@@ -24,13 +24,17 @@ describe('RackBrowserDetailViewComponent', () => {
   let seoService: any;
   let commentsDataService: any;
   let userManagementService: any;
+  let singleRackData$: BehaviorSubject<any>;
+  let rowedRackedModules$: BehaviorSubject<any>;
 
   beforeEach(() => {
+    singleRackData$ = new BehaviorSubject<any>(undefined);
+    rowedRackedModules$ = new BehaviorSubject<any>(undefined);
     dataService = {
       setPublicDetailMode: jasmine.createSpy('setPublicDetailMode'),
       updateSingleRackData$: {next: jasmine.createSpy('updateSingleRackData$.next')},
-      singleRackData$: of(undefined),
-      rowedRackedModules$: of(undefined)
+      singleRackData$,
+      rowedRackedModules$
     };
     userAreaDataService = {
       updateModulesData$: {next: jasmine.createSpy('updateModulesData$.next')}
@@ -47,6 +51,10 @@ describe('RackBrowserDetailViewComponent', () => {
       commentsDataService,
       userManagementService
     );
+  });
+
+  afterEach(() => {
+    component.ngOnDestroy();
   });
 
   function makeRackedModule(
@@ -84,6 +92,10 @@ describe('RackBrowserDetailViewComponent', () => {
 
     expect(dataService.setPublicDetailMode).toHaveBeenCalledWith(true);
     expect(dataService.updateSingleRackData$.next).toHaveBeenCalledWith(42);
+  });
+
+  it('shows the wide-shell nav by default for rack detail pages', () => {
+    expect(component.showWideShellNav).toBeTrue();
   });
 
   it('uses authenticated detail reads for signed-in users', () => {

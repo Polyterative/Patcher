@@ -6,6 +6,8 @@ import {
 
 
 describe('CommentsDataService', () => {
+  let createdServices: CommentsDataService[];
+
   function build() {
     const backend = {
       GET: {
@@ -24,8 +26,17 @@ describe('CommentsDataService', () => {
     };
     
     const service = new CommentsDataService(backend as any, snackBar as any);
+    createdServices.push(service);
     return { service, backend, snackBar };
   }
+
+  beforeEach(() => {
+    createdServices = [];
+  });
+
+  afterEach(() => {
+    createdServices.forEach((service) => service.ngOnDestroy());
+  });
   
   it('loads comments and resets the field when update is requested', () => {
     const { service, backend } = build();

@@ -7,6 +7,8 @@ import { ModuleAdderDataService } from './module-adder-data.service';
 
 
 describe('ModuleAdderDataService - Form Validation', () => {
+  let createdServices: ModuleAdderDataService[];
+
   function build() {
     const standards$ = new BehaviorSubject<any[]>([]);
     const backend = {
@@ -37,9 +39,18 @@ describe('ModuleAdderDataService - Form Validation', () => {
       snackBar,
       router
     );
+    createdServices.push(service);
     
     return {service, standards$, backend, dialog, snackBar, router};
   }
+
+  beforeEach(() => {
+    createdServices = [];
+  });
+
+  afterEach(() => {
+    createdServices.forEach((service) => service.ngOnDestroy());
+  });
   
   function fillRequired(service: ModuleAdderDataService) {
     service.formData.name.control.setValue('Maths');

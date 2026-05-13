@@ -55,8 +55,10 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
   @ViewChild(MatPaginator) paginator: MatPaginator;
   private readonly document = inject(DOCUMENT);
   @Input() showSubmitFab = true;
+  @Input() showWideShellNav = true;
   @Input() compactSidebarAtTablet = false;
   @Input() titleBig = 'Modules';
+  @Input() titleSub = '';
   @Input() description = 'Discover modules and save favourites';
   @Input() showRecentActivity = true;
   @Input() manageSeo = true;

@@ -9,14 +9,18 @@ describe('PatchBrowserDetailViewComponent', () => {
   let commentsDataService: any;
   let userManagementService: any;
   let loggedUser$: BehaviorSubject<any>;
+  let singlePatchData$: BehaviorSubject<any>;
+  let patchConnections$: BehaviorSubject<any>;
   
   beforeEach(() => {
     loggedUser$ = new BehaviorSubject<any>(undefined);
+    singlePatchData$ = new BehaviorSubject<any>(undefined);
+    patchConnections$ = new BehaviorSubject<any>(undefined);
     dataService = {
       setPublicDetailMode: jasmine.createSpy('setPublicDetailMode'),
       updateSinglePatchData$: {next: jasmine.createSpy('updateSinglePatchData$.next')},
-      singlePatchData$: of(undefined),
-      patchConnections$: of(undefined),
+      singlePatchData$,
+      patchConnections$,
       patchEditingPanelOpenState$: {next: jasmine.createSpy('patchEditingPanelOpenState$.next')}
     };
     seoService = {updateSeo: jasmine.createSpy('updateSeo')};
@@ -30,6 +34,10 @@ describe('PatchBrowserDetailViewComponent', () => {
       commentsDataService,
       userManagementService
     );
+  });
+
+  afterEach(() => {
+    component.ngOnDestroy();
   });
   
   it('uses public detail reads for signed-out visitors', () => {

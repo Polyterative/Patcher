@@ -13,6 +13,9 @@ import { SelectionPanelBridgeService } from '../selection-panel-bridge.service';
 
 
 describe('PatchDetailDataService - Sync and Error Paths', () => {
+  let createdServices: PatchDetailDataService[];
+  let createdBridges: SelectionPanelBridgeService[];
+
   function patch(partial: any = {}) {
     return {
       id: 10,
@@ -85,8 +88,20 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
       backend as any,
       bridge
     );
+    createdBridges.push(bridge);
+    createdServices.push(service);
     return {service, backend, bridge, router, snackBar};
   }
+
+  beforeEach(() => {
+    createdServices = [];
+    createdBridges = [];
+  });
+
+  afterEach(() => {
+    createdServices.forEach((service) => service.ngOnDestroy());
+    createdBridges.forEach((bridge) => bridge.ngOnDestroy());
+  });
   
   it('removes patch from collection and refreshes current patch', () => {
     const {service, backend, snackBar} = build();

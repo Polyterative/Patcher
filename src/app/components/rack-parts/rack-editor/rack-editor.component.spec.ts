@@ -15,10 +15,47 @@ import { RACK_ANALYSIS_MODES } from '../rack-analysis-mode';
 
 
 describe('RackEditorComponent', () => {
+  let createdComponents: RackEditorComponent[];
+
+  function createComponent(
+    snackBar: MatSnackBar = {} as MatSnackBar,
+    supabaseService: SupabaseService = {} as SupabaseService,
+    dataService: RackDetailDataService = {} as RackDetailDataService,
+    contextMenuDataService: GeneralContextMenuDataService = {} as GeneralContextMenuDataService,
+    changeDetectorRef: ChangeDetectorRef = {markForCheck: () => undefined} as ChangeDetectorRef,
+    dialog: MatDialog = jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
+  ) {
+    const normalizedContextMenu = {
+      menuItems$: new BehaviorSubject<any[]>([]),
+      open$: new Subject<MouseEvent>(),
+      menuClose$: new Subject<any>(),
+      ...contextMenuDataService
+    } as GeneralContextMenuDataService;
+
+    const component = new RackEditorComponent(
+      snackBar,
+      supabaseService,
+      dataService,
+      normalizedContextMenu,
+      changeDetectorRef,
+      dialog
+    );
+    createdComponents.push(component);
+    return component;
+  }
+
+  beforeEach(() => {
+    createdComponents = [];
+  });
+
+  afterEach(() => {
+    createdComponents.forEach((component) => component.ngOnDestroy());
+  });
+
   it('opens the active panel in the zoom dialog from inspect action', () => {
     const dialog = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
 
-    const component = new RackEditorComponent(
+    const component = createComponent(
       {} as MatSnackBar,
       {} as SupabaseService,
       {} as RackDetailDataService,
@@ -52,7 +89,7 @@ describe('RackEditorComponent', () => {
   it('does nothing when the active panel has no image file', () => {
     const dialog = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
 
-    const component = new RackEditorComponent(
+    const component = createComponent(
       {} as MatSnackBar,
       {} as SupabaseService,
       {} as RackDetailDataService,
@@ -88,7 +125,7 @@ describe('RackEditorComponent', () => {
       requestRackedModulePanelSwitch$: new Subject<any>(),
     };
 
-    const component = new RackEditorComponent(
+    const component = createComponent(
       {} as MatSnackBar,
       {} as SupabaseService,
       dataService as any,
@@ -119,7 +156,7 @@ describe('RackEditorComponent', () => {
   });
 
   it('toggles the view options panel', () => {
-    const component = new RackEditorComponent(
+    const component = createComponent(
       {} as MatSnackBar,
       {} as SupabaseService,
       {} as RackDetailDataService,
@@ -150,7 +187,7 @@ describe('RackEditorComponent', () => {
     };
     const contextMenu = {menuItems$, open$} as GeneralContextMenuDataService;
 
-    const component = new RackEditorComponent(
+    const component = createComponent(
       {} as MatSnackBar,
       {} as SupabaseService,
       dataService as any,
@@ -194,7 +231,7 @@ describe('RackEditorComponent', () => {
   });
 
   it('uses the same shared action ids for the touch tray and the context menu', () => {
-    const component = new RackEditorComponent(
+    const component = createComponent(
       {} as MatSnackBar,
       {} as SupabaseService,
       {} as RackDetailDataService,
@@ -220,7 +257,7 @@ describe('RackEditorComponent', () => {
 
   it('clears the touch selection after running the shared replace-with-blank action', () => {
     const replaceWithBlank$ = new Subject<RackedModule>();
-    const component = new RackEditorComponent(
+    const component = createComponent(
       {} as MatSnackBar,
       {} as SupabaseService,
       {
@@ -248,7 +285,7 @@ describe('RackEditorComponent', () => {
   });
 
   it('does not expose the paused signal analysis mode in the UI options', () => {
-    const component = new RackEditorComponent(
+    const component = createComponent(
       {} as MatSnackBar,
       {} as SupabaseService,
       {} as RackDetailDataService,
@@ -265,7 +302,7 @@ describe('RackEditorComponent', () => {
   });
 
   it('scales the rack down when the viewport is narrower than the rack width', () => {
-    const component = new RackEditorComponent(
+    const component = createComponent(
       {} as MatSnackBar,
       {} as SupabaseService,
       {} as RackDetailDataService,
@@ -288,7 +325,7 @@ describe('RackEditorComponent', () => {
   });
 
   it('combines auto scale and reduced scale into the drag surface scale', () => {
-    const component = new RackEditorComponent(
+    const component = createComponent(
       {} as MatSnackBar,
       {} as SupabaseService,
       {} as RackDetailDataService,
@@ -312,7 +349,7 @@ describe('RackEditorComponent', () => {
   });
 
   it('returns compensated rack frame dimensions for transform scaling', () => {
-    const component = new RackEditorComponent(
+    const component = createComponent(
       {} as MatSnackBar,
       {} as SupabaseService,
       {} as RackDetailDataService,
@@ -344,7 +381,7 @@ describe('RackEditorComponent', () => {
   });
 
   it('disables drop animations only for the explicit reduced-scale mode', () => {
-    const component = new RackEditorComponent(
+    const component = createComponent(
       {} as MatSnackBar,
       {} as SupabaseService,
       {} as RackDetailDataService,
@@ -364,7 +401,7 @@ describe('RackEditorComponent', () => {
   });
 
   it('caps the rack scale at full size when the viewport is wide enough', () => {
-    const component = new RackEditorComponent(
+    const component = createComponent(
       {} as MatSnackBar,
       {} as SupabaseService,
       {} as RackDetailDataService,
@@ -387,7 +424,7 @@ describe('RackEditorComponent', () => {
   });
 
   it('falls back to the window width when no rack viewport reference is available', () => {
-    const component = new RackEditorComponent(
+    const component = createComponent(
       {} as MatSnackBar,
       {} as SupabaseService,
       {} as RackDetailDataService,
@@ -408,7 +445,7 @@ describe('RackEditorComponent', () => {
 
   it('recomputes scale when the rack viewport setter receives a new element', async () => {
     const cdr = jasmine.createSpyObj<ChangeDetectorRef>('ChangeDetectorRef', ['markForCheck']);
-    const component = new RackEditorComponent(
+    const component = createComponent(
       {} as MatSnackBar,
       {} as SupabaseService,
       {} as RackDetailDataService,
@@ -434,7 +471,7 @@ describe('RackEditorComponent', () => {
 
   it('recomputes scale and marks for check on window resize', () => {
     const cdr = jasmine.createSpyObj<ChangeDetectorRef>('ChangeDetectorRef', ['markForCheck']);
-    const component = new RackEditorComponent(
+    const component = createComponent(
       {} as MatSnackBar,
       {} as SupabaseService,
       {} as RackDetailDataService,
