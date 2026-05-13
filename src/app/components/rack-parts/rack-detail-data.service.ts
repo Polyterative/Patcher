@@ -79,22 +79,22 @@ function cloneRackData<T>(value: T): T {
 export class RackDetailDataService extends SubManager {
   private static readonly imageCaptureOverlayResetDelayMs = 360;
   private usePublicDetailReads = false;
-  updateSingleRackData$ = new ReplaySubject<number>();
-  singleRackData$ = new BehaviorSubject<Rack | undefined>(undefined);
-  deleteRack$ = new Subject<RackMinimal>();
-  duplicateRack$ = new Subject<RackMinimal>();
-  downloadRackImageToUserComputer$ = new Subject<void>();
-  updateRackImagePreview$ = new Subject<void>();
-  currentDownloadElementRef$: BehaviorSubject<{
+  readonly updateSingleRackData$ = new ReplaySubject<number>();
+  readonly singleRackData$ = new BehaviorSubject<Rack | undefined>(undefined);
+  readonly deleteRack$ = new Subject<RackMinimal>();
+  readonly duplicateRack$ = new Subject<RackMinimal>();
+  readonly downloadRackImageToUserComputer$ = new Subject<void>();
+  readonly updateRackImagePreview$ = new Subject<void>();
+  readonly currentDownloadElementRef$: BehaviorSubject<{
     screen: ElementRef,
   } | undefined> = new BehaviorSubject<{
     screen: ElementRef,
   }>(undefined);
   
-  addModuleToRack$ = new Subject<MinimalModule>();
-  shouldShowPanelImages$ = new BehaviorSubject<boolean>(true);
-  analysisMode$ = new BehaviorSubject<RackAnalysisMode>(RACK_ANALYSIS_MODES.off);
-  signalFocusArea$ = new BehaviorSubject<SignalFocusArea | null>(null);
+  readonly addModuleToRack$ = new Subject<MinimalModule>();
+  readonly shouldShowPanelImages$ = new BehaviorSubject<boolean>(true);
+  readonly analysisMode$ = new BehaviorSubject<RackAnalysisMode>(RACK_ANALYSIS_MODES.off);
+  readonly signalFocusArea$ = new BehaviorSubject<SignalFocusArea | null>(null);
   formData = {
     name: {
       control: new FormControl('', [

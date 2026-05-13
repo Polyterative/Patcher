@@ -3,10 +3,10 @@ import { BehaviorSubject, Subject } from 'rxjs';
 
 @Injectable()
 export class HeroInfoBoxService {
-  infoText$ = new BehaviorSubject<string>('');
+  readonly infoText$ = new BehaviorSubject<string>('');
 
-  hoverStart$ = new Subject<string>();
-  hoverEnd$ = new Subject<string>();
+  readonly hoverStart$ = new Subject<string>();
+  readonly hoverEnd$ = new Subject<string>();
 
   constructor() {
     this.hoverStart$.subscribe(value => this.infoText$.next(value));

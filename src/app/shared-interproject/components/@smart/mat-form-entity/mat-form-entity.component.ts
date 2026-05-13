@@ -149,8 +149,8 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
   dataPack?: IMatFormEntityConfig;
   
   // @ts-ignore
-  invalid$: BehaviorSubject<boolean> = new BehaviorSubject(false);  // keep this a bsubject otherwise you will have template errors
-  errors$: BehaviorSubject<string> = new BehaviorSubject('');       // keep this a bsubject otherwise you will have template errors
+  readonly invalid$: BehaviorSubject<boolean> = new BehaviorSubject(false);  // keep this a bsubject otherwise you will have template errors
+  readonly errors$: BehaviorSubject<string> = new BehaviorSubject('');       // keep this a bsubject otherwise you will have template errors
   /**
    * Types reference, do not use from outside
    */
