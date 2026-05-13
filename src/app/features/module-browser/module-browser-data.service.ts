@@ -252,7 +252,7 @@ export class ModuleBrowserDataService extends SubManager {
         control: new FormControl<ISelectable[]>([], {nonNullable: true}),
         type: FormTypes.MULTISELECT,
         options$: this.backend.get.allTags().pipe(
-          map(tags => (tags ?? []).map((t: any) => ({id: t.id.toString(), name: t.name}))),
+          map(tags => (tags ?? []).map((t) => ({id: t.id.toString(), name: t.name}))),
           startWith([]),
           takeUntil(this.destroy$),
           share()
