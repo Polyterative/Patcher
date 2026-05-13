@@ -1,6 +1,5 @@
 import { RackBalancePanelComponent } from './rack-balance-panel.component';
-import { RackBalanceAnalysisService } from '../rack-balance-analysis.service';
-import { RackBalanceAnalysisResult } from '../rack-balance-analysis.service';
+import { RackBalanceAnalysisResult, RackBalanceAnalysisService } from '../rack-balance-analysis.service';
 
 
 describe('RackBalancePanelComponent', () => {
