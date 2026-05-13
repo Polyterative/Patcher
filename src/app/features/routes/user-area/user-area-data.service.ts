@@ -35,18 +35,16 @@ import { SubManager } from 'src/app/shared-interproject/directives/subscription-
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { MatDialog } from "@angular/material/dialog";
 import { DbComment } from "src/app/models/comment";
-import { matchesSearchQuery } from 'src/app/shared-interproject/components/@smart/mat-form-entity/string-utils';
 import { CurrentUserContributorStats } from 'src/app/features/backend/supabase-queries';
-
-function pagedSlice$<T>(
-  data$: Observable<T[] | undefined>,
-  skip$: Observable<number>,
-  take$: Observable<number>
-): Observable<T[] | undefined> {
-  return combineLatest([data$, skip$, take$]).pipe(
-    map(([data, skip, take]) => data ? data.slice(skip, skip + take) : undefined)
-  );
-}
+import { matchesSearchQuery } from 'src/app/shared-interproject/components/@smart/mat-form-entity/string-utils';
+import {
+  buildDiscoverySnapshot,
+  filterComments,
+  filterManuals,
+  filterModules,
+  filterRacks,
+  pagedSlice$
+} from './user-area-data.utils';
 
 @Injectable()
 export class UserAreaDataService extends SubManager {
@@ -125,7 +123,7 @@ export class UserAreaDataService extends SubManager {
       this.modulesData$,
       this.searchQuery$
     ]).pipe(
-      map(([modules, query]) => this.filterModules(modules, query))
+      map(([modules, query]) => filterModules(modules, query))
     );
 
     this.filteredModulesCount$ = this.filteredModulesData$.pipe(
@@ -142,7 +140,7 @@ export class UserAreaDataService extends SubManager {
       this.rackData$,
       this.searchQuery$
     ]).pipe(
-      map(([racks, query]) => this.filterRacks(racks, query))
+      map(([racks, query]) => filterRacks(racks, query))
     );
 
     this.filteredRacksCount$ = this.filteredRacksData$.pipe(
@@ -189,14 +187,14 @@ export class UserAreaDataService extends SubManager {
       this.manualsData$,
       this.searchQuery$
     ]).pipe(
-      map(([manuals, query]) => this.filterManuals(manuals, query))
+      map(([manuals, query]) => filterManuals(manuals, query))
     );
 
     this.filteredCommentsData$ = combineLatest([
       this.commentsData$,
       this.searchQuery$
     ]).pipe(
-      map(([comments, query]) => this.filterComments(comments, query))
+      map(([comments, query]) => filterComments(comments, query))
     );
 
     this.allPatchTags$ = this.patchesData$.pipe(
@@ -289,7 +287,7 @@ export class UserAreaDataService extends SubManager {
       this.commentsData$,
       this._searchQuery$
     ]).pipe(
-      map(([modules, racks, patches, manuals, comments, query]) => this.buildDiscoverySnapshot(
+      map(([modules, racks, patches, manuals, comments, query]) => buildDiscoverySnapshot(
         modules,
         racks,
         patches,
@@ -417,97 +415,5 @@ export class UserAreaDataService extends SubManager {
         pagination.skip$.next(event.pageIndex * event.pageSize);
         onPageChange?.();
       });
-  }
-
-  private buildDiscoverySnapshot(
-    modules: MinimalModule[] | undefined,
-    racks: Rack[] | undefined,
-    patches: Patch[] | undefined,
-    manuals: DbModule[] | undefined,
-    comments: DbComment[] | undefined,
-    query: string
-  ): DiscoveryTipUserAreaSnapshot {
-    const modulesCount = modules?.length ?? 0;
-    const racksCount = racks?.length ?? 0;
-    const patchesCount = patches?.length ?? 0;
-    const manualsCount = manuals?.length ?? 0;
-    const commentsCount = comments?.length ?? 0;
-
-    return {
-      modulesLoaded: modules !== undefined,
-      racksLoaded: racks !== undefined,
-      patchesLoaded: patches !== undefined,
-      manualsLoaded: manuals !== undefined,
-      commentsLoaded: comments !== undefined,
-      modulesCount,
-      racksCount,
-      patchesCount,
-      manualsCount,
-      commentsCount,
-      totalCount: modulesCount + racksCount + patchesCount,
-      hasSearchQuery: query.length > 0
-    };
-  }
-
-  private filterModules(
-    modules: MinimalModule[] | undefined,
-    query: string
-  ): MinimalModule[] | undefined {
-    if (!modules) {
-      return undefined;
-    }
-
-    return modules.filter((module) => {
-      const searchFields = [
-        module.name,
-        module.manufacturer?.name,
-        module.description,
-        ...(module.tags ?? []).map((tagVote) => tagVote.tag?.name ?? '')
-      ];
-
-      return matchesSearchQuery(query, ...searchFields);
-    });
-  }
-
-  private filterRacks(
-    racks: Rack[] | undefined,
-    query: string
-  ): Rack[] | undefined {
-    if (!racks) {
-      return undefined;
-    }
-
-    return racks.filter((rack) => matchesSearchQuery(query, rack.name, rack.description));
-  }
-
-  private filterManuals(
-    manuals: DbModule[] | undefined,
-    query: string
-  ): DbModule[] | undefined {
-    if (!manuals) {
-      return undefined;
-    }
-
-    return manuals.filter((manual) => matchesSearchQuery(
-      query,
-      manual.name,
-      manual.manufacturer?.name,
-      manual.description
-    ));
-  }
-
-  private filterComments(
-    comments: DbComment[] | undefined,
-    query: string
-  ): DbComment[] | undefined {
-    if (!comments) {
-      return undefined;
-    }
-
-    return comments.filter((comment) => matchesSearchQuery(
-      query,
-      comment.content,
-      comment.profile?.username
-    ));
   }
 }
