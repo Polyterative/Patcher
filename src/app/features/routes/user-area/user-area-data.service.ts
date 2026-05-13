@@ -197,16 +197,10 @@ export class UserAreaDataService extends SubManager {
     );
 
     this.allPatchTags$ = this.patchesData$.pipe(
-      map(patches => {
-        if (!patches) { return []; }
-        const tagSet = new Set<string>();
-        for (const p of patches) {
-          for (const t of (p.tags ?? [])) {
-            tagSet.add(t);
-          }
-        }
-        return Array.from(tagSet).sort();
-      })
+      map(patches => patches
+        ? Array.from(new Set(patches.flatMap(p => p.tags ?? []))).sort()
+        : []
+      )
     );
 
     this.bindPageEvent(this.commentsPageEvent$, this.commentsPagination, () => this.updateCommentsData$.next());
@@ -276,9 +270,10 @@ export class UserAreaDataService extends SubManager {
           false,
           true
         )),
-        map(x => x.filter(y => y.manualURL !== null && y.manualURL !== '' && y.manualURL !== undefined)),
-        // order the entities of the array by name alphabetically
-        map(x => x.sort((a, b) => a.name.localeCompare(b.name))),
+        map(x => x
+          .filter(y => y.manualURL !== null && y.manualURL !== '' && y.manualURL !== undefined)
+          .sort((a, b) => a.name.localeCompare(b.name))
+        ),
         takeUntil(this.destroy$)
       )
       .subscribe(x => this.manualsData$.next(x));
