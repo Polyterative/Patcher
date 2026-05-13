@@ -374,7 +374,6 @@ export class ModuleAdderDataService extends SubManager {
           };
           
         }),
-        filter(x => !!x),
         switchMap((x) => this.backend.add.modules([x as any]).pipe(
           map(() => x),
           catchError(() => {
