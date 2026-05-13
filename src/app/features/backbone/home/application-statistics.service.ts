@@ -892,9 +892,10 @@ export class ApplicationStatisticsService extends SubManager {
     return segments.filter((segment) => segment.widthPercent > 0);
   }
 
+  private static readonly METRIC_TONES: MetricTone[] = ['brand', 'emerald', 'violet', 'amber'];
+
   private getToneByIndex(index: number): MetricTone {
-    const tones: MetricTone[] = ['brand', 'emerald', 'violet', 'amber'];
-    return tones[index % tones.length];
+    return ApplicationStatisticsService.METRIC_TONES[index % ApplicationStatisticsService.METRIC_TONES.length];
   }
 
   private mapTrendDays(activitySeries: PublicApplicationActivityPoint[]): ApplicationInsightsTrendDay[] {
