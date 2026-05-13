@@ -298,7 +298,6 @@ export class RackDetailDataService extends SubManager {
         withLatestFrom(this.singleRackData$),
         takeUntil(this.destroyEvent$)
       )
-      // .subscribe(() => this.updateSingleRackData$.next(this.singleRackData$.value.id));
       .subscribe(([_, rackData]) => {
         this.singleRackData$.next(rackData);
       });

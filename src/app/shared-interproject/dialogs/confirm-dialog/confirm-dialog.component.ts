@@ -34,11 +34,6 @@ export class ConfirmDialogComponent extends DialogBase implements ConfirmDialogD
 
   positive?: DialogLabelDefinition;
 
-  // closeDialog(answer: boolean) {
-  //   this.dialogRef.close({
-  //     answer
-  //   });
-  // }
   negative?: DialogLabelDefinition;
 
   constructor(

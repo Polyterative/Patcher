@@ -637,11 +637,6 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
   }
 
   private checkOptions(): void {
-    // console.warn([
-    //   this.label,
-    //   this.options
-    // ]);
-    
     if (this.options$ === undefined) {
       console.error('Options is not observable! I\'m a selector, give me the options!');
       console.error(this.options$);

@@ -30,8 +30,6 @@ import { SubManager } from "src/app/shared-interproject/directives/subscription-
 export class UserSignupDataService extends SubManager {
   updateData$ = new Subject<void>();
   
-  // user$ = new BehaviorSubject<StaffGet | undefined>(undefined);
-  
   readonly fields: {
     username: IMatFormEntityConfig;
     email: IMatFormEntityConfig;
@@ -113,17 +111,6 @@ export class UserSignupDataService extends SubManager {
   ) {
     super();
     
-    // this.mailLoginClick$
-    //     .pipe(switchMap(x => this.loginInteraction.login(this.fields.user.control.value, this.fields.password.control.value)))
-    //     .subscribe(x => {
-    //       if (!!x.error) {
-    //         SharedConstants.errorLogin(snackBar, x.error.message);
-    //       } else {
-    //         SharedConstants.successLogin(snackBar);
-    //         this.router.navigate(['/modules/browser']);
-    //       }
-    //     });
-    
     this.mailSignClick$
       .pipe(
         switchMap(() => this.loginInteraction.signup(
@@ -152,20 +139,6 @@ export class UserSignupDataService extends SubManager {
         const returnUrl = this.activated.snapshot.queryParamMap.get('returnUrl');
         this.router.navigate([returnUrl || x.returnUrl || '/user/area']);
       });
-    
-    // this.googleSignClick$
-    //     .pipe(
-    //       switchMap(x => this.loginInteraction.signupGoogle()),
-    //       takeUntil(this.destroy$)
-    //     )
-    //     .subscribe(x => {
-    //       if (!!x.error) {
-    //         SharedConstants.errorSignup(snackBar, x.error.message);
-    //       } else {
-    //         SharedConstants.confirmMail(snackBar);
-    //       }
-    //
-    //     });
     
   }
 }

@@ -9,7 +9,6 @@ import { CleanCardModule } from 'src/app/shared-interproject/components/@visual/
 import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { ScreenWrapperModule } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 import { ApplicationInsightsPageComponent } from './application-insights/application-insights-page.component';
-// import { MarkdownModule } from 'ngx-markdown';
 import { ChangelogComponent } from './changelog/changelog.component';
 
 
