@@ -2,51 +2,40 @@ import { CV } from 'src/app/models/cv';
 import { RackedModule } from 'src/app/models/module';
 import { isBlankModule } from './rack-blank-module.constants';
 import { buildRackFunctionVisual } from './rack-function-visuals.utils';
+import {
+  SignalAnalysisOptions,
+  SignalDestinationGroup,
+  SignalDestinationMatch,
+  SignalDestinationTier,
+  SignalDestinationTierGroup,
+  SignalFocusArea,
+  SignalModuleAnalysis,
+  SignalTypeFamily,
+} from './rack-signal-analysis.models';
+import {
+  DEFAULT_SIGNAL_MAX_MATCHES,
+  GENERIC_SIGNAL_TOKENS,
+  PITCH_CONTROL_DESTINATION_PATTERN,
+  SIGNAL_FAMILY_LABELS,
+  SIGNAL_FAMILY_ORDER,
+  SIGNAL_FAMILY_TAG_PATTERNS,
+  SIGNAL_KEYWORD_PATTERNS,
+  SIGNAL_TIER_LABELS,
+  SIGNAL_TIER_ORDER,
+  TIMING_DESTINATION_PATTERN,
+} from './rack-signal-analysis.constants';
 
-export type SignalTypeFamily = 'audio' | 'pitch' | 'clock' | 'modulation' | 'other';
-export type SignalDestinationConfidence = 'likely' | 'potential';
-export type SignalDestinationTier = 'natural' | 'exploratory';
-export type SignalFocusArea = 'voices' | 'tone' | 'mixing' | 'modulation' | 'clock';
-
-export interface SignalAnalysisOptions {
-  focusArea?: SignalFocusArea;
-  maxMatches?: number;
-}
-
-export interface SignalDestinationMatch {
-  destination: RackedModule;
-  family: SignalTypeFamily;
-  familyLabel: string;
-  score: number;
-  confidence: SignalDestinationConfidence;
-  tier: SignalDestinationTier;
-  reasonLabel: string;
-  destinationRoleLabel: string;
-  matchedOutputNames: string[];
-  matchedInputNames: string[];
-}
-
-export interface SignalDestinationGroup {
-  family: SignalTypeFamily;
-  label: string;
-  matches: SignalDestinationMatch[];
-}
-
-export interface SignalDestinationTierGroup {
-  tier: SignalDestinationTier;
-  label: string;
-  groups: SignalDestinationGroup[];
-}
-
-export interface SignalModuleAnalysis {
-  inputNames: string[];
-  outputNames: string[];
-  tagNames: string[];
-  destinationMatches: SignalDestinationMatch[];
-  destinationTierGroups: SignalDestinationTierGroup[];
-  totalDestinations: number;
-  hiddenDestinationCount: number;
-}
+export type {
+  SignalAnalysisOptions,
+  SignalDestinationConfidence,
+  SignalDestinationGroup,
+  SignalDestinationMatch,
+  SignalDestinationTier,
+  SignalDestinationTierGroup,
+  SignalFocusArea,
+  SignalModuleAnalysis,
+  SignalTypeFamily,
+} from './rack-signal-analysis.models';
 
 export function suggestSignalFocusArea(rackedModule: RackedModule): SignalFocusArea {
   const functionRole = buildRackFunctionVisual(rackedModule).roleLabel;
@@ -74,101 +63,6 @@ export function suggestSignalFocusArea(rackedModule: RackedModule): SignalFocusA
 
   return 'modulation';
 }
-
-const SIGNAL_FAMILY_ORDER: SignalTypeFamily[] = ['audio', 'pitch', 'clock', 'modulation', 'other'];
-
-const SIGNAL_FAMILY_LABELS: Record<SignalTypeFamily, string> = {
-  audio: 'Audio',
-  pitch: 'Pitch / V-Oct',
-  clock: 'Clock / Gate',
-  modulation: 'Modulation',
-  other: 'Other',
-};
-
-const SIGNAL_TIER_ORDER: SignalDestinationTier[] = ['natural', 'exploratory'];
-
-const SIGNAL_TIER_LABELS: Record<SignalDestinationTier, string> = {
-  natural: 'Best matches',
-  exploratory: 'More possible routes',
-};
-
-const DEFAULT_SIGNAL_MAX_MATCHES = 8;
-const TIMING_DESTINATION_PATTERN = /\bclock\b|\bsequencer\b|\bdivider\b|\bmultiplier\b|\blogic\b|\breset\b|\brun\b|\bsync\b/;
-const PITCH_CONTROL_DESTINATION_PATTERN = /\bquantizer\b|\bsequencer\b|\bkeyboard\b|\bkey\b|\barp(?:eggiator)?\b|\bpitch\b/;
-
-const SIGNAL_KEYWORD_PATTERNS: Record<SignalTypeFamily, RegExp[]> = {
-  audio: [
-    /\baudio\b/,
-    /\bmain\b/,
-    /\bmix\b/,
-    /\bstereo\b/,
-    /\bmono\b/,
-    /\bleft\b/,
-    /\bright\b/,
-    /\breturn\b/,
-    /\bsend\b/,
-    /\bfilter\b/,
-    /\bvca\b/,
-  ],
-  pitch: [
-    /\bv\/?oct\b/,
-    /\b1v\/?oct\b/,
-    /\bpitch\b/,
-    /\bkey\b/,
-    /\bkeyboard\b/,
-    /\btracking\b/,
-  ],
-  clock: [
-    /\bclock\b/,
-    /\bclk\b/,
-    /\bgate\b/,
-    /\btrig(?:ger)?\b/,
-    /\breset\b/,
-    /\brun\b/,
-    /\bsync\b/,
-    /\bpulse\b/,
-  ],
-  modulation: [
-    /\bcv\b/,
-    /\bmod\b/,
-    /\bfm\b/,
-    /\benv\b/,
-    /\benvelope\b/,
-    /\blfo\b/,
-    /\brand(?:om)?\b/,
-    /\bslew\b/,
-    /\bcutoff\b/,
-    /\blevel\b/,
-    /\bdepth\b/,
-    /\bamt\b/,
-    /\bpwm\b/,
-  ],
-  other: [],
-};
-
-const SIGNAL_FAMILY_TAG_PATTERNS: Record<Exclude<SignalTypeFamily, 'other'>, RegExp[]> = {
-  audio: [/\bfilter\b/, /\bvca\b/, /\bmixer\b/, /\beffect\b/, /\bdelay\b/, /\breverb\b/, /\boutput\b/, /\bvoice\b/],
-  pitch: [/\bvco\b/, /\bosc\b/, /\bvoice\b/, /\bquantizer\b/, /\bsequencer\b/, /\bpitch\b/],
-  clock: [/\bclock\b/, /\bgate\b/, /\btrigger\b/, /\btrig\b/, /\bsequencer\b/, /\bdivider\b/, /\blogic\b/, /\benvelope\b/],
-  modulation: [/\blfo\b/, /\benvelope\b/, /\bfunction\b/, /\bmod\b/, /\bcv\b/, /\butility\b/, /\brandom\b/],
-};
-
-const GENERIC_SIGNAL_TOKENS = new Set([
-  'in',
-  'out',
-  'input',
-  'output',
-  'sig',
-  'signal',
-  'main',
-  'send',
-  'return',
-  'left',
-  'right',
-  'mono',
-  'stereo',
-  'cv',
-]);
 
 export function buildSignalModuleAnalysis(
   hoveredModule: RackedModule,
