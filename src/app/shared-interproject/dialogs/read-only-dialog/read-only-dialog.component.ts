@@ -4,18 +4,16 @@ import {
   Inject
 } from '@angular/core';
 import { DialogBase } from '../DialogBase';
-import { DialogDataInModelBase } from '../DialogDataStructures';
 import {
   MAT_DIALOG_DATA,
   MatDialogRef
 } from "@angular/material/dialog";
+import {
+  ReadOnlyDialogDataInModel,
+  ReadOnlyDialogDataOutModel
+} from './read-only-dialog.types';
 
-
-export interface ReadOnlyDialogDataInModel extends DialogDataInModelBase {
-}
-
-export interface ReadOnlyDialogDataOutModel {
-}
+export type { ReadOnlyDialogDataInModel, ReadOnlyDialogDataOutModel };
 
 @Component({
   selector: 'lib-read-only-dialog',
