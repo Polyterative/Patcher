@@ -69,9 +69,11 @@
       @if ((dataService.isCurrentRackEditable$|async)) {
         <app-module-browser-root
           [showSubmitFab]="false"
+          [showWideShellNav]="false"
           [compactSidebarAtTablet]="true"
           [enableCollectionBrowseModes]="true"
-          [titleBig]="'Add modules'"
+          [titleBig]="'Add modules to'"
+          [titleSub]="bag.data?.name ?? ''"
           [description]="'Use your collection or the full library to place modules into this rack.'"
           [showRecentActivity]="false"
           [manageSeo]="false"

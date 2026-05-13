@@ -9,6 +9,8 @@ import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 
 
 describe('ModuleAdderDataService', () => {
+  let createdServices: ModuleAdderDataService[];
+
   function build(options?: {
     manufacturers?: { id: number; name: string }[];
     modules?: { id: number; name: string }[];
@@ -46,9 +48,18 @@ describe('ModuleAdderDataService', () => {
       snackBar,
       router
     );
+    createdServices.push(service);
     
     return {service, standards$, backend, dialog, snackBar, router};
   }
+
+  beforeEach(() => {
+    createdServices = [];
+  });
+
+  afterEach(() => {
+    createdServices.forEach((service) => service.ngOnDestroy());
+  });
   
   it('loads manufacturer options and enables control after data arrives', () => {
     const {service, backend, standards$} = build();

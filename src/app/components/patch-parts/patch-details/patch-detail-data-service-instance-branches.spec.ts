@@ -12,6 +12,9 @@ import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 
 
 describe('PatchDetailDataService - Instance Edge Branches', () => {
+  let createdServices: PatchDetailDataService[];
+  let createdBridges: SelectionPanelBridgeService[];
+
   function patch(partial: any = {}) {
     return {
       id: 100,
@@ -79,8 +82,20 @@ describe('PatchDetailDataService - Instance Edge Branches', () => {
       backend as any,
       bridge
     );
+    createdBridges.push(bridge);
+    createdServices.push(service);
     return {service, backend};
   }
+
+  beforeEach(() => {
+    createdServices = [];
+    createdBridges = [];
+  });
+
+  afterEach(() => {
+    createdServices.forEach((service) => service.ngOnDestroy());
+    createdBridges.forEach((bridge) => bridge.ngOnDestroy());
+  });
   
   it('enforces instance copy limit before insert', () => {
     spyOn(SharedConstants, 'errorCustom').and.callFake(() => {

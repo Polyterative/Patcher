@@ -4,6 +4,8 @@ import { STANDARDS } from '../module-collection-analysis.service';
 
 
 describe('RackCreatorComponent', () => {
+  let createdComponents: RackCreatorComponent[];
+
   function build(user: any = {id: 'user-1'}, userModules: any[] = []) {
     const backend = {
       auth: {
@@ -34,6 +36,7 @@ describe('RackCreatorComponent', () => {
       {userModules} as any,
       moduleCollectionAnalysisService as any
     );
+    createdComponents.push(component);
     
     return {
       component,
@@ -43,6 +46,14 @@ describe('RackCreatorComponent', () => {
       moduleCollectionAnalysisService
     };
   }
+
+  beforeEach(() => {
+    createdComponents = [];
+  });
+
+  afterEach(() => {
+    createdComponents.forEach((component) => component.ngOnDestroy());
+  });
   
   it('filters out small 1U formats from rack analysis input', (done) => {
     const modules = [
