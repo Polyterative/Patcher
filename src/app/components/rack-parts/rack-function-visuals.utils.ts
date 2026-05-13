@@ -12,6 +12,7 @@ import {
   RowFunctionBreakdown,
   RowFunctionRoleBreakdown
 } from './rack-function-visuals.models';
+import { FUNCTION_ANALYSIS_LEGEND } from './rack-function-visuals.constants';
 
 export type {
   FunctionAnalysisLegendItem,
@@ -20,6 +21,8 @@ export type {
   RowFunctionBreakdown,
   RowFunctionRoleBreakdown
 } from './rack-function-visuals.models';
+
+export { FUNCTION_ANALYSIS_LEGEND } from './rack-function-visuals.constants';
 
 interface RackFunctionAxisScore {
   score: number;
@@ -36,13 +39,6 @@ const FUNCTION_AXIS_CLASS_NAMES: Record<RackBalanceAxisId, string> = {
   tone: 'functionAnalysisModule--tone',
 };
 
-export const FUNCTION_ANALYSIS_LEGEND: ReadonlyArray<FunctionAnalysisLegendItem> = [
-  {label: 'Voices', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--voices'},
-  {label: 'Modulation', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--modulation'},
-  {label: 'Utilities', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--utilities'},
-  {label: 'Timing', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--timing'},
-  {label: 'Tone shaping', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--tone'},
-];
 
 const TRACKED_FUNCTION_ROLE_CLASS_NAMES = new Set<string>(Object.values(FUNCTION_AXIS_CLASS_NAMES));
 const TRACKED_FUNCTION_ROLE_LABELS = new Set<string>(FUNCTION_ANALYSIS_LEGEND.map(item => item.label));
