@@ -40,14 +40,12 @@ import {
   LINKED_RACK_PENDING_CREATE_MESSAGE
 } from '../linked-rack-rollout';
 import { generatePatchName } from '../patch-name-generator';
+import {
+  PatchCreatorInModel,
+  PatchCreatorOutModel
+} from './patch-creator.types';
 
-
-export interface PatchCreatorOutModel {
-}
-
-export interface PatchCreatorInModel {
-  linkedRackId?: number | null;
-}
+export type { PatchCreatorInModel, PatchCreatorOutModel };
 
 @Component({
   selector: 'app-patch-creator',
