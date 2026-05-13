@@ -73,14 +73,11 @@ import {
   buildRackStatistics,
   buildRowedModulesArray,
   calculateBlankIdForSizeAndStandard,
+  cloneRackData,
   extractCreatedPatchId,
   isAnyModuleWithoutRackingId,
 } from './rack-detail-data.utils';
 
-
-function cloneRackData<T>(value: T): T {
-  return structuredClone(value);
-}
 
 @Injectable()
 export class RackDetailDataService extends SubManager {
