@@ -8,6 +8,8 @@ import { RackDetailDataService } from './rack-detail-data.service';
 
 
 describe('RackDetailDataService reactive flows', () => {
+  let createdServices: RackDetailDataService[];
+
   function moduleInRack(id: number, row: number | null, column: number | null, hp = 8, standardId = 0) {
     return {
       module: {
@@ -85,9 +87,18 @@ describe('RackDetailDataService reactive flows', () => {
       dialog as any,
       router
     );
+    createdServices.push(service);
     
     return {service, backend, dialog, snackBar, router, loggedUser$};
   }
+
+  beforeEach(() => {
+    createdServices = [];
+  });
+
+  afterEach(() => {
+    createdServices.forEach((service) => service.ngOnDestroy());
+  });
   
   it('updates row count on add/remove row requests', () => {
     const {service, backend} = build();

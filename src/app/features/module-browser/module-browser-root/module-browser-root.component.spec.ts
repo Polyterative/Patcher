@@ -86,6 +86,16 @@ describe('ModuleBrowserRootComponent', () => {
     expect(recentActivity).not.toBeNull();
   });
 
+  it('shows the wide-shell nav by default on standalone module browser pages', () => {
+    expect(component.showWideShellNav).toBeTrue();
+  });
+
+  it('exposes an optional subtitle for embedded browser headings', () => {
+    component.titleSub = 'Rack name';
+
+    expect(component.titleSub).toBe('Rack name');
+  });
+
   it('defaults to full catalog when owned collection is below the adaptive threshold', () => {
     component.enableCollectionBrowseModes = true;
     component.ownedModulesInput = buildOwnedModules(5);

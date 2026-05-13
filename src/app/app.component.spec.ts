@@ -103,6 +103,16 @@ describe('AppComponent', () => {
     expect(fixture.debugElement.query(By.directive(ToolbarStubComponent))).not.toBeNull();
   });
 
+  it('uses the embedded shell on rack detail routes when wide-shell layout is active', () => {
+    routerMock.url = '/racks/details/1114';
+    wideShell$.next(true);
+    fixture.detectChanges();
+
+    const shell = fixture.debugElement.query(By.css('.app-shell')).nativeElement as HTMLElement;
+    expect(shell.classList.contains('app-shell--wide')).toBeTrue();
+    expect(fixture.debugElement.query(By.directive(ToolbarStubComponent))).toBeNull();
+  });
+
   it('shows the route loading state during navigation starts', () => {
     fixture.detectChanges();
     routerEvents$.next(new NavigationStart(1, '/modules/browser'));
