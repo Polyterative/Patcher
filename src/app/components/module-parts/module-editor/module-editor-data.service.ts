@@ -8,13 +8,9 @@ import {
   BehaviorSubject,
   EMPTY,
   from,
-  Observable,
-  of
+  Observable
 } from 'rxjs';
-import {
-  switchMap,
-  withLatestFrom
-} from 'rxjs/operators';
+import { switchMap } from 'rxjs/operators';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { CV } from 'src/app/models/cv';
 import { DbModule } from 'src/app/models/module';
@@ -149,10 +145,7 @@ export class ModuleEditorDataService {
     group: UntypedFormGroup,
     subject: BehaviorSubject<FormCV[]>
   ): void {
-    const controlsToRemove = Object.keys(group.controls);
-    controlsToRemove.forEach(controlName => {
-      group.removeControl(controlName);
-    });
+    Object.keys(group.controls).forEach(name => group.removeControl(name));
 
     cvs
       .filter(cv => !cv.isApproved)
@@ -309,15 +302,15 @@ export class ModuleEditorDataService {
       return EMPTY;
     }
 
-    return from(params.file.arrayBuffer()).pipe(
-      withLatestFrom(of([params.file.name, params.file.type] as const)),
-      switchMap(([fileBuffer, [filename, fileType]]) => {
-        const extensionFromFilename = filename.includes('.') ? filename.split('.').pop() : '';
-        const extensionFromType = (fileType ?? '').split('/').pop();
-        const extension = (extensionFromFilename || extensionFromType || 'jpg').toLowerCase();
+    const file = params.file;
+    return from(file.arrayBuffer()).pipe(
+      switchMap((fileBuffer) => {
+        const extension = this.fileExtensionFromType(file.type)
+          || this.fileExtensionFromName(file.name)
+          || 'jpg';
         const name: string = `${ this.safeString(params.module.name) }-${ this.safeString(params.module.manufacturer.name) }-${ params.panelTypeValue.name }-${ this.safeString(params.module.standard.name) }`;
         const filenameAndExtension: string = `${ name }.${ extension }`;
-        return this.backend.storage.uploadModulePanel(fileBuffer, filenameAndExtension, fileType);
+        return this.backend.storage.uploadModulePanel(fileBuffer, filenameAndExtension, file.type);
       }),
       switchMap(dbFilename =>
         this.backend.add.panel([{
