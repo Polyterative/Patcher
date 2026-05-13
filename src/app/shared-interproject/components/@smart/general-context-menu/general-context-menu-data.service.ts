@@ -12,7 +12,7 @@ export interface ContextMenuItem {
   label: string;
   disabled: boolean;
   danger?: boolean;
-  data?: any;
+  data?: unknown;
   click$: Subject<ContextMenuItem>;
   submenu?: ContextMenuItem[];
   imageUrl?: string;
