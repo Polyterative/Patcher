@@ -8,6 +8,7 @@ import {
   EditorModuleCard,
   filterEditorCardsByQuery,
   PATCH_EDITOR_OPERATION_MODE_OPTIONS,
+  PATCH_EDITOR_OPERATION_MODES,
   PatchEditorComponent,
   resolveRackInlinePanelSide,
   resolvePatchEditorSortStrategy,
@@ -25,11 +26,13 @@ function createPatchEditorComponent(): PatchEditorComponent {
     description: 'No rack is linked yet.',
     rackId: null
   });
+  const editorOperationMode$ = new BehaviorSubject(PATCH_EDITOR_OPERATION_MODES.collection);
   return new PatchEditorComponent(
     {} as any,
     {
       singlePatchData$: of(undefined),
-      linkedRackState$
+      linkedRackState$,
+      editorOperationMode$
     } as any,
     {} as any,
     {nativeElement: document.createElement('div')} as any,
@@ -84,11 +87,13 @@ describe('PatchEditorComponent', () => {
       description: 'No rack is linked yet.',
       rackId: null
     });
+    const editorOperationMode$ = new BehaviorSubject(PATCH_EDITOR_OPERATION_MODES.collection);
     const component = new PatchEditorComponent(
       {} as any,
       {
         singlePatchData$: of(undefined),
-        linkedRackState$
+        linkedRackState$,
+        editorOperationMode$
       } as any,
       {} as any,
       {nativeElement: document.createElement('div')} as any,

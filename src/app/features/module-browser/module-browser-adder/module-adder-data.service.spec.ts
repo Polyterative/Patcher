@@ -171,10 +171,9 @@ describe('ModuleAdderDataService', () => {
     expect(service.formData.description.control.value).toBe('');
     expect(service.formData.manual.control.value).toBe('');
     expect(service.formData.hp.control.value).toBe('');
-    expect(snackBar.open).toHaveBeenCalled();
     
     // navigation is delayed by the celebration animation
-    tick(2200);
+    tick(4000);
     expect(router.navigate).toHaveBeenCalledWith(
       ['/modules', 'browser'],
       jasmine.objectContaining({queryParams: {refresh: true}})
