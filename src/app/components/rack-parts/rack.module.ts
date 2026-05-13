@@ -30,11 +30,13 @@ import { RackCreatorComponent } from './rack-creator/rack-creator.component';
 import { RackDetailsRemainingIndicatorComponent } from './rack-details/rack-details-remaining-indicator/rack-details-remaining-indicator.component';
 import { RackBalancePanelComponent } from './rack-balance-panel/rack-balance-panel.component';
 import { HasUnrackedModulesPipe } from './rack-editor/rack-visual-model/has-unracked-modules.pipe';
+import { HasUnrackedModulesListPipe } from './rack-editor/rack-visual-model/has-unracked-modules-list.pipe';
 import { RackVisualModelComponent } from './rack-editor/rack-visual-model/rack-visual-model.component';
 import { RackedToModulesPipe } from './racked-to-modules.pipe';
 import { TotalHpOfModulesPipe } from './total-hp-of-modules.pipe';
 import { TotalHpOfRackPipe } from './total-hp-of-rack.pipe';
 import { TotalModulesOfRackPipe } from './total-modules-of-rack.pipe';
+import { TotalPlacedModulesOfRackPipe } from './total-placed-modules-of-rack.pipe';
 import { StatisticsModule } from "src/app/components/shared-atoms/statistics/statistics.module";
 import { MatDialogModule } from "@angular/material/dialog";
 import { MatCardModule } from "@angular/material/card";
@@ -55,6 +57,7 @@ import { TotalMissingPowerDataInRackPipe } from "src/app/components/rack-parts/t
 import { TotalDepthOfRackPipe } from "src/app/components/rack-parts/total-depth-of-rack.pipe";
 import { TotalWeightOfRackPipe } from "src/app/components/rack-parts/total-weight-of-rack.pipe";
 import { EditFabModule } from "src/app/shared-interproject/components/@visual/edit-fab/edit-fab.module";
+import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-state-tips/empty-state-tips.component';
 import { InputDialogModule } from "src/app/shared-interproject/dialogs/input-dialog/input-dialog.module";
 
 
@@ -70,10 +73,12 @@ import { InputDialogModule } from "src/app/shared-interproject/dialogs/input-dia
     RackDetailsRemainingIndicatorComponent,
     TotalHpOfRackPipe,
     TotalModulesOfRackPipe,
+    TotalPlacedModulesOfRackPipe,
     MapToModulePipe,
     RackedToModulesPipe,
     RackVisualModelComponent,
-    HasUnrackedModulesPipe
+    HasUnrackedModulesPipe,
+    HasUnrackedModulesListPipe
   ],
   exports: [
     RackMinimalComponent,
@@ -135,6 +140,7 @@ import { InputDialogModule } from "src/app/shared-interproject/dialogs/input-dia
     TotalDepthOfRackPipe,
     TotalWeightOfRackPipe,
     EditFabModule,
+    EmptyStateTipsComponent,
     InputDialogModule,
   ]
 })
