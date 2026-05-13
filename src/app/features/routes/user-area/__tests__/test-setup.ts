@@ -4,9 +4,12 @@ import {
   ReplaySubject,
   Subject
 } from 'rxjs';
-import { MinimalModule } from 'src/app/models/module';
+import { DbComment } from 'src/app/models/comment';
+import { DbModule, MinimalModule } from 'src/app/models/module';
 import { Patch } from 'src/app/models/patch';
 import { Rack } from 'src/app/models/rack';
+import { RichUserModel, SimpleUserModel } from 'src/app/features/backend/supabase.types';
+import { CurrentUserContributorStats } from 'src/app/features/backend/supabase-queries';
 
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
@@ -41,8 +44,8 @@ export const MOCK_RACKS: Partial<Rack>[] = [
  * Creates a mock UserManagementService with all user-area-relevant observables.
  */
 export function createMockUserManagementService() {
-  const loggedUser$ = new ReplaySubject<any>(1);
-  const loggedUserFullProfile$ = new ReplaySubject<any>(1);
+  const loggedUser$ = new ReplaySubject<SimpleUserModel | undefined>(1);
+  const loggedUserFullProfile$ = new ReplaySubject<RichUserModel | undefined>(1);
   
   loggedUser$.next(undefined);
   loggedUserFullProfile$.next(undefined);
@@ -62,12 +65,12 @@ export function createMockUserManagementService() {
  * action Subjects needed by UserAreaRootComponent and its children.
  */
 export function createMockUserAreaDataService() {
-  const modulesData$ = new BehaviorSubject<any[] | undefined>(undefined);
-  const patchesData$ = new BehaviorSubject<any[] | undefined>(undefined);
-  const rackData$ = new BehaviorSubject<any[] | undefined>(undefined);
-  const manualsData$ = new BehaviorSubject<any[] | undefined>(undefined);
-  const commentsData$ = new BehaviorSubject<any[] | undefined>(undefined);
-  const contributorStats$ = new BehaviorSubject<any | undefined>(undefined);
+  const modulesData$ = new BehaviorSubject<MinimalModule[] | undefined>(undefined);
+  const patchesData$ = new BehaviorSubject<Patch[] | undefined>(undefined);
+  const rackData$ = new BehaviorSubject<Rack[] | undefined>(undefined);
+  const manualsData$ = new BehaviorSubject<DbModule[] | undefined>(undefined);
+  const commentsData$ = new BehaviorSubject<DbComment[] | undefined>(undefined);
+  const contributorStats$ = new BehaviorSubject<CurrentUserContributorStats | undefined>(undefined);
   
   const updateModulesData$ = new Subject<void>();
   const updatePatchesData$ = new Subject<void>();

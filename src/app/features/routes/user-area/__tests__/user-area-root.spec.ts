@@ -183,8 +183,8 @@ describe('UserAreaRootComponent - miscStats$', () => {
     mockDataService.modulesData$.next(MOCK_MODULES as any);
     mockDataService.rackData$.next(MOCK_RACKS as any);
     mockDataService.patchesData$.next(MOCK_PATCHES as any);
-    mockDataService.commentsData$.next([{id: 1}, {id: 2}, {id: 3}]);
-    mockDataService.manualsData$.next([{id: 5}]);
+    mockDataService.commentsData$.next([{id: 1}, {id: 2}, {id: 3}] as any);
+    mockDataService.manualsData$.next([{id: 5}] as any);
     
     component.miscStats$.subscribe((stats: any[]) => {
       expect(stats.find(s => s.name === 'Modules')?.value).toBe(2);
