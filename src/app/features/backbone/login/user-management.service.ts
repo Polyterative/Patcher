@@ -390,14 +390,14 @@ export class UserManagementService extends SubManager {
   }
   
   private initializeUpdateUsernameHandler(): void {
-    this.updateUsernameAction$.pipe(      withLatestFrom(this.loggedUserFullProfile$),
+    this.updateUsernameAction$.pipe(
+      withLatestFrom(this.loggedUserFullProfile$),
       filter(([_, profile]) => !!profile),
       switchMap(([newUsername, profile]) =>
         this.backend.auth.updateUsername$(profile!.id, newUsername).pipe(
           map(() => newUsername),
           catchError((error) => {
-            const errorMessage = error?.message || SharedConstants.messages.operationFailed;
-            SharedConstants.errorCustom(this.snackBar, errorMessage);
+            this.showOperationError(error);
             return NEVER;
           })
         )
@@ -430,8 +430,7 @@ export class UserManagementService extends SubManager {
         }
         return this.backend.auth.updateUsername$(profile.id, newUsername).pipe(
           catchError((error) => {
-            const errorMessage = error?.message || SharedConstants.messages.operationFailed;
-            SharedConstants.errorCustom(this.snackBar, errorMessage);
+            this.showOperationError(error);
             return throwError(() => error);
           })
         );
@@ -467,8 +466,7 @@ export class UserManagementService extends SubManager {
             );
           }),
           catchError((error) => {
-            const errorMessage = error?.message || SharedConstants.messages.operationFailed;
-            SharedConstants.errorCustom(this.snackBar, errorMessage);
+            this.showOperationError(error);
             return throwError(() => error);
           })
         );
@@ -577,8 +575,7 @@ export class UserManagementService extends SubManager {
       switchMap(({newPassword}) =>
         this.backend.auth.updatePassword$(newPassword).pipe(
           catchError((error) => {
-            const msg = error?.message || SharedConstants.messages.operationFailed;
-            SharedConstants.errorCustom(this.snackBar, msg);
+            this.showOperationError(error);
             return NEVER;
           })
         )
@@ -589,6 +586,11 @@ export class UserManagementService extends SubManager {
       }),
       takeUntil(this.destroy$)
     ).subscribe();
+  }
+
+  private showOperationError(error: unknown): void {
+    const msg = (error as any)?.message || SharedConstants.messages.operationFailed;
+    SharedConstants.errorCustom(this.snackBar, msg);
   }
 
   private _getAdminRole(): Observable<boolean> {
