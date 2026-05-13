@@ -59,7 +59,8 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
   @Input() compactSidebarAtTablet = false;
   @Input() titleBig = 'Modules';
   @Input() titleSub = '';
-  @Input() description = 'Discover modules and save favourites';
+  @Input() compactTitleSub = false;
+  @Input() description = '';
   @Input() showRecentActivity = true;
   @Input() manageSeo = true;
   mobileFiltersExpanded = false;
