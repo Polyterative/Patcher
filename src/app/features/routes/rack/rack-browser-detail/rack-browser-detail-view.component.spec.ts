@@ -9,6 +9,7 @@ import { ActivatedRoute } from '@angular/router';
 import {
   BehaviorSubject,
   of,
+  Subject,
 } from 'rxjs';
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
 import { CommentsDataService } from 'src/app/components/shared-atoms/comments/comments-data.service';
@@ -145,6 +146,7 @@ describe('RackBrowserDetailViewComponent', () => {
         rowedRackedModules$,
         isCurrentRackEditable$,
         isCurrentRackPropertyOfCurrentUser$,
+        moduleAddedFromPicker$: new Subject<void>(),
       };
       templateUserAreaDataService = {
         updateModulesData$: {next: jasmine.createSpy('updateModulesData$.next')},
