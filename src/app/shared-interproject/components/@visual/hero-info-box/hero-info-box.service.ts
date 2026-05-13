@@ -10,7 +10,6 @@ export class HeroInfoBoxService {
 
   constructor() {
     this.hoverStart$.subscribe(value => this.infoText$.next(value));
-    // this.hoverEnd$.pipe(throttleTime(50)).subscribe(() => this.infoText$.next(''));
     this.hoverEnd$.subscribe(() => this.infoText$.next(''));
   }
 

@@ -30,7 +30,6 @@ export class UrlCreatorService {
   }
   
   copyLinkToClipboard(path: string): void {
-    // this.router.
     const url: string = window.location.origin + path;
 
     this.copyTextToClipboard(
