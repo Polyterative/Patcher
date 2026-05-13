@@ -1,3 +1,4 @@
+import { CV } from 'src/app/models/cv';
 import { RackedModule } from 'src/app/models/module';
 import { buildRackFunctionVisual } from './rack-function-visuals.utils';
 import {
@@ -29,6 +30,7 @@ import {
   normalizedTokenOverlap,
   resolveSignalFamily,
   sortCvNames,
+  sortNames,
   sortTagNames,
 } from './rack-signal-analysis.helpers';
 
