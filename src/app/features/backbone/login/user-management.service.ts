@@ -131,11 +131,7 @@ export class UserManagementService extends SubManager {
         takeUntil(this.destroy$)
       )
       .subscribe(x => {
-        if (x) {
-          this.userBoxService.store.user$.next({username: x.username});
-        } else {
-          this.userBoxService.store.user$.next({username: undefined});
-        }
+        this.userBoxService.store.user$.next({username: x?.username});
       });
   }
   
@@ -389,13 +385,7 @@ export class UserManagementService extends SubManager {
     this.backend.auth.getUserSession$().pipe(
       take(1)
     ).subscribe(x => {
-      if (x) {
-        // Explicitly set the user since we know they are logged in
-        this._loggedUser$.next(x);
-      } else {
-        // Explicitly set undefined since we know they are not logged in
-        this._loggedUser$.next(undefined);
-      }
+      this._loggedUser$.next(x ?? undefined);
     });
   }
   
