@@ -36,17 +36,34 @@
         </div>
       } @else {
         <div class="userComments__empty">
-          <mat-card-subtitle class="userComments__emptyText">
-            @if (bag.hasSearchQuery && bag.activeFilter !== null) {
-              No comments match the current search and type filter.
-            } @else if (bag.hasSearchQuery) {
-              No comments match the current search.
-            } @else if (bag.activeFilter !== null) {
-              No comments match the selected type.
-            } @else {
-              No comments yet.
-            }
-          </mat-card-subtitle>
+          @if (bag.hasSearchQuery && bag.activeFilter !== null) {
+            <app-empty-state-tips
+              [compact]="true"
+              icon="filter_alt_off"
+              title="No matches"
+              copy="No comments match the current search and type filter."
+            ></app-empty-state-tips>
+          } @else if (bag.hasSearchQuery) {
+            <app-empty-state-tips
+              [compact]="true"
+              icon="search_off"
+              title="No matches"
+              copy="No comments match the current search."
+            ></app-empty-state-tips>
+          } @else if (bag.activeFilter !== null) {
+            <app-empty-state-tips
+              [compact]="true"
+              icon="filter_alt_off"
+              title="No matches"
+              copy="No comments match the selected type."
+            ></app-empty-state-tips>
+          } @else {
+            <app-empty-state-tips
+              icon="chat_bubble_outline"
+              title="No comments yet"
+              copy="Your comments on modules, racks, and patches will show up here once you start a conversation."
+            ></app-empty-state-tips>
+          }
         </div>
       }
     }

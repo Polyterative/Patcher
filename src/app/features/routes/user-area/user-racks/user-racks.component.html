@@ -27,13 +27,23 @@
           </div>
         } @else {
           <div class="section-empty">
-            <mat-card-subtitle>
-              @if (globalSearchQuery.trim()) {
-                No racks match "{{ globalSearchQuery.trim() }}".
-              } @else {
-                It looks like you haven't created any racks yet. Try adding your first!
-              }
-            </mat-card-subtitle>
+            @if (globalSearchQuery.trim()) {
+              <app-empty-state-tips
+                [compact]="true"
+                icon="search_off"
+                title="No matches"
+                [copy]="'No racks match &quot;<strong>' + globalSearchQuery.trim() + '</strong>&quot;.'"
+              ></app-empty-state-tips>
+            } @else {
+              <app-empty-state-tips
+                icon="view_stream"
+                title="Plan your first rack"
+                copy="Racks let you lay out modules, check if they fit, and share the build with friends."
+                [tips]="[
+                  { icon: 'add', html: 'Click <strong>Create rack</strong>, then drag modules in from your collection or the library.' }
+                ]"
+              ></app-empty-state-tips>
+            }
           </div>
         }
       }
