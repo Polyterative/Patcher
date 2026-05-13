@@ -72,13 +72,13 @@ describe('HeroContentCardComponent', () => {
     expect(host.textContent).toContain('Log in');
   });
 
-  it('reveals a compact sticky nav after the integrated nav reaches the toolbar edge', () => {
+  it('reveals a compact sticky nav only after the integrated nav has scrolled past the toolbar edge', () => {
     wideShell$.next(true);
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
     const navOrigin = host.querySelector('.title-metro-nav-origin') as HTMLElement;
-    spyOn(navOrigin, 'getBoundingClientRect').and.returnValue(createDomRect({top: -12, bottom: 68, height: 80}));
+    spyOn(navOrigin, 'getBoundingClientRect').and.returnValue(createDomRect({top: -92, bottom: -12, height: 80}));
 
     (fixture.componentInstance as any).syncCompactWideShellNav();
     fixture.detectChanges();
@@ -89,6 +89,20 @@ describe('HeroContentCardComponent', () => {
     expect(floatingNav?.textContent).not.toContain('patcher.xyz');
     expect(floatingNav?.textContent).toContain('Home');
     expect(floatingNav?.textContent).toContain('Log in');
+  });
+
+  it('keeps the sticky nav hidden while the integrated nav is still partially visible', () => {
+    wideShell$.next(true);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const navOrigin = host.querySelector('.title-metro-nav-origin') as HTMLElement;
+    spyOn(navOrigin, 'getBoundingClientRect').and.returnValue(createDomRect({top: -12, bottom: 68, height: 80}));
+
+    (fixture.componentInstance as any).syncCompactWideShellNav();
+    fixture.detectChanges();
+
+    expect(host.querySelector('.title-metro-sticky-shell--visible')).toBeNull();
   });
 
   it('stacks the inline description under the title block when titleSub is present', () => {

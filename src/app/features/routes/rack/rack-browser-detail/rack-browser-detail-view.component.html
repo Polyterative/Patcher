@@ -6,7 +6,7 @@
 }; as bag) {
   <div class="col gap1"
   >
-    <lib-hero-content-card class="racksBG"
+    <lib-hero-content-card class="racksBG rackBrowserDetailView__header"
                            [titleBig]="bag.isCurrentRackEditable && bag.isCurrentRackPropertyOfCurrentUser ? 'Rack editing' : 'Rack details'"
                            [showWideShellNav]="showWideShellNav"
                            [titleSub]="bag.data?.name"
@@ -71,6 +71,7 @@
           [showSubmitFab]="false"
           [showWideShellNav]="false"
           [compactSidebarAtTablet]="true"
+          [compactTitleSub]="true"
           [enableCollectionBrowseModes]="true"
           [titleBig]="'Add modules to'"
           [titleSub]="bag.data?.name ?? ''"

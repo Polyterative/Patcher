@@ -81,6 +81,7 @@ export class HeroContentCardComponent implements AfterViewInit, OnDestroy {
   @Input() showHelpButton = false;
   @Input() icon: string;
   @Input() showWideShellNav = false;
+  @Input() compactTitleSub = false;
   @ViewChild('wideShellNavOrigin')
   set wideShellNavOriginRef(value: ElementRef<HTMLElement> | undefined) {
     this.wideShellNavOrigin = value;
@@ -231,6 +232,6 @@ export class HeroContentCardComponent implements AfterViewInit, OnDestroy {
 
     const navRect = this.wideShellNavOrigin.nativeElement.getBoundingClientRect();
     const revealThresholdPx = Math.min(Math.max(navRect.height * 0.1, 8), 20);
-    return navRect.top <= -revealThresholdPx;
+    return navRect.bottom <= revealThresholdPx;
   }
 }
