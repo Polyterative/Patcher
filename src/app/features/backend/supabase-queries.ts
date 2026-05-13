@@ -55,36 +55,12 @@ export type {
   PublicApplicationStatistics,
   PublicUserContributorStats
 } from './supabase-queries.models';
-
-
-interface ManufacturerModuleStats {
-  moduleCount: number;
-  latestModuleUpdatedAt: string | null;
-  latestModuleUpdatedAtMs: number | null;
-  changedModulesLast30Days: number;
-}
-
-
-
-type ModuleActivityRow = {
-  manufacturerId: number;
-  updated: string
-};
-
-type PublicModuleInsightRow = {
-  manufacturerId: number;
-  manufacturerName: string;
-  hp: number;
-  standardName: string;
-  created: string;
-  updated: string;
-};
-
-type ManufacturerInsightStats = {
-  totalModules: number;
-  totalHp: number;
-  oneUModules: number;
-};
+import {
+  ManufacturerModuleStats,
+  ModuleActivityRow,
+  PublicModuleInsightRow,
+  ManufacturerInsightStats
+} from './supabase-queries.types';
 
 function applyClientSideSearchFilter<T>(
   response: { data?: T[]; count?: number | null } & Record<string, any>,
