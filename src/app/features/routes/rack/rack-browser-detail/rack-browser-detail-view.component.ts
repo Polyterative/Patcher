@@ -116,7 +116,7 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
             modified: rackData.updated
           };
           this.seoAndUtilsService.updateSeo(seoData, `${ rackData.name } - Rack Details`);
-          this.injectRackJsonLd(rackData, uniqueRowedFlatted);
+          this.injectRackJsonLd(rackData!, uniqueRowedFlatted);
         });
     }
     
@@ -205,7 +205,7 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
     return count > 0 ? ` (${ count } missing)` : '';
   }
 
-  private injectRackJsonLd(rackData: any, modules: string[]): void {
+  private injectRackJsonLd(rackData: RackMinimal, modules: string[]): void {
     clearJsonLdScript(JSONLD_SCRIPT_ID);
     const jsonLd: Record<string, unknown> = {
       '@context': 'https://schema.org',

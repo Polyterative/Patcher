@@ -14,6 +14,7 @@ import {
   take,
   takeUntil
 } from 'rxjs/operators';
+import { Patch } from 'src/app/models/patch';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import {
   defaultPatchMinimalViewConfig,
@@ -119,7 +120,7 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
           };
           this.seoAndUtilsService.updateSeo(seoData,
             `${ patchData.name } - Patch Details`);
-          this.injectPatchJsonLd(patchData, uniqueModulesInPatch);
+          this.injectPatchJsonLd(patchData!, uniqueModulesInPatch);
         });
     }
     
@@ -145,7 +146,7 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
     super.ngOnDestroy();
   }
 
-  private injectPatchJsonLd(patchData: any, modules: string[]): void {
+  private injectPatchJsonLd(patchData: Patch, modules: string[]): void {
     clearJsonLdScript(JSONLD_SCRIPT_ID);
     const jsonLd: Record<string, unknown> = {
       '@context': 'https://schema.org',
