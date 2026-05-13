@@ -4,10 +4,9 @@ import {
 } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { AppStateService } from '../../app-state.service';
-import { FormTypes, MatFormErgonomicsConfig } from '../../components/@smart/mat-form-entity/form-element-models';
+import { FormTypes } from '../../components/@smart/mat-form-entity/form-element-models';
 import { IMatFormEntityConfig } from '../../components/@smart/mat-form-entity/mat-form-entity.component';
 import { DialogBase } from '../DialogBase';
-import { DialogDataInModelBase } from '../DialogDataStructures';
 import { ReadOnlyDialogComponent } from '../read-only-dialog/read-only-dialog.component';
 import { takeUntil } from "rxjs/operators";
 import { BehaviorSubject } from "rxjs";
@@ -15,20 +14,12 @@ import {
   MAT_DIALOG_DATA,
   MatDialogRef
 } from "@angular/material/dialog";
+import {
+  InputDialogDataInModel,
+  InputDialogDataOutModel
+} from './input-dialog.types';
 
-
-export interface InputDialogDataInModel extends DialogDataInModelBase {
-  control: FormControl,
-  type: FormTypes,
-  label: string,
-  hint?: string,
-  iconL1?: string,
-  ergonomics?: MatFormErgonomicsConfig
-}
-
-export interface InputDialogDataOutModel {
-  result: string
-}
+export type { InputDialogDataInModel, InputDialogDataOutModel };
 
 @Component({
   selector: 'app-input-dialog',
