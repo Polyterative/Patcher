@@ -201,12 +201,14 @@ export class PatchDetailDataService implements OnDestroy {
     
     this.updateSinglePatchData$
       .pipe(
-        tap(_ => this.patchConnections$.next(null)),
-        tap(_ => this.editorConnections$.next(null)),
-        tap(() => this.patchModuleInstances$.next([])),
-        tap(() => this.singlePatchData$.next(undefined)),
-        tap(() => this.patchDetailUnavailableMessage$.next(null)),
-        tap(() => this.backend.cacheResetter$.next(['patchModuleInstances', 'rackWithId'])),
+        tap(() => {
+          this.patchConnections$.next(null);
+          this.editorConnections$.next(null);
+          this.patchModuleInstances$.next([]);
+          this.singlePatchData$.next(undefined);
+          this.patchDetailUnavailableMessage$.next(null);
+          this.backend.cacheResetter$.next(['patchModuleInstances', 'rackWithId']);
+        }),
         switchMap(x => this.usePublicDetailReads
           ? this.backend.GET.publicPatchWithId(x)
           : this.backend.get.patchWithId(x)
@@ -624,9 +626,7 @@ export class PatchDetailDataService implements OnDestroy {
         withLatestFrom(this.editorConnections$, this.singlePatchData$),
         concatMap(([_, connections, patch]) => {
           let request$: Observable<unknown>;
-          if (!patch) {
-            request$ = of(null);
-          } else if (connections === null) {
+          if (!patch || connections === null) {
             request$ = of(null);
           } else if (connections.length === 0) {
             request$ = this.backend.delete.patchConnectionsForPatch(patch.id).pipe(
@@ -1004,13 +1004,11 @@ export class PatchDetailDataService implements OnDestroy {
   }
   
   private groupInstancesByModuleId(instances: PatchModuleInstance[]): Map<number, PatchModuleInstance[]> {
-    const map = new Map<number, PatchModuleInstance[]>();
-    for (const inst of instances) {
+    return instances.reduce((map, inst) => {
       const list = map.get(inst.module_id) ?? [];
       list.push(inst);
-      map.set(inst.module_id, list);
-    }
-    return map;
+      return map.set(inst.module_id, list);
+    }, new Map<number, PatchModuleInstance[]>());
   }
 
   ngOnDestroy(): void {
@@ -1178,13 +1176,10 @@ export class PatchDetailDataService implements OnDestroy {
     ).pipe(
       tap(() => {
         // Update local state in one batch
-        const current = [...this.patchModuleInstances$.value];
-        for (const u of updates) {
-          const idx = current.findIndex(i => i.id === u.instance.id);
-          if (idx >= 0) {
-            current[idx] = {...current[idx], instance_label: u.newLabel};
-          }
-        }
+        const current = this.patchModuleInstances$.value.map(inst => {
+          const update = updates.find(u => u.instance.id === inst.id);
+          return update ? {...inst, instance_label: update.newLabel} : inst;
+        });
         this.patchModuleInstances$.next(current);
       }),
       map(() => null)
