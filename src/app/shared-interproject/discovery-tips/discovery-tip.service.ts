@@ -26,15 +26,15 @@ import {
   DiscoveryTipStorageShape,
   DiscoveryTipUserAreaSnapshot
 } from './discovery-tip.models';
+import {
+  DEFAULT_GLOBAL_DISCOVERY_TIP_PAUSE_MS,
+  DEFAULT_STORAGE_SHAPE,
+  DISCOVERY_TIP_GLOBAL_PAUSE_ID,
+  DISCOVERY_TIP_STORAGE_KEY
+} from './discovery-tip.constants';
 
+export { DISCOVERY_TIP_STORAGE_KEY } from './discovery-tip.constants';
 
-export const DISCOVERY_TIP_STORAGE_KEY = 'patcher.discovery-tips.v1';
-const DISCOVERY_TIP_GLOBAL_PAUSE_ID = '__global_pause__';
-const DEFAULT_GLOBAL_DISCOVERY_TIP_PAUSE_MS = 1000 * 60 * 60 * 24 * 7;
-
-const defaultStorageShape: DiscoveryTipStorageShape = {
-  viewers: {}
-};
 
 function isSnoozed(snoozedUntil: string | undefined): boolean {
   return !!snoozedUntil && new Date(snoozedUntil).getTime() > Date.now();
@@ -392,18 +392,18 @@ export class DiscoveryTipService extends SubManager {
 
   private readStorage(): DiscoveryTipStorageShape {
     if (!this.isBrowser) {
-      return defaultStorageShape;
+      return DEFAULT_STORAGE_SHAPE;
     }
 
     try {
       const rawValue = window.localStorage.getItem(DISCOVERY_TIP_STORAGE_KEY);
       if (!rawValue) {
-        return defaultStorageShape;
+        return DEFAULT_STORAGE_SHAPE;
       }
       const parsed = JSON.parse(rawValue) as DiscoveryTipStorageShape;
-      return parsed?.viewers ? parsed : defaultStorageShape;
+      return parsed?.viewers ? parsed : DEFAULT_STORAGE_SHAPE;
     } catch {
-      return defaultStorageShape;
+      return DEFAULT_STORAGE_SHAPE;
     }
   }
 
