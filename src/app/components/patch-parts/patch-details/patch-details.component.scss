@@ -1,7 +1,9 @@
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   min-width: 0;
+  flex: 1;
 }
 
 .encloseVertically {
@@ -10,8 +12,10 @@
 }
 
 .patch-details-shell {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 0.9rem;
+  flex: 1;
 }
 
 .patch-details-content {
@@ -19,6 +23,7 @@
   flex-direction: column;
   gap: 1rem;
   min-width: 0;
+  flex: 1;
 }
 
 .patch-details-graph {
@@ -31,28 +36,7 @@
   flex: 0 1 auto;
 }
 
-.patch-details-empty-state {
-  display: grid;
-  justify-items: start;
-  gap: 0.45rem;
-  padding: 1rem 1.1rem;
-  border-radius: 1rem;
-  background: rgba(243, 248, 252, 0.82);
-  border: 1px dashed rgba(58, 93, 129, 0.22);
-
-  mat-icon {
-    color: rgba(38, 72, 108, 0.7);
-  }
-}
-
-.patch-details-empty-state__title {
-  font-weight: 700;
-  color: rgba(18, 40, 66, 0.94);
-}
-
-.patch-details-empty-state__copy {
-  margin: 0;
-  font-size: 0.92rem;
-  line-height: 1.45;
-  color: rgba(27, 49, 74, 0.72);
+app-empty-state-tips {
+  flex: 1;
+  display: flex;
 }

@@ -53,6 +53,7 @@ import { FlexboxRowFastModule } from 'src/app/shared-interproject/components/@vi
 import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
 import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.module';
 import { EditFabModule } from 'src/app/shared-interproject/components/@visual/edit-fab/edit-fab.module';
+import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-state-tips/empty-state-tips.component';
 
 
 @NgModule({
@@ -118,6 +119,7 @@ import { EditFabModule } from 'src/app/shared-interproject/components/@visual/ed
     FormValidPipe,
     StatisticsModule,
     FlexboxRowFastModule,
+    EmptyStateTipsComponent,
     ModuleBrowserModule,
     ModulePartsModule,
     EditFabModule
