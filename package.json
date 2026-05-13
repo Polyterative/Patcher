@@ -50,7 +50,7 @@
     "switch:production": "git update-index --no-skip-worktree src/build.ts && git checkout -- src/build.ts && git checkout production && git update-index --skip-worktree src/build.ts",
     "merge:prod-to-dev": "pnpm switch:develop && git merge production",
     "merge:dev-to-prod": "pnpm switch:production && git merge develop",
-    "prepare": "husky"
+    "prepare": "husky && git update-index --skip-worktree .env"
   },
   "lint-staged": {
     "src/**/*.scss": [
@@ -87,7 +87,16 @@
       "follow-redirects@1.15.11": "1.16.0",
       "browserslist@4.28.1": "4.28.2",
       "caniuse-lite@1.0.30001780": "1.0.30001788"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "@scarf/scarf",
+      "@sentry/cli",
+      "core-js",
+      "esbuild",
+      "lmdb",
+      "msgpackr-extract"
+    ]
   },
   "dependencies": {
     "@angular/animations": "^21.1.4",
