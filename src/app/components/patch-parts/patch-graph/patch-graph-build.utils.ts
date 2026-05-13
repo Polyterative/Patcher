@@ -111,12 +111,11 @@ export function buildPatchGraphData(params: PatchGraphBuildParams): PatchGraphBu
   
   // Instance grouping guarantees duplicate modules get stable "(n)" labels and distinct IDs.
   const instances = extractPatchGraphModuleInstances(connections);
-  const instancesByModule = new Map<number, ModuleInstance[]>();
-  instances.forEach(instance => {
-    const list = instancesByModule.get(instance.moduleId) ?? [];
+  const instancesByModule = instances.reduce((map, instance) => {
+    const list = map.get(instance.moduleId) ?? [];
     list.push(instance);
-    instancesByModule.set(instance.moduleId, list);
-  });
+    return map.set(instance.moduleId, list);
+  }, new Map<number, ModuleInstance[]>());
   
   const instanceOrderByKey = new Map<string, number>();
   instancesByModule.forEach((moduleInstances, moduleId) => {
