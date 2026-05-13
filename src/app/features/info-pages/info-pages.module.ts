@@ -10,6 +10,7 @@ import { HeroContentCardModule } from 'src/app/shared-interproject/components/@v
 import { ScreenWrapperModule } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 import { ApplicationInsightsPageComponent } from './application-insights/application-insights-page.component';
 import { InsightChipComponent } from './application-insights/insight-chip/insight-chip.component';
+import { InsightMetricBarComponent } from './application-insights/insight-metric-bar/insight-metric-bar.component';
 import { ChangelogComponent } from './changelog/changelog.component';
 
 
@@ -17,7 +18,8 @@ import { ChangelogComponent } from './changelog/changelog.component';
   declarations: [
     ChangelogComponent,
     ApplicationInsightsPageComponent,
-    InsightChipComponent
+    InsightChipComponent,
+    InsightMetricBarComponent
   ],
   imports:      [
     CommonModule,
@@ -47,3 +49,4 @@ import { ChangelogComponent } from './changelog/changelog.component';
   ]
 })
 export class InfoPagesModule {}
+
