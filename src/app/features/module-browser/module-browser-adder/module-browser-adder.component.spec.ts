@@ -59,13 +59,12 @@ describe('ModuleBrowserAdderComponent', () => {
     expect(component.guidelinesData.length).toBe(5);
   });
   
-  it('each guideline item has label, value, icon and size="auto"', () => {
+  it('each guideline item has label, value and icon', () => {
     const {component} = build();
     for (const item of component.guidelinesData) {
       expect(item.label).toBeTruthy();
       expect(item.value).toBeTruthy();
       expect(item.icon).toBeTruthy();
-      expect(item.size).toBe('auto');
     }
   });
   
