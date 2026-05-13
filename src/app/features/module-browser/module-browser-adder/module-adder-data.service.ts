@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import {
-  FormControl,
   FormGroup,
   UntypedFormControl,
   UntypedFormGroup,
@@ -73,38 +72,32 @@ export class ModuleAdderDataService extends SubManager {
     standard: {
       code: string;
       flex: string;
-      control: FormControl<any>;
+      control: UntypedFormControl;
       label: string;
-      options$: Observable<any[] | {
-        name: string;
-        id: number
-      }[]>;
+      options$: Observable<{ id: string; name: string }[]>;
       type: FormTypes
     };
     diy: {
       code: string;
       flex: string;
       hint: string;
-      control: FormControl<any>;
+      control: UntypedFormControl;
       label: string;
-      options$: Observable<({
-        name: string;
-        id: string
-      })[]>;
+      options$: Observable<({ name: string; id: string })[]>;
       type: FormTypes
     };
     name: {
       code: string;
       flex: string;
       hint: string;
-      control: FormControl<any>;
+      control: UntypedFormControl;
       label: string;
       type: FormTypes
     };
     hp: {
       code: string;
       flex: string;
-      control: FormControl<any>;
+      control: UntypedFormControl;
       label: string;
       type: FormTypes
     };
@@ -112,7 +105,7 @@ export class ModuleAdderDataService extends SubManager {
       code: string;
       flex: string;
       hint: string;
-      control: FormControl<any>;
+      control: UntypedFormControl;
       label: string;
       type: FormTypes
     };
@@ -120,7 +113,7 @@ export class ModuleAdderDataService extends SubManager {
       code: string;
       flex: string;
       hint: string;
-      control: FormControl<any>;
+      control: UntypedFormControl;
       label: string;
       type: FormTypes
     };
@@ -128,10 +121,10 @@ export class ModuleAdderDataService extends SubManager {
       code: string;
       flex: string;
       hint: string;
-      control: FormControl<any>;
+      control: UntypedFormControl;
       label: string;
       type: FormTypes;
-      options$: Observable<any>
+      options$: Observable<{ id: string; name: string }[]>
     }
   };
   
@@ -276,7 +269,7 @@ export class ModuleAdderDataService extends SubManager {
       .subscribe(x => {
         this.formData.standard.control.enable();
         
-        const found: any = x.find(y => `${ y.id }` === '0');
+        const found = x.find(y => `${ y.id }` === '0');
         if (found) {
           this.formData.standard.control.setValue(found);
         }
@@ -366,7 +359,7 @@ export class ModuleAdderDataService extends SubManager {
         tap(() => this.similarModulesData$.next(undefined)),
         map(() => {
           const manualValue    = this.formData.manual.control.value;
-          const manualURL: any = manualValue && manualValue.length > 'https://'.length ? manualValue : undefined;
+          const manualURL: string | undefined = manualValue && manualValue.length > 'https://'.length ? manualValue : undefined;
           
           return {
             name: plainSanitize(this.formData.name.control.value),
@@ -382,7 +375,7 @@ export class ModuleAdderDataService extends SubManager {
           
         }),
         filter(x => !!x),
-        switchMap((x: any) => this.backend.add.modules([x]).pipe(
+        switchMap((x) => this.backend.add.modules([x as any]).pipe(
           map(() => x),
           catchError(() => {
             SharedConstants.errorCustom(this.snackBar, 'Failed to submit module. Please try again.');
