@@ -20,6 +20,7 @@ import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 import { AppStateService } from "src/app/shared-interproject/app-state.service";
 import { UserManagementService } from "src/app/features/backbone/login/user-management.service";
 import { ModuleBrowserDetailComponent } from './module-browser-detail.component';
+import { ModuleUsageCardComponent } from './module-usage-card/module-usage-card.component';
 
 
 describe('ModuleBrowserDetailComponent', () => {
@@ -127,7 +128,7 @@ describe('ModuleBrowserDetailComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      declarations: [ModuleBrowserDetailComponent],
+      declarations: [ModuleBrowserDetailComponent, ModuleUsageCardComponent],
       imports: [CommonModule, FormsModule, NoopAnimationsModule],
       providers: [
         {provide: ModuleDetailDataService, useValue: dataService},
