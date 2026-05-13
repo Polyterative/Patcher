@@ -47,14 +47,12 @@ import {
   colors,
   uniqueNamesGenerator
 } from 'unique-names-generator';
+import {
+  RackCreatorInModel,
+  RackCreatorOutModel
+} from './rack-creator.types';
 
-
-export interface RackCreatorOutModel {
-}
-
-export interface RackCreatorInModel {
-  userModules?: MinimalModule[];
-}
+export type { RackCreatorInModel, RackCreatorOutModel };
 
 
 @Component({
