@@ -32,6 +32,7 @@ export class GeneralContextMenuDataService extends SubManager {
   });
   
   readonly open$ = new Subject<MouseEvent>();
+  readonly menuClose$ = new Subject<void>();
 
   clampPosition(event: MouseEvent, itemCount = this.menuItems$.value.length): {x: string; y: string} {
     const visualViewport = typeof window !== 'undefined' ? window.visualViewport : null;
