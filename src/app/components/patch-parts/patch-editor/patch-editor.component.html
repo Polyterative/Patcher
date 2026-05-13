@@ -20,7 +20,7 @@
     </lib-auto-content-loading-indicator>
   } @else {
     <div class="patch-editor-shell">
-      @if (bag.editorConnections.length > 0) {
+      @if (!readonly && bag.editorConnections.length > 0) {
         <lib-hero-content-card
           [titleNormal]="'Patch connections (' + bag.editorConnections.length + ')'"
           class="connections"
@@ -35,6 +35,7 @@
         </lib-hero-content-card>
       }
 
+      @if (!readonly) {
       <lib-hero-content-card
         class="modulesBG"
         [descriptionAlign]="'alignTextStart'"
@@ -186,8 +187,20 @@
           }
         </div>
       </lib-hero-content-card>
+      } @else if (bag.linkedRackPreview.kind === 'loading') {
+        <div class="patch-editor-empty-state">
+          <mat-icon>sync</mat-icon>
+          <div class="patch-editor-empty-state__title">Loading rack…</div>
+        </div>
+      } @else if (bag.linkedRackPreview.kind !== 'ready' || !bag.linkedRackPreview.rack) {
+        <div class="patch-editor-empty-state">
+          <mat-icon>view_stream</mat-icon>
+          <div class="patch-editor-empty-state__title">Rack unavailable</div>
+          <p class="patch-editor-empty-state__copy">{{ bag.linkedRackPreview.description }}</p>
+        </div>
+      }
 
-        @if (bag.hasLinkedRack && bag.operationMode === operationModes.linkedRack
+        @if (bag.hasLinkedRack && (readonly || bag.operationMode === operationModes.linkedRack)
              && bag.linkedRackPreview.kind === 'ready' && bag.linkedRackPreview.rack) {
          <div class="patch-editor-rack-visual"
               (click)="onRackVisualBackgroundClick($event)">
@@ -213,7 +226,8 @@
                             [class.patch-editor-rack-visual__module-wrapper--pending-source]="isRackModulePendingSource(previewCard.trackingId, previewCard.module.id, bag.instanceMap, bag.selectedForConnection)"
                             [class.patch-editor-rack-visual__module-wrapper--pending-in]="getRackModuleConnectionRole(previewCard.trackingId, previewCard.module.id, bag.instanceMap, bag.selectedForConnection) === 'in'"
                             [class.patch-editor-rack-visual__module-wrapper--pending-out]="getRackModuleConnectionRole(previewCard.trackingId, previewCard.module.id, bag.instanceMap, bag.selectedForConnection) === 'out'"
-                            (click)="$event.preventDefault(); $event.stopPropagation(); selectRackModule(previewCard.trackingId, previewCard.module, moduleWrapper)">
+                            (click)="$event.preventDefault(); $event.stopPropagation(); onRackModuleClick(previewCard.trackingId, previewCard.module, moduleWrapper)"
+                            [class.patch-editor-rack-visual__module-wrapper--readonly]="readonly">
                          <app-module-realistic
                           class="patch-editor-rack-visual__module"
                           [data]="previewCard.module"

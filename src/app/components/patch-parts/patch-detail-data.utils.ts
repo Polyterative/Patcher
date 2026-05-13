@@ -23,7 +23,8 @@ export function buildLinkedRackUiState(
   patch: Patch | undefined,
   racks: Rack[],
   resolvedLinkedRack: Rack | null = null,
-  isOwner = false
+  isOwner = false,
+  isLoggedIn = false
 ): LinkedRackUiState {
   if (!patch || patch.linked_rack_id == null) {
     return DEFAULT_LINKED_RACK_UI_STATE;
@@ -31,13 +32,16 @@ export function buildLinkedRackUiState(
 
   const linkedRack = resolvedLinkedRack ?? racks.find(rack => rack.id === patch.linked_rack_id);
   if (!linkedRack) {
+    const description = isOwner
+      ? 'This patch still remembers a linked rack, but that rack is no longer available. Choose another rack or clear the link without affecting the patch itself.'
+      : isLoggedIn
+        ? 'This patch references a linked rack, but that rack is not publicly available right now.'
+        : 'This patch has a linked rack. Sign in to view it.';
     return {
       kind: 'unavailable',
       statusTone: 'warning',
       statusLabel: 'Rack unavailable',
-      description: isOwner
-        ? 'This patch still remembers a linked rack, but that rack is no longer available. Choose another rack or clear the link without affecting the patch itself.'
-        : 'This patch references a linked rack, but that rack is not publicly available right now.',
+      description,
       rackId: patch.linked_rack_id
     };
   }

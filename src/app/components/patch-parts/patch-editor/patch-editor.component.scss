@@ -351,6 +351,12 @@ $rack-grid-weight: 0.1rem;
   }
 }
 
+// No hover interaction in readonly view
+.patch-editor-rack-visual__module-wrapper--readonly {
+  cursor: default;
+  pointer-events: none;
+}
+
 // Subtle hover on dimmed modules (still clickable to switch selection)
 .patch-editor-rack-visual__module-wrapper--dimmed:hover {
   opacity: 0.6;
