@@ -63,7 +63,8 @@ export class UserCommentsComponent implements OnInit {
     { label: 'Patches', value: CommentableEntityTypes.PATCH },
   ];
 
-  readonly activeFilter$ = new BehaviorSubject<number | null>(null);
+  private readonly _activeFilter$ = new BehaviorSubject<number | null>(null);
+  readonly activeFilter$ = this._activeFilter$.asObservable();
   readonly filteredComments$: Observable<DbComment[] | undefined>;
 
   constructor(
@@ -71,7 +72,7 @@ export class UserCommentsComponent implements OnInit {
   ) {
     this.filteredComments$ = combineLatest([
       this.dataService.filteredCommentsData$,
-      this.activeFilter$,
+      this._activeFilter$,
     ]).pipe(
       map(([data, filter]: [DbComment[] | undefined, number | null]) =>
         filter == null ? data : data?.filter(c => c.entityType === filter)
@@ -84,6 +85,6 @@ export class UserCommentsComponent implements OnInit {
   }
 
   setFilter(value: number | null): void {
-    this.activeFilter$.next(value);
+    this._activeFilter$.next(value);
   }
 }
