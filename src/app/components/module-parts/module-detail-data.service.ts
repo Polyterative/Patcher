@@ -5,6 +5,7 @@ import {
   delay,
   EMPTY,
   merge,
+  Observable,
   of,
   ReplaySubject,
   Subject
@@ -86,10 +87,7 @@ export class ModuleDetailDataService implements OnDestroy {
     // when delete of the latest panel is requested, perform the deletion
     this.deleteLastPanel$
       .pipe(
-        switchMap(module => this.backend.auth.hasAdminRole$().pipe(
-          take(1),
-          switchMap(isAdmin => (this.appState.isDev || isAdmin) ? of(module) : EMPTY)
-        )),
+        switchMap(module => this.requiresAdminOrDev(module)),
         map((x) => x.panels.sort((a, b) => a.id - b.id).pop()!),
         switchMap(x => this.backend.delete.modulePanel(x)),
         takeUntil(this.destroyEvent$)
@@ -235,10 +233,7 @@ export class ModuleDetailDataService implements OnDestroy {
     this.deleteModule$
       .pipe(
         filter(x => x > 0),
-        switchMap(id => this.backend.auth.hasAdminRole$().pipe(
-          take(1),
-          switchMap(isAdmin => (this.appState.isDev || isAdmin) ? of(id) : EMPTY)
-        )),
+        switchMap(id => this.requiresAdminOrDev(id)),
         withLatestFrom(this.singleModuleData$),
         switchMap(([x, module]) => this.backend.delete.module(x).pipe(map(() => module))),
         takeUntil(this.destroyEvent$)
@@ -251,10 +246,7 @@ export class ModuleDetailDataService implements OnDestroy {
     this.deleteModuleAndOrphanManufacturer$
       .pipe(
         filter(module => !!module?.id),
-        switchMap(module => this.backend.auth.hasAdminRole$().pipe(
-          take(1),
-          switchMap(isAdmin => (this.appState.isDev || isAdmin) ? of(module) : EMPTY)
-        )),
+        switchMap(module => this.requiresAdminOrDev(module)),
         switchMap(module => this.backend.get.modulesBySameManufacturer(module.manufacturerId, 0, 20, 'id,manufacturerId').pipe(
           map(modules => ({
             module,
@@ -286,10 +278,7 @@ export class ModuleDetailDataService implements OnDestroy {
     
     this.changeModule$
       .pipe(
-        switchMap(partial => this.backend.auth.hasAdminRole$().pipe(
-          take(1),
-          switchMap(isAdmin => (this.appState.isDev || isAdmin) ? of(partial) : EMPTY)
-        )),
+        switchMap(partial => this.requiresAdminOrDev(partial)),
         withLatestFrom(this.singleModuleData$),
         switchMap(([partial, original]) => this.backend.update.module({...original, ...partial}).pipe(map(() => ({...original, ...partial})))),
         takeUntil(this.destroyEvent$)
@@ -329,6 +318,13 @@ export class ModuleDetailDataService implements OnDestroy {
   ngOnDestroy(): void {
     this.destroyEvent$.next();
     this.destroyEvent$.complete();
-    
+  }
+
+  /** Emits `value` only when the current user is an admin or the app is running in dev mode; otherwise completes silently. */
+  private requiresAdminOrDev<T>(value: T): Observable<T> {
+    return this.backend.auth.hasAdminRole$().pipe(
+      take(1),
+      switchMap(isAdmin => (this.appState.isDev || isAdmin) ? of(value) : EMPTY)
+    );
   }
 }
