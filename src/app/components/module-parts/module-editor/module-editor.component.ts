@@ -111,7 +111,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   outSummary$ = this.OUTs$.pipe(map(cvs => this.moduleEditorDataService.buildCvSummary(cvs)));
   
   /** Tracks panel color values already present on this module. */
-  private _existingPanelColors$ = new BehaviorSubject<Set<number>>(new Set());
+  private readonly _existingPanelColors$ = new BehaviorSubject<Set<number>>(new Set());
   /** True when the currently selected panel type already exists on the module. */
   panelTypeAlreadyExists$ = new BehaviorSubject<boolean>(false);
   /** The human-readable name of the duplicate panel type, for display in the warning. */

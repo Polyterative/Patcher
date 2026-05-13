@@ -42,8 +42,8 @@ import {
 @Injectable()
 export class UserManagementService extends SubManager {
   // STATE - Private subjects
-  private _loggedUser$ = new ReplaySubject<SimpleUserModel | undefined>(1);
-  private _loggedUserFullProfile$ = new ReplaySubject<RichUserModel | undefined>(1);
+  private readonly _loggedUser$ = new ReplaySubject<SimpleUserModel | undefined>(1);
+  private readonly _loggedUserFullProfile$ = new ReplaySubject<RichUserModel | undefined>(1);
   
   // PUBLIC - Read-only observables
   public readonly loggedUser$ = this._loggedUser$.asObservable();
@@ -90,7 +90,7 @@ export class UserManagementService extends SubManager {
   }>();
   
   // Password form toggle
-  private _showPasswordForm$ = new BehaviorSubject<boolean>(false);
+  private readonly _showPasswordForm$ = new BehaviorSubject<boolean>(false);
   public readonly showPasswordForm$ = this._showPasswordForm$.asObservable();
   public togglePasswordForm$ = new Subject<boolean>();
   
