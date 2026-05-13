@@ -26,47 +26,14 @@ import {
   safeString,
   stripFileExtension,
 } from './module-editor-data.utils';
+import {
+  BuildPersistPlanArgs,
+  CvSectionSummary,
+  FormCV,
+  PendingSaveState
+} from './module-editor-data.types';
 
-
-export interface FormCV {
-  id: number;
-  name: UntypedFormControl;
-  a: UntypedFormControl;
-  b: UntypedFormControl;
-  isApproved: boolean;
-}
-
-export interface CvSectionSummary {
-  total: number;
-  editable: number;
-  locked: number;
-}
-
-export interface PendingSaveState {
-  ins: CV[];
-  outs: CV[];
-  shouldSaveInsOuts: boolean;
-  shouldSavePower: boolean;
-  shouldSavePhysical: boolean;
-  shouldSavePanel: boolean;
-  hasPendingChanges: boolean;
-}
-
-interface BuildPersistPlanArgs {
-  module: DbModule;
-  pendingState: PendingSaveState;
-  powerPos12: number;
-  powerNeg12: number;
-  powerPos5: number;
-  weight: number | '' | undefined;
-  depth: number | '' | undefined;
-  panelFile: File | undefined;
-  panelTypeValue: {
-    name: string;
-    value: number | string;
-  };
-  panelDescription: string;
-}
+export type { FormCV, CvSectionSummary, PendingSaveState };
 
 @Injectable()
 export class ModuleEditorDataService {
