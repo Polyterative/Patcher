@@ -27,14 +27,10 @@
         ></lib-mat-form-entity>
         
         <div class="col gap1">
-          <button mat-stroked-button
-                  (click)="dataService.resetForm$.next()"
-                  [disabled]="!(dataService.canReset$ | async)"
-                  [matTooltip]="'Reset all filters'"
-          >
-            <mat-icon>refresh</mat-icon>
-            Reset filters
-          </button>
+          <app-browser-reset-filters-button
+            [canReset$]="dataService.canReset$"
+            (reset$)="dataService.resetForm$.next()"
+          ></app-browser-reset-filters-button>
         </div>
       
       </aside>
