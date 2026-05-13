@@ -11,36 +11,24 @@ import {
   PATCH_GRAPH_NODE_TYPE
 } from './patch-graph.constants';
 import { orderPatchGraphNodesForReveal } from './patch-graph-layout.utils';
+import {
+  ModuleInstance,
+  PatchGraphBuildPalette,
+  PatchGraphBuildParams,
+  PatchGraphBuildResult
+} from './patch-graph-build.models';
 
+export type {
+  ModuleInstance,
+  PatchGraphBuildPalette,
+  PatchGraphBuildParams,
+  PatchGraphBuildResult
+} from './patch-graph-build.models';
 
 interface NodesDictionary {
   [id: string]: GraphNode;
 }
 
-export interface ModuleInstance {
-  moduleId: number;
-  instanceId: number | undefined;
-}
-
-export interface PatchGraphBuildPalette {
-  moduleColor: string;
-  cvOutColor: string;
-  cvInColor: string;
-  moduleJackEdgeColor: string;
-  patchCableBaseColor: string;
-}
-
-export interface PatchGraphBuildParams {
-  connections: PatchConnection[];
-  modules: DbModule[];
-  sizeConstant: number;
-  palette: PatchGraphBuildPalette;
-}
-
-export interface PatchGraphBuildResult {
-  nodes: GraphNode[];
-  edges: GraphEdge[];
-}
 
 export function computePatchGraphSizeConstant(
   modulesCount: number,
