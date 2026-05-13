@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { Route, RouterModule, Routes } from '@angular/router';
+import { CanActivateFn, Route, RouterModule, Routes } from '@angular/router';
 import { ScreenWrapperModule } from '../../components/@visual/screen-wrapper/screen-wrapper.module';
 import { SaturnComponent } from './saturn.component';
 
@@ -24,7 +24,7 @@ export class SaturnModule {}
  * @param routes The routes to add.
  * @param title Overhead title
  */
-export function generateSaturnRoutes(parentPrefix: string, routes: Routes, title?: string, canActivate: any[] = []): Route {
+export function generateSaturnRoutes(parentPrefix: string, routes: Routes, title?: string, canActivate: CanActivateFn[] = []): Route {
   
   return {
     path:        parentPrefix,
