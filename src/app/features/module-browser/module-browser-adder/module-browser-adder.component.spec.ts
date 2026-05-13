@@ -1,5 +1,5 @@
-import { BehaviorSubject } from 'rxjs';
-import { UntypedFormControl } from '@angular/forms';
+import { BehaviorSubject, Subject } from 'rxjs';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { ModuleBrowserAdderComponent } from './module-browser-adder.component';
 
 
@@ -12,6 +12,7 @@ describe('ModuleBrowserAdderComponent', () => {
     const manufacturerControl = new UntypedFormControl('');
     const standardControl = new UntypedFormControl('');
     const hpControl = new UntypedFormControl('8');
+    const nameControl = new UntypedFormControl('');
     
     const dataService = {
       formData: {
@@ -25,8 +26,19 @@ describe('ModuleBrowserAdderComponent', () => {
         },
         hp: {
           control: hpControl
+        },
+        name: {
+          control: nameControl
         }
-      }
+      },
+      similarModulesData$: new BehaviorSubject<any>(undefined),
+      submitSuccess$: new Subject<any>(),
+      formGroup: new UntypedFormGroup({
+        manufacturer: manufacturerControl,
+        standard: standardControl,
+        hp: hpControl,
+        name: nameControl
+      })
     };
     
     const route = {queryParams: queryParams$.asObservable()};
@@ -59,13 +71,12 @@ describe('ModuleBrowserAdderComponent', () => {
     expect(component.guidelinesData.length).toBe(5);
   });
   
-  it('each guideline item has label, value, icon and size="auto"', () => {
+  it('each guideline item has label, value and icon', () => {
     const {component} = build();
     for (const item of component.guidelinesData) {
       expect(item.label).toBeTruthy();
       expect(item.value).toBeTruthy();
       expect(item.icon).toBeTruthy();
-      expect(item.size).toBe('auto');
     }
   });
   

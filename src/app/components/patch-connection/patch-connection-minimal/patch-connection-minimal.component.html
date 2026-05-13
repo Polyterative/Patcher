@@ -5,7 +5,11 @@
       @if (isCreator && showDeselectButtons) {
         <div class="slot-header">
           <mat-icon class="slot-direction-icon">call_made</mat-icon>
-          <button mat-icon-button class="slot-deselect" matTooltip="Deselect output" (click)="deselectA$.emit()">
+          <button mat-icon-button
+                  class="slot-deselect"
+                  aria-label="Deselect output"
+                  matTooltip="Deselect output"
+                  (click)="deselectA$.emit()">
             <mat-icon>close</mat-icon>
           </button>
         </div>
@@ -23,7 +27,11 @@
       @if (isCreator && showDeselectButtons) {
         <div class="slot-header">
           <mat-icon class="slot-direction-icon">call_received</mat-icon>
-          <button mat-icon-button class="slot-deselect" matTooltip="Deselect input" (click)="deselectB$.emit()">
+          <button mat-icon-button
+                  class="slot-deselect"
+                  aria-label="Deselect input"
+                  matTooltip="Deselect input"
+                  (click)="deselectB$.emit()">
             <mat-icon>close</mat-icon>
           </button>
         </div>

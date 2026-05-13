@@ -1,52 +1,50 @@
 import { CV } from 'src/app/models/cv';
 import { RackedModule } from 'src/app/models/module';
-import { isBlankModule } from './rack-blank-module.constants';
 import { buildRackFunctionVisual } from './rack-function-visuals.utils';
+import {
+  SignalAnalysisOptions,
+  SignalDestinationGroup,
+  SignalDestinationMatch,
+  SignalDestinationTier,
+  SignalDestinationTierGroup,
+  SignalFocusArea,
+  SignalModuleAnalysis,
+  SignalTypeFamily,
+} from './rack-signal-analysis.models';
+import {
+  DEFAULT_SIGNAL_MAX_MATCHES,
+  GENERIC_SIGNAL_TOKENS,
+  PITCH_CONTROL_DESTINATION_PATTERN,
+  SIGNAL_FAMILY_LABELS,
+  SIGNAL_FAMILY_ORDER,
+  SIGNAL_TIER_LABELS,
+  SIGNAL_TIER_ORDER,
+  TIMING_DESTINATION_PATTERN,
+} from './rack-signal-analysis.constants';
+import {
+  classifyModuleFamilies,
+  classifySignalFamily,
+  flattenRackedModules,
+  moduleContextMatches,
+  moduleTagAffinity,
+  normalizedTokenOverlap,
+  resolveSignalFamily,
+  sortCvNames,
+  sortNames,
+  sortTagNames,
+} from './rack-signal-analysis.helpers';
 
-export type SignalTypeFamily = 'audio' | 'pitch' | 'clock' | 'modulation' | 'other';
-export type SignalDestinationConfidence = 'likely' | 'potential';
-export type SignalDestinationTier = 'natural' | 'exploratory';
-export type SignalFocusArea = 'voices' | 'tone' | 'mixing' | 'modulation' | 'clock';
-
-export interface SignalAnalysisOptions {
-  focusArea?: SignalFocusArea;
-  maxMatches?: number;
-}
-
-export interface SignalDestinationMatch {
-  destination: RackedModule;
-  family: SignalTypeFamily;
-  familyLabel: string;
-  score: number;
-  confidence: SignalDestinationConfidence;
-  tier: SignalDestinationTier;
-  reasonLabel: string;
-  destinationRoleLabel: string;
-  matchedOutputNames: string[];
-  matchedInputNames: string[];
-}
-
-export interface SignalDestinationGroup {
-  family: SignalTypeFamily;
-  label: string;
-  matches: SignalDestinationMatch[];
-}
-
-export interface SignalDestinationTierGroup {
-  tier: SignalDestinationTier;
-  label: string;
-  groups: SignalDestinationGroup[];
-}
-
-export interface SignalModuleAnalysis {
-  inputNames: string[];
-  outputNames: string[];
-  tagNames: string[];
-  destinationMatches: SignalDestinationMatch[];
-  destinationTierGroups: SignalDestinationTierGroup[];
-  totalDestinations: number;
-  hiddenDestinationCount: number;
-}
+export type {
+  SignalAnalysisOptions,
+  SignalDestinationConfidence,
+  SignalDestinationGroup,
+  SignalDestinationMatch,
+  SignalDestinationTier,
+  SignalDestinationTierGroup,
+  SignalFocusArea,
+  SignalModuleAnalysis,
+  SignalTypeFamily,
+} from './rack-signal-analysis.models';
 
 export function suggestSignalFocusArea(rackedModule: RackedModule): SignalFocusArea {
   const functionRole = buildRackFunctionVisual(rackedModule).roleLabel;
@@ -74,101 +72,6 @@ export function suggestSignalFocusArea(rackedModule: RackedModule): SignalFocusA
 
   return 'modulation';
 }
-
-const SIGNAL_FAMILY_ORDER: SignalTypeFamily[] = ['audio', 'pitch', 'clock', 'modulation', 'other'];
-
-const SIGNAL_FAMILY_LABELS: Record<SignalTypeFamily, string> = {
-  audio: 'Audio',
-  pitch: 'Pitch / V-Oct',
-  clock: 'Clock / Gate',
-  modulation: 'Modulation',
-  other: 'Other',
-};
-
-const SIGNAL_TIER_ORDER: SignalDestinationTier[] = ['natural', 'exploratory'];
-
-const SIGNAL_TIER_LABELS: Record<SignalDestinationTier, string> = {
-  natural: 'Best matches',
-  exploratory: 'More possible routes',
-};
-
-const DEFAULT_SIGNAL_MAX_MATCHES = 8;
-const TIMING_DESTINATION_PATTERN = /\bclock\b|\bsequencer\b|\bdivider\b|\bmultiplier\b|\blogic\b|\breset\b|\brun\b|\bsync\b/;
-const PITCH_CONTROL_DESTINATION_PATTERN = /\bquantizer\b|\bsequencer\b|\bkeyboard\b|\bkey\b|\barp(?:eggiator)?\b|\bpitch\b/;
-
-const SIGNAL_KEYWORD_PATTERNS: Record<SignalTypeFamily, RegExp[]> = {
-  audio: [
-    /\baudio\b/,
-    /\bmain\b/,
-    /\bmix\b/,
-    /\bstereo\b/,
-    /\bmono\b/,
-    /\bleft\b/,
-    /\bright\b/,
-    /\breturn\b/,
-    /\bsend\b/,
-    /\bfilter\b/,
-    /\bvca\b/,
-  ],
-  pitch: [
-    /\bv\/?oct\b/,
-    /\b1v\/?oct\b/,
-    /\bpitch\b/,
-    /\bkey\b/,
-    /\bkeyboard\b/,
-    /\btracking\b/,
-  ],
-  clock: [
-    /\bclock\b/,
-    /\bclk\b/,
-    /\bgate\b/,
-    /\btrig(?:ger)?\b/,
-    /\breset\b/,
-    /\brun\b/,
-    /\bsync\b/,
-    /\bpulse\b/,
-  ],
-  modulation: [
-    /\bcv\b/,
-    /\bmod\b/,
-    /\bfm\b/,
-    /\benv\b/,
-    /\benvelope\b/,
-    /\blfo\b/,
-    /\brand(?:om)?\b/,
-    /\bslew\b/,
-    /\bcutoff\b/,
-    /\blevel\b/,
-    /\bdepth\b/,
-    /\bamt\b/,
-    /\bpwm\b/,
-  ],
-  other: [],
-};
-
-const SIGNAL_FAMILY_TAG_PATTERNS: Record<Exclude<SignalTypeFamily, 'other'>, RegExp[]> = {
-  audio: [/\bfilter\b/, /\bvca\b/, /\bmixer\b/, /\beffect\b/, /\bdelay\b/, /\breverb\b/, /\boutput\b/, /\bvoice\b/],
-  pitch: [/\bvco\b/, /\bosc\b/, /\bvoice\b/, /\bquantizer\b/, /\bsequencer\b/, /\bpitch\b/],
-  clock: [/\bclock\b/, /\bgate\b/, /\btrigger\b/, /\btrig\b/, /\bsequencer\b/, /\bdivider\b/, /\blogic\b/, /\benvelope\b/],
-  modulation: [/\blfo\b/, /\benvelope\b/, /\bfunction\b/, /\bmod\b/, /\bcv\b/, /\butility\b/, /\brandom\b/],
-};
-
-const GENERIC_SIGNAL_TOKENS = new Set([
-  'in',
-  'out',
-  'input',
-  'output',
-  'sig',
-  'signal',
-  'main',
-  'send',
-  'return',
-  'left',
-  'right',
-  'mono',
-  'stereo',
-  'cv',
-]);
 
 export function buildSignalModuleAnalysis(
   hoveredModule: RackedModule,
@@ -199,28 +102,28 @@ export function buildSignalDestinationGroups(
   return groupSignalDestinationMatches(allMatches.slice(0, options.maxMatches ?? DEFAULT_SIGNAL_MAX_MATCHES));
 }
 
+function createSignalFamilyGroupMap(): Map<SignalTypeFamily, SignalDestinationMatch[]> {
+  const map = new Map<SignalTypeFamily, SignalDestinationMatch[]>();
+  for (const family of SIGNAL_FAMILY_ORDER) {
+    map.set(family, []);
+  }
+  return map;
+}
+
 function buildSignalDestinationMatches(
   hoveredModule: RackedModule,
   rowedRackedModules: RackedModule[][] | null | undefined,
   focusArea?: SignalFocusArea
 ): SignalDestinationMatch[] {
-  const groupedMatches = new Map<SignalTypeFamily, SignalDestinationMatch[]>();
-
-  for (const family of SIGNAL_FAMILY_ORDER) {
-    groupedMatches.set(family, []);
-  }
+  const groupedMatches = createSignalFamilyGroupMap();
 
   for (const candidate of flattenRackedModules(rowedRackedModules)) {
-    if (candidate === hoveredModule || isBlankModule(candidate.module.id)) {
+    if (candidate === hoveredModule) {
       continue;
     }
 
     const match = buildSignalDestinationMatch(hoveredModule, candidate);
-    if (!match) {
-      continue;
-    }
-
-    if (!matchesSignalFocusArea(match, focusArea)) {
+    if (!match || !matchesSignalFocusArea(match, focusArea)) {
       continue;
     }
 
@@ -239,11 +142,7 @@ function buildSignalDestinationMatches(
 }
 
 function groupSignalDestinationMatches(matches: SignalDestinationMatch[]): SignalDestinationGroup[] {
-  const groupedMatches = new Map<SignalTypeFamily, SignalDestinationMatch[]>();
-
-  for (const family of SIGNAL_FAMILY_ORDER) {
-    groupedMatches.set(family, []);
-  }
+  const groupedMatches = createSignalFamilyGroupMap();
 
   for (const match of matches) {
     groupedMatches.get(match.family)?.push(match);
@@ -430,101 +329,6 @@ function scoreSignalPair(
   };
 }
 
-function classifySignalFamily(cv: CV | null | undefined): SignalTypeFamily {
-  if (!cv) {
-    return 'other';
-  }
-
-  if (cv.isVOCT) {
-    return 'pitch';
-  }
-
-  if (cv.isAudio) {
-    return 'audio';
-  }
-
-  if (cv.isDCC) {
-    return 'clock';
-  }
-
-  const normalizedName = cv.name?.trim().toLowerCase() ?? '';
-
-  for (const family of SIGNAL_FAMILY_ORDER) {
-    if (family === 'other') {
-      continue;
-    }
-
-    if (SIGNAL_KEYWORD_PATTERNS[family].some(pattern => pattern.test(normalizedName))) {
-      return family;
-    }
-  }
-
-  return 'other';
-}
-
-function moduleTagAffinity(rackedModule: RackedModule, family: Exclude<SignalTypeFamily, 'other'>): boolean {
-  const contextTokens = moduleContextParts(rackedModule);
-  return contextTokens.some(value => SIGNAL_FAMILY_TAG_PATTERNS[family].some(pattern => pattern.test(value)));
-}
-
-function classifyModuleFamilies(rackedModule: RackedModule): Set<SignalTypeFamily> {
-  const families = new Set<SignalTypeFamily>();
-
-  for (const value of moduleContextParts(rackedModule)) {
-    for (const family of SIGNAL_FAMILY_ORDER) {
-      if (family === 'other') {
-        continue;
-      }
-
-      if (
-        SIGNAL_FAMILY_TAG_PATTERNS[family].some(pattern => pattern.test(value))
-        || SIGNAL_KEYWORD_PATTERNS[family].some(pattern => pattern.test(value))
-      ) {
-        families.add(family);
-      }
-    }
-  }
-
-  return families;
-}
-
-function resolveSignalFamily(
-  sourceFamily: SignalTypeFamily,
-  destinationFamily: SignalTypeFamily,
-  sourceModuleFamilies: Set<SignalTypeFamily>,
-  destinationModuleFamilies: Set<SignalTypeFamily>
-): SignalTypeFamily {
-  if (sourceFamily !== 'other') {
-    return sourceFamily;
-  }
-
-  if (destinationFamily !== 'other') {
-    return destinationFamily;
-  }
-
-  for (const family of SIGNAL_FAMILY_ORDER) {
-    if (family === 'other') {
-      continue;
-    }
-
-    if (sourceModuleFamilies.has(family) && destinationModuleFamilies.has(family)) {
-      return family;
-    }
-  }
-
-  for (const family of SIGNAL_FAMILY_ORDER) {
-    if (family === 'other') {
-      continue;
-    }
-
-    if (sourceModuleFamilies.has(family) || destinationModuleFamilies.has(family)) {
-      return family;
-    }
-  }
-
-  return 'other';
-}
-
 function buildSignalDestinationTierGroups(matches: SignalDestinationMatch[]): SignalDestinationTierGroup[] {
   return SIGNAL_TIER_ORDER
     .map(tier => ({
@@ -661,20 +465,6 @@ function resolveSignalRelationshipHint(
   return {scoreBonus: 0, reasonLabel: 'connection fit'};
 }
 
-function moduleContextParts(rackedModule: RackedModule): string[] {
-  return [
-    rackedModule.module.name,
-    rackedModule.module.description,
-    ...(rackedModule.module.tags ?? []).map(entry => entry?.tag?.name),
-  ]
-    .map(value => value?.trim().toLowerCase())
-    .filter((value): value is string => !!value);
-}
-
-function moduleContextMatches(rackedModule: RackedModule, pattern: RegExp): boolean {
-  return moduleContextParts(rackedModule).some(value => pattern.test(value));
-}
-
 function isBlockedSignalRelationship(
   sourceModule: RackedModule,
   destinationModule: RackedModule,
@@ -699,53 +489,4 @@ function isBlockedSignalRelationship(
   }
 
   return false;
-}
-
-function normalizedTokenOverlap(a: string, b: string, options?: {ignoreTokens?: Set<string>}): number {
-  const aTokens = new Set(normalizeSignalTokens(a, options));
-  const bTokens = new Set(normalizeSignalTokens(b, options));
-  let overlap = 0;
-
-  aTokens.forEach(token => {
-    if (bTokens.has(token)) {
-      overlap += 1;
-    }
-  });
-
-  return overlap;
-}
-
-function normalizeSignalTokens(value: string, options?: {ignoreTokens?: Set<string>}): string[] {
-  return value
-    .toLowerCase()
-    .replace(/1v\/oct/g, 'voct')
-    .replace(/v\/oct/g, 'voct')
-    .replace(/[^a-z0-9]+/g, ' ')
-    .split(' ')
-    .map(token => token.trim())
-    .filter(token => token.length > 1)
-    .filter(token => !options?.ignoreTokens?.has(token));
-}
-
-function sortTagNames(rackedModule: RackedModule): string[] {
-  return [...(rackedModule.module.tags ?? [])]
-    .sort((a, b) => (b?.voteCount?.length ?? 0) - (a?.voteCount?.length ?? 0) || compareNames(a?.tag?.name, b?.tag?.name))
-    .map(entry => entry?.tag?.name?.trim())
-    .filter((name): name is string => !!name);
-}
-
-function sortCvNames(cvs: CV[] | null | undefined): string[] {
-  return sortNames((cvs ?? []).map(cv => cv?.name?.trim()).filter((name): name is string => !!name));
-}
-
-function sortNames(names: string[]): string[] {
-  return [...names].sort(compareNames);
-}
-
-function compareNames(a: string | null | undefined, b: string | null | undefined): number {
-  return (a ?? '').localeCompare(b ?? '', undefined, {numeric: true, sensitivity: 'base'});
-}
-
-function flattenRackedModules(rowedRackedModules: RackedModule[][] | null | undefined): RackedModule[] {
-  return (rowedRackedModules ?? []).flat().filter(rackedModule => !isBlankModule(rackedModule.module.id));
 }

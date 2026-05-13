@@ -1,0 +1,43 @@
+::ng-deep .mat-mdc-dialog-container {
+  padding: 2rem !important;
+}
+
+.moduleChooserGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: 1.15rem;
+  align-items: start;
+  min-width: 0;
+}
+
+.moduleChooserCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0;
+}
+
+// Clamp autocomplete option text to fixed height for stable button positioning
+::ng-deep .mat-mdc-optgroup,
+::ng-deep .mat-mdc-option {
+  height: 3rem;
+  display: flex;
+  align-items: center;
+
+  .mdc-list-item__primary-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    word-break: break-word;
+  }
+}
+
+::ng-deep .mat-mdc-form-field .mat-mdc-text-field-wrapper {
+  .mdc-text-field--filled .mdc-text-field__input {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

@@ -64,32 +64,43 @@ import {
   buildFunctionAnalysisResidualLabel
 } from './rack-function-visuals.utils';
 import { SignalFocusArea } from './rack-signal-analysis.utils';
+import {
+  isLinkedRackSchemaMissingError,
+  LINKED_RACK_PENDING_CREATE_MESSAGE
+} from '../patch-parts/linked-rack-rollout';
+import { generatePatchName } from '../patch-parts/patch-name-generator';
+import {
+  buildRackStatistics,
+  buildRowedModulesArray,
+  calculateBlankIdForSizeAndStandard,
+  cloneRackData,
+  extractCreatedPatchId,
+  isAnyModuleWithoutRackingId,
+} from './rack-detail-data.utils';
 
-
-function cloneRackData<T>(value: T): T {
-  return structuredClone(value);
-}
 
 @Injectable()
 export class RackDetailDataService extends SubManager {
   private static readonly imageCaptureOverlayResetDelayMs = 360;
   private usePublicDetailReads = false;
-  updateSingleRackData$ = new ReplaySubject<number>();
-  singleRackData$ = new BehaviorSubject<Rack | undefined>(undefined);
-  deleteRack$ = new Subject<RackMinimal>();
-  duplicateRack$ = new Subject<RackMinimal>();
-  downloadRackImageToUserComputer$ = new Subject<void>();
-  updateRackImagePreview$ = new Subject<void>();
-  currentDownloadElementRef$: BehaviorSubject<{
+  readonly updateSingleRackData$ = new ReplaySubject<number>();
+  readonly singleRackData$ = new BehaviorSubject<Rack | undefined>(undefined);
+  readonly deleteRack$ = new Subject<RackMinimal>();
+  readonly duplicateRack$ = new Subject<RackMinimal>();
+  readonly downloadRackImageToUserComputer$ = new Subject<void>();
+  readonly updateRackImagePreview$ = new Subject<void>();
+  readonly currentDownloadElementRef$: BehaviorSubject<{
     screen: ElementRef,
   } | undefined> = new BehaviorSubject<{
     screen: ElementRef,
   }>(undefined);
   
-  addModuleToRack$ = new Subject<MinimalModule>();
-  shouldShowPanelImages$ = new BehaviorSubject<boolean>(true);
-  analysisMode$ = new BehaviorSubject<RackAnalysisMode>(RACK_ANALYSIS_MODES.off);
-  signalFocusArea$ = new BehaviorSubject<SignalFocusArea | null>(null);
+  readonly addModuleToRack$ = new Subject<MinimalModule>();
+  /** Emits when a module has been added via the bottom picker so views can scroll the rack into focus */
+  readonly moduleAddedFromPicker$ = new Subject<MinimalModule>();
+  readonly shouldShowPanelImages$ = new BehaviorSubject<boolean>(true);
+  readonly analysisMode$ = new BehaviorSubject<RackAnalysisMode>(RACK_ANALYSIS_MODES.off);
+  readonly signalFocusArea$ = new BehaviorSubject<SignalFocusArea | null>(null);
   formData = {
     name: {
       control: new FormControl('', [
@@ -108,6 +119,7 @@ export class RackDetailDataService extends SubManager {
   isRackDataLoading$ = new BehaviorSubject<boolean>(false);
   
   rowedRackedModules$ = new BehaviorSubject<RackedModule[][] | null>(null);
+  isRackImageCaptureInProgress$ = new BehaviorSubject<boolean>(false);
   readonly functionAnalysisLegendItems$ = this.rowedRackedModules$.pipe(
     map(rowedRackedModules => buildFunctionAnalysisLegendItems(rowedRackedModules)),
     shareReplay(1)
@@ -132,6 +144,7 @@ export class RackDetailDataService extends SubManager {
   userRequestedSmallerScale$ = new BehaviorSubject<boolean>(false);
   //
   requestRackEditableStatusChange$ = new Subject<void>();
+  requestCreatePatchFromRack$ = new Subject<void>();
   requestRackPrivacyStatusChange$ = new Subject<void>();
   requestRackedModuleRemoval$ = new Subject<RackedModule>();
   requestRackedModuleDuplication$ = new Subject<RackedModule>();
@@ -243,7 +256,7 @@ export class RackDetailDataService extends SubManager {
               row: originalModule.rackingData.row,
               column: originalModule.rackingData.column,
               rackId: rack.id,
-              moduleId: this.calculateBlankIdForSizeAndStandard(
+              moduleId: calculateBlankIdForSizeAndStandard(
                 rackedModule.module.hp,
                 rackedModule.module.standard.id
               )
@@ -291,7 +304,6 @@ export class RackDetailDataService extends SubManager {
         withLatestFrom(this.singleRackData$),
         takeUntil(this.destroyEvent$)
       )
-      // .subscribe(() => this.updateSingleRackData$.next(this.singleRackData$.value.id));
       .subscribe(([_, rackData]) => {
         this.singleRackData$.next(rackData);
       });
@@ -332,11 +344,7 @@ export class RackDetailDataService extends SubManager {
           // Convert the image data to a Blob
           map(imageData => {
             const byteCharacters = atob(imageData.split(',')[1]);
-            const byteNumbers = new Array(byteCharacters.length);
-            for (let i = 0; i < byteCharacters.length; i++) {
-              byteNumbers[i] = byteCharacters.charCodeAt(i);
-            }
-            const byteArray = new Uint8Array(byteNumbers);
+            const byteArray = new Uint8Array(Array.from(byteCharacters, c => c.charCodeAt(0)));
             return new Blob([byteArray], {type: 'image/jpeg'});
           })
         );
@@ -386,6 +394,55 @@ export class RackDetailDataService extends SubManager {
         takeUntil(this.destroy$),
       )
       .subscribe();
+
+    this.requestCreatePatchFromRack$
+      .pipe(
+        withLatestFrom(this.singleRackData$, this.isCurrentRackPropertyOfCurrentUser$),
+        switchMap(([_, rack, isOwner]) => {
+          if (!rack) {
+            SharedConstants.errorCustom(this.snackBar, 'Rack data is still loading. Try again in a moment.');
+            return EMPTY;
+          }
+
+          if (!isOwner) {
+            SharedConstants.errorCustom(this.snackBar, 'Only the rack owner can start a linked patch from this rack.');
+            return EMPTY;
+          }
+
+          return this.askForConfirmationWhenCreatingPatchFromRack(rack);
+        }),
+        switchMap((rack) => {
+          const generatedPatchName = generatePatchName();
+          this.snackBar.open(`Creating "${ generatedPatchName }"…`, undefined);
+
+          return this.backend.add.patch({
+            name: generatedPatchName,
+            public: true,
+            linked_rack_id: rack.id
+          }).pipe(
+            map((response) => ({
+              rack,
+              generatedPatchName,
+              createdPatchId: extractCreatedPatchId(response)
+            })),
+            catchError((error) => {
+              if (isLinkedRackSchemaMissingError(error)) {
+                SharedConstants.errorCustom(this.snackBar, LINKED_RACK_PENDING_CREATE_MESSAGE);
+              } else {
+                console.error('Failed to create linked patch from rack:', error);
+                SharedConstants.errorCustom(this.snackBar, 'Patch creation failed — check your connection and try again.');
+              }
+
+              return EMPTY;
+            })
+          );
+        }),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(({rack, generatedPatchName, createdPatchId}) => {
+        this.router.navigate(['/patches/details', createdPatchId]);
+        SharedConstants.successCustom(this.snackBar, `"${ generatedPatchName }" is ready with "${ rack.name }" linked.`);
+      });
     
     this.formData.name.control.valueChanges
       .pipe(
@@ -485,7 +542,7 @@ export class RackDetailDataService extends SubManager {
     )
       .subscribe(({rackedModules, rack}: {rackedModules: RackedModule[]; rack: Rack}) => {
         // create a 2d array of racked modules and sort them by row
-        const rowedRackedModules = this.buildRowedModulesArray(rackedModules, rack);
+        const rowedRackedModules = buildRowedModulesArray(rackedModules, rack);
         this.rowedRackedModules$.next(rowedRackedModules);
         this.isRackDataLoading$.next(false);
       });
@@ -523,7 +580,7 @@ export class RackDetailDataService extends SubManager {
             this.transferBetweenRows(rackModules, module, event, newRow);
           }
           
-          this.rowedRackedModules$.next(rackModules);
+          this.rowedRackedModules$.next([...rackModules]);
           
           this.requestRackedModulesDbSync$.next();
         }
@@ -713,8 +770,8 @@ export class RackDetailDataService extends SubManager {
         takeUntil(this.destroyEvent$)
       )
       .subscribe((module) => {
-        SharedConstants.successCustom(this.snackBar, `"${ module.name }" added to "${ this.singleRackData$.value.name }".`);
-        
+        SharedConstants.successCustom(this.snackBar, `"${ module.name }" added to "${ this.singleRackData$.value.name }". Drag it into a row to place it.`);
+        this.moduleAddedFromPicker$.next(module);
         this.updateSingleRackData$.next(this.singleRackData$.value.id);
       });
     
@@ -729,7 +786,7 @@ export class RackDetailDataService extends SubManager {
       withLatestFrom(this.singleRackData$),
       takeUntil(this.destroy$)
     )
-      .subscribe(([rows]) => this.rackStatistics$.next(this.buildRackStatistics(rows)));
+      .subscribe(([rows]) => this.rackStatistics$.next(buildRackStatistics(rows)));
     
   }
 
@@ -737,23 +794,6 @@ export class RackDetailDataService extends SubManager {
     this.usePublicDetailReads = enabled;
   }
   
-  private buildRackStatistics(rows: RackedModule[][]): {
-    name: string;
-    value: string
-  }[] {
-    const byHP = new Map<number, number>();
-    rows.flatMap(row => row)
-      .filter(m => m.module.standard.id === 0)
-      .forEach(m => {
-        const hp = m.module.hp;
-        byHP.set(hp, (byHP.get(hp) ?? 0) + 1);
-      });
-    
-    return Array.from(byHP.entries())
-      .sort(([a], [b]) => a - b)
-      .map(([hp, count]) => ({name: `${ hp }HP count`, value: String(count)}));
-  }
-
   private removeInformationFromModulesOfCurrentRack(newlyCreatedRackId: number) {
     const rackModules: RackedModule[][] = this.rowedRackedModules$.value;
     
@@ -804,7 +844,31 @@ export class RackDetailDataService extends SubManager {
         filter((x: ConfirmDialogDataOutModel) => !!x?.answer)
       );
   }
-  
+
+  private askForConfirmationWhenCreatingPatchFromRack(rack: RackMinimal) {
+    const data: ConfirmDialogDataInModel = {
+      title: `Start a patch from "${ rack.name }"?`,
+      description: 'We will generate the name automatically, link this rack, and open the patch immediately so you can start working.',
+      positive: {label: 'Create patch', theme: 'positive'}
+    };
+
+    return this.dialog.open(
+      ConfirmDialogComponent,
+      {
+        data,
+        disableClose: false
+      }
+    )
+      .afterClosed()
+      .pipe(
+        tap((x: ConfirmDialogDataOutModel) => {
+          if (!x?.answer) SharedConstants.infoCustom(this.snackBar, 'No patch created.');
+        }),
+        filter((x: ConfirmDialogDataOutModel) => !!x?.answer),
+        map(() => rack)
+      );
+  }
+
   // bump up version number in name of rack if it has one, otherwise add "V2" — used when duplicating
   private bumpUpVersionInNameOfOfRack() {
     const originalName = this.singleRackData$.value.name;
@@ -825,39 +889,11 @@ export class RackDetailDataService extends SubManager {
     return this.backend.update.rackedModules(rackModules.flatMap(row => row))
       .pipe(
         tap(() => {
-          if (this.isAnyModuleWithoutRackingId(rackModules)) {
+          if (isAnyModuleWithoutRackingId(rackModules)) {
             this.singleRackData$.next(rack);
           }
         })
       );
-  }
-  
-  /*
-   check if there are modules without racking id, because they have not been synced with the backend yet,
-   probably because they are new, and have not been saved to the backend yet
-   */
-  
-  private isAnyModuleWithoutRackingId(rackModules: RackedModule[][]): boolean {
-    return rackModules.flatMap(row => row)
-      .filter(module => module.rackingData.id === undefined).length > 0;
-  }
-  
-  private buildRowedModulesArray(rackedModules: RackedModule[], rackData: RackMinimal): RackedModule[][] {
-    const rowedRackedModules: RackedModule[][] = [];
-    for (let i = 0; i < rackData.rows; i++) {
-      rowedRackedModules[i] = rackedModules.filter(module => module.rackingData.row === i);
-    }
-    
-    // check if there are modules without row and column, add them to a new row
-    const modulesWithoutRowAndColumn = rackedModules.filter(
-      module => module.rackingData.row === null && module.rackingData.column === null
-    );
-    
-    if (modulesWithoutRowAndColumn.length > 0) {
-      rowedRackedModules.push(modulesWithoutRowAndColumn);
-    }
-    
-    return rowedRackedModules;
   }
   
   private generateRackJpeg$(el: HTMLElement) {
@@ -873,12 +909,14 @@ export class RackDetailDataService extends SubManager {
     return defer(() => {
       const previousAnalysisMode = this.analysisMode$.value ?? RACK_ANALYSIS_MODES.off;
       this.analysisMode$.next(RACK_ANALYSIS_MODES.off);
+      this.isRackImageCaptureInProgress$.next(true);
 
       return of(undefined).pipe(
         // Rack analysis overlays animate out over ~320ms, so wait for the rendered UI to settle before capture.
         delay(RackDetailDataService.imageCaptureOverlayResetDelayMs),
         switchMap(() => this.generateRackJpeg$(el)),
         finalize(() => {
+          this.isRackImageCaptureInProgress$.next(false);
           if (this.analysisMode$.value === RACK_ANALYSIS_MODES.off) {
             this.analysisMode$.next(previousAnalysisMode);
           }
@@ -909,7 +947,7 @@ export class RackDetailDataService extends SubManager {
     
   }
   
-  private transferBetweenRows(rackedModules: RackedModule[][], rackedModule: RackedModule, event, newRow): void {
+  private transferBetweenRows(rackedModules: RackedModule[][], rackedModule: RackedModule, event: CdkDragDrop<ElementRef>, newRow: number): void {
     // remove item from old array
     this.removeRackedModuleFromRack(rackedModules, rackedModule);
     
@@ -965,26 +1003,5 @@ export class RackDetailDataService extends SubManager {
     this.updateModulesColumnIds(rackedModules, deepCopiedRackedModule.rackingData.row);
   }
   
-  // the following identifications come from database
-  private readonly BLANK_IDS_STANDARD_0: Record<number, number> = {
-    1: 4666, 2: 4647, 3: 4665, 4: 4648, 5: 4664,
-    6: 4649, 7: 4650, 8: 4651, 9: 4652, 10: 4653,
-    11: 4654, 12: 4655, 13: 4656, 14: 4657, 15: 4658,
-    16: 4659, 17: 4660, 18: 4661, 19: 4662, 20: 4663
-  };
-  
-  private readonly BLANK_IDS_STANDARD_1: Record<number, number> = {
-    1: 4711, 2: 4712, 3: 4713, 4: 4714, 5: 4715,
-    6: 4716, 7: 4717, 8: 4718, 9: 4719, 10: 4720,
-    11: 4721, 12: 4722, 13: 4723, 14: 4724, 15: 4725,
-    16: 4726, 17: 4727, 18: 4728, 19: 4729, 20: 4730,
-    21: 4731, 22: 4732, 23: 4733, 24: 4734, 25: 4735
-  };
-  
-  private calculateBlankIdForSizeAndStandard(hp: number, standard: number = 0): number {
-    const map = standard === 0 ? this.BLANK_IDS_STANDARD_0
-      : standard === 1 ? this.BLANK_IDS_STANDARD_1
-        : null;
-    return map?.[hp] ?? -1;
-  }
 }
+

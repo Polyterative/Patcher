@@ -1,0 +1,32 @@
+<lib-hero-content-card [sidesPadding]="false"
+                       [@moduleDetailSupportEnter]="{ value: '', params: { delay: animationDelay, duration: 185 } }"
+                       class="module-detail-usage-card"
+                       [titleNormal]="title">
+  <lib-auto-content-loading-indicator [data$]="data$"
+                                      [updateData$]="updateData$">
+    @if (items && items.length > 0) {
+      @if (entityType === 'rack') {
+        <app-module-racks [data$]="$any(data$)"></app-module-racks>
+      } @else {
+        <app-module-patches [data$]="$any(data$)"></app-module-patches>
+      }
+      @if (showHiddenUsageNote) {
+        <div class="col gap1 animate-fadein-slowest">
+          <mat-card-subtitle class="module-detail-empty-state-copy">
+            {{ hiddenUsageSupplementCopy }}
+          </mat-card-subtitle>
+        </div>
+      }
+    } @else {
+      <div class="col gap1 animate-fadein-slowest">
+        <mat-card-subtitle class="module-detail-empty-state-copy">
+          @if (!isUsageSummaryLoaded) {
+            {{ usagePendingCopy }}
+          } @else {
+            {{ noPublicUsageCopy }}
+          }
+        </mat-card-subtitle>
+      </div>
+    }
+  </lib-auto-content-loading-indicator>
+</lib-hero-content-card>

@@ -54,22 +54,20 @@ export function buildRackPowerBreakdown(rowedRackedModules: RackedModule[][]): R
     };
   });
 
-  return rows.reduce<RackPowerBreakdown>(
-    (accumulator, row) => {
-      accumulator.rows.push(row);
-      accumulator.powerPos12 += row.powerPos12;
-      accumulator.powerNeg12 += row.powerNeg12;
-      accumulator.powerPos5 += row.powerPos5;
-      return accumulator;
-    },
-    {
-      rows: [],
-      missingPowerDataCount: missingPowerDataModuleIds.size,
-      powerPos12: 0,
-      powerNeg12: 0,
-      powerPos5: 0
-    }
+  const totals = rows.reduce(
+    (acc, row) => ({
+      powerPos12: acc.powerPos12 + row.powerPos12,
+      powerNeg12: acc.powerNeg12 + row.powerNeg12,
+      powerPos5: acc.powerPos5 + row.powerPos5
+    }),
+    {powerPos12: 0, powerNeg12: 0, powerPos5: 0}
   );
+
+  return {
+    rows,
+    missingPowerDataCount: missingPowerDataModuleIds.size,
+    ...totals
+  };
 }
 
 export function formatPowerRailValue(value: number): string {

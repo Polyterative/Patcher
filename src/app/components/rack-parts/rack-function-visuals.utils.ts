@@ -5,37 +5,24 @@ import {
   RackBalanceAxisId
 } from './rack-balance-analysis.constants';
 import { isBlankModule } from './rack-blank-module.constants';
+import {
+  FunctionAnalysisLegendItem,
+  FunctionAnalysisLegendSummaryItem,
+  RackFunctionVisual,
+  RowFunctionBreakdown,
+  RowFunctionRoleBreakdown
+} from './rack-function-visuals.models';
+import { FUNCTION_ANALYSIS_LEGEND } from './rack-function-visuals.constants';
 
-export interface RackFunctionVisual {
-  className: string;
-  roleLabel: string;
-  tagLabel: string;
-  icon: string;
-}
+export type {
+  FunctionAnalysisLegendItem,
+  FunctionAnalysisLegendSummaryItem,
+  RackFunctionVisual,
+  RowFunctionBreakdown,
+  RowFunctionRoleBreakdown
+} from './rack-function-visuals.models';
 
-export interface FunctionAnalysisLegendItem {
-  label: string;
-  swatchClass: string;
-}
-
-export interface FunctionAnalysisLegendSummaryItem extends FunctionAnalysisLegendItem {
-  count: number;
-  hp: number;
-}
-
-export interface RowFunctionRoleBreakdown {
-  label: string;
-  className: string;
-  moduleCount: number;
-  hp: number;
-}
-
-export interface RowFunctionBreakdown {
-  moduleCount: number;
-  roles: RowFunctionRoleBreakdown[];
-  residualCount: number;
-  residualHp: number;
-}
+export { FUNCTION_ANALYSIS_LEGEND } from './rack-function-visuals.constants';
 
 interface RackFunctionAxisScore {
   score: number;
@@ -52,13 +39,6 @@ const FUNCTION_AXIS_CLASS_NAMES: Record<RackBalanceAxisId, string> = {
   tone: 'functionAnalysisModule--tone',
 };
 
-export const FUNCTION_ANALYSIS_LEGEND: ReadonlyArray<FunctionAnalysisLegendItem> = [
-  {label: 'Voices', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--voices'},
-  {label: 'Modulation', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--modulation'},
-  {label: 'Utilities', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--utilities'},
-  {label: 'Timing', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--timing'},
-  {label: 'Tone shaping', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--tone'},
-];
 
 const TRACKED_FUNCTION_ROLE_CLASS_NAMES = new Set<string>(Object.values(FUNCTION_AXIS_CLASS_NAMES));
 const TRACKED_FUNCTION_ROLE_LABELS = new Set<string>(FUNCTION_ANALYSIS_LEGEND.map(item => item.label));
@@ -294,6 +274,15 @@ export function buildRowFunctionResidualLabel(rowFunction: RowFunctionBreakdown 
     : 'All modules in this row map to tracked function roles.';
 }
 
+const NUMERIC_TAG_TYPE_NAMES: Readonly<Record<number, string>> = {
+  0: 'purpose',
+  1: 'nature',
+  2: 'character',
+};
+
+const EXACT_MATCH_WEIGHTS: Readonly<Record<string, number>> = {purpose: 6, nature: 4};
+const PATTERN_MATCH_WEIGHTS: Readonly<Record<string, number>> = {purpose: 4, nature: 2};
+
 function scoreTagAgainstAxis(
   axis: RackBalanceAxisDefinition,
   tagName: string,
@@ -313,15 +302,7 @@ function normalizeTagType(tagType: unknown): string | null {
   }
 
   if (typeof tagType === 'number') {
-    if (tagType === 0) {
-      return 'purpose';
-    }
-    if (tagType === 1) {
-      return 'nature';
-    }
-    if (tagType === 2) {
-      return 'character';
-    }
+    return NUMERIC_TAG_TYPE_NAMES[tagType] ?? null;
   }
 
   return null;
@@ -365,27 +346,11 @@ function getPatternsForTagType(axis: RackBalanceAxisDefinition, tagType: string 
 }
 
 function exactMatchWeight(tagType: string | null): number {
-  if (tagType === 'purpose') {
-    return 6;
-  }
-
-  if (tagType === 'nature') {
-    return 4;
-  }
-
-  return 3;
+  return tagType !== null ? (EXACT_MATCH_WEIGHTS[tagType] ?? 3) : 3;
 }
 
 function patternMatchWeight(tagType: string | null): number {
-  if (tagType === 'purpose') {
-    return 4;
-  }
-
-  if (tagType === 'nature') {
-    return 2;
-  }
-
-  return 1;
+  return tagType !== null ? (PATTERN_MATCH_WEIGHTS[tagType] ?? 1) : 1;
 }
 
 function flattenRowedModules(rowedRackedModules: RackedModule[][] | null | undefined): RackedModule[] {
@@ -393,19 +358,15 @@ function flattenRowedModules(rowedRackedModules: RackedModule[][] | null | undef
 }
 
 function buildResidualTotals(rackedModules: RackedModule[]): {count: number; hp: number} {
-  let count = 0;
-  let hp = 0;
-
-  for (const rackedModule of rackedModules) {
-    if (isTrackedFunctionLabel(buildRackFunctionVisual(rackedModule).roleLabel)) {
-      continue;
-    }
-
-    count += 1;
-    hp += rackedModule.module.hp ?? 0;
-  }
-
-  return {count, hp};
+  return rackedModules.reduce(
+    (acc, rackedModule) => {
+      if (isTrackedFunctionLabel(buildRackFunctionVisual(rackedModule).roleLabel)) {
+        return acc;
+      }
+      return {count: acc.count + 1, hp: acc.hp + (rackedModule.module.hp ?? 0)};
+    },
+    {count: 0, hp: 0}
+  );
 }
 
 function isTrackedFunctionLabel(roleLabel: string): boolean {

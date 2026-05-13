@@ -38,20 +38,16 @@ import {
 } from "angular-animations";
 import { derivePanelLabel } from '../../module-parts/panel.constants';
 import { ModulePanelZoomDialogComponent } from '../../module-parts/module-details/module-panel-zoom-dialog.component';
-import {
-  RACK_ANALYSIS_MODES,
-  RACK_ANALYSIS_MODE_OPTIONS
-} from '../rack-analysis-mode';
+import { RACK_ANALYSIS_MODES, RACK_ANALYSIS_MODE_OPTIONS } from '../rack-analysis-mode';
 import { SignalFocusArea } from '../rack-signal-analysis.utils';
 import { prefersTouchInteraction } from 'src/app/shared-interproject/touch-interaction.utils';
+import {
+  ModuleRightClick,
+  PANEL_IMAGE_BASE,
+  RackEditorModuleAction
+} from './rack-editor.types';
 
-
-export interface ModuleRightClick {
-  $event: MouseEvent;
-  rackedModule: RackedModule;
-}
-
-const PANEL_IMAGE_BASE = 'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/';
+export type { ModuleRightClick } from './rack-editor.types';
 
 
 @Component({
@@ -94,6 +90,8 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
     {value: 'modulation', label: 'Modulation'},
     {value: 'clock', label: 'Clock'},
   ];
+  readonly moduleActions: RackEditorModuleAction[];
+  readonly touchTrayModuleActions: RackEditorModuleAction[];
 
   moduleRightClick$ = new Subject<ModuleRightClick>();
   selectedTouchModule: RackedModule | null = null;
@@ -220,7 +218,53 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
     // userManagerService: UserManagementService
   ) {
     super();
-
+    this.moduleActions = [
+      {
+        id: 'inspect',
+        label: 'Inspect panel',
+        icon: 'zoom_in',
+        includeInTouchTray: true,
+        includeInContextMenu: true,
+        run: (rackedModule) => this.openInspectPanel(rackedModule)
+      },
+      {
+        id: 'duplicate',
+        label: 'Duplicate',
+        icon: 'content_copy',
+        includeInTouchTray: true,
+        includeInContextMenu: true,
+        run: (rackedModule) => this.dataService.requestRackedModuleDuplication$.next(rackedModule)
+      },
+      {
+        id: 'replace-with-blank',
+        label: 'Replace with blank',
+        icon: 'space_bar',
+        includeInTouchTray: true,
+        includeInContextMenu: true,
+        clearsTouchSelection: true,
+        run: (rackedModule) => this.dataService.requestRackedModuleReplaceWithBlank$.next(rackedModule)
+      },
+      {
+        id: 'delete',
+        label: 'Delete from rack',
+        icon: 'delete',
+        danger: true,
+        includeInTouchTray: true,
+        includeInContextMenu: true,
+        clearsTouchSelection: true,
+        run: (rackedModule) => this.dataService.requestRackedModuleRemoval$.next(rackedModule)
+      },
+      {
+        id: 'clear-row',
+        label: 'Delete all in row',
+        icon: 'delete_sweep',
+        danger: true,
+        includeInTouchTray: false,
+        includeInContextMenu: true,
+        run: (rackedModule) => this.dataService.requestRackedModuleRowClearing$.next(rackedModule)
+      }
+    ];
+    this.touchTrayModuleActions = this.moduleActions.filter(action => action.includeInTouchTray);
   }
 
   ngOnInit(): void {
@@ -242,47 +286,7 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
           $event,
           rackedModule
         }]) => {
-          
-          const inspectModule$ = new Subject<ContextMenuItem>();
-          const duplicateModule$ = new Subject<ContextMenuItem>();
-          const deleteModule$ = new Subject<ContextMenuItem>();
-          const deleteRow$ = new Subject<ContextMenuItem>();
-          const replaceWithBlank$ = new Subject<ContextMenuItem>();
-          
-          const panels = rackedModule.module.panels ?? [];
-          const switchPanelSubjects = panels.map(() => new Subject<ContextMenuItem>());
-          const effectiveHp = rackedModule.module.hp;
-          const panelSubmenuItem = this.buildPanelSubmenuItem(rackedModule, switchPanelSubjects);
-
-          this.contextMenu.menuItems$.next(this.buildModuleContextMenuItems(
-            rackedModule,
-            effectiveHp,
-            panelSubmenuItem,
-            {
-              inspectModule$,
-              duplicateModule$,
-              replaceWithBlank$,
-              deleteModule$,
-              deleteRow$
-            }
-          ));
-          
-          this.contextMenu.open$.next($event);
-
-          this.bindContextMenuAction(inspectModule$, () => this.openInspectPanel(rackedModule));
-          this.bindContextMenuAction(duplicateModule$, () => this.dataService.requestRackedModuleDuplication$.next(rackedModule));
-          this.bindContextMenuAction(deleteModule$, () => this.dataService.requestRackedModuleRemoval$.next(rackedModule));
-          this.bindContextMenuAction(replaceWithBlank$, () => this.dataService.requestRackedModuleReplaceWithBlank$.next(rackedModule));
-          this.bindContextMenuAction(deleteRow$, () => this.dataService.requestRackedModuleRowClearing$.next(rackedModule));
-          
-          switchPanelSubjects.forEach((subject$, idx) => {
-            this.bindContextMenuAction(subject$, () => {
-              const panelId = panels[idx]?.id ?? null;
-              this.dataService.requestRackedModulePanelSwitch$.next({rackedModule, panelId});
-            });
-          });
-          
-          
+          this.openModuleContextMenu(rackedModule, $event);
         })
     );
      
@@ -331,29 +335,20 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
     this.cdr.markForCheck();
   }
 
-  duplicateSelectedTouchModule(): void {
+  runSelectedTouchAction(action: RackEditorModuleAction): void {
     if (!this.selectedTouchModule) {
       return;
     }
 
-    this.dataService.requestRackedModuleDuplication$.next(this.selectedTouchModule);
+    this.runModuleAction(action, this.selectedTouchModule);
   }
 
-  replaceSelectedTouchModuleWithBlank(): void {
+  openSelectedTouchModuleMenu(anchor: HTMLElement | null): void {
     if (!this.selectedTouchModule) {
       return;
     }
 
-    this.dataService.requestRackedModuleReplaceWithBlank$.next(this.selectedTouchModule);
-  }
-
-  removeSelectedTouchModule(): void {
-    if (!this.selectedTouchModule) {
-      return;
-    }
-
-    this.dataService.requestRackedModuleRemoval$.next(this.selectedTouchModule);
-    this.clearSelectedTouchModule();
+    this.openModuleContextMenu(this.selectedTouchModule, this.createContextMenuAnchorEvent(anchor));
   }
 
   private get rackWidthPx(): number {
@@ -390,14 +385,42 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
 
   private bindContextMenuAction(action$: Subject<ContextMenuItem>, callback: () => void): void {
     action$.pipe(
-      takeUntil(this.contextMenu.open$),
+      takeUntil(this.contextMenu.menuClose$),
       takeUntil(this.destroy$)
     ).subscribe(() => callback());
   }
 
+  private openModuleContextMenu(rackedModule: RackedModule, event: MouseEvent): void {
+    const panels = rackedModule.module.panels ?? [];
+    const effectiveHp = rackedModule.module.hp;
+    const panelSubmenuItem = this.buildPanelSubmenuItem(rackedModule);
+
+    this.contextMenu.menuItems$.next(this.buildModuleContextMenuItems(
+      rackedModule,
+      effectiveHp,
+      panelSubmenuItem
+    ));
+
+    this.contextMenu.open$.next(event);
+  }
+
+  private createContextMenuAnchorEvent(anchor: HTMLElement | null): MouseEvent {
+    const fallbackWidth = typeof window !== 'undefined' ? window.innerWidth : 0;
+    const fallbackHeight = typeof window !== 'undefined' ? window.innerHeight : 0;
+    const rect = anchor?.getBoundingClientRect();
+    const clientX = rect ? rect.left + (rect.width / 2) : fallbackWidth / 2;
+    const clientY = rect ? rect.top + (rect.height / 2) : fallbackHeight / 2;
+
+    return new MouseEvent('contextmenu', {
+      bubbles: true,
+      cancelable: true,
+      clientX,
+      clientY
+    });
+  }
+
   private buildPanelSubmenuItem(
-    rackedModule: RackedModule,
-    switchPanelSubjects: Subject<ContextMenuItem>[]
+    rackedModule: RackedModule
   ): ContextMenuItem | null {
     const panels = rackedModule.module.panels ?? [];
 
@@ -423,7 +446,12 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
         disabled: false,
         imageUrl: panel.filename ? PANEL_IMAGE_BASE + panel.filename : undefined,
         data: rackedModule,
-        click$: switchPanelSubjects[idx]
+        click$: this.createMenuActionSubject(() => {
+          this.dataService.requestRackedModulePanelSwitch$.next({
+            rackedModule,
+            panelId: panels[idx]?.id ?? null
+          });
+        })
       }))
     };
   }
@@ -431,15 +459,20 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
   private buildModuleContextMenuItems(
     rackedModule: RackedModule,
     effectiveHp: number,
-    panelSubmenuItem: ContextMenuItem | null,
-    actions: {
-      inspectModule$: Subject<ContextMenuItem>;
-      duplicateModule$: Subject<ContextMenuItem>;
-      replaceWithBlank$: Subject<ContextMenuItem>;
-      deleteModule$: Subject<ContextMenuItem>;
-      deleteRow$: Subject<ContextMenuItem>;
-    }
+    panelSubmenuItem: ContextMenuItem | null
   ): ContextMenuItem[] {
+    const contextMenuActions = this.moduleActions
+      .filter(action => action.includeInContextMenu)
+      .map(action => this.createContextMenuActionItem(action, rackedModule));
+    const inspectAction = contextMenuActions[0];
+    const standardActions = contextMenuActions.slice(1, 4).map((item) => item.id === 'replace-with-blank'
+      ? {
+        ...item,
+        label: 'Replace with blank (add spacing)'
+      }
+      : item);
+    const secondaryActions = contextMenuActions.slice(4);
+
     return [
       {
         id: 'name',
@@ -448,52 +481,31 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
         disabled: true,
         click$: new Subject<ContextMenuItem>()
       },
-      {
-        id: 'inspect',
-        label: 'Inspect panel',
-        icon: 'zoom_in',
-        data: rackedModule,
-        disabled: false,
-        click$: actions.inspectModule$
-      },
+      ...(inspectAction ? [inspectAction] : []),
       ...(panelSubmenuItem ? [panelSubmenuItem] : []),
-      {
-        id: 'duplicate',
-        label: 'Duplicate',
-        icon: 'content_copy',
-        data: rackedModule,
-        disabled: false,
-        click$: actions.duplicateModule$
-      },
-      {
-        id: 'replace-with-blank',
-        label: 'Replace with blank (add spacing)',
-        icon: 'space_bar',
-        data: rackedModule,
-        disabled: false,
-        click$: actions.replaceWithBlank$
-      },
-      {
-        id: 'delete',
-        label: 'Delete from rack',
-        icon: 'delete',
-        data: rackedModule,
-        disabled: false,
-        danger: true,
-        click$: actions.deleteModule$
-      },
+      ...standardActions,
       this.createContextMenuSpacerItem(1),
       this.createContextMenuSpacerItem(2),
-      {
-        id: 'clear-row',
-        label: 'Delete all in row',
-        icon: 'delete_sweep',
-        data: rackedModule,
-        disabled: false,
-        danger: true,
-        click$: actions.deleteRow$
-      }
+      ...secondaryActions
     ];
+  }
+
+  private createContextMenuActionItem(action: RackEditorModuleAction, rackedModule: RackedModule): ContextMenuItem {
+    return {
+      id: action.id,
+      label: action.label,
+      icon: action.icon,
+      data: rackedModule,
+      disabled: false,
+      danger: action.danger,
+      click$: this.createMenuActionSubject(() => this.runModuleAction(action, rackedModule))
+    };
+  }
+
+  private createMenuActionSubject(callback: () => void): Subject<ContextMenuItem> {
+    const action$ = new Subject<ContextMenuItem>();
+    this.bindContextMenuAction(action$, callback);
+    return action$;
   }
 
   private createContextMenuSpacerItem(index: number): ContextMenuItem {
@@ -505,6 +517,14 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
       disabled: true,
       click$: new Subject<ContextMenuItem>()
     };
+  }
+
+  private runModuleAction(action: RackEditorModuleAction, rackedModule: RackedModule): void {
+    action.run(rackedModule);
+
+    if (action.clearsTouchSelection && this.selectedTouchModule === rackedModule) {
+      this.clearSelectedTouchModule();
+    }
   }
 
   private resolveActivePanelContext(rackedModule: RackedModule): {

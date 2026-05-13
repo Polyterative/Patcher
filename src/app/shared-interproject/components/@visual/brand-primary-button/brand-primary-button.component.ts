@@ -5,6 +5,7 @@ import {
   Input,
   Output
 } from '@angular/core';
+import { TooltipPosition } from '@angular/material/tooltip';
 
 
 export type BrandPrimaryButtonTheme =
@@ -34,6 +35,8 @@ export class BrandPrimaryButtonComponent {
   @Input() routerLink: string | any[] = undefined;
   @Input() autoFocus = false;
   @Input() icon: string | undefined = undefined;
+  @Input() tooltip = '';
+  @Input() tooltipPosition: TooltipPosition = 'above';
   
   doNothing() {
     // do not delete this

@@ -1,13 +1,17 @@
 import {
   BehaviorSubject,
   of,
+  Subject,
   throwError
 } from 'rxjs';
+import { fakeAsync, tick } from '@angular/core/testing';
 import { ModuleAdderDataService } from './module-adder-data.service';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 
 
 describe('ModuleAdderDataService', () => {
+  let createdServices: ModuleAdderDataService[];
+
   function build(options?: {
     manufacturers?: { id: number; name: string }[];
     modules?: { id: number; name: string }[];
@@ -45,9 +49,18 @@ describe('ModuleAdderDataService', () => {
       snackBar,
       router
     );
+    createdServices.push(service);
     
     return {service, standards$, backend, dialog, snackBar, router};
   }
+
+  beforeEach(() => {
+    createdServices = [];
+  });
+
+  afterEach(() => {
+    createdServices.forEach((service) => service.ngOnDestroy());
+  });
   
   it('loads manufacturer options and enables control after data arrives', () => {
     const {service, backend, standards$} = build();
@@ -66,6 +79,59 @@ describe('ModuleAdderDataService', () => {
     
     expect(backend.GET.modules).toHaveBeenCalled();
     expect(service.similarModulesData$.value).toEqual([{id: 12, name: 'Maths'}] as any);
+  });
+
+  it('shows a loading state while submit-module similar search is pending', () => {
+    const {service, backend} = build();
+    const response$ = new Subject<{data: { id: number; name: string }[]}>();
+    backend.GET.modules.and.returnValue(response$.asObservable());
+    service.similarModulesData$.next([{id: 1, name: 'Previous'}] as any);
+
+    service.formData.name.control.setValue('Rings');
+
+    expect(service.similarModulesData$.value).toBeUndefined();
+    response$.next({data: [{id: 2, name: 'Rings'}]});
+    response$.complete();
+    expect(service.similarModulesData$.value).toEqual([{id: 2, name: 'Rings'}] as any);
+  });
+
+  it('supports manufacturer-only similar search for empty-state discovery', () => {
+    const {service, backend} = build({modules: []});
+
+    service.formData.manufacturer.control.setValue({id: '1', name: 'Make Noise'});
+
+    const args = backend.GET.modules.calls.mostRecent().args as any[];
+    expect(args[2]).toBe('');
+    expect(args[5]).toBe(1);
+    expect(args[10]).toBeFalse();
+    expect(service.similarModulesData$.value).toEqual([]);
+  });
+
+  it('clears similar search results to an empty list when no matches are found', () => {
+    const {service} = build({modules: []});
+
+    service.formData.name.control.setValue('No Exact Match');
+
+    expect(service.similarModulesData$.value).toEqual([]);
+  });
+
+  it('keeps submit-module similar search working after a backend error', () => {
+    const {service, backend} = build();
+    spyOn(console, 'error');
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
+    });
+    backend.GET.modules.and.returnValues(
+      throwError(() => new Error('network')),
+      of({data: [{id: 42, name: 'Recovered'}]})
+    );
+
+    service.formData.name.control.setValue('Broken');
+    expect(service.similarModulesData$.value).toEqual([]);
+    expect(SharedConstants.errorCustom).toHaveBeenCalledWith(jasmine.anything(), 'Failed to search similar modules');
+
+    service.formData.name.control.setValue('Recovered');
+    expect(service.similarModulesData$.value).toEqual([{id: 42, name: 'Recovered'}] as any);
+    expect(console.error).toHaveBeenCalledWith('Failed to search similar modules:', jasmine.any(Error));
   });
 
   it('detects duplicate manufacturer names accent-insensitively', () => {
@@ -88,8 +154,8 @@ describe('ModuleAdderDataService', () => {
     expect(service.similarModulesData$.value).toEqual([{id: 2075, name: 'Lùbadh'}] as any);
   });
   
-  it('submits module after confirmation and resets form fields', () => {
-    const {service, backend, snackBar, router, dialog} = build();
+  it('submits module immediately and resets form fields', fakeAsync(() => {
+    const {service, backend, snackBar, router} = build();
     service.formData.name.control.setValue('Sample');
     service.formData.description.control.setValue('Desc');
     service.formData.manufacturer.control.setValue({id: '1', name: 'Make Noise'});
@@ -100,18 +166,19 @@ describe('ModuleAdderDataService', () => {
     
     service.submitModuleForm$.next();
     
-    expect(dialog.open).toHaveBeenCalled();
     expect(backend.add.modules).toHaveBeenCalled();
     expect(service.formData.name.control.value).toBe('');
     expect(service.formData.description.control.value).toBe('');
     expect(service.formData.manual.control.value).toBe('');
     expect(service.formData.hp.control.value).toBe('');
-    expect(snackBar.open).toHaveBeenCalled();
+    
+    // navigation is delayed by the celebration animation
+    tick(4000);
     expect(router.navigate).toHaveBeenCalledWith(
       ['/modules', 'browser'],
       jasmine.objectContaining({queryParams: {refresh: true}})
     );
-  });
+  }));
   
   it('creates manufacturer inline and selects the new option', () => {
     const {service, backend} = build();

@@ -1,8 +1,11 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   Input,
-  OnInit
+  OnInit,
+  ViewChild
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { SeoSocialShareData } from 'src/app/models/seo.model';
@@ -16,6 +19,7 @@ import {
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
 import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
+import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area-data.service';
 import {
   CommentableEntityTypes,
   CommentsDataService
@@ -47,18 +51,22 @@ const JSONLD_SCRIPT_ID = 'rack-jsonld';
   templateUrl: './rack-browser-detail-view.component.html',
   styleUrls: ['./rack-browser-detail-view.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [CommentsDataService],
+  providers: [CommentsDataService, UserAreaDataService],
   standalone: false
 })
-export class RackBrowserDetailViewComponent extends SubManager implements OnInit {
+export class RackBrowserDetailViewComponent extends SubManager implements OnInit, AfterViewInit {
   @Input() readonly viewConfig: ModuleMinimalViewConfig = {
     ...defaultModuleMinimalViewConfig,
     tagsShowCounts: false
   };
   @Input() ignoreSeo = false;
+  @Input() showWideShellNav = true;
+
+  @ViewChild('rackEditorAnchor', { static: false }) rackEditorAnchor?: ElementRef<HTMLElement>;
 
   constructor(
     public dataService: RackDetailDataService,
+    public userAreaDataService: UserAreaDataService,
     public route: ActivatedRoute,
     readonly seoAndUtilsService: SeoAndUtilsService,
     private commentsDataService: CommentsDataService,
@@ -78,6 +86,9 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
       this.userManagementService.loggedUser$.pipe(take(1))
     ]).subscribe(([rackId, user]) => {
       this.dataService.setPublicDetailMode(!user);
+      if (user) {
+        this.userAreaDataService.updateModulesData$.next();
+      }
       this.dataService.updateSingleRackData$.next(rackId);
     });
 
@@ -110,7 +121,7 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
             modified: rackData.updated
           };
           this.seoAndUtilsService.updateSeo(seoData, `${ rackData.name } - Rack Details`);
-          this.injectRackJsonLd(rackData, uniqueRowedFlatted);
+          this.injectRackJsonLd(rackData!, uniqueRowedFlatted);
         });
     }
     
@@ -133,6 +144,21 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
     clearJsonLdScript(JSONLD_SCRIPT_ID);
     this.dataService.singleRackData$.next(undefined);
     super.ngOnDestroy();
+  }
+
+  ngAfterViewInit(): void {
+    this.dataService.moduleAddedFromPicker$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        // Give the rack a tick to re-render with the newly added (unracked) module
+        // then bring the rack editor into view so the user sees what happened.
+        setTimeout(() => {
+          const el = this.rackEditorAnchor?.nativeElement;
+          if (el && typeof el.scrollIntoView === 'function') {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 120);
+      });
   }
 
   calculateRackUtilization(totalHp: number, rows: number, usedHp: number): string {
@@ -199,7 +225,7 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
     return count > 0 ? ` (${ count } missing)` : '';
   }
 
-  private injectRackJsonLd(rackData: any, modules: string[]): void {
+  private injectRackJsonLd(rackData: RackMinimal, modules: string[]): void {
     clearJsonLdScript(JSONLD_SCRIPT_ID);
     const jsonLd: Record<string, unknown> = {
       '@context': 'https://schema.org',

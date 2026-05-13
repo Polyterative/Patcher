@@ -42,8 +42,8 @@ import {
 @Injectable()
 export class UserManagementService extends SubManager {
   // STATE - Private subjects
-  private _loggedUser$ = new ReplaySubject<SimpleUserModel | undefined>(1);
-  private _loggedUserFullProfile$ = new ReplaySubject<RichUserModel | undefined>(1);
+  private readonly _loggedUser$ = new ReplaySubject<SimpleUserModel | undefined>(1);
+  private readonly _loggedUserFullProfile$ = new ReplaySubject<RichUserModel | undefined>(1);
   
   // PUBLIC - Read-only observables
   public readonly loggedUser$ = this._loggedUser$.asObservable();
@@ -90,7 +90,7 @@ export class UserManagementService extends SubManager {
   }>();
   
   // Password form toggle
-  private _showPasswordForm$ = new BehaviorSubject<boolean>(false);
+  private readonly _showPasswordForm$ = new BehaviorSubject<boolean>(false);
   public readonly showPasswordForm$ = this._showPasswordForm$.asObservable();
   public togglePasswordForm$ = new Subject<boolean>();
   
@@ -131,11 +131,7 @@ export class UserManagementService extends SubManager {
         takeUntil(this.destroy$)
       )
       .subscribe(x => {
-        if (x) {
-          this.userBoxService.store.user$.next({username: x.username});
-        } else {
-          this.userBoxService.store.user$.next({username: undefined});
-        }
+        this.userBoxService.store.user$.next({username: x?.username});
       });
   }
   
@@ -389,25 +385,19 @@ export class UserManagementService extends SubManager {
     this.backend.auth.getUserSession$().pipe(
       take(1)
     ).subscribe(x => {
-      if (x) {
-        // Explicitly set the user since we know they are logged in
-        this._loggedUser$.next(x);
-      } else {
-        // Explicitly set undefined since we know they are not logged in
-        this._loggedUser$.next(undefined);
-      }
+      this._loggedUser$.next(x ?? undefined);
     });
   }
   
   private initializeUpdateUsernameHandler(): void {
-    this.updateUsernameAction$.pipe(      withLatestFrom(this.loggedUserFullProfile$),
+    this.updateUsernameAction$.pipe(
+      withLatestFrom(this.loggedUserFullProfile$),
       filter(([_, profile]) => !!profile),
       switchMap(([newUsername, profile]) =>
         this.backend.auth.updateUsername$(profile!.id, newUsername).pipe(
           map(() => newUsername),
           catchError((error) => {
-            const errorMessage = error?.message || SharedConstants.messages.operationFailed;
-            SharedConstants.errorCustom(this.snackBar, errorMessage);
+            this.showOperationError(error);
             return NEVER;
           })
         )
@@ -440,8 +430,7 @@ export class UserManagementService extends SubManager {
         }
         return this.backend.auth.updateUsername$(profile.id, newUsername).pipe(
           catchError((error) => {
-            const errorMessage = error?.message || SharedConstants.messages.operationFailed;
-            SharedConstants.errorCustom(this.snackBar, errorMessage);
+            this.showOperationError(error);
             return throwError(() => error);
           })
         );
@@ -477,8 +466,7 @@ export class UserManagementService extends SubManager {
             );
           }),
           catchError((error) => {
-            const errorMessage = error?.message || SharedConstants.messages.operationFailed;
-            SharedConstants.errorCustom(this.snackBar, errorMessage);
+            this.showOperationError(error);
             return throwError(() => error);
           })
         );
@@ -587,8 +575,7 @@ export class UserManagementService extends SubManager {
       switchMap(({newPassword}) =>
         this.backend.auth.updatePassword$(newPassword).pipe(
           catchError((error) => {
-            const msg = error?.message || SharedConstants.messages.operationFailed;
-            SharedConstants.errorCustom(this.snackBar, msg);
+            this.showOperationError(error);
             return NEVER;
           })
         )
@@ -599,6 +586,11 @@ export class UserManagementService extends SubManager {
       }),
       takeUntil(this.destroy$)
     ).subscribe();
+  }
+
+  private showOperationError(error: unknown): void {
+    const msg = (error as any)?.message || SharedConstants.messages.operationFailed;
+    SharedConstants.errorCustom(this.snackBar, msg);
   }
 
   private _getAdminRole(): Observable<boolean> {

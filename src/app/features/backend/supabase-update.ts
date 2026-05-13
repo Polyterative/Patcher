@@ -36,77 +36,26 @@ import {
   cacheBust,
   catchErrors,
   remapErrors,
-  showSuccessMessage
+  showSuccessMessage,
+  throwIfSupabaseError
 } from './supabase.cache';
 import { SimpleUserModel } from './supabase.types';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import {
+  buildCVInserter,
+  buildCVUpdater,
+  buildPatchConnectionInserter,
+  getCvMapper,
+  normalizeCvRangeForDb
+} from './supabase-update.helpers';
 
-
-export function getCvMapper(moduleid: number): (cv: CV) => CVwithModuleId {
-  return (cv: CV) => ({...cv, moduleid});
-}
-
-export function buildCVInserter(
-  supabase: SupabaseClient<Database>,
-  cvs: CV[],
-  path: 'module_ins' | 'module_outs',
-  moduleId: number,
-  authorid: string
-) {
-  const mappedCVs = cvs.map(getCvMapper(moduleId))
-    .filter(x => x.id === 0)
-    .map(x => {
-      x.id = undefined;
-      return x;
-    })
-    .map(x => ({...x, authorid}));
-  
-  return mappedCVs.map(x => rxFrom(supabase.from(path).insert(x)));
-}
-
-export function buildCVUpdater(
-  supabase: SupabaseClient<Database>,
-  cvs: CV[],
-  path: 'module_ins' | 'module_outs',
-  moduleId: number
-) {
-  const mappedCVs = cvs.map(getCvMapper(moduleId)).filter(x => x.id > 0);
-  return mappedCVs.map(x => rxFrom(supabase.from(path).update(x).eq('id', x.id)));
-}
-
-export function buildPatchConnectionInserter(
-  supabase: SupabaseClient<Database>,
-  connections: PatchConnection[],
-  patchConnectionsForPatch: (id: number) => Observable<any>
-) {
-  const toInsert = connections.map((conn, i) => ({
-    patchid: conn.patch.id,
-    a: conn.a.id,
-    b: conn.b.id,
-    notes: conn.notes,
-    ordinal: i,
-    instance_id_a: conn.instance_id_a ?? null,
-    instance_id_b: conn.instance_id_b ?? null
-  }));
-  
-  const inserter$ = rxFrom(
-    supabase.from(DbPaths.patch_connections)
-      .insert(toInsert)
-      .select('patchid')
-  ).pipe(tap(() => void 0));
-  
-  if (connections.length > 0) {
-    return patchConnectionsForPatch(connections[0].patch.id)
-      .pipe(switchMap(() => inserter$));
-  }
-  return inserter$;
-}
+export { getCvMapper, buildCVInserter, buildCVUpdater, buildPatchConnectionInserter };
 
 export function createUpdateNamespace(
   supabase: SupabaseClient<Database>,
   snackBar: MatSnackBar,
   getUserSession$: () => Observable<SimpleUserModel | null>,
-  patchConnectionsForPatch: (id: number) => Observable<any>,
+  patchConnectionsForPatch: (id: number) => Observable<unknown>,
   hasAdminRole$: () => Observable<boolean> = () => rxFrom(Promise.resolve(false))
 ) {
   return {
@@ -248,6 +197,7 @@ export function createUpdateNamespace(
               .single()
           );
         }),
+        throwIfSupabaseError(),
         cacheBust(['patches', 'patchConnections'])
       );
     },

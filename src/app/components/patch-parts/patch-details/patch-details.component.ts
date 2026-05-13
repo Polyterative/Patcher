@@ -27,6 +27,7 @@ import { Patch } from 'src/app/models/patch';
 export class PatchDetailsComponent implements OnInit {
   @Input() data: Patch;
   @Input() isEditing: boolean = false;
+  @Input() showConnectionsList: boolean = true;
   
   switches = [];
   

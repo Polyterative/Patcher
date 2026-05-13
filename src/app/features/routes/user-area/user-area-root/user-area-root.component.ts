@@ -26,7 +26,6 @@ import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area
 import { UntypedFormControl } from '@angular/forms';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
-import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import { UrlCreatorService } from 'src/app/features/backend/url-creator.service';
 import { CurrentUserContributorStats } from 'src/app/features/backend/supabase-queries';
 
@@ -65,14 +64,13 @@ export class UserAreaRootComponent extends SubManager implements OnInit, OnDestr
   miscStats$ = of([]);
   contributorStats$ = of<any[] | null>(null);
   readonly contributorStatsEmptyMessage =
-    'No contributor activity yet. Submit a module, leave a useful comment, or flag an issue to start building your contribution profile.';
+    'Submit a module, leave a useful comment, or flag an issue to start building your contribution profile.';
   
   constructor(
     public userService: UserManagementService,
     public backend: SupabaseService,
     public dataService: UserAreaDataService,
     readonly seoAndUtilsService: SeoAndUtilsService,
-    public appState: AppStateService,
     public urlCreatorService: UrlCreatorService
   ) {
     super();
@@ -84,22 +82,22 @@ export class UserAreaRootComponent extends SubManager implements OnInit, OnDestr
       this.dataService.manualsData$
     ]).pipe(
       map(([modules, racks, patches, comments, manuals]) => [
-        {name: 'Modules', value: modules?.length ?? 0, icon: 'memory'},
-        {name: 'Racks', value: racks?.length ?? 0, icon: 'dashboard'},
-        {name: 'Patches', value: patches?.length ?? 0, icon: 'cable'},
-        {name: 'Comments', value: comments?.length ?? 0, icon: 'chat'},
-        {name: 'Manual links', value: manuals?.length ?? 0, icon: 'menu_book'}
+        {name: 'Modules', value: modules?.length ?? 0, icon: 'view_module'},
+        {name: 'Racks', value: racks?.length ?? 0, icon: 'view_stream'},
+        {name: 'Patches', value: patches?.length ?? 0, icon: 'settings_input_composite'},
+        {name: 'Comments', value: comments?.length ?? 0, icon: 'comment'},
+        {name: 'Manual links', value: manuals?.length ?? 0, icon: 'book'}
       ])
     );
 
     this.contributorStats$ = this.dataService.contributorStats$.pipe(
       map((stats: CurrentUserContributorStats | undefined) => stats
         ? [
-          {name: 'Modules submitted', value: stats.modulesSubmitted, icon: 'upload_file'},
+          {name: 'Modules submitted', value: stats.modulesSubmitted, icon: 'upload'},
           {name: 'Approved modules', value: stats.approvedModules, icon: 'check_circle'},
           {name: 'Pending review', value: stats.pendingModules, icon: 'schedule'},
-          {name: 'Comments posted', value: stats.commentsPosted, icon: 'chat'},
-          {name: 'Issue reports', value: stats.moduleFlagsSubmitted, icon: 'report'}
+          {name: 'Comments posted', value: stats.commentsPosted, icon: 'comment'},
+          {name: 'Issue reports', value: stats.moduleFlagsSubmitted, icon: 'bug_report'}
         ]
         : null
       )
@@ -131,6 +129,12 @@ export class UserAreaRootComponent extends SubManager implements OnInit, OnDestr
 
   publicProfilePath(username: string): string {
     return `/u/${ username }`;
+  }
+
+  profileVisibilityDescription(isPublic: boolean): string {
+    return isPublic
+      ? 'Public profile is visible to everyone.'
+      : 'Public profile is hidden from visitors.';
   }
 
   toggleProfileVisibility(isPublic: boolean): void {

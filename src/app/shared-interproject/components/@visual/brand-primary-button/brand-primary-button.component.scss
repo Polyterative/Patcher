@@ -18,88 +18,44 @@
 
   font-family: Roboto, Helvetica Neue, sans-serif;
   padding: 0 1rem;
-
-  //font-weight: bolder;
   text-transform: uppercase;
-  //font-weight: bolder;
-  //letter-spacing: 0.06rem;
-  //color: white;
   background-color: white;
   color: $brand-primary;
   border: 0.2rem solid $brand-primary;
-  //border-radius:    0;
 
-  transition: 125ms;
+  transition: 160ms ease;
 
   &:hover {
     background-color: $brand-secondary !important;
     color: white !important;
-    //border:           0.2rem solid white !important;
-    //border: 0.2rem solid rgba(4, 30, 80, 0);
   }
 
   &.error {
-    //background-color: $brand-secondary !important;
     color: rgba(255, 255, 255, 0.81) !important;
-    //border: 0.2rem solid rgba(4, 30, 80, 0);
-    //border:           0.2rem solid $brand-secondary;
     border: 0.2rem solid $brand-error !important;
     cursor: not-allowed;
   }
 
-
   &.warning {
-    background-color: $brand-warning-background;
-    color: $brand-warning;
-    //border: 0.2rem solid rgba(4, 30, 80, 0);
-    //border:           0.2rem solid $brand-secondary;
-    border: 0.2rem solid $brand-warning;
-    //cursor:           ;
+    background: rgba(255, 239, 214, 0.9);
+    color: color.scale($brand-warning, $lightness: -18%, $saturation: +10%);
+    border: 0.2rem solid rgba($brand-warning, 0.34);
+    box-shadow: 0 0.375rem 1rem rgba($brand-warning, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+
+    &:hover {
+      background: rgba(255, 229, 190, 0.96) !important;
+      color: color.scale($brand-warning, $lightness: -24%, $saturation: +12%) !important;
+      border-color: rgba($brand-warning, 0.5);
+      box-shadow: 0 0.625rem 1.2rem rgba($brand-warning, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.78);
+      transform: translateY(-0.0625rem);
+    }
   }
 
-  &.positive {
-    background-color: $brand-positive-background;
-    color: $brand-positive;
-    //border: 0.2rem solid rgba(4, 30, 80, 0);
-    //border:           0.2rem solid $brand-secondary;
-    border: 0.2rem solid $brand-positive;
-    //cursor:           not-allowed;
-  }
+  &.positive { background-color: $brand-positive-background; color: $brand-positive; border: 0.2rem solid $brand-positive; }
 
-  &.negative {
-    background-color: $brand-negative-background;
-    color: $brand-negative;
-    //border: 0.2rem solid rgba(4, 30, 80, 0);
-    //border:           0.2rem solid $brand-secondary;
-    border: 0.2rem solid $brand-negative;
-    //cursor:           not-allowed;
-  }
+  &.negative { background-color: $brand-negative-background; color: $brand-negative; border: 0.2rem solid $brand-negative; }
 
+  &.light { color: $brand-secondary; border: 0.2rem solid $brand-secondary; }
 
-  &.light {
-    //background-color: white;
-    color: $brand-secondary;
-    border: 0.2rem solid $brand-secondary;
-    //border: 0.2rem solid rgba(4, 30, 80, 0);
-    //border:           0.2rem solid $brand-secondary;
-    //border:           0.2rem solid $brand-secondary;
-    //cursor:           not-allowed;
-    //opacity: 0.25;
-
-    //&:hover {
-    //  opacity: 1;
-    //}
-  }
-
-
-  &.disabled {
-    background-color: color.adjust($brand-secondary, $lightness: 20%);
-    color: rgba(255, 255, 255, 0.81);
-    //border: 0.2rem solid rgba(4, 30, 80, 0);
-    //border:           0.2rem solid $brand-secondary;
-    border: 0.2rem solid white;
-    cursor: not-allowed;
-  }
-
-
+  &.disabled { background-color: color.adjust($brand-secondary, $lightness: 20%); color: rgba(255, 255, 255, 0.81); border: 0.2rem solid white; cursor: not-allowed; }
 }

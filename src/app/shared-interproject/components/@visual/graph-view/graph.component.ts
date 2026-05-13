@@ -16,41 +16,10 @@ import FA2LayoutSupervisor, { FA2LayoutSupervisorParameters } from 'graphology-l
 
 import { Sigma } from 'sigma';
 import { GraphViewService } from './graph-view.service';
+import { GraphComponentState, GraphEdge, GraphNode } from './graph.types';
+import { interpolateColor, renderNodeLabel } from './graph.utils';
 
-
-export interface GraphNode {
-  id: string;
-  size: number;
-  label: string;
-  color: string;
-  data?: any;
-  x: number;
-  y: number;
-}
-
-export interface GraphEdge {
-  id: string;
-  label: string;
-  from: string;
-  to: string;
-  color: string;
-  size: number;
-  weight?: number;
-  type: 'arrow' | 'curve' | 'line';
-  data?: any;
-}
-
-interface State {
-  hoveredNode?: string;
-  searchQuery: string;
-
-  // State derived from query:
-  selectedNode?: string;
-  suggestions?: Set<string>;
-
-  // State derived from hovered node:
-  hoveredNeighbors?: Set<string>;
-}
+export type { GraphNode, GraphEdge } from './graph.types';
 
 @Component({
   selector: 'lib-graph',
@@ -65,7 +34,7 @@ export class GraphComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   @ViewChild('container') container: ElementRef | null = null;
 
-  state: State = {searchQuery: ''};
+  state: GraphComponentState = {searchQuery: ''};
 
   @Input('graph') graph: Graph = new Graph({
     type: 'directed',
@@ -136,7 +105,7 @@ export class GraphComponent implements AfterViewInit, OnChanges, OnDestroy {
         hideEdgesOnMove: false,
         labelGridCellSize: 10,
         labelRenderedSizeThreshold: 9,
-        labelRenderer: this.renderNodeLabel
+        labelRenderer: renderNodeLabel
       });
       
       this.viewReady = true;
@@ -427,10 +396,10 @@ export class GraphComponent implements AfterViewInit, OnChanges, OnDestroy {
       let flairSize = baseSize;
       
       if (isStart) {
-        flairColor = this.interpolateColor(baseColor, '#FFE888', 0.66);
+        flairColor = interpolateColor(baseColor, '#FFE888', 0.66);
         flairSize = baseSize * 1.28;
       } else if (isEnd) {
-        flairColor = this.interpolateColor(baseColor, '#D6EBFF', 0.66);
+          flairColor = interpolateColor(baseColor, '#D6EBFF', 0.66);
         flairSize = baseSize * 1.28;
       }
       
@@ -522,97 +491,6 @@ export class GraphComponent implements AfterViewInit, OnChanges, OnDestroy {
     }
   }
   
-  private interpolateColor(fromColor: string, toColor: string, weight: number): string {
-    const from = this.parseColor(fromColor);
-    const to = this.parseColor(toColor);
-    const t = Math.max(0, Math.min(1, weight));
-    const r = Math.round(from.r + (to.r - from.r) * t);
-    const g = Math.round(from.g + (to.g - from.g) * t);
-    const b = Math.round(from.b + (to.b - from.b) * t);
-    return `rgb(${ r }, ${ g }, ${ b })`;
-  }
-  
-  private parseColor(color: string): {
-    r: number,
-    g: number,
-    b: number
-  } {
-    const value = color.trim();
-    if (value.startsWith('#')) {
-      const hex = value.replace('#', '');
-      const normalized = hex.length === 3
-        ? hex.split('').map(char => char + char).join('')
-        : hex;
-      const parsed = Number.parseInt(normalized, 16);
-      return {
-        r: (parsed >> 16) & 255,
-        g: (parsed >> 8) & 255,
-        b: parsed & 255
-      };
-    }
-    
-    const rgbMatch = value.match(/rgb\s*\(\s*(\d+),\s*(\d+),\s*(\d+)\s*\)/i);
-    if (rgbMatch) {
-      return {
-        r: Number.parseInt(rgbMatch[1], 10),
-        g: Number.parseInt(rgbMatch[2], 10),
-        b: Number.parseInt(rgbMatch[3], 10)
-      };
-    }
-    
-    return {r: 128, g: 128, b: 128};
-  }
-  
-  private renderNodeLabel(
-    context: CanvasRenderingContext2D,
-    data: {
-      x: number,
-      y: number,
-      size: number,
-      label?: string,
-      color?: string
-    },
-    settings: {
-      labelSize: number,
-      labelFont: string,
-      labelWeight: string,
-      labelColor: {
-        attribute?: string,
-        color?: string
-      }
-    }
-  ): void {
-    if (!data?.label) {
-      return;
-    }
-    
-    const size = settings.labelSize;
-    const font = settings.labelFont;
-    const weight = settings.labelWeight;
-    const labelColorAttribute = settings.labelColor?.attribute;
-    const color = labelColorAttribute
-      ? ((data as Record<string, unknown>)[labelColorAttribute] as string)
-      || settings.labelColor?.color
-      || '#111111'
-      : settings.labelColor?.color ?? '#111111';
-    const xOffset = Math.max(10, data.size * 0.85);
-    const x = data.x + data.size + xOffset;
-    const y = data.y + size / 3;
-    
-    context.save();
-    context.font = `${ weight } ${ size }px ${ font }`;
-    context.textAlign = 'left';
-    context.textBaseline = 'alphabetic';
-    // Subtle halo keeps labels readable when arrows run close to nodes.
-    context.lineWidth = Math.max(2, size * 0.32);
-    context.strokeStyle = 'rgba(255, 255, 255, 0.82)';
-    context.lineJoin = 'round';
-    context.strokeText(data.label, x, y);
-    context.fillStyle = color;
-    context.fillText(data.label, x, y);
-    context.restore();
-  }
-
   private computeLayoutRuntimeMs(): number {
     const complexity = this.graph.order + this.graph.size;
     return Math.max(1200, Math.min(3200, 900 + complexity * 15));

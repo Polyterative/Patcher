@@ -1,5 +1,6 @@
 import {
   expect,
+  Page,
   test
 } from '@playwright/test';
 
@@ -46,7 +47,7 @@ test.describe('Navigation', () => {
   });
 });
 
-async function assertAuthTitleFits(page: Parameters<typeof test>[0]['page'], path: string, expectedTitle: RegExp): Promise<void> {
+async function assertAuthTitleFits(page: Page, path: string, expectedTitle: RegExp): Promise<void> {
   await page.setViewportSize({width: 360, height: 740});
   await page.goto(path);
 

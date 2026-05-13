@@ -4,6 +4,9 @@
    [class]="'brand-button'+' '+theme"
    [disabled]="disabled||error"
    [ngClass]='{"disabled": disabled, "error": error }'
+   [matTooltip]="tooltip"
+   [matTooltipDisabled]="!tooltip"
+   [matTooltipPosition]="tooltipPosition"
    [cdkTrapFocus]="autoFocus"
    (click)="disabled?doNothing():click$.emit()"
 >

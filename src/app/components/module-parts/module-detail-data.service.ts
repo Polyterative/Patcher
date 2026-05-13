@@ -5,6 +5,7 @@ import {
   delay,
   EMPTY,
   merge,
+  Observable,
   of,
   ReplaySubject,
   Subject
@@ -29,35 +30,42 @@ import { MatDialog } from "@angular/material/dialog";
 import { AppStateService } from "src/app/shared-interproject/app-state.service";
 import { Router } from "@angular/router";
 import { SharedConstants } from "src/app/shared-interproject/SharedConstants";
+import {
+  HiddenUsageBucket,
+  ModuleUsageSummary
+} from './module-detail-data.models';
+
+export type { HiddenUsageBucket, ModuleUsageSummary } from './module-detail-data.models';
 
 
 @Injectable()
 export class ModuleDetailDataService implements OnDestroy {
-  updateSingleModuleData$ = new ReplaySubject<number>();
-  singleModuleData$ = new BehaviorSubject<DbModule | null>(null);
+  readonly updateSingleModuleData$ = new ReplaySubject<number>();
+  readonly singleModuleData$ = new BehaviorSubject<DbModule | null>(null);
   //
-  moduleEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
-  moduleEditorHasPendingChanges$ = new BehaviorSubject<boolean>(false);
-  userModulesList$: BehaviorSubject<DbModule[]> = new BehaviorSubject<DbModule[]>([]);
+  readonly moduleEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
+  readonly moduleEditorHasPendingChanges$ = new BehaviorSubject<boolean>(false);
+  readonly userModulesList$: BehaviorSubject<DbModule[]> = new BehaviorSubject<DbModule[]>([]);
   // modulePatchesList$: BehaviorSubject<Patch[]> = new BehaviorSubject<Patch[]>([]);
-  addModuleToCollection$ = new Subject<number>();
-  requestAddModuleToRack$ = new Subject<DbModule>();
-  removeModuleFromCollection$ = new Subject<number>();
-  copyModuleNameAndManufacturer$ = new Subject<void>();
+  readonly addModuleToCollection$ = new Subject<number>();
+  readonly requestAddModuleToRack$ = new Subject<DbModule>();
+  readonly removeModuleFromCollection$ = new Subject<number>();
+  readonly copyModuleNameAndManufacturer$ = new Subject<void>();
   //
-  racksWithThisModule$ = new BehaviorSubject<RackMinimal[] | undefined>(undefined);
-  patchesWithThisModule$ = new BehaviorSubject<PatchMinimal[] | undefined>(undefined);
-  modulesBySameManufacturer$ = new BehaviorSubject<DbModule[] | undefined>(undefined);
+  readonly racksWithThisModule$ = new BehaviorSubject<RackMinimal[] | undefined>(undefined);
+  readonly patchesWithThisModule$ = new BehaviorSubject<PatchMinimal[] | undefined>(undefined);
+  readonly moduleUsageSummary$ = new BehaviorSubject<ModuleUsageSummary | undefined>(undefined);
+  readonly modulesBySameManufacturer$ = new BehaviorSubject<DbModule[] | undefined>(undefined);
   //
-  deleteModule$ = new Subject<number>();
-  deleteModuleAndOrphanManufacturer$ = new Subject<DbModule>();
-  deleteLastPanel$ = new Subject<DbModule>();
-  changeModule$ = new Subject<Partial<DbModule>>();
-  setStoreUrl$ = new Subject<{ id: number; url: string | null }>();
+  readonly deleteModule$ = new Subject<number>();
+  readonly deleteModuleAndOrphanManufacturer$ = new Subject<DbModule>();
+  readonly deleteLastPanel$ = new Subject<DbModule>();
+  readonly changeModule$ = new Subject<Partial<DbModule>>();
+  readonly setStoreUrl$ = new Subject<{ id: number; url: string | null }>();
   /** Toggle the module editing panel open/closed through the service layer. */
-  requestModuleEditingToggle$ = new Subject<void>();
-  isAdmin$ = new BehaviorSubject<boolean>(false);
-  protected destroyEvent$ = new Subject<void>();
+  readonly requestModuleEditingToggle$ = new Subject<void>();
+  readonly isAdmin$ = new BehaviorSubject<boolean>(false);
+  protected readonly destroyEvent$ = new Subject<void>();
   
   constructor(
     public dialog: MatDialog,
@@ -76,10 +84,7 @@ export class ModuleDetailDataService implements OnDestroy {
     // when delete of the latest panel is requested, perform the deletion
     this.deleteLastPanel$
       .pipe(
-        switchMap(module => this.backend.auth.hasAdminRole$().pipe(
-          take(1),
-          switchMap(isAdmin => (this.appState.isDev || isAdmin) ? of(module) : EMPTY)
-        )),
+        switchMap(module => this.requiresAdminOrDev(module)),
         map((x) => x.panels.sort((a, b) => a.id - b.id).pop()!),
         switchMap(x => this.backend.delete.modulePanel(x)),
         takeUntil(this.destroyEvent$)
@@ -133,7 +138,7 @@ export class ModuleDetailDataService implements OnDestroy {
         switchMap(x => this.backend.get.racksWithModule(x)),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(x => this.racksWithThisModule$.next(x.data.map(y => y.rack)));
+      .subscribe(x => this.racksWithThisModule$.next((x.data ?? []).map(y => y.rack)));
     
     // get patches with this module
     this.updateSingleModuleData$
@@ -144,6 +149,15 @@ export class ModuleDetailDataService implements OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(x => this.patchesWithThisModule$.next(x));
+
+    this.updateSingleModuleData$
+      .pipe(
+        tap(() => this.moduleUsageSummary$.next(undefined)),
+        delay(175),
+        switchMap(x => this.backend.get.moduleUsageSummary(x)),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(summary => this.moduleUsageSummary$.next(summary));
     
     // get modules by same manufacturer
     this.singleModuleData$
@@ -204,10 +218,10 @@ export class ModuleDetailDataService implements OnDestroy {
     
     this.singleModuleData$.pipe(
       filter(x => !!x),
-      switchMap(x => this.userService.loggedUser$.pipe(withLatestFrom(of(x)))),
+      switchMap(() => this.userService.loggedUser$),
       takeUntil(this.destroyEvent$)
     )
-      .subscribe(([user, module]) => {
+      .subscribe(user => {
         if (user) {
           this.moduleEditingPanelOpenState$.next(false);
         }
@@ -216,10 +230,7 @@ export class ModuleDetailDataService implements OnDestroy {
     this.deleteModule$
       .pipe(
         filter(x => x > 0),
-        switchMap(id => this.backend.auth.hasAdminRole$().pipe(
-          take(1),
-          switchMap(isAdmin => (this.appState.isDev || isAdmin) ? of(id) : EMPTY)
-        )),
+        switchMap(id => this.requiresAdminOrDev(id)),
         withLatestFrom(this.singleModuleData$),
         switchMap(([x, module]) => this.backend.delete.module(x).pipe(map(() => module))),
         takeUntil(this.destroyEvent$)
@@ -232,10 +243,7 @@ export class ModuleDetailDataService implements OnDestroy {
     this.deleteModuleAndOrphanManufacturer$
       .pipe(
         filter(module => !!module?.id),
-        switchMap(module => this.backend.auth.hasAdminRole$().pipe(
-          take(1),
-          switchMap(isAdmin => (this.appState.isDev || isAdmin) ? of(module) : EMPTY)
-        )),
+        switchMap(module => this.requiresAdminOrDev(module)),
         switchMap(module => this.backend.get.modulesBySameManufacturer(module.manufacturerId, 0, 20, 'id,manufacturerId').pipe(
           map(modules => ({
             module,
@@ -267,10 +275,7 @@ export class ModuleDetailDataService implements OnDestroy {
     
     this.changeModule$
       .pipe(
-        switchMap(partial => this.backend.auth.hasAdminRole$().pipe(
-          take(1),
-          switchMap(isAdmin => (this.appState.isDev || isAdmin) ? of(partial) : EMPTY)
-        )),
+        switchMap(partial => this.requiresAdminOrDev(partial)),
         withLatestFrom(this.singleModuleData$),
         switchMap(([partial, original]) => this.backend.update.module({...original, ...partial}).pipe(map(() => ({...original, ...partial})))),
         takeUntil(this.destroyEvent$)
@@ -310,6 +315,13 @@ export class ModuleDetailDataService implements OnDestroy {
   ngOnDestroy(): void {
     this.destroyEvent$.next();
     this.destroyEvent$.complete();
-    
+  }
+
+  /** Emits `value` only when the current user is an admin or the app is running in dev mode; otherwise completes silently. */
+  private requiresAdminOrDev<T>(value: T): Observable<T> {
+    return this.backend.auth.hasAdminRole$().pipe(
+      take(1),
+      switchMap(isAdmin => (this.appState.isDev || isAdmin) ? of(value) : EMPTY)
+    );
   }
 }

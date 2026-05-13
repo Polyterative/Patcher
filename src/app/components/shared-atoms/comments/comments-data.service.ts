@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import {
   FormControl,
+  UntypedFormControl,
   Validators
 } from '@angular/forms';
 import {
@@ -38,7 +39,7 @@ export class CommentsDataService extends SubManager {
     submit: {
       code: string;
       flex: string;
-      control: FormControl<any>;
+      control: UntypedFormControl;
       label: string;
       type: FormTypes
     }

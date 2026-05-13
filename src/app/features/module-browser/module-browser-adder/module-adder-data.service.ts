@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import {
-  FormControl,
   FormGroup,
   UntypedFormControl,
   UntypedFormGroup,
@@ -46,6 +45,7 @@ import { plainSanitize } from "src/app/shared-interproject/components/@smart/mat
 import { normalizeForSearch } from "src/app/shared-interproject/components/@smart/mat-form-entity/string-utils";
 import { Router } from "@angular/router";
 import { SharedConstants } from "src/app/shared-interproject/SharedConstants";
+import { ModuleAdderFormData } from './module-adder-data.models';
 
 
 @Injectable()
@@ -55,6 +55,13 @@ export class ModuleAdderDataService extends SubManager {
   updateModulesList$ = new Subject<void>();
   //
   submitModuleForm$  = new Subject<void>();
+  submitSuccess$     = new Subject<{
+    name: string;
+    manufacturer?: string;
+    hp?: number;
+    standard?: string;
+    isDIY?: boolean;
+  }>();
 
   // Inline manufacturer creation
   showNewManufacturerForm$ = new BehaviorSubject<boolean>(false);
@@ -67,73 +74,9 @@ export class ModuleAdderDataService extends SubManager {
   ]));
   createManufacturer$ = new Subject<void>();
 
-  private _manufacturerOptions$ = new BehaviorSubject<{ id: string; name: string }[]>([]);
+  private readonly _manufacturerOptions$ = new BehaviorSubject<{ id: string; name: string }[]>([]);
   
-  formData: {
-    standard: {
-      code: string;
-      flex: string;
-      control: FormControl<any>;
-      label: string;
-      options$: Observable<any[] | {
-        name: string;
-        id: number
-      }[]>;
-      type: FormTypes
-    };
-    diy: {
-      code: string;
-      flex: string;
-      hint: string;
-      control: FormControl<any>;
-      label: string;
-      options$: Observable<({
-        name: string;
-        id: string
-      })[]>;
-      type: FormTypes
-    };
-    name: {
-      code: string;
-      flex: string;
-      hint: string;
-      control: FormControl<any>;
-      label: string;
-      type: FormTypes
-    };
-    hp: {
-      code: string;
-      flex: string;
-      control: FormControl<any>;
-      label: string;
-      type: FormTypes
-    };
-    description: {
-      code: string;
-      flex: string;
-      hint: string;
-      control: FormControl<any>;
-      label: string;
-      type: FormTypes
-    };
-    manual: {
-      code: string;
-      flex: string;
-      hint: string;
-      control: FormControl<any>;
-      label: string;
-      type: FormTypes
-    };
-    manufacturer: {
-      code: string;
-      flex: string;
-      hint: string;
-      control: FormControl<any>;
-      label: string;
-      type: FormTypes;
-      options$: Observable<any>
-    }
-  };
+  formData: ModuleAdderFormData;
   
   formGroup: FormGroup;
   
@@ -262,7 +205,7 @@ export class ModuleAdderDataService extends SubManager {
     
     // load manufacturers into options BehaviorSubject
     this.backend.GET.manufacturers(0, 99999, 'id,name').pipe(
-      map(x => x.data.map(z => ({ id: z.id.toString(), name: z.name }))),
+      map(x => (x.data ?? []).map(z => ({ id: z.id.toString(), name: z.name }))),
       takeUntil(this.destroy$)
     ).subscribe(opts => this._manufacturerOptions$.next(opts));
 
@@ -276,7 +219,7 @@ export class ModuleAdderDataService extends SubManager {
       .subscribe(x => {
         this.formData.standard.control.enable();
         
-        const found: any = x.find(y => `${ y.id }` === '0');
+        const found = x.find(y => `${ y.id }` === '0');
         if (found) {
           this.formData.standard.control.setValue(found);
         }
@@ -322,7 +265,12 @@ export class ModuleAdderDataService extends SubManager {
       .pipe(
         tap(() => this.similarModulesData$.next(undefined)),
         filter(() => this.formData.name.control.value.length > 0 || !!this.formData.manufacturer.control.value),
-        switchMap(() => this.backend.GET.modules(0, (10) - 1, this.formData.name.control.value, undefined, undefined, parseInt(getCleanedValueId(this.formData.manufacturer.control)), undefined, undefined, undefined, undefined, false)),
+        switchMap(() => this.backend.GET.modules(0, (10) - 1, this.formData.name.control.value, undefined, undefined, parseInt(getCleanedValueId(this.formData.manufacturer.control)), undefined, undefined, undefined, undefined, false)
+          .pipe(catchError(error => {
+            console.error('Failed to search similar modules:', error);
+            SharedConstants.errorCustom(this.snackBar, 'Failed to search similar modules');
+            return of({data: []});
+          }))),
         takeUntil(this.destroy$)
       )
       .subscribe(x => {
@@ -330,38 +278,13 @@ export class ModuleAdderDataService extends SubManager {
       });
     
     // when user submits the form, we need to add the module on the server
+    // confirmation is handled inline (armed-state button), so no dialog here
     this.submitModuleForm$
       .pipe(
-        switchMap(x => {
-          
-          const data: ConfirmDialogDataInModel = {
-            title: 'Submit this module?',
-            description: 'Once submitted, your module will be queued for review. Make sure all information is correct before continuing.',
-            positive:    {
-              label: 'Submit',
-              theme: 'primary'
-            }
-          };
-          
-          return this.dialog.open(
-            ConfirmDialogComponent,
-            {
-              data,
-              disableClose: false
-            }
-          )
-            .afterClosed()
-            .pipe(
-              tap((x: ConfirmDialogDataOutModel) => {
-                if (!x?.answer) SharedConstants.infoCustom(this.snackBar, 'No changes made.');
-              }),
-              filter((x: ConfirmDialogDataOutModel) => x && x.answer)
-            );
-        }),
         tap(() => this.similarModulesData$.next(undefined)),
         map(() => {
           const manualValue    = this.formData.manual.control.value;
-          const manualURL: any = manualValue && manualValue.length > 'https://'.length ? manualValue : undefined;
+          const manualURL: string | undefined = manualValue && manualValue.length > 'https://'.length ? manualValue : undefined;
           
           return {
             name: plainSanitize(this.formData.name.control.value),
@@ -371,13 +294,13 @@ export class ModuleAdderDataService extends SubManager {
             standard: parseInt(this.formData.standard.control.value.id),
             manualURL: plainSanitize(manualURL),
             isApproved: false,
+            isComplete: false,
             isDIY: this.formData.diy.control.value.id === '1',
             public: true
           };
           
         }),
-        filter(x => !!x),
-        switchMap((x: any) => this.backend.add.modules([x]).pipe(
+        switchMap((x) => this.backend.add.modules([x as any]).pipe(
           map(() => x),
           catchError(() => {
             SharedConstants.errorCustom(this.snackBar, 'Failed to submit module. Please try again.');
@@ -388,28 +311,36 @@ export class ModuleAdderDataService extends SubManager {
       )
       .subscribe((module) => {
         
+        // capture display values from the form BEFORE resetting it
+        const mfrCtl = this.formData.manufacturer.control.value;
+        const stdCtl = this.formData.standard.control.value;
+        const diyCtl = this.formData.diy.control.value;
+        const recap = {
+          name: module.name,
+          manufacturer: (mfrCtl && mfrCtl.name) || undefined,
+          hp: parseInt(this.formData.hp.control.value) || undefined,
+          standard: (stdCtl && stdCtl.name) || undefined,
+          isDIY: !!(diyCtl && diyCtl.id === '1')
+        };
+        
         this.formData.name.control.setValue('');
         this.formData.description.control.setValue('');
         this.formData.manual.control.setValue('');
         this.formData.hp.control.setValue('');
         
-        // inform user that the module was added
-        this.snackBar.open(
-          `"${ module.name }" submitted and published to the community.`,
-          '',
-          {
-            duration: 7000,
-            panelClass: 'snack-success'
-          });
+        // trigger celebration overlay in the component
+        this.submitSuccess$.next(recap);
         
-        // navigate to the module browser page
-        this.router.navigate(
-          ['/modules', 'browser'],
-          {
-            queryParams: {refresh: true},
-            queryParamsHandling: 'merge' // This keeps existing query parameters and merges the new one.
-          }
-        );
+        // let the celebration play before navigating away
+        setTimeout(() => {
+          this.router.navigate(
+            ['/modules', 'browser'],
+            {
+              queryParams: {refresh: true},
+              queryParamsHandling: 'merge'
+            }
+          );
+        }, 4000);
       });
 
     // when user requests to create a new manufacturer inline

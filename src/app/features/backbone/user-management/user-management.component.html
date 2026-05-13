@@ -1,145 +1,147 @@
-<lib-screen-wrapper maxSize="40rem">
+<lib-screen-wrapper sizePreset="full-bleed">
   <div class="account-shell col gap1"
   >
-    <lib-hero-content-card titleBig="Account management"
-                           icon="manage_accounts"
-                           class="userBG account-card"
-    >
-      <div class="account-content col gap2"
+    @if ({
+      userProfile:(userManagementService.loggedUserFullProfile$|async),
+      user:(userManagementService.loggedUser$|async)
+    }; as bag) {
+      <!-- Reapply `userBG` here if we want the warmer private/account hero gradient back. -->
+      <lib-hero-content-card titleBig="Account management"
+                             [titleSub]="bag.userProfile?.username"
+                             [showWideShellNav]="true"
+                             icon="manage_accounts"
+                             class="account-card"
       >
-        <p class="account-subtitle">Manage your profile details and security settings in one place.</p>
-        
-        @if ({
-          userProfile:(userManagementService.loggedUserFullProfile$|async),
-          user:(userManagementService.loggedUser$|async)
-        }; as bag) {
-          @if (bag.user && bag.userProfile) {
-            <div class="col gap1 account-sections"
-            >
-              <app-brand-primary-button fxFlex="100"
-                                        innerFlex="fill"
-                                        icon="logout"
-                                        class="logout-button"
-                                        (click$)="userManagementService.logoff$()"
-                                        theme="warning"
-              >Logout
-              </app-brand-primary-button>
-              <div class="row gap1 section-surface" fxLayoutAlign="start center">
-                <app-label-value-showcase label="Display Name"
-                                          fxFlex="grow"
-                >{{ bag.userProfile.username }}
-                </app-label-value-showcase>
-              </div>
-              <div class="section-surface">
-                <app-label-value-showcase label="Email Address">{{ bag.userProfile.email }}</app-label-value-showcase>
-              </div>
-              <!-- SSO badge: shown for every non-email provider the account has linked -->
-              @for (provider of (bag.userProfile.auth_providers || []); track provider) {
-                @if (provider !== 'email') {
-                  <div class="section-surface">
-                    <app-label-value-showcase label="Linked sign-in">
-                      {{ provider | titlecase }}
+        @if (bag.user && bag.userProfile) {
+          <div class="account-content col gap2"
+          >
+            <div class="account-surface">
+              <div class="account-body">
+                <div class="col gap1 account-sections"
+                >
+                  <div class="row gap1 section-surface" fxLayoutAlign="start center">
+                    <app-label-value-showcase label="Display Name"
+                                              fxFlex="grow"
+                    >{{ bag.userProfile.username }}
                     </app-label-value-showcase>
                   </div>
-                }
-              }
-              <!-- Password section: only shown for pure email/password accounts (no OAuth providers linked) -->
-              @if (isEmailOnlyAccount(bag.userProfile.auth_providers) && (userManagementService.showPasswordForm$ | async)) {
-                <form class="col gap1 section-surface"
-                      [formGroup]="passwordForm"
-                      (ngSubmit)="submitPasswordChange()"
-                >
-                  <mat-form-field appearance="outline">
-                    <mat-label>New password</mat-label>
-                    <input matInput
-                           type="password"
-                           formControlName="newPassword"
-                           autocomplete="new-password"
-                    >
-                    <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('required')">Password is required
-                    </mat-error>
-                    <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('minlength')">At least 8 characters
-                      required
-                    </mat-error>
-                  </mat-form-field>
-                  <mat-form-field appearance="outline">
-                    <mat-label>Confirm new password</mat-label>
-                    <input matInput
-                           type="password"
-                           formControlName="confirmPassword"
-                           autocomplete="new-password"
-                    >
-                    <mat-error *ngIf="passwordForm.get('confirmPassword')?.hasError('required')">Confirm password is
-                      required
-                    </mat-error>
-                    <mat-error
-                      *ngIf="passwordForm.hasError('confirmMismatch') && passwordForm.get('confirmPassword')?.touched">
-                      Passwords do not match
-                    </mat-error>
-                  </mat-form-field>
-                  <div class="row gap1">
-                    <button mat-raised-button
-                            class="primary-action"
-                            color="primary"
-                            type="submit"
-                            [disabled]="passwordForm.invalid"
-                    >
-                      <mat-icon>check_circle</mat-icon>
-                      Save new password
-                    </button>
-                    <button mat-stroked-button
-                            type="button"
-                            (click)="userManagementService.togglePasswordForm$.next(false); passwordForm.reset()"
-                    >
-                      <mat-icon>close</mat-icon>
-                      Cancel
-                    </button>
+                  <div class="section-surface">
+                    <app-label-value-showcase label="Email Address">{{ bag.userProfile.email }}</app-label-value-showcase>
                   </div>
-                </form>
-              } @else if (isEmailOnlyAccount(bag.userProfile.auth_providers)) {
-                <div class="row gap1 section-surface" fxLayoutAlign="start center">
-                  <app-label-value-showcase label="Password"
-                                            fxFlex="grow"
-                  >••••••••
-                  </app-label-value-showcase>
+                  <!-- SSO badge: shown for every non-email provider the account has linked -->
+                  @for (provider of (bag.userProfile.auth_providers || []); track provider) {
+                    @if (provider !== 'email') {
+                      <div class="section-surface">
+                        <app-label-value-showcase label="Linked sign-in">
+                          {{ provider | titlecase }}
+                        </app-label-value-showcase>
+                      </div>
+                    }
+                  }
+                  <!-- Password section: only shown for pure email/password accounts (no OAuth providers linked) -->
+                  @if (isEmailOnlyAccount(bag.userProfile.auth_providers) && (userManagementService.showPasswordForm$ | async)) {
+                    <form class="col gap1 section-surface"
+                          [formGroup]="passwordForm"
+                          (ngSubmit)="submitPasswordChange()"
+                    >
+                      <mat-form-field appearance="outline">
+                        <mat-label>New password</mat-label>
+                        <input matInput
+                               type="password"
+                               formControlName="newPassword"
+                               autocomplete="new-password"
+                        >
+                        <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('required')">Password is required
+                        </mat-error>
+                        <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('minlength')">At least 8 characters
+                          required
+                        </mat-error>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline">
+                        <mat-label>Confirm new password</mat-label>
+                        <input matInput
+                               type="password"
+                               formControlName="confirmPassword"
+                               autocomplete="new-password"
+                        >
+                        <mat-error *ngIf="passwordForm.get('confirmPassword')?.hasError('required')">Confirm password is
+                          required
+                        </mat-error>
+                        <mat-error
+                          *ngIf="passwordForm.hasError('confirmMismatch') && passwordForm.get('confirmPassword')?.touched">
+                          Passwords do not match
+                        </mat-error>
+                      </mat-form-field>
+                      <div class="row gap1">
+                        <button mat-raised-button
+                                class="primary-action"
+                                color="primary"
+                                type="submit"
+                                [disabled]="passwordForm.invalid"
+                        >
+                          <mat-icon>check_circle</mat-icon>
+                          Save new password
+                        </button>
+                        <button mat-stroked-button
+                                type="button"
+                                (click)="userManagementService.togglePasswordForm$.next(false); passwordForm.reset()"
+                        >
+                          <mat-icon>close</mat-icon>
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  } @else if (isEmailOnlyAccount(bag.userProfile.auth_providers)) {
+                    <div class="row gap1 section-surface" fxLayoutAlign="start center">
+                      <app-label-value-showcase label="Password"
+                                                fxFlex="grow"
+                      >••••••••
+                      </app-label-value-showcase>
+                      <app-brand-primary-button
+                        (click$)="userManagementService.togglePasswordForm$.next(true)"
+                        icon="lock"
+                        matTooltip="Change your password directly without leaving this page"
+                        theme="primary"
+                      >Change
+                      </app-brand-primary-button>
+                    </div>
+                  }
+                  <div class="section-surface">
+                    <app-label-value-showcase label="Account Created On">{{ bag.user.created_at|timeago }}
+                    </app-label-value-showcase>
+                  </div>
+                  <div class="section-surface section-surface--id">
+                    <app-label-value-showcase label="Account ID (for support inquiries)">{{ bag.user.id }}
+                    </app-label-value-showcase>
+                  </div>
+                </div>
+
+                <div class="row gap1 danger-zone">
                   <app-brand-primary-button
-                    (click$)="userManagementService.togglePasswordForm$.next(true)"
-                    icon="lock"
-                    matTooltip="Change your password directly without leaving this page"
-                    theme="primary"
-                  >Change
+                                            (click$)="userManagementService.resetUserDataAction$.next()"
+                                            matTooltip="Delete your patches, racks, collections, and comments, but keep your account so you can start fresh."
+                                            theme="warning"
+                  >Delete my data
+                  </app-brand-primary-button>
+                  <app-brand-primary-button
+                                            (click$)="userManagementService.deleteAccountAction$.next()"
+                                            matTooltip="Permanently delete your account and all associated data. This cannot be undone."
+                                            theme="negative"
+                  >Delete my account
+                  </app-brand-primary-button>
+                  <app-brand-primary-button class="danger-zone__logout"
+                                            icon="logout"
+                                            (click$)="userManagementService.logoff$()"
+                                            theme="warning"
+                  >Logout
                   </app-brand-primary-button>
                 </div>
-              }
-              <div class="section-surface">
-                <app-label-value-showcase label="Account Created On">{{ bag.user.created_at|timeago }}
-                </app-label-value-showcase>
-              </div>
-              <div class="section-surface section-surface--id">
-                <app-label-value-showcase label="Account ID (for support inquiries)">{{ bag.user.id }}
-                </app-label-value-showcase>
               </div>
             </div>
-          }
+          </div>
         }
-        
-        <div class="row gap1 danger-zone">
-          <app-brand-primary-button
-                                    (click$)="userManagementService.resetUserDataAction$.next()"
-                                    matTooltip="Delete your patches, racks, collections, and comments, but keep your account so you can start fresh."
-                                    theme="warning"
-          >Delete my data
-          </app-brand-primary-button>
-          <app-brand-primary-button
-                                    (click$)="userManagementService.deleteAccountAction$.next()"
-                                    matTooltip="Permanently delete your account and all associated data. This cannot be undone."
-                                    theme="negative"
-          >Delete my account
-          </app-brand-primary-button>
-        </div>
-      
-      </div>
-    </lib-hero-content-card>
+      </lib-hero-content-card>
+    }
   
   </div>
   

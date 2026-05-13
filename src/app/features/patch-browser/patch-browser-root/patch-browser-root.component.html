@@ -2,7 +2,7 @@
 >
   <lib-hero-content-card titleBig="Patches"
                          class="patchesBG"
-                         description="Browse and discover patches, get inspired and exchange ideas"
+                         [showWideShellNav]="true"
   >
     <div class="sidebar-layout">
       
@@ -26,14 +26,10 @@
         ></lib-mat-form-entity>
         
         <div class="col gap1">
-          <button mat-stroked-button
-                  (click)="dataService.resetForm$.next()"
-                  [disabled]="!(dataService.canReset$ | async)"
-                  [matTooltip]="'Reset all filters'"
-          >
-            <mat-icon>refresh</mat-icon>
-            Reset filters
-          </button>
+          <app-browser-reset-filters-button
+            [canReset$]="dataService.canReset$"
+            (reset$)="dataService.resetForm$.next()"
+          ></app-browser-reset-filters-button>
         </div>
       
       </aside>
@@ -51,9 +47,11 @@
                        (page)="dataService.pageEvent$.next($event)"
                        showFirstLastButtons
         ></mat-paginator>
-        <lib-auto-content-loading-indicator [data$]="dataService.patchesList$"
-                                            [updateData$]="dataService.updatePatchesList$"
-        ></lib-auto-content-loading-indicator>
+        @if ((dataService.patchesList$ | async) !== null) {
+          <lib-auto-update-loading-indicator [data$]="dataService.patchesList$"
+                                             [updateData$]="dataService.updatePatchesList$"
+          ></lib-auto-update-loading-indicator>
+        }
       </div>
     
     </div>

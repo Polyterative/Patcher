@@ -7,6 +7,8 @@ import { ModuleAdderDataService } from './module-adder-data.service';
 
 
 describe('ModuleAdderDataService - Form Validation', () => {
+  let createdServices: ModuleAdderDataService[];
+
   function build() {
     const standards$ = new BehaviorSubject<any[]>([]);
     const backend = {
@@ -37,9 +39,18 @@ describe('ModuleAdderDataService - Form Validation', () => {
       snackBar,
       router
     );
+    createdServices.push(service);
     
     return {service, standards$, backend, dialog, snackBar, router};
   }
+
+  beforeEach(() => {
+    createdServices = [];
+  });
+
+  afterEach(() => {
+    createdServices.forEach((service) => service.ngOnDestroy());
+  });
   
   function fillRequired(service: ModuleAdderDataService) {
     service.formData.name.control.setValue('Maths');
@@ -182,21 +193,10 @@ describe('ModuleAdderDataService - Form Validation', () => {
     expect(service.formGroup.valid).toBeFalse();
   });
   
-  // ─── submission — dialog cancelled ───────────────────────────────────────────
-  
-  it('does not call backend add when confirmation dialog is cancelled', () => {
-    const {service, backend} = build(); // dialog returns {answer: false} by default
-    fillRequired(service);
-    service.submitModuleForm$.next();
-    expect(backend.add.modules).not.toHaveBeenCalled();
-  });
-  
-  it('does not navigate when confirmation dialog is cancelled', () => {
-    const {service, router} = build();
-    fillRequired(service);
-    service.submitModuleForm$.next();
-    expect(router.navigate).not.toHaveBeenCalled();
-  });
+  // ─── submission — confirmation is handled inline (armed button) ──────────
+  // The old dialog-based confirmation has been replaced by a two-stage
+  // "safety cover" button in the component; data-service now submits as soon
+  // as submitModuleForm$ emits.
   
   // ─── submission payload mapping ──────────────────────────────────────────────
   

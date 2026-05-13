@@ -129,6 +129,19 @@ export function createGetNamespace(
       remapErrors(),
       map((response: any) => (response.data ?? []) as Patch[])
     ),
+    moduleUsageSummary: (moduleid: number) => rxFrom(
+      supabase.rpc('get_module_usage_summary_bucketed', {
+        p_module_id: moduleid
+      })
+    ).pipe(
+      remapErrors(),
+      map((response: any) => response.data?.[0] ?? {
+        public_rack_count: 0,
+        hidden_rack_bucket: 'none',
+        public_patch_count: 0,
+        hidden_patch_bucket: 'none'
+      })
+    ),
     modulesBySameManufacturer: (manufacturerId: any, from = 0, to: number = defaultPag, columns = '*') => rxFrom(
       supabase.from(DbPaths.modules)
         .select(`${ columns },

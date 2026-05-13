@@ -14,22 +14,19 @@
 
 
 <ng-template #content>
-  <div class="col gap1"
+  <div class="col gap1 section-shell"
   >
     @if (!(userModulesComponentViewConfig.hideAddModulesButton)) {
-      <div class="row gap1 auto-left"
-      >
+      <div class="row gap1 auto-left section-actions">
         <app-brand-primary-button appDiscoveryTipAnchor="user-area-modules-submit"
                                   routerLink="/modules/add"
                                   icon="upload"
-                                  fxLayoutAlign="end"
         >Submit NEW
         </app-brand-primary-button>
         <app-brand-primary-button appDiscoveryTipAnchor="user-area-modules-add"
                                   routerLink="/modules/browser"
                                   (click$)="dataService.addModulesToCollection$.next()"
                                   icon="add"
-                                  fxLayoutAlign="end"
         >Add modules to collection
         </app-brand-primary-button>
       </div>
@@ -41,21 +38,34 @@
     >
       @if ((dataService.pagedModulesData$ | async); as data) {
         @if (data.length > 0) {
-          <app-module-list fxFlex="grow"
-                           [data$]="dataService.pagedModulesData$"
-                           [viewConfig]="modulesViewConfig"
-                           [showSearch]="false"
-                           [encloseVertically]="encloseVertically"
-          ></app-module-list>
+          <div class="section-scroll">
+            <app-module-list class="section-list"
+                             [data$]="dataService.pagedModulesData$"
+                             [viewConfig]="modulesViewConfig"
+                             [showSearch]="false"
+                             [encloseVertically]="encloseVertically"
+            ></app-module-list>
+          </div>
         } @else {
-          <div fxFlex="100">
-            <mat-card-subtitle fxLayoutAlign="center center">
-              @if (globalSearchQuery.trim()) {
-                No modules match "{{ globalSearchQuery.trim() }}".
-              } @else {
-                So far, you haven't added any modules to your collection. Try adding a few!
-              }
-            </mat-card-subtitle>
+          <div class="section-empty">
+            @if (globalSearchQuery.trim()) {
+              <app-empty-state-tips
+                [compact]="true"
+                icon="search_off"
+                title="No matches"
+                [copy]="'No modules in your collection match &quot;<strong>' + globalSearchQuery.trim() + '</strong>&quot;.'"
+              ></app-empty-state-tips>
+            } @else {
+              <app-empty-state-tips
+                icon="view_module"
+                title="Build your collection"
+                copy="Add the modules you own here so they're available when you build racks and patches."
+                [tips]="[
+                  { icon: 'add', html: 'Open a module from the library and hit the <strong>+ in the bottom-left</strong> to mark it as owned.' },
+                  { icon: 'upload', html: 'Missing one? <strong>Submit NEW</strong> to add it to Patcher.' }
+                ]"
+              ></app-empty-state-tips>
+            }
           </div>
         }
       }

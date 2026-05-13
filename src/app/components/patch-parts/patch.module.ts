@@ -12,6 +12,7 @@ import { TimeagoModule } from 'ngx-timeago';
 import { PatchConnectionModule } from 'src/app/components/patch-connection/patch-connection.module';
 import { PatchCreatorComponent } from 'src/app/components/patch-parts/patch-creator/patch-creator.component';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
+import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
 import { PatchDetailsComponent } from 'src/app/components/patch-parts/patch-details/patch-details.component';
 import { PatchEditorComponent } from 'src/app/components/patch-parts/patch-editor/patch-editor.component';
 import { PatchMinimalComponent } from 'src/app/components/patch-parts/patch-minimal/patch-minimal.component';
@@ -42,6 +43,7 @@ import { MatChipsModule } from "@angular/material/chips";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { LibShowcaseGridComponent } from 'src/app/components/rack-parts/rack-editor/lib-showcase-grid/lib-showcase-grid.component';
 import { FormValidPipe } from 'src/app/shared-interproject/components/@smart/mat-form-entity/is-control-valid.pipe';
 import { StatisticsModule } from 'src/app/components/shared-atoms/statistics/statistics.module';
@@ -49,7 +51,9 @@ import { PatchConnectionStatsPipe } from 'src/app/components/patch-parts/patch-c
 import { PatchConnectionUniqueModulesPipe } from 'src/app/components/patch-parts/patch-connection-unique-modules.pipe';
 import { FlexboxRowFastModule } from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
 import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
+import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.module';
 import { EditFabModule } from 'src/app/shared-interproject/components/@visual/edit-fab/edit-fab.module';
+import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-state-tips/empty-state-tips.component';
 
 
 @NgModule({
@@ -72,7 +76,7 @@ import { EditFabModule } from 'src/app/shared-interproject/components/@visual/ed
     PatchConnectionStatsPipe,
     PatchConnectionUniqueModulesPipe
   ],
-  providers:    [PatchDetailDataService],
+  providers:    [PatchDetailDataService, RackDetailDataService],
   imports: [
     CommonModule,
     ConfirmDialogModule,
@@ -110,11 +114,14 @@ import { EditFabModule } from 'src/app/shared-interproject/components/@visual/ed
     LibGraphModule,
     PatchMicroModule,
     MatSlideToggleModule,
+    MatButtonToggleModule,
     LibShowcaseGridComponent,
     FormValidPipe,
     StatisticsModule,
     FlexboxRowFastModule,
+    EmptyStateTipsComponent,
     ModuleBrowserModule,
+    ModulePartsModule,
     EditFabModule
   ]
 })

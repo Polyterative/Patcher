@@ -26,15 +26,18 @@ import {
   DiscoveryTipStorageShape,
   DiscoveryTipUserAreaSnapshot
 } from './discovery-tip.models';
+import {
+  DEFAULT_GLOBAL_DISCOVERY_TIP_PAUSE_MS,
+  DEFAULT_STORAGE_SHAPE,
+  DISCOVERY_TIP_GLOBAL_PAUSE_ID,
+  DISCOVERY_TIP_STORAGE_KEY
+} from './discovery-tip.constants';
+import {
+  isSnoozed,
+  normalizeTipState
+} from './discovery-tip.utils';
 
-
-export const DISCOVERY_TIP_STORAGE_KEY = 'patcher.discovery-tips.v1';
-const DISCOVERY_TIP_GLOBAL_PAUSE_ID = '__global_pause__';
-const DEFAULT_GLOBAL_DISCOVERY_TIP_PAUSE_MS = 1000 * 60 * 60 * 24 * 7;
-
-const defaultStorageShape: DiscoveryTipStorageShape = {
-  viewers: {}
-};
+export { DISCOVERY_TIP_STORAGE_KEY } from './discovery-tip.constants';
 
 @Injectable({
   providedIn: 'root'
@@ -218,10 +221,6 @@ export class DiscoveryTipService extends SubManager {
       return;
     }
 
-    if (currentTip && currentTip.definition.id !== candidate.id) {
-      this._activeTip$.next(null);
-    }
-
     if (this.queuedTipId === candidate.id) {
       return;
     }
@@ -277,7 +276,7 @@ export class DiscoveryTipService extends SubManager {
       return false;
     }
 
-    if (currentState.snoozedUntil && new Date(currentState.snoozedUntil).getTime() > Date.now()) {
+    if (isSnoozed(currentState.snoozedUntil)) {
       return false;
     }
 
@@ -292,7 +291,7 @@ export class DiscoveryTipService extends SubManager {
 
   private isTipEligible(definition: DiscoveryTipDefinition, snapshot: DiscoveryTipContextSnapshot): boolean {
     const globalPauseState = this._tipStates$.value[DISCOVERY_TIP_GLOBAL_PAUSE_ID];
-    if (globalPauseState?.snoozedUntil && new Date(globalPauseState.snoozedUntil).getTime() > Date.now()) {
+    if (isSnoozed(globalPauseState?.snoozedUntil)) {
       return false;
     }
 
@@ -313,7 +312,7 @@ export class DiscoveryTipService extends SubManager {
       return false;
     }
 
-    if (currentState.snoozedUntil && new Date(currentState.snoozedUntil).getTime() > Date.now()) {
+    if (isSnoozed(currentState.snoozedUntil)) {
       return false;
     }
 
@@ -343,7 +342,7 @@ export class DiscoveryTipService extends SubManager {
   }
 
   private getTipState(definition: DiscoveryTipDefinition): DiscoveryTipStateRecord {
-    return this.normalizeTipState(definition, this._tipStates$.value[definition.id]);
+    return normalizeTipState(definition, this._tipStates$.value[definition.id]);
   }
 
   private updateTipState(
@@ -357,19 +356,6 @@ export class DiscoveryTipService extends SubManager {
 
     this._tipStates$.next(nextStates);
     this.persistViewerTipStates(this._viewerKey$.value, nextStates);
-  }
-
-  private normalizeTipState(
-    definition: DiscoveryTipDefinition,
-    state?: DiscoveryTipStateRecord
-  ): DiscoveryTipStateRecord {
-    if (!state || state.version !== definition.version) {
-      return {
-        version: definition.version,
-        shownCount: 0
-      };
-    }
-    return state;
   }
 
   private readViewerTipStates(viewerKey: string): Record<string, DiscoveryTipStateRecord> {
@@ -392,18 +378,18 @@ export class DiscoveryTipService extends SubManager {
 
   private readStorage(): DiscoveryTipStorageShape {
     if (!this.isBrowser) {
-      return defaultStorageShape;
+      return DEFAULT_STORAGE_SHAPE;
     }
 
     try {
       const rawValue = window.localStorage.getItem(DISCOVERY_TIP_STORAGE_KEY);
       if (!rawValue) {
-        return defaultStorageShape;
+        return DEFAULT_STORAGE_SHAPE;
       }
       const parsed = JSON.parse(rawValue) as DiscoveryTipStorageShape;
-      return parsed?.viewers ? parsed : defaultStorageShape;
+      return parsed?.viewers ? parsed : DEFAULT_STORAGE_SHAPE;
     } catch {
-      return defaultStorageShape;
+      return DEFAULT_STORAGE_SHAPE;
     }
   }
 

@@ -1,13 +1,32 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  ElementRef,
   HostBinding,
+  HostListener,
   Input,
   OnChanges
 } from '@angular/core';
 import { fadeInOnEnterAnimation } from 'angular-animations';
+import { TooltipPosition } from '@angular/material/tooltip';
 import { MinimalModule } from 'src/app/models/module';
+import { AppViewportService } from 'src/app/shared-interproject/app-viewport.service';
+
+
+export function resolveSurfaceTooltipPosition(
+  hostRect: Pick<DOMRect, 'left' | 'right'>,
+  viewportWidth: number,
+  viewportOffsetLeft = 0,
+  margin = 16
+): TooltipPosition {
+  const viewportRight = viewportOffsetLeft + viewportWidth;
+  const availableLeft = Math.max(0, hostRect.left - viewportOffsetLeft - margin);
+  const availableRight = Math.max(0, viewportRight - hostRect.right - margin);
+
+  return availableLeft > availableRight ? 'before' : 'after';
+}
 
 
 @Component({
@@ -24,13 +43,17 @@ import { MinimalModule } from 'src/app/models/module';
   ],
   standalone: false
 })
-export class ModulePartImageComponent implements OnChanges {
+export class ModulePartImageComponent implements AfterViewInit, OnChanges {
   
   @Input() data: MinimalModule;
   @Input() selectedPanelId: number | null = null;
   @Input() preferredPanelColor: number | null = null;
+  @Input() tooltip = '';
+  @Input() tooltipDisabled = false;
+  @Input() tooltipClass = '';
   
   filename: string | undefined;
+  tooltipPosition: TooltipPosition = 'after';
   
   @Input() containImage: boolean = true;
   @Input() big: boolean = false;
@@ -58,8 +81,14 @@ export class ModulePartImageComponent implements OnChanges {
   }
   
   constructor(
-    public changeDetection: ChangeDetectorRef
+    public changeDetection: ChangeDetectorRef,
+    private readonly hostElementRef?: ElementRef<HTMLElement>,
+    private readonly appViewportService?: AppViewportService
   ) { }
+
+  ngAfterViewInit(): void {
+    this.updateTooltipPosition();
+  }
   
   ngOnChanges(): void {
     if (this.data.panels?.length > 0) {
@@ -73,7 +102,28 @@ export class ModulePartImageComponent implements OnChanges {
     } else {
       this.filename = undefined;
     }
+    this.updateTooltipPosition();
     this.changeDetection.detectChanges();
+  }
+
+  @HostListener('mouseenter')
+  @HostListener('focusin')
+  @HostListener('window:resize')
+  updateTooltipPosition(anchor?: {getBoundingClientRect(): Pick<DOMRect, 'left' | 'right'>}): void {
+    if (!this.hostElementRef || !this.appViewportService) {
+      return;
+    }
+
+    const viewport = this.appViewportService.currentViewport();
+    if (!viewport.width) {
+      return;
+    }
+
+    this.tooltipPosition = resolveSurfaceTooltipPosition(
+      (anchor ?? this.hostElementRef.nativeElement).getBoundingClientRect(),
+      viewport.width,
+      viewport.offsetLeft
+    );
   }
   
 }

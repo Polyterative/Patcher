@@ -51,7 +51,15 @@
             ></app-module-minimal>
           </lib-clean-card>
         } @empty {
-          <app-empty-state></app-empty-state>
+          @if (emptyStateCopy) {
+            <div class="col"
+                 style="align-items: center; text-align: center; padding: 2rem 0; color: var(--mat-sys-on-surface-variant, #666); width: 100%">
+              <mat-icon style="font-size: 3rem; width: 3rem; height: 3rem; opacity: 0.4">search_off</mat-icon>
+              <span style="margin-top: 0.75rem; font-size: 1rem; opacity: 0.85; max-width: 30rem">{{ emptyStateCopy }}</span>
+            </div>
+          } @else {
+            <app-empty-state></app-empty-state>
+          }
         }
       </flexbox-row-fast>
     </div>

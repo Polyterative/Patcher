@@ -6,25 +6,24 @@
   stats: (publicStats$ | async),
   isOwnProfile: (isOwnProfile$ | async),
 }; as bag) {
-  <lib-screen-wrapper maxSize="130rem">
+  <lib-screen-wrapper sizePreset="wide-shell">
     @if (bag.state === 'ready' && bag.profile) {
-      <div class="col gap1">
-        <lib-clean-card class="profile-header">
-          <div class="profile-header__inner">
-            <div class="profile-header__identity">
-              <app-label-value-showcase label="Public profile">
-                {{ bag.profile.username }}
-              </app-label-value-showcase>
-
-              @if (bag.profile.website) {
-                <a
-                  class="profile-link"
-                  [href]="bag.profile.website"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >{{ bag.profile.website }}</a>
-              }
-            </div>
+      <div class="col gap1 public-profile-page">
+        <lib-hero-content-card class="userBG profile-header"
+                               titleBig="Public profile"
+                               [titleSub]="bag.profile.username"
+                               description="Shared racks and patches from this profile."
+                               [showWideShellNav]="true"
+                               icon="person_search">
+          <div class="profile-header__content col gap1">
+            @if (bag.profile.website) {
+              <a
+                class="profile-link"
+                [href]="bag.profile.website"
+                rel="noopener noreferrer"
+                target="_blank"
+              >{{ bag.profile.website }}</a>
+            }
 
             <div class="row gap1 profile-header__actions">
               @if (bag.isOwnProfile) {
@@ -43,7 +42,7 @@
               >Copy profile link</app-brand-primary-button>
             </div>
           </div>
-        </lib-clean-card>
+        </lib-hero-content-card>
 
         <div class="public-profile-layout">
           <div class="container gap1 main-content">
@@ -115,7 +114,7 @@
     } @else if (bag.state === 'private' && bag.profile) {
       <div class="col gap1 public-profile-state">
         <app-empty-state backgroundImage="assets/svg/404.svg"></app-empty-state>
-        <mat-card-title fxLayoutAlign="center">This profile is private.</mat-card-title>
+        <mat-card-title class="public-profile-state__title">This profile is private.</mat-card-title>
         @if (bag.isOwnProfile) {
           <div class="row gap1 center">
             <app-brand-primary-button
@@ -132,12 +131,12 @@
     } @else if (bag.state === 'incomplete') {
       <div class="col gap1 public-profile-state">
         <app-empty-state backgroundImage="assets/svg/404.svg"></app-empty-state>
-        <mat-card-title fxLayoutAlign="center">This profile is not available yet.</mat-card-title>
+        <mat-card-title class="public-profile-state__title">This profile is not available yet.</mat-card-title>
       </div>
     } @else if (bag.state === 'not-found' || bag.state === 'error') {
       <div class="col gap1 public-profile-state">
         <app-empty-state backgroundImage="assets/svg/404.svg"></app-empty-state>
-        <mat-card-title fxLayoutAlign="center">Profile not found.</mat-card-title>
+        <mat-card-title class="public-profile-state__title">Profile not found.</mat-card-title>
       </div>
     } @else {
       <div class="col gap1">

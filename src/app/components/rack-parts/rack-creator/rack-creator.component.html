@@ -10,28 +10,18 @@
       <p style="font-size: 1rem">
         You can always edit the rack name and number of rows later.
       </p>
-      <lib-mat-form-entity [type]="fields.name.type"
-                           [control]="fields.name.control"
-                           [label]="fields.name.label"
+      <lib-mat-form-entity [dataPack]="fields.name"
                            [hint]="(fields.name.control.value?.length || 0) + '/32'"
-                           iconL1="label"
       >
       </lib-mat-form-entity>
       
-      <lib-mat-form-entity [type]="fields.hp.type"
-                           [control]="fields.hp.control"
-                           [label]="fields.hp.label"
-                           [hint]="'Range: 2-216 HP'"
-                           iconL1="straighten"
-      >
+      <lib-mat-form-entity [dataPack]="fields.hp"
+       >
       </lib-mat-form-entity>
       
-      <lib-mat-form-entity [type]="fields.rows.type"
-                           [control]="fields.rows.control"
-                           [label]="fields.rows.label"
-                           [hint]="'Range: 1-10 rows'"
-                           iconL1="view_comfy"
-      >
+      <lib-mat-form-entity [dataPack]="fields.rows"
+                           (enterPressed)="save$.next()"
+       >
       </lib-mat-form-entity>
       
       <ng-container *ngIf="rackAnalysis$ | async as analysis">

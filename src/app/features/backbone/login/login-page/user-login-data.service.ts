@@ -20,6 +20,7 @@ import {
   tap
 } from 'rxjs/operators';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { IMatFormEntityConfig } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { UserManagementService } from '../user-management.service';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
@@ -40,7 +41,10 @@ export class UserLoginDataService extends SubManager {
   public readonly resetSuccessMessage$ = new BehaviorSubject<string>('');
   public readonly resetErrorMessage$ = new BehaviorSubject<string>('');
   
-  fields = {
+  readonly fields: {
+    user: IMatFormEntityConfig;
+    password: IMatFormEntityConfig;
+  } = {
     user: {
       label: 'Email',
       code: 'email',
@@ -50,7 +54,12 @@ export class UserLoginDataService extends SubManager {
         Validators.required,
         Validators.minLength(3)
       ])),
-      type: FormTypes.EMAIL
+      type: FormTypes.EMAIL,
+      iconL1: 'email',
+      ergonomics: {
+        autofocus: true,
+        enterkeyhint: 'next'
+      }
     },
     password: {
       label: 'Password',
@@ -61,7 +70,11 @@ export class UserLoginDataService extends SubManager {
         Validators.minLength(8),
         Validators.maxLength(30)
       ])),
-      type: FormTypes.PASSWORD_CURRENT
+      type: FormTypes.PASSWORD_CURRENT,
+      iconL1: 'lock',
+      ergonomics: {
+        enterkeyhint: 'send'
+      }
     }
   };
   

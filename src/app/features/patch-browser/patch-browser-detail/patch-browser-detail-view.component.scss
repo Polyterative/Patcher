@@ -1,7 +1,48 @@
-.toggle {
-  align-self: center;
-  padding-top: 2rem;
-  padding-right: 2rem;
-  padding-left: .5rem;
-  padding-bottom: 2rem;
+:host {
+  display: block;
+  width: 100%;
+}
+
+.patch-browser-detail-shell {
+  min-width: 0;
+}
+
+:host ::ng-deep .patch-browser-detail__header h1.title {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+}
+
+:host ::ng-deep .patch-browser-detail__header h1.title .title-heading-copy,
+:host ::ng-deep .patch-browser-detail__header h1.title .title-text {
+  min-width: 0;
+}
+
+:host ::ng-deep .patch-browser-detail__header h1.title .title-text--with-sub {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.18rem;
+}
+
+:host ::ng-deep .patch-browser-detail__header h1.title .title-separator {
+  display: none;
+}
+
+:host ::ng-deep .patch-browser-detail__header h1.title .title-text--with-sub .title-main,
+:host ::ng-deep .patch-browser-detail__header h1.title .title-text--with-sub .title-sub {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+}
+
+:host ::ng-deep .patch-browser-detail__header h1.title .title-text--with-sub .title-main {
+  font-size: 0.45em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.42);
+}
+
+:host ::ng-deep .patch-browser-detail__header h1.title .title-text--with-sub .title-sub {
+  display: block;
+  color: rgba(0, 0, 0, 0.72);
 }

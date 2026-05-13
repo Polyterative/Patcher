@@ -7,6 +7,7 @@ import {
 } from 'rxjs';
 import {
   catchError,
+  map,
   tap
 } from 'rxjs/operators';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
@@ -70,4 +71,15 @@ export function catchErrors<T>(snackBar: MatSnackBar): (source: Observable<T>) =
 export function remapErrors<T>() {
   // In Supabase v2, errors are handled differently - just pass through
   return (source: Observable<any>) => source;
+}
+
+export function throwIfSupabaseError<T>() {
+  return (source: Observable<any>) => source.pipe(
+    map((response: any) => {
+      if (response?.error) {
+        throw response.error;
+      }
+      return response as T;
+    })
+  );
 }

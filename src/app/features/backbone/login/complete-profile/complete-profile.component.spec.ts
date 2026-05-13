@@ -14,10 +14,9 @@ import {
 } from 'rxjs';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { CompleteProfileComponent } from './complete-profile.component';
 import { UserManagementService } from '../user-management.service';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
@@ -48,10 +47,9 @@ describe('CompleteProfileComponent', () => {
         ReactiveFormsModule,
         NoopAnimationsModule,
         MatCardModule,
-        MatFormFieldModule,
-        MatInputModule,
         MatButtonModule,
-        MatProgressSpinnerModule
+        MatProgressSpinnerModule,
+        MatFormEntityComponent
       ],
       providers: [
         {provide: Router, useValue: mockRouter},
@@ -116,6 +114,14 @@ describe('CompleteProfileComponent', () => {
   it('usernameControl is valid for a proper username', () => {
     component.usernameControl.setValue('validname');
     expect(component.usernameControl.valid).toBeTrue();
+  });
+
+  it('exposes username ergonomics through the shared field config', () => {
+    expect(component.usernameField.control).toBe(component.usernameControl);
+    expect(component.usernameField.ergonomics).toEqual({
+      autofocus: true,
+      enterkeyhint: 'done'
+    });
   });
   
   it('usernameControl is invalid for usernames with special characters', () => {

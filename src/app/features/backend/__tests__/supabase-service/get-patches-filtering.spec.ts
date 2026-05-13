@@ -111,6 +111,23 @@ describe('SupabaseService - GET.patches filtering and ordering', () => {
       }
     });
   }, TEST_TIMEOUT);
+
+  it('should not require linked_rack_id in the public patch listing select', (done) => {
+    const mock = chainableWithIlike({data: [], count: 0, error: null});
+    const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+    service.GET.patches(0, 9).subscribe({
+      next: () => {
+        expect(selectSpy.calls.mostRecent().args[0]).not.toContain('linked_rack_id');
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
   
   it('should NOT apply ilike when name is not provided', (done) => {
     const mock = chainableWithIlike({data: [], count: 0, error: null});

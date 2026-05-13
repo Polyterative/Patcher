@@ -64,4 +64,18 @@ describe('UrlCreatorService', () => {
     
     expect(capturedUrl).toBe(window.location.origin + path);
   });
+
+  it('copies arbitrary text with a custom success message', async () => {
+    clipboardSpy().and.returnValue(Promise.resolve());
+
+    service.copyTextToClipboard('hello patch', 'Patch text copied.');
+    await Promise.resolve();
+
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith('hello patch');
+    expect(mockSnackBar.open).toHaveBeenCalledWith(
+      'Patch text copied.',
+      undefined,
+      jasmine.objectContaining({panelClass: 'snack-success'})
+    );
+  });
 });

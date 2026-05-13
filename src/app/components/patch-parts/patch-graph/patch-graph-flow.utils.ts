@@ -3,23 +3,23 @@ import {
   PATCH_GRAPH_EDGE_STAGE,
   PATCH_GRAPH_HIDDEN_COLOR
 } from './patch-graph.constants';
+import {
+  FlowAnimationState,
+  PatchGraphFlowPalette
+} from './patch-graph-flow.models';
+
+export type {
+  FlowAnimationState,
+  PatchGraphFlowPalette
+} from './patch-graph-flow.models';
+
+const FLOW_HEAT_DECAY = 0.87;
+const FLOW_HEAT_MIN_THRESHOLD = 0.03;
+const FLOW_HEAT_INCREMENT = 0.72;
+const FLOW_SIZE_BASE = 0.95;
+const FLOW_SIZE_HEAT_SCALE = 0.62;
 
 
-export interface FlowAnimationState {
-  baseEdges: GraphEdge[];
-  flowPoolEdges: GraphEdge[];
-  outgoingByNode: Map<string, GraphEdge[]>;
-  currentNodeId?: string;
-  edgeHeatById: Map<string, number>;
-  tickCount: number;
-}
-
-export interface PatchGraphFlowPalette {
-  flowStartColor: string;
-  flowEndColor: string;
-  flowBaseColor: string;
-  moduleJackEdgeColor: string;
-}
 
 export function createFlowAnimationState(
   edges: GraphEdge[],
@@ -45,12 +45,12 @@ export function createFlowAnimationState(
     ? flowPoolEdges
     : baseEdges.filter(edge => !edge.data?.hidden);
   
-  const outgoingByNode = new Map<string, GraphEdge[]>();
-  resolvedFlowPool.forEach(edge => {
-    const list = outgoingByNode.get(edge.from) ?? [];
+  const outgoingByNode = resolvedFlowPool.reduce((acc, edge) => {
+    const list = acc.get(edge.from) ?? [];
     list.push(edge);
-    outgoingByNode.set(edge.from, list);
-  });
+    acc.set(edge.from, list);
+    return acc;
+  }, new Map<string, GraphEdge[]>());
   
   const flowState: FlowAnimationState = {
     baseEdges,
@@ -108,7 +108,7 @@ export function buildFlowStyledEdges(
       color: heat > 0.01
         ? flowColor
         : baseColorForPatchGraphEdge(edge, palette),
-      size: edge.size * (0.95 + heat * 0.62),
+      size: edge.size * (FLOW_SIZE_BASE + heat * FLOW_SIZE_HEAT_SCALE),
       data: {
         ...(edge.data ?? {}),
         flowHeat: heat
@@ -187,17 +187,13 @@ function injectFlowPulse(flowState: FlowAnimationState, randomFn: () => number):
   
   flowState.currentNodeId = nextEdge.to;
   const current = edgeHeatById.get(nextEdge.id) ?? 0;
-  edgeHeatById.set(nextEdge.id, Math.min(1, current + 0.72));
+  edgeHeatById.set(nextEdge.id, Math.min(1, current + FLOW_HEAT_INCREMENT));
 }
 
 function decayFlowHeat(flowState: FlowAnimationState): void {
-  const nextHeatById = new Map<string, number>();
-  flowState.edgeHeatById.forEach((heat, edgeId) => {
-    const decayed = heat * 0.87;
-    if (decayed > 0.03) {
-      nextHeatById.set(edgeId, decayed);
-    }
-  });
-  
-  flowState.edgeHeatById = nextHeatById;
+  flowState.edgeHeatById = new Map(
+    [...flowState.edgeHeatById.entries()]
+      .map(([id, heat]) => [id, heat * FLOW_HEAT_DECAY] as const)
+      .filter(([, decayed]) => decayed > FLOW_HEAT_MIN_THRESHOLD)
+  );
 }
