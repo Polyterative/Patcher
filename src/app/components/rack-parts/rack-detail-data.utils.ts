@@ -1,6 +1,10 @@
 import { RackedModule } from '../../models/module';
 import { RackMinimal } from '../../models/rack';
 
+export function cloneRackData<T>(value: T): T {
+  return structuredClone(value);
+}
+
 const BLANK_IDS_STANDARD_0: Record<number, number> = {
   1: 4666, 2: 4647, 3: 4665, 4: 4648, 5: 4664,
   6: 4649, 7: 4650, 8: 4651, 9: 4652, 10: 4653,
