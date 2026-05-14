@@ -131,7 +131,7 @@ important notices without turning Patcher into a blog platform.
 
 **Paused 2026-02-23.** Resume when Manufacturer Page Phase 1 is live (manufacturer pages need OG images too).
 
-Completed: sitemap, robots.txt, canonical URLs, JSON-LD, llms.txt, og:image dimensions, bot cache headers (partial).
+Completed: sitemap, robots.txt, canonical URLs, JSON-LD, llms.txt, og:image dimensions, bot cache headers (partial), manufacturer detail metadata (`907e676a`).
 
 Remaining:
 
