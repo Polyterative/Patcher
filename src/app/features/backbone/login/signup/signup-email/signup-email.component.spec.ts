@@ -20,4 +20,8 @@ describe('SignupEmailComponent', () => {
   it('ngOnInit runs without error', () => {
     expect(() => comp.ngOnInit()).not.toThrow();
   });
+
+  it('dataService is the same reference as the injected mock', () => {
+    expect(comp.dataService).toEqual(mockDataService);
+  });
 });

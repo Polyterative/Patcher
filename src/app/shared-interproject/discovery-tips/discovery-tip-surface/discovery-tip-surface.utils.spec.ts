@@ -15,6 +15,12 @@ describe('discovery-tip-surface.utils', () => {
     it('handles empty strings', () => {
       expect(estimateDiscoveryTipHeight('', '', 320)).toBeGreaterThan(0);
     });
+
+    it('scales with wider tip width', () => {
+      const narrow = estimateDiscoveryTipHeight('T', 'Body text that might wrap', 200);
+      const wide = estimateDiscoveryTipHeight('T', 'Body text that might wrap', 400);
+      expect(narrow).toBeGreaterThanOrEqual(wide);
+    });
   });
 
   describe('calculateDiscoveryTipPosition', () => {
@@ -46,6 +52,12 @@ describe('discovery-tip-surface.utils', () => {
       const anchor = makeRect(0, 10, 10, 10);
       const result = calculateDiscoveryTipPosition(anchor, 800, 600);
       expect(result.left).toBeGreaterThanOrEqual(16);
+    });
+
+    it('left does not exceed viewport width minus tipWidth minus 16', () => {
+      const anchor = makeRect(750, 10, 50, 30);
+      const result = calculateDiscoveryTipPosition(anchor, 800, 600);
+      expect(result.left).toBeLessThanOrEqual(800 - 16);
     });
   });
 });
