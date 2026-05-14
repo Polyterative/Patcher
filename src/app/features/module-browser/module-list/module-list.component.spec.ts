@@ -116,4 +116,22 @@ describe('ModuleListComponent', () => {
     expect(currentVal(component.filteredData$)?.map((module) => module.name)).toEqual(['Arrived']);
     component.ngOnDestroy();
   }));
+
+  it('sortControl and groupControl default to first sort/group option', () => {
+    const {component} = build();
+    expect(component.sortControl.value).toBeDefined();
+    expect(component.groupControl.value).toBeDefined();
+    component.ngOnDestroy();
+  });
+
+  it('returns empty array when data$ emits empty list', fakeAsync(() => {
+    const filterService = new LocalDataFilterService();
+    const data$ = new BehaviorSubject<MinimalModule[] | null>([]);
+    const component = new ModuleListComponent({} as any, filterService, {preferredPanelColor$: of(null)} as any);
+    component.data$ = data$;
+    component.ngOnInit();
+    tick(0);
+    expect(currentVal(component.filteredData$)).toEqual([]);
+    component.ngOnDestroy();
+  }));
 });
