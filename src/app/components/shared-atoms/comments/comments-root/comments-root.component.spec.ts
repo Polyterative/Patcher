@@ -95,4 +95,32 @@ describe('CommentsRootComponent', () => {
     expect(rail).not.toBeNull();
     expect(rail.contains(loadMoreButton)).toBeTrue();
   });
+
+  it('hides the load-more button when count equals loaded comments', () => {
+    build({
+      comments: [{ id: 1, content: 'Only comment' }],
+      count: 1,
+    });
+
+    const loadMoreButton = fixture.nativeElement.querySelector('.commentsRoot__loadMore');
+    expect(loadMoreButton).toBeNull();
+  });
+
+  it('hides the composer when user is not logged in', () => {
+    build({ user: null });
+
+    const composer = fixture.nativeElement.querySelector('.commentsRoot__composer');
+    expect(composer).toBeNull();
+  });
+
+  it('shows remaining count in load-more label', () => {
+    build({
+      comments: [{ id: 1, content: 'First' }],
+      count: 5,
+    });
+
+    const loadMoreButton = fixture.nativeElement.querySelector('.commentsRoot__loadMore');
+    expect(loadMoreButton).not.toBeNull();
+    expect(loadMoreButton.textContent).toContain('4 remaining');
+  });
 });
