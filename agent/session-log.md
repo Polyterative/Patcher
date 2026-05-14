@@ -784,3 +784,20 @@ Mock approach: supabaseService exposes a `supabase.auth.onAuthStateChange` spy, 
 - **SaturnComponent** (5): same Uranus/Venus pattern — title from route data; no-op when absent; manual title preserved.
 - **RackDetailsRemainingIndicatorComponent** (2): creation, ngOnInit no-throw.
 - **UserPatchesComponent** (4): creation, updatePatchesData$.next() called in ctor, globalSearchQuery='', dataService exposed.
+
+---
+
+## Loop iteration 28 — 10 specs (31 tests): ModulePanelZoomDialog + DevOnlyWindow + RackMicro + ModulePartDescription + BrowserResetFiltersButton + HeroLink + HomeProofShowcase + ModulePartHp + ModulePartManufacturer + EntityAuthor
+
+All 31 tests green first run.
+
+- **ModulePanelZoomDialogComponent** (3): creation, data from MAT_DIALOG_DATA, dialogRef exposed.
+- **DevOnlyWindowComponent** (4): creation, pre=false, show is boolean, ngOnInit no-throw.
+- **RackMicroComponent** (2): creation, ngOnInit no-throw.
+- **ModulePartDescriptionComponent** (2): creation, ngOnInit no-throw.
+- **BrowserResetFiltersButtonComponent** (2): creation, reset$ EventEmitter emits.
+- **HeroLinkComponent** (4): creation, iconColor='black', disabled=false, ngOnInit no-throw.
+- **HomeProofShowcaseComponent** (8): defaults, getDescriptionSegments: empty for empty description, plain segment for no keywords, highlights keywords.
+- **ModulePartHpComponent** (2): creation, ngOnInit no-throw.
+- **ModulePartManufacturerComponent** (2): creation, ngOnInit no-throw.
+- **EntityAuthorComponent** (2): creation, ngOnInit no-throw.
