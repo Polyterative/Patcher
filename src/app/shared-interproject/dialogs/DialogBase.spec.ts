@@ -26,4 +26,9 @@ describe('DialogBase', () => {
     const base = new DialogBase(input);
     expect(base.data).toBe(input);
   });
+
+  it('title is an empty string when provided as empty', () => {
+    const base = new DialogBase({title: ''});
+    expect(base.title).toBe('');
+  });
 });
