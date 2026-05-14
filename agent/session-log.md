@@ -1,5 +1,16 @@
 # Session Log
 
+## 2026-05-14T12:06 — ManufacturerDetailComponent spec
+
+- **Boot state:** `current-task.md` held stale rack-detail spec task (completed `3d76c982` in prior session). Cleaned up stale state files.
+- **Selected task:** Add missing unit spec for `ManufacturerDetailComponent` (151 lines, no spec existed). Logic to test: `stats$` observable (catalogue count, avg HP, 3U/1U breakdown, hidden fields), `logoUrl()` helper, route id parsing, SEO title update on data arrival.
+- **Source:** AGENTS.md §1 step 4 (high-value cleanup — missing test).
+- **Actions performed:** Updated `agent/current-task.md`, `agent/acceptance-checklist.md`; created `src/app/features/manufacturer-detail/manufacturer-detail.component.spec.ts` with 14 tests.
+- **Files changed:** See commit.
+- **Tests run:** targeted spec run + build.
+- **Results:** TBD — in progress.
+- **Blockers raised:** None.
+
 ## 2026-05-14T12:15 — Unit test coverage continuation
 
 - **Tasks completed:**
