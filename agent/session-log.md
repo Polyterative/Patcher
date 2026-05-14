@@ -507,3 +507,28 @@ generation, writeValue, valueChanges→onChange/onTouched wiring, setDisabledSta
 **Tests run**: 30/30 green after fix
 
 **Files touched**: user-management.component.spec.ts (new), COMPLETED.md, session-log.md
+
+---
+
+## Loop iteration 11 — RackListComponent + PatchListComponent specs
+
+**Tasks**: Batch two structurally-similar filter-list components
+
+**RackListComponent** (12 tests):
+- construction (filteredData$=[], showSearch=false)
+- externalSearchQuery setter (filters, undefined→no-filter)
+- ngOnInit showSearch=false (all items, by name, by description, empty result, case-insensitive)
+- ngOnInit showSearch=true (filterService.filterEvent$ drives filtering)
+- ngOnDestroy (stops reacting after destroy)
+
+**PatchListComponent** (14 tests):
+- same structure + filters by tags, skips null items gracefully
+
+Compile errors fixed:
+- `created_at` → `created`, `updated_at` → `updated` (Timestamped interface uses short names)
+- `is_private` → `public` (Privatable interface)
+- `readonly @Input` → `(comp as any).data$ = ...` cast
+
+26/26 green on final run.
+
+**Files touched**: 2 new spec files, COMPLETED.md, session-log.md
