@@ -285,3 +285,5 @@
 
 - **14-05-2026** — Reactive Pipeline Audit complete: all 13 bullets checked; 9 exhaustMap fixes (commit `aecd4f3c`); 81 combineLatest calls verified; no fan-out/leak issues; debounceTime coverage confirmed; OnPush sweep pre-done; caching.spec.ts expanded to 5 tests
 - **14-05-2026** — Cache Strategy Review complete: all bullets checked; DatabaseStrings.ts join audit done (no issues found); all cache invalidation gaps fixed; CACHE_STRATEGY.md documents full inventory
+- **14-05-2026** — Bandwidth audit complete: all queries checked, queries already well-optimised, no rewrites needed; detailed findings in TODO.md
+- **14-05-2026** — Cleared expired Superbooth 2026 event banner (ended 2026-05-10)
