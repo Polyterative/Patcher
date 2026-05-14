@@ -622,3 +622,19 @@ Compile errors fixed:
 - handleSSOSignup: delegates to loginWithSSO, passes provider
 
 30/30 green on first run.
+
+---
+
+## Loop iteration 16 — EmptyStateComponent + LottieContainerComponent
+
+**EmptyStateComponent** (9 tests):
+- construction: no error, backgroundImage=undefined
+- ngOnInit: @Input wins over route data, uses route data when @Input absent, neither→console.warn, warns when both absent, no warn with @Input, no warn with route data
+
+**LottieContainerComponent** (6 tests):
+- isBrowser=true for 'browser' platform, false for 'server'
+- default styles (maxWidth, margin), options=undefined
+- ngOnInit no throw, styles override accepted
+- Fix: 'browser'/'server' need `as unknown as object` cast for TypeScript PLATFORM_ID type
+
+15/15 green after fix.
