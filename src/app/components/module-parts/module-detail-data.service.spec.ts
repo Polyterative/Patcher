@@ -346,4 +346,65 @@ describe('ModuleDetailDataService', () => {
 
     expect(service.moduleEditingPanelOpenState$.value).toBeFalse();
   });
+
+  it('starts with expected default state for all subjects', () => {
+    const {service} = build();
+
+    expect(service.singleModuleData$.value).toBeNull();
+    expect(service.racksWithThisModule$.value).toBeUndefined();
+    expect(service.patchesWithThisModule$.value).toBeUndefined();
+    expect(service.moduleUsageSummary$.value).toBeUndefined();
+    expect(service.modulesBySameManufacturer$.value).toBeUndefined();
+    expect(service.moduleEditingPanelOpenState$.value).toBeFalse();
+    expect(service.moduleEditorHasPendingChanges$.value).toBeFalse();
+    expect(service.isAdmin$.value).toBeFalse();
+    // userModulesList$ fires immediately via loggedUser$ BehaviorSubject in constructor
+    expect(service.userModulesList$.value).toEqual([{id: 50} as any]);
+  });
+
+  it('clears singleModuleData$ and related streams to undefined when updateSingleModuleData$ fires', fakeAsync(() => {
+    const {service, backend} = build();
+
+    service.updateSingleModuleData$.next(10);
+    // Before tick, tap side-effects have already run synchronously
+    expect(service.racksWithThisModule$.value).toBeUndefined();
+    expect(service.patchesWithThisModule$.value).toBeUndefined();
+    expect(service.moduleUsageSummary$.value).toBeUndefined();
+
+    tick(260); // clear delays
+    expect(service.singleModuleData$.value?.id).toBe(10);
+  }));
+
+  it('clears moduleEditorHasPendingChanges$ when updateSingleModuleData$ fires', fakeAsync(() => {
+    const {service} = build();
+    service.moduleEditorHasPendingChanges$.next(true);
+
+    service.updateSingleModuleData$.next(10);
+    tick(260);
+
+    expect(service.moduleEditorHasPendingChanges$.value).toBeFalse();
+  }));
+
+  it('loads userModulesList$ when updateSingleModuleData$ fires and user is logged in', fakeAsync(() => {
+    const {service, backend} = build();
+
+    service.updateSingleModuleData$.next(10);
+    tick(260);
+
+    expect(backend.GET.currentUserModules).toHaveBeenCalledWith(false);
+    expect(service.userModulesList$.value).toEqual([{id: 50} as any]);
+  }));
+
+  it('sets userModulesList$ to empty array when user is not logged in', fakeAsync(() => {
+    const {service, backend, loggedUser$} = build();
+    loggedUser$.next(null);
+
+    const callsBefore = backend.GET.currentUserModules.calls.count();
+    service.updateSingleModuleData$.next(10);
+    tick(260);
+
+    // With null user, the subscription uses of([]) — no extra call to currentUserModules
+    expect(backend.GET.currentUserModules.calls.count()).toBe(callsBefore);
+    expect(service.userModulesList$.value).toEqual([]);
+  }));
 });
