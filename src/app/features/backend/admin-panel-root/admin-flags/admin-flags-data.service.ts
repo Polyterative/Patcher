@@ -39,6 +39,7 @@ export class AdminFlagsDataService extends SubManager {
   // ── Filter state ──────────────────────────────────────────────────────────
   readonly statusFilter$ = new BehaviorSubject<FlagStatusFilter>('open');
   readonly categoryFilter$ = new BehaviorSubject<string | null>(null);
+  readonly sortOrder$ = new BehaviorSubject<'desc' | 'asc'>('desc');
   readonly categoryGroups = ADMIN_FLAG_CATEGORY_GROUPS;
 
   // ── Derived streams ───────────────────────────────────────────────────────
@@ -50,14 +51,18 @@ export class AdminFlagsDataService extends SubManager {
   readonly filteredFlags$ = combineLatest([
     this._flags$,
     this.statusFilter$,
-    this.categoryFilter$
+    this.categoryFilter$,
+    this.sortOrder$
   ]).pipe(
-    map(([flags, status, category]) => {
+    map(([flags, status, category, sortOrder]) => {
       let result = flags;
       if (status === 'open') result = result.filter(f => !f.resolved);
       if (status === 'resolved') result = result.filter(f => f.resolved);
       if (category) result = result.filter(f => f.category === category);
-      return result;
+      return [...result].sort((a, b) => {
+        const diff = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        return sortOrder === 'asc' ? diff : -diff;
+      });
     }),
     shareReplay(1)
   );

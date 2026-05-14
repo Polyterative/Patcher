@@ -21,9 +21,9 @@ const makeFlag = (partial: Partial<AdminFlagRow>): AdminFlagRow => ({
   ...partial
 });
 
-const OPEN_WRONG  = makeFlag({id: 1, category: 'wrong-power', resolved: false});
-const OPEN_DUP    = makeFlag({id: 2, category: 'duplicate', resolved: false});
-const RESOLVED    = makeFlag({id: 3, category: 'wrong-power', resolved: true});
+const OPEN_WRONG  = makeFlag({id: 1, category: 'wrong-power', resolved: false, created_at: '2026-01-01T00:00:00Z'});
+const OPEN_DUP    = makeFlag({id: 2, category: 'duplicate', resolved: false, created_at: '2026-03-01T00:00:00Z'});
+const RESOLVED    = makeFlag({id: 3, category: 'wrong-power', resolved: true, created_at: '2026-02-01T00:00:00Z'});
 const ALL_FLAGS   = [OPEN_WRONG, OPEN_DUP, RESOLVED];
 
 function setupTest() {
@@ -179,6 +179,43 @@ describe('AdminFlagsDataService', () => {
       service.categoryFilter$.next('duplicate');
       service.filteredFlags$.pipe(take(1)).subscribe(flags => {
         expect(flags.length).toBe(0);
+        done();
+      });
+    });
+  });
+
+  describe('filteredFlags$ — sort order', () => {
+    it('should default to newest-first (desc)', done => {
+      const {service} = setupTest();
+      service.statusFilter$.next('all');
+      service.filteredFlags$.pipe(take(1)).subscribe(flags => {
+        const dates = flags.map(f => f.created_at);
+        expect(dates[0]).toBe('2026-03-01T00:00:00Z');
+        expect(dates[dates.length - 1]).toBe('2026-01-01T00:00:00Z');
+        done();
+      });
+    });
+
+    it('should sort oldest-first when sortOrder$ is "asc"', done => {
+      const {service} = setupTest();
+      service.statusFilter$.next('all');
+      service.sortOrder$.next('asc');
+      service.filteredFlags$.pipe(take(1)).subscribe(flags => {
+        const dates = flags.map(f => f.created_at);
+        expect(dates[0]).toBe('2026-01-01T00:00:00Z');
+        expect(dates[dates.length - 1]).toBe('2026-03-01T00:00:00Z');
+        done();
+      });
+    });
+
+    it('should apply sort after filtering', done => {
+      const {service} = setupTest();
+      service.statusFilter$.next('open');
+      service.sortOrder$.next('asc');
+      service.filteredFlags$.pipe(take(1)).subscribe(flags => {
+        expect(flags.length).toBe(2);
+        expect(flags[0].created_at).toBe('2026-01-01T00:00:00Z');
+        expect(flags[1].created_at).toBe('2026-03-01T00:00:00Z');
         done();
       });
     });

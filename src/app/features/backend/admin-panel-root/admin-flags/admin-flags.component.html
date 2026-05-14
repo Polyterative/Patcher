@@ -38,6 +38,13 @@
             }
           </mat-select>
         </mat-form-field>
+
+        <mat-button-toggle-group [value]="dataService.sortOrder$ | async"
+                                 (change)="dataService.sortOrder$.next($event.value)"
+                                 aria-label="Sort order">
+          <mat-button-toggle value="desc">Newest first</mat-button-toggle>
+          <mat-button-toggle value="asc">Oldest first</mat-button-toggle>
+        </mat-button-toggle-group>
       </div>
 
       @if (vm.flags.length === 0) {
@@ -84,7 +91,7 @@
                   {{ flag.resolved ? 'Reopen' : 'Resolve' }}
                 </app-brand-primary-button>
                 <app-brand-primary-button theme="negative"
-                                          (click$)="dataService.deleteFlag$.next(flag.id)">
+                                          (click$)="confirmDelete(flag.id)">
                   Delete
                 </app-brand-primary-button>
               </div>

@@ -1,16 +1,24 @@
 # Current Task
 
-**Active task:** None — Manufacturer Pages Phase 1 Polish complete as of 2026-05-14.
+**Title:** Admin Flags — Delete Confirmation + Sort Order Toggle
 
-**Last completed task:** Manufacturer Pages — Phase 1 Polish (Tier 0).
+**Source:** User feedback ("The admin page could use some work") + autonomous safety audit
 
-**What shipped:**
-- Logo display added to manufacturer detail page header (`manufacturer.logo` → Supabase storage URL, consistent with `manufacturer-row` pattern).
-- Module catalogue now defaults to "Group by standard (3U / 1U)" via a new backward-compatible `defaultGroupId` input on `ModuleListComponent`.
-- Data-report guidance note added below the module list pointing users to "Report an issue" on each module's page.
+**Goal:**
+The admin module-flag page has two UX gaps: (1) the Delete action fires immediately with no confirmation, which is a safety issue for an admin tool; (2) there is no way to change the sort order of flags, making it hard to triage oldest-first (FIFO). This task adds a delete confirmation step (consistent with the pattern used elsewhere in the app) and a "Newest first / Oldest first" toggle to the filter toolbar.
 
-**Next step:** Pick the next task from `internaldocs/workflow/TODO.md`. Candidates:
-- LOW: Rack-Context Patch Building — Polish Review
-- INFRA: Unit Test Coverage on high-yield files (rack-detail-data.service.ts, module-detail-data.service.ts, user-area-data.service.ts)
-- PRODUCT Tier 0: Media Attachment on Patches (embed-only v1)
-- PRODUCT Tier 0: Patch Tags
+**Acceptance criteria:** see agent/acceptance-checklist.md
+
+**Affected files:**
+- `admin-flags.component.ts` — add `confirmDelete()` method
+- `admin-flags.component.html` — wire `confirmDelete`, add sort toggle
+- `admin-flags-data.service.ts` — add `sortOrder$` BehaviorSubject, include in `filteredFlags$`
+- `admin-flags-data.service.spec.ts` — tests for sort behavior
+
+**Out of scope:**
+- Inline module editor / preview panel
+- Bulk operations
+- Backend schema changes
+- Any other admin panel surface
+
+**Risk:** Low — fully contained in admin panel, no user-facing surface affected.
