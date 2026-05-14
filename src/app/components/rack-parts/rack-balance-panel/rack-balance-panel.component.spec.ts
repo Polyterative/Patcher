@@ -124,4 +124,71 @@ describe('RackBalancePanelComponent', () => {
     expect(component.lowDataTitle(analysis)).toContain('hidden');
     expect(component.lowDataMessage(analysis)).toContain('1 of 4 modules');
   });
+
+  it('returns an empty rack title and message when isEmpty is true', () => {
+    const {component} = build();
+    const analysis: RackBalanceAnalysisResult = {
+      axes: [], confidence: 0, recognizedModuleCount: 0, totalModules: 0,
+      warningMessage: null, summary: '', isEmpty: true
+    };
+    expect(component.lowDataTitle(analysis)).toContain('modules to evaluate');
+    expect(component.lowDataMessage(analysis)).toContain('Add modules');
+  });
+
+  it('confidencePercent rounds to the nearest integer percentage', () => {
+    const {component} = build();
+    const makeAnalysis = (c: number): RackBalanceAnalysisResult => ({
+      axes: [], confidence: c, recognizedModuleCount: 0, totalModules: 0,
+      warningMessage: null, summary: '', isEmpty: false
+    });
+    expect(component.confidencePercent(makeAnalysis(0.756))).toBe(76);
+    expect(component.confidencePercent(makeAnalysis(1))).toBe(100);
+  });
+
+  it('axisDetails excludes axes with zero matched modules', () => {
+    const {component} = build();
+    const analysis: RackBalanceAnalysisResult = {
+      axes: [
+        {id: 'voices', label: 'Voices', icon: 'graphic_eq', share: 30, matchedModules: 3, guidance: ''},
+        {id: 'utilities', label: 'Utilities', icon: 'build', share: 0, matchedModules: 0, guidance: ''},
+      ],
+      confidence: 0.8, recognizedModuleCount: 3, totalModules: 5, warningMessage: null, summary: '', isEmpty: false
+    };
+    const details = component.axisDetails(analysis);
+    expect(details.length).toBe(1);
+    expect(details[0].id).toBe('voices');
+  });
+
+  it('radarShowcaseStats labels the strongest axis as Leans toward', () => {
+    const {component} = build();
+    const analysis: RackBalanceAnalysisResult = {
+      axes: [
+        {id: 'voices', label: 'Voices', icon: 'graphic_eq', share: 60, matchedModules: 4, guidance: ''},
+        {id: 'timing', label: 'Timing', icon: 'timer', share: 20, matchedModules: 2, guidance: ''},
+      ],
+      confidence: 0.9, recognizedModuleCount: 6, totalModules: 8, warningMessage: null, summary: '', isEmpty: false
+    };
+    const stats = component.radarShowcaseStats(analysis);
+    expect(stats[0].label).toBe('Leans toward');
+    expect(stats[0].value).toBe('Voices');
+    expect(stats[1].label).toBe('Light on');
+    expect(stats[1].value).toBe('Timing');
+  });
+
+  it('infoTooltip always contains advisory disclaimer', () => {
+    const {component} = build();
+    const analysis: RackBalanceAnalysisResult = {
+      axes: [], confidence: 0.8, recognizedModuleCount: 5, totalModules: 8,
+      warningMessage: null, summary: '', isEmpty: false
+    };
+    const tooltip = component.infoTooltip(analysis);
+    expect(tooltip).toContain('Advisory only');
+    expect(tooltip).toContain('5 tagged modules');
+  });
+
+  it('radarGridPoints returns a polygon string with 5 coordinates', () => {
+    const {component} = build();
+    const points = component.radarGridPoints(0.5);
+    expect(points.trim().split(' ').length).toBe(5);
+  });
 });
