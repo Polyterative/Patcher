@@ -730,3 +730,15 @@ Mock approach: supabaseService exposes a `supabase.auth.onAuthStateChange` spy, 
 **GeneralContextMenuComponent** (3 tests): creation, dataService exposed, ngOnInit no-throw (contextMenu undefined in unit test, openMenu only called on event).
 
 27/27 green first run.
+
+---
+
+## Loop iteration 24 — EmptyStateTips + HeroInfoBox + UserModules + FaqComponent + UserRacks
+
+**EmptyStateTipsComponent** (7 tests): defaults (icon, title, copy, tips, compact), tips input accepted.
+**HeroInfoBoxComponent** (3 tests): creation, dataService exposed, ngOnInit no-throw.
+**UserModulesComponent** (6 tests): creation, emits updateModulesData$ on construction, viewConfig defaults, encloseVertically=true, globalSearchQuery=''.
+**FaqComponent** (3 tests): creation, data=[], accepts input.
+**UserRacksComponent** (4 tests): creation, emits updateRackData$ on construction, rackMinimalViewConfig defaults, globalSearchQuery=''.
+
+23/23 green first run.
