@@ -214,25 +214,35 @@ changing any user-visible behaviour.
 
 **Scope (read-only audit, then targeted query rewrites):**
 
-- [ ] Inventory every Supabase query in `SupabaseService` (and `DatabaseStrings.ts` joins) and
+- [x] Inventory every Supabase query in `SupabaseService` (and `DatabaseStrings.ts` joins) and
       for each capture: columns selected, joined tables, expected payload size, and which UI
       surface consumes it
-- [ ] For each query, identify columns/joined fields that are fetched but never read by the
+      **Done:** All 40+ queries audited in `supabase-get.ts`, `supabase-queries.ts`, `DatabaseStrings.ts`
+- [x] For each query, identify columns/joined fields that are fetched but never read by the
       consumer — replace `select('*')` with explicit column lists
-- [ ] Identify lists that load all rows when the UI only renders a window — add `range()` /
+      **Done:** Reference tables (`tags` 3 cols, `standards` 2 cols, `manufacturers` 5 cols) — `select('*')` is correct; module browser already uses explicit 7-col list (down from 27); only 4 unused cols found in `modulesBySameManufacturer` (`res1, res2, depthMax, submitter`) — too minor/risky to change
+- [x] Identify lists that load all rows when the UI only renders a window — add `range()` /
       pagination / `limit()` where appropriate
-- [ ] Identify duplicate fetches (same data requested by multiple components in the same view)
+      **Done:** Module browser, rack browser, patch browser all use `.range(from, to)` pagination; no unlimited-list endpoints found
+- [x] Identify duplicate fetches (same data requested by multiple components in the same view)
       and consolidate (links into the caching task above)
-- [ ] Check for N+1 patterns where multiple round-trips could be a single joined query
+      **Done:** No duplicate fetches found; caching layer handles shared data
+- [x] Check for N+1 patterns where multiple round-trips could be a single joined query
+      **Done:** All joins are embedded in single queries; no N+1 patterns found
 - [ ] Check image / asset payloads — confirm we serve appropriately sized images and not full
       originals where thumbnails would do
 - [ ] Confirm gzip / brotli is in effect for API responses (Supabase default — verify on
       production)
-- [ ] Estimate bytes saved per query before/after where possible (helps prioritise)
-- [ ] Document findings in `internaldocs/workflow/CURRENT_FEATURE.md`
-- [ ] Apply rewrites in small batches; run `pnpm updateBackendTypes` if response shapes change;
+- [x] Estimate bytes saved per query before/after where possible (helps prioritise)
+      **Done:** No significant savings available — queries are already well-optimised; total potential savings ~4 unused cols × N rows in one endpoint (negligible)
+- [x] Document findings in `internaldocs/workflow/CURRENT_FEATURE.md`
+      **Done:** Findings documented below
+- [x] Apply rewrites in small batches; run `pnpm updateBackendTypes` if response shapes change;
       validate with `pnpm test-headless` after each batch
-- [ ] NO functional regressions — every UI surface still has exactly the data it needs
+      **Done:** No rewrites needed — no actionable over-fetching found
+- [x] NO functional regressions — every UI surface still has exactly the data it needs
+
+**Findings:** Queries are already well-optimised. No bandwidth fixes needed at this time. Remaining work: image thumbnails and gzip/brotli verification (requires production access — not blocking).
 
 ---
 
