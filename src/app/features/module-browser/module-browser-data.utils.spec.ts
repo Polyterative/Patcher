@@ -5,7 +5,7 @@ const makeModule = (name: string, created: string, standardId?: number, tags: nu
   name,
   created,
   standard: standardId !== undefined ? { id: standardId } : undefined,
-  tags: tags.map(id => ({ tag: { id, name: 'tag' + id } }))
+  tags: tags.map(id => ({ tag: { id, name: `tag${id}` } }))
 } as any);
 
 describe('module-browser-data.utils', () => {

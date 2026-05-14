@@ -72,14 +72,12 @@ import {
 
 
 import {
-  LinkedRackUiState,
-  MAX_INSTANCES_PER_MODULE,
-  MultiInstanceModuleSummary,
-} from './patch-detail-data.models';
-import {
   CVConnectionEvent,
   CVConnectionState,
   EMPTY_CV_CONNECTION_STATE,
+  LinkedRackUiState,
+  MAX_INSTANCES_PER_MODULE,
+  MultiInstanceModuleSummary,
 } from './patch-detail-data.models';
 import {
   buildLinkedRackUiState,
