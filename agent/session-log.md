@@ -291,3 +291,33 @@ None new. Prior blockers unchanged (E2E test account, Tier 1 backend work).
   (all small wins, ~3 tests each)
 - OG image generation endpoint (`api/og.ts` using `@vercel/og`) — requires `pnpm add @vercel/og` first
 - UI consistency pass using Playwright screenshots (high-effort, benefits from fresh session)
+
+---
+
+## Session continued (same day, loop iteration 2)
+
+### Task: Unit spec — ModuleTagsComponent
+
+**Source**: Policy — unit test coverage; component chosen as highest-yield unspecced component
+with 187 lines of business logic (visibleTags$ merge/sort, availableTags$ filtering, grouping,
+proposer open/close, proposeTag, ngOnInit preloading).
+
+**What was done**
+- Created `src/app/components/module-parts/module-minimal/module-tags/module-tags.component.spec.ts`
+- 20 tests, all green on first run
+- Direct instantiation pattern; mock TagVoteDataService using BehaviorSubjects
+- Covers: visibleTags$ (merge, sort, maxTags, voteCount default), availableTags$ (server+proposed
+  filtering), availableTagGroups$ (TagType grouping), openProposer/closeProposer/proposeTag
+  (state + events), ngOnInit (loadVotes$.next with preloaded counts + empty-tags edge case)
+
+**Tests run**: 20/20 green (targeted run)
+
+**Files touched**
+- `src/app/components/module-parts/module-minimal/module-tags/module-tags.component.spec.ts` (new)
+- `internaldocs/workflow/COMPLETED.md` (new row prepended)
+- `agent/session-log.md` (this entry)
+
+**Next pickup suggestions**
+- More component specs: `reset-password-page.component.ts` (182 lines) or
+  `patch-connection-minimal.component.ts` (113 lines)
+- UI consistency pass (spacing/density) per audit recommended rollout order
