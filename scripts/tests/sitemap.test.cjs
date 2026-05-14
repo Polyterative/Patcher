@@ -77,7 +77,8 @@ function ok(payload) {
 function stubSupabaseResponses({
   modules = [],
   patches = [],
-  racks = []
+  racks = [],
+  manufacturers = []
 } = {}) {
   const calls = [];
   global.fetch = async (url) => {
@@ -91,6 +92,9 @@ function stubSupabaseResponses({
     }
     if (rawUrl.includes('/rest/v1/racks?')) {
       return ok(racks);
+    }
+    if (rawUrl.includes('/rest/v1/manufacturers?')) {
+      return ok(manufacturers);
     }
     return ok([]);
   };
@@ -139,8 +143,8 @@ test('returns dynamic sitemap XML with static and entity routes in production', 
   assert.match(state.body, /<loc>https:\/\/patcher\.xyz\/patches\/details\/16<\/loc>/);
   assert.match(state.body, /<loc>https:\/\/patcher\.xyz\/racks\/details\/91<\/loc>/);
   assert.match(state.body, /<lastmod>2026-02-20T10:00:00\.000Z<\/lastmod>/);
-  assert.equal(calls.length, 3);
-  assert.ok(calls.every((url) => url.includes('public=eq.true')));
+  assert.equal(calls.length, 4);
+  assert.ok(calls.every((url) => url.includes('public=eq.true') || url.includes('/rest/v1/manufacturers')));
 });
 
 test('returns noindex + production-origin URLs for preview deployments', async () => {
@@ -172,4 +176,23 @@ test('skips Supabase lookups when SUPABASE_ANON_KEY is missing', async () => {
   assert.equal(calls.length, 0);
   assert.match(state.body, /<loc>https:\/\/patcher\.xyz\/modules\/browser<\/loc>/);
   assert.doesNotMatch(state.body, /<loc>https:\/\/patcher\.xyz\/modules\/details\/72<\/loc>/);
+});
+
+test('includes manufacturer browser route in static entries and manufacturer detail pages', async () => {
+  const handler = loadSitemapHandler();
+  stubSupabaseResponses({
+    manufacturers: [
+      { id: 15, name: 'Intellijel', logo: 'intellijel.png' },
+      { id: 22, name: 'Make Noise', logo: null }
+    ]
+  });
+  const { res, state } = makeResponseRecorder();
+
+  await handler(makeRequest('GET', 'patcher.xyz'), res);
+
+  assert.equal(state.statusCode, 200);
+  assert.match(state.body, /<loc>https:\/\/patcher\.xyz\/manufacturers\/browser<\/loc>/);
+  assert.match(state.body, /<loc>https:\/\/patcher\.xyz\/manufacturers\/details\/15<\/loc>/);
+  assert.match(state.body, /<loc>https:\/\/patcher\.xyz\/manufacturers\/details\/22<\/loc>/);
+  assert.match(state.body, /manufacturer-logos\/intellijel\.png/);
 });
