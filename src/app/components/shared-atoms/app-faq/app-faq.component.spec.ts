@@ -26,4 +26,10 @@ describe('AppFaqComponent', () => {
       expect(item.icon!.length).toBeGreaterThan(0);
     });
   });
+
+  it('every faq item has unique question text', () => {
+    const questions = comp.faq.map(item => item.question);
+    const unique = new Set(questions);
+    expect(unique.size).toBe(questions.length);
+  });
 });

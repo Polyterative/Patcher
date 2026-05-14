@@ -22,4 +22,9 @@ describe('ModulePartNameComponent', () => {
   it('ngOnInit runs without error', () => {
     expect(() => comp.ngOnInit()).not.toThrow();
   });
+
+  it('data input can be set without error', () => {
+    comp.data = {id: 42, name: 'Clouds', hp: 12} as any;
+    expect(comp.data.id).toBe(42);
+  });
 });
