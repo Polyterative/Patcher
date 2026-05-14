@@ -61,6 +61,15 @@ function rackPayload(image = 'rack-preview.jpeg') {
   }];
 }
 
+function manufacturerPayload(logo = 'intellijel.png') {
+  return [{
+    id: 15,
+    name: 'Intellijel',
+    logo,
+    websiteURL: 'https://intellijel.com'
+  }];
+}
+
 function stubFetchWithPayload(payloadFactory) {
   let calls = 0;
   global.fetch = async (url) => {
@@ -253,4 +262,53 @@ test('detail fallback is noindex and not cached (private/nonexistent protection)
   assert.equal(second.headers.get('x-patcher-seo-cache'), 'miss');
   assert.equal(first.headers.get('x-patcher-seo-source'), 'rack-not-found');
   assert.equal(getCalls(), 2);
+});
+test('returns manufacturer metadata with logo for bot requests', async () => {
+  const middleware = loadMiddleware('test-key');
+  stubFetchWithPayload((url) => {
+    if (String(url).includes('/rest/v1/manufacturers')) {
+      return manufacturerPayload('intellijel.png');
+    }
+    return [];
+  });
+
+  const response = await middleware(makeRequest('/manufacturers/details/15'));
+  const html = await response.text();
+
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('x-patcher-seo-source'), 'manufacturer-logo');
+  assert.match(html, /Intellijel/);
+  assert.match(html, /og:title/);
+  assert.match(html, /rel="canonical"/);
+  assert.match(html, /storage\/v1\/object\/public\/manufacturer-logos\/intellijel\.png/);
+  assert.match(html, /"@type":"Organization"/);
+});
+
+test('returns manufacturer metadata with default image when logo is null', async () => {
+  const middleware = loadMiddleware('test-key');
+  stubFetchWithPayload((url) => {
+    if (String(url).includes('/rest/v1/manufacturers')) {
+      return [{id: 15, name: 'No Logo Co', logo: null, websiteURL: null}];
+    }
+    return [];
+  });
+
+  const response = await middleware(makeRequest('/manufacturers/details/15'));
+  const html = await response.text();
+
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('x-patcher-seo-source'), 'manufacturer-default-image');
+  assert.match(html, /No Logo Co/);
+  assert.match(html, /patcher_seo_hero\.png/);
+});
+
+test('falls back to noindex default when manufacturer is not found', async () => {
+  const middleware = loadMiddleware('test-key');
+  stubFetchWithPayload(() => []);
+
+  const response = await middleware(makeRequest('/manufacturers/details/9999'));
+
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow, noarchive');
+  assert.equal(response.headers.get('x-patcher-seo-source'), 'manufacturer-not-found');
 });

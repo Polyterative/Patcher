@@ -1,12 +1,14 @@
 # Acceptance Checklist
 
-## Unit Test Coverage — High-Yield Data Services
+## SEO — Manufacturer detail metadata in middleware
 
-- [x] `rack-detail-data.service.ts`: add tests for user-ownership guard (isOwner$), delete rack flow, image upload/delete flows
-- [ ] `rack-detail-data.service.ts`: add tests for module add/remove/move flows (deferred — out of scope for this pass)
-- [ ] `module-detail-data.service.ts`: add tests for primary init flow (module load, CV data, related patches/racks)
-- [ ] `module-detail-data.service.ts`: add tests for ownership / favourite / comment flows
-- [x] `user-area-data.service.ts`: add tests for count updates (patchesCount$, racksCount$, commentsCount$) and allPatchTags$ with undefined data
-- [x] All new specs: 0 lint errors, correct TypeScript types, no `any` except where pre-existing pattern allows
-- [x] `pnpm test-headless` scoped to new/extended specs: all passing (62/62)
-- [x] `pnpm build`: clean (pre-existing CSS budget warning only)
+- [x] `/manufacturers/details/:id` is parsed by `parseDetailRoute`
+- [x] `getManufacturerMetadata` queries `manufacturers` table with `id, name, logo, websiteURL`
+- [x] Title: `{name} | Patcher.xyz`
+- [x] Description: manufacturer name + module count fallback copy
+- [x] og:image: logo URL if logo present, else default site image
+- [x] JSON-LD: `Organization` type with `name`, `url`, `logo`, `@id` set to canonical URL
+- [x] Falls back to `site` default metadata when manufacturer not found (no key, not found, fetch error)
+- [x] Middleware unit tests pass (13/13, including 3 new manufacturer tests)
+- [x] Angular suite green (2372/2372)
+- [x] No TypeScript errors
