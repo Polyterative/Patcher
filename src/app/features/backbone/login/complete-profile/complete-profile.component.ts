@@ -1,4 +1,6 @@
 import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   OnInit
 } from '@angular/core';
@@ -35,6 +37,7 @@ import { UserManagementService } from '../user-management.service';
  * 4. After setting username, user proceeds to main app
  */
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-complete-profile',
   template: `
     <div class="complete-profile-container">
@@ -166,7 +169,8 @@ export class CompleteProfileComponent extends SubManager implements OnInit {
   constructor(
     private userManagementService: UserManagementService,
     private router: Router,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private cdr: ChangeDetectorRef
   ) {
     super();
   }
@@ -208,11 +212,15 @@ export class CompleteProfileComponent extends SubManager implements OnInit {
         }
         
         this.saving = false;
+        this.cdr.markForCheck();
         return NEVER;
       }),
       takeUntil(this.destroy$)
     ).subscribe({
-      complete: () => { this.saving = false; }
+      complete: () => {
+        this.saving = false;
+        this.cdr.markForCheck();
+      }
     });
   }
 }
