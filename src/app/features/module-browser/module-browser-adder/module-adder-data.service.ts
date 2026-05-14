@@ -17,6 +17,7 @@ import {
 } from 'rxjs';
 import {
   catchError,
+  exhaustMap,
   filter,
   map,
   shareReplay,
@@ -300,7 +301,7 @@ export class ModuleAdderDataService extends SubManager {
           };
           
         }),
-        switchMap((x) => this.backend.add.modules([x as any]).pipe(
+        exhaustMap((x) => this.backend.add.modules([x as any]).pipe(
           map(() => x),
           catchError(() => {
             SharedConstants.errorCustom(this.snackBar, 'Failed to submit module. Please try again.');
@@ -348,7 +349,7 @@ export class ModuleAdderDataService extends SubManager {
       filter(() => this.newManufacturerNameControl.valid && this.duplicateManufacturer$.value === null),
       tap(() => this.isCreatingManufacturer$.next(true)),
       map(() => plainSanitize(this.newManufacturerNameControl.value.trim())),
-      switchMap(name => this.backend.add.manufacturers([{ name }]).pipe(
+      exhaustMap(name => this.backend.add.manufacturers([{ name }]).pipe(
         map(result => ({ name, data: result?.data })),
         catchError(err => {
           console.error('Failed to create manufacturer:', err);
