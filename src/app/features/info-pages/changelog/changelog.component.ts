@@ -14,7 +14,7 @@ import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 })
 export class ChangelogComponent {
   readonly changelogUrl = 'https://github.com/Polyterative/Patcher/blob/develop/CHANGELOG.md';
-  readonly roadmapUrl = 'https://github.com/Polyterative/Patcher/blob/develop/internaldocs/workflow/TODO.md';
+  readonly roadmapUrl = 'https://github.com/Polyterative/Patcher/blob/develop/internaldocs/product/ROADMAP.md';
   readonly repoUrl = 'https://github.com/Polyterative/Patcher';
   readonly issueTrackerUrl = 'https://github.com/Polyterative/Patcher/issues';
 
