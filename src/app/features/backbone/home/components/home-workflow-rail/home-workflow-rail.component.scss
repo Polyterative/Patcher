@@ -2,12 +2,16 @@
 
 :host {
   display: block;
+  --section-space-100: 1rem;
+  --section-space-150: 1.5rem;
+  --section-space-200: 2rem;
+  --section-space-050: 0.5rem;
 }
 
 .workflow-shell {
   display: grid;
-  gap: 2rem;
-  padding: 2.5rem 2rem;
+  gap: var(--section-space-150);
+  padding: var(--section-space-200);
   border: 1px solid var(--home-border);
   border-radius: 0.5rem;
   background: linear-gradient(160deg, rgba(255, 247, 238, 0.88), rgba(236, 247, 255, 0.9));
@@ -15,7 +19,7 @@
 
 .section-head {
   display: grid;
-  gap: 1rem;
+  gap: var(--section-space-100);
 
   h2 {
     @include brand-resources.heading-font;
@@ -51,10 +55,10 @@
   &:not(:last-child)::after {
     content: "";
     position: absolute;
-    right: -0.58rem;
+    right: calc(var(--section-space-050) * -1);
     top: 50%;
-    width: 0.48rem;
-    height: 0.48rem;
+    width: var(--section-space-050);
+    height: var(--section-space-050);
     border-radius: 50%;
     background: var(--home-accent);
     box-shadow: 0 0 0 0.25rem rgba(23, 102, 178, 0.16);
@@ -104,7 +108,7 @@
 
 @media (max-width: 40rem) {
   .workflow-shell {
-    padding: 1rem;
+    padding: var(--section-space-150);
   }
 
   .workflow-grid {
