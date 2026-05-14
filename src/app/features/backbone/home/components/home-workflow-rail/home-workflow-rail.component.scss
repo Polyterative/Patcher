@@ -6,8 +6,8 @@
 
 .workflow-shell {
   display: grid;
-  gap: 1.75rem;
-  padding: 2.5rem 2.25rem;
+  gap: 2rem;
+  padding: 2.5rem 2rem;
   border: 1px solid var(--home-border);
   border-radius: 0.5rem;
   background: linear-gradient(160deg, rgba(255, 247, 238, 0.88), rgba(236, 247, 255, 0.9));
@@ -15,7 +15,7 @@
 
 .section-head {
   display: grid;
-  gap: 0.75rem;
+  gap: 1rem;
 
   h2 {
     @include brand-resources.heading-font;
@@ -35,13 +35,13 @@
 .workflow-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1.25rem;
+  gap: 1.5rem;
 }
 
 .workflow-step {
   position: relative;
   display: grid;
-  gap: 0.75rem;
+  gap: 1rem;
   padding: 1.5rem;
   border: 1px solid rgba(13, 30, 52, 0.13);
   border-radius: 0.5rem;
@@ -104,7 +104,7 @@
 
 @media (max-width: 40rem) {
   .workflow-shell {
-    padding: 1.25rem 1rem;
+    padding: 1rem;
   }
 
   .workflow-grid {

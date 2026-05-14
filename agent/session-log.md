@@ -980,3 +980,25 @@ All `.ts` source files testable with direct instantiation (no Angular TestBed/in
 2. UI consistency improvements from `UI_CONSISTENCY_AUDIT.md`
 3. TestBed-based directive/adapter specs if coverage tooling demands it
 
+
+## Iteration 42 — 2025-07-16
+
+**Task:** Home page E2E expansion + UI spacing consistency pass
+
+**What I did:**
+1. `e2e/home.spec.ts` — expanded from 3 tests to 12:
+   - CTA navigation: Browse modules → /modules/browser, Sign up → /auth/signup, Log in → /auth/login
+   - Deferred section visibility: proof-showcase, statistics, open-principles, workflow-rail, invitation-CTA
+   - Responsive: hero heading stays within bounds at 360×740 mobile viewport
+2. SCSS spacing consistency pass on 3 files (from UI_CONSISTENCY_AUDIT.md item #1):
+   - `home-open-principles.component.scss`: 1.75→2rem shell gap, 2.25→2rem side padding, 0.75→1rem section-head gap, 1.25→1.5rem grid gap, 0.75→1rem card gap, 1.25rem→1rem mobile padding
+   - `home-workflow-rail.component.scss`: same pattern (identical structure)
+   - `event-banner.component.scss`: 0.75rem → 1rem in mobile and reduced-motion breakpoints
+
+**Files touched:** e2e/home.spec.ts, event-banner.component.scss, home-open-principles.component.scss, home-workflow-rail.component.scss
+
+**Tests run:** `pnpm lint` — 0 errors; `pnpm build` — clean (pre-existing budget warnings only)
+
+**Follow-ups:**
+- UI audit item #2 (button/link hierarchy) is next when an opportunity arises
+- E2E multi-instance patching still blocked on dedicated test account
