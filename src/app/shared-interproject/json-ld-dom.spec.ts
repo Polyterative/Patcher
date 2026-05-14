@@ -34,4 +34,11 @@ describe('json-ld-dom helpers', () => {
       upsertJsonLdScript(scriptId, {'@type': 'Thing'}, undefined);
     }).not.toThrow();
   });
+
+  it('clearJsonLdScript removes an existing script', () => {
+    upsertJsonLdScript(scriptId, {'@type': 'Thing'});
+    expect(document.getElementById(scriptId)).not.toBeNull();
+    clearJsonLdScript(scriptId);
+    expect(document.getElementById(scriptId)).toBeNull();
+  });
 });
