@@ -18,4 +18,10 @@ describe('BrowserResetFiltersButtonComponent', () => {
     comp.reset$.emit();
     expect(emitted).toBeTrue();
   });
+
+  it('canReset$ input can be assigned', () => {
+    const obs = new (require('rxjs').Subject)();
+    comp.canReset$ = obs;
+    expect(comp.canReset$).toBe(obs);
+  });
 });

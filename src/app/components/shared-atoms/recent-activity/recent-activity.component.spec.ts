@@ -61,3 +61,44 @@ describe('RecentActivityComponent', () => {
     expect(host.textContent).toContain('Loading recent activity...');
   });
 });
+
+describe('RecentActivityComponent - pure unit', () => {
+  let comp: RecentActivityComponent;
+
+  beforeEach(() => {
+    comp = new RecentActivityComponent();
+  });
+
+  it('title defaults to Recent activity', () => {
+    expect(comp.title).toBe('Recent activity');
+  });
+
+  it('maxItems defaults to 5', () => {
+    expect(comp.maxItems).toBe(5);
+  });
+
+  it('visibleItems returns empty array when items is null', () => {
+    comp.items = null;
+    expect(comp.visibleItems).toEqual([]);
+  });
+
+  it('visibleItems respects maxItems', () => {
+    comp.maxItems = 2;
+    comp.items = [
+      {id: 'a', type: 'update', actionLabel: 'x', targetLabel: 'y', timestamp: '', contextLabel: '', route: []},
+      {id: 'b', type: 'update', actionLabel: 'x', targetLabel: 'y', timestamp: '', contextLabel: '', route: []},
+      {id: 'c', type: 'update', actionLabel: 'x', targetLabel: 'y', timestamp: '', contextLabel: '', route: []}
+    ];
+    expect(comp.visibleItems.length).toBe(2);
+  });
+
+  it('resolveIcon returns item.icon when present', () => {
+    const item: any = {id: '1', type: 'update', icon: 'star', actionLabel: '', targetLabel: '', timestamp: '', contextLabel: '', route: []};
+    expect(comp.resolveIcon(item)).toBe('star');
+  });
+
+  it('resolveIcon falls back to type icon', () => {
+    const item: any = {id: '2', type: 'comment', actionLabel: '', targetLabel: '', timestamp: '', contextLabel: '', route: []};
+    expect(comp.resolveIcon(item)).toBe('chat_bubble_outline');
+  });
+});
