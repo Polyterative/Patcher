@@ -555,3 +555,23 @@ Compile errors fixed:
 24/24 green on first run.
 
 **Files touched**: 2 new spec files, COMPLETED.md, session-log.md
+
+---
+
+## Loop iteration 13 — LoginPageComponent + FileDragHostComponent
+
+**LoginPageComponent** (10 tests):
+- construction: no error, updateSeo called with noindex:true
+- ngOnInit checkResetSuccessParam: snackBar when resetSuccess='true', no-op otherwise
+- ngOnInit checkLoggedInUser: navigates to /user/area when user present, no-op when null, successLogin called
+- handleSSOLogin: delegates to loginWithSSO with provider passthrough
+
+**FileDragHostComponent** (8 tests):
+- construction: no error, isImageOnlyMode=false
+- ngOnInit singleFileMode: !multipleFilesMode passed to service
+- detectChanges called after each service stream emits (with 100ms setTimeout for debounce(50))
+- ngOnDestroy: stops calling detectChanges after destroy
+
+18/18 green on first run.
+
+**Files touched**: 2 new spec files, COMPLETED.md, session-log.md
