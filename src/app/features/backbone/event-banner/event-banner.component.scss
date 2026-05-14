@@ -3,6 +3,10 @@
   width: 100%;
   box-sizing: border-box;
   overflow: hidden;
+  --event-banner-space-050: 0.5rem;
+  --event-banner-space-075: 0.75rem;
+  --event-banner-space-100: 1rem;
+  --event-banner-space-150: 1.5rem;
 }
 
 // ─── Main announcement strip ───────────────────────────────────────────────
@@ -12,10 +16,10 @@
   flex-direction:   row;
   align-items:      flex-start;
   justify-content:  space-between;
-  padding:          0.5rem 0.5rem 0.5rem 1rem;
+  padding:          var(--event-banner-space-075) var(--event-banner-space-100);
   background-color: var(--mat-sys-surface-variant, #e2e0e7);
   color:            var(--mat-sys-on-surface-variant, #45464e);
-  gap:              0.5rem;
+  gap:              var(--event-banner-space-075);
   box-sizing:       border-box;
   width:            100%;
   overflow-wrap:    break-word;
@@ -30,10 +34,9 @@
     display:     flex;
     flex-wrap:   wrap;
     align-items: center;
-    gap:         0.25rem 0.5rem;
+    gap:         var(--event-banner-space-050) var(--event-banner-space-075);
     flex:        1;
     min-width:   0;
-    padding-top: 0.25rem;
   }
 
   &__title {
@@ -45,9 +48,9 @@
   }
 
   &__description {
-    flex:          1 1 180px;
+    flex:          1 1 12rem;
     min-width:     0;
-    font-size:     0.8125rem;
+    font-size:     0.875rem;
     line-height:   1.45;
     overflow-wrap: break-word;
     word-break:    break-word;
@@ -56,25 +59,25 @@
 
   &__cta {
     flex-shrink:   0;
-    font-size:     0.8125rem;
-    margin-top:    0.25rem;
+    font-size:     0.875rem;
+    margin-top:    0;
   }
 
   &__dismiss {
     flex-shrink:   0;
-    margin-top:    0;
+    align-self:    flex-start;
+    margin:        calc(var(--event-banner-space-050) * -1);
   }
 
   // Narrow screens: stack title + description + CTA vertically
   @media (max-width: 520px) {
-    padding:        1rem 0.5rem 1rem 1rem;
+    padding:        var(--event-banner-space-100);
     align-items:    flex-start;
 
     &__body {
       flex-direction: column;
       align-items:    flex-start;
-      gap:            0.25rem 0;
-      padding-top:    0;
+      gap:            var(--event-banner-space-050);
     }
 
     &__title {
@@ -86,10 +89,13 @@
     }
 
     &__cta {
-      margin-top: 0.25rem;
-      // Full-width on tiny screens for easier tap target
+      margin-top: var(--event-banner-space-050);
       width:      100%;
       text-align: center;
+    }
+
+    &__dismiss {
+      margin: 0;
     }
   }
 }
