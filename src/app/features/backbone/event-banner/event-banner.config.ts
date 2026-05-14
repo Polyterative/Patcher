@@ -27,21 +27,8 @@ export interface EventBannerConfig {
 
 // Set to null to disable the banner entirely (no component renders).
 // To add a future event: replace this constant — one file edit, no DB migration.
-export const ACTIVE_EVENT_BANNER: EventBannerConfig | null = {
-  id:          'superbooth-2026',
-  title:       '🎛 Heading to Superbooth 2026',
-  description: 'Hey there, it\'s Vlady, the author of Patcher. I\'ll be at Superbooth in Berlin (7–10 May) as a personal attendee — no booth, just roaming the show floor. I\'ll have a tablet with a live Patcher demo if you\'d like to see it in action and share some feedback. Reach out on Instagram and let\'s meet up!',
-  startDate:   '2026-05-03',
-  endDate:     '2026-05-10',
-  ctaLabel:    'Say hi on Instagram',
-  ctaUrl:      'https://www.instagram.com/patcher.xyz/',
-  theme:       'accent',
-  marquee: {
-    text:      '🎛 Superbooth 2026 · Berlin · 7–10 May · Come say hi! · @patcher.xyz on Instagram · ',
-    startDate: '2026-05-07',
-    endDate:   '2026-05-10',
-  },
-};
+// Superbooth 2026 banner ran 2026-05-03..2026-05-10; cleared after event ended.
+export const ACTIVE_EVENT_BANNER: EventBannerConfig | null = null;
 
 export const EVENT_BANNER_CONFIG = new InjectionToken<EventBannerConfig | null>(
   'EVENT_BANNER_CONFIG',
