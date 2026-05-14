@@ -66,7 +66,7 @@ export class AppFaqComponent {
     {
       question: 'What is being developed right now?',
       icon: 'build',
-      link: 'https://github.com/Polyterative/Patcher/blob/develop/internaldocs/TODO.md',
+      link: 'https://github.com/Polyterative/Patcher/blob/develop/internaldocs/product/ROADMAP.md',
       answer: 'We are constantly improving the project. You can check the roadmap on our GitHub repository to see what is currently being developed.'
     }
   ];
