@@ -312,7 +312,7 @@ async function prepareHome(page: Page): Promise<void> {
   const patchId = await getPublicConnectedPatchId();
   await page.goto('/home');
   await expect(page).toHaveURL(/\/home/, {timeout: 20_000});
-  await expect(page.locator('main.home-page h1').first()).toBeVisible({timeout: 20_000});
+  await expect(page.locator('div.home-page h1').first()).toBeVisible({timeout: 20_000});
   await expect(page.getByRole('link', {name: /sign up/i}).first()).toBeVisible({timeout: 20_000});
   await expect(page.getByRole('link', {name: /log in/i}).first()).toBeVisible({timeout: 20_000});
   await expect(page.getByRole('link', {name: /my profile/i})).toHaveCount(0);
