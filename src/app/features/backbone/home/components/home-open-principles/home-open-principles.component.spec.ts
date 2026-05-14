@@ -23,4 +23,10 @@ describe('HomeOpenPrinciplesComponent', () => {
     const segments = comp.getCardDescriptionSegments(card);
     expect(segments.some(s => s.highlighted)).toBeTrue();
   });
+
+  it('getCardDescriptionSegments returns all text as non-highlighted when no keywords match', () => {
+    const card = { icon: 'i', title: 't', description: 'Hello world', keywords: ['Missing'] };
+    const segments = comp.getCardDescriptionSegments(card);
+    expect(segments.every(s => !s.highlighted)).toBeTrue();
+  });
 });

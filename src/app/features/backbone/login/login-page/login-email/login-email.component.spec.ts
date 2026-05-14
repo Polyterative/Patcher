@@ -37,4 +37,13 @@ describe('LoginEmailComponent', () => {
     valueChanges$.next('test@example.com');
     expect(emitted).toBe('test@example.com');
   });
+
+  it('emailChange emits each new value from valueChanges', () => {
+    comp.ngOnInit();
+    const values: string[] = [];
+    comp.emailChange.subscribe(v => values.push(v));
+    valueChanges$.next('a@example.com');
+    valueChanges$.next('b@example.com');
+    expect(values).toEqual(['a@example.com', 'b@example.com']);
+  });
 });
