@@ -377,6 +377,7 @@
           [disabled]="control.value === '' || control.value == null"
           matSuffix
           mat-icon-button
+          aria-label="Clear"
           (click)="control.patchValue('')"
     >
           <mat-icon>close</mat-icon>
