@@ -1,28 +1,27 @@
 # Current Task
 
 ## Title
-Unit spec for ManufacturerDetailComponent
+UI Consistency Pass 2 — Auth page form element smoke tests + user-area spacing
 
 ## Source
-AGENTS.md §1 step 4 — high-value cleanup: missing test.
-Component at `src/app/features/manufacturer-detail/manufacturer-detail.component.ts` (151 lines, no spec).
+UI_CONSISTENCY_AUDIT.md §3 (Buttons/Links) + §5 (Authenticated editing cleanup) — improve consistency in auth pages and user-area surfaces.
 
 ## Goal
-Cover the business logic in `ManufacturerDetailComponent` that is not exercised by the existing
-`manufacturer-detail-data.service.spec.ts`: the `stats$` derived observable, the `logoUrl()` helper,
-route id parsing, and SEO title update, so the component's own logic is regression-protected.
+Add targeted E2E smoke tests for the auth pages (form elements, sign-up/login flow basics without actual credentials) and apply spacing corrections to user-area-root where non-scale values degrade the spacing system enforcement.
 
 ## Acceptance criteria
-(See agent/acceptance-checklist.md)
+- Auth page smoke tests: login form fields are present and accessible; signup form renders
+- user-area-root utility search gap/padding aligned to scale
 
 ## Affected files
-- src/app/features/manufacturer-detail/manufacturer-detail.component.spec.ts (new)
+- e2e/auth-pages-smoke.spec.ts (new)
+- src/app/features/routes/user-area/user-area-root/user-area-root.component.scss (spacing)
+- playwright.config.ts (testMatch)
 
 ## Out of scope
-- Template rendering / DOM interactions
-- JSON-LD DOM injection detail (cleanup tested via ngOnDestroy)
-- ManufacturerDetailDataService internals (already covered by its own spec)
+- Actual authentication flow (requires credentials)
+- Button/link hierarchy refactor (larger scope, needs planning)
+- Backend RLS/auth config
 
 ## Risk notes
-Component uses SubManager; direct instantiation requires calling ngOnDestroy() after each test.
-DOM helper imports (clearJsonLdScript, upsertJsonLdScript) operate on document — fine in Karma.
+Unauthenticated auth page tests: low risk. SCSS changes: user-area-root is auth-gated so cannot visually verify without a running instance — make only clearly safe, unambiguous changes.
