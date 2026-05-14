@@ -1,23 +1,14 @@
 # Current Task
 
-**Active task:** Add privacy-safe linked-rack viewer handling.
+**Active task:** None — all acceptance-checklist items complete as of 2026-05-13.
 
-**Why it matters:** Linked-rack edit/create flows now degrade safely and the patch editor has a read-only linked-rack mode, so the next bounded step is making viewer-facing linked-rack state safe when the rack is unavailable or not visible to that viewer.
+**Last completed task:** Add privacy-safe linked-rack viewer handling.
 
-**Likely affected files:**
-- `src/app/components/patch-parts/patch-detail-data.service.ts`
-- `src/app/components/patch-parts/patch-minimal/*`
-- focused patch-detail / patch-minimal specs
-- any public patch detail query/helper needed to resolve linked-rack viewer state safely
+**What shipped:** Guests and non-owners now see the linked rack in read-only mode when a rack is available and accessible. When the rack is unavailable or the viewer lacks access, safe text-first messaging is shown without leaking rack identity or structure. The `PatchEditorComponent` gained a `readonly` input that skips collection loading and disables module clicks. References: commit `6500485` (2026-05-13).
 
-**Acceptance criteria:**
-- Public or unauthorized viewers never see the identity or structure of a private/unavailable linked rack.
-- Linked-rack context degrades to safe text-first messaging when the rack cannot be shown.
-- Existing owner flows remain intact.
-- Focused specs cover the new viewer state behavior.
+**Feature state:** Patch Builder — Optional Rack Context shipped as v6.0.0 on 2026-05-13. All acceptance-checklist items are now done. One minor Layer 3 Polish review item remains open in the backlog (`internaldocs/workflow/TODO.md`).
 
-**Validation steps:**
-- Run targeted patch detail / patch minimal specs.
-- Run a build-safe validation command after the viewer-state slice lands.
-
-**Completion status / next action:** Ready to start. Note: live selected linked-rack persistence still depends on applying the existing `patches.linked_rack_id` migration outside the repo; until then, viewer-state work should assume linked-rack mode data can come only from seeded/non-live environments.
+**Next step:** Pick the next task from `internaldocs/workflow/TODO.md`. Candidates:
+- Review educational/planning flows to ensure rack-linked mode does not weaken non-1:1 use cases (low, carry-over from Layer 3)
+- Patch Editing — "No connections" warning not updating after connection added (high, pre-existing bug)
+- E2E — Dedicated Test Account Cleanup (high infra task, prerequisite for E2E multi-instance)

@@ -8,4 +8,4 @@
 - [x] Existing-patch owner UI choose/change/clear flows are implemented.
 - [x] Patch creation can optionally set the linked rack.
 - [x] Linked-rack create/edit writes degrade safely while the live schema rollout is pending.
-- [ ] Privacy-safe viewer rendering is implemented.
+- [x] Privacy-safe viewer rendering is implemented.
