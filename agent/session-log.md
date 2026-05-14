@@ -1,8 +1,19 @@
 # Session Log
 
-## 2026-05-14T11:30
+## 2026-05-14T11:30 — Session continuation (unit test coverage pass)
 
-- **Selected task:** Unit Test Coverage — High-Yield Data Services (resumed from prior session)
+- **Tasks completed:**
+  1. Committed 10 tests to rack-detail + user-area specs (commit `941c63d5`)
+  2. Committed 6 tests for tag-filter, error-swallow, editor-close (commit `1c04ecb3`)
+  3. Created specs for `UserLoginDataService` (8 tests) and `UserResetPasswordDataService` (10 tests) (commit `b87018fe`)
+  4. Created `patch-detail-data.service.core.spec.ts` with 11 tests covering core data flows (commit `1300403b`)
+- **Total new tests this session:** ~45 tests across 6 files/new files
+- **All tests green. Build clean.**
+- **Blockers raised:** None
+- **Decisions:** Identified that `UserResetPasswordDataService` service-level length guards are unreachable via Angular validators in normal flow — documented by clearing validators in tests to cover the defensive branches. `functionAnalysis*$` derived streams in rack-detail are trivial `map+shareReplay` with builders already tested in `rack-function-visuals.utils.spec.ts` — skipped as low-value.
+- **Suggested next pickup:** Continue test coverage on `public-profile-data.service.ts` (245 lines, 74-line spec), or `rack-browser-data.service.ts` (220 lines, 97-line spec). Alternatively look at other service files not yet specced (check `find src/app -name "*.service.ts" | grep -v spec` vs `find src/app -name "*.service.spec.ts"` for remaining gaps).
+
+
 - **Actions performed:** Added 10 new tests to two spec files. Rack-detail reactive spec: null-rack guard on `requestCreatePatchFromRack$`, non-owner guard, image-deletion branch of `deleteRack$`, `rackStatistics$` null-reset, ownership detection (true/false). User-area spec: `patchesCount$` update, `racksCount$` update, `commentsCount$` update, `allPatchTags$` with undefined patchesData$.
 - **Files changed:** `src/app/components/rack-parts/rack-detail-data.service.reactive.spec.ts`, `src/app/features/routes/user-area/user-area-data.service.spec.ts`, `agent/acceptance-checklist.md`, `internaldocs/workflow/COMPLETED.md`, `agent/session-log.md`
 - **Tests run:** `pnpm test-headless --include=rack-detail-data.service.reactive.spec.ts --include=user-area-data.service.spec.ts --include=module-detail-data.service.spec.ts` → **62/62 passing**
