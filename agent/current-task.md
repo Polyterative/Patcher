@@ -1,27 +1,18 @@
 # Current Task
 
-## Title
-UI Consistency Pass 2 — Auth page form element smoke tests + user-area spacing
+*No active task — session closed 14-05-2026.*
 
-## Source
-UI_CONSISTENCY_AUDIT.md §3 (Buttons/Links) + §5 (Authenticated editing cleanup) — improve consistency in auth pages and user-area surfaces.
+## Last completed
+- Cache Strategy Review — all bullets done (commit `d5fc8ec9`)
+- Reactive Pipeline Audit — all 13 bullets done (commit `aecd4f3c`)
+- caching.spec.ts expanded to 5 tests (commit `0df75e93`)
+- Bandwidth Optimisation audit — no rewrites needed, queries already optimised (commit `eb94a038`)
+- Superbooth 2026 banner cleared (commit `eb94a038`)
 
-## Goal
-Add targeted E2E smoke tests for the auth pages (form elements, sign-up/login flow basics without actual credentials) and apply spacing corrections to user-area-root where non-scale values degrade the spacing system enforcement.
+## Next candidate
+Pick from `internaldocs/workflow/TODO.md` INFRA section:
 
-## Acceptance criteria
-- Auth page smoke tests: login form fields are present and accessible; signup form renders
-- user-area-root utility search gap/padding aligned to scale
-
-## Affected files
-- e2e/auth-pages-smoke.spec.ts (new)
-- src/app/features/routes/user-area/user-area-root/user-area-root.component.scss (spacing)
-- playwright.config.ts (testMatch)
-
-## Out of scope
-- Actual authentication flow (requires credentials)
-- Button/link hierarchy refactor (larger scope, needs planning)
-- Backend RLS/auth config
-
-## Risk notes
-Unauthenticated auth page tests: low risk. SCSS changes: user-area-root is auth-gated so cannot visually verify without a running instance — make only clearly safe, unambiguous changes.
+1. **Initial Render Flash investigation** — code-analysis portion can be done headlessly; browser DevTools portion needs `pnpm start:ssr`. Start with template audit for double-emission patterns.
+2. **Unit test coverage** — expand specs for `user-management.service.ts`, `rack-detail-data.service.ts`, `module-detail-data.service.ts` using TestBed + mocking pattern.
+3. **Sentry triage** — requires Sentry MCP access; medium priority.
+4. All Tier 0 product features (Manufacturer Pages, Store Links, Patch Tags, Module Flagging, Rack-Context Patch Building) are already implemented.
