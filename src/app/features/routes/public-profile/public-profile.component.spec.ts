@@ -90,4 +90,39 @@ describe('PublicProfileComponent', () => {
       done();
     });
   });
+
+  it('detects own profile when logged user id matches profile id', (done) => {
+    const { component, dataService, userService } = build();
+
+    dataService.profile$.next({id: 'u1', username: 'viewer'} as any);
+    userService.loggedUserFullProfile$.next({id: 'u1'} as any);
+
+    component.isOwnProfile$.subscribe((isOwn) => {
+      expect(isOwn).toBeTrue();
+      done();
+    });
+  });
+
+  it('returns false for isOwnProfile when ids differ', (done) => {
+    const { component, dataService, userService } = build();
+
+    dataService.profile$.next({id: 'u1', username: 'viewer'} as any);
+    userService.loggedUserFullProfile$.next({id: 'u2'} as any);
+
+    component.isOwnProfile$.subscribe((isOwn) => {
+      expect(isOwn).toBeFalse();
+      done();
+    });
+  });
+
+  it('profilePath returns the /u/ prefixed route', () => {
+    const { component } = build();
+    expect(component.profilePath('viewer')).toBe('/u/viewer');
+  });
+
+  it('view configs have hideButtons true', () => {
+    const { component } = build();
+    expect(component.patchViewConfig.hideButtons).toBeTrue();
+    expect(component.rackViewConfig.hideButtons).toBeTrue();
+  });
 });
