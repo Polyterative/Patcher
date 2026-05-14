@@ -52,4 +52,16 @@ describe('ssr-host-config', () => {
     expect(normalizeHostCandidate('*.Vercel.app')).toBe('*.vercel.app');
     expect(normalizeHostCandidate('https://Patcher.xyz/modules/1')).toBe('patcher.xyz');
   });
+
+  it('normalizeHostCandidate returns undefined for empty and whitespace-only inputs', () => {
+    expect(normalizeHostCandidate('')).toBeUndefined();
+    expect(normalizeHostCandidate('   ')).toBeUndefined();
+    expect(normalizeHostCandidate(undefined)).toBeUndefined();
+  });
+
+  it('resolveRequestOrigin falls back to local dev host when no host info provided', () => {
+    const origin = resolveRequestOrigin({protocol: 'http', host: '', forwardedProto: '', forwardedHost: ''});
+    expect(origin).toContain('http://');
+    expect(origin.length).toBeGreaterThan(7);
+  });
 });
