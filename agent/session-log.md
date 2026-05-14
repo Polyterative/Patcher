@@ -1,6 +1,18 @@
 # Session Log
 
-## 2026-05-14T11:30 — Session continuation (unit test coverage pass)
+## 2026-05-14T12:15 — Unit test coverage continuation
+
+- **Tasks completed:**
+  1. `public-profile-data.service.spec.ts` +5 tests: not-found, incomplete username, ready state with data, private strips fields, error state → `c79d9602`
+  2. `rack-browser-data.service.spec.ts` +4 tests: data hydration, error fallback to previous data, canReset$, pageEvent$ skip/take → `c79d9602`
+  3. NEW `general-context-menu-data.service.spec.ts`: 5 tests for init state and clampPosition clamping → `c79d9602`
+  4. NEW `file-drag-host.service.spec.ts`: 7 tests for add/append/single-mode/rejection/remove/removeAll → `c79d9602`
+- **Full suite run: 2372/2372 green**
+- **All remaining uncovered data services now specced.** Only `user-management.service.ts` (599 lines, backend integration heavy) remains without a spec — properly out of scope given complexity.
+- **No blockers raised.**
+- **Suggested next pickup:** Evaluate TODO.md for any new unblocked frontend tasks. All Tier 0 product items remain backend-blocked. Consider E2E or UI consistency audit work.
+
+
 
 - **Tasks completed:**
   1. Committed 10 tests to rack-detail + user-area specs (commit `941c63d5`)
