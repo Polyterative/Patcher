@@ -67,4 +67,21 @@ describe('EntityStatCardComponent', () => {
     expect(result.length).toBe(1);
     expect(result[0][0].items.length).toBe(2);
   });
+
+  it('equalColumns defaults to false', () => {
+    expect(component.equalColumns).toBeFalse();
+  });
+
+  it('equalColumns input can be set', () => {
+    component.equalColumns = true;
+    expect(component.equalColumns).toBeTrue();
+  });
+
+  it('verticallyCentered defaults to false', () => {
+    expect(component.verticallyCentered).toBeFalse();
+  });
+
+  it('stackedItems defaults to false', () => {
+    expect(component.stackedItems).toBeFalse();
+  });
 });

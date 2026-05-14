@@ -16,4 +16,10 @@ describe('RackDetailsComponent', () => {
   it('exposes dataService', () => {
     expect(comp.dataService).toBe(mockDataService);
   });
+
+  it('data input can be assigned', () => {
+    const rack = {id: 3, name: 'Skiff'} as any;
+    comp.data = rack;
+    expect(comp.data).toBe(rack);
+  });
 });
