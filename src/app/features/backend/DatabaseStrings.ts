@@ -27,7 +27,16 @@ export class DbPaths {
 export class DbStoragePaths {
   static module_panels = 'module-panels' as const;
   static racks = 'racks' as const;
-  
+  static manufacturer_logos = 'manufacturer-logos' as const;
+}
+
+const SUPABASE_STORAGE_BASE = 'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/';
+
+/** Ready-to-use public base URLs for each storage bucket. Append a filename to get a full asset URL. */
+export class StorageUrls {
+  static modulePanels = `${SUPABASE_STORAGE_BASE}${DbStoragePaths.module_panels}/`;
+  static manufacturerLogos = `${SUPABASE_STORAGE_BASE}${DbStoragePaths.manufacturer_logos}/`;
+  static racks = `${SUPABASE_STORAGE_BASE}${DbStoragePaths.racks}/`;
 }
 
 export class QueryJoins {

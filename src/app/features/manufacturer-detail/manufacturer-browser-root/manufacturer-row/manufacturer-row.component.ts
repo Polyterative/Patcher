@@ -11,6 +11,7 @@ import { takeUntil } from 'rxjs/operators';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { ModuleList } from 'src/app/features/module-browser/module-browser-data.service';
 import { ManufacturerDetail } from '../../manufacturer-detail-data.service';
+import { StorageUrls } from 'src/app/features/backend/DatabaseStrings';
 import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
@@ -40,6 +41,8 @@ import { ManufacturerUpdatedBadgeComponent } from './manufacturer-updated-badge/
 export class ManufacturerRowComponent extends SubManager implements OnInit {
   @Input() manufacturer!: ManufacturerDetail;
   @Input() hideRowLink = false;
+
+  readonly logoStorageBase = StorageUrls.manufacturerLogos;
 
   private readonly _modules$ = new BehaviorSubject<ModuleList>(null);
   readonly modules$ = this._modules$.asObservable();

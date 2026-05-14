@@ -11,7 +11,7 @@
         <img
           class="img image-transition"
           [ngStyle]="{maxHeight:bag.height/sizeDivider+'rem'}"
-          [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/racks/'+filename"
+          [src]="rackStorageBase+filename"
           [@enter]
           loading="lazy"
           [alt]="'Rack preview for '+data.name"
@@ -22,7 +22,7 @@
       @if (filename) {
         <img
           [ngStyle]="{maxHeight:((bag.height)+'rem')}"
-          [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/racks/'+filename"
+          [src]="rackStorageBase+filename"
           [@enter]
           class="image-transition"
           loading="lazy"

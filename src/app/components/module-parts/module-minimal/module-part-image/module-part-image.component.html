@@ -19,7 +19,7 @@
           class="img image-transition"
           [class.img--fixed-height]="fixedHeight"
           [ngStyle]="fixedHeight ? {} : {maxHeight:32/sizeDivider+'rem'}"
-          [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+filename"
+          [src]="panelStorageBase+filename"
           [@enter]
           [attr.loading]="imageLoadingMode"
           [attr.decoding]="imageDecodingMode"
@@ -64,7 +64,7 @@
           class="image-transition modulePartImageHost__surfaceImage"
           [class.img--fixed-height]="fixedHeight"
           [ngStyle]="fixedHeight ? {} : {maxHeight:((bag.height)+'rem')}"
-          [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+filename"
+          [src]="panelStorageBase+filename"
           [@enter]
           [attr.loading]="imageLoadingMode"
           [attr.decoding]="imageDecodingMode"
