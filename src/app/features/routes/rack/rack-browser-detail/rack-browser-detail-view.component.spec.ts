@@ -117,6 +117,24 @@ describe('RackBrowserDetailViewComponent', () => {
     expect(dataService.updateSingleRackData$.next).toHaveBeenCalledWith(77);
   });
 
+  it('calculates rack utilization as a percentage string', () => {
+    expect(component.calculateRackUtilization(84, 1, 42)).toBe('50.0%');
+    expect(component.calculateRackUtilization(84, 2, 168)).toBe('100.0%');
+    expect(component.calculateRackUtilization(0, 2, 0)).toBe('0%');
+  });
+
+  it('exposes space stat group with HP used, available and utilization', () => {
+    const rows = component.rackSummaryStatRows({hp: 84, rows: 1} as any, [
+      [makeRackedModule(301, 10, 50, -20, 0), makeRackedModule(302, 8, 0, 0, 0)]
+    ]);
+    const spaceGroup = rows[0][1];
+    expect(spaceGroup.title).toBe('Space');
+    expect(spaceGroup.items[0].label).toBe('HP used');
+    expect(spaceGroup.items[0].value).toBe('18');
+    expect(spaceGroup.items[1].label).toBe('HP available');
+    expect(spaceGroup.items[1].value).toBe('66');
+  });
+
   describe('template comment visibility', () => {
     let fixture: ComponentFixture<RackBrowserDetailViewComponent>;
     let templateDataService: any;

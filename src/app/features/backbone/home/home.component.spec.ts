@@ -82,4 +82,18 @@ describe('HomeComponent', () => {
     expect(comp2.communityLinks.some(l => l.href === '/insights')).toBeTrue();
     comp2.ngOnDestroy();
   });
+
+  it('rackViewConfig and moduleViewConfig are defined with sensible defaults', () => {
+    expect(comp.rackViewConfig).toBeDefined();
+    expect(comp.moduleViewConfig.hidePanelsOptions).toBeTrue();
+    expect(comp.moduleViewConfig.bigPanelImage).toBeFalse();
+  });
+
+  it('proofSections has at least one item', () => {
+    expect((comp as any).proofSections.length).toBeGreaterThan(0);
+  });
+
+  it('heroContent title is non-empty', () => {
+    expect(comp.heroContent.title.length).toBeGreaterThan(0);
+  });
 });
