@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Fixed
 - `aria-label` added to all icon-only buttons project-wide (18+ buttons across 8 components) so screen readers can announce button purpose
+- Nested `<main>` landmark in home page replaced with `<div>` to produce valid, single-landmark HTML
+- `role="alert"` added to standalone password-mismatch error in sign-up form so screen readers announce it immediately
 
 ## [6.0.0](https://github.com/Polyterative/Patcher/compare/v5.7.3...v6.0.0) (2026-05-13)
 

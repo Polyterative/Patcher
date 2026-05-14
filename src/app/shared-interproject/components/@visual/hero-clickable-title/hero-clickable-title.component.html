@@ -1,9 +1,9 @@
 <mat-card-title [ngStyle]="{'font-size':textSize?(textSize+'rem'):undefined}"
 >
-  <div [routerLink]="link"
-       class="title"
-       fxFlex="fill"
+  <a [routerLink]="link"
+     class="title"
+     fxFlex="fill"
   >
     <ng-content></ng-content>
-  </div>
+  </a>
 </mat-card-title>
