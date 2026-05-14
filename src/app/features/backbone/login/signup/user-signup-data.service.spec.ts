@@ -95,4 +95,47 @@ describe('UserSignupDataService', () => {
     expect(userManagementService.login$).toHaveBeenCalledWith('new@example.com', 'password123');
     expect(router.navigate).toHaveBeenCalledWith(['/user/area']);
   });
+
+  it('shows errorSignup feedback and stops when signup throws', () => {
+    spyOn(SharedConstants, 'errorSignup').and.callFake(() => {});
+    const errorMsg = 'Email already registered';
+    const {throwError} = require('rxjs');
+    userManagementService.signup.and.returnValue(throwError(() => new Error(errorMsg)));
+
+    service.mailSignClick$.next();
+
+    expect(SharedConstants.errorSignup).toHaveBeenCalledWith(jasmine.anything(), errorMsg);
+    expect(router.navigate).not.toHaveBeenCalled();
+  });
+
+  it('navigates to returnUrl from query params when present', () => {
+    const routeWithReturn = {
+      snapshot: {queryParamMap: {get: () => '/modules/browser'}}
+    };
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        UserSignupDataService,
+        {provide: Router, useValue: router},
+        {provide: ActivatedRoute, useValue: routeWithReturn},
+        {provide: UserManagementService, useValue: userManagementService},
+        {provide: MatSnackBar, useValue: jasmine.createSpyObj('MatSnackBar', ['open'])}
+      ]
+    });
+    const svc = TestBed.inject(UserSignupDataService);
+    svc.fields.email.control.setValue('x@x.com');
+    svc.fields.password.control.setValue('pass1234');
+
+    spyOn(SharedConstants, 'successSignup').and.callFake(() => {});
+    userManagementService.signup.and.returnValue(of({
+      user: {id: 'u-1', email: 'x@x.com', created_at: '', updated_at: ''},
+      requiresEmailConfirmation: false
+    }));
+    userManagementService.login$.and.returnValue(of({returnUrl: null, user: {}} as any));
+
+    svc.mailSignClick$.next();
+
+    expect(router.navigate).toHaveBeenCalledWith(['/modules/browser']);
+  });
 });
