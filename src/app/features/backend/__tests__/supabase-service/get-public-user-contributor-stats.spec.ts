@@ -60,4 +60,16 @@ describe('SupabaseService - GET.publicUserContributorStats', () => {
       }
     });
   }, TEST_TIMEOUT);
+
+  it('calls from() with the correct table name', (done) => {
+    const fromSpy = spyOn(supabaseClient, 'from').and.returnValue(chainable({count: 0, error: null}));
+
+    service.GET.publicUserContributorStats('user-x').subscribe({
+      next: () => {
+        expect(fromSpy).toHaveBeenCalled();
+        done();
+      },
+      error: (err) => { fail(err); done(); }
+    });
+  }, TEST_TIMEOUT);
 });
