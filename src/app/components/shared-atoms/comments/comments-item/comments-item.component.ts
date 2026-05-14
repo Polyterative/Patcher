@@ -63,7 +63,7 @@ export class CommentsItemComponent {
   avatarColor(username: string): string {
     let hash = 0;
     for (let i = 0; i < username.length; i++) {
-      hash = username.charCodeAt(i) + ((hash << 5) - hash);
+      hash = username.charCodeAt(i) + ((hash << 5) - hash); // eslint-disable-line no-bitwise
     }
     const hue = Math.abs(hash) % 360;
     return `hsl(${ hue }, 55%, 42%)`;
