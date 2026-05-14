@@ -94,4 +94,57 @@ describe('RackBrowserDataService', () => {
     
     service.ngOnDestroy();
   }));
+
+  it('updates racksList$ and itemsCount$ on successful backend response', () => {
+    const {service, backend} = build();
+    backend.GET.racksMinimal.and.returnValue(
+      of({data: [{id: 1}, {id: 2}], count: 42})
+    );
+
+    service.updateRacksList$.next();
+
+    expect(service.racksList$.value).toEqual([{id: 1}, {id: 2}] as any);
+    expect(service.serversideAdditionalData.itemsCount$.value).toBe(42);
+  });
+
+  it('falls back to previous data on backend error response', () => {
+    const {service, backend} = build();
+    backend.GET.racksMinimal.and.returnValue(
+      of({data: [{id: 99}], count: 1})
+    );
+    service.updateRacksList$.next();
+
+    backend.GET.racksMinimal.and.returnValue(
+      of({error: 'server error', data: null, count: 0})
+    );
+    service.updateRacksList$.next();
+
+    expect(service.racksList$.value).toEqual([{id: 99}] as any);
+    expect(service.serversideAdditionalData.itemsCount$.value).toBe(1);
+  });
+
+  it('canReset$ emits true when search is non-empty', fakeAsync(() => {
+    const {service} = build();
+    let canReset: boolean | undefined;
+    service.canReset$.subscribe(v => (canReset = v));
+
+    service.fields.search.control.setValue('test');
+    tick(0);
+
+    expect(canReset).toBeTrue();
+    service.ngOnDestroy();
+  }));
+
+  it('pageEvent$ updates skip/take and triggers a backend reload', () => {
+    const {service, backend} = build();
+    backend.GET.racksMinimal.calls.reset();
+
+    service.pageEvent$.next({pageIndex: 2, pageSize: 10, length: 100});
+
+    expect(service.serversideTableRequestData.skip$.value).toBe(20);
+    expect(service.serversideTableRequestData.take$.value).toBe(10);
+    expect(backend.GET.racksMinimal).toHaveBeenCalledWith(
+      20, 29, '', 'updated', 'desc'
+    );
+  });
 });
