@@ -324,4 +324,26 @@ describe('ModuleDetailDataService', () => {
       expect(nextSpy).toHaveBeenCalledWith(10);
     }));
   });
+
+  it('setStoreUrl$ silently swallows backend errors without affecting other streams', fakeAsync(() => {
+    const {service, backend} = build();
+    const {throwError} = require('rxjs');
+    backend.update.moduleStoreUrl.and.returnValue(throwError(() => new Error('network error')));
+    service.singleModuleData$.next({id: 10} as any);
+
+    expect(() => {
+      service.setStoreUrl$.next({id: 10, url: 'https://store.example.com'});
+      tick();
+    }).not.toThrow();
+  }));
+
+  it('closes editor panel when a new user session is emitted while module data is set', () => {
+    const {service, loggedUser$, baseModule} = build();
+    service.moduleEditingPanelOpenState$.next(true);
+    service.singleModuleData$.next(baseModule as any);
+
+    loggedUser$.next({id: 'user-2'} as any);
+
+    expect(service.moduleEditingPanelOpenState$.value).toBeFalse();
+  });
 });

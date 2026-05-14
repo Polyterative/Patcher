@@ -506,4 +506,60 @@ describe('UserAreaDataService', () => {
 
     expect(service.commentsCount$.value).toBe(1);
   });
+
+  it('filteredPatchesData$ filters by active tag', (done) => {
+    const {service} = build();
+    service.patchesData$.next([
+      {id: 1, name: 'Patch A', tags: ['ambient']} as any,
+      {id: 2, name: 'Patch B', tags: ['drone']} as any,
+    ]);
+    service.activeTagFilter$.next('ambient');
+
+    service.filteredPatchesData$.subscribe(patches => {
+      expect(patches?.length).toBe(1);
+      expect(patches?.[0].id).toBe(1);
+      done();
+    });
+  });
+
+  it('filteredPatchesData$ shows all patches when tag filter is cleared', (done) => {
+    const {service} = build();
+    service.patchesData$.next([
+      {id: 1, name: 'Alpha', tags: ['ambient']} as any,
+      {id: 2, name: 'Beta', tags: ['drone']} as any,
+    ]);
+    service.activeTagFilter$.next(null);
+
+    service.filteredPatchesData$.subscribe(patches => {
+      expect(patches?.length).toBe(2);
+      done();
+    });
+  });
+
+  it('filteredPatchesData$ returns undefined when patchesData$ is undefined', (done) => {
+    const {service} = build();
+    service.patchesData$.next(undefined);
+
+    service.filteredPatchesData$.subscribe(patches => {
+      expect(patches).toBeUndefined();
+      done();
+    });
+  });
+
+  it('filteredPatchesData$ combines tag and text search', (done) => {
+    const {service} = build();
+    service.patchesData$.next([
+      {id: 1, name: 'Ambient Study', description: '', tags: ['ambient']} as any,
+      {id: 2, name: 'Drone Fog',    description: '', tags: ['ambient', 'drone']} as any,
+      {id: 3, name: 'Bright Tones', description: '', tags: ['melodic']} as any,
+    ]);
+    service.activeTagFilter$.next('ambient');
+    service['_searchQuery$'].next('drone');
+
+    service.filteredPatchesData$.subscribe(patches => {
+      expect(patches?.length).toBe(1);
+      expect(patches?.[0].id).toBe(2);
+      done();
+    });
+  });
 });
