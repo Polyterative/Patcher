@@ -63,4 +63,14 @@ describe('orderPatchGraphNodesForReveal', () => {
     expect(ordered[0].id).toBe('m1');
     expect(ordered.some(n => n.id === 'loose')).toBeTrue();
   });
+
+  it('returns empty array for empty input', () => {
+    expect(orderPatchGraphNodesForReveal([])).toEqual([]);
+  });
+
+  it('handles module with no children without error', () => {
+    const ordered = orderPatchGraphNodesForReveal([node('m1', 'module')]);
+    expect(ordered.length).toBe(1);
+    expect(ordered[0].id).toBe('m1');
+  });
 });
