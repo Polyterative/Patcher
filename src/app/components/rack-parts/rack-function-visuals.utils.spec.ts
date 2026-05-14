@@ -174,4 +174,24 @@ describe('rackFunctionVisualsUtils', () => {
     expect(isTrackedFunctionRole('functionAnalysisModule--voices')).toBeTrue();
     expect(isTrackedFunctionRole('functionAnalysisModule--blank')).toBeFalse();
   });
+
+  it('returns no-modules copy from coverage summary when rack is empty', () => {
+    expect(buildFunctionAnalysisCoverageSummary(null)).toBe('No modules to classify yet.');
+    expect(buildFunctionAnalysisCoverageSummary([[]])).toBe('No modules to classify yet.');
+  });
+
+  it('returns full-coverage copy when all modules map to tracked roles', () => {
+    const summary = buildFunctionAnalysisCoverageSummary([[
+      makeRackedModule(501, [{name: 'VCO', type: TagType.Purpose}], 4),
+      makeRackedModule(502, [{name: 'Envelope Gen.', type: TagType.Purpose}], 6)
+    ]]);
+    expect(summary).toBe('Tracked 2/2 modules · 10/10HP');
+  });
+
+  it('returns null for residual label when all modules map to tracked roles', () => {
+    const residual = buildFunctionAnalysisResidualLabel([[
+      makeRackedModule(601, [{name: 'VCO', type: TagType.Purpose}], 8)
+    ]]);
+    expect(residual).toBeNull();
+  });
 });

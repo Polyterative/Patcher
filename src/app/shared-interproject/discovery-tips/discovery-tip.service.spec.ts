@@ -331,4 +331,35 @@ describe('DiscoveryTipService', () => {
 
     expect(activeTip).toBeNull();
   });
+
+  it('registerAnchor increments anchor revision counter', () => {
+    const service = build('user-anchor-test');
+    let revision = -1;
+    (service as any)._anchorsRevision$.subscribe((v: number) => revision = v);
+    const before = revision;
+    service.registerAnchor('test-anchor', document.createElement('div'));
+    expect(revision).toBe(before + 1);
+  });
+
+  it('unregisterAnchor removes anchor and clears activeTip when it matches', () => {
+    const service = build('user-unregister');
+    const anchor = document.createElement('button');
+    service.registerAnchor('user-area-modules-add', anchor);
+
+    let activeTip: any = 'not-set';
+    service.activeTip$.subscribe(v => (activeTip = v));
+
+    service.unregisterAnchor('user-area-modules-add', anchor);
+
+    expect((service as any).anchors.has('user-area-modules-add')).toBeFalse();
+  });
+
+  it('unregisterAnchor ignores calls with a mismatched element reference', () => {
+    const service = build('user-unregister-mismatch');
+    const original = document.createElement('button');
+    const other = document.createElement('button');
+    service.registerAnchor('test-anchor', original);
+    service.unregisterAnchor('test-anchor', other);
+    expect((service as any).anchors.has('test-anchor')).toBeTrue();
+  });
 });
