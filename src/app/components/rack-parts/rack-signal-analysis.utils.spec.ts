@@ -240,4 +240,45 @@ describe('rackSignalAnalysisUtils', () => {
     expect(suggestSignalFocusArea(voice)).toBe('tone');
     expect(suggestSignalFocusArea(lfo)).toBe('modulation');
   });
+
+  it('suggests clock focus for timing modules with isDCC outputs', () => {
+    const clockModule = makeRackedModule(99, {
+      name: 'Clock',
+      outs: [{name: 'Clock Out', isDCC: true}]
+    });
+    expect(suggestSignalFocusArea(clockModule)).toBe('clock');
+  });
+
+  it('suggests mixing focus for plain audio output modules with no timing or modulation role', () => {
+    const audioOut = makeRackedModule(88, {
+      name: 'VCA',
+      outs: [{name: 'Audio Out', isAudio: true}]
+    });
+    expect(suggestSignalFocusArea(audioOut)).toBe('mixing');
+  });
+
+  it('buildSignalModuleAnalysis returns input, output and tag name lists', () => {
+    const mod = makeRackedModule(50, {
+      ins: [{name: 'IN 1'}, {name: 'IN 2'}],
+      outs: [{name: 'OUT 1'}],
+      tags: [{name: 'VCO', votes: 5}, {name: 'Oscillator', votes: 2}]
+    });
+    const result = buildSignalModuleAnalysis(mod, [[mod]]);
+    expect(result.inputNames.length).toBe(2);
+    expect(result.outputNames.length).toBe(1);
+    expect(result.tagNames.length).toBe(2);
+    expect(result.tagNames[0]).toBe('VCO');
+  });
+
+  it('buildSignalModuleAnalysis respects maxMatches option', () => {
+    const source = makeRackedModule(60, {
+      outs: [{name: 'CV Out', isVOCT: true}]
+    });
+    const targets = Array.from({length: 10}, (_, i) =>
+      makeRackedModule(100 + i, {ins: [{name: 'V/Oct', isVOCT: true}]})
+    );
+    const result = buildSignalModuleAnalysis(source, [[source, ...targets]], {maxMatches: 3});
+    expect(result.totalDestinations).toBeLessThanOrEqual(3);
+    expect(result.hiddenDestinationCount).toBeGreaterThanOrEqual(0);
+  });
 });
