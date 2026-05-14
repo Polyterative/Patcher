@@ -11,11 +11,8 @@
 - [x] Add a patch-editor operation mode selector with read-only linked-rack context below the editor.
 - [x] Fix duplicate linked rack card rendering in patch detail view.
 - [x] Apply the linked_rack_id migration to the live Supabase environment.
-
-## Ready next
-
-- [ ] Add privacy-safe viewer handling for unavailable or inaccessible linked racks.
-- [ ] Add rack-origin patch creation entry points that preselect the linked rack without changing collection-first editing.
+- [x] Add privacy-safe viewer handling for unavailable or inaccessible linked racks. (commit `6500485`, 2026-05-13)
+- [x] Add rack-origin patch creation entry points that preselect the linked rack without changing collection-first editing. (commit `3aac565`, 2026-05-12)
 
 ## Deferred / external
 
