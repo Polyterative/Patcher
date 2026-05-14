@@ -42,3 +42,25 @@ describe('AdviceTooltipComponent', () => {
     expect(icon.textContent?.trim()).toBe('campaign');
   });
 });
+
+describe('AdviceTooltipComponent - iconName getter', () => {
+  function make(): AdviceTooltipComponent {
+    return Object.assign(new AdviceTooltipComponent(), {});
+  }
+
+  it('returns custom icon when set', () => {
+    const c = make(); c.icon = 'star'; expect(c.iconName).toBe('star');
+  });
+  it('returns lightbulb for warning tone', () => {
+    const c = make(); c.tone = 'warning'; expect(c.iconName).toBe('lightbulb');
+  });
+  it('returns info for info tone', () => {
+    const c = make(); c.tone = 'info'; expect(c.iconName).toBe('info');
+  });
+  it('returns warning for danger tone', () => {
+    const c = make(); c.tone = 'danger'; expect(c.iconName).toBe('warning');
+  });
+  it('returns check_circle for success tone', () => {
+    const c = make(); c.tone = 'success'; expect(c.iconName).toBe('check_circle');
+  });
+});

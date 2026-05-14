@@ -9,4 +9,8 @@ describe('HeroItemCardComponent', () => {
     const comp = new HeroItemCardComponent();
     expect(() => comp.ngOnInit()).not.toThrow();
   });
+
+  it('multiple instances are independent', () => {
+    expect(new HeroItemCardComponent()).not.toBe(new HeroItemCardComponent());
+  });
 });

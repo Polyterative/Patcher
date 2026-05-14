@@ -22,4 +22,12 @@ describe('SelectionPanelOutletComponent', () => {
     const comp = new SelectionPanelOutletComponent(bridge);
     expect(comp.bridge).toBe(bridge);
   });
+
+  it('two instances with different bridges are independent', () => {
+    const bridgeA = mockBridge();
+    const bridgeB = mockBridge();
+    const compA = new SelectionPanelOutletComponent(bridgeA);
+    const compB = new SelectionPanelOutletComponent(bridgeB);
+    expect(compA.bridge).not.toBe(compB.bridge);
+  });
 });
