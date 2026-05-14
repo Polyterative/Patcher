@@ -373,3 +373,28 @@ debounce, blur hide, destroy teardown).
 - `src/app/components/shared-atoms/comments/comment-context/comment-context.component.spec.ts` (new)
 - `internaldocs/workflow/COMPLETED.md` (new row prepended)
 - `agent/session-log.md` (this entry)
+
+---
+
+## Session continued (loop iteration 5)
+
+### Task: Unit spec — DaysInWeekPickerComponent
+
+**Source**: Policy — unit test coverage; 84-line ControlValueAccessor with FormBuilder, day array
+generation, writeValue, valueChanges→onChange/onTouched wiring, setDisabledState, ngOnDestroy.
+
+**What was done**
+- Created `src/app/shared-interproject/components/@smart/days-in-week-picker/days-in-week-picker.component.spec.ts`
+- 20 tests, all green on first run
+- Used `new FormBuilder()` directly (established pattern in project)
+- Covers: days array (7 items, IDs A0-A6, non-empty names), ngOnInit (form creation, default false,
+  disabled=true), writeValue (partial selection, empty array, non-array, all 7), valueChanges
+  (onChange called with day numbers, empty array case, onTouched called), setDisabledState,
+  registerOnChange/Touched, ngOnDestroy unsubscribe (no calls after destroy)
+
+**Tests run**: 20/20 green (targeted run)
+
+**Files touched**
+- `src/app/shared-interproject/components/@smart/days-in-week-picker/days-in-week-picker.component.spec.ts` (new)
+- `internaldocs/workflow/COMPLETED.md` (new row prepended)
+- `agent/session-log.md` (this entry)
