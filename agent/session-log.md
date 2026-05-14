@@ -150,3 +150,23 @@
 - LOW: Rack-Context Patch Building — Polish Review
 - PRODUCT Tier 0: Patch Tags or Media Attachment on Patches
 - INFRA: Unit test coverage on high-yield services
+
+## 2026-05-14T10:38:00+02:00 — SESSION CLOSE
+
+### Tasks completed this session
+
+| SHA | Commit |
+|-----|--------|
+| `50af7e75` | fix(patch): use editorConnections$ for empty-state source in patch-details template |
+| `72478744` | feat(manufacturer): logo display, standard grouping default, data-report guidance |
+| `06fca8b5` | fix(admin-flags): add delete confirmation and sort order toggle |
+| `4394865a` | fix(patch-editor): show 'No rack linked yet' when kind is unlinked |
+
+### Blockers raised
+- OG Image endpoint requires new server-side API route — out of agent scope
+- E2E test account requires human to create Supabase account and update secrets
+- Manufacturer Accounts (Tier 1) requires human approval for RLS policy work
+
+### Suggested next pickup
+- Unblock E2E account and run multi-instance patching E2E suite (highest infra value)
+- OR: unit test coverage pass on high-yield data services
