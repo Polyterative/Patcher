@@ -47,4 +47,13 @@ describe('UserRacksComponent', () => {
   it('globalSearchQuery defaults to empty string', () => {
     expect(comp.globalSearchQuery).toBe('');
   });
+
+  it('globalSearchQuery input can be assigned', () => {
+    comp.globalSearchQuery = 'filter text';
+    expect(comp.globalSearchQuery).toBe('filter text');
+  });
+
+  it('dataService is the injected mock', () => {
+    expect(comp.dataService).toBe(ds);
+  });
 });

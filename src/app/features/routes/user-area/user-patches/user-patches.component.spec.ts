@@ -30,4 +30,9 @@ describe('UserPatchesComponent', () => {
   it('exposes dataService', () => {
     expect(comp.dataService).toBe(mockDataService);
   });
+
+  it('globalSearchQuery input can be assigned', () => {
+    comp.globalSearchQuery = 'bass';
+    expect(comp.globalSearchQuery).toBe('bass');
+  });
 });
