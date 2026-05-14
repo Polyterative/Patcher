@@ -421,3 +421,27 @@ generation, writeValue, valueChanges→onChange/onTouched wiring, setDisabledSta
 - `src/app/components/shared-atoms/comments/comments-item/comments-item.component.spec.ts` (new)
 - `internaldocs/workflow/COMPLETED.md` (new row prepended)
 - `agent/session-log.md` (this entry)
+
+---
+
+## Session continued (loop iteration 7)
+
+### Task: Unit specs — 7 rack pipes (batched)
+
+**Source**: Policy — unit test coverage; 7 unspecced pure pipes in rack-parts.
+
+**What was done**
+- Created `src/app/components/rack-parts/rack-pipes.spec.ts` (batched spec)
+- 37 tests, 36/37 green on first run; 1 failure diagnosed and fixed immediately
+  (undefined row test: JS default params treat `undefined` argument as "use default",
+  so `makeRacked(1, 4, undefined, 0)` was actually passing `row=0`. Fixed by constructing
+  rackingData directly for that one test.)
+- Pipes covered: TotalHpOfRack, TotalPowerOfRack, TotalPlacedModulesOfRack, TotalDepthOfRack,
+  TotalMissingPowerDataInRack, HasUnrackedModulesList, CalculateRowInformation
+
+**Tests run**: 37/37 green after fix
+
+**Files touched**
+- `src/app/components/rack-parts/rack-pipes.spec.ts` (new)
+- `internaldocs/workflow/COMPLETED.md` (new row prepended)
+- `agent/session-log.md` (this entry)
