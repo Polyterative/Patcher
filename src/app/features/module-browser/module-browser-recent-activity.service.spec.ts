@@ -105,4 +105,30 @@ describe('ModuleBrowserRecentActivityService', () => {
     expect(output.length).toBe(1);
     expect(output[0].targetLabel).toBe('Activity Source');
   });
+
+  it('returns empty array when modules input is null', () => {
+    const {service} = build();
+    expect(service.mapModulesToRecentActivityItems(null, 5)).toEqual([]);
+  });
+
+  it('returns empty array when maxItems is 0', () => {
+    const {service} = build();
+    const modules = [{
+      id: 1, name: 'M', description: '', hp: 4, public: true, manufacturerId: 1,
+      manufacturer: {name: 'X'}, standard: 0, tags: [], panels: [],
+      created: '2025-01-01T00:00:00.000Z', updated: '2025-01-01T00:00:00.000Z'
+    }] as any;
+    expect(service.mapModulesToRecentActivityItems(modules, 0)).toEqual([]);
+  });
+
+  it('slices to maxItems when more modules are provided', () => {
+    const {service} = build();
+    const modules = Array.from({length: 10}, (_, i) => ({
+      id: i + 1, name: `Module ${i}`, description: '', hp: 4, public: true, manufacturerId: 1,
+      manufacturer: {name: 'X'}, standard: 0, tags: [], panels: [],
+      created: `2025-01-${String(i + 1).padStart(2, '0')}T00:00:00.000Z`,
+      updated: `2025-01-${String(i + 1).padStart(2, '0')}T00:00:00.000Z`
+    })) as any;
+    expect(service.mapModulesToRecentActivityItems(modules, 3).length).toBe(3);
+  });
 });

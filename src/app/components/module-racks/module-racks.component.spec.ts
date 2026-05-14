@@ -20,6 +20,14 @@ describe('ModuleRacksComponent', () => {
     expect(comp.viewConfig.hideButtons).toBeTrue();
   });
 
+  it('viewConfig spreads all base config properties from defaultRackMinimalViewConfig', () => {
+    const keys = Object.keys(defaultRackMinimalViewConfig) as (keyof typeof defaultRackMinimalViewConfig)[];
+    const nonOverridden = keys.filter(k => k !== 'hideButtons');
+    nonOverridden.forEach(key => {
+      expect(comp.viewConfig[key]).toBe(defaultRackMinimalViewConfig[key]);
+    });
+  });
+
   it('ngOnInit runs without error', () => {
     expect(() => comp.ngOnInit()).not.toThrow();
   });
