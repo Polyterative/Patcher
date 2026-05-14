@@ -507,4 +507,34 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
     
     expect(confirmSpy).toHaveBeenCalled();
   });
+
+  // Regression test: empty-state stale-source bug fix (see TODO.md "No connections" warning).
+  // The template must read editorConnections$ (live), not patchConnections$ (backend snapshot).
+  // patchConnections$ stays at its backend value while the editor is open; adding a connection
+  // updates only editorConnections$, so a template driven by patchConnections$ would never clear
+  // the empty state until the editor is closed and the patch reloaded.
+  it('updates editorConnections$ while patchConnections$ remains at the loaded backend value after a connection is confirmed', () => {
+    spyOn(SharedConstants, 'successCustom').and.callFake(() => {});
+    const {service} = build();
+
+    // Simulate: backend returned empty connection list on patch load
+    service.singlePatchData$.next(patch({id: 77}));
+    service.patchConnections$.next([]);
+    // editorConnections$ mirrors the backend value
+    expect(service.editorConnections$.value?.length).toBe(0);
+
+    service.patchEditingPanelOpenState$.next(true);
+    service.selectedForConnection$.next({
+      a: cv(10, 'out', 100),
+      b: cv(20, 'in', 200)
+    });
+    service.confirmSelectedConnection$.next();
+
+    // editorConnections$ is now live — reflects the newly added connection
+    expect(service.editorConnections$.value?.length).toBe(1);
+
+    // patchConnections$ has NOT been updated (no backend refresh while editor is open)
+    // A template using patchConnections$ would still show the empty state — that was the bug
+    expect(service.patchConnections$.value?.length).toBe(0);
+  });
 });
