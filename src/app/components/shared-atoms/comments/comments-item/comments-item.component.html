@@ -14,7 +14,7 @@
       </div>
       @if (data.profile.id === (userService.loggedUser$|async)?.id || viewConfig.alwaysDeletable) {
         <div class="delete">
-          <button mat-icon-button (click)="requestDelete()" class="danger-action">
+          <button mat-icon-button (click)="requestDelete()" class="danger-action" aria-label="Delete comment">
             <mat-icon class="opacizeOnHover danger-action">delete</mat-icon>
           </button>
         </div>
