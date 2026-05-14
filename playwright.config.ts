@@ -54,6 +54,7 @@ export default defineConfig({
     '**/rack-details-layout.spec.ts',
     '**/home.spec.ts',
     '**/navigation.spec.ts',
+    '**/info-pages.spec.ts',
     AUTH_SPEC_GLOB
   ],
   /* Use Node-compatible tsconfig — root tsconfig uses "bundler" which breaks Playwright */
