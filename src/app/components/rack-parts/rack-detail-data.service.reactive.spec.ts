@@ -380,4 +380,71 @@ describe('RackDetailDataService reactive flows', () => {
     });
   });
 
+  it('shows error and blocks patch creation when rack data is not yet loaded', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    service.singleRackData$.next(undefined as any);
+    service.isCurrentRackPropertyOfCurrentUser$.next(true);
+
+    service.requestCreatePatchFromRack$.next();
+
+    expect(SharedConstants.errorCustom).toHaveBeenCalledWith(
+      jasmine.anything(),
+      jasmine.stringMatching(/still loading/)
+    );
+    expect(backend.add.patch).not.toHaveBeenCalled();
+  });
+
+  it('shows error and blocks patch creation when user is not the rack owner', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    service.singleRackData$.next(rack({id: 50, name: 'Other Rack'}));
+    service.isCurrentRackPropertyOfCurrentUser$.next(false);
+
+    service.requestCreatePatchFromRack$.next();
+
+    expect(SharedConstants.errorCustom).toHaveBeenCalledWith(
+      jasmine.anything(),
+      jasmine.stringMatching(/owner/)
+    );
+    expect(backend.add.patch).not.toHaveBeenCalled();
+  });
+
+  it('deletes rack image from storage when deleting a rack that has a preview image', () => {
+    spyOn(SharedConstants, 'successCustom').and.callFake(() => {});
+    const {service, backend, router} = build();
+    service.singleRackData$.next(rack({id: 10, name: 'Image Rack', image: 'rack-preview.jpg'}));
+
+    service.deleteRack$.next(service.singleRackData$.value as any);
+
+    expect(backend.storage.deleteRackImage).toHaveBeenCalledWith('rack-preview.jpg');
+    expect(backend.delete.userRack).toHaveBeenCalledWith(10);
+    expect(router.navigate).toHaveBeenCalledWith(['/user/area']);
+  });
+
+  it('resets rackStatistics$ to null when rack data is cleared', () => {
+    const {service} = build();
+    service.rackStatistics$.next([{name: 'HP used', value: '42'}]);
+
+    service.singleRackData$.next(undefined as any);
+
+    expect(service.rackStatistics$.value).toBeNull();
+  });
+
+  it('detects ownership correctly when user matches rack author', () => {
+    const {service, loggedUser$} = build();
+    service.singleRackData$.next(rack({id: 1, author: {id: 'user-owner', username: 'owner'}}));
+    loggedUser$.next({id: 'user-owner'} as any);
+
+    expect(service.isCurrentRackPropertyOfCurrentUser$.value).toBeTrue();
+  });
+
+  it('detects non-ownership when user id does not match rack author', () => {
+    const {service, loggedUser$} = build();
+    service.singleRackData$.next(rack({id: 1, author: {id: 'user-owner', username: 'owner'}}));
+    loggedUser$.next({id: 'different-user'} as any);
+
+    expect(service.isCurrentRackPropertyOfCurrentUser$.value).toBeFalse();
+  });
+
 });

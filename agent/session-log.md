@@ -1,6 +1,17 @@
 # Session Log
 
-## 2026-05-12T11:16:04+02:00
+## 2026-05-14T11:30
+
+- **Selected task:** Unit Test Coverage — High-Yield Data Services (resumed from prior session)
+- **Actions performed:** Added 10 new tests to two spec files. Rack-detail reactive spec: null-rack guard on `requestCreatePatchFromRack$`, non-owner guard, image-deletion branch of `deleteRack$`, `rackStatistics$` null-reset, ownership detection (true/false). User-area spec: `patchesCount$` update, `racksCount$` update, `commentsCount$` update, `allPatchTags$` with undefined patchesData$.
+- **Files changed:** `src/app/components/rack-parts/rack-detail-data.service.reactive.spec.ts`, `src/app/features/routes/user-area/user-area-data.service.spec.ts`, `agent/acceptance-checklist.md`, `internaldocs/workflow/COMPLETED.md`, `agent/session-log.md`
+- **Tests run:** `pnpm test-headless --include=rack-detail-data.service.reactive.spec.ts --include=user-area-data.service.spec.ts --include=module-detail-data.service.spec.ts` → **62/62 passing**
+- **Build:** `pnpm build` → clean (pre-existing CSS budget warning only)
+- **Results:** All acceptance bullets for this pass satisfied. Next pass could cover `functionAnalysis*$` derived streams and the module-detail service.
+- **Blockers raised:** None
+- **Suggested next pickup:** Either extend rack-detail reactive spec with `functionAnalysisLegendItems$`/`functionAnalysisResidualLabel$`/`functionAnalysisCoverageSummary$` derived-stream tests, or start a unit-test pass on `module-detail-data.service.ts` init/ownership flows.
+
+
 
 - **Selected task:** Define the linked-rack state contract for the active patch-builder feature, then queue the first schema/backend slice.
 - **Actions performed:** Read workflow and product docs, created the missing `agent/` state files, and documented linked-rack states, degraded behavior, back-compat expectations, and acceptance scenarios.
@@ -170,3 +181,31 @@
 ### Suggested next pickup
 - Unblock E2E account and run multi-instance patching E2E suite (highest infra value)
 - OR: unit test coverage pass on high-yield data services
+
+---
+
+## 2026-05-14T10:44:00+02:00 — SESSION START
+
+### Boot summary
+
+- Read AGENTS.md, mission.md, current-task.md, blockers.md, decision-log.md (last 20 entries), FOR_AI_AGENTS.md, CURRENT_FEATURE.md, TODO.md, ROADMAP.md.
+- `git status`: on develop, 7 commits ahead of origin, working tree clean.
+- No active task; no blockers.
+
+### State assessment
+
+- All Tier 0 unblocked frontend product features are either done (Manufacturer Pages, Patch Tags, Rack-Context Patch Building, Module Flagging, Event Banner, Rack Analysis, Store Links per Module was already gone) or backend-blocked (Store Links, Media Attachment on Patches, Rack Module Panel Variant Switching).
+- Event banner component is fully implemented (05-03) and already wired in app.component.html.
+- Patch tags are fully implemented (backend spec confirms patchTags service, user-area filter, patch-minimal display).
+- TODO.md has two completed task blocks still showing [x] items not yet cleaned: Rack-Context Polish Review and Patch Editing connections bug. Both are in COMPLETED.md already (connections bug confirmed). Polish Review not in COMPLETED.md yet.
+
+### Housekeeping plan
+
+1. Add Rack-Context Polish Review to COMPLETED.md and remove both completed blocks from TODO.md.
+2. Update agent control files.
+
+### Task selection
+
+Only unblocked viable frontend task: **POLICY: Unit Test Coverage** on high-yield data services.
+Target files per TODO.md: `rack-detail-data.service.ts` (1007 lines, 3 existing spec files), `user-area-data.service.ts` (419 lines, 2 existing spec files), and `module-detail-data.service.ts`.
+Will audit existing coverage gaps and add focused specs for uncovered branches.
