@@ -718,3 +718,15 @@ Compile errors fixed:
 Mock approach: supabaseService exposes a `supabase.auth.onAuthStateChange` spy, returning fake auth listener object. `queryParams: of({})` gives empty params to avoid token verification branch.
 
 7/7 green first run.
+
+---
+
+## Loop iteration 23 — UserAvatar + ModuleComposite + SelectionPanelOutlet + PatchDetails + GeneralContextMenu
+
+**UserAvatarComponent** (8 tests): defaults (name='', hideLogoff=false, backgroundImagePath), EventEmitters defined, logoff$ emits.
+**ModuleCompositeComponent** (8 tests): construction defaults, shouldUsePortraitDetailSplit false when prefer=false or wide module, ngOnInit no-throw.
+**SelectionPanelOutletComponent** (2 tests): creation, bridge exposed.
+**PatchDetailsComponent** (5 tests): isEditing=false, showConnectionsList=true, switches=[], ngOnInit no-throw.
+**GeneralContextMenuComponent** (3 tests): creation, dataService exposed, ngOnInit no-throw (contextMenu undefined in unit test, openMenu only called on event).
+
+27/27 green first run.
