@@ -44,6 +44,8 @@
   </div>
 } @else {
   <div [routerLink]="['/modules/details',data.id]"
+       role="link"
+       tabindex="0"
        class="clickable modulePartImageHost modulePartImageHost--surface"
        [@.disabled]="disableEnterAnimation"
        #tooltipAnchor
