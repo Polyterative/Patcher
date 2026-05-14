@@ -1,4 +1,8 @@
 <div (click)="click$.next(data)"
+     (keydown.enter)="click$.next(data)"
+     (keydown.space)="$event.preventDefault(); click$.next(data)"
+     role="button"
+     tabindex="0"
      [ngClass]="{'a' : highlightedFrom|async, 'b': highlightedTo|async}"
      [class]="kind"
      [matTooltip]="(data.min!=undefined&&data.max!=undefined)?((data.min+'V → '+data.max+'V')):'No CV voltage data available'"
