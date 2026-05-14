@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [Unreleased]
+
+### Added
+- Skip-to-content keyboard link and `<main>` landmark in app shell for screen reader navigation
+- `og:image` / `twitter:image` meta tags on manufacturer detail, module detail, and public profile pages for richer social sharing previews
+
+### Fixed
+- `aria-label` added to all icon-only buttons project-wide (18+ buttons across 8 components) so screen readers can announce button purpose
+
 ## [6.0.0](https://github.com/Polyterative/Patcher/compare/v5.7.3...v6.0.0) (2026-05-13)
 
 
