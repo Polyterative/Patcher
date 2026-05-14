@@ -91,4 +91,40 @@ describe('PatchGraphRevealController', () => {
 
     expect(startFlowCalls.length).toBeGreaterThanOrEqual(0);
   });
+
+  it('module-bridge edges are visible on the first emit', () => {
+    const nodes = [makeNode('m1', 'module'), makeNode('m2', 'module')];
+    const edges = [makeEdge('bridge1', 'm1', 'm2', 'module-bridge')];
+
+    controller.reveal(nodes, edges);
+
+    const firstEdgeEmit = emittedEdges[0];
+    expect(firstEdgeEmit.some((e: any) => e.id === 'bridge1')).toBeTrue();
+  });
+
+  it('cv-out nodes appear after tick', () => {
+    const nodes = [makeNode('m1', 'module'), makeNode('cv-out-1', 'cv-out')];
+    const edges = [makeEdge('e1', 'm1', 'cv-out-1', 'module-to-cv-out')];
+
+    controller.reveal(nodes, edges);
+    const nodesBeforeTick = emittedNodes[emittedNodes.length - 1];
+    const hadCvOut = nodesBeforeTick.some((n: any) => n.id === 'cv-out-1');
+
+    jasmine.clock().tick(1000);
+
+    const nodesAfterTick = emittedNodes[emittedNodes.length - 1];
+    expect(nodesAfterTick.some((n: any) => n.id === 'cv-out-1')).toBeTrue();
+    // cv-out should not have appeared before the tick
+    expect(hadCvOut).toBeFalse();
+  });
+
+  it('second reveal cancels timers from the first', () => {
+    const nodes = [makeNode('m1', 'module'), makeNode('cv-out-1', 'cv-out')];
+    controller.reveal(nodes, []);
+    const emitCountAfterFirstReveal = emittedNodes.length;
+    controller.reveal([], []);
+    jasmine.clock().tick(2000);
+    // After cancel + new empty reveal, later ticks should not add more nodes
+    expect(emittedNodes[emittedNodes.length - 1]).toEqual([]);
+  });
 });

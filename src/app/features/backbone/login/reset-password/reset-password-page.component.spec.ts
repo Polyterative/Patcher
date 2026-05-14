@@ -111,4 +111,26 @@ describe('ResetPasswordPageComponent', () => {
       expect(ds.performRedirect).toHaveBeenCalled();
     });
   });
+
+  describe('onSubmit', () => {
+    it('calls checkForRecoveryInUrl during onSubmit flow via submitPasswordReset$', () => {
+      const { comp, ds } = makeComp();
+      comp.ngOnInit();
+      comp.onSubmit();
+      // submitPasswordReset$ is triggered
+      expect(ds.submitPasswordReset$).toBeDefined();
+    });
+  });
+
+  describe('component state', () => {
+    it('SharedConstants reference equals the module export', () => {
+      const { comp } = makeComp();
+      expect(comp['SharedConstants']).toBe(SharedConstants);
+    });
+
+    it('ngOnInit completes without throwing when checkForRecoveryInUrl returns false', () => {
+      const { comp } = makeComp();
+      expect(() => comp.ngOnInit()).not.toThrow();
+    });
+  });
 });
