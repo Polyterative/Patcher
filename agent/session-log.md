@@ -891,3 +891,23 @@ All pure utility functions tested.
 
 **Next pivot:** Unspecced services — find all `*.service.ts` without a `*.service.spec.ts`, prefer simple pure/injectable ones first.
 
+
+---
+
+### Iteration 39 — 2025-07-16 (service specs)
+
+**Files created (all green):**
+- `src/app/features/backend/local-storage.service.spec.ts` — 1 test
+- `src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.service.spec.ts` — 3 tests
+- `src/app/features/backbone/toolbar/toolbar.service.spec.ts` — 6 tests
+- `src/app/shared-interproject/components/@visual/graph-view/graph-view.service.spec.ts` — 3 tests
+- `src/app/shared-interproject/components/@visual/photo/photos.service.spec.ts` — 3 tests
+
+**Total new tests:** 16.
+
+**Skipped:** `user-management.service.ts` (599L, Supabase-heavy — backend dependency).
+
+**All simple non-backend services now specced.** Grand total: ~1120+ tests across ~141+ spec files.
+
+**Next pivot:** Hunt for any remaining unspecced files — models, constants, enums, or other testable code units.
+
