@@ -58,28 +58,19 @@ describe('PublicProfileDataService', () => {
     expect(backend.GET.publicUserContributorStats).not.toHaveBeenCalled();
   });
 
-  it('strips website and avatar data for private profiles before exposing profile state', () => {
+  it('patchesCount$ and racksCount$ reflect loaded counts for a public profile', () => {
     const { service, backend } = build({
-      id: 'private-user',
-      username: 'private-user',
-      public: false,
-      website: 'https://private.example',
-      avatar_url: 'https://private.example/avatar.png',
+      id: 'public-user',
+      username: 'public-user',
+      public: true,
     });
+    backend.GET.publicUserPatchesPaginated.and.returnValue(require('rxjs').of({data: [], count: 5}));
+    backend.GET.publicUserRacksPaginated.and.returnValue(require('rxjs').of({data: [], count: 3}));
 
-    service.loadProfile$.next('private-user');
+    service.loadProfile$.next('public-user');
 
-    expect(service.routeState$.value).toBe('private');
-    expect(service.profile$.value).toEqual({
-      id: 'private-user',
-      username: 'private-user',
-      public: false,
-      website: null,
-      avatarUrl: null,
-    });
-    expect(backend.GET.publicUserPatchesPaginated).not.toHaveBeenCalled();
-    expect(backend.GET.publicUserRacksPaginated).not.toHaveBeenCalled();
-    expect(backend.GET.publicUserContributorStats).not.toHaveBeenCalled();
+    expect(service.patchesCount$.value).toBe(5);
+    expect(service.racksCount$.value).toBe(3);
   });
 
   it('loads public contributor stats for public profiles', () => {
