@@ -279,3 +279,9 @@
 - Promoted `<div class="main">` to `<main id="main-content">` semantic element in `app.component.html`
 - Added visually-hidden skip-to-content link as first focusable element in app shell
 - Skip link appears at top-left on keyboard focus with high-contrast styling
+
+- **14-05-2026** — Cache Strategy Review (audit + fixes): 7 missing rackWithId/racksMinimal invalidations fixed in supabase-add/update/delete; CACHE_STRATEGY.md written; 3872 tests green — commit `d5fc8ec9`
+- **14-05-2026** — Reactive pipeline fixes: 9 switchMap→exhaustMap for submit/write triggers (login, signup, reset-pw, comments, rack, patch); no regressions — commit `aecd4f3c`
+
+- **14-05-2026** — Reactive Pipeline Audit complete: all 13 bullets checked; 9 exhaustMap fixes (commit `aecd4f3c`); 81 combineLatest calls verified; no fan-out/leak issues; debounceTime coverage confirmed; OnPush sweep pre-done; caching.spec.ts expanded to 5 tests
+- **14-05-2026** — Cache Strategy Review complete: all bullets checked; DatabaseStrings.ts join audit done (no issues found); all cache invalidation gaps fixed; CACHE_STRATEGY.md documents full inventory
