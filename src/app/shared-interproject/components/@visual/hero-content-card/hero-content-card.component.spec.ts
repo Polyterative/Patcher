@@ -114,6 +114,21 @@ describe('HeroContentCardComponent', () => {
     expect(host.querySelector('.title-heading-copy--stacked-description')).not.toBeNull();
   });
 
+  it('has siteTitle equal to patcher.xyz', () => {
+    expect(fixture.componentInstance.siteTitle).toBe('patcher.xyz');
+  });
+
+  it('showCompactWideShellNav defaults to false', () => {
+    expect(fixture.componentInstance.showCompactWideShellNav).toBeFalse();
+  });
+
+  it('renders titleNormal when set', () => {
+    fixture.componentRef.setInput('titleBig', undefined);
+    fixture.componentRef.setInput('titleNormal', 'Browse the catalog');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Browse the catalog');
+  });
+
   function createDomRect(rect: Partial<DOMRect>): DOMRect {
     return {
       x: rect.left ?? 0,
