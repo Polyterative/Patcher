@@ -61,4 +61,17 @@ describe('RecentActivityItem model shapes', () => {
       expect(typeof type).toBe('string');
     }
   });
+
+  it('route can be an array of mixed string and number segments', () => {
+    const item: RecentActivityItem = {
+      id: 'x',
+      type: 'update',
+      actionLabel: 'updated',
+      targetLabel: 'Clouds',
+      timestamp: '2025-01-01T00:00:00.000Z',
+      route: ['/modules', 'details', 123]
+    };
+    expect(Array.isArray(item.route)).toBeTrue();
+    expect((item.route as any[])[2]).toBe(123);
+  });
 });
