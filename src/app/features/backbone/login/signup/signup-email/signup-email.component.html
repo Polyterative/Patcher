@@ -21,7 +21,7 @@
   
   @if (dataService.fields.password.control.value !== '' && dataService.fields.passwordAgain.control.value.length > 0 &&
   dataService.fields.password.control.value !== dataService.fields.passwordAgain.control.value) {
-    <mat-error
+    <mat-error role="alert"
     >Repeated password should be the same as original password
     </mat-error>
   }
