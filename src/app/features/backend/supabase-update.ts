@@ -129,7 +129,8 @@ export function createUpdateNamespace(
           }),
           remapErrors()
         );
-      })
+      }),
+      cacheBust(['rackWithId'])
     ),
     
     rackModulePanel: (rackModuleId: number, panelId: number | null) => getUserSession$().pipe(
@@ -162,7 +163,7 @@ export function createUpdateNamespace(
             }).select('id')
         );
       }),
-      cacheBust(['rackWithId'])
+      cacheBust(['rackWithId', 'racksMinimal'])
     ),
     
     patch: (data: Patch) => {
