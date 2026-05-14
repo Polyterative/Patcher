@@ -769,3 +769,18 @@ Mock approach: supabaseService exposes a `supabase.auth.onAuthStateChange` spy, 
 - **LoginEmailComponent** (4): creation, exposes dataService, emailChange EventEmitter, ngOnInit wires valueChanges to emailChange.
 
 33/33 green first run.
+
+---
+
+## Loop iteration 27 — PatchMicro + ModulePatches + Footer + CommentsItemBlock + ModulePartName + Saturn + RackDetailsRemainingIndicator + UserPatches
+
+8 specs, 29 tests, all green first run.
+
+- **PatchMicroComponent** (4): creation, data=null, viewConfig=defaultPatchMinimalViewConfig, ngOnInit no-throw.
+- **ModulePatchesComponent** (3): creation, viewConfig=defaultPatchMinimalViewConfig, ngOnInit no-throw.
+- **FooterComponent** (5): creation, instagramUrl/Handle constants, ngOnInit no-throw, appState exposed.
+- **CommentsItemBlockComponent** (2): creation, viewConfig=defaultCommentViewConfig.
+- **ModulePartNameComponent** (4): creation, textSize=undefined, suffix=undefined, ngOnInit no-throw.
+- **SaturnComponent** (5): same Uranus/Venus pattern — title from route data; no-op when absent; manual title preserved.
+- **RackDetailsRemainingIndicatorComponent** (2): creation, ngOnInit no-throw.
+- **UserPatchesComponent** (4): creation, updatePatchesData$.next() called in ctor, globalSearchQuery='', dataService exposed.
