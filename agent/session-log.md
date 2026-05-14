@@ -674,3 +674,18 @@ Compile errors fixed:
 - Fix: `{ modules: 0 }` rejected by TypeScript strict object check → used `jasmine.objectContaining({})`
 
 12/12 green.
+
+---
+
+## Loop iteration 19 — GeneratedFormComponent + PatchCompositeComponent
+
+**GeneratedFormComponent** (7 tests):
+- construction: separationTreshold=4, hideOldValue=undefined, controlTypes=FormTypes
+- inputs: controls, oldControls, separationTreshold all accept assignment
+
+**PatchCompositeComponent** (9 tests):
+- construction: isEditing=false, viewConfig=defaultPatchMinimalViewConfig
+- buildStatRows: 2D array with one group titled "Patch statistics",
+  Cables value='10', Multiples hidden when 0, Annotated hidden when 0, Multiples visible when >0
+
+16/16 green first run.
