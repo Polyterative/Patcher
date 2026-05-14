@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   Inject
 } from '@angular/core';
@@ -22,6 +23,7 @@ import {
 export type { InputDialogDataInModel, InputDialogDataOutModel };
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-input-dialog',
   templateUrl: './input-dialog.component.html',
   styleUrls: ['./input-dialog.component.scss'],

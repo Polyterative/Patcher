@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   Input,
   OnInit
@@ -20,6 +21,7 @@ const SCREEN_WRAPPER_SIZE_PRESETS: Record<ScreenWrapperSizePreset, string> = {
  * 2k ma non fhd oppure permette di forzare roba ad una certa dimensione
  */
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'lib-screen-wrapper',
   templateUrl: './screen-wrapper.component.html',
   styleUrls: ['./screen-wrapper.component.scss'],
