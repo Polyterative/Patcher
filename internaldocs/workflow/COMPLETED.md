@@ -203,3 +203,21 @@
 
 | 2025-07-16 | test(e2e): expand home page coverage to 12 tests | `cd0711f3` |
 | 2025-07-16 | style(home): align spacing to $standardUnit scale (UI consistency pass 1) | `ef35e678` |
+
+## 2025-07-11 — Login/signup page E2E smoke tests + user-area spacing alignment
+
+**Commit**: `aab906c9`
+
+- Added `e2e/login-pages-smoke.spec.ts` (13 tests): login form inputs, submit button, sign-up link, forgot-password link, aria sections; signup form inputs, submit button, log-in link, cross-page navigation
+- Aligned `user-area-root.component.scss` spacing to $standardUnit scale: profile-card gap 0.85rem→1rem, profile-layout row-gap 0.9rem→1rem, main-content row-gap 0.85rem→1rem, utility-search gap 0.7rem→0.5rem + padding 0.8rem→1rem, search header gap 0.2rem→0.25rem
+- Source: UI_CONSISTENCY_AUDIT.md §3/§16
+
+## 2025-07-11 — Unit test coverage expansion (batch 2)
+
+**Commits**: `ba03f752`, `a037f121`, `1568747f`
+
+- `patch-graph-build.spec.ts`: +11 tests for moduleInstanceKey, buildModuleNodeId, buildCvNodeId, extractPatchGraphModuleInstances
+- `user-area-data.utils.spec.ts`: +4 tests for pagedSlice$
+- `selection-panel-bridge.service.spec.ts`: +5 tests for record$/recordedKey$ behaviors and auto-clear mechanism
+- `app-shell-layout.service.spec.ts`: +2 tests for initial emission and shareReplay
+- `toolbar-link-data.spec.ts`: +7 tests covering 6 previously untested exported functions
