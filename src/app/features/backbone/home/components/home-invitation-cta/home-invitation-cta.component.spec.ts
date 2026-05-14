@@ -6,4 +6,5 @@ describe('HomeInvitationCtaComponent', () => {
   it('title defaults to empty string', () => { expect(comp.title).toBe(''); });
   it('imageSrc defaults to empty string', () => { expect(comp.imageSrc).toBe(''); });
   it('imageAlt defaults to empty string', () => { expect(comp.imageAlt).toBe(''); });
+  it('description defaults to empty string', () => { expect(comp.description).toBe(''); });
 });
