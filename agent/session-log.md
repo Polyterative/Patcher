@@ -321,3 +321,32 @@ proposer open/close, proposeTag, ngOnInit preloading).
 - More component specs: `reset-password-page.component.ts` (182 lines) or
   `patch-connection-minimal.component.ts` (113 lines)
 - UI consistency pass (spacing/density) per audit recommended rollout order
+
+---
+
+## Session continued (loop iteration 3)
+
+### Task: Unit spec — PatchConnectionMinimalComponent
+
+**Source**: Policy — unit test coverage; 113-line component with rich logic (notes sync pipeline,
+debounce, blur hide, destroy teardown).
+
+**What was done**
+- Created `src/app/components/patch-connection/patch-connection-minimal/patch-connection-minimal.component.spec.ts`
+- 18 tests, all green on first run after one compile-error fix (noteSync$ is readonly @Input;
+  fixed with `(comp as any).noteSync$ = ...` cast)
+- fakeAsync/tick(600) used to verify debounce boundary and distinctUntilChanged behaviour
+- Covers: initial state, ngOnInit notes preload (truthy/falsy), sync pipeline (wired/unwired,
+  debounce 600ms, final value, pipeline stops after destroy), showNoteInput, onNoteBlur
+  (content/empty/whitespace), ngOnDestroy teardown
+
+**Tests run**: 18/18 green (targeted run)
+
+**Files touched**
+- `src/app/components/patch-connection/patch-connection-minimal/patch-connection-minimal.component.spec.ts` (new)
+- `internaldocs/workflow/COMPLETED.md` (new row prepended)
+- `agent/session-log.md` (this entry)
+
+**Next pickup suggestions**
+- Component specs: `home.component.ts` (272 lines), `comment-context.component.ts` (107 lines)
+- UI consistency pass (spacing/density) per audit recommended rollout order
