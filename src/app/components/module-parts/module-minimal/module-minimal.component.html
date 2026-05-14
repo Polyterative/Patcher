@@ -117,6 +117,7 @@
                             [disabled]="!bag.user||(bag.singleModuleData.manufacturer.id===10000)"
                             [title]="!bag.user ? 'Login to add to modules your collection':''"
                             mat-icon-button
+                            aria-label="Add to your collection"
                             matTooltip="Add to your collection"
                     >
                       <mat-icon>add</mat-icon>
@@ -128,6 +129,7 @@
                     <button (click)="dataService.removeModuleFromCollection$.next(data.id)"
                             [disabled]="!bag.user||(bag.singleModuleData.manufacturer.id===10000)"
                             mat-icon-button
+                            aria-label="Remove from your collection"
                             matTooltip="Remove from your collection"
                     >
                       <mat-icon>eject</mat-icon>
@@ -139,6 +141,7 @@
                           [disabled]="(!bag.user)||(bag.singleModuleData.manufacturer.id===10000)"
                           [title]="!bag.user ? 'Login to add to modules your rack':''"
                           mat-icon-button
+                          aria-label="Add to rack"
                           matTooltip="Add to rack"
                   >
                     <mat-icon>playlist_add</mat-icon>
@@ -148,6 +151,7 @@
                   @if (bag.isCurrentRackEditable) {
                     <button (click)="rackDataService.addModuleToRack$.next(data)"
                             [matTooltip]="'Add to '+rackData.name"
+                            [attr.aria-label]="'Add to ' + rackData.name"
                             [title]="!bag.user ? 'Login to add to modules your rack':''"
                             mat-icon-button
                     >
@@ -165,6 +169,7 @@
                     <a
                       [href]="bag.singleModuleData.manualURL"
                       mat-icon-button
+                      aria-label="Open manual"
                       matTooltip="Open manual"
                       rel="noopener noreferrer"
                       target="_blank"
@@ -174,6 +179,7 @@
                   }
                   <a (click)="dataService.copyModuleNameAndManufacturer$.next()"
                      mat-icon-button
+                     aria-label="Copy module name to clipboard"
                      matTooltip="Copy module name to clipboard"
                   >
                     <mat-icon>content_copy</mat-icon>
