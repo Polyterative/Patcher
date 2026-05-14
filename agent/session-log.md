@@ -575,3 +575,29 @@ Compile errors fixed:
 18/18 green on first run.
 
 **Files touched**: 2 new spec files, COMPLETED.md, session-log.md
+
+---
+
+## Loop iteration 14 — EditFabComponent + RouteClickableLinkComponent + AutoUpdateLoadingIndicatorComponent
+
+**EditFabComponent** (11 tests):
+- default inputs: hasPendingChanges$, openLabel, closeLabel, discardLabel, openIcon, closeIcon, discardIcon
+- toggle$ is EventEmitter
+- bouncing$ is truthy observable
+- input overrides accepted
+
+**RouteClickableLinkComponent + getRouteClickableLinkKey** (11 tests):
+- getRouteClickableLinkKey: combines route/href/label/icon, fallback to empty strings, deterministic, distinct
+- construction: no error, data$=of([]), direction='row'
+- trackByLink: returns link key, different keys for different items
+- onLinkInteraction: prevents default+stopPropagation when disabled, no-op when enabled
+
+**AutoUpdateLoadingIndicatorComponent** (14 tests):
+- initial state, missing inputs, wired inputs (data$→false including null, update$→true, cycle)
+- skipFirstData (skip first / not skip)
+- ngOnDestroy (stops reacting, safe double-destroy)
+- Key difference from AutoContentLoadingIndicator: NO filter(!!data) — null values still mark done
+
+36/36 green on first run.
+
+**Files touched**: 3 new spec files, COMPLETED.md, session-log.md
