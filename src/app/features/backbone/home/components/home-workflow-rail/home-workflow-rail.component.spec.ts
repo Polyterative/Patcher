@@ -28,4 +28,10 @@ describe('HomeWorkflowRailComponent', () => {
     const highlighted = segments.filter(s => s.highlighted);
     expect(highlighted.length).toBe(1);
   });
+
+  it('getStepDescriptionSegments with no matching keywords yields no highlights', () => {
+    const step = { kicker: 'k', title: 't', description: 'Hello world', keywords: ['Missing'] };
+    const segments = comp.getStepDescriptionSegments(step);
+    expect(segments.every(s => !s.highlighted)).toBeTrue();
+  });
 });
