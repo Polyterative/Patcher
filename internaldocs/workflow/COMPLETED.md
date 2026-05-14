@@ -260,3 +260,22 @@
 - `chore(lint)`: Fixed all 18 lint warnings — merged duplicate imports, converted string concat to template literals, added `eslint-disable-next-line no-bitwise` to intentional bitwise ops, excluded generated `database.types.ts` from ESLint
 - `feat(manufacturer)`: Set og:image to manufacturer logo URL when available
 - `feat(module-detail)`: Include module panel image in og:image / twitter:image meta tags
+
+## 2025-07-24 (session continued) — Accessibility pass
+
+**Scope**: Comprehensive accessibility audit and fixes across the frontend.
+
+**Commits**:
+- `5d525f2b` — `fix(a11y): add aria-label to icon-only buttons in comments and module-minimal`
+- `dcbdd9ed` — `fix(a11y): add aria-label to all remaining icon-only buttons`
+- `0c6853a2` — `feat(a11y): add skip-to-content link and main landmark to app shell`
+
+**Changes**:
+- Added `aria-label` to all icon-only buttons project-wide (18 buttons across 8 components)
+  - Matched `aria-label` text to existing `matTooltip` content
+  - Used `[attr.aria-label]` for dynamic labels (privacy toggle, rack name, copy-count)
+  - Files: `comments-item`, `module-minimal`, `module-tags`, `rack-minimal`, `rack-balance-panel`,
+    `patch-minimal`, `patch-connection-minimal`, `patch-editor`, `mat-form-entity`
+- Promoted `<div class="main">` to `<main id="main-content">` semantic element in `app.component.html`
+- Added visually-hidden skip-to-content link as first focusable element in app shell
+- Skip link appears at top-left on keyboard focus with high-contrast styling
