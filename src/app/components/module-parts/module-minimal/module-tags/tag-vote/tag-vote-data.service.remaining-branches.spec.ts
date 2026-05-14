@@ -81,4 +81,16 @@ describe('TagVoteDataService - Remaining Branches', () => {
     
     expect(SharedConstants.errorCustom).toHaveBeenCalledWith(jasmine.anything(), 'Vote failed');
   }));
+
+  it('calls delete.userModuleTag when user already has the vote', fakeAsync(() => {
+    const {service, backend} = setup();
+    // Seed: user already has vote for moduleTagId=10
+    service.loadVotes$.next([{moduleTagId: 10, count: 2}]);
+    tick();
+    // The real "already voted" check requires myVotes to return [10]
+    // backend.get.myVotes already returns of([10]) by default
+    service.toggleVote$.next(10);
+    tick(200);
+    expect(backend.delete.userModuleTag).toHaveBeenCalledWith(10);
+  }));
 });
