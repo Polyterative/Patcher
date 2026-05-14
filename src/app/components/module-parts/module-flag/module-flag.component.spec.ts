@@ -87,4 +87,41 @@ describe('ModuleFlagComponent', () => {
 
     expect(component.selectedCategoryLabel).toBe('Wrong power requirements');
   });
+
+  it('does not emit submitFlag$ when no category is selected', () => {
+    const {component, flagService} = makeComponent();
+    let emitted = false;
+    flagService.submitFlag$.subscribe(() => emitted = true);
+
+    component.submitFlag();
+
+    expect(emitted).toBeFalse();
+  });
+
+  it('ngOnChanges pushes moduleId into flagService.moduleId$', () => {
+    const {component, flagService} = makeComponent();
+    const received: number[] = [];
+    flagService.moduleId$.subscribe(id => received.push(id));
+
+    component.moduleId = 42;
+    component.ngOnChanges({ moduleId: { currentValue: 42, previousValue: undefined, firstChange: true, isFirstChange: () => true } });
+
+    expect(received).toEqual([42]);
+  });
+
+  it('selectedGroupOptions returns empty array before a group is selected', () => {
+    const {component} = makeComponent();
+    expect(component.selectedGroupOptions).toEqual([]);
+  });
+
+  it('selectedGroup returns undefined before any group is selected', () => {
+    const {component} = makeComponent();
+    expect(component.selectedGroup).toBeUndefined();
+  });
+
+  it('selectedCategoryLabel returns empty string when no category is selected', () => {
+    const {component} = makeComponent();
+    component.selectGroup('Specs and setup');
+    expect(component.selectedCategoryLabel).toBe('');
+  });
 });
