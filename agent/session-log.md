@@ -71,3 +71,45 @@
 - **Tests run:** None (docs-only pass).
 - **Results:** All agent control files now reflect the actual post-v6.0.0 state. TODO.md reduced from ~26 KB to a clean open-items-only backlog. COMPLETED.md has the v6.0.0 linked-rack summary. One genuine open item (Layer 3 polish review) added to backlog. "No connections warning" bug confirmed IN-PROGRESS with audit annotation.
 - **Next step:** Pick next task from `internaldocs/workflow/TODO.md` (candidates: patch-editing connections bug HIGH, E2E account rotation HIGH, rack-context polish review LOW).
+
+## 2026-05-14T10:11:53+02:00
+
+### Boot
+
+- Read `AGENTS.md`, `agent/mission.md`, `agent/current-task.md`, `agent/blockers.md`, `agent/decision-log.md`, `internaldocs/FOR_AI_AGENTS.md`, `internaldocs/workflow/CURRENT_FEATURE.md`, `internaldocs/workflow/TODO.md`, `internaldocs/product/ROADMAP.md`.
+- `git status` showed 2 commits ahead of v6.0.0 (changelog and docs reconcile). Working tree clean.
+- No active task; no blockers.
+
+### Selected task: Fix Patch Editing "No connections" empty-state stale-source bug (HIGH priority)
+
+**Why this task:** Highest-priority unblocked item in `TODO.md`. The E2E account cleanup requires creating a Supabase test account (backend/human task). The Polish Review is LOW.
+
+### Investigation
+
+- Traced the bug: `patch-details.component.html` drives the empty-state bag from `patchConnections$` (backend snapshot refreshed only on load/editor close), while live edits update `editorConnections$`.
+- `editorConnections$` is always synced from `patchConnections$` at load (line 583-588 of `patch-detail-data.service.ts`), so it is always a safe replacement for display purposes.
+- The graph (`patch-graph.component.ts`) already drives its auto-rebuild from `editorConnections$` (3 s debounce), so the graph rebuild path was fine; only the visibility guard in the template was broken.
+- The second TODO bullet ("audit graph empty state") was satisfied by the same template fix: the `@if (bagA.length > 0)` guard that hides the graph now reads the live source.
+
+### Implementation
+
+- **`src/app/components/patch-parts/patch-details/patch-details.component.html`** — Changed `patchConnections$` → `editorConnections$` in the outer bag. One line.
+- **`src/app/components/patch-parts/patch-details/patch-detail-data-service-sync-errors.spec.ts`** — Added regression test: confirms a connection via `confirmSelectedConnection$`, asserts `editorConnections$` updates to length 1 while `patchConnections$` stays at 0.
+
+### Verification
+
+- Focused tests: 25/25 passing (all pre-existing + new regression test).
+- Production build: clean (only pre-existing budget warnings).
+
+### Docs updated
+
+- `agent/acceptance-checklist.md` — all items ticked.
+- `agent/current-task.md` — reset to None.
+- `internaldocs/workflow/TODO.md` — both sub-items of the connections bug marked `[x]`.
+- `internaldocs/workflow/COMPLETED.md` — entry added.
+- `agent/session-log.md` — this entry.
+
+### Next step
+
+- LOW: Rack-Context Patch Building — Polish Review (deferred, low priority).
+- HIGH: E2E Dedicated Test Account Cleanup — requires human to create Supabase test account; not automatable by an agent.
