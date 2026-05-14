@@ -44,9 +44,9 @@
 rack-linked mode does not weaken non-1:1 use cases (patches that intentionally diverge from any rack, or span multiple
 racks, or reference no rack at all).
 
-- [ ] Review educational copy, empty states, and help cues in patch editor / patch detail to confirm non-1:1 patch
+- [x] Review educational copy, empty states, and help cues in patch editor / patch detail to confirm non-1:1 patch
   flows are clearly supported and the rack-linked mode framing does not imply "rack-first" as the preferred default
-- [ ] Confirm informational advisory states (diverged, unavailable) do not read as errors or discouragement
+- [x] Confirm informational advisory states (diverged, unavailable) do not read as errors or discouragement
 
 ---
 
