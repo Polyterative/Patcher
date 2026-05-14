@@ -147,4 +147,22 @@ describe('RackBrowserDataService', () => {
       20, 29, '', 'updated', 'desc'
     );
   });
+
+  it('canReset$ emits false when search is empty', fakeAsync(() => {
+    const {service} = build();
+    let canReset: boolean | undefined;
+    service.canReset$.subscribe(v => (canReset = v));
+
+    service.fields.search.control.setValue('');
+    tick(0);
+
+    expect(canReset).toBeFalse();
+    service.ngOnDestroy();
+  }));
+
+  it('racksList$ starts as null', () => {
+    const {service} = build();
+    expect(service.racksList$.value).toBeNull();
+    service.ngOnDestroy();
+  });
 });

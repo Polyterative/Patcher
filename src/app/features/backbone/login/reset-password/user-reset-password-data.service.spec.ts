@@ -150,4 +150,24 @@ describe('UserResetPasswordDataService', () => {
 
     service.ngOnDestroy();
   }));
+
+  it('startRedirectCountdown initializes progress to 100 and decrements proportionally', fakeAsync(() => {
+    const {service} = build();
+    service.startRedirectCountdown(4);
+
+    expect(service.redirectProgress$.value).toBe(100);
+
+    tick(1000);
+    expect(service.redirectProgress$.value).toBeCloseTo(75, 0);
+
+    tick(1000);
+    expect(service.redirectProgress$.value).toBeCloseTo(50, 0);
+
+    service.ngOnDestroy();
+  }));
+
+  it('isSubmitting$ starts as false', () => {
+    const {service} = build();
+    expect(service.isSubmitting$.value).toBeFalse();
+  });
 });
