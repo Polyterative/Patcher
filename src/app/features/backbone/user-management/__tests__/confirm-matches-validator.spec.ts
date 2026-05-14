@@ -32,4 +32,8 @@ describe('confirmMatchesNewValidator', () => {
   it('returns null when both are empty', () => {
     expect(confirmMatchesNewValidator()(makeGroup('', ''))).toBeNull();
   });
+
+  it('returns null for whitespace-only matching passwords', () => {
+    expect(confirmMatchesNewValidator()(makeGroup('   ', '   '))).toBeNull();
+  });
 });

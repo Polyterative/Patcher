@@ -29,4 +29,8 @@ describe('FooterComponent', () => {
   it('exposes appState', () => {
     expect(comp.appState).toBe(mockAppState);
   });
+
+  it('data property is defined (build info)', () => {
+    expect(comp.data).toBeDefined();
+  });
 });

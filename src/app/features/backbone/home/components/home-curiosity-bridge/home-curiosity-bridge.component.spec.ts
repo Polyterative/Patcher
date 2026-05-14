@@ -6,4 +6,12 @@ describe('HomeCuriosityBridgeComponent', () => {
   it('title defaults to empty string', () => { expect(comp.title).toBe(''); });
   it('links defaults to empty array', () => { expect(comp.links).toEqual([]); });
   it('description defaults to empty string', () => { expect(comp.description).toBe(''); });
+  it('title input can be assigned', () => {
+    comp.title = 'Explore More';
+    expect(comp.title).toBe('Explore More');
+  });
+  it('links input can be assigned', () => {
+    comp.links = [{label: 'Modules', href: '/modules'} as any];
+    expect(comp.links.length).toBe(1);
+  });
 });
