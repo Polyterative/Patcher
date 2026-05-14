@@ -7,4 +7,9 @@ describe('UserDataHandlerComponent', () => {
     const comp = new UserDataHandlerComponent(mockService);
     expect(comp.userDataHandlerService).toBe(mockService);
   });
+  it('service reference is the exact same object', () => {
+    const svc = {} as any;
+    const comp = new UserDataHandlerComponent(svc);
+    expect(comp.userDataHandlerService).toBe(svc);
+  });
 });

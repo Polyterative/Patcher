@@ -23,4 +23,12 @@ describe('generatePatchName', () => {
     const names = new Set(Array.from({length: 30}, () => generatePatchName()));
     expect(names.size).toBeGreaterThan(1);
   });
+
+  it('every name is a non-empty string', () => {
+    for (let i = 0; i < 10; i++) {
+      const name = generatePatchName();
+      expect(typeof name).toBe('string');
+      expect(name.length).toBeGreaterThan(0);
+    }
+  });
 });

@@ -75,4 +75,13 @@ describe('rackPowerBreakdownUtils', () => {
       powerPos5: 5
     })).toBe('+12 90 mA · -12 35 mA · +5 5 mA');
   });
+
+  it('returns empty rows array for empty rack', () => {
+    const breakdown = buildRackPowerBreakdown([]);
+    expect(breakdown.rows).toEqual([]);
+    expect(breakdown.powerPos12).toBe(0);
+    expect(breakdown.powerNeg12).toBe(0);
+    expect(breakdown.powerPos5).toBe(0);
+    expect(breakdown.missingPowerDataCount).toBe(0);
+  });
 });
