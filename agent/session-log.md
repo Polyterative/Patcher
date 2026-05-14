@@ -398,3 +398,26 @@ generation, writeValue, valueChanges→onChange/onTouched wiring, setDisabledSta
 - `src/app/shared-interproject/components/@smart/days-in-week-picker/days-in-week-picker.component.spec.ts` (new)
 - `internaldocs/workflow/COMPLETED.md` (new row prepended)
 - `agent/session-log.md` (this entry)
+
+---
+
+## Session continued (loop iteration 6)
+
+### Task: Unit spec — CommentsItemComponent
+
+**Source**: Policy — unit test coverage; 82-line component with pure helper methods
+(avatarColor, avatarInitials) and requestDelete() snackbar flow.
+
+**What was done**
+- Created `src/app/components/shared-atoms/comments/comments-item/comments-item.component.spec.ts`
+- 15 tests, all green on first run
+- Covers: defaultCommentViewConfig constants, avatarInitials (2-char, single, empty, long),
+  avatarColor (hsl format, deterministic, range, no-throw), requestDelete (snackbar args,
+  no emit without action, emit with correct id on action)
+
+**Tests run**: 15/15 green (targeted run)
+
+**Files touched**
+- `src/app/components/shared-atoms/comments/comments-item/comments-item.component.spec.ts` (new)
+- `internaldocs/workflow/COMPLETED.md` (new row prepended)
+- `agent/session-log.md` (this entry)
