@@ -22,4 +22,19 @@ describe('ModuleDetailDataCardComponent', () => {
   it('animationDelay defaults to 0', () => {
     expect(comp.animationDelay).toBe(0);
   });
+
+  it('title input can be assigned', () => {
+    comp.title = 'Power';
+    expect(comp.title).toBe('Power');
+  });
+
+  it('animationDelay input can be assigned', () => {
+    comp.animationDelay = 150;
+    expect(comp.animationDelay).toBe(150);
+  });
+
+  it('data input can be assigned', () => {
+    comp.data = [{label: 'HP', value: '8'}];
+    expect(comp.data.length).toBe(1);
+  });
 });
