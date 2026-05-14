@@ -177,4 +177,22 @@ describe('PatchDetailDataService selection behavior', () => {
     }, 10);
   });
 
+  it('selectedForConnection$ starts in empty state with no CV selected', () => {
+    const initial = service.selectedForConnection$.value;
+    expect(initial.a).toBeNull();
+    expect(initial.b).toBeNull();
+  });
+
+  it('patchModuleInstances$ starts as an empty array', () => {
+    expect(service.patchModuleInstances$.value).toEqual([]);
+  });
+
+  it('isCurrentPatchPrivate$ starts as false', () => {
+    expect(service.isCurrentPatchPrivate$.value).toBeFalse();
+  });
+
+  it('patchEditingPanelOpenState$ starts as false', () => {
+    expect(service.patchEditingPanelOpenState$.value).toBeFalse();
+  });
+
 });
