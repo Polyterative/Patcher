@@ -47,4 +47,12 @@ describe('SupabaseService - Database Connection Health', () => {
       expect(testQuery$).toBeDefined();
     }).not.toThrow();
   });
+
+  it('GET group exposes known query methods', () => {
+    ['tags', 'modules', 'patches', 'manufacturers'].forEach(method => {
+      expect(typeof (service.GET as any)[method])
+        .withContext(`GET.${method} should be a function`)
+        .toBe('function');
+    });
+  });
 });
