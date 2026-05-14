@@ -15,6 +15,7 @@ import {
 } from 'rxjs';
 import {
   catchError,
+  exhaustMap,
   filter,
   switchMap,
   takeUntil
@@ -113,7 +114,7 @@ export class UserSignupDataService extends SubManager {
     
     this.mailSignClick$
       .pipe(
-        switchMap(() => this.loginInteraction.signup(
+        exhaustMap(() => this.loginInteraction.signup(
           this.fields.username.control.value.trim(),
           this.fields.email.control.value,
           this.fields.password.control.value

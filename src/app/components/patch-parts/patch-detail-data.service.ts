@@ -234,7 +234,7 @@ export class PatchDetailDataService implements OnDestroy {
           this.isCurrentPatchPrivate$.next(!patch.public);
           return {...patch}; // clone so backend.update.patch can't mutate the live object
         }),
-        switchMap(patch => this.backend.update.patch(patch).pipe(
+        exhaustMap(patch => this.backend.update.patch(patch).pipe(
           tap(() => {
             const msg = patch.public
               ? `"${ patch.name }" is now public — visible to everyone.`
@@ -755,7 +755,7 @@ export class PatchDetailDataService implements OnDestroy {
       .pipe(
         withLatestFrom(this.singlePatchData$, this.patchModuleInstances$),
         filter(([_, patch]) => !!patch),
-        switchMap(([module, patch, existingInstances]) => {
+        exhaustMap(([module, patch, existingInstances]) => {
           const sameModuleCount = (existingInstances || []).filter(i => i.module_id === module.id).length;
 
           // Enforce copy limit — account for jumpstart (count=0 → creates 2)
