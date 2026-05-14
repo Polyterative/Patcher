@@ -873,3 +873,21 @@ All pure utility functions tested.
 
 ## Loop iteration 37 — 3 more utility specs (44 tests): discovery-tip-surface, rack-visual-model, module-editor-data
 
+
+---
+
+### Iteration 38 — 2025-07-16 (patch-editor.utils + 5 patch-graph/graph utils)
+
+**Files created (all green):**
+- `src/app/components/patch-parts/patch-editor/patch-editor.utils.spec.ts` — 19 tests
+- `src/app/components/patch-parts/patch-graph/patch-graph-build.utils.spec.ts` — 13 tests
+- `src/app/components/patch-parts/patch-graph/patch-graph-flow.utils.spec.ts` — 13 tests
+- `src/app/components/patch-parts/patch-graph/patch-graph-layout.utils.spec.ts` — 5 tests
+- `src/app/shared-interproject/components/@visual/graph-view/graph.utils.spec.ts` — 11 tests
+
+**Total new tests:** 61. **Grand total: ~1100+ tests across ~136+ spec files.**
+
+**All utility files now specced.** No more unspecced `.util.ts`/`.utils.ts` files remain.
+
+**Next pivot:** Unspecced services — find all `*.service.ts` without a `*.service.spec.ts`, prefer simple pure/injectable ones first.
+
