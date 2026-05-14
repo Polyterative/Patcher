@@ -129,6 +129,7 @@ export function createAddNamespace(
             })
         );
       }),
+      cacheBust(['rackWithId']),
       remapErrors()
     ),
 
@@ -142,7 +143,7 @@ export function createAddNamespace(
             .select('id')
         );
       }),
-      cacheBust(['rackWithId']),
+      cacheBust(['rackWithId', 'racksMinimal']),
       remapErrors()
     ),
     

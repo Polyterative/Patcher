@@ -123,6 +123,7 @@ export function createDeleteNamespace(
             .filter('id', 'eq', id)
         );
       }),
+      cacheBust(['rackWithId']),
       remapErrors()
     ),
 
@@ -135,6 +136,7 @@ export function createDeleteNamespace(
             .filter('rackid', 'eq', rackId)
         );
       }),
+      cacheBust(['rackWithId']),
       remapErrors()
     ),
     
@@ -234,7 +236,7 @@ export function createDeleteNamespace(
             .filter('id', 'eq', id)
         )),
         remapErrors(),
-        cacheBust(['rackWithId'])
+        cacheBust(['rackWithId', 'racksMinimal'])
       ),
     
     modules: (from = 0, to: number = defaultPag) => getUserSession$().pipe(
