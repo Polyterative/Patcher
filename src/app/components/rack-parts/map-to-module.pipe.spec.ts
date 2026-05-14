@@ -34,4 +34,13 @@ describe('MapToModulePipe', () => {
   it('creates pipe instance', () => {
     expect(pipe).toBeTruthy();
   });
+
+  it('passes through hp value from the inner module', () => {
+    const module = {id: 10, name: 'Filter', hp: 12} as DbModule;
+    const rackedModule: RackedModule = {
+      rackingData: {id: 3, rackid: 2, moduleid: 10, row: 1, column: 0},
+      module
+    };
+    expect(pipe.transform(rackedModule).hp).toBe(12);
+  });
 });

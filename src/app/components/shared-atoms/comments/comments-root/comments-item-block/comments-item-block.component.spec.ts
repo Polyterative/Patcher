@@ -15,4 +15,15 @@ describe('CommentsItemBlockComponent', () => {
   it('viewConfig defaults to defaultCommentViewConfig', () => {
     expect(comp.viewConfig).toEqual(defaultCommentViewConfig);
   });
+
+  it('data input can be assigned', () => {
+    comp.data = [{id: 1, content: 'hello'} as any];
+    expect(comp.data[0].id).toBe(1);
+  });
+
+  it('viewConfig can be overridden', () => {
+    const custom: any = {showAuthor: false};
+    comp.viewConfig = custom;
+    expect(comp.viewConfig).toBe(custom);
+  });
 });
