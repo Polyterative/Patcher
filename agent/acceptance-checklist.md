@@ -1,19 +1,13 @@
 # Acceptance Checklist
 
-## ManufacturerDetailComponent spec
+## Initial Render Flash — Headless Audit
 
-- [x] `stats$` returns `[]` when `manufacturerData$` is null
-- [x] `stats$` computes `In catalogue` from modules length
-- [x] `stats$` computes `Average HP` as total HP / count (one decimal)
-- [x] `stats$` hides `Average HP` when modules list is empty
-- [x] `stats$` separates 3U (standard.id = 0) from 1U (standard.id = 1 or 2)
-- [x] `stats$` hides `3U` entry when there are no 3U modules
-- [x] `stats$` hides `Active this month` when `changedModulesLast30Days` is 0
-- [x] `stats$` shows `Active this month` when `changedModulesLast30Days` > 0
-- [x] `stats$` includes `Last updated` when `latestModuleUpdatedAt` is set
-- [x] `stats$` hides `Last updated` when `latestModuleUpdatedAt` is null
-- [x] `logoUrl()` returns full URL when logo is present
-- [x] `logoUrl()` returns null when logo is null
-- [x] Route param `id > 0` is forwarded to `updateManufacturer$.next`
-- [x] Route param `id = 0` is filtered (never forwarded)
-- [x] Spec passes clean (build green, lint green)
+- [ ] Audit `*ngIf`/`@if` guards on affected route templates for false→true→false→true flip patterns
+- [ ] Audit `async` pipes feeding route templates for double-emission (BehaviorSubject init + late real value)
+- [ ] Check router data flow for double emissions on navigation (ActivatedRoute.params/paramMap pipelines)
+- [ ] Check loading/skeleton state logic across affected templates
+- [ ] Check `@font-face` / FOUT handling in styles
+- [ ] Findings documented in CURRENT_FEATURE.md with root cause + proposed fix
+- [ ] Minimal fix implemented (if headless analysis reveals actionable items)
+- [ ] `pnpm build` green
+- [ ] `pnpm test-headless` green (targeted)

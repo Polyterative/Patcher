@@ -1,3 +1,4 @@
+import { StorageUrls } from 'src/app/features/backend/DatabaseStrings';
 import { RackedModule } from 'src/app/models/module';
 
 export interface ModuleRightClick {
@@ -16,4 +17,4 @@ export interface RackEditorModuleAction {
   run: (rackedModule: RackedModule) => void;
 }
 
-export const PANEL_IMAGE_BASE = 'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/';
+export const PANEL_IMAGE_BASE = StorageUrls.modulePanels;
