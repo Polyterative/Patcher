@@ -833,3 +833,12 @@ All 21 green first run.
 - **AdminPanelRootComponent** (2): creation, backend exposed.
 - **UserDataHandlerComponent** (2): creation, userDataHandlerService exposed.
 - **RackCompositeComponent** (1), **BrandLogoComponent** (1): creation.
+
+---
+
+## Loop iteration 33 — HomeComponent (9 tests) + PhotoComponent (4 tests)
+
+Final 2 manageable unspecced components covered. graph.component.ts (498L, D3) and patch-graph.component.ts (297L, SupabaseService) skipped — too complex / backend-dependent for direct-instantiation pattern.
+
+All component spec files exhausted. 
+
