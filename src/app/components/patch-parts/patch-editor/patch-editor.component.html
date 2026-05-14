@@ -162,6 +162,7 @@
                           <button mat-icon-button
                                   class="delete-instance-btn"
                                   matTooltip="Remove this copy"
+                                  aria-label="Remove this copy"
                                   (click)="dataService.removeModuleInstance$.next(card.instance)"
                           >
                             <mat-icon>delete_outline</mat-icon>
@@ -169,6 +170,7 @@
                         }
                         <button mat-icon-button
                                 [matTooltip]="card.instanceCount >= maxInstances ? 'Maximum of ' + maxInstances + ' copies reached' : 'Add another copy of this module'"
+                                [attr.aria-label]="card.instanceCount >= maxInstances ? 'Maximum of ' + maxInstances + ' copies reached' : 'Add another copy of this module'"
                                 [disabled]="card.instanceCount >= maxInstances || addingCopy.has(card.module.id)"
                                 (click)="onAddCopy(card)"
                         >
