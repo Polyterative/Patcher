@@ -956,3 +956,27 @@ All non-backend, non-D3/canvas TypeScript files in the project now have spec cov
 
 **Clean working tree.** All tests green. Docs updated.
 
+
+---
+
+### Session Closing Summary — 2025-07-16
+
+**Bulk unit test coverage pass — COMPLETE**
+
+All `.ts` source files testable with direct instantiation (no Angular TestBed/injection context required) now have spec coverage.
+
+**Remaining skipped (intentional):**
+- `CustomDateAdapterPlainMondayStart` — extends `NativeDateAdapter`, needs Angular injection context
+- `RestrictedLoggedDirective` — structural directive, needs `ViewContainerRef`/`TemplateRef`
+- `HeroInfoBoxTextDirective` — needs `ElementRef` via TestBed
+- `application-statistics.mappers.ts` — complex class, testable but lower priority
+- `user-management.service.ts` (599L) — Supabase Auth-heavy
+- `graph.component.ts`, `patch-graph.component.ts` — D3/canvas/backend-dependent
+
+**Working tree: CLEAN.** All tests green.
+
+**Next suggested work:**
+1. Product features (all backend-blocked — see `agent/blockers.md`)
+2. UI consistency improvements from `UI_CONSISTENCY_AUDIT.md`
+3. TestBed-based directive/adapter specs if coverage tooling demands it
+
