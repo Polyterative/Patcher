@@ -1,5 +1,6 @@
 @if ({embeddedShell: (embeddedShell$ | async) ?? false}; as shell) {
   <div class="app-shell" [class.app-shell--wide]="shell.embeddedShell">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     @if (!shell.embeddedShell) {
       <div class="app-shell__toolbar">
         <app-toolbar></app-toolbar>
@@ -25,7 +26,7 @@
           </lib-screen-wrapper>
         </div>
       }
-      <div class="main">
+      <main id="main-content" class="main">
         <div class="col"
         >
           <router-outlet></router-outlet>
@@ -36,7 +37,7 @@
           </div>
           <app-footer></app-footer>
         </div>
-      </div>
+      </main>
     </div>
     <!-- Selection panel outlet: renders at root stacking context, position:fixed anchored bottom-left -->
     <!-- SCAFFOLD 2026-02-21: always visible for layout evaluation; guarded by @if in Layer 2 -->
