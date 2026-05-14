@@ -488,3 +488,22 @@ generation, writeValue, valueChanges→onChange/onTouched wiring, setDisabledSta
 29/29 green, first run both files.
 
 **Files touched**: 2 new spec files, COMPLETED.md, current-task.md, session-log.md
+
+---
+
+## Loop iteration 10 — UserManagementComponent spec
+
+**Task**: Unit spec for UserManagementComponent (30 tests)
+
+**What was done**
+- Created `user-management.component.spec.ts`
+- Covers exported `confirmMatchesNewValidator` (5 tests): null/match/mismatch/partial cases
+- Covers component (25 tests): construction, ngOnInit SEO, submitPasswordChange (invalid/valid/reset),
+  beginUsernameEdit (flag/value/pristine), cancelUsernameEdit (flag/reset), submitUsernameChange
+  (invalid guard, same-username guard, valid call, success side-effects, error handling),
+  isEmailOnlyAccount (null/undefined/empty/all-email/mixed/github)
+- 1 failure on first run: trim test used spaces which pattern validator rejects → fixed to plain 'bob'
+
+**Tests run**: 30/30 green after fix
+
+**Files touched**: user-management.component.spec.ts (new), COMPLETED.md, session-log.md
