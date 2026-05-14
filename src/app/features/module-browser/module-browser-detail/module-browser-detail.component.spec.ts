@@ -388,4 +388,39 @@ describe('ModuleBrowserDetailComponent', () => {
 
     expect(fixture.nativeElement.querySelector('lib-hero-content-card[titleNormal="Dev utils"]')).not.toBeNull();
   });
+
+  it('getUsagePendingCopy describes pending rack check', () => {
+    const {component} = build();
+    expect(component.getUsagePendingCopy('rack')).toContain('rack');
+    expect(component.getUsagePendingCopy('rack')).toContain('Checking');
+  });
+
+  it('getUsagePendingCopy describes pending patch check', () => {
+    const {component} = build();
+    expect(component.getUsagePendingCopy('patch')).toContain('patch');
+  });
+
+  it('getNoPublicUsageCopy with no hidden usage returns try-adding copy', () => {
+    const {component} = build();
+    const copy = component.getNoPublicUsageCopy('rack', null);
+    expect(copy).toContain('Try adding it to yours');
+  });
+
+  it('getNoPublicUsageCopy with some hidden usage mentions hidden racks', () => {
+    const {component} = build();
+    const copy = component.getNoPublicUsageCopy('rack', 'some');
+    expect(copy).toContain('some');
+    expect(copy).toContain('racks');
+  });
+
+  it('getHiddenUsageSupplementCopy mentions the bucket descriptor', () => {
+    const {component} = build();
+    expect(component.getHiddenUsageSupplementCopy('patch', '5_plus')).toContain('5+');
+    expect(component.getHiddenUsageSupplementCopy('patch', '5_plus')).toContain('patches');
+  });
+
+  it('searchLinks is non-empty', () => {
+    const {component} = build();
+    expect(component.searchLinks.length).toBeGreaterThan(0);
+  });
 });
