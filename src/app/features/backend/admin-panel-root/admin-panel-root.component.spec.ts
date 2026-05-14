@@ -7,4 +7,7 @@ describe('AdminPanelRootComponent', () => {
     const comp = new AdminPanelRootComponent(mockBackend);
     expect(comp.backend).toBe(mockBackend);
   });
+  it('instances are independent', () => {
+    expect(new AdminPanelRootComponent({} as any)).not.toBe(new AdminPanelRootComponent({} as any));
+  });
 });
