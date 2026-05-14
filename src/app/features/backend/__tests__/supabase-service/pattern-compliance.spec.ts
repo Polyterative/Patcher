@@ -42,4 +42,9 @@ describe('SupabaseService - Service Pattern Compliance', () => {
     expect(typeof service.GET.modules).toBe('function');
     expect(typeof service.GET.moduleWithId).toBe('function');
   });
+
+  it('auth namespace is defined and exposes getUserSession$', () => {
+    expect(service.auth).toBeDefined();
+    expect(typeof (service.auth as any).getUserSession$).toBe('function');
+  });
 });

@@ -6,4 +6,9 @@ describe('RackCompositeComponent', () => {
     comp.data = {id: 1, name: 'My Rack'} as any;
     expect(comp.data.id).toBe(1);
   });
+  it('data name is preserved after assignment', () => {
+    const comp = new RackCompositeComponent();
+    comp.data = {id: 5, name: 'Studio Rack'} as any;
+    expect(comp.data.name).toBe('Studio Rack');
+  });
 });
