@@ -35,4 +35,23 @@ describe('ModuleBrowserDetailComponent search links', () => {
     expect(urls.some(url => url.includes('modulargrid.net'))).toBeTrue();
     expect(urls.some(url => url.includes('perfectcircuit.com'))).toBeTrue();
   });
+
+  it('includes manufacturer name in Google and YouTube URLs', () => {
+    const {component} = build();
+    const google = component.searchLinks.find(l => l.label === 'Google');
+    const youtube = component.searchLinks.find(l => l.label === 'YouTube');
+
+    expect(google).toBeTruthy();
+    expect(google!.url('Rings', 'Mutable Instruments')).toContain('Mutable');
+    expect(youtube).toBeTruthy();
+    expect(youtube!.url('Rings', 'Mutable Instruments')).toContain('Mutable');
+  });
+
+  it('every search link has a non-empty label and icon', () => {
+    const {component} = build();
+    component.searchLinks.forEach(link => {
+      expect(link.label.length).toBeGreaterThan(0);
+      expect(link.icon.length).toBeGreaterThan(0);
+    });
+  });
 });
