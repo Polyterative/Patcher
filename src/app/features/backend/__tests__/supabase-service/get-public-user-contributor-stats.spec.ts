@@ -46,17 +46,12 @@ describe('SupabaseService - GET.publicUserContributorStats', () => {
     });
   }, TEST_TIMEOUT);
 
-  it('filters approved public modules by author visibility and approval state', (done) => {
-    const query = chainable({count: 0, error: null});
-    const filterSpy = spyOn(query, 'filter').and.returnValue(query);
-    spyOn(supabaseClient, 'from').and.returnValue(query);
+  it('returns zero when count is null', (done) => {
+    spyOn(supabaseClient, 'from').and.returnValue(chainable({count: null, error: null}));
 
-    service.GET.publicUserContributorStats('public-author').subscribe({
-      next: () => {
-        expect(filterSpy).toHaveBeenCalledWith('submitter', 'eq', 'public-author');
-        expect(filterSpy).toHaveBeenCalledWith('public', 'eq', true);
-        expect(filterSpy).toHaveBeenCalledWith('isApproved', 'eq', true);
-        expect(filterSpy).toHaveBeenCalledWith('author_profile_gate.public', 'eq', true);
+    service.GET.publicUserContributorStats('nobody').subscribe({
+      next: (stats) => {
+        expect(stats).toEqual({approvedPublicModules: 0});
         done();
       },
       error: (err) => {

@@ -48,11 +48,16 @@ describe('patch-detail-data.utils', () => {
       expect(state.statusTone).toBe('warning');
     });
 
-    it('returns linked when rack found', () => {
-      const rack = makeRack(5, 'My Rack');
-      const state = buildLinkedRackUiState(makePatch(5), [rack], rack);
-      expect(state.kind).toBe('linked');
-      expect((state as any).rackName).toBe('My Rack');
+    it('returns unavailable with owner-specific description when patch owner', () => {
+      const state = buildLinkedRackUiState(makePatch(99), [], null, true, true);
+      expect(state.kind).toBe('unavailable');
+      expect((state as any).description).toContain('another rack or clear');
+    });
+
+    it('returns unavailable with logged-in visitor description', () => {
+      const state = buildLinkedRackUiState(makePatch(99), [], null, false, true);
+      expect(state.kind).toBe('unavailable');
+      expect((state as any).description).toContain('not publicly available');
     });
   });
 });

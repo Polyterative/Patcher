@@ -12,4 +12,14 @@ describe('ModuleCvIconComponent', () => {
   it('ngOnInit runs without error', () => {
     expect(() => comp.ngOnInit()).not.toThrow();
   });
+
+  it('type input can be set to in', () => {
+    comp.type = 'in';
+    expect(comp.type).toBe('in');
+  });
+
+  it('type input can be set to out', () => {
+    comp.type = 'out';
+    expect(comp.type).toBe('out');
+  });
 });
