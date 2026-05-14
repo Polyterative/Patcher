@@ -71,4 +71,24 @@ describe('HomeExperienceHeroComponent', () => {
     expect(host.textContent).toContain('Racks');
     expect(host.textContent).toContain('Log in');
   });
+
+  it('siteTitle is patcher.xyz', () => {
+    expect(fixture.componentInstance.siteTitle).toBe('patcher.xyz');
+  });
+
+  it('subtitleLines splits content subtitle on newlines', () => {
+    expect(fixture.componentInstance.subtitleLines).toEqual([
+      'Make patches.',
+      'Browse racks.'
+    ]);
+  });
+
+  it('displays the eyebrow text in the template', () => {
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.textContent).toContain('Explore');
+  });
+
+  it('wideShellTargets is a non-empty array', () => {
+    expect(fixture.componentInstance.wideShellTargets.length).toBeGreaterThan(0);
+  });
 });
