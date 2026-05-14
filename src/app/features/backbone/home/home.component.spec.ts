@@ -1,5 +1,7 @@
 import { HomeComponent } from './home.component';
 import { Subject } from 'rxjs';
+import { fakeAsync, tick } from '@angular/core/testing';
+import { PLATFORM_ID } from '@angular/core';
 
 describe('HomeComponent', () => {
   let comp: HomeComponent;
@@ -96,4 +98,44 @@ describe('HomeComponent', () => {
   it('heroContent title is non-empty', () => {
     expect(comp.heroContent.title.length).toBeGreaterThan(0);
   });
+
+  it('SEO data includes correct url, type and keywords', () => {
+    const call = (mockSeoSvc.updateSeo as jasmine.Spy).calls.mostRecent().args[0];
+    expect(call.url).toBe('https://patcher.xyz/');
+    expect(call.type).toBe('website');
+    expect(call.keywords).toContain('eurorack');
+  });
+
+  it('does not fire data-service updates on server platform', fakeAsync(() => {
+    const patchSpy = spyOn(mockPatchSvc.updateSinglePatchData$, 'next');
+    const moduleSpy = spyOn(mockModuleSvc.updateSingleModuleData$, 'next');
+    const rackSpy = spyOn(mockRackSvc.updateSingleRackData$, 'next');
+
+    const serverComp = new HomeComponent(
+      mockPatchSvc, mockRackSvc, mockModuleSvc, mockAppStatSvc,
+      mockAppState, mockSeoSvc, 'server' as unknown as object
+    );
+    tick(5000);
+
+    expect(patchSpy).not.toHaveBeenCalled();
+    expect(moduleSpy).not.toHaveBeenCalled();
+    expect(rackSpy).not.toHaveBeenCalled();
+    serverComp.ngOnDestroy();
+  }));
+
+  it('fires preview data triggers after timers on browser platform', fakeAsync(() => {
+    const patchSpy = spyOn(mockPatchSvc.updateSinglePatchData$, 'next');
+    const moduleSpy = spyOn(mockModuleSvc.updateSingleModuleData$, 'next');
+    const rackSpy = spyOn(mockRackSvc.updateSingleRackData$, 'next');
+
+    const browserComp = new HomeComponent(
+      mockPatchSvc, mockRackSvc, mockModuleSvc, mockAppStatSvc,
+      mockAppState, mockSeoSvc, 'browser' as unknown as object
+    );
+
+    tick(1001);  expect(patchSpy).toHaveBeenCalledWith(5);
+    tick(1000);  expect(moduleSpy).toHaveBeenCalledWith(1025);
+    tick(1000);  expect(rackSpy).toHaveBeenCalledWith(265);
+    browserComp.ngOnDestroy();
+  }));
 });
