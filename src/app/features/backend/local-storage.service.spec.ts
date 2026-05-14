@@ -6,4 +6,10 @@ describe('LocalStorageService', () => {
     const service = new LocalStorageService(storageMock);
     expect(service).toBeTruthy();
   });
+
+  it('exposes the injected storage instance', () => {
+    const storageMock: any = {get: jasmine.createSpy('get')};
+    const service = new LocalStorageService(storageMock);
+    expect((service as any).storage).toBe(storageMock);
+  });
 });

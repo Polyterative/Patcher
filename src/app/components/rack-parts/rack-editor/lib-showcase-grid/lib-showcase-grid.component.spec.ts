@@ -12,4 +12,10 @@ describe('LibShowcaseGridComponent', () => {
   it('data defaults to empty array', () => {
     expect(comp.data).toEqual([]);
   });
+
+  it('data input can be assigned', () => {
+    comp.data = [{label: 'Modules', value: '42'}];
+    expect(comp.data.length).toBe(1);
+    expect(comp.data[0].label).toBe('Modules');
+  });
 });
