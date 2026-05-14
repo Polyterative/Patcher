@@ -46,4 +46,15 @@ describe('OnlyTagOfTypePipe', () => {
     expect(result[0].id).toBe(7);
     expect(result[0].name).toBe('tag-7');
   });
+
+  it('filters all three TagType values independently', () => {
+    const input = [
+      makeTagEntry(1, TagType.Purpose),
+      makeTagEntry(2, TagType.Nature),
+      makeTagEntry(3, TagType.Character),
+    ];
+    expect((pipe.transform(input, TagType.Purpose) as Tag[]).length).toBe(1);
+    expect((pipe.transform(input, TagType.Nature) as Tag[]).length).toBe(1);
+    expect((pipe.transform(input, TagType.Character) as Tag[]).length).toBe(1);
+  });
 });
