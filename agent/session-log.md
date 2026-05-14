@@ -532,3 +532,26 @@ Compile errors fixed:
 26/26 green on final run.
 
 **Files touched**: 2 new spec files, COMPLETED.md, session-log.md
+
+---
+
+## Loop iteration 12 — CountdownProgressComponent + ListLinkRouterComponent
+
+**Tasks**: Batch two zero-dependency presentation components
+
+**CountdownProgressComponent** (14 tests):
+- default inputs: countdown=null, progress=0, message, unitLabel, theme='success', actionButtonLabel=undefined, actionClick$ is EventEmitter
+- onActionClick: emits, emits multiple times
+- ngOnDestroy: no throw
+- input assignments: countdown, progress, theme variants
+
+**ListLinkRouterComponent** (10 tests):
+- construction: no error, linksData===cleanCardlinkModelObject
+- isRelative: array→true, string→false, empty array→true, url string→false
+- doNothing: callable
+- ngOnInit: no throw
+- ngOnDestroy: emits destroyEvent$, completes destroyEvent$
+
+24/24 green on first run.
+
+**Files touched**: 2 new spec files, COMPLETED.md, session-log.md
