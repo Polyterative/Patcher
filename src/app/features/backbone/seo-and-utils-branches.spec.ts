@@ -83,4 +83,33 @@ describe('SeoAndUtilsService - additional branches', () => {
     
     TestBed.resetTestingModule();
   });
+
+  it('sets robots noindex tag when noindex is true', () => {
+    const metaSpy = jasmine.createSpyObj<Meta>('Meta', ['updateTag', 'removeTag']);
+    const service = new SeoAndUtilsService(
+      jasmine.createSpyObj('Title', ['setTitle']) as any, metaSpy, document
+    );
+    service.updateSeo({description: 'd', image: 'img', noindex: true}, 'Area');
+    expect(metaSpy.updateTag).toHaveBeenCalledWith({name: 'robots', content: 'noindex, nofollow'});
+  });
+
+  it('removes robots tag when noindex is false', () => {
+    const metaSpy = jasmine.createSpyObj<Meta>('Meta', ['updateTag', 'removeTag']);
+    const service = new SeoAndUtilsService(
+      jasmine.createSpyObj('Title', ['setTitle']) as any, metaSpy, document
+    );
+    service.updateSeo({description: 'd', image: 'img', noindex: false}, 'Area');
+    expect(metaSpy.removeTag).toHaveBeenCalledWith(`name='robots'`);
+  });
+
+  it('sets og:image and twitter:image from data.image', () => {
+    const metaSpy = jasmine.createSpyObj<Meta>('Meta', ['updateTag', 'removeTag']);
+    const service = new SeoAndUtilsService(
+      jasmine.createSpyObj('Title', ['setTitle']) as any, metaSpy, document
+    );
+    const imageUrl = 'https://cdn.example.com/rack.jpg';
+    service.updateSeo({description: 'd', image: imageUrl}, 'Area');
+    expect(metaSpy.updateTag).toHaveBeenCalledWith({property: 'og:image', content: imageUrl});
+    expect(metaSpy.updateTag).toHaveBeenCalledWith({name: 'twitter:image', content: imageUrl});
+  });
 });
