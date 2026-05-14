@@ -29,5 +29,8 @@ describe('rack-power-data.utils', () => {
     it('returns false when any power field is null', () => {
       expect(hasCompletePowerData(make(null, 100, 0))).toBeFalse();
     });
+    it('returns false when all power fields are null', () => {
+      expect(hasCompletePowerData(make(null, null, null))).toBeFalse();
+    });
   });
 });

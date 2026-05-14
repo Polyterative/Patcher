@@ -14,4 +14,9 @@ describe('ModulePartHpComponent', () => {
   it('ngOnInit runs without error', () => {
     expect(() => comp.ngOnInit()).not.toThrow();
   });
+
+  it('data input can be assigned', () => {
+    comp.data = {id: 5, hp: 14} as any;
+    expect(comp.data.hp).toBe(14);
+  });
 });
