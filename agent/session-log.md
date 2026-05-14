@@ -911,3 +911,21 @@ All pure utility functions tested.
 
 **Next pivot:** Hunt for any remaining unspecced files — models, constants, enums, or other testable code units.
 
+
+---
+
+### Iteration 40 — 2025-07-16 (geometry, panel, signal-analysis, linked-rack-rollout specs)
+
+Committed `860e6a83`: module-format-geometry.constants (7), panel.constants (9), rack-signal-analysis.helpers (24), linked-rack-rollout (6) — 46 total.
+
+### Iteration 41 — 2025-07-16 (card link builder + module-editor types specs)
+
+**Files created (all green):**
+- `src/app/shared-interproject/components/@smart/list-link-router/clickable-list-card-base.spec.ts` — 7 tests
+- `src/app/components/module-parts/module-editor/module-editor.types.spec.ts` — 9 tests
+
+**All non-backend .ts files with exported functions now have spec coverage.**
+Only `supabase.cache.ts` remains unspecced — backend, off-limits.
+
+**Next pivot:** Broader component sweep — look for any remaining components without specs.
+
