@@ -79,4 +79,24 @@ describe('patch-graph-build.utils', () => {
       expect(buildCvNodeId(7, undefined, 99)).toBe('799');
     });
   });
+
+  describe('computePatchGraphSizeConstant extra', () => {
+    it('scales down as module and connection count grow together', () => {
+      const small = computePatchGraphSizeConstant(2, 2);
+      const large = computePatchGraphSizeConstant(20, 20);
+      expect(small).toBeGreaterThanOrEqual(large);
+    });
+  });
+
+  describe('extractPatchGraphModuleInstances extra', () => {
+    it('returns one instance per unique module+instance combination', () => {
+      const conns = [
+        makeConn(1, undefined, 2, undefined),
+        makeConn(1, undefined, 3, undefined)
+      ];
+      const result = extractPatchGraphModuleInstances(conns);
+      const keys = result.map(i => moduleInstanceKey(i.moduleId, i.instanceId));
+      expect(new Set(keys).size).toBe(keys.length);
+    });
+  });
 });
