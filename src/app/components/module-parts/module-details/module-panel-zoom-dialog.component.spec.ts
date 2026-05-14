@@ -22,4 +22,9 @@ describe('ModulePanelZoomDialogComponent', () => {
   it('exposes dialogRef', () => {
     expect(comp.dialogRef).toBe(mockDialogRef);
   });
+
+  it('data contains both imageUrl and label from injection', () => {
+    expect(comp.data.imageUrl).toBe('https://example.com/image.png');
+    expect(comp.data.label).toBe('Test Module');
+  });
 });

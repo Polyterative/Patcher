@@ -34,6 +34,7 @@ second source of rules.
 | [../AGENTS.md](../AGENTS.md) | Canonical agent rules, workflow, and git conventions |
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | Service layers, project structure, and state boundaries |
 | [STYLE_GUIDE.md](./STYLE_GUIDE.md) | Naming conventions and HTML/SCSS conventions |
+| [agents/README.md](./agents/README.md) | Specialised agent personas (planner, frontend-dev, designer, reviewer, refactorer, test-writer, bug-hunter) |
 
 ### Patterns and Testing
 

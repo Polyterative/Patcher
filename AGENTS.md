@@ -100,7 +100,59 @@ Key paths:
 - When compacting context, keep file references and short keywords, not large code blocks.
 - Do not preload large repo docs unless the current task needs them.
 
-## 8) Internal docs map
+## 8) Tools available beyond shell + edit
+
+Agents in this repo have access to several MCP servers and an LSP. **Prefer these over
+shelling out to `grep` / `find` / repeated `view` reads** — they are faster, more accurate,
+and cheaper in tokens.
+
+### Code search preference order
+
+When you need to find code, use tools in this order (first match wins):
+
+1. **LSP** (`typescript` server, configured in `.github/lsp.json`) — for *known symbols*:
+   `goToDefinition`, `findReferences`, `incomingCalls`, `hover`, `documentSymbol`.
+   Use this for "where is `SubManager` defined?", "who calls `addPatch`?",
+   "rename `userId` → `userID`". File-scoped ops are reliable; `workspaceSymbol` may need
+   a warmup query.
+2. **cocoindex-code-search** (MCP, configured in `.github/mcp.json`) — for *concepts*:
+   "find code that does X", "how is auth wired", "where do we cache rack lists".
+   Indexed across 10.890+ TS chunks + 1.900 HTML/CSS/SQL/JS, embeddings are local
+   (`snowflake-arctic-embed-xs`), daemon refreshes on save, zero API cost.
+   Start with `limit: 5`, expand if needed. Use `paths` / `languages` filters to narrow.
+3. **grep / glob** — only when 1 and 2 don't apply (e.g., literal string, log line, config
+   value, regex). Always pair `grep` with a `glob` filter to keep it cheap.
+
+### Other MCP servers
+
+- **Sentry MCP** — use it instead of asking the user for stack traces. Trigger it whenever
+  a bug report comes in or when working on `internaldocs/workflow/TODO.md` § Sentry.
+- **Supabase MCP** — read-only inspection of the live DB (list tables, advisors, logs).
+  **Never** use it to apply migrations, change RLS, or mutate data without explicit
+  user approval (see §5 "Reuse and backend access").
+- **GitHub MCP** — for PR / issue / Actions inspection without leaving the chat.
+
+### When the tool list looks wrong
+
+If you don't see one of the tools above in your environment, **say so to the user before
+falling back to grep**. The MCP/LSP setup is intentional and a missing tool is a config
+problem worth surfacing, not a silent fallback.
+
+## 9) Specialised agent personas
+
+When a task fits a known role (planning, UI polish, review, refactor, test-writing, bug
+diagnosis), delegate to a sub-agent using the matching persona spec from
+`internaldocs/agents/` as the system prompt. The index at `internaldocs/agents/README.md`
+lists composition patterns (Plan → Build → Review, Bug fix, Refactor sweep, UI polish).
+
+Two project-scoped Copilot CLI skills live in `.github/skills/`:
+
+- **`patcher`** — auto-surfaces persona routing + tool preferences for normal dev work in this
+  repo. Keep it in sync with `internaldocs/agents/`.
+- **`ai-dlc`** — opt-in only. Loads the formal AWS AI-DLC phased workflow from
+  `.aidlc-rule-details/` when the user explicitly asks for it.
+
+## 10) Internal docs map
 
 - `internaldocs/README.md` - doc index and routing
 - `internaldocs/workflow/CURRENT_FEATURE.md` - active implementation details

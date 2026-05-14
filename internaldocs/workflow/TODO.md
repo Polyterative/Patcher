@@ -99,6 +99,132 @@ important notices without turning Patcher into a blog platform.
 
 ---
 
+#### HIGH: Perf — Investigate Initial Render Flash on Route Open
+
+**Why:** When opening a route there is a noticeable flash roughly 1.5–2s after navigation: all
+text appears to disappear and then reappear. This looks like a late-arriving state update (SSR
+hydration mismatch, late `async` pipe emission swapping placeholder → real content, a guarded
+`*ngIf` flipping from `false → true → false → true`, font/FOUT swap, or a router data resolver
+firing a second emission). Goal: find the root cause and eliminate the visible re-render.
+
+**Scope (read-only investigation first — do NOT change behaviour while diagnosing):**
+
+- [ ] Reproduce reliably on at least one route (capture which routes flash and which do not)
+- [ ] Record a Performance trace (Chrome DevTools) covering the navigation + the flash window;
+      identify whether the flash correlates with a script task, layout, paint, or network response
+- [ ] Check SSR vs CSR: confirm whether the flash is SSR hydration replacing server HTML, or a
+      pure CSR state transition (compare `pnpm start` vs `pnpm start:ssr` behaviour)
+- [ ] Audit `*ngIf` / `@if` guards on the affected templates — look for conditions that briefly
+      evaluate truthy from cached/stale data then flip when fresh data arrives (and vice versa)
+- [ ] Audit `async` pipes on the affected templates — list every observable feeding the view and
+      confirm it is not emitting twice (e.g., `BehaviorSubject` initial value + late real value
+      without `distinctUntilChanged`, or missing `shareReplay`)
+- [ ] Check router data flow: resolvers, route params subscriptions, and any
+      `ActivatedRoute.params`/`paramMap` pipelines for double emissions on navigation
+- [ ] Check the loading/skeleton states — confirm the flash is not a skeleton being shown for
+      <2s after content is already visible
+- [ ] Check `@font-face` / FOUT — flash text disappearance could be a font swap event
+- [ ] Document findings in `internaldocs/workflow/CURRENT_FEATURE.md` with root cause + proposed fix
+- [ ] Implement the minimal fix that removes the visible flash WITHOUT removing any current
+      functionality (no behavioural regressions on the affected routes)
+- [ ] Verify across the routes that originally reproduced the issue + run `pnpm test-headless`
+      and at least the auth E2E (`pnpm test:e2e:auth`)
+
+---
+
+#### HIGH: Perf — Audit Reactive Pipelines & Event Chains for Smoothness
+
+**Why:** The app should feel like butter. Today there are likely pipelines that re-emit more
+than necessary, chains that re-subscribe per emission, or templates that re-render on identity
+changes that should have been collapsed. The goal is a global pass over every observable chain
+to tighten things up — fewer redundant emissions, fewer change-detection cycles, smoother UX —
+while preserving every current behaviour.
+
+**Scope (read-only audit, then targeted refactors):**
+
+- [ ] Inventory every `Subject` / `BehaviorSubject` / `ReplaySubject` in `src/app` and note its
+      role (entity identity trigger, refresh signal, submit event, UI toggle, etc.)
+- [ ] Inventory every long observable chain (services + components) and capture: source(s),
+      operators used, consumer(s), and whether the chain is `shareReplay`’d or duplicated across
+      subscribers
+- [ ] Look for missing `distinctUntilChanged` on streams where consecutive equal values trigger
+      re-renders or re-fetches
+- [ ] Look for `switchMap` chains that should be `exhaustMap` (e.g., submit buttons) or
+      `concatMap` (ordered writes) — wrong flattening operator is a common smoothness killer
+- [ ] Look for nested subscriptions (`.subscribe` inside another `.subscribe`) and flatten with
+      `switchMap` / `mergeMap`
+- [ ] Look for components that manually subscribe where the template could use `async` pipe
+      (per `AGENTS.md` style guidance)
+- [ ] Look for `combineLatest` / `withLatestFrom` calls that fan-out emissions unnecessarily;
+      consider `auditTime` / `debounceTime` / `throttleTime` where appropriate
+- [ ] Look for chains that fire on every keystroke / scroll / hover without `debounceTime`
+- [ ] Confirm `SubManager` + `takeUntil(this.destroy$)` is used everywhere (no leaked subs)
+- [ ] Verify `OnPush` change detection is used where possible on container components — flag
+      candidates that are still on default CD
+- [ ] Document findings + proposed refactors in `internaldocs/workflow/CURRENT_FEATURE.md`
+- [ ] Apply refactors in small batches, each batch validated with `pnpm test-headless`
+- [ ] NO functional regressions — every feature still works as before
+
+---
+
+#### HIGH: Perf — Cache Strategy Review (Hits, Invalidation, Coverage)
+
+**Why:** Backend access goes through `SupabaseService` and several reads are cacheable, but we
+need a fresh pass to confirm: are we busting cache keys when (and only when) we should? Are
+there reads that should be cached but currently aren’t? Are there caches that are too aggressive
+and serve stale data after writes? Right balance = fewer round-trips and consistent UI.
+
+**Scope (read-only audit, then targeted fixes):**
+
+- [ ] Inventory every `GET/get` method in `SupabaseService` (and any data services that cache
+      locally) and record: cache key shape, TTL (if any), and which write methods invalidate it
+- [ ] Inventory every `add/update/delete` method and confirm it busts ALL keys that could now be
+      stale — cross-reference against the GET inventory
+- [ ] Identify reads that are NOT currently cached but are called repeatedly with the same args
+      across components (candidates to add caching)
+- [ ] Identify caches that survive longer than they should (e.g., user-area data after a logout
+      / account switch / patch save)
+- [ ] Check `DatabaseStrings.ts` joins for any duplicated round-trips that could be merged into
+      a single cached read
+- [ ] Verify caches respect user-scoped boundaries (no cross-account leakage)
+- [ ] Document the cache map (key → producer → invalidators) in `internaldocs/patterns/` or
+      `internaldocs/workflow/CURRENT_FEATURE.md` for future agents
+- [ ] Apply fixes in small batches, each validated with `pnpm test-headless`
+- [ ] NO functional regressions — every read still returns the same data the user expects
+
+---
+
+#### HIGH: Perf — Backend Bandwidth Optimisation (Every Byte Costs Money)
+
+**Why:** Supabase egress is billed per byte. Today some queries probably select more columns,
+more rows, or more joins than the UI actually consumes. The goal is to systematically trim
+backend payloads — fewer columns, narrower joins, server-side filtering / pagination — without
+changing any user-visible behaviour.
+
+**Scope (read-only audit, then targeted query rewrites):**
+
+- [ ] Inventory every Supabase query in `SupabaseService` (and `DatabaseStrings.ts` joins) and
+      for each capture: columns selected, joined tables, expected payload size, and which UI
+      surface consumes it
+- [ ] For each query, identify columns/joined fields that are fetched but never read by the
+      consumer — replace `select('*')` with explicit column lists
+- [ ] Identify lists that load all rows when the UI only renders a window — add `range()` /
+      pagination / `limit()` where appropriate
+- [ ] Identify duplicate fetches (same data requested by multiple components in the same view)
+      and consolidate (links into the caching task above)
+- [ ] Check for N+1 patterns where multiple round-trips could be a single joined query
+- [ ] Check image / asset payloads — confirm we serve appropriately sized images and not full
+      originals where thumbnails would do
+- [ ] Confirm gzip / brotli is in effect for API responses (Supabase default — verify on
+      production)
+- [ ] Estimate bytes saved per query before/after where possible (helps prioritise)
+- [ ] Document findings in `internaldocs/workflow/CURRENT_FEATURE.md`
+- [ ] Apply rewrites in small batches; run `pnpm updateBackendTypes` if response shapes change;
+      validate with `pnpm test-headless` after each batch
+- [ ] NO functional regressions — every UI surface still has exactly the data it needs
+
+---
+
 #### MEDIUM: Sentry — Issue Monitoring & Resolution Workflow
 
 **Why:** Sentry is already integrated and collecting error data, but there is currently no process
