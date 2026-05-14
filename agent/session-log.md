@@ -753,3 +753,19 @@ Mock approach: supabaseService exposes a `supabase.auth.onAuthStateChange` spy, 
 **AppFaqComponent** (4 tests): creation, faq.length=9, first item has question+answer, every item has icon.
 
 26/26 green first run.
+
+---
+
+## Loop iteration 26 — ModuleDetailDataCard + ModuleRacks + Changelog + NotFound + Uranus + Venus + LoginEmail
+
+7 new specs, 33 new tests.
+
+- **ModuleDetailDataCardComponent** (4): defaults (title, data, animationDelay).
+- **ModuleRacksComponent** (4): creation, viewConfig inherits base, hideButtons=true, ngOnInit no-throw.
+- **ChangelogComponent** (6): creation, seoAndUtilsService.updateSeo called in ctor with correct title, URL constants contain expected fragments.
+- **NotFoundComponent** (5): creation, ngOnInit sets page title + robots/description/og:title meta tags.
+- **UranusComponent** (5): title defaults undefined, ngOnInit sets from route data, no-op when missing, doesn't overwrite manual title.
+- **VenusComponent** (5): same pattern as Uranus.
+- **LoginEmailComponent** (4): creation, exposes dataService, emailChange EventEmitter, ngOnInit wires valueChanges to emailChange.
+
+33/33 green first run.
