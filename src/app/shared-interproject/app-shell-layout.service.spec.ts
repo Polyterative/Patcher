@@ -67,4 +67,24 @@ describe('AppShellLayoutService', () => {
     expect(emissions).toEqual([false, true, false]);
     sub.unsubscribe();
   });
+
+  it('emits initial state on subscription', () => {
+    const service = TestBed.inject(AppShellLayoutService);
+    const emissions: boolean[] = [];
+
+    service.wideShell$.subscribe(v => emissions.push(v));
+    expect(emissions).toEqual([false]);
+  });
+
+  it('replays latest value to late subscribers (shareReplay)', () => {
+    const service = TestBed.inject(AppShellLayoutService);
+    let firstValue: boolean | undefined;
+    service.wideShell$.subscribe(v => firstValue = v);
+
+    state$.next({matches: true, breakpoints: {[APP_SHELL_WIDE_QUERY]: true}});
+
+    let replayedValue: boolean | undefined;
+    service.wideShell$.subscribe(v => replayedValue = v);
+    expect(replayedValue).toBe(true);
+  });
 });
