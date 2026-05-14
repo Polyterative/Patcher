@@ -29,4 +29,12 @@ describe('HomeOpenPrinciplesComponent', () => {
     const segments = comp.getCardDescriptionSegments(card);
     expect(segments.every(s => !s.highlighted)).toBeTrue();
   });
+
+  it('sectionTitle defaults to empty string', () => {
+    expect(comp.sectionTitle).toBe('');
+  });
+
+  it('sectionIntro defaults to empty string', () => {
+    expect(comp.sectionIntro).toBe('');
+  });
 });
