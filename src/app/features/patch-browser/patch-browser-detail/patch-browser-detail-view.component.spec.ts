@@ -90,4 +90,24 @@ describe('PatchBrowserDetailViewComponent', () => {
   it('viewConfig hides buttons by default', () => {
     expect(component.viewConfig.hideButtons).toBeFalse();
   });
+
+  it('resets patch data and closes edit panel on destroy', () => {
+    component.ngOnDestroy();
+    expect(dataService.singlePatchData$.value).toBeUndefined();
+    expect(dataService.patchEditingPanelOpenState$.next).toHaveBeenCalledWith(false);
+  });
+
+  it('requests comments update when single patch data arrives', () => {
+    component.ngOnInit();
+    singlePatchData$.next({id: 99, name: 'My Patch'});
+    expect(commentsDataService.requestCommentsUpdate$.next).toHaveBeenCalledWith(
+      jasmine.objectContaining({entityId: 99})
+    );
+  });
+
+  it('does not request comments for falsy patch data', () => {
+    component.ngOnInit();
+    singlePatchData$.next(null);
+    expect(commentsDataService.requestCommentsUpdate$.next).not.toHaveBeenCalled();
+  });
 });
