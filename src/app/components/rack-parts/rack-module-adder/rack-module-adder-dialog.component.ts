@@ -20,6 +20,7 @@ import {
   map,
   share,
   startWith,
+  exhaustMap,
   switchMap,
   takeUntil
 } from 'rxjs/operators';
@@ -100,7 +101,7 @@ export class RackModuleAdderDialogComponent extends SubManager implements OnInit
     
       this.saveRackedModule$
         .pipe(
-          switchMap(() => this.backend.add.rackModule(
+          exhaustMap(() => this.backend.add.rackModule(
             this.data.module.id,
             this.fields.rack.control.value.id
           )),
