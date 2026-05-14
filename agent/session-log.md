@@ -689,3 +689,12 @@ Compile errors fixed:
   Cables value='10', Multiples hidden when 0, Annotated hidden when 0, Multiples visible when >0
 
 16/16 green first run.
+
+---
+
+## Loop iteration 20 — ModuleEditorAdderLineComponent + RackBrowserRootComponent
+
+**ModuleEditorAdderLineComponent** (8 tests): no-dep component, 6 presets verified by count/first/last, addPreset emits CV with correct min/max/name/id/isApproved.
+**RackBrowserRootComponent** (5 tests): inject(DOCUMENT) via TestBed.runInInjectionContext, updateSeo called, formTypes defined, updateRacksList$ emitted, viewConfig defined.
+
+13/13 green first run.
