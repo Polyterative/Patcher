@@ -1,9 +1,10 @@
 # Acceptance Checklist
 
-## Patch Editing — "No connections" warning fix
+## Manufacturer Pages — Phase 1 Polish
 
-- [x] `patch-details.component.html` outer bag uses `editorConnections$` as the connections source so the empty state clears immediately when a connection is added during editing
-- [x] When not editing, display behaviour is unchanged (`editorConnections$` is synced from `patchConnections$` on patch load)
-- [x] No regression in loading indicator (null check still works — `editorConnections$` starts as `null` just like `patchConnections$`)
-- [x] Unit test covering the stale-source scenario: adding a connection via `confirmSelectedConnection$` updates `editorConnections$` and `patchConnections$` stays at backend value
-- [x] Build green, lint green, focused tests green (25/25)
+- [x] Manufacturer logo renders in the detail page header when `manufacturer.logo` is set
+- [x] When no logo is set the layout does not break (guarded with `@if (logoUrl(...))`)
+- [x] Logo display is consistent with the existing `manufacturer-row` pattern (same Supabase storage URL, alt text)
+- [x] Module catalogue defaults to "Group by standard (3U / 1U)" — `defaultGroupId` input added to `ModuleListComponent` (backward-compatible); manufacturer detail sets `[defaultGroupId]="'standard'"`
+- [x] Data-report guidance note added below the module list when modules are present; points users to the per-module "Report an issue" flag component
+- [x] Build green, tests green (4/4 module-list)

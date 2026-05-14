@@ -28,8 +28,6 @@
 
 ---
 
-## Backlog
-
 > Two tracks run in parallel: **Product** (user-facing features) and **Infra** (tests, tooling, hygiene).
 > Product tasks are sequenced by the Tier 0 → Tier 1 → Tier 2 arc from [../product/ROADMAP.md](../product/ROADMAP.md).
 > Infra tasks are independent and can be picked any time a product task is blocked.

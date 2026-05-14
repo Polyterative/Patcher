@@ -70,6 +70,8 @@ export class ModuleListComponent extends SubManager implements OnInit {
   @Input() showOrder = false;
   @Input() encloseVertically = true;
   @Input() emptyStateCopy = '';
+  /** Pre-selects a grouping mode when the list first renders. Defaults to 'none'. */
+  @Input() defaultGroupId: ModuleGroupId = 'none';
 
   private readonly externalSearchQuery$ = new BehaviorSubject<string>('');
 
@@ -97,6 +99,13 @@ export class ModuleListComponent extends SubManager implements OnInit {
   }
 
   ngOnInit(): void {
+    if (this.defaultGroupId !== 'none') {
+      const defaultOption = MODULE_GROUP_OPTIONS.find(o => o.id === this.defaultGroupId);
+      if (defaultOption) {
+        this.groupControl.setValue(defaultOption, {emitEvent: false});
+      }
+    }
+
     const localSearchQuery$ = this.showSearch
       ? this.filterService.filterEvent$.pipe(startWith(''))
       : of('');

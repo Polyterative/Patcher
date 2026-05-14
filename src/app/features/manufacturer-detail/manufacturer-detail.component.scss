@@ -1,5 +1,37 @@
 @use "src/app/style/brand-resources" as *;
 
+.manufacturer-detail-logo-wrap {
+  display: flex;
+  align-items: center;
+  padding-block: 0.25rem;
+}
+
+.manufacturer-detail-logo {
+  max-height: 3.5rem;
+  max-width: 12rem;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.manufacturer-detail-data-note {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0.5rem 0.25rem 0;
+  font-size: 0.8125rem;
+  color: var(--mdc-theme-text-secondary-on-background, rgba(0,0,0,0.54));
+
+  &__icon {
+    font-size: 0.9rem;
+    width: 0.9rem;
+    height: 0.9rem;
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+}
+
 .manufacturer-website-btn {
   width: fit-content;
   min-height: 2.75rem;
