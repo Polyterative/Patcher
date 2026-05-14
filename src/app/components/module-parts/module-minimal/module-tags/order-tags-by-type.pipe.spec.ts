@@ -55,4 +55,10 @@ describe('OrderTagsByTypePipe', () => {
     expect(result[0].tag.type).toBe(TagType.Purpose);
     expect(result[result.length - 1].tag.type).toBe(TagType.Character);
   });
+
+  it('all-same-type array stays in original order', () => {
+    const input = [makeTagEntry(1, TagType.Nature), makeTagEntry(2, TagType.Nature)];
+    const result = pipe.transform(input) as {tag: Tag}[];
+    expect(result.map(x => x.tag.id)).toEqual([1, 2]);
+  });
 });
