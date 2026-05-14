@@ -658,3 +658,19 @@ Compile errors fixed:
 - updateSeo called on construction; updateList$ emitted on construction; formTypes defined
 
 21/21 green first run.
+
+---
+
+## Loop iteration 18 — PatchConnectionsListComponent + ApplicationInsightsPageComponent
+
+**PatchConnectionsListComponent** (7 tests):
+- construction defaults (isEditing=false, reverseOrder=false, instanceLabelMap=empty Map)
+- effectiveNoteSync$: undefined when not editing, returns requestNoteSync$ when editing
+- ngOnInit no-throw
+
+**ApplicationInsightsPageComponent** (5 tests):
+- construction: no error, updateSeo called, vm$ defined
+- vm$: startWith emits isLoading=true first (used plain Subject not BehaviorSubject to avoid immediate override), page$ emission produces isLoading=false
+- Fix: `{ modules: 0 }` rejected by TypeScript strict object check → used `jasmine.objectContaining({})`
+
+12/12 green.
