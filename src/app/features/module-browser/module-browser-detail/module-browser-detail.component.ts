@@ -298,12 +298,16 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
           if (data.isDIY) { descParts.push(`DIY module.`); }
           if (tagsClean) { descParts.push(`Tags: ${ tagsClean }.`); }
 
+          const panelImage = data.panels?.[0]?.filename
+            ? `${ MODULE_PANELS_BASE_URL }${ data.panels[0].filename }`
+            : undefined;
           const seoData: SeoSocialShareData = {
             title: `${ data.name } - details.`,
             description: descParts.join(' '),
             keywords: keywords,
             published: data.created,
             modified: data.updated,
+            image: panelImage,
           };
           this.seoAndUtilsService.updateSeo(seoData,
             `${ data.name } by ${ data.manufacturer.name } - Module Details`);
