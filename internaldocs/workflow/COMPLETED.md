@@ -200,3 +200,6 @@
 | 2025-07-16 | test(constants+helpers): geometry, panel, signal-analysis, linked-rack-rollout specs (61 tests) | pending |
 
 | 2025-07-16 | test(misc): add card-link builder + module-editor crop types specs (16 tests) | `09ba30a1` |
+
+| 2025-07-16 | test(e2e): expand home page coverage to 12 tests | `cd0711f3` |
+| 2025-07-16 | style(home): align spacing to $standardUnit scale (UI consistency pass 1) | `ef35e678` |
