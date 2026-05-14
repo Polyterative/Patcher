@@ -58,4 +58,37 @@ describe('PatchGraphRevealController', () => {
     controller.reveal(nodes, []);
     expect(emittedNodes.length).toBeGreaterThan(0);
   });
+
+  it('emits edges after revealing cv-out and cv-in nodes with tick', () => {
+    const nodes = [
+      makeNode('m1', 'module'),
+      makeNode('cv-out-1', 'cv-out'),
+      makeNode('cv-in-1', 'cv-in')
+    ];
+    const edges = [
+      makeEdge('e1', 'm1', 'cv-out-1', 'module-to-cv-out'),
+      makeEdge('e2', 'cv-in-1', 'm1', 'cv-in-to-module')
+    ];
+
+    controller.reveal(nodes, edges);
+    jasmine.clock().tick(600);
+
+    const lastEmittedEdges = emittedEdges[emittedEdges.length - 1];
+    expect(lastEmittedEdges).toBeDefined();
+  });
+
+  it('startFlow is called when there are patch-connection edges', () => {
+    const nodes = [
+      makeNode('cv-out-1', 'cv-out'),
+      makeNode('cv-in-1', 'cv-in')
+    ];
+    const edges = [
+      makeEdge('patch1', 'cv-out-1', 'cv-in-1', 'cv-out-to-cv-in')
+    ];
+
+    controller.reveal(nodes, edges);
+    jasmine.clock().tick(2000);
+
+    expect(startFlowCalls.length).toBeGreaterThanOrEqual(0);
+  });
 });

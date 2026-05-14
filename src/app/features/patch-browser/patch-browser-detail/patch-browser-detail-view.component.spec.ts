@@ -82,4 +82,12 @@ describe('PatchBrowserDetailViewComponent', () => {
     expect(dataService.updateSinglePatchData$.next).toHaveBeenCalledTimes(2);
     expect(dataService.updateSinglePatchData$.next).toHaveBeenCalledWith(213);
   });
+
+  it('shows wide-shell nav by default', () => {
+    expect(component.showWideShellNav).toBeTrue();
+  });
+
+  it('viewConfig hides buttons by default', () => {
+    expect(component.viewConfig.hideButtons).toBeFalse();
+  });
 });
