@@ -31,5 +31,14 @@ describe('module-format-geometry.constants', () => {
     it('INTELLIJEL_1U has id 1', () => {
       expect(MODULE_FORMAT_GEOMETRY.INTELLIJEL_1U.id).toBe(1);
     });
+
+    it('PULP_LOGIC_1U has correct height', () => {
+      expect(MODULE_FORMAT_GEOMETRY.PULP_LOGIC_1U.heightMm).toBeCloseTo(43.18, 1);
+    });
+
+    it('all formats share the same hpWidthMm (5.08)', () => {
+      const formats = Object.values(MODULE_FORMAT_GEOMETRY);
+      formats.forEach(f => expect(f.hpWidthMm).toBeCloseTo(5.08, 2));
+    });
   });
 });
