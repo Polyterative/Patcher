@@ -11,6 +11,7 @@ import {
 } from 'rxjs';
 import {
   catchError,
+  exhaustMap,
   map,
   shareReplay,
   switchMap,
@@ -89,7 +90,7 @@ export class AdminFlagsDataService extends SubManager {
     ).subscribe(flags => this._flags$.next(flags));
 
     this.resolveFlag$.pipe(
-      switchMap(({id, resolved}) => this.backend.update.moduleFlagResolved(id, resolved).pipe(
+      exhaustMap(({id, resolved}) => this.backend.update.moduleFlagResolved(id, resolved).pipe(
         catchError(() => {
           SharedConstants.errorCustom(this.snackBar, 'Failed to update flag.');
           return EMPTY;
@@ -99,7 +100,7 @@ export class AdminFlagsDataService extends SubManager {
     ).subscribe(() => this._refresh$.next());
 
     this.deleteFlag$.pipe(
-      switchMap(id => this.backend.delete.moduleFlag(id).pipe(
+      exhaustMap(id => this.backend.delete.moduleFlag(id).pipe(
         catchError(() => {
           SharedConstants.errorCustom(this.snackBar, 'Failed to delete flag.');
           return EMPTY;

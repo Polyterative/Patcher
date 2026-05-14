@@ -31,6 +31,7 @@ import {
   distinctUntilChanged,
   filter,
   finalize,
+  exhaustMap,
   map,
   pairwise,
   scan,
@@ -214,7 +215,7 @@ export class PatchDetailDataService implements OnDestroy {
     
     this.removePatchFromCollection$
       .pipe(
-        switchMap(x => this.backend.delete.userPatch(x)),
+        exhaustMap(x => this.backend.delete.userPatch(x)),
         withLatestFrom(this.updateSinglePatchData$),
         takeUntil(this.destroyEvent$)
       )
