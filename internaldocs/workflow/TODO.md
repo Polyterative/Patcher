@@ -38,38 +38,6 @@
 
 ---
 
-#### LOW: Rack-Context Patch Building — Polish Review
-
-**Why:** The optional linked-rack feature shipped as v6.0.0. One Layer 3 Polish item was deferred: verifying that
-rack-linked mode does not weaken non-1:1 use cases (patches that intentionally diverge from any rack, or span multiple
-racks, or reference no rack at all).
-
-- [x] Review educational copy, empty states, and help cues in patch editor / patch detail to confirm non-1:1 patch
-  flows are clearly supported and the rack-linked mode framing does not imply "rack-first" as the preferred default
-- [x] Confirm informational advisory states (diverged, unavailable) do not read as errors or discouragement
-
----
-
-#### HIGH: Patch Editing — "No connections" warning not updating after connection added
-
-**Why:** On the patch editing page, the yellow warning banner "This patch has no connections yet" stays visible even
-after a connection has been added (PATCH CONNECTIONS shows count 1). Investigation shows this is **not** a generic
-change-detection failure. The root cause is split state: `patch-details.component.html` drives the warning from
-`dataService.patchConnections$`, but live editing updates `dataService.editorConnections$`. `patchConnections$` only
-refreshes from the backend on patch load / editor close, so the warning stays stale while the editor is open even though
-the editor's own "Patch connections (N)" card is already showing the new connection. The graph card currently has the same
-stale-source coupling (`patch-graph.component.html` also reads `patchConnections$`).
-
-<!-- AUDIT: UI was redesigned (warning replaced by empty-state-tips in 36152120) but the stale-source root cause —
-     patchConnections$ driving empty-state while editing — was not fixed as of 2026-05-14. Both [ ] items remain open. -->
-
-- [x] Switch patch-detail warning/empty-state logic to the live editing source when edit mode is open (`editorConnections$`
-  or a derived merged stream), so the banner clears immediately after a connection is added
-- [x] Audit nearby patch-detail surfaces that still read persisted `patchConnections$` during live editing (at minimum the
-  graph empty state) and align them with the same source-of-truth rule
-
----
-
 ### PRODUCT — Tier 1 (requires Manufacturer Page Phase 2 to be live)
 
 ---

@@ -472,4 +472,38 @@ describe('UserAreaDataService', () => {
 
     expect(latestQuery).toBe('before destroy');
   });
+
+  it('updates patchesCount$ when patches data loads', () => {
+    const {service} = build();
+
+    service.updatePatchesData$.next();
+
+    expect(service.patchesCount$.value).toBe(1);
+  });
+
+  it('updates racksCount$ when rack data loads', () => {
+    const {service} = build();
+
+    service.updateRackData$.next(undefined);
+
+    expect(service.racksCount$.value).toBe(1);
+  });
+
+  it('returns empty array from allPatchTags$ when patchesData$ is undefined', (done) => {
+    const {service} = build();
+    service.patchesData$.next(undefined);
+
+    service.allPatchTags$.subscribe(tags => {
+      expect(tags).toEqual([]);
+      done();
+    });
+  });
+
+  it('updates commentsCount$ when comments data loads', () => {
+    const {service} = build();
+
+    service.updateCommentsData$.next();
+
+    expect(service.commentsCount$.value).toBe(1);
+  });
 });
