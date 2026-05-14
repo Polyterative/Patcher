@@ -1,24 +1,12 @@
 # Current Task
 
-**Title:** Admin Flags — Delete Confirmation + Sort Order Toggle
+**Active task:** None — session closed cleanly 2026-05-14T10:38.
 
-**Source:** User feedback ("The admin page could use some work") + autonomous safety audit
+**All Tier 0 unblocked frontend tasks are complete.**
 
-**Goal:**
-The admin module-flag page has two UX gaps: (1) the Delete action fires immediately with no confirmation, which is a safety issue for an admin tool; (2) there is no way to change the sort order of flags, making it hard to triage oldest-first (FIFO). This task adds a delete confirmation step (consistent with the pattern used elsewhere in the app) and a "Newest first / Oldest first" toggle to the filter toolbar.
-
-**Acceptance criteria:** see agent/acceptance-checklist.md
-
-**Affected files:**
-- `admin-flags.component.ts` — add `confirmDelete()` method
-- `admin-flags.component.html` — wire `confirmDelete`, add sort toggle
-- `admin-flags-data.service.ts` — add `sortOrder$` BehaviorSubject, include in `filteredFlags$`
-- `admin-flags-data.service.spec.ts` — tests for sort behavior
-
-**Out of scope:**
-- Inline module editor / preview panel
-- Bulk operations
-- Backend schema changes
-- Any other admin panel surface
-
-**Risk:** Low — fully contained in admin panel, no user-facing surface affected.
+**Next pickup candidates (in priority order):**
+1. INFRA HIGH: E2E Dedicated Test Account — blocked on human creating Supabase test account + updating `.env` / GitHub secrets
+2. INFRA HIGH: E2E Multi-Instance Patching — depends on item 1
+3. SEO OG Image Generation — blocked: requires new server-side API route (`@vercel/og`), out of agent scope
+4. PRODUCT Tier 1: Manufacturer Accounts & Verification — blocked on explicit human approval for RLS/policy work
+5. Optional hygiene: unit test coverage on `rack-detail-data.service.ts`, `module-detail-data.service.ts`
