@@ -19,4 +19,9 @@ describe('ModulePartManufacturerComponent', () => {
     comp.data = {id: 2, manufacturer: {name: 'Make Noise'}} as any;
     expect((comp.data as any).manufacturer.name).toBe('Make Noise');
   });
+
+  it('data id is preserved after assignment', () => {
+    comp.data = {id: 99} as any;
+    expect(comp.data.id).toBe(99);
+  });
 });
