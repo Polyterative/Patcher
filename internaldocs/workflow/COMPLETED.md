@@ -224,3 +224,31 @@
 - `selection-panel-bridge.service.spec.ts`: +5 tests for record$/recordedKey$ behaviors and auto-clear mechanism
 - `app-shell-layout.service.spec.ts`: +2 tests for initial emission and shareReplay
 - `toolbar-link-data.spec.ts`: +7 tests covering 6 previously untested exported functions
+
+## 2025-07-18 — Unit test coverage bulk expansion (1200+ tests)
+
+**Commits**: `eac8011b`, `54f1c00b`, `e0dc90b4`, `f409a5e3`, `fcd7ef96`, `18d4d588`, `728ee928`, `04a34d87`
+
+- `discovery-tip.service.spec.ts`: registerAnchor/unregisterAnchor tests (8→11)
+- `rack-function-visuals.utils.spec.ts`: empty rack, full coverage, null residual (11→14)
+- `rack-signal-analysis.utils.spec.ts`: clock focus, mixing focus, buildSignalModuleAnalysis (10→14)
+- `rack-browser-detail-view.component.spec.ts`: utilization %, space stat group (6→8)
+- `home.component.spec.ts`: viewConfigs, proofSections, heroContent (9→12)
+- `user-reset-password-data.service.spec.ts`: redirectProgress, isSubmitting$ (10→12)
+- `rack-browser-data.service.spec.ts`: canReset$ false, racksList$ null (11→13)
+- `patch-graph-build.utils.spec.ts`: size scaling, unique keys (13→15)
+- `module-adder-data.service.spec.ts`: initial state tests (13→16)
+- `patch-detail-data.service.spec.ts`: 4 BehaviorSubject initial states (5→9)
+- `app-viewport.service.spec.ts`: SSR, fallback, double-init (2→5)
+- `patch-browser-detail-view.component.spec.ts`: defaults (3→5)
+- `patch-graph-reveal.controller.spec.ts`: edge reveal, patch connections (4→6)
+- `module-list.component.spec.ts`: sort/group defaults, empty data (4→6)
+- `app.component.spec.ts`: navigation end hides loading (4→5)
+- `ssr-host-config.spec.ts`: normalizeHostCandidate edge cases, fallback origin (4→6)
+- `app-form-utils.spec.ts`: plainSanitize null/undefined/plain-text (5→8)
+- `patch-graph-layout.utils.spec.ts`: orphan nodes, ring radius growth (5→7)
+- `discovery-tip-surface.component.spec.ts`: below/centered positioning (2→5)
+- `public-profile.component.spec.ts`: isOwnProfile, profilePath, viewConfig (3→8)
+- `user-comments.component.spec.ts`: clearFilter, activeFilter init, filterOptions (3→7)
+- `user-signup-data.service.spec.ts`: fields init/keys (4→6)
+- `hero-content-card.component.spec.ts`: siteTitle, compactNav default, titleNormal (5→8)
