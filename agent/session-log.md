@@ -698,3 +698,13 @@ Compile errors fixed:
 **RackBrowserRootComponent** (5 tests): inject(DOCUMENT) via TestBed.runInInjectionContext, updateSeo called, formTypes defined, updateRacksList$ emitted, viewConfig defined.
 
 13/13 green first run.
+
+---
+
+## Loop iteration 21 — PatchBrowserRootComponent + UserAreaRootComponent
+
+**PatchBrowserRootComponent** (5 tests): DOCUMENT inject via TestBed.runInInjectionContext, updateSeo called, formTypes, updatePatchesList$ emitted, viewConfig (hideButtons=true, hideDates=false).
+
+**UserAreaRootComponent** (14 tests): construction (no error, globalSearchControl starts empty, formTypes, ignoreSeo=false, contributorStatsEmptyMessage non-empty), ngOnInit (updateSeo called when ignoreSeo=false, NOT called when ignoreSeo=true, connectDiscovery called), publicProfilePath, profileVisibilityDescription (public/hidden), copyPublicProfileLink, toggleProfileVisibility, ngOnDestroy calls resetUiState.
+
+19/19 green first run.
