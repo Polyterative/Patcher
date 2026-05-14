@@ -1117,3 +1117,56 @@ All `.ts` source files testable with direct instantiation (no Angular TestBed/in
 1. **Initial Render Flash** — static template audit is headless-safe; scan `*ngIf`/`@if` on affected routes for double-emission patterns; browser investigation of SSR hydration requires `pnpm start:ssr`
 2. **Unit tests for hard cases** — `user-management.service.ts` (599L, TestBed + auth mocks), `rack-detail-data.service.ts`, `module-detail-data.service.ts`
 3. **Sentry triage** — requires Sentry MCP; medium priority
+
+---
+
+## Session continuation — 14-05-2026
+
+### Tasks completed
+
+1. **`test(changelog)` — fix stale roadmapUrl spec** (`741d400a`)
+   - `changelog.component.spec.ts` was asserting `roadmapUrl` contains `'TODO.md'`
+   - Previous session fixed the URL to `ROADMAP.md` but forgot to update the spec
+   - 1 failing test → 3874 SUCCESS
+
+2. **`test(faq)` — add roadmap link regression guard** (committed in `02be93c9`)
+   - `app-faq.component.spec.ts`: added assertion that the roadmap FAQ link contains `ROADMAP.md`
+   - Guards against future link regressions on both FAQ and Changelog pages
+
+3. **`refactor(storage)` — centralise Supabase storage base URLs** (`d9fd933f`)
+   - 10 occurrences of the hardcoded Supabase project URL across 8 files → single `StorageUrls` class in `DatabaseStrings.ts`
+   - New exports: `StorageUrls.modulePanels`, `StorageUrls.manufacturerLogos`, `StorageUrls.racks`
+   - Templates updated via component properties (`panelStorageBase`, `rackStorageBase`, `logoStorageBase`)
+   - No behaviour change; single place to add image transform params in future
+
+4. **`docs(todo)` — mark bandwidth image check done** (`02be93c9`)
+   - Documented finding: all images served as full originals; Supabase image transformation deferred (requires Pro/Team plan)
+   - TODO item checked off with evidence + pointer to `StorageUrls` as the future injection point
+
+### Files touched this session
+- `src/app/features/info-pages/changelog/changelog.component.spec.ts`
+- `src/app/components/shared-atoms/app-faq/app-faq.component.spec.ts`
+- `src/app/features/backend/DatabaseStrings.ts`
+- `src/app/features/module-browser/module-browser-detail/module-browser-detail.constants.ts`
+- `src/app/components/module-parts/module-details/module-details.component.ts`
+- `src/app/components/rack-parts/rack-editor/rack-editor.types.ts`
+- `src/app/features/manufacturer-detail/manufacturer-detail.component.ts`
+- `src/app/components/module-parts/module-minimal/module-part-image/module-part-image.component.ts`
+- `src/app/components/module-parts/module-minimal/module-part-image/module-part-image.component.html`
+- `src/app/components/rack-parts/rack-image/rack-image.component.ts`
+- `src/app/components/rack-parts/rack-image/rack-image.component.html`
+- `src/app/features/manufacturer-detail/manufacturer-browser-root/manufacturer-row/manufacturer-row.component.ts`
+- `src/app/features/manufacturer-detail/manufacturer-browser-root/manufacturer-row/manufacturer-row.component.html`
+- `src/app/components/patch-parts/patch-minimal/patch-minimal.component.ts`
+- `internaldocs/workflow/TODO.md`
+
+### Test results: 3874 SUCCESS, 0 FAILED
+
+### Blockers unchanged
+- Sentry triage: no SENTRY_ACCESS_TOKEN
+- E2E test account rotation: credentials/backend needed
+- Manufacturer accounts & verification: backend RLS work needed
+
+### Suggested next actions
+- Resume Initial Render Flash investigation (paused by user; ~30% complete)
+- UI consistency fixes from `UI_CONSISTENCY_AUDIT.md` (spacing/density is highest priority)
