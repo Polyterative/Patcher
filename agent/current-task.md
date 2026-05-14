@@ -1,21 +1,27 @@
 # Current Task
 
-**Active task:** Unit Test Coverage — High-Yield Data Services
+## Title
+SEO — Manufacturer detail metadata in middleware
 
-**Source:** `internaldocs/workflow/TODO.md` — POLICY: Unit Test Coverage
+## Source
+`internaldocs/workflow/TODO.md` → INFRA → ON HOLD: SEO — OG Image Generation (now unblocked: Manufacturer Page Phase 1 shipped commit `72478744`)
 
-**Goal:** Add focused unit tests for the three highest-yield uncovered data services — `rack-detail-data.service.ts`, `module-detail-data.service.ts`, and `user-area-data.service.ts` — to push statement/line coverage toward the 75% target and protect already-implemented logic from regressions.
+## Goal
+The SEO middleware handles module/patch/rack detail routes but is unaware of manufacturer detail pages (`/manufacturers/details/:id`). Add manufacturer metadata so bots and social crawlers get correct title, description, og:image (logo if available), canonical URL, and JSON-LD structured data when sharing manufacturer pages — consistent with the existing module/patch/rack pattern.
 
-**Acceptance criteria:** see `agent/acceptance-checklist.md`
+## Acceptance criteria
+(see agent/acceptance-checklist.md)
 
-**Affected files:**
-- `src/app/components/rack-parts/rack-detail-data.service.ts` (1007 lines) — new spec for uncovered methods
-- `src/app/components/module-parts/module-detail-data.service.ts` — new/extended spec
-- `src/app/features/routes/user-area/user-area-data.service.ts` (419 lines) — extend existing spec
+## Affected files
+- `middleware.ts` — add ManufacturerRow, parseDetailRoute manufacturer branch, getManufacturerMetadata, wire in buildMetadata
+- `middleware.spec.ts` (if exists) — add manufacturer route tests
 
-**Out of scope:**
-- Backend changes of any kind
-- Changing production code; only add/extend test files
-- Full coverage to 100% — targeted gaps only
+## Out of scope
+- OG image generation endpoint (`@vercel/og`) — separate piece
+- E2E / social preview debugger validation — requires live deployment
+- Changing any Supabase schema or RLS
 
-**Risk:** Low; test-only change
+## Risk notes
+- Middleware runs as Vercel Edge Function — must stay plain JS/TS, no Node-only APIs
+- Manufacturer table has no `description` field — use module count copy as fallback
+- `logo` in manufacturers table is a filename, not a URL — must construct via SUPABASE_URL env var same as module panels
