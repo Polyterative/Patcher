@@ -490,4 +490,32 @@ describe('RackEditorComponent', () => {
     expect(component.autoScale).toBeCloseTo(0.8, 4);
     expect(cdr.markForCheck).toHaveBeenCalled();
   });
+
+  it('analysisModes has expected entries', () => {
+    const component = createComponent();
+    expect(typeof component.analysisModes).toBe('object');
+    expect(component.analysisModes['off']).toBeDefined();
+    expect(component.analysisModes['function']).toBeDefined();
+    expect(component.analysisModes['signal']).toBeDefined();
+  });
+
+  it('signalFocusOptions contains all expected focus areas', () => {
+    const component = createComponent();
+    const values = component.signalFocusOptions.map(o => o.value);
+    expect(values).toContain('voices');
+    expect(values).toContain('clock');
+    expect(values).toContain('mixing');
+    expect(values).toContain('modulation');
+    expect(values).toContain('tone');
+  });
+
+  it('viewOptionsExpanded starts as false', () => {
+    const component = createComponent();
+    expect(component.viewOptionsExpanded).toBeFalse();
+  });
+
+  it('selectedTouchModule starts as null', () => {
+    const component = createComponent();
+    expect(component.selectedTouchModule).toBeNull();
+  });
 });
