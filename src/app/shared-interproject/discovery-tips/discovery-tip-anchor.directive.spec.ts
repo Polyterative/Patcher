@@ -24,4 +24,15 @@ describe('DiscoveryTipAnchorDirective', () => {
 
     expect(discoveryTipService.unregisterAnchor).toHaveBeenCalledWith('user-area-modules-add', element);
   });
+
+  it('does not register when anchorId is empty', () => {
+    const element = document.createElement('div');
+    const discoveryTipService = jasmine.createSpyObj('DiscoveryTipService', ['registerAnchor', 'unregisterAnchor']);
+    const directive = new DiscoveryTipAnchorDirective(new ElementRef(element), discoveryTipService);
+    directive.anchorId = '';
+
+    directive.ngOnInit();
+
+    expect(discoveryTipService.registerAnchor).not.toHaveBeenCalled();
+  });
 });

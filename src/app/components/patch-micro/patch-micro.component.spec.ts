@@ -23,4 +23,16 @@ describe('PatchMicroComponent', () => {
   it('ngOnInit runs without error', () => {
     expect(() => comp.ngOnInit()).not.toThrow();
   });
+
+  it('data input can be assigned', () => {
+    const patch = {id: 9, name: 'Bassline'} as any;
+    comp.data = patch;
+    expect(comp.data).toBe(patch);
+  });
+
+  it('viewConfig input can be assigned', () => {
+    const cfg = {...defaultPatchMinimalViewConfig, hideLabels: true};
+    comp.viewConfig = cfg;
+    expect(comp.viewConfig.hideLabels).toBeTrue();
+  });
 });
