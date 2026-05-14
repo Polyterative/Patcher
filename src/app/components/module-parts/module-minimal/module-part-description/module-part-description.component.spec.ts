@@ -19,4 +19,10 @@ describe('ModulePartDescriptionComponent', () => {
     comp.data = {id: 1, name: 'VCO', description: 'A voltage controlled oscillator'} as any;
     expect(comp.data.name).toBe('VCO');
   });
+
+  it('viewConfig input can be assigned', () => {
+    const cfg = {showDescription: true} as any;
+    comp.viewConfig = cfg;
+    expect(comp.viewConfig).toBe(cfg);
+  });
 });
