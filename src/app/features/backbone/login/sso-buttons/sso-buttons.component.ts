@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   EventEmitter,
   Input,
@@ -46,6 +47,7 @@ interface ProviderConfig {
  * ```
  */
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-sso-buttons',
   templateUrl: './sso-buttons.component.html',
   styleUrls: ['./sso-buttons.component.scss'],

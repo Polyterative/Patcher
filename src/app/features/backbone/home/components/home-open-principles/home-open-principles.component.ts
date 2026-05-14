@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   Input
 } from '@angular/core';
@@ -7,6 +8,7 @@ import { buildHomeTextSegments } from '../../home-text-segments.util';
 
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-home-open-principles',
   templateUrl: './home-open-principles.component.html',
   styleUrls: ['./home-open-principles.component.scss'],

@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   Input
 } from '@angular/core';
@@ -6,6 +7,7 @@ import { HomeFounderNote } from '../../home-content.models';
 
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-home-founder-note',
   templateUrl: './home-founder-note.component.html',
   styleUrls: ['./home-founder-note.component.scss'],
