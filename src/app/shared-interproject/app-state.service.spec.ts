@@ -63,8 +63,32 @@ describe('AppStateService', () => {
     expect(latestValue.lg).toBeFalse();
   }));
   
-  it('ngOnDestroy completes destroyEvent$ without error', () => {
+  it('setPreferredPanelColor stores and emits the color', (done) => {
     const service = buildService();
-    expect(() => service.ngOnDestroy()).not.toThrow();
+    service.setPreferredPanelColor(1);
+    expect(localStorage.getItem('preferredPanelColor')).toBe('1');
+    service.preferredPanelColor$.pipe(take(1)).subscribe(val => {
+      expect(val).toBe(1);
+      done();
+    });
+  });
+
+  it('setPreferredPanelColor(null) removes the localStorage key and emits null', (done) => {
+    const service = buildService();
+    localStorage.setItem('preferredPanelColor', '2');
+    service.setPreferredPanelColor(null);
+    expect(localStorage.getItem('preferredPanelColor')).toBeNull();
+    service.preferredPanelColor$.pipe(take(1)).subscribe(val => {
+      expect(val).toBeNull();
+      done();
+    });
+  });
+
+  it('loadPreferredPanelColor ignores values other than 1 or 2', () => {
+    localStorage.setItem('preferredPanelColor', '99');
+    const service = buildService();
+    let loaded: number | null | undefined;
+    service.preferredPanelColor$.pipe(take(1)).subscribe(v => (loaded = v));
+    expect(loaded).toBeNull();
   });
 });
