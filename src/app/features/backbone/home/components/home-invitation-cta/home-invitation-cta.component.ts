@@ -1,10 +1,12 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   Input
 } from '@angular/core';
 
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-home-invitation-cta',
   templateUrl: './home-invitation-cta.component.html',
   styleUrls: ['./home-invitation-cta.component.scss'],
