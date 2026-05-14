@@ -13,6 +13,7 @@ import {
 import {
   filter,
   catchError,
+  exhaustMap,
   map,
   switchMap,
   take,
@@ -86,7 +87,7 @@ export class ModuleDetailDataService implements OnDestroy {
       .pipe(
         switchMap(module => this.requiresAdminOrDev(module)),
         map((x) => x.panels.sort((a, b) => a.id - b.id).pop()!),
-        switchMap(x => this.backend.delete.modulePanel(x)),
+        exhaustMap(x => this.backend.delete.modulePanel(x)),
         takeUntil(this.destroyEvent$)
       )
       .subscribe(x => {
@@ -185,7 +186,7 @@ export class ModuleDetailDataService implements OnDestroy {
     
     this.addModuleToCollection$
       .pipe(
-        switchMap(x => this.backend.add.userModule(x)),
+        exhaustMap(x => this.backend.add.userModule(x)),
         withLatestFrom(this.updateSingleModuleData$, this.singleModuleData$),
         takeUntil(this.destroyEvent$)
       )
@@ -196,7 +197,7 @@ export class ModuleDetailDataService implements OnDestroy {
     
     this.removeModuleFromCollection$
       .pipe(
-        switchMap(x => this.backend.delete.userModule(x)),
+        exhaustMap(x => this.backend.delete.userModule(x)),
         withLatestFrom(this.updateSingleModuleData$, this.singleModuleData$),
         takeUntil(this.destroyEvent$)
       )
@@ -232,7 +233,7 @@ export class ModuleDetailDataService implements OnDestroy {
         filter(x => x > 0),
         switchMap(id => this.requiresAdminOrDev(id)),
         withLatestFrom(this.singleModuleData$),
-        switchMap(([x, module]) => this.backend.delete.module(x).pipe(map(() => module))),
+        exhaustMap(([x, module]) => this.backend.delete.module(x).pipe(map(() => module))),
         takeUntil(this.destroyEvent$)
       )
       .subscribe(module => {
@@ -251,7 +252,7 @@ export class ModuleDetailDataService implements OnDestroy {
               && modules.every(relatedModule => relatedModule.id === module.id)
           }))
         )),
-        switchMap(({module, shouldDeleteManufacturer}) => this.backend.delete.module(module.id).pipe(
+        exhaustMap(({module, shouldDeleteManufacturer}) => this.backend.delete.module(module.id).pipe(
           switchMap(() => {
             if (!shouldDeleteManufacturer) {
               return of({module, manufacturerDeleted: false});
@@ -277,7 +278,7 @@ export class ModuleDetailDataService implements OnDestroy {
       .pipe(
         switchMap(partial => this.requiresAdminOrDev(partial)),
         withLatestFrom(this.singleModuleData$),
-        switchMap(([partial, original]) => this.backend.update.module({...original, ...partial}).pipe(map(() => ({...original, ...partial})))),
+        exhaustMap(([partial, original]) => this.backend.update.module({...original, ...partial}).pipe(map(() => ({...original, ...partial})))),
         takeUntil(this.destroyEvent$)
       )
       .subscribe(module => {
@@ -287,7 +288,7 @@ export class ModuleDetailDataService implements OnDestroy {
 
     this.setStoreUrl$
       .pipe(
-        switchMap(({id, url}) => this.backend.update.moduleStoreUrl(id, url).pipe(
+        exhaustMap(({id, url}) => this.backend.update.moduleStoreUrl(id, url).pipe(
           catchError(() => EMPTY)
         )),
         takeUntil(this.destroyEvent$)

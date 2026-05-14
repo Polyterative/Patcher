@@ -16,6 +16,7 @@ import {
 import { SupabaseService } from "src/app/features/backend/supabase.service";
 import { SubManager } from "src/app/shared-interproject/directives/subscription-manager";
 import {
+  exhaustMap,
   map,
   switchMap,
   takeUntil,
@@ -87,7 +88,7 @@ export class CommentsDataService extends SubManager {
     
     // when requested comment deletion, perform the backend call
     this.deleteComment$.pipe(
-      switchMap(x => this.backend.delete.comment(x)),
+      exhaustMap(x => this.backend.delete.comment(x)),
       withLatestFrom(this.requestCommentsUpdate$),
       takeUntil(this.destroy$)
     ).subscribe(([_, entity]) => {

@@ -25,6 +25,7 @@ import {
   debounceTime,
   distinctUntilChanged,
   filter,
+  exhaustMap,
   finalize,
   map,
   shareReplay,
@@ -763,7 +764,7 @@ export class RackDetailDataService extends SubManager {
     // add a module from bottom picker
     this.addModuleToRack$
       .pipe(
-        switchMap(module => this.backend.add.rackModule(
+        exhaustMap(module => this.backend.add.rackModule(
           module.id,
           this.singleRackData$.value.id
         ).pipe(map(() => module))),
