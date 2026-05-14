@@ -27,7 +27,7 @@ test.describe('Home Page', () => {
   });
 
   test('main hero heading is visible', async ({page}) => {
-    const heroHeading = page.locator('main.home-page h1').first();
+    const heroHeading = page.locator('div.home-page h1').first();
     await expect(heroHeading).toBeVisible({timeout: 10_000});
     await expect(heroHeading).toContainText(/operating system.*modular/i);
   });
@@ -111,7 +111,7 @@ test.describe('Home Page', () => {
   test('hero heading stays visible on mobile viewport (360 × 740)', async ({page}) => {
     await page.setViewportSize({width: 360, height: 740});
     await page.goto('/home');
-    const heroHeading = page.locator('main.home-page h1').first();
+    const heroHeading = page.locator('div.home-page h1').first();
     await expect(heroHeading).toBeVisible({timeout: 10_000});
     // Heading must not overflow its container horizontally
     const metrics = await heroHeading.evaluate((el: HTMLElement) => ({
