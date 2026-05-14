@@ -62,3 +62,12 @@
 - **Tests run:** `pnpm test-headless --include="src/app/components/patch-parts/patch-editor/patch-editor.component.spec.ts" --include="src/app/components/patch-parts/patch-editor/patch-editor-extended.spec.ts" --include="src/app/components/patch-parts/patch-editor/patch-editor-build-cards.spec.ts"` and `pnpm build`
 - **Results:** The patch editor now exposes collection vs linked-rack mode, and linked-rack mode shows a read-only rack-context section below the editor while leaving collection-first editing unchanged.
 - **Next step:** Add privacy-safe viewer handling for linked racks.
+
+## 2026-05-14T10:00:00+02:00
+
+- **Selected task:** Documentation audit, reconciliation, and cleanup.
+- **Actions performed:** Audited all docs under `internaldocs/`, `agent/`, and root. Verified completion status of all active/pending items against git history and source code. Reconciled agent control files with post-session commits. Archived the completed Patch Builder — Optional Rack Context feature to COMPLETED.md and reset CURRENT_FEATURE.md. Cleaned all fully-completed `[x]` backlog items out of TODO.md, leaving only open items. Added audit annotation on the "no connections warning" bug confirming its root cause remains unresolved.
+- **Files changed:** `agent/acceptance-checklist.md`, `agent/current-task.md`, `agent/backlog.md`, `agent/session-log.md`, `internaldocs/workflow/CURRENT_FEATURE.md`, `internaldocs/workflow/TODO.md`, `internaldocs/workflow/COMPLETED.md`
+- **Tests run:** None (docs-only pass).
+- **Results:** All agent control files now reflect the actual post-v6.0.0 state. TODO.md reduced from ~26 KB to a clean open-items-only backlog. COMPLETED.md has the v6.0.0 linked-rack summary. One genuine open item (Layer 3 polish review) added to backlog. "No connections warning" bug confirmed IN-PROGRESS with audit annotation.
+- **Next step:** Pick next task from `internaldocs/workflow/TODO.md` (candidates: patch-editing connections bug HIGH, E2E account rotation HIGH, rack-context polish review LOW).
