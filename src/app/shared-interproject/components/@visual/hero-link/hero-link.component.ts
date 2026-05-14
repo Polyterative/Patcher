@@ -1,6 +1,7 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector:    'lib-hero-link',
   templateUrl: './hero-link.component.html',
   styleUrls:   ['./hero-link.component.scss']
