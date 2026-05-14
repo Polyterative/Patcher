@@ -232,3 +232,51 @@
 Only unblocked viable frontend task: **POLICY: Unit Test Coverage** on high-yield data services.
 Target files per TODO.md: `rack-detail-data.service.ts` (1007 lines, 3 existing spec files), `user-area-data.service.ts` (419 lines, 2 existing spec files), and `module-detail-data.service.ts`.
 Will audit existing coverage gaps and add focused specs for uncovered branches.
+
+---
+
+## Session — 14-05-2025 (continued)
+
+### Context
+Resumed from compaction. Sitemap work was in-progress (uncommitted). All unit test work from prior
+iterations already committed.
+
+### Work completed
+
+**1. Sitemap: manufacturer routes (commit `b530cd11`)**
+- `api/sitemap.ts`: added `/manufacturers/browser` to STATIC_ROUTES, manufacturer fetch in Promise.all,
+  `makeManufacturerEntry()` with logo image URL
+- `scripts/tests/sitemap.test.cjs`: updated `stubSupabaseResponses` to accept manufacturers param,
+  fixed `calls.length` assertion (3→4), added manufacturer sitemap test
+- All 18 function tests pass (13 middleware + 5 sitemap)
+
+**2. Unit tests: RackDetailDataService (commit `3d76c982`)**
+- NEW: `rack-detail-data.service.spec.ts` — 19 tests from scratch
+- Covers: initial state, rack load, public/private read mode, module hydration, stream sync,
+  ownership tracking, privacy/editable/row toggles, module removal, form name debounce, analysis
+  derived streams, statistics
+- Discovered: `rowedRackedModules$` starts as `[]` (not null) because BehaviorSubject singleRackData$
+  taps undefined immediately in constructor; `requestRackedModuleRemoval$` re-fetches on completion
+  so stub must return different values across calls
+
+**3. Unit tests: ModuleDetailDataService extension (commit `c5f085f1`)**
+- Added 5 tests to existing spec (18→23)
+- Covers: initial state defaults (userModulesList$ pre-populated by loggedUser$ BehaviorSubject),
+  stream clearing, moduleEditorHasPendingChanges reset, userModulesList$ null-user branch
+
+**Full suite: 2396/2396 green** (baseline was 2372 at session start, +24 new tests)
+
+### Decisions made
+- Rack-detail dialog-heavy flows (delete, duplicate, createPatch) excluded from spec (documented in
+  current-task.md as out-of-scope, each warrants its own spec when dialog testing is needed)
+- Module-detail `userModulesList$` synchronous initialization correctly documented in test comment
+  to avoid future confusion
+
+### Blockers raised
+None new. Prior blockers unchanged (E2E test account, Tier 1 backend work).
+
+### Next pickup suggestions
+- Add more user-area-data.service tests: `hasSearchQuery$`, `filteredModulesCount$`, `filteredRacksCount$`
+  (all small wins, ~3 tests each)
+- OG image generation endpoint (`api/og.ts` using `@vercel/og`) — requires `pnpm add @vercel/og` first
+- UI consistency pass using Playwright screenshots (high-effort, benefits from fresh session)
