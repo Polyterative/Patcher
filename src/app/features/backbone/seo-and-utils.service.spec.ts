@@ -111,4 +111,16 @@ describe('SeoAndUtilsService', () => {
     ).not.toThrow();
     expect(errorSpy).toHaveBeenCalled();
   });
+
+  it('setTitle with non-empty title calls updateTag for twitter:title', () => {
+    const metaSpy = jasmine.createSpyObj<Meta>('Meta', ['updateTag', 'removeTag']);
+    const titleSpy = jasmine.createSpyObj('Title', ['setTitle']);
+    const serviceDirect = new SeoAndUtilsService(titleSpy as any, metaSpy, document);
+
+    (serviceDirect as any).setTitle('Patcher Module');
+
+    expect(metaSpy.updateTag).toHaveBeenCalledWith({name: 'twitter:title', content: 'Patcher Module'});
+    expect(metaSpy.updateTag).toHaveBeenCalledWith({name: 'title', content: 'Patcher Module'});
+    expect(metaSpy.removeTag).not.toHaveBeenCalled();
+  });
 });
