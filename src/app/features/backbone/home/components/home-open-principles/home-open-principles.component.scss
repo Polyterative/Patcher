@@ -2,12 +2,15 @@
 
 :host {
   display: block;
+  --section-space-100: 1rem;
+  --section-space-150: 1.5rem;
+  --section-space-200: 2rem;
 }
 
 .principles-shell {
   display: grid;
-  gap: 2rem;
-  padding: 2.5rem 2rem;
+  gap: var(--section-space-150);
+  padding: var(--section-space-200);
   border: 1px solid var(--home-border);
   border-radius: 0.5rem;
   background: linear-gradient(160deg, rgba(235, 247, 255, 0.92), rgba(241, 255, 246, 0.86));
@@ -15,7 +18,7 @@
 
 .section-head {
   display: grid;
-  gap: 1rem;
+  gap: var(--section-space-100);
 
   h2 {
     @include brand-resources.heading-font;
@@ -91,7 +94,7 @@
 
 @media (max-width: 40rem) {
   .principles-shell {
-    padding: 1rem;
+    padding: var(--section-space-150);
   }
 
   .principles-grid {
