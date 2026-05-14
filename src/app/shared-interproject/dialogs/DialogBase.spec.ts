@@ -20,4 +20,10 @@ describe('DialogBase', () => {
     expect(base.title).toBe('Only title');
     expect(base.description).toBeUndefined();
   });
+
+  it('data property references the original input', () => {
+    const input = {title: 'Ref check', description: 'desc'};
+    const base = new DialogBase(input);
+    expect(base.data).toBe(input);
+  });
 });
