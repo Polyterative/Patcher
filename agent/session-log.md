@@ -350,3 +350,26 @@ debounce, blur hide, destroy teardown).
 **Next pickup suggestions**
 - Component specs: `home.component.ts` (272 lines), `comment-context.component.ts` (107 lines)
 - UI consistency pass (spacing/density) per audit recommended rollout order
+
+---
+
+## Session continued (loop iteration 4)
+
+### Task: Unit spec — CommentContextComponent
+
+**Source**: Policy — unit test coverage; 107-line component with switch-based dispatch logic
+(MODULE/PATCH/RACK/default) and openURL navigation.
+
+**What was done**
+- Created `src/app/components/shared-atoms/comments/comment-context/comment-context.component.spec.ts`
+- 18 tests, all green on first run
+- Covers: initial state (undefined), ngOnInit MODULE branch (calls moduleWithId, correct description,
+  URL, entityLabel), PATCH branch, RACK branch, default/unknown branch (no calls, undefined),
+  PROFILE falls to default, openURL() calls router.navigate with stored URL
+
+**Tests run**: 18/18 green (targeted run)
+
+**Files touched**
+- `src/app/components/shared-atoms/comments/comment-context/comment-context.component.spec.ts` (new)
+- `internaldocs/workflow/COMPLETED.md` (new row prepended)
+- `agent/session-log.md` (this entry)
