@@ -1,14 +1,19 @@
 # Acceptance Checklist
 
-## SEO — Manufacturer detail metadata in middleware
+## ManufacturerDetailComponent spec
 
-- [x] `/manufacturers/details/:id` is parsed by `parseDetailRoute`
-- [x] `getManufacturerMetadata` queries `manufacturers` table with `id, name, logo, websiteURL`
-- [x] Title: `{name} | Patcher.xyz`
-- [x] Description: manufacturer name + module count fallback copy
-- [x] og:image: logo URL if logo present, else default site image
-- [x] JSON-LD: `Organization` type with `name`, `url`, `logo`, `@id` set to canonical URL
-- [x] Falls back to `site` default metadata when manufacturer not found (no key, not found, fetch error)
-- [x] Middleware unit tests pass (13/13, including 3 new manufacturer tests)
-- [x] Angular suite green (2372/2372)
-- [x] No TypeScript errors
+- [x] `stats$` returns `[]` when `manufacturerData$` is null
+- [x] `stats$` computes `In catalogue` from modules length
+- [x] `stats$` computes `Average HP` as total HP / count (one decimal)
+- [x] `stats$` hides `Average HP` when modules list is empty
+- [x] `stats$` separates 3U (standard.id = 0) from 1U (standard.id = 1 or 2)
+- [x] `stats$` hides `3U` entry when there are no 3U modules
+- [x] `stats$` hides `Active this month` when `changedModulesLast30Days` is 0
+- [x] `stats$` shows `Active this month` when `changedModulesLast30Days` > 0
+- [x] `stats$` includes `Last updated` when `latestModuleUpdatedAt` is set
+- [x] `stats$` hides `Last updated` when `latestModuleUpdatedAt` is null
+- [x] `logoUrl()` returns full URL when logo is present
+- [x] `logoUrl()` returns null when logo is null
+- [x] Route param `id > 0` is forwarded to `updateManufacturer$.next`
+- [x] Route param `id = 0` is filtered (never forwarded)
+- [x] Spec passes clean (build green, lint green)
