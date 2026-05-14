@@ -164,7 +164,14 @@ Remaining:
 
 Target: statements and lines ≥ 75% (baseline 03-02: ~57%).
 Not a blocking task — coverage rises naturally as new features ship with tests.
-If coverage stalls after two feature completions, revisit as a targeted task:
 
-- Highest-yield uncovered files: `rack-detail-data.service.ts`, `module-detail-data.service.ts`,
-  `user-area-data.service.ts`
+**2025-07-16 bulk pass completed (~1200+ tests added, ~145+ spec files created):**
+All components, pipes, utils, services, constants, and helper files that can be tested with
+direct instantiation (no Supabase/D3/canvas) now have spec coverage.
+
+Remaining uncovered high-value files (complex dependencies):
+- `user-management.service.ts` (599L, Supabase Auth-heavy)
+- `graph.component.ts` (498L, D3/canvas)
+- `patch-graph.component.ts` (297L, SupabaseService-dependent)
+- `rack-detail-data.service.ts`, `module-detail-data.service.ts`, `user-area-data.service.ts`
+  (these require TestBed + extensive mocking — consider after backend tasks unblock)
