@@ -54,4 +54,9 @@ describe('ModuleBrowserDetailComponent search links', () => {
       expect(link.icon.length).toBeGreaterThan(0);
     });
   });
+
+  it('has at least 4 search links configured', () => {
+    const {component} = build();
+    expect(component.searchLinks.length).toBeGreaterThanOrEqual(4);
+  });
 });

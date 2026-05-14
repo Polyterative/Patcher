@@ -27,4 +27,10 @@ describe('RoutingService', () => {
     expect(window.open).toHaveBeenCalledWith('https://patcher.xyz/modules/details/1', '_blank');
     expect(mockWindow.focus).toHaveBeenCalled();
   });
+
+  it('routeTo delegates a single path segment correctly', () => {
+    const {service, router} = build();
+    service.routeTo(['/modules']);
+    expect(router.navigate).toHaveBeenCalledWith(['/modules']);
+  });
 });
