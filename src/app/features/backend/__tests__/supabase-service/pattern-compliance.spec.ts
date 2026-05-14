@@ -37,4 +37,9 @@ describe('SupabaseService - Service Pattern Compliance', () => {
       expect(typeof (service as any)[group]).withContext(`${ group } should be an object`).toBe('object');
     });
   });
+
+  it('GET and get groups both expose module retrieval methods', () => {
+    expect(typeof service.GET.modules).toBe('function');
+    expect(typeof service.GET.moduleWithId).toBe('function');
+  });
 });
