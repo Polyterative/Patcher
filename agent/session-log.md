@@ -819,3 +819,17 @@ All 30 green first run.
 ## Loop iteration 31 — 10 specs (26 tests): InsightChip + DialogInfoBox + RackDetails + SignupEmail + ProducthuntBadge + FeedbackBox + DiscordWidget + CommonSidebar + BuildInfo + PatchConnectionSymbol
 
 All 26 green first run.
+
+---
+
+## Loop iteration 32 — 8 specs (21 tests): RackComposite + UserDataHandler + HomeCuriosityBridge + AdminPanelRoot + HomeInvitationCta + BrandLogo + ReadOnlyDialog + AdminFlags
+
+All 21 green first run.
+
+- **ReadOnlyDialogComponent** (4): creation, data from MAT_DIALOG_DATA, title/description from DialogBase.
+- **AdminFlagsComponent** (4): creation, dataService exposed, confirmDelete emits when confirmed, no-op when cancelled.
+- **HomeCuriosityBridgeComponent** (3): creation, title='', links=[].
+- **HomeInvitationCtaComponent** (4): creation, title/imageSrc/imageAlt=''.
+- **AdminPanelRootComponent** (2): creation, backend exposed.
+- **UserDataHandlerComponent** (2): creation, userDataHandlerService exposed.
+- **RackCompositeComponent** (1), **BrandLogoComponent** (1): creation.
