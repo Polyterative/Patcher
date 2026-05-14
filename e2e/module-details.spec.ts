@@ -78,13 +78,12 @@ test.describe('Module Details', () => {
     const firstCard = page.locator('app-module-minimal').first();
     await expect(firstCard).toBeVisible({timeout: 20_000});
 
-    // Get the href from the card's link and navigate to the detail
-    const detailHref = await firstCard.locator('a[href*="/modules/details/"]').first().getAttribute('href');
-    await page.goto(detailHref!);
+    // The detail link is rendered as a <div [routerLink]> via app-hero-clickable-title — click it
+    await firstCard.locator('mat-card-title .title').first().click();
     await expect(page).toHaveURL(/modules\/details\/\d+/, {timeout: 10_000});
     await expect(page.locator('lib-hero-content-card.modulesBG')).toBeVisible({timeout: 10_000});
 
-    // Navigate back to the browser using the wide-shell nav
+    // Navigate back to the browser
     await page.goBack();
     await expect(page).toHaveURL(/modules\/browser/, {timeout: 10_000});
   });

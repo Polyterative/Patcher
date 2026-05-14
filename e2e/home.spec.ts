@@ -86,15 +86,20 @@ test.describe('Home Page', () => {
   });
 
   test('workflow rail section is visible', async ({page}) => {
-    await page.evaluate(() => window.scrollBy(0, document.body.scrollHeight * 0.8));
-    await page.waitForTimeout(500);
+    // app-home-workflow-rail is inside @defer (on viewport) — scroll the section into view
+    // so Angular's IntersectionObserver fires, then wait for the component to render
+    const workflowSection = page.locator('section.section-enter').nth(3);
+    await workflowSection.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(1000);
     const workflow = page.locator('app-home-workflow-rail').first();
     await expect(workflow).toBeVisible({timeout: 15_000});
   });
 
   test('invitation CTA section contains a second set of action links', async ({page}) => {
-    await page.evaluate(() => window.scrollBy(0, document.body.scrollHeight));
-    await page.waitForTimeout(500);
+    // app-home-invitation-cta is inside @defer (on viewport) — scroll the section into view
+    const ctaSection = page.locator('section.section-enter').nth(4);
+    await ctaSection.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(1000);
     const cta = page.locator('app-home-invitation-cta').first();
     await expect(cta).toBeVisible({timeout: 15_000});
     // The invitation CTA must expose at least one action link
