@@ -1,12 +1,21 @@
 # Current Task
 
-**Active task:** None — session closed cleanly 2026-05-14T10:38.
+**Active task:** Unit Test Coverage — High-Yield Data Services
 
-**All Tier 0 unblocked frontend tasks are complete.**
+**Source:** `internaldocs/workflow/TODO.md` — POLICY: Unit Test Coverage
 
-**Next pickup candidates (in priority order):**
-1. INFRA HIGH: E2E Dedicated Test Account — blocked on human creating Supabase test account + updating `.env` / GitHub secrets
-2. INFRA HIGH: E2E Multi-Instance Patching — depends on item 1
-3. SEO OG Image Generation — blocked: requires new server-side API route (`@vercel/og`), out of agent scope
-4. PRODUCT Tier 1: Manufacturer Accounts & Verification — blocked on explicit human approval for RLS/policy work
-5. Optional hygiene: unit test coverage on `rack-detail-data.service.ts`, `module-detail-data.service.ts`
+**Goal:** Add focused unit tests for the three highest-yield uncovered data services — `rack-detail-data.service.ts`, `module-detail-data.service.ts`, and `user-area-data.service.ts` — to push statement/line coverage toward the 75% target and protect already-implemented logic from regressions.
+
+**Acceptance criteria:** see `agent/acceptance-checklist.md`
+
+**Affected files:**
+- `src/app/components/rack-parts/rack-detail-data.service.ts` (1007 lines) — new spec for uncovered methods
+- `src/app/components/module-parts/module-detail-data.service.ts` — new/extended spec
+- `src/app/features/routes/user-area/user-area-data.service.ts` (419 lines) — extend existing spec
+
+**Out of scope:**
+- Backend changes of any kind
+- Changing production code; only add/extend test files
+- Full coverage to 100% — targeted gaps only
+
+**Risk:** Low; test-only change
