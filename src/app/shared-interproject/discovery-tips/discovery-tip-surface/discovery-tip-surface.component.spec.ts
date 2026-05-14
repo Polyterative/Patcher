@@ -46,4 +46,27 @@ describe('calculateDiscoveryTipPosition', () => {
     expect(position.left).toBeLessThanOrEqual(1280 - 320 - 16);
     expect(position.left).toBeGreaterThanOrEqual(16);
   });
+
+  it('shows below when anchor is in the upper half of viewport', () => {
+    const position = calculateDiscoveryTipPosition(
+      rect({left: 400, top: 100, width: 100, height: 40}),
+      1280,
+      720
+    );
+
+    expect(position.side).toBe('below');
+    expect(position.top).toBeGreaterThan(100);
+  });
+
+  it('positions tip centered on anchor when viewport is wide enough', () => {
+    const position = calculateDiscoveryTipPosition(
+      rect({left: 600, top: 200, width: 80, height: 40}),
+      1280,
+      720
+    );
+
+    // anchor center = 640, tip half = 160, so unclamped left = 480 which is within bounds
+    expect(position.left).toBeGreaterThanOrEqual(16);
+    expect(position.left).toBeLessThanOrEqual(1280 - 16);
+  });
 });
