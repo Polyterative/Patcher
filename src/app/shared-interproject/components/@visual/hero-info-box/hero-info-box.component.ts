@@ -5,6 +5,7 @@ import {
   trigger
 } from '@angular/animations';
 import {
+  ChangeDetectionStrategy,
   Component,
   OnInit
 } from '@angular/core';
@@ -12,6 +13,7 @@ import { HeroInfoBoxService } from './hero-info-box.service';
 
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-hero-info-box',
   templateUrl: './hero-info-box.component.html',
   styleUrls: ['./hero-info-box.component.scss'],
