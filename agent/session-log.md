@@ -1032,3 +1032,25 @@ All `.ts` source files testable with direct instantiation (no Angular TestBed/in
 - Footer styling consistency (audit score 2.5/5)
 - Module-editor CV-form-line accessibility audit
 - Remaining matTooltip-only elements in deeply nested admin/editor views
+
+---
+
+### Session entry — 14-05-2026 (continued)
+
+**Resumed from a11y pass. User directed: "enough with a11y, mark done, move on."**
+
+**Tasks completed:**
+
+1. **`feat(seo)` `88430a86`** — Rack detail og:image: added `rackData.image` to `SeoSocialShareData` when present. Added 4 SEO unit tests to `rack-browser-detail-view.component.spec.ts` (title, image present, image absent, ignoreSeo skip).
+
+2. **`perf(cd)` `1a433c92`** — OnPush for 11 features components: home root, 7 home sub-components (experience-hero, curiosity-bridge, open-principles, workflow-rail, proof-showcase, founder-note, invitation-cta), auth-callback, sso-buttons, manufacturer-updated-badge.
+
+3. **`perf(cd)` `07c01b33`** — OnPush for 10 shared-interproject components: dialog-info-box, hero-info-box, screen-wrapper, hero-link, user-data-handler, venus/saturn/uranus layouts, days-in-week-picker, input-dialog.
+
+**State after session:** All 3691 unit tests pass. Zero components missing OnPush except `graph.component.ts` (D3/canvas — cannot test), `patch-graph.component.ts` (canvas — cannot test), and `complete-profile.component.ts` (needs `markForCheck` for `saving` flag — left for follow-up).
+
+**Next candidate tasks:**
+- Add `markForCheck` to `complete-profile.component.ts` to enable OnPush there
+- Spacing/density consistency pass (Priority 1 from UI audit)
+- Unit tests for `user-area-data.service.ts` (requires TestBed, complex mocking)
+- E2E: public-profile smoke test (`/u/:username`)
