@@ -1054,3 +1054,66 @@ All `.ts` source files testable with direct instantiation (no Angular TestBed/in
 - Spacing/density consistency pass (Priority 1 from UI audit)
 - Unit tests for `user-area-data.service.ts` (requires TestBed, complex mocking)
 - E2E: public-profile smoke test (`/u/:username`)
+
+---
+
+### Session entry — 14-05-2026 (continued — test expansion batches 13-18)
+
+**Tasks completed:**
+
+1. **batch 13 `ebdafafc`** — +6 tests (3819→3825): module-detail-data-card, user-racks, user-patches
+2. **batch 14 `2ecda9b9`** — +11 tests (3825→3836): module-part-description/hp/manufacturer, rack-details, discovery-tip-anchor, entity-stat-card, patch-micro
+3. **batch 15 `83e1fc90`** — +15 tests (3836→3851): advice-tooltip iconName branches, browser-reset-filters-button, hero-item-card, recent-activity (visibleItems/resolveIcon), selection-panel-outlet, timestamps-relative
+4. **batch 16 `2a7c95a5`** — +10 tests (3851→3861): hero-content-card-head-icon, lib-showcase-grid, 7 empty backbone/visual components instance isolation
+5. **batch 17 `cb55aac5`** — +6 tests (3861→3867): get-public-user-contributor-stats, pattern-compliance, admin-panel-root, rack-composite, brand-logo, patch-connection-symbol
+6. **batch 18 `a999bea6`** — +5 tests (3867→3872): DialogBase, ConfirmDialogComponent, FaqComponent, HeroInfoBoxComponent, WidthLimiterComponent
+
+**Total test count at close: 3872**
+
+**Next candidate:** INFRA HIGH — Cache Strategy Review or Reactive Pipeline audit (read-only investigation phases)
+
+
+---
+
+### Session entry — 14-05-2026 (continued — INFRA audits and housekeeping)
+
+**Context:** Picked up from 3872 tests passing. Continued the INFRA HIGH task sequence.
+
+**Tasks completed:**
+
+1. **`test(supabase-cache)` `0df75e93`** — Expanded `caching.spec.ts` from 3 to 5 tests: added `cacheBust()` operator test (verifies `cacheBuster$` fires with correct keys) and compile-time `CachedEntity` type validation for `rackWithId`/`racksMinimal`.
+
+2. **Reactive Pipeline Audit — fully closed** — Completed all 13 remaining `[~]` bullets:
+   - Scanned 81 `combineLatest` calls: all are filter/view-model combiners — correct use; no fan-out issues
+   - Confirmed `debounceTime(750)` on all search/filter inputs; `distinctUntilChanged` on auto-save streams
+   - No nested subscriptions found across all data services
+   - 1 minor low-severity subscription leak noted (`login-email.component.ts` `valueChanges`) — not worth churn; shares component lifecycle
+   - `withLatestFrom` patterns verified: all are sampling companion state on trigger — idiomatic
+   - `shareReplay(1)` without `refCount`: all 17 usages in component-scoped or cold-observable contexts — no memory leak risk
+   - All 13 bullets marked `[x]` in `TODO.md`
+
+3. **Cache Strategy Review — DatabaseStrings.ts join audit** — Final bullet closed: no duplicated round-trips; `select('*')` on `tags` (3 cols) and `standards` (2 cols) is correct. Marked done.
+
+4. **Backend Bandwidth Optimisation audit** — Full query inventory completed:
+   - All `select('*')` usages on `racks`, `patches`, `rack_modules`, `tags`, `standards`, `manufacturers` — all have ≤12 columns; all columns used
+   - Module browser already uses explicit 7-col list (vs 27 total) — well-optimised
+   - `modulesBySameManufacturer` fetches 4 unused cols (`res1, res2, depthMax, submitter`) — too minor/risky to touch
+   - All list endpoints use `.range(from, to)` pagination — no unbounded queries
+   - No N+1 patterns found
+   - **Conclusion:** no bandwidth rewrites needed; queries are already lean
+   - Remaining 2 bullets (image thumbnails, gzip/brotli) require production access — deferred
+
+5. **`chore(event-banner)` `eb94a038`** — Cleared expired Superbooth 2026 banner (ran 2026-05-03..2026-05-10); set `ACTIVE_EVENT_BANNER = null`; marked Reactive Pipeline, Bandwidth, and DatabaseStrings audits complete in TODO/COMPLETED.
+
+**Total commits this session:** 3 (`0df75e93`, `eb94a038`, and the doc commit above)
+**Test count at close:** 482 supabase-service tests passing; total project ≥3872
+
+**All Tier 0 product features verified already implemented:**
+- Manufacturer Pages ✓, Patch Tags ✓, Store Links ✓, Module Flagging ✓, Rack-Context Patch Building ✓, Event Banner ✓
+
+**Blockers raised:** None new.
+
+**Suggested next pickup:**
+1. **Initial Render Flash** — static template audit is headless-safe; scan `*ngIf`/`@if` on affected routes for double-emission patterns; browser investigation of SSR hydration requires `pnpm start:ssr`
+2. **Unit tests for hard cases** — `user-management.service.ts` (599L, TestBed + auth mocks), `rack-detail-data.service.ts`, `module-detail-data.service.ts`
+3. **Sentry triage** — requires Sentry MCP; medium priority
