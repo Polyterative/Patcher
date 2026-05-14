@@ -10,12 +10,13 @@ const VERCEL_ENV = (process.env.VERCEL_ENV || '').toLowerCase();
 const STORAGE_BASE = `${ SUPABASE_URL }/storage/v1/object/public`;
 
 const STATIC_ROUTES: Array<{ path: string; priority: string; changefreq: string }> = [
-  { path: '/',                  priority: '1.0', changefreq: 'weekly'  },
-  { path: '/home',              priority: '0.9', changefreq: 'weekly'  },
-  { path: '/modules/browser',   priority: '0.9', changefreq: 'daily'   },
-  { path: '/patches/browser',   priority: '0.9', changefreq: 'daily'   },
-  { path: '/racks/browser',     priority: '0.8', changefreq: 'daily'   },
-  { path: '/info/changelog',    priority: '0.5', changefreq: 'monthly' },
+  { path: '/',                       priority: '1.0', changefreq: 'weekly'  },
+  { path: '/home',                   priority: '0.9', changefreq: 'weekly'  },
+  { path: '/modules/browser',        priority: '0.9', changefreq: 'daily'   },
+  { path: '/patches/browser',        priority: '0.9', changefreq: 'daily'   },
+  { path: '/racks/browser',          priority: '0.8', changefreq: 'daily'   },
+  { path: '/manufacturers/browser',  priority: '0.7', changefreq: 'weekly'  },
+  { path: '/info/changelog',         priority: '0.5', changefreq: 'monthly' },
 ];
 
 interface PublicEntityRow {
@@ -47,6 +48,11 @@ interface RackRow extends PublicEntityRow {
   hp?: number;
   rows?: number;
   image?: string;
+}
+
+interface ManufacturerRow extends PublicEntityRow {
+  name?: string;
+  logo?: string;
 }
 
 interface SitemapEntry {
@@ -87,17 +93,19 @@ async function buildSitemapEntries(): Promise<SitemapEntry[]> {
     priority: route.priority,
   }));
 
-  const [moduleRows, patchRows, rackRows] = await Promise.all([
+  const [moduleRows, patchRows, rackRows, manufacturerRows] = await Promise.all([
     fetchPublicEntityRows<ModuleRow>('modules', 'id,created,updated,name,description,hp,manufacturer:manufacturerId(name),panels:module_panels!module_panels_moduleid_fkey(filename)'),
     fetchPublicEntityRows<PatchRow>('patches', 'id,created,updated,name,description'),
-    fetchPublicEntityRows<RackRow>('racks', 'id,created,updated,name,description,hp,rows,image')
+    fetchPublicEntityRows<RackRow>('racks', 'id,created,updated,name,description,hp,rows,image'),
+    fetchPublicEntityRows<ManufacturerRow>('manufacturers', 'id,name,logo')
   ]);
   
   const moduleEntries = moduleRows.map(row => makeModuleEntry(row));
   const patchEntries = patchRows.map(row => makePatchEntry(row));
   const rackEntries = rackRows.map(row => makeRackEntry(row));
+  const manufacturerEntries = manufacturerRows.map(row => makeManufacturerEntry(row));
 
-  return [...staticEntries, ...moduleEntries, ...patchEntries, ...rackEntries]
+  return [...staticEntries, ...moduleEntries, ...patchEntries, ...rackEntries, ...manufacturerEntries]
     .filter((entry): entry is SitemapEntry => !!entry)
     .sort((a, b) => a.loc.localeCompare(b.loc));
 }
@@ -166,6 +174,23 @@ function makeRackEntry(row: RackRow): SitemapEntry | undefined {
     imageUrl: rackImageUrl,
     imageTitle: imageTitle || undefined,
     imageCaption: imageCaption || undefined
+  };
+}
+
+function makeManufacturerEntry(row: ManufacturerRow): SitemapEntry | undefined {
+  if (!row.id) return undefined;
+
+  const logoPath = row.logo ? row.logo.trim() : '';
+  const imageUrl = logoPath
+    ? `${ STORAGE_BASE }/manufacturer-logos/${ encodeURIComponent(logoPath) }`
+    : undefined;
+
+  return {
+    loc: `${ SITE_URL }/manufacturers/details/${ row.id }`,
+    changefreq: 'monthly',
+    priority: '0.6',
+    imageUrl,
+    imageTitle: row.name || undefined,
   };
 }
 
