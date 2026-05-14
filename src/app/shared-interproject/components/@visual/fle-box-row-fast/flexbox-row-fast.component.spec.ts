@@ -9,4 +9,8 @@ describe('FlexboxRowFastComponent', () => {
     const comp = new FlexboxRowFastComponent();
     expect(() => comp.ngOnInit()).not.toThrow();
   });
+
+  it('instances are independent', () => {
+    expect(new FlexboxRowFastComponent()).not.toBe(new FlexboxRowFastComponent());
+  });
 });

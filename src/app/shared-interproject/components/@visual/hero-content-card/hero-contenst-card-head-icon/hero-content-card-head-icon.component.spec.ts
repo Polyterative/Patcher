@@ -12,4 +12,9 @@ describe('HeroContentCardHeadIconComponent', () => {
   it('ngOnInit runs without error', () => {
     expect(() => comp.ngOnInit()).not.toThrow();
   });
+
+  it('icon input can be assigned', () => {
+    comp.icon = 'settings';
+    expect(comp.icon).toBe('settings');
+  });
 });

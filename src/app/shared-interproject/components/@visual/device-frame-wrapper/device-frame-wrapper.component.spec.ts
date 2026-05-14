@@ -9,4 +9,8 @@ describe('DeviceFrameWrapperComponent', () => {
     const comp = new DeviceFrameWrapperComponent();
     expect(() => comp.ngOnInit()).not.toThrow();
   });
+
+  it('instances are independent', () => {
+    expect(new DeviceFrameWrapperComponent()).not.toBe(new DeviceFrameWrapperComponent());
+  });
 });
