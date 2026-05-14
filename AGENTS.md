@@ -10,27 +10,18 @@ Unified operating guide for AI coding agents in this repository.
 
 ## 2) Start-of-session routing
 
-Start with this file, then load only the docs the task actually needs.
+Load docs lazily — only what the task needs.
 
-1. Read `internaldocs/workflow/CURRENT_FEATURE.md` only when the prompt is clearly about the current in-flight feature, asks to
-   continue existing work, or references the active plan/task list.
-2. For small one-off fixes, targeted refactors, or debugging, do not preload large planning docs unless they become relevant.
-3. If more repo context is needed, open `internaldocs/README.md` first and then only the specific doc(s) that match the task.
-4. When feature work does need planning, keep the agreed implementation state in `internaldocs/workflow/CURRENT_FEATURE.md`,
-   archive the outcome to `internaldocs/workflow/COMPLETED.md`, and reset `CURRENT_FEATURE.md` when the feature is done.
+- Read `internaldocs/workflow/CURRENT_FEATURE.md` only if the prompt continues in-flight feature work or references the active plan.
+- For small fixes, targeted refactors, or debugging, skip planning docs.
+- For more context, open `internaldocs/README.md` first, then the specific file(s) that match the task.
+- During feature work: keep agreed state in `CURRENT_FEATURE.md`; on completion, archive to `COMPLETED.md` and reset `CURRENT_FEATURE.md`.
 
 ## 3) Command policy
 
-- Use `pnpm` and existing `package.json` scripts whenever possible.
-- Prefer:
-  - `pnpm test-headless`
-  - `pnpm test-headless --include="**/foo.spec.ts"` for targeted runs
-  - `pnpm test:e2e`
-  - `pnpm test:e2e:auth`
-  - `pnpm lint`
-  - `pnpm updateBackendTypes`
-  - `pnpm start` / `pnpm start:ssr` only when needed
-- Do not use `npm install`, `ng test`, `npx ng test`, or watch/interactive variants unless the user explicitly asks.
+- Package manager: `pnpm` only; use existing `package.json` scripts.
+- Preferred: `pnpm lint`, `pnpm test-headless` (add `--include="**/foo.spec.ts"` to target), `pnpm test:e2e` / `pnpm test:e2e:auth`, `pnpm updateBackendTypes`. Use `pnpm start` / `start:ssr` only when needed.
+- Never run `npm install`, `ng test`, `npx ng test`, or any watch/interactive variant unless the user explicitly asks.
 
 ## 4) Architecture guardrails
 
@@ -100,65 +91,37 @@ Key paths:
 - When compacting context, keep file references and short keywords, not large code blocks.
 - Do not preload large repo docs unless the current task needs them.
 
-## 8) Tools available beyond shell + edit
+## 8) Tools beyond shell + edit
 
-Agents in this repo have access to several MCP servers and an LSP. **Prefer these over
-shelling out to `grep` / `find` / repeated `view` reads** — they are faster, more accurate,
-and cheaper in tokens.
+This repo has an LSP and several MCP servers wired up (`.github/lsp.json`, `.github/mcp.json`). **Prefer them over `grep` / `find` / repeated `view` reads.**
 
-### Code search preference order
+Code search order (first match wins):
 
-When you need to find code, use tools in this order (first match wins):
+1. **LSP** (TypeScript) — known symbols: `goToDefinition`, `findReferences`, `incomingCalls`, `documentSymbol`, `hover`, `rename`. `workspaceSymbol` may need a warmup query.
+2. **cocoindex-code-search** MCP — concept queries ("how is auth wired", "where do we cache rack lists"). Local embeddings, zero API cost, auto-refreshes. Start with `limit: 5`; filter with `paths` / `languages`.
+3. **grep + glob** — only for literals, log lines, config values, regex. Always pair `grep` with a `glob` filter.
 
-1. **LSP** (`typescript` server, configured in `.github/lsp.json`) — for *known symbols*:
-   `goToDefinition`, `findReferences`, `incomingCalls`, `hover`, `documentSymbol`.
-   Use this for "where is `SubManager` defined?", "who calls `addPatch`?",
-   "rename `userId` → `userID`". File-scoped ops are reliable; `workspaceSymbol` may need
-   a warmup query.
-2. **cocoindex-code-search** (MCP, configured in `.github/mcp.json`) — for *concepts*:
-   "find code that does X", "how is auth wired", "where do we cache rack lists".
-   Indexed across 10.890+ TS chunks + 1.900 HTML/CSS/SQL/JS, embeddings are local
-   (`snowflake-arctic-embed-xs`), daemon refreshes on save, zero API cost.
-   Start with `limit: 5`, expand if needed. Use `paths` / `languages` filters to narrow.
-3. **grep / glob** — only when 1 and 2 don't apply (e.g., literal string, log line, config
-   value, regex). Always pair `grep` with a `glob` filter to keep it cheap.
+Other MCPs:
 
-### Other MCP servers
+- **Sentry** — pull issue details directly instead of asking the user for stack traces.
+- **Supabase** — **read-only** inspection (tables, advisors, logs). Never migrate / change RLS / mutate without explicit user approval (see §5).
+- **GitHub** — PR / issue / Actions inspection.
 
-- **Sentry MCP** — use it instead of asking the user for stack traces. Trigger it whenever
-  a bug report comes in or when working on `internaldocs/workflow/TODO.md` § Sentry.
-- **Supabase MCP** — read-only inspection of the live DB (list tables, advisors, logs).
-  **Never** use it to apply migrations, change RLS, or mutate data without explicit
-  user approval (see §5 "Reuse and backend access").
-- **GitHub MCP** — for PR / issue / Actions inspection without leaving the chat.
-
-### When the tool list looks wrong
-
-If you don't see one of the tools above in your environment, **say so to the user before
-falling back to grep**. The MCP/LSP setup is intentional and a missing tool is a config
-problem worth surfacing, not a silent fallback.
+If any of these tools is missing from your environment, surface it to the user before falling back to `grep` — it's a config problem, not a silent fallback.
 
 ## 9) Specialised agent personas
 
-When a task fits a known role (planning, UI polish, review, refactor, test-writing, bug
-diagnosis), delegate to a sub-agent using the matching persona spec from
-`internaldocs/agents/` as the system prompt. The index at `internaldocs/agents/README.md`
-lists composition patterns (Plan → Build → Review, Bug fix, Refactor sweep, UI polish).
+For known roles (planning, UI polish, review, refactor, test-writing, bug diagnosis), delegate to a sub-agent using the matching persona spec from `internaldocs/agents/` as the system prompt. `internaldocs/agents/README.md` has the full index plus composition patterns (Plan → Build → Review, Bug fix, Refactor sweep, UI polish).
 
-Two project-scoped Copilot CLI skills live in `.github/skills/`:
+Project-scoped Copilot CLI skills in `.github/skills/`:
 
-- **`patcher`** — auto-surfaces persona routing + tool preferences for normal dev work in this
-  repo. Keep it in sync with `internaldocs/agents/`.
-- **`ai-dlc`** — opt-in only. Loads the formal AWS AI-DLC phased workflow from
-  `.aidlc-rule-details/` when the user explicitly asks for it.
+- **`patcher`** — auto-surfaces persona routing + tool preferences for normal dev work. Keep in sync with `internaldocs/agents/`.
+- **`ai-dlc`** — opt-in only. Loads the AWS AI-DLC phased workflow from `.aidlc-rule-details/` on explicit request.
 
 ## 10) Internal docs map
 
-- `internaldocs/README.md` - doc index and routing
-- `internaldocs/workflow/CURRENT_FEATURE.md` - active implementation details
-- `internaldocs/workflow/TODO.md` - backlog and active tasks
-- `internaldocs/workflow/COMPLETED.md` - completed feature archive
-- `internaldocs/ARCHITECTURE.md`, `internaldocs/STYLE_GUIDE.md`, `internaldocs/product/PRINCIPLES.md`,
-  `internaldocs/product/ROADMAP.md`, `internaldocs/patterns/REACTIVE_SERVICES.md`,
-  `internaldocs/patterns/BACKEND_METHODS.md`, `internaldocs/patterns/UI_PATTERNS.md`,
-  `internaldocs/testing/UNIT_TESTING.md` - deeper reference material
+Start at `internaldocs/README.md` (full index). Most-used:
+`workflow/CURRENT_FEATURE.md`, `workflow/TODO.md`, `workflow/COMPLETED.md`,
+`ARCHITECTURE.md`, `STYLE_GUIDE.md`, `patterns/REACTIVE_SERVICES.md`,
+`patterns/BACKEND_METHODS.md`, `patterns/UI_PATTERNS.md`, `testing/UNIT_TESTING.md`,
+`product/PRINCIPLES.md`, `product/ROADMAP.md`.
