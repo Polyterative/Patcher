@@ -856,3 +856,10 @@ Fix: RackingData uses camelCase (rackid, moduleid not rack_id, module_id) — co
 
 All pipe specs now exhausted. 
 
+
+---
+
+## Loop iteration 35 — 5 utility specs (62 tests): rack-power-data, discovery-tip, home-text-segments, application-statistics, module-collection-analysis
+
+All pure utility functions tested.
+
