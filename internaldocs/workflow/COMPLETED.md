@@ -198,3 +198,5 @@
 | 2025-07-16 | test(utils): add 5 patch-graph/graph utility specs + patch-editor.utils (61 tests) | `b1c9f439` |
 | 2025-07-16 | test(services): add 5 service specs (16 tests) | `bb6f2367` |
 | 2025-07-16 | test(constants+helpers): geometry, panel, signal-analysis, linked-rack-rollout specs (61 tests) | pending |
+
+| 2025-07-16 | test(misc): add card-link builder + module-editor crop types specs (16 tests) | `09ba30a1` |
