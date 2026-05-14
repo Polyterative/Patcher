@@ -13,6 +13,7 @@ import {
 } from 'rxjs';
 import {
   catchError,
+  exhaustMap,
   filter,
   map,
   startWith,
@@ -492,7 +493,7 @@ export class UserManagementService extends SubManager {
         if (!result?.answer) SharedConstants.infoCustom(this.snackBar, 'No changes made.');
       }),
       filter((result): result is ConfirmDialogDataOutModel => !!result?.answer),
-      switchMap(() => this.backend.delete.allUserData().pipe(
+      exhaustMap(() => this.backend.delete.allUserData().pipe(
         catchError((error) => {
           console.error('Data deletion failed:', error);
           SharedConstants.errorCustom(this.snackBar, 'Data deletion failed. Please try again or contact support.');
@@ -531,7 +532,7 @@ export class UserManagementService extends SubManager {
         if (!result?.answer) SharedConstants.infoCustom(this.snackBar, 'No changes made.');
       }),
       filter((result): result is ConfirmDialogDataOutModel => !!result?.answer),
-      switchMap(() => this.backend.delete.allUserData().pipe(
+      exhaustMap(() => this.backend.delete.allUserData().pipe(
         catchError((error) => {
           console.error('Data deletion failed:', error);
           SharedConstants.errorCustom(this.snackBar, 'Account deletion failed while removing your data. Please try again or contact support.');
