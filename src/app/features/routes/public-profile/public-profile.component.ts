@@ -106,6 +106,7 @@ export class PublicProfileComponent extends SubManager {
             description: descriptionParts.join(' '),
             url: `https://patcher.xyz/u/${ profile.username }`,
             author: profile.username,
+            image: profile.avatarUrl ?? undefined,
           },
           `${ profile.username } — Public profile`,
         );
