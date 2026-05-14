@@ -15,7 +15,7 @@ test.describe('Navigation', () => {
   test('root path lands on the home experience', async ({page}) => {
     await page.goto('/');
     await expect(page).toHaveURL(/\/(?:home)?$/, {timeout: 10_000});
-    const heroHeading = page.locator('main.home-page h1').first();
+    const heroHeading = page.locator('div.home-page h1').first();
     await expect(heroHeading).toBeVisible({timeout: 10_000});
     await expect(heroHeading).toContainText(/operating system.*modular/i);
   });
