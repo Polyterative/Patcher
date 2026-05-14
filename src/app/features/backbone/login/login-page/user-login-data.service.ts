@@ -14,6 +14,7 @@ import {
 import {
   catchError,
   concatMap,
+  exhaustMap,
   map,
   switchMap,
   takeUntil,
@@ -100,7 +101,7 @@ export class UserLoginDataService extends SubManager {
   private initializeLoginHandler(): void {
     this.mailLoginClick$
       .pipe(
-        switchMap(() => this.loginInteraction.login$(
+        exhaustMap(() => this.loginInteraction.login$(
           this.fields.user.control.value,
           this.fields.password.control.value
         )),

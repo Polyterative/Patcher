@@ -146,7 +146,7 @@ export class CommentsDataService extends SubManager {
       tap(() => this.isSubmitting$.next(true)),
       sanitizeItemInPipe(),
       withLatestFrom(this.requestCommentsUpdate$),
-      switchMap(([comment, entity]) =>
+      exhaustMap(([comment, entity]) =>
         this.backend.add.comment({
           content: comment,
           entityId: entity.entityId,
