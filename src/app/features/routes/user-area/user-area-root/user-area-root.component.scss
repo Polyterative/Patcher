@@ -154,9 +154,9 @@
   gap: 0.5rem;
   padding: 1rem;
   border: 1px solid rgba(34, 72, 118, 0.12);
-  border-radius: 1rem;
+  border-radius: var(--app-floating-surface-radius, 0.8rem);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(247, 250, 255, 0.94));
-  box-shadow: 0 0.3rem 0.9rem rgba(21, 43, 74, 0.08);
+  box-shadow: var(--app-floating-surface-shadow-strong, 0 0.45rem 1.4rem rgba(0, 0, 0, 0.22));
 }
 
 .user-area-utility-search__header {
