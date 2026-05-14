@@ -67,7 +67,7 @@
 
   // Narrow screens: stack title + description + CTA vertically
   @media (max-width: 520px) {
-    padding:        0.75rem 0.5rem 0.75rem 0.75rem;
+    padding:        1rem 0.5rem 1rem 1rem;
     align-items:    flex-start;
 
     &__body {
@@ -115,7 +115,7 @@
   @media (prefers-reduced-motion: reduce) {
     overflow-x: auto;
     height:     auto;
-    padding:    0.25rem 0.75rem;
+    padding:    0.25rem 1rem;
 
     .event-marquee__track {
       animation: none;
