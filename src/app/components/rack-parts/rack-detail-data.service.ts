@@ -177,7 +177,7 @@ export class RackDetailDataService extends SubManager {
           x.rows--;
           return x;
         }),
-        switchMap(x => this.backend.update.rack(x)),
+        exhaustMap(x => this.backend.update.rack(x)),
         takeUntil(this.destroy$),
       )
       .subscribe(() => {
@@ -193,7 +193,7 @@ export class RackDetailDataService extends SubManager {
           x.rows++;
           return x;
         }),
-        switchMap(x => this.backend.update.rack(x)),
+        exhaustMap(x => this.backend.update.rack(x)),
         takeUntil(this.destroy$),
       )
       .subscribe(() => {
@@ -210,7 +210,7 @@ export class RackDetailDataService extends SubManager {
           this.isCurrentRackPrivate$.next(!x.public);
           return x;
         }),
-        switchMap(x => this.backend.update.rack(x)),
+        exhaustMap(x => this.backend.update.rack(x)),
         takeUntil(this.destroy$),
       )
       .subscribe();

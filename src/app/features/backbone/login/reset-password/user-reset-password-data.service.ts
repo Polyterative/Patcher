@@ -13,6 +13,7 @@ import {
 } from 'rxjs';
 import {
   catchError,
+  exhaustMap,
   map,
   switchMap,
   takeUntil
@@ -89,7 +90,7 @@ export class UserResetPasswordDataService implements OnDestroy {
   private initializeSubmitHandler(): void {
     this.submitPasswordReset$
       .pipe(
-        switchMap(() => {
+        exhaustMap(() => {
           // Validate form
           const password = this.fields.password.control.value;
           const confirmPassword = this.fields.confirmPassword.control.value;
