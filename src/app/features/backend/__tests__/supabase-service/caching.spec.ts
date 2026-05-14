@@ -41,4 +41,15 @@ describe('SupabaseService - Caching Behavior', () => {
     // This validates the caching setup exists
     expect(localStorage).toBeDefined();
   });
+
+  it('cacheResetter$ emits the provided key array to subscribers', () => {
+    const emissions: string[][] = [];
+    const sub = service.cacheResetter$.subscribe(keys => emissions.push(keys as string[]));
+
+    (service.cacheResetter$ as any).next(['modules', 'patches']);
+    sub.unsubscribe();
+
+    expect(emissions.length).toBe(1);
+    expect(emissions[0]).toEqual(['modules', 'patches']);
+  });
 });

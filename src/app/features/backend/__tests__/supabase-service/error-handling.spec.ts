@@ -36,4 +36,11 @@ describe('SupabaseService - Error Handling & Edge Cases', () => {
       expect(result$).toBeDefined();
     }).not.toThrow();
   });
+
+  it('should return observable for patch with non-existent ID', () => {
+    expect(() => {
+      const result$ = service.GET.publicPatchWithId(999999);
+      expect(result$).toBeDefined();
+    }).not.toThrow();
+  });
 });
