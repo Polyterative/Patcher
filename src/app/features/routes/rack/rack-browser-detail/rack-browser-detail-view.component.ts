@@ -118,7 +118,8 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
             description: descParts.join(' '),
             keywords: `${ joined }, rack, eurorack`,
             published: rackData.created,
-            modified: rackData.updated
+            modified: rackData.updated,
+            ...(rackData.image ? {image: rackData.image} : {})
           };
           this.seoAndUtilsService.updateSeo(seoData, `${ rackData.name } - Rack Details`);
           this.injectRackJsonLd(rackData!, uniqueRowedFlatted);
