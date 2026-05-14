@@ -138,4 +138,20 @@ describe('UserSignupDataService', () => {
 
     expect(router.navigate).toHaveBeenCalledWith(['/modules/browser']);
   });
+
+  it('fields start with empty values', () => {
+    service.fields.username.control.setValue('');
+    service.fields.email.control.setValue('');
+    service.fields.password.control.setValue('');
+    expect(service.fields.username.control.value).toBe('');
+    expect(service.fields.email.control.value).toBe('');
+    expect(service.fields.password.control.value).toBe('');
+  });
+
+  it('fields object has expected keys', () => {
+    expect(service.fields.username).toBeDefined();
+    expect(service.fields.email).toBeDefined();
+    expect(service.fields.password).toBeDefined();
+    expect(service.fields.passwordAgain).toBeDefined();
+  });
 });
