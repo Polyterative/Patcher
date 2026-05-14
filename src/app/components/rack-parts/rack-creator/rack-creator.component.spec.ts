@@ -94,7 +94,33 @@ describe('RackCreatorComponent', () => {
 
     expect(component.fields.public.control.value).toBeTrue();
   });
-  
+
+  it('defaults HP to 84 and rows to 2', () => {
+    const {component} = build({id: 'u1'}, []);
+    expect(Number(component.fields.hp.control.value)).toBe(84);
+    expect(Number(component.fields.rows.control.value)).toBe(2);
+  });
+
+  it('HP control rejects values outside 2–216', () => {
+    const {component} = build({id: 'u1'}, []);
+    component.fields.hp.control.setValue(1);
+    expect(component.fields.hp.control.valid).toBeFalse();
+    component.fields.hp.control.setValue(217);
+    expect(component.fields.hp.control.valid).toBeFalse();
+    component.fields.hp.control.setValue(84);
+    expect(component.fields.hp.control.valid).toBeTrue();
+  });
+
+  it('rows control rejects values outside 1–10', () => {
+    const {component} = build({id: 'u1'}, []);
+    component.fields.rows.control.setValue(0);
+    expect(component.fields.rows.control.valid).toBeFalse();
+    component.fields.rows.control.setValue(11);
+    expect(component.fields.rows.control.valid).toBeFalse();
+    component.fields.rows.control.setValue(3);
+    expect(component.fields.rows.control.valid).toBeTrue();
+  });
+
   it('does not create rack when user is not logged in', () => {
     const {component, backend, dialogRef} = build(null, []);
     
