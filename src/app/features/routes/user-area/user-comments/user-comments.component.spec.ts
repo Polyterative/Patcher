@@ -45,4 +45,32 @@ describe('UserCommentsComponent', () => {
 
     expect(nextSpy).toHaveBeenCalled();
   });
+
+  it('clears the type filter when setFilter is called with null', (done) => {
+    const {component} = build();
+    component.setFilter(CommentableEntityTypes.PATCH);
+    component.setFilter(null);
+
+    component.filteredComments$.subscribe((comments) => {
+      expect(comments?.length).toBe(2);
+      done();
+    });
+  });
+
+  it('activeFilter$ starts as null', (done) => {
+    const {component} = build();
+    component.activeFilter$.subscribe((f) => {
+      expect(f).toBeNull();
+      done();
+    });
+  });
+
+  it('filterOptions includes all expected entity types', () => {
+    const {component} = build();
+    const labels = component.filterOptions.map(o => o.label);
+    expect(labels).toContain('All');
+    expect(labels).toContain('Modules');
+    expect(labels).toContain('Patches');
+    expect(labels).toContain('Racks');
+  });
 });
