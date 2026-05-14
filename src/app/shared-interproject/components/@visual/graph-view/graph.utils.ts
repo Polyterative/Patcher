@@ -17,8 +17,11 @@ export function parseColor(color: string): {r: number; g: number; b: number} {
       : hex;
     const parsed = Number.parseInt(normalized, 16);
     return {
+      // eslint-disable-next-line no-bitwise
       r: (parsed >> 16) & 255,
+      // eslint-disable-next-line no-bitwise
       g: (parsed >> 8) & 255,
+      // eslint-disable-next-line no-bitwise
       b: parsed & 255
     };
   }

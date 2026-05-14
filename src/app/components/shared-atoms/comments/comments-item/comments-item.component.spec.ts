@@ -1,5 +1,4 @@
-import { of } from 'rxjs';
-import { Subject } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { CommentsItemComponent, defaultCommentViewConfig } from './comments-item.component';
 import { DbComment } from 'src/app/models/comment';
 

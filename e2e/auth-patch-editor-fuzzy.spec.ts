@@ -253,8 +253,10 @@ function collectCriticalErrors(page: Page): () => string[] {
 }
 
 function seededRandom(seed: number): () => number {
+  // eslint-disable-next-line no-bitwise
   let state = seed >>> 0;
   return () => {
+    // eslint-disable-next-line no-bitwise
     state = (1664525 * state + 1013904223) >>> 0;
     return state / 0x100000000;
   };

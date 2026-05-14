@@ -2,7 +2,7 @@ import { RackedToModulesPipe } from './racked-to-modules.pipe';
 import { RackedModule } from '../../models/module';
 
 const makeRackedModule = (id: number): RackedModule => ({
-  module: { id, hp: 4, name: 'M' + id } as any,
+  module: { id, hp: 4, name: `M${id}` } as any,
   rackingData: { id: 1, row: 0, column: 0, rackid: 1, moduleid: id }
 });
 
