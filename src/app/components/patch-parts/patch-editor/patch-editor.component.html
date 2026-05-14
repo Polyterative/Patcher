@@ -84,7 +84,9 @@
             } @else if (bag.linkedRackPreview.kind !== 'ready' || !bag.linkedRackPreview.rack) {
               <div class="patch-editor-empty-state">
                 <mat-icon>view_stream</mat-icon>
-                <div class="patch-editor-empty-state__title">Rack unavailable</div>
+                <div class="patch-editor-empty-state__title">
+                  {{ bag.linkedRackPreview.kind === 'unlinked' ? 'No rack linked yet' : 'Rack unavailable' }}
+                </div>
                 <p class="patch-editor-empty-state__copy">{{ bag.linkedRackPreview.description }}</p>
               </div>
             }
@@ -195,7 +197,9 @@
       } @else if (bag.linkedRackPreview.kind !== 'ready' || !bag.linkedRackPreview.rack) {
         <div class="patch-editor-empty-state">
           <mat-icon>view_stream</mat-icon>
-          <div class="patch-editor-empty-state__title">Rack unavailable</div>
+          <div class="patch-editor-empty-state__title">
+            {{ bag.linkedRackPreview.kind === 'unlinked' ? 'No rack linked yet' : 'Rack unavailable' }}
+          </div>
           <p class="patch-editor-empty-state__copy">{{ bag.linkedRackPreview.description }}</p>
         </div>
       }
