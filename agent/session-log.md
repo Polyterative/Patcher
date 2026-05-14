@@ -1002,3 +1002,33 @@ All `.ts` source files testable with direct instantiation (no Angular TestBed/in
 **Follow-ups:**
 - UI audit item #2 (button/link hierarchy) is next when an opportunity arises
 - E2E multi-instance patching still blocked on dedicated test account
+
+---
+
+## [2025-07-24 continued] Accessibility Pass
+
+**Tasks completed this session block:**
+
+1. **A11y: aria-label sweep (batch 1)** — `5d525f2b`
+   - Found `comments-item` delete button had zero accessibility information
+   - Found `module-minimal` buttons had `matTooltip` but no `aria-label`
+   - Added `aria-label` matching tooltip text; dynamic ones use `[attr.aria-label]`
+
+2. **A11y: aria-label sweep (batch 2)** — `dcbdd9ed`
+   - Completed sweep across all remaining `mat-icon-button` elements without `aria-label`
+   - Fixed 8 more components: rack-minimal, patch-minimal, patch-connection-minimal,
+     rack-balance-panel, module-tags cancel button, patch-editor, mat-form-entity clear button
+   - All buttons now have aria-label matching their visible tooltip
+
+3. **A11y: skip-to-content + main landmark** — `0c6853a2`
+   - Promoted `<div class="main">` to `<main id="main-content">` in app.component.html
+   - Added `.skip-link` as first focusable element — keyboard-only visible on focus
+   - Verified: pnpm lint clean, pnpm tsc --noEmit clean
+
+**Files touched:** `app.component.html`, `app.component.scss`, 8 HTML templates
+
+**Next candidate tasks:**
+- Public profile E2E smoke test (`/u/:username` route, no auth)
+- Footer styling consistency (audit score 2.5/5)
+- Module-editor CV-form-line accessibility audit
+- Remaining matTooltip-only elements in deeply nested admin/editor views
