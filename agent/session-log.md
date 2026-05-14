@@ -113,3 +113,40 @@
 
 - LOW: Rack-Context Patch Building — Polish Review (deferred, low priority).
 - HIGH: E2E Dedicated Test Account Cleanup — requires human to create Supabase test account; not automatable by an agent.
+
+## 2026-05-14T10:40:00+02:00
+
+### Selected task: Manufacturer Pages — Phase 1 Polish (Tier 0 product)
+
+**Why this task:** Highest-value unblocked Tier 0 item after the connections bug fix. Manufacturer Pages noted as "UI-only task, backend query already exists" in ROADMAP.md. No entry in TODO.md — added it.
+
+### Investigation
+
+- Manufacturer detail page already had: website button, stats grid, flat module list, JSON-LD with logo URL, submit-module FAB.
+- Missing vs ROADMAP goals: logo not rendered in UI (only used for JSON-LD); module catalogue not grouped; no data-report path visible.
+- `manufacturer-row.component.html` already shows the correct logo rendering pattern.
+- `MODULE_GROUP_OPTIONS` in `module-sort-utils.ts` already has `{id: 'standard', name: 'Group by standard (3U / 1U)'}`.
+- `app-module-flag` component is already on every module detail page (confirmed by user).
+
+### Implementation
+
+1. **Logo** — added `logoUrl(manufacturer)` helper to `manufacturer-detail.component.ts` (reuses `LOGO_BASE_URL` already in the file). Added `<img>` with `@if` guard in template. Added SCSS for `.manufacturer-detail-logo-wrap` / `.manufacturer-detail-logo`.
+2. **Module grouping** — added `defaultGroupId: ModuleGroupId = 'none'` input to `ModuleListComponent` (backward-compatible); in `ngOnInit`, if non-default, sets `groupControl` value before the `startWith` pipeline reads it. Manufacturer detail sets `[defaultGroupId]="'standard'"`.
+3. **Data-report guidance** — added a small secondary note below the module list referencing the per-module "Report an issue" flag. Added SCSS for `.manufacturer-detail-data-note`.
+
+### Verification
+
+- `pnpm test-headless --include="**/module-list.component.spec.ts"` → 4/4 pass.
+- `pnpm build` → clean (same pre-existing budget warnings).
+
+### Docs updated
+
+- `internaldocs/workflow/TODO.md` — Manufacturer Pages task added, bullets checked, active cleared.
+- `internaldocs/workflow/COMPLETED.md` — entry added.
+- `agent/current-task.md`, `agent/acceptance-checklist.md`, `agent/session-log.md` updated.
+
+### Next candidates
+
+- LOW: Rack-Context Patch Building — Polish Review
+- PRODUCT Tier 0: Patch Tags or Media Attachment on Patches
+- INFRA: Unit test coverage on high-yield services
