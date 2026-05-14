@@ -1,18 +1,24 @@
 # Current Task
 
-*No active task — session closed 14-05-2026.*
+## Title
+Unit Test Coverage — module-detail-data.service & rack-detail-data.service
 
-## Last completed
-- Cache Strategy Review — all bullets done (commit `d5fc8ec9`)
-- Reactive Pipeline Audit — all 13 bullets done (commit `aecd4f3c`)
-- caching.spec.ts expanded to 5 tests (commit `0df75e93`)
-- Bandwidth Optimisation audit — no rewrites needed, queries already optimised (commit `eb94a038`)
-- Superbooth 2026 banner cleared (commit `eb94a038`)
+## Source
+`internaldocs/workflow/TODO.md` → INFRA → POLICY: Unit Test Coverage
 
-## Next candidate
-Pick from `internaldocs/workflow/TODO.md` INFRA section:
+## Goal
+Expand spec coverage for `module-detail-data.service.ts` (328L, existing spec) and
+`rack-detail-data.service.ts` (1008L, several existing specs). Add meaningful tests
+using the TestBed + mocking pattern established in existing specs.
 
-1. **Initial Render Flash investigation** — code-analysis portion can be done headlessly; browser DevTools portion needs `pnpm start:ssr`. Start with template audit for double-emission patterns.
-2. **Unit test coverage** — expand specs for `user-management.service.ts`, `rack-detail-data.service.ts`, `module-detail-data.service.ts` using TestBed + mocking pattern.
-3. **Sentry triage** — requires Sentry MCP access; medium priority.
-4. All Tier 0 product features (Manufacturer Pages, Store Links, Patch Tags, Module Flagging, Rack-Context Patch Building) are already implemented.
+## On hold
+Initial Render Flash investigation — paused by user request. Flash may have been resolved
+already; will revisit on explicit request.
+
+## Acceptance criteria (see acceptance-checklist.md)
+- [ ] Review existing module-detail spec and identify gaps
+- [ ] Add missing tests to module-detail-data.service.spec.ts
+- [ ] Review existing rack-detail specs for meaningful gaps
+- [ ] Add targeted tests to rack-detail specs
+- [ ] `pnpm test-headless` green
+- [ ] `pnpm build` green

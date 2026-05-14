@@ -12,6 +12,7 @@ import { RouterLink } from "@angular/router";
 import { ScreenWrapperModule } from "src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module";
 
 import { Rack } from "src/app/models/rack";
+import { StorageUrls } from 'src/app/features/backend/DatabaseStrings';
 
 
 @Component({
@@ -36,6 +37,8 @@ export class RackImageComponent implements OnInit, OnChanges {
   
   @Input() data: Rack;
   @Input() containImage: boolean = true;
+  
+  readonly rackStorageBase = StorageUrls.racks;
   
   filename: string | undefined;
   

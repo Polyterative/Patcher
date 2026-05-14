@@ -25,12 +25,15 @@ import {
 import { LabelValueData } from 'src/app/components/rack-parts/rack-editor/lib-showcase-grid/lib-showcase-grid.component';
 import { TimeagoPipe } from 'ngx-timeago';
 import {
+  StorageUrls
+} from 'src/app/features/backend/DatabaseStrings';
+import {
   clearJsonLdScript,
   upsertJsonLdScript
 } from 'src/app/shared-interproject/json-ld-dom';
 
 
-const LOGO_BASE_URL = 'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/manufacturer-logos/';
+const LOGO_BASE_URL = StorageUrls.manufacturerLogos;
 const JSONLD_SCRIPT_ID = 'manufacturer-jsonld';
 
 @Component({
