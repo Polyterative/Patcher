@@ -801,3 +801,9 @@ All 31 tests green first run.
 - **ModulePartHpComponent** (2): creation, ngOnInit no-throw.
 - **ModulePartManufacturerComponent** (2): creation, ngOnInit no-throw.
 - **EntityAuthorComponent** (2): creation, ngOnInit no-throw.
+
+---
+
+## Loop iteration 29 — 10 specs (31 tests): ModuleRealisticHoleline + WidthLimiter + PageHeader + LabelGroupShowcase + HeroHeader + HeroContentCardHeadIcon + HeroClickableTitle + TimestampsRelative + IconTogglerBoolean + FlexboxRowFast
+
+All 31 green first run. All basic @Input default tests + ngOnInit no-throw.
