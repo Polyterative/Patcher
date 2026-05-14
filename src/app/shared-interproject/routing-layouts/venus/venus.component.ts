@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { fadeAnimation } from './fade.animation';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector:    'app-venus',
   templateUrl: './venus.component.html',
   styleUrls:   ['./venus.component.scss'],
