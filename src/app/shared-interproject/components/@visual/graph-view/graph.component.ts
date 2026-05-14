@@ -1,5 +1,6 @@
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   ElementRef,
@@ -25,7 +26,8 @@ export type { GraphNode, GraphEdge } from './graph.types';
   selector: 'lib-graph',
   templateUrl: './graph.component.html',
   styleUrls: ['./graph.component.scss'],
-  standalone: false
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GraphComponent implements AfterViewInit, OnChanges, OnDestroy {
 
