@@ -320,5 +320,8 @@ Remaining uncovered high-value files (complex dependencies):
 - `user-management.service.ts` (599L, Supabase Auth-heavy)
 - `graph.component.ts` (498L, D3/canvas)
 - `patch-graph.component.ts` (297L, SupabaseService-dependent)
-- `rack-detail-data.service.ts`, `module-detail-data.service.ts`, `user-area-data.service.ts`
-  (these require TestBed + extensive mocking — consider after backend tasks unblock)
+
+Previously listed as "remaining" but now fully covered by direct-instantiation specs:
+- `rack-detail-data.service.ts` — 5 spec files, 40+ tests (helpers, reactive, media-duplicate, main)
+- `module-detail-data.service.ts` — 1 spec file, 24 tests
+- `user-area-data.service.ts` — 1 spec file, 24 tests
