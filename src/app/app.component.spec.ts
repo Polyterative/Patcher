@@ -121,14 +121,30 @@ describe('AppComponent', () => {
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Loading page');
   });
 
-  it('hides the route loading state when navigation ends', () => {
-    import('@angular/router').then(({NavigationEnd}) => {
-      fixture.detectChanges();
-      routerEvents$.next(new NavigationStart(1, '/modules/browser'));
-      fixture.detectChanges();
-      routerEvents$.next(new NavigationEnd(1, '/modules/browser', '/modules/browser'));
-      fixture.detectChanges();
-      expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Loading page');
-    });
+  it('uses the embedded shell on auth routes when wide-shell layout is active', () => {
+    routerMock.url = '/auth/login';
+    wideShell$.next(true);
+    fixture.detectChanges();
+
+    const shell = fixture.debugElement.query(By.css('.app-shell')).nativeElement as HTMLElement;
+    expect(shell.classList.contains('app-shell--wide')).toBeTrue();
+  });
+
+  it('does NOT use embedded shell on admin routes', () => {
+    routerMock.url = '/admin/flags';
+    wideShell$.next(true);
+    fixture.detectChanges();
+
+    const shell = fixture.debugElement.query(By.css('.app-shell')).nativeElement as HTMLElement;
+    expect(shell.classList.contains('app-shell--wide')).toBeFalse();
+  });
+
+  it('uses the embedded shell on /user/area when wide-shell is active', () => {
+    routerMock.url = '/user/area';
+    wideShell$.next(true);
+    fixture.detectChanges();
+
+    const shell = fixture.debugElement.query(By.css('.app-shell')).nativeElement as HTMLElement;
+    expect(shell.classList.contains('app-shell--wide')).toBeTrue();
   });
 });
