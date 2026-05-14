@@ -13,6 +13,7 @@ import { fadeInOnEnterAnimation } from 'angular-animations';
 import { TooltipPosition } from '@angular/material/tooltip';
 import { MinimalModule } from 'src/app/models/module';
 import { AppViewportService } from 'src/app/shared-interproject/app-viewport.service';
+import { StorageUrls } from 'src/app/features/backend/DatabaseStrings';
 
 
 export function resolveSurfaceTooltipPosition(
@@ -54,6 +55,8 @@ export class ModulePartImageComponent implements AfterViewInit, OnChanges {
   
   filename: string | undefined;
   tooltipPosition: TooltipPosition = 'after';
+  
+  readonly panelStorageBase = StorageUrls.modulePanels;
   
   @Input() containImage: boolean = true;
   @Input() big: boolean = false;

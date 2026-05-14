@@ -32,4 +32,10 @@ describe('AppFaqComponent', () => {
     const unique = new Set(questions);
     expect(unique.size).toBe(questions.length);
   });
+
+  it('roadmap link points to ROADMAP.md', () => {
+    const roadmapItem = comp.faq.find(item => item.link?.includes('ROADMAP'));
+    expect(roadmapItem).toBeTruthy();
+    expect(roadmapItem!.link).toContain('ROADMAP.md');
+  });
 });

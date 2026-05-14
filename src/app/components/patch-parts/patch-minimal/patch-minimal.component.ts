@@ -25,6 +25,7 @@ import {
   PatchMinimalViewConfig,
   defaultPatchMinimalViewConfig
 } from './patch-minimal.types';
+import { StorageUrls } from 'src/app/features/backend/DatabaseStrings';
 
 export type { PatchMinimalViewConfig };
 export { defaultPatchMinimalViewConfig };
@@ -163,7 +164,7 @@ export class PatchMinimalComponent implements OnInit, OnDestroy {
   }
 
   getRackPreviewUrl(filename: string): string {
-    return `https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/racks/${ filename }`;
+    return `${StorageUrls.racks}${filename}`;
   }
 
   private buildModuleLines(

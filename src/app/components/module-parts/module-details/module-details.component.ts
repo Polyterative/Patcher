@@ -13,6 +13,7 @@ import {
 } from '../module-minimal/module-minimal.component';
 import { derivePanelLabel, PANEL_COLORS } from '../panel.constants';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
+import { StorageUrls } from 'src/app/features/backend/DatabaseStrings';
 import { ModulePanelZoomDialogComponent } from './module-panel-zoom-dialog.component';
 
 
@@ -31,7 +32,7 @@ import { ModulePanelZoomDialogComponent } from './module-panel-zoom-dialog.compo
   standalone:      false
 })
 export class ModuleDetailsComponent {
-  private readonly panelStorageBaseUrl = 'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/';
+  readonly panelStorageBaseUrl = StorageUrls.modulePanels;
   @Input() data: DbModule;
   @Input() viewConfig: ModuleMinimalViewConfig = defaultModuleMinimalViewConfig;
   /** Passed through to app-module-cvs for instance-aware CV clicks */

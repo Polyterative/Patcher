@@ -12,7 +12,7 @@
     @if (manufacturer.logo) {
       <img
         class="manufacturer-row-logo"
-        [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/manufacturer-logos/' + manufacturer.logo"
+        [src]="logoStorageBase + manufacturer.logo"
         [alt]="manufacturer.name + ' logo'"
         loading="lazy"
       />

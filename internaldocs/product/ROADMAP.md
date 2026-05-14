@@ -69,6 +69,103 @@ A single canonical "buy new" URL per module (e.g. Thomann, Perfect Circuit). Use
 module detail page. **Upgrades when:** Price Hub layer 1 ships → link becomes the anchor of cross-store price
 comparison. Affiliate tracking is added → every click becomes a revenue event.
 
+#### Module Possession States *(design phase)*
+
+> **Status: Design phase — not yet promoted to execution.** No entry in `workflow/CURRENT_FEATURE.md` until the
+> open questions in this section are resolved and a three-layer plan is drafted.
+
+Extend the collection model so users can track modules in three states — **owned**, **wished**, and
+**selling** — instead of a single owned-or-not flag. The DB already supports this: `user_modules.kind` is
+an enum `HAS | WANTS | SELLS` with PK `(profileid, moduleid)`, so a given user has at most one state per
+module. Current app code never sets `kind` on insert (defaults to `HAS`) and never filters by `kind` on
+read, so this is a product/UX layering task on top of latent backend capability — not a schema change.
+
+**Why Tier 0:** delivers immediate solo-user value (wishlist is a strongly requested Eurorack workflow)
+without depending on profiles, marketplace, or community. Each state also becomes a primitive that later
+tiers reuse, in line with the compounding principle.
+
+**Conceptual model:**
+
+| State   | Enum    | Meaning                                                  | Counts as "collection"? |
+|---------|---------|----------------------------------------------------------|--------------------------|
+| Owned   | `HAS`   | User physically owns this module                         | Yes                      |
+| Wished  | `WANTS` | User wants to acquire this module                        | No                       |
+| Selling | `SELLS` | User still owns it, but is willing to part with it       | Yes (still owned)        |
+
+Invariants: one state per (user, module); "collection" for collection-aware features = `HAS` (and
+`SELLS` when ownership is the question; never `WANTS`); a module being for sale never silently removes
+it from the owned collection.
+
+**Allowed transitions (MVP):**
+
+| From  | To    | Trigger                                                                       |
+|-------|-------|-------------------------------------------------------------------------------|
+| ∅     | HAS   | Add to collection                                                             |
+| ∅     | WANTS | Add to wishlist                                                               |
+| HAS   | SELLS | Mark for sale                                                                 |
+| SELLS | HAS   | No longer selling / keep                                                      |
+| WANTS | HAS   | "I got it" / acquired (or, later, a completed marketplace purchase)           |
+| HAS   | ∅     | Remove from collection                                                        |
+| WANTS | ∅     | Remove from wishlist                                                          |
+| SELLS | ∅     | Sale completed → row deleted (no past-owned history retained in MVP)          |
+
+Reserve internal enum names (`HAS`, `WANTS`, `SELLS`) for code; user-facing copy uses
+*Own / Wishlist / For sale*.
+
+**UX shape (sketch — final UX is a designer-agent task):**
+
+- Module detail page: a single segmented control — `Own | Want | Sell | —` — that reflects the current
+  state for the viewing user and writes the corresponding transition.
+- Existing "My Modules" page stays the home for `HAS`; `SELLS` rows are shown inline with a badge, not in
+  a separate page (a dedicated *For Sale* surface only becomes useful once marketplace listings exist).
+- Wishlist gets its own list view (sibling page or tab under "My Modules" — see open questions).
+
+**Upgrades when later layers ship:**
+
+- *Price Hub (Tier 1–2)* → `WANTS` is the natural watchlist primitive for price-drop tracking; no new
+  schema needed beyond the existing enum.
+- *Marketplace (Tier 2)* → `SELLS` is the pre-listing intent state. Creating a listing should flip
+  `HAS → SELLS` only with explicit confirmation. Closing or expiring a listing **must not** auto-flip back
+  to `HAS`, matching the existing roadmap rule that collection membership is not silently mutated by
+  listing state. A completed sale removes the row.
+- *Manufacturer aggregates (Tier 1+)* → `WANTS` counts become a genuine demand signal for verified
+  manufacturers, alongside `HAS` install-base counts. Both remain anonymised.
+- *Collection-Aware Patch Discovery (Tier 3)* → default query still uses `HAS` only; an optional
+  "near-match" mode can extend to `HAS ∪ WANTS` ("playable if I acquired one wished module").
+- *Rack builder* → no change. Rack contents remain authoritative for rack presentation, independent of
+  possession state.
+
+**Non-goals / deferred scope:**
+
+- **`SOLD` (past-owned) state.** No new enum value, no historical record of "modules I used to own".
+  Revisit only when marketplace transactions are live and sale-history is genuinely needed; at that
+  point it's an additive `ALTER TYPE`, not a structural change.
+- **Multiple copies per state.** Possession stays boolean per (user, module). The patch-instances copies
+  model already covers "I have 2 Maths" inside patches.
+- **Auto-transitions driven by marketplace.** Every state flip must be user-confirmed at MVP.
+- **Public visibility of wishlist / for-sale lists.** Wishlist and `SELLS` stay private in v1; public
+  surfaces are a separate decision once profiles ship.
+- **Notifications.** Price-drop / wishlist-match notifications are downstream of Price Hub and
+  Marketplace.
+
+**Open questions:**
+
+1. Single segmented control on the module page, or separate explicit actions ("Add to collection" /
+   "Add to wishlist" / "Mark for sale")?
+2. Where does Wishlist live in nav — sibling to "My Modules" or a tab inside it?
+3. `SELLS` rows: inline badge in the owned list, or grouped sub-section?
+4. Expose a count of `WANTS` per module on the module detail page from day one, or wait for the
+   manufacturer-aggregate work?
+5. On `WANTS → HAS`, offer a one-tap follow-up to assign the module to a rack, or keep collection
+   and rack placement strictly separate?
+6. RLS verification: confirm existing `user_modules` policies already cover read/write for non-`HAS`
+   rows scoped to the owning user. **No RLS changes without explicit user approval** — checklist, not
+   action.
+
+**Exit criteria from design phase:** open questions above have decisions (or explicit deferrals); a
+three-layer MVP → Structural → Polish plan is drafted in `CURRENT_FEATURE.md`; designer-agent sign-off
+on the entry-point control and Wishlist surface.
+
 #### Patch Tags
 
 Useful for solo users organising their own patches today — find "my ambient patches" without scrolling through 50 items.

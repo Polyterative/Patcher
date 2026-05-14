@@ -1,4 +1,6 @@
-export const MODULE_PANELS_BASE_URL = 'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/';
+import { StorageUrls } from 'src/app/features/backend/DatabaseStrings';
+
+export const MODULE_PANELS_BASE_URL = StorageUrls.modulePanels;
 export const JSONLD_SCRIPT_ID = 'module-jsonld';
 
 export interface SearchLink {
