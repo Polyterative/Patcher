@@ -6,6 +6,11 @@
       "env": {
         "SENTRY_ACCESS_TOKEN": "${SENTRY_ACCESS_TOKEN}"
       }
+    },
+    "cocoindex-code": {
+      "command": "/Users/polyterative/.local/bin/ccc",
+      "args": ["mcp"],
+      "env": {}
     }
   }
 }

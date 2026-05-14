@@ -21,4 +21,10 @@ export class AdminFlagsComponent {
     public backend: SupabaseService,
     public snackBar: MatSnackBar
   ) {}
+
+  confirmDelete(id: number): void {
+    if (window.confirm('Delete this flag? This action cannot be undone.')) {
+      this.dataService.deleteFlag$.next(id);
+    }
+  }
 }
