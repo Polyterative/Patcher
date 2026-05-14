@@ -119,6 +119,7 @@ export class ManufacturerDetailComponent extends SubManager {
           description: `Browse all Eurorack modules by ${ manufacturer.name } on patcher.xyz.`,
           keywords: `eurorack, modular, ${ manufacturer.name }, modules`,
           url: `https://patcher.xyz/manufacturers/details/${ manufacturer.id }`,
+          image: manufacturer.logo ? `${ LOGO_BASE_URL }${ manufacturer.logo }` : undefined,
         },
         `${ manufacturer.name } — Manufacturer`
       );
