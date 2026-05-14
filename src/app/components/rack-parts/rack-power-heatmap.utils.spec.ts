@@ -100,4 +100,20 @@ describe('rackPowerHeatmapUtils', () => {
     expect(visuals.get(rackPowerHeatmapKey(solo))?.className).toBe('powerAnalysisModule--peak');
     expect(visuals.get(rackPowerHeatmapKey(missing))?.className).toBe('powerAnalysisModule--inactive');
   });
+
+  it('rackPowerHeatmapKey encodes id|moduleId|row|column', () => {
+    const rm: any = {
+      module: {id: 7},
+      rackingData: {id: 3, row: 1, column: 4}
+    };
+    expect(rackPowerHeatmapKey(rm)).toBe('3|7|1|4');
+  });
+
+  it('rackPowerHeatmapKey uses na for missing rackingData id', () => {
+    const rm: any = {
+      module: {id: 5},
+      rackingData: {id: undefined, row: 0, column: 0}
+    };
+    expect(rackPowerHeatmapKey(rm)).toBe('na|5|0|0');
+  });
 });
