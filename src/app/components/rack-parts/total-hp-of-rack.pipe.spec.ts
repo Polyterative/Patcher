@@ -30,4 +30,12 @@ describe('TotalHpOfRackPipe', () => {
     const rack = [[makeModule(1, 4), makeModule(BLANK_ID, 100)]];
     expect(pipe.transform(rack)).toBe(4);
   });
+
+  it('excludes multiple blank modules across multiple rows', () => {
+    const rack = [
+      [makeModule(BLANK_ID, 100), makeModule(1, 6)],
+      [makeModule(BLANK_ID, 100), makeModule(BLANK_ID, 100), makeModule(2, 4)]
+    ];
+    expect(pipe.transform(rack)).toBe(10);
+  });
 });
