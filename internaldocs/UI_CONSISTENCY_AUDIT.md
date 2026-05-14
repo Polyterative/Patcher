@@ -223,6 +223,11 @@ Relevant files:
 
 **Consistency impact:** the app has a system, but users experience a mix of systemized and one-off spacing rhythms.
 
+**Update — 14-05-2026**
+
+- Home spacing pass landed in commit `0baa0b9dfdf1decf513d535edffdc6b508df95d0`, replacing off-scale values such as `2.8rem`, `2.2rem`, `5.2rem`, `1.65rem`, `0.72rem`, `1.9rem`, `1.15rem`, and `0.28rem` with shared 0.5/1/1.5/2/3/5rem tokens across the home shell, principles panel, and workflow rail.
+- Event banner spacing pass landed in commit `118384241ea7e0b579098b604dfaead69722a9f1`, normalizing the asymmetric banner padding, body gaps, CTA sizing, and mobile dismiss spacing onto the 0.5/0.75/1rem scale.
+
 ### 2. Floating surfaces are visually disconnected from each other
 
 Three important floating surfaces each use a distinct treatment:
