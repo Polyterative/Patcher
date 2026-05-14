@@ -92,4 +92,25 @@ describe('SupabaseService - accent-insensitive search', () => {
       error: done.fail
     });
   }, TEST_TIMEOUT);
+
+  it('matches accented module names from an unaccented search query', (done) => {
+    const queries = (service as any).queries;
+    spyOn(supabaseClient, 'from').and.returnValue(chainableQuery({
+      data: [
+        {id: 1, name: 'Érbe-Verb', manufacturer: {name: 'Make Noise'}, panels: [], tags: []},
+        {id: 2, name: 'Mimeophon', manufacturer: {name: 'Make Noise'}, panels: [], tags: []}
+      ],
+      count: 2,
+      error: null
+    }));
+
+    queries.getModules(0, 10, 'erbe').subscribe({
+      next: (result: any) => {
+        expect(result.count).toBe(1);
+        expect(result.data[0].name).toBe('Érbe-Verb');
+        done();
+      },
+      error: done.fail
+    });
+  }, TEST_TIMEOUT);
 });
