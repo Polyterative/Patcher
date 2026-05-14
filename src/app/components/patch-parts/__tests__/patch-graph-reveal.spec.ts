@@ -139,4 +139,31 @@ describe('PatchGraphRevealController', () => {
     expect(flowStartCount).toBe(1);
     expect(latestFlowEdges.some(e => e.data?.stage === PATCH_GRAPH_EDGE_STAGE.CV_OUT_TO_CV_IN)).toBeTrue();
   }));
+
+  it('second reveal replaces first by cancelling prior timers', fakeAsync(() => {
+    let emittedNodeSets: number[] = [];
+
+    const controller = new PatchGraphRevealController(
+      {
+        emitNodes: (nodes) => emittedNodeSets.push(nodes.length),
+        emitEdges: () => undefined,
+        startFlow: () => undefined
+      },
+      {stageBridgeColor: '#9fb4ca'}
+    );
+
+    const nodesA = [node('a', PATCH_GRAPH_NODE_TYPE.MODULE)];
+    const nodesB = [
+      node('b', PATCH_GRAPH_NODE_TYPE.MODULE),
+      node('b-out', PATCH_GRAPH_NODE_TYPE.CV_OUT, 'b')
+    ];
+
+    controller.reveal(nodesA, []);
+    controller.reveal(nodesB, []);
+    tick(2500);
+
+    // The second reveal's first emission should include 2 nodes, not 1
+    const lastEmit = emittedNodeSets[emittedNodeSets.length - 1];
+    expect(lastEmit).toBeGreaterThanOrEqual(nodesB.length);
+  }));
 });

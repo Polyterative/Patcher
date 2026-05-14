@@ -26,4 +26,8 @@ describe('TotalHpOfModulesPipe', () => {
   it('sums hp of all modules', () => {
     expect(pipe.transform([makeModule(1, 4), makeModule(2, 6), makeModule(3, 2)])).toBe(12);
   });
+
+  it('treats module with 0 hp as 0 contribution', () => {
+    expect(pipe.transform([makeModule(1, 0), makeModule(2, 8)])).toBe(8);
+  });
 });

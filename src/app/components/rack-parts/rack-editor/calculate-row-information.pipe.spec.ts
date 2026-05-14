@@ -27,4 +27,9 @@ describe('CalculateRowInformationPipe', () => {
   it('single module hp is returned', () => {
     expect(pipe.transform([makeRackedModule(1, 8)])).toBe('Total HP: 8');
   });
+
+  it('handles row with multiple modules of same hp', () => {
+    const row = [makeRackedModule(1, 4), makeRackedModule(2, 4), makeRackedModule(3, 4)];
+    expect(pipe.transform(row)).toBe('Total HP: 12');
+  });
 });
