@@ -63,6 +63,7 @@
       <div class="row gap0 action-icons">
         <button mat-icon-button
                 [matTooltip]="isCreator?'Clear selection':'Remove connection'"
+                [attr.aria-label]="isCreator ? 'Clear selection' : 'Remove connection'"
                 (click)="remove$.next(data)"
                 class="transparentize-quarter opacizeOnHover danger-action"
         >
@@ -71,6 +72,7 @@
         @if (!isCreator && !showNotes) {
           <button mat-icon-button
                   matTooltip="Add note"
+                  aria-label="Add note"
                   (click)="showNoteInput()"
                   class="transparentize-quarter opacizeOnHover"
           >

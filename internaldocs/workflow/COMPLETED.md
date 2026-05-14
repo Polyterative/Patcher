@@ -252,3 +252,11 @@
 - `user-comments.component.spec.ts`: clearFilter, activeFilter init, filterOptions (3→7)
 - `user-signup-data.service.spec.ts`: fields init/keys (4→6)
 - `hero-content-card.component.spec.ts`: siteTitle, compactNav default, titleNormal (5→8)
+
+## 2025-07-24 — Lint zero-warnings baseline + SEO image improvements
+
+**Commits**: `0e1b47b3`, `994f68fb`, `d68975d2`
+
+- `chore(lint)`: Fixed all 18 lint warnings — merged duplicate imports, converted string concat to template literals, added `eslint-disable-next-line no-bitwise` to intentional bitwise ops, excluded generated `database.types.ts` from ESLint
+- `feat(manufacturer)`: Set og:image to manufacturer logo URL when available
+- `feat(module-detail)`: Include module panel image in og:image / twitter:image meta tags
