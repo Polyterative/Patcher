@@ -21,4 +21,10 @@ describe('HeroInfoBoxService', () => {
     service.hoverEnd$.next('');
     expect(service.infoText$.getValue()).toBe('');
   });
+
+  it('replaces text on subsequent hoverStart$ emissions', () => {
+    service.hoverStart$.next('first');
+    service.hoverStart$.next('second');
+    expect(service.infoText$.getValue()).toBe('second');
+  });
 });

@@ -16,4 +16,9 @@ describe('RestrictedEntityComponent', () => {
   it('ngOnInit runs without error', () => {
     expect(() => comp.ngOnInit()).not.toThrow();
   });
+
+  it('disabled can be set to true', () => {
+    comp.disabled = true;
+    expect(comp.disabled).toBeTrue();
+  });
 });
