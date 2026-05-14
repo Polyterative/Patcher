@@ -76,4 +76,17 @@ describe('sanitizers', () => {
         done();
       });
   });
+
+  it('plainSanitize returns null for null input', () => {
+    expect(plainSanitize(null)).toBeNull();
+  });
+
+  it('plainSanitize returns undefined for undefined input', () => {
+    expect(plainSanitize(undefined)).toBeUndefined();
+  });
+
+  it('plainSanitize preserves plain text without modification', () => {
+    const result = plainSanitize('Hello world') as string;
+    expect(result).toContain('Hello world');
+  });
 });
