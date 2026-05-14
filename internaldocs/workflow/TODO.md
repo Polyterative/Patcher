@@ -65,9 +65,9 @@ stale-source coupling (`patch-graph.component.html` also reads `patchConnections
 <!-- AUDIT: UI was redesigned (warning replaced by empty-state-tips in 36152120) but the stale-source root cause —
      patchConnections$ driving empty-state while editing — was not fixed as of 2026-05-14. Both [ ] items remain open. -->
 
-- [ ] Switch patch-detail warning/empty-state logic to the live editing source when edit mode is open (`editorConnections$`
+- [x] Switch patch-detail warning/empty-state logic to the live editing source when edit mode is open (`editorConnections$`
   or a derived merged stream), so the banner clears immediately after a connection is added
-- [ ] Audit nearby patch-detail surfaces that still read persisted `patchConnections$` during live editing (at minimum the
+- [x] Audit nearby patch-detail surfaces that still read persisted `patchConnections$` during live editing (at minimum the
   graph empty state) and align them with the same source-of-truth rule
 
 ---
