@@ -466,3 +466,25 @@ generation, writeValue, valueChanges→onChange/onTouched wiring, setDisabledSta
 - `src/app/shared-interproject/components/@smart/mat-form-entity/form-pipes.spec.ts` (new)
 - `internaldocs/workflow/COMPLETED.md` (new row prepended)
 - `agent/session-log.md` (this entry)
+
+---
+
+## Loop iteration 9 — AutoContentLoadingIndicatorComponent + ManufacturerRowComponent
+
+**Tasks**: Two component specs batched into one commit (both small, no shared state)
+
+**AutoContentLoadingIndicatorComponent** (17 tests):
+- Initial state: dataLoading$=true, default inputs
+- Missing inputs: no throw, no crash, stays loading
+- Wired: data$ truthy→false, falsy/null/0 stays loading, updateData$→true, full cycle
+- skipFirstData: skips first emission, processes second
+- ngOnDestroy: stops reacting to both streams, safe double-call
+
+**ManufacturerRowComponent** (12 tests):
+- Construction: no error, modules$ starts null, hideRowLink=false
+- moduleViewConfig: based on defaults, hideButtons/hideManufacturer/hideTags/tagsMaxCount
+- ngOnInit: calls backend with correct ID+pagination, emits modules, emits [] on null, stops on destroy
+
+29/29 green, first run both files.
+
+**Files touched**: 2 new spec files, COMPLETED.md, current-task.md, session-log.md
