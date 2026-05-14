@@ -129,4 +129,36 @@ describe('RackCreatorComponent', () => {
     expect(backend.add.rack).not.toHaveBeenCalled();
     expect(dialogRef.close).not.toHaveBeenCalled();
   });
+
+  it('name field starts with a non-empty generated value', () => {
+    const {component} = build({id: 'u1'}, []);
+    expect(typeof component.fields.name.control.value).toBe('string');
+    expect(component.fields.name.control.value.length).toBeGreaterThan(0);
+  });
+
+  it('passes public flag correctly when saving rack', () => {
+    const {component, backend} = build({id: 'u1'}, []);
+    component.fields.name.control.setValue('Test Rack');
+    component.fields.hp.control.setValue(60);
+    component.fields.rows.control.setValue(2);
+    component.fields.public.control.setValue(false);
+
+    component.save$.next();
+
+    expect(backend.add.rack).toHaveBeenCalledWith(jasmine.objectContaining({public: false}));
+  });
+
+  it('rackAnalysis$ emits after hp value changes', (done) => {
+    const {component, moduleCollectionAnalysisService} = build({id: 'u1'}, []);
+    let emitCount = 0;
+    component.rackAnalysis$.subscribe(() => {
+      emitCount++;
+      if (emitCount === 1) {
+        component.fields.hp.control.setValue(104);
+      } else {
+        expect(moduleCollectionAnalysisService.analyzeRackConfiguration).toHaveBeenCalled();
+        done();
+      }
+    });
+  });
 });
