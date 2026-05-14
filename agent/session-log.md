@@ -638,3 +638,23 @@ Compile errors fixed:
 - Fix: 'browser'/'server' need `as unknown as object` cast for TypeScript PLATFORM_ID type
 
 15/15 green after fix.
+
+---
+
+## Loop iteration 17 — RackImageComponent + RackMinimalComponent + ManufacturerBrowserRootComponent
+
+**RackImageComponent** (9 tests):
+- construction defaults (containImage=true, sizeDivider=1.5, filename=undefined)
+- ngOnInit: sets filename from data.image, undefined when absent, calls detectChanges
+- ngOnChanges: sets/clears filename
+
+**RackMinimalComponent** (8 tests):
+- construction: viewConfig.containImage=false (component override), hideLabels=false
+- ngOnInit no throw; ngOnDestroy completes destroyEvent$
+- defaultRackMinimalViewConfig exported object: all false + containImage=true
+
+**ManufacturerBrowserRootComponent** (4 tests):
+- Uses TestBed.runInInjectionContext for inject(DOCUMENT) wiring
+- updateSeo called on construction; updateList$ emitted on construction; formTypes defined
+
+21/21 green first run.
