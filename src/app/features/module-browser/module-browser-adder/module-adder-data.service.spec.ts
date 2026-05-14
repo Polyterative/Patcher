@@ -233,4 +233,22 @@ describe('ModuleAdderDataService', () => {
 
     expect(service.formGroup.valid).toBeTrue();
   });
+
+  it('similarModulesData$ starts as undefined', () => {
+    const {service} = build();
+    expect(service.similarModulesData$.value).toBeUndefined();
+    service.ngOnDestroy();
+  });
+
+  it('isCreatingManufacturer$ starts as false', () => {
+    const {service} = build();
+    expect(service.isCreatingManufacturer$.value).toBeFalse();
+    service.ngOnDestroy();
+  });
+
+  it('newManufacturerNameControl starts empty', () => {
+    const {service} = build();
+    expect(service.newManufacturerNameControl.value).toBe('');
+    service.ngOnDestroy();
+  });
 });
