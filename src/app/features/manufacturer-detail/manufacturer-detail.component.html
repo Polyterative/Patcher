@@ -12,6 +12,17 @@
     >
       <div class="col gap2">
 
+        @if (bag.manufacturer && logoUrl(bag.manufacturer); as logo) {
+          <div class="manufacturer-detail-logo-wrap">
+            <img
+              class="manufacturer-detail-logo"
+              [src]="logo"
+              [alt]="(bag.manufacturer?.name || '') + ' logo'"
+              loading="eager"
+            />
+          </div>
+        }
+
         @if (bag.manufacturer?.websiteURL) {
           <a
             [href]="bag.manufacturer.websiteURL"
@@ -44,6 +55,7 @@
               [showSearch]="true"
               [showOrder]="true"
               [encloseVertically]="false"
+              [defaultGroupId]="'standard'"
             ></app-module-list>
           } @else if (bag.modules !== null) {
             <div class="col gap1 manufacturer-empty-state">
@@ -51,6 +63,13 @@
             </div>
           }
         </lib-auto-content-loading-indicator>
+
+        @if (bag.modules && bag.modules.length > 0) {
+          <p class="manufacturer-detail-data-note">
+            <mat-icon class="manufacturer-detail-data-note__icon">flag</mat-icon>
+            Spotted incorrect data? Open any module's page and use <strong>Report an issue</strong> to flag it for review.
+          </p>
+        }
       
       </div>
     </lib-hero-content-card>

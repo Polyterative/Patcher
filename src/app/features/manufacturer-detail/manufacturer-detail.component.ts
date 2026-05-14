@@ -132,6 +132,10 @@ export class ManufacturerDetailComponent extends SubManager {
   }
   
   
+  logoUrl(manufacturer: ManufacturerDetail): string | null {
+    return manufacturer.logo ? `${ LOGO_BASE_URL }${ manufacturer.logo }` : null;
+  }
+  
   private injectManufacturerJsonLd(manufacturer: ManufacturerDetail): void {
     clearJsonLdScript(JSONLD_SCRIPT_ID);
     const jsonLd: Record<string, unknown> = {
