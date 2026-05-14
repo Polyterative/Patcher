@@ -601,3 +601,24 @@ Compile errors fixed:
 36/36 green on first run.
 
 **Files touched**: 3 new spec files, COMPLETED.md, session-log.md
+
+---
+
+## Loop iteration 15 — ScreenWrapperComponent + BrandPrimaryButtonComponent + SignupPageComponent
+
+**ScreenWrapperComponent** (10 tests):
+- default inputs: maxSize='86rem', sizePreset=undefined, force=false
+- resolvedMaxSize: uses maxSize when no preset, resolves 'default'/'wide-shell'/'full-bleed', preset wins over maxSize
+- ngOnInit: no throw
+
+**BrandPrimaryButtonComponent** (15 tests):
+- all defaults: disabled/error/theme/click$/innerFlex/routerLink/autoFocus/icon/tooltip/tooltipPosition
+- doNothing: callable
+- theme variants: warning/positive/negative/light
+
+**SignupPageComponent** (5 tests):
+- construction: no error, updateSeo noindex:true
+- ngOnInit: no throw
+- handleSSOSignup: delegates to loginWithSSO, passes provider
+
+30/30 green on first run.
