@@ -143,6 +143,34 @@ describe('MatFormEntityComponent ergonomics', () => {
     expect(selectComponent.voidSelectionLabel).toBe('Clear / Nothing');
   });
 
+  it('autofocus is true on first field', () => {
+    const firstComponent = fixture.debugElement
+      .queryAll(By.directive(MatFormEntityComponent))[0]
+      .componentInstance as MatFormEntityComponent;
+    expect(firstComponent.autofocus).toBe(true);
+  });
+
+  it('tooltip defaults to empty string', () => {
+    const firstComponent = fixture.debugElement
+      .queryAll(By.directive(MatFormEntityComponent))[0]
+      .componentInstance as MatFormEntityComponent;
+    expect(firstComponent.tooltip).toBe('');
+  });
+
+  it('formFieldAppearanceType defaults to outline', () => {
+    const firstComponent = fixture.debugElement
+      .queryAll(By.directive(MatFormEntityComponent))[0]
+      .componentInstance as MatFormEntityComponent;
+    expect(firstComponent.formFieldAppearanceType).toBe('outline');
+  });
+
+  it('strictAutocomplete defaults to true', () => {
+    const firstComponent = fixture.debugElement
+      .queryAll(By.directive(MatFormEntityComponent))[0]
+      .componentInstance as MatFormEntityComponent;
+    expect(firstComponent.strictAutocomplete).toBe(true);
+  });
+
   function getRenderedInputs(): HTMLInputElement[] {
     return Array.from(fixture.nativeElement.querySelectorAll('input')) as HTMLInputElement[];
   }
