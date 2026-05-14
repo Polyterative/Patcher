@@ -134,4 +134,33 @@ describe('ModuleListComponent', () => {
     expect(currentVal(component.filteredData$)).toEqual([]);
     component.ngOnDestroy();
   }));
+
+  it('defaultGroupId none keeps groupControl at first option', fakeAsync(() => {
+    const filterService = new LocalDataFilterService();
+    const data$ = new BehaviorSubject<MinimalModule[] | null>([]);
+    const component = new ModuleListComponent({} as any, filterService, {preferredPanelColor$: of(null)} as any);
+    component.data$ = data$;
+    component.defaultGroupId = 'none';
+    component.ngOnInit();
+    expect(component.groupControl.value?.id).toBe('none');
+    component.ngOnDestroy();
+  }));
+
+  it('defaultGroupId standard preselects standard group option', fakeAsync(() => {
+    const filterService = new LocalDataFilterService();
+    const data$ = new BehaviorSubject<MinimalModule[] | null>([]);
+    const component = new ModuleListComponent({} as any, filterService, {preferredPanelColor$: of(null)} as any);
+    component.data$ = data$;
+    component.defaultGroupId = 'standard';
+    component.ngOnInit();
+    expect(component.groupControl.value?.id).toBe('standard');
+    component.ngOnDestroy();
+  }));
+
+  it('orderData is an identity function', () => {
+    const {component} = build();
+    const modules = [buildModule({id: 10})];
+    expect(component.orderData(modules)).toBe(modules);
+    component.ngOnDestroy();
+  });
 });

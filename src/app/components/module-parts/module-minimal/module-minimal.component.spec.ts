@@ -81,4 +81,31 @@ describe('ModuleMinimalComponent', () => {
 
     expect(component.shouldShowPanelVariantsBadge()).toBeTrue();
   });
+
+  it('insCount and outsCount return CV port totals from data', () => {
+    const {component} = build();
+    component.data = {id: 1, ins: [{id: 1}, {id: 2}], outs: [{id: 3}]} as any;
+    expect(component.insCount).toBe(2);
+    expect(component.outsCount).toBe(1);
+    expect(component.hasIO).toBeTrue();
+  });
+
+  it('hasIO is false when ins and outs are empty', () => {
+    const {component} = build();
+    component.data = {id: 1, ins: [], outs: []} as any;
+    expect(component.hasIO).toBeFalse();
+  });
+
+  it('insCount and outsCount return 0 when data is undefined', () => {
+    const {component} = build();
+    component.data = undefined as any;
+    expect(component.insCount).toBe(0);
+    expect(component.outsCount).toBe(0);
+  });
+
+  it('shouldShowPanelVariantsBadge is false when only one panel exists', () => {
+    const {component} = build();
+    component.data = {id: 42, panels: [{id: 1}]} as any;
+    expect(component.shouldShowPanelVariantsBadge()).toBeFalse();
+  });
 });
