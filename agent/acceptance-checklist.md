@@ -1,10 +1,11 @@
 # Acceptance Checklist
 
-## Manufacturer Pages — Phase 1 Polish
+## Admin Flags — Delete Confirmation + Sort Order Toggle
 
-- [x] Manufacturer logo renders in the detail page header when `manufacturer.logo` is set
-- [x] When no logo is set the layout does not break (guarded with `@if (logoUrl(...))`)
-- [x] Logo display is consistent with the existing `manufacturer-row` pattern (same Supabase storage URL, alt text)
-- [x] Module catalogue defaults to "Group by standard (3U / 1U)" — `defaultGroupId` input added to `ModuleListComponent` (backward-compatible); manufacturer detail sets `[defaultGroupId]="'standard'"`
-- [x] Data-report guidance note added below the module list when modules are present; points users to the per-module "Report an issue" flag component
-- [x] Build green, tests green (4/4 module-list)
+- [x] Delete button shows a `window.confirm()` dialog before emitting to `deleteFlag$`
+- [x] Confirmation message is clear: "Delete this flag? This action cannot be undone."
+- [x] `sortOrder$: BehaviorSubject<'desc' | 'asc'>` added to service; defaults to `'desc'`
+- [x] `filteredFlags$` applies sort after filtering; sort is stable (uses spread copy)
+- [x] Sort toggle UI added to toolbar: "Newest first" / "Oldest first"
+- [x] 18/18 tests pass (3 new sort tests added)
+- [x] Build green

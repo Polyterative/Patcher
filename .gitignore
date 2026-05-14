@@ -82,3 +82,5 @@ supabase/.temp/
 
 # Local Supabase backups — NEVER commit: contains real user data (public repo)
 /backups/
+# CocoIndex Code (ccc)
+/.cocoindex_code/
