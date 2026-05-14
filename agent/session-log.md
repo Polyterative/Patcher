@@ -842,3 +842,17 @@ Final 2 manageable unspecced components covered. graph.component.ts (498L, D3) a
 
 All component spec files exhausted. 
 
+
+---
+
+## Loop iteration 34 — 12 pipe specs (62 tests): all remaining unspecced pipes
+
+CalculateRowInformationPipe (4), HasUnrackedModulesListPipe (5), HasUnrackedModulesPipe (5),
+RackedToModulesPipe (4), TotalDepthOfRackPipe (5), TotalHpOfModulesPipe (4), TotalHpOfRackPipe (4),
+TotalMissingPowerDataInRackPipe (8), TotalPlacedModulesOfRackPipe (5), TotalPowerOfRackPipe (5),
+GetControlValuePipe (5), FormValidPipe (4).
+
+Fix: RackingData uses camelCase (rackid, moduleid not rack_id, module_id) — corrected in all specs.
+
+All pipe specs now exhausted. 
+
