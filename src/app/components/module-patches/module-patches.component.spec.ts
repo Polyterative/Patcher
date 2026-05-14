@@ -16,6 +16,13 @@ describe('ModulePatchesComponent', () => {
     expect(comp.viewConfig).toEqual(defaultPatchMinimalViewConfig);
   });
 
+  it('viewConfig spreads all base config properties', () => {
+    const keys = Object.keys(defaultPatchMinimalViewConfig) as (keyof typeof defaultPatchMinimalViewConfig)[];
+    keys.forEach(key => {
+      expect(comp.viewConfig[key]).toBe(defaultPatchMinimalViewConfig[key]);
+    });
+  });
+
   it('ngOnInit runs without error', () => {
     expect(() => comp.ngOnInit()).not.toThrow();
   });

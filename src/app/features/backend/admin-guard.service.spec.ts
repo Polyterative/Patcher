@@ -60,4 +60,17 @@ describe('AdminGuardService', () => {
       }
     });
   });
+
+  it('calls getUserSession$ once per canActivate invocation', () => {
+    const mockSupabase = {
+      auth: {
+        getUserSession$: jasmine.createSpy('getUserSession$').and.returnValue(of({id: 'u1'})),
+        hasAdminRole$: jasmine.createSpy('hasAdminRole$').and.returnValue(of(false))
+      }
+    };
+    service = new AdminGuardService(mockSupabase as any);
+
+    (service.canActivate({} as ActivatedRouteSnapshot) as any).subscribe();
+    expect(mockSupabase.auth.getUserSession$).toHaveBeenCalledTimes(1);
+  });
 });
