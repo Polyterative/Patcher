@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   Input
 } from '@angular/core';
@@ -6,6 +7,7 @@ import { HomeLinkPill } from '../../home-content.models';
 
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-home-curiosity-bridge',
   templateUrl: './home-curiosity-bridge.component.html',
   styleUrls: ['./home-curiosity-bridge.component.scss'],

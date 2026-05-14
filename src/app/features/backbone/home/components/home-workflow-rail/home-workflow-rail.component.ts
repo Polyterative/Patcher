@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   Input
 } from '@angular/core';
@@ -7,6 +8,7 @@ import { buildHomeTextSegments } from '../../home-text-segments.util';
 
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-home-workflow-rail',
   templateUrl: './home-workflow-rail.component.html',
   styleUrls: ['./home-workflow-rail.component.scss'],

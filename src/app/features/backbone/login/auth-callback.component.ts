@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   OnInit
 } from '@angular/core';
@@ -21,6 +22,7 @@ import { UserManagementService } from 'src/app/features/backbone/login/user-mana
  * 4. Redirects to profile completion if needed, otherwise to main app
  */
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-auth-callback',
   template: `
     <div class="auth-callback-container">

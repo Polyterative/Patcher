@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   Input
 } from '@angular/core';
@@ -11,6 +12,7 @@ const DEFAULT_COLOR = 'rgba(36, 49, 63, 0.84)';
 const STALE_COLOR = '#111111';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-manufacturer-updated-badge',
   templateUrl: './manufacturer-updated-badge.component.html',
   styleUrls: ['./manufacturer-updated-badge.component.scss'],
