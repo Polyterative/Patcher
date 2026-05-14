@@ -31,4 +31,10 @@ describe('ConfirmDialogComponent', () => {
     expect(component.title).toBe('Confirm');
     expect(component.description).toBe('Proceed?');
   });
+
+  it('data property references the original dialog data', () => {
+    const data = {title: 'Check', description: 'desc'};
+    const component = new ConfirmDialogComponent({} as any, data as any);
+    expect(component.data).toBe(data);
+  });
 });
