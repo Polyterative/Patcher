@@ -30,4 +30,8 @@ describe('MapToModulePipe', () => {
     const result = pipe.transform(rackedModule);
     expect(result).toBe(module);
   });
+
+  it('creates pipe instance', () => {
+    expect(pipe).toBeTruthy();
+  });
 });

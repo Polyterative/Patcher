@@ -33,4 +33,8 @@ describe('ToolbarPrimaryIcon', () => {
   it('defines SAVE icon', () => {
     expect(ToolbarPrimaryIcon.SAVE).toBe('save');
   });
+
+  it('EDIT is not a defined icon in ToolbarPrimaryIcon', () => {
+    expect((ToolbarPrimaryIcon as any)['EDIT']).toBeUndefined();
+  });
 });
