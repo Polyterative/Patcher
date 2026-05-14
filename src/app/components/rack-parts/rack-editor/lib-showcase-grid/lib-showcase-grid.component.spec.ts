@@ -18,4 +18,10 @@ describe('LibShowcaseGridComponent', () => {
     expect(comp.data.length).toBe(1);
     expect(comp.data[0].label).toBe('Modules');
   });
+
+  it('multiple data items are preserved in order', () => {
+    comp.data = [{label: 'A', value: '1'}, {label: 'B', value: '2'}];
+    expect(comp.data[0].label).toBe('A');
+    expect(comp.data[1].value).toBe('2');
+  });
 });
