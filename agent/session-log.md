@@ -742,3 +742,14 @@ Mock approach: supabaseService exposes a `supabase.auth.onAuthStateChange` spy, 
 **UserRacksComponent** (4 tests): creation, emits updateRackData$ on construction, rackMinimalViewConfig defaults, globalSearchQuery=''.
 
 23/23 green first run.
+
+---
+
+## Loop iteration 25 — ModuleUsageCard + HomeFounderNote + LabelValueShowcase + AppFaq
+
+**ModuleUsageCardComponent** (8 tests): all @Input defaults checked (title, entityType='rack', items=null, showHiddenUsageNote=false, isUsageSummaryLoaded=false, animationDelay=0), entityType accepts 'patch'.
+**HomeFounderNoteComponent** (9 tests): defaults, resolvedStories: returns stories array when set, returns [] when empty+no quote, returns synthetic from quote/author/role when stories empty.
+**LabelValueShowcaseComponent** (6 tests): bigText=true, pushToEnd=false, valueBelow=true, monospace=false, icon=undefined.
+**AppFaqComponent** (4 tests): creation, faq.length=9, first item has question+answer, every item has icon.
+
+26/26 green first run.
