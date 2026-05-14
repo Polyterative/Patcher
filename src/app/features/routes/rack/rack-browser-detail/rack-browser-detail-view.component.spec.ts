@@ -135,6 +135,72 @@ describe('RackBrowserDetailViewComponent', () => {
     expect(spaceGroup.items[1].value).toBe('66');
   });
 
+  describe('SEO metadata', () => {
+    it('calls updateSeo with rack title and description when data arrives', () => {
+      singleRackData$.next({
+        id: 1, name: 'Test Rack', hp: 84, rows: 2,
+        author: {username: 'modular_jane'},
+        created: '2024-01-01', updated: '2024-06-01'
+      });
+      rowedRackedModules$.next([]);
+
+      component.ngOnInit();
+
+      expect(seoService.updateSeo).toHaveBeenCalledWith(
+        jasmine.objectContaining({
+          title: 'Test Rack - details. ',
+          description: jasmine.stringContaining('modular_jane'),
+          keywords: jasmine.stringContaining('eurorack')
+        }),
+        'Test Rack - Rack Details'
+      );
+    });
+
+    it('includes og:image in SEO data when rack has an image', () => {
+      singleRackData$.next({
+        id: 2, name: 'Imaged Rack', hp: 42, rows: 1,
+        author: {username: 'synth_bob'},
+        image: 'https://example.com/rack-preview.jpg',
+        created: '2024-01-01', updated: '2024-06-01'
+      });
+      rowedRackedModules$.next([]);
+
+      component.ngOnInit();
+
+      expect(seoService.updateSeo).toHaveBeenCalledWith(
+        jasmine.objectContaining({image: 'https://example.com/rack-preview.jpg'}),
+        jasmine.any(String)
+      );
+    });
+
+    it('omits og:image from SEO data when rack has no image', () => {
+      singleRackData$.next({
+        id: 3, name: 'No Image Rack', hp: 42, rows: 1,
+        author: {username: 'synth_bob'},
+        created: '2024-01-01', updated: '2024-06-01'
+      });
+      rowedRackedModules$.next([]);
+
+      component.ngOnInit();
+
+      const call = seoService.updateSeo.calls.mostRecent();
+      expect(call.args[0].image).toBeUndefined();
+    });
+
+    it('skips SEO when ignoreSeo is true', () => {
+      component.ignoreSeo = true;
+      singleRackData$.next({
+        id: 4, name: 'Rack', hp: 84, rows: 1,
+        author: {username: 'user'}, created: '2024-01-01', updated: '2024-01-01'
+      });
+      rowedRackedModules$.next([]);
+
+      component.ngOnInit();
+
+      expect(seoService.updateSeo).not.toHaveBeenCalled();
+    });
+  });
+
   describe('template comment visibility', () => {
     let fixture: ComponentFixture<RackBrowserDetailViewComponent>;
     let templateDataService: any;
