@@ -14,4 +14,9 @@ describe('EntityAuthorComponent', () => {
   it('ngOnInit runs without error', () => {
     expect(() => comp.ngOnInit()).not.toThrow();
   });
+
+  it('data input can be assigned via cast', () => {
+    (comp as any)['data'] = {username: 'alice'};
+    expect((comp as any)['data'].username).toBe('alice');
+  });
 });

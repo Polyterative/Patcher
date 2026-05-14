@@ -22,4 +22,12 @@ describe('GraphViewService', () => {
     service.selectedNode$.next(undefined);
     expect(service.selectedNode$.getValue()).toBeUndefined();
   });
+
+  it('selectedNode$ is a BehaviorSubject — late subscriber receives current value', () => {
+    const node: any = {id: 'n2', label: 'Node 2'};
+    service.selectedNode$.next(node);
+    let received: any;
+    service.selectedNode$.subscribe(v => received = v);
+    expect(received).toBe(node);
+  });
 });

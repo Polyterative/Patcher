@@ -27,4 +27,17 @@ describe('PhotosService', () => {
     service.ngOnDestroy();
     expect(completed).toBe(true);
   });
+
+  it('loadUnsplash$ starts with no emissions', () => {
+    const emissions: string[] = [];
+    const sub = service.loadUnsplash$.subscribe(v => emissions.push(v));
+    sub.unsubscribe();
+    expect(emissions.length).toBe(0);
+  });
+
+  it('url$ can be reset to empty string', () => {
+    service.url$.next('https://example.com/photo.jpg');
+    service.url$.next('');
+    expect(service.url$.getValue()).toBe('');
+  });
 });
