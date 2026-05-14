@@ -195,4 +195,32 @@ describe('PatchDetailDataService selection behavior', () => {
     expect(service.patchEditingPanelOpenState$.value).toBeFalse();
   });
 
+  it('singlePatchData$ starts as undefined', () => {
+    expect(service.singlePatchData$.value).toBeUndefined();
+  });
+
+  it('patchConnections$ starts as null', () => {
+    expect(service.patchConnections$.value).toBeNull();
+  });
+
+  it('collectionModules$ starts as empty array', () => {
+    expect(service.collectionModules$.value).toEqual([]);
+  });
+
+  it('multiInstanceSummary$ starts as empty array', () => {
+    expect(service.multiInstanceSummary$.value).toEqual([]);
+  });
+
+  it('shouldShowPanelImages$ starts as true', () => {
+    expect(service.shouldShowPanelImages$.value).toBeTrue();
+  });
+
+  it('patchTags$ starts as empty array', () => {
+    expect(service.patchTags$.value).toEqual([]);
+  });
+
+  it('instanceLabelMap$ starts as empty Map', () => {
+    expect(service.instanceLabelMap$.value.size).toBe(0);
+  });
+
 });

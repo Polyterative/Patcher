@@ -362,4 +362,27 @@ describe('DiscoveryTipService', () => {
     service.unregisterAnchor('test-anchor', other);
     expect((service as any).anchors.has('test-anchor')).toBeTrue();
   });
+
+  it('pauseAllTips clears active tip and sets global pause in state', () => {
+    const service = build('user-pause-all');
+
+    service.pauseAllTips(5000);
+
+    expect((service as any)._activeTip$.value).toBeNull();
+    const states = (service as any)._tipStates$.value;
+    expect(states['__global_pause__']).toBeTruthy();
+    expect(states['__global_pause__'].snoozedUntil).toBeDefined();
+  });
+
+  it('acknowledgeActiveTip does nothing when activeTip is null', () => {
+    const service = build('user-ack-null');
+    // No active tip — should not throw
+    expect(() => service.acknowledgeActiveTip()).not.toThrow();
+    expect((service as any)._activeTip$.value).toBeNull();
+  });
+
+  it('snoozeActiveTip does nothing when activeTip is null', () => {
+    const service = build('user-snooze-null');
+    expect(() => service.snoozeActiveTip()).not.toThrow();
+  });
 });
