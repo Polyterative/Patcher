@@ -868,3 +868,8 @@ All pure utility functions tested.
 
 ## Loop iteration 36 — 5 more utility specs (52 tests): user-area, public-profile, module-browser, patch-detail-data, rack-detail-data
 
+
+---
+
+## Loop iteration 37 — 3 more utility specs (44 tests): discovery-tip-surface, rack-visual-model, module-editor-data
+
