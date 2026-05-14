@@ -4,11 +4,12 @@ import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.serv
 import { Subject, BehaviorSubject } from 'rxjs';
 import { TestBed } from '@angular/core/testing';
 import { DOCUMENT } from '@angular/common';
+import { PageEvent } from '@angular/material/paginator';
 
 function mockDataService(): ManufacturerBrowserRootDataService {
   return {
     paginatorToFistPage$: new Subject<void>(),
-    pageEvent$: new Subject<void>(),
+    pageEvent$: new Subject<PageEvent>(),
     manufacturers$: new BehaviorSubject<any[]>([]),
     updateList$: new Subject<void>()
   } as unknown as ManufacturerBrowserRootDataService;
@@ -66,5 +67,32 @@ describe('ManufacturerBrowserRootComponent', () => {
   it('has formTypes reference', () => {
     const comp = makeComp();
     expect(comp.formTypes).toBeDefined();
+  });
+
+  it('SEO has correct url and description', () => {
+    makeComp();
+    expect(seo.updateSeo).toHaveBeenCalledOnceWith(
+      jasmine.objectContaining({
+        url: 'https://patcher.xyz/manufacturers/browser',
+        description: jasmine.stringContaining('manufacturer')
+      }),
+      jasmine.any(String)
+    );
+  });
+
+  it('scrolls to top when pageEvent$ fires after manufacturers$ emits', () => {
+    const mockDoc = {defaultView: {scrollTo: jasmine.createSpy('scrollTo')}};
+    TestBed.overrideProvider(DOCUMENT, {useValue: mockDoc});
+
+    const ds = mockDataService();
+    const s = mockSeo();
+    const comp = TestBed.runInInjectionContext(() => new ManufacturerBrowserRootComponent(ds, s));
+
+    (ds.manufacturers$ as BehaviorSubject<any[]>).next([{id: 1}]);
+    ds.pageEvent$.next({pageIndex: 1, pageSize: 10, length: 100} as PageEvent);
+    (ds.manufacturers$ as BehaviorSubject<any[]>).next([{id: 2}]);
+
+    expect(mockDoc.defaultView.scrollTo).toHaveBeenCalledWith({top: 0, behavior: 'smooth'});
+    comp.ngOnDestroy();
   });
 });
