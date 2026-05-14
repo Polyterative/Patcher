@@ -708,3 +708,13 @@ Compile errors fixed:
 **UserAreaRootComponent** (14 tests): construction (no error, globalSearchControl starts empty, formTypes, ignoreSeo=false, contributorStatsEmptyMessage non-empty), ngOnInit (updateSeo called when ignoreSeo=false, NOT called when ignoreSeo=true, connectDiscovery called), publicProfilePath, profileVisibilityDescription (public/hidden), copyPublicProfileLink, toggleProfileVisibility, ngOnDestroy calls resetUiState.
 
 19/19 green first run.
+
+---
+
+## Loop iteration 22 — ResetPasswordPageComponent
+
+**ResetPasswordPageComponent** (7 tests): construction (no error, SharedConstants exposed), ngOnInit (updateSeo with Reset Password, no-throw), onSubmit (emits submitPasswordReset$), goToLogin (navigates to /auth/login), goToLoginAfterReset (calls performRedirect).
+
+Mock approach: supabaseService exposes a `supabase.auth.onAuthStateChange` spy, returning fake auth listener object. `queryParams: of({})` gives empty params to avoid token verification branch.
+
+7/7 green first run.
