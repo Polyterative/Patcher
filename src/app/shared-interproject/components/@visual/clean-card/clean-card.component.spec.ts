@@ -9,4 +9,8 @@ describe('CleanCardComponent', () => {
     const comp = new CleanCardComponent();
     expect(() => comp.ngOnInit()).not.toThrow();
   });
+
+  it('instances are independent', () => {
+    expect(new CleanCardComponent()).not.toBe(new CleanCardComponent());
+  });
 });
