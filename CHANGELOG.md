@@ -12,6 +12,10 @@ All notable changes to this project will be documented in this file. See [standa
 - `aria-label` added to all icon-only buttons project-wide (18+ buttons across 8 components) so screen readers can announce button purpose
 - Nested `<main>` landmark in home page replaced with `<div>` to produce valid, single-landmark HTML
 - `role="alert"` added to standalone password-mismatch error in sign-up form so screen readers announce it immediately
+- `hero-clickable-title` card title link changed from `<div [routerLink]>` to `<a [routerLink]>` for native keyboard focus and Tab/Enter navigation
+- `module-part-image` and manufacturer-row module-strip cards: added `role="link"` + `tabindex="0"` to non-anchor routerLink containers so keyboard users can navigate to detail pages
+- `module-cvitem` CV port: added `role="button"`, `tabindex="0"`, and keyboard handlers (Enter/Space) so patch editor CV ports are operable without a mouse
+- 7 pre-existing E2E test failures repaired (login strict-mode violation, home `@defer` scroll, module/patch navigation selector)
 
 ## [6.0.0](https://github.com/Polyterative/Patcher/compare/v5.7.3...v6.0.0) (2026-05-13)
 
