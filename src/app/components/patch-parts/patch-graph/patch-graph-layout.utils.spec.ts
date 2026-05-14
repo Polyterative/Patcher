@@ -55,5 +55,26 @@ describe('patch-graph-layout.utils', () => {
       const result = orderPatchGraphNodesForReveal(nodes);
       expect(result.length).toBe(3);
     });
+
+    it('ungrouped non-module nodes without a parent still appear in output', () => {
+      const nodes = [
+        makeNode('m1', 'module'),
+        makeNode('orphan', 'cv-out')
+      ];
+      const result = orderPatchGraphNodesForReveal(nodes);
+      const ids = result.map(n => n.id);
+      expect(ids).toContain('m1');
+      expect(ids).toContain('orphan');
+    });
+
+    it('module ring radius grows with module count', () => {
+      const twoModules = [makeNode('m1', 'module'), makeNode('m2', 'module')];
+      const tenModules = Array.from({length: 10}, (_, i) => makeNode(`m${i}`, 'module'));
+      const r2 = orderPatchGraphNodesForReveal(twoModules).map(n => Math.sqrt(n.x ** 2 + n.y ** 2));
+      const r10 = orderPatchGraphNodesForReveal(tenModules).map(n => Math.sqrt(n.x ** 2 + n.y ** 2));
+      const avg2 = r2.reduce((a, b) => a + b, 0) / r2.length;
+      const avg10 = r10.reduce((a, b) => a + b, 0) / r10.length;
+      expect(avg10).toBeGreaterThan(avg2);
+    });
   });
 });
