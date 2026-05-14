@@ -7,7 +7,11 @@ import { DbModule } from 'src/app/models/module';
 import { Patch } from 'src/app/models/patch';
 import {
   buildPatchGraphData,
-  computePatchGraphSizeConstant
+  buildCvNodeId,
+  buildModuleNodeId,
+  computePatchGraphSizeConstant,
+  extractPatchGraphModuleInstances,
+  moduleInstanceKey,
 } from '../patch-graph/patch-graph-build.utils';
 
 
@@ -104,5 +108,69 @@ describe('patch-graph-build utils', () => {
     
     const moduleNode = result.nodes.find(node => node.id === '10_101');
     expect(moduleNode?.label).toContain('A');
+  });
+});
+
+describe('moduleInstanceKey', () => {
+  it('returns "<moduleId>_<instanceId>" when instanceId is defined', () => {
+    expect(moduleInstanceKey(10, 101)).toBe('10_101');
+  });
+
+  it('returns "<moduleId>_none" when instanceId is undefined', () => {
+    expect(moduleInstanceKey(10, undefined)).toBe('10_none');
+  });
+});
+
+describe('buildModuleNodeId', () => {
+  it('returns plain moduleId string when no instanceId', () => {
+    expect(buildModuleNodeId(42, undefined)).toBe('42');
+  });
+
+  it('appends _instanceId when instanceId is defined', () => {
+    expect(buildModuleNodeId(42, 7)).toBe('42_7');
+  });
+
+  it('does not append suffix for instanceId 0 (treats 0 as falsy)', () => {
+    // null/undefined → no suffix; 0 is explicitly != null so suffix IS appended
+    expect(buildModuleNodeId(42, 0)).toBe('42_0');
+  });
+});
+
+describe('buildCvNodeId', () => {
+  it('returns "<moduleId><cvId>" when no instanceId', () => {
+    expect(buildCvNodeId(10, undefined, 5)).toBe('105');
+  });
+
+  it('returns "<moduleId>_<instanceId><cvId>" when instanceId is defined', () => {
+    expect(buildCvNodeId(10, 101, 5)).toBe('10_1015');
+  });
+});
+
+describe('extractPatchGraphModuleInstances', () => {
+  it('returns empty array for no connections', () => {
+    expect(extractPatchGraphModuleInstances([])).toEqual([]);
+  });
+
+  it('extracts unique module instances from both sides of connections', () => {
+    const conn = makeConnection(1, 10, 'A', 4, 20, 'B', 101, undefined);
+    const instances = extractPatchGraphModuleInstances([conn]);
+    expect(instances.length).toBe(2);
+    expect(instances).toContain(jasmine.objectContaining({moduleId: 10, instanceId: 101}));
+    expect(instances).toContain(jasmine.objectContaining({moduleId: 20, instanceId: undefined}));
+  });
+
+  it('deduplicates the same (moduleId, instanceId) pair', () => {
+    const conn1 = makeConnection(1, 10, 'A', 4, 20, 'B', 101, undefined);
+    const conn2 = makeConnection(3, 10, 'A', 5, 20, 'B', 101, undefined);
+    const instances = extractPatchGraphModuleInstances([conn1, conn2]);
+    expect(instances.length).toBe(2);
+  });
+
+  it('treats same moduleId with different instanceIds as distinct', () => {
+    const conn1 = makeConnection(1, 10, 'A', 4, 10, 'A', 101, 102);
+    const instances = extractPatchGraphModuleInstances([conn1]);
+    expect(instances.length).toBe(2);
+    expect(instances).toContain(jasmine.objectContaining({moduleId: 10, instanceId: 101}));
+    expect(instances).toContain(jasmine.objectContaining({moduleId: 10, instanceId: 102}));
   });
 });
