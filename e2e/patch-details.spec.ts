@@ -79,8 +79,8 @@ test.describe('Patch Details (public)', () => {
     const firstPatch = page.locator('app-patch-micro').first();
     await expect(firstPatch).toBeVisible({timeout: 15_000});
 
-    const detailHref = await firstPatch.locator('a[href*="/patches/details/"]').first().getAttribute('href');
-    await page.goto(detailHref!);
+    // The detail link is rendered as a <div [routerLink]> via app-hero-clickable-title — click it
+    await firstPatch.locator('mat-card-title .title').first().click();
     await expect(page).toHaveURL(/patches\/details\/\d+/, {timeout: 10_000});
     await expect(page.locator('lib-hero-content-card.patchesBG')).toBeVisible({timeout: 10_000});
 

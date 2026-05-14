@@ -8,7 +8,7 @@ test.describe('Login page — form element smoke tests', () => {
 
   test('page loads with correct title', async ({page}) => {
     await expect(page).toHaveURL(/\/auth\/login/);
-    await expect(page.locator('lib-hero-content-card')).toBeVisible();
+    await expect(page.locator('lib-hero-content-card.auth-entry-card')).toBeVisible();
   });
 
   test('email/password form inputs are rendered', async ({page}) => {
@@ -49,7 +49,7 @@ test.describe('Signup page — form element smoke tests', () => {
 
   test('page loads with correct title', async ({page}) => {
     await expect(page).toHaveURL(/\/auth\/signup/);
-    await expect(page.locator('lib-hero-content-card')).toBeVisible();
+    await expect(page.locator('lib-hero-content-card.auth-entry-card')).toBeVisible();
   });
 
   test('signup form inputs are rendered (username, email, password, confirm)', async ({page}) => {
