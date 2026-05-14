@@ -24,8 +24,8 @@ describe('ChangelogComponent', () => {
     expect(comp.changelogUrl).toContain('CHANGELOG.md');
   });
 
-  it('roadmapUrl points to TODO.md', () => {
-    expect(comp.roadmapUrl).toContain('TODO.md');
+  it('roadmapUrl points to ROADMAP.md', () => {
+    expect(comp.roadmapUrl).toContain('ROADMAP.md');
   });
 
   it('repoUrl points to GitHub repo', () => {
