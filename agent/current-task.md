@@ -1,29 +1,28 @@
 # Current Task
 
 ## Title
-Unit test coverage — rack-detail-data.service.ts
+Unit spec for ManufacturerDetailComponent
 
 ## Source
-internaldocs/workflow/TODO.md — POLICY: Unit Test Coverage
-Highest-yield uncovered file: `rack-detail-data.service.ts` (1007 lines, zero spec)
+AGENTS.md §1 step 4 — high-value cleanup: missing test.
+Component at `src/app/features/manufacturer-detail/manufacturer-detail.component.ts` (151 lines, no spec).
 
 ## Goal
-Add a dedicated spec for `RackDetailDataService` covering initial state, rack data loading,
-racked-module hydration, privacy/editable/row toggles, ownership tracking, module removal,
-form name auto-sync, derived analysis streams, and the `bumpUpVersionInNameOfOfRack` branch logic.
-DOM-heavy flows (image capture, rack deletion dialog, duplication dialog) are explicitly out of scope.
+Cover the business logic in `ManufacturerDetailComponent` that is not exercised by the existing
+`manufacturer-detail-data.service.spec.ts`: the `stats$` derived observable, the `logoUrl()` helper,
+route id parsing, and SEO title update, so the component's own logic is regression-protected.
 
 ## Acceptance criteria
 (See agent/acceptance-checklist.md)
 
 ## Affected files
-- src/app/components/rack-parts/rack-detail-data.service.spec.ts (new)
+- src/app/features/manufacturer-detail/manufacturer-detail.component.spec.ts (new)
 
 ## Out of scope
-- `downloadRackImageToUserComputer$` — requires DOM ElementRef + domToJpeg
-- `updateRackImagePreview$` — requires DOM ElementRef + storage upload
-- `deleteRack$` / `duplicateRack$` / `requestCreatePatchFromRack$` — dialog-heavy; separate task
-- `rackOrderChange$` drag-drop — CDK drag-drop interaction; separate task
+- Template rendering / DOM interactions
+- JSON-LD DOM injection detail (cleanup tested via ngOnDestroy)
+- ManufacturerDetailDataService internals (already covered by its own spec)
 
 ## Risk notes
-Heavy service; stub only the consumed backend namespaces. Use fakeAsync/tick for debounce.
+Component uses SubManager; direct instantiation requires calling ngOnDestroy() after each test.
+DOM helper imports (clearJsonLdScript, upsertJsonLdScript) operate on document — fine in Karma.
