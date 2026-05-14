@@ -6,8 +6,8 @@
 
 .principles-shell {
   display: grid;
-  gap: 1.75rem;
-  padding: 2.5rem 2.25rem;
+  gap: 2rem;
+  padding: 2.5rem 2rem;
   border: 1px solid var(--home-border);
   border-radius: 0.5rem;
   background: linear-gradient(160deg, rgba(235, 247, 255, 0.92), rgba(241, 255, 246, 0.86));
@@ -15,7 +15,7 @@
 
 .section-head {
   display: grid;
-  gap: 0.75rem;
+  gap: 1rem;
 
   h2 {
     @include brand-resources.heading-font;
@@ -35,12 +35,12 @@
 .principles-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.25rem;
+  gap: 1.5rem;
 }
 
 .principle-card {
   display: grid;
-  gap: 0.75rem;
+  gap: 1rem;
   padding: 1.5rem;
   border: 0;
   border-left: 0.25rem solid rgba(23, 102, 178, 0.62);
@@ -91,7 +91,7 @@
 
 @media (max-width: 40rem) {
   .principles-shell {
-    padding: 1.25rem 1rem;
+    padding: 1rem;
   }
 
   .principles-grid {
