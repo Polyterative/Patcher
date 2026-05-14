@@ -18,7 +18,7 @@ const METADATA_CACHE_MAX_ENTRIES = 2000;
 const BOT_UA_REGEX = /(facebookexternalhit|facebot|twitterbot|slackbot|whatsapp|telegrambot|linkedinbot|discordbot|googlebot|bingbot|applebot|chatgpt-user|gptbot|perplexitybot|duckassistbot|bytespider|yandexbot|embedly)/i;
 const STATIC_ASSET_REGEX = /\.(?:css|js|map|json|txt|xml|png|jpg|jpeg|gif|webp|svg|ico|woff2?|ttf|otf|eot)$/i;
 
-type EntityType = 'site' | 'module' | 'patch' | 'rack';
+type EntityType = 'site' | 'module' | 'patch' | 'rack' | 'manufacturer';
 type DetailType = Exclude<EntityType, 'site'>;
 
 interface RouteMatch {
@@ -87,6 +87,13 @@ interface RackRow {
     username?: string;
     id?: string
   };
+}
+
+interface ManufacturerRow {
+  id: number;
+  name?: string;
+  logo?: string;
+  websiteURL?: string;
 }
 
 export default async function middleware(request: Request): Promise<Response | void> {
@@ -273,6 +280,13 @@ async function buildMetadata(routeMatch: RouteMatch | undefined, canonicalUrl: s
     }
   }
 
+  if (routeMatch.type === 'manufacturer') {
+    const manufacturerMetadata = await getManufacturerMetadata(routeMatch.id, canonicalUrl, siteOrigin);
+    if (manufacturerMetadata) {
+      return manufacturerMetadata;
+    }
+  }
+
   return defaultMetadata(canonicalUrl, siteOrigin, `${ routeMatch.type }-not-found`);
 }
 
@@ -298,6 +312,14 @@ function parseDetailRoute(pathname: string): RouteMatch | undefined {
     return {
       type: 'rack',
       id: parseInt(rackMatch[1], 10)
+    };
+  }
+
+  const manufacturerMatch = pathname.match(/^\/manufacturers\/details\/(\d+)$/);
+  if (manufacturerMatch) {
+    return {
+      type: 'manufacturer',
+      id: parseInt(manufacturerMatch[1], 10)
     };
   }
 
@@ -553,6 +575,49 @@ async function getRackMetadata(rackId: number, canonicalUrl: string, siteOrigin:
       ...(authorName ? {
         author: {'@type': 'Person', name: authorName}
       } : {})
+    }
+  };
+}
+
+async function getManufacturerMetadata(manufacturerId: number, canonicalUrl: string, siteOrigin: string): Promise<ShareMetadata | undefined> {
+  const params = new URLSearchParams();
+  params.set('select', 'id,name,logo,websiteURL');
+  params.set('id', `eq.${ manufacturerId }`);
+  params.set('limit', '1');
+
+  const row = await fetchSupabaseRow<ManufacturerRow>('manufacturers', params);
+  if (!row || !row.id) {
+    return undefined;
+  }
+
+  const name = (row.name || `Manufacturer #${ row.id }`).trim();
+  const title = `${ name } | ${ SITE_NAME }`;
+  const description = clampDescription(
+    `Eurorack modules by ${ name }. Browse the full catalogue on ${ SITE_NAME }.`,
+    DEFAULT_DESCRIPTION
+  );
+
+  const logoPath = row.logo ? row.logo.trim() : '';
+  const image = logoPath
+    ? `${ SUPABASE_URL }/storage/v1/object/public/manufacturer-logos/${ encodeURIComponent(logoPath) }`
+    : getDefaultImage(siteOrigin);
+  const source = logoPath ? 'manufacturer-logo' : 'manufacturer-default-image';
+
+  return {
+    type: 'manufacturer',
+    title,
+    description,
+    image,
+    url: canonicalUrl,
+    ogType: 'website',
+    source,
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      '@id': canonicalUrl,
+      name,
+      url: row.websiteURL || canonicalUrl,
+      ...(logoPath ? {logo: image} : {}),
     }
   };
 }
