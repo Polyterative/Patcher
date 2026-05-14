@@ -193,3 +193,8 @@
 | Bug fix — connection note textarea clipped on multi-line                    | 02-21 | `align-items: flex-start` on editing-row; removed negative margin; padding-top on icons                                                                                                                                                             |
 | Admin Flags Polish — delete confirmation + sort order | 05-14 | `confirmDelete()` guard prevents accidental deletions; `sortOrder$` BehaviorSubject + "Newest / Oldest first" toggle added to toolbar; 3 new sort tests; 18/18 pass. |
 | Rack-Context Patch Building — Polish Review | 05-14 | Full copy review passed. One fix: hardcoded "Rack unavailable" title in both editor empty-state blocks was shown for `kind === 'unlinked'` (never-linked) too. Fixed template to use "No rack linked yet" for `unlinked` and "Rack unavailable" for `unavailable`. |
+
+| 2025-07-16 | test(utils): add 3 more utility specs — discovery-tip-surface, rack-visual-model, module-editor (44 tests) | `de8826a9` |
+| 2025-07-16 | test(utils): add 5 patch-graph/graph utility specs + patch-editor.utils (61 tests) | `b1c9f439` |
+| 2025-07-16 | test(services): add 5 service specs (16 tests) | `bb6f2367` |
+| 2025-07-16 | test(constants+helpers): geometry, panel, signal-analysis, linked-rack-rollout specs (61 tests) | pending |
