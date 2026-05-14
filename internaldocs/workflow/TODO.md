@@ -229,8 +229,12 @@ changing any user-visible behaviour.
       **Done:** No duplicate fetches found; caching layer handles shared data
 - [x] Check for N+1 patterns where multiple round-trips could be a single joined query
       **Done:** All joins are embedded in single queries; no N+1 patterns found
-- [ ] Check image / asset payloads — confirm we serve appropriately sized images and not full
+- [x] Check image / asset payloads — confirm we serve appropriately sized images and not full
       originals where thumbnails would do
+      **Done:** All module panels, rack images, and manufacturer logos are served as full originals (no Supabase image
+      transformation applied). Supabase image transformation (`/render/image/public/`) would require Pro/Team plan;
+      deferred for now. Storage base URLs consolidated into `StorageUrls` class in `DatabaseStrings.ts` (commit `d9fd933f`)
+      — a single place to add transform params if/when the plan supports it.
 - [ ] Confirm gzip / brotli is in effect for API responses (Supabase default — verify on
       production)
 - [x] Estimate bytes saved per query before/after where possible (helps prioritise)
