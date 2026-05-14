@@ -84,4 +84,16 @@ describe('rackPowerBreakdownUtils', () => {
     expect(breakdown.powerPos5).toBe(0);
     expect(breakdown.missingPowerDataCount).toBe(0);
   });
+
+  it('single-row rack preserves moduleCount correctly', () => {
+    const breakdown = buildRackPowerBreakdown([
+      [makeRackedModule(1, 10, -5, 0), makeRackedModule(2, 20, -10, 0)]
+    ]);
+    expect(breakdown.rows[0].moduleCount).toBe(2);
+    expect(breakdown.rows[0].powerPos12).toBe(30);
+  });
+
+  it('formatPowerRailValue formats zero as "0 mA"', () => {
+    expect(formatPowerRailValue(0)).toBe('0 mA');
+  });
 });

@@ -15,6 +15,12 @@ describe('discovery-tip.utils', () => {
       const future = new Date(Date.now() + 60_000).toISOString();
       expect(isSnoozed(future)).toBeTrue();
     });
+
+    it('returns false for "now" (edge: snoozedUntil is current timestamp)', () => {
+      // In practice Date.now() will already have moved on; snoozedUntil = now is in the past
+      const justNow = new Date(Date.now() - 1).toISOString();
+      expect(isSnoozed(justNow)).toBeFalse();
+    });
   });
 
   describe('normalizeTipState', () => {
@@ -37,6 +43,13 @@ describe('discovery-tip.utils', () => {
       const currentState: DiscoveryTipStateRecord = { version: 2, shownCount: 3 };
       const result = normalizeTipState(def, currentState);
       expect(result).toBe(currentState);
+    });
+
+    it('returns fresh state when shownCount is non-zero but version mismatches', () => {
+      const oldState: DiscoveryTipStateRecord = { version: 0, shownCount: 10 };
+      const result = normalizeTipState(def, oldState);
+      expect(result.shownCount).toBe(0);
+      expect(result.version).toBe(2);
     });
   });
 });
