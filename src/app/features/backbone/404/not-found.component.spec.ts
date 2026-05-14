@@ -36,4 +36,11 @@ describe('NotFoundComponent', () => {
       jasmine.objectContaining({ property: 'og:title' })
     );
   });
+
+  it('ngOnInit updates og:description meta tag', () => {
+    comp.ngOnInit();
+    expect(mockMeta.updateTag).toHaveBeenCalledWith(
+      jasmine.objectContaining({ property: 'og:description' })
+    );
+  });
 });
