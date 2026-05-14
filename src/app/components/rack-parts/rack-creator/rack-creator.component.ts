@@ -20,6 +20,7 @@ import {
   filter,
   map,
   startWith,
+  exhaustMap,
   switchMap,
   takeUntil,
   withLatestFrom
@@ -188,7 +189,7 @@ export class RackCreatorComponent extends SubManager implements OnInit {
         // check if user is logged in
         filter(([_, user]) => !!user),
         // create rack in database
-        switchMap(() => this.backend.add.rack(
+        exhaustMap(() => this.backend.add.rack(
           {
             name: this.fields.name.control.value,
             hp: this.fields.hp.control.value,
