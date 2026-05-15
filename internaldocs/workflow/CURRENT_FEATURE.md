@@ -12,7 +12,48 @@
 
 ## Active
 
-*None — pick a task from TODO.md.*
+### Module Possession States
+
+**Goal:** expose `user_modules.kind` (`HAS | WANTS | SELLS`) in the UI so users can track
+owned, wanted, and for-sale modules — no DB schema changes required (enum exists in DB).
+
+Source: `internaldocs/product/ROADMAP.md` → Tier 0 → "Module Possession States"
+
+#### Open questions resolved (2026-05-15)
+
+1. **Single segmented control vs separate actions** → segmented control (`Own | Want | Sell | —`). Clicking active state deselects (removes row).
+2. **Wishlist nav placement** → DEFERRED to Layer 2; blocked as open question in `agent/blockers.md`.
+3. **SELLS rows in user-area** → inline badge in existing owned list (Layer 2 scope).
+4. **WANTS count on module page** → deferred (wait for manufacturer-aggregate work).
+5. **WANTS→HAS rack prompt** → deferred (Layer 3 optional enhancement).
+6. **RLS verification** → checklist only; existing `user_modules` RLS covers all rows for owning user.
+
+#### Layer 1 — MVP (shipped 2026-05-15)
+
+- [x] `UserModulePossessionKind = 'HAS' | 'WANTS' | 'SELLS'` type exported from `models/module.ts`
+- [x] `MinimalModule.possessionKind?: UserModulePossessionKind` added (optional, set only in collection-context loads)
+- [x] `getCurrentUserModules` query includes `kind` column → mapped as `possessionKind`
+- [x] `backend.update.userModulePossession(moduleId, kind)` — upsert on `user_modules` PK
+- [x] `ModuleDetailDataService.setModulePossession$` action (`null` = delete row)
+- [x] `ModuleDetailDataService.currentModulePossession$` derived observable
+- [x] `module-minimal` component shows `mat-button-toggle-group` (Own|Want|Sell) instead of Add/Remove buttons when user is logged in
+- [x] Clicking active toggle sends `null` → removes row (deselect UX)
+- [x] `MatButtonToggleModule` added to `ModulePartsModule`
+- [x] 62 targeted tests green; `pnpm build` clean
+
+#### Layer 2 — Structural
+
+- [ ] "My Modules" page (user-area) filters by kind: `HAS`+`SELLS` in default view, separate Wishlist tab/page for `WANTS`
+- [ ] Module picker in rack editor / patch editor filters to `HAS`+`SELLS` only (WANTS should not appear as "owned" in collection-aware picker)
+- [ ] `SELLS` rows shown with inline badge in user-area module list
+- [ ] Wishlist nav placement decision (sibling page vs tab under "My Modules") → requires human input (logged in `agent/blockers.md`)
+
+#### Layer 3 — Polish
+
+- [ ] SCSS tuning for possession-toggle-group sizing/alignment across all module card contexts
+- [ ] Snackbar feedback on possession state change (e.g. "Added to wishlist", "Marked for sale")
+- [ ] Token alphabet review (N/A here but carry forward from ROADMAP)
+- [ ] On `WANTS → HAS`: optional one-tap follow-up to assign the module to a rack
 
 ---
 
