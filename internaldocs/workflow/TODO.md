@@ -38,6 +38,22 @@
 
 ---
 
+#### HIGH: Module Possession States
+
+**Why:** Allows users to track modules as owned/wanted/for-sale — the DB already supports it
+(`user_modules.kind` enum `HAS|WANTS|SELLS`). High solo-user value, no external dependencies.
+**Source:** `internaldocs/product/ROADMAP.md` → Tier 0 → "Module Possession States"
+
+Layer 1 (MVP — module detail segmented control): **shipped 2026-05-15 on `agent/autonomous-20260515`**
+
+Remaining (Layer 2 — user area integration):
+
+- [ ] Filter "My Modules" user-area to `HAS`+`SELLS` by default; add Wishlist view for `WANTS`
+- [ ] Filter rack/patch editor module picker to `HAS`+`SELLS` only
+- [ ] `SELLS` inline badge in user-area module list
+
+---
+
 ### PRODUCT — Tier 1 (requires Manufacturer Page Phase 2 to be live)
 
 ---
