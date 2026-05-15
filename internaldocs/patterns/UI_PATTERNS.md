@@ -143,6 +143,66 @@ private _isDeletingId$ = new BehaviorSubject<number | null>(null);
 
 ---
 
+## Detail-View Empty State (single-row fetch returned nothing)
+
+Single-row detail components (rack, patch, …) must surface a user-readable message when the
+backend lookup returns no row — anonymous viewer on a private item, deleted item, RLS block,
+404, etc. Rendering the standard loading indicator forever, or nothing at all, is a bug.
+
+**Contract (used by both `PatchDetailDataService` and `RackDetailDataService`):**
+
+```typescript
+readonly singleEntityData$ = new BehaviorSubject<Entity | undefined>(undefined);
+readonly entityDetailUnavailableMessage$ = new BehaviorSubject<string | null>(null);
+
+this.updateSingleEntityData$
+  .pipe(
+    tap(() => this.entityDetailUnavailableMessage$.next(null)),   // reset on every request
+    switchMap(id => this.backend.GET.entityWithId(id)),
+    catchError(() => {
+      this.entityDetailUnavailableMessage$.next(this.buildUnavailableMessage());
+      return EMPTY;
+    }),
+    takeUntil(this.destroy$),
+  )
+  .subscribe(x => {
+    if (!x?.data) {
+      this.singleEntityData$.next(undefined);
+      this.entityDetailUnavailableMessage$.next(this.buildUnavailableMessage());
+      return;
+    }
+    this.singleEntityData$.next(x.data);
+  });
+
+private buildUnavailableMessage(): string {
+  return this.usePublicDetailReads
+    ? `This {entity} isn't publicly available. ...`
+    : `This {entity} could not be loaded.`;
+}
+```
+
+**Template branch (always include `data-testid` so the regression spec can pin it):**
+
+```html
+@if (bag.data) {
+  <!-- normal detail view -->
+} @else if (bag.unavailableMessage) {
+  <app-advice-tooltip data-testid="{entity}-detail-unavailable"
+                      title="Unavailable"
+                      tone="info">
+    {{ bag.unavailableMessage }}
+  </app-advice-tooltip>
+}
+```
+
+**Regression spec contract** — see
+`src/app/components/rack-parts/rack-detail-data.service.unavailable.spec.ts` and the
+"unavailable / blank-page regression" block in
+`rack-browser-detail-view.component.spec.ts` for the reusable template. Mirror these
+whenever you add a new detail view.
+
+---
+
 ## Tablet / Touch Guardrails
 
 Use these as default rules when building or refactoring UI that should work well on iPad-class devices.
