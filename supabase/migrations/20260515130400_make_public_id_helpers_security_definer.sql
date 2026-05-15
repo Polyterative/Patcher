@@ -1,4 +1,5 @@
--- Pin generate_public_id() to pg_catalog so function lookup is deterministic.
+-- Allow public_id generation to call pgcrypto from Supabase's `extensions`
+-- schema without requiring app roles to have USAGE on that schema.
 
 create or replace function public.generate_public_id(p_len int default 12)
 returns text
@@ -20,3 +21,17 @@ $$;
 
 comment on function public.generate_public_id(int) is
   '12-char base64url opaque ID for racks/patches URLs. ~71 bits entropy.';
+
+create or replace function public.tg_set_public_id()
+returns trigger
+language plpgsql
+security definer
+set search_path = pg_catalog
+as $$
+begin
+  if NEW.public_id is null or NEW.public_id = '' then
+    NEW.public_id := public.generate_public_id();
+  end if;
+  return NEW;
+end;
+$$;

@@ -4,6 +4,7 @@
 create or replace function public.tg_set_public_id()
 returns trigger
 language plpgsql
+security definer
 set search_path = pg_catalog
 as $$
 begin
