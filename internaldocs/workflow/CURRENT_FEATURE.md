@@ -117,6 +117,8 @@ Legacy:  GET /racks/details/1018
 - [x] RLS unchanged; SECURITY DEFINER RPCs are the only path that exposes private rows by token.
 - [x] Types regenerated via Supabase MCP into `src/backend/database.types.ts`; manually flipped `public_id` to optional on Insert/Update generics (trigger fills it).
 - [x] Follow-up fixes `supabase/migrations/20260515125800_fix_generate_public_id_pgcrypto_schema.sql`, `20260515130200_harden_generate_public_id_search_path.sql`, and `20260515130500_harden_public_id_trigger_search_path.sql`: schema-qualified `extensions.gen_random_bytes(...)` because Supabase installs `pgcrypto` in `extensions`; unqualified lookup broke rack lock/unlock upserts when the public_id trigger fired. Also pinned the public_id helper search paths to `pg_catalog`.
+- [x] Follow-up fix `supabase/migrations/20260515130400_make_public_id_helpers_security_definer.sql`: marked the public_id generator and trigger helper `SECURITY DEFINER` so authenticated writes can use Supabase's locked-down `extensions` schema without granting app roles direct schema access.
+- [x] Follow-up fix `supabase/migrations/20260515130700_revoke_public_id_helper_execute.sql`: revoked direct RPC execution of the internal public_id helpers from `public`, `anon`, and `authenticated`; triggers still execute them server-side.
 
 **Frontend routing:**
 

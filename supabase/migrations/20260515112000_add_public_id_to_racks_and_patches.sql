@@ -21,6 +21,7 @@ create or replace function public.generate_public_id(p_len int default 12)
 returns text
 language plpgsql
 volatile
+security definer
 set search_path = pg_catalog
 as $$
 declare
@@ -89,6 +90,7 @@ alter table public.patches alter column public_id set not null;
 create or replace function public.tg_set_public_id()
 returns trigger
 language plpgsql
+security definer
 set search_path = pg_catalog
 as $$
 begin
