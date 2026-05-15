@@ -1,13 +1,9 @@
 import { UserRacksComponent } from './user-racks.component';
 import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area-data.service';
 import { Subject } from 'rxjs';
 import { defaultRackMinimalViewConfig } from 'src/app/components/rack-parts/rack-minimal/rack-minimal.component';
-import { RackMinimal } from 'src/app/models/rack';
-import { RoutingService } from 'src/app/services/routing.service';
-import { UrlCreatorService } from 'src/app/features/backend/url-creator.service';
 
 function mockDialog(): MatDialog {
   return {} as unknown as MatDialog;
@@ -23,48 +19,16 @@ function mockDataService(): UserAreaDataService {
   } as unknown as UserAreaDataService;
 }
 
-function mockSnackBar(): jasmine.SpyObj<MatSnackBar> {
-  return jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
-}
-
-function rack(overrides: Partial<RackMinimal>): RackMinimal {
-  return {
-    id: 42,
-    name: 'Test rack',
-    hp: 104,
-    rows: 2,
-    locked: false,
-    public: false,
-    author: {} as RackMinimal['author'],
-    ...overrides
-  } as RackMinimal;
-}
-
 describe('UserRacksComponent', () => {
   let comp: UserRacksComponent;
   let ds: UserAreaDataService;
-  let snackBar: jasmine.SpyObj<MatSnackBar>;
-  let writeTextSpy: jasmine.Spy;
-
-  beforeAll(() => {
-    Object.defineProperty(navigator, 'clipboard', {
-      value: {writeText: jasmine.createSpy('writeText')},
-      configurable: true
-    });
-  });
 
   beforeEach(() => {
     ds = mockDataService();
-    snackBar = mockSnackBar();
-    writeTextSpy = navigator.clipboard.writeText as jasmine.Spy;
-    writeTextSpy.calls.reset();
-    writeTextSpy.and.returnValue(Promise.resolve());
     comp = new UserRacksComponent(
       mockDialog(),
       mockBackend(),
       ds,
-      new RoutingService({} as never),
-      new UrlCreatorService({} as never, snackBar, {} as never)
     );
   });
 
@@ -76,13 +40,7 @@ describe('UserRacksComponent', () => {
     let emitted = false;
     const ds2 = mockDataService();
     ds2.updateRackData$.subscribe(() => emitted = true);
-    new UserRacksComponent(
-      mockDialog(),
-      mockBackend(),
-      ds2,
-      new RoutingService({} as never),
-      new UrlCreatorService({} as never, mockSnackBar(), {} as never)
-    );
+    new UserRacksComponent(mockDialog(), mockBackend(), ds2);
     expect(emitted).toBeTrue();
   });
 
@@ -101,23 +59,5 @@ describe('UserRacksComponent', () => {
 
   it('dataService is the injected mock', () => {
     expect(comp.dataService).toBe(ds);
-  });
-
-  it('copies an absolute public_id rack share link and shows confirmation', async () => {
-    comp.copyRackShareLink(rack({public_id: 'rack-token'}));
-
-    expect(writeTextSpy).toHaveBeenCalledOnceWith(`${ window.location.origin }/racks/rack-token`);
-    await Promise.resolve();
-    expect(snackBar.open).toHaveBeenCalledWith(
-      'Share link copied.',
-      undefined,
-      {duration: 2000, panelClass: 'snack-success'}
-    );
-  });
-
-  it('copies an absolute legacy rack share link when public_id is missing', () => {
-    comp.copyRackShareLink(rack({id: 99, public_id: undefined}));
-
-    expect(writeTextSpy).toHaveBeenCalledOnceWith(`${ window.location.origin }/racks/details/99`);
   });
 });

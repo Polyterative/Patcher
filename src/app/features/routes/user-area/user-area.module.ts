@@ -35,7 +35,6 @@ import { StatisticsModule } from "src/app/components/shared-atoms/statistics/sta
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonModule } from '@angular/material/button';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { DiscoveryTipsModule } from 'src/app/shared-interproject/discovery-tips/discovery-tips.module';
 import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-state-tips/empty-state-tips.component';
@@ -81,7 +80,6 @@ import { RackMicroModule } from 'src/app/components/rack-micro/rack-micro.module
     MatPaginatorModule,
     MatChipsModule,
     MatButtonModule,
-    MatTooltipModule,
     UserManualsComponent,
     UserCommentsComponent,
     AppFaqComponent,
