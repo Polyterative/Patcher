@@ -5,3 +5,29 @@
 img {
   max-width: 100% !important;
 }
+
+.rack-image-fallback {
+  width: 100%;
+  min-height: 7rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  background: rgba(0, 0, 0, 0.06);
+  color: rgba(0, 0, 0, 0.58);
+  box-sizing: border-box;
+}
+
+.rack-image-fallback--contained {
+  min-height: 5rem;
+}
+
+.rack-image-fallback--empty {
+  border-style: dashed;
+}
+
+.rack-image-fallback__eyebrow {
+  font-size: 0.68rem;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
