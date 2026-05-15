@@ -163,6 +163,10 @@ export class SupabaseService extends SubManager {
       publicUserContributorStats: this.queries.getPublicUserContributorStats.bind(this.queries),
       rackWithId: this.queries.getRackWithId.bind(this.queries),
       publicRackWithId: this.queries.getPublicRackWithId.bind(this.queries),
+      rackByPublicId: this.queries.getRackByPublicId.bind(this.queries),
+      resolvePublicRackLegacyId: this.queries.resolvePublicRackLegacyId.bind(this.queries),
+      patchByPublicId: this.queries.getPatchByPublicId.bind(this.queries),
+      resolvePublicPatchLegacyId: this.queries.resolvePublicPatchLegacyId.bind(this.queries),
       racksMinimal: this.queries.getRacksMinimal.bind(this.queries),
       userPatchesPaginated: this.queries.getUserPatchesPaginated.bind(this.queries),
       userRacksPaginated: this.queries.getUserRacksPaginated.bind(this.queries),
@@ -216,6 +220,10 @@ export class SupabaseService extends SubManager {
     publicUserContributorStats: typeof SupabaseQueriesService.prototype.getPublicUserContributorStats;
     rackWithId: typeof SupabaseQueriesService.prototype.getRackWithId;
     publicRackWithId: typeof SupabaseQueriesService.prototype.getPublicRackWithId;
+    rackByPublicId: typeof SupabaseQueriesService.prototype.getRackByPublicId;
+    resolvePublicRackLegacyId: typeof SupabaseQueriesService.prototype.resolvePublicRackLegacyId;
+    patchByPublicId: typeof SupabaseQueriesService.prototype.getPatchByPublicId;
+    resolvePublicPatchLegacyId: typeof SupabaseQueriesService.prototype.resolvePublicPatchLegacyId;
     racksMinimal: typeof SupabaseQueriesService.prototype.getRacksMinimal;
     userPatchesPaginated: typeof SupabaseQueriesService.prototype.getUserPatchesPaginated;
     userRacksPaginated: typeof SupabaseQueriesService.prototype.getUserRacksPaginated;

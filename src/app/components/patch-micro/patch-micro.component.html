@@ -1,6 +1,6 @@
 @if (data) {
   <div class="col gap0">
-    <app-hero-clickable-title [link]="['/patches/details',data.id]"
+    <app-hero-clickable-title [link]="data.public_id ? ['/patches', data.public_id] : ['/patches/details', data.id]"
                               infoBox
                               infoText="Patch name"
     >{{ data.name }}

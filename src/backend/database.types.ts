@@ -617,6 +617,7 @@ export type Database = {
           linked_rack_id: number | null
           name: string | null
           public: boolean
+          public_id: string
           tags: string[]
           updated: string
         }
@@ -628,6 +629,7 @@ export type Database = {
           linked_rack_id?: number | null
           name?: string | null
           public?: boolean
+          public_id?: string
           tags?: string[]
           updated?: string
         }
@@ -639,6 +641,7 @@ export type Database = {
           linked_rack_id?: number | null
           name?: string | null
           public?: boolean
+          public_id?: string
           tags?: string[]
           updated?: string
         }
@@ -768,6 +771,7 @@ export type Database = {
           locked: boolean
           name: string | null
           public: boolean
+          public_id: string
           rows: number
           updated: string
         }
@@ -781,6 +785,7 @@ export type Database = {
           locked?: boolean
           name?: string | null
           public?: boolean
+          public_id?: string
           rows?: number
           updated?: string
         }
@@ -794,6 +799,7 @@ export type Database = {
           locked?: boolean
           name?: string | null
           public?: boolean
+          public_id?: string
           rows?: number
           updated?: string
         }
@@ -981,6 +987,7 @@ export type Database = {
     }
     Functions: {
       delete_current_user_account: { Args: never; Returns: undefined }
+      generate_public_id: { Args: { p_len?: number }; Returns: string }
       get_application_insights_snapshot: {
         Args: { p_days?: number }
         Returns: {
@@ -1011,6 +1018,22 @@ export type Database = {
           public_rack_count: number
         }[]
       }
+      get_patch_by_public_id: {
+        Args: { p_public_id: string }
+        Returns: {
+          author: Json
+          authorid: string
+          created: string
+          description: string
+          id: number
+          linked_rack_id: number
+          name: string
+          public: boolean
+          public_id: string
+          tags: string[]
+          updated: string
+        }[]
+      }
       get_public_patches_for_module: {
         Args: {
           p_from?: number
@@ -1030,6 +1053,29 @@ export type Database = {
           updated: string
         }[]
       }
+      get_rack_by_public_id: {
+        Args: { p_public_id: string }
+        Returns: {
+          author: Json
+          authorid: string
+          created: string
+          description: string
+          hp: number
+          id: number
+          image: string
+          locked: boolean
+          name: string
+          public: boolean
+          public_id: string
+          rows: number
+          updated: string
+        }[]
+      }
+      resolve_public_patch_legacy_id: {
+        Args: { p_id: number }
+        Returns: string
+      }
+      resolve_public_rack_legacy_id: { Args: { p_id: number }; Returns: string }
     }
     Enums: {
       "user module possession": "HAS" | "WANTS" | "SELLS"

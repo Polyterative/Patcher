@@ -8,6 +8,7 @@ import { RackModule } from 'src/app/components/rack-parts/rack.module';
 import { CommonSidebarComponent } from 'src/app/features/backbone/common-sidebar/common-sidebar.component';
 import { RackBrowserDataService } from 'src/app/features/routes/rack/rack-browser-data.service';
 import { RackBrowserDetailViewComponent } from 'src/app/features/routes/rack/rack-browser-detail/rack-browser-detail-view.component';
+import { LegacyRackRedirectComponent } from 'src/app/features/routes/rack/legacy-rack-redirect/legacy-rack-redirect.component';
 import { RackBrowserRootComponent } from 'src/app/features/routes/rack/rack-browser-root/rack-browser-root.component';
 import { RackCompositeComponent } from 'src/app/features/routes/rack/rack-composite/rack-composite.component';
 import { AutoContentLoadingIndicatorModule } from 'src/app/shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator.module';
@@ -46,6 +47,7 @@ import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatInputModule } from "@angular/material/input";
 import { CommentsModule } from "src/app/components/shared-atoms/comments/comments.module";
 import { SharedAtomsModule } from "src/app/components/shared-atoms/shared-atoms.module";
+import { AdviceTooltipModule } from "src/app/shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module";
 
 
 const parentPrefix: string = 'racks';
@@ -54,7 +56,8 @@ const parentPrefix: string = 'racks';
   declarations: [
     RackBrowserDetailViewComponent,
     RackCompositeComponent,
-    RackBrowserRootComponent
+    RackBrowserRootComponent,
+    LegacyRackRedirectComponent
   ],
   exports:      [
     RackBrowserDetailViewComponent
@@ -63,13 +66,17 @@ const parentPrefix: string = 'racks';
   imports: [
     CommonModule,
     RouterModule.forChild([
-      
+      // Legacy numeric ID URLs: resolve via RPC then redirect to /:publicId
+      // (public racks) or /links/retired (private/missing). Three segments — listed
+      // first so it wins over the two-segment publicId route.
       {
         path: `${ parentPrefix }/details/:id`,
         pathMatch: 'full',
-        component: RackBrowserDetailViewComponent
-        // children:  []
+        component: LegacyRackRedirectComponent
       },
+      // Uranus shell (browser etc.) must come BEFORE the :publicId catch-all
+      // so `/racks/browser` matches the listing instead of being treated as
+      // a token.
       generateUranusRoutes(parentPrefix, [
         {
           path: 'browser',
@@ -86,7 +93,16 @@ const parentPrefix: string = 'racks';
           component: UserDataHandlerComponent,
           outlet: 'user'
         }
-      ])
+      ]),
+      // Canonical token-based detail URL. Two-segment match; anonymous
+      // holders of a valid token can view private racks via the SECURITY
+      // DEFINER RPC. Declared last so reserved words like `browser` are
+      // claimed by the uranus shell above.
+      {
+        path: `${ parentPrefix }/:publicId`,
+        pathMatch: 'full',
+        component: RackBrowserDetailViewComponent
+      }
     ]),
     RackModule,
     FlexLayoutModule,
@@ -126,6 +142,7 @@ const parentPrefix: string = 'racks';
     MatInputModule,
     CommentsModule,
     SharedAtomsModule,
+    AdviceTooltipModule,
   ]
 })
 export class RackBrowserModule {}

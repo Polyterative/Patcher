@@ -45,6 +45,18 @@ export function extractCreatedPatchId(
   return createdPatchId;
 }
 
+/**
+ * Extract the `public_id` (opaque URL token) from a Supabase insert/select
+ * response. Returns `undefined` for legacy responses that did not request
+ * the column. Callers should fall back to the numeric-ID URL when this
+ * returns undefined.
+ */
+export function extractCreatedPublicId(
+  response: {public_id?: string; data?: Array<{public_id?: string}>} | undefined
+): string | undefined {
+  return response?.data?.[0]?.public_id ?? response?.public_id ?? undefined;
+}
+
 export function isAnyModuleWithoutRackingId(rackModules: RackedModule[][]): boolean {
   return rackModules.flatMap(row => row)
     .some(module => module.rackingData.id === undefined);

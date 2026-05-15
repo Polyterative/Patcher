@@ -9,6 +9,7 @@ import { PatchModule } from 'src/app/components/patch-parts/patch.module';
 import { CommonSidebarComponent } from 'src/app/features/backbone/common-sidebar/common-sidebar.component';
 import { PatchBrowserDataService } from 'src/app/features/patch-browser/patch-browser-data.service';
 import { PatchBrowserDetailViewComponent } from 'src/app/features/patch-browser/patch-browser-detail/patch-browser-detail-view.component';
+import { LegacyPatchRedirectComponent } from 'src/app/features/patch-browser/legacy-patch-redirect/legacy-patch-redirect.component';
 import { PatchBrowserRootComponent } from 'src/app/features/patch-browser/patch-browser-root/patch-browser-root.component';
 import { PatchCompositeComponent } from 'src/app/features/patch-browser/patch-composite/patch-composite.component';
 import { AutoContentLoadingIndicatorModule } from 'src/app/shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator.module';
@@ -53,7 +54,8 @@ const parentPrefix = 'patches';
   declarations: [
     PatchBrowserDetailViewComponent,
     PatchCompositeComponent,
-    PatchBrowserRootComponent
+    PatchBrowserRootComponent,
+    LegacyPatchRedirectComponent
   ],
   exports:      [
     PatchBrowserDetailViewComponent
@@ -63,12 +65,15 @@ const parentPrefix = 'patches';
     CommonModule,
     
     RouterModule.forRoot([
+      // Legacy numeric-ID URL: redirects public patches to /:publicId,
+      // sends private/missing links to /links/retired.
       {
         path: `${ parentPrefix }/details/:id`,
         pathMatch: 'full',
-        component: PatchBrowserDetailViewComponent
-        // children:  []
+        component: LegacyPatchRedirectComponent
       },
+      // Uranus shell must come before the :publicId catch-all so
+      // /patches/browser doesn't get treated as a token.
       generateUranusRoutes(parentPrefix, [
         {
           path: 'browser',
@@ -85,7 +90,13 @@ const parentPrefix = 'patches';
           component: UserDataHandlerComponent,
           outlet: 'user'
         }
-      ])
+      ]),
+      // Canonical token-based detail URL.
+      {
+        path: `${ parentPrefix }/:publicId`,
+        pathMatch: 'full',
+        component: PatchBrowserDetailViewComponent
+      }
     ], {scrollPositionRestoration: 'enabled'}),
     PatchModule,
     FlexLayoutModule,

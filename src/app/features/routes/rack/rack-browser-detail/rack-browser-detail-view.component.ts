@@ -79,17 +79,17 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
     if (!this.ignoreSeo) { this.seoAndUtilsService.updateSeo({}, 'Rack Details'); }
     combineLatest([
       this.route.params.pipe(
-        map(x => x && x.id && parseInt(x.id) ? parseInt(x.id) : 0),
-        filter(x => x > 0),
+        map(x => (x && typeof x.publicId === 'string' && x.publicId.length > 0) ? x.publicId : ''),
+        filter(x => !!x),
         take(1)
       ),
       this.userManagementService.loggedUser$.pipe(take(1))
-    ]).subscribe(([rackId, user]) => {
+    ]).subscribe(([publicId, user]) => {
       this.dataService.setPublicDetailMode(!user);
       if (user) {
         this.userAreaDataService.updateModulesData$.next();
       }
-      this.dataService.updateSingleRackData$.next(rackId);
+      this.dataService.updateSingleRackByPublicId$.next(publicId);
     });
 
     if (!this.ignoreSeo) {
@@ -238,7 +238,7 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
         : undefined,
       'dateCreated': rackData.created ?? undefined,
       'dateModified': rackData.updated ?? undefined,
-      'url': `https://patcher.xyz/racks/details/${ rackData.id }`,
+      'url': `https://patcher.xyz/racks/${ rackData.public_id ?? rackData.id }`,
       'keywords': modules.length ? modules.join(', ') : undefined,
     };
     Object.keys(jsonLd).forEach(k => jsonLd[k] === undefined && delete jsonLd[k]);
