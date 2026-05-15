@@ -1,5 +1,5 @@
 <div fxLayoutAlign="center center"
-     [routerLink]="['/racks/details',data.id]"
+   [routerLink]="data.public_id ? ['/racks', data.public_id] : ['/racks/details', data.id]"
      class="clickable"
      style="max-width:100%"
 >

@@ -95,6 +95,12 @@ export { MAX_INSTANCES_PER_MODULE } from './patch-detail-data.models';
 export class PatchDetailDataService implements OnDestroy {
   private usePublicDetailReads = false;
   readonly updateSinglePatchData$ = new ReplaySubject<number>();
+  /**
+   * Token-based detail fetch entry-point. Routed through the SECURITY DEFINER
+   * RPC `get_patch_by_public_id` so anonymous holders of a private patch's
+   * share token can view it without enabling enumeration by numeric ID.
+   */
+  readonly updateSinglePatchByPublicId$ = new ReplaySubject<string>(1);
   readonly singlePatchData$ = new BehaviorSubject<Patch | undefined>(undefined);
   //
   readonly patchEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
@@ -194,6 +200,30 @@ export class PatchDetailDataService implements OnDestroy {
           ? this.backend.GET.publicPatchWithId(x)
           : this.backend.get.patchWithId(x)
         ),
+        catchError(() => of({data: undefined, error: null})),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(x => {
+        const patch = x?.data ?? undefined;
+        this.singlePatchData$.next(patch);
+        if (!patch) {
+          this.patchDetailUnavailableMessage$.next(this.buildUnavailableMessage());
+        }
+      });
+
+    // Token-based fetch. Always goes through the SECURITY DEFINER RPC so a
+    // valid token works for both anonymous and authenticated viewers.
+    this.updateSinglePatchByPublicId$
+      .pipe(
+        tap(() => {
+          this.patchConnections$.next(null);
+          this.editorConnections$.next(null);
+          this.patchModuleInstances$.next([]);
+          this.singlePatchData$.next(undefined);
+          this.patchDetailUnavailableMessage$.next(null);
+          this.backend.cacheResetter$.next(['patchModuleInstances', 'rackWithId']);
+        }),
+        switchMap(token => this.backend.GET.patchByPublicId(token)),
         catchError(() => of({data: undefined, error: null})),
         takeUntil(this.destroyEvent$)
       )

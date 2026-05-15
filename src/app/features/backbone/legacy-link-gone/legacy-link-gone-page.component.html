@@ -1,0 +1,36 @@
+<div fxFlex="100"
+     fxLayout="column"
+     fxLayoutGap="2rem"
+     fxLayoutAlign="start center"
+>
+  <app-empty-state style="padding-top: 8rem"
+                   backgroundImage="assets/svg/404.svg"
+  ></app-empty-state>
+
+  <div class="legacy-link-gone__content"
+       fxLayout="column"
+       fxLayoutGap="1.5rem"
+       fxLayoutAlign="center center"
+  >
+    <mat-card-title fxLayoutAlign="center">This share link has been retired.</mat-card-title>
+
+    <p class="legacy-link-gone__copy">
+      To improve privacy, we replaced numeric rack and patch links with opaque tokens. Old private
+      share links no longer work — ask the owner for a new link, or visit your own racks and patches
+      in your profile.
+    </p>
+
+    <div fxLayout="row wrap"
+         fxLayoutGap="1rem"
+         fxLayoutAlign="center center"
+    >
+      <a mat-raised-button
+         color="primary"
+         routerLink="/racks/browser"
+      >Browse racks</a>
+      <a mat-stroked-button
+         [routerLink]="profileLink$ | async"
+      >My profile</a>
+    </div>
+  </div>
+</div>

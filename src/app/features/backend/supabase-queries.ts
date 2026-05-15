@@ -852,6 +852,41 @@ export class SupabaseQueriesService {
         remapErrors()
       );
   }
+
+  /**
+   * Token-gated rack read. Goes through a SECURITY DEFINER RPC so anonymous
+   * link-holders can view even private racks. Only the holder of the full
+   * ~71-bit token can hit a row.
+   */
+  @Cacheable({
+    maxAge: defaultCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('rackWithId') || x.includes('profiles'))),
+    maxCacheCount: 50,
+  })
+  getRackByPublicId(publicId: string) {
+    return rxFrom(
+      this.supabase.rpc('get_rack_by_public_id', {p_public_id: publicId})
+    )
+      .pipe(
+        remapErrors(),
+        map((response: any) => {
+          const row = Array.isArray(response?.data) ? response.data[0] : response?.data;
+          return {data: row ?? null, error: response?.error ?? null};
+        })
+      );
+  }
+
+  /**
+   * Resolve a legacy numeric rack id to its public_id — only succeeds for
+   * PUBLIC racks (private rows yield null by design, so legacy private share
+   * links 404 after the URL migration).
+   */
+  resolvePublicRackLegacyId(id: number) {
+    return rxFrom(
+      this.supabase.rpc('resolve_public_rack_legacy_id', {p_id: id})
+    )
+      .pipe(remapErrors());
+  }
   
   @Cacheable({
     maxAge: defaultCacheTime,
@@ -878,6 +913,7 @@ export class SupabaseQueriesService {
       "created",
       "updated",
       "authorid",
+      "public_id",
       QueryJoins.author,
       publicAuthorGateJoin,
       "image"
@@ -1017,6 +1053,38 @@ export class SupabaseQueriesService {
         .filter('id', 'eq', id)
         .filter('public', 'eq', true)
         .single()
+    )
+      .pipe(remapErrors());
+  }
+
+  /**
+   * Token-gated patch read. SECURITY DEFINER RPC — see getRackByPublicId.
+   */
+  @Cacheable({
+    maxAge: defaultCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('patches') || x.includes('profiles'))),
+    maxCacheCount: 50,
+  })
+  getPatchByPublicId(publicId: string) {
+    return rxFrom(
+      this.supabase.rpc('get_patch_by_public_id', {p_public_id: publicId})
+    )
+      .pipe(
+        remapErrors(),
+        map((response: any) => {
+          const row = Array.isArray(response?.data) ? response.data[0] : response?.data;
+          return {data: row ?? null, error: response?.error ?? null};
+        })
+      );
+  }
+
+  /**
+   * Resolve a legacy numeric patch id to its public_id — succeeds only for
+   * PUBLIC patches.
+   */
+  resolvePublicPatchLegacyId(id: number) {
+    return rxFrom(
+      this.supabase.rpc('resolve_public_patch_legacy_id', {p_id: id})
     )
       .pipe(remapErrors());
   }

@@ -185,7 +185,7 @@ describe('SupabaseService - CRUD Operations', () => {
             authorid: 'patch-creator',
             public: true
           });
-          expect(selectSpy).toHaveBeenCalledWith('id');
+          expect(selectSpy).toHaveBeenCalledWith('id, public_id');
           done();
         },
         error: (err) => {
