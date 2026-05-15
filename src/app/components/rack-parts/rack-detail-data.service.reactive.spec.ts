@@ -472,4 +472,21 @@ describe('RackDetailDataService reactive flows', () => {
     expect(service.isCurrentRackPropertyOfCurrentUser$.value).toBeFalse();
   });
 
+  // Timestamp-bump fix (Option A — DB triggers).
+  // The DB triggers on rack_modules now propagate updated timestamp to the parent racks row
+  // automatically on any INSERT/UPDATE/DELETE, so the frontend only needs to call
+  // backend.update.rackedModules — no explicit parent-row touch required.
+  // Deeper verification (that racks.updated actually changes) requires a live-DB integration
+  // test; this unit test asserts the frontend side of the contract.
+  it('calls backend.update.rackedModules when module positions are synced to DB', () => {
+    const {service, backend} = build();
+    service.singleRackData$.next(rack({id: 1}));
+    const modules = [moduleInRack(1, 0, 0), moduleInRack(2, 0, 1)];
+    service.rowedRackedModules$.next([modules]);
+
+    service.requestRackedModulesDbSync$.next();
+
+    expect(backend.update.rackedModules).toHaveBeenCalled();
+  });
+
 });

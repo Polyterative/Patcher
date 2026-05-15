@@ -506,6 +506,30 @@ describe('SupabaseService - CRUD Operations', () => {
       });
     }, TEST_TIMEOUT);
 
+    it('should surface Supabase rack update errors instead of treating them as success', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'session-user'}));
+      const upsertSpy = jasmine.createSpy('upsert').and.returnValue({
+        select: jasmine.createSpy('select').and.returnValue(
+          Promise.resolve({data: null, error: {message: 'update failed'}})
+        )
+      });
+
+      spyOn(supabaseClient, 'from').and.returnValue({
+        upsert: upsertSpy
+      });
+
+      service.update.rack({id: 1, name: 'Rack'} as any).subscribe({
+        next: () => {
+          fail('Expected rack update to error');
+          done();
+        },
+        error: (err) => {
+          expect(err.message).toContain('update failed');
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
     it('should error when user is not authenticated', (done) => {
       spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
 

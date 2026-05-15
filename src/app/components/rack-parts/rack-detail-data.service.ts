@@ -16,6 +16,7 @@ import {
   EMPTY,
   forkJoin,
   from,
+  Observable,
   of,
   ReplaySubject,
   Subject
@@ -368,31 +369,51 @@ export class RackDetailDataService extends SubManager {
         const fileName = `${ this.singleRackData$.value.id }`;
         return this.backend.storage.uploadRackImage(imageBlob, `${ fileName }.jpeg`);
       }),
-      // remove the old image from the backend
       withLatestFrom(this.singleRackData$),
-      switchMap(([uploadResult, singleRackData]) => {
-        if (singleRackData.image) {
-          return this.backend.storage.deleteRackImage(singleRackData.image).pipe(map(() => uploadResult));
-        } else {
-          return of(uploadResult);
-        }
-      }),
-      withLatestFrom(this.singleRackData$),
-      // Update the rack data with the new image URL
+      // Update the rack data with the new image filename before deleting the previous file.
       switchMap(([uploadResult, rackData]) => {
-        rackData.image = uploadResult;
-        return this.backend.update.rack(rackData);
-        
+        const updatedRackData: Rack = {...rackData, image: uploadResult};
+        const previousImage = rackData.image;
+        return this.backend.update.rack(updatedRackData).pipe(
+          map(() => ({updatedRackData, previousImage}))
+        );
       }),
-      withLatestFrom(this.singleRackData$),
-      takeUntil(this.destroyEvent$)
-    )
-      .subscribe(() => {
-        SharedConstants.successCustom(this.snackBar, `Preview image updated for "${ this.singleRackData$.value.name }".`);
-        
-        this.updateSingleRackData$.next(this.singleRackData$.value.id);
+      // remove the old image from the backend after the DB update succeeds
+      switchMap(({updatedRackData, previousImage}): Observable<Rack> => {
+        if (!previousImage) {
+          return of(updatedRackData);
         }
-      );
+
+        return this.backend.storage.deleteRackImage(previousImage).pipe(
+          map(() => updatedRackData),
+          catchError((error) => {
+            const status = (error as {status?: number | string; statusCode?: number | string} | undefined)?.status
+              ?? (error as {status?: number | string; statusCode?: number | string} | undefined)?.statusCode;
+            const message = error instanceof Error
+              ? error.message
+              : String((error as {message?: unknown} | undefined)?.message ?? '');
+
+            if (status === 404 || status === '404' || /not found/i.test(message)) {
+              console.warn('Rack preview delete skipped because the previous image was already missing.', error);
+              return of(updatedRackData);
+            }
+
+            throw error;
+          })
+        );
+      }),
+      tap((updatedRackData: Rack) => this.singleRackData$.next(updatedRackData)),
+      takeUntil(this.destroyEvent$),
+      catchError((err) => {
+        console.error('Failed to update rack preview image:', err);
+        SharedConstants.errorCustom(this.snackBar, 'Failed to update preview image. Please try again.');
+        return EMPTY;
+      })
+    )
+      .subscribe((updatedRackData: Rack) => {
+        SharedConstants.successCustom(this.snackBar, `Preview image updated for "${ updatedRackData.name }".`);
+        this.updateSingleRackData$.next(updatedRackData.id);
+      });
     
     // when user toggles locked status of rack, update backend
     this.requestRackEditableStatusChange$

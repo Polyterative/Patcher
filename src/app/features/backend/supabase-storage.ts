@@ -12,7 +12,10 @@ import {
 import { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from 'src/backend/database.types';
 import { DbStoragePaths } from './DatabaseStrings';
-import { cacheBust } from './supabase.cache';
+import {
+  cacheBust,
+  throwIfSupabaseError
+} from './supabase.cache';
 import {
   SimpleUserModel,
   SupabaseStorageFile
@@ -66,6 +69,7 @@ export function createStorageNamespace(
               contentType: 'image/jpeg'
             })
         ).pipe(
+          throwIfSupabaseError(),
           cacheBust(['rackWithId']),
           map(() => filenameAndExtension)
         ))
@@ -81,7 +85,7 @@ export function createStorageNamespace(
             supabase.storage
               .from(DbStoragePaths.racks)
               .remove([filenameAndExtension])
-          );
+          ).pipe(throwIfSupabaseError());
         }),
         cacheBust(['rackWithId'])
       );

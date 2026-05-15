@@ -156,3 +156,11 @@ After any non-trivial schema change use the Supabase MCP `get_advisors` (lint + 
 ### 6. Did I record the migration in `internaldocs/workflow/CURRENT_FEATURE.md`?
 
 Every backend change in active feature work belongs in `CURRENT_FEATURE.md` (with the applied-on date) and, on completion, archived to `COMPLETED.md`.
+
+---
+
+## Schema-change incident log
+
+| Date       | Change                                                               | Tables affected                                                          |
+|------------|----------------------------------------------------------------------|--------------------------------------------------------------------------|
+| 2026-05-15 | add touch-parent triggers on rack_modules and patch child tables | rack_modules, patches, racks |
