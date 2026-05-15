@@ -8,7 +8,7 @@
 --
 -- Roll-forward only. Reversal (drop columns / functions) is straightforward if needed.
 
-create extension if not exists pgcrypto;
+create extension if not exists pgcrypto with schema extensions;
 
 -- ============================================================================
 -- 1. Token generator
@@ -21,6 +21,7 @@ create or replace function public.generate_public_id(p_len int default 12)
 returns text
 language plpgsql
 volatile
+set search_path = pg_catalog
 as $$
 declare
   bytes_needed int;
@@ -28,7 +29,7 @@ declare
 begin
   -- base64 emits 4 chars per 3 bytes; ceil to cover the requested length.
   bytes_needed := ceil(p_len::numeric * 3 / 4)::int;
-  raw := translate(encode(gen_random_bytes(bytes_needed), 'base64'), '+/=', '-_');
+  raw := translate(encode(extensions.gen_random_bytes(bytes_needed), 'base64'), '+/=', '-_');
   return substr(raw, 1, p_len);
 end;
 $$;
@@ -88,6 +89,7 @@ alter table public.patches alter column public_id set not null;
 create or replace function public.tg_set_public_id()
 returns trigger
 language plpgsql
+set search_path = pg_catalog
 as $$
 begin
   if NEW.public_id is null or NEW.public_id = '' then
