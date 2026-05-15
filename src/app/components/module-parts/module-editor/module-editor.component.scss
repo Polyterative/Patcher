@@ -64,7 +64,7 @@
 
 .setup-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  grid-template-columns: 1fr;
   gap: 0.7rem;
   align-items: start;
   width: 100%;
@@ -444,10 +444,6 @@
 }
 
 @media (max-width: 72.5rem) {
-  .setup-grid {
-    grid-template-columns: 1fr;
-  }
-
   .save-fab {
     right: calc(var(--app-floating-inset-inline, 0.75rem) + env(safe-area-inset-right) + var(--module-editor-close-fab-width, 12.6rem) + var(--module-editor-fab-gap, var(--app-floating-surface-gap, 0.65rem)));
     bottom: calc(var(--app-floating-inset-block, 0.75rem) + env(safe-area-inset-bottom) + var(--app-floating-bottom-offset, 0px));
