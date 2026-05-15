@@ -116,6 +116,7 @@ Legacy:  GET /racks/details/1018
 - [x] RPC `resolve_public_rack_legacy_id(p_id int)` + `resolve_public_patch_legacy_id(p_id int)` — returns `public_id` for public rows, NULL for private/missing.
 - [x] RLS unchanged; SECURITY DEFINER RPCs are the only path that exposes private rows by token.
 - [x] Types regenerated via Supabase MCP into `src/backend/database.types.ts`; manually flipped `public_id` to optional on Insert/Update generics (trigger fills it).
+- [x] Follow-up fixes `supabase/migrations/20260515125800_fix_generate_public_id_pgcrypto_schema.sql`, `20260515130200_harden_generate_public_id_search_path.sql`, and `20260515130500_harden_public_id_trigger_search_path.sql`: schema-qualified `extensions.gen_random_bytes(...)` because Supabase installs `pgcrypto` in `extensions`; unqualified lookup broke rack lock/unlock upserts when the public_id trigger fired. Also pinned the public_id helper search paths to `pg_catalog`.
 
 **Frontend routing:**
 
