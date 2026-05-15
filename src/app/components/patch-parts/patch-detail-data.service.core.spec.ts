@@ -47,7 +47,8 @@ describe('PatchDetailDataService core flows', () => {
       GET: {
         patchConnections: jasmine.createSpy('patchConnections').and.returnValue(of([])),
         patchModuleInstances: jasmine.createSpy('patchModuleInstances').and.returnValue(of([])),
-        publicPatchWithId: jasmine.createSpy('publicPatchWithId').and.returnValue(of({data: null}))
+        publicPatchWithId: jasmine.createSpy('publicPatchWithId').and.returnValue(of({data: null})),
+        patchByPublicId: jasmine.createSpy('patchByPublicId').and.returnValue(of({data: patch({id: 88})}))
       },
       get: {
         patchWithId: jasmine.createSpy('patchWithId').and.callFake((id: number) =>
@@ -116,6 +117,30 @@ describe('PatchDetailDataService core flows', () => {
     service.updateSinglePatchData$.next(404);
 
     expect(service.patchDetailUnavailableMessage$.value).not.toBeNull();
+  });
+
+
+
+  it('updateSinglePatchByPublicId$ loads patch through the token RPC', () => {
+    const {service, backend} = build();
+    backend.GET.patchByPublicId.and.returnValue(of({data: patch({id: 44, name: 'Token Patch'})}));
+
+    service.updateSinglePatchByPublicId$.next('aBcD1234_-Xy');
+
+    expect(backend.GET.patchByPublicId).toHaveBeenCalledWith('aBcD1234_-Xy');
+    expect(service.singlePatchData$.value?.id).toBe(44);
+    expect(service.patchDetailUnavailableMessage$.value).toBeNull();
+  });
+
+  it('updateSinglePatchByPublicId$ sets unavailable state when no patch is returned', () => {
+    const {service, backend} = build();
+    backend.GET.patchByPublicId.and.returnValue(of({data: null}));
+
+    service.updateSinglePatchByPublicId$.next('zYxW9876_-Ab');
+
+    expect(backend.GET.patchByPublicId).toHaveBeenCalledWith('zYxW9876_-Ab');
+    expect(service.singlePatchData$.value).toBeUndefined();
+    expect(service.patchDetailUnavailableMessage$.value).toBeTruthy();
   });
 
   // --- Privacy ---

@@ -17,19 +17,19 @@ function makeComment(entityType: number, entityId = 42): DbComment {
   };
 }
 
-function makeBackend() {
+function makeBackend(options: {rackPublicId?: string; patchPublicId?: string} = {}) {
   return {
     GET: {
       moduleWithId: jasmine.createSpy('moduleWithId').and.returnValue(
         of({ data: { id: 1, name: 'Test Module', manufacturer: { name: 'Test MFR' } } })
       ),
       rackWithId: jasmine.createSpy('rackWithId').and.returnValue(
-        of({ data: { id: 2, name: 'Test Rack' } })
+        of({ data: { id: 2, name: 'Test Rack', ...(options.rackPublicId ? {public_id: options.rackPublicId} : {}) } })
       ),
     },
     get: {
       patchWithId: jasmine.createSpy('patchWithId').and.returnValue(
-        of({ data: { id: 3, name: 'Test Patch' } })
+        of({ data: { id: 3, name: 'Test Patch', ...(options.patchPublicId ? {public_id: options.patchPublicId} : {}) } })
       ),
     },
   };
@@ -39,8 +39,8 @@ function makeRouter() {
   return { navigate: jasmine.createSpy('navigate') };
 }
 
-function makeComponent(data: DbComment) {
-  const backend = makeBackend();
+function makeComponent(data: DbComment, backendOptions: {rackPublicId?: string; patchPublicId?: string} = {}) {
+  const backend = makeBackend(backendOptions);
   const router = makeRouter();
   const comp = new CommentContextComponent(backend as any, router as any);
   comp.data = data;
@@ -122,6 +122,12 @@ describe('CommentContextComponent', () => {
       comp.ngOnInit();
       expect(snapshotContext(comp).entityLabel).toBe('Patch');
     });
+
+    it('uses the canonical public patch URL when public_id is available', () => {
+      const { comp } = makeComponent(makeComment(CommentableEntityTypes.PATCH), {patchPublicId: 'tokenAbcDef00'});
+      comp.ngOnInit();
+      expect(snapshotContext(comp).URL).toEqual(['patches', 'tokenAbcDef00']);
+    });
   });
 
   describe('ngOnInit() — RACK entity', () => {
@@ -147,6 +153,12 @@ describe('CommentContextComponent', () => {
       const { comp } = makeComponent(makeComment(CommentableEntityTypes.RACK));
       comp.ngOnInit();
       expect(snapshotContext(comp).entityLabel).toBe('Rack');
+    });
+
+    it('uses the canonical public rack URL when public_id is available', () => {
+      const { comp } = makeComponent(makeComment(CommentableEntityTypes.RACK), {rackPublicId: 'tokenAbcDef00'});
+      comp.ngOnInit();
+      expect(snapshotContext(comp).URL).toEqual(['racks', 'tokenAbcDef00']);
     });
   });
 
