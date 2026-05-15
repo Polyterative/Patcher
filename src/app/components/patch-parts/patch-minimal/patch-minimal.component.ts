@@ -158,7 +158,8 @@ export class PatchMinimalComponent implements OnInit, OnDestroy {
       lines.push(...connections.map((connection, index) => `${ index + 1 }. ${ this.describeConnection(connection) }`));
     }
 
-    lines.push('', `Patch link: ${ window.location.origin }/patches/details/${ patch.id }`);
+    const patchPath = patch.public_id ? `/patches/${ patch.public_id }` : `/patches/details/${ patch.id }`;
+    lines.push('', `Patch link: ${ window.location.origin }${ patchPath }`);
 
     return lines.join('\n');
   }

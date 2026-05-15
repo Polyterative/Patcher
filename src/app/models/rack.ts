@@ -33,5 +33,7 @@ export interface RackMinimal extends Timestamped, Privatable {
   author: PublicUser;
   locked: boolean;
   image?: string;
-  
+  /** Opaque ~71-bit URL token. Used by `/racks/:publicId` routes. */
+  public_id?: string;
+
 }

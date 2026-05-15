@@ -48,7 +48,7 @@
         {{ bag.unavailableMessage }}
       </app-advice-tooltip>
     } @else {
-      <lib-auto-content-loading-indicator [updateData$]="dataService.updateSinglePatchData$"
+      <lib-auto-content-loading-indicator [updateData$]="dataService.updateSinglePatchByPublicId$"
                                           [data$]="dataService.singlePatchData$"
       ></lib-auto-content-loading-indicator>
     }

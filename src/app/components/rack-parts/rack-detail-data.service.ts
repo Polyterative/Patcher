@@ -76,6 +76,7 @@ import {
   calculateBlankIdForSizeAndStandard,
   cloneRackData,
   extractCreatedPatchId,
+  extractCreatedPublicId,
   isAnyModuleWithoutRackingId,
 } from './rack-detail-data.utils';
 
@@ -85,7 +86,19 @@ export class RackDetailDataService extends SubManager {
   private static readonly imageCaptureOverlayResetDelayMs = 360;
   private usePublicDetailReads = false;
   readonly updateSingleRackData$ = new ReplaySubject<number>();
+  /**
+   * Token-based detail fetch entry-point. Routed through the SECURITY DEFINER
+   * RPC `get_rack_by_public_id` so anonymous holders of a private rack's
+   * share token can view it without enabling enumeration by numeric ID.
+   */
+  readonly updateSingleRackByPublicId$ = new ReplaySubject<string>(1);
   readonly singleRackData$ = new BehaviorSubject<Rack | undefined>(undefined);
+  /**
+   * Set to a user-readable message when a detail fetch yields no row (e.g. RLS
+   * blocked the read for an anonymous viewer of a private rack). Cleared at the
+   * start of each new fetch. Mirrors `PatchDetailDataService.patchDetailUnavailableMessage$`.
+   */
+  readonly rackDetailUnavailableMessage$ = new BehaviorSubject<string | null>(null);
   readonly deleteRack$ = new Subject<RackMinimal>();
   readonly duplicateRack$ = new Subject<RackMinimal>();
   readonly downloadRackImageToUserComputer$ = new Subject<void>();
@@ -424,7 +437,8 @@ export class RackDetailDataService extends SubManager {
             map((response) => ({
               rack,
               generatedPatchName,
-              createdPatchId: extractCreatedPatchId(response)
+              createdPatchId: extractCreatedPatchId(response),
+              createdPatchPublicId: extractCreatedPublicId(response)
             })),
             catchError((error) => {
               if (isLinkedRackSchemaMissingError(error)) {
@@ -440,8 +454,11 @@ export class RackDetailDataService extends SubManager {
         }),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(({rack, generatedPatchName, createdPatchId}) => {
-        this.router.navigate(['/patches/details', createdPatchId]);
+      .subscribe(({rack, generatedPatchName, createdPatchId, createdPatchPublicId}) => {
+        const target = createdPatchPublicId
+          ? ['/patches', createdPatchPublicId]
+          : ['/patches/details', createdPatchId];
+        this.router.navigate(target);
         SharedConstants.successCustom(this.snackBar, `"${ generatedPatchName }" is ready with "${ rack.name }" linked.`);
       });
     
@@ -480,6 +497,7 @@ export class RackDetailDataService extends SubManager {
         tap(() => {
           this.isRackDataLoading$.next(true);
           this.rowedRackedModules$.next(null);
+          this.rackDetailUnavailableMessage$.next(null);
         }),
         switchMap(x => this.usePublicDetailReads
           ? this.backend.GET.publicRackWithId(x)
@@ -489,6 +507,7 @@ export class RackDetailDataService extends SubManager {
           this.singleRackData$.next(undefined);
           this.rowedRackedModules$.next([]);
           this.isRackDataLoading$.next(false);
+          this.rackDetailUnavailableMessage$.next(this.buildUnavailableMessage());
           SharedConstants.errorCustom(this.snackBar, 'Failed to load this rack. Refresh the page and try again.');
           return EMPTY;
         }),
@@ -499,9 +518,41 @@ export class RackDetailDataService extends SubManager {
           this.singleRackData$.next(undefined);
           this.rowedRackedModules$.next([]);
           this.isRackDataLoading$.next(false);
+          this.rackDetailUnavailableMessage$.next(this.buildUnavailableMessage());
           return;
         }
 
+        this.singleRackData$.next(x.data);
+      });
+
+    // Token-based fetch. Always goes through the SECURITY DEFINER RPC so a
+    // valid token works for both anonymous and authenticated viewers.
+    this.updateSingleRackByPublicId$
+      .pipe(
+        tap(() => {
+          this.isRackDataLoading$.next(true);
+          this.rowedRackedModules$.next(null);
+          this.rackDetailUnavailableMessage$.next(null);
+        }),
+        switchMap(token => this.backend.GET.rackByPublicId(token)),
+        catchError((err) => {
+          console.error('Failed to load rack by token:', err);
+          this.singleRackData$.next(undefined);
+          this.rowedRackedModules$.next([]);
+          this.isRackDataLoading$.next(false);
+          this.rackDetailUnavailableMessage$.next(this.buildUnavailableMessage());
+          return EMPTY;
+        }),
+        takeUntil(this.destroy$),
+      )
+      .subscribe(x => {
+        if (!x?.data) {
+          this.singleRackData$.next(undefined);
+          this.rowedRackedModules$.next([]);
+          this.isRackDataLoading$.next(false);
+          this.rackDetailUnavailableMessage$.next(this.buildUnavailableMessage());
+          return;
+        }
         this.singleRackData$.next(x.data);
       });
     
@@ -733,17 +784,24 @@ export class RackDetailDataService extends SubManager {
         switchMap(([rack, user]) => {
           // create new rack on the backend,with a new author: current user
           return this.createNewRackOnBackendForCurrentUser(user.id).pipe(
-            map(x => ({newRackId: x.data[0].id, originalName: rack.name}))
+            map(x => ({newRackId: x.data[0].id, newRackPublicId: x.data[0].public_id, originalName: rack.name}))
           );
         }),
         // wait for the new rack id to arrive, then update the rack modules with the new rack id,
-        switchMap(({newRackId, originalName}) => {
-          history.replaceState({}, '', `/racks/details/${ newRackId }`);
-          
+        switchMap(({newRackId, newRackPublicId, originalName}) => {
+          const newUrl = newRackPublicId
+            ? `/racks/${ newRackPublicId }`
+            : `/racks/details/${ newRackId }`;
+          history.replaceState({}, '', newUrl);
+
           const rackModules = this.removeInformationFromModulesOfCurrentRack(newRackId);
-          
-          // load the new empty rack
-          this.updateSingleRackData$.next(newRackId);
+
+          // load the new empty rack — prefer token, fall back to numeric id.
+          if (newRackPublicId) {
+            this.updateSingleRackByPublicId$.next(newRackPublicId);
+          } else {
+            this.updateSingleRackData$.next(newRackId);
+          }
           return this.singleRackData$.pipe(
             filter(x => x.id === newRackId),
             take(1),
@@ -793,6 +851,12 @@ export class RackDetailDataService extends SubManager {
 
   setPublicDetailMode(enabled: boolean) {
     this.usePublicDetailReads = enabled;
+  }
+
+  private buildUnavailableMessage(): string {
+    return this.usePublicDetailReads
+      ? `This rack isn't publicly available. If you have a share link from the owner, use that to view it.`
+      : 'This rack could not be loaded.';
   }
   
   private removeInformationFromModulesOfCurrentRack(newlyCreatedRackId: number) {

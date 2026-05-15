@@ -3,6 +3,7 @@
   rowedRackedModules: (dataService.rowedRackedModules$|async),
   isCurrentRackEditable: (dataService.isCurrentRackEditable$|async),
   isCurrentRackPropertyOfCurrentUser: (dataService.isCurrentRackPropertyOfCurrentUser$|async),
+  unavailableMessage: (dataService.rackDetailUnavailableMessage$|async),
 }; as bag) {
   <div class="col gap1"
   >
@@ -13,7 +14,7 @@
     >
       @if (bag.data) {
         <lib-auto-update-loading-indicator [data$]="dataService.singleRackData$"
-                                           [updateData$]="dataService.updateSingleRackData$">
+                                           [updateData$]="dataService.updateSingleRackByPublicId$">
           <div class="col gap1">
              <div class="rackBrowserDetailView__summaryLayout">
                <div class="col gap1 rackBrowserDetailView__summaryColumn rackBrowserDetailView__summaryColumn--left">
@@ -65,6 +66,12 @@
             }
           </div>
         </lib-auto-update-loading-indicator>
+      } @else if (bag.unavailableMessage) {
+        <app-advice-tooltip data-testid="rack-detail-unavailable"
+                            title="Unavailable"
+                            tone="info">
+          {{ bag.unavailableMessage }}
+        </app-advice-tooltip>
       }
     </lib-hero-content-card>
     @if (dataService.isCurrentRackPropertyOfCurrentUser$|async) {

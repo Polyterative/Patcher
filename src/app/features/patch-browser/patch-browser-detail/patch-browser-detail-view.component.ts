@@ -69,8 +69,8 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
     
     combineLatest([
       this.route.params.pipe(
-        map(x => x && x.id && parseInt(x.id) ? parseInt(x.id) : 0),
-        filter(x => x > 0),
+        map(x => (x && typeof x.publicId === 'string' && x.publicId.length > 0) ? x.publicId : ''),
+        filter(x => !!x),
         distinctUntilChanged()
       ),
       this.userManagementService.loggedUser$.pipe(
@@ -79,9 +79,9 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
       )
     ])
       .pipe(takeUntil(this.destroy$))
-      .subscribe(([patchId, usePublicDetailMode]) => {
+      .subscribe(([publicId, usePublicDetailMode]) => {
         this.dataService.setPublicDetailMode(usePublicDetailMode);
-        this.dataService.updateSinglePatchData$.next(patchId);
+        this.dataService.updateSinglePatchByPublicId$.next(publicId);
       });
     
     if (!this.ignoreSeo) {
@@ -158,7 +158,7 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
         : undefined,
       'dateCreated': patchData.created ?? undefined,
       'dateModified': patchData.updated ?? undefined,
-      'url': `https://patcher.xyz/patches/details/${ patchData.id }`,
+      'url': `https://patcher.xyz/patches/${ patchData.public_id ?? patchData.id }`,
       'keywords': modules.join(', ') || undefined,
     };
     Object.keys(jsonLd).forEach(k => jsonLd[k] === undefined && delete jsonLd[k]);
