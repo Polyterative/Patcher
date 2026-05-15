@@ -18,7 +18,7 @@ describe('PatchBrowserDetailViewComponent', () => {
     patchConnections$ = new BehaviorSubject<any>(undefined);
     dataService = {
       setPublicDetailMode: jasmine.createSpy('setPublicDetailMode'),
-      updateSinglePatchData$: {next: jasmine.createSpy('updateSinglePatchData$.next')},
+      updateSinglePatchByPublicId$: {next: jasmine.createSpy('updateSinglePatchByPublicId$.next')},
       singlePatchData$,
       patchConnections$,
       patchEditingPanelOpenState$: {next: jasmine.createSpy('patchEditingPanelOpenState$.next')}
@@ -29,7 +29,7 @@ describe('PatchBrowserDetailViewComponent', () => {
     
     component = new PatchBrowserDetailViewComponent(
       dataService,
-      {params: of({id: '42'})} as any,
+      {params: of({publicId: 'aBcD1234_-Xy'})} as any,
       seoService,
       commentsDataService,
       userManagementService
@@ -44,14 +44,14 @@ describe('PatchBrowserDetailViewComponent', () => {
     component.ngOnInit();
     
     expect(dataService.setPublicDetailMode).toHaveBeenCalledWith(true);
-    expect(dataService.updateSinglePatchData$.next).toHaveBeenCalledWith(42);
+    expect(dataService.updateSinglePatchByPublicId$.next).toHaveBeenCalledWith('aBcD1234_-Xy');
   });
   
   it('uses authenticated detail reads for signed-in users', () => {
     loggedUser$.next({id: 'u1'});
     component = new PatchBrowserDetailViewComponent(
       dataService,
-      {params: of({id: '213'})} as any,
+      {params: of({publicId: 'zYxW9876_-Ab'})} as any,
       seoService,
       commentsDataService,
       userManagementService
@@ -60,14 +60,14 @@ describe('PatchBrowserDetailViewComponent', () => {
     component.ngOnInit();
     
     expect(dataService.setPublicDetailMode).toHaveBeenCalledWith(false);
-    expect(dataService.updateSinglePatchData$.next).toHaveBeenCalledWith(213);
+    expect(dataService.updateSinglePatchByPublicId$.next).toHaveBeenCalledWith('zYxW9876_-Ab');
   });
 
   it('switches back to public detail reads when the viewer logs out on the page', () => {
     loggedUser$.next({id: 'u1'});
     component = new PatchBrowserDetailViewComponent(
       dataService,
-      {params: of({id: '213'})} as any,
+      {params: of({publicId: 'zYxW9876_-Ab'})} as any,
       seoService,
       commentsDataService,
       userManagementService
@@ -79,8 +79,8 @@ describe('PatchBrowserDetailViewComponent', () => {
     expect(dataService.setPublicDetailMode).toHaveBeenCalledTimes(2);
     expect(dataService.setPublicDetailMode).toHaveBeenCalledWith(false);
     expect(dataService.setPublicDetailMode).toHaveBeenCalledWith(true);
-    expect(dataService.updateSinglePatchData$.next).toHaveBeenCalledTimes(2);
-    expect(dataService.updateSinglePatchData$.next).toHaveBeenCalledWith(213);
+    expect(dataService.updateSinglePatchByPublicId$.next).toHaveBeenCalledTimes(2);
+    expect(dataService.updateSinglePatchByPublicId$.next).toHaveBeenCalledWith('zYxW9876_-Ab');
   });
 
   it('shows wide-shell nav by default', () => {
