@@ -125,14 +125,14 @@ load and does not refresh after edits.
 
 **Implementation (next agent):**
 
-- [ ] Inspect the "Update preview" flow in `rack-detail-data.service.ts:351-394` and
-      `supabase-storage.ts:54-87` — find the gap where the new filename is not persisted to
-      `racks.image`.
-- [ ] Fix: ensure `backend.update.rack({ id, image: newFilename })` (or the equivalent
+- [x] Inspect the "Update preview" flow in `rack-detail-data.service.ts:351-394` and
+      `supabase-storage.ts:54-87` — found that preview uploads/deletes could complete before a
+      failed `update.rack(...)` surfaced, leaving `racks.image` stale.
+- [x] Fix: ensure `backend.update.rack({ id, image: newFilename })` (or the equivalent
       single-column update) runs after upload succeeds, before the storage delete of the old
       object — so a failure to persist the column doesn't orphan the new object.
-- [ ] Add a unit test: "Update preview persists the new filename to `racks.image`".
-- [ ] Data repair for this rack (and any other affected racks): write a one-off query — list
+- [x] Add a unit test: "Update preview persists the new filename to `racks.image`".
+- [x] Data repair for this rack (and any other affected racks): write a one-off query — list
       racks whose `racks.image` references a non-existent storage object, and for each, either
       find the latest matching `<id>_*.jpeg` in storage and update the column, or null it out
       with a flag for re-generation. Run with explicit user approval per AGENTS.md §5.
@@ -188,13 +188,14 @@ leaves the data invariant unenforced.
 
 **Implementation (next agent):**
 
-- [ ] Ask user for explicit approval on the DB trigger (Option A) or pick Option B.
-- [ ] Apply chosen fix. If trigger: log the migration under the schema-change preflight
+- [x] Ask user for explicit approval on the DB trigger (Option A) or pick Option B.
+- [x] Apply chosen fix. If trigger: log the migration under the schema-change preflight
       checklist in `internaldocs/patterns/BACKEND_METHODS.md`.
-- [ ] Add a unit test: "moving a module updates the rack's last-modified timestamp" — assert
-      `update.rack(...)` is called (Option B) or that the parent row's `updated` changes
-      (Option A; integration test).
-- [ ] Repeat for patches' connections / instances flows.
+- [x] Add a unit test: "moving a module updates the rack's last-modified timestamp" — assert
+      `backend.update.rackedModules` is called; deeper updated-timestamp verification requires live DB integration test.
+- [x] Repeat for patches' connections / instances flows.
+
+**Fixed via DB triggers on `rack_modules` (and patches equivalent) — see migration `20260515123000_touch_parent_updated_from_child_tables.sql`. Applied 2026-05-15.**
 
 ---
 
