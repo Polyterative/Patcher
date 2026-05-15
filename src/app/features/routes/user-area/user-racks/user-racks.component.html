@@ -19,22 +19,12 @@
       @if ((dataService.pagedRacksData$|async); as data) {
         @if (data.length > 0) {
           <div class="section-scroll">
-            <flexbox-row-fast class="section-list share-link-grid">
+            <flexbox-row-fast class="section-list">
               @for (item of data; track item) {
-                <lib-clean-card class="share-link-card">
-                  <div class="share-link-card__content">
-                    <app-rack-micro [data]="item"
-                                    [viewConfig]="rackMinimalViewConfig"
-                    ></app-rack-micro>
-                    <button mat-icon-button
-                            class="share-link-card__button"
-                            matTooltip="Copy share link"
-                            [attr.aria-label]="'Copy share link for ' + item.name"
-                            (click)="copyRackShareLink(item)"
-                    >
-                      <mat-icon>content_copy</mat-icon>
-                    </button>
-                  </div>
+                <lib-clean-card>
+                  <app-rack-micro [data]="item"
+                                  [viewConfig]="rackMinimalViewConfig"
+                  ></app-rack-micro>
                 </lib-clean-card>
               }
             </flexbox-row-fast>

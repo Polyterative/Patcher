@@ -28,8 +28,6 @@ describe('UserPatchesComponent', () => {
       mockDialog as any,
       mockBackend as any,
       mockDataService as any,
-      {} as any,
-      {} as any
     );
   }
   
@@ -55,8 +53,6 @@ describe('UserPatchesComponent', () => {
       mockDialog as any,
       mockBackend as any,
       mockDataService as any,
-      {} as any,
-      {} as any
     );
     
     expect(spy).toHaveBeenCalledTimes(1);

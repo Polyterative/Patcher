@@ -29,8 +29,6 @@ describe('UserRacksComponent', () => {
       mockDialog as any,
       mockBackend as any,
       mockDataService as any,
-      {} as any,
-      {} as any
     );
   }
   
@@ -61,8 +59,6 @@ describe('UserRacksComponent', () => {
       mockDialog as any,
       mockBackend as any,
       mockDataService as any,
-      {} as any,
-      {} as any
     );
     
     expect(spy).toHaveBeenCalledWith(undefined);
