@@ -73,3 +73,37 @@ src/backend/
 - Observables as `readonly`
 - Actions via Subjects
 - Components use `async` pipe
+
+
+## Opaque URL Token Pattern (`public_id` + SECURITY DEFINER RPC)
+
+Used for: racks, patches (any entity that can be privately shared via link).
+
+**Problem solved:** sequential numeric `/racks/details/:id` URLs allow enumeration of private
+content. Anyone can iterate IDs and discover private racks.
+
+**Pattern:**
+
+1. **DB column:** `public_id text UNIQUE NOT NULL` — 12-char nanoid-style token, alphabet
+   `[A-Za-z0-9_-]` (~71 bits entropy). Generated server-side by a `BEFORE INSERT` trigger using
+   `pgcrypto`. Backfill existing rows with the same helper function.
+
+2. **SECURITY DEFINER RPC:** `get_<entity>_by_public_id(token text)` — bypasses RLS so anonymous
+   callers with the token can read a private row. Returns the same column shape as the regular
+   authenticated read. The 71-bit keyspace makes brute-force infeasible.
+
+3. **Legacy resolver RPC:** `resolve_public_<entity>_legacy_id(p_id int)` — returns `public_id`
+   for **public** rows only, NULL for private/missing. Used by redirect components.
+
+4. **Angular routing:**
+   - Canonical URL: `/<entities>/:publicId` — routed to the detail component, loads via the
+     SECURITY DEFINER RPC.
+   - Legacy URL: `/<entities>/details/:id` — routed to `Legacy<Entity>RedirectComponent`:
+     - public row → `router.navigate(['/<entities>', publicId], { replaceUrl: true })`
+     - private/missing → `router.navigate(['/links/retired'], { replaceUrl: true })`
+
+5. **`RoutingService` helpers:** `linkToRack(rack)` / `linkToPatch(patch)` prefer `public_id`,
+   fall back to `/details/:id` so old cached objects without a token still deep-link.
+
+**Re-use this pattern for any new privately-shareable entity.** Migration reference:
+`supabase/migrations/20260515112000_add_public_id_to_racks_and_patches.sql`

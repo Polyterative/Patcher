@@ -15,7 +15,7 @@ describe('LegacyPatchRedirectComponent', () => {
     return {component, router, backend};
   }
 
-  it('redirects public legacy patch ids to the canonical token URL', () => {
+  it('redirects public legacy patch ids to the canonical token URL with replaceUrl', () => {
     const {component, router, backend} = build('42', 'tokenAbc');
 
     component.ngOnInit();
@@ -25,7 +25,7 @@ describe('LegacyPatchRedirectComponent', () => {
     expect(router.navigate).not.toHaveBeenCalled();
   });
 
-  it('routes private or missing legacy patch ids to the retired-link page', () => {
+  it('routes private or missing legacy patch ids to the retired-link page with replaceUrl', () => {
     const {component, router, backend} = build('42', null);
 
     component.ngOnInit();
