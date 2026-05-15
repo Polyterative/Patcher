@@ -2,6 +2,7 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { MatSnackBar } from "@angular/material/snack-bar";
 import {
   BehaviorSubject,
+  combineLatest,
   delay,
   EMPTY,
   merge,
@@ -24,7 +25,10 @@ import {
 import { RackModuleAdderDialogComponent } from 'src/app/components/rack-parts/rack-module-adder/rack-module-adder-dialog.component';
 import { UserManagementService } from '../../features/backbone/login/user-management.service';
 import { SupabaseService } from '../../features/backend/supabase.service';
-import { DbModule } from '../../models/module';
+import {
+  DbModule,
+  UserModulePossessionKind
+} from '../../models/module';
 import { PatchMinimal } from '../../models/patch';
 import { RackMinimal } from '../../models/rack';
 import { MatDialog } from "@angular/material/dialog";
@@ -51,6 +55,10 @@ export class ModuleDetailDataService implements OnDestroy {
   readonly addModuleToCollection$ = new Subject<number>();
   readonly requestAddModuleToRack$ = new Subject<DbModule>();
   readonly removeModuleFromCollection$ = new Subject<number>();
+  /** Unified possession-state action. Pass null to remove from collection. */
+  readonly setModulePossession$ = new Subject<UserModulePossessionKind | null>();
+  /** Current possession kind for the viewed module, or null if not in collection. */
+  readonly currentModulePossession$: Observable<UserModulePossessionKind | null>;
   readonly copyModuleNameAndManufacturer$ = new Subject<void>();
   //
   readonly racksWithThisModule$ = new BehaviorSubject<RackMinimal[] | undefined>(undefined);
@@ -117,6 +125,34 @@ export class ModuleDetailDataService implements OnDestroy {
       )
       .subscribe(x => {
         this.userModulesList$.next(x);
+      });
+
+    this.currentModulePossession$ = combineLatest([
+      this.userModulesList$,
+      this.singleModuleData$
+    ]).pipe(
+      map(([list, module]) => {
+        if (!module) return null;
+        const row = list.find(userModule => userModule.id === module.id);
+        return row?.possessionKind ?? null;
+      })
+    );
+
+    this.setModulePossession$
+      .pipe(
+        withLatestFrom(this.singleModuleData$, this.updateSingleModuleData$),
+        exhaustMap(([kind, module]) => {
+          if (!module) return EMPTY;
+          if (kind === null) {
+            return this.backend.delete.userModule(module.id);
+          }
+          return this.backend.update.userModulePossession(module.id, kind);
+        }),
+        withLatestFrom(this.updateSingleModuleData$),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(([_, moduleId]) => {
+        this.updateSingleModuleData$.next(moduleId);
       });
     
     // get module data

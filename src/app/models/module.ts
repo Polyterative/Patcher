@@ -9,6 +9,7 @@ import { Standard } from './standard';
 import { Switch } from './switch';
 import { Tag } from './tag';
 
+export type UserModulePossessionKind = 'HAS' | 'WANTS' | 'SELLS';
 
 export interface Module {
   name: string;
@@ -45,6 +46,7 @@ export interface MinimalModule extends Timestamped {
   ins?: CV[];
   /** Outputs — only present when explicitly fetched via insOuts join */
   outs?: CV[];
+  possessionKind?: UserModulePossessionKind;
 }
 
 export interface DbModule extends MinimalModule {
