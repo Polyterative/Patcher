@@ -19,7 +19,10 @@ import {
   takeUntil
 } from 'rxjs/operators';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
-import { MinimalModule } from 'src/app/models/module';
+import {
+  MinimalModule,
+  UserModulePossessionKind
+} from 'src/app/models/module';
 import { RackMinimal } from 'src/app/models/rack';
 import { RackDetailDataService } from '../../rack-parts/rack-detail-data.service';
 import { ModuleDetailDataService } from '../module-detail-data.service';
@@ -92,6 +95,7 @@ export class ModuleMinimalComponent implements OnInit, OnDestroy {
   isTagChooserOpen = false;
 
   isInCollection$: Observable<boolean>;
+  possessionKind$: Observable<UserModulePossessionKind | null>;
   
   get insCount(): number {
     return this.data?.ins?.length ?? 0;
@@ -113,10 +117,21 @@ export class ModuleMinimalComponent implements OnInit, OnDestroy {
   
   ngOnInit(): void {
     this.isInCollection$ = this.dataService.userModulesList$
-                               .pipe(
-                                  map(data => data.filter(x => x.id === this.data.id).length > 0),
-                                  takeUntil(this.destroyEvent$)
-                                );
+      .pipe(
+        map(data => {
+          const row = data.find(module => module.id === this.data.id);
+          return row?.possessionKind === 'HAS' || row?.possessionKind === 'SELLS';
+        }),
+        takeUntil(this.destroyEvent$)
+      );
+
+    this.possessionKind$ = this.dataService.userModulesList$.pipe(
+      map(data => {
+        const row = data.find(module => module.id === this.data.id);
+        return row?.possessionKind ?? null;
+      }),
+      takeUntil(this.destroyEvent$)
+    );
   }
   
   protected destroyEvent$ = new Subject<void>();
