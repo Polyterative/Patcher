@@ -29,7 +29,7 @@ describe('ModuleDetailDataService', () => {
         hasAdminRole$: jasmine.createSpy('hasAdminRole$').and.returnValue(adminRole$.asObservable())
       },
       GET: {
-        currentUserModules: jasmine.createSpy('currentUserModules').and.returnValue(of([{id: 50}])),
+        currentUserModules: jasmine.createSpy('currentUserModules').and.returnValue(of([{id: 50, possessionKind: 'HAS'}])),
         moduleWithId: jasmine.createSpy('moduleWithId').and.callFake((id: number) => of({
           data: {...baseModule, id}
         }))
@@ -59,7 +59,8 @@ describe('ModuleDetailDataService', () => {
       },
       update: {
         module: jasmine.createSpy('module').and.callFake((module: any) => of(module)),
-        moduleStoreUrl: jasmine.createSpy('moduleStoreUrl').and.returnValue(of(null))
+        moduleStoreUrl: jasmine.createSpy('moduleStoreUrl').and.returnValue(of(null)),
+        userModulePossession: jasmine.createSpy('userModulePossession').and.returnValue(of(null))
       }
     };
     
@@ -119,14 +120,43 @@ describe('ModuleDetailDataService', () => {
   it('adds and removes module from collection then refreshes current module', () => {
     const {service, backend} = build();
     const nextSpy = spyOn(service.updateSingleModuleData$, 'next').and.callThrough();
-    
+
     service.updateSingleModuleData$.next(10);
     service.addModuleToCollection$.next(10);
     service.removeModuleFromCollection$.next(10);
-    
+
     expect(backend.add.userModule).toHaveBeenCalledWith(10);
     expect(backend.delete.userModule).toHaveBeenCalledWith(10);
     expect(nextSpy).toHaveBeenCalledWith(10);
+  });
+
+  it('sets and clears module possession then refreshes current module', () => {
+    const {service, backend} = build();
+    const nextSpy = spyOn(service.updateSingleModuleData$, 'next').and.callThrough();
+
+    service.updateSingleModuleData$.next(10);
+    service.setModulePossession$.next('WANTS');
+    service.setModulePossession$.next(null);
+
+    expect(backend.update.userModulePossession).toHaveBeenCalledWith(10, 'WANTS');
+    expect(backend.delete.userModule).toHaveBeenCalledWith(10);
+    expect(nextSpy).toHaveBeenCalledWith(10);
+  });
+
+  it('derives currentModulePossession$ from current user modules and viewed module', () => {
+    const {service} = build();
+    let latest: string | null | undefined;
+
+    service.currentModulePossession$.subscribe(value => latest = value);
+    service.singleModuleData$.next({id: 50} as any);
+
+    expect(latest).toBe('HAS');
+
+    service.userModulesList$.next([{id: 50, possessionKind: 'SELLS'} as any]);
+    expect(latest).toBe('SELLS');
+
+    service.userModulesList$.next([{id: 1, possessionKind: 'HAS'} as any]);
+    expect(latest).toBeNull();
   });
   
   it('opens module-to-rack dialog and refreshes module data', () => {
@@ -359,7 +389,7 @@ describe('ModuleDetailDataService', () => {
     expect(service.moduleEditorHasPendingChanges$.value).toBeFalse();
     expect(service.isAdmin$.value).toBeFalse();
     // userModulesList$ fires immediately via loggedUser$ BehaviorSubject in constructor
-    expect(service.userModulesList$.value).toEqual([{id: 50} as any]);
+    expect(service.userModulesList$.value).toEqual([{id: 50, possessionKind: 'HAS'} as any]);
   });
 
   it('clears singleModuleData$ and related streams to undefined when updateSingleModuleData$ fires', fakeAsync(() => {
@@ -392,7 +422,7 @@ describe('ModuleDetailDataService', () => {
     tick(260);
 
     expect(backend.GET.currentUserModules).toHaveBeenCalledWith(false);
-    expect(service.userModulesList$.value).toEqual([{id: 50} as any]);
+    expect(service.userModulesList$.value).toEqual([{id: 50, possessionKind: 'HAS'} as any]);
   }));
 
   it('sets userModulesList$ to empty array when user is not logged in', fakeAsync(() => {

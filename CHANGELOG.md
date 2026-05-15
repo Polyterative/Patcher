@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file. See [standa
 ## [Unreleased]
 
 ### Added
+- **Module Possession States (Layer 1):** Replace binary Add/Remove collection toggle with a 3-state segmented control — *Own*, *Want*, *Sell* — on every module detail card. Users can now track modules as owned (`HAS`), wished (`WANTS`), or for sale (`SELLS`). Tapping an active state deselects and removes the module from the collection. Backed by the existing `user_modules.kind` DB enum — no schema changes.
 - Skip-to-content keyboard link and `<main>` landmark in app shell for screen reader navigation
 - `og:image` / `twitter:image` meta tags on manufacturer detail, module detail, and public profile pages for richer social sharing previews
 

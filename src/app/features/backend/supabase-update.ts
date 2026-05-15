@@ -20,7 +20,8 @@ import {
 } from '../../models/cv';
 import {
   DbModule,
-  RackedModule
+  RackedModule,
+  UserModulePossessionKind
 } from '../../models/module';
 import {
   RackingData,
@@ -333,6 +334,18 @@ export function createUpdateNamespace(
         );
       }),
       cacheBust(['patches']),
+      remapErrors()
+    ),
+
+    userModulePossession: (moduleId: number, kind: UserModulePossessionKind) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return rxFrom(
+          supabase.from(DbPaths.user_modules)
+            .upsert({moduleid: moduleId, profileid: user.id, kind}, {onConflict: 'profileid,moduleid'})
+        );
+      }),
+      cacheBust(['currentUserModules']),
       remapErrors()
     )
   };
