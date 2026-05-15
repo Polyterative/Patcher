@@ -14,9 +14,11 @@ import { HeroContentCardComponent } from './hero-content-card.component';
 describe('HeroContentCardComponent', () => {
   let fixture: ComponentFixture<HeroContentCardComponent>;
   let wideShell$: BehaviorSubject<boolean>;
+  let isAdmin$: BehaviorSubject<boolean>;
 
   beforeEach(async () => {
     wideShell$ = new BehaviorSubject(false);
+    isAdmin$ = new BehaviorSubject(false);
 
     await TestBed.configureTestingModule({
       imports: [
@@ -41,7 +43,8 @@ describe('HeroContentCardComponent', () => {
           provide: UserManagementService,
           useValue: {
             loggedUser$: new BehaviorSubject(undefined),
-            loggedUserFullProfile$: new BehaviorSubject(undefined)
+            loggedUserFullProfile$: new BehaviorSubject(undefined),
+            isAdmin$
           }
         }
       ],
@@ -70,6 +73,23 @@ describe('HeroContentCardComponent', () => {
     expect(host.textContent).toContain('Modules');
     expect(host.textContent).toContain('Racks');
     expect(host.textContent).toContain('Log in');
+  });
+
+  it('renders the admin target in the wide-shell account group for admin users', () => {
+    isAdmin$.next(true);
+    wideShell$.next(true);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.textContent).toContain('Admin');
+  });
+
+  it('does not render the admin target in the wide-shell account group for guests or non-admin users', () => {
+    wideShell$.next(true);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.textContent).not.toContain('Admin');
   });
 
   it('reveals a compact sticky nav only after the integrated nav has scrolled past the toolbar edge', () => {

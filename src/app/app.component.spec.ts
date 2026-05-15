@@ -130,13 +130,13 @@ describe('AppComponent', () => {
     expect(shell.classList.contains('app-shell--wide')).toBeTrue();
   });
 
-  it('does NOT use embedded shell on admin routes', () => {
+  it('uses the embedded shell on admin routes when wide-shell layout is active', () => {
     routerMock.url = '/admin/flags';
     wideShell$.next(true);
     fixture.detectChanges();
 
     const shell = fixture.debugElement.query(By.css('.app-shell')).nativeElement as HTMLElement;
-    expect(shell.classList.contains('app-shell--wide')).toBeFalse();
+    expect(shell.classList.contains('app-shell--wide')).toBeTrue();
   });
 
   it('uses the embedded shell on /user/area when wide-shell is active', () => {
