@@ -2,20 +2,52 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-## [Unreleased]
+### [6.0.1](https://github.com/Polyterative/Patcher/compare/v6.0.0...v6.0.1) (2026-05-15)
 
-### Added
-- Skip-to-content keyboard link and `<main>` landmark in app shell for screen reader navigation
-- `og:image` / `twitter:image` meta tags on manufacturer detail, module detail, and public profile pages for richer social sharing previews
 
-### Fixed
-- `aria-label` added to all icon-only buttons project-wide (18+ buttons across 8 components) so screen readers can announce button purpose
-- Nested `<main>` landmark in home page replaced with `<div>` to produce valid, single-landmark HTML
-- `role="alert"` added to standalone password-mismatch error in sign-up form so screen readers announce it immediately
-- `hero-clickable-title` card title link changed from `<div [routerLink]>` to `<a [routerLink]>` for native keyboard focus and Tab/Enter navigation
-- `module-part-image` and manufacturer-row module-strip cards: added `role="link"` + `tabindex="0"` to non-anchor routerLink containers so keyboard users can navigate to detail pages
-- `module-cvitem` CV port: added `role="button"`, `tabindex="0"`, and keyboard handlers (Enter/Space) so patch editor CV ports are operable without a mouse
-- 7 pre-existing E2E test failures repaired (login strict-mode violation, home `@defer` scroll, module/patch navigation selector)
+### Features
+
+* **a11y:** add skip-to-content link and main landmark to app shell ([0c6853a](https://github.com/Polyterative/Patcher/commit/0c6853a2b6ae309cdb8715f681489020b34de64b))
+* **changelog:** upgrade to new toolbar and refine UI to match app standard ([2807a9b](https://github.com/Polyterative/Patcher/commit/2807a9be557659215ed3cbc913d9517cf18e1af7))
+* **manufacturer:** logo display, standard grouping default, data-report guidance ([7247874](https://github.com/Polyterative/Patcher/commit/72478744d3b8706c5a19cd43122a11ea3a47d27c))
+* **manufacturer:** set og:image to logo URL for richer social sharing ([994f68f](https://github.com/Polyterative/Patcher/commit/994f68fb7797a207800d8699535a732941f018ad))
+* **module-detail:** include panel image in og:image / twitter:image meta ([d68975d](https://github.com/Polyterative/Patcher/commit/d68975d204b0c8d7fac4bb8ca20d5ca8959c6bca))
+* **public-profile:** set user avatar as og:image for social card previews ([cf4b861](https://github.com/Polyterative/Patcher/commit/cf4b861f5deab887b04b7a069bdc4042cd7d28c4))
+* **security:** replace enumerable rack/patch IDs with opaque public_id token URLs ([f03e3cb](https://github.com/Polyterative/Patcher/commit/f03e3cb63af8412ceda13bd9d6ea68d81a0fce90))
+* **seo:** add manufacturer detail metadata to SEO middleware ([907e676](https://github.com/Polyterative/Patcher/commit/907e676a1b8d0b51c614ab426409aff44319bb12))
+* **seo:** add manufacturer pages to sitemap ([b530cd1](https://github.com/Polyterative/Patcher/commit/b530cd1156bc812c81cdcfc79ffcbda2860b3979))
+* **seo:** add og:image to rack detail metadata; add SEO unit tests ([88430a8](https://github.com/Polyterative/Patcher/commit/88430a869ced6cbfce5a5d5544ea083e9d7a8c74))
+* **ux:** add copy-share-link button to my racks/patches and cache token RPC reads ([81b0e08](https://github.com/Polyterative/Patcher/commit/81b0e0898db2666fddfb9aa0f5dde9758c2a9747))
+
+
+### Bug Fixes
+
+* **a11y:** add aria-label to all remaining icon-only buttons ([dcbdd9e](https://github.com/Polyterative/Patcher/commit/dcbdd9eda81da62e0ddd9aca3267ff4f4afdcf10))
+* **a11y:** add aria-label to icon-only buttons in comments and module-minimal ([5d525f2](https://github.com/Polyterative/Patcher/commit/5d525f2b3e4da24d663fde3c21f71cf2bca245ec))
+* **a11y:** add role=alert to standalone password-mismatch mat-error ([6aa8237](https://github.com/Polyterative/Patcher/commit/6aa8237e056983c4fc9e3b26602c2aba09b15c0f))
+* **a11y:** add role=link and tabindex to module-strip cards in manufacturer row ([eddb99c](https://github.com/Polyterative/Patcher/commit/eddb99ceb519cafb569b6006853edac498d6bc56))
+* **a11y:** make CV-item interactive element keyboard accessible ([ff7ad24](https://github.com/Polyterative/Patcher/commit/ff7ad248920ea29d8b6e56ac9042adf85786aa78))
+* **a11y:** make routerLink-driven title and image containers keyboard accessible ([205ff3a](https://github.com/Polyterative/Patcher/commit/205ff3a603ddba1d7366d062c027a91ca3bed146))
+* **a11y:** remove nested <main> in home page ([b258e18](https://github.com/Polyterative/Patcher/commit/b258e18d11f6f55707c841a75d6e6ba36e723412))
+* **admin-flags:** add delete confirmation and sort order toggle ([06fca8b](https://github.com/Polyterative/Patcher/commit/06fca8b5d525fb24f829a5b49926850d249ac93c))
+* **admin:** use wide shell navigation ([4e8a829](https://github.com/Polyterative/Patcher/commit/4e8a829931f04eff64617e332b6c342742c3f353))
+* **cache:** add missing rackWithId/racksMinimal invalidations in rack mutation ops ([d5fc8ec](https://github.com/Polyterative/Patcher/commit/d5fc8ec9eaf285c5f50a5dbe24d3a9aabd7e4b21))
+* **changelog,faq:** point roadmap links to ROADMAP.md instead of dev backlog ([0c40884](https://github.com/Polyterative/Patcher/commit/0c40884ff6527e0b262dd4944c5d84e11c619945))
+* **docs:** record spacing pass ([4a69e5e](https://github.com/Polyterative/Patcher/commit/4a69e5ecd40513335d31127528bb93f84c913160))
+* **e2e:** repair 6 pre-existing spec failures ([c17e763](https://github.com/Polyterative/Patcher/commit/c17e76301f6cf25c01a5deee0f091646a229c579))
+* **e2e:** update navigation spec selector after main→div rename ([1f809b7](https://github.com/Polyterative/Patcher/commit/1f809b728808b129474a1aad4b6102356fe667cc))
+* **event-banner:** align banner spacing to scale ([1183842](https://github.com/Polyterative/Patcher/commit/118384241ea7e0b579098b604dfaead69722a9f1))
+* **home:** normalize landing spacing scale ([0baa0b9](https://github.com/Polyterative/Patcher/commit/0baa0b9dfdf1decf513d535edffdc6b508df95d0))
+* **module-editor:** stack setup sections ([ca502a2](https://github.com/Polyterative/Patcher/commit/ca502a2a7ec31a09c4630c2d93a77c046ee3428f))
+* **patch-editor:** show 'No rack linked yet' when kind is unlinked ([4394865](https://github.com/Polyterative/Patcher/commit/4394865a1905e2b8ff7261208eb0acad48606856))
+* **patch:** use editorConnections$ for empty-state source in patch-details template ([50af7e7](https://github.com/Polyterative/Patcher/commit/50af7e75b47ff5809860bcd2e7d62650af41d0fb))
+* **rack:** handle missing preview images ([ed4a7d1](https://github.com/Polyterative/Patcher/commit/ed4a7d181f02d9f574331a419804695c49ad3ae0))
+* **racks:** add DB triggers to bump parent updated on child-table writes ([6ccd18a](https://github.com/Polyterative/Patcher/commit/6ccd18ad64852569c6a64d45f823d29d9e31b442))
+* **racks:** make old-image delete best-effort and surface update.rack errors in preview flow ([1feefcf](https://github.com/Polyterative/Patcher/commit/1feefcf22e2dc7d1736fe49bc13d4eba1c505dfd))
+* **reactive:** replace switchMap with exhaustMap on remaining write operations ([25ec05a](https://github.com/Polyterative/Patcher/commit/25ec05a1ee7a05505b073dc5b6f81d4b162d3c7e))
+* **reactive:** replace switchMap with exhaustMap on write operations ([f16ecf0](https://github.com/Polyterative/Patcher/commit/f16ecf00b8deb41b034a6d48bd541a9d5a01a051))
+* **supabase:** qualify public id token generator ([e88e5b7](https://github.com/Polyterative/Patcher/commit/e88e5b7601eb491bf654f07957d360d516776ce0))
+* **supabase:** run public id helpers as definer ([ea85cb1](https://github.com/Polyterative/Patcher/commit/ea85cb1e9b0d246f575da5e8dc311a855a3e5fa1))
 
 ## [6.0.0](https://github.com/Polyterative/Patcher/compare/v5.7.3...v6.0.0) (2026-05-13)
 
