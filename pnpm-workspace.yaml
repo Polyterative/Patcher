@@ -1,12 +1,6 @@
 packages:
   - '.'
 
-packages:
-  - '.'
-
-packages:
-  - '.'
-
 allowBuilds:
   '@parcel/watcher': true
   '@scarf/scarf': true
