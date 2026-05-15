@@ -103,6 +103,8 @@ export class AppComponent {
       || isAuthShellRoute
       || normalizedUrl.startsWith('/user/area')
       || normalizedUrl.startsWith('/user/account')
-      || normalizedUrl.startsWith('/u/');
+      || normalizedUrl.startsWith('/u/')
+      || normalizedUrl === '/admin'
+      || normalizedUrl.startsWith('/admin/');
 }
 }

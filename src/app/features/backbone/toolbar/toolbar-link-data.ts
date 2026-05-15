@@ -125,9 +125,9 @@ export function buildToolbarGuestLinks(): RouteClickableLink[] {
   return guestLinksCache;
 }
 
-export function buildWideShellAccountLinks(isLoggedIn: boolean, username: string): RouteClickableLink[] {
+export function buildWideShellAccountLinks(isLoggedIn: boolean, username: string, isAdmin = false): RouteClickableLink[] {
   const normalizedUsername = username.trim() || 'Account';
-  const cacheKey = `${ isLoggedIn ? 'user' : 'guest' }:${ normalizedUsername }`;
+  const cacheKey = `${ isLoggedIn ? 'user' : 'guest' }:${ normalizedUsername }:${ isAdmin ? 'admin' : 'standard' }`;
   const cachedLinks = wideShellAccountLinksCache.get(cacheKey);
   if (cachedLinks) {
     return cachedLinks;
@@ -154,6 +154,9 @@ export function buildWideShellAccountLinks(isLoggedIn: boolean, username: string
 
     return link;
   });
+  if (isAdmin) {
+    nextLinks.push(...getToolbarAdminLinks());
+  }
   wideShellAccountLinksCache.set(cacheKey, nextLinks);
   return nextLinks;
 }
