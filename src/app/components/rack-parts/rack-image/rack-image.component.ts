@@ -41,6 +41,7 @@ export class RackImageComponent implements OnInit, OnChanges {
   readonly rackStorageBase = StorageUrls.racks;
   
   filename: string | undefined;
+  imageLoadFailed = false;
   
   // proportion between contained and full size
   sizeDivider: number = 1.5;
@@ -51,22 +52,24 @@ export class RackImageComponent implements OnInit, OnChanges {
   }
   
   ngOnChanges(): void {
-    if (this.data.image) {
-      this.filename = this.data.image;
-    } else {
-      this.filename = undefined;
-    }
-    
+    this.syncFilename();
   }
   
   ngOnInit(): void {
-    if (this.data.image) {
-      this.filename = this.data.image;
-    } else {
-      this.filename = undefined;
-    }
-    
+    this.syncFilename();
     this.changeDetection.detectChanges();
+  }
+
+  onPreviewLoadError(): void {
+    this.imageLoadFailed = true;
+  }
+
+  private syncFilename(): void {
+    const nextFilename = this.data.image || undefined;
+    if (this.filename !== nextFilename) {
+      this.imageLoadFailed = false;
+    }
+    this.filename = nextFilename;
   }
   
 }

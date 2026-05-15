@@ -45,6 +45,10 @@ describe('RackImageComponent', () => {
     it('filename is initially undefined', () => {
       expect(new RackImageComponent(cdr).filename).toBeUndefined();
     });
+
+    it('imageLoadFailed defaults to false', () => {
+      expect(new RackImageComponent(cdr).imageLoadFailed).toBeFalse();
+    });
   });
 
   describe('ngOnInit', () => {
@@ -83,6 +87,26 @@ describe('RackImageComponent', () => {
       comp.data = makeRack(undefined);
       comp.ngOnChanges();
       expect(comp.filename).toBeUndefined();
+    });
+
+    it('clears failed state when the image filename changes', () => {
+      const comp = new RackImageComponent(cdr);
+      comp.data = makeRack('old.jpg');
+      comp.ngOnChanges();
+      comp.onPreviewLoadError();
+
+      comp.data = makeRack('new.jpg');
+      comp.ngOnChanges();
+
+      expect(comp.imageLoadFailed).toBeFalse();
+    });
+  });
+
+  describe('onPreviewLoadError', () => {
+    it('marks the preview as failed', () => {
+      const comp = new RackImageComponent(cdr);
+      comp.onPreviewLoadError();
+      expect(comp.imageLoadFailed).toBeTrue();
     });
   });
 });
