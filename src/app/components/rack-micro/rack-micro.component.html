@@ -5,7 +5,7 @@
                   [containImage]="viewConfig.containImage"
   ></app-rack-image>
 
-  <app-hero-clickable-title [link]="['/racks/details',data.id]"
+  <app-hero-clickable-title [link]="data.public_id ? ['/racks', data.public_id] : ['/racks/details', data.id]"
   >{{ data.name }}
   </app-hero-clickable-title>
   <div class="row gap1 space-between"

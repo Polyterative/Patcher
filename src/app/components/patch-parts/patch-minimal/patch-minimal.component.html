@@ -202,7 +202,7 @@
         <button mat-icon-button
                 matTooltip="Share patch"
                 aria-label="Share patch"
-                (click)="urlCreatorService.copyLinkToClipboard('/patches/details/'+data.id)"
+                (click)="urlCreatorService.copyLinkToClipboard(data.public_id ? '/patches/'+data.public_id : '/patches/details/'+data.id)"
         >
           <mat-icon>share</mat-icon>
         </button>

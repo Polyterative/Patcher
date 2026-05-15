@@ -1,0 +1,8 @@
+allowBuilds:
+  '@parcel/watcher': true
+  '@scarf/scarf': true
+  '@sentry/cli': true
+  core-js: true
+  esbuild: true
+  lmdb: true
+  msgpackr-extract: true

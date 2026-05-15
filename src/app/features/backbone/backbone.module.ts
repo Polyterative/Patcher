@@ -28,7 +28,9 @@ import { FeedbackBoxModule }         from './feedback-box/feedback-box.module';
 import { FooterComponent }           from './footer/footer.component';
 import { ProducthuntBadgeComponent } from './footer/producthunt-badge/producthunt-badge.component';
 import { HomeModule }                from './home/home.module';
+import { LegacyLinkGoneModule }      from './legacy-link-gone/legacy-link-gone.module';
 import { LoginModule }               from './login/login.module';
+import { NotFoundModule }            from './404/not-found.module';
 import { SentryIntegrationModule }   from './sentry-integration/sentry-integration.module';
 import { ToolbarModule }             from './toolbar/toolbar.module';
 
@@ -67,7 +69,8 @@ import { ToolbarModule }             from './toolbar/toolbar.module';
     LottieContainerModule,
     MatButtonModule,
     MatIconModule,
-    // NotFoundModule//keep as last (for routes)
+    LegacyLinkGoneModule,
+    NotFoundModule//keep as last (for routes)
   ], providers: [
     AppStateService,
     UserDataHandlerService,

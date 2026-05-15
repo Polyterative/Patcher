@@ -140,7 +140,7 @@ export function createAddNamespace(
           supabase
             .from(DbPaths.racks)
             .insert({...data, authorid: user.id})
-            .select('id')
+            .select('id, public_id')
         );
       }),
       cacheBust(['rackWithId', 'racksMinimal']),
@@ -164,7 +164,7 @@ export function createAddNamespace(
                 public: data.public ?? true,
                 ...(data.linked_rack_id === undefined ? {} : {linked_rack_id: data.linked_rack_id})
               })
-              .select('id')
+              .select('id, public_id')
           );
         }),
         throwIfSupabaseError(),
