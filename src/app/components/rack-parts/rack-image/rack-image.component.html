@@ -7,7 +7,7 @@
     height: 20
   }; as bag) {
     @if (containImage) {
-      @if (filename) {
+      @if (filename && !imageLoadFailed) {
         <img
           class="img image-transition"
           [ngStyle]="{maxHeight:bag.height/sizeDivider+'rem'}"
@@ -15,11 +15,32 @@
           [@enter]
           loading="lazy"
           [alt]="'Rack preview for '+data.name"
+          (error)="onPreviewLoadError()"
         >
+      } @else if (filename && imageLoadFailed) {
+        <div
+          class="rack-image-fallback rack-image-fallback--contained image-transition"
+          [ngStyle]="{maxHeight:bag.height/sizeDivider+'rem'}"
+          [@enter]
+          role="img"
+          [attr.aria-label]="'Rack preview unavailable for '+data.name"
+        >
+          <span class="rack-image-fallback__eyebrow">Preview unavailable</span>
+        </div>
+      } @else {
+        <div
+          class="rack-image-fallback rack-image-fallback--contained rack-image-fallback--empty image-transition"
+          [ngStyle]="{maxHeight:bag.height/sizeDivider+'rem'}"
+          [@enter]
+          role="img"
+          [attr.aria-label]="'No rack preview yet for '+data.name"
+        >
+          <span class="rack-image-fallback__eyebrow">New rack</span>
+        </div>
       }
     }
     @if (!containImage) {
-      @if (filename) {
+      @if (filename && !imageLoadFailed) {
         <img
           [ngStyle]="{maxHeight:((bag.height)+'rem')}"
           [src]="rackStorageBase+filename"
@@ -27,7 +48,28 @@
           class="image-transition"
           loading="lazy"
           [alt]="'Rack preview for '+data.name"
+          (error)="onPreviewLoadError()"
         >
+      } @else if (filename && imageLoadFailed) {
+        <div
+          class="rack-image-fallback image-transition"
+          [ngStyle]="{maxHeight:bag.height+'rem'}"
+          [@enter]
+          role="img"
+          [attr.aria-label]="'Rack preview unavailable for '+data.name"
+        >
+          <span class="rack-image-fallback__eyebrow">Preview unavailable</span>
+        </div>
+      } @else {
+        <div
+          class="rack-image-fallback rack-image-fallback--empty image-transition"
+          [ngStyle]="{maxHeight:bag.height+'rem'}"
+          [@enter]
+          role="img"
+          [attr.aria-label]="'No rack preview yet for '+data.name"
+        >
+          <span class="rack-image-fallback__eyebrow">New rack</span>
+        </div>
       }
     }
   }
