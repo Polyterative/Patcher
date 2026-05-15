@@ -33,7 +33,7 @@ describe('RackBrowserDetailViewComponent', () => {
     rowedRackedModules$ = new BehaviorSubject<any>(undefined);
     dataService = {
       setPublicDetailMode: jasmine.createSpy('setPublicDetailMode'),
-      updateSingleRackData$: {next: jasmine.createSpy('updateSingleRackData$.next')},
+      updateSingleRackByPublicId$: {next: jasmine.createSpy('updateSingleRackByPublicId$.next')},
       singleRackData$,
       rowedRackedModules$
     };
@@ -47,7 +47,7 @@ describe('RackBrowserDetailViewComponent', () => {
     component = new RackBrowserDetailViewComponent(
       dataService,
       userAreaDataService,
-      {params: of({id: '42'})} as any,
+      {params: of({publicId: 'abc123XYZ_-0'})} as any,
       seoService,
       commentsDataService,
       userManagementService
@@ -92,7 +92,7 @@ describe('RackBrowserDetailViewComponent', () => {
     component.ngOnInit();
 
     expect(dataService.setPublicDetailMode).toHaveBeenCalledWith(true);
-    expect(dataService.updateSingleRackData$.next).toHaveBeenCalledWith(42);
+    expect(dataService.updateSingleRackByPublicId$.next).toHaveBeenCalledWith('abc123XYZ_-0');
   });
 
   it('shows the wide-shell nav by default for rack detail pages', () => {
@@ -104,7 +104,7 @@ describe('RackBrowserDetailViewComponent', () => {
     component = new RackBrowserDetailViewComponent(
       dataService,
       userAreaDataService,
-      {params: of({id: '77'})} as any,
+      {params: of({publicId: 'tokenXYZ77_X'})} as any,
       seoService,
       commentsDataService,
       userManagementService
@@ -114,7 +114,7 @@ describe('RackBrowserDetailViewComponent', () => {
 
     expect(dataService.setPublicDetailMode).toHaveBeenCalledWith(false);
     expect(userAreaDataService.updateModulesData$.next).toHaveBeenCalled();
-    expect(dataService.updateSingleRackData$.next).toHaveBeenCalledWith(77);
+    expect(dataService.updateSingleRackByPublicId$.next).toHaveBeenCalledWith('tokenXYZ77_X');
   });
 
   it('calculates rack utilization as a percentage string', () => {
@@ -225,7 +225,7 @@ describe('RackBrowserDetailViewComponent', () => {
 
       templateDataService = {
         setPublicDetailMode: jasmine.createSpy('setPublicDetailMode'),
-        updateSingleRackData$: {next: jasmine.createSpy('updateSingleRackData$.next')},
+        updateSingleRackByPublicId$: {next: jasmine.createSpy('updateSingleRackByPublicId$.next')},
         singleRackData$,
         rowedRackedModules$,
         isCurrentRackEditable$,
@@ -253,7 +253,7 @@ describe('RackBrowserDetailViewComponent', () => {
           {provide: SeoAndUtilsService, useValue: {updateSeo: jasmine.createSpy('updateSeo')}},
           {provide: CommentsDataService, useValue: templateCommentsDataService},
           {provide: UserManagementService, useValue: templateUserManagementService},
-          {provide: ActivatedRoute, useValue: {params: of({id: '42'})}},
+          {provide: ActivatedRoute, useValue: {params: of({publicId: 'route1XYZ_-0'})}},
         ],
         schemas: [NO_ERRORS_SCHEMA],
       })
@@ -280,6 +280,81 @@ describe('RackBrowserDetailViewComponent', () => {
       fixture.detectChanges();
 
       expect(fixture.nativeElement.querySelector('app-comments-root')).toBeNull();
+    });
+  });
+
+  /**
+   * Regression: opening a private rack URL (or any URL where RLS / the lookup
+   * yields no row) used to render a completely blank page because the template
+   * has no fallback branch when `singleRackData$` is undefined.
+   *
+   * Contract: when data is missing and `rackDetailUnavailableMessage$` is set,
+   * the template must render a user-readable element (identified by
+   * `[data-testid="rack-detail-unavailable"]`) containing that message.
+   *
+   * Failing on purpose until the template fix lands.
+   */
+  describe('unavailable / blank-page regression', () => {
+    let fixture: ComponentFixture<RackBrowserDetailViewComponent>;
+    let templateSingleRackData$: BehaviorSubject<any>;
+    let templateUnavailable$: BehaviorSubject<string | null>;
+
+    beforeEach(async () => {
+      templateSingleRackData$ = new BehaviorSubject<any>(undefined);
+      templateUnavailable$ = new BehaviorSubject<string | null>(null);
+
+      const templateDataService: any = {
+        setPublicDetailMode: jasmine.createSpy('setPublicDetailMode'),
+        updateSingleRackByPublicId$: {next: jasmine.createSpy('updateSingleRackByPublicId$.next')},
+        singleRackData$: templateSingleRackData$,
+        rowedRackedModules$: new BehaviorSubject<any>(null),
+        isCurrentRackEditable$: new BehaviorSubject<boolean>(false),
+        isCurrentRackPropertyOfCurrentUser$: new BehaviorSubject<boolean>(false),
+        moduleAddedFromPicker$: new Subject<void>(),
+        rackDetailUnavailableMessage$: templateUnavailable$,
+      };
+
+      await TestBed.configureTestingModule({
+        declarations: [RackBrowserDetailViewComponent],
+        imports: [
+          CommonModule,
+          NoopAnimationsModule,
+        ],
+        providers: [
+          {provide: RackDetailDataService, useValue: templateDataService},
+          {provide: UserAreaDataService, useValue: {updateModulesData$: {next: () => {}}, modulesData$: of([])}},
+          {provide: SeoAndUtilsService, useValue: {updateSeo: () => {}}},
+          {provide: CommentsDataService, useValue: {requestCommentsUpdate$: {next: () => {}}}},
+          {provide: UserManagementService, useValue: {loggedUser$: of(undefined)}},
+          {provide: ActivatedRoute, useValue: {params: of({publicId: 'route1018_XX'})}},
+        ],
+        schemas: [NO_ERRORS_SCHEMA],
+      })
+        .overrideComponent(RackBrowserDetailViewComponent, {set: {providers: []}})
+        .compileComponents();
+
+      fixture = TestBed.createComponent(RackBrowserDetailViewComponent);
+      fixture.componentInstance.ignoreSeo = true;
+    });
+
+    it('renders a user-readable "rack unavailable" element when the rack data is missing', () => {
+      templateUnavailable$.next('This rack is private or no longer available.');
+
+      fixture.detectChanges();
+
+      const unavailableEl = fixture.nativeElement.querySelector('[data-testid="rack-detail-unavailable"]');
+      expect(unavailableEl)
+        .withContext('Template must render a [data-testid="rack-detail-unavailable"] empty state ' +
+          'when singleRackData$ is undefined and rackDetailUnavailableMessage$ is set, ' +
+          'otherwise users see a blank page (this is the bug).')
+        .not.toBeNull();
+      expect(unavailableEl?.textContent ?? '')
+        .toContain('private or no longer available');
+    });
+
+    it('does not render the rack composite when there is no data (sanity)', () => {
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('app-rack-composite')).toBeNull();
     });
   });
 
