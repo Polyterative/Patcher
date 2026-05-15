@@ -8,6 +8,7 @@ create or replace function public.generate_public_id(p_len int default 12)
 returns text
 language plpgsql
 volatile
+security definer
 set search_path = pg_catalog
 as $$
 declare
