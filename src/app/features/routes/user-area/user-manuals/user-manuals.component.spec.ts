@@ -43,7 +43,8 @@ describe('UserManualsComponent', () => {
           provide: UserManagementService,
           useValue: {
             loggedUser$: new BehaviorSubject<any>(null),
-            loggedUserFullProfile$: new BehaviorSubject<any>(null)
+            loggedUserFullProfile$: new BehaviorSubject<any>(null),
+            isAdmin$: new BehaviorSubject<boolean>(false)
           }
         },
         {
