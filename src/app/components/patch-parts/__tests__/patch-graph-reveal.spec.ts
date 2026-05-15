@@ -141,7 +141,7 @@ describe('PatchGraphRevealController', () => {
   }));
 
   it('second reveal replaces first by cancelling prior timers', fakeAsync(() => {
-    let emittedNodeSets: number[] = [];
+    const emittedNodeSets: number[] = [];
 
     const controller = new PatchGraphRevealController(
       {

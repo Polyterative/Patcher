@@ -127,7 +127,7 @@ describe('RackDetailDataService media, rename, and duplication', () => {
     expect(service.analysisMode$.value).toBe(RACK_ANALYSIS_MODES.power);
   }));
   
-  it('updates rack preview image, deletes previous image, and refreshes rack', fakeAsync(() => {
+  it('updates rack preview image, persists the new filename, deletes previous image, and refreshes rack', fakeAsync(() => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {
     });
     const {service, backend} = build();
@@ -141,17 +141,17 @@ describe('RackDetailDataService media, rename, and duplication', () => {
       screen: {nativeElement: {scrollWidth: 20, scrollHeight: 30}} as any
     });
     service.analysisMode$.next(RACK_ANALYSIS_MODES.function);
-    
+
     service.updateRackImagePreview$.next();
     expect(service.analysisMode$.value).toBe(RACK_ANALYSIS_MODES.off);
     expect(service.isRackImageCaptureInProgress$.value).toBeTrue();
     tick(359);
     expect(generateRackJpegSpy).not.toHaveBeenCalled();
     tick(1);
-    
+
     expect(backend.storage.uploadRackImage).toHaveBeenCalled();
+    expect(backend.update.rack).toHaveBeenCalledWith(jasmine.objectContaining({id: 7, image: 'uploaded.jpeg'}));
     expect(backend.storage.deleteRackImage).toHaveBeenCalledWith('old.jpeg');
-    expect(backend.update.rack).toHaveBeenCalled();
     expect(refreshSpy).toHaveBeenCalledWith(7);
     expect(SharedConstants.successCustom).toHaveBeenCalled();
     expect(service.analysisMode$.value).toBe(RACK_ANALYSIS_MODES.function);
@@ -165,15 +165,58 @@ describe('RackDetailDataService media, rename, and duplication', () => {
     service.currentDownloadElementRef$.next({
       screen: {nativeElement: {scrollWidth: 40, scrollHeight: 50}} as any
     });
-    
+
     service.updateRackImagePreview$.next();
     tick(359);
     expect(generateRackJpegSpy).not.toHaveBeenCalled();
     tick(1);
-    
+
     expect(backend.storage.uploadRackImage).toHaveBeenCalled();
     expect(backend.storage.deleteRackImage).not.toHaveBeenCalled();
-    expect(backend.update.rack).toHaveBeenCalled();
+    expect(backend.update.rack).toHaveBeenCalledWith(jasmine.objectContaining({id: 9, image: 'uploaded.jpeg'}));
+  }));
+
+  it('continues when the previous rack image is already missing from storage', fakeAsync(() => {
+    spyOn(SharedConstants, 'successCustom').and.callFake(() => {
+    });
+    const {service, backend} = build();
+    backend.storage.deleteRackImage.and.returnValue(throwError(() => ({status: 404, message: 'Object not found'})));
+    spyOn<any>(service, 'generateRackJpeg$').and.returnValue(of('data:image/jpeg;base64,YQ=='));
+    const refreshSpy = spyOn(service.updateSingleRackData$, 'next').and.callThrough();
+    service.singleRackData$.next(rack({id: 11, image: 'missing.jpeg'}));
+    service.currentDownloadElementRef$.next({
+      screen: {nativeElement: {scrollWidth: 40, scrollHeight: 50}} as any
+    });
+
+    service.updateRackImagePreview$.next();
+    tick(360);
+
+    expect(backend.update.rack).toHaveBeenCalledWith(jasmine.objectContaining({id: 11, image: 'uploaded.jpeg'}));
+    expect(refreshSpy).toHaveBeenCalledWith(11);
+    expect(SharedConstants.successCustom).toHaveBeenCalled();
+  }));
+
+  it('shows an error when persisting the new rack preview filename fails', fakeAsync(() => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
+    });
+    spyOn(SharedConstants, 'successCustom').and.callFake(() => {
+    });
+    const {service, backend} = build();
+    backend.update.rack.and.returnValue(throwError(() => new Error('db write failed')));
+    spyOn<any>(service, 'generateRackJpeg$').and.returnValue(of('data:image/jpeg;base64,YQ=='));
+    const refreshSpy = spyOn(service.updateSingleRackData$, 'next').and.callThrough();
+    service.singleRackData$.next(rack({id: 12, image: 'old.jpeg'}));
+    service.currentDownloadElementRef$.next({
+      screen: {nativeElement: {scrollWidth: 40, scrollHeight: 50}} as any
+    });
+
+    service.updateRackImagePreview$.next();
+    tick(360);
+
+    expect(backend.storage.deleteRackImage).not.toHaveBeenCalled();
+    expect(refreshSpy).not.toHaveBeenCalled();
+    expect(SharedConstants.errorCustom).toHaveBeenCalled();
+    expect(SharedConstants.successCustom).not.toHaveBeenCalled();
   }));
   
   it('updates rack name from inline control and auto-saves', fakeAsync(() => {
