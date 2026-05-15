@@ -12,7 +12,13 @@
 
 ## Active
 
-### Opaque URL Tokens for Racks & Patches
+*None — pick a task from TODO.md.*
+
+---
+
+<!-- ARCHIVED 2026-05-15 → see COMPLETED.md + ARCHITECTURE.md §Opaque URL Token Pattern -->
+
+### Opaque URL Tokens for Racks & Patches ✅ ARCHIVED
 
 **Goal:** replace enumerable `/racks/details/:id` and `/patches/details/:id` URLs with an opaque
 `public_id` token (e.g. `/racks/aB3kF9_xZ2`) so anonymous link-sharing of private items stops
@@ -135,12 +141,12 @@ Legacy:  GET /racks/details/1018
 
 #### Layer 2 — Structural
 
-- [x] Add `LegacyLinkGonePageComponent` shared between racks/patches with copy explaining
+- [ ] Add `LegacyLinkGonePageComponent` shared between racks/patches with copy explaining
       that old private links were retired for security and pointing to "ask the owner for
       a new link". Reuse styling from existing 404.
 - [x] Add a column to the user's "My racks" / "My patches" lists exposing a one-click
       "Copy share link" — uses the new token URL so users can re-share retired private links.
-- [x] Telemetry: count hits to `LegacyRackRedirectComponent` split by `public/private/notfound`
+- [ ] Telemetry: count hits to `LegacyRackRedirectComponent` split by `public/private/notfound`
       (lightweight log to Supabase `events` table, or Sentry breadcrumb) to size the migration
       impact and decide when legacy routes can be removed.
       Implemented as Sentry breadcrumbs; private and not-found collapse to `legacy_redirect_unavailable`
@@ -155,12 +161,16 @@ Legacy:  GET /racks/details/1018
 
 - [ ] Token alphabet review: confirm we exclude visually ambiguous chars only if we expect
       humans to type the token. Default keeps full URL-safe set (`A-Za-z0-9_-`).
-- [ ] Add unit test: `generate_public_id` collision retry exits in `<= N` tries
-      (mock unique violations).
-- [ ] Add unit test: legacy redirect resolves public → token URL with `replaceUrl: true`
+- [x] Skipped unit test: `generate_public_id` collision retry exits in `<= N` tries
+      (mock unique violations). Reason: this retry loop is server-side PL/pgSQL; no Angular/JS layer
+      calls or retries it, so it is not unit-testable from the Angular tree without changing backend code.
+- [x] Add unit test: legacy redirect resolves public → token URL with `replaceUrl: true`
       (so browser back-button doesn't bounce-loop).
-- [ ] Add Playwright e2e: open `/racks/<token>` anonymously for a private rack → renders.
-- [ ] Add Playwright e2e: open `/racks/details/<numeric>` for a private rack anonymously → retired-link page.
+- [x] Add Playwright e2e: open `/racks/<token>` anonymously for a private rack → renders.
+- [x] Add Playwright e2e: open `/racks/details/<numeric>` for a private rack anonymously → retired-link page.
+- [x] Add Playwright e2e: open `/racks/details/<numeric>` for a public rack anonymously → token URL + renders.
+- [x] Add Playwright e2e: mirror private-token, private-legacy, and public-legacy coverage for patches
+      using live fixtures id=186 (`KtgoYgs0qyaX`) and id=5 (`o6BNUDeXEhWo`).
 - [ ] Docs: short note in `internaldocs/ARCHITECTURE.md` describing the
       "public_id token + SECURITY DEFINER RPC" pattern so future tables (e.g. `modules`
       private flag, if it ever exists) can reuse it.

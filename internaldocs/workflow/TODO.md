@@ -99,6 +99,105 @@ important notices without turning Patcher into a blog platform.
 
 ---
 
+#### MEDIUM: Bug — Rack Preview Not Loading / Updating on Specific Rack
+
+**Why:** Repro case: `http://localhost:5556/racks/TSHX38-bjQJS` — the rack preview image does not
+load and does not refresh after edits.
+
+**Investigation completed 15-05-2026 (confidence: HIGH, root cause confirmed against live DB):**
+
+- The bug is **NOT data-specific to this rack** — it's a systemic regression in the
+  "Update preview" persistence flow.
+- DB row for `public_id = 'TSHX38-bjQJS'` (id=336):
+  - `racks.image` column: `336_2024-10-2813-20-39290.jpeg` (stale)
+  - Actual storage object in bucket `racks`: `336_2026-05-1509-54-15073.jpeg` (uploaded today
+    2026-05-15 09:54 — user clicked "Update preview")
+  - Direct HTTP GET of the `racks.image` value → **404 Object not found**
+- Root cause: the "Update preview" flow uploads a new object + deletes the old one, but **does
+  not write the new filename back to `racks.image`**. Likely a missing `update.rack({ image })`
+  call after the storage upload completes, or a silent error in that call.
+- Preview generation is **manual-only** (the editor's "Update preview" button) — no automatic
+  refresh on rack/module edits. That's a separate, deferred concern.
+- Render path: `RackImageComponent` reads `data.image`, prefixes `StorageUrls.racks`, no
+  fallback. (`src/app/components/rack-parts/rack-image/`)
+- Upload path: `src/app/features/backend/supabase-storage.ts:54-87` + trigger in
+  `rack-detail-data.service.ts:351-394`.
+
+**Implementation (next agent):**
+
+- [ ] Inspect the "Update preview" flow in `rack-detail-data.service.ts:351-394` and
+      `supabase-storage.ts:54-87` — find the gap where the new filename is not persisted to
+      `racks.image`.
+- [ ] Fix: ensure `backend.update.rack({ id, image: newFilename })` (or the equivalent
+      single-column update) runs after upload succeeds, before the storage delete of the old
+      object — so a failure to persist the column doesn't orphan the new object.
+- [ ] Add a unit test: "Update preview persists the new filename to `racks.image`".
+- [ ] Data repair for this rack (and any other affected racks): write a one-off query — list
+      racks whose `racks.image` references a non-existent storage object, and for each, either
+      find the latest matching `<id>_*.jpeg` in storage and update the column, or null it out
+      with a flag for re-generation. Run with explicit user approval per AGENTS.md §5.
+- [ ] Optional follow-up (separate task): auto-refresh preview on rack/module edits instead of
+      requiring the manual button.
+
+---
+
+#### MEDIUM: Bug — Moving Modules Inside a Rack Does Not Bump `updated` Timestamp
+
+**Why:** Moving modules on the rack canvas does NOT update `racks.updated`, so the edited
+rack doesn't jump to the top of the "My Racks" list (sorted by `updated DESC`).
+
+**Investigation completed 15-05-2026 (confidence: HIGH, root cause confirmed in code):**
+
+- "My Racks" query at `src/app/features/backend/supabase-queries.ts:735-745` orders by
+  `updated DESC` — correct sort field.
+- Module move/reorder save path: `rack-detail-data.service.ts:953-961` →
+  `backend.update.rackedModules(...)` → `supabase-update.ts:100-134` writes **only**
+  `rack_modules` rows and busts `rackWithId` cache. **No write to parent `racks` row.**
+- Rack metadata edits (rename, privacy, row count) DO write the parent `racks` row through
+  `update.rack(...)` in `supabase-update.ts:148-167` → those correctly bump `racks.updated`
+  (via the existing BEFORE UPDATE timestamp trigger).
+- **Same defect exists for patches:** `patch-detail-data.service.ts:636-660` →
+  `update.patchConnectionsSilent(...)` → only writes `patch_connections`, never touches the
+  parent `patches` row.
+
+**Recommended fix (Option A preferred — DB trigger, needs explicit user approval):**
+
+Add a trigger on `rack_modules` and `patch_connections` (and likely
+`patch_module_instances` if it exists) that bumps the parent row's `updated` on any
+INSERT/UPDATE/DELETE:
+
+```sql
+create or replace function public.touch_rack_updated_from_rack_modules()
+returns trigger language plpgsql as $$
+begin
+  update public.racks set updated = now()
+    where id = coalesce(new.rackid, old.rackid);
+  return null;
+end; $$;
+
+create trigger trg_touch_rack_updated_from_rack_modules
+after insert or update or delete on public.rack_modules
+for each row execute function public.touch_rack_updated_from_rack_modules();
+```
+
+(Mirror for patches; pick correct FK column names from schema.)
+
+**Trade-off:** Option A covers any writer (current and future). Option B (frontend-only — add
+an `update.rack({ updated: now })` touch after `update.rackedModules`) is faster to ship but
+leaves the data invariant unenforced.
+
+**Implementation (next agent):**
+
+- [ ] Ask user for explicit approval on the DB trigger (Option A) or pick Option B.
+- [ ] Apply chosen fix. If trigger: log the migration under the schema-change preflight
+      checklist in `internaldocs/patterns/BACKEND_METHODS.md`.
+- [ ] Add a unit test: "moving a module updates the rack's last-modified timestamp" — assert
+      `update.rack(...)` is called (Option B) or that the parent row's `updated` changes
+      (Option A; integration test).
+- [ ] Repeat for patches' connections / instances flows.
+
+---
+
 #### HIGH: Perf — Investigate Initial Render Flash on Route Open
 
 **Why:** When opening a route there is a noticeable flash roughly 1.5–2s after navigation: all
