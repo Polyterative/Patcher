@@ -17,18 +17,38 @@ describe('ModuleMinimalComponent', () => {
     return {component, userModulesList$};
   }
   
-  it('maps membership state from userModulesList$', () => {
+  it('maps owned membership state from userModulesList$', () => {
     const {component, userModulesList$} = build();
     let latest: boolean | undefined;
-    
+
     component.ngOnInit();
     component.isInCollection$.subscribe(v => latest = v);
-    
-    userModulesList$.next([{id: 1}, {id: 42}]);
+
+    userModulesList$.next([{id: 42, possessionKind: 'HAS'}]);
     expect(latest).toBeTrue();
-    
+
+    userModulesList$.next([{id: 42, possessionKind: 'SELLS'}]);
+    expect(latest).toBeTrue();
+
+    userModulesList$.next([{id: 42, possessionKind: 'WANTS'}]);
+    expect(latest).toBeFalse();
+
     userModulesList$.next([{id: 1}]);
     expect(latest).toBeFalse();
+  });
+
+  it('maps possession kind from userModulesList$', () => {
+    const {component, userModulesList$} = build();
+    let latest: string | null | undefined;
+
+    component.ngOnInit();
+    component.possessionKind$.subscribe(v => latest = v);
+
+    userModulesList$.next([{id: 42, possessionKind: 'WANTS'}]);
+    expect(latest).toBe('WANTS');
+
+    userModulesList$.next([{id: 1}]);
+    expect(latest).toBeNull();
   });
   
   it('emits and completes destroy subject on ngOnDestroy', () => {

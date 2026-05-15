@@ -1778,7 +1778,7 @@ export class SupabaseQueriesService {
       switchMap(user => {
         let queryBuilder = this.supabase.from(DbPaths.user_modules)
           .select(
-            `collectionUpdated:updated,
+            `kind,collectionUpdated:updated,
               ${ prefix }:modules!user_modules_moduleid_fkey(
                 ${ columns.join(',') })`
           )
@@ -1816,7 +1816,8 @@ export class SupabaseQueriesService {
           remapErrors(),
           map((x: any) => (x.data ?? []).map((y: any) => ({
             ...y.module,
-            collectionUpdated: y.collectionUpdated
+            collectionUpdated: y.collectionUpdated,
+            possessionKind: y.kind
           })))
         );
       }),

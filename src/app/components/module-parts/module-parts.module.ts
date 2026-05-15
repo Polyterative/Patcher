@@ -49,6 +49,7 @@ import { MatChipsModule } from "@angular/material/chips";
 import { MatIconModule } from "@angular/material/icon";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatButtonModule } from "@angular/material/button";
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatDialogModule } from "@angular/material/dialog";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatExpansionModule } from "@angular/material/expansion";
@@ -103,6 +104,7 @@ import { ModulePanelZoomDialogComponent } from './module-details/module-panel-zo
     MatIconModule,
     MatTooltipModule,
     MatButtonModule,
+    MatButtonToggleModule,
     MatDialogModule,
     RestrictedEntityModule,
     RouterModule,
