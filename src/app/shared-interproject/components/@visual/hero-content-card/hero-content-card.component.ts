@@ -123,11 +123,13 @@ export class HeroContentCardComponent implements AfterViewInit, OnDestroy {
     );
     this.accountLinks$ = combineLatest([
       this.userManagementService.loggedUser$.pipe(startWith(undefined)),
-      this.userManagementService.loggedUserFullProfile$.pipe(startWith(undefined))
+      this.userManagementService.loggedUserFullProfile$.pipe(startWith(undefined)),
+      this.userManagementService.isAdmin$.pipe(startWith(false))
     ]).pipe(
-      map(([loggedUser, profile]) => buildWideShellAccountLinks(
+      map(([loggedUser, profile, isAdmin]) => buildWideShellAccountLinks(
         Boolean(loggedUser),
-        profile?.username?.trim() || 'Account'
+        profile?.username?.trim() || 'Account',
+        isAdmin
       )),
       distinctUntilChanged(),
       shareReplay({bufferSize: 1, refCount: true})

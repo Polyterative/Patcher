@@ -28,6 +28,20 @@ describe('toolbar-link-data', () => {
     expect(buildWideShellAccountLinks(false, 'andrew')).toEqual(buildToolbarGuestLinks());
   });
 
+  it('does not add the admin link to wide-shell links for guest or non-admin users', () => {
+    const guestLinks = buildWideShellAccountLinks(false, 'Account', false);
+    const nonAdminLinks = buildWideShellAccountLinks(true, 'andrew', false);
+
+    expect(guestLinks.some(l => l.route === '/admin')).toBeFalse();
+    expect(nonAdminLinks.some(l => l.route === '/admin')).toBeFalse();
+  });
+
+  it('adds the admin link to the wide-shell account group for admin users', () => {
+    const links = buildWideShellAccountLinks(true, 'andrew', true);
+
+    expect(links.some(l => l.route === '/admin')).toBeTrue();
+  });
+
   it('getToolbarHomeLinks returns links including the home route', () => {
     const links = getToolbarHomeLinks();
     expect(links.length).toBeGreaterThan(0);
