@@ -56,6 +56,7 @@ export default defineConfig({
     '**/navigation.spec.ts',
     '**/info-pages.spec.ts',
     '**/patch-details.spec.ts',
+    '**/public-id-links.spec.ts',
     '**/login-pages-smoke.spec.ts',
     '**/public-profile.spec.ts',
     AUTH_SPEC_GLOB

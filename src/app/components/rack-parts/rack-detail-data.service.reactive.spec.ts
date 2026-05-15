@@ -65,7 +65,8 @@ describe('RackDetailDataService reactive flows', () => {
       },
       GET: {
         rackWithId: jasmine.createSpy('GET.rackWithId').and.returnValue(of({data: rack()})),
-        publicRackWithId: jasmine.createSpy('GET.publicRackWithId').and.returnValue(of({data: rack()}))
+        publicRackWithId: jasmine.createSpy('GET.publicRackWithId').and.returnValue(of({data: rack()})),
+        rackByPublicId: jasmine.createSpy('GET.rackByPublicId').and.returnValue(of({data: rack()}))
       },
       storage: {
         uploadRackImage: jasmine.createSpy('storage.uploadRackImage').and.returnValue(of('new-image.jpg')),
@@ -220,6 +221,30 @@ describe('RackDetailDataService reactive flows', () => {
     expect(SharedConstants.errorCustom).toHaveBeenCalled();
   });
   
+
+
+  it('loads rack data on updateSingleRackByPublicId$ and clears unavailable state', () => {
+    const {service, backend} = build();
+    backend.GET.rackByPublicId.and.returnValue(of({data: rack({id: 44, name: 'Token Rack'})}));
+
+    service.updateSingleRackByPublicId$.next('aBcD1234_-Xy');
+
+    expect(backend.GET.rackByPublicId).toHaveBeenCalledWith('aBcD1234_-Xy');
+    expect(service.singleRackData$.value?.id).toBe(44);
+    expect(service.rackDetailUnavailableMessage$.value).toBeNull();
+  });
+
+  it('sets unavailable state when updateSingleRackByPublicId$ returns no rack', () => {
+    const {service, backend} = build();
+    backend.GET.rackByPublicId.and.returnValue(of({data: null}));
+
+    service.updateSingleRackByPublicId$.next('zYxW9876_-Ab');
+
+    expect(backend.GET.rackByPublicId).toHaveBeenCalledWith('zYxW9876_-Ab');
+    expect(service.singleRackData$.value).toBeUndefined();
+    expect(service.rackDetailUnavailableMessage$.value).toBeTruthy();
+  });
+
   it('handles rack order changes for disallowed and allowed moves', () => {
     const {service, snackBar} = build();
     const currentRack = rack({rows: 1});
