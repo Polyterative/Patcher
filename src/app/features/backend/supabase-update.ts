@@ -163,6 +163,7 @@ export function createUpdateNamespace(
             }).select('id')
         );
       }),
+      throwIfSupabaseError(),
       cacheBust(['rackWithId', 'racksMinimal'])
     ),
     
