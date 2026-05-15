@@ -61,6 +61,7 @@ Key paths:
 
 - Keep reusable UI-block logic in dedicated middle-layer services, not unrelated feature services or containers.
 - Route backend access through `SupabaseService`.
+- **Before any schema / migration / RPC change, read [`internaldocs/patterns/BACKEND_METHODS.md` §"Schema-change preflight"](internaldocs/patterns/BACKEND_METHODS.md#schema-change-preflight-read-before-writing-sql).** It lists past mistakes (e.g., backfill UPDATEs wiping `updated` timestamps) and the mitigations.
 - Never make Supabase RLS/policy changes without explicit manual user approval. Agents may inspect and propose RLS changes, but
   must not apply them autonomously.
 - Before a new backend method: register the table in `DatabaseStrings.ts`; make reads cacheable when appropriate; bust all
@@ -73,6 +74,7 @@ Key paths:
 - Use layout helpers from `tools.scss` and shared notification helpers.
 - Observables/Subjects use a `$` suffix; private `BehaviorSubject`s use an `_` prefix.
 - For visual UI fixes or responsive-layout tweaks, capture and inspect real screenshots with Playwright before concluding the work.
+- All visual decisions must be grounded in [`internaldocs/DESIGN_LANGUAGE.md`](internaldocs/DESIGN_LANGUAGE.md) — the canonical design philosophy, character, inspirations, and anti-patterns for Patcher.
 
 ## 6) Git and delivery
 
