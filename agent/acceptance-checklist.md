@@ -1,13 +1,15 @@
 # Acceptance Checklist
 
-## Initial Render Flash — Headless Audit
+## Module Possession States — Layer 1 MVP
 
-- [ ] Audit `*ngIf`/`@if` guards on affected route templates for false→true→false→true flip patterns
-- [ ] Audit `async` pipes feeding route templates for double-emission (BehaviorSubject init + late real value)
-- [ ] Check router data flow for double emissions on navigation (ActivatedRoute.params/paramMap pipelines)
-- [ ] Check loading/skeleton state logic across affected templates
-- [ ] Check `@font-face` / FOUT handling in styles
-- [ ] Findings documented in CURRENT_FEATURE.md with root cause + proposed fix
-- [ ] Minimal fix implemented (if headless analysis reveals actionable items)
-- [ ] `pnpm build` green
-- [ ] `pnpm test-headless` green (targeted)
+- [x] `MinimalModule` model has optional `possessionKind?: UserModulePossessionKind`
+- [x] `getCurrentUserModules` query includes `kind` column mapped to `possessionKind`
+- [x] `backend.update.userModulePossession(moduleId, kind)` upserts `user_modules.kind`
+- [x] `SupabaseService.update` exposes `userModulePossession`
+- [x] `module-detail-data.service` exposes `currentModulePossession$` and `setModulePossession$`
+- [x] `module-minimal` shows 4-state button-toggle (Own | Want | Sell | —) when user is logged in
+- [x] Selecting current state again is a no-op
+- [x] Selecting — removes row from `user_modules`
+- [x] Unit tests for `setModulePossession$` pipeline in data service spec
+- [x] `pnpm test-headless` green (62/62)
+- [x] `pnpm build` green

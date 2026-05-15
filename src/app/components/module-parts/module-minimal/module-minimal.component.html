@@ -1,6 +1,7 @@
   @if ({
    user:(userManagerService.loggedUser$|async),
    isInCollection:(isInCollection$|async),
+   possessionKind:(possessionKind$|async),
    singleModuleData: (dataService.singleModuleData$|async),
    currentRackData: (rackDataService.singleRackData$|async),
    isCurrentRackEditable: (rackDataService.isCurrentRackEditable$|async)
@@ -111,30 +112,39 @@
                    fxLayout="row"
                    fxLayoutGap="1rem"
               >
-                @if (!bag.isInCollection) {
-                  @if ((bag.singleModuleData)) {
-                    <button (click)="dataService.addModuleToCollection$.next(data.id)"
-                            [disabled]="!bag.user||(bag.singleModuleData.manufacturer.id===10000)"
-                            [title]="!bag.user ? 'Login to add to modules your collection':''"
-                            mat-icon-button
-                            aria-label="Add to your collection"
-                            matTooltip="Add to your collection"
+                @if (bag.user && bag.singleModuleData && bag.singleModuleData.manufacturer.id !== 10000) {
+                  <mat-button-toggle-group
+                    [value]="bag.possessionKind"
+                    aria-label="Collection status"
+                  >
+                    <mat-button-toggle
+                      value="HAS"
+                      matTooltip="I own this module"
+                      aria-label="Own"
+                      (click)="dataService.setModulePossession$.next(bag.possessionKind === 'HAS' ? null : 'HAS')"
                     >
-                      <mat-icon>add</mat-icon>
-                    </button>
-                  }
-                }
-                @if (bag.isInCollection) {
-                  @if ((bag.singleModuleData)) {
-                    <button (click)="dataService.removeModuleFromCollection$.next(data.id)"
-                            [disabled]="!bag.user||(bag.singleModuleData.manufacturer.id===10000)"
-                            mat-icon-button
-                            aria-label="Remove from your collection"
-                            matTooltip="Remove from your collection"
+                      <mat-icon>check_circle</mat-icon>
+                      <span class="possession-toggle-label">Own</span>
+                    </mat-button-toggle>
+                    <mat-button-toggle
+                      value="WANTS"
+                      matTooltip="I want this module"
+                      aria-label="Want"
+                      (click)="dataService.setModulePossession$.next(bag.possessionKind === 'WANTS' ? null : 'WANTS')"
                     >
-                      <mat-icon>eject</mat-icon>
-                    </button>
-                  }
+                      <mat-icon>favorite_border</mat-icon>
+                      <span class="possession-toggle-label">Want</span>
+                    </mat-button-toggle>
+                    <mat-button-toggle
+                      value="SELLS"
+                      matTooltip="I'm selling this module"
+                      aria-label="Selling"
+                      (click)="dataService.setModulePossession$.next(bag.possessionKind === 'SELLS' ? null : 'SELLS')"
+                    >
+                      <mat-icon>sell</mat-icon>
+                      <span class="possession-toggle-label">Sell</span>
+                    </mat-button-toggle>
+                  </mat-button-toggle-group>
                 }
                 @if ((bag.singleModuleData)) {
                   <button (click)="dataService.requestAddModuleToRack$.next(data)"
