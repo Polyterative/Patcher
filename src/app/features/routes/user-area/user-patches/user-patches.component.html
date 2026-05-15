@@ -44,20 +44,10 @@
       @if ((dataService.pagedPatchesData$|async); as data) {
         @if (data.length > 0) {
           <div class="section-scroll">
-            <flexbox-row-fast class="section-list share-link-grid">
+            <flexbox-row-fast class="section-list">
               @for (item of data; track item) {
-                <lib-clean-card class="share-link-card">
-                  <div class="share-link-card__content">
-                    <app-patch-micro [data]="item"></app-patch-micro>
-                    <button mat-icon-button
-                            class="share-link-card__button"
-                            matTooltip="Copy share link"
-                            [attr.aria-label]="'Copy share link for ' + item.name"
-                            (click)="copyPatchShareLink(item)"
-                    >
-                      <mat-icon>content_copy</mat-icon>
-                    </button>
-                  </div>
+                <lib-clean-card>
+                  <app-patch-micro [data]="item"></app-patch-micro>
                 </lib-clean-card>
               }
             </flexbox-row-fast>

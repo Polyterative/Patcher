@@ -36,20 +36,6 @@
   padding-right: 0.15rem;
 }
 
-.share-link-card {
-  position: relative;
-}
-
-.share-link-card__content {
-  padding-right: 2.5rem;
-}
-
-.share-link-card__button {
-  position: absolute;
-  top: 0.25rem;
-  right: 0.25rem;
-}
-
 @media (max-width: 36rem) {
   .section-actions {
     justify-content: flex-start;
