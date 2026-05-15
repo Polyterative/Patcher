@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "installCommand": "corepack enable pnpm && pnpm install --frozen-lockfile",
+  "installCommand": "corepack enable pnpm && pnpm install",
   "buildCommand": "pnpm build:release",
   "outputDirectory": "dist/Patcher/browser",
   "ignoreCommand": "git diff HEAD^ HEAD --name-only | grep -qvE '^(internaldocs/|[^/]+\\.md$|[^/]+\\.txt$|\\.github/)' && exit 1 || exit 0",
