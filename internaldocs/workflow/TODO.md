@@ -1083,19 +1083,19 @@ editor shows a gutter marker.
 
 **Checklist:**
 
-- [ ] Compute `rowUsedHp` and `rowOverflowHp` per row in the component (client-side, no
+- [x] Compute `rowUsedHp` and `rowOverflowHp` per row in the component (client-side, no
       backend call needed).
-- [ ] When `rowOverflowHp > 0`, render a visual overflow indicator on that row. Suggested
+- [x] When `rowOverflowHp > 0`, render a visual overflow indicator on that row. Suggested
       treatment: a thin accent bar at the right edge of the row that protrudes slightly beyond
       the rack boundary, coloured with the design system's warning/error token, with a
       `matTooltip` showing e.g. *"Row 2: 105 / 104 HP — 1 HP over capacity"*.
-- [ ] Additionally, show a compact summary badge somewhere on the rack card header (or the
+- [x] Additionally, show a compact summary badge somewhere on the rack card header (or the
       row power panel area) listing total overflow when any row is over — e.g.
       `⚠ 1 HP over` — so the problem is visible without hovering.
-- [ ] The indicator should animate in/out smoothly when modules are added/removed (tie into
+- [x] The indicator should animate in/out smoothly when modules are added/removed (tie into
       the diff-based update work once that lands).
-- [ ] No indicator shown when `rowOverflowHp <= 0`; the UI stays clean for well-packed racks.
-- [ ] Ground visual decisions in `internaldocs/DESIGN_LANGUAGE.md` — use existing warning
+- [x] No indicator shown when `rowOverflowHp <= 0`; the UI stays clean for well-packed racks.
+- [x] Ground visual decisions in `internaldocs/DESIGN_LANGUAGE.md` — use existing warning
       colour tokens, not ad-hoc colours.
 
 ---
@@ -1121,16 +1121,17 @@ confusing and error-prone.
 
 **Fix checklist:**
 
-- [ ] Audit `rack-visual-model.component.html` for the `*cdkDragPreview` template block —
+- [x] Audit `rack-visual-model.component.html` for the `*cdkDragPreview` template block —
       if missing, restore it (render `<app-module-realistic>` or equivalent minimal tile).
-- [ ] Check `isDropRevealSuppressed()` — ensure it returns `true` only for the actively
+- [x] Check `isDropRevealSuppressed()` — ensure it returns `true` only for the actively
       dragged module, not for all modules or the placeholder slot.
 - [ ] Verify `[cdkDragScale]` is set correctly so the preview matches the visual size of
       the tile in the rack grid.
-- [ ] Restore the entry animation on drop so the placed module animates into its final
+- [x] Restore the entry animation on drop so the placed module animates into its final
       position (was working before the regression).
 - [ ] Add a Playwright visual smoke test: drag a module to a new slot and assert the
       preview element is present in the DOM during the drag.
+  Remaining: Playwright test requires live E2E test account (see blockers.md).
 
 ---
 
