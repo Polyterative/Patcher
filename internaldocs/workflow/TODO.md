@@ -133,7 +133,7 @@ change feel instant and local.
 
 **Layer 1 — Exit animation before reload (quick win)**
 
-- [ ] Add a CSS/Angular-animation exit sequence to the module tile in the rack visual model
+- [x] Add a CSS/Angular-animation exit sequence to the module tile in the rack visual model
       (`rack-visual-model` / `module-realistic` component). When a remove action is confirmed,
       play the exit animation on the specific tile first (e.g. fade+scale-down, ~180 ms),
       *then* trigger the backend delete and reload pipeline. This ensures the user always sees
