@@ -8,18 +8,22 @@ import {
   throwError
 } from 'rxjs';
 import { MinimalModule } from 'src/app/models/module';
+import {
+  Tag,
+  TagType
+} from 'src/app/models/tag';
 import { ModuleBrowserDataService } from './module-browser-data.service';
 
 
 describe('ModuleBrowserDataService', () => {
-  function build() {
+  function build(options: {allTags?: Tag[]} = {}) {
     const backend = {
       GET: {
         manufacturers: jasmine.createSpy('GET.manufacturers').and.returnValue(of({data: []})),
         modules: jasmine.createSpy('GET.modules').and.returnValue(of({data: [], count: 0}))
       },
       get: {
-        allTags: jasmine.createSpy('get.allTags').and.returnValue(of([]))
+        allTags: jasmine.createSpy('get.allTags').and.returnValue(of(options.allTags ?? []))
       },
       cacheResetter$: {next: jasmine.createSpy('cacheResetter$.next')}
     };
@@ -453,4 +457,138 @@ describe('ModuleBrowserDataService', () => {
 
     expect(filtered?.map((module) => module.id)).toEqual([2]);
   });
+
+  it('groups and filters tags by the search query', fakeAsync(() => {
+    const {service} = build({
+      allTags: [
+        {id: 1, name: 'Oscillator', type: TagType.Purpose},
+        {id: 2, name: 'Filter', type: TagType.Nature},
+        {id: 3, name: 'Warm', type: TagType.Character}
+      ]
+    });
+    let groupedTags: any[] | undefined;
+    service.groupedFilterTags$.subscribe((value) => (groupedTags = value));
+
+    tick(300);
+    expect(groupedTags?.map((group) => group.label)).toEqual(['Purpose', 'Nature', 'Character']);
+
+    service.tagSearchQuery$.next('fi');
+    tick(300);
+
+    expect(groupedTags).toEqual([
+      {
+        label: 'Nature',
+        tags: [{id: 2, name: 'Filter', type: TagType.Nature}]
+      }
+    ]);
+    service.ngOnDestroy();
+  }));
+
+  it('toggleTagFilter adds and removes tags from the multiselect control', () => {
+    const {service} = build();
+    const tag = {id: 5, name: 'Oscillator', type: TagType.Purpose};
+
+    service.toggleTagFilter(tag);
+    expect(service.fields.tags.control.value).toEqual([{id: '5', name: 'Oscillator'}]);
+
+    service.toggleTagFilter(tag);
+    expect(service.fields.tags.control.value).toEqual([]);
+  });
+
+  it('auto-selects best-match when tags become active and reverts when they clear', fakeAsync(() => {
+    const {service} = build();
+
+    service.fields.tags.control.setValue([{id: '5', name: 'Oscillator'}]);
+    expect(service.fields.order.control.value).toEqual(service.bestMatchOrderOption);
+
+    tick(750);
+    service.fields.tags.control.setValue([]);
+    expect(service.fields.order.control.value).toEqual(service.orderStartingValue);
+    service.ngOnDestroy();
+  }));
+
+  it('uses updated/desc for backend sorting when best-match is selected', fakeAsync(() => {
+    const {service, backend} = build();
+
+    service.fields.tags.control.setValue([{id: '5', name: 'Oscillator'}]);
+    tick(750);
+
+    expect(service.fields.order.control.value).toEqual(service.bestMatchOrderOption);
+    expect(sortArgs(backend)).toEqual(['updated', 'desc']);
+    service.ngOnDestroy();
+  }));
+
+  it('applies client-side AND filtering to remote module results', () => {
+    const {service, backend} = build();
+    backend.GET.modules.and.returnValue(of({
+      data: [
+        moduleFactory({
+          id: 1,
+          name: 'Both Tags',
+          tags: [
+            {id: 1, tag: {id: 1, name: 'Oscillator'} as any, voteCount: []},
+            {id: 2, tag: {id: 2, name: 'Analog'} as any, voteCount: []}
+          ]
+        }),
+        moduleFactory({
+          id: 2,
+          name: 'One Tag',
+          tags: [
+            {id: 1, tag: {id: 1, name: 'Oscillator'} as any, voteCount: []}
+          ]
+        })
+      ],
+      count: 2
+    }));
+
+    service.fields.tags.control.setValue([
+      {id: '1', name: 'Oscillator'},
+      {id: '2', name: 'Analog'}
+    ]);
+    service.tagMatchMode$.next('AND');
+
+    expect(service.modulesList$.value?.map((module) => module.id)).toEqual([1]);
+  });
+
+  it('sorts best-match by score desc then name asc', () => {
+    const {service} = build();
+    service.fields.tags.control.setValue([
+      {id: '1', name: 'Oscillator'},
+      {id: '2', name: 'Analog'}
+    ]);
+
+    const sorted = service.sortModulesByBestMatch([
+      moduleFactory({
+        id: 3,
+        name: 'Zulu',
+        tags: [{id: 1, tag: {id: 1, name: 'Oscillator'} as any, voteCount: []}]
+      }),
+      moduleFactory({
+        id: 1,
+        name: 'Alpha',
+        tags: [
+          {id: 1, tag: {id: 1, name: 'Oscillator'} as any, voteCount: []},
+          {id: 2, tag: {id: 2, name: 'Analog'} as any, voteCount: []}
+        ]
+      }),
+      moduleFactory({
+        id: 2,
+        name: 'Beta',
+        tags: [{id: 1, tag: {id: 1, name: 'Oscillator'} as any, voteCount: []}]
+      })
+    ]);
+
+    expect(sorted.map((module) => module.id)).toEqual([1, 2, 3]);
+  });
+
+  it('canReset$ emits true when tag match mode differs from OR', fakeAsync(() => {
+    const {service} = build();
+    let canReset: boolean | undefined;
+    service.canReset$.subscribe(v => (canReset = v));
+
+    service.tagMatchMode$.next('AND');
+    tick();
+
+    expect(canReset).toBeTrue();
+  }));
 });

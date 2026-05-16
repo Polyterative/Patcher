@@ -5,6 +5,7 @@
 
 - **16-05-2026** — feat(forms): add preset quick-select chip overlay to mat-form-entity — @Input() presets: (string|number)[] triggers compact chip-style autocomplete panel on focus; wired to HP filter in module browser + HP/rows in rack creator (mat-form-entity.component.ts/.html/.scss, 2 spec tests added)
 
+- **16-05-2026** — feat(module-browser): replace sidebar tag MULTISELECT with grouped chip picker + tag search + AND/OR toggle + best-match sorting; shared TAG_TYPE_LABELS moved to tag model and module-browser tag filtering now supports client-side AND mode + relevance ranking (module-browser-data.service/.utils, module-browser-root component, tag.ts)
 - **16-05-2026** — feat(rack-editor): add [@leave] fade+scale-down exit animation (180ms) to module tiles in rack-visual-model when module is removed — provides visual confirmation of which module was deleted before DOM removal (rack-visual-model.component.ts + .html)
 
 - **16-05-2026** — feat(collection): SELLS inline badge in module-minimal meta row — sell icon + "Selling" label appears in module-meta-row__stats when possessionKind===SELLS; meta-row render condition extended to include SELLS state (module-minimal.component.html + .scss)

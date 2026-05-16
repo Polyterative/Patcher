@@ -30,6 +30,14 @@ describe('module-browser-data.utils', () => {
       const mod = makeModule('M', '2024', 0, [1]);
       expect(matchesSelectedTags(mod, [5, 6])).toBeFalse();
     });
+    it('returns true in AND mode when all selected tags are present', () => {
+      const mod = makeModule('M', '2024', 0, [1, 2, 3]);
+      expect(matchesSelectedTags(mod, [1, 3], 'AND')).toBeTrue();
+    });
+    it('returns false in AND mode when a selected tag is missing', () => {
+      const mod = makeModule('M', '2024', 0, [1, 2]);
+      expect(matchesSelectedTags(mod, [1, 4], 'AND')).toBeFalse();
+    });
     it('returns false when module has no tags', () => {
       expect(matchesSelectedTags(makeModule('M', '2024'), [1])).toBeFalse();
     });
