@@ -3,8 +3,7 @@ import {
   Component,
   inject,
   Input,
-  OnInit,
-  ViewChild
+  OnInit
 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import {
@@ -14,9 +13,6 @@ import {
 } from 'rxjs';
 import {
   startWith,
-  skip,
-  switchMap,
-  take,
   takeUntil
 } from 'rxjs/operators';
 import {
@@ -27,10 +23,6 @@ import { RecentActivityItem } from 'src/app/components/shared-atoms/recent-activ
 import { ModuleBrowserDataService } from 'src/app/features/module-browser/module-browser-data.service';
 import { ModuleBrowserRecentActivityService } from 'src/app/features/module-browser/module-browser-recent-activity.service';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
-import {
-  MatPaginator,
-  PageEvent
-} from '@angular/material/paginator';
 import { ActivatedRoute } from '@angular/router';
 import {
   MinimalModule,
@@ -53,7 +45,6 @@ const OWNED_MODULES_DEFAULT_THRESHOLD = 20;
   standalone: false
 })
 export class ModuleBrowserRootComponent extends SubManager implements OnInit {
-  @ViewChild(MatPaginator) paginator: MatPaginator;
   private readonly document = inject(DOCUMENT);
   @Input() showSubmitFab = true;
   @Input() showWideShellNav = true;
@@ -70,6 +61,22 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
   readonly visibleItemsCount$ = new BehaviorSubject<number>(0);
   readonly ownedModulesDefaultThreshold = OWNED_MODULES_DEFAULT_THRESHOLD;
   collectionBrowseMode: RackModuleBrowseMode = 'all';
+
+  get hasMoreModules(): boolean {
+    const total = this.dataService.serversideAdditionalData.itemsCount$.value;
+    const loaded = this.dataService.modulesList$.value?.length ?? 0;
+    return !this.usesOwnedDataset && loaded < total;
+  }
+
+  get remainingModulesCount(): number {
+    const total = this.dataService.serversideAdditionalData.itemsCount$.value;
+    const loaded = this.dataService.modulesList$.value?.length ?? 0;
+    return Math.max(0, total - loaded);
+  }
+
+  loadMore(): void {
+    this.dataService.loadMore$.next();
+  }
 
   private _enableCollectionBrowseModes = false;
   private hasManualCollectionBrowseModeSelection = false;
@@ -154,17 +161,9 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
 
     this.dataService.paginatorToFistPage$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.paginator?.firstPage());
-    
-    this.dataService.pageEvent$
-      .pipe(
-        switchMap(() => this.dataService.modulesList$.pipe(
-          skip(1),
-          take(1)
-        )),
-        takeUntil(this.destroy$)
-      )
-      .subscribe(() => this.document.defaultView?.scrollTo({top: 0, behavior: 'smooth'}));
+      .subscribe(() => {
+        this.document.defaultView?.scrollTo({top: 0, behavior: 'smooth'});
+      });
     
     this.dataService.fields.order.control.patchValue(this.dataService.orderStartingValue, {emitEvent: false});
     this.dataService.serversideTableRequestData.sort$.next([this.dataService.orderStartingValue.id, 'desc']);
@@ -195,18 +194,6 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
   setCollectionBrowseMode(mode: RackModuleBrowseMode): void {
     this.hasManualCollectionBrowseModeSelection = true;
     this.applyCollectionBrowseMode(mode);
-  }
-
-  handlePageEvent(event: PageEvent): void {
-    if (this.usesOwnedDataset) {
-      this.dataService.serversideTableRequestData.take$.next(event.pageSize);
-      this.dataService.serversideTableRequestData.skip$.next(event.pageIndex * event.pageSize);
-      this.syncVisibleModules();
-      this.document.defaultView?.scrollTo({top: 0, behavior: 'smooth'});
-      return;
-    }
-
-    this.dataService.pageEvent$.next(event);
   }
 
   isTagSelected(tag: Tag): boolean {
@@ -292,12 +279,6 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
       : 'No modules from your collection are available in this view right now.';
   }
 
-  get visibleResultsMeta(): string {
-    const visibleCount = this.visibleItemsCount$.value;
-    const resultLabel = visibleCount === 1 ? 'result' : 'results';
-    return `${ visibleCount } ${ resultLabel }`;
-  }
-
   private applyAdaptiveCollectionBrowseMode(): void {
     if (!this.enableCollectionBrowseModes || this.hasManualCollectionBrowseModeSelection || this.ownedModules === undefined) {
       return;
@@ -324,7 +305,6 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
     }
 
     this.dataService.serversideTableRequestData.skip$.next(0);
-    this.dataService.paginatorToFistPage$.next();
     if (nextMode === 'all') {
       this.dataService.updateModulesList$.next();
     } else {
@@ -349,10 +329,8 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
       return;
     }
 
-    const skip = this.dataService.serversideTableRequestData.skip$.value;
-    const take = this.dataService.serversideTableRequestData.take$.value;
     this.visibleItemsCount$.next(filteredOwnedModules.length);
-    this.updateVisibleModules(filteredOwnedModules.slice(skip, skip + take));
+    this.updateVisibleModules(filteredOwnedModules);
   }
 
   private updateVisibleModules(modules: ModuleList): void {
