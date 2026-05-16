@@ -1043,20 +1043,20 @@ rejected because it requires counting taps and gives no visual overview of avail
 
 **Checklist:**
 
-- [ ] Expose a per-row "add blank" action area in `rack-visual-model.component.html`
+- [x] Expose a per-row "add blank" action area in `rack-visual-model.component.html`
       (visible on row hover in edit mode, or always visible when `rowOverflowHp < 0` i.e.
       there is free space to fill). Keep it visually lightweight — icon + number strip,
       not a full button row.
-- [ ] Build the HP number strip as a row of `mat-mini-fab` or small flat `mat-button`
+- [x] Build the HP number strip as a row of `mat-mini-fab` or small flat `mat-button`
       elements: `[1, 2, 3, 4, 6, 8]`. Tapping any triggers
       `rackDetailDataService.addBlankToRow$(rowId, hp)` (new action).
-- [ ] Add `addBlankToRow$` action in `rack-detail-data.service.ts`: resolves the correct
+- [x] Add `addBlankToRow$` action in `rack-detail-data.service.ts`: resolves the correct
       blank module ID from `BLANK_MODULE_IDS` (offset by HP value from the base ID 4646 for
       3U blanks), calls `backend.add.rackedModule(...)`, then applies an optimistic local
       update (ties into the diff-based update work).
 - [ ] `…` overflow button opens a compact `MatMenu` or inline number grid showing the full
       1–20 HP range for unusual sizes.
-- [ ] Intelligently pre-select / highlight the size that exactly fills the remaining free HP
+- [x] Intelligently pre-select / highlight the size that exactly fills the remaining free HP
       in that row (computed from `rowUsedHp` vs `rackData.hp`) so one tap fills the gap.
 - [ ] Ground the strip visual style in `internaldocs/DESIGN_LANGUAGE.md` — should feel like
       a tool affordance, not a call-to-action button.
