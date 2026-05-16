@@ -314,18 +314,21 @@ needed for a single manufacturer's catalogue).
 
 **Checklist:**
 
-- [ ] Audit `app-module-list` and decide: extend with more `@Input()` filter flags, or
+- [x] Audit `app-module-list` and decide: extend with more `@Input()` filter flags, or
       extract a separate `ModuleFilterBarComponent` that wraps the `LocalDataFilterService`
-      pattern. Prefer extraction if 3+ contexts will need the same bar.
-- [ ] Implement client-side standard / HP / tag filtering in the manufacturer context
+      pattern. Prefer extraction if 3+ contexts will need the same bar. **Decision: extended
+      app-module-list with `@Input() showFilters = false` — only 2 contexts currently.**
+- [x] Implement client-side standard / HP / tag filtering in the manufacturer context
       (pipe on the `modulesData$` stream, no new backend queries).
-- [ ] Add the filter controls to `manufacturer-detail.component.html` — compact inline
+- [x] Add the filter controls to `manufacturer-detail.component.html` — compact inline
       bar or collapsible panel (not a full sidebar; the manufacturer page layout is narrower).
-- [ ] Add reset functionality.
-- [ ] Ensure the `defaultGroupId='standard'` grouping behaviour is preserved after
-      filtering (filtered results should still group by standard if grouping is active).
+- [x] Add reset functionality.
+- [x] Ensure the `defaultGroupId='standard'` grouping behaviour is preserved after
+      filtering (filtered results still group by standard if grouping is active — sorting
+      and grouping are separate from filtering in the pipeline).
 - [ ] Reduce duplication: if a shared component is extracted, update the module browser
-      root to use it too — one source of truth for filter controls.
+      root to use it too — one source of truth for filter controls. (Deferred: server-side
+      vs client-side filtering means module browser cannot trivially share the same bar.)
 
 ---
 

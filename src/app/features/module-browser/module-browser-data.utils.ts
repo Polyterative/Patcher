@@ -24,6 +24,17 @@ export function getModuleStandardId(module: MinimalModule): number | undefined {
     : standard?.id;
 }
 
+export function applyHpCondition(moduleHp: number, hpValue: number, conditionId: string): boolean {
+  switch (conditionId) {
+    case '!=': return moduleHp !== hpValue;
+    case '>': return moduleHp > hpValue;
+    case '<': return moduleHp < hpValue;
+    case '>=': return moduleHp >= hpValue;
+    case '<=': return moduleHp <= hpValue;
+    default: return moduleHp === hpValue;
+  }
+}
+
 export function compareModulesByCreated(a: MinimalModule, b: MinimalModule, direction: 'asc' | 'desc'): number {
   const aCreated = Date.parse(a.created || '');
   const bCreated = Date.parse(b.created || '');

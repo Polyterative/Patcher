@@ -54,8 +54,10 @@
               [viewConfig]="moduleViewConfig"
               [showSearch]="true"
               [showOrder]="true"
+              [showFilters]="true"
               [encloseVertically]="false"
               [defaultGroupId]="'standard'"
+              emptyStateCopy="No modules match your filters. Try adjusting the Standard, HP, or tag selection."
             ></app-module-list>
           } @else if (bag.modules !== null) {
             <div class="col gap1 manufacturer-empty-state">
