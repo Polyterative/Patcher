@@ -87,7 +87,7 @@ Layer 1 (MVP — module detail segmented control): **shipped 2026-05-15 on `agen
 Remaining (Layer 2 — user area integration):
 
 - [ ] Filter "My Modules" user-area to `HAS`+`SELLS` by default; add Wishlist view for `WANTS`
-- [ ] Filter rack/patch editor module picker to `HAS`+`SELLS` only
+- [x] Filter rack/patch editor module picker to `HAS`+`SELLS` only
 - [ ] `SELLS` inline badge in user-area module list
 
 ---

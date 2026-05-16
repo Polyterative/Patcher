@@ -271,7 +271,9 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
   
   ngOnInit(): void {
     if (!this.readonly) {
-      // Fetch user's collection modules with backend-first ordering for selected sort mode
+      // Fetch user's collection modules with backend-first ordering for selected sort mode.
+      // WANTS modules are excluded — the picker should only show modules the user physically
+      // has (HAS) or is selling (SELLS). WANTS are wishlist items, not collection items.
       this.moduleSortStrategy$
         .pipe(
           switchMap(strategy => this.backend.GET.currentUserModules(
@@ -279,6 +281,7 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
             false,
             strategy.backendOrder
           )),
+          map((modules: DbModule[]) => modules.filter(m => m.possessionKind !== 'WANTS')),
           takeUntil(this.destroyEvent$)
         )
         .subscribe((modules: DbModule[]) => {
