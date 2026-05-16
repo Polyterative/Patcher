@@ -1871,6 +1871,29 @@ export class SupabaseQueriesService {
   }
   
   @Cacheable({
+    maxAge: defaultCacheTime,
+    maxCacheCount: 100,
+  })
+  getModulePossessionCounts(moduleId: number): Observable<{ hasCount: number; wantsCount: number; sellsCount: number }> {
+    return rxFrom(
+      this.supabase.from(DbPaths.user_modules)
+        .select('kind')
+        .eq('moduleid', moduleId)
+    ).pipe(
+      map((x: any) => {
+        const rows: { kind: string }[] = x.data ?? [];
+        const counts = { hasCount: 0, wantsCount: 0, sellsCount: 0 };
+        for (const row of rows) {
+          if (row.kind === 'HAS') counts.hasCount++;
+          else if (row.kind === 'WANTS') counts.wantsCount++;
+          else if (row.kind === 'SELLS') counts.sellsCount++;
+        }
+        return counts;
+      })
+    );
+  }
+
+  @Cacheable({
     maxAge: longCacheTime,
   })
   getAllTagsCached(): Observable<any[]> {

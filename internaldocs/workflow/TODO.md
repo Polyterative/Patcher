@@ -384,9 +384,9 @@ light by default):
 
 **Checklist:**
 
-- [ ] Phase 1: add `getModulePossessionCounts(moduleId)` to `supabase-queries.ts`; wire
+- [x] Phase 1: add `getModulePossessionCounts(moduleId)` to `supabase-queries.ts`; wire
       into module detail data service; render stat row in module detail template.
-- [ ] Apply minimum-3 display threshold and cache TTL.
+- [x] Apply minimum-3 display threshold and cache TTL.
 - [ ] Phase 2: decide Option A vs B with product owner; get approval for schema change.
 - [ ] Phase 2: implement snapshot function + chart component once schema is approved.
 
