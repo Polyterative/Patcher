@@ -275,6 +275,23 @@
               </app-module-realistic>
             }
           </div>
+          @if (isCurrentRackEditable && isCurrentRackPropertyOfCurrentUser && analysisMode === analysisModes.off && isRowHovered(rowId)) {
+            @let remaining = rowRemainingHp(rowId);
+            <div class="blankStrip"
+                 [@enter]
+                 [@leave]
+                 (mousedown)="$event.stopPropagation()"
+            >
+              @for (hp of commonBlankSizes; track hp) {
+                <button mat-icon-button
+                        class="blankStrip__btn"
+                        [class.blankStrip__btn--exact]="hp === remaining"
+                        [matTooltip]="hp === remaining ? hp + 'HP — fills remaining space' : hp + 'HP blank'"
+                        (click)="rackDetailDataService.addBlankToRow$.next({rowId: rowId, hp: hp})"
+                >{{ hp }}</button>
+              }
+            </div>
+          }
           @if (rowHpOverflowAt(rowId) > 0) {
             <div class="rowHpOverflow"
                 [@enter]
