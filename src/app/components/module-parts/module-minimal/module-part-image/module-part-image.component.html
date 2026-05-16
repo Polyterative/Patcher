@@ -27,17 +27,12 @@
         >
       }
       @if (!filename) {
-        <lib-screen-wrapper
-          class="img"
-          [class.img--fixed-height]="fixedHeight"
-          [@enter]
+        <div [ngStyle]="fixedHeight ? {} : { width: (data.hp/sizeDivider/2)+'rem', height: (bag.height/sizeDivider/2)+'rem' }"
+             class="preview img"
+             [class.preview--fixed-height]="fixedHeight"
+             [@enter]
         >
-          <div [ngStyle]="fixedHeight ? {} : { width: (data.hp/sizeDivider/2)+'rem', height: (bag.height/sizeDivider/2)+'rem' }"
-               class="preview img"
-               [class.preview--fixed-height]="fixedHeight"
-          >
-          </div>
-        </lib-screen-wrapper>
+        </div>
       }
     }
   </div>
