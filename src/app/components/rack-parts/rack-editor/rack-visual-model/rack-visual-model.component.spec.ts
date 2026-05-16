@@ -176,6 +176,71 @@ describe('RackVisualModelComponent', () => {
     expect(rackRow?.classList.contains('row-bg')).toBeTrue();
   });
 
+  it('computes zero HP overflow when modules fit within rack capacity', () => {
+    component.rackData = {hp: 30} as any;
+    component.rowedRackedModules = [[makeRackedModule(1, 0, 0), makeRackedModule(2, 0, 14)]]; // 14+14=28 < 30
+    fixture.detectChanges();
+
+    expect(component.rowHpOverflowAt(0)).toBe(0);
+    expect(component.totalHpOverflow).toBe(0);
+  });
+
+  it('computes positive HP overflow when modules exceed rack capacity', () => {
+    component.rackData = {hp: 20} as any;
+    component.rowedRackedModules = [[makeRackedModule(1, 0, 0), makeRackedModule(2, 0, 14)]]; // 14+14=28 > 20 → overflow=8
+    fixture.detectChanges();
+
+    expect(component.rowHpOverflowAt(0)).toBe(8);
+    expect(component.totalHpOverflow).toBe(8);
+  });
+
+  it('sums HP overflow across multiple rows', () => {
+    component.rackData = {hp: 20} as any;
+    component.rowedRackedModules = [
+      [makeRackedModule(1, 0, 0), makeRackedModule(2, 0, 14)], // 28 → overflow=8
+      [makeRackedModule(3, 1, 0), makeRackedModule(4, 1, 14)], // 28 → overflow=8
+    ];
+    fixture.detectChanges();
+
+    expect(component.totalHpOverflow).toBe(16);
+  });
+
+  it('renders the per-row overflow indicator only when overflow > 0', () => {
+    component.rackData = {hp: 20} as any;
+    component.rowedRackedModules = [[makeRackedModule(1, 0, 0), makeRackedModule(2, 0, 14)]]; // 28 > 20
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('.rowHpOverflow')).not.toBeNull();
+  });
+
+  it('does not render the per-row overflow indicator when modules fit within capacity', () => {
+    component.rackData = {hp: 40} as any;
+    component.rowedRackedModules = [[makeRackedModule(1, 0, 0), makeRackedModule(2, 0, 14)]]; // 28 < 40
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('.rowHpOverflow')).toBeNull();
+  });
+
+  it('renders the summary overflow badge when any row exceeds capacity', () => {
+    component.rackData = {hp: 20} as any;
+    component.rowedRackedModules = [[makeRackedModule(1, 0, 0), makeRackedModule(2, 0, 14)]];
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('.hpOverflowBadge')).not.toBeNull();
+  });
+
+  it('does not render the summary overflow badge when all rows fit within capacity', () => {
+    component.rackData = {hp: 40} as any;
+    component.rowedRackedModules = [[makeRackedModule(1, 0, 0), makeRackedModule(2, 0, 14)]]; // 28 < 40
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('.hpOverflowBadge')).toBeNull();
+  });
+
   it('removes the row template background when the row contains unracked modules', () => {
     component.rowedRackedModules = [[makeRackedModule(10, null as any, null as any)]];
     fixture.detectChanges();

@@ -7,6 +7,16 @@
                      fxLayoutAlign="center center"
                      class="widthRuler"
   >{{rackData.hp}}</mat-card-subtitle>
+  @if (totalHpOverflow > 0) {
+    <div class="hpOverflowBadge"
+         [@enter]
+         [@leave]
+         [matTooltip]="'Total HP overflow: ' + totalHpOverflow + ' HP over capacity across all rows'"
+    >
+      <mat-icon class="hpOverflowBadge__icon">warning</mat-icon>
+      <span>{{ totalHpOverflow }} HP over</span>
+    </div>
+  }
 
   <div class="col gap0 rackScreen"
        #screen
@@ -257,6 +267,17 @@
               </app-module-realistic>
             }
           </div>
+          @if (rowHpOverflowAt(rowId) > 0) {
+            <div class="rowHpOverflow"
+                [@enter]
+                [@leave]
+                [matTooltip]="rowHpTooltip(rowId)"
+                aria-label="HP overflow warning"
+            >
+              <span class="rowHpOverflow__bar"></span>
+              <span class="rowHpOverflow__label">+{{ rowHpOverflowAt(rowId) }}HP</span>
+            </div>
+          }
        </div>
     }
     <!--    <div class="watermark self-center">Planned on patcher.xyz</div>-->
