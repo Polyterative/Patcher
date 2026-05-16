@@ -195,6 +195,7 @@ export function createGetNamespace(
     ).pipe(remapErrors()),
     myVotes: () => queries.getMyVotes(),
     allTags: () => queries.getAllTagsCached(),
+    modulePossessionCounts: (moduleId: number) => queries.getModulePossessionCounts(moduleId),
     tagVotesForModule: (moduleTagIds: number[]) => rxFrom(
       supabase
         .from(DbPaths.user_module_tags)
