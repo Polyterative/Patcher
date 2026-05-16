@@ -275,6 +275,7 @@
               </app-module-realistic>
             }
           </div>
+          <!-- TODO: re-enable blank panel shortcut strip when ready
           @if (isCurrentRackEditable && isCurrentRackPropertyOfCurrentUser && analysisMode === analysisModes.off && isRowHovered(rowId)) {
             @let remaining = rowRemainingHp(rowId);
             <div class="blankStrip"
@@ -292,6 +293,7 @@
               }
             </div>
           }
+          -->
           @if (rowHpOverflowAt(rowId) > 0) {
             <div class="rowHpOverflow"
                 [@enter]
