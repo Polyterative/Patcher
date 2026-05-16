@@ -1,5 +1,6 @@
 @use '@angular/material' as mat;
 @use '../../function-analysis-theme' as functionTheme;
+@use "src/app/style/brand-resources" as *;
 
 .cdk-drag-preview {
   @include mat.elevation(8);
@@ -539,4 +540,60 @@
     min-width: 100%;
     max-width: 100%;
   }
+}
+
+// HP overflow indicator — shown per-row when modules exceed rack HP capacity
+.rowHpOverflow {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  transform: translateX(calc(100% + 0.25rem));
+  pointer-events: auto;
+  z-index: 10;
+  cursor: default;
+}
+
+.rowHpOverflow__bar {
+  display: block;
+  width: 0.2rem;
+  height: 80%;
+  border-radius: 0.1rem;
+  background: $brand-warning;
+  opacity: 0.85;
+}
+
+.rowHpOverflow__label {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: $brand-warning;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+// Summary badge above the rack when any row overflows
+.hpOverflowBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.25rem;
+  background: rgba($brand-warning, 0.12);
+  border: 1px solid rgba($brand-warning, 0.35);
+  color: $brand-warning;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  cursor: default;
+  margin-bottom: 0.15rem;
+}
+
+.hpOverflowBadge__icon {
+  font-size: 0.9rem;
+  width: 0.9rem;
+  height: 0.9rem;
+  line-height: 0.9rem;
 }

@@ -272,7 +272,7 @@ describe('RackDetailDataService reactive flows', () => {
   });
   
   it('removes, duplicates, and syncs rack modules with error handling', () => {
-    spyOn(SharedConstants, 'errorHandlerOperation').and.callFake(() => (source$) => source$);
+    spyOn(SharedConstants, 'errorCustom');
     const {service, backend} = build();
     service.singleRackData$.next(rack());
     const rows = [[moduleInRack(1, 0, 0), moduleInRack(2, 0, 1)]];
@@ -287,7 +287,7 @@ describe('RackDetailDataService reactive flows', () => {
     
     backend.update.rackedModules.and.returnValue(throwError(() => new Error('sync fail')));
     service.requestRackedModulesDbSync$.next();
-    expect(SharedConstants.errorHandlerOperation).toHaveBeenCalled();
+    expect(SharedConstants.errorCustom).toHaveBeenCalled();
   });
   
   it('deletes a rack after confirmation and navigates away', () => {

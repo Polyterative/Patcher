@@ -125,6 +125,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   private hoveredRowIndex: number | null = null;
   private hoveredRowPowerPanelPlacement: 'above' | 'below' = 'above';
   private rowPowerBreakdown: RackPowerRowBreakdown[] = [];
+  rowHpOverflow: number[] = [];
   private rowFunctionBreakdowns = new Map<number, RowFunctionBreakdown>();
   private modulePowerHeatmap = new Map<string, RackPowerHeatmapVisual>();
   private signalAnalysis: SignalModuleAnalysis | null = null;
@@ -178,7 +179,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['rowedRackedModules'] || changes['dragScale']) {
+    if (changes['rowedRackedModules'] || changes['dragScale'] || changes['rackData']) {
       this.updateRowPowerBreakdown();
     }
   }
@@ -330,6 +331,22 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
 
   rowPowerBreakdownAt(rowId: number): RackPowerRowBreakdown | null {
     return this.rowPowerBreakdown[rowId] ?? null;
+  }
+
+  rowHpOverflowAt(rowId: number): number {
+    return this.rowHpOverflow[rowId] ?? 0;
+  }
+
+  rowHpTooltip(rowId: number): string {
+    const capacity = this.rackData?.hp ?? 0;
+    const row = this.rowedRackedModules?.[rowId] ?? [];
+    const used = row.reduce((sum, m) => sum + (m.module?.hp ?? 0), 0);
+    const overflow = this.rowHpOverflow[rowId] ?? 0;
+    return `Row ${rowId + 1}: ${used} / ${capacity} HP — ${overflow} HP over capacity`;
+  }
+
+  get totalHpOverflow(): number {
+    return this.rowHpOverflow.reduce((sum, v) => sum + v, 0);
   }
 
   isRowAnalysisPanelVisible(rowId: number): boolean {
@@ -547,6 +564,11 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
 
   private updateRowPowerBreakdown(): void {
     this.rowPowerBreakdown = buildRackPowerBreakdown(this.rowedRackedModules ?? []).rows;
+    const capacity = this.rackData?.hp ?? 0;
+    this.rowHpOverflow = (this.rowedRackedModules ?? []).map(row => {
+      const used = row.reduce((sum, m) => sum + (m.module?.hp ?? 0), 0);
+      return Math.max(0, used - capacity);
+    });
     this.rowFunctionBreakdowns = buildRowFunctionBreakdowns(this.rowedRackedModules);
     if (this.hoveredRowIndex != null && this.hoveredRowIndex >= this.rowPowerBreakdown.length) {
       this.hoveredRowIndex = null;
