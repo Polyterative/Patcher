@@ -11,3 +11,30 @@
 .mat-form-field-infix {
   min-width: 5rem !important;
 }
+
+// Preset chips panel — compact chip-style options shown on focus
+::ng-deep .mat-form-entity-presets-panel {
+  min-width: 0 !important;
+
+  .mat-mdc-option {
+    min-height: 2rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    border-radius: 1rem;
+    margin: 0.25rem 0.5rem;
+    background: var(--mat-sys-secondary-container, rgba(128, 128, 128, 0.12));
+    width: auto;
+    display: inline-flex;
+
+    &.mdc-list-item--selected,
+    &:hover {
+      background: var(--mat-sys-primary-container, rgba(128, 128, 128, 0.2));
+    }
+  }
+
+  .mat-mdc-autocomplete-panel {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0.375rem;
+  }
+}
