@@ -163,4 +163,76 @@ describe('ModuleListComponent', () => {
     expect(component.orderData(modules)).toBe(modules);
     component.ngOnDestroy();
   });
+
+  describe('showFilters=true', () => {
+    function buildWithFilters() {
+      const filterService = new LocalDataFilterService();
+      const data$ = new BehaviorSubject<MinimalModule[] | null>([
+        buildModule({id: 1, name: 'Maths', hp: 20, standard: {id: 0, name: '3U Doepfer'} as any}),
+        buildModule({id: 2, name: '1U Thing', hp: 4, standard: {id: 1, name: '1U Intellijel'} as any,
+          tags: [{id: 5, tag: {id: 5, name: 'LFO'} as any, voteCount: []}]}),
+        buildModule({id: 3, name: 'Big 3U', hp: 28, standard: {id: 0, name: '3U Doepfer'} as any}),
+      ]);
+      const component = new ModuleListComponent({} as any, filterService, {preferredPanelColor$: of(null)} as any);
+      component.data$ = data$;
+      component.showFilters = true;
+      component.ngOnInit();
+      return {component, data$};
+    }
+
+    it('filters by standard when standardControl changes', fakeAsync(() => {
+      const {component} = buildWithFilters();
+      tick();
+      component.standardControl.setValue({id: 1, name: '1U Intellijel'});
+      tick();
+      expect(currentVal(component.filteredData$)?.map(m => m.name)).toEqual(['1U Thing']);
+      component.ngOnDestroy();
+    }));
+
+    it('filters by HP with = condition', fakeAsync(() => {
+      const {component} = buildWithFilters();
+      tick();
+      component.hpControl.setValue('20');
+      tick();
+      expect(currentVal(component.filteredData$)?.map(m => m.name)).toEqual(['Maths']);
+      component.ngOnDestroy();
+    }));
+
+    it('filters by HP with >= condition', fakeAsync(() => {
+      const {component} = buildWithFilters();
+      tick();
+      component.hpConditionControl.setValue({id: '>=', name: 'at least'});
+      component.hpControl.setValue('20');
+      tick();
+      const names = currentVal(component.filteredData$)?.map(m => m.name);
+      expect(names).toContain('Maths');
+      expect(names).toContain('Big 3U');
+      expect(names).not.toContain('1U Thing');
+      component.ngOnDestroy();
+    }));
+
+    it('filters by tag selection', fakeAsync(() => {
+      const {component} = buildWithFilters();
+      tick();
+      component.tagsControl.setValue([5]);
+      tick();
+      expect(currentVal(component.filteredData$)?.map(m => m.name)).toEqual(['1U Thing']);
+      component.ngOnDestroy();
+    }));
+
+    it('resetFilters clears all filter controls', fakeAsync(() => {
+      const {component} = buildWithFilters();
+      tick();
+      component.standardControl.setValue({id: 1, name: '1U Intellijel'});
+      component.hpControl.setValue('8');
+      component.tagsControl.setValue([5]);
+      tick();
+      component.resetFilters();
+      tick();
+      expect(component.standardControl.value?.id).toBeUndefined();
+      expect(component.hpControl.value).toBe('');
+      expect(component.tagsControl.value).toEqual([]);
+      component.ngOnDestroy();
+    }));
+  });
 });

@@ -1,6 +1,9 @@
 @if ({
   filteredData:(filteredData$|async),
-  data:(data$|async)
+  data:(data$|async),
+  availableTags:(availableTags$|async),
+  canReset:(canReset$|async),
+  selectedTagIds:(tagsControl.valueChanges|async)
 }; as bag) {
   @if (bag.data == null) {
     <lib-auto-content-loading-indicator
@@ -34,6 +37,57 @@
               iconL1="view_stream"
               label="Group"
             ></lib-mat-form-entity>
+          }
+        </div>
+      }
+      @if (showFilters) {
+        <div class="col gap1 module-list-filters">
+          <div class="row gap1 rowwrap">
+            <lib-mat-form-entity
+              [control]="standardControl"
+              [type]="formTypes.SELECT"
+              [options$]="standardOptions$"
+              [disableVoidSelection]="true"
+              [formFieldAppearanceType]="'outline'"
+              iconL1="view_module"
+              label="Standard"
+            ></lib-mat-form-entity>
+            <lib-mat-form-entity
+              [control]="hpConditionControl"
+              [type]="formTypes.SELECT"
+              [options$]="hpConditionOptions$"
+              [disableVoidSelection]="true"
+              [formFieldAppearanceType]="'outline'"
+              iconL1="straighten"
+              label="HP"
+              style="flex: 0 0 10rem"
+            ></lib-mat-form-entity>
+            <lib-mat-form-entity
+              [control]="hpControl"
+              [type]="formTypes.NUMBER"
+              [formFieldAppearanceType]="'outline'"
+              [presets]="[2,4,6,8,10,12,14,16,20,24]"
+              label="HP value"
+              style="flex: 0 0 8rem"
+            ></lib-mat-form-entity>
+            @if (bag.canReset) {
+              <button mat-stroked-button (click)="resetFilters()" class="module-list-reset-btn">
+                <mat-icon>filter_alt_off</mat-icon>
+                Reset
+              </button>
+            }
+          </div>
+          @if (bag.availableTags && bag.availableTags.length > 0) {
+            <mat-chip-listbox
+              [multiple]="true"
+              class="module-list-tag-chips"
+              [ngModel]="tagsControl.value"
+              (ngModelChange)="tagsControl.setValue($event)"
+            >
+              @for (tag of bag.availableTags; track tag.id) {
+                <mat-chip-option [value]="tag.id">{{ tag.name }}</mat-chip-option>
+              }
+            </mat-chip-listbox>
           }
         </div>
       }
