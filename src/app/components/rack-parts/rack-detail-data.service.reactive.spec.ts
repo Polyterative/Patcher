@@ -316,6 +316,20 @@ describe('RackDetailDataService reactive flows', () => {
     expect(refreshSpy).toHaveBeenCalledWith(50);
   });
 
+  it('adds a blank panel to a row at the correct column position', () => {
+    const {service, backend} = build();
+    service.singleRackData$.next(rack({id: 50}));
+    const rows = [[moduleInRack(1, 0, 0), moduleInRack(2, 0, 1)]];
+    service.rowedRackedModules$.next(rows as any);
+    const refreshSpy = spyOn(service.updateSingleRackData$, 'next').and.callThrough();
+
+    service.addBlankToRow$.next({rowId: 0, hp: 4});
+
+    // blank ID for hp=4 standard=0 is 4648 (from BLANK_IDS_STANDARD_0)
+    expect(backend.add.rackModule).toHaveBeenCalledWith(4648, 50, 0, 2);
+    expect(refreshSpy).toHaveBeenCalledWith(50);
+  });
+
   it('creates a linked patch from the current rack and routes straight to it', () => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {});
     const {service, backend, router, dialog, snackBar} = build();

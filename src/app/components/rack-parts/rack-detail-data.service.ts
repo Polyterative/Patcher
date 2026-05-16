@@ -111,6 +111,8 @@ export class RackDetailDataService extends SubManager {
   }>(undefined);
   
   readonly addModuleToRack$ = new Subject<MinimalModule>();
+  /** Inserts a blank panel of the given HP at the end of the given row. */
+  readonly addBlankToRow$ = new Subject<{rowId: number; hp: number}>();
   /** Emits when a module has been added via the bottom picker so views can scroll the rack into focus */
   readonly moduleAddedFromPicker$ = new Subject<MinimalModule>();
   readonly shouldShowPanelImages$ = new BehaviorSubject<boolean>(true);
@@ -865,6 +867,24 @@ export class RackDetailDataService extends SubManager {
       .subscribe((module) => {
         SharedConstants.successCustom(this.snackBar, `"${ module.name }" added to "${ this.singleRackData$.value.name }". Drag it into a row to place it.`);
         this.moduleAddedFromPicker$.next(module);
+        this.updateSingleRackData$.next(this.singleRackData$.value.id);
+      });
+
+    // quick-add blank panel directly to a row
+    this.addBlankToRow$
+      .pipe(
+        exhaustMap(({rowId, hp}) => {
+          const rackId = this.singleRackData$.value?.id;
+          if (!rackId) return EMPTY;
+          const row = this.rowedRackedModules$.value?.[rowId] ?? [];
+          const column = row.length;
+          const blankId = calculateBlankIdForSizeAndStandard(hp);
+          if (blankId === -1) return EMPTY;
+          return this.backend.add.rackModule(blankId, rackId, rowId, column);
+        }),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(() => {
         this.updateSingleRackData$.next(this.singleRackData$.value.id);
       });
     

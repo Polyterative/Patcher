@@ -597,3 +597,45 @@
   height: 0.9rem;
   line-height: 0.9rem;
 }
+
+// Quick-add blank panel strip — shown on row hover in edit mode
+.blankStrip {
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+  padding: 0 0.2rem;
+  flex: 0 0 auto;
+  pointer-events: auto;
+}
+
+.blankStrip__btn {
+  width: 1.6rem;
+  height: 1.6rem;
+  min-width: 1.6rem;
+  min-height: 1.6rem;
+  line-height: 1.6rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+  border-radius: 0.25rem !important;
+  color: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  padding: 0 !important;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.08);
+    color: rgba(0, 0, 0, 0.7);
+    border-color: rgba(0, 0, 0, 0.2) !important;
+  }
+
+  &.blankStrip__btn--exact {
+    background: rgba($brand-primary, 0.12);
+    border-color: rgba($brand-primary, 0.35) !important;
+    color: $brand-primary;
+
+    &:hover {
+      background: rgba($brand-primary, 0.2);
+    }
+  }
+}

@@ -353,6 +353,18 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     return this.hoveredRowIndex === rowId && ((this.rowedRackedModules?.[rowId]?.length ?? 0) > 0);
   }
 
+  isRowHovered(rowId: number): boolean {
+    return this.hoveredRowIndex === rowId;
+  }
+
+  rowRemainingHp(rowId: number): number {
+    const row = this.rowedRackedModules?.[rowId] ?? [];
+    const used = row.reduce((sum, m) => sum + (m.module?.hp ?? 0), 0);
+    return Math.max(0, (this.rackData?.hp ?? 0) - used);
+  }
+
+  readonly commonBlankSizes = [1, 2, 3, 4, 6, 8] as const;
+
   shouldShowRowPowerPanel(rowId: number, analysisMode: RackAnalysisMode): boolean {
     return this.shouldShowRowAnalysisPanel(rowId, analysisMode, this.analysisModes.power);
   }
