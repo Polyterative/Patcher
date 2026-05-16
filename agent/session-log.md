@@ -1170,3 +1170,67 @@ All `.ts` source files testable with direct instantiation (no Angular TestBed/in
 ### Suggested next actions
 - Resume Initial Render Flash investigation (paused by user; ~30% complete)
 - UI consistency fixes from `UI_CONSISTENCY_AUDIT.md` (spacing/density is highest priority)
+
+---
+
+## 16-05-2026 10:11 — SESSION START
+
+### Boot summary
+
+- Read AGENTS.md, mission.md, current-task.md, blockers.md, decision-log.md, FOR_AI_AGENTS.md,
+  CURRENT_FEATURE.md, TODO.md (Tier 0), ROADMAP.md.
+- `git status`: on develop, working tree has 2 unstaged changes (internaldocs/workflow/TODO.md
+  modified, src/assets/screenshots/01-home.jpg deleted). Branch is up to date with origin.
+- `git log -20`: HEAD is `4cc3e67f` — merge of Module Possession States Layer 1+2 from
+  agent/autonomous-20260515. All previous sessions' work is on develop.
+- `agent/current-task.md` still describes the Layer 1 MVP task — it is **fully complete**
+  (all acceptance items checked in acceptance-checklist.md). Need to clean it up and pick next task.
+
+### State assessment
+
+- Module Possession States Layer 1 is merged and fully done. Layer 2 partially blocked (wishlist
+  nav placement open question in blockers.md). Unblocked Layer 2 items (module picker filter, SELLS
+  badge) could be next but require deeper investigation of user-area and editor components.
+- Opaque URL Tokens feature: Layer 2 has two more unchecked items (LegacyLinkGonePageComponent,
+  telemetry); Layer 3 has docs note pending.
+- Best unblocked HIGH-priority frontend task: **Bug — 1U module placeholder wrong aspect ratio**
+  (confirmed HIGH in TODO.md; root cause and fix are fully specified; pure frontend).
+
+### Selected task
+
+**HIGH: Bug — 1U module placeholder wrong aspect ratio**
+
+Root cause: `module-part-image.component.html` placeholder `<div>` uses `[fxFlex]` to set the
+width. `fxFlex` sets `flex-basis` along the parent flex main-axis; if the parent
+`lib-screen-wrapper` has column direction, `fxFlex` sets *height*, not width — producing portrait
+proportions for 1U wide-flat modules. Fix: replace `[fxFlex]` with explicit `[ngStyle]` width + height.
+
+### Implementation — 1U placeholder aspect ratio fix
+
+**Root cause confirmed:** `[fxFlex]="data.hp/sizeDivider/2+'rem'"` on the placeholder `<div>`
+inside `<lib-screen-wrapper>`. Angular FlexLayout's `fxFlex` sets `flex-basis` along the parent
+flex main axis. If the parent wraps in column direction, the HP value ends up setting the height
+instead of the width — producing portrait proportions for a wide, flat 1U module.
+
+**Fix:** In `module-part-image.component.html` line 35, replaced:
+```
+[fxFlex]="data.hp/sizeDivider/2+'rem'"
+[ngStyle]="fixedHeight ? {} : {height:((bag.height)/sizeDivider/2+'rem')}"
+```
+with a single explicit binding:
+```
+[ngStyle]="fixedHeight ? {} : { width: (data.hp/sizeDivider/2)+'rem', height: (bag.height/sizeDivider/2)+'rem' }"
+```
+Width and height are now explicit CSS properties, immune to flex-direction.
+
+**`fixedHeight=true` path:** unchanged — `.preview--fixed-height` CSS class already sets
+`width: 100%; height: 8rem !important;` and `ngStyle` emits `{}` so no conflict.
+
+**Tests run:** 19/19 targeted spec green. `pnpm build` clean (exit 0; 3 pre-existing budget warnings).
+
+**Files changed:**
+- `src/app/components/module-parts/module-minimal/module-part-image/module-part-image.component.html`
+- `agent/current-task.md`, `agent/acceptance-checklist.md`, `agent/session-log.md`
+- `agent/decision-log.md`, `internaldocs/workflow/TODO.md`, `internaldocs/workflow/COMPLETED.md`
+
+**Status:** Fix complete. Pending commit (per AGENTS.md §6 — ask before committing).

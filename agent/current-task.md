@@ -1,35 +1,34 @@
 # Current Task
 
 ## Title
-Module Possession States — Layer 1 (MVP): segmented Own/Want/Sell control on module detail
+Bug — 1U module placeholder wrong aspect ratio
 
 ## Source
-`internaldocs/product/ROADMAP.md` → Tier 0 → "Module Possession States"
+`internaldocs/workflow/TODO.md` → PRODUCT Tier 0 → "HIGH: Bug — 1U module placeholder wrong aspect ratio"
 
 ## Goal
-Surface the existing `user_modules.kind` enum (`HAS | WANTS | SELLS`) in the module
-detail UI. Replace the binary Add/Remove toggle with a 4-state segmented control
-(Own | Want | Sell | —) that lets users set or clear their possession state for a module.
-No DB schema changes needed — the enum and PK constraint already exist.
+When a 1U module (Intellijel or Pulp Logic format) has no panel image, the grey placeholder
+rectangle shows with the wrong (portrait/tall) proportions instead of the correct wide, flat 1U
+shape. The root cause is `[fxFlex]` being used to set width on the placeholder `<div>` — it sets
+`flex-basis` along the parent flex main axis, which may be vertical. Replace with explicit
+`[ngStyle]` width + height binding so dimensions are immune to flex-direction.
 
 ## Acceptance criteria (see acceptance-checklist.md)
-- [ ] `MinimalModule` model has optional `possessionKind?: UserModulePossessionKind`
-- [ ] `getCurrentUserModules` query includes `kind` column mapped to `possessionKind`
-- [ ] `backend.update.userModulePossession(moduleId, kind)` upserts `user_modules.kind`
-- [ ] `module-detail-data.service` exposes `currentModulePossession$` and `setModulePossession$`
-- [ ] `module-minimal` shows 4-state button-toggle (Own | Want | Sell | —) when user is logged in
-- [ ] Selecting current state again is a no-op (idempotent)
-- [ ] Selecting — removes row from `user_modules`
-- [ ] `pnpm test-headless` green (targeted)
+- [ ] `module-part-image.component.html` placeholder `<div>` has `[fxFlex]` removed
+- [ ] Replaced with `[ngStyle]` explicit width AND height when `fixedHeight=false`
+- [ ] `fixedHeight=true` path unaffected (CSS class still controls dimensions)
 - [ ] `pnpm build` green
+- [ ] `pnpm test-headless` targeted green
 
-## Out of scope (Layer 2+)
-- Wishlist page / nav placement
-- My Modules page filtering by kind (WANTS shown separately)
-- WANTS count on module detail
-- SELLS inline badge in user-area
+## Affected files
+- `src/app/components/module-parts/module-minimal/module-part-image/module-part-image.component.html`
+
+## Out of scope
+- Surface-mode (`containImage=false`) path — no placeholder rendered there
+- Any changes to `lib-screen-wrapper` or flex layout direction
+- Visual regression screenshots (manual visual check is sufficient for a style fix)
 
 ## Risk notes
-- `currentUserModules` is used broadly; adding `possessionKind` is additive (no type breakage)
-- Module picker in rack editor currently shows all user_modules rows; WANTS will now appear there.
-  Filed as a Layer 2 follow-up.
+- Low risk — one-line attribute swap, no TS logic change.
+- `fixedHeight=true` path uses CSS class `.preview--fixed-height` which already sets
+  `width: 100%; height: 8rem !important;` — no ngStyle needed there; the `{}` empty object keeps it.
