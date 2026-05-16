@@ -600,12 +600,17 @@
 
 // Quick-add blank panel strip — shown on row hover in edit mode
 .blankStrip {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: 20;
   display: flex;
   align-items: center;
   gap: 0.1rem;
-  padding: 0 0.2rem;
-  flex: 0 0 auto;
+  padding: 0 0.2rem 0.2rem;
   pointer-events: auto;
+  // Fade the row content under the strip so buttons are readable
+  background: linear-gradient(to top, rgba(255,255,255,0.55) 0%, transparent 100%);
 }
 
 .blankStrip__btn {
