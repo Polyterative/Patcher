@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { PageEvent } from '@angular/material/paginator';
 import {
   BehaviorSubject,
   merge,
@@ -17,7 +16,8 @@ import {
   shareReplay,
   startWith,
   switchMap,
-  takeUntil
+  takeUntil,
+  withLatestFrom
 } from 'rxjs/operators';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
@@ -60,9 +60,9 @@ const DEFAULT_ORDER = MANUFACTURER_ORDER_OPTIONS[2];
 export class ManufacturerBrowserRootDataService extends SubManager {
   // ── Actions ───────────────────────────────────────────────────────────────
   readonly updateList$ = new Subject<void>();
+  readonly loadMore$ = new Subject<void>();
   readonly resetForm$ = new Subject<void>();
   readonly paginatorToFistPage$ = new Subject<void>();
-  readonly pageEvent$ = new Subject<PageEvent>();
 
   // ── Server-side pagination state ──────────────────────────────────────────
   readonly serversideTableRequestData = {
@@ -82,6 +82,10 @@ export class ManufacturerBrowserRootDataService extends SubManager {
   // ── Public state ──────────────────────────────────────────────────────────
   private readonly _manufacturers$ = new BehaviorSubject<ManufacturerDetail[] | null>(null);
   readonly manufacturers$ = this._manufacturers$.asObservable();
+
+  get loadedCount(): number {
+    return this._manufacturers$.value?.length ?? 0;
+  }
   readonly canReset$: Observable<boolean>;
 
   constructor(
@@ -118,16 +122,7 @@ export class ManufacturerBrowserRootDataService extends SubManager {
       shareReplay(1)
     );
     
-    // Page navigation — update skip/take then re-fetch
-    this.pageEvent$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(event => {
-        this.serversideTableRequestData.take$.next(event.pageSize);
-        this.serversideTableRequestData.skip$.next(event.pageIndex * event.pageSize);
-        this.updateList$.next();
-      });
-
-    this.initializeFormChangeHandler();
+        this.initializeFormChangeHandler();
     this.initializeFetchHandler();
     this.initializeResetHandler();
   }
@@ -190,9 +185,21 @@ export class ManufacturerBrowserRootDataService extends SubManager {
       }),
       takeUntil(this.destroy$)
     ).subscribe(x => {
+      const skip = this.serversideTableRequestData.skip$.value;
+      const current = this._manufacturers$.value ?? [];
       this.serversideAdditionalData.itemsCount$.next(x.count);
-      this._manufacturers$.next(x.data as ManufacturerDetail[]);
+      this._manufacturers$.next(skip === 0 ? x.data as ManufacturerDetail[] : [...current, ...x.data as ManufacturerDetail[]]);
     });
+
+    this.loadMore$
+      .pipe(
+        withLatestFrom(this.manufacturers$),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(([_, current]) => {
+        this.serversideTableRequestData.skip$.next(current?.length ?? 0);
+        this.updateList$.next();
+      });
   }
   
   private initializeResetHandler(): void {

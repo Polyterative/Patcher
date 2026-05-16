@@ -73,13 +73,15 @@ describe('ManufacturerBrowserRootDataService', () => {
     service.ngOnDestroy();
   }));
   
-  it('updates skip/take and triggers reload on pageEvent$', fakeAsync(() => {
+  it('loadMore$ appends results and advances skip', fakeAsync(() => {
     const {service, backend} = buildService();
+    const firstBatch = Array.from({length: 10}, (_, i) => ({id: i + 1})) as any[];
+    service['_manufacturers$'].next(firstBatch);
+    service.serversideAdditionalData.itemsCount$.next(30);
     const before = backend.GET.manufacturersPaginated.calls.count();
-    service.pageEvent$.next({pageIndex: 2, pageSize: 20, length: 100} as any);
+    service.loadMore$.next();
     tick();
-    expect(service.serversideTableRequestData.skip$.value).toBe(40);
-    expect(service.serversideTableRequestData.take$.value).toBe(20);
+    expect(service.serversideTableRequestData.skip$.value).toBe(10);
     expect(backend.GET.manufacturersPaginated.calls.count()).toBeGreaterThan(before);
   }));
   

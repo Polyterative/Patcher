@@ -1,17 +1,10 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  inject,
-  ViewChild
+  inject
 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
-import {
-  skip,
-  switchMap,
-  take,
-  takeUntil
-} from 'rxjs/operators';
-import { MatPaginator } from '@angular/material/paginator';
+import { takeUntil } from 'rxjs/operators';
 import { ManufacturerBrowserRootDataService } from './manufacturer-browser-root-data.service';
 import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
@@ -26,9 +19,22 @@ import { SubManager } from 'src/app/shared-interproject/directives/subscription-
   standalone: false
 })
 export class ManufacturerBrowserRootComponent extends SubManager {
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
   private readonly document = inject(DOCUMENT);
   readonly formTypes = FormTypes;
+
+  get hasMoreManufacturers(): boolean {
+    const total = this.dataService.serversideAdditionalData.itemsCount$.value;
+    return this.dataService.loadedCount < total;
+  }
+
+  get remainingManufacturersCount(): number {
+    const total = this.dataService.serversideAdditionalData.itemsCount$.value;
+    return Math.max(0, total - this.dataService.loadedCount);
+  }
+
+  loadMore(): void {
+    this.dataService.loadMore$.next();
+  }
 
   constructor(
     public readonly dataService: ManufacturerBrowserRootDataService,
@@ -47,17 +53,9 @@ export class ManufacturerBrowserRootComponent extends SubManager {
     
     this.dataService.paginatorToFistPage$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.paginator?.firstPage());
-    
-    this.dataService.pageEvent$
-      .pipe(
-        switchMap(() => this.dataService.manufacturers$.pipe(
-          skip(1),
-          take(1)
-        )),
-        takeUntil(this.destroy$)
-      )
-      .subscribe(() => this.document.defaultView?.scrollTo({top: 0, behavior: 'smooth'}));
+      .subscribe(() => {
+        this.document.defaultView?.scrollTo({top: 0, behavior: 'smooth'});
+      });
     
     this.dataService.updateList$.next();
   }
