@@ -54,3 +54,17 @@
 - Added focused patch-editor coverage for the new operation-mode options and row-grouped linked-rack preview shaping.
 - Validation stayed at focused unit/build coverage because the shared live environment still cannot persist a linked patch until the external schema migration lands, which blocks a stable visible end-to-end assertion for linked-rack mode.
 - Next bounded task is privacy-safe viewer handling for unavailable or inaccessible linked racks.
+
+## 16-05-2026 10:11
+
+- Fixed 1U module placeholder aspect ratio bug by removing `[fxFlex]` from the placeholder `<div>`
+  inside `module-part-image.component.html` and replacing it with an explicit `[ngStyle]` binding
+  for both `width` and `height`.
+- `fxFlex` sets `flex-basis` along the parent flex main axis, which is not always horizontal;
+  using explicit CSS properties is immune to flex-direction, so the fix is correct across all
+  host layouts without requiring any parent-component changes.
+- `fixedHeight=true` path kept as-is: the existing `.preview--fixed-height` CSS class already
+  enforces `width: 100%; height: 8rem !important;` — no inline override needed.
+- Discarded alternatives: (a) forcing `flex-direction: row` on `lib-screen-wrapper` — would be
+  a broader change with potential layout side-effects; (b) removing `lib-screen-wrapper` — not
+  needed; the wrapper is not the root cause.
