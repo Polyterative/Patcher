@@ -1,15 +1,10 @@
 # Acceptance Checklist
 
-## Module Possession States — Layer 1 MVP
+## Bug — 1U module placeholder wrong aspect ratio
 
-- [x] `MinimalModule` model has optional `possessionKind?: UserModulePossessionKind`
-- [x] `getCurrentUserModules` query includes `kind` column mapped to `possessionKind`
-- [x] `backend.update.userModulePossession(moduleId, kind)` upserts `user_modules.kind`
-- [x] `SupabaseService.update` exposes `userModulePossession`
-- [x] `module-detail-data.service` exposes `currentModulePossession$` and `setModulePossession$`
-- [x] `module-minimal` shows 4-state button-toggle (Own | Want | Sell | —) when user is logged in
-- [x] Selecting current state again is a no-op
-- [x] Selecting — removes row from `user_modules`
-- [x] Unit tests for `setModulePossession$` pipeline in data service spec
-- [x] `pnpm test-headless` green (62/62)
-- [x] `pnpm build` green
+- [x] `module-part-image.component.html` placeholder `<div>` has `[fxFlex]` removed
+- [x] Replaced with `[ngStyle]` explicit width AND height when `fixedHeight=false`
+- [x] `fixedHeight=true` path unaffected (CSS class `.preview--fixed-height` controls dimensions)
+- [x] `pnpm build` green (19/19 spec + build clean)
+- [x] Targeted `pnpm test-headless` green
+- [ ] Visual verification in live app for Intellijel 1U + Pulp Logic 1U (manual/human)
