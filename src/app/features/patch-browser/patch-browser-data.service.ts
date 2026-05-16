@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { PageEvent } from '@angular/material/paginator';
 import {
   BehaviorSubject,
   merge,
@@ -15,7 +14,8 @@ import {
   shareReplay,
   startWith,
   switchMap,
-  takeUntil
+  takeUntil,
+  withLatestFrom
 } from 'rxjs/operators';
 import { PatchMinimal } from '../../models/patch';
 import { FormTypes } from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
@@ -67,8 +67,8 @@ const PATCH_DEFAULT_ORDER: PatchOrderOption = {id: 'updated', name: 'Updated ↓
 export class PatchBrowserDataService extends SubManager {
   readonly patchesList$ = new BehaviorSubject<PatchList>(null);
   readonly updatePatchesList$ = new Subject<void>();
+  readonly loadMore$ = new Subject<void>();
   readonly resetForm$ = new Subject<void>();
-  readonly pageEvent$ = new Subject<PageEvent>();
   readonly paginatorToFistPage$ = new Subject<void>();
   
   readonly serversideTableRequestData = {
@@ -122,15 +122,6 @@ export class PatchBrowserDataService extends SubManager {
       shareReplay(1)
     );
     
-    // Page navigation — update skip/take then re-fetch
-    this.pageEvent$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(event => {
-        this.serversideTableRequestData.take$.next(event.pageSize);
-        this.serversideTableRequestData.skip$.next(event.pageIndex * event.pageSize);
-        this.updatePatchesList$.next();
-      });
-
     // Single merged pipeline — debounce collapses reset burst into one fetch.
     merge(
       this.fields.search.control.valueChanges,
@@ -163,8 +154,20 @@ export class PatchBrowserDataService extends SubManager {
         takeUntil(this.destroy$)
       )
       .subscribe(x => {
+        const skip = this.serversideTableRequestData.skip$.value;
+        const current = this.patchesList$.value ?? [];
         this.serversideAdditionalData.itemsCount$.next(x.count);
-        this.patchesList$.next(x.data);
+        this.patchesList$.next(skip === 0 ? x.data : [...current, ...x.data]);
+      });
+
+    this.loadMore$
+      .pipe(
+        withLatestFrom(this.patchesList$),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(([_, current]) => {
+        this.serversideTableRequestData.skip$.next(current?.length ?? 0);
+        this.updatePatchesList$.next();
       });
 
     this.resetForm$

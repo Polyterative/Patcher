@@ -100,13 +100,15 @@ describe('PatchBrowserDataService', () => {
     service.ngOnDestroy();
   }));
   
-  it('pageEvent$ updates skip/take and triggers reload', fakeAsync(() => {
+  it('loadMore$ appends results and advances skip', fakeAsync(() => {
     const {service, backend} = build();
+    const firstBatch = Array.from({length: 10}, (_, i) => ({id: i + 1})) as any[];
+    service.patchesList$.next(firstBatch as any);
+    service.serversideAdditionalData.itemsCount$.next(50);
     const before = backend.GET.patches.calls.count();
-    service.pageEvent$.next({pageIndex: 1, pageSize: 10, length: 50} as any);
+    service.loadMore$.next();
     tick();
     expect(service.serversideTableRequestData.skip$.value).toBe(10);
-    expect(service.serversideTableRequestData.take$.value).toBe(10);
     expect(backend.GET.patches.calls.count()).toBeGreaterThan(before);
   }));
   

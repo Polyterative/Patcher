@@ -5,12 +5,11 @@ import { Subject, BehaviorSubject } from 'rxjs';
 import { FormControl } from '@angular/forms';
 import { TestBed } from '@angular/core/testing';
 import { DOCUMENT } from '@angular/common';
-import { PageEvent } from '@angular/material/paginator';
 
 function mockDataService(): PatchBrowserDataService {
   return {
     paginatorToFistPage$: new Subject<void>(),
-    pageEvent$: new Subject<PageEvent>(),
+    loadMore$: new Subject<void>(),
     patchesList$: new BehaviorSubject(null),
     updatePatchesList$: new Subject<void>(),
     serversideTableRequestData: { sort$: new Subject() },
@@ -86,16 +85,14 @@ describe('PatchBrowserRootComponent', () => {
     expect(ds.fields.order.control.value).toEqual({id: 'updated', name: 'Updated ↓'});
   });
 
-  it('scrolls to top when pageEvent$ fires after patchesList$ emits', () => {
+  it('scrolls to top when paginatorToFistPage$ fires', () => {
     const mockDoc = {defaultView: {scrollTo: jasmine.createSpy('scrollTo')}};
     TestBed.overrideProvider(DOCUMENT, {useValue: mockDoc});
 
     const ds = mockDataService();
     const comp = TestBed.runInInjectionContext(() => new PatchBrowserRootComponent(ds, mockSeo()));
 
-    (ds.patchesList$ as BehaviorSubject<any>).next([{id: 1}]);
-    ds.pageEvent$.next({pageIndex: 2, pageSize: 10, length: 100} as PageEvent);
-    (ds.patchesList$ as BehaviorSubject<any>).next([{id: 2}]);
+    ds.paginatorToFistPage$.next();
 
     expect(mockDoc.defaultView.scrollTo).toHaveBeenCalledWith({top: 0, behavior: 'smooth'});
     comp.ngOnDestroy();
