@@ -245,6 +245,7 @@
         <app-module-list [data$]="visibleModules$"
                          [viewConfig]="viewConfig"
                          [emptyStateCopy]="showCollectionBrowseToggle ? rackContextEmptyStateCopy : ''"
+                         [suppressEmpty]="hasMoreModules"
                          [encloseVertically]="false"
         ></app-module-list>
         @if (!usesOwnedDataset && hasMoreModules) {
