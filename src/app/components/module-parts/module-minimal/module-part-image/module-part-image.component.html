@@ -27,7 +27,9 @@
         >
       }
       @if (!filename) {
-        <div [ngStyle]="fixedHeight ? {} : { width: (data.hp/sizeDivider/2)+'rem', height: (bag.height/sizeDivider/2)+'rem' }"
+        <div [ngStyle]="fixedHeight
+                          ? { width: (data.hp * 8 / bag.height) + 'rem' }
+                          : { width: (data.hp/sizeDivider/2)+'rem', height: (bag.height/sizeDivider/2)+'rem' }"
              class="preview img"
              [class.preview--fixed-height]="fixedHeight"
              [@enter]
