@@ -214,6 +214,22 @@ describe('UserAreaDataService', () => {
     expect(rackUpdateSpy).toHaveBeenCalledWith(undefined);
   });
 
+  it('excludes WANTS modules when opening rack creator (only HAS and SELLS pass)', () => {
+    const {service, dialog} = build();
+    service.modulesData$.next([
+      {id: 1, name: 'Rings',  hp: 8, possessionKind: 'HAS'}   as any,
+      {id: 2, name: 'Clouds', hp: 14, possessionKind: 'WANTS'} as any,
+      {id: 3, name: 'Braids', hp: 10, possessionKind: 'SELLS'} as any,
+    ]);
+
+    service.addRack$.next();
+
+    const callArgs = (dialog.open as jasmine.Spy).calls.mostRecent().args[1];
+    const passedIds = (callArgs.data.userModules as any[]).map((m: any) => m.id);
+    expect(passedIds).toEqual([1, 3]);
+    expect(passedIds).not.toContain(2);
+  });
+
   it('pages modules, racks, and patches locally without triggering extra backend calls', () => {
     const {service, backend} = build();
 

@@ -354,7 +354,8 @@ export class UserAreaDataService extends SubManager {
         }),
         switchMap(() => {
           const data: RackCreatorInModel = {
-            userModules: this.modulesData$.value || []
+            // WANTS modules excluded — rack balance analysis uses only physically-owned modules
+            userModules: (this.modulesData$.value || []).filter(m => m.possessionKind !== 'WANTS')
           };
           
           return this.dialog.open(
