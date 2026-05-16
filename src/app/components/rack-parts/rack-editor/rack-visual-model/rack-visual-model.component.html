@@ -101,6 +101,7 @@
              @let showHoverStats = shouldShowModuleHoverStats(rackedModule, analysisMode);
              @let moduleHp = effectiveHp(rackedModule);
               <app-module-realistic [@enter]="{ value: '', params: { delay: (i * 50)}}"
+                                     [@leave]
                                      [data]="rackedModule|mapToModule"
                                      [analysisMode]="analysisMode"
                                     [analysisClass]="analysisVisualClass(rackedModule, analysisMode)"
