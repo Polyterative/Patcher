@@ -147,6 +147,14 @@
                                       (mouseleave)="clearHoveredModule(rackedModule)"
                                       (contextmenu)="moduleRightClick$.next({$event:$event, rackedModule:rackedModule})"
                 >
+                <ng-template cdkDragPreview>
+                  <app-module-realistic
+                    [data]="rackedModule|mapToModule"
+                    [analysisMode]="analysisModes.off"
+                    [showPanelImages]="false"
+                    class="module"
+                  ></app-module-realistic>
+                </ng-template>
                 @if (isCurrentRackEditable && isCurrentRackPropertyOfCurrentUser && !suppressHpIndicators && analysisMode === analysisModes.off) {
                   <div class="hpIndicator"
                        (mousedown)="$event.stopPropagation()"
