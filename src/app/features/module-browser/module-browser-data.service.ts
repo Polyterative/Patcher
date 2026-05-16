@@ -3,7 +3,6 @@ import {
   FormControl,
   Validators
 } from '@angular/forms';
-import { PageEvent } from '@angular/material/paginator';
 import {
   BehaviorSubject,
   combineLatest,
@@ -23,7 +22,8 @@ import {
   startWith,
   switchMap,
   takeUntil,
-  tap
+  tap,
+  withLatestFrom
 } from 'rxjs/operators';
 import { MinimalModule } from '../../models/module';
 import { TAG_TYPE_LABELS, Tag, TagSuggestionGroup } from '../../models/tag';
@@ -77,13 +77,13 @@ export class ModuleBrowserDataService extends SubManager {
   readonly tagMatchMode$ = new BehaviorSubject<'OR' | 'AND'>('OR');
   readonly tagSearchQuery$ = new BehaviorSubject<string>('');
   readonly updateModulesList$ = new Subject<void>();
+  readonly loadMore$ = new Subject<void>();
   readonly moduleFilterInteraction$ = new Subject<void>();
   readonly modulesLoadingTrigger$ = merge(
     this.moduleFilterInteraction$,
     this.updateModulesList$
   );
   readonly resetForm$ = new Subject<void>();
-  readonly pageEvent$ = new Subject<PageEvent>();
   readonly paginatorToFistPage$ = new Subject<void>();
 
   readonly serversideTableRequestData = {
@@ -283,14 +283,6 @@ export class ModuleBrowserDataService extends SubManager {
       shareReplay(1)
     );
 
-    this.pageEvent$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(event => {
-        this.serversideTableRequestData.take$.next(event.pageSize);
-        this.serversideTableRequestData.skip$.next(event.pageIndex * event.pageSize);
-        this.updateModulesList$.next();
-      });
-
     merge(
       this.fields.name.control.valueChanges,
       this.fields.description.control.valueChanges,
@@ -398,8 +390,20 @@ export class ModuleBrowserDataService extends SubManager {
       )
       .subscribe(response => {
         this.serversideAdditionalData.itemsCount$.next(response.count);
-        this.modulesList$.next(response.data);
+        const skip = this.serversideTableRequestData.skip$.value;
+        const current = this.modulesList$.value ?? [];
+        this.modulesList$.next(skip === 0 ? response.data : [...current, ...response.data]);
         this.remoteTagFilterLoading$.next(false);
+      });
+
+    this.loadMore$
+      .pipe(
+        withLatestFrom(this.modulesList$),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(([_, current]) => {
+        this.serversideTableRequestData.skip$.next(current?.length ?? 0);
+        this.updateModulesList$.next();
       });
 
     this.resetForm$
