@@ -218,6 +218,8 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
   @Input() inputmode?: AppInputMode;
   @Input() enterkeyhint?: AppEnterKeyHint;
   @Input() autofocus = false;
+  /** Optional preset values shown as quick-select chips when the input is focused. */
+  @Input() presets: (string | number)[] = [];
   @Output() enterPressed = new EventEmitter<KeyboardEvent>();
   @ViewChild('primaryInput', {read: ElementRef}) primaryInput?: ElementRef<HTMLElement>;
   
@@ -227,6 +229,10 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
   private errorObjectNotInOptions = {[ErrorCodes.form.errorCode.custom.notInOptions]: true};
   
   hidePassword = true;
+
+  get presetOptions(): ISelectable[] {
+    return this.presets.map(v => ({ id: String(v), name: String(v) }));
+  }
 
   get resolvedInputMode(): AppInputMode | null {
     if (this.inputmode) {
@@ -290,7 +296,12 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
     // option click => displayfunction => output
     return entry && entry.name || '';
   }
-  
+
+  /** Display function for the preset autocomplete panel — shows the raw string value. */
+  presetDisplayFunction = (entry?: ISelectable): string => {
+    return entry?.name ?? '';
+  };
+
   ngOnInit(): void {
     if (this.dataPack) {
       this.control = this.dataPack.control;
