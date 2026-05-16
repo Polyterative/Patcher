@@ -142,13 +142,14 @@ change feel instant and local.
 
 **Layer 2 — Optimistic / diff-based state (structural)**
 
-- [ ] Replace the "delete → full reload" pattern with an **optimistic local update**: on
+- [x] Replace the "delete → full reload" pattern with an **optimistic local update**: on
       remove, immediately splice the module out of the in-memory rack state (the observable
       driving the visual model) and fire the backend call in the background. On backend success,
       do nothing (state is already correct). On error, restore the original state and show an
       error snackbar.
-- [ ] Apply the same diff pattern to **add** and **reorder** operations so the rack visual
-      model never needs a full reload for standard mutations.
+- [x] Apply the same diff pattern to **reorder** operations: `requestRackedModulesDbSync$`
+      pipeline now captures a snapshot before backend sync and restores on error.
+- [ ] Apply the optimistic diff pattern to **add** operations (harder — requires DB-generated ID).
 - [ ] Audit `rack-detail-data.service.ts` for every place a full `rackWithId` cache bust +
       reload is triggered after a write; replace each with a targeted `state$.next(patchedState)`
       emission where the operation is local enough to compute the new state deterministically.
