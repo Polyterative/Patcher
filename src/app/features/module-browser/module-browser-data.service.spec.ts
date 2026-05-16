@@ -210,14 +210,17 @@ describe('ModuleBrowserDataService', () => {
     expect(canReset).toBeTrue();
   }));
   
-  it('pageEvent$ updates skip/take and triggers reload', fakeAsync(() => {
+  it('loadMore$ appends results and advances skip', fakeAsync(() => {
     const {service, backend} = build();
-    const before = backend.GET.modules.calls.count();
-    service.pageEvent$.next({pageIndex: 2, pageSize: 20, length: 100} as any);
+    // simulate first page already loaded (20 modules)
+    const firstBatch = Array.from({length: 20}, (_, i) => ({id: i + 1})) as any[];
+    service.modulesList$.next(firstBatch);
+    service.serversideAdditionalData.itemsCount$.next(45);
+    const beforeCount = backend.GET.modules.calls.count();
+    service.loadMore$.next();
     tick();
-    expect(service.serversideTableRequestData.skip$.value).toBe(40);
-    expect(service.serversideTableRequestData.take$.value).toBe(20);
-    expect(backend.GET.modules.calls.count()).toBeGreaterThan(before);
+    expect(service.serversideTableRequestData.skip$.value).toBe(20);
+    expect(backend.GET.modules.calls.count()).toBeGreaterThan(beforeCount);
   }));
   
   it('canReset$ emits true when tag filter has selections', fakeAsync(() => {

@@ -489,11 +489,11 @@ pagination. "Load more" is a straightforward adaptation:
 
 **Checklist:**
 
-- [ ] Refactor `ModuleBrowserDataService`: add `loadMore$: Subject<void>`, change
-      `modulesList$` pipeline to accumulate pages via `scan` instead of replace.
+- [x] Refactor `ModuleBrowserDataService`: add `loadMore$: Subject<void>`, change
+      `modulesList$` pipeline to accumulate pages via append on `skip > 0`.
       Reset accumulator on filter/sort change.
-- [ ] Replace `mat-paginator` in `module-browser-root.component.html` with a
-      `AppLoadMoreButtonComponent` (new shared component: button + remaining-count label).
+- [x] Replace `mat-paginator` in `module-browser-root.component.html` with a
+      Load More button (inline implementation, no shared component needed).
 - [ ] Apply same pattern to `PatchBrowserDataService` + template.
 - [ ] Apply same pattern to `ManufacturerBrowserRootComponent` (client-side — simpler,
       just slice the local array and grow the slice on each "load more").

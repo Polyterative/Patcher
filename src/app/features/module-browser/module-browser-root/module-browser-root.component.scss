@@ -279,3 +279,19 @@
   max-height: 18rem;
   overflow-y: auto;
 }
+
+.loadMore {
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem 0 0.5rem;
+
+  &__btn {
+    min-width: 12rem;
+  }
+
+  &__count {
+    margin-left: 0.5rem;
+    opacity: 0.7;
+    font-size: 0.875em;
+  }
+}

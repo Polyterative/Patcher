@@ -14,12 +14,13 @@
       <aside class="filter-sidebar col gap1"
               [class.module-filter-sidebar--expanded]="mobileFiltersExpanded"
        >
+        @let itemsCount = (visibleItemsCount$ | async);
         @if (showCollectionBrowseToggle) {
           <div class="module-browser-mode col gap075">
             <div class="col gap025 module-browser-mode__summary">
               <span class="module-browser-mode__eyebrow">Browsing mode</span>
               <span class="module-browser-mode__heading">{{ browseModeHeading }}</span>
-              <span class="module-browser-mode__meta">{{ visibleResultsMeta }} · {{ browseModeHint }}</span>
+              <span class="module-browser-mode__meta">{{ itemsCount }} {{ itemsCount === 1 ? 'result' : 'results' }} · {{ browseModeHint }}</span>
             </div>
             <div class="module-browser-mode__toggle"
                  role="group"
@@ -246,18 +247,22 @@
                          [emptyStateCopy]="showCollectionBrowseToggle ? rackContextEmptyStateCopy : ''"
                          [encloseVertically]="false"
         ></app-module-list>
-        <mat-paginator [hidePageSize]="(visibleItemsCount$|async)<20"
-                       [pageSizeOptions]="[20,25,50,100]"
-                       [pageSize]="dataService.serversideTableRequestData.take$.value"
-                       [pageIndex]="dataService.serversideTableRequestData.skip$.value / dataService.serversideTableRequestData.take$.value"
-                       [length]="visibleItemsCount$|async"
-                       (page)="handlePageEvent($event)"
-                       showFirstLastButtons
-        ></mat-paginator>
+        @if (!usesOwnedDataset && hasMoreModules) {
+         <div class="loadMore">
+           <button mat-stroked-button
+                   color="primary"
+                   (click)="loadMore()"
+                   class="loadMore__btn"
+           >
+             Load more
+             <span class="loadMore__count">({{ remainingModulesCount }} remaining)</span>
+           </button>
+         </div>
+        }
         @if ((dataService.modulesList$ | async) !== null) {
-          <lib-auto-update-loading-indicator [data$]="dataService.modulesList$"
-                                             [updateData$]="dataService.updateModulesList$"
-          ></lib-auto-update-loading-indicator>
+         <lib-auto-update-loading-indicator [data$]="dataService.modulesList$"
+                                            [updateData$]="dataService.updateModulesList$"
+         ></lib-auto-update-loading-indicator>
         }
       </div>
     
