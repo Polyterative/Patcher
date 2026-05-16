@@ -1,16 +1,10 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  inject,
-  ViewChild
+  inject
 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
-import {
-  skip,
-  switchMap,
-  take,
-  takeUntil
-} from 'rxjs/operators';
+import { takeUntil } from 'rxjs/operators';
 import {
   defaultPatchMinimalViewConfig,
   PatchMinimalViewConfig
@@ -18,7 +12,6 @@ import {
 import { PatchBrowserDataService } from 'src/app/features/patch-browser/patch-browser-data.service';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { MatPaginator } from '@angular/material/paginator';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 
 
@@ -30,7 +23,6 @@ import { SubManager } from 'src/app/shared-interproject/directives/subscription-
   standalone: false
 })
 export class PatchBrowserRootComponent extends SubManager {
-  @ViewChild(MatPaginator) paginator: MatPaginator;
   private readonly document = inject(DOCUMENT);
 
   readonly formTypes = FormTypes;
@@ -39,6 +31,22 @@ export class PatchBrowserRootComponent extends SubManager {
     hideButtons: true,
     hideDates:   false
   };
+
+  get hasMorePatches(): boolean {
+    const total = this.dataService.serversideAdditionalData.itemsCount$.value;
+    const loaded = this.dataService.patchesList$.value?.length ?? 0;
+    return loaded < total;
+  }
+
+  get remainingPatchesCount(): number {
+    const total = this.dataService.serversideAdditionalData.itemsCount$.value;
+    const loaded = this.dataService.patchesList$.value?.length ?? 0;
+    return Math.max(0, total - loaded);
+  }
+
+  loadMore(): void {
+    this.dataService.loadMore$.next();
+  }
 
   constructor(
     public dataService: PatchBrowserDataService,
@@ -53,17 +61,9 @@ export class PatchBrowserRootComponent extends SubManager {
 
     this.dataService.paginatorToFistPage$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.paginator.firstPage());
-    
-    this.dataService.pageEvent$
-      .pipe(
-        switchMap(() => this.dataService.patchesList$.pipe(
-          skip(1),
-          take(1)
-        )),
-        takeUntil(this.destroy$)
-      )
-      .subscribe(() => this.document.defaultView?.scrollTo({top: 0, behavior: 'smooth'}));
+      .subscribe(() => {
+        this.document.defaultView?.scrollTo({top: 0, behavior: 'smooth'});
+      });
     
     this.dataService.fields.order.control.patchValue(
       {id: 'updated', name: 'Updated ↓'},

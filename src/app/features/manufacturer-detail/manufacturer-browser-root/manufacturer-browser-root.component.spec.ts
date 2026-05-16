@@ -4,12 +4,11 @@ import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.serv
 import { Subject, BehaviorSubject } from 'rxjs';
 import { TestBed } from '@angular/core/testing';
 import { DOCUMENT } from '@angular/common';
-import { PageEvent } from '@angular/material/paginator';
 
 function mockDataService(): ManufacturerBrowserRootDataService {
   return {
     paginatorToFistPage$: new Subject<void>(),
-    pageEvent$: new Subject<PageEvent>(),
+    loadMore$: new Subject<void>(),
     manufacturers$: new BehaviorSubject<any[]>([]),
     updateList$: new Subject<void>()
   } as unknown as ManufacturerBrowserRootDataService;
@@ -80,7 +79,7 @@ describe('ManufacturerBrowserRootComponent', () => {
     );
   });
 
-  it('scrolls to top when pageEvent$ fires after manufacturers$ emits', () => {
+  it('scrolls to top when paginatorToFistPage$ fires', () => {
     const mockDoc = {defaultView: {scrollTo: jasmine.createSpy('scrollTo')}};
     TestBed.overrideProvider(DOCUMENT, {useValue: mockDoc});
 
@@ -88,9 +87,7 @@ describe('ManufacturerBrowserRootComponent', () => {
     const s = mockSeo();
     const comp = TestBed.runInInjectionContext(() => new ManufacturerBrowserRootComponent(ds, s));
 
-    (ds.manufacturers$ as BehaviorSubject<any[]>).next([{id: 1}]);
-    ds.pageEvent$.next({pageIndex: 1, pageSize: 10, length: 100} as PageEvent);
-    (ds.manufacturers$ as BehaviorSubject<any[]>).next([{id: 2}]);
+    ds.paginatorToFistPage$.next();
 
     expect(mockDoc.defaultView.scrollTo).toHaveBeenCalledWith({top: 0, behavior: 'smooth'});
     comp.ngOnDestroy();
