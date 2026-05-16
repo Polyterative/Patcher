@@ -259,13 +259,13 @@ More fields can opt in by passing `[presets]` — the mechanism is generic.
 
 **Checklist:**
 
-- [ ] Decide implementation: extend `mat-form-entity` with `@Input() presets` vs standalone
+- [x] Decide implementation: extend `mat-form-entity` with `@Input() presets` vs standalone
       directive. Prefer directive for composability.
-- [ ] Build the preset overlay (4 chips max, compact, dismisses on blur/Escape/chip click).
-- [ ] Wire preset chips to set the `FormControl` value directly.
-- [ ] Apply to HP filter field in module browser and manufacturer page.
-- [ ] Apply to rack creator HP + rows fields.
-- [ ] Unit-test: preset chip click sets correct control value; overlay absent when
+- [x] Build the preset overlay (4 chips max, compact, dismisses on blur/Escape/chip click).
+- [x] Wire preset chips to set the `FormControl` value directly.
+- [x] Apply to HP filter field in module browser and manufacturer page.
+- [x] Apply to rack creator HP + rows fields.
+- [x] Unit-test: preset chip click sets correct control value; overlay absent when
       `presets` is empty.
 
 ---

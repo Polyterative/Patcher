@@ -171,6 +171,25 @@ describe('MatFormEntityComponent ergonomics', () => {
     expect(firstComponent.strictAutocomplete).toBe(true);
   });
 
+  it('presets defaults to empty array', () => {
+    const firstComponent = fixture.debugElement
+      .queryAll(By.directive(MatFormEntityComponent))[0]
+      .componentInstance as MatFormEntityComponent;
+    expect(firstComponent.presets).toEqual([]);
+  });
+
+  it('presetOptions converts preset values to ISelectable array', () => {
+    const firstComponent = fixture.debugElement
+      .queryAll(By.directive(MatFormEntityComponent))[0]
+      .componentInstance as MatFormEntityComponent;
+    firstComponent.presets = [2, 4, 8];
+    expect(firstComponent.presetOptions).toEqual([
+      { id: '2', name: '2' },
+      { id: '4', name: '4' },
+      { id: '8', name: '8' }
+    ]);
+  });
+
   function getRenderedInputs(): HTMLInputElement[] {
     return Array.from(fixture.nativeElement.querySelectorAll('input')) as HTMLInputElement[];
   }

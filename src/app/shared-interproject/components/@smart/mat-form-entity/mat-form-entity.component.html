@@ -57,9 +57,19 @@
                [placeholder]="placeholder"
                [type]="type"
                (keydown.enter)="onInputEnterPressed($event)"
+               [matAutocomplete]="presetsPanel"
                matInput
                style="height: 15.333px"
         />
+        <mat-autocomplete #presetsPanel
+                          panelClass="mat-form-entity-presets-panel"
+                          [displayWith]="presetDisplayFunction"
+                          (optionSelected)="control.patchValue($event.option.value.id); control.markAsDirty()"
+        >
+          @for (preset of presetOptions; track preset.id) {
+            <mat-option [value]="preset">{{ preset.name }}</mat-option>
+          }
+        </mat-autocomplete>
       }
       <!--  -->
       @if ((type === types.EMAIL)) {

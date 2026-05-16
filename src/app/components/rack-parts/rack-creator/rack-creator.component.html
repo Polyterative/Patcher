@@ -16,10 +16,12 @@
       </lib-mat-form-entity>
       
       <lib-mat-form-entity [dataPack]="fields.hp"
+                           [presets]="[84, 104, 126, 168]"
        >
       </lib-mat-form-entity>
       
       <lib-mat-form-entity [dataPack]="fields.rows"
+                           [presets]="[3, 4, 6, 9]"
                            (enterPressed)="save$.next()"
        >
       </lib-mat-form-entity>
