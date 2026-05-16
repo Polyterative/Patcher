@@ -679,6 +679,7 @@ export class RackDetailDataService extends SubManager {
       .pipe(
         withLatestFrom(this.rowedRackedModules$),
         switchMap(([rackedModule, rackModules]) => {
+          const snapshot: RackedModule[][] = cloneRackData(rackModules);
           
           this.removeRackedModuleFromRack(rackModules, rackedModule);
           this.rowedRackedModules$.next(rackModules);
@@ -686,8 +687,16 @@ export class RackDetailDataService extends SubManager {
           // this.requestRackedModulesDbSync$.next();
           // this does not work, because the rack data are upserted, so we need to delete in the backend manually
           
-          return this.backend.delete.rackedModule(rackedModule.rackingData.id);
+          return this.backend.delete.rackedModule(rackedModule.rackingData.id).pipe(
+            catchError(err => {
+              console.error(`Error removing racked module: ${ err }`);
+              this.rowedRackedModules$.next(snapshot);
+              SharedConstants.errorCustom(this.snackBar, 'Failed to remove module — changes reverted. Check your connection and try again.');
+              return of(undefined);
+            })
+          );
         }),
+        filter(x => x !== undefined),
         withLatestFrom(this.singleRackData$),
         takeUntil(this.destroy$)
       )
@@ -741,12 +750,16 @@ export class RackDetailDataService extends SubManager {
     this.requestRackedModulesDbSync$
       .pipe(
         withLatestFrom(this.rowedRackedModules$, this.singleRackData$),
-        switchMap(([_, rackModules, rack]) => this.callBackendToUpdateModulesOfRack(rackModules, rack)),
-        // handle error, if any module has not been updated,tell to the user that something went wrong
-        catchError((err) => {
-          console.error(`Error syncing rack data with backend: ${ err }`);
-          SharedConstants.errorHandlerOperation(this.snackBar);
-          return of(undefined);
+        switchMap(([_, rackModules, rack]) => {
+          const snapshot: RackedModule[][] = cloneRackData(rackModules);
+          return this.callBackendToUpdateModulesOfRack(rackModules, rack).pipe(
+            catchError((err) => {
+              console.error(`Error syncing rack data with backend: ${ err }`);
+              this.rowedRackedModules$.next(snapshot);
+              SharedConstants.errorCustom(this.snackBar, 'Failed to save rack changes — changes reverted. Check your connection and try again.');
+              return of(undefined);
+            })
+          );
         }),
         filter(x => !!x),
         takeUntil(this.destroyEvent$)

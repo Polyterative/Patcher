@@ -5,7 +5,8 @@ import {
 import {
   BehaviorSubject,
   of,
-  Subject
+  Subject,
+  throwError
 } from 'rxjs';
 import { RackDetailDataService } from './rack-detail-data.service';
 
@@ -267,6 +268,26 @@ describe('RackDetailDataService', () => {
     // After re-fetch triggered by singleRackData$.next, the stub returns [] so final state is empty
     const after = service.rowedRackedModules$.value!.flat().length;
     expect(after).toBe(0);
+  }));
+
+  it('requestRackedModuleRemoval$ rolls back local state when backend delete fails', fakeAsync(() => {
+    const module = makeRackedModule();
+    const {service, backend, snackBar} = build();
+    backend.GET.rackWithId.and.returnValue(of({data: makeRack({rows: 1})}));
+    backend.get.rackedModules.and.returnValue(of([module]));
+
+    service.updateSingleRackData$.next(1);
+    tick();
+
+    expect(service.rowedRackedModules$.value!.flat().length).toBe(1);
+
+    backend.delete.rackedModule.and.returnValue(throwError(() => new Error('network error')));
+    service.requestRackedModuleRemoval$.next(module);
+    tick();
+
+    // State should be restored to 1 module after rollback
+    expect(service.rowedRackedModules$.value!.flat().length).toBe(1);
+    expect(snackBar.open).toHaveBeenCalled();
   }));
 
   it('formData.name.control updates singleRackData$.value.name immediately when valid', fakeAsync(() => {
