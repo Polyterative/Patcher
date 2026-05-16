@@ -701,11 +701,11 @@ results; likely a site redesign). Fix or replace before the next release.
 
 **Checklist:**
 
-- [ ] Manually verify unchecked URLs and Patchwerks in a browser — confirm search results
+- [x] Manually verify unchecked URLs and Patchwerks in a browser — confirm search results
       actually appear (HTTP 200 is not sufficient; some sites redirect broken searches to
-      homepage with 200).
-- [ ] Fix or remove any broken entries in `module-browser-detail.constants.ts`.
-- [ ] Add a comment at the top of the constants file noting the last audit date so future
+      homepage with 200). — Lines ✅, Elektronauts ✅, VCV Library ✅, Thomann (geo-redirects) ✅, Patchwerks ✅ (no SSL timeout)
+- [x] Fix or remove any broken entries in `module-browser-detail.constants.ts`. — Schneidersladen `?sSearch=` → `?search=` (Shopware 6 migration); Wigglehunt tooltip corrected.
+- [x] Add a comment at the top of the constants file noting the last audit date so future
       maintainers know when to re-check.
 
 ---

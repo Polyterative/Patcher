@@ -3,6 +3,13 @@ import { StorageUrls } from 'src/app/features/backend/DatabaseStrings';
 export const MODULE_PANELS_BASE_URL = StorageUrls.modulePanels;
 export const JSONLD_SCRIPT_ID = 'module-jsonld';
 
+// Last audited: 2026-05-16. Re-check all URLs periodically (sites redesign).
+// Verified: Google, YouTube, Modwiggler, Lines, Elektronauts, Modulargrid,
+//           VCV Library, Wigglehunt, Thomann (geo-redirects to regional), Signalsounds,
+//           Exploding Shed, Elevatorsound, Perfect Circuit, Milk Audio, New Groove,
+//           Escape From Noise, Machineroom, Control, Patchwerks, Found Sound, Synthshop.
+// Schneidersladen: migrated to Shopware 6 — use `?search=` instead of `?sSearch=`.
+
 export interface SearchLink {
   url: (name: string, manufacturer?: string) => string;
   label: string;
@@ -57,7 +64,7 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     url: (name: string) => `https://wigglehunt.com/?query=${ name }`,
     label: 'Wigglehunt',
     icon: 'attach_money',
-    tooltip: 'Search on Modulargrid'
+    tooltip: 'Search on Wigglehunt'
   },
   {
     url: (name: string) => `https://www.thomann.de/intl/search_dir.html?sw=${ name }`,
@@ -66,7 +73,7 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     tooltip: 'Search on Thomann'
   },
   {
-    url: (name: string) => `https://schneidersladen.de/en/search?sSearch=${ name }`,
+    url: (name: string) => `https://schneidersladen.de/en/search?search=${ name }`,
     label: 'Schneidersladen 🇩🇪',
     icon: 'store',
     tooltip: 'Search on Schneidersladen'
