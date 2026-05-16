@@ -6,8 +6,15 @@ export function toSortDirection(optionName: string | undefined): 'asc' | 'desc' 
   return optionName?.includes('↑') ? 'asc' : 'desc';
 }
 
-export function matchesSelectedTags(module: MinimalModule, selectedTagIds: number[]): boolean {
-  return (module.tags ?? []).some((tagVote) => selectedTagIds.includes(tagVote.tag?.id));
+export function matchesSelectedTags(
+  module: MinimalModule,
+  selectedTagIds: number[],
+  mode: 'OR' | 'AND' = 'OR'
+): boolean {
+  const matcher = mode === 'AND' ? 'every' : 'some';
+  return selectedTagIds[matcher]((selectedTagId) =>
+    (module.tags ?? []).some((tagVote) => tagVote.tag?.id === selectedTagId)
+  );
 }
 
 export function getModuleStandardId(module: MinimalModule): number | undefined {

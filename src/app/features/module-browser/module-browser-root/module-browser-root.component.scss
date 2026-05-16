@@ -248,3 +248,34 @@
     }
   }
 }
+
+
+.module-tag-filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.module-tag-filter-header {
+  align-items: center;
+}
+
+.tag-match-mode-toggle {
+  ::ng-deep .mat-button-toggle {
+    font-size: 0.75rem;
+  }
+}
+
+.tag-search-field {
+  width: 100%;
+  font-size: 0.875rem;
+}
+
+.selected-tags-row {
+  flex-wrap: wrap;
+}
+
+.proposer-groups {
+  max-height: 18rem;
+  overflow-y: auto;
+}

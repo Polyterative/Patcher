@@ -36,6 +36,7 @@ import {
   MinimalModule,
   RackedModule
 } from 'src/app/models/module';
+import { Tag } from 'src/app/models/tag';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { ModuleList } from '../module-browser-data.service';
 
@@ -142,6 +143,7 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
       this.dataService.fields.hpCondition.control.valueChanges,
       this.dataService.fields.standard.control.valueChanges,
       this.dataService.fields.tags.control.valueChanges,
+      this.dataService.tagMatchMode$,
       this.dataService.fields.order.control.valueChanges
     )
       .pipe(
@@ -205,6 +207,11 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
     }
 
     this.dataService.pageEvent$.next(event);
+  }
+
+  isTagSelected(tag: Tag): boolean {
+    const selected = this.dataService.fields.tags.control.value ?? [];
+    return selected.some((selectedTag) => +selectedTag.id === tag.id);
   }
 
   get showCollectionBrowseToggle(): boolean {
@@ -328,7 +335,7 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
   private syncVisibleModules(): void {
     if (!this.usesOwnedDataset) {
       this.visibleItemsCount$.next(this.dataService.serversideAdditionalData.itemsCount$.value);
-      this.visibleModules$.next(this.dataService.modulesList$.value);
+      this.updateVisibleModules(this.dataService.modulesList$.value);
       return;
     }
 
@@ -345,7 +352,21 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
     const skip = this.dataService.serversideTableRequestData.skip$.value;
     const take = this.dataService.serversideTableRequestData.take$.value;
     this.visibleItemsCount$.next(filteredOwnedModules.length);
-    this.visibleModules$.next(filteredOwnedModules.slice(skip, skip + take));
+    this.updateVisibleModules(filteredOwnedModules.slice(skip, skip + take));
+  }
+
+  private updateVisibleModules(modules: ModuleList): void {
+    if (modules === null) {
+      this.visibleModules$.next(null);
+      return;
+    }
+
+    if (!this.usesOwnedDataset && this.dataService.fields.order.control.value?.id === 'best-match') {
+      this.visibleModules$.next(this.dataService.sortModulesByBestMatch(modules));
+      return;
+    }
+
+    this.visibleModules$.next(modules);
   }
 
   private get availableOwnedModulesCount(): number {

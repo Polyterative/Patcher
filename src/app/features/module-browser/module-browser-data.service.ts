@@ -6,6 +6,7 @@ import {
 import { PageEvent } from '@angular/material/paginator';
 import {
   BehaviorSubject,
+  combineLatest,
   merge,
   Observable,
   of,
@@ -18,12 +19,14 @@ import {
   map,
   share,
   shareReplay,
+  skip,
   startWith,
   switchMap,
-  tap,
-  takeUntil
+  takeUntil,
+  tap
 } from 'rxjs/operators';
 import { MinimalModule } from '../../models/module';
+import { TAG_TYPE_LABELS, Tag, TagSuggestionGroup } from '../../models/tag';
 import {
   FormTypes,
   getCleanedValueId,
@@ -46,14 +49,10 @@ import { SupabaseService } from '../backend/supabase.service';
 import {
   HpConditionOption,
   HpConditionOperator,
-  IdNameOption,
   IdNumberOption,
   ModuleBrowserFields,
   ModuleList,
-  ModuleMultiselectField,
-  ModuleOrderOption,
-  ModuleSelectField,
-  ModuleTextField
+  ModuleOrderOption
 } from './module-browser-data.models';
 import {
   DEFAULT_HP_CONDITION,
@@ -75,6 +74,8 @@ export type { ModuleList, ModuleOrderOption } from './module-browser-data.models
 export class ModuleBrowserDataService extends SubManager {
   readonly modulesList$ = new BehaviorSubject<ModuleList>(null);
   readonly remoteTagFilterLoading$ = new BehaviorSubject<boolean>(false);
+  readonly tagMatchMode$ = new BehaviorSubject<'OR' | 'AND'>('OR');
+  readonly tagSearchQuery$ = new BehaviorSubject<string>('');
   readonly updateModulesList$ = new Subject<void>();
   readonly moduleFilterInteraction$ = new Subject<void>();
   readonly modulesLoadingTrigger$ = merge(
@@ -95,15 +96,65 @@ export class ModuleBrowserDataService extends SubManager {
   readonly serversideAdditionalData = {
     itemsCount$: new BehaviorSubject<number>(0)
   };
-  
+
   readonly orderStartingValue: ModuleOrderOption = {id: 'updated', name: 'Updated ↓'};
   readonly ownedModeOrderStartingValue: ModuleOrderOption = OWNED_MODE_DEFAULT_ORDER;
+  readonly bestMatchOrderOption: ModuleOrderOption = {id: 'best-match', name: 'Best match'};
+  readonly allTags$: Observable<Tag[]>;
+  readonly groupedFilterTags$: Observable<TagSuggestionGroup[]>;
   readonly fields: ModuleBrowserFields;
   readonly canReset$: Observable<boolean>;
-  
+
   constructor(private backend: SupabaseService) {
     super();
     this.backend.cacheResetter$?.next(['manufacturers']);
+
+    this.allTags$ = this.backend.get.allTags().pipe(
+      startWith([]),
+      shareReplay(1),
+      takeUntil(this.destroy$)
+    );
+
+    this.groupedFilterTags$ = combineLatest([
+      this.allTags$,
+      this.tagSearchQuery$.pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        startWith(this.tagSearchQuery$.value)
+      )
+    ]).pipe(
+      map(([tags, query]) => {
+        const normalizedQuery = query.trim().toLowerCase();
+        const visibleTags = normalizedQuery
+          ? tags.filter((tag) => tag.name.toLowerCase().includes(normalizedQuery))
+          : tags;
+        const grouped = new Map<string, Tag[]>();
+
+        for (const tag of visibleTags) {
+          const label = TAG_TYPE_LABELS[tag.type] ?? 'Other';
+          grouped.set(label, [...(grouped.get(label) ?? []), tag]);
+        }
+
+        return Array.from(grouped.entries()).map(([label, groupedTags]) => ({
+          label,
+          tags: groupedTags
+        }));
+      }),
+      shareReplay(1),
+      takeUntil(this.destroy$)
+    );
+
+    const orderControl = new FormControl<ModuleOrderOption>(this.orderStartingValue, {nonNullable: true});
+    const tagsControl = new FormControl<ISelectable[]>([], {nonNullable: true});
+    const orderOptions$ = tagsControl.valueChanges.pipe(
+      startWith(tagsControl.value),
+      map((selectedTags) => (selectedTags?.length ?? 0) > 0
+        ? [...MODULE_ORDER_OPTIONS, this.bestMatchOrderOption]
+        : MODULE_ORDER_OPTIONS
+      ),
+      shareReplay(1),
+      takeUntil(this.destroy$)
+    );
 
     this.fields = {
       name: {
@@ -124,9 +175,9 @@ export class ModuleBrowserDataService extends SubManager {
         label: 'Order by',
         code: 'order',
         flex: '10rem',
-        control: new FormControl<ModuleOrderOption>(this.orderStartingValue, {nonNullable: true}),
+        control: orderControl,
         type: FormTypes.SELECT,
-        options$: of(MODULE_ORDER_OPTIONS)
+        options$: orderOptions$
       },
       manufacturers: {
         label: 'Made by...',
@@ -187,10 +238,10 @@ export class ModuleBrowserDataService extends SubManager {
         label: 'Filter by tags...',
         code: 'tags',
         flex: '14rem',
-        control: new FormControl<ISelectable[]>([], {nonNullable: true}),
+        control: tagsControl,
         type: FormTypes.MULTISELECT,
-        options$: this.backend.get.allTags().pipe(
-          map(tags => (tags ?? []).map((t) => ({id: t.id.toString(), name: t.name}))),
+        options$: this.allTags$.pipe(
+          map(tags => (tags ?? []).map((tag) => ({id: tag.id.toString(), name: tag.name}))),
           startWith([]),
           takeUntil(this.destroy$),
           share()
@@ -206,7 +257,8 @@ export class ModuleBrowserDataService extends SubManager {
       this.fields.hpCondition.control.valueChanges,
       this.fields.standard.control.valueChanges,
       this.fields.order.control.valueChanges,
-      this.fields.tags.control.valueChanges
+      this.fields.tags.control.valueChanges,
+      this.tagMatchMode$
     ).pipe(
       startWith(null),
       map(() => {
@@ -223,14 +275,14 @@ export class ModuleBrowserDataService extends SubManager {
           (hpCondition && hpCondition.id !== DEFAULT_HP_CONDITION.id) ||
           (standard && standard.id !== undefined) ||
           (order && order.id !== this.orderStartingValue.id) ||
-          (tags && tags.length > 0)
+          (tags && tags.length > 0) ||
+          this.tagMatchMode$.value !== 'OR'
         );
       }),
       distinctUntilChanged(),
       shareReplay(1)
     );
-    
-    // Page navigation - update skip/take then re-fetch
+
     this.pageEvent$
       .pipe(takeUntil(this.destroy$))
       .subscribe(event => {
@@ -238,8 +290,7 @@ export class ModuleBrowserDataService extends SubManager {
         this.serversideTableRequestData.skip$.next(event.pageIndex * event.pageSize);
         this.updateModulesList$.next();
       });
-    
-    // Single merged pipeline - debounce collapses reset burst into one fetch.
+
     merge(
       this.fields.name.control.valueChanges,
       this.fields.description.control.valueChanges,
@@ -256,22 +307,45 @@ export class ModuleBrowserDataService extends SubManager {
     ).subscribe(() => {
       const orderVal = this.fields.order.control.value;
       const nameVal = this.fields.name.control.value ?? '';
+      const isBestMatchOrder = orderVal?.id === this.bestMatchOrderOption.id;
       this.serversideTableRequestData.filter$.next(nameVal);
       this.serversideTableRequestData.sort$.next([
-        orderVal?.id ?? '',
-        toSortDirection(orderVal?.name)
+        isBestMatchOrder ? this.orderStartingValue.id : (orderVal?.id ?? ''),
+        isBestMatchOrder ? 'desc' : toSortDirection(orderVal?.name)
       ]);
       this.serversideTableRequestData.skip$.next(0);
       this.paginatorToFistPage$.next();
       this.updateModulesList$.next();
-      });
-    
+    });
+
     this.fields.tags.control.valueChanges
       .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
+      .subscribe((selectedTags) => {
+        const currentOrder = this.fields.order.control.value;
+        const selectedCount = selectedTags?.length ?? 0;
+
+        if (selectedCount > 0 && currentOrder?.id === this.orderStartingValue.id) {
+          this.fields.order.control.setValue(this.bestMatchOrderOption);
+        } else if (selectedCount === 0 && currentOrder?.id === this.bestMatchOrderOption.id) {
+          this.fields.order.control.setValue(this.orderStartingValue);
+        }
+
         if (this.modulesList$.value !== null) {
           this.remoteTagFilterLoading$.next(true);
         }
+      });
+
+    this.tagMatchMode$
+      .pipe(
+        distinctUntilChanged(),
+        skip(1),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        if (this.modulesList$.value !== null && this.getSelectedTagIds().length > 0) {
+          this.remoteTagFilterLoading$.next(true);
+        }
+        this.updateModulesList$.next();
       });
 
     this.updateModulesList$
@@ -282,11 +356,8 @@ export class ModuleBrowserDataService extends SubManager {
           const filter = this.serversideTableRequestData.filter$.value;
           const [sortCol, sortDir] = this.serversideTableRequestData.sort$.value;
           const standard = this.fields.standard.control.value?.id;
-          const selectedTags = this.fields.tags.control.value ?? [];
-          const tagIds = selectedTags.length > 0
-            ? selectedTags.map((t: ISelectable) => parseInt(t.id, 10))
-            : undefined;
-          
+          const tagIds = this.getSelectedTagIds();
+
           return this.backend.GET.modules(
               skip,
               (skip + take) - 1,
@@ -299,25 +370,43 @@ export class ModuleBrowserDataService extends SubManager {
               standard,
               this.fields.description.control.value,
               true,
-              tagIds
+              tagIds.length > 0 ? tagIds : undefined
             )
             .pipe(catchError(error => {
               console.error('Failed to load modules:', error);
               return of({data: [], count: 0});
             }));
         }),
+        map((response) => {
+          const selectedTagIds = this.getSelectedTagIds();
+          let data = response.data ?? [];
+
+          if (this.tagMatchMode$.value === 'AND' && selectedTagIds.length > 0) {
+            data = data.filter((module) => matchesSelectedTags(module, selectedTagIds, 'AND'));
+          }
+
+          if (this.fields.order.control.value?.id === this.bestMatchOrderOption.id) {
+            data = this.sortModulesByBestMatch(data);
+          }
+
+          return {
+            ...response,
+            data
+          };
+        }),
         takeUntil(this.destroy$)
       )
-      .subscribe(x => {
-        this.serversideAdditionalData.itemsCount$.next(x.count);
-        this.modulesList$.next(x.data);
+      .subscribe(response => {
+        this.serversideAdditionalData.itemsCount$.next(response.count);
+        this.modulesList$.next(response.data);
         this.remoteTagFilterLoading$.next(false);
       });
-    
+
     this.resetForm$
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
         this.backend.cacheResetter$.next(['modules']);
+        const shouldTriggerManualReload = this.tagMatchMode$.value === 'OR';
         const silent = {emitEvent: false};
         this.fields.name.control.setValue('', silent);
         this.fields.description.control.setValue('', silent);
@@ -327,11 +416,15 @@ export class ModuleBrowserDataService extends SubManager {
         this.fields.hpCondition.control.setValue(DEFAULT_HP_CONDITION, silent);
         this.fields.standard.control.setValue(DEFAULT_STANDARD, silent);
         this.fields.tags.control.setValue([], silent);
+        this.tagMatchMode$.next('OR');
+        this.tagSearchQuery$.next('');
         this.serversideTableRequestData.filter$.next('');
         this.serversideTableRequestData.sort$.next([this.orderStartingValue.id, 'desc']);
         this.serversideTableRequestData.skip$.next(0);
         this.paginatorToFistPage$.next();
-        this.updateModulesList$.next();
+        if (shouldTriggerManualReload) {
+          this.updateModulesList$.next();
+        }
       });
   }
 
@@ -359,6 +452,16 @@ export class ModuleBrowserDataService extends SubManager {
     );
   }
 
+  toggleTagFilter(tag: Tag): void {
+    const selectedTags = this.fields.tags.control.value ?? [];
+    const isSelected = selectedTags.some((selectedTag) => Number.parseInt(selectedTag.id, 10) === tag.id);
+    const nextTags = isSelected
+      ? selectedTags.filter((selectedTag) => Number.parseInt(selectedTag.id, 10) !== tag.id)
+      : [...selectedTags, {id: tag.id.toString(), name: tag.name}];
+
+    this.fields.tags.control.setValue(nextTags);
+  }
+
   filterOwnedModules(
     modules: MinimalModule[] | undefined,
     excludedModuleIds: number[] = []
@@ -374,13 +477,23 @@ export class ModuleBrowserDataService extends SubManager {
     return this.sortOwnedModules(filteredModules);
   }
 
+  sortModulesByBestMatch(modules: MinimalModule[]): MinimalModule[] {
+    const selectedTagIds = this.getSelectedTagIds();
+    return [...modules].sort((a, b) => {
+      const scoreDiff = this.getModuleTagMatchScore(b, selectedTagIds) - this.getModuleTagMatchScore(a, selectedTagIds);
+      if (scoreDiff !== 0) {
+        return scoreDiff;
+      }
+
+      return compareModulesByNameAsc(a, b);
+    });
+  }
+
   private matchesOwnedModuleFilters(module: MinimalModule): boolean {
     const selectedManufacturerId = Number.parseInt(getCleanedValueId(this.fields.manufacturers.control), 10);
     const hpValue = Number.parseInt(this.fields.hp.control.value, 10);
     const selectedStandardId = this.fields.standard.control.value?.id;
-    const selectedTagIds = (this.fields.tags.control.value ?? [])
-      .map((tag) => Number.parseInt(tag.id, 10))
-      .filter((id) => Number.isFinite(id));
+    const selectedTagIds = this.getSelectedTagIds();
 
     if (!matchesSearchQuery(this.fields.name.control.value, module.name)) {
       return false;
@@ -405,7 +518,7 @@ export class ModuleBrowserDataService extends SubManager {
       return false;
     }
 
-    if (selectedTagIds.length > 0 && !matchesSelectedTags(module, selectedTagIds)) {
+    if (selectedTagIds.length > 0 && !matchesSelectedTags(module, selectedTagIds, this.tagMatchMode$.value)) {
       return false;
     }
 
@@ -436,6 +549,8 @@ export class ModuleBrowserDataService extends SubManager {
 
     const sortedModules = [...modules];
     switch (order?.id) {
+      case 'best-match':
+        return this.sortModulesByBestMatch(sortedModules);
       case 'name':
         return sortedModules.sort(direction === 'asc' ? compareModulesByNameAsc : compareModulesByNameDesc);
       case 'hp':
@@ -449,5 +564,17 @@ export class ModuleBrowserDataService extends SubManager {
       default:
         return sortedModules;
     }
+  }
+
+  private getSelectedTagIds(): number[] {
+    return (this.fields.tags.control.value ?? [])
+      .map((tag) => Number.parseInt(tag.id, 10))
+      .filter((id) => Number.isFinite(id));
+  }
+
+  private getModuleTagMatchScore(module: MinimalModule, selectedTagIds: number[]): number {
+    return selectedTagIds.filter((selectedTagId) =>
+      module.tags?.some((tagVote) => tagVote.tag?.id === selectedTagId)
+    ).length;
   }
 }
