@@ -3,6 +3,7 @@
   racksWithThisModule: (dataService.racksWithThisModule$|async),
   patchesWithThisModule: (dataService.patchesWithThisModule$|async),
   moduleUsageSummary: (dataService.moduleUsageSummary$|async),
+  possessionCounts: (dataService.possessionCounts$|async),
   modulesBySameManufacturer: (dataService.modulesBySameManufacturer$|async),
   user: (userManagementService.loggedUser$|async),
   editing: (dataService.moduleEditingPanelOpenState$|async),
@@ -143,6 +144,18 @@
                       { label: 'Outputs', value: bag.data.outs.length.toString(), icon: 'output', hidden: bag.data.outs.length === 0, size: 'auto' },
                       { label: 'Total Jacks', value: (bag.data.outs.length + bag.data.ins.length).toString(), icon: 'settings_input_composite', hidden: (bag.data.outs.length + bag.data.ins.length) === 0, size: 'auto' },
                       { label: 'Density (in+out/hp)', value: ((bag.data.outs.length + bag.data.ins.length) / bag.data.hp).toPrecision(3), icon: 'bar_chart', size: 'auto' }
+                    ]"
+                  ></app-module-detail-data-card>
+                }
+                <!-- Community Stats Card -->
+                @if (bag.possessionCounts && (bag.possessionCounts.hasCount >= 3 || bag.possessionCounts.wantsCount >= 3 || bag.possessionCounts.sellsCount >= 3)) {
+                  <app-module-detail-data-card
+                    title="Community"
+                    [animationDelay]="240"
+                    [data]="[
+                      { label: 'Owners', value: bag.possessionCounts.hasCount >= 3 ? bag.possessionCounts.hasCount.toString() : '<3', icon: 'inventory_2', size: 'auto' },
+                      { label: 'Wishlist', value: bag.possessionCounts.wantsCount >= 3 ? bag.possessionCounts.wantsCount.toString() : '<3', icon: 'star_outline', size: 'auto', hidden: bag.possessionCounts.wantsCount < 3 },
+                      { label: 'For Sale', value: bag.possessionCounts.sellsCount >= 3 ? bag.possessionCounts.sellsCount.toString() : '<3', icon: 'sell', size: 'auto', hidden: bag.possessionCounts.sellsCount < 3 }
                     ]"
                   ></app-module-detail-data-card>
                 }

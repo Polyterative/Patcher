@@ -43,6 +43,11 @@ describe('ModuleDetailDataService', () => {
           public_patch_count: 1,
           hidden_patch_bucket: '5_plus'
         })),
+        modulePossessionCounts: jasmine.createSpy('modulePossessionCounts').and.returnValue(of({
+          hasCount: 5,
+          wantsCount: 2,
+          sellsCount: 1
+        })),
         modulesBySameManufacturer: jasmine.createSpy('modulesBySameManufacturer').and.returnValue(of(options.modulesBySameManufacturer ?? [
           {id: 10, manufacturerId: 7, manufacturer: {name: 'Maker'}},
           {id: 11, manufacturerId: 7, manufacturer: {name: 'Maker'}}

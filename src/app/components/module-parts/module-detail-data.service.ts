@@ -37,10 +37,11 @@ import { Router } from "@angular/router";
 import { SharedConstants } from "src/app/shared-interproject/SharedConstants";
 import {
   HiddenUsageBucket,
+  ModulePossessionCounts,
   ModuleUsageSummary
 } from './module-detail-data.models';
 
-export type { HiddenUsageBucket, ModuleUsageSummary } from './module-detail-data.models';
+export type { HiddenUsageBucket, ModulePossessionCounts, ModuleUsageSummary } from './module-detail-data.models';
 
 
 @Injectable()
@@ -65,6 +66,7 @@ export class ModuleDetailDataService implements OnDestroy {
   readonly patchesWithThisModule$ = new BehaviorSubject<PatchMinimal[] | undefined>(undefined);
   readonly moduleUsageSummary$ = new BehaviorSubject<ModuleUsageSummary | undefined>(undefined);
   readonly modulesBySameManufacturer$ = new BehaviorSubject<DbModule[] | undefined>(undefined);
+  readonly possessionCounts$ = new BehaviorSubject<ModulePossessionCounts | undefined>(undefined);
   //
   readonly deleteModule$ = new Subject<number>();
   readonly deleteModuleAndOrphanManufacturer$ = new Subject<DbModule>();
@@ -195,6 +197,15 @@ export class ModuleDetailDataService implements OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(summary => this.moduleUsageSummary$.next(summary));
+
+    this.updateSingleModuleData$
+      .pipe(
+        tap(() => this.possessionCounts$.next(undefined)),
+        delay(225),
+        switchMap(x => this.backend.get.modulePossessionCounts(x)),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(counts => this.possessionCounts$.next(counts));
     
     // get modules by same manufacturer
     this.singleModuleData$
