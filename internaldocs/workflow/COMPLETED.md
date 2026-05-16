@@ -3,6 +3,8 @@
 > Archive of finished work. One-line summaries only. For strategy context see `../product/PRINCIPLES.md` and
 > `../product/ROADMAP.md`.
 
+- **16-05-2026** — feat(collection): SELLS inline badge in module-minimal meta row — sell icon + "Selling" label appears in module-meta-row__stats when possessionKind===SELLS; meta-row render condition extended to include SELLS state (module-minimal.component.html + .scss)
+
 - **16-05-2026** — feat(collection): filter rack creator + patch editor module picker to HAS+SELLS; WANTS wishlist modules excluded from both pickers (patch-editor.component.ts, user-area-data.service.ts + spec)
 
 - **16-05-2026** — fix(module-browser): fix Schneidersladen search URL (?sSearch= → ?search= for Shopware 6) + Wigglehunt tooltip + audit comment (module-browser-detail.constants.ts)

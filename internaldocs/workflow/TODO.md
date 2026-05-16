@@ -88,7 +88,7 @@ Remaining (Layer 2 — user area integration):
 
 - [ ] Filter "My Modules" user-area to `HAS`+`SELLS` by default; add Wishlist view for `WANTS`
 - [x] Filter rack/patch editor module picker to `HAS`+`SELLS` only
-- [ ] `SELLS` inline badge in user-area module list
+- [x] `SELLS` inline badge in user-area module list
 
 ---
 
