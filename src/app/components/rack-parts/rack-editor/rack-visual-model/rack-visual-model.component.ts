@@ -21,6 +21,7 @@ import {
   ViewChild
 } from '@angular/core';
 import { fadeInOnEnterAnimation } from 'angular-animations';
+import { animate, style, transition, trigger } from '@angular/animations';
 import { Subject } from 'rxjs';
 import { RackedModule } from 'src/app/models/module';
 import { RackMinimal } from 'src/app/models/rack';
@@ -82,7 +83,15 @@ import {
       anchor: 'enter',
       animateChildren: 'after'
       // animateChildren: 'before',
-    })
+    }),
+    trigger('leave', [
+      transition(':leave', [
+        animate('180ms cubic-bezier(0.4, 0, 1, 1)', style({
+          opacity: 0,
+          transform: 'scale(0.92)'
+        }))
+      ])
+    ])
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false

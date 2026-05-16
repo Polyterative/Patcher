@@ -3,6 +3,8 @@
 > Archive of finished work. One-line summaries only. For strategy context see `../product/PRINCIPLES.md` and
 > `../product/ROADMAP.md`.
 
+- **16-05-2026** — feat(rack-editor): add [@leave] fade+scale-down exit animation (180ms) to module tiles in rack-visual-model when module is removed — provides visual confirmation of which module was deleted before DOM removal (rack-visual-model.component.ts + .html)
+
 - **16-05-2026** — feat(collection): SELLS inline badge in module-minimal meta row — sell icon + "Selling" label appears in module-meta-row__stats when possessionKind===SELLS; meta-row render condition extended to include SELLS state (module-minimal.component.html + .scss)
 
 - **16-05-2026** — feat(collection): filter rack creator + patch editor module picker to HAS+SELLS; WANTS wishlist modules excluded from both pickers (patch-editor.component.ts, user-area-data.service.ts + spec)
