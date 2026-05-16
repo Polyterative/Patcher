@@ -1234,3 +1234,27 @@ Width and height are now explicit CSS properties, immune to flex-direction.
 - `agent/decision-log.md`, `internaldocs/workflow/TODO.md`, `internaldocs/workflow/COMPLETED.md`
 
 **Status:** Fix complete. Pending commit (per AGENTS.md §6 — ask before committing).
+
+---
+**[16-05-2026 continuing session]**
+
+Tasks completed this session continuation:
+
+1. **feat(collection): filter module pickers to HAS+SELLS** (`9bd0147e`)
+   - `patch-editor.component.ts`: added `.filter(m => m.possessionKind !== 'WANTS')` in ngOnInit switchMap pipeline before `collectionModules$.next()`
+   - `user-area-data.service.ts`: same filter applied on `modulesData$.value` before passing to RackCreatorComponent
+   - `user-area-data.service.spec.ts`: added regression test — WANTS module (id 2) must not appear in dialog data when modulesData$ contains HAS+WANTS+SELLS
+   - 26/26 tests green, build clean
+
+2. **feat(collection): SELLS inline badge in module-minimal** (`8e10db81`)
+   - `module-minimal.component.html`: added `@if (bag.possessionKind === 'SELLS')` span with sell icon + "Selling" label in `module-meta-row__stats`
+   - Extended render guard condition to also trigger on SELLS state
+   - `module-minimal.component.scss`: added `.module-possession-badge--sells` with secondary colour token
+
+3. **feat(rack-editor): exit animation for module tile on delete** (`8b04dd3e`)
+   - `rack-visual-model.component.ts`: added custom `@leave` trigger (fade+scale(0.92), 180ms, ease-in)
+   - `rack-visual-model.component.html`: added `[@leave]` binding to `<app-module-realistic>`
+   - Imported `animate`, `style`, `transition`, `trigger` from `@angular/animations`
+
+4. **Module Browser Tag Filter UX** — delegated to background subagent (complex multi-bullet feature: grouped chip picker, search input, AND/OR toggle, best-match sort)
+
