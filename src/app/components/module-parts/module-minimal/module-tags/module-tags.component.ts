@@ -29,20 +29,10 @@ import {
 import { MinimalModule } from 'src/app/models/module';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import {
+  TAG_TYPE_LABELS,
   Tag,
-  TagType
+  TagSuggestionGroup
 } from 'src/app/models/tag';
-
-interface TagSuggestionGroup {
-  label: string;
-  tags: Tag[];
-}
-
-const TAG_TYPE_LABELS: Record<TagType, string> = {
-  [TagType.Purpose]: 'Purpose',
-  [TagType.Nature]: 'Nature',
-  [TagType.Character]: 'Character'
-};
 
 
 @Component({

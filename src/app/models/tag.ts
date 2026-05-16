@@ -7,3 +7,14 @@ export interface Tag {
   name: string;
   type: TagType;
 }
+
+export interface TagSuggestionGroup {
+  label: string;
+  tags: Tag[];
+}
+
+export const TAG_TYPE_LABELS: Record<TagType, string> = {
+  [TagType.Purpose]: 'Purpose',
+  [TagType.Nature]: 'Nature',
+  [TagType.Character]: 'Character'
+};
