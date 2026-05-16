@@ -3,6 +3,7 @@
 > Archive of finished work. One-line summaries only. For strategy context see `../product/PRINCIPLES.md` and
 > `../product/ROADMAP.md`.
 
+- **16-05-2026** — fix(module): replace fxFlex with explicit ngStyle width+height on 1U placeholder div in module-part-image.component.html — fixes wrong aspect ratio for 1U modules with no panel image
 
 - **2026-05-15** Opaque URL Tokens for Racks & Patches — replaced enumerable `/details/:id` URLs with 12-char `public_id` tokens; SECURITY DEFINER RPCs for anonymous token-reads; Angular routes `/racks/:publicId` + `/patches/:publicId`; legacy-redirect components; `/links/retired` page; copy-share-link buttons in My Racks/Patches; cache wired via existing key namespaces; 6 Playwright e2e + 84 unit regression specs green. See `ARCHITECTURE.md §Opaque URL Token Pattern` and migration `20260515112000_add_public_id_to_racks_and_patches.sql`.
 ---
