@@ -94,6 +94,12 @@
   white-space: nowrap;
 }
 
+.module-possession-badge--sells {
+  color: var(--mat-sys-secondary, #b08030);
+  font-weight: 500;
+  opacity: 1;
+}
+
 .module-minimal__focus-hide {
   opacity: 1;
   max-height: 48rem;
