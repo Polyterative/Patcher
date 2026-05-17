@@ -4,7 +4,6 @@ import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.serv
 import { Subject, BehaviorSubject } from 'rxjs';
 import { FormControl } from '@angular/forms';
 import { TestBed } from '@angular/core/testing';
-import { DOCUMENT } from '@angular/common';
 
 function mockDataService(): RackBrowserDataService {
   return {
@@ -39,11 +38,7 @@ describe('RackBrowserRootComponent', () => {
   let seo: SeoAndUtilsService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({
-      providers: [
-        { provide: DOCUMENT, useValue: document }
-      ]
-    });
+    TestBed.configureTestingModule({});
   });
 
   afterEach(() => TestBed.resetTestingModule());
@@ -95,18 +90,16 @@ describe('RackBrowserRootComponent', () => {
     expect(ds.fields.order.control.value).toEqual({id: 'updated', name: 'Updated ↓'});
   });
 
-  it('scrolls to top when loadMore$ fires after racksList$ emits', () => {
-    const mockDoc = {defaultView: {scrollTo: jasmine.createSpy('scrollTo')}};
-    TestBed.overrideProvider(DOCUMENT, {useValue: mockDoc});
-
+  it('does NOT scroll to top when loadMore$ fires (append mode should keep scroll position)', () => {
+    // regression guard: scrolling to top after a load-more hides newly appended items
+    const scrollSpy = spyOn(window, 'scrollTo');
     const ds = mockDataService();
-    const comp = TestBed.runInInjectionContext(() => new RackBrowserRootComponent(ds, mockSeo()));
+    TestBed.runInInjectionContext(() => new RackBrowserRootComponent(ds, mockSeo()));
 
     (ds.racksList$ as BehaviorSubject<any>).next([{id: 1}]);
     ds.loadMore$.next();
-    (ds.racksList$ as BehaviorSubject<any>).next([{id: 2}]);
+    (ds.racksList$ as BehaviorSubject<any>).next([{id: 1}, {id: 2}]);
 
-    expect(mockDoc.defaultView.scrollTo).toHaveBeenCalledWith({top: 0, behavior: 'smooth'});
-    comp.ngOnDestroy();
+    expect(scrollSpy).not.toHaveBeenCalled();
   });
 });
