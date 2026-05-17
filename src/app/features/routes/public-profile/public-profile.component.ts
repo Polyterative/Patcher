@@ -168,6 +168,30 @@ export class PublicProfileComponent extends SubManager {
     return `/u/${ username }`;
   }
 
+  get hasMorePatches(): boolean {
+    const total = this.dataService.patchesCount$.value;
+    const loaded = this.dataService.patchesData$.value?.length ?? 0;
+    return loaded < total;
+  }
+
+  get remainingPatchesCount(): number {
+    const total = this.dataService.patchesCount$.value;
+    const loaded = this.dataService.patchesData$.value?.length ?? 0;
+    return Math.max(0, total - loaded);
+  }
+
+  get hasMoreRacks(): boolean {
+    const total = this.dataService.racksCount$.value;
+    const loaded = this.dataService.rackData$.value?.length ?? 0;
+    return loaded < total;
+  }
+
+  get remainingRacksCount(): number {
+    const total = this.dataService.racksCount$.value;
+    const loaded = this.dataService.rackData$.value?.length ?? 0;
+    return Math.max(0, total - loaded);
+  }
+
   makeProfilePublic(username: string): void {
     this.userService.updateProfileVisibility$(true).subscribe(() => {
       this.dataService.loadProfile$.next(username);

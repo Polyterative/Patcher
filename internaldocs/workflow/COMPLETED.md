@@ -3,6 +3,8 @@
 > Archive of finished work. One-line summaries only. For strategy context see `../product/PRINCIPLES.md` and
 > `../product/ROADMAP.md`.
 
+- **17-05-2026** — feat(public-profile): replace mat-paginator with Load More buttons in Racks and Patches tabs — accumulates results on load-more click; reset on profile change; +2 spec tests (loadMorePatches$, loadMoreRacks$); MatPaginatorModule → MatButtonModule in module (public-profile-data.service.ts, public-profile.component.ts/.html/.scss, public-profile.module.ts, spec)
+
 - **16-05-2026** — feat(forms): add preset quick-select chip overlay to mat-form-entity — @Input() presets: (string|number)[] triggers compact chip-style autocomplete panel on focus; wired to HP filter in module browser + HP/rows in rack creator (mat-form-entity.component.ts/.html/.scss, 2 spec tests added)
 
 - **16-05-2026** — feat(module-browser): replace sidebar tag MULTISELECT with grouped chip picker + tag search + AND/OR toggle + best-match sorting; shared TAG_TYPE_LABELS moved to tag model and module-browser tag filtering now supports client-side AND mode + relevance ranking (module-browser-data.service/.utils, module-browser-root component, tag.ts)
