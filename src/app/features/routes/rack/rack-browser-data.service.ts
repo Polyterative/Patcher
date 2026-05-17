@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import {
   BehaviorSubject,
+  combineLatest,
   merge,
   Observable,
   of,
@@ -83,6 +84,9 @@ export class RackBrowserDataService extends SubManager {
   readonly serversideAdditionalData = {
     itemsCount$: new BehaviorSubject<number>(0)
   };
+
+  readonly hasMoreRacks$: Observable<boolean>;
+  readonly remainingRacksCount$: Observable<number>;
   
   readonly fields: RackBrowserFields;
   readonly canReset$: Observable<boolean>;
@@ -123,6 +127,16 @@ export class RackBrowserDataService extends SubManager {
       distinctUntilChanged(),
       shareReplay(1)
     );
+
+    this.hasMoreRacks$ = combineLatest([
+      this.racksList$,
+      this.serversideAdditionalData.itemsCount$
+    ]).pipe(map(([list, count]) => count > (list?.length ?? 0)));
+
+    this.remainingRacksCount$ = combineLatest([
+      this.racksList$,
+      this.serversideAdditionalData.itemsCount$
+    ]).pipe(map(([list, count]) => Math.max(0, count - (list?.length ?? 0))));
     
     // Load more — advance skip to current list length, then re-fetch (append mode)
     this.loadMore$

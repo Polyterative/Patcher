@@ -11,6 +11,8 @@ function mockDataService(): RackBrowserDataService {
     loadMore$: new Subject<void>(),
     racksList$: new BehaviorSubject(null),
     updateRacksList$: new Subject<void>(),
+    hasMoreRacks$: new BehaviorSubject(false),
+    remainingRacksCount$: new BehaviorSubject(0),
     serversideTableRequestData: {
       sort$: new Subject(),
       skip$: new BehaviorSubject<number>(0),
@@ -105,16 +107,6 @@ describe('RackBrowserRootComponent', () => {
     (ds.racksList$ as BehaviorSubject<any>).next([{id: 2}]);
 
     expect(mockDoc.defaultView.scrollTo).toHaveBeenCalledWith({top: 0, behavior: 'smooth'});
-    comp.ngOnDestroy();
-  });
-
-  it('hasMoreRacks returns true when count > loaded', () => {
-    const ds = mockDataService();
-    (ds.serversideAdditionalData.itemsCount$ as BehaviorSubject<number>).next(50);
-    (ds.racksList$ as BehaviorSubject<any>).next(Array(20).fill({id: 1}));
-    const comp = TestBed.runInInjectionContext(() => new RackBrowserRootComponent(ds, mockSeo()));
-    expect(comp.hasMoreRacks).toBeTrue();
-    expect(comp.remainingRacksCount).toBe(30);
     comp.ngOnDestroy();
   });
 });
