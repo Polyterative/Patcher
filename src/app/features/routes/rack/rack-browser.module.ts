@@ -42,7 +42,6 @@ import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatButtonModule } from "@angular/material/button";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatDividerModule } from "@angular/material/divider";
-import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatInputModule } from "@angular/material/input";
 import { CommentsModule } from "src/app/components/shared-atoms/comments/comments.module";
@@ -118,7 +117,6 @@ const parentPrefix: string = 'racks';
     MatButtonModule,
     MatTooltipModule,
     MatDividerModule,
-    MatPaginatorModule,
     BrandPrimaryButtonModule,
     BrowserResetFiltersButtonComponent,
     AutoContentLoadingIndicatorModule,

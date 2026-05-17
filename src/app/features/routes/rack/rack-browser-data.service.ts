@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { PageEvent } from '@angular/material/paginator';
 import {
   BehaviorSubject,
   merge,
@@ -72,8 +71,7 @@ export class RackBrowserDataService extends SubManager {
   readonly racksList$ = new BehaviorSubject<RackList>(null);
   readonly updateRacksList$ = new Subject<void>();
   readonly resetForm$ = new Subject<void>();
-  readonly pageEvent$ = new Subject<PageEvent>();
-  readonly paginatorToFistPage$ = new Subject<void>();
+  readonly loadMore$ = new Subject<void>();
   
   readonly serversideTableRequestData = {
     skip$:   new BehaviorSubject<number>(0),
@@ -126,12 +124,11 @@ export class RackBrowserDataService extends SubManager {
       shareReplay(1)
     );
     
-    // Page navigation — update skip/take then re-fetch
-    this.pageEvent$
+    // Load more — advance skip to current list length, then re-fetch (append mode)
+    this.loadMore$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(event => {
-        this.serversideTableRequestData.take$.next(event.pageSize);
-        this.serversideTableRequestData.skip$.next(event.pageIndex * event.pageSize);
+      .subscribe(() => {
+        this.serversideTableRequestData.skip$.next(this.racksList$.value?.length ?? 0);
         this.updateRacksList$.next();
       });
 
@@ -151,7 +148,6 @@ export class RackBrowserDataService extends SubManager {
         orderVal?.name?.includes('↑') ? 'asc' : 'desc'
       ]);
       this.serversideTableRequestData.skip$.next(0);
-      this.paginatorToFistPage$.next();
       this.updateRacksList$.next();
     });
 
@@ -202,7 +198,12 @@ export class RackBrowserDataService extends SubManager {
       )
       .subscribe((x: any) => {
         this.serversideAdditionalData.itemsCount$.next(x.count);
-        this.racksList$.next(x.data);
+        const skip = this.serversideTableRequestData.skip$.value;
+        if (skip === 0) {
+          this.racksList$.next(x.data);
+        } else {
+          this.racksList$.next([...(this.racksList$.value ?? []), ...x.data]);
+        }
       });
 
     this.resetForm$
@@ -214,7 +215,6 @@ export class RackBrowserDataService extends SubManager {
         this.serversideTableRequestData.filter$.next('');
         this.serversideTableRequestData.sort$.next([RACK_DEFAULT_ORDER.id, 'desc']);
         this.serversideTableRequestData.skip$.next(0);
-        this.paginatorToFistPage$.next();
         this.updateRacksList$.next();
       });
   }

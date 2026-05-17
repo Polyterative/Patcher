@@ -230,18 +230,13 @@ describe('UserAreaDataService', () => {
     expect(passedIds).not.toContain(2);
   });
 
-  it('pages modules, racks, and patches locally without triggering extra backend calls', () => {
+  it('pages modules and patches locally without triggering extra backend calls', () => {
     const {service, backend} = build();
 
     service.modulesData$.next([
       {id: 1, name: 'One', manufacturer: {name: 'A'}, description: ''},
       {id: 2, name: 'Two', manufacturer: {name: 'A'}, description: ''},
       {id: 3, name: 'Three', manufacturer: {name: 'A'}, description: ''}
-    ] as any);
-    service.rackData$.next([
-      {id: 1, name: 'Rack One', description: ''},
-      {id: 2, name: 'Rack Two', description: ''},
-      {id: 3, name: 'Rack Three', description: ''}
     ] as any);
     service.patchesData$.next([
       {id: 1, name: 'Patch One', description: '', tags: []},
@@ -250,25 +245,38 @@ describe('UserAreaDataService', () => {
     ] as any);
 
     service.modulesPageEvent$.next({pageIndex: 1, pageSize: 1, length: 3} as any);
-    service.racksPageEvent$.next({pageIndex: 1, pageSize: 1, length: 3} as any);
     service.patchesPageEvent$.next({pageIndex: 1, pageSize: 1, length: 3} as any);
 
     expect(service.modulesPagination.skip$.value).toBe(1);
-    expect(service.racksPagination.skip$.value).toBe(1);
     expect(service.patchesPagination.skip$.value).toBe(1);
     expect(backend.GET.currentUserModules).not.toHaveBeenCalled();
-    expect(backend.get.currentUserRacks).not.toHaveBeenCalled();
     expect(backend.get.currentUserPatches).not.toHaveBeenCalled();
 
     service.pagedModulesData$.subscribe((modules) => {
       expect(modules?.map((module) => module.id)).toEqual([2]);
     });
-    service.pagedRacksData$.subscribe((racks) => {
-      expect(racks?.map((rack) => rack.id)).toEqual([2]);
-    });
     service.pagedPatchesData$.subscribe((patches) => {
       expect(patches?.map((patch) => patch.id)).toEqual([2]);
     });
+  });
+
+  it('loadMoreRacks$ grows take$ and does not trigger extra backend calls', () => {
+    const {service, backend} = build();
+
+    service.rackData$.next([
+      {id: 1, name: 'Rack One', description: ''},
+      {id: 2, name: 'Rack Two', description: ''},
+      {id: 3, name: 'Rack Three', description: ''}
+    ] as any);
+
+    expect(service.racksPagination.take$.value).toBe(10);
+    service.loadMoreRacks$.next();
+    expect(service.racksPagination.take$.value).toBe(20);
+    expect(backend.get.currentUserRacks).not.toHaveBeenCalled();
+
+    let lastRacks: any[] = [];
+    service.pagedRacksData$.subscribe((racks) => { if (racks) { lastRacks = racks; } });
+    expect(lastRacks.map((r: any) => r.id)).toEqual([1, 2, 3]);
   });
 
   it('records discovery actions from service-owned helper subjects', () => {

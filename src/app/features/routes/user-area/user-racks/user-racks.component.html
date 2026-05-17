@@ -52,14 +52,15 @@
         }
       }
       
-      @if ((dataService.filteredRacksCount$ | async) > dataService.racksPagination.take$.value) {
-        <mat-paginator
-          [pageSize]="dataService.racksPagination.take$.value"
-          [pageSizeOptions]="[10, 20, 50]"
-          [length]="dataService.filteredRacksCount$ | async"
-          (page)="dataService.racksPageEvent$.next($event)"
-          showFirstLastButtons
-        ></mat-paginator>
+      @if ((dataService.hasMoreRacks$ | async)) {
+        <div class="loadMore">
+          <button mat-stroked-button
+                  class="loadMore__btn"
+                  (click)="dataService.loadMoreRacks$.next()"
+          >Load more
+            <span class="loadMore__count">{{ dataService.remainingRacksCount$ | async }} remaining</span>
+          </button>
+        </div>
       }
       <lib-auto-update-loading-indicator [data$]="dataService.rackData$"
                                          [updateData$]="dataService.updateRackData$"
