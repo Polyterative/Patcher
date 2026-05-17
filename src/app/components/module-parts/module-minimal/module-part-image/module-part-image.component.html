@@ -32,8 +32,7 @@
           [class.img--fixed-height]="fixedHeight"
           [@enter]
         >
-          <div [fxFlex]="data.hp/sizeDivider/2+'rem'"
-               [ngStyle]="fixedHeight ? {} : {height:((bag.height)/sizeDivider/2+'rem')}"
+          <div [ngStyle]="fixedHeight ? {} : { width: (data.hp/sizeDivider/2)+'rem', height: (bag.height/sizeDivider/2)+'rem' }"
                class="preview img"
                [class.preview--fixed-height]="fixedHeight"
           >
