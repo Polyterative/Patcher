@@ -1,5 +1,23 @@
 # Session Log
 
+## 17-05-2026 09:15 — Public profile Load More (session start + completion)
+
+- **Boot state:** Read AGENTS.md, mission.md, current-task.md (stale — showed 1U bug already committed as `44e08cab`), TODO.md, ROADMAP.md, FOR_AI_AGENTS.md. Git log confirmed recent work from prior sessions. Ran `git status` (AGENTS.md had an uncommitted human wording improvement — left untouched per rule).
+- **1U bug task:** Already shipped (`44e08cab`). Cleaned up stale current-task.md and acceptance-checklist.md entries.
+- **Task selected:** "Load More for public profile rack/patch tabs" — last open item in the Tier 0 Load More TODO group. Confirmed `mat-paginator` was still present in `public-profile.component.html`.
+- **Implementation:**
+  - `public-profile-data.service.ts`: removed `patchesPageEvent$`, `racksPageEvent$`, `bindPageEvent()`, `MatPaginator`/`PageEvent`/`catchError` imports; added `loadMorePatches$` + `loadMoreRacks$` Subjects; changed patch/rack load handlers to accumulate on load-more (skip>0 → append) vs replace on fresh load (skip===0 → replace); spinner only on fresh load.
+  - `public-profile.component.ts`: added `hasMorePatches`, `remainingPatchesCount`, `hasMoreRacks`, `remainingRacksCount` getters.
+  - `public-profile.component.html`: replaced both `<mat-paginator>` with Load More button pattern.
+  - `public-profile.module.ts`: `MatPaginatorModule` → `MatButtonModule`.
+  - `public-profile.component.scss`: added `.loadMore` / `.loadMore__btn` / `.loadMore__count` styles.
+  - `public-profile-data.service.spec.ts`: +2 tests (loadMorePatches$ appends, loadMoreRacks$ appends).
+- **Tests:** `pnpm test-headless` targeted — 9/9 SUCCESS.
+- **Build:** `pnpm build` — green (pre-existing budget warnings only).
+- **Docs updated:** COMPLETED.md, TODO.md (checked all 3 load-more items), current-task.md (cleared), acceptance-checklist.md (new list all ticked).
+- **Blockers raised:** None.
+- **Next candidates:** Module Possession States Layer 3 polish (snackbar feedback, scss tuning) — HIGH in Tier 0; Module tags axis-colour tinting — LOW; Stale rack preview indicator — LOW.
+
 ## 2026-05-14T12:06 — ManufacturerDetailComponent spec
 
 - **Boot state:** `current-task.md` held stale rack-detail spec task (completed `3d76c982` in prior session). Cleaned up stale state files.

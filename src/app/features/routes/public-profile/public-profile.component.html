@@ -58,14 +58,17 @@
                   [showSearch]="false"
                   [viewConfig]="rackViewConfig"
                 ></app-rack-list>
-                @if ((dataService.racksCount$ | async) > dataService.racksPagination.take$.value) {
-                  <mat-paginator
-                    [pageSize]="dataService.racksPagination.take$.value"
-                    [pageSizeOptions]="[10, 20, 50]"
-                    [length]="dataService.racksCount$ | async"
-                    (page)="dataService.racksPageEvent$.next($event)"
-                    showFirstLastButtons
-                  ></mat-paginator>
+                @if (hasMoreRacks) {
+                  <div class="loadMore">
+                    <button mat-stroked-button
+                            color="primary"
+                            (click)="dataService.loadMoreRacks$.next()"
+                            class="loadMore__btn"
+                    >
+                      Load more
+                      <span class="loadMore__count">({{ remainingRacksCount }} remaining)</span>
+                    </button>
+                  </div>
                 }
               </div>
             </lib-hero-content-card>
@@ -82,14 +85,17 @@
                   [showSearch]="false"
                   [viewConfig]="patchViewConfig"
                 ></app-patch-list>
-                @if ((dataService.patchesCount$ | async) > dataService.patchesPagination.take$.value) {
-                  <mat-paginator
-                    [pageSize]="dataService.patchesPagination.take$.value"
-                    [pageSizeOptions]="[10, 20, 50]"
-                    [length]="dataService.patchesCount$ | async"
-                    (page)="dataService.patchesPageEvent$.next($event)"
-                    showFirstLastButtons
-                  ></mat-paginator>
+                @if (hasMorePatches) {
+                  <div class="loadMore">
+                    <button mat-stroked-button
+                            color="primary"
+                            (click)="dataService.loadMorePatches$.next()"
+                            class="loadMore__btn"
+                    >
+                      Load more
+                      <span class="loadMore__count">({{ remainingPatchesCount }} remaining)</span>
+                    </button>
+                  </div>
                 }
               </div>
             </lib-hero-content-card>
