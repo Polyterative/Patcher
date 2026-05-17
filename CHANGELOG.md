@@ -8,6 +8,13 @@ All notable changes to this project will be documented in this file. See [standa
 - **Module Possession States (Layer 1):** Replace binary Add/Remove collection toggle with a 3-state segmented control — *Own*, *Want*, *Sell* — on every module detail card. Users can now track modules as owned (`HAS`), wished (`WANTS`), or for sale (`SELLS`). Tapping an active state deselects and removes the module from the collection. Backed by the existing `user_modules.kind` DB enum — no schema changes.
 - **Module Possession States (Layer 2):** My Modules page split into "My Modules" (HAS+SELLS) and "Wishlist" (WANTS) tabs. Patch editor collection picker now shows only owned/for-sale modules.
 
+### [6.0.2](https://github.com/Polyterative/Patcher/compare/v6.0.1...v6.0.2) (2026-05-17)
+
+
+### Bug Fixes
+
+* **module:** use explicit ngStyle width+height on 1U placeholder div ([90a4b19](https://github.com/Polyterative/Patcher/commit/90a4b19ba404010056c88bd552a3d8ff80bee483))
+
 ### [6.0.1](https://github.com/Polyterative/Patcher/compare/v6.0.0...v6.0.1) (2026-05-15)
 
 ### Features
