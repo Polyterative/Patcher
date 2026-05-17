@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.0.2](https://github.com/Polyterative/Patcher/compare/v6.0.1...v6.0.2) (2026-05-17)
+
+
+### Bug Fixes
+
+* **module:** use explicit ngStyle width+height on 1U placeholder div ([90a4b19](https://github.com/Polyterative/Patcher/commit/90a4b19ba404010056c88bd552a3d8ff80bee483))
+
 ### [6.0.1](https://github.com/Polyterative/Patcher/compare/v6.0.0...v6.0.1) (2026-05-15)
 
 
