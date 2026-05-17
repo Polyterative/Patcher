@@ -84,6 +84,8 @@ export class UserAreaDataService extends SubManager {
   readonly filteredRacksData$: Observable<Rack[] | undefined>;
   readonly filteredRacksCount$: Observable<number>;
   readonly pagedRacksData$: Observable<Rack[] | undefined>;
+  readonly hasMoreRacks$: Observable<boolean>;
+  readonly remainingRacksCount$: Observable<number>;
   readonly filteredPatchesData$: Observable<Patch[] | undefined>;
   readonly filteredPatchesCount$: Observable<number>;
   readonly pagedPatchesData$: Observable<Patch[] | undefined>;
@@ -100,8 +102,8 @@ export class UserAreaDataService extends SubManager {
   readonly updateContributorStats$ = new Subject<void>();
   readonly commentsPageEvent$ = new Subject<PageEvent>();
   readonly patchesPageEvent$ = new Subject<PageEvent>();
-  readonly racksPageEvent$ = new Subject<PageEvent>();
   readonly modulesPageEvent$ = new Subject<PageEvent>();
+  readonly loadMoreRacks$ = new Subject<void>();
   readonly addPatch$ = new Subject<void>();
   readonly addRack$ = new Subject<void>();
   readonly addModulesToCollection$ = new Subject<void>();
@@ -152,6 +154,16 @@ export class UserAreaDataService extends SubManager {
       this.racksPagination.skip$,
       this.racksPagination.take$
     );
+
+    this.hasMoreRacks$ = combineLatest([
+      this.filteredRacksCount$,
+      this.racksPagination.take$
+    ]).pipe(map(([count, take]) => count > take));
+
+    this.remainingRacksCount$ = combineLatest([
+      this.filteredRacksCount$,
+      this.racksPagination.take$
+    ]).pipe(map(([count, take]) => Math.max(0, count - take)));
 
     this.filteredPatchesData$ = combineLatest([
       this.patchesData$,
@@ -206,8 +218,13 @@ export class UserAreaDataService extends SubManager {
 
     this.bindPageEvent(this.commentsPageEvent$, this.commentsPagination, () => this.updateCommentsData$.next());
     this.bindPageEvent(this.patchesPageEvent$, this.patchesPagination);
-    this.bindPageEvent(this.racksPageEvent$, this.racksPagination);
     this.bindPageEvent(this.modulesPageEvent$, this.modulesPagination);
+
+    this.loadMoreRacks$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.racksPagination.take$.next(this.racksPagination.take$.value + 10);
+      });
 
     this.updateCommentsData$
       .pipe(
@@ -304,6 +321,7 @@ export class UserAreaDataService extends SubManager {
         tap(() => {
           this.modulesPagination.skip$.next(0);
           this.racksPagination.skip$.next(0);
+          this.racksPagination.take$.next(10);
           this.patchesPagination.skip$.next(0);
         }),
         takeUntil(this.destroy$)
