@@ -494,10 +494,10 @@ pagination. "Load more" is a straightforward adaptation:
       Reset accumulator on filter/sort change.
 - [x] Replace `mat-paginator` in `module-browser-root.component.html` with a
       Load More button (inline implementation, no shared component needed).
-- [ ] Apply same pattern to `PatchBrowserDataService` + template.
-- [ ] Apply same pattern to `ManufacturerBrowserRootComponent` (client-side — simpler,
+- [x] Apply same pattern to `PatchBrowserDataService` + template.
+- [x] Apply same pattern to `ManufacturerBrowserRootComponent` (client-side — simpler,
       just slice the local array and grow the slice on each "load more").
-- [ ] Apply same pattern to public profile rack/module tabs.
+- [x] Apply same pattern to public profile rack/module tabs.
 - [ ] Keep `mat-paginator` in `user-comments` and any data-table context.
 - [ ] Ensure back-navigation restores scroll position and loaded items (use Angular
       route scroll strategy + serialise loaded count in router state if needed).

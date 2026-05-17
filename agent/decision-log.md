@@ -1,5 +1,9 @@
 # Decision Log
 
+## 17-05-2026
+
+- **Load More for public profile tabs:** Followed the established `PatchBrowserDataService` accumulation pattern exactly (skip===0 → replace, skip>0 → append, loading state only on fresh load). Considered keeping `MatPaginator` for simplicity but rejected it — it's inconsistent with every other list view in the app since `25240a44` and `c874817a`. No new pattern introduced. `MatPaginatorModule` removed from the feature module entirely; replaced with `MatButtonModule` which was already present elsewhere.
+
 ## 2026-05-12T11:16:04+02:00
 
 - Bootstrapped the missing `agent/` control files instead of blocking on their absence, because the iterative loop needs durable in-repo state.

@@ -1,13 +1,11 @@
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { PageEvent } from '@angular/material/paginator';
 import {
   BehaviorSubject,
   ReplaySubject,
   Subject,
 } from 'rxjs';
 import {
-  catchError,
   filter,
   switchMap,
   takeUntil,
@@ -56,25 +54,14 @@ export class PublicProfileDataService extends SubManager {
   readonly updatePatchesData$ = new Subject<void>();
   readonly updateRacksData$ = new Subject<void>();
   readonly updateContributorStats$ = new Subject<void>();
-  readonly patchesPageEvent$ = new Subject<PageEvent>();
-  readonly racksPageEvent$ = new Subject<PageEvent>();
+  readonly loadMorePatches$ = new Subject<void>();
+  readonly loadMoreRacks$ = new Subject<void>();
 
   constructor(
     private readonly backend: SupabaseService,
     private readonly snackBar: MatSnackBar,
   ) {
     super();
-
-    this.bindPageEvent(
-      this.patchesPageEvent$,
-      this.patchesPagination,
-      () => this.updatePatchesData$.next(),
-    );
-    this.bindPageEvent(
-      this.racksPageEvent$,
-      this.racksPagination,
-      () => this.updateRacksData$.next(),
-    );
 
     this.initializeProfileLoadHandler();
     this.initializePatchLoadHandler();
@@ -160,11 +147,22 @@ export class PublicProfileDataService extends SubManager {
   }
 
   private initializePatchLoadHandler(): void {
+    this.loadMorePatches$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.patchesPagination.skip$.next(this.patchesData$.value?.length ?? 0);
+        this.updatePatchesData$.next();
+      });
+
     this.updatePatchesData$
       .pipe(
         withLatestFrom(this.profile$),
         filter(([, profile]) => !!profile && profile.public),
-        tap(() => this.patchesData$.next(undefined)),
+        tap(() => {
+          if (this.patchesPagination.skip$.value === 0) {
+            this.patchesData$.next(undefined);
+          }
+        }),
         switchMap(([, profile]) => {
           const skip = this.patchesPagination.skip$.value;
           const take = this.patchesPagination.take$.value;
@@ -179,7 +177,10 @@ export class PublicProfileDataService extends SubManager {
       )
       .subscribe({
         next: (response) => {
-          this.patchesData$.next((response?.data as Patch[]) ?? []);
+          const skip = this.patchesPagination.skip$.value;
+          const incoming = (response?.data as Patch[]) ?? [];
+          const current = this.patchesData$.value ?? [];
+          this.patchesData$.next(skip === 0 ? incoming : [...current, ...incoming]);
           this.patchesCount$.next(response?.count ?? 0);
         },
         error: (error) => {
@@ -192,11 +193,22 @@ export class PublicProfileDataService extends SubManager {
   }
 
   private initializeRackLoadHandler(): void {
+    this.loadMoreRacks$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.racksPagination.skip$.next(this.rackData$.value?.length ?? 0);
+        this.updateRacksData$.next();
+      });
+
     this.updateRacksData$
       .pipe(
         withLatestFrom(this.profile$),
         filter(([, profile]) => !!profile && profile.public),
-        tap(() => this.rackData$.next(undefined)),
+        tap(() => {
+          if (this.racksPagination.skip$.value === 0) {
+            this.rackData$.next(undefined);
+          }
+        }),
         switchMap(([, profile]) => {
           const skip = this.racksPagination.skip$.value;
           const take = this.racksPagination.take$.value;
@@ -211,7 +223,10 @@ export class PublicProfileDataService extends SubManager {
       )
       .subscribe({
         next: (response) => {
-          this.rackData$.next((response?.data as Rack[]) ?? []);
+          const skip = this.racksPagination.skip$.value;
+          const incoming = (response?.data as Rack[]) ?? [];
+          const current = this.rackData$.value ?? [];
+          this.rackData$.next(skip === 0 ? incoming : [...current, ...incoming]);
           this.racksCount$.next(response?.count ?? 0);
         },
         error: (error) => {
@@ -220,20 +235,6 @@ export class PublicProfileDataService extends SubManager {
           this.rackData$.next([]);
           this.racksCount$.next(0);
         },
-      });
-  }
-
-  private bindPageEvent(
-    pageEvent$: Subject<PageEvent>,
-    pagination: { skip$: BehaviorSubject<number>; take$: BehaviorSubject<number> },
-    onPageChange: () => void,
-  ): void {
-    pageEvent$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((event) => {
-        pagination.take$.next(event.pageSize);
-        pagination.skip$.next(event.pageIndex * event.pageSize);
-        onPageChange();
       });
   }
 

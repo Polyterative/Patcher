@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
+import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { MatPaginatorModule } from '@angular/material/paginator';
 import { RouterModule } from '@angular/router';
 import { PatchListModule } from 'src/app/components/patch-list/patch-list.module';
 import { RackListModule } from 'src/app/components/rack-list/rack-list.module';
@@ -28,9 +28,9 @@ import { PublicProfileComponent } from './public-profile.component';
       },
     ]),
     FlexLayoutModule,
+    MatButtonModule,
     MatCardModule,
     MatIconModule,
-    MatPaginatorModule,
     PatchListModule,
     RackListModule,
     StatisticsModule,

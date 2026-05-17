@@ -155,4 +155,50 @@ describe('PublicProfileDataService', () => {
     expect(service.routeState$.value).toBe('error');
     expect(SharedConstants.errorCustom).toHaveBeenCalled();
   });
+
+  it('loadMorePatches$ appends results and advances skip', () => {
+    const firstPage = [{id: 1}, {id: 2}];
+    const secondPage = [{id: 3}, {id: 4}];
+    const {service, backend} = build({
+      id: 'pub-1',
+      username: 'gooduser',
+      public: true,
+    });
+    backend.GET.publicUserPatchesPaginated
+      .and.returnValues(
+        require('rxjs').of({data: firstPage, count: 4}),
+        require('rxjs').of({data: secondPage, count: 4}),
+      );
+    backend.GET.publicUserRacksPaginated.and.returnValue(require('rxjs').of({data: [], count: 0}));
+
+    service.loadProfile$.next('gooduser');
+    expect(service.patchesData$.value).toEqual(firstPage as any);
+
+    service.loadMorePatches$.next();
+    expect(service.patchesData$.value).toEqual([...firstPage, ...secondPage] as any);
+    expect(service.patchesCount$.value).toBe(4);
+  });
+
+  it('loadMoreRacks$ appends results and advances skip', () => {
+    const firstPage = [{id: 10}, {id: 11}];
+    const secondPage = [{id: 12}];
+    const {service, backend} = build({
+      id: 'pub-1',
+      username: 'gooduser',
+      public: true,
+    });
+    backend.GET.publicUserPatchesPaginated.and.returnValue(require('rxjs').of({data: [], count: 0}));
+    backend.GET.publicUserRacksPaginated
+      .and.returnValues(
+        require('rxjs').of({data: firstPage, count: 3}),
+        require('rxjs').of({data: secondPage, count: 3}),
+      );
+
+    service.loadProfile$.next('gooduser');
+    expect(service.rackData$.value).toEqual(firstPage as any);
+
+    service.loadMoreRacks$.next();
+    expect(service.rackData$.value).toEqual([...firstPage, ...secondPage] as any);
+    expect(service.racksCount$.value).toBe(3);
+  });
 });
