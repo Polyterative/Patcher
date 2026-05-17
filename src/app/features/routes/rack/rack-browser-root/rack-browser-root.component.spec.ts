@@ -5,15 +5,19 @@ import { Subject, BehaviorSubject } from 'rxjs';
 import { FormControl } from '@angular/forms';
 import { TestBed } from '@angular/core/testing';
 import { DOCUMENT } from '@angular/common';
-import { PageEvent } from '@angular/material/paginator';
 
 function mockDataService(): RackBrowserDataService {
   return {
-    paginatorToFistPage$: new Subject<void>(),
-    pageEvent$: new Subject<PageEvent>(),
+    loadMore$: new Subject<void>(),
     racksList$: new BehaviorSubject(null),
     updateRacksList$: new Subject<void>(),
-    serversideTableRequestData: { sort$: new Subject() },
+    serversideTableRequestData: {
+      sort$: new Subject(),
+      skip$: new BehaviorSubject<number>(0),
+    },
+    serversideAdditionalData: {
+      itemsCount$: new BehaviorSubject<number>(0),
+    },
     fields: {
       order: {
         control: new FormControl()
@@ -89,7 +93,7 @@ describe('RackBrowserRootComponent', () => {
     expect(ds.fields.order.control.value).toEqual({id: 'updated', name: 'Updated ↓'});
   });
 
-  it('scrolls to top when pageEvent$ fires after racksList$ emits', () => {
+  it('scrolls to top when loadMore$ fires after racksList$ emits', () => {
     const mockDoc = {defaultView: {scrollTo: jasmine.createSpy('scrollTo')}};
     TestBed.overrideProvider(DOCUMENT, {useValue: mockDoc});
 
@@ -97,10 +101,20 @@ describe('RackBrowserRootComponent', () => {
     const comp = TestBed.runInInjectionContext(() => new RackBrowserRootComponent(ds, mockSeo()));
 
     (ds.racksList$ as BehaviorSubject<any>).next([{id: 1}]);
-    ds.pageEvent$.next({pageIndex: 2, pageSize: 10, length: 100} as PageEvent);
+    ds.loadMore$.next();
     (ds.racksList$ as BehaviorSubject<any>).next([{id: 2}]);
 
     expect(mockDoc.defaultView.scrollTo).toHaveBeenCalledWith({top: 0, behavior: 'smooth'});
+    comp.ngOnDestroy();
+  });
+
+  it('hasMoreRacks returns true when count > loaded', () => {
+    const ds = mockDataService();
+    (ds.serversideAdditionalData.itemsCount$ as BehaviorSubject<number>).next(50);
+    (ds.racksList$ as BehaviorSubject<any>).next(Array(20).fill({id: 1}));
+    const comp = TestBed.runInInjectionContext(() => new RackBrowserRootComponent(ds, mockSeo()));
+    expect(comp.hasMoreRacks).toBeTrue();
+    expect(comp.remainingRacksCount).toBe(30);
     comp.ngOnDestroy();
   });
 });

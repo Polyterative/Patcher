@@ -39,14 +39,16 @@
         <app-rack-list [data$]="dataService.racksList$"
                        [viewConfig]="viewConfig"
         ></app-rack-list>
-        <mat-paginator [hidePageSize]="(dataService.serversideAdditionalData.itemsCount$|async)<20"
-                       [pageSizeOptions]="[20,25,50,100]"
-                       [pageSize]="dataService.serversideTableRequestData.take$.value"
-                       [pageIndex]="dataService.serversideTableRequestData.skip$.value / dataService.serversideTableRequestData.take$.value"
-                       [length]="dataService.serversideAdditionalData.itemsCount$|async"
-                       (page)="dataService.pageEvent$.next($event)"
-                       showFirstLastButtons
-        ></mat-paginator>
+        @if (hasMoreRacks) {
+          <div class="loadMore">
+            <button mat-stroked-button
+                    class="loadMore__btn"
+                    (click)="dataService.loadMore$.next()"
+            >Load more
+              <span class="loadMore__count">{{ remainingRacksCount }} remaining</span>
+            </button>
+          </div>
+        }
         <lib-auto-update-loading-indicator [data$]="dataService.racksList$"
                                            [updateData$]="dataService.updateRacksList$"
         ></lib-auto-update-loading-indicator>
