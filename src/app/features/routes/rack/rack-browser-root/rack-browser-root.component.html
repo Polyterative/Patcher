@@ -39,13 +39,13 @@
         <app-rack-list [data$]="dataService.racksList$"
                        [viewConfig]="viewConfig"
         ></app-rack-list>
-        @if (hasMoreRacks) {
+        @if (dataService.hasMoreRacks$ | async) {
           <div class="loadMore">
             <button mat-stroked-button
                     class="loadMore__btn"
                     (click)="dataService.loadMore$.next()"
             >Load more
-              <span class="loadMore__count">{{ remainingRacksCount }} remaining</span>
+              <span class="loadMore__count">{{ dataService.remainingRacksCount$ | async }} remaining</span>
             </button>
           </div>
         }

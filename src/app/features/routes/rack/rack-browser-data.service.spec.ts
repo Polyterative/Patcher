@@ -168,4 +168,17 @@ describe('RackBrowserDataService', () => {
     expect(service.racksList$.value).toBeNull();
     service.ngOnDestroy();
   });
+
+  it('hasMoreRacks$ emits true when total count > loaded list length', () => {
+    const {service} = build();
+    let hasMore: boolean | undefined;
+    service.hasMoreRacks$.subscribe(v => (hasMore = v));
+
+    service.serversideAdditionalData.itemsCount$.next(35);
+    (service.racksList$ as any).next(Array(20).fill({id: 1}));
+
+    expect(hasMore).toBeTrue();
+    expect(service.racksList$.value?.length).toBe(20);
+    service.ngOnDestroy();
+  });
 });

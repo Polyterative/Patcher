@@ -61,16 +61,4 @@ export class RackBrowserRootComponent extends SubManager {
     this.dataService.serversideTableRequestData.sort$.next(['updated', 'desc']);
     this.dataService.updateRacksList$.next();
   }
-
-  get hasMoreRacks(): boolean {
-    const count = this.dataService.serversideAdditionalData.itemsCount$.value;
-    const loaded = this.dataService.racksList$.value?.length ?? 0;
-    return count > loaded;
-  }
-
-  get remainingRacksCount(): number {
-    const count = this.dataService.serversideAdditionalData.itemsCount$.value;
-    const loaded = this.dataService.racksList$.value?.length ?? 0;
-    return Math.max(0, count - loaded);
-  }
 }
