@@ -135,16 +135,19 @@ describe('RackBrowserDataService', () => {
     service.ngOnDestroy();
   }));
 
-  it('pageEvent$ updates skip/take and triggers a backend reload', () => {
+  it('loadMore$ appends to racksList$ and advances skip', () => {
     const {service, backend} = build();
     backend.GET.racksMinimal.calls.reset();
 
-    service.pageEvent$.next({pageIndex: 2, pageSize: 10, length: 100});
+    // Simulate initial 20 items loaded
+    (service.racksList$ as any).next(Array(20).fill({id: 1}));
+    service.serversideAdditionalData.itemsCount$.next(35);
+
+    service.loadMore$.next();
 
     expect(service.serversideTableRequestData.skip$.value).toBe(20);
-    expect(service.serversideTableRequestData.take$.value).toBe(10);
     expect(backend.GET.racksMinimal).toHaveBeenCalledWith(
-      20, 29, '', 'updated', 'desc'
+      20, 39, '', 'updated', 'desc'
     );
   });
 

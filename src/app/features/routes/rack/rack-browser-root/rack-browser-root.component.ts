@@ -1,8 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  inject,
-  ViewChild
+  inject
 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import {
@@ -18,7 +17,6 @@ import {
 import { RackBrowserDataService } from 'src/app/features/routes/rack/rack-browser-data.service';
 import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { MatPaginator } from '@angular/material/paginator';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 
 
@@ -30,7 +28,6 @@ import { SubManager } from 'src/app/shared-interproject/directives/subscription-
   standalone: false
 })
 export class RackBrowserRootComponent extends SubManager {
-  @ViewChild(MatPaginator) paginator: MatPaginator;
   private readonly document = inject(DOCUMENT);
   
   readonly formTypes = FormTypes;
@@ -47,11 +44,7 @@ export class RackBrowserRootComponent extends SubManager {
       'Racks'
     );
 
-    this.dataService.paginatorToFistPage$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.paginator.firstPage());
-    
-    this.dataService.pageEvent$
+    this.dataService.loadMore$
       .pipe(
         switchMap(() => this.dataService.racksList$.pipe(
           skip(1),
@@ -67,5 +60,17 @@ export class RackBrowserRootComponent extends SubManager {
     );
     this.dataService.serversideTableRequestData.sort$.next(['updated', 'desc']);
     this.dataService.updateRacksList$.next();
+  }
+
+  get hasMoreRacks(): boolean {
+    const count = this.dataService.serversideAdditionalData.itemsCount$.value;
+    const loaded = this.dataService.racksList$.value?.length ?? 0;
+    return count > loaded;
+  }
+
+  get remainingRacksCount(): number {
+    const count = this.dataService.serversideAdditionalData.itemsCount$.value;
+    const loaded = this.dataService.racksList$.value?.length ?? 0;
+    return Math.max(0, count - loaded);
   }
 }
