@@ -1,15 +1,7 @@
 import {
   ChangeDetectionStrategy,
-  Component,
-  inject
+  Component
 } from '@angular/core';
-import { DOCUMENT } from '@angular/common';
-import {
-  skip,
-  switchMap,
-  take,
-  takeUntil
-} from 'rxjs/operators';
 import {
   defaultRackMinimalViewConfig,
   RackMinimalViewConfig
@@ -28,8 +20,6 @@ import { SubManager } from 'src/app/shared-interproject/directives/subscription-
   standalone: false
 })
 export class RackBrowserRootComponent extends SubManager {
-  private readonly document = inject(DOCUMENT);
-  
   readonly formTypes = FormTypes;
   readonly viewConfig: RackMinimalViewConfig = {...defaultRackMinimalViewConfig};
 
@@ -44,16 +34,6 @@ export class RackBrowserRootComponent extends SubManager {
       'Racks'
     );
 
-    this.dataService.loadMore$
-      .pipe(
-        switchMap(() => this.dataService.racksList$.pipe(
-          skip(1),
-          take(1)
-        )),
-        takeUntil(this.destroy$)
-      )
-      .subscribe(() => this.document.defaultView?.scrollTo({top: 0, behavior: 'smooth'}));
-    
     this.dataService.fields.order.control.patchValue(
       {id: 'updated', name: 'Updated ↓'},
       {emitEvent: false}
