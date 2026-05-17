@@ -33,10 +33,19 @@ else
   exit 0
 fi
 
-if ! command -v jq >/dev/null 2>&1; then
-  echo "[vercel-ignore] jq missing in build image — cannot gate on Actions; skipping deploy to stay safe."
-  exit 0
-fi
+parse_checks() {
+  # Use node (always available in Vercel) to parse the check-runs JSON.
+  # Prints three lines: total pending failed
+  node -e "
+const d = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
+const runs = d.check_runs || [];
+const total   = runs.length;
+const pending = runs.filter(r => r.status !== 'completed').length;
+const bad     = ['failure','cancelled','timed_out','action_required','stale'];
+const failed  = runs.filter(r => r.status === 'completed' && bad.includes(r.conclusion)).length;
+console.log(total + ' ' + pending + ' ' + failed);
+" 2>/dev/null || echo "0 0 0"
+}
 
 API="https://api.github.com/repos/${OWNER}/${REPO}/commits/${SHA}/check-runs?per_page=100"
 MAX_ATTEMPTS=72   # ~12 min @ 10s, matches the Actions timeout-minutes
@@ -44,18 +53,16 @@ SLEEP_SECONDS=10
 
 for attempt in $(seq 1 ${MAX_ATTEMPTS}); do
   response="$(curl -sSL -H 'Accept: application/vnd.github+json' "${API}" || true)"
-  total="$(printf '%s' "${response}" | jq -r '.total_count // 0' 2>/dev/null || echo 0)"
-  pending="$(printf '%s' "${response}" | jq -r '[.check_runs[]? | select(.status != "completed")] | length' 2>/dev/null || echo 0)"
-  failed="$(printf '%s' "${response}" | jq -r '[.check_runs[]? | select(.status == "completed" and ((.conclusion // "") | IN("failure","cancelled","timed_out","action_required","stale")))] | length' 2>/dev/null || echo 0)"
+  read -r total pending failed <<< "$(printf '%s' "${response}" | parse_checks)"
 
   echo "[vercel-ignore] attempt ${attempt}/${MAX_ATTEMPTS} sha=${SHA} total=${total} pending=${pending} failed=${failed}"
 
-  if [ "${failed}" -gt 0 ]; then
+  if [ "${failed:-0}" -gt 0 ]; then
     echo "[vercel-ignore] At least one required check failed — skipping deploy."
     exit 0
   fi
 
-  if [ "${total}" -gt 0 ] && [ "${pending}" -eq 0 ]; then
+  if [ "${total:-0}" -gt 0 ] && [ "${pending:-0}" -eq 0 ]; then
     echo "[vercel-ignore] All ${total} checks passed — proceeding with deploy."
     exit 1
   fi
