@@ -98,7 +98,7 @@ export async function openOwnedRackDetailsInEditMode(page: Page): Promise<void> 
 
   await rackTitle.click();
 
-  await expect(page).toHaveURL(/\/racks\/details\/\d+/, {timeout: 20_000});
+  await expect(page).toHaveURL(/\/racks\/[^/]+/, {timeout: 20_000});
   await expect(page.getByRole('heading', {name: /Rack (Details|Editing)/i}).first()).toBeVisible({timeout: 20_000});
   await expect(page.locator('app-rack-composite').first()).toBeVisible({timeout: 20_000});
 

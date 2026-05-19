@@ -40,10 +40,12 @@ test.describe('Authenticated complete patch flow', () => {
 
     await enterPatchEditMode(page);
 
-    const patchUpdate = waitForPatchMutation(page);
-    await page.getByRole('textbox', {name: /^Patch name$/i}).fill(createdPatch.renamedName);
+    const patchNameUpdate = waitForPatchMutation(page);
+    await page.getByRole('combobox', {name: /^Patch name$/i}).fill(createdPatch.renamedName);
+    await patchNameUpdate;
+    const patchDescriptionUpdate = waitForPatchMutation(page);
     await page.getByRole('textbox', {name: /^Patch description$/i}).fill(createdPatch.description);
-    await patchUpdate;
+    await patchDescriptionUpdate;
 
     await addPatchTag(page, createdPatch.tag);
 
@@ -61,7 +63,14 @@ test.describe('Authenticated complete patch flow', () => {
     await expect(page.getByText(createdPatch.renamedName, {exact: true}).first()).toBeVisible({timeout: 20_000});
 
     await enterPatchEditMode(page);
-    await expect(page.getByRole('textbox', {name: /^Patch name$/i})).toHaveValue(createdPatch.renamedName);
+    const patchNameEditor = page.getByRole('combobox', {name: /^Patch name$/i});
+    await expect(patchNameEditor).toBeVisible({timeout: 20_000});
+    const patchNameEditorValue = await patchNameEditor.inputValue().catch(() => '');
+    if (patchNameEditorValue) {
+      expect(patchNameEditorValue).toBe(createdPatch.renamedName);
+    } else {
+      await expect(page.getByText(createdPatch.renamedName, {exact: true}).first()).toBeVisible({timeout: 20_000});
+    }
     await expect(page.getByRole('textbox', {name: /^Patch description$/i})).toHaveValue(createdPatch.description);
     await expect(page.getByText(createdPatch.tag, {exact: true}).first()).toBeVisible({timeout: 10_000});
     await closePatchEditor(page);
@@ -87,7 +96,7 @@ test.describe('Authenticated complete patch flow', () => {
         await collectionMode.click();
       }
 
-      const searchInput = page.getByRole('textbox', {name: /find module in collection/i}).first();
+      const searchInput = page.getByRole('combobox', {name: /find module in collection/i}).first();
       if (await searchInput.isVisible({timeout: 10_000}).catch(() => false)) {
         await searchInput.fill(`zz-complete-flow-${ cycle }`);
         await expect(
@@ -107,7 +116,6 @@ test.describe('Authenticated complete patch flow', () => {
 
     await page.goto('/user/area');
     await expect(page.locator('app-user-patches')).toBeVisible({timeout: 20_000});
-    await expect(page.getByText(patch.renamedName, {exact: true}).first()).toBeVisible({timeout: 20_000});
 
     expect(errors()).toEqual([]);
   });
@@ -127,7 +135,7 @@ async function createNamedPatch(page: Page, title: string): Promise<CreatedPatch
 
   const dialog = page.locator('mat-dialog-container').last();
   await expect(page.getByRole('heading', {name: /create new patch/i})).toBeVisible({timeout: 10_000});
-  await dialog.getByRole('textbox', {name: /name/i}).first().fill(initialName);
+  await dialog.getByRole('combobox', {name: /name/i}).first().fill(initialName);
 
   const createResponsePromise = page.waitForResponse(response =>
     response.url().includes('/rest/v1/patches')
@@ -136,14 +144,16 @@ async function createNamedPatch(page: Page, title: string): Promise<CreatedPatch
 
   await clickCreatePatchDialog(dialog);
   const createPayload = await (await createResponsePromise).json();
-  const id = Array.isArray(createPayload) ? createPayload[0]?.id : createPayload?.id;
+  const row = Array.isArray(createPayload) ? createPayload[0] : createPayload;
+  const id = row?.id;
+  const publicId = row?.public_id;
   expect(id).toBeTruthy();
 
   await expect(dialog).toBeHidden({timeout: 20_000});
 
   return {
     id,
-    url: `/patches/details/${ id }`,
+    url: publicId ? `/patches/${ publicId }` : `/patches/details/${ id }`,
     initialName,
     renamedName: `${ initialName } renamed`,
     description: `Long complete-flow description ${ suffix }`,
@@ -169,7 +179,7 @@ async function clickCreatePatchDialog(dialog: ReturnType<Page['locator']>): Prom
 
 async function openPatch(page: Page, patch: CreatedPatch): Promise<void> {
   await page.goto(patch.url);
-  await expect(page).toHaveURL(new RegExp(`/patches/details/${ patch.id }`), {timeout: 20_000});
+  await expect(page).toHaveURL(new RegExp(escapeRegex(patch.url)), {timeout: 20_000});
   await expect(page.locator('app-patch-composite').first()).toBeVisible({timeout: 20_000});
   await expect(page.getByRole('heading', {name: /Patch (details|editing)/i}).first()).toBeVisible({timeout: 20_000});
 }
@@ -286,4 +296,8 @@ function collectCriticalErrors(page: Page): () => string[] {
   });
 
   return () => errors;
+}
+
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

@@ -49,11 +49,22 @@ test.describe('Manufacturer Browser', () => {
     ).toBeVisible({timeout: 20_000});
   });
   
-  test('paginator shows total item count greater than zero', async ({page}) => {
+  test('loaded count is greater than zero', async ({page}) => {
     await page.goto(BROWSER_URL);
-    const status = page.locator('mat-paginator .mat-mdc-paginator-range-label');
-    await expect(status).toBeVisible({timeout: 20_000});
-    await expect(status).toHaveText(/\d+ \u2013 \d+ of [1-9]\d*/);
+    // Wait for at least one manufacturer row to appear
+    await expect(page.locator('app-manufacturer-row').first()).toBeVisible({timeout: 20_000});
+
+    // If the total exceeds the initial page size a "Load more (N of M loaded)" button appears.
+    // Verify it shows a valid "N of M" count where M > 0.
+    const loadMoreCount = page.locator('.loadMore__count');
+    const countVisible = await loadMoreCount.isVisible();
+    if (countVisible) {
+      await expect(loadMoreCount).toHaveText(/\(\d+ of [1-9]\d* loaded\)/);
+    } else {
+      // All manufacturers fit on one page — row count itself proves > 0 items loaded.
+      const count = await page.locator('app-manufacturer-row').count();
+      expect(count).toBeGreaterThan(0);
+    }
   });
   
   test('search filter narrows results', async ({page}) => {
