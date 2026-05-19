@@ -1,0 +1,132 @@
+.module-possession-dialog {
+  display: grid;
+  gap: 1rem;
+  max-width: 34rem;
+  font: inherit;
+}
+
+.module-possession-dialog__module {
+  display: grid;
+  grid-template-columns: minmax(7rem, 10rem) minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  border: 0.0625rem solid rgba(77, 90, 115, 0.16);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.42);
+}
+
+.module-possession-dialog__panel {
+  min-width: 0;
+}
+
+.module-possession-dialog__module-copy {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.module-possession-dialog__module-copy strong {
+  color: rgba(31, 48, 68, 0.92);
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.module-possession-dialog__module-copy span:not(.module-possession-dialog__eyebrow) {
+  color: rgba(32, 47, 62, 0.66);
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+.module-possession-dialog__eyebrow {
+  color: rgba(32, 47, 62, 0.56);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.module-possession-dialog__intro {
+  margin: 0;
+  color: rgba(32, 47, 62, 0.78);
+  line-height: 1.45;
+}
+
+.module-possession-dialog__choices {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.module-possession-choice {
+  appearance: none;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 0.6rem;
+  min-height: 0;
+  min-width: 0;
+  padding: 0.85rem;
+  border: 0.0625rem solid rgba(77, 90, 115, 0.28);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.76);
+  color: rgba(31, 48, 68, 0.9);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.module-possession-choice:hover,
+.module-possession-choice:focus-visible {
+  border-color: rgba(77, 90, 115, 0.58);
+  background: rgba(245, 249, 253, 0.95);
+  outline: none;
+}
+
+.module-possession-choice:focus-visible {
+  box-shadow: 0 0 0 0.125rem rgba(77, 90, 115, 0.18);
+}
+
+.module-possession-choice--selected {
+  border-color: rgba(77, 90, 115, 0.82);
+  background: rgba(77, 90, 115, 0.12);
+}
+
+.module-possession-choice mat-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  font-size: 1.25rem;
+}
+
+.module-possession-choice__copy {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.module-possession-choice__copy strong {
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.module-possession-choice__copy span {
+  color: rgba(32, 47, 62, 0.7);
+  font: inherit;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.module-possession-dialog__actions {
+  justify-content: flex-end;
+  width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .module-possession-choice {
+    transition: none;
+  }
+}
