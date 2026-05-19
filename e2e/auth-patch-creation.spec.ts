@@ -16,8 +16,9 @@ test.describe('Authenticated patch creation', () => {
     
     const createPatchDialog = page.locator('mat-dialog-container').last();
     await expect(page.getByRole('heading', {name: /create new patch/i})).toBeVisible({timeout: 10_000});
-    const patchNameInput = createPatchDialog.getByRole('textbox', {name: /name/i}).first();
-    const patchName = (await patchNameInput.inputValue()).trim();
+    const patchNameInput = createPatchDialog.getByRole('combobox', {name: /name/i}).first();
+    const patchName = `[E2E] patch creation ${ Date.now().toString().slice(-6) }`;
+    await patchNameInput.fill(patchName);
     expect(patchName.length).toBeGreaterThan(0);
     await expect(createPatchDialog.getByText(/linked rack/i).first()).toBeVisible({timeout: 10_000});
     await expect(createPatchDialog.getByText(/optional context only/i).first()).toBeVisible({timeout: 10_000});
@@ -43,13 +44,16 @@ test.describe('Authenticated patch creation', () => {
       }
     }
     const createResponse = await createResponsePromise;
-    const createdRows = await createResponse.json() as Array<{id?: number}>;
-    const createdPatchId = createdRows.find((row) => typeof row.id === 'number')?.id;
+    const createdRows = await createResponse.json() as Array<{id?: number; public_id?: string | null}>;
+    const createdRow = createdRows.find((row) => typeof row.id === 'number');
+    const createdPatchId = createdRow?.id;
+    const createdPatchPublicId = createdRow?.public_id;
     expect(createdPatchId).toBeTruthy();
     
     await expect(createPatchDialog).toBeHidden({timeout: 20_000});
-    await page.goto(`/patches/details/${ createdPatchId }`);
-    await expect(page).toHaveURL(new RegExp(`/patches/details/${ createdPatchId }$`), {timeout: 20_000});
+    const patchUrl = createdPatchPublicId ? `/patches/${ createdPatchPublicId }` : `/patches/details/${ createdPatchId }`;
+    await page.goto(patchUrl);
+    await expect(page).toHaveURL(new RegExp(`${ patchUrl }$`), {timeout: 20_000});
     await expect(page.getByRole('heading', {name: /Patch (details|editing)/i}).first()).toBeVisible({timeout: 20_000});
     await expect(page.locator('app-patch-composite').first()).toBeVisible({timeout: 20_000});
     await expect(page.getByText(patchName, {exact: true}).first()).toBeVisible({timeout: 20_000});

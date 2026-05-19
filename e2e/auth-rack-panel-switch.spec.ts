@@ -86,7 +86,7 @@ test.describe('Authenticated Rack Panel Switching', () => {
     await expect(newRackCard).toBeVisible({timeout: 15_000});
     await newRackCard.click();
 
-    await expect(page).toHaveURL(/\/racks\/details\/\d+/, {timeout: 15_000});
+    await expect(page).toHaveURL(/\/racks\/[^/]+/, {timeout: 15_000});
     const rackUrl = page.url();
 
     // Enter edit mode

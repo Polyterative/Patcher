@@ -22,11 +22,12 @@ test.describe('Rack Browser', () => {
     await expect(page.locator('app-rack-micro').first()).toBeVisible({timeout: 15_000});
   });
   
-  test('paginator shows total item count greater than zero', async ({page}) => {
+  test('shows load-more affordance with remaining count when more results exist', async ({page}) => {
     await page.goto('/racks/browser');
-    const status = page.locator('mat-paginator .mat-mdc-paginator-range-label');
-    await expect(status).toBeVisible({timeout: 15_000});
-    await expect(status).toHaveText(/\d+ \u2013 \d+ of [1-9]\d*/);
+    await expect(page.locator('app-rack-micro').first()).toBeVisible({timeout: 15_000});
+    const loadMoreBtn = page.locator('button.loadMore__btn');
+    await expect(loadMoreBtn).toBeVisible({timeout: 15_000});
+    await expect(page.locator('.loadMore__count')).toHaveText(/[1-9]\d* remaining/);
   });
   
   test('initial loader stops after list data is rendered', async ({page}) => {
@@ -68,17 +69,16 @@ test.describe('Rack Browser', () => {
     await expect(listSkeleton).toBeHidden({timeout: 3_000});
   });
   
-  test('next-page loader settles within 2s after paginator navigation', async ({page}) => {
+  test('load-more loader settles within reasonable time after load-more click', async ({page}) => {
     await page.goto('/racks/browser');
     await expect(page.locator('app-rack-micro').first()).toBeVisible({timeout: 15_000});
-    
-    const nextPageButton = page.getByRole('button', {name: /next page/i});
-    await expect(nextPageButton).toBeEnabled({timeout: 15_000});
-    
-    await nextPageButton.click();
-    
-    const pageLoader = page.locator('lib-auto-update-loading-indicator app-lottie-container');
-    await expect(pageLoader).toBeHidden({timeout: 3_000});
+
+    const loadMoreBtn = page.locator('button.loadMore__btn');
+    await expect(loadMoreBtn).toBeVisible({timeout: 15_000});
+    await loadMoreBtn.click();
+
+    const loadMoreShell = page.locator('.loadMore .update-loading-shell');
+    await expect(loadMoreShell).toBeHidden({timeout: 5_000});
   });
 
   test('shows an update loader while a rack search request is pending', async ({page}) => {

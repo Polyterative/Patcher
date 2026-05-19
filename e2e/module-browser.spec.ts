@@ -26,11 +26,24 @@ test.describe('Module Browser', () => {
     await expect(page.locator('div.card').first()).toBeVisible({timeout: 15_000});
   });
   
-  test('paginator shows total item count greater than zero', async ({page}) => {
-    const status = page.locator('mat-paginator .mat-mdc-paginator-range-label');
-    await expect(status).toBeVisible({timeout: 15_000});
-    // Match "X – Y of Z" where Z is a positive number (at least one non-zero digit)
-    await expect(status).toHaveText(/\d+ \u2013 \d+ of [1-9]\d*/);
+  test('server returns a non-zero total result count', async ({page}) => {
+    // Wait for at least one card to render
+    await expect(page.locator('div.card').first()).toBeVisible({timeout: 15_000});
+
+    // The paginator was replaced by a "Load more (N remaining)" affordance.
+    // When the server total exceeds one page (25), the button is visible — this
+    // confirms the back-end returned a meaningful, non-empty result set.
+    const loadMoreBtn = page.locator('.loadMore__btn');
+    const loadMoreVisible = await loadMoreBtn.isVisible().catch(() => false);
+
+    if (loadMoreVisible) {
+      // Remaining count must be a positive number, e.g. "(1234 remaining)"
+      await expect(loadMoreBtn).toContainText(/\([1-9]\d* remaining\)/);
+    } else {
+      // All results fit on a single page — still verify we have at least one card
+      const cardCount = await page.locator('div.card').count();
+      expect(cardCount).toBeGreaterThan(0);
+    }
   });
   
   test('page title / heading is visible', async ({page}) => {

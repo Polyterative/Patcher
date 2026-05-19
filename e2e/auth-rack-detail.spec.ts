@@ -33,7 +33,7 @@ test.describe('Authenticated Rack Detail UX', () => {
     }
     
     await rackDetailCards.first().click();
-    await expect(page).toHaveURL(/\/racks\/details\/\d+/, {timeout: 15_000});
+    await expect(page).toHaveURL(/\/racks\/[^/]+/, {timeout: 15_000});
     
     const editRackButton = page.getByRole('button', {name: /^Edit rack$/i}).first();
     if (await editRackButton.isVisible().catch(() => false)) {
