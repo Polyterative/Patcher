@@ -79,7 +79,7 @@ test.describe('Authenticated patch editor fuzzy stress', () => {
 
     const rackMode = page.getByRole('radio', {name: /^Rack$/i}).first();
     const collectionMode = page.getByRole('radio', {name: /^Collection$/i}).first();
-    const searchInput = page.getByRole('textbox', {name: /find module in collection/i}).first();
+    const searchInput = page.getByRole('combobox', {name: /find module in collection/i}).first();
 
     for (const query of ['zz-fuzzy-no-match', '', 'dual', 'zz-fuzzy-no-match-again', '']) {
       await collectionMode.click();

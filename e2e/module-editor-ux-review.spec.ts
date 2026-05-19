@@ -93,7 +93,7 @@ async function addUnsavedDraftRows(page: Page): Promise<void> {
   // INs: add one blank and one -10 to +10V preset row, then leave them unsaved.
   const inAdder = adders.first();
   await inAdder.getByRole('button', {name: /Add CV/i}).click();
-  await page.getByRole('menuitem', {name: /^Blank$/i}).click();
+  await page.getByRole('menuitem', {name: /^Range unspecified$/i}).click();
 
   await inAdder.getByRole('button', {name: /Add CV/i}).click();
   await page.getByRole('menuitem', {name: /-10 to \+10V/i}).click();

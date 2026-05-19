@@ -36,7 +36,7 @@ export async function ensureLinkedRackScenario(page: Page): Promise<PreparedLink
 export async function cleanupLinkedRackScenario(page: Page, scenario: PreparedLinkedRackScenario): Promise<void> {
   try {
     // Delete patch first (it references the rack)
-    await deletePatchById(page, scenario.patchId);
+    await deletePatchById(page, scenario.patchUrl);
   } catch { /* best-effort */ }
 
   try {
@@ -74,11 +74,12 @@ async function ensureRackWithModules(page: Page): Promise<{ rackUrl: string; rac
 
   const payload = await (await createResponse).json();
   const rackId = Array.isArray(payload) ? payload[0]?.id : payload?.id;
+  const rackPublicId = Array.isArray(payload) ? payload[0]?.public_id : payload?.public_id;
   expect(rackId).toBeTruthy();
 
-  const rackUrl = `/racks/details/${rackId}`;
+  const rackUrl = rackPublicId ? `/racks/${rackPublicId}` : `/racks/details/${rackId}`;
   await page.goto(rackUrl);
-  await expect(page).toHaveURL(new RegExp(`/racks/details/${rackId}`), {timeout: 15_000});
+  await expect(page).toHaveURL(new RegExp(rackPublicId ? `/racks/${rackPublicId}$` : `/racks/details/${rackId}$`), {timeout: 15_000});
   await expect(page.locator('app-rack-editor')).toBeVisible({timeout: 15_000});
 
   // Enter edit mode
@@ -220,18 +221,19 @@ async function ensurePatchLinkedToRack(page: Page, rackId: number): Promise<{ pa
 
   const payload = await (await createResponse).json();
   const patchId = Array.isArray(payload) ? payload[0]?.id : payload?.id;
+  const patchPublicId = Array.isArray(payload) ? payload[0]?.public_id : payload?.public_id;
   expect(patchId).toBeTruthy();
 
   await expect(dialog).toBeHidden({timeout: 20_000});
 
-  const patchUrl = `/patches/details/${patchId}`;
+  const patchUrl = patchPublicId ? `/patches/${patchPublicId}` : `/patches/details/${patchId}`;
   return {patchUrl, patchId};
 }
 
 // --- Cleanup ---
 
-async function deletePatchById(page: Page, patchId: number): Promise<void> {
-  await page.goto(`/patches/details/${patchId}`);
+async function deletePatchById(page: Page, patchUrl: string): Promise<void> {
+  await page.goto(patchUrl);
   await page.waitForTimeout(3000);
 
   const deleteBtn = page.locator('button[mattooltip*="elete"]').first();
