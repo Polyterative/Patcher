@@ -200,6 +200,26 @@ export class ModuleMinimalComponent implements OnInit, OnDestroy {
       .subscribe(() => this.dataService.setModulePossession$.next(null));
   }
 
+  getPossessionLabel(kind: UserModulePossessionKind | null | undefined): string | null {
+    switch (kind) {
+      case 'HAS':
+        return 'Owned';
+      case 'WANTS':
+        return 'Wanted';
+      case 'SELLS':
+        return 'For sale';
+      default:
+        return null;
+    }
+  }
+
+  getRemovePossessionTooltip(kind: UserModulePossessionKind | null | undefined): string {
+    const label = this.getPossessionLabel(kind);
+    return label
+      ? `Current status: ${ label }. Click to remove this module from your collection.`
+      : 'Remove from your collection';
+  }
+
   shouldShowPanelVariantsBadge(): boolean {
     return (this.data?.panels?.length ?? 0) > 1 && !this.viewConfig?.hidePanelsOptions;
   }

@@ -230,6 +230,35 @@ describe('UserAreaDataService', () => {
     expect(passedIds).not.toContain(2);
   });
 
+  it('filters user modules by collection status and treats legacy rows as owned', () => {
+    const {service} = build();
+    const emittedIds: number[][] = [];
+    service.modulesData$.next([
+      {id: 1, name: 'Rings', manufacturer: {name: 'Mutable'}, description: '', possessionKind: 'HAS'} as any,
+      {id: 2, name: 'Clouds', manufacturer: {name: 'Mutable'}, description: '', possessionKind: 'WANTS'} as any,
+      {id: 3, name: 'Braids', manufacturer: {name: 'Mutable'}, description: '', possessionKind: 'SELLS'} as any,
+      {id: 4, name: 'Legacy', manufacturer: {name: 'Mutable'}, description: ''} as any,
+    ]);
+
+    const subscription = service.filteredModulesData$.subscribe((modules) => {
+      emittedIds.push((modules ?? []).map(module => module.id));
+    });
+    service.moduleCollectionFilter$.next('WANTS');
+    service.moduleCollectionFilter$.next('SELLS');
+
+    expect(emittedIds).toEqual([[1, 4], [2], [3]]);
+    subscription.unsubscribe();
+  });
+
+  it('resets module pagination when collection status changes', () => {
+    const {service} = build();
+    service.modulesPagination.skip$.next(20);
+
+    service.moduleCollectionFilter$.next('WANTS');
+
+    expect(service.modulesPagination.skip$.value).toBe(0);
+  });
+
   it('pages modules and patches locally without triggering extra backend calls', () => {
     const {service, backend} = build();
 

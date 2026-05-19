@@ -1,7 +1,7 @@
 <div class="col gap1"
 >
   <lib-hero-content-card titleNormal="Modules"
-                         description="Modules added to your collection will be visible in the patch builder"
+                         [description]="sectionDescriptionByFilter[(dataService.moduleCollectionFilter$ | async) ?? 'HAS']"
                          class="modulesBG"
                          icon="view_module"
                          id="modules"
@@ -18,6 +18,20 @@
   >
     @if (!(userModulesComponentViewConfig.hideAddModulesButton)) {
       <div class="row gap1 auto-left section-actions">
+        <mat-button-toggle-group
+          class="module-collection-filter"
+          [value]="dataService.moduleCollectionFilter$ | async"
+          (change)="dataService.moduleCollectionFilter$.next($event.value)"
+          aria-label="Filter modules by collection status"
+        >
+          @for (filter of collectionFilters; track filter.value) {
+            <mat-button-toggle [value]="filter.value">
+              <mat-icon aria-hidden="true">{{ filter.icon }}</mat-icon>
+              <span>{{ filter.label }}</span>
+            </mat-button-toggle>
+          }
+        </mat-button-toggle-group>
+
         <app-brand-primary-button appDiscoveryTipAnchor="user-area-modules-submit"
                                   routerLink="/modules/add"
                                   icon="upload"
@@ -58,10 +72,10 @@
             } @else {
               <app-empty-state-tips
                 icon="view_module"
-                title="Build your collection"
-                copy="Add the modules you own here so they're available when you build racks and patches."
+                title="No modules here yet"
+                [copy]="emptyStateCopyByFilter[(dataService.moduleCollectionFilter$ | async) ?? 'HAS']"
                 [tips]="[
-                  { icon: 'add', html: 'Open a module from the library and hit the <strong>+ in the bottom-left</strong> to mark it as owned.' },
+                  { icon: 'add', html: 'Open a module from the library and hit the <strong>+ in the bottom-left</strong> to mark it as owned, wanted, or for sale.' },
                   { icon: 'upload', html: 'Missing one? <strong>Submit NEW</strong> to add it to Patcher.' }
                 ]"
               ></app-empty-state-tips>
