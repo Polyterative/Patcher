@@ -117,8 +117,8 @@
                     <button
                       type="button"
                       mat-icon-button
-                      matTooltip="Remove from your collection"
-                      aria-label="Remove module from your collection"
+                      [matTooltip]="getRemovePossessionTooltip(bag.possessionKind)"
+                      [attr.aria-label]="getRemovePossessionTooltip(bag.possessionKind)"
                       (click)="removePossession(bag.possessionKind)"
                     >
                       <mat-icon>remove</mat-icon>
