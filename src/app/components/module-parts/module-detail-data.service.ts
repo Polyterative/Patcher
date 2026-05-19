@@ -146,14 +146,18 @@ export class ModuleDetailDataService implements OnDestroy {
         exhaustMap(([kind, module]) => {
           if (!module) return EMPTY;
           if (kind === null) {
-            return this.backend.delete.userModule(module.id);
+            return this.backend.delete.userModule(module.id).pipe(map(() => ({kind, module})));
           }
-          return this.backend.update.userModulePossession(module.id, kind);
+          return this.backend.update.userModulePossession(module.id, kind).pipe(map(() => ({kind, module})));
         }),
         withLatestFrom(this.updateSingleModuleData$),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(([_, moduleId]) => {
+      .subscribe(([{kind, module}, moduleId]) => {
+        const message = kind === null
+          ? `"${module.name}" removed from your collection.`
+          : `"${module.name}" marked as ${this.possessionKindLabel(kind)}.`;
+        SharedConstants.successCustom(this.snackBar, message);
         this.updateSingleModuleData$.next(moduleId);
       });
     
@@ -371,5 +375,16 @@ export class ModuleDetailDataService implements OnDestroy {
       take(1),
       switchMap(isAdmin => (this.appState.isDev || isAdmin) ? of(value) : EMPTY)
     );
+  }
+
+  private possessionKindLabel(kind: UserModulePossessionKind): string {
+    switch (kind) {
+      case 'HAS':
+        return 'owned';
+      case 'WANTS':
+        return 'wanted';
+      case 'SELLS':
+        return 'for sale';
+    }
   }
 }
