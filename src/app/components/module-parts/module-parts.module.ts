@@ -49,17 +49,18 @@ import { MatChipsModule } from "@angular/material/chips";
 import { MatIconModule } from "@angular/material/icon";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatButtonModule } from "@angular/material/button";
-import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatDialogModule } from "@angular/material/dialog";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatExpansionModule } from "@angular/material/expansion";
 import { MatSelectModule } from "@angular/material/select";
 import { MatInputModule } from "@angular/material/input";
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { ConfirmDialogModule } from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.module';
 import { FormsModule } from "@angular/forms";
 import { ImageCropperComponent } from 'ngx-image-cropper';
 import { CopyableDirective } from "src/app/shared-interproject/app-copy-on-click.directive";
 import { ModulePanelZoomDialogComponent } from './module-details/module-panel-zoom-dialog.component';
+import { ModulePossessionDialogComponent } from './module-possession-dialog/module-possession-dialog.component';
 
 
 @NgModule({
@@ -85,7 +86,8 @@ import { ModulePanelZoomDialogComponent } from './module-details/module-panel-zo
     OnlyNotSavedFormCVsLengthPipe,
     GetModuleHeightForStandardPipe,
     ModulePartImageComponent,
-    ModulePanelZoomDialogComponent
+    ModulePanelZoomDialogComponent,
+    ModulePossessionDialogComponent
   ],
   providers:    [
     ModuleDetailDataService
@@ -104,7 +106,6 @@ import { ModulePanelZoomDialogComponent } from './module-details/module-panel-zo
     MatIconModule,
     MatTooltipModule,
     MatButtonModule,
-    MatButtonToggleModule,
     MatDialogModule,
     RestrictedEntityModule,
     RouterModule,
@@ -122,6 +123,7 @@ import { ModulePanelZoomDialogComponent } from './module-details/module-panel-zo
     MatSelectModule,
     MatInputModule,
     MatSnackBarModule,
+    ConfirmDialogModule,
     FormsModule,
     FileDragHostModule,
     ImageCropperComponent,

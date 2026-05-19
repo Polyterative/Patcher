@@ -20,6 +20,7 @@ When the user's request matches one of these, **delegate to a sub-agent** using 
 | User intent | Persona | File |
 |---|---|---|
 | "Plan X", multi-step or cross-cutting work, ambiguous scope | **planner** | `internaldocs/agents/planner.md` |
+| Hard ambiguous problem, high-risk decision, or explicit premium-model counsel request | **advisor** | `internaldocs/agents/advisor.md` |
 | Implement Angular component / service / RxJS pipeline | **frontend-dev** | `internaldocs/agents/frontend-dev.md` |
 | Fix visual / spacing / responsive issue, UI polish | **designer** | `internaldocs/agents/designer.md` |
 | Review a diff / branch / PR before commit | **reviewer** | `internaldocs/agents/reviewer.md` |
@@ -27,11 +28,12 @@ When the user's request matches one of these, **delegate to a sub-agent** using 
 | Add unit / E2E test coverage | **test-writer** | `internaldocs/agents/test-writer.md` |
 | Diagnose a defect to root cause | **bug-hunter** | `internaldocs/agents/bug-hunter.md` |
 
-**Recommendation:** the `planner` persona benefits from a stronger reasoning model (Opus / GPT-5 top tier) — pass `model: "claude-opus-4.7"` (or equivalent) when invoking it via `task`. All other personas run fine on the default model.
+**Model policy:** operational personas, including `planner`, run on default/Sonnet-class models (`planner`: `claude-sonnet-4.6`). The only premium-model persona is `advisor`, used as a fast general counselor for hard problems; it must not edit files or execute implementation work.
 
 **Composition flows:**
 
 - New feature: `planner` → `frontend-dev` → `reviewer`
+- Hard decision: normal investigation → `advisor` → appropriate executor
 - Bug fix: `bug-hunter` → `frontend-dev` → `test-writer`
 - Cleanup: `refactorer` → `reviewer`
 - Visual: `designer` → `reviewer`

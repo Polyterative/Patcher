@@ -1,0 +1,65 @@
+<h1 mat-dialog-title [id]="titleId">Add to your collection</h1>
+
+<mat-dialog-content class="module-possession-dialog">
+  <div class="module-possession-dialog__module">
+    <div class="module-possession-dialog__panel">
+      <app-module-part-image
+        [data]="data.module"
+        [fixedHeight]="true"
+      ></app-module-part-image>
+    </div>
+    <div class="module-possession-dialog__module-copy">
+      <span class="module-possession-dialog__eyebrow">Module</span>
+      <strong>{{ data.module.name }}</strong>
+      @if (data.module.manufacturer?.name) {
+        <span>{{ data.module.manufacturer.name }}</span>
+      }
+    </div>
+  </div>
+
+  <p class="module-possession-dialog__intro" [id]="descriptionId">
+    Choose how this module belongs in your modular workflow.
+  </p>
+
+  <div
+    class="module-possession-dialog__choices"
+    role="radiogroup"
+    [attr.aria-labelledby]="titleId"
+    [attr.aria-describedby]="descriptionId"
+  >
+    @for (choice of choices; track choice.kind) {
+      <button
+        type="button"
+        class="module-possession-choice"
+        [class.module-possession-choice--selected]="selectedKind === choice.kind"
+        role="radio"
+        [attr.aria-checked]="selectedKind === choice.kind"
+        (click)="select(choice.kind)"
+      >
+        <mat-icon aria-hidden="true">{{ choice.icon }}</mat-icon>
+        <span class="module-possession-choice__copy">
+          <strong>{{ choice.label }}</strong>
+          <span>{{ choice.helper }}</span>
+        </span>
+      </button>
+    }
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <div class="module-possession-dialog__actions row gap1">
+    <app-brand-primary-button
+      theme="negative"
+      (click$)="dialogRef.close(undefined)"
+    >
+      Cancel
+    </app-brand-primary-button>
+    <app-brand-primary-button
+      theme="positive"
+      [disabled]="!selectedKind"
+      (click$)="save()"
+    >
+      Save
+    </app-brand-primary-button>
+  </div>
+</mat-dialog-actions>

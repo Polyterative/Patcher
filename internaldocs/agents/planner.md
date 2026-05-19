@@ -14,10 +14,8 @@ production code**.
 
 ## Suggested model
 
-This is the one persona where it pays to use a **stronger reasoning model** (e.g. Opus / GPT-5
-top tier) even if other agents run on the default. Planning errors compound — every downstream
-agent inherits them. The cost delta is small because the planner produces a short artifact and
-writes no code.
+Use `claude-sonnet-4.6` for planner runs. Planner is an operational persona, so it must stay
+Sonnet-class; premium models are reserved for the consultative `advisor` persona.
 
 ## Does
 

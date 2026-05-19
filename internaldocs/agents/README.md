@@ -12,8 +12,8 @@ specific behaviour.
 3. **Hard scope boundary.** Each persona has explicit "Does" / "Does NOT" sections.
    Out-of-scope work must be handed back, not silently absorbed.
 4. **Tight output contract.** Each persona declares the artifact it produces and where it goes.
-5. **No model lock-in by default.** Most personas run on the default model. Only the
-   `planner` agent recommends a stronger model — see its file.
+5. **No premium model lock-in for executors.** Operational personas run on default/Sonnet-class
+   models. The only premium-model persona is `advisor`, and it is consultative only.
 6. **Token-cheap.** Keep each file under ~120 lines. Cut prose, keep checklists.
 
 ## Personas
@@ -21,6 +21,7 @@ specific behaviour.
 | Persona | When to invoke | Output |
 | --- | --- | --- |
 | [`planner.md`](./planner.md) | Multi-step or cross-cutting work needing a plan before code | Plan in `internaldocs/workflow/CURRENT_FEATURE.md` |
+| [`advisor.md`](./advisor.md) | Hard ambiguous problem needing senior counsel / second opinion | Concise recommendation, no edits |
 | [`frontend-dev.md`](./frontend-dev.md) | Implement Angular components, services, RxJS pipelines | Code + co-located tests |
 | [`designer.md`](./designer.md) | UI/UX adjustments, visual polish, responsive layout | SCSS + template changes + screenshots |
 | [`reviewer.md`](./reviewer.md) | Pre-commit / pre-PR review of staged changes | Inline findings, no edits |
@@ -31,6 +32,7 @@ specific behaviour.
 ## Composition patterns
 
 - **Plan → Build → Review:** `planner` → `frontend-dev` → `reviewer`
+- **Hard decision:** normal investigation → `advisor` → appropriate executor
 - **Bug fix:** `bug-hunter` → `frontend-dev` (apply minimal fix) → `test-writer` (regression test)
 - **Refactor sweep:** `refactorer` → `reviewer`
 - **UI polish:** `designer` → `reviewer`
