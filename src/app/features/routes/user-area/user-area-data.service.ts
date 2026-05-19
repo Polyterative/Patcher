@@ -23,7 +23,8 @@ import {
 } from 'src/app/components/rack-parts/rack-creator/rack-creator.component';
 import {
   DbModule,
-  MinimalModule
+  MinimalModule,
+  UserModulePossessionKind
 } from 'src/app/models/module';
 import { Patch } from 'src/app/models/patch';
 import { Rack } from 'src/app/models/rack';
@@ -45,6 +46,8 @@ import {
   filterRacks,
   pagedSlice$
 } from './user-area-data.utils';
+
+export type UserModuleCollectionFilter = 'HAS' | 'WANTS' | 'SELLS';
 
 @Injectable()
 export class UserAreaDataService extends SubManager {
@@ -80,6 +83,7 @@ export class UserAreaDataService extends SubManager {
   readonly filteredModulesData$: Observable<MinimalModule[] | undefined>;
   readonly filteredModulesCount$: Observable<number>;
   readonly pagedModulesData$: Observable<MinimalModule[] | undefined>;
+  readonly moduleCollectionFilter$ = new BehaviorSubject<UserModuleCollectionFilter>('HAS');
   readonly activeTagFilter$ = new BehaviorSubject<string | null>(null);
   readonly filteredRacksData$: Observable<Rack[] | undefined>;
   readonly filteredRacksCount$: Observable<number>;
@@ -123,9 +127,13 @@ export class UserAreaDataService extends SubManager {
 
     this.filteredModulesData$ = combineLatest([
       this.modulesData$,
+      this.moduleCollectionFilter$,
       this.searchQuery$
     ]).pipe(
-      map(([modules, query]) => filterModules(modules, query))
+      map(([modules, collectionFilter, query]) => filterModules(
+        this.filterModulesByPossession(modules, collectionFilter),
+        query
+      ))
     );
 
     this.filteredModulesCount$ = this.filteredModulesData$.pipe(
@@ -328,6 +336,13 @@ export class UserAreaDataService extends SubManager {
       )
       .subscribe();
 
+    this.moduleCollectionFilter$
+      .pipe(
+        tap(() => this.modulesPagination.skip$.next(0)),
+        takeUntil(this.destroy$)
+      )
+      .subscribe();
+
     this.activeTagFilter$
       .pipe(
         tap(() => this.patchesPagination.skip$.next(0)),
@@ -415,6 +430,7 @@ export class UserAreaDataService extends SubManager {
     this.disconnectDiscovery();
     this._searchQuery$.next('');
     this.activeTagFilter$.next(null);
+    this.moduleCollectionFilter$.next('HAS');
   }
 
   override ngOnDestroy(): void {
@@ -434,5 +450,20 @@ export class UserAreaDataService extends SubManager {
         pagination.skip$.next(event.pageIndex * event.pageSize);
         onPageChange?.();
       });
+  }
+
+  private filterModulesByPossession(
+    modules: MinimalModule[] | undefined,
+    collectionFilter: UserModuleCollectionFilter
+  ): MinimalModule[] | undefined {
+    if (!modules) {
+      return undefined;
+    }
+
+    return modules.filter(module => this.normalizePossessionKind(module.possessionKind) === collectionFilter);
+  }
+
+  private normalizePossessionKind(kind: UserModulePossessionKind | undefined): UserModuleCollectionFilter {
+    return kind === 'WANTS' || kind === 'SELLS' ? kind : 'HAS';
   }
 }

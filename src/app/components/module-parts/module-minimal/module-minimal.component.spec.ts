@@ -155,4 +155,11 @@ describe('ModuleMinimalComponent', () => {
 
     expect(nextSpy).toHaveBeenCalledWith(null);
   });
+
+  it('describes the current state and click action in the remove tooltip', () => {
+    const {component} = build();
+
+    expect(component.getRemovePossessionTooltip('WANTS'))
+      .toBe('Current status: Wanted. Click to remove this module from your collection.');
+  });
 });

@@ -5,6 +5,7 @@
   moduleUsageSummary: (dataService.moduleUsageSummary$|async),
   possessionCounts: (dataService.possessionCounts$|async),
   modulesBySameManufacturer: (dataService.modulesBySameManufacturer$|async),
+  currentModulePossession: (dataService.currentModulePossession$|async),
   user: (userManagementService.loggedUser$|async),
   editing: (dataService.moduleEditingPanelOpenState$|async),
   hasPendingEditorChanges: (dataService.moduleEditorHasPendingChanges$|async)
@@ -14,7 +15,7 @@
     <lib-hero-content-card class="modulesBG module-browser-detail__header"
                            titleBig="Module details"
                            [showWideShellNav]="showWideShellNav"
-                           [titleSub]="bag.data?.name"
+                           [titleSub]="getModuleDetailTitleSub(bag.data?.name, bag.currentModulePossession)"
       >
         <div class="module-detail-layout"
              [@moduleDetailModeTransition]="!!bag.editing"
