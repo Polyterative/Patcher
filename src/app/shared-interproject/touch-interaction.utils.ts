@@ -12,7 +12,7 @@ export function prefersTouchInteraction(environment: TouchInteractionEnvironment
   }
 
   const matchMedia = 'matchMedia' in environment
-    ? (environment.matchMedia ?? null)
+    ? environment.matchMedia
     : (typeof window !== 'undefined' && typeof window.matchMedia === 'function'
       ? window.matchMedia.bind(window)
       : null);
