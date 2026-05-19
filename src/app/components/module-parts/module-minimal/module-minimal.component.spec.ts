@@ -8,13 +8,23 @@ import {
 describe('ModuleMinimalComponent', () => {
   function build() {
     const userModulesList$ = new BehaviorSubject<any[]>([]);
+    const setModulePossession$ = new BehaviorSubject<any>(undefined);
+    const dialog = {
+      open: jasmine.createSpy('open').and.returnValue({
+        afterClosed: () => new BehaviorSubject<any>(undefined)
+      })
+    };
     const component = new ModuleMinimalComponent(
       {} as any,
-      {userModulesList$} as any,
-      {} as any
+      {
+        userModulesList$,
+        setModulePossession$
+      } as any,
+      {} as any,
+      dialog as any
     );
-    component.data = {id: 42} as any;
-    return {component, userModulesList$};
+    component.data = {id: 42, name: 'Maths'} as any;
+    return {component, userModulesList$, setModulePossession$, dialog};
   }
   
   it('maps owned membership state from userModulesList$', () => {
@@ -127,5 +137,22 @@ describe('ModuleMinimalComponent', () => {
     const {component} = build();
     component.data = {id: 42, panels: [{id: 1}]} as any;
     expect(component.shouldShowPanelVariantsBadge()).toBeFalse();
+  });
+
+  it('opens the possession dialog from the add action', () => {
+    const {component, dialog} = build();
+
+    component.openPossessionDialog();
+
+    expect(dialog.open).toHaveBeenCalled();
+  });
+
+  it('removes non-selling possession immediately', () => {
+    const {component, setModulePossession$} = build();
+    const nextSpy = spyOn(setModulePossession$, 'next');
+
+    component.removePossession('WANTS');
+
+    expect(nextSpy).toHaveBeenCalledWith(null);
   });
 });
