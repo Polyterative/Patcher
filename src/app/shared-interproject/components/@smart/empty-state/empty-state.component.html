@@ -1,30 +1,20 @@
-<div style="padding-top: 4rem">
+<div class="empty-state">
   @if (backgroundImage) {
-    <div fxLayout="column"
-         fxLayoutAlign="center center"
-    >
-      <div fxFlex="100"
-           [fxHide.xs]="true"
-           style="padding: 8rem 16rem;"
-           [ngStyle]='{"background-image": "url("+ this.backgroundImage + ")"}'
-           class="bg"
-      ></div>
-      <div fxFlex="100"
-           fxHide="true"
-           [fxHide.xs]="false"
-           style="padding: 4rem 8rem;"
-           [ngStyle]='{"background-image": "url("+ this.backgroundImage + ")"}'
-           class="bg"
-      ></div>
-    </div>
+    <div
+      class="empty-state__image"
+      [ngStyle]='{"background-image": "url("+ this.backgroundImage + ")"}'
+      aria-hidden="true"
+    ></div>
   }
   @if (!backgroundImage) {
-    <div class="col"
-         style="align-items: center; text-align: center; padding: 2rem 0; color: var(--mat-sys-on-surface-variant, #666); width: 100%">
-      <mat-icon style="font-size: 3rem; width: 3rem; height: 3rem; opacity: 0.4">search_off</mat-icon>
-      <span style="margin-top: 0.75rem; font-size: 1rem; opacity: 0.6">No results found</span>
+    <div class="empty-state__panel" role="status" aria-live="polite">
+      <div class="empty-state__icon-shell" aria-hidden="true">
+        <mat-icon class="empty-state__icon">{{ icon }}</mat-icon>
+      </div>
+      <div class="empty-state__copy">
+        <strong>{{ title }}</strong>
+        <span>{{ copy }}</span>
+      </div>
     </div>
   }
-
-
 </div>

@@ -4,7 +4,13 @@ import {
   inject
 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
-import { takeUntil } from 'rxjs/operators';
+import { merge, Observable } from 'rxjs';
+import {
+  mapTo,
+  shareReplay,
+  startWith,
+  takeUntil
+} from 'rxjs/operators';
 import {
   defaultPatchMinimalViewConfig,
   PatchMinimalViewConfig
@@ -26,6 +32,7 @@ export class PatchBrowserRootComponent extends SubManager {
   private readonly document = inject(DOCUMENT);
 
   readonly formTypes = FormTypes;
+  readonly patchesUpdating$: Observable<boolean>;
   readonly viewConfig: PatchMinimalViewConfig = {
     ...defaultPatchMinimalViewConfig,
     hideButtons: true,
@@ -53,6 +60,14 @@ export class PatchBrowserRootComponent extends SubManager {
     readonly seoAndUtilsService: SeoAndUtilsService
   ) {
     super();
+    this.patchesUpdating$ = merge(
+      this.dataService.updatePatchesList$.pipe(mapTo(true)),
+      this.dataService.patchesList$.pipe(mapTo(false))
+    ).pipe(
+      startWith(false),
+      shareReplay({bufferSize: 1, refCount: true}),
+      takeUntil(this.destroy$)
+    );
     
     this.seoAndUtilsService.updateSeo(
       {description: 'Patches created by patcher.xyz community. Get inspiration and explore new ideas!'},
