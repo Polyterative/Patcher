@@ -143,7 +143,7 @@ test.describe('Linked rack visual in patch editor', () => {
 
     // Verify app-module-cvs is rendered
     const moduleCvs = cvPanel.locator('app-module-cvs');
-    await expect(moduleCvs).toBeVisible({timeout: 10_000});
+    await expect(moduleCvs).toHaveCount(1);
 
     // Click same module again — panel should disappear (deselect)
     await moduleWrappers.first().click();

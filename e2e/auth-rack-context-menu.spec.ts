@@ -304,12 +304,13 @@ async function createPreparedRack(page: Page, testInfo: TestInfo): Promise<strin
   await confirmBtn.click();
 
   const rackPayload = await (await createResponse).json();
-  const rackId = Array.isArray(rackPayload) ? rackPayload[0]?.id : rackPayload?.id;
-  expect(rackId).toBeTruthy();
+  const firstRack = Array.isArray(rackPayload) ? rackPayload[0] : rackPayload;
+  const rackPublicId = firstRack?.public_id;
+  expect(rackPublicId).toBeTruthy();
 
-  const createdRackUrl = `/racks/details/${ rackId }`;
+  const createdRackUrl = `/racks/${ rackPublicId }`;
   await page.goto(createdRackUrl);
-  await expect(page).toHaveURL(new RegExp(`/racks/details/${ rackId }(?:$|[?#])`), {timeout: 15_000});
+  await expect(page).toHaveURL(new RegExp(`/racks/${ rackPublicId }(?:$|[?#])`), {timeout: 15_000});
 
   await enterEditMode(page);
   await addModuleToRack(page, TEST_MODULE);

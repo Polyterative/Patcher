@@ -230,14 +230,13 @@ async function createPreparedRack(page: Page, testInfo: TestInfo): Promise<strin
   await confirmBtn.click();
 
   const rackCreatePayload = await (await createRackResponse).json();
-  const createdRackId = Array.isArray(rackCreatePayload)
-    ? rackCreatePayload[0]?.id
-    : rackCreatePayload?.id;
-  expect(createdRackId).toBeTruthy();
+  const firstRack = Array.isArray(rackCreatePayload) ? rackCreatePayload[0] : rackCreatePayload;
+  const createdRackPublicId = firstRack?.public_id;
+  expect(createdRackPublicId).toBeTruthy();
 
-  const createdRackUrl = `/racks/details/${ createdRackId }`;
+  const createdRackUrl = `/racks/${ createdRackPublicId }`;
   await page.goto(createdRackUrl);
-  await expect(page).toHaveURL(new RegExp(`/racks/details/${ createdRackId }(?:$|[?#])`), {timeout: 15_000});
+  await expect(page).toHaveURL(new RegExp(`/racks/${ createdRackPublicId }(?:$|[?#])`), {timeout: 15_000});
 
   await enterEditMode(page);
   await addRackModuleToRack(page, TEST_MODULE);

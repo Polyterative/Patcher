@@ -24,10 +24,23 @@ test.describe('Patch Browser', () => {
     await expect(page.locator('app-patch-list app-patch-micro').first()).toBeVisible({timeout: 15_000});
   });
   
-  test('paginator shows total item count greater than zero', async ({page}) => {
-    const rangeLabel = page.locator('mat-paginator .mat-mdc-paginator-range-label');
-    await expect(rangeLabel).toBeVisible({timeout: 15_000});
-    await expect(rangeLabel).toHaveText(/\d+ \u2013 \d+ of [1-9]\d*/);
+  test('load-more affordance is visible when there are more patches', async ({page}) => {
+    // Wait for at least one patch card to confirm results loaded
+    await expect(page.locator('app-patch-list app-patch-micro').first()).toBeVisible({timeout: 15_000});
+
+    // The "Load more" button is rendered only when loaded count < total.
+    // If the entire dataset fits on the first page the button is absent — that is still valid.
+    const loadMoreBtn = page.locator('.loadMore__btn');
+    const cardCount = await page.locator('app-patch-list app-patch-micro').count();
+
+    const btnVisible = await loadMoreBtn.isVisible();
+    if (btnVisible) {
+      // Button text must contain "remaining" with a positive number
+      await expect(loadMoreBtn).toContainText(/\d+ remaining/);
+    } else {
+      // All patches fit on one page — just verify we got at least one result
+      expect(cardCount).toBeGreaterThan(0);
+    }
   });
   
   test('page heading is visible', async ({page}) => {

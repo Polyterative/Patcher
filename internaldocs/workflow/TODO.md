@@ -1100,7 +1100,62 @@ editor shows a gutter marker.
 
 ---
 
-#### HIGH: Bug — Drag-and-drop module preview (ghost) no longer visible during drag
+#### MEDIUM: Rack Analytics — Power Header Count
+
+**Why:** A Eurorack rack needs one power header (bus board connector) per module that draws
+power. Passive modules (all power rails = 0 mA) and blank panels don't need a header.
+Knowing the required header count before buying or wiring a rack saves mistakes and money.
+The existing `buildRackPowerBreakdown` already iterates over all racked modules and has
+access to every power field — this is purely a derived display value, no new backend data
+needed.
+
+**Definition of "needs a power header":**
+A module counts toward the power-header total if **all three** of these are true:
+1. It is not a blank panel (`!isBlankModule(rackedModule.module.id)`).
+2. It has known power data for at least one rail (`!hasMissingPowerData` is NOT required —
+   a module with partial data is still active and still needs a header).
+3. It is not purely passive — i.e. at least one rail value is non-zero:
+   `(powerPos12 ?? 0) !== 0 || (powerNeg12 ?? 0) !== 0 || (powerPos5 ?? 0) !== 0`.
+
+Modules with all rails explicitly set to `0` are passive and do **not** count.
+Modules with `null` rails are ambiguous — count them conservatively (they may draw power).
+
+**Conservative counting rule for `null` rails:**
+- All three rails `null` → unknown module, count it (assume it needs power, flag it).
+- At least one rail non-zero → active, count it.
+- All three rails explicitly `0` → passive, do not count.
+
+**Output to surface:**
+- `powerHeaderCount: number` — total headers needed across the whole rack.
+- `passiveModuleCount: number` — modules confirmed passive (all rails 0).
+- `unknownPowerModuleCount: number` — modules with all-null power data (ambiguous).
+- Per-row breakdown: `rowPowerHeaderCount: number` per `RackPowerRowBreakdown` (how many
+  headers are on each row / bus board row).
+
+**Where to show it:**
+Surface the count in the existing rack **power analysis panel** (the floating panel used in
+`power` analysis mode in the rack editor, and in the rack detail/view page power section).
+Place it as a summary line below the +12V / −12V / +5V totals:
+```
+Power headers needed: 14  (2 passive · 1 unknown)
+```
+Link the "unknown" count to the existing missing-power-data warning if one exists.
+
+**Checklist:**
+
+- [ ] Add `powerHeaderCount`, `passiveModuleCount`, and `unknownPowerModuleCount` to
+      `RackPowerBreakdown` interface in `rack-power-breakdown.utils.ts`.
+- [ ] Add `rowPowerHeaderCount` to `RackPowerRowBreakdown` interface.
+- [ ] Implement the counting logic inside `buildRackPowerBreakdown` using the conservative
+      rule above. Pure function — no service injection needed.
+- [ ] Update the power analysis panel template to show the summary line (rack editor +
+      rack detail view). Use existing typography tokens; keep it one line under the rail totals.
+- [ ] Unit-test `buildRackPowerBreakdown` with fixtures covering: all active, all passive,
+      mixed, all-null rails.
+
+---
+
+
 
 **Why:** Regression. Previously, dragging a module inside the rack visual model showed a
 semi-transparent preview of the module tile at the drop target position before releasing —

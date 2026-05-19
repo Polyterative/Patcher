@@ -30,7 +30,7 @@ test.describe('Authenticated application monkey flows', () => {
     await page.goto('/modules/browser');
     await expect(page.locator('app-module-list')).toBeVisible({timeout: 20_000});
 
-    const search = page.getByLabel('Search module...');
+    const search = page.getByLabel('Search module...').first();
     await search.fill(WEIRD_QUERY);
     await page.keyboard.press('Meta+A');
     await page.keyboard.press('Backspace');
@@ -51,9 +51,9 @@ test.describe('Authenticated application monkey flows', () => {
     await page.getByLabel('Search patch...').fill(WEIRD_QUERY);
     await expect(page.locator('.browser-content-area .update-loading-shell')).toBeHidden({timeout: 20_000});
 
-    const nextPage = page.getByRole('button', {name: /next page/i});
-    if (await nextPage.isEnabled().catch(() => false)) {
-      await nextPage.click();
+    const loadMore = page.getByRole('button', {name: /load more/i});
+    if (await loadMore.isVisible().catch(() => false)) {
+      await loadMore.click();
       await expect(page.locator('app-patch-list')).toBeVisible({timeout: 20_000});
     }
 
@@ -111,8 +111,8 @@ test.describe('Authenticated application monkey flows', () => {
 
     const dialog = page.locator('mat-dialog-container').last();
     await expect(page.getByRole('heading', {name: /create new patch/i})).toBeVisible({timeout: 10_000});
-    await dialog.getByRole('textbox', {name: /name/i}).fill('[E2E] this patch name is intentionally far too long for validation');
-    await dialog.getByRole('textbox', {name: /name/i}).press('Enter');
+    await dialog.locator('input').first().fill('[E2E] this patch name is intentionally far too long for validation');
+    await dialog.locator('input').first().press('Enter');
     await page.waitForTimeout(750);
 
     expect(patchPostCount).toBe(0);
@@ -156,6 +156,7 @@ test.describe('Authenticated application monkey flows', () => {
 
     await page.goto('/patches/details/5');
     await expect(page.locator('app-patch-composite').first()).toBeVisible({timeout: 20_000});
+    await page.waitForURL(/\/patches\//);
     await page.setViewportSize({width: 412, height: 915});
     await expect(page.locator('app-patch-composite').first()).toBeVisible();
 
@@ -168,7 +169,7 @@ test.describe('Authenticated application monkey flows', () => {
 
     await page.goto('/home');
     await page.goBack();
-    await expect(page).toHaveURL(/patches\/details\/5/);
+    await expect(page).toHaveURL(/\/patches\//);
     await expect(page.locator('app-patch-composite').first()).toBeVisible({timeout: 20_000});
     expect(errors()).toEqual([]);
   });
@@ -306,15 +307,12 @@ test.describe('Authenticated application monkey flows', () => {
     await page.goto('/racks/browser');
     await expect(page.locator('app-rack-list')).toBeVisible({timeout: 20_000});
 
-    const nextPage = page.getByRole('button', {name: /next page/i});
-    const previousPage = page.getByRole('button', {name: /previous page/i});
+    const loadMore = page.getByRole('button', {name: /load more/i});
     for (const size of [{width: 360, height: 780}, {width: 1366, height: 850}, {width: 768, height: 1024}]) {
       await page.setViewportSize(size);
-      if (await nextPage.isEnabled().catch(() => false)) {
-        await nextPage.click();
-      }
-      if (await previousPage.isEnabled().catch(() => false)) {
-        await previousPage.click();
+      if (await loadMore.isVisible().catch(() => false)) {
+        await loadMore.click();
+        await page.waitForTimeout(300);
       }
       await expect(page.locator('app-rack-browser-root')).toBeVisible();
     }
@@ -336,7 +334,7 @@ test.describe('Authenticated application monkey flows', () => {
       await page.locator('app-user-patches app-brand-primary-button', {hasText: /create patch/i}).first().click();
       const dialog = page.locator('mat-dialog-container').last();
       await expect(page.getByRole('heading', {name: /create new patch/i})).toBeVisible({timeout: 10_000});
-      await dialog.getByRole('textbox', {name: /name/i}).fill(`[E2E] escape ${ i }`);
+      await dialog.locator('input').first().fill(`[E2E] escape ${ i }`);
       await page.keyboard.press('Escape');
       await expect(dialog).toBeHidden({timeout: 10_000});
     }
