@@ -37,6 +37,14 @@
   }
 }
 
+.module-filter-mobile-actions {
+  display: contents;
+}
+
+.module-filter-reset--mobile {
+  display: none;
+}
+
 .module-browser-mode {
   padding: 1rem;
   border: 1px solid rgba(34, 75, 117, 0.12);
@@ -170,6 +178,10 @@
     display: none;
   }
 
+  .module-tag-filter-section.module-filter-control--optional {
+    display: none;
+  }
+
   .module-recent-activity {
     display: none;
   }
@@ -186,11 +198,30 @@
     display: block;
   }
 
+  .module-filter-sidebar--expanded .module-tag-filter-section.module-filter-control--optional {
+    display: flex;
+  }
+
   .module-filter-toggle {
     display: inline-flex;
     align-items: center;
     gap: 0.25rem;
     align-self: flex-start;
+  }
+
+  .module-filter-mobile-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .module-filter-reset--mobile {
+    display: block;
+  }
+
+  .module-filter-reset--desktop {
+    display: none;
   }
 }
 
@@ -209,6 +240,10 @@
       display: none;
     }
 
+    .module-tag-filter-section.module-filter-control--optional {
+      display: none;
+    }
+
     .module-recent-activity {
       display: none;
     }
@@ -217,11 +252,30 @@
       display: block;
     }
 
+    .module-filter-sidebar--expanded .module-tag-filter-section.module-filter-control--optional {
+      display: flex;
+    }
+
     .module-filter-toggle {
       display: inline-flex;
       align-items: center;
       gap: 0.25rem;
       align-self: flex-start;
+    }
+
+    .module-filter-mobile-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .module-filter-reset--mobile {
+      display: block;
+    }
+
+    .module-filter-reset--desktop {
+      display: none;
     }
   }
 }
