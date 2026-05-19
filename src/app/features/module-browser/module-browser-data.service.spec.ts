@@ -214,6 +214,8 @@ describe('ModuleBrowserDataService', () => {
     const {service, backend} = build();
     // simulate first page already loaded (20 modules)
     const firstBatch = Array.from({length: 20}, (_, i) => ({id: i + 1})) as any[];
+    const secondBatch = Array.from({length: 20}, (_, i) => moduleFactory({id: i + 21, name: `Module ${ i + 21 }`}));
+    backend.GET.modules.and.returnValue(of({data: secondBatch, count: null}));
     service.modulesList$.next(firstBatch);
     service.serversideAdditionalData.itemsCount$.next(45);
     const beforeCount = backend.GET.modules.calls.count();
@@ -221,6 +223,23 @@ describe('ModuleBrowserDataService', () => {
     tick();
     expect(service.serversideTableRequestData.skip$.value).toBe(20);
     expect(backend.GET.modules.calls.count()).toBeGreaterThan(beforeCount);
+    expect(service.modulesList$.value?.length).toBe(40);
+    expect(service.modulesList$.value?.at(-1)?.id).toBe(40);
+  }));
+
+  it('skips exact count on load more because the first page already knows the total', fakeAsync(() => {
+    const {service, backend} = build();
+    const firstBatch = Array.from({length: 20}, (_, i) => ({id: i + 1})) as any[];
+    service.modulesList$.next(firstBatch);
+    service.serversideAdditionalData.itemsCount$.next(45);
+
+    service.loadMore$.next();
+    tick();
+
+    const args = backend.GET.modules.calls.mostRecent().args as any[];
+    expect(args[0]).toBe(20);
+    expect(args[1]).toBe(39);
+    expect(args[12]).toBeFalse();
   }));
   
   it('canReset$ emits true when tag filter has selections', fakeAsync(() => {

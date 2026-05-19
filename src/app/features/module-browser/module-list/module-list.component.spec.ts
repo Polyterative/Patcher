@@ -135,6 +135,31 @@ describe('ModuleListComponent', () => {
     component.ngOnDestroy();
   }));
 
+  it('starts enter animation delay from the newly appended batch', fakeAsync(() => {
+    const filterService = new LocalDataFilterService();
+    const firstPage = [
+      buildModule({id: 1, name: 'Module 1'}),
+      buildModule({id: 2, name: 'Module 2'}),
+      buildModule({id: 3, name: 'Module 3'}),
+    ];
+    const data$ = new BehaviorSubject<MinimalModule[] | null>(firstPage);
+    const component = new ModuleListComponent({} as any, filterService, {preferredPanelColor$: of(null)} as any);
+    component.data$ = data$;
+    component.ngOnInit();
+    tick();
+
+    data$.next([
+      ...firstPage,
+      buildModule({id: 4, name: 'Module 4'}),
+      buildModule({id: 5, name: 'Module 5'}),
+    ]);
+    tick();
+
+    expect(component.getEnterDelay(4)).toBe(50);
+    expect(component.getEnterDelay(5)).toBe(75);
+    component.ngOnDestroy();
+  }));
+
   it('defaultGroupId none keeps groupControl at first option', fakeAsync(() => {
     const filterService = new LocalDataFilterService();
     const data$ = new BehaviorSubject<MinimalModule[] | null>([]);

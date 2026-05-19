@@ -181,13 +181,14 @@ describe('ModuleBrowserRootComponent', () => {
     expect(component.dataService.serversideTableRequestData.sort$.value).toEqual(['updated', 'desc']);
   });
 
-  it('shows tag-filter loading feedback and keeps current results visible until the next backend result arrives', fakeAsync(() => {
+  it('uses the shared update loader and keeps current results visible until the next backend result arrives', fakeAsync(() => {
     const backend = TestBed.inject(SupabaseService) as any;
     const modulesResponse$ = new Subject<{data: MinimalModule[]; count: number}>();
     const currentResults = buildOwnedModules(2);
 
     backend.GET.modules.and.returnValue(modulesResponse$.asObservable());
     component.dataService.modulesList$.next(currentResults);
+    component.dataService.serversideAdditionalData.itemsCount$.next(3);
     component.visibleModules$.next(currentResults);
     fixture.detectChanges();
 
@@ -196,7 +197,8 @@ describe('ModuleBrowserRootComponent', () => {
 
     expect(component.dataService.remoteTagFilterLoading$.value).toBeTrue();
     expect(component.visibleModules$.value).toEqual(currentResults);
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Updating results');
+    expect((fixture.nativeElement as HTMLElement).querySelector('.module-browser-loading-note')).toBeNull();
+    expect((fixture.nativeElement as HTMLElement).querySelector('lib-auto-update-loading-indicator')).not.toBeNull();
 
     tick(750);
     modulesResponse$.next({data: [currentResults[0]], count: 1});
@@ -206,7 +208,7 @@ describe('ModuleBrowserRootComponent', () => {
     expect(component.dataService.remoteTagFilterLoading$.value).toBeFalse();
   }));
 
-  it('does not show remote tag-filter loading feedback in owned collection mode', () => {
+  it('does not show a custom remote tag-filter loading note in owned collection mode', () => {
     component.enableCollectionBrowseModes = true;
     component.ownedModulesInput = buildOwnedModules(20);
     fixture.detectChanges();
@@ -215,7 +217,7 @@ describe('ModuleBrowserRootComponent', () => {
     fixture.detectChanges();
 
     expect(component.collectionBrowseMode).toBe('owned');
-    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Updating results');
+    expect((fixture.nativeElement as HTMLElement).querySelector('.module-browser-loading-note')).toBeNull();
   });
 
   it('uses all-modules search empty copy when catalog filters return nothing', () => {

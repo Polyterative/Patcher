@@ -349,6 +349,7 @@ export class ModuleBrowserDataService extends SubManager {
           const [sortCol, sortDir] = this.serversideTableRequestData.sort$.value;
           const standard = this.fields.standard.control.value?.id;
           const tagIds = this.getSelectedTagIds();
+          const includeCount = skip === 0;
 
           return this.backend.GET.modules(
               skip,
@@ -362,7 +363,8 @@ export class ModuleBrowserDataService extends SubManager {
               standard,
               this.fields.description.control.value,
               true,
-              tagIds.length > 0 ? tagIds : undefined
+              tagIds.length > 0 ? tagIds : undefined,
+              includeCount
             )
             .pipe(catchError(error => {
               console.error('Failed to load modules:', error);
@@ -389,7 +391,9 @@ export class ModuleBrowserDataService extends SubManager {
         takeUntil(this.destroy$)
       )
       .subscribe(response => {
-        this.serversideAdditionalData.itemsCount$.next(response.count);
+        this.serversideAdditionalData.itemsCount$.next(
+          response.count ?? this.serversideAdditionalData.itemsCount$.value
+        );
         const skip = this.serversideTableRequestData.skip$.value;
         const current = this.modulesList$.value ?? [];
         this.modulesList$.next(skip === 0 ? response.data : [...current, ...response.data]);

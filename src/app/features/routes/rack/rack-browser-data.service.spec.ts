@@ -2,7 +2,10 @@ import {
   fakeAsync,
   tick
 } from '@angular/core/testing';
-import { of } from 'rxjs';
+import {
+  of,
+  Subject
+} from 'rxjs';
 import { RackBrowserDataService } from './rack-browser-data.service';
 
 
@@ -26,7 +29,7 @@ describe('RackBrowserDataService', () => {
     const {service, backend} = build();
     service.updateRacksList$.next();
     expect(backend.GET.racksMinimal).toHaveBeenCalledWith(
-      0, jasmine.any(Number), '', 'updated', 'desc'
+      0, jasmine.any(Number), '', 'updated', 'desc', true, 'stable-rack-pagination-v2'
     );
   });
 
@@ -47,7 +50,7 @@ describe('RackBrowserDataService', () => {
     tick(750);
     expect(service.serversideTableRequestData.sort$.value).toEqual(['name', 'desc']);
     expect(backend.GET.racksMinimal).toHaveBeenCalledWith(
-      0, jasmine.any(Number), '', 'name', 'desc'
+      0, jasmine.any(Number), '', 'name', 'desc', true, 'stable-rack-pagination-v2'
     );
     service.ngOnDestroy();
   }));
@@ -61,7 +64,7 @@ describe('RackBrowserDataService', () => {
     service.resetForm$.next();
     expect(service.serversideTableRequestData.sort$.value).toEqual(['updated', 'desc']);
     expect(backend.GET.racksMinimal).toHaveBeenCalledWith(
-      0, jasmine.any(Number), '', 'updated', 'desc'
+      0, jasmine.any(Number), '', 'updated', 'desc', true, 'stable-rack-pagination-v2'
     );
     service.ngOnDestroy();
   }));
@@ -77,7 +80,7 @@ describe('RackBrowserDataService', () => {
     service.updateRacksList$.next();
 
     expect(backend.GET.racksMinimal).toHaveBeenCalledWith(
-      0, jasmine.any(Number), '', 'updated', 'desc'
+      0, jasmine.any(Number), '', 'updated', 'desc', true, 'stable-rack-pagination-v2'
     );
   });
   
@@ -140,16 +143,62 @@ describe('RackBrowserDataService', () => {
     backend.GET.racksMinimal.calls.reset();
 
     // Simulate initial 20 items loaded
-    (service.racksList$ as any).next(Array(20).fill({id: 1}));
+    const firstBatch = Array.from({length: 20}, (_, index) => ({id: index + 1}));
+    const secondBatch = Array.from({length: 10}, (_, index) => ({id: index + 21}));
+    backend.GET.racksMinimal.and.returnValue(of({data: secondBatch, count: null}));
+    (service.racksList$ as any).next(firstBatch);
     service.serversideAdditionalData.itemsCount$.next(35);
 
     service.loadMore$.next();
 
     expect(service.serversideTableRequestData.skip$.value).toBe(20);
     expect(backend.GET.racksMinimal).toHaveBeenCalledWith(
-      20, 39, '', 'updated', 'desc'
+      20, 39, '', 'updated', 'desc', false, 'stable-rack-pagination-v2'
     );
+    expect(service.racksList$.value?.length).toBe(30);
+    expect(service.racksList$.value?.at(-1)?.id).toBe(30);
   });
+
+  it('deduplicates repeated racks returned by overlapping backend pages', () => {
+    const {service, backend} = build();
+    const initialRacks = [{id: 1}, {id: 2}, {id: 3}];
+    backend.GET.racksMinimal.and.returnValue(
+      of({data: [{id: 3}, {id: 4}, {id: 5}], count: null})
+    );
+    (service.racksList$ as any).next(initialRacks);
+    service.serversideAdditionalData.itemsCount$.next(6);
+
+    service.loadMore$.next();
+
+    expect(service.racksList$.value).toEqual([
+      {id: 1},
+      {id: 2},
+      {id: 3},
+      {id: 4},
+      {id: 5}
+    ] as any);
+  });
+
+  it('waits for slow load-more responses instead of restoring the previous rack list', fakeAsync(() => {
+    const {service, backend} = build();
+    const slowResponse$ = new Subject<{data: {id: number}[]; count: null}>();
+    const initialRacks = Array.from({length: 20}, (_, index) => ({id: index + 1}));
+    backend.GET.racksMinimal.and.returnValue(slowResponse$.asObservable());
+    (service.racksList$ as any).next(initialRacks);
+    service.serversideAdditionalData.itemsCount$.next(35);
+
+    service.loadMore$.next();
+    tick(2_500);
+
+    expect(service.racksList$.value).toEqual(initialRacks as any);
+
+    slowResponse$.next({data: [{id: 21}], count: null});
+    slowResponse$.complete();
+    tick();
+
+    expect(service.racksList$.value).toEqual([...initialRacks, {id: 21}] as any);
+    expect(service.serversideAdditionalData.itemsCount$.value).toBe(35);
+  }));
 
   it('canReset$ emits false when search is empty', fakeAsync(() => {
     const {service} = build();

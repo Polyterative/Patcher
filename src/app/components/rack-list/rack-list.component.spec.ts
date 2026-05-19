@@ -44,6 +44,10 @@ describe('RackListComponent', () => {
     it('showSearch defaults to false', () => {
       expect(makeComp().showSearch).toBeFalse();
     });
+
+    it('encloseVertically defaults to true for legacy embedded lists', () => {
+      expect(makeComp().encloseVertically).toBeTrue();
+    });
   });
 
   describe('externalSearchQuery setter', () => {
@@ -125,6 +129,27 @@ describe('RackListComponent', () => {
       let result: any;
       comp.filteredData$.subscribe(v => (result = v)).unsubscribe();
       expect(result).toEqual([]);
+    });
+
+    it('starts enter animation delay from the newly appended batch', () => {
+      const comp = makeComp();
+      const firstPage = [
+        makeRack({id: 1, name: 'Rack 1'}),
+        makeRack({id: 2, name: 'Rack 2'}),
+        makeRack({id: 3, name: 'Rack 3'}),
+      ];
+      const data$ = new BehaviorSubject<any>(firstPage);
+      (comp as any).data$ = data$;
+      comp.ngOnInit();
+
+      data$.next([
+        ...firstPage,
+        makeRack({id: 4, name: 'Rack 4'}),
+        makeRack({id: 5, name: 'Rack 5'}),
+      ]);
+
+      expect(comp.getEnterDelay(4)).toBe(50);
+      expect(comp.getEnterDelay(5)).toBe(75);
     });
 
     it('is case-insensitive', () => {
