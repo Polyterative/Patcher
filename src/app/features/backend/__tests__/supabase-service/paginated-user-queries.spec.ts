@@ -438,6 +438,24 @@ describe('SupabaseService - GET.racksMinimal', () => {
       }
     });
   }, TEST_TIMEOUT);
+
+  it('adds id as a stable secondary order for deterministic rack pagination', (done) => {
+    const mock = chainable({data: [], count: 0, error: null});
+    const orderSpy = spyOn(mock, 'order').and.returnValue(mock);
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+    service.GET.racksMinimal(20, 39, '', 'updated', 'desc').subscribe({
+      next: () => {
+        expect(orderSpy).toHaveBeenCalledWith('updated', {ascending: false});
+        expect(orderSpy).toHaveBeenCalledWith('id', {ascending: false});
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
   
   it('should NOT apply name filter when name is empty', (done) => {
     const mock = chainable({data: [], count: 0, error: null});

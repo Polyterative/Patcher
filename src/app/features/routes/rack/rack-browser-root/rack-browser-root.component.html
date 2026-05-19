@@ -38,20 +38,22 @@
       <div class="browser-content-area col gap1">
         <app-rack-list [data$]="dataService.racksList$"
                        [viewConfig]="viewConfig"
+                       [encloseVertically]="false"
         ></app-rack-list>
         @if (dataService.hasMoreRacks$ | async) {
           <div class="loadMore">
-            <button mat-stroked-button
-                    class="loadMore__btn"
-                    (click)="dataService.loadMore$.next()"
-            >Load more
-              <span class="loadMore__count">{{ dataService.remainingRacksCount$ | async }} remaining</span>
-            </button>
+            <lib-auto-update-loading-indicator [data$]="dataService.racksList$"
+                                               [updateData$]="dataService.updateRacksList$"
+            >
+              <button mat-stroked-button
+                      class="loadMore__btn"
+                      (click)="dataService.loadMore$.next()"
+              >Load more
+                <span class="loadMore__count">{{ dataService.remainingRacksCount$ | async }} remaining</span>
+              </button>
+            </lib-auto-update-loading-indicator>
           </div>
         }
-        <lib-auto-update-loading-indicator [data$]="dataService.racksList$"
-                                           [updateData$]="dataService.updateRacksList$"
-        ></lib-auto-update-loading-indicator>
       </div>
     
     </div>

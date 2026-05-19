@@ -24,6 +24,7 @@ import { SubManager } from '../../shared-interproject/directives/subscription-ma
 import { RackMinimalViewConfig } from '../rack-parts/rack-minimal/rack-minimal.component';
 import { LocalDataFilterService } from '../shared-atoms/local-data-filter/local-data-filter.service';
 import { matchesSearchQuery } from '../../shared-interproject/components/@smart/mat-form-entity/string-utils';
+import { RackMinimal } from 'src/app/models/rack';
 
 
 @Component({
@@ -50,6 +51,7 @@ export class RackListComponent extends SubManager implements OnInit {
   readonly data$: Observable<RackList>;
   
   @Input() readonly showSearch = false;
+  @Input() encloseVertically = true;
   @Input() viewConfig: RackMinimalViewConfig;
   private readonly externalSearchQuery$ = new BehaviorSubject<string>('');
   
@@ -60,6 +62,8 @@ export class RackListComponent extends SubManager implements OnInit {
   
   private readonly _filteredData$ = new BehaviorSubject<RackList>([]);
   readonly filteredData$ = this._filteredData$.asObservable();
+  private visibleRackIds = new Set<number>();
+  private readonly enterDelayByRackId = new Map<number, number>();
   
   constructor(
     public filterService: LocalDataFilterService
@@ -75,7 +79,7 @@ export class RackListComponent extends SubManager implements OnInit {
     this.manageSub(
       this.data$
           .pipe(take(1))
-          .subscribe(x => this._filteredData$.next(x))
+          .subscribe(x => this.updateFilteredData(x ?? []))
     );
     
     this.manageSub(
@@ -90,9 +94,27 @@ export class RackListComponent extends SubManager implements OnInit {
             return matchesSearchQuery(localQuery, ...searchFields)
               && matchesSearchQuery(externalQuery, ...searchFields);
           });
-          this._filteredData$.next(result);
+          this.updateFilteredData(result);
         })
     );
+  }
+
+  getEnterDelay(rackId: number): number {
+    return this.enterDelayByRackId.get(rackId) ?? 50;
+  }
+
+  private updateFilteredData(data: RackMinimal[]): void {
+    const nextVisibleIds = new Set(data.map(rack => rack.id));
+    let newItemIndex = 0;
+    this.enterDelayByRackId.clear();
+
+    for (const rack of data) {
+      const delayIndex = this.visibleRackIds.has(rack.id) ? 0 : newItemIndex++;
+      this.enterDelayByRackId.set(rack.id, (delayIndex * 25) + 50);
+    }
+
+    this.visibleRackIds = nextVisibleIds;
+    this._filteredData$.next(data);
   }
   
 }

@@ -149,14 +149,24 @@ export class PatchBrowserDataService extends SubManager {
           const take = this.serversideTableRequestData.take$.value;
           const filter = this.serversideTableRequestData.filter$.value;
           const [sortCol, sortDir] = this.serversideTableRequestData.sort$.value;
-          return this.backend.GET.patches(skip, (skip + take) - 1, filter, sortCol || null, sortDir);
+          return this.backend.GET.patches(
+            skip,
+            (skip + take) - 1,
+            filter,
+            sortCol || null,
+            sortDir,
+            undefined,
+            skip === 0
+          );
         }),
         takeUntil(this.destroy$)
       )
       .subscribe(x => {
         const skip = this.serversideTableRequestData.skip$.value;
         const current = this.patchesList$.value ?? [];
-        this.serversideAdditionalData.itemsCount$.next(x.count);
+        this.serversideAdditionalData.itemsCount$.next(
+          x.count ?? this.serversideAdditionalData.itemsCount$.value
+        );
         this.patchesList$.next(skip === 0 ? x.data : [...current, ...x.data]);
       });
 

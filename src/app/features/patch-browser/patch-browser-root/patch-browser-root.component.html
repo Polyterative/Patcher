@@ -41,20 +41,19 @@
         ></app-patch-list>
         @if (hasMorePatches) {
           <div class="loadMore">
-            <button mat-stroked-button
-                    color="primary"
-                    (click)="loadMore()"
-                    class="loadMore__btn"
+            <lib-auto-update-loading-indicator [data$]="dataService.patchesList$"
+                                               [updateData$]="dataService.updatePatchesList$"
             >
-              Load more
-              <span class="loadMore__count">({{ remainingPatchesCount }} remaining)</span>
-            </button>
+              <button mat-stroked-button
+                      color="primary"
+                      (click)="loadMore()"
+                      class="loadMore__btn"
+              >
+                Load more
+                <span class="loadMore__count">({{ remainingPatchesCount }} remaining)</span>
+              </button>
+            </lib-auto-update-loading-indicator>
           </div>
-        }
-        @if ((dataService.patchesList$ | async) !== null) {
-          <lib-auto-update-loading-indicator [data$]="dataService.patchesList$"
-                                             [updateData$]="dataService.updatePatchesList$"
-          ></lib-auto-update-loading-indicator>
         }
       </div>
     
