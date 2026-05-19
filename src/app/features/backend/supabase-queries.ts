@@ -544,7 +544,8 @@ export class SupabaseQueriesService {
     standard: number | undefined = undefined,
     description?: string,
     onlyPublic = true,
-    tagIds?: number[]) {
+    tagIds?: number[],
+    includeCount = true) {
     const nameQuery = (name ?? '').trim();
     const descriptionQuery = (description ?? '').trim();
     const requiresClientTextFiltering = nameQuery.length > 0 || descriptionQuery.length > 0;
@@ -603,14 +604,24 @@ export class SupabaseQueriesService {
       return nextQuery;
     };
 
-    const buildDetailedQuery = (query: any) => applyBaseFilters(
-      query.select(`
+    const selectDetailedModules = (query: any) => includeCount
+      ? query.select(`
                     id,name,hp,description,public,created,updated,
                     ${ QueryJoins.manufacturer },
                     ${ QueryJoins.standard },
                     ${ QueryJoins.module_panels },
                     ${ moduleTagsJoin }
                   `, {count: 'exact'})
+      : query.select(`
+                    id,name,hp,description,public,created,updated,
+                    ${ QueryJoins.manufacturer },
+                    ${ QueryJoins.standard },
+                    ${ QueryJoins.module_panels },
+                    ${ moduleTagsJoin }
+                  `);
+
+    const buildDetailedQuery = (query: any) => applyBaseFilters(
+      selectDetailedModules(query)
     )
       .order(`color`, {foreignTable: DbPaths.module_panels, ascending: true})
       .limit(1, {foreignTable: DbPaths.module_panels})
@@ -621,10 +632,12 @@ export class SupabaseQueriesService {
         ? `id,name,description,${ DbPaths.module_tags }!inner(id)`
         : 'id,name,description';
 
-      return applyBaseFilters(
-        query.select(lightweightSelect, {count: 'exact'}),
-        applyTextFilters
-      ).order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'});
+      const selectedQuery = includeCount
+        ? query.select(lightweightSelect, {count: 'exact'})
+        : query.select(lightweightSelect);
+
+      return applyBaseFilters(selectedQuery, applyTextFilters)
+        .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'});
     };
 
     if (!requiresClientTextFiltering) {
@@ -898,8 +911,11 @@ export class SupabaseQueriesService {
     to?: number,
     name?: string,
     orderBy?: string,
-    orderDirection?: string
+    orderDirection?: string,
+    includeCount = true,
+    cacheKeyVersion = 'stable-rack-pagination-v2'
   ) {
+    void cacheKeyVersion;
     const publicAuthorGateJoin = QueryJoins.publicAuthorGate(SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS);
     const effectiveTo = to ?? this.defaultPag;
     const nameQuery = (name ?? '').trim();
@@ -919,11 +935,13 @@ export class SupabaseQueriesService {
       "image"
     ].join(",");
     
+    const selectColumns = `${ columns }, rack_modules!inner(rackid)`;
     let query = this.supabase.from(DbPaths.racks)
-      .select(`${ columns }, rack_modules!inner(rackid)`, {count: "exact"})
+      .select(selectColumns, includeCount ? {count: "exact"} : undefined)
       .filter("public", "eq", true)
       .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
-      .order(orderBy ? orderBy : "name", {ascending: orderDirection === "asc"});
+      .order(orderBy ? orderBy : "name", {ascending: orderDirection === "asc"})
+      .order('id', {ascending: orderDirection === "asc"});
     
     if (nameQuery.length === 0) {
       query = query.range(from, effectiveTo);
@@ -1329,14 +1347,15 @@ export class SupabaseQueriesService {
     name?: string,
     orderBy?: string,
     orderDirection?: string,
-    columns: string = `id,name,description,${ QueryJoins.author },updated,created`
+    columns: string = `id,name,description,${ QueryJoins.author },updated,created`,
+    includeCount = true
   ) {
     const connections = `,patch_connections!inner(patchid,a,b)`; // Ensures only patches with connections are included
     const nameQuery = (name ?? '').trim();
     
     let queryBuilder = this.supabase
       .from(DbPaths.patches)
-      .select(`${ columns + connections }`, {count: 'exact'})
+      .select(`${ columns + connections }`, includeCount ? {count: 'exact'} : undefined)
       .filter("public", "eq", true)
       .order(orderBy ?? 'name', {ascending: orderDirection === 'asc'});
 
