@@ -26,7 +26,7 @@ describe('PatchBrowserDataService', () => {
     const {service, backend} = build();
     service.updatePatchesList$.next();
     expect(backend.GET.patches).toHaveBeenCalledWith(
-      0, jasmine.any(Number), '', 'updated', 'desc'
+      0, jasmine.any(Number), '', 'updated', 'desc', undefined, true
     );
   });
 
@@ -36,7 +36,7 @@ describe('PatchBrowserDataService', () => {
     tick(750);
     expect(service.serversideTableRequestData.sort$.value).toEqual(['name', 'asc']);
     expect(backend.GET.patches).toHaveBeenCalledWith(
-      0, jasmine.any(Number), '', 'name', 'asc'
+      0, jasmine.any(Number), '', 'name', 'asc', undefined, true
     );
     service.ngOnDestroy();
   }));
@@ -51,7 +51,7 @@ describe('PatchBrowserDataService', () => {
     service.resetForm$.next();
     expect(service.serversideTableRequestData.sort$.value).toEqual(['updated', 'desc']);
     expect(backend.GET.patches).toHaveBeenCalledWith(
-      0, jasmine.any(Number), '', 'updated', 'desc'
+      0, jasmine.any(Number), '', 'updated', 'desc', undefined, true
     );
     service.ngOnDestroy();
   }));
@@ -68,7 +68,7 @@ describe('PatchBrowserDataService', () => {
     service.updatePatchesList$.next();
 
     expect(backend.GET.patches).toHaveBeenCalledWith(
-      0, jasmine.any(Number), '', 'updated', 'desc'
+      0, jasmine.any(Number), '', 'updated', 'desc', undefined, true
     );
   });
   
@@ -103,6 +103,8 @@ describe('PatchBrowserDataService', () => {
   it('loadMore$ appends results and advances skip', fakeAsync(() => {
     const {service, backend} = build();
     const firstBatch = Array.from({length: 10}, (_, i) => ({id: i + 1})) as any[];
+    const secondBatch = Array.from({length: 10}, (_, i) => ({id: i + 11})) as any[];
+    backend.GET.patches.and.returnValue(of({data: secondBatch, count: null}));
     service.patchesList$.next(firstBatch as any);
     service.serversideAdditionalData.itemsCount$.next(50);
     const before = backend.GET.patches.calls.count();
@@ -110,6 +112,9 @@ describe('PatchBrowserDataService', () => {
     tick();
     expect(service.serversideTableRequestData.skip$.value).toBe(10);
     expect(backend.GET.patches.calls.count()).toBeGreaterThan(before);
+    expect((backend.GET.patches.calls.mostRecent().args as any[])[6]).toBeFalse();
+    expect(service.patchesList$.value?.length).toBe(20);
+    expect(service.patchesList$.value?.at(-1)?.id).toBe(20);
   }));
   
   it('resetForm$ triggers exactly one backend call, not two (no double reload)', fakeAsync(() => {

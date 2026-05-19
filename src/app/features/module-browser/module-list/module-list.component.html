@@ -94,8 +94,8 @@
       <flexbox-row-fast
         [ngClass]="{'limit-height':encloseVertically}"
       >
-        @for (item of bag.filteredData; track item; let i = $index) {
-          <lib-clean-card [@enter]="{ value: '', params: { delay: (i * 25)+50}}"
+        @for (item of bag.filteredData; track item.id) {
+          <lib-clean-card [@enter]="{ value: '', params: { delay: getEnterDelay(item.id)}}"
                           [@leave]="{ value: '', params: { delay:  0 }}"
           >
             <app-module-minimal

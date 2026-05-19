@@ -236,12 +236,6 @@
       
       <!-- ── Right column: results ── -->
       <div class="browser-content-area col gap1">
-        @if (!usesOwnedDataset && (dataService.remoteTagFilterLoading$ | async)) {
-          <div class="module-browser-loading-note" aria-live="polite" role="status">
-            <strong>Updating results</strong>
-            <span>Refreshing the visible list for the selected tags while keeping the current cards in place.</span>
-          </div>
-        }
         <app-module-list [data$]="visibleModules$"
                          [viewConfig]="viewConfig"
                          [emptyStateCopy]="showCollectionBrowseToggle ? rackContextEmptyStateCopy : ''"
@@ -250,20 +244,19 @@
         ></app-module-list>
         @if (!usesOwnedDataset && hasMoreModules) {
          <div class="loadMore">
-           <button mat-stroked-button
-                   color="primary"
-                   (click)="loadMore()"
-                   class="loadMore__btn"
+           <lib-auto-update-loading-indicator [data$]="dataService.modulesList$"
+                                              [updateData$]="dataService.updateModulesList$"
            >
-             Load more
-             <span class="loadMore__count">({{ remainingModulesCount }} remaining)</span>
-           </button>
+             <button mat-stroked-button
+                     color="primary"
+                     (click)="loadMore()"
+                     class="loadMore__btn"
+             >
+               Load more
+               <span class="loadMore__count">({{ remainingModulesCount }} remaining)</span>
+             </button>
+           </lib-auto-update-loading-indicator>
          </div>
-        }
-        @if ((dataService.modulesList$ | async) !== null) {
-         <lib-auto-update-loading-indicator [data$]="dataService.modulesList$"
-                                            [updateData$]="dataService.updateModulesList$"
-         ></lib-auto-update-loading-indicator>
         }
       </div>
     

@@ -16,8 +16,7 @@ import {
   shareReplay,
   startWith,
   switchMap,
-  takeUntil,
-  timeoutWith
+  takeUntil
 } from 'rxjs/operators';
 import { RackMinimal } from 'src/app/models/rack';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
@@ -67,8 +66,6 @@ const RACK_DEFAULT_ORDER: RackOrderOption = {id: 'updated', name: 'Updated ↓'}
 
 @Injectable()
 export class RackBrowserDataService extends SubManager {
-  private static readonly MAX_LOADING_MS = 2_000;
-  
   readonly racksList$ = new BehaviorSubject<RackList>(null);
   readonly updateRacksList$ = new Subject<void>();
   readonly resetForm$ = new Subject<void>();
@@ -175,7 +172,15 @@ export class RackBrowserDataService extends SubManager {
           const previousData = this.racksList$.value ?? [];
           const previousCount = this.serversideAdditionalData.itemsCount$.value ?? previousData.length;
 
-          return this.backend.GET.racksMinimal(skip, (skip + take) - 1, filter, sortCol || null, sortDir)
+          return this.backend.GET.racksMinimal(
+            skip,
+            (skip + take) - 1,
+            filter,
+            sortCol || null,
+            sortDir,
+            skip === 0,
+            'stable-rack-pagination-v2'
+          )
             .pipe(
               map((response: any) => {
                 if (response?.error) {
@@ -183,15 +188,10 @@ export class RackBrowserDataService extends SubManager {
                 }
                 return {
                   kind: 'success' as const,
-                  count: response?.count ?? 0,
+                  count: response?.count ?? previousCount,
                   data: Array.isArray(response?.data) ? response.data : []
                 };
               }),
-              timeoutWith(RackBrowserDataService.MAX_LOADING_MS, of({
-                kind: 'timeout' as const,
-                count: previousCount,
-                data: previousData
-              })),
               catchError(error => of({
                 kind: 'error' as const,
                 error,
@@ -201,9 +201,7 @@ export class RackBrowserDataService extends SubManager {
             );
         }),
         map(result => {
-          if (result.kind === 'timeout') {
-            console.error('[rack-browser] Racks list request timed out after 2 seconds');
-          } else if (result.kind === 'error') {
+          if (result.kind === 'error') {
             console.error('[rack-browser] Failed to load racks list', (result as any).error);
           }
           return {count: result.count, data: result.data};
@@ -216,7 +214,7 @@ export class RackBrowserDataService extends SubManager {
         if (skip === 0) {
           this.racksList$.next(x.data);
         } else {
-          this.racksList$.next([...(this.racksList$.value ?? []), ...x.data]);
+          this.racksList$.next(this.appendUniqueRacks(this.racksList$.value ?? [], x.data));
         }
       });
 
@@ -231,5 +229,18 @@ export class RackBrowserDataService extends SubManager {
         this.serversideTableRequestData.skip$.next(0);
         this.updateRacksList$.next();
       });
+  }
+
+  private appendUniqueRacks(current: RackMinimal[], incoming: RackMinimal[]): RackMinimal[] {
+    const seenIds = new Set(current.map(rack => rack.id));
+    const uniqueIncoming = incoming.filter(rack => {
+      if (seenIds.has(rack.id)) {
+        return false;
+      }
+      seenIds.add(rack.id);
+      return true;
+    });
+
+    return [...current, ...uniqueIncoming];
   }
 }

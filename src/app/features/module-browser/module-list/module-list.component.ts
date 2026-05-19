@@ -59,6 +59,7 @@ import {
   matchesSelectedTags
 } from '../module-browser-data.utils';
 import { Tag } from 'src/app/models/tag';
+import { MinimalModule } from 'src/app/models/module';
 
 // Re-export so existing consumers that imported these from here still compile.
 export type ModuleListSortId = ModuleSortId;
@@ -103,6 +104,8 @@ export class ModuleListComponent extends SubManager implements OnInit {
 
   private readonly _filteredData$ = new BehaviorSubject<ModuleList>([]);
   readonly filteredData$ = this._filteredData$.asObservable();
+  private visibleModuleIds = new Set<number>();
+  private readonly enterDelayByModuleId = new Map<number, number>();
   
   // Sort & group controls (active when showOrder = true)
   readonly formTypes = FormTypes;
@@ -221,7 +224,7 @@ export class ModuleListComponent extends SubManager implements OnInit {
     
     // Seed with first emission so the list isn't blank on initial render
     this.manageSub(
-      this.data$.pipe(take(1)).subscribe(x => this._filteredData$.next(x ?? []))
+      this.data$.pipe(take(1)).subscribe(x => this.updateFilteredData(x ?? []))
     );
 
     this.manageSub(
@@ -253,9 +256,13 @@ export class ModuleListComponent extends SubManager implements OnInit {
           return true;
         });
         
-        this._filteredData$.next(sortAndGroupMinimalModules(filtered, sortId, groupId));
+        this.updateFilteredData(sortAndGroupMinimalModules(filtered, sortId, groupId));
       })
     );
+  }
+
+  getEnterDelay(moduleId: number): number {
+    return this.enterDelayByModuleId.get(moduleId) ?? 50;
   }
 
   resetFilters(): void {
@@ -275,5 +282,19 @@ export class ModuleListComponent extends SubManager implements OnInit {
       ? current.filter(id => id !== tagId)
       : [...current, tagId];
     this.tagsControl.setValue(next);
+  }
+
+  private updateFilteredData(data: MinimalModule[]): void {
+    const nextVisibleIds = new Set(data.map(module => module.id));
+    let newItemIndex = 0;
+    this.enterDelayByModuleId.clear();
+
+    for (const module of data) {
+      const delayIndex = this.visibleModuleIds.has(module.id) ? 0 : newItemIndex++;
+      this.enterDelayByModuleId.set(module.id, (delayIndex * 25) + 50);
+    }
+
+    this.visibleModuleIds = nextVisibleIds;
+    this._filteredData$.next(data);
   }
 }
