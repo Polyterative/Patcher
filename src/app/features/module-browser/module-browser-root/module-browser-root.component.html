@@ -83,16 +83,24 @@
           ></lib-mat-form-entity>
         </div>
         
-        <button mat-button
-                type="button"
-                class="module-filter-toggle"
-                (click)="toggleMobileFilters()"
-                [attr.aria-expanded]="mobileFiltersExpanded"
-                aria-controls="module-filter-advanced-controls"
-        >
-          <mat-icon>{{ mobileFiltersExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
-          {{ mobileFiltersExpanded ? 'Show fewer filters' : 'Show more filters' }}
-        </button>
+        <div class="module-filter-mobile-actions">
+          <button mat-button
+                  type="button"
+                  class="module-filter-toggle"
+                  (click)="toggleMobileFilters()"
+                  [attr.aria-expanded]="mobileFiltersExpanded"
+                  aria-controls="module-filter-advanced-controls"
+          >
+            <mat-icon>{{ mobileFiltersExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
+            {{ mobileFiltersExpanded ? 'Show fewer filters' : 'Show more filters' }}
+          </button>
+
+          <app-browser-reset-filters-button
+            class="module-filter-reset module-filter-reset--mobile"
+            [canReset$]="dataService.canReset$"
+            (reset$)="dataService.resetForm$.next()"
+          ></app-browser-reset-filters-button>
+        </div>
         
         <div id="module-filter-advanced-controls"
              class="module-filter-control module-filter-control--optional"
@@ -217,7 +225,7 @@
           ></lib-mat-form-entity>
         </div>
         
-        <div class="col gap1">
+        <div class="col gap1 module-filter-reset module-filter-reset--desktop">
           <app-browser-reset-filters-button
             [canReset$]="dataService.canReset$"
             (reset$)="dataService.resetForm$.next()"
