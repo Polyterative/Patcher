@@ -73,7 +73,7 @@ export class RackBrowserDataService extends SubManager {
   
   readonly serversideTableRequestData = {
     skip$:   new BehaviorSubject<number>(0),
-    take$: new BehaviorSubject<number>(20),
+    take$: new BehaviorSubject<number>(25),
     filter$: new BehaviorSubject<string>(''),
     sort$: new BehaviorSubject<[string, string]>(['updated', 'desc'])
   };

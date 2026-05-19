@@ -55,6 +55,11 @@ describe('ModuleBrowserDataService', () => {
     expect(service.serversideTableRequestData.sort$.value).toEqual(['updated', 'desc']);
   });
 
+  it('loads 25 modules per page by default', () => {
+    const {service} = build();
+    expect(service.serversideTableRequestData.take$.value).toBe(25);
+  });
+
   it('busts manufacturers cache on init so autocomplete reloads fresh options', () => {
     const {backend} = build();
     expect(backend.cacheResetter$.next).toHaveBeenCalledWith(['manufacturers']);
@@ -212,24 +217,24 @@ describe('ModuleBrowserDataService', () => {
   
   it('loadMore$ appends results and advances skip', fakeAsync(() => {
     const {service, backend} = build();
-    // simulate first page already loaded (20 modules)
-    const firstBatch = Array.from({length: 20}, (_, i) => ({id: i + 1})) as any[];
-    const secondBatch = Array.from({length: 20}, (_, i) => moduleFactory({id: i + 21, name: `Module ${ i + 21 }`}));
+    // simulate first page already loaded (25 modules)
+    const firstBatch = Array.from({length: 25}, (_, i) => ({id: i + 1})) as any[];
+    const secondBatch = Array.from({length: 25}, (_, i) => moduleFactory({id: i + 26, name: `Module ${ i + 26 }`}));
     backend.GET.modules.and.returnValue(of({data: secondBatch, count: null}));
     service.modulesList$.next(firstBatch);
     service.serversideAdditionalData.itemsCount$.next(45);
     const beforeCount = backend.GET.modules.calls.count();
     service.loadMore$.next();
     tick();
-    expect(service.serversideTableRequestData.skip$.value).toBe(20);
+    expect(service.serversideTableRequestData.skip$.value).toBe(25);
     expect(backend.GET.modules.calls.count()).toBeGreaterThan(beforeCount);
-    expect(service.modulesList$.value?.length).toBe(40);
-    expect(service.modulesList$.value?.at(-1)?.id).toBe(40);
+    expect(service.modulesList$.value?.length).toBe(50);
+    expect(service.modulesList$.value?.at(-1)?.id).toBe(50);
   }));
 
   it('skips exact count on load more because the first page already knows the total', fakeAsync(() => {
     const {service, backend} = build();
-    const firstBatch = Array.from({length: 20}, (_, i) => ({id: i + 1})) as any[];
+    const firstBatch = Array.from({length: 25}, (_, i) => ({id: i + 1})) as any[];
     service.modulesList$.next(firstBatch);
     service.serversideAdditionalData.itemsCount$.next(45);
 
@@ -237,8 +242,8 @@ describe('ModuleBrowserDataService', () => {
     tick();
 
     const args = backend.GET.modules.calls.mostRecent().args as any[];
-    expect(args[0]).toBe(20);
-    expect(args[1]).toBe(39);
+    expect(args[0]).toBe(25);
+    expect(args[1]).toBe(49);
     expect(args[12]).toBeFalse();
   }));
   
@@ -570,6 +575,90 @@ describe('ModuleBrowserDataService', () => {
     service.tagMatchMode$.next('AND');
 
     expect(service.modulesList$.value?.map((module) => module.id)).toEqual([1]);
+  });
+
+  it('uses the AND-filtered result count so empty pages do not expose load-more state', () => {
+    const {service, backend} = build();
+    backend.GET.modules.and.returnValue(of({
+      data: [
+        moduleFactory({
+          id: 1,
+          name: 'Passive Only',
+          tags: [
+            {id: 1, tag: {id: 1, name: 'Passive'} as any, voteCount: []}
+          ]
+        }),
+        moduleFactory({
+          id: 2,
+          name: 'Power Only',
+          tags: [
+            {id: 2, tag: {id: 2, name: 'Power'} as any, voteCount: []}
+          ]
+        })
+      ],
+      count: 117
+    }));
+
+    service.fields.tags.control.setValue([
+      {id: '1', name: 'Passive'},
+      {id: '2', name: 'Power'}
+    ]);
+    service.tagMatchMode$.next('AND');
+
+    expect(service.modulesList$.value).toEqual([]);
+    expect(service.serversideAdditionalData.itemsCount$.value).toBe(0);
+  });
+
+  it('resets pagination on tag match-mode changes so empty backend pages replace stale results', () => {
+    const {service, backend} = build();
+    const staleResults = Array.from({length: 25}, (_, index) => moduleFactory({id: index + 1}));
+    service.modulesList$.next(staleResults);
+    service.serversideAdditionalData.itemsCount$.next(117);
+    service.serversideTableRequestData.skip$.next(25);
+    service.fields.tags.control.setValue([
+      {id: '1', name: 'Passive'},
+      {id: '2', name: 'Power'}
+    ], {emitEvent: false});
+    backend.GET.modules.and.returnValue(of({data: [], count: 0}));
+
+    service.tagMatchMode$.next('AND');
+
+    expect(service.serversideTableRequestData.skip$.value).toBe(0);
+    expect(service.modulesList$.value).toEqual([]);
+    expect(service.serversideAdditionalData.itemsCount$.value).toBe(0);
+  });
+
+  it('preserves the backend count for non-empty AND-filtered pages so load-more can continue', () => {
+    const {service, backend} = build();
+    backend.GET.modules.and.returnValue(of({
+      data: [
+        moduleFactory({
+          id: 1,
+          name: 'Both Tags',
+          tags: [
+            {id: 1, tag: {id: 1, name: 'Passive'} as any, voteCount: []},
+            {id: 2, tag: {id: 2, name: 'Power'} as any, voteCount: []}
+          ]
+        }),
+        moduleFactory({
+          id: 2,
+          name: 'Power Only',
+          tags: [
+            {id: 2, tag: {id: 2, name: 'Power'} as any, voteCount: []}
+          ]
+        })
+      ],
+      count: 117
+    }));
+
+    service.fields.tags.control.setValue([
+      {id: '1', name: 'Passive'},
+      {id: '2', name: 'Power'}
+    ]);
+    service.tagMatchMode$.next('AND');
+
+    expect(service.modulesList$.value?.map((module) => module.id)).toEqual([1]);
+    expect(service.serversideAdditionalData.itemsCount$.value).toBe(117);
   });
 
   it('sorts best-match by score desc then name asc', () => {

@@ -25,6 +25,13 @@ describe('EmptyStateComponent', () => {
     it('backgroundImage starts as undefined', () => {
       expect(makeComp().backgroundImage).toBeUndefined();
     });
+
+    it('uses professional default empty-state copy', () => {
+      const comp = makeComp();
+      expect(comp.icon).toBe('search_off');
+      expect(comp.title).toBe('No results found');
+      expect(comp.copy).toBe('Try adjusting the filters or clearing the current search.');
+    });
   });
 
   describe('ngOnInit — backgroundImage resolution', () => {

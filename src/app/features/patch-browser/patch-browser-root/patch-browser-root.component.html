@@ -36,13 +36,18 @@
       
       <!-- ── Right column: results ── -->
       <div class="browser-content-area col gap1">
-        <app-patch-list [data$]="dataService.patchesList$"
-                        [viewConfig]="viewConfig"
-        ></app-patch-list>
+        <div class="patch-results-shell"
+             [class.patch-results-shell--updating]="patchesUpdating$ | async"
+        >
+          <app-patch-list [data$]="dataService.patchesList$"
+                          [viewConfig]="viewConfig"
+          ></app-patch-list>
+        </div>
         @if (hasMorePatches) {
           <div class="loadMore">
             <lib-auto-update-loading-indicator [data$]="dataService.patchesList$"
                                                [updateData$]="dataService.updatePatchesList$"
+                                               [initialLoading]="false"
             >
               <button mat-stroked-button
                       color="primary"

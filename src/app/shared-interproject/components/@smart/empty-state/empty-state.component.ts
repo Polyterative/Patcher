@@ -23,6 +23,9 @@ import {
 export class EmptyStateComponent implements OnInit {
   @Input()
   backgroundImage: string;
+  @Input() icon = 'search_off';
+  @Input() title = 'No results found';
+  @Input() copy = 'Try adjusting the filters or clearing the current search.';
 
   constructor(private route: ActivatedRoute, private router: Router) {
 

@@ -36,14 +36,19 @@
       
       <!-- ── Right column: results ── -->
       <div class="browser-content-area col gap1">
-        <app-rack-list [data$]="dataService.racksList$"
-                       [viewConfig]="viewConfig"
-                       [encloseVertically]="false"
-        ></app-rack-list>
+        <div class="rack-results-shell"
+             [class.rack-results-shell--updating]="racksUpdating$ | async"
+        >
+          <app-rack-list [data$]="dataService.racksList$"
+                         [viewConfig]="viewConfig"
+                         [encloseVertically]="false"
+          ></app-rack-list>
+        </div>
         @if (dataService.hasMoreRacks$ | async) {
           <div class="loadMore">
             <lib-auto-update-loading-indicator [data$]="dataService.racksList$"
                                                [updateData$]="dataService.updateRacksList$"
+                                               [initialLoading]="false"
             >
               <button mat-stroked-button
                       class="loadMore__btn"

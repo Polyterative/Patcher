@@ -46,6 +46,7 @@ export default defineConfig({
     '**/manufacturer-browser.spec.ts',
     '**/module-browser.spec.ts',
     '**/module-browser-pagination.spec.ts',
+    '**/module-browser-tags.spec.ts',
     '**/module-details.spec.ts',
     '**/module-editor-ux-review.spec.ts',
     '**/patch-browser.spec.ts',

@@ -14,3 +14,12 @@
     font-size: 0.875em;
   }
 }
+
+.patch-results-shell {
+  opacity: 1;
+  transition: opacity 160ms ease;
+}
+
+.patch-results-shell--updating {
+  opacity: 0.85;
+}

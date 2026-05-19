@@ -32,12 +32,14 @@ export class AutoUpdateLoadingIndicatorComponent implements OnInit, OnDestroy {
   @Input() updateData$: Observable<unknown>;
   readonly dataLoading$ = new BehaviorSubject<boolean>(true);
   
+  @Input() initialLoading = true;
   @Input() loadingLines = 1;
   @Input() skipFirstData = false;
   @Input() loadingLabel = 'Updating results';
   protected destroyEvent$ = new Subject<void>();
   
   ngOnInit(): void {
+    this.dataLoading$.next(this.initialLoading);
     if (this.data$ && this.updateData$) {
       merge(
         this.updateData$.pipe(takeUntil(this.destroyEvent$), mapTo(true)),
