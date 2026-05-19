@@ -36,7 +36,10 @@ import {
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 import { AppStateService } from "src/app/shared-interproject/app-state.service";
 import { Animations } from 'src/app/shared-interproject/SharedConstants';
-import { DbModule } from "src/app/models/module";
+import {
+  DbModule,
+  UserModulePossessionKind
+} from "src/app/models/module";
 import {
   CommentableEntityTypes,
   CommentsDataService
@@ -336,6 +339,15 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
     return `Checking private and hidden ${ kind } usage...`;
   }
 
+  getModuleDetailTitleSub(moduleName: string | null | undefined, possessionKind: UserModulePossessionKind | null | undefined): string | undefined {
+    if (!moduleName) {
+      return undefined;
+    }
+
+    const possessionLabel = this.getPossessionLabel(possessionKind);
+    return possessionLabel ? `${ moduleName } (${ possessionLabel })` : moduleName;
+  }
+
   ngOnDestroy(): void {
     clearJsonLdScript(JSONLD_SCRIPT_ID);
     this.dataService.singleModuleData$.next(undefined);
@@ -383,6 +395,19 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
 
   private getHiddenUsageNoun(kind: 'rack' | 'patch'): 'racks' | 'patches' {
     return kind === 'rack' ? 'racks' : 'patches';
+  }
+
+  private getPossessionLabel(kind: UserModulePossessionKind | null | undefined): string | null {
+    switch (kind) {
+      case 'HAS':
+        return 'Owned';
+      case 'WANTS':
+        return 'Wanted';
+      case 'SELLS':
+        return 'For sale';
+      default:
+        return null;
+    }
   }
   
   setDevStandard(id: number): void {

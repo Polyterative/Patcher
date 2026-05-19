@@ -10,6 +10,8 @@ import { HeroContentCardModule } from 'src/app/shared-interproject/components/@v
 import { RouterLink } from "@angular/router";
 import { MatCardModule } from "@angular/material/card";
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatIconModule } from '@angular/material/icon';
 import { DiscoveryTipsModule } from 'src/app/shared-interproject/discovery-tips/discovery-tips.module';
 import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-state-tips/empty-state-tips.component';
 
@@ -26,6 +28,8 @@ import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-s
     BrandPrimaryButtonModule,
     MatCardModule,
     MatPaginatorModule,
+    MatButtonToggleModule,
+    MatIconModule,
     MatDividerModule,
     AutoUpdateLoadingIndicatorModule,
     RouterLink,

@@ -6,7 +6,10 @@ import {
 import { ModuleMinimalViewConfig } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
-import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area-data.service';
+import {
+  UserAreaDataService,
+  UserModuleCollectionFilter
+} from 'src/app/features/routes/user-area/user-area-data.service';
 
 
 export interface UserModulesComponentViewConfig {
@@ -29,6 +32,22 @@ export class UserModulesComponent extends SubManager {
   @Input() userModulesComponentViewConfig: UserModulesComponentViewConfig = userModulesDefaultViewConfig;
   @Input() readonly encloseVertically = true;
   @Input() globalSearchQuery = '';
+  readonly collectionFilters: {value: UserModuleCollectionFilter; label: string; icon: string}[] = [
+    {value: 'HAS', label: 'Owned', icon: 'inventory_2'},
+    {value: 'WANTS', label: 'Wanted', icon: 'bookmark_add'},
+    {value: 'SELLS', label: 'For sale', icon: 'sell'},
+  ];
+  readonly emptyStateCopyByFilter: Record<UserModuleCollectionFilter, string> = {
+    HAS: 'Add the modules you own here so they are available when you build racks and patches.',
+    WANTS: 'Mark modules as wanted from the library to build your wishlist.',
+    SELLS: 'Mark modules as for sale from the library to keep track of gear you want to move.'
+  };
+  readonly sectionDescriptionByFilter: Record<UserModuleCollectionFilter, string> = {
+    HAS: 'Owned modules are available when you build racks and patches.',
+    WANTS: 'Wanted modules help you keep track of gear you are considering.',
+    SELLS: 'For-sale modules help you track gear you want to move.'
+  };
+
   constructor(
     public backend: SupabaseService,
     public dataService: UserAreaDataService

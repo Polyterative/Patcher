@@ -111,6 +111,7 @@ describe('ModuleBrowserDetailComponent', () => {
         public_patch_count: 0,
         hidden_patch_bucket: 'none'
       }),
+      currentModulePossession$: new BehaviorSubject<any>(null),
       modulesBySameManufacturer$: new BehaviorSubject<any[]>([]),
       moduleEditingPanelOpenState$: new BehaviorSubject<boolean>(false),
       moduleEditorHasPendingChanges$: new BehaviorSubject<boolean>(false),
@@ -196,6 +197,20 @@ describe('ModuleBrowserDetailComponent', () => {
     dataService.updateSingleModuleData$.next(0 as any);
     
     expect(commentsDataService.requestReset$.next).toHaveBeenCalled();
+  });
+
+  it('adds current possession state to the module detail page title', () => {
+    const {component} = build();
+
+    expect(component.getModuleDetailTitleSub('Mega Osc', 'HAS')).toBe('Mega Osc (Owned)');
+    expect(component.getModuleDetailTitleSub('Mega Osc', 'WANTS')).toBe('Mega Osc (Wanted)');
+    expect(component.getModuleDetailTitleSub('Mega Osc', 'SELLS')).toBe('Mega Osc (For sale)');
+  });
+
+  it('leaves the module detail page title unchanged without possession state', () => {
+    const {component} = build();
+
+    expect(component.getModuleDetailTitleSub('Mega Osc', null)).toBe('Mega Osc');
   });
 
   it('shows hidden rack and patch usage when public lists are empty', async () => {
