@@ -2,6 +2,60 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.1.0](https://github.com/Polyterative/Patcher/compare/v6.0.2...v6.1.0) (2026-05-19)
+
+
+### Features
+
+* **collection:** add module possession states — Own / Want / Sell segmented control ([dfacc2a](https://github.com/Polyterative/Patcher/commit/dfacc2a781206e22fa078bc1744fc315b6a3b0f0))
+* **collection:** filter module pickers to HAS+SELLS — exclude WANTS from patch editor + rack creator ([9bd0147](https://github.com/Polyterative/Patcher/commit/9bd0147e1f01c918865f2f5bd11f990140b6c74d))
+* **collection:** merge module possession states (Layer 1+2) from agent/autonomous-20260515 ([4cc3e67](https://github.com/Polyterative/Patcher/commit/4cc3e67f5ccb0d79aaea82c91a732a94d6b081a4))
+* **collection:** show SELLS inline badge in module-minimal meta row ([8e10db8](https://github.com/Polyterative/Patcher/commit/8e10db811544a59964e4c4ed9dd9fbda43e78f4f))
+* **forms:** add preset quick-select chip overlay to mat-form-entity ([354d8cb](https://github.com/Polyterative/Patcher/commit/354d8cb9a5fa7ef931abca00e7b318cedb1b03a9))
+* **manufacturer-detail:** add Standard / HP / tag client-side filters to module list ([dc1a9eb](https://github.com/Polyterative/Patcher/commit/dc1a9ebadda7fb062a6dac7a92cf5d50b5087b0e))
+* **module-browser:** add community possession stats card on module detail page ([07139e0](https://github.com/Polyterative/Patcher/commit/07139e0a14afc22ca7100a2c84a41f84409e98b0))
+* **module-browser:** replace mat-paginator with load-more button ([c874817](https://github.com/Polyterative/Patcher/commit/c874817a7c93e9cd8a8fd0df3c942995eba03f18))
+* **module-browser:** replace tag MULTISELECT with grouped chip picker + AND/OR toggle + best-match sort ([277e645](https://github.com/Polyterative/Patcher/commit/277e6457a448ca37c62d938470c806d0d79f3691))
+* **module:** add possession dialog ([a109d58](https://github.com/Polyterative/Patcher/commit/a109d58b874a354024a897148ba9bdeb6febbdbc))
+* **pagination:** replace mat-paginator with Load More button in patch and manufacturer browsers ([25240a4](https://github.com/Polyterative/Patcher/commit/25240a445e602cead50e1c23110d03497e76bb03))
+* **public-profile:** replace mat-paginator with load-more for racks and patches tabs ([f796f72](https://github.com/Polyterative/Patcher/commit/f796f72ac9697c6c825c2c1e73a1cc94541b48bb))
+* **rack-browser,user-racks:** replace mat-paginator with load-more buttons ([a4f4fe2](https://github.com/Polyterative/Patcher/commit/a4f4fe250182bd3cdf99db13921a0e29d90a4ceb))
+* **rack-editor:** add exit animation to module tile on delete ([8b04dd3](https://github.com/Polyterative/Patcher/commit/8b04dd3e16d84156ab3f2d41b5adf3e57d2b32c6))
+* **rack-editor:** quick-add blank panel shortcut strip on row hover ([76030b9](https://github.com/Polyterative/Patcher/commit/76030b99647838f486bb7e282827c1753df86b04))
+* **rack-editor:** row HP overflow indicator with per-row badge and summary ([62dc868](https://github.com/Polyterative/Patcher/commit/62dc868f898eca8c6879e54b0a466c95a284b272))
+* **user-area:** filter module collection states ([4ff72bf](https://github.com/Polyterative/Patcher/commit/4ff72bfb08a740ca76749dadb9e1666fe096738a))
+
+
+### Bug Fixes
+
+* **browser:** harden loading and empty states ([017b6d4](https://github.com/Polyterative/Patcher/commit/017b6d43b277c98bbc8932375e9c31732afea4c3))
+* **browser:** improve load more pagination ([e0752f6](https://github.com/Polyterative/Patcher/commit/e0752f6779d3f96c9f345a8905bc73e5295f8fae))
+* **ci:** add packages field to pnpm-workspace.yaml for pnpm 11 compat ([b122b78](https://github.com/Polyterative/Patcher/commit/b122b789df5101fb2fa97775f958bde66c90292d))
+* **ci:** downgrade packageManager to pnpm@10.33.4 ([e91f27a](https://github.com/Polyterative/Patcher/commit/e91f27a9d079a5f811e3c112c97a63d97c85b6d3))
+* **ci:** downgrade to pnpm@10.33.4 and use --no-frozen-lockfile for Vercel ([389ddad](https://github.com/Polyterative/Patcher/commit/389ddadb49d47a286176711c8ebb4a1c446f0379))
+* **ci:** force corepack pnpm in Vercel installCommand to use pnpm@11 ([f740cbb](https://github.com/Polyterative/Patcher/commit/f740cbb672b99586cb11392074a8966fcdf897a1))
+* **ci:** gate Vercel deploy on GitHub Actions check-runs ([3a913da](https://github.com/Polyterative/Patcher/commit/3a913da73de8d582ff935e425bc75ed69af77e06))
+* **ci:** port CI publish chain from develop ([4d9207c](https://github.com/Polyterative/Patcher/commit/4d9207cb2f15c4646d9e3a698b03f3d19ef3d08d))
+* **ci:** regenerate lockfile with pnpm@10 to include overrides ([348e658](https://github.com/Polyterative/Patcher/commit/348e658bc579bb0236114244545dd802ca068582))
+* **ci:** remove --frozen-lockfile from Vercel installCommand to fix pnpm overrides mismatch ([8ab1269](https://github.com/Polyterative/Patcher/commit/8ab12697e4a57625b28d77214446686d7804d0e6))
+* **ci:** remove duplicate packages keys in pnpm-workspace.yaml ([893dd6a](https://github.com/Polyterative/Patcher/commit/893dd6aa7cfaa37a87fd812107e89ed361e71558))
+* **ci:** replace jq with node for JSON parsing in vercel-ignore-build.sh ([a03002f](https://github.com/Polyterative/Patcher/commit/a03002f563e5c564e28f3fd4f5016a7dddbfc99f))
+* **module-browser:** fix Schneidersladen search URL + tooltip + audit comment ([9726b8e](https://github.com/Polyterative/Patcher/commit/9726b8e432cdd119c9286eb0b0735107136b959a))
+* **module-browser:** improve mobile filter actions ([1402a98](https://github.com/Polyterative/Patcher/commit/1402a98675101c4be4af83e12b531ced3dfaeb55))
+* **module-browser:** suppress empty-state when server reports more items to load ([3caf9ca](https://github.com/Polyterative/Patcher/commit/3caf9ca9637480fc80013409470df567fbf58afa))
+* **module:** fix imageless placeholder width in fixedHeight mode ([44e08ca](https://github.com/Polyterative/Patcher/commit/44e08cab714ecb96e29f2acab40ddb9596c8a568))
+* **module:** restore placeholder visibility by removing lib-screen-wrapper wrapper ([90e1d02](https://github.com/Polyterative/Patcher/commit/90e1d02516b34d72635668f32e1b31f6ccf8e11d))
+* **module:** use explicit ngStyle width+height on 1U placeholder div ([31b6856](https://github.com/Polyterative/Patcher/commit/31b6856cd69d1ee87cc83d5e7aa6193086a55cd2))
+* **rack-browser:** make load-more button reactive with async pipe ([62c5788](https://github.com/Polyterative/Patcher/commit/62c57885957021c645ce7940dd47c1ca8a71624b))
+* **rack-browser:** remove scroll-to-top on load-more ([e6f921e](https://github.com/Polyterative/Patcher/commit/e6f921e36111c9684e6d62ceadc003aef68f76a4))
+* **rack-editor:** add optimistic rollback on remove and reorder failures ([b0036d8](https://github.com/Polyterative/Patcher/commit/b0036d833fd247d4f7b94a9c0d451149ca51a828))
+* **rack-editor:** make blank panel shortcut strip an overlay (position:absolute) ([6646faf](https://github.com/Polyterative/Patcher/commit/6646fafc370fb1fac1569651526f37879ed766ab))
+* **rack-editor:** restore drag-and-drop module preview (cdkDragPreview) ([f611785](https://github.com/Polyterative/Patcher/commit/f611785a086c9d98b57ca9c3cf2a67ad283fc116))
+* **tests:** add isAdmin$ to UserManagementService mock in user-manuals spec ([a527f74](https://github.com/Polyterative/Patcher/commit/a527f7454bc5b143b0dbe1710fa322aac337a1b6))
+* **tests:** fix 4 failing unit tests on Chrome Headless 147 ([b3b3cc6](https://github.com/Polyterative/Patcher/commit/b3b3cc6289e6c2564bc1ec47a1339190a0690068))
+* **touch:** respect explicit matchMedia: undefined in environment override ([404d88f](https://github.com/Polyterative/Patcher/commit/404d88f305c42fb0ba0cc58eeb1019f2a9804148))
+* **ui:** polish tag filter sidebar - group label pill and thin scrollbar ([2460c89](https://github.com/Polyterative/Patcher/commit/2460c89d9c586eeeab5d682e1c86ef512254a812))
+
 ### [6.0.2](https://github.com/Polyterative/Patcher/compare/v6.0.1...v6.0.2) (2026-05-17)
 
 
@@ -10,7 +64,6 @@ All notable changes to this project will be documented in this file. See [standa
 * **module:** use explicit ngStyle width+height on 1U placeholder div ([90a4b19](https://github.com/Polyterative/Patcher/commit/90a4b19ba404010056c88bd552a3d8ff80bee483))
 
 ### [6.0.1](https://github.com/Polyterative/Patcher/compare/v6.0.0...v6.0.1) (2026-05-15)
-
 
 ### Features
 
