@@ -30,6 +30,7 @@ test.describe('Authenticated Rack Module Picker', () => {
 
   let rackUrl = '';
   let seededModuleId: number | null = null;
+  let ownedModuleForTest: OwnedModule | null = null;
 
   test.beforeEach(async ({page}, testInfo) => {
     test.setTimeout(120_000);
@@ -37,7 +38,9 @@ test.describe('Authenticated Rack Module Picker', () => {
     // Ensure the user has at least one owned module before navigating to the
     // rack (the full page reload clears in-memory cache, making the seeded
     // module visible to Angular's data service on load).
-    seededModuleId = await ensureOwnedModule(page);
+    const ownedModule = await ensureOwnedModule(page);
+    ownedModuleForTest = ownedModule;
+    seededModuleId = ownedModule.seededModuleId;
     await openRackInEditMode(page, rackUrl, DESKTOP_VIEWPORT);
   });
 
@@ -48,6 +51,7 @@ test.describe('Authenticated Rack Module Picker', () => {
       await removeOwnedModule(page, seededModuleId);
       seededModuleId = null;
     }
+    ownedModuleForTest = null;
   });
 
   test('hides comments while editing and restores them after locking', async ({page}) => {
@@ -59,7 +63,7 @@ test.describe('Authenticated Rack Module Picker', () => {
   });
 
   test('available mode hides a racked owned module while collection still shows it', async ({page}) => {
-    const ownedModule = await readFirstOwnedModule(page);
+    const ownedModule = await readFirstOwnedModule(page, ownedModuleForTest);
 
     await addRackModuleToRack(page, ownedModule);
     await searchForModule(page, ownedModule.name);
@@ -76,7 +80,7 @@ test.describe('Authenticated Rack Module Picker', () => {
   });
 
   test('keeps the browse mode buttons anchored on tablet while switching modes', async ({page}) => {
-    const ownedModule = await readFirstOwnedModule(page);
+    const ownedModule = await readFirstOwnedModule(page, ownedModuleForTest);
 
     await addRackModuleToRack(page, ownedModule);
     await openRackInEditMode(page, rackUrl, TABLET_VIEWPORT);
@@ -131,22 +135,11 @@ async function createEmptyRack(page: Page, testInfo: TestInfo): Promise<string> 
 
 async function openRackInEditMode(page: Page, rackUrl: string, viewport: {width: number; height: number}): Promise<void> {
   await page.setViewportSize(viewport);
-  // Intercept user_modules API calls for debugging
-  const userModulesRequests: string[] = [];
-  page.on('response', async (resp) => {
-    if (resp.url().includes('/rest/v1/user_modules') && resp.request().method() === 'GET') {
-      try {
-        const body = await resp.text();
-        userModulesRequests.push(`url=${resp.url().split('?')[1]?.slice(0, 100)} status=${resp.status()} body=${body.slice(0, 150)}`);
-      } catch {}
-    }
-  });
+  // Clear stale app cache so Angular re-fetches user modules fresh on load.
+  await page.evaluate(() => localStorage.removeItem('CACHE_STORAGE'));
   await page.goto(rackUrl);
   await waitForRackDetail(page);
   await enterEditMode(page);
-  if (userModulesRequests.length > 0) {
-    console.log(`[openRackInEditMode] user_modules calls: ${userModulesRequests.join(' | ')}`);
-  }
 }
 
 async function waitForRackDetail(page: Page): Promise<void> {
@@ -177,31 +170,11 @@ async function lockRack(page: Page): Promise<void> {
   await expect(page.getByRole('button', {name: /^Edit rack$/i}).first()).toBeVisible({timeout: 20_000});
 }
 
-async function readFirstOwnedModule(page: Page): Promise<OwnedModule> {
+async function readFirstOwnedModule(page: Page, ownedModuleForTest: OwnedModule | null): Promise<OwnedModule> {
   await setBrowseMode(page, 'Collection');
-
-  const ownedModule = await page.waitForFunction(() => {
-    const ng = (window as any).ng;
-    const browserRoot = document.querySelector('app-module-browser-root');
-    if (!ng?.getComponent || !browserRoot) {
-      return null;
-    }
-
-    const component = ng.getComponent(browserRoot);
-    const modules = component.ownedModules;
-    if (!Array.isArray(modules) || modules.length === 0) {
-      return null;
-    }
-
-    return {
-      id: modules[0].id,
-      name: modules[0].name,
-    };
-  }, undefined, {timeout: 20_000});
-
-  const value = await ownedModule.jsonValue() as OwnedModule | null;
-  expect(value).not.toBeNull();
-  return value!;
+  expect(ownedModuleForTest).not.toBeNull();
+  await expect(page.locator('app-module-list')).toContainText(ownedModuleForTest!.name, {timeout: 20_000});
+  return ownedModuleForTest!;
 }
 
 async function setBrowseMode(page: Page, label: 'Available' | 'Collection' | 'All modules'): Promise<void> {
@@ -317,25 +290,27 @@ function buildRackName(testInfo: TestInfo): string {
   return `[E2E] ${ titleSlug } ${ Date.now().toString().slice(-6) }`;
 }
 
-function escapeForRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
 /**
  * Ensures the logged-in user has at least one owned module by seeding one
  * from the public catalogue if none exist.  Must be called while an
  * authenticated page is loaded (localStorage has the Supabase auth token).
  * Returns the seeded module id, or null if the user already had modules.
  */
-async function ensureOwnedModule(page: Page): Promise<number | null> {
+async function ensureOwnedModule(page: Page): Promise<{id: number; name: string; seededModuleId: number | null}> {
   const result = await page.evaluate(
     async ({supabaseUrl, anonKey}) => {
       const lsKey = Object.keys(localStorage).find(k => k.includes('auth-token'));
-      if (!lsKey) { return {status: 'no-lskey', moduleId: null}; }
+      if (!lsKey) { return {status: 'no-lskey', module: null, seededModuleId: null}; }
 
-      const authData = JSON.parse(localStorage.getItem(lsKey) ?? '{}') as {access_token?: string};
-      const accessToken = authData?.access_token;
-      if (!accessToken) { return {status: 'no-token', moduleId: null}; }
+      const authData = JSON.parse(localStorage.getItem(lsKey) ?? '{}') as {
+        access_token?: string;
+        currentSession?: {access_token?: string};
+        session?: {access_token?: string};
+      };
+      const accessToken = authData?.access_token
+        ?? authData?.currentSession?.access_token
+        ?? authData?.session?.access_token;
+      if (!accessToken) { return {status: 'no-token', module: null, seededModuleId: null}; }
 
       const headers: Record<string, string> = {
         apikey: anonKey,
@@ -347,17 +322,34 @@ async function ensureOwnedModule(page: Page): Promise<number | null> {
       // including manufacturer join (which uses INNER JOIN semantics in PostgREST
       // for NOT-NULL FK columns), to check for truly valid owned modules.
       const fullJoin =
-        'kind,updated,module:modules!user_modules_moduleid_fkey(id,name,manufacturer:manufacturerId(id,name))';
+        'kind,module:modules!user_modules_moduleid_fkey(id,name,manufacturer:manufacturerId(id,name))';
       const existingResp = await fetch(
         `${ supabaseUrl }/rest/v1/user_modules?select=${ encodeURIComponent(fullJoin) }&limit=5`,
         {headers},
       );
       const existing = (await existingResp.json()) as Array<{
+        kind: string | null;
         module: {id: number; name: string; manufacturer: {id: number} | null} | null;
       }>;
-      const hasValidModules =
-        Array.isArray(existing) && existing.some(r => r.module?.id != null && r.module?.manufacturer != null);
-      if (hasValidModules) { return {status: 'already-has-valid-modules', moduleId: null}; }
+      const existingOwnedModule = Array.isArray(existing)
+        ? existing.find(r =>
+          (r.kind === 'HAS' || r.kind === 'SELLS')
+          && r.module?.id != null
+          && r.module?.manufacturer != null
+        )
+        : undefined;
+      if (existingOwnedModule?.module?.id) {
+        return {
+          status: 'already-has-valid-modules',
+          module: {id: existingOwnedModule.module.id, name: existingOwnedModule.module.name},
+          seededModuleId: null
+        };
+      }
+
+      const existingModuleToPromote = Array.isArray(existing)
+        ? existing.find(r => r.module?.id != null && r.module?.manufacturer != null)?.module
+        : undefined;
+      const existingModuleIdToPromote = existingModuleToPromote?.id ?? null;
 
       // Decode JWT to get user ID.
       let profileId: string | null = null;
@@ -365,47 +357,53 @@ async function ensureOwnedModule(page: Page): Promise<number | null> {
         const payload = JSON.parse(atob(accessToken.split('.')[1])) as {sub?: string};
         profileId = payload?.sub ?? null;
       } catch {
-        return {status: 'jwt-decode-error', moduleId: null};
+        return {status: 'jwt-decode-error', module: null, seededModuleId: null};
       }
-      if (!profileId) { return {status: 'no-profile-id', moduleId: null}; }
+      if (!profileId) { return {status: 'no-profile-id', module: null, seededModuleId: null}; }
 
-      // Find an approved module that also has a valid manufacturer (required by Angular's
-      // full JOIN query — modules without a manufacturer are excluded from results).
-      const modulesResp = await fetch(
-        `${ supabaseUrl }/rest/v1/modules?select=id,name,manufacturer:manufacturers!modules_manufacturerid_fkey(id)&isApproved=eq.true&limit=5`,
-        {headers},
-      );
-      const modulesBody = await modulesResp.text();
-      let candidateModules: Array<{id: number; manufacturer: {id: number} | null}> = [];
-      try { candidateModules = JSON.parse(modulesBody); } catch { candidateModules = []; }
-      const validModule = Array.isArray(candidateModules)
-        ? candidateModules.find(m => m.manufacturer?.id != null)
-        : undefined;
-      if (!validModule) {
-        return {status: `no-valid-module-found:${modulesResp.status}:${modulesBody.slice(0, 100)}`, moduleId: null};
+      let moduleToOwn: {id: number; name: string} | null = existingModuleToPromote
+        ? {id: existingModuleToPromote.id, name: existingModuleToPromote.name}
+        : null;
+      let moduleId = existingModuleIdToPromote;
+      if (!moduleId) {
+        // Find an approved module that also has a valid manufacturer (required by Angular's
+        // full JOIN query — modules without a manufacturer are excluded from results).
+        const modulesResp = await fetch(
+          `${ supabaseUrl }/rest/v1/modules?select=id,name,manufacturer:manufacturerId(id)&isApproved=eq.true&limit=5`,
+          {headers},
+        );
+        const modulesBody = await modulesResp.text();
+        let candidateModules: Array<{id: number; name: string; manufacturer: {id: number} | null}> = [];
+        try { candidateModules = JSON.parse(modulesBody); } catch { candidateModules = []; }
+        const validModule = Array.isArray(candidateModules)
+          ? candidateModules.find(m => m.manufacturer?.id != null)
+          : undefined;
+        if (!validModule) {
+          return {status: `no-valid-module-found:${modulesResp.status}:${modulesBody.slice(0, 100)}`, module: null, seededModuleId: null};
+        }
+        moduleId = validModule.id;
+        moduleToOwn = {id: validModule.id, name: validModule.name};
       }
-      const moduleId = validModule.id;
 
-      // Remove any phantom records for this profile before inserting.
-      await fetch(`${ supabaseUrl }/rest/v1/user_modules?profileid=eq.${ profileId }`, {
-        method: 'DELETE',
-        headers,
-      });
-
-      const addResp = await fetch(`${ supabaseUrl }/rest/v1/user_modules`, {
+      const addResp = await fetch(`${ supabaseUrl }/rest/v1/user_modules?on_conflict=profileid,moduleid`, {
         method: 'POST',
-        headers: {...headers, Prefer: 'return=minimal'},
-        body: JSON.stringify({moduleid: moduleId, profileid: profileId}),
+        headers: {...headers, Prefer: 'return=minimal,resolution=merge-duplicates'},
+        body: JSON.stringify({moduleid: moduleId, profileid: profileId, kind: 'HAS'}),
       });
       const addBody = await addResp.text();
       if (!addResp.ok) {
-        return {status: `insert-failed:${addResp.status}:${addBody.slice(0, 200)}`, moduleId: null};
+        return {status: `insert-failed:${addResp.status}:${addBody.slice(0, 200)}`, module: null, seededModuleId: null};
       }
-      return {status: 'seeded', moduleId};
+      return {status: 'seeded', module: moduleToOwn, seededModuleId: moduleId};
     },
     {supabaseUrl: SUPABASE_URL, anonKey: SUPABASE_ANON_KEY},
   );
-  return result.moduleId;
+  if (!result.module) {
+    throw new Error(`Unable to prepare an owned module for auth rack tests: ${ result.status }`);
+  }
+  return result.module
+    ? {...result.module, seededModuleId: result.seededModuleId}
+    : (() => { throw new Error(`Unable to prepare an owned module for auth rack tests: ${ result.status }`); })();
 }
 
 /** Removes a previously seeded module from the user's collection. */
@@ -415,8 +413,14 @@ async function removeOwnedModule(page: Page, moduleId: number): Promise<void> {
       const lsKey = Object.keys(localStorage).find(k => k.includes('auth-token'));
       if (!lsKey) { return; }
 
-      const authData = JSON.parse(localStorage.getItem(lsKey) ?? '{}') as {access_token?: string};
-      const accessToken = authData?.access_token;
+      const authData = JSON.parse(localStorage.getItem(lsKey) ?? '{}') as {
+        access_token?: string;
+        currentSession?: {access_token?: string};
+        session?: {access_token?: string};
+      };
+      const accessToken = authData?.access_token
+        ?? authData?.currentSession?.access_token
+        ?? authData?.session?.access_token;
       if (!accessToken) { return; }
 
       await fetch(`${ supabaseUrl }/rest/v1/user_modules?moduleid=eq.${ mId }`, {
