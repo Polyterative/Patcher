@@ -6,6 +6,15 @@
   padding: 0.5rem 0 0.25rem;
 }
 
+.rack-results-shell {
+  opacity: 1;
+  transition: opacity 160ms ease;
+}
+
+.rack-results-shell--updating {
+  opacity: 0.85;
+}
+
 .loadMore__btn {
   min-width: 12rem;
 }

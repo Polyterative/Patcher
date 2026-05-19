@@ -25,6 +25,11 @@ describe('RackBrowserDataService', () => {
     expect(service.serversideTableRequestData.sort$.value).toEqual(['updated', 'desc']);
   });
 
+  it('loads 25 racks per page by default', () => {
+    const {service} = build();
+    expect(service.serversideTableRequestData.take$.value).toBe(25);
+  });
+
   it('calls backend with updated/desc when updateRacksList$ fires', () => {
     const {service, backend} = build();
     service.updateRacksList$.next();
@@ -142,21 +147,21 @@ describe('RackBrowserDataService', () => {
     const {service, backend} = build();
     backend.GET.racksMinimal.calls.reset();
 
-    // Simulate initial 20 items loaded
-    const firstBatch = Array.from({length: 20}, (_, index) => ({id: index + 1}));
-    const secondBatch = Array.from({length: 10}, (_, index) => ({id: index + 21}));
+    // Simulate initial 25 items loaded
+    const firstBatch = Array.from({length: 25}, (_, index) => ({id: index + 1}));
+    const secondBatch = Array.from({length: 10}, (_, index) => ({id: index + 26}));
     backend.GET.racksMinimal.and.returnValue(of({data: secondBatch, count: null}));
     (service.racksList$ as any).next(firstBatch);
     service.serversideAdditionalData.itemsCount$.next(35);
 
     service.loadMore$.next();
 
-    expect(service.serversideTableRequestData.skip$.value).toBe(20);
+    expect(service.serversideTableRequestData.skip$.value).toBe(25);
     expect(backend.GET.racksMinimal).toHaveBeenCalledWith(
-      20, 39, '', 'updated', 'desc', false, 'stable-rack-pagination-v2'
+      25, 49, '', 'updated', 'desc', false, 'stable-rack-pagination-v2'
     );
-    expect(service.racksList$.value?.length).toBe(30);
-    expect(service.racksList$.value?.at(-1)?.id).toBe(30);
+    expect(service.racksList$.value?.length).toBe(35);
+    expect(service.racksList$.value?.at(-1)?.id).toBe(35);
   });
 
   it('deduplicates repeated racks returned by overlapping backend pages', () => {
@@ -182,7 +187,7 @@ describe('RackBrowserDataService', () => {
   it('waits for slow load-more responses instead of restoring the previous rack list', fakeAsync(() => {
     const {service, backend} = build();
     const slowResponse$ = new Subject<{data: {id: number}[]; count: null}>();
-    const initialRacks = Array.from({length: 20}, (_, index) => ({id: index + 1}));
+    const initialRacks = Array.from({length: 25}, (_, index) => ({id: index + 1}));
     backend.GET.racksMinimal.and.returnValue(slowResponse$.asObservable());
     (service.racksList$ as any).next(initialRacks);
     service.serversideAdditionalData.itemsCount$.next(35);
@@ -192,11 +197,11 @@ describe('RackBrowserDataService', () => {
 
     expect(service.racksList$.value).toEqual(initialRacks as any);
 
-    slowResponse$.next({data: [{id: 21}], count: null});
+    slowResponse$.next({data: [{id: 26}], count: null});
     slowResponse$.complete();
     tick();
 
-    expect(service.racksList$.value).toEqual([...initialRacks, {id: 21}] as any);
+    expect(service.racksList$.value).toEqual([...initialRacks, {id: 26}] as any);
     expect(service.serversideAdditionalData.itemsCount$.value).toBe(35);
   }));
 

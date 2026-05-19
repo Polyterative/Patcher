@@ -244,16 +244,21 @@
       
       <!-- ── Right column: results ── -->
       <div class="browser-content-area col gap1">
-        <app-module-list [data$]="visibleModules$"
-                         [viewConfig]="viewConfig"
-                         [emptyStateCopy]="showCollectionBrowseToggle ? rackContextEmptyStateCopy : ''"
-                         [suppressEmpty]="hasMoreModules"
-                         [encloseVertically]="false"
-        ></app-module-list>
+        <div class="module-results-shell"
+             [class.module-results-shell--updating]="modulesUpdating$ | async"
+        >
+          <app-module-list [data$]="visibleModules$"
+                           [viewConfig]="viewConfig"
+                           [emptyStateCopy]="showCollectionBrowseToggle ? rackContextEmptyStateCopy : ''"
+                           [suppressEmpty]="hasMoreModules"
+                           [encloseVertically]="false"
+          ></app-module-list>
+        </div>
         @if (!usesOwnedDataset && hasMoreModules) {
          <div class="loadMore">
            <lib-auto-update-loading-indicator [data$]="dataService.modulesList$"
-                                              [updateData$]="dataService.updateModulesList$"
+                                             [updateData$]="dataService.modulesLoadingTrigger$"
+                                              [initialLoading]="false"
            >
              <button mat-stroked-button
                      color="primary"

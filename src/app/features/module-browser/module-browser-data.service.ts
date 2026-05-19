@@ -88,7 +88,7 @@ export class ModuleBrowserDataService extends SubManager {
 
   readonly serversideTableRequestData = {
     skip$: new BehaviorSubject<number>(0),
-    take$: new BehaviorSubject<number>(20),
+    take$: new BehaviorSubject<number>(25),
     filter$: new BehaviorSubject<string>(''),
     sort$: new BehaviorSubject<[string, string]>(['updated', 'desc'])
   };
@@ -337,6 +337,8 @@ export class ModuleBrowserDataService extends SubManager {
         if (this.modulesList$.value !== null && this.getSelectedTagIds().length > 0) {
           this.remoteTagFilterLoading$.next(true);
         }
+        this.serversideTableRequestData.skip$.next(0);
+        this.paginatorToFistPage$.next();
         this.updateModulesList$.next();
       });
 
@@ -366,9 +368,13 @@ export class ModuleBrowserDataService extends SubManager {
               tagIds.length > 0 ? tagIds : undefined,
               includeCount
             )
+            .pipe(map(response => ({
+             ...response,
+             requestedSkip: skip
+            })))
             .pipe(catchError(error => {
-              console.error('Failed to load modules:', error);
-              return of({data: [], count: 0});
+             console.error('Failed to load modules:', error);
+             return of({data: [], count: 0, requestedSkip: skip});
             }));
         }),
         map((response) => {
@@ -385,7 +391,10 @@ export class ModuleBrowserDataService extends SubManager {
 
           return {
             ...response,
-            data
+            data,
+            count: this.tagMatchMode$.value === 'AND' && selectedTagIds.length > 0 && data.length === 0
+              ? data.length
+              : response.count
           };
         }),
         takeUntil(this.destroy$)
@@ -394,7 +403,7 @@ export class ModuleBrowserDataService extends SubManager {
         this.serversideAdditionalData.itemsCount$.next(
           response.count ?? this.serversideAdditionalData.itemsCount$.value
         );
-        const skip = this.serversideTableRequestData.skip$.value;
+        const skip = response.requestedSkip;
         const current = this.modulesList$.value ?? [];
         this.modulesList$.next(skip === 0 ? response.data : [...current, ...response.data]);
         this.remoteTagFilterLoading$.next(false);

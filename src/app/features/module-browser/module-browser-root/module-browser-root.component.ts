@@ -12,6 +12,8 @@ import {
   Observable
 } from 'rxjs';
 import {
+  mapTo,
+  shareReplay,
   startWith,
   takeUntil
 } from 'rxjs/operators';
@@ -57,6 +59,7 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
   @Input() manageSeo = true;
   mobileFiltersExpanded = false;
   readonly recentActivityItems$: Observable<RecentActivityItem[]>;
+  readonly modulesUpdating$: Observable<boolean>;
   readonly visibleModules$ = new BehaviorSubject<ModuleList>(null);
   readonly visibleItemsCount$ = new BehaviorSubject<number>(0);
   readonly ownedModulesDefaultThreshold = OWNED_MODULES_DEFAULT_THRESHOLD;
@@ -137,6 +140,14 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
     super();
 
     this.recentActivityItems$ = this.recentActivityService.getRecentActivityItems$(this.dataService.modulesList$);
+    this.modulesUpdating$ = merge(
+      this.dataService.modulesLoadingTrigger$.pipe(mapTo(true)),
+      this.dataService.modulesList$.pipe(mapTo(false))
+    ).pipe(
+      startWith(false),
+      shareReplay({bufferSize: 1, refCount: true}),
+      takeUntil(this.destroy$)
+    );
 
     merge(
       this.dataService.modulesList$,
@@ -174,7 +185,7 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
       .subscribe(params => {
         if (params['refresh']) {
           this.dataService.serversideTableRequestData.skip$.next(0);
-          this.dataService.serversideTableRequestData.take$.next(20);
+          this.dataService.serversideTableRequestData.take$.next(25);
         }
       });
   }
