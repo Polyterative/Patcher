@@ -3,6 +3,16 @@ import {
   Component
 } from '@angular/core';
 import {
+  merge,
+  Observable
+} from 'rxjs';
+import {
+  mapTo,
+  shareReplay,
+  startWith,
+  takeUntil
+} from 'rxjs/operators';
+import {
   defaultRackMinimalViewConfig,
   RackMinimalViewConfig
 } from 'src/app/components/rack-parts/rack-minimal/rack-minimal.component';
@@ -21,6 +31,7 @@ import { SubManager } from 'src/app/shared-interproject/directives/subscription-
 })
 export class RackBrowserRootComponent extends SubManager {
   readonly formTypes = FormTypes;
+  readonly racksUpdating$: Observable<boolean>;
   readonly viewConfig: RackMinimalViewConfig = {...defaultRackMinimalViewConfig};
 
   constructor(
@@ -28,6 +39,14 @@ export class RackBrowserRootComponent extends SubManager {
     readonly seoAndUtilsService: SeoAndUtilsService
   ) {
     super();
+    this.racksUpdating$ = merge(
+      this.dataService.updateRacksList$.pipe(mapTo(true)),
+      this.dataService.racksList$.pipe(mapTo(false))
+    ).pipe(
+      startWith(false),
+      shareReplay({bufferSize: 1, refCount: true}),
+      takeUntil(this.destroy$)
+    );
     
     this.seoAndUtilsService.updateSeo(
       {description: 'Racks created by patcher.xyz community. Get inspired and explore new possibilities!'},

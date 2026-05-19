@@ -173,6 +173,15 @@
   margin-top: 0.2rem;
 }
 
+.module-results-shell {
+  opacity: 1;
+  transition: opacity 160ms ease;
+}
+
+.module-results-shell--updating {
+  opacity: 0.85;
+}
+
 @media (max-width: 59.9375rem) {
   .module-filter-control--optional {
     display: none;

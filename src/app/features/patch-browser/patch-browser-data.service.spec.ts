@@ -22,6 +22,11 @@ describe('PatchBrowserDataService', () => {
     expect(service.serversideTableRequestData.sort$.value).toEqual(['updated', 'desc']);
   });
 
+  it('loads 25 patches per page by default', () => {
+    const {service} = build();
+    expect(service.serversideTableRequestData.take$.value).toBe(25);
+  });
+
   it('calls backend with updated/desc when updatePatchesList$ fires', () => {
     const {service, backend} = build();
     service.updatePatchesList$.next();

@@ -14,3 +14,9 @@
   min-width: var(--flexbox-row-fast-item-min-width);
   max-width: var(--flexbox-row-fast-item-max-width);
 }
+
+.box > .flexbox-row-fast__full-row {
+  flex-basis: 100%;
+  min-width: 0;
+  max-width: none;
+}

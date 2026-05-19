@@ -15,6 +15,10 @@ describe('AutoUpdateLoadingIndicatorComponent', () => {
       expect(makeComp().loadingLines).toBe(1);
     });
 
+    it('initialLoading defaults to true', () => {
+      expect(makeComp().initialLoading).toBeTrue();
+    });
+
     it('skipFirstData defaults to false', () => {
       expect(makeComp().skipFirstData).toBeFalse();
     });
@@ -28,6 +32,13 @@ describe('AutoUpdateLoadingIndicatorComponent', () => {
     it('does not throw when neither data$ nor updateData$ provided', () => {
       const comp = makeComp();
       expect(() => comp.ngOnInit()).not.toThrow();
+    });
+
+    it('uses initialLoading when inputs are initialized', () => {
+      const comp = makeComp();
+      comp.initialLoading = false;
+      comp.ngOnInit();
+      expect(comp.dataLoading$.getValue()).toBeFalse();
     });
 
     it('does not throw when only data$ is provided', () => {
