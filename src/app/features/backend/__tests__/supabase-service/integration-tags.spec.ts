@@ -66,7 +66,7 @@ describe('SupabaseService - getTags Integration', () => {
           expect(tag.name.length).withContext('Tag name should not be empty').toBeGreaterThan(0);
           
           expect(tag.type).withContext('Tag should have type').toBeDefined();
-          expect([TagType.Purpose, TagType.Nature, TagType.Character]).withContext('Tag type should be valid TagType enum').toContain(tag.type);
+          expect(Object.values(TagType).filter(v => typeof v === 'number')).withContext('Tag type should be valid TagType enum').toContain(tag.type);
         }
         
         done();

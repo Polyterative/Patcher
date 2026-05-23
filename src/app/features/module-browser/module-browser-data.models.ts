@@ -81,4 +81,5 @@ export interface ModuleBrowserFields {
   order: ModuleSelectField<ModuleOrderOption>;
   standard: ModuleSelectField<IdNumberOption>;
   tags: ModuleMultiselectField<ISelectable>;
+  tagSearch: ModuleTextField;
 }

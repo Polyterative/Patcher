@@ -50,6 +50,19 @@
                 }
                 Collection
               </button>
+              @if (showWantedBrowseMode) {
+                <button type="button"
+                        class="module-browser-mode__button"
+                        [class.module-browser-mode__button--active]="collectionBrowseMode === 'wanted'"
+                        [attr.aria-pressed]="collectionBrowseMode === 'wanted'"
+                        (click)="setCollectionBrowseMode('wanted')"
+                >
+                  @if (collectionBrowseMode === 'wanted') {
+                    <mat-icon class="module-browser-mode__button-icon" aria-hidden="true">radio_button_checked</mat-icon>
+                  }
+                  Wanted
+                </button>
+              }
               <button type="button"
                       class="module-browser-mode__button"
                       [class.module-browser-mode__button--active]="collectionBrowseMode === 'all'"
@@ -115,6 +128,91 @@
           ></lib-mat-form-entity>
         </div>
         
+        <div class="module-filter-control module-filter-control--optional module-tag-filter-section">
+          <div class="module-tag-filter-header row gap1">
+            <lib-mat-form-entity
+              [control]="dataService.fields.tagSearch.control"
+              [type]="dataService.fields.tagSearch.type"
+              [label]="dataService.fields.tagSearch.label"
+              iconL1="search"
+            ></lib-mat-form-entity>
+            @if ((dataService.fields.tags.control.value?.length ?? 0) > 0) {
+              <mat-button-toggle-group
+                [value]="dataService.tagMatchMode$ | async"
+                (change)="dataService.tagMatchMode$.next($event.value)"
+                aria-label="Tag match mode"
+                class="tag-match-mode-toggle"
+              >
+                <mat-button-toggle value="OR" matTooltip="Match any selected tag">Any</mat-button-toggle>
+                <mat-button-toggle value="AND" matTooltip="Match all selected tags">All</mat-button-toggle>
+              </mat-button-toggle-group>
+            }
+          </div>
+
+          @if ((dataService.fields.tags.control.value?.length ?? 0) > 0) {
+            <div class="selected-tags-row">
+              <mat-chip-set aria-label="Active tag filters">
+                @for (tag of dataService.fields.tags.control.value; track tag.id) {
+                  <mat-chip
+                    (removed)="dataService.toggleTagFilter({id: +tag.id, name: tag.name, type: tag.type})"
+                    [removable]="true"
+                    highlighted
+                  >
+                    {{ tag.name }}
+                    <button matChipRemove aria-label="Remove tag filter {{ tag.name }}">
+                      <mat-icon>cancel</mat-icon>
+                    </button>
+                  </mat-chip>
+                }
+              </mat-chip-set>
+            </div>
+          }
+
+          @let isSearching = !!(dataService.tagSearchQuery$ | async);
+
+          @if (isSearching) {
+            <div class="tag-search-results">
+              <mat-chip-listbox [multiple]="true" aria-label="Search results">
+                @for (group of dataService.groupedFilterTags$ | async; track group.label) {
+                  @for (tag of group.tags; track tag.id) {
+                    <mat-chip-option
+                      [selected]="isTagSelected(tag)"
+                      (click)="dataService.toggleTagFilter(tag)"
+                      [matTooltip]="group.label"
+                    >{{ tag.name }}</mat-chip-option>
+                  }
+                }
+              </mat-chip-listbox>
+            </div>
+          } @else {
+            <mat-accordion class="tag-filter-accordion" [multi]="false">
+              @for (group of dataService.groupedFilterTags$ | async; track group.label) {
+                @if (group.tags.length > 0) {
+                  <mat-expansion-panel class="tag-filter-panel">
+                    <mat-expansion-panel-header>
+                      <mat-panel-title class="tag-filter-panel__title">
+                        {{ group.label }}
+                        @let count = selectedTagCount(group);
+                        @if (count > 0) {
+                          <span class="tag-filter-panel__badge">{{ count }}</span>
+                        }
+                      </mat-panel-title>
+                    </mat-expansion-panel-header>
+                    <mat-chip-listbox [multiple]="true" aria-label="{{ group.label }} tags">
+                      @for (tag of group.tags; track tag.id) {
+                        <mat-chip-option
+                          [selected]="isTagSelected(tag)"
+                          (click)="dataService.toggleTagFilter(tag)"
+                        >{{ tag.name }}</mat-chip-option>
+                      }
+                    </mat-chip-listbox>
+                  </mat-expansion-panel>
+                }
+              }
+            </mat-accordion>
+          }
+        </div>
+
         <div class="module-filter-control module-filter-control--optional">
           <lib-mat-form-entity [control]="dataService.fields.hpCondition.control"
                                [type]="dataService.fields.hpCondition.type"
@@ -142,77 +240,6 @@
                                [label]="dataService.fields.standard.label"
                                iconL1="settings"
           ></lib-mat-form-entity>
-        </div>
-        
-        <div class="module-filter-control module-filter-control--optional module-tag-filter-section">
-          <div class="module-tag-filter-header row gap1">
-            <span class="filter-sidebar__heading" style="margin: 0">Tags</span>
-            @if ((dataService.fields.tags.control.value?.length ?? 0) > 0) {
-              <mat-button-toggle-group
-                [value]="dataService.tagMatchMode$ | async"
-                (change)="dataService.tagMatchMode$.next($event.value)"
-                aria-label="Tag match mode"
-                class="tag-match-mode-toggle"
-              >
-                <mat-button-toggle value="OR" matTooltip="Match any selected tag">Any</mat-button-toggle>
-                <mat-button-toggle value="AND" matTooltip="Match all selected tags">All</mat-button-toggle>
-              </mat-button-toggle-group>
-            }
-          </div>
-
-          <mat-form-field appearance="outline" class="tag-search-field">
-            <mat-label>Search tags…</mat-label>
-            <mat-icon matPrefix>search</mat-icon>
-            <input matInput
-                   [value]="dataService.tagSearchQuery$ | async"
-                   (input)="dataService.tagSearchQuery$.next($any($event.target).value)"
-                   aria-label="Filter tags by name"
-            />
-            @if (dataService.tagSearchQuery$ | async; as tagSearchQuery) {
-              @if (tagSearchQuery) {
-                <button matSuffix mat-icon-button (click)="dataService.tagSearchQuery$.next('')" aria-label="Clear tag search">
-                  <mat-icon>close</mat-icon>
-                </button>
-              }
-            }
-          </mat-form-field>
-
-          @if ((dataService.fields.tags.control.value?.length ?? 0) > 0) {
-            <div class="selected-tags-row">
-              <mat-chip-set aria-label="Active tag filters">
-                @for (tag of dataService.fields.tags.control.value; track tag.id) {
-                  <mat-chip
-                    (removed)="dataService.toggleTagFilter({id: +tag.id, name: tag.name, type: 0})"
-                    [removable]="true"
-                    highlighted
-                  >
-                    {{ tag.name }}
-                    <button matChipRemove aria-label="Remove tag filter {{ tag.name }}">
-                      <mat-icon>cancel</mat-icon>
-                    </button>
-                  </mat-chip>
-                }
-              </mat-chip-set>
-            </div>
-          }
-
-          <div class="proposer-groups col gap1">
-            @for (group of dataService.groupedFilterTags$ | async; track group.label) {
-              @if (group.tags.length > 0) {
-                <div class="col gap0_5 proposer-group">
-                  <span class="proposer-group__label">{{ group.label }}</span>
-                  <mat-chip-listbox [multiple]="true" aria-label="{{ group.label }} tags">
-                    @for (tag of group.tags; track tag.id) {
-                      <mat-chip-option
-                        [selected]="isTagSelected(tag)"
-                        (click)="dataService.toggleTagFilter(tag)"
-                      >{{ tag.name }}</mat-chip-option>
-                    }
-                  </mat-chip-listbox>
-                </div>
-              }
-            }
-          </div>
         </div>
         
         <div class="module-filter-control module-filter-control--optional">

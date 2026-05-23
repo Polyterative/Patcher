@@ -15,6 +15,7 @@ import { MapToModulePipe } from '../../map-to-module.pipe';
 import { RACK_ANALYSIS_MODES, RackAnalysisMode } from '../../rack-analysis-mode';
 import { HasUnrackedModulesPipe } from './has-unracked-modules.pipe';
 import { RackVisualModelComponent } from './rack-visual-model.component';
+import { TagType } from 'src/app/models/tag';
 
 
 describe('RackVisualModelComponent', () => {
@@ -275,7 +276,7 @@ describe('RackVisualModelComponent', () => {
     moduleRef.module.tags = [{
       tag: {
         name: 'VCO',
-        type: 0
+        type: TagType.Source
       }
     }];
     fixture.detectChanges();
@@ -300,7 +301,7 @@ describe('RackVisualModelComponent', () => {
     moduleRef.module.tags = [{
       tag: {
         name: 'VCO',
-        type: 0
+        type: TagType.Source
       },
       voteCount: [{moduletagid: 1}]
     }];
@@ -309,7 +310,7 @@ describe('RackVisualModelComponent', () => {
     destination.module.tags = [{
       tag: {
         name: 'Filter',
-        type: 0
+        type: TagType.Source
       },
       voteCount: [{moduletagid: 1}]
     }];
@@ -535,8 +536,8 @@ describe('RackVisualModelComponent', () => {
       makeRackedModule(11, 0, 14),
       makeRackedModule(4647, 0, 22)
     ]];
-    component.rowedRackedModules[0][0].module.tags = [{id: 1, tag: {id: 1, name: 'VCO', type: 0}, voteCount: []}];
-    component.rowedRackedModules[0][1].module.tags = [{id: 2, tag: {id: 2, name: 'Envelope Gen.', type: 0}, voteCount: []}];
+    component.rowedRackedModules[0][0].module.tags = [{id: 1, tag: {id: 1, name: 'VCO', type: TagType.Source}, voteCount: []}];
+    component.rowedRackedModules[0][1].module.tags = [{id: 2, tag: {id: 2, name: 'Envelope Gen.', type: TagType.Source}, voteCount: []}];
     fixture.detectChanges();
 
     component.setHoveredRow(0);

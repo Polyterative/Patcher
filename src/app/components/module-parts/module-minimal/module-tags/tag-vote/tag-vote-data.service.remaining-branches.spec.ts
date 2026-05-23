@@ -12,6 +12,7 @@ import {
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import { TagType } from 'src/app/models/tag';
 import { TagVoteDataService } from './tag-vote-data.service';
 
 
@@ -22,7 +23,7 @@ describe('TagVoteDataService - Remaining Branches', () => {
     
     const backend = {
       get: {
-        allTags: jasmine.createSpy('allTags').and.returnValue(of([{id: 1, name: 'VCO', type: 0}])),
+        allTags: jasmine.createSpy('allTags').and.returnValue(of([{id: 1, name: 'VCO', type: TagType.Source}])),
         myVotes: jasmine.createSpy('myVotes').and.returnValue(of([10]))
       },
       add: {
