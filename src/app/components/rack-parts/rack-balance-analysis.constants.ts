@@ -29,7 +29,9 @@ export const RACK_BALANCE_AXES: RackBalanceAxisDefinition[] = [
     label: 'Voices',
     icon: 'graphic_eq',
     dbTagNames: [
+      'Chord',
       'Full Voice',
+      'Granular',
       'Noise',
       'Sample',
       'VCO'
@@ -56,11 +58,13 @@ export const RACK_BALANCE_AXES: RackBalanceAxisDefinition[] = [
     icon: 'swap_calls',
     dbTagNames: [
       'Control',
-      'Env. Follow',
+      'Envelope Follow',
       'Envelope Gen.',
+      'Envelope Gen',
       'Function Gen.',
       'LFO',
       'Modulate',
+      'Randomness',
       'S&H',
       'Slew Limit',
       'Uncertainty'
@@ -70,7 +74,7 @@ export const RACK_BALANCE_AXES: RackBalanceAxisDefinition[] = [
       /\benvelope\b/i,
       /\bfunction\b/i,
       /\bmodulat/i,
-      /\brandom\b/i,
+      /\brandom/i,
       /\bslew\b/i,
       /\bcontroller\b/i
     ],
@@ -124,7 +128,6 @@ export const RACK_BALANCE_AXES: RackBalanceAxisDefinition[] = [
     label: 'Timing',
     icon: 'timer',
     dbTagNames: [
-      'Clock Gen',
       'Clock Mod',
       'Frequency Div.',
       'Quantize',
@@ -152,19 +155,26 @@ export const RACK_BALANCE_AXES: RackBalanceAxisDefinition[] = [
     label: 'Tone shaping',
     icon: 'tune',
     dbTagNames: [
+      'Bandpass',
+      'Bitcrush',
       'Compress',
       'Delay',
       'Distort',
       'EQ',
       'FX',
+      'Hipass',
       'LPG',
+      'Looper',
+      'Lowpass',
       'Pan',
       'Phase Shift',
       'Pitch Shift',
+      'Resonator',
       'Reverb',
       'Ring Mod',
       'Stereo',
       'VCF',
+      'Wave Fold',
       'Waveshape'
     ],
     purposePatterns: [
