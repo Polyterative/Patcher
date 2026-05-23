@@ -6,8 +6,8 @@ import { ProposedTag, TagVoteCount } from './tag-vote/tag-vote-data.types';
 
 // ── Test data ─────────────────────────────────────────────────────────────────
 
-const tagPurpose1: Tag = { id: 1, name: 'Oscillator', type: TagType.Purpose };
-const tagPurpose2: Tag = { id: 4, name: 'Drone', type: TagType.Purpose };
+const tagPurpose1: Tag = { id: 1, name: 'Oscillator', type: TagType.Source };
+const tagPurpose2: Tag = { id: 4, name: 'Drone', type: TagType.Source };
 const tagCharacter: Tag = { id: 2, name: 'Dark', type: TagType.Character };
 const tagNature: Tag = { id: 3, name: 'Digital', type: TagType.Nature };
 
@@ -204,10 +204,10 @@ describe('ModuleTagsComponent', () => {
       const groups = snapshot(comp.availableTagGroups$);
       const labels = groups.map(g => g.label);
 
-      expect(labels).toContain('Purpose');
+      expect(labels).toContain('Source');
       expect(labels).toContain('Character');
       expect(labels).toContain('Nature');
-      const purposeGroup = groups.find(g => g.label === 'Purpose')!;
+      const purposeGroup = groups.find(g => g.label === 'Source')!;
       expect(purposeGroup.tags.length).toBe(2);
     });
 
