@@ -72,11 +72,11 @@ describe('RackBalanceAnalysisService', () => {
     expect(result.axes.every(axis => axis.share === 0)).toBeTrue();
   });
 
-  it('scores recognized axes from purpose and nature tags', () => {
+  it('scores recognized axes from source and nature tags', () => {
     const rack = [[
-      makeRackedModule(1, [{name: 'VCO', type: TagType.Purpose}]),
+      makeRackedModule(1, [{name: 'VCO', type: TagType.Source}]),
       makeRackedModule(2, [{name: 'Utility', type: TagType.Nature}]),
-      makeRackedModule(3, [{name: 'Envelope', type: TagType.Purpose}]),
+      makeRackedModule(3, [{name: 'Envelope', type: TagType.Modulation}]),
     ]];
 
     const result = service.analyze(rack);
@@ -108,14 +108,14 @@ describe('RackBalanceAnalysisService', () => {
     expect(result.axes.find(axis => axis.id === 'tone')?.matchedModules).toBe(1);
   });
 
-  it('matches the stored DB tag labels, including punctuation-heavy purpose tags', () => {
+  it('matches the stored DB tag labels, including punctuation-heavy source tags', () => {
     const rack = [[
-      makeRackedModule(1, [{name: 'Envelope Gen.', type: TagType.Purpose}]),
-      makeRackedModule(2, [{name: 'Clock Gen', type: TagType.Purpose}]),
-      makeRackedModule(3, [{name: 'Env. Follow', type: TagType.Purpose}]),
-      makeRackedModule(4, [{name: 'Waveshape', type: TagType.Purpose}]),
-      makeRackedModule(5, [{name: 'VCA', type: TagType.Purpose}]),
-      makeRackedModule(6, [{name: 'Full Voice', type: TagType.Purpose}])
+      makeRackedModule(1, [{name: 'Envelope Gen.', type: TagType.Modulation}]),
+      makeRackedModule(2, [{name: 'Clock Mod', type: TagType.Utility}]),
+      makeRackedModule(3, [{name: 'Envelope Follow', type: TagType.Modulation}]),
+      makeRackedModule(4, [{name: 'Waveshape', type: TagType.Effect}]),
+      makeRackedModule(5, [{name: 'VCA', type: TagType.Utility}]),
+      makeRackedModule(6, [{name: 'Full Voice', type: TagType.Source}])
     ]];
 
     const result = service.analyze(rack);
@@ -126,6 +126,28 @@ describe('RackBalanceAnalysisService', () => {
     expect(result.axes.find(axis => axis.id === 'tone')?.matchedModules).toBe(1);
     expect(result.axes.find(axis => axis.id === 'utilities')?.matchedModules).toBe(1);
     expect(result.axes.find(axis => axis.id === 'voices')?.matchedModules).toBe(1);
+  });
+
+  it('recognizes new tags added in the type restructure (Chord, Granular, filter subtypes, new effects)', () => {
+    const rack = [[
+      makeRackedModule(1, [{name: 'Chord', type: TagType.Source}]),
+      makeRackedModule(2, [{name: 'Granular', type: TagType.Source}]),
+      makeRackedModule(3, [{name: 'Bandpass', type: TagType.Filter}]),
+      makeRackedModule(4, [{name: 'Lowpass', type: TagType.Filter}]),
+      makeRackedModule(5, [{name: 'Hipass', type: TagType.Filter}]),
+      makeRackedModule(6, [{name: 'Bitcrush', type: TagType.Effect}]),
+      makeRackedModule(7, [{name: 'Resonator', type: TagType.Effect}]),
+      makeRackedModule(8, [{name: 'Looper', type: TagType.Effect}]),
+      makeRackedModule(9, [{name: 'Randomness', type: TagType.Modulation}]),
+      makeRackedModule(10, [{name: 'Envelope Follow', type: TagType.Modulation}]),
+    ]];
+
+    const result = service.analyze(rack);
+
+    expect(result.recognizedModuleCount).toBe(10);
+    expect(result.axes.find(a => a.id === 'voices')?.matchedModules).toBe(2);    // Chord + Granular
+    expect(result.axes.find(a => a.id === 'tone')?.matchedModules).toBe(6);      // Bandpass + Lowpass + Hipass + Bitcrush + Resonator + Looper
+    expect(result.axes.find(a => a.id === 'modulation')?.matchedModules).toBe(2); // Randomness + Envelope Follow
   });
 
   it('ignores non-role database tag categories even when their label matches a balance axis', () => {
@@ -143,7 +165,7 @@ describe('RackBalanceAnalysisService', () => {
 
   it('reports partial confidence when many modules have no recognized tags', () => {
     const rack = [[
-      makeRackedModule(1, [{name: 'VCO', type: TagType.Purpose}]),
+      makeRackedModule(1, [{name: 'VCO', type: TagType.Source}]),
       makeRackedModule(2),
       makeRackedModule(3),
       makeRackedModule(4)
@@ -158,7 +180,7 @@ describe('RackBalanceAnalysisService', () => {
 
   it('excludes blank spacer modules from coverage totals', () => {
     const rack = [[
-      makeRackedModule(1, [{name: 'VCO', type: TagType.Purpose}]),
+      makeRackedModule(1, [{name: 'VCO', type: TagType.Source}]),
       makeRackedModule(BLANK_3U_MODULE_ID),
       makeRackedModule(3)
     ]];
@@ -172,7 +194,7 @@ describe('RackBalanceAnalysisService', () => {
 
   it('excludes blank spacer modules from low-coverage warning copy', () => {
     const rack = [[
-      makeRackedModule(1, [{name: 'VCO', type: TagType.Purpose}]),
+      makeRackedModule(1, [{name: 'VCO', type: TagType.Source}]),
       makeRackedModule(BLANK_3U_MODULE_ID),
       makeRackedModule(3),
       makeRackedModule(4)
@@ -201,10 +223,10 @@ describe('RackBalanceAnalysisService', () => {
 
   it('weights HP more strongly than raw module count when scoring axes', () => {
     const rack = [[
-      makeRackedModule(1, [{name: 'Filter', type: TagType.Purpose}], 24),
-      makeRackedModule(2, [{name: 'VCO', type: TagType.Purpose}], 4),
-      makeRackedModule(3, [{name: 'VCO', type: TagType.Purpose}], 4),
-      makeRackedModule(4, [{name: 'VCO', type: TagType.Purpose}], 4),
+      makeRackedModule(1, [{name: 'Filter', type: TagType.Filter}], 24),
+      makeRackedModule(2, [{name: 'VCO', type: TagType.Source}], 4),
+      makeRackedModule(3, [{name: 'VCO', type: TagType.Source}], 4),
+      makeRackedModule(4, [{name: 'VCO', type: TagType.Source}], 4),
     ]];
 
     const result = service.analyze(rack);
@@ -218,11 +240,11 @@ describe('RackBalanceAnalysisService', () => {
 
   it('surfaces balanced guidance when coverage is broad across axes', () => {
     const rack = [[
-      makeRackedModule(1, [{name: 'VCO', type: TagType.Purpose}]),
-      makeRackedModule(2, [{name: 'Envelope', type: TagType.Purpose}]),
+      makeRackedModule(1, [{name: 'VCO', type: TagType.Source}]),
+      makeRackedModule(2, [{name: 'Envelope', type: TagType.Modulation}]),
       makeRackedModule(3, [{name: 'Utility', type: TagType.Nature}]),
-      makeRackedModule(4, [{name: 'Clock', type: TagType.Purpose}]),
-      makeRackedModule(5, [{name: 'Filter', type: TagType.Purpose}])
+      makeRackedModule(4, [{name: 'Clock', type: TagType.Source}]),
+      makeRackedModule(5, [{name: 'Filter', type: TagType.Filter}])
     ]];
 
     const result = service.analyze(rack);
