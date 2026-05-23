@@ -39,7 +39,7 @@ describe('rackFunctionVisualsUtils', () => {
 
   it('maps direct voice tags to the voices function color', () => {
     const visual = buildRackFunctionVisual(makeRackedModule(101, [
-      {name: 'VCO', type: TagType.Purpose}
+      {name: 'VCO', type: TagType.Source}
     ]));
 
     expect(visual).toEqual(jasmine.objectContaining({
@@ -52,7 +52,7 @@ describe('rackFunctionVisualsUtils', () => {
   it('prefers purpose matches over weaker secondary matches when choosing a primary role', () => {
     const visual = buildRackFunctionVisual(makeRackedModule(102, [
       {name: 'Processor', type: TagType.Nature},
-      {name: 'Envelope Gen.', type: TagType.Purpose}
+      {name: 'Envelope Gen.', type: TagType.Source}
     ]));
 
     expect(visual).toEqual(jasmine.objectContaining({
@@ -64,8 +64,8 @@ describe('rackFunctionVisualsUtils', () => {
 
   it('uses the highest-voted matching tag even when it is not first in the tag list', () => {
     const visual = buildRackFunctionVisual(makeRackedModule(104, [
-      {name: 'Mixer', type: TagType.Purpose, votes: 1},
-      {name: 'VCO', type: TagType.Purpose, votes: 6}
+      {name: 'Mixer', type: TagType.Source, votes: 1},
+      {name: 'VCO', type: TagType.Source, votes: 6}
     ]));
 
     expect(visual).toEqual(jasmine.objectContaining({
@@ -88,7 +88,7 @@ describe('rackFunctionVisualsUtils', () => {
 
   it('treats blank modules as spacers in function analysis mode', () => {
     const visual = buildRackFunctionVisual(makeRackedModule(4647, [
-      {name: 'VCO', type: TagType.Purpose}
+      {name: 'VCO', type: TagType.Source}
     ]));
 
     expect(visual).toEqual(jasmine.objectContaining({
@@ -100,8 +100,8 @@ describe('rackFunctionVisualsUtils', () => {
 
   it('builds function analysis legend totals from module counts and hp', () => {
     const items = buildFunctionAnalysisLegendItems([[
-      makeRackedModule(201, [{name: 'VCO', type: TagType.Purpose}], 10),
-      makeRackedModule(202, [{name: 'Envelope Gen.', type: TagType.Purpose}], 12),
+      makeRackedModule(201, [{name: 'VCO', type: TagType.Source}], 10),
+      makeRackedModule(202, [{name: 'Envelope Gen.', type: TagType.Source}], 12),
       makeRackedModule(4647, [], 4)
     ]]);
 
@@ -121,7 +121,7 @@ describe('rackFunctionVisualsUtils', () => {
 
   it('reports residual function analysis modules and tracked coverage', () => {
     const rowedRackedModules = [[
-      makeRackedModule(301, [{name: 'VCO', type: TagType.Purpose}], 10),
+      makeRackedModule(301, [{name: 'VCO', type: TagType.Source}], 10),
       makeRackedModule(4647, [], 4),
       makeRackedModule(302, [{name: 'Experimental', type: TagType.Character}], 8)
     ]];
@@ -132,8 +132,8 @@ describe('rackFunctionVisualsUtils', () => {
 
   it('omits the residual label when every module maps to a tracked function role', () => {
     const rowedRackedModules = [[
-      makeRackedModule(311, [{name: 'VCO', type: TagType.Purpose}], 10),
-      makeRackedModule(312, [{name: 'Envelope Gen.', type: TagType.Purpose}], 12)
+      makeRackedModule(311, [{name: 'VCO', type: TagType.Source}], 10),
+      makeRackedModule(312, [{name: 'Envelope Gen.', type: TagType.Source}], 12)
     ]];
 
     expect(buildFunctionAnalysisResidualLabel(rowedRackedModules)).toBeNull();
@@ -142,8 +142,8 @@ describe('rackFunctionVisualsUtils', () => {
   it('builds per-row function breakdowns and residual labels', () => {
     const breakdowns = buildRowFunctionBreakdowns([
       [
-        makeRackedModule(401, [{name: 'VCO', type: TagType.Purpose}], 10),
-        makeRackedModule(402, [{name: 'Envelope Gen.', type: TagType.Purpose}], 12),
+        makeRackedModule(401, [{name: 'VCO', type: TagType.Source}], 10),
+        makeRackedModule(402, [{name: 'Envelope Gen.', type: TagType.Source}], 12),
         makeRackedModule(4647, [], 4)
       ],
       [
@@ -163,8 +163,8 @@ describe('rackFunctionVisualsUtils', () => {
 
   it('reports when an entire row maps cleanly to tracked function roles', () => {
     const breakdowns = buildRowFunctionBreakdowns([[
-      makeRackedModule(411, [{name: 'VCO', type: TagType.Purpose}], 10),
-      makeRackedModule(412, [{name: 'Envelope Gen.', type: TagType.Purpose}], 12)
+      makeRackedModule(411, [{name: 'VCO', type: TagType.Source}], 10),
+      makeRackedModule(412, [{name: 'Envelope Gen.', type: TagType.Source}], 12)
     ]]);
 
     expect(buildRowFunctionResidualLabel(breakdowns.get(0) ?? null)).toBe('All modules in this row map to tracked function roles.');
@@ -182,15 +182,15 @@ describe('rackFunctionVisualsUtils', () => {
 
   it('returns full-coverage copy when all modules map to tracked roles', () => {
     const summary = buildFunctionAnalysisCoverageSummary([[
-      makeRackedModule(501, [{name: 'VCO', type: TagType.Purpose}], 4),
-      makeRackedModule(502, [{name: 'Envelope Gen.', type: TagType.Purpose}], 6)
+      makeRackedModule(501, [{name: 'VCO', type: TagType.Source}], 4),
+      makeRackedModule(502, [{name: 'Envelope Gen.', type: TagType.Source}], 6)
     ]]);
     expect(summary).toBe('Tracked 2/2 modules · 10/10HP');
   });
 
   it('returns null for residual label when all modules map to tracked roles', () => {
     const residual = buildFunctionAnalysisResidualLabel([[
-      makeRackedModule(601, [{name: 'VCO', type: TagType.Purpose}], 8)
+      makeRackedModule(601, [{name: 'VCO', type: TagType.Source}], 8)
     ]]);
     expect(residual).toBeNull();
   });
