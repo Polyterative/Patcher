@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { RackedModule } from 'src/app/models/module';
+import { isFunctionalTagType, normalizeTagName, normalizeTagType } from 'src/app/models/tag';
 import {
   HIGH_AXIS_SHARE,
   LOW_AXIS_SHARE,
@@ -118,7 +119,7 @@ export class RackBalanceAnalysisService {
 
     for (const entry of tagEntries) {
       const tagName = entry?.tag?.name?.trim();
-      const tagType = this.normalizeTagType(entry?.tag?.type);
+      const tagType = normalizeTagType(entry?.tag?.type);
 
       if (!tagName || !this.isBalanceRelevantTagType(tagType)) {
         continue;
@@ -141,49 +142,16 @@ export class RackBalanceAnalysisService {
     return matchedAxes;
   }
 
-  private static readonly NUMERIC_TAG_TYPE_NAMES: Readonly<Record<number, string>> = {
-    0: 'purpose',
-    1: 'nature',
-    2: 'character',
-  };
-
-  private normalizeTagType(tagType: unknown): string | null {
-    if (typeof tagType === 'string') {
-      return tagType.trim().toLowerCase();
-    }
-
-    if (typeof tagType === 'number') {
-      return RackBalanceAnalysisService.NUMERIC_TAG_TYPE_NAMES[tagType] ?? null;
-    }
-
-    return null;
-  }
-
   private matchesDbTagName(axis: RackBalanceAxisDefinition, tagName: string): boolean {
-    const normalizedTagName = this.normalizeTagName(tagName);
-
-    return axis.dbTagNames.some(name => this.normalizeTagName(name) === normalizedTagName);
-  }
-
-  private normalizeTagName(tagName: string): string {
-    return tagName
-      .trim()
-      .toLowerCase()
-      .replace(/&/g, ' and ')
-      .replace(/[^a-z0-9]+/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
+    return axis.dbTagNames.some(name => normalizeTagName(name) === normalizeTagName(tagName));
   }
 
   private isBalanceRelevantTagType(tagType: string | null): boolean {
-    return tagType === 'purpose'
-      || tagType === 'nature'
-      || tagType === 'function'
-      || tagType === 'module_type';
+    return tagType === 'nature' || isFunctionalTagType(tagType);
   }
 
   private getPatternsForTagType(axis: RackBalanceAxisDefinition, tagType: string): RegExp[] {
-    if (tagType === 'purpose') {
+    if (isFunctionalTagType(tagType)) {
       return axis.purposePatterns;
     }
 
