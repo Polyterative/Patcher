@@ -7,16 +7,28 @@ import { PatchModuleInstance } from 'src/app/models/connection';
 
 
 describe('TagType enum', () => {
-  it('has numeric values 0, 1, 2', () => {
-    expect(TagType.Purpose).toBe(0);
+  it('has numeric values 1–9 (type 0 retired)', () => {
     expect(TagType.Nature).toBe(1);
     expect(TagType.Character).toBe(2);
+    expect(TagType.Voice).toBe(3);
+    expect(TagType.Source).toBe(4);
+    expect(TagType.Filter).toBe(5);
+    expect(TagType.Modulation).toBe(6);
+    expect(TagType.Effect).toBe(7);
+    expect(TagType.Sequencing).toBe(8);
+    expect(TagType.Utility).toBe(9);
   });
   
   it('is a bi-directional enum (reverse mapping works)', () => {
-    expect(TagType[0]).toBe('Purpose');
     expect(TagType[1]).toBe('Nature');
     expect(TagType[2]).toBe('Character');
+    expect(TagType[3]).toBe('Voice');
+    expect(TagType[4]).toBe('Source');
+    expect(TagType[5]).toBe('Filter');
+    expect(TagType[6]).toBe('Modulation');
+    expect(TagType[7]).toBe('Effect');
+    expect(TagType[8]).toBe('Sequencing');
+    expect(TagType[9]).toBe('Utility');
   });
 });
 

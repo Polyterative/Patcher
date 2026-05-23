@@ -1,4 +1,5 @@
 import { SupabaseService } from '../../supabase.service';
+import { TagType } from 'src/app/models/tag';
 import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest,
@@ -185,7 +186,7 @@ describe('SupabaseService - get simple queries', () => {
           tags: [
             {
               id: 8,
-              tag: {id: 3, name: 'VCO', type: 0},
+              tag: {id: 3, name: 'VCO', type: TagType.Source},
               voteCount: [{moduletagid: 8}]
             }
           ]

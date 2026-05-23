@@ -29,6 +29,7 @@ import {
 import { MinimalModule } from 'src/app/models/module';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import {
+  TAG_TYPE_DISPLAY_ORDER,
   TAG_TYPE_LABELS,
   Tag,
   TagSuggestionGroup
@@ -144,9 +145,13 @@ export class ModuleTagsComponent extends SubManager implements OnInit {
           grouped.set(label, [...(grouped.get(label) ?? []), tag]);
         }
 
-        return Array.from(grouped.entries()).map(([label, groupedTags]) => ({
+        const orderedLabels = TAG_TYPE_DISPLAY_ORDER
+          .map(type => TAG_TYPE_LABELS[type])
+          .filter(label => grouped.has(label));
+
+        return orderedLabels.map(label => ({
           label,
-          tags: groupedTags
+          tags: grouped.get(label)!
         }));
       })
     );

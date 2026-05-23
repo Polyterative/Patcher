@@ -18,16 +18,16 @@ describe('OrderTagsByTypePipe', () => {
     pipe = new OrderTagsByTypePipe();
   });
   
-  it('sorts tags by type ascending', () => {
+  it('sorts tags by display order', () => {
     const input = [
       makeTagEntry(1, TagType.Character),
-      makeTagEntry(2, TagType.Purpose),
+      makeTagEntry(2, TagType.Source),
       makeTagEntry(3, TagType.Nature)
     ];
     const result = pipe.transform(input) as {
       tag: Tag
     }[];
-    expect(result[0].tag.type).toBe(TagType.Purpose);
+    expect(result[0].tag.type).toBe(TagType.Source);
     expect(result[1].tag.type).toBe(TagType.Nature);
     expect(result[2].tag.type).toBe(TagType.Character);
   });
@@ -44,15 +44,17 @@ describe('OrderTagsByTypePipe', () => {
   it('preserves all elements after sorting', () => {
     const input = [
       makeTagEntry(10, TagType.Character),
-      makeTagEntry(20, TagType.Purpose),
+      makeTagEntry(20, TagType.Source),
       makeTagEntry(30, TagType.Nature),
-      makeTagEntry(40, TagType.Purpose)
+      makeTagEntry(40, TagType.Source)
     ];
     const result = pipe.transform(input) as {
       tag: Tag
     }[];
     expect(result.length).toBe(4);
-    expect(result[0].tag.type).toBe(TagType.Purpose);
+    expect(result[0].tag.type).toBe(TagType.Source);
+    expect(result[1].tag.type).toBe(TagType.Source);
+    expect(result[2].tag.type).toBe(TagType.Nature);
     expect(result[result.length - 1].tag.type).toBe(TagType.Character);
   });
 

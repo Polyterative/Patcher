@@ -30,12 +30,12 @@ import {
   MinimalModule,
   RackedModule
 } from 'src/app/models/module';
-import { Tag } from 'src/app/models/tag';
+import { Tag, TagSuggestionGroup } from 'src/app/models/tag';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { ModuleList } from '../module-browser-data.service';
 
 
-type RackModuleBrowseMode = 'available' | 'owned' | 'all';
+type RackModuleBrowseMode = 'available' | 'owned' | 'wanted' | 'all';
 const OWNED_MODULES_DEFAULT_THRESHOLD = 20;
 
 @Component({
@@ -100,6 +100,9 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
   @Input()
   set ownedModulesInput(value: MinimalModule[] | undefined) {
     this.ownedModules = value;
+    if (!this.showWantedBrowseMode && this.collectionBrowseMode === 'wanted') {
+      this.collectionBrowseMode = 'owned';
+    }
     this.applyAdaptiveCollectionBrowseMode();
     this.syncVisibleModules();
   }
@@ -212,6 +215,10 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
     return selected.some((selectedTag) => +selectedTag.id === tag.id);
   }
 
+  selectedTagCount(group: TagSuggestionGroup): number {
+    return group.tags.filter(tag => this.isTagSelected(tag)).length;
+  }
+
   get showCollectionBrowseToggle(): boolean {
     return this.enableCollectionBrowseModes && this.ownedModules !== undefined;
   }
@@ -220,8 +227,16 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
     return this.currentRackModuleIds.size > 0;
   }
 
+  get showWantedBrowseMode(): boolean {
+    return this.wantedModulesCount > 0;
+  }
+
   get ownedModulesCount(): number {
-    return this.ownedModules?.length ?? 0;
+    return this.getOwnedModulesCount(this.ownedModules);
+  }
+
+  get wantedModulesCount(): number {
+    return this.getWantedModulesCount(this.ownedModules);
   }
 
   get currentRackModuleCount(): number {
@@ -229,7 +244,7 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
   }
 
   get usesOwnedDataset(): boolean {
-    return this.collectionBrowseMode === 'available' || this.collectionBrowseMode === 'owned';
+    return this.collectionBrowseMode === 'available' || this.collectionBrowseMode === 'owned' || this.collectionBrowseMode === 'wanted';
   }
 
   get isAvailableBrowseMode(): boolean {
@@ -240,12 +255,18 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
     return this.enableCollectionBrowseModes && this.collectionBrowseMode === 'owned';
   }
 
+  get isWantedBrowseMode(): boolean {
+    return this.enableCollectionBrowseModes && this.collectionBrowseMode === 'wanted';
+  }
+
   get browseModeHeading(): string {
     switch (this.collectionBrowseMode) {
       case 'available':
         return 'Available to add';
       case 'owned':
         return 'Your collection';
+      case 'wanted':
+        return 'Wanted';
       case 'all':
       default:
         return 'All modules';
@@ -257,7 +278,9 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
       case 'available':
         return 'Owned modules that are not already in this rack.';
       case 'owned':
-        return 'Everything in your collection, including modules already used in this rack.';
+        return 'All owned modules in your collection, including modules already used in this rack.';
+      case 'wanted':
+        return 'Modules on your wishlist.';
       case 'all':
       default:
         return 'The full module library, including modules outside your collection.';
@@ -271,7 +294,11 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
         : 'No modules are available right now.';
     }
 
-    if ((this.ownedModules?.length ?? 0) === 0) {
+    if (this.isWantedBrowseMode && this.wantedModulesCount === 0) {
+      return 'No wanted modules are available in this view right now.';
+    }
+
+    if (!this.isWantedBrowseMode && this.ownedModulesCount === 0) {
       return 'Your collection is empty. Switch to All modules or add some modules to your collection first.';
     }
 
@@ -280,9 +307,17 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
     }
 
     if (this.dataService.hasActiveModuleFilters()) {
-      return this.isAvailableBrowseMode
-        ? 'No available collection modules match the current filters. Reset the filters or switch browsing mode.'
-        : 'No collection modules match the current filters. Reset the filters or switch browsing mode.';
+      if (this.isAvailableBrowseMode) {
+        return 'No available collection modules match the current filters. Reset the filters or switch browsing mode.';
+      }
+      if (this.isWantedBrowseMode) {
+        return 'No wanted modules match the current filters. Reset the filters or switch browsing mode.';
+      }
+      return 'No collection modules match the current filters. Reset the filters or switch browsing mode.';
+    }
+
+    if (this.isWantedBrowseMode) {
+      return 'No wanted modules are available in this view right now.';
     }
 
     return this.isAvailableBrowseMode
@@ -295,19 +330,22 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
       return;
     }
 
-    const nextMode: RackModuleBrowseMode = this.ownedModules.length >= this.ownedModulesDefaultThreshold
+    const nextMode: RackModuleBrowseMode = this.ownedModulesCount >= this.ownedModulesDefaultThreshold
       ? (this.showAvailableBrowseMode ? 'available' : 'owned')
       : 'all';
     this.applyCollectionBrowseMode(nextMode);
   }
 
   private applyCollectionBrowseMode(mode: RackModuleBrowseMode): void {
-    const nextMode: RackModuleBrowseMode = this.enableCollectionBrowseModes
+    let nextMode: RackModuleBrowseMode = this.enableCollectionBrowseModes
       ? mode
       : 'all';
+    if (nextMode === 'wanted' && !this.showWantedBrowseMode) {
+      nextMode = 'owned';
+    }
 
     this.collectionBrowseMode = nextMode;
-    if (nextMode === 'available' || nextMode === 'owned') {
+    if (nextMode === 'available' || nextMode === 'owned' || nextMode === 'wanted') {
       this.dataService.applyOwnedModeDefaultOrder();
     }
     if (nextMode === 'all') {
@@ -330,18 +368,20 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
       return;
     }
 
-    const filteredOwnedModules = this.dataService.filterOwnedModules(
-      this.ownedModules,
-      this.isAvailableBrowseMode ? [...this.currentRackModuleIds] : []
-    );
-    if (filteredOwnedModules === undefined) {
+    const filteredUserModules = this.isWantedBrowseMode
+      ? this.dataService.filterWantedModules(this.ownedModules)
+      : this.dataService.filterOwnedModules(
+        this.ownedModules,
+        this.isAvailableBrowseMode ? [...this.currentRackModuleIds] : []
+      );
+    if (filteredUserModules === undefined) {
       this.visibleItemsCount$.next(0);
       this.visibleModules$.next(null);
       return;
     }
 
-    this.visibleItemsCount$.next(filteredOwnedModules.length);
-    this.updateVisibleModules(filteredOwnedModules);
+    this.visibleItemsCount$.next(filteredUserModules.length);
+    this.updateVisibleModules(filteredUserModules);
   }
 
   private updateVisibleModules(modules: ModuleList): void {
@@ -364,6 +404,16 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
       return 0;
     }
 
-    return ownedModules.filter((module) => !this.currentRackModuleIds.has(module.id)).length;
+    return ownedModules.filter((module) =>
+      this.dataService.isOwnedPossession(module) && !this.currentRackModuleIds.has(module.id)
+    ).length;
+  }
+
+  private getOwnedModulesCount(modules: MinimalModule[] | undefined): number {
+    return modules?.filter((module) => this.dataService.isOwnedPossession(module)).length ?? 0;
+  }
+
+  private getWantedModulesCount(modules: MinimalModule[] | undefined): number {
+    return modules?.filter((module) => this.dataService.isWantedPossession(module)).length ?? 0;
   }
 }
