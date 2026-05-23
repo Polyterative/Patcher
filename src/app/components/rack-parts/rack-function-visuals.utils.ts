@@ -1,5 +1,10 @@
 import { RackedModule } from 'src/app/models/module';
 import {
+  isFunctionalTagType,
+  normalizeTagName,
+  normalizeTagType,
+} from 'src/app/models/tag';
+import {
   RACK_BALANCE_AXES,
   RackBalanceAxisDefinition,
   RackBalanceAxisId
@@ -274,14 +279,9 @@ export function buildRowFunctionResidualLabel(rowFunction: RowFunctionBreakdown 
     : 'All modules in this row map to tracked function roles.';
 }
 
-const NUMERIC_TAG_TYPE_NAMES: Readonly<Record<number, string>> = {
-  0: 'purpose',
-  1: 'nature',
-  2: 'character',
-};
-
-const EXACT_MATCH_WEIGHTS: Readonly<Record<string, number>> = {purpose: 6, nature: 4};
-const PATTERN_MATCH_WEIGHTS: Readonly<Record<string, number>> = {purpose: 4, nature: 2};
+// Scoring weights for balance axis matching.
+const EXACT_MATCH_WEIGHTS: Readonly<Record<string, number>> = {functional: 6, nature: 4};
+const PATTERN_MATCH_WEIGHTS: Readonly<Record<string, number>> = {functional: 4, nature: 2};
 
 function scoreTagAgainstAxis(
   axis: RackBalanceAxisDefinition,
@@ -296,18 +296,6 @@ function scoreTagAgainstAxis(
   return patterns.some(pattern => pattern.test(tagName)) ? patternMatchWeight(tagType) : 0;
 }
 
-function normalizeTagType(tagType: unknown): string | null {
-  if (typeof tagType === 'string') {
-    return tagType.trim().toLowerCase();
-  }
-
-  if (typeof tagType === 'number') {
-    return NUMERIC_TAG_TYPE_NAMES[tagType] ?? null;
-  }
-
-  return null;
-}
-
 function getTagVoteCount(
   entry: RackedModule['module']['tags'][number] | null | undefined
 ): number {
@@ -316,22 +304,11 @@ function getTagVoteCount(
 
 function matchesDbTagName(axis: RackBalanceAxisDefinition, tagName: string): boolean {
   const normalizedTagName = normalizeTagName(tagName);
-
   return axis.dbTagNames.some(name => normalizeTagName(name) === normalizedTagName);
 }
 
-function normalizeTagName(tagName: string): string {
-  return tagName
-    .trim()
-    .toLowerCase()
-    .replace(/&/g, ' and ')
-    .replace(/[^a-z0-9]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
 function getPatternsForTagType(axis: RackBalanceAxisDefinition, tagType: string | null): RegExp[] {
-  if (tagType === 'purpose') {
+  if (isFunctionalTagType(tagType)) {
     return axis.purposePatterns;
   }
 
@@ -346,10 +323,12 @@ function getPatternsForTagType(axis: RackBalanceAxisDefinition, tagType: string 
 }
 
 function exactMatchWeight(tagType: string | null): number {
+  if (isFunctionalTagType(tagType)) return EXACT_MATCH_WEIGHTS['functional'];
   return tagType !== null ? (EXACT_MATCH_WEIGHTS[tagType] ?? 3) : 3;
 }
 
 function patternMatchWeight(tagType: string | null): number {
+  if (isFunctionalTagType(tagType)) return PATTERN_MATCH_WEIGHTS['functional'];
   return tagType !== null ? (PATTERN_MATCH_WEIGHTS[tagType] ?? 1) : 1;
 }
 
