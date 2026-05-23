@@ -414,7 +414,7 @@ function resolveSignalRelationshipHint(
     return {scoreBonus: sourceRoleLabel === 'Voices' || family === 'audio' ? 3 : 2, reasonLabel: 'mixing'};
   }
 
-  if (moduleContextMatches(destinationModule, /\bfilter\b|\bvca\b|\beffect\b|\bdelay\b|\breverb\b|\bwave(?:folder)?\b|\bdrive\b/)) {
+  if (moduleContextMatches(destinationModule, /\bfilter\b|\bvca\b|\beffect\b|\bdelay\b|\breverb\b|\bwave\s*fold(?:er)?\b|\bdrive\b/)) {
     return {scoreBonus: sourceRoleLabel === 'Voices' || family === 'audio' ? 3 : 2, reasonLabel: 'tone shaping'};
   }
 

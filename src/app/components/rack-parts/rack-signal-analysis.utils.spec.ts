@@ -26,7 +26,7 @@ describe('rackSignalAnalysisUtils', () => {
           tag: {
             id: index + 1,
             name: tag.name,
-            type: tag.type ?? TagType.Purpose
+            type: tag.type ?? TagType.Source
           },
           voteCount: Array.from({length: tag.votes ?? 0}, () => ({moduletagid: index + 1}))
         })),
