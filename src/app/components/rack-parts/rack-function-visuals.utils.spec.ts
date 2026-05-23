@@ -49,7 +49,7 @@ describe('rackFunctionVisualsUtils', () => {
     }));
   });
 
-  it('prefers purpose matches over weaker secondary matches when choosing a primary role', () => {
+  it('falls back to axis-matched tag when no votes exist, preferring functional over nature pattern match', () => {
     const visual = buildRackFunctionVisual(makeRackedModule(102, [
       {name: 'Processor', type: TagType.Nature},
       {name: 'Envelope Gen.', type: TagType.Source}
@@ -72,6 +72,34 @@ describe('rackFunctionVisualsUtils', () => {
       className: 'functionAnalysisModule--voices',
       roleLabel: 'Voices',
       tagLabel: 'Primary tag: VCO'
+    }));
+  });
+
+  it('shows most-voted tag as primary even when it is a Nature tag that does not drive the axis', () => {
+    // Simulates a module like S9: External (Nature, 2 votes) + Modulate (Functional, 1 vote).
+    // The axis classification is still driven by Modulate, but the tooltip should reflect community consensus.
+    const visual = buildRackFunctionVisual(makeRackedModule(105, [
+      {name: 'External', type: TagType.Nature, votes: 2},
+      {name: 'Modulate', type: TagType.Modulation, votes: 1}
+    ]));
+
+    expect(visual).toEqual(jasmine.objectContaining({
+      className: 'functionAnalysisModule--modulation',
+      roleLabel: 'Modulation',
+      tagLabel: 'Primary tag: External'
+    }));
+  });
+
+  it('falls back to axis-matched tag as primary when no tag has received votes', () => {
+    const visual = buildRackFunctionVisual(makeRackedModule(106, [
+      {name: 'Processor', type: TagType.Nature},
+      {name: 'Envelope Gen.', type: TagType.Modulation}
+    ]));
+
+    expect(visual).toEqual(jasmine.objectContaining({
+      className: 'functionAnalysisModule--modulation',
+      roleLabel: 'Modulation',
+      tagLabel: 'Primary tag: Envelope Gen.'
     }));
   });
 
