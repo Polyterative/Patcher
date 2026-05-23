@@ -36,7 +36,8 @@ describe('ModuleBrowserRootComponent', () => {
       manufacturer: {id: 1, name: 'Maker'} as any,
       standard: {id: 0, name: '3U Doepfer'} as any,
       tags: [],
-      panels: []
+      panels: [],
+      possessionKind: 'HAS'
     }));
   }
   
@@ -137,7 +138,19 @@ describe('ModuleBrowserRootComponent', () => {
     const host = fixture.nativeElement as HTMLElement;
     expect(host.textContent).toContain('Available');
     expect(host.textContent).toContain('Collection');
+    expect(host.textContent).not.toContain('Wanted');
     expect(host.textContent).toContain('All modules');
+  });
+
+  it('renders the wanted mode only when the user has wanted modules', () => {
+    const modules = buildOwnedModules(2);
+    modules[1].possessionKind = 'WANTS';
+    component.enableCollectionBrowseModes = true;
+    component.ownedModulesInput = modules;
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.textContent).toContain('Wanted');
   });
 
   it('renders the radio-style selected icon only for the active browse mode', () => {
@@ -179,6 +192,32 @@ describe('ModuleBrowserRootComponent', () => {
 
     expect(component.dataService.fields.order.control.value).toEqual(component.dataService.orderStartingValue);
     expect(component.dataService.serversideTableRequestData.sort$.value).toEqual(['updated', 'desc']);
+  });
+
+  it('shows only owned modules in collection and available modes, wanted modules in wanted mode, and leaves all modules unfiltered', () => {
+    const owned = buildOwnedModules(4);
+    owned[1].possessionKind = 'WANTS';
+    owned[2].possessionKind = 'SELLS';
+    component.enableCollectionBrowseModes = true;
+    component.ownedModulesInput = owned;
+    component.currentRackModulesInput = [[{module: owned[0]} as any]];
+    component.dataService.modulesList$.next(owned);
+    fixture.detectChanges();
+
+    component.setCollectionBrowseMode('owned');
+    expect(component.visibleModules$.value?.map((module) => module.id)).toEqual([1, 4]);
+    expect(component.ownedModulesCount).toBe(2);
+
+    component.setCollectionBrowseMode('available');
+    expect(component.visibleModules$.value?.map((module) => module.id)).toEqual([4]);
+
+    component.setCollectionBrowseMode('wanted');
+    expect(component.visibleModules$.value?.map((module) => module.id)).toEqual([2]);
+    expect(component.wantedModulesCount).toBe(1);
+
+    component.setCollectionBrowseMode('all');
+    component.dataService.modulesList$.next(owned);
+    expect(component.visibleModules$.value?.map((module) => module.id)).toEqual([1, 2, 3, 4]);
   });
 
   it('uses the shared update loader and keeps current results visible until the next backend result arrives', fakeAsync(() => {

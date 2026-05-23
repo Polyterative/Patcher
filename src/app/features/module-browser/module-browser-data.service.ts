@@ -26,7 +26,7 @@ import {
   withLatestFrom
 } from 'rxjs/operators';
 import { MinimalModule } from '../../models/module';
-import { TAG_TYPE_LABELS, Tag, TagSuggestionGroup } from '../../models/tag';
+import { TAG_TYPE_DISPLAY_ORDER, TAG_TYPE_LABELS, Tag, TagSuggestionGroup } from '../../models/tag';
 import {
   FormTypes,
   getCleanedValueId,
@@ -135,9 +135,13 @@ export class ModuleBrowserDataService extends SubManager {
           grouped.set(label, [...(grouped.get(label) ?? []), tag]);
         }
 
-        return Array.from(grouped.entries()).map(([label, groupedTags]) => ({
+        const orderedLabels = TAG_TYPE_DISPLAY_ORDER
+          .map(type => TAG_TYPE_LABELS[type])
+          .filter(label => grouped.has(label));
+
+        return orderedLabels.map(label => ({
           label,
-          tags: groupedTags
+          tags: grouped.get(label)!
         }));
       }),
       shareReplay(1),
@@ -246,8 +250,20 @@ export class ModuleBrowserDataService extends SubManager {
           takeUntil(this.destroy$),
           share()
         )
+      },
+      tagSearch: {
+        label: 'Search tags…',
+        code: 'tagSearch',
+        flex: '14rem',
+        control: new FormControl<string>('', {nonNullable: true}),
+        type: FormTypes.TEXT
       }
     };
+
+    // Sync tagSearch control ↔ tagSearchQuery$
+    this.fields.tagSearch.control.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(query => this.tagSearchQuery$.next(query));
 
     this.canReset$ = merge(
       this.fields.name.control.valueChanges,
@@ -433,6 +449,7 @@ export class ModuleBrowserDataService extends SubManager {
         this.fields.hpCondition.control.setValue(DEFAULT_HP_CONDITION, silent);
         this.fields.standard.control.setValue(DEFAULT_STANDARD, silent);
         this.fields.tags.control.setValue([], silent);
+        this.fields.tagSearch.control.setValue('', silent);
         this.tagMatchMode$.next('OR');
         this.tagSearchQuery$.next('');
         this.serversideTableRequestData.filter$.next('');
@@ -489,9 +506,28 @@ export class ModuleBrowserDataService extends SubManager {
 
     const excludedIds = new Set(excludedModuleIds);
     const filteredModules = modules.filter((module) =>
-      !excludedIds.has(module.id) && this.matchesOwnedModuleFilters(module)
+      this.isOwnedPossession(module) && !excludedIds.has(module.id) && this.matchesOwnedModuleFilters(module)
     );
     return this.sortOwnedModules(filteredModules);
+  }
+
+  filterWantedModules(modules: MinimalModule[] | undefined): MinimalModule[] | undefined {
+    if (modules === undefined) {
+      return undefined;
+    }
+
+    const filteredModules = modules.filter((module) =>
+      this.isWantedPossession(module) && this.matchesOwnedModuleFilters(module)
+    );
+    return this.sortOwnedModules(filteredModules);
+  }
+
+  isOwnedPossession(module: MinimalModule): boolean {
+    return module.possessionKind === undefined || module.possessionKind === 'HAS';
+  }
+
+  isWantedPossession(module: MinimalModule): boolean {
+    return module.possessionKind === 'WANTS';
   }
 
   sortModulesByBestMatch(modules: MinimalModule[]): MinimalModule[] {

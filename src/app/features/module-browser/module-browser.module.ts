@@ -50,6 +50,7 @@ import { MatDividerModule } from "@angular/material/divider";
 import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { ModulePartsModule } from "src/app/components/module-parts/module-parts.module";
 import {
   MatMenu,
@@ -128,6 +129,7 @@ const parentPrefix = 'modules';
     MatDividerModule,
     MatPaginatorModule,
     MatButtonToggleModule,
+    MatExpansionModule,
     BrandPrimaryButtonModule,
     BrowserResetFiltersButtonComponent,
     AutoContentLoadingIndicatorModule,

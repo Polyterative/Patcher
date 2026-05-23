@@ -20,18 +20,18 @@ describe('OnlyTagOfTypePipe', () => {
   
   it('returns only tags matching the requested type', () => {
     const input = [
-      makeTagEntry(1, TagType.Purpose),
+      makeTagEntry(1, TagType.Source),
       makeTagEntry(2, TagType.Nature),
-      makeTagEntry(3, TagType.Purpose)
+      makeTagEntry(3, TagType.Source)
     ];
-    const result = pipe.transform(input, TagType.Purpose) as Tag[];
+    const result = pipe.transform(input, TagType.Source) as Tag[];
     expect(result.length).toBe(2);
-    expect(result.every(t => t.type === TagType.Purpose)).toBeTrue();
+    expect(result.every(t => t.type === TagType.Source)).toBeTrue();
   });
   
   it('returns empty array when no tags match the type', () => {
     const input = [makeTagEntry(1, TagType.Nature), makeTagEntry(2, TagType.Character)];
-    const result = pipe.transform(input, TagType.Purpose) as Tag[];
+    const result = pipe.transform(input, TagType.Source) as Tag[];
     expect(result.length).toBe(0);
   });
   
@@ -49,11 +49,11 @@ describe('OnlyTagOfTypePipe', () => {
 
   it('filters all three TagType values independently', () => {
     const input = [
-      makeTagEntry(1, TagType.Purpose),
+      makeTagEntry(1, TagType.Source),
       makeTagEntry(2, TagType.Nature),
       makeTagEntry(3, TagType.Character),
     ];
-    expect((pipe.transform(input, TagType.Purpose) as Tag[]).length).toBe(1);
+    expect((pipe.transform(input, TagType.Source) as Tag[]).length).toBe(1);
     expect((pipe.transform(input, TagType.Nature) as Tag[]).length).toBe(1);
     expect((pipe.transform(input, TagType.Character) as Tag[]).length).toBe(1);
   });

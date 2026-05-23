@@ -10,6 +10,7 @@ import {
 } from 'src/app/components/module-parts/module-minimal/module-tags/tag-vote/tag-vote-data.service';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
+import { TagType } from 'src/app/models/tag';
 
 
 const PRELOADED_COUNTS: TagVoteCount[] = [
@@ -18,8 +19,8 @@ const PRELOADED_COUNTS: TagVoteCount[] = [
 ];
 
 const MOCK_ALL_TAGS = [
-  {id: 1, name: 'VCO', type: 0},
-  {id: 2, name: 'Filter', type: 0},
+  {id: 1, name: 'VCO', type: TagType.Source},
+  {id: 2, name: 'Filter', type: TagType.Source},
 ];
 
 function setupTest(userOverride?: any) {

@@ -47,6 +47,7 @@ describe('ModuleBrowserDataService', () => {
       panels: overrides.panels ?? [],
       ins: overrides.ins,
       outs: overrides.outs,
+      possessionKind: overrides.possessionKind,
     };
   }
 
@@ -295,6 +296,25 @@ describe('ModuleBrowserDataService', () => {
     service.ngOnDestroy();
   }));
 
+  it('resets tagSearch control and tagSearchQuery$ on resetForm$', fakeAsync(() => {
+    const {service} = build();
+    service.fields.tagSearch.control.setValue('osc');
+    tick(750);
+    service.resetForm$.next();
+    expect(service.fields.tagSearch.control.value).toBe('');
+    expect(service.tagSearchQuery$.value).toBe('');
+    service.ngOnDestroy();
+  }));
+
+  it('tagSearch control changes propagate to tagSearchQuery$', fakeAsync(() => {
+    const {service} = build();
+    service.fields.tagSearch.control.setValue('vco');
+    expect(service.tagSearchQuery$.value).toBe('vco');
+    service.fields.tagSearch.control.setValue('');
+    expect(service.tagSearchQuery$.value).toBe('');
+    service.ngOnDestroy();
+  }));
+
   it('sets remoteTagFilterLoading$ during tag changes after initial results and clears it on the next backend response', fakeAsync(() => {
     const {service, backend} = build();
     const modulesResponse$ = new Subject<{data: MinimalModule[]; count: number}>();
@@ -485,10 +505,34 @@ describe('ModuleBrowserDataService', () => {
     expect(filtered?.map((module) => module.id)).toEqual([2]);
   });
 
+  it('filters rack-owned modules to modules the user owns', () => {
+    const {service} = build();
+
+    const filtered = service.filterOwnedModules([
+      moduleFactory({id: 1, name: 'Owned', possessionKind: 'HAS'}),
+      moduleFactory({id: 2, name: 'Wanted', possessionKind: 'WANTS'}),
+      moduleFactory({id: 3, name: 'For Sale', possessionKind: 'SELLS'})
+    ]);
+
+    expect(filtered?.map((module) => module.id)).toEqual([1]);
+  });
+
+  it('filters wanted modules to wishlist modules only', () => {
+    const {service} = build();
+
+    const filtered = service.filterWantedModules([
+      moduleFactory({id: 1, name: 'Owned', possessionKind: 'HAS'}),
+      moduleFactory({id: 2, name: 'Wanted', possessionKind: 'WANTS'}),
+      moduleFactory({id: 3, name: 'For Sale', possessionKind: 'SELLS'})
+    ]);
+
+    expect(filtered?.map((module) => module.id)).toEqual([2]);
+  });
+
   it('groups and filters tags by the search query', fakeAsync(() => {
     const {service} = build({
       allTags: [
-        {id: 1, name: 'Oscillator', type: TagType.Purpose},
+        {id: 1, name: 'Oscillator', type: TagType.Source},
         {id: 2, name: 'Filter', type: TagType.Nature},
         {id: 3, name: 'Warm', type: TagType.Character}
       ]
@@ -497,9 +541,9 @@ describe('ModuleBrowserDataService', () => {
     service.groupedFilterTags$.subscribe((value) => (groupedTags = value));
 
     tick(300);
-    expect(groupedTags?.map((group) => group.label)).toEqual(['Purpose', 'Nature', 'Character']);
+    expect(groupedTags?.map((group) => group.label)).toEqual(['Source', 'Nature', 'Character']);
 
-    service.tagSearchQuery$.next('fi');
+    service.fields.tagSearch.control.setValue('fi');
     tick(300);
 
     expect(groupedTags).toEqual([
@@ -513,7 +557,7 @@ describe('ModuleBrowserDataService', () => {
 
   it('toggleTagFilter adds and removes tags from the multiselect control', () => {
     const {service} = build();
-    const tag = {id: 5, name: 'Oscillator', type: TagType.Purpose};
+    const tag = {id: 5, name: 'Oscillator', type: TagType.Source};
 
     service.toggleTagFilter(tag);
     expect(service.fields.tags.control.value).toEqual([{id: '5', name: 'Oscillator'}]);
