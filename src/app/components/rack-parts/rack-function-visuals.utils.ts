@@ -134,13 +134,15 @@ export function buildRackFunctionVisual(rackedModule: RackedModule): RackFunctio
   }
 
   const strongestAxisScore = scores.get(strongestAxis.id);
+  // Prefer the most-voted tag as the "primary tag" (community consensus).
+  // Fall back to the axis-matched tag when no tag has received any votes yet.
+  const mostVoted = getMostVotedTagName(rackedModule);
+  const primaryTag = mostVoted ?? strongestAxisScore?.matchedTagName ?? null;
 
   return {
     className: FUNCTION_AXIS_CLASS_NAMES[strongestAxis.id],
     roleLabel: strongestAxis.label,
-    tagLabel: strongestAxisScore?.matchedTagName
-      ? `Primary tag: ${ strongestAxisScore.matchedTagName }`
-      : 'Recognized by module tags',
+    tagLabel: primaryTag ? `Primary tag: ${ primaryTag }` : 'Recognized by module tags',
     icon: strongestAxis.icon
   };
 }
@@ -300,6 +302,22 @@ function getTagVoteCount(
   entry: RackedModule['module']['tags'][number] | null | undefined
 ): number {
   return entry?.voteCount?.length ?? 0;
+}
+
+function getMostVotedTagName(rackedModule: RackedModule): string | null {
+  const tags = rackedModule.module.tags ?? [];
+  if (tags.length === 0) return null;
+
+  const best = tags.reduce<{ name: string | null; votes: number }>(
+    (acc, entry) => {
+      const name = entry?.tag?.name?.trim() ?? null;
+      const votes = getTagVoteCount(entry);
+      return votes > acc.votes && name ? {name, votes} : acc;
+    },
+    {name: null, votes: 0}
+  );
+
+  return best.name;
 }
 
 function matchesDbTagName(axis: RackBalanceAxisDefinition, tagName: string): boolean {
