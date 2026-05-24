@@ -215,6 +215,21 @@ describe('RackDetailDataService', () => {
     expect(service.isCurrentRackEditable$.value).toBeFalse();
   }));
 
+  it('pre-fills formData.name.control with the current rack name when activating edit mode', fakeAsync(() => {
+    const {service, backend} = build();
+    backend.GET.rackWithId.and.returnValue(of({data: makeRack({name: 'My Rack', locked: true})}));
+
+    service.updateSingleRackData$.next(1);
+    tick();
+    expect(service.isCurrentRackEditable$.value).toBeFalse();
+
+    service.requestRackEditableStatusChange$.next();
+    tick();
+
+    expect(service.isCurrentRackEditable$.value).toBeTrue();
+    expect(service.formData.name.control.value).toBe('My Rack');
+  }));
+
   it('requestAddNewRow$ increments rows by 1 and calls backend.update.rack', fakeAsync(() => {
     const {service, backend} = build();
     backend.GET.rackWithId.and.returnValue(of({data: makeRack({rows: 3})}));

@@ -423,6 +423,9 @@ export class RackDetailDataService extends SubManager {
         withLatestFrom(this.singleRackData$, this.isCurrentRackEditable$),
         map(([_, x, y]) => {
           const editable: boolean = !y;
+          if (editable) {
+            this.formData.name.control.reset(x.name, {emitEvent: false});
+          }
           this.isCurrentRackEditable$.next(editable);
           x.locked = !editable;
           return x;
