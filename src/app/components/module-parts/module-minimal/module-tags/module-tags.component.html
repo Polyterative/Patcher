@@ -4,6 +4,7 @@
   @let isLoggedIn = (tagVoteService.isLoggedIn$ | async);
   @let proposerOpen = (proposerOpen$ | async);
   @let availableTagGroups = (availableTagGroups$ | async);
+  @let proposerTagGroups = (proposerTagGroups$ | async);
   @let visibleTags = (visibleTags$ | async);
   <div class="col gap0">
     <div class="module-tags-toolbar">
@@ -44,17 +45,22 @@
             <mat-icon>close</mat-icon>
           </button>
         </div>
-        @if (availableTagGroups && availableTagGroups.length > 0) {
+        @if (proposerTagGroups && proposerTagGroups.length > 0) {
           <div class="col gap1 proposer-groups">
-            @for (group of availableTagGroups; track group.label) {
+            @for (group of proposerTagGroups; track group.label) {
               <div class="col gap0_5 proposer-group">
                 <span class="proposer-group__label">{{ group.label }}</span>
-                <mat-chip-listbox class="padT0 padB0" [multiple]="false">
-                  @for (tag of group.tags; track tag.id) {
+                <mat-chip-listbox class="padT0 padB0" [multiple]="true">
+                  @for (pt of group.tags; track pt.tag.id) {
                     <mat-chip-option
-                      (click)="proposeTag(tag)"
-                      [matTooltip]="'Add \'' + tag.name + '\' to this module'"
-                    >{{ tag.name }}
+                      [@enter]="{ value: '', params: { delay: 0 }}"
+                      [@leave]="{ value: '', params: { delay: 0 }}"
+                      [selected]="pt.isVotedByMe"
+                      (click)="proposeOrToggle(pt)"
+                      [matTooltip]="pt.isLinked ? (pt.isVotedByMe ? 'Remove your vote from \'' + pt.tag.name + '\'' : 'Vote for \'' + pt.tag.name + '\'') : 'Add \'' + pt.tag.name + '\' to this module'"
+                    >{{ pt.tag.name }}@if (pt.isLinked && pt.voteCount > 0) {
+                      · {{ pt.voteCount }}
+                    }
                     </mat-chip-option>
                   }
                 </mat-chip-listbox>
