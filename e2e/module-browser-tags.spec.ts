@@ -31,8 +31,14 @@ test.describe('Module Browser tag filters', () => {
 
   test('1. exposes the tag search and tag chips in the advanced filter area', async ({page}) => {
     await expect(tagSearch(page)).toBeVisible();
+
+    await revealTagOption(page, FIRST_TAG);
     await expect(tagOption(page, FIRST_TAG)).toBeVisible();
+
+    await revealTagOption(page, SECOND_TAG);
     await expect(tagOption(page, SECOND_TAG)).toBeVisible();
+
+    await clearTagSearch(page);
   });
 
   test('2. tag search narrows suggestions without changing the current result list', async ({page}) => {
@@ -46,6 +52,8 @@ test.describe('Module Browser tag filters', () => {
   });
 
   test('3. selecting one tag sends a backend tag-filter request and keeps the page in a settled state', async ({page}) => {
+    await revealTagOption(page, FIRST_TAG);
+
     const tagRequest = waitForModuleTagRequest(page);
     const option = tagOption(page, FIRST_TAG);
 
@@ -56,6 +64,7 @@ test.describe('Module Browser tag filters', () => {
     await expect(page.locator('.module-results-shell')).toHaveClass(/module-results-shell--updating/);
 
     await tagRequest;
+    await clearTagSearch(page);
     await expectSettledResultsState(page);
   });
 
@@ -151,11 +160,11 @@ function moduleCards(page: Page) {
 }
 
 function tagSearch(page: Page) {
-  return page.getByLabel('Filter tags by name');
+  return page.getByRole('combobox', {name: /search tags/i});
 }
 
 function tagOption(page: Page, name: string) {
-  return page.locator('mat-chip-option').filter({hasText: name}).first();
+  return page.locator('.module-tag-filter-section mat-chip-option').filter({hasText: new RegExp(`^${ escapeRegExp(name) }$`)}).first();
 }
 
 function selectedTag(page: Page, name: string) {
@@ -167,12 +176,15 @@ function matchModeButton(page: Page, mode: 'Any' | 'All') {
 }
 
 async function selectTag(page: Page, name: string, waitForBackend = true): Promise<void> {
+  await revealTagOption(page, name);
+
   const option = tagOption(page, name);
   const response = waitForBackend ? waitForModuleTagResponse(page) : null;
   await expect(option).toBeVisible({timeout: 10_000});
   await option.click();
   await expectSelectedTag(page, name);
   await response;
+  await clearTagSearch(page);
   await expectUpdatingToSettle(page);
 }
 
@@ -190,6 +202,15 @@ async function setTagMatchMode(page: Page, mode: 'Any' | 'All'): Promise<void> {
 
 async function expectSelectedTag(page: Page, name: string): Promise<void> {
   await expect(selectedTag(page, name)).toBeVisible({timeout: 10_000});
+}
+
+async function revealTagOption(page: Page, name: string): Promise<void> {
+  await tagSearch(page).fill(name);
+  await expect(tagOption(page, name)).toBeVisible({timeout: 10_000});
+}
+
+async function clearTagSearch(page: Page): Promise<void> {
+  await tagSearch(page).fill('');
 }
 
 async function expectUpdatingToSettle(page: Page): Promise<void> {
@@ -211,6 +232,10 @@ async function expectEmptyState(page: Page): Promise<void> {
 
 async function expectNoEmptyState(page: Page): Promise<void> {
   await expect(page.locator('app-module-list app-empty-state')).toHaveCount(0);
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function waitForModuleTagRequest(page: Page) {
