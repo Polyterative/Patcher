@@ -206,40 +206,29 @@ describe('RackVisualModelComponent', () => {
     expect(component.totalHpOverflow).toBe(16);
   });
 
-  it('renders the per-row overflow indicator only when overflow > 0', () => {
+  it('marks overflowing modules with the overflow border overlay when overflow > 0', () => {
     component.rackData = {hp: 20} as any;
     component.rowedRackedModules = [[makeRackedModule(1, 0, 0), makeRackedModule(2, 0, 14)]]; // 28 > 20
     fixture.detectChanges();
 
-    const host = fixture.nativeElement as HTMLElement;
-    expect(host.querySelector('.rowHpOverflow')).not.toBeNull();
+    expect(component.isModuleOverflowing(0, 1)).toBeTrue();
   });
 
-  it('does not render the per-row overflow indicator when modules fit within capacity', () => {
+  it('does not mark modules as overflowing when modules fit within capacity', () => {
     component.rackData = {hp: 40} as any;
     component.rowedRackedModules = [[makeRackedModule(1, 0, 0), makeRackedModule(2, 0, 14)]]; // 28 < 40
     fixture.detectChanges();
 
-    const host = fixture.nativeElement as HTMLElement;
-    expect(host.querySelector('.rowHpOverflow')).toBeNull();
+    expect(component.isModuleOverflowing(0, 0)).toBeFalse();
+    expect(component.isModuleOverflowing(0, 1)).toBeFalse();
   });
 
-  it('renders the summary overflow badge when any row exceeds capacity', () => {
-    component.rackData = {hp: 20} as any;
-    component.rowedRackedModules = [[makeRackedModule(1, 0, 0), makeRackedModule(2, 0, 14)]];
-    fixture.detectChanges();
-
-    const host = fixture.nativeElement as HTMLElement;
-    expect(host.querySelector('.hpOverflowBadge')).not.toBeNull();
-  });
-
-  it('does not render the summary overflow badge when all rows fit within capacity', () => {
+  it('isModuleOverflowing returns false when all rows fit within capacity', () => {
     component.rackData = {hp: 40} as any;
     component.rowedRackedModules = [[makeRackedModule(1, 0, 0), makeRackedModule(2, 0, 14)]]; // 28 < 40
     fixture.detectChanges();
 
-    const host = fixture.nativeElement as HTMLElement;
-    expect(host.querySelector('.hpOverflowBadge')).toBeNull();
+    expect(component.isModuleOverflowing(0, 0)).toBeFalse();
   });
 
   it('removes the row template background when the row contains unracked modules', () => {
