@@ -147,11 +147,12 @@
                                       (mouseleave)="clearHoveredModule(rackedModule)"
                                       (contextmenu)="moduleRightClick$.next({$event:$event, rackedModule:rackedModule})"
                 >
-                <ng-template cdkDragPreview>
+                <ng-template cdkDragPreview [matchSize]="true">
                   <app-module-realistic
                     [data]="rackedModule|mapToModule"
                     [analysisMode]="analysisModes.off"
-                    [showPanelImages]="false"
+                    [showPanelImages]="true"
+                    [disablePanelImageEnterAnimation]="true"
                     class="module"
                   ></app-module-realistic>
                 </ng-template>
