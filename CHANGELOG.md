@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.1.1](https://github.com/Polyterative/Patcher/compare/v6.1.0...v6.1.1) (2026-05-24)
+
+
+### Features
+
+* **module-browser:** restructure tag filter UI and fix tag type handling ([ef58f83](https://github.com/Polyterative/Patcher/commit/ef58f83678a73949094d43f406858aea10196333))
+
+
+### Bug Fixes
+
+* **balance-analysis:** repair broken axis scoring after tag type restructure ([9863332](https://github.com/Polyterative/Patcher/commit/9863332f3ec78ea1f96bf2a1b706822194a7e872))
+* **rack-function-visuals:** show most-voted tag as primary tooltip label ([66c388d](https://github.com/Polyterative/Patcher/commit/66c388d2628105b674fc84c0361719f8569f69fd))
+
 ## [6.1.0](https://github.com/Polyterative/Patcher/compare/v6.0.2...v6.1.0) (2026-05-19)
 
 
