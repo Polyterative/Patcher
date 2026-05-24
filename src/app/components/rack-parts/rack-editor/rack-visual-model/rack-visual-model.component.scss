@@ -25,19 +25,22 @@
   transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.cdk-drop-list-dragging .module:not(.cdk-drag-placeholder) {
+.cdk-drop-list-dragging .module:not(.cdk-drag-placeholder),
+.cdk-drop-list-receiving .module:not(.cdk-drag-placeholder) {
   transition: transform 150ms cubic-bezier(0, 0, 0.2, 1);
 }
 
 .cdk-drop-list-dragging .module .root,
-.cdk-drop-list-dragging .module .analysisOverlay {
+.cdk-drop-list-dragging .module .analysisOverlay,
+.cdk-drop-list-receiving .module .root,
+.cdk-drop-list-receiving .module .analysisOverlay {
   transition: none;
 }
 
 :host(.rackVisualModel--disableDropAnimations) {
   .cdk-drag-animating,
-  .cdk-drop-list-dragging .module:not(.cdk-drag-placeholder) {
-    transition: none;
+  .module:not(.cdk-drag-placeholder) {
+    transition: opacity 220ms ease, filter 220ms ease, box-shadow 220ms ease;
   }
 }
 
@@ -105,7 +108,7 @@
 .module {
   position: relative;
   z-index: 2;
-  transition: opacity 220ms ease, filter 220ms ease, box-shadow 220ms ease;
+  transition: transform 150ms cubic-bezier(0, 0, 0.2, 1), opacity 220ms ease, filter 220ms ease, box-shadow 220ms ease;
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
