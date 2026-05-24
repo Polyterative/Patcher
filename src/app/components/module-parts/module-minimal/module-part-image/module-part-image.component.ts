@@ -61,6 +61,7 @@ export class ModulePartImageComponent implements AfterViewInit, OnChanges {
   @Input() containImage: boolean = true;
   @Input() big: boolean = false;
   @Input() disableEnterAnimation = false;
+  @Input() disableNavigation = false;
   /** When true, the panel image is rendered at a fixed 3U-equivalent height
    *  so all cards align in a grid regardless of image aspect ratio.
    *  Set to false to use the original dynamic sizing behaviour. */
