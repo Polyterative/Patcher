@@ -21,7 +21,7 @@ import {
   ViewChild
 } from '@angular/core';
 import { fadeInOnEnterAnimation } from 'angular-animations';
-import { animate, style, transition, trigger } from '@angular/animations';
+import { animate, keyframes, style, transition, trigger } from '@angular/animations';
 import { Subject } from 'rxjs';
 import { RackedModule } from 'src/app/models/module';
 import { RackMinimal } from 'src/app/models/rack';
@@ -90,6 +90,21 @@ import {
           opacity: 0,
           transform: 'scale(0.92)'
         }))
+      ])
+    ]),
+    trigger('overflowBorder', [
+      transition(':enter', [
+        animate('750ms ease-out', keyframes([
+          style({ opacity: 0,    offset: 0 }),
+          style({ opacity: 1,    offset: 0.20 }),
+          style({ opacity: 0.05, offset: 0.38 }),
+          style({ opacity: 1,    offset: 0.58 }),
+          style({ opacity: 0.05, offset: 0.74 }),
+          style({ opacity: 1,    offset: 1 }),
+        ]))
+      ]),
+      transition(':leave', [
+        animate('1000ms ease', style({ opacity: 0 }))
       ])
     ])
   ],
@@ -335,6 +350,18 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
 
   rowHpOverflowAt(rowId: number): number {
     return this.rowHpOverflow[rowId] ?? 0;
+  }
+
+  isModuleOverflowing(rowId: number, moduleIndex: number): boolean {
+    if ((this.rowHpOverflow[rowId] ?? 0) <= 0) return false;
+    const row = this.rowedRackedModules?.[rowId];
+    if (!row) return false;
+    const capacity = this.rackData?.hp ?? 0;
+    let cumulative = 0;
+    for (let i = 0; i < moduleIndex; i++) {
+      cumulative += row[i]?.module?.hp ?? 0;
+    }
+    return cumulative + (row[moduleIndex]?.module?.hp ?? 0) > capacity;
   }
 
   rowHpTooltip(rowId: number): string {

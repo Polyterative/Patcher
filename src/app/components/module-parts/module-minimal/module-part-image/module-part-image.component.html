@@ -1,6 +1,6 @@
 @if (containImage) {
   <div fxLayoutAlign="center center"
-       [routerLink]="['/modules/details',data.id]"
+       [routerLink]="disableNavigation ? null : ['/modules/details',data.id]"
        class="clickable modulePartImageHost"
        [@.disabled]="disableEnterAnimation"
        #tooltipAnchor
@@ -39,7 +39,7 @@
     }
   </div>
 } @else {
-  <div [routerLink]="['/modules/details',data.id]"
+  <div [routerLink]="disableNavigation ? null : ['/modules/details',data.id]"
        role="link"
        tabindex="0"
        class="clickable modulePartImageHost modulePartImageHost--surface"

@@ -7,16 +7,6 @@
                      fxLayoutAlign="center center"
                      class="widthRuler"
   >{{rackData.hp}}</mat-card-subtitle>
-  @if (totalHpOverflow > 0) {
-    <div class="hpOverflowBadge"
-         [@enter]
-         [@leave]
-         [matTooltip]="'Total HP overflow: ' + totalHpOverflow + ' HP over capacity across all rows'"
-    >
-      <mat-icon class="hpOverflowBadge__icon">warning</mat-icon>
-      <span>{{ totalHpOverflow }} HP over</span>
-    </div>
-  }
 
   <div class="col gap0 rackScreen"
        #screen
@@ -157,6 +147,9 @@
                     class="module"
                   ></app-module-realistic>
                 </ng-template>
+                @if (isModuleOverflowing(rowId, i)) {
+                  <div moduleOverlay [@overflowBorder] class="overflowBorderOverlay"></div>
+                }
                 @if (isCurrentRackEditable && isCurrentRackPropertyOfCurrentUser && !suppressHpIndicators && analysisMode === analysisModes.off) {
                   <div class="hpIndicator"
                        (mousedown)="$event.stopPropagation()"
@@ -296,18 +289,8 @@
             </div>
           }
           -->
-          @if (rowHpOverflowAt(rowId) > 0) {
-            <div class="rowHpOverflow"
-                [@enter]
-                [@leave]
-                [matTooltip]="rowHpTooltip(rowId)"
-                aria-label="HP overflow warning"
-            >
-              <span class="rowHpOverflow__bar"></span>
-              <span class="rowHpOverflow__label">+{{ rowHpOverflowAt(rowId) }}HP</span>
-            </div>
-          }
-       </div>
+        </div>
+
     }
     <!--    <div class="watermark self-center">Planned on patcher.xyz</div>-->
   </div>
