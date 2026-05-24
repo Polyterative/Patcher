@@ -35,6 +35,19 @@ import {
   TagSuggestionGroup
 } from 'src/app/models/tag';
 
+export interface ProposerTag {
+  tag: Tag;
+  /** null when the tag is not yet linked to the module */
+  moduleTagId: number | null;
+  isLinked: boolean;
+  isVotedByMe: boolean;
+  voteCount: number;
+}
+
+export interface ProposerTagGroup {
+  label: string;
+  tags: ProposerTag[];
+}
 
 @Component({
   selector: 'app-module-tags',
@@ -102,6 +115,9 @@ export class ModuleTagsComponent extends SubManager implements OnInit {
   availableTags$: Observable<Tag[]>;
   availableTagGroups$: Observable<TagSuggestionGroup[]>;
 
+  /** All tags enriched with link/vote state — used in the proposer panel */
+  proposerTagGroups$: Observable<ProposerTagGroup[]>;
+
   constructor(public tagVoteService: TagVoteDataService) {
     super();
     
@@ -118,7 +134,8 @@ export class ModuleTagsComponent extends SubManager implements OnInit {
           voteCount: [{moduletagid: tagVotes.get(p.moduleTagId) ?? 1}]
         }));
         const merged = [...serverTags, ...proposedAsModuleTags];
-        const sorted = merged.sort(
+        const filtered = merged.filter(item => (tagVotes.get(item.id) ?? 0) > 0);
+        const sorted = filtered.sort(
           (a, b) => (b.voteCount?.length ?? 0) - (a.voteCount?.length ?? 0)
         );
         return this.maxTags ? sorted.slice(0, this.maxTags) : sorted;
@@ -155,6 +172,51 @@ export class ModuleTagsComponent extends SubManager implements OnInit {
         }));
       })
     );
+
+    this.proposerTagGroups$ = combineLatest([
+      this.tagVoteService.allTags$,
+      this.tagVoteService.proposedTags$,
+      this.tagVoteService.myVotes$,
+      this.tagVoteService.tagVotes$,
+    ]).pipe(
+      map(([allTags, proposed, myVotes, tagVotes]) => {
+        const serverTags = this.data?.tags ?? [];
+
+        // Build tagId → moduleTagId map from both server tags and locally proposed ones
+        const linkedTagMap = new Map<number, number>();
+        for (const t of serverTags) {
+          linkedTagMap.set(t.tag.id, t.id);
+        }
+        for (const p of proposed) {
+          if (!linkedTagMap.has(p.tag.id)) {
+            linkedTagMap.set(p.tag.id, p.moduleTagId);
+          }
+        }
+
+        const proposerTags: ProposerTag[] = allTags.map(tag => {
+          const moduleTagId = linkedTagMap.get(tag.id) ?? null;
+          const isLinked = moduleTagId !== null;
+          const isVotedByMe = isLinked ? myVotes.has(moduleTagId!) : false;
+          const voteCount = isLinked ? (tagVotes.get(moduleTagId!) ?? 0) : 0;
+          return { tag, moduleTagId, isLinked, isVotedByMe, voteCount };
+        });
+
+        const grouped = new Map<string, ProposerTag[]>();
+        for (const pt of proposerTags) {
+          const label = TAG_TYPE_LABELS[pt.tag.type] ?? 'Other';
+          grouped.set(label, [...(grouped.get(label) ?? []), pt]);
+        }
+
+        const orderedLabels = TAG_TYPE_DISPLAY_ORDER
+          .map(type => TAG_TYPE_LABELS[type])
+          .filter(label => grouped.has(label));
+
+        return orderedLabels.map(label => ({
+          label,
+          tags: grouped.get(label)!
+        }));
+      })
+    );
   }
 
   ngOnInit(): void {
@@ -177,6 +239,13 @@ export class ModuleTagsComponent extends SubManager implements OnInit {
 
   proposeTag(tag: Tag): void {
     this.tagVoteService.proposeTag$.next({moduleId: this.data.id, tagId: tag.id});
-    this.closeProposer();
+  }
+
+  proposeOrToggle(pt: ProposerTag): void {
+    if (pt.isLinked && pt.moduleTagId !== null) {
+      this.tagVoteService.toggleVote$.next(pt.moduleTagId);
+    } else {
+      this.tagVoteService.proposeTag$.next({moduleId: this.data.id, tagId: pt.tag.id});
+    }
   }
 }
