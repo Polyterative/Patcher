@@ -14,26 +14,11 @@
 }
 
 .cdk-drag-placeholder {
-  opacity: 0;
+  opacity: 0.5;
 }
 
 .module--dropRevealSuppressed {
-  opacity: 0 !important;
   transition: none !important;
-}
-
-.module--dropRevealAnimating {
-  animation: moduleDropReveal 225ms ease-out;
-}
-
-@keyframes moduleDropReveal {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
 }
 
 .cdk-drag-animating {
