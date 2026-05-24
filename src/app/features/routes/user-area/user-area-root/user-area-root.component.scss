@@ -90,7 +90,7 @@
   min-width: 0;
   position: sticky;
   top: 1rem;
-  max-block-size: calc(100vh - 2rem);
+  max-block-size: calc(var(--app-viewport-height, 100vh) - 2rem);
   overflow: auto;
   scrollbar-gutter: stable;
   padding-right: 0.25rem;
@@ -122,7 +122,7 @@
   column-gap: 1rem;
   row-gap: 1rem;
   min-width: 0;
-  min-block-size: calc(100vh - 13rem);
+  min-block-size: calc(var(--app-viewport-height, 100vh) - 13rem);
   padding-bottom: 5rem;
   align-items: start;
 }

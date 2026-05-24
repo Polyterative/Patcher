@@ -54,7 +54,7 @@
 }
 
 .section-scroll {
-  max-block-size: clamp(24rem, calc(100vh - 23rem), 50rem);
+  max-block-size: clamp(24rem, calc(var(--app-viewport-height, 100vh) - 23rem), 50rem);
   overflow: auto;
   scrollbar-gutter: stable;
   padding-right: 0.15rem;

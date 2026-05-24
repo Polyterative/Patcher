@@ -316,8 +316,7 @@ h3 {
   z-index: 1200;
   isolation: isolate;
   background: color.adjust($brand-secondary, $lightness: 34%, $alpha: -0.1);
-  backdrop-filter: blur(1rem) saturate(180%) brightness(1.08);
-  -webkit-backdrop-filter: blur(1rem) saturate(180%) brightness(1.08);
+  -webkit-backdrop-filter: blur(1rem) saturate(180%) brightness(1.08); backdrop-filter: blur(1rem) saturate(180%) brightness(1.08);
   border-bottom: 1px solid rgba(255, 255, 255, 0.46);
   box-shadow:
     0 0.5rem 2rem rgba(26, 44, 66, 0.16),

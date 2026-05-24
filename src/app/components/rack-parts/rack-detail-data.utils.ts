@@ -2,7 +2,10 @@ import { RackedModule } from '../../models/module';
 import { RackMinimal } from '../../models/rack';
 
 export function cloneRackData<T>(value: T): T {
-  return structuredClone(value);
+  if (typeof structuredClone === 'function') {
+    return structuredClone(value);
+  }
+  return JSON.parse(JSON.stringify(value)) as T;
 }
 
 const BLANK_IDS_STANDARD_0: Record<number, number> = {

@@ -9,7 +9,7 @@
     linear-gradient(180deg, rgba(255, 251, 242, 0.98) 0%, rgba(251, 245, 231, 0.98) 100%);
   box-shadow: var(--app-floating-surface-shadow-strong, 0 0.45rem 1.4rem rgba(0, 0, 0, 0.22));
   color: #2f2816;
-  backdrop-filter: blur(var(--app-floating-surface-blur, 0.375rem));
+  -webkit-backdrop-filter: blur(var(--app-floating-surface-blur, 0.375rem)); backdrop-filter: blur(var(--app-floating-surface-blur, 0.375rem));
   animation: discovery-tip-enter var(--app-floating-surface-raise-duration, 160ms) ease-out;
 
   &::after {

@@ -97,6 +97,11 @@ export default defineConfig({
       testIgnore: [AUTH_SPEC_GLOB],
       use: {...devices['Desktop Chrome']},
     },
+    {
+      name: 'webkit',
+      testIgnore: [AUTH_SPEC_GLOB],
+      use: {...devices['Desktop Safari']},
+    },
     ...(hasAuthCredentials
       ? [{
         name: 'chromium-auth',
@@ -111,6 +116,14 @@ export default defineConfig({
         testMatch: ['**/screenshots/**/*.spec.ts'],
         use: {
           ...devices['Desktop Chrome'],
+          storageState: AUTH_STORAGE_STATE_PATH
+        }
+      }, {
+        name: 'webkit-auth',
+        testMatch: [AUTH_SPEC_GLOB],
+        testIgnore: ['**/screenshots/**/*.spec.ts'],
+        use: {
+          ...devices['Desktop Safari'],
           storageState: AUTH_STORAGE_STATE_PATH
         }
       }]

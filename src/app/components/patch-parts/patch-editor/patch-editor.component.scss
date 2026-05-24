@@ -449,7 +449,7 @@ $connection-out-outline: rgba(226, 82, 60, 0.55);
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 0.5rem;
   background: rgba(255, 255, 255, 0.97);
-  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22), 0 2px 8px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.06);
   z-index: 20;
   pointer-events: auto;
