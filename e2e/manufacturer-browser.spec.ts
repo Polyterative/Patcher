@@ -111,13 +111,10 @@ test.describe('Manufacturer Browser', () => {
     await page.goto(BROWSER_URL);
     const firstRow = page.locator('app-manufacturer-row').first();
     await expect(firstRow).toBeVisible({timeout: 20_000});
-    
-    // Wait for modules to load (the loading indicator should disappear)
-    await page.waitForTimeout(3_000);
-    
-    const hasStrip = await firstRow.locator('.module-strip').isVisible();
-    const hasEmpty = await firstRow.locator('.manufacturer-row-empty').isVisible();
-    expect(hasStrip || hasEmpty).toBe(true);
+
+    await expect(
+      firstRow.locator('.module-strip, .manufacturer-row-empty').first()
+    ).toBeVisible({timeout: 15_000});
   });
   
   test('module strip cards are visible inside the first row', async ({page}) => {

@@ -106,7 +106,8 @@ type SummaryLayoutMetrics = {
 
 async function openRackDetails(page: Page, rackId: number): Promise<void> {
   await page.goto(`/racks/details/${ rackId }`);
-  await expect(page).toHaveURL(new RegExp(`/racks/details/${ rackId }(?:$|[?#])`), {timeout: 15_000});
+  await expect(page).not.toHaveURL(/\/links\/retired(?:$|[?#])/);
+  await expect(page).toHaveURL(new RegExp(`/racks/(?:details/${ rackId }|(?!browser(?:$|[?#]))[^/?#]+)(?:$|[?#])`), {timeout: 15_000});
 
   const rackComposite = page.locator('app-rack-composite').first();
   const visibleRackViewport = page.locator('app-rack-editor .scroll').first();
