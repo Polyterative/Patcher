@@ -52,6 +52,7 @@
                            [selectedPanelId]="selectedPanelId"
                            [containImage]="false"
                            [disableEnterAnimation]="disablePanelImageEnterAnimation"
+                           [disableNavigation]="(rackDetailDataService.isCurrentRackEditable$|async) && (rackDetailDataService.isCurrentRackPropertyOfCurrentUser$|async)"
                            [tooltip]="analysisModeActive ? '' : buildPanelTooltip(data, selectedPanelId)"
                            [tooltipDisabled]="analysisModeActive || touchInteractionMode"
                            [tooltipClass]="'module-panel-tooltip'"
@@ -66,3 +67,4 @@
     <div class="analysisOverlay__layer analysisOverlay__layer--signal"></div>
   </div>
 </div>
+<ng-content select="[moduleOverlay]"></ng-content>
