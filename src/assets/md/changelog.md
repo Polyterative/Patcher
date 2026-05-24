@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.1.2](https://github.com/Polyterative/Patcher/compare/v6.1.1...v6.1.2) (2026-05-24)
+
+
+### Bug Fixes
+
+* **rack-editor:** improve cross-row drag animation and suppress ghost ([fcc1ddb](https://github.com/Polyterative/Patcher/commit/fcc1ddbca57467c8b401a8a3c5b1529e1bbfe09e))
+* **rack-editor:** replace HP overflow indicators with animated module border ([e071d93](https://github.com/Polyterative/Patcher/commit/e071d93bbaee4fa0d5c53055942802e508faa3d6))
+* **rack-editor:** restore natural drag-and-drop behavior ([d4d40c0](https://github.com/Polyterative/Patcher/commit/d4d40c099f92e35c6f58daca54810d222939b3c0))
+
 ### [6.1.1](https://github.com/Polyterative/Patcher/compare/v6.1.0...v6.1.1) (2026-05-24)
 
 
