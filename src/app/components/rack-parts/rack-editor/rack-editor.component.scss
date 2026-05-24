@@ -116,13 +116,14 @@ $floatingSurfaceMaxWidth: 16.5rem;
   );
   border-radius: 0.85rem;
   background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(var(--app-floating-surface-blur, 0.375rem));
+  -webkit-backdrop-filter: blur(var(--app-floating-surface-blur, 0.375rem)); backdrop-filter: blur(var(--app-floating-surface-blur, 0.375rem));
   box-shadow: var(--app-floating-surface-shadow, 0 0.35rem 1.1rem rgba(0, 0, 0, 0.18));
   opacity: var(--app-floating-surface-rest-opacity, 0.78);
   transition:
     opacity var(--app-floating-surface-transition-duration, 160ms) ease,
     transform var(--app-floating-surface-transition-duration, 160ms) ease,
     box-shadow var(--app-floating-surface-transition-duration, 160ms) ease,
+    -webkit-backdrop-filter var(--app-floating-surface-transition-duration, 160ms) ease,
     backdrop-filter var(--app-floating-surface-transition-duration, 160ms) ease;
 }
 

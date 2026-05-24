@@ -114,8 +114,10 @@ export class ModuleDetailDataService implements OnDestroy {
       .subscribe(([a, b]) => {
         if (b) {
           const text: string = `${ b.name } by ${ b.manufacturer.name }`;
-          navigator.clipboard.writeText(text);
-          SharedConstants.successCustom(snackBar, `Copied to clipboard: ${ text }`);
+          navigator.clipboard.writeText(text).then(
+            () => SharedConstants.successCustom(snackBar, `Copied to clipboard: ${ text }`),
+            () => snackBar.open('Clipboard write failed — copy manually.', undefined, {duration: 3000, panelClass: 'snack-error'})
+          );
         }
       });
     

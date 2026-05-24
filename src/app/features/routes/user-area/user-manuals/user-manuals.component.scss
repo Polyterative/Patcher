@@ -13,7 +13,7 @@
 }
 
 .manuals-list {
-  max-block-size: clamp(20rem, calc(100vh - 24rem), 25rem);
+  max-block-size: clamp(20rem, calc(var(--app-viewport-height, 100vh) - 24rem), 25rem);
   overflow: auto;
   scrollbar-gutter: stable;
   padding-right: 0.15rem;
