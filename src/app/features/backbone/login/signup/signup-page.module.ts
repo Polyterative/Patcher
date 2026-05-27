@@ -3,11 +3,11 @@ import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatCardModule } from "@angular/material/card";
 import { RouterModule } from '@angular/router';
-import { EmptyStateModule } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.module';
+import { EmptyStateComponent } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.component';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
-import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
+import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
-import { ScreenWrapperModule } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
+import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { LoginEmailModule } from '../login-page/login-email/login-email.module';
 import { SSOButtonsComponent } from '../sso-buttons/sso-buttons.component';
 import { SignupEmailComponent } from './signup-email/signup-email.component';
@@ -22,11 +22,11 @@ import { MatError } from "@angular/material/input";
   ],
   imports: [
     CommonModule,
-    BrandPrimaryButtonModule,
+    BrandPrimaryButtonComponent,
     LoginEmailModule,
     HeroContentCardModule,
-    EmptyStateModule,
-    ScreenWrapperModule,
+    EmptyStateComponent,
+    ScreenWrapperComponent,
     FlexLayoutModule,
     MatFormEntityComponent,
     MatCardModule,

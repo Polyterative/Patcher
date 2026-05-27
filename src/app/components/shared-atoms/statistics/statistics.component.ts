@@ -1,8 +1,13 @@
+import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   Input
 } from '@angular/core';
+import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-state-tips/empty-state-tips.component';
+import { LabelValueShowcaseModule } from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
+import { CleanCardComponent } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.component';
+import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 
 
 @Component({
@@ -10,7 +15,14 @@ import {
   templateUrl: './statistics.component.html',
   styleUrls: ['./statistics.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+  standalone: true,
+  imports: [
+    CommonModule,
+    LabelValueShowcaseModule,
+    HeroContentCardModule,
+    EmptyStateTipsComponent,
+    CleanCardComponent
+  ]
 })
 export class StatisticsComponent {
 

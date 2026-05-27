@@ -10,7 +10,7 @@ import {
   templateUrl: './clean-card.component.html',
   styleUrls: ['./clean-card.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+  standalone: true
 })
 export class CleanCardComponent implements OnInit {
   

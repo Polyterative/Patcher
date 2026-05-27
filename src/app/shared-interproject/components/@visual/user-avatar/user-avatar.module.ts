@@ -2,8 +2,8 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatCardModule } from "@angular/material/card";
-import { BrandPrimaryButtonModule } from '../brand-primary-button/brand-primary-button.module';
-import { CleanCardModule } from '../clean-card/clean-card.module';
+import { BrandPrimaryButtonComponent } from '../brand-primary-button/brand-primary-button.component';
+import { CleanCardComponent } from '../clean-card/clean-card.component';
 import { UserAvatarComponent } from './user-avatar.component';
 
 
@@ -12,9 +12,9 @@ import { UserAvatarComponent } from './user-avatar.component';
   imports: [
     CommonModule,
     FlexLayoutModule,
-    BrandPrimaryButtonModule,
+    BrandPrimaryButtonComponent,
     MatCardModule,
-    CleanCardModule,
+    CleanCardComponent,
   ],
   exports:      [UserAvatarComponent]
 })

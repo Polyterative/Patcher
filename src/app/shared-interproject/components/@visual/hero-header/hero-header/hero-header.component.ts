@@ -1,3 +1,4 @@
+import { FlexLayoutModule } from '@angular/flex-layout';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -11,7 +12,8 @@ import {
   templateUrl: './hero-header.component.html',
   styleUrls: ['./hero-header.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+  standalone: true,
+  imports: [FlexLayoutModule]
 })
 export class HeroHeaderComponent implements OnInit {
   @Input() public readonly title = '';

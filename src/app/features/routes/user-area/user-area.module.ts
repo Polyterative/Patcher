@@ -12,13 +12,13 @@ import { UserPatchesComponent } from 'src/app/features/routes/user-area/user-pat
 import { UserRacksComponent } from 'src/app/features/routes/user-area/user-racks/user-racks.component';
 import { PatchListModule } from 'src/app/components/patch-list/patch-list.module';
 import { RackListModule } from 'src/app/components/rack-list/rack-list.module';
-import { AutoUpdateLoadingIndicatorModule } from 'src/app/shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator.module';
-import { EmptyStateModule } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.module';
-import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
-import { CleanCardModule } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.module';
+import { AutoUpdateLoadingIndicatorComponent } from 'src/app/shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator/auto-update-loading-indicator.component';
+import { EmptyStateComponent } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.component';
+import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
+import { CleanCardComponent } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.component';
 import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { LabelValueShowcaseModule } from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
-import { ScreenWrapperModule } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
+import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
 import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area-data.service';
 import { UserAreaRootComponent } from 'src/app/features/routes/user-area/user-area-root/user-area-root.component';
@@ -31,7 +31,7 @@ import {
 import { UserManualsComponent } from "src/app/features/routes/user-area/user-manuals/user-manuals.component";
 import { UserCommentsComponent } from "src/app/features/routes/user-area/user-comments/user-comments.component";
 import { AppFaqComponent } from "src/app/components/shared-atoms/app-faq/app-faq.component";
-import { StatisticsModule } from "src/app/components/shared-atoms/statistics/statistics.module";
+import { StatisticsComponent } from "src/app/components/shared-atoms/statistics/statistics.component";
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonModule } from '@angular/material/button';
@@ -59,24 +59,24 @@ import { RackMicroModule } from 'src/app/components/rack-micro/rack-micro.module
       }
     ]),
     FlexLayoutModule,
-    BrandPrimaryButtonModule,
-    ScreenWrapperModule,
+    BrandPrimaryButtonComponent,
+    ScreenWrapperComponent,
     MatExpansionModule,
     MatIconModule,
     MatCardModule,
     ModuleBrowserModule,
     HeroContentCardModule,
-    EmptyStateModule,
+    EmptyStateComponent,
     PatchBrowserModule,
     RackBrowserModule,
     UserModulesModule,
     MatDividerModule,
     LabelValueShowcaseModule,
-    CleanCardModule,
-    AutoUpdateLoadingIndicatorModule,
+    CleanCardComponent,
+    AutoUpdateLoadingIndicatorComponent,
     RackListModule,
     PatchListModule,
-    StatisticsModule,
+    StatisticsComponent,
     MatPaginatorModule,
     MatChipsModule,
     MatButtonModule,

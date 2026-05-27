@@ -7,7 +7,7 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { UrlCreatorService } from 'src/app/features/backend/url-creator.service';
-import { BrandPrimaryButtonModule } from '../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
+import { BrandPrimaryButtonComponent } from '../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { LibGraphModule } from '../../shared-interproject/components/@visual/graph-view/lib-graph.module';
 import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { AdminGuardService } from './admin-guard.service';
@@ -36,7 +36,7 @@ import { SupabaseService } from './supabase.service';
       }
     ]),
     FlexLayoutModule,
-    BrandPrimaryButtonModule,
+    BrandPrimaryButtonComponent,
     LibGraphModule,
     HeroContentCardModule,
     MatButtonToggleModule,

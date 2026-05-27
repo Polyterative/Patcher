@@ -13,17 +13,17 @@ import { RackModuleAdderDialogComponent } from 'src/app/components/rack-parts/ra
 import { SharedAtomsModule } from 'src/app/components/shared-atoms/shared-atoms.module';
 import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
-import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
+import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { DialogInfoBoxComponent } from 'src/app/shared-interproject/components/@visual/dialog-info-box/dialog-info-box.component';
 import { FlexboxRowFastModule } from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
 import { HeroClickableTitleModule } from 'src/app/shared-interproject/components/@visual/hero-clickable-title/hero-clickable-title.module';
 import { HeroInfoBoxModule } from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
-import { AutoContentLoadingIndicatorModule } from '../../shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator.module';
+import { AutoContentLoadingIndicatorComponent } from '../../shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator/auto-content-loading-indicator.component';
 import { GeneralContextMenuModule } from '../../shared-interproject/components/@smart/general-context-menu/general-context-menu.module';
 import { BrandLogoModule } from '../../shared-interproject/components/@visual/brand-logo/brand-logo.module';
-import { CleanCardModule } from '../../shared-interproject/components/@visual/clean-card/clean-card.module';
+import { CleanCardComponent } from '../../shared-interproject/components/@visual/clean-card/clean-card.component';
 import { HeroContentCardModule } from '../../shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
-import { ScreenWrapperModule } from '../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
+import { ScreenWrapperComponent } from '../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { RackMicroModule } from '../rack-micro/rack-micro.module';
 import { MapToModulePipe } from './map-to-module.pipe';
 import { RackCreatorComponent } from './rack-creator/rack-creator.component';
@@ -37,7 +37,7 @@ import { TotalHpOfModulesPipe } from './total-hp-of-modules.pipe';
 import { TotalHpOfRackPipe } from './total-hp-of-rack.pipe';
 import { TotalModulesOfRackPipe } from './total-modules-of-rack.pipe';
 import { TotalPlacedModulesOfRackPipe } from './total-placed-modules-of-rack.pipe';
-import { StatisticsModule } from "src/app/components/shared-atoms/statistics/statistics.module";
+import { StatisticsComponent } from "src/app/components/shared-atoms/statistics/statistics.component";
 import { MatDialogModule } from "@angular/material/dialog";
 import { MatCardModule } from "@angular/material/card";
 import { MatDividerModule } from "@angular/material/divider";
@@ -102,7 +102,7 @@ import { InputDialogModule } from "src/app/shared-interproject/dialogs/input-dia
     CommonModule,
     ReactiveFormsModule,
     MatCardModule,
-    BrandPrimaryButtonModule,
+    BrandPrimaryButtonComponent,
     FlexLayoutModule,
     MatDividerModule,
     MatFormEntityComponent,
@@ -118,16 +118,16 @@ import { InputDialogModule } from "src/app/shared-interproject/dialogs/input-dia
     HeroInfoBoxModule,
     HeroClickableTitleModule,
     HeroContentCardModule,
-    CleanCardModule,
+    CleanCardComponent,
     DragDropModule,
     BrandLogoModule,
-    ScreenWrapperModule,
-    AutoContentLoadingIndicatorModule,
+    ScreenWrapperComponent,
+    AutoContentLoadingIndicatorComponent,
     GeneralContextMenuModule,
     RackMicroModule,
     MatSlideToggleModule,
     MatButtonToggleModule,
-    StatisticsModule,
+    StatisticsComponent,
     AdviceTooltipModule,
     DialogInfoBoxComponent,
     MatBadge,

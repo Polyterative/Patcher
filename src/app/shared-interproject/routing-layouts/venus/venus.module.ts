@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { Route, RouterModule, Routes } from '@angular/router';
-import { ScreenWrapperModule } from '../../components/@visual/screen-wrapper/screen-wrapper.module';
+import { ScreenWrapperComponent } from '../../components/@visual/screen-wrapper/screen-wrapper.component';
 import { VenusComponent } from './venus.component';
 
 @NgModule({
@@ -12,7 +12,7 @@ import { VenusComponent } from './venus.component';
     RouterModule,
     CommonModule,
     FlexLayoutModule,
-    ScreenWrapperModule,
+    ScreenWrapperComponent,
     MatToolbarModule
   ],
   providers:    [],

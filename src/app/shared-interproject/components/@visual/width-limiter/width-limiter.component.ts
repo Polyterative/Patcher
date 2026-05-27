@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -11,7 +12,8 @@ import {
   templateUrl: './width-limiter.component.html',
   styleUrls: ['./width-limiter.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+  standalone: true,
+  imports: [CommonModule]
 })
 export class WidthLimiterComponent implements OnInit {
   @Input()

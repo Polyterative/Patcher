@@ -19,7 +19,7 @@ import { UserDataHandlerService }    from '../../shared-interproject/components/
 import { HeroInfoBoxModule }         from '../../shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
 import { HeroInfoBoxService }        from '../../shared-interproject/components/@visual/hero-info-box/hero-info-box.service';
 import { LabelValueShowcaseModule }  from '../../shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
-import { ScreenWrapperModule }       from '../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
+import { ScreenWrapperComponent }       from '../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { BuildInfoComponent }        from './build-info/build-info.component';
 import { CommonSidebarComponent }    from './common-sidebar/common-sidebar.component';
 import { DiscordWidgetComponent }    from './discord-widget/discord-widget.component';
@@ -63,7 +63,7 @@ import { ToolbarModule }             from './toolbar/toolbar.module';
     TimeagoModule,
     LabelValueShowcaseModule,
     MatDividerModule,
-    ScreenWrapperModule,
+    ScreenWrapperComponent,
     LottieContainerModule,
     MatButtonModule,
     MatIconModule,

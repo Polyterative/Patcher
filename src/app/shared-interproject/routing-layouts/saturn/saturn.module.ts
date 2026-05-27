@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { CanActivateFn, Route, RouterModule, Routes } from '@angular/router';
-import { ScreenWrapperModule } from '../../components/@visual/screen-wrapper/screen-wrapper.module';
+import { ScreenWrapperComponent } from '../../components/@visual/screen-wrapper/screen-wrapper.component';
 import { SaturnComponent } from './saturn.component';
 
 @NgModule({
@@ -10,7 +10,7 @@ import { SaturnComponent } from './saturn.component';
   imports:      [
     RouterModule,
     CommonModule,
-    ScreenWrapperModule,
+    ScreenWrapperComponent,
     MatToolbarModule
   ],
   providers:    [],

@@ -17,7 +17,6 @@ import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
 } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
-import { FileDragHostService } from 'src/app/shared-interproject/components/@smart/file-drag-host/file-drag-host.service';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 import { ModuleAdderDataService } from './module-adder-data.service';
 import { UserManagementService } from "src/app/features/backbone/login/user-management.service";
@@ -39,10 +38,6 @@ export type SidebarState = 'idle' | 'searching' | 'results' | 'clear';
   templateUrl: './module-browser-adder.component.html',
   styleUrls: ['./module-browser-adder.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [
-    ModuleAdderDataService,
-    FileDragHostService
-  ],
   standalone: false
 })
 export class ModuleBrowserAdderComponent extends SubManager implements OnInit, OnDestroy {

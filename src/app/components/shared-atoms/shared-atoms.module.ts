@@ -11,7 +11,7 @@ import { TimestampsRelativeComponent }    from './timestamps-relative/timestamps
 import { MatCardModule }                  from "@angular/material/card";
 import { MatBadgeModule }                from "@angular/material/badge";
 import { MatTooltipModule }               from "@angular/material/tooltip";
-import { CleanCardModule } from "src/app/shared-interproject/components/@visual/clean-card/clean-card.module";
+import { CleanCardComponent } from "src/app/shared-interproject/components/@visual/clean-card/clean-card.component";
 import { LabelValueShowcaseModule } from "src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module";
 import { EntityStatGridComponent } from "./entity-stat-grid/entity-stat-grid.component";
 import { EntityStatCardComponent } from "./entity-stat-card/entity-stat-card.component";
@@ -35,7 +35,7 @@ import { EntityStatCardComponent } from "./entity-stat-card/entity-stat-card.com
     HeroInfoBoxModule,
     MatIconModule,
     MatTooltipModule,
-    CleanCardModule,
+    CleanCardComponent,
     LabelValueShowcaseModule
   ],
   exports:      [

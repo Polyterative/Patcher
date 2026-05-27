@@ -1,3 +1,5 @@
+import { A11yModule } from '@angular/cdk/a11y';
+import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -5,7 +7,14 @@ import {
   Input,
   Output
 } from '@angular/core';
-import { TooltipPosition } from '@angular/material/tooltip';
+import { FlexLayoutModule } from '@angular/flex-layout';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import {
+  MatTooltipModule,
+  TooltipPosition
+} from '@angular/material/tooltip';
+import { RouterModule } from '@angular/router';
 
 
 export type BrandPrimaryButtonTheme =
@@ -24,7 +33,16 @@ export type BrandPrimaryButtonTheme =
   styleUrls: ['./brand-primary-button.component.scss'],
   // encapsulation:   ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+  standalone: true,
+  imports: [
+    CommonModule,
+    FlexLayoutModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTooltipModule,
+    RouterModule,
+    A11yModule
+  ]
 })
 export class BrandPrimaryButtonComponent {
   @Input() disabled = false;

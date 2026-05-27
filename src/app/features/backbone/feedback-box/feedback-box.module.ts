@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatCardModule } from "@angular/material/card";
 import { LabelValueShowcaseModule } from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
-import { ScreenWrapperModule } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
+import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { FeedbackBoxComponent } from './feedback-box.component';
 
 
@@ -13,7 +13,7 @@ import { FeedbackBoxComponent } from './feedback-box.component';
   ],
   imports:      [
     CommonModule,
-    ScreenWrapperModule,
+    ScreenWrapperComponent,
     MatCardModule,
     FlexLayoutModule,
     LabelValueShowcaseModule

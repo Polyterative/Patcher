@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -34,7 +35,8 @@ import {
   ],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+  standalone: true,
+  imports: [CommonModule]
 })
 export class AutoContentLoadingIndicatorComponent implements OnInit, OnDestroy {
   @Input() data$: Observable<unknown>;

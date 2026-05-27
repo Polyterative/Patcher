@@ -12,7 +12,7 @@ import {
 } from "@angular/common";
 import { TimeagoModule } from "ngx-timeago";
 import { MatIcon } from "@angular/material/icon";
-import { CleanCardModule } from "src/app/shared-interproject/components/@visual/clean-card/clean-card.module";
+import { CleanCardComponent } from "src/app/shared-interproject/components/@visual/clean-card/clean-card.component";
 import { MatTooltip } from "@angular/material/tooltip";
 import { MatIconButton } from "@angular/material/button";
 import { CommentContextComponent } from "src/app/components/shared-atoms/comments/comment-context/comment-context.component";
@@ -41,7 +41,7 @@ export const defaultCommentViewConfig: CommentViewConfig = {
     TimeagoModule,
     AsyncPipe,
     MatIcon,
-    CleanCardModule,
+    CleanCardComponent,
     MatTooltip,
     MatIconButton,
     CommentContextComponent,

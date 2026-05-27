@@ -7,14 +7,14 @@ import { MatIconModule } from '@angular/material/icon';
 import { RouterModule } from '@angular/router';
 import { PatchListModule } from 'src/app/components/patch-list/patch-list.module';
 import { RackListModule } from 'src/app/components/rack-list/rack-list.module';
-import { StatisticsModule } from 'src/app/components/shared-atoms/statistics/statistics.module';
-import { AutoContentLoadingIndicatorModule } from 'src/app/shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator.module';
-import { EmptyStateModule } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.module';
-import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
-import { CleanCardModule } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.module';
+import { StatisticsComponent } from 'src/app/components/shared-atoms/statistics/statistics.component';
+import { AutoContentLoadingIndicatorComponent } from 'src/app/shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator/auto-content-loading-indicator.component';
+import { EmptyStateComponent } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.component';
+import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
+import { CleanCardComponent } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.component';
 import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { LabelValueShowcaseModule } from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
-import { ScreenWrapperModule } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
+import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { PublicProfileComponent } from './public-profile.component';
 
 @NgModule({
@@ -33,14 +33,14 @@ import { PublicProfileComponent } from './public-profile.component';
     MatIconModule,
     PatchListModule,
     RackListModule,
-    StatisticsModule,
-    AutoContentLoadingIndicatorModule,
-    EmptyStateModule,
-    BrandPrimaryButtonModule,
-    CleanCardModule,
+    StatisticsComponent,
+    AutoContentLoadingIndicatorComponent,
+    EmptyStateComponent,
+    BrandPrimaryButtonComponent,
+    CleanCardComponent,
     HeroContentCardModule,
     LabelValueShowcaseModule,
-    ScreenWrapperModule,
+    ScreenWrapperComponent,
   ],
 })
 export class PublicProfileModule {}

@@ -21,15 +21,15 @@ import { UserModulesModule } from 'src/app/features/routes/user-area/user-module
 import { DevOnlyWindowModule } from 'src/app/shared-interproject/components/@smart/dev-only-window/dev-only-window.module';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { AdviceTooltipModule } from 'src/app/shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module';
-import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
+import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { DialogInfoBoxComponent } from 'src/app/shared-interproject/components/@visual/dialog-info-box/dialog-info-box.component';
 import { HeroClickableTitleModule } from 'src/app/shared-interproject/components/@visual/hero-clickable-title/hero-clickable-title.module';
 import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { HeroInfoBoxModule } from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
 import { ConfirmDialogModule } from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.module';
-import { AutoContentLoadingIndicatorModule } from '../../shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator.module';
-import { AutoUpdateLoadingIndicatorModule } from '../../shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator.module';
-import { CleanCardModule } from '../../shared-interproject/components/@visual/clean-card/clean-card.module';
+import { AutoContentLoadingIndicatorComponent } from '../../shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator/auto-content-loading-indicator.component';
+import { AutoUpdateLoadingIndicatorComponent } from '../../shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator/auto-update-loading-indicator.component';
+import { CleanCardComponent } from '../../shared-interproject/components/@visual/clean-card/clean-card.component';
 import { LibGraphModule } from '../../shared-interproject/components/@visual/graph-view/lib-graph.module';
 import { PatchMicroModule } from '../patch-micro/patch-micro.module';
 import { PatchConnectionsListComponent } from './patch-connections-list/patch-connections-list.component';
@@ -46,7 +46,7 @@ import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { LibShowcaseGridComponent } from 'src/app/components/rack-parts/rack-editor/lib-showcase-grid/lib-showcase-grid.component';
 import { FormValidPipe } from 'src/app/shared-interproject/components/@smart/mat-form-entity/is-control-valid.pipe';
-import { StatisticsModule } from 'src/app/components/shared-atoms/statistics/statistics.module';
+import { StatisticsComponent } from 'src/app/components/shared-atoms/statistics/statistics.component';
 import { PatchConnectionStatsPipe } from 'src/app/components/patch-parts/patch-connection-stats.pipe';
 import { PatchConnectionUniqueModulesPipe } from 'src/app/components/patch-parts/patch-connection-unique-modules.pipe';
 import { FlexboxRowFastModule } from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
@@ -83,7 +83,7 @@ import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-s
     TimeagoModule.forChild(),
     MatCardModule,
     ReactiveFormsModule,
-    BrandPrimaryButtonModule,
+    BrandPrimaryButtonComponent,
     FlexLayoutModule,
     MatDividerModule,
     MatFormEntityComponent,
@@ -106,18 +106,18 @@ import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-s
     MatDialogModule,
     HeroClickableTitleModule,
     MatExpansionModule,
-    AutoContentLoadingIndicatorModule,
+    AutoContentLoadingIndicatorComponent,
     ScrollingModule,
     ExperimentalScrollingModule,
-    AutoUpdateLoadingIndicatorModule,
-    CleanCardModule,
+    AutoUpdateLoadingIndicatorComponent,
+    CleanCardComponent,
     LibGraphModule,
     PatchMicroModule,
     MatSlideToggleModule,
     MatButtonToggleModule,
     LibShowcaseGridComponent,
     FormValidPipe,
-    StatisticsModule,
+    StatisticsComponent,
     FlexboxRowFastModule,
     EmptyStateTipsComponent,
     ModuleBrowserModule,

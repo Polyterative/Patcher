@@ -4,7 +4,7 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { RouterModule } from '@angular/router';
-import { EmptyStateModule } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.module';
+import { EmptyStateComponent } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.component';
 import { LegacyLinkGonePageComponent } from './legacy-link-gone-page.component';
 
 @NgModule({
@@ -19,7 +19,7 @@ import { LegacyLinkGonePageComponent } from './legacy-link-gone-page.component';
         component: LegacyLinkGonePageComponent
       }
     ], {scrollPositionRestoration: 'enabled'}),
-    EmptyStateModule,
+    EmptyStateComponent,
     FlexLayoutModule,
     MatButtonModule,
     MatCardModule

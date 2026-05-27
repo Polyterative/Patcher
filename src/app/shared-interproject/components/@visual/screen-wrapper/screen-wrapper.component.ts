@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -25,7 +26,8 @@ const SCREEN_WRAPPER_SIZE_PRESETS: Record<ScreenWrapperSizePreset, string> = {
   selector: 'lib-screen-wrapper',
   templateUrl: './screen-wrapper.component.html',
   styleUrls: ['./screen-wrapper.component.scss'],
-  standalone: false
+  standalone: true,
+  imports: [CommonModule]
 })
 export class ScreenWrapperComponent implements OnInit {
   

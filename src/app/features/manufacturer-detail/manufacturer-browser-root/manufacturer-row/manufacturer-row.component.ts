@@ -17,8 +17,8 @@ import {
   ModuleMinimalViewConfig
 } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
-import { AutoContentLoadingIndicatorModule } from 'src/app/shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator.module';
-import { CleanCardModule } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.module';
+import { AutoContentLoadingIndicatorComponent } from 'src/app/shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator/auto-content-loading-indicator.component';
+import { CleanCardComponent } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.component';
 import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.module';
 import { ManufacturerUpdatedBadgeComponent } from './manufacturer-updated-badge/manufacturer-updated-badge.component';
 
@@ -32,8 +32,8 @@ import { ManufacturerUpdatedBadgeComponent } from './manufacturer-updated-badge/
   imports: [
     CommonModule,
     RouterModule,
-    AutoContentLoadingIndicatorModule,
-    CleanCardModule,
+    AutoContentLoadingIndicatorComponent,
+    CleanCardComponent,
     ModulePartsModule,
     ManufacturerUpdatedBadgeComponent
   ]
