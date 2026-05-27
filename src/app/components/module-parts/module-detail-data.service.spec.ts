@@ -304,7 +304,7 @@ describe('ModuleDetailDataService', () => {
   
   it('copies module + manufacturer text to clipboard', () => {
     const {service, baseModule} = build();
-    const writeText = jasmine.createSpy('writeText');
+    const writeText = jasmine.createSpy('writeText').and.returnValue(Promise.resolve());
     Object.defineProperty(navigator, 'clipboard', {
       value: {writeText},
       configurable: true
