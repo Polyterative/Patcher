@@ -1,0 +1,59 @@
+@if (type === types.MULTI_TEXT) {
+  <mat-chip-grid #chipList
+                 [formControl]="control"
+  >
+    @for (chip of control.value ?? []; track chip) {
+      <mat-chip (removed)="removeChip.emit(chip)"
+                [removable]="true"
+      >
+        {{ chip.name }}
+        <mat-icon matChipRemove>cancel</mat-icon>
+      </mat-chip>
+    }
+    <input (matChipInputTokenEnd)="addMultiText.emit($event)"
+           [matChipInputAddOnBlur]="true"
+           [matChipInputFor]="chipList"
+           [matChipInputSeparatorKeyCodes]="autocompleteSeparatorKeysCodes"
+           [attr.inputmode]="resolvedInputMode"
+           [attr.enterkeyhint]="resolvedEnterKeyHint"
+           [placeholder]="placeholder"
+    >
+  </mat-chip-grid>
+}
+
+@if (type === types.AUTOCOMPLETE_MULTIPLE) {
+  <mat-chip-grid #chipList
+                 [formControl]="control"
+  >
+    @for (chip of control.value ?? []; track chip) {
+      <mat-chip (removed)="removeChip.emit(chip)"
+                [removable]="!controlDisabled"
+      >
+        {{ chip.name }}
+        @if (!controlDisabled) {
+          <mat-icon matChipRemove>cancel</mat-icon>
+        }
+      </mat-chip>
+    }
+    <input (matChipInputTokenEnd)="cleanMultiComplete.emit($event)"
+           [formControl]="ghostControl"
+           [attr.inputmode]="resolvedInputMode"
+           [attr.enterkeyhint]="resolvedEnterKeyHint"
+           [matAutocomplete]="autocomplete"
+           [matChipInputAddOnBlur]="true"
+           [matChipInputFor]="chipList"
+           [matChipInputSeparatorKeyCodes]="autocompleteSeparatorKeysCodes"
+           [placeholder]="placeholder"
+           (keydown.enter)="inputEnter.emit($event)"
+           matInput
+    />
+  </mat-chip-grid>
+  <mat-autocomplete #autocomplete="matAutocomplete"
+                    (optionSelected)="addMultiComplete.emit($event)"
+                    autoActiveFirstOption
+  >
+    @for (option of (optionsFiltered | async) ?? []; track option) {
+      <mat-option [value]="option">{{ option.name }}</mat-option>
+    }
+  </mat-autocomplete>
+}

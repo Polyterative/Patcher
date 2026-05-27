@@ -1,12 +1,9 @@
 <div class="container"
-     fxFlex="100"
-     fxLayout="column"
+     style="display:flex; flex:1 1 auto; flex-direction:column;"
      [@fadeInOut]
-
 >
-  <div fxFlex="100"
-       fxLayoutAlign="start center"
-       class="text"
+  <div class="text"
+       style="display:flex; align-items:center;"
   >
     <mat-card-subtitle>
       @if ({data: dataService.infoText$|async}; as bag) {

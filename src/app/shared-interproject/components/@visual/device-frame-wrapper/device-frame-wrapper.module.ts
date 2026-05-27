@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { DeviceFrameWrapperComponent } from './device-frame-wrapper.component';
 
 @NgModule({
@@ -8,8 +7,7 @@ import { DeviceFrameWrapperComponent } from './device-frame-wrapper.component';
     DeviceFrameWrapperComponent
   ],
   imports:      [
-    CommonModule,
-    FlexLayoutModule
+    CommonModule
   ],
   exports:      [
     DeviceFrameWrapperComponent

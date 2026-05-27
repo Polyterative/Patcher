@@ -7,7 +7,6 @@ import {
   LOCALE_ID,
   NgModule
 } from '@angular/core';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatCardModule } from '@angular/material/card';
 import {
   MAT_DATE_FORMATS,
@@ -39,11 +38,10 @@ import {
   MAT_SNACK_BAR_DEFAULT_OPTIONS,
   MatSnackBarConfig
 } from "@angular/material/snack-bar";
-
-import * as Sentry from "@sentry/angular";
 import { AppFaqComponent } from "src/app/components/shared-atoms/app-faq/app-faq.component";
 import { SelectionPanelOutletComponent } from 'src/app/components/patch-parts/selection-panel-outlet/selection-panel-outlet.component';
 import { SelectionPanelBridgeService } from 'src/app/components/patch-parts/selection-panel-bridge.service';
+import { LazySentryErrorHandler } from './features/backbone/sentry-integration/lazy-sentry-error-handler';
 import { DiscoveryTipSurfaceComponent } from './shared-interproject/discovery-tips/discovery-tip-surface/discovery-tip-surface.component';
 
 
@@ -90,7 +88,6 @@ const matDatepickerLocaleIT = {
     ScreenWrapperComponent,
     PageHeaderComponent,
     MatToolbarModule,
-    FlexLayoutModule,
     MatCardModule,
     AdviceTooltipComponent,
     MatDividerModule,
@@ -121,7 +118,7 @@ const matDatepickerLocaleIT = {
     },
     {
       provide: ErrorHandler,
-      useValue: Sentry.createErrorHandler(),
+      useClass: LazySentryErrorHandler,
     }
   ],
   bootstrap:    [AppComponent]

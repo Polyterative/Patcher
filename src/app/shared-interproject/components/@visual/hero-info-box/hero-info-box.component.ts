@@ -9,7 +9,6 @@ import {
   Component
 } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatCardModule } from '@angular/material/card';
 import { HeroInfoBoxService } from './hero-info-box.service';
 
@@ -36,7 +35,7 @@ import { HeroInfoBoxService } from './hero-info-box.service';
     ])
  ],
  standalone: true,
- imports: [AsyncPipe, FlexLayoutModule, MatCardModule]
+ imports: [AsyncPipe, MatCardModule]
 })
 export class HeroInfoBoxComponent {
  constructor(public dataService: HeroInfoBoxService) { }

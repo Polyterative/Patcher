@@ -7,11 +7,9 @@ import {
 import { NgModule }                  from '@angular/core';
 import { MatButtonModule }           from '@angular/material/button';
 import { MatIconModule }             from '@angular/material/icon';
-import { FlexLayoutModule }          from '@angular/flex-layout';
 import { MatCardModule }             from "@angular/material/card";
 import { MatDividerModule }          from '@angular/material/divider';
 import { TimeagoModule }             from 'ngx-timeago';
-import { UserManagementModule }      from 'src/app/features/backbone/user-management/user-management.module';
 import { AppStateService }           from '../../shared-interproject/app-state.service';
 import { DevOnlyWindowComponent }       from '../../shared-interproject/components/@smart/dev-only-window/dev-only-window/dev-only-window.component';
 import { LottieContainerModule }     from '../../shared-interproject/components/@smart/lottie-container/lottie-container.module';
@@ -31,7 +29,6 @@ import { ProducthuntBadgeComponent } from './footer/producthunt-badge/producthun
 import { HomeModule }                from './home/home.module';
 import { LegacyLinkGoneModule }      from './legacy-link-gone/legacy-link-gone.module';
 import { NotFoundModule }            from './404/not-found.module';
-import { SentryIntegrationModule }   from './sentry-integration/sentry-integration.module';
 import { ToolbarModule }             from './toolbar/toolbar.module';
 
 
@@ -51,14 +48,10 @@ import { ToolbarModule }             from './toolbar/toolbar.module';
     DiscordWidgetComponent,
     ProducthuntBadgeComponent,
     EventBannerComponent,
-  ], imports:   [SentryIntegrationModule,
-    HomeModule,
-    ToolbarModule,
-    FeedbackBoxModule,
-    FlexLayoutModule,
-    UserManagementModule,
-    HeroInfoBoxComponent,
-    HeroInfoBoxTextDirective,
+  ], imports:   [HomeModule,
+  ToolbarModule,
+  FeedbackBoxModule,
+  HeroInfoBoxComponent,    HeroInfoBoxTextDirective,
     MatCardModule,
     DevOnlyWindowComponent,
     CommonModule,

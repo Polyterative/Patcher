@@ -7,7 +7,6 @@ import {
   Input,
   Output
 } from '@angular/core';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import {
@@ -36,7 +35,6 @@ export type BrandPrimaryButtonTheme =
   standalone: true,
   imports: [
     CommonModule,
-    FlexLayoutModule,
     MatButtonModule,
     MatIconModule,
     MatTooltipModule,

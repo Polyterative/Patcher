@@ -37,7 +37,6 @@ import { ModuleBrowserModule } from 'src/app/features/module-browser/module-brow
 import { StatisticsComponent } from "src/app/components/shared-atoms/statistics/statistics.component";
 import { RouterModule } from "@angular/router";
 import { MatCardModule } from "@angular/material/card";
-import { MatChipsModule } from "@angular/material/chips";
 import { MatIconModule } from "@angular/material/icon";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatButtonModule } from "@angular/material/button";
@@ -107,7 +106,6 @@ import { AdviceTooltipComponent } from "src/app/shared-interproject/components/@
     FlexLayoutModule,
     MatCardModule,
     HeroContentCardComponent,
-    MatChipsModule,
     DragDropModule,
     LabelValueShowcaseComponent,
     ScrollingModule,

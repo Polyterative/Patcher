@@ -1,0 +1,22 @@
+@if (applicationStatisticsService.teaser$ | async; as insights) {
+  <div class="bridge-row">
+    @if (showInsightsPageEntry) {
+      <app-home-curiosity-bridge
+        [title]="insightsTitle"
+        [description]="insightsDescription"
+        [links]="communityLinks"
+      ></app-home-curiosity-bridge>
+    }
+
+    <app-statistics
+      title="Current public snapshot"
+      icon="insights"
+      cardClass="home-insights-card"
+      [statistics]="insights.statistics"
+      [emptyMessage]="insights.emptyMessage"
+    ></app-statistics>
+
+    <p class="insights-supporting-copy">{{ insights.interpretation }}</p>
+    <p class="insights-methodology">{{ insights.methodology }}</p>
+  </div>
+}

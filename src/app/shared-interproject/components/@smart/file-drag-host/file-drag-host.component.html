@@ -38,7 +38,7 @@
             [@fadeInOut]
           >
             <mat-card-subtitle class="label">
-              {{ file.name|shorten:144: '...' }}
+              {{ file.name.length > 144 ? (file.name | slice:0:144) + '...' : file.name }}
               <br>
               {{ file.lastModified|date }}
             </mat-card-subtitle>
@@ -63,7 +63,7 @@
                  class="label"
             >
               <mat-card-subtitle fxFlex="100"
-              >{{ file.name|shorten:144: '...' }}
+              >{{ file.name.length > 144 ? (file.name | slice:0:144) + '...' : file.name }}
               </mat-card-subtitle>
               <mat-card-subtitle fxFlex="100"
               >[{{ file.type }}]

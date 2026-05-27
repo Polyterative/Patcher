@@ -13,10 +13,9 @@ import {
   Validators
 } from '@angular/forms';
 import { MatSnackBar } from "@angular/material/snack-bar";
-import {
+import type {
   CropperPosition,
   Dimensions,
-  ImageCropperComponent,
   ImageCroppedEvent
 } from 'ngx-image-cropper';
 import {
@@ -64,6 +63,7 @@ import {
   scalePanelCropPosition,
   ValidationFeedback,
 } from './module-editor.types';
+import { ModuleEditorCropperComponent } from './module-editor-cropper.component';
 
 type CvSectionKind = 'IN' | 'OUT';
 
@@ -123,7 +123,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   private panelTypeSuggestionRequestId = 0;
   private activePanelSourcePreviewUrl: string | null = null;
   private activeCroppedPanelPreviewUrl: string | null = null;
-  @ViewChild(ImageCropperComponent) private panelCropper?: ImageCropperComponent;
+  @ViewChild(ModuleEditorCropperComponent) private panelCropper?: ModuleEditorCropperComponent;
   
   protected destroyEvent$ = new Subject<void>();
   

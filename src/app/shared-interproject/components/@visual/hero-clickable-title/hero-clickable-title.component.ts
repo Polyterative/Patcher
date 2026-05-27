@@ -4,7 +4,6 @@ import {
   Input
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatCardModule } from '@angular/material/card';
 import { RouterModule } from '@angular/router';
 
@@ -15,7 +14,7 @@ import { RouterModule } from '@angular/router';
   styleUrls: ['./hero-clickable-title.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, FlexLayoutModule, MatCardModule, RouterModule]
+  imports: [CommonModule, MatCardModule, RouterModule]
 })
 export class HeroClickableTitleComponent {
  @Input() link: string | any[] = undefined;

@@ -21,7 +21,6 @@ import {
   MatButton,
   MatIconButton
 } from "@angular/material/button";
-import { NgDatePipesModule } from "ngx-pipes";
 import { TimeagoModule } from "ngx-timeago";
 import { MatTooltip } from "@angular/material/tooltip";
 import { CleanCardComponent } from "src/app/shared-interproject/components/@visual/clean-card/clean-card.component";
@@ -47,7 +46,6 @@ import { CommentsItemBlockComponent } from "src/app/components/shared-atoms/comm
     MatIcon,
     MatButton,
     MatIconButton,
-    NgDatePipesModule,
     TimeagoModule,
     MatTooltip,
     CleanCardComponent,

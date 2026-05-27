@@ -1,0 +1,33 @@
+<mat-form-field
+  [appearance]="formFieldAppearanceType"
+  [floatLabel]="floatLabel"
+  [hideRequiredMarker]="hideRequiredMarker"
+  [matTooltipPosition]="tooltipPosition"
+  [matTooltip]="tooltip"
+>
+  <mat-label>
+    @if (iconL1) {
+      <mat-icon
+        style="font-size: 18px; height: 18px; width: 18px; vertical-align: middle; margin-right: 0.25rem;"
+      >{{ iconL1 }}</mat-icon>
+    }
+    {{ label }}
+  </mat-label>
+  <input
+    matInput
+    [formControl]="control"
+    [attr.enterkeyhint]="resolvedEnterKeyHint"
+    [matDatepicker]="picker"
+    [max]="dateMax"
+    [min]="dateMin"
+    [placeholder]="placeholder"
+    (keydown.enter)="inputEnter.emit($event)"
+  >
+  <mat-datepicker-toggle matSuffix [for]="$any(picker)">
+    <mat-icon matDatepickerToggleIcon>keyboard_arrow_down</mat-icon>
+  </mat-datepicker-toggle>
+  <mat-datepicker #picker [startAt]="dateOpenPosition"></mat-datepicker>
+  @if (invalid) {
+    <mat-error>{{ errors }}</mat-error>
+  }
+</mat-form-field>

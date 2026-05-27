@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { RouterModule } from '@angular/router';
@@ -20,7 +19,6 @@ import { LegacyLinkGonePageComponent } from './legacy-link-gone-page.component';
       }
     ], {scrollPositionRestoration: 'enabled'}),
     EmptyStateComponent,
-    FlexLayoutModule,
     MatButtonModule,
     MatCardModule
   ],
