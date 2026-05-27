@@ -20,7 +20,6 @@ import {
   SimpleChanges,
   ViewChild
 } from '@angular/core';
-import { fadeInOnEnterAnimation } from 'angular-animations';
 import { animate, keyframes, style, transition, trigger } from '@angular/animations';
 import { Subject } from 'rxjs';
 import { RackedModule } from 'src/app/models/module';
@@ -78,12 +77,12 @@ import {
   templateUrl: './rack-visual-model.component.html',
   styleUrls: ['./rack-visual-model.component.scss'],
   animations: [
-    fadeInOnEnterAnimation({
-      duration: 225,
-      anchor: 'enter',
-      animateChildren: 'after'
-      // animateChildren: 'before',
-    }),
+    trigger('enter', [
+      transition(':enter', [
+        style({opacity: 0}),
+        animate('225ms ease', style({opacity: 1}))
+      ])
+    ]),
     trigger('leave', [
       transition(':leave', [
         animate('180ms cubic-bezier(0.4, 0, 1, 1)', style({

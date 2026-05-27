@@ -7,7 +7,7 @@ import {
   OnInit,
   ViewEncapsulation
 } from '@angular/core';
-import { fadeInOnEnterAnimation } from 'angular-animations';
+import { animate, style, transition, trigger } from '@angular/animations';
 import {
   BehaviorSubject,
   merge,
@@ -27,11 +27,12 @@ import {
   templateUrl: './auto-content-loading-indicator.component.html',
   styleUrls: ['./auto-content-loading-indicator.component.scss'],
   animations: [
-    fadeInOnEnterAnimation({
-      anchor: 'enter',
-      duration: 500,
-      animateChildren: 'after'
-    })
+    trigger('enter', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('500ms ease', style({ opacity: 1 }))
+      ])
+    ])
   ],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,

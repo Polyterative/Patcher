@@ -4,7 +4,7 @@ import {
 } from '@angular/core';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import { CommentsDataService } from '../comments-data.service';
-import { fadeInOnEnterAnimation } from "angular-animations";
+import { animate, style, transition, trigger } from '@angular/animations';
 import { UserManagementService } from "src/app/features/backbone/login/user-management.service";
 
 
@@ -14,11 +14,12 @@ import { UserManagementService } from "src/app/features/backbone/login/user-mana
   styleUrls: ['./comments-root.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
-    fadeInOnEnterAnimation({
-      anchor: 'enter',
-      duration: 725,
-      animateChildren: 'after'
-    })
+    trigger('enter', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('725ms ease', style({ opacity: 1 }))
+      ])
+    ])
   ],
   standalone: false
 })

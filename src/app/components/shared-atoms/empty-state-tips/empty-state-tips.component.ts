@@ -5,7 +5,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { fadeInOnEnterAnimation } from 'angular-animations';
+import { animate, style, transition, trigger } from '@angular/animations';
 
 export interface EmptyStateTip {
   icon: string;
@@ -21,11 +21,12 @@ export interface EmptyStateTip {
   styleUrls: ['./empty-state-tips.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
-    fadeInOnEnterAnimation({
-      anchor: 'enter',
-      duration: 1525,
-      animateChildren: 'after'
-    })
+    trigger('enter', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('1525ms ease', style({ opacity: 1 }))
+      ])
+    ])
   ]
 })
 export class EmptyStateTipsComponent {

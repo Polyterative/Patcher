@@ -1,10 +1,4 @@
-import {
-  animate,
-  keyframes,
-  style,
-  transition,
-  trigger
-} from '@angular/animations';
+import { animate, keyframes, style, transition, trigger } from '@angular/animations';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -13,10 +7,6 @@ import {
   OnInit,
   Output, OnDestroy
 } from '@angular/core';
-import {
-  fadeInOnEnterAnimation,
-  fadeOutOnLeaveAnimation
-} from 'angular-animations';
 import {
   BehaviorSubject,
   combineLatest,
@@ -48,8 +38,17 @@ const popOnEnter = trigger('popOnEnter', [
   templateUrl: './module-cvitem.component.html',
   styleUrls: ['./module-cvitem.component.scss'],
   animations: [
-    fadeInOnEnterAnimation({anchor: 'badgeEnter', duration: 150}),
-    fadeOutOnLeaveAnimation({anchor: 'badgeLeave', duration: 100}),
+    trigger('badgeEnter', [
+      transition(':enter', [
+        style({opacity: 0}),
+        animate('150ms ease', style({opacity: 1}))
+      ])
+    ]),
+    trigger('badgeLeave', [
+      transition(':leave', [
+        animate('100ms ease', style({opacity: 0}))
+      ])
+    ]),
     popOnEnter
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -4,10 +4,7 @@ import {
   Input,
   OnInit
 } from '@angular/core';
-import {
-  fadeOutOnLeaveAnimation,
-  zoomInOnEnterAnimation
-} from 'angular-animations';
+import { animate, style, transition, trigger } from '@angular/animations';
 import { Subject } from 'rxjs';
 import { PatchConnection } from 'src/app/models/connection';
 import { PatchDetailDataService } from '../patch-detail-data.service';
@@ -18,14 +15,12 @@ import { PatchDetailDataService } from '../patch-detail-data.service';
   templateUrl: './patch-connections-list.component.html',
   styleUrls: ['./patch-connections-list.component.scss'],
   animations: [
-    zoomInOnEnterAnimation({
-      duration: 0,
-      anchor: 'enter'
-    }),
-    fadeOutOnLeaveAnimation({
-      duration: 500,
-      anchor: 'exit'
-    })
+    trigger('enter', []),
+    trigger('exit', [
+      transition(':leave', [
+        animate('500ms ease', style({opacity: 0}))
+      ])
+    ])
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false

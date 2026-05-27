@@ -8,7 +8,7 @@
   OnInit,
   ViewChild
 } from '@angular/core';
-import { fadeInOnEnterAnimation } from 'angular-animations';
+import { animate, style, transition, trigger } from '@angular/animations';
 import { UntypedFormControl } from '@angular/forms';
 import {
   BehaviorSubject,
@@ -120,11 +120,12 @@ export {
   templateUrl: './patch-editor.component.html',
   styleUrls: ['./patch-editor.component.scss'],
   animations: [
-    fadeInOnEnterAnimation({
-      duration: 225,
-      anchor: 'moduleEnter',
-      animateChildren: 'after'
-    })
+    trigger('moduleEnter', [
+      transition(':enter', [
+        style({opacity: 0}),
+        animate('225ms ease', style({opacity: 1}))
+      ])
+    ])
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false

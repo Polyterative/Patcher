@@ -6,11 +6,8 @@ import {
   OnInit,
   Output, OnDestroy
 } from '@angular/core';
+import { animate, style, transition, trigger } from '@angular/animations';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import {
-  fadeInOnEnterAnimation,
-  fadeOutOnLeaveAnimation
-} from 'angular-animations';
 import {
   EMPTY,
   of,
@@ -33,15 +30,17 @@ import { DbModule } from 'src/app/models/module';
   templateUrl: './module-cvs.component.html',
   styleUrls: ['./module-cvs.component.scss'],
   animations: [
-    fadeInOnEnterAnimation({
-      anchor: 'enter',
-      duration: 225,
-      animateChildren: 'after'
-    }),
-    fadeOutOnLeaveAnimation({
-      anchor: 'leave',
-      duration: 1
-    })
+    trigger('enter', [
+      transition(':enter', [
+        style({opacity: 0}),
+        animate('225ms ease', style({opacity: 1}))
+      ])
+    ]),
+    trigger('leave', [
+      transition(':leave', [
+        animate('1ms ease', style({opacity: 0}))
+      ])
+    ])
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false

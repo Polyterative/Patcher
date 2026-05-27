@@ -6,7 +6,7 @@ import {
   OnChanges,
   OnInit
 } from '@angular/core';
-import { fadeInOnEnterAnimation } from 'angular-animations';
+import { animate, style, transition, trigger } from '@angular/animations';
 import { FlexLayoutModule } from "@angular/flex-layout";
 import { RouterLink } from "@angular/router";
 
@@ -24,11 +24,12 @@ import { StorageUrls } from 'src/app/features/backend/DatabaseStrings';
     RouterLink
   ],
   animations: [
-    fadeInOnEnterAnimation({
-      anchor: 'enter',
-      duration: 725,
-      animateChildren: 'after'
-    })
+    trigger('enter', [
+      transition(':enter', [
+        style({opacity: 0}),
+        animate('725ms ease', style({opacity: 1}))
+      ])
+    ])
   ]
 })
 export class RackImageComponent implements OnInit, OnChanges {

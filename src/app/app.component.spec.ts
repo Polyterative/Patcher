@@ -2,6 +2,7 @@ import {
   Component,
   NO_ERRORS_SCHEMA
 } from '@angular/core';
+import { AsyncPipe } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
@@ -18,7 +19,7 @@ import { AppViewportService } from './shared-interproject/app-viewport.service';
 @Component({
   selector: 'app-toolbar',
   template: '',
-  standalone: false
+  standalone: true
 })
 class ToolbarStubComponent {
 }
@@ -49,11 +50,8 @@ describe('AppComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [
-        NoopAnimationsModule
-      ],
-      declarations: [
+        NoopAnimationsModule,
         AppComponent,
-        ToolbarStubComponent
       ],
       providers: [
         {
@@ -74,7 +72,13 @@ describe('AppComponent', () => {
         }
       ],
       schemas: [NO_ERRORS_SCHEMA]
-    }).compileComponents();
+    })
+    .overrideComponent(AppComponent, {
+      set: {
+        imports: [ToolbarStubComponent, AsyncPipe],
+      }
+    })
+    .compileComponents();
 
     fixture = TestBed.createComponent(AppComponent);
   });

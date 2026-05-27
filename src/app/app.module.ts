@@ -7,20 +7,12 @@ import {
   LOCALE_ID,
   NgModule
 } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
 import {
   MAT_DATE_FORMATS,
   MAT_DATE_LOCALE
 } from '@angular/material/core';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { AdviceTooltipComponent } from 'src/app/shared-interproject/components/@visual/advice-tooltip/advice-tooltip/advice-tooltip.component';
 import build from 'src/build';
 import { environment } from 'src/environments/environment';
 
@@ -30,19 +22,13 @@ import { AppRoutingModule } from './app-routing.module';
 import { BackboneModule } from './features/backbone/backbone.module';
 import { FeedbackBoxModule } from './features/backbone/feedback-box/feedback-box.module';
 import { UserAuthGuard } from './features/backbone/login/user-auth-guard.service';
-import { ToolbarModule } from './features/backbone/toolbar/toolbar.module';
-import { PageHeaderComponent } from './shared-interproject/components/@visual/page-header/page-header/page-header.component';
-import { ScreenWrapperComponent } from './shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { MatDialogRef } from "@angular/material/dialog";
 import {
   MAT_SNACK_BAR_DEFAULT_OPTIONS,
   MatSnackBarConfig
 } from "@angular/material/snack-bar";
-import { AppFaqComponent } from "src/app/components/shared-atoms/app-faq/app-faq.component";
-import { SelectionPanelOutletComponent } from 'src/app/components/patch-parts/selection-panel-outlet/selection-panel-outlet.component';
 import { SelectionPanelBridgeService } from 'src/app/components/patch-parts/selection-panel-bridge.service';
 import { LazySentryErrorHandler } from './features/backbone/sentry-integration/lazy-sentry-error-handler';
-import { DiscoveryTipSurfaceComponent } from './shared-interproject/discovery-tips/discovery-tip-surface/discovery-tip-surface.component';
 
 
 const locale: {
@@ -73,30 +59,14 @@ const matDatepickerLocaleIT = {
 };
 
 @NgModule({
-  declarations: [
-    AppComponent,
-  ],
   imports: [
+    AppComponent,
     BrowserModule,
-    SelectionPanelOutletComponent,
-    DiscoveryTipSurfaceComponent,
     AppRoutingModule,
     BrowserAnimationsModule,
-    ToolbarModule,
     AppFeaturesModule,
     FeedbackBoxModule,
-    ScreenWrapperComponent,
-    PageHeaderComponent,
-    MatToolbarModule,
-    MatCardModule,
-    AdviceTooltipComponent,
-    MatDividerModule,
     BackboneModule,
-    AppFaqComponent,
-    MatIconModule,
-    MatButtonModule,
-    MatTooltipModule,
-    MatProgressBarModule,
 //keep as last (for routes)
   ],
   providers:    [

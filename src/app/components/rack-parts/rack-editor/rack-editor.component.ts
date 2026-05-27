@@ -11,6 +11,7 @@ import {
   SimpleChanges,
   ViewChild
 } from '@angular/core';
+import { animate, style, transition, trigger } from '@angular/animations';
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatDialog } from '@angular/material/dialog';
 import { Subject } from 'rxjs';
@@ -32,10 +33,6 @@ import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
 } from '../../module-parts/module-minimal/module-minimal.component';
-import {
-  fadeInOnEnterAnimation,
-  fadeOutOnLeaveAnimation
-} from "angular-animations";
 import { derivePanelLabel } from '../../module-parts/panel.constants';
 import { ModulePanelZoomDialogComponent } from '../../module-parts/module-details/module-panel-zoom-dialog.component';
 import { RACK_ANALYSIS_MODES, RACK_ANALYSIS_MODE_OPTIONS } from '../rack-analysis-mode';
@@ -57,15 +54,17 @@ export type { ModuleRightClick } from './rack-editor.types';
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [GeneralContextMenuDataService],
   animations: [
-    fadeInOnEnterAnimation({
-      anchor: 'enter',
-      duration: 1525,
-      animateChildren: 'after'
-    }),
-    fadeOutOnLeaveAnimation({
-      anchor: 'leave',
-      duration: 1
-    })
+    trigger('enter', [
+      transition(':enter', [
+        style({opacity: 0}),
+        animate('1525ms ease', style({opacity: 1}))
+      ])
+    ]),
+    trigger('leave', [
+      transition(':leave', [
+        animate('1ms ease', style({opacity: 0}))
+      ])
+    ])
   ],
   standalone: false
 })

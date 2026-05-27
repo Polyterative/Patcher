@@ -6,7 +6,7 @@ import {
   OnInit,
   ViewChild
 } from '@angular/core';
-import { fadeInAnimation } from 'angular-animations';
+import { animate, style, transition, trigger } from '@angular/animations';
 import {
   BehaviorSubject,
   delay,
@@ -53,11 +53,12 @@ import { PatchDetailDataService } from '../patch-detail-data.service';
   styleUrls: ['./patch-graph.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
-    fadeInAnimation({
-      duration: 500,
-      delay: 100,
-      anchor: 'enter'
-    })
+    trigger('enter', [
+      transition(':enter', [
+        style({opacity: 0}),
+        animate('500ms 100ms ease', style({opacity: 1}))
+      ])
+    ])
   ],
   providers: [GraphViewService],
   standalone: false

@@ -3,8 +3,8 @@ import {
   Component,
   Input
 } from '@angular/core';
+import { animate, style, transition, trigger } from '@angular/animations';
 import { MatDialog } from '@angular/material/dialog';
-import { fadeInOnEnterAnimation } from 'angular-animations';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { DbModule } from 'src/app/models/module';
 import {
@@ -22,11 +22,12 @@ import { ModulePanelZoomDialogComponent } from './module-panel-zoom-dialog.compo
   templateUrl: './module-details.component.html',
   styleUrls:   ['./module-details.component.scss'],
   animations:  [
-    fadeInOnEnterAnimation({
-      duration: 8000,
-      delay:    0,
-      anchor:   'help'
-    })
+    trigger('help', [
+      transition(':enter', [
+        style({opacity: 0}),
+        animate('8000ms ease', style({opacity: 1}))
+      ])
+    ])
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone:      false
