@@ -6,7 +6,7 @@ import { RouterModule } from '@angular/router';
 import { EmptyStateComponent } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.component';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
-import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
+import { HeroContentCardComponent } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component';
 import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { LoginEmailModule } from '../login-page/login-email/login-email.module';
 import { SSOButtonsComponent } from '../sso-buttons/sso-buttons.component';
@@ -24,7 +24,7 @@ import { MatError } from "@angular/material/input";
     CommonModule,
     BrandPrimaryButtonComponent,
     LoginEmailModule,
-    HeroContentCardModule,
+    HeroContentCardComponent,
     EmptyStateComponent,
     ScreenWrapperComponent,
     FlexLayoutModule,

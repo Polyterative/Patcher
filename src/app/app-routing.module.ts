@@ -19,6 +19,18 @@ const routes: Routes = [
     loadChildren: () => import('./features/routes/user-area/user-area.module').then(m => m.UserAreaModule)
   },
   {
+    path: 'racks',
+    loadChildren: () => import('./features/routes/rack/rack-browser.module').then(m => m.RackBrowserModule)
+  },
+  {
+    path: 'patches',
+    loadChildren: () => import('./features/patch-browser/patch-browser.module').then(m => m.PatchBrowserModule)
+  },
+  {
+    path: 'modules',
+    loadChildren: () => import('./features/module-browser/module-browser.module').then(m => m.ModuleBrowserModule)
+  },
+  {
     path: 'manufacturers',
     loadChildren: () => import('./features/manufacturer-detail/manufacturer.module').then(m => m.ManufacturerModule)
   },

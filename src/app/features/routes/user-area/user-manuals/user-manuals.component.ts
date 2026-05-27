@@ -9,7 +9,7 @@ import {
   MatChipListbox,
   MatChipOption
 } from "@angular/material/chips";
-import { HeroContentCardModule } from "src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module";
+import { HeroContentCardComponent } from "src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component";
 import { RackListModule } from "src/app/components/rack-list/rack-list.module";
 import { EmptyStateTipsComponent } from "src/app/components/shared-atoms/empty-state-tips/empty-state-tips.component";
 
@@ -21,7 +21,7 @@ import { EmptyStateTipsComponent } from "src/app/components/shared-atoms/empty-s
     AutoUpdateLoadingIndicatorComponent,
     MatChipListbox,
     MatChipOption,
-    HeroContentCardModule,
+    HeroContentCardComponent,
     RackListModule,
     EmptyStateTipsComponent,
   ],

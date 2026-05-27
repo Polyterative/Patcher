@@ -6,9 +6,11 @@ import {
 } from '@angular/animations';
 import {
   ChangeDetectionStrategy,
-  Component,
-  OnInit
+  Component
 } from '@angular/core';
+import { AsyncPipe } from '@angular/common';
+import { FlexLayoutModule } from '@angular/flex-layout';
+import { MatCardModule } from '@angular/material/card';
 import { HeroInfoBoxService } from './hero-info-box.service';
 
 
@@ -32,13 +34,10 @@ import { HeroInfoBoxService } from './hero-info-box.service';
         style({opacity: 0})
       ])
     ])
-  ],
-  standalone: false
+ ],
+ standalone: true,
+ imports: [AsyncPipe, FlexLayoutModule, MatCardModule]
 })
-export class HeroInfoBoxComponent implements OnInit {
-  constructor(public dataService: HeroInfoBoxService) { }
-
-  ngOnInit(): void {
-  }
-
+export class HeroInfoBoxComponent {
+ constructor(public dataService: HeroInfoBoxService) { }
 }

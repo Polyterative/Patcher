@@ -17,7 +17,7 @@ import { AutoContentLoadingIndicatorComponent } from 'src/app/shared-interprojec
 import { AutoUpdateLoadingIndicatorComponent } from 'src/app/shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator/auto-update-loading-indicator.component';
 import { EmptyStateComponent } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.component';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
-import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
+import { HeroContentCardComponent } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component';
 import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { CleanCardComponent } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.component';
 import { generateUranusRoutes } from 'src/app/shared-interproject/routing-layouts/uranus/uranus.module';
@@ -67,7 +67,7 @@ import { MatChipsModule } from '@angular/material/chips';
         }
       ])
     ]),
-    HeroContentCardModule,
+    HeroContentCardComponent,
     ScreenWrapperComponent,
     CleanCardComponent,
     AutoContentLoadingIndicatorComponent,

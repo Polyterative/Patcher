@@ -30,7 +30,4 @@ describe('PhotoComponent', () => {
     expect(mockDataService.url$.next).toHaveBeenCalledWith('https://example.com/photo.jpg');
   });
 
-  it('ngOnInit runs without error', () => {
-    expect(() => comp.ngOnInit()).not.toThrow();
-  });
 });

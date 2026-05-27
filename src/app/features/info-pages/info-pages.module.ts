@@ -6,7 +6,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { RouterModule } from '@angular/router';
 import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { CleanCardComponent } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.component';
-import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
+import { HeroContentCardComponent } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component';
 import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { ApplicationInsightsPageComponent } from './application-insights/application-insights-page.component';
 import { InsightChipComponent } from './application-insights/insight-chip/insight-chip.component';
@@ -28,7 +28,7 @@ import { ChangelogComponent } from './changelog/changelog.component';
     MatProgressBarModule,
     BrandPrimaryButtonComponent,
     CleanCardComponent,
-    HeroContentCardModule,
+    HeroContentCardComponent,
     ScreenWrapperComponent,
     
     RouterModule.forChild([

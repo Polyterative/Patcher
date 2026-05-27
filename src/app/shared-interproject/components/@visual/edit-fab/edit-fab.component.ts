@@ -1,3 +1,4 @@
+import { AsyncPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -5,6 +6,9 @@ import {
   Input,
   Output
 } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   concat,
   Observable,
@@ -33,7 +37,8 @@ const BOUNCE_DURATION_MS = 650;
   templateUrl: './edit-fab.component.html',
   styleUrls: ['./edit-fab.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+  standalone: true,
+  imports: [AsyncPipe, MatButtonModule, MatIconModule, MatTooltipModule]
 })
 export class EditFabComponent {
   @Input() editMode$: Observable<boolean>;

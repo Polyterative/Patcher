@@ -5,9 +5,9 @@ import {
   Input
 } from '@angular/core';
 import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-state-tips/empty-state-tips.component';
-import { LabelValueShowcaseModule } from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
+import { LabelValueShowcaseComponent } from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.component';
 import { CleanCardComponent } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.component';
-import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
+import { HeroContentCardComponent } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component';
 
 
 @Component({
@@ -18,8 +18,8 @@ import { HeroContentCardModule } from 'src/app/shared-interproject/components/@v
   standalone: true,
   imports: [
     CommonModule,
-    LabelValueShowcaseModule,
-    HeroContentCardModule,
+    LabelValueShowcaseComponent,
+    HeroContentCardComponent,
     EmptyStateTipsComponent,
     CleanCardComponent
   ]

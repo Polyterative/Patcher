@@ -6,7 +6,7 @@ import {
 
 @Pipe({
   name: 'ellipsis',
-  standalone: false
+  standalone: true
 })
 export class EllipsisPipe implements PipeTransform {
   transform(value: string, max: number): string {

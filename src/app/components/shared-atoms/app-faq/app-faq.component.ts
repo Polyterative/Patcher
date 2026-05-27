@@ -3,14 +3,14 @@ import {
   Component
 } from '@angular/core';
 import { FaqComponent } from "src/app/shared-interproject/components/@visual/faq/faq.component";
-import { HeroContentCardModule } from "src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module";
+import { HeroContentCardComponent } from "src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component";
 
 
 @Component({
   selector: 'app-faq',
   imports: [
     FaqComponent,
-    HeroContentCardModule
+    HeroContentCardComponent
   ],
   templateUrl: './app-faq.component.html',
   styleUrl: './app-faq.component.scss',

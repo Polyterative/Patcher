@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  OnInit,
   ViewEncapsulation
 } from '@angular/core';
 
@@ -12,13 +11,6 @@ import {
   styleUrls: ['./flexbox-row-fast.component.scss'],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+  standalone: true
 })
-export class FlexboxRowFastComponent implements OnInit {
-  
-  constructor() { }
-  
-  ngOnInit(): void {
-  }
-  
-}
+export class FlexboxRowFastComponent {}

@@ -1,8 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
-import { PatchBrowserModule } from 'src/app/features/patch-browser/patch-browser.module';
-import { RackBrowserModule } from 'src/app/features/routes/rack/rack-browser.module';
 import { MAT_DIALOG_DEFAULT_OPTIONS } from "@angular/material/dialog";
 
 
@@ -19,10 +16,7 @@ import { MAT_DIALOG_DEFAULT_OPTIONS } from "@angular/material/dialog";
     }
   ],
   imports:      [
-    CommonModule,
-    PatchBrowserModule,
-    RackBrowserModule,
-    ModuleBrowserModule
+    CommonModule
   ]
 })
 export class AppFeaturesModule {}

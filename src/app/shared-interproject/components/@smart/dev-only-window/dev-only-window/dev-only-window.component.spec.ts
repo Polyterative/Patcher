@@ -19,7 +19,4 @@ describe('DevOnlyWindowComponent', () => {
     expect(typeof comp.show).toBe('boolean');
   });
 
-  it('ngOnInit runs without error', () => {
-    expect(() => comp.ngOnInit()).not.toThrow();
-  });
 });

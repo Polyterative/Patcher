@@ -6,27 +6,28 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { ModuleCompositeComponent } from 'src/app/features/module-browser/module-composite/module-composite.component';
 import { AutoContentLoadingIndicatorComponent } from 'src/app/shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator/auto-content-loading-indicator.component';
-import { DevOnlyWindowModule } from 'src/app/shared-interproject/components/@smart/dev-only-window/dev-only-window.module';
+import { DevOnlyWindowComponent } from 'src/app/shared-interproject/components/@smart/dev-only-window/dev-only-window/dev-only-window.component';
 import { EmptyStateComponent } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.component';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
-import { RestrictedEntityModule } from 'src/app/shared-interproject/components/@smart/restricted-entity/restricted-entity.module';
+import { RestrictedEntityComponent } from 'src/app/shared-interproject/components/@smart/restricted-entity/restricted-entity/restricted-entity.component';
 import { UserDataHandlerComponent } from 'src/app/shared-interproject/components/@smart/user-data-handler/user-data-handler.component';
 import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { BrowserResetFiltersButtonComponent } from 'src/app/shared-interproject/components/@visual/browser-reset-filters-button/browser-reset-filters-button.component';
-import { FlexboxRowFastModule } from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
-import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
-import { HeroInfoBoxModule } from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
-import { HeroItemCardModule } from 'src/app/shared-interproject/components/@visual/hero-item-card/hero-item-card.module';
-import { LabelValueShowcaseModule } from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
+import { FlexboxRowFastComponent } from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.component';
+import { HeroContentCardComponent } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component';
+import { HeroInfoBoxComponent } from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.component';
+import { HeroInfoBoxTextDirective } from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box-text.directive';
+import { HeroItemCardComponent } from 'src/app/shared-interproject/components/@visual/hero-item-card/hero-item-card.component';
+import { LabelValueShowcaseComponent } from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.component';
 import { PageHeaderComponent } from 'src/app/shared-interproject/components/@visual/page-header/page-header/page-header.component';
 import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { WidthLimiterComponent } from 'src/app/shared-interproject/components/@visual/width-limiter/width-limiter.component';
 import { generateUranusRoutes } from 'src/app/shared-interproject/routing-layouts/uranus/uranus.module';
 import { ModulePatchesModule } from '../../components/module-patches/module-patches.module';
 import { ModuleRacksModule } from '../../components/module-racks/module-racks.module';
-import { LocalDataFilterModule } from '../../components/shared-atoms/local-data-filter/local-data-filter.module';
+import { LocalDataFilterComponent } from '../../components/shared-atoms/local-data-filter/local-data-filter/local-data-filter.component';
 import { AutoUpdateLoadingIndicatorComponent } from '../../shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator/auto-update-loading-indicator.component';
-import { AdviceTooltipModule } from '../../shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module';
+import { AdviceTooltipComponent } from '../../shared-interproject/components/@visual/advice-tooltip/advice-tooltip/advice-tooltip.component';
 import { CleanCardComponent } from '../../shared-interproject/components/@visual/clean-card/clean-card.component';
 import { ModuleDetailDataCardComponent } from './module-browser-detail/module-detail-data-card/module-detail-data-card.component';
 import { ModuleUsageCardComponent } from './module-browser-detail/module-usage-card/module-usage-card.component';
@@ -57,13 +58,12 @@ import {
 import { CommentsModule } from "src/app/components/shared-atoms/comments/comments.module";
 import { CopyableDirective } from "src/app/shared-interproject/app-copy-on-click.directive";
 import { LibShowcaseGridComponent, } from "src/app/components/rack-parts/rack-editor/lib-showcase-grid/lib-showcase-grid.component";
-import { EditFabModule } from "src/app/shared-interproject/components/@visual/edit-fab/edit-fab.module";
+import { EditFabComponent } from "src/app/shared-interproject/components/@visual/edit-fab/edit-fab.component";
 import { ManufacturerRowComponent } from "src/app/features/manufacturer-detail/manufacturer-browser-root/manufacturer-row/manufacturer-row.component";
 import { RecentActivityModule } from "src/app/components/shared-atoms/recent-activity/recent-activity.module";
 import { ModuleListModule } from './module-list/module-list.module';
 
 
-const parentPrefix = 'modules';
 
 @NgModule({
   declarations: [
@@ -79,15 +79,15 @@ const parentPrefix = 'modules';
     RouterModule.forChild([
       
       {
-        path: `${ parentPrefix }/details/:id`,
+        path: 'details/:id',
         pathMatch: 'full',
         component: ModuleBrowserDetailComponent
       },
       {
-        path: `${ parentPrefix }/add`,
+        path: 'add',
         loadChildren: () => import('./module-adder/module-adder.module').then(m => m.ModuleAdderModule)
       },
-      generateUranusRoutes(parentPrefix, [
+      generateUranusRoutes('', [
         {
           path: 'browser',
           component: ModuleBrowserRootComponent
@@ -107,10 +107,10 @@ const parentPrefix = 'modules';
     ]),
     FlexLayoutModule,
     MatCardModule,
-    HeroContentCardModule,
+    HeroContentCardComponent,
     MatChipsModule,
     DragDropModule,
-    LabelValueShowcaseModule,
+    LabelValueShowcaseComponent,
     ScrollingModule,
     ScreenWrapperComponent,
     MatIconModule,
@@ -131,20 +131,21 @@ const parentPrefix = 'modules';
     MatFormEntityComponent,
     MatToolbarModule,
     PageHeaderComponent,
-    DevOnlyWindowModule,
-    HeroInfoBoxModule,
-    RestrictedEntityModule,
+    DevOnlyWindowComponent,
+    HeroInfoBoxComponent,
+    HeroInfoBoxTextDirective,
+    RestrictedEntityComponent,
     ModulePartsModule,
-    FlexboxRowFastModule,
+    FlexboxRowFastComponent,
     WidthLimiterComponent,
-    HeroItemCardModule,
+    HeroItemCardComponent,
     EmptyStateComponent,
     AutoUpdateLoadingIndicatorComponent,
-    LocalDataFilterModule,
+    LocalDataFilterComponent,
     CleanCardComponent,
     ModuleRacksModule,
     ModulePatchesModule,
-    AdviceTooltipModule,
+    AdviceTooltipComponent,
     ModuleListModule,
     MatMenu,
     MatMenuItem,
@@ -152,7 +153,7 @@ const parentPrefix = 'modules';
     CommentsModule,
     CopyableDirective,
     LibShowcaseGridComponent,
-    EditFabModule,
+    EditFabComponent,
     ManufacturerRowComponent,
     RecentActivityModule,
   ],

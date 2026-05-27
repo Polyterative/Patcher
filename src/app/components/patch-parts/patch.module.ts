@@ -18,14 +18,15 @@ import { PatchEditorComponent } from 'src/app/components/patch-parts/patch-edito
 import { PatchMinimalComponent } from 'src/app/components/patch-parts/patch-minimal/patch-minimal.component';
 import { SharedAtomsModule } from 'src/app/components/shared-atoms/shared-atoms.module';
 import { UserModulesModule } from 'src/app/features/routes/user-area/user-modules/user-modules.module';
-import { DevOnlyWindowModule } from 'src/app/shared-interproject/components/@smart/dev-only-window/dev-only-window.module';
+import { DevOnlyWindowComponent } from 'src/app/shared-interproject/components/@smart/dev-only-window/dev-only-window/dev-only-window.component';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
-import { AdviceTooltipModule } from 'src/app/shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module';
+import { AdviceTooltipComponent } from 'src/app/shared-interproject/components/@visual/advice-tooltip/advice-tooltip/advice-tooltip.component';
 import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { DialogInfoBoxComponent } from 'src/app/shared-interproject/components/@visual/dialog-info-box/dialog-info-box.component';
-import { HeroClickableTitleModule } from 'src/app/shared-interproject/components/@visual/hero-clickable-title/hero-clickable-title.module';
-import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
-import { HeroInfoBoxModule } from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
+import { HeroClickableTitleComponent } from 'src/app/shared-interproject/components/@visual/hero-clickable-title/hero-clickable-title.component';
+import { HeroContentCardComponent } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component';
+import { HeroInfoBoxComponent } from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.component';
+import { HeroInfoBoxTextDirective } from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box-text.directive';
 import { ConfirmDialogModule } from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.module';
 import { AutoContentLoadingIndicatorComponent } from '../../shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator/auto-content-loading-indicator.component';
 import { AutoUpdateLoadingIndicatorComponent } from '../../shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator/auto-update-loading-indicator.component';
@@ -49,10 +50,10 @@ import { FormValidPipe } from 'src/app/shared-interproject/components/@smart/mat
 import { StatisticsComponent } from 'src/app/components/shared-atoms/statistics/statistics.component';
 import { PatchConnectionStatsPipe } from 'src/app/components/patch-parts/patch-connection-stats.pipe';
 import { PatchConnectionUniqueModulesPipe } from 'src/app/components/patch-parts/patch-connection-unique-modules.pipe';
-import { FlexboxRowFastModule } from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
+import { FlexboxRowFastComponent } from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.component';
 import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
 import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.module';
-import { EditFabModule } from 'src/app/shared-interproject/components/@visual/edit-fab/edit-fab.module';
+import { EditFabComponent } from 'src/app/shared-interproject/components/@visual/edit-fab/edit-fab.component';
 import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-state-tips/empty-state-tips.component';
 
 
@@ -91,20 +92,21 @@ import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-s
     RouterModule,
     MatButtonModule,
     MatTooltipModule,
-    HeroInfoBoxModule,
+    HeroInfoBoxComponent,
+    HeroInfoBoxTextDirective,
     SharedAtomsModule,
     MatChipsModule,
     MatFormFieldModule,
     MatInputModule,
-    DevOnlyWindowModule,
+    DevOnlyWindowComponent,
     PatchConnectionModule,
     UserModulesModule,
     MatToolbarModule,
-    AdviceTooltipModule,
+    AdviceTooltipComponent,
     DialogInfoBoxComponent,
-    HeroContentCardModule,
+    HeroContentCardComponent,
     MatDialogModule,
-    HeroClickableTitleModule,
+    HeroClickableTitleComponent,
     MatExpansionModule,
     AutoContentLoadingIndicatorComponent,
     ScrollingModule,
@@ -118,11 +120,11 @@ import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-s
     LibShowcaseGridComponent,
     FormValidPipe,
     StatisticsComponent,
-    FlexboxRowFastModule,
+    FlexboxRowFastComponent,
     EmptyStateTipsComponent,
     ModuleBrowserModule,
     ModulePartsModule,
-    EditFabModule
+    EditFabComponent
   ]
 })
 export class PatchModule {}

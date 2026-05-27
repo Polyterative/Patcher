@@ -12,8 +12,8 @@ import { AutoContentLoadingIndicatorComponent } from 'src/app/shared-interprojec
 import { EmptyStateComponent } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.component';
 import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { CleanCardComponent } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.component';
-import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
-import { LabelValueShowcaseModule } from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
+import { HeroContentCardComponent } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component';
+import { LabelValueShowcaseComponent } from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.component';
 import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { PublicProfileComponent } from './public-profile.component';
 
@@ -38,8 +38,8 @@ import { PublicProfileComponent } from './public-profile.component';
     EmptyStateComponent,
     BrandPrimaryButtonComponent,
     CleanCardComponent,
-    HeroContentCardModule,
-    LabelValueShowcaseModule,
+    HeroContentCardComponent,
+    LabelValueShowcaseComponent,
     ScreenWrapperComponent,
   ],
 })

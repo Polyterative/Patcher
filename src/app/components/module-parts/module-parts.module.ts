@@ -7,19 +7,20 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { RouterModule } from '@angular/router';
 import { TimeagoModule } from 'ngx-timeago';
 import { SharedAtomsModule } from 'src/app/components/shared-atoms/shared-atoms.module';
-import { HeroClickableTitleModule } from 'src/app/shared-interproject/components/@visual/hero-clickable-title/hero-clickable-title.module';
-import { SharedPipesModule } from 'src/app/shared-interproject/pipes/shared-pipes.module';
+import { HeroClickableTitleComponent } from 'src/app/shared-interproject/components/@visual/hero-clickable-title/hero-clickable-title.component';
+import { EllipsisPipe } from 'src/app/shared-interproject/pipes/ellipsis.pipe';
 import { AutoContentLoadingIndicatorComponent } from '../../shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator/auto-content-loading-indicator.component';
 import { AutoUpdateLoadingIndicatorComponent } from '../../shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator/auto-update-loading-indicator.component';
 import { FileDragHostModule } from '../../shared-interproject/components/@smart/file-drag-host/file-drag-host.module';
 import { MatFormEntityComponent } from '../../shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { FormValidPipe } from '../../shared-interproject/components/@smart/mat-form-entity/is-control-valid.pipe';
-import { RestrictedEntityModule } from '../../shared-interproject/components/@smart/restricted-entity/restricted-entity.module';
-import { AdviceTooltipModule } from '../../shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module';
+import { RestrictedEntityComponent } from '../../shared-interproject/components/@smart/restricted-entity/restricted-entity/restricted-entity.component';
+import { AdviceTooltipComponent } from '../../shared-interproject/components/@visual/advice-tooltip/advice-tooltip/advice-tooltip.component';
 import { BrandPrimaryButtonComponent } from '../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { CleanCardComponent } from '../../shared-interproject/components/@visual/clean-card/clean-card.component';
-import { HeroInfoBoxModule } from '../../shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
-import { LabelValueShowcaseModule } from '../../shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
+import { HeroInfoBoxComponent } from '../../shared-interproject/components/@visual/hero-info-box/hero-info-box.component';
+import { HeroInfoBoxTextDirective } from '../../shared-interproject/components/@visual/hero-info-box/hero-info-box-text.directive';
+import { LabelValueShowcaseComponent } from '../../shared-interproject/components/@visual/label-value-showcase/label-value-showcase.component';
 import { ScreenWrapperComponent } from '../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { GetModuleHeightForStandardPipe } from './get-module-height-for-standard.pipe';
 import { ModuleCvIconComponent } from './module-cv-icon/module-cv-icon.component';
@@ -102,22 +103,23 @@ import { ModulePossessionDialogComponent } from './module-possession-dialog/modu
     MatFormEntityComponent,
     FormValidPipe,
     MatChipsModule,
-    HeroInfoBoxModule,
+    HeroInfoBoxComponent,
+    HeroInfoBoxTextDirective,
     MatIconModule,
     MatTooltipModule,
     MatButtonModule,
     MatDialogModule,
-    RestrictedEntityModule,
+    RestrictedEntityComponent,
     RouterModule,
     SharedAtomsModule,
-    SharedPipesModule,
-    HeroClickableTitleModule,
+    EllipsisPipe,
+    HeroClickableTitleComponent,
     AutoContentLoadingIndicatorComponent,
-    AdviceTooltipModule,
+    AdviceTooltipComponent,
     AutoUpdateLoadingIndicatorComponent,
     CleanCardComponent,
     MatMenuModule,
-    LabelValueShowcaseModule,
+    LabelValueShowcaseComponent,
     ScreenWrapperComponent,
     MatExpansionModule,
     MatSelectModule,

@@ -8,7 +8,7 @@ import {
 
 @Directive({
   selector: '[appRestrictedLogged]',
-  standalone: false
+  standalone: true
 })
 export class RestrictedLoggedDirective {
   private hasView = false;

@@ -12,24 +12,25 @@ import { LegacyRackRedirectComponent } from 'src/app/features/routes/rack/legacy
 import { RackBrowserRootComponent } from 'src/app/features/routes/rack/rack-browser-root/rack-browser-root.component';
 import { RackCompositeComponent } from 'src/app/features/routes/rack/rack-composite/rack-composite.component';
 import { AutoContentLoadingIndicatorComponent } from 'src/app/shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator/auto-content-loading-indicator.component';
-import { DevOnlyWindowModule } from 'src/app/shared-interproject/components/@smart/dev-only-window/dev-only-window.module';
+import { DevOnlyWindowComponent } from 'src/app/shared-interproject/components/@smart/dev-only-window/dev-only-window/dev-only-window.component';
 import { EmptyStateComponent } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.component';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
-import { RestrictedEntityModule } from 'src/app/shared-interproject/components/@smart/restricted-entity/restricted-entity.module';
+import { RestrictedEntityComponent } from 'src/app/shared-interproject/components/@smart/restricted-entity/restricted-entity/restricted-entity.component';
 import { UserDataHandlerComponent } from 'src/app/shared-interproject/components/@smart/user-data-handler/user-data-handler.component';
 import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { BrowserResetFiltersButtonComponent } from 'src/app/shared-interproject/components/@visual/browser-reset-filters-button/browser-reset-filters-button.component';
-import { FlexboxRowFastModule } from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
-import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
-import { HeroInfoBoxModule } from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
-import { HeroItemCardModule } from 'src/app/shared-interproject/components/@visual/hero-item-card/hero-item-card.module';
-import { LabelValueShowcaseModule } from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
+import { FlexboxRowFastComponent } from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.component';
+import { HeroContentCardComponent } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component';
+import { HeroInfoBoxComponent } from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.component';
+import { HeroInfoBoxTextDirective } from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box-text.directive';
+import { HeroItemCardComponent } from 'src/app/shared-interproject/components/@visual/hero-item-card/hero-item-card.component';
+import { LabelValueShowcaseComponent } from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.component';
 import { PageHeaderComponent } from 'src/app/shared-interproject/components/@visual/page-header/page-header/page-header.component';
 import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { WidthLimiterComponent } from 'src/app/shared-interproject/components/@visual/width-limiter/width-limiter.component';
 import { generateUranusRoutes } from 'src/app/shared-interproject/routing-layouts/uranus/uranus.module';
 import { RackListModule } from 'src/app/components/rack-list/rack-list.module';
-import { LocalDataFilterModule } from 'src/app/components/shared-atoms/local-data-filter/local-data-filter.module';
+import { LocalDataFilterComponent } from 'src/app/components/shared-atoms/local-data-filter/local-data-filter/local-data-filter.component';
 import { AutoUpdateLoadingIndicatorComponent } from 'src/app/shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator/auto-update-loading-indicator.component';
 import { CleanCardComponent } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.component';
 import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
@@ -46,10 +47,9 @@ import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatInputModule } from "@angular/material/input";
 import { CommentsModule } from "src/app/components/shared-atoms/comments/comments.module";
 import { SharedAtomsModule } from "src/app/components/shared-atoms/shared-atoms.module";
-import { AdviceTooltipModule } from "src/app/shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module";
+import { AdviceTooltipComponent } from "src/app/shared-interproject/components/@visual/advice-tooltip/advice-tooltip/advice-tooltip.component";
 
 
-const parentPrefix: string = 'racks';
 
 @NgModule({
   declarations: [
@@ -69,14 +69,14 @@ const parentPrefix: string = 'racks';
       // (public racks) or /links/retired (private/missing). Three segments — listed
       // first so it wins over the two-segment publicId route.
       {
-        path: `${ parentPrefix }/details/:id`,
+        path: 'details/:id',
         pathMatch: 'full',
         component: LegacyRackRedirectComponent
       },
       // Uranus shell (browser etc.) must come BEFORE the :publicId catch-all
       // so `/racks/browser` matches the listing instead of being treated as
       // a token.
-      generateUranusRoutes(parentPrefix, [
+      generateUranusRoutes('', [
         {
           path: 'browser',
           component: RackBrowserRootComponent
@@ -98,7 +98,7 @@ const parentPrefix: string = 'racks';
       // DEFINER RPC. Declared last so reserved words like `browser` are
       // claimed by the uranus shell above.
       {
-        path: `${ parentPrefix }/:publicId`,
+        path: ':publicId',
         pathMatch: 'full',
         component: RackBrowserDetailViewComponent
       }
@@ -106,10 +106,10 @@ const parentPrefix: string = 'racks';
     RackModule,
     FlexLayoutModule,
     MatCardModule,
-    HeroContentCardModule,
+    HeroContentCardComponent,
     MatChipsModule,
     DragDropModule,
-    LabelValueShowcaseModule,
+    LabelValueShowcaseComponent,
     ScrollingModule,
     ScreenWrapperComponent,
     MatIconModule,
@@ -123,16 +123,17 @@ const parentPrefix: string = 'racks';
     MatFormEntityComponent,
     MatToolbarModule,
     PageHeaderComponent,
-    DevOnlyWindowModule,
-    HeroInfoBoxModule,
-    RestrictedEntityModule,
+    DevOnlyWindowComponent,
+    HeroInfoBoxComponent,
+    HeroInfoBoxTextDirective,
+    RestrictedEntityComponent,
     ModulePartsModule,
-    FlexboxRowFastModule,
+    FlexboxRowFastComponent,
     WidthLimiterComponent,
-    HeroItemCardModule,
+    HeroItemCardComponent,
     EmptyStateComponent,
     AutoUpdateLoadingIndicatorComponent,
-    LocalDataFilterModule,
+    LocalDataFilterComponent,
     CleanCardComponent,
     RackListModule,
     ModuleBrowserModule,
@@ -140,7 +141,7 @@ const parentPrefix: string = 'racks';
     MatInputModule,
     CommentsModule,
     SharedAtomsModule,
-    AdviceTooltipModule,
+    AdviceTooltipComponent,
   ]
 })
 export class RackBrowserModule {}

@@ -3,6 +3,7 @@ import {
   Component,
   Input
 } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
 
 type AdviceTooltipTone = 'info' | 'warning' | 'danger' | 'success';
 
@@ -11,7 +12,8 @@ type AdviceTooltipTone = 'info' | 'warning' | 'danger' | 'success';
   templateUrl: './advice-tooltip.component.html',
   styleUrls: ['./advice-tooltip.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+  standalone: true,
+  imports: [MatIconModule]
 })
 export class AdviceTooltipComponent {
   @Input() title = '';

@@ -16,8 +16,8 @@ import { AutoUpdateLoadingIndicatorComponent } from 'src/app/shared-interproject
 import { EmptyStateComponent } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.component';
 import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { CleanCardComponent } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.component';
-import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
-import { LabelValueShowcaseModule } from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
+import { HeroContentCardComponent } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component';
+import { LabelValueShowcaseComponent } from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.component';
 import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
 import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area-data.service';
@@ -38,7 +38,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { DiscoveryTipsModule } from 'src/app/shared-interproject/discovery-tips/discovery-tips.module';
 import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-state-tips/empty-state-tips.component';
-import { FlexboxRowFastModule } from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
+import { FlexboxRowFastComponent } from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.component';
 import { PatchMicroModule } from 'src/app/components/patch-micro/patch-micro.module';
 import { RackMicroModule } from 'src/app/components/rack-micro/rack-micro.module';
 
@@ -65,13 +65,13 @@ import { RackMicroModule } from 'src/app/components/rack-micro/rack-micro.module
     MatIconModule,
     MatCardModule,
     ModuleBrowserModule,
-    HeroContentCardModule,
+    HeroContentCardComponent,
     EmptyStateComponent,
     PatchBrowserModule,
     RackBrowserModule,
     UserModulesModule,
     MatDividerModule,
-    LabelValueShowcaseModule,
+    LabelValueShowcaseComponent,
     CleanCardComponent,
     AutoUpdateLoadingIndicatorComponent,
     RackListModule,
@@ -86,7 +86,7 @@ import { RackMicroModule } from 'src/app/components/rack-micro/rack-micro.module
     MatFormEntityComponent,
     DiscoveryTipsModule,
     EmptyStateTipsComponent,
-    FlexboxRowFastModule,
+    FlexboxRowFastComponent,
     PatchMicroModule,
     RackMicroModule
   ],

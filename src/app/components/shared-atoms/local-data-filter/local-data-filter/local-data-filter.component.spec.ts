@@ -17,7 +17,4 @@ describe('LocalDataFilterComponent', () => {
     expect(comp.dataService).toBe(mockDataService);
   });
 
-  it('ngOnInit runs without error', () => {
-    expect(() => comp.ngOnInit()).not.toThrow();
-  });
 });

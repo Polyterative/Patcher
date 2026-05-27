@@ -4,7 +4,8 @@ import { FlexLayoutModule }               from '@angular/flex-layout';
 import { MatIconModule }                  from '@angular/material/icon';
 import { TimeagoModule }                  from 'ngx-timeago';
 import { RouterModule }                   from '@angular/router';
-import { HeroInfoBoxModule }              from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
+import { HeroInfoBoxComponent } from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.component';
+import { HeroInfoBoxTextDirective } from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box-text.directive';
 import { EntityAuthorComponent }          from './entity-author/entity-author.component';
 import { PatchConnectionSymbolComponent } from './patch-connection-symbol/patch-connection-symbol.component';
 import { TimestampsRelativeComponent }    from './timestamps-relative/timestamps-relative.component';
@@ -12,7 +13,7 @@ import { MatCardModule }                  from "@angular/material/card";
 import { MatBadgeModule }                from "@angular/material/badge";
 import { MatTooltipModule }               from "@angular/material/tooltip";
 import { CleanCardComponent } from "src/app/shared-interproject/components/@visual/clean-card/clean-card.component";
-import { LabelValueShowcaseModule } from "src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module";
+import { LabelValueShowcaseComponent } from "src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.component";
 import { EntityStatGridComponent } from "./entity-stat-grid/entity-stat-grid.component";
 import { EntityStatCardComponent } from "./entity-stat-card/entity-stat-card.component";
 
@@ -32,11 +33,12 @@ import { EntityStatCardComponent } from "./entity-stat-card/entity-stat-card.com
     TimeagoModule.forChild(),
     MatCardModule,
     MatBadgeModule,
-    HeroInfoBoxModule,
+    HeroInfoBoxComponent,
+    HeroInfoBoxTextDirective,
     MatIconModule,
     MatTooltipModule,
     CleanCardComponent,
-    LabelValueShowcaseModule
+    LabelValueShowcaseComponent
   ],
   exports:      [
     TimestampsRelativeComponent,

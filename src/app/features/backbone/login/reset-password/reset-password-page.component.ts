@@ -13,7 +13,7 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
-import { HeroContentCardModule } from "src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module";
+import { HeroContentCardComponent } from "src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component";
 import { ScreenWrapperComponent } from "src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component";
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { SeoAndUtilsService } from '../../seo-and-utils.service';
@@ -38,7 +38,7 @@ const AUTH_CHECK_DELAY_MS = 1000;
     MatIconModule,
     MatFormEntityComponent,
     BrandPrimaryButtonComponent,
-    HeroContentCardModule,
+    HeroContentCardComponent,
     ScreenWrapperComponent,
     CountdownProgressModule
   ],
