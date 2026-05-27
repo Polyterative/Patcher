@@ -81,7 +81,7 @@ describe('HomeComponent', () => {
       mockSeoSvc,
       'server' as unknown as object
     );
-    expect(comp2.communityLinks.some(l => l.href === '/insights')).toBeTrue();
+    expect(comp2.communityLinks.some(l => l.href === '/info/insights')).toBeTrue();
     comp2.ngOnDestroy();
   });
 
