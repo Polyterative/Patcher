@@ -134,8 +134,7 @@ export class ModuleTagsComponent extends SubManager implements OnInit {
           voteCount: [{moduletagid: tagVotes.get(p.moduleTagId) ?? 1}]
         }));
         const merged = [...serverTags, ...proposedAsModuleTags];
-        const filtered = merged.filter(item => (tagVotes.get(item.id) ?? 0) > 0);
-        const sorted = filtered.sort(
+        const sorted = merged.sort(
           (a, b) => (b.voteCount?.length ?? 0) - (a.voteCount?.length ?? 0)
         );
         return this.maxTags ? sorted.slice(0, this.maxTags) : sorted;
@@ -239,6 +238,7 @@ export class ModuleTagsComponent extends SubManager implements OnInit {
 
   proposeTag(tag: Tag): void {
     this.tagVoteService.proposeTag$.next({moduleId: this.data.id, tagId: tag.id});
+    this.closeProposer();
   }
 
   proposeOrToggle(pt: ProposerTag): void {
