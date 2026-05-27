@@ -4,10 +4,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { RouterModule } from '@angular/router';
-import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
-import { CleanCardModule } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.module';
+import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
+import { CleanCardComponent } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.component';
 import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
-import { ScreenWrapperModule } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
+import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { ApplicationInsightsPageComponent } from './application-insights/application-insights-page.component';
 import { InsightChipComponent } from './application-insights/insight-chip/insight-chip.component';
 import { InsightMetricBarComponent } from './application-insights/insight-metric-bar/insight-metric-bar.component';
@@ -26,10 +26,10 @@ import { ChangelogComponent } from './changelog/changelog.component';
     MatButtonModule,
     MatIconModule,
     MatProgressBarModule,
-    BrandPrimaryButtonModule,
-    CleanCardModule,
+    BrandPrimaryButtonComponent,
+    CleanCardComponent,
     HeroContentCardModule,
-    ScreenWrapperModule,
+    ScreenWrapperComponent,
     
     RouterModule.forChild([
       {

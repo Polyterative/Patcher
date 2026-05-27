@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatCardModule } from "@angular/material/card";
 import { HeroItemCardComponent } from 'src/app/shared-interproject/components/@visual/hero-item-card/hero-item-card.component';
-import { CleanCardModule } from '../clean-card/clean-card.module';
+import { CleanCardComponent } from '../clean-card/clean-card.component';
 
 
 @NgModule({
@@ -14,7 +14,7 @@ import { CleanCardModule } from '../clean-card/clean-card.module';
     CommonModule,
     MatCardModule,
     FlexLayoutModule,
-    CleanCardModule
+    CleanCardComponent
   ],
   exports:      [
     HeroItemCardComponent

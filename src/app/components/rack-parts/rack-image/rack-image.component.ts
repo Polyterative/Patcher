@@ -9,7 +9,6 @@ import {
 import { fadeInOnEnterAnimation } from 'angular-animations';
 import { FlexLayoutModule } from "@angular/flex-layout";
 import { RouterLink } from "@angular/router";
-import { ScreenWrapperModule } from "src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module";
 
 import { Rack } from "src/app/models/rack";
 import { StorageUrls } from 'src/app/features/backend/DatabaseStrings';
@@ -22,8 +21,7 @@ import { StorageUrls } from 'src/app/features/backend/DatabaseStrings';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FlexLayoutModule,
-    RouterLink,
-    ScreenWrapperModule
+    RouterLink
   ],
   animations: [
     fadeInOnEnterAnimation({

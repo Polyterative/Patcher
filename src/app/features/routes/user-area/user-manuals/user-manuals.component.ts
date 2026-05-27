@@ -4,7 +4,7 @@ import {
 } from '@angular/core';
 import { UserAreaDataService } from "src/app/features/routes/user-area/user-area-data.service";
 import { AsyncPipe } from "@angular/common";
-import { AutoUpdateLoadingIndicatorModule } from "src/app/shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator.module";
+import { AutoUpdateLoadingIndicatorComponent } from "src/app/shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator/auto-update-loading-indicator.component";
 import {
   MatChipListbox,
   MatChipOption
@@ -18,7 +18,7 @@ import { EmptyStateTipsComponent } from "src/app/components/shared-atoms/empty-s
   selector: 'app-user-manuals',
   imports: [
     AsyncPipe,
-    AutoUpdateLoadingIndicatorModule,
+    AutoUpdateLoadingIndicatorComponent,
     MatChipListbox,
     MatChipOption,
     HeroContentCardModule,

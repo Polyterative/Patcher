@@ -5,14 +5,14 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TimeagoModule } from 'ngx-timeago';
 import { UserManagementComponent } from 'src/app/features/backbone/user-management/user-management.component';
-import { EmptyStateModule } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.module';
-import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
+import { EmptyStateComponent } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.component';
+import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { LabelValueShowcaseModule } from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
-import { ScreenWrapperModule } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
+import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { InputDialogModule } from 'src/app/shared-interproject/dialogs/input-dialog/input-dialog.module';
 import { ConfirmDialogModule } from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.module';
-import { StatisticsModule } from 'src/app/components/shared-atoms/statistics/statistics.module';
+import { StatisticsComponent } from 'src/app/components/shared-atoms/statistics/statistics.component';
 import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
 import { MatDialogModule } from "@angular/material/dialog";
@@ -48,9 +48,9 @@ import { MatTooltipModule } from "@angular/material/tooltip";
     FlexLayoutModule,
     ReactiveFormsModule,
     HeroContentCardModule,
-    BrandPrimaryButtonModule,
-    EmptyStateModule,
-    ScreenWrapperModule,
+    BrandPrimaryButtonComponent,
+    EmptyStateComponent,
+    ScreenWrapperComponent,
     LabelValueShowcaseModule,
     MatTooltipModule,
     MatDialogModule,
@@ -60,7 +60,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
     MatIconModule,
     InputDialogModule,
     ConfirmDialogModule,
-    StatisticsModule,
+    StatisticsComponent,
     TimeagoModule
   
   ],

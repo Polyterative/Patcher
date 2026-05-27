@@ -13,13 +13,13 @@ import {
 
 import { CommonSidebarComponent } from 'src/app/features/backbone/common-sidebar/common-sidebar.component';
 import { UserDataHandlerComponent } from 'src/app/shared-interproject/components/@smart/user-data-handler/user-data-handler.component';
-import { AutoContentLoadingIndicatorModule } from 'src/app/shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator.module';
-import { AutoUpdateLoadingIndicatorModule } from 'src/app/shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator.module';
-import { EmptyStateModule } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.module';
+import { AutoContentLoadingIndicatorComponent } from 'src/app/shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator/auto-content-loading-indicator.component';
+import { AutoUpdateLoadingIndicatorComponent } from 'src/app/shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator/auto-update-loading-indicator.component';
+import { EmptyStateComponent } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.component';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
-import { ScreenWrapperModule } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
-import { CleanCardModule } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.module';
+import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
+import { CleanCardComponent } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.component';
 import { generateUranusRoutes } from 'src/app/shared-interproject/routing-layouts/uranus/uranus.module';
 
 import { ManufacturerDetailComponent } from './manufacturer-detail.component';
@@ -68,11 +68,11 @@ import { MatChipsModule } from '@angular/material/chips';
       ])
     ]),
     HeroContentCardModule,
-    ScreenWrapperModule,
-    CleanCardModule,
-    AutoContentLoadingIndicatorModule,
-    AutoUpdateLoadingIndicatorModule,
-    EmptyStateModule,
+    ScreenWrapperComponent,
+    CleanCardComponent,
+    AutoContentLoadingIndicatorComponent,
+    AutoUpdateLoadingIndicatorComponent,
+    EmptyStateComponent,
     MatFormEntityComponent,
     MatButtonModule,
     MatIconModule,

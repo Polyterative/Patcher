@@ -12,8 +12,8 @@ import { PatchDetailDataService, LinkedRackUiState } from '../patch-detail-data.
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { UrlCreatorService } from 'src/app/features/backend/url-creator.service';
 import {
-  BrandPrimaryButtonModule
-} from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
+  BrandPrimaryButtonComponent
+} from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 
 
 describe('PatchMinimalComponent - linked rack UI', () => {
@@ -72,7 +72,7 @@ describe('PatchMinimalComponent - linked rack UI', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [CommonModule, ReactiveFormsModule, RouterTestingModule, BrandPrimaryButtonModule],
+      imports: [CommonModule, ReactiveFormsModule, RouterTestingModule, BrandPrimaryButtonComponent],
       declarations: [PatchMinimalComponent],
       providers: [
         {provide: PatchDetailDataService, useValue: dataService},

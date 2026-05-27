@@ -8,7 +8,7 @@ import {
   RouterModule,
   Routes
 } from '@angular/router';
-import { ScreenWrapperModule } from '../../components/@visual/screen-wrapper/screen-wrapper.module';
+import { ScreenWrapperComponent } from '../../components/@visual/screen-wrapper/screen-wrapper.component';
 import { UranusComponent } from './uranus.component';
 import { FaqComponent } from "src/app/shared-interproject/components/@visual/faq/faq.component";
 import { HeroContentCardModule } from "src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module";
@@ -21,7 +21,7 @@ import { AppFaqComponent } from "src/app/components/shared-atoms/app-faq/app-faq
     RouterModule,
     CommonModule,
     FlexLayoutModule,
-    ScreenWrapperModule,
+    ScreenWrapperComponent,
     MatToolbarModule,
     FaqComponent,
     HeroContentCardModule,

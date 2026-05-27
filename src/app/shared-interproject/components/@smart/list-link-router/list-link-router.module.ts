@@ -5,7 +5,7 @@ import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from "@angular/material/list";
 import { RouterModule } from '@angular/router';
-import { CleanCardModule } from '../../@visual/clean-card/clean-card.module';
+import { CleanCardComponent } from '../../@visual/clean-card/clean-card.component';
 import { ListLinkRouterComponent } from './list-link-router.component';
 
 
@@ -18,7 +18,7 @@ import { ListLinkRouterComponent } from './list-link-router.component';
     MatIconModule,
     MatCardModule,
     RouterModule,
-    CleanCardModule
+    CleanCardComponent
   ],
     exports:      [ListLinkRouterComponent]
 })

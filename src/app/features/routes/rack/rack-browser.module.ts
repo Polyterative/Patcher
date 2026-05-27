@@ -11,29 +11,29 @@ import { RackBrowserDetailViewComponent } from 'src/app/features/routes/rack/rac
 import { LegacyRackRedirectComponent } from 'src/app/features/routes/rack/legacy-rack-redirect/legacy-rack-redirect.component';
 import { RackBrowserRootComponent } from 'src/app/features/routes/rack/rack-browser-root/rack-browser-root.component';
 import { RackCompositeComponent } from 'src/app/features/routes/rack/rack-composite/rack-composite.component';
-import { AutoContentLoadingIndicatorModule } from 'src/app/shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator.module';
+import { AutoContentLoadingIndicatorComponent } from 'src/app/shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator/auto-content-loading-indicator.component';
 import { DevOnlyWindowModule } from 'src/app/shared-interproject/components/@smart/dev-only-window/dev-only-window.module';
-import { EmptyStateModule } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.module';
+import { EmptyStateComponent } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.component';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { RestrictedEntityModule } from 'src/app/shared-interproject/components/@smart/restricted-entity/restricted-entity.module';
 import { UserDataHandlerComponent } from 'src/app/shared-interproject/components/@smart/user-data-handler/user-data-handler.component';
-import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
+import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { BrowserResetFiltersButtonComponent } from 'src/app/shared-interproject/components/@visual/browser-reset-filters-button/browser-reset-filters-button.component';
 import { FlexboxRowFastModule } from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
 import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { HeroInfoBoxModule } from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
 import { HeroItemCardModule } from 'src/app/shared-interproject/components/@visual/hero-item-card/hero-item-card.module';
 import { LabelValueShowcaseModule } from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
-import { PageHeaderModule } from 'src/app/shared-interproject/components/@visual/page-header/page-header.module';
-import { ScreenWrapperModule } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
-import { WidthLimiterModule } from 'src/app/shared-interproject/components/@visual/width-limiter/width-limiter.module';
+import { PageHeaderComponent } from 'src/app/shared-interproject/components/@visual/page-header/page-header/page-header.component';
+import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
+import { WidthLimiterComponent } from 'src/app/shared-interproject/components/@visual/width-limiter/width-limiter.component';
 import { generateUranusRoutes } from 'src/app/shared-interproject/routing-layouts/uranus/uranus.module';
 import { RackListModule } from 'src/app/components/rack-list/rack-list.module';
 import { LocalDataFilterModule } from 'src/app/components/shared-atoms/local-data-filter/local-data-filter.module';
-import { AutoUpdateLoadingIndicatorModule } from 'src/app/shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator.module';
-import { CleanCardModule } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.module';
+import { AutoUpdateLoadingIndicatorComponent } from 'src/app/shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator/auto-update-loading-indicator.component';
+import { CleanCardComponent } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.component';
 import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
-import { StatisticsModule } from "src/app/components/shared-atoms/statistics/statistics.module";
+import { StatisticsComponent } from "src/app/components/shared-atoms/statistics/statistics.component";
 import { RouterModule } from "@angular/router";
 import { MatCardModule } from "@angular/material/card";
 import { MatChipsModule } from "@angular/material/chips";
@@ -111,32 +111,32 @@ const parentPrefix: string = 'racks';
     DragDropModule,
     LabelValueShowcaseModule,
     ScrollingModule,
-    ScreenWrapperModule,
+    ScreenWrapperComponent,
     MatIconModule,
     MatSnackBarModule,
     MatButtonModule,
     MatTooltipModule,
     MatDividerModule,
-    BrandPrimaryButtonModule,
+    BrandPrimaryButtonComponent,
     BrowserResetFiltersButtonComponent,
-    AutoContentLoadingIndicatorModule,
+    AutoContentLoadingIndicatorComponent,
     MatFormEntityComponent,
     MatToolbarModule,
-    PageHeaderModule,
+    PageHeaderComponent,
     DevOnlyWindowModule,
     HeroInfoBoxModule,
     RestrictedEntityModule,
     ModulePartsModule,
     FlexboxRowFastModule,
-    WidthLimiterModule,
+    WidthLimiterComponent,
     HeroItemCardModule,
-    EmptyStateModule,
-    AutoUpdateLoadingIndicatorModule,
+    EmptyStateComponent,
+    AutoUpdateLoadingIndicatorComponent,
     LocalDataFilterModule,
-    CleanCardModule,
+    CleanCardComponent,
     RackListModule,
     ModuleBrowserModule,
-    StatisticsModule,
+    StatisticsComponent,
     MatInputModule,
     CommentsModule,
     SharedAtomsModule,

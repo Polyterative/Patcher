@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -5,6 +6,7 @@ import {
   OnDestroy,
   OnInit
 } from '@angular/core';
+import { LottieContainerModule } from '../../lottie-container/lottie-container.module';
 import {
   asapScheduler,
   BehaviorSubject,
@@ -25,7 +27,11 @@ import {
   templateUrl: './auto-update-loading-indicator.component.html',
   styleUrls: ['./auto-update-loading-indicator.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+  standalone: true,
+  imports: [
+    CommonModule,
+    LottieContainerModule
+  ]
 })
 export class AutoUpdateLoadingIndicatorComponent implements OnInit, OnDestroy {
   @Input() data$: Observable<unknown>;

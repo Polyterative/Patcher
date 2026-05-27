@@ -7,7 +7,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterModule } from '@angular/router';
 import { RouteClickableLinkModule } from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.module';
-import { ScreenWrapperModule } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
+import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { ToolbarComponent } from './toolbar.component';
 import { ToolbarService } from './toolbar.service';
 
@@ -20,7 +20,7 @@ import { ToolbarService } from './toolbar.service';
     MatButtonModule,
     MatMenuModule,
     RouterModule,
-    ScreenWrapperModule,
+    ScreenWrapperComponent,
     RouteClickableLinkModule,
     MatDividerModule
   ],

@@ -1,9 +1,11 @@
+import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   Input,
   OnInit
 } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
 import {
   ActivatedRoute,
   Router
@@ -18,7 +20,11 @@ import {
   templateUrl: './empty-state.component.html',
   styleUrls: ['./empty-state.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatIconModule
+  ]
 })
 export class EmptyStateComponent implements OnInit {
   @Input()

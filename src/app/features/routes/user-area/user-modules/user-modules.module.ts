@@ -4,8 +4,8 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatDividerModule } from '@angular/material/divider';
 import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
 import { UserModulesComponent } from 'src/app/features/routes/user-area/user-modules/user-modules.component';
-import { AutoUpdateLoadingIndicatorModule } from 'src/app/shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator.module';
-import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
+import { AutoUpdateLoadingIndicatorComponent } from 'src/app/shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator/auto-update-loading-indicator.component';
+import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { RouterLink } from "@angular/router";
 import { MatCardModule } from "@angular/material/card";
@@ -25,13 +25,13 @@ import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-s
     ModuleBrowserModule,
     HeroContentCardModule,
     FlexLayoutModule,
-    BrandPrimaryButtonModule,
+    BrandPrimaryButtonComponent,
     MatCardModule,
     MatPaginatorModule,
     MatButtonToggleModule,
     MatIconModule,
     MatDividerModule,
-    AutoUpdateLoadingIndicatorModule,
+    AutoUpdateLoadingIndicatorComponent,
     RouterLink,
     DiscoveryTipsModule,
     EmptyStateTipsComponent

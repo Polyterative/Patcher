@@ -9,18 +9,18 @@ import { TimeagoModule } from 'ngx-timeago';
 import { SharedAtomsModule } from 'src/app/components/shared-atoms/shared-atoms.module';
 import { HeroClickableTitleModule } from 'src/app/shared-interproject/components/@visual/hero-clickable-title/hero-clickable-title.module';
 import { SharedPipesModule } from 'src/app/shared-interproject/pipes/shared-pipes.module';
-import { AutoContentLoadingIndicatorModule } from '../../shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator.module';
-import { AutoUpdateLoadingIndicatorModule } from '../../shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator.module';
+import { AutoContentLoadingIndicatorComponent } from '../../shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator/auto-content-loading-indicator.component';
+import { AutoUpdateLoadingIndicatorComponent } from '../../shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator/auto-update-loading-indicator.component';
 import { FileDragHostModule } from '../../shared-interproject/components/@smart/file-drag-host/file-drag-host.module';
 import { MatFormEntityComponent } from '../../shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { FormValidPipe } from '../../shared-interproject/components/@smart/mat-form-entity/is-control-valid.pipe';
 import { RestrictedEntityModule } from '../../shared-interproject/components/@smart/restricted-entity/restricted-entity.module';
 import { AdviceTooltipModule } from '../../shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module';
-import { BrandPrimaryButtonModule } from '../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
-import { CleanCardModule } from '../../shared-interproject/components/@visual/clean-card/clean-card.module';
+import { BrandPrimaryButtonComponent } from '../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
+import { CleanCardComponent } from '../../shared-interproject/components/@visual/clean-card/clean-card.component';
 import { HeroInfoBoxModule } from '../../shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
 import { LabelValueShowcaseModule } from '../../shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
-import { ScreenWrapperModule } from '../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
+import { ScreenWrapperComponent } from '../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { GetModuleHeightForStandardPipe } from './get-module-height-for-standard.pipe';
 import { ModuleCvIconComponent } from './module-cv-icon/module-cv-icon.component';
 import { ModuleCVItemComponent } from './module-cvitem/module-cvitem.component';
@@ -96,7 +96,7 @@ import { ModulePossessionDialogComponent } from './module-possession-dialog/modu
     CommonModule,
     TimeagoModule.forChild(),
     MatCardModule,
-    BrandPrimaryButtonModule,
+    BrandPrimaryButtonComponent,
     FlexLayoutModule,
     MatDividerModule,
     MatFormEntityComponent,
@@ -112,13 +112,13 @@ import { ModulePossessionDialogComponent } from './module-possession-dialog/modu
     SharedAtomsModule,
     SharedPipesModule,
     HeroClickableTitleModule,
-    AutoContentLoadingIndicatorModule,
+    AutoContentLoadingIndicatorComponent,
     AdviceTooltipModule,
-    AutoUpdateLoadingIndicatorModule,
-    CleanCardModule,
+    AutoUpdateLoadingIndicatorComponent,
+    CleanCardComponent,
     MatMenuModule,
     LabelValueShowcaseModule,
-    ScreenWrapperModule,
+    ScreenWrapperComponent,
     MatExpansionModule,
     MatSelectModule,
     MatInputModule,

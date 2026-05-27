@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
-import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
+import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { LoginEmailComponent } from './login-email.component';
 
 
@@ -13,7 +13,7 @@ import { LoginEmailComponent } from './login-email.component';
   imports:      [
     CommonModule,
     MatFormEntityComponent,
-    BrandPrimaryButtonModule,
+    BrandPrimaryButtonComponent,
     FlexLayoutModule
   ],
   exports:      [

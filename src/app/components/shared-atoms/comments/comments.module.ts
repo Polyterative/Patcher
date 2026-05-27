@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 import { MatCardModule } from "@angular/material/card";
 import { DevOnlyWindowModule } from 'src/app/shared-interproject/components/@smart/dev-only-window/dev-only-window.module';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
-import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
+import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { CommentsDataService } from './comments-data.service';
 import { CommentsRootComponent } from './comments-root/comments-root.component';
@@ -15,7 +15,7 @@ import {
   MatTree,
   MatTreeNode
 } from "@angular/material/tree";
-import { AutoUpdateLoadingIndicatorModule } from "src/app/shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator.module";
+import { AutoUpdateLoadingIndicatorComponent } from "src/app/shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator/auto-update-loading-indicator.component";
 import { MatIcon } from "@angular/material/icon";
 import {
   MatButton,
@@ -24,7 +24,7 @@ import {
 import { NgDatePipesModule } from "ngx-pipes";
 import { TimeagoModule } from "ngx-timeago";
 import { MatTooltip } from "@angular/material/tooltip";
-import { CleanCardModule } from "src/app/shared-interproject/components/@visual/clean-card/clean-card.module";
+import { CleanCardComponent } from "src/app/shared-interproject/components/@visual/clean-card/clean-card.component";
 import { CommentsItemBlockComponent } from "src/app/components/shared-atoms/comments/comments-root/comments-item-block/comments-item-block.component";
 
 
@@ -35,7 +35,7 @@ import { CommentsItemBlockComponent } from "src/app/components/shared-atoms/comm
   imports: [
     CommonModule,
     MatCardModule,
-    BrandPrimaryButtonModule,
+    BrandPrimaryButtonComponent,
     MatFormEntityComponent,
     DevOnlyWindowModule,
     HeroContentCardModule,
@@ -43,14 +43,14 @@ import { CommentsItemBlockComponent } from "src/app/components/shared-atoms/comm
     MatList,
     MatTreeNode,
     MatTree,
-    AutoUpdateLoadingIndicatorModule,
+    AutoUpdateLoadingIndicatorComponent,
     MatIcon,
     MatButton,
     MatIconButton,
     NgDatePipesModule,
     TimeagoModule,
     MatTooltip,
-    CleanCardModule,
+    CleanCardComponent,
     CommentsItemBlockComponent,
   ],
   providers:    [CommentsDataService],

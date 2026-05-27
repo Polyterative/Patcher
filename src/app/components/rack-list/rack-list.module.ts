@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { AutoContentLoadingIndicatorModule } from '../../shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator.module';
-import { EmptyStateModule } from '../../shared-interproject/components/@smart/empty-state/empty-state.module';
-import { CleanCardModule } from '../../shared-interproject/components/@visual/clean-card/clean-card.module';
+import { AutoContentLoadingIndicatorComponent } from '../../shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator/auto-content-loading-indicator.component';
+import { EmptyStateComponent } from '../../shared-interproject/components/@smart/empty-state/empty-state.component';
+import { CleanCardComponent } from '../../shared-interproject/components/@visual/clean-card/clean-card.component';
 import { FlexboxRowFastModule } from '../../shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
 import { RackMicroModule } from '../rack-micro/rack-micro.module';
 import { LocalDataFilterModule } from '../shared-atoms/local-data-filter/local-data-filter.module';
@@ -14,10 +14,10 @@ import { RackListComponent } from './rack-list.component';
   exports:      [RackListComponent],
   imports:      [
     CommonModule,
-    AutoContentLoadingIndicatorModule,
-    EmptyStateModule,
+    AutoContentLoadingIndicatorComponent,
+    EmptyStateComponent,
     FlexboxRowFastModule,
-    CleanCardModule,
+    CleanCardComponent,
     RackMicroModule,
     LocalDataFilterModule
   ]

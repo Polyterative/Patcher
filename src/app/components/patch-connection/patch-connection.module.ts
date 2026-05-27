@@ -4,7 +4,7 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.module';
 import { SharedAtomsModule } from 'src/app/components/shared-atoms/shared-atoms.module';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
-import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
+import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { HeroInfoBoxModule } from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
 import { PatchConnectionMinimalComponent } from './patch-connection-minimal/patch-connection-minimal.component';
 import { MatIconModule } from "@angular/material/icon";
@@ -28,7 +28,7 @@ import { MatCardModule } from "@angular/material/card";
     MatIconModule,
     MatTooltipModule,
     MatButtonModule,
-    BrandPrimaryButtonModule,
+    BrandPrimaryButtonComponent,
     MatDividerModule,
     HeroInfoBoxModule,
     MatFormEntityComponent,

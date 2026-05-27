@@ -32,8 +32,8 @@ import { BackboneModule } from './features/backbone/backbone.module';
 import { FeedbackBoxModule } from './features/backbone/feedback-box/feedback-box.module';
 import { UserAuthGuard } from './features/backbone/login/user-auth-guard.service';
 import { ToolbarModule } from './features/backbone/toolbar/toolbar.module';
-import { PageHeaderModule } from './shared-interproject/components/@visual/page-header/page-header.module';
-import { ScreenWrapperModule } from './shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
+import { PageHeaderComponent } from './shared-interproject/components/@visual/page-header/page-header/page-header.component';
+import { ScreenWrapperComponent } from './shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { MatDialogRef } from "@angular/material/dialog";
 import {
   MAT_SNACK_BAR_DEFAULT_OPTIONS,
@@ -87,8 +87,8 @@ const matDatepickerLocaleIT = {
     ToolbarModule,
     AppFeaturesModule,
     FeedbackBoxModule,
-    ScreenWrapperModule,
-    PageHeaderModule,
+    ScreenWrapperComponent,
+    PageHeaderComponent,
     MatToolbarModule,
     FlexLayoutModule,
     MatCardModule,
