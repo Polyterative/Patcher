@@ -11,7 +11,7 @@ import { HomeFounderNote } from '../../home-content.models';
   selector: 'app-home-founder-note',
   templateUrl: './home-founder-note.component.html',
   styleUrls: ['./home-founder-note.component.scss'],
-  standalone: false
+  standalone: true
 })
 export class HomeFounderNoteComponent {
   @Input() quote = '';

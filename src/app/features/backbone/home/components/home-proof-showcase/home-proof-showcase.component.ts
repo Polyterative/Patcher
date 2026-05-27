@@ -12,7 +12,7 @@ import { buildHomeTextSegments } from '../../home-text-segments.util';
   selector: 'app-home-proof-showcase',
   templateUrl: './home-proof-showcase.component.html',
   styleUrls: ['./home-proof-showcase.component.scss'],
-  standalone: false
+  standalone: true
 })
 export class HomeProofShowcaseComponent {
   @Input() kicker = '';

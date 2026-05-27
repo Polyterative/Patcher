@@ -10,7 +10,7 @@ import {
   selector: 'app-home-invitation-cta',
   templateUrl: './home-invitation-cta.component.html',
   styleUrls: ['./home-invitation-cta.component.scss'],
-  standalone: false
+  standalone: true
 })
 export class HomeInvitationCtaComponent {
   @Input() title = '';

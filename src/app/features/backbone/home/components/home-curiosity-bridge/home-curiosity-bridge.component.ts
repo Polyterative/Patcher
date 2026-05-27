@@ -3,6 +3,8 @@ import {
   Component,
   Input
 } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
+import { RouterModule } from '@angular/router';
 import { HomeLinkPill } from '../../home-content.models';
 
 
@@ -11,7 +13,8 @@ import { HomeLinkPill } from '../../home-content.models';
   selector: 'app-home-curiosity-bridge',
   templateUrl: './home-curiosity-bridge.component.html',
   styleUrls: ['./home-curiosity-bridge.component.scss'],
-  standalone: false
+  standalone: true,
+  imports: [MatIconModule, RouterModule]
 })
 export class HomeCuriosityBridgeComponent {
   @Input() title = '';
