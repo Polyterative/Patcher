@@ -33,7 +33,7 @@ import { ChangelogComponent } from './changelog/changelog.component';
     
     RouterModule.forChild([
       {
-        path:      'info/changelog',
+        path: 'changelog',
         component: ChangelogComponent
       },
       {

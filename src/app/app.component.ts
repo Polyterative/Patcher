@@ -99,7 +99,7 @@ export class AppComponent {
       || normalizedUrl.startsWith('/racks')
       || normalizedUrl.startsWith('/patches')
       || normalizedUrl.startsWith('/manufacturers')
-      || normalizedUrl.startsWith('/insights')
+      || normalizedUrl.startsWith('/info/')
       || isAuthShellRoute
       || normalizedUrl.startsWith('/user/area')
       || normalizedUrl.startsWith('/user/account')

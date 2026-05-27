@@ -224,7 +224,7 @@ export class HomeComponent extends SubManager {
         {
           icon: 'insights',
           label: 'Open insights',
-          href: '/insights'
+          href: '/info/insights'
         },
         ...this.browseLinks
       ]

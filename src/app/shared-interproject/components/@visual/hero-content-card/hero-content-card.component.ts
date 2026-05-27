@@ -200,8 +200,8 @@ export class HeroContentCardComponent implements AfterViewInit, OnDestroy {
         return normalizedUrl.startsWith('/patches/');
       case '/manufacturers/browser':
         return normalizedUrl.startsWith('/manufacturers/');
-      case '/insights':
-        return normalizedUrl.startsWith('/insights');
+      case '/info/insights':
+        return normalizedUrl.startsWith('/info/insights');
       default:
         return false;
     }

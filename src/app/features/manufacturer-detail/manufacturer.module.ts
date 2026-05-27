@@ -33,8 +33,6 @@ import { LibShowcaseGridComponent } from 'src/app/components/rack-parts/rack-edi
 import { MatChipsModule } from '@angular/material/chips';
 
 
-const parentPrefix = 'manufacturers';
-
 @NgModule({
   declarations: [
     ManufacturerDetailComponent,
@@ -48,11 +46,11 @@ const parentPrefix = 'manufacturers';
     CommonModule,
     RouterModule.forChild([
       {
-        path: `${ parentPrefix }/details/:id`,
+        path: 'details/:id',
         pathMatch: 'full',
         component: ManufacturerDetailComponent
       },
-      generateUranusRoutes(parentPrefix, [
+      generateUranusRoutes('', [
         {
           path: 'browser',
           component: ManufacturerBrowserRootComponent

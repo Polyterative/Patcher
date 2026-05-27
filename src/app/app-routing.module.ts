@@ -14,6 +14,18 @@ const routes: Routes = [
     path: 'u',
     loadChildren: () => import('./features/routes/public-profile/public-profile.module').then(m => m.PublicProfileModule)
   },
+  {
+    path: 'user',
+    loadChildren: () => import('./features/routes/user-area/user-area.module').then(m => m.UserAreaModule)
+  },
+  {
+    path: 'manufacturers',
+    loadChildren: () => import('./features/manufacturer-detail/manufacturer.module').then(m => m.ManufacturerModule)
+  },
+  {
+    path: 'info',
+    loadChildren: () => import('./features/info-pages/info-pages.module').then(m => m.InfoPagesModule)
+  }
 ];
 
 @NgModule({
