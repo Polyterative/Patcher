@@ -53,7 +53,7 @@ import { RackMicroModule } from 'src/app/components/rack-micro/rack-micro.module
     CommonModule,
     RouterModule.forChild([
       {
-        path: 'user/area',
+        path: 'area',
         component: UserAreaRootComponent,
         canActivate: [AuthGuard, UsernameGuard],
       }

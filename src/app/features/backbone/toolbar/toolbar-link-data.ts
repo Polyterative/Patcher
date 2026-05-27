@@ -44,7 +44,7 @@ const MAIN_LINKS: RouteClickableLink[] = [
 
 const INSIGHTS_LINK: RouteClickableLink = {
   label: 'Insights',
-  route: '/insights',
+  route: '/info/insights',
   icon: 'insights',
   disabled: false
 };
