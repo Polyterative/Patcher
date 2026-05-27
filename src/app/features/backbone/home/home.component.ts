@@ -1,77 +1,53 @@
-import { ChangeDetectionStrategy, Component, Inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
-import {
-  Observable,
-  timer
-} from 'rxjs';
-import {
-  take,
-  takeUntil
-} from 'rxjs/operators';
-import { ModuleDetailDataService } from 'src/app/components/module-parts/module-detail-data.service';
-import {
-  defaultModuleMinimalViewConfig,
-  ModuleMinimalViewConfig
-} from 'src/app/components/module-parts/module-minimal/module-minimal.component';
-import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
-import {
-  defaultPatchMinimalViewConfig,
-  PatchMinimalViewConfig
-} from 'src/app/components/patch-parts/patch-minimal/patch-minimal.component';
-import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
-import {
-  defaultRackMinimalViewConfig,
-  RackMinimalViewConfig
-} from 'src/app/components/rack-parts/rack-minimal/rack-minimal.component';
-import { SeoSocialShareData } from 'src/app/models/seo.model';
-import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
-import { SeoAndUtilsService } from '../seo-and-utils.service';
+import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { StatisticsComponent } from 'src/app/components/shared-atoms/statistics/statistics.component';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
+import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
+import { DeviceFrameWrapperModule } from 'src/app/shared-interproject/components/@visual/device-frame-wrapper/device-frame-wrapper.module';
+import { SeoSocialShareData } from 'src/app/models/seo.model';
+import { SeoAndUtilsService } from '../seo-and-utils.service';
 import {
   ApplicationInsightsTeaser,
   ApplicationStatisticsService
 } from './application-statistics.service';
+import { HomeCuriosityBridgeComponent } from './components/home-curiosity-bridge/home-curiosity-bridge.component';
+import { HomeExperienceHeroComponent } from './components/home-experience-hero/home-experience-hero.component';
+import { HomeInvitationCtaComponent } from './components/home-invitation-cta/home-invitation-cta.component';
+import { HomeOpenPrinciplesComponent } from './components/home-open-principles/home-open-principles.component';
+import { HomeProofShowcaseComponent } from './components/home-proof-showcase/home-proof-showcase.component';
+import { HomeWorkflowRailComponent } from './components/home-workflow-rail/home-workflow-rail.component';
 import {
   HomeFounderNote,
   HomeHeroContent,
   HomeLinkPill,
   HomePrincipleCard,
+  HomeProofKind,
   HomeProofSection,
   HomeWorkflowStep
 } from './home-content.models';
-
+import { Observable } from 'rxjs';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-home',
   styleUrls: ['./home.component.scss'],
   templateUrl: './home.component.html',
-  providers: [
-    PatchDetailDataService,
-    RackDetailDataService,
-    ModuleDetailDataService,
-    ApplicationStatisticsService
+  standalone: true,
+  imports: [
+    CommonModule,
+    BrandPrimaryButtonComponent,
+    DeviceFrameWrapperModule,
+    HomeCuriosityBridgeComponent,
+    HomeExperienceHeroComponent,
+    HomeInvitationCtaComponent,
+    HomeOpenPrinciplesComponent,
+    HomeProofShowcaseComponent,
+    HomeWorkflowRailComponent,
+    StatisticsComponent,
   ],
-  standalone: false
+  providers: [ApplicationStatisticsService]
 })
-export class HomeComponent extends SubManager {
-  readonly patchViewConfig: PatchMinimalViewConfig = {
-    ...defaultPatchMinimalViewConfig,
-    hideButtons: true,
-  };
-  readonly rackViewConfig: RackMinimalViewConfig = {
-    ...defaultRackMinimalViewConfig,
-  };
-  readonly moduleViewConfig: ModuleMinimalViewConfig = {
-    ...defaultModuleMinimalViewConfig,
-    hidePanelsOptions: true,
-    bigPanelImage: false,
-    ellipseDescription: true,
-    hideBySameManufacturer: true,
-    hidePatchedIn: false,
-    hideRackedIn: false
-  };
-  
+export class HomeComponent {
   readonly heroContent: HomeHeroContent = {
     eyebrow: '',
     title: 'Your operating system for everything modular.',
@@ -90,7 +66,22 @@ export class HomeComponent extends SubManager {
       alt: 'Rack detail view showing arrangement and module placements'
     }
   };
-  
+
+  readonly proofPreviewImages: Record<HomeProofKind, { src: string; alt: string }> = {
+    patch: {
+      src: '/assets/screenshots/major-area-screenshots/04-patches.jpg',
+      alt: 'Patch detail preview showing notes and controls'
+    },
+    rack: {
+      src: '/assets/screenshots/major-area-screenshots/07-rack-details.jpg',
+      alt: 'Rack planner preview showing arranged modules'
+    },
+    module: {
+      src: '/assets/screenshots/major-area-screenshots/03-module-details.jpg',
+      alt: 'Module library preview showing specs and panel image'
+    }
+  };
+
   readonly principleCards: HomePrincipleCard[] = [
     {
       icon: 'tips_and_updates',
@@ -108,7 +99,7 @@ export class HomeComponent extends SubManager {
       description: 'Keep drafts private and publish finished work when you are ready.'
     }
   ];
-  
+
   readonly workflowSteps: HomeWorkflowStep[] = [
     {
       kicker: 'step 01',
@@ -131,7 +122,7 @@ export class HomeComponent extends SubManager {
       description: 'Open a past session and rebuild with perfect accuracy for your next rehearsal gig, or share your work with the community when you are ready.'
     }
   ];
-  
+
   readonly proofSections: HomeProofSection[] = [
     {
       kind: 'patch',
@@ -158,7 +149,7 @@ export class HomeComponent extends SubManager {
       tone: 'module'
     }
   ];
-  
+
   readonly communityLinks: HomeLinkPill[];
   readonly showInsightsPageEntry: boolean;
   private readonly browseLinks: HomeLinkPill[] = [
@@ -182,7 +173,7 @@ export class HomeComponent extends SubManager {
   readonly insightsTitle = 'Open the full insights page';
   readonly insightsDescription =
     'Start with the homepage snapshot, then jump into the dedicated insights page for the fuller read on catalogue growth, activity, and sharing patterns.';
-  
+
   readonly userStories: HomeFounderNote[] = [
     {
       quote: 'opened a patch from 6 weeks ago before a set, followed my saved steps, and got back to the sound fast.',
@@ -205,19 +196,12 @@ export class HomeComponent extends SubManager {
       role: 'sound designer'
     }
   ];
-  
-  private readonly delayTime = 500;
 
   constructor(
-    readonly patchDetailDataService: PatchDetailDataService,
-    readonly rackDetailDataService: RackDetailDataService,
-    readonly moduleDetailDataService: ModuleDetailDataService,
     readonly applicationStatisticsService: ApplicationStatisticsService,
     public readonly appState: AppStateService,
     readonly seoAndUtilsService: SeoAndUtilsService,
-    @Inject(PLATFORM_ID) private platformId: object
   ) {
-    super();
     this.showInsightsPageEntry = this.appState.isDev;
     this.communityLinks = this.showInsightsPageEntry
       ? [
@@ -240,34 +224,5 @@ export class HomeComponent extends SubManager {
     };
 
     this.seoAndUtilsService.updateSeo(seoData, 'Home');
-
-    if (isPlatformBrowser(this.platformId)) {
-      timer(this.delayTime * 2)
-        .pipe(
-          take(1),
-          takeUntil(this.destroy$)
-        )
-        .subscribe(() => {
-          this.patchDetailDataService.updateSinglePatchData$.next(5);
-        });
-
-      timer(this.delayTime * 4)
-        .pipe(
-          take(1),
-          takeUntil(this.destroy$)
-        )
-        .subscribe(() => {
-          this.moduleDetailDataService.updateSingleModuleData$.next(1025);
-        });
-
-      timer(this.delayTime * 6)
-        .pipe(
-          take(1),
-          takeUntil(this.destroy$)
-        )
-        .subscribe(() => {
-          this.rackDetailDataService.updateSingleRackData$.next(265);
-        });
-    }
   }
 }

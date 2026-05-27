@@ -1,38 +1,22 @@
 import { HomeComponent } from './home.component';
 import { Subject } from 'rxjs';
-import { fakeAsync, tick } from '@angular/core/testing';
-import { PLATFORM_ID } from '@angular/core';
 
 describe('HomeComponent', () => {
   let comp: HomeComponent;
-  let mockPatchSvc: any;
-  let mockRackSvc: any;
-  let mockModuleSvc: any;
   let mockAppStatSvc: any;
   let mockAppState: any;
   let mockSeoSvc: any;
 
   beforeEach(() => {
-    mockPatchSvc = { updateSinglePatchData$: new Subject<number>() };
-    mockRackSvc = { updateSingleRackData$: new Subject<number>() };
-    mockModuleSvc = { updateSingleModuleData$: new Subject<number>() };
     mockAppStatSvc = { teaser$: new Subject<any>() };
     mockAppState = { isDev: false };
     mockSeoSvc = { updateSeo: jasmine.createSpy('updateSeo') };
 
     comp = new HomeComponent(
-      mockPatchSvc,
-      mockRackSvc,
-      mockModuleSvc,
       mockAppStatSvc,
       mockAppState,
       mockSeoSvc,
-      'server' as unknown as object
     );
-  });
-
-  afterEach(() => {
-    comp.ngOnDestroy();
   });
 
   it('creates without error', () => {
@@ -44,10 +28,6 @@ describe('HomeComponent', () => {
       jasmine.objectContaining({ title: 'Patcher home' }),
       'Home'
     );
-  });
-
-  it('patchViewConfig has hideButtons=true', () => {
-    expect(comp.patchViewConfig.hideButtons).toBeTrue();
   });
 
   it('principleCards has 3 items', () => {
@@ -73,22 +53,17 @@ describe('HomeComponent', () => {
   it('communityLinks includes insights when isDev=true', () => {
     mockAppState.isDev = true;
     const comp2 = new HomeComponent(
-      mockPatchSvc,
-      mockRackSvc,
-      mockModuleSvc,
       mockAppStatSvc,
       mockAppState,
       mockSeoSvc,
-      'server' as unknown as object
     );
     expect(comp2.communityLinks.some(l => l.href === '/info/insights')).toBeTrue();
-    comp2.ngOnDestroy();
   });
 
-  it('rackViewConfig and moduleViewConfig are defined with sensible defaults', () => {
-    expect(comp.rackViewConfig).toBeDefined();
-    expect(comp.moduleViewConfig.hidePanelsOptions).toBeTrue();
-    expect(comp.moduleViewConfig.bigPanelImage).toBeFalse();
+  it('proofPreviewImages has screenshots for each showcase kind', () => {
+    expect(comp.proofPreviewImages.patch.src).toContain('04-patches');
+    expect(comp.proofPreviewImages.rack.src).toContain('07-rack-details');
+    expect(comp.proofPreviewImages.module.src).toContain('03-module-details');
   });
 
   it('proofSections has at least one item', () => {
@@ -105,37 +80,4 @@ describe('HomeComponent', () => {
     expect(call.type).toBe('website');
     expect(call.keywords).toContain('eurorack');
   });
-
-  it('does not fire data-service updates on server platform', fakeAsync(() => {
-    const patchSpy = spyOn(mockPatchSvc.updateSinglePatchData$, 'next');
-    const moduleSpy = spyOn(mockModuleSvc.updateSingleModuleData$, 'next');
-    const rackSpy = spyOn(mockRackSvc.updateSingleRackData$, 'next');
-
-    const serverComp = new HomeComponent(
-      mockPatchSvc, mockRackSvc, mockModuleSvc, mockAppStatSvc,
-      mockAppState, mockSeoSvc, 'server' as unknown as object
-    );
-    tick(5000);
-
-    expect(patchSpy).not.toHaveBeenCalled();
-    expect(moduleSpy).not.toHaveBeenCalled();
-    expect(rackSpy).not.toHaveBeenCalled();
-    serverComp.ngOnDestroy();
-  }));
-
-  it('fires preview data triggers after timers on browser platform', fakeAsync(() => {
-    const patchSpy = spyOn(mockPatchSvc.updateSinglePatchData$, 'next');
-    const moduleSpy = spyOn(mockModuleSvc.updateSingleModuleData$, 'next');
-    const rackSpy = spyOn(mockRackSvc.updateSingleRackData$, 'next');
-
-    const browserComp = new HomeComponent(
-      mockPatchSvc, mockRackSvc, mockModuleSvc, mockAppStatSvc,
-      mockAppState, mockSeoSvc, 'browser' as unknown as object
-    );
-
-    tick(1001);  expect(patchSpy).toHaveBeenCalledWith(5);
-    tick(1000);  expect(moduleSpy).toHaveBeenCalledWith(1025);
-    tick(1000);  expect(rackSpy).toHaveBeenCalledWith(265);
-    browserComp.ngOnDestroy();
-  }));
 });

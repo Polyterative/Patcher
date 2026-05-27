@@ -1,4 +1,3 @@
-import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { BehaviorSubject } from 'rxjs';
@@ -18,8 +17,7 @@ describe('HomeExperienceHeroComponent', () => {
     isAdmin$ = new BehaviorSubject(false);
 
     await TestBed.configureTestingModule({
-      declarations: [HomeExperienceHeroComponent],
-      imports: [RouterTestingModule],
+      imports: [HomeExperienceHeroComponent, RouterTestingModule],
       providers: [
         {
           provide: AppShellLayoutService,
@@ -42,7 +40,6 @@ describe('HomeExperienceHeroComponent', () => {
           }
         }
       ],
-      schemas: [NO_ERRORS_SCHEMA]
     }).compileComponents();
 
     fixture = TestBed.createComponent(HomeExperienceHeroComponent);
@@ -51,8 +48,17 @@ describe('HomeExperienceHeroComponent', () => {
       title: 'Patch. Share. Discover.',
       subtitle: 'Make patches.\nBrowse racks.',
       mainVisual: {
-        src: '',
-        alt: ''
+        src: '/assets/screenshots/major-area-screenshots/04-patches.jpg',
+        alt: 'Example hero visual',
+        caption: 'Capture the patch and come back later.'
+      },
+      floatingVisualA: {
+        src: '/assets/screenshots/major-area-screenshots/03-module-details.jpg',
+        alt: 'Example floating visual A'
+      },
+      floatingVisualB: {
+        src: '/assets/screenshots/major-area-screenshots/07-rack-details.jpg',
+        alt: 'Example floating visual B'
       }
     };
     fixture.detectChanges();
@@ -110,5 +116,12 @@ describe('HomeExperienceHeroComponent', () => {
 
   it('wideShellTargets is a non-empty array', () => {
     expect(fixture.componentInstance.wideShellTargets.length).toBeGreaterThan(0);
+  });
+
+  it('renders the hero screenshots', () => {
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('.visual-main img')?.getAttribute('src')).toContain('/assets/screenshots/major-area-screenshots/04-patches.jpg');
+    expect(host.querySelector('.visual-float.visual-a img')?.getAttribute('src')).toContain('/assets/screenshots/major-area-screenshots/03-module-details.jpg');
+    expect(host.querySelector('.visual-float.visual-b img')?.getAttribute('src')).toContain('/assets/screenshots/major-area-screenshots/07-rack-details.jpg');
   });
 });

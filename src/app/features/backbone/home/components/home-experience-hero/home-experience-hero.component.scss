@@ -217,22 +217,6 @@ h1 {
   align-content: start;
 }
 
-.patch-graph-shell {
-  display: block;
-  width: 100%;
-  border: 1px solid var(--home-border);
-  border-radius: 0.42rem;
-  overflow: hidden;
-  background: transparent;
-  contain: layout inline-size;
-}
-
-.patch-graph-shell app-patch-graph {
-  display: block;
-  width: 100%;
-  min-height: 19rem;
-}
-
 .visual-main {
   margin: 0;
   overflow: hidden;

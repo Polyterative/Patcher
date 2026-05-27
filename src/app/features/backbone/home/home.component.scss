@@ -133,13 +133,13 @@ section {
   zoom: var(--embedded-preview-scale);
 }
 
-.frame-host app-patch-browser-patch-detail,
-.frame-host app-module-browser-detail,
-.frame-host app-rack-browser-rack-detail {
+.frame-host .showcase-preview {
   display: block;
   width: 100%;
   max-width: 100%;
   min-width: 0;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
 }
 
 .frame-placeholder {

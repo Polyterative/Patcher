@@ -1,7 +1,18 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { HomeComponent } from './features/backbone/home/home.component';
 
 const routes: Routes = [
+  {
+    path: '',
+    pathMatch: 'full',
+    component: HomeComponent
+  },
+  {
+    path: 'home',
+    pathMatch: 'full',
+    component: HomeComponent
+  },
   {
     path: 'admin',
     loadChildren: () => import('./features/backend/backend.module').then(m => m.BackendModule)

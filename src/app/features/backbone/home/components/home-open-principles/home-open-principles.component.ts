@@ -3,6 +3,7 @@ import {
   Component,
   Input
 } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
 import { HomePrincipleCard } from '../../home-content.models';
 import { buildHomeTextSegments } from '../../home-text-segments.util';
 
@@ -12,7 +13,8 @@ import { buildHomeTextSegments } from '../../home-text-segments.util';
   selector: 'app-home-open-principles',
   templateUrl: './home-open-principles.component.html',
   styleUrls: ['./home-open-principles.component.scss'],
-  standalone: false
+  standalone: true,
+  imports: [MatIconModule]
 })
 export class HomeOpenPrinciplesComponent {
   @Input() sectionTitle = '';

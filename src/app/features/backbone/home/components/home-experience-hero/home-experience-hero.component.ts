@@ -3,6 +3,8 @@ import {
   Component,
   Input
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import {
   buildWideShellAccountLinks,
@@ -24,7 +26,7 @@ import {
 } from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.component';
 import { AppShellLayoutService } from 'src/app/shared-interproject/app-shell-layout.service';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
-import { HomeHeroContent } from '../../home-content.models';
+import { HomeHeroContent, HomeHeroVisual } from '../../home-content.models';
 import { buildHomeTextSegments } from '../../home-text-segments.util';
 
 
@@ -33,7 +35,8 @@ import { buildHomeTextSegments } from '../../home-text-segments.util';
   selector: 'app-home-experience-hero',
   templateUrl: './home-experience-hero.component.html',
   styleUrls: ['./home-experience-hero.component.scss'],
-  standalone: false
+  standalone: true,
+  imports: [CommonModule, RouterModule]
 })
 export class HomeExperienceHeroComponent {
   private _content: HomeHeroContent = {
@@ -116,6 +119,10 @@ export class HomeExperienceHeroComponent {
   
   getSubtitleSegments(line: string) {
     return this.subtitleSegmentsByLine.get(line) ?? [];
+  }
+
+  getVisualCaptionSegments(visual: HomeHeroVisual) {
+    return buildHomeTextSegments(visual.caption ?? '', visual.captionKeywords ?? []);
   }
 
   trackByNavLink(index: number, item: RouteClickableLink): string {

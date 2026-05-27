@@ -64,8 +64,31 @@
   </div>
   
   <div class="hero-visuals">
-    <div class="patch-graph-shell">
-      <app-patch-graph [progressiveRender]="true"></app-patch-graph>
-    </div>
+    <figure class="visual-main">
+      <img [src]="content.mainVisual.src" [alt]="content.mainVisual.alt" loading="eager">
+      @if (content.mainVisual.caption) {
+        <figcaption class="visual-caption">
+          @for (segment of getVisualCaptionSegments(content.mainVisual); track $index) {
+            @if (segment.highlighted) {
+              <strong>{{ segment.text }}</strong>
+            } @else {
+              {{ segment.text }}
+            }
+          }
+        </figcaption>
+      }
+    </figure>
+
+    @if (content.floatingVisualA) {
+      <figure class="visual-float visual-a" aria-hidden="true">
+        <img [src]="content.floatingVisualA.src" [alt]="content.floatingVisualA.alt" loading="lazy">
+      </figure>
+    }
+
+    @if (content.floatingVisualB) {
+      <figure class="visual-float visual-b" aria-hidden="true">
+        <img [src]="content.floatingVisualB.src" [alt]="content.floatingVisualB.alt" loading="lazy">
+      </figure>
+    }
   </div>
 </section>

@@ -12,7 +12,7 @@ import { buildHomeTextSegments } from '../../home-text-segments.util';
   selector: 'app-home-workflow-rail',
   templateUrl: './home-workflow-rail.component.html',
   styleUrls: ['./home-workflow-rail.component.scss'],
-  standalone: false
+  standalone: true
 })
 export class HomeWorkflowRailComponent {
   @Input() sectionTitle = '';
