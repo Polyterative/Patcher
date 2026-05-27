@@ -3,10 +3,7 @@ import {
   Component,
   Input
 } from '@angular/core';
-import {
-  fadeInOnEnterAnimation,
-  fadeOutOnLeaveAnimation
-} from 'angular-animations';
+import { animate, style, transition, trigger } from '@angular/animations';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import {
   defaultPatchMinimalViewConfig,
@@ -21,8 +18,17 @@ import { Patch } from 'src/app/models/patch';
   templateUrl: './patch-composite.component.html',
   styleUrls: ['./patch-composite.component.scss'],
   animations: [
-    fadeInOnEnterAnimation({duration: 200, anchor: 'enter'}),
-    fadeOutOnLeaveAnimation({duration: 150, anchor: 'exit'})
+    trigger('enter', [
+      transition(':enter', [
+        style({opacity: 0}),
+        animate('200ms ease', style({opacity: 1}))
+      ])
+    ]),
+    trigger('exit', [
+      transition(':leave', [
+        animate('150ms ease', style({opacity: 0}))
+      ])
+    ])
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false

@@ -5,6 +5,7 @@ import {
   inject
 } from '@angular/core';
 import {
+  AsyncPipe,
   isPlatformBrowser
 } from '@angular/common';
 import {
@@ -12,7 +13,8 @@ import {
   NavigationEnd,
   NavigationError,
   NavigationStart,
-  Router
+  Router,
+  RouterOutlet
 } from '@angular/router';
 import {
   combineLatest
@@ -26,6 +28,14 @@ import {
 } from 'rxjs/operators';
 import { AppShellLayoutService } from './shared-interproject/app-shell-layout.service';
 import { AppViewportService } from './shared-interproject/app-viewport.service';
+import { BackboneModule } from './features/backbone/backbone.module';
+import { ToolbarModule } from './features/backbone/toolbar/toolbar.module';
+import { ScreenWrapperComponent } from './shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
+import { AppFaqComponent } from './components/shared-atoms/app-faq/app-faq.component';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatIconModule } from '@angular/material/icon';
+import { SelectionPanelOutletComponent } from './components/patch-parts/selection-panel-outlet/selection-panel-outlet.component';
+import { DiscoveryTipSurfaceComponent } from './shared-interproject/discovery-tips/discovery-tip-surface/discovery-tip-surface.component';
 
 
 @Component({
@@ -36,7 +46,19 @@ import { AppViewportService } from './shared-interproject/app-viewport.service';
   host: {
     '[@.disabled]': 'animationsDisabled'
   },
-  standalone: false
+  standalone: true,
+  imports: [
+    BackboneModule,
+    ToolbarModule,
+    RouterOutlet,
+    MatProgressBarModule,
+    MatIconModule,
+    ScreenWrapperComponent,
+    AppFaqComponent,
+    AsyncPipe,
+    SelectionPanelOutletComponent,
+    DiscoveryTipSurfaceComponent,
+  ]
 })
 export class AppComponent {
   readonly routeLoading$;

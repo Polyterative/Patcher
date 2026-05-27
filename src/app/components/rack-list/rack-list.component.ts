@@ -4,10 +4,7 @@ import {
   Input,
   OnInit
 } from '@angular/core';
-import {
-  fadeInOnEnterAnimation,
-  fadeOutOnLeaveAnimation
-} from 'angular-animations';
+import { animate, style, transition, trigger } from '@angular/animations';
 import {
   BehaviorSubject,
   combineLatest,
@@ -32,15 +29,17 @@ import { RackMinimal } from 'src/app/models/rack';
   templateUrl: './rack-list.component.html',
   styleUrls: ['./rack-list.component.scss'],
   animations: [
-    fadeInOnEnterAnimation({
-      anchor: 'enter',
-      duration: 225,
-      animateChildren: 'after'
-    }),
-    fadeOutOnLeaveAnimation({
-      anchor: 'leave',
-      duration: 1
-    })
+    trigger('enter', [
+      transition(':enter', [
+        style({opacity: 0}),
+        animate('225ms ease', style({opacity: 1}))
+      ])
+    ]),
+    trigger('leave', [
+      transition(':leave', [
+        animate('1ms ease', style({opacity: 0}))
+      ])
+    ])
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   viewProviders: [LocalDataFilterService],

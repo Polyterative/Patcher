@@ -16,16 +16,7 @@ import {
   TagVoteCount,
   TagVoteDataService
 } from 'src/app/components/module-parts/module-minimal/module-tags/tag-vote/tag-vote-data.service';
-import {
-  fadeInOnEnterAnimation,
-  fadeOutOnLeaveAnimation
-} from 'angular-animations';
-import {
-  animate,
-  style,
-  transition,
-  trigger
-} from '@angular/animations';
+import { animate, style, transition, trigger } from '@angular/animations';
 import { MinimalModule } from 'src/app/models/module';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import {
@@ -54,15 +45,17 @@ export interface ProposerTagGroup {
   templateUrl: './module-tags.component.html',
   styleUrls: ['./module-tags.component.scss'],
   animations: [
-    fadeInOnEnterAnimation({
-      anchor: 'enter',
-      duration: 225,
-      animateChildren: 'after'
-    }),
-    fadeOutOnLeaveAnimation({
-      anchor: 'leave',
-      duration: 1
-    }),
+    trigger('enter', [
+      transition(':enter', [
+        style({opacity: 0}),
+        animate('225ms ease', style({opacity: 1}))
+      ])
+    ]),
+    trigger('leave', [
+      transition(':leave', [
+        animate('1ms ease', style({opacity: 0}))
+      ])
+    ]),
     trigger('tagChooserPanel', [
       transition(':enter', [
         style({

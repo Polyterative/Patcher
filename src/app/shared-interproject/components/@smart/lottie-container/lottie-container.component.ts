@@ -7,7 +7,7 @@ import {
   PLATFORM_ID
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { fadeInOnEnterAnimation } from 'angular-animations';
+import { animate, style, transition, trigger } from '@angular/animations';
 import { AnimationOptions } from 'ngx-lottie';
 
 
@@ -16,12 +16,12 @@ import { AnimationOptions } from 'ngx-lottie';
   templateUrl: './lottie-container.component.html',
   styleUrls: ['./lottie-container.component.scss'],
   animations: [
-    fadeInOnEnterAnimation({
-      duration: 1000,
-      delay: 0,
-      animateChildren: 'together',
-      anchor: 'enter'
-    })
+    trigger('enter', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('1000ms ease', style({ opacity: 1 }))
+      ])
+    ])
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false

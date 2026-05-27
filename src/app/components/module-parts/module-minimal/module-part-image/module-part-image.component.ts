@@ -9,7 +9,7 @@ import {
   Input,
   OnChanges
 } from '@angular/core';
-import { fadeInOnEnterAnimation } from 'angular-animations';
+import { animate, style, transition, trigger } from '@angular/animations';
 import { TooltipPosition } from '@angular/material/tooltip';
 import { MinimalModule } from 'src/app/models/module';
 import { AppViewportService } from 'src/app/shared-interproject/app-viewport.service';
@@ -36,11 +36,12 @@ export function resolveSurfaceTooltipPosition(
   styleUrls: ['./module-part-image.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
-    fadeInOnEnterAnimation({
-      anchor: 'enter',
-      duration: 725,
-      animateChildren: 'after'
-    })
+    trigger('enter', [
+      transition(':enter', [
+        style({opacity: 0}),
+        animate('725ms ease', style({opacity: 1}))
+      ])
+    ])
   ],
   standalone: false
 })
