@@ -1,8 +1,8 @@
 import {
   ChangeDetectionStrategy,
-  Component,
-  OnInit
+  Component
 } from '@angular/core';
+import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { LocalDataFilterService } from '../local-data-filter.service';
 
 
@@ -11,13 +11,9 @@ import { LocalDataFilterService } from '../local-data-filter.service';
   templateUrl: './local-data-filter.component.html',
   styleUrls: ['./local-data-filter.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+  standalone: true,
+  imports: [MatFormEntityComponent]
 })
-export class LocalDataFilterComponent implements OnInit {
-  
+export class LocalDataFilterComponent {
   constructor(public dataService: LocalDataFilterService) { }
-  
-  ngOnInit(): void {
-  }
-  
 }

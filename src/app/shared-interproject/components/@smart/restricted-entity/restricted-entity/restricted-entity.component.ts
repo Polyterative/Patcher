@@ -1,9 +1,9 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Input,
-  OnInit
+  Input
 } from '@angular/core';
+import { FlexLayoutModule } from '@angular/flex-layout';
 
 
 @Component({
@@ -11,14 +11,9 @@ import {
   templateUrl: './restricted-entity.component.html',
   styleUrls: ['./restricted-entity.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+  standalone: true,
+  imports: [FlexLayoutModule]
 })
-export class RestrictedEntityComponent implements OnInit {
+export class RestrictedEntityComponent {
   @Input() disabled: boolean = false;
-  
-  constructor() { }
-  
-  ngOnInit(): void {
-  }
-  
 }

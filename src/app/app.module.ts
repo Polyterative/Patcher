@@ -21,7 +21,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { AdviceTooltipModule } from 'src/app/shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module';
+import { AdviceTooltipComponent } from 'src/app/shared-interproject/components/@visual/advice-tooltip/advice-tooltip/advice-tooltip.component';
 import build from 'src/build';
 import { environment } from 'src/environments/environment';
 
@@ -92,7 +92,7 @@ const matDatepickerLocaleIT = {
     MatToolbarModule,
     FlexLayoutModule,
     MatCardModule,
-    AdviceTooltipModule,
+    AdviceTooltipComponent,
     MatDividerModule,
     BackboneModule,
     AppFaqComponent,

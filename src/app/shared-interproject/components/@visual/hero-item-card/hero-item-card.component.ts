@@ -1,8 +1,8 @@
 import {
   ChangeDetectionStrategy,
-  Component,
-  OnInit
+  Component
 } from '@angular/core';
+import { CleanCardComponent } from '../clean-card/clean-card.component';
 
 
 @Component({
@@ -10,13 +10,7 @@ import {
   templateUrl: './hero-item-card.component.html',
   styleUrls: ['./hero-item-card.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+  standalone: true,
+  imports: [CleanCardComponent]
 })
-export class HeroItemCardComponent implements OnInit {
-  
-  constructor() { }
-  
-  ngOnInit(): void {
-  }
-  
-}
+export class HeroItemCardComponent {}

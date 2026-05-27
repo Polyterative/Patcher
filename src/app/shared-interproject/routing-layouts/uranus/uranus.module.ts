@@ -11,7 +11,7 @@ import {
 import { ScreenWrapperComponent } from '../../components/@visual/screen-wrapper/screen-wrapper.component';
 import { UranusComponent } from './uranus.component';
 import { FaqComponent } from "src/app/shared-interproject/components/@visual/faq/faq.component";
-import { HeroContentCardModule } from "src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module";
+import { HeroContentCardComponent } from "src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component";
 import { AppFaqComponent } from "src/app/components/shared-atoms/app-faq/app-faq.component";
 
 
@@ -24,7 +24,7 @@ import { AppFaqComponent } from "src/app/components/shared-atoms/app-faq/app-faq
     ScreenWrapperComponent,
     MatToolbarModule,
     FaqComponent,
-    HeroContentCardModule,
+    HeroContentCardComponent,
     AppFaqComponent
   ],
   providers:    [],

@@ -10,7 +10,7 @@ import {
 import { MatPaginatorModule } from "@angular/material/paginator";
 import { UserAreaDataService } from "src/app/features/routes/user-area/user-area-data.service";
 import { Animations } from "src/app/shared-interproject/SharedConstants";
-import { HeroContentCardModule } from "src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module";
+import { HeroContentCardComponent } from "src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component";
 import { CommentsItemBlockComponent } from "src/app/components/shared-atoms/comments/comments-root/comments-item-block/comments-item-block.component";
 import {
   CommentViewConfig,
@@ -40,7 +40,7 @@ interface FilterOption {
   imports: [
     AsyncPipe,
     NgTemplateOutlet,
-    HeroContentCardModule,
+    HeroContentCardComponent,
     CommentsItemBlockComponent,
     MatPaginatorModule,
     MatChipsModule,

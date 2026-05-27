@@ -7,7 +7,6 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import { AppShellLayoutService } from 'src/app/shared-interproject/app-shell-layout.service';
-import { HeroContentCardModule } from './hero-content-card.module';
 import { HeroContentCardComponent } from './hero-content-card.component';
 
 
@@ -24,7 +23,7 @@ describe('HeroContentCardComponent', () => {
       imports: [
         NoopAnimationsModule,
         RouterTestingModule,
-        HeroContentCardModule
+        HeroContentCardComponent
       ],
       providers: [
         {

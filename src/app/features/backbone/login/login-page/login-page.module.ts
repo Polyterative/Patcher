@@ -8,7 +8,7 @@ import { EmptyStateComponent } from 'src/app/shared-interproject/components/@sma
 import { LottieContainerModule } from 'src/app/shared-interproject/components/@smart/lottie-container/lottie-container.module';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
-import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
+import { HeroContentCardComponent } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component';
 import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { LoginEmailModule } from './login-email/login-email.module';
 import { LoginPageComponent } from './login-page.component';
@@ -32,7 +32,7 @@ import { SSOButtonsComponent } from '../sso-buttons/sso-buttons.component';
     BrandPrimaryButtonComponent,
     EmptyStateComponent,
     ScreenWrapperComponent,
-    HeroContentCardModule,
+    HeroContentCardComponent,
     FlexLayoutModule,
     LoginEmailModule,
     RouterModule,

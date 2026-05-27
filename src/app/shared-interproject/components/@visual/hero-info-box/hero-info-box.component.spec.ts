@@ -27,9 +27,6 @@ describe('HeroInfoBoxComponent', () => {
     expect(comp.dataService).toBe(service);
   });
 
-  it('ngOnInit does not throw', () => {
-    expect(() => comp.ngOnInit()).not.toThrow();
-  });
 
   it('infoText$ is defined in the injected service', () => {
     expect((service as any).infoText$).toBeDefined();

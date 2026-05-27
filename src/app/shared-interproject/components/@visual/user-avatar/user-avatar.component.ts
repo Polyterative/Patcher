@@ -5,6 +5,9 @@ import {
   Input,
   Output
 } from '@angular/core';
+import { FlexLayoutModule } from '@angular/flex-layout';
+import { BrandPrimaryButtonComponent } from '../brand-primary-button/brand-primary-button.component';
+import { CleanCardComponent } from '../clean-card/clean-card.component';
 
 
 /**
@@ -15,7 +18,8 @@ import {
   templateUrl: './user-avatar.component.html',
   styleUrls: ['./user-avatar.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+  standalone: true,
+  imports: [FlexLayoutModule, BrandPrimaryButtonComponent, CleanCardComponent]
 })
 export class UserAvatarComponent {
   @Output()

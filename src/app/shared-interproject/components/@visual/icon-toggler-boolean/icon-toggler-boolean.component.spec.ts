@@ -21,7 +21,4 @@ describe('IconTogglerBooleanComponent', () => {
     expect(comp.iconOff).toBeUndefined();
   });
 
-  it('ngOnInit runs without error', () => {
-    expect(() => comp.ngOnInit()).not.toThrow();
-  });
 });

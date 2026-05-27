@@ -9,7 +9,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { UrlCreatorService } from 'src/app/features/backend/url-creator.service';
 import { BrandPrimaryButtonComponent } from '../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { LibGraphModule } from '../../shared-interproject/components/@visual/graph-view/lib-graph.module';
-import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
+import { HeroContentCardComponent } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component';
 import { AdminGuardService } from './admin-guard.service';
 import { AdminPanelRootComponent } from './admin-panel-root/admin-panel-root.component';
 import { AdminFlagsComponent } from './admin-panel-root/admin-flags/admin-flags.component';
@@ -38,7 +38,7 @@ import { SupabaseService } from './supabase.service';
     FlexLayoutModule,
     BrandPrimaryButtonComponent,
     LibGraphModule,
-    HeroContentCardModule,
+    HeroContentCardComponent,
     MatButtonToggleModule,
     MatFormFieldModule,
     MatSelectModule

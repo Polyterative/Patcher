@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import { PhotosService } from 'src/app/shared-interproject/components/@visual/photo/photos.service';
 
@@ -7,10 +8,11 @@ import { PhotosService } from 'src/app/shared-interproject/components/@visual/ph
   templateUrl:     './photo.component.html',
   styleUrls:       ['./photo.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  // ,
+  standalone: true,
+  imports: [CommonModule],
   providers: [PhotosService]
 })
-export class PhotoComponent implements OnInit {
+export class PhotoComponent {
   @Input()
   set path(path: string) {
     this.dataService.url$.next(path);
@@ -22,8 +24,4 @@ export class PhotoComponent implements OnInit {
     public dataService: PhotosService,
     public appState: AppStateService
   ) { }
-  
-  ngOnInit(): void {
-  }
-  
 }

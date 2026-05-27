@@ -15,14 +15,15 @@ import { ModuleBrowserModule } from 'src/app/features/module-browser/module-brow
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { DialogInfoBoxComponent } from 'src/app/shared-interproject/components/@visual/dialog-info-box/dialog-info-box.component';
-import { FlexboxRowFastModule } from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
-import { HeroClickableTitleModule } from 'src/app/shared-interproject/components/@visual/hero-clickable-title/hero-clickable-title.module';
-import { HeroInfoBoxModule } from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
+import { FlexboxRowFastComponent } from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.component';
+import { HeroClickableTitleComponent } from 'src/app/shared-interproject/components/@visual/hero-clickable-title/hero-clickable-title.component';
+import { HeroInfoBoxComponent } from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.component';
+import { HeroInfoBoxTextDirective } from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box-text.directive';
 import { AutoContentLoadingIndicatorComponent } from '../../shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator/auto-content-loading-indicator.component';
 import { GeneralContextMenuModule } from '../../shared-interproject/components/@smart/general-context-menu/general-context-menu.module';
 import { BrandLogoModule } from '../../shared-interproject/components/@visual/brand-logo/brand-logo.module';
 import { CleanCardComponent } from '../../shared-interproject/components/@visual/clean-card/clean-card.component';
-import { HeroContentCardModule } from '../../shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
+import { HeroContentCardComponent } from '../../shared-interproject/components/@visual/hero-content-card/hero-content-card.component';
 import { ScreenWrapperComponent } from '../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { RackMicroModule } from '../rack-micro/rack-micro.module';
 import { MapToModulePipe } from './map-to-module.pipe';
@@ -46,17 +47,17 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { AdviceTooltipModule } from "src/app/shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module";
+import { AdviceTooltipComponent } from "src/app/shared-interproject/components/@visual/advice-tooltip/advice-tooltip/advice-tooltip.component";
 import { MatBadge } from "@angular/material/badge";
 import { CalculateRowInformationPipe } from "src/app/components/rack-parts/rack-editor/calculate-row-information.pipe";
 import { RackImageComponent } from "src/app/components/rack-parts/rack-image/rack-image.component";
-import { LabelValueShowcaseModule } from "src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module";
+import { LabelValueShowcaseComponent } from "src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.component";
 import { LibShowcaseGridComponent, } from "src/app/components/rack-parts/rack-editor/lib-showcase-grid/lib-showcase-grid.component";
 import { TotalPowerOfRackPipe } from "src/app/components/rack-parts/total-power-of-rack.pipe";
 import { TotalMissingPowerDataInRackPipe } from "src/app/components/rack-parts/total-missing-power-data-in-rack.pipe";
 import { TotalDepthOfRackPipe } from "src/app/components/rack-parts/total-depth-of-rack.pipe";
 import { TotalWeightOfRackPipe } from "src/app/components/rack-parts/total-weight-of-rack.pipe";
-import { EditFabModule } from "src/app/shared-interproject/components/@visual/edit-fab/edit-fab.module";
+import { EditFabComponent } from "src/app/shared-interproject/components/@visual/edit-fab/edit-fab.component";
 import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-state-tips/empty-state-tips.component';
 import { InputDialogModule } from "src/app/shared-interproject/dialogs/input-dialog/input-dialog.module";
 
@@ -113,11 +114,12 @@ import { InputDialogModule } from "src/app/shared-interproject/dialogs/input-dia
     MatDialogModule,
     SharedAtomsModule,
     ModuleBrowserModule,
-    FlexboxRowFastModule,
+    FlexboxRowFastComponent,
     ModulePartsModule,
-    HeroInfoBoxModule,
-    HeroClickableTitleModule,
-    HeroContentCardModule,
+    HeroInfoBoxComponent,
+    HeroInfoBoxTextDirective,
+    HeroClickableTitleComponent,
+    HeroContentCardComponent,
     CleanCardComponent,
     DragDropModule,
     BrandLogoModule,
@@ -128,18 +130,18 @@ import { InputDialogModule } from "src/app/shared-interproject/dialogs/input-dia
     MatSlideToggleModule,
     MatButtonToggleModule,
     StatisticsComponent,
-    AdviceTooltipModule,
+    AdviceTooltipComponent,
     DialogInfoBoxComponent,
     MatBadge,
     CalculateRowInformationPipe,
     RackImageComponent,
-    LabelValueShowcaseModule,
+    LabelValueShowcaseComponent,
     LibShowcaseGridComponent,
     TotalPowerOfRackPipe,
     TotalMissingPowerDataInRackPipe,
     TotalDepthOfRackPipe,
     TotalWeightOfRackPipe,
-    EditFabModule,
+    EditFabComponent,
     EmptyStateTipsComponent,
     InputDialogModule,
   ]

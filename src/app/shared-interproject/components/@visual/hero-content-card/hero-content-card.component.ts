@@ -10,7 +10,7 @@ import {
   ViewChild,
   inject
 } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { fadeInOnEnterAnimation } from 'angular-animations';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import {
@@ -19,7 +19,8 @@ import {
 } from 'src/app/features/backbone/toolbar/toolbar-link-data';
 import {
   NavigationEnd,
-  Router
+  Router,
+  RouterModule
 } from '@angular/router';
 import {
   combineLatest,
@@ -42,8 +43,12 @@ import {
   getRouteClickableLinkKey,
   RouteClickableLink
 } from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.component';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { AppShellLayoutService } from 'src/app/shared-interproject/app-shell-layout.service';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
+import { HeroContentCardHeadIconComponent } from './hero-contenst-card-head-icon/hero-content-card-head-icon.component';
 
 
 /**
@@ -66,7 +71,15 @@ import { AppStateService } from 'src/app/shared-interproject/app-state.service';
       delay: 500
     })
   ],
-  standalone: false
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatCardModule,
+    MatIconModule,
+    MatTooltipModule,
+    RouterModule,
+    HeroContentCardHeadIconComponent
+  ]
 })
 export class HeroContentCardComponent implements AfterViewInit, OnDestroy {
   @Input() titleBig: string;

@@ -13,9 +13,6 @@ describe('HeroClickableTitleComponent', () => {
     expect(comp.textSize).toBeUndefined();
   });
 
-  it('ngOnInit runs without error', () => {
-    expect(() => comp.ngOnInit()).not.toThrow();
-  });
 
   it('textSize can be set to a number', () => {
     comp.textSize = 24;

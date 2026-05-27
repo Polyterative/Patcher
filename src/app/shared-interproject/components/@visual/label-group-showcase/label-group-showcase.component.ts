@@ -1,4 +1,6 @@
+import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { FlexLayoutModule } from '@angular/flex-layout';
 
 /**
  *  UI ONLY COMPONENT
@@ -7,7 +9,9 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
   selector:        'app-label-group-showcase',
   templateUrl:     './label-group-showcase.component.html',
   styleUrls:       ['./label-group-showcase.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [CommonModule, FlexLayoutModule]
 })
 export class LabelGroupShowcaseComponent {
   @Input()

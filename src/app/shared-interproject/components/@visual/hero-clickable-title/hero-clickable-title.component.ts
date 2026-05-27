@@ -1,9 +1,12 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Input,
-  OnInit
+  Input
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FlexLayoutModule } from '@angular/flex-layout';
+import { MatCardModule } from '@angular/material/card';
+import { RouterModule } from '@angular/router';
 
 
 @Component({
@@ -11,15 +14,10 @@ import {
   templateUrl: './hero-clickable-title.component.html',
   styleUrls: ['./hero-clickable-title.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+  standalone: true,
+  imports: [CommonModule, FlexLayoutModule, MatCardModule, RouterModule]
 })
-export class HeroClickableTitleComponent implements OnInit {
-  @Input() link: string | any[] = undefined;
-  @Input() textSize: number | undefined = undefined;
-
-  constructor() { }
-
-  ngOnInit(): void {
-  }
-
+export class HeroClickableTitleComponent {
+ @Input() link: string | any[] = undefined;
+ @Input() textSize: number | undefined = undefined;
 }

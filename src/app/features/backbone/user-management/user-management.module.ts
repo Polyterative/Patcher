@@ -7,8 +7,8 @@ import { TimeagoModule } from 'ngx-timeago';
 import { UserManagementComponent } from 'src/app/features/backbone/user-management/user-management.component';
 import { EmptyStateComponent } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.component';
 import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
-import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
-import { LabelValueShowcaseModule } from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
+import { HeroContentCardComponent } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component';
+import { LabelValueShowcaseComponent } from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.component';
 import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { InputDialogModule } from 'src/app/shared-interproject/dialogs/input-dialog/input-dialog.module';
 import { ConfirmDialogModule } from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.module';
@@ -47,11 +47,11 @@ import { MatTooltipModule } from "@angular/material/tooltip";
     MatCardModule,
     FlexLayoutModule,
     ReactiveFormsModule,
-    HeroContentCardModule,
+    HeroContentCardComponent,
     BrandPrimaryButtonComponent,
     EmptyStateComponent,
     ScreenWrapperComponent,
-    LabelValueShowcaseModule,
+    LabelValueShowcaseComponent,
     MatTooltipModule,
     MatDialogModule,
     MatFormFieldModule,

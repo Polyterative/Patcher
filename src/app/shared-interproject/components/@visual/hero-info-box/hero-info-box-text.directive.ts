@@ -8,7 +8,7 @@ import {
 
 @Directive({
   selector: '[infoBox]',
-  standalone: false
+  standalone: true
 })
 export class HeroInfoBoxTextDirective {
   @Input() infoText: string;

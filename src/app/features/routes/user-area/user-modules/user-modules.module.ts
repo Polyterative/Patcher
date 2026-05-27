@@ -6,7 +6,7 @@ import { ModuleBrowserModule } from 'src/app/features/module-browser/module-brow
 import { UserModulesComponent } from 'src/app/features/routes/user-area/user-modules/user-modules.component';
 import { AutoUpdateLoadingIndicatorComponent } from 'src/app/shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator/auto-update-loading-indicator.component';
 import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
-import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
+import { HeroContentCardComponent } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component';
 import { RouterLink } from "@angular/router";
 import { MatCardModule } from "@angular/material/card";
 import { MatPaginatorModule } from '@angular/material/paginator';
@@ -23,7 +23,7 @@ import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-s
   imports: [
     CommonModule,
     ModuleBrowserModule,
-    HeroContentCardModule,
+    HeroContentCardComponent,
     FlexLayoutModule,
     BrandPrimaryButtonComponent,
     MatCardModule,

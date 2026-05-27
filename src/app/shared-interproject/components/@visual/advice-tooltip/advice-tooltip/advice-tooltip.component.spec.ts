@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatIconModule } from '@angular/material/icon';
 import { AdviceTooltipComponent } from './advice-tooltip.component';
 
 
@@ -9,8 +8,7 @@ describe('AdviceTooltipComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [AdviceTooltipComponent],
-      imports: [MatIconModule],
+      imports: [AdviceTooltipComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AdviceTooltipComponent);

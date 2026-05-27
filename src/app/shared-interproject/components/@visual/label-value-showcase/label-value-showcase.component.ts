@@ -3,6 +3,8 @@ import {
   Component,
   Input
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
 
 
 /**
@@ -13,7 +15,8 @@ import {
   templateUrl: './label-value-showcase.component.html',
   styleUrls: ['./label-value-showcase.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+  standalone: true,
+  imports: [CommonModule, MatIconModule]
 })
 export class LabelValueShowcaseComponent {
   @Input()

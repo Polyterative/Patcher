@@ -10,7 +10,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
-import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
+import { HeroContentCardComponent } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component';
 import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { ModuleBrowserAdderComponent } from '../module-browser-adder/module-browser-adder.component';
 import { ModuleAdderDataService } from '../module-browser-adder/module-adder-data.service';
@@ -31,7 +31,7 @@ import { ModuleListModule } from '../module-list/module-list.module';
     MatTooltipModule,
     MatFormEntityComponent,
     BrandPrimaryButtonComponent,
-    HeroContentCardModule,
+    HeroContentCardComponent,
     ScreenWrapperComponent,
     ModuleListModule,
   ],
