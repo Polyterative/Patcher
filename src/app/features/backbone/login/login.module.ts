@@ -25,7 +25,6 @@ import { SSOButtonsComponent } from './sso-buttons/sso-buttons.component';
     AuthCallbackComponent,
     CompleteProfileComponent
   ],
-  providers: [UserManagementService],
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -39,33 +38,28 @@ import { SSOButtonsComponent } from './sso-buttons/sso-buttons.component';
     LoginPageModule,
     SignupPageModule,
     SSOButtonsComponent,
-    RouterModule.forRoot([
+    RouterModule.forChild([
       {
-        path: 'auth',
-        children: [
-          {
-            path: 'login',
-            component: LoginPageComponent
-          },
-          {
-            path: 'signup',
-            component: SignupPageComponent
-          },
-          {
-            path: 'reset-password',
-            component: ResetPasswordPageComponent
-          },
-          {
-            path: 'callback',
-            component: AuthCallbackComponent
-          },
-          {
-            path: 'complete-profile',
-            component: CompleteProfileComponent
-          }
-        ]
+        path: 'login',
+        component: LoginPageComponent
+      },
+      {
+        path: 'signup',
+        component: SignupPageComponent
+      },
+      {
+        path: 'reset-password',
+        component: ResetPasswordPageComponent
+      },
+      {
+        path: 'callback',
+        component: AuthCallbackComponent
+      },
+      {
+        path: 'complete-profile',
+        component: CompleteProfileComponent
       }
-    ], {scrollPositionRestoration: 'enabled'})
+    ])
   ]
 })
 export class LoginModule {}

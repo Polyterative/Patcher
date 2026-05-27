@@ -22,22 +22,19 @@ import { SupabaseService } from './supabase.service';
     AdminPanelRootComponent,
     AdminFlagsComponent
   ],
-  providers:    [
+  providers: [
     AdminGuardService,
-    LocalStorageService,
-    UrlCreatorService,
-    SupabaseService
   ],
-  imports:      [
+  imports: [
     CommonModule,
     LuxonModule,
-    RouterModule.forRoot([
+    RouterModule.forChild([
       {
-        path:        'admin',
+        path:        '',
         component:   AdminPanelRootComponent,
         canActivate: [AdminGuardService]
       }
-    ], {scrollPositionRestoration: 'enabled'}),
+    ]),
     FlexLayoutModule,
     BrandPrimaryButtonModule,
     LibGraphModule,
@@ -46,7 +43,7 @@ import { SupabaseService } from './supabase.service';
     MatFormFieldModule,
     MatSelectModule
   ],
-  exports:      [
+  exports: [
     AdminPanelRootComponent
   ]
 })

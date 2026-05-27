@@ -17,7 +17,8 @@ import {
 import { UserManagementService } from './user-management.service';
 import {
   switchMap,
-  take
+  take,
+  timeout
 } from "rxjs/operators";
 
 
@@ -34,7 +35,8 @@ export class UserAuthGuard {
   ) {
     return of(undefined).pipe(
       switchMap(() => this.authenticationService.loggedUser$.pipe(
-        take(1)
+        take(1),
+        timeout({ first: 8000, with: () => of(undefined) })
       )),
       tap((user) => {
         if (!user) {

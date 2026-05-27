@@ -40,7 +40,7 @@ import {
 } from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
 
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class UserManagementService extends SubManager {
   // STATE - Private subjects
   private readonly _loggedUser$ = new ReplaySubject<SimpleUserModel | undefined>(1);
@@ -384,7 +384,8 @@ export class UserManagementService extends SubManager {
    */
   private checkUserInCookies(): void {
     this.backend.auth.getUserSession$().pipe(
-      take(1)
+      take(1),
+      catchError(() => of(undefined))
     ).subscribe(x => {
       this._loggedUser$.next(x ?? undefined);
     });

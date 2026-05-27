@@ -21,13 +21,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { RouterModule } from '@angular/router';
 import { AdviceTooltipModule } from 'src/app/shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module';
 import build from 'src/build';
 import { environment } from 'src/environments/environment';
 
 import { AppComponent } from './app.component';
 import { AppFeaturesModule } from './features/app-features.module';
+import { AppRoutingModule } from './app-routing.module';
 import { BackboneModule } from './features/backbone/backbone.module';
 import { FeedbackBoxModule } from './features/backbone/feedback-box/feedback-box.module';
 import { UserAuthGuard } from './features/backbone/login/user-auth-guard.service';
@@ -82,7 +82,7 @@ const matDatepickerLocaleIT = {
     BrowserModule,
     SelectionPanelOutletComponent,
     DiscoveryTipSurfaceComponent,
-    RouterModule,
+    AppRoutingModule,
     BrowserAnimationsModule,
     ToolbarModule,
     AppFeaturesModule,

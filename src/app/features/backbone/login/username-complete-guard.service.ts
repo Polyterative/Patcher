@@ -8,8 +8,10 @@ import {
 } from '@angular/router';
 import {
   map,
-  take
+  take,
+  timeout
 } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { UserManagementService } from './user-management.service';
 
 
@@ -34,6 +36,7 @@ export class UsernameCompleteGuard {
   canActivate() {
     return this.userManagementService.loggedUserFullProfile$.pipe(
       take(1),
+      timeout({ first: 8000, with: () => of(undefined) }),
       map(user => {
         if (isUsernameComplete(user?.username)) {
           return true;
