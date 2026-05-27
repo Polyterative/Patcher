@@ -1,18 +1,12 @@
-<div fxFlex="100"
-     fxLayout="column"
-     fxLayoutGap="2rem"
-     fxLayoutAlign="start center"
->
+<div style="display:flex; flex:1 1 auto; flex-direction:column; gap:2rem; align-items:center;">
   <app-empty-state style="padding-top: 8rem"
                    backgroundImage="assets/svg/404.svg"
   ></app-empty-state>
 
   <div class="legacy-link-gone__content"
-       fxLayout="column"
-       fxLayoutGap="1.5rem"
-       fxLayoutAlign="center center"
+       style="display:flex; flex-direction:column; gap:1.5rem; align-items:center;"
   >
-    <mat-card-title fxLayoutAlign="center">This share link has been retired.</mat-card-title>
+    <mat-card-title style="display:flex; justify-content:center;">This share link has been retired.</mat-card-title>
 
     <p class="legacy-link-gone__copy">
       To improve privacy, we replaced numeric rack and patch links with opaque tokens. Old private
@@ -20,10 +14,7 @@
       in your profile.
     </p>
 
-    <div fxLayout="row wrap"
-         fxLayoutGap="1rem"
-         fxLayoutAlign="center center"
-    >
+    <div style="display:flex; flex-wrap:wrap; gap:1rem; justify-content:center; align-items:center;">
       <a mat-raised-button
          color="primary"
          routerLink="/racks/browser"

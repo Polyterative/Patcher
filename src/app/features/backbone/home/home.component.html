@@ -12,59 +12,47 @@
         </app-home-experience-hero>
     </section>
 
-    <section class="proof-list section-enter" aria-label="product walkthrough">
-      @for (section of proofSections; track section.title; let index = $index) {
-        <app-home-proof-showcase
-          [kicker]="section.kicker"
-          [title]="section.title"
-          [description]="section.description"
-          [keywords]="section.keywords ?? []"
-          [tone]="section.tone"
-          [reverse]="index % 2 === 1"
-        >
-          <div class="frame-host">
-            <lib-device-frame-wrapper>
-              @defer (on viewport) {
-                <img
-                  class="showcase-preview"
-                  [src]="proofPreviewImages[section.kind].src"
-                  [alt]="proofPreviewImages[section.kind].alt"
-                  loading="lazy"
-                  decoding="async"
-                >
-              } @placeholder {
-                <div class="frame-placeholder"></div>
-              }
-            </lib-device-frame-wrapper>
-          </div>
-        </app-home-proof-showcase>
-      }
-    </section>
+    @defer (on viewport) {
+      <section class="proof-list section-enter" aria-label="product walkthrough">
+        @for (section of proofSections; track section.title; let index = $index) {
+          <app-home-proof-showcase
+            [kicker]="section.kicker"
+            [title]="section.title"
+            [description]="section.description"
+            [keywords]="section.keywords ?? []"
+            [tone]="section.tone"
+            [reverse]="index % 2 === 1"
+          >
+            <div class="frame-host">
+              <lib-device-frame-wrapper>
+                @defer (on viewport) {
+                  <img
+                    class="showcase-preview"
+                    [src]="proofPreviewImages[section.kind].src"
+                    [alt]="proofPreviewImages[section.kind].alt"
+                    loading="lazy"
+                    decoding="async"
+                  >
+                } @placeholder {
+                  <div class="frame-placeholder"></div>
+                }
+              </lib-device-frame-wrapper>
+            </div>
+          </app-home-proof-showcase>
+        }
+      </section>
+    } @placeholder {
+      <div></div>
+    }
 
     <section class="section-enter">
       @defer (on viewport) {
-        @if (applicationInsights$ | async; as insights) {
-          <div class="bridge-row">
-            @if (showInsightsPageEntry) {
-              <app-home-curiosity-bridge
-                [title]="insightsTitle"
-                [description]="insightsDescription"
-                [links]="communityLinks"
-              ></app-home-curiosity-bridge>
-            }
-
-            <app-statistics
-              title="Current public snapshot"
-              icon="insights"
-              cardClass="home-insights-card"
-              [statistics]="insights.statistics"
-              [emptyMessage]="insights.emptyMessage"
-            ></app-statistics>
-
-            <p class="insights-supporting-copy">{{ insights.interpretation }}</p>
-            <p class="insights-methodology">{{ insights.methodology }}</p>
-          </div>
-        }
+        <app-home-insights-section
+          [showInsightsPageEntry]="showInsightsPageEntry"
+          [communityLinks]="communityLinks"
+          [insightsTitle]="insightsTitle"
+          [insightsDescription]="insightsDescription"
+        ></app-home-insights-section>
       } @placeholder {
         <div></div>
       }

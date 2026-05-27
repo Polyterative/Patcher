@@ -3,41 +3,51 @@ import {
   provideZoneChangeDetection
 } from '@angular/core';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
-import * as Sentry from '@sentry/browser';
 
 import { AppModule } from './app/app.module';
 import build from './build';
 import { environment } from './environments/environment';
 
-
 if (environment.production) {
   enableProdMode();
-  
-  try {
-    Sentry.init({
-      dsn: 'https://57dc8f0b1ad240f3afa61628b8351aae@o718439.ingest.us.sentry.io/5780783',
-      
-      environment: environment.production ? 'production' : 'development',
-      release: `patcher@${ build.version }`,
-      integrations: [
-        Sentry.browserTracingIntegration(),
-        Sentry.replayIntegration(),
-        Sentry.breadcrumbsIntegration(),
-        Sentry.browserApiErrorsIntegration(),
-        Sentry.dedupeIntegration(),
-        Sentry.httpContextIntegration()
-      ],
-      tracesSampleRate: 1.0,
-      tracePropagationTargets: ['localhost', /^https:\/\/patcher\.xyz/], // Updated to include only patcher.xyz
-    });
-  } catch (sentryErr) {
-    console.warn('Sentry init failed:', sentryErr);
+}
+
+function initializeSentry(): void {
+  if (!environment.production) {
+    return;
   }
-  
+
+  window.setTimeout(() => {
+    void import('@sentry/angular')
+      .then(Sentry => {
+        Sentry.init({
+          dsn: 'https://57dc8f0b1ad240f3afa61628b8351aae@o718439.ingest.us.sentry.io/5780783',
+          environment: 'production',
+          release: `patcher@${ build.version }`,
+          integrations: [
+            Sentry.browserTracingIntegration(),
+            Sentry.replayIntegration(),
+            Sentry.breadcrumbsIntegration(),
+            Sentry.browserApiErrorsIntegration(),
+            Sentry.dedupeIntegration(),
+            Sentry.httpContextIntegration()
+          ],
+          tracesSampleRate: 1.0,
+          tracePropagationTargets: ['localhost', /^https:\/\/patcher\.xyz/],
+        });
+      })
+      .catch(sentryErr => {
+        console.warn('Sentry init failed:', sentryErr);
+      });
+  }, 1000);
 }
 
 platformBrowserDynamic()
   .bootstrapModule(AppModule, {applicationProviders: [provideZoneChangeDetection()],})
+  .then(appRef => {
+    initializeSentry();
+    return appRef;
+  })
   .catch(err => {
     console.error('Angular bootstrap failed:', err);
     const root = document.querySelector('app-root');

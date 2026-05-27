@@ -30,7 +30,6 @@ import { ManufacturerUpdatedBadgeComponent } from './manufacturer-browser-root/m
 import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
 import { ModulePartsModule } from "src/app/components/module-parts/module-parts.module";
 import { LibShowcaseGridComponent } from 'src/app/components/rack-parts/rack-editor/lib-showcase-grid/lib-showcase-grid.component';
-import { MatChipsModule } from '@angular/material/chips';
 
 
 @NgModule({
@@ -83,7 +82,6 @@ import { MatChipsModule } from '@angular/material/chips';
     ModuleBrowserModule,
     ModulePartsModule,
     LibShowcaseGridComponent,
-    MatChipsModule,
     ManufacturerRowComponent,
     ManufacturerUpdatedBadgeComponent
   ]

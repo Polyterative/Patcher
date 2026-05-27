@@ -62,6 +62,7 @@ import { EditFabComponent } from "src/app/shared-interproject/components/@visual
 import { ManufacturerRowComponent } from "src/app/features/manufacturer-detail/manufacturer-browser-root/manufacturer-row/manufacturer-row.component";
 import { RecentActivityModule } from "src/app/components/shared-atoms/recent-activity/recent-activity.module";
 import { ModuleListModule } from './module-list/module-list.module';
+import { ModuleEditorModule } from 'src/app/components/module-parts/module-editor/module-editor.module';
 
 
 
@@ -147,6 +148,7 @@ import { ModuleListModule } from './module-list/module-list.module';
     ModulePatchesModule,
     AdviceTooltipComponent,
     ModuleListModule,
+    ModuleEditorModule,
     MatMenu,
     MatMenuItem,
     MatMenuTrigger,

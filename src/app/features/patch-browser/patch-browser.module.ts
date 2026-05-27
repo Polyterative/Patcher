@@ -35,7 +35,6 @@ import { PatchListModule } from '../../components/patch-list/patch-list.module';
 import { LocalDataFilterComponent } from '../../components/shared-atoms/local-data-filter/local-data-filter/local-data-filter.component';
 import { CleanCardComponent } from '../../shared-interproject/components/@visual/clean-card/clean-card.component';
 import { MatCardModule } from "@angular/material/card";
-import { MatChipsModule } from "@angular/material/chips";
 import { MatIconModule } from "@angular/material/icon";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatButtonModule } from "@angular/material/button";
@@ -102,7 +101,6 @@ import { SharedAtomsModule } from 'src/app/components/shared-atoms/shared-atoms.
     FlexLayoutModule,
     MatCardModule,
     HeroContentCardComponent,
-    MatChipsModule,
     DragDropModule,
     LabelValueShowcaseComponent,
     ScrollingModule,

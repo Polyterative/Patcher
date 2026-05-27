@@ -1,21 +1,16 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { StatisticsComponent } from 'src/app/components/shared-atoms/statistics/statistics.component';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { DeviceFrameWrapperModule } from 'src/app/shared-interproject/components/@visual/device-frame-wrapper/device-frame-wrapper.module';
 import { SeoSocialShareData } from 'src/app/models/seo.model';
 import { SeoAndUtilsService } from '../seo-and-utils.service';
-import {
-  ApplicationInsightsTeaser,
-  ApplicationStatisticsService
-} from './application-statistics.service';
-import { HomeCuriosityBridgeComponent } from './components/home-curiosity-bridge/home-curiosity-bridge.component';
 import { HomeExperienceHeroComponent } from './components/home-experience-hero/home-experience-hero.component';
 import { HomeInvitationCtaComponent } from './components/home-invitation-cta/home-invitation-cta.component';
 import { HomeOpenPrinciplesComponent } from './components/home-open-principles/home-open-principles.component';
 import { HomeProofShowcaseComponent } from './components/home-proof-showcase/home-proof-showcase.component';
 import { HomeWorkflowRailComponent } from './components/home-workflow-rail/home-workflow-rail.component';
+import { HomeInsightsSectionComponent } from './components/home-insights-section/home-insights-section.component';
 import {
   HomeFounderNote,
   HomeHeroContent,
@@ -25,7 +20,6 @@ import {
   HomeProofSection,
   HomeWorkflowStep
 } from './home-content.models';
-import { Observable } from 'rxjs';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -37,15 +31,13 @@ import { Observable } from 'rxjs';
     CommonModule,
     BrandPrimaryButtonComponent,
     DeviceFrameWrapperModule,
-    HomeCuriosityBridgeComponent,
     HomeExperienceHeroComponent,
     HomeInvitationCtaComponent,
+    HomeInsightsSectionComponent,
     HomeOpenPrinciplesComponent,
     HomeProofShowcaseComponent,
     HomeWorkflowRailComponent,
-    StatisticsComponent,
   ],
-  providers: [ApplicationStatisticsService]
 })
 export class HomeComponent {
   readonly heroContent: HomeHeroContent = {
@@ -169,7 +161,6 @@ export class HomeComponent {
       href: '/patches/browser'
     },
   ];
-  readonly applicationInsights$!: Observable<ApplicationInsightsTeaser>;
   readonly insightsTitle = 'Open the full insights page';
   readonly insightsDescription =
     'Start with the homepage snapshot, then jump into the dedicated insights page for the fuller read on catalogue growth, activity, and sharing patterns.';
@@ -198,7 +189,6 @@ export class HomeComponent {
   ];
 
   constructor(
-    readonly applicationStatisticsService: ApplicationStatisticsService,
     public readonly appState: AppStateService,
     readonly seoAndUtilsService: SeoAndUtilsService,
   ) {
@@ -213,8 +203,7 @@ export class HomeComponent {
         ...this.browseLinks
       ]
       : [...this.browseLinks];
-    this.applicationInsights$ = this.applicationStatisticsService.teaser$;
-
+ 
     const seoData: SeoSocialShareData = {
       title: 'Patcher home',
       description: 'Free open-source workspace for Eurorack musicians to capture ideas, plan racks, and return to patches quickly.',

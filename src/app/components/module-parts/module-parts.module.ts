@@ -11,7 +11,6 @@ import { HeroClickableTitleComponent } from 'src/app/shared-interproject/compone
 import { EllipsisPipe } from 'src/app/shared-interproject/pipes/ellipsis.pipe';
 import { AutoContentLoadingIndicatorComponent } from '../../shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator/auto-content-loading-indicator.component';
 import { AutoUpdateLoadingIndicatorComponent } from '../../shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator/auto-update-loading-indicator.component';
-import { FileDragHostModule } from '../../shared-interproject/components/@smart/file-drag-host/file-drag-host.module';
 import { MatFormEntityComponent } from '../../shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { FormValidPipe } from '../../shared-interproject/components/@smart/mat-form-entity/is-control-valid.pipe';
 import { RestrictedEntityComponent } from '../../shared-interproject/components/@smart/restricted-entity/restricted-entity/restricted-entity.component';
@@ -29,10 +28,6 @@ import { ModuleCVsComponent } from './module-cvs/module-cvs.component';
 import { ModuleDetailDataService } from './module-detail-data.service';
 import { ModuleDetailsComponent } from './module-details/module-details.component';
 import { ModuleFlagComponent } from './module-flag/module-flag.component';
-import { ModuleEditorAdderLineComponent } from './module-editor/module-editor-adder-line/module-editor-adder-line.component';
-import { ModuleEditorCvFormLineComponent } from './module-editor/module-editor-cv-form-line/module-editor-cv-form-line.component';
-import { ModuleEditorComponent } from './module-editor/module-editor.component';
-import { OnlyNotSavedFormCVsLengthPipe } from './module-editor/only-not-saved-form-cvs.pipe';
 import { ModuleMinimalComponent } from './module-minimal/module-minimal.component';
 import { ModulePartDescriptionComponent } from './module-minimal/module-part-description/module-part-description.component';
 import { ModulePartHpComponent } from './module-minimal/module-part-hp/module-part-hp.component';
@@ -58,7 +53,6 @@ import { MatInputModule } from "@angular/material/input";
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { ConfirmDialogModule } from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.module';
 import { FormsModule } from "@angular/forms";
-import { ImageCropperComponent } from 'ngx-image-cropper';
 import { CopyableDirective } from "src/app/shared-interproject/app-copy-on-click.directive";
 import { ModulePanelZoomDialogComponent } from './module-details/module-panel-zoom-dialog.component';
 import { ModulePossessionDialogComponent } from './module-possession-dialog/module-possession-dialog.component';
@@ -70,7 +64,6 @@ import { ModulePossessionDialogComponent } from './module-possession-dialog/modu
     ModuleCVsComponent,
     ModuleDetailsComponent,
     ModuleFlagComponent,
-    ModuleEditorComponent,
     ModuleMinimalComponent,
     ModuleCvIconComponent,
     ModuleRealisticComponent,
@@ -82,9 +75,6 @@ import { ModulePossessionDialogComponent } from './module-possession-dialog/modu
     ModuleTagsComponent,
     OnlyTagOfTypePipe,
     OrderTagsByTypePipe,
-    ModuleEditorCvFormLineComponent,
-    ModuleEditorAdderLineComponent,
-    OnlyNotSavedFormCVsLengthPipe,
     GetModuleHeightForStandardPipe,
     ModulePartImageComponent,
     ModulePanelZoomDialogComponent,
@@ -127,8 +117,6 @@ import { ModulePossessionDialogComponent } from './module-possession-dialog/modu
     MatSnackBarModule,
     ConfirmDialogModule,
     FormsModule,
-    FileDragHostModule,
-    ImageCropperComponent,
     NgOptimizedImage,
     CopyableDirective
   ],
@@ -136,7 +124,6 @@ import { ModulePossessionDialogComponent } from './module-possession-dialog/modu
     ModuleCVItemComponent,
     ModuleCVsComponent,
     ModuleDetailsComponent,
-    ModuleEditorComponent,
     ModuleMinimalComponent,
     ModuleCvIconComponent,
     ModuleRealisticComponent,
@@ -146,8 +133,6 @@ import { ModulePossessionDialogComponent } from './module-possession-dialog/modu
     ModulePartHpComponent,
     ModuleRealisticHolelineComponent,
     ModuleTagsComponent,
-    ModuleEditorCvFormLineComponent,
-    ModuleEditorAdderLineComponent,
     ModulePartImageComponent
   ]
 })

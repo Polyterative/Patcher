@@ -120,28 +120,20 @@
 
                   <div class="setup-panel-crop-grid">
                     <div class="setup-panel-crop-stage">
-                      <image-cropper
-                        [imageFile]="cropBag.selectedPanelFile"
-                        [output]="'blob'"
-                        [format]="panelCropOutputFormat"
-                        [imageQuality]="panelCropOutputQuality"
-                        [maintainAspectRatio]="true"
-                        [aspectRatio]="panelCropAspectRatio"
-                        [containWithinAspectRatio]="true"
-                        [onlyScaleDown]="true"
-                        [cropperMinWidth]="120"
-                        [cropperMinHeight]="120"
-                        [checkImageType]="true"
-                        [imageAltText]="'Selected panel image'"
-                        [cropperFrameAriaLabel]="'Panel crop selection'"
-                        [initialStepSize]="1"
-                        [cropper]="panelCropOverride"
-                        (imageCropped)="onPanelImageCropped($event)"
-                        (imageLoaded)="onPanelImageLoaded()"
-                        (cropperChange)="onPanelCropperChange($event)"
-                        (cropperReady)="onPanelCropperReady()"
-                        (loadImageFailed)="onPanelImageLoadFailed()"
-                      ></image-cropper>
+                      @defer (when true) {
+                        <app-module-editor-cropper
+                          [imageFile]="cropBag.selectedPanelFile"
+                          [format]="panelCropOutputFormat"
+                          [imageQuality]="panelCropOutputQuality"
+                          [aspectRatio]="panelCropAspectRatio"
+                          [cropper]="panelCropOverride"
+                          (imageCropped)="onPanelImageCropped($event)"
+                          (imageLoaded)="onPanelImageLoaded()"
+                          (cropperChange)="onPanelCropperChange($event)"
+                          (cropperReady)="onPanelCropperReady($event)"
+                          (loadImageFailed)="onPanelImageLoadFailed()"
+                        ></app-module-editor-cropper>
+                      }
 
                       @if (cropBag.cropLoading) {
                         <div class="setup-panel-crop-status">

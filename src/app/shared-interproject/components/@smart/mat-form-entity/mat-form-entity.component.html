@@ -178,77 +178,26 @@
           }
         </mat-select>
       }
-      @if ((type === types.MULTI_TEXT)) {
-        <mat-chip-grid #chipList
-                       [formControl]="control"
-        >
-          @for (chip of control.value; track chip) {
-            <mat-chip (removed)="removeFromChips(chip)"
-                      [removable]="true"
-        >
-              {{ chip.name }}
-              @if (true) {
-                <mat-icon
-                  matChipRemove
-                >cancel
-          </mat-icon>
-              }
-            </mat-chip>
-          }
-           <input (matChipInputTokenEnd)="addToMultiText($event)"
-                  [matChipInputAddOnBlur]="true"
-                  [matChipInputFor]="chipList"
-                  [matChipInputSeparatorKeyCodes]="autocompleteSeparatorKeysCodes"
-                  [attr.inputmode]="resolvedInputMode"
-                  [attr.enterkeyhint]="resolvedEnterKeyHint"
-                  [placeholder]="placeholder"
-           >
-        </mat-chip-grid>
-      }
-      @if ((type === types.AUTOCOMPLETE_MULTIPLE)) {
-        <mat-chip-grid #chipList
-                       [formControl]="control"
-        >
-          @for (chip of control.value; track chip) {
-            <mat-chip (removed)="removeFromChips(chip)"
-                      [removable]="!control.disabled"
-            >
-              {{ chip.name }}
-              @if (!control.disabled) {
-                <mat-icon
-                  matChipRemove
-            >cancel
-                </mat-icon>
-              }
-            </mat-chip>
-          }
-          <input #primaryInput
-                 (matChipInputTokenEnd)="cleanMultiComplete($event)"
-                  [formControl]="ghostControl"
-                  [attr.inputmode]="resolvedInputMode"
-                  [attr.enterkeyhint]="resolvedEnterKeyHint"
-                  [matAutocomplete]="autocomplete"
-                  [matChipInputAddOnBlur]="true"
-                  [matChipInputFor]="chipList"
-                  [matChipInputSeparatorKeyCodes]="autocompleteSeparatorKeysCodes"
-                  [placeholder]="placeholder"
-                  (keydown.enter)="onInputEnterPressed($event)"
-                  matInput
-           />
-        </mat-chip-grid>
-        <mat-autocomplete #autocomplete="matAutocomplete"
-                          (optionSelected)="addToMultiComplete($event)"
-                          [displayWith]="autocomplete_displayFunction"
-                          autoActiveFirstOption
-        >
-          @for (option of optionsFiltered|async; track option) {
-            <mat-option
-              [value]="option"
-        >
-              {{ option.name }}
-            </mat-option>
-          }
-        </mat-autocomplete>
+      @if ((type === types.MULTI_TEXT) || (type === types.AUTOCOMPLETE_MULTIPLE)) {
+        @defer (when true) {
+          <lib-mat-form-entity-chip-input
+            [type]="type"
+            [types]="types"
+            [control]="control"
+            [ghostControl]="ghostControl"
+            [placeholder]="placeholder"
+            [resolvedInputMode]="resolvedInputMode"
+            [resolvedEnterKeyHint]="resolvedEnterKeyHint"
+            [autocompleteSeparatorKeysCodes]="autocompleteSeparatorKeysCodes"
+            [optionsFiltered]="optionsFiltered"
+            [controlDisabled]="control.disabled"
+            (removeChip)="removeFromChips($event)"
+            (addMultiText)="addToMultiText($event)"
+            (cleanMultiComplete)="cleanMultiComplete($event)"
+            (addMultiComplete)="addToMultiComplete($event)"
+            (inputEnter)="onInputEnterPressed($event)"
+          ></lib-mat-form-entity-chip-input>
+        }
       }
       <ng-container>
         <!--  <ng-container *ngIf="(type===types.AUTOCOMPLETE_MULTIPLE_GROUPED)">-->
@@ -408,43 +357,25 @@
     </mat-form-field>
   }
   @if ((type === types.DATE)) {
-    <mat-form-field
-      [appearance]="formFieldAppearanceType"
-      [floatLabel]="styleOptions.floatLabel"
-      [hideRequiredMarker]="styleOptions.hideRequired"
-      [matTooltipPosition]="tooltipPosition"
-      [matTooltip]="tooltip"
-      fxFlexFill
-    >
-    <mat-label>
-      @if (iconL1) {
-        <mat-icon
-          style="font-size: 18px; height: 18px; width: 18px; vertical-align: middle; margin-right: 0.25rem;">{{ iconL1 }}
-        </mat-icon>
-      }
-      {{ label }}
-    </mat-label>
-    <input #primaryInput
-           matInput
-           [formControl]="control"
-           [attr.enterkeyhint]="resolvedEnterKeyHint"
-           [matDatepicker]="picker"
-           [max]="dateMax"
-           [min]="dateMin"
-           [placeholder]="placeholder"
-           (keydown.enter)="onInputEnterPressed($event)"
-    >
-    <mat-datepicker-toggle matSuffix
-                           [for]="$any(picker)"
-    >
-      <mat-icon matDatepickerToggleIcon>keyboard_arrow_down</mat-icon>
-    </mat-datepicker-toggle>
-    <mat-datepicker #picker
-                    [startAt]="dateOpenPosition"
-    ></mat-datepicker>
-      @if ((invalid$|async)) {
-        <mat-error>{{ ((errors$|async)) }}</mat-error>
-      }
-  </mat-form-field>
+    @defer (when true) {
+      <lib-mat-form-entity-date-input
+        [control]="control"
+        [label]="label"
+        [iconL1]="iconL1"
+        [placeholder]="placeholder"
+        [invalid]="(invalid$ | async) ?? false"
+        [errors]="(errors$ | async) ?? ''"
+        [dateMin]="dateMin"
+        [dateMax]="dateMax"
+        [dateOpenPosition]="dateOpenPosition ?? undefined"
+        [resolvedEnterKeyHint]="resolvedEnterKeyHint"
+        [formFieldAppearanceType]="formFieldAppearanceType"
+        [floatLabel]="styleOptions.floatLabel"
+        [hideRequiredMarker]="styleOptions.hideRequired"
+        [tooltip]="tooltip"
+        [tooltipPosition]="tooltipPosition"
+        (inputEnter)="onInputEnterPressed($event)"
+      ></lib-mat-form-entity-date-input>
+    }
   }
 }

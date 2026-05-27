@@ -25,10 +25,7 @@ import {
   UntypedFormGroup,
   ValidatorFn
 } from '@angular/forms';
-import {
-  MatChipInputEvent,
-  MatChipsModule
-} from '@angular/material/chips';
+import type { MatChipInputEvent } from '@angular/material/chips';
 import {
   BehaviorSubject,
   merge,
@@ -66,7 +63,7 @@ import {
 } from "@angular/material/form-field";
 import {
   MatAutocompleteModule,
-  MatAutocompleteSelectedEvent
+  type MatAutocompleteSelectedEvent
 } from "@angular/material/autocomplete";
 import {
   MatTooltipModule,
@@ -77,10 +74,10 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatButtonModule } from "@angular/material/button";
 import { MatInputModule } from "@angular/material/input";
 import { MatIconModule } from "@angular/material/icon";
-import { MatDatepickerModule } from "@angular/material/datepicker";
-import { MatNativeDateModule } from "@angular/material/core";
 import { MatSelectModule } from "@angular/material/select";
 import { MatDialogModule } from "@angular/material/dialog";
+import { MatFormEntityChipInputComponent } from './mat-form-entity-chip-input.component';
+import { MatFormEntityDateInputComponent } from './mat-form-entity-date-input.component';
 
 
 export interface IMatFormEntityConfig {
@@ -112,12 +109,11 @@ export interface IMatFormEntityConfig {
     MatInputModule,
     MatFormFieldModule,
     MatIconModule,
-    MatChipsModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
     MatSelectModule,
     MatAutocompleteModule,
-    MatDialogModule
+    MatDialogModule,
+    MatFormEntityChipInputComponent,
+    MatFormEntityDateInputComponent
   ]
 })
 export class MatFormEntityComponent extends SubManager implements OnInit, OnDestroy, AfterViewInit {

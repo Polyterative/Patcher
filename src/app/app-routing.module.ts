@@ -26,6 +26,10 @@ const routes: Routes = [
     loadChildren: () => import('./features/routes/public-profile/public-profile.module').then(m => m.PublicProfileModule)
   },
   {
+    path: 'user/account',
+    loadChildren: () => import('./features/backbone/user-management/user-management.module').then(m => m.UserManagementModule)
+  },
+  {
     path: 'user',
     loadChildren: () => import('./features/routes/user-area/user-area.module').then(m => m.UserAreaModule)
   },

@@ -28,22 +28,12 @@ import { MatTooltipModule } from "@angular/material/tooltip";
   ],
   imports:      [
     CommonModule,
-    RouterModule.forRoot([
+    RouterModule.forChild([
       {
-        path:     'user',
-        children: [
-          {
-            path:      'account',
-            component: UserManagementComponent
-          }
-          // {
-          //   path:      'signup',
-          //   component: SignupPageComponent
-          // }
-        ]
+        path: '',
+        component: UserManagementComponent
       }
-    
-    ], {scrollPositionRestoration: 'enabled'}),
+    ]),
     MatCardModule,
     FlexLayoutModule,
     ReactiveFormsModule,

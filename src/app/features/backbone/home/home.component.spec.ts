@@ -1,19 +1,15 @@
 import { HomeComponent } from './home.component';
-import { Subject } from 'rxjs';
 
 describe('HomeComponent', () => {
   let comp: HomeComponent;
-  let mockAppStatSvc: any;
   let mockAppState: any;
   let mockSeoSvc: any;
 
   beforeEach(() => {
-    mockAppStatSvc = { teaser$: new Subject<any>() };
     mockAppState = { isDev: false };
     mockSeoSvc = { updateSeo: jasmine.createSpy('updateSeo') };
 
     comp = new HomeComponent(
-      mockAppStatSvc,
       mockAppState,
       mockSeoSvc,
     );
@@ -53,7 +49,6 @@ describe('HomeComponent', () => {
   it('communityLinks includes insights when isDev=true', () => {
     mockAppState.isDev = true;
     const comp2 = new HomeComponent(
-      mockAppStatSvc,
       mockAppState,
       mockSeoSvc,
     );
