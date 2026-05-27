@@ -29,7 +29,6 @@ import { FooterComponent }           from './footer/footer.component';
 import { ProducthuntBadgeComponent } from './footer/producthunt-badge/producthunt-badge.component';
 import { HomeModule }                from './home/home.module';
 import { LegacyLinkGoneModule }      from './legacy-link-gone/legacy-link-gone.module';
-import { LoginModule }               from './login/login.module';
 import { NotFoundModule }            from './404/not-found.module';
 import { SentryIntegrationModule }   from './sentry-integration/sentry-integration.module';
 import { ToolbarModule }             from './toolbar/toolbar.module';
@@ -56,7 +55,6 @@ import { ToolbarModule }             from './toolbar/toolbar.module';
     ToolbarModule,
     FeedbackBoxModule,
     FlexLayoutModule,
-    LoginModule,
     UserManagementModule,
     HeroInfoBoxModule,
     MatCardModule,

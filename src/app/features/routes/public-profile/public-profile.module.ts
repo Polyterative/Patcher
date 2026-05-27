@@ -23,7 +23,7 @@ import { PublicProfileComponent } from './public-profile.component';
     CommonModule,
     RouterModule.forChild([
       {
-        path: 'u/:username',
+        path: ':username',
         component: PublicProfileComponent,
       },
     ]),

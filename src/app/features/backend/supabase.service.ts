@@ -51,7 +51,7 @@ export type {
   SupabaseStorageFile
 };
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class SupabaseService extends SubManager {
   private readonly authStateSubscription: {
     unsubscribe: () => void
@@ -235,7 +235,7 @@ export class SupabaseService extends SubManager {
   readonly cacheResetter$ = cacheBuster$;
   
   private customLock: LockFunc = (name, acquireTimeout, fn) =>
-    navigatorLock(name, acquireTimeout || 1, fn);
+    navigatorLock(name, acquireTimeout ?? -1, fn);
 
   // Initialized in constructor to allow platform-aware auth config (SSR vs browser).
   private supabase!: SupabaseClient<Database, 'public'>;
