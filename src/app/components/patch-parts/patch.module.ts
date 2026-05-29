@@ -51,7 +51,6 @@ import { StatisticsComponent } from 'src/app/components/shared-atoms/statistics/
 import { PatchConnectionStatsPipe } from 'src/app/components/patch-parts/patch-connection-stats.pipe';
 import { PatchConnectionUniqueModulesPipe } from 'src/app/components/patch-parts/patch-connection-unique-modules.pipe';
 import { FlexboxRowFastComponent } from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.component';
-import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
 import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.module';
 import { EditFabComponent } from 'src/app/shared-interproject/components/@visual/edit-fab/edit-fab.component';
 import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-state-tips/empty-state-tips.component';
@@ -122,7 +121,6 @@ import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-s
     StatisticsComponent,
     FlexboxRowFastComponent,
     EmptyStateTipsComponent,
-    ModuleBrowserModule,
     ModulePartsModule,
     EditFabComponent
   ]

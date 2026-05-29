@@ -12,12 +12,7 @@ import { LegacyLinkGonePageComponent } from './legacy-link-gone-page.component';
   ],
   imports:      [
     CommonModule,
-    RouterModule.forRoot([
-      {
-        path:      'links/retired',
-        component: LegacyLinkGonePageComponent
-      }
-    ], {scrollPositionRestoration: 'enabled'}),
+    RouterModule,
     EmptyStateComponent,
     MatButtonModule,
     MatCardModule

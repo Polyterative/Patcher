@@ -11,7 +11,6 @@ import { RackEditorComponent } from 'src/app/components/rack-parts/rack-editor/r
 import { RackMinimalComponent } from 'src/app/components/rack-parts/rack-minimal/rack-minimal.component';
 import { RackModuleAdderDialogComponent } from 'src/app/components/rack-parts/rack-module-adder/rack-module-adder-dialog.component';
 import { SharedAtomsModule } from 'src/app/components/shared-atoms/shared-atoms.module';
-import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { DialogInfoBoxComponent } from 'src/app/shared-interproject/components/@visual/dialog-info-box/dialog-info-box.component';
@@ -113,7 +112,6 @@ import { InputDialogModule } from "src/app/shared-interproject/dialogs/input-dia
     MatTooltipModule,
     MatDialogModule,
     SharedAtomsModule,
-    ModuleBrowserModule,
     FlexboxRowFastComponent,
     ModulePartsModule,
     HeroInfoBoxComponent,

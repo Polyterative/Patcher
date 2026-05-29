@@ -27,7 +27,7 @@ import { ManufacturerBrowserRootComponent } from './manufacturer-browser-root/ma
 import { ManufacturerBrowserRootDataService } from './manufacturer-browser-root/manufacturer-browser-root-data.service';
 import { ManufacturerRowComponent } from './manufacturer-browser-root/manufacturer-row/manufacturer-row.component';
 import { ManufacturerUpdatedBadgeComponent } from './manufacturer-browser-root/manufacturer-row/manufacturer-updated-badge/manufacturer-updated-badge.component';
-import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
+import { ModuleListModule } from 'src/app/features/module-browser/module-list/module-list.module';
 import { ModulePartsModule } from "src/app/components/module-parts/module-parts.module";
 import { LibShowcaseGridComponent } from 'src/app/components/rack-parts/rack-editor/lib-showcase-grid/lib-showcase-grid.component';
 
@@ -79,7 +79,7 @@ import { LibShowcaseGridComponent } from 'src/app/components/rack-parts/rack-edi
     MatTooltipModule,
     MatPaginatorModule,
     TimeagoModule,
-    ModuleBrowserModule,
+    ModuleListModule,
     ModulePartsModule,
     LibShowcaseGridComponent,
     ManufacturerRowComponent,

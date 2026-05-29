@@ -5,8 +5,6 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterModule } from '@angular/router';
-import { PatchBrowserModule } from 'src/app/features/patch-browser/patch-browser.module';
-import { RackBrowserModule } from 'src/app/features/routes/rack/rack-browser.module';
 import { UserModulesModule } from 'src/app/features/routes/user-area/user-modules/user-modules.module';
 import { UserPatchesComponent } from 'src/app/features/routes/user-area/user-patches/user-patches.component';
 import { UserRacksComponent } from 'src/app/features/routes/user-area/user-racks/user-racks.component';
@@ -19,7 +17,6 @@ import { CleanCardComponent } from 'src/app/shared-interproject/components/@visu
 import { HeroContentCardComponent } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component';
 import { LabelValueShowcaseComponent } from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.component';
 import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
-import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
 import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area-data.service';
 import { UserAreaRootComponent } from 'src/app/features/routes/user-area/user-area-root/user-area-root.component';
 import { MatCardModule } from "@angular/material/card";
@@ -64,11 +61,8 @@ import { RackMicroModule } from 'src/app/components/rack-micro/rack-micro.module
     MatExpansionModule,
     MatIconModule,
     MatCardModule,
-    ModuleBrowserModule,
     HeroContentCardComponent,
     EmptyStateComponent,
-    PatchBrowserModule,
-    RackBrowserModule,
     UserModulesModule,
     MatDividerModule,
     LabelValueShowcaseComponent,

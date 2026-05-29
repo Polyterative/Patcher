@@ -1,6 +1,8 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './features/backbone/home/home.component';
+import { LegacyLinkGonePageComponent } from './features/backbone/legacy-link-gone/legacy-link-gone-page.component';
+import { NotFoundComponent } from './features/backbone/404/not-found.component';
 
 const routes: Routes = [
   {
@@ -52,6 +54,18 @@ const routes: Routes = [
   {
     path: 'info',
     loadChildren: () => import('./features/info-pages/info-pages.module').then(m => m.InfoPagesModule)
+  },
+  {
+    path:      'links/retired',
+    component: LegacyLinkGonePageComponent
+  },
+  {
+    path:      '404',
+    component: NotFoundComponent
+  },
+  {
+    path:       '**',
+    redirectTo: '/404'
   }
 ];
 

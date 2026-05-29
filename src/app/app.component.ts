@@ -9,10 +9,7 @@ import {
   isPlatformBrowser
 } from '@angular/common';
 import {
-  NavigationCancel,
   NavigationEnd,
-  NavigationError,
-  NavigationStart,
   Router,
   RouterOutlet
 } from '@angular/router';
@@ -32,8 +29,6 @@ import { BackboneModule } from './features/backbone/backbone.module';
 import { ToolbarModule } from './features/backbone/toolbar/toolbar.module';
 import { ScreenWrapperComponent } from './shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { AppFaqComponent } from './components/shared-atoms/app-faq/app-faq.component';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatIconModule } from '@angular/material/icon';
 import { SelectionPanelOutletComponent } from './components/patch-parts/selection-panel-outlet/selection-panel-outlet.component';
 import { DiscoveryTipSurfaceComponent } from './shared-interproject/discovery-tips/discovery-tip-surface/discovery-tip-surface.component';
 
@@ -51,8 +46,6 @@ import { DiscoveryTipSurfaceComponent } from './shared-interproject/discovery-ti
     BackboneModule,
     ToolbarModule,
     RouterOutlet,
-    MatProgressBarModule,
-    MatIconModule,
     ScreenWrapperComponent,
     AppFaqComponent,
     AsyncPipe,
@@ -61,7 +54,6 @@ import { DiscoveryTipSurfaceComponent } from './shared-interproject/discovery-ti
   ]
 })
 export class AppComponent {
-  readonly routeLoading$;
   readonly embeddedShell$;
   readonly animationsDisabled: boolean;
   private readonly platformId = inject(PLATFORM_ID);
@@ -74,22 +66,11 @@ export class AppComponent {
     this.animationsDisabled = isPlatformBrowser(this.platformId)
       && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.appViewportService.initialize();
-    const navigationState$ = this.router.events.pipe(
-      filter((event) =>
-        event instanceof NavigationStart
-        || event instanceof NavigationEnd
-        || event instanceof NavigationCancel
-        || event instanceof NavigationError
-      ),
+    const currentUrl$ = this.router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+      map((event) => event.urlAfterRedirects),
       startWith(null),
-      map((event) => ({
-        currentUrl: this.router.url ?? '/',
-        routeLoading: event instanceof NavigationStart
-      })),
-      shareReplay({bufferSize: 1, refCount: true})
-    );
-    const currentUrl$ = navigationState$.pipe(
-      map((state) => state.currentUrl),
+      map((url) => url ?? this.router.url ?? '/'),
       distinctUntilChanged()
     );
     this.embeddedShell$ = combineLatest([
@@ -97,11 +78,8 @@ export class AppComponent {
       currentUrl$
     ]).pipe(
       map(([wideShell, currentUrl]) => wideShell && this.supportsEmbeddedShell(currentUrl)),
-      distinctUntilChanged()
-    );
-    this.routeLoading$ = navigationState$.pipe(
-      map((state) => state.routeLoading),
-      distinctUntilChanged()
+      distinctUntilChanged(),
+      shareReplay({bufferSize: 1, refCount: true})
     );
   }
 
