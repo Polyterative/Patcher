@@ -33,7 +33,6 @@ import { RackListModule } from 'src/app/components/rack-list/rack-list.module';
 import { LocalDataFilterComponent } from 'src/app/components/shared-atoms/local-data-filter/local-data-filter/local-data-filter.component';
 import { AutoUpdateLoadingIndicatorComponent } from 'src/app/shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator/auto-update-loading-indicator.component';
 import { CleanCardComponent } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.component';
-import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
 import { StatisticsComponent } from "src/app/components/shared-atoms/statistics/statistics.component";
 import { RouterModule } from "@angular/router";
 import { MatCardModule } from "@angular/material/card";
@@ -134,7 +133,6 @@ import { AdviceTooltipComponent } from "src/app/shared-interproject/components/@
     LocalDataFilterComponent,
     CleanCardComponent,
     RackListModule,
-    ModuleBrowserModule,
     StatisticsComponent,
     MatInputModule,
     CommentsModule,

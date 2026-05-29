@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatDividerModule } from '@angular/material/divider';
-import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
+import { ModuleListModule } from 'src/app/features/module-browser/module-list/module-list.module';
 import { UserModulesComponent } from 'src/app/features/routes/user-area/user-modules/user-modules.component';
 import { AutoUpdateLoadingIndicatorComponent } from 'src/app/shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator/auto-update-loading-indicator.component';
 import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
@@ -22,7 +22,7 @@ import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-s
   ],
   imports: [
     CommonModule,
-    ModuleBrowserModule,
+    ModuleListModule,
     HeroContentCardComponent,
     FlexLayoutModule,
     BrandPrimaryButtonComponent,

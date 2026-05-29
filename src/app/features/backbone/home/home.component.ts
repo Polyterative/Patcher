@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { DeviceFrameWrapperModule } from 'src/app/shared-interproject/components/@visual/device-frame-wrapper/device-frame-wrapper.module';
@@ -29,6 +30,7 @@ import {
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     BrandPrimaryButtonComponent,
     DeviceFrameWrapperModule,
     HomeExperienceHeroComponent,
