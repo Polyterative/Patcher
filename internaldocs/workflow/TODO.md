@@ -219,6 +219,110 @@ important notices without turning Patcher into a blog platform.
 
 ---
 
+#### HIGH: Type safety — eliminate `any` and flow Supabase types end-to-end
+
+**Why:** A repo-wide scan found **~2,633 `any` annotations across ~45k TS LOC** (roughly one
+every 17 lines), even though `src/backend/database.types.ts` already exposes generated
+Supabase row types. The result is that refactors are dangerous, IDE intelligence is degraded,
+and a whole class of runtime bugs (renamed columns, null fields, wrong joins) ship to Sentry
+instead of failing at compile time. Worst offenders are the big data services and
+`supabase-queries.ts` (1,928 LOC).
+
+**Scope:**
+- Establish a typed query helper layer so every call returns `PostgrestSingleResponse<T>` /
+  `Tables<'rack'>` / `TablesInsert<...>` instead of `any` — start with `SupabaseService`
+  namespaces (`GET`/`get`/`add`/`update`/`delete`).
+- Ratchet ESLint: add `@typescript-eslint/no-explicit-any` as warn, snapshot the baseline,
+  then forbid new occurrences on changed files via lint-staged.
+- Enable `strict` / `noImplicitAny` incrementally with a per-directory budget; track the
+  count in this entry as it drops.
+- Prioritise these files first (largest blast radius):
+  `features/backend/supabase-queries.ts`, `components/patch-parts/patch-detail-data.service.ts`,
+  `components/rack-parts/rack-detail-data.service.ts`,
+  `components/module-parts/module-editor/module-editor.component.ts`,
+  `features/module-browser/module-browser-data.service.ts`.
+
+**Out of scope:** refactoring the runtime behaviour of those files; this is purely a type
+hardening pass with no functional change.
+
+- [ ] Add `@typescript-eslint/no-explicit-any` (warn) and record baseline count.
+- [ ] Introduce typed wrapper around Supabase calls in `SupabaseService` using `Tables<>` /
+      `TablesInsert<>` / `TablesUpdate<>` helpers.
+- [ ] Migrate the five priority files above; verify the data-service callers compile clean.
+- [ ] Flip `noImplicitAny` to true (file-by-file via `// @ts-expect-error` budget if needed).
+- [ ] Drop the count below 500 `any`, then below 100.
+
+---
+
+#### HIGH: Angular modernization — signals, `inject()`, standalone, `takeUntilDestroyed`
+
+**Why:** The project is on Angular 21 but written largely in pre-signals style: scans show
+**1,210 `.subscribe(` calls vs only 342 `takeUntil`** (latent leak risk), **178 NgModule /
+`standalone:false` references**, **445 `ngOnInit`s**, and only **~37** signal / `inject()` /
+`input()` occurrences across 174 components. This blocks future zoneless mode, makes CD
+inconsistent (332 `ChangeDetectionStrategy` mentions across 174 components — not uniformly
+OnPush), and keeps boilerplate high.
+
+**Scope:**
+- Run the official Angular schematics: `ng generate @angular/core:standalone` and
+  `ng generate @angular/core:control-flow` for mechanical wins first.
+- Migrate `SubManager` internally to `takeUntilDestroyed(inject(DestroyRef))` so every
+  subclass benefits automatically; deprecate manual `takeUntil(this.destroy$)` patterns over
+  time.
+- Default new components to `ChangeDetectionStrategy.OnPush`; audit existing components and
+  enable OnPush where safe.
+- Convert hot leaf components to signal inputs / `computed()` for measurable CD wins.
+  Candidates: `rack-visual-model`, `module-list` rows, `patch-graph` nodes, `mat-form-entity`.
+- Split the four God-files (each crossing 900–1,900 LOC) discovered during the audit:
+  `supabase-queries.ts`, `patch-detail-data.service.ts`, `rack-detail-data.service.ts`,
+  `module-editor.component.ts`.
+
+**Sequencing:** This task can interleave with the type-safety task above — modernising a file
+is a natural time to also kill its `any`s.
+
+- [ ] Run standalone + control-flow schematics; commit the mechanical diff.
+- [ ] Rewire `SubManager` to `DestroyRef` + `takeUntilDestroyed`; keep API back-compatible.
+- [ ] OnPush audit across `src/app/components/**` and `src/app/features/**`.
+- [ ] Convert at least three hot leaf components to signal inputs as a pilot.
+- [ ] Split each of the four God-files into focused sub-services / sub-components.
+
+---
+
+#### HIGH: Bundle weight, lazy boundaries, and SSR prerender coverage
+
+**Why:** Built `dist/Patcher/browser` is **~22 MB**, top JS chunks are 416 KB / 336 KB /
+324 KB, Lottie alone is 220 KB, and `prerender-routes.txt` only lists **6 routes** even
+though the public surface is per-rack / per-module / per-patch / per-user / per-manufacturer.
+For a share-link-driven music-gear social app this is both a TTI and an SEO regression. Heavy
+deps (`@angular/flex-layout` — deprecated, `lodash` full, `sigma` + `graphology*`, GSAP,
+`lottie-web`, `modern-screenshot`, `ngx-image-cropper`, `ngx-dropzone`) are likely all in the
+initial graph.
+
+**Scope:**
+- Run `pnpm bundle-report` and document the top 10 vendor offenders inline in this entry.
+- Replace `lodash` with `lodash-es` (already tree-shakeable) or native methods; remove
+  `@angular/flex-layout` in favour of CSS grid/flex utilities already in `tools.scss`.
+- Move admin-panel, `application-insights`, sigma/graph view, `ngx-image-cropper`,
+  `ngx-dropzone`, and Lottie behind `@defer` blocks or route-level `loadComponent`.
+- Generalise `scripts/generate-prerender-routes.mjs` to enumerate top public racks / modules /
+  patches / profiles / manufacturers so they are SSR-cached and crawlable; cap volume to a
+  sensible top-N to keep build time manageable.
+- Image audit: add `loading="lazy"`, explicit `width`/`height`, and proper `alt` (only 154
+  a11y attrs across 165 HTML files — double dip for a11y).
+
+**Success criteria:**
+- Initial JS payload (main + eagerly-loaded chunks) under 300 KB gzipped.
+- Largest single chunk under 250 KB.
+- Prerender list covers ≥ 95% of inbound public traffic by URL.
+
+- [ ] Capture baseline bundle report and pin numbers in this entry.
+- [ ] Drop `@angular/flex-layout` and full `lodash`.
+- [ ] Defer the six heavy feature areas listed above.
+- [ ] Extend prerender generator to top-N public entities; verify in `dist/Patcher/prerendered-routes.json`.
+- [ ] Image/lazy-loading sweep across hero cards and list rows.
+
+---
+
 #### BUG: Rack editor — name field empty when entering edit mode
 
 **What happens:** When the user clicks "Edit rack" (i.e. unlocks a locked rack), the "Rack name"
