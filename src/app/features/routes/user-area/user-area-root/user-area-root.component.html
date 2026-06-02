@@ -102,6 +102,9 @@
                             cardClass="userBG"
                             [compact]="true"
                             [statistics]="miscStats$ | async"
+                            emptyMessage="Start adding modules, racks, and patches to see your stats."
+                            emptyTitle="No activity yet"
+                            emptyIcon="analytics"
             ></app-statistics>
             <app-statistics
               title="Contributor stats"
