@@ -42,7 +42,7 @@ export class StatisticsComponent {
   }[] | null;
   
   get visibleStatistics() {
-    return this.statistics?.filter(s => s.value > 0) ?? [];
+    return this.statistics ?? [];
   }
 
   get showEmptyState(): boolean {

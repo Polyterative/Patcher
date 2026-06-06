@@ -130,6 +130,36 @@ describe('UserAreaRootComponent - Initialization', () => {
 
     expect(mockDataService.updateContributorStats$.next).toHaveBeenCalledWith();
   });
+
+  it('should request workspace entities on ngOnInit', () => {
+    mockUserService = createMockUserManagementService();
+    mockDataService = createMockUserAreaDataService();
+    mockSeoService = createMockSeoAndUtilsService();
+    mockBackend = createMockSupabaseService();
+
+    component = new UserAreaRootComponent(
+      mockUserService as any,
+      mockBackend as any,
+      mockDataService as any,
+      mockSeoService as any,
+      createMockUrlCreatorService() as any
+    );
+    component.ignoreSeo = true;
+
+    spyOn(mockDataService.updateModulesData$, 'next');
+    spyOn(mockDataService.updateRackData$, 'next');
+    spyOn(mockDataService.updatePatchesData$, 'next');
+    spyOn(mockDataService.updateManualsData$, 'next');
+    spyOn(mockDataService.updateCommentsData$, 'next');
+
+    component.ngOnInit();
+
+    expect(mockDataService.updateModulesData$.next).toHaveBeenCalledWith();
+    expect(mockDataService.updateRackData$.next).toHaveBeenCalledWith(undefined);
+    expect(mockDataService.updatePatchesData$.next).toHaveBeenCalledWith();
+    expect(mockDataService.updateManualsData$.next).toHaveBeenCalledWith();
+    expect(mockDataService.updateCommentsData$.next).toHaveBeenCalledWith();
+  });
 });
 
 
