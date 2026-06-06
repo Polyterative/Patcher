@@ -27,6 +27,7 @@ When the user's request matches one of these, **delegate to a sub-agent** using 
 | Restructure code without changing behaviour | **refactorer** | `internaldocs/agents/refactorer.md` |
 | Add unit / E2E test coverage | **test-writer** | `internaldocs/agents/test-writer.md` |
 | Diagnose a defect to root cause | **bug-hunter** | `internaldocs/agents/bug-hunter.md` |
+| Boot a long-running autonomous loop driven by `agent/` and `internaldocs/workflow/` (replaces pasting a 10 KB mission prompt by hand) | **autonomous-engineer** | `internaldocs/agents/autonomous-engineer.md` |
 
 **Model policy:** operational personas, including `planner`, run on default/Sonnet-class models (`planner`: `claude-sonnet-4.6`). The only premium-model persona is `advisor`, used as a fast general counselor for hard problems; it must not edit files or execute implementation work.
 

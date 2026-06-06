@@ -28,6 +28,7 @@ specific behaviour.
 | [`refactorer.md`](./refactorer.md) | Clean up code without changing behaviour | Behaviour-preserving diffs + green tests |
 | [`test-writer.md`](./test-writer.md) | Add unit/E2E coverage for existing code | New spec files, no production changes |
 | [`bug-hunter.md`](./bug-hunter.md) | Diagnose a reported defect to root cause | Root-cause writeup + minimal fix |
+| [`autonomous-engineer.md`](./autonomous-engineer.md) | Long-running, frontend-only loop driven by `agent/` and `internaldocs/workflow/` files | Iterative commits + doc updates over a multi-hour session. Heavier than the other personas by design (full mission prompt) — load it once instead of pasting. |
 
 ## Composition patterns
 
