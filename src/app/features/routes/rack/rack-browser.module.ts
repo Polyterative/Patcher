@@ -5,6 +5,7 @@ import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.module';
 import { RackModule } from 'src/app/components/rack-parts/rack.module';
+import { ModuleBrowserRootModule } from 'src/app/features/module-browser/module-browser-root/module-browser-root.module';
 import { CommonSidebarComponent } from 'src/app/features/backbone/common-sidebar/common-sidebar.component';
 import { RackBrowserDataService } from 'src/app/features/routes/rack/rack-browser-data.service';
 import { RackBrowserDetailViewComponent } from 'src/app/features/routes/rack/rack-browser-detail/rack-browser-detail-view.component';
@@ -102,6 +103,7 @@ import { AdviceTooltipComponent } from "src/app/shared-interproject/components/@
       }
     ]),
     RackModule,
+    ModuleBrowserRootModule,
     FlexLayoutModule,
     MatCardModule,
     HeroContentCardComponent,

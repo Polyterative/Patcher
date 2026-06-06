@@ -38,6 +38,8 @@ import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-s
 import { FlexboxRowFastComponent } from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.component';
 import { PatchMicroModule } from 'src/app/components/patch-micro/patch-micro.module';
 import { RackMicroModule } from 'src/app/components/rack-micro/rack-micro.module';
+import { RackModule } from 'src/app/components/rack-parts/rack.module';
+import { PatchModule } from 'src/app/components/patch-parts/patch.module';
 
 
 @NgModule({
@@ -82,7 +84,9 @@ import { RackMicroModule } from 'src/app/components/rack-micro/rack-micro.module
     EmptyStateTipsComponent,
     FlexboxRowFastComponent,
     PatchMicroModule,
-    RackMicroModule
+    RackMicroModule,
+    RackModule,
+    PatchModule
   ],
   exports:      [
     UserAreaRootComponent
