@@ -82,7 +82,7 @@ export function createDeleteNamespace(
         );
       }),
       remapErrors(),
-      cacheBust(['modules', 'currentUserModules', 'moduleWithId', 'currentUserComments']),
+      cacheBust(['modules', 'currentUserModules', 'modulePossessionCounts', 'moduleWithId', 'currentUserComments']),
       catchErrors(snackBar)
     ),
     
@@ -99,7 +99,7 @@ export function createDeleteNamespace(
           .filter('entityId', 'eq', id)
           .filter('entityType', 'eq', CommentableEntityTypes.MODULE)
       )),
-      cacheBust(['currentUserModules', 'currentUserComments']),
+      cacheBust(['currentUserModules', 'modulePossessionCounts', 'currentUserComments']),
       remapErrors()
     ),
     

@@ -345,7 +345,7 @@ export function createUpdateNamespace(
             .upsert({moduleid: moduleId, profileid: user.id, kind}, {onConflict: 'profileid,moduleid'})
         );
       }),
-      cacheBust(['currentUserModules']),
+      cacheBust(['currentUserModules', 'modulePossessionCounts']),
       remapErrors()
     )
   };

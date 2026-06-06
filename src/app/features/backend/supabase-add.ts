@@ -88,7 +88,7 @@ export function createAddNamespace(
               profileid: user.id
             })
         )),
-        cacheBust(['currentUserModules']),
+        cacheBust(['currentUserModules', 'modulePossessionCounts']),
         remapErrors()
       ),
     
