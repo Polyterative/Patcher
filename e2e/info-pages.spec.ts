@@ -39,12 +39,12 @@ test.describe('Changelog Page', () => {
 
 test.describe('Insights Page', () => {
   test.beforeEach(async ({page}) => {
-    await page.goto('/insights');
+    await page.goto('/info/insights');
   });
 
   test('page loads without error', async ({page}) => {
     await expect(page).not.toHaveURL(/404/);
-    await expect(page).toHaveURL(/insights/);
+    await expect(page).toHaveURL(/info\/insights/);
   });
 
   test('insights hero card is visible (loading or loaded)', async ({page}) => {
@@ -68,7 +68,7 @@ test.describe('Insights Page', () => {
     await page.route('**/rest/v1/**', route =>
       route.fulfill({status: 500, body: JSON.stringify({message: 'forced failure'})})
     );
-    await page.goto('/insights');
+    await page.goto('/info/insights');
     await expect(page.locator('lib-hero-content-card').first()).toBeVisible({timeout: 10_000});
     await expect(page).not.toHaveURL(/404/);
   });

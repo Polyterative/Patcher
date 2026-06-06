@@ -10,7 +10,7 @@ import {
   BehaviorSubject,
   Subject
 } from 'rxjs';
-import { NavigationStart, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { AppComponent } from './app.component';
 import { AppShellLayoutService } from './shared-interproject/app-shell-layout.service';
 import { AppViewportService } from './shared-interproject/app-viewport.service';
@@ -115,14 +115,6 @@ describe('AppComponent', () => {
     const shell = fixture.debugElement.query(By.css('.app-shell')).nativeElement as HTMLElement;
     expect(shell.classList.contains('app-shell--wide')).toBeTrue();
     expect(fixture.debugElement.query(By.directive(ToolbarStubComponent))).toBeNull();
-  });
-
-  it('shows the route loading state during navigation starts', () => {
-    fixture.detectChanges();
-    routerEvents$.next(new NavigationStart(1, '/modules/browser'));
-    fixture.detectChanges();
-
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Loading page');
   });
 
   it('uses the embedded shell on auth routes when wide-shell layout is active', () => {

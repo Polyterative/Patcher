@@ -17,7 +17,8 @@ test.describe('Patch Graph Stability', () => {
 
     await page.goto('/patches/details/5');
     await expect(page).not.toHaveURL(/404/);
-    await expect(page).toHaveURL(/patches\/details\/5/);
+    // Legacy /patches/details/:id URLs redirect to the opaque /patches/:public_id slug.
+    await expect(page).toHaveURL(/\/patches\/(details\/5|[^/]+)/);
 
     const graphContainer = page.locator('app-patch-graph .graph-container');
     await expect(graphContainer).toBeVisible({timeout: 20_000});
