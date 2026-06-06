@@ -293,9 +293,26 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
     return entry && entry.name || '';
   }
 
-  /** Display function for the preset autocomplete panel — shows the raw string value. */
-  presetDisplayFunction = (entry?: ISelectable): string => {
-    return entry?.name ?? '';
+  /**
+   * Display function for the preset autocomplete panel.
+   *
+   * The matAutocomplete trigger calls this for every writeValue, including
+   * programmatic resets where the control value is a plain string or number
+   * (e.g. a rack name pre-fill). Returning `entry?.name` for those would wipe
+   * the displayed value, so we pass primitives through unchanged and only
+   * unwrap ISelectable objects coming from the preset chip panel.
+   */
+  presetDisplayFunction = (entry?: ISelectable | string | number | null): string => {
+    if (entry == null) {
+      return '';
+    }
+    if (typeof entry === 'string') {
+      return entry;
+    }
+    if (typeof entry === 'number') {
+      return String(entry);
+    }
+    return entry.name ?? '';
   };
 
   ngOnInit(): void {
