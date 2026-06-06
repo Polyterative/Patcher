@@ -32,6 +32,7 @@ import { CleanCardComponent } from '../../shared-interproject/components/@visual
 import { ModuleDetailDataCardComponent } from './module-browser-detail/module-detail-data-card/module-detail-data-card.component';
 import { ModuleUsageCardComponent } from './module-browser-detail/module-usage-card/module-usage-card.component';
 import { ModuleBrowserRootComponent } from './module-browser-root/module-browser-root.component';
+import { ModuleBrowserRootModule } from './module-browser-root/module-browser-root.module';
 import { ModuleBrowserDetailComponent } from "src/app/features/module-browser/module-browser-detail/module-browser-detail.component";
 import { ModuleBrowserDataService } from "src/app/features/module-browser/module-browser-data.service";
 import { RouterModule } from "@angular/router";
@@ -68,14 +69,14 @@ import { ModuleEditorModule } from 'src/app/components/module-parts/module-edito
 
 @NgModule({
   declarations: [
-    ModuleBrowserRootComponent,
     ModuleBrowserDetailComponent,
     ModuleCompositeComponent,
     ModuleDetailDataCardComponent,
     ModuleUsageCardComponent
   ],
-  providers:    [ModuleBrowserDataService],
+  providers:    [],
   imports: [
+    ModuleBrowserRootModule,
     CommonModule,
     RouterModule.forChild([
       
