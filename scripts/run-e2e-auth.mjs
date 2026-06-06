@@ -3,7 +3,7 @@
  * Guard script for authenticated e2e tests.
  * Exits 0 with a warning when credentials are not set so CI doesn't break.
  */
-import {execSync} from 'child_process';
+import {spawnSync} from 'child_process';
 import {existsSync, readFileSync} from 'fs';
 import {resolve} from 'path';
 
@@ -23,4 +23,10 @@ if (!process.env['E2E_TEST_EMAIL'] || !process.env['E2E_TEST_PASSWORD']) {
     process.exit(0);
 }
 
-execSync('playwright test --reporter=list --project=chromium-auth', {stdio: 'inherit', cwd: rootDir});
+const args = ['test', '--reporter=list', '--project=chromium-auth', ...process.argv.slice(2)];
+const result = spawnSync('playwright', args, {stdio: 'inherit', cwd: rootDir});
+
+if (result.error) {
+    throw result.error;
+}
+process.exit(result.status ?? 1);
