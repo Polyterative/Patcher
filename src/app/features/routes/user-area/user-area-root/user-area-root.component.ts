@@ -115,6 +115,11 @@ export class UserAreaRootComponent extends SubManager implements OnInit, OnDestr
     }
     
     this.dataService.connectDiscovery(this.globalSearchQuery$);
+    this.dataService.updateModulesData$.next();
+    this.dataService.updateRackData$.next(undefined);
+    this.dataService.updatePatchesData$.next();
+    this.dataService.updateManualsData$.next();
+    this.dataService.updateCommentsData$.next();
     this.dataService.updateContributorStats$.next();
   }
 

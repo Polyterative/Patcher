@@ -8,23 +8,27 @@ describe('StatisticsComponent', () => {
     component = new StatisticsComponent();
   });
   
-  it('visibleStatistics returns only items with value > 0', () => {
+  it('visibleStatistics keeps zero-valued items so populated stats cards remain visible', () => {
     component.statistics = [
       {name: 'Modules', value: 5},
       {name: 'Patches', value: 0},
       {name: 'Racks', value: 3},
       {name: 'Empty', value: 0}
     ];
-    expect(component.visibleStatistics.length).toBe(2);
-    expect(component.visibleStatistics.map(s => s.name)).toEqual(['Modules', 'Racks']);
+    expect(component.visibleStatistics.length).toBe(4);
+    expect(component.visibleStatistics.map(s => s.name)).toEqual(['Modules', 'Patches', 'Racks', 'Empty']);
   });
   
-  it('visibleStatistics returns empty array when all values are 0', () => {
+  it('visibleStatistics returns all rows when all values are 0', () => {
     component.statistics = [
       {name: 'Modules', value: 0},
       {name: 'Patches', value: 0}
     ];
-    expect(component.visibleStatistics).toEqual([]);
+    expect(component.visibleStatistics).toEqual([
+      {name: 'Modules', value: 0},
+      {name: 'Patches', value: 0}
+    ]);
+    expect(component.shouldRenderCard).toBeTrue();
   });
   
   it('visibleStatistics returns empty array when statistics is null', () => {
@@ -41,14 +45,13 @@ describe('StatisticsComponent', () => {
     expect(component.visibleStatistics.length).toBe(3);
   });
   
-  it('includes items with negative values (< 0 is not > 0)', () => {
+  it('keeps negative values when supplied by the caller', () => {
     component.statistics = [
       {name: 'Positive', value: 5},
       {name: 'Negative', value: -1}
     ];
-    // -1 is not > 0, so it should be filtered out
-    expect(component.visibleStatistics.length).toBe(1);
-    expect(component.visibleStatistics[0].name).toBe('Positive');
+    expect(component.visibleStatistics.length).toBe(2);
+    expect(component.visibleStatistics.map(s => s.name)).toEqual(['Positive', 'Negative']);
   });
   
   it('default values are set correctly', () => {
@@ -58,14 +61,14 @@ describe('StatisticsComponent', () => {
     expect(component.compact).toBeFalse();
   });
 
-  it('showEmptyState is true when empty message is provided and all values are zero', () => {
+  it('showEmptyState is false when empty message is provided and all values are zero', () => {
     component.statistics = [
       {name: 'Modules submitted', value: 0},
       {name: 'Comments posted', value: 0}
     ];
     component.emptyMessage = 'Start contributing';
 
-    expect(component.showEmptyState).toBeTrue();
+    expect(component.showEmptyState).toBeFalse();
     expect(component.shouldRenderCard).toBeTrue();
   });
 

@@ -24,6 +24,11 @@ function mockDataService(): UserAreaDataService {
     commentsData$:         new BehaviorSubject(undefined),
     manualsData$:          new BehaviorSubject(undefined),
     contributorStats$:     new BehaviorSubject(undefined),
+    updateModulesData$:    new Subject<void>(),
+    updateRackData$:       new Subject<string | undefined>(),
+    updatePatchesData$:    new Subject<void>(),
+    updateManualsData$:    new Subject<void>(),
+    updateCommentsData$:   new Subject<void>(),
     updateContributorStats$: new Subject<void>(),
     connectDiscovery:      jasmine.createSpy('connectDiscovery'),
     resetUiState:          jasmine.createSpy('resetUiState')
@@ -102,6 +107,25 @@ describe('UserAreaRootComponent', () => {
       const { comp, ds } = makeComp();
       comp.ngOnInit();
       expect(ds.connectDiscovery).toHaveBeenCalled();
+    });
+
+    it('requests workspace data on init', () => {
+      const { comp, ds } = makeComp();
+      spyOn(ds.updateModulesData$, 'next');
+      spyOn(ds.updateRackData$, 'next');
+      spyOn(ds.updatePatchesData$, 'next');
+      spyOn(ds.updateManualsData$, 'next');
+      spyOn(ds.updateCommentsData$, 'next');
+      spyOn(ds.updateContributorStats$, 'next');
+
+      comp.ngOnInit();
+
+      expect(ds.updateModulesData$.next).toHaveBeenCalled();
+      expect(ds.updateRackData$.next).toHaveBeenCalledWith(undefined);
+      expect(ds.updatePatchesData$.next).toHaveBeenCalled();
+      expect(ds.updateManualsData$.next).toHaveBeenCalled();
+      expect(ds.updateCommentsData$.next).toHaveBeenCalled();
+      expect(ds.updateContributorStats$.next).toHaveBeenCalled();
     });
   });
 
