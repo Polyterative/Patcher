@@ -1892,6 +1892,7 @@ export class SupabaseQueriesService {
   @Cacheable({
     maxAge: defaultCacheTime,
     maxCacheCount: 100,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('modulePossessionCounts') || x.includes('currentUserModules'))),
   })
   getModulePossessionCounts(moduleId: number): Observable<{ hasCount: number; wantsCount: number; sellsCount: number }> {
     return rxFrom(

@@ -42,6 +42,7 @@ export type CachedEntity =
   | 'rackWithId'
   | 'racksMinimal'
   | 'userModuleTags'
+  | 'modulePossessionCounts'
   | void;
 
 export const cacheBuster$ = new Subject<CachedEntity[]>();
