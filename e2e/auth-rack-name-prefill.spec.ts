@@ -119,10 +119,17 @@ async function createRack(page: Page, rackName: string): Promise<string> {
   return url;
 }
 
+function editFabEditButton(page: Page) {
+  return page.locator('app-edit-fab').getByRole('button', {name: /^Edit rack$/i});
+}
+
+function editFabLockButton(page: Page) {
+  return page.locator('app-edit-fab').getByRole('button', {name: /^(Lock rack|Discard changes)$/i});
+}
+
 async function enterEditMode(page: Page): Promise<void> {
-  const editButton = page.getByRole('button', {name: /^Edit rack$/i}).first();
-  const lockButton = page.getByRole('button', {name: /^(Lock rack|Discard changes)$/i}).first();
   const moduleBrowser = page.locator('app-module-browser-root');
+  const lockButton = editFabLockButton(page);
 
   if (
     await lockButton.isVisible().catch(() => false)
@@ -131,21 +138,21 @@ async function enterEditMode(page: Page): Promise<void> {
     return;
   }
 
+  const editButton = editFabEditButton(page);
   await expect(editButton).toBeVisible({timeout: 10_000});
   await editButton.click();
   await expect(moduleBrowser).toBeVisible({timeout: 10_000});
 }
 
 async function lockRack(page: Page): Promise<void> {
-  const editButton = page.getByRole('button', {name: /^Edit rack$/i}).first();
+  const editButton = editFabEditButton(page);
   if (await editButton.isVisible().catch(() => false)) {
     return;
   }
 
-  const lockButton = page.getByRole('button', {name: /^(Lock rack|Discard changes)$/i}).first();
-  if (await lockButton.isVisible().catch(() => false)) {
-    await lockButton.click();
-  }
+  const lockButton = editFabLockButton(page);
+  await expect(lockButton).toBeVisible({timeout: 10_000});
+  await lockButton.click();
 
-  await expect(page.getByRole('button', {name: /^Edit rack$/i}).first()).toBeVisible({timeout: 10_000});
+  await expect(editButton).toBeVisible({timeout: 10_000});
 }
