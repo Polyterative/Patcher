@@ -29,7 +29,8 @@ test.describe('Patch Details (public)', () => {
 
   test('page loads without error', async ({page}) => {
     await expect(page).not.toHaveURL(/404/);
-    await expect(page).toHaveURL(/patches\/details\/5/);
+    // Legacy /patches/details/:id URLs redirect to the opaque /patches/:public_id slug.
+    await expect(page).toHaveURL(/\/patches\/(details\/5|[^/]+)/);
   });
 
   test('hero card with "Patch details" heading is visible', async ({page}) => {
