@@ -77,13 +77,20 @@ if (forRootViolations.length > 0) {
     console.error(`  - ${violation}`);
   }
   console.error('');
+  console.error('Fix: replace RouterModule.forRoot() with RouterModule.forChild() in this feature module,');
+  console.error('     or move the route registration into src/app/app-routing.module.ts.');
+  console.error('     See internaldocs/ARCHITECTURE.md §File Structure.');
+  console.error('');
 }
 
 if (importViolations.length > 0) {
   console.error(
     'Feature modules that declare RouterModule.forChild() must be lazy-loaded, not imported as shared UI modules.'
   );
-  console.error('Extract reusable declarations into a separate shared/list module instead.\n');
+  console.error('Fix: extract reusable declarations (components/pipes/directives) into a separate');
+  console.error('     shared/list module that does NOT register routes, and import that module instead.');
+  console.error('     See internaldocs/ARCHITECTURE.md §File Structure.');
+  console.error('');
 
   for (const violation of importViolations) {
     console.error(
