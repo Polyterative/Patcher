@@ -112,11 +112,23 @@ test.describe('RLS · critical user journeys', () => {
     throw new Error('no unused module/tag pair available for RLS journey setup');
   };
 
+  // RLS blocks authed users from DELETE on modules (admin-only policy), so test modules
+  // can't be hard-deleted from the spec. Insert them as private + unapproved + owned by the
+  // test user so they never leak into the public catalog/search even if rows accumulate.
   const createTestModule = async (name: string): Promise<number> => {
     const makerId = await manufacturerId();
     const {data, error} = await authedClient
       .from('modules')
-      .insert({name, hp: 4, manufacturerId: makerId, standard: 1})
+      .insert({
+        name,
+        hp: 4,
+        manufacturerId: makerId,
+        standard: 1,
+        public: false,
+        isApproved: false,
+        submitter: testUserId,
+        description: 'auto-created by RLS e2e (do not surface)'
+      })
       .select('id')
       .single();
     expect(error, `module create failed: ${ error?.message }`).toBeNull();
@@ -323,7 +335,8 @@ test.describe('RLS · critical user journeys', () => {
         await cleanup('delete submitted module inputs', () => authedClient.from('module_ins').delete().eq('moduleid', moduleId!));
         await cleanup('delete submitted module outputs', () => authedClient.from('module_outs').delete().eq('moduleid', moduleId!));
       }
-      // Module intentionally remains; admin can sweep DELETE FROM modules WHERE name LIKE '__rls-test-mod-%'.
+      // Module row is left in place (RLS blocks authed delete). createTestModule keeps
+      // it private + unapproved + owned by the test user so it never leaks to the catalog.
     }
   });
 
@@ -370,7 +383,8 @@ test.describe('RLS · critical user journeys', () => {
       if (moduleId) {
         await cleanup('delete own module panels by module', () => authedClient.from('module_panels').delete().eq('moduleid', moduleId!));
       }
-      // Module intentionally remains; admin can sweep DELETE FROM modules WHERE name LIKE '__rls-test-mod-%'.
+      // Module row is left in place (RLS blocks authed delete). createTestModule keeps
+      // it private + unapproved + owned by the test user so it never leaks to the catalog.
     }
   });
 
