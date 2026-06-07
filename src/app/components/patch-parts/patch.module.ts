@@ -52,6 +52,7 @@ import { PatchConnectionStatsPipe } from 'src/app/components/patch-parts/patch-c
 import { PatchConnectionUniqueModulesPipe } from 'src/app/components/patch-parts/patch-connection-unique-modules.pipe';
 import { FlexboxRowFastComponent } from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.component';
 import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.module';
+import { ModuleBrowserSharedModule } from 'src/app/features/module-browser/module-browser-shared.module';
 import { EditFabComponent } from 'src/app/shared-interproject/components/@visual/edit-fab/edit-fab.component';
 import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-state-tips/empty-state-tips.component';
 
@@ -122,6 +123,7 @@ import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-s
     FlexboxRowFastComponent,
     EmptyStateTipsComponent,
     ModulePartsModule,
+    ModuleBrowserSharedModule,
     EditFabComponent
   ]
 })
