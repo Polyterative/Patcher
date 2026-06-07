@@ -192,7 +192,8 @@ async function openRackModulePanel(module: Locator): Promise<boolean> {
   await module.scrollIntoViewIfNeeded();
 
   for (const force of [false, true]) {
-    await module.click({force});
+    const clicked = await module.click({force, timeout: 5_000}).then(() => true).catch(() => false);
+    if (!clicked) continue;
     const panel = module.locator('.patch-editor-rack-visual__cv-inline');
     if (await panel.isVisible({timeout: 1_500}).catch(() => false)) {
       return true;

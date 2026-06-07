@@ -217,7 +217,7 @@ async function addRackModuleToRack(page: Page, module: OwnedModule): Promise<voi
   });
 
   await addRequest;
-  await expect(page.locator('.module-browser-mode__button', {hasText: /^Available$/i})).toBeVisible({timeout: 15_000});
+  await expect(page.getByRole('button', {name: /^Available$/i}).first()).toBeVisible({timeout: 15_000});
 }
 
 async function deleteTestRack(page: Page, rackUrl: string): Promise<void> {
@@ -318,13 +318,26 @@ async function ensureOwnedModule(page: Page): Promise<{id: number; name: string;
         'Content-Type': 'application/json',
       };
 
+      // Decode JWT to get the current user's profile id up-front so all
+      // user_modules queries are scoped to this user (avoids picking up rows
+      // belonging to other test users which would falsely satisfy
+      // "already has valid modules").
+      let profileId: string | null = null;
+      try {
+        const payload = JSON.parse(atob(accessToken.split('.')[1])) as {sub?: string};
+        profileId = payload?.sub ?? null;
+      } catch {
+        return {status: 'jwt-decode-error', module: null, seededModuleId: null};
+      }
+      if (!profileId) { return {status: 'no-profile-id', module: null, seededModuleId: null}; }
+
       // Use the same complex JOIN that Angular's getCurrentUserModules uses,
       // including manufacturer join (which uses INNER JOIN semantics in PostgREST
       // for NOT-NULL FK columns), to check for truly valid owned modules.
       const fullJoin =
         'kind,module:modules!user_modules_moduleid_fkey(id,name,manufacturer:manufacturerId(id,name))';
       const existingResp = await fetch(
-        `${ supabaseUrl }/rest/v1/user_modules?select=${ encodeURIComponent(fullJoin) }&limit=5`,
+        `${ supabaseUrl }/rest/v1/user_modules?select=${ encodeURIComponent(fullJoin) }&profileid=eq.${ profileId }&limit=5`,
         {headers},
       );
       const existing = (await existingResp.json()) as Array<{
@@ -350,16 +363,6 @@ async function ensureOwnedModule(page: Page): Promise<{id: number; name: string;
         ? existing.find(r => r.module?.id != null && r.module?.manufacturer != null)?.module
         : undefined;
       const existingModuleIdToPromote = existingModuleToPromote?.id ?? null;
-
-      // Decode JWT to get user ID.
-      let profileId: string | null = null;
-      try {
-        const payload = JSON.parse(atob(accessToken.split('.')[1])) as {sub?: string};
-        profileId = payload?.sub ?? null;
-      } catch {
-        return {status: 'jwt-decode-error', module: null, seededModuleId: null};
-      }
-      if (!profileId) { return {status: 'no-profile-id', module: null, seededModuleId: null}; }
 
       let moduleToOwn: {id: number; name: string} | null = existingModuleToPromote
         ? {id: existingModuleToPromote.id, name: existingModuleToPromote.name}
@@ -423,7 +426,17 @@ async function removeOwnedModule(page: Page, moduleId: number): Promise<void> {
         ?? authData?.session?.access_token;
       if (!accessToken) { return; }
 
-      await fetch(`${ supabaseUrl }/rest/v1/user_modules?moduleid=eq.${ mId }`, {
+      // Decode JWT to scope the delete to the current user's profile id only.
+      let profileId: string | null = null;
+      try {
+        const payload = JSON.parse(atob(accessToken.split('.')[1])) as {sub?: string};
+        profileId = payload?.sub ?? null;
+      } catch {
+        profileId = null;
+      }
+      if (!profileId) { return; }
+
+      await fetch(`${ supabaseUrl }/rest/v1/user_modules?moduleid=eq.${ mId }&profileid=eq.${ profileId }`, {
         method: 'DELETE',
         headers: {apikey: anonKey, Authorization: `Bearer ${ accessToken }`},
       });
