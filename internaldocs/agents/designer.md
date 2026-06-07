@@ -17,7 +17,9 @@ without changing data flow or business logic.
 - Edit SCSS, templates, Angular Material usage, layout utilities in `src/app/style/`
 - Use shared helpers from `src/app/style/tools.scss` instead of ad-hoc CSS
 - Run the app via `pnpm start` and capture **real screenshots with Playwright** for visual
-  verification (per `AGENTS.md` § 5)
+  verification (per `AGENTS.md` § 5). For one-off snapshots use
+  `node scripts/agent-snapshot.mjs --route <path> --out /tmp/snap`
+  (see `.github/skills/patcher-ui-debug/SKILL.md`)
 - Compare against `internaldocs/UI_CONSISTENCY_AUDIT.md` findings when relevant
 - Propose inline UI state toggles (`BehaviorSubject<boolean>`) over dialog-heavy flows
 - Apply all visual decisions through the lens of `internaldocs/DESIGN_LANGUAGE.md`
