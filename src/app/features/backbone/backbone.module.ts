@@ -26,7 +26,6 @@ import { EventBannerComponent }      from './event-banner/event-banner.component
 import { FeedbackBoxModule }         from './feedback-box/feedback-box.module';
 import { FooterComponent }           from './footer/footer.component';
 import { ProducthuntBadgeComponent } from './footer/producthunt-badge/producthunt-badge.component';
-import { HomeModule }                from './home/home.module';
 import { LegacyLinkGoneModule }      from './legacy-link-gone/legacy-link-gone.module';
 import { NotFoundModule }            from './404/not-found.module';
 import { ToolbarModule }             from './toolbar/toolbar.module';
@@ -48,7 +47,7 @@ import { ToolbarModule }             from './toolbar/toolbar.module';
     DiscordWidgetComponent,
     ProducthuntBadgeComponent,
     EventBannerComponent,
-  ], imports:   [HomeModule,
+  ], imports:   [
   ToolbarModule,
   FeedbackBoxModule,
   HeroInfoBoxComponent,    HeroInfoBoxTextDirective,

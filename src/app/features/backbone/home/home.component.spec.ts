@@ -1,17 +1,33 @@
+import { ReplaySubject } from 'rxjs';
 import { HomeComponent } from './home.component';
 
 describe('HomeComponent', () => {
   let comp: HomeComponent;
   let mockAppState: any;
   let mockSeoSvc: any;
+  let mockPatchSvc: any;
+  let mockRackSvc: any;
+  let mockModuleSvc: any;
+  const platformId: object = { __browser: false };
+
+  function makeServiceMocks() {
+    mockPatchSvc = { updateSinglePatchData$: new ReplaySubject<number>(1) };
+    mockRackSvc = { updateSingleRackData$: new ReplaySubject<number>(1) };
+    mockModuleSvc = { updateSingleModuleData$: new ReplaySubject<number>(1) };
+  }
 
   beforeEach(() => {
     mockAppState = { isDev: false };
     mockSeoSvc = { updateSeo: jasmine.createSpy('updateSeo') };
+    makeServiceMocks();
 
     comp = new HomeComponent(
       mockAppState,
       mockSeoSvc,
+      mockPatchSvc,
+      mockRackSvc,
+      mockModuleSvc,
+      platformId,
     );
   });
 
@@ -48,17 +64,16 @@ describe('HomeComponent', () => {
 
   it('communityLinks includes insights when isDev=true', () => {
     mockAppState.isDev = true;
+    makeServiceMocks();
     const comp2 = new HomeComponent(
       mockAppState,
       mockSeoSvc,
+      mockPatchSvc,
+      mockRackSvc,
+      mockModuleSvc,
+      platformId,
     );
     expect(comp2.communityLinks.some(l => l.href === '/info/insights')).toBeTrue();
-  });
-
-  it('proofPreviewImages has screenshots for each showcase kind', () => {
-    expect(comp.proofPreviewImages.patch.src).toContain('04-patches');
-    expect(comp.proofPreviewImages.rack.src).toContain('07-rack-details');
-    expect(comp.proofPreviewImages.module.src).toContain('03-module-details');
   });
 
   it('proofSections has at least one item', () => {
@@ -74,5 +89,21 @@ describe('HomeComponent', () => {
     expect(call.url).toBe('https://patcher.xyz/');
     expect(call.type).toBe('website');
     expect(call.keywords).toContain('eurorack');
+  });
+
+  it('exposes view configs for the proof showcase live components', () => {
+    expect(comp.patchViewConfig).toBeDefined();
+    expect(comp.rackViewConfig).toBeDefined();
+    expect(comp.moduleViewConfig).toBeDefined();
+  });
+
+  it('does not seed proof preview data on the server', () => {
+    spyOn(mockPatchSvc.updateSinglePatchData$, 'next');
+    spyOn(mockRackSvc.updateSingleRackData$, 'next');
+    spyOn(mockModuleSvc.updateSingleModuleData$, 'next');
+    comp.ngOnInit();
+    expect(mockPatchSvc.updateSinglePatchData$.next).not.toHaveBeenCalled();
+    expect(mockRackSvc.updateSingleRackData$.next).not.toHaveBeenCalled();
+    expect(mockModuleSvc.updateSingleModuleData$.next).not.toHaveBeenCalled();
   });
 });

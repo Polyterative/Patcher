@@ -7,11 +7,10 @@ import { RouterModule } from '@angular/router';
 import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.module';
 import { PatchModule } from 'src/app/components/patch-parts/patch.module';
 import { CommonSidebarComponent } from 'src/app/features/backbone/common-sidebar/common-sidebar.component';
-import { PatchBrowserDataService } from 'src/app/features/patch-browser/patch-browser-data.service';
 import { PatchBrowserDetailViewComponent } from 'src/app/features/patch-browser/patch-browser-detail/patch-browser-detail-view.component';
 import { LegacyPatchRedirectComponent } from 'src/app/features/patch-browser/legacy-patch-redirect/legacy-patch-redirect.component';
 import { PatchBrowserRootComponent } from 'src/app/features/patch-browser/patch-browser-root/patch-browser-root.component';
-import { PatchCompositeComponent } from 'src/app/features/patch-browser/patch-composite/patch-composite.component';
+import { PatchBrowserSharedModule } from 'src/app/features/patch-browser/patch-browser-shared.module';
 import { AutoContentLoadingIndicatorComponent } from 'src/app/shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator/auto-content-loading-indicator.component';
 import { DevOnlyWindowComponent } from 'src/app/shared-interproject/components/@smart/dev-only-window/dev-only-window/dev-only-window.component';
 import { EmptyStateComponent } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.component';
@@ -51,18 +50,15 @@ import { SharedAtomsModule } from 'src/app/components/shared-atoms/shared-atoms.
 
 @NgModule({
   declarations: [
-    PatchBrowserDetailViewComponent,
-    PatchCompositeComponent,
     PatchBrowserRootComponent,
     LegacyPatchRedirectComponent
   ],
   exports:      [
     PatchBrowserDetailViewComponent
   ],
-  providers:    [PatchBrowserDataService],
   imports: [
     CommonModule,
-    
+    PatchBrowserSharedModule,
     RouterModule.forChild([
       // Legacy numeric-ID URL: redirects public patches to /:publicId,
       // sends private/missing links to /links/retired.

@@ -1,10 +1,16 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Input
+  Inject,
+  Input,
+  OnDestroy,
+  OnInit,
+  PLATFORM_ID
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
+import { PatchModule } from 'src/app/components/patch-parts/patch.module';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import {
   buildWideShellAccountLinks,
@@ -12,13 +18,18 @@ import {
 } from 'src/app/features/backbone/toolbar/toolbar-link-data';
 import {
   combineLatest,
-  Observable
+  Observable,
+  Subject,
+  Subscription,
+  timer
 } from 'rxjs';
 import {
   distinctUntilChanged,
   map,
   shareReplay,
-  startWith
+  startWith,
+  take,
+  takeUntil
 } from 'rxjs/operators';
 import {
   getRouteClickableLinkKey,
@@ -30,15 +41,18 @@ import { HomeHeroContent, HomeHeroVisual } from '../../home-content.models';
 import { buildHomeTextSegments } from '../../home-text-segments.util';
 
 
+const HERO_DEFAULT_PATCH_ID = 5;
+const HERO_PATCH_LOAD_DELAY_MS = 1000;
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-home-experience-hero',
   templateUrl: './home-experience-hero.component.html',
   styleUrls: ['./home-experience-hero.component.scss'],
   standalone: true,
-  imports: [CommonModule, RouterModule]
+  imports: [CommonModule, RouterModule, PatchModule]
 })
-export class HomeExperienceHeroComponent {
+export class HomeExperienceHeroComponent implements OnInit, OnDestroy {
   private _content: HomeHeroContent = {
     eyebrow: '',
     title: '',
@@ -83,11 +97,15 @@ export class HomeExperienceHeroComponent {
   }>;
   public readonly siteTitle = 'patcher.xyz';
   public subtitleLines: string[] = [];
+  private readonly destroy$ = new Subject<void>();
+  private heroPatchLoadSub?: Subscription;
 
   constructor(
     private readonly appShellLayoutService: AppShellLayoutService,
     private readonly appState: AppStateService,
-    private readonly userManagementService: UserManagementService
+    private readonly userManagementService: UserManagementService,
+    public readonly patchDetailDataService: PatchDetailDataService,
+    @Inject(PLATFORM_ID) private readonly platformId: object
   ) {
     this.wideShell$ = this.appShellLayoutService.wideShell$;
     this.wideShellTargets = getWideShellQuickTargets(this.appState.isDev);
@@ -116,7 +134,25 @@ export class HomeExperienceHeroComponent {
     );
     this.content = this._content;
   }
-  
+
+  ngOnInit(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
+    this.heroPatchLoadSub = timer(HERO_PATCH_LOAD_DELAY_MS)
+      .pipe(take(1), takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.patchDetailDataService.updateSinglePatchData$.next(HERO_DEFAULT_PATCH_ID);
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.heroPatchLoadSub?.unsubscribe();
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   getSubtitleSegments(line: string) {
     return this.subtitleSegmentsByLine.get(line) ?? [];
   }
