@@ -25,8 +25,10 @@ done
 if [ "$found" -eq 1 ]; then
   echo ""
   echo "⚠  Hardcoded px values found in TypeScript files."
-  echo "   Use rem instead (divide by 16, e.g. 16px → 1rem, 20px → 1.25rem)."
+  echo "   Fix: use rem instead (divide by 16, e.g. 16px → 1rem, 20px → 1.25rem)."
   echo "   Exception: 0px and 1px are excluded (positions / hairline borders)."
-  echo "   To bypass: git commit --no-verify"
+  echo "   Annotate intentional px with a trailing '// px-ok' comment."
+  echo "   See internaldocs/STYLE_GUIDE.md for sizing rules."
+  echo "   To bypass once: git commit --no-verify"
   exit 1
 fi

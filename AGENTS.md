@@ -123,7 +123,23 @@ Project-scoped Copilot CLI skills in `.github/skills/`:
 ## 10) Internal docs map
 
 Start at `internaldocs/README.md` (full index). Most-used:
-`workflow/CURRENT_FEATURE.md`, `workflow/TODO.md`, `workflow/COMPLETED.md`,
+`workflow/CURRENT_FEATURE.md`, `workflow/TODO.md` (thin index), `workflow/plans/<slug>.md` (per-task detail + decision log), `workflow/COMPLETED.md`,
 `ARCHITECTURE.md`, `STYLE_GUIDE.md`, `patterns/REACTIVE_SERVICES.md`,
 `patterns/BACKEND_METHODS.md`, `patterns/UI_PATTERNS.md`, `testing/UNIT_TESTING.md`,
 `product/PRINCIPLES.md`, `product/ROADMAP.md`.
+
+## 11) Mechanical guardrails (custom lints)
+
+These run as part of `pnpm lint`. Read the error message — each lint is written
+to tell you exactly how to fix the violation, and points at the canonical doc.
+
+- `scripts/check-layering.cjs` — enforces `Component → Data Service → API Service → Supabase`.
+  - **R1** Components must not import `SupabaseService` directly — use a co-located `*-data.service.ts`.
+  - **R2** Files outside `features/backend/` must not import `DatabaseStrings`.
+  - **R3** API services must not depend on component-scoped data services.
+  - **R4** `*.ts` files >500 lines warn, >1000 lines error. Split.
+  - Existing violations are grandfathered in `scripts/.layering-baseline.json`.
+    Refactor to remove entries; update the baseline only with explicit justification
+    (`node scripts/check-layering.cjs --update-baseline`).
+- `scripts/check-route-module-imports.cjs` — `RouterModule.forRoot()` only in `app-routing.module.ts`; lazy-loaded route modules cannot be imported as shared UI.
+- `scripts/check-px-ts.sh` — hardcoded `px` in `*.ts` (use `rem`; annotate intentional `px` with `// px-ok`).

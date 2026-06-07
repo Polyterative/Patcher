@@ -15,7 +15,8 @@ second source of rules.
 
 | File | Purpose |
 |---|---|
-| [workflow/TODO.md](./workflow/TODO.md) | Active tasks and backlog |
+| [workflow/TODO.md](./workflow/TODO.md) | Thin index of active tasks and backlog (one line per task) |
+| [workflow/plans/](./workflow/plans/) | Per-task plan files — backlog detail, checklists, decision logs |
 | [workflow/CURRENT_FEATURE.md](./workflow/CURRENT_FEATURE.md) | Working detail for the feature currently in progress |
 | [workflow/COMPLETED.md](./workflow/COMPLETED.md) | Archive of finished features |
 | [workflow/ABANDONED.md](./workflow/ABANDONED.md) | Intentionally dropped work and rationale |

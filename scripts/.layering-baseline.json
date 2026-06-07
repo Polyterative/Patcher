@@ -1,0 +1,44 @@
+{
+  "_comment": "Grandfathered layering violations. Do not add by hand — run `node scripts/check-layering.cjs --update-baseline`. New violations should NOT be added; refactor instead.",
+  "R1": [
+    "src/app/components/format-translator/standards.service.ts",
+    "src/app/components/module-parts/module-details/module-details.component.ts",
+    "src/app/components/patch-parts/patch-creator/patch-creator.component.ts",
+    "src/app/components/patch-parts/patch-details/patch-details.component.ts",
+    "src/app/components/patch-parts/patch-editor/patch-editor.component.ts",
+    "src/app/components/patch-parts/patch-graph/patch-graph.component.ts",
+    "src/app/components/rack-parts/rack-creator/rack-creator.component.ts",
+    "src/app/components/rack-parts/rack-editor/rack-editor.component.ts",
+    "src/app/components/rack-parts/rack-module-adder/rack-module-adder-dialog.component.ts",
+    "src/app/components/shared-atoms/comments/comment-context/comment-context.component.ts"
+  ],
+  "R2": [
+    "src/app/components/module-parts/module-details/module-details.component.ts",
+    "src/app/components/module-parts/module-minimal/module-part-image/module-part-image.component.ts",
+    "src/app/components/patch-parts/patch-minimal/patch-minimal.component.ts",
+    "src/app/components/rack-parts/rack-editor/rack-editor.types.ts",
+    "src/app/components/rack-parts/rack-image/rack-image.component.ts",
+    "src/app/components/shared-atoms/comments/comment-context/comment-context.component.ts",
+    "src/app/features/manufacturer-detail/manufacturer-browser-root/manufacturer-row/manufacturer-row.component.ts",
+    "src/app/features/manufacturer-detail/manufacturer-detail.component.ts",
+    "src/app/features/module-browser/module-browser-detail/module-browser-detail.constants.ts"
+  ],
+  "R3": [
+    "src/app/features/backend/supabase-delete.ts"
+  ],
+  "R4": [
+    "src/app/components/module-parts/module-editor/module-editor.component.ts",
+    "src/app/components/patch-parts/patch-detail-data.service.ts",
+    "src/app/components/patch-parts/patch-editor/patch-editor.component.ts",
+    "src/app/components/patch-parts/patch-editor/patch-editor.utils.ts",
+    "src/app/components/rack-parts/rack-detail-data.service.ts",
+    "src/app/components/rack-parts/rack-editor/rack-editor.component.ts",
+    "src/app/components/rack-parts/rack-editor/rack-visual-model/rack-visual-model.component.ts",
+    "src/app/features/backbone/home/application-statistics.mappers.ts",
+    "src/app/features/backbone/login/user-management.service.ts",
+    "src/app/features/module-browser/module-browser-data.service.ts",
+    "src/app/features/module-browser/module-browser-detail/module-browser-detail.component.ts",
+    "src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component.ts",
+    "src/app/shared-interproject/components/@visual/graph-view/graph.component.ts"
+  ]
+}
