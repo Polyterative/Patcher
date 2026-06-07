@@ -18,6 +18,8 @@ Diagnose a reported defect to **root cause** before any fix is attempted. Hand o
   `git --no-pager blame`)
 - Trace observable chains, lifecycle hooks, and route data flow with grep / LSP
 - Inspect Sentry payloads if available (via MCP / browser)
+- Capture runtime UI state with `node scripts/agent-snapshot.mjs --route <path> --out /tmp/snap`
+  (see `.github/skills/patcher-ui-debug/SKILL.md`) — screenshot, DOM, console, network in one call
 - Write a root-cause writeup before proposing a fix
 
 ## Does NOT

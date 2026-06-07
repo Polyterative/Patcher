@@ -12,7 +12,7 @@
     "bundle-report": "ng build --configuration=production --stats-json && webpack-bundle-analyzer dist/Patcher/browser/stats.json",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org patcher --project patcher-xyz ./dist/Patcher && sentry-cli sourcemaps upload --org patcher --project patcher-xyz ./dist/Patcher",
     "copyChangelog": "cp CHANGELOG.md src/assets/md/changelog.md",
-    "lint": "ng lint && node scripts/check-route-module-imports.cjs && node scripts/check-layering.cjs",
+    "lint": "ng lint && node scripts/check-route-module-imports.cjs && node scripts/check-layering.cjs && node scripts/check-docs.cjs",
     "lint:styles": "stylelint \"src/**/*.scss\"",
     "lint:px": "bash scripts/check-px-ts.sh $(find src -name '*.ts' -not -path '*/node_modules/*')",
     "px-to-rem": "node scripts/px-to-rem.mjs",

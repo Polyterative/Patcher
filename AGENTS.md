@@ -132,6 +132,7 @@ Start at `internaldocs/README.md` (full index). Most-used:
 
 These run as part of `pnpm lint`. Read the error message — each lint is written
 to tell you exactly how to fix the violation, and points at the canonical doc.
+Mechanical rules are catalogued in [`internaldocs/GOLDEN_PRINCIPLES.md`](./internaldocs/GOLDEN_PRINCIPLES.md).
 
 - `scripts/check-layering.cjs` — enforces `Component → Data Service → API Service → Supabase`.
   - **R1** Components must not import `SupabaseService` directly — use a co-located `*-data.service.ts`.
@@ -143,3 +144,11 @@ to tell you exactly how to fix the violation, and points at the canonical doc.
     (`node scripts/check-layering.cjs --update-baseline`).
 - `scripts/check-route-module-imports.cjs` — `RouterModule.forRoot()` only in `app-routing.module.ts`; lazy-loaded route modules cannot be imported as shared UI.
 - `scripts/check-px-ts.sh` — hardcoded `px` in `*.ts` (use `rem`; annotate intentional `px` with `// px-ok`).
+- `scripts/check-docs.cjs` — broken markdown links inside `internaldocs/`, missing personas, plan files without a Decision log, `CURRENT_FEATURE.md` partial active feature.
+
+## 12) Runtime legibility for agents
+
+When an agent needs to see the running app (visual bug repro, fix validation, runtime
+console / network state), use the [`patcher-ui-debug` skill](.github/skills/patcher-ui-debug/SKILL.md).
+It wraps `scripts/agent-snapshot.mjs` and the Sentry / Supabase MCP cookbook for one-shot
+runtime snapshots. Personas `bug-hunter` and `designer` reference it directly.

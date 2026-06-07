@@ -33,6 +33,7 @@ second source of rules.
 | File | Purpose |
 |---|---|
 | [../AGENTS.md](../AGENTS.md) | Canonical agent rules, workflow, and git conventions |
+| [GOLDEN_PRINCIPLES.md](./GOLDEN_PRINCIPLES.md) | Mechanical rules (lint-enforced or on the path to it) |
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | Service layers, project structure, and state boundaries |
 | [STYLE_GUIDE.md](./STYLE_GUIDE.md) | Naming conventions and HTML/SCSS conventions |
 | [DESIGN_LANGUAGE.md](./DESIGN_LANGUAGE.md) | Visual philosophy, character, inspirations, responsive rules, and anti-patterns |
