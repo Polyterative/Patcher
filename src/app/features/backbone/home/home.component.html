@@ -26,13 +26,29 @@
             <div class="frame-host">
               <lib-device-frame-wrapper>
                 @defer (on viewport) {
-                  <img
-                    class="showcase-preview"
-                    [src]="proofPreviewImages[section.kind].src"
-                    [alt]="proofPreviewImages[section.kind].alt"
-                    loading="lazy"
-                    decoding="async"
-                  >
+                  @switch (section.kind) {
+                    @case ('patch') {
+                      <app-patch-browser-patch-detail
+                        [ignoreSeo]="true"
+                        [showWideShellNav]="false"
+                        [viewConfig]="patchViewConfig"
+                      />
+                    }
+                    @case ('rack') {
+                      <app-rack-browser-rack-detail
+                        [ignoreSeo]="true"
+                        [showWideShellNav]="false"
+                        [viewConfig]="rackViewConfig"
+                      />
+                    }
+                    @case ('module') {
+                      <app-module-browser-detail
+                        [ignoreSeo]="true"
+                        [showWideShellNav]="false"
+                        [viewConfig]="moduleViewConfig"
+                      />
+                    }
+                  }
                 } @placeholder {
                   <div class="frame-placeholder"></div>
                 }

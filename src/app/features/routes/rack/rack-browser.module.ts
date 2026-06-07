@@ -7,11 +7,10 @@ import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.
 import { RackModule } from 'src/app/components/rack-parts/rack.module';
 import { ModuleBrowserRootModule } from 'src/app/features/module-browser/module-browser-root/module-browser-root.module';
 import { CommonSidebarComponent } from 'src/app/features/backbone/common-sidebar/common-sidebar.component';
-import { RackBrowserDataService } from 'src/app/features/routes/rack/rack-browser-data.service';
 import { RackBrowserDetailViewComponent } from 'src/app/features/routes/rack/rack-browser-detail/rack-browser-detail-view.component';
 import { LegacyRackRedirectComponent } from 'src/app/features/routes/rack/legacy-rack-redirect/legacy-rack-redirect.component';
 import { RackBrowserRootComponent } from 'src/app/features/routes/rack/rack-browser-root/rack-browser-root.component';
-import { RackCompositeComponent } from 'src/app/features/routes/rack/rack-composite/rack-composite.component';
+import { RackBrowserSharedModule } from 'src/app/features/routes/rack/rack-browser-shared.module';
 import { AutoContentLoadingIndicatorComponent } from 'src/app/shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator/auto-content-loading-indicator.component';
 import { DevOnlyWindowComponent } from 'src/app/shared-interproject/components/@smart/dev-only-window/dev-only-window/dev-only-window.component';
 import { EmptyStateComponent } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.component';
@@ -52,17 +51,15 @@ import { AdviceTooltipComponent } from "src/app/shared-interproject/components/@
 
 @NgModule({
   declarations: [
-    RackBrowserDetailViewComponent,
-    RackCompositeComponent,
     RackBrowserRootComponent,
     LegacyRackRedirectComponent
   ],
   exports:      [
     RackBrowserDetailViewComponent
   ],
-  providers:    [RackBrowserDataService],
   imports: [
     CommonModule,
+    RackBrowserSharedModule,
     RouterModule.forChild([
       // Legacy numeric ID URLs: resolve via RPC then redirect to /:publicId
       // (public racks) or /links/retired (private/missing). Three segments — listed

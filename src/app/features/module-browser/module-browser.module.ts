@@ -64,19 +64,15 @@ import { ManufacturerRowComponent } from "src/app/features/manufacturer-detail/m
 import { RecentActivityModule } from "src/app/components/shared-atoms/recent-activity/recent-activity.module";
 import { ModuleListModule } from './module-list/module-list.module';
 import { ModuleEditorModule } from 'src/app/components/module-parts/module-editor/module-editor.module';
+import { ModuleBrowserSharedModule } from 'src/app/features/module-browser/module-browser-shared.module';
 
 
 
 @NgModule({
-  declarations: [
-    ModuleBrowserDetailComponent,
-    ModuleCompositeComponent,
-    ModuleDetailDataCardComponent,
-    ModuleUsageCardComponent
-  ],
+  declarations: [],
   providers:    [],
   imports: [
-    ModuleBrowserRootModule,
+    ModuleBrowserSharedModule,
     CommonModule,
     RouterModule.forChild([
       
@@ -163,8 +159,7 @@ import { ModuleEditorModule } from 'src/app/components/module-parts/module-edito
   exports: [
     ModuleListModule,
     ModuleCompositeComponent,
-    ModuleBrowserDetailComponent,
-    ModuleBrowserRootComponent
+    ModuleBrowserDetailComponent
   ]
 })
 export class ModuleBrowserModule {}

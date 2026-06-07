@@ -1,9 +1,29 @@
-import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { ChangeDetectionStrategy, Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { take, takeUntil, timer } from 'rxjs';
+import { ModuleDetailDataService } from 'src/app/components/module-parts/module-detail-data.service';
+import {
+  defaultModuleMinimalViewConfig,
+  ModuleMinimalViewConfig
+} from 'src/app/components/module-parts/module-minimal/module-minimal.component';
+import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
+import {
+  defaultPatchMinimalViewConfig,
+  PatchMinimalViewConfig
+} from 'src/app/components/patch-parts/patch-minimal/patch-minimal.component';
+import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
+import {
+  defaultRackMinimalViewConfig,
+  RackMinimalViewConfig
+} from 'src/app/components/rack-parts/rack-minimal/rack-minimal.component';
+import { ModuleBrowserSharedModule } from 'src/app/features/module-browser/module-browser-shared.module';
+import { PatchBrowserSharedModule } from 'src/app/features/patch-browser/patch-browser-shared.module';
+import { RackBrowserSharedModule } from 'src/app/features/routes/rack/rack-browser-shared.module';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { DeviceFrameWrapperModule } from 'src/app/shared-interproject/components/@visual/device-frame-wrapper/device-frame-wrapper.module';
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { SeoSocialShareData } from 'src/app/models/seo.model';
 import { SeoAndUtilsService } from '../seo-and-utils.service';
 import { HomeExperienceHeroComponent } from './components/home-experience-hero/home-experience-hero.component';
@@ -17,10 +37,14 @@ import {
   HomeHeroContent,
   HomeLinkPill,
   HomePrincipleCard,
-  HomeProofKind,
   HomeProofSection,
   HomeWorkflowStep
 } from './home-content.models';
+
+const HOME_PROOF_PATCH_ID = 5;
+const HOME_PROOF_MODULE_ID = 1025;
+const HOME_PROOF_RACK_ID = 265;
+const HOME_PROOF_DELAY_STEP_MS = 500;
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -39,9 +63,29 @@ import {
     HomeOpenPrinciplesComponent,
     HomeProofShowcaseComponent,
     HomeWorkflowRailComponent,
+    PatchBrowserSharedModule,
+    RackBrowserSharedModule,
+    ModuleBrowserSharedModule,
   ],
 })
-export class HomeComponent {
+export class HomeComponent extends SubManager implements OnInit {
+  readonly patchViewConfig: PatchMinimalViewConfig = {
+    ...defaultPatchMinimalViewConfig,
+    hideButtons: true,
+  };
+  readonly rackViewConfig: RackMinimalViewConfig = {
+    ...defaultRackMinimalViewConfig,
+  };
+  readonly moduleViewConfig: ModuleMinimalViewConfig = {
+    ...defaultModuleMinimalViewConfig,
+    hidePanelsOptions: true,
+    bigPanelImage: false,
+    ellipseDescription: true,
+    hideBySameManufacturer: true,
+    hidePatchedIn: false,
+    hideRackedIn: false
+  };
+
   readonly heroContent: HomeHeroContent = {
     eyebrow: '',
     title: 'Your operating system for everything modular.',
@@ -58,21 +102,6 @@ export class HomeComponent {
     floatingVisualB: {
       src: '/assets/screenshots/major-area-screenshots/07-rack-details.jpg',
       alt: 'Rack detail view showing arrangement and module placements'
-    }
-  };
-
-  readonly proofPreviewImages: Record<HomeProofKind, { src: string; alt: string }> = {
-    patch: {
-      src: '/assets/screenshots/major-area-screenshots/04-patches.jpg',
-      alt: 'Patch detail preview showing notes and controls'
-    },
-    rack: {
-      src: '/assets/screenshots/major-area-screenshots/07-rack-details.jpg',
-      alt: 'Rack planner preview showing arranged modules'
-    },
-    module: {
-      src: '/assets/screenshots/major-area-screenshots/03-module-details.jpg',
-      alt: 'Module library preview showing specs and panel image'
     }
   };
 
@@ -193,7 +222,12 @@ export class HomeComponent {
   constructor(
     public readonly appState: AppStateService,
     readonly seoAndUtilsService: SeoAndUtilsService,
+    readonly patchDetailDataService: PatchDetailDataService,
+    readonly rackDetailDataService: RackDetailDataService,
+    readonly moduleDetailDataService: ModuleDetailDataService,
+    @Inject(PLATFORM_ID) private readonly platformId: object,
   ) {
+    super();
     this.showInsightsPageEntry = this.appState.isDev;
     this.communityLinks = this.showInsightsPageEntry
       ? [
@@ -215,5 +249,26 @@ export class HomeComponent {
     };
 
     this.seoAndUtilsService.updateSeo(seoData, 'Home');
+  }
+
+  ngOnInit(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    timer(HOME_PROOF_DELAY_STEP_MS * 2)
+      .pipe(take(1), takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.patchDetailDataService.updateSinglePatchData$.next(HOME_PROOF_PATCH_ID);
+      });
+    timer(HOME_PROOF_DELAY_STEP_MS * 4)
+      .pipe(take(1), takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.moduleDetailDataService.updateSingleModuleData$.next(HOME_PROOF_MODULE_ID);
+      });
+    timer(HOME_PROOF_DELAY_STEP_MS * 6)
+      .pipe(take(1), takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.rackDetailDataService.updateSingleRackData$.next(HOME_PROOF_RACK_ID);
+      });
   }
 }

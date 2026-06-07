@@ -1,19 +1,21 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { HomeComponent } from './features/backbone/home/home.component';
 import { LegacyLinkGonePageComponent } from './features/backbone/legacy-link-gone/legacy-link-gone-page.component';
 import { NotFoundComponent } from './features/backbone/404/not-found.component';
+
+const loadHomeComponent = () =>
+  import('./features/backbone/home/home.component').then(m => m.HomeComponent);
 
 const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    component: HomeComponent
+    loadComponent: loadHomeComponent
   },
   {
     path: 'home',
     pathMatch: 'full',
-    component: HomeComponent
+    loadComponent: loadHomeComponent
   },
   {
     path: 'admin',

@@ -1,6 +1,9 @@
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, ReplaySubject } from 'rxjs';
+import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
+import { PatchModule } from 'src/app/components/patch-parts/patch.module';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { AppShellLayoutService } from 'src/app/shared-interproject/app-shell-layout.service';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
@@ -38,9 +41,20 @@ describe('HomeExperienceHeroComponent', () => {
             loggedUserFullProfile$: new BehaviorSubject(undefined),
             isAdmin$
           }
+        },
+        {
+          provide: PatchDetailDataService,
+          useValue: {
+            updateSinglePatchData$: new ReplaySubject<number>()
+          }
         }
       ],
-    }).compileComponents();
+    })
+      .overrideComponent(HomeExperienceHeroComponent, {
+        remove: { imports: [PatchModule] },
+        add: { schemas: [NO_ERRORS_SCHEMA] }
+      })
+      .compileComponents();
 
     fixture = TestBed.createComponent(HomeExperienceHeroComponent);
     fixture.componentInstance.content = {
@@ -51,14 +65,6 @@ describe('HomeExperienceHeroComponent', () => {
         src: '/assets/screenshots/major-area-screenshots/04-patches.jpg',
         alt: 'Example hero visual',
         caption: 'Capture the patch and come back later.'
-      },
-      floatingVisualA: {
-        src: '/assets/screenshots/major-area-screenshots/03-module-details.jpg',
-        alt: 'Example floating visual A'
-      },
-      floatingVisualB: {
-        src: '/assets/screenshots/major-area-screenshots/07-rack-details.jpg',
-        alt: 'Example floating visual B'
       }
     };
     fixture.detectChanges();
@@ -118,10 +124,9 @@ describe('HomeExperienceHeroComponent', () => {
     expect(fixture.componentInstance.wideShellTargets.length).toBeGreaterThan(0);
   });
 
-  it('renders the hero screenshots', () => {
+  it('renders the patch-graph shell in the hero visuals', () => {
     const host = fixture.nativeElement as HTMLElement;
-    expect(host.querySelector('.visual-main img')?.getAttribute('src')).toContain('/assets/screenshots/major-area-screenshots/04-patches.jpg');
-    expect(host.querySelector('.visual-float.visual-a img')?.getAttribute('src')).toContain('/assets/screenshots/major-area-screenshots/03-module-details.jpg');
-    expect(host.querySelector('.visual-float.visual-b img')?.getAttribute('src')).toContain('/assets/screenshots/major-area-screenshots/07-rack-details.jpg');
+    expect(host.querySelector('.patch-graph-shell')).not.toBeNull();
+    expect(host.querySelector('.patch-graph-shell app-patch-graph')).not.toBeNull();
   });
 });
