@@ -5,7 +5,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { animate, style, transition, trigger } from '@angular/animations';
+import { animate, animateChild, query, style, transition, trigger } from '@angular/animations';
 
 export interface EmptyStateTip {
   icon: string;
@@ -24,7 +24,8 @@ export interface EmptyStateTip {
     trigger('enter', [
       transition(':enter', [
         style({ opacity: 0 }),
-        animate('1525ms {{ delay }}ms ease', style({ opacity: 1 }))
+        animate('1525ms {{ delay }}ms ease', style({ opacity: 1 })),
+        query('@*', animateChild(), { optional: true })
       ], { params: { delay: 0 } })
     ])
   ]

@@ -6,7 +6,7 @@ import {
   OnInit,
   Output, OnDestroy
 } from '@angular/core';
-import { animate, style, transition, trigger } from '@angular/animations';
+import { animate, animateChild, query, style, transition, trigger } from '@angular/animations';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   EMPTY,
@@ -33,7 +33,8 @@ import { DbModule } from 'src/app/models/module';
     trigger('enter', [
       transition(':enter', [
         style({opacity: 0}),
-        animate('225ms {{ delay }}ms ease', style({opacity: 1}))
+        animate('225ms {{ delay }}ms ease', style({opacity: 1})),
+        query('@*', animateChild(), { optional: true })
       ], { params: { delay: 0 } })
     ]),
     trigger('leave', [

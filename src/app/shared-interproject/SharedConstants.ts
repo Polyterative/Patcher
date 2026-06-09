@@ -4,7 +4,7 @@ import {
 } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { MatSnackBar } from "@angular/material/snack-bar";
-import { animate, style, transition, trigger } from "@angular/animations";
+import { animate, animateChild, query, style, transition, trigger } from "@angular/animations";
 
 
 export class SharedConstants {
@@ -138,7 +138,8 @@ export namespace Animations {
   export const fadeInOnEnter = trigger('enter', [
     transition(':enter', [
       style({ opacity: 0 }),
-      animate('225ms ease', style({ opacity: 1 }))
+      animate('225ms ease', style({ opacity: 1 })),
+      query('@*', animateChild(), { optional: true })
     ])
   ]);
 }

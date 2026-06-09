@@ -4,7 +4,7 @@ import {
   Input,
   OnInit
 } from '@angular/core';
-import { animate, style, transition, trigger } from '@angular/animations';
+import { animate, animateChild, query, style, transition, trigger } from '@angular/animations';
 import {
   BehaviorSubject,
   combineLatest,
@@ -31,7 +31,8 @@ import { RackMinimal } from 'src/app/models/rack';
     trigger('enter', [
       transition(':enter', [
         style({opacity: 0}),
-        animate('225ms {{ delay }}ms ease', style({opacity: 1}))
+        animate('225ms {{ delay }}ms ease', style({opacity: 1})),
+        query('@*', animateChild(), { optional: true })
       ], { params: { delay: 0 } })
     ]),
     trigger('leave', [
@@ -102,7 +103,7 @@ export class RackListComponent extends SubManager implements OnInit {
 
     for (const rack of data) {
       const delayIndex = this.visibleRackIds.has(rack.id) ? 0 : newItemIndex++;
-      this.enterDelayByRackId.set(rack.id, this.itemInitialDelay + (delayIndex * 60) + 50);
+      this.enterDelayByRackId.set(rack.id, this.itemInitialDelay + (delayIndex * 25) + 50);
     }
 
     this.visibleRackIds = nextVisibleIds;

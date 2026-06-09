@@ -4,7 +4,7 @@ import {
   Input,
   OnInit
 } from '@angular/core';
-import { animate, style, transition, trigger } from '@angular/animations';
+import { animate, animateChild, query, style, transition, trigger } from '@angular/animations';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { Patch } from 'src/app/models/patch';
@@ -19,7 +19,8 @@ import { Patch } from 'src/app/models/patch';
     trigger('enter', [
       transition(':enter', [
         style({opacity: 0}),
-        animate('1525ms {{ delay }}ms ease', style({opacity: 1}))
+        animate('1525ms {{ delay }}ms ease', style({opacity: 1})),
+        query('@*', animateChild(), { optional: true })
       ], { params: { delay: 0 } })
     ])
   ],

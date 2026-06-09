@@ -11,7 +11,7 @@ import {
   SimpleChanges,
   ViewChild
 } from '@angular/core';
-import { animate, style, transition, trigger } from '@angular/animations';
+import { animate, animateChild, query, style, transition, trigger } from '@angular/animations';
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatDialog } from '@angular/material/dialog';
 import { Subject } from 'rxjs';
@@ -57,7 +57,8 @@ export type { ModuleRightClick } from './rack-editor.types';
     trigger('enter', [
       transition(':enter', [
         style({opacity: 0}),
-        animate('1525ms {{ delay }}ms ease', style({opacity: 1}))
+        animate('1525ms {{ delay }}ms ease', style({opacity: 1})),
+        query('@*', animateChild(), { optional: true })
       ], { params: { delay: 0 } })
     ]),
     trigger('leave', [

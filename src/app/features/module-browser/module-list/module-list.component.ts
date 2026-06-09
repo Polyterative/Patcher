@@ -4,7 +4,7 @@ import {
   Input,
   OnInit
 } from '@angular/core';
-import { animate, style, transition, trigger } from '@angular/animations';
+import { animate, animateChild, query, style, transition, trigger } from '@angular/animations';
 import {
   FormControl,
   UntypedFormControl
@@ -18,8 +18,7 @@ import {
 import {
   filter,
   map,
-  startWith,
-  take
+  startWith
 } from 'rxjs/operators';
 import {
   defaultModuleMinimalViewConfig,
@@ -73,7 +72,8 @@ export const MODULE_LIST_GROUP_OPTIONS = MODULE_GROUP_OPTIONS;
     trigger('enter', [
       transition(':enter', [
         style({opacity: 0}),
-        animate('225ms {{ delay }}ms ease', style({opacity: 1}))
+        animate('225ms {{ delay }}ms ease', style({opacity: 1})),
+        query('@*', animateChild(), { optional: true })
       ], { params: { delay: 0 } })
     ]),
     trigger('leave', [
@@ -228,11 +228,6 @@ export class ModuleListComponent extends SubManager implements OnInit {
       ? this.tagsControl.valueChanges.pipe(startWith(this.tagsControl.value))
       : of([]);
     
-    // Seed with first emission so the list isn't blank on initial render
-    this.manageSub(
-      this.data$.pipe(take(1)).subscribe(x => this.updateFilteredData(x ?? []))
-    );
-
     this.manageSub(
       combineLatest([
         this.data$.pipe(filter(data => !!data)),

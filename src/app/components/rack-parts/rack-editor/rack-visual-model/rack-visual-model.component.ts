@@ -20,7 +20,7 @@ import {
   SimpleChanges,
   ViewChild
 } from '@angular/core';
-import { animate, keyframes, style, transition, trigger } from '@angular/animations';
+import { animate, animateChild, keyframes, query, style, transition, trigger } from '@angular/animations';
 import { Subject } from 'rxjs';
 import { RackedModule } from 'src/app/models/module';
 import { RackMinimal } from 'src/app/models/rack';
@@ -80,7 +80,8 @@ import {
     trigger('enter', [
       transition(':enter', [
         style({opacity: 0}),
-        animate('225ms {{ delay }}ms ease', style({opacity: 1}))
+        animate('225ms {{ delay }}ms ease', style({opacity: 1})),
+        query('@*', animateChild(), { optional: true })
       ], { params: { delay: 0 } })
     ]),
     trigger('leave', [
