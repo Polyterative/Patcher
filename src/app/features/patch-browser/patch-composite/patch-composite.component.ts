@@ -21,8 +21,8 @@ import { Patch } from 'src/app/models/patch';
     trigger('enter', [
       transition(':enter', [
         style({opacity: 0}),
-        animate('200ms ease', style({opacity: 1}))
-      ])
+        animate('200ms {{ delay }}ms ease', style({opacity: 1}))
+      ], { params: { delay: 0 } })
     ]),
     trigger('exit', [
       transition(':leave', [

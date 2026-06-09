@@ -57,8 +57,8 @@ export type { ModuleRightClick } from './rack-editor.types';
     trigger('enter', [
       transition(':enter', [
         style({opacity: 0}),
-        animate('1525ms ease', style({opacity: 1}))
-      ])
+        animate('1525ms {{ delay }}ms ease', style({opacity: 1}))
+      ], { params: { delay: 0 } })
     ]),
     trigger('leave', [
       transition(':leave', [

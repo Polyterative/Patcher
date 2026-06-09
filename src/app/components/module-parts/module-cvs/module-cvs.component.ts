@@ -33,8 +33,8 @@ import { DbModule } from 'src/app/models/module';
     trigger('enter', [
       transition(':enter', [
         style({opacity: 0}),
-        animate('225ms ease', style({opacity: 1}))
-      ])
+        animate('225ms {{ delay }}ms ease', style({opacity: 1}))
+      ], { params: { delay: 0 } })
     ]),
     trigger('leave', [
       transition(':leave', [

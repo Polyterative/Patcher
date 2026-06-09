@@ -24,8 +24,8 @@ export interface EmptyStateTip {
     trigger('enter', [
       transition(':enter', [
         style({ opacity: 0 }),
-        animate('1525ms ease', style({ opacity: 1 }))
-      ])
+        animate('1525ms {{ delay }}ms ease', style({ opacity: 1 }))
+      ], { params: { delay: 0 } })
     ])
   ]
 })
