@@ -3,6 +3,7 @@ import {
   Component,
   Input
 } from '@angular/core';
+import { animate, style, transition, trigger } from '@angular/animations';
 import { MatDialog } from "@angular/material/dialog";
 import {
   defaultRackMinimalViewConfig,
@@ -16,6 +17,14 @@ import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area
   selector: 'app-user-racks',
   templateUrl: './user-racks.component.html',
   styleUrls: ['./user-racks.component.scss'],
+  animations: [
+    trigger('enter', [
+      transition(':enter', [
+        style({opacity: 0}),
+        animate('225ms {{ delay }}ms ease', style({opacity: 1}))
+      ], { params: { delay: 0 } })
+    ])
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })

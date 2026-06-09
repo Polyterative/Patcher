@@ -20,8 +20,8 @@
         @if (data.length > 0) {
           <div class="section-scroll">
             <flexbox-row-fast class="section-list">
-              @for (item of data; track item) {
-                <lib-clean-card>
+              @for (item of data; track item; let i = $index) {
+                <lib-clean-card [@enter]="{ value: '', params: { delay: (i * 25) + 50 } }">
                   <app-rack-micro [data]="item"
                                   [viewConfig]="rackMinimalViewConfig"
                   ></app-rack-micro>

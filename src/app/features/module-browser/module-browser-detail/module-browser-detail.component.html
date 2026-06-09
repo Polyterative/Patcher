@@ -149,14 +149,16 @@
                   ></app-module-detail-data-card>
                 }
                 <!-- Community Stats Card -->
-                @if (bag.possessionCounts && (bag.possessionCounts.hasCount > 0 || bag.possessionCounts.wantsCount > 0 || bag.possessionCounts.sellsCount > 0)) {
+                <!-- Enters with the initial stagger (when bag.data is ready) by showing while possessionCounts is still loading.
+                     Once loaded, disappears only if all counts are zero. -->
+                @if (!bag.possessionCounts || bag.possessionCounts.hasCount > 0 || bag.possessionCounts.wantsCount > 0 || bag.possessionCounts.sellsCount > 0) {
                   <app-module-detail-data-card
                     title="Community"
                     [animationDelay]="240"
                     [data]="[
-                      { label: 'Owners', value: bag.possessionCounts.hasCount.toString(), icon: 'inventory_2', size: 'auto', hidden: bag.possessionCounts.hasCount === 0 },
-                      { label: 'Wishlist', value: bag.possessionCounts.wantsCount.toString(), icon: 'star_outline', size: 'auto', hidden: bag.possessionCounts.wantsCount === 0 },
-                      { label: 'For Sale', value: bag.possessionCounts.sellsCount.toString(), icon: 'sell', size: 'auto', hidden: bag.possessionCounts.sellsCount === 0 }
+                      { label: 'Owners', value: bag.possessionCounts ? bag.possessionCounts.hasCount.toString() : '…', icon: 'inventory_2', size: 'auto', hidden: !!bag.possessionCounts && bag.possessionCounts.hasCount === 0 },
+                      { label: 'Wishlist', value: bag.possessionCounts ? bag.possessionCounts.wantsCount.toString() : '…', icon: 'star_outline', size: 'auto', hidden: !!bag.possessionCounts && bag.possessionCounts.wantsCount === 0 },
+                      { label: 'For Sale', value: bag.possessionCounts ? bag.possessionCounts.sellsCount.toString() : '…', icon: 'sell', size: 'auto', hidden: !!bag.possessionCounts && bag.possessionCounts.sellsCount === 0 }
                     ]"
                   ></app-module-detail-data-card>
                 }
