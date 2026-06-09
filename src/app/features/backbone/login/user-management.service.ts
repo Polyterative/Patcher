@@ -38,6 +38,7 @@ import {
   ConfirmDialogDataInModel,
   ConfirmDialogDataOutModel
 } from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
+import { SentryContextService } from '../sentry-integration/sentry-context.service';
 
 
 @Injectable({ providedIn: 'root' })
@@ -103,7 +104,8 @@ export class UserManagementService extends SubManager {
     private router: Router,
     private backend: SupabaseService,
     private userBoxService: UserDataHandlerService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private sentryContext: SentryContextService
   ) {
     super();
     
@@ -124,6 +126,7 @@ export class UserManagementService extends SubManager {
     this.initializeDeleteAccountHandler();
     this.initializeChangePasswordHandler();
     this.initializeTogglePasswordFormHandler();
+    this.initializeSentryIdentityHandler();
   }
   
   private initializeUserBoxHandler(): void {
@@ -133,6 +136,24 @@ export class UserManagementService extends SubManager {
       )
       .subscribe(x => {
         this.userBoxService.store.user$.next({username: x?.username});
+      });
+  }
+
+  private initializeSentryIdentityHandler(): void {
+    // Feed Sentry the current user (id/email/username) so issues group by
+    // "users affected" and triage isn't blind. Cleared on logout.
+    this.loggedUserFullProfile$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(profile => {
+        if (profile && profile.id) {
+          this.sentryContext.setUser({
+            id:       profile.id,
+            email:    profile.email,
+            username: profile.username
+          });
+        } else {
+          this.sentryContext.clearUser();
+        }
       });
   }
   
