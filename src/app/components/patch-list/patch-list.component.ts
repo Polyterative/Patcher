@@ -3,7 +3,7 @@ import {
   Component,
   Input, OnInit
 } from '@angular/core';
-import { animate, style, transition, trigger } from '@angular/animations';
+import { animate, animateChild, query, style, transition, trigger } from '@angular/animations';
 import {
   BehaviorSubject,
   combineLatest,
@@ -33,7 +33,8 @@ import { LocalDataFilterService } from '../shared-atoms/local-data-filter/local-
     trigger('enter', [
       transition(':enter', [
         style({opacity: 0}),
-        animate('225ms {{ delay }}ms ease', style({opacity: 1}))
+        animate('225ms {{ delay }}ms ease', style({opacity: 1})),
+        query('@*', animateChild(), { optional: true })
       ], { params: { delay: 0 } })
     ]),
     trigger('leave', [

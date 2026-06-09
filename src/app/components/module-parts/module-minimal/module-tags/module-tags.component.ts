@@ -16,7 +16,7 @@ import {
   TagVoteCount,
   TagVoteDataService
 } from 'src/app/components/module-parts/module-minimal/module-tags/tag-vote/tag-vote-data.service';
-import { animate, style, transition, trigger } from '@angular/animations';
+import { animate, animateChild, query, style, transition, trigger } from '@angular/animations';
 import { MinimalModule } from 'src/app/models/module';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import {
@@ -48,7 +48,8 @@ export interface ProposerTagGroup {
     trigger('enter', [
       transition(':enter', [
         style({opacity: 0}),
-        animate('225ms {{ delay }}ms ease', style({opacity: 1}))
+        animate('225ms {{ delay }}ms ease', style({opacity: 1})),
+        query('@*', animateChild(), { optional: true })
       ], { params: { delay: 0 } })
     ]),
     trigger('leave', [
