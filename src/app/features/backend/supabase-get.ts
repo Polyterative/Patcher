@@ -21,21 +21,6 @@ import { SimpleUserModel } from './supabase.types';
 import { SupabaseQueriesService } from './supabase-queries';
 
 
-const PUBLIC_AUTHOR_GATE_ALIAS = 'author_profile_gate';
-
-function stripPublicAuthorGate<T>(response: any) {
-  const data = Array.isArray(response?.data)
-    ? response.data.map(({[PUBLIC_AUTHOR_GATE_ALIAS]: _gate, ...rest}: any) => rest)
-    : response?.data && typeof response.data === 'object'
-      ? (({[PUBLIC_AUTHOR_GATE_ALIAS]: _gate, ...rest}: any) => rest)(response.data)
-      : response?.data;
-
-  return {
-    ...response,
-    data
-  } as T;
-}
-
 export interface AdminFlagRow {
   id: number;
   module_id: number;
@@ -89,25 +74,8 @@ export function createGetNamespace(
           }
         })))),
     
-    racksWithModule: (moduleid: number, from = 0, to: number = defaultPag, orderBy?: string, orderDirection?: 'asc' | 'desc') => rxFrom(
-      supabase.from(DbPaths.racks)
-        .select(`*, ${ QueryJoins.author }, ${ QueryJoins.publicAuthorGate(PUBLIC_AUTHOR_GATE_ALIAS) }, rack_modules!inner(rackid,moduleid)`, {count: 'exact'})
-        .filter('public', 'eq', true)
-        .filter(`${ PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
-        .filter('rack_modules.moduleid', 'eq', moduleid)
-        .range(from, to)
-        .order(orderBy ? orderBy : 'updated', {ascending: orderDirection === 'asc'})
-    )
-      .pipe(
-        remapErrors(),
-        map((response: any) => {
-          const stripped = stripPublicAuthorGate<{data: Rack[]; count: number | null}>(response);
-          return {
-            ...stripped,
-            data: (stripped.data ?? []).map((rack: Rack) => ({rack}))
-          };
-        }),
-      ),
+    racksWithModule: (moduleid: number, from = 0, to: number = defaultPag, orderBy?: string, orderDirection?: 'asc' | 'desc') =>
+      queries.getRacksWithModule(moduleid, from, to, orderBy, orderDirection),
     patchWithId: (id: number, columns = '*') => rxFrom(
       supabase.from(DbPaths.patches)
         .select(`${ columns }, ${ QueryJoins.author }`)
@@ -117,18 +85,8 @@ export function createGetNamespace(
       .pipe(
         remapErrors()
       ),
-    patchesWithModule: (moduleid: number, from = 0, to: number = defaultPag, orderBy?: string, orderDirection?: 'asc' | 'desc') => rxFrom(
-      supabase.rpc('get_public_patches_for_module', {
-        p_module_id: moduleid,
-        p_from: from,
-        p_to: to,
-        p_order_by: orderBy ?? 'updated',
-        p_order_direction: orderDirection ?? 'desc'
-      })
-    ).pipe(
-      remapErrors(),
-      map((response: any) => (response.data ?? []) as Patch[])
-    ),
+    patchesWithModule: (moduleid: number, from = 0, to: number = defaultPag, orderBy?: string, orderDirection?: 'asc' | 'desc') =>
+      queries.getPatchesWithModule(moduleid, from, to, orderBy, orderDirection),
     moduleUsageSummary: (moduleid: number) => rxFrom(
       supabase.rpc('get_module_usage_summary_bucketed', {
         p_module_id: moduleid
@@ -142,26 +100,8 @@ export function createGetNamespace(
         hidden_patch_bucket: 'none'
       })
     ),
-    modulesBySameManufacturer: (manufacturerId: any, from = 0, to: number = defaultPag, columns = '*') => rxFrom(
-      supabase.from(DbPaths.modules)
-        .select(`${ columns },
-          ${ QueryJoins.manufacturer },
-          ${ QueryJoins.standard },
-          ${ QueryJoins.module_panels },
-          ${ QueryJoins.module_tags },
-          ${ QueryJoins.insOuts }
-          `)
-        .filter('manufacturerId', 'eq', manufacturerId)
-        .limit(1, {foreignTable: DbPaths.module_panels})
-        .order(`color`, {foreignTable: DbPaths.module_panels, ascending: true})
-        .order('updated', {ascending: false})
-        .order('id', {ascending: false})
-        .range(from, to)
-    )
-      .pipe(
-        remapErrors(),
-        map((x => x.data))
-      ),
+    modulesBySameManufacturer: (manufacturerId: any, from = 0, to: number = defaultPag, columns = '*') =>
+      queries.getModulesBySameManufacturer(manufacturerId, from, to, columns),
     manufacturerWithId: (id: number, from = 0, to: number = defaultPag, columns = '*') => rxFrom(
       supabase.from(DbPaths.manufacturers)
         .select(columns)
