@@ -6,9 +6,9 @@
                                       [updateData$]="updateData$">
     @if (items && items.length > 0) {
       @if (entityType === 'rack') {
-        <app-module-racks [data$]="$any(data$)"></app-module-racks>
+        <app-module-racks [data$]="$any(data$)" [itemInitialDelay]="animationDelay + 185"></app-module-racks>
       } @else {
-        <app-module-patches [data$]="$any(data$)"></app-module-patches>
+        <app-module-patches [data$]="$any(data$)" [itemInitialDelay]="animationDelay + 185"></app-module-patches>
       }
       @if (showHiddenUsageNote) {
         <div class="col gap1 animate-fadein-slowest">

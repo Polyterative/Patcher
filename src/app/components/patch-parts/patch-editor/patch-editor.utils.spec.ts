@@ -6,9 +6,15 @@ import {
   countOrphanedConnections,
   buildDivergenceTooltip,
   resolveRackInlinePanelSide,
+  buildLinkedRackPreviewRows,
   defaultSortModeId,
   defaultGroupModeId
 } from './patch-editor.utils';
+
+const makeRackedModule = (id: number, row: number | null, column = 0): any => ({
+  rackingData: { id, rackid: 1, moduleid: id, row, column, selectedPanelId: null },
+  module: { id, name: `Module ${id}` }
+});
 
 const makeCard = (name: string, mfr = 'MFR', connectionCount = 0, instanceCount = 0): any => ({
   module: { name, manufacturer: { name: mfr } },
@@ -124,6 +130,35 @@ describe('patch-editor.utils', () => {
     it('ends with collection-mode note', () => {
       const divergence = { orphanedModules: [], excessInstances: [] } as any;
       expect(buildDivergenceTooltip(divergence, 0)).toContain('collection mode');
+    });
+  });
+
+  describe('buildLinkedRackPreviewRows', () => {
+    it('excludes modules with null row from the preview', () => {
+      const modules = [
+        makeRackedModule(1, 0, 0),
+        makeRackedModule(2, 0, 1),
+        makeRackedModule(3, null, 0) // floating module — not placed in any row
+      ];
+      const rows = buildLinkedRackPreviewRows(modules);
+      expect(rows.length).toBe(1);
+      expect(rows[0].modules.length).toBe(2);
+      expect(rows[0].modules.find((m: any) => m.module.id === 3)).toBeUndefined();
+    });
+
+    it('excludes modules with undefined row from the preview', () => {
+      const modules = [
+        makeRackedModule(1, 0, 0),
+        { rackingData: { id: 9, rackid: 1, moduleid: 9, row: undefined, column: 0 }, module: { id: 9, name: 'Floating' } }
+      ];
+      const rows = buildLinkedRackPreviewRows(modules as any);
+      expect(rows.length).toBe(1);
+      expect(rows[0].modules.length).toBe(1);
+    });
+
+    it('returns empty array when all modules have null row', () => {
+      const modules = [makeRackedModule(1, null), makeRackedModule(2, null)];
+      expect(buildLinkedRackPreviewRows(modules)).toEqual([]);
     });
   });
 });

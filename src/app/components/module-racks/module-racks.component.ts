@@ -20,8 +20,8 @@ import {
   standalone: false
 })
 export class ModuleRacksComponent implements OnInit {
-  @Input()
-  data$: Observable<RackMinimal[]>;
+  @Input() data$: Observable<RackMinimal[]>;
+  @Input() itemInitialDelay = 0;
   viewConfig: RackMinimalViewConfig = {
     ...defaultRackMinimalViewConfig,
     hideButtons: true

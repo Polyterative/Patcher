@@ -307,7 +307,8 @@ export function buildLinkedRackPreviewRows(rackedModules: RackedModule[]): Linke
   const rows = new Map<number, LinkedRackPreviewCard[]>();
 
   for (const rackedModule of rackedModules) {
-    const row = rackedModule.rackingData.row ?? 0;
+    if (rackedModule.rackingData.row == null) { continue; }
+    const row = rackedModule.rackingData.row;
     const rowCards = rows.get(row) ?? [];
     rowCards.push({
       trackingId: rackedModule.rackingData.id ?? ((row + 1) * 100000) + ((rackedModule.rackingData.column ?? 0) * 100) + rackedModule.module.id,
@@ -379,12 +380,13 @@ export function buildLinkedRackPreviewState(
   }
 
   const rows = buildLinkedRackPreviewRows(rackedModules);
+  const placedCount = rows.reduce((sum, r) => sum + r.modules.length, 0);
   return {
     kind: 'ready',
     description: 'Click ins and outs to wire connections from linked rack modules. Module sourcing and editing above still come from your collection.',
     rack,
     rows,
-    moduleCount: rackedModules.length
+    moduleCount: placedCount
   };
 }
 
