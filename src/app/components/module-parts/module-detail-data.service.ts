@@ -64,7 +64,6 @@ export class ModuleDetailDataService implements OnDestroy {
   readonly racksWithThisModule$ = new BehaviorSubject<RackMinimal[] | undefined>(undefined);
   readonly patchesWithThisModule$ = new BehaviorSubject<PatchMinimal[] | undefined>(undefined);
   readonly moduleUsageSummary$ = new BehaviorSubject<ModuleUsageSummary | undefined>(undefined);
-  readonly modulesBySameManufacturer$ = new BehaviorSubject<DbModule[] | undefined>(undefined);
   readonly possessionCounts$ = new BehaviorSubject<ModulePossessionCounts | undefined>(undefined);
   //
   readonly deleteModule$ = new Subject<number>();
@@ -207,20 +206,6 @@ export class ModuleDetailDataService implements OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(counts => this.possessionCounts$.next(counts));
-    
-    // get modules by same manufacturer
-    this.singleModuleData$
-      .pipe(
-        filter(x => !!x && !!x.manufacturer),
-        tap(x => this.modulesBySameManufacturer$.next(undefined)),
-        switchMap(singleModuleData => this.backend.get.modulesBySameManufacturer(singleModuleData.manufacturerId)
-          .pipe(
-            map(x => x.filter(module => module.id !== singleModuleData.id))
-          )
-        ),
-        takeUntil(this.destroyEvent$)
-      )
-      .subscribe(x => this.modulesBySameManufacturer$.next(x));
     
     // hidden cause circular dependency
     // this.updateSingleModuleData$
