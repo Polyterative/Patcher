@@ -24,6 +24,18 @@
 
       <div class="toolbar-spacer toolbar-desktop-spacer" aria-hidden="true"></div>
 
+      <a
+        mat-icon-button
+        class="toolbar-support toolbar-desktop-links"
+        [href]="patreonUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Support Patcher on Patreon"
+        matTooltip="Support Patcher on Patreon"
+      >
+        <mat-icon>favorite</mat-icon>
+      </a>
+
       <div class="toolbar-account">
         <app-route-clickable-link-list
           [data$]="(isLoggedIn$ | async) ? linksUser$ : linksA$"></app-route-clickable-link-list>

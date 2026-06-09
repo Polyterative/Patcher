@@ -1,5 +1,16 @@
 import { RouteClickableLink } from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.component';
 
+export const PATREON_URL = 'https://www.patreon.com/patcher';
+
+const SUPPORT_LINKS: RouteClickableLink[] = [
+  {
+    label: 'Support on Patreon',
+    href: PATREON_URL,
+    hrefNewTab: true,
+    icon: 'favorite',
+    disabled: false
+  }
+];
 
 export interface ToolbarMobileSection {
   label: string;
@@ -178,6 +189,8 @@ export function buildToolbarSections(isLoggedIn: boolean, username: string, isAd
   if (isAdmin) {
     sections.push({label: 'Admin', links: getToolbarAdminLinks()});
   }
+
+  sections.push({label: 'Support', links: SUPPORT_LINKS});
 
   toolbarSectionsCache.set(cacheKey, sections);
   return sections;

@@ -108,8 +108,6 @@ describe('ModuleDetailDataService', () => {
     expect(backend.get.racksWithModule).toHaveBeenCalledWith(10);
     expect(backend.get.patchesWithModule).toHaveBeenCalledWith(10);
     expect(backend.get.moduleUsageSummary).toHaveBeenCalledWith(10);
-    expect(backend.get.modulesBySameManufacturer).toHaveBeenCalledWith(7);
-    
     expect(service.singleModuleData$.value?.id).toBe(10);
     expect(service.racksWithThisModule$.value).toEqual([{id: 1} as any]);
     expect(service.patchesWithThisModule$.value).toEqual([{id: 21} as any]);
@@ -119,7 +117,6 @@ describe('ModuleDetailDataService', () => {
       public_patch_count: 1,
       hidden_patch_bucket: '5_plus'
     });
-    expect(service.modulesBySameManufacturer$.value?.map(x => x.id)).toEqual([11]);
   }));
   
   it('adds and removes module from collection then refreshes current module', () => {
@@ -389,7 +386,6 @@ describe('ModuleDetailDataService', () => {
     expect(service.racksWithThisModule$.value).toBeUndefined();
     expect(service.patchesWithThisModule$.value).toBeUndefined();
     expect(service.moduleUsageSummary$.value).toBeUndefined();
-    expect(service.modulesBySameManufacturer$.value).toBeUndefined();
     expect(service.moduleEditingPanelOpenState$.value).toBeFalse();
     expect(service.moduleEditorHasPendingChanges$.value).toBeFalse();
     expect(service.isAdmin$.value).toBeFalse();
