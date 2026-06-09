@@ -24,6 +24,7 @@ import {
   getToolbarAdminLinks,
   getToolbarHomeLinks,
   getToolbarMainLinks,
+  PATREON_URL,
   ToolbarMobileSection
 } from './toolbar-link-data';
 
@@ -35,6 +36,7 @@ import {
   standalone:      false
 })
 export class ToolbarComponent extends SubManager {
+  readonly patreonUrl = PATREON_URL;
   private readonly homeLinks = getToolbarHomeLinks();
   private readonly mainLinks: RouteClickableLink[];
   private readonly adminLinks = getToolbarAdminLinks();

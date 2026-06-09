@@ -77,6 +77,32 @@
           </app-label-value-showcase>
         </div>
         <div class="footer-section">
+          <app-label-value-showcase label="Support Patcher"
+                                    [bigText]="false"
+          >
+            <div class="col gap1">
+              <div>Patcher is free and open-source.</div>
+              <div>
+                <a [href]="patreonUrl"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="patreon-button-link"
+                   aria-label="Become a Patron on Patreon"
+                >
+                  <img
+                    src="https://c5.patreon.com/external/logo/become_a_patron_button@2x.png"
+                    alt="Become a Patron"
+                    width="162"
+                    height="51"
+                    loading="lazy"
+                    class="patreon-button-img"
+                  />
+                </a>
+              </div>
+            </div>
+          </app-label-value-showcase>
+        </div>
+        <div class="footer-section">
           <app-label-value-showcase label="Follow us"
                                     [bigText]="false"
           >

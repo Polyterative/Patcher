@@ -114,6 +114,33 @@ a {
   justify-content: flex-end;
 }
 
+.patreon-button-link {
+  display: inline-block;
+  text-decoration: none;
+  border-bottom: none;
+  border-radius: 0.375rem;
+  overflow: hidden;
+  opacity: 0.92;
+  transition: opacity 160ms ease, transform 160ms ease;
+
+  &:hover {
+    opacity: 1;
+    transform: translateY(-1px);
+    text-decoration: none;
+  }
+
+  &:active {
+    transform: translateY(0);
+    opacity: 0.85;
+  }
+}
+
+.patreon-button-img {
+  display: block;
+  width: 10rem; // px-ok: image intrinsic ratio preserved, just constraining render width
+  height: auto;
+}
+
 @media (max-width: 40rem) {
   .footer-bottom {
     align-items: stretch;

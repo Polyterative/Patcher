@@ -160,6 +160,18 @@ mat-divider {
   }
 }
 
+.toolbar-support {
+  color: rgba(255, 255, 255, 0.75);
+  --mdc-icon-button-icon-color: rgba(255, 255, 255, 0.75);
+  transition: color 160ms ease;
+
+  &:hover:not([disabled]) {
+    color: rgba(255, 180, 180, 0.95);
+    --mdc-icon-button-icon-color: rgba(255, 180, 180, 0.95);
+    background-color: rgba(255, 255, 255, 0.12);
+  }
+}
+
 .sticky {
   position: sticky;
   position: -webkit-sticky;
