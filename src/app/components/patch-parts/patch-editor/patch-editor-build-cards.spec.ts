@@ -70,7 +70,7 @@ describe('PatchEditorComponent.buildEditorCards (via private access)', () => {
     expect(cards[0].instanceCount).toBe(0);
   });
   
-  it('module with 1 instance produces one card with instanceId set and no label', () => {
+  it('module with 1 instance produces one card with instanceId set and stable module-derived trackingId', () => {
     const comp = buildComponent();
     const module = fakeModule(5);
     const instance = fakeInstance(100, 5);
@@ -78,7 +78,10 @@ describe('PatchEditorComponent.buildEditorCards (via private access)', () => {
     
     expect(cards.length).toBe(1);
     expect(cards[0].instance).toBe(instance);
-    expect(cards[0].trackingId).toBe(100);
+    // trackingId stays -module.id even with 1 instance so the @for loop in the
+    // patch-editor template doesn't tear down + rebuild the card when an
+    // instance is auto-created on first CV click.
+    expect(cards[0].trackingId).toBe(-5);
     expect(cards[0].label).toBeUndefined();
     expect(cards[0].instanceCount).toBe(1);
   });
