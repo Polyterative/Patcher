@@ -696,7 +696,13 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
           instanceCount: count,
           connectionCount: instConns.length,
           connectionNames: this.buildConnectionNames(instConns, inst?.id),
-          trackingId: inst?.id ?? -module.id
+          // Single-instance card: keep trackingId stable across the 0→1 instance
+          // transition so the @for loop doesn't destroy + recreate the DOM when
+          // an instance is auto-created on first CV click. Recreating the card
+          // mid-interaction collapses the projected module-details (image,
+          // ports) until the next change-detection cycle and was the cause of
+          // the "only the title is visible after the first connection" bug.
+          trackingId: -module.id
         });
       } else {
         // N instances → N cards with labels
