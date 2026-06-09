@@ -56,24 +56,29 @@
       <div class="profile-layout">
         <div class="main-content">
           <app-user-modules appDiscoveryTipAnchor="user-area-modules-section"
-                            class="block"
+                            class="block user-area-section"
+                            [style.--section-enter-delay.ms]="0"
                             [modulesViewConfig]="viewConfig"
                             [encloseVertically]="true"
                             [globalSearchQuery]="bag.globalSearchQuery ?? ''"
           ></app-user-modules>
           <app-user-racks appDiscoveryTipAnchor="user-area-racks-section"
-                          class="block"
+                          class="block user-area-section"
+                          [style.--section-enter-delay.ms]="120"
                           [globalSearchQuery]="bag.globalSearchQuery ?? ''"
           ></app-user-racks>
           <app-user-patches appDiscoveryTipAnchor="user-area-patches-section"
-                            class="block"
+                            class="block user-area-section"
+                            [style.--section-enter-delay.ms]="240"
                             [globalSearchQuery]="bag.globalSearchQuery ?? ''"
           ></app-user-patches>
           <app-user-manuals appDiscoveryTipAnchor="user-area-manuals"
-                            class="block"
+                            class="block user-area-section"
+                            [style.--section-enter-delay.ms]="360"
           ></app-user-manuals>
           <app-user-comments appDiscoveryTipAnchor="user-area-comments"
-                             class="block"
+                             class="block user-area-section"
+                             [style.--section-enter-delay.ms]="480"
           ></app-user-comments>
         </div>
         <div class="sidebar col gap1">
