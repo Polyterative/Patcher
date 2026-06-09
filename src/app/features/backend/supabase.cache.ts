@@ -41,6 +41,9 @@ export type CachedEntity =
   | 'currentUserComments'
   | 'rackWithId'
   | 'racksMinimal'
+  | 'racksWithModule'
+  | 'patchesWithModule'
+  | 'modulesBySameManufacturer'
   | 'userModuleTags'
   | 'modulePossessionCounts'
   | void;

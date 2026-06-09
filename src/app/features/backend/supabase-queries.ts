@@ -1914,6 +1914,103 @@ export class SupabaseQueriesService {
   }
 
   @Cacheable({
+    maxAge: defaultCacheTime,
+    maxCacheCount: 50,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x =>
+      x.includes('rackWithId') || x.includes('racksMinimal') || x.includes('racksWithModule')
+    )),
+  })
+  getRacksWithModule(
+    moduleid: number,
+    from = 0,
+    to: number = this.defaultPag,
+    orderBy?: string,
+    orderDirection?: 'asc' | 'desc'
+  ) {
+    const publicAuthorGateJoin = QueryJoins.publicAuthorGate(SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS);
+    return rxFrom(
+      this.supabase.from(DbPaths.racks)
+        .select(`*, ${ QueryJoins.author }, ${ publicAuthorGateJoin }, rack_modules!inner(rackid,moduleid)`, { count: 'exact' })
+        .filter('public', 'eq', true)
+        .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
+        .filter('rack_modules.moduleid', 'eq', moduleid)
+        .range(from, to)
+        .order(orderBy ?? 'updated', { ascending: orderDirection === 'asc' })
+    ).pipe(
+      remapErrors(),
+      map((response: any) => {
+        const stripped = this.stripPublicAuthorGate<{ data: Rack[]; count: number | null }>(response);
+        return {
+          ...stripped,
+          data: (stripped.data ?? []).map((rack: Rack) => ({ rack }))
+        };
+      })
+    );
+  }
+
+  @Cacheable({
+    maxAge: defaultCacheTime,
+    maxCacheCount: 50,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x =>
+      x.includes('patches') || x.includes('patchModuleInstances') || x.includes('patchesWithModule')
+    )),
+  })
+  getPatchesWithModule(
+    moduleid: number,
+    from = 0,
+    to: number = this.defaultPag,
+    orderBy?: string,
+    orderDirection?: 'asc' | 'desc'
+  ): Observable<Patch[]> {
+    return rxFrom(
+      this.supabase.rpc('get_public_patches_for_module', {
+        p_module_id: moduleid,
+        p_from: from,
+        p_to: to,
+        p_order_by: orderBy ?? 'updated',
+        p_order_direction: orderDirection ?? 'desc'
+      })
+    ).pipe(
+      remapErrors(),
+      map((response: any) => (response.data ?? []) as Patch[])
+    );
+  }
+
+  @Cacheable({
+    maxAge: defaultCacheTime,
+    maxCacheCount: 20,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x =>
+      x.includes('modules') || x.includes('moduleWithId') || x.includes('modulesBySameManufacturer')
+    )),
+  })
+  getModulesBySameManufacturer(
+    manufacturerId: any,
+    from = 0,
+    to: number = this.defaultPag,
+    columns = '*'
+  ) {
+    return rxFrom(
+      this.supabase.from(DbPaths.modules)
+        .select(`${ columns },
+          ${ QueryJoins.manufacturer },
+          ${ QueryJoins.standard },
+          ${ QueryJoins.module_panels },
+          ${ QueryJoins.module_tags },
+          ${ QueryJoins.insOuts }
+          `)
+        .filter('manufacturerId', 'eq', manufacturerId)
+        .limit(1, { foreignTable: DbPaths.module_panels })
+        .order('color', { foreignTable: DbPaths.module_panels, ascending: true })
+        .order('updated', { ascending: false })
+        .order('id', { ascending: false })
+        .range(from, to)
+    ).pipe(
+      remapErrors(),
+      map((x: any) => x.data)
+    );
+  }
+
+  @Cacheable({
     maxAge: longCacheTime,
   })
   getAllTagsCached(): Observable<any[]> {
