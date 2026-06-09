@@ -31,6 +31,9 @@ import { ScreenWrapperComponent } from './shared-interproject/components/@visual
 import { AppFaqComponent } from './components/shared-atoms/app-faq/app-faq.component';
 import { SelectionPanelOutletComponent } from './components/patch-parts/selection-panel-outlet/selection-panel-outlet.component';
 import { DiscoveryTipSurfaceComponent } from './shared-interproject/discovery-tips/discovery-tip-surface/discovery-tip-surface.component';
+import { ModuleDetailDataService } from './components/module-parts/module-detail-data.service';
+import { PatchDetailDataService } from './components/patch-parts/patch-detail-data.service';
+import { RackDetailDataService } from './components/rack-parts/rack-detail-data.service';
 
 
 @Component({
@@ -42,6 +45,20 @@ import { DiscoveryTipSurfaceComponent } from './shared-interproject/discovery-ti
     '[@.disabled]': 'animationsDisabled'
   },
   standalone: true,
+  // Provide the data services that the floating SelectionPanelOutletComponent
+  // tree depends on (module-cvitem injects PatchDetailDataService; module-minimal
+  // injects ModuleDetailDataService + RackDetailDataService). The outlet lives
+  // at app root, outside any lazy feature module, so without these providers
+  // its inner render aborts with NG0201 and the panel body silently collapses
+  // to just the header. PatchModule/RackModule still declare their own
+  // component-level providers so the patch/rack editors keep their isolated,
+  // navigation-scoped instances — the AppComponent instances are only ever
+  // touched by the always-present floating outlet.
+  providers: [
+    PatchDetailDataService,
+    RackDetailDataService,
+    ModuleDetailDataService,
+  ],
   imports: [
     BackboneModule,
     ToolbarModule,
@@ -61,7 +78,12 @@ export class AppComponent {
   constructor(
     private router: Router,
     private readonly appViewportService: AppViewportService,
-    private readonly appShellLayoutService: AppShellLayoutService
+    private readonly appShellLayoutService: AppShellLayoutService,
+    // Eagerly instantiate so its constructor's initial bridge.selectionState$
+    // push (EMPTY) happens at boot — before any patch editor instance can
+    // push real selection state. Otherwise the lazy creation triggered by
+    // the panel's first render would clobber the user's selection mid-click.
+    _patchDataServiceEagerBoot: PatchDetailDataService,
   ) {
     this.animationsDisabled = isPlatformBrowser(this.platformId)
       && window.matchMedia('(prefers-reduced-motion: reduce)').matches;

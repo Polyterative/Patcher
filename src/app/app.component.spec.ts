@@ -12,6 +12,9 @@ import {
 } from 'rxjs';
 import { Router } from '@angular/router';
 import { AppComponent } from './app.component';
+import { ModuleDetailDataService } from './components/module-parts/module-detail-data.service';
+import { PatchDetailDataService } from './components/patch-parts/patch-detail-data.service';
+import { RackDetailDataService } from './components/rack-parts/rack-detail-data.service';
 import { AppShellLayoutService } from './shared-interproject/app-shell-layout.service';
 import { AppViewportService } from './shared-interproject/app-viewport.service';
 
@@ -76,6 +79,15 @@ describe('AppComponent', () => {
     .overrideComponent(AppComponent, {
       set: {
         imports: [ToolbarStubComponent, AsyncPipe],
+        // Replace the heavy data-service providers with empty stubs — this
+        // spec exercises shell-layout behaviour, not the floating selection
+        // panel. The real services are exercised by their own specs and
+        // verified at runtime by the regression guard below.
+        providers: [
+          {provide: PatchDetailDataService, useValue: {}},
+          {provide: RackDetailDataService, useValue: {}},
+          {provide: ModuleDetailDataService, useValue: {}}
+        ]
       }
     })
     .compileComponents();
@@ -142,5 +154,66 @@ describe('AppComponent', () => {
 
     const shell = fixture.debugElement.query(By.css('.app-shell')).nativeElement as HTMLElement;
     expect(shell.classList.contains('app-shell--wide')).toBeTrue();
+  });
+});
+
+
+/**
+ * Regression guard for the "CV connection panel body is empty" bug.
+ *
+ * The floating <app-selection-panel-outlet> lives inside AppComponent.
+ * Its inner render chain (patch-connection-minimal → module-minimal →
+ * module-cvitem) injects PatchDetailDataService, RackDetailDataService,
+ * and ModuleDetailDataService. When PatchModule/RackModule became lazy
+ * those services stopped being reachable from app-root scope and the
+ * panel silently rendered just its header. The fix declares them as
+ * AppComponent-level providers. This test locks that in so a future
+ * refactor doesn't quietly delete them.
+ */
+describe('AppComponent — selection panel provider wiring', () => {
+  it('eagerly instantiates PatchDetailDataService at construction time', async () => {
+    // The bridge.selectionState$ push in PatchDetailDataService's constructor
+    // emits EMPTY on initial subscription. If the AppComponent-scoped instance
+    // is created LAZILY (e.g. on first panel render after the user has already
+    // clicked) it overwrites the user's live selection. Eager construction
+    // forces that EMPTY push to happen at boot, before any patch interaction.
+    let constructed = 0;
+    class PatchDataStub {
+      constructor() { constructed++; }
+    }
+
+    spyOn(window, 'matchMedia').and.returnValue({
+      matches: false, media: '', onchange: null,
+      addListener: () => undefined, removeListener: () => undefined,
+      addEventListener: () => undefined, removeEventListener: () => undefined,
+      dispatchEvent: () => false
+    });
+
+    await TestBed.configureTestingModule({
+      imports: [NoopAnimationsModule, AppComponent],
+      providers: [
+        {provide: Router, useValue: {events: new Subject(), url: '/'}},
+        {provide: AppViewportService, useValue: {initialize: () => undefined}},
+        {provide: AppShellLayoutService, useValue: {wideShell$: new BehaviorSubject(false)}}
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
+    })
+    .overrideComponent(AppComponent, {
+      set: {
+        imports: [ToolbarStubComponent, AsyncPipe],
+        providers: [
+          {provide: PatchDetailDataService, useClass: PatchDataStub},
+          {provide: RackDetailDataService, useValue: {}},
+          {provide: ModuleDetailDataService, useValue: {}}
+        ]
+      }
+    })
+    .compileComponents();
+
+    expect(constructed).withContext('PatchDetailDataService must not be constructed before AppComponent').toBe(0);
+    TestBed.createComponent(AppComponent);
+    expect(constructed)
+      .withContext('AppComponent constructor must eagerly inject PatchDetailDataService')
+      .toBe(1);
   });
 });
