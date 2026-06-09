@@ -13,8 +13,7 @@ import {
 } from 'rxjs';
 import {
   filter,
-  startWith,
-  take
+  startWith
 } from 'rxjs/operators';
 import { RackList } from 'src/app/features/routes/rack/rack-browser-data.service';
 import { SubManager } from '../../shared-interproject/directives/subscription-manager';
@@ -46,8 +45,8 @@ import { RackMinimal } from 'src/app/models/rack';
   standalone: false
 })
 export class RackListComponent extends SubManager implements OnInit {
-  @Input()
-  readonly data$: Observable<RackList>;
+  @Input() readonly data$: Observable<RackList>;
+  @Input() itemInitialDelay = 0;
   
   @Input() readonly showSearch = false;
   @Input() encloseVertically = true;
@@ -76,12 +75,6 @@ export class RackListComponent extends SubManager implements OnInit {
       : of('');
 
     this.manageSub(
-      this.data$
-          .pipe(take(1))
-          .subscribe(x => this.updateFilteredData(x ?? []))
-    );
-    
-    this.manageSub(
       combineLatest([
         this.data$.pipe(filter(data => !!data)),
         localSearchQuery$,
@@ -109,7 +102,7 @@ export class RackListComponent extends SubManager implements OnInit {
 
     for (const rack of data) {
       const delayIndex = this.visibleRackIds.has(rack.id) ? 0 : newItemIndex++;
-      this.enterDelayByRackId.set(rack.id, (delayIndex * 25) + 50);
+      this.enterDelayByRackId.set(rack.id, this.itemInitialDelay + (delayIndex * 60) + 50);
     }
 
     this.visibleRackIds = nextVisibleIds;

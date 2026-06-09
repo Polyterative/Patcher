@@ -5,6 +5,7 @@ import {
   Input,
   OnInit
 } from '@angular/core';
+import { animate, style, transition, trigger } from '@angular/animations';
 import { DOCUMENT } from '@angular/common';
 import {
   BehaviorSubject,
@@ -44,7 +45,28 @@ const OWNED_MODULES_DEFAULT_THRESHOLD = 20;
   styleUrls: ['./module-browser-root.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [ModuleBrowserRecentActivityService],
-  standalone: false
+  standalone: false,
+  animations: [
+    trigger('chipExpand', [
+      transition(':enter', [
+        style({ height: 0, opacity: 0, overflow: 'hidden', minHeight: 0 }),
+        animate('220ms cubic-bezier(0.4, 0, 0.2, 1)', style({ height: '*', opacity: 1 }))
+      ]),
+      transition(':leave', [
+        style({ overflow: 'hidden' }),
+        animate('160ms cubic-bezier(0.4, 0, 0.2, 1)', style({ height: 0, opacity: 0, minHeight: 0 }))
+      ])
+    ]),
+    trigger('toggleExpand', [
+      transition(':enter', [
+        style({ transform: 'scale(0.7)', opacity: 0 }),
+        animate('200ms cubic-bezier(0.34, 1.56, 0.64, 1)', style({ transform: 'scale(1)', opacity: 1 }))
+      ]),
+      transition(':leave', [
+        animate('140ms cubic-bezier(0.4, 0, 0.2, 1)', style({ transform: 'scale(0.7)', opacity: 0 }))
+      ])
+    ])
+  ]
 })
 export class ModuleBrowserRootComponent extends SubManager implements OnInit {
   private readonly document = inject(DOCUMENT);

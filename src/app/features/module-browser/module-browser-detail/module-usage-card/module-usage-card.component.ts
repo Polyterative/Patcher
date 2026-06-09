@@ -5,6 +5,9 @@ import {
 } from '@angular/core';
 import {
   animate,
+  animateChild,
+  group,
+  query,
   style,
   transition,
   trigger
@@ -20,7 +23,10 @@ import { Observable } from 'rxjs';
     trigger('moduleDetailSupportEnter', [
       transition(':enter', [
         style({ opacity: 0 }),
-        animate('{{ duration }}ms {{ delay }}ms cubic-bezier(0.22, 1, 0.36, 1)', style({ opacity: 1 }))
+        group([
+          animate('{{ duration }}ms {{ delay }}ms cubic-bezier(0.22, 1, 0.36, 1)', style({ opacity: 1 })),
+          query('@*', animateChild(), { optional: true })
+        ])
       ], { params: { delay: 0, duration: 185 } })
     ])
   ],

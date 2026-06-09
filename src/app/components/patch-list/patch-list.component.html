@@ -19,7 +19,7 @@
       <flexbox-row-fast
       >
         @for (item of bag.filteredData; track item; let i = $index) {
-          <lib-clean-card [@enter]="{ value: '', params: { delay: (i * 25)+50}}"
+          <lib-clean-card [@enter]="{ value: '', params: { delay: itemInitialDelay + (i * 60)+50}}"
                           [@leave]="{ value: '', params: { delay:  0 }}"
           >
             <app-patch-micro [data]="item"

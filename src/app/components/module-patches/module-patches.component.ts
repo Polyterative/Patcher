@@ -21,7 +21,7 @@ import {
 })
 export class ModulePatchesComponent implements OnInit {
   @Input() data$: Observable<PatchMinimal[]>;
-  
+  @Input() itemInitialDelay = 0;
   @Input() viewConfig: PatchMinimalViewConfig = defaultPatchMinimalViewConfig;
   
   constructor() { }

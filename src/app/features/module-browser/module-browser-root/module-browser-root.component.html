@@ -129,31 +129,31 @@
         </div>
         
         <div class="module-filter-control module-filter-control--optional module-tag-filter-section">
-          <div class="module-tag-filter-header row gap1">
-            <lib-mat-form-entity
-              [control]="dataService.fields.tagSearch.control"
-              [type]="dataService.fields.tagSearch.type"
-              [label]="dataService.fields.tagSearch.label"
-              iconL1="search"
-            ></lib-mat-form-entity>
-            @if ((dataService.fields.tags.control.value?.length ?? 0) > 0) {
-              <mat-button-toggle-group
-                [value]="dataService.tagMatchMode$ | async"
-                (change)="dataService.tagMatchMode$.next($event.value)"
-                aria-label="Tag match mode"
-                class="tag-match-mode-toggle"
-              >
-                <mat-button-toggle value="OR" matTooltip="Match any selected tag">Any</mat-button-toggle>
-                <mat-button-toggle value="AND" matTooltip="Match all selected tags">All</mat-button-toggle>
-              </mat-button-toggle-group>
-            }
-          </div>
+          <lib-mat-form-entity
+            [control]="dataService.fields.tagSearch.control"
+            [type]="dataService.fields.tagSearch.type"
+            [label]="dataService.fields.tagSearch.label"
+            iconL1="search"
+          ></lib-mat-form-entity>
 
           @if ((dataService.fields.tags.control.value?.length ?? 0) > 0) {
             <div class="selected-tags-row">
+              @if ((dataService.fields.tags.control.value?.length ?? 0) > 1) {
+                <mat-button-toggle-group
+                  @toggleExpand
+                  [value]="dataService.tagMatchMode$ | async"
+                  (change)="dataService.tagMatchMode$.next($event.value)"
+                  aria-label="Tag match mode"
+                  class="tag-match-mode-toggle"
+                >
+                  <mat-button-toggle value="OR" matTooltip="Match any selected tag">Any</mat-button-toggle>
+                  <mat-button-toggle value="AND" matTooltip="Match all selected tags">All</mat-button-toggle>
+                </mat-button-toggle-group>
+              }
               <mat-chip-set aria-label="Active tag filters">
                 @for (tag of dataService.fields.tags.control.value; track tag.id) {
                   <mat-chip
+                    @chipExpand
                     (removed)="dataService.toggleTagFilter({id: +tag.id, name: tag.name, type: tag.type})"
                     [removable]="true"
                     highlighted

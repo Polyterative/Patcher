@@ -97,7 +97,7 @@
             <div class="module-detail-supportRailCards">
           @if (bag.data) {
              <lib-hero-content-card
-                [@moduleDetailDataEnter]="{ value: '', params: { delay: 348, duration: 180 } }"
+                [@moduleDetailDataEnter]="{ value: '', params: { delay: 80, duration: 180 } }"
                 titleNormal="Data"
                [sidesPadding]="false"
             >
@@ -399,7 +399,7 @@
                     [usagePendingCopy]="getUsagePendingCopy('rack')"
                     [noPublicUsageCopy]="getNoPublicUsageCopy('rack', bag.moduleUsageSummary?.hidden_rack_bucket)"
                     [isUsageSummaryLoaded]="bag.moduleUsageSummary != null"
-                    [animationDelay]="452"
+                    [animationDelay]="680"
                   ></app-module-usage-card>
                 }
                 @if (viewConfig.hidePatchedIn === false) {
@@ -414,7 +414,7 @@
                     [usagePendingCopy]="getUsagePendingCopy('patch')"
                     [noPublicUsageCopy]="getNoPublicUsageCopy('patch', bag.moduleUsageSummary?.hidden_patch_bucket)"
                     [isUsageSummaryLoaded]="bag.moduleUsageSummary != null"
-                    [animationDelay]="476"
+                    [animationDelay]="730"
                   ></app-module-usage-card>
                 }
               </div>

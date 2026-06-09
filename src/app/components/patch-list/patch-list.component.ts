@@ -50,6 +50,7 @@ export class PatchListComponent extends SubManager implements OnInit {
   @Input() readonly data$: Observable<PatchList>;
   @Input() readonly showSearch = false;
   @Input() readonly viewConfig: PatchMinimalViewConfig = defaultPatchMinimalViewConfig;
+  @Input() itemInitialDelay = 0;
 
   private readonly externalSearchQuery$ = new BehaviorSubject<string>('');
 
