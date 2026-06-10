@@ -184,6 +184,20 @@ describe('RackDetailDataService helpers', () => {
     expect(unrackedRows[1].length).toBe(2);
     expect(unrackedRows[1][1].rackingData.id).toBeUndefined();
   });
+
+  it('duplicates beside the current source index even when stored columns are stale', () => {
+    const {service} = build();
+    const duplicate = (service as any).duplicateModule.bind(service);
+
+    const source = mod(1, 0, 2);
+    const neighbor = mod(2, 0, 0);
+    const rows = [[source, neighbor]];
+
+    duplicate(rows, source);
+
+    expect(rows[0].map((x: any) => x.rackingData.id)).toEqual([1, undefined, 2]);
+    expect(rows[0].map((x: any) => x.rackingData.column)).toEqual([0, 1, 2]);
+  });
   
   it('preserves selectedPanelId when duplicating a module', () => {
     const {service} = build();
@@ -212,17 +226,28 @@ describe('RackDetailDataService helpers', () => {
     expect(isAnyModuleWithoutRackingId(copied)).toBeTrue();
   });
   
-  it('syncs rack modules through backend and refreshes rack when missing ids exist', () => {
+  it('syncs rack modules through backend and assigns returned ids without refreshing rack', () => {
     const {service, backend} = build();
     const sync = (service as any).callBackendToUpdateModulesOfRack.bind(service);
     const rack = {id: 1, name: 'Rack', rows: 2, hp: 84} as any;
     const nextSpy = spyOn(service.singleRackData$, 'next').and.callThrough();
     const rows = [[mod(undefined as any, 0, 0), mod(2, 0, 1)]];
+    backend.update.rackedModules.and.returnValue(of({
+      data: [{
+        id: 99,
+        moduleid: rows[0][0].rackingData.moduleid,
+        rackid: rows[0][0].rackingData.rackid,
+        row: 0,
+        column: 0,
+        selected_panel_id: null
+      }]
+    }));
     
     sync(rows, rack).subscribe();
     
     expect(backend.update.rackedModules).toHaveBeenCalledWith(rows.flatMap(x => x));
-    expect(nextSpy).toHaveBeenCalledWith(rack);
+    expect(rows[0][0].rackingData.id).toBe(99);
+    expect(nextSpy).not.toHaveBeenCalled();
   });
   
   it('creates duplicated rack payload for current user without reusing preview media and confirms duplication dialog', () => {

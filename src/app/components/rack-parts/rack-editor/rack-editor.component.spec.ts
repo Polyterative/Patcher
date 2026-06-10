@@ -123,6 +123,7 @@ describe('RackEditorComponent', () => {
       requestRackedModuleRemoval$: new Subject<RackedModule>(),
       requestRackedModuleReplaceWithBlank$: new Subject<RackedModule>(),
       requestRackedModuleRowClearing$: new Subject<RackedModule>(),
+      requestClearRow$: new Subject<number>(),
       requestRackedModulePanelSwitch$: new Subject<any>(),
     };
 
@@ -151,9 +152,10 @@ describe('RackEditorComponent', () => {
       });
 
     const ids = menuItems$.value.map(item => item.id);
-      expect(ids).not.toContain('edit-hp');
-       expect(ids).not.toContain('reset-hp');
-       expect(menuItems$.value[0].label).toBe('Belgrad (Xaoc Devices, 14 HP)');
+    expect(ids).not.toContain('edit-hp');
+    expect(ids).not.toContain('reset-hp');
+    expect(ids).not.toContain('clear-row');
+    expect(menuItems$.value[0].label).toBe('Belgrad (Xaoc Devices, 14 HP)');
   });
 
   it('toggles the view options panel', () => {
@@ -184,6 +186,7 @@ describe('RackEditorComponent', () => {
       requestRackedModuleRemoval$: new Subject<RackedModule>(),
       requestRackedModuleReplaceWithBlank$: new Subject<RackedModule>(),
       requestRackedModuleRowClearing$: new Subject<RackedModule>(),
+      requestClearRow$: new Subject<number>(),
       requestRackedModulePanelSwitch$: new Subject<any>(),
     };
     const contextMenu = {menuItems$, open$} as GeneralContextMenuDataService;
@@ -223,7 +226,7 @@ describe('RackEditorComponent', () => {
 
     component.openSelectedTouchModuleMenu(anchor);
 
-    expect(menuItems$.value.map(item => item.id)).toContain('clear-row');
+    expect(menuItems$.value.map(item => item.id)).not.toContain('clear-row');
     expect(openSpy).toHaveBeenCalled();
     expect(openSpy.calls.mostRecent().args[0]).toEqual(jasmine.objectContaining({
       clientX: 160,
@@ -251,9 +254,46 @@ describe('RackEditorComponent', () => {
       'inspect',
       'duplicate',
       'replace-with-blank',
-      'delete',
-      'clear-row'
+      'delete'
     ]);
+  });
+
+  it('exposes clear row from the row action menu', () => {
+    const menuItems$ = new BehaviorSubject<any[]>([]);
+    const open$ = new Subject<MouseEvent>();
+    const requestClearRow$ = new Subject<number>();
+    const component = createComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      {
+        requestMoveRow$: new Subject<{rowId: number; direction: 'up' | 'down'}>(),
+        requestClearRow$,
+        requestDeleteRow$: new Subject<number>()
+      } as any,
+      {menuItems$, open$} as GeneralContextMenuDataService,
+      {markForCheck: () => undefined} as ChangeDetectorRef,
+      jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
+    );
+    const clearSpy = spyOn(requestClearRow$, 'next');
+
+    component.openRowOverflowMenu({
+      $event: new MouseEvent('click'),
+      rowId: 1,
+      totalRows: 3,
+      rowModuleCount: 2
+    });
+
+    const ids = menuItems$.value.map(item => item.id);
+    expect(ids).toContain('clear-row');
+    expect(ids).toContain('delete-row');
+    const clearItem = menuItems$.value.find(item => item.id === 'clear-row');
+    const deleteItem = menuItems$.value.find(item => item.id === 'delete-row');
+    expect(clearItem.disabled).toBeFalse();
+    expect(deleteItem.disabled).toBeTrue();
+
+    clearItem.click$.next(clearItem);
+
+    expect(clearSpy).toHaveBeenCalledWith(1);
   });
 
   it('clears the touch selection after running the shared replace-with-blank action', () => {

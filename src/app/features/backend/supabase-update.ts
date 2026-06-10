@@ -113,6 +113,7 @@ export function createUpdateNamespace(
         
         return rxFrom(
           supabase.from(DbPaths.rack_modules).upsert(toSimplyUpdate)
+            .select('id,moduleid,rackid,row,column,selected_panel_id')
         ).pipe(
           switchMap(x => {
             const newRackedModules = data
@@ -125,7 +126,11 @@ export function createUpdateNamespace(
                 selected_panel_id: rackedModule.rackingData.selectedPanelId ?? null
               }));
             
-            const insertNew$ = rxFrom(supabase.from(DbPaths.rack_modules).insert(newRackedModules));
+            const insertNew$ = rxFrom(
+              supabase.from(DbPaths.rack_modules)
+                .insert(newRackedModules)
+                .select('id,moduleid,rackid,row,column,selected_panel_id')
+            );
             return newRackedModules.length > 0 ? insertNew$ : of(x);
           }),
           remapErrors()

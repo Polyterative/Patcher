@@ -255,15 +255,6 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
         includeInContextMenu: true,
         clearsTouchSelection: true,
         run: (rackedModule) => this.dataService.requestRackedModuleRemoval$.next(rackedModule)
-      },
-      {
-        id: 'clear-row',
-        label: 'Delete all in row',
-        icon: 'delete_sweep',
-        danger: true,
-        includeInTouchTray: false,
-        includeInContextMenu: true,
-        run: (rackedModule) => this.dataService.requestRackedModuleRowClearing$.next(rackedModule)
       }
     ];
     this.touchTrayModuleActions = this.moduleActions.filter(action => action.includeInTouchTray);
@@ -562,6 +553,14 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
           rowId,
           direction: 'down'
         }))
+      },
+      {
+        id: 'clear-row',
+        label: 'Clear row',
+        icon: 'delete_sweep',
+        disabled: rowModuleCount === 0,
+        danger: true,
+        click$: this.createMenuActionSubject(() => this.dataService.requestClearRow$.next(rowId))
       },
       {
         id: 'delete-row',
