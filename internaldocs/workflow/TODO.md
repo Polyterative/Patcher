@@ -19,7 +19,6 @@
 
 ### 🔥 MAX PRIORITY
 
-- [ ] **MAX: Bug — Patch editor collection-mode cards collapse to title-only after first connection** → [`plans/bug-patch-editor-collection-mode-cards-collapse-on-first-connection.md`](./plans/bug-patch-editor-collection-mode-cards-collapse-on-first-connection.md)
 
 ### PRODUCT — Tier 0 (ship in any order; no external dependencies)
 
