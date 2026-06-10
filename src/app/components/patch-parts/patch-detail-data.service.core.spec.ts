@@ -80,7 +80,7 @@ describe('PatchDetailDataService core flows', () => {
     const bridge = new SelectionPanelBridgeService();
 
     const service = new PatchDetailDataService(
-      router, snackBar, dialog as any, {} as any, backend as any, bridge
+      router, snackBar, dialog as any, {} as any, backend as any, bridge, {capture: () => {}, identify: () => {}, reset: () => {}} as any
     );
     createdServices.push(service);
     createdBridges.push(bridge);

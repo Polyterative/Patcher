@@ -39,6 +39,7 @@ import {
   ModulePossessionCounts,
   ModuleUsageSummary
 } from './module-detail-data.models';
+import { AnalyticsService } from '../../features/backbone/analytics-integration/analytics.service';
 
 export type { HiddenUsageBucket, ModulePossessionCounts, ModuleUsageSummary } from './module-detail-data.models';
 
@@ -83,7 +84,7 @@ export class ModuleDetailDataService implements OnDestroy {
     public backend: SupabaseService,
     public appState: AppStateService,
     public router: Router,
-  
+    private analytics: AnalyticsService,
   ) {
     
     this.backend.auth.hasAdminRole$()
@@ -154,6 +155,8 @@ export class ModuleDetailDataService implements OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(([{kind, module}, moduleId]) => {
+        const state = kind === null ? 'removed' : 'added';
+        this.analytics.capture('module.collection_toggled', { module_id: module?.id, state });
         const message = kind === null
           ? `"${module.name}" removed from your collection.`
           : `"${module.name}" marked as ${this.possessionKindLabel(kind)}.`;
@@ -171,7 +174,15 @@ export class ModuleDetailDataService implements OnDestroy {
         switchMap(x => this.backend.GET.moduleWithId(x)),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(x => this.singleModuleData$.next(x.data));
+      .subscribe(x => {
+        this.singleModuleData$.next(x.data);
+        if (x.data) {
+          this.analytics.capture('module.viewed', {
+            module_id:       x.data.id,
+            manufacturer_id: x.data.manufacturer?.id
+          });
+        }
+      });
     
     // get racks with this module
     this.updateSingleModuleData$
@@ -223,6 +234,7 @@ export class ModuleDetailDataService implements OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(([a, b, module]) => {
+        this.analytics.capture('module.collection_toggled', { module_id: module?.id, state: 'added' });
         snackBar.open(`"${ module?.name }" added to your collection.`, undefined, {duration: 2000, panelClass: 'snack-success'});
         this.updateSingleModuleData$.next(b);
       });
@@ -234,6 +246,7 @@ export class ModuleDetailDataService implements OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(([a, b, module]) => {
+        this.analytics.capture('module.collection_toggled', { module_id: module?.id, state: 'removed' });
         snackBar.open(`"${ module?.name }" removed from your collection.`, undefined, {duration: 2000, panelClass: 'snack-success'});
         this.updateSingleModuleData$.next(b);
       });

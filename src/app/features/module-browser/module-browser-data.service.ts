@@ -66,6 +66,7 @@ import {
   matchesSelectedTags,
   toSortDirection
 } from './module-browser-data.utils';
+import { AnalyticsService } from '../backbone/analytics-integration/analytics.service';
 
 export type { ModuleList, ModuleOrderOption } from './module-browser-data.models';
 
@@ -105,7 +106,7 @@ export class ModuleBrowserDataService extends SubManager {
   readonly fields: ModuleBrowserFields;
   readonly canReset$: Observable<boolean>;
 
-  constructor(private backend: SupabaseService) {
+  constructor(private backend: SupabaseService, private analytics: AnalyticsService) {
     super();
     this.backend.cacheResetter$?.next(['manufacturers']);
 
@@ -423,6 +424,21 @@ export class ModuleBrowserDataService extends SubManager {
         const current = this.modulesList$.value ?? [];
         this.modulesList$.next(skip === 0 ? response.data : [...current, ...response.data]);
         this.remoteTagFilterLoading$.next(false);
+
+        // Only capture for fresh searches (skip===0), not pagination loads.
+        if (skip === 0) {
+          const nameVal = this.fields.name.control.value ?? '';
+          const hasManufacturer = !!this.fields.manufacturers.control.value;
+          const hasHp = !!(this.fields.hp.control.value);
+          const hasTags = this.getSelectedTagIds().length > 0;
+          const hasDescription = !!(this.fields.description.control.value);
+          const filtersActive = [hasManufacturer, hasHp, hasTags, hasDescription].filter(Boolean).length;
+          this.analytics.capture('search.performed', {
+            query_len:      nameVal.length,
+            filters_active: filtersActive,
+            result_count:   response.count ?? response.data.length
+          });
+        }
       });
 
     this.loadMore$

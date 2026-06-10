@@ -86,7 +86,8 @@ describe('RackDetailDataService reactive flows', () => {
       {loggedUser$} as any,
       backend as any,
       dialog as any,
-      router
+      router,
+      {capture: () => {}, identify: () => {}, reset: () => {}} as any
     );
     createdServices.push(service);
     

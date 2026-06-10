@@ -49,7 +49,8 @@ describe('RackDetailDataService helpers', () => {
       {loggedUser$: of(undefined)} as any,
       backend as any,
       dialog as any,
-      jasmine.createSpyObj('Router', ['navigate'])
+      jasmine.createSpyObj('Router', ['navigate']),
+      {capture: () => {}, identify: () => {}, reset: () => {}} as any
     );
     createdServices.push(service);
     

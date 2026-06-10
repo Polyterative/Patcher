@@ -259,6 +259,7 @@ export class UserManagementService extends SubManager {
         // The login$ already fetches the username, so we have complete data
         this._loggedUser$.next(x.user);
         this._loggedUserFullProfile$.next(x.user);
+        this.analytics.capture('auth.signed_in', { method: 'password' });
       }),
       takeUntil(this.destroy$)
     ).subscribe();
@@ -274,6 +275,7 @@ export class UserManagementService extends SubManager {
         })
       )),
       tap(() => {
+        this.analytics.capture('auth.signed_out');
         // State will be cleared by the auth state change listener
         // which triggers the cross-tab logout handler
         this.router.navigate(['/auth/login']);

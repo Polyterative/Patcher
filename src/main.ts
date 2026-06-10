@@ -33,6 +33,12 @@ function initializePostHog(): void {
           // needed. Keeps payloads small.
           disable_session_recording: true
         });
+
+        // Super-properties on every event — slice dashboards by release/commit.
+        posthog.register({
+          release: build.version,
+          commit:  build.git?.hash ?? 'unknown'
+        });
       })
       .catch(phErr => {
         console.warn('PostHog init failed:', phErr);
@@ -72,6 +78,15 @@ function initializeSentry(): void {
           replaysSessionSampleRate: 0,
           replaysOnErrorSampleRate: 1.0,
           beforeSend: (event, hint) => {
+            // Cross-link: stamp the PostHog distinct_id so you can jump
+            // from a Sentry issue straight to that user's PostHog timeline.
+            try {
+              const ph = (window as unknown as Record<string, { get_distinct_id?: () => string }>)['posthog'];
+              if (ph?.get_distinct_id) {
+                event.tags = { ...event.tags, posthog_distinct_id: ph.get_distinct_id() };
+              }
+            } catch { /* swallow */ }
+
             const error: unknown = hint?.originalException;
             const message =
               (error as { message?: string } | undefined)?.message

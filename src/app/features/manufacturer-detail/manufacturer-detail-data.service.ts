@@ -15,6 +15,7 @@ import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { ModuleList } from 'src/app/features/module-browser/module-browser-data.service';
+import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 
 
 export interface ManufacturerDetail {
@@ -45,7 +46,8 @@ export class ManufacturerDetailDataService extends SubManager {
   
   constructor(
     private readonly backend: SupabaseService,
-    private readonly snackBar: MatSnackBar
+    private readonly snackBar: MatSnackBar,
+    private readonly analytics: AnalyticsService
   ) {
     super();
     this.initializeLoadHandler();
@@ -61,6 +63,9 @@ export class ManufacturerDetailDataService extends SubManager {
       switchMap(id => this.backend.get.manufacturerWithId(id).pipe(
         tap(result => {
           this._manufacturerData$.next(result.data as ManufacturerDetail);
+          if (result.data) {
+            this.analytics.capture('manufacturer.viewed', { manufacturer_id: (result.data as ManufacturerDetail).id });
+          }
         }),
         switchMap(() => this.backend.get.modulesBySameManufacturer(id, 0, 200)),
         tap(modules => {

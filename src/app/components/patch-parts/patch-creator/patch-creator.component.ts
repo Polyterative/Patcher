@@ -45,6 +45,8 @@ import {
   PatchCreatorOutModel
 } from './patch-creator.types';
 
+import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
+
 export type { PatchCreatorInModel, PatchCreatorOutModel };
 
 @Component({
@@ -141,7 +143,8 @@ export class PatchCreatorComponent implements OnInit, OnDestroy {
     public snackBar: MatSnackBar,
     public backend: SupabaseService,
     public dialogRef: MatDialogRef<PatchCreatorComponent, PatchCreatorOutModel>,
-    @Inject(MAT_DIALOG_DATA) public data: PatchCreatorInModel
+    @Inject(MAT_DIALOG_DATA) public data: PatchCreatorInModel,
+    private analytics: AnalyticsService
   ) {
     
     this.save$
@@ -183,6 +186,7 @@ export class PatchCreatorComponent implements OnInit, OnDestroy {
           takeUntil(this.destroyEvent$)
         )
         .subscribe(value => {
+          this.analytics.capture('patch.created', { patch_id: (value as { data?: Array<{ id?: number }> })?.data?.[0]?.id });
           const patchName = this.fields.name.control.value;
           this.snackBar.open(`"${ patchName }" created and saved to your library.`, undefined, {
             duration: 3000,
