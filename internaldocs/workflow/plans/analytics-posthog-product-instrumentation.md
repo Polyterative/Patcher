@@ -32,8 +32,8 @@ that answers concrete product questions.
       `getPostHog()` once dev verification is done.
 - [ ] Add a `cookie_consent` / `respect_dnt` confirmation pass — verify no events
       fire when DNT is on; mention PostHog in privacy copy if not already covered.
-- [ ] Add a build-time super-property: `register({ release: build.version, commit: build.git.hash })`
-      so dashboards can slice by release.
+- [x] Add a build-time super-property: `register({ release: build.version, commit: build.git.hash })`
+      so dashboards can slice by release. ✅ Done in `main.ts`.
 - [ ] Mask sensitive autocapture surfaces: confirm password fields and any email
       inputs carry `data-ph-no-capture` (PostHog autocapture default already skips
       `<input type="password">`, but verify on login + reset-password forms).
@@ -43,32 +43,23 @@ that answers concrete product questions.
 The two tools have distinct lanes; redundancy here means double quota burn,
 duplicate alerts, and confused dashboards. Keep them split:
 
-- [ ] **Do not enable PostHog exception / error capture.** Errors are
-      single-sourced in Sentry. If you ever see `posthog.captureException` or
-      the PostHog "Error tracking" toggle in our config, that's a regression —
-      remove it.
-- [ ] **Do not enable PostHog Web Vitals or performance capture.** Performance
-      is single-sourced in Sentry's `browserTracingIntegration`. PostHog stays
-      product-events only.
-- [ ] **Do not enable PostHog session recording on top of Sentry replays.**
-      Currently Sentry handles error-replay (`replaysOnErrorSampleRate: 1.0`)
-      and PostHog recording is `disabled`. If we ever want broad/sampled
-      replay, switch to PostHog's (free in our tier) and turn Sentry's replay
-      integration off — never run both.
-- [ ] Cross-link the two for debugging: on Sentry init set the PostHog
+- [x] **Do not enable PostHog exception / error capture.** Errors are
+      single-sourced in Sentry. ✅ Not enabled.
+- [x] **Do not enable PostHog Web Vitals or performance capture.** ✅ Not enabled.
+- [x] **Do not enable PostHog session recording on top of Sentry replays.** ✅ Recording off.
+- [x] Cross-link the two for debugging: on Sentry init set the PostHog
       `distinct_id` as a Sentry tag, and register Sentry's `release` / `dist`
-      as PostHog super-properties. One click between an error and that user's
-      PostHog timeline.
-- [ ] Lower Sentry `tracesSampleRate` from `1.0` → `0.2` (separate concern from
-      PostHog, but the audit surfaced it — quota-cheap perf coverage).
+      as PostHog super-properties. ✅ Done in `main.ts` `beforeSend`.
+- [x] Lower Sentry `tracesSampleRate` from `1.0` → `0.2` — **REVERTED per user request.
+      Kept at `1.0`.**
 
 ## Layer 1 — Event taxonomy (decide once, document, then sprinkle)
 
-- [ ] Add `internaldocs/patterns/ANALYTICS.md` with:
+- [x] Add `internaldocs/patterns/ANALYTICS.md` with:
   - Naming rule: `domain.action` snake_case, past-tense verbs, no PII in props.
   - Source-of-truth event list (start with the table below).
   - "Adding a new event" checklist (update doc → add `capture()` call → verify in
-    PostHog Live Events → add to relevant dashboard).
+    PostHog Live Events → add to relevant dashboard). ✅ Done.
 
 **Initial event list:**
 
@@ -95,16 +86,11 @@ One PR per domain so review stays scoped. Inject `AnalyticsService` into the
 relevant **data services** (not components) and wire via `tap()` into the existing
 reactive pipelines so events fire next to the side effect that produces them.
 
-- [ ] **Auth domain** — `UserManagementService` login / signup / logoff handlers.
-- [ ] **Rack domain** — `RackEditorDataService` (and equivalents) for create / delete /
-      duplicate / module add / module remove / module move; `RackDetailComponent`
-      for `rack.viewed`; share component for `rack.shared`.
-- [ ] **Patch domain** — patch data service for create / delete / connection
-      add / remove.
-- [ ] **Module browser** — module browser data service for `search.performed`;
-      module detail route for `module.viewed` (record the `source` param via the
-      navigation that opens it).
-- [ ] **Manufacturer page** — `manufacturer.viewed` on enter.
+- [x] **Auth domain** — `UserManagementService` login / signup / logoff handlers. ✅ Done.
+- [x] **Rack domain** — create / delete / duplicate / module add / remove / move; `rack.viewed`; share deferred. ✅ Done.
+- [x] **Patch domain** — create / delete / connection add / remove. ✅ Done.
+- [x] **Module browser** — `search.performed`; `module.viewed`; `source` param deferred. ✅ Done.
+- [x] **Manufacturer page** — `manufacturer.viewed` on enter. ✅ Done.
 - [ ] **Collection / Cool / Feedback / Admin** — sprinkle remaining events.
 - [ ] Spot-check every PR in PostHog Live Events with `env = development` filter
       before merging.
@@ -144,13 +130,13 @@ Build these in PostHog and pin them to a "Patcher" dashboard folder.
 
 ## Layer 5 — Hygiene
 
-- [ ] Add a unit test for `AnalyticsService` (happy path no-ops in test env;
-      `capture` resolves without throwing when SDK is absent).
-- [ ] Add a lint rule or CI grep that fails if `posthog-js` is imported anywhere
+- [x] Add a unit test for `AnalyticsService` (happy path no-ops in test env;
+      `capture` resolves without throwing when SDK is absent). ✅ Done (`analytics.service.spec.ts`).
+- [x] Add a lint rule or CI grep that fails if `posthog-js` is imported anywhere
       outside `analytics.service.ts` and `main.ts` (single chokepoint, mirrors
-      the Sentry pattern).
-- [ ] Document in `internaldocs/patterns/ANALYTICS.md` how to verify a new event
-      reaches PostHog (Live Events filter with `env`, `release`, distinct_id).
+      the Sentry pattern). ✅ Done (`scripts/check-posthog-imports.sh`, wired into `lint`).
+- [x] Document in `internaldocs/patterns/ANALYTICS.md` how to verify a new event
+      reaches PostHog (Live Events filter with `env`, `release`, distinct_id). ✅ Done.
 
 ---
 

@@ -26,6 +26,8 @@ describe('PatchCreatorComponent', () => {
       backend as any,
       dialogRef as any,
       data
+    ,
+      {capture: () => {}, identify: () => {}, reset: () => {}} as any
     );
     return {component, backend, snackBar, dialogRef};
   }

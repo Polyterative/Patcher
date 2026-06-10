@@ -35,6 +35,8 @@ describe('RackCreatorComponent', () => {
       dialogRef as any,
       {userModules} as any,
       moduleCollectionAnalysisService as any
+    ,
+      {capture: () => {}, identify: () => {}, reset: () => {}} as any
     );
     createdComponents.push(component);
     

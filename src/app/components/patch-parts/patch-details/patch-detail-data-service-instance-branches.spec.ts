@@ -80,7 +80,8 @@ describe('PatchDetailDataService - Instance Edge Branches', () => {
       } as any,
       {loggedUser$: of({id: 'u1'})} as any,
       backend as any,
-      bridge
+      bridge,
+      {capture: () => {}, identify: () => {}, reset: () => {}} as any
     );
     createdBridges.push(bridge);
     createdServices.push(service);

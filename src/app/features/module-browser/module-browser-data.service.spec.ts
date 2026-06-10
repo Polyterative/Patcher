@@ -27,7 +27,7 @@ describe('ModuleBrowserDataService', () => {
       },
       cacheResetter$: {next: jasmine.createSpy('cacheResetter$.next')}
     };
-    const service = new ModuleBrowserDataService(backend as any);
+    const service = new ModuleBrowserDataService(backend as any, {capture: () => {}, identify: () => {}, reset: () => {}} as any);
     return {service, backend};
   }
 

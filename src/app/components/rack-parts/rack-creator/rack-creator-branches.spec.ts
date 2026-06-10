@@ -22,7 +22,8 @@ describe('RackCreatorComponent - uncovered branches', () => {
       backend as any,
       dialogRef as any,
       {userModules} as any,
-      mca as any
+      mca as any,
+      {capture: () => {}, identify: () => {}, reset: () => {}} as any
     );
     createdComponents.push(component);
     return {component, backend, snackBar, dialogRef, mca};
