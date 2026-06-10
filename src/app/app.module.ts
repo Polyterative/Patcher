@@ -59,39 +59,55 @@ const matDatepickerLocaleIT = {
   }
 };
 
+/**
+ * Root-injector imports for the application shell.
+ *
+ * Exported so unit tests (e.g. app.component.boot.spec.ts) can spin up
+ * the same provider graph as production via TestBed, without re-importing
+ * AppModule itself (which would drag in the `bootstrap: [AppComponent]`
+ * declaration TestBed rejects for standalone components).
+ */
+export const APP_ROOT_IMPORTS = [
+  AppComponent,
+  BrowserModule,
+  AppRoutingModule,
+  BrowserAnimationsModule,
+  AppFeaturesModule,
+  FeedbackBoxModule,
+  BackboneModule
+//keep as last (for routes)
+] as const;
+
+export const APP_ROOT_PROVIDERS = [
+  SelectionPanelBridgeService,
+  locale,
+  matDatepickerLocale,
+  matDatepickerLocaleIT,
+  UserAuthGuard,
+  {
+    provide:  MatDialogRef,
+    useValue: {}
+  },
+  {
+    provide:  MAT_SNACK_BAR_DEFAULT_OPTIONS,
+    useValue: {
+      verticalPosition:   'top',
+      horizontalPosition: 'end'
+    } as MatSnackBarConfig
+  },
+  {
+    provide:  ErrorHandler,
+    useClass: LazySentryErrorHandler
+  }
+];
+
 @NgModule({
   imports: [
-    AppComponent,
-    BrowserModule,
-    AppRoutingModule,
-    BrowserAnimationsModule,
-    AppFeaturesModule,
-    FeedbackBoxModule,
-    BackboneModule,
-    TimeagoModule.forRoot(),
+    ...APP_ROOT_IMPORTS
 //keep as last (for routes)
   ],
-  providers:    [
-    SelectionPanelBridgeService,
-    locale,
-    matDatepickerLocale,
-    matDatepickerLocaleIT,
-    UserAuthGuard,
-    {
-      provide: MatDialogRef,
-      useValue: {}
-    },
-    {
-      provide: MAT_SNACK_BAR_DEFAULT_OPTIONS,
-      useValue: {
-        verticalPosition: 'top',
-        horizontalPosition: 'end',
-      } as MatSnackBarConfig
-    },
-    {
-      provide: ErrorHandler,
-      useClass: LazySentryErrorHandler,
-    }
+  providers: [
+    ...APP_ROOT_PROVIDERS
   ],
   bootstrap:    [AppComponent]
 })
