@@ -38,6 +38,7 @@ import { ModulePanelZoomDialogComponent } from '../../module-parts/module-detail
 import { RACK_ANALYSIS_MODES, RACK_ANALYSIS_MODE_OPTIONS } from '../rack-analysis-mode';
 import { SignalFocusArea } from '../rack-signal-analysis.utils';
 import { prefersTouchInteraction } from 'src/app/shared-interproject/touch-interaction.utils';
+import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 import {
   ModuleRightClick,
   PANEL_IMAGE_BASE,
@@ -214,8 +215,8 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
     public dataService: RackDetailDataService,
     public contextMenu: GeneralContextMenuDataService,
     private cdr: ChangeDetectorRef,
-    private readonly dialog: MatDialog
-    // userManagerService: UserManagementService
+    private readonly dialog: MatDialog,
+    private readonly analytics: AnalyticsService
   ) {
     super();
     this.moduleActions = [
@@ -312,6 +313,10 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
       return;
     }
 
+    this.analytics.capture('rack.module_panel_inspected', {
+      rack_id: this.dataService.singleRackData$?.value?.id,
+      module_id: rackedModule.module.id
+    });
     this.dialog.open(ModulePanelZoomDialogComponent, {
       width: 'min(96vw, 90rem)',
       maxWidth: '96vw',
@@ -517,6 +522,38 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
       disabled: true,
       click$: new Subject<ContextMenuItem>()
     };
+  }
+
+  setAnalysisMode(mode: typeof this.dataService.analysisMode$.value): void {
+    this.dataService.analysisMode$.next(mode);
+    this.analytics.capture('rack.analysis_mode_changed', {
+      rack_id: this.dataService.singleRackData$.value?.id,
+      mode
+    });
+  }
+
+  setSignalFocusArea(area: SignalFocusArea): void {
+    this.dataService.signalFocusArea$.next(area);
+    this.analytics.capture('rack.signal_focus_changed', {
+      rack_id: this.dataService.singleRackData$.value?.id,
+      area
+    });
+  }
+
+  setShouldShowPanelImages(show: boolean): void {
+    this.dataService.shouldShowPanelImages$.next(show);
+    this.analytics.capture('rack.panel_images_toggled', {
+      rack_id: this.dataService.singleRackData$.value?.id,
+      visible: show
+    });
+  }
+
+  setReducedScale(reduced: boolean): void {
+    this.dataService.userRequestedSmallerScale$.next(reduced);
+    this.analytics.capture('rack.scale_toggled', {
+      rack_id: this.dataService.singleRackData$.value?.id,
+      reduced
+    });
   }
 
   private runModuleAction(action: RackEditorModuleAction, rackedModule: RackedModule): void {

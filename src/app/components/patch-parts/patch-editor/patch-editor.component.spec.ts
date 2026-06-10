@@ -36,7 +36,8 @@ function createPatchEditorComponent(): PatchEditorComponent {
     } as any,
     {} as any,
     {nativeElement: document.createElement('div')} as any,
-    {markForCheck: () => {}} as any
+    {markForCheck: () => {}} as any,
+    {capture: () => {}} as any
   );
 }
 
@@ -97,7 +98,8 @@ describe('PatchEditorComponent', () => {
       } as any,
       {} as any,
       {nativeElement: document.createElement('div')} as any,
-      {markForCheck: () => {}} as any
+      {markForCheck: () => {}} as any,
+      {capture: () => {}} as any
     );
     const values: boolean[] = [];
     const sub = component.hasLinkedRack$.subscribe(value => values.push(value));
