@@ -42,7 +42,8 @@ import { AnalyticsService } from 'src/app/features/backbone/analytics-integratio
 import {
   ModuleRightClick,
   PANEL_IMAGE_BASE,
-  RackEditorModuleAction
+  RackEditorModuleAction,
+  RowOverflowClick
 } from './rack-editor.types';
 
 export type { ModuleRightClick } from './rack-editor.types';
@@ -356,6 +357,11 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
     this.openModuleContextMenu(this.selectedTouchModule, this.createContextMenuAnchorEvent(anchor));
   }
 
+  openRowOverflowMenu({$event, rowId, totalRows, rowModuleCount}: RowOverflowClick): void {
+    this.contextMenu.menuItems$.next(this.buildRowContextMenuItems(rowId, totalRows, rowModuleCount));
+    this.contextMenu.open$.next($event);
+  }
+
   private get rackWidthPx(): number {
     const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
     const rem = Number.isFinite(fontSize) && fontSize > 0 ? fontSize : 16;
@@ -522,6 +528,50 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
       disabled: true,
       click$: new Subject<ContextMenuItem>()
     };
+  }
+
+  private buildRowContextMenuItems(rowId: number, totalRows: number, rowModuleCount: number): ContextMenuItem[] {
+    const rowLabel = `Row ${ rowId + 1 }`;
+    const isFirstRow = rowId === 0;
+    const isLastRow = rowId >= totalRows - 1;
+    const canDeleteRow = totalRows > 1 && rowModuleCount === 0;
+
+    return [
+      {
+        id: 'row-name',
+        label: rowLabel,
+        disabled: true,
+        click$: new Subject<ContextMenuItem>()
+      },
+      {
+        id: 'move-row-up',
+        label: 'Move row up',
+        icon: 'keyboard_arrow_up',
+        disabled: isFirstRow,
+        click$: this.createMenuActionSubject(() => this.dataService.requestMoveRow$.next({
+          rowId,
+          direction: 'up'
+        }))
+      },
+      {
+        id: 'move-row-down',
+        label: 'Move row down',
+        icon: 'keyboard_arrow_down',
+        disabled: isLastRow,
+        click$: this.createMenuActionSubject(() => this.dataService.requestMoveRow$.next({
+          rowId,
+          direction: 'down'
+        }))
+      },
+      {
+        id: 'delete-row',
+        label: 'Delete row',
+        icon: 'delete',
+        disabled: !canDeleteRow,
+        danger: true,
+        click$: this.createMenuActionSubject(() => this.dataService.requestDeleteRow$.next(rowId))
+      }
+    ];
   }
 
   setAnalysisMode(mode: typeof this.dataService.analysisMode$.value): void {

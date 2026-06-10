@@ -6,6 +6,13 @@ export interface ModuleRightClick {
   rackedModule: RackedModule;
 }
 
+export interface RowOverflowClick {
+  $event: MouseEvent;
+  rowId: number;
+  totalRows: number;
+  rowModuleCount: number;
+}
+
 export interface RackEditorModuleAction {
   id: string;
   label: string;

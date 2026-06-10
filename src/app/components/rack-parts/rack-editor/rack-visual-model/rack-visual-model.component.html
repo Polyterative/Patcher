@@ -41,6 +41,18 @@
            #rowSurface
            (mouseenter)="setHoveredRow(rowId, rowSurface)"
            (mouseleave)="clearHoveredRow(rowId)">
+        @if (isCurrentRackEditable && isCurrentRackPropertyOfCurrentUser && analysisMode === analysisModes.off && !(row|hasUnrackedModules)) {
+          <button
+                  type="button"
+                  class="rowOverflowButton"
+                  [attr.aria-label]="'Open actions for row ' + (rowId + 1)"
+                  matTooltip="Row actions"
+                  (mousedown)="$event.stopPropagation()"
+                  (click)="openRowOverflow($event, rowId)"
+          >
+            <mat-icon>tune</mat-icon>
+          </button>
+        }
         @if (shouldShowRowPowerPanel(rowId, analysisMode)) {
           @if (rowPowerBreakdownAt(rowId); as rowPower) {
             <div class="rowPowerPanel"

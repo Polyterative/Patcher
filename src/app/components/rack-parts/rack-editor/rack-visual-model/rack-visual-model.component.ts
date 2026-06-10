@@ -43,7 +43,10 @@ import {
 } from '../../rack-function-visuals.utils';
 import { hasCompletePowerData } from '../../rack-power-data.utils';
 import { RackDetailDataService } from '../../rack-detail-data.service';
-import { ModuleRightClick } from '../rack-editor.component';
+import {
+  ModuleRightClick,
+  RowOverflowClick,
+} from '../rack-editor.types';
 import { RackAnalysisMode, RACK_ANALYSIS_MODES } from '../../rack-analysis-mode';
 import { prefersTouchInteraction } from 'src/app/shared-interproject/touch-interaction.utils';
 import {
@@ -165,6 +168,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   
   @Input() moduleRightClick$: Subject<ModuleRightClick>;
   @Output() touchModuleSelected = new EventEmitter<RackedModule>();
+  @Output() rowOverflowClick = new EventEmitter<RowOverflowClick>();
   
   @ViewChild('screen') screenReference: ElementRef;
   
@@ -447,6 +451,17 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   isModuleDragDisabled(rackedModule: RackedModule): boolean {
     return !(this.isCurrentRackEditable && this.isCurrentRackPropertyOfCurrentUser)
       || this.touchContextMenuBlockedModule === rackedModule;
+  }
+
+  openRowOverflow(event: MouseEvent, rowId: number): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.rowOverflowClick.emit({
+      $event: event,
+      rowId,
+      totalRows: this.rackData?.rows ?? 0,
+      rowModuleCount: this.rowedRackedModules?.[rowId]?.length ?? 0,
+    });
   }
 
   onModulePointerDown(event: PointerEvent, rackedModule: RackedModule): void {

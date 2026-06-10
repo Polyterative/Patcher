@@ -174,6 +174,8 @@ export class RackDetailDataService extends SubManager {
   requestRackedModulePanelSwitch$ = new Subject<{ rackedModule: RackedModule; panelId: number | null }>();
   requestAddNewRow$ = new Subject<void>();
   requestRemoveRow$ = new Subject<void>();
+  requestMoveRow$ = new Subject<{rowId: number; direction: 'up' | 'down'}>();
+  requestDeleteRow$ = new Subject<number>();
   
   requestRackedModulesDbSync$ = new Subject<void>(); // updates the backend with the current state of the rack
   //
@@ -234,6 +236,93 @@ export class RackDetailDataService extends SubManager {
           this.updateSingleRackData$.next(this.singleRackData$.value.id);
         }
       );
+
+    this.requestMoveRow$
+      .pipe(
+        withLatestFrom(this.rowedRackedModules$, this.singleRackData$),
+        switchMap(([{rowId, direction}, rackModules, rack]) => {
+          const targetRow = direction === 'up' ? rowId - 1 : rowId + 1;
+          const canMove = rowId >= 0
+            && rowId < rack.rows
+            && targetRow >= 0
+            && targetRow < rack.rows;
+
+          if (!canMove) {
+            SharedConstants.infoCustom(this.snackBar, 'This row cannot move any further.');
+            return EMPTY;
+          }
+
+          const snapshot: RackedModule[][] = cloneRackData(rackModules);
+          const nextRackModules: RackedModule[][] = cloneRackData(rackModules);
+          [nextRackModules[rowId], nextRackModules[targetRow]] = [nextRackModules[targetRow], nextRackModules[rowId]];
+          this.updateRackRowCoordinates(nextRackModules, rack.rows);
+          this.rowedRackedModules$.next(nextRackModules);
+
+          return this.callBackendToUpdateModulesOfRack(nextRackModules, rack).pipe(
+            tap(() => this.analytics.capture('rack.row_moved', {
+              rack_id: rack.id,
+              direction
+            })),
+            catchError((err) => {
+              console.error(`Error moving rack row: ${ err }`);
+              this.rowedRackedModules$.next(snapshot);
+              SharedConstants.errorCustom(this.snackBar, 'Failed to move row — changes reverted. Check your connection and try again.');
+              return EMPTY;
+            })
+          );
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe();
+
+    this.requestDeleteRow$
+      .pipe(
+        withLatestFrom(this.rowedRackedModules$, this.singleRackData$),
+        switchMap(([rowId, rackModules, rack]) => {
+          const row = rackModules?.[rowId] ?? [];
+          const canDelete = rack.rows > 1
+            && rowId >= 0
+            && rowId < rack.rows
+            && row.length === 0;
+
+          if (!canDelete) {
+            SharedConstants.infoCustom(this.snackBar, row.length > 0
+              ? 'Clear this row before deleting it.'
+              : 'This row cannot be deleted.');
+            return EMPTY;
+          }
+
+          const snapshotRack: Rack = cloneRackData(rack);
+          const snapshotRackModules: RackedModule[][] = cloneRackData(rackModules);
+          const nextRack: Rack = {
+            ...rack,
+            rows: rack.rows - 1
+          };
+          const nextRackModules: RackedModule[][] = cloneRackData(rackModules);
+          nextRackModules.splice(rowId, 1);
+          this.updateRackRowCoordinates(nextRackModules, nextRack.rows);
+          this.rowedRackedModules$.next(nextRackModules);
+
+          return this.persistRackRowsAndModules(nextRackModules, nextRack).pipe(
+            tap(() => {
+              this.singleRackData$.next(nextRack);
+              this.analytics.capture('rack.row_deleted', {
+                rack_id: rack.id,
+                row: rowId
+              });
+            }),
+            catchError((err) => {
+              console.error(`Error deleting rack row: ${ err }`);
+              this.singleRackData$.next(snapshotRack);
+              this.rowedRackedModules$.next(snapshotRackModules);
+              SharedConstants.errorCustom(this.snackBar, 'Failed to delete row — changes reverted. Check your connection and try again.');
+              return EMPTY;
+            })
+          );
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe();
     
     // when user requests to change privacy status of rack, update backend
     this.requestRackPrivacyStatusChange$
@@ -1070,7 +1159,13 @@ export class RackDetailDataService extends SubManager {
   }
   
   private callBackendToUpdateModulesOfRack(rackModules: RackedModule[][], rack: Rack) {
-    return this.backend.update.rackedModules(rackModules.flatMap(row => row))
+    const modules = rackModules.flatMap(row => row);
+
+    if (modules.length === 0) {
+      return of(undefined);
+    }
+
+    return this.backend.update.rackedModules(modules)
       .pipe(
         tap(() => {
           if (isAnyModuleWithoutRackingId(rackModules)) {
@@ -1078,6 +1173,12 @@ export class RackDetailDataService extends SubManager {
           }
         })
       );
+  }
+
+  private persistRackRowsAndModules(rackModules: RackedModule[][], rack: Rack) {
+    return this.callBackendToUpdateModulesOfRack(rackModules, rack).pipe(
+      switchMap(() => this.backend.update.rack(rack))
+    );
   }
   
   private generateRackJpeg$(el: HTMLElement) {
@@ -1120,6 +1221,7 @@ export class RackDetailDataService extends SubManager {
     if (row === undefined) {
       return undefined; // do nothing if rack has not been placed yet
     }
+
     const modulesInRow: RackedModule[] | undefined = rackModules[row];
     
     if (modulesInRow) {
@@ -1129,6 +1231,12 @@ export class RackDetailDataService extends SubManager {
       });
     }
     
+  }
+
+  private updateRackRowCoordinates(rackModules: RackedModule[][], rowCount: number): void {
+    for (let row = 0; row < rowCount; row++) {
+      this.updateModulesColumnIds(rackModules, row);
+    }
   }
   
   private transferBetweenRows(rackedModules: RackedModule[][], rackedModule: RackedModule, event: CdkDragDrop<ElementRef>, newRow: number): void {

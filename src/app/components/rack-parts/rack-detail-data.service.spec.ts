@@ -219,6 +219,88 @@ describe('RackDetailDataService', () => {
     expect(service.isCurrentRackEditable$.value).toBeFalse();
   }));
 
+  it('moves a rack row up and persists updated module coordinates', fakeAsync(() => {
+    const {service, backend} = build();
+    const rowZeroModule = makeRackedModule({
+      rackingData: {id: 10, rackid: 1, moduleid: 5, row: 0, column: 0, selectedPanelId: null},
+      module: {id: 5, name: 'VCO', hp: 8, standard: {id: 0}, functions: []}
+    });
+    const rowOneModule = makeRackedModule({
+      rackingData: {id: 11, rackid: 1, moduleid: 6, row: 1, column: 0, selectedPanelId: null},
+      module: {id: 6, name: 'VCF', hp: 10, standard: {id: 0}, functions: []}
+    });
+
+    service.singleRackData$.next(makeRack({rows: 3}));
+    service.rowedRackedModules$.next([[rowZeroModule], [rowOneModule], []]);
+    backend.update.rackedModules.calls.reset();
+
+    service.requestMoveRow$.next({rowId: 1, direction: 'up'});
+    tick();
+
+    const rows = service.rowedRackedModules$.value!;
+    expect(rows[0][0].module.id).toBe(6);
+    expect(rows[0][0].rackingData.row).toBe(0);
+    expect(rows[1][0].module.id).toBe(5);
+    expect(rows[1][0].rackingData.row).toBe(1);
+    expect(backend.update.rackedModules).toHaveBeenCalled();
+  }));
+
+  it('does not move the first row up', fakeAsync(() => {
+    const {service, backend} = build();
+    const rowZeroModule = makeRackedModule();
+
+    service.singleRackData$.next(makeRack({rows: 2}));
+    service.rowedRackedModules$.next([[rowZeroModule], []]);
+    backend.update.rackedModules.calls.reset();
+
+    service.requestMoveRow$.next({rowId: 0, direction: 'up'});
+    tick();
+
+    expect(service.rowedRackedModules$.value![0][0].module.id).toBe(5);
+    expect(backend.update.rackedModules).not.toHaveBeenCalled();
+  }));
+
+  it('deletes an empty row and shifts rows below it up', fakeAsync(() => {
+    const {service, backend} = build();
+    const rowZeroModule = makeRackedModule({
+      rackingData: {id: 10, rackid: 1, moduleid: 5, row: 0, column: 0, selectedPanelId: null},
+      module: {id: 5, name: 'VCO', hp: 8, standard: {id: 0}, functions: []}
+    });
+    const rowTwoModule = makeRackedModule({
+      rackingData: {id: 12, rackid: 1, moduleid: 7, row: 2, column: 0, selectedPanelId: null},
+      module: {id: 7, name: 'VCA', hp: 6, standard: {id: 0}, functions: []}
+    });
+
+    service.singleRackData$.next(makeRack({rows: 3}));
+    service.rowedRackedModules$.next([[rowZeroModule], [], [rowTwoModule]]);
+    backend.update.rackedModules.calls.reset();
+    backend.update.rack.calls.reset();
+
+    service.requestDeleteRow$.next(1);
+    tick();
+
+    expect(backend.update.rackedModules).toHaveBeenCalled();
+    const persistedModules = backend.update.rackedModules.calls.mostRecent().args[0];
+    expect(persistedModules.find((module: any) => module.module.id === 7).rackingData.row).toBe(1);
+    expect(backend.update.rack).toHaveBeenCalledWith(jasmine.objectContaining({rows: 2}));
+  }));
+
+  it('does not delete a row that still has modules', fakeAsync(() => {
+    const {service, backend} = build();
+    const rowZeroModule = makeRackedModule();
+
+    service.singleRackData$.next(makeRack({rows: 2}));
+    service.rowedRackedModules$.next([[rowZeroModule], []]);
+    backend.update.rackedModules.calls.reset();
+    backend.update.rack.calls.reset();
+
+    service.requestDeleteRow$.next(0);
+    tick();
+
+    expect(backend.update.rackedModules).not.toHaveBeenCalled();
+    expect(backend.update.rack).not.toHaveBeenCalled();
+  }));
+
   it('pre-fills formData.name.control with the current rack name when activating edit mode', fakeAsync(() => {
     const {service, backend} = build();
     backend.GET.rackWithId.and.returnValue(of({data: makeRack({name: 'My Rack', locked: true})}));
