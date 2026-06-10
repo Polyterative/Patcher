@@ -48,6 +48,7 @@ import {
   colors,
   uniqueNamesGenerator
 } from 'unique-names-generator';
+import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 import {
   RackCreatorInModel,
   RackCreatorOutModel
@@ -88,7 +89,8 @@ export class RackCreatorComponent extends SubManager implements OnInit {
     public backend: SupabaseService,
     public dialogRef: MatDialogRef<RackCreatorComponent, RackCreatorOutModel>,
     @Inject(MAT_DIALOG_DATA) public data: RackCreatorInModel,
-    private moduleCollectionAnalysisService: ModuleCollectionAnalysisService
+    private moduleCollectionAnalysisService: ModuleCollectionAnalysisService,
+    private analytics: AnalyticsService
   ) {
     super();
     
@@ -200,7 +202,9 @@ export class RackCreatorComponent extends SubManager implements OnInit {
         )),
         takeUntil(this.destroy$)
       )
-      .subscribe(() => {
+      .subscribe(result => {
+        const rackId = result?.data?.[0]?.id;
+        this.analytics.capture('rack.created', { rack_id: rackId });
         // success and open the new rack action
         this.snackBar.open('Rack created', undefined, {
           duration: 3000

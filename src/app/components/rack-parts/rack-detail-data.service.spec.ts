@@ -81,7 +81,8 @@ describe('RackDetailDataService', () => {
       userService as any,
       backend as any,
       dialog as any,
-      router
+      router,
+      {capture: () => {}, identify: () => {}, reset: () => {}} as any
     );
 
     if (options.usePublicReads) {

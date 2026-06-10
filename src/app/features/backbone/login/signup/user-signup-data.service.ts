@@ -18,13 +18,15 @@ import {
   exhaustMap,
   filter,
   switchMap,
-  takeUntil
+  takeUntil,
+  tap
 } from 'rxjs/operators';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { IMatFormEntityConfig } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { UserManagementService } from '../user-management.service';
 import { SubManager } from "src/app/shared-interproject/directives/subscription-manager";
+import { AnalyticsService } from '../../analytics-integration/analytics.service';
 
 
 @Injectable()
@@ -108,7 +110,8 @@ export class UserSignupDataService extends SubManager {
     public router: Router,
     public activated: ActivatedRoute,
     public loginInteraction: UserManagementService,
-    snackBar: MatSnackBar
+    snackBar: MatSnackBar,
+    private analytics: AnalyticsService
   ) {
     super();
     
@@ -124,6 +127,11 @@ export class UserSignupDataService extends SubManager {
             return EMPTY;
           })
         )),
+        tap(result => {
+          if (!result.requiresEmailConfirmation) {
+            this.analytics.capture('auth.signed_up', { method: 'password' });
+          }
+        }),
         switchMap(result => {
           if (result.requiresEmailConfirmation) {
             SharedConstants.confirmMail(snackBar);

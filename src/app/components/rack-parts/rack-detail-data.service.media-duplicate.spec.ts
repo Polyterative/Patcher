@@ -76,7 +76,8 @@ describe('RackDetailDataService media, rename, and duplication', () => {
       {loggedUser$} as any,
       backend as any,
       dialog as any,
-      router
+      router,
+      {capture: () => {}, identify: () => {}, reset: () => {}} as any
     );
     createdServices.push(service);
     return {service, backend, dialog, snackBar};

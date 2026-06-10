@@ -80,12 +80,14 @@ import {
   extractCreatedPublicId,
   isAnyModuleWithoutRackingId,
 } from './rack-detail-data.utils';
+import { AnalyticsService } from '../../features/backbone/analytics-integration/analytics.service';
 
 
 @Injectable()
 export class RackDetailDataService extends SubManager {
   private static readonly imageCaptureOverlayResetDelayMs = 360;
   private usePublicDetailReads = false;
+  private rackViewedFired = false;
   readonly updateSingleRackData$ = new ReplaySubject<number>();
   /**
    * Token-based detail fetch entry-point. Routed through the SECURITY DEFINER
@@ -182,6 +184,7 @@ export class RackDetailDataService extends SubManager {
     private backend: SupabaseService,
     private dialog: MatDialog,
     private router: Router,
+    private analytics: AnalyticsService,
   ) {
     super();
     
@@ -592,6 +595,21 @@ export class RackDetailDataService extends SubManager {
         this.isCurrentRackEditable$.next(!rack.locked);
         this.isCurrentRackPrivate$.next(!rack.public);
         this.formData.name.control.reset(rack.name, {emitEvent: false});
+
+        // Fire rack.viewed once per service instance (i.e. once per route activation).
+        // Re-fires are suppressed so refreshes within the same session don't double-count.
+        if (!this.rackViewedFired) {
+          this.rackViewedFired = true;
+          const isOwner = this.isCurrentRackPropertyOfCurrentUser$.value;
+          const moduleCount = this.rowedRackedModules$.value
+            ? this.rowedRackedModules$.value.flat().length
+            : 0;
+          this.analytics.capture('rack.viewed', {
+            rack_id:      rack.id,
+            is_owner:     isOwner,
+            module_count: moduleCount
+          });
+        }
       });
     
     // when updated rack data is received, update rowedRackedModules$
@@ -659,7 +677,7 @@ export class RackDetailDataService extends SubManager {
           }
           
           this.rowedRackedModules$.next([...rackModules]);
-          
+          this.analytics.capture('rack.module_moved', { rack_id: rack.id });
           this.requestRackedModulesDbSync$.next();
         }
         
@@ -685,6 +703,8 @@ export class RackDetailDataService extends SubManager {
         withLatestFrom(this.rowedRackedModules$),
         switchMap(([rackedModule, rackModules]) => {
           const snapshot: RackedModule[][] = cloneRackData(rackModules);
+          const moduleId = rackedModule.module.id;
+          const rackId = this.singleRackData$.value?.id;
           
           this.removeRackedModuleFromRack(rackModules, rackedModule);
           this.rowedRackedModules$.next(rackModules);
@@ -693,6 +713,7 @@ export class RackDetailDataService extends SubManager {
           // this does not work, because the rack data are upserted, so we need to delete in the backend manually
           
           return this.backend.delete.rackedModule(rackedModule.rackingData.id).pipe(
+            map(() => ({ moduleId, rackId })),
             catchError(err => {
               console.error(`Error removing racked module: ${ err }`);
               this.rowedRackedModules$.next(snapshot);
@@ -705,7 +726,13 @@ export class RackDetailDataService extends SubManager {
         withLatestFrom(this.singleRackData$),
         takeUntil(this.destroy$)
       )
-      .subscribe(([_, rackData]) => {
+      .subscribe(([result, rackData]) => {
+        if (result) {
+          this.analytics.capture('rack.module_removed', {
+            rack_id:   result.rackId,
+            module_id: result.moduleId
+          });
+        }
         this.singleRackData$.next(rackData);
       });
     
@@ -808,6 +835,7 @@ export class RackDetailDataService extends SubManager {
       )
       .subscribe((rack) => {
         this.router.navigate(['/user/area']);
+        this.analytics.capture('rack.deleted', { rack_id: rack.id });
         SharedConstants.successCustom(this.snackBar, `"${ rack.name }" has been deleted.`);
       });
     
@@ -855,6 +883,8 @@ export class RackDetailDataService extends SubManager {
         takeUntil(this.destroyEvent$)
       )
       .subscribe((originalName) => {
+        const rackId = this.singleRackData$.value?.id;
+        this.analytics.capture('rack.duplicated', { rack_id: rackId });
         SharedConstants.successCustom(this.snackBar, `"${ originalName }" duplicated successfully.`);
       });
     
@@ -868,6 +898,10 @@ export class RackDetailDataService extends SubManager {
         takeUntil(this.destroyEvent$)
       )
       .subscribe((module) => {
+        this.analytics.capture('rack.module_added', {
+          rack_id:   this.singleRackData$.value?.id,
+          module_id: module.id
+        });
         SharedConstants.successCustom(this.snackBar, `"${ module.name }" added to "${ this.singleRackData$.value.name }". Drag it into a row to place it.`);
         this.moduleAddedFromPicker$.next(module);
         this.updateSingleRackData$.next(this.singleRackData$.value.id);

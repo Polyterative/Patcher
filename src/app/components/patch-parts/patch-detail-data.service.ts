@@ -85,6 +85,7 @@ import {
   DEFAULT_LINKED_RACK_UI_STATE,
   groupInstancesByModuleId,
 } from './patch-detail-data.utils';
+import { AnalyticsService } from '../../features/backbone/analytics-integration/analytics.service';
 
 export type { LinkedRackUiState, MultiInstanceModuleSummary } from './patch-detail-data.models';
 export { MAX_INSTANCES_PER_MODULE } from './patch-detail-data.models';
@@ -183,7 +184,8 @@ export class PatchDetailDataService implements OnDestroy {
     private dialog: MatDialog,
     public userService: UserManagementService,
     public backend: SupabaseService,
-    private bridge: SelectionPanelBridgeService
+    private bridge: SelectionPanelBridgeService,
+    private analytics: AnalyticsService
   ) {
     
     this.updateSinglePatchData$
@@ -599,6 +601,7 @@ export class PatchDetailDataService implements OnDestroy {
           this.editorConnections$.next(nextList);
           this.bridge.editorConnections$.next(nextList);
           this.requestConnectionDbSync$.next();
+          this.analytics.capture('patch.connection_added', { patch_id: patch.id });
           SharedConstants.successCustom(this.snackBar, `${ newConnection.a.module.name } "${ newConnection.a.name }" → ${ newConnection.b.module.name } "${ newConnection.b.name }" recorded.`);
           
           // notify outlet of confirmation: emit a record event. Keep the current selection so user can tweak one side.
@@ -629,6 +632,7 @@ export class PatchDetailDataService implements OnDestroy {
         ;
         this.editorConnections$.next(next);
         this.bridge.editorConnections$.next(next);
+        this.analytics.capture('patch.connection_removed', { patch_id: this.singlePatchData$.value?.id });
         this.requestConnectionDbSync$.next();
       });
     
@@ -717,6 +721,7 @@ export class PatchDetailDataService implements OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(_ => {
+        this.analytics.capture('patch.deleted', { patch_id: this.singlePatchData$.value?.id });
         this.router.navigate(['/user/area']);
       });
     
