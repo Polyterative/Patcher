@@ -70,6 +70,7 @@
 - [x] **HIGH: Perf — Cache Strategy Review (Hits, Invalidation, Coverage)** → [`plans/perf-cache-strategy-review-hits-invalidation-coverage.md`](./plans/perf-cache-strategy-review-hits-invalidation-coverage.md)
 - [ ] **HIGH: Perf — Backend Bandwidth Optimisation (Every Byte Costs Money)** → [`plans/perf-backend-bandwidth-optimisation-every-byte-costs-money.md`](./plans/perf-backend-bandwidth-optimisation-every-byte-costs-money.md)
 - [ ] **MEDIUM: Sentry — Issue Monitoring & Resolution Workflow** → [`plans/sentry-issue-monitoring-resolution-workflow.md`](./plans/sentry-issue-monitoring-resolution-workflow.md)
+- [ ] **MEDIUM: Analytics — PostHog Product Instrumentation** → [`plans/analytics-posthog-product-instrumentation.md`](./plans/analytics-posthog-product-instrumentation.md)
 - [ ] **LOW: Maintenance — Update libraries (Sentry SDK and others)** → [`plans/maintenance-update-libraries.md`](./plans/maintenance-update-libraries.md)
 - [ ] **HIGH: E2E — Dedicated Test Account Cleanup** → [`plans/e2e-dedicated-test-account-cleanup.md`](./plans/e2e-dedicated-test-account-cleanup.md)
 - [ ] **HIGH: E2E — Multi-Instance Patching** → [`plans/e2e-multi-instance-patching.md`](./plans/e2e-multi-instance-patching.md)
