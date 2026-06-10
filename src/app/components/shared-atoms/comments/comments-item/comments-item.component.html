@@ -9,8 +9,8 @@
       </a>
       <a class="username author-link" [routerLink]="['/u', data.profile.username]">{{ data.profile.username }}</a>
       <div class="timestamp"
-           [matTooltip]="data.updated | date:'medium'"
-      >{{ data.updated | timeago }}
+           [matTooltip]="data.updated | supabaseUtcTimestamp | date:'medium'"
+      >{{ data.updated | supabaseUtcTimestamp | timeago }}
       </div>
       @if (data.profile.id === (userService.loggedUser$|async)?.id || viewConfig.alwaysDeletable) {
         <div class="delete">

@@ -6,6 +6,7 @@ import {
 } from 'rxjs/operators';
 import { MinimalModule } from 'src/app/models/module';
 import { RecentActivityItem } from 'src/app/components/shared-atoms/recent-activity/recent-activity.model';
+import { normalizeSupabaseUtcTimestamp } from 'src/app/shared-interproject/pipes/supabase-utc-timestamp.pipe';
 
 
 type ModuleActivitySource =
@@ -54,7 +55,7 @@ export class ModuleBrowserRecentActivityService {
   }
   
   private toTimestampMs(value: string): number {
-    const timestamp = Date.parse(value);
+    const timestamp = Date.parse(normalizeSupabaseUtcTimestamp(value));
     if (Number.isNaN(timestamp)) {
       return 0;
     }

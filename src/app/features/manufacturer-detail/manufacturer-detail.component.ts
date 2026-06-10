@@ -31,6 +31,7 @@ import {
   clearJsonLdScript,
   upsertJsonLdScript
 } from 'src/app/shared-interproject/json-ld-dom';
+import { normalizeSupabaseUtcTimestamp } from 'src/app/shared-interproject/pipes/supabase-utc-timestamp.pipe';
 
 
 const LOGO_BASE_URL = StorageUrls.manufacturerLogos;
@@ -85,7 +86,7 @@ export class ManufacturerDetailComponent extends SubManager {
         const avgHp = count > 0 ? (totalHp / count).toFixed(1) : '—';
         
         const lastUpdated = manufacturer.latestModuleUpdatedAt
-          ? this.timeago.transform(manufacturer.latestModuleUpdatedAt) as string
+          ? this.timeago.transform(normalizeSupabaseUtcTimestamp(manufacturer.latestModuleUpdatedAt)) as string
           : null;
         
         const changed = manufacturer.changedModulesLast30Days ?? 0;

@@ -5,6 +5,7 @@ import {
   ManufacturerModuleStats,
   ModuleActivityRow
 } from './supabase-queries.types';
+import { normalizeSupabaseUtcTimestamp } from 'src/app/shared-interproject/pipes/supabase-utc-timestamp.pipe';
 
 const EMPTY_STATS: ManufacturerModuleStats = {
   moduleCount: 0,
@@ -48,6 +49,7 @@ export function parseModuleUpdatedTimestampMs(rawUpdated: unknown): number | nul
   s = s.replace(/([+-]\d{2})$/, '$1:00');
   // 4. Four-digit offset without colon: +0000 → +00:00
   s = s.replace(/([+-]\d{2})(\d{2})$/, '$1:$2');
+  s = normalizeSupabaseUtcTimestamp(s);
   const ms = Date.parse(s);
   return isNaN(ms) ? null : ms;
 }

@@ -19,6 +19,7 @@ import { CommentContextComponent } from "src/app/components/shared-atoms/comment
 import { CommentTextPipe } from "src/app/components/shared-atoms/comments/comment-text.pipe";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { RouterLink } from '@angular/router';
+import { SupabaseUtcTimestampPipe } from 'src/app/shared-interproject/pipes/supabase-utc-timestamp.pipe';
 
 
 export interface CommentViewConfig {
@@ -47,6 +48,7 @@ export const defaultCommentViewConfig: CommentViewConfig = {
     CommentContextComponent,
     CommentTextPipe,
     RouterLink,
+    SupabaseUtcTimestampPipe,
   ],
 })
 export class CommentsItemComponent {

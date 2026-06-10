@@ -29,6 +29,7 @@ import { ProducthuntBadgeComponent } from './footer/producthunt-badge/producthun
 import { LegacyLinkGoneModule }      from './legacy-link-gone/legacy-link-gone.module';
 import { NotFoundModule }            from './404/not-found.module';
 import { ToolbarModule }             from './toolbar/toolbar.module';
+import { SupabaseUtcTimestampPipe } from 'src/app/shared-interproject/pipes/supabase-utc-timestamp.pipe';
 
 
 @NgModule({
@@ -62,6 +63,7 @@ import { ToolbarModule }             from './toolbar/toolbar.module';
     MatButtonModule,
     MatIconModule,
     LegacyLinkGoneModule,
+    SupabaseUtcTimestampPipe,
     NotFoundModule//keep as last (for routes)
   ], providers: [
     AppStateService,

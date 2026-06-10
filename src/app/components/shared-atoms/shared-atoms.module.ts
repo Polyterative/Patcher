@@ -16,6 +16,7 @@ import { CleanCardComponent } from "src/app/shared-interproject/components/@visu
 import { LabelValueShowcaseComponent } from "src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.component";
 import { EntityStatGridComponent } from "./entity-stat-grid/entity-stat-grid.component";
 import { EntityStatCardComponent } from "./entity-stat-card/entity-stat-card.component";
+import { SupabaseUtcTimestampPipe } from 'src/app/shared-interproject/pipes/supabase-utc-timestamp.pipe';
 
 
 @NgModule({
@@ -38,7 +39,8 @@ import { EntityStatCardComponent } from "./entity-stat-card/entity-stat-card.com
     MatIconModule,
     MatTooltipModule,
     CleanCardComponent,
-    LabelValueShowcaseComponent
+    LabelValueShowcaseComponent,
+    SupabaseUtcTimestampPipe
   ],
   exports:      [
     TimestampsRelativeComponent,

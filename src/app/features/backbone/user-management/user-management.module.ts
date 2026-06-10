@@ -20,6 +20,7 @@ import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatIconModule } from "@angular/material/icon";
 import { MatInputModule } from "@angular/material/input";
 import { MatTooltipModule } from "@angular/material/tooltip";
+import { SupabaseUtcTimestampPipe } from 'src/app/shared-interproject/pipes/supabase-utc-timestamp.pipe';
 
 
 @NgModule({
@@ -51,7 +52,8 @@ import { MatTooltipModule } from "@angular/material/tooltip";
     InputDialogModule,
     ConfirmDialogModule,
     StatisticsComponent,
-    TimeagoModule
+    TimeagoModule,
+    SupabaseUtcTimestampPipe
   
   ],
   exports:      [

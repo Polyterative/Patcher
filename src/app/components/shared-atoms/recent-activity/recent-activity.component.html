@@ -38,7 +38,7 @@
               @if (item.actorLabel) {
                 <span class="recent-activity__actor">{{ item.actorLabel }}</span>
               }
-              <time [attr.datetime]="item.timestamp">{{ item.timestamp | timeago }}</time>
+              <time [attr.datetime]="item.timestamp">{{ item.timestamp | supabaseUtcTimestamp | timeago }}</time>
             </div>
           </div>
         </li>
