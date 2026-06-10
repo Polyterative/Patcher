@@ -47,7 +47,8 @@ describe('ModuleAdderDataService', () => {
       backend as any,
       dialog as any,
       snackBar,
-      router
+      router,
+      {capture: () => {}, identify: () => {}, reset: () => {}} as any
     );
     createdServices.push(service);
     

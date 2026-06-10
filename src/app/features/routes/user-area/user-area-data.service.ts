@@ -46,6 +46,7 @@ import {
   filterRacks,
   pagedSlice$
 } from './user-area-data.utils';
+import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 
 export type UserModuleCollectionFilter = 'HAS' | 'WANTS' | 'SELLS';
 
@@ -123,7 +124,8 @@ export class UserAreaDataService extends SubManager {
   constructor(
     public dialog: MatDialog,
     public backend: SupabaseService,
-    private readonly discoveryTipService: DiscoveryTipService
+    private readonly discoveryTipService: DiscoveryTipService,
+    private readonly analytics: AnalyticsService
   ) {
     super();
 
@@ -239,15 +241,25 @@ export class UserAreaDataService extends SubManager {
     this.bindPageEvent(this.commentsPageEvent$, this.commentsPagination, () => this.updateCommentsData$.next());
     this.bindPageEvent(this.patchesPageEvent$, this.patchesPagination);
 
+    // Analytics for page events — thin separate subscriptions so bindPageEvent stays simple
+    this.commentsPageEvent$.pipe(takeUntil(this.destroy$)).subscribe(e =>
+      this.analytics.capture('user_area.comments.page_changed', { page_index: e.pageIndex, page_size: e.pageSize })
+    );
+    this.patchesPageEvent$.pipe(takeUntil(this.destroy$)).subscribe(e =>
+      this.analytics.capture('user_area.patches.page_changed', { page_index: e.pageIndex, page_size: e.pageSize })
+    );
+
     this.loadMoreModules$
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
+        this.analytics.capture('user_area.modules.load_more', { current_take: this.modulesPagination.take$.value });
         this.modulesPagination.take$.next(this.modulesPagination.take$.value + 10);
       });
 
     this.loadMoreRacks$
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
+        this.analytics.capture('user_area.racks.load_more', { current_take: this.racksPagination.take$.value });
         this.racksPagination.take$.next(this.racksPagination.take$.value + 10);
       });
 
@@ -356,7 +368,8 @@ export class UserAreaDataService extends SubManager {
 
     this.moduleCollectionFilter$
       .pipe(
-        tap(() => {
+        tap((filter) => {
+          this.analytics.capture('user_area.modules.collection_filter_changed', { collection_filter: filter });
           this.modulesPagination.skip$.next(0);
           this.modulesPagination.take$.next(10);
         }),
@@ -366,7 +379,10 @@ export class UserAreaDataService extends SubManager {
 
     this.activeTagFilter$
       .pipe(
-        tap(() => this.patchesPagination.skip$.next(0)),
+        tap((tag) => {
+          this.analytics.capture('user_area.patches.tag_filter_changed', { tag_filter: tag });
+          this.patchesPagination.skip$.next(0);
+        }),
         takeUntil(this.destroy$)
       )
       .subscribe();
@@ -374,6 +390,7 @@ export class UserAreaDataService extends SubManager {
     this.addModulesToCollection$
       .pipe(
         tap(() => {
+          this.analytics.capture('user_area.modules.add_initiated', {});
           this.discoveryTipService.recordAction('user-area.modules.add-clicked');
         }),
         takeUntil(this.destroy$)
@@ -383,6 +400,7 @@ export class UserAreaDataService extends SubManager {
     this.addPatch$
       .pipe(
         tap(() => {
+          this.analytics.capture('user_area.patch.create_clicked', {});
           this.discoveryTipService.recordAction('user-area.patches.create-clicked');
         }),
         switchMap(() => {
@@ -404,6 +422,7 @@ export class UserAreaDataService extends SubManager {
     this.addRack$
       .pipe(
         tap(() => {
+          this.analytics.capture('user_area.rack.create_clicked', {});
           this.discoveryTipService.recordAction('user-area.racks.create-clicked');
         }),
         switchMap(() => {
@@ -435,7 +454,10 @@ export class UserAreaDataService extends SubManager {
       map((query) => query.trim()),
       tap((query) => this._searchQuery$.next(query)),
       filter((query) => query.length > 0),
-      tap(() => this.discoveryTipService.recordAction('user-area.search-used')),
+      tap(() => {
+        this.analytics.capture('user_area.search_used', {});
+        this.discoveryTipService.recordAction('user-area.search-used');
+      }),
       takeUntil(this.discoverySearchDestroy$),
       takeUntil(this.destroy$)
     ).subscribe();

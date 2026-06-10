@@ -47,6 +47,7 @@ import { normalizeForSearch } from "src/app/shared-interproject/components/@smar
 import { Router } from "@angular/router";
 import { SharedConstants } from "src/app/shared-interproject/SharedConstants";
 import { ModuleAdderFormData } from './module-adder-data.models';
+import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 
 
 @Injectable()
@@ -86,7 +87,8 @@ export class ModuleAdderDataService extends SubManager {
     public backend: SupabaseService,
     public dialog: MatDialog,
     public snackBar: MatSnackBar,
-    private router: Router
+    private router: Router,
+    private readonly analytics: AnalyticsService
   ) {
     super();
     this.backend.cacheResetter$?.next(['manufacturers']);
@@ -324,6 +326,13 @@ export class ModuleAdderDataService extends SubManager {
           isDIY: !!(diyCtl && diyCtl.id === '1')
         };
         
+        this.analytics.capture('module.submitted', {
+          manufacturer_id: parseInt(mfrCtl?.id) || undefined,
+          hp:              recap.hp,
+          is_diy:          recap.isDIY,
+          has_manual:      !!(this.formData.manual.control.value?.length > 'https://'.length),
+        });
+        
         this.formData.name.control.setValue('');
         this.formData.description.control.setValue('');
         this.formData.manual.control.setValue('');
@@ -368,6 +377,7 @@ export class ModuleAdderDataService extends SubManager {
         const currentOptions = this._manufacturerOptions$.value;
         this._manufacturerOptions$.next([...currentOptions, newOption]);
         this.formData.manufacturer.control.setValue(newOption);
+        this.analytics.capture('manufacturer.created', { manufacturer_id: created.id });
         SharedConstants.successCustom(this.snackBar, `Manufacturer "${name}" created successfully`);
       } else {
         SharedConstants.errorCustom(this.snackBar, 'Failed to create manufacturer');

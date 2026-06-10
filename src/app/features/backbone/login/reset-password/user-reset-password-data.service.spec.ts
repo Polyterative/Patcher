@@ -19,7 +19,7 @@ describe('UserResetPasswordDataService', () => {
     };
     const router = jasmine.createSpyObj('Router', ['navigate']);
 
-    const service = new UserResetPasswordDataService(router, supabaseService as any);
+    const service = new UserResetPasswordDataService(router, supabaseService as any, {capture: () => {}, identify: () => {}, reset: () => {}} as any);
     return {service, supabaseService, router};
   }
 
