@@ -83,6 +83,8 @@ export class UserAreaDataService extends SubManager {
   readonly filteredModulesData$: Observable<MinimalModule[] | undefined>;
   readonly filteredModulesCount$: Observable<number>;
   readonly pagedModulesData$: Observable<MinimalModule[] | undefined>;
+  readonly hasMoreModules$: Observable<boolean>;
+  readonly remainingModulesCount$: Observable<number>;
   readonly moduleCollectionFilter$ = new BehaviorSubject<UserModuleCollectionFilter>('HAS');
   readonly activeTagFilter$ = new BehaviorSubject<string | null>(null);
   readonly filteredRacksData$: Observable<Rack[] | undefined>;
@@ -106,7 +108,7 @@ export class UserAreaDataService extends SubManager {
   readonly updateContributorStats$ = new Subject<void>();
   readonly commentsPageEvent$ = new Subject<PageEvent>();
   readonly patchesPageEvent$ = new Subject<PageEvent>();
-  readonly modulesPageEvent$ = new Subject<PageEvent>();
+  readonly loadMoreModules$ = new Subject<void>();
   readonly loadMoreRacks$ = new Subject<void>();
   readonly addPatch$ = new Subject<void>();
   readonly addRack$ = new Subject<void>();
@@ -145,6 +147,16 @@ export class UserAreaDataService extends SubManager {
       this.modulesPagination.skip$,
       this.modulesPagination.take$
     );
+
+    this.hasMoreModules$ = combineLatest([
+      this.filteredModulesCount$,
+      this.modulesPagination.take$
+    ]).pipe(map(([count, take]) => count > take));
+
+    this.remainingModulesCount$ = combineLatest([
+      this.filteredModulesCount$,
+      this.modulesPagination.take$
+    ]).pipe(map(([count, take]) => Math.max(0, count - take)));
 
     this.filteredRacksData$ = combineLatest([
       this.rackData$,
@@ -226,7 +238,12 @@ export class UserAreaDataService extends SubManager {
 
     this.bindPageEvent(this.commentsPageEvent$, this.commentsPagination, () => this.updateCommentsData$.next());
     this.bindPageEvent(this.patchesPageEvent$, this.patchesPagination);
-    this.bindPageEvent(this.modulesPageEvent$, this.modulesPagination);
+
+    this.loadMoreModules$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.modulesPagination.take$.next(this.modulesPagination.take$.value + 10);
+      });
 
     this.loadMoreRacks$
       .pipe(takeUntil(this.destroy$))
@@ -328,6 +345,7 @@ export class UserAreaDataService extends SubManager {
       .pipe(
         tap(() => {
           this.modulesPagination.skip$.next(0);
+          this.modulesPagination.take$.next(10);
           this.racksPagination.skip$.next(0);
           this.racksPagination.take$.next(10);
           this.patchesPagination.skip$.next(0);
@@ -338,7 +356,10 @@ export class UserAreaDataService extends SubManager {
 
     this.moduleCollectionFilter$
       .pipe(
-        tap(() => this.modulesPagination.skip$.next(0)),
+        tap(() => {
+          this.modulesPagination.skip$.next(0);
+          this.modulesPagination.take$.next(10);
+        }),
         takeUntil(this.destroy$)
       )
       .subscribe();
