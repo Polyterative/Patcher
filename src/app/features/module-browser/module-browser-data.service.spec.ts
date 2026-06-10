@@ -17,6 +17,7 @@ import { ModuleBrowserDataService } from './module-browser-data.service';
 
 describe('ModuleBrowserDataService', () => {
   function build(options: {allTags?: Tag[]} = {}) {
+    const analytics = jasmine.createSpyObj('AnalyticsService', ['capture', 'identify', 'reset']);
     const backend = {
       GET: {
         manufacturers: jasmine.createSpy('GET.manufacturers').and.returnValue(of({data: []})),
@@ -27,8 +28,8 @@ describe('ModuleBrowserDataService', () => {
       },
       cacheResetter$: {next: jasmine.createSpy('cacheResetter$.next')}
     };
-    const service = new ModuleBrowserDataService(backend as any, {capture: () => {}, identify: () => {}, reset: () => {}} as any);
-    return {service, backend};
+    const service = new ModuleBrowserDataService(backend as any, analytics as any);
+    return {service, backend, analytics};
   }
 
   function moduleFactory(overrides: Partial<MinimalModule> = {}): MinimalModule {
@@ -275,6 +276,23 @@ describe('ModuleBrowserDataService', () => {
     const args = backend.GET.modules.calls.mostRecent().args as any[];
     // tagIds is the 12th argument (index 11)
     expect(args[11]).toEqual([3, 7]);
+    service.ngOnDestroy();
+  }));
+
+  it('refreshes modules on tag changes even when the order stays on best match', fakeAsync(() => {
+    const {service, backend, analytics} = build();
+
+    service.fields.order.control.setValue(service.bestMatchOrderOption);
+    tick(750);
+    backend.GET.modules.calls.reset();
+    analytics.capture.calls.reset();
+
+    service.fields.tags.control.setValue([{id: '5', name: 'Oscillator'}]);
+
+    expect(backend.GET.modules.calls.count()).toBe(1);
+    const eventNames = analytics.capture.calls.allArgs().map(args => args[0]);
+    expect(eventNames).toContain('search.tags_selected');
+    expect(eventNames).not.toContain('search.filter_changed');
     service.ngOnDestroy();
   }));
   

@@ -307,8 +307,7 @@ export class ModuleBrowserDataService extends SubManager {
       this.fields.hp.control.valueChanges,
       this.fields.hpCondition.control.valueChanges,
       this.fields.standard.control.valueChanges,
-      this.fields.order.control.valueChanges,
-      this.fields.tags.control.valueChanges
+      this.fields.order.control.valueChanges
     ).pipe(
       tap(() => this.moduleFilterInteraction$.next()),
       debounceTime(750),
@@ -358,6 +357,9 @@ export class ModuleBrowserDataService extends SubManager {
           this.fields.order.control.setValue(this.bestMatchOrderOption);
         } else if (selectedCount === 0 && currentOrder?.id === this.bestMatchOrderOption.id) {
           this.fields.order.control.setValue(this.orderStartingValue);
+        } else {
+          this.moduleFilterInteraction$.next();
+          this.updateModulesList$.next();
         }
 
         if (this.modulesList$.value !== null) {
