@@ -274,12 +274,22 @@ describe('RackBrowserDetailViewComponent', () => {
       expect(fixture.nativeElement.querySelector('app-comments-root')).not.toBeNull();
     });
 
-    it('hides comments while editing', () => {
+    it('hides comments while the owner is editing', () => {
       isCurrentRackEditable$.next(true);
+      isCurrentRackPropertyOfCurrentUser$.next(true);
 
       fixture.detectChanges();
 
       expect(fixture.nativeElement.querySelector('app-comments-root')).toBeNull();
+    });
+
+    it('shows comments for non-owners even when the rack itself is unlocked', () => {
+      isCurrentRackEditable$.next(true);
+      isCurrentRackPropertyOfCurrentUser$.next(false);
+
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('app-comments-root')).not.toBeNull();
     });
   });
 

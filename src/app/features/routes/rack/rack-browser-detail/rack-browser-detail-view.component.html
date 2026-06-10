@@ -57,10 +57,10 @@
                 ></app-rack-balance-panel>
               </div>
             }
-            @if (!bag.isCurrentRackEditable) {
+            @if (!(bag.isCurrentRackEditable && bag.isCurrentRackPropertyOfCurrentUser)) {
               <lib-screen-wrapper class="rackBrowserDetailView__bottomComments"
                                   maxSize="var(--app-readable-section-max-width)"
-                                  [hidden]="bag.isCurrentRackEditable">
+                                  [hidden]="bag.isCurrentRackEditable && bag.isCurrentRackPropertyOfCurrentUser">
                 <app-comments-root></app-comments-root>
               </lib-screen-wrapper>
             }
