@@ -83,7 +83,8 @@ describe('ModuleDetailDataService', () => {
       userService as any,
       backend as any,
       appState as any,
-      router
+      router,
+      {capture: () => {}, identify: () => {}, reset: () => {}} as any
     );
     
     return {

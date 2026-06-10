@@ -27,7 +27,7 @@ describe('ManufacturerDetailDataService', () => {
     
     const snackBar = {open: jasmine.createSpy('open')};
     
-    const service = new ManufacturerDetailDataService(backend as any, snackBar as any);
+    const service = new ManufacturerDetailDataService(backend as any, snackBar as any, {capture: () => {}, identify: () => {}, reset: () => {}} as any);
     
     return {service, backend, snackBar, mockManufacturer, mockModules};
   }

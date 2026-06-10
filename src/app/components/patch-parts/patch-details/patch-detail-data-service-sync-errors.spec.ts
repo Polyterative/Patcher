@@ -86,7 +86,8 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
       dialog as any,
       {loggedUser$: of({id: 'u1'})} as any,
       backend as any,
-      bridge
+      bridge,
+      {capture: () => {}, identify: () => {}, reset: () => {}} as any
     );
     createdBridges.push(bridge);
     createdServices.push(service);

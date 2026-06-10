@@ -37,7 +37,7 @@ describe('PatchDetailDataService selection behavior', () => {
     const dialog = dialogStub as any;
     const userService = new DummyUserService() as any;
 
-    service = new PatchDetailDataService(router, snack, dialog, userService, backendStub, bridge);
+    service = new PatchDetailDataService(router, snack, dialog, userService, backendStub, bridge, {capture: () => {}, identify: () => {}, reset: () => {}} as any);
   });
 
   afterEach(() => {
