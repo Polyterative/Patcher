@@ -1,7 +1,7 @@
 # TODO
 
-> **Index of active and backlog tasks. Per-task detail lives in [plans/](./plans/).**
->
+> **Index of active and backlog tasks. Per-task detail lives in** [**plans/**](./plans/)**.**
+> >
 > **Rules for AI agents using this file:**
 > 1. **Pick one task** by reading its plan file under `plans/`. Open the plan and update the
 >    `## Decision log` section as you make non-obvious choices.
@@ -13,16 +13,16 @@
 
 ## Legend
 
-- `[ ]` OPEN — `[~]` IN PROGRESS — `[x]` DONE
+- [ ]  OPEN — `[~]` IN PROGRESS — `[x]` DONE
 
 ---
 
 ### 🔥 MAX PRIORITY
 
-
 ### PRODUCT — Tier 0 (ship in any order; no external dependencies)
 
 - [ ] **HIGH: Module Possession States** → [`plans/module-possession-states.md`](./plans/module-possession-states.md)
+- [ ] **MEDIUM: Module Collections — curated discovery playlists** → [`plans/module-collections-curated-discovery.md`](./plans/module-collections-curated-discovery.md)
 - [x] **MEDIUM: Module Browser — Tag Filter UX improvements** → [`plans/module-browser-tag-filter-ux-improvements.md`](./plans/module-browser-tag-filter-ux-improvements.md)
 - [ ] **HIGH: Rack Editor — Optimistic / diff-based updates (no full-reload flash)** → [`plans/rack-editor-optimistic-diff-based-updates-no-full-reload-flash.md`](./plans/rack-editor-optimistic-diff-based-updates-no-full-reload-flash.md)
 
