@@ -182,6 +182,7 @@ export class RackDetailDataService extends SubManager {
   //
   
   protected destroyEvent$ = new Subject<void>();
+  private readonly loadModulesForRack$ = new Subject<number>();
   
   constructor(
     private snackBar: MatSnackBar,
@@ -371,24 +372,84 @@ export class RackDetailDataService extends SubManager {
         map(([rackedModule]) => rackedModule),
         withLatestFrom(this.rowedRackedModules$, this.singleRackData$),
         switchMap(([rackedModule, rackModules, rack]) => {
-          
-          const originalModule: RackedModule = cloneRackData(rackedModule);
-          
-          this.removeRackedModuleFromRack(rackModules, rackedModule);
-          this.rowedRackedModules$.next(rackModules);
-          
-          return this.backend.delete.rackedModule(rackedModule.rackingData.id).pipe(
-            // add the blank module in their old position
-            map(() => ({
-              row: originalModule.rackingData.row,
-              column: originalModule.rackingData.column,
-              rackId: rack.id,
-              moduleId: calculateBlankIdForSizeAndStandard(
-                rackedModule.module.hp,
-                rackedModule.module.standard.id
-              )
-            })),
-            switchMap(({row, column, rackId, moduleId}) => this.backend.add.rackModule(moduleId, rackId, row, column)),
+          if (rackedModule.rackingData.id == null) {
+            SharedConstants.errorCustom(this.snackBar, 'Rack changes are still syncing. Try replacing this module again in a moment.');
+            return EMPTY;
+          }
+
+          const blankModuleId = calculateBlankIdForSizeAndStandard(
+            rackedModule.module.hp,
+            rackedModule.module.standard.id
+          );
+
+          if (blankModuleId === -1) {
+            SharedConstants.errorCustom(this.snackBar, 'No matching blank panel was found for this module.');
+            return EMPTY;
+          }
+
+          const snapshot: RackedModule[][] = cloneRackData(rackModules);
+          const currentRows: RackedModule[][] = cloneRackData(rackModules);
+          const rowId = rackedModule.rackingData.row;
+          const row = rowId == null ? undefined : currentRows[rowId];
+          const moduleIndex = row?.findIndex(module => module.rackingData.id === rackedModule.rackingData.id) ?? -1;
+
+          if (!row || moduleIndex < 0) {
+            SharedConstants.errorCustom(this.snackBar, 'Could not find this module in the rack.');
+            return EMPTY;
+          }
+
+          return this.backend.GET.moduleWithId(blankModuleId).pipe(
+            map(response => this.assertBackendSuccess(response)),
+            switchMap(response => {
+              const blankModule = (response as {data?: RackedModule['module']}).data;
+              if (!blankModule) {
+                throw new Error('Blank module lookup returned no data');
+              }
+
+              const blankRackedModule: RackedModule = {
+                module: blankModule,
+                rackingData: {
+                  id: undefined as any,
+                  rackid: rack.id,
+                  moduleid: blankModule.id,
+                  row: rackedModule.rackingData.row,
+                  column: rackedModule.rackingData.column,
+                  selectedPanelId: null
+                }
+              };
+              row.splice(moduleIndex, 1, blankRackedModule);
+              this.updateModulesColumnIds(currentRows, rowId);
+              this.rowedRackedModules$.next(currentRows);
+
+              return this.backend.delete.rackedModule(rackedModule.rackingData.id).pipe(
+                map(deleteResponse => this.assertBackendSuccess(deleteResponse)),
+                catchError((err) => {
+                  console.error(`Error replacing module with blank: ${ err }`);
+                  this.rowedRackedModules$.next(snapshot);
+                  SharedConstants.errorCustom(this.snackBar, 'Failed to replace module with blank — changes reverted. Check your connection and try again.');
+                  return EMPTY;
+                }),
+                switchMap(() => this.backend.add.rackModule(blankModuleId, rack.id, blankRackedModule.rackingData.row, blankRackedModule.rackingData.column).pipe(
+                  map(addResponse => this.assertBackendSuccess(addResponse)),
+                  tap(addResponse => this.applyPersistedRackingIds(addResponse, currentRows)),
+                  catchError((err) => {
+                    console.error(`Error adding replacement blank: ${ err }`);
+                    const nextRows: RackedModule[][] = cloneRackData(this.rowedRackedModules$.value ?? []);
+                    nextRows[rowId].splice(moduleIndex, 1);
+                    this.updateModulesColumnIds(nextRows, rowId);
+                    this.rowedRackedModules$.next(nextRows);
+                    this.requestRackedModulesDbSync$.next();
+                    SharedConstants.errorCustom(this.snackBar, 'The module was removed, but the blank panel could not be added. Try adding a blank manually.');
+                    return EMPTY;
+                  })
+                ))
+              );
+            }),
+            catchError((err) => {
+              console.error(`Error preparing blank replacement: ${ err }`);
+              SharedConstants.errorCustom(this.snackBar, 'Failed to load the matching blank panel. Try again in a moment.');
+              return EMPTY;
+            }),
             takeUntil(this.destroyEvent$)
           );
         }),
@@ -396,7 +457,6 @@ export class RackDetailDataService extends SubManager {
       )
       .subscribe(() => {
         this.analytics.capture('rack.module_replaced_with_blank', { rack_id: this.singleRackData$.value?.id });
-        this.updateSingleRackData$.next(this.singleRackData$.value.id);
       });
     
     this.requestRackedModuleRowClearing$
@@ -425,6 +485,7 @@ export class RackDetailDataService extends SubManager {
             }
 
             return forkJoin(modulesInRow.map(module => this.backend.delete.rackedModule(module.rackingData.id).pipe(
+              map(response => this.assertBackendSuccess(response)),
               map(() => ({
                 id: module.rackingData.id,
                 ok: true
@@ -707,6 +768,7 @@ export class RackDetailDataService extends SubManager {
         }
 
         this.singleRackData$.next(x.data);
+        this.loadModulesForRack$.next(x.data.id);
       });
 
     // Token-based fetch. Always goes through the SECURITY DEFINER RPC so a
@@ -738,6 +800,7 @@ export class RackDetailDataService extends SubManager {
           return;
         }
         this.singleRackData$.next(x.data);
+        this.loadModulesForRack$.next(x.data.id);
       });
     
     // sync editable, privacy and form state whenever rack data changes
@@ -763,19 +826,22 @@ export class RackDetailDataService extends SubManager {
         }
       });
     
-    // when updated rack data is received, update rowedRackedModules$
-    this.singleRackData$.pipe(
-      tap((rack) => {
-        if (!rack) {
-          this.rowedRackedModules$.next([]);
-          this.isRackDataLoading$.next(false);
-        }
-      }),
-      filter(x => !!x),
-      switchMap((rack) => this.backend.get.rackedModules(rack.id).pipe(
+    this.singleRackData$
+      .pipe(
+        filter(x => !x),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        this.rowedRackedModules$.next([]);
+        this.isRackDataLoading$.next(false);
+      });
+
+    // when rack detail is loaded, update rowedRackedModules$
+    this.loadModulesForRack$.pipe(
+      switchMap((rackId) => this.backend.get.rackedModules(rackId).pipe(
         map((rackedModules) => ({
           rackedModules,
-          rack
+          rackId
         })),
         catchError((err) => {
           console.error('Failed to load rack modules:', err);
@@ -785,9 +851,11 @@ export class RackDetailDataService extends SubManager {
           return EMPTY;
         })
       )),
+      withLatestFrom(this.singleRackData$),
+      filter(([{rackId}, rack]) => !!rack && rack.id === rackId),
       takeUntil(this.destroy$),
     )
-      .subscribe(({rackedModules, rack}: {rackedModules: RackedModule[]; rack: Rack}) => {
+      .subscribe(([{rackedModules}, rack]: [{rackedModules: RackedModule[]; rackId: number}, Rack]) => {
         // create a 2d array of racked modules and sort them by row
         const rowedRackedModules = buildRowedModulesArray(rackedModules, rack);
         this.rowedRackedModules$.next(rowedRackedModules);
@@ -1202,6 +1270,15 @@ export class RackDetailDataService extends SubManager {
       .pipe(
         tap(response => this.applyPersistedRackingIds(response, rackModules))
       );
+  }
+
+  private assertBackendSuccess<T>(response: T): T {
+    const error = (response as {error?: unknown} | undefined)?.error;
+    if (error) {
+      throw error;
+    }
+
+    return response;
   }
 
   private applyPersistedRackingIds(response: unknown, rackModules: RackedModule[][]): void {

@@ -64,7 +64,8 @@ describe('SupabaseService - CRUD Operations', () => {
       );
       
       spyOn(supabaseClient, 'from').and.returnValue({
-        insert: insertSpy
+        insert: insertSpy,
+        select: jasmine.createSpy('select').and.returnValue(Promise.resolve({data: {id: 1}, error: null}))
       });
       
       const commentData = {
@@ -107,7 +108,8 @@ describe('SupabaseService - CRUD Operations', () => {
       });
       
       spyOn(supabaseClient, 'from').and.returnValue({
-        insert: insertSpy
+        insert: insertSpy,
+        select: jasmine.createSpy('select').and.returnValue(Promise.resolve({data: {id: 1}, error: null}))
       });
       
       service.add.comment({
@@ -302,13 +304,11 @@ describe('SupabaseService - CRUD Operations', () => {
   describe('add.rackModule', () => {
     it('should add module to rack with position when authenticated', (done) => {
       spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
-      const insertSpy = jasmine.createSpy('insert').and.returnValue(
-        Promise.resolve({data: {id: 1}, error: null})
-      );
+      const mock = chainable({data: {id: 1}, error: null});
+      const insertSpy = spyOn(mock, 'insert').and.returnValue(mock);
+      const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
 
-      spyOn(supabaseClient, 'from').and.returnValue({
-        insert: insertSpy
-      });
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
 
       service.add.rackModule(10, 5, 2, 3).subscribe({
         next: () => {
@@ -318,6 +318,7 @@ describe('SupabaseService - CRUD Operations', () => {
             row: 2,
             column: 3
           });
+          expect(selectSpy).toHaveBeenCalledWith('id,moduleid,rackid,row,column,selected_panel_id');
           done();
         },
         error: (err) => {
@@ -329,13 +330,11 @@ describe('SupabaseService - CRUD Operations', () => {
 
     it('should allow optional row and column', (done) => {
       spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
-      const insertSpy = jasmine.createSpy('insert').and.returnValue(
-        Promise.resolve({data: {id: 1}, error: null})
-      );
+      const mock = chainable({data: {id: 1}, error: null});
+      const insertSpy = spyOn(mock, 'insert').and.returnValue(mock);
+      const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
 
-      spyOn(supabaseClient, 'from').and.returnValue({
-        insert: insertSpy
-      });
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
 
       service.add.rackModule(10, 5).subscribe({
         next: () => {
@@ -345,6 +344,7 @@ describe('SupabaseService - CRUD Operations', () => {
             row: undefined,
             column: undefined
           });
+          expect(selectSpy).toHaveBeenCalledWith('id,moduleid,rackid,row,column,selected_panel_id');
           done();
         },
         error: (err) => {

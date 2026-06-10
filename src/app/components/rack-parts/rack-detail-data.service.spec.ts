@@ -275,6 +275,7 @@ describe('RackDetailDataService', () => {
     service.rowedRackedModules$.next([[rowZeroModule], [], [rowTwoModule]]);
     backend.update.rackedModules.calls.reset();
     backend.update.rack.calls.reset();
+    backend.get.rackedModules.calls.reset();
 
     service.requestDeleteRow$.next(1);
     tick();
@@ -283,6 +284,7 @@ describe('RackDetailDataService', () => {
     const persistedModules = backend.update.rackedModules.calls.mostRecent().args[0];
     expect(persistedModules.find((module: any) => module.module.id === 7).rackingData.row).toBe(1);
     expect(backend.update.rack).toHaveBeenCalledWith(jasmine.objectContaining({rows: 2}));
+    expect(backend.get.rackedModules).not.toHaveBeenCalled();
   }));
 
   it('does not delete a row that still has modules', fakeAsync(() => {

@@ -56,7 +56,9 @@ describe('RackDetailDataService reactive flows', () => {
         userRack: jasmine.createSpy('delete.userRack').and.returnValue(of({}))
       },
       add: {
-        rackModule: jasmine.createSpy('add.rackModule').and.returnValue(of({})),
+        rackModule: jasmine.createSpy('add.rackModule').and.returnValue(of({
+          data: [{id: 88, moduleid: 4651, rackid: 1, row: 0, column: 0, selected_panel_id: null}]
+        })),
         rack: jasmine.createSpy('add.rack').and.returnValue(of({data: [{id: 99}]})),
         patch: jasmine.createSpy('add.patch').and.returnValue(of({data: [{id: 321}]}))
       },
@@ -66,7 +68,19 @@ describe('RackDetailDataService reactive flows', () => {
       GET: {
         rackWithId: jasmine.createSpy('GET.rackWithId').and.returnValue(of({data: rack()})),
         publicRackWithId: jasmine.createSpy('GET.publicRackWithId').and.returnValue(of({data: rack()})),
-        rackByPublicId: jasmine.createSpy('GET.rackByPublicId').and.returnValue(of({data: rack()}))
+        rackByPublicId: jasmine.createSpy('GET.rackByPublicId').and.returnValue(of({data: rack()})),
+        moduleWithId: jasmine.createSpy('GET.moduleWithId').and.callFake((id: number) => of({
+          data: {
+            id,
+            name: `${ id } blank`,
+            hp: 8,
+            standard: {id: 0},
+            panels: [],
+            ins: [],
+            outs: [],
+            tags: [],
+          }
+        }))
       },
       storage: {
         uploadRackImage: jasmine.createSpy('storage.uploadRackImage').and.returnValue(of('new-image.jpg')),
@@ -140,18 +154,21 @@ describe('RackDetailDataService reactive flows', () => {
     expect(snackBar.open).toHaveBeenCalled();
   });
   
-  it('replaces a module with a blank and refreshes rack', () => {
+  it('replaces a module with a blank without refreshing rack modules', () => {
     const {service, backend} = build();
-    const currentRack = rack({id: 10});
+    const currentRack = rack({id: 1});
     service.singleRackData$.next(currentRack);
     service.rowedRackedModules$.next([[moduleInRack(1, 0, 0, 8, 0)]]);
     const refreshSpy = spyOn(service.updateSingleRackData$, 'next').and.callThrough();
     
     service.requestRackedModuleReplaceWithBlank$.next(moduleInRack(1, 0, 0, 8, 0));
     
+    expect(backend.GET.moduleWithId).toHaveBeenCalledWith(4651);
     expect(backend.delete.rackedModule).toHaveBeenCalled();
     expect(backend.add.rackModule).toHaveBeenCalled();
-    expect(refreshSpy).toHaveBeenCalledWith(10);
+    expect(refreshSpy).not.toHaveBeenCalled();
+    expect(service.rowedRackedModules$.value[0][0].module.id).toBe(4651);
+    expect(service.rowedRackedModules$.value[0][0].rackingData.id).toBe(88);
   });
   
   it('clears row modules and handles invalid rows', () => {
@@ -197,7 +214,7 @@ describe('RackDetailDataService reactive flows', () => {
     const firstModule = moduleInRack(1, 0, 0);
     const failingModule = moduleInRack(2, 0, 1);
     backend.delete.rackedModule.and.callFake((id: number) => id === 2
-      ? throwError(() => new Error('delete failed'))
+      ? of({error: new Error('delete failed')})
       : of({})
     );
     service.singleRackData$.next(rack({rows: 1}));

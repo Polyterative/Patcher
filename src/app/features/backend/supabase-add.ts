@@ -127,6 +127,7 @@ export function createAddNamespace(
               row,
               column
             })
+            .select('id,moduleid,rackid,row,column,selected_panel_id')
         );
       }),
       cacheBust(['rackWithId']),

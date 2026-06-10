@@ -312,7 +312,8 @@ describe('RackDetailDataService media, rename, and duplication', () => {
       mod(3, 0, 2, 8, 0),
       mod(4, 0, 3, 14, 1)
     ]));
-    service.singleRackData$.next(rack({id: 2, rows: 2}));
+    backend.GET.rackWithId.and.returnValue(of({data: rack({id: 2, rows: 2})}));
+    service.updateSingleRackData$.next(2);
     
     const stats = service.rackStatistics$.value || [];
     expect(stats.map(x => x.name)).toEqual(['4HP count', '8HP count']);

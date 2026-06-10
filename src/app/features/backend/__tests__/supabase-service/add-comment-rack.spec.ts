@@ -38,6 +38,7 @@ describe('SupabaseService - add.comment', () => {
     
     const mock = chainable({data: null, error: null});
     const insertSpy = spyOn(mock, 'insert').and.returnValue(mock);
+    const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
     service.add.comment({entityId: 5, entityType: 2, content: 'Nice rack!'}).subscribe({
@@ -193,6 +194,7 @@ describe('SupabaseService - add.rackModule', () => {
     
     const mock = chainable({data: null, error: null});
     const insertSpy = spyOn(mock, 'insert').and.returnValue(mock);
+    const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
     service.add.rackModule(3, 7, 0, 2).subscribe({
@@ -200,6 +202,7 @@ describe('SupabaseService - add.rackModule', () => {
         expect(insertSpy).toHaveBeenCalledWith(jasmine.objectContaining({
           moduleid: 3, rackid: 7, row: 0, column: 2
         }));
+        expect(selectSpy).toHaveBeenCalledWith('id,moduleid,rackid,row,column,selected_panel_id');
         done();
       },
       error: (err) => {
