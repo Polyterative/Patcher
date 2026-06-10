@@ -615,13 +615,9 @@ export class RackDetailDataService extends SubManager {
         if (!this.rackViewedFired) {
           this.rackViewedFired = true;
           const isOwner = this.isCurrentRackPropertyOfCurrentUser$.value;
-          const moduleCount = this.rowedRackedModules$.value
-            ? this.rowedRackedModules$.value.flat().length
-            : 0;
           this.analytics.capture('rack.viewed', {
-            rack_id:      rack.id,
-            is_owner:     isOwner,
-            module_count: moduleCount
+            rack_id:  rack.id,
+            is_owner: isOwner
           });
         }
       });
@@ -1175,4 +1171,3 @@ export class RackDetailDataService extends SubManager {
   }
   
 }
-

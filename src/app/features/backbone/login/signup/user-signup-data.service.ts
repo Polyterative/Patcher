@@ -128,9 +128,10 @@ export class UserSignupDataService extends SubManager {
           })
         )),
         tap(result => {
-          if (!result.requiresEmailConfirmation) {
-            this.analytics.capture('auth.signed_up', { method: 'password' });
-          }
+          this.analytics.capture('auth.signed_up', {
+            method: 'password',
+            email_confirmation_required: result.requiresEmailConfirmation
+          });
         }),
         switchMap(result => {
           if (result.requiresEmailConfirmation) {

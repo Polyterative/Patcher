@@ -5,6 +5,7 @@ import {
   Router
 } from '@angular/router';
 import { of } from 'rxjs';
+import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { UserManagementService } from '../user-management.service';
 import { UserSignupDataService } from './user-signup-data.service';
@@ -14,10 +15,12 @@ describe('UserSignupDataService', () => {
   let service: UserSignupDataService;
   let userManagementService: jasmine.SpyObj<UserManagementService>;
   let router: jasmine.SpyObj<Router>;
+  let analytics: jasmine.SpyObj<AnalyticsService>;
 
   beforeEach(() => {
     userManagementService = jasmine.createSpyObj<UserManagementService>('UserManagementService', ['signup', 'login$']);
     router = jasmine.createSpyObj<Router>('Router', ['navigate']);
+    analytics = jasmine.createSpyObj<AnalyticsService>('AnalyticsService', ['capture', 'identify', 'reset']);
 
     TestBed.configureTestingModule({
       providers: [
@@ -34,6 +37,7 @@ describe('UserSignupDataService', () => {
           }
         },
         {provide: UserManagementService, useValue: userManagementService},
+        {provide: AnalyticsService, useValue: analytics},
         {provide: MatSnackBar, useValue: jasmine.createSpyObj('MatSnackBar', ['open'])}
       ]
     });
@@ -60,6 +64,10 @@ describe('UserSignupDataService', () => {
     service.mailSignClick$.next();
 
     expect(SharedConstants.confirmMail).toHaveBeenCalled();
+    expect(analytics.capture).toHaveBeenCalledWith('auth.signed_up', {
+      method: 'password',
+      email_confirmation_required: true
+    });
     expect(SharedConstants.successSignup).not.toHaveBeenCalled();
     expect(userManagementService.login$).not.toHaveBeenCalled();
     expect(router.navigate).not.toHaveBeenCalled();
@@ -90,6 +98,10 @@ describe('UserSignupDataService', () => {
 
     service.mailSignClick$.next();
 
+    expect(analytics.capture).toHaveBeenCalledWith('auth.signed_up', {
+      method: 'password',
+      email_confirmation_required: false
+    });
     expect(SharedConstants.successSignup).toHaveBeenCalled();
     expect(SharedConstants.confirmMail).not.toHaveBeenCalled();
     expect(userManagementService.login$).toHaveBeenCalledWith('new@example.com', 'password123');
