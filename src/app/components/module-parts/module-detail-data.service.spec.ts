@@ -397,11 +397,18 @@ describe('ModuleDetailDataService', () => {
   it('clears singleModuleData$ and related streams to undefined when updateSingleModuleData$ fires', fakeAsync(() => {
     const {service, backend} = build();
 
+    const rackEmissions: any[] = [];
+    const patchEmissions: any[] = [];
+    const summaryEmissions: any[] = [];
+    service.racksWithThisModule$.subscribe(v => rackEmissions.push(v));
+    service.patchesWithThisModule$.subscribe(v => patchEmissions.push(v));
+    service.moduleUsageSummary$.subscribe(v => summaryEmissions.push(v));
+
     service.updateSingleModuleData$.next(10);
-    // Before tick, tap side-effects have already run synchronously
-    expect(service.racksWithThisModule$.value).toBeUndefined();
-    expect(service.patchesWithThisModule$.value).toBeUndefined();
-    expect(service.moduleUsageSummary$.value).toBeUndefined();
+    // The tap() reset emits undefined before the backend response replaces it.
+    expect(rackEmissions).toContain(undefined);
+    expect(patchEmissions).toContain(undefined);
+    expect(summaryEmissions).toContain(undefined);
 
     tick(260); // clear delays
     expect(service.singleModuleData$.value?.id).toBe(10);

@@ -1,5 +1,6 @@
 import { of } from 'rxjs';
 import { SupabaseService } from '../../supabase.service';
+import { cacheBuster$ } from '../../supabase.cache';
 import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest,
@@ -47,6 +48,9 @@ describe('SupabaseService - Remaining Branches', () => {
     service.get.patchesWithModule(1).subscribe({
       next: (result: any[]) => {
         expect(result[0].id).toBe(7);
+
+        // getPatchesWithModule is @Cacheable on (moduleId, from, to, ...) — bust to force a fresh RPC.
+        cacheBuster$.next(['patchesWithModule']);
 
         service.get.patchesWithModule(1).subscribe({
           next: (emptyResult: any[]) => {
