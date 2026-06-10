@@ -259,7 +259,7 @@ describe('UserAreaDataService', () => {
     expect(service.modulesPagination.skip$.value).toBe(0);
   });
 
-  it('pages modules and patches locally without triggering extra backend calls', () => {
+  it('pages patches locally and grows modules via loadMoreModules$ without triggering extra backend calls', () => {
     const {service, backend} = build();
 
     service.modulesData$.next([
@@ -273,16 +273,18 @@ describe('UserAreaDataService', () => {
       {id: 3, name: 'Patch Three', description: '', tags: []}
     ] as any);
 
-    service.modulesPageEvent$.next({pageIndex: 1, pageSize: 1, length: 3} as any);
+    expect(service.modulesPagination.take$.value).toBe(10);
+    service.loadMoreModules$.next();
     service.patchesPageEvent$.next({pageIndex: 1, pageSize: 1, length: 3} as any);
 
-    expect(service.modulesPagination.skip$.value).toBe(1);
+    expect(service.modulesPagination.skip$.value).toBe(0);
+    expect(service.modulesPagination.take$.value).toBe(20);
     expect(service.patchesPagination.skip$.value).toBe(1);
     expect(backend.GET.currentUserModules).not.toHaveBeenCalled();
     expect(backend.get.currentUserPatches).not.toHaveBeenCalled();
 
     service.pagedModulesData$.subscribe((modules) => {
-      expect(modules?.map((module) => module.id)).toEqual([2]);
+      expect(modules?.map((module) => module.id)).toEqual([1, 2, 3]);
     });
     service.pagedPatchesData$.subscribe((patches) => {
       expect(patches?.map((patch) => patch.id)).toEqual([2]);

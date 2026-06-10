@@ -84,14 +84,15 @@
         }
       }
     </lib-auto-update-loading-indicator>
-    @if ((dataService.filteredModulesCount$ | async) > dataService.modulesPagination.take$.value) {
-      <mat-paginator
-        [pageSize]="dataService.modulesPagination.take$.value"
-        [pageSizeOptions]="[10, 20, 50]"
-        [length]="dataService.filteredModulesCount$ | async"
-        (page)="dataService.modulesPageEvent$.next($event)"
-        showFirstLastButtons
-      ></mat-paginator>
+    @if ((dataService.hasMoreModules$ | async)) {
+      <div class="loadMore">
+        <button mat-stroked-button
+                class="loadMore__btn"
+                (click)="dataService.loadMoreModules$.next()"
+        >Load more
+          <span class="loadMore__count">{{ dataService.remainingModulesCount$ | async }} remaining</span>
+        </button>
+      </div>
     }
 
   </div>
