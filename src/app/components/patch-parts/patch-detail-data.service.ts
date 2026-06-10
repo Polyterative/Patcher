@@ -208,6 +208,9 @@ export class PatchDetailDataService implements OnDestroy {
       .subscribe(x => {
         const patch = x?.data ?? undefined;
         this.singlePatchData$.next(patch);
+        if (patch) {
+          this.analytics.capture('patch.viewed', { patch_id: patch.id });
+        }
         if (!patch) {
           this.patchDetailUnavailableMessage$.next(this.buildUnavailableMessage());
         }
@@ -232,6 +235,9 @@ export class PatchDetailDataService implements OnDestroy {
       .subscribe(x => {
         const patch = x?.data ?? undefined;
         this.singlePatchData$.next(patch);
+        if (patch) {
+          this.analytics.capture('patch.viewed', { patch_id: patch.id });
+        }
         if (!patch) {
           this.patchDetailUnavailableMessage$.next(this.buildUnavailableMessage());
         }
@@ -252,6 +258,7 @@ export class PatchDetailDataService implements OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(([_a, b]) => {
+        this.analytics.capture('patch.collection_removed', { patch_id: this.singlePatchData$.value?.id });
         const patchName = this.singlePatchData$.value?.name;
         snackBar.open(`"${ patchName }" removed from your library.`, undefined, {duration: 2000, panelClass: 'snack-success'});
         this.updateSinglePatchData$.next(b);
@@ -272,6 +279,7 @@ export class PatchDetailDataService implements OnDestroy {
               ? `"${ patch.name }" is now public — visible to everyone.`
               : `"${ patch.name }" is now private — only you can see it.`;
             SharedConstants.successCustom(this.snackBar, msg);
+            this.analytics.capture('patch.privacy_toggled', { patch_id: patch?.id, public: patch.public });
           })
         )),
         takeUntil(this.destroyEvent$),
@@ -434,6 +442,7 @@ export class PatchDetailDataService implements OnDestroy {
               }
               this.linkedRackState$.next(buildLinkedRackUiState(nextPatch, this.currentUserRacks$.value));
               this.syncLinkedRackControl(nextPatch, this.currentUserRacks$.value);
+              this.analytics.capture('patch.linked_rack_changed', { patch_id: nextPatch?.id, rack_id: linkedRackId });
               const message = linkedRackId == null
                 ? 'Linked rack cleared.'
                 : 'Linked rack updated.';
@@ -676,6 +685,7 @@ export class PatchDetailDataService implements OnDestroy {
       .pipe(
         switchMap(conn =>
           this.backend.update.patchConnectionNoteSilent(conn).pipe(
+            tap(() => this.analytics.capture('patch.connection_note_saved', { patch_id: this.singlePatchData$.value?.id })),
             catchError(_ => {
               SharedConstants.errorCustom(this.snackBar, 'Failed to save note — check your connection.');
               return EMPTY;
@@ -849,6 +859,7 @@ export class PatchDetailDataService implements OnDestroy {
         if (moduleId != null) {
           this.renumberModuleInstances$(moduleId).subscribe();
         }
+        this.analytics.capture('patch.module_instance_added', { patch_id: this.singlePatchData$.value?.id, module_id: moduleId, count: newInstances.length });
         const msg = newInstances.length > 1 ? 'Module split into 2 copies.' : 'Copy added.';
         SharedConstants.successCustom(this.snackBar, msg);
       });
@@ -942,6 +953,7 @@ export class PatchDetailDataService implements OnDestroy {
         }
         
         SharedConstants.successCustom(this.snackBar, `Instance removed.`);
+        this.analytics.capture('patch.module_instance_removed', { patch_id: this.singlePatchData$.value?.id, module_id: removed.module_id });
       });
     
     // ── Bridge mirroring — push state into SelectionPanelBridgeService ─────

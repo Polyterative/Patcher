@@ -200,6 +200,7 @@ export class RackDetailDataService extends SubManager {
         takeUntil(this.destroy$),
       )
       .subscribe(() => {
+          this.analytics.capture('rack.row_removed', { rack_id: this.singleRackData$.value.id });
           this.updateSingleRackData$.next(this.singleRackData$.value.id);
         }
       );
@@ -216,6 +217,7 @@ export class RackDetailDataService extends SubManager {
         takeUntil(this.destroy$),
       )
       .subscribe(() => {
+          this.analytics.capture('rack.row_added', { rack_id: this.singleRackData$.value.id });
           this.updateSingleRackData$.next(this.singleRackData$.value.id);
         }
       );
@@ -232,7 +234,9 @@ export class RackDetailDataService extends SubManager {
         exhaustMap(x => this.backend.update.rack(x)),
         takeUntil(this.destroy$),
       )
-      .subscribe();
+      .subscribe(x => {
+        this.analytics.capture('rack.privacy_toggled', { rack_id: this.singleRackData$.value?.id, public: this.singleRackData$.value?.public });
+      });
     
     // when user wants to replace a module with blank, replace it with a blank module from manufacturer id 2000
     this.requestRackedModuleReplaceWithBlank$
@@ -287,7 +291,10 @@ export class RackDetailDataService extends SubManager {
         }),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(() => this.updateSingleRackData$.next(this.singleRackData$.value.id));
+      .subscribe(() => {
+        this.analytics.capture('rack.module_replaced_with_blank', { rack_id: this.singleRackData$.value?.id });
+        this.updateSingleRackData$.next(this.singleRackData$.value.id);
+      });
     
     // when user requests to clear a row, remove all modules from that row and update backend
     this.requestRackedModuleRowClearing$
@@ -325,6 +332,7 @@ export class RackDetailDataService extends SubManager {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(([_, rackData]) => {
+        this.analytics.capture('rack.row_cleared', { rack_id: rackData?.id });
         this.singleRackData$.next(rackData);
       });
     
@@ -350,6 +358,7 @@ export class RackDetailDataService extends SubManager {
           link.click();
           link.remove();
           
+          this.analytics.capture('rack.image_downloaded', { rack_id: rackData?.id });
           this.snackBar.open(`Image downloaded: ${  downloadName}`, undefined, {duration: 5000});
         }
       );
@@ -417,6 +426,7 @@ export class RackDetailDataService extends SubManager {
     )
       .subscribe((updatedRackData: Rack) => {
         SharedConstants.successCustom(this.snackBar, `Preview image updated for "${ updatedRackData.name }".`);
+        this.analytics.capture('rack.preview_image_updated', { rack_id: updatedRackData?.id });
         this.updateSingleRackData$.next(updatedRackData.id);
       });
     
@@ -436,7 +446,9 @@ export class RackDetailDataService extends SubManager {
         switchMap(x => this.backend.update.rack(x)),
         takeUntil(this.destroy$),
       )
-      .subscribe();
+      .subscribe(x => {
+        this.analytics.capture('rack.lock_toggled', { rack_id: this.singleRackData$.value?.id, locked: this.singleRackData$.value?.locked });
+      });
 
     this.requestCreatePatchFromRack$
       .pipe(
@@ -484,6 +496,7 @@ export class RackDetailDataService extends SubManager {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(({rack, generatedPatchName, createdPatchId, createdPatchPublicId}) => {
+        this.analytics.capture('rack.linked_patch_created', { rack_id: rack?.id, patch_id: createdPatchId });
         const target = createdPatchPublicId
           ? ['/patches', createdPatchPublicId]
           : ['/patches/details', createdPatchId];
@@ -510,6 +523,7 @@ export class RackDetailDataService extends SubManager {
         filter(() => this.formData.name.control.valid),
         switchMap(rack =>
           this.backend.update.rack({...rack}).pipe(
+            tap(() => this.analytics.capture('rack.name_changed', { rack_id: rack?.id })),
             catchError(err => {
               console.error('Failed to auto-save rack name:', err);
               SharedConstants.errorCustom(this.snackBar, 'Failed to save — check your connection and try again.');
@@ -743,12 +757,10 @@ export class RackDetailDataService extends SubManager {
         takeUntil(this.destroy$)
       )
       .subscribe(([rackedModule, rackModules]) => {
-        
         this.duplicateModule(rackModules, rackedModule);
         this.rowedRackedModules$.next(rackModules);
-        
+        this.analytics.capture('rack.module_duplicated', { rack_id: this.singleRackData$.value?.id, module_id: rackedModule.module?.id });
         this.requestRackedModulesDbSync$.next();
-        
       });
     
     // when request to switch panel for a rack module is received, update local state then persist to backend
@@ -767,6 +779,7 @@ export class RackDetailDataService extends SubManager {
             this.rowedRackedModules$.next(rackModules);
           }
           return this.backend.update.rackModulePanel(rackedModule.rackingData.id, panelId).pipe(
+            tap(() => this.analytics.capture('rack.module_panel_switched', { rack_id: this.singleRackData$.value?.id, module_id: rackedModule.module?.id, panel_id: panelId })),
             catchError((err) => {
               console.error(`Error updating rack module panel: ${ err }`);
               this.snackBar.open(SharedConstants.messages.operationFailed, undefined, {duration: 8000, panelClass: 'snack-error'});
@@ -917,7 +930,9 @@ export class RackDetailDataService extends SubManager {
           const column = row.length;
           const blankId = calculateBlankIdForSizeAndStandard(hp);
           if (blankId === -1) return EMPTY;
-          return this.backend.add.rackModule(blankId, rackId, rowId, column);
+          return this.backend.add.rackModule(blankId, rackId, rowId, column).pipe(
+            tap(() => this.analytics.capture('rack.blank_panel_added', { rack_id: rackId, hp }))
+          );
         }),
         takeUntil(this.destroyEvent$)
       )

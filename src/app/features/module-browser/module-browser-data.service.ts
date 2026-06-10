@@ -317,6 +317,20 @@ export class ModuleBrowserDataService extends SubManager {
       const orderVal = this.fields.order.control.value;
       const nameVal = this.fields.name.control.value ?? '';
       const isBestMatchOrder = orderVal?.id === this.bestMatchOrderOption.id;
+
+      const activeFilters: string[] = [];
+      if (nameVal) activeFilters.push('name');
+      if (this.fields.description.control.value) activeFilters.push('description');
+      if (this.fields.manufacturers.control.value) activeFilters.push('manufacturer');
+      if (this.fields.hp.control.value) activeFilters.push('hp');
+      if (this.fields.standard.control.value?.id !== undefined) activeFilters.push('standard');
+      if ((this.fields.tags.control.value ?? []).length > 0) activeFilters.push('tags');
+      this.analytics.capture('search.filter_changed', {
+        active_filters: activeFilters,
+        active_filter_count: activeFilters.length,
+        order: orderVal?.id,
+      });
+
       this.serversideTableRequestData.filter$.next(nameVal);
       this.serversideTableRequestData.sort$.next([
         isBestMatchOrder ? this.orderStartingValue.id : (orderVal?.id ?? ''),
@@ -332,6 +346,13 @@ export class ModuleBrowserDataService extends SubManager {
       .subscribe((selectedTags) => {
         const currentOrder = this.fields.order.control.value;
         const selectedCount = selectedTags?.length ?? 0;
+        const orderChanged = selectedCount > 0 && currentOrder?.id === this.orderStartingValue.id
+          || selectedCount === 0 && currentOrder?.id === this.bestMatchOrderOption.id;
+
+        this.analytics.capture('search.tags_selected', {
+          selected_count: selectedCount,
+          order_changed: orderChanged,
+        });
 
         if (selectedCount > 0 && currentOrder?.id === this.orderStartingValue.id) {
           this.fields.order.control.setValue(this.bestMatchOrderOption);
@@ -351,7 +372,12 @@ export class ModuleBrowserDataService extends SubManager {
         takeUntil(this.destroy$)
       )
       .subscribe(() => {
-        if (this.modulesList$.value !== null && this.getSelectedTagIds().length > 0) {
+        const activeTags = this.getSelectedTagIds().length;
+        this.analytics.capture('search.tag_match_mode_changed', {
+          mode: this.tagMatchMode$.value,
+          active_tags_count: activeTags,
+        });
+        if (this.modulesList$.value !== null && activeTags > 0) {
           this.remoteTagFilterLoading$.next(true);
         }
         this.serversideTableRequestData.skip$.next(0);
@@ -447,6 +473,7 @@ export class ModuleBrowserDataService extends SubManager {
         takeUntil(this.destroy$)
       )
       .subscribe(([_, current]) => {
+        this.analytics.capture('search.load_more', { loaded_count: current?.length ?? 0 });
         this.serversideTableRequestData.skip$.next(current?.length ?? 0);
         this.updateModulesList$.next();
       });
@@ -454,6 +481,7 @@ export class ModuleBrowserDataService extends SubManager {
     this.resetForm$
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
+        this.analytics.capture('search.filters_reset', {});
         this.backend.cacheResetter$.next(['modules']);
         const shouldTriggerManualReload = this.tagMatchMode$.value === 'OR';
         const silent = {emitEvent: false};

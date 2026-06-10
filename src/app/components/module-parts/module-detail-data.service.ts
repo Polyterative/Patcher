@@ -101,7 +101,7 @@ export class ModuleDetailDataService implements OnDestroy {
       )
       .subscribe(x => {
         SharedConstants.successCustom(this.snackBar, 'Panel image removed from module.');
-        
+        this.analytics.capture('module.panel_deleted', { module_id: this.singleModuleData$.value?.id });
         this.updateSingleModuleData$.next(this.singleModuleData$.value.id);
       });
     
@@ -114,7 +114,10 @@ export class ModuleDetailDataService implements OnDestroy {
         if (b) {
           const text: string = `${ b.name } by ${ b.manufacturer.name }`;
           navigator.clipboard.writeText(text).then(
-            () => SharedConstants.successCustom(snackBar, `Copied to clipboard: ${ text }`),
+            () => {
+              SharedConstants.successCustom(snackBar, `Copied to clipboard: ${ text }`);
+              this.analytics.capture('module.info_copied', { module_id: b?.id });
+            },
             () => snackBar.open('Clipboard write failed — copy manually.', undefined, {duration: 3000, panelClass: 'snack-error'})
           );
         }
@@ -282,6 +285,7 @@ export class ModuleDetailDataService implements OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(module => {
+        this.analytics.capture('module.deleted', { module_id: module?.id });
         snackBar.open(`"${ module?.name }" deleted from the database.`, undefined, {duration: 2000, panelClass: 'snack-success'});
         this.router.navigate(['/modules', 'browser']);
       });
@@ -311,6 +315,7 @@ export class ModuleDetailDataService implements OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(({module, manufacturerDeleted}) => {
+        this.analytics.capture('module.deleted', { module_id: module?.id, manufacturer_deleted: manufacturerDeleted });
         const successMessage = manufacturerDeleted
           ? `"${ module.name }" and orphan manufacturer "${ module.manufacturer.name }" deleted from the database.`
           : `"${ module.name }" deleted from the database.`;
@@ -327,6 +332,7 @@ export class ModuleDetailDataService implements OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(module => {
+        this.analytics.capture('module.metadata_changed', { module_id: module?.id });
         snackBar.open(`"${ module?.name }" updated.`, undefined, {duration: 2000, panelClass: 'snack-success'});
         this.updateSingleModuleData$.next(this.singleModuleData$.value.id);
       });
@@ -339,6 +345,7 @@ export class ModuleDetailDataService implements OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(() => {
+        this.analytics.capture('module.store_url_updated', { module_id: this.singleModuleData$.value?.id });
         this.updateSingleModuleData$.next(this.singleModuleData$.value?.id);
       });
     

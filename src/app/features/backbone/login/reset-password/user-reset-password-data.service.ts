@@ -22,6 +22,7 @@ import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-for
 import { IMatFormEntityConfig } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { SupabaseService } from '../../../backend/supabase.service';
+import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 
 
 const ERROR_MESSAGES = SharedConstants.messages.resetPassword;
@@ -79,7 +80,8 @@ export class UserResetPasswordDataService implements OnDestroy {
   
   constructor(
     private router: Router,
-    private supabaseService: SupabaseService
+    private supabaseService: SupabaseService,
+    private readonly analytics: AnalyticsService
   ) {
     this.initializeSubmitHandler();
   }
@@ -131,6 +133,7 @@ export class UserResetPasswordDataService implements OnDestroy {
               // Success
               this.successMessage$.next(ERROR_MESSAGES.successTitle);
               this.isSubmitting$.next(false);
+              this.analytics.capture('auth.password_reset_completed', {});
               
               // Clear form
               this.fields.password.control.setValue('');

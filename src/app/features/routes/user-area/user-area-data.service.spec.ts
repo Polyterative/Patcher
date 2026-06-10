@@ -47,7 +47,7 @@ describe('UserAreaDataService', () => {
       recordAction: jasmine.createSpy('recordAction')
     };
     
-    const service = new UserAreaDataService(dialog as any, backend as any, discoveryTipService as any);
+    const service = new UserAreaDataService(dialog as any, backend as any, discoveryTipService as any, {capture: () => {}, identify: () => {}, reset: () => {}} as any);
     return {service, backend, dialog, discoveryTipService};
   }
   

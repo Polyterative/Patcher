@@ -303,7 +303,10 @@ export class UserManagementService extends SubManager {
           return NEVER;
         })
       )),
-      tap(() => SharedConstants.successCustom(this.snackBar, SharedConstants.messages.passwordResetEmailSent)),
+      tap(() => {
+        this.analytics.capture('auth.password_reset_requested', {});
+        SharedConstants.successCustom(this.snackBar, SharedConstants.messages.passwordResetEmailSent);
+      }),
       takeUntil(this.destroy$)
     ).subscribe();
   }
@@ -311,6 +314,7 @@ export class UserManagementService extends SubManager {
   private initializeSSOLoginHandler(): void {
     this.ssoLoginAction$.pipe(
       switchMap(({provider, redirectUrl}) => this.backend.auth.loginWithOAuth$(provider, redirectUrl).pipe(
+        tap(() => this.analytics.capture('auth.sso_login_initiated', { provider })),
         catchError((error) => {
           console.error('SSO login failed:', error);
           SharedConstants.errorCustom(
@@ -341,6 +345,7 @@ export class UserManagementService extends SubManager {
       tap(user => {
         this._loggedUser$.next(user);
         this._loggedUserFullProfile$.next(user);
+        this.analytics.capture('auth.signed_in', { method: 'oauth' });
       }),
       takeUntil(this.destroy$)
     ).subscribe();
@@ -454,6 +459,7 @@ export class UserManagementService extends SubManager {
       filter(({profile}) => !!profile),
       tap(({profile, newUsername}) => {
         this._loggedUserFullProfile$.next(profile);
+        this.analytics.capture('account.username_changed', {});
         SharedConstants.successCustom(this.snackBar, `Username changed to "${ newUsername }" — your profile has been synced.`);
       }),
       takeUntil(this.destroy$)
@@ -549,6 +555,7 @@ export class UserManagementService extends SubManager {
       tap(() => {
         this._loggedUser$.next(undefined);
         this._loggedUserFullProfile$.next(undefined);
+        this.analytics.capture('account.data_deleted', {});
       }),
       switchMap(() => from(this.backend.auth.logoff$()).pipe(
         catchError(() => NEVER)
@@ -595,6 +602,7 @@ export class UserManagementService extends SubManager {
       tap(() => {
         this._loggedUser$.next(undefined);
         this._loggedUserFullProfile$.next(undefined);
+        this.analytics.capture('account.deleted', {});
       }),
       switchMap(() => this.backend.auth.logoffLocal$().pipe(
         catchError((error) => {
@@ -629,6 +637,7 @@ export class UserManagementService extends SubManager {
       ),
       tap(() => {
         this._showPasswordForm$.next(false);
+        this.analytics.capture('auth.password_changed', {});
         SharedConstants.successCustom(this.snackBar, 'Password updated successfully.');
       }),
       takeUntil(this.destroy$)
