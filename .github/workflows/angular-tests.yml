@@ -57,6 +57,8 @@ jobs:
             command: pnpm run test:functions
           - name: Production build
             command: pnpm run build
+          - name: Production smoke (e2e)
+            command: pnpm run test:e2e:prod
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -80,6 +82,10 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+
+      - name: Install Playwright browsers
+        if: matrix.name == 'Production smoke (e2e)'
+        run: pnpm exec playwright install --with-deps chromium
 
       - name: Run checks
         run: ${{ matrix.command }}
