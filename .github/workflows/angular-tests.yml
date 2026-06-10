@@ -55,10 +55,8 @@ jobs:
             command: pnpm run ci
           - name: Function tests
             command: pnpm run test:functions
-          - name: Production build
-            command: pnpm run build
-          - name: Production smoke (e2e)
-            command: pnpm run test:e2e:prod
+          - name: Production build + smoke
+            command: pnpm run build && pnpm run test:e2e:prod:run
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -83,9 +81,21 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
 
-      - name: Install Playwright browsers
-        if: matrix.name == 'Production smoke (e2e)'
-        run: pnpm exec playwright install --with-deps chromium
+      # Cache the Chromium binary used by the prod smoke step. Keyed by the
+      # Playwright version in the lockfile so cache invalidates only on
+      # version bumps. Saves ~30s per run vs. re-downloading.
+      - name: Cache Playwright browsers
+        if: matrix.name == 'Production build + smoke'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Playwright Chromium
+        if: matrix.name == 'Production build + smoke'
+        # Skip --with-deps: ubuntu-latest already has Chromium's system libs,
+        # and --with-deps shells out to apt-get for another ~30s.
+        run: pnpm exec playwright install chromium
 
       - name: Run checks
         run: ${{ matrix.command }}
