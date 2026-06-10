@@ -119,6 +119,7 @@
     "ngx-lottie": "^11.0.2",
     "ngx-pipes": "^3.0.0",
     "ngx-timeago": "^3.0.0",
+    "posthog-js": "^1.384.0",
     "rxjs": "^7.8.1",
     "sigma": "^2.2.0",
     "ts-cacheable": "^1.0.10",
