@@ -258,7 +258,7 @@
                                   class="rackEditorFloatingOptions__analysisFocusButton"
                                   [class.rackEditorFloatingOptions__analysisFocusButton--active]="bag.signalFocusArea === option.value"
                                   [attr.aria-pressed]="bag.signalFocusArea === option.value"
-                                  (click)="dataService.signalFocusArea$.next(option.value)"
+                                  (click)="setSignalFocusArea(option.value)"
                           >
                             @if (bag.signalFocusArea === option.value) {
                               <mat-icon class="rackEditorFloatingOptions__segmentedIcon" aria-hidden="true">radio_button_checked</mat-icon>
@@ -291,7 +291,7 @@
                              class="rackEditorFloatingOptions__analysisModeButton"
                              [class.rackEditorFloatingOptions__analysisModeButton--active]="currentAnalysisMode === option.mode"
                              [attr.aria-pressed]="currentAnalysisMode === option.mode"
-                             (click)="dataService.analysisMode$.next(option.mode)"
+                             (click)="setAnalysisMode(option.mode)"
                      >
                        @if (currentAnalysisMode === option.mode) {
                          <mat-icon class="rackEditorFloatingOptions__segmentedIcon" aria-hidden="true">radio_button_checked</mat-icon>
@@ -304,12 +304,12 @@
             @if (viewOptionsExpanded) {
              <div class="rackEditorFloatingOptions__panel">
                <mat-slide-toggle [checked]="bag.shouldShowPanelImages"
-                                 (change)="dataService.shouldShowPanelImages$.next($event.checked)"
+                                 (change)="setShouldShowPanelImages($event.checked)"
               >
                 Use images
               </mat-slide-toggle>
               <mat-slide-toggle [checked]="bag.userRequestedSmallerScale"
-                                (change)="dataService.userRequestedSmallerScale$.next($event.checked)"
+                                (change)="setReducedScale($event.checked)"
               >
                 Reduce scale
               </mat-slide-toggle>

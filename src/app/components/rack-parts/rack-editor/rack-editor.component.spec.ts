@@ -38,7 +38,8 @@ describe('RackEditorComponent', () => {
       dataService,
       normalizedContextMenu,
       changeDetectorRef,
-      dialog
+      dialog,
+      {capture: () => {}} as any
     );
     createdComponents.push(component);
     return component;

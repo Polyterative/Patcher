@@ -292,7 +292,11 @@ export class PatchDetailDataService implements OnDestroy {
         withLatestFrom(this.patchEditingPanelOpenState$),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(([_, current]) => this.patchEditingPanelOpenState$.next(!current));
+      .subscribe(([_, current]) => {
+        const opened = !current;
+        this.patchEditingPanelOpenState$.next(opened);
+        this.analytics.capture('patch.editing_toggled', { patch_id: this.singlePatchData$.value?.id, opened });
+      });
     
     this.formData.name.control.valueChanges
       .pipe(
@@ -323,6 +327,7 @@ export class PatchDetailDataService implements OnDestroy {
       filter(() => this.formData.name.control.valid && this.formData.description.control.valid),
       switchMap(([_, patch]) =>
         this.backend.update.patchSilent({...patch}).pipe(
+          tap(() => this.analytics.capture('patch.metadata_saved', { patch_id: patch.id })),
           catchError(err => {
             console.error('Failed to auto-save patch metadata:', err);
             SharedConstants.errorCustom(this.snackBar, 'Failed to save — check your connection and try again.');
@@ -508,7 +513,7 @@ export class PatchDetailDataService implements OnDestroy {
       )
       .subscribe(_ => this.resetSelectedForConnection$.next());
     
-    // when editing panel closes (was open -> closed), trigger patch refresh
+    // when editing panel closes (was open -> closed), trigger patch refresh and track close
     this.patchEditingPanelOpenState$
       .pipe(
         pairwise(),
@@ -516,11 +521,24 @@ export class PatchDetailDataService implements OnDestroy {
         filter(() => !!this.singlePatchData$.value),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(() => this.updateSinglePatchData$.next(this.singlePatchData$.value.id));
+      .subscribe(() => {
+        this.analytics.capture('patch.editing_panel_closed', { patch_id: this.singlePatchData$.value.id });
+        this.updateSinglePatchData$.next(this.singlePatchData$.value.id);
+      });
     
     merge(
-      this.clickOnModuleCV$.pipe(map(cv => ({type: 'cv', cv} as CVConnectionEvent))),
-      this.resetSelectedForConnection$.pipe(map(() => ({type: 'reset'} as CVConnectionEvent))),
+      this.clickOnModuleCV$.pipe(
+        tap(cv => this.analytics.capture('patch.cv_clicked', {
+          patch_id: this.singlePatchData$.value?.id,
+          cv_kind: cv.kind,
+          module_id: cv.cv.module.id
+        })),
+        map(cv => ({type: 'cv', cv} as CVConnectionEvent))
+      ),
+      this.resetSelectedForConnection$.pipe(
+        tap(() => this.analytics.capture('patch.connection_selection_reset', { patch_id: this.singlePatchData$.value?.id })),
+        map(() => ({type: 'reset'} as CVConnectionEvent))
+      ),
       this.bridge.resetA$.pipe(map(() => ({type: 'resetA'} as CVConnectionEvent))),
       this.bridge.resetB$.pipe(map(() => ({type: 'resetB'} as CVConnectionEvent)))
     )
@@ -617,6 +635,7 @@ export class PatchDetailDataService implements OnDestroy {
           this.bridge.record$.next();
           
         } else {
+          this.analytics.capture('patch.connection_duplicate_attempted', { patch_id: patch?.id });
           SharedConstants.errorCustom(this.snackBar, `${ newConnection.a.module.name } "${ newConnection.a.name }" → ${ newConnection.b.module.name } "${ newConnection.b.name }" is already in this patch.`);
         }
       });
@@ -985,6 +1004,7 @@ export class PatchDetailDataService implements OnDestroy {
           const patch = this.singlePatchData$.value;
           if (!patch) { return EMPTY; }
           return this.backend.update.patchTags(patch.id, tags).pipe(
+            tap(() => this.analytics.capture('patch.tags_saved', { patch_id: patch.id, tag_count: tags.length })),
             catchError(err => {
               console.error('Failed to save tags:', err);
               SharedConstants.errorCustom(this.snackBar, 'Failed to save tags — check your connection.');
@@ -1017,6 +1037,7 @@ export class PatchDetailDataService implements OnDestroy {
     if (this.singlePatchData$.value) {
       this.singlePatchData$.value.tags = next;
     }
+    this.analytics.capture('patch.tag_added', { patch_id: this.singlePatchData$.value?.id, tag_count: next.length });
     this._tagsUpdate$.next(next);
   }
 
@@ -1026,6 +1047,7 @@ export class PatchDetailDataService implements OnDestroy {
     if (this.singlePatchData$.value) {
       this.singlePatchData$.value.tags = next;
     }
+    this.analytics.capture('patch.tag_removed', { patch_id: this.singlePatchData$.value?.id, tag_count: next.length });
     this._tagsUpdate$.next(next);
   }
 

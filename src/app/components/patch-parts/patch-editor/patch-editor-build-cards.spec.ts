@@ -54,7 +54,8 @@ describe('PatchEditorComponent.buildEditorCards (via private access)', () => {
       fakeDataService() as any,
       {} as any,
       {nativeElement: document.createElement('div')} as any,
-      {markForCheck: () => {}} as any
+      {markForCheck: () => {}} as any,
+      {capture: () => {}} as any
     );
   }
   
@@ -145,7 +146,8 @@ describe('PatchEditorComponent.buildConnectionNames (via private access)', () =>
       fakeDataService() as any,
       {} as any,
       {nativeElement: document.createElement('div')} as any,
-      {markForCheck: () => {}} as any
+      {markForCheck: () => {}} as any,
+      {capture: () => {}} as any
     );
   }
   

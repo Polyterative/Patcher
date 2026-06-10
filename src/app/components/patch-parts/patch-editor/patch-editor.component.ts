@@ -50,6 +50,7 @@ import {
 } from '../../module-parts/module-minimal/module-minimal.component';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
+import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 import {
   EditorModuleCard,
   LinkedRackDivergence,
@@ -254,7 +255,8 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
     public dataService: PatchDetailDataService,
     public appState: AppStateService,
     private elementRef: ElementRef,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private analytics: AnalyticsService
   ) {
     this.operationMode$ = this.dataService.editorOperationMode$;
     this.hasLinkedRack$ = this.dataService.linkedRackState$.pipe(
@@ -431,11 +433,15 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
     this.hasLinkedRack$
       .pipe(takeUntil(this.destroyEvent$))
       .subscribe(hasLinkedRack => {
-        if (hasLinkedRack) {
-          this.operationMode$.next(PATCH_EDITOR_OPERATION_MODES.linkedRack);
-        } else {
-          this.operationMode$.next(PATCH_EDITOR_OPERATION_MODES.collection);
-        }
+        const mode = hasLinkedRack
+          ? PATCH_EDITOR_OPERATION_MODES.linkedRack
+          : PATCH_EDITOR_OPERATION_MODES.collection;
+        this.operationMode$.next(mode);
+        this.analytics.capture('patch.editor_mode_changed', {
+          patch_id: this.dataService.singlePatchData$.value?.id,
+          mode,
+          trigger: 'linked_rack_auto'
+        });
       });
 
     // Close expanded CV panel after a connection is confirmed so the rack
@@ -462,6 +468,11 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
 
   setOperationMode(mode: PatchEditorOperationMode): void {
     this.operationMode$.next(mode);
+    this.analytics.capture('patch.editor_mode_changed', {
+      patch_id: this.dataService.singlePatchData$.value?.id,
+      mode,
+      trigger: 'user'
+    });
     this.clearExpandedRackSelection();
   }
 
