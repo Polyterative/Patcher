@@ -84,6 +84,7 @@
                                         [rackDetailDataService]="dataService"
                                         [moduleRightClick$]="moduleRightClick$"
                                         (touchModuleSelected)="onTouchModuleSelected($event)"
+                                        (rowOverflowClick)="openRowOverflowMenu($event)"
                                         [dragScale]="effectiveScale(bag.userRequestedSmallerScale)"
                                         [style.width.rem]="rackWidthRem()"
                                         [style.transform]="rackSurfaceTransform(bag.userRequestedSmallerScale)"
