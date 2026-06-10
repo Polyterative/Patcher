@@ -28,18 +28,18 @@ edit any rack's image regardless of ownership.
 
 **Checklist:**
 
-- [ ] Confirm `racks.image_url` column exists and is in `DatabaseStrings.ts`; add if missing.
-- [ ] Provision (or reuse) a `rack-images` Supabase Storage bucket — public read, service-role write only.
-- [ ] Add a `SECURITY DEFINER` RPC `admin_set_rack_image_url(p_rack_id int, p_url text)` — callable only via service-role; not granted to `anon` or `authenticated`.
-- [ ] Add `backend.admin.setRackImageUrl(rackId, url)` to `SupabaseService`, initialised with the service-role client (not the anon client).
-- [ ] Build `AdminRackImageUploadComponent` (file input → upload to Storage → call RPC → snackbar).
-- [ ] Wire the component into the admin rack detail view, behind the existing admin auth guard.
-- [ ] Verify existing `racks` RLS is **not** relaxed — only the new SECURITY DEFINER RPC changes what the admin can write.
-- [ ] Unit-test: upload triggers the correct storage path and RPC; error path shows snackbar; component is not reachable without admin role.
+- [x] Confirm `racks.image_url` column exists and is in `DatabaseStrings.ts`; add if missing.
+- [x] Provision (or reuse) a `rack-images` Supabase Storage bucket — public read, service-role write only.
+- [x] Add a `SECURITY DEFINER` RPC `admin_set_rack_image_url(p_rack_id int, p_url text)` — callable only via service-role; not granted to `anon` or `authenticated`.
+- [x] Add `backend.admin.setRackImageUrl(rackId, url)` to `SupabaseService`, initialised with the service-role client (not the anon client).
+- [x] Build `AdminRackImageUploadComponent` (file input → upload to Storage → call RPC → snackbar).
+- [x] Wire the component into the admin rack detail view, behind the existing admin auth guard.
+- [x] Verify existing `racks` RLS is **not** relaxed — only the new SECURITY DEFINER RPC changes what the admin can write.
+- [x] Unit-test: upload triggers the correct storage path and RPC; error path shows snackbar; component is not reachable without admin role.
 
 ---
 
 ## Decision log
 
 <!-- Append timestamped one-liners as the plan progresses. -->
-
+- 2026-06-10 — kept the admin write path server-side behind SSR instead of exposing a service-role secret in browser code.

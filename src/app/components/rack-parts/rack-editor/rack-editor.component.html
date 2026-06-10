@@ -10,7 +10,8 @@
   isRackImageCaptureInProgress:(dataService.isRackImageCaptureInProgress$|async),
   functionAnalysisLegendItems:(dataService.functionAnalysisLegendItems$|async),
   functionAnalysisResidualLabel:(dataService.functionAnalysisResidualLabel$|async),
-  functionAnalysisCoverageSummary:(dataService.functionAnalysisCoverageSummary$|async)
+  functionAnalysisCoverageSummary:(dataService.functionAnalysisCoverageSummary$|async),
+  canUpdateRackImagePreview:(dataService.canUpdateRackImagePreview$|async)
 }; as bag) {
   @let currentAnalysisMode = bag.analysisMode ?? analysisModes.off;
   <div class="col gap1"
@@ -115,7 +116,8 @@
              @if ((bag.rowedRackedModules | totalHpOfRack) > 0) {
                <ng-container *ngTemplateOutlet="rackMediaActions; context: {
                  isOwner: bag.isCurrentRackPropertyOfCurrentUser,
-                 buttonClass: 'rackEditorResponsiveActions__button'
+                canUpdatePreview: bag.canUpdateRackImagePreview,
+                buttonClass: 'rackEditorResponsiveActions__button'
                }"></ng-container>
              }
              @if (touchInteractionMode && bag.isCurrentRackPropertyOfCurrentUser && bag.isCurrentRackEditable && currentAnalysisMode === analysisModes.off) {
@@ -199,6 +201,7 @@
               <div class="rackEditorFloatingOptions__panel rackEditorFloatingOptions__panel--actions">
                 <ng-container *ngTemplateOutlet="rackMediaActions; context: {
                   isOwner: bag.isCurrentRackPropertyOfCurrentUser,
+                  canUpdatePreview: bag.canUpdateRackImagePreview,
                   buttonClass: 'rackEditorFloatingOptions__actionButton'
                 }"></ng-container>
              </div>
@@ -333,6 +336,7 @@
   </div>
   <ng-template #rackMediaActions
                let-isOwner="isOwner"
+               let-canUpdatePreview="canUpdatePreview"
                let-buttonClass="buttonClass">
     <button mat-stroked-button
             type="button"
@@ -342,7 +346,7 @@
       <mat-icon>download</mat-icon>
       Download jpeg
     </button>
-    @if (isOwner) {
+    @if (canUpdatePreview) {
       <button mat-stroked-button
               type="button"
               [class]="buttonClass"

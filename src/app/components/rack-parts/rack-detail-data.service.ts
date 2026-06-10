@@ -158,6 +158,8 @@ export class RackDetailDataService extends SubManager {
     module: RackedModule
   }>();
   isCurrentRackPropertyOfCurrentUser$ = new BehaviorSubject<boolean>(false);
+  readonly isCurrentUserAdmin$: Observable<boolean>;
+  readonly canUpdateRackImagePreview$: Observable<boolean>;
   isCurrentRackEditable$ = new BehaviorSubject<boolean>(true);
   isCurrentRackPrivate$ = new BehaviorSubject<boolean>(false);
   userRequestedSmallerScale$ = new BehaviorSubject<boolean>(false);
@@ -187,6 +189,17 @@ export class RackDetailDataService extends SubManager {
     private analytics: AnalyticsService,
   ) {
     super();
+    this.isCurrentUserAdmin$ = this.backend.auth.hasAdminRole$().pipe(
+      shareReplay(1)
+    );
+    this.canUpdateRackImagePreview$ = combineLatest([
+      this.isCurrentRackPropertyOfCurrentUser$,
+      this.isCurrentUserAdmin$
+    ]).pipe(
+      map(([isOwner, isAdmin]) => isOwner || isAdmin),
+      distinctUntilChanged(),
+      shareReplay(1)
+    );
     
     // when user requests to remove a row, update data and backend
     this.requestRemoveRow$
@@ -378,18 +391,22 @@ export class RackDetailDataService extends SubManager {
           })
         );
       }),
-      // Upload the Blob to the backend
-      switchMap(imageBlob => {
-        const fileName = `${ this.singleRackData$.value.id }`;
-        return this.backend.storage.uploadRackImage(imageBlob, `${ fileName }.jpeg`);
-      }),
-      withLatestFrom(this.singleRackData$),
-      // Update the rack data with the new image filename before deleting the previous file.
-      switchMap(([uploadResult, rackData]) => {
-        const updatedRackData: Rack = {...rackData, image: uploadResult};
-        const previousImage = rackData.image;
-        return this.backend.update.rack(updatedRackData).pipe(
-          map(() => ({updatedRackData, previousImage}))
+      withLatestFrom(this.singleRackData$, this.isCurrentRackPropertyOfCurrentUser$, this.isCurrentUserAdmin$),
+      // Upload the Blob and persist the new filename using the owner path or the admin path.
+      switchMap(([imageBlob, rackData, isOwner, isAdmin]) => {
+        if (!isOwner && !isAdmin) {
+          SharedConstants.errorCustom(this.snackBar, 'Only the rack owner or an admin can update the preview image.');
+          return EMPTY;
+        }
+        const fileName = `${ rackData.id }`;
+        return this.backend.storage.uploadRackImage(imageBlob, `${ fileName }.jpeg`).pipe(
+          switchMap(uploadResult => {
+            const updatedRackData: Rack = {...rackData, image: uploadResult};
+            const previousImage = rackData.image;
+            return this.backend.update.rack(updatedRackData).pipe(
+              map(() => ({updatedRackData, previousImage}))
+            );
+          })
         );
       }),
       // remove the old image from the backend after the DB update succeeds

@@ -485,7 +485,7 @@ describe('SupabaseService - CRUD Operations', () => {
         locked: false,
         public: true,
         image: null,
-        author: {id: 'original-owner', username: 'test'}
+        author: {id: 'session-user', username: 'test'}
       };
 
       service.update.rack(rackData as any).subscribe({
@@ -525,6 +525,47 @@ describe('SupabaseService - CRUD Operations', () => {
         },
         error: (err) => {
           expect(err.message).toContain('update failed');
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should update non-owned racks for admins without changing authorid', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'admin-user'}));
+      spyOn(service.auth as any, 'hasAdminRole$').and.returnValue(of(true));
+      const selectSpy = jasmine.createSpy('select').and.returnValue(
+        Promise.resolve({data: [{id: 1}], error: null})
+      );
+      const eqSpy = jasmine.createSpy('eq').and.returnValue({select: selectSpy});
+      const updateSpy = jasmine.createSpy('update').and.returnValue({eq: eqSpy});
+      const upsertSpy = jasmine.createSpy('upsert');
+
+      spyOn(supabaseClient, 'from').and.returnValue({
+        update: updateSpy,
+        upsert: upsertSpy
+      });
+
+      service.update.rack({
+        id: 1,
+        name: 'Other Rack',
+        description: null,
+        rows: 2,
+        hp: 104,
+        locked: false,
+        public: true,
+        image: 'rack.jpeg',
+        author: {id: 'owner-user', username: 'owner'}
+      } as any).subscribe({
+        next: () => {
+          const callArgs = updateSpy.calls.first().args[0];
+          expect(callArgs.authorid).toBeUndefined();
+          expect(callArgs.image).toBe('rack.jpeg');
+          expect(eqSpy).toHaveBeenCalledWith('id', 1);
+          expect(upsertSpy).not.toHaveBeenCalled();
+          done();
+        },
+        error: (err) => {
+          fail(`Error: ${ err }`);
           done();
         }
       });

@@ -36,8 +36,8 @@ describe('RackDetailDataService media, rename, and duplication', () => {
     } as any;
   }
   
-  function build() {
-    const loggedUser$ = new BehaviorSubject<any>({id: 'u1'});
+  function build(options: {userId?: string; isAdmin?: boolean} = {}) {
+    const loggedUser$ = new BehaviorSubject<any>({id: options.userId ?? 'u1'});
     const backend = {
       update: {
         rack: jasmine.createSpy('update.rack').and.returnValue(of({data: [{id: 1}]})),
@@ -62,6 +62,12 @@ describe('RackDetailDataService media, rename, and duplication', () => {
       storage: {
         uploadRackImage: jasmine.createSpy('storage.uploadRackImage').and.returnValue(of('uploaded.jpeg')),
         deleteRackImage: jasmine.createSpy('storage.deleteRackImage').and.returnValue(of({}))
+      },
+      admin: {
+        setRackImageUrl: jasmine.createSpy('admin.setRackImageUrl').and.returnValue(of(void 0))
+      },
+      auth: {
+        hasAdminRole$: jasmine.createSpy('auth.hasAdminRole$').and.returnValue(of(options.isAdmin ?? false))
       }
     };
     const dialog = {
@@ -176,6 +182,37 @@ describe('RackDetailDataService media, rename, and duplication', () => {
     expect(backend.storage.deleteRackImage).not.toHaveBeenCalled();
     expect(backend.update.rack).toHaveBeenCalledWith(jasmine.objectContaining({id: 9, image: 'uploaded.jpeg'}));
   }));
+
+  it('allows non-owner admins to update the generated rack preview through the existing rack update path', fakeAsync(() => {
+    spyOn(SharedConstants, 'successCustom').and.callFake(() => {
+    });
+    const {service, backend} = build({userId: 'admin-user', isAdmin: true});
+    spyOn<any>(service, 'generateRackJpeg$').and.returnValue(of('data:image/jpeg;base64,YQ=='));
+    const refreshSpy = spyOn(service.updateSingleRackData$, 'next').and.callThrough();
+    service.singleRackData$.next(rack({id: 13, image: 'old.jpeg', author: {id: 'owner-user', username: 'owner'}}));
+    service.currentDownloadElementRef$.next({
+      screen: {nativeElement: {scrollWidth: 40, scrollHeight: 50}} as any
+    });
+
+    service.updateRackImagePreview$.next();
+    tick(360);
+
+    expect(backend.storage.uploadRackImage).toHaveBeenCalled();
+    expect(backend.update.rack).toHaveBeenCalledWith(jasmine.objectContaining({id: 13, image: 'uploaded.jpeg'}));
+    expect(backend.storage.deleteRackImage).toHaveBeenCalledWith('old.jpeg');
+    expect(refreshSpy).toHaveBeenCalledWith(13);
+    expect(SharedConstants.successCustom).toHaveBeenCalled();
+  }));
+
+  it('marks admins as allowed to update rack previews even when they do not own the rack', () => {
+    const {service} = build({userId: 'admin-user', isAdmin: true});
+    const emitted: boolean[] = [];
+    service.canUpdateRackImagePreview$.subscribe(value => emitted.push(value));
+
+    service.isCurrentRackPropertyOfCurrentUser$.next(false);
+
+    expect(emitted[emitted.length - 1]).toBeTrue();
+  });
 
   it('continues when the previous rack image is already missing from storage', fakeAsync(() => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {

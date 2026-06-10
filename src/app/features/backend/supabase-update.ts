@@ -149,11 +149,10 @@ export function createUpdateNamespace(
     rack: (data: RackMinimal) => getUserSession$().pipe(
       switchMap(user => {
         if (!user) return throwError(() => new Error('Authentication required'));
-        return rxFrom(
-          supabase.from(DbPaths.racks)
-            .upsert({
-              id: data.id,
-              authorid: user.id,
+        return hasAdminRole$().pipe(
+          take(1),
+          switchMap(isAdmin => {
+            const rackUpdate = {
               name: data.name,
               description: data.description,
               rows: data.rows,
@@ -161,7 +160,27 @@ export function createUpdateNamespace(
               locked: data.locked,
               public: data.public,
               image: data.image
-            }).select('id')
+            };
+            const isDifferentOwner = !!data.author?.id && data.author.id !== user.id;
+
+            if (isAdmin && isDifferentOwner) {
+              return rxFrom(
+                supabase.from(DbPaths.racks)
+                  .update(rackUpdate)
+                  .eq('id', data.id)
+                  .select('id')
+              );
+            }
+
+            return rxFrom(
+              supabase.from(DbPaths.racks)
+                .upsert({
+                  id: data.id,
+                  authorid: user.id,
+                  ...rackUpdate
+                }).select('id')
+            );
+          })
         );
       }),
       throwIfSupabaseError(),

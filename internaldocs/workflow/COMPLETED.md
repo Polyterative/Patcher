@@ -3,6 +3,8 @@
 > Archive of finished work. One-line summaries only. For strategy context see `../product/PRINCIPLES.md` and
 > `../product/ROADMAP.md`.
 
+- **2026-06-10** — feat(admin): add rack image upload/update flow for admins only — SSR admin API uploads raw files to the existing `racks` bucket, SECURITY DEFINER RPC updates `racks.image`, and the admin panel now includes a rack image detail card with tests.
+
 - **17-05-2026** — feat(public-profile): replace mat-paginator with Load More buttons in Racks and Patches tabs — accumulates results on load-more click; reset on profile change; +2 spec tests (loadMorePatches$, loadMoreRacks$); MatPaginatorModule → MatButtonModule in module (public-profile-data.service.ts, public-profile.component.ts/.html/.scss, public-profile.module.ts, spec)
 
 - **16-05-2026** — feat(forms): add preset quick-select chip overlay to mat-form-entity — @Input() presets: (string|number)[] triggers compact chip-style autocomplete panel on focus; wired to HP filter in module browser + HP/rows in rack creator (mat-form-entity.component.ts/.html/.scss, 2 spec tests added)
