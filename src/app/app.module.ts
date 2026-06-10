@@ -28,6 +28,7 @@ import {
   MatSnackBarConfig
 } from "@angular/material/snack-bar";
 import { SelectionPanelBridgeService } from 'src/app/components/patch-parts/selection-panel-bridge.service';
+import { TimeagoModule } from 'ngx-timeago';
 import { LazySentryErrorHandler } from './features/backbone/sentry-integration/lazy-sentry-error-handler';
 
 
@@ -67,6 +68,7 @@ const matDatepickerLocaleIT = {
     AppFeaturesModule,
     FeedbackBoxModule,
     BackboneModule,
+    TimeagoModule.forRoot(),
 //keep as last (for routes)
   ],
   providers:    [
