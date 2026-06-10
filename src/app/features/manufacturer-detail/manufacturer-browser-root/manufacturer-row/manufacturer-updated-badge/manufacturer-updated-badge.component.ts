@@ -4,6 +4,10 @@ import {
   Input
 } from '@angular/core';
 import { TimeagoModule } from 'ngx-timeago';
+import {
+  normalizeSupabaseUtcTimestamp,
+  SupabaseUtcTimestampPipe
+} from 'src/app/shared-interproject/pipes/supabase-utc-timestamp.pipe';
 
 
 const WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
@@ -17,7 +21,10 @@ const STALE_COLOR = '#111111';
   templateUrl: './manufacturer-updated-badge.component.html',
   styleUrls: ['./manufacturer-updated-badge.component.scss'],
   standalone: true,
-  imports: [TimeagoModule]
+  imports: [
+    TimeagoModule,
+    SupabaseUtcTimestampPipe
+  ]
 })
 export class ManufacturerUpdatedBadgeComponent {
   private _updatedAt: string | null = null;
@@ -38,7 +45,7 @@ export class ManufacturerUpdatedBadgeComponent {
       return DEFAULT_COLOR;
     }
     
-    const parsedMs = Date.parse(updatedAt);
+    const parsedMs = Date.parse(normalizeSupabaseUtcTimestamp(updatedAt));
     if (Number.isNaN(parsedMs)) {
       return DEFAULT_COLOR;
     }

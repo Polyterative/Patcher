@@ -16,6 +16,10 @@ describe('ManufacturerUpdatedBadgeComponent', () => {
     expect(component.updatedColor.startsWith('hsl(')).toBeTrue();
   });
   
+  it('treats naive backend timestamps as UTC when resolving recency color', () => {
+    expect(component.resolveUpdatedColor('2026-03-02T12:00:00', NOW_MS).startsWith('hsl(')).toBeTrue();
+  });
+  
   it('should use black for updates older than one week', () => {
     component.updatedAt = '2026-02-20T09:00:00.000Z';
     expect(component.updatedColor).toBe('#111111');

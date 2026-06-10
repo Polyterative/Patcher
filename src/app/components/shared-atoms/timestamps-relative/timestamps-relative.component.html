@@ -3,7 +3,7 @@
     <div infoBox
          infoText="Updated/Created"
          class="technical-item item"
-    >{{ data.updated|timeago }} - {{ data.created|timeago }}
+    >{{ data.updated | supabaseUtcTimestamp | timeago }} - {{ data.created | supabaseUtcTimestamp | timeago }}
     </div>
   }
 </div>

@@ -4,6 +4,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 import { TimeagoModule } from 'ngx-timeago';
 import { RecentActivityComponent } from './recent-activity.component';
+import { SupabaseUtcTimestampPipe } from 'src/app/shared-interproject/pipes/supabase-utc-timestamp.pipe';
 
 
 @NgModule({
@@ -12,7 +13,8 @@ import { RecentActivityComponent } from './recent-activity.component';
     CommonModule,
     MatIconModule,
     RouterLink,
-    TimeagoModule.forChild()
+    TimeagoModule.forChild(),
+    SupabaseUtcTimestampPipe
   ],
   exports: [RecentActivityComponent]
 })

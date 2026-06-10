@@ -1,5 +1,6 @@
 import { MinimalModule } from '../../models/module';
 import { compareModulesByNameAsc } from '../../shared-interproject/utils/module-sort-utils';
+import { normalizeSupabaseUtcTimestamp } from 'src/app/shared-interproject/pipes/supabase-utc-timestamp.pipe';
 
 
 export function toSortDirection(optionName: string | undefined): 'asc' | 'desc' {
@@ -36,8 +37,8 @@ export function applyHpCondition(moduleHp: number, hpValue: number, conditionId:
 }
 
 export function compareModulesByCreated(a: MinimalModule, b: MinimalModule, direction: 'asc' | 'desc'): number {
-  const aCreated = Date.parse(a.created || '');
-  const bCreated = Date.parse(b.created || '');
+  const aCreated = Date.parse(normalizeSupabaseUtcTimestamp(a.created || ''));
+  const bCreated = Date.parse(normalizeSupabaseUtcTimestamp(b.created || ''));
   const comparison = (Number.isNaN(aCreated) ? 0 : aCreated) - (Number.isNaN(bCreated) ? 0 : bCreated);
 
   if (comparison !== 0) {

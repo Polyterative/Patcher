@@ -5,7 +5,7 @@
       <div class="footer-grid gap2">
         <div class="footer-section">
           <div class="col gap1">
-            <app-label-value-showcase label="App last updated">{{ data.timestamp|timeago }}</app-label-value-showcase>
+            <app-label-value-showcase label="App last updated">{{ data.timestamp | supabaseUtcTimestamp | timeago }}</app-label-value-showcase>
             <app-label-value-showcase label="Version">
               <div class="col gap0 footer-version-block">
                 <div class="footer-version-number">{{ data.version }}</div>

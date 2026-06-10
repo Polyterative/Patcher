@@ -9,6 +9,7 @@
 import { ISelectable } from '../components/@smart/mat-form-entity/form-element-models';
 import { normalizeForSearch } from '../components/@smart/mat-form-entity/string-utils';
 import { MinimalModule } from '../../models/module';
+import { normalizeSupabaseUtcTimestamp } from 'src/app/shared-interproject/pipes/supabase-utc-timestamp.pipe';
 
 // ─── Sort ────────────────────────────────────────────────────────────────────
 
@@ -98,7 +99,7 @@ export function compareModulesByManufacturerDesc(a: MinimalModule, b: MinimalMod
 }
 
 function getModuleUpdatedTimestamp(m: MinimalModule): number {
-  const parsed = Date.parse(m?.updated || '');
+  const parsed = Date.parse(normalizeSupabaseUtcTimestamp(m?.updated || ''));
   return Number.isNaN(parsed) ? 0 : parsed;
 }
 

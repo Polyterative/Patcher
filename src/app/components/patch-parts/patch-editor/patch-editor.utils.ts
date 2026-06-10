@@ -12,6 +12,7 @@ import {
 } from 'src/app/models/connection';
 import { RackedModule } from 'src/app/models/module';
 import { Rack } from 'src/app/models/rack';
+import { normalizeSupabaseUtcTimestamp } from 'src/app/shared-interproject/pipes/supabase-utc-timestamp.pipe';
 import {
   DbModuleWithCollectionUpdated,
   DivergenceModuleInfo,
@@ -104,7 +105,7 @@ function getCollectionUpdatedValue(card: EditorModuleCard): string {
 
 function getCollectionUpdatedTimestamp(card: EditorModuleCard): number {
   const value = getCollectionUpdatedValue(card);
-  const timestamp = Date.parse(value);
+  const timestamp = Date.parse(normalizeSupabaseUtcTimestamp(value));
   return Number.isFinite(timestamp) ? timestamp : 0;
 }
 

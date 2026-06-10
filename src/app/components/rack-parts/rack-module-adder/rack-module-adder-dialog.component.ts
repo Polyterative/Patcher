@@ -39,6 +39,7 @@ import {
   RackModuleAdderInModel,
   RackModuleAdderOutModel
 } from './rack-module-adder-dialog.types';
+import { normalizeSupabaseUtcTimestamp } from 'src/app/shared-interproject/pipes/supabase-utc-timestamp.pipe';
 
 export type { RackModuleAdderInModel, RackModuleAdderOutModel };
 
@@ -145,7 +146,7 @@ export class RackModuleAdderDialogComponent extends SubManager implements OnInit
           name: string;
           id: string
         } = row => {
-            const name = `${ row.name } ( ${ row.hp } HP , ${ row.rows } row(s) , ${ this.timeagoPipe.transform(new Date(row.updated)) } )`;
+            const name = `${ row.name } ( ${ row.hp } HP , ${ row.rows } row(s) , ${ this.timeagoPipe.transform(normalizeSupabaseUtcTimestamp(row.updated)) } )`;
             
             return {
               id: row.id.toString(),
@@ -160,7 +161,7 @@ export class RackModuleAdderDialogComponent extends SubManager implements OnInit
           // add lastly updated rack if not already empty
           if (options.length > 0) {
             const lastUpdatedRack = x.sort((a, b) =>
-              new Date(b.updated).getTime() - new Date(a.updated).getTime())[0];
+              new Date(normalizeSupabaseUtcTimestamp(b.updated)).getTime() - new Date(normalizeSupabaseUtcTimestamp(a.updated)).getTime())[0];
             
             const firstRackAsOption: {
               name: string;
