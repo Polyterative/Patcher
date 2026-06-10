@@ -68,6 +68,9 @@ describe('RackDetailDataService', () => {
       storage: {
         uploadRackImage: jasmine.createSpy('uploadRackImage').and.returnValue(of('url')),
         deleteRackImage: jasmine.createSpy('deleteRackImage').and.returnValue(of({}))
+      },
+      auth: {
+        hasAdminRole$: jasmine.createSpy('hasAdminRole$').and.returnValue(of(false))
       }
     };
 

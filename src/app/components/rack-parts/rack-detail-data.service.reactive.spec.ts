@@ -71,6 +71,9 @@ describe('RackDetailDataService reactive flows', () => {
       storage: {
         uploadRackImage: jasmine.createSpy('storage.uploadRackImage').and.returnValue(of('new-image.jpg')),
         deleteRackImage: jasmine.createSpy('storage.deleteRackImage').and.returnValue(of({}))
+      },
+      auth: {
+        hasAdminRole$: jasmine.createSpy('auth.hasAdminRole$').and.returnValue(of(false))
       }
     };
     const dialog = {

@@ -2,9 +2,9 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
-  OnInit, OnDestroy
+  OnDestroy,
+  OnInit
 } from '@angular/core';
-import { Subject } from 'rxjs';
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { RackMinimal } from 'src/app/models/rack';
@@ -23,22 +23,16 @@ export class RackMinimalComponent implements OnInit, OnDestroy {
     ...defaultRackMinimalViewConfig,
     containImage: false
   };
-  
+
   constructor(
     public userManagerService: UserManagementService,
     public dataService: RackDetailDataService
   ) {}
-  
-  ngOnInit(): void {
-  }
-  
-  protected destroyEvent$ = new Subject<void>();
-  
-  ngOnDestroy(): void {
-    this.destroyEvent$.next();
-    this.destroyEvent$.complete();
-    
-  }
+
+  ngOnInit(): void {}
+
+  ngOnDestroy(): void {}
+
 }
 
 export interface RackMinimalViewConfig {

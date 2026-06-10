@@ -1,12 +1,10 @@
-import {
-  defaultRackMinimalViewConfig,
-  RackMinimalComponent,
-  RackMinimalViewConfig
-} from './rack-minimal.component';
+import { BehaviorSubject } from 'rxjs';
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
-import { RackMinimal } from 'src/app/models/rack';
-import { BehaviorSubject } from 'rxjs';
+import {
+  defaultRackMinimalViewConfig,
+  RackMinimalComponent
+} from './rack-minimal.component';
 
 function mockUserMgmt(): UserManagementService {
   return {} as unknown as UserManagementService;
@@ -14,22 +12,10 @@ function mockUserMgmt(): UserManagementService {
 
 function mockDataService(): RackDetailDataService {
   return {
-    singleRackData$: new BehaviorSubject(undefined)
+    singleRackData$: new BehaviorSubject(undefined),
+    updateSingleRackData$: {next: jasmine.createSpy('next')} as any,
+    updateSingleRackByPublicId$: {next: jasmine.createSpy('next')} as any
   } as unknown as RackDetailDataService;
-}
-
-function makeRackMinimal(): RackMinimal {
-  return {
-    id: 1,
-    name: 'My Rack',
-    hp: 84,
-    rows: 3,
-    locked: false,
-    public: true,
-    created: '2024-01-01',
-    updated: '2024-01-01',
-    author: { id: 'u1', username: 'tester', avatar_url: null }
-  } as unknown as RackMinimal;
 }
 
 describe('RackMinimalComponent', () => {
@@ -53,25 +39,6 @@ describe('RackMinimalComponent', () => {
     });
   });
 
-  describe('ngOnInit', () => {
-    it('does not throw', () => {
-      comp.data = makeRackMinimal();
-      expect(() => comp.ngOnInit()).not.toThrow();
-    });
-  });
-
-  describe('ngOnDestroy', () => {
-    it('does not throw', () => {
-      expect(() => comp.ngOnDestroy()).not.toThrow();
-    });
-
-    it('completes destroyEvent$ stream', () => {
-      let completed = false;
-      comp['destroyEvent$'].subscribe({ complete: () => completed = true });
-      comp.ngOnDestroy();
-      expect(completed).toBeTrue();
-    });
-  });
 });
 
 describe('defaultRackMinimalViewConfig', () => {
