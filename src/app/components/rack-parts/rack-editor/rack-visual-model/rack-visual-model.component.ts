@@ -136,6 +136,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   private dragImageAnimationSuppressedModule: RackedModule | null = null;
   private dropRevealSuppressedModule: RackedModule | null = null;
   private dropRevealAnimatingModule: RackedModule | null = null;
+  private readonly rackModuleTrackKeys = new WeakMap<RackedModule, number | string>();
   private touchLongPressTimerId: number | null = null;
   private touchLongPressModule: RackedModule | null = null;
   private touchLongPressStartPoint: {x: number; y: number} | null = null;
@@ -261,6 +262,17 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
 
   moduleDomKey(rackedModule: RackedModule): string {
     return `${ rackedModule.rackingData.id }-${ rackedModule.module.id }-${ rackedModule.rackingData.row }-${ rackedModule.rackingData.column }`;
+  }
+
+  rackModuleTrackKey(rackedModule: RackedModule): number | string {
+    const existingKey = this.rackModuleTrackKeys.get(rackedModule);
+    if (existingKey != null) {
+      return existingKey;
+    }
+
+    const key = rackedModule.rackingData.id ?? this.moduleDomKey(rackedModule);
+    this.rackModuleTrackKeys.set(rackedModule, key);
+    return key;
   }
 
   isSignalSourceModule(rackedModule: RackedModule, analysisMode: RackAnalysisMode): boolean {

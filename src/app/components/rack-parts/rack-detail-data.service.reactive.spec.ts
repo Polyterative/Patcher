@@ -174,6 +174,41 @@ describe('RackDetailDataService reactive flows', () => {
     expect(SharedConstants.successCustom).toHaveBeenCalled();
     expect(SharedConstants.errorCustom).toHaveBeenCalled();
   });
+
+  it('does not clear a row while optimistic modules are still syncing', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
+    });
+    const {service, backend} = build();
+    const optimisticModule = moduleInRack(undefined as any, 0, 0);
+    service.singleRackData$.next(rack({rows: 1}));
+    service.rowedRackedModules$.next([[optimisticModule]]);
+
+    service.requestClearRow$.next(0);
+
+    expect(backend.delete.rackedModule).not.toHaveBeenCalled();
+    expect(service.rowedRackedModules$.value[0]).toEqual([optimisticModule]);
+    expect(SharedConstants.errorCustom).toHaveBeenCalled();
+  });
+
+  it('keeps successfully cleared modules removed when one row clear delete fails', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
+    });
+    const {service, backend} = build();
+    const firstModule = moduleInRack(1, 0, 0);
+    const failingModule = moduleInRack(2, 0, 1);
+    backend.delete.rackedModule.and.callFake((id: number) => id === 2
+      ? throwError(() => new Error('delete failed'))
+      : of({})
+    );
+    service.singleRackData$.next(rack({rows: 1}));
+    service.rowedRackedModules$.next([[firstModule, failingModule]]);
+
+    service.requestClearRow$.next(0);
+
+    expect(service.rowedRackedModules$.value[0].map((module: any) => module.rackingData.id)).toEqual([2]);
+    expect(service.rowedRackedModules$.value[0][0].rackingData.column).toBe(0);
+    expect(SharedConstants.errorCustom).toHaveBeenCalled();
+  });
   
   it('loads rack data on updateSingleRackData$ and recalculates ownership/status', () => {
     const {service, backend} = build();
@@ -282,14 +317,18 @@ describe('RackDetailDataService reactive flows', () => {
     const rows = [[moduleInRack(1, 0, 0), moduleInRack(2, 0, 1)]];
     service.rowedRackedModules$.next(rows as any);
     const syncSpy = spyOn(service.requestRackedModulesDbSync$, 'next').and.callThrough();
+    const rackRefreshSpy = spyOn(service.singleRackData$, 'next').and.callThrough();
     
     service.requestRackedModuleRemoval$.next(rows[0][0]);
     expect(backend.delete.rackedModule).toHaveBeenCalled();
+    expect(rackRefreshSpy).not.toHaveBeenCalled();
+    expect(service.rowedRackedModules$.value![0].map((module: any) => module.rackingData.id)).toEqual([2]);
     
     service.requestRackedModuleDuplication$.next(rows[0][0]);
     expect(syncSpy).toHaveBeenCalled();
     
     backend.update.rackedModules.and.returnValue(throwError(() => new Error('sync fail')));
+    service.rowedRackedModules$.next([[moduleInRack(4, 0, 0)]] as any);
     service.requestRackedModulesDbSync$.next();
     expect(SharedConstants.errorCustom).toHaveBeenCalled();
   });

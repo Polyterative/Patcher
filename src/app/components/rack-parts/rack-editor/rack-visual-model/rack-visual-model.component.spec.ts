@@ -109,6 +109,22 @@ describe('RackVisualModelComponent', () => {
     expect(badge?.textContent?.trim()).toBe('14HP');
   });
 
+  it('tracks persisted rack modules by racking id instead of object identity or coordinates', () => {
+    const cloneOfSameRackModule = makeRackedModule(10, 1, 3);
+
+    expect(component.rackModuleTrackKey(moduleRef)).toBe(10);
+    expect(component.rackModuleTrackKey(cloneOfSameRackModule)).toBe(10);
+  });
+
+  it('keeps an optimistic rack module track key stable after a persisted id is assigned', () => {
+    const optimisticModule = makeRackedModule(undefined as any, 0, 1);
+
+    const optimisticKey = component.rackModuleTrackKey(optimisticModule);
+    optimisticModule.rackingData.id = 44;
+
+    expect(component.rackModuleTrackKey(optimisticModule)).toBe(optimisticKey);
+  });
+
   it('hides the per-module HP badge during rack image capture', () => {
     component.suppressHpIndicators = true;
     fixture.detectChanges();

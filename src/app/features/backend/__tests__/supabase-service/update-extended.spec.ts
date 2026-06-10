@@ -235,6 +235,7 @@ describe('SupabaseService - update extended', () => {
     it('should upsert existing modules (with defined id)', (done) => {
       const mock = chainable({data: null, error: null});
       const upsertSpy = spyOn(mock, 'upsert').and.returnValue(mock);
+      const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
       spyOn(supabaseClient, 'from').and.returnValue(mock);
       
       const data = [{
@@ -252,6 +253,7 @@ describe('SupabaseService - update extended', () => {
             column: 0,
             selected_panel_id: null
           }]);
+          expect(selectSpy).toHaveBeenCalledWith('id,moduleid,rackid,row,column,selected_panel_id');
           done();
         },
         error: (err) => {
@@ -310,6 +312,7 @@ describe('SupabaseService - update extended', () => {
     it('should insert new modules when rackingData.id is undefined', (done) => {
       const mock = chainable({data: null, error: null});
       const insertSpy = spyOn(mock, 'insert').and.returnValue(mock);
+      const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
       spyOn(supabaseClient, 'from').and.returnValue(mock);
       
       const data = [{
@@ -326,6 +329,7 @@ describe('SupabaseService - update extended', () => {
             column: 2,
             selected_panel_id: null
           }]);
+          expect(selectSpy).toHaveBeenCalledWith('id,moduleid,rackid,row,column,selected_panel_id');
           done();
         },
         error: (err) => {

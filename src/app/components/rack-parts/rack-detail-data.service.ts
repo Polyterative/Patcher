@@ -175,6 +175,7 @@ export class RackDetailDataService extends SubManager {
   requestAddNewRow$ = new Subject<void>();
   requestRemoveRow$ = new Subject<void>();
   requestMoveRow$ = new Subject<{rowId: number; direction: 'up' | 'down'}>();
+  requestClearRow$ = new Subject<number>();
   requestDeleteRow$ = new Subject<number>();
   
   requestRackedModulesDbSync$ = new Subject<void>(); // updates the backend with the current state of the rack
@@ -398,45 +399,79 @@ export class RackDetailDataService extends SubManager {
         this.updateSingleRackData$.next(this.singleRackData$.value.id);
       });
     
-    // when user requests to clear a row, remove all modules from that row and update backend
     this.requestRackedModuleRowClearing$
       .pipe(
+        map(rackedModule => rackedModule.rackingData.row),
+        filter((rowId): rowId is number => rowId != null),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(rowId => this.requestClearRow$.next(rowId));
+
+    // when user requests to clear a row, remove all modules from that row and update backend
+    this.requestClearRow$
+      .pipe(
         withLatestFrom(this.rowedRackedModules$, this.singleRackData$),
-        switchMap(([rackedModule, allRackModule, _rack]) => {
-          const rackModules: RackedModule[][] = cloneRackData(allRackModule);
-          const modulesInRow: RackedModule[] = cloneRackData(rackModules[rackedModule.rackingData.row]);
+        switchMap(([rowId, allRackModule, rack]) => {
+          if (!allRackModule) {
+            return EMPTY;
+          }
+
+          const modulesInRow: RackedModule[] = cloneRackData(allRackModule?.[rowId] ?? []);
           
           if (modulesInRow && modulesInRow.length > 0) {
-            modulesInRow.forEach(module => {
-              this.removeRackedModuleFromRack(rackModules, module);
-            });
-            
-            // Update the UI before submitting to the backend. This is currently buggy in the user interface.
-            // The goal is to perform all changes without reloading the entire page to avoid layout shifting and flashing.
-            
-            return forkJoin(modulesInRow.map(module => this.backend.delete.rackedModule(module.rackingData.id))).pipe(
-              tap(() => SharedConstants.successCustom(this.snackBar, `${ modulesInRow.length } module${ modulesInRow.length === 1 ? '' : 's' } unracked from this row.`)),
+            if (isAnyModuleWithoutRackingId([modulesInRow])) {
+              SharedConstants.errorCustom(this.snackBar, 'Rack changes are still syncing. Try clearing this row again in a moment.');
+              return EMPTY;
+            }
+
+            return forkJoin(modulesInRow.map(module => this.backend.delete.rackedModule(module.rackingData.id).pipe(
+              map(() => ({
+                id: module.rackingData.id,
+                ok: true
+              })),
               catchError((err) => {
-                console.error(`Error clearing row: ${ err }`);
-                SharedConstants.errorCustom(this.snackBar, 'Row clear failed — the database returned an error. Refresh the page and try again.');
-                  return of(undefined);
+                console.error(`Error clearing row module: ${ err }`);
+                return of({
+                  id: module.rackingData.id,
+                  ok: false
+                });
+              })
+            ))).pipe(
+              tap(results => {
+                const deletedIds = new Set(results.filter(result => result.ok).map(result => result.id));
+                const failedCount = results.length - deletedIds.size;
+                const rackModules: RackedModule[][] = cloneRackData(this.rowedRackedModules$.value ?? []);
+                rackModules[rowId] = (rackModules[rowId] ?? []).filter(module => !deletedIds.has(module.rackingData.id));
+                this.updateModulesColumnIds(rackModules, rowId);
+                this.rowedRackedModules$.next(rackModules);
+
+                this.analytics.capture('rack.row_cleared', {
+                  rack_id: rack?.id,
+                  row: rowId,
+                  cleared_count: deletedIds.size,
+                  failed_count: failedCount
+                });
+
+                if (failedCount > 0) {
+                  if (deletedIds.size > 0) {
+                    this.requestRackedModulesDbSync$.next();
+                  }
+                  SharedConstants.errorCustom(this.snackBar, `${ failedCount } module${ failedCount === 1 ? '' : 's' } could not be unracked. Try again in a moment.`);
+                } else {
+                  SharedConstants.successCustom(this.snackBar, `${ modulesInRow.length } module${ modulesInRow.length === 1 ? '' : 's' } unracked from this row.`);
                 }
-              )
+              })
             );
           } else {
             SharedConstants.errorCustom(this.snackBar, 'This row type cannot be cleared.');
             
           }
           
-          return of(undefined);
+          return EMPTY;
         }),
-        withLatestFrom(this.singleRackData$),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(([_, rackData]) => {
-        this.analytics.capture('rack.row_cleared', { rack_id: rackData?.id });
-        this.singleRackData$.next(rackData);
-      });
+      .subscribe();
     
     // when user requests to download rack image, download it using HTML2Canvas
     this.downloadRackImageToUserComputer$.pipe(
@@ -839,17 +874,15 @@ export class RackDetailDataService extends SubManager {
           );
         }),
         filter(x => x !== undefined),
-        withLatestFrom(this.singleRackData$),
         takeUntil(this.destroy$)
       )
-      .subscribe(([result, rackData]) => {
+      .subscribe((result) => {
         if (result) {
           this.analytics.capture('rack.module_removed', {
             rack_id:   result.rackId,
             module_id: result.moduleId
           });
         }
-        this.singleRackData$.next(rackData);
       });
     
     // when request to duplicate module is received, find module and duplicate it, then update the local rack data
@@ -1158,7 +1191,7 @@ export class RackDetailDataService extends SubManager {
     }
   }
   
-  private callBackendToUpdateModulesOfRack(rackModules: RackedModule[][], rack: Rack) {
+  private callBackendToUpdateModulesOfRack(rackModules: RackedModule[][], _rack: Rack) {
     const modules = rackModules.flatMap(row => row);
 
     if (modules.length === 0) {
@@ -1167,12 +1200,43 @@ export class RackDetailDataService extends SubManager {
 
     return this.backend.update.rackedModules(modules)
       .pipe(
-        tap(() => {
-          if (isAnyModuleWithoutRackingId(rackModules)) {
-            this.singleRackData$.next(rack);
-          }
-        })
+        tap(response => this.applyPersistedRackingIds(response, rackModules))
       );
+  }
+
+  private applyPersistedRackingIds(response: unknown, rackModules: RackedModule[][]): void {
+    const persistedRows = (response as {
+      data?: Array<{
+        id?: number;
+        moduleid?: number;
+        rackid?: number;
+        row?: number;
+        column?: number;
+        selected_panel_id?: number | null;
+      }>;
+    } | undefined)?.data ?? [];
+
+    if (persistedRows.length === 0 || !isAnyModuleWithoutRackingId(rackModules)) {
+      return;
+    }
+
+    const unsyncedModules = rackModules.flatMap(row => row)
+      .filter(module => module.rackingData.id === undefined);
+
+    for (const module of unsyncedModules) {
+      const persistedRow = persistedRows.find(row =>
+        row.id != null
+        && row.moduleid === module.rackingData.moduleid
+        && row.rackid === module.rackingData.rackid
+        && row.row === module.rackingData.row
+        && row.column === module.rackingData.column
+      );
+
+      if (persistedRow?.id != null) {
+        module.rackingData.id = persistedRow.id;
+        module.rackingData.selectedPanelId = persistedRow.selected_panel_id ?? null;
+      }
+    }
   }
 
   private persistRackRowsAndModules(rackModules: RackedModule[][], rack: Rack) {
@@ -1282,8 +1346,8 @@ export class RackDetailDataService extends SubManager {
     const moduleRow: RackedModule[] = rackedModules[deepCopiedRackedModule.rackingData.row];
     
     if (moduleRow) {
-      // insert deep copied module into the array close to the original module
-      const columnCoordinate: number = deepCopiedRackedModule.rackingData.column + 1;
+      const sourceIndex = moduleRow.findIndex(module => module.rackingData.id === rackedModule.rackingData.id);
+      const columnCoordinate: number = (sourceIndex >= 0 ? sourceIndex : deepCopiedRackedModule.rackingData.column) + 1;
       moduleRow.splice(
         columnCoordinate, 0, deepCopiedRackedModule
       );
