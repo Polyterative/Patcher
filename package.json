@@ -37,6 +37,7 @@
     "test:e2e:screenshots": "playwright test --reporter=list --workers=8 --project=chromium-screenshots e2e/screenshots/auth-major-area-screenshots.spec.ts",
     "pretest:e2e:ci": "playwright install chromium",
     "test:e2e:ci": "playwright test --reporter=list --workers=1",
+    "test:e2e:prod": "pnpm build && playwright test --config=playwright.prod.config.ts",
     "backup:data": "bash scripts/backup-data.sh",
     "backup:data:dry-run": "bash scripts/backup-data.sh --dry-run",
     "restore:data": "bash scripts/restore-data.sh",
