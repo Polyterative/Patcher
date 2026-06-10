@@ -38,6 +38,7 @@ import {
   ConfirmDialogDataInModel,
   ConfirmDialogDataOutModel
 } from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
+import { AnalyticsService } from '../analytics-integration/analytics.service';
 import { SentryContextService } from '../sentry-integration/sentry-context.service';
 
 
@@ -105,7 +106,8 @@ export class UserManagementService extends SubManager {
     private backend: SupabaseService,
     private userBoxService: UserDataHandlerService,
     private dialog: MatDialog,
-    private sentryContext: SentryContextService
+    private sentryContext: SentryContextService,
+    private analytics: AnalyticsService
   ) {
     super();
     
@@ -127,6 +129,7 @@ export class UserManagementService extends SubManager {
     this.initializeChangePasswordHandler();
     this.initializeTogglePasswordFormHandler();
     this.initializeSentryIdentityHandler();
+    this.initializeAnalyticsIdentityHandler();
   }
   
   private initializeUserBoxHandler(): void {
@@ -157,6 +160,25 @@ export class UserManagementService extends SubManager {
       });
   }
   
+  private initializeAnalyticsIdentityHandler(): void {
+    // Tie PostHog distinct_id to the Supabase user so funnels and retention
+    // join across sessions/devices. Reset on logout to drop identity from
+    // the local SDK state.
+    this.loggedUserFullProfile$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(profile => {
+        if (profile && profile.id) {
+          this.analytics.identify({
+            id:       profile.id,
+            email:    profile.email,
+            username: profile.username
+          });
+        } else {
+          this.analytics.reset();
+        }
+      });
+  }
+
   private initializeProfileFetchHandler(): void {
     // Update loggedUserProfile$ when loggedUser$ changes
     // This handles session restoration (page loads) where we have a user from session
