@@ -8,6 +8,7 @@ import {
 } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import {
   of,
   Subject
@@ -46,7 +47,8 @@ describe('ModuleBrowserRootComponent', () => {
       declarations: [ModuleBrowserRootComponent],
       imports: [
         CommonModule,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        NoopAnimationsModule
       ],
       providers: [
         ModuleBrowserDataService,

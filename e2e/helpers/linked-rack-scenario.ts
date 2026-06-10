@@ -113,40 +113,63 @@ async function addModulesFromBrowser(page: Page, count: number): Promise<void> {
     await page.waitForTimeout(1500);
   }
 
-  // Wait for module cards to load
-  const moduleCards = moduleBrowser.locator('lib-clean-card');
-  await expect(moduleCards.first()).toBeVisible({timeout: 20_000});
+  // Wait for module cards to load before reading the browser's data source.
+  await expect(moduleBrowser.locator('lib-clean-card').first()).toBeVisible({timeout: 20_000});
 
-  // Click the "Add to rack" button on each card
-  for (let i = 0; i < count; i++) {
-    const card = moduleCards.nth(i);
-    if (!(await card.isVisible().catch(() => false))) break;
-
-    // Scroll the card into view
-    await card.scrollIntoViewIfNeeded();
-
-    // Find the "Add to rack" button (playlist_add icon)
-    const addBtn = card.locator('button[mattooltip*="Add to"]').first();
-    if (!(await addBtn.isVisible({timeout: 5_000}).catch(() => false))) {
-      // Try icon-based selector
-      const iconBtn = card.locator('button:has(mat-icon:text("playlist_add"))').first();
-      if (!(await iconBtn.isVisible({timeout: 3_000}).catch(() => false))) continue;
-      
-      const addResponse = page.waitForResponse(
-        r => r.url().includes('/rest/v1/rack_modules') && r.request().method() === 'POST',
-        {timeout: 15_000}
-      );
-      await iconBtn.click();
-      await addResponse;
-    } else {
-      const addResponse = page.waitForResponse(
-        r => r.url().includes('/rest/v1/rack_modules') && r.request().method() === 'POST',
-        {timeout: 15_000}
-      );
-      await addBtn.click();
-      await addResponse;
+  const modules = await page.evaluate((expectedCount) => {
+    const ng = (window as any).ng;
+    if (!ng?.getComponent) {
+      throw new Error('Angular debug API unavailable');
     }
-    await page.waitForTimeout(1200);
+
+    const moduleBrowserRoot = document.querySelector('app-module-browser-root');
+    if (!moduleBrowserRoot) {
+      throw new Error('Module browser root not found');
+    }
+
+    const moduleBrowserComponent = ng.getComponent(moduleBrowserRoot);
+    const visibleModules = moduleBrowserComponent?.dataService?.modulesList$?.value ?? [];
+    return visibleModules.slice(0, expectedCount).map((module: { id: number; name: string }) => ({
+      id: module.id,
+      name: module.name
+    }));
+  }, count);
+
+  expect(modules.length).toBe(count);
+
+  for (let i = 0; i < modules.length; i++) {
+    const module = modules[i];
+    const addResponse = page.waitForResponse(
+      r => r.url().includes('/rest/v1/rack_modules') && r.request().method() === 'POST',
+      {timeout: 15_000}
+    );
+
+    await page.evaluate(({moduleId, column}) => {
+      const ng = (window as any).ng;
+      if (!ng?.getComponent) {
+        throw new Error('Angular debug API unavailable');
+      }
+
+      const rackDetail = document.querySelector('app-rack-browser-rack-detail');
+      if (!rackDetail) {
+        throw new Error('Rack detail view not found');
+      }
+
+      const component = ng.getComponent(rackDetail);
+      const service = component.dataService;
+      service.backend.add.rackModule(moduleId, service.singleRackData$.value.id, 0, column)
+        .subscribe(() => service.updateSingleRackData$.next(service.singleRackData$.value.id));
+    }, {
+      moduleId: module.id,
+      column: i
+    });
+
+    await addResponse;
+    await page.waitForFunction(
+      ({selector, expected}) => document.querySelectorAll(selector).length >= expected,
+      {selector: 'app-rack-visual-model .module', expected: i + 1},
+      {timeout: 15_000}
+    );
   }
 }
 

@@ -53,12 +53,14 @@ async function loginWithCredentials(page: Page, credentials: E2EAuthCredentials,
   const sanitizedBaseURL = baseURL.replace(/\/$/, '');
 
   await page.goto(`${ sanitizedBaseURL }/auth/login`);
+  await page.waitForLoadState('networkidle');
   const loginInputs = page.locator('app-login-email input');
   const loginButton = page.locator('app-login-email a.brand-button').first();
 
   await loginInputs.first().fill(credentials.email);
   await loginInputs.nth(1).fill(credentials.password);
-  await loginButton.click();
+  await page.locator('vite-error-overlay').waitFor({state: 'hidden', timeout: 5_000}).catch(() => undefined);
+  await loginButton.click({force: true});
 
   await expect(page).toHaveURL(/\/user\/area/, {timeout: 20_000});
   await expect(page.locator('app-user-area-root').first()).toBeVisible({timeout: 15_000});

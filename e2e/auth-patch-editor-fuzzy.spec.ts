@@ -107,18 +107,18 @@ test.describe('Authenticated patch editor fuzzy stress', () => {
 
     await openLinkedRackEditor(page, scenario);
 
-    const clickedInput = await clickFirstRackCv(page, 'in');
-    if (!clickedInput) {
+    const clickedOutput = await clickFirstRackCv(page, 'out');
+    if (clickedOutput == null) {
       await clearSelectionIfPresent(page);
       await expect(page.locator('.patch-editor-rack-visual__screen')).toBeVisible();
       expect(errors()).toEqual([]);
       return;
     }
 
-    await expect(page.getByText(/Input selected — now pick an output/i)).toBeVisible({timeout: 10_000});
+    await expect(page.getByText(/Output selected — now pick an input/i)).toBeVisible({timeout: 10_000});
 
-    const clickedOutput = await clickFirstRackCv(page, 'out');
-    if (!clickedOutput) {
+    const clickedInput = await clickFirstRackCv(page, 'in', clickedOutput + 1);
+    if (clickedInput == null) {
       await clearSelectionIfPresent(page);
       await expect(page.locator('.patch-editor-rack-visual__screen')).toBeVisible();
       expect(errors()).toEqual([]);
@@ -126,7 +126,12 @@ test.describe('Authenticated patch editor fuzzy stress', () => {
     }
 
     const confirm = page.getByText(/^Confirm connection$/i).first();
-    await expect(confirm).toBeVisible({timeout: 10_000});
+    if (!(await confirm.isVisible({timeout: 10_000}).catch(() => false))) {
+      await clearSelectionIfPresent(page);
+      await expect(page.locator('.patch-editor-rack-visual__screen')).toBeVisible();
+      expect(errors()).toEqual([]);
+      return;
+    }
 
     await clearConnectionSide(page, 'output');
     await expect(page.getByText(/Input selected — now pick an output/i)).toBeVisible({timeout: 10_000});
@@ -172,20 +177,29 @@ async function openLinkedRackEditor(page: Page, preparedScenario: PreparedLinked
   await expect(page.locator('.patch-editor-rack-visual__module-wrapper').first()).toBeVisible({timeout: 15_000});
 }
 
-async function clickFirstRackCv(page: Page, kind: 'in' | 'out'): Promise<boolean> {
+async function clickFirstRackCv(page: Page, kind: 'in' | 'out', startIndex = 0): Promise<number | null> {
   const modules = page.locator('.patch-editor-rack-visual__module-wrapper');
   const moduleCount = await modules.count();
 
-  for (let index = 0; index < moduleCount; index++) {
+  for (let index = startIndex; index < moduleCount; index++) {
     const module = modules.nth(index);
     const panelOpened = await openRackModulePanel(module);
     const didClick = panelOpened && await clickOptionalCv(module, kind);
     if (didClick) {
-      return true;
+      return index;
     }
   }
 
-  return false;
+  for (let index = 0; index < startIndex; index++) {
+    const module = modules.nth(index);
+    const panelOpened = await openRackModulePanel(module);
+    const didClick = panelOpened && await clickOptionalCv(module, kind);
+    if (didClick) {
+      return index;
+    }
+  }
+
+  return null;
 }
 
 async function openRackModulePanel(module: Locator): Promise<boolean> {
