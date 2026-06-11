@@ -135,7 +135,7 @@ describe('RackDetailDataService media, rename, and duplication', () => {
     expect(service.analysisMode$.value).toBe(RACK_ANALYSIS_MODES.power);
   }));
   
-  it('updates rack preview image, persists the new filename, deletes previous image, and refreshes rack', fakeAsync(() => {
+  it('updates rack preview image locally without refreshing rack modules', fakeAsync(() => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {
     });
     const {service, backend} = build();
@@ -145,6 +145,8 @@ describe('RackDetailDataService media, rename, and duplication', () => {
     });
     const refreshSpy = spyOn(service.updateSingleRackData$, 'next').and.callThrough();
     service.singleRackData$.next(rack({id: 7, image: 'old.jpeg'}));
+    service.rowedRackedModules$.next([[mod(1, 0, 0)]]);
+    const rowReference = service.rowedRackedModules$.value[0];
     service.currentDownloadElementRef$.next({
       screen: {nativeElement: {scrollWidth: 20, scrollHeight: 30}} as any
     });
@@ -160,7 +162,9 @@ describe('RackDetailDataService media, rename, and duplication', () => {
     expect(backend.storage.uploadRackImage).toHaveBeenCalled();
     expect(backend.update.rack).toHaveBeenCalledWith(jasmine.objectContaining({id: 7, image: 'uploaded.jpeg'}));
     expect(backend.storage.deleteRackImage).toHaveBeenCalledWith('old.jpeg');
-    expect(refreshSpy).toHaveBeenCalledWith(7);
+    expect(refreshSpy).not.toHaveBeenCalled();
+    expect(service.singleRackData$.value?.image).toBe('uploaded.jpeg');
+    expect(service.rowedRackedModules$.value[0]).toBe(rowReference);
     expect(SharedConstants.successCustom).toHaveBeenCalled();
     expect(service.analysisMode$.value).toBe(RACK_ANALYSIS_MODES.function);
     expect(service.isRackImageCaptureInProgress$.value).toBeFalse();
@@ -189,7 +193,6 @@ describe('RackDetailDataService media, rename, and duplication', () => {
     });
     const {service, backend} = build({userId: 'admin-user', isAdmin: true});
     spyOn<any>(service, 'generateRackJpeg$').and.returnValue(of('data:image/jpeg;base64,YQ=='));
-    const refreshSpy = spyOn(service.updateSingleRackData$, 'next').and.callThrough();
     service.singleRackData$.next(rack({id: 13, image: 'old.jpeg', author: {id: 'owner-user', username: 'owner'}}));
     service.currentDownloadElementRef$.next({
       screen: {nativeElement: {scrollWidth: 40, scrollHeight: 50}} as any
@@ -201,7 +204,7 @@ describe('RackDetailDataService media, rename, and duplication', () => {
     expect(backend.storage.uploadRackImage).toHaveBeenCalled();
     expect(backend.update.rack).toHaveBeenCalledWith(jasmine.objectContaining({id: 13, image: 'uploaded.jpeg'}));
     expect(backend.storage.deleteRackImage).toHaveBeenCalledWith('old.jpeg');
-    expect(refreshSpy).toHaveBeenCalledWith(13);
+    expect(service.singleRackData$.value?.image).toBe('uploaded.jpeg');
     expect(SharedConstants.successCustom).toHaveBeenCalled();
   }));
 
@@ -221,7 +224,6 @@ describe('RackDetailDataService media, rename, and duplication', () => {
     const {service, backend} = build();
     backend.storage.deleteRackImage.and.returnValue(throwError(() => ({status: 404, message: 'Object not found'})));
     spyOn<any>(service, 'generateRackJpeg$').and.returnValue(of('data:image/jpeg;base64,YQ=='));
-    const refreshSpy = spyOn(service.updateSingleRackData$, 'next').and.callThrough();
     service.singleRackData$.next(rack({id: 11, image: 'missing.jpeg'}));
     service.currentDownloadElementRef$.next({
       screen: {nativeElement: {scrollWidth: 40, scrollHeight: 50}} as any
@@ -231,7 +233,7 @@ describe('RackDetailDataService media, rename, and duplication', () => {
     tick(360);
 
     expect(backend.update.rack).toHaveBeenCalledWith(jasmine.objectContaining({id: 11, image: 'uploaded.jpeg'}));
-    expect(refreshSpy).toHaveBeenCalledWith(11);
+    expect(service.singleRackData$.value?.image).toBe('uploaded.jpeg');
     expect(SharedConstants.successCustom).toHaveBeenCalled();
   }));
 
