@@ -1,14 +1,34 @@
 import { ManufacturerBrowserRootComponent } from './manufacturer-browser-root.component';
 import { ManufacturerBrowserRootDataService } from './manufacturer-browser-root-data.service';
 import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
-import { Subject, BehaviorSubject } from 'rxjs';
+import { CommonModule } from '@angular/common';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { FormControl } from '@angular/forms';
+import { Subject, BehaviorSubject, of } from 'rxjs';
 import { TestBed } from '@angular/core/testing';
+import { AutoContentLoadingIndicatorComponent } from 'src/app/shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator/auto-content-loading-indicator.component';
 
 function mockDataService(): ManufacturerBrowserRootDataService {
   return {
+    fields: {
+      search: {
+        label: 'Search manufacturer...',
+        control: new FormControl<string>('', {nonNullable: true}),
+      },
+      order: {
+        label: 'Order by',
+        control: new FormControl<any>(null),
+        options$: of([]),
+      },
+    },
+    serversideAdditionalData: {
+      itemsCount$: new BehaviorSubject<number>(0),
+    },
     paginatorToFistPage$: new Subject<void>(),
     loadMore$: new Subject<void>(),
-    manufacturers$: new BehaviorSubject<any[]>([]),
+    manufacturers$: new BehaviorSubject<any[] | null>([]),
+    canReset$: of(false),
+    loadedCount: 0,
     updateList$: new Subject<void>()
   } as unknown as ManufacturerBrowserRootDataService;
 }
@@ -82,5 +102,26 @@ describe('ManufacturerBrowserRootComponent', () => {
 
     expect(scrollSpy).not.toHaveBeenCalled();
     comp.ngOnDestroy();
+  });
+
+  it('renders the initial loader while manufacturers are unresolved', () => {
+    TestBed.resetTestingModule();
+    const ds = mockDataService();
+    (ds.manufacturers$ as BehaviorSubject<any[] | null>).next(null);
+
+    TestBed.configureTestingModule({
+      declarations: [ManufacturerBrowserRootComponent],
+      imports: [CommonModule, AutoContentLoadingIndicatorComponent],
+      providers: [
+        {provide: ManufacturerBrowserRootDataService, useValue: ds},
+        {provide: SeoAndUtilsService, useValue: mockSeo()},
+      ],
+      schemas: [NO_ERRORS_SCHEMA],
+    });
+
+    const fixture = TestBed.createComponent(ManufacturerBrowserRootComponent);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.loading-shell')).not.toBeNull();
   });
 });
