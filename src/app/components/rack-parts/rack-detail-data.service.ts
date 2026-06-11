@@ -208,36 +208,88 @@ export class RackDetailDataService extends SubManager {
     // when user requests to remove a row, update data and backend
     this.requestRemoveRow$
       .pipe(
-        withLatestFrom(this.singleRackData$),
-        map(([_, x]) => {
-          x.rows--;
-          return x;
+        withLatestFrom(this.singleRackData$, this.rowedRackedModules$),
+        exhaustMap(([_, rack, rackModules]) => {
+          if (!rack || rack.rows <= 1) {
+            SharedConstants.infoCustom(this.snackBar, 'This row cannot be removed.');
+            return EMPTY;
+          }
+
+          const rowToRemove = rack.rows - 1;
+          const currentRows: RackedModule[][] = cloneRackData(rackModules ?? Array.from({length: rack.rows}, () => []));
+          while (currentRows.length < rack.rows) {
+            currentRows.push([]);
+          }
+          const lastRackRow = currentRows[rowToRemove] ?? [];
+          if (lastRackRow.length > 0) {
+            SharedConstants.infoCustom(this.snackBar, 'Clear the last row before removing it.');
+            return EMPTY;
+          }
+
+          const snapshotRack: Rack = cloneRackData(rack);
+          const snapshotRows: RackedModule[][] = cloneRackData(currentRows);
+          const nextRack: Rack = {
+            ...rack,
+            rows: rack.rows - 1
+          };
+          currentRows.splice(rowToRemove, 1);
+          this.singleRackData$.next(nextRack);
+          this.rowedRackedModules$.next(currentRows);
+
+          return this.backend.update.rack(nextRack).pipe(
+            map(response => this.assertBackendSuccess(response)),
+            tap(() => this.analytics.capture('rack.row_removed', { rack_id: nextRack.id })),
+            catchError((err) => {
+              console.error(`Error removing rack row: ${ err }`);
+              this.singleRackData$.next(snapshotRack);
+              this.rowedRackedModules$.next(snapshotRows);
+              SharedConstants.errorCustom(this.snackBar, 'Failed to remove row — changes reverted. Check your connection and try again.');
+              return EMPTY;
+            })
+          );
         }),
-        exhaustMap(x => this.backend.update.rack(x)),
-        takeUntil(this.destroy$),
+        takeUntil(this.destroy$)
       )
-      .subscribe(() => {
-          this.analytics.capture('rack.row_removed', { rack_id: this.singleRackData$.value.id });
-          this.updateSingleRackData$.next(this.singleRackData$.value.id);
-        }
-      );
+      .subscribe();
     
     // when user requests to add a new row, update data and backend
     this.requestAddNewRow$
       .pipe(
-        withLatestFrom(this.singleRackData$),
-        map(([_, x]) => {
-          x.rows++;
-          return x;
+        withLatestFrom(this.singleRackData$, this.rowedRackedModules$),
+        exhaustMap(([_, rack, rackModules]) => {
+          if (!rack) {
+            return EMPTY;
+          }
+
+          const snapshotRack: Rack = cloneRackData(rack);
+          const currentRows: RackedModule[][] = cloneRackData(rackModules ?? Array.from({length: rack.rows}, () => []));
+          while (currentRows.length < rack.rows) {
+            currentRows.push([]);
+          }
+          const snapshotRows: RackedModule[][] = cloneRackData(currentRows);
+          const nextRack: Rack = {
+            ...rack,
+            rows: rack.rows + 1
+          };
+          currentRows.splice(rack.rows, 0, []);
+          this.singleRackData$.next(nextRack);
+          this.rowedRackedModules$.next(currentRows);
+
+          return this.backend.update.rack(nextRack).pipe(
+            map(response => this.assertBackendSuccess(response)),
+            tap(() => this.analytics.capture('rack.row_added', { rack_id: nextRack.id })),
+            catchError((err) => {
+              console.error(`Error adding rack row: ${ err }`);
+              this.singleRackData$.next(snapshotRack);
+              this.rowedRackedModules$.next(snapshotRows);
+              SharedConstants.errorCustom(this.snackBar, 'Failed to add row — changes reverted. Check your connection and try again.');
+              return EMPTY;
+            })
+          );
         }),
-        exhaustMap(x => this.backend.update.rack(x)),
-        takeUntil(this.destroy$),
+        takeUntil(this.destroy$)
       )
-      .subscribe(() => {
-          this.analytics.capture('rack.row_added', { rack_id: this.singleRackData$.value.id });
-          this.updateSingleRackData$.next(this.singleRackData$.value.id);
-        }
-      );
+      .subscribe();
 
     this.requestMoveRow$
       .pipe(
