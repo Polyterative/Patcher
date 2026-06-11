@@ -18,7 +18,7 @@
   contain: layout style;
 }
 
-.hero-metro-nav {
+.title-metro-nav {
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
@@ -29,7 +29,7 @@
   contain: layout style;
 }
 
-.hero-metro-topbar {
+.title-metro-topbar {
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -37,8 +37,8 @@
   gap: 1rem;
 }
 
-.hero-metro-brand {
-  --hero-metro-brand-color: #{$brand-primary};
+.title-metro-brand {
+  --title-metro-brand-color: #{$brand-primary};
   display: inline-flex;
   align-items: center;
   font-size: 1.02rem;
@@ -46,31 +46,31 @@
   font-weight: 500;
   letter-spacing: 0.01em;
   text-transform: uppercase;
-  color: var(--hero-metro-brand-color);
+  color: var(--title-metro-brand-color);
   text-decoration: none;
   white-space: nowrap;
 }
 
-.hero-metro-brand:link,
-.hero-metro-brand:visited,
-.hero-metro-brand:active {
-  color: var(--hero-metro-brand-color);
+.title-metro-brand:link,
+.title-metro-brand:visited,
+.title-metro-brand:active {
+  color: var(--title-metro-brand-color);
 }
 
-.hero-metro-brand:focus-visible {
+.title-metro-brand:focus-visible {
   outline: 0.125rem solid rgba($brand-primary, 0.22);
   outline-offset: 0.18rem;
   border-radius: 0.25rem;
 }
 
-.hero-metro-brand--active {
+.title-metro-brand--active {
   text-decoration: underline;
   text-decoration-color: rgba($brand-primary, 0.36);
   text-decoration-thickness: 0.12rem;
   text-underline-offset: 0.22rem;
 }
 
-.hero-metro-targets {
+.title-metro-targets {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -80,7 +80,7 @@
   contain: layout style;
 }
 
-.hero-metro-target-group {
+.title-metro-target-group {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -88,12 +88,12 @@
   min-width: 0;
 }
 
-.hero-metro-target-group--account {
+.title-metro-target-group--account {
   justify-content: flex-end;
   margin-left: auto;
 }
 
-.hero-metro-target {
+.title-metro-target {
   display: inline-flex;
   align-items: center;
   gap: 0.38rem;
@@ -110,17 +110,21 @@
   transition: color 160ms ease, border-color 160ms ease;
 }
 
-.hero-metro-target--active {
+.title-metro-target:hover {
+  color: rgba(24, 42, 65, 0.9);
+}
+
+.title-metro-target--active {
   color: rgba(17, 31, 48, 0.96);
   border-bottom-color: rgba(34, 72, 118, 0.9);
 }
 
-.hero-metro-target span {
+.title-metro-target span {
   display: inline-flex;
   align-items: center;
 }
 
-.hero-metro-target mat-icon {
+.title-metro-target mat-icon {
   width: 0.95rem;
   height: 0.95rem;
   font-size: 0.95rem;
@@ -128,12 +132,12 @@
   opacity: 0.72;
 }
 
-.hero-metro-target--private {
+.title-metro-target--private {
   color: rgba(28, 51, 78, 0.86);
 }
 
-.hero-metro-target--active mat-icon,
-.hero-metro-target:hover mat-icon {
+.title-metro-target--active mat-icon,
+.title-metro-target:hover mat-icon {
   opacity: 1;
 }
 
@@ -313,10 +317,6 @@ h1 {
 }
 
 @media (max-width: 68rem) {
-  .hero-metro-nav {
-    display: none;
-  }
-
   .hero-shell {
     grid-template-columns: 1fr;
   }
@@ -329,12 +329,12 @@ h1 {
 }
 
 @media (max-width: 80rem) {
-  .hero-metro-targets {
+  .title-metro-targets {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .hero-metro-target-group--account {
+  .title-metro-target-group--account {
     margin-left: 0;
     justify-content: flex-start;
   }

@@ -68,6 +68,10 @@ describe('AppShellLayoutService', () => {
     sub.unsubscribe();
   });
 
+  it('keeps the Material mobile toolbar active below the true-mobile cutoff', () => {
+    expect(APP_SHELL_WIDE_QUERY).toBe('(min-width: 37.5rem)');
+  });
+
   it('emits initial state on subscription', () => {
     const service = TestBed.inject(AppShellLayoutService);
     const emissions: boolean[] = [];

@@ -1,31 +1,31 @@
 <section class="hero-shell" aria-labelledby="home-hero-title">
   @if (shellVm$ | async; as shellVm) {
     @if (shellVm.wideShell) {
-      <div class="hero-metro-nav">
-        <div class="hero-metro-topbar">
-          <a class="hero-metro-brand"
+      <div class="title-metro-nav">
+        <div class="title-metro-topbar">
+          <a class="title-metro-brand"
              routerLink="/home"
-             routerLinkActive="hero-metro-brand--active"
+             routerLinkActive="title-metro-brand--active"
              aria-label="Go to home">{{ siteTitle }}</a>
         </div>
-        <nav class="hero-metro-targets" aria-label="Section targets">
-          <div class="hero-metro-target-group">
+        <nav class="title-metro-targets" aria-label="Section targets">
+          <div class="title-metro-target-group">
             @for (item of wideShellTargets; track trackByNavLink($index, item)) {
               <a
-                class="hero-metro-target"
+                class="title-metro-target"
                 [routerLink]="item.route"
-                routerLinkActive="hero-metro-target--active"
+                routerLinkActive="title-metro-target--active"
                 [attr.aria-label]="item.label"
               >
                 {{ item.label }}
               </a>
             }
           </div>
-          <div class="hero-metro-target-group hero-metro-target-group--account">
+          <div class="title-metro-target-group title-metro-target-group--account">
             @for (item of shellVm.accountLinks; track trackByNavLink($index, item)) {
-              <a class="hero-metro-target hero-metro-target--private"
+              <a class="title-metro-target title-metro-target--private"
                  [routerLink]="item.route"
-                 routerLinkActive="hero-metro-target--active"
+                 routerLinkActive="title-metro-target--active"
                  [attr.aria-label]="item.label">
                 <span>{{ item.label }}</span>
               </a>
