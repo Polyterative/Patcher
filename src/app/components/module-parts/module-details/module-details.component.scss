@@ -21,21 +21,13 @@
 }
 
 .parent:hover > .opacizeOnHover {
-  opacity:            1;
-  -webkit-transition: opacity 125ms ease-in-out;
-  -moz-transition:    opacity 125ms ease-in-out;
-  -ms-transition:     opacity 125ms ease-in-out;
-  -o-transition:      opacity 125ms ease-in-out;
-  transition:         opacity 125ms ease-in-out;
+  opacity: 1;
+  transition: opacity 125ms ease-in-out;
 }
 
 .parent:hover > .showOnHover {
-  opacity:            1;
-  -webkit-transition: opacity 125ms ease-in-out;
-  -moz-transition:    opacity 125ms ease-in-out;
-  -ms-transition:     opacity 125ms ease-in-out;
-  -o-transition:      opacity 125ms ease-in-out;
-  transition:         opacity 125ms ease-in-out;
+  opacity: 1;
+  transition: opacity 125ms ease-in-out;
 }
 
 .description {
