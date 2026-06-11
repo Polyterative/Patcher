@@ -382,11 +382,9 @@ describe('RackDetailDataService reactive flows', () => {
   });
   
   it('clears row modules and handles invalid rows', () => {
-    spyOn(SharedConstants, 'successCustom').and.callFake(() => {
-    });
     spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
     });
-    const {service, backend} = build();
+    const {service, backend, snackBar} = build();
     const currentRack = rack({rows: 2});
     service.singleRackData$.next(currentRack);
     service.rowedRackedModules$.next([
@@ -398,8 +396,109 @@ describe('RackDetailDataService reactive flows', () => {
     service.requestRackedModuleRowClearing$.next(moduleInRack(3, 1, 0));
     
     expect(backend.delete.rackedModule).toHaveBeenCalledTimes(2);
-    expect(SharedConstants.successCustom).toHaveBeenCalled();
+    expect(snackBar.open).toHaveBeenCalledWith('2 modules unracked from this row.', 'Undo', {
+      duration: 5000,
+      panelClass: 'snack-success'
+    });
     expect(SharedConstants.errorCustom).toHaveBeenCalled();
+  });
+
+  it('undoes a module removal from the confirmation snackbar', () => {
+    spyOn(SharedConstants, 'successCustom').and.callFake(() => {});
+    const undoAction$ = new Subject<void>();
+    const {service, backend, snackBar} = build();
+    snackBar.open.and.returnValue({onAction: () => undoAction$.asObservable()} as any);
+    backend.update.rackedModules.and.returnValue(of({
+      data: [{id: 77, moduleid: 1001, rackid: 1, row: 0, column: 0, selected_panel_id: null}]
+    }));
+    const removedModule = moduleInRack(1, 0, 0);
+    const remainingModule = moduleInRack(2, 0, 1);
+    service.singleRackData$.next(rack({rows: 1}));
+    service.rowedRackedModules$.next([[removedModule, remainingModule]]);
+
+    service.requestRackedModuleRemoval$.next(removedModule);
+    expect(service.rowedRackedModules$.value[0].map((module: any) => module.rackingData.id)).toEqual([2]);
+
+    undoAction$.next();
+    undoAction$.complete();
+
+    expect(service.rowedRackedModules$.value[0].map((module: any) => module.module.id)).toEqual([1001, 1002]);
+    expect(service.rowedRackedModules$.value[0][0].rackingData.id).toBe(77);
+    expect(backend.update.rackedModules).toHaveBeenCalled();
+    expect(SharedConstants.successCustom).toHaveBeenCalledWith(snackBar, '"M1" restored.');
+  });
+
+  it('undoes a full row clear from the confirmation snackbar', () => {
+    spyOn(SharedConstants, 'successCustom').and.callFake(() => {});
+    const undoAction$ = new Subject<void>();
+    const {service, backend, snackBar} = build();
+    snackBar.open.and.returnValue({onAction: () => undoAction$.asObservable()} as any);
+    backend.update.rackedModules.and.returnValue(of({
+      data: [
+        {id: 81, moduleid: 1001, rackid: 1, row: 0, column: 0, selected_panel_id: null},
+        {id: 82, moduleid: 1002, rackid: 1, row: 0, column: 1, selected_panel_id: null}
+      ]
+    }));
+    service.singleRackData$.next(rack({rows: 1}));
+    service.rowedRackedModules$.next([[moduleInRack(1, 0, 0), moduleInRack(2, 0, 1)]]);
+
+    service.requestClearRow$.next(0);
+    expect(service.rowedRackedModules$.value[0]).toEqual([]);
+
+    undoAction$.next();
+    undoAction$.complete();
+
+    expect(service.rowedRackedModules$.value[0].map((module: any) => module.module.id)).toEqual([1001, 1002]);
+    expect(service.rowedRackedModules$.value[0].map((module: any) => module.rackingData.id)).toEqual([81, 82]);
+    expect(backend.update.rackedModules).toHaveBeenCalled();
+    expect(SharedConstants.successCustom).toHaveBeenCalledWith(snackBar, '2 modules restored.');
+  });
+
+  it('undoes replace-with-blank by removing the blank and restoring the original module', () => {
+    spyOn(SharedConstants, 'successCustom').and.callFake(() => {});
+    const undoAction$ = new Subject<void>();
+    const {service, backend, snackBar} = build();
+    snackBar.open.and.returnValue({onAction: () => undoAction$.asObservable()} as any);
+    backend.update.rackedModules.and.returnValue(of({
+      data: [{id: 91, moduleid: 1001, rackid: 1, row: 0, column: 0, selected_panel_id: null}]
+    }));
+    const original = moduleInRack(1, 0, 0, 8, 0);
+    service.singleRackData$.next(rack({rows: 1}));
+    service.rowedRackedModules$.next([[original]]);
+
+    service.requestRackedModuleReplaceWithBlank$.next(original);
+    expect(service.rowedRackedModules$.value[0][0].module.id).toBe(4651);
+    expect(service.rowedRackedModules$.value[0][0].rackingData.id).toBe(88);
+
+    undoAction$.next();
+    undoAction$.complete();
+
+    expect(backend.delete.rackedModule).toHaveBeenCalledWith(88);
+    expect(service.rowedRackedModules$.value[0][0].module.id).toBe(1001);
+    expect(service.rowedRackedModules$.value[0][0].rackingData.id).toBe(91);
+    expect(SharedConstants.successCustom).toHaveBeenCalledWith(snackBar, '"M1" restored.');
+  });
+
+  it('undoes deleting an empty row from the confirmation snackbar', () => {
+    spyOn(SharedConstants, 'successCustom').and.callFake(() => {});
+    const undoAction$ = new Subject<void>();
+    const {service, backend, snackBar} = build();
+    snackBar.open.and.returnValue({onAction: () => undoAction$.asObservable()} as any);
+    service.singleRackData$.next(rack({rows: 3}));
+    service.rowedRackedModules$.next([[moduleInRack(1, 0, 0)], [], [moduleInRack(2, 2, 0)]]);
+
+    service.requestDeleteRow$.next(1);
+    expect(service.singleRackData$.value.rows).toBe(2);
+    expect(service.rowedRackedModules$.value.length).toBe(2);
+
+    undoAction$.next();
+    undoAction$.complete();
+
+    expect(service.singleRackData$.value.rows).toBe(3);
+    expect(service.rowedRackedModules$.value.length).toBe(3);
+    expect(service.rowedRackedModules$.value[1]).toEqual([]);
+    expect(backend.update.rack).toHaveBeenCalledWith(jasmine.objectContaining({rows: 3}));
+    expect(SharedConstants.successCustom).toHaveBeenCalledWith(snackBar, 'Row restored.');
   });
 
   it('ignores clear-row requests until row data is available', () => {
@@ -412,10 +511,8 @@ describe('RackDetailDataService reactive flows', () => {
     expect(backend.delete.rackedModule).not.toHaveBeenCalled();
   });
 
-  it('does not clear a row while optimistic modules are still syncing', () => {
-    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
-    });
-    const {service, backend} = build();
+  it('clears locally duplicated modules before their backend racking ids finish syncing', () => {
+    const {service, backend, snackBar} = build();
     const optimisticModule = moduleInRack(undefined as any, 0, 0);
     service.singleRackData$.next(rack({rows: 1}));
     service.rowedRackedModules$.next([[optimisticModule]]);
@@ -423,8 +520,54 @@ describe('RackDetailDataService reactive flows', () => {
     service.requestClearRow$.next(0);
 
     expect(backend.delete.rackedModule).not.toHaveBeenCalled();
-    expect(service.rowedRackedModules$.value[0]).toEqual([optimisticModule]);
-    expect(SharedConstants.errorCustom).toHaveBeenCalled();
+    expect(service.rowedRackedModules$.value[0]).toEqual([]);
+    expect(snackBar.open).toHaveBeenCalledWith('1 module unracked from this row.', 'Undo', {
+      duration: 5000,
+      panelClass: 'snack-success'
+    });
+  });
+
+  it('removes locally duplicated modules before their backend racking ids finish syncing', () => {
+    const {service, backend, snackBar} = build();
+    const optimisticModule = moduleInRack(undefined as any, 0, 0);
+    optimisticModule.module.name = 'Duplicated';
+    const stableModule = moduleInRack(2, 0, 1);
+    service.singleRackData$.next(rack({rows: 1}));
+    service.rowedRackedModules$.next([[optimisticModule, stableModule]]);
+
+    service.requestRackedModuleRemoval$.next(optimisticModule);
+
+    expect(backend.delete.rackedModule).not.toHaveBeenCalled();
+    expect(service.rowedRackedModules$.value[0].map((module: any) => module.rackingData.id)).toEqual([2]);
+    expect(snackBar.open).toHaveBeenCalledWith('"Duplicated" removed from rack.', 'Undo', {
+      duration: 5000,
+      panelClass: 'snack-success'
+    });
+  });
+
+  it('deletes a late backend insert when a duplicated row is cleared before persistence returns', () => {
+    const {service, backend} = build();
+    const duplicatePersist$ = new Subject<any>();
+    const sourceModule = moduleInRack(1, 0, 0);
+    sourceModule.rackingData.moduleid = sourceModule.module.id;
+    backend.update.rackedModules.and.returnValue(duplicatePersist$.asObservable());
+    service.singleRackData$.next(rack({rows: 1}));
+    service.rowedRackedModules$.next([[sourceModule]]);
+
+    service.requestDuplicateRow$.next(0);
+    expect(service.rowedRackedModules$.value[1][0].rackingData.id).toBeUndefined();
+
+    service.requestClearRow$.next(1);
+    expect(service.rowedRackedModules$.value[1]).toEqual([]);
+    expect(backend.delete.rackedModule).not.toHaveBeenCalled();
+
+    duplicatePersist$.next({
+      data: [{id: 123, moduleid: sourceModule.module.id, rackid: 1, row: 1, column: 0, selected_panel_id: null}]
+    });
+    duplicatePersist$.complete();
+
+    expect(backend.delete.rackedModule).toHaveBeenCalledWith(123);
+    expect(service.rowedRackedModules$.value[1]).toEqual([]);
   });
 
   it('keeps successfully cleared modules removed when one row clear delete fails', () => {
