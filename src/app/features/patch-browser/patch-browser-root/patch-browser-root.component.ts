@@ -1,9 +1,7 @@
 import {
   ChangeDetectionStrategy,
-  Component,
-  inject
+  Component
 } from '@angular/core';
-import { DOCUMENT } from '@angular/common';
 import { merge, Observable } from 'rxjs';
 import {
   mapTo,
@@ -29,8 +27,6 @@ import { SubManager } from 'src/app/shared-interproject/directives/subscription-
   standalone: false
 })
 export class PatchBrowserRootComponent extends SubManager {
-  private readonly document = inject(DOCUMENT);
-
   readonly formTypes = FormTypes;
   readonly patchesUpdating$: Observable<boolean>;
   readonly viewConfig: PatchMinimalViewConfig = {
@@ -74,12 +70,6 @@ export class PatchBrowserRootComponent extends SubManager {
       'Patches'
     );
 
-    this.dataService.paginatorToFistPage$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.document.defaultView?.scrollTo({top: 0, behavior: 'smooth'});
-      });
-    
     this.dataService.fields.order.control.patchValue(
       {id: 'updated', name: 'Updated ↓'},
       {emitEvent: false}
