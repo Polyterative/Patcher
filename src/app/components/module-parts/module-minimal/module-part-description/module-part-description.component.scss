@@ -1,0 +1,64 @@
+.description {
+  position: relative;
+  min-width: 0;
+  width: 100%;
+}
+
+.module-description {
+  overflow-wrap: break-word;
+}
+
+.module-description--clamped {
+  display: block;
+  max-height: 5.55lh;
+  overflow: hidden;
+  cursor: default;
+  -webkit-mask-image: linear-gradient(180deg, #000 0 calc(100% - 0.65lh), transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0 calc(100% - 0.65lh), transparent 100%);
+}
+
+.module-description-reader {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  width: min(34rem, calc(100vw - 2rem));
+  max-height: min(28rem, calc(100vh - 4rem));
+  box-sizing: border-box;
+  overflow: auto;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid rgba(24, 37, 53, 0.16);
+  border-radius: 0.35rem;
+  background: rgba(248, 251, 255, 0.98);
+  box-shadow: 0 0.45rem 1.25rem rgba(15, 30, 52, 0.18);
+  color: rgba(24, 37, 53, 0.88);
+  font-size: 0.95rem;
+  line-height: 1.35;
+  white-space: pre-line;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-0.2rem);
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease,
+    visibility 0s linear 120ms;
+  visibility: hidden;
+}
+
+.module-description-reader--align-end {
+  right: 0;
+  left: auto;
+}
+
+.description--has-reader:has(.module-description--clamped:hover) .module-description-reader,
+.description--has-reader:has(.module-description--clamped:focus-visible) .module-description-reader,
+.description--has-reader:has(.module-description-reader:hover) .module-description-reader {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition:
+    opacity 120ms ease 840ms,
+    transform 120ms ease 840ms,
+    visibility 0s linear 840ms;
+  visibility: visible;
+}

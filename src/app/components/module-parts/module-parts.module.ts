@@ -8,7 +8,6 @@ import { RouterModule } from '@angular/router';
 import { TimeagoModule } from 'ngx-timeago';
 import { SharedAtomsModule } from 'src/app/components/shared-atoms/shared-atoms.module';
 import { HeroClickableTitleComponent } from 'src/app/shared-interproject/components/@visual/hero-clickable-title/hero-clickable-title.component';
-import { EllipsisPipe } from 'src/app/shared-interproject/pipes/ellipsis.pipe';
 import { AutoContentLoadingIndicatorComponent } from '../../shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator/auto-content-loading-indicator.component';
 import { AutoUpdateLoadingIndicatorComponent } from '../../shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator/auto-update-loading-indicator.component';
 import { MatFormEntityComponent } from '../../shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
@@ -102,7 +101,6 @@ import { ModulePossessionDialogComponent } from './module-possession-dialog/modu
     RestrictedEntityComponent,
     RouterModule,
     SharedAtomsModule,
-    EllipsisPipe,
     HeroClickableTitleComponent,
     AutoContentLoadingIndicatorComponent,
     AdviceTooltipComponent,
