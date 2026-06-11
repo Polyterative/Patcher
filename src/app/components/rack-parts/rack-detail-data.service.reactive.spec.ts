@@ -122,18 +122,24 @@ describe('RackDetailDataService reactive flows', () => {
   it('adds and removes rack rows locally without refreshing rack data', () => {
     const {service, backend} = build();
     service.singleRackData$.next(rack({id: 7, rows: 2}));
+    const placedRow = [moduleInRack(1, 0, 0)];
+    const emptyRow: any[] = [];
     const unrackedModule = moduleInRack(3, null, null);
+    const unrackedRow = [unrackedModule];
     service.rowedRackedModules$.next([
-      [moduleInRack(1, 0, 0)],
-      [],
-      [unrackedModule]
+      placedRow,
+      emptyRow,
+      unrackedRow
     ]);
     const refreshSpy = spyOn(service.updateSingleRackData$, 'next').and.callThrough();
     
     service.requestAddNewRow$.next();
     expect(service.singleRackData$.value.rows).toBe(3);
     expect(service.rowedRackedModules$.value.length).toBe(4);
+    expect(service.rowedRackedModules$.value[0]).toBe(placedRow);
+    expect(service.rowedRackedModules$.value[1]).toBe(emptyRow);
     expect(service.rowedRackedModules$.value[2]).toEqual([]);
+    expect(service.rowedRackedModules$.value[3]).toBe(unrackedRow);
     expect(service.rowedRackedModules$.value[3][0].rackingData.id).toBe(3);
 
     service.requestRemoveRow$.next();
@@ -141,6 +147,9 @@ describe('RackDetailDataService reactive flows', () => {
     expect(backend.update.rack).toHaveBeenCalledTimes(2);
     expect(service.singleRackData$.value.rows).toBe(2);
     expect(service.rowedRackedModules$.value.length).toBe(3);
+    expect(service.rowedRackedModules$.value[0]).toBe(placedRow);
+    expect(service.rowedRackedModules$.value[1]).toBe(emptyRow);
+    expect(service.rowedRackedModules$.value[2]).toBe(unrackedRow);
     expect(service.rowedRackedModules$.value[2][0].rackingData.id).toBe(3);
     expect(refreshSpy).not.toHaveBeenCalled();
   });
