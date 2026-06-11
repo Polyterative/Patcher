@@ -69,12 +69,32 @@ $secondary-font:            'Noto Sans';
 @font-face {
   font-family: GangsterGrotesk-Light;
   src: url('/assets/font/GangsterGrotesk-Light.otf') format("opentype");
+  font-weight: 300;
+  font-style: normal;
   font-display: block;
 }
 
 @font-face {
   font-family: GangsterGrotesk;
   src: url('/assets/font/GangsterGrotesk-Light.otf') format("opentype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: GangsterGrotesk;
+  src: url('/assets/font/GangsterGrotesk-Regular.otf') format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: GangsterGrotesk;
+  src: url('/assets/font/GangsterGrotesk-Bold.otf') format("opentype");
+  font-weight: 700;
+  font-style: normal;
   font-display: block;
 }
 
@@ -273,15 +293,16 @@ h1, h2, h3, h4, h5, h6 {
 
 .mat-mdc-card-title {
   @include title-font;
-  font-family: 'GangsterGrotesk', ', ', sans-serif;
+  font-family: 'GangsterGrotesk', sans-serif;
+  font-weight: 400;
   font-size: 1.4rem;
   color: rgba(0, 0, 0, 0.7);
 }
 
 .mat-mdc-card-subtitle, p {
-  font-family: 'GangsterGrotesk', ', ', sans-serif;
+  font-family: 'GangsterGrotesk', sans-serif;
   color: rgba(0, 0, 0, 0.9);
-  font-weight: 500;
+  font-weight: 400;
 }
 
 p {
