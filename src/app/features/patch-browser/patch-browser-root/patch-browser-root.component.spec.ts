@@ -4,7 +4,6 @@ import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 import { Subject, BehaviorSubject } from 'rxjs';
 import { FormControl } from '@angular/forms';
 import { TestBed } from '@angular/core/testing';
-import { DOCUMENT } from '@angular/common';
 
 function mockDataService(): PatchBrowserDataService {
   return {
@@ -31,11 +30,7 @@ describe('PatchBrowserRootComponent', () => {
   let dataService: PatchBrowserDataService;
   let seo: SeoAndUtilsService;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      providers: [{ provide: DOCUMENT, useValue: document }]
-    });
-  });
+  beforeEach(() => TestBed.configureTestingModule({}));
 
   afterEach(() => TestBed.resetTestingModule());
 
@@ -85,16 +80,14 @@ describe('PatchBrowserRootComponent', () => {
     expect(ds.fields.order.control.value).toEqual({id: 'updated', name: 'Updated ↓'});
   });
 
-  it('scrolls to top when paginatorToFistPage$ fires', () => {
-    const mockDoc = {defaultView: {scrollTo: jasmine.createSpy('scrollTo')}};
-    TestBed.overrideProvider(DOCUMENT, {useValue: mockDoc});
-
+  it('does not scroll to top when paginatorToFistPage$ fires', () => {
+    const scrollSpy = spyOn(window, 'scrollTo');
     const ds = mockDataService();
     const comp = TestBed.runInInjectionContext(() => new PatchBrowserRootComponent(ds, mockSeo()));
 
     ds.paginatorToFistPage$.next();
 
-    expect(mockDoc.defaultView.scrollTo).toHaveBeenCalledWith({top: 0, behavior: 'smooth'});
+    expect(scrollSpy).not.toHaveBeenCalled();
     comp.ngOnDestroy();
   });
 });
