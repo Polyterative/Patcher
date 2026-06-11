@@ -1110,17 +1110,48 @@ export class RackDetailDataService extends SubManager {
         exhaustMap(module => this.backend.add.rackModule(
           module.id,
           this.singleRackData$.value.id
-        ).pipe(map(() => module))),
+        ).pipe(
+          map(response => this.assertBackendSuccess(response)),
+          map(response => ({module, response}))
+        )),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe((module) => {
+      .subscribe(({module, response}) => {
+        const insertedRackingData = (response as {
+          data?: Array<{
+            id?: number;
+            moduleid?: number;
+            rackid?: number;
+            row?: number | null;
+            column?: number | null;
+            selected_panel_id?: number | null;
+          }>;
+        }).data?.[0];
+        const rack = this.singleRackData$.value;
+        const currentRows = cloneRackData(this.rowedRackedModules$.value ?? Array.from({length: rack.rows}, () => []));
+        const unrackedModule: RackedModule = {
+          module: module as any,
+          rackingData: {
+            id: insertedRackingData?.id,
+            rackid: insertedRackingData?.rackid ?? rack.id,
+            moduleid: insertedRackingData?.moduleid ?? module.id,
+            row: insertedRackingData?.row ?? null,
+            column: insertedRackingData?.column ?? null,
+            selectedPanelId: insertedRackingData?.selected_panel_id ?? null
+          }
+        };
+        const unrackedRowIndex = currentRows.length > rack.rows ? currentRows.length - 1 : currentRows.length;
+        if (!currentRows[unrackedRowIndex]) {
+          currentRows[unrackedRowIndex] = [];
+        }
+        currentRows[unrackedRowIndex].push(unrackedModule);
+        this.rowedRackedModules$.next(currentRows);
         this.analytics.capture('rack.module_added', {
           rack_id:   this.singleRackData$.value?.id,
           module_id: module.id
         });
         SharedConstants.successCustom(this.snackBar, `"${ module.name }" added to "${ this.singleRackData$.value.name }". Drag it into a row to place it.`);
         this.moduleAddedFromPicker$.next(module);
-        this.updateSingleRackData$.next(this.singleRackData$.value.id);
       });
 
     // quick-add blank panel directly to a row

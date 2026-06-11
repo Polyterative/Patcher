@@ -274,6 +274,29 @@ describe('ModuleBrowserRootComponent', () => {
     );
   });
 
+  it('does not scroll to top when the module list resets', () => {
+    const scrollSpy = spyOn(window, 'scrollTo');
+
+    component.dataService.paginatorToFistPage$.next();
+
+    expect(scrollSpy).not.toHaveBeenCalled();
+  });
+
+  it('does not re-emit the all-modules list when only current rack modules change', () => {
+    const modules = buildOwnedModules(3);
+    component.enableCollectionBrowseModes = true;
+    component.ownedModulesInput = buildOwnedModules(1);
+    component.setCollectionBrowseMode('all');
+    component.dataService.modulesList$.next(modules);
+    expect(component.visibleModules$.value).toBe(modules);
+
+    const nextSpy = spyOn(component.visibleModules$, 'next').and.callThrough();
+
+    component.currentRackModulesInput = [[{module: modules[0]} as any]];
+
+    expect(nextSpy).not.toHaveBeenCalled();
+  });
+
   it('uses available-mode search empty copy when rack collection filters return nothing', () => {
     const ownedModules = buildOwnedModules(2);
     component.enableCollectionBrowseModes = true;

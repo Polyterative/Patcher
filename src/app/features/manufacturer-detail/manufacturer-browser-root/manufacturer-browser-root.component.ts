@@ -1,10 +1,7 @@
 import {
   ChangeDetectionStrategy,
-  Component,
-  inject
+  Component
 } from '@angular/core';
-import { DOCUMENT } from '@angular/common';
-import { takeUntil } from 'rxjs/operators';
 import { ManufacturerBrowserRootDataService } from './manufacturer-browser-root-data.service';
 import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
@@ -19,7 +16,6 @@ import { SubManager } from 'src/app/shared-interproject/directives/subscription-
   standalone: false
 })
 export class ManufacturerBrowserRootComponent extends SubManager {
-  private readonly document = inject(DOCUMENT);
   readonly formTypes = FormTypes;
 
   get hasMoreManufacturers(): boolean {
@@ -50,12 +46,6 @@ export class ManufacturerBrowserRootComponent extends SubManager {
       },
       'Manufacturers'
     );
-    
-    this.dataService.paginatorToFistPage$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.document.defaultView?.scrollTo({top: 0, behavior: 'smooth'});
-      });
     
     this.dataService.updateList$.next();
   }
