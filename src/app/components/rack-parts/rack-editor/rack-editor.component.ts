@@ -248,7 +248,7 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
       },
       {
         id: 'delete',
-        label: 'Delete from rack',
+        label: 'Remove from rack',
         icon: 'delete',
         danger: true,
         includeInTouchTray: true,
@@ -466,14 +466,14 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
     const contextMenuActions = this.moduleActions
       .filter(action => action.includeInContextMenu)
       .map(action => this.createContextMenuActionItem(action, rackedModule));
-    const inspectAction = contextMenuActions[0];
-    const standardActions = contextMenuActions.slice(1, 4).map((item) => item.id === 'replace-with-blank'
-      ? {
-        ...item,
-        label: 'Replace with blank (add spacing)'
-      }
-      : item);
-    const secondaryActions = contextMenuActions.slice(4);
+    const inspectAction = contextMenuActions.find(action => action.id === 'inspect');
+    const cautionActions = contextMenuActions.filter(action => action.id === 'replace-with-blank');
+    const standardActions = contextMenuActions.filter(action =>
+      action.id !== 'inspect'
+      && action.id !== 'replace-with-blank'
+      && !action.danger
+    );
+    const dangerousActions = contextMenuActions.filter(action => action.danger);
 
     return [
       {
@@ -486,9 +486,14 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
       ...(inspectAction ? [inspectAction] : []),
       ...(panelSubmenuItem ? [panelSubmenuItem] : []),
       ...standardActions,
-      this.createContextMenuSpacerItem(1),
-      this.createContextMenuSpacerItem(2),
-      ...secondaryActions
+      ...(cautionActions.length > 0 ? [
+        this.createContextMenuSpacerItem(1),
+        ...cautionActions
+      ] : []),
+      ...(dangerousActions.length > 0 ? [
+        this.createContextMenuSpacerItem(2),
+        ...dangerousActions
+      ] : [])
     ];
   }
 
@@ -517,6 +522,7 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
       icon: '',
       data: undefined,
       disabled: true,
+      separator: true,
       click$: new Subject<ContextMenuItem>()
     };
   }
@@ -554,6 +560,14 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
           direction: 'down'
         }))
       },
+      {
+        id: 'duplicate-row',
+        label: 'Duplicate row',
+        icon: 'content_copy',
+        disabled: false,
+        click$: this.createMenuActionSubject(() => this.dataService.requestDuplicateRow$.next(rowId))
+      },
+      this.createContextMenuSpacerItem(1),
       {
         id: 'clear-row',
         label: 'Clear row',
