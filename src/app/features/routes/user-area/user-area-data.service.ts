@@ -48,7 +48,7 @@ import {
 } from './user-area-data.utils';
 import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 
-export type UserModuleCollectionFilter = 'HAS' | 'WANTS' | 'SELLS';
+export type UserModuleCollectionFilter = 'ALL' | UserModulePossessionKind;
 
 @Injectable()
 export class UserAreaDataService extends SubManager {
@@ -86,7 +86,7 @@ export class UserAreaDataService extends SubManager {
   readonly pagedModulesData$: Observable<MinimalModule[] | undefined>;
   readonly hasMoreModules$: Observable<boolean>;
   readonly remainingModulesCount$: Observable<number>;
-  readonly moduleCollectionFilter$ = new BehaviorSubject<UserModuleCollectionFilter>('HAS');
+  readonly moduleCollectionFilter$ = new BehaviorSubject<UserModuleCollectionFilter>('ALL');
   readonly activeTagFilter$ = new BehaviorSubject<string | null>(null);
   readonly filteredRacksData$: Observable<Rack[] | undefined>;
   readonly filteredRacksCount$: Observable<number>;
@@ -473,7 +473,7 @@ export class UserAreaDataService extends SubManager {
     this.disconnectDiscovery();
     this._searchQuery$.next('');
     this.activeTagFilter$.next(null);
-    this.moduleCollectionFilter$.next('HAS');
+    this.moduleCollectionFilter$.next('ALL');
   }
 
   override ngOnDestroy(): void {
@@ -501,6 +501,10 @@ export class UserAreaDataService extends SubManager {
   ): MinimalModule[] | undefined {
     if (!modules) {
       return undefined;
+    }
+
+    if (collectionFilter === 'ALL') {
+      return modules;
     }
 
     return modules.filter(module => this.normalizePossessionKind(module.possessionKind) === collectionFilter);
