@@ -25,6 +25,11 @@
   display: block;
   position: relative;
   padding: 1rem;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .manufacturer-row-link {
@@ -44,15 +49,22 @@
   width: 100%;
   min-width: 0;
   max-width: 100%;
-  overflow-x: auto;
+  box-sizing: border-box;
+  overflow-x: scroll;
   overflow-y: hidden;
   scroll-snap-type: x proximity;
-  scrollbar-gutter: stable;
+  scrollbar-gutter: stable both-edges;
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x;
-  padding-bottom: 0.15rem;
-  @include scrollbars(0.3rem);
+  cursor: grab;
+  padding-bottom: 0.45rem;
+  border-bottom: 0.125rem solid rgba(0, 0, 0, 0.12);
+  @include scrollbars(0.45rem, rgba(45, 67, 89, 0.55), rgba(255, 255, 255, 0.28));
+
+  &:active {
+    cursor: grabbing;
+  }
 }
 .manufacturer-row-header {
   display: flex;

@@ -10,6 +10,18 @@
   overflow-x: hidden;
 }
 
+.sidebar-layout,
+.browser-content-area {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.browser-content-area {
+  align-self: stretch;
+  overflow-x: hidden;
+}
+
 .manufacturer-list {
   display: flex;
   flex-direction: column;
