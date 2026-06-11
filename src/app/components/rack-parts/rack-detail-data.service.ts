@@ -216,7 +216,7 @@ export class RackDetailDataService extends SubManager {
           }
 
           const rowToRemove = rack.rows - 1;
-          const currentRows: RackedModule[][] = cloneRackData(rackModules ?? Array.from({length: rack.rows}, () => []));
+          const currentRows: RackedModule[][] = [...(rackModules ?? Array.from({length: rack.rows}, () => []))];
           while (currentRows.length < rack.rows) {
             currentRows.push([]);
           }
@@ -227,7 +227,7 @@ export class RackDetailDataService extends SubManager {
           }
 
           const snapshotRack: Rack = cloneRackData(rack);
-          const snapshotRows: RackedModule[][] = cloneRackData(currentRows);
+          const snapshotRows: RackedModule[][] = rackModules ?? cloneRackData(currentRows);
           const nextRack: Rack = {
             ...rack,
             rows: rack.rows - 1
@@ -262,11 +262,11 @@ export class RackDetailDataService extends SubManager {
           }
 
           const snapshotRack: Rack = cloneRackData(rack);
-          const currentRows: RackedModule[][] = cloneRackData(rackModules ?? Array.from({length: rack.rows}, () => []));
+          const currentRows: RackedModule[][] = [...(rackModules ?? Array.from({length: rack.rows}, () => []))];
           while (currentRows.length < rack.rows) {
             currentRows.push([]);
           }
-          const snapshotRows: RackedModule[][] = cloneRackData(currentRows);
+          const snapshotRows: RackedModule[][] = rackModules ?? cloneRackData(currentRows);
           const nextRack: Rack = {
             ...rack,
             rows: rack.rows + 1
