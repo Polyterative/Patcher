@@ -624,6 +624,23 @@ describe('SupabaseService - get complex queries', () => {
       });
     }, TEST_TIMEOUT);
     
+    it('should only return public modules', (done) => {
+      const mock = chainable({data: [], error: null});
+      const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+      service.get.modulesBySameManufacturer(7).subscribe({
+        next: () => {
+          expect(filterSpy).toHaveBeenCalledWith('public', 'eq', true);
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
     it('should order by updated desc with id desc tie-break', (done) => {
       const mock = chainable({data: [], error: null});
       const orderSpy = spyOn(mock, 'order').and.returnValue(mock);
@@ -644,6 +661,39 @@ describe('SupabaseService - get complex queries', () => {
   });
   
   describe('GET.manufacturersPaginated', () => {
+    it('should build manufacturer list activity from public modules only', (done) => {
+      const manufacturers = [
+        {id: 1, name: 'Endorphin.es', logo: null, websiteURL: null, adminUser: null}
+      ];
+      const moduleActivityRows = [
+        {id: 10, manufacturerId: 1, updated: '2026-02-01T10:00:00.123456+00'}
+      ];
+      const modulesMock = chainable({data: moduleActivityRows, error: null});
+      const modulesFilterSpy = spyOn(modulesMock, 'filter').and.returnValue(modulesMock);
+
+      spyOn(supabaseClient, 'from').and.callFake((table: string) => {
+        if (table === 'manufacturers') {
+          return chainable({data: manufacturers, count: manufacturers.length, error: null});
+        }
+        if (table === 'modules') {
+          return modulesMock;
+        }
+        return chainable({data: [], error: null});
+      });
+
+      service.GET.manufacturersPaginated(0, 19, '', 'module_updated', 'desc').subscribe({
+        next: (result: any) => {
+          expect(modulesFilterSpy).toHaveBeenCalledWith('public', 'eq', true);
+          expect(result?.data?.[0]?.moduleCount).toBe(1);
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
     it('should sort by latest module updated timestamp (desc) with +00 offsets', (done) => {
       const manufacturers = [
         {id: 1, name: 'Endorphin.es', logo: null, websiteURL: null, adminUser: null},

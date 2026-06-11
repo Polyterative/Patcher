@@ -1726,6 +1726,7 @@ export class SupabaseQueriesService {
       while (true) {
         let q = this.supabase.from(DbPaths.modules)
           .select('id,manufacturerId,updated')
+          .filter('public', 'eq', true)
           .order('updated', {ascending: orderDirection === 'asc'})
           .order('id', {ascending: orderDirection === 'asc'})
           .range(offset, offset + pageSize - 1);
@@ -1999,6 +2000,7 @@ export class SupabaseQueriesService {
           ${ QueryJoins.insOuts }
           `)
         .filter('manufacturerId', 'eq', manufacturerId)
+        .filter('public', 'eq', true)
         .limit(1, { foreignTable: DbPaths.module_panels })
         .order('color', { foreignTable: DbPaths.module_panels, ascending: true })
         .order('updated', { ascending: false })
