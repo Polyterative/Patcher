@@ -230,8 +230,11 @@ describe('RackDetailDataService', () => {
       module: {id: 6, name: 'VCF', hp: 10, standard: {id: 0}, functions: []}
     });
 
+    const rowZero = [rowZeroModule];
+    const rowOne = [rowOneModule];
+    const rowTwo: any[] = [];
     service.singleRackData$.next(makeRack({rows: 3}));
-    service.rowedRackedModules$.next([[rowZeroModule], [rowOneModule], []]);
+    service.rowedRackedModules$.next([rowZero, rowOne, rowTwo]);
     backend.update.rackedModules.calls.reset();
 
     service.requestMoveRow$.next({rowId: 1, direction: 'up'});
@@ -239,10 +242,99 @@ describe('RackDetailDataService', () => {
 
     const rows = service.rowedRackedModules$.value!;
     expect(rows[0][0].module.id).toBe(6);
+    expect(rows[0]).toBe(rowOne);
     expect(rows[0][0].rackingData.row).toBe(0);
     expect(rows[1][0].module.id).toBe(5);
+    expect(rows[1]).toBe(rowZero);
     expect(rows[1][0].rackingData.row).toBe(1);
+    expect(rows[2]).toBe(rowTwo);
     expect(backend.update.rackedModules).toHaveBeenCalled();
+  }));
+
+  it('duplicates a rack row below the source row without recreating existing rows', fakeAsync(() => {
+    const {service, backend} = build();
+    const rowZeroModule = makeRackedModule({
+      rackingData: {id: 10, rackid: 1, moduleid: 5, row: 0, column: 0, selectedPanelId: null},
+      module: {id: 5, name: 'VCO', hp: 8, standard: {id: 0}, functions: []}
+    });
+    const rowOneModule = makeRackedModule({
+      rackingData: {id: 11, rackid: 1, moduleid: 6, row: 1, column: 0, selectedPanelId: null},
+      module: {id: 6, name: 'VCF', hp: 10, standard: {id: 0}, functions: []}
+    });
+    const unrackedModule = makeRackedModule({
+      rackingData: {id: 12, rackid: 1, moduleid: 7, row: null, column: null, selectedPanelId: null},
+      module: {id: 7, name: 'VCA', hp: 6, standard: {id: 0}, functions: []}
+    });
+    const rowZero = [rowZeroModule];
+    const rowOne = [rowOneModule];
+    const unrackedRow = [unrackedModule];
+
+    service.singleRackData$.next(makeRack({rows: 2}));
+    service.rowedRackedModules$.next([rowZero, rowOne, unrackedRow]);
+    backend.update.rackedModules.calls.reset();
+    backend.update.rack.calls.reset();
+
+    service.requestDuplicateRow$.next(0);
+    tick();
+
+    const rows = service.rowedRackedModules$.value!;
+    expect(service.singleRackData$.value.rows).toBe(3);
+    expect(rows.length).toBe(4);
+    expect(rows[0]).toBe(rowZero);
+    expect(rows[2]).toBe(rowOne);
+    expect(rows[3]).toBe(unrackedRow);
+    expect(rows[1]).not.toBe(rowZero);
+    expect(rows[1][0].module.id).toBe(5);
+    expect(rows[1][0].rackingData.id).toBeUndefined();
+    expect(rows[1][0].rackingData.row).toBe(1);
+    expect(rowOneModule.rackingData.row).toBe(2);
+    expect(unrackedModule.rackingData.row).toBeNull();
+    expect(backend.update.rack).toHaveBeenCalledWith(jasmine.objectContaining({rows: 3}));
+    expect(backend.update.rackedModules).toHaveBeenCalled();
+  }));
+
+  it('patches duplicated row module ids by object reference after the row moves before persistence returns', fakeAsync(() => {
+    const {service, backend} = build();
+    const duplicatePersist$ = new Subject<any>();
+    const rowZeroModule = makeRackedModule({
+      rackingData: {id: 10, rackid: 1, moduleid: 5, row: 0, column: 0, selectedPanelId: null},
+      module: {id: 5, name: 'VCO', hp: 8, standard: {id: 0}, functions: []}
+    });
+    const rowOneModule = makeRackedModule({
+      rackingData: {id: 11, rackid: 1, moduleid: 6, row: 1, column: 0, selectedPanelId: null},
+      module: {id: 6, name: 'VCF', hp: 10, standard: {id: 0}, functions: []}
+    });
+
+    backend.update.rackedModules.and.returnValues(
+      duplicatePersist$.asObservable(),
+      of({data: []})
+    );
+    service.singleRackData$.next(makeRack({rows: 2}));
+    service.rowedRackedModules$.next([[rowZeroModule], [rowOneModule]]);
+
+    service.requestDuplicateRow$.next(0);
+    const duplicatedModule = service.rowedRackedModules$.value![1][0];
+    service.requestMoveRow$.next({rowId: 1, direction: 'down'});
+    tick();
+
+    expect(duplicatedModule.rackingData.row).toBe(2);
+    expect(duplicatedModule.rackingData.id).toBeUndefined();
+
+    duplicatePersist$.next({
+      data: [{
+        id: 88,
+        moduleid: 5,
+        rackid: 1,
+        row: 1,
+        column: 0,
+        selected_panel_id: null
+      }]
+    });
+    duplicatePersist$.complete();
+    tick();
+
+    expect(duplicatedModule.rackingData.id).toBe(88);
+    expect(duplicatedModule.rackingData.row).toBe(2);
   }));
 
   it('does not move the first row up', fakeAsync(() => {
@@ -271,8 +363,11 @@ describe('RackDetailDataService', () => {
       module: {id: 7, name: 'VCA', hp: 6, standard: {id: 0}, functions: []}
     });
 
+    const rowZero = [rowZeroModule];
+    const rowOne: any[] = [];
+    const rowTwo = [rowTwoModule];
     service.singleRackData$.next(makeRack({rows: 3}));
-    service.rowedRackedModules$.next([[rowZeroModule], [], [rowTwoModule]]);
+    service.rowedRackedModules$.next([rowZero, rowOne, rowTwo]);
     backend.update.rackedModules.calls.reset();
     backend.update.rack.calls.reset();
     backend.get.rackedModules.calls.reset();
@@ -281,6 +376,8 @@ describe('RackDetailDataService', () => {
     tick();
 
     expect(backend.update.rackedModules).toHaveBeenCalled();
+    expect(service.rowedRackedModules$.value![0]).toBe(rowZero);
+    expect(service.rowedRackedModules$.value![1]).toBe(rowTwo);
     const persistedModules = backend.update.rackedModules.calls.mostRecent().args[0];
     expect(persistedModules.find((module: any) => module.module.id === 7).rackingData.row).toBe(1);
     expect(backend.update.rack).toHaveBeenCalledWith(jasmine.objectContaining({rows: 2}));

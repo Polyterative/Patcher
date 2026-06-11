@@ -155,6 +155,19 @@ describe('RackEditorComponent', () => {
     expect(ids).not.toContain('edit-hp');
     expect(ids).not.toContain('reset-hp');
     expect(ids).not.toContain('clear-row');
+    expect(ids).toEqual([
+      'name',
+      'inspect',
+      'duplicate',
+      'void-spacer-1',
+      'replace-with-blank',
+      'void-spacer-2',
+      'delete'
+    ]);
+    expect(menuItems$.value.find(item => item.id === 'void-spacer-1')?.separator).toBeTrue();
+    expect(menuItems$.value.find(item => item.id === 'void-spacer-2')?.separator).toBeTrue();
+    expect(menuItems$.value.find(item => item.id === 'delete')?.danger).toBeTrue();
+    expect(menuItems$.value.find(item => item.id === 'replace-with-blank')?.label).toBe('Replace with blank');
     expect(menuItems$.value[0].label).toBe('Belgrad (Xaoc Devices, 14 HP)');
   });
 
@@ -261,12 +274,14 @@ describe('RackEditorComponent', () => {
   it('exposes clear row from the row action menu', () => {
     const menuItems$ = new BehaviorSubject<any[]>([]);
     const open$ = new Subject<MouseEvent>();
+    const requestDuplicateRow$ = new Subject<number>();
     const requestClearRow$ = new Subject<number>();
     const component = createComponent(
       {} as MatSnackBar,
       {} as SupabaseService,
       {
         requestMoveRow$: new Subject<{rowId: number; direction: 'up' | 'down'}>(),
+        requestDuplicateRow$,
         requestClearRow$,
         requestDeleteRow$: new Subject<number>()
       } as any,
@@ -274,6 +289,7 @@ describe('RackEditorComponent', () => {
       {markForCheck: () => undefined} as ChangeDetectorRef,
       jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
     );
+    const duplicateSpy = spyOn(requestDuplicateRow$, 'next');
     const clearSpy = spyOn(requestClearRow$, 'next');
 
     component.openRowOverflowMenu({
@@ -284,15 +300,29 @@ describe('RackEditorComponent', () => {
     });
 
     const ids = menuItems$.value.map(item => item.id);
+    expect(ids).toEqual([
+      'row-name',
+      'move-row-up',
+      'move-row-down',
+      'duplicate-row',
+      'void-spacer-1',
+      'clear-row',
+      'delete-row'
+    ]);
+    expect(menuItems$.value.find(item => item.id === 'void-spacer-1')?.separator).toBeTrue();
     expect(ids).toContain('clear-row');
     expect(ids).toContain('delete-row');
+    const duplicateItem = menuItems$.value.find(item => item.id === 'duplicate-row');
     const clearItem = menuItems$.value.find(item => item.id === 'clear-row');
     const deleteItem = menuItems$.value.find(item => item.id === 'delete-row');
+    expect(duplicateItem.disabled).toBeFalse();
     expect(clearItem.disabled).toBeFalse();
     expect(deleteItem.disabled).toBeTrue();
 
+    duplicateItem.click$.next(duplicateItem);
     clearItem.click$.next(clearItem);
 
+    expect(duplicateSpy).toHaveBeenCalledWith(1);
     expect(clearSpy).toHaveBeenCalledWith(1);
   });
 

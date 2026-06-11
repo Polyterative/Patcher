@@ -10,7 +10,9 @@
   >
     <ng-template matMenuContent>
       @for (menuItem of dataService.menuItems$|async; track menuItem.id) {
-        @if (menuItem.submenu && menuItem.submenu.length > 0) {
+        @if (menuItem.separator) {
+          <div class="contextMenuSpacer" aria-hidden="true"></div>
+        } @else if (menuItem.submenu && menuItem.submenu.length > 0) {
           <button mat-menu-item
                   [matMenuTriggerFor]="sub"
                   [disabled]="menuItem.disabled"

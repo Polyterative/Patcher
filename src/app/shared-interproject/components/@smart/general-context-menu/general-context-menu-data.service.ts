@@ -12,6 +12,7 @@ export interface ContextMenuItem {
   label: string;
   disabled: boolean;
   danger?: boolean;
+  separator?: boolean;
   data?: unknown;
   click$: Subject<ContextMenuItem>;
   submenu?: ContextMenuItem[];

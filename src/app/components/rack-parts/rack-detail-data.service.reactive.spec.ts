@@ -1,6 +1,7 @@
 import {
   BehaviorSubject,
   of,
+  Subject,
   throwError
 } from 'rxjs';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
@@ -254,18 +255,41 @@ describe('RackDetailDataService reactive flows', () => {
     const {service, backend} = build();
     const firstModule = moduleInRack(1, 0, 0);
     const failingModule = moduleInRack(2, 0, 1);
+    const unaffectedModule = moduleInRack(3, 1, 0);
+    const rowToClear = [firstModule, failingModule];
+    const unaffectedRow = [unaffectedModule];
     backend.delete.rackedModule.and.callFake((id: number) => id === 2
       ? of({error: new Error('delete failed')})
       : of({})
     );
-    service.singleRackData$.next(rack({rows: 1}));
-    service.rowedRackedModules$.next([[firstModule, failingModule]]);
+    service.singleRackData$.next(rack({rows: 2}));
+    service.rowedRackedModules$.next([rowToClear, unaffectedRow]);
 
     service.requestClearRow$.next(0);
 
+    expect(service.rowedRackedModules$.value[0]).toBe(rowToClear);
     expect(service.rowedRackedModules$.value[0].map((module: any) => module.rackingData.id)).toEqual([2]);
     expect(service.rowedRackedModules$.value[0][0].rackingData.column).toBe(0);
+    expect(service.rowedRackedModules$.value[1]).toBe(unaffectedRow);
     expect(SharedConstants.errorCustom).toHaveBeenCalled();
+  });
+
+  it('keeps a cleared row removed locally when a racking id changes before delete returns', () => {
+    const {service, backend} = build();
+    const deleteResult$ = new Subject<{}>();
+    const module = moduleInRack(1, 0, 0);
+    const rowToClear = [module];
+    backend.delete.rackedModule.and.returnValue(deleteResult$.asObservable());
+    service.singleRackData$.next(rack({rows: 1}));
+    service.rowedRackedModules$.next([rowToClear]);
+
+    service.requestClearRow$.next(0);
+    module.rackingData.id = 99;
+    deleteResult$.next({});
+    deleteResult$.complete();
+
+    expect(service.rowedRackedModules$.value[0]).toBe(rowToClear);
+    expect(service.rowedRackedModules$.value[0]).toEqual([]);
   });
   
   it('loads rack data on updateSingleRackData$ and recalculates ownership/status', () => {

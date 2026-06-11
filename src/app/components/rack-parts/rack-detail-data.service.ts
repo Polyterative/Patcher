@@ -175,6 +175,7 @@ export class RackDetailDataService extends SubManager {
   requestAddNewRow$ = new Subject<void>();
   requestRemoveRow$ = new Subject<void>();
   requestMoveRow$ = new Subject<{rowId: number; direction: 'up' | 'down'}>();
+  requestDuplicateRow$ = new Subject<number>();
   requestClearRow$ = new Subject<number>();
   requestDeleteRow$ = new Subject<number>();
   
@@ -307,7 +308,7 @@ export class RackDetailDataService extends SubManager {
           }
 
           const snapshot: RackedModule[][] = cloneRackData(rackModules);
-          const nextRackModules: RackedModule[][] = cloneRackData(rackModules);
+          const nextRackModules: RackedModule[][] = [...rackModules];
           [nextRackModules[rowId], nextRackModules[targetRow]] = [nextRackModules[targetRow], nextRackModules[rowId]];
           this.updateRackRowCoordinates(nextRackModules, rack.rows);
           this.rowedRackedModules$.next(nextRackModules);
@@ -321,6 +322,50 @@ export class RackDetailDataService extends SubManager {
               console.error(`Error moving rack row: ${ err }`);
               this.rowedRackedModules$.next(snapshot);
               SharedConstants.errorCustom(this.snackBar, 'Failed to move row — changes reverted. Check your connection and try again.');
+              return EMPTY;
+            })
+          );
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe();
+
+    this.requestDuplicateRow$
+      .pipe(
+        withLatestFrom(this.rowedRackedModules$, this.singleRackData$),
+        switchMap(([rowId, rackModules, rack]) => {
+          if (!rack || rowId < 0 || rowId >= rack.rows) {
+            SharedConstants.infoCustom(this.snackBar, 'This row cannot be duplicated.');
+            return EMPTY;
+          }
+
+          const snapshotRack: Rack = cloneRackData(rack);
+          const snapshotRackModules: RackedModule[][] = cloneRackData(rackModules);
+          const nextRack: Rack = {
+            ...rack,
+            rows: rack.rows + 1
+          };
+          const nextRackModules: RackedModule[][] = [...rackModules];
+          const duplicatedRow = cloneRackData(nextRackModules[rowId] ?? []);
+          duplicatedRow.forEach(module => {
+            module.rackingData.id = undefined as any;
+          });
+          nextRackModules.splice(rowId + 1, 0, duplicatedRow);
+          this.updateRackRowCoordinates(nextRackModules, nextRack.rows);
+          this.singleRackData$.next(nextRack);
+          this.rowedRackedModules$.next(nextRackModules);
+
+          return this.persistRackRowsAndModules(nextRackModules, nextRack).pipe(
+            tap(() => this.analytics.capture('rack.row_duplicated', {
+              rack_id: rack.id,
+              row: rowId,
+              module_count: duplicatedRow.length
+            })),
+            catchError((err) => {
+              console.error(`Error duplicating rack row: ${ err }`);
+              this.singleRackData$.next(snapshotRack);
+              this.rowedRackedModules$.next(snapshotRackModules);
+              SharedConstants.errorCustom(this.snackBar, 'Failed to duplicate row — changes reverted. Check your connection and try again.');
               return EMPTY;
             })
           );
@@ -352,7 +397,7 @@ export class RackDetailDataService extends SubManager {
             ...rack,
             rows: rack.rows - 1
           };
-          const nextRackModules: RackedModule[][] = cloneRackData(rackModules);
+          const nextRackModules: RackedModule[][] = [...rackModules];
           nextRackModules.splice(rowId, 1);
           this.updateRackRowCoordinates(nextRackModules, nextRack.rows);
           this.rowedRackedModules$.next(nextRackModules);
@@ -528,7 +573,7 @@ export class RackDetailDataService extends SubManager {
             return EMPTY;
           }
 
-          const modulesInRow: RackedModule[] = cloneRackData(allRackModule?.[rowId] ?? []);
+          const modulesInRow: RackedModule[] = [...(allRackModule?.[rowId] ?? [])];
           
           if (modulesInRow && modulesInRow.length > 0) {
             if (isAnyModuleWithoutRackingId([modulesInRow])) {
@@ -540,22 +585,31 @@ export class RackDetailDataService extends SubManager {
               map(response => this.assertBackendSuccess(response)),
               map(() => ({
                 id: module.rackingData.id,
+                module,
                 ok: true
               })),
               catchError((err) => {
                 console.error(`Error clearing row module: ${ err }`);
                 return of({
                   id: module.rackingData.id,
+                  module,
                   ok: false
                 });
               })
             ))).pipe(
               tap(results => {
                 const deletedIds = new Set(results.filter(result => result.ok).map(result => result.id));
+                const deletedModules = new Set(results.filter(result => result.ok).map(result => result.module));
                 const failedCount = results.length - deletedIds.size;
-                const rackModules: RackedModule[][] = cloneRackData(this.rowedRackedModules$.value ?? []);
-                rackModules[rowId] = (rackModules[rowId] ?? []).filter(module => !deletedIds.has(module.rackingData.id));
-                this.updateModulesColumnIds(rackModules, rowId);
+                const rackModules: RackedModule[][] = [...(this.rowedRackedModules$.value ?? [])];
+                for (const row of rackModules) {
+                  for (let index = row.length - 1; index >= 0; index--) {
+                    if (deletedIds.has(row[index].rackingData.id) || deletedModules.has(row[index])) {
+                      row.splice(index, 1);
+                    }
+                  }
+                }
+                this.updateRackRowCoordinates(rackModules, rack?.rows ?? rackModules.length);
                 this.rowedRackedModules$.next(rackModules);
 
                 this.analytics.capture('rack.row_cleared', {
@@ -1344,6 +1398,7 @@ export class RackDetailDataService extends SubManager {
   
   private callBackendToUpdateModulesOfRack(rackModules: RackedModule[][], _rack: Rack) {
     const modules = rackModules.flatMap(row => row);
+    const unsyncedModules = modules.filter(module => module.rackingData.id === undefined);
 
     if (modules.length === 0) {
       return of(undefined);
@@ -1351,7 +1406,7 @@ export class RackDetailDataService extends SubManager {
 
     return this.backend.update.rackedModules(modules)
       .pipe(
-        tap(response => this.applyPersistedRackingIds(response, rackModules))
+        tap(response => this.applyPersistedRackingIds(response, rackModules, unsyncedModules))
       );
   }
 
@@ -1364,7 +1419,11 @@ export class RackDetailDataService extends SubManager {
     return response;
   }
 
-  private applyPersistedRackingIds(response: unknown, rackModules: RackedModule[][]): void {
+  private applyPersistedRackingIds(
+    response: unknown,
+    rackModules: RackedModule[][],
+    targetUnsyncedModules: RackedModule[] = []
+  ): void {
     const persistedRows = (response as {
       data?: Array<{
         id?: number;
@@ -1378,6 +1437,14 @@ export class RackDetailDataService extends SubManager {
 
     if (persistedRows.length === 0 || !isAnyModuleWithoutRackingId(rackModules)) {
       return;
+    }
+
+    for (const [index, target] of targetUnsyncedModules.entries()) {
+      const persistedRow = persistedRows[index];
+      if (target?.rackingData.id === undefined && persistedRow?.id != null) {
+        target.rackingData.id = persistedRow.id;
+        target.rackingData.selectedPanelId = persistedRow.selected_panel_id ?? null;
+      }
     }
 
     const unsyncedModules = rackModules.flatMap(row => row)
