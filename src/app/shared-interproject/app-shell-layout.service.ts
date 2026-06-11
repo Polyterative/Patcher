@@ -8,7 +8,7 @@ import {
 } from 'rxjs/operators';
 
 
-export const APP_SHELL_WIDE_QUERY = '(min-width: 31.25rem)';
+export const APP_SHELL_WIDE_QUERY = '(min-width: 37.5rem)';
 
 @Injectable({providedIn: 'root'})
 export class AppShellLayoutService {

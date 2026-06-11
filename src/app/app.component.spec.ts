@@ -79,6 +79,7 @@ describe('AppComponent', () => {
     .overrideComponent(AppComponent, {
       set: {
         imports: [ToolbarStubComponent, AsyncPipe],
+        schemas: [NO_ERRORS_SCHEMA],
         // Replace the heavy data-service providers with empty stubs — this
         // spec exercises shell-layout behaviour, not the floating selection
         // panel. The real services are exercised by their own specs and
@@ -95,12 +96,18 @@ describe('AppComponent', () => {
     fixture = TestBed.createComponent(AppComponent);
   });
 
-  it('applies the shared wide-shell class and removes the legacy toolbar on desktop shells', () => {
+  it('keeps the blue Material toolbar for mobile shells', () => {
     fixture.detectChanges();
 
     const shell = fixture.debugElement.query(By.css('.app-shell')).nativeElement as HTMLElement;
     expect(shell.classList.contains('app-shell--wide')).toBeFalse();
     expect(fixture.debugElement.query(By.directive(ToolbarStubComponent))).not.toBeNull();
+  });
+
+  it('applies the shared wide-shell class and removes the blue Material toolbar on non-mobile shells', () => {
+    fixture.detectChanges();
+
+    const shell = fixture.debugElement.query(By.css('.app-shell')).nativeElement as HTMLElement;
 
     wideShell$.next(true);
     fixture.detectChanges();
@@ -201,6 +208,7 @@ describe('AppComponent — selection panel provider wiring', () => {
     .overrideComponent(AppComponent, {
       set: {
         imports: [ToolbarStubComponent, AsyncPipe],
+        schemas: [NO_ERRORS_SCHEMA],
         providers: [
           {provide: PatchDetailDataService, useClass: PatchDataStub},
           {provide: RackDetailDataService, useValue: {}},

@@ -72,15 +72,17 @@ describe('HomeExperienceHeroComponent', () => {
 
   it('keeps the integrated metro nav hidden outside the wide shell', () => {
     const host = fixture.nativeElement as HTMLElement;
-    expect(host.querySelector('.hero-metro-nav')).toBeNull();
+    expect(host.querySelector('.title-metro-nav')).toBeNull();
   });
 
-  it('renders the integrated metro nav inside the home hero for wide shells', () => {
+  it('renders the canonical integrated metro nav inside the home hero for wide shells', () => {
     wideShell$.next(true);
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
-    expect(host.querySelector('.hero-metro-nav')).not.toBeNull();
+    expect(host.querySelector('.title-metro-nav')).not.toBeNull();
+    expect(host.querySelector('.title-metro-targets')).not.toBeNull();
+    expect(host.querySelector('.title-metro-target-group--account')).not.toBeNull();
     expect(host.textContent).toContain('patcher.xyz');
     expect(host.textContent).toContain('Modules');
     expect(host.textContent).toContain('Racks');
