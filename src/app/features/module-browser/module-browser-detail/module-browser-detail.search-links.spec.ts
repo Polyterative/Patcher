@@ -47,6 +47,15 @@ describe('ModuleBrowserDetailComponent search links', () => {
     expect(youtube!.url('Rings', 'Mutable Instruments')).toContain('Mutable');
   });
 
+  it('encodes user input in search URLs', () => {
+    const {component} = build();
+    const google = component.searchLinks.find(l => l.label === 'Google');
+
+    expect(google).toBeTruthy();
+    const url = new URL(google!.url('Rings & Co', 'Mutable Instruments/Inc?'));
+    expect(url.searchParams.get('q')).toBe('Rings & Co by Mutable Instruments/Inc?');
+  });
+
   it('every search link has a non-empty label and icon', () => {
     const {component} = build();
     component.searchLinks.forEach(link => {
