@@ -332,6 +332,12 @@ describe('RackDetailDataService media, rename, and duplication', () => {
     service.singleRackData$.next(rack({id: 1, name: 'Perf Rack V5', hp: 104, rows: 2, image: 'keep.jpeg'}));
     service.rowedRackedModules$.next([[mod(1, 0, 0), mod(2, 0, 1)]]);
     backend.GET.rackWithId.and.callFake((id: number) => of({data: rack({id, name: 'New Rack'})}));
+    backend.update.rackedModules.and.returnValue(of({
+      data: [
+        {id: 301, moduleid: 1001, rackid: 200, row: 0, column: 0, selected_panel_id: null},
+        {id: 302, moduleid: 1002, rackid: 200, row: 0, column: 1, selected_panel_id: null}
+      ]
+    }));
     
     service.duplicateRack$.next({id: 1, name: 'Perf Rack V5'} as any);
     
@@ -340,6 +346,8 @@ describe('RackDetailDataService media, rename, and duplication', () => {
     expect(backend.add.rack.calls.mostRecent().args[0].image).toBeUndefined();
     expect(history.replaceState).toHaveBeenCalled();
     expect(backend.update.rackedModules).toHaveBeenCalled();
+    expect(service.rowedRackedModules$.value[0].map((module: any) => module.module.id)).toEqual([1001, 1002]);
+    expect(service.rowedRackedModules$.value[0].map((module: any) => module.rackingData.id)).toEqual([301, 302]);
     expect(SharedConstants.successCustom).toHaveBeenCalled();
   });
 
