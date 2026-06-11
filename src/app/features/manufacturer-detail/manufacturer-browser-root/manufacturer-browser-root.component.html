@@ -40,17 +40,19 @@
       
       <!-- ── Right column: results ── -->
       <div class="browser-content-area col gap1">
-        @if (dataService.manufacturers$ | async; as manufacturers) {
-          @if (manufacturers == null) {
+        @if ({
+          manufacturers: (dataService.manufacturers$ | async)
+        }; as bag) {
+          @if (bag.manufacturers == null) {
             <lib-auto-content-loading-indicator
               [skipFirstData]="true"
               [loadingLines]="5"
             >
             </lib-auto-content-loading-indicator>
           } @else {
-            @if (manufacturers.length > 0) {
+            @if (bag.manufacturers.length > 0) {
               <div class="manufacturer-list">
-                @for (manufacturer of manufacturers; track manufacturer.id) {
+                @for (manufacturer of bag.manufacturers; track manufacturer.id) {
                   <app-manufacturer-row [manufacturer]="manufacturer"></app-manufacturer-row>
                 } @empty {
                   <app-empty-state></app-empty-state>
@@ -59,18 +61,18 @@
             } @else {
               <app-empty-state></app-empty-state>
             }
-          }
-          @if (hasMoreManufacturers) {
-            <div class="loadMore">
-              <button mat-stroked-button
-                      color="primary"
-                      (click)="loadMore()"
-                      class="loadMore__btn"
-              >
-                Load more
-                <span class="loadMore__count">({{ dataService.loadedCount }} of {{ dataService.serversideAdditionalData.itemsCount$.value }} loaded)</span>
-              </button>
-            </div>
+            @if (hasMoreManufacturers) {
+              <div class="loadMore">
+                <button mat-stroked-button
+                        color="primary"
+                        (click)="loadMore()"
+                        class="loadMore__btn"
+                >
+                  Load more
+                  <span class="loadMore__count">({{ dataService.loadedCount }} of {{ dataService.serversideAdditionalData.itemsCount$.value }} loaded)</span>
+                </button>
+              </div>
+            }
           }
         }
         <lib-auto-update-loading-indicator
