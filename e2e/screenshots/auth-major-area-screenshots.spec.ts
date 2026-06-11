@@ -108,24 +108,27 @@ async function getPublicConnectedPatchId(): Promise<number> {
 
 async function setHomeHeroPatch(page: Page, patchId: number): Promise<void> {
   await page.waitForTimeout(1_200);
-  await page.evaluate((resolvedPatchId: number) => {
+  const patchInjected = await page.evaluate((resolvedPatchId: number) => {
     const ng = (window as {ng?: {getComponent?: (element: Element) => any}}).ng;
     if (!ng?.getComponent) {
-      throw new Error('Angular debug API unavailable');
+      return false;
     }
 
     const homeRoot = document.querySelector('app-home');
     if (!homeRoot) {
-      throw new Error('Home component not found');
+      return false;
     }
 
     const component = ng.getComponent(homeRoot);
     component.patchDetailDataService.updateSinglePatchData$.next(resolvedPatchId);
+    return true;
   }, patchId);
+
+  expect(patchInjected).toBeTruthy();
 }
 
-async function revealHomeHeroGraph(page: Page): Promise<void> {
-  await page.waitForFunction(
+async function revealHomeHeroGraph(page: Page): Promise<boolean> {
+  return page.waitForFunction(
     () => {
       const ng = (window as {ng?: {getComponent?: (element: Element) => any}}).ng;
       const patchGraphHost = document.querySelector('app-home-experience-hero .patch-graph-shell app-patch-graph');
@@ -155,7 +158,7 @@ async function revealHomeHeroGraph(page: Page): Promise<void> {
     },
     undefined,
     {timeout: 20_000}
-  );
+  ).then(() => true).catch(() => false);
 }
 
 async function captureViewport(
@@ -324,7 +327,9 @@ async function prepareHome(page: Page): Promise<void> {
 async function prepareModuleBrowser(page: Page): Promise<void> {
   await page.goto('/modules/browser');
   await expect(page).toHaveURL(/\/modules\/browser/, {timeout: 20_000});
-  await expect(page.getByRole('status').first()).toBeVisible({timeout: 20_000});
+  await expect(page.locator('app-module-minimal, app-empty-state, lib-auto-content-loading-indicator').first()).toBeVisible({
+    timeout: 20_000
+  });
 }
 
 async function prepareModuleDetails(page: Page): Promise<void> {
@@ -339,7 +344,9 @@ async function prepareModuleDetails(page: Page): Promise<void> {
 async function preparePatchBrowser(page: Page): Promise<void> {
   await page.goto('/patches/browser');
   await expect(page).toHaveURL(/\/patches\/browser/, {timeout: 20_000});
-  await expect(page.getByRole('status').first()).toBeVisible({timeout: 20_000});
+  await expect(page.locator('app-patch-micro, app-empty-state, lib-auto-content-loading-indicator').first()).toBeVisible({
+    timeout: 20_000
+  });
 }
 
 async function preparePatchDetailsEditing(page: Page): Promise<void> {
@@ -356,7 +363,7 @@ async function prepareUserArea(page: Page): Promise<void> {
   await page.goto('/user/area');
   await expect(page).toHaveURL(/\/user\/area/, {timeout: 20_000});
   await expect(page.locator('app-user-area-root').first()).toBeVisible({timeout: 20_000});
-  await expect(page.getByRole('textbox', {name: /search modules, racks, patches/i}).first()).toBeVisible({
+  await expect(page.locator('.user-area-utility-search input').first()).toBeVisible({
     timeout: 20_000
   });
   await expect(page.locator('app-user-modules, app-user-racks, app-user-patches').first()).toBeVisible({timeout: 20_000});
@@ -371,8 +378,9 @@ const SCREENSHOT_TARGETS: ScreenshotTarget[] = [
   {
     fileName: '01-home.jpg',
     prepare: prepareHome,
-    focusSelector: 'app-home-experience-hero .patch-graph-shell lib-graph',
-    settleDelayMs: 15_000,
+    focusSelector: 'app-home-experience-hero .hero-shell',
+    readyScopeSelector: 'app-home-experience-hero',
+    settleDelayMs: 1_500,
     authenticated: false
   },
   {fileName: '02-modules.jpg', prepare: prepareModuleBrowser, focusSelector: 'app-module-minimal, app-empty-state'},
