@@ -50,21 +50,8 @@
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
-  overflow-x: scroll;
+  overflow-x: hidden;
   overflow-y: hidden;
-  scroll-snap-type: x proximity;
-  scrollbar-gutter: stable both-edges;
-  overscroll-behavior-x: contain;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-x;
-  cursor: grab;
-  padding-bottom: 0.45rem;
-  border-bottom: 0.125rem solid rgba(0, 0, 0, 0.12);
-  @include scrollbars(0.45rem, rgba(45, 67, 89, 0.55), rgba(255, 255, 255, 0.28));
-
-  &:active {
-    cursor: grabbing;
-  }
 }
 .manufacturer-row-header {
   display: flex;
@@ -157,14 +144,40 @@
 // ── Module strip — single nowrap row with horizontal scroll ───────────────
 
 .module-strip {
-  display: inline-flex;
+  display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
   gap: 0.65rem;
   align-items: stretch;
-  padding-bottom: 0.35rem;
-  width: max-content;
-  min-width: 100%;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x proximity;
+  scrollbar-gutter: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  cursor: grab;
+  padding-bottom: 0.15rem;
+  @include scrollbars(0.35rem, rgba(96, 96, 96, 0.7), transparent);
+
+  &::-webkit-scrollbar,
+  &::-webkit-scrollbar-track,
+  &::-webkit-scrollbar-track-piece,
+  &::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(96, 96, 96, 0.7);
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
 }
 
 // Fixed width so cards stay compact and consistent in the strip
