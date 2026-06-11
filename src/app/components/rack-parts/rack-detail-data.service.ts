@@ -79,6 +79,7 @@ import {
   extractCreatedPatchId,
   extractCreatedPublicId,
   isAnyModuleWithoutRackingId,
+  mergeRefreshedModules,
 } from './rack-detail-data.utils';
 import { AnalyticsService } from '../../features/backbone/analytics-integration/analytics.service';
 
@@ -987,7 +988,7 @@ export class RackDetailDataService extends SubManager {
     )
       .subscribe(([{rackedModules}, rack]: [{rackedModules: RackedModule[]; rackId: number}, Rack]) => {
         // create a 2d array of racked modules and sort them by row
-        const rowedRackedModules = buildRowedModulesArray(rackedModules, rack);
+        const rowedRackedModules = mergeRefreshedModules(this.rowedRackedModules$.value, rackedModules, rack);
         this.rowedRackedModules$.next(rowedRackedModules);
         this.isRackDataLoading$.next(false);
       });
@@ -1455,7 +1456,9 @@ export class RackDetailDataService extends SubManager {
             this.backend.delete.rackedModule(module.rackingData.id).pipe(
               map(deleteResponse => this.assertBackendSuccess(deleteResponse))
             )
-          )).pipe(map(() => response));
+          )).pipe(
+            map(() => response)
+          );
         })
       );
   }

@@ -48,7 +48,7 @@ import {
 } from './user-area-data.utils';
 import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 
-export type UserModuleCollectionFilter = 'ALL' | UserModulePossessionKind;
+export type UserModuleCollectionFilter = 'MY_MODULES' | 'WISHLIST';
 
 @Injectable()
 export class UserAreaDataService extends SubManager {
@@ -86,7 +86,7 @@ export class UserAreaDataService extends SubManager {
   readonly pagedModulesData$: Observable<MinimalModule[] | undefined>;
   readonly hasMoreModules$: Observable<boolean>;
   readonly remainingModulesCount$: Observable<number>;
-  readonly moduleCollectionFilter$ = new BehaviorSubject<UserModuleCollectionFilter>('ALL');
+  readonly moduleCollectionFilter$ = new BehaviorSubject<UserModuleCollectionFilter>('MY_MODULES');
   readonly activeTagFilter$ = new BehaviorSubject<string | null>(null);
   readonly filteredRacksData$: Observable<Rack[] | undefined>;
   readonly filteredRacksCount$: Observable<number>;
@@ -473,7 +473,7 @@ export class UserAreaDataService extends SubManager {
     this.disconnectDiscovery();
     this._searchQuery$.next('');
     this.activeTagFilter$.next(null);
-    this.moduleCollectionFilter$.next('ALL');
+    this.moduleCollectionFilter$.next('MY_MODULES');
   }
 
   override ngOnDestroy(): void {
@@ -503,14 +503,14 @@ export class UserAreaDataService extends SubManager {
       return undefined;
     }
 
-    if (collectionFilter === 'ALL') {
-      return modules;
+    if (collectionFilter === 'MY_MODULES') {
+      return modules.filter(module => this.normalizePossessionKind(module.possessionKind) !== 'WANTS');
     }
 
-    return modules.filter(module => this.normalizePossessionKind(module.possessionKind) === collectionFilter);
+    return modules.filter(module => this.normalizePossessionKind(module.possessionKind) === 'WANTS');
   }
 
-  private normalizePossessionKind(kind: UserModulePossessionKind | undefined): UserModuleCollectionFilter {
+  private normalizePossessionKind(kind: UserModulePossessionKind | undefined): UserModulePossessionKind {
     return kind === 'WANTS' || kind === 'SELLS' ? kind : 'HAS';
   }
 }

@@ -230,7 +230,7 @@ describe('UserAreaDataService', () => {
     expect(passedIds).not.toContain(2);
   });
 
-  it('shows all user modules by default and filters by collection status on request', () => {
+  it('shows my modules by default and switches to wishlist on request', () => {
     const {service} = build();
     const emittedIds: number[][] = [];
     service.modulesData$.next([
@@ -243,19 +243,26 @@ describe('UserAreaDataService', () => {
     const subscription = service.filteredModulesData$.subscribe((modules) => {
       emittedIds.push((modules ?? []).map(module => module.id));
     });
-    service.moduleCollectionFilter$.next('HAS');
-    service.moduleCollectionFilter$.next('WANTS');
-    service.moduleCollectionFilter$.next('SELLS');
+    service.moduleCollectionFilter$.next('WISHLIST');
 
-    expect(emittedIds).toEqual([[1, 2, 3, 4], [1, 4], [2], [3]]);
+    expect(emittedIds).toEqual([[1, 3, 4], [2]]);
     subscription.unsubscribe();
+  });
+
+  it('resets module collection view to my modules', () => {
+    const {service} = build();
+
+    service.moduleCollectionFilter$.next('WISHLIST');
+    service.resetUiState();
+
+    expect(service.moduleCollectionFilter$.value).toBe('MY_MODULES');
   });
 
   it('resets module pagination when collection status changes', () => {
     const {service} = build();
     service.modulesPagination.skip$.next(20);
 
-    service.moduleCollectionFilter$.next('WANTS');
+    service.moduleCollectionFilter$.next('WISHLIST');
 
     expect(service.modulesPagination.skip$.value).toBe(0);
   });

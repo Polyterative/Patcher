@@ -3,6 +3,10 @@
 > Archive of finished work. One-line summaries only. For strategy context see `../product/PRINCIPLES.md` and
 > `../product/ROADMAP.md`.
 
+- **2026-06-11** — HIGH: Module Possession States — user-area modules now default to My Modules (HAS+SELLS) with a dedicated Wishlist view for WANTS.
+
+- **2026-06-11** — feat(rack-editor): granular local updates for no-reload animations — rack reloads now preserve DOM identity, row/module mutations stay local, and targeted rack specs pass.
+
 - **2026-06-10** — feat(admin): add rack image upload/update flow for admins only — SSR admin API uploads raw files to the existing `racks` bucket, SECURITY DEFINER RPC updates `racks.image`, and the admin panel now includes a rack image detail card with tests.
 
 - **17-05-2026** — feat(public-profile): replace mat-paginator with Load More buttons in Racks and Patches tabs — accumulates results on load-more click; reset on profile change; +2 spec tests (loadMorePatches$, loadMoreRacks$); MatPaginatorModule → MatButtonModule in module (public-profile-data.service.ts, public-profile.component.ts/.html/.scss, public-profile.module.ts, spec)

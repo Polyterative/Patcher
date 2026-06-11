@@ -4,6 +4,7 @@ import {
   extractCreatedPatchId,
   isAnyModuleWithoutRackingId,
   buildRowedModulesArray,
+  mergeRefreshedModules,
   calculateBlankIdForSizeAndStandard
 } from './rack-detail-data.utils';
 import { RackedModule } from '../../models/module';
@@ -86,6 +87,52 @@ describe('rack-detail-data.utils', () => {
       const modules = [makeRackedModule(1, 4, 0, 1, null, null)];
       const result = buildRowedModulesArray(modules, { rows: 1 } as RackMinimal);
       expect(result.length).toBe(2);
+    });
+  });
+
+  describe('mergeRefreshedModules', () => {
+    it('preserves references for known ids and drops removed modules', () => {
+      const preservedA = makeRackedModule(1, 4, 0, 11, 0, 0);
+      const preservedB = makeRackedModule(2, 6, 0, 12, 0, 1);
+      const removed = makeRackedModule(3, 8, 0, 13, 1, 0);
+      const freshA = makeRackedModule(1, 10, 0, 11, 0, 0);
+      const freshB = makeRackedModule(2, 6, 0, 12, 0, 1);
+      const freshD = makeRackedModule(4, 12, 0, 24, 1, 0);
+
+      const merged = mergeRefreshedModules(
+        [[preservedA, preservedB], [removed]],
+        [freshA, freshB, freshD],
+        {rows: 2} as RackMinimal
+      );
+
+      expect(merged[0][0]).toBe(preservedA);
+      expect(merged[0][1]).toBe(preservedB);
+      expect(merged[0][0].module.hp).toBe(10);
+      expect(merged[1][0]).toBe(freshD);
+      expect(merged.flat().some(module => module.rackingData.id === 13)).toBeFalse();
+    });
+
+    it('backfills optimistic ids by row and column', () => {
+      const optimistic = makeRackedModule(1, 4, 0, undefined as any, 0, 0);
+      const refreshed = makeRackedModule(1, 4, 0, 55, 0, 0);
+
+      const merged = mergeRefreshedModules(
+        [[optimistic]],
+        [refreshed],
+        {rows: 1} as RackMinimal
+      );
+
+      expect(merged[0][0]).toBe(optimistic);
+      expect(merged[0][0].rackingData.id).toBe(55);
+    });
+
+    it('builds from scratch when there is no current state', () => {
+      const refreshed = makeRackedModule(1, 4, 0, 101, 0, 0);
+      const rack = {rows: 1} as RackMinimal;
+
+      expect(mergeRefreshedModules(null, [refreshed], rack)).toEqual(
+        buildRowedModulesArray([refreshed], rack)
+      );
     });
   });
 
