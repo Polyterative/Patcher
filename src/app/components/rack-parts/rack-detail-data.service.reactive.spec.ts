@@ -119,16 +119,48 @@ describe('RackDetailDataService reactive flows', () => {
     createdServices.forEach((service) => service.ngOnDestroy());
   });
   
-  it('updates row count on add/remove row requests', () => {
+  it('adds and removes rack rows locally without refreshing rack data', () => {
     const {service, backend} = build();
     service.singleRackData$.next(rack({id: 7, rows: 2}));
+    const unrackedModule = moduleInRack(3, null, null);
+    service.rowedRackedModules$.next([
+      [moduleInRack(1, 0, 0)],
+      [],
+      [unrackedModule]
+    ]);
     const refreshSpy = spyOn(service.updateSingleRackData$, 'next').and.callThrough();
     
     service.requestAddNewRow$.next();
+    expect(service.singleRackData$.value.rows).toBe(3);
+    expect(service.rowedRackedModules$.value.length).toBe(4);
+    expect(service.rowedRackedModules$.value[2]).toEqual([]);
+    expect(service.rowedRackedModules$.value[3][0].rackingData.id).toBe(3);
+
     service.requestRemoveRow$.next();
     
     expect(backend.update.rack).toHaveBeenCalledTimes(2);
-    expect(refreshSpy).toHaveBeenCalledWith(7);
+    expect(service.singleRackData$.value.rows).toBe(2);
+    expect(service.rowedRackedModules$.value.length).toBe(3);
+    expect(service.rowedRackedModules$.value[2][0].rackingData.id).toBe(3);
+    expect(refreshSpy).not.toHaveBeenCalled();
+  });
+
+  it('does not remove the last rack row when it still contains modules', () => {
+    spyOn(SharedConstants, 'infoCustom').and.callFake(() => {
+    });
+    const {service, backend} = build();
+    service.singleRackData$.next(rack({id: 7, rows: 2}));
+    service.rowedRackedModules$.next([
+      [],
+      [moduleInRack(2, 1, 0)]
+    ]);
+
+    service.requestRemoveRow$.next();
+
+    expect(service.singleRackData$.value.rows).toBe(2);
+    expect(service.rowedRackedModules$.value.length).toBe(2);
+    expect(backend.update.rack).not.toHaveBeenCalled();
+    expect(SharedConstants.infoCustom).toHaveBeenCalled();
   });
   
   it('toggles privacy and editable state and persists to backend', () => {
