@@ -249,6 +249,17 @@ describe('RackDetailDataService helpers', () => {
     expect(rows[0][0].rackingData.id).toBe(99);
     expect(nextSpy).not.toHaveBeenCalled();
   });
+
+  it('does not call backend.update.rackedModules when there are no modules to sync', () => {
+    const {service, backend} = build();
+    const sync = (service as any).callBackendToUpdateModulesOfRack.bind(service);
+
+    sync([[], []], {id: 1, rows: 2} as any).subscribe((value: unknown) => {
+      expect(value).toBeUndefined();
+    });
+
+    expect(backend.update.rackedModules).not.toHaveBeenCalled();
+  });
   
   it('creates duplicated rack payload for current user without reusing preview media and confirms duplication dialog', () => {
     const {service, backend, dialog} = build();

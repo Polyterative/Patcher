@@ -7,6 +7,7 @@ const makeModule = (id: number, hp: number): RackedModule => ({
 });
 
 const BLANK_ID = 4647;
+const INTELLIJEL_BLANK_ID = 4711;
 
 describe('TotalHpOfRackPipe', () => {
   let pipe: TotalHpOfRackPipe;
@@ -37,5 +38,20 @@ describe('TotalHpOfRackPipe', () => {
       [makeModule(BLANK_ID, 100), makeModule(BLANK_ID, 100), makeModule(2, 4)]
     ];
     expect(pipe.transform(rack)).toBe(10);
+  });
+
+  it('returns 0 when every module is blank', () => {
+    expect(pipe.transform([[makeModule(BLANK_ID, 100), makeModule(INTELLIJEL_BLANK_ID, 200)]])).toBe(0);
+  });
+
+  it('includes unracked real modules in total HP', () => {
+    const unracked = makeModule(1, 12);
+    unracked.rackingData.row = null as any;
+    unracked.rackingData.column = null as any;
+    expect(pipe.transform([[unracked]])).toBe(12);
+  });
+
+  it('ignores empty rows while summing later rows', () => {
+    expect(pipe.transform([[], [makeModule(1, 7)], []])).toBe(7);
   });
 });
