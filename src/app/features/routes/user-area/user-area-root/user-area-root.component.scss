@@ -211,17 +211,6 @@
 }
 
 @media (max-width: 82rem) {
-  .profile-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .sidebar {
-    position: static;
-    max-block-size: none;
-    overflow: visible;
-    padding-right: 0;
-  }
-
   .main-content {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     min-block-size: auto;
@@ -231,14 +220,7 @@
 @media (max-width: 60rem) {
   .main-content {
     grid-template-columns: 1fr;
-  }
-
-  .main-content {
     padding-bottom: 6rem;
-  }
-
-  .sidebar {
-    margin-top: 0.25rem;
   }
 
   .user-area-page {
@@ -252,6 +234,20 @@
   .user-profile-card__actions {
     justify-content: flex-start;
     flex-basis: 100%;
+  }
+}
+
+@media (max-width: 48rem) {
+  .profile-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+    max-block-size: none;
+    overflow: visible;
+    padding-right: 0;
+    margin-top: 0.25rem;
   }
 }
 

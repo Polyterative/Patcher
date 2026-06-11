@@ -1,7 +1,7 @@
 <div class="col gap1"
 >
   <lib-hero-content-card titleNormal="Modules"
-                         [description]="sectionDescriptionByFilter[(dataService.moduleCollectionFilter$ | async) ?? 'HAS']"
+                         [description]="sectionDescriptionByFilter[(dataService.moduleCollectionFilter$ | async) ?? 'ALL']"
                          class="modulesBG"
                          icon="view_module"
                          id="modules"
@@ -73,7 +73,7 @@
               <app-empty-state-tips
                 icon="view_module"
                 title="No modules here yet"
-                [copy]="emptyStateCopyByFilter[(dataService.moduleCollectionFilter$ | async) ?? 'HAS']"
+                [copy]="emptyStateCopyByFilter[(dataService.moduleCollectionFilter$ | async) ?? 'ALL']"
                 [tips]="[
                   { icon: 'add', html: 'Open a module from the library and hit the <strong>+ in the bottom-left</strong> to mark it as owned, wanted, or for sale.' },
                   { icon: 'upload', html: 'Missing one? <strong>Submit NEW</strong> to add it to Patcher.' }

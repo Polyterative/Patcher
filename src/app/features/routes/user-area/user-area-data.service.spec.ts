@@ -230,7 +230,7 @@ describe('UserAreaDataService', () => {
     expect(passedIds).not.toContain(2);
   });
 
-  it('filters user modules by collection status and treats legacy rows as owned', () => {
+  it('shows all user modules by default and filters by collection status on request', () => {
     const {service} = build();
     const emittedIds: number[][] = [];
     service.modulesData$.next([
@@ -243,10 +243,11 @@ describe('UserAreaDataService', () => {
     const subscription = service.filteredModulesData$.subscribe((modules) => {
       emittedIds.push((modules ?? []).map(module => module.id));
     });
+    service.moduleCollectionFilter$.next('HAS');
     service.moduleCollectionFilter$.next('WANTS');
     service.moduleCollectionFilter$.next('SELLS');
 
-    expect(emittedIds).toEqual([[1, 4], [2], [3]]);
+    expect(emittedIds).toEqual([[1, 2, 3, 4], [1, 4], [2], [3]]);
     subscription.unsubscribe();
   });
 
