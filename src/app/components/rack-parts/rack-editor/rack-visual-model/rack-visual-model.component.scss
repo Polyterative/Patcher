@@ -7,9 +7,18 @@
   will-change: transform;
 }
 
+.cdk-drag-preview:not(.cdk-drag-animating) {
+  transition: none !important;
+}
+
+.cdk-drag-preview.cdk-drag-animating {
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
 .cdk-drag-preview .root,
+.module.cdk-drag-dragging,
 .module.cdk-drag-dragging .root {
-  transition: none;
+  transition: none !important;
   box-shadow: none !important;
 }
 
