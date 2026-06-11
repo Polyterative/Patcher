@@ -1,14 +1,26 @@
 @if (data.description) {
   <div class="row space-between description"
+       [class.description--has-reader]="shouldClampDescription"
        fxLayoutGap="1rem"
   >
-    <mat-card-subtitle>
-      @if (viewConfig.ellipseDescription) {
-        {{ data.description|ellipsis:144 }}
-      }
-      @if (!viewConfig.ellipseDescription) {
-        {{ data.description }}
-      }
+    <mat-card-subtitle
+      #descriptionTrigger
+      class="module-description"
+      [class.module-description--clamped]="shouldClampDescription"
+      [attr.tabindex]="shouldClampDescription ? 0 : null"
+      (mouseenter)="updateReaderAlignment(descriptionTrigger)"
+      (focus)="updateReaderAlignment(descriptionTrigger)"
+    >
+      {{ data.description }}
     </mat-card-subtitle>
+    @if (shouldClampDescription) {
+      <span
+        class="module-description-reader"
+        [class.module-description-reader--align-end]="readerAlignEnd"
+        aria-hidden="true"
+      >
+        {{ data.description }}
+      </span>
+    }
   </div>
 }

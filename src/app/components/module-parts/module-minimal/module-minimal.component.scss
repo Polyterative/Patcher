@@ -114,6 +114,13 @@
   max-height: 14rem;
 }
 
+.module-minimal__focus-hide--copy:has(> app-module-part-description:hover),
+.module-minimal__focus-hide--copy:has(> app-module-part-description:focus-within) {
+  position: relative;
+  z-index: 20;
+  overflow: visible;
+}
+
 .module-minimal__focus-hide--extended {
   max-height: 96rem;
 }
