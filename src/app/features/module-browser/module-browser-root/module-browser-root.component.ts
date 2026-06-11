@@ -1,12 +1,10 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  inject,
   Input,
   OnInit
 } from '@angular/core';
 import { animate, style, transition, trigger } from '@angular/animations';
-import { DOCUMENT } from '@angular/common';
 import {
   BehaviorSubject,
   merge,
@@ -69,7 +67,6 @@ const OWNED_MODULES_DEFAULT_THRESHOLD = 20;
   ]
 })
 export class ModuleBrowserRootComponent extends SubManager implements OnInit {
-  private readonly document = inject(DOCUMENT);
   @Input() showSubmitFab = true;
   @Input() showWideShellNav = true;
   @Input() compactSidebarAtTablet = false;
@@ -195,12 +192,6 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
       )
       .subscribe(() => this.syncVisibleModules());
 
-    this.dataService.paginatorToFistPage$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.document.defaultView?.scrollTo({top: 0, behavior: 'smooth'});
-      });
-    
     this.dataService.fields.order.control.patchValue(this.dataService.orderStartingValue, {emitEvent: false});
     this.dataService.serversideTableRequestData.sort$.next([this.dataService.orderStartingValue.id, 'desc']);
     this.dataService.updateModulesList$.next();
@@ -408,16 +399,36 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
 
   private updateVisibleModules(modules: ModuleList): void {
     if (modules === null) {
+      if (this.visibleModules$.value === null) {
+        return;
+      }
       this.visibleModules$.next(null);
       return;
     }
 
+    const currentModules = this.visibleModules$.value;
     if (!this.usesOwnedDataset && this.dataService.fields.order.control.value?.id === 'best-match') {
-      this.visibleModules$.next(this.dataService.sortModulesByBestMatch(modules));
+      const sortedModules = this.dataService.sortModulesByBestMatch(modules);
+      if (!this.haveSameModuleIds(currentModules, sortedModules)) {
+        this.visibleModules$.next(sortedModules);
+      }
       return;
     }
 
-    this.visibleModules$.next(modules);
+    if (!this.haveSameModuleIds(currentModules, modules)) {
+      this.visibleModules$.next(modules);
+    }
+  }
+
+  private haveSameModuleIds(currentModules: ModuleList, nextModules: ModuleList): boolean {
+    if (currentModules === nextModules) {
+      return true;
+    }
+    if (!currentModules || !nextModules || currentModules.length !== nextModules.length) {
+      return false;
+    }
+
+    return currentModules.every((module, index) => module.id === nextModules[index].id);
   }
 
   private get availableOwnedModulesCount(): number {

@@ -363,17 +363,24 @@ describe('RackDetailDataService reactive flows', () => {
     expect(router.navigate).toHaveBeenCalledWith(['/user/area']);
   });
   
-  it('adds module to rack and emits refresh', () => {
+  it('adds module to rack as an unracked local row without refreshing', () => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {
     });
     const {service, backend} = build();
     service.singleRackData$.next(rack({id: 50, name: 'Demo'}));
+    service.rowedRackedModules$.next([[]]);
+    backend.add.rackModule.and.returnValue(of({
+      data: [{id: 123, moduleid: 777, rackid: 50, row: null, column: null, selected_panel_id: null}]
+    }));
     const refreshSpy = spyOn(service.updateSingleRackData$, 'next').and.callThrough();
     
-    service.addModuleToRack$.next({id: 777, name: 'New Module'} as any);
+    service.addModuleToRack$.next({id: 777, name: 'New Module', hp: 8, standard: {id: 0}} as any);
     
     expect(backend.add.rackModule).toHaveBeenCalledWith(777, 50);
-    expect(refreshSpy).toHaveBeenCalledWith(50);
+    expect(refreshSpy).not.toHaveBeenCalled();
+    expect(service.rowedRackedModules$.value.length).toBe(2);
+    expect(service.rowedRackedModules$.value[1][0].module.id).toBe(777);
+    expect(service.rowedRackedModules$.value[1][0].rackingData.id).toBe(123);
   });
 
   it('adds a blank panel to a row at the correct column position', () => {

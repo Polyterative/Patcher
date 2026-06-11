@@ -3,7 +3,6 @@ import { ManufacturerBrowserRootDataService } from './manufacturer-browser-root-
 import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
 import { Subject, BehaviorSubject } from 'rxjs';
 import { TestBed } from '@angular/core/testing';
-import { DOCUMENT } from '@angular/common';
 
 function mockDataService(): ManufacturerBrowserRootDataService {
   return {
@@ -24,13 +23,7 @@ describe('ManufacturerBrowserRootComponent', () => {
   let dataService: ManufacturerBrowserRootDataService;
   let seo: SeoAndUtilsService;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      providers: [
-        { provide: DOCUMENT, useValue: document }
-      ]
-    });
-  });
+  beforeEach(() => TestBed.configureTestingModule({}));
 
   afterEach(() => TestBed.resetTestingModule());
 
@@ -79,17 +72,15 @@ describe('ManufacturerBrowserRootComponent', () => {
     );
   });
 
-  it('scrolls to top when paginatorToFistPage$ fires', () => {
-    const mockDoc = {defaultView: {scrollTo: jasmine.createSpy('scrollTo')}};
-    TestBed.overrideProvider(DOCUMENT, {useValue: mockDoc});
-
+  it('does not scroll to top when paginatorToFistPage$ fires', () => {
+    const scrollSpy = spyOn(window, 'scrollTo');
     const ds = mockDataService();
     const s = mockSeo();
     const comp = TestBed.runInInjectionContext(() => new ManufacturerBrowserRootComponent(ds, s));
 
     ds.paginatorToFistPage$.next();
 
-    expect(mockDoc.defaultView.scrollTo).toHaveBeenCalledWith({top: 0, behavior: 'smooth'});
+    expect(scrollSpy).not.toHaveBeenCalled();
     comp.ngOnDestroy();
   });
 });
