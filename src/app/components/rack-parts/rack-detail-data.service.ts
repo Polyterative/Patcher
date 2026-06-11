@@ -760,7 +760,6 @@ export class RackDetailDataService extends SubManager {
       .subscribe((updatedRackData: Rack) => {
         SharedConstants.successCustom(this.snackBar, `Preview image updated for "${ updatedRackData.name }".`);
         this.analytics.capture('rack.preview_image_updated', { rack_id: updatedRackData?.id });
-        this.updateSingleRackData$.next(updatedRackData.id);
       });
     
     // when user toggles locked status of rack, update backend
