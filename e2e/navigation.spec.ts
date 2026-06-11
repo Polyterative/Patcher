@@ -25,6 +25,16 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL(/modules\/browser/);
     await expect(page.getByRole('heading', {name: /modules/i})).toBeVisible({timeout: 10_000});
   });
+
+  test('slash modules redirects to the module browser and submit CTA opens the form', async ({page}) => {
+    await page.goto('/modules');
+    await expect(page).toHaveURL(/modules\/browser/);
+    await expect(page.getByRole('heading', {name: /modules/i})).toBeVisible({timeout: 10_000});
+
+    await page.getByRole('link', {name: /submit a new module/i}).click();
+    await expect(page).toHaveURL(/modules\/add/);
+    await expect(page.getByRole('heading', {name: /submit a module/i})).toBeVisible({timeout: 10_000});
+  });
   
   test('navigating to patches/browser lands on the correct page', async ({page}) => {
     await page.goto('/patches/browser');

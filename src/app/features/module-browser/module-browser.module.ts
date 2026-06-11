@@ -85,6 +85,11 @@ import { ModuleBrowserSharedModule } from 'src/app/features/module-browser/modul
         path: 'add',
         loadChildren: () => import('./module-adder/module-adder.module').then(m => m.ModuleAdderModule)
       },
+      {
+        path: '',
+        pathMatch: 'full',
+        redirectTo: 'browser'
+      },
       generateUranusRoutes('', [
         {
           path: 'browser',
