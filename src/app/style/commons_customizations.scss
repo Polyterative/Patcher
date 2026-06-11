@@ -349,6 +349,19 @@ $snack-toolbar-offset: 5em;
     color: brand-resources.$brand-positive !important;
     font-weight: 500;
   }
+
+  .mat-mdc-snack-bar-action,
+  .mdc-snackbar__action {
+    color: brand-resources.$brand-positive !important;
+    font-weight: 700;
+  }
+
+  .mat-mdc-snack-bar-action:hover,
+  .mat-mdc-snack-bar-action:focus-visible,
+  .mdc-snackbar__action:hover,
+  .mdc-snackbar__action:focus-visible {
+    background-color: rgba(brand-resources.$brand-positive, .12);
+  }
 }
 
 .snack-error {
