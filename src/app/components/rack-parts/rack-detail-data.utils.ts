@@ -82,6 +82,48 @@ export function buildRowedModulesArray(rackedModules: RackedModule[], rackData: 
   return rowedRackedModules;
 }
 
+export function mergeRefreshedModules(
+  current: RackedModule[][] | null,
+  fresh: RackedModule[],
+  rackData: RackMinimal
+): RackedModule[][] {
+  const nextRows = buildRowedModulesArray(fresh, rackData);
+  if (!current) {
+    return nextRows;
+  }
+
+  const currentById = new Map<number, RackedModule>();
+  const currentByPosition = new Map<string, RackedModule>();
+
+  for (const module of current.flatMap(row => row)) {
+    const {id, row, column} = module.rackingData;
+    if (id != null) {
+      currentById.set(id, module);
+      continue;
+    }
+
+    if (row != null && column != null) {
+      currentByPosition.set(`${ row }:${ column }`, module);
+    }
+  }
+
+  return nextRows.map((row, rowIndex) => row.map((freshModule, columnIndex) => {
+    const {id, row, column} = freshModule.rackingData;
+    const currentModule = (id != null ? currentById.get(id) : undefined)
+      ?? (row != null && column != null
+        ? currentByPosition.get(`${ row }:${ column }`)
+        : undefined)
+      ?? currentByPosition.get(`${ rowIndex }:${ columnIndex }`);
+
+    if (!currentModule) {
+      return freshModule;
+    }
+
+    Object.assign(currentModule, freshModule);
+    return currentModule;
+  }));
+}
+
 export function calculateBlankIdForSizeAndStandard(hp: number, standard: number = 0): number {
   const map = standard === 0 ? BLANK_IDS_STANDARD_0
     : standard === 1 ? BLANK_IDS_STANDARD_1

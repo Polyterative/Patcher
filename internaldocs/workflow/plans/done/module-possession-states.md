@@ -11,7 +11,7 @@ Layer 1 (MVP — module detail segmented control): **shipped 2026-05-15 on `agen
 
 Remaining (Layer 2 — user area integration):
 
-- [ ] Filter "My Modules" user-area to `HAS`+`SELLS` by default; add Wishlist view for `WANTS`
+- [x] Filter "My Modules" user-area to `HAS`+`SELLS` by default; add Wishlist view for `WANTS`
 - [x] Filter rack/patch editor module picker to `HAS`+`SELLS` only
 - [x] `SELLS` inline badge in user-area module list
 
@@ -19,5 +19,4 @@ Remaining (Layer 2 — user area integration):
 
 ## Decision log
 
-<!-- Append timestamped one-liners as the plan progresses. -->
-
+- 2026-06-11 — Reframed the user-area module surface into two views: "My Modules" defaults to HAS+SELLS, while "Wishlist" isolates WANTS so the collection UI matches how users actually browse the list.

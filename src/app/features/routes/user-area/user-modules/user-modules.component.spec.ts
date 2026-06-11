@@ -49,6 +49,10 @@ describe('UserModulesComponent', () => {
   it('globalSearchQuery defaults to empty string', () => {
     expect(comp.globalSearchQuery).toBe('');
   });
+
+  it('shows My Modules and Wishlist filters', () => {
+    expect(comp.collectionFilters.map((filter) => filter.value)).toEqual(['MY_MODULES', 'WISHLIST']);
+  });
 });
 
 describe('userModulesDefaultViewConfig', () => {
