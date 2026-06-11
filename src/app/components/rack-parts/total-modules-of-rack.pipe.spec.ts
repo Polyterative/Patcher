@@ -37,4 +37,19 @@ describe('TotalModulesOfRackPipe', () => {
   it('returns 0 when all modules are blanks', () => {
     expect(pipe.transform([[makeRackedModule(4650), makeRackedModule(4711)]])).toBe(0);
   });
+
+  it('counts unracked real modules because they are still rack modules', () => {
+    const unracked = makeRackedModule(42);
+    unracked.rackingData.row = null as any;
+    unracked.rackingData.column = null as any;
+    expect(pipe.transform([[unracked]])).toBe(1);
+  });
+
+  it('ignores empty rows while counting later rows', () => {
+    expect(pipe.transform([[], [makeRackedModule(1)], []])).toBe(1);
+  });
+
+  it('excludes 1U blank modules from the count', () => {
+    expect(pipe.transform([[makeRackedModule(4711), makeRackedModule(4735), makeRackedModule(1)]])).toBe(1);
+  });
 });

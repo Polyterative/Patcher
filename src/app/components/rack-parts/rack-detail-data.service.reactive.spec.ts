@@ -195,6 +195,107 @@ describe('RackDetailDataService reactive flows', () => {
     
     expect(snackBar.open).toHaveBeenCalled();
   });
+
+  it('summarizes function-analysis coverage and residual modules from rack rows', () => {
+    const {service} = build();
+    const voice = moduleInRack(1, 0, 0, 8, 0);
+    voice.module.tags = [{tag: {name: 'VCO', type: 4}, votes: 3}];
+    const unclassified = moduleInRack(2, 0, 1, 6, 0);
+    let residual: string | null | undefined;
+    let summary: string | undefined;
+
+    service.functionAnalysisResidualLabel$.subscribe(value => residual = value);
+    service.functionAnalysisCoverageSummary$.subscribe(value => summary = value);
+    service.rowedRackedModules$.next([[voice, unclassified]]);
+
+    expect(summary).toBe('Tracked 1/2 modules · 8/14HP');
+    expect(residual).toBe('1 blank or unclassified (6HP)');
+
+    service.rowedRackedModules$.next([]);
+    expect(summary).toBe('No modules to classify yet.');
+    expect(residual).toBeNull();
+  });
+
+  it('ignores row add/remove requests when rack data is missing', () => {
+    const {service, backend} = build();
+    service.singleRackData$.next(undefined as any);
+    service.rowedRackedModules$.next([]);
+
+    service.requestAddNewRow$.next();
+    service.requestRemoveRow$.next();
+
+    expect(backend.update.rack).not.toHaveBeenCalled();
+  });
+
+  it('pads missing rows before adding and removing rows', () => {
+    const {service, backend} = build();
+    service.singleRackData$.next(rack({rows: 3}));
+    service.rowedRackedModules$.next([[moduleInRack(1, 0, 0)]]);
+
+    service.requestAddNewRow$.next();
+    expect(service.rowedRackedModules$.value.length).toBe(4);
+    expect(service.rowedRackedModules$.value[1]).toEqual([]);
+    expect(service.rowedRackedModules$.value[2]).toEqual([]);
+    expect(backend.update.rack).toHaveBeenCalledWith(jasmine.objectContaining({rows: 4}));
+
+    service.singleRackData$.next(rack({rows: 3}));
+    service.rowedRackedModules$.next([[moduleInRack(2, 0, 0)]]);
+    service.requestRemoveRow$.next();
+    expect(service.singleRackData$.value.rows).toBe(2);
+    expect(service.rowedRackedModules$.value.length).toBe(2);
+    expect(service.rowedRackedModules$.value[1]).toEqual([]);
+  });
+
+  it('rolls back add and remove row changes when rack persistence fails', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    backend.update.rack.and.returnValue(throwError(() => new Error('rack update failed')));
+    const originalRows = [[moduleInRack(1, 0, 0)]];
+    service.singleRackData$.next(rack({rows: 2}));
+    service.rowedRackedModules$.next(originalRows);
+
+    service.requestAddNewRow$.next();
+
+    expect(service.singleRackData$.value.rows).toBe(2);
+    expect(service.rowedRackedModules$.value).toEqual(originalRows);
+
+    service.rowedRackedModules$.next([originalRows[0], []]);
+    service.requestRemoveRow$.next();
+
+    expect(service.singleRackData$.value.rows).toBe(2);
+    expect(service.rowedRackedModules$.value).toEqual([originalRows[0], []]);
+    expect(SharedConstants.errorCustom).toHaveBeenCalledTimes(2);
+  });
+
+  it('rolls back move, duplicate, and delete row changes when persistence fails', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    spyOn(SharedConstants, 'infoCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    const rowZero = [moduleInRack(1, 0, 0)];
+    const rowOne: any[] = [];
+    const rowTwo = [moduleInRack(2, 2, 0)];
+    service.singleRackData$.next(rack({rows: 3}));
+    service.rowedRackedModules$.next([rowZero, rowOne, rowTwo]);
+
+    backend.update.rackedModules.and.returnValue(throwError(() => new Error('module update failed')));
+    service.requestMoveRow$.next({rowId: 2, direction: 'up'});
+    expect(service.rowedRackedModules$.value[0][0].rackingData.id).toBe(1);
+    expect(service.rowedRackedModules$.value[2][0].rackingData.id).toBe(2);
+
+    service.requestDuplicateRow$.next(-1);
+    expect(SharedConstants.infoCustom).toHaveBeenCalledWith(jasmine.anything(), 'This row cannot be duplicated.');
+
+    backend.update.rackedModules.and.returnValue(of({}));
+    backend.update.rack.and.returnValue(throwError(() => new Error('rack update failed')));
+    service.requestDuplicateRow$.next(0);
+    expect(service.singleRackData$.value.rows).toBe(3);
+    expect(service.rowedRackedModules$.value.map((row: any[]) => row.map(module => module.rackingData.id))).toEqual([[1], [], [2]]);
+
+    service.requestDeleteRow$.next(1);
+    expect(service.singleRackData$.value.rows).toBe(3);
+    expect(service.rowedRackedModules$.value.map((row: any[]) => row.map(module => module.rackingData.id))).toEqual([[1], [], [2]]);
+    expect(SharedConstants.errorCustom).toHaveBeenCalledTimes(3);
+  });
   
   it('replaces a module with a blank without refreshing rack modules', () => {
     const {service, backend} = build();
@@ -211,6 +312,73 @@ describe('RackDetailDataService reactive flows', () => {
     expect(refreshSpy).not.toHaveBeenCalled();
     expect(service.rowedRackedModules$.value[0][0].module.id).toBe(4651);
     expect(service.rowedRackedModules$.value[0][0].rackingData.id).toBe(88);
+  });
+
+  it('guards replace-with-blank when the module cannot be safely replaced', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    service.singleRackData$.next(rack());
+
+    service.rowedRackedModules$.next([[moduleInRack(undefined as any, 0, 0, 8, 0)]]);
+    service.requestRackedModuleReplaceWithBlank$.next(service.rowedRackedModules$.value[0][0]);
+
+    service.rowedRackedModules$.next([[moduleInRack(2, 0, 0, 26, 1)]]);
+    service.requestRackedModuleReplaceWithBlank$.next(service.rowedRackedModules$.value[0][0]);
+
+    service.rowedRackedModules$.next([[]]);
+    service.requestRackedModuleReplaceWithBlank$.next(moduleInRack(3, 0, 0, 8, 0));
+
+    expect(backend.GET.moduleWithId).not.toHaveBeenCalled();
+    expect(SharedConstants.errorCustom).toHaveBeenCalledTimes(3);
+  });
+
+  it('rolls back replace-with-blank when deleting the original module fails', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    const original = moduleInRack(1, 0, 0, 8, 0);
+    service.singleRackData$.next(rack());
+    service.rowedRackedModules$.next([[original]]);
+    backend.delete.rackedModule.and.returnValue(throwError(() => new Error('delete failed')));
+
+    service.requestRackedModuleReplaceWithBlank$.next(original);
+
+    expect(service.rowedRackedModules$.value[0][0].rackingData.id).toBe(1);
+    expect(service.rowedRackedModules$.value[0][0].module.id).toBe(1001);
+    expect(backend.add.rackModule).not.toHaveBeenCalled();
+    expect(SharedConstants.errorCustom).toHaveBeenCalled();
+  });
+
+  it('removes the original module when replacement blank add fails after delete succeeds', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    const original = moduleInRack(1, 0, 0, 8, 0);
+    service.singleRackData$.next(rack());
+    service.rowedRackedModules$.next([[original]]);
+    backend.add.rackModule.and.returnValue(throwError(() => new Error('add failed')));
+    const syncSpy = spyOn(service.requestRackedModulesDbSync$, 'next').and.callThrough();
+
+    service.requestRackedModuleReplaceWithBlank$.next(original);
+
+    expect(backend.delete.rackedModule).toHaveBeenCalledWith(1);
+    expect(service.rowedRackedModules$.value[0]).toEqual([]);
+    expect(syncSpy).toHaveBeenCalled();
+    expect(SharedConstants.errorCustom).toHaveBeenCalled();
+  });
+
+  it('shows a replace-with-blank preparation error when blank lookup fails or returns no data', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    service.singleRackData$.next(rack());
+    service.rowedRackedModules$.next([[moduleInRack(1, 0, 0, 8, 0)]]);
+    backend.GET.moduleWithId.and.returnValue(of({data: null}));
+
+    service.requestRackedModuleReplaceWithBlank$.next(service.rowedRackedModules$.value[0][0]);
+
+    backend.GET.moduleWithId.and.returnValue(throwError(() => new Error('lookup failed')));
+    service.requestRackedModuleReplaceWithBlank$.next(service.rowedRackedModules$.value[0][0]);
+
+    expect(backend.delete.rackedModule).not.toHaveBeenCalled();
+    expect(SharedConstants.errorCustom).toHaveBeenCalledTimes(2);
   });
   
   it('clears row modules and handles invalid rows', () => {
@@ -232,6 +400,16 @@ describe('RackDetailDataService reactive flows', () => {
     expect(backend.delete.rackedModule).toHaveBeenCalledTimes(2);
     expect(SharedConstants.successCustom).toHaveBeenCalled();
     expect(SharedConstants.errorCustom).toHaveBeenCalled();
+  });
+
+  it('ignores clear-row requests until row data is available', () => {
+    const {service, backend} = build();
+    service.singleRackData$.next(rack({rows: 1}));
+    service.rowedRackedModules$.next(null as any);
+
+    service.requestClearRow$.next(0);
+
+    expect(backend.delete.rackedModule).not.toHaveBeenCalled();
   });
 
   it('does not clear a row while optimistic modules are still syncing', () => {
@@ -341,6 +519,18 @@ describe('RackDetailDataService reactive flows', () => {
     expect(service.rowedRackedModules$.value).toEqual([]);
     expect(SharedConstants.errorCustom).toHaveBeenCalled();
   });
+
+  it('clears loading and unavailable state when public-token rack loading fails', () => {
+    const {service, backend} = build();
+    backend.GET.rackByPublicId.and.returnValue(throwError(() => new Error('token load fail')));
+
+    service.updateSingleRackByPublicId$.next('bad-token');
+
+    expect(service.singleRackData$.value).toBeUndefined();
+    expect(service.rowedRackedModules$.value).toEqual([]);
+    expect(service.isRackDataLoading$.value).toBeFalse();
+    expect(service.rackDetailUnavailableMessage$.value).toBeTruthy();
+  });
   
 
 
@@ -389,6 +579,27 @@ describe('RackDetailDataService reactive flows', () => {
       newRow: 0,
       module: a
     });
+    expect(syncSpy).toHaveBeenCalled();
+  });
+
+  it('transfers a module between rack rows during drag-drop order changes', () => {
+    const {service} = build();
+    service.singleRackData$.next(rack({rows: 2}));
+    const moving = moduleInRack(1, 0, 0);
+    const existing = moduleInRack(2, 1, 0);
+    service.rowedRackedModules$.next([[moving], [existing]]);
+    const syncSpy = spyOn(service.requestRackedModulesDbSync$, 'next').and.callThrough();
+
+    service.rackOrderChange$.next({
+      event: {previousIndex: 0, currentIndex: 1} as any,
+      newRow: 1,
+      module: moving
+    });
+
+    expect(service.rowedRackedModules$.value[0]).toEqual([]);
+    expect(service.rowedRackedModules$.value[1].map((module: any) => module.rackingData.id)).toEqual([2, 1]);
+    expect(moving.rackingData.row).toBe(1);
+    expect(moving.rackingData.column).toBe(1);
     expect(syncSpy).toHaveBeenCalled();
   });
   

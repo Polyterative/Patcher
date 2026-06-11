@@ -57,7 +57,8 @@ describe('RackDetailDataService media, rename, and duplication', () => {
         rackedModules: jasmine.createSpy('get.rackedModules').and.returnValue(of([]))
       },
       GET: {
-        rackWithId: jasmine.createSpy('GET.rackWithId').and.callFake((id: number) => of({data: rack({id})}))
+        rackWithId: jasmine.createSpy('GET.rackWithId').and.callFake((id: number) => of({data: rack({id})})),
+        rackByPublicId: jasmine.createSpy('GET.rackByPublicId').and.callFake((token: string) => of({data: rack({id: 200, public_id: token})}))
       },
       storage: {
         uploadRackImage: jasmine.createSpy('storage.uploadRackImage').and.returnValue(of('uploaded.jpeg')),
@@ -234,6 +235,46 @@ describe('RackDetailDataService media, rename, and duplication', () => {
     expect(SharedConstants.successCustom).toHaveBeenCalled();
   }));
 
+  it('blocks rack preview updates for users who are neither owner nor admin', fakeAsync(() => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    spyOn(SharedConstants, 'successCustom').and.callFake(() => {});
+    const {service, backend} = build({userId: 'visitor', isAdmin: false});
+    spyOn<any>(service, 'generateRackJpeg$').and.returnValue(of('data:image/jpeg;base64,YQ=='));
+    service.singleRackData$.next(rack({id: 15, image: 'old.jpeg', author: {id: 'owner', username: 'owner'}}));
+    service.currentDownloadElementRef$.next({
+      screen: {nativeElement: {scrollWidth: 40, scrollHeight: 50}} as any
+    });
+
+    service.updateRackImagePreview$.next();
+    tick(360);
+
+    expect(backend.storage.uploadRackImage).not.toHaveBeenCalled();
+    expect(backend.update.rack).not.toHaveBeenCalledWith(jasmine.objectContaining({image: 'uploaded.jpeg'}));
+    expect(SharedConstants.errorCustom).toHaveBeenCalledWith(jasmine.anything(), jasmine.stringMatching(/owner or an admin/));
+    expect(SharedConstants.successCustom).not.toHaveBeenCalled();
+  }));
+
+  it('shows an error when deleting the previous rack preview image fails for a non-404 reason', fakeAsync(() => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    spyOn(SharedConstants, 'successCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    backend.storage.deleteRackImage.and.returnValue(throwError(() => ({status: 500, message: 'storage unavailable'})));
+    spyOn<any>(service, 'generateRackJpeg$').and.returnValue(of('data:image/jpeg;base64,YQ=='));
+    const refreshSpy = spyOn(service.updateSingleRackData$, 'next').and.callThrough();
+    service.singleRackData$.next(rack({id: 16, image: 'old.jpeg'}));
+    service.currentDownloadElementRef$.next({
+      screen: {nativeElement: {scrollWidth: 40, scrollHeight: 50}} as any
+    });
+
+    service.updateRackImagePreview$.next();
+    tick(360);
+
+    expect(backend.update.rack).toHaveBeenCalledWith(jasmine.objectContaining({id: 16, image: 'uploaded.jpeg'}));
+    expect(refreshSpy).not.toHaveBeenCalled();
+    expect(SharedConstants.errorCustom).toHaveBeenCalled();
+    expect(SharedConstants.successCustom).not.toHaveBeenCalled();
+  }));
+
   it('shows an error when persisting the new rack preview filename fails', fakeAsync(() => {
     spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
     });
@@ -268,6 +309,20 @@ describe('RackDetailDataService media, rename, and duplication', () => {
     expect(service.singleRackData$.value?.name).toBe('Renamed Rack');
     expect(backend.update.rack).toHaveBeenCalledWith(jasmine.objectContaining({id: 123, name: 'Renamed Rack'}));
   }));
+
+  it('shows an error when inline rack name auto-save fails', fakeAsync(() => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    backend.update.rack.and.returnValue(throwError(() => new Error('save failed')));
+    service.singleRackData$.next(rack({id: 124, name: 'Old Name'}));
+
+    service.formData.name.control.setValue('Failed Rename');
+    tick(900);
+
+    expect(service.singleRackData$.value?.name).toBe('Failed Rename');
+    expect(backend.update.rack).toHaveBeenCalledWith(jasmine.objectContaining({id: 124, name: 'Failed Rename'}));
+    expect(SharedConstants.errorCustom).toHaveBeenCalled();
+  }));
   
   it('duplicates rack without reusing the original preview image and syncs copied module layout to the new rack', () => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {
@@ -286,6 +341,21 @@ describe('RackDetailDataService media, rename, and duplication', () => {
     expect(history.replaceState).toHaveBeenCalled();
     expect(backend.update.rackedModules).toHaveBeenCalled();
     expect(SharedConstants.successCustom).toHaveBeenCalled();
+  });
+
+  it('loads a duplicated rack by public token when the create response includes one', () => {
+    spyOn(SharedConstants, 'successCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    spyOn(history, 'replaceState');
+    backend.add.rack.and.returnValue(of({data: [{id: 200, public_id: 'public-token'}]}));
+    service.singleRackData$.next(rack({id: 1, name: 'Token Rack', hp: 84, rows: 1}));
+    service.rowedRackedModules$.next([[mod(1, 0, 0)]]);
+
+    service.duplicateRack$.next({id: 1, name: 'Token Rack'} as any);
+
+    expect(backend.GET.rackByPublicId).toHaveBeenCalledWith('public-token');
+    expect(history.replaceState).toHaveBeenCalledWith({}, '', '/racks/public-token');
+    expect(backend.update.rackedModules).toHaveBeenCalled();
   });
   
   it('handles row clear backend failure', () => {

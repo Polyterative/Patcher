@@ -1,7 +1,7 @@
 import { HasUnrackedModulesListPipe } from './has-unracked-modules-list.pipe';
 import { RackedModule } from 'src/app/models/module';
 
-const makeModule = (id: number, row: number | null, col: number | null): RackedModule => ({
+const makeModule = (id: number, row: number | null | undefined, col: number | null | undefined): RackedModule => ({
   module: { id, hp: 4 } as any,
   rackingData: { id: 1, row, column: col, rack_id: 1, moduleid: id } as any
 });
@@ -32,5 +32,27 @@ describe('HasUnrackedModulesListPipe', () => {
   it('returns true when a module has null column', () => {
     const rows = [[makeModule(1, 0, null)]];
     expect(pipe.transform(rows)).toBeTrue();
+  });
+
+  it('returns true when a module has undefined row', () => {
+    const rows = [[makeModule(1, undefined, 0)]];
+    expect(pipe.transform(rows)).toBeTrue();
+  });
+
+  it('returns true when a module has undefined column', () => {
+    const rows = [[makeModule(1, 0, undefined)]];
+    expect(pipe.transform(rows)).toBeTrue();
+  });
+
+  it('returns true when a later row has an unracked module', () => {
+    const rows = [
+      [makeModule(1, 0, 0)],
+      [makeModule(2, null, null)]
+    ];
+    expect(pipe.transform(rows)).toBeTrue();
+  });
+
+  it('returns false for empty rows', () => {
+    expect(pipe.transform([[], []])).toBeFalse();
   });
 });

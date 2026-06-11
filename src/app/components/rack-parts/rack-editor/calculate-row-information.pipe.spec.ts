@@ -32,4 +32,14 @@ describe('CalculateRowInformationPipe', () => {
     const row = [makeRackedModule(1, 4), makeRackedModule(2, 4), makeRackedModule(3, 4)];
     expect(pipe.transform(row)).toBe('Total HP: 12');
   });
+
+  it('includes zero HP modules without changing the total', () => {
+    const row = [makeRackedModule(1, 0), makeRackedModule(2, 6)];
+    expect(pipe.transform(row)).toBe('Total HP: 6');
+  });
+
+  it('includes blank modules because it reports physical row HP', () => {
+    const row = [makeRackedModule(1, 6), makeRackedModule(4647, 2)];
+    expect(pipe.transform(row)).toBe('Total HP: 8');
+  });
 });

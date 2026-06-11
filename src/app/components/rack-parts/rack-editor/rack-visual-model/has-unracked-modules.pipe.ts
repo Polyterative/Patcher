@@ -15,7 +15,9 @@ export class HasUnrackedModulesPipe implements PipeTransform {
   
     return rackedModules.some(
       module => module.rackingData.row === null
+                || module.rackingData.row === undefined
                 || module.rackingData.column === null
+                || module.rackingData.column === undefined
     );
   }
   
