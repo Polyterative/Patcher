@@ -1235,6 +1235,7 @@ export class RackDetailDataService extends SubManager {
         ),
         // wait for the new empty rack to arrive, then add the modules to the new rack
         switchMap(({rackModules, originalName}) => this.callBackendToUpdateModulesOfRack(rackModules, this.singleRackData$.value).pipe(
+          tap(() => this.rowedRackedModules$.next(rackModules)),
           map(() => originalName)
         )),
         takeUntil(this.destroyEvent$)
