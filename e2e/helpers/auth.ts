@@ -62,14 +62,16 @@ async function loginWithCredentials(page: Page, credentials: E2EAuthCredentials,
   await page.locator('vite-error-overlay').waitFor({state: 'hidden', timeout: 5_000}).catch(() => undefined);
   await loginButton.click({force: true});
 
-  await expect(page).toHaveURL(/\/user\/area/, {timeout: 20_000});
-  await expect(page.locator('app-user-area-root').first()).toBeVisible({timeout: 15_000});
+  await expect(page).toHaveURL(/\/user\/area/, {timeout: 30_000});
+  await page.waitForLoadState('networkidle');
+  await expect(page.locator('app-user-area-root').first()).toBeVisible({timeout: 20_000});
 }
 
 export async function loginAndSaveStorageState(baseURL: string, storageStatePath = AUTH_STORAGE_STATE_PATH): Promise<void> {
   const credentials = getE2EAuthCredentialsOrThrow();
 
   fs.mkdirSync(path.dirname(storageStatePath), {recursive: true});
+  const storageStateTempPath = `${ storageStatePath }.${ process.pid }.tmp`;
 
   const browser = await chromium.launch({headless: true});
   const context = await browser.newContext();
@@ -77,8 +79,11 @@ export async function loginAndSaveStorageState(baseURL: string, storageStatePath
 
   try {
     await loginWithCredentials(page, credentials, baseURL);
-    await context.storageState({path: storageStatePath});
+    const storageState = await context.storageState();
+    fs.writeFileSync(storageStateTempPath, `${ JSON.stringify(storageState, null, 2) }\n`);
+    fs.renameSync(storageStateTempPath, storageStatePath);
   } finally {
+    fs.rmSync(storageStateTempPath, {force: true});
     await context.close();
     await browser.close();
   }

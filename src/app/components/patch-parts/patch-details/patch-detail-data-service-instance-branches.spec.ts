@@ -117,6 +117,7 @@ describe('PatchDetailDataService - Instance Edge Branches', () => {
   it('handles addModuleInstance$ failures for 0, 1, and 2+ existing copies', () => {
     spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
     });
+    const consoleErrorSpy = spyOn(console, 'error');
     const {service, backend} = build();
     service.singlePatchData$.next(patch({id: 100}));
     
@@ -132,11 +133,13 @@ describe('PatchDetailDataService - Instance Edge Branches', () => {
     service.addModuleInstance$.next({id: 9, name: 'A'} as any);
     
     expect(SharedConstants.errorCustom).toHaveBeenCalledTimes(3);
+    expect(consoleErrorSpy).toHaveBeenCalledTimes(3);
   });
   
   it('handles removeModuleInstance$ delete failures', () => {
     spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
     });
+    spyOn(console, 'error');
     const {service, backend} = build();
     const doomed = inst(300, 33, '(1)');
     backend.delete.patchModuleInstance.and.returnValue(throwError(() => new Error('delete fail')));
@@ -181,6 +184,7 @@ describe('PatchDetailDataService - Instance Edge Branches', () => {
   });
   
   it('ensureModuleInstance$ covers no-patch, existing, created, and creation-error branches', () => {
+    spyOn(console, 'error');
     const {service, backend} = build();
     let emitted: number | undefined;
     service.ensureModuleInstance$({id: 1} as any).subscribe(v => emitted = v);
@@ -204,6 +208,7 @@ describe('PatchDetailDataService - Instance Edge Branches', () => {
   });
   
   it('covers relabelExistingInstance$ catch branch and no-op branch', () => {
+    spyOn(console, 'error');
     const {service, backend} = build();
     service.patchModuleInstances$.next([inst(1, 77, '(1)')]);
     
@@ -218,6 +223,7 @@ describe('PatchDetailDataService - Instance Edge Branches', () => {
   });
   
   it('covers renumberModuleInstances$ single-label clear error and multi-update error fallback', () => {
+    const consoleErrorSpy = spyOn(console, 'error');
     const {service, backend} = build();
     service.patchModuleInstances$.next([inst(5, 88, '(1)')]);
     backend.update.patchModuleInstanceLabel.and.returnValue(throwError(() => new Error('clear fail')));
@@ -233,5 +239,6 @@ describe('PatchDetailDataService - Instance Edge Branches', () => {
     (service as any).renumberModuleInstances$(99).subscribe((v: any) => done2 = v);
     expect(done2).toBeNull();
     expect(service.patchModuleInstances$.value.map(x => x.instance_label)).toEqual(['(1)', '(2)', '(3)']);
+    expect(consoleErrorSpy).toHaveBeenCalledTimes(3);
   });
 });

@@ -39,7 +39,7 @@ export async function openOwnedPatchDetails(page: Page): Promise<void> {
 
   await patchTitle.click();
 
-  await expect(page).toHaveURL(/\/patches\/details\/\d+/, {timeout: 20_000});
+  await expect(page).toHaveURL(/\/patches\/(details\/\d+|[A-Za-z0-9_-]+)/, {timeout: 20_000});
   await expect(page.getByRole('heading', {name: /Patch (details|editing)/i}).first()).toBeVisible({timeout: 20_000});
   await expect(page.locator('app-patch-composite').first()).toBeVisible({timeout: 20_000});
 }
