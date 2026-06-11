@@ -15,14 +15,12 @@
 
   line-height: 2.25rem;
   white-space: nowrap;
-
   font-family: Roboto, Helvetica Neue, sans-serif;
   padding: 0 1rem;
   text-transform: uppercase;
   background-color: white;
   color: $brand-primary;
   border: 0.2rem solid $brand-primary;
-
   transition: 160ms ease;
 
   &:hover {
@@ -51,11 +49,27 @@
     }
   }
 
-  &.positive { background-color: $brand-positive-background; color: $brand-positive; border: 0.2rem solid $brand-positive; }
+  &.positive {
+    background-color: $brand-positive-background;
+    color: $brand-positive;
+    border: 0.2rem solid $brand-positive;
+  }
 
-  &.negative { background-color: $brand-negative-background; color: $brand-negative; border: 0.2rem solid $brand-negative; }
+  &.negative {
+    background-color: $brand-negative-background;
+    color: $brand-negative;
+    border: 0.2rem solid $brand-negative;
+  }
 
-  &.light { color: $brand-secondary; border: 0.2rem solid $brand-secondary; }
+  &.light {
+    color: $brand-secondary;
+    border: 0.2rem solid $brand-secondary;
+  }
 
-  &.disabled { background-color: color.adjust($brand-secondary, $lightness: 20%); color: rgba(255, 255, 255, 0.81); border: 0.2rem solid white; cursor: not-allowed; }
+  &.disabled {
+    background-color: color.adjust($brand-secondary, $lightness: 20%);
+    color: rgba(255, 255, 255, 0.81);
+    border: 0.2rem solid white;
+    cursor: not-allowed;
+  }
 }
