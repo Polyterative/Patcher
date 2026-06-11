@@ -16,9 +16,14 @@
   }
 }
 
+.description {
+  @include item-description
+
+}
+
 .image-container {
   position: relative;
-  margin-bottom: 0.5rem;
+  margin-bottom: .5rem;
 }
 
 .module-minimal__layout {
@@ -94,7 +99,11 @@
   max-height: 48rem;
   overflow: hidden;
   transform: translateY(0);
-  transition: opacity 180ms ease, max-height 220ms ease, transform 220ms ease, margin 220ms ease;
+  transition:
+    opacity 180ms ease,
+    max-height 220ms ease,
+    transform 220ms ease,
+    margin 220ms ease;
 }
 
 .module-minimal__focus-hide--compact {
