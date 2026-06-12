@@ -15,18 +15,18 @@
   &::after {
     content: '';
     position: absolute;
-    left: 2.15rem;
+    left: var(--tip-arrow-left, 2.15rem);
     width: 0.85rem;
     height: 0.85rem;
     background: inherit;
     border-left: 1px solid rgba(204, 176, 106, 0.34);
     border-top: 1px solid rgba(204, 176, 106, 0.34);
-    transform: rotate(45deg);
+    transform: translateX(-50%) rotate(45deg);
   }
 
   &.above::after {
     bottom: -0.45rem;
-    transform: rotate(225deg);
+    transform: translateX(-50%) rotate(225deg);
   }
 
   &.below::after {
