@@ -29,6 +29,7 @@ export interface PatchGraphFullscreenDialogData {
   nodes: GraphNode[];
   edges: GraphEdge[];
   legend: PatchGraphLegendItem[];
+  patchName?: string;
 }
 
 @Component({

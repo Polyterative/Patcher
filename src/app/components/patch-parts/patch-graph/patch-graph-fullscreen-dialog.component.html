@@ -1,16 +1,23 @@
 <div #fullscreenTarget class="patch-graph-fullscreen-dialog">
-  <div class="patch-graph-fullscreen-dialog__toolbar">
-    <div class="patch-graph-fullscreen-dialog__label">GRAPH VIEW</div>
-    <button
-      mat-icon-button
-      type="button"
-      aria-label="Close full screen graph"
-      matTooltip="Close full screen graph"
-      (click)="close()"
-    >
-      <mat-icon>close</mat-icon>
-    </button>
+  <div class="patch-graph-fullscreen-dialog__title">
+    <lib-hero-content-card
+      titleBig="Patch graph"
+      [titleSub]="data.patchName"
+      [showWideShellNav]="false"
+      [vertPadding]="false"
+    ></lib-hero-content-card>
   </div>
+
+  <button
+    class="patch-graph-fullscreen-dialog__close"
+    mat-icon-button
+    type="button"
+    aria-label="Close full screen graph"
+    matTooltip="Close full screen graph"
+    (click)="close()"
+  >
+    <mat-icon>close</mat-icon>
+  </button>
 
   <div class="patch-graph-fullscreen-dialog__graph-shell">
     <div class="patch-graph-fullscreen-dialog__legend">
