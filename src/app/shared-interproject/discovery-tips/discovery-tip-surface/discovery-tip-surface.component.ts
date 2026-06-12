@@ -52,6 +52,7 @@ export class DiscoveryTipSurfaceComponent extends SubManager implements OnInit {
   private tipPanelElement: HTMLElement | null = null;
   private tipResizeObserver: ResizeObserver | null = null;
   private measuredTipSize: {width: number; height: number} | undefined;
+  private scrolledTipId: string | null = null;
   private readonly refreshTick$ = new BehaviorSubject<number>(0);
   readonly viewModel$;
 
@@ -120,12 +121,17 @@ export class DiscoveryTipSurfaceComponent extends SubManager implements OnInit {
       return null;
     }
 
+    const viewport = this.appViewportService.currentViewport();
     const anchorRect = this.focusRectFor(activeTip);
     if (anchorRect.width === 0 && anchorRect.height === 0) {
       return null;
     }
 
-    const viewport = this.appViewportService.currentViewport();
+    if (!this.isVerticallyVisible(anchorRect, viewport.offsetTop, viewport.height)) {
+      this.scrollTargetIntoView(activeTip);
+      return null;
+    }
+
     const guidedStepLabel = activeTip.guidedStepIndex && activeTip.guidedStepTotal
       ? `Step ${ activeTip.guidedStepIndex } of ${ activeTip.guidedStepTotal }`
       : undefined;
@@ -154,9 +160,34 @@ export class DiscoveryTipSurfaceComponent extends SubManager implements OnInit {
     };
   }
 
+  private scrollTargetIntoView(activeTip: DiscoveryTipActive): void {
+    if (this.scrolledTipId === activeTip.definition.id) {
+      return;
+    }
+
+    this.scrolledTipId = activeTip.definition.id;
+    activeTip.anchorElement.scrollIntoView({
+      block: 'center',
+      inline: 'nearest',
+      behavior: 'instant'
+    });
+    window.requestAnimationFrame(() => this.refreshTick$.next(Date.now()));
+  }
+
+  private isVerticallyVisible(rect: DOMRect, viewportTop: number, viewportHeight: number): boolean {
+    const margin = 16;
+    const visibleTop = viewportTop + margin;
+    const visibleBottom = viewportTop + viewportHeight - margin;
+    return rect.top >= visibleTop && rect.bottom <= visibleBottom;
+  }
+
   private focusRectFor(activeTip: DiscoveryTipActive): DOMRect {
     const anchorRect = activeTip.anchorElement.getBoundingClientRect();
     const targetKind = activeTip.definition.placement?.targetKind ?? 'element';
+    if (targetKind === 'control' || activeTip.definition.anchorId === 'user-area-search') {
+      return this.controlRect(activeTip.anchorElement, anchorRect);
+    }
+
     if (targetKind === 'element' || targetKind === 'action') {
       return anchorRect;
     }
@@ -168,6 +199,29 @@ export class DiscoveryTipSurfaceComponent extends SubManager implements OnInit {
       sectionRect.width,
       Math.min(sectionRect.height, 112)
     );
+  }
+
+  private controlRect(anchorElement: HTMLElement, fallbackRect: DOMRect): DOMRect {
+    const exactControl = anchorElement.querySelector<HTMLElement>(
+      '.mdc-notched-outline, .mat-mdc-text-field-wrapper, .mdc-text-field'
+    );
+    if (exactControl) {
+      const rect = exactControl.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        return rect;
+      }
+    }
+
+    const candidates = anchorElement.querySelectorAll<HTMLElement>(
+      'input, textarea, button, [role="textbox"], .mat-mdc-form-field, mat-form-field, .user-area-utility-search__field'
+    );
+    for (const candidate of Array.from(candidates)) {
+      const rect = candidate.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        return rect;
+      }
+    }
+    return fallbackRect;
   }
 
   private sectionStartRect(anchorElement: HTMLElement, fallbackRect: DOMRect): DOMRect {
