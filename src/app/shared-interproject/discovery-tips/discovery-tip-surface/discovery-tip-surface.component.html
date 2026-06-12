@@ -1,4 +1,14 @@
 @if ((viewModel$ | async); as tip) {
+  <div
+    class="discovery-tip-highlight"
+    [ngStyle]="{
+      left: tip.highlight.left + 'px',
+      top: tip.highlight.top + 'px',
+      width: tip.highlight.width + 'px',
+      height: tip.highlight.height + 'px'
+    }"
+    aria-hidden="true"
+  ></div>
   <section
     #tipPanel
     class="discovery-tip"
@@ -12,31 +22,54 @@
     aria-live="polite"
     role="status"
   >
-    <div class="eyebrow">Helpful tip</div>
+    <div class="eyebrow">{{ tip.guidedStepLabel ?? 'Helpful tip' }}</div>
     <div class="title">{{ tip.title }}</div>
     <div class="body">{{ tip.body }}</div>
+    @if (tip.reason) {
+      <details class="reason">
+        <summary>Why this?</summary>
+        <p>{{ tip.reason }}</p>
+      </details>
+    }
 
     <div class="actions">
-      <button
-        class="tertiary-action"
-        type="button"
-        (click)="discoveryTipService.pauseAllTips()"
-      >
-        Pause tips
-      </button>
-      <button
-        class="secondary-action"
-        type="button"
-        (click)="discoveryTipService.snoozeActiveTip()"
-      >
-        Later
-      </button>
+      @if (tip.isGuided) {
+        <button
+          class="tertiary-action"
+          type="button"
+          (click)="discoveryTipService.endGuidedTour()"
+        >
+          End tour
+        </button>
+      } @else {
+        <button
+          class="tertiary-action"
+          type="button"
+          (click)="discoveryTipService.pauseAllTips()"
+        >
+          Pause tips
+        </button>
+        <button
+          class="secondary-action"
+          type="button"
+          (click)="discoveryTipService.startUserAreaTour()"
+        >
+          Start tour
+        </button>
+        <button
+          class="secondary-action"
+          type="button"
+          (click)="discoveryTipService.snoozeActiveTip()"
+        >
+          Later
+        </button>
+      }
       <button
         class="primary-action"
         type="button"
         (click)="discoveryTipService.acknowledgeActiveTip()"
       >
-        Got it
+        {{ tip.isGuided ? (tip.isLastGuidedStep ? 'Done' : 'Next') : 'Got it' }}
       </button>
     </div>
   </section>

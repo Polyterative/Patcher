@@ -21,6 +21,14 @@ export interface DiscoveryTipContextSnapshot {
   userArea: DiscoveryTipUserAreaSnapshot;
 }
 
+export type DiscoveryTipPreferredSide = 'auto' | 'above' | 'below';
+export type DiscoveryTipTargetKind = 'element' | 'section-start' | 'action';
+
+export interface DiscoveryTipPlacement {
+  preferredSide?: DiscoveryTipPreferredSide;
+  targetKind?: DiscoveryTipTargetKind;
+}
+
 export interface DiscoveryTipStateRecord {
   version: number;
   shownCount: number;
@@ -35,6 +43,9 @@ export interface DiscoveryTipDefinition {
   anchorId: string;
   title: string;
   body: string;
+  reason?: string | ((snapshot: DiscoveryTipContextSnapshot) => string);
+  placement?: DiscoveryTipPlacement;
+  guidedTourOrder?: number;
   routePrefixes: string[];
   priority: number;
   audience: 'all' | 'signed-in';
@@ -48,6 +59,9 @@ export interface DiscoveryTipDefinition {
 export interface DiscoveryTipActive {
   definition: DiscoveryTipDefinition;
   anchorElement: HTMLElement;
+  reason?: string;
+  guidedStepIndex?: number;
+  guidedStepTotal?: number;
 }
 
 export interface DiscoveryTipStorageShape {

@@ -1,3 +1,16 @@
+.discovery-tip-highlight {
+  position: fixed;
+  z-index: 1240;
+  pointer-events: none;
+  border: 1px solid rgba(255, 213, 104, 0.78);
+  border-radius: var(--app-floating-surface-radius, 0.8rem);
+  background: rgba(255, 213, 104, 0.08);
+  box-shadow:
+    0 0 0 9999px rgba(5, 8, 12, 0.18),
+    0 0 0.95rem rgba(255, 213, 104, 0.28);
+  animation: discovery-tip-highlight-enter var(--app-floating-surface-raise-duration, 160ms) ease-out;
+}
+
 .discovery-tip {
   position: fixed;
   z-index: 1250;
@@ -56,8 +69,29 @@
   line-height: 1.45;
 }
 
+.reason {
+  margin-top: 0.7rem;
+  border-top: 1px solid rgba(138, 109, 26, 0.18);
+  padding-top: 0.55rem;
+  color: rgba(47, 40, 22, 0.72);
+  font-size: 0.82rem;
+  line-height: 1.35;
+
+  summary {
+    width: fit-content;
+    cursor: pointer;
+    color: rgba(47, 40, 22, 0.62);
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0.35rem 0 0;
+  }
+}
+
 .actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: 0.5rem;
   margin-top: 0.85rem;
@@ -107,8 +141,20 @@
   }
 }
 
+@keyframes discovery-tip-highlight-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .discovery-tip {
+  .discovery-tip,
+  .discovery-tip-highlight {
     animation: none;
   }
 
