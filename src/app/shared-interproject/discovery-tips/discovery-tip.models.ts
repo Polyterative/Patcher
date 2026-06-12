@@ -22,7 +22,7 @@ export interface DiscoveryTipContextSnapshot {
 }
 
 export type DiscoveryTipPreferredSide = 'auto' | 'above' | 'below';
-export type DiscoveryTipTargetKind = 'element' | 'section-start' | 'action';
+export type DiscoveryTipTargetKind = 'element' | 'section-start' | 'action' | 'control';
 
 export interface DiscoveryTipPlacement {
   preferredSide?: DiscoveryTipPreferredSide;

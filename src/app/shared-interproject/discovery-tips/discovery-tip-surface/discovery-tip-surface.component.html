@@ -16,9 +16,9 @@
     [class.below]="tip.side === 'below'"
     [ngStyle]="{
       left: tip.left + 'px',
-      top: tip.top + 'px',
-      '--tip-arrow-left': tip.arrowLeft + 'px'
+      top: tip.top + 'px'
     }"
+    [style.--tip-arrow-left]="tip.arrowLeft + 'px'"
     aria-live="polite"
     role="status"
   >
