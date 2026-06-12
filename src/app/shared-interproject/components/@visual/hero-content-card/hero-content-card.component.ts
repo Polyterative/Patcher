@@ -11,7 +11,6 @@ import {
   inject
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { animate, style, transition, trigger } from '@angular/animations';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import {
   buildWideShellAccountLinks,
@@ -59,20 +58,6 @@ import { HeroContentCardHeadIconComponent } from './hero-contenst-card-head-icon
   templateUrl: './hero-content-card.component.html',
   styleUrls: ['./hero-content-card.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  animations: [
-    trigger('title', [
-      transition(':enter', [
-        style({ opacity: 0 }),
-        animate('500ms 100ms ease', style({ opacity: 1 }))
-      ])
-    ]),
-    trigger('description', [
-      transition(':enter', [
-        style({ opacity: 0 }),
-        animate('1000ms 500ms ease', style({ opacity: 1 }))
-      ])
-    ])
-  ],
   standalone: true,
   imports: [
     CommonModule,

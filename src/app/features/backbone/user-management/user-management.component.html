@@ -5,14 +5,14 @@
       userProfile:(userManagementService.loggedUserFullProfile$|async),
       user:(userManagementService.loggedUser$|async)
     }; as bag) {
-      <!-- Reapply `userBG` here if we want the warmer private/account hero gradient back. -->
-      <lib-hero-content-card titleBig="Account management"
-                             [titleSub]="bag.userProfile?.username"
-                             [showWideShellNav]="true"
-                             icon="manage_accounts"
-                             class="account-card"
-      >
-        @if (bag.user && bag.userProfile) {
+      @if (bag.user && bag.userProfile) {
+        <!-- Reapply `userBG` here if we want the warmer private/account hero gradient back. -->
+        <lib-hero-content-card titleBig="Account management"
+                               [titleSub]="bag.userProfile.username"
+                               [showWideShellNav]="true"
+                               icon="manage_accounts"
+                               class="account-card"
+        >
           <div class="account-content col gap2"
           >
             <div class="account-surface">
@@ -139,8 +139,10 @@
               </div>
             </div>
           </div>
-        }
-      </lib-hero-content-card>
+        </lib-hero-content-card>
+      } @else {
+        <div class="account-shell__loading" aria-hidden="true"></div>
+      }
     }
   
   </div>

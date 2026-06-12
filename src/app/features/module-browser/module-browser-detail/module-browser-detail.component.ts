@@ -344,7 +344,7 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
 
   getModuleDetailTitleSub(moduleName: string | null | undefined, possessionKind: UserModulePossessionKind | null | undefined): string | undefined {
     if (!moduleName) {
-      return undefined;
+      return 'Loading...';
     }
 
     const possessionLabel = this.getPossessionLabel(possessionKind);
