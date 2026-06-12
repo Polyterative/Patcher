@@ -49,6 +49,7 @@ export class BrandPrimaryButtonComponent {
   @Output() readonly click$ = new EventEmitter<void>();
   @Input() innerFlex: string = undefined;
   @Input() routerLink: string | any[] = undefined;
+  @Input() fragment: string | undefined = undefined;
   @Input() autoFocus = false;
   @Input() icon: string | undefined = undefined;
   @Input() tooltip = '';

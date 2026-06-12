@@ -50,8 +50,8 @@ describe('UserModulesComponent', () => {
     expect(comp.globalSearchQuery).toBe('');
   });
 
-  it('shows My Modules and Wishlist filters', () => {
-    expect(comp.collectionFilters.map((filter) => filter.value)).toEqual(['MY_MODULES', 'WISHLIST']);
+  it('shows Owned, Wanted, and For Sale filters', () => {
+    expect(comp.collectionFilters.map((filter) => filter.value)).toEqual(['MY_MODULES', 'WISHLIST', 'FOR_SALE']);
   });
 });
 

@@ -1,0 +1,36 @@
+.user-collections-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.user-collections-card {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.user-collections-card__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.user-collections-card__copy {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.user-collections-card__copy h3,
+.user-collections-card__copy p {
+  margin: 0;
+}
+
+.user-collections-card__copy p {
+  color: rgba(28, 49, 79, 0.76);
+  line-height: 1.4;
+}
+
+.user-collections-card__actions {
+  flex-wrap: wrap;
+}

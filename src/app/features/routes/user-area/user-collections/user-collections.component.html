@@ -1,0 +1,48 @@
+<div class="col gap1">
+  <lib-hero-content-card titleNormal="Collections"
+                         description="Save useful groups of modules for ideas, builds, and reference."
+                         class="modulesBG"
+                         icon="playlist_play"
+                         id="collections">
+    <div class="col gap1 section-shell">
+      <div class="row gap1 auto-left section-actions">
+        <app-brand-primary-button icon="add" (click$)="createCollection()">Start collection</app-brand-primary-button>
+        <app-brand-primary-button icon="travel_explore" routerLink="/collections/browser">Browse collections</app-brand-primary-button>
+      </div>
+      <mat-divider inset="true"></mat-divider>
+
+      @if ((dataService.currentUserCollections$ | async); as collections) {
+        @if (collections.length > 0) {
+          <div class="user-collections-list">
+            @for (collection of collections; track collection.id) {
+              <lib-clean-card>
+                <div class="user-collections-card">
+                  <div class="user-collections-card__copy">
+                    <div class="user-collections-card__meta">
+                      <span>{{ collection.public ? 'Public' : 'Private' }}</span>
+                      <span>{{ collection.module_count ?? 0 }} modules</span>
+                    </div>
+                    <h3>{{ collection.name }}</h3>
+                    <p>{{ collection.description || 'Ready for modules, notes, and cover art.' }}</p>
+                  </div>
+                  <div class="row gap05 user-collections-card__actions">
+                    <app-brand-primary-button icon="playlist_add" [routerLink]="collectionManagementPath(collection.id)">Build</app-brand-primary-button>
+                    @if (collection.public) {
+                      <app-brand-primary-button theme="light" icon="public" [routerLink]="['/collections', collection.public_id]">Public view</app-brand-primary-button>
+                    }
+                    <app-brand-primary-button theme="negative" icon="delete" (click$)="deleteCollection(collection.id)">Delete</app-brand-primary-button>
+                  </div>
+                </div>
+              </lib-clean-card>
+            }
+          </div>
+        } @else {
+          <app-empty-state icon="playlist_add"
+                           title="No collections yet"
+                           copy="Start one when a set of modules belongs together."
+          ></app-empty-state>
+        }
+      }
+    </div>
+  </lib-hero-content-card>
+</div>

@@ -3,6 +3,7 @@ import {
   forkJoin,
   from as rxFrom,
   Observable,
+  of,
   throwError
 } from 'rxjs';
 import {
@@ -24,6 +25,10 @@ import {
   throwIfSupabaseError
 } from './supabase.cache';
 import { SimpleUserModel } from './supabase.types';
+import {
+  buildModuleCollectionEntries,
+  validatePublicModuleCollectionModuleIds
+} from './supabase-module-collections';
 
 
 export function createAddNamespace(
@@ -248,6 +253,51 @@ export function createAddNamespace(
         remapErrors(),
         cacheBust(['manufacturers'])
       ),
+
+    moduleCollection: (data: {
+      name: string;
+      description?: string | null;
+      public?: boolean;
+      image?: string | null;
+      moduleIds?: number[];
+    }) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return validatePublicModuleCollectionModuleIds(supabase, data.moduleIds ?? []).pipe(
+          switchMap(moduleIds => rxFrom(
+            supabase
+              .from(DbPaths.module_collections)
+              .insert({
+                authorid: user.id,
+                name: data.name,
+                description: data.description ?? null,
+                public: data.public ?? false,
+                image: data.image ?? null
+              })
+              .select('id')
+              .single()
+          ).pipe(
+            throwIfSupabaseError(),
+            switchMap((response: any) => {
+              const collectionId = response.data?.id as number | undefined;
+              if (!collectionId) {
+                return throwError(() => new Error('Created collection response did not include an id.'));
+              }
+
+              const entries = buildModuleCollectionEntries(collectionId, moduleIds);
+
+              return entries.length > 0
+                ? rxFrom(supabase.from(DbPaths.module_collection_entries).insert(entries)).pipe(
+                  throwIfSupabaseError(),
+                  map(() => collectionId)
+                )
+                : of(collectionId);
+            })
+          ))
+        );
+      }),
+      cacheBust(['moduleCollections', 'moduleCollectionWithId', 'moduleCollectionsByModule']),
+    ),
     
     panel: (data: Database['public']['Tables']['module_panels']['Insert'][]) => rxFrom(
       supabase

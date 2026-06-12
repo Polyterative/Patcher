@@ -50,6 +50,14 @@ const routes: Routes = [
     loadChildren: () => import('./features/module-browser/module-browser.module').then(m => m.ModuleBrowserModule)
   },
   {
+    path: 'collections',
+    loadChildren: () => import('./features/module-collections/module-collections.module').then(m => m.ModuleCollectionsModule)
+  },
+  {
+    path: 'collection/:collectionId',
+    loadChildren: () => import('./features/module-collections/module-collections-owned.module').then(m => m.ModuleCollectionsOwnedModule)
+  },
+  {
     path: 'manufacturers',
     loadChildren: () => import('./features/manufacturer-detail/manufacturer.module').then(m => m.ManufacturerModule)
   },

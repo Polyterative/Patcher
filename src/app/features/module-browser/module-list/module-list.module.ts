@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.module';
 import { LocalDataFilterComponent } from 'src/app/components/shared-atoms/local-data-filter/local-data-filter/local-data-filter.component';
 import { AutoContentLoadingIndicatorComponent } from 'src/app/shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator/auto-content-loading-indicator.component';
@@ -24,6 +25,7 @@ import { ModuleListComponent } from './module-list.component';
     MatButtonModule,
     MatChipsModule,
     MatIconModule,
+    MatTooltipModule,
     ModulePartsModule,
     LocalDataFilterComponent,
     AutoContentLoadingIndicatorComponent,

@@ -1,0 +1,35 @@
+<div class="collection-minimal">
+  <div class="collection-minimal__layout">
+    <div class="collection-minimal__media">
+      <div class="collection-minimal__image-container panel">
+        @if (coverImageSrc(collection.image); as coverUrl) {
+          <img class="collection-minimal__image" [src]="coverUrl" [alt]="collection.name">
+        } @else {
+          <div class="collection-minimal__placeholder">
+            <mat-icon>playlist_play</mat-icon>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="collection-minimal__content">
+      <app-hero-clickable-title [link]="['/collections', collection.public_id]"
+                                infoBox
+                                infoText="Collection name"
+                                textSize="md"
+      >
+        {{ collection.name }}
+      </app-hero-clickable-title>
+      <div class="collection-minimal__meta">
+        <span>By {{ collection.author?.username || 'unknown' }}</span>
+        <span>{{ collection.module_count ?? 0 }} modules</span>
+      </div>
+      <app-timestamps-relative [data]="collection"></app-timestamps-relative>
+      @if (collection.description) {
+        <div class="collection-minimal__description">
+          <mat-card-subtitle>{{ collection.description }}</mat-card-subtitle>
+        </div>
+      }
+    </div>
+  </div>
+</div>

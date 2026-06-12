@@ -1,0 +1,44 @@
+@if (discovery$ | async; as discovery) {
+  <lib-hero-content-card titleNormal="Community trends" icon="trending_up" class="home-discovery-card">
+    <div class="home-discovery">
+      <p class="home-discovery__intro">
+        See what the community owns, wants, and moves most often.
+      </p>
+
+      <mat-button-toggle-group
+        class="home-discovery__tabs"
+        [value]="selectedBucket"
+        (change)="onBucketChange($event.value)"
+        aria-label="Community discovery buckets"
+      >
+        @for (bucket of discoveryBuckets; track bucket.key) {
+          <mat-button-toggle [value]="bucket.key">
+            <mat-icon>{{ bucket.icon }}</mat-icon>
+            {{ bucket.label }}
+          </mat-button-toggle>
+        }
+      </mat-button-toggle-group>
+
+      @if (currentEntries(discovery).length > 0) {
+        <div class="home-discovery__rows" [attr.aria-label]="bucketLabel(selectedBucket)">
+          @for (entry of currentEntries(discovery); track entry.id; let index = $index) {
+            <a
+              class="home-discovery__row"
+              [routerLink]="['/modules/details', entry.id]"
+              (click)="onModuleClick(selectedBucket, entry, index + 1)"
+            >
+              <span class="home-discovery__rank">{{ index + 1 }}</span>
+              <span class="home-discovery__name">{{ entry.name }}</span>
+              <span class="home-discovery__manufacturer">{{ entry.manufacturer.name }}</span>
+              <span class="home-discovery__count">{{ entry.count }}</span>
+            </a>
+          }
+        </div>
+      } @else {
+        <p class="home-discovery__empty">
+          No modules clear the privacy threshold yet.
+        </p>
+      }
+    </div>
+  </lib-hero-content-card>
+}

@@ -9,7 +9,7 @@ import {
 // getModules can still use ilike in some branches, so we keep it in the mock
 function chainableWithIlike(resolveValue: any = {data: [], count: 0, error: null}) {
   const m: any = {};
-  ['select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit', 'single',
+  ['select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit', 'single', 'or',
     'insert', 'update', 'delete', 'upsert', 'ilike'].forEach(method => {
     m[method] = () => m;
   });
@@ -39,6 +39,34 @@ describe('SupabaseService - GET.modules filtering', () => {
     service.GET.modules().subscribe({
       next: (result: any) => {
         expect(result).toBeDefined();
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+
+  it('searches collection editor modules by public name or description without a broad catalogue fallback', (done) => {
+    const mock = chainableWithIlike({
+      data: [{id: 8025, name: 'Gem HP', description: 'Behind the modest appearance lurks a tonal beast.'}],
+      count: 1,
+      error: null
+    });
+    const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
+    const orSpy = spyOn(mock, 'or').and.returnValue(mock);
+    const limitSpy = spyOn(mock, 'limit').and.returnValue(mock);
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+    const fetchAllRowsSpy = spyOn((service as any).queries as any, 'fetchAllRows').and.callThrough();
+
+    service.GET.searchPublicModulesForCollection('modest').subscribe({
+      next: (result) => {
+        expect(filterSpy).toHaveBeenCalledWith('public', 'eq', true);
+        expect(orSpy).toHaveBeenCalledWith('name.ilike.%modest%,description.ilike.%modest%');
+        expect(limitSpy).toHaveBeenCalledWith(24);
+        expect(fetchAllRowsSpy).not.toHaveBeenCalled();
+        expect(result[0].name).toBe('Gem HP');
         done();
       },
       error: (err) => {

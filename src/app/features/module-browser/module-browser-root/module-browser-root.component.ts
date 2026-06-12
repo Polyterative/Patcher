@@ -1,8 +1,10 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   Input,
-  OnInit
+  OnInit,
+  Output
 } from '@angular/core';
 import { animate, style, transition, trigger } from '@angular/animations';
 import {
@@ -32,6 +34,7 @@ import {
 import { Tag, TagSuggestionGroup } from 'src/app/models/tag';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { ModuleList } from '../module-browser-data.service';
+import { ModuleListActionConfig } from '../module-list/module-list.component';
 
 
 type RackModuleBrowseMode = 'available' | 'owned' | 'wanted' | 'all';
@@ -76,6 +79,9 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
   @Input() description = '';
   @Input() showRecentActivity = true;
   @Input() manageSeo = true;
+  @Input() moduleAction: ModuleListActionConfig | null = null;
+  @Input() moduleActionDisabledIds: ReadonlySet<number> | null = null;
+  @Output() readonly moduleAction$ = new EventEmitter<MinimalModule>();
   mobileFiltersExpanded = false;
   readonly recentActivityItems$: Observable<RecentActivityItem[]>;
   readonly modulesUpdating$: Observable<boolean>;

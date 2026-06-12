@@ -41,6 +41,10 @@ import {
   throwIfSupabaseError
 } from './supabase.cache';
 import { SimpleUserModel } from './supabase.types';
+import {
+  buildModuleCollectionEntries,
+  validatePublicModuleCollectionModuleIds
+} from './supabase-module-collections';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import {
   buildCVInserter,
@@ -270,6 +274,62 @@ export function createUpdateNamespace(
       map(({error}: any) => { if (error) throw error; }),
       cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
       showSuccessMessage(snackBar)
+    ),
+
+    moduleCollection: (data: {
+      id: number;
+      name: string;
+      description?: string | null;
+      public?: boolean;
+      image?: string | null;
+      moduleIds?: number[];
+    }) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return validatePublicModuleCollectionModuleIds(supabase, data.moduleIds ?? []).pipe(
+          switchMap(moduleIds => rxFrom(
+            supabase
+              .from(DbPaths.module_collections)
+              .update({
+                name: data.name,
+                description: data.description ?? null,
+                public: data.public ?? false,
+                image: data.image ?? null
+              })
+              .eq('id', data.id)
+              .eq('authorid', user.id)
+              .select('id')
+              .single()
+          ).pipe(
+            throwIfSupabaseError(),
+            switchMap((response: any) => {
+              const collectionId = response.data?.id as number | undefined;
+              if (!collectionId) {
+                return throwError(() => new Error('Collection was not updated.'));
+              }
+
+              const entries = buildModuleCollectionEntries(collectionId, moduleIds);
+
+              return rxFrom(
+                supabase
+                  .from(DbPaths.module_collection_entries)
+                  .delete()
+                  .eq('collection_id', collectionId)
+              ).pipe(
+                throwIfSupabaseError(),
+                switchMap(() => entries.length > 0
+                  ? rxFrom(supabase.from(DbPaths.module_collection_entries).insert(entries)).pipe(
+                    throwIfSupabaseError(),
+                    map(() => collectionId)
+                  )
+                  : of(collectionId)
+                )
+              );
+            })
+          ))
+        );
+      }),
+      cacheBust(['moduleCollections', 'moduleCollectionWithId', 'moduleCollectionsByModule']),
     ),
 
     moduleINsOUTs: (moduleId: number, ins: CV[], outs: CV[], authorid: string = '') => {

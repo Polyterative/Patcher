@@ -1,0 +1,40 @@
+@if (collections == null) {
+  <lib-auto-content-loading-indicator [skipFirstData]="true" [loadingLines]="4">
+  </lib-auto-content-loading-indicator>
+} @else if (collections.length === 0) {
+  <app-empty-state
+    icon="playlist_play"
+    title="No collections found"
+    copy="Try a different search or be the first to share a curated module playlist."
+  ></app-empty-state>
+} @else {
+  <div class="collections-list col gap1">
+    <flexbox-row-fast>
+      @for (collection of collections; track collection.id) {
+        <lib-clean-card>
+          <app-module-collection-card [collection]="collection"></app-module-collection-card>
+        </lib-clean-card>
+      }
+    </flexbox-row-fast>
+
+    @if (hasMore) {
+      <div class="loadMore">
+        <button
+          mat-stroked-button
+          color="primary"
+          class="loadMore__btn"
+          [disabled]="loading"
+          (click)="loadMore.emit()"
+        >
+          @if (loading) {
+            Loading…
+          } @else if (remainingCount > 0) {
+            Load more ({{ remainingCount }} remaining)
+          } @else {
+            Load more
+          }
+        </button>
+      </div>
+    }
+  </div>
+}

@@ -1,0 +1,88 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.collection-minimal {
+  display: block;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+
+.collection-minimal__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+  height: 100%;
+}
+
+.collection-minimal__media,
+.collection-minimal__content {
+  min-width: 0;
+}
+
+.collection-minimal__image-container {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.collection-minimal__image,
+.collection-minimal__placeholder {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+}
+
+.collection-minimal__image {
+  object-fit: cover;
+  display: block;
+}
+
+.collection-minimal__placeholder {
+  display: grid;
+  place-items: center;
+  min-height: 8rem;
+  background: rgba(239, 244, 249, 0.96);
+  color: rgba(61, 83, 105, 0.72);
+}
+
+.collection-minimal__placeholder mat-icon {
+  width: 2rem;
+  height: 2rem;
+  font-size: 2rem;
+}
+
+.collection-minimal__content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.collection-minimal__meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+  flex-wrap: wrap;
+  color: rgba(61, 83, 105, 0.74);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.collection-minimal__description {
+  position: relative;
+  min-width: 0;
+  width: 100%;
+}
+
+.collection-minimal__description mat-card-subtitle {
+  margin: 0;
+  display: block;
+  max-height: 5.55lh;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  color: rgba(61, 83, 105, 0.88);
+  -webkit-mask-image: linear-gradient(180deg, #000 0 calc(100% - 0.65lh), transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0 calc(100% - 0.65lh), transparent 100%);
+}

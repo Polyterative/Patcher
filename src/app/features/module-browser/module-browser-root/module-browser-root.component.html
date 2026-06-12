@@ -279,6 +279,9 @@
                            [emptyStateCopy]="showCollectionBrowseToggle ? rackContextEmptyStateCopy : ''"
                            [suppressEmpty]="hasMoreModules"
                            [encloseVertically]="false"
+                           [moduleAction]="moduleAction"
+                           [moduleActionDisabledIds]="moduleActionDisabledIds"
+                           (moduleAction$)="moduleAction$.emit($event)"
           ></app-module-list>
         </div>
         @if (!usesOwnedDataset && hasMoreModules) {

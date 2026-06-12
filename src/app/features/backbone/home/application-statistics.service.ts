@@ -21,6 +21,7 @@ export type {
   ApplicationInsightsTrendDay,
   ApplicationInsightsTrendLegendItem,
   ApplicationInsightsTrendMomentumItem,
+  ApplicationDiscoverySnapshot,
   MetricTone,
 } from './application-statistics.models';
 
@@ -36,6 +37,9 @@ export class ApplicationStatisticsService extends SubManager {
   readonly page$ = this.refreshRequest$.pipe(
     switchMap(() => this.backend.GET.applicationInsightsSnapshot(30)),
     map(({statistics, activitySeries, moduleInsights}) => this.mappers.mapPage(statistics, activitySeries, moduleInsights))
+  );
+  readonly discovery$ = this.refreshRequest$.pipe(
+    switchMap(() => this.backend.GET.applicationModuleDiscovery(6, 3))
   );
 
   constructor(

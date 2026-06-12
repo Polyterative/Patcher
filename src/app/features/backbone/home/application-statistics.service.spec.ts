@@ -113,7 +113,18 @@ describe('ApplicationStatisticsService', () => {
           moduleInsights
         })),
         applicationActivitySeries: jasmine.createSpy('GET.applicationActivitySeries').and.returnValue(of(activitySeries)),
-        applicationModuleInsights: jasmine.createSpy('GET.applicationModuleInsights').and.returnValue(of(moduleInsights))
+        applicationModuleInsights: jasmine.createSpy('GET.applicationModuleInsights').and.returnValue(of(moduleInsights)),
+        applicationModuleDiscovery: jasmine.createSpy('GET.applicationModuleDiscovery').and.returnValue(of({
+          mostOwned: [
+            {id: 5, name: 'Maths', manufacturer: {id: 2, name: 'Intellijel'}, count: 41}
+          ],
+          mostWanted: [
+            {id: 8, name: 'Clouds', manufacturer: {id: 7, name: 'Mutable Instruments'}, count: 29}
+          ],
+          mostSold: [
+            {id: 11, name: 'Dixie II+', manufacturer: {id: 4, name: 'Intellijel'}, count: 13}
+          ]
+        }))
       }
     };
 
@@ -332,6 +343,23 @@ describe('ApplicationStatisticsService', () => {
         {label: 'Profiles sharing patches', value: '18', icon: 'hub'},
         {label: 'Recent patch updates', value: '9', icon: 'timelapse'}
       ]);
+      done();
+    });
+  });
+
+  it('maps discovery buckets from the backend snapshot', (done) => {
+    const {backend, service} = build();
+
+    service.discovery$.subscribe((snapshot) => {
+      expect(backend.GET.applicationModuleDiscovery).toHaveBeenCalledWith(6, 3);
+      expect(snapshot.mostOwned[0]).toEqual({
+        id: 5,
+        name: 'Maths',
+        manufacturer: {id: 2, name: 'Intellijel'},
+        count: 41
+      });
+      expect(snapshot.mostWanted[0].name).toBe('Clouds');
+      expect(snapshot.mostSold[0].count).toBe(13);
       done();
     });
   });

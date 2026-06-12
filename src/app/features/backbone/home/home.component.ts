@@ -27,6 +27,7 @@ import { SubManager } from 'src/app/shared-interproject/directives/subscription-
 import { SeoSocialShareData } from 'src/app/models/seo.model';
 import { SeoAndUtilsService } from '../seo-and-utils.service';
 import { HomeExperienceHeroComponent } from './components/home-experience-hero/home-experience-hero.component';
+import { HomeDiscoverySectionComponent } from './components/home-discovery-section/home-discovery-section.component';
 import { HomeInvitationCtaComponent } from './components/home-invitation-cta/home-invitation-cta.component';
 import { HomeOpenPrinciplesComponent } from './components/home-open-principles/home-open-principles.component';
 import { HomeProofShowcaseComponent } from './components/home-proof-showcase/home-proof-showcase.component';
@@ -58,6 +59,7 @@ const HOME_PROOF_DELAY_STEP_MS = 500;
     BrandPrimaryButtonComponent,
     DeviceFrameWrapperModule,
     HomeExperienceHeroComponent,
+    HomeDiscoverySectionComponent,
     HomeInvitationCtaComponent,
     HomeInsightsSectionComponent,
     HomeOpenPrinciplesComponent,

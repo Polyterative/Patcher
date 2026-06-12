@@ -72,6 +72,7 @@ import { RackDetailDataService } from './components/rack-parts/rack-detail-data.
 })
 export class AppComponent {
   readonly embeddedShell$;
+  readonly showSupportingContent$;
   readonly animationsDisabled: boolean;
   private readonly platformId = inject(PLATFORM_ID);
 
@@ -103,6 +104,11 @@ export class AppComponent {
       distinctUntilChanged(),
       shareReplay({bufferSize: 1, refCount: true})
     );
+    this.showSupportingContent$ = currentUrl$.pipe(
+      map((currentUrl) => this.supportsSupportingContent(currentUrl)),
+      distinctUntilChanged(),
+      shareReplay({bufferSize: 1, refCount: true})
+    );
   }
 
   private supportsEmbeddedShell(url: string): boolean {
@@ -120,6 +126,8 @@ export class AppComponent {
       || normalizedUrl.startsWith('/modules')
       || normalizedUrl.startsWith('/racks')
       || normalizedUrl.startsWith('/patches')
+      || normalizedUrl.startsWith('/collection/')
+      || normalizedUrl.startsWith('/collections')
       || normalizedUrl.startsWith('/manufacturers')
       || normalizedUrl.startsWith('/info/')
       || isAuthShellRoute
@@ -128,5 +136,11 @@ export class AppComponent {
       || normalizedUrl.startsWith('/u/')
       || normalizedUrl === '/admin'
       || normalizedUrl.startsWith('/admin/');
-}
+ }
+
+ private supportsSupportingContent(url: string): boolean {
+   const normalizedUrl = url.toLowerCase();
+   return !/^\/collection\/\d+(?:[/?#]|$)/.test(normalizedUrl)
+     && !/^\/collections\/manage\/\d+(?:[/?#]|$)/.test(normalizedUrl);
+ }
 }

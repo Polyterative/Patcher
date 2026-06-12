@@ -52,6 +52,7 @@ describe('toolbar-link-data', () => {
     const prod = getToolbarMainLinks(false);
     const dev = getToolbarMainLinks(true);
     expect(prod.length).toBeGreaterThan(0);
+    expect(prod.some(l => l.route === '/collections/browser')).toBeTrue();
     expect(dev.length).toBeGreaterThanOrEqual(prod.length);
   });
 
