@@ -42,7 +42,7 @@
   border-radius: 0.5rem;
   border: 0.0938rem solid;
   background: #fff;
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
 
   &:hover:not(:disabled) {

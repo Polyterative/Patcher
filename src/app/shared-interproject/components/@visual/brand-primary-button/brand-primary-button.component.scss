@@ -1,6 +1,6 @@
 @use "sass:color";
 @use "src/app/style/brand-resources" as *;
-@use "src/app/style/commons_customizations";
+@use "src/app/style/commons-resources" as commons;
 
 :host {
   display: flex;
@@ -11,7 +11,7 @@
 }
 
 .brand-button {
-  @extend .slight-rounding;
+  @include commons.slight-rounding;
 
   line-height: 2.25rem;
   white-space: nowrap;

@@ -1,0 +1,330 @@
+@use "tools" as *;
+
+.row {
+  @include flex;
+  display:            inline-flex;
+  flex-direction:     row;
+  //flex-flow:          row;
+  -webkit-box-orient: horizontal;
+}
+
+.rowwrap {
+  @include flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  //flex-flow:          row wrap;
+  -webkit-box-orient: horizontal;
+}
+
+.rowrev {
+  @include flex;
+  flex-direction:     row-reverse;
+  //flex-flow:          row;
+  -webkit-box-orient: horizontal;
+}
+
+.fixed-width12 {
+  flex: 0 0 12rem;
+}
+
+.fixed-width16 {
+  flex: 0 0 16rem;
+}
+
+.fixed-width20 {
+  flex: 0 0 20rem;
+}
+
+.fixed-width24 {
+  flex: 0 0 24rem;
+}
+
+.fixed-width28 {
+  flex: 0 0 28rem;
+}
+
+.fixed-width32 {
+  flex: 0 0 32rem;
+}
+
+//breakpoint	mediaQuery
+//xs	'screen and (max-width: 37.4375rem)'
+//sm	'screen and (min-width: 37.5rem) and (max-width: 59.9375rem)'
+//md	'screen and (min-width: 60rem) and (max-width: 79.9375rem)'
+//lg	'screen and (min-width: 80rem) and (max-width: 119.9375rem)'
+//xl	'screen and (min-width: 120rem) and (max-width: 312.5rem)'
+//lt-sm	'screen and (max-width: 37.4375rem)'
+//lt-md	'screen and (max-width: 59.9375rem)'
+//lt-lg	'screen and (max-width: 79.9375rem)'
+//lt-xl	'screen and (max-width: 119.9375rem)'
+//gt-xs	'screen and (min-width: 37.5rem)'
+//gt-sm	'screen and (min-width: 60rem)'
+//gt-md	'screen and (min-width: 80rem)'
+//gt-lg	'screen and (min-width: 120rem)'
+
+.col-lt-SM {
+  /* Below 37.5rem all flex rows should be cols*/
+  @media (max-width: 37.5rem) {
+    flex-direction: column !important;
+    -webkit-box-orient: vertical !important;
+    height: auto !important /*  important for sizing of row heights */
+  }
+}
+
+.col-lt-MD {
+  /* Below 60rem all flex rows should be cols*/
+  @media (max-width: 60rem) {
+    flex-direction: column !important;
+    -webkit-box-orient: vertical !important;
+    height: auto !important; /*  important for sizing of row heights */
+  }
+}
+
+.col-lt-LG {
+  /* Below 80rem all flex rows should be cols*/
+  @media (max-width: 80rem) {
+    flex-direction: column;
+    -webkit-box-orient: vertical;
+    height: auto; /*  important for sizing of row heights */
+  }
+}
+
+.col-lt-XL {
+  /* Below 120rem all flex rows should be cols*/
+  @media (max-width: 120rem) {
+    flex-direction: column;
+    -webkit-box-orient: vertical;
+    height: auto; /*  important for sizing of row heights */
+  }
+}
+
+.row-lt-SM {
+  /* Below 37.5rem all flex cols should be rows*/
+  @media (max-width: 37.5rem) {
+    flex-direction: row;
+    -webkit-box-orient: horizontal;
+    height: auto; /*  important for sizing of row heights */
+  }
+}
+
+.row-lt-MD {
+  /* Below 60rem all flex cols should be rows*/
+  @media (max-width: 60rem) {
+    flex-direction: row;
+    -webkit-box-orient: horizontal;
+    height: auto; /*  important for sizing of row heights */
+  }
+}
+
+.row-lt-LG {
+  /* Below 80rem all flex cols should be rows*/
+  @media (max-width: 80rem) {
+    flex-direction: row;
+    -webkit-box-orient: horizontal;
+    height: auto; /*  important for sizing of row heights */
+  }
+}
+
+.row-lt-XL {
+  /* Below 120rem all flex cols should be rows*/
+  @media (max-width: 120rem) {
+    flex-direction: row;
+    -webkit-box-orient: horizontal;
+    height: auto; /*  important for sizing of row heights */
+  }
+}
+
+.gap0 {
+  gap: $standardUnit/2 $standardUnit/2 /* row-gap column gap */
+}
+
+.gap1 {
+  gap: $standardUnit $standardUnit
+}
+
+.gap2 {
+  gap: $standardUnit*2 $standardUnit*2
+}
+
+.gap3 {
+  gap: $standardUnit*3 $standardUnit*3
+}
+
+.gap4 {
+  gap: $standardUnit*4 $standardUnit*4
+}
+
+.col {
+  @include flex;
+  flex-direction:     column;
+  //flex-flow:          column;
+  -webkit-box-orient: vertical;
+  height:             auto; /*  important for sizing of row heights */
+  //margin-bottom:      1.25rem;
+}
+
+//align flex to end
+.auto-left {
+  margin-left: auto;
+}
+
+//align flex to center
+.center {
+  align-items: center;
+}
+
+.align-left {
+  align-items: flex-start;
+}
+
+.align-right {
+  align-items: flex-end;
+}
+
+.self-center {
+  align-self: center;
+}
+
+//align flex to start
+.auto-right {
+  margin-right: auto;
+}
+
+
+
+
+
+.darker-bg {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.lighter-bg {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.colrev {
+  @include flex;
+  flex-direction:     column-reverse;
+  //flex-flow:          column;
+  -webkit-box-orient: vertical;
+  height:             auto; /*  important for sizing of row heights */
+  //margin-bottom:      1.25rem;
+}
+
+.auto {
+  flex: 1 1 auto;
+}
+
+.flex50 {
+  flex: 1 1 auto;
+}
+
+.space-between {
+  justify-content: space-between;
+}
+
+.grow {
+  flex: 1 0 auto;
+}
+
+.shrink {
+  flex: 0 1 auto;
+}
+
+.basis {
+  flex: 0 0 auto;
+}
+
+.occupyHalf {
+  // occupy at most half of the space
+  flex: 0 0 50%;
+}
+
+.textEllipse {
+  white-space:   nowrap;
+  overflow:      hidden;
+  text-overflow: ellipsis;
+}
+
+.padTB1 {
+  padding-top:    $standardUnit;
+  padding-bottom: $standardUnit;
+}
+
+.padT0 {
+  padding-top: $standardUnit/2;
+}
+
+.padT1 {
+  padding-top: $standardUnit;
+}
+
+.padB1 {
+  padding-bottom: $standardUnit;
+}
+
+.padB0 {
+  padding-bottom: $standardUnit/2;
+}
+
+.transparentize-half {
+  opacity: .5;
+}
+
+.transparentize-quarter {
+  opacity: .75;
+}
+
+.transition-all {
+  transition: all 250ms cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.transition-all-long {
+  transition: all 500ms cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.half-sizing {
+  transform: scale(0.5);
+}
+
+// ── Browser sidebar layout ─────────────────────────────────────────────────
+// Shared by module-browser, patch-browser and rack-browser pages.
+// Left aside = filters; right div = results grid.
+.sidebar-layout {
+  display: flex;
+  flex-direction: row;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.filter-sidebar {
+  width: 16.25rem;
+  min-width: 16.25rem;
+  flex-shrink: 0;
+
+  &__heading {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.55;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+.browser-content-area {
+  flex: 1 1 0;
+  min-width: 0; // prevent flex blowout
+}
+
+@media (max-width: 59.9375rem) {
+  .sidebar-layout {
+    flex-direction: column;
+  }
+
+  .filter-sidebar {
+    width: 100%;
+    min-width: unset;
+  }
+}

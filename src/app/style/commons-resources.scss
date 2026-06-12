@@ -1,0 +1,54 @@
+@use "brand-resources";
+@use "tools";
+
+$roundingRadius: .5em;
+
+@mixin margins {
+  margin: tools.$standardUnit;
+}
+
+@mixin round {
+  border-radius: $roundingRadius;
+}
+
+@mixin round_less {
+  $border-radius: $roundingRadius/2;
+  border-radius: $border-radius;
+}
+
+@mixin hoverWithShow {
+  .opacizeParent > .opacizeOnHover {
+    opacity: 1;
+    transition: opacity 125ms ease-in-out;
+  }
+
+  .opacizeParent:hover > .opacizeOnHover {
+    opacity: 0.2;
+    transition: opacity 125ms ease-in-out;
+  }
+
+  .opacizeParent > .showOnHover {
+    opacity: 0;
+    transition: opacity 125ms ease-in-out;
+  }
+
+  .opacizeParent:hover > .showOnHover {
+    opacity: 1;
+    transition: opacity 125ms ease-in-out;
+  }
+}
+
+@mixin item-description {
+  font-style: italic;
+  color: rgba(0, 0, 0, 0.5);
+  @include brand-resources.condensed-font
+}
+
+@mixin slight-rounding {
+  border-radius: .25rem;
+}
+
+@mixin standard-rounding {
+  border-radius: 1rem;
+  -webkit-border-radius: 1rem;
+}

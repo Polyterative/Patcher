@@ -1,5 +1,5 @@
 @use "src/app/style/brand-resources.scss" as *;
-@use "src/app/style/commons_customizations.scss" as *;
+@use "src/app/style/commons-resources.scss" as commons;
 
 .parent > .opacizeOnHover {
   opacity: 1;
@@ -17,7 +17,7 @@
 }
 
 .description {
-  @include item-description
+  @include commons.item-description
 
 }
 
