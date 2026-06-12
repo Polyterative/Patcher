@@ -18,7 +18,8 @@ import { DbPaths } from './DatabaseStrings';
 import {
   cacheBust,
   catchErrors,
-  remapErrors
+  remapErrors,
+  throwIfSupabaseError
 } from './supabase.cache';
 import { SimpleUserModel } from './supabase.types';
 import { CommentableEntityTypes } from 'src/app/components/shared-atoms/comments/comments-data.service';
@@ -363,7 +364,7 @@ export function createDeleteNamespace(
                supabase.from(DbPaths.patch_connections)
                  .delete()
                  .in('patchid', patchIds)
-             ).pipe(remapErrors());
+             ).pipe(throwIfSupabaseError());
 
          const deletePatchModuleInstances$ = (patchIds: number[]) =>
            patchIds.length === 0
@@ -372,7 +373,7 @@ export function createDeleteNamespace(
                supabase.from(DbPaths.patch_module_instances)
                  .delete()
                  .in('patch_id', patchIds)
-             ).pipe(remapErrors());
+             ).pipe(throwIfSupabaseError());
 
          const deletePatches$ = (patchIds: number[]) =>
            patchIds.length === 0
@@ -381,7 +382,7 @@ export function createDeleteNamespace(
                supabase.from(DbPaths.patches)
                  .delete()
                  .in('id', patchIds)
-             ).pipe(remapErrors());
+             ).pipe(throwIfSupabaseError());
 
          const deleteRackModules$ = (rackIds: number[]) =>
            rackIds.length === 0
@@ -390,7 +391,7 @@ export function createDeleteNamespace(
                supabase.from(DbPaths.rack_modules)
                  .delete()
                  .in('rackid', rackIds)
-             ).pipe(remapErrors());
+             ).pipe(throwIfSupabaseError());
 
          const deleteRacks$ = (rackIds: number[]) =>
            rackIds.length === 0
@@ -399,7 +400,24 @@ export function createDeleteNamespace(
                supabase.from(DbPaths.racks)
                  .delete()
                  .in('id', rackIds)
-             ).pipe(remapErrors());
+             ).pipe(throwIfSupabaseError());
+
+         const verifyRacksDeleted$ = (rackIds: number[]) =>
+           rackIds.length === 0
+             ? of(void 0)
+             : rxFrom(
+               supabase.from(DbPaths.racks)
+                 .select('id')
+                 .in('id', rackIds)
+             ).pipe(
+               throwIfSupabaseError(),
+               map(({data}) => {
+                 const remainingRackIds = (data ?? []).map(row => row.id);
+                 if (remainingRackIds.length > 0) {
+                   throw new Error(`Rack deletion incomplete; remaining rack ids: ${ remainingRackIds.join(', ') }`);
+                 }
+               })
+             );
 
          const deleteEntityComments$ = (entityType: number, entityIds: number[]) =>
            entityIds.length === 0
@@ -409,15 +427,15 @@ export function createDeleteNamespace(
                  .delete()
                  .eq('entityType', entityType)
                  .in('entityId', entityIds)
-             ).pipe(remapErrors());
+             ).pipe(throwIfSupabaseError());
          
-         const deleteUserModules$ = rxFrom(
+         const deleteUserModules$ = () => rxFrom(
            supabase.from(DbPaths.user_modules).delete().eq('profileid', uid)
-         ).pipe(remapErrors());
+         ).pipe(throwIfSupabaseError());
          
-        const deleteComments$ = rxFrom(
+         const deleteComments$ = () => rxFrom(
            supabase.from(DbPaths.comments).delete().eq('authorId', uid)
-         ).pipe(remapErrors());
+         ).pipe(throwIfSupabaseError());
 
          return forkJoin({
            patchIds: loadPatchIds$,
@@ -430,8 +448,9 @@ export function createDeleteNamespace(
              switchMap(() => deleteRackModules$(rackIds)),
              switchMap(() => deleteEntityComments$(CommentableEntityTypes.RACK, rackIds)),
              switchMap(() => deleteRacks$(rackIds)),
-             switchMap(() => deleteUserModules$),
-             switchMap(() => deleteComments$),
+             switchMap(() => verifyRacksDeleted$(rackIds)),
+             switchMap(() => deleteUserModules$()),
+             switchMap(() => deleteComments$()),
              cacheBust(['modules', 'currentUserModules', 'moduleWithId', 'patches', 'patchConnections', 'rackWithId', 'racksMinimal', 'comments', 'currentUserComments'])
            ))
          );

@@ -193,10 +193,19 @@ describe('SupabaseService - delete advanced', () => {
         column: string;
         ids: number[];
       }> = [];
+      const eqCalls: Array<{
+        table: string;
+        column: string;
+        value: unknown;
+      }> = [];
       const buildDeleteMock = (table: string) => {
         const mock = chainable({data: null, error: null});
         spyOn(mock, 'in').and.callFake((column: string, ids: number[]) => {
           inCalls.push({table, column, ids: [...ids]});
+          return mock;
+        });
+        spyOn(mock, 'eq').and.callFake((column: string, value: unknown) => {
+          eqCalls.push({table, column, value});
           return mock;
         });
         return mock;
@@ -273,10 +282,80 @@ describe('SupabaseService - delete advanced', () => {
             column: 'entityId',
             ids: [11, 12]
           }));
+          expect(inCalls).toContain(jasmine.objectContaining({
+            table: 'comments',
+            column: 'entityId',
+            ids: [21]
+          }));
+          expect(eqCalls).toContain(jasmine.objectContaining({
+            table: 'comments',
+            column: 'entityType',
+            value: 2
+          }));
           done();
         },
         error: (err) => {
           fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should error when rack deletion leaves owned rack rows behind', (done) => {
+      const mockUser = {id: 'delete-user-rack-remains'};
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+
+      const patchSelect = chainable({data: [], error: null});
+      const rackSelect = chainable({data: [{id: 21}], error: null});
+      const rackDelete = chainable({data: null, error: null});
+      const rackVerify = chainable({data: [{id: 21}], error: null});
+
+      let rackCalls = 0;
+      spyOn(supabaseClient, 'from').and.callFake((table: string) => {
+        if (table === 'patches') return patchSelect;
+        if (table === 'racks') {
+          rackCalls++;
+          if (rackCalls === 1) return rackSelect;
+          if (rackCalls === 2) return rackDelete;
+          return rackVerify;
+        }
+        return chainable({data: null, error: null});
+      });
+
+      service.delete.allUserData().subscribe({
+        next: () => {
+          fail('Expected an error when rack rows remain after deletion');
+          done();
+        },
+        error: (err) => {
+          expect(err.message).toContain('Rack deletion incomplete');
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should propagate Supabase errors during rack cleanup', (done) => {
+      const mockUser = {id: 'delete-user-rack-error'};
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+
+      const patchSelect = chainable({data: [], error: null});
+      const rackSelect = chainable({data: [{id: 21}], error: null});
+      const rackModulesDelete = chainable({data: null, error: {message: 'rack modules blocked'}});
+
+      spyOn(supabaseClient, 'from').and.callFake((table: string) => {
+        if (table === 'patches') return patchSelect;
+        if (table === 'racks') return rackSelect;
+        if (table === 'rack_modules') return rackModulesDelete;
+        return chainable({data: null, error: null});
+      });
+
+      service.delete.allUserData().subscribe({
+        next: () => {
+          fail('Expected rack module deletion error to propagate');
+          done();
+        },
+        error: (err) => {
+          expect(err.message).toBe('rack modules blocked');
           done();
         }
       });
