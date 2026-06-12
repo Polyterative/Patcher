@@ -9,7 +9,19 @@
   </div>
 
   <button
-    class="patch-graph-fullscreen-dialog__close"
+    class="patch-graph-fullscreen-dialog__action patch-graph-fullscreen-dialog__download"
+    mat-icon-button
+    type="button"
+    aria-label="Download graph image"
+    matTooltip="Download graph image"
+    [disabled]="!graphReady || downloading"
+    (click)="downloadImage()"
+  >
+    <mat-icon>{{ downloading ? 'hourglass_empty' : 'download' }}</mat-icon>
+  </button>
+
+  <button
+    class="patch-graph-fullscreen-dialog__action patch-graph-fullscreen-dialog__close"
     mat-icon-button
     type="button"
     aria-label="Close full screen graph"
