@@ -6,15 +6,17 @@ import {
 } from '@angular/core';
 import { SubManager } from '../../../directives/subscription-manager';
 import { GeneralContextMenuDataService } from './general-context-menu-data.service';
-import { MatMenuTrigger } from "@angular/material/menu";
+import { MatMenuTrigger, MatMenu, MatMenuContent, MatMenuItem } from "@angular/material/menu";
+import { MatIcon } from '@angular/material/icon';
+import { AsyncPipe } from '@angular/common';
 
 
 @Component({
-  selector: 'app-general-context-menu',
-  templateUrl: './general-context-menu.component.html',
-  styleUrls: ['./general-context-menu.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+    selector: 'app-general-context-menu',
+    templateUrl: './general-context-menu.component.html',
+    styleUrls: ['./general-context-menu.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [MatMenuTrigger, MatMenu, MatMenuContent, MatMenuItem, MatIcon, AsyncPipe]
 })
 export class GeneralContextMenuComponent extends SubManager implements OnInit {
   @ViewChild(MatMenuTrigger)

@@ -7,14 +7,16 @@ import {
   Meta,
   Title
 } from '@angular/platform-browser';
+import { EmptyStateComponent } from '../../../shared-interproject/components/@smart/empty-state/empty-state.component';
+import { MatCardTitle } from '@angular/material/card';
 
 
 @Component({
-  selector:        'app-not-found',
-  templateUrl:     './not-found.component.html',
-  styleUrls:       ['./not-found.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone:      false
+    selector: 'app-not-found',
+    templateUrl: './not-found.component.html',
+    styleUrls: ['./not-found.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [EmptyStateComponent, MatCardTitle]
 })
 export class NotFoundComponent implements OnInit {
   

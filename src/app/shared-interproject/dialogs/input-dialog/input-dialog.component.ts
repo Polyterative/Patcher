@@ -6,28 +6,28 @@ import {
 import { FormControl } from '@angular/forms';
 import { AppStateService } from '../../app-state.service';
 import { FormTypes } from '../../components/@smart/mat-form-entity/form-element-models';
-import { IMatFormEntityConfig } from '../../components/@smart/mat-form-entity/mat-form-entity.component';
+import { IMatFormEntityConfig, MatFormEntityComponent } from '../../components/@smart/mat-form-entity/mat-form-entity.component';
 import { DialogBase } from '../DialogBase';
 import { ReadOnlyDialogComponent } from '../read-only-dialog/read-only-dialog.component';
 import { takeUntil } from "rxjs/operators";
 import { BehaviorSubject } from "rxjs";
-import {
-  MAT_DIALOG_DATA,
-  MatDialogRef
-} from "@angular/material/dialog";
+import { MAT_DIALOG_DATA, MatDialogRef, MatDialogTitle, MatDialogContent, MatDialogActions } from "@angular/material/dialog";
 import {
   InputDialogDataInModel,
   InputDialogDataOutModel
 } from './input-dialog.types';
+import { CdkScrollable } from '@angular/cdk/scrolling';
+import { BrandPrimaryButtonComponent } from '../../components/@visual/brand-primary-button/brand-primary-button.component';
+import { AsyncPipe } from '@angular/common';
 
 export type { InputDialogDataInModel, InputDialogDataOutModel };
 
 @Component({
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'app-input-dialog',
-  templateUrl: './input-dialog.component.html',
-  styleUrls: ['./input-dialog.component.scss'],
-  standalone: false
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-input-dialog',
+    templateUrl: './input-dialog.component.html',
+    styleUrls: ['./input-dialog.component.scss'],
+    imports: [MatDialogTitle, CdkScrollable, MatDialogContent, MatFormEntityComponent, MatDialogActions, BrandPrimaryButtonComponent, AsyncPipe]
 })
 export class InputDialogComponent extends DialogBase {
   // primaryClick$: EventEmitter<void>;

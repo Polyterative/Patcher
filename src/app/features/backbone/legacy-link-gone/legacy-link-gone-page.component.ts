@@ -13,13 +13,18 @@ import {
 } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
+import { EmptyStateComponent } from '../../../shared-interproject/components/@smart/empty-state/empty-state.component';
+import { MatCardTitle } from '@angular/material/card';
+import { MatButton } from '@angular/material/button';
+import { RouterLink } from '@angular/router';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
-  selector:        'app-legacy-link-gone-page',
-  templateUrl:     './legacy-link-gone-page.component.html',
-  styleUrls:       ['./legacy-link-gone-page.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone:      false
+    selector: 'app-legacy-link-gone-page',
+    templateUrl: './legacy-link-gone-page.component.html',
+    styleUrls: ['./legacy-link-gone-page.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [EmptyStateComponent, MatCardTitle, MatButton, RouterLink, AsyncPipe]
 })
 export class LegacyLinkGonePageComponent implements OnInit {
   readonly profileLink$: Observable<string[]>;
