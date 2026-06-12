@@ -59,5 +59,50 @@ describe('discovery-tip-surface.utils', () => {
       const result = calculateDiscoveryTipPosition(anchor, 800, 600);
       expect(result.left).toBeLessThanOrEqual(800 - 16);
     });
+
+    it('uses measured tip height when available', () => {
+      const anchor = makeRect(100, 520, 50, 30);
+      const result = calculateDiscoveryTipPosition(
+        anchor,
+        800,
+        600,
+        'A title long enough to make the estimate taller',
+        'A body long enough to wrap across several lines in the estimated fallback height.',
+        {width: 320, height: 100}
+      );
+
+      expect(result.side).toBe('above');
+      expect(result.top).toBe(406);
+    });
+
+    it('chooses the side where the measured tip fits', () => {
+      const anchor = makeRect(100, 300, 50, 30);
+      const result = calculateDiscoveryTipPosition(
+        anchor,
+        800,
+        600,
+        '',
+        '',
+        {width: 320, height: 100}
+      );
+
+      expect(result.side).toBe('below');
+      expect(result.top).toBe(344);
+    });
+
+    it('keeps arrow aligned with the anchor when the tip is clamped', () => {
+      const anchor = makeRect(760, 100, 40, 30);
+      const result = calculateDiscoveryTipPosition(
+        anchor,
+        800,
+        600,
+        '',
+        '',
+        {width: 320, height: 100}
+      );
+
+      expect(result.left).toBe(464);
+      expect(result.arrowLeft).toBe(302);
+    });
   });
 });

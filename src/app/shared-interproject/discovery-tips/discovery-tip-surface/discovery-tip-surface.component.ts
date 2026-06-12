@@ -6,9 +6,11 @@ import {
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   Inject,
   OnInit,
-  PLATFORM_ID
+  PLATFORM_ID,
+  ViewChild
 } from '@angular/core';
 import {
   BehaviorSubject,
@@ -47,8 +49,30 @@ export { calculateDiscoveryTipPosition };
 })
 export class DiscoveryTipSurfaceComponent extends SubManager implements OnInit {
   private readonly isBrowser: boolean;
+  private tipPanelElement: HTMLElement | null = null;
+  private tipResizeObserver: ResizeObserver | null = null;
+  private measuredTipSize: {width: number; height: number} | undefined;
   private readonly refreshTick$ = new BehaviorSubject<number>(0);
   readonly viewModel$;
+
+  @ViewChild('tipPanel')
+  set tipPanel(panel: ElementRef<HTMLElement> | undefined) {
+    if (!this.isBrowser) {
+      return;
+    }
+
+    this.tipResizeObserver?.disconnect();
+    this.tipPanelElement = panel?.nativeElement ?? null;
+
+    if (!this.tipPanelElement) {
+      this.measuredTipSize = undefined;
+      return;
+    }
+
+    this.updateMeasuredTipSize();
+    this.tipResizeObserver = new ResizeObserver(() => this.updateMeasuredTipSize());
+    this.tipResizeObserver.observe(this.tipPanelElement);
+  }
 
   constructor(
     readonly discoveryTipService: DiscoveryTipService,
@@ -86,6 +110,11 @@ export class DiscoveryTipSurfaceComponent extends SubManager implements OnInit {
     });
   }
 
+  override ngOnDestroy(): void {
+    this.tipResizeObserver?.disconnect();
+    super.ngOnDestroy();
+  }
+
   private buildViewModel(activeTip: DiscoveryTipActive | null): DiscoveryTipViewModel | null {
     if (!this.isBrowser || !activeTip) {
       return null;
@@ -102,12 +131,37 @@ export class DiscoveryTipSurfaceComponent extends SubManager implements OnInit {
       viewport.width,
       viewport.height,
       activeTip.definition.title,
-      activeTip.definition.body
+      activeTip.definition.body,
+      this.measuredTipSize,
+      {
+        offsetLeft: viewport.offsetLeft,
+        offsetTop: viewport.offsetTop
+      }
     );
     return {
       ...position,
       title: activeTip.definition.title,
       body: activeTip.definition.body
     };
+  }
+
+  private updateMeasuredTipSize(): void {
+    if (!this.tipPanelElement) {
+      return;
+    }
+
+    const rect = this.tipPanelElement.getBoundingClientRect();
+    const width = Math.round(rect.width);
+    const height = Math.round(rect.height);
+    if (width === 0 || height === 0) {
+      return;
+    }
+
+    if (this.measuredTipSize?.width === width && this.measuredTipSize.height === height) {
+      return;
+    }
+
+    this.measuredTipSize = {width, height};
+    this.refreshTick$.next(Date.now());
   }
 }

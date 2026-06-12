@@ -1,9 +1,14 @@
 @if ((viewModel$ | async); as tip) {
   <section
+    #tipPanel
     class="discovery-tip"
     [class.above]="tip.side === 'above'"
     [class.below]="tip.side === 'below'"
-    [ngStyle]="{left: tip.left + 'px', top: tip.top + 'px'}"
+    [ngStyle]="{
+      left: tip.left + 'px',
+      top: tip.top + 'px',
+      '--tip-arrow-left': tip.arrowLeft + 'px'
+    }"
     aria-live="polite"
     role="status"
   >
