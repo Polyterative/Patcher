@@ -128,6 +128,27 @@ test('passes through llms.txt requests for bots without hitting Supabase', async
   assert.equal(getCalls(), 0);
 });
 
+test('redirects bot SPA bypass URLs to the canonical URL without hitting Supabase', async () => {
+  const middleware = loadMiddleware('test-key');
+  const getCalls = stubFetchWithPayload(modulePayload);
+
+  const response = await middleware(makeRequest('/modules/details/72?__spa=1'));
+
+  assert.equal(response.status, 308);
+  assert.equal(response.headers.get('location'), 'https://patcher.xyz/modules/details/72');
+  assert.equal(getCalls(), 0);
+});
+
+test('still passes through non-bot SPA bypass URLs without hitting Supabase', async () => {
+  const middleware = loadMiddleware('test-key');
+  const getCalls = stubFetchWithPayload(modulePayload);
+
+  const response = await middleware(makeRequest('/modules/details/72?__spa=1', 'Mozilla/5.0'));
+
+  assert.equal(response, undefined);
+  assert.equal(getCalls(), 0);
+});
+
 test('returns entity-specific metadata for bot detail requests', async () => {
   const middleware = loadMiddleware('test-key');
   const getCalls = stubFetchWithPayload(modulePayload);
@@ -143,6 +164,18 @@ test('returns entity-specific metadata for bot detail requests', async () => {
   assert.match(html, /og:title/);
   assert.match(html, /rel="canonical"/);
   assert.match(html, /module-panels\/panel\.png/);
+});
+
+test('does not expose SPA bypass URLs through crawler-followable markup', async () => {
+  const middleware = loadMiddleware('test-key');
+  stubFetchWithPayload(modulePayload);
+
+  const response = await middleware(makeRequest('/modules/details/72'));
+  const html = await response.text();
+
+  assert.doesNotMatch(html, /<meta http-equiv="refresh"/);
+  assert.match(html, /<a href="https:\/\/patcher\.xyz\/modules\/details\/72">/);
+  assert.match(html, /window\.location\.replace\("https:\/\/patcher\.xyz\/modules\/details\/72\?__spa=1"\)/);
 });
 
 test('reuses in-memory cache for repeated bot requests', async () => {

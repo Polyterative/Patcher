@@ -105,10 +105,6 @@ export default async function middleware(request: Request): Promise<Response | v
   const isPreviewDeployment = isPreviewRequest(requestUrl);
   const canonicalOrigin = resolveCanonicalOrigin(requestOrigin, isPreviewDeployment);
 
-  if (requestUrl.searchParams.has('__spa')) {
-    return;
-  }
-
   if (request.method !== 'GET') {
     return;
   }
@@ -118,6 +114,13 @@ export default async function middleware(request: Request): Promise<Response | v
   }
 
   const userAgent = request.headers.get('user-agent') || '';
+  if (requestUrl.searchParams.has('__spa')) {
+    if (BOT_UA_REGEX.test(userAgent)) {
+      return Response.redirect(`${ canonicalOrigin }${ resolveCanonicalPath(pathname) }`, 308);
+    }
+    return;
+  }
+
   if (!BOT_UA_REGEX.test(userAgent)) {
     return;
   }
@@ -736,7 +739,6 @@ function renderHtml(metadata: ShareMetadata, robotsTag: string): string {
   const image = escapeHtml(metadata.image);
   const escapedRobotsTag = escapeHtml(robotsTag);
   const redirectTarget = addSpaBypass(metadata.url);
-  const redirectUrl = escapeHtml(redirectTarget);
   const redirectScriptTarget = JSON.stringify(redirectTarget);
   const jsonLd = JSON.stringify(metadata.jsonLd).replace(/</g, '\\u003c');
   const ogType = escapeHtml(metadata.ogType || 'website');
@@ -775,11 +777,9 @@ function renderHtml(metadata: ShareMetadata, robotsTag: string): string {
   <meta name="twitter:image:alt" content="${ title }">
 
   <script type="application/ld+json">${ jsonLd }</script>
-  <meta http-equiv="refresh" content="0;url=${ redirectUrl }">
   <script>if(!(${ BOT_UA_REGEX }).test(navigator.userAgent)){window.location.replace(${ redirectScriptTarget });}</script>
 </head>
 <body>
-  <noscript><meta http-equiv="refresh" content="0;url=${ redirectUrl }"></noscript>
   <p>Continue to <a href="${ canonical }">${ canonical }</a></p>
 </body>
 </html>`;
