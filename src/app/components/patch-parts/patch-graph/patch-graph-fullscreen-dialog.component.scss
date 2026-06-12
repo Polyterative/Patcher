@@ -10,7 +10,12 @@
 .patch-graph-fullscreen-dialog__title {
   flex: 0 0 auto;
   background: #ffffff;
-  border-bottom: 0.0625rem solid rgba(0, 0, 0, 0.06);
+
+  ::ng-deep .content {
+    background-color: #ffffff !important;
+    padding-top: 0.5rem;
+    padding-bottom: 0.25rem;
+  }
 }
 
 .patch-graph-fullscreen-dialog__close {
