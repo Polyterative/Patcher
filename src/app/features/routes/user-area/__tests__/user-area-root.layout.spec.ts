@@ -56,7 +56,7 @@ describe('UserAreaRootComponent - Layout Shell', () => {
     expect(host.querySelector('.profile-layout')).not.toBeNull();
     expect(host.querySelector('.main-content')).not.toBeNull();
     expect(host.querySelector('.sidebar')).not.toBeNull();
-    expect(host.querySelectorAll('.block').length).toBe(6);
+    expect(host.querySelectorAll('.block').length).toBe(5);
   });
 
   it('renders search inside the sidebar instead of as a floating shell', () => {
