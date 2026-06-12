@@ -75,7 +75,7 @@
 
   @include condensed-font ;
 
-  transition:       all 75ms ease-in-out;
+  transition:       box-shadow 75ms ease-in-out;
 
   &:hover {
     @include mat.elevation(1);

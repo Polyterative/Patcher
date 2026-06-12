@@ -2,14 +2,14 @@
 //@use '@angular/material' as mat;
 //@import '@angular/material/theming';
 @use "src/app/style/brand-resources" as *;
-@use "src/app/style/commons_customizations";
+@use "src/app/style/commons-resources" as commons;
 
 mat-card {
   padding: 0
 }
 
 h1 {
-  @extend .std-rounding;
+  @include commons.standard-rounding;
 
   // Explicitly include heading font styles to ensure proper rendering after Angular update
   font-size: 3.5rem;
@@ -116,7 +116,7 @@ h3 {
   //border-bottom-right-radius: 0.25rem;
   //border-bottom-left-radius:  0.25rem;
   //@include mat.elevation(0);
-  transition:       all 125ms cubic-bezier(0.0, 0.0, 0.2, 1)
+  transition:       background-color 125ms cubic-bezier(0.0, 0.0, 0.2, 1)
 }
 
 .title {
@@ -196,11 +196,11 @@ h3 {
 }
 
 .container {
-  @extend .std-rounding;
+  @include commons.standard-rounding;
 }
 
 .bgImage {
-  @extend .std-rounding;
+  @include commons.standard-rounding;
 
   //$color: rgb(255, 255, 255, 0);
   //background-image: linear-gradient($color, $color) url(/assets/illustrations/undraw_road_sign_mfpo.svg);
