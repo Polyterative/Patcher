@@ -7,7 +7,7 @@
   <div class="col gap1">
     <lib-hero-content-card class="modulesBG module-collections-detail__header"
                            [titleBig]="bag.editing ? 'Collection editing' : 'Collection details'"
-                           [titleSub]="bag.collection?.name ?? ''"
+                           [titleSub]="bag.collection?.name ?? 'Loading...'"
                            [description]="bag.editing ? 'Pick modules, set the order, and decide if others can see it.' : (bag.collection?.description ?? 'Curated module playlist.')"
                            icon="playlist_play"
                            [showWideShellNav]="true">

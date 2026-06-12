@@ -24,6 +24,10 @@
   width: 100%;
 }
 
+.user-area-header-loading {
+  min-height: 18rem;
+}
+
 :host ::ng-deep .user-area-header h1.title {
   display: flex;
   width: 100%;

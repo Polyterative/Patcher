@@ -3,15 +3,15 @@
   globalSearchQuery: (globalSearchQuery$|async)
 }; as bag) {
   <lib-screen-wrapper sizePreset="full-bleed">
-    <lib-hero-content-card appDiscoveryTipAnchor="user-area-profile-card"
-                           class="userBG user-area-header"
-                           titleBig="User area"
-                           [titleSub]="bag.userProfile?.username"
-                           [description]="bag.userProfile ? profileVisibilityDescription(bag.userProfile.public) : ''"
-                           [descriptionAlign]="'alignTextStart'"
-                           [showWideShellNav]="true"
-                           icon="dashboard">
-      @if (bag.userProfile) {
+    @if (bag.userProfile) {
+      <lib-hero-content-card appDiscoveryTipAnchor="user-area-profile-card"
+                             class="userBG user-area-header"
+                             titleBig="User area"
+                             [titleSub]="bag.userProfile.username"
+                             [description]="profileVisibilityDescription(bag.userProfile.public)"
+                             [descriptionAlign]="'alignTextStart'"
+                             [showWideShellNav]="true"
+                             icon="dashboard">
         <div class="user-profile-card__content">
           <div class="user-profile-card__actions">
             <app-brand-primary-button
@@ -49,8 +49,10 @@
           </mat-button-toggle-group>
         </div>
         -->
-      }
-    </lib-hero-content-card>
+      </lib-hero-content-card>
+    } @else {
+      <div class="user-area-header-loading" aria-hidden="true"></div>
+    }
     <div class="col gap1 user-area-page"
     >
       <div class="profile-layout">

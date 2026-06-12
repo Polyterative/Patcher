@@ -7,7 +7,7 @@
     <lib-hero-content-card
       titleBig="Manufacturer Details"
       [showWideShellNav]="true"
-      [titleSub]="bag.manufacturer?.name"
+      [titleSub]="bag.manufacturer?.name ?? 'Loading...'"
       class="manufacturersBG"
     >
       <div class="col gap2">

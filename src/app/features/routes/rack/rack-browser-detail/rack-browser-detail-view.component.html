@@ -10,7 +10,7 @@
     <lib-hero-content-card class="racksBG rackBrowserDetailView__header"
                            [titleBig]="bag.isCurrentRackEditable && bag.isCurrentRackPropertyOfCurrentUser ? 'Rack editing' : 'Rack details'"
                            [showWideShellNav]="showWideShellNav"
-                           [titleSub]="bag.data?.name"
+                           [titleSub]="bag.data?.name ?? (bag.unavailableMessage ? 'Unavailable' : 'Loading...')"
     >
       @if (bag.data) {
         <lib-auto-update-loading-indicator [data$]="dataService.singleRackData$"
@@ -83,7 +83,7 @@
           [compactTitleSub]="true"
           [enableCollectionBrowseModes]="true"
           [titleBig]="'Add modules to'"
-          [titleSub]="bag.data?.name ?? ''"
+          [titleSub]="bag.data?.name ?? 'Loading...'"
           [description]="'Use your collection or the full library to place modules into this rack.'"
           [showRecentActivity]="false"
           [manageSeo]="false"

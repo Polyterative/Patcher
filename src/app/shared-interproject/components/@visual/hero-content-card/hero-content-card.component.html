@@ -17,13 +17,12 @@
         <div class="col gap1 title bgImage std-rounding">
           @if (titleBig) {
             <h2 style="margin-bottom: 0"
-              [@title]
             >
               {{ titleBig }}
             </h2>
           }
           @if (titleNormal) {
-            <h3 [@title]
+            <h3
               [class.no-word-break]="!description"
             >
               {{ titleNormal }}
@@ -36,7 +35,7 @@
               class="row title bgImage vertPadding gap1"
               [class.title--with-sub]="titleSub">
               <div class="title-shell"
-                   [@title]>
+              >
                 @if (showWideShellNav && shellVm.wideShell) {
                   <div #wideShellNavOrigin class="title-metro-nav-origin">
                     <ng-container *ngTemplateOutlet="wideShellNav; context: {$implicit: shellVm, floating: false}"></ng-container>
@@ -73,8 +72,7 @@
         }
         @if (titleNormal) {
           <h3
-            class="row title gap1"
-            [@title]>
+            class="row title gap1">
             @if (icon) {
               <app-hero-content-card-head-icon [icon]="icon"
               >
@@ -91,7 +89,7 @@
         <mat-card-subtitle
           class="description auto"
           [ngClass]="descriptionAlign"
-          [@description]>
+        >
           {{ description }}
         </mat-card-subtitle>
       }

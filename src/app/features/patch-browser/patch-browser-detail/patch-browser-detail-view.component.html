@@ -8,7 +8,7 @@
     >
       <lib-hero-content-card titleBig="Patch details"
                              [showWideShellNav]="showWideShellNav"
-                             [titleSub]="bag.data?.name"
+                             [titleSub]="bag.data?.name ?? (bag.unavailableMessage ? 'Unavailable' : 'Loading...')"
                              class="patchesBG patch-browser-detail__header"
       >
         <div class="col gap1"
@@ -25,7 +25,7 @@
     >
       <lib-hero-content-card titleBig="Patch editing"
                              [showWideShellNav]="showWideShellNav"
-                             [titleSub]="bag.data?.name"
+                             [titleSub]="bag.data?.name ?? (bag.unavailableMessage ? 'Unavailable' : 'Loading...')"
                              class="patchesBG patch-browser-detail__header"
       >
         <div class="col gap1"
