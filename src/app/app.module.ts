@@ -74,6 +74,7 @@ export const APP_ROOT_IMPORTS = [
   BrowserAnimationsModule,
   AppFeaturesModule,
   FeedbackBoxModule,
+  TimeagoModule.forRoot(),
   BackboneModule
 //keep as last (for routes)
 ] as const;
