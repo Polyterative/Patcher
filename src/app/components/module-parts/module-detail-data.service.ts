@@ -30,6 +30,7 @@ import {
 } from '../../models/module';
 import { PatchMinimal } from '../../models/patch';
 import { RackMinimal } from '../../models/rack';
+import { ModuleCollectionSummary } from '../../models/module-collection';
 import { MatDialog } from "@angular/material/dialog";
 import { AppStateService } from "src/app/shared-interproject/app-state.service";
 import { Router } from "@angular/router";
@@ -64,6 +65,7 @@ export class ModuleDetailDataService implements OnDestroy {
   //
   readonly racksWithThisModule$ = new BehaviorSubject<RackMinimal[] | undefined>(undefined);
   readonly patchesWithThisModule$ = new BehaviorSubject<PatchMinimal[] | undefined>(undefined);
+  readonly collectionsWithThisModule$ = new BehaviorSubject<ModuleCollectionSummary[] | undefined>(undefined);
   readonly moduleUsageSummary$ = new BehaviorSubject<ModuleUsageSummary | undefined>(undefined);
   readonly possessionCounts$ = new BehaviorSubject<ModulePossessionCounts | undefined>(undefined);
   //
@@ -204,6 +206,14 @@ export class ModuleDetailDataService implements OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(x => this.patchesWithThisModule$.next(x));
+
+    this.updateSingleModuleData$
+      .pipe(
+        tap(() => this.collectionsWithThisModule$.next(undefined)),
+        switchMap(x => this.backend.GET.moduleCollectionsForModule(x)),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(collections => this.collectionsWithThisModule$.next(collections));
 
     this.updateSingleModuleData$
       .pipe(

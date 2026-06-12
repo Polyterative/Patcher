@@ -1,0 +1,31 @@
+<div class="module-collection-creator col gap1">
+  <h1 mat-dialog-title>Start a collection</h1>
+
+  <mat-dialog-content>
+    <div class="col gap1">
+      <p class="module-collection-creator__copy">
+        Give it a name now. Add modules, cover art, notes, and sharing details on the collection page.
+      </p>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Name</mat-label>
+        <input matInput [formControl]="nameControl" maxlength="80">
+      </mat-form-field>
+
+      <div class="module-collection-creator__visibility">
+        <mat-icon>{{ publicControl.value ? 'public' : 'lock' }}</mat-icon>
+        <span>{{ publicControl.value ? 'Public - visible to everyone' : 'Private - only visible to you' }}</span>
+        <mat-slide-toggle [formControl]="publicControl"></mat-slide-toggle>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close type="button">Cancel</button>
+    <app-brand-primary-button
+      icon="add"
+      [disabled]="(saving$ | async) ?? false"
+      (click$)="create$.next()"
+    >Start collection</app-brand-primary-button>
+  </mat-dialog-actions>
+</div>

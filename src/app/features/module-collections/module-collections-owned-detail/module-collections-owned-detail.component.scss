@@ -1,0 +1,16 @@
+.collection-owned-detail {
+  padding-bottom: 3rem;
+}
+
+.collection-owned-detail__frame {
+  display: grid;
+  gap: 1rem;
+}
+
+.collection-owned-detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: flex-start;
+}

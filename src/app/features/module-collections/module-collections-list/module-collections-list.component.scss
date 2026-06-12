@@ -1,0 +1,13 @@
+:host {
+  display: block;
+}
+
+.loadMore {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem 0 0.25rem;
+}
+
+.loadMore__btn {
+  min-width: 10rem;
+}

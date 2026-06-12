@@ -145,6 +145,7 @@ export class SupabaseService extends SubManager {
     this.GET = {
       currentUserModules: this.queries.getCurrentUserModules.bind(this.queries),
       modules: this.queries.getModules.bind(this.queries),
+      searchPublicModulesForCollection: this.queries.searchPublicModulesForCollection.bind(this.queries),
       manufacturers: this.queries.getManufacturers.bind(this.queries),
       manufacturersPaginated: this.queries.getManufacturersPaginated.bind(this.queries),
       comments: this.queries.getComments.bind(this.queries),
@@ -156,8 +157,15 @@ export class SupabaseService extends SubManager {
       currentUserContributorStats: this.queries.getCurrentUserContributorStats.bind(this.queries),
       applicationStatistics: this.queries.getApplicationStatistics.bind(this.queries),
       applicationInsightsSnapshot: this.queries.getApplicationInsightsSnapshot.bind(this.queries),
+      applicationModuleDiscovery: this.queries.getApplicationModuleDiscovery.bind(this.queries),
       applicationActivitySeries: this.queries.getApplicationActivitySeries.bind(this.queries),
       applicationModuleInsights: this.queries.getApplicationModuleInsights.bind(this.queries),
+      publicModuleCollections: this.queries.getPublicModuleCollections.bind(this.queries),
+      publicModuleCollectionsPage: this.queries.getPublicModuleCollectionsPage.bind(this.queries),
+      currentUserModuleCollections: this.queries.getCurrentUserModuleCollections.bind(this.queries),
+      publicModuleCollectionByPublicId: this.queries.getPublicModuleCollectionByPublicId.bind(this.queries),
+      currentUserModuleCollectionById: this.queries.getCurrentUserModuleCollectionById.bind(this.queries),
+      moduleCollectionsForModule: this.queries.getModuleCollectionsForModule.bind(this.queries),
       patches: this.queries.getPatches.bind(this.queries),
       publicPatchWithId: this.queries.getPublicPatchWithId.bind(this.queries),
       publicUserContributorStats: this.queries.getPublicUserContributorStats.bind(this.queries),
@@ -202,6 +210,7 @@ export class SupabaseService extends SubManager {
   readonly GET!: {
     currentUserModules: typeof SupabaseQueriesService.prototype.getCurrentUserModules;
     modules: typeof SupabaseQueriesService.prototype.getModules;
+    searchPublicModulesForCollection: typeof SupabaseQueriesService.prototype.searchPublicModulesForCollection;
     manufacturers: typeof SupabaseQueriesService.prototype.getManufacturers;
     manufacturersPaginated: typeof SupabaseQueriesService.prototype.getManufacturersPaginated;
     comments: typeof SupabaseQueriesService.prototype.getComments;
@@ -213,8 +222,15 @@ export class SupabaseService extends SubManager {
     currentUserContributorStats: typeof SupabaseQueriesService.prototype.getCurrentUserContributorStats;
     applicationStatistics: typeof SupabaseQueriesService.prototype.getApplicationStatistics;
     applicationInsightsSnapshot: typeof SupabaseQueriesService.prototype.getApplicationInsightsSnapshot;
+    applicationModuleDiscovery: typeof SupabaseQueriesService.prototype.getApplicationModuleDiscovery;
     applicationActivitySeries: typeof SupabaseQueriesService.prototype.getApplicationActivitySeries;
     applicationModuleInsights: typeof SupabaseQueriesService.prototype.getApplicationModuleInsights;
+    publicModuleCollections: typeof SupabaseQueriesService.prototype.getPublicModuleCollections;
+    publicModuleCollectionsPage: typeof SupabaseQueriesService.prototype.getPublicModuleCollectionsPage;
+    currentUserModuleCollections: typeof SupabaseQueriesService.prototype.getCurrentUserModuleCollections;
+    publicModuleCollectionByPublicId: typeof SupabaseQueriesService.prototype.getPublicModuleCollectionByPublicId;
+    currentUserModuleCollectionById: typeof SupabaseQueriesService.prototype.getCurrentUserModuleCollectionById;
+    moduleCollectionsForModule: typeof SupabaseQueriesService.prototype.getModuleCollectionsForModule;
     patches: typeof SupabaseQueriesService.prototype.getPatches;
     publicPatchWithId: typeof SupabaseQueriesService.prototype.getPublicPatchWithId;
     publicUserContributorStats: typeof SupabaseQueriesService.prototype.getPublicUserContributorStats;

@@ -65,3 +65,19 @@ export interface PublicApplicationInsightsSnapshot {
   activitySeries: PublicApplicationActivityPoint[];
   moduleInsights: PublicApplicationModuleInsights;
 }
+
+export interface PublicModuleDiscoveryEntry {
+  id: number;
+  name: string;
+  manufacturer: {
+    id: number;
+    name: string;
+  };
+  count: number;
+}
+
+export interface PublicModuleDiscoverySnapshot {
+  mostOwned: PublicModuleDiscoveryEntry[];
+  mostWanted: PublicModuleDiscoveryEntry[];
+  mostSold: PublicModuleDiscoveryEntry[];
+}

@@ -5,6 +5,8 @@ export class DbPaths {
   static moduleOUTs = 'module_outs' as const;
   static manufacturers = 'manufacturers' as const;
   static user_modules = 'user_modules' as const;
+  static module_collections = 'module_collections' as const;
+  static module_collection_entries = 'module_collection_entries' as const;
   static racks = 'racks' as const;
   static rack_modules = 'rack_modules' as const;
   static rack_modules_grouped_by_moduleid = 'rack_modules_grouped_by_moduleid' as const;
@@ -28,6 +30,7 @@ export class DbStoragePaths {
   static module_panels = 'module-panels' as const;
   static racks = 'racks' as const;
   static manufacturer_logos = 'manufacturer-logos' as const;
+  static module_collections = 'module-collections' as const;
 }
 
 const SUPABASE_STORAGE_BASE = 'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/';
@@ -36,6 +39,7 @@ const SUPABASE_STORAGE_BASE = 'https://sozmatmywjpstwidzlss.supabase.co/storage/
 export class StorageUrls {
   static modulePanels = `${SUPABASE_STORAGE_BASE}${DbStoragePaths.module_panels}/`;
   static manufacturerLogos = `${SUPABASE_STORAGE_BASE}${DbStoragePaths.manufacturer_logos}/`;
+  static moduleCollections = `${SUPABASE_STORAGE_BASE}${DbStoragePaths.module_collections}/`;
   static racks = `${SUPABASE_STORAGE_BASE}${DbStoragePaths.racks}/`;
 }
 
@@ -87,6 +91,35 @@ export class QueryJoins {
 
   // Module Panels
   static module_panels: string = `panels:${ DbPaths.module_panels }!module_panels_moduleid_fkey(*)`;
+
+  // Module Collections
+  static moduleCollection: string = 'collection:module_collections!module_collection_entries_collection_id_fkey(*)';
+  static moduleCollectionEntries: string = `entries:${ DbPaths.module_collection_entries }(*)`;
+  static collectionAuthor: string = 'author:authorid(username,id)';
+  static collectionModule: string = `module:modules!module_collection_entries_module_id_fkey(
+    id,
+    name,
+    description,
+    hp,
+    public,
+    manufacturer:manufacturerId(name,id),
+    standard:standards!modules_standard_fkey(name,id),
+    panels:${ DbPaths.module_panels }!module_panels_moduleid_fkey(*),
+    created,
+    updated
+  )`;
+  static collectionEntryModule: string = `module:modules!module_collection_entries_module_id_fkey(
+    id,
+    name,
+    description,
+    hp,
+    public,
+    manufacturer:manufacturerId(name,id),
+    standard:standards!modules_standard_fkey(name,id),
+    panels:${ DbPaths.module_panels }!module_panels_moduleid_fkey(*),
+    created,
+    updated
+  )`;
 
   // Module Inputs
   static ins: string = `ins:${ DbPaths.moduleINs }(*)`;

@@ -230,7 +230,7 @@ describe('UserAreaDataService', () => {
     expect(passedIds).not.toContain(2);
   });
 
-  it('shows my modules by default and switches to wishlist on request', () => {
+  it('shows my modules by default and switches between collection filters', () => {
     const {service} = build();
     const emittedIds: number[][] = [];
     service.modulesData$.next([
@@ -244,8 +244,9 @@ describe('UserAreaDataService', () => {
       emittedIds.push((modules ?? []).map(module => module.id));
     });
     service.moduleCollectionFilter$.next('WISHLIST');
+    service.moduleCollectionFilter$.next('FOR_SALE');
 
-    expect(emittedIds).toEqual([[1, 3, 4], [2]]);
+    expect(emittedIds).toEqual([[1, 4], [2], [3]]);
     subscription.unsubscribe();
   });
 

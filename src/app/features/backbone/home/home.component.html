@@ -76,6 +76,14 @@
 
     <section class="section-enter">
       @defer (on viewport) {
+        <app-home-discovery-section></app-home-discovery-section>
+      } @placeholder {
+        <div></div>
+      }
+    </section>
+
+    <section class="section-enter">
+      @defer (on viewport) {
         <app-home-open-principles
           sectionTitle="Why it feels easy to use"
           sectionIntro="Everything is designed to help you stay creative, organized, and get back to great sounds faster."

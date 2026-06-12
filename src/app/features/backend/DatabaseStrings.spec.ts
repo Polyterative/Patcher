@@ -70,4 +70,9 @@ describe('QueryJoins', () => {
   it('module_panels join string contains the module_panels table reference', () => {
     expect(QueryJoins.module_panels).toContain('module_panels');
   });
+
+  it('collection module joins include module panels for module thumbnails', () => {
+    expect(QueryJoins.collectionModule).toContain('panels:module_panels');
+    expect(QueryJoins.collectionEntryModule).toContain('panels:module_panels');
+  });
 });

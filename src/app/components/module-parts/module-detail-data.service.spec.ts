@@ -32,7 +32,10 @@ describe('ModuleDetailDataService', () => {
         currentUserModules: jasmine.createSpy('currentUserModules').and.returnValue(of([{id: 50, possessionKind: 'HAS'}])),
         moduleWithId: jasmine.createSpy('moduleWithId').and.callFake((id: number) => of({
           data: {...baseModule, id}
-        }))
+        })),
+        moduleCollectionsForModule: jasmine.createSpy('moduleCollectionsForModule').and.returnValue(of([
+          {id: 81, name: 'Ambient starters', public: true, public_id: 'ambient', author: {username: 'Curator'}, module_count: 3}
+        ]))
       },
       get: {
         racksWithModule: jasmine.createSpy('racksWithModule').and.returnValue(of({data: [{rack: {id: 1}}]})),
@@ -108,10 +111,12 @@ describe('ModuleDetailDataService', () => {
     expect(backend.GET.moduleWithId).toHaveBeenCalledWith(10);
     expect(backend.get.racksWithModule).toHaveBeenCalledWith(10);
     expect(backend.get.patchesWithModule).toHaveBeenCalledWith(10);
+    expect(backend.GET.moduleCollectionsForModule).toHaveBeenCalledWith(10);
     expect(backend.get.moduleUsageSummary).toHaveBeenCalledWith(10);
     expect(service.singleModuleData$.value?.id).toBe(10);
     expect(service.racksWithThisModule$.value).toEqual([{id: 1} as any]);
     expect(service.patchesWithThisModule$.value).toEqual([{id: 21} as any]);
+    expect(service.collectionsWithThisModule$.value?.[0].name).toBe('Ambient starters');
     expect(service.moduleUsageSummary$.value).toEqual({
       public_rack_count: 1,
       hidden_rack_bucket: 'some',

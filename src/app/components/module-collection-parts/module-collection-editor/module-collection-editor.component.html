@@ -1,0 +1,166 @@
+<div class="col gap1 module-collection-editor" [class.module-collection-editor--page]="surface === 'page'">
+  @if (surface === 'dialog') {
+    <h1 mat-dialog-title>{{ isEditMode ? 'Edit collection' : 'Create collection' }}</h1>
+
+    <mat-dialog-content>
+      <ng-container *ngTemplateOutlet="editorFields"></ng-container>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+      <ng-container *ngTemplateOutlet="editorActions; context: { cancel: true }"></ng-container>
+    </mat-dialog-actions>
+  } @else {
+    <div class="module-collection-editor__page-body">
+      <ng-container *ngTemplateOutlet="editorFields"></ng-container>
+    </div>
+  }
+</div>
+
+<ng-template #editorFields>
+  <div class="module-collection-editor__grid">
+    <section class="module-collection-editor__panel module-collection-editor__panel--identity">
+      <div class="module-collection-editor__panel-heading">
+        <span class="module-collection-editor__eyebrow">Identity</span>
+        <h2>Name the playlist</h2>
+      </div>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Title</mat-label>
+        <input matInput [formControl]="nameControl" maxlength="80">
+      </mat-form-field>
+
+      <div class="module-collection-editor__cover">
+        <div class="module-collection-editor__cover-preview" *ngIf="displayCoverPreview() as preview">
+          <img [src]="preview" alt="Collection cover preview">
+        </div>
+        <label class="module-collection-editor__file">
+          <input type="file" accept="image/*" (change)="onCoverFileChange($any($event.target).files)">
+          <mat-icon>image</mat-icon>
+          <span>{{ displayCoverPreview() ? 'Replace cover' : 'Add cover' }}</span>
+        </label>
+      </div>
+
+      <div class="module-collection-editor__visibility">
+        <div class="module-collection-editor__visibility-copy">
+          <mat-icon>{{ publicControl.value ? 'public' : 'lock' }}</mat-icon>
+          <span>{{ publicControl.value ? 'Public collection' : 'Private collection' }}</span>
+        </div>
+        <mat-slide-toggle [formControl]="publicControl"></mat-slide-toggle>
+      </div>
+    </section>
+
+    <section class="module-collection-editor__panel module-collection-editor__panel--rationale">
+      <div class="module-collection-editor__panel-heading">
+        <span class="module-collection-editor__eyebrow">Rationale</span>
+        <h2>Why these modules belong together</h2>
+      </div>
+      <p class="module-collection-editor__guidance">
+        Treat this like liner notes for a module playlist: describe the sound, build quality, panel language,
+        patching role, or personal reason that makes this bucket useful.
+      </p>
+      <mat-form-field appearance="outline" class="module-collection-editor__rationale-field">
+        <mat-label>Description / rationale</mat-label>
+        <textarea matInput rows="8" [formControl]="descriptionControl"></textarea>
+      </mat-form-field>
+    </section>
+
+    <section class="module-collection-editor__panel module-collection-editor__panel--selected">
+      @let selectedModules = (selectedModules$ | async) ?? [];
+      <div class="module-collection-editor__panel-heading module-collection-editor__panel-heading--row">
+        <div>
+          <span class="module-collection-editor__eyebrow">Playlist</span>
+          <h2>Selected modules</h2>
+        </div>
+        <span class="module-collection-editor__count">{{ selectedModules.length }} modules</span>
+      </div>
+      <div class="module-collection-editor__selected"
+           cdkDropList
+           cdkDropListOrientation="horizontal"
+           [cdkDropListData]="selectedModules"
+           (cdkDropListDropped)="onSelectedModulesDrop($event)"
+      >
+        @if (selectedModules.length === 0) {
+          <div class="module-collection-editor__empty-state">
+            <mat-icon>playlist_add</mat-icon>
+            <div>
+              <strong>No modules selected</strong>
+              <span>Use the module picker below to build the playlist. Add wild distortion, liquid filters, beautiful panels, precision utilities - whatever the collection is about.</span>
+            </div>
+          </div>
+        } @else {
+          <div class="module-collection-editor__selected-card"
+               *ngFor="let module of selectedModules; let i = index"
+               cdkDrag
+               [cdkDragData]="module"
+          >
+            <lib-clean-card>
+              <div class="module-collection-editor__selected-card-body">
+                <div class="module-collection-editor__selected-card-actions">
+                  <span class="module-collection-editor__ordinal">{{ i + 1 }}</span>
+                  <button mat-icon-button
+                          type="button"
+                          aria-label="Drag to reorder module"
+                          cdkDragHandle
+                  >
+                    <mat-icon>drag_indicator</mat-icon>
+                  </button>
+                  <button mat-icon-button
+                          type="button"
+                          aria-label="Remove module"
+                          (click)="removeSelectedModule$.next(module.id)"
+                  >
+                    <mat-icon>delete_outline</mat-icon>
+                  </button>
+                </div>
+                <app-module-minimal
+                  [data]="module"
+                  [viewConfig]="playlistModuleViewConfig"
+                ></app-module-minimal>
+              </div>
+            </lib-clean-card>
+            <div class="module-collection-editor__drag-placeholder" *cdkDragPlaceholder></div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <section class="module-collection-editor__embedded-browser">
+      <app-module-browser-root
+        [showSubmitFab]="false"
+        [showWideShellNav]="false"
+        [compactSidebarAtTablet]="true"
+        [compactTitleSub]="true"
+        [titleBig]="'Add modules to'"
+        [titleSub]="nameControl.value || 'collection'"
+        [description]="'Use the full module browser to search, filter, and add modules directly into the playlist above.'"
+        [showRecentActivity]="false"
+        [manageSeo]="false"
+        [viewConfig]="browserModuleViewConfig"
+        [moduleAction]="moduleBrowserAction"
+        [moduleActionDisabledIds]="(selectedModuleIds$ | async) ?? emptySelectedModuleIds"
+        (moduleAction$)="addModule$.next($event)"
+      ></app-module-browser-root>
+    </section>
+
+    @if (!isEditMode) {
+      <div class="module-collection-editor__page-actions">
+        <ng-container *ngTemplateOutlet="editorActions; context: { cancel: false }"></ng-container>
+      </div>
+    }
+  </div>
+</ng-template>
+
+<ng-template #editorActions let-cancel="cancel">
+  @if (cancel) {
+    <button mat-button mat-dialog-close type="button">{{ isEditMode ? 'Close' : 'Cancel' }}</button>
+  }
+  @if (!isEditMode) {
+    <app-brand-primary-button
+      icon="save"
+      [disabled]="(saving$ | async) ?? false"
+      (click$)="save$.next()"
+    >
+      Create collection
+    </app-brand-primary-button>
+  }
+</ng-template>

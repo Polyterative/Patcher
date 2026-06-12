@@ -32,6 +32,7 @@ import { StatisticsComponent } from "src/app/components/shared-atoms/statistics/
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { DiscoveryTipsModule } from 'src/app/shared-interproject/discovery-tips/discovery-tips.module';
 import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-state-tips/empty-state-tips.component';
@@ -40,13 +41,17 @@ import { PatchMicroModule } from 'src/app/components/patch-micro/patch-micro.mod
 import { RackMicroModule } from 'src/app/components/rack-micro/rack-micro.module';
 import { RackModule } from 'src/app/components/rack-parts/rack.module';
 import { PatchModule } from 'src/app/components/patch-parts/patch.module';
+import { ModuleCollectionPartsModule } from 'src/app/components/module-collection-parts/module-collection-parts.module';
+import { ModuleCollectionsDataService } from 'src/app/features/module-collections/module-collections-data.service';
+import { UserCollectionsComponent } from 'src/app/features/routes/user-area/user-collections/user-collections.component';
 
 
 @NgModule({
   declarations: [
     UserAreaRootComponent,
     UserRacksComponent,
-    UserPatchesComponent
+    UserPatchesComponent,
+    UserCollectionsComponent
   ],
   imports: [
     CommonModule,
@@ -76,8 +81,10 @@ import { PatchModule } from 'src/app/components/patch-parts/patch.module';
     MatPaginatorModule,
     MatChipsModule,
     MatButtonModule,
+    MatDialogModule,
     UserManualsComponent,
     UserCommentsComponent,
+    ModuleCollectionPartsModule,
     AppFaqComponent,
     MatFormEntityComponent,
     DiscoveryTipsModule,
@@ -93,6 +100,7 @@ import { PatchModule } from 'src/app/components/patch-parts/patch.module';
   ],
   providers:    [
     UserAreaDataService,
+    ModuleCollectionsDataService,
     UsernameCompleteGuard
   ]
 })

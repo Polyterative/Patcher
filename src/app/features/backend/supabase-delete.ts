@@ -238,7 +238,22 @@ export function createDeleteNamespace(
         remapErrors(),
         cacheBust(['rackWithId', 'racksMinimal'])
       ),
-    
+
+    moduleCollection: (id: number) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return rxFrom(
+          supabase
+            .from(DbPaths.module_collections)
+            .delete()
+            .filter('authorid', 'eq', user.id)
+            .filter('id', 'eq', id)
+        );
+      }),
+      remapErrors(),
+      cacheBust(['moduleCollections', 'moduleCollectionWithId', 'moduleCollectionsByModule'])
+    ),
+
     modules: (from = 0, to: number = defaultPag) => getUserSession$().pipe(
       switchMap(user => {
         if (!user) return throwError(() => new Error('Authentication required'));

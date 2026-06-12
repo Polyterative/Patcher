@@ -40,6 +40,12 @@ const MAIN_LINKS: RouteClickableLink[] = [
     disabled: false
   },
   {
+    label: 'Collections',
+    route: '/collections/browser',
+    icon: 'playlist_play',
+    disabled: false
+  },
+  {
     label: 'Patches',
     route: '/patches/browser',
     icon: 'settings_input_composite',
@@ -70,9 +76,9 @@ const ADMIN_LINKS: RouteClickableLink[] = [
 ];
 
 const DEV_MAIN_LINKS: RouteClickableLink[] = [
-  ...MAIN_LINKS.slice(0, 3),
+  ...MAIN_LINKS.slice(0, 4),
   INSIGHTS_LINK,
-  ...MAIN_LINKS.slice(3)
+  ...MAIN_LINKS.slice(4)
 ];
 
 const guestLinksCache = [

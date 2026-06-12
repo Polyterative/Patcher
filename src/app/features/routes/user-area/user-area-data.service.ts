@@ -23,8 +23,7 @@ import {
 } from 'src/app/components/rack-parts/rack-creator/rack-creator.component';
 import {
   DbModule,
-  MinimalModule,
-  UserModulePossessionKind
+  MinimalModule
 } from 'src/app/models/module';
 import { Patch } from 'src/app/models/patch';
 import { Rack } from 'src/app/models/rack';
@@ -42,13 +41,14 @@ import {
   buildDiscoverySnapshot,
   filterComments,
   filterManuals,
+  filterModulesByPossession,
   filterModules,
   filterRacks,
   pagedSlice$
 } from './user-area-data.utils';
 import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 
-export type UserModuleCollectionFilter = 'MY_MODULES' | 'WISHLIST';
+export type UserModuleCollectionFilter = 'MY_MODULES' | 'WISHLIST' | 'FOR_SALE';
 
 @Injectable()
 export class UserAreaDataService extends SubManager {
@@ -135,7 +135,7 @@ export class UserAreaDataService extends SubManager {
       this.searchQuery$
     ]).pipe(
       map(([modules, collectionFilter, query]) => filterModules(
-        this.filterModulesByPossession(modules, collectionFilter),
+        filterModulesByPossession(modules, collectionFilter),
         query
       ))
     );
@@ -495,22 +495,4 @@ export class UserAreaDataService extends SubManager {
       });
   }
 
-  private filterModulesByPossession(
-    modules: MinimalModule[] | undefined,
-    collectionFilter: UserModuleCollectionFilter
-  ): MinimalModule[] | undefined {
-    if (!modules) {
-      return undefined;
-    }
-
-    if (collectionFilter === 'MY_MODULES') {
-      return modules.filter(module => this.normalizePossessionKind(module.possessionKind) !== 'WANTS');
-    }
-
-    return modules.filter(module => this.normalizePossessionKind(module.possessionKind) === 'WANTS');
-  }
-
-  private normalizePossessionKind(kind: UserModulePossessionKind | undefined): UserModulePossessionKind {
-    return kind === 'WANTS' || kind === 'SELLS' ? kind : 'HAS';
-  }
 }

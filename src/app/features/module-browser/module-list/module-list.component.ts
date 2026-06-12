@@ -1,8 +1,10 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   Input,
-  OnInit
+  OnInit,
+  Output
 } from '@angular/core';
 import { animate, animateChild, query, style, transition, trigger } from '@angular/animations';
 import {
@@ -63,6 +65,13 @@ export type ModuleListGroupId = ModuleGroupId;
 export const MODULE_LIST_SORT_OPTIONS = MODULE_SORT_OPTIONS;
 export const MODULE_LIST_GROUP_OPTIONS = MODULE_GROUP_OPTIONS;
 
+export interface ModuleListActionConfig {
+  icon: string;
+  label: string;
+  disabledIcon?: string;
+  disabledLabel?: string;
+}
+
 
 @Component({
   selector: 'app-module-list',
@@ -100,6 +109,9 @@ export class ModuleListComponent extends SubManager implements OnInit {
   @Input() suppressEmpty = false;
   /** Pre-selects a grouping mode when the list first renders. Defaults to 'none'. */
   @Input() defaultGroupId: ModuleGroupId = 'none';
+  @Input() moduleAction: ModuleListActionConfig | null = null;
+  @Input() moduleActionDisabledIds: ReadonlySet<number> | null = null;
+  @Output() readonly moduleAction$ = new EventEmitter<MinimalModule>();
 
   private readonly externalSearchQuery$ = new BehaviorSubject<string>('');
 
@@ -271,6 +283,24 @@ export class ModuleListComponent extends SubManager implements OnInit {
     this.hpControl.setValue('');
     this.hpConditionControl.setValue(DEFAULT_HP_CONDITION);
     this.tagsControl.setValue([]);
+  }
+
+  isModuleActionDisabled(module: MinimalModule): boolean {
+    return this.moduleActionDisabledIds?.has(module.id) ?? false;
+  }
+
+  getModuleActionIcon(module: MinimalModule): string {
+    if (this.isModuleActionDisabled(module)) {
+      return this.moduleAction?.disabledIcon ?? this.moduleAction?.icon ?? '';
+    }
+    return this.moduleAction?.icon ?? '';
+  }
+
+  getModuleActionLabel(module: MinimalModule): string {
+    if (this.isModuleActionDisabled(module)) {
+      return this.moduleAction?.disabledLabel ?? this.moduleAction?.label ?? '';
+    }
+    return this.moduleAction?.label ?? '';
   }
   
   orderData(moduleList: ModuleList): ModuleList {

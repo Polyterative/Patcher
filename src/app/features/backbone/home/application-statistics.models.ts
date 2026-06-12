@@ -101,3 +101,21 @@ export interface ApplicationInsightsPage {
   patchDepthBars: ApplicationInsightsBar[];
   patchHighlights: ApplicationInsightsHighlight[];
 }
+
+export type ApplicationDiscoveryBucket = 'mostOwned' | 'mostWanted' | 'mostSold';
+
+export interface ApplicationDiscoveryEntry {
+  id: number;
+  name: string;
+  manufacturer: {
+    id: number;
+    name: string;
+  };
+  count: number;
+}
+
+export interface ApplicationDiscoverySnapshot {
+  mostOwned: ApplicationDiscoveryEntry[];
+  mostWanted: ApplicationDiscoveryEntry[];
+  mostSold: ApplicationDiscoveryEntry[];
+}

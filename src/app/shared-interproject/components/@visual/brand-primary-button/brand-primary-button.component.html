@@ -1,6 +1,7 @@
 <a mat-raised-button
    [style.flex]="innerFlex"
    [routerLink]="routerLink"
+   [fragment]="fragment"
    [class]="'brand-button'+' '+theme"
    [disabled]="disabled||error"
    [ngClass]='{"disabled": disabled, "error": error }'

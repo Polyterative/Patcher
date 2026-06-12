@@ -189,6 +189,23 @@ describe('ModuleListComponent', () => {
     component.ngOnDestroy();
   });
 
+  it('resolves optional module action labels and disabled icons', () => {
+    const {component} = build();
+    const module = buildModule({id: 10});
+    component.moduleAction = {
+      icon: 'playlist_add',
+      label: 'Add to playlist',
+      disabledIcon: 'check',
+      disabledLabel: 'Already in playlist'
+    };
+    component.moduleActionDisabledIds = new Set([10]);
+
+    expect(component.isModuleActionDisabled(module)).toBeTrue();
+    expect(component.getModuleActionIcon(module)).toBe('check');
+    expect(component.getModuleActionLabel(module)).toBe('Already in playlist');
+    component.ngOnDestroy();
+  });
+
   describe('showFilters=true', () => {
     function buildWithFilters() {
       const filterService = new LocalDataFilterService();

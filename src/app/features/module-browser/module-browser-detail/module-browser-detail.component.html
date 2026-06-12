@@ -2,6 +2,7 @@
   data: (dataService.singleModuleData$|async),
   racksWithThisModule: (dataService.racksWithThisModule$|async),
   patchesWithThisModule: (dataService.patchesWithThisModule$|async),
+  collectionsWithThisModule: (dataService.collectionsWithThisModule$|async),
   moduleUsageSummary: (dataService.moduleUsageSummary$|async),
   possessionCounts: (dataService.possessionCounts$|async),
   currentModulePossession: (dataService.currentModulePossession$|async),
@@ -184,6 +185,22 @@
                   }
                 </mat-chip-set>
               </lib-hero-content-card>
+              @if (bag.collectionsWithThisModule && bag.collectionsWithThisModule.length > 0) {
+                <lib-hero-content-card titleNormal="Appears in collections"
+                                       [@moduleDetailSupportEnter]="{ value: '', params: { delay: 398, duration: 185 } }"
+                                       [sidesPadding]="false">
+                  <mat-chip-set class="rowwrap gap1">
+                    @for (collection of bag.collectionsWithThisModule; track collection.id) {
+                      <mat-chip class="module-search-chip"
+                                [routerLink]="['/collections', collection.public_id]"
+                      >
+                        <mat-icon matChipAvatar>{{ collection.public ? 'public' : 'lock' }}</mat-icon>
+                        {{ collection.name }}
+                      </mat-chip>
+                    }
+                  </mat-chip-set>
+                </lib-hero-content-card>
+              }
                <div [@moduleDetailSupportEnter]="{ value: '', params: { delay: 412, duration: 190 } }">
                  <lib-screen-wrapper maxSize="var(--app-readable-section-max-width)">
                    <app-comments-root></app-comments-root>

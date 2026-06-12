@@ -95,9 +95,23 @@
         [ngClass]="{'limit-height':encloseVertically}"
       >
         @for (item of bag.filteredData; track item.id) {
-          <lib-clean-card [@enter]="{ value: '', params: { delay: getEnterDelay(item.id)}}"
+          <lib-clean-card class="module-list-card"
+                          [@enter]="{ value: '', params: { delay: getEnterDelay(item.id)}}"
                           [@leave]="{ value: '', params: { delay:  0 }}"
           >
+            @if (moduleAction) {
+              <button
+                mat-icon-button
+                type="button"
+                class="module-list-card-action"
+                [disabled]="isModuleActionDisabled(item)"
+                [attr.aria-label]="getModuleActionLabel(item)"
+                [matTooltip]="getModuleActionLabel(item)"
+                (click)="moduleAction$.emit(item)"
+              >
+                <mat-icon>{{ getModuleActionIcon(item) }}</mat-icon>
+              </button>
+            }
             <app-module-minimal
               [data]="item"
               [viewConfig]="viewConfig"

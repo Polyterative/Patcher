@@ -1,0 +1,112 @@
+@if ({
+  collection: (dataService.collection$ | async),
+  unavailable: (dataService.unavailableMessage$ | async),
+  user: (userManagementService.loggedUser$ | async),
+  editing: (collectionEditingPanelOpenState$ | async)
+}; as bag) {
+  <div class="col gap1">
+    <lib-hero-content-card class="modulesBG module-collections-detail__header"
+                           [titleBig]="bag.editing ? 'Collection editing' : 'Collection details'"
+                           [titleSub]="bag.collection?.name ?? ''"
+                           [description]="bag.editing ? 'Pick modules, set the order, and decide if others can see it.' : (bag.collection?.description ?? 'Curated module playlist.')"
+                           icon="playlist_play"
+                           [showWideShellNav]="true">
+      @if (bag.collection) {
+        @if (bag.editing && isCollectionOwner(bag.collection, bag.user)) {
+          <app-module-collection-editor
+            surface="page"
+            [collection]="bag.collection"
+            (collectionUpdated)="onCollectionUpdated($event)"
+            (saved)="onCollectionSaved(bag.collection)"
+          ></app-module-collection-editor>
+        } @else {
+          <div class="collection-detail-readonly">
+            <div class="module-detail-layout">
+              <div class="module-detail-column module-detail-column--left">
+                <div class="col gap2 module-detail-mainStack">
+                  <lib-clean-card class="module-detail-primary-card">
+                    <div class="collection-summary">
+                      <div class="collection-summary__media">
+                        @if (coverImageSrc(bag.collection.image); as coverUrl) {
+                          <img class="collection-summary__cover" [src]="coverUrl" [alt]="bag.collection.name">
+                        } @else {
+                          <div class="collection-summary__placeholder">
+                            <mat-icon>playlist_play</mat-icon>
+                          </div>
+                        }
+                      </div>
+
+                      <div class="collection-summary__content">
+                        <app-hero-clickable-title [link]="['/collections', bag.collection.public_id]"
+                                                  infoBox
+                                                  infoText="Collection name"
+                                                  textSize="lg"
+                        >
+                          {{ bag.collection.name }}
+                        </app-hero-clickable-title>
+                        <div class="collection-summary__meta">
+                          <span>By {{ bag.collection.author?.username || 'unknown' }}</span>
+                          <span>{{ bag.collection.module_count }} modules</span>
+                        </div>
+                        <app-timestamps-relative [data]="bag.collection"></app-timestamps-relative>
+                        @if (bag.collection.description) {
+                          <div class="collection-summary__description">
+                            <mat-card-subtitle>{{ bag.collection.description }}</mat-card-subtitle>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  </lib-clean-card>
+                </div>
+              </div>
+
+              <div class="col gap2 module-detail-column module-detail-column--middle">
+                <div class="module-detail-supportRail">
+                  <div class="module-detail-supportRailCards">
+                    <lib-hero-content-card titleNormal="Data" [sidesPadding]="false">
+                      <app-lib-showcase-grid [data]="collectionStats(bag.collection)"></app-lib-showcase-grid>
+                    </lib-hero-content-card>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="collection-detail-modules-section">
+              <lib-hero-content-card titleNormal="Modules" [sidesPadding]="false">
+                <app-module-list
+                  [data$]="collectionModules$"
+                  [viewConfig]="viewConfig"
+                  [emptyStateCopy]="'This playlist is empty.'"
+                ></app-module-list>
+              </lib-hero-content-card>
+            </div>
+          </div>
+        }
+
+        @if (isCollectionOwner(bag.collection, bag.user)) {
+          <app-edit-fab
+            [editMode$]="collectionEditingPanelOpenState$"
+            [hasPendingChanges$]="collectionEditorHasPendingChanges$"
+            openLabel="Edit collection"
+            closeLabel="Close editor"
+            openIcon="edit"
+            closeIcon="lock"
+            (toggle$)="toggleEditor()"
+          ></app-edit-fab>
+        }
+      } @else if (bag.unavailable) {
+        <app-empty-state icon="playlist_remove"
+                         title="Collection unavailable"
+                         [copy]="bag.unavailable"
+        ></app-empty-state>
+      } @else {
+        <lib-clean-card>
+          <lib-auto-content-loading-indicator
+            [loadingLines]="5"
+            [skipFirstData]="true"
+          ></lib-auto-content-loading-indicator>
+        </lib-clean-card>
+      }
+    </lib-hero-content-card>
+  </div>
+}

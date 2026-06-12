@@ -6,7 +6,8 @@ import {
 import { DbComment } from 'src/app/models/comment';
 import {
   DbModule,
-  MinimalModule
+  MinimalModule,
+  UserModulePossessionKind
 } from 'src/app/models/module';
 import { Patch } from 'src/app/models/patch';
 import { Rack } from 'src/app/models/rack';
@@ -72,6 +73,29 @@ export function filterModules(
 
     return matchesSearchQuery(query, ...searchFields);
   });
+}
+
+export function filterModulesByPossession(
+  modules: MinimalModule[] | undefined,
+  collectionFilter: 'MY_MODULES' | 'WISHLIST' | 'FOR_SALE'
+): MinimalModule[] | undefined {
+  if (!modules) {
+    return undefined;
+  }
+
+  if (collectionFilter === 'MY_MODULES') {
+    return modules.filter(module => normalizePossessionKind(module.possessionKind) === 'HAS');
+  }
+
+  if (collectionFilter === 'WISHLIST') {
+    return modules.filter(module => normalizePossessionKind(module.possessionKind) === 'WANTS');
+  }
+
+  return modules.filter(module => normalizePossessionKind(module.possessionKind) === 'SELLS');
+}
+
+function normalizePossessionKind(kind: UserModulePossessionKind | undefined): UserModulePossessionKind {
+  return kind === 'WANTS' || kind === 'SELLS' ? kind : 'HAS';
 }
 
 export function filterRacks(

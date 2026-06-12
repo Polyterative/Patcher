@@ -1,0 +1,52 @@
+@if ({
+  collection: (dataService.currentUserCollection$ | async),
+  unavailable: (dataService.currentUserCollectionUnavailableMessage$ | async)
+}; as bag) {
+  <lib-screen-wrapper sizePreset="full-bleed">
+    <div class="col gap1 collection-owned-detail">
+      @if (bag.collection) {
+        <lib-hero-content-card class="modulesBG"
+                               titleBig="Collection editing"
+                               [titleSub]="bag.collection.name"
+                               description="Pick modules, set the order, and decide if others can see it."
+                               [showWideShellNav]="true"
+                               icon="playlist_play">
+          <div class="collection-owned-detail__frame">
+            <div class="collection-owned-detail__actions">
+              <app-brand-primary-button routerLink="/user/area" icon="dashboard">User area</app-brand-primary-button>
+              <app-brand-primary-button routerLink="/collections/browser" icon="travel_explore">Browse collections</app-brand-primary-button>
+              @if (bag.collection.public) {
+                <app-brand-primary-button theme="light" [routerLink]="['/collections', bag.collection.public_id]" icon="public">Public view</app-brand-primary-button>
+              }
+            </div>
+
+            <app-module-collection-editor
+              surface="page"
+              [collection]="bag.collection"
+              (collectionUpdated)="onCollectionUpdated($event)"
+              (saved)="reloadCollection()"
+            ></app-module-collection-editor>
+          </div>
+        </lib-hero-content-card>
+      } @else if (bag.unavailable) {
+        <lib-hero-content-card class="modulesBG"
+                               titleBig="Collection editing"
+                               titleSub="Unavailable"
+                               [description]="bag.unavailable"
+                               [showWideShellNav]="true"
+                               icon="playlist_remove">
+          <div class="collection-owned-detail__frame">
+            <div class="collection-owned-detail__actions">
+              <app-brand-primary-button routerLink="/user/area" icon="dashboard">User area</app-brand-primary-button>
+              <app-brand-primary-button routerLink="/collections/browser" icon="travel_explore">Browse collections</app-brand-primary-button>
+            </div>
+            <app-empty-state icon="playlist_remove"
+                             title="Collection unavailable"
+                             [copy]="bag.unavailable"
+            ></app-empty-state>
+          </div>
+        </lib-hero-content-card>
+      }
+    </div>
+  </lib-screen-wrapper>
+}

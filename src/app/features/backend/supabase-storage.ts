@@ -75,7 +75,44 @@ export function createStorageNamespace(
         ))
       );
     },
-    
+
+    uploadCollectionCover: (file: SupabaseStorageFile, filenameAndExtension: string) => {
+      filenameAndExtension = cleanUpFileName(filenameAndExtension);
+      filenameAndExtension = filenameAndExtension.split('.').join(
+        `_${ new Date().toISOString().replace(/:/g, '-').replace(/[^0-9-]/g, '') }.`
+      );
+
+      return getUserSession$().pipe(
+        switchMap(() => rxFrom(
+          supabase.storage
+            .from(DbStoragePaths.module_collections)
+            .upload(filenameAndExtension, file, {
+              cacheControl: '360',
+              contentType: 'image/jpeg'
+            })
+        ).pipe(
+          throwIfSupabaseError(),
+          cacheBust(['moduleCollections', 'moduleCollectionWithId']),
+          map(() => filenameAndExtension)
+        ))
+      );
+    },
+
+    deleteCollectionCover: (filenameAndExtension: string) => {
+      filenameAndExtension = cleanUpFileName(filenameAndExtension);
+      return getUserSession$().pipe(
+        switchMap(user => {
+          if (!user) return throwError(() => new Error('Authentication required'));
+          return rxFrom(
+            supabase.storage
+              .from(DbStoragePaths.module_collections)
+              .remove([filenameAndExtension])
+          ).pipe(throwIfSupabaseError());
+        }),
+        cacheBust(['moduleCollections', 'moduleCollectionWithId'])
+      );
+    },
+
     deleteRackImage: (filenameAndExtension: string) => {
       filenameAndExtension = cleanUpFileName(filenameAndExtension);
       return getUserSession$().pipe(

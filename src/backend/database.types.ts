@@ -131,6 +131,102 @@ export type Database = {
         }
         Relationships: []
       }
+      module_collection_entries: {
+        Row: {
+          collection_id: number
+          created: string
+          id: number
+          module_id: number
+          note: string | null
+          ordinal: number
+          updated: string
+        }
+        Insert: {
+          collection_id: number
+          created?: string
+          id?: number
+          module_id: number
+          note?: string | null
+          ordinal: number
+          updated?: string
+        }
+        Update: {
+          collection_id?: number
+          created?: string
+          id?: number
+          module_id?: number
+          note?: string | null
+          ordinal?: number
+          updated?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_collection_entries_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "module_collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_collection_entries_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_collection_entries_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "patches_for_modules"
+            referencedColumns: ["moduleid"]
+          },
+        ]
+      }
+      module_collections: {
+        Row: {
+          authorid: string
+          created: string
+          description: string | null
+          id: number
+          image: string | null
+          name: string
+          public: boolean
+          public_id: string
+          updated: string
+        }
+        Insert: {
+          authorid: string
+          created?: string
+          description?: string | null
+          id?: number
+          image?: string | null
+          name: string
+          public?: boolean
+          public_id?: string
+          updated?: string
+        }
+        Update: {
+          authorid?: string
+          created?: string
+          description?: string | null
+          id?: number
+          image?: string | null
+          name?: string
+          public?: boolean
+          public_id?: string
+          updated?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_collections_authorid_fkey"
+            columns: ["authorid"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       module_flags: {
         Row: {
           category: string
@@ -987,6 +1083,10 @@ export type Database = {
     }
     Functions: {
       delete_current_user_account: { Args: never; Returns: undefined }
+      delete_module_collection: {
+        Args: { p_collection_id: number }
+        Returns: undefined
+      }
       generate_public_id: { Args: { p_len?: number }; Returns: string }
       get_application_insights_snapshot: {
         Args: { p_days?: number }
@@ -994,6 +1094,55 @@ export type Database = {
           activity_series: Json
           module_insights: Json
           statistics: Json
+        }[]
+      }
+      get_current_user_module_collection_by_id: {
+        Args: { p_collection_id: number }
+        Returns: {
+          author: Json
+          authorid: string
+          created: string
+          description: string
+          entries: Json
+          id: number
+          image: string
+          module_count: number
+          name: string
+          public: boolean
+          public_id: string
+          updated: string
+        }[]
+      }
+      get_current_user_module_collections: {
+        Args: { p_from?: number; p_to?: number }
+        Returns: {
+          author: Json
+          authorid: string
+          created: string
+          description: string
+          id: number
+          image: string
+          module_count: number
+          name: string
+          public: boolean
+          public_id: string
+          updated: string
+        }[]
+      }
+      get_module_collections_for_module: {
+        Args: { p_module_id: number }
+        Returns: {
+          author: Json
+          authorid: string
+          created: string
+          description: string
+          id: number
+          image: string
+          module_count: number
+          name: string
+          public: boolean
+          public_id: string
+          updated: string
         }[]
       }
       get_module_open_flag_count: {
@@ -1031,6 +1180,39 @@ export type Database = {
           public: boolean
           public_id: string
           tags: string[]
+          updated: string
+        }[]
+      }
+      get_public_module_collection_by_public_id: {
+        Args: { p_public_id: string }
+        Returns: {
+          author: Json
+          authorid: string
+          created: string
+          description: string
+          entries: Json
+          id: number
+          image: string
+          module_count: number
+          name: string
+          public: boolean
+          public_id: string
+          updated: string
+        }[]
+      }
+      get_public_module_collections: {
+        Args: { p_from?: number; p_to?: number }
+        Returns: {
+          author: Json
+          authorid: string
+          created: string
+          description: string
+          id: number
+          image: string
+          module_count: number
+          name: string
+          public: boolean
+          public_id: string
           updated: string
         }[]
       }
@@ -1076,6 +1258,17 @@ export type Database = {
         Returns: string
       }
       resolve_public_rack_legacy_id: { Args: { p_id: number }; Returns: string }
+      save_module_collection: {
+        Args: {
+          p_collection_id?: number
+          p_description?: string
+          p_image?: string
+          p_module_ids?: number[]
+          p_name: string
+          p_public?: boolean
+        }
+        Returns: number
+      }
     }
     Enums: {
       "user module possession": "HAS" | "WANTS" | "SELLS"
