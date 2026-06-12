@@ -40,11 +40,17 @@ export interface PatchGraphFullscreenDialogData {
   standalone: false
 })
 export class PatchGraphFullscreenDialogComponent implements AfterViewInit, OnDestroy {
+  /** Multiplier applied to node and edge sizes so points are easier to read on a large canvas. */
+  private static readonly FULLSCREEN_SIZE_BOOST = 1.25;
+
   @ViewChild('fullscreenTarget', {static: true}) fullscreenTarget!: ElementRef<HTMLElement>;
 
   /** Graph is only mounted after the dialog has settled, so the open animation
    *  isn't stalled by Sigma boot. */
   graphReady = false;
+
+  readonly scaledNodes: GraphNode[];
+  readonly scaledEdges: GraphEdge[];
 
   private ownsBrowserFullscreen = false;
   private readonly handleFullscreenChange = () => {
@@ -60,6 +66,9 @@ export class PatchGraphFullscreenDialogComponent implements AfterViewInit, OnDes
     private readonly cdr: ChangeDetectorRef,
     private readonly zone: NgZone
   ) {
+    const boost = PatchGraphFullscreenDialogComponent.FULLSCREEN_SIZE_BOOST;
+    this.scaledNodes = data.nodes.map(node => ({...node, size: node.size * boost}));
+    this.scaledEdges = data.edges.map(edge => ({...edge, size: edge.size * boost}));
     this.dialogRef.beforeClosed().subscribe(() => this.exitBrowserFullscreen());
   }
 

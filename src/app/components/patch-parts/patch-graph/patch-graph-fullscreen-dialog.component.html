@@ -25,10 +25,10 @@
       }
     </div>
 
-    @if (graphReady && data.nodes.length > 0) {
+    @if (graphReady && scaledNodes.length > 0) {
       <lib-graph
-        [nodes]="data.nodes"
-        [edges]="data.edges"
+        [nodes]="scaledNodes"
+        [edges]="scaledEdges"
       ></lib-graph>
     } @else {
       <div class="patch-graph-fullscreen-dialog__empty">
