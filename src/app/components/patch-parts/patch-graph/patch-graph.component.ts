@@ -323,7 +323,8 @@ export class PatchGraphComponent extends SubManager implements OnInit {
     return {
       nodes: this._nodes$.getValue(),
       edges: this._edges$.getValue(),
-      legend: this.legend
+      legend: this.legend,
+      patchName: this.patchDetailDataService.singlePatchData$?.value?.name
     };
   }
 }
