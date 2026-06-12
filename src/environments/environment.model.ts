@@ -4,4 +4,7 @@ export interface EnvironmentModel {
     url: string
     key: string
   };
+  features: {
+    collectionsEnabled: boolean;
+  };
 }

@@ -1,4 +1,5 @@
 import { RouteClickableLink } from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.component';
+import { environment } from 'src/environments/environment';
 
 export const PATREON_URL = 'https://www.patreon.com/patcher';
 
@@ -39,12 +40,15 @@ const MAIN_LINKS: RouteClickableLink[] = [
     icon: 'view_stream',
     disabled: false
   },
-  {
-    label: 'Collections',
-    route: '/collections/browser',
-    icon: 'playlist_play',
-    disabled: false
-  },
+  ...(environment.features.collectionsEnabled
+    ? [{
+        label: 'Collections',
+        route: '/collections/browser',
+        icon: 'playlist_play',
+        disabled: false
+      }]
+    : []
+  ),
   {
     label: 'Patches',
     route: '/patches/browser',

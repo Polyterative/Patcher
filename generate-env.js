@@ -32,6 +32,9 @@ export const environment = {
     url: '${supabaseUrl}', // SAFE to expose — anon key with RLS enforced
     key: '${supabaseAnonKey}' // SAFE to expose — anon key with RLS enforced
   },
+  features: {
+    collectionsEnabled: false
+  }
 };
 `;
 
@@ -44,6 +47,9 @@ export const environment = {
     url: '${supabaseUrl}', // SAFE to expose — anon key with RLS enforced
     key: '${supabaseAnonKey}' // SAFE to expose — anon key with RLS enforced
   },
+  features: {
+    collectionsEnabled: true
+  }
 };
 `;
 

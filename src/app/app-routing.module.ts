@@ -2,9 +2,23 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { LegacyLinkGonePageComponent } from './features/backbone/legacy-link-gone/legacy-link-gone-page.component';
 import { NotFoundComponent } from './features/backbone/404/not-found.component';
+import { environment } from 'src/environments/environment';
 
 const loadHomeComponent = () =>
   import('./features/backbone/home/home.component').then(m => m.HomeComponent);
+
+const collectionRoutes: Routes = environment.features.collectionsEnabled
+  ? [
+      {
+        path: 'collections',
+        loadChildren: () => import('./features/module-collections/module-collections.module').then(m => m.ModuleCollectionsModule)
+      },
+      {
+        path: 'collection/:collectionId',
+        loadChildren: () => import('./features/module-collections/module-collections-owned.module').then(m => m.ModuleCollectionsOwnedModule)
+      }
+    ]
+  : [];
 
 const routes: Routes = [
   {
@@ -49,14 +63,7 @@ const routes: Routes = [
     path: 'modules',
     loadChildren: () => import('./features/module-browser/module-browser.module').then(m => m.ModuleBrowserModule)
   },
-  {
-    path: 'collections',
-    loadChildren: () => import('./features/module-collections/module-collections.module').then(m => m.ModuleCollectionsModule)
-  },
-  {
-    path: 'collection/:collectionId',
-    loadChildren: () => import('./features/module-collections/module-collections-owned.module').then(m => m.ModuleCollectionsOwnedModule)
-  },
+  ...collectionRoutes,
   {
     path: 'manufacturers',
     loadChildren: () => import('./features/manufacturer-detail/manufacturer.module').then(m => m.ManufacturerModule)
