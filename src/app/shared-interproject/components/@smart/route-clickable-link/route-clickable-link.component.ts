@@ -8,14 +8,19 @@ import {
   of
 } from 'rxjs';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
+import { MatIconButton, MatButton } from '@angular/material/button';
+import { RouterLinkActive, RouterLink } from '@angular/router';
+import { MatTooltip } from '@angular/material/tooltip';
+import { NgStyle, AsyncPipe } from '@angular/common';
+import { MatIcon } from '@angular/material/icon';
 
 
 @Component({
-  selector: 'app-route-clickable-link-list',
-  templateUrl: './route-clickable-link.component.html',
-  styleUrls: ['./route-clickable-link.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+    selector: 'app-route-clickable-link-list',
+    templateUrl: './route-clickable-link.component.html',
+    styleUrls: ['./route-clickable-link.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [MatIconButton, RouterLinkActive, RouterLink, MatTooltip, NgStyle, MatIcon, MatButton, AsyncPipe]
 })
 export class RouteClickableLinkComponent {
   @Input()

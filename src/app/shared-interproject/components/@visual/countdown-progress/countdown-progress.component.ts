@@ -13,11 +13,10 @@ import {
  * Displays a countdown timer with a progress bar
  */
 @Component({
-  selector: 'lib-countdown-progress',
-  templateUrl: './countdown-progress.component.html',
-  styleUrls: ['./countdown-progress.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+    selector: 'lib-countdown-progress',
+    templateUrl: './countdown-progress.component.html',
+    styleUrls: ['./countdown-progress.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CountdownProgressComponent implements OnDestroy {
   /**

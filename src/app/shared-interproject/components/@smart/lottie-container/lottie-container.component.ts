@@ -8,23 +8,23 @@ import {
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { animate, style, transition, trigger } from '@angular/animations';
-import { AnimationOptions } from 'ngx-lottie';
+import { AnimationOptions, LottieComponent } from 'ngx-lottie';
 
 
 @Component({
-  selector: 'app-lottie-container',
-  templateUrl: './lottie-container.component.html',
-  styleUrls: ['./lottie-container.component.scss'],
-  animations: [
-    trigger('enter', [
-      transition(':enter', [
-        style({ opacity: 0 }),
-        animate('1000ms ease', style({ opacity: 1 }))
-      ])
-    ])
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+    selector: 'app-lottie-container',
+    templateUrl: './lottie-container.component.html',
+    styleUrls: ['./lottie-container.component.scss'],
+    animations: [
+        trigger('enter', [
+            transition(':enter', [
+                style({ opacity: 0 }),
+                animate('1000ms ease', style({ opacity: 1 }))
+            ])
+        ])
+    ],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [LottieComponent]
 })
 export class LottieContainerComponent implements OnInit {
   @Input() options: AnimationOptions;

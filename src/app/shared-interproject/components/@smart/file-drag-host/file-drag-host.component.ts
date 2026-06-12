@@ -18,40 +18,44 @@ import {
 import { debounceTime } from 'rxjs/operators';
 import { SubManager } from '../../../directives/subscription-manager';
 import { FileDragHostService } from './file-drag-host.service';
+import { FlexModule } from '@angular/flex-layout/flex';
+import { NgxDropzoneModule } from 'ngx-dropzone';
+import { MatCardSubtitle } from '@angular/material/card';
+import { AsyncPipe, SlicePipe, DatePipe } from '@angular/common';
 
 
 @Component({
-  selector: 'lib-file-drag-host',
-  templateUrl: './file-drag-host.component.html',
-  styleUrls: ['./file-drag-host.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  animations: [
-    trigger('fadeInOut', [
-      transition(':enter', [
-        style({
-          opacity: 0,
-          height: 0.01
-        }),
-        animate('225ms cubic-bezier(0.0, 0.0, 0.2, 1)'),
-        style({opacity: 1})
-      ]),
-      transition(':leave', [
-        animate('225ms cubic-bezier(0.4, 0.0, 1, 1)'),
-        style({opacity: 0})
-      ])
-    ]),
-    trigger('fadeIn', [
-      transition(':enter', [
-        style({
-          opacity: 0,
-          height: 0.01
-        }),
-        animate('225ms 500ms cubic-bezier(0.0, 0.0, 0.2, 1)'),
-        style({opacity: 1})
-      ])
-    ])
-  ],
-  standalone: false
+    selector: 'lib-file-drag-host',
+    templateUrl: './file-drag-host.component.html',
+    styleUrls: ['./file-drag-host.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    animations: [
+        trigger('fadeInOut', [
+            transition(':enter', [
+                style({
+                    opacity: 0,
+                    height: 0.01
+                }),
+                animate('225ms cubic-bezier(0.0, 0.0, 0.2, 1)'),
+                style({ opacity: 1 })
+            ]),
+            transition(':leave', [
+                animate('225ms cubic-bezier(0.4, 0.0, 1, 1)'),
+                style({ opacity: 0 })
+            ])
+        ]),
+        trigger('fadeIn', [
+            transition(':enter', [
+                style({
+                    opacity: 0,
+                    height: 0.01
+                }),
+                animate('225ms 500ms cubic-bezier(0.0, 0.0, 0.2, 1)'),
+                style({ opacity: 1 })
+            ])
+        ])
+    ],
+    imports: [FlexModule, NgxDropzoneModule, MatCardSubtitle, AsyncPipe, SlicePipe, DatePipe]
 })
 export class FileDragHostComponent extends SubManager implements OnInit {
   @Input()

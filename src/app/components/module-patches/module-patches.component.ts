@@ -10,14 +10,15 @@ import {
   defaultPatchMinimalViewConfig,
   PatchMinimalViewConfig
 } from '../patch-parts/patch-minimal/patch-minimal.component';
+import { PatchListModule } from '../patch-list/patch-list.module';
 
 
 @Component({
-  selector: 'app-module-patches',
-  templateUrl: './module-patches.component.html',
-  styleUrls: ['./module-patches.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+    selector: 'app-module-patches',
+    templateUrl: './module-patches.component.html',
+    styleUrls: ['./module-patches.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [PatchListModule]
 })
 export class ModulePatchesComponent implements OnInit {
   @Input() data$: Observable<PatchMinimal[]>;

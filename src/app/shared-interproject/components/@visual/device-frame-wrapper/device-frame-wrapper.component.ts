@@ -6,11 +6,10 @@ import {
 
 
 @Component({
-  selector: 'lib-device-frame-wrapper',
-  templateUrl: './device-frame-wrapper.component.html',
-  styleUrls: ['./device-frame-wrapper.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+    selector: 'lib-device-frame-wrapper',
+    templateUrl: './device-frame-wrapper.component.html',
+    styleUrls: ['./device-frame-wrapper.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DeviceFrameWrapperComponent implements OnInit {
   

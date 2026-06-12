@@ -10,14 +10,15 @@ import {
   defaultRackMinimalViewConfig,
   RackMinimalViewConfig
 } from '../rack-parts/rack-minimal/rack-minimal.component';
+import { RackListModule } from '../rack-list/rack-list.module';
 
 
 @Component({
-  selector: 'app-module-racks',
-  templateUrl: './module-racks.component.html',
-  styleUrls: ['./module-racks.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+    selector: 'app-module-racks',
+    templateUrl: './module-racks.component.html',
+    styleUrls: ['./module-racks.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [RackListModule]
 })
 export class ModuleRacksComponent implements OnInit {
   @Input() data$: Observable<RackMinimal[]>;

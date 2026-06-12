@@ -6,11 +6,10 @@ import {
 
 
 @Component({
-  selector: 'app-feedback-box',
-  templateUrl: './feedback-box.component.html',
-  styleUrls: ['./feedback-box.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+    selector: 'app-feedback-box',
+    templateUrl: './feedback-box.component.html',
+    styleUrls: ['./feedback-box.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FeedbackBoxComponent implements OnInit {
 

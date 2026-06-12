@@ -7,14 +7,18 @@ import {
   RecentActivityItem,
   RecentActivityType
 } from './recent-activity.model';
+import { MatIcon } from '@angular/material/icon';
+import { RouterLink } from '@angular/router';
+import { TimeagoModule } from 'ngx-timeago';
+import { SupabaseUtcTimestampPipe } from '../../../shared-interproject/pipes/supabase-utc-timestamp.pipe';
 
 
 @Component({
-  selector: 'app-recent-activity',
-  templateUrl: './recent-activity.component.html',
-  styleUrls: ['./recent-activity.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+    selector: 'app-recent-activity',
+    templateUrl: './recent-activity.component.html',
+    styleUrls: ['./recent-activity.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [MatIcon, RouterLink, TimeagoModule, SupabaseUtcTimestampPipe]
 })
 export class RecentActivityComponent {
   @Input() title = 'Recent activity';
