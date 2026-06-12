@@ -193,9 +193,14 @@ export class PatchGraphFullscreenDialogComponent implements AfterViewInit, OnDes
       .replace(/[^a-z0-9-_]+/gi, '-')
       .replace(/^-+|-+$/g, '')
       .toLowerCase() || 'patch';
+    const now = new Date();
+    const pad = (value: number) => value.toString().padStart(2, '0');
+    const timestamp =
+      `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}` +
+      `-${pad(now.getHours())}${pad(now.getMinutes())}`;
     const link = document.createElement('a');
     link.href = dataUrl;
-    link.download = `${safeName}-graph.png`;
+    link.download = `patcher-${safeName}-graph-${timestamp}.png`;
     document.body.appendChild(link);
     link.click();
     link.remove();
