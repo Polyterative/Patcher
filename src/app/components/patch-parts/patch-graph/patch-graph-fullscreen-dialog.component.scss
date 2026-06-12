@@ -18,11 +18,22 @@
   }
 }
 
-.patch-graph-fullscreen-dialog__close {
+.patch-graph-fullscreen-dialog__action {
   position: absolute;
   top: 0.5rem;
-  right: 0.75rem;
   z-index: 9;
+}
+
+.patch-graph-fullscreen-dialog__close {
+  right: 0.75rem;
+}
+
+.patch-graph-fullscreen-dialog__download {
+  right: 3.25rem;
+}
+
+.patch-graph-fullscreen-dialog--capturing .patch-graph-fullscreen-dialog__action {
+  visibility: hidden;
 }
 
 .patch-graph-fullscreen-dialog__label {

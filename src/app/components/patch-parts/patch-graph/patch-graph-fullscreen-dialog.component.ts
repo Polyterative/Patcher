@@ -13,7 +13,9 @@ import {
   MAT_DIALOG_DATA,
   MatDialogRef
 } from '@angular/material/dialog';
+import { domToPng } from 'modern-screenshot';
 import {
+  GraphComponent,
   GraphEdge,
   GraphNode
 } from 'src/app/shared-interproject/components/@visual/graph-view/graph.component';
@@ -45,10 +47,13 @@ export class PatchGraphFullscreenDialogComponent implements AfterViewInit, OnDes
   private static readonly FULLSCREEN_SIZE_BOOST = 1.25;
 
   @ViewChild('fullscreenTarget', {static: true}) fullscreenTarget!: ElementRef<HTMLElement>;
+  @ViewChild(GraphComponent) graphComponent?: GraphComponent;
 
   /** Graph is only mounted after the dialog has settled, so the open animation
    *  isn't stalled by Sigma boot. */
   graphReady = false;
+
+  downloading = false;
 
   readonly scaledNodes: GraphNode[];
   readonly scaledEdges: GraphEdge[];
@@ -103,6 +108,97 @@ export class PatchGraphFullscreenDialogComponent implements AfterViewInit, OnDes
 
   close(): void {
     this.dialogRef.close();
+  }
+
+  downloadImage(): void {
+    if (this.downloading) {
+      return;
+    }
+    const renderer = this.graphComponent?.renderer;
+    const target = this.fullscreenTarget?.nativeElement;
+    if (!renderer || !target) {
+      return;
+    }
+
+    this.downloading = true;
+    this.cdr.markForCheck();
+    target.classList.add('patch-graph-fullscreen-dialog--capturing');
+
+    const cleanup = () => {
+      target.classList.remove('patch-graph-fullscreen-dialog--capturing');
+      this.downloading = false;
+      this.cdr.markForCheck();
+    };
+
+    // Sigma's WebGL contexts (esp. the nodes layer) don't preserve their drawing
+    // buffer, so we have to flatten each canvas into a 2D snapshot in the same
+    // microtask as the WebGL draw. We hook afterRender once, snapshot the
+    // canvases there, swap them into the DOM, then let modern-screenshot walk
+    // the (now fully readable) DOM. Originals are restored on completion.
+    const sourceCanvases = Array.from(target.querySelectorAll('canvas')) as HTMLCanvasElement[];
+    const swaps: { original: HTMLCanvasElement; snapshot: HTMLCanvasElement }[] = [];
+
+    const finishCapture = () => {
+      // Swap snapshots back to originals so the live graph keeps working.
+      for (const { original, snapshot } of swaps) {
+        snapshot.replaceWith(original);
+      }
+    };
+
+    renderer.once('afterRender', () => {
+      for (const original of sourceCanvases) {
+        const snapshot = document.createElement('canvas');
+        snapshot.width = original.width;
+        snapshot.height = original.height;
+        snapshot.className = original.className;
+        snapshot.style.cssText = original.style.cssText;
+        const ctx = snapshot.getContext('2d');
+        if (ctx) {
+          try {
+            ctx.drawImage(original, 0, 0);
+          } catch {
+            // ignore — best-effort snapshot
+          }
+        }
+        original.replaceWith(snapshot);
+        swaps.push({ original, snapshot });
+      }
+
+      domToPng(target, {
+        backgroundColor: '#ffffff',
+        scale: 2
+      }).then(dataUrl => {
+        finishCapture();
+        this.triggerDownload(dataUrl);
+        cleanup();
+      }).catch(error => {
+        finishCapture();
+        console.warn('Unable to export graph image.', error);
+        cleanup();
+      });
+    });
+
+    try {
+      renderer.refresh();
+    } catch (error) {
+      finishCapture();
+      console.warn('Unable to refresh graph for export.', error);
+      cleanup();
+    }
+  }
+
+  private triggerDownload(dataUrl: string): void {
+    const safeName = (this.data.patchName ?? 'patch')
+      .trim()
+      .replace(/[^a-z0-9-_]+/gi, '-')
+      .replace(/^-+|-+$/g, '')
+      .toLowerCase() || 'patch';
+    const link = document.createElement('a');
+    link.href = dataUrl;
+    link.download = `${safeName}-graph.png`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
   }
 
   private mountGraphAfterPaint(): void {

@@ -58,7 +58,9 @@ describe('PatchGraphFullscreenDialogComponent', () => {
   });
 
   it('closes from the top-right action', () => {
-    const button = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    const button = fixture.nativeElement.querySelector(
+      'button[aria-label="Close full screen graph"]'
+    ) as HTMLButtonElement;
 
     button.click();
 
