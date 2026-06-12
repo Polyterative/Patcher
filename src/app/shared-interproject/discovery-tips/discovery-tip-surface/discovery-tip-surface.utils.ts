@@ -5,9 +5,21 @@ export interface DiscoveryTipPosition {
   arrowLeft: number;
 }
 
+export interface DiscoveryTipHighlight {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
+
 export interface DiscoveryTipViewModel extends DiscoveryTipPosition {
   title: string;
   body: string;
+  reason?: string;
+  guidedStepLabel?: string;
+  isGuided: boolean;
+  isLastGuidedStep: boolean;
+  highlight: DiscoveryTipHighlight;
 }
 
 export interface DiscoveryTipSize {
@@ -19,6 +31,8 @@ export interface DiscoveryTipViewportOffset {
   offsetLeft: number;
   offsetTop: number;
 }
+
+export type DiscoveryTipPositionPreferredSide = 'auto' | 'above' | 'below';
 
 export function estimateDiscoveryTipHeight(title: string, body: string, tipWidth: number): number {
   const contentWidth = Math.max(180, tipWidth - 32);
@@ -36,7 +50,8 @@ export function calculateDiscoveryTipPosition(
   title = '',
   body = '',
   tipSize?: DiscoveryTipSize,
-  viewportOffset: DiscoveryTipViewportOffset = {offsetLeft: 0, offsetTop: 0}
+  viewportOffset: DiscoveryTipViewportOffset = {offsetLeft: 0, offsetTop: 0},
+  preferredSide: DiscoveryTipPositionPreferredSide = 'auto'
 ): DiscoveryTipPosition {
   const margin = 16;
   const tipWidth = tipSize?.width ?? Math.min(320, viewportWidth - (margin * 2));
@@ -51,7 +66,10 @@ export function calculateDiscoveryTipPosition(
   const maxTop = visibleBottom - tipHeight;
   const spaceAbove = anchorRect.top - minTop - gap;
   const spaceBelow = visibleBottom - anchorRect.bottom - gap;
-  const side: 'above' | 'below' = spaceBelow >= tipHeight || spaceBelow >= spaceAbove ? 'below' : 'above';
+  const autoSide: 'above' | 'below' = spaceBelow >= tipHeight || spaceBelow >= spaceAbove ? 'below' : 'above';
+  const side: 'above' | 'below' = preferredSide === 'above' || preferredSide === 'below'
+    ? preferredSide
+    : autoSide;
   const unclampedLeft = anchorRect.left + (anchorRect.width / 2) - (tipWidth / 2);
   const left = Math.max(minLeft, Math.min(unclampedLeft, maxLeft));
   const unclampedTop = side === 'above'

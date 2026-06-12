@@ -261,6 +261,57 @@ describe('DiscoveryTipService', () => {
     expect(activeTip?.definition.id).toBe(firstTipId);
   });
 
+  it('adds contextual reason text to active tips', () => {
+    const service = build('user-reason');
+    const anchor = document.createElement('button');
+    let activeTip: any = null;
+
+    service.activeTip$.subscribe((value) => {
+      activeTip = value;
+    });
+
+    service.registerAnchor('user-area-modules-add', anchor);
+    service.updateUserAreaSnapshot({
+      modulesLoaded: true,
+      racksLoaded: true,
+      patchesLoaded: true,
+      modulesCount: 0,
+      racksCount: 0,
+      patchesCount: 0,
+      totalCount: 0,
+      hasSearchQuery: false
+    });
+    jasmine.clock().tick(1300);
+
+    expect(activeTip?.definition.id).toBe('user-area-modules-add');
+    expect(activeTip?.reason).toContain('do not have modules');
+  });
+
+  it('starts and advances the guided user-area tour through registered anchors', () => {
+    const service = build('user-guided');
+    const profileAnchor = document.createElement('section');
+    const modulesAnchor = document.createElement('button');
+    let activeTip: any = null;
+
+    service.activeTip$.subscribe((value) => {
+      activeTip = value;
+    });
+
+    service.registerAnchor('user-area-profile-card', profileAnchor);
+    service.registerAnchor('user-area-modules-add', modulesAnchor);
+
+    service.startUserAreaTour();
+
+    expect(activeTip?.definition.id).toBe('user-area-profile-private');
+    expect(activeTip?.guidedStepIndex).toBe(1);
+    expect(activeTip?.guidedStepTotal).toBeGreaterThan(1);
+
+    service.acknowledgeActiveTip();
+
+    expect(activeTip?.definition.id).toBe('user-area-modules-add');
+    expect(activeTip?.guidedStepIndex).toBe(2);
+  });
+
   it('does not surface tips while the global pause is still active', () => {
     const firstService = build();
     const firstAnchor = document.createElement('button');

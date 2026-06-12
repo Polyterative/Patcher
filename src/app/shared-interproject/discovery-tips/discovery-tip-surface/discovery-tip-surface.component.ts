@@ -120,12 +120,15 @@ export class DiscoveryTipSurfaceComponent extends SubManager implements OnInit {
       return null;
     }
 
-    const anchorRect = activeTip.anchorElement.getBoundingClientRect();
+    const anchorRect = this.focusRectFor(activeTip);
     if (anchorRect.width === 0 && anchorRect.height === 0) {
       return null;
     }
 
     const viewport = this.appViewportService.currentViewport();
+    const guidedStepLabel = activeTip.guidedStepIndex && activeTip.guidedStepTotal
+      ? `Step ${ activeTip.guidedStepIndex } of ${ activeTip.guidedStepTotal }`
+      : undefined;
     const position = calculateDiscoveryTipPosition(
       anchorRect,
       viewport.width,
@@ -136,13 +139,82 @@ export class DiscoveryTipSurfaceComponent extends SubManager implements OnInit {
       {
         offsetLeft: viewport.offsetLeft,
         offsetTop: viewport.offsetTop
-      }
+      },
+      activeTip.definition.placement?.preferredSide ?? 'auto'
     );
     return {
       ...position,
       title: activeTip.definition.title,
-      body: activeTip.definition.body
+      body: activeTip.definition.body,
+      reason: activeTip.reason,
+      guidedStepLabel,
+      isGuided: !!activeTip.guidedStepTotal,
+      isLastGuidedStep: activeTip.guidedStepIndex === activeTip.guidedStepTotal,
+      highlight: this.highlightFor(anchorRect, viewport.offsetLeft, viewport.offsetTop, viewport.width, viewport.height)
     };
+  }
+
+  private focusRectFor(activeTip: DiscoveryTipActive): DOMRect {
+    const anchorRect = activeTip.anchorElement.getBoundingClientRect();
+    const targetKind = activeTip.definition.placement?.targetKind ?? 'element';
+    if (targetKind === 'element' || targetKind === 'action') {
+      return anchorRect;
+    }
+
+    const sectionRect = this.sectionStartRect(activeTip.anchorElement, anchorRect);
+    return this.rectFromBounds(
+      sectionRect.left,
+      sectionRect.top,
+      sectionRect.width,
+      Math.min(sectionRect.height, 112)
+    );
+  }
+
+  private sectionStartRect(anchorElement: HTMLElement, fallbackRect: DOMRect): DOMRect {
+    const candidates = anchorElement.querySelectorAll<HTMLElement>(
+      'lib-hero-content-card, .container > .row.gap1, .section-actions, h1, h2, h3, .title'
+    );
+    for (const candidate of Array.from(candidates)) {
+      const rect = candidate.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        return rect;
+      }
+    }
+    return fallbackRect;
+  }
+
+  private highlightFor(
+    rect: DOMRect,
+    viewportLeft: number,
+    viewportTop: number,
+    viewportWidth: number,
+    viewportHeight: number
+  ) {
+    const padding = 8;
+    const left = Math.max(viewportLeft + 8, rect.left - padding);
+    const top = Math.max(viewportTop + 8, rect.top - padding);
+    const right = Math.min(viewportLeft + viewportWidth - 8, rect.right + padding);
+    const bottom = Math.min(viewportTop + viewportHeight - 8, rect.bottom + padding);
+    return {
+      left,
+      top,
+      width: Math.max(0, right - left),
+      height: Math.max(0, bottom - top)
+    };
+  }
+
+  private rectFromBounds(left: number, top: number, width: number, height: number): DOMRect {
+    return {
+      left,
+      top,
+      width,
+      height,
+      right: left + width,
+      bottom: top + height,
+      x: left,
+      y: top,
+      toJSON: () => ({})
+    } as DOMRect;
   }
 
   private updateMeasuredTipSize(): void {

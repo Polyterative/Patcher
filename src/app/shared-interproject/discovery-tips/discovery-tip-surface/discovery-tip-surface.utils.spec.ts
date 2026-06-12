@@ -104,5 +104,22 @@ describe('discovery-tip-surface.utils', () => {
       expect(result.left).toBe(464);
       expect(result.arrowLeft).toBe(302);
     });
+
+    it('honors an explicit preferred side when one is supplied', () => {
+      const anchor = makeRect(100, 120, 50, 30);
+      const result = calculateDiscoveryTipPosition(
+        anchor,
+        800,
+        600,
+        '',
+        '',
+        {width: 320, height: 80},
+        {offsetLeft: 0, offsetTop: 0},
+        'above'
+      );
+
+      expect(result.side).toBe('above');
+      expect(result.top).toBe(26);
+    });
   });
 });
