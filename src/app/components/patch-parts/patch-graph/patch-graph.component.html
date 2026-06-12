@@ -3,10 +3,8 @@
 <!--           [clusters]="clusters$|async"-->
 <!--           fxFlex="grow"-->
 <!--&gt;</lib-graph>-->
-<div class="row gap0"
-     fxLayoutAlign="end center"
-     style="position: absolute;background-color: rgba(255,255,255,0.8)!important;z-index: 5;"
->
+<div class="graph-overlay graph-overlay--legend row gap0"
+     fxLayoutAlign="end center">
 
   @for (item of legend; track item) {
     <div class="row gap0"
@@ -17,6 +15,17 @@
       <div>{{ item.label }}</div>
     </div>
   }
+</div>
+<div class="graph-overlay graph-overlay--actions">
+  <button
+    mat-icon-button
+    type="button"
+    aria-label="View graph full screen"
+    matTooltip="View graph full screen"
+    (click)="openFullscreenGraph()"
+  >
+    <mat-icon>fullscreen</mat-icon>
+  </button>
 </div>
 <div class="graph-container"
      #graphContainer

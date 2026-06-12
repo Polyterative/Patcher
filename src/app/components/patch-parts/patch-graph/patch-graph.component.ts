@@ -23,6 +23,7 @@ import {
   tap,
   withLatestFrom
 } from 'rxjs/operators';
+import { MatDialog } from '@angular/material/dialog';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { GraphViewService } from 'src/app/shared-interproject/components/@visual/graph-view/graph-view.service';
 import {
@@ -45,6 +46,10 @@ import {
 } from './patch-graph-flow.utils';
 import { PatchGraphRevealController } from './patch-graph-reveal.controller';
 import { PatchDetailDataService } from '../patch-detail-data.service';
+import {
+  PatchGraphFullscreenDialogComponent,
+  PatchGraphFullscreenDialogData
+} from './patch-graph-fullscreen-dialog.component';
 
 
 @Component({
@@ -114,7 +119,8 @@ export class PatchGraphComponent extends SubManager implements OnInit {
   constructor(
     public patchDetailDataService: PatchDetailDataService,
     public backend: SupabaseService,
-    public graphViewService: GraphViewService
+    public graphViewService: GraphViewService,
+    private readonly dialog: MatDialog
   ) {
     super();
     this.revealController = new PatchGraphRevealController(
@@ -233,6 +239,22 @@ export class PatchGraphComponent extends SubManager implements OnInit {
   refreshNow(): void {
     this._manualRefresh$.next();
   }
+
+  openFullscreenGraph(): void {
+    this.dialog.open(PatchGraphFullscreenDialogComponent, {
+      width: '100vw',
+      maxWidth: '100vw',
+      height: '100vh',
+      maxHeight: '100vh',
+      autoFocus: false,
+      restoreFocus: true,
+      hasBackdrop: false,
+      enterAnimationDuration: 0,
+      exitAnimationDuration: 0,
+      panelClass: 'patch-graph-fullscreen-dialog-panel',
+      data: this.buildFullscreenDialogData()
+    });
+  }
   
   // Progressive reveal sequencing lives in the dedicated controller; component delegates.
   private revealGraphProgressively(nodes: GraphNode[], edges: GraphEdge[]): void {
@@ -294,6 +316,14 @@ export class PatchGraphComponent extends SubManager implements OnInit {
       flowEndColor: this.flowEndColor,
       flowBaseColor: this.flowBaseColor,
       moduleJackEdgeColor: this.moduleJackEdgeColor
+    };
+  }
+
+  private buildFullscreenDialogData(): PatchGraphFullscreenDialogData {
+    return {
+      nodes: this._nodes$.getValue(),
+      edges: this._edges$.getValue(),
+      legend: this.legend
     };
   }
 }

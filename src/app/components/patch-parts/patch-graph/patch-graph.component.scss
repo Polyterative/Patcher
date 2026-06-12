@@ -1,6 +1,25 @@
 :host {
   display: block;
+  position: relative;
   width: 100%;
+}
+
+.graph-overlay {
+  position: absolute;
+  z-index: 5;
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+.graph-overlay--legend {
+  top: 0;
+  left: 0;
+  padding: 0.25rem;
+}
+
+.graph-overlay--actions {
+  top: 0.25rem;
+  right: 0.25rem;
+  z-index: 7;
 }
 
 .circle {
