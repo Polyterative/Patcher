@@ -100,12 +100,16 @@ export class PatchGraphFullscreenDialogComponent implements AfterViewInit, OnDes
       return;
     }
     this.zone.runOutsideAngular(() => {
-      requestAnimationFrame(() => {
+      // Let the dialog + placeholder paint and the fullscreen layout settle
+      // before paying the Sigma boot cost. 180ms is below the design-language
+      // 200ms perception threshold for "instant" but long enough for the
+      // pulse to register.
+      setTimeout(() => {
         this.zone.run(() => {
           this.graphReady = true;
           this.cdr.markForCheck();
         });
-      });
+      }, 180);
     });
   }
 
