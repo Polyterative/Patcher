@@ -1,0 +1,105 @@
+.patch-graph-fullscreen-dialog {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  background: #ffffff;
+  animation: graphFullscreenEnter 140ms ease-out;
+}
+
+.patch-graph-fullscreen-dialog__toolbar {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem;
+  background: rgba(255, 255, 255, 0.88);
+  border: 0.0625rem solid rgba(0, 0, 0, 0.08);
+}
+
+.patch-graph-fullscreen-dialog__label {
+  padding: 0 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: rgba(0, 0, 0, 0.64);
+}
+
+.patch-graph-fullscreen-dialog__graph-shell {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  background: #ffffff;
+
+  lib-graph {
+    display: block;
+    height: 100%;
+    width: 100%;
+  }
+}
+
+.patch-graph-fullscreen-dialog__legend {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.4rem 0.6rem;
+  background: rgba(255, 255, 255, 0.88);
+  border: 0.0625rem solid rgba(0, 0, 0, 0.08);
+}
+
+.patch-graph-fullscreen-dialog__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+}
+
+.patch-graph-fullscreen-dialog__legend-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+}
+
+.patch-graph-fullscreen-dialog__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 100%;
+  color: rgba(0, 0, 0, 0.64);
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+}
+
+.patch-graph-fullscreen-dialog__empty-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.4);
+  animation: graphFullscreenPulse 900ms ease-in-out infinite;
+}
+
+@keyframes graphFullscreenPulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.85); }
+  50%      { opacity: 1;   transform: scale(1); }
+}
+
+@keyframes graphFullscreenEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

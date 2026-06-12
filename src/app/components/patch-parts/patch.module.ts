@@ -55,6 +55,7 @@ import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.
 import { ModuleBrowserSharedModule } from 'src/app/features/module-browser/module-browser-shared.module';
 import { EditFabComponent } from 'src/app/shared-interproject/components/@visual/edit-fab/edit-fab.component';
 import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-state-tips/empty-state-tips.component';
+import { PatchGraphFullscreenDialogComponent } from './patch-graph/patch-graph-fullscreen-dialog.component';
 
 
 @NgModule({
@@ -64,6 +65,7 @@ import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-s
     PatchCreatorComponent,
     PatchDetailsComponent,
     PatchGraphComponent,
+    PatchGraphFullscreenDialogComponent,
     PatchConnectionsListComponent,
     PatchConnectionStatsPipe,
     PatchConnectionUniqueModulesPipe

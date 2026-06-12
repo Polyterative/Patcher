@@ -1,0 +1,40 @@
+<div #fullscreenTarget class="patch-graph-fullscreen-dialog">
+  <div class="patch-graph-fullscreen-dialog__toolbar">
+    <div class="patch-graph-fullscreen-dialog__label">GRAPH VIEW</div>
+    <button
+      mat-icon-button
+      type="button"
+      aria-label="Close full screen graph"
+      matTooltip="Close full screen graph"
+      (click)="close()"
+    >
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="patch-graph-fullscreen-dialog__graph-shell">
+    <div class="patch-graph-fullscreen-dialog__legend">
+      @for (item of data.legend; track item.label) {
+        <div class="patch-graph-fullscreen-dialog__legend-item">
+          <div
+            class="patch-graph-fullscreen-dialog__legend-dot"
+            [style.background-color]="item.color"
+          ></div>
+          <div>{{ item.label }}</div>
+        </div>
+      }
+    </div>
+
+    @if (graphReady && data.nodes.length > 0) {
+      <lib-graph
+        [nodes]="data.nodes"
+        [edges]="data.edges"
+      ></lib-graph>
+    } @else {
+      <div class="patch-graph-fullscreen-dialog__empty">
+        <span class="patch-graph-fullscreen-dialog__empty-dot"></span>
+        <span>Preparing graph…</span>
+      </div>
+    }
+  </div>
+</div>
