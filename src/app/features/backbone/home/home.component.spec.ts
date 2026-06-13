@@ -58,6 +58,14 @@ describe('HomeComponent', () => {
     expect(comp.communityLinks.length).toBe(3);
   });
 
+  it('keeps community trends hidden while disabled', () => {
+    expect(comp.showCommunityTrends).toBeFalse();
+  });
+
+  it('keeps homepage insights hidden while disabled', () => {
+    expect(comp.showHomepageInsights).toBeFalse();
+  });
+
   it('showInsightsPageEntry reflects appState.isDev', () => {
     expect(comp.showInsightsPageEntry).toBeFalse();
   });
