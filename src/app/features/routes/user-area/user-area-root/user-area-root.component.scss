@@ -40,6 +40,20 @@
   white-space: nowrap;
 }
 
+:host ::ng-deep .user-area-header .content {
+  background: transparent;
+  background-color: transparent;
+  padding-block: 0;
+}
+
+:host ::ng-deep .user-area-header .content > .sides-pad {
+  margin-inline: 1rem;
+  padding: 1rem;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.035) 0%, rgba(0, 0, 0, 0.055) 100%),
+    linear-gradient(135deg, rgba(0, 0, 0, 0.04) 0%, rgba(0, 0, 0, 0) 68%);
+}
+
 .user-profile-card__content {
   display: flex;
   flex-wrap: wrap;
@@ -105,6 +119,7 @@
 
 .user-area-page {
   box-sizing: border-box;
+  padding-top: 1rem;
   padding-inline: 1rem;
   padding-bottom: 2.5rem;
 }
