@@ -110,7 +110,7 @@ async function openRackDetails(page: Page, rackId: number): Promise<void> {
   await expect(page).toHaveURL(new RegExp(`/racks/(?:details/${ rackId }|(?!browser(?:$|[?#]))[^/?#]+)(?:$|[?#])`), {timeout: 15_000});
 
   const rackComposite = page.locator('app-rack-composite').first();
-  const visibleRackViewport = page.locator('app-rack-editor .scroll').first();
+  const visibleRackViewport = page.locator('app-rack-editor .rackEditorViewport').first();
   const rackCanvas = page.locator('#screen').first();
 
   await expect(rackComposite).toBeVisible({timeout: 15_000});
@@ -123,7 +123,7 @@ async function openRackDetails(page: Page, rackId: number): Promise<void> {
 async function readRackViewportMetrics(page: Page): Promise<RackViewportMetrics> {
   const metrics = await page.evaluate<RackViewportMetrics | null>(() => {
     const canvas = document.querySelector<HTMLElement>('#screen');
-    const container = document.querySelector<HTMLElement>('app-rack-editor .scroll');
+    const container = document.querySelector<HTMLElement>('app-rack-editor .rackEditorViewport');
 
     if (!canvas || !container) {
       return null;
@@ -150,7 +150,7 @@ async function readRackEdgeMetrics(page: Page, selector: string): Promise<RackEd
   const metrics = await page.evaluate<RackEdgeMetrics | null, string>((itemSelector) => {
     const items = Array.from(document.querySelectorAll<HTMLElement>(itemSelector));
     const item = items.at(-1) ?? null;
-    const container = document.querySelector<HTMLElement>('app-rack-editor .scroll');
+    const container = document.querySelector<HTMLElement>('app-rack-editor .rackEditorViewport');
 
     if (!item || !container) {
       return null;
@@ -174,7 +174,7 @@ async function readRackEdgeMetrics(page: Page, selector: string): Promise<RackEd
 }
 
 async function scrollRackViewportToEnd(page: Page): Promise<void> {
-  await page.locator('app-rack-editor .scroll').first().evaluate(container => {
+  await page.locator('app-rack-editor .rackEditorViewport').first().evaluate(container => {
     container.scrollLeft = container.scrollWidth;
   });
   await page.waitForTimeout(500);
@@ -188,7 +188,7 @@ async function readSummaryLayoutMetrics(page: Page): Promise<SummaryLayoutMetric
     const stats = document.querySelector<HTMLElement>('.rackBrowserDetailView__summaryStats');
     const bottomComments = document.querySelector<HTMLElement>('.rackBrowserDetailView__bottomComments .content')
       ?? document.querySelector<HTMLElement>('.rackBrowserDetailView__bottomComments');
-    const editorCard = document.querySelector<HTMLElement>('app-rack-editor')?.closest('lib-clean-card') as HTMLElement | null;
+    const editorCard = document.querySelector<HTMLElement>('app-rack-editor');
     const desktopAnalysis = document.querySelector<HTMLElement>('.rackBrowserDetailView__desktopAnalysis');
     const mobileAnalysis = document.querySelector<HTMLElement>('.rackBrowserDetailView__mobileAnalysis');
     const visualSurface = document.querySelector<HTMLElement>('.rackBalancePanel__visualSurface');
@@ -350,20 +350,21 @@ test.describe('Rack Details Summary Layout iPad Pro Landscape', () => {
 test.describe('Rack Details Summary Layout Mid Desktop', () => {
   test.use({viewport: SUMMARY_MID_DESKTOP_VIEWPORT});
 
-  test('mid desktop moves the balance analysis below the editor while keeping the top summary compact', async ({page}) => {
+  test('mid desktop keeps the stats and balance analysis paired in the summary row', async ({page}) => {
     await openRackDetails(page, 559);
 
     const metrics = await readSummaryLayoutMetrics(page);
 
     expect(metrics.summaryDisplay, JSON.stringify(metrics)).toBe('flex');
-    expect(metrics.desktopAnalysisDisplay, JSON.stringify(metrics)).toBe('none');
-    expect(metrics.mobileAnalysisDisplay, JSON.stringify(metrics)).toBe('block');
+    expect(metrics.desktopAnalysisDisplay, JSON.stringify(metrics)).toBe('block');
+    expect(metrics.mobileAnalysisDisplay, JSON.stringify(metrics)).toBe('none');
     expect(metrics.bottomCommentsDisplay, JSON.stringify(metrics)).toBe('block');
     expect(metrics.statsLeft, JSON.stringify(metrics)).toBe(metrics.compositeLeft);
-    expect(metrics.mobileAnalysisTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.editorBottom);
-    expect(metrics.bottomCommentsTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.mobileAnalysisTop);
+    expect(metrics.desktopAnalysisTop, JSON.stringify(metrics)).toBe(metrics.statsTop);
+    expect(metrics.desktopAnalysisLeft, JSON.stringify(metrics)).toBeGreaterThan(metrics.statsLeft);
+    expect(metrics.bottomCommentsTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.editorTop);
     expect(metrics.bottomCommentsWidth, JSON.stringify(metrics)).toBeLessThanOrEqual(HUGGED_COMMENTS_MAX_WIDTH_PX);
-    expect(metrics.mobileAnalysisWidth, JSON.stringify(metrics)).toBeGreaterThan(0);
+    expect(metrics.desktopAnalysisWidth, JSON.stringify(metrics)).toBeGreaterThan(0);
     expect(metrics.visualSurfaceOverflowX, JSON.stringify(metrics)).toBe(false);
     expect(metrics.axisListOverflowX, JSON.stringify(metrics)).toBe(false);
   });
@@ -510,20 +511,21 @@ test.describe('Rack Details Summary Layout 1130 Desktop', () => {
 test.describe('Rack Details Summary Layout Tablet', () => {
   test.use({viewport: SUMMARY_TABLET_VIEWPORT});
 
-  test('tablet summary keeps stats above and moves balance analysis below the editor', async ({page}) => {
+  test('tablet summary keeps stats and balance analysis side by side without overflow', async ({page}) => {
     await openRackDetails(page, 559);
 
     const metrics = await readSummaryLayoutMetrics(page);
 
     expect(metrics.summaryDisplay, JSON.stringify(metrics)).toBe('flex');
-    expect(metrics.desktopAnalysisDisplay, JSON.stringify(metrics)).toBe('none');
-    expect(metrics.mobileAnalysisDisplay, JSON.stringify(metrics)).toBe('block');
+    expect(metrics.desktopAnalysisDisplay, JSON.stringify(metrics)).toBe('block');
+    expect(metrics.mobileAnalysisDisplay, JSON.stringify(metrics)).toBe('none');
     expect(metrics.bottomCommentsDisplay, JSON.stringify(metrics)).toBe('block');
     expect(metrics.statsLeft, JSON.stringify(metrics)).toBe(metrics.compositeLeft);
-    expect(metrics.mobileAnalysisTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.editorBottom);
-    expect(metrics.bottomCommentsTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.mobileAnalysisTop);
+    expect(metrics.desktopAnalysisTop, JSON.stringify(metrics)).toBe(metrics.statsTop);
+    expect(metrics.desktopAnalysisLeft, JSON.stringify(metrics)).toBeGreaterThan(metrics.statsLeft);
+    expect(metrics.bottomCommentsTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.editorTop);
     expect(metrics.bottomCommentsWidth, JSON.stringify(metrics)).toBeLessThanOrEqual(HUGGED_COMMENTS_MAX_WIDTH_PX);
-    expect(metrics.mobileAnalysisWidth, JSON.stringify(metrics)).toBeGreaterThan(0);
+    expect(metrics.desktopAnalysisWidth, JSON.stringify(metrics)).toBeGreaterThan(0);
     expect(metrics.visualSurfaceOverflowX, JSON.stringify(metrics)).toBe(false);
     expect(metrics.axisListOverflowX, JSON.stringify(metrics)).toBe(false);
   });

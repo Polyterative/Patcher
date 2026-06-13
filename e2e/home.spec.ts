@@ -1,5 +1,6 @@
 import {
   expect,
+  Page,
   test
 } from '@playwright/test';
 
@@ -70,37 +71,24 @@ test.describe('Home Page', () => {
     await expect(firstShowcase).toBeVisible({timeout: 15_000});
   });
 
-  test('statistics section loads with a heading', async ({page}) => {
-    // Scroll to the statistics section to trigger @defer (on viewport)
-    await page.evaluate(() => window.scrollBy(0, document.body.scrollHeight / 2));
-    await page.waitForTimeout(500);
-    const statsCard = page.locator('app-statistics').first();
-    await expect(statsCard).toBeVisible({timeout: 15_000});
+  test('product walkthrough renders multiple showcase cards', async ({page}) => {
+    await page.locator('section[aria-label="product walkthrough"]').scrollIntoViewIfNeeded();
+    await expect.poll(
+      () => page.locator('app-home-proof-showcase').count(),
+      {timeout: 15_000}
+    ).toBeGreaterThanOrEqual(3);
   });
 
   test('open principles section is visible', async ({page}) => {
-    await page.evaluate(() => window.scrollBy(0, document.body.scrollHeight * 0.65));
-    await page.waitForTimeout(500);
-    const principles = page.locator('app-home-open-principles').first();
-    await expect(principles).toBeVisible({timeout: 15_000});
+    await scrollUntilVisible(page, 'app-home-open-principles');
   });
 
   test('workflow rail section is visible', async ({page}) => {
-    // app-home-workflow-rail is inside @defer (on viewport) — scroll the section into view
-    // so Angular's IntersectionObserver fires, then wait for the component to render
-    const workflowSection = page.locator('section.section-enter').nth(3);
-    await workflowSection.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(1000);
-    const workflow = page.locator('app-home-workflow-rail').first();
-    await expect(workflow).toBeVisible({timeout: 15_000});
+    await scrollUntilVisible(page, 'app-home-workflow-rail');
   });
 
   test('invitation CTA section contains a second set of action links', async ({page}) => {
-    // app-home-invitation-cta is inside @defer (on viewport) — scroll the section into view
-    const ctaSection = page.locator('section.section-enter').nth(4);
-    await ctaSection.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(1000);
-    const cta = page.locator('app-home-invitation-cta').first();
+    const cta = await scrollUntilVisible(page, 'app-home-invitation-cta');
     await expect(cta).toBeVisible({timeout: 15_000});
     // The invitation CTA must expose at least one action link
     await expect(cta.locator('a[href]').first()).toBeVisible({timeout: 5_000});
@@ -121,3 +109,21 @@ test.describe('Home Page', () => {
     expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 2);
   });
 });
+
+async function scrollUntilVisible(page: Page, selector: string) {
+  const target = page.locator(selector).first();
+
+  for (const ratio of [0, 0.2, 0.4, 0.6, 0.8, 1]) {
+    await page.evaluate((scrollRatio) => {
+      window.scrollTo(0, document.body.scrollHeight * scrollRatio);
+    }, ratio);
+    await page.waitForTimeout(500);
+
+    if (await target.isVisible().catch(() => false)) {
+      return target;
+    }
+  }
+
+  await expect(target).toBeVisible({timeout: 15_000});
+  return target;
+}
