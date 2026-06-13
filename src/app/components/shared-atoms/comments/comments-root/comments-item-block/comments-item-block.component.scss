@@ -6,12 +6,13 @@
   margin-inline: auto;
   padding: 2.5rem 1rem;
   gap: 0.5rem;
-  opacity: 0.6;
+  color: rgba(24, 42, 65, 0.72);
 
   .empty-icon {
     font-size: 2.5rem;
     width: 2.5rem;
     height: 2.5rem;
+    color: rgba(24, 42, 65, 0.58);
   }
 
   .empty-title {
@@ -22,5 +23,6 @@
   .empty-subtitle {
     font-size: 0.85rem;
     text-align: center;
+    color: rgba(24, 42, 65, 0.62);
   }
 }

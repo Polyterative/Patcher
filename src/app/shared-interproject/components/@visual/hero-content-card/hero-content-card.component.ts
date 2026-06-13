@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  HostBinding,
   Input,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -56,4 +57,9 @@ export class HeroContentCardComponent {
   @Input() icon: string;
   @Input() showWideShellNav = false;
   @Input() compactTitleSub = false;
+
+  @HostBinding('class.hero-content-card--detail-heading')
+  get detailHeading(): boolean {
+    return !!this.titleBig && !!this.titleSub;
+  }
 }

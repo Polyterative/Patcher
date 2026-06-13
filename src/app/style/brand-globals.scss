@@ -183,6 +183,21 @@ $bgGradientBG: rgb(223, 223, 223);
   background-color: transparent;
 }
 
+.app-shell.app-shell--wide :where(
+  lib-hero-content-card.hero-content-card--detail-heading.modulesBG,
+  lib-hero-content-card.hero-content-card--detail-heading.racksBG,
+  lib-hero-content-card.hero-content-card--detail-heading.patchesBG,
+  lib-hero-content-card.hero-content-card--detail-heading.homeBG,
+  lib-hero-content-card.hero-content-card--detail-heading.userBG,
+  lib-hero-content-card.hero-content-card--detail-heading.manualsBG,
+  lib-hero-content-card.hero-content-card--detail-heading.commentsBG,
+  lib-hero-content-card.hero-content-card--detail-heading.changelogBG,
+  lib-hero-content-card.hero-content-card--detail-heading.manufacturersBG
+) .content {
+  background: transparent;
+  background-color: transparent;
+}
+
 .limit-height {
   @include scrollbars;
 
