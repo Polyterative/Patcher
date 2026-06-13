@@ -187,6 +187,41 @@
   pointer-events: none;
 }
 
+@media (min-width: 39.0625rem) {
+  :host-context(.app-shell__wide-toolbar--stuck) .title-metro-nav {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0.35rem 1rem;
+    padding-bottom: 0;
+  }
+
+  :host-context(.app-shell__wide-toolbar--stuck) .title-metro-topbar {
+    inline-size: auto;
+  }
+
+  :host-context(.app-shell__wide-toolbar--stuck) .title-metro-brand {
+    font-size: 0.86rem;
+    letter-spacing: 0.03em;
+  }
+
+  :host-context(.app-shell__wide-toolbar--stuck) .title-metro-targets {
+    align-items: center;
+    gap: 0.45rem 0.9rem;
+    padding-bottom: 0;
+  }
+
+  :host-context(.app-shell__wide-toolbar--stuck) .title-metro-target-group {
+    gap: 0.2rem 0.85rem;
+  }
+
+  :host-context(.app-shell__wide-toolbar--stuck) .title-metro-target {
+    min-height: 1.5rem;
+    font-size: 0.94rem;
+    line-height: 1;
+  }
+}
+
 @media (max-width: 56rem) {
   .title-metro-nav {
     gap: 0.7rem;
