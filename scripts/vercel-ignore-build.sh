@@ -33,66 +33,49 @@ if [ -n "${changed_files}" ] && ! printf '%s\n' "${changed_files}" \
 fi
 
 parse_workflow_run() {
-  # Use node (always available in Vercel) to parse the workflow-runs JSON.
   # Prints three fields: found status conclusion. Prints "api_error none none"
   # when GitHub returns an error payload.
-  node -e "
-const d = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
-if (!Array.isArray(d.workflow_runs)) {
-  console.log('api_error none none');
-  process.exit(0);
-}
-const runs = d.workflow_runs || [];
-const run = runs
-  .filter(r => r.event === 'push')
-  .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))[0];
-if (!run) {
-  console.log('0 none none');
-  process.exit(0);
-}
-console.log('1 ' + (run.status || 'unknown') + ' ' + (run.conclusion || 'none'));
-" 2>/dev/null || echo "api_error none none"
+  compact="$(tr -d '\n\r\t ' | head -c 200000)"
+
+  if ! printf '%s' "${compact}" | grep -q '"workflow_runs":'; then
+    echo "api_error none none"
+    return
+  fi
+
+  if printf '%s' "${compact}" | grep -q '"workflow_runs":\[\]'; then
+    echo "0 none none"
+    return
+  fi
+
+  status="$(printf '%s' "${compact}" | grep -o '"status":"[^"]*"' | head -n 1 | cut -d '"' -f 4)"
+  conclusion="$(printf '%s' "${compact}" | grep -o '"conclusion":"[^"]*"' | head -n 1 | cut -d '"' -f 4)"
+  echo "1 ${status:-unknown} ${conclusion:-none}"
 }
 
 parse_required_check_runs() {
   # Prints one field: success, failed, pending, or api_error.
-  node -e "
-const d = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
-if (!Array.isArray(d.check_runs)) {
-  console.log('api_error');
-  process.exit(0);
-}
-const required = new Set([
-  'Lint',
-  'Stylelint',
-  'Unit tests',
-  'Function tests',
-  'Production build + smoke',
-]);
-const runs = d.check_runs || [];
-const byName = new Map();
-for (const run of runs) {
-  if (required.has(run.name)) {
-    byName.set(run.name, run);
-  }
-}
-if (byName.size < required.size) {
-  console.log('pending');
-  process.exit(0);
-}
-const bad = ['failure','cancelled','timed_out','action_required','stale'];
-for (const run of byName.values()) {
-  if (run.status !== 'completed') {
-    console.log('pending');
-    process.exit(0);
-  }
-  if (bad.includes(run.conclusion)) {
-    console.log('failed');
-    process.exit(0);
-  }
-}
-console.log('success');
-" 2>/dev/null || echo "api_error"
+  compact="$(tr -d '\n\r\t ' | head -c 500000)"
+
+  if ! printf '%s' "${compact}" | grep -q '"check_runs":'; then
+    echo "api_error"
+    return
+  fi
+
+  for name in Lint Stylelint Unittests Functiontests Productionbuild+smoke; do
+    chunk="$(printf '%s' "${compact}" | grep -o "\"name\":\"${name}\"[^}]*" | head -n 1)"
+
+    if [ -z "${chunk}" ] || ! printf '%s' "${chunk}" | grep -q '"status":"completed"'; then
+      echo "pending"
+      return
+    fi
+
+    if ! printf '%s' "${chunk}" | grep -q '"conclusion":"success"'; then
+      echo "failed"
+      return
+    fi
+  done
+
+  echo "success"
 }
 
 API="https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/angular-tests.yml/runs?head_sha=${SHA}&event=push&per_page=10"
@@ -111,18 +94,17 @@ elif [ -n "${GH_TOKEN:-}" ]; then
 fi
 
 describe_github_error() {
-  node -e "
-const input = require('fs').readFileSync('/dev/stdin', 'utf8');
-const compact = input.replace(/[\x00-\x1F\x7F]/g, ' ').slice(0, 160);
-try {
-  const d = JSON.parse(input);
-  const message = d.message || 'unknown';
-  const status = d.status || 'unknown';
-  console.log('status=' + status + ' bytes=' + input.length + ' message=' + JSON.stringify(message));
-} catch (e) {
-  console.log('status=unknown bytes=' + input.length + ' prefix=' + JSON.stringify(compact));
-}
-" 2>/dev/null || echo 'status=unknown bytes=unknown message="diagnostic parser failed"'
+  input="$(cat)"
+  bytes="$(printf '%s' "${input}" | wc -c | tr -d ' ')"
+  compact="$(printf '%s' "${input}" | tr '\n\r\t' ' ' | cut -c 1-160)"
+  message="$(printf '%s' "${input}" | tr -d '\n\r\t' | sed -n 's/.*"message"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n 1)"
+  status="$(printf '%s' "${input}" | tr -d '\n\r\t' | sed -n 's/.*"status"[[:space:]]*:[[:space:]]*"\{0,1\}\([^",}]*\)"\{0,1\}.*/\1/p' | head -n 1)"
+
+  if [ -n "${message}" ]; then
+    echo "status=${status:-unknown} bytes=${bytes} message=\"${message}\""
+  else
+    echo "status=unknown bytes=${bytes} prefix=\"${compact}\""
+  fi
 }
 
 echo "[vercel-ignore] GitHub API auth source: ${AUTH_SOURCE}"
