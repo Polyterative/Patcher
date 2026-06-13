@@ -11,18 +11,7 @@ import {
   inject
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import {
-  buildWideShellAccountLinks,
-  getWideShellQuickTargets
-} from 'src/app/features/backbone/toolbar/toolbar-link-data';
-import {
-  NavigationEnd,
-  Router,
-  RouterModule
-} from '@angular/router';
-import {
-  combineLatest,
   fromEvent,
   merge,
   Observable,
@@ -31,22 +20,13 @@ import {
 } from 'rxjs';
 import {
   auditTime,
-  distinctUntilChanged,
-  filter,
-  map,
-  shareReplay,
-  startWith,
   takeUntil
 } from 'rxjs/operators';
-import {
-  getRouteClickableLinkKey,
-  RouteClickableLink
-} from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.component';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AppShellLayoutService } from 'src/app/shared-interproject/app-shell-layout.service';
-import { AppStateService } from 'src/app/shared-interproject/app-state.service';
+import { WideShellToolbarComponent } from 'src/app/shared-interproject/components/@visual/wide-shell-toolbar/wide-shell-toolbar.component';
 import { HeroContentCardHeadIconComponent } from './hero-contenst-card-head-icon/hero-content-card-head-icon.component';
 
 
@@ -64,7 +44,7 @@ import { HeroContentCardHeadIconComponent } from './hero-contenst-card-head-icon
     MatCardModule,
     MatIconModule,
     MatTooltipModule,
-    RouterModule,
+    WideShellToolbarComponent,
     HeroContentCardHeadIconComponent
   ]
 })
@@ -89,15 +69,6 @@ export class HeroContentCardComponent implements AfterViewInit, OnDestroy {
   }
 
   public readonly wideShell$: Observable<boolean>;
-  public readonly wideShellTargets: RouteClickableLink[];
-  public readonly currentShellUrl$: Observable<string>;
-  public readonly accountLinks$: Observable<RouteClickableLink[]>;
-  public readonly shellVm$: Observable<{
-    wideShell: boolean;
-    currentUrl: string;
-    accountLinks: RouteClickableLink[];
-  }>;
-  public readonly siteTitle = 'patcher.xyz';
   public showCompactWideShellNav = false;
   private readonly platformId = inject(PLATFORM_ID);
   private readonly changeDetectorRef = inject(ChangeDetectorRef);
@@ -108,44 +79,8 @@ export class HeroContentCardComponent implements AfterViewInit, OnDestroy {
 
   constructor(
     private readonly appShellLayoutService: AppShellLayoutService,
-    private readonly appState: AppStateService,
-    private readonly userManagementService: UserManagementService,
-    private readonly router: Router
   ) {
     this.wideShell$ = this.appShellLayoutService.wideShell$;
-    this.wideShellTargets = getWideShellQuickTargets(this.appState.isDev);
-    this.currentShellUrl$ = this.router.events.pipe(
-      filter((event) => event instanceof NavigationEnd),
-      startWith(null),
-      map(() => this.router.url),
-      distinctUntilChanged(),
-      shareReplay({bufferSize: 1, refCount: true})
-    );
-    this.accountLinks$ = combineLatest([
-      this.userManagementService.loggedUser$.pipe(startWith(undefined)),
-      this.userManagementService.loggedUserFullProfile$.pipe(startWith(undefined)),
-      this.userManagementService.isAdmin$.pipe(startWith(false))
-    ]).pipe(
-      map(([loggedUser, profile, isAdmin]) => buildWideShellAccountLinks(
-        Boolean(loggedUser),
-        profile?.username?.trim() || 'Account',
-        isAdmin
-      )),
-      distinctUntilChanged(),
-      shareReplay({bufferSize: 1, refCount: true})
-    );
-    this.shellVm$ = combineLatest([
-      this.wideShell$,
-      this.currentShellUrl$,
-      this.accountLinks$
-    ]).pipe(
-      map(([wideShell, currentUrl, accountLinks]) => ({
-        wideShell,
-        currentUrl,
-        accountLinks
-      })),
-      shareReplay({bufferSize: 1, refCount: true})
-    );
   }
 
   ngAfterViewInit(): void {
@@ -175,40 +110,6 @@ export class HeroContentCardComponent implements AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  isWideShellTargetActive(item: RouteClickableLink, currentUrl: string): boolean {
-    const normalizedUrl = currentUrl.toLowerCase();
-    const normalizedRoute = item.route?.toLowerCase();
-
-    if (!normalizedRoute) {
-      return false;
-    }
-
-    if (normalizedRoute === normalizedUrl) {
-      return true;
-    }
-
-    switch (normalizedRoute) {
-      case '/home':
-        return normalizedUrl === '/' || normalizedUrl === '/home';
-      case '/modules/browser':
-        return normalizedUrl.startsWith('/modules/');
-      case '/racks/browser':
-        return normalizedUrl.startsWith('/racks/');
-      case '/patches/browser':
-        return normalizedUrl.startsWith('/patches/');
-      case '/manufacturers/browser':
-        return normalizedUrl.startsWith('/manufacturers/');
-      case '/info/insights':
-        return normalizedUrl.startsWith('/info/insights');
-      default:
-        return false;
-    }
-  }
-
-  trackByNavLink(index: number, item: RouteClickableLink): string {
-    return getRouteClickableLinkKey(item);
   }
 
   private syncCompactWideShellNav(): void {

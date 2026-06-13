@@ -26,7 +26,7 @@ import {
 import { AppShellLayoutService } from './shared-interproject/app-shell-layout.service';
 import { AppViewportService } from './shared-interproject/app-viewport.service';
 import { BackboneModule } from './features/backbone/backbone.module';
-import { ToolbarModule } from './features/backbone/toolbar/toolbar.module';
+import { MobileShellToolbarModule } from './features/backbone/toolbar/toolbar.module';
 import { ScreenWrapperComponent } from './shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { AppFaqComponent } from './components/shared-atoms/app-faq/app-faq.component';
 import { SelectionPanelOutletComponent } from './components/patch-parts/selection-panel-outlet/selection-panel-outlet.component';
@@ -61,7 +61,7 @@ import { RackDetailDataService } from './components/rack-parts/rack-detail-data.
   ],
   imports: [
     BackboneModule,
-    ToolbarModule,
+    MobileShellToolbarModule,
     RouterOutlet,
     ScreenWrapperComponent,
     AppFaqComponent,

@@ -133,10 +133,6 @@ describe('HeroContentCardComponent', () => {
     expect(host.querySelector('.title-heading-copy--stacked-description')).not.toBeNull();
   });
 
-  it('has siteTitle equal to patcher.xyz', () => {
-    expect(fixture.componentInstance.siteTitle).toBe('patcher.xyz');
-  });
-
   it('showCompactWideShellNav defaults to false', () => {
     expect(fixture.componentInstance.showCompactWideShellNav).toBeFalse();
   });

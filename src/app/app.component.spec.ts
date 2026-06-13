@@ -20,11 +20,11 @@ import { AppViewportService } from './shared-interproject/app-viewport.service';
 
 
 @Component({
-  selector: 'app-toolbar',
+  selector: 'app-mobile-shell-toolbar',
   template: '',
   standalone: true
 })
-class ToolbarStubComponent {
+class MobileShellToolbarStubComponent {
 }
 
 describe('AppComponent', () => {
@@ -78,7 +78,7 @@ describe('AppComponent', () => {
     })
     .overrideComponent(AppComponent, {
       set: {
-        imports: [ToolbarStubComponent, AsyncPipe],
+        imports: [MobileShellToolbarStubComponent, AsyncPipe],
         schemas: [NO_ERRORS_SCHEMA],
         // Replace the heavy data-service providers with empty stubs — this
         // spec exercises shell-layout behaviour, not the floating selection
@@ -101,7 +101,7 @@ describe('AppComponent', () => {
 
     const shell = fixture.debugElement.query(By.css('.app-shell')).nativeElement as HTMLElement;
     expect(shell.classList.contains('app-shell--wide')).toBeFalse();
-    expect(fixture.debugElement.query(By.directive(ToolbarStubComponent))).not.toBeNull();
+    expect(fixture.debugElement.query(By.directive(MobileShellToolbarStubComponent))).not.toBeNull();
   });
 
   it('applies the shared wide-shell class and removes the blue Material toolbar on non-mobile shells', () => {
@@ -113,7 +113,7 @@ describe('AppComponent', () => {
     fixture.detectChanges();
 
     expect(shell.classList.contains('app-shell--wide')).toBeTrue();
-    expect(fixture.debugElement.query(By.directive(ToolbarStubComponent))).toBeNull();
+    expect(fixture.debugElement.query(By.directive(MobileShellToolbarStubComponent))).toBeNull();
   });
 
   it('keeps the legacy toolbar when the current route does not provide an embedded shell', () => {
@@ -123,7 +123,7 @@ describe('AppComponent', () => {
 
     const shell = fixture.debugElement.query(By.css('.app-shell')).nativeElement as HTMLElement;
     expect(shell.classList.contains('app-shell--wide')).toBeFalse();
-    expect(fixture.debugElement.query(By.directive(ToolbarStubComponent))).not.toBeNull();
+    expect(fixture.debugElement.query(By.directive(MobileShellToolbarStubComponent))).not.toBeNull();
   });
 
   it('uses the embedded shell on rack detail routes when wide-shell layout is active', () => {
@@ -133,7 +133,7 @@ describe('AppComponent', () => {
 
     const shell = fixture.debugElement.query(By.css('.app-shell')).nativeElement as HTMLElement;
     expect(shell.classList.contains('app-shell--wide')).toBeTrue();
-    expect(fixture.debugElement.query(By.directive(ToolbarStubComponent))).toBeNull();
+    expect(fixture.debugElement.query(By.directive(MobileShellToolbarStubComponent))).toBeNull();
   });
 
   it('uses the embedded shell on auth routes when wide-shell layout is active', () => {
@@ -207,7 +207,7 @@ describe('AppComponent — selection panel provider wiring', () => {
     })
     .overrideComponent(AppComponent, {
       set: {
-        imports: [ToolbarStubComponent, AsyncPipe],
+        imports: [MobileShellToolbarStubComponent, AsyncPipe],
         schemas: [NO_ERRORS_SCHEMA],
         providers: [
           {provide: PatchDetailDataService, useClass: PatchDataStub},

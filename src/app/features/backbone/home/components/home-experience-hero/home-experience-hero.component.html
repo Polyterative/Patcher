@@ -1,39 +1,15 @@
 <section class="hero-shell" aria-labelledby="home-hero-title">
-  @if (shellVm$ | async; as shellVm) {
-    @if (shellVm.wideShell) {
-      <div class="title-metro-nav">
-        <div class="title-metro-topbar">
-          <a class="title-metro-brand"
-             routerLink="/home"
-             routerLinkActive="title-metro-brand--active"
-             aria-label="Go to home">{{ siteTitle }}</a>
-        </div>
-        <nav class="title-metro-targets" aria-label="Section targets">
-          <div class="title-metro-target-group">
-            @for (item of wideShellTargets; track trackByNavLink($index, item)) {
-              <a
-                class="title-metro-target"
-                [routerLink]="item.route"
-                routerLinkActive="title-metro-target--active"
-                [attr.aria-label]="item.label"
-              >
-                {{ item.label }}
-              </a>
-            }
-          </div>
-          <div class="title-metro-target-group title-metro-target-group--account">
-            @for (item of shellVm.accountLinks; track trackByNavLink($index, item)) {
-              <a class="title-metro-target title-metro-target--private"
-                 [routerLink]="item.route"
-                 routerLinkActive="title-metro-target--active"
-                 [attr.aria-label]="item.label">
-                <span>{{ item.label }}</span>
-              </a>
-            }
-          </div>
-        </nav>
+  @if (wideShell$ | async) {
+    <div class="home-wide-shell-toolbar-sticky"
+         [class.home-wide-shell-toolbar-sticky--visible]="showCompactWideShellToolbar"
+         [attr.aria-hidden]="!showCompactWideShellToolbar">
+      <div class="home-wide-shell-toolbar-sticky__wrapper">
+        <app-wide-shell-toolbar [floating]="true" [showBrand]="false"></app-wide-shell-toolbar>
       </div>
-    }
+    </div>
+    <div #wideShellToolbarOrigin class="home-wide-shell-toolbar-origin">
+      <app-wide-shell-toolbar></app-wide-shell-toolbar>
+    </div>
   }
 
   <div class="hero-copy">

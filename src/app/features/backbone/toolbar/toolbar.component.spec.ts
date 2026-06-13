@@ -4,8 +4,8 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { BehaviorSubject } from 'rxjs';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
-import { ToolbarComponent } from './toolbar.component';
-import { ToolbarModule } from './toolbar.module';
+import { MobileShellToolbarComponent } from './toolbar.component';
+import { MobileShellToolbarModule } from './toolbar.module';
 import { ToolbarService } from './toolbar.service';
 import { getRouteClickableLinkKey } from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.component';
 
@@ -43,8 +43,8 @@ function layoutState(overrides: Partial<{
   };
 }
 
-describe('ToolbarComponent', () => {
-  let fixture: ComponentFixture<ToolbarComponent>;
+describe('MobileShellToolbarComponent', () => {
+  let fixture: ComponentFixture<MobileShellToolbarComponent>;
   let loggedUser$: BehaviorSubject<{id: string; email: string} | undefined>;
   let loggedUserFullProfile$: BehaviorSubject<{username: string} | undefined>;
   let isAdmin$: BehaviorSubject<boolean>;
@@ -59,7 +59,7 @@ describe('ToolbarComponent', () => {
       imports: [
         NoopAnimationsModule,
         RouterTestingModule,
-        ToolbarModule
+        MobileShellToolbarModule
       ],
       providers: [
         ToolbarService,
@@ -81,16 +81,16 @@ describe('ToolbarComponent', () => {
       ]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ToolbarComponent);
+    fixture = TestBed.createComponent(MobileShellToolbarComponent);
     fixture.detectChanges();
   });
 
-  it('keeps the horizontal top toolbar outside the large-screen breakpoint', () => {
+  it('renders the mobile-shell Material toolbar outside embedded wide shells', () => {
     expect(fixture.nativeElement.querySelector('mat-toolbar.toolbar--top.sticky')).not.toBeNull();
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Modules');
   });
 
-  it('keeps the shared top-toolbar navigation readable for large-screen shells too', () => {
+  it('keeps the mobile-shell navigation readable when it is used outside embedded shells', () => {
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
