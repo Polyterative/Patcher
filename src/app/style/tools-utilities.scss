@@ -1,4 +1,5 @@
 @use "tools" as *;
+@use "src/app/style/responsive-breakpoints" as breakpoints;
 
 .row {
   @include flex;
@@ -318,7 +319,7 @@
   min-width: 0; // prevent flex blowout
 }
 
-@media (max-width: 59.9375rem) {
+@media (max-width: breakpoints.$phone-only-max-width) {
   .sidebar-layout {
     flex-direction: column;
   }
@@ -326,5 +327,9 @@
   .filter-sidebar {
     width: 100%;
     min-width: unset;
+  }
+
+  .browser-content-area {
+    width: 100%;
   }
 }

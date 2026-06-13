@@ -1,4 +1,5 @@
 // Sidebar layout classes are defined in tools.scss (shared global)
+@use "src/app/style/responsive-breakpoints" as breakpoints;
 
 :host {
   display: block;
@@ -182,7 +183,7 @@
   opacity: 0.85;
 }
 
-@media (max-width: 59.9375rem) {
+@media (max-width: breakpoints.$phone-only-max-width) {
   .module-filter-control--optional {
     display: none;
   }
@@ -234,7 +235,7 @@
   }
 }
 
-@media (max-width: 70.5625rem) {
+@media (max-width: breakpoints.$phone-only-max-width) {
   .module-browser-root--compact-tablet {
     .module-browser-mode__summary {
       block-size: 7rem;
