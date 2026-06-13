@@ -273,13 +273,6 @@ $rack-balance-accent: rgba(71, 170, 156, 1);
   width: 100%;
 }
 
-@media (min-width: 60.0625rem) and (max-width: 74.9375rem) {
-  .rackBalancePanel__visualSurface {
-    grid-template-columns: 1fr;
-    gap: 0.9rem;
-  }
-}
-
 @media (min-width: 84rem) {
   .rackBalancePanel__header {
     gap: 0.75rem;

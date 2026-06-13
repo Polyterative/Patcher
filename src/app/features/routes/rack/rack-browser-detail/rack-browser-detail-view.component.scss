@@ -82,6 +82,20 @@
   width: 100%;
 }
 
+@media (min-width: breakpoints.$rack-detail-insights-two-column-min-width) {
+  .rackBrowserDetailView__summaryInsights {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    grid-auto-rows: 1fr;
+  }
+
+  .rackBrowserDetailView__summaryStats,
+  .rackBrowserDetailView__desktopAnalysis {
+    height: 100%;
+    align-self: stretch;
+  }
+}
+
 @media (min-width: breakpoints.$rack-summary-two-column-min-width) {
   .rackBrowserDetailView__summaryLayout {
     flex-wrap: nowrap;
@@ -98,17 +112,6 @@
     max-width: none;
   }
 
-  .rackBrowserDetailView__summaryInsights {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: stretch;
-    grid-auto-rows: 1fr;
-  }
-
-  .rackBrowserDetailView__summaryStats,
-  .rackBrowserDetailView__desktopAnalysis {
-    height: 100%;
-    align-self: stretch;
-  }
 }
 
 @media (max-width: breakpoints.$rack-summary-stacked-max-width) {
