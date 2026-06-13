@@ -1,6 +1,7 @@
 @use '@angular/material' as mat;
 @use '../../function-analysis-theme' as functionTheme;
 @use "src/app/style/brand-resources" as *;
+@use "src/app/style/responsive-breakpoints" as breakpoints;
 
 .cdk-drag-preview {
   @include mat.elevation(8);
@@ -579,7 +580,7 @@
   color: rgba(43, 69, 93, 0.72);
 }
 
-@media (max-width: 70.5625rem) {
+@media (max-width: breakpoints.$phone-only-max-width) {
   .rowPowerPanel {
     left: 0;
     min-width: 100%;

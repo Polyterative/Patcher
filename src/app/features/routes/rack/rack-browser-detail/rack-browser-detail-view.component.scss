@@ -1,3 +1,5 @@
+@use "src/app/style/responsive-breakpoints" as breakpoints;
+
 :host {
   --rack-editor-mobile-fab-clearance: 0rem;
 }
@@ -80,7 +82,7 @@
   width: 100%;
 }
 
-@media (min-width: 70.625rem) {
+@media (min-width: breakpoints.$rack-summary-two-column-min-width) {
   .rackBrowserDetailView__summaryLayout {
     flex-wrap: nowrap;
     align-items: stretch;
@@ -109,23 +111,23 @@
   }
 }
 
-@media (max-width: 70.5625rem) {
-  .rackBrowserDetailView__desktopAnalysis {
-    display: none;
-  }
-
+@media (max-width: breakpoints.$rack-summary-stacked-max-width) {
   .rackBrowserDetailView__summaryColumn--left,
   .rackBrowserDetailView__summaryColumn--right {
     flex: 1 0 100%;
     max-width: 100%;
   }
+}
+
+@media (max-width: breakpoints.$phone-only-max-width) {
+  .rackBrowserDetailView__desktopAnalysis {
+    display: none;
+  }
 
   .rackBrowserDetailView__mobileAnalysis {
     display: block;
   }
-}
 
-@media (max-width: 70.5625rem) {
   :host ::ng-deep app-rack-composite app-edit-fab {
     display: none;
   }
