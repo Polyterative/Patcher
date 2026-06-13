@@ -21,6 +21,10 @@ $floatingSurfaceMaxWidth: 16.5rem;
   transform: scale(0.98);
 }
 
+.rackEditorViewport {
+  overflow: visible;
+}
+
 .rackEditorCanvasContainer {
   display: flex;
   justify-content: center;
