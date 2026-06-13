@@ -61,6 +61,7 @@ second source of rules.
 | File | Purpose |
 |---|---|
 | [ops/LOCAL_BACKUP_INSPECTION.md](./ops/LOCAL_BACKUP_INSPECTION.md) | Local-only backup inspection notes |
+| [ops/VERCEL_CI_GATE.md](./ops/VERCEL_CI_GATE.md) | Vercel ignored-build CI gate behavior, token requirements, and troubleshooting |
 
 ## Legacy Compatibility Stubs
 

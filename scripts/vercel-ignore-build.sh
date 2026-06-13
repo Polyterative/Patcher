@@ -12,6 +12,8 @@
 #      exact commit. If that endpoint is temporarily unavailable, fall back to
 #      the required Angular Tests check-runs. Proceed only when CI completed
 #      successfully. Failed, missing, or timed-out CI state skips deploy.
+#
+# See internaldocs/ops/VERCEL_CI_GATE.md before changing this script.
 
 set -uo pipefail
 
