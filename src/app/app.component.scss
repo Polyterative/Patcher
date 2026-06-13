@@ -1,6 +1,7 @@
 .app-shell {
   display: block;
   min-height: var(--app-viewport-stable-height, 100svh);
+  --app-sticky-toolbar-offset: 0rem;
   --app-shell-area-tint: rgba(148, 148, 148, 0.35);
   --app-shell-area-field: linear-gradient(135deg, var(--app-shell-area-tint) 0%, rgba(255, 255, 255, 0) 72%);
   --app-shell-area-ground: linear-gradient(180deg, rgba(220, 239, 246, 0.98) 0%, rgba(238, 246, 250, 0.98) 100%);
@@ -125,6 +126,7 @@
 .app-shell--wide {
   --app-floating-inset-inline: 1.5rem;
   --app-floating-inset-block: 1.25rem;
+  --app-sticky-toolbar-offset: 2.35rem;
   background:
     var(--app-shell-area-field),
     linear-gradient(180deg, rgba(214, 236, 244, 0.88) 0%, rgba(238, 246, 250, 0.98) 14rem);

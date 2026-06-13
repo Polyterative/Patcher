@@ -112,10 +112,15 @@
 }
 
 .sidebar {
+  --user-area-sidebar-sticky-gap: 1rem;
   min-width: 0;
   position: sticky;
-  top: 1rem;
-  max-block-size: calc(var(--app-viewport-height, 100vh) - 2rem);
+  top: calc(var(--app-sticky-toolbar-offset, 2.35rem) + var(--user-area-sidebar-sticky-gap));
+  max-block-size: calc(
+    var(--app-viewport-height, 100vh)
+    - var(--app-sticky-toolbar-offset, 2.35rem)
+    - (var(--user-area-sidebar-sticky-gap) * 2)
+  );
   overflow: auto;
 }
 

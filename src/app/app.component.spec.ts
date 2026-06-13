@@ -23,10 +23,8 @@ describe('AppComponent', () => {
   let wideShell$: BehaviorSubject<boolean>;
   let routerEvents$: Subject<unknown>;
   let routerMock: { events: Subject<unknown>; url: string };
-  let originalIntersectionObserver: typeof IntersectionObserver | undefined;
 
   beforeEach(async () => {
-    originalIntersectionObserver = window.IntersectionObserver;
     wideShell$ = new BehaviorSubject(false);
     routerEvents$ = new Subject<unknown>();
     routerMock = {
@@ -89,10 +87,6 @@ describe('AppComponent', () => {
     fixture = TestBed.createComponent(AppComponent);
   });
 
-  afterEach(() => {
-    window.IntersectionObserver = originalIntersectionObserver as typeof IntersectionObserver;
-  });
-
   it('renders the modern shell toolbar for supported mobile shell routes', () => {
     fixture.detectChanges();
 
@@ -122,33 +116,21 @@ describe('AppComponent', () => {
     expect(host.querySelector('.app-shell__wide-toolbar')?.closest('lib-hero-content-card')).toBeNull();
   });
 
-  it('marks the wide-shell toolbar as stuck when its sentinel leaves the viewport', () => {
-    let observerCallback: IntersectionObserverCallback | undefined;
-    class IntersectionObserverStub {
-      constructor(callback: IntersectionObserverCallback) {
-        observerCallback = callback;
-      }
-
-      observe(): void {}
-      disconnect(): void {}
-      takeRecords(): IntersectionObserverEntry[] { return []; }
-      unobserve(): void {}
-      readonly root = null;
-      readonly rootMargin = '';
-      readonly thresholds = [0];
-    }
-    window.IntersectionObserver = IntersectionObserverStub as unknown as typeof IntersectionObserver;
-
+  it('marks the wide-shell toolbar as stuck whenever the page is scrolled', () => {
+    spyOnProperty(window, 'scrollY', 'get').and.returnValues(0, 24, 0);
     wideShell$.next(true);
     fixture.detectChanges();
 
-    observerCallback?.([{
-      isIntersecting: false
-    } as IntersectionObserverEntry], {} as IntersectionObserver);
+    window.dispatchEvent(new Event('scroll'));
     fixture.detectChanges();
 
     const toolbar = fixture.nativeElement.querySelector('.app-shell__wide-toolbar') as HTMLElement;
     expect(toolbar.classList.contains('app-shell__wide-toolbar--stuck')).toBeTrue();
+
+    window.dispatchEvent(new Event('scroll'));
+    fixture.detectChanges();
+
+    expect(toolbar.classList.contains('app-shell__wide-toolbar--stuck')).toBeFalse();
   });
 
   it('applies route area classes to the app shell', () => {
