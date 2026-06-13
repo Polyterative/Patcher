@@ -1,11 +1,26 @@
 <div #fullscreenTarget class="patch-graph-fullscreen-dialog">
-  <div class="patch-graph-fullscreen-dialog__title">
-    <lib-hero-content-card
-      titleBig="Patch graph"
-      [titleSub]="data.patchName"
-      [showWideShellNav]="false"
-      [vertPadding]="false"
-    ></lib-hero-content-card>
+  <div class="patch-graph-fullscreen-dialog__top-left">
+    <div class="patch-graph-fullscreen-dialog__title">
+      <lib-hero-content-card
+        titleBig="Patch graph"
+        [titleSub]="data.patchName"
+        [showWideShellNav]="false"
+        [sidesPadding]="false"
+        [vertPadding]="false"
+      ></lib-hero-content-card>
+    </div>
+
+    <div class="patch-graph-fullscreen-dialog__legend">
+      @for (item of data.legend; track item.label) {
+        <div class="patch-graph-fullscreen-dialog__legend-item">
+          <div
+            class="patch-graph-fullscreen-dialog__legend-dot"
+            [style.background-color]="item.color"
+          ></div>
+          <div>{{ item.label }}</div>
+        </div>
+      }
+    </div>
   </div>
 
   <button
@@ -32,18 +47,6 @@
   </button>
 
   <div class="patch-graph-fullscreen-dialog__graph-shell">
-    <div class="patch-graph-fullscreen-dialog__legend">
-      @for (item of data.legend; track item.label) {
-        <div class="patch-graph-fullscreen-dialog__legend-item">
-          <div
-            class="patch-graph-fullscreen-dialog__legend-dot"
-            [style.background-color]="item.color"
-          ></div>
-          <div>{{ item.label }}</div>
-        </div>
-      }
-    </div>
-
     @if (graphReady && scaledNodes.length > 0) {
       <lib-graph
         [nodes]="scaledNodes"
