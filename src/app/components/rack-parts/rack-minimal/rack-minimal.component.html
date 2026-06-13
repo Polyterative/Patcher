@@ -11,6 +11,11 @@
                              label="Rack name"
                              iconL1="label"
         ></lib-mat-form-entity>
+        <app-rack-image
+          class="rackMinimal__editingPreview"
+          [data]="data"
+          [containImage]="viewConfig.containImage"
+        ></app-rack-image>
       </div>
     } @else {
       <app-rack-micro [data]="data"

@@ -4,6 +4,12 @@
   transition: opacity 125ms ease-in-out;
 }
 
+.rackMinimal__editingPreview {
+  display: block;
+  opacity: 0.5;
+  transition: opacity 125ms ease-in-out;
+}
+
 .parent > .showOnHover {
   opacity: 1;
 }
