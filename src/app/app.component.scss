@@ -37,6 +37,11 @@
   padding-inline: 1rem;
 }
 
+.app-shell__wide-toolbar {
+  padding-block: 1.5rem 0.65rem;
+  padding-inline: 1rem;
+}
+
 .app-shell__supporting {
   padding-inline: 1rem;
 }
@@ -101,7 +106,8 @@
 }
 
 @media (max-width: 72.5rem) {
-  .app-shell__surface {
+  .app-shell__surface,
+  .app-shell__wide-toolbar {
     padding-inline: 0.75rem;
   }
 

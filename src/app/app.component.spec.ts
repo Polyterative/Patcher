@@ -116,6 +116,15 @@ describe('AppComponent', () => {
     expect(fixture.debugElement.query(By.directive(MobileShellToolbarStubComponent))).toBeNull();
   });
 
+  it('renders the wide-shell toolbar at the app shell level on embedded routes', () => {
+    wideShell$.next(true);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('.app-shell__wide-toolbar app-wide-shell-toolbar')).not.toBeNull();
+    expect(host.querySelector('.app-shell__wide-toolbar')?.closest('lib-hero-content-card')).toBeNull();
+  });
+
   it('keeps the legacy toolbar when the current route does not provide an embedded shell', () => {
     routerMock.url = '/not-embedded';
     wideShell$.next(true);

@@ -34,6 +34,7 @@ import { DiscoveryTipSurfaceComponent } from './shared-interproject/discovery-ti
 import { ModuleDetailDataService } from './components/module-parts/module-detail-data.service';
 import { PatchDetailDataService } from './components/patch-parts/patch-detail-data.service';
 import { RackDetailDataService } from './components/rack-parts/rack-detail-data.service';
+import { WideShellToolbarComponent } from './shared-interproject/components/@visual/wide-shell-toolbar/wide-shell-toolbar.component';
 
 
 @Component({
@@ -68,6 +69,7 @@ import { RackDetailDataService } from './components/rack-parts/rack-detail-data.
     AsyncPipe,
     SelectionPanelOutletComponent,
     DiscoveryTipSurfaceComponent,
+    WideShellToolbarComponent,
   ]
 })
 export class AppComponent {
