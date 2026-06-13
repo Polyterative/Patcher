@@ -14,7 +14,6 @@ import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/compone
 import { CleanCardComponent } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.component';
 import { HeroContentCardComponent } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component';
 import { LabelValueShowcaseComponent } from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.component';
-import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { PublicProfileComponent } from './public-profile.component';
 
 @NgModule({
@@ -40,7 +39,6 @@ import { PublicProfileComponent } from './public-profile.component';
     CleanCardComponent,
     HeroContentCardComponent,
     LabelValueShowcaseComponent,
-    ScreenWrapperComponent,
   ],
 })
 export class PublicProfileModule {}
