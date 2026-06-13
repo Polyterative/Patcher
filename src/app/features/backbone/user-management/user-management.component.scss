@@ -42,10 +42,9 @@
   min-width: 0;
 }
 
-:host ::ng-deep .account-card h1.title .title-sub {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+:host ::ng-deep .account-card h1.title .title-heading-copy,
+:host ::ng-deep .account-card h1.title .title-text {
+  min-width: 0;
 }
 
 .account-sections {
@@ -93,10 +92,6 @@
 @media (max-width: 37.4375rem) {
   .account-shell {
     padding-bottom: 5.5rem;
-  }
-
-  :host ::ng-deep .account-card h1.title .title-sub {
-    white-space: normal;
   }
 
   .danger-zone__logout {
