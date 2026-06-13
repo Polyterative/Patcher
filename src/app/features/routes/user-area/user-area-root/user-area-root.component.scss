@@ -104,6 +104,8 @@
 }
 
 .user-area-page {
+  box-sizing: border-box;
+  padding-inline: 1rem;
   padding-bottom: 2.5rem;
 }
 
@@ -113,8 +115,6 @@
   top: 1rem;
   max-block-size: calc(var(--app-viewport-height, 100vh) - 2rem);
   overflow: auto;
-  scrollbar-gutter: stable;
-  padding-right: 0.25rem;
 }
 
 .sidebar :host ::ng-deep .container > .row.gap1 {
@@ -131,6 +131,37 @@
 .sidebar :host ::ng-deep h3.title .title-text {
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+:host ::ng-deep .sidebar app-statistics lib-hero-content-card.userBG {
+  background: #ffffff;
+  background-color: #ffffff;
+  border: 0;
+  border-radius: 0;
+}
+
+:host ::ng-deep .sidebar app-statistics lib-hero-content-card.userBG .content {
+  background: #ffffff;
+  background-color: #ffffff;
+}
+
+:host ::ng-deep .sidebar app-statistics .statistics-card-content {
+  padding: 0.8rem;
+  border: 0;
+  border-radius: 0;
+  background: #ffffff;
+  background-color: #ffffff;
+}
+
+:host ::ng-deep .sidebar app-statistics .statistics-grid--compact {
+  gap: 0.35rem;
+}
+
+:host ::ng-deep .sidebar app-statistics .stat-item--compact {
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  background-color: transparent;
 }
 
 .utility-rail-group {
@@ -170,13 +201,57 @@
   text-align: start;
 }
 
+:host ::ng-deep .main-content .user-area-section lib-hero-content-card.modulesBG {
+  --user-area-section-tint: 86, 187, 220;
+}
+
+:host ::ng-deep .main-content .user-area-section lib-hero-content-card.racksBG {
+  --user-area-section-tint: 104, 191, 167;
+}
+
+:host ::ng-deep .main-content .user-area-section lib-hero-content-card.patchesBG {
+  --user-area-section-tint: 175, 166, 223;
+}
+
+:host ::ng-deep .main-content .user-area-section lib-hero-content-card.manualsBG {
+  --user-area-section-tint: 114, 175, 166;
+}
+
+:host ::ng-deep .main-content .user-area-section lib-hero-content-card.commentsBG {
+  --user-area-section-tint: 104, 126, 191;
+}
+
+:host ::ng-deep .main-content .user-area-section lib-hero-content-card.modulesBG,
+:host ::ng-deep .main-content .user-area-section lib-hero-content-card.racksBG,
+:host ::ng-deep .main-content .user-area-section lib-hero-content-card.patchesBG,
+:host ::ng-deep .main-content .user-area-section lib-hero-content-card.manualsBG,
+:host ::ng-deep .main-content .user-area-section lib-hero-content-card.commentsBG {
+  background:
+    linear-gradient(135deg, rgba(var(--user-area-section-tint), 0.32) 0%, rgba(255, 255, 255, 0) 100%);
+  background-color: transparent;
+  border: 1px solid rgba(var(--user-area-section-tint), 0.18);
+  border-radius: var(--app-floating-surface-radius, 0.8rem);
+}
+
+:host ::ng-deep .main-content .user-area-section lib-hero-content-card.modulesBG .content,
+:host ::ng-deep .main-content .user-area-section lib-hero-content-card.racksBG .content,
+:host ::ng-deep .main-content .user-area-section lib-hero-content-card.patchesBG .content,
+:host ::ng-deep .main-content .user-area-section lib-hero-content-card.manualsBG .content,
+:host ::ng-deep .main-content .user-area-section lib-hero-content-card.commentsBG .content {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.08) 100%),
+    linear-gradient(135deg, rgba(var(--user-area-section-tint), 0.16) 0%, rgba(255, 255, 255, 0) 72%);
+  background-color: transparent;
+}
+
 .user-area-utility-search {
   display: grid;
   gap: 0.5rem;
   padding: 1rem;
   border: 1px solid rgba(34, 72, 118, 0.12);
   border-radius: var(--app-floating-surface-radius, 0.8rem);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(247, 250, 255, 0.94));
+  background: #ffffff;
+  background-color: #ffffff;
 }
 
 .user-area-utility-search__header {
