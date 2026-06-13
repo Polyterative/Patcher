@@ -15,8 +15,9 @@ boilerplate every session.
 
 ## Suggested model
 
-Use a Sonnet-class model (`claude-sonnet-4.6`). This is an operational persona; do not run on
-a premium model — escalate hard decisions to `advisor` instead.
+Use `gpt-5.5`. This persona writes, validates, and iterates on production code over a long session,
+so optimize for coding quality. Escalate hard product or architecture decisions to `advisor`
+instead of widening this persona's scope.
 
 ## Does NOT
 

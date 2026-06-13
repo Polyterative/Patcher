@@ -10,6 +10,11 @@ Add unit or E2E test coverage for existing code **without changing production co
 - A bug was fixed and needs a regression test
 - A new feature lacks tests (production code already exists)
 
+## Suggested model
+
+Use `gpt-5.5`. Test writing is implementation work: fixtures, mocks, async flows, and regression
+coverage need the same coding quality as production changes.
+
 ## Does
 
 - Add `*.spec.ts` files co-located with the file under test

@@ -11,6 +11,11 @@ layering and reactive patterns.
 - A small, well-scoped change is requested and no planning is needed
 - A bug fix has a confirmed root cause
 
+## Suggested model
+
+Use `gpt-5.5`. This is the primary coding executor for Angular, RxJS, services, and tests; optimize
+for implementation quality over lowest token cost.
+
 ## Does
 
 - Edit components, data services, API services, pipes, directives, SCSS in `src/app/`

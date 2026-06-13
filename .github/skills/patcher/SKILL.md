@@ -17,19 +17,19 @@ This skill is project-scoped — it only loads when working inside the Patcher r
 
 When the user's request matches one of these, **delegate to a sub-agent** using the `task` tool (`agent_type: general-purpose` for most, `explore` for read-only investigations). Paste the corresponding persona file content from `internaldocs/agents/` into the prompt.
 
-| User intent | Persona | File |
-|---|---|---|
-| "Plan X", multi-step or cross-cutting work, ambiguous scope | **planner** | `internaldocs/agents/planner.md` |
-| Hard ambiguous problem, high-risk decision, or explicit premium-model counsel request | **advisor** | `internaldocs/agents/advisor.md` |
-| Implement Angular component / service / RxJS pipeline | **frontend-dev** | `internaldocs/agents/frontend-dev.md` |
-| Fix visual / spacing / responsive issue, UI polish | **designer** | `internaldocs/agents/designer.md` |
-| Review a diff / branch / PR before commit | **reviewer** | `internaldocs/agents/reviewer.md` |
-| Restructure code without changing behaviour | **refactorer** | `internaldocs/agents/refactorer.md` |
-| Add unit / E2E test coverage | **test-writer** | `internaldocs/agents/test-writer.md` |
-| Diagnose a defect to root cause | **bug-hunter** | `internaldocs/agents/bug-hunter.md` |
-| Boot a long-running autonomous loop driven by `agent/` and `internaldocs/workflow/` (replaces pasting a 10 KB mission prompt by hand) | **autonomous-engineer** | `internaldocs/agents/autonomous-engineer.md` |
+| User intent | Persona | Model | File |
+|---|---|---|---|
+| "Plan X", multi-step or cross-cutting work, ambiguous scope | **planner** | `claude-opus-4.7` | `internaldocs/agents/planner.md` |
+| Hard ambiguous problem, high-risk decision, or explicit premium-model counsel request | **advisor** | `claude-opus-4.7` | `internaldocs/agents/advisor.md` |
+| Implement Angular component / service / RxJS pipeline | **frontend-dev** | `gpt-5.5` | `internaldocs/agents/frontend-dev.md` |
+| Design visual / spacing / responsive direction, UI structure, or product organization | **designer** | `claude-sonnet-4.6` | `internaldocs/agents/designer.md` |
+| Review a diff / branch / PR before commit | **reviewer** | `gpt-5.4-mini` | `internaldocs/agents/reviewer.md` |
+| Restructure code without changing behaviour | **refactorer** | `gpt-5.5` | `internaldocs/agents/refactorer.md` |
+| Add unit / E2E test coverage | **test-writer** | `gpt-5.5` | `internaldocs/agents/test-writer.md` |
+| Diagnose a defect to root cause | **bug-hunter** | `gpt-5.4` | `internaldocs/agents/bug-hunter.md` |
+| Boot a long-running autonomous loop driven by `agent/` and `internaldocs/workflow/` (replaces pasting a 10 KB mission prompt by hand) | **autonomous-engineer** | `gpt-5.5` | `internaldocs/agents/autonomous-engineer.md` |
 
-**Model policy:** operational personas, including `planner`, run on default/Sonnet-class models (`planner`: `claude-sonnet-4.6`). The only premium-model persona is `advisor`, used as a fast general counselor for hard problems; it must not edit files or execute implementation work.
+**Model policy:** use `gpt-5.5` for coding-heavy executors (`frontend-dev`, `refactorer`, `test-writer`, `autonomous-engineer`), `claude-sonnet-4.6` for non-coding visual/structural design work, and `claude-opus-4.7` for planning and premium counsel. Use cheaper OpenAI models for read-heavy tasks: `gpt-5.4` for root-cause diagnosis and `gpt-5.4-mini` for diff review. Escalate review/diagnosis only for hard architecture, security, or data-loss risk.
 
 **Composition flows:**
 
@@ -37,7 +37,7 @@ When the user's request matches one of these, **delegate to a sub-agent** using 
 - Hard decision: normal investigation → `advisor` → appropriate executor
 - Bug fix: `bug-hunter` → `frontend-dev` → `test-writer`
 - Cleanup: `refactorer` → `reviewer`
-- Visual: `designer` → `reviewer`
+- Visual: `designer` → `frontend-dev` → `reviewer`
 
 ## Tooling that is configured but easy to miss
 

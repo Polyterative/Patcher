@@ -11,6 +11,11 @@ Diagnose a reported defect to **root cause** before any fix is attempted. Hand o
 - Symptoms are clear but the cause is not
 - A flaky test needs root-cause analysis
 
+## Suggested model
+
+Use `gpt-5.4`. Diagnosis is read-heavy, but root-cause work often needs stronger reasoning than a
+mini/haiku-class review pass. Hand confirmed fixes to `frontend-dev` on `gpt-5.5`.
+
 ## Does
 
 - Reproduce the bug deterministically (or document why it's intermittent)
