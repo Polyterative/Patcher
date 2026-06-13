@@ -11,6 +11,11 @@ ratio** — surface only issues that genuinely matter.
 - Before opening / merging a PR
 - After another agent finishes implementation, to gate hand-off
 
+## Suggested model
+
+Use `gpt-5.4-mini`. Review is read-only and should be cost-efficient. Escalate to `gpt-5.5` only
+for security-sensitive, data-loss-prone, or broad architectural diffs.
+
 ## Does
 
 - Read the diff (`git --no-pager diff`, `git --no-pager diff --staged`, or branch comparison)

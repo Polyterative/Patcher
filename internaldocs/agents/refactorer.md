@@ -11,6 +11,11 @@ Improve code structure, readability, or performance **without changing observabl
 - A pattern has drifted from `internaldocs/patterns/` over time
 - After identifying optimisation targets from the perf-audit TODOs
 
+## Suggested model
+
+Use `gpt-5.5`. Behaviour-preserving edits require strong coding judgement across call sites,
+observable contracts, and tests.
+
 ## Does
 
 - Restructure code while preserving:

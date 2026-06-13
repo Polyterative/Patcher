@@ -12,23 +12,23 @@ specific behaviour.
 3. **Hard scope boundary.** Each persona has explicit "Does" / "Does NOT" sections.
    Out-of-scope work must be handed back, not silently absorbed.
 4. **Tight output contract.** Each persona declares the artifact it produces and where it goes.
-5. **No premium model lock-in for executors.** Operational personas run on default/Sonnet-class
-   models. The only premium-model persona is `advisor`, and it is consultative only.
+5. **Match model cost to task shape.** Coding-heavy executors mostly use `gpt-5.5`; visual design
+   uses Sonnet; deep planning/advice uses Opus; read-only review starts on cheaper OpenAI models.
 6. **Token-cheap.** Keep each file under ~120 lines. Cut prose, keep checklists.
 
 ## Personas
 
-| Persona | When to invoke | Output |
-| --- | --- | --- |
-| [`planner.md`](./planner.md) | Multi-step or cross-cutting work needing a plan before code | Plan in `internaldocs/workflow/CURRENT_FEATURE.md` |
-| [`advisor.md`](./advisor.md) | Hard ambiguous problem needing senior counsel / second opinion | Concise recommendation, no edits |
-| [`frontend-dev.md`](./frontend-dev.md) | Implement Angular components, services, RxJS pipelines | Code + co-located tests |
-| [`designer.md`](./designer.md) | UI/UX adjustments, visual polish, responsive layout | SCSS + template changes + screenshots |
-| [`reviewer.md`](./reviewer.md) | Pre-commit / pre-PR review of staged changes | Inline findings, no edits |
-| [`refactorer.md`](./refactorer.md) | Clean up code without changing behaviour | Behaviour-preserving diffs + green tests |
-| [`test-writer.md`](./test-writer.md) | Add unit/E2E coverage for existing code | New spec files, no production changes |
-| [`bug-hunter.md`](./bug-hunter.md) | Diagnose a reported defect to root cause | Root-cause writeup + minimal fix |
-| [`autonomous-engineer.md`](./autonomous-engineer.md) | Long-running, frontend-only loop driven by `agent/` and `internaldocs/workflow/` files | Iterative commits + doc updates over a multi-hour session. Heavier than the other personas by design (full mission prompt) — load it once instead of pasting. |
+| Persona | Model | Strategy | Output |
+| --- | --- | --- | --- |
+| [`planner.md`](./planner.md) | `claude-opus-4.7` | Use premium reasoning for cross-cutting plans where bad scope is expensive. | Plan in `internaldocs/workflow/CURRENT_FEATURE.md` |
+| [`advisor.md`](./advisor.md) | `claude-opus-4.7` | Reserve Opus for hard ambiguity, architecture tradeoffs, and second opinions. | Concise recommendation, no edits |
+| [`frontend-dev.md`](./frontend-dev.md) | `gpt-5.5` | Primary coding executor; use the model that has been strongest on implementation quality. | Code + co-located tests |
+| [`designer.md`](./designer.md) | `claude-sonnet-4.6` | Use Sonnet for abstract visual, spatial, structural, and organizational reasoning. | Visual/design handoff for `frontend-dev`, no code edits |
+| [`reviewer.md`](./reviewer.md) | `gpt-5.4-mini` | Read-only diff analysis should be cost-efficient; escalate to `gpt-5.5` only for risky changes. | Inline findings, no edits |
+| [`refactorer.md`](./refactorer.md) | `gpt-5.5` | Behaviour-preserving code changes require strong coding and call-site reasoning. | Behaviour-preserving diffs + green tests |
+| [`test-writer.md`](./test-writer.md) | `gpt-5.5` | Test code is still code; prioritize robust fixtures and regression coverage over lowest cost. | New spec files, no production changes |
+| [`bug-hunter.md`](./bug-hunter.md) | `gpt-5.4` | Diagnosis is read-heavy but can need deeper reasoning than review; hand fixes to `frontend-dev`. | Root-cause writeup + minimal fix |
+| [`autonomous-engineer.md`](./autonomous-engineer.md) | `gpt-5.5` | Long-running executor that repeatedly writes and validates code; optimize for implementation quality. | Iterative commits + doc updates over a multi-hour session. Heavier than the other personas by design (full mission prompt) — load it once instead of pasting. |
 
 ## Composition patterns
 
@@ -36,7 +36,7 @@ specific behaviour.
 - **Hard decision:** normal investigation → `advisor` → appropriate executor
 - **Bug fix:** `bug-hunter` → `frontend-dev` (apply minimal fix) → `test-writer` (regression test)
 - **Refactor sweep:** `refactorer` → `reviewer`
-- **UI polish:** `designer` → `reviewer`
+- **UI polish:** `designer` → `frontend-dev` → `reviewer`
 
 ## Persona file template
 

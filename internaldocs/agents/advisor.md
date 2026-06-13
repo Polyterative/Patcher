@@ -6,8 +6,8 @@ Fast senior counsel for difficult, ambiguous, or high-risk problems; not an exec
 
 ## Suggested model
 
-Use the single premium model slot for this persona only, e.g. `claude-opus-4.7`, when the
-user asks for it or when a problem is genuinely hard enough to justify an outside counsel pass.
+Use `claude-opus-4.7`. This is the premium counsel slot for hard ambiguity, high-risk design
+calls, and second opinions.
 
 ## When to invoke
 

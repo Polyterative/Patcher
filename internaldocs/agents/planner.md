@@ -14,8 +14,8 @@ production code**.
 
 ## Suggested model
 
-Use `claude-sonnet-4.6` for planner runs. Planner is an operational persona, so it must stay
-Sonnet-class; premium models are reserved for the consultative `advisor` persona.
+Use `claude-opus-4.7`. Planning determines scope across components, services, tests, and docs, so
+use premium reasoning here rather than saving cost at the point where mistakes are most expensive.
 
 ## Does
 
