@@ -1,42 +1,36 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
+  ElementRef,
   Inject,
   Input,
   OnDestroy,
   OnInit,
-  PLATFORM_ID
+  PLATFORM_ID,
+  ViewChild,
+  inject
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { RouterModule } from '@angular/router';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { PatchModule } from 'src/app/components/patch-parts/patch.module';
-import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import {
-  buildWideShellAccountLinks,
-  getWideShellQuickTargets
-} from 'src/app/features/backbone/toolbar/toolbar-link-data';
-import {
-  combineLatest,
+  fromEvent,
+  merge,
   Observable,
+  of,
   Subject,
   Subscription,
   timer
 } from 'rxjs';
 import {
-  distinctUntilChanged,
-  map,
-  shareReplay,
-  startWith,
+  auditTime,
   take,
   takeUntil
 } from 'rxjs/operators';
-import {
-  getRouteClickableLinkKey,
-  RouteClickableLink
-} from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.component';
 import { AppShellLayoutService } from 'src/app/shared-interproject/app-shell-layout.service';
-import { AppStateService } from 'src/app/shared-interproject/app-state.service';
+import { WideShellToolbarComponent } from 'src/app/shared-interproject/components/@visual/wide-shell-toolbar/wide-shell-toolbar.component';
 import { HomeHeroContent, HomeHeroVisual } from '../../home-content.models';
 import { buildHomeTextSegments } from '../../home-text-segments.util';
 
@@ -50,9 +44,9 @@ const HERO_PATCH_LOAD_DELAY_MS = 1000;
   templateUrl: './home-experience-hero.component.html',
   styleUrls: ['./home-experience-hero.component.scss'],
   standalone: true,
-  imports: [CommonModule, RouterModule, PatchModule]
+  imports: [CommonModule, PatchModule, WideShellToolbarComponent]
 })
-export class HomeExperienceHeroComponent implements OnInit, OnDestroy {
+export class HomeExperienceHeroComponent implements AfterViewInit, OnInit, OnDestroy {
   private _content: HomeHeroContent = {
     eyebrow: '',
     title: '',
@@ -89,50 +83,46 @@ export class HomeExperienceHeroComponent implements OnInit, OnDestroy {
   }
 
   public readonly wideShell$: Observable<boolean>;
-  public readonly wideShellTargets: RouteClickableLink[];
-  public readonly accountLinks$: Observable<RouteClickableLink[]>;
-  public readonly shellVm$: Observable<{
-    wideShell: boolean;
-    accountLinks: RouteClickableLink[];
-  }>;
-  public readonly siteTitle = 'patcher.xyz';
+  public showCompactWideShellToolbar = false;
   public subtitleLines: string[] = [];
+  @ViewChild('wideShellToolbarOrigin')
+  private wideShellToolbarOrigin?: ElementRef<HTMLElement>;
+  private readonly changeDetectorRef = inject(ChangeDetectorRef);
   private readonly destroy$ = new Subject<void>();
   private heroPatchLoadSub?: Subscription;
+  private isWideShellActive = false;
 
   constructor(
     private readonly appShellLayoutService: AppShellLayoutService,
-    private readonly appState: AppStateService,
-    private readonly userManagementService: UserManagementService,
     public readonly patchDetailDataService: PatchDetailDataService,
     @Inject(PLATFORM_ID) private readonly platformId: object
   ) {
     this.wideShell$ = this.appShellLayoutService.wideShell$;
-    this.wideShellTargets = getWideShellQuickTargets(this.appState.isDev);
-    this.accountLinks$ = combineLatest([
-      this.userManagementService.loggedUser$.pipe(startWith(undefined)),
-      this.userManagementService.loggedUserFullProfile$.pipe(startWith(undefined)),
-      this.userManagementService.isAdmin$.pipe(startWith(false))
-    ]).pipe(
-      map(([loggedUser, profile, isAdmin]) => buildWideShellAccountLinks(
-        Boolean(loggedUser),
-        profile?.username?.trim() || 'Account',
-        isAdmin
-      )),
-      distinctUntilChanged(),
-      shareReplay({bufferSize: 1, refCount: true})
-    );
-    this.shellVm$ = combineLatest([
-      this.wideShell$,
-      this.accountLinks$
-    ]).pipe(
-      map(([wideShell, accountLinks]) => ({
-        wideShell,
-        accountLinks
-      })),
-      shareReplay({bufferSize: 1, refCount: true})
-    );
     this.content = this._content;
+  }
+
+  ngAfterViewInit(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
+    this.wideShell$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe((wideShell) => {
+      this.isWideShellActive = wideShell;
+      this.syncCompactWideShellToolbar();
+    });
+
+    merge(
+      of(null),
+      fromEvent(window, 'scroll', {passive: true}),
+      fromEvent(window, 'resize')
+    ).pipe(
+      auditTime(16),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.syncCompactWideShellToolbar();
+    });
   }
 
   ngOnInit(): void {
@@ -161,7 +151,28 @@ export class HomeExperienceHeroComponent implements OnInit, OnDestroy {
     return buildHomeTextSegments(visual.caption ?? '', visual.captionKeywords ?? []);
   }
 
-  trackByNavLink(index: number, item: RouteClickableLink): string {
-    return getRouteClickableLinkKey(item);
+  private syncCompactWideShellToolbar(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
+    const nextCompactVisibility = this.shouldShowCompactWideShellToolbar();
+
+    if (this.showCompactWideShellToolbar === nextCompactVisibility) {
+      return;
+    }
+
+    this.showCompactWideShellToolbar = nextCompactVisibility;
+    this.changeDetectorRef.markForCheck();
+  }
+
+  private shouldShowCompactWideShellToolbar(): boolean {
+    if (!this.isWideShellActive || !this.wideShellToolbarOrigin?.nativeElement) {
+      return false;
+    }
+
+    const navRect = this.wideShellToolbarOrigin.nativeElement.getBoundingClientRect();
+    const revealThresholdPx = Math.min(Math.max(navRect.height * 0.1, 8), 20);
+    return navRect.bottom <= revealThresholdPx;
   }
 }

@@ -29,13 +29,13 @@ import {
 } from './toolbar-link-data';
 
 @Component({
-  selector:        'app-toolbar',
+  selector:        'app-mobile-shell-toolbar',
   templateUrl:     './toolbar.component.html',
   styleUrls:       ['./toolbar.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone:      false
 })
-export class ToolbarComponent extends SubManager {
+export class MobileShellToolbarComponent extends SubManager {
   readonly patreonUrl = PATREON_URL;
   private readonly homeLinks = getToolbarHomeLinks();
   private readonly mainLinks: RouteClickableLink[];

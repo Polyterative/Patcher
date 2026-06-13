@@ -8,7 +8,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterModule } from '@angular/router';
 import { RouteClickableLinkModule } from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.module';
 import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
-import { ToolbarComponent } from './toolbar.component';
+import { MobileShellToolbarComponent } from './toolbar.component';
 import { ToolbarService } from './toolbar.service';
 
 
@@ -25,13 +25,13 @@ import { ToolbarService } from './toolbar.service';
     MatDividerModule
   ],
   declarations: [
-    ToolbarComponent
+    MobileShellToolbarComponent
   ],
   exports:      [
-    ToolbarComponent
+    MobileShellToolbarComponent
   ],
   providers:    [
     ToolbarService
   ]
 })
-export class ToolbarModule {}
+export class MobileShellToolbarModule {}

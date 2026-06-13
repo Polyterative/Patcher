@@ -80,9 +80,7 @@ describe('HomeExperienceHeroComponent', () => {
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
-    expect(host.querySelector('.title-metro-nav')).not.toBeNull();
-    expect(host.querySelector('.title-metro-targets')).not.toBeNull();
-    expect(host.querySelector('.title-metro-target-group--account')).not.toBeNull();
+    expect(host.querySelector('.home-wide-shell-toolbar-origin app-wide-shell-toolbar')).not.toBeNull();
     expect(host.textContent).toContain('patcher.xyz');
     expect(host.textContent).toContain('Modules');
     expect(host.textContent).toContain('Racks');
@@ -106,8 +104,19 @@ describe('HomeExperienceHeroComponent', () => {
     expect(host.textContent).not.toContain('Admin');
   });
 
-  it('siteTitle is patcher.xyz', () => {
-    expect(fixture.componentInstance.siteTitle).toBe('patcher.xyz');
+  it('reveals the shared sticky wide-shell toolbar after the hero nav scrolls away', () => {
+    wideShell$.next(true);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const navOrigin = host.querySelector('.home-wide-shell-toolbar-origin') as HTMLElement;
+    spyOn(navOrigin, 'getBoundingClientRect').and.returnValue(createDomRect({top: -92, bottom: -12, height: 80}));
+
+    (fixture.componentInstance as any).syncCompactWideShellToolbar();
+    fixture.detectChanges();
+
+    expect(host.querySelector('.home-wide-shell-toolbar-sticky--visible')).not.toBeNull();
+    expect(host.querySelector('.home-wide-shell-toolbar-sticky app-wide-shell-toolbar')).not.toBeNull();
   });
 
   it('subtitleLines splits content subtitle on newlines', () => {
@@ -122,13 +131,23 @@ describe('HomeExperienceHeroComponent', () => {
     expect(host.textContent).toContain('Explore');
   });
 
-  it('wideShellTargets is a non-empty array', () => {
-    expect(fixture.componentInstance.wideShellTargets.length).toBeGreaterThan(0);
-  });
-
   it('renders the patch-graph shell in the hero visuals', () => {
     const host = fixture.nativeElement as HTMLElement;
     expect(host.querySelector('.patch-graph-shell')).not.toBeNull();
     expect(host.querySelector('.patch-graph-shell app-patch-graph')).not.toBeNull();
   });
+
+  function createDomRect(rect: Partial<DOMRect>): DOMRect {
+    return {
+      x: rect.left ?? 0,
+      y: rect.top ?? 0,
+      width: rect.width ?? 0,
+      height: rect.height ?? 0,
+      top: rect.top ?? 0,
+      right: rect.right ?? 0,
+      bottom: rect.bottom ?? 0,
+      left: rect.left ?? 0,
+      toJSON: () => ({})
+    } as DOMRect;
+  }
 });
