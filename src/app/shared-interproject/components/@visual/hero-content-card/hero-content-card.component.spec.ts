@@ -21,7 +21,6 @@ describe('HeroContentCardComponent', () => {
     fixture = TestBed.createComponent(HeroContentCardComponent);
     fixture.componentInstance.titleBig = 'Modules';
     fixture.componentInstance.description = 'Browse the latest additions to the catalog.';
-    fixture.componentInstance.showWideShellNav = true;
     fixture.detectChanges();
   });
 

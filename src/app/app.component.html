@@ -1,5 +1,6 @@
 @if ({
   embeddedShell: (embeddedShell$ | async) ?? false,
+  modernShell: (modernShell$ | async) ?? false,
   showSupportingContent: (showSupportingContent$ | async) ?? true,
   area: (shellArea$ | async) ?? 'home'
 }; as shell) {
@@ -15,15 +16,13 @@
        [class.app-shell--area-comments]="shell.area === 'comments'"
        [class.app-shell--area-info]="shell.area === 'info'">
     <a href="#main-content" class="skip-link">Skip to main content</a>
-    @if (!shell.embeddedShell) {
-      <div class="app-shell__toolbar">
-        <app-mobile-shell-toolbar></app-mobile-shell-toolbar>
-      </div>
-    }
-
     <div class="app-shell__content">
-      @if (shell.embeddedShell) {
-        <div class="app-shell__wide-toolbar">
+      @if (shell.modernShell) {
+        <div #wideToolbarSentinel
+             class="app-shell__wide-toolbar-sentinel"
+             aria-hidden="true"></div>
+        <div class="app-shell__wide-toolbar"
+             [class.app-shell__wide-toolbar--stuck]="wideShellToolbarStuck">
           <app-wide-shell-toolbar></app-wide-shell-toolbar>
         </div>
       }

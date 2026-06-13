@@ -189,7 +189,6 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
   
   protected destroyEvent$                      = new Subject<void>();
   @Input() ignoreSeo                           = false;
-  @Input() showWideShellNav                    = true;
   @Input() showManualButton                    = false;
   @Input() viewConfig: ModuleMinimalViewConfig = {
     ...defaultModuleMinimalViewConfig,

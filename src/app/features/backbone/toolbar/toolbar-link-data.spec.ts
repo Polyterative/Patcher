@@ -71,6 +71,8 @@ describe('toolbar-link-data', () => {
   it('buildToolbarSections includes Browse and Account sections', () => {
     const sections = buildToolbarSections(true, 'bob', false, false);
     const labels = sections.map(s => s.label);
+    expect(labels).not.toContain('Quick links');
+    expect(labels).not.toContain('Support');
     expect(labels).toContain('Browse');
     expect(labels).toContain('Your account');
   });

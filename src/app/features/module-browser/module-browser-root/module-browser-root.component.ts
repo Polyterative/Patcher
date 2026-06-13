@@ -71,7 +71,6 @@ const OWNED_MODULES_DEFAULT_THRESHOLD = 20;
 })
 export class ModuleBrowserRootComponent extends SubManager implements OnInit {
   @Input() showSubmitFab = true;
-  @Input() showWideShellNav = true;
   @Input() compactSidebarAtTablet = false;
   @Input() titleBig = 'Modules';
   @Input() titleSub = '';

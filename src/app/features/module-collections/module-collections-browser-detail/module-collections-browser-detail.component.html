@@ -10,7 +10,7 @@
                            [titleSub]="bag.collection?.name ?? 'Loading...'"
                            [description]="bag.editing ? 'Pick modules, set the order, and decide if others can see it.' : (bag.collection?.description ?? 'Curated module playlist.')"
                            icon="playlist_play"
-                           [showWideShellNav]="true">
+                           >
       @if (bag.collection) {
         @if (bag.editing && isCollectionOwner(bag.collection, bag.user)) {
           <app-module-collection-editor

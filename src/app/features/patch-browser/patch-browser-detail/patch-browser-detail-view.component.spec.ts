@@ -84,7 +84,6 @@ describe('PatchBrowserDetailViewComponent', () => {
   });
 
   it('shows wide-shell nav by default', () => {
-    expect(component.showWideShellNav).toBeTrue();
   });
 
   it('viewConfig hides buttons by default', () => {

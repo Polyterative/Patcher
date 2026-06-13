@@ -48,7 +48,6 @@ const JSONLD_SCRIPT_ID = 'patch-jsonld';
 export class PatchBrowserDetailViewComponent extends SubManager implements OnInit, OnDestroy {
 
   @Input() ignoreSeo = false;
-  @Input() showWideShellNav = true;
   @Input() readonly viewConfig: PatchMinimalViewConfig = {
     ...defaultPatchMinimalViewConfig,
     hideButtons: false

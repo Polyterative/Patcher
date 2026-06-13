@@ -1,7 +1,11 @@
 import {
+  ChangeDetectorRef,
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
+  OnDestroy,
   PLATFORM_ID,
+  ViewChild,
   inject
 } from '@angular/core';
 import {
@@ -26,7 +30,6 @@ import {
 import { AppShellLayoutService } from './shared-interproject/app-shell-layout.service';
 import { AppViewportService } from './shared-interproject/app-viewport.service';
 import { BackboneModule } from './features/backbone/backbone.module';
-import { MobileShellToolbarModule } from './features/backbone/toolbar/toolbar.module';
 import { ScreenWrapperComponent } from './shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { AppFaqComponent } from './components/shared-atoms/app-faq/app-faq.component';
 import { SelectionPanelOutletComponent } from './components/patch-parts/selection-panel-outlet/selection-panel-outlet.component';
@@ -63,7 +66,6 @@ type AppShellArea = 'home' | 'modules' | 'racks' | 'patches' | 'manufacturers' |
   ],
   imports: [
     BackboneModule,
-    MobileShellToolbarModule,
     RouterOutlet,
     ScreenWrapperComponent,
     AppFaqComponent,
@@ -73,12 +75,21 @@ type AppShellArea = 'home' | 'modules' | 'racks' | 'patches' | 'manufacturers' |
     WideShellToolbarComponent,
   ]
 })
-export class AppComponent {
+export class AppComponent implements OnDestroy {
+  readonly modernShell$;
   readonly embeddedShell$;
   readonly showSupportingContent$;
   readonly shellArea$;
   readonly animationsDisabled: boolean;
+  wideShellToolbarStuck = false;
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly changeDetectorRef = inject(ChangeDetectorRef);
+  private wideShellToolbarObserver?: IntersectionObserver;
+
+  @ViewChild('wideToolbarSentinel')
+  set wideToolbarSentinelRef(value: ElementRef<HTMLElement> | undefined) {
+    this.observeWideShellToolbar(value?.nativeElement);
+  }
 
   constructor(
     private router: Router,
@@ -100,11 +111,16 @@ export class AppComponent {
       map((url) => url ?? this.router.url ?? '/'),
       distinctUntilChanged()
     );
-    this.embeddedShell$ = combineLatest([
-      this.appShellLayoutService.wideShell$,
-      currentUrl$
-    ]).pipe(
-      map(([wideShell, currentUrl]) => wideShell && this.supportsEmbeddedShell(currentUrl)),
+    this.modernShell$ = currentUrl$.pipe(
+      map((currentUrl) => this.supportsEmbeddedShell(currentUrl)),
+      distinctUntilChanged(),
+      shareReplay({bufferSize: 1, refCount: true})
+    );
+    this.embeddedShell$ = combineLatest({
+      wideShell: this.appShellLayoutService.wideShell$,
+      modernShell: this.modernShell$
+    }).pipe(
+      map(({wideShell, modernShell}) => wideShell && modernShell),
       distinctUntilChanged(),
       shareReplay({bufferSize: 1, refCount: true})
     );
@@ -118,6 +134,34 @@ export class AppComponent {
       distinctUntilChanged(),
       shareReplay({bufferSize: 1, refCount: true})
     );
+  }
+
+  ngOnDestroy(): void {
+    this.wideShellToolbarObserver?.disconnect();
+  }
+
+  private observeWideShellToolbar(sentinel: HTMLElement | undefined): void {
+    this.wideShellToolbarObserver?.disconnect();
+    this.wideShellToolbarObserver = undefined;
+
+    if (!sentinel || !isPlatformBrowser(this.platformId) || typeof IntersectionObserver === 'undefined') {
+      this.updateWideShellToolbarStuck(false);
+      return;
+    }
+
+    this.wideShellToolbarObserver = new IntersectionObserver(([entry]) => {
+      this.updateWideShellToolbarStuck(!entry.isIntersecting);
+    }, {threshold: [0]});
+    this.wideShellToolbarObserver.observe(sentinel);
+  }
+
+  private updateWideShellToolbarStuck(stuck: boolean): void {
+    if (this.wideShellToolbarStuck === stuck) {
+      return;
+    }
+
+    this.wideShellToolbarStuck = stuck;
+    this.changeDetectorRef.markForCheck();
   }
 
   private supportsEmbeddedShell(url: string): boolean {

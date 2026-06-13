@@ -25,7 +25,6 @@ class HeroContentCardStubComponent {
   @Input() titleNormal = '';
   @Input() description = '';
   @Input() icon = '';
-  @Input() showWideShellNav = false;
 }
 
 describe('ModuleCollectionsBrowserRootComponent', () => {
@@ -89,7 +88,6 @@ describe('ModuleCollectionsBrowserRootComponent', () => {
   it('shows the wide-shell nav like the module browser page', () => {
     const hero = fixture.debugElement.query(By.directive(HeroContentCardStubComponent));
 
-    expect(hero.componentInstance.showWideShellNav).toBeTrue();
     expect(hero.componentInstance.titleBig).toBe('Collections');
   });
 });

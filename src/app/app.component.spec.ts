@@ -1,7 +1,4 @@
-import {
-  Component,
-  NO_ERRORS_SCHEMA
-} from '@angular/core';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
@@ -21,22 +18,15 @@ import { RackDetailDataService } from './components/rack-parts/rack-detail-data.
 import { AppShellLayoutService } from './shared-interproject/app-shell-layout.service';
 import { AppViewportService } from './shared-interproject/app-viewport.service';
 
-
-@Component({
-  selector: 'app-mobile-shell-toolbar',
-  template: '',
-  standalone: true
-})
-class MobileShellToolbarStubComponent {
-}
-
 describe('AppComponent', () => {
   let fixture: ComponentFixture<AppComponent>;
   let wideShell$: BehaviorSubject<boolean>;
   let routerEvents$: Subject<unknown>;
   let routerMock: { events: Subject<unknown>; url: string };
+  let originalIntersectionObserver: typeof IntersectionObserver | undefined;
 
   beforeEach(async () => {
+    originalIntersectionObserver = window.IntersectionObserver;
     wideShell$ = new BehaviorSubject(false);
     routerEvents$ = new Subject<unknown>();
     routerMock = {
@@ -81,7 +71,7 @@ describe('AppComponent', () => {
     })
     .overrideComponent(AppComponent, {
       set: {
-        imports: [MobileShellToolbarStubComponent, AsyncPipe],
+        imports: [AsyncPipe],
         schemas: [NO_ERRORS_SCHEMA],
         // Replace the heavy data-service providers with empty stubs — this
         // spec exercises shell-layout behaviour, not the floating selection
@@ -99,15 +89,19 @@ describe('AppComponent', () => {
     fixture = TestBed.createComponent(AppComponent);
   });
 
-  it('keeps the blue Material toolbar for mobile shells', () => {
+  afterEach(() => {
+    window.IntersectionObserver = originalIntersectionObserver as typeof IntersectionObserver;
+  });
+
+  it('renders the modern shell toolbar for supported mobile shell routes', () => {
     fixture.detectChanges();
 
     const shell = fixture.debugElement.query(By.css('.app-shell')).nativeElement as HTMLElement;
     expect(shell.classList.contains('app-shell--wide')).toBeFalse();
-    expect(fixture.debugElement.query(By.directive(MobileShellToolbarStubComponent))).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.app-shell__wide-toolbar app-wide-shell-toolbar')).not.toBeNull();
   });
 
-  it('applies the shared wide-shell class and removes the blue Material toolbar on non-mobile shells', () => {
+  it('applies the shared wide-shell class while keeping the same modern toolbar on non-mobile shells', () => {
     fixture.detectChanges();
 
     const shell = fixture.debugElement.query(By.css('.app-shell')).nativeElement as HTMLElement;
@@ -116,7 +110,7 @@ describe('AppComponent', () => {
     fixture.detectChanges();
 
     expect(shell.classList.contains('app-shell--wide')).toBeTrue();
-    expect(fixture.debugElement.query(By.directive(MobileShellToolbarStubComponent))).toBeNull();
+    expect(fixture.nativeElement.querySelector('.app-shell__wide-toolbar app-wide-shell-toolbar')).not.toBeNull();
   });
 
   it('renders the wide-shell toolbar at the app shell level on embedded routes', () => {
@@ -126,6 +120,35 @@ describe('AppComponent', () => {
     const host = fixture.nativeElement as HTMLElement;
     expect(host.querySelector('.app-shell__wide-toolbar app-wide-shell-toolbar')).not.toBeNull();
     expect(host.querySelector('.app-shell__wide-toolbar')?.closest('lib-hero-content-card')).toBeNull();
+  });
+
+  it('marks the wide-shell toolbar as stuck when its sentinel leaves the viewport', () => {
+    let observerCallback: IntersectionObserverCallback | undefined;
+    class IntersectionObserverStub {
+      constructor(callback: IntersectionObserverCallback) {
+        observerCallback = callback;
+      }
+
+      observe(): void {}
+      disconnect(): void {}
+      takeRecords(): IntersectionObserverEntry[] { return []; }
+      unobserve(): void {}
+      readonly root = null;
+      readonly rootMargin = '';
+      readonly thresholds = [0];
+    }
+    window.IntersectionObserver = IntersectionObserverStub as unknown as typeof IntersectionObserver;
+
+    wideShell$.next(true);
+    fixture.detectChanges();
+
+    observerCallback?.([{
+      isIntersecting: false
+    } as IntersectionObserverEntry], {} as IntersectionObserver);
+    fixture.detectChanges();
+
+    const toolbar = fixture.nativeElement.querySelector('.app-shell__wide-toolbar') as HTMLElement;
+    expect(toolbar.classList.contains('app-shell__wide-toolbar--stuck')).toBeTrue();
   });
 
   it('applies route area classes to the app shell', () => {
@@ -154,14 +177,14 @@ describe('AppComponent', () => {
     expect(shell.classList.contains('app-shell--area-user')).toBeFalse();
   });
 
-  it('keeps the legacy toolbar when the current route does not provide an embedded shell', () => {
+  it('omits the modern toolbar when the current route does not provide the modern shell', () => {
     routerMock.url = '/not-embedded';
     wideShell$.next(true);
     fixture.detectChanges();
 
     const shell = fixture.debugElement.query(By.css('.app-shell')).nativeElement as HTMLElement;
     expect(shell.classList.contains('app-shell--wide')).toBeFalse();
-    expect(fixture.debugElement.query(By.directive(MobileShellToolbarStubComponent))).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.app-shell__wide-toolbar app-wide-shell-toolbar')).toBeNull();
   });
 
   it('uses the embedded shell on rack detail routes when wide-shell layout is active', () => {
@@ -171,7 +194,7 @@ describe('AppComponent', () => {
 
     const shell = fixture.debugElement.query(By.css('.app-shell')).nativeElement as HTMLElement;
     expect(shell.classList.contains('app-shell--wide')).toBeTrue();
-    expect(fixture.debugElement.query(By.directive(MobileShellToolbarStubComponent))).toBeNull();
+    expect(fixture.nativeElement.querySelector('.app-shell__wide-toolbar app-wide-shell-toolbar')).not.toBeNull();
   });
 
   it('uses the embedded shell on auth routes when wide-shell layout is active', () => {
@@ -245,7 +268,7 @@ describe('AppComponent — selection panel provider wiring', () => {
     })
     .overrideComponent(AppComponent, {
       set: {
-        imports: [MobileShellToolbarStubComponent, AsyncPipe],
+        imports: [AsyncPipe],
         schemas: [NO_ERRORS_SCHEMA],
         providers: [
           {provide: PatchDetailDataService, useClass: PatchDataStub},
