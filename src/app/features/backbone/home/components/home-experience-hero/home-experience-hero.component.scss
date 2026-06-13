@@ -3,30 +3,36 @@
 
 :host {
   display: block;
-  --home-wide-shell-toolbar-inset: clamp(1.25rem, 2.4vw, 2.5rem);
 }
 
 .hero-shell {
   display: grid;
+  gap: 1.2rem;
+}
+
+.hero-body {
+  display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
   gap: 1.2rem;
+  inline-size: 100%;
+  max-inline-size: calc(86rem - (var(--home-content-inline-inset) * 2));
+  margin-inline: auto;
+  box-sizing: border-box;
 }
 
 .hero-copy {
   display: grid;
   gap: 0.95rem;
   align-content: center;
-  padding: 0.45rem;
+  padding-block: 0.45rem;
   contain: layout style;
 }
 
 .home-wide-shell-toolbar-origin {
   display: block;
   grid-column: 1 / -1;
-  inline-size: 100vw;
-  max-inline-size: 100vw;
-  margin-inline-start: calc(50% - 50vw);
-  padding-inline: var(--home-wide-shell-toolbar-inset);
+  inline-size: 100%;
+  max-inline-size: 100%;
   box-sizing: border-box;
 }
 
@@ -65,7 +71,7 @@
   display: block;
   inline-size: 100%;
   box-sizing: border-box;
-  padding-inline: var(--home-wide-shell-toolbar-inset);
+  padding-inline: var(--home-content-inline-inset);
 }
 
 
@@ -244,7 +250,7 @@ h1 {
 }
 
 @media (max-width: 68rem) {
-  .hero-shell {
+  .hero-body {
     grid-template-columns: 1fr;
   }
 
@@ -255,16 +261,9 @@ h1 {
   }
 }
 
-@media (max-width: 80rem) {
-  .home-wide-shell-toolbar-origin,
-  .home-wide-shell-toolbar-sticky__wrapper {
-    padding-inline: 1rem;
-  }
-}
-
 @media (max-width: 40rem) {
   .hero-copy {
-    padding: 0.2rem;
+    padding: 0;
   }
 
   .hero-actions {

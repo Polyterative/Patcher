@@ -9,11 +9,13 @@
   --home-accent-warm: #f57b2a;
   --home-accent-mint: #17916f;
   --home-space-050: 0.5rem;
+  --home-space-075: 0.75rem;
   --home-space-100: 1rem;
   --home-space-150: 1.5rem;
   --home-space-200: 2rem;
   --home-space-300: 3rem;
   --home-space-500: 5rem;
+  --home-content-inline-inset: var(--home-space-100);
 }
 
 .home-page {
@@ -55,7 +57,7 @@
   display: grid;
   gap: var(--home-space-300);
   inline-size: 100%;
-  max-inline-size: 86rem;
+  max-inline-size: 100%;
   margin-inline: auto;
   padding: var(--home-space-200) 0 var(--home-space-500);
   box-sizing: border-box;
@@ -65,8 +67,13 @@ section {
   inline-size: 100%;
   max-inline-size: 100%;
   box-sizing: border-box;
-  padding: 0 var(--home-space-150);
+  padding: 0 var(--home-content-inline-inset);
   min-width: 0;
+}
+
+.home-page__inner > section:not(:first-child) {
+  max-inline-size: 86rem;
+  margin-inline: auto;
 }
 
 .hero-action-stack {
@@ -197,13 +204,13 @@ section {
 }
 
 @media (max-width: 40rem) {
+  :host {
+    --home-content-inline-inset: var(--home-space-075);
+  }
+
   .home-page__inner {
     padding: var(--home-space-150) 0 var(--home-space-300);
     gap: var(--home-space-150);
-  }
-
-  section {
-    padding: 0 var(--home-space-100);
   }
 
   .hero-action-stack {
