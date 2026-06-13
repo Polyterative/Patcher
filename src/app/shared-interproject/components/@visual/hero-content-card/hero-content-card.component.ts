@@ -10,6 +10,10 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { HeroContentCardHeadIconComponent } from './hero-contenst-card-head-icon/hero-content-card-head-icon.component';
+import {
+  DEFAULT_AUTO_COMPACT_TITLE_SUB_LENGTH,
+  shouldCompactHeroTitleSub
+} from './hero-title-layout.utils';
 
 
 /**
@@ -56,9 +60,20 @@ export class HeroContentCardComponent {
   @Input() showHelpButton = false;
   @Input() icon: string;
   @Input() compactTitleSub = false;
+  @Input() autoCompactTitleSub = false;
+  @Input() autoCompactTitleSubLength = DEFAULT_AUTO_COMPACT_TITLE_SUB_LENGTH;
 
   @HostBinding('class.hero-content-card--detail-heading')
   get detailHeading(): boolean {
     return !!this.titleBig && !!this.titleSub;
+  }
+
+  get compactTitleSubActive(): boolean {
+    return this.compactTitleSub || (
+      this.autoCompactTitleSub
+      && shouldCompactHeroTitleSub(this.titleSub, {
+        compactAtLength: this.autoCompactTitleSubLength
+      })
+    );
   }
 }

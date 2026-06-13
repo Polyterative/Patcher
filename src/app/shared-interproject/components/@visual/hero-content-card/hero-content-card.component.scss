@@ -231,6 +231,7 @@ h3 {
   flex-direction: column;
   gap: 0.65rem;
   min-width: 0;
+  container-type: inline-size;
 }
 
 .title-heading-row {
@@ -395,6 +396,39 @@ h3 {
   }
 
   .title-text--with-sub .title-sub {
+    color: rgba(0, 0, 0, 0.72);
+  }
+}
+
+@container (max-width: 36rem) {
+  .title-text--with-sub-auto {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.18rem;
+  }
+
+  .title-text--with-sub-auto .title-separator {
+    display: none;
+  }
+
+  .title-text--with-sub-auto .title-main,
+  .title-text--with-sub-auto .title-sub {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+  }
+
+  .title-text--with-sub-auto .title-main {
+    font-size: 0.45em;
+    text-transform: uppercase;
+    color: rgba(0, 0, 0, 0.42);
+  }
+
+  .title-text--with-sub-auto .title-sub {
+    display: block;
+    font-size: 0.54em;
+    line-height: 1.12;
     color: rgba(0, 0, 0, 0.72);
   }
 }
