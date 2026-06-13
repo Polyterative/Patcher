@@ -84,7 +84,7 @@ export class AppComponent implements OnDestroy {
   wideShellToolbarStuck = false;
   private readonly platformId = inject(PLATFORM_ID);
   private readonly changeDetectorRef = inject(ChangeDetectorRef);
-  private wideShellToolbarObserver?: IntersectionObserver;
+  private removeWideShellToolbarScrollListeners?: () => void;
 
   @ViewChild('wideToolbarSentinel')
   set wideToolbarSentinelRef(value: ElementRef<HTMLElement> | undefined) {
@@ -137,22 +137,40 @@ export class AppComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.wideShellToolbarObserver?.disconnect();
+    this.removeWideShellToolbarScrollListeners?.();
   }
 
   private observeWideShellToolbar(sentinel: HTMLElement | undefined): void {
-    this.wideShellToolbarObserver?.disconnect();
-    this.wideShellToolbarObserver = undefined;
+    this.removeWideShellToolbarScrollListeners?.();
+    this.removeWideShellToolbarScrollListeners = undefined;
 
-    if (!sentinel || !isPlatformBrowser(this.platformId) || typeof IntersectionObserver === 'undefined') {
+    if (!sentinel || !isPlatformBrowser(this.platformId)) {
       this.updateWideShellToolbarStuck(false);
       return;
     }
 
-    this.wideShellToolbarObserver = new IntersectionObserver(([entry]) => {
-      this.updateWideShellToolbarStuck(!entry.isIntersecting);
-    }, {threshold: [0]});
-    this.wideShellToolbarObserver.observe(sentinel);
+    const syncStuckState = () => this.syncWideShellToolbarStuck();
+    window.addEventListener('scroll', syncStuckState, {passive: true});
+    window.addEventListener('resize', syncStuckState, {passive: true});
+    window.visualViewport?.addEventListener('resize', syncStuckState, {passive: true});
+    window.visualViewport?.addEventListener('scroll', syncStuckState, {passive: true});
+    this.removeWideShellToolbarScrollListeners = () => {
+      window.removeEventListener('scroll', syncStuckState);
+      window.removeEventListener('resize', syncStuckState);
+      window.visualViewport?.removeEventListener('resize', syncStuckState);
+      window.visualViewport?.removeEventListener('scroll', syncStuckState);
+    };
+
+    this.syncWideShellToolbarStuck();
+  }
+
+  private syncWideShellToolbarStuck(): void {
+    const scrollTop = Math.max(
+      window.scrollY,
+      document.documentElement.scrollTop,
+      document.body?.scrollTop ?? 0
+    );
+    this.updateWideShellToolbarStuck(scrollTop > 0);
   }
 
   private updateWideShellToolbarStuck(stuck: boolean): void {

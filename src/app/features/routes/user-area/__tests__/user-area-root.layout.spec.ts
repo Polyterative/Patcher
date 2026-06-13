@@ -53,10 +53,21 @@ describe('UserAreaRootComponent - Layout Shell', () => {
     build();
 
     const host = fixture.nativeElement as HTMLElement;
+    const sidebar = host.querySelector('.sidebar') as HTMLElement | null;
     expect(host.querySelector('.profile-layout')).not.toBeNull();
     expect(host.querySelector('.main-content')).not.toBeNull();
-    expect(host.querySelector('.sidebar')).not.toBeNull();
+    expect(sidebar).not.toBeNull();
     expect(host.querySelectorAll('.block').length).toBe(5);
+  });
+
+  it('offsets the sticky sidebar below the app toolbar', () => {
+    build();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const sidebar = host.querySelector('.sidebar') as HTMLElement;
+    const stickyTop = Number.parseFloat(getComputedStyle(sidebar).top);
+
+    expect(stickyTop).toBeGreaterThan(16);
   });
 
   it('renders search inside the sidebar instead of as a floating shell', () => {
