@@ -12,36 +12,38 @@
     </div>
   }
 
-  <div class="hero-copy">
-    <p class="eyebrow">{{ content.eyebrow }}</p>
-    <h1 id="home-hero-title">{{ content.title }}</h1>
-    <ul class="subtitle">
-      @for (line of subtitleLines; track line) {
-        <li>
-          @for (segment of getSubtitleSegments(line); track $index) {
-            @if (segment.highlighted) {
-              <strong>{{ segment.text }}</strong>
-            } @else {
-              {{ segment.text }}
+  <div class="hero-body">
+    <div class="hero-copy">
+      <p class="eyebrow">{{ content.eyebrow }}</p>
+      <h1 id="home-hero-title">{{ content.title }}</h1>
+      <ul class="subtitle">
+        @for (line of subtitleLines; track line) {
+          <li>
+            @for (segment of getSubtitleSegments(line); track $index) {
+              @if (segment.highlighted) {
+                <strong>{{ segment.text }}</strong>
+              } @else {
+                {{ segment.text }}
+              }
             }
-          }
-        </li>
-      }
-    </ul>
-    
-    <div class="hero-actions">
-      <ng-content select="[hero-actions]"></ng-content>
-      @if (content.sourceLinkHref && content.sourceLinkLabel) {
-        <a class="source-link" [href]="content.sourceLinkHref" target="_blank" rel="noopener noreferrer">
-          {{ content.sourceLinkLabel }}
-        </a>
-      }
+          </li>
+        }
+      </ul>
+
+      <div class="hero-actions">
+        <ng-content select="[hero-actions]"></ng-content>
+        @if (content.sourceLinkHref && content.sourceLinkLabel) {
+          <a class="source-link" [href]="content.sourceLinkHref" target="_blank" rel="noopener noreferrer">
+            {{ content.sourceLinkLabel }}
+          </a>
+        }
+      </div>
     </div>
-  </div>
-  
-  <div class="hero-visuals">
-    <div class="patch-graph-shell">
-      <app-patch-graph [progressiveRender]="true"></app-patch-graph>
+
+    <div class="hero-visuals">
+      <div class="patch-graph-shell">
+        <app-patch-graph [progressiveRender]="true"></app-patch-graph>
+      </div>
     </div>
   </div>
 </section>
