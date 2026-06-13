@@ -100,12 +100,31 @@ CHECKS_API="https://api.github.com/repos/${OWNER}/${REPO}/commits/${SHA}/check-r
 MAX_ATTEMPTS="${VERCEL_IGNORE_MAX_ATTEMPTS:-72}"   # ~12 min @ 10s, matches the Actions timeout-minutes
 SLEEP_SECONDS="${VERCEL_IGNORE_SLEEP_SECONDS:-10}"
 AUTH_HEADER=()
+AUTH_SOURCE="none"
 
 if [ -n "${GITHUB_TOKEN:-}" ]; then
   AUTH_HEADER=(-H "Authorization: Bearer ${GITHUB_TOKEN}")
+  AUTH_SOURCE="GITHUB_TOKEN"
 elif [ -n "${GH_TOKEN:-}" ]; then
   AUTH_HEADER=(-H "Authorization: Bearer ${GH_TOKEN}")
+  AUTH_SOURCE="GH_TOKEN"
 fi
+
+describe_github_error() {
+  node -e "
+const input = require('fs').readFileSync('/dev/stdin', 'utf8');
+try {
+  const d = JSON.parse(input);
+  const message = d.message || 'unknown';
+  const status = d.status || 'unknown';
+  console.log('status=' + status + ' message=' + JSON.stringify(message));
+} catch {
+  console.log('status=unknown message=\"non-json response\"');
+}
+" 2>/dev/null || echo 'status=unknown message="unparseable response"'
+}
+
+echo "[vercel-ignore] GitHub API auth source: ${AUTH_SOURCE}"
 
 for attempt in $(seq 1 ${MAX_ATTEMPTS}); do
   response="$(curl -sSL -H 'Accept: application/vnd.github+json' "${AUTH_HEADER[@]}" "${API}" || true)"
@@ -114,9 +133,17 @@ for attempt in $(seq 1 ${MAX_ATTEMPTS}); do
   echo "[vercel-ignore] attempt ${attempt}/${MAX_ATTEMPTS} sha=${SHA} workflow_found=${found} status=${status} conclusion=${conclusion}"
 
   if [ "${found}" = "api_error" ]; then
+    workflow_error="$(printf '%s' "${response}" | describe_github_error)"
+    echo "[vercel-ignore] workflow API error: ${workflow_error}"
+
     checks_response="$(curl -sSL -H 'Accept: application/vnd.github+json' "${AUTH_HEADER[@]}" "${CHECKS_API}" || true)"
     checks_state="$(printf '%s' "${checks_response}" | parse_required_check_runs)"
     echo "[vercel-ignore] workflow API unavailable; required_check_runs=${checks_state}"
+
+    if [ "${checks_state}" = "api_error" ]; then
+      checks_error="$(printf '%s' "${checks_response}" | describe_github_error)"
+      echo "[vercel-ignore] check-runs API error: ${checks_error}"
+    fi
 
     if [ "${checks_state}" = "success" ]; then
       echo "[vercel-ignore] Required Angular Tests check-runs passed — proceeding with deploy."
