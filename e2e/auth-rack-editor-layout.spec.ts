@@ -102,7 +102,7 @@ test.describe('Authenticated Rack Editor layout regressions', () => {
     await openRackAtViewport(page, rackUrl, MOBILE_VIEWPORT);
     await lockRack(page);
 
-    const viewport = page.locator('app-rack-editor .scroll').first();
+    const viewport = page.locator('app-rack-editor .rackEditorViewport').first();
     const actions = page.locator('app-rack-editor .rackEditorResponsiveActions');
     const downloadButton = actions.getByRole('button', {name: /download jpeg/i});
     const updateButton = actions.getByRole('button', {name: /update preview/i});
@@ -170,12 +170,12 @@ test.describe('Authenticated Rack Editor layout regressions', () => {
     expect(overlaps(panelBox, lockFabBox)).toBe(false);
   });
 
-  test('tablet keeps the compact action strip visible while hiding the docked image actions', async ({page}) => {
+  test('tablet landscape uses docked image actions instead of the compact action strip', async ({page}) => {
     await openRackAtViewport(page, rackUrl, TABLET_LANDSCAPE_VIEWPORT);
     await lockRack(page);
 
-    await expect(page.locator('app-rack-editor .rackEditorResponsiveActions')).toBeVisible();
-    await expect(page.locator('app-rack-editor .rackEditorFloatingOptions__panel--actions')).toBeHidden();
+    await expect(page.locator('app-rack-editor .rackEditorResponsiveActions')).toBeHidden();
+    await expect(page.locator('app-rack-editor .rackEditorFloatingOptions__panel--actions')).toBeVisible();
   });
 
   test('desktop keeps floating action controls and the edit FAB separated while hiding the compact action strip', async ({page}) => {
@@ -268,7 +268,11 @@ async function addRackModuleToRack(
         throw new Error('Rack detail view not found');
       }
       const component = ng.getComponent(rackDetail);
-      component.dataService.addModuleToRack$.next({id: moduleId, name: moduleName});
+      const service = component.dataService;
+      const rows = service.rowedRackedModules$.value ?? [];
+      const column = rows[0]?.length ?? 0;
+      service.backend.add.rackModule(moduleId, service.singleRackData$.value.id, 0, column)
+        .subscribe(() => service.updateSingleRackData$.next(service.singleRackData$.value.id));
     }, {
       moduleId: module.id,
       moduleName: module.name
@@ -363,7 +367,7 @@ async function openRackAtViewport(page: Page, rackUrl: string, viewport: { width
 
 async function waitForRackEditor(page: Page): Promise<void> {
   await expect(page.locator('app-rack-editor')).toBeVisible({timeout: 15_000});
-  await expect(page.locator('app-rack-editor .scroll').first()).toBeVisible({timeout: 15_000});
+  await expect(page.locator('app-rack-editor .rackEditorViewport').first()).toBeVisible({timeout: 15_000});
   await expect(page.locator('#screen').first()).toBeVisible({timeout: 15_000});
   await page.waitForFunction(() => document.querySelectorAll('app-rack-visual-model .module').length > 0, {timeout: 15_000});
   await page.waitForTimeout(500);

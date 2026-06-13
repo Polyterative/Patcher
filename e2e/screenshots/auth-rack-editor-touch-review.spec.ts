@@ -55,7 +55,7 @@ function ensureOutputDir(): void {
 
 async function waitForRackEditor(page: Page): Promise<void> {
   await expect(page.locator('app-rack-editor')).toBeVisible({timeout: 20_000});
-  await expect(page.locator('app-rack-editor .scroll').first()).toBeVisible({timeout: 20_000});
+  await expect(page.locator('app-rack-editor .rackEditorViewport').first()).toBeVisible({timeout: 20_000});
   await page.waitForTimeout(800);
 }
 

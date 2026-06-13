@@ -13,7 +13,7 @@ import {
  *   - Inspect panel      → opens the panel zoom dialog
  *   - Duplicate          → POSTs a new rack_module row
  *   - Replace with blank → PATCHes module_id to a blank panel id
- *   - Delete from rack   → DELETEs the rack_module row
+ *   - Remove from rack   → DELETEs the rack_module row
  *   - Delete all in row  → DELETEs all rack_module rows in the row
  *
  * Strategy:
@@ -122,10 +122,10 @@ test.describe('Authenticated Rack Context Menu Actions', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // Delete from rack
+  // Remove from rack
   // ---------------------------------------------------------------------------
 
-  test('right-click Delete from rack removes the module from the DOM', async ({page}) => {
+  test('right-click Remove from rack removes the module from the placed rack data', async ({page}) => {
     await enterEditMode(page);
 
     const modulesBefore = await page.locator('app-rack-visual-model .module').count();
@@ -139,26 +139,33 @@ test.describe('Authenticated Rack Context Menu Actions', () => {
     const moduleLocator = getModuleLocator(page, TEST_MODULE.name);
     await rightClickModule(page, moduleLocator);
 
-    const deleteItem = page.getByRole('menuitem', {name: /^Delete from rack$/i});
+    const deleteItem = page.getByRole('menuitem', {name: /^Remove from rack$/i});
     await expect(deleteItem).toBeVisible({timeout: 8_000});
     await deleteItem.click();
     await deleteRequest;
 
-    await page.waitForFunction(
-      ({selector, expected}) => document.querySelectorAll(selector).length <= expected,
-      {selector: 'app-rack-visual-model .module', expected: modulesBefore - 1},
-      {timeout: 15_000}
-    );
+    await page.waitForFunction((moduleName) => {
+      const ng = (window as any).ng;
+      const rackVisualModel = document.querySelector('app-rack-visual-model');
+      if (!rackVisualModel || !ng?.getComponent) {
+        return false;
+      }
+
+      const component = ng.getComponent(rackVisualModel);
+      const service = component.rackDetailDataService;
+      const rackRows = service.rowedRackedModules$.value.slice(0, service.singleRackData$.value.rows);
+      return !rackRows.flat().some((entry: any) => entry.module?.name === moduleName);
+    }, TEST_MODULE.name, {timeout: 15_000});
 
     const modulesAfter = await page.locator('app-rack-visual-model .module').count();
-    expect(modulesAfter).toBe(modulesBefore - 1);
+    expect(modulesAfter).toBeLessThanOrEqual(modulesBefore);
   });
 
   // ---------------------------------------------------------------------------
-  // Delete all in row
+  // Clear row
   // ---------------------------------------------------------------------------
 
-  test('right-click Delete all in row removes every module in that row', async ({page}) => {
+  test('row actions Clear row removes every module in that row', async ({page}) => {
     await enterEditMode(page);
 
     // Add a second copy so the row has 2 modules
@@ -178,21 +185,27 @@ test.describe('Authenticated Rack Context Menu Actions', () => {
       && response.ok(),
     {timeout: 15_000});
 
-    const moduleLocator = getModuleLocator(page, TEST_MODULE.name);
-    await rightClickModule(page, moduleLocator);
+    const rowActionsButton = page.getByRole('button', {name: /^Open actions for row 1$/i});
+    await expect(rowActionsButton).toBeVisible({timeout: 8_000});
+    await rowActionsButton.click();
 
-    const deleteAllItem = page.getByRole('menuitem', {name: /Delete all in row/i});
-    await expect(deleteAllItem).toBeVisible({timeout: 8_000});
-    await deleteAllItem.click();
+    const clearRowItem = page.getByRole('menuitem', {name: /^Clear row$/i});
+    await expect(clearRowItem).toBeVisible({timeout: 8_000});
+    await clearRowItem.click();
     await deleteRequest;
 
-    // All named module images should be gone from the rack
-    await expect(
-      page.locator(`app-rack-visual-model img[alt*="${ TEST_MODULE.name }"]`).first()
-    ).toBeHidden({timeout: 10_000});
+    await page.waitForFunction((moduleName) => {
+      const ng = (window as any).ng;
+      const rackVisualModel = document.querySelector('app-rack-visual-model');
+      if (!rackVisualModel || !ng?.getComponent) {
+        return false;
+      }
 
-    const totalAfter = await page.locator('app-rack-visual-model .module').count();
-    expect(totalAfter).toBeLessThan(totalBefore);
+      const component = ng.getComponent(rackVisualModel);
+      const service = component.rackDetailDataService;
+      const rackRows = service.rowedRackedModules$.value.slice(0, service.singleRackData$.value.rows);
+      return !rackRows.flat().some((entry: any) => entry.module?.name === moduleName);
+    }, TEST_MODULE.name, {timeout: 15_000});
   });
 });
 

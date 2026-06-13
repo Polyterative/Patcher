@@ -302,7 +302,11 @@ test.describe('Authenticated Rack Panel Switching', () => {
         throw new Error('Rack detail view not found');
       }
       const component = ng.getComponent(rackDetail);
-      component.dataService.addModuleToRack$.next({id: moduleId, name: moduleName});
+      const service = component.dataService;
+      const rows = service.rowedRackedModules$.value ?? [];
+      const column = rows[0]?.length ?? 0;
+      service.backend.add.rackModule(moduleId, service.singleRackData$.value.id, 0, column)
+        .subscribe(() => service.updateSingleRackData$.next(service.singleRackData$.value.id));
     }, {
       moduleId: module.id,
       moduleName: module.name
