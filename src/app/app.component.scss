@@ -1,6 +1,9 @@
 .app-shell {
   display: block;
   min-height: var(--app-viewport-stable-height, 100svh);
+  --app-shell-area-tint: rgba(148, 148, 148, 0.35);
+  --app-shell-area-field: linear-gradient(135deg, var(--app-shell-area-tint) 0%, rgba(255, 255, 255, 0) 72%);
+  --app-shell-area-ground: linear-gradient(180deg, rgba(220, 239, 246, 0.98) 0%, rgba(238, 246, 250, 0.98) 100%);
 }
 
 .skip-link {
@@ -38,6 +41,7 @@
 }
 
 .app-shell__wide-toolbar {
+  background: transparent;
   padding-block: 1.5rem 0.65rem;
   padding-inline: 1rem;
 }
@@ -96,13 +100,62 @@
 .app-shell--wide {
   --app-floating-inset-inline: 1.5rem;
   --app-floating-inset-block: 1.25rem;
-  background: linear-gradient(180deg, rgba(214, 236, 244, 0.88) 0%, rgba(238, 246, 250, 0.98) 14rem);
+  background:
+    var(--app-shell-area-field),
+    linear-gradient(180deg, rgba(214, 236, 244, 0.88) 0%, rgba(238, 246, 250, 0.98) 14rem);
 }
 
 .app-shell--wide .app-shell__content {
   min-height: var(--app-viewport-stable-height, 100svh);
-  background: linear-gradient(180deg, rgba(220, 239, 246, 0.98) 0%, rgba(238, 246, 250, 0.98) 100%);
+  background-image:
+    var(--app-shell-area-field),
+    var(--app-shell-area-ground);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.app-shell--wide .main {
+  background: transparent;
+}
+
+.app-shell--area-home {
+  --app-shell-area-field:
+    radial-gradient(circle at 10% 3%, rgba(23, 102, 178, 0.26), transparent 34%),
+    radial-gradient(circle at 82% 8%, rgba(245, 123, 42, 0.2), transparent 36%),
+    radial-gradient(circle at 78% 82%, rgba(23, 145, 111, 0.2), transparent 38%),
+    linear-gradient(145deg, #e9f4ff 0%, #e9fff4 52%, #fff0e3 100%);
+  --app-shell-area-ground: linear-gradient(transparent, transparent);
+}
+
+.app-shell--area-modules {
+  --app-shell-area-tint: rgba(86, 187, 220, 0.35);
+}
+
+.app-shell--area-racks {
+  --app-shell-area-tint: rgba(104, 191, 167, 0.35);
+}
+
+.app-shell--area-patches {
+  --app-shell-area-tint: rgba(175, 166, 223, 0.35);
+}
+
+.app-shell--area-manufacturers {
+  --app-shell-area-tint: rgba(220, 160, 86, 0.35);
+}
+
+.app-shell--area-user {
+  --app-shell-area-tint: rgba(229, 155, 155, 0.35);
+}
+
+.app-shell--area-manuals {
+  --app-shell-area-tint: rgba(114, 175, 166, 0.35);
+}
+
+.app-shell--area-comments {
+  --app-shell-area-tint: rgba(104, 126, 191, 0.35);
+}
+
+.app-shell--area-info {
+  --app-shell-area-tint: rgba(61, 115, 188, 0.35);
 }
 
 @media (max-width: 72.5rem) {

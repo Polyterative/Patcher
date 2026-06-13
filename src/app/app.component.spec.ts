@@ -10,7 +10,10 @@ import {
   BehaviorSubject,
   Subject
 } from 'rxjs';
-import { Router } from '@angular/router';
+import {
+  NavigationEnd,
+  Router
+} from '@angular/router';
 import { AppComponent } from './app.component';
 import { ModuleDetailDataService } from './components/module-parts/module-detail-data.service';
 import { PatchDetailDataService } from './components/patch-parts/patch-detail-data.service';
@@ -123,6 +126,32 @@ describe('AppComponent', () => {
     const host = fixture.nativeElement as HTMLElement;
     expect(host.querySelector('.app-shell__wide-toolbar app-wide-shell-toolbar')).not.toBeNull();
     expect(host.querySelector('.app-shell__wide-toolbar')?.closest('lib-hero-content-card')).toBeNull();
+  });
+
+  it('applies route area classes to the app shell', () => {
+    routerMock.url = '/modules/browser';
+    wideShell$.next(true);
+    fixture.detectChanges();
+
+    const shell = fixture.debugElement.query(By.css('.app-shell')).nativeElement as HTMLElement;
+    expect(shell.classList.contains('app-shell--area-modules')).toBeTrue();
+
+    routerMock.url = '/racks';
+    routerEvents$.next(new NavigationEnd(1, '/modules/browser', '/racks'));
+    fixture.detectChanges();
+
+    expect(shell.classList.contains('app-shell--area-racks')).toBeTrue();
+    expect(shell.classList.contains('app-shell--area-modules')).toBeFalse();
+  });
+
+  it('uses section colors for nested user-area routes', () => {
+    routerMock.url = '/user/area/patches';
+    wideShell$.next(true);
+    fixture.detectChanges();
+
+    const shell = fixture.debugElement.query(By.css('.app-shell')).nativeElement as HTMLElement;
+    expect(shell.classList.contains('app-shell--area-patches')).toBeTrue();
+    expect(shell.classList.contains('app-shell--area-user')).toBeFalse();
   });
 
   it('keeps the legacy toolbar when the current route does not provide an embedded shell', () => {

@@ -1,8 +1,19 @@
 @if ({
   embeddedShell: (embeddedShell$ | async) ?? false,
-  showSupportingContent: (showSupportingContent$ | async) ?? true
+  showSupportingContent: (showSupportingContent$ | async) ?? true,
+  area: (shellArea$ | async) ?? 'home'
 }; as shell) {
-  <div class="app-shell" [class.app-shell--wide]="shell.embeddedShell">
+  <div class="app-shell"
+       [class.app-shell--wide]="shell.embeddedShell"
+       [class.app-shell--area-home]="shell.area === 'home'"
+       [class.app-shell--area-modules]="shell.area === 'modules'"
+       [class.app-shell--area-racks]="shell.area === 'racks'"
+       [class.app-shell--area-patches]="shell.area === 'patches'"
+       [class.app-shell--area-manufacturers]="shell.area === 'manufacturers'"
+       [class.app-shell--area-user]="shell.area === 'user'"
+       [class.app-shell--area-manuals]="shell.area === 'manuals'"
+       [class.app-shell--area-comments]="shell.area === 'comments'"
+       [class.app-shell--area-info]="shell.area === 'info'">
     <a href="#main-content" class="skip-link">Skip to main content</a>
     @if (!shell.embeddedShell) {
       <div class="app-shell__toolbar">
