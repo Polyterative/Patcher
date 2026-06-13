@@ -61,26 +61,30 @@
       <div></div>
     }
 
-    <section>
-      @defer (on viewport) {
-        <app-home-insights-section
-          [showInsightsPageEntry]="showInsightsPageEntry"
-          [communityLinks]="communityLinks"
-          [insightsTitle]="insightsTitle"
-          [insightsDescription]="insightsDescription"
-        ></app-home-insights-section>
-      } @placeholder {
-        <div></div>
-      }
-    </section>
+    @if (showHomepageInsights) {
+      <section>
+        @defer (on viewport) {
+          <app-home-insights-section
+            [showInsightsPageEntry]="showInsightsPageEntry"
+            [communityLinks]="communityLinks"
+            [insightsTitle]="insightsTitle"
+            [insightsDescription]="insightsDescription"
+          ></app-home-insights-section>
+        } @placeholder {
+          <div></div>
+        }
+      </section>
+    }
 
-    <section>
-      @defer (on viewport) {
-        <app-home-discovery-section></app-home-discovery-section>
-      } @placeholder {
-        <div></div>
-      }
-    </section>
+    @if (showCommunityTrends) {
+      <section>
+        @defer (on viewport) {
+          <app-home-discovery-section></app-home-discovery-section>
+        } @placeholder {
+          <div></div>
+        }
+      </section>
+    }
 
     <section>
       @defer (on viewport) {
