@@ -41,9 +41,34 @@
 }
 
 .app-shell__wide-toolbar {
+  position: sticky;
+  position: -webkit-sticky;
+  top: 0;
+  z-index: 10;
   background: transparent;
   padding-block: 1.5rem 0.65rem;
   padding-inline: 1rem;
+  transition:
+    background-color 140ms ease,
+    -webkit-backdrop-filter 140ms ease,
+    backdrop-filter 140ms ease,
+    box-shadow 140ms ease,
+    padding 140ms ease;
+}
+
+.app-shell__wide-toolbar--stuck {
+  background: rgba(247, 252, 255, 0.58);
+  -webkit-backdrop-filter: blur(0.65rem) saturate(135%);
+  backdrop-filter: blur(0.65rem) saturate(135%);
+  box-shadow:
+    0 0.12rem 0.45rem rgba(37, 59, 86, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.32);
+  padding-block: 0.85rem 0.45rem;
+}
+
+.app-shell__wide-toolbar-sentinel {
+  block-size: 1px;
+  pointer-events: none;
 }
 
 .app-shell__supporting {
@@ -166,5 +191,15 @@
 
   .app-shell__supporting {
     padding-inline: 0.75rem;
+  }
+}
+
+@media (max-width: 56rem) {
+  .app-shell__wide-toolbar {
+    padding-block: 0.7rem 0.4rem;
+  }
+
+  .app-shell__wide-toolbar--stuck {
+    padding-block: 0.5rem;
   }
 }

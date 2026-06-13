@@ -14,25 +14,14 @@
   inline-size: 100%;
   max-inline-size: 100%;
   padding-bottom: 0.7rem;
-  contain: layout style;
-}
-
-.title-metro-nav--floating {
   position: relative;
-  z-index: 1;
-  inline-size: 100%;
-  padding: 0.65rem 0 0.55rem;
-}
-
-.title-metro-nav--floating .title-metro-targets {
-  padding-bottom: 0;
-  align-items: start;
+  contain: layout style;
 }
 
 .title-metro-topbar {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
   inline-size: 100%;
   gap: 1rem;
 }
@@ -68,6 +57,36 @@
   text-decoration-color: rgba($brand-primary, 0.36);
   text-decoration-thickness: 0.12rem;
   text-underline-offset: 0.22rem;
+}
+
+.title-metro-menu-trigger,
+.title-metro-mobile-panel {
+  display: none;
+}
+
+.title-metro-menu-trigger {
+  align-items: center;
+  justify-content: center;
+  inline-size: 2rem;
+  block-size: 2rem;
+  padding: 0;
+  border: 1px solid rgba(34, 72, 118, 0.24);
+  border-radius: 0.35rem;
+  background: rgba(255, 255, 255, 0.36);
+  color: rgba(28, 51, 78, 0.9);
+  line-height: 0;
+}
+
+.title-metro-menu-trigger:focus-visible {
+  outline: 0.125rem solid rgba($brand-primary, 0.28);
+  outline-offset: 0.18rem;
+}
+
+.title-metro-menu-trigger mat-icon {
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  font-size: 1.25rem;
+  line-height: 1;
 }
 
 .title-metro-targets {
@@ -127,13 +146,52 @@
   color: rgba(28, 51, 78, 0.86);
 }
 
-@media (max-width: 31.25rem) {
-  .title-metro-nav {
-    display: none;
-  }
+.title-metro-mobile-section-label {
+  margin: 0;
+  color: rgba(30, 52, 78, 0.54);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.title-metro-mobile-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.title-metro-mobile-target {
+  display: flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+  padding: 0.62rem 0.5rem;
+  border-bottom: 1px solid rgba(34, 72, 118, 0.07);
+  border-left: 2px solid transparent;
+  color: rgba(28, 51, 78, 0.86);
+  font-size: 0.88rem;
+  line-height: 1.1;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.title-metro-mobile-target--active {
+  border-left-color: rgba($brand-primary, 0.9);
+  color: rgba(17, 31, 48, 0.98);
+  font-weight: 500;
+}
+
+.title-metro-mobile-target--disabled {
+  opacity: 0.45;
+  pointer-events: none;
 }
 
 @media (max-width: 56rem) {
+  .title-metro-nav {
+    gap: 0.7rem;
+  }
+
   .title-metro-targets {
     grid-template-columns: minmax(0, 1fr);
     align-items: stretch;
@@ -141,5 +199,92 @@
 
   .title-metro-target-group--account {
     justify-content: flex-start;
+  }
+
+  .title-metro-target-group {
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .title-metro-target-group::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@media (max-width: 39rem) {
+  .title-metro-nav {
+    gap: 0.45rem;
+    padding-bottom: 0;
+  }
+
+  .title-metro-topbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.4rem;
+  }
+
+  .title-metro-brand {
+    font-size: 0.9rem;
+  }
+
+  .title-metro-menu-trigger {
+    display: inline-flex;
+  }
+
+  .title-metro-targets {
+    display: none;
+  }
+
+  .title-metro-mobile-panel {
+    position: absolute;
+    top: calc(100% + 0.55rem);
+    left: -0.75rem;
+    right: -0.75rem;
+    z-index: 1;
+    display: none;
+    max-block-size: min(72svh, 28rem);
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0.75rem;
+    border-top: 1px solid rgba(34, 72, 118, 0.1);
+    background: #fbfdff;
+    box-shadow: 0 0.3rem 0.8rem rgba(37, 59, 86, 0.1);
+  }
+
+  .title-metro-mobile-panel--open {
+    display: grid;
+    row-gap: 0.8rem;
+  }
+
+  .title-metro-mobile-panel--open .title-metro-mobile-section {
+    visibility: visible;
+  }
+
+  .title-metro-mobile-section {
+    min-height: 0;
+    visibility: hidden;
+  }
+
+  .title-metro-mobile-section {
+    display: grid;
+    gap: 0.25rem;
+    padding-block-start: 0.35rem;
+  }
+
+  .title-metro-mobile-section:first-child {
+    padding-block-start: 0;
+  }
+}
+
+@media (max-width: 31.25rem) {
+  .title-metro-brand {
+    font-size: 0.82rem;
+  }
+
+  .title-metro-menu-trigger {
+    inline-size: 1.875rem;
+    block-size: 1.875rem;
   }
 }

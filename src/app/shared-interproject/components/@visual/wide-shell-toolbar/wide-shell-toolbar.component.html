@@ -1,12 +1,23 @@
 @if (shellVm$ | async; as shellVm) {
-  <div class="title-metro-nav"
-       [class.title-metro-nav--floating]="floating">
-    @if (showBrand && !floating) {
+  <div class="title-metro-nav">
+    @if (showBrand) {
       <div class="title-metro-topbar">
         <a class="title-metro-brand"
            routerLink="/home"
            routerLinkActive="title-metro-brand--active"
            aria-label="Go to home">{{ siteTitle }}</a>
+        <button
+          #mobileMenuTrigger
+          type="button"
+          class="title-metro-menu-trigger"
+          [attr.aria-expanded]="mobileMenuOpen"
+          aria-controls="title-metro-mobile-panel"
+          [attr.aria-label]="mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'"
+          [matTooltip]="mobileMenuOpen ? 'Close navigation' : 'Open navigation'"
+          [matTooltipDisabled]="mobileMenuOpen"
+          (click)="toggleMobileMenu()">
+          <mat-icon aria-hidden="true">{{ mobileMenuOpen ? 'close' : 'menu' }}</mat-icon>
+        </button>
       </div>
     }
     <nav class="title-metro-targets" aria-label="Section targets">
@@ -35,5 +46,45 @@
         }
       </div>
     </nav>
+    <div
+      id="title-metro-mobile-panel"
+      class="title-metro-mobile-panel"
+      [class.title-metro-mobile-panel--open]="mobileMenuOpen"
+      [attr.inert]="mobileMenuOpen ? null : ''"
+      [attr.aria-hidden]="!mobileMenuOpen">
+      @for (section of shellVm.mobileSections; track section.label) {
+        <section class="title-metro-mobile-section">
+          <h2 class="title-metro-mobile-section-label">{{ section.label }}</h2>
+          <div class="title-metro-mobile-links">
+            @for (item of section.links; track trackByNavLink($index, item)) {
+              @if (item.href) {
+                <a
+                  class="title-metro-mobile-target"
+                  [class.title-metro-mobile-target--disabled]="item.disabled"
+                  [attr.href]="item.disabled ? null : item.href"
+                  [attr.target]="item.hrefNewTab ? '_blank' : null"
+                  [attr.rel]="item.hrefNewTab ? 'noopener noreferrer' : null"
+                  [attr.aria-disabled]="item.disabled"
+                  [attr.aria-label]="item.label"
+                  (click)="closeMobileMenu()">
+                  <span>{{ item.label }}</span>
+                </a>
+              } @else {
+                <a
+                  class="title-metro-mobile-target"
+                  [class.title-metro-mobile-target--active]="isMobileTargetActive(item, shellVm.currentUrl)"
+                  [class.title-metro-mobile-target--disabled]="item.disabled"
+                  [routerLink]="item.disabled ? null : item.route"
+                  [attr.aria-disabled]="item.disabled"
+                  [attr.aria-label]="item.label"
+                  (click)="closeMobileMenu()">
+                  <span>{{ item.label }}</span>
+                </a>
+              }
+            }
+          </div>
+        </section>
+      }
+    </div>
   </div>
 }

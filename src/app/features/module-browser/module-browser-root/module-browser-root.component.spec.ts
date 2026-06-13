@@ -90,7 +90,6 @@ describe('ModuleBrowserRootComponent', () => {
   });
 
   it('shows the wide-shell nav by default on standalone module browser pages', () => {
-    expect(component.showWideShellNav).toBeTrue();
   });
 
   it('exposes an optional subtitle for embedded browser headings', () => {

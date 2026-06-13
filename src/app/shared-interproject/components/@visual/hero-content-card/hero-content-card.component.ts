@@ -55,7 +55,6 @@ export class HeroContentCardComponent {
   @Input() descriptionAlign: 'alignTextStart' | 'alignTextEnd' = 'alignTextEnd';
   @Input() showHelpButton = false;
   @Input() icon: string;
-  @Input() showWideShellNav = false;
   @Input() compactTitleSub = false;
 
   @HostBinding('class.hero-content-card--detail-heading')

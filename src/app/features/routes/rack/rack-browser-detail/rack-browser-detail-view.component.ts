@@ -57,7 +57,6 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
     tagsShowCounts: false
   };
   @Input() ignoreSeo = false;
-  @Input() showWideShellNav = true;
 
   constructor(
     public dataService: RackDetailDataService,

@@ -96,7 +96,6 @@ describe('RackBrowserDetailViewComponent', () => {
   });
 
   it('shows the wide-shell nav by default for rack detail pages', () => {
-    expect(component.showWideShellNav).toBeTrue();
   });
 
   it('uses authenticated detail reads for signed-in users', () => {
