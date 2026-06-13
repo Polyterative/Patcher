@@ -9,8 +9,9 @@
 #   1. If the diff only touches docs / .github / *.md / *.txt → skip (matches
 #      the historical ignoreCommand behaviour).
 #   2. Otherwise poll the Angular Tests GitHub Actions workflow run for this
-#      exact commit. Proceed only when that workflow completed successfully.
-#      Failed, missing, unavailable, or timed-out workflow state skips deploy.
+#      exact commit. If that endpoint is temporarily unavailable, fall back to
+#      the required Angular Tests check-runs. Proceed only when CI completed
+#      successfully. Failed, missing, or timed-out CI state skips deploy.
 
 set -uo pipefail
 
@@ -53,7 +54,49 @@ console.log('1 ' + (run.status || 'unknown') + ' ' + (run.conclusion || 'none'))
 " 2>/dev/null || echo "api_error none none"
 }
 
+parse_required_check_runs() {
+  # Prints one field: success, failed, pending, or api_error.
+  node -e "
+const d = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
+if (!Array.isArray(d.check_runs)) {
+  console.log('api_error');
+  process.exit(0);
+}
+const required = new Set([
+  'Lint',
+  'Stylelint',
+  'Unit tests',
+  'Function tests',
+  'Production build + smoke',
+]);
+const runs = d.check_runs || [];
+const byName = new Map();
+for (const run of runs) {
+  if (required.has(run.name)) {
+    byName.set(run.name, run);
+  }
+}
+if (byName.size < required.size) {
+  console.log('pending');
+  process.exit(0);
+}
+const bad = ['failure','cancelled','timed_out','action_required','stale'];
+for (const run of byName.values()) {
+  if (run.status !== 'completed') {
+    console.log('pending');
+    process.exit(0);
+  }
+  if (bad.includes(run.conclusion)) {
+    console.log('failed');
+    process.exit(0);
+  }
+}
+console.log('success');
+" 2>/dev/null || echo "api_error"
+}
+
 API="https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/angular-tests.yml/runs?head_sha=${SHA}&event=push&per_page=10"
+CHECKS_API="https://api.github.com/repos/${OWNER}/${REPO}/commits/${SHA}/check-runs?per_page=100"
 MAX_ATTEMPTS="${VERCEL_IGNORE_MAX_ATTEMPTS:-72}"   # ~12 min @ 10s, matches the Actions timeout-minutes
 SLEEP_SECONDS="${VERCEL_IGNORE_SLEEP_SECONDS:-10}"
 AUTH_HEADER=()
@@ -71,8 +114,22 @@ for attempt in $(seq 1 ${MAX_ATTEMPTS}); do
   echo "[vercel-ignore] attempt ${attempt}/${MAX_ATTEMPTS} sha=${SHA} workflow_found=${found} status=${status} conclusion=${conclusion}"
 
   if [ "${found}" = "api_error" ]; then
-    echo "[vercel-ignore] GitHub workflow status is unavailable — skipping deploy."
-    exit 0
+    checks_response="$(curl -sSL -H 'Accept: application/vnd.github+json' "${AUTH_HEADER[@]}" "${CHECKS_API}" || true)"
+    checks_state="$(printf '%s' "${checks_response}" | parse_required_check_runs)"
+    echo "[vercel-ignore] workflow API unavailable; required_check_runs=${checks_state}"
+
+    if [ "${checks_state}" = "success" ]; then
+      echo "[vercel-ignore] Required Angular Tests check-runs passed — proceeding with deploy."
+      exit 1
+    fi
+
+    if [ "${checks_state}" = "failed" ]; then
+      echo "[vercel-ignore] At least one required Angular Tests check-run failed — skipping deploy."
+      exit 0
+    fi
+
+    sleep ${SLEEP_SECONDS}
+    continue
   fi
 
   if [ "${found}" = "1" ] && [ "${status}" = "completed" ] && [ "${conclusion}" = "success" ]; then
