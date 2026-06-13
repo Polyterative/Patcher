@@ -6,9 +6,12 @@
 #   exit 1 → PROCEED with deployment
 #
 # Strategy:
-#   1. If the diff only touches docs / .github / *.md / *.txt → skip (matches
+#   1. Develop preview and production deploys are orchestrated by GitHub
+#      Actions after the checks pass, so automatic Vercel Git builds for those
+#      branches are skipped.
+#   2. If the diff only touches docs / .github / *.md / *.txt → skip (matches
 #      the historical ignoreCommand behaviour).
-#   2. Otherwise poll the GitHub Actions check-runs for this commit and only
+#   3. Otherwise poll the GitHub Actions check-runs for this commit and only
 #      skip when a visible check has a failing conclusion. If checks are
 #      unavailable or never appear, proceed so Vercel can run its own build.
 
@@ -17,13 +20,19 @@ set -uo pipefail
 OWNER="${VERCEL_GIT_REPO_OWNER:-Polyterative}"
 REPO="${VERCEL_GIT_REPO_SLUG:-Patcher}"
 SHA="${VERCEL_GIT_COMMIT_SHA:-$(git rev-parse HEAD 2>/dev/null || true)}"
+REF="${VERCEL_GIT_COMMIT_REF:-$(git branch --show-current 2>/dev/null || true)}"
 
 if [ -z "${SHA}" ]; then
   echo "[vercel-ignore] No commit SHA available — proceeding to avoid a stalled pipeline."
   exit 1
 fi
 
-# 1) Docs-only short-circuit. Replicates the previous ignoreCommand.
+if [ "${REF}" = "develop" ] || [ "${REF}" = "production" ]; then
+  echo "[vercel-ignore] ${REF} deploys from GitHub Actions after checks pass — skipping automatic Vercel Git build."
+  exit 0
+fi
+
+# Docs-only short-circuit. Replicates the previous ignoreCommand.
 if git diff HEAD^ HEAD --name-only 2>/dev/null \
     | grep -qvE '^(internaldocs/|[^/]+\.md$|[^/]+\.txt$|\.github/)'; then
   :
