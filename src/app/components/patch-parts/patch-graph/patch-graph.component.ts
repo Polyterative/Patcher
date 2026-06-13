@@ -6,7 +6,6 @@ import {
   OnInit,
   ViewChild
 } from '@angular/core';
-import { animate, style, transition, trigger } from '@angular/animations';
 import {
   BehaviorSubject,
   delay,
@@ -57,14 +56,6 @@ import {
   templateUrl: './patch-graph.component.html',
   styleUrls: ['./patch-graph.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  animations: [
-    trigger('enter', [
-      transition(':enter', [
-        style({opacity: 0}),
-        animate('500ms 100ms ease', style({opacity: 1}))
-      ])
-    ])
-  ],
   providers: [GraphViewService],
   standalone: false
 })

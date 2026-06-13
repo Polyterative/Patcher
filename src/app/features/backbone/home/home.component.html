@@ -1,6 +1,6 @@
 <div class="home-page">
   <div class="home-page__inner">
-    <section class="section-enter">
+    <section>
         <app-home-experience-hero [content]="heroContent">
           <div hero-actions class="hero-action-stack">
           <app-brand-primary-button routerLink="/modules/browser" icon="travel_explore">Browse modules
@@ -13,7 +13,7 @@
     </section>
 
     @defer (on viewport) {
-      <section class="proof-list section-enter" aria-label="product walkthrough">
+      <section class="proof-list" aria-label="product walkthrough">
         @for (section of proofSections; track section.title; let index = $index) {
           <app-home-proof-showcase
             [kicker]="section.kicker"
@@ -61,7 +61,7 @@
       <div></div>
     }
 
-    <section class="section-enter">
+    <section>
       @defer (on viewport) {
         <app-home-insights-section
           [showInsightsPageEntry]="showInsightsPageEntry"
@@ -74,7 +74,7 @@
       }
     </section>
 
-    <section class="section-enter">
+    <section>
       @defer (on viewport) {
         <app-home-discovery-section></app-home-discovery-section>
       } @placeholder {
@@ -82,7 +82,7 @@
       }
     </section>
 
-    <section class="section-enter">
+    <section>
       @defer (on viewport) {
         <app-home-open-principles
           sectionTitle="Why it feels easy to use"
@@ -94,7 +94,7 @@
       }
     </section>
 
-    <section class="section-enter">
+    <section>
       @defer (on viewport) {
         <app-home-workflow-rail
           sectionTitle="How to actually use it"
@@ -106,7 +106,7 @@
       }
     </section>
 
-    <section class="section-enter">
+    <section>
       @defer (on viewport) {
         <app-home-invitation-cta
           title="Start building your library"

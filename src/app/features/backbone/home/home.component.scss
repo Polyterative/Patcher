@@ -156,48 +156,43 @@ section {
   }
 }
 
-.section-enter {
-  opacity: 0;
-  transform: translateY(0.75rem);
-  animation: homeEnter 560ms ease forwards;
+section {
+  animation: homeSectionSettle 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
-.section-enter:nth-child(2) {
-  animation-delay: 80ms;
+.home-page__inner > section:nth-of-type(2) {
+  animation-delay: 60ms;
 }
 
-.section-enter:nth-child(3) {
-  animation-delay: 150ms;
+.home-page__inner > section:nth-of-type(3) {
+  animation-delay: 120ms;
 }
 
-.section-enter:nth-child(4) {
-  animation-delay: 220ms;
+.home-page__inner > section:nth-of-type(4) {
+  animation-delay: 180ms;
 }
 
-.section-enter:nth-child(5) {
+.home-page__inner > section:nth-of-type(5) {
+  animation-delay: 240ms;
+}
+
+.home-page__inner > section:nth-of-type(6) {
   animation-delay: 300ms;
 }
 
-.section-enter:nth-child(6) {
-  animation-delay: 360ms;
-}
-
-@keyframes homeEnter {
+@keyframes homeSectionSettle {
   from {
-    opacity: 0;
-    transform: translateY(0.75rem);
+    transform: translateY(0.45rem);
   }
   to {
-    opacity: 1;
     transform: translateY(0);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .section-enter {
-    opacity: 1;
-    transform: none;
+  section {
     animation: none;
+    transform: none;
   }
 }
 
