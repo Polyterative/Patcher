@@ -26,7 +26,7 @@
              [class.patch-details-content--has-connections]="!isEditing && bagA.length > 0">
           @if (bagA.length > 0) {
             <div class="patch-details-graph">
-              <lib-clean-card>
+              <lib-clean-card class="patch-details-graph-card">
                 <app-patch-graph [progressiveRender]="!isEditing"
                                    [animateGraphBuild]="isEditing"
                 ></app-patch-graph>

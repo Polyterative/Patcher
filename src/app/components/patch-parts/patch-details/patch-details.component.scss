@@ -31,6 +31,11 @@
   flex: 0 1 auto;
 }
 
+:host ::ng-deep .patch-details-graph-card > .card {
+  padding: 0;
+  overflow: hidden;
+}
+
 .patch-details-connections {
   min-width: 0;
   flex: 0 1 auto;
