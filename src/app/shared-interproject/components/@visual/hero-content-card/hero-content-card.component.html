@@ -1,16 +1,3 @@
-@if ({
-  wideShell: (wideShell$ | async) ?? false
-}; as shellVm) {
-  @if (showWideShellNav && shellVm.wideShell) {
-    <div class="title-metro-sticky-shell"
-         [class.title-metro-sticky-shell--visible]="showCompactWideShellNav"
-         [attr.aria-hidden]="!showCompactWideShellNav">
-      <div class="title-metro-sticky-wrapper">
-        <app-wide-shell-toolbar [floating]="true" [showBrand]="false"></app-wide-shell-toolbar>
-      </div>
-    </div>
-  }
-
   <div class="container col">
     <div class="row gap1"
          [class.sides-pad]="sidesPadding"
@@ -19,12 +6,14 @@
         <div class="col gap1 title bgImage std-rounding">
           @if (titleBig) {
             <h2 style="margin-bottom: 0"
+                [@title]
             >
               {{ titleBig }}
             </h2>
           }
           @if (titleNormal) {
             <h3
+              [@title]
               [class.no-word-break]="!description"
             >
               {{ titleNormal }}
@@ -33,20 +22,15 @@
         </div>
       } @else {
         @if (titleBig) {
+          <div class="title-shell">
             <h1
               class="row title bgImage vertPadding gap1"
               [class.title--with-sub]="titleSub">
-              <div class="title-shell"
-              >
-                @if (showWideShellNav && shellVm.wideShell) {
-                  <div #wideShellNavOrigin class="title-metro-nav-origin">
-                    <app-wide-shell-toolbar></app-wide-shell-toolbar>
-                  </div>
-                }
-                <div class="row gap1 title-heading-row">
+              <div class="row gap1 title-heading-row"
+                   [@title]>
                 <div class="title-heading-copy"
-                     [class.title-heading-copy--with-inline-description]="description && !showHelpButton && showWideShellNav && shellVm.wideShell"
-                     [class.title-heading-copy--stacked-description]="titleSub && description && !showHelpButton && showWideShellNav && shellVm.wideShell">
+                     [class.title-heading-copy--with-inline-description]="description && !showHelpButton"
+                     [class.title-heading-copy--stacked-description]="titleSub && description && !showHelpButton">
                   <div class="title-text"
                        [class.title-text--with-sub]="titleSub"
                        [class.title-text--with-sub-compact]="compactTitleSub && titleSub">
@@ -58,7 +42,7 @@
                             [attr.title]="titleSub">{{ titleSub }}</span>
                     }
                   </div>
-                  @if (description && !showHelpButton && showWideShellNav && shellVm.wideShell) {
+                  @if (description && !showHelpButton) {
                     <div class="title-inline-description">{{ description }}</div>
                   }
                 </div>
@@ -69,12 +53,13 @@
                 }
                 <ng-container *ngTemplateOutlet="helpButton"></ng-container>
               </div>
-            </div>
           </h1>
+          </div>
         }
         @if (titleNormal) {
           <h3
-            class="row title gap1">
+            class="row title gap1"
+            [@title]>
             @if (icon) {
               <app-hero-content-card-head-icon [icon]="icon"
               >
@@ -87,10 +72,11 @@
           </h3>
         }
       }
-      @if (description && !showHelpButton && !(titleBig && showWideShellNav && shellVm.wideShell)) {
+      @if (description && !showHelpButton && !titleBig) {
         <mat-card-subtitle
           class="description auto"
           [ngClass]="descriptionAlign"
+          [@description]
         >
           {{ description }}
         </mat-card-subtitle>
@@ -113,7 +99,6 @@
       }
     </div>
   </div>
-}
 
 
 <ng-template #helpButton>

@@ -11,6 +11,11 @@
     }
 
     <div class="app-shell__content">
+      @if (shell.embeddedShell) {
+        <div class="app-shell__wide-toolbar">
+          <app-wide-shell-toolbar></app-wide-shell-toolbar>
+        </div>
+      }
       <div class="app-shell__surface app-shell__surface--banner">
         <lib-screen-wrapper sizePreset="wide-shell" class="app-shell__surface-shell">
           <app-event-banner></app-event-banner>

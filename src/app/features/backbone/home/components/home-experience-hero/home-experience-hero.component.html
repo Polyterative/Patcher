@@ -1,17 +1,4 @@
 <section class="hero-shell" aria-labelledby="home-hero-title">
-  @if (wideShell$ | async) {
-    <div class="home-wide-shell-toolbar-sticky"
-         [class.home-wide-shell-toolbar-sticky--visible]="showCompactWideShellToolbar"
-         [attr.aria-hidden]="!showCompactWideShellToolbar">
-      <div class="home-wide-shell-toolbar-sticky__wrapper">
-        <app-wide-shell-toolbar [floating]="true" [showBrand]="false"></app-wide-shell-toolbar>
-      </div>
-    </div>
-    <div #wideShellToolbarOrigin class="home-wide-shell-toolbar-origin">
-      <app-wide-shell-toolbar></app-wide-shell-toolbar>
-    </div>
-  }
-
   <div class="hero-body">
     <div class="hero-copy">
       <p class="eyebrow">{{ content.eyebrow }}</p>

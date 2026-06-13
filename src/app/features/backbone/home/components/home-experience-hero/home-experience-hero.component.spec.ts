@@ -1,47 +1,19 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { BehaviorSubject, ReplaySubject } from 'rxjs';
+import { ReplaySubject } from 'rxjs';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { PatchModule } from 'src/app/components/patch-parts/patch.module';
-import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
-import { AppShellLayoutService } from 'src/app/shared-interproject/app-shell-layout.service';
-import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import { HomeExperienceHeroComponent } from './home-experience-hero.component';
 
 
 describe('HomeExperienceHeroComponent', () => {
   let fixture: ComponentFixture<HomeExperienceHeroComponent>;
-  let wideShell$: BehaviorSubject<boolean>;
-  let isAdmin$: BehaviorSubject<boolean>;
 
   beforeEach(async () => {
-    wideShell$ = new BehaviorSubject(false);
-    isAdmin$ = new BehaviorSubject(false);
-
     await TestBed.configureTestingModule({
       imports: [HomeExperienceHeroComponent, RouterTestingModule],
       providers: [
-        {
-          provide: AppShellLayoutService,
-          useValue: {
-            wideShell$
-          }
-        },
-        {
-          provide: AppStateService,
-          useValue: {
-            isDev: false
-          }
-        },
-        {
-          provide: UserManagementService,
-          useValue: {
-            loggedUser$: new BehaviorSubject(undefined),
-            loggedUserFullProfile$: new BehaviorSubject(undefined),
-            isAdmin$
-          }
-        },
         {
           provide: PatchDetailDataService,
           useValue: {
@@ -70,53 +42,10 @@ describe('HomeExperienceHeroComponent', () => {
     fixture.detectChanges();
   });
 
-  it('keeps the integrated metro nav hidden outside the wide shell', () => {
+  it('does not render shell toolbar chrome inside the home hero', () => {
     const host = fixture.nativeElement as HTMLElement;
     expect(host.querySelector('.title-metro-nav')).toBeNull();
-  });
-
-  it('renders the canonical integrated metro nav inside the home hero for wide shells', () => {
-    wideShell$.next(true);
-    fixture.detectChanges();
-
-    const host = fixture.nativeElement as HTMLElement;
-    expect(host.querySelector('.home-wide-shell-toolbar-origin app-wide-shell-toolbar')).not.toBeNull();
-    expect(host.textContent).toContain('patcher.xyz');
-    expect(host.textContent).toContain('Modules');
-    expect(host.textContent).toContain('Racks');
-    expect(host.textContent).toContain('Log in');
-  });
-
-  it('renders the admin target in the wide-shell account group for admin users', () => {
-    isAdmin$.next(true);
-    wideShell$.next(true);
-    fixture.detectChanges();
-
-    const host = fixture.nativeElement as HTMLElement;
-    expect(host.textContent).toContain('Admin');
-  });
-
-  it('does not render the admin target in the wide-shell account group for guests or non-admin users', () => {
-    wideShell$.next(true);
-    fixture.detectChanges();
-
-    const host = fixture.nativeElement as HTMLElement;
-    expect(host.textContent).not.toContain('Admin');
-  });
-
-  it('reveals the shared sticky wide-shell toolbar after the hero nav scrolls away', () => {
-    wideShell$.next(true);
-    fixture.detectChanges();
-
-    const host = fixture.nativeElement as HTMLElement;
-    const navOrigin = host.querySelector('.home-wide-shell-toolbar-origin') as HTMLElement;
-    spyOn(navOrigin, 'getBoundingClientRect').and.returnValue(createDomRect({top: -92, bottom: -12, height: 80}));
-
-    (fixture.componentInstance as any).syncCompactWideShellToolbar();
-    fixture.detectChanges();
-
-    expect(host.querySelector('.home-wide-shell-toolbar-sticky--visible')).not.toBeNull();
-    expect(host.querySelector('.home-wide-shell-toolbar-sticky app-wide-shell-toolbar')).not.toBeNull();
+    expect(host.querySelector('app-wide-shell-toolbar')).toBeNull();
   });
 
   it('subtitleLines splits content subtitle on newlines', () => {
@@ -136,18 +65,4 @@ describe('HomeExperienceHeroComponent', () => {
     expect(host.querySelector('.patch-graph-shell')).not.toBeNull();
     expect(host.querySelector('.patch-graph-shell app-patch-graph')).not.toBeNull();
   });
-
-  function createDomRect(rect: Partial<DOMRect>): DOMRect {
-    return {
-      x: rect.left ?? 0,
-      y: rect.top ?? 0,
-      width: rect.width ?? 0,
-      height: rect.height ?? 0,
-      top: rect.top ?? 0,
-      right: rect.right ?? 0,
-      bottom: rect.bottom ?? 0,
-      left: rect.left ?? 0,
-      toJSON: () => ({})
-    } as DOMRect;
-  }
 });
