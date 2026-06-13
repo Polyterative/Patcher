@@ -33,7 +33,8 @@
                      [class.title-heading-copy--stacked-description]="titleSub && description && !showHelpButton">
                   <div class="title-text"
                        [class.title-text--with-sub]="titleSub"
-                       [class.title-text--with-sub-compact]="compactTitleSub && titleSub">
+                       [class.title-text--with-sub-auto]="titleSub && autoCompactTitleSub"
+                       [class.title-text--with-sub-compact]="titleSub && compactTitleSubActive">
                     <span class="title-main">{{ titleBig }}</span>
                     @if (titleSub) {
                       <span class="title-separator"

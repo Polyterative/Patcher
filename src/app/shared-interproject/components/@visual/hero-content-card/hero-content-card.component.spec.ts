@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
 import { HeroContentCardComponent } from './hero-content-card.component';
+import { shouldCompactHeroTitleSub } from './hero-title-layout.utils';
 
 
 describe('HeroContentCardComponent', () => {
@@ -43,5 +44,48 @@ describe('HeroContentCardComponent', () => {
     fixture.componentRef.setInput('titleNormal', 'Browse the catalog');
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('Browse the catalog');
+  });
+
+  it('keeps titleSub inline by default', () => {
+    fixture.componentRef.setInput('titleSub', 'very-long-profile-name-that-can-wrap');
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('.title-text--with-sub-compact')).toBeNull();
+  });
+
+  it('compacts titleSub when compactTitleSub is enabled', () => {
+    fixture.componentRef.setInput('titleSub', 'Polyterative');
+    fixture.componentRef.setInput('compactTitleSub', true);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('.title-text--with-sub-compact')).not.toBeNull();
+  });
+
+  it('auto-compacts titleSub only when the sub title is long', () => {
+    fixture.componentRef.setInput('titleSub', 'Polyterative');
+    fixture.componentRef.setInput('autoCompactTitleSub', true);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('.title-text--with-sub-auto')).not.toBeNull();
+    expect(host.querySelector('.title-text--with-sub-compact')).toBeNull();
+
+    fixture.componentRef.setInput('titleSub', 'very-long-profile-name-that-can-wrap');
+    fixture.detectChanges();
+
+    expect(host.querySelector('.title-text--with-sub-compact')).not.toBeNull();
+  });
+});
+
+describe('shouldCompactHeroTitleSub', () => {
+  it('returns false for missing or short subtitles', () => {
+    expect(shouldCompactHeroTitleSub(undefined)).toBeFalse();
+    expect(shouldCompactHeroTitleSub('Polyterative')).toBeFalse();
+  });
+
+  it('returns true when the subtitle exceeds the compact threshold', () => {
+    expect(shouldCompactHeroTitleSub('123456', { compactAtLength: 5 })).toBeTrue();
   });
 });
