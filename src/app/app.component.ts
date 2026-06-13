@@ -36,6 +36,7 @@ import { PatchDetailDataService } from './components/patch-parts/patch-detail-da
 import { RackDetailDataService } from './components/rack-parts/rack-detail-data.service';
 import { WideShellToolbarComponent } from './shared-interproject/components/@visual/wide-shell-toolbar/wide-shell-toolbar.component';
 
+type AppShellArea = 'home' | 'modules' | 'racks' | 'patches' | 'manufacturers' | 'user' | 'manuals' | 'comments' | 'info';
 
 @Component({
   selector: 'app-root',
@@ -75,6 +76,7 @@ import { WideShellToolbarComponent } from './shared-interproject/components/@vis
 export class AppComponent {
   readonly embeddedShell$;
   readonly showSupportingContent$;
+  readonly shellArea$;
   readonly animationsDisabled: boolean;
   private readonly platformId = inject(PLATFORM_ID);
 
@@ -111,6 +113,11 @@ export class AppComponent {
       distinctUntilChanged(),
       shareReplay({bufferSize: 1, refCount: true})
     );
+    this.shellArea$ = currentUrl$.pipe(
+      map((currentUrl) => this.getShellArea(currentUrl)),
+      distinctUntilChanged(),
+      shareReplay({bufferSize: 1, refCount: true})
+    );
   }
 
   private supportsEmbeddedShell(url: string): boolean {
@@ -144,5 +151,56 @@ export class AppComponent {
    const normalizedUrl = url.toLowerCase();
    return !/^\/collection\/\d+(?:[/?#]|$)/.test(normalizedUrl)
      && !/^\/collections\/manage\/\d+(?:[/?#]|$)/.test(normalizedUrl);
+ }
+
+ private getShellArea(url: string): AppShellArea {
+   const normalizedUrl = url.toLowerCase();
+   const path = normalizedUrl.split(/[?#]/, 1)[0];
+   const userAreaSection = /^\/user\/area\/([^/]+)/.exec(path)?.[1];
+   const section = userAreaSection ?? path.split('/')[1] ?? '';
+
+   if (section === 'modules'
+     || section === 'collections'
+     || section === 'collection') {
+     return 'modules';
+   }
+
+   if (section === 'racks') {
+     return 'racks';
+   }
+
+   if (section === 'patches') {
+     return 'patches';
+   }
+
+   if (section === 'manuals') {
+     return 'manuals';
+   }
+
+   if (section === 'comments') {
+     return 'comments';
+   }
+
+   if (normalizedUrl.startsWith('/manufacturers')) {
+     return 'manufacturers';
+   }
+
+   if (normalizedUrl.startsWith('/user/')
+     || normalizedUrl.startsWith('/u/')
+     || normalizedUrl.startsWith('/auth')
+     || normalizedUrl.startsWith('/login')
+     || normalizedUrl.startsWith('/signup')
+     || normalizedUrl.startsWith('/reset-password')
+     || normalizedUrl.startsWith('/complete-profile')
+     || normalizedUrl.startsWith('/callback')
+     || normalizedUrl.startsWith('/admin')) {
+     return 'user';
+   }
+
+   if (normalizedUrl.startsWith('/info/')) {
+     return 'info';
+   }
+
+   return 'home';
  }
 }

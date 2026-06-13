@@ -53,6 +53,13 @@
   }
 }
 
+:host-context(.app-shell--wide.app-shell--area-home) .home-page {
+  &::before,
+  &::after {
+    content: none;
+  }
+}
+
 .home-page__inner {
   display: grid;
   gap: var(--home-space-300);
