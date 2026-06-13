@@ -271,7 +271,7 @@
       <!-- ── Right column: results ── -->
       <div class="browser-content-area col gap1">
         <div class="module-results-shell"
-             [class.module-results-shell--updating]="modulesUpdating$ | async"
+             [class.module-results-shell--updating]="(modulesUpdating$ | async) && !usesOwnedDataset"
         >
           <app-module-list [data$]="visibleModules$"
                            [viewConfig]="viewConfig"

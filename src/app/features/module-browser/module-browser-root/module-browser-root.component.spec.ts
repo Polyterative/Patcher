@@ -260,6 +260,20 @@ describe('ModuleBrowserRootComponent', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('.module-browser-loading-note')).toBeNull();
   });
 
+  it('does not dim already-loaded owned collection results while the full library refreshes', () => {
+    component.enableCollectionBrowseModes = true;
+    component.ownedModulesInput = buildOwnedModules(20);
+    fixture.detectChanges();
+
+    component.dataService.fields.tags.control.setValue([{id: '7', name: 'Filter'}] as any);
+    fixture.detectChanges();
+
+    const resultsShell = (fixture.nativeElement as HTMLElement).querySelector('.module-results-shell');
+    expect(component.collectionBrowseMode).toBe('owned');
+    expect(component.visibleModules$.value).not.toBeNull();
+    expect(resultsShell?.classList.contains('module-results-shell--updating')).toBeFalse();
+  });
+
   it('uses all-modules search empty copy when catalog filters return nothing', () => {
     component.enableCollectionBrowseModes = true;
     component.ownedModulesInput = buildOwnedModules(1);
