@@ -90,6 +90,56 @@ page.on('response', async (resp) => {
   }
 });
 
+async function writeAccessibilitySnapshot() {
+  const a11yPath = path.join(outDir, 'a11y.json');
+  const snapshot = page.accessibility?.snapshot;
+
+  if (typeof snapshot !== 'function') {
+    const warning =
+      'Playwright page.accessibility.snapshot is unavailable in this runtime; wrote a null accessibility snapshot fallback.';
+    const fallback = {
+      snapshot: null,
+      supported: false,
+      warning,
+      runtime: {
+        node: process.version
+      }
+    };
+
+    console.warn(`[agent-snapshot] ${warning}`);
+    consoleLines.push(`[warning] ${warning}`);
+    fs.writeFileSync(a11yPath, JSON.stringify(fallback, null, 2));
+    return { supported: false, warning };
+  }
+
+  try {
+    const a11y = await snapshot.call(page.accessibility, {
+      interestingOnly: false
+    });
+    fs.writeFileSync(a11yPath, JSON.stringify(a11y, null, 2));
+    return { supported: true };
+  } catch (err) {
+    const warning = `Playwright accessibility snapshot failed: ${err.message}`;
+    const fallback = {
+      snapshot: null,
+      supported: true,
+      warning,
+      error: {
+        name: err.name,
+        message: err.message
+      },
+      runtime: {
+        node: process.version
+      }
+    };
+
+    console.warn(`[agent-snapshot] ${warning}`);
+    consoleLines.push(`[warning] ${warning}`);
+    fs.writeFileSync(a11yPath, JSON.stringify(fallback, null, 2));
+    return { supported: true, warning };
+  }
+}
+
 const t0 = Date.now();
 try {
   await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
@@ -106,8 +156,7 @@ await page.screenshot({
 const html = await page.content();
 fs.writeFileSync(path.join(outDir, 'dom.html'), html);
 
-const a11y = await page.accessibility.snapshot({ interestingOnly: false });
-fs.writeFileSync(path.join(outDir, 'a11y.json'), JSON.stringify(a11y, null, 2));
+const accessibility = await writeAccessibilitySnapshot();
 
 fs.writeFileSync(path.join(outDir, 'console.log'), consoleLines.join('\n'));
 fs.writeFileSync(path.join(outDir, 'requests.log'), requests.join('\n'));
@@ -119,6 +168,7 @@ const meta = {
   durationMs: Date.now() - t0,
   consoleCount: consoleLines.length,
   requestCount: requests.length,
+  accessibility,
   outDir
 };
 fs.writeFileSync(path.join(outDir, 'meta.json'), JSON.stringify(meta, null, 2));
