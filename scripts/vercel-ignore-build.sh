@@ -23,11 +23,10 @@ if [ -z "${SHA}" ]; then
   exit 0
 fi
 
-# Docs-only short-circuit. Replicates the previous ignoreCommand.
-if git diff HEAD^ HEAD --name-only 2>/dev/null \
+changed_files="$(git diff HEAD^ HEAD --name-only 2>/dev/null || git show --pretty='' --name-only HEAD 2>/dev/null || true)"
+
+if [ -n "${changed_files}" ] && ! printf '%s\n' "${changed_files}" \
     | grep -qvE '^(internaldocs/|[^/]+\.md$|[^/]+\.txt$|\.github/)'; then
-  :
-else
   echo "[vercel-ignore] Only docs/.github changed — skipping deploy."
   exit 0
 fi
