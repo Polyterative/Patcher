@@ -1,5 +1,6 @@
 @use "sass:color";
 @use '../function-analysis-theme' as functionTheme;
+@use "src/app/style/responsive-breakpoints" as breakpoints;
 
 $bgOpacity: 0.8;
 $bgGradientBG: rgb(223, 223, 223);
@@ -431,7 +432,7 @@ $floatingSurfaceMaxWidth: 16.5rem;
   border-color: rgba(34, 75, 117, 0.92);
 }
 
-@media (max-width: 70.5625rem) {
+@media (max-width: breakpoints.$phone-only-max-width) {
   :host ::ng-deep .rackEditorCard .content > .sides-pad {
     padding-left: 0.75rem;
     padding-right: 0.75rem;
@@ -716,7 +717,7 @@ $floatingSurfaceMaxWidth: 16.5rem;
   }
 }
 
-@media (max-width: 42rem) {
+@media (max-width: breakpoints.$phone-only-max-width) {
   :host ::ng-deep .rackEditorCard .content > .sides-pad {
     padding-left: 0.625rem;
     padding-right: 0.625rem;

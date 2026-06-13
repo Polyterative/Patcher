@@ -1,3 +1,5 @@
+@use "src/app/style/responsive-breakpoints" as breakpoints;
+
 :host {
   display: block;
   min-width: 0;
@@ -349,7 +351,7 @@ $rack-balance-accent: rgba(71, 170, 156, 1);
   height: 100%;
 }
 
-@media (max-width: 70.5625rem) {
+@media (max-width: breakpoints.$phone-only-max-width) {
   .rackBalancePanel__header {
     flex-direction: column;
     gap: 0.5rem;
