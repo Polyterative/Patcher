@@ -103,31 +103,32 @@ AUTH_HEADER=()
 AUTH_SOURCE="none"
 
 if [ -n "${GITHUB_TOKEN:-}" ]; then
-  AUTH_HEADER=(-H "Authorization: Bearer ${GITHUB_TOKEN}")
+  AUTH_HEADER=(-H "Authorization: token ${GITHUB_TOKEN}")
   AUTH_SOURCE="GITHUB_TOKEN"
 elif [ -n "${GH_TOKEN:-}" ]; then
-  AUTH_HEADER=(-H "Authorization: Bearer ${GH_TOKEN}")
+  AUTH_HEADER=(-H "Authorization: token ${GH_TOKEN}")
   AUTH_SOURCE="GH_TOKEN"
 fi
 
 describe_github_error() {
   node -e "
 const input = require('fs').readFileSync('/dev/stdin', 'utf8');
+const compact = input.replace(/[\x00-\x1F\x7F]/g, ' ').slice(0, 160);
 try {
   const d = JSON.parse(input);
   const message = d.message || 'unknown';
   const status = d.status || 'unknown';
-  console.log('status=' + status + ' message=' + JSON.stringify(message));
-} catch {
-  console.log('status=unknown message=\"non-json response\"');
+  console.log('status=' + status + ' bytes=' + input.length + ' message=' + JSON.stringify(message));
+} catch (e) {
+  console.log('status=unknown bytes=' + input.length + ' prefix=' + JSON.stringify(compact));
 }
-" 2>/dev/null || echo 'status=unknown message="unparseable response"'
+" 2>/dev/null || echo 'status=unknown bytes=unknown message="diagnostic parser failed"'
 }
 
 echo "[vercel-ignore] GitHub API auth source: ${AUTH_SOURCE}"
 
 for attempt in $(seq 1 ${MAX_ATTEMPTS}); do
-  response="$(curl -sSL -H 'Accept: application/vnd.github+json' "${AUTH_HEADER[@]}" "${API}" || true)"
+  response="$(curl -sSL --show-error -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28' "${AUTH_HEADER[@]}" "${API}" || true)"
   read -r found status conclusion <<< "$(printf '%s' "${response}" | parse_workflow_run)"
 
   echo "[vercel-ignore] attempt ${attempt}/${MAX_ATTEMPTS} sha=${SHA} workflow_found=${found} status=${status} conclusion=${conclusion}"
@@ -136,7 +137,7 @@ for attempt in $(seq 1 ${MAX_ATTEMPTS}); do
     workflow_error="$(printf '%s' "${response}" | describe_github_error)"
     echo "[vercel-ignore] workflow API error: ${workflow_error}"
 
-    checks_response="$(curl -sSL -H 'Accept: application/vnd.github+json' "${AUTH_HEADER[@]}" "${CHECKS_API}" || true)"
+    checks_response="$(curl -sSL --show-error -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28' "${AUTH_HEADER[@]}" "${CHECKS_API}" || true)"
     checks_state="$(printf '%s' "${checks_response}" | parse_required_check_runs)"
     echo "[vercel-ignore] workflow API unavailable; required_check_runs=${checks_state}"
 
