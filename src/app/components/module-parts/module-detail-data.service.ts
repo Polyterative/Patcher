@@ -41,12 +41,14 @@ import {
   ModuleUsageSummary
 } from './module-detail-data.models';
 import { AnalyticsService } from '../../features/backbone/analytics-integration/analytics.service';
+import { environment } from 'src/environments/environment';
 
 export type { HiddenUsageBucket, ModulePossessionCounts, ModuleUsageSummary } from './module-detail-data.models';
 
 
 @Injectable()
 export class ModuleDetailDataService implements OnDestroy {
+  private readonly collectionsEnabled = environment.features.collectionsEnabled;
   readonly updateSingleModuleData$ = new ReplaySubject<number>();
   readonly singleModuleData$ = new BehaviorSubject<DbModule | null>(null);
   //
@@ -210,7 +212,7 @@ export class ModuleDetailDataService implements OnDestroy {
     this.updateSingleModuleData$
       .pipe(
         tap(() => this.collectionsWithThisModule$.next(undefined)),
-        switchMap(x => this.backend.GET.moduleCollectionsForModule(x)),
+        switchMap(x => this.collectionsEnabled ? this.backend.GET.moduleCollectionsForModule(x) : of([])),
         takeUntil(this.destroyEvent$)
       )
       .subscribe(collections => this.collectionsWithThisModule$.next(collections));

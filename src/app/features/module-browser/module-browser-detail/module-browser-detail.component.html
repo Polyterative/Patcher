@@ -184,7 +184,7 @@
                   }
                 </mat-chip-set>
               </lib-hero-content-card>
-              @if (bag.collectionsWithThisModule && bag.collectionsWithThisModule.length > 0) {
+              @if (collectionsEnabled && bag.collectionsWithThisModule && bag.collectionsWithThisModule.length > 0) {
                 <lib-hero-content-card titleNormal="Appears in collections"
                                        [@moduleDetailSupportEnter]="{ value: '', params: { delay: 398, duration: 185 } }"
                                        [sidesPadding]="false">

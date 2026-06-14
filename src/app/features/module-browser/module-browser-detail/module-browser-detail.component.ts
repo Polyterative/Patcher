@@ -56,6 +56,7 @@ import {
   MODULE_SEARCH_LINKS,
   SearchLink,
 } from './module-browser-detail.constants';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-module-browser-detail',
@@ -210,6 +211,7 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
     tagsMaxCount: 5
   };
   readonly searchLinks: SearchLink[] = MODULE_SEARCH_LINKS;
+  readonly collectionsEnabled = environment.features.collectionsEnabled;
   
   constructor(
     public dataService: ModuleDetailDataService,
