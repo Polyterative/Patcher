@@ -355,7 +355,7 @@ describe('RackEditorComponent', () => {
     expect(component.selectedTouchModule).toBeNull();
   });
 
-  it('does not expose the paused signal analysis mode in the UI options', () => {
+  it('exposes active rack analysis modes while keeping paused signal mode hidden', () => {
     const component = createComponent(
       {} as MatSnackBar,
       {} as SupabaseService,
@@ -369,7 +369,10 @@ describe('RackEditorComponent', () => {
       RACK_ANALYSIS_MODES.off,
       RACK_ANALYSIS_MODES.power,
       RACK_ANALYSIS_MODES.function,
+      RACK_ANALYSIS_MODES.layout,
     ]);
+    expect(component.analysisModes.layout).toBe('layout');
+    expect(component.analysisModeOptions.map(option => option.mode)).not.toContain(RACK_ANALYSIS_MODES.signal);
   });
 
   it('scales the rack down when the viewport is narrower than the rack width', () => {

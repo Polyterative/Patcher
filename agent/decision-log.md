@@ -1,5 +1,9 @@
 # Decision Log
 
+## 14-06-2026 21:00
+
+- **Rack remix layout mode:** Added `layout` as a visible analysis option separately from panel implementation. Kept `signal` hidden because existing tests and UI wording describe it as paused; Remix should not accidentally unpause unrelated signal analysis UI.
+
 ## 14-06-2026 20:58
 
 - **Rack remix layout foundation:** Started with pure analysis utilities rather than toolbar/UI wiring so format isolation, mixed-row blocking, blank exclusion, and FFD behaviour are locked before product interaction work. Did not mark the full `computeLayoutAnalysis` checklist complete because exact/estimated arrangement counting remains intentionally unfinished.

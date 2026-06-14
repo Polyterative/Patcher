@@ -1,5 +1,14 @@
 # Session Log
 
+## 14-06-2026 21:00 — Rack remix layout mode
+
+- **Task selected:** Continue Rack Editor Remix after the pure layout foundation with the smallest UI-adjacent model slice.
+- **Implementation note:** Reused `RACK_ANALYSIS_MODES`, `RACK_ANALYSIS_MODE_OPTIONS`, and the rack editor's existing options binding. No layout panel or visible remix controls were created beyond exposing the new analysis option.
+- **Actions performed:** Added the `layout` analysis mode and `Layout` option; updated the existing rack editor options guard so `signal` stays paused/hidden while `layout` is active.
+- **Tests run:** Focused rack-editor and rack-layout-analysis specs passing.
+- **Docs updated:** Marked only the analysis-mode checklist item complete.
+- **Blockers raised:** None.
+
 ## 14-06-2026 20:58 — Rack remix layout foundation
 
 - **Task selected:** Rack Editor — Remix layout optimizer, first bounded pure-analysis slice after Rack Comparison was postponed.

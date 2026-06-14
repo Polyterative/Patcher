@@ -2,6 +2,7 @@ export const RACK_ANALYSIS_MODES = {
   off: 'off',
   power: 'power',
   function: 'function',
+  layout: 'layout',
   signal: 'signal'
 } as const;
 
@@ -15,5 +16,6 @@ export interface RackAnalysisModeOption {
 export const RACK_ANALYSIS_MODE_OPTIONS: ReadonlyArray<RackAnalysisModeOption> = [
   {mode: RACK_ANALYSIS_MODES.off, label: 'Off'},
   {mode: RACK_ANALYSIS_MODES.power, label: 'Power'},
-  {mode: RACK_ANALYSIS_MODES.function, label: 'Function'}
+  {mode: RACK_ANALYSIS_MODES.function, label: 'Function'},
+  {mode: RACK_ANALYSIS_MODES.layout, label: 'Layout'}
 ];
