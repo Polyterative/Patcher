@@ -24,10 +24,10 @@ run `pnpm test:e2e:auth` and it will fail on "name input is pre-filled immediate
 - Or call `changeDetectorRef.markForCheck()` on `rack-minimal` after the reset.
 - Or switch the `reset` call to `setValue` which always emits.
 
-- [ ] Identify whether the issue is CD (OnPush not picking up `{emitEvent:false}` reset) or timing
+- [x] Identify whether the issue is CD (OnPush not picking up `{emitEvent:false}` reset) or timing
       (form rendered before `reset()` fires).
-- [ ] Apply fix and verify `e2e/auth-rack-name-prefill.spec.ts` turns green.
-- [ ] Keep the E2E test as a permanent regression guard.
+- [x] Apply fix and verify `e2e/auth-rack-name-prefill.spec.ts` turns green.
+- [x] Keep the E2E test as a permanent regression guard.
 
 ---
 
@@ -37,3 +37,4 @@ run `pnpm test:e2e:auth` and it will fail on "name input is pre-filled immediate
 
 <!-- Append timestamped one-liners as the plan progresses. -->
 
+- 2026-06-14 — Root cause confirmed in shared `lib-mat-form-entity`: Material autocomplete `displayWith` must pass through primitive string/number values from programmatic control resets instead of treating them as selectable objects. Current HEAD already contains the primitive-safe `presetDisplayFunction`; this pass added a rendered-input regression test and verified the authenticated rack-name E2E.

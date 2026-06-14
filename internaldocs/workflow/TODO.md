@@ -39,7 +39,6 @@
 - [ ] **HIGH: Type safety — eliminate `any` and flow Supabase types end-to-end** → [`plans/type-safety-eliminate-any-and-flow-supabase-types-end-to-end.md`](./plans/type-safety-eliminate-any-and-flow-supabase-types-end-to-end.md)
 - [ ] **HIGH: Angular modernization — signals, `inject()`, standalone, `takeUntilDestroyed`** → [`plans/angular-modernization-signals-inject-standalone-takeuntildestroyed.md`](./plans/angular-modernization-signals-inject-standalone-takeuntildestroyed.md)
 - [ ] **HIGH: Bundle weight, lazy boundaries, and SSR prerender coverage** → [`plans/bundle-weight-lazy-boundaries-and-ssr-prerender-coverage.md`](./plans/bundle-weight-lazy-boundaries-and-ssr-prerender-coverage.md)
-- [ ] **BUG: Rack editor — name field empty when entering edit mode** → [`plans/rack-editor-name-field-empty-when-entering-edit-mode.md`](./plans/rack-editor-name-field-empty-when-entering-edit-mode.md)
 - [ ] **MEDIUM: Manufacturer page — parity with module browser filters** → [`plans/manufacturer-page-parity-with-module-browser-filters.md`](./plans/manufacturer-page-parity-with-module-browser-filters.md)
 - [ ] **MEDIUM: Module — public possession statistics & trend charts** → [`plans/module-public-possession-statistics-trend-charts.md`](./plans/module-public-possession-statistics-trend-charts.md)
 - [ ] **LOW: Module — "Cool" appreciation button** → [`plans/module-cool-appreciation-button.md`](./plans/module-cool-appreciation-button.md)
