@@ -9,8 +9,7 @@ import {
 } from 'rxjs';
 import {
   filter,
-  map,
-  takeUntil
+  map
 } from 'rxjs/operators';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
@@ -108,14 +107,14 @@ export class ManufacturerDetailComponent extends SubManager {
     this.route.params.pipe(
       map(params => params && params['id'] ? parseInt(params['id'], 10) : 0),
       filter(id => id > 0),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe(id => {
       this.dataService.updateManufacturer$.next(id);
     });
 
     this.dataService.manufacturerData$.pipe(
       filter((m): m is ManufacturerDetail => !!m),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe(manufacturer => {
       this.seoAndUtilsService.updateSeo(
         {

@@ -1,4 +1,7 @@
-import { Injectable } from '@angular/core';
+import {
+  DestroyRef,
+  Injectable
+} from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   BehaviorSubject,
@@ -12,7 +15,6 @@ import {
   catchError,
   shareReplay,
   switchMap,
-  takeUntil,
   withLatestFrom
 } from 'rxjs/operators';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
@@ -53,13 +55,14 @@ export class ModuleFlagDataService extends SubManager {
 
   constructor(
     private backend: SupabaseService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    destroyRef?: DestroyRef
   ) {
-    super();
+    super(destroyRef);
 
     this.toggleForm$.pipe(
       withLatestFrom(this._formVisible$),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe(([, visible]) => {
       this._formVisible$.next(!visible);
     });
@@ -78,7 +81,7 @@ export class ModuleFlagDataService extends SubManager {
           })
         )
       ),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe(() => {
       SharedConstants.successCustom(this.snackBar, 'Report submitted. Thanks for helping improve the catalogue!');
       this._formVisible$.next(false);

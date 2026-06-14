@@ -1,3 +1,4 @@
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -17,7 +18,6 @@ import {
   catchError,
   filter,
   switchMap,
-  takeUntil,
   tap
 } from 'rxjs/operators';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
@@ -46,7 +46,7 @@ import { DbModule } from 'src/app/models/module';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class ModuleCVsComponent implements OnInit, OnDestroy {
+export class ModuleCVsComponent extends SubManager implements OnInit, OnDestroy {
   @Input() data: DbModule;
   /** When set, CV clicks will include this instance_id in the emitted CVwithModule */
   @Input() instanceId: number | undefined;
@@ -59,12 +59,11 @@ export class ModuleCVsComponent implements OnInit, OnDestroy {
   @Output() inClick$ = new EventEmitter<[CV, DbModule]>();
   @Output() outClick$ = new EventEmitter<[CV, DbModule]>();
   
-  protected destroyEvent$ = new Subject<void>();
-  
   constructor(
     public patchService: PatchDetailDataService,
     private readonly snackBar: MatSnackBar
   ) {
+    super();
   }
   
   ngOnInit(): void {
@@ -116,7 +115,7 @@ export class ModuleCVsComponent implements OnInit, OnDestroy {
             catchError(() => EMPTY)
           )
         ),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe();
     
@@ -134,15 +133,14 @@ export class ModuleCVsComponent implements OnInit, OnDestroy {
             catchError(() => EMPTY)
           )
         ),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe();
     
   }
   
   ngOnDestroy(): void {
-    this.destroyEvent$.next();
-    this.destroyEvent$.complete();
+    super.ngOnDestroy();
   }
   
   /**

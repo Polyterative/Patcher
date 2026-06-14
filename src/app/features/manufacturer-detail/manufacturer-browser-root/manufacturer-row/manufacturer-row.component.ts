@@ -7,7 +7,6 @@ import {
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { ModuleList } from 'src/app/features/module-browser/module-browser-data.service';
 import { ManufacturerDetail } from '../../manufacturer-detail-data.service';
@@ -70,7 +69,7 @@ export class ManufacturerRowComponent extends SubManager implements OnInit {
 
   ngOnInit(): void {
     this.backend.get.modulesBySameManufacturer(this.manufacturer.id, 0, 29)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(modules => this._modules$.next(modules ?? []));
   }
 }

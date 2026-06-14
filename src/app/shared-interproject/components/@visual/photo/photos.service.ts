@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 
 interface UnsplashResponse {
   urls: {
@@ -9,18 +10,16 @@ interface UnsplashResponse {
 }
 
 @Injectable()
-export class PhotosService implements OnDestroy {
-  protected destroyEvent$ = new Subject<void>();
+export class PhotosService extends SubManager implements OnDestroy {
   public readonly url$ = new BehaviorSubject<string>('');
   public readonly loadUnsplash$ = new Subject<string>();
   
   ngOnDestroy(): void {
-    this.destroyEvent$.next();
-    this.destroyEvent$.complete();
-    
+    super.ngOnDestroy();
   }
   
   constructor(private http: HttpClient) {
+    super();
     
     // this.loadUnsplash$
     //     .pipe(

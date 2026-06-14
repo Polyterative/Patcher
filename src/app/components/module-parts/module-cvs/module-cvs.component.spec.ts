@@ -138,10 +138,10 @@ describe('ModuleCVsComponent', () => {
     expect(snackBar.open).not.toHaveBeenCalled();
   });
   
-  it('emits and completes destroy subject on ngOnDestroy', () => {
+  it('emits and completes inherited destroy subject on ngOnDestroy', () => {
     const {component} = build();
-    const nextSpy = spyOn((component as any).destroyEvent$, 'next').and.callThrough();
-    const completeSpy = spyOn((component as any).destroyEvent$, 'complete').and.callThrough();
+    const nextSpy = spyOn((component as any).destroy$, 'next').and.callThrough();
+    const completeSpy = spyOn((component as any).destroy$, 'complete').and.callThrough();
     
     component.ngOnDestroy();
     

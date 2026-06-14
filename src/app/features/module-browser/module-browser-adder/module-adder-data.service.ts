@@ -1,4 +1,7 @@
-import { Injectable } from '@angular/core';
+import {
+  DestroyRef,
+  Injectable
+} from '@angular/core';
 import {
   FormGroup,
   UntypedFormControl,
@@ -23,7 +26,6 @@ import {
   shareReplay,
   startWith,
   switchMap,
-  takeUntil,
   tap
 } from 'rxjs/operators';
 import { StandardsService } from 'src/app/components/format-translator/standards.service';
@@ -88,9 +90,10 @@ export class ModuleAdderDataService extends SubManager {
     public dialog: MatDialog,
     public snackBar: MatSnackBar,
     private router: Router,
-    private readonly analytics: AnalyticsService
+    private readonly analytics: AnalyticsService,
+    destroyRef?: DestroyRef
   ) {
-    super();
+    super(destroyRef);
     this.backend.cacheResetter$?.next(['manufacturers']);
     this.formData = {
       name:         {
@@ -209,7 +212,7 @@ export class ModuleAdderDataService extends SubManager {
     // load manufacturers into options BehaviorSubject
     this.backend.GET.manufacturers(0, 99999, 'id,name').pipe(
       map(x => (x.data ?? []).map(z => ({ id: z.id.toString(), name: z.name }))),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe(opts => this._manufacturerOptions$.next(opts));
 
     // apply default on init
@@ -217,7 +220,7 @@ export class ModuleAdderDataService extends SubManager {
       tap(() => this.formData.standard.control.disable()),
       filter(x => x !== undefined),
       filter(x => x.length > 0),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     )
       .subscribe(x => {
         this.formData.standard.control.enable();
@@ -236,7 +239,7 @@ export class ModuleAdderDataService extends SubManager {
         const normalized = normalizeForSearch(value.trim());
         return this._manufacturerOptions$.value.find(opt => normalizeForSearch(opt.name) === normalized) ?? null;
       }),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe(match => this.duplicateManufacturer$.next(match));
 
     // enable manufacturer control once options are loaded
@@ -245,7 +248,7 @@ export class ModuleAdderDataService extends SubManager {
         if (x.length === 0) this.formData.manufacturer.control.disable();
       }),
       filter(x => x.length > 0),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     )
       .subscribe(() => {
         this.formData.manufacturer.control.enable();
@@ -257,7 +260,7 @@ export class ModuleAdderDataService extends SubManager {
       this.formData.manufacturer.control.valueChanges
     )
       .pipe(
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(_ => {
         this.updateModulesList$.next();
@@ -274,7 +277,7 @@ export class ModuleAdderDataService extends SubManager {
             SharedConstants.errorCustom(this.snackBar, 'Failed to search similar modules');
             return of({data: []});
           }))),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(x => {
         this.similarModulesData$.next(x.data);
@@ -310,7 +313,7 @@ export class ModuleAdderDataService extends SubManager {
             return EMPTY;
           })
         )),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe((module) => {
         
@@ -368,7 +371,7 @@ export class ModuleAdderDataService extends SubManager {
         })
       )),
       tap(() => this.isCreatingManufacturer$.next(false)),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe(({ name, data }) => {
       const created = data?.[0];
       if (created) {

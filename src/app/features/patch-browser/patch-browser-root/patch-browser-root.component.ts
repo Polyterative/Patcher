@@ -6,8 +6,7 @@ import { merge, Observable } from 'rxjs';
 import {
   mapTo,
   shareReplay,
-  startWith,
-  takeUntil
+  startWith
 } from 'rxjs/operators';
 import {
   defaultPatchMinimalViewConfig,
@@ -62,7 +61,7 @@ export class PatchBrowserRootComponent extends SubManager {
     ).pipe(
       startWith(false),
       shareReplay({bufferSize: 1, refCount: true}),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     );
     
     this.seoAndUtilsService.updateSeo(

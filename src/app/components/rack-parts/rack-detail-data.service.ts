@@ -32,7 +32,6 @@ import {
   shareReplay,
   switchMap,
   take,
-  takeUntil,
   tap,
   withLatestFrom
 } from 'rxjs/operators';
@@ -183,7 +182,6 @@ export class RackDetailDataService extends SubManager {
   requestRackedModulesDbSync$ = new Subject<void>(); // updates the backend with the current state of the rack
   //
   
-  protected destroyEvent$ = new Subject<void>();
   private readonly loadModulesForRack$ = new Subject<number>();
   
   constructor(
@@ -250,7 +248,7 @@ export class RackDetailDataService extends SubManager {
             })
           );
         }),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe();
     
@@ -289,7 +287,7 @@ export class RackDetailDataService extends SubManager {
             })
           );
         }),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe();
 
@@ -327,7 +325,7 @@ export class RackDetailDataService extends SubManager {
             })
           );
         }),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe();
 
@@ -371,7 +369,7 @@ export class RackDetailDataService extends SubManager {
             })
           );
         }),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe();
 
@@ -425,7 +423,7 @@ export class RackDetailDataService extends SubManager {
             })
           );
         }),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe();
     
@@ -439,7 +437,7 @@ export class RackDetailDataService extends SubManager {
           return x;
         }),
         exhaustMap(x => this.backend.update.rack(x)),
-        takeUntil(this.destroy$),
+        this.takeUntilDestroyed(),
       )
       .subscribe(x => {
         this.analytics.capture('rack.privacy_toggled', { rack_id: this.singleRackData$.value?.id, public: this.singleRackData$.value?.public });
@@ -561,10 +559,10 @@ export class RackDetailDataService extends SubManager {
               SharedConstants.errorCustom(this.snackBar, 'Failed to load the matching blank panel. Try again in a moment.');
               return EMPTY;
             }),
-            takeUntil(this.destroyEvent$)
+            this.takeUntilDestroyed()
           );
         }),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(() => {
         this.analytics.capture('rack.module_replaced_with_blank', { rack_id: this.singleRackData$.value?.id });
@@ -574,7 +572,7 @@ export class RackDetailDataService extends SubManager {
       .pipe(
         map(rackedModule => rackedModule.rackingData.row),
         filter((rowId): rowId is number => rowId != null),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(rowId => this.requestClearRow$.next(rowId));
 
@@ -662,7 +660,7 @@ export class RackDetailDataService extends SubManager {
           
           return EMPTY;
         }),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe();
     
@@ -674,7 +672,7 @@ export class RackDetailDataService extends SubManager {
         return this.generateRackJpegWithoutAnalysisOverlays$(references.screen.nativeElement);
       }),
       withLatestFrom(this.singleRackData$),
-      takeUntil(this.destroyEvent$)
+      this.takeUntilDestroyed()
     )
       .subscribe(
         ([imageData, rackData]) => {
@@ -751,7 +749,7 @@ export class RackDetailDataService extends SubManager {
         );
       }),
       tap((updatedRackData: Rack) => this.singleRackData$.next(updatedRackData)),
-      takeUntil(this.destroyEvent$),
+      this.takeUntilDestroyed(),
       catchError((err) => {
         console.error('Failed to update rack preview image:', err);
         SharedConstants.errorCustom(this.snackBar, 'Failed to update preview image. Please try again.');
@@ -777,7 +775,7 @@ export class RackDetailDataService extends SubManager {
           return x;
         }),
         switchMap(x => this.backend.update.rack(x)),
-        takeUntil(this.destroy$),
+        this.takeUntilDestroyed(),
       )
       .subscribe(x => {
         this.analytics.capture('rack.lock_toggled', { rack_id: this.singleRackData$.value?.id, locked: this.singleRackData$.value?.locked });
@@ -826,7 +824,7 @@ export class RackDetailDataService extends SubManager {
             })
           );
         }),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(({rack, generatedPatchName, createdPatchId, createdPatchPublicId}) => {
         this.analytics.capture('rack.linked_patch_created', { rack_id: rack?.id, patch_id: createdPatchId });
@@ -841,7 +839,7 @@ export class RackDetailDataService extends SubManager {
       .pipe(
         filter(() => !!this.singleRackData$.value),
         filter(() => this.formData.name.control.valid),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(input => this.singleRackData$.value.name = input ?? '');
     
@@ -864,7 +862,7 @@ export class RackDetailDataService extends SubManager {
             })
           )
         ),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe();
     
@@ -887,7 +885,7 @@ export class RackDetailDataService extends SubManager {
           SharedConstants.errorCustom(this.snackBar, 'Failed to load this rack. Refresh the page and try again.');
           return EMPTY;
         }),
-        takeUntil(this.destroy$),
+        this.takeUntilDestroyed(),
       )
       .subscribe(x => {
         if (!x?.data) {
@@ -920,7 +918,7 @@ export class RackDetailDataService extends SubManager {
           this.rackDetailUnavailableMessage$.next(this.buildUnavailableMessage());
           return EMPTY;
         }),
-        takeUntil(this.destroy$),
+        this.takeUntilDestroyed(),
       )
       .subscribe(x => {
         if (!x?.data) {
@@ -938,7 +936,7 @@ export class RackDetailDataService extends SubManager {
     this.singleRackData$
       .pipe(
         filter(x => !!x),
-        takeUntil(this.destroy$),
+        this.takeUntilDestroyed(),
       )
       .subscribe(rack => {
         this.isCurrentRackEditable$.next(!rack.locked);
@@ -960,7 +958,7 @@ export class RackDetailDataService extends SubManager {
     this.singleRackData$
       .pipe(
         filter(x => !x),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(() => {
         this.rowedRackedModules$.next([]);
@@ -984,7 +982,7 @@ export class RackDetailDataService extends SubManager {
       )),
       withLatestFrom(this.singleRackData$),
       filter(([{rackId}, rack]) => !!rack && rack.id === rackId),
-      takeUntil(this.destroy$),
+      this.takeUntilDestroyed(),
     )
       .subscribe(([{rackedModules}, rack]: [{rackedModules: RackedModule[]; rackId: number}, Rack]) => {
         // create a 2d array of racked modules and sort them by row
@@ -997,7 +995,7 @@ export class RackDetailDataService extends SubManager {
     this.rackOrderChange$
       .pipe(
         withLatestFrom(this.rowedRackedModules$, this.singleRackData$),
-        takeUntil(this.destroy$),
+        this.takeUntilDestroyed(),
       )
       .subscribe(([
                     {
@@ -1041,7 +1039,7 @@ export class RackDetailDataService extends SubManager {
       .pipe(
         tap(() => this.isCurrentRackPropertyOfCurrentUser$.next(false)),
         filter(([user, rackData]) => (!!user && !!rackData)),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(([user, rackData]) => {
         this.isCurrentRackPropertyOfCurrentUser$.next(user.id === rackData.author.id);
@@ -1078,7 +1076,7 @@ export class RackDetailDataService extends SubManager {
           );
         }),
         filter(x => x !== undefined),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe((result) => {
         if (result) {
@@ -1098,7 +1096,7 @@ export class RackDetailDataService extends SubManager {
     this.requestRackedModuleDuplication$
       .pipe(
         withLatestFrom(this.rowedRackedModules$),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(([rackedModule, rackModules]) => {
         this.duplicateModule(rackModules, rackedModule);
@@ -1139,7 +1137,7 @@ export class RackDetailDataService extends SubManager {
             })
           );
         }),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe();
     
@@ -1159,7 +1157,7 @@ export class RackDetailDataService extends SubManager {
           );
         }),
         filter(x => !!x),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(() => {
         // SharedConstants.successSaveShort(this.snackBar);
@@ -1196,7 +1194,7 @@ export class RackDetailDataService extends SubManager {
         switchMap(rack => this.backend.delete.commentsForRack(rack.id).pipe(map(() => rack))),
         switchMap(rack => rack.image ? this.backend.storage.deleteRackImage(rack.image).pipe(map(() => rack)) : of(rack)),
         switchMap(rack => this.backend.delete.userRack(rack.id).pipe(map(() => rack))),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe((rack) => {
         this.router.navigate(['/user/area']);
@@ -1246,7 +1244,7 @@ export class RackDetailDataService extends SubManager {
           tap(() => this.rowedRackedModules$.next(rackModules)),
           map(() => originalName)
         )),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe((originalName) => {
         const rackId = this.singleRackData$.value?.id;
@@ -1289,7 +1287,7 @@ export class RackDetailDataService extends SubManager {
             })
           );
         }),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(({module, rack}) => {
         this.analytics.capture('rack.module_added', {
@@ -1366,7 +1364,7 @@ export class RackDetailDataService extends SubManager {
             })
           );
         }),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe();
     
@@ -1379,7 +1377,7 @@ export class RackDetailDataService extends SubManager {
       filter(x => !!x),
       switchMap(() => this.rowedRackedModules$.pipe(filter(y => !!y), take(1))),
       withLatestFrom(this.singleRackData$),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     )
       .subscribe(([rows]) => this.rackStatistics$.next(buildRackStatistics(rows)));
     
@@ -1662,7 +1660,7 @@ export class RackDetailDataService extends SubManager {
             return EMPTY;
           })
         )),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(() => SharedConstants.successCustom(this.snackBar, undoSuccessMessage));
   }

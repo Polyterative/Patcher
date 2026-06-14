@@ -9,8 +9,7 @@ import {
 import {
   mapTo,
   shareReplay,
-  startWith,
-  takeUntil
+  startWith
 } from 'rxjs/operators';
 import {
   defaultRackMinimalViewConfig,
@@ -45,7 +44,7 @@ export class RackBrowserRootComponent extends SubManager {
     ).pipe(
       startWith(false),
       shareReplay({bufferSize: 1, refCount: true}),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     );
     
     this.seoAndUtilsService.updateSeo(

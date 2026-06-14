@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  EventEmitter,
   Input,
   OnDestroy,
   OnInit
@@ -11,6 +10,7 @@ import {
   CardLinkDataModel,
   cleanCardlinkModelObject
 } from './clickable-list-card-base';
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 
 
 /**
@@ -40,19 +40,16 @@ import {
   ,
   standalone: false
 })
-export class ListLinkRouterComponent implements OnInit, OnDestroy {
+export class ListLinkRouterComponent extends SubManager implements OnInit, OnDestroy {
   @Input()
   linksData: CardLinkDataModel = cleanCardlinkModelObject;
 
-  protected destroyEvent$: EventEmitter<void> = new EventEmitter();
-
   ngOnDestroy(): void {
-    this.destroyEvent$.emit();
-    this.destroyEvent$.complete(); 
-
+    super.ngOnDestroy();
   }
 
   constructor() {
+    super();
   }
 
   ngOnInit(): void {

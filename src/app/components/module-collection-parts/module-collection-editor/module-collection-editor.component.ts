@@ -20,7 +20,6 @@ import { MinimalModule } from 'src/app/models/module';
 import { ModuleCollectionDetail } from 'src/app/models/module-collection';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { ModuleCollectionEditorDataService } from './module-collection-editor-data.service';
-import { takeUntil } from 'rxjs/operators';
 
 export interface ModuleCollectionEditorDialogData {
   collection?: ModuleCollectionDetail;
@@ -92,7 +91,7 @@ export class ModuleCollectionEditorComponent extends SubManager implements OnCha
 
     this.dataService.initializeCollection(data?.collection);
     this.dataService.explicitSaveCompleted$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(() => {
         this.saved.emit();
         if (typeof this.dialogRef?.close === 'function') {
@@ -101,7 +100,7 @@ export class ModuleCollectionEditorComponent extends SubManager implements OnCha
       });
 
     this.dataService.collectionUpdated$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(collection => this.collectionUpdated.emit(collection));
   }
 

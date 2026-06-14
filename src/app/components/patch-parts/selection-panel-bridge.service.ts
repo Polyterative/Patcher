@@ -9,7 +9,6 @@ import {
   map,
   shareReplay,
   startWith,
-  takeUntil,
   withLatestFrom
 } from 'rxjs/operators';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
@@ -120,14 +119,14 @@ export class SelectionPanelBridgeService extends SubManager {
   // until explicitly changed by another record or external clearing.
   constructor() {
     super();
-    this.record$.pipe(withLatestFrom(this.selectionState$), takeUntil(this.destroy$)).subscribe(([_, sel]) => {
+    this.record$.pipe(withLatestFrom(this.selectionState$), this.takeUntilDestroyed()).subscribe(([_, sel]) => {
       if (!sel?.a || !sel?.b) { return; }
       this.recordedKey$.next(selectionToConnectionKey(sel.a, sel.b));
     });
     // If the recorded key exists but the editorConnections list no longer contains it (deleted), clear it.
     // This treats deletion as a "new event" that invalidates the previously recorded key.
     combineLatest([this.recordedKey$, this.editorConnections$])
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(([rk, conns]) => {
         if (!rk || !conns) { return; }
         const exists = conns.find(c => connectionKeysEqual(

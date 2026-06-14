@@ -18,7 +18,6 @@ import {
   exhaustMap,
   filter,
   switchMap,
-  takeUntil,
   tap
 } from 'rxjs/operators';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
@@ -143,7 +142,7 @@ export class UserSignupDataService extends SubManager {
           return this.loginInteraction.login$(this.fields.email.control.value, this.fields.password.control.value);
         }),
         filter(x => !!x),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(x => {
         const returnUrl = this.activated.snapshot.queryParamMap.get('returnUrl');

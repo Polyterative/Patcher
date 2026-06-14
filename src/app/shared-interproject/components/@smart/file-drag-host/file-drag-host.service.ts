@@ -1,3 +1,4 @@
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import {
   EventEmitter,
   Injectable,
@@ -12,7 +13,6 @@ import {
 import {
   filter,
   map,
-  takeUntil,
   tap,
   withLatestFrom
 } from 'rxjs/operators';
@@ -21,7 +21,7 @@ import {
 type FileArray = File[];
 
 @Injectable()
-export class FileDragHostService implements OnDestroy {
+export class FileDragHostService extends SubManager implements OnDestroy {
   
   readonly fileAdd$: EventEmitter<NgxDropzoneChangeEvent> = new EventEmitter<NgxDropzoneChangeEvent>();
   readonly files$: BehaviorSubject<FileArray> = new BehaviorSubject<FileArray>([]);
@@ -30,11 +30,12 @@ export class FileDragHostService implements OnDestroy {
   readonly singleFileMode$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
   constructor(private snackBar: MatSnackBar) {
+    super();
 
     this.setupFileAdder();
 
     this.removeAllFiles$
-        .pipe(takeUntil(this.destroyEvent$))
+        .pipe(this.takeUntilDestroyed())
         .subscribe(_ => {
           this.files$.next([]);
         });
@@ -43,7 +44,7 @@ export class FileDragHostService implements OnDestroy {
 
   private setupFileAdder(): void {
     this.removeFile$
-        .pipe(takeUntil(this.destroyEvent$))
+        .pipe(this.takeUntilDestroyed())
         .pipe(
           withLatestFrom(this.files$),
           map(([deteled, files]) => {
@@ -73,18 +74,15 @@ export class FileDragHostService implements OnDestroy {
               return oldPool.concat(newFiles);
             }
           }),
-          takeUntil(this.destroyEvent$)
+          this.takeUntilDestroyed()
         )
         .subscribe(x => this.files$.next(x));
 
 
   }
-  
-  protected destroyEvent$ = new Subject<void>();
 
   ngOnDestroy(): void {
-    this.destroyEvent$.next();
-    this.destroyEvent$.complete();
+    super.ngOnDestroy();
 
   }
 

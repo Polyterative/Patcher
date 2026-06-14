@@ -1,3 +1,4 @@
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -93,7 +94,7 @@ import { ModulePossessionDialogComponent } from '../module-possession-dialog/mod
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class ModuleMinimalComponent implements OnInit, OnDestroy {
+export class ModuleMinimalComponent extends SubManager implements OnInit, OnDestroy {
   @Input() data: MinimalModule;
   @Input() viewConfig: ModuleMinimalViewConfig;
   /** Optional suffix shown inline next to the module name (e.g. instance label) */
@@ -122,7 +123,9 @@ export class ModuleMinimalComponent implements OnInit, OnDestroy {
     public dataService: ModuleDetailDataService,
     public rackDataService: RackDetailDataService,
     private dialog: MatDialog
-  ) {}
+  ) {
+    super();
+  }
   
   ngOnInit(): void {
     this.isInCollection$ = this.dataService.userModulesList$
@@ -131,7 +134,7 @@ export class ModuleMinimalComponent implements OnInit, OnDestroy {
           const row = data.find(module => module.id === this.data.id);
           return row?.possessionKind === 'HAS' || row?.possessionKind === 'SELLS';
         }),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       );
 
     this.possessionKind$ = this.dataService.userModulesList$.pipe(
@@ -139,15 +142,12 @@ export class ModuleMinimalComponent implements OnInit, OnDestroy {
         const row = data.find(module => module.id === this.data.id);
         return row?.possessionKind ?? null;
       }),
-      takeUntil(this.destroyEvent$)
+      this.takeUntilDestroyed()
     );
   }
   
-  protected destroyEvent$ = new Subject<void>();
-  
   ngOnDestroy(): void {
-    this.destroyEvent$.next();
-    this.destroyEvent$.complete();
+    super.ngOnDestroy();
     
   }
 
@@ -170,7 +170,7 @@ export class ModuleMinimalComponent implements OnInit, OnDestroy {
       .afterClosed()
       .pipe(
         filter((kind): kind is UserModulePossessionKind => !!kind),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(kind => this.dataService.setModulePossession$.next(kind));
   }
@@ -195,7 +195,7 @@ export class ModuleMinimalComponent implements OnInit, OnDestroy {
       .afterClosed()
       .pipe(
         filter(result => result?.answer === true),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(() => this.dataService.setModulePossession$.next(null));
   }

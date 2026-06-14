@@ -14,7 +14,6 @@ import {
   map,
   switchMap,
   take,
-  takeUntil,
   tap,
   withLatestFrom
 } from 'rxjs/operators';
@@ -73,7 +72,7 @@ export class TagVoteDataService extends SubManager {
     this.backend.get.allTags().pipe(
       tap(tags => this._allTags$.next(tags ?? [])),
       catchError(() => EMPTY),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe();
   }
 
@@ -119,7 +118,7 @@ export class TagVoteDataService extends SubManager {
           })
         )
       ),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe();
   }
   
@@ -154,7 +153,7 @@ export class TagVoteDataService extends SubManager {
           })
         )
       ),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe();
   }
   
@@ -162,7 +161,7 @@ export class TagVoteDataService extends SubManager {
     this.userService.loggedUser$.pipe(
       filter(user => !user),
       tap(() => this._myVotes$.next(new Set())),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe();
   }
   
@@ -215,7 +214,7 @@ export class TagVoteDataService extends SubManager {
           })
         );
       }),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe();
   }
 }

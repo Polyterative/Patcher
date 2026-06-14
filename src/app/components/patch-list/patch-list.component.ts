@@ -12,8 +12,7 @@ import {
 } from 'rxjs';
 import {
   filter,
-  startWith,
-  takeUntil
+  startWith
 } from 'rxjs/operators';
 import { PatchList } from '../../features/patch-browser/patch-browser-data.service';
 import { SubManager } from '../../shared-interproject/directives/subscription-manager';
@@ -77,7 +76,7 @@ export class PatchListComponent extends SubManager implements OnInit {
       localSearchQuery$,
       this.externalSearchQuery$
     ])
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(([data, localQuery, externalQuery]) => {
         this._filteredData$.next(
           data.filter(item => {

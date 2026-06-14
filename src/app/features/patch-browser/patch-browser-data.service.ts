@@ -1,4 +1,7 @@
-import { Injectable } from '@angular/core';
+import {
+  DestroyRef,
+  Injectable
+} from '@angular/core';
 import { FormControl } from '@angular/forms';
 import {
   BehaviorSubject,
@@ -14,7 +17,6 @@ import {
   shareReplay,
   startWith,
   switchMap,
-  takeUntil,
   withLatestFrom
 } from 'rxjs/operators';
 import { PatchMinimal } from '../../models/patch';
@@ -85,8 +87,11 @@ export class PatchBrowserDataService extends SubManager {
   readonly fields: PatchBrowserFields;
   readonly canReset$: Observable<boolean>;
 
-  constructor(private backend: SupabaseService) {
-    super();
+  constructor(
+    private backend: SupabaseService,
+    destroyRef?: DestroyRef
+  ) {
+    super(destroyRef);
 
     this.fields = {
       search: {
@@ -128,7 +133,7 @@ export class PatchBrowserDataService extends SubManager {
       this.fields.order.control.valueChanges
     ).pipe(
       debounceTime(750),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe(() => {
       const orderVal = this.fields.order.control.value;
       const searchVal = this.fields.search.control.value ?? '';
@@ -159,7 +164,7 @@ export class PatchBrowserDataService extends SubManager {
             skip === 0
           );
         }),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(x => {
         const skip = this.serversideTableRequestData.skip$.value;
@@ -173,7 +178,7 @@ export class PatchBrowserDataService extends SubManager {
     this.loadMore$
       .pipe(
         withLatestFrom(this.patchesList$),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(([_, current]) => {
         this.serversideTableRequestData.skip$.next(current?.length ?? 0);
@@ -181,7 +186,7 @@ export class PatchBrowserDataService extends SubManager {
       });
 
     this.resetForm$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(() => {
         const silent = {emitEvent: false};
         this.fields.search.control.setValue('', silent);

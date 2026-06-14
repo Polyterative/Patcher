@@ -1,12 +1,14 @@
-import { Injectable } from '@angular/core';
+import {
+  DestroyRef,
+  Injectable
+} from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import {
   of,
   Subject
 } from 'rxjs';
 import {
-  debounceTime,
-  takeUntil
+  debounceTime
 } from 'rxjs/operators';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { IMatFormEntityConfig } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
@@ -86,19 +88,19 @@ export class LocalDataFilterService extends SubManager {
     ])
   };
   
-  constructor() {
-    super();
+  constructor(destroyRef?: DestroyRef) {
+    super(destroyRef);
     
     this.search.control.valueChanges
       .pipe(
         debounceTime(350),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(x => this.filterEvent$.next(x));
     
     this.order.control.valueChanges
       .pipe(
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(x => this.orderEvent$.next(x));
     

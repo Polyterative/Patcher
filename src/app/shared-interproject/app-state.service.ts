@@ -1,3 +1,4 @@
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { Injectable, OnDestroy } from '@angular/core';
 import {
   MediaChange,
@@ -89,7 +90,7 @@ function sameLayoutFlexWidthState(a: LayoutFlexWidthState, b: LayoutFlexWidthSta
 
 
 @Injectable()
-export class AppStateService implements OnDestroy {
+export class AppStateService extends SubManager implements OnDestroy {
   
   /*
    *  this one is needed in service form to be able to access it from the HTML
@@ -119,17 +120,16 @@ export class AppStateService implements OnDestroy {
     const parsed = Number(raw);
     return (parsed === 1 || parsed === 2) ? parsed : null;
   }
-
-  protected destroyEvent$ = new Subject<void>();
   
   readonly layoutFlexWidth$: Observable<LayoutFlexWidthState>;
   
   constructor(
     public mediaObserver: MediaObserver
   ) {
+    super();
     this.layoutFlexWidth$ = this.mediaObserver.asObservable()
       .pipe(
-        takeUntil(this.destroyEvent$),
+        this.takeUntilDestroyed(),
         map((changes) => buildLayoutFlexWidthState(changes)),
         auditTime(16),
         startWith(DEFAULT_LAYOUT_FLEX_WIDTH_STATE),
@@ -139,8 +139,7 @@ export class AppStateService implements OnDestroy {
   }
   
   ngOnDestroy(): void {
-    this.destroyEvent$.next();
-    this.destroyEvent$.complete();
+    super.ngOnDestroy();
     
   }
   

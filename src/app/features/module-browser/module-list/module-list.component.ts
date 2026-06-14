@@ -1,10 +1,12 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   EventEmitter,
   Input,
   OnInit,
-  Output
+  Output,
+  signal
 } from '@angular/core';
 import { animate, animateChild, query, style, transition, trigger } from '@angular/animations';
 import {
@@ -121,8 +123,8 @@ export class ModuleListComponent extends SubManager implements OnInit {
 
   private readonly _filteredData$ = new BehaviorSubject<ModuleList>([]);
   readonly filteredData$ = this._filteredData$.asObservable();
-  private visibleModuleIds = new Set<number>();
-  private readonly enterDelayByModuleId = new Map<number, number>();
+  private readonly visibleModuleIds = signal<ReadonlySet<number>>(new Set<number>());
+  private readonly enterDelayByModuleId = signal<ReadonlyMap<number, number>>(new Map<number, number>());
   
   // Sort & group controls (active when showOrder = true)
   readonly formTypes = FormTypes;
@@ -157,9 +159,10 @@ export class ModuleListComponent extends SubManager implements OnInit {
   constructor(
     public patchingService: PatchDetailDataService,
     public filterService: LocalDataFilterService,
-    public appState: AppStateService
+    public appState: AppStateService,
+    destroyRef?: DestroyRef
   ) {
-    super();
+    super(destroyRef);
   }
 
   ngOnInit(): void {
@@ -274,7 +277,7 @@ export class ModuleListComponent extends SubManager implements OnInit {
   }
 
   getEnterDelay(moduleId: number): number {
-    return this.enterDelayByModuleId.get(moduleId) ?? 50;
+    return this.enterDelayByModuleId().get(moduleId) ?? 50;
   }
 
   resetFilters(): void {
@@ -317,14 +320,16 @@ export class ModuleListComponent extends SubManager implements OnInit {
   private updateFilteredData(data: MinimalModule[]): void {
     const nextVisibleIds = new Set(data.map(module => module.id));
     let newItemIndex = 0;
-    this.enterDelayByModuleId.clear();
+    const nextEnterDelayByModuleId = new Map<number, number>();
+    const previousVisibleIds = this.visibleModuleIds();
 
     for (const module of data) {
-      const delayIndex = this.visibleModuleIds.has(module.id) ? 0 : newItemIndex++;
-      this.enterDelayByModuleId.set(module.id, (delayIndex * 25) + 50);
+      const delayIndex = previousVisibleIds.has(module.id) ? 0 : newItemIndex++;
+      nextEnterDelayByModuleId.set(module.id, (delayIndex * 25) + 50);
     }
 
-    this.visibleModuleIds = nextVisibleIds;
+    this.visibleModuleIds.set(nextVisibleIds);
+    this.enterDelayByModuleId.set(nextEnterDelayByModuleId);
     this._filteredData$.next(data);
   }
 

@@ -1,7 +1,7 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { take, takeUntil, timer } from 'rxjs';
+import { take, timer } from 'rxjs';
 import { ModuleDetailDataService } from 'src/app/components/module-parts/module-detail-data.service';
 import {
   defaultModuleMinimalViewConfig,
@@ -261,17 +261,17 @@ export class HomeComponent extends SubManager implements OnInit {
       return;
     }
     timer(HOME_PROOF_DELAY_STEP_MS * 2)
-      .pipe(take(1), takeUntil(this.destroy$))
+      .pipe(take(1), this.takeUntilDestroyed())
       .subscribe(() => {
         this.patchDetailDataService.updateSinglePatchData$.next(HOME_PROOF_PATCH_ID);
       });
     timer(HOME_PROOF_DELAY_STEP_MS * 4)
-      .pipe(take(1), takeUntil(this.destroy$))
+      .pipe(take(1), this.takeUntilDestroyed())
       .subscribe(() => {
         this.moduleDetailDataService.updateSingleModuleData$.next(HOME_PROOF_MODULE_ID);
       });
     timer(HOME_PROOF_DELAY_STEP_MS * 6)
-      .pipe(take(1), takeUntil(this.destroy$))
+      .pipe(take(1), this.takeUntilDestroyed())
       .subscribe(() => {
         this.rackDetailDataService.updateSingleRackData$.next(HOME_PROOF_RACK_ID);
       });

@@ -22,7 +22,6 @@ import {
   startWith,
   exhaustMap,
   switchMap,
-  takeUntil,
   withLatestFrom
 } from 'rxjs/operators';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
@@ -200,7 +199,7 @@ export class RackCreatorComponent extends SubManager implements OnInit {
             locked: false
           }
         )),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(result => {
         const rackId = result?.data?.[0]?.id;

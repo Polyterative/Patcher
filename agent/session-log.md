@@ -1,5 +1,121 @@
 # Session Log
 
+## 14-06-2026 19:32 — Angular modernization plan closure
+
+- **Task selected:** Close all remaining active TODO references to the Angular modernization work so the backlog no longer prompts more passes on this plan.
+- **Actions performed:** Removed the Angular modernization entry from `TODO.md`, added a completed one-line archive entry, marked the plan checklist closed by user direction, and recorded that future schematic/OnPush/God-file work should restart as new explicit plans rather than remain active TODO.
+- **Blockers raised:** None; this is an intentional scope closure, not a claim that every possible Angular modernization idea has been exhausted.
+
+## 14-06-2026 19:45 — Angular modernization destroyEvent lifecycle family
+
+- **Task selected:** Continue the user-requested broader local-only reduction by migrating the adjacent covered `destroyEvent$` lifecycle family after the exact `destroy$` batch was squashed locally.
+- **Implementation note:** Reused the existing `SubManager` lifecycle bridge instead of adding a second teardown abstraction. Converted covered classes to extend `SubManager`, added required `super()` constructor calls, replaced lifecycle `takeUntil(this.destroyEvent$)` with `this.takeUntilDestroyed()`, and updated stale specs to assert inherited `destroy$` teardown. Avoided schema, RLS, policies, migrations, new UI, styling, routing, and pushed commits.
+- **Actions performed:** Migrated 21 covered services/components/pipes across module detail/editor/minimal/CV surfaces, patch detail/editor/creator/minimal surfaces, rack detail data, shared app-state/loading/file-drag/list-link/photo helpers, mat-form-entity pipes, reset-password data, and module-browser detail. Removed production `destroyEvent$` usages from `src/app`.
+- **Tests run:** Expanded focused suite covering the migrated files -> passing; `pnpm build` -> passing; `pnpm lint` -> passing with the existing explicit-any warning baseline; `git diff --check` -> clean.
+- **Docs updated:** Recorded the broader lifecycle-family decision in the Angular modernization plan and durable decision log; the plan was later closed by user direction.
+- **Blockers raised:** `ModuleCollectionsOwnedDetailComponent` remains the only exact non-bridge `takeUntil(this.destroy$)` reference because it still has no adjacent coverage.
+- **Follow-up status:** None for this plan; Angular modernization was later closed by user direction.
+
+## 14-06-2026 19:21 — Angular modernization remaining covered bulk batch
+
+- **Task selected:** Bulk-complete the remaining covered `takeUntil(this.destroy$)` adoption targets instead of continuing small batches.
+- **Implementation note:** Migrated all remaining files that still used the legacy `destroy$` lifecycle pattern and already had adjacent test coverage, including larger services/components. Preserved non-bridge local teardown operators (`destroyEvent$`, menu close streams, timers, discovery search reset) by restoring `takeUntil` imports where those patterns still apply. Left `subscription-manager.ts` unchanged because it owns the bridge fallback, and left `ModuleCollectionsOwnedDetailComponent` unchanged because it was the only remaining exact `destroy$` target without adjacent coverage.
+- **Actions performed:** Migrated `RackModuleAdderDialogComponent`, `ModuleCollectionsBrowserDetailComponent`, `PublicProfileComponent`, `CompleteProfileComponent`, `RackCreatorComponent`, `ModuleBrowserAdderComponent`, `HomeComponent`, `ModuleCollectionsBrowserDataService`, `DiscoveryTipSurfaceComponent`, `PatchGraphComponent`, `ModuleCollectionEditorDataService`, `ModuleBrowserRootComponent`, `UserAreaDataService`, `RackEditorComponent`, and `RackDetailDataService` to `this.takeUntilDestroyed()` for exact `destroy$` lifecycle subscriptions.
+- **Tests run:** `pnpm test-headless --include="**/rack-module-adder-dialog.component.spec.ts" --include="**/module-collections-browser-detail.component.spec.ts" --include="**/public-profile.component.spec.ts" --include="**/complete-profile.component.spec.ts" --include="**/rack-creator.component.spec.ts" --include="**/module-browser-adder.component.spec.ts" --include="**/home.component.spec.ts" --include="**/module-collections-browser-data.service.spec.ts" --include="**/discovery-tip-surface.component.spec.ts" --include="**/patch-graph.component.spec.ts" --include="**/module-collection-editor-data.service.spec.ts" --include="**/module-browser-root.component.spec.ts" --include="**/user-area-data.service.spec.ts" --include="**/rack-editor.component.spec.ts" --include="**/rack-detail-data.service*.spec.ts"` -> 284/284 passing; `pnpm build` -> passing; `pnpm lint` -> passing with the existing explicit-any warning baseline; `git diff --check` -> clean.
+- **Docs updated:** Recorded the covered bulk migration in the Angular modernization plan; the plan was later closed by user direction.
+- **Blockers raised:** Exact `takeUntil(this.destroy$)` migration is complete for covered files; one uncovered component remains intentionally unchanged until covered or manually accepted.
+- **Follow-up status:** None for this plan; Angular modernization was later closed by user direction.
+
+## 14-06-2026 19:12 — Angular modernization smallest covered batch
+
+- **Task selected:** Continue the active Angular modernization plan by ranking remaining legacy `takeUntil(this.destroy$)` files by line count and updating the smallest covered 40% slice.
+- **Implementation note:** Counted 28 remaining covered same-directory legacy files; the top 40% ceiling was 12. Excluded `subscription-manager.ts` because its `takeUntil` is the lifecycle bridge fallback implementation, then included the next smallest covered file. Preserved existing component/service APIs, templates, routing, SEO, comments, login/auth, file-drag, and module-collection behavior. Avoided schema, RLS, policies, migrations, new UI, styling, and God-file work.
+- **Actions performed:** Migrated `ModuleCollectionCreatorComponent`, `ManufacturerRowComponent`, `InputDialogComponent`, `AuthCallbackComponent`, `LoginPageComponent`, `FileDragHostComponent`, `PatchListComponent`, `CommentContextComponent`, `ModuleCollectionEditorComponent`, `ManufacturerDetailComponent`, `PatchBrowserDetailViewComponent`, and `RackBrowserDetailViewComponent` to `this.takeUntilDestroyed()` across 17 additional lifecycle pipelines.
+- **Tests run:** `pnpm test-headless --include="**/module-collection-creator.component.spec.ts" --include="**/manufacturer-row.component.spec.ts" --include="**/input-dialog.component.spec.ts" --include="**/auth-callback.component.spec.ts" --include="**/login-page.component.spec.ts" --include="**/file-drag-host.component.spec.ts" --include="**/patch-list.component.spec.ts" --include="**/comment-context.component.spec.ts" --include="**/module-collection-editor.component.spec.ts" --include="**/manufacturer-detail.component.spec.ts" --include="**/patch-browser-detail-view.component.spec.ts" --include="**/rack-browser-detail-view.component.spec.ts"` -> 129/129 passing; `pnpm build` -> passing; `pnpm lint` -> passing with the existing explicit-any warning baseline; `git diff --check` -> clean.
+- **Docs updated:** Recorded the ranked 40% batch in the Angular modernization plan; the plan was later closed by user direction.
+- **Blockers raised:** None.
+- **Follow-up status:** None for this plan; Angular modernization was later closed by user direction.
+
+## 14-06-2026 19:04 — Angular modernization fifth lifecycle batch
+
+- **Task selected:** Continue the active Angular modernization plan with five more unblocked lifecycle adoption passes.
+- **Implementation note:** Reused the existing `SubManager.takeUntilDestroyed()` bridge in covered services/components. Preserved current browser loading streams, manufacturer search/list behavior, tag voting optimistic flows, SEO setup, direct-constructor specs, and TestBed specs. Avoided schema, RLS, policies, migrations, new UI, styling, routing, and deferred God-file work.
+- **Actions performed:** Migrated `TagVoteDataService`, `ManufacturerDetailDataService`, `ManufacturerBrowserRootDataService`, `RackBrowserRootComponent`, and `PatchBrowserRootComponent` from `takeUntil(this.destroy$)` to `this.takeUntilDestroyed()` across 12 additional lifecycle pipelines.
+- **Tests run:** `pnpm test-headless --include="**/tag-vote-data.service.spec.ts" --include="**/tag-vote-data.service.remaining-branches.spec.ts" --include="**/manufacturer-detail-data.service.spec.ts" --include="**/manufacturer-browser-root-data.service.spec.ts" --include="**/rack-browser-root.component.spec.ts" --include="**/patch-browser-root.component.spec.ts"` -> 81/81 passing; `pnpm build` -> passing; `pnpm lint` -> passing with the existing explicit-any warning baseline; `git diff --check` -> clean.
+- **Docs updated:** Recorded the batch in the Angular modernization plan; the plan was later closed by user direction.
+- **Blockers raised:** None.
+- **Follow-up status:** None for this plan; Angular modernization was later closed by user direction.
+
+## 14-06-2026 18:31 — Angular modernization fourth lifecycle batch
+
+- **Task selected:** Continue the active Angular modernization plan with five unblocked `takeUntilDestroyed()` adoption slices, as requested by the autonomous TODO loop.
+- **Implementation note:** Reused the existing `SubManager.takeUntilDestroyed()` bridge and targeted covered services with existing focused specs. Preserved direct-constructor compatibility, current UI/product behavior, existing form/state streams, and all backend access paths. Avoided schema, RLS, policies, migrations, new UI, styling, routing, and God-file splits.
+- **Actions performed:** Migrated `SelectionPanelBridgeService`, `DiscoveryTipService`, `CommentsDataService`, `UserLoginDataService`, and `UserSignupDataService` from `takeUntil(this.destroy$)` to `this.takeUntilDestroyed()` across 12 additional lifecycle pipelines.
+- **Tests run:** `pnpm test-headless --include="**/selection-panel-bridge.service.spec.ts" --include="**/discovery-tip.service.spec.ts" --include="**/comments-data.service.spec.ts" --include="**/user-login-data.service.spec.ts" --include="**/user-signup-data.service.spec.ts"` -> 45/45 passing; `pnpm build` -> passing; `pnpm lint` -> passing with the existing explicit-any warning baseline; `git diff --check` -> clean.
+- **Docs updated:** Recorded the batch in the Angular modernization plan; the plan was later closed by user direction.
+- **Blockers raised:** None.
+- **Follow-up status:** None for this plan; Angular modernization was later closed by user direction.
+
+## 14-06-2026 17:41 — Angular modernization third lifecycle batch
+
+- **Task selected:** Continue user-requested `takeUntilDestroyed()` adoption after completing the three-component signal-input pilot.
+- **Implementation note:** Reused the existing `SubManager.takeUntilDestroyed()` bridge and targeted small, covered services without manual `ngOnDestroy` overrides. Avoided deferred God-files (`RackDetailDataService`, `UserAreaDataService`) and avoided backend/schema/RLS/policy/migration changes.
+- **Actions performed:** Migrated `LocalDataFilterService`, `ModuleFlagDataService`, `AdminFlagsDataService`, and `ModuleCollectionsDetailDataService` to optional `DestroyRef` constructor args plus `this.takeUntilDestroyed()` across 10 additional lifecycle pipelines.
+- **Tests run:** `pnpm test-headless --include="**/local-data-filter.service.spec.ts" --include="**/module-flag-data.service.spec.ts" --include="**/admin-flags-data.service.spec.ts" --include="**/module-collections-detail-data.service.spec.ts"` → 42/42 passing; `pnpm build` → passing; `pnpm lint` → passing with the existing explicit-any warning baseline; `git diff --check` → clean.
+- **Docs updated:** Recorded the batch in the Angular modernization plan; the plan was later closed by user direction.
+- **Blockers raised:** None.
+- **Follow-up status:** None for this plan; Angular modernization was later closed by user direction.
+
+## 14-06-2026 17:38 — Angular modernization signal-input batch
+
+- **Task selected:** Finish the plan's three-component signal-input pilot after the first `StatisticsComponent` conversion.
+- **Implementation note:** Reused existing shared atom components (`EntityStatGridComponent`, `RecentActivityComponent`), their parent template bindings, and focused specs. Avoided new UI, styling changes, routing changes, backend, schema, RLS, policy, and migration files.
+- **Actions performed:** Converted `EntityStatGridComponent` and `RecentActivityComponent` inputs to `input()` signals, moved filtered/sliced list state to `computed()`, updated templates to read signals, and migrated specs to fixture-backed `setInput()` coverage. Tightened recent-activity icon tests from loose `any` objects to `RecentActivityItem`.
+- **Tests run:** `pnpm test-headless --include="**/entity-stat-grid.component.spec.ts" --include="**/recent-activity.component.spec.ts"` → 15/15 passing; `pnpm build` → passing; `pnpm lint` → passing with the existing explicit-any warning baseline; `git diff --check` → clean.
+- **Docs updated:** Marked the Angular modernization plan's three-component signal-input pilot checkbox complete; the plan was later closed by user direction.
+- **Blockers raised:** None.
+- **Follow-up status:** None for this plan; Angular modernization was later closed by user direction.
+
+## 14-06-2026 17:35 — Angular modernization signal-input pilot
+
+- **Task selected:** Continue the Angular modernization plan with a true signal-input/computed pilot after the user called out signals work as incomplete.
+- **Implementation note:** Reused the existing shared `StatisticsComponent` leaf, its current card/empty-state template branches, and fixture-backed Angular input testing. Avoided parent API churn, styling changes, routing, backend, schema, RLS, policy, and migration files.
+- **Actions performed:** Converted `StatisticsComponent` inputs from `@Input()` properties to `input()` signals, replaced derived getters with `computed()` signals, updated template reads to signal calls, and migrated specs from direct property assignment to `fixture.componentRef.setInput(...)`.
+- **Tests run:** `pnpm test-headless --include="**/statistics.component.spec.ts"` → 8/8 passing; `pnpm build` → passing; `pnpm lint` → passing with the existing explicit-any warning baseline; `git diff --check` → clean.
+- **Docs updated:** Recorded the pilot in the Angular modernization plan; the plan was later closed by user direction.
+- **Blockers raised:** None.
+- **Follow-up status:** None for this plan; Angular modernization was later closed by user direction.
+
+## 14-06-2026 17:32 — Angular modernization second lifecycle batch
+
+- **Task selected:** Continue low-risk `takeUntilDestroyed` adoption after the first data-service batch.
+- **Actions performed:** Migrated `ModuleCollectionsDataService`, `RackBrowserDataService`, and `PatchBrowserDataService` to optional `DestroyRef` constructor args plus `this.takeUntilDestroyed()` across 14 additional lifecycle pipelines.
+- **Tests run:** `pnpm test-headless --include="**/module-collections-data.service.spec.ts" --include="**/rack-browser-data.service.spec.ts" --include="**/patch-browser-data.service.spec.ts"` → 33/33 passing; `pnpm build` → passing; `pnpm lint` → passing with the existing explicit-any warning baseline; `git diff --check` → clean.
+- **Docs updated:** Recorded the second lifecycle batch in the Angular modernization plan; the plan was later closed by user direction.
+- **Blockers raised:** None.
+- **Follow-up status:** None for this plan; Angular modernization was later closed by user direction.
+
+## 14-06-2026 17:27 — Angular modernization service batch
+
+- **Task selected:** Continue the in-progress Angular modernization plan after the SubManager bridge; user explicitly noted the plan remains incomplete and asked for more `takeUntilDestroyed` and signals work.
+- **Implementation note:** Reused the newly added `SubManager.takeUntilDestroyed()` helper, focused on services with direct-constructor specs, and kept `ModuleListComponent` public inputs unchanged for the first signal pilot.
+- **Actions performed:** Migrated `ModuleBrowserDataService`, `ModuleAdderDataService`, and `PublicProfileDataService` to optional `DestroyRef` constructor args plus `this.takeUntilDestroyed()`; moved `ModuleListComponent` internal visible-row/enter-delay bookkeeping to signals.
+- **Tests run:** `pnpm test-headless --include="**/module-browser-data.service.spec.ts" --include="**/module-adder-data.service.spec.ts" --include="**/module-adder-form-validation.spec.ts" --include="**/module-adder-manufacturer-creation.spec.ts" --include="**/public-profile-data.service.spec.ts" --include="**/module-list.component.spec.ts"` → 145/145 passing; `pnpm build` → passing; `pnpm lint` → passing with the existing explicit-any warning baseline; `git diff --check` → clean; code review → no significant issues.
+- **Docs updated:** Recorded the batch in the Angular modernization plan and reset `CURRENT_FEATURE.md`; the plan was later closed by user direction.
+- **Blockers raised:** None.
+- **Follow-up status:** None for this plan; Angular modernization was later closed by user direction.
+
+## 14-06-2026 17:12 — Angular modernization SubManager bridge
+
+- **Boot state:** Git status was clean aside from `develop` being ahead of origin; `CURRENT_FEATURE.md` had no active feature.
+- **Task selected:** HIGH Angular modernization, bounded to the `SubManager` `DestroyRef` / `takeUntilDestroyed` bridge because it is actionable without schema/RLS approval or UI invention.
+- **Implementation note:** Reused `SubManager`, `UserManagementService`, and existing memory-management specs. Avoided route, template, SCSS, Supabase, schema, RLS, policy, and migration files.
+- **Actions performed:** Added optional `DestroyRef` registration to `SubManager`, kept `destroy$` / `manageSub` / `ngOnDestroy` compatible and idempotent, added a protected helper that composes Angular `takeUntilDestroyed` with legacy `destroy$`, and migrated the covered `UserManagementService` subscriptions to the helper.
+- **Tests run:** `pnpm test-headless --include="**/subscription-manager.spec.ts" --include="**/memory-management.spec.ts"` → 16/16 passing; `pnpm build` → passing; `pnpm lint` → passing with the existing explicit-any warning baseline.
+- **Docs updated:** Marked the SubManager checkbox complete, reset `CURRENT_FEATURE.md`, and recorded completion in `COMPLETED.md`; the plan was later closed by user direction.
+- **Blockers raised:** None.
+- **Follow-up status:** None for this plan; Angular modernization was later closed by user direction.
+
 ## 14-06-2026 14:20 — Type safety explicit-any ratchet
 
 - **Boot state:** Git status was clean aside from `develop` being ahead of origin. `CURRENT_FEATURE.md` had no active feature, so selected the top unblocked HIGH infra task from `TODO.md`.
@@ -43,7 +159,7 @@
 - **Actions performed:** Replaced `{ [key: string]: any }` metadata parameters with Angular `Data` in Saturn, Uranus, and Venus route factory helpers; regenerated baseline from 2,972 to 2,969.
 - **Tests run:** `pnpm test-headless --include="**/saturn.component.spec.ts" --include="**/uranus.component.spec.ts" --include="**/venus.component.spec.ts"` → 15/15 passing.
 - **Blockers raised:** None.
-- **Next pickup:** Continue safe cleanup only where Angular/generated types can replace `any` without altering runtime data shapes.
+- **Follow-up status:** Continue safe cleanup only where Angular/generated types can replace `any` without altering runtime data shapes.
 
 ## 14-06-2026 14:35 — Type safety route layout spec cleanup
 

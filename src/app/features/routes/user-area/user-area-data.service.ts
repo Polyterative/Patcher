@@ -242,22 +242,22 @@ export class UserAreaDataService extends SubManager {
     this.bindPageEvent(this.patchesPageEvent$, this.patchesPagination);
 
     // Analytics for page events — thin separate subscriptions so bindPageEvent stays simple
-    this.commentsPageEvent$.pipe(takeUntil(this.destroy$)).subscribe(e =>
+    this.commentsPageEvent$.pipe(this.takeUntilDestroyed()).subscribe(e =>
       this.analytics.capture('user_area.comments.page_changed', { page_index: e.pageIndex, page_size: e.pageSize })
     );
-    this.patchesPageEvent$.pipe(takeUntil(this.destroy$)).subscribe(e =>
+    this.patchesPageEvent$.pipe(this.takeUntilDestroyed()).subscribe(e =>
       this.analytics.capture('user_area.patches.page_changed', { page_index: e.pageIndex, page_size: e.pageSize })
     );
 
     this.loadMoreModules$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(() => {
         this.analytics.capture('user_area.modules.load_more', { current_take: this.modulesPagination.take$.value });
         this.modulesPagination.take$.next(this.modulesPagination.take$.value + 10);
       });
 
     this.loadMoreRacks$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(() => {
         this.analytics.capture('user_area.racks.load_more', { current_take: this.racksPagination.take$.value });
         this.racksPagination.take$.next(this.racksPagination.take$.value + 10);
@@ -271,7 +271,7 @@ export class UserAreaDataService extends SubManager {
           const take = this.commentsPagination.take$.value;
           return this.backend.GET.currentUserComments(skip, skip + take - 1);
         }),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(response => {
         this.commentsData$.next(response?.data ?? []);
@@ -282,7 +282,7 @@ export class UserAreaDataService extends SubManager {
       .pipe(
         tap(() => this.modulesData$.next(undefined)),
         switchMap(() => this.backend.GET.currentUserModules()),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(x => this.modulesData$.next(x));
 
@@ -290,7 +290,7 @@ export class UserAreaDataService extends SubManager {
       .pipe(
         tap(() => this.contributorStats$.next(undefined)),
         switchMap(() => this.backend.GET.currentUserContributorStats()),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe((stats) => this.contributorStats$.next(stats));
 
@@ -298,7 +298,7 @@ export class UserAreaDataService extends SubManager {
       .pipe(
         tap(() => this.patchesData$.next(undefined)),
         switchMap(() => this.backend.get.currentUserPatches()),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(patches => {
         const nextPatches = patches ?? [];
@@ -310,7 +310,7 @@ export class UserAreaDataService extends SubManager {
       .pipe(
         tap(() => this.rackData$.next(undefined)),
         switchMap(() => this.backend.get.currentUserRacks()),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(racks => {
         const nextRacks = racks ?? [];
@@ -329,7 +329,7 @@ export class UserAreaDataService extends SubManager {
           .filter(y => !!y.manualURL)
           .sort((a, b) => a.name.localeCompare(b.name))
         ),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(x => this.manualsData$.next(x));
 
@@ -350,7 +350,7 @@ export class UserAreaDataService extends SubManager {
         query
       )),
       tap((snapshot) => this.discoveryTipService.updateUserAreaSnapshot(snapshot)),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe();
 
     this.searchQuery$
@@ -362,7 +362,7 @@ export class UserAreaDataService extends SubManager {
           this.racksPagination.take$.next(10);
           this.patchesPagination.skip$.next(0);
         }),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe();
 
@@ -373,7 +373,7 @@ export class UserAreaDataService extends SubManager {
           this.modulesPagination.skip$.next(0);
           this.modulesPagination.take$.next(10);
         }),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe();
 
@@ -383,7 +383,7 @@ export class UserAreaDataService extends SubManager {
           this.analytics.capture('user_area.patches.tag_filter_changed', { tag_filter: tag });
           this.patchesPagination.skip$.next(0);
         }),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe();
 
@@ -393,7 +393,7 @@ export class UserAreaDataService extends SubManager {
           this.analytics.capture('user_area.modules.add_initiated', {});
           this.discoveryTipService.recordAction('user-area.modules.add-clicked');
         }),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe();
     
@@ -415,7 +415,7 @@ export class UserAreaDataService extends SubManager {
           )
             .afterClosed();
         }),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(() => this.updatePatchesData$.next());
     
@@ -441,7 +441,7 @@ export class UserAreaDataService extends SubManager {
           )
             .afterClosed();
         }),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(() => this.updateRackData$.next(undefined));
     
@@ -459,7 +459,7 @@ export class UserAreaDataService extends SubManager {
         this.discoveryTipService.recordAction('user-area.search-used');
       }),
       takeUntil(this.discoverySearchDestroy$),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe();
   }
 
@@ -487,7 +487,7 @@ export class UserAreaDataService extends SubManager {
     onPageChange?: () => void
   ): void {
     pageEvent$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe((event) => {
         pagination.take$.next(event.pageSize);
         pagination.skip$.next(event.pageIndex * event.pageSize);

@@ -1,3 +1,4 @@
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import {
   ChangeDetectorRef,
   Pipe,
@@ -18,13 +19,13 @@ type LocalType = UntypedFormControl | UntypedFormGroup;
   pure: false,
   standalone: true
 })
-export class FormValidPipe implements PipeTransform, OnDestroy {
+export class FormValidPipe extends SubManager implements PipeTransform, OnDestroy {
   valid = false;
   subscribed = false;
-  
-  protected destroyEvent$ = new Subject<void>();
 
-  constructor(public changeDetection: ChangeDetectorRef) {}
+  constructor(public changeDetection: ChangeDetectorRef) {
+    super();
+  }
 
   transform(control: LocalType): boolean {
 
@@ -38,7 +39,7 @@ export class FormValidPipe implements PipeTransform, OnDestroy {
   private subscribe(control: LocalType): void {
     control.valueChanges
            .pipe(
-             takeUntil(this.destroyEvent$)
+             this.takeUntilDestroyed()
            )
            .subscribe(_ => {
              this.updateResult(control);
@@ -55,8 +56,7 @@ export class FormValidPipe implements PipeTransform, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.destroyEvent$.next();
-    this.destroyEvent$.complete();
+    super.ngOnDestroy();
 
   }
 }

@@ -1,19 +1,19 @@
 <section class="recent-activity">
-  <h3 class="recent-activity__title">{{ title }}</h3>
+  <h3 class="recent-activity__title">{{ title() }}</h3>
   
-  @if (items === undefined) {
+  @if (items() === undefined) {
     <div class="recent-activity__state recent-activity__state--loading">
       <mat-icon>history</mat-icon>
-      <span>{{ loadingText }}</span>
+      <span>{{ loadingText() }}</span>
     </div>
-  } @else if (visibleItems.length === 0) {
+  } @else if (visibleItems().length === 0) {
     <div class="recent-activity__state">
       <mat-icon>history_toggle_off</mat-icon>
-      <span>{{ emptyText }}</span>
+      <span>{{ emptyText() }}</span>
     </div>
   } @else {
     <ul class="recent-activity__list">
-      @for (item of visibleItems; track item.id) {
+      @for (item of visibleItems(); track item.id) {
         <li class="recent-activity__item">
           <mat-icon class="recent-activity__icon">{{ resolveIcon(item) }}</mat-icon>
           

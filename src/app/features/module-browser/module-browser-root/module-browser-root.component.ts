@@ -16,7 +16,6 @@ import {
   mapTo,
   shareReplay,
   startWith,
-  takeUntil
 } from 'rxjs/operators';
 import {
   defaultModuleMinimalViewConfig,
@@ -173,7 +172,7 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
     ).pipe(
       startWith(false),
       shareReplay({bufferSize: 1, refCount: true}),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     );
 
     merge(
@@ -193,7 +192,7 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
     )
       .pipe(
         startWith(null),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(() => this.syncVisibleModules());
 
@@ -202,7 +201,7 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
     this.dataService.updateModulesList$.next();
 
     this.route.queryParams
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(params => {
         if (params['refresh']) {
           this.dataService.serversideTableRequestData.skip$.next(0);

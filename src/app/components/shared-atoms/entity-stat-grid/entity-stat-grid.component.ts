@@ -1,7 +1,8 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Input
+  computed,
+  input
 } from '@angular/core';
 
 export interface EntityStatItem {
@@ -22,16 +23,14 @@ export interface EntityStatItem {
   standalone: false
 })
 export class EntityStatGridComponent {
-  @Input() items: EntityStatItem[] = [];
-  @Input() equalColumns = false;
-  @Input() stacked = false;
+  readonly items = input<EntityStatItem[]>([]);
+  readonly equalColumns = input(false);
+  readonly stacked = input(false);
 
-  visibleItems(): EntityStatItem[] {
-    return this.items.filter(item => !item.hidden);
-  }
+  readonly visibleItems = computed(() => this.items().filter(item => !item.hidden));
 
   itemFlex(item: EntityStatItem): string {
-    return this.equalColumns ? '1 1 0' : `1 1 ${ item.size ?? '12rem' }`;
+    return this.equalColumns() ? '1 1 0' : `1 1 ${ item.size ?? '12rem' }`;
   }
 
   itemTrackKey(item: EntityStatItem, index: number): string {

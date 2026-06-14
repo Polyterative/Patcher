@@ -1,4 +1,7 @@
-import { Injectable } from '@angular/core';
+import {
+  DestroyRef,
+  Injectable
+} from '@angular/core';
 import {
   BehaviorSubject,
   ReplaySubject,
@@ -6,7 +9,6 @@ import {
 } from 'rxjs';
 import {
   switchMap,
-  takeUntil,
   tap
 } from 'rxjs/operators';
 import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
@@ -27,9 +29,10 @@ export class ModuleCollectionsDetailDataService extends SubManager {
 
   constructor(
     private backend: SupabaseService,
-    private analytics: AnalyticsService
+    private analytics: AnalyticsService,
+    destroyRef?: DestroyRef
   ) {
-    super();
+    super(destroyRef);
 
     this.load$.pipe(
       tap(() => {
@@ -37,7 +40,7 @@ export class ModuleCollectionsDetailDataService extends SubManager {
         this._unavailableMessage$.next(null);
       }),
       switchMap(publicId => this.backend.GET.publicModuleCollectionByPublicId(publicId)),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe(collection => {
       this._collection$.next(collection);
       if (!collection) {
@@ -56,7 +59,7 @@ export class ModuleCollectionsDetailDataService extends SubManager {
         this._unavailableMessage$.next(null);
       }),
       switchMap(collectionId => this.backend.GET.currentUserModuleCollectionById(collectionId)),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe(collection => {
       this._collection$.next(collection);
       if (!collection) {
@@ -65,7 +68,7 @@ export class ModuleCollectionsDetailDataService extends SubManager {
     });
 
     this.localCollectionUpdated$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(collection => this._collection$.next(collection));
   }
 

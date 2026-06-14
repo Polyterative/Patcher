@@ -24,7 +24,6 @@ import {
   filter,
   map,
   startWith,
-  takeUntil
 } from "rxjs/operators";
 import { SubManager } from "src/app/shared-interproject/directives/subscription-manager";
 
@@ -198,12 +197,12 @@ export class ModuleBrowserAdderComponent extends SubManager implements OnInit, O
 
     // celebration overlay on successful submission
     this.dataService.submitSuccess$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(payload => this.celebration$.next(payload));
 
     // any edit to the form disarms the two-step submit
     this.dataService.formGroup.valueChanges
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(() => {
         if (this.armed$.value) this.armed$.next(false);
       });
@@ -213,16 +212,16 @@ export class ModuleBrowserAdderComponent extends SubManager implements OnInit, O
       this.route.queryParams,
       this.dataService.formData.manufacturer.options$.pipe(
         filter(x => x.length > 0),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       ),
       this.dataService.formData.standard.options$.pipe(
         filter(x => x.length > 0),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       ),
     ])
       .pipe(
         delay(200),
-        takeUntil(this.destroy$),
+        this.takeUntilDestroyed(),
       )
       .subscribe(([params, manufacturersList, standardsList]) => {
           if (parseInt(params.manufacturer)) {

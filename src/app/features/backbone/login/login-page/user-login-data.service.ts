@@ -17,7 +17,6 @@ import {
   exhaustMap,
   map,
   switchMap,
-  takeUntil,
   tap
 } from 'rxjs/operators';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
@@ -106,7 +105,7 @@ export class UserLoginDataService extends SubManager {
           this.fields.password.control.value
         )),
         tap(() => SharedConstants.successLogin(this.snackBar)),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(x => {
         this.router.navigate([x.returnUrl ? x.returnUrl : '/user/area']);
@@ -118,7 +117,7 @@ export class UserLoginDataService extends SubManager {
    */
   private initializePasswordResetToggle(): void {
     this.togglePasswordReset$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(show => {
         this.showPasswordReset$.next(show);
         this.resetSuccessMessage$.next('');
@@ -138,7 +137,7 @@ export class UserLoginDataService extends SubManager {
           this.resetSuccessMessage$.next('');
         }),
         concatMap(email => this.validateAndSubmitPasswordReset$(email)),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe({
         next: result => {

@@ -15,7 +15,6 @@ import {
   shareReplay,
   startWith,
   switchMap,
-  takeUntil,
   tap,
 } from 'rxjs/operators';
 import { FormControl } from '@angular/forms';
@@ -177,7 +176,7 @@ export class ModuleCollectionsBrowserDataService extends SubManager {
       switchMap(([search, order]) => this.fetchPage(0, search, order.id).pipe(
         map(page => ({page, search, order}))
       )),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe(({page, search, order}) => {
       this.applyFirstPage(page);
       this.analytics.capture('module_collection.browser_viewed', { view: 'public' });
@@ -209,7 +208,7 @@ export class ModuleCollectionsBrowserDataService extends SubManager {
           map(page => ({ page, filterVersion }))
         );
       }),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe(({ page, filterVersion }) => {
       if (filterVersion !== this.filterVersion) {
         return;
@@ -225,7 +224,7 @@ export class ModuleCollectionsBrowserDataService extends SubManager {
     });
 
     this.collectionOpened$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(({collection, index}) => {
         this.analytics.capture('module_collection.discovery_collection_clicked', {
           collection_id: collection.id,

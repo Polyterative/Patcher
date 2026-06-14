@@ -1,7 +1,8 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Input
+  computed,
+  input
 } from '@angular/core';
 import {
   RecentActivityItem,
@@ -21,11 +22,11 @@ import { SupabaseUtcTimestampPipe } from '../../../shared-interproject/pipes/sup
     imports: [MatIcon, RouterLink, TimeagoModule, SupabaseUtcTimestampPipe]
 })
 export class RecentActivityComponent {
-  @Input() title = 'Recent activity';
-  @Input() emptyText = 'No recent activity yet.';
-  @Input() loadingText = 'Loading recent activity...';
-  @Input() maxItems = 5;
-  @Input() items: RecentActivityItem[] | null | undefined = undefined;
+  readonly title = input('Recent activity');
+  readonly emptyText = input('No recent activity yet.');
+  readonly loadingText = input('Loading recent activity...');
+  readonly maxItems = input(5);
+  readonly items = input<RecentActivityItem[] | null | undefined>(undefined);
   
   private readonly defaultIcons: Record<RecentActivityType, string> = {
     comment: 'chat_bubble_outline',
@@ -36,10 +37,10 @@ export class RecentActivityComponent {
     generic: 'history'
   };
   
-  get visibleItems(): RecentActivityItem[] {
-    const source = this.items ?? [];
-    return source.slice(0, this.maxItems);
-  }
+  readonly visibleItems = computed(() => {
+    const source = this.items() ?? [];
+    return source.slice(0, this.maxItems());
+  });
   
   resolveIcon(item: RecentActivityItem): string {
     if (item.icon) {

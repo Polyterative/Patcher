@@ -3,7 +3,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject, EMPTY, Subject } from 'rxjs';
-import { catchError, exhaustMap, filter, map, takeUntil } from 'rxjs/operators';
+import { catchError, exhaustMap, filter, map } from 'rxjs/operators';
 import { ModuleCollectionsDataService } from 'src/app/features/module-collections/module-collections-data.service';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
@@ -61,7 +61,7 @@ export class ModuleCollectionCreatorComponent extends SubManager {
             })
           );
         }),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(id => {
         this.saving$.next(false);

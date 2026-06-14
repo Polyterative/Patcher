@@ -1,4 +1,7 @@
-import { Injectable } from '@angular/core';
+import {
+  DestroyRef,
+  Injectable
+} from '@angular/core';
 import {
   FormControl,
   Validators
@@ -21,7 +24,6 @@ import {
   skip,
   startWith,
   switchMap,
-  takeUntil,
   tap,
   withLatestFrom
 } from 'rxjs/operators';
@@ -106,14 +108,18 @@ export class ModuleBrowserDataService extends SubManager {
   readonly fields: ModuleBrowserFields;
   readonly canReset$: Observable<boolean>;
 
-  constructor(private backend: SupabaseService, private analytics: AnalyticsService) {
-    super();
+  constructor(
+    private backend: SupabaseService,
+    private analytics: AnalyticsService,
+    destroyRef?: DestroyRef
+  ) {
+    super(destroyRef);
     this.backend.cacheResetter$?.next(['manufacturers']);
 
     this.allTags$ = this.backend.get.allTags().pipe(
       startWith([]),
       shareReplay(1),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     );
 
     this.groupedFilterTags$ = combineLatest([
@@ -146,7 +152,7 @@ export class ModuleBrowserDataService extends SubManager {
         }));
       }),
       shareReplay(1),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     );
 
     const orderControl = new FormControl<ModuleOrderOption>(this.orderStartingValue, {nonNullable: true});
@@ -158,7 +164,7 @@ export class ModuleBrowserDataService extends SubManager {
         : MODULE_ORDER_OPTIONS
       ),
       shareReplay(1),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     );
 
     this.fields = {
@@ -194,7 +200,7 @@ export class ModuleBrowserDataService extends SubManager {
           .pipe(
             map(x => (x.data ?? []).map(z => ({id: z.id.toString(), name: z.name}))),
             startWith([]),
-            takeUntil(this.destroy$),
+            this.takeUntilDestroyed(),
             share()
           )
       },
@@ -248,7 +254,7 @@ export class ModuleBrowserDataService extends SubManager {
         options$: this.allTags$.pipe(
           map(tags => (tags ?? []).map((tag) => ({id: tag.id.toString(), name: tag.name}))),
           startWith([]),
-          takeUntil(this.destroy$),
+          this.takeUntilDestroyed(),
           share()
         )
       },
@@ -263,7 +269,7 @@ export class ModuleBrowserDataService extends SubManager {
 
     // Sync tagSearch control ↔ tagSearchQuery$
     this.fields.tagSearch.control.valueChanges
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(query => this.tagSearchQuery$.next(query));
 
     this.canReset$ = merge(
@@ -311,7 +317,7 @@ export class ModuleBrowserDataService extends SubManager {
     ).pipe(
       tap(() => this.moduleFilterInteraction$.next()),
       debounceTime(750),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe(() => {
       const orderVal = this.fields.order.control.value;
       const nameVal = this.fields.name.control.value ?? '';
@@ -341,7 +347,7 @@ export class ModuleBrowserDataService extends SubManager {
     });
 
     this.fields.tags.control.valueChanges
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe((selectedTags) => {
         const currentOrder = this.fields.order.control.value;
         const selectedCount = selectedTags?.length ?? 0;
@@ -371,7 +377,7 @@ export class ModuleBrowserDataService extends SubManager {
       .pipe(
         distinctUntilChanged(),
         skip(1),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(() => {
         const activeTags = this.getSelectedTagIds().length;
@@ -442,7 +448,7 @@ export class ModuleBrowserDataService extends SubManager {
               : response.count
           };
         }),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(response => {
         this.serversideAdditionalData.itemsCount$.next(
@@ -472,7 +478,7 @@ export class ModuleBrowserDataService extends SubManager {
     this.loadMore$
       .pipe(
         withLatestFrom(this.modulesList$),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(([_, current]) => {
         this.analytics.capture('search.load_more', { loaded_count: current?.length ?? 0 });
@@ -481,7 +487,7 @@ export class ModuleBrowserDataService extends SubManager {
       });
 
     this.resetForm$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(() => {
         this.analytics.capture('search.filters_reset', {});
         this.backend.cacheResetter$.next(['modules']);

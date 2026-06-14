@@ -11,7 +11,6 @@ import {
   ENTER
 } from '@angular/cdk/keycodes';
 import { MatChipInputEvent } from '@angular/material/chips';
-import { Subject } from 'rxjs';
 import {
   MultiInstanceModuleSummary,
   PatchDetailDataService
@@ -26,6 +25,7 @@ import {
   defaultPatchMinimalViewConfig
 } from './patch-minimal.types';
 import { StorageUrls } from 'src/app/features/backend/DatabaseStrings';
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 
 export type { PatchMinimalViewConfig };
 export { defaultPatchMinimalViewConfig };
@@ -38,11 +38,10 @@ export { defaultPatchMinimalViewConfig };
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class PatchMinimalComponent implements OnInit, OnDestroy {
+export class PatchMinimalComponent extends SubManager implements OnInit, OnDestroy {
   @Input() data: PatchMinimal;
   @Input() viewConfig: PatchMinimalViewConfig = defaultPatchMinimalViewConfig;
   
-  protected destroyEvent$ = new Subject<void>();
   readonly tagSeparatorKeysCodes: number[] = [ENTER, COMMA];
   readonly formTypes = FormTypes;
   linkedRackHelpOpen = false;
@@ -69,15 +68,15 @@ export class PatchMinimalComponent implements OnInit, OnDestroy {
     public dataService: PatchDetailDataService,
     public urlCreatorService: UrlCreatorService,
     private readonly elementRef: ElementRef<HTMLElement>
-  ) {}
+  ) {
+    super();
+  }
   
   ngOnInit(): void {
   }
   
   ngOnDestroy(): void {
-    this.destroyEvent$.next();
-    this.destroyEvent$.complete();
-    
+    super.ngOnDestroy();
   }
 
   addTag(event: MatChipInputEvent): void {

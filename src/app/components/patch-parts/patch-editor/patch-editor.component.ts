@@ -1,4 +1,5 @@
-﻿import {
+﻿import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
+import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -131,7 +132,7 @@ export {
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class PatchEditorComponent implements OnInit, OnDestroy {
+export class PatchEditorComponent extends SubManager implements OnInit, OnDestroy {
   @Input() data: Patch;
   @Input() readonly = false;
   //
@@ -248,8 +249,6 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
     }
   }
   
-  protected destroyEvent$ = new Subject<void>();
-  
   constructor(
     public backend: SupabaseService,
     public dataService: PatchDetailDataService,
@@ -258,6 +257,7 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private analytics: AnalyticsService
   ) {
+    super();
     this.operationMode$ = this.dataService.editorOperationMode$;
     this.hasLinkedRack$ = this.dataService.linkedRackState$.pipe(
       map(state => state.kind !== 'unlinked'),
@@ -268,8 +268,7 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.rackResizeObserver?.disconnect();
     this.rackScreenResizeObserver?.disconnect();
-    this.destroyEvent$.next();
-    this.destroyEvent$.complete();
+    super.ngOnDestroy();
   }
   
   ngOnInit(): void {
@@ -285,7 +284,7 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
             strategy.backendOrder
           )),
           map((modules: DbModule[]) => modules.filter(m => m.possessionKind !== 'WANTS')),
-          takeUntil(this.destroyEvent$)
+          this.takeUntilDestroyed()
         )
         .subscribe((modules: DbModule[]) => {
           this.dataService.collectionModules$.next(modules);
@@ -298,7 +297,7 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
         this.dataService.patchModuleInstances$,
         this.dataService.editorConnections$
       ])
-        .pipe(takeUntil(this.destroyEvent$))
+        .pipe(this.takeUntilDestroyed())
         .subscribe(cards => {
           const [modules, instances, connections] = cards;
           const editorCards = this.buildEditorCards(modules, instances, connections || []);
@@ -318,13 +317,13 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
             const filteredCards = filterEditorCardsByQuery(cards, searchQuery);
             return sortAndGroupEditorCards(filteredCards, strategy, groupModeId);
           }),
-          takeUntil(this.destroyEvent$)
+          this.takeUntilDestroyed()
         )
         .subscribe(cards => this.editorCards$.next(cards));
 
       // Close expanded CV panel after a connection is confirmed
       this.dataService.confirmSelectedConnection$
-        .pipe(takeUntil(this.destroyEvent$))
+        .pipe(this.takeUntilDestroyed())
         .subscribe(() => {
           this.clearExpandedRackSelection();
         });
@@ -335,7 +334,7 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
         .pipe(
           filter(() => this.expandedRackTrackingId != null),
           filter(event => !this.isInsideRackVisual(event.target)),
-          takeUntil(this.destroyEvent$)
+          this.takeUntilDestroyed()
         )
         .subscribe(() => {
           this.clearExpandedRackSelection();
@@ -348,7 +347,7 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
       ])
         .pipe(
           map(([instances, previewState]) => buildLinkedRackInstanceMap(previewState, instances)),
-          takeUntil(this.destroyEvent$)
+          this.takeUntilDestroyed()
         )
         .subscribe(map => this.linkedRackInstanceMap$.next(map));
 
@@ -362,7 +361,7 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
           map(([instances, previewState, connections]) =>
             detectLinkedRackDivergence(previewState, instances, connections ?? [])
           ),
-          takeUntil(this.destroyEvent$)
+          this.takeUntilDestroyed()
         )
         .subscribe(divergence => this.linkedRackDivergence$.next(divergence));
 
@@ -376,7 +375,7 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
           map(([instanceMap, instances, connections]) =>
             countOrphanedConnections(instanceMap, instances, connections ?? [])
           ),
-          takeUntil(this.destroyEvent$)
+          this.takeUntilDestroyed()
         )
         .subscribe(count => this.orphanedConnectionCount$.next(count));
     }
@@ -410,7 +409,7 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
             catchError(() => of(buildLinkedRackPreviewState(undefined)))
           );
         }),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(state => {
         this.linkedRackPreviewState$.next(state);
@@ -431,7 +430,7 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
       });
 
     this.hasLinkedRack$
-      .pipe(takeUntil(this.destroyEvent$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(hasLinkedRack => {
         const mode = hasLinkedRack
           ? PATCH_EDITOR_OPERATION_MODES.linkedRack
@@ -447,7 +446,7 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
     // Close expanded CV panel after a connection is confirmed so the rack
     // visual shows role colors without a specific module's CVs open.
     this.dataService.confirmSelectedConnection$
-      .pipe(takeUntil(this.destroyEvent$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(() => this.clearExpandedRackSelection());
   }
 

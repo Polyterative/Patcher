@@ -9,7 +9,6 @@ import { FormTypes } from '../../components/@smart/mat-form-entity/form-element-
 import { IMatFormEntityConfig, MatFormEntityComponent } from '../../components/@smart/mat-form-entity/mat-form-entity.component';
 import { DialogBase } from '../DialogBase';
 import { ReadOnlyDialogComponent } from '../read-only-dialog/read-only-dialog.component';
-import { takeUntil } from "rxjs/operators";
 import { BehaviorSubject } from "rxjs";
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogTitle, MatDialogContent, MatDialogActions } from "@angular/material/dialog";
 import {
@@ -60,7 +59,7 @@ export class InputDialogComponent extends DialogBase {
     
     this.data.control.valueChanges
       .pipe(
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(() => {
         this.isValid$.next(this.data.control.valid);
