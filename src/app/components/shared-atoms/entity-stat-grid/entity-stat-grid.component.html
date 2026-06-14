@@ -20,6 +20,9 @@
       >
         {{ item.value }}
       </app-label-value-showcase>
+      @if (item.detail) {
+        <div class="entityStatGrid__detail">{{ item.detail }}</div>
+      }
     </a>
   }
 </div>

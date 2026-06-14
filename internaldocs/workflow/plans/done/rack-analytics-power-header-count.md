@@ -44,14 +44,14 @@ Link the "unknown" count to the existing missing-power-data warning if one exist
 
 **Checklist:**
 
-- [ ] Add `powerHeaderCount`, `passiveModuleCount`, and `unknownPowerModuleCount` to
+- [x] Add `powerHeaderCount`, `passiveModuleCount`, and `unknownPowerModuleCount` to
       `RackPowerBreakdown` interface in `rack-power-breakdown.utils.ts`.
-- [ ] Add `rowPowerHeaderCount` to `RackPowerRowBreakdown` interface.
-- [ ] Implement the counting logic inside `buildRackPowerBreakdown` using the conservative
+- [x] Add `rowPowerHeaderCount` to `RackPowerRowBreakdown` interface.
+- [x] Implement the counting logic inside `buildRackPowerBreakdown` using the conservative
       rule above. Pure function — no service injection needed.
-- [ ] Update the power analysis panel template to show the summary line (rack editor +
+- [x] Update the power analysis panel template to show the summary line (rack editor +
       rack detail view). Use existing typography tokens; keep it one line under the rail totals.
-- [ ] Unit-test `buildRackPowerBreakdown` with fixtures covering: all active, all passive,
+- [x] Unit-test `buildRackPowerBreakdown` with fixtures covering: all active, all passive,
       mixed, all-null rails.
 
 ---
@@ -95,3 +95,4 @@ confusing and error-prone.
 
 <!-- Append timestamped one-liners as the plan progresses. -->
 
+- 2026-06-14T20:16+02:00 — Implemented the derived-only power-header slice without backend/schema changes. Reused `buildRackPowerBreakdown`, rack detail stat groups, and the existing row power hover panel; counted all-null and non-zero modules as needing headers, all-zero passive modules as not needing headers, and blank panels as excluded.

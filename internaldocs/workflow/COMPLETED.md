@@ -17,6 +17,8 @@
 
 - **2026-06-14** — MEDIUM: Module / Patch / Rack browser — old-school Material paginators are removed from product surfaces; user-area comments append backend pages and user-area patches grow in-place with the existing explicit Load More pattern.
 
+- **2026-06-14** — MEDIUM: Rack Analytics — rack power analysis now shows derived power-header counts, with passive and unknown module metadata, in rack detail stats and row-level editor power analysis.
+
 - **2026-06-14** — HIGH: Perf — route-open render flash is closed after the SCSS font-loading error was fixed; no active implementation remains.
 
 - **2026-06-14** — HIGH: Angular modernization — `SubManager` now has a back-compatible optional `DestroyRef`/`takeUntilDestroyed` bridge, with `UserManagementService` piloting the new lifecycle helper and lifecycle regressions covering manual and Angular teardown paths.
@@ -350,4 +352,5 @@
 - Archived [Module Browser — Tag Filter UX improvements](./plans/done/module-browser-tag-filter-ux-improvements.md)
 - Archived [Perf — Audit Reactive Pipelines & Event Chains for Smoothness](./plans/done/perf-audit-reactive-pipelines-event-chains-for-smoothness.md)
 - Archived [Perf — Cache Strategy Review (Hits, Invalidation, Coverage)](./plans/done/perf-cache-strategy-review-hits-invalidation-coverage.md)
+- Archived [Perf — Backend Bandwidth Optimisation (Every Byte Costs Money)](./plans/done/perf-backend-bandwidth-optimisation-every-byte-costs-money.md)
 - Archived [Rack Editor — Row HP overflow indicator](./plans/done/rack-editor-row-hp-overflow-indicator.md)

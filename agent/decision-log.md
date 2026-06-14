@@ -1,5 +1,9 @@
 # Decision Log
 
+## 14-06-2026 20:18
+
+- **Backend bandwidth closure:** Treated the stale perf plan as complete after verifying live Vercel and Supabase REST compression headers. Archived the plan without code changes because all query/pagination/image audit implementation work was already done and the only remaining item was external verification.
+
 ## 14-06-2026 19:58
 
 - **Root leaf route split:** Selected `/404` and `/links/retired` because both were low-traffic leaf pages imported eagerly by `AppRoutingModule` while already shaped as standalone components. Exported `appRoutes` only for test visibility and preserved route paths/redirect behavior.
@@ -7,6 +11,10 @@
 ## 14-06-2026 20:02
 
 - **Load More closure:** User clarified that even comments should not keep the old paginator. Reused the existing user-area modules/racks Load More visual pattern; comments append backend pages while patches grow the local slice because their full list is already loaded.
+
+## 14-06-2026 20:16
+
+- **Rack power headers:** Selected the derived-only Rack Analytics slice because it is product-useful and unblocked by schema/RLS. Kept the count in `buildRackPowerBreakdown` and existing rack power surfaces rather than adding a new UI component or backend method.
 
 ## 14-06-2026 19:55
 

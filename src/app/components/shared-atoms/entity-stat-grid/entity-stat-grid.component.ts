@@ -12,6 +12,7 @@ export interface EntityStatItem {
   hidden?: boolean;
   size?: string;
   badge?: string;
+  detail?: string;
   routerLink?: (string | number)[];
 }
 
@@ -36,6 +37,6 @@ export class EntityStatGridComponent {
   itemTrackKey(item: EntityStatItem, index: number): string {
     const routerLink = item.routerLink?.join('/') ?? '';
 
-    return `${ item.label }|${ item.value }|${ item.icon ?? '' }|${ item.badge ?? '' }|${ routerLink }|${ index }`;
+    return `${ item.label }|${ item.value }|${ item.icon ?? '' }|${ item.badge ?? '' }|${ item.detail ?? '' }|${ routerLink }|${ index }`;
   }
 }

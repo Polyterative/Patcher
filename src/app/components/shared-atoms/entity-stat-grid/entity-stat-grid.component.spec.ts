@@ -38,6 +38,7 @@ describe('EntityStatGridComponent', () => {
       value: '420 HP',
       icon: 'bolt',
       badge: 'new',
+      detail: 'meta',
       routerLink: ['/racks', '1']
     }, 0);
 
@@ -46,6 +47,7 @@ describe('EntityStatGridComponent', () => {
       value: '420 HP',
       icon: 'bolt',
       badge: 'new',
+      detail: 'meta',
       routerLink: ['/racks', '1']
     }, 0);
 
