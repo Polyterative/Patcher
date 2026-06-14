@@ -1,5 +1,9 @@
 # Decision Log
 
+## 14-06-2026 19:37
+
+- **Bundle/prerender first slice:** Chose measurement plus prerender coverage before dependency deferral so later chunk changes have a pinned baseline. Reused the existing sitemap REST pattern rather than adding Angular service/API methods because the generator runs in Node before build. Dynamic prerender routes fail open to static routes when credentials or individual tables are unavailable, matching existing sitemap resilience while avoiding schema/RLS work.
+
 ## 14-06-2026 13:00
 
 - **Type safety ratchet:** Selected the first Type Safety plan item as the next unblocked HIGH infra slice. Reused `.eslintrc.json`, `package.json` lint/lint-staged wiring, and the `check-layering.cjs` baseline pattern. Chose AST-based `SyntaxKind.AnyKeyword` counting over regex so aliases/comments/strings do not skew the baseline.

@@ -14,4 +14,31 @@
 
 ## Active
 
-No active feature.
+HIGH: Bundle weight, lazy boundaries, and SSR prerender coverage
+
+Plan: [bundle-weight-lazy-boundaries-and-ssr-prerender-coverage.md](./plans/bundle-weight-lazy-boundaries-and-ssr-prerender-coverage.md)
+
+### Layer 1 — Measurement and prerender coverage
+
+- [x] Capture production bundle stats baseline.
+- [x] Generalise the existing prerender route generator behind capped public Supabase REST reads.
+- [x] Add focused generator tests and wire them into `pnpm test:functions`.
+
+### Layer 2 — Lazy/deferred boundaries
+
+- [ ] Pick one heavy eager dependency area and move it behind an existing lazy/deferred boundary.
+- [ ] Verify chunk movement against the bundle stats baseline.
+
+### Layer 3 — Asset and image polish
+
+- [ ] Sweep high-traffic hero/list images for lazy-loading, dimensions, and alt text using existing components.
+
+### Implementation note
+
+- Existing components/patterns reused: `api/sitemap.ts` Supabase REST fetch shape, route paths from `app-routing.module.ts` and feature modules, canonical rack/patch token fallback from `RoutingService`.
+- Layout/page patterns copied: none; no UI created or changed in this slice.
+- Styling conventions preserved: no SCSS or visual-token changes.
+- Files modified: `scripts/generate-prerender-routes.mjs`, `scripts/tests/prerender-routes.test.mjs`, `package.json`, workflow/agent docs, generated `prerender-routes.txt`.
+- Files not touched: Angular components/templates/SCSS, Supabase schema/RLS/policies/migrations, backend Angular services.
+- Tests/build commands: `node --test scripts/tests/prerender-routes.test.mjs`, `pnpm test:functions:prerender-routes`, `pnpm build`, `pnpm lint`.
+- Risks/assumptions: local builds without `SUPABASE_ANON_KEY` intentionally emit static-only routes; production/CI environments with the anon key emit capped dynamic routes. Top-N traffic is approximated by recent public updates until inbound analytics are available.

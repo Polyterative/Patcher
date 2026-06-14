@@ -1,6 +1,8 @@
 /
+/collections/browser
 /home
+/info/changelog
+/manufacturers/browser
 /modules/browser
 /patches/browser
 /racks/browser
-/info/changelog
