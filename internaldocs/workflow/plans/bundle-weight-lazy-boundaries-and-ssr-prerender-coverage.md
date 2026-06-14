@@ -40,6 +40,7 @@ initial graph.
 
 - [x] Capture baseline bundle report and pin numbers in this entry.
 - [ ] Drop `@angular/flex-layout` and full `lodash`.
+  - [x] Removed unused direct `lodash`, `@types/lodash`, and Angular CommonJS allow-list entry; remaining lodash packages are transitive.
 - [ ] Defer the six heavy feature areas listed above.
   - [x] `application-insights` route split into lazy `ApplicationInsightsModule` (`40.80 KB raw / 7.54 KB estimated transfer` lazy chunk).
 - [x] Extend prerender generator to top-N public entities; verified static fallback locally and covered dynamic routes with focused tests.
@@ -54,3 +55,4 @@ initial graph.
 - 2026-06-14T19:37+02:00 — Started with the measurement/prerender slice because it is HIGH infra, product-aligned, and unblocked by schema/RLS. Reused the existing sitemap Supabase REST pattern and app route definitions instead of adding Angular backend methods or UI. Kept local no-key builds static-only, with production dynamic routes gated on `SUPABASE_ANON_KEY` and capped by `PRERENDER_PUBLIC_ROUTE_LIMIT` (default 100).
 - 2026-06-14T19:43+02:00 — Completed ten image metadata improvements using existing templates only: collection covers/previews, module gallery/editor previews, patch linked-rack previews, context-menu thumbnails, Product Hunt badge, and manufacturer logos now have lazy/decoding/dimension metadata where appropriate. Added a static Node regression because these are template contracts and do not require new UI behavior.
 - 2026-06-14T19:46+02:00 — Split the Application Insights page and its local metric atoms into a lazy child module under `/info/insights`. Kept changelog eager in `InfoPagesModule`, restored `MatIconModule` there because changelog still uses icons, and verified stats output now contains a dedicated `application-insights.module` lazy chunk.
+- 2026-06-14T19:49+02:00 — Source search found no direct lodash imports, so removed the direct `lodash` and `@types/lodash` package entries plus the Angular CommonJS allow-list item. Kept the broader dependency checklist open because `@angular/flex-layout` removal remains.

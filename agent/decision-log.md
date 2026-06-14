@@ -1,5 +1,9 @@
 # Decision Log
 
+## 14-06-2026 19:49
+
+- **Lodash cleanup:** Removed only the direct lodash package entries because source search showed no imports. Did not try to force-remove transitive lodash packages from the lockfile; those are owned by upstream dependencies and would require separate package replacement work.
+
 ## 14-06-2026 19:46
 
 - **Application insights lazy boundary:** Picked Application Insights for the first Layer 2 lazy split because it was declared directly in `InfoPagesModule` but is only reached through `/info/insights`. Used a child NgModule rather than standalone conversion to avoid mixing lazy-boundary work with component architecture churn.

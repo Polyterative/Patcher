@@ -64,3 +64,10 @@ Ten completed improvements:
 - `/info/insights` now lazy-loads that feature module while `/info/changelog` stays eager inside the parent info module.
 - Focused route regression: `infoPageRoutes` keeps `insights` behind `loadChildren`.
 - Stats verification: production stats now emit `application-insights.module-*.js` as a lazy chunk at **40.80 KB raw / 7.54 KB estimated transfer**.
+
+### 2026-06-14 dependency cleanup slice
+
+- Removed unused direct `lodash` dependency; source search found no imports/usages.
+- Removed unused direct `@types/lodash` dev dependency.
+- Removed `lodash` from Angular `allowedCommonJsDependencies`.
+- Refreshed `pnpm-lock.yaml`; remaining lodash entries are transitive dependencies.

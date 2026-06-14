@@ -1,5 +1,14 @@
 # Session Log
 
+## 14-06-2026 19:49 — Lodash direct dependency removal
+
+- **Task selected:** Continue the active bundle/dependency cleanup after the application-insights lazy split.
+- **Implementation note:** Source search showed no direct lodash imports or runtime usage, so this slice only removes unused dependency metadata rather than changing app code.
+- **Actions performed:** Removed direct `lodash`, removed direct `@types/lodash`, removed `lodash` from Angular `allowedCommonJsDependencies`, and refreshed `pnpm-lock.yaml`.
+- **Tests run:** `pnpm build` passing; `pnpm lint` passing with the existing warning noise.
+- **Docs updated:** Recorded the direct lodash cleanup in `CURRENT_FEATURE.md` and the bundle plan.
+- **Blockers raised:** `@angular/flex-layout` remains the open dependency-removal item.
+
 ## 14-06-2026 19:46 — Application insights lazy boundary
 
 - **Task selected:** Continue the active bundle/prerender plan; Layer 2 still needed one heavy eager area moved behind an existing lazy/deferred boundary.
