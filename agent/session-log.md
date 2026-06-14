@@ -1,5 +1,14 @@
 # Session Log
 
+## 14-06-2026 19:46 — Application insights lazy boundary
+
+- **Task selected:** Continue the active bundle/prerender plan; Layer 2 still needed one heavy eager area moved behind an existing lazy/deferred boundary.
+- **Implementation note:** Reused the existing `/info/insights` route and component declarations. Created a feature-local `ApplicationInsightsModule` instead of converting the page to standalone or changing UI. Kept `/info/changelog` eager in `InfoPagesModule`.
+- **Actions performed:** Moved `ApplicationInsightsPageComponent`, `InsightChipComponent`, and `InsightMetricBarComponent` declarations/imports into a lazy child module, changed `infoPageRoutes` to `loadChildren`, and added a route regression asserting insights stays lazy.
+- **Tests run:** Focused insights route/component specs passing; stats build passing and emitting `application-insights.module-*.js` as a 40.80 KB raw / 7.54 KB transfer lazy chunk; `pnpm build` passing; `pnpm lint` passing with the existing warning noise.
+- **Docs updated:** Marked the Current Feature Layer 2 slice complete and recorded the stats delta in the bundle plan.
+- **Blockers raised:** Broader `@angular/flex-layout`/lodash removal and the other listed heavy areas remain separate follow-up slices.
+
 ## 14-06-2026 19:43 — Image metadata sweep
 
 - **Task selected:** User requested ten improvements; selected ten low-risk image metadata improvements inside the active bundle/prerender plan.

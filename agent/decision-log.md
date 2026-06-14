@@ -1,5 +1,9 @@
 # Decision Log
 
+## 14-06-2026 19:46
+
+- **Application insights lazy boundary:** Picked Application Insights for the first Layer 2 lazy split because it was declared directly in `InfoPagesModule` but is only reached through `/info/insights`. Used a child NgModule rather than standalone conversion to avoid mixing lazy-boundary work with component architecture churn.
+
 ## 14-06-2026 19:43
 
 - **Image metadata sweep:** Chose template-only image attributes as the ten-improvement execution slice because it advances the active asset/a11y objective without inventing UI or touching visual layout. Added a static Node contract test instead of full fixture tests for every template because the behavior is declarative metadata and several changed surfaces are module-declared rather than standalone.
