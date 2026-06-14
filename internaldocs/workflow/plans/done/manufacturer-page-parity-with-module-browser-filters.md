@@ -56,7 +56,7 @@ needed for a single manufacturer's catalogue).
 - [x] Ensure the `defaultGroupId='standard'` grouping behaviour is preserved after
       filtering (filtered results still group by standard if grouping is active — sorting
       and grouping are separate from filtering in the pipeline).
-- [ ] Reduce duplication: if a shared component is extracted, update the module browser
+- [x] Reduce duplication: if a shared component is extracted, update the module browser
       root to use it too — one source of truth for filter controls. (Deferred: server-side
       vs client-side filtering means module browser cannot trivially share the same bar.)
 
@@ -66,3 +66,4 @@ needed for a single manufacturer's catalogue).
 
 <!-- Append timestamped one-liners as the plan progresses. -->
 
+- 2026-06-14 — Existing implementation already extended `app-module-list` with `showFilters` and manufacturer detail already enabled it. Found and fixed the remaining UI-path bug: shared select options emit string ids, while module standards are numeric; `ModuleListComponent` now maps rendered standard option ids (`'', '0', '1', '2'`) to numeric filter ids before applying client-side filtering. Added a regression for that mapping.
