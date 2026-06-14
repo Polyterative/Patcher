@@ -31,7 +31,12 @@
 
       <div class="module-collection-editor__cover">
         <div class="module-collection-editor__cover-preview" *ngIf="displayCoverPreview() as preview">
-          <img [src]="preview" alt="Collection cover preview">
+          <img [src]="preview"
+               alt="Collection cover preview"
+               decoding="async"
+               width="320"
+               height="180"
+          >
         </div>
         <label class="module-collection-editor__file">
           <input type="file" accept="image/*" (change)="onCoverFileChange($any($event.target).files)">

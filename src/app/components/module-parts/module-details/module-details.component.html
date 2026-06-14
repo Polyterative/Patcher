@@ -23,6 +23,9 @@
                 [alt]="getPanelLabel(item.filename, item.description, idx)"
                 class="image-transition panel-gallery-img"
                 loading="lazy"
+                decoding="async"
+                width="120"
+                height="160"
                 [matTooltip]="getPanelLabel(item.filename, item.description, idx)"
                 [src]="getPanelImageUrl(item.filename)"
               >

@@ -31,7 +31,7 @@ Plan: [bundle-weight-lazy-boundaries-and-ssr-prerender-coverage.md](./plans/bund
 
 ### Layer 3 — Asset and image polish
 
-- [ ] Sweep high-traffic hero/list images for lazy-loading, dimensions, and alt text using existing components.
+- [x] Sweep high-traffic hero/list images for lazy-loading, dimensions, decoding, and alt text using existing components.
 
 ### Implementation note
 
@@ -42,3 +42,18 @@ Plan: [bundle-weight-lazy-boundaries-and-ssr-prerender-coverage.md](./plans/bund
 - Files not touched: Angular components/templates/SCSS, Supabase schema/RLS/policies/migrations, backend Angular services.
 - Tests/build commands: `node --test scripts/tests/prerender-routes.test.mjs`, `pnpm test:functions:prerender-routes`, `pnpm build`, `pnpm lint`.
 - Risks/assumptions: local builds without `SUPABASE_ANON_KEY` intentionally emit static-only routes; production/CI environments with the anon key emit capped dynamic routes. Top-N traffic is approximated by recent public updates until inbound analytics are available.
+
+### 2026-06-14 image metadata slice
+
+Ten completed improvements:
+
+1. Module collection card cover images now declare lazy loading, async decoding, and intrinsic dimensions.
+2. Module collection detail cover images now declare lazy loading, async decoding, and intrinsic dimensions.
+3. Module collection editor cover previews now declare async decoding and intrinsic dimensions.
+4. Module panel gallery thumbnails now declare async decoding and intrinsic dimensions.
+5. Module editor cropped panel previews now declare async decoding and intrinsic dimensions.
+6. Patch linked-rack preview images now declare async decoding and intrinsic dimensions.
+7. General context-menu submenu thumbnails now declare lazy loading, async decoding, and intrinsic dimensions.
+8. Product Hunt badge now declares async decoding alongside existing lazy loading and dimensions.
+9. Manufacturer row logos now declare async decoding and intrinsic dimensions.
+10. A focused static regression (`pnpm test:functions:image-metadata`) now guards the image metadata contract and is wired into `pnpm test:functions`.

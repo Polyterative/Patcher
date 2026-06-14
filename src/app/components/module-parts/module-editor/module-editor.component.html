@@ -165,6 +165,9 @@
                           class="setup-panel-preview-image"
                           [src]="cropBag.croppedPreviewUrl || cropBag.selectedPanelPreviewUrl"
                           alt="Cropped panel preview"
+                          decoding="async"
+                          width="240"
+                          height="320"
                         >
                       } @else {
                         <div class="setup-panel-preview-placeholder">

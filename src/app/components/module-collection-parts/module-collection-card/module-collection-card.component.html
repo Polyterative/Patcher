@@ -3,7 +3,14 @@
     <div class="collection-minimal__media">
       <div class="collection-minimal__image-container panel">
         @if (coverImageSrc(collection.image); as coverUrl) {
-          <img class="collection-minimal__image" [src]="coverUrl" [alt]="collection.name">
+          <img class="collection-minimal__image"
+               [src]="coverUrl"
+               [alt]="collection.name"
+               loading="lazy"
+               decoding="async"
+               width="320"
+               height="180"
+          >
         } @else {
           <div class="collection-minimal__placeholder">
             <mat-icon>playlist_play</mat-icon>

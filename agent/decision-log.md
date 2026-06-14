@@ -1,5 +1,9 @@
 # Decision Log
 
+## 14-06-2026 19:43
+
+- **Image metadata sweep:** Chose template-only image attributes as the ten-improvement execution slice because it advances the active asset/a11y objective without inventing UI or touching visual layout. Added a static Node contract test instead of full fixture tests for every template because the behavior is declarative metadata and several changed surfaces are module-declared rather than standalone.
+
 ## 14-06-2026 19:37
 
 - **Bundle/prerender first slice:** Chose measurement plus prerender coverage before dependency deferral so later chunk changes have a pinned baseline. Reused the existing sitemap REST pattern rather than adding Angular service/API methods because the generator runs in Node before build. Dynamic prerender routes fail open to static routes when credentials or individual tables are unavailable, matching existing sitemap resilience while avoiding schema/RLS work.
