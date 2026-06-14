@@ -10,6 +10,7 @@
 - **Discovery community trends:** Reused the existing homepage discovery component and RPC-backed aggregate service. Chose not to create a new route or additional query because the documented MVP already exists behind `showCommunityTrends = false`.
 - **Rack name prefill bug:** Confirmed the service state was not the bug; the visual path depends on `matAutocomplete` `displayWith` in `lib-mat-form-entity`. Current HEAD already passes primitives through in `presetDisplayFunction`, so this slice added a rendered-input regression and archived the stale TODO after E2E verification.
 - **1U placeholder aspect bug:** Treated the TODO as stale production-code-wise because `module-part-image` already uses explicit style dimensions for no-panel placeholders. Added rendered component tests rather than changing the template; the public `/modules` snapshot contained 1U image cards but no missing-panel `.preview` nodes, so the exact no-panel state is covered in unit DOM tests.
+- **Manufacturer filter parity:** Kept advanced catalogue filters inside `app-module-list` rather than extracting a shared browser filter bar because module browser filtering is server-side and manufacturer filtering is local. Fixed standard filtering by converting the select component's string ids to numeric module standard ids at the local filter boundary.
 
 ## 17-05-2026
 

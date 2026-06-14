@@ -70,6 +70,16 @@
 - **Blockers raised:** None.
 - **Next pickup:** Highest-priority open TODO from `internaldocs/workflow/TODO.md`.
 
+## 14-06-2026 13:40 — Manufacturer catalogue filter parity
+
+- **Task selected:** `MEDIUM: Manufacturer page — parity with module browser filters`.
+- **Implementation note:** Reused `app-module-list`, its `showFilters` input, existing local search/sort/group pipeline, `LocalDataFilterService`, `lib-mat-form-entity`, module browser HP utilities, and manufacturer detail's existing `defaultGroupId='standard'` list wiring. Did not touch backend, schema, manufacturer stats, or global styling.
+- **Actions performed:** Fixed the remaining standard-filter UI contract by mapping rendered select option ids from strings to numeric module standard ids before local filtering; added a focused regression proving the rendered option values filter 1U modules correctly.
+- **Tests run:** `pnpm test-headless --include="**/module-list.component.spec.ts"` → 17/17 passing; `pnpm build` → passing; `pnpm lint` → passing with one unrelated pre-existing warning in `e2e/screenshots/cropper-debug.spec.ts`.
+- **Docs updated:** Completed and archived the manufacturer filter parity plan; moved the TODO entry to `COMPLETED.md`.
+- **Blockers raised:** None.
+- **Next pickup:** Stop per user request.
+
 ## 17-05-2026 09:15 — Public profile Load More (session start + completion)
 
 - **Boot state:** Read AGENTS.md, mission.md, current-task.md (stale — showed 1U bug already committed as `44e08cab`), TODO.md, ROADMAP.md, FOR_AI_AGENTS.md. Git log confirmed recent work from prior sessions. Ran `git status` (AGENTS.md had an uncommitted human wording improvement — left untouched per rule).

@@ -43,10 +43,7 @@ import {
 } from 'src/app/shared-interproject/utils/module-sort-utils';
 import { ModuleList } from '../module-browser-data.service';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
-import {
-  HpConditionOption,
-  IdNumberOption
-} from '../module-browser-data.models';
+import { HpConditionOption } from '../module-browser-data.models';
 import {
   DEFAULT_HP_CONDITION,
   DEFAULT_STANDARD
@@ -64,6 +61,8 @@ export type ModuleListSortId = ModuleSortId;
 export type ModuleListGroupId = ModuleGroupId;
 export const MODULE_LIST_SORT_OPTIONS = MODULE_SORT_OPTIONS;
 export const MODULE_LIST_GROUP_OPTIONS = MODULE_GROUP_OPTIONS;
+
+const ALL_STANDARD_OPTION: ISelectable = {id: '', name: DEFAULT_STANDARD.name};
 
 export interface ModuleListActionConfig {
   icon: string;
@@ -133,13 +132,13 @@ export class ModuleListComponent extends SubManager implements OnInit {
   readonly groupControl = new UntypedFormControl(MODULE_GROUP_OPTIONS[0]);
 
   // Filter controls (active when showFilters = true)
-  readonly standardControl = new FormControl<IdNumberOption>(DEFAULT_STANDARD, {nonNullable: true});
+  readonly standardControl = new FormControl<ISelectable>(ALL_STANDARD_OPTION, {nonNullable: true});
   readonly hpControl = new UntypedFormControl('');
   readonly hpConditionControl = new FormControl<HpConditionOption>(DEFAULT_HP_CONDITION, {nonNullable: true});
   readonly tagsControl = new FormControl<number[]>([], {nonNullable: true});
 
   readonly standardOptions$: Observable<ISelectable[]> = of([
-    {id: String(DEFAULT_STANDARD.id), name: DEFAULT_STANDARD.name},
+    ALL_STANDARD_OPTION,
     {id: '0', name: '3U Doepfer'},
     {id: '1', name: '1U Intellijel'},
     {id: '2', name: '1U Pulp Logic'},
@@ -195,7 +194,7 @@ export class ModuleListComponent extends SubManager implements OnInit {
         this.tagsControl.valueChanges.pipe(startWith(this.tagsControl.value)),
       ]).pipe(
         map(([std, hp, tags]) =>
-          std.id !== DEFAULT_STANDARD.id || (hp !== '' && hp !== null) || tags.length > 0
+          this.selectedStandardId(std) !== undefined || (hp !== '' && hp !== null) || tags.length > 0
         )
       );
     }
@@ -221,7 +220,7 @@ export class ModuleListComponent extends SubManager implements OnInit {
     const standardId$: Observable<number | undefined> = this.showFilters
       ? this.standardControl.valueChanges.pipe(
           startWith(this.standardControl.value),
-          map(v => v?.id)
+          map(v => this.selectedStandardId(v))
         )
       : of(undefined);
 
@@ -279,7 +278,7 @@ export class ModuleListComponent extends SubManager implements OnInit {
   }
 
   resetFilters(): void {
-    this.standardControl.setValue(DEFAULT_STANDARD);
+    this.standardControl.setValue(ALL_STANDARD_OPTION);
     this.hpControl.setValue('');
     this.hpConditionControl.setValue(DEFAULT_HP_CONDITION);
     this.tagsControl.setValue([]);
@@ -327,5 +326,13 @@ export class ModuleListComponent extends SubManager implements OnInit {
 
     this.visibleModuleIds = nextVisibleIds;
     this._filteredData$.next(data);
+  }
+
+  private selectedStandardId(option: ISelectable | null | undefined): number | undefined {
+    if (!option?.id) {
+      return undefined;
+    }
+    const id = Number.parseInt(option.id, 10);
+    return Number.isFinite(id) ? id : undefined;
   }
 }

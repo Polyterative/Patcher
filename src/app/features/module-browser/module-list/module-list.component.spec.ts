@@ -225,8 +225,22 @@ describe('ModuleListComponent', () => {
     it('filters by standard when standardControl changes', fakeAsync(() => {
       const {component} = buildWithFilters();
       tick();
-      component.standardControl.setValue({id: 1, name: '1U Intellijel'});
+      component.standardControl.setValue({id: '1', name: '1U Intellijel'});
       tick();
+      expect(currentVal(component.filteredData$)?.map(m => m.name)).toEqual(['1U Thing']);
+      component.ngOnDestroy();
+    }));
+
+    it('maps rendered standard option ids to numeric module standards', fakeAsync(() => {
+      const {component} = buildWithFilters();
+      let options: any[] = [];
+      component.standardOptions$.subscribe(value => options = value).unsubscribe();
+
+      expect(options.map(option => option.id)).toEqual(['', '0', '1', '2']);
+
+      component.standardControl.setValue(options.find(option => option.id === '1'));
+      tick();
+
       expect(currentVal(component.filteredData$)?.map(m => m.name)).toEqual(['1U Thing']);
       component.ngOnDestroy();
     }));
@@ -265,13 +279,13 @@ describe('ModuleListComponent', () => {
     it('resetFilters clears all filter controls', fakeAsync(() => {
       const {component} = buildWithFilters();
       tick();
-      component.standardControl.setValue({id: 1, name: '1U Intellijel'});
+      component.standardControl.setValue({id: '1', name: '1U Intellijel'});
       component.hpControl.setValue('8');
       component.tagsControl.setValue([5]);
       tick();
       component.resetFilters();
       tick();
-      expect(component.standardControl.value?.id).toBeUndefined();
+      expect(component.standardControl.value?.id).toBe('');
       expect(component.hpControl.value).toBe('');
       expect(component.tagsControl.value).toEqual([]);
       component.ngOnDestroy();
