@@ -41,6 +41,14 @@
   width: 100%;
 }
 
+.entityStatGrid__detail {
+  margin-top: 0.12rem;
+  margin-left: 2.1rem;
+  color: rgba(0, 0, 0, 0.56);
+  font-size: 0.74rem;
+  line-height: 1.15;
+}
+
 :host ::ng-deep .entityStatGrid__showcase--clickable {
   cursor: pointer;
   border-radius: 0.5rem;

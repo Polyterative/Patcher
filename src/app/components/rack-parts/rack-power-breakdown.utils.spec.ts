@@ -41,9 +41,12 @@ describe('rackPowerBreakdownUtils', () => {
     expect(breakdown.powerNeg12).toBe(-35);
     expect(breakdown.powerPos5).toBe(5);
     expect(breakdown.missingPowerDataCount).toBe(0);
+    expect(breakdown.powerHeaderCount).toBe(2);
+    expect(breakdown.passiveModuleCount).toBe(0);
+    expect(breakdown.unknownPowerModuleCount).toBe(0);
     expect(breakdown.rows).toEqual([
-      jasmine.objectContaining({rowIndex: 0, moduleCount: 1, powerPos12: 50, powerNeg12: -20, powerPos5: 5}),
-      jasmine.objectContaining({rowIndex: 1, moduleCount: 1, powerPos12: 70, powerNeg12: -15, powerPos5: 0}),
+      jasmine.objectContaining({rowIndex: 0, moduleCount: 1, rowPowerHeaderCount: 1, powerPos12: 50, powerNeg12: -20, powerPos5: 5}),
+      jasmine.objectContaining({rowIndex: 1, moduleCount: 1, rowPowerHeaderCount: 1, powerPos12: 70, powerNeg12: -15, powerPos5: 0}),
     ]);
   });
 
@@ -70,6 +73,9 @@ describe('rackPowerBreakdownUtils', () => {
       rowIndex: 0,
       moduleCount: 2,
       missingPowerDataCount: 0,
+      rowPowerHeaderCount: 2,
+      passiveModuleCount: 0,
+      unknownPowerModuleCount: 0,
       powerPos12: 90,
       powerNeg12: -35,
       powerPos5: 5
@@ -83,6 +89,9 @@ describe('rackPowerBreakdownUtils', () => {
     expect(breakdown.powerNeg12).toBe(0);
     expect(breakdown.powerPos5).toBe(0);
     expect(breakdown.missingPowerDataCount).toBe(0);
+    expect(breakdown.powerHeaderCount).toBe(0);
+    expect(breakdown.passiveModuleCount).toBe(0);
+    expect(breakdown.unknownPowerModuleCount).toBe(0);
   });
 
   it('single-row rack preserves moduleCount correctly', () => {
@@ -91,6 +100,32 @@ describe('rackPowerBreakdownUtils', () => {
     ]);
     expect(breakdown.rows[0].moduleCount).toBe(2);
     expect(breakdown.rows[0].powerPos12).toBe(30);
+  });
+
+  it('counts active, passive, mixed, and all-null modules using the conservative header rule', () => {
+    const breakdown = buildRackPowerBreakdown([
+      [
+        makeRackedModule(1, 10, 0, 0),
+        makeRackedModule(2, 0, 0, 0),
+        makeRackedModule(3, null, null, null),
+        makeRackedModule(4, null, -5, 0),
+        makeRackedModule(4647, null, null, null)
+      ],
+      [
+        makeRackedModule(5, 0, 0, 5),
+        makeRackedModule(6, 0, 0, 0)
+      ]
+    ]);
+
+    expect(breakdown.powerHeaderCount).toBe(4);
+    expect(breakdown.passiveModuleCount).toBe(2);
+    expect(breakdown.unknownPowerModuleCount).toBe(1);
+    expect(breakdown.rows[0].rowPowerHeaderCount).toBe(3);
+    expect(breakdown.rows[0].passiveModuleCount).toBe(1);
+    expect(breakdown.rows[0].unknownPowerModuleCount).toBe(1);
+    expect(breakdown.rows[1].rowPowerHeaderCount).toBe(1);
+    expect(breakdown.rows[1].passiveModuleCount).toBe(1);
+    expect(breakdown.rows[1].unknownPowerModuleCount).toBe(0);
   });
 
   it('formatPowerRailValue formats zero as "0 mA"', () => {

@@ -31,8 +31,12 @@ changing any user-visible behaviour.
       transformation applied). Supabase image transformation (`/render/image/public/`) would require Pro/Team plan;
       deferred for now. Storage base URLs consolidated into `StorageUrls` class in `DatabaseStrings.ts` (commit `d9fd933f`)
       — a single place to add transform params if/when the plan supports it.
-- [ ] Confirm gzip / brotli is in effect for API responses (Supabase default — verify on
+- [x] Confirm gzip / brotli is in effect for API responses (Supabase default — verify on
       production)
+      **Done:** Verified 2026-06-14 with live headers. `https://patcher.xyz` returns
+      `content-encoding: br` from Vercel when requested; Supabase REST
+      `tags?select=id,name,type&limit=1` returns `content-encoding: br` for Brotli requests
+      and `content-encoding: gzip` for gzip requests, with `vary: Accept-Encoding`.
 - [x] Estimate bytes saved per query before/after where possible (helps prioritise)
       **Done:** No significant savings available — queries are already well-optimised; total potential savings ~4 unused cols × N rows in one endpoint (negligible)
 - [x] Document findings in `internaldocs/workflow/CURRENT_FEATURE.md`
@@ -42,7 +46,7 @@ changing any user-visible behaviour.
       **Done:** No rewrites needed — no actionable over-fetching found
 - [x] NO functional regressions — every UI surface still has exactly the data it needs
 
-**Findings:** Queries are already well-optimised. No bandwidth fixes needed at this time. Remaining work: image thumbnails and gzip/brotli verification (requires production access — not blocking).
+**Findings:** Queries are already well-optimised. No bandwidth fixes needed at this time. Image thumbnails remain a future hosting-plan-dependent opportunity; production API/app compression is active.
 
 ---
 
@@ -50,3 +54,5 @@ changing any user-visible behaviour.
 
 <!-- Append timestamped one-liners as the plan progresses. -->
 
+- 2026-06-14T20:18+02:00 — Closed the remaining production compression check with live
+  Vercel/Supabase headers. No code changes were needed; archived the plan as complete.

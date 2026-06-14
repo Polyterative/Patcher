@@ -432,6 +432,23 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
       : 'All module power data available';
   }
 
+  rowPowerHeaderLabel(rowId: number): string {
+    const rowPower = this.rowPowerBreakdown[rowId];
+
+    if (!rowPower || rowPower.moduleCount === 0) {
+      return '';
+    }
+
+    const qualifiers = [
+      rowPower.passiveModuleCount > 0 ? `${ rowPower.passiveModuleCount } passive` : '',
+      rowPower.unknownPowerModuleCount > 0 ? `${ rowPower.unknownPowerModuleCount } unknown` : '',
+    ].filter(Boolean);
+
+    return qualifiers.length
+      ? `${ rowPower.rowPowerHeaderCount } headers · ${ qualifiers.join(' · ') }`
+      : `${ rowPower.rowPowerHeaderCount } headers`;
+  }
+
   rowFunctionBreakdownAt(rowId: number): RowFunctionBreakdown | null {
     return this.rowFunctionBreakdowns.get(rowId) ?? null;
   }

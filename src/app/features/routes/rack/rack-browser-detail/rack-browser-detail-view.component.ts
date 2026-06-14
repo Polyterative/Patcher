@@ -184,7 +184,13 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
           items: [
             { label: `+12V${ missingPowerSuffix }`, value: formatPowerRailValue(powerBreakdown.powerPos12), icon: 'bolt' },
             { label: `-12V${ missingPowerSuffix }`, value: formatPowerRailValue(powerBreakdown.powerNeg12), icon: 'bolt' },
-            { label: `+5V${ missingPowerSuffix }`, value: formatPowerRailValue(powerBreakdown.powerPos5), icon: 'bolt' }
+            { label: `+5V${ missingPowerSuffix }`, value: formatPowerRailValue(powerBreakdown.powerPos5), icon: 'bolt' },
+            {
+              label: 'Power headers',
+              value: powerBreakdown.powerHeaderCount.toString(),
+              icon: 'power',
+              detail: this.powerHeaderDetail(powerBreakdown.passiveModuleCount, powerBreakdown.unknownPowerModuleCount)
+            }
           ]
         },
         {
@@ -202,6 +208,15 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
 
   private missingPowerSuffix(count: number): string {
     return count > 0 ? ` (${ count } missing)` : '';
+  }
+
+  private powerHeaderDetail(passiveCount: number, unknownCount: number): string | undefined {
+    const parts = [
+      passiveCount > 0 ? `${ passiveCount } passive` : '',
+      unknownCount > 0 ? `${ unknownCount } unknown` : '',
+    ].filter(Boolean);
+
+    return parts.length ? parts.join(' · ') : undefined;
   }
 
   private injectRackJsonLd(rackData: RackMinimal, modules: string[]): void {

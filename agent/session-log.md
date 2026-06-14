@@ -1,5 +1,14 @@
 # Session Log
 
+## 14-06-2026 20:16 — Rack power header count
+
+- **Task selected:** Rack Analytics — Power Header Count, a derived-only rack analysis improvement with no backend/schema work.
+- **Implementation note:** Reused `buildRackPowerBreakdown`, rack detail Power stat groups, and the existing rack editor row power hover panel. No new route, component, service, visual system, Supabase schema, RLS, policies, or migrations.
+- **Actions performed:** Added rack/row power-header counts plus passive and unknown counts, surfaced rack-level Power headers with badge metadata, surfaced row-level header counts in the hover panel, and expanded focused tests.
+- **Tests run:** Focused rack power/detail/visual specs passing.
+- **Docs updated:** Activated the plan, completed its checklist, and recorded the decision in current feature plus durable logs.
+- **Blockers raised:** None.
+
 ## 14-06-2026 20:02 — User-area Load More completion
 
 - **Task selected:** Complete the active Load More plan by removing the remaining visible old-school paginators.
@@ -1605,6 +1614,17 @@ All `.ts` source files testable with direct instantiation (no Angular TestBed/in
 ### Suggested next actions
 - Resume Initial Render Flash investigation (paused by user; ~30% complete)
 - UI consistency fixes from `UI_CONSISTENCY_AUDIT.md` (spacing/density is highest priority)
+
+---
+
+## Session continuation — 14-06-2026 20:18
+
+- Selected **Perf — Backend Bandwidth Optimisation** as the highest-priority unblocked task because Tier 0 is empty and Manufacturer Accounts remains schema/RLS-blocked.
+- Confirmed prior audit evidence: Supabase query inventory, pagination, duplicate-fetch, N+1, and storage URL consolidation were already complete.
+- Closed the remaining compression check with live headers:
+  - Vercel app `https://patcher.xyz` returns `content-encoding: br`.
+  - Supabase REST `tags?select=id,name,type&limit=1` returns `content-encoding: br` for Brotli and `content-encoding: gzip` for gzip, with `vary: Accept-Encoding`.
+- Archived the completed bandwidth plan and removed it from active TODO. No product code or schema/RLS changes were needed.
 
 ---
 
