@@ -1,5 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { CdkDragDrop } from '@angular/cdk/drag-drop';
+import {
+  ElementRef,
+  NO_ERRORS_SCHEMA,
+  SimpleChange
+} from '@angular/core';
 import {
   ComponentFixture,
   TestBed,
@@ -129,6 +134,16 @@ describe('RackVisualModelComponent', () => {
     optimisticModule.rackingData.id = 44;
 
     expect(component.rackModuleTrackKey(optimisticModule)).toBe(optimisticKey);
+  });
+
+  it('renders a stable movement key separately from the coordinate key', () => {
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const moduleElement = host.querySelector('[data-rack-module-track-key="10"]');
+
+    expect(moduleElement).not.toBeNull();
+    expect(moduleElement?.getAttribute('data-rack-module-key')).toBe('10-10-0-0');
   });
 
   it('hides the per-module HP badge during rack image capture', () => {
@@ -759,6 +774,32 @@ describe('RackVisualModelComponent', () => {
     expect(component.isDropRevealSuppressed(moduleRef)).toBeFalse();
   });
 
+  it('suppresses enter and leave animations for modules that move during a layout update', () => {
+    const animationFrames: FrameRequestCallback[] = [];
+    spyOn(window, 'requestAnimationFrame').and.callFake((callback: FrameRequestCallback): number => {
+      animationFrames.push(callback);
+      return animationFrames.length;
+    });
+    spyOn(window, 'cancelAnimationFrame').and.stub();
+    const moduleA = makeRackedModule(10, 0, 0);
+    const moduleB = makeRackedModule(11, 1, 0);
+    component.rowedRackedModules = [[moduleA], [moduleB]];
+    fixture.detectChanges();
+
+    const nextRows = [[moduleB], [moduleA]];
+    component.rowedRackedModules = nextRows;
+    component.ngOnChanges({
+      rowedRackedModules: new SimpleChange([[moduleA], [moduleB]], nextRows, false)
+    });
+    fixture.detectChanges();
+
+    expect(component.isModuleLayoutMoveAnimating(moduleA)).toBeTrue();
+    expect(component.isModuleLayoutMoveAnimating(moduleB)).toBeTrue();
+    expect(component.isModuleAnimationSuppressed(moduleA)).toBeTrue();
+    expect(component.areLayoutMoveAngularAnimationsDisabled()).toBeTrue();
+    expect(animationFrames.length).toBeGreaterThan(0);
+  });
+
   it('animates same-row drop reveals after suppression clears', () => {
     jasmine.clock().install();
     const animationFrames: FrameRequestCallback[] = [];
@@ -800,6 +841,38 @@ describe('RackVisualModelComponent', () => {
     animationFrames.shift()?.(0);
 
     expect(component.isDropRevealAnimating(moduleRef)).toBeFalse();
+  });
+
+  it('does not run remix move animation during manual cross-row drop updates', () => {
+    jasmine.clock().install();
+    const animationFrames: FrameRequestCallback[] = [];
+    spyOn(window, 'requestAnimationFrame').and.callFake((callback: FrameRequestCallback): number => {
+      animationFrames.push(callback);
+      return animationFrames.length;
+    });
+    spyOn(window, 'cancelAnimationFrame').and.stub();
+
+    try {
+      const moduleA = makeRackedModule(10, 0, 0);
+      const moduleB = makeRackedModule(11, 1, 0);
+      component.rowedRackedModules = [[moduleA], [moduleB]];
+      fixture.detectChanges();
+
+      const dropEvent = {previousContainer: {}, container: {}} as CdkDragDrop<ElementRef>;
+      component.onDragReleased({}, moduleA);
+      component.onDropListDropped(dropEvent, 1, moduleA);
+      const nextRows = [[], [moduleB, moduleA]];
+      component.rowedRackedModules = nextRows;
+      component.ngOnChanges({
+        rowedRackedModules: new SimpleChange([[moduleA], [moduleB]], nextRows, false)
+      });
+      fixture.detectChanges();
+
+      expect(component.isModuleLayoutMoveAnimating(moduleA)).toBeFalse();
+      expect(component.isModuleAnimationSuppressed(moduleA)).toBeFalse();
+    } finally {
+      jasmine.clock().uninstall();
+    }
   });
 
   it('builds module heatmap visuals for powered modules', () => {

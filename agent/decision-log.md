@@ -1,5 +1,13 @@
 # Decision Log
 
+## 14-06-2026 21:36
+
+- **Rack remix motion:** Use a FLIP-style compositor animation in `rack-visual-model` instead of making the data service animation-aware. Rows now track by index so row array replacement does not recreate the full rack, while module signal coordinate keys remain separate from stable movement keys.
+- **Scaled rack correction:** Convert measured viewport deltas through `dragScale` before applying CSS transforms. The rack editor renders even the normal surface at scale, so raw viewport pixels make cross-row travel overshoot and look unstable.
+- **Manual drag isolation:** Suppress Remix FLIP for a short cooldown after manual CDK drops instead of relying only on the existing two-frame reorder flag. CDK owns manual drag settling; Remix FLIP owns programmatic layout changes.
+- **Full-rect Remix FLIP:** Store width/height with each movement snapshot and animate from the previous full rect, not just previous top-left. This avoids size snaps in unusual transforms and lets travel distance extend duration without changing the rack data flow.
+- **Avoid ghost overlays:** Keep Remix on direct FLIP instead of Material/CDK or cloned overlay animations. CDK primitives are pointer-drag oriented, and cloned ghosts produced duplicate/fade artifacts; the safer fix is disabling Angular enter/leave at the rack boundary during the FLIP window.
+
 ## 14-06-2026 21:18
 
 - **Rack remix refinement:** Count target-column changes as real Remix output, not only cross-row moves. This makes single-row 1U layouts and already-packed racks eligible for alternate ordering while preserving the physical-standard isolation rule. Undo uses the existing snackbar action pattern with a 10-second duration.

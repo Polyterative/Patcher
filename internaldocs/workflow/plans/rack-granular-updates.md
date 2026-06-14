@@ -1,5 +1,7 @@
 # Rack Editor — Granular Local Updates (no-reload animations)
 
+**Status:** IN PROGRESS — core no-reload behavior is implemented; polish steps remain open.
+
 **Goal:** All rack CRUD operations mutate `rowedRackedModules$` in-place so Angular's `@for` tracker preserves existing DOM elements, eliminating the staggered `[@enter]` re-animation that triggers on full reloads. Drag/drop and future row-move animations are preserved.
 
 **Related prior work:** `rack-editor-optimistic-diff-based-updates-no-full-reload-flash.md` (Layer 1 + Layer 2 partly done — exit animation and remove/reorder optimistic updates are already in). This plan closes the remaining gaps and adds the merge-refresh infrastructure.

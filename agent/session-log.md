@@ -1,5 +1,18 @@
 # Session Log
 
+## 14-06-2026 21:36 — Rack remix motion refinement
+
+- **Task selected:** Improve Remix animation quality and delta behavior after user feedback.
+- **Implementation note:** Reused the existing rack visual model, module-realistic host, CDK drag transition vocabulary, and rack editor layout mode surface. Kept the change visual-only: no schema, persistence, or new UI surface changes.
+- **Actions performed:** Added stable module movement keys, row index tracking, FLIP-style post-render layout move animations, reduced-motion guard, and Angular enter/leave suppression only for modules that actually move.
+- **Follow-up refinement:** Corrected cross-row movement by dividing viewport-space FLIP deltas by the rack surface scale and slowed the motion to a more legible 420ms ease-out.
+- **Regression fix:** Manual cross-row drops now suppress the Remix FLIP path during CDK's own settle window so the pre-existing drag animations remain isolated.
+- **Second motion pass:** Switched Remix motion snapshots from top-left points to full rects, added top-left scale interpolation for size-changing moves, disabled the base transform transition during WAAPI Remix motion, and made long moves slower with a 620ms floor.
+- **Correction after feedback:** Backed out the ghost-overlay experiment before committing it. Kept direct FLIP and added a rack-screen-level Angular animation disable during programmatic Remix moves to prevent cross-row enter/leave fades from showing through.
+- **Tests run:** Broader Remix-focused unit spec set passing.
+- **Docs updated:** Added plan and decision-log entries for the animation approach.
+- **Blockers raised:** None.
+
 ## 14-06-2026 21:18 — Rack remix undo and alternate ordering
 
 - **Task selected:** Address user feedback from trying Remix on a packed rack.

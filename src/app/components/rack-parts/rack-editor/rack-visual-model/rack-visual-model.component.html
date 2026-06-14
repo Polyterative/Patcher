@@ -11,6 +11,7 @@
   <div class="col gap0 rackScreen"
        #screen
        id="screen"
+       [@.disabled]="areLayoutMoveAngularAnimationsDisabled()"
        [style.width]="rackData.hp + 'rem'"
        [style.min-width]="rackData.hp + 'rem'"
        [style.max-width]="rackData.hp + 'rem'">
@@ -36,7 +37,7 @@
         </svg>
       </div>
     }
-    @for (row of rowedRackedModules; track row; let rowId = $index) {
+    @for (row of rowedRackedModules; track $index; let rowId = $index) {
       <div class="rackRowShell"
            #rowSurface
            (mouseenter)="setHoveredRow(rowId, rowSurface)"
@@ -139,7 +140,7 @@
              @let moduleHp = effectiveHp(rackedModule);
               <app-module-realistic [@enter]="{ value: '', params: { delay: (i * 50)}}"
                                      [@leave]
-                                     [@.disabled]="isDragImageAnimationSuppressed(rackedModule)"
+                                     [@.disabled]="isModuleAnimationSuppressed(rackedModule)"
                                      [data]="rackedModule|mapToModule"
                                      [analysisMode]="analysisMode"
                                     [analysisClass]="analysisVisualClass(rackedModule, analysisMode)"
@@ -148,6 +149,7 @@
                                        [disablePanelImageEnterAnimation]="true"
                                        [class.module--dropRevealSuppressed]="isDropRevealSuppressed(rackedModule)"
                                        [class.module--dropRevealAnimating]="isDropRevealAnimating(rackedModule)"
+                                       [class.module--layoutRemixMoving]="isModuleLayoutMoveAnimating(rackedModule)"
                                        [class.module--signalSource]="isSignalSourceModule(rackedModule, analysisMode)"
                                        [class.module--signalDestination]="signalDestinationMatchFor(rackedModule, analysisMode)"
                                        [class.module--signalMuted]="isSignalMutedModule(rackedModule, analysisMode)"
@@ -159,6 +161,7 @@
                                       [style.--signal-destination-panel-border-color]="signalDestinationPanelBorderColor(rackedModule, analysisMode)"
                                       [class.module--tabletSelected]="isTouchSelectedModule(rackedModule)"
                                       [attr.data-rack-module-key]="moduleDomKey(rackedModule)"
+                                      [attr.data-rack-module-track-key]="rackModuleStableDomKey(rackedModule)"
                                            class="module"
                                         cdkDrag
                                       [cdkDragData]="rackedModule"

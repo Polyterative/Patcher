@@ -175,6 +175,13 @@
   touch-action: none;
 }
 
+.module--layoutRemixMoving {
+  z-index: 18;
+  transition: opacity 220ms ease, filter 220ms ease, box-shadow 220ms ease;
+  transform-origin: top left;
+  will-change: transform;
+}
+
 .module--signalSource,
 .module--signalDestination,
 .module--tabletSelected {
