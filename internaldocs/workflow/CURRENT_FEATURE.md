@@ -71,3 +71,10 @@ Ten completed improvements:
 - Removed unused direct `@types/lodash` dev dependency.
 - Removed `lodash` from Angular `allowedCommonJsDependencies`.
 - Refreshed `pnpm-lock.yaml`; remaining lodash entries are transitive dependencies.
+
+### 2026-06-14 patch graph dialog lazy slice
+
+- Converted `PatchGraphFullscreenDialogComponent` to standalone and opened it through a dynamic import from `PatchGraphComponent`.
+- Removed the dialog declaration/import from `PatchModule` while preserving the existing inline graph, legend, fullscreen action, and export behavior.
+- Verification artifact: production output now emits `dist/Patcher/browser/patch-graph-fullscreen-dialog.component-*.js`, so the fullscreen/export dialog and `modern-screenshot` are outside the default patch graph path.
+- Scope cut: did not touch `@angular/flex-layout`, inline `LibGraphModule` rendering, or the module-editor cropper because those require broader template/module restructuring.

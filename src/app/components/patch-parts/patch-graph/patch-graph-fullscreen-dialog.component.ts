@@ -9,10 +9,15 @@ import {
   OnDestroy,
   ViewChild
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import {
   MAT_DIALOG_DATA,
+  MatDialogModule,
   MatDialogRef
 } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { domToPng } from 'modern-screenshot';
 import {
   GraphComponent,
@@ -20,6 +25,8 @@ import {
   GraphNode
 } from 'src/app/shared-interproject/components/@visual/graph-view/graph.component';
 import { GraphViewService } from 'src/app/shared-interproject/components/@visual/graph-view/graph-view.service';
+import { LibGraphModule } from 'src/app/shared-interproject/components/@visual/graph-view/lib-graph.module';
+import { HeroContentCardComponent } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component';
 
 
 export interface PatchGraphLegendItem {
@@ -40,7 +47,16 @@ export interface PatchGraphFullscreenDialogData {
   styleUrls: ['./patch-graph-fullscreen-dialog.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [GraphViewService],
-  standalone: false
+  standalone: true,
+  imports: [
+    CommonModule,
+    HeroContentCardComponent,
+    LibGraphModule,
+    MatButtonModule,
+    MatDialogModule,
+    MatIconModule,
+    MatTooltipModule
+  ]
 })
 export class PatchGraphFullscreenDialogComponent implements AfterViewInit, OnDestroy {
   /** Multiplier applied to node and edge sizes so points are easier to read on a large canvas. */
