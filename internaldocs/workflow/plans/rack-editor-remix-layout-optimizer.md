@@ -79,7 +79,7 @@ rack visual model shows a "remix" control panel in the same floating options are
 
 **Checklist:**
 
-- [ ] Add `layout` to `RACK_ANALYSIS_MODES` and `RACK_ANALYSIS_MODE_OPTIONS`.
+- [x] Add `layout` to `RACK_ANALYSIS_MODES` and `RACK_ANALYSIS_MODE_OPTIONS`.
 - [ ] Implement `computeLayoutAnalysis(modules: RackedModule[], rackHp: number)` pure
       function in a new `rack-layout-analysis.utils.ts`:
       - **First step:** partition input by `module.standard.id` into format groups.
@@ -107,3 +107,4 @@ rack visual model shows a "remix" control panel in the same floating options are
 <!-- Append timestamped one-liners as the plan progresses. -->
 
 - **2026-06-14:** Added the first pure layout-analysis foundation in `rack-layout-analysis.utils.ts`: current row HP validity, mixed-standard row blocking, blank-panel exclusion, scope filtering, and FFD auto-arrange move output. This does **not** complete the full checklist item yet because exact/estimated arrangement counting and UI wiring remain.
+- **2026-06-14:** Added `layout` to the rack analysis mode constants and visible options, while preserving the existing paused `signal` mode as hidden from the UI options.
