@@ -1,12 +1,16 @@
 import { ChangeDetectorRef } from '@angular/core';
-import { RackImageComponent } from './rack-image.component';
+import {
+  isPreviewStale,
+  previewGeneratedAt,
+  RackImageComponent
+} from './rack-image.component';
 import { Rack } from 'src/app/models/rack';
 
 function mockCdr(): ChangeDetectorRef {
   return { detectChanges: jasmine.createSpy('detectChanges') } as unknown as ChangeDetectorRef;
 }
 
-function makeRack(image?: string): Rack {
+function makeRack(image?: string, updated = '2024-01-01'): Rack {
   return {
     id: 1,
     name: 'Test Rack',
@@ -16,7 +20,7 @@ function makeRack(image?: string): Rack {
     locked: false,
     public: true,
     created: '2024-01-01',
-    updated: '2024-01-01',
+    updated,
     author: { id: 'u1', username: 'tester', avatar_url: null }
   } as unknown as Rack;
 }
@@ -107,6 +111,33 @@ describe('RackImageComponent', () => {
       const comp = new RackImageComponent(cdr);
       comp.onPreviewLoadError();
       expect(comp.imageLoadFailed).toBeTrue();
+    });
+  });
+
+  describe('preview stale helpers', () => {
+    it('parses the timestamp encoded in a rack preview filename', () => {
+      const generatedAt = previewGeneratedAt('336_2026-05-1509-54-15073.jpeg');
+
+      expect(generatedAt?.getFullYear()).toBe(2026);
+      expect(generatedAt?.getMonth()).toBe(4);
+      expect(generatedAt?.getDate()).toBe(15);
+      expect(generatedAt?.getHours()).toBe(9);
+      expect(generatedAt?.getMinutes()).toBe(54);
+      expect(generatedAt?.getSeconds()).toBe(15);
+      expect(generatedAt?.getMilliseconds()).toBe(73);
+    });
+
+    it('marks a preview as stale when rack.updated is newer than the encoded image timestamp', () => {
+      expect(isPreviewStale(makeRack('336_2026-05-1509-54-15073.jpeg', '2026-05-15T10:00:00'))).toBeTrue();
+    });
+
+    it('keeps a preview fresh when the image timestamp is newer than rack.updated', () => {
+      expect(isPreviewStale(makeRack('336_2026-05-1509-54-15073.jpeg', '2026-05-15T09:30:00'))).toBeFalse();
+    });
+
+    it('returns false for missing or unparseable preview filenames', () => {
+      expect(isPreviewStale(makeRack(undefined, '2026-05-15T10:00:00'))).toBeFalse();
+      expect(isPreviewStale(makeRack('legacy-preview.jpeg', '2026-05-15T10:00:00'))).toBeFalse();
     });
   });
 });

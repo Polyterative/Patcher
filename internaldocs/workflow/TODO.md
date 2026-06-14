@@ -42,7 +42,6 @@
 - [ ] **LOW: Module tags — axis-colour tinting (code-highlighting style)** → [`plans/module-tags-axis-colour-tinting-code-highlighting-style.md`](./plans/module-tags-axis-colour-tinting-code-highlighting-style.md)
 - [ ] **LOW: Rack Editor — "Weakest category" hint in module picker** → [`plans/rack-editor-weakest-category-hint-in-module-picker.md`](./plans/rack-editor-weakest-category-hint-in-module-picker.md)
 - [ ] **MEDIUM: Tag taxonomy — split "PURPOSE" group into sub-groups** → [`plans/tag-taxonomy-split-purpose-group-into-sub-groups.md`](./plans/tag-taxonomy-split-purpose-group-into-sub-groups.md)
-- [ ] **LOW: Rack — Stale preview indicator** → [`plans/rack-stale-preview-indicator.md`](./plans/rack-stale-preview-indicator.md)
 - [ ] **MEDIUM: Rack Comparison — balance diff between two racks** → [`plans/rack-comparison-balance-diff-between-two-racks.md`](./plans/rack-comparison-balance-diff-between-two-racks.md)
 - [ ] **MEDIUM: Rack Editor — "Remix" layout optimizer** → [`plans/rack-editor-remix-layout-optimizer.md`](./plans/rack-editor-remix-layout-optimizer.md)
 - [ ] **MEDIUM: Bug — Rack Preview Not Loading / Updating on Specific Rack** → [`plans/bug-rack-preview-not-loading-updating-on-specific-rack.md`](./plans/bug-rack-preview-not-loading-updating-on-specific-rack.md)

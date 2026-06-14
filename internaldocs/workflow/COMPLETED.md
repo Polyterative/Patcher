@@ -355,3 +355,4 @@
 - Archived [Perf — Backend Bandwidth Optimisation (Every Byte Costs Money)](./plans/done/perf-backend-bandwidth-optimisation-every-byte-costs-money.md)
 - Archived [Rack Editor — Row HP overflow indicator](./plans/done/rack-editor-row-hp-overflow-indicator.md)
 - Archived [Rack Editor — Quick-add blank panel shortcut](./plans/done/rack-editor-quick-add-blank-panel-shortcut.md)
+- Archived [Rack — Stale preview indicator](./plans/done/rack-stale-preview-indicator.md)

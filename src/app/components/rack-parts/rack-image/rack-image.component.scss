@@ -2,8 +2,40 @@
   background-color: rgba(0, 0, 0, 0.1)
 }
 
+.rackImage {
+  position: relative;
+  max-width: 100%;
+}
+
+.rackImage__frame {
+  position: relative;
+  display: inline-flex;
+  max-width: 100%;
+}
+
 img {
   max-width: 100% !important;
+}
+
+.rackImage__staleBadge {
+  position: absolute;
+  right: 0.45rem;
+  bottom: 0.45rem;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  color: rgba(19, 54, 89, 0.86);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(34, 75, 117, 0.24);
+  -webkit-backdrop-filter: blur(0.25rem);
+  backdrop-filter: blur(0.25rem);
+}
+
+.rackImage__staleBadge mat-icon {
+  font-size: 1rem;
+  width: 1rem;
+  height: 1rem;
+  line-height: 1rem;
 }
 
 .rack-image-fallback {

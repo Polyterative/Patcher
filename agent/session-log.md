@@ -1641,6 +1641,16 @@ All `.ts` source files testable with direct instantiation (no Angular TestBed/in
 
 ---
 
+## Session continuation — 14-06-2026 20:24
+
+- Selected **Rack — Stale preview indicator** as the next unblocked rack-adjacent task.
+- Implementation note: reused `RackImageComponent`, the editable rack preview in `RackMinimalComponent`, and `RackDetailDataService.updateRackImagePreview$`. Did not add backend methods, schema, storage operations, or a new visual surface.
+- Added `previewGeneratedAt()` / `isPreviewStale()` pure helpers for filenames like `336_2026-05-1509-54-15073.jpeg`.
+- Added an owner-only stale badge over existing rack images via `canUpdatePreview`; clicking it emits `updatePreviewClick`, and the editable rack preview forwards that to the existing update-preview action.
+- Focused validation: `pnpm test-headless --include="**/rack-image.component.spec.ts"` → 16/16 green; `pnpm build` passed.
+
+---
+
 ## 16-05-2026 10:11 — SESSION START
 
 ### Boot summary

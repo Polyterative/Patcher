@@ -15,6 +15,8 @@
           class="rackMinimal__editingPreview"
           [data]="data"
           [containImage]="viewConfig.containImage"
+          [canUpdatePreview]="true"
+          (updatePreviewClick)="dataService.updateRackImagePreview$.next()"
         ></app-rack-image>
       </div>
     } @else {
