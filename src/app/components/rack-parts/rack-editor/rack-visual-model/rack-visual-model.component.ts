@@ -44,6 +44,10 @@ import {
 import { hasCompletePowerData } from '../../rack-power-data.utils';
 import { RackDetailDataService } from '../../rack-detail-data.service';
 import {
+  computeLayoutAnalysis,
+  RackLayoutAnalysisResult,
+} from '../../rack-layout-analysis.utils';
+import {
   ModuleRightClick,
   RowOverflowClick,
 } from '../rack-editor.types';
@@ -146,6 +150,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   private rowPowerBreakdown: RackPowerRowBreakdown[] = [];
   rowHpOverflow: number[] = [];
   private rowFunctionBreakdowns = new Map<number, RowFunctionBreakdown>();
+  layoutAnalysis: RackLayoutAnalysisResult | null = null;
   private modulePowerHeatmap = new Map<string, RackPowerHeatmapVisual>();
   private signalAnalysis: SignalModuleAnalysis | null = null;
   private signalDestinationMatches = new Map<string, SignalDestinationMatch>();
@@ -417,6 +422,10 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     return this.shouldShowRowAnalysisPanel(rowId, analysisMode, this.analysisModes.function);
   }
 
+  shouldShowRowLayoutPanel(rowId: number, analysisMode: RackAnalysisMode): boolean {
+    return this.shouldShowRowAnalysisPanel(rowId, analysisMode, this.analysisModes.layout);
+  }
+
   isRowPowerPanelBelow(rowId: number): boolean {
     return this.hoveredRowIndex === rowId && this.hoveredRowPowerPanelPlacement === 'below';
   }
@@ -456,6 +465,54 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
 
   rowFunctionResidualLabel(rowId: number): string {
     return buildRowFunctionResidualLabel(this.rowFunctionBreakdownAt(rowId));
+  }
+
+  rowLayoutUsedHp(rowId: number): number {
+    const overflow = this.layoutAnalysis?.overflowHp[rowId] ?? 0;
+    const wasted = this.layoutAnalysis?.wastedHp[rowId] ?? 0;
+    const capacity = this.rackData?.hp ?? 0;
+    return capacity + overflow - wasted;
+  }
+
+  rowLayoutStatusLabel(rowId: number): string {
+    const mixedIssue = this.layoutMixedIssueAt(rowId);
+    if (mixedIssue) {
+      return `Mixed formats: ${ mixedIssue.standards.map(standard => this.layoutStandardLabel(standard)).join(' + ') }`;
+    }
+
+    const overflow = this.layoutAnalysis?.overflowHp[rowId] ?? 0;
+    if (overflow > 0) {
+      return `${ overflow }HP over capacity`;
+    }
+
+    const wasted = this.layoutAnalysis?.wastedHp[rowId] ?? 0;
+    return wasted > 0 ? `${ wasted }HP spare` : 'Perfectly filled';
+  }
+
+  rowLayoutFooterLabel(rowId: number): string {
+    const mixedIssue = this.layoutMixedIssueAt(rowId);
+    if (mixedIssue) {
+      return `Fix row ${ rowId + 1 } before remixing.`;
+    }
+
+    const moves = this.layoutAnalysis?.autoArrangeMoves
+      .filter(move => move.fromRow === rowId || move.toRow === rowId)
+      .filter(move => move.fromRow !== move.toRow)
+      .length ?? 0;
+
+    return moves > 0
+      ? `${ moves } module${ moves === 1 ? '' : 's' } would move in auto-arrange.`
+      : 'No cross-row moves suggested for this row.';
+  }
+
+  rowLayoutPanelClass(rowId: number): string {
+    if (this.layoutMixedIssueAt(rowId)) {
+      return 'rowPowerPanel--layoutWarning';
+    }
+
+    return (this.layoutAnalysis?.overflowHp[rowId] ?? 0) > 0
+      ? 'rowPowerPanel--layoutOverflow'
+      : 'rowPowerPanel--layout';
   }
 
   powerAnalysisVisual(rackedModule: RackedModule): RackPowerHeatmapVisual {
@@ -654,6 +711,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
       return Math.max(0, used - capacity);
     });
     this.rowFunctionBreakdowns = buildRowFunctionBreakdowns(this.rowedRackedModules);
+    this.layoutAnalysis = computeLayoutAnalysis(this.rowedRackedModules, capacity);
     if (this.hoveredRowIndex != null && this.hoveredRowIndex >= this.rowPowerBreakdown.length) {
       this.hoveredRowIndex = null;
     }
@@ -681,6 +739,20 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     targetMode: RackAnalysisMode
   ): boolean {
     return analysisMode === targetMode && this.isRowAnalysisPanelVisible(rowId);
+  }
+
+  private layoutMixedIssueAt(rowId: number) {
+    return this.layoutAnalysis?.mixedRowIssues.find(issue => issue.rowIndex === rowId) ?? null;
+  }
+
+  private layoutStandardLabel(standard: number): string {
+    if (standard === 1) {
+      return 'Intellijel 1U';
+    }
+    if (standard === 2) {
+      return 'Pulp Logic 1U';
+    }
+    return '3U';
   }
 
   private shouldTrackTouchLongPress(event: PointerEvent): boolean {

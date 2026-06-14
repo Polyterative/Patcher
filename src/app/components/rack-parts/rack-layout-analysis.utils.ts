@@ -26,6 +26,11 @@ export interface RackLayoutAnalysisResult {
   estimate?: number;
 }
 
+interface RackLayoutFormatGroup {
+  modules: RackedModule[];
+  rowIndexes: number[];
+}
+
 export function computeLayoutAnalysis(
   rowedModules: RackedModule[][] | null | undefined,
   rackHp: number,
@@ -48,11 +53,13 @@ export function computeLayoutAnalysis(
     };
   }
 
-  const modules = rows
-    .flat()
-    .filter(module => !isBlankModule(module.module.id))
-    .filter(module => isInScope(module, scope));
-  const autoArrangeMoves = firstFitDecreasing(modules, rackHp);
+  const modules = scopedModules(rows, scope);
+  const formatGroups = buildFormatGroups(rows, modules, scope);
+  const autoArrangeMoves = formatGroups.flatMap(group => firstFitDecreasing(
+    group.modules,
+    rackHp,
+    group.rowIndexes
+  ));
   const hasOverflow = overflowHp.some(value => value > 0);
 
   return {
@@ -92,31 +99,87 @@ function isInScope(module: RackedModule, scope: RackLayoutScope): boolean {
   return module.rackingData.row === scope.rowIndex;
 }
 
-function firstFitDecreasing(modules: RackedModule[], rackHp: number): RackLayoutAutoArrangeMove[] {
-  const rows: number[] = [];
+function scopedModules(rows: RackedModule[][], scope: RackLayoutScope): RackedModule[] {
+  return rows
+    .flat()
+    .filter(module => !isBlankModule(module.module.id))
+    .filter(module => isInScope(module, scope));
+}
+
+function buildFormatGroups(
+  rows: RackedModule[][],
+  modules: RackedModule[],
+  scope: RackLayoutScope
+): RackLayoutFormatGroup[] {
+  if (typeof scope === 'object') {
+    return [{
+      modules,
+      rowIndexes: [scope.rowIndex]
+    }];
+  }
+
+  const modulesByStandard = new Map<number, RackedModule[]>();
+  modules.forEach(module => {
+    const standardId = moduleStandardId(module);
+    modulesByStandard.set(standardId, [...(modulesByStandard.get(standardId) ?? []), module]);
+  });
+
+  return Array.from(modulesByStandard.entries())
+    .sort(([leftStandard], [rightStandard]) => leftStandard - rightStandard)
+    .map(([standardId, groupModules]) => ({
+      modules: groupModules,
+      rowIndexes: rowIndexesForStandard(rows, standardId)
+    }));
+}
+
+function rowIndexesForStandard(rows: RackedModule[][], standardId: number): number[] {
+  return rows
+    .map((row, rowIndex) => ({
+      rowIndex,
+      hasMatchingStandard: row
+        .filter(module => !isBlankModule(module.module.id))
+        .some(module => moduleStandardId(module) === standardId)
+    }))
+    .filter(row => row.hasMatchingStandard)
+    .map(row => row.rowIndex);
+}
+
+function firstFitDecreasing(
+  modules: RackedModule[],
+  rackHp: number,
+  targetRowIndexes: number[]
+): RackLayoutAutoArrangeMove[] {
+  const bins = targetRowIndexes.length > 0
+    ? targetRowIndexes.map(rowIndex => ({rowIndex, usedHp: 0}))
+    : [{rowIndex: 0, usedHp: 0}];
+  let nextSyntheticRowIndex = Math.max(...bins.map(row => row.rowIndex), -1) + 1;
 
   return [...modules]
     .sort((a, b) => (b.module.hp ?? 0) - (a.module.hp ?? 0))
     .map(module => {
       const hp = module.module.hp ?? 0;
-      let targetRow = rows.findIndex(usedHp => usedHp + hp <= rackHp);
-      if (targetRow < 0) {
-        targetRow = rows.length;
-        rows.push(0);
+      let targetBin = bins.find(row => row.usedHp + hp <= rackHp);
+      if (!targetBin) {
+        targetBin = {
+          rowIndex: nextSyntheticRowIndex,
+          usedHp: 0
+        };
+        nextSyntheticRowIndex += 1;
+        bins.push(targetBin);
       }
-      rows[targetRow] += hp;
+      targetBin.usedHp += hp;
 
       return {
         rackedModuleId: module.rackingData.id,
         moduleId: module.module.id,
         fromRow: module.rackingData.row,
-        toRow: targetRow
+        toRow: targetBin.rowIndex
       };
     });
 }
 
 function countGreedyArrangement(modules: RackedModule[], rackHp: number): number {
-  return firstFitDecreasing(modules, rackHp).every(move => move.toRow >= 0) ? 1 : 0;
+  return firstFitDecreasing(modules, rackHp, []).every(move => move.toRow >= 0) ? 1 : 0;
 }
 
 function moduleStandardId(module: RackedModule): number {

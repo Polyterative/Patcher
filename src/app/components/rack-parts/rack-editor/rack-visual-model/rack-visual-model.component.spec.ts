@@ -79,7 +79,8 @@ describe('RackVisualModelComponent', () => {
     column: number,
     powerPos12: number | null = null,
     powerNeg12: number | null = null,
-    powerPos5: number | null = null
+    powerPos5: number | null = null,
+    standardId = 0
   ): any {
     return {
       module: {
@@ -93,6 +94,7 @@ describe('RackVisualModelComponent', () => {
         powerPos12,
         powerNeg12,
         powerPos5,
+        standard: {id: standardId},
       },
       rackingData: {
         id,
@@ -608,6 +610,43 @@ describe('RackVisualModelComponent', () => {
       residualHp: 14
     }));
     expect(component.rowFunctionResidualLabel(0)).toContain('1 module blank or unclassified');
+  });
+
+  it('shows row layout analysis for hovered rows in layout mode', () => {
+    component.rackData.hp = 40;
+    component.rowedRackedModules = [[makeRackedModule(10, 0, 0), makeRackedModule(11, 0, 14)]];
+    fixture.detectChanges();
+
+    rackDetailDataService.analysisMode$.next(RACK_ANALYSIS_MODES.layout);
+    component.setHoveredRow(0);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const layoutPanel = host.querySelector('.rowPowerPanel--layout');
+
+    expect(component.shouldShowRowLayoutPanel(0, RACK_ANALYSIS_MODES.layout)).toBeTrue();
+    expect(component.layoutAnalysis?.wastedHp).toEqual([12]);
+    expect(layoutPanel?.textContent?.replace(/\s+/g, '').trim()).toContain('Used28/40HP');
+    expect(layoutPanel?.textContent).toContain('12HP spare');
+  });
+
+  it('surfaces mixed row formats in layout mode before remix actions are offered', () => {
+    component.rowedRackedModules = [[
+      makeRackedModule(10, 0, 0, null, null, null, 0),
+      makeRackedModule(11, 0, 14, null, null, null, 1),
+    ]];
+    fixture.detectChanges();
+
+    rackDetailDataService.analysisMode$.next(RACK_ANALYSIS_MODES.layout);
+    component.setHoveredRow(0);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const layoutPanel = host.querySelector('.rowPowerPanel--layoutWarning');
+
+    expect(component.layoutAnalysis?.mixedRowIssues).toEqual([{rowIndex: 0, standards: [0, 1]}]);
+    expect(layoutPanel?.textContent).toContain('Mixed formats: 3U + Intellijel 1U');
+    expect(layoutPanel?.textContent).toContain('Fix row 1 before remixing.');
   });
 
   it('places the row power panel below when there is not enough visible space above', () => {
