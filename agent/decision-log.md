@@ -8,6 +8,7 @@
 - **Rack editor optimistic add implementation:** Kept the solution inside `RackDetailDataService` and `rowedRackedModules$` rather than creating UI-level state. Bottom-picker adds use an optimistic unracked row, quick-add blanks fetch the existing blank module data before local insertion, and both paths patch generated ids through `applyPersistedRackingIds` or remove only the optimistic object on failure.
 - **Rack editor full-reload audit:** Treated duplicate-rack hydration as an intentional route handoff instead of same-rack reload debt. The remaining same-rack opportunity was panel switching, which already updated local state but did not roll back on failed persistence; fixed it by restoring the prior `selectedPanelId`.
 - **Discovery community trends:** Reused the existing homepage discovery component and RPC-backed aggregate service. Chose not to create a new route or additional query because the documented MVP already exists behind `showCommunityTrends = false`.
+- **Rack name prefill bug:** Confirmed the service state was not the bug; the visual path depends on `matAutocomplete` `displayWith` in `lib-mat-form-entity`. Current HEAD already passes primitives through in `presetDisplayFunction`, so this slice added a rendered-input regression and archived the stale TODO after E2E verification.
 
 ## 17-05-2026
 

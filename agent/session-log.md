@@ -49,6 +49,16 @@
 - **Blockers raised:** None.
 - **Next pickup:** Highest-priority open TODO from `internaldocs/workflow/TODO.md`.
 
+## 14-06-2026 13:30 — Rack name prefill regression guard
+
+- **Task selected:** `BUG: Rack editor — name field empty when entering edit mode`.
+- **Implementation note:** Reused the existing `lib-mat-form-entity` test host, the existing rack detail service unit guard, and the existing authenticated E2E. No production behavior change was needed because current HEAD already has the primitive-safe autocomplete display fix.
+- **Actions performed:** Added a rendered-input regression proving primitive text remains visible after a programmatic control reset through the shared `mat-form-entity` input/autocomplete path.
+- **Tests run:** `pnpm test-headless --include="**/mat-form-entity.component.spec.ts" --include="**/rack-detail-data.service.spec.ts"` → 39/39 passing; `pnpm test:e2e:auth --grep "name input is pre-filled immediately when entering edit mode"` → 1/1 passing; `pnpm build` → passing; `pnpm lint` → passing with one unrelated pre-existing warning in `e2e/screenshots/cropper-debug.spec.ts`.
+- **Docs updated:** Completed and archived the rack-name bug plan; moved the TODO entry to `COMPLETED.md`.
+- **Blockers raised:** None.
+- **Next pickup:** Highest-priority open TODO from `internaldocs/workflow/TODO.md`.
+
 ## 17-05-2026 09:15 — Public profile Load More (session start + completion)
 
 - **Boot state:** Read AGENTS.md, mission.md, current-task.md (stale — showed 1U bug already committed as `44e08cab`), TODO.md, ROADMAP.md, FOR_AI_AGENTS.md. Git log confirmed recent work from prior sessions. Ran `git status` (AGENTS.md had an uncommitted human wording improvement — left untouched per rule).

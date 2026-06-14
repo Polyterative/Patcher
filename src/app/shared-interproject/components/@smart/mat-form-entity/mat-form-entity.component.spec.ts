@@ -190,6 +190,14 @@ describe('MatFormEntityComponent ergonomics', () => {
     ]);
   });
 
+  it('keeps primitive text visible after a programmatic control reset', async () => {
+    host.firstField.control.reset('My Rack');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(getRenderedInputs()[0].value).toBe('My Rack');
+  });
+
   function getRenderedInputs(): HTMLInputElement[] {
     return Array.from(fixture.nativeElement.querySelectorAll('input')) as HTMLInputElement[];
   }
