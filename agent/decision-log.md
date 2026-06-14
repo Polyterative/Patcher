@@ -7,6 +7,7 @@
 - **Rack editor optimistic add slice:** Chose bottom-picker add plus blank quick-add as the bounded next step. Existing delete/reorder/row paths already prove the rollback pattern; add paths need generated id reconciliation, so this slice will reuse `applyPersistedRackingIds` instead of adding a second id-mapping helper.
 - **Rack editor optimistic add implementation:** Kept the solution inside `RackDetailDataService` and `rowedRackedModules$` rather than creating UI-level state. Bottom-picker adds use an optimistic unracked row, quick-add blanks fetch the existing blank module data before local insertion, and both paths patch generated ids through `applyPersistedRackingIds` or remove only the optimistic object on failure.
 - **Rack editor full-reload audit:** Treated duplicate-rack hydration as an intentional route handoff instead of same-rack reload debt. The remaining same-rack opportunity was panel switching, which already updated local state but did not roll back on failed persistence; fixed it by restoring the prior `selectedPanelId`.
+- **Discovery community trends:** Reused the existing homepage discovery component and RPC-backed aggregate service. Chose not to create a new route or additional query because the documented MVP already exists behind `showCommunityTrends = false`.
 
 ## 17-05-2026
 

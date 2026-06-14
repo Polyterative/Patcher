@@ -39,6 +39,16 @@
 - **Blockers raised:** None.
 - **Next pickup:** Highest-priority open TODO from `internaldocs/workflow/TODO.md`.
 
+## 14-06-2026 13:25 — Discovery community trends enablement
+
+- **Task selected:** `Discovery — Most Owned / Wanted / Sold modules section`.
+- **Implementation note:** Reused the existing `HomeDiscoverySectionComponent`, `ApplicationStatisticsService.discovery$`, `GET.applicationModuleDiscovery`, `get_module_discovery_snapshot` RPC, `HeroContentCardComponent`, and existing discovery analytics. No new route, schema, RLS, RPC, or visual system changes.
+- **Actions performed:** Enabled the existing homepage community trends section and added backend coverage proving the discovery RPC is called with top-6/min-count-3 parameters and normalizes snake_case/camelCase response keys.
+- **Tests run:** `pnpm test-headless --include="**/home.component.spec.ts" --include="**/home-discovery-section.component.spec.ts" --include="**/application-statistics.service.spec.ts" --include="**/get-complex-queries.spec.ts"` → 44/44 passing; `pnpm build` → passing; `pnpm lint` → passing with one unrelated pre-existing warning in `e2e/screenshots/cropper-debug.spec.ts`.
+- **Docs updated:** Completed and archived the Discovery community trends plan; moved the TODO entry to `COMPLETED.md`, reset `CURRENT_FEATURE.md`, and cleared `agent/` active state.
+- **Blockers raised:** None.
+- **Next pickup:** Highest-priority open TODO from `internaldocs/workflow/TODO.md`.
+
 ## 17-05-2026 09:15 — Public profile Load More (session start + completion)
 
 - **Boot state:** Read AGENTS.md, mission.md, current-task.md (stale — showed 1U bug already committed as `44e08cab`), TODO.md, ROADMAP.md, FOR_AI_AGENTS.md. Git log confirmed recent work from prior sessions. Ran `git status` (AGENTS.md had an uncommitted human wording improvement — left untouched per rule).

@@ -43,3 +43,5 @@ popular to own, currently in demand, or actively circulating in the market.
 
 <!-- Append timestamped one-liners as the plan progresses. -->
 
+- 2026-06-14 — Existing homepage implementation found: `HomeDiscoverySectionComponent` renders the three possession buckets, `ApplicationStatisticsService.discovery$` calls `GET.applicationModuleDiscovery(6, 3)`, and the RPC migration applies count thresholding/stable sorting. MVP scope is to enable and verify this existing surface rather than add a new route.
+- 2026-06-14 — Enabled the homepage community trends section by flipping the existing `showCommunityTrends` flag. Added backend coverage for `get_module_discovery_snapshot` RPC parameters and response normalization; existing component tests continue covering rows, bucket analytics, and click analytics.
