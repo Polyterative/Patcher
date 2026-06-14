@@ -1,11 +1,13 @@
+import { ChangeDetectorRef } from '@angular/core';
 import { FormValidPipe } from './is-control-valid.pipe';
 import { UntypedFormControl, Validators } from '@angular/forms';
 
 describe('FormValidPipe (isControlValid)', () => {
   let pipe: FormValidPipe;
-  const mockCdr = { markForCheck: () => {}, detectChanges: () => {} } as any;
+  let mockCdr: jasmine.SpyObj<ChangeDetectorRef>;
 
   beforeEach(() => {
+    mockCdr = jasmine.createSpyObj<ChangeDetectorRef>('ChangeDetectorRef', ['markForCheck', 'detectChanges']);
     pipe = new FormValidPipe(mockCdr);
   });
 

@@ -14,6 +14,12 @@ const EMPTY_STATS: ManufacturerModuleStats = {
   changedModulesLast30Days: 0
 };
 
+interface ManufacturerStatsTarget {
+  id: number;
+  name?: string | null;
+  [key: string]: unknown;
+}
+
 /**
  * Build a rank map for manufacturers based on module activity order
  */
@@ -88,7 +94,10 @@ export function buildManufacturerModuleStats(rows: ModuleActivityRow[]): Map<num
 /**
  * Enrich manufacturer object with module statistics
  */
-export function withManufacturerModuleStats(manufacturer: any, stats: ManufacturerModuleStats | undefined) {
+export function withManufacturerModuleStats<T extends ManufacturerStatsTarget>(
+  manufacturer: T,
+  stats: ManufacturerModuleStats | undefined
+) {
   return {
     ...manufacturer,
     moduleCount: stats?.moduleCount ?? 0,
@@ -101,8 +110,8 @@ export function withManufacturerModuleStats(manufacturer: any, stats: Manufactur
  * Comparator for sorting manufacturers by latest module activity
  */
 export function compareManufacturersByLatestModuleActivity(
-  aManufacturer: any,
-  bManufacturer: any,
+  aManufacturer: ManufacturerStatsTarget,
+  bManufacturer: ManufacturerStatsTarget,
   activityRankByManufacturerId: Map<number, number>
 ): number {
   const aRank = activityRankByManufacturerId.get(aManufacturer.id);

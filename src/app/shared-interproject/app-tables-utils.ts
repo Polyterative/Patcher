@@ -4,11 +4,11 @@ import { normalizeForSearch } from './components/@smart/mat-form-entity/string-u
 export class AppTablesUtils {
 
   public static nestedObjectsFilterPredicate: (data, filter: string) => boolean = (data, filter: string) => {
-    const accumulator = (currentTerm, key) => {
+    const accumulator = (currentTerm: string, key: string): string => {
       return AppTablesUtils.nestedFilterCheck(currentTerm, data, key);
     };
     const dataStr = Object.keys(data)
-      .reduce(accumulator, '');
+      .reduce<string>(accumulator, '');
     // Transform the filter by converting it to lowercase, removing accents and whitespace.
     const normalizedDataStr = normalizeForSearch(dataStr);
     const transformedFilter = normalizeForSearch(filter.trim());
@@ -18,7 +18,7 @@ export class AppTablesUtils {
   public static nestedObjectsfilterPredicateIgnoreColumns(columns: string[]) {
 
     return (data, filter: string) => {
-      const accumulator = (currentTerm, key) => {
+      const accumulator = (currentTerm: string, key: string): string => {
         return AppTablesUtils.nestedFilterCheck(currentTerm, data, key);
       };
       let keys: string[] = Object.keys(data);
@@ -27,7 +27,7 @@ export class AppTablesUtils {
       keys = keys.filter(item => columns.indexOf(item) < 0);
 
       const dataStr = keys
-        .reduce(accumulator, '');
+        .reduce<string>(accumulator, '');
       
       // Transform the filter by converting it to lowercase, removing accents and whitespace.
       const normalizedDataStr = normalizeForSearch(dataStr);

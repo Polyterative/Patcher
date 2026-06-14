@@ -5,13 +5,17 @@
 /**
  * Apply client-side search filter to a response with pagination
  */
-export function applyClientSideSearchFilter<T>(
-  response: { data?: T[]; count?: number | null } & Record<string, any>,
+type ResponseRow<Response> = Response extends { data?: (infer Row)[] } ? Row : never;
+
+export function applyClientSideSearchFilter<
+  Response extends { data?: unknown[]; count?: number | null } & Record<string, unknown>
+>(
+  response: Response,
   from: number,
   to: number,
-  predicate: (row: T) => boolean
-) {
-  const rows = Array.isArray(response?.data) ? response.data : [];
+  predicate: (row: ResponseRow<Response>) => boolean
+): Omit<Response, 'data' | 'count'> & { data: ResponseRow<Response>[]; count: number } {
+  const rows = Array.isArray(response?.data) ? response.data as ResponseRow<Response>[] : [];
   const filteredRows = rows.filter(predicate);
   
   return {

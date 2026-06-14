@@ -29,6 +29,12 @@ import {
   buildModuleCollectionEntries,
   validatePublicModuleCollectionModuleIds
 } from './supabase-module-collections';
+import {
+  responseData,
+  type SupabaseTableInsert,
+  type SupabaseTableUpdate,
+  type SupabaseSingleResponse
+} from './supabase-db.types';
 
 
 export function createAddNamespace(
@@ -117,7 +123,7 @@ export function createAddNamespace(
       )),
       cacheBust(['modules', 'moduleWithId']),
       remapErrors(),
-      map((x: any) => ({id: x.data?.id as number}))
+      map(x => ({id: responseData(x as SupabaseSingleResponse<{id: number}>)?.id as number}))
     ),
     
     rackModule: (moduleId: number, rackid: number, row?: number, column?: number) => getUserSession$().pipe(
@@ -173,7 +179,7 @@ export function createAddNamespace(
               .select('id, public_id')
           );
         }),
-        throwIfSupabaseError(),
+        throwIfSupabaseError<SupabaseSingleResponse<{id: number}>>(),
         cacheBust(['patches']),
         remapErrors());
     },
@@ -187,31 +193,33 @@ export function createAddNamespace(
               submitter: user.id
             }))
             .map(x => {
-              const dbData: any = {...x};
-              if (dbData.standard && typeof dbData.standard === 'object') {
-                dbData.standard = dbData.standard.id;
+              const dbData: Record<string, unknown> = {...x};
+              const standard = dbData['standard'];
+              if (standard && typeof standard === 'object' && 'id' in standard) {
+                dbData['standard'] = standard.id;
               }
-              if (dbData.manufacturer && typeof dbData.manufacturer === 'object') {
-                dbData.manufacturerId = dbData.manufacturer.id;
-                delete dbData.manufacturer;
+              const manufacturer = dbData['manufacturer'];
+              if (manufacturer && typeof manufacturer === 'object' && 'id' in manufacturer) {
+                dbData['manufacturerId'] = manufacturer.id;
+                delete dbData['manufacturer'];
               }
-              delete dbData.ins;
-              delete dbData.outs;
-              delete dbData.switches;
-              delete dbData.panels;
-              delete dbData.tags;
+              delete dbData['ins'];
+              delete dbData['outs'];
+              delete dbData['switches'];
+              delete dbData['panels'];
+              delete dbData['tags'];
               
               if (!x.id) {
                 return rxFrom(
                   supabase
                     .from(DbPaths.modules)
-                    .insert(dbData)
+                    .insert(dbData as SupabaseTableInsert<'modules'>)
                 );
               } else {
                 return rxFrom(
                   supabase
                     .from(DbPaths.modules)
-                    .update(dbData)
+                    .update(dbData as SupabaseTableUpdate<'modules'>)
                     .eq('id', x.id)
                 );
               }
@@ -278,8 +286,8 @@ export function createAddNamespace(
               .single()
           ).pipe(
             throwIfSupabaseError(),
-            switchMap((response: any) => {
-              const collectionId = response.data?.id as number | undefined;
+            switchMap((response) => {
+              const collectionId = responseData(response as SupabaseSingleResponse<{id: number}>)?.id;
               if (!collectionId) {
                 return throwError(() => new Error('Created collection response did not include an id.'));
               }
@@ -318,7 +326,7 @@ export function createAddNamespace(
         );
       }),
       remapErrors(),
-      map(x => (x as any).data as PatchModuleInstance),
+      map(x => responseData(x as SupabaseSingleResponse<PatchModuleInstance>) as PatchModuleInstance),
       cacheBust(['patchConnections', 'patchModuleInstances'])
     ),
 
@@ -338,7 +346,7 @@ export function createAddNamespace(
         );
       }),
       remapErrors(),
-      map(x => (x as any).data as PatchModuleInstance[]),
+      map(x => responseData(x as SupabaseSingleResponse<PatchModuleInstance[]>) ?? []),
       cacheBust(['patchConnections', 'patchModuleInstances'])
     )
   };

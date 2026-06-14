@@ -1,12 +1,13 @@
+import { ActivatedRoute, Data } from '@angular/router';
 import { VenusComponent } from './venus.component';
 
 describe('VenusComponent', () => {
   let comp: VenusComponent;
-  let mockRoute: { snapshot: { data: Record<string, unknown> } };
+  let mockRoute: ActivatedRoute;
 
-  const makeComp = (data: Record<string, unknown> = {}): VenusComponent => {
-    mockRoute = { snapshot: { data } };
-    return new VenusComponent(mockRoute as any);
+  const makeComp = (data: Data = {}): VenusComponent => {
+    mockRoute = { snapshot: { data } } as ActivatedRoute;
+    return new VenusComponent(mockRoute);
   };
 
   it('creates without error', () => {

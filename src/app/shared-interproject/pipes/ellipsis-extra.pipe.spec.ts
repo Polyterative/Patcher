@@ -41,6 +41,6 @@ describe('EllipsisPipe - additional cases', () => {
   });
   
   it('handles undefined-like falsy value', () => {
-    expect(pipe.transform(undefined as any, 5)).toBeUndefined();
+    expect(pipe.transform(undefined, 5)).toBeUndefined();
   });
 });

@@ -90,6 +90,9 @@ import { AnalyticsService } from '../../features/backbone/analytics-integration/
 export type { LinkedRackUiState, MultiInstanceModuleSummary } from './patch-detail-data.models';
 export { MAX_INSTANCES_PER_MODULE } from './patch-detail-data.models';
 
+type RackReadResponse = {
+  data?: Rack | null;
+};
 
 
 @Injectable()
@@ -407,8 +410,8 @@ export class PatchDetailDataService implements OnDestroy {
             : this.backend.GET.rackWithId(patch.linked_rack_id);
 
           return rackRead$.pipe(
-            map((response: any) => ({
-              linkedRack: (response?.data as Rack | null) ?? null,
+            map((response: RackReadResponse | null | undefined) => ({
+              linkedRack: response?.data ?? null,
               isOwner,
               isLoggedIn
             })),
@@ -1273,4 +1276,3 @@ export class PatchDetailDataService implements OnDestroy {
   }
 
 }
-

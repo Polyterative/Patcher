@@ -1,11 +1,13 @@
+import { ChangeDetectorRef } from '@angular/core';
 import { GetControlValuePipe } from './get-control-value.pipe';
 import { FormControl } from '@angular/forms';
 
 describe('GetControlValuePipe', () => {
   let pipe: GetControlValuePipe;
-  const mockCdr = { markForCheck: () => {}, detectChanges: () => {} } as any;
+  let mockCdr: jasmine.SpyObj<ChangeDetectorRef>;
 
   beforeEach(() => {
+    mockCdr = jasmine.createSpyObj<ChangeDetectorRef>('ChangeDetectorRef', ['markForCheck', 'detectChanges']);
     pipe = new GetControlValuePipe(mockCdr);
   });
 

@@ -59,10 +59,10 @@ describe('normalizeForSearch - consistency', () => {
   });
   
   it('returns null for null input (passthrough)', () => {
-    expect(normalizeForSearch(null as any)).toBeNull();
+    expect(normalizeForSearch(null)).toBeNull();
   });
   
   it('returns undefined for undefined input (passthrough)', () => {
-    expect(normalizeForSearch(undefined as any)).toBeUndefined();
+    expect(normalizeForSearch(undefined)).toBeUndefined();
   });
 });

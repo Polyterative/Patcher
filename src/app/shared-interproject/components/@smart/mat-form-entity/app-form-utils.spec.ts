@@ -1,5 +1,6 @@
-import { UntypedFormControl } from '@angular/forms';
-import { of } from 'rxjs';
+import { UntypedFormControl, ValidationErrors } from '@angular/forms';
+import { DomSanitizer } from '@angular/platform-browser';
+import { from, of } from 'rxjs';
 import { toArray } from 'rxjs/operators';
 import {
   AppFormUtils,
@@ -20,7 +21,7 @@ describe('AppFormUtils', () => {
   
   it('maps known error codes to user-facing messages', () => {
     const checks: Array<{
-      error: any;
+      error: ValidationErrors;
       expected: string
     }> = [
       {error: {required: true}, expected: ErrorMessages.form.error_required},
@@ -49,7 +50,8 @@ describe('AppFormUtils', () => {
 
 describe('sanitizers', () => {
   it('sanitizeItemInPipe sanitizes and drops empty strings', (done) => {
-    of('  <b>hello</b>  ', '   ', {any: 'value'} as any)
+    const mixedValues: Array<string | { any: string }> = ['  <b>hello</b>  ', '   ', {any: 'value'}];
+    from(mixedValues)
       .pipe(sanitizeItemInPipe(), toArray())
       .subscribe(values => {
         expect(values[0]).toContain('hello');
@@ -66,8 +68,8 @@ describe('sanitizers', () => {
   });
   
   it('sanitizeObjectInPipe sanitizes string fields and keeps non-string fields', (done) => {
-    of({a: '<img src=x onerror=alert(1)>text', b: 5} as any)
-      .pipe(sanitizeObjectInPipe({} as any), toArray())
+    of({a: '<img src=x onerror=alert(1)>text', b: 5})
+      .pipe(sanitizeObjectInPipe({} as DomSanitizer), toArray())
       .subscribe(values => {
         expect(values.length).toBe(1);
         expect(values[0].a).toContain('text');

@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { CanActivateFn, Route, RouterModule, Routes } from '@angular/router';
+import { CanActivateFn, Data, Route, RouterModule, Routes } from '@angular/router';
 import { ScreenWrapperComponent } from '../../components/@visual/screen-wrapper/screen-wrapper.component';
 import { SaturnComponent } from './saturn.component';
 
@@ -37,7 +37,7 @@ export function generateSaturnRoutes(parentPrefix: string, routes: Routes, title
   };
 }
 
-export function generateSaturnRoutesWithData(parentPrefix: string, routes: Routes, data: { [key: string]: any }, title?: string): Route {
+export function generateSaturnRoutesWithData(parentPrefix: string, routes: Routes, data: Data, title?: string): Route {
 
   return {
     path:      parentPrefix,

@@ -21,7 +21,7 @@ describe('EllipsisPipe', () => {
   });
   
   it('returns falsy value unchanged when value is null', () => {
-    expect(pipe.transform(null as any, 5)).toBeNull();
+    expect(pipe.transform(null, 5)).toBeNull();
   });
   
   it('returns empty string unchanged', () => {

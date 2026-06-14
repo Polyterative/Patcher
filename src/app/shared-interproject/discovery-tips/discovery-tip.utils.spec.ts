@@ -24,7 +24,17 @@ describe('discovery-tip.utils', () => {
   });
 
   describe('normalizeTipState', () => {
-    const def: DiscoveryTipDefinition = { id: 'tip1', version: 2 } as any;
+    const def: DiscoveryTipDefinition = {
+      id: 'tip1',
+      version: 2,
+      anchorId: 'tip-anchor',
+      title: 'Tip title',
+      body: 'Tip body',
+      routePrefixes: ['/'],
+      priority: 1,
+      audience: 'all',
+      isEligible: () => true
+    };
 
     it('returns fresh state when no state provided', () => {
       const result = normalizeTipState(def, undefined);

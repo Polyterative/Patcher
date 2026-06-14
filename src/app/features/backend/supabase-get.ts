@@ -19,6 +19,15 @@ import {
 import { remapErrors } from './supabase.cache';
 import { SimpleUserModel } from './supabase.types';
 import { SupabaseQueriesService } from './supabase-queries';
+import {
+  responseCount,
+  responseData,
+  responseList,
+  type SupabaseFunctionReturns,
+  type SupabaseSingleResponse,
+  type SupabaseTableRow
+} from './supabase-db.types';
+import { DbModule, RackedModule } from 'src/app/models/module';
 
 
 export interface AdminFlagRow {
@@ -31,6 +40,26 @@ export interface AdminFlagRow {
   created_at: string;
   resolved: boolean;
 }
+
+type RackModuleWithModuleRow = SupabaseTableRow<'rack_modules'> & {
+  module: DbModule;
+};
+type HiddenUsageBucket = 'none' | 'some' | '5_plus' | '10_plus' | '25_plus';
+type ModuleUsageSummaryRow = Omit<
+  SupabaseFunctionReturns<'get_module_usage_summary_bucketed'>[number],
+  'hidden_rack_bucket' | 'hidden_patch_bucket'
+> & {
+  hidden_rack_bucket: HiddenUsageBucket;
+  hidden_patch_bucket: HiddenUsageBucket;
+};
+type ModuleTagVoteRow = Pick<SupabaseTableRow<'user_module_tags'>, 'moduletagid'>;
+
+const EMPTY_MODULE_USAGE_SUMMARY: ModuleUsageSummaryRow = {
+  public_rack_count: 0,
+  hidden_rack_bucket: 'none',
+  public_patch_count: 0,
+  hidden_patch_bucket: 'none'
+};
 
 export function createGetNamespace(
   supabase: SupabaseClient<Database>,
@@ -61,16 +90,16 @@ export function createGetNamespace(
     )
       .pipe(remapErrors())
       .pipe(
-        map((x: any) => x.data),
-        map(x => x.map((y: any) => ({
-          module: y.module,
+        map(response => responseList(response as SupabaseSingleResponse<RackModuleWithModuleRow[]>)),
+        map(rows => rows.map((row): RackedModule => ({
+          module: row.module,
           rackingData: {
-            id: y.id,
-            row: y.row,
-            column: y.column,
-            moduleid: y.moduleid,
-            rackid: y.rackid,
-            selectedPanelId: y.selected_panel_id ?? null
+            id: row.id,
+            row: row.row,
+            column: row.column,
+            moduleid: row.moduleid,
+            rackid: row.rackid,
+            selectedPanelId: row.selected_panel_id ?? null
           }
         })))),
     
@@ -93,14 +122,9 @@ export function createGetNamespace(
       })
     ).pipe(
       remapErrors(),
-      map((response: any) => response.data?.[0] ?? {
-        public_rack_count: 0,
-        hidden_rack_bucket: 'none',
-        public_patch_count: 0,
-        hidden_patch_bucket: 'none'
-      })
+      map(response => responseList(response as SupabaseSingleResponse<ModuleUsageSummaryRow[]>)[0] ?? EMPTY_MODULE_USAGE_SUMMARY)
     ),
-    modulesBySameManufacturer: (manufacturerId: any, from = 0, to: number = defaultPag, columns = '*') =>
+    modulesBySameManufacturer: (manufacturerId: number, from = 0, to: number = defaultPag, columns = '*') =>
       queries.getModulesBySameManufacturer(manufacturerId, from, to, columns),
     manufacturerWithId: (id: number, from = 0, to: number = defaultPag, columns = '*') => rxFrom(
       supabase.from(DbPaths.manufacturers)
@@ -144,9 +168,7 @@ export function createGetNamespace(
     ).pipe(
       remapErrors(),
       map(x => {
-        const rows: {
-          moduletagid: number
-        }[] = (x.data as any) ?? [];
+        const rows = responseList(x as SupabaseSingleResponse<ModuleTagVoteRow[]>);
         const countMap = new Map<number, number>();
         for (const row of rows) {
           countMap.set(row.moduletagid, (countMap.get(row.moduletagid) ?? 0) + 1);
@@ -158,7 +180,7 @@ export function createGetNamespace(
       supabase.rpc('get_module_open_flag_count', {p_module_id: moduleId})
     ).pipe(
       remapErrors(),
-      map(x => ((x as any).data as number) ?? 0)
+      map(x => responseData(x as SupabaseSingleResponse<number>) ?? 0)
     ),
     allModuleFlags: () => rxFrom(
       supabase
@@ -168,7 +190,7 @@ export function createGetNamespace(
         .order('created_at', {ascending: false})
     ).pipe(
       remapErrors(),
-      map(x => ((x as any).data ?? []) as AdminFlagRow[])
+      map(x => responseList(x as SupabaseSingleResponse<AdminFlagRow[]>))
     ),
     statistics: () => zip(
       rxFrom(
@@ -176,19 +198,19 @@ export function createGetNamespace(
           .select('id', {count: 'exact'})
       )
         .pipe(remapErrors())
-        .pipe(map(((x: any) => x.count))),
+        .pipe(map(x => responseCount(x as SupabaseSingleResponse<{id: number}[]>))),
       rxFrom(
         supabase.from(DbPaths.racks)
           .select('id', {count: 'exact'})
       )
         .pipe(remapErrors())
-        .pipe(map(((x: any) => x.count))),
+        .pipe(map(x => responseCount(x as SupabaseSingleResponse<{id: number}[]>))),
       rxFrom(
         supabase.from(DbPaths.patches)
           .select('id', {count: 'exact'})
       )
         .pipe(remapErrors())
-        .pipe(map(((x: any) => x.count)))
+        .pipe(map(x => responseCount(x as SupabaseSingleResponse<{id: number}[]>)))
     )
   };
 }

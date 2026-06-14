@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { Route, RouterModule, Routes } from '@angular/router';
+import { Data, Route, RouterModule, Routes } from '@angular/router';
 import { ScreenWrapperComponent } from '../../components/@visual/screen-wrapper/screen-wrapper.component';
 import { VenusComponent } from './venus.component';
 
@@ -39,7 +39,7 @@ export function generateVenusRoutes(parentPrefix: string, routes: Routes, title?
   };
 }
 
-export function generateVenusRoutesWithData(parentPrefix: string, routes: Routes, data: { [key: string]: any }, title?: string): Route {
+export function generateVenusRoutesWithData(parentPrefix: string, routes: Routes, data: Data, title?: string): Route {
 
   return {
     path:      parentPrefix,
