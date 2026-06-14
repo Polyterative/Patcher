@@ -1,5 +1,9 @@
 # Decision Log
 
+## 14-06-2026 19:58
+
+- **Root leaf route split:** Selected `/404` and `/links/retired` because both were low-traffic leaf pages imported eagerly by `AppRoutingModule` while already shaped as standalone components. Exported `appRoutes` only for test visibility and preserved route paths/redirect behavior.
+
 ## 14-06-2026 19:55
 
 - **Patch graph fullscreen dialog split:** Chose the fullscreen/export dialog as the next non-flex heavy boundary because it is user-triggered and owns the `modern-screenshot` import. Converted only that dialog to standalone and opened it via dynamic import; did not defer the inline graph or cropper because those are more tightly coupled to currently rendered module templates and `@ViewChild` paths.
