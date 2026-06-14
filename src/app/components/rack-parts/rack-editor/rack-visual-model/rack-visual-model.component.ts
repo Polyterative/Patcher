@@ -64,13 +64,17 @@ import {
 import { takeUntil } from 'rxjs/operators';
 import {
   ModuleRenderRect,
+  ModuleLayoutAnimationCancel,
   SignalHoverCardPlacement,
   SignalOverlayFrame,
   SignalOverlayLine,
 } from './rack-visual-model.types';
 import {
   buildCurvedSignalPath,
+  captureModuleLayoutMoveRects,
   buildRenderedModuleElementMap,
+  findMovedRackModuleKeys,
+  playModuleLayoutMoveAnimations,
   buildSignalOverlayFrame,
   resolveRenderedModuleRect,
   resolveRowPowerPanelPlacement,
@@ -129,6 +133,8 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   };
   private static readonly rowAnalysisPanelHeightPx = 136;
   private static readonly dropRevealAnimationDurationMs = 225;
+  private static readonly layoutMoveAnimationDurationMs = 620;
+  private static readonly manualDropLayoutMoveCooldownMs = 520;
   private static readonly signalHoverCardWidthPx = 224;
   private static readonly signalHoverCardGapPx = 10;
   private static readonly touchContextMenuDelayMs = 550;
@@ -147,6 +153,10 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   private touchContextMenuBlockedModule: RackedModule | null = null;
   private hoveredRowIndex: number | null = null;
   private hoveredRowPowerPanelPlacement: 'above' | 'below' = 'above';
+  private layoutMoveAnimationCancel: ModuleLayoutAnimationCancel | null = null;
+  private layoutMoveAnimatingKeys = new Set<string>();
+  private layoutMoveSuppressedUntilMs = 0;
+  layoutMoveAngularAnimationsDisabled = false;
   private rowPowerBreakdown: RackPowerRowBreakdown[] = [];
   rowHpOverflow: number[] = [];
   private rowFunctionBreakdowns = new Map<number, RowFunctionBreakdown>();
@@ -204,12 +214,19 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['rowedRackedModules'] && !changes['rowedRackedModules'].firstChange) {
+      this.prepareLayoutMoveAnimation(
+        changes['rowedRackedModules'].previousValue,
+        changes['rowedRackedModules'].currentValue
+      );
+    }
     if (changes['rowedRackedModules'] || changes['dragScale'] || changes['rackData']) {
       this.updateRowPowerBreakdown();
     }
   }
 
   ngOnDestroy(): void {
+    this.cancelLayoutMoveAnimation();
     this.clearTouchInteractionState();
     this.destroyState$.next();
     this.destroyState$.complete();
@@ -267,6 +284,10 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
 
   moduleDomKey(rackedModule: RackedModule): string {
     return `${ rackedModule.rackingData.id }-${ rackedModule.module.id }-${ rackedModule.rackingData.row }-${ rackedModule.rackingData.column }`;
+  }
+
+  rackModuleStableDomKey(rackedModule: RackedModule): string {
+    return String(this.rackModuleTrackKey(rackedModule));
   }
 
   rackModuleTrackKey(rackedModule: RackedModule): number | string {
@@ -614,6 +635,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
 
   onDropListDropped(event: CdkDragDrop<ElementRef>, rowId: number, module: RackedModule): void {
     const shouldAnimateDropReveal = event.previousContainer === event.container;
+    this.suppressLayoutMoveAnimationForManualDrop();
     this.suppressPostDropReorder = true;
     this.cdr.markForCheck();
     this.rackDetailDataService.rackOrderChange$.next({event, newRow: rowId, module});
@@ -703,6 +725,18 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     return this.dropRevealAnimatingModule === module;
   }
 
+  isModuleLayoutMoveAnimating(module: RackedModule): boolean {
+    return this.layoutMoveAnimatingKeys.has(this.rackModuleStableDomKey(module));
+  }
+
+  isModuleAnimationSuppressed(module: RackedModule): boolean {
+    return this.isDragImageAnimationSuppressed(module) || this.isModuleLayoutMoveAnimating(module);
+  }
+
+  areLayoutMoveAngularAnimationsDisabled(): boolean {
+    return this.layoutMoveAngularAnimationsDisabled;
+  }
+
   private updateRowPowerBreakdown(): void {
     this.rowPowerBreakdown = buildRackPowerBreakdown(this.rowedRackedModules ?? []).rows;
     const capacity = this.rackData?.hp ?? 0;
@@ -717,6 +751,68 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     }
     this.updateModulePowerHeatmap();
     this.updateSignalAnalysisState();
+  }
+
+  private prepareLayoutMoveAnimation(
+    previousRows: RackedModule[][] | null | undefined,
+    nextRows: RackedModule[][] | null | undefined
+  ): void {
+    if (!this.shouldRunLayoutMoveAnimation()) {
+      this.cancelLayoutMoveAnimation();
+      return;
+    }
+
+    const movedKeys = findMovedRackModuleKeys(previousRows, nextRows, module => this.rackModuleStableDomKey(module));
+    if (movedKeys.size === 0) {
+      this.cancelLayoutMoveAnimation();
+      return;
+    }
+
+    const screenElement = this.screenReference?.nativeElement;
+    if (!screenElement) {
+      return;
+    }
+
+    const snapshots = captureModuleLayoutMoveRects(screenElement, movedKeys);
+    this.cancelLayoutMoveAnimation();
+    if (snapshots.size === 0) {
+      return;
+    }
+
+    this.layoutMoveAngularAnimationsDisabled = true;
+    this.layoutMoveAnimatingKeys = movedKeys;
+    this.layoutMoveAnimationCancel = playModuleLayoutMoveAnimations(
+      screenElement,
+      snapshots,
+      RackVisualModelComponent.layoutMoveAnimationDurationMs,
+      this.dragScale,
+      () => {
+        this.layoutMoveAnimatingKeys.clear();
+        this.layoutMoveAngularAnimationsDisabled = false;
+        this.layoutMoveAnimationCancel = null;
+        this.cdr.markForCheck();
+      }
+    );
+  }
+
+  private cancelLayoutMoveAnimation(): void {
+    this.layoutMoveAnimationCancel?.();
+    this.layoutMoveAnimationCancel = null;
+    this.layoutMoveAnimatingKeys.clear();
+    this.layoutMoveAngularAnimationsDisabled = false;
+  }
+
+  private shouldRunLayoutMoveAnimation(): boolean {
+    return typeof window !== 'undefined'
+      && !!window.requestAnimationFrame
+      && !window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
+      && Date.now() >= this.layoutMoveSuppressedUntilMs
+      && !this.suppressPostDropReorder;
+  }
+
+  private suppressLayoutMoveAnimationForManualDrop(): void {
+    this.layoutMoveSuppressedUntilMs = Date.now() + RackVisualModelComponent.manualDropLayoutMoveCooldownMs;
+    this.cancelLayoutMoveAnimation();
   }
 
   private updateModulePowerHeatmap(): void {

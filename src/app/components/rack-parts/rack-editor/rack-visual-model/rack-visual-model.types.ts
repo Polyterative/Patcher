@@ -24,3 +24,12 @@ export interface ModuleRenderRect {
   centerX: number;
   centerY: number;
 }
+
+export interface ModuleLayoutMoveRect {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
+
+export type ModuleLayoutAnimationCancel = () => void;

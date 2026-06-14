@@ -3,6 +3,8 @@
 
 #### POLICY: Unit Test Coverage
 
+**Status:** HISTORICAL SNAPSHOT — the completed coverage batches are summarized in `../COMPLETED.md`.
+
 Target: statements and lines ≥ 75% (baseline 03-02: ~57%).
 Not a blocking task — coverage rises naturally as new features ship with tests.
 
@@ -23,4 +25,3 @@ Previously listed as "remaining" but now fully covered by direct-instantiation s
 ## Decision log
 
 <!-- Append timestamped one-liners as the plan progresses. -->
-

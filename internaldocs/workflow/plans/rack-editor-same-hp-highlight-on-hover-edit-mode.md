@@ -3,6 +3,8 @@
 
 #### LOW: Rack Editor — Same-HP highlight on hover (edit mode)
 
+**Status:** OPEN — backlog item; no implementation started yet.
+
 **Why:** When deciding whether to swap two modules, the user needs to know which other
 modules are the same width. Currently there is no visual cue — they have to remember or
 read the HP label on each tile individually.
@@ -29,4 +31,3 @@ analysis overlays take full control and this highlight is suppressed entirely.
 ## Decision log
 
 <!-- Append timestamped one-liners as the plan progresses. -->
-
