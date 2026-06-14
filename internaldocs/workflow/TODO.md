@@ -23,7 +23,6 @@
 ### PRODUCT — Tier 0 (ship in any order; no external dependencies)
 
 - [ ] **MEDIUM: Discovery — Most Owned / Wanted / Sold modules section** → [`plans/discovery-most-owned-wanted-sold-modules-section.md`](./plans/discovery-most-owned-wanted-sold-modules-section.md)
-- [ ] **HIGH: Rack Editor — Optimistic / diff-based updates (no full-reload flash)** → [`plans/rack-editor-optimistic-diff-based-updates-no-full-reload-flash.md`](./plans/rack-editor-optimistic-diff-based-updates-no-full-reload-flash.md)
 
 ### PRODUCT — Tier 1 (requires Manufacturer Page Phase 2 to be live)
 

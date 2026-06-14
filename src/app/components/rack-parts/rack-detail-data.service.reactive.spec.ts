@@ -267,6 +267,96 @@ describe('RackDetailDataService reactive flows', () => {
     expect(SharedConstants.errorCustom).toHaveBeenCalledTimes(2);
   });
 
+  it('optimistically adds a picker module before backend racking id is returned', () => {
+    const {service, backend} = build();
+    const addResult$ = new Subject<any>();
+    backend.add.rackModule.and.returnValue(addResult$.asObservable());
+    const refreshSpy = spyOn(service.updateSingleRackData$, 'next').and.callThrough();
+    const module = {
+      id: 77,
+      name: 'New module',
+      hp: 10,
+      standard: {id: 0},
+      panels: [],
+      ins: [],
+      outs: [],
+      tags: []
+    } as any;
+    service.singleRackData$.next(rack({id: 1, rows: 1, name: 'Add Rack'}));
+    service.rowedRackedModules$.next([[moduleInRack(1, 0, 0)]]);
+
+    service.addModuleToRack$.next(module);
+
+    let rows = service.rowedRackedModules$.value;
+    expect(rows.length).toBe(2);
+    expect(rows[1][0].module.id).toBe(77);
+    expect(rows[1][0].rackingData.id).toBeUndefined();
+    expect(backend.add.rackModule).toHaveBeenCalledWith(77, 1);
+    expect(refreshSpy).not.toHaveBeenCalled();
+
+    addResult$.next({
+      data: [{id: 99, moduleid: 77, rackid: 1, row: null, column: null, selected_panel_id: null}]
+    });
+    addResult$.complete();
+
+    rows = service.rowedRackedModules$.value;
+    expect(rows[1][0].rackingData.id).toBe(99);
+    expect(refreshSpy).not.toHaveBeenCalled();
+  });
+
+  it('rolls back optimistic picker module add when backend persistence fails', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    backend.add.rackModule.and.returnValue(throwError(() => new Error('add failed')));
+    const originalRows = [[moduleInRack(1, 0, 0)]];
+    service.singleRackData$.next(rack({id: 1, rows: 1}));
+    service.rowedRackedModules$.next(originalRows);
+
+    service.addModuleToRack$.next({
+      id: 77,
+      name: 'New module',
+      hp: 10,
+      standard: {id: 0},
+      panels: [],
+      ins: [],
+      outs: [],
+      tags: []
+    } as any);
+
+    expect(service.rowedRackedModules$.value).toEqual(originalRows);
+    expect(SharedConstants.errorCustom).toHaveBeenCalled();
+  });
+
+  it('adds a blank panel to a row without reloading the rack', () => {
+    const {service, backend} = build();
+    const refreshSpy = spyOn(service.updateSingleRackData$, 'next').and.callThrough();
+    service.singleRackData$.next(rack({id: 1, rows: 1}));
+    service.rowedRackedModules$.next([[moduleInRack(1, 0, 0)]]);
+
+    service.addBlankToRow$.next({rowId: 0, hp: 8});
+
+    expect(backend.GET.moduleWithId).toHaveBeenCalledWith(4651);
+    expect(backend.add.rackModule).toHaveBeenCalledWith(4651, 1, 0, 1);
+    expect(service.rowedRackedModules$.value[0].length).toBe(2);
+    expect(service.rowedRackedModules$.value[0][1].module.id).toBe(4651);
+    expect(service.rowedRackedModules$.value[0][1].rackingData.id).toBe(88);
+    expect(refreshSpy).not.toHaveBeenCalled();
+  });
+
+  it('rolls back optimistic blank panel add when backend persistence fails', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    backend.add.rackModule.and.returnValue(throwError(() => new Error('blank add failed')));
+    service.singleRackData$.next(rack({id: 1, rows: 1}));
+    service.rowedRackedModules$.next([[moduleInRack(1, 0, 0)]]);
+
+    service.addBlankToRow$.next({rowId: 0, hp: 8});
+
+    expect(service.rowedRackedModules$.value[0].length).toBe(1);
+    expect(service.rowedRackedModules$.value[0][0].module.id).toBe(1001);
+    expect(SharedConstants.errorCustom).toHaveBeenCalled();
+  });
+
   it('rolls back move, duplicate, and delete row changes when persistence fails', () => {
     spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
     spyOn(SharedConstants, 'infoCustom').and.callFake(() => {});
@@ -812,8 +902,12 @@ describe('RackDetailDataService reactive flows', () => {
     service.addBlankToRow$.next({rowId: 0, hp: 4});
 
     // blank ID for hp=4 standard=0 is 4648 (from BLANK_IDS_STANDARD_0)
+    expect(backend.GET.moduleWithId).toHaveBeenCalledWith(4648);
     expect(backend.add.rackModule).toHaveBeenCalledWith(4648, 50, 0, 2);
-    expect(refreshSpy).toHaveBeenCalledWith(50);
+    expect(service.rowedRackedModules$.value[0].length).toBe(3);
+    expect(service.rowedRackedModules$.value[0][2].module.id).toBe(4648);
+    expect(service.rowedRackedModules$.value[0][2].rackingData.id).toBe(88);
+    expect(refreshSpy).not.toHaveBeenCalled();
   });
 
   it('creates a linked patch from the current rack and routes straight to it', () => {
@@ -893,14 +987,16 @@ describe('RackDetailDataService reactive flows', () => {
       expect(backend.update.rackModulePanel).toHaveBeenCalledWith(7, null);
     });
     
-    it('shows error snackbar when backend call fails', () => {
+    it('rolls back local panel selection and shows an error when backend call fails', () => {
       const {service, backend, snackBar} = build();
       backend.update.rackModulePanel.and.returnValue(throwError(() => new Error('DB error')));
       const module = moduleInRack(9, 0, 0);
+      module.rackingData.selectedPanelId = 4;
       service.rowedRackedModules$.next([[module]]);
       
       service.requestRackedModulePanelSwitch$.next({rackedModule: module, panelId: 1});
       
+      expect(service.rowedRackedModules$.value[0][0].rackingData.selectedPanelId).toBe(4);
       expect(snackBar.open).toHaveBeenCalled();
     });
   });

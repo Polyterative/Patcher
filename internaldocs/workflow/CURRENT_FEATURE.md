@@ -14,4 +14,4 @@
 
 ## Active
 
-*None.*
+No active feature. Pick the next task from [`TODO.md`](./TODO.md).

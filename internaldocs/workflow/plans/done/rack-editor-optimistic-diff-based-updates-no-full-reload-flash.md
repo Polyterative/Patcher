@@ -26,11 +26,11 @@ change feel instant and local.
       error snackbar.
 - [x] Apply the same diff pattern to **reorder** operations: `requestRackedModulesDbSync$`
       pipeline now captures a snapshot before backend sync and restores on error.
-- [ ] Apply the optimistic diff pattern to **add** operations (harder — requires DB-generated ID).
-- [ ] Audit `rack-detail-data.service.ts` for every place a full `rackWithId` cache bust +
+- [x] Apply the optimistic diff pattern to **add** operations (harder — requires DB-generated ID).
+- [x] Audit `rack-detail-data.service.ts` for every place a full `rackWithId` cache bust +
       reload is triggered after a write; replace each with a targeted `state$.next(patchedState)`
       emission where the operation is local enough to compute the new state deterministically.
-- [ ] Long-term: no rack operation should cause a visible full-page re-render. Track remaining
+- [x] Long-term: no rack operation should cause a visible full-page re-render. Track remaining
       full-reload call sites as tech debt until all are eliminated.
 
 ---
@@ -39,3 +39,5 @@ change feel instant and local.
 
 <!-- Append timestamped one-liners as the plan progresses. -->
 
+- 2026-06-14 — Add operations slice completed: bottom-picker modules are inserted as local unracked modules before backend completion, quick-add blanks are inserted into `rowedRackedModules$` without a full rack reload, and generated racking ids are reconciled through `applyPersistedRackingIds` with targeted rollback on failure.
+- 2026-06-14 — Full-reload audit completed. The only remaining `updateSingleRackData$` write path is rack duplication after `history.replaceState()` to hydrate the newly created rack id/token; same-rack mutations now stay local where deterministic. Tightened panel-switch persistence so a failed backend update restores the prior `selectedPanelId` instead of leaving failed local state visible.
