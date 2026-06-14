@@ -5,6 +5,7 @@ import {
   setupSupabaseServiceTest,
   TEST_TIMEOUT
 } from './test-setup';
+import { CommentableEntityTypes } from 'src/app/components/shared-atoms/comments/comments-data.service';
 
 
 function chainable(resolveValue: any = {data: null, error: null}) {
@@ -125,12 +126,22 @@ describe('SupabaseService - delete advanced', () => {
       const tablesAccessed: string[] = [];
       let patchCalls = 0;
       let rackCalls = 0;
+      let moduleCalls = 0;
+      let collectionCalls = 0;
       let commentCalls = 0;
       spyOn(supabaseClient, 'from').and.callFake((table: string) => {
         tablesAccessed.push(table);
         if (table === 'patches') {
           patchCalls++;
           return chainable({data: patchCalls === 1 ? [{id: 1}] : null, error: null});
+        }
+        if (table === 'modules') {
+          moduleCalls++;
+          return chainable({data: moduleCalls === 1 ? [{id: 3}] : null, error: null});
+        }
+        if (table === 'module_collections') {
+          collectionCalls++;
+          return chainable({data: collectionCalls === 1 ? [{id: 4}] : null, error: null});
         }
         if (table === 'racks') {
           rackCalls++;
@@ -152,6 +163,10 @@ describe('SupabaseService - delete advanced', () => {
           expect(tablesAccessed).toContain('racks');
           expect(tablesAccessed).toContain('user_modules');
           expect(tablesAccessed).toContain('comments');
+          expect(tablesAccessed).toContain('modules');
+          expect(tablesAccessed).toContain('module_flags');
+          expect(tablesAccessed).toContain('module_collections');
+          expect(tablesAccessed).toContain('module_collection_entries');
           done();
         },
         error: (err) => {
@@ -175,6 +190,10 @@ describe('SupabaseService - delete advanced', () => {
           expect(bustedKeys).toContain('comments');
           expect(bustedKeys).toContain('rackWithId');
           expect(bustedKeys).toContain('modules');
+          expect(bustedKeys).toContain('module_flags');
+          expect(bustedKeys).toContain('moduleCollections');
+          expect(bustedKeys).toContain('moduleCollectionWithId');
+          expect(bustedKeys).toContain('moduleCollectionsByModule');
           done();
         },
         error: (err) => {
@@ -218,19 +237,50 @@ describe('SupabaseService - delete advanced', () => {
       const rackSelect = chainable({data: [{id: 21}], error: null});
       const rackModulesDelete = buildDeleteMock('rack_modules');
       const rackDelete = buildDeleteMock('racks');
+      const moduleSelect = chainable({data: [{id: 31}, {id: 32}], error: null});
+      const moduleDelete = buildDeleteMock('modules');
+      const collectionSelect = chainable({data: [{id: 41}], error: null});
+      const collectionEntriesByCollectionDelete = buildDeleteMock('module_collection_entries');
+      const collectionEntriesByModuleDelete = buildDeleteMock('module_collection_entries');
+      const collectionDelete = buildDeleteMock('module_collections');
+      const moduleFlagsByModuleDelete = buildDeleteMock('module_flags');
+      const moduleFlagsByUserDelete = buildDeleteMock('module_flags');
       const userModulesDelete = chainable({data: null, error: null});
       const patchCommentsDelete = buildDeleteMock('comments');
       const rackCommentsDelete = buildDeleteMock('comments');
+      const moduleCommentsDelete = buildDeleteMock('comments');
       const authorCommentsDelete = chainable({data: null, error: null});
 
       let patchCalls = 0;
       let rackCalls = 0;
       let commentCalls = 0;
+      let moduleCalls = 0;
+      let moduleCollectionCalls = 0;
+      let moduleCollectionEntriesCalls = 0;
+      let moduleFlagCalls = 0;
 
       spyOn(supabaseClient, 'from').and.callFake((table: string) => {
         if (table === 'patches') {
           patchCalls++;
           return patchCalls === 1 ? patchSelect : patchDelete;
+        }
+        if (table === 'modules') {
+          moduleCalls++;
+          return moduleCalls === 1 ? moduleSelect : moduleDelete;
+        }
+        if (table === 'module_collections') {
+          moduleCollectionCalls++;
+          return moduleCollectionCalls === 1 ? collectionSelect : collectionDelete;
+        }
+        if (table === 'module_collection_entries') {
+          moduleCollectionEntriesCalls++;
+          return moduleCollectionEntriesCalls === 1
+            ? collectionEntriesByCollectionDelete
+            : collectionEntriesByModuleDelete;
+        }
+        if (table === 'module_flags') {
+          moduleFlagCalls++;
+          return moduleFlagCalls === 1 ? moduleFlagsByModuleDelete : moduleFlagsByUserDelete;
         }
         if (table === 'patch_connections') return patchConnectionsDelete;
         if (table === 'patch_module_instances') return patchModuleInstancesDelete;
@@ -244,6 +294,7 @@ describe('SupabaseService - delete advanced', () => {
           commentCalls++;
           if (commentCalls === 1) return patchCommentsDelete;
           if (commentCalls === 2) return rackCommentsDelete;
+          if (commentCalls === 3) return moduleCommentsDelete;
           return authorCommentsDelete;
         }
         fail(`Unexpected table access: ${ table }`);
@@ -287,10 +338,50 @@ describe('SupabaseService - delete advanced', () => {
             column: 'entityId',
             ids: [21]
           }));
+          expect(inCalls).toContain(jasmine.objectContaining({
+            table: 'module_collection_entries',
+            column: 'collection_id',
+            ids: [41]
+          }));
+          expect(inCalls).toContain(jasmine.objectContaining({
+            table: 'module_collection_entries',
+            column: 'module_id',
+            ids: [31, 32]
+          }));
+          expect(inCalls).toContain(jasmine.objectContaining({
+            table: 'module_collections',
+            column: 'id',
+            ids: [41]
+          }));
+          expect(inCalls).toContain(jasmine.objectContaining({
+            table: 'module_flags',
+            column: 'module_id',
+            ids: [31, 32]
+          }));
+          expect(inCalls).toContain(jasmine.objectContaining({
+            table: 'comments',
+            column: 'entityId',
+            ids: [31, 32]
+          }));
+          expect(inCalls).toContain(jasmine.objectContaining({
+            table: 'modules',
+            column: 'id',
+            ids: [31, 32]
+          }));
           expect(eqCalls).toContain(jasmine.objectContaining({
             table: 'comments',
             column: 'entityType',
-            value: 2
+            value: CommentableEntityTypes.RACK
+          }));
+          expect(eqCalls).toContain(jasmine.objectContaining({
+            table: 'comments',
+            column: 'entityType',
+            value: CommentableEntityTypes.MODULE
+          }));
+          expect(eqCalls).toContain(jasmine.objectContaining({
+            table: 'module_flags',
+            column: 'user_id',
+            value: 'delete-user-ids'
           }));
           done();
         },
