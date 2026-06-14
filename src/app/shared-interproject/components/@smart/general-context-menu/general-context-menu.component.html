@@ -31,6 +31,10 @@
                   <img [src]="child.imageUrl"
                        style="width:28px;height:28px;margin-right:8px;border-radius:2px;object-fit:cover;flex-shrink:0;vertical-align:middle"
                        [alt]="child.label"
+                       loading="lazy"
+                       decoding="async"
+                       width="28"
+                       height="28"
                   >
                 }
                 @if (!child.imageUrl) {

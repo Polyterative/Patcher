@@ -28,7 +28,14 @@
                     <div class="collection-summary">
                       <div class="collection-summary__media">
                         @if (coverImageSrc(bag.collection.image); as coverUrl) {
-                          <img class="collection-summary__cover" [src]="coverUrl" [alt]="bag.collection.name">
+                          <img class="collection-summary__cover"
+                               [src]="coverUrl"
+                               [alt]="bag.collection.name"
+                               loading="lazy"
+                               decoding="async"
+                               width="320"
+                               height="180"
+                          >
                         } @else {
                           <div class="collection-summary__placeholder">
                             <mat-icon>playlist_play</mat-icon>

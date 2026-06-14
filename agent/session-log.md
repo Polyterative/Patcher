@@ -1,5 +1,14 @@
 # Session Log
 
+## 14-06-2026 19:43 — Image metadata sweep
+
+- **Task selected:** User requested ten improvements; selected ten low-risk image metadata improvements inside the active bundle/prerender plan.
+- **Implementation note:** Reused existing image surfaces and styling. Added only `loading`, `decoding`, `width`, and `height` attributes where missing; preserved existing alt bindings/copy and avoided new UI, SCSS, routing, backend, schema, RLS, policies, or migrations.
+- **Actions performed:** Updated collection card/detail/editor images, module detail/editor previews, patch linked-rack previews, context-menu thumbnails, Product Hunt badge, and manufacturer row logos. Added `scripts/tests/image-metadata.test.cjs` and wired it into `pnpm test:functions`.
+- **Tests run:** `pnpm test:functions:image-metadata` passing; focused component specs for touched areas passing; `pnpm build` passing; `pnpm lint` passing with the existing warning noise.
+- **Docs updated:** Marked the image/lazy-loading sweep complete in the active plan and recorded the ten concrete improvements in `CURRENT_FEATURE.md`.
+- **Blockers raised:** None.
+
 ## 14-06-2026 19:37 — Bundle/prerender baseline slice
 
 - **Task selected:** HIGH bundle weight, lazy boundaries, and SSR prerender coverage; first actionable slice is baseline measurement plus prerender generator coverage.

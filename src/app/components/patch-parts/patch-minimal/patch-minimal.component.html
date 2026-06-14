@@ -149,6 +149,9 @@
                   [src]="getRackPreviewUrl(bag.linkedRackState.rackImage)"
                   [alt]="'Rack preview for ' + (bag.linkedRackState.rackName || 'linked rack')"
                   loading="lazy"
+                  decoding="async"
+                  width="320"
+                  height="180"
                 >
               </a>
             }
