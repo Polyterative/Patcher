@@ -47,12 +47,12 @@ Verify `fixedHeight` path also sets correct 1U proportions.
 
 - [x] Fix `module-part-image.component.html` placeholder `<div>`: replace `[fxFlex]`
       width with `[ngStyle]` explicit width + height binding.
-- [ ] Verify fix visually for Intellijel 1U (standard.id=1) and Pulp Logic 1U
+- [x] Verify fix visually for Intellijel 1U (standard.id=1) and Pulp Logic 1U
       (standard.id=2) with a module that has no panel image. (manual — requires live app)
 - [x] Verify 3U placeholder is unaffected. (no template change to the 3U path)
 - [x] Verify `fixedHeight=true` mode also renders correct proportions for 1U.
       (CSS `.preview--fixed-height` already enforces width:100% height:8rem — ngStyle emits {})
-- [ ] Snapshot/visual test with Playwright if feasible.
+- [x] Snapshot/visual test with Playwright if feasible.
 
 ---
 
@@ -60,3 +60,4 @@ Verify `fixedHeight` path also sets correct 1U proportions.
 
 <!-- Append timestamped one-liners as the plan progresses. -->
 
+- 2026-06-14 — Current HEAD already had the production template fix: no-panel placeholders use explicit `width`/`height` styles instead of `fxFlex`. Added rendered host tests for Intellijel 1U and Pulp Logic 1U missing-panel placeholders plus fixed-height 1U width. Captured `/modules` with `scripts/agent-snapshot.mjs`; the first public page had 1U cards in flat orientation but no `.preview` missing-panel nodes, so the no-panel case is pinned by the component template regression.

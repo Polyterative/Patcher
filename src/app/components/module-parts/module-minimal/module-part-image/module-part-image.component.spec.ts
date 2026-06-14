@@ -1,8 +1,16 @@
 import {
+  Component,
   ChangeDetectorRef,
   ElementRef
 } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { RouterTestingModule } from '@angular/router/testing';
+import { FlexLayoutModule } from '@angular/flex-layout';
 import { AppViewportService } from 'src/app/shared-interproject/app-viewport.service';
+import { GetModuleHeightForStandardPipe } from '../../get-module-height-for-standard.pipe';
+import { MODULE_FORMAT_GEOMETRY } from '../../module-format-geometry.constants';
 import {
   ModulePartImageComponent,
   resolveSurfaceTooltipPosition
@@ -37,8 +45,27 @@ function buildComponent(options: {
 const PANEL_DARK = {id: 1, filename: 'dark.png', color: 0, description: 'Dark', moduleid: 10};
 const PANEL_LIGHT = {id: 2, filename: 'light.png', color: 1, description: 'Light', moduleid: 10};
 
-function makeModule(panels: any[] = [PANEL_DARK, PANEL_LIGHT]): any {
-  return {id: 10, name: 'VCO', panels, manufacturer: {name: 'Make Noise'}, standard: {name: '3U'}};
+function makeModule(
+  panels: any[] = [PANEL_DARK, PANEL_LIGHT],
+  standard: {id: number; name: string} = {id: 0, name: '3U'},
+  hp = 10
+): any {
+  return {id: 10, name: 'VCO', hp, panels, manufacturer: {name: 'Make Noise'}, standard};
+}
+
+@Component({
+  template: `
+    <app-module-part-image
+      [data]="data"
+      [fixedHeight]="fixedHeight"
+      [disableEnterAnimation]="true"
+    ></app-module-part-image>
+  `,
+  standalone: false
+})
+class HostComponent {
+  data = makeModule([], {id: 1, name: 'Intellijel 1U'}, 10);
+  fixedHeight = false;
 }
 
 describe('ModulePartImageComponent — panel resolution', () => {
@@ -195,4 +222,62 @@ describe('resolveSurfaceTooltipPosition', () => {
       right: 450
     } as DOMRect, 420, 200)).toBe('before');
   });
+});
+
+describe('ModulePartImageComponent — placeholder proportions', () => {
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      declarations: [
+        HostComponent,
+        ModulePartImageComponent,
+        GetModuleHeightForStandardPipe
+      ],
+      imports: [
+        FlexLayoutModule,
+        MatTooltipModule,
+        NoopAnimationsModule,
+        RouterTestingModule
+      ]
+    }).compileComponents();
+  });
+
+  it('renders missing-panel Intellijel 1U placeholders as a wide slab', () => {
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.detectChanges();
+
+    const placeholder = fixture.nativeElement.querySelector('.preview') as HTMLElement;
+
+    expectRemValue(placeholder.style.width, 10 / 2.7 / 2);
+    expectRemValue(placeholder.style.height, MODULE_FORMAT_GEOMETRY.INTELLIJEL_1U.heightRem / 2.7 / 2);
+    expect(parseFloat(placeholder.style.width)).toBeGreaterThan(parseFloat(placeholder.style.height));
+  });
+
+  it('uses Pulp Logic 1U height when sizing missing-panel placeholders', () => {
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.componentInstance.data = makeModule([], {id: 2, name: 'Pulp Logic 1U'}, 10);
+    fixture.detectChanges();
+
+    const placeholder = fixture.nativeElement.querySelector('.preview') as HTMLElement;
+
+    expectRemValue(placeholder.style.width, 10 / 2.7 / 2);
+    expectRemValue(placeholder.style.height, MODULE_FORMAT_GEOMETRY.PULP_LOGIC_1U.heightRem / 2.7 / 2);
+    expect(parseFloat(placeholder.style.width)).toBeGreaterThan(parseFloat(placeholder.style.height));
+  });
+
+  it('keeps fixed-height 1U placeholder width derived from HP and format height', () => {
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.componentInstance.fixedHeight = true;
+    fixture.detectChanges();
+
+    const placeholder = fixture.nativeElement.querySelector('.preview') as HTMLElement;
+
+    expectRemValue(placeholder.style.width, 10 * 8 / MODULE_FORMAT_GEOMETRY.INTELLIJEL_1U.heightRem);
+    expect(placeholder.style.height).toBe('');
+    expect(placeholder.classList).toContain('preview--fixed-height');
+  });
+
+  function expectRemValue(actual: string, expected: number): void {
+    expect(actual.endsWith('rem')).toBeTrue();
+    expect(parseFloat(actual)).toBeCloseTo(expected, 4);
+  }
 });
