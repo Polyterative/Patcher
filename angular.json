@@ -65,7 +65,6 @@
               "graphology-layout-forceatlas2",
               "graphology-layout",
               "sigma",
-              "lodash",
               "dom-to-image",
               "ws"
             ],
