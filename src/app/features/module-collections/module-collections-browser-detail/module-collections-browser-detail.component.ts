@@ -7,6 +7,7 @@ import {
   of
 } from 'rxjs';
 import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
+import { SeoSocialShareData } from 'src/app/models/seo.model';
 import { ModuleCollectionsDetailDataService } from '../module-collections-detail-data.service';
 import { ModuleCollectionsDataService } from '../module-collections-data.service';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
@@ -68,9 +69,10 @@ export class ModuleCollectionsBrowserDetailComponent extends SubManager implemen
         takeUntil(this.destroy$)
       )
       .subscribe(collection => {
-        this.seoAndUtilsService.updateSeo({
-          description: collection.description ?? `Curated module collection by ${ collection.author?.username ?? 'unknown' }.`
-        }, collection.name);
+        this.seoAndUtilsService.updateSeo(
+          this.buildCollectionSeoData(collection),
+          `${ collection.name } — Module collection`
+        );
       });
   }
 
@@ -137,5 +139,45 @@ export class ModuleCollectionsBrowserDetailComponent extends SubManager implemen
       dateStyle: 'medium',
       timeStyle: 'short'
     }).format(new Date(value));
+  }
+
+  private buildCollectionSeoData(collection: ModuleCollectionDetail): SeoSocialShareData {
+    const author = collection.author?.username || 'unknown';
+    const moduleCount = collection.module_count ?? collection.entries.length;
+    const moduleNames = collection.entries
+      .map(entry => entry.module?.name)
+      .filter((name): name is string => !!name);
+    const manufacturerNames = collection.entries
+      .map(entry => entry.module?.manufacturer?.name)
+      .filter((name): name is string => !!name);
+    const descriptionParts = [
+      collection.description?.trim(),
+      `Curated module collection by ${ author } with ${ moduleCount } module${ moduleCount === 1 ? '' : 's' }.`,
+      moduleNames.length > 0
+        ? `Includes ${ moduleNames.join(', ') }.`
+        : null
+    ].filter((part): part is string => !!part);
+    const keywordParts = [
+      collection.name,
+      author,
+      ...moduleNames,
+      ...manufacturerNames,
+      'module collection',
+      'eurorack',
+      'modular'
+    ];
+    const uniqueKeywords = [...new Set(keywordParts.map(keyword => keyword.trim()).filter(Boolean))];
+    const image = this.coverImageSrc(collection.image) ?? undefined;
+
+    return {
+      title: `${ collection.name } - Module collection`,
+      description: descriptionParts.join(' '),
+      url: `https://patcher.xyz/collections/${ collection.public_id }`,
+      author,
+      keywords: uniqueKeywords.join(', '),
+      published: collection.created,
+      modified: collection.updated,
+      ...(image ? {image} : {})
+    };
   }
 }

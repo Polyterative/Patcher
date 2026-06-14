@@ -164,7 +164,8 @@ export class ModuleCollectionsDataService extends SubManager {
         public: data.public ?? false,
         image: data.image ?? null,
         moduleIds: data.moduleIds ?? []
-      }).pipe(tap(() => this.analytics.capture('module_collection.created', {
+      }).pipe(tap((collectionId) => this.analytics.capture('module_collection.created', {
+        collection_id: typeof collectionId === 'number' ? collectionId : undefined,
         module_count: data.moduleIds?.length ?? 0,
         public: data.public ?? false
       })));

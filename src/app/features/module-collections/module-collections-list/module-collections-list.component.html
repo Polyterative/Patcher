@@ -10,9 +10,12 @@
 } @else {
   <div class="collections-list col gap1">
     <flexbox-row-fast>
-      @for (collection of collections; track collection.id) {
+      @for (collection of collections; track collection.id; let index = $index) {
         <lib-clean-card>
-          <app-module-collection-card [collection]="collection"></app-module-collection-card>
+          <app-module-collection-card
+            [collection]="collection"
+            (openCollection)="collectionOpen.emit({collection: $event, index})"
+          ></app-module-collection-card>
         </lib-clean-card>
       }
     </flexbox-row-fast>

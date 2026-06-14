@@ -1,17 +1,13 @@
 # Acceptance Checklist
 
-## feat(public-profile): Replace mat-paginator with Load More for racks and patches tabs
+## feat(module-collections): Creation/discovery analytics
 
-- [x] `loadMorePatches$` Subject added to `public-profile-data.service.ts`
-- [x] `loadMoreRacks$` Subject added to `public-profile-data.service.ts`
-- [x] Patch pipeline: `skip===0` → replace list; `skip>0` → append list
-- [x] Rack pipeline: same accumulation pattern
-- [x] Loading state (undefined) only shown on fresh load, not on load-more
-- [x] Skip resets to 0 on profile change
-- [x] Component getters added: `hasMorePatches`, `remainingPatchesCount`, `hasMoreRacks`, `remainingRacksCount`
-- [x] Template: both `<mat-paginator>` replaced with `@if (hasMore*) { mat-stroked-button }`
-- [x] Module: `MatPaginatorModule` → `MatButtonModule`
-- [x] SCSS `.loadMore` styles added to component stylesheet
-- [x] 2 new spec tests: `loadMorePatches$ appends results and advances skip`, `loadMoreRacks$ appends results and advances skip`
-- [x] `pnpm test-headless` — 9/9 tests pass (5 existing + 2 new + 2 others)
-- [x] `pnpm build` — green (pre-existing budget warnings only)
+- [x] Collection creation analytics includes created collection id when the backend returns it.
+- [x] Public collection browser captures search/order filter changes without raw search text.
+- [x] Public collection browser captures first-page search results with order/count metadata.
+- [x] Public collection browser captures reset and load-more interactions.
+- [x] Public collection card/list/root wiring captures collection click/open interactions.
+- [x] Focused specs cover creation analytics and browser discovery events.
+- [x] `pnpm test-headless --include="**/module-collections-browser-data.service.spec.ts" --include="**/module-collections-data.service.spec.ts"` passes.
+- [x] `pnpm build` passes.
+- [x] `pnpm lint` passes.

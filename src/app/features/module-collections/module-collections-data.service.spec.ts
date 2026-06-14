@@ -114,6 +114,7 @@ describe('ModuleCollectionsDataService', () => {
     }));
     expect(backend.delete.moduleCollection).toHaveBeenCalledWith(2);
     expect(analytics.capture).toHaveBeenCalledWith('module_collection.created', {
+      collection_id: 11,
       module_count: 2,
       public: false
     });

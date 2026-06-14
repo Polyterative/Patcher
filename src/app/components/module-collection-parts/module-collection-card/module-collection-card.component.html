@@ -17,6 +17,7 @@
                                 infoBox
                                 infoText="Collection name"
                                 textSize="md"
+                                (click)="openCollection.emit(collection)"
       >
         {{ collection.name }}
       </app-hero-clickable-title>

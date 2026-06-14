@@ -37,6 +37,11 @@ export interface CollectionOrderOption extends ISelectable {
   id: CollectionOrderKey;
 }
 
+export interface ModuleCollectionDiscoveryOpenEvent {
+  collection: ModuleCollectionSummary;
+  index: number;
+}
+
 export const COLLECTION_ORDER_OPTIONS: CollectionOrderOption[] = [
   { id: 'updated_desc', name: 'Recently updated' },
   { id: 'created_desc', name: 'Newest first' },
@@ -99,6 +104,7 @@ export class ModuleCollectionsBrowserDataService extends SubManager {
 
   readonly loadMore$ = new Subject<void>();
   readonly resetForm$ = new Subject<void>();
+  readonly collectionOpened$ = new Subject<ModuleCollectionDiscoveryOpenEvent>();
   readonly canReset$: Observable<boolean>;
 
   private readonly _skip$ = new BehaviorSubject<number>(0);
@@ -138,6 +144,7 @@ export class ModuleCollectionsBrowserDataService extends SubManager {
       ),
       this.resetForm$.pipe(
         tap(() => {
+          this.analytics.capture('module_collection.discovery_filters_reset', {});
           this.fields.search.control.setValue('', { emitEvent: false });
           this.fields.order.control.setValue(COLLECTION_ORDER_OPTIONS[0], { emitEvent: false });
         }),
@@ -151,6 +158,13 @@ export class ModuleCollectionsBrowserDataService extends SubManager {
 
     filters$.pipe(
       tap(([search, order]) => {
+        if (this.filterVersion > 0) {
+          this.analytics.capture('module_collection.discovery_filter_changed', {
+            search_active: search.trim().length > 0,
+            search_length: search.trim().length,
+            order: order.id
+          });
+        }
         this.filterVersion++;
         this.activeSearch = search;
         this.activeOrder = order;
@@ -160,15 +174,34 @@ export class ModuleCollectionsBrowserDataService extends SubManager {
         this._remainingCount$.next(0);
         this._loading$.next(true);
       }),
-      switchMap(([search, order]) => this.fetchPage(0, search, order.id)),
+      switchMap(([search, order]) => this.fetchPage(0, search, order.id).pipe(
+        map(page => ({page, search, order}))
+      )),
       takeUntil(this.destroy$)
-    ).subscribe(page => {
+    ).subscribe(({page, search, order}) => {
       this.applyFirstPage(page);
       this.analytics.capture('module_collection.browser_viewed', { view: 'public' });
+      this.analytics.capture('module_collection.discovery_search_performed', {
+        search_active: search.trim().length > 0,
+        search_length: search.trim().length,
+        order: order.id,
+        result_count: page.items.length,
+        total: page.total,
+        remaining: page.remaining,
+        failed: page.failed
+      });
     });
 
     this.loadMore$.pipe(
-      tap(() => this._loading$.next(true)),
+      tap(() => {
+        this._loading$.next(true);
+        this.analytics.capture('module_collection.discovery_load_more', {
+          loaded_count: this._collections$.getValue()?.length ?? 0,
+          remaining: this._remainingCount$.getValue(),
+          order: this.activeOrder.id,
+          search_active: this.activeSearch.trim().length > 0
+        });
+      }),
       switchMap(() => {
         const nextSkip = this._skip$.getValue() + PAGE_SIZE;
         const filterVersion = this.filterVersion;
@@ -190,6 +223,17 @@ export class ModuleCollectionsBrowserDataService extends SubManager {
       this._hasMore$.next(page.remaining > 0);
       this._remainingCount$.next(page.remaining);
     });
+
+    this.collectionOpened$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(({collection, index}) => {
+        this.analytics.capture('module_collection.discovery_collection_clicked', {
+          collection_id: collection.id,
+          public_id: collection.public_id,
+          rank: index + 1,
+          module_count: collection.module_count ?? 0
+        });
+      });
 
   }
 

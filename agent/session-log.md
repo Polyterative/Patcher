@@ -1,5 +1,25 @@
 # Session Log
 
+## 14-06-2026 13:00 — Module collection SEO/share metadata
+
+- **Boot state:** Read `internaldocs/README.md`, active `CURRENT_FEATURE.md`, `TODO.md`, module collection plan, architecture/style/design/pattern/testing docs, autonomous agent docs, and `agent/` state. Git status was clean; recent commits showed current work on `develop`.
+- **Task selected:** `CURRENT_FEATURE.md` Layer 3 "Add SEO/share metadata for public collection pages."
+- **Implementation note:** Stored in session artifact `plan.md`; reused `ModuleCollectionsBrowserDetailComponent`, `SeoAndUtilsService`, `getPublicStorageUrl`, and the rack/public-profile SEO patterns. No UI, SCSS, route, schema, or backend changes.
+- **Actions performed:** Replaced the minimal collection SEO call with share-ready metadata: title, description, canonical `/collections/:public_id`, author, cover image URL, keywords, published and modified timestamps. Added component specs for rich metadata and no-cover fallback. Updated `CURRENT_FEATURE.md`, `current-task.md`, `acceptance-checklist.md`, and `decision-log.md`.
+- **Tests run:** `pnpm test-headless --include="**/module-collections-browser-detail.component.spec.ts"` → 6/6 passing; `pnpm build` → passing; `pnpm lint` → passing with one unrelated pre-existing warning in `e2e/screenshots/cropper-debug.spec.ts`.
+- **Blockers raised:** None.
+- **Next pickup:** Module Collections Layer 3 analytics for collection creation and discovery interactions.
+
+## 14-06-2026 13:05 — Module collection analytics + archive
+
+- **Task selected:** `CURRENT_FEATURE.md` Layer 3 "Add analytics for collection creation and discovery interactions."
+- **Implementation note:** Extended the session `plan.md`; reused `AnalyticsService`, collection browser data-service subjects, module browser search analytics, and home discovery click analytics. No UI styling, backend, route, or provider changes.
+- **Actions performed:** Added collection creation `collection_id` analytics when the backend returns an id; added public collection discovery events for search/order changes, first-page result metadata, filter reset, load more, and clicked/opened collections. Wired click tracking through existing collection card/list/root components using outputs only.
+- **Tests run:** `pnpm test-headless --include="**/module-collections-browser-data.service.spec.ts" --include="**/module-collections-data.service.spec.ts"` → 13/13 passing; `pnpm build` → passing; `pnpm lint` → passing with one unrelated pre-existing warning in `e2e/screenshots/cropper-debug.spec.ts`.
+- **Docs updated:** Completed and archived Module Collections; moved the TODO entry to `COMPLETED.md`, reset `CURRENT_FEATURE.md`, and moved the plan to `plans/done/`.
+- **Blockers raised:** None.
+- **Next pickup:** Highest-priority open TODO from `internaldocs/workflow/TODO.md`.
+
 ## 17-05-2026 09:15 — Public profile Load More (session start + completion)
 
 - **Boot state:** Read AGENTS.md, mission.md, current-task.md (stale — showed 1U bug already committed as `44e08cab`), TODO.md, ROADMAP.md, FOR_AI_AGENTS.md. Git log confirmed recent work from prior sessions. Ran `git status` (AGENTS.md had an uncommitted human wording improvement — left untouched per rule).
@@ -1275,4 +1295,3 @@ Tasks completed this session continuation:
    - Imported `animate`, `style`, `transition`, `trigger` from `@angular/animations`
 
 4. **Module Browser Tag Filter UX** — delegated to background subagent (complex multi-bullet feature: grouped chip picker, search input, AND/OR toggle, best-match sort)
-
