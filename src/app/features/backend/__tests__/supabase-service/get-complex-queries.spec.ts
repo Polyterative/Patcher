@@ -282,6 +282,50 @@ describe('SupabaseService - get complex queries', () => {
     }, TEST_TIMEOUT);
   });
 
+  describe('GET.applicationModuleDiscovery', () => {
+    it('calls the discovery snapshot RPC with threshold parameters and normalizes response keys', (done) => {
+      const rpcSpy = spyOn(supabaseClient, 'rpc').and.returnValue(Promise.resolve({
+        data: [{
+          most_owned: [
+            {id: 5, name: 'Maths', manufacturer: {id: 1, name: 'Make Noise'}, count: 8}
+          ],
+          mostWanted: [
+            {id: 6, name: 'Plaits', manufacturer: {id: 2, name: 'Mutable Instruments'}, count: 7}
+          ],
+          most_sold: [
+            {id: 7, name: 'Disting EX', manufacturer: {id: 3, name: 'Expert Sleepers'}, count: 4}
+          ]
+        }],
+        error: null
+      }));
+
+      service.GET.applicationModuleDiscovery(6, 3).subscribe({
+        next: (snapshot) => {
+          expect(rpcSpy).toHaveBeenCalledWith('get_module_discovery_snapshot', {
+            p_limit: 6,
+            p_min_count: 3
+          });
+          expect(snapshot).toEqual({
+            mostOwned: [
+              {id: 5, name: 'Maths', manufacturer: {id: 1, name: 'Make Noise'}, count: 8}
+            ],
+            mostWanted: [
+              {id: 6, name: 'Plaits', manufacturer: {id: 2, name: 'Mutable Instruments'}, count: 7}
+            ],
+            mostSold: [
+              {id: 7, name: 'Disting EX', manufacturer: {id: 3, name: 'Expert Sleepers'}, count: 4}
+            ]
+          });
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+  });
+
   describe('GET.applicationActivitySeries', () => {
     it('should return daily public-safe activity counts for modules, racks, and connected patches', (done) => {
       const today = new Date();
