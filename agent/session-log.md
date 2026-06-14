@@ -1,5 +1,15 @@
 # Session Log
 
+## 14-06-2026 20:38 — Module tag axis tinting
+
+- **Task selected:** Module tags — axis-colour tinting, an unblocked frontend-only visual grammar slice.
+- **Implementation note:** Reused `ModuleTagsComponent`, `ModuleMinimalViewConfig`, Material chips, the existing rack balance axis definitions, and `_function-analysis-theme.scss` overlay mixin. Enabled only for module browser and module detail view configs; rack editor embedded module cards remain neutral by default.
+- **Actions performed:** Added shared `resolveTagAxis()`, optional chip axis classes, subtle tint SCSS, opt-in view config wiring, and focused resolver/component tests.
+- **Tests run:** Focused rack-balance-analysis utils and module-tags specs passing.
+- **Docs updated:** Completed and archived the tag-axis plan, removed it from TODO, and added it to completed features.
+- **Blockers raised:** No existing description keyword highlight pipe was present; future highlighting should reuse the new resolver.
+
+
 ## 14-06-2026 20:30 — Rack picker weakest-axis hint
 
 - **Task selected:** Rack Editor — "Weakest category" hint in module picker, an unblocked frontend-only ambient guidance slice.

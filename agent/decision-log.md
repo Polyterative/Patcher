@@ -1,5 +1,9 @@
 # Decision Log
 
+## 14-06-2026 20:38
+
+- **Module tag axis tinting:** Kept axis colour as an opt-in `ModuleMinimalViewConfig` flag so dense rack/editor module-card contexts stay neutral. Used the existing function-analysis theme overlay mixin for subtle tinting rather than adding a new palette. Added `resolveTagAxis()` as the reusable mapping source; no current description-highlight pipe exists to wire yet.
+
 ## 14-06-2026 20:30
 
 - **Rack picker weakest-axis hint:** Derived the hint in `RackDetailDataService` instead of the browser component so the picker remains a generic embedded browser. Passed the computed axis through the edit-only rack detail template and rendered only the label as the visible chip text, keeping the explanatory "least coverage" copy in the tooltip.

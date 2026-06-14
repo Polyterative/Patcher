@@ -43,15 +43,15 @@ zero dependencies, fully unit-testable.
 
 **Checklist:**
 
-- [ ] Extract `resolveTagAxis(tagName: string): RackBalanceAxisId | null` as a pure
+- [x] Extract `resolveTagAxis(tagName: string): RackBalanceAxisId | null` as a pure
       exported function in `rack-balance-analysis.utils.ts` (or alongside the constants).
-- [ ] In `module-tags.component`, bind `[class]="'tag-chip--axis-' + resolveTagAxis(tag.name)"` 
+- [x] In `module-tags.component`, bind `[class]="'tag-chip--axis-' + resolveTagAxis(tag.name)"` 
       conditionally when `viewConfig.colorTagsByAxis`.
-- [ ] Add SCSS rules for each `.tag-chip--axis-{id}` using CSS custom properties.
-- [ ] Add `colorTagsByAxis` to `ModuleMinimalViewConfig` (default `false`).
-- [ ] Enable in module browser and module detail contexts only.
-- [ ] Unit-test `resolveTagAxis` for all known `dbTagNames` and a few unmapped strings.
-- [ ] **Reuse** `resolveTagAxis` in the description keyword highlight pipe — single source
+- [x] Add SCSS rules for each `.tag-chip--axis-{id}` using CSS custom properties.
+- [x] Add `colorTagsByAxis` to `ModuleMinimalViewConfig` (default `false`).
+- [x] Enable in module browser and module detail contexts only.
+- [x] Unit-test `resolveTagAxis` for all known `dbTagNames` and a few unmapped strings.
+- [x] **Reuse** `resolveTagAxis` in the description keyword highlight pipe — single source
       of truth for tag→axis→colour mapping.
 
 ---
@@ -60,3 +60,4 @@ zero dependencies, fully unit-testable.
 
 <!-- Append timestamped one-liners as the plan progresses. -->
 
+- **2026-06-14:** Completed tag chip axis tinting with a shared `resolveTagAxis()` helper, opt-in `ModuleMinimalViewConfig.colorTagsByAxis`, module browser/detail enablement, and focused tests. No existing description keyword highlight pipe was found in the current codebase; future description highlighting should consume `resolveTagAxis()` rather than reimplementing tag-axis mapping.

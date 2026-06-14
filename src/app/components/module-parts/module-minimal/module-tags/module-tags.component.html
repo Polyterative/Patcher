@@ -15,6 +15,7 @@
               [@enter]="{ value: '', params: { delay: (i * 25)+100}}"
               [@leave]="{ value: '', params: { delay: 5 }}"
               [class.zero-votes]="showCounts && !myVotes?.has(item.id) && (tagVotes?.get(item.id) ?? 0) === 0"
+              [ngClass]="axisClassForTag(item.tag.name)"
               [matTooltip]="showCounts ? (readOnly ? '' : (isLoggedIn ? (myVotes?.has(item.id) ? 'Remove your vote' : 'Vote for this tag') : 'Log in to vote on tags')) : ''"
               [selected]="showCounts && myVotes?.has(item.id)"
               (click)="!readOnly && isLoggedIn && showCounts && tagVoteService.toggleVote$.next(item.id)"
@@ -56,6 +57,7 @@
                       [@enter]="{ value: '', params: { delay: 0 }}"
                       [@leave]="{ value: '', params: { delay: 0 }}"
                       [selected]="pt.isVotedByMe"
+                      [ngClass]="axisClassForTag(pt.tag.name)"
                       (click)="proposeOrToggle(pt)"
                       [matTooltip]="pt.isLinked ? (pt.isVotedByMe ? 'Remove your vote from \'' + pt.tag.name + '\'' : 'Vote for \'' + pt.tag.name + '\'') : 'Add \'' + pt.tag.name + '\' to this module'"
                     >{{ pt.tag.name }}@if (pt.isLinked && pt.voteCount > 0) {

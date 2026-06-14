@@ -162,6 +162,16 @@ describe('ModuleTagsComponent', () => {
       const result = snapshot(comp.visibleTags$);
       expect(result.length).toBe(3);
     });
+
+    it('resolves optional axis tint classes for balance tags', () => {
+      const { comp } = makeComponent();
+      expect(comp.axisClassForTag('Oscillator')).toBeNull();
+
+      comp.colorTagsByAxis = true;
+
+      expect(comp.axisClassForTag('Oscillator')).toBe('tag-chip--axis-voices');
+      expect(comp.axisClassForTag('Unmapped')).toBeNull();
+    });
   });
 
   describe('availableTags$', () => {
