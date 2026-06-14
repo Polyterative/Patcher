@@ -33,8 +33,7 @@ describe('PatchGraphFullscreenDialogComponent', () => {
     spyOnProperty(document, 'fullscreenEnabled', 'get').and.returnValue(false);
 
     await TestBed.configureTestingModule({
-      declarations: [PatchGraphFullscreenDialogComponent],
-      imports: [NoopAnimationsModule],
+      imports: [NoopAnimationsModule, PatchGraphFullscreenDialogComponent],
       providers: [
         {provide: MatDialogRef, useValue: dialogRef},
         {
@@ -69,7 +68,7 @@ describe('PatchGraphFullscreenDialogComponent', () => {
 });
 
 describe('PatchGraphComponent fullscreen action', () => {
-  it('opens the fullscreen dialog with a read-only graph snapshot', () => {
+  it('opens the fullscreen dialog with a read-only graph snapshot', async () => {
     const dialog = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
     const dialogRef = {
       afterClosed: () => of(undefined)
@@ -84,10 +83,10 @@ describe('PatchGraphComponent fullscreen action', () => {
       dialog
     );
 
-    component.openFullscreenGraph();
+    await component.openFullscreenGraph();
 
     expect(dialog.open).toHaveBeenCalledWith(
-      PatchGraphFullscreenDialogComponent,
+      jasmine.any(Function),
       jasmine.objectContaining({
         width: '100vw',
         maxWidth: '100vw',

@@ -1,5 +1,14 @@
 # Session Log
 
+## 14-06-2026 19:55 — Patch graph fullscreen dialog lazy boundary
+
+- **Task selected:** Continue the active bundle plan while respecting the user's direction not to work on flex-layout.
+- **Implementation note:** Reused the existing `PatchGraphComponent`, `MatDialog` interaction, `LibGraphModule`, hero card, Material actions, and fullscreen/export dialog UI. Split only the dialog by converting it to standalone and loading it dynamically on the existing fullscreen button click.
+- **Actions performed:** Removed `PatchGraphFullscreenDialogComponent` from `PatchModule` declarations, added standalone imports to the dialog, changed `openFullscreenGraph()` to await a dynamic import, and updated the focused dialog/action spec.
+- **Tests run:** Focused patch graph fullscreen dialog spec passing; production build passing and emitting `patch-graph-fullscreen-dialog.component-*.js`; `pnpm lint` passing with the existing warning noise.
+- **Docs updated:** Recorded the lazy dialog slice in `CURRENT_FEATURE.md`, the bundle plan checklist, and the durable decision log.
+- **Blockers raised:** Flex-layout remains intentionally deferred; cropper/Lottie deferral still need broader module/template restructuring to stay safe.
+
 ## 14-06-2026 19:49 — Lodash direct dependency removal
 
 - **Task selected:** Continue the active bundle/dependency cleanup after the application-insights lazy split.

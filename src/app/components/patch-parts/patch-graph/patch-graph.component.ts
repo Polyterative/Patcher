@@ -44,10 +44,7 @@ import {
 } from './patch-graph-flow.utils';
 import { PatchGraphRevealController } from './patch-graph-reveal.controller';
 import { PatchDetailDataService } from '../patch-detail-data.service';
-import {
-  PatchGraphFullscreenDialogComponent,
-  PatchGraphFullscreenDialogData
-} from './patch-graph-fullscreen-dialog.component';
+import type { PatchGraphFullscreenDialogData } from './patch-graph-fullscreen-dialog.component';
 
 
 @Component({
@@ -230,7 +227,9 @@ export class PatchGraphComponent extends SubManager implements OnInit {
     this._manualRefresh$.next();
   }
 
-  openFullscreenGraph(): void {
+  async openFullscreenGraph(): Promise<void> {
+    const {PatchGraphFullscreenDialogComponent} = await import('./patch-graph-fullscreen-dialog.component');
+
     this.dialog.open(PatchGraphFullscreenDialogComponent, {
       width: '100vw',
       maxWidth: '100vw',

@@ -1,5 +1,9 @@
 # Decision Log
 
+## 14-06-2026 19:55
+
+- **Patch graph fullscreen dialog split:** Chose the fullscreen/export dialog as the next non-flex heavy boundary because it is user-triggered and owns the `modern-screenshot` import. Converted only that dialog to standalone and opened it via dynamic import; did not defer the inline graph or cropper because those are more tightly coupled to currently rendered module templates and `@ViewChild` paths.
+
 ## 14-06-2026 19:49
 
 - **Lodash cleanup:** Removed only the direct lodash package entries because source search showed no imports. Did not try to force-remove transitive lodash packages from the lockfile; those are owned by upstream dependencies and would require separate package replacement work.
