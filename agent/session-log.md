@@ -1,5 +1,14 @@
 # Session Log
 
+## 14-06-2026 20:52 — Rack comparison diff foundation
+
+- **Task selected:** Rack Comparison — balance diff between two racks, first safe foundation slice.
+- **Implementation note:** Reused `RackBalanceAnalysisResult`, `RackBalanceAxisResult`, and the existing `rack-balance-analysis.utils.ts` file created for tag-axis mapping. No new route, UI, data service, backend, schema, RLS, policies, or migrations.
+- **Actions performed:** Added `RackBalanceDiff`, `RackBalanceAxisDiff`, `computeRackBalanceDiff()`, and `buildRackBalanceDiffSummary()` with focused tests. Diff currently covers `share` and `matchedModules`; HP delta remains deferred because the current analysis result type has no matched-HP field.
+- **Tests run:** Focused rack-balance-analysis utils spec passing.
+- **Docs updated:** Marked the pure diff checklist item complete and recorded the HP-model limitation in the plan.
+- **Blockers raised:** None for this slice.
+
 ## 14-06-2026 20:38 — Module tag axis tinting
 
 - **Task selected:** Module tags — axis-colour tinting, an unblocked frontend-only visual grammar slice.

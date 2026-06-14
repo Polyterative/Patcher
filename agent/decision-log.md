@@ -1,5 +1,9 @@
 # Decision Log
 
+## 14-06-2026 20:52
+
+- **Rack comparison diff foundation:** Implemented comparison as pure utilities before adding entry-point UI. Used existing normalized `share` plus `matchedModules` because `RackBalanceAxisResult` currently has no matched-HP field despite the plan's HP examples; avoided inventing HP data in UI copy until the analysis model is deliberately extended.
+
 ## 14-06-2026 20:38
 
 - **Module tag axis tinting:** Kept axis colour as an opt-in `ModuleMinimalViewConfig` flag so dense rack/editor module-card contexts stay neutral. Used the existing function-analysis theme overlay mixin for subtle tinting rather than adding a new palette. Added `resolveTagAxis()` as the reusable mapping source; no current description-highlight pipe exists to wire yet.
