@@ -39,7 +39,6 @@ import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatButtonModule } from "@angular/material/button";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatDividerModule } from "@angular/material/divider";
-import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 import { CommentsModule } from "src/app/components/shared-atoms/comments/comments.module";
@@ -106,7 +105,6 @@ import { SharedAtomsModule } from 'src/app/components/shared-atoms/shared-atoms.
     MatButtonModule,
     MatTooltipModule,
     MatDividerModule,
-    MatPaginatorModule,
     BrandPrimaryButtonComponent,
     BrowserResetFiltersButtonComponent,
     AutoContentLoadingIndicatorComponent,

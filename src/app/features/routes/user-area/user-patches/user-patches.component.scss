@@ -42,6 +42,22 @@
   padding-right: 0.15rem;
 }
 
+.loadMore {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem 0 0.25rem;
+}
+
+.loadMore__btn {
+  min-width: 12rem;
+}
+
+.loadMore__count {
+  margin-left: 0.5rem;
+  font-size: 0.78rem;
+  opacity: 0.6;
+}
+
 @media (max-width: 36rem) {
   .section-actions {
     justify-content: flex-start;

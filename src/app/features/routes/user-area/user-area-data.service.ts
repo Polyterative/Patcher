@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { PageEvent } from '@angular/material/paginator';
 import {
   BehaviorSubject,
   combineLatest,
@@ -98,7 +97,11 @@ export class UserAreaDataService extends SubManager {
   readonly pagedPatchesData$: Observable<Patch[] | undefined>;
   readonly filteredManualsData$: Observable<DbModule[] | undefined>;
   readonly filteredCommentsData$: Observable<DbComment[] | undefined>;
+  readonly hasMoreComments$: Observable<boolean>;
+  readonly remainingCommentsCount$: Observable<number>;
   readonly allPatchTags$: Observable<string[]>;
+  readonly hasMorePatches$: Observable<boolean>;
+  readonly remainingPatchesCount$: Observable<number>;
 
   //
   readonly updatePatchesData$ = new Subject<void>();
@@ -107,10 +110,10 @@ export class UserAreaDataService extends SubManager {
   readonly updateManualsData$ = new Subject<void>();
   readonly updateCommentsData$ = new Subject<void>();
   readonly updateContributorStats$ = new Subject<void>();
-  readonly commentsPageEvent$ = new Subject<PageEvent>();
-  readonly patchesPageEvent$ = new Subject<PageEvent>();
+  readonly loadMoreComments$ = new Subject<void>();
   readonly loadMoreModules$ = new Subject<void>();
   readonly loadMoreRacks$ = new Subject<void>();
+  readonly loadMorePatches$ = new Subject<void>();
   readonly addPatch$ = new Subject<void>();
   readonly addRack$ = new Subject<void>();
   readonly addModulesToCollection$ = new Subject<void>();
@@ -231,6 +234,16 @@ export class UserAreaDataService extends SubManager {
       map(([comments, query]) => filterComments(comments, query))
     );
 
+    this.hasMoreComments$ = combineLatest([
+      this.commentsCount$,
+      this.commentsData$
+    ]).pipe(map(([count, comments]) => count > (comments?.length ?? 0)));
+
+    this.remainingCommentsCount$ = combineLatest([
+      this.commentsCount$,
+      this.commentsData$
+    ]).pipe(map(([count, comments]) => Math.max(0, count - (comments?.length ?? 0))));
+
     this.allPatchTags$ = this.patchesData$.pipe(
       map(patches => patches
         ? Array.from(new Set(patches.flatMap(p => p.tags ?? []))).sort()
@@ -238,16 +251,23 @@ export class UserAreaDataService extends SubManager {
       )
     );
 
-    this.bindPageEvent(this.commentsPageEvent$, this.commentsPagination, () => this.updateCommentsData$.next());
-    this.bindPageEvent(this.patchesPageEvent$, this.patchesPagination);
+    this.hasMorePatches$ = combineLatest([
+      this.filteredPatchesCount$,
+      this.patchesPagination.take$
+    ]).pipe(map(([count, take]) => count > take));
 
-    // Analytics for page events — thin separate subscriptions so bindPageEvent stays simple
-    this.commentsPageEvent$.pipe(this.takeUntilDestroyed()).subscribe(e =>
-      this.analytics.capture('user_area.comments.page_changed', { page_index: e.pageIndex, page_size: e.pageSize })
-    );
-    this.patchesPageEvent$.pipe(this.takeUntilDestroyed()).subscribe(e =>
-      this.analytics.capture('user_area.patches.page_changed', { page_index: e.pageIndex, page_size: e.pageSize })
-    );
+    this.remainingPatchesCount$ = combineLatest([
+      this.filteredPatchesCount$,
+      this.patchesPagination.take$
+    ]).pipe(map(([count, take]) => Math.max(0, count - take)));
+
+    this.loadMoreComments$
+      .pipe(this.takeUntilDestroyed())
+      .subscribe(() => {
+        this.analytics.capture('user_area.comments.load_more', { current_loaded: this.commentsData$.value?.length ?? 0 });
+        this.commentsPagination.skip$.next(this.commentsData$.value?.length ?? 0);
+        this.updateCommentsData$.next();
+      });
 
     this.loadMoreModules$
       .pipe(this.takeUntilDestroyed())
@@ -263,9 +283,20 @@ export class UserAreaDataService extends SubManager {
         this.racksPagination.take$.next(this.racksPagination.take$.value + 10);
       });
 
+    this.loadMorePatches$
+      .pipe(this.takeUntilDestroyed())
+      .subscribe(() => {
+        this.analytics.capture('user_area.patches.load_more', { current_take: this.patchesPagination.take$.value });
+        this.patchesPagination.take$.next(this.patchesPagination.take$.value + 10);
+      });
+
     this.updateCommentsData$
       .pipe(
-        tap(() => this.commentsData$.next(undefined)),
+        tap(() => {
+          if (this.commentsPagination.skip$.value === 0) {
+            this.commentsData$.next(undefined);
+          }
+        }),
         switchMap(() => {
           const skip = this.commentsPagination.skip$.value;
           const take = this.commentsPagination.take$.value;
@@ -274,7 +305,10 @@ export class UserAreaDataService extends SubManager {
         this.takeUntilDestroyed()
       )
       .subscribe(response => {
-        this.commentsData$.next(response?.data ?? []);
+        const skip = this.commentsPagination.skip$.value;
+        const incoming = response?.data ?? [];
+        const current = this.commentsData$.value ?? [];
+        this.commentsData$.next(skip === 0 ? incoming : [...current, ...incoming]);
         this.commentsCount$.next(response?.count ?? 0);
       });
 
@@ -356,6 +390,7 @@ export class UserAreaDataService extends SubManager {
     this.searchQuery$
       .pipe(
         tap(() => {
+          this.commentsPagination.skip$.next(0);
           this.modulesPagination.skip$.next(0);
           this.modulesPagination.take$.next(10);
           this.racksPagination.skip$.next(0);
@@ -479,20 +514,6 @@ export class UserAreaDataService extends SubManager {
   override ngOnDestroy(): void {
     this.disconnectDiscovery();
     super.ngOnDestroy();
-  }
-
-  private bindPageEvent(
-    pageEvent$: Observable<PageEvent>,
-    pagination: { skip$: BehaviorSubject<number>; take$: BehaviorSubject<number> },
-    onPageChange?: () => void
-  ): void {
-    pageEvent$
-      .pipe(this.takeUntilDestroyed())
-      .subscribe((event) => {
-        pagination.take$.next(event.pageSize);
-        pagination.skip$.next(event.pageIndex * event.pageSize);
-        onPageChange?.();
-      });
   }
 
 }

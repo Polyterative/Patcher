@@ -46,7 +46,6 @@ import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatDividerModule } from "@angular/material/divider";
-import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -125,7 +124,6 @@ import { ModuleBrowserSharedModule } from 'src/app/features/module-browser/modul
     FormsModule,
     MatTooltipModule,
     MatDividerModule,
-    MatPaginatorModule,
     MatButtonToggleModule,
     MatExpansionModule,
     BrandPrimaryButtonComponent,

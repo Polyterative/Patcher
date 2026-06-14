@@ -88,14 +88,17 @@
           </div>
         }
       }
-      @if ((dataService.filteredPatchesCount$ | async) > dataService.patchesPagination.take$.value) {
-        <mat-paginator
-          [pageSize]="dataService.patchesPagination.take$.value"
-          [pageSizeOptions]="[10, 20, 50]"
-          [length]="dataService.filteredPatchesCount$ | async"
-          (page)="dataService.patchesPageEvent$.next($event)"
-          showFirstLastButtons
-        ></mat-paginator>
+      @if (dataService.hasMorePatches$ | async) {
+        <div class="loadMore">
+          <button mat-stroked-button
+                  color="primary"
+                  class="loadMore__btn"
+                  (click)="dataService.loadMorePatches$.next()"
+          >
+            Load more
+            <span class="loadMore__count">{{ dataService.remainingPatchesCount$ | async }} remaining</span>
+          </button>
+        </div>
       }
       <lib-auto-update-loading-indicator [data$]="dataService.patchesData$"
                                          [updateData$]="dataService.updatePatchesData$"

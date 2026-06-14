@@ -3,6 +3,8 @@
 
 #### HIGH: Bundle weight, lazy boundaries, and SSR prerender coverage
 
+**Status:** ON HOLD — very long-term future. Do not resume unless explicitly requested.
+
 **Why:** Built `dist/Patcher/browser` is **~22 MB**, top JS chunks are 416 KB / 336 KB /
 324 KB, Lottie alone is 220 KB, and `prerender-routes.txt` only lists **6 routes** even
 though the public surface is per-rack / per-module / per-patch / per-user / per-manufacturer.
@@ -60,3 +62,4 @@ initial graph.
 - 2026-06-14T19:49+02:00 — Source search found no direct lodash imports, so removed the direct `lodash` and `@types/lodash` package entries plus the Angular CommonJS allow-list item. Kept the broader dependency checklist open because `@angular/flex-layout` removal remains.
 - 2026-06-14T19:55+02:00 — Split the patch graph fullscreen/export dialog behind a dynamic import instead of touching the always-visible graph surface. Converted the dialog to standalone so `modern-screenshot` is loaded on fullscreen/export demand and left the module-level `LibGraphModule` usage intact for the existing inline graph.
 - 2026-06-14T19:58+02:00 — Removed eager root-route imports for the 404 and retired-share-link pages. Used existing standalone component boundaries with `loadComponent`, exported `appRoutes` for a small route regression, and preserved the current redirect paths/copy.
+- 2026-06-14T20:00+02:00 — User explicitly deprioritised the remaining bundle/flex-layout work as very long-term future. Keep completed measurement/prerender/image/lazy slices, but do not keep this plan active.
