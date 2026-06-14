@@ -13,7 +13,9 @@ export interface RackLayoutAutoArrangeMove {
   rackedModuleId: number | undefined;
   moduleId: number;
   fromRow: number | null;
+  fromColumn: number | null;
   toRow: number;
+  toColumn: number;
 }
 
 export interface RackLayoutAnalysisResult {
@@ -31,10 +33,21 @@ interface RackLayoutFormatGroup {
   rowIndexes: number[];
 }
 
+interface RackLayoutBin {
+  rowIndex: number;
+  usedHp: number;
+  moduleCount: number;
+}
+
+export interface RackLayoutAnalysisOptions {
+  variant?: number;
+}
+
 export function computeLayoutAnalysis(
   rowedModules: RackedModule[][] | null | undefined,
   rackHp: number,
-  scope: RackLayoutScope = 'all'
+  scope: RackLayoutScope = 'all',
+  options: RackLayoutAnalysisOptions = {}
 ): RackLayoutAnalysisResult {
   const rows = rowedModules ?? [];
   const mixedRowIssues = findMixedRowIssues(rows);
@@ -58,7 +71,8 @@ export function computeLayoutAnalysis(
   const autoArrangeMoves = formatGroups.flatMap(group => firstFitDecreasing(
     group.modules,
     rackHp,
-    group.rowIndexes
+    group.rowIndexes,
+    options.variant ?? 0
   ));
   const hasOverflow = overflowHp.some(value => value > 0);
 
@@ -147,39 +161,67 @@ function rowIndexesForStandard(rows: RackedModule[][], standardId: number): numb
 function firstFitDecreasing(
   modules: RackedModule[],
   rackHp: number,
-  targetRowIndexes: number[]
+  targetRowIndexes: number[],
+  variant = 0
 ): RackLayoutAutoArrangeMove[] {
-  const bins = targetRowIndexes.length > 0
-    ? targetRowIndexes.map(rowIndex => ({rowIndex, usedHp: 0}))
-    : [{rowIndex: 0, usedHp: 0}];
+  const bins: RackLayoutBin[] = targetRowIndexes.length > 0
+    ? targetRowIndexes.map(rowIndex => ({rowIndex, usedHp: 0, moduleCount: 0}))
+    : [{rowIndex: 0, usedHp: 0, moduleCount: 0}];
   let nextSyntheticRowIndex = Math.max(...bins.map(row => row.rowIndex), -1) + 1;
 
-  return [...modules]
-    .sort((a, b) => (b.module.hp ?? 0) - (a.module.hp ?? 0))
+  return orderModulesForVariant(modules, variant)
     .map(module => {
       const hp = module.module.hp ?? 0;
       let targetBin = bins.find(row => row.usedHp + hp <= rackHp);
       if (!targetBin) {
         targetBin = {
           rowIndex: nextSyntheticRowIndex,
-          usedHp: 0
+          usedHp: 0,
+          moduleCount: 0
         };
         nextSyntheticRowIndex += 1;
         bins.push(targetBin);
       }
       targetBin.usedHp += hp;
+      const toColumn = targetBin.moduleCount ?? 0;
+      targetBin.moduleCount = toColumn + 1;
 
       return {
         rackedModuleId: module.rackingData.id,
         moduleId: module.module.id,
         fromRow: module.rackingData.row,
-        toRow: targetBin.rowIndex
+        fromColumn: module.rackingData.column,
+        toRow: targetBin.rowIndex,
+        toColumn
       };
     });
 }
 
 function countGreedyArrangement(modules: RackedModule[], rackHp: number): number {
   return firstFitDecreasing(modules, rackHp, []).every(move => move.toRow >= 0) ? 1 : 0;
+}
+
+function orderModulesForVariant(modules: RackedModule[], variant: number): RackedModule[] {
+  const ordered = [...modules].sort((a, b) => {
+    const hpDiff = (b.module.hp ?? 0) - (a.module.hp ?? 0);
+    if (hpDiff !== 0) {
+      return hpDiff;
+    }
+
+    return (a.rackingData.column ?? 0) - (b.rackingData.column ?? 0);
+  });
+  const mode = Math.abs(variant) % 3;
+
+  if (mode === 1) {
+    return [...ordered].reverse();
+  }
+
+  if (mode === 2 && ordered.length > 1) {
+    const offset = Math.abs(variant) % ordered.length;
+    return [...ordered.slice(offset), ...ordered.slice(0, offset)];
+  }
+
+  return ordered;
 }
 
 function moduleStandardId(module: RackedModule): number {

@@ -83,11 +83,14 @@ import {
   mergeRefreshedModules,
 } from './rack-detail-data.utils';
 import { AnalyticsService } from '../../features/backbone/analytics-integration/analytics.service';
+import { computeLayoutAnalysis } from './rack-layout-analysis.utils';
+import { isBlankModule } from './rack-blank-module.constants';
 
 
 @Injectable()
 export class RackDetailDataService extends SubManager {
   private static readonly imageCaptureOverlayResetDelayMs = 360;
+  private layoutRemixVariant = 0;
   private usePublicDetailReads = false;
   private rackViewedFired = false;
   readonly updateSingleRackData$ = new ReplaySubject<number>();
@@ -191,6 +194,7 @@ export class RackDetailDataService extends SubManager {
   requestDuplicateRow$ = new Subject<number>();
   requestClearRow$ = new Subject<number>();
   requestDeleteRow$ = new Subject<number>();
+  requestLayoutRemix$ = new Subject<void>();
   
   requestRackedModulesDbSync$ = new Subject<void>(); // updates the backend with the current state of the rack
   //
@@ -433,6 +437,65 @@ export class RackDetailDataService extends SubManager {
               this.singleRackData$.next(snapshotRack);
               this.rowedRackedModules$.next(snapshotRackModules);
               SharedConstants.errorCustom(this.snackBar, 'Failed to delete row — changes reverted. Check your connection and try again.');
+              return EMPTY;
+            })
+          );
+        }),
+        this.takeUntilDestroyed()
+      )
+      .subscribe();
+
+    this.requestLayoutRemix$
+      .pipe(
+        withLatestFrom(this.rowedRackedModules$, this.singleRackData$),
+        switchMap(([_, rackModules, rack]) => {
+          if (!rack || !rackModules) {
+            SharedConstants.errorCustom(this.snackBar, 'Rack data is still loading. Try remixing again in a moment.');
+            return EMPTY;
+          }
+
+          const analysis = computeLayoutAnalysis(rackModules, rack.hp, 'all', {
+            variant: this.layoutRemixVariant
+          });
+          if (analysis.mixedRowIssues.length > 0) {
+            SharedConstants.errorCustom(this.snackBar, 'Fix mixed-format rows before remixing.');
+            return EMPTY;
+          }
+
+          const candidate = this.findLayoutRemixCandidate(rackModules, rack.hp, rack.rows);
+          if (!candidate && !analysis.autoArrangeMoves.some(move => move.toRow < 0 || move.toRow >= rack.rows)) {
+            SharedConstants.infoCustom(this.snackBar, 'This rack is already arranged as tightly as Remix can make it.');
+            return EMPTY;
+          }
+
+          if (!candidate) {
+            SharedConstants.infoCustom(this.snackBar, 'Remix needs another row for these modules. Add a row, then try again.');
+            return EMPTY;
+          }
+
+          const snapshot: RackedModule[][] = cloneRackData(rackModules);
+          const nextRackModules = this.buildRemixedRackRows(rackModules, candidate.analysis.autoArrangeMoves, rack.rows);
+          this.updateRackRowCoordinates(nextRackModules, rack.rows);
+          this.rowedRackedModules$.next(nextRackModules);
+
+          return this.callBackendToUpdateModulesOfRack(nextRackModules, rack).pipe(
+            tap(() => {
+              this.layoutRemixVariant = candidate.nextVariant;
+              this.analytics.capture('rack.layout_remixed', {
+                rack_id: rack.id,
+                moved_count: candidate.changedMoves.length
+              });
+              this.showUndoSnackBar(
+                `Remixed ${ candidate.changedMoves.length } module${ candidate.changedMoves.length === 1 ? '' : 's' }.`,
+                () => this.restoreRackLayout$(snapshot),
+                'Previous layout restored.',
+                10000
+              );
+            }),
+            catchError((err) => {
+              console.error(`Error remixing rack layout: ${ err }`);
+              this.rowedRackedModules$.next(snapshot);
+              SharedConstants.errorCustom(this.snackBar, 'Failed to remix layout — changes reverted. Check your connection and try again.');
               return EMPTY;
             })
           );
@@ -1529,6 +1592,80 @@ export class RackDetailDataService extends SubManager {
       );
   }
 
+  private buildRemixedRackRows(
+    rackModules: RackedModule[][],
+    moves: ReturnType<typeof computeLayoutAnalysis>['autoArrangeMoves'],
+    rowCount: number
+  ): RackedModule[][] {
+    const moveByRackedId = new Map(
+      moves
+        .filter(move => move.rackedModuleId != null)
+        .map(move => [move.rackedModuleId, move])
+    );
+    const moveByModuleId = new Map(moves.map(move => [move.moduleId, move]));
+    const nextRows: RackedModule[][] = Array.from({length: rowCount}, () => []);
+
+    rackModules.flat().forEach(module => {
+      if (isBlankModule(module.module.id)) {
+        const row = module.rackingData.row;
+        if (row != null && row >= 0 && row < rowCount) {
+          nextRows[row].push(module);
+        }
+        return;
+      }
+
+      const move = module.rackingData.id != null
+        ? moveByRackedId.get(module.rackingData.id)
+        : moveByModuleId.get(module.module.id);
+      const targetRow = move?.toRow ?? module.rackingData.row;
+      if (targetRow == null || targetRow < 0 || targetRow >= rowCount) {
+        return;
+      }
+
+      nextRows[targetRow].push(module);
+    });
+
+    nextRows.forEach(row => row.sort((left, right) => {
+      const leftOrder = (left.rackingData.id != null
+        ? moveByRackedId.get(left.rackingData.id)?.toColumn
+        : moveByModuleId.get(left.module.id)?.toColumn) ?? Number.MAX_SAFE_INTEGER;
+      const rightOrder = (right.rackingData.id != null
+        ? moveByRackedId.get(right.rackingData.id)?.toColumn
+        : moveByModuleId.get(right.module.id)?.toColumn) ?? Number.MAX_SAFE_INTEGER;
+      return leftOrder - rightOrder;
+    }));
+
+    return nextRows;
+  }
+
+  private findLayoutRemixCandidate(
+    rackModules: RackedModule[][],
+    rackHp: number,
+    rackRows: number
+  ): {analysis: ReturnType<typeof computeLayoutAnalysis>; changedMoves: ReturnType<typeof computeLayoutAnalysis>['autoArrangeMoves']; nextVariant: number} | null {
+    const moduleCount = rackModules.flat().filter(module => !isBlankModule(module.module.id)).length;
+    const candidateCount = Math.max(moduleCount + 3, 6);
+
+    for (let offset = 0; offset < candidateCount; offset += 1) {
+      const variant = this.layoutRemixVariant + offset;
+      const analysis = computeLayoutAnalysis(rackModules, rackHp, 'all', {variant});
+      const changedMoves = analysis.autoArrangeMoves.filter(move =>
+        move.fromRow !== move.toRow || move.fromColumn !== move.toColumn
+      );
+      const requiresUnavailableRow = analysis.autoArrangeMoves.some(move => move.toRow < 0 || move.toRow >= rackRows);
+
+      if (changedMoves.length > 0 && !requiresUnavailableRow) {
+        return {
+          analysis,
+          changedMoves,
+          nextVariant: variant + 1
+        };
+      }
+    }
+
+    return null;
+  }
+
   private assertBackendSuccess<T>(response: T): T {
     const error = (response as {error?: unknown} | undefined)?.error;
     if (error) {
@@ -1654,9 +1791,14 @@ export class RackDetailDataService extends SubManager {
     );
   }
 
-  private showUndoSnackBar(message: string, undoFactory: () => Observable<unknown>, undoSuccessMessage: string): void {
+  private showUndoSnackBar(
+    message: string,
+    undoFactory: () => Observable<unknown>,
+    undoSuccessMessage: string,
+    duration = 5000
+  ): void {
     const snackRef = this.snackBar.open(message, 'Undo', {
-      duration: 5000,
+      duration,
       panelClass: 'snack-success'
     });
     const action$ = snackRef?.onAction?.();
@@ -1677,6 +1819,25 @@ export class RackDetailDataService extends SubManager {
         this.takeUntilDestroyed()
       )
       .subscribe(() => SharedConstants.successCustom(this.snackBar, undoSuccessMessage));
+  }
+
+  private restoreRackLayout$(snapshotRows: RackedModule[][]): Observable<unknown> {
+    const rack = this.singleRackData$.value;
+    if (!rack) {
+      return EMPTY;
+    }
+
+    const failureSnapshot = cloneRackData(this.rowedRackedModules$.value ?? []);
+    const nextRows = cloneRackData(snapshotRows);
+    this.updateRackRowCoordinates(nextRows, rack.rows);
+    this.rowedRackedModules$.next(nextRows);
+
+    return this.callBackendToUpdateModulesOfRack(nextRows, rack).pipe(
+      catchError(err => {
+        this.rowedRackedModules$.next(failureSnapshot);
+        throw err;
+      })
+    );
   }
 
   private restoreRemovedModules$(modules: RackedModule[]): Observable<unknown> {

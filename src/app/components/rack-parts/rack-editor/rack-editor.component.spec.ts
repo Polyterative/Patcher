@@ -375,6 +375,23 @@ describe('RackEditorComponent', () => {
     expect(component.analysisModeOptions.map(option => option.mode)).not.toContain(RACK_ANALYSIS_MODES.signal);
   });
 
+  it('requests layout remix through the rack data service', () => {
+    const requestLayoutRemix$ = new Subject<void>();
+    const component = createComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      {requestLayoutRemix$} as RackDetailDataService,
+      {} as GeneralContextMenuDataService,
+      {markForCheck: () => undefined} as ChangeDetectorRef,
+      jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
+    );
+    const remixSpy = spyOn(requestLayoutRemix$, 'next');
+
+    component.requestLayoutRemix();
+
+    expect(remixSpy).toHaveBeenCalled();
+  });
+
   it('scales the rack down when the viewport is narrower than the rack width', () => {
     const component = createComponent(
       {} as MatSnackBar,

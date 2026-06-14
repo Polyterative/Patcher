@@ -93,7 +93,7 @@ rack visual model shows a "remix" control panel in the same floating options are
 - [x] Wire into `rack-visual-model.component.ts` alongside existing `rowPowerBreakdown`.
 - [ ] Build the layout panel UI in the floating options area (same pattern as power/function
       panels in `rack-editor.component.html`).
-- [ ] "Auto-arrange" emits new row assignments through `rackDetailDataService` using the
+- [x] "Auto-arrange" emits new row assignments through `rackDetailDataService` using the
       diff-based update path (batch move, not full reload).
 - [ ] Blank panels (`isBlankModule`) are stripped before remix and ignored in HP accounting
       for arrangement count.
@@ -110,3 +110,5 @@ rack visual model shows a "remix" control panel in the same floating options are
 - **2026-06-14:** Added `layout` to the rack analysis mode constants and visible options, while preserving the existing paused `signal` mode as hidden from the UI options.
 - **2026-06-14:** Wired `computeLayoutAnalysis` into the rack visual model as a read-only layout-mode row hover panel. It surfaces used/wasted/overflow HP and mixed-format blockers, but intentionally does not expose auto-arrange/shuffle controls yet.
 - **2026-06-14:** Tightened FFD auto-arrange output to run independently for each physical standard and map moves back onto rows of the same standard. `1u` scope still handles Intellijel and Pulp Logic as separate groups.
+- **2026-06-14:** Added the first `Remix layout` action in layout mode. It triggers the existing rack data service, applies FFD row assignments through the existing `backend.update.rackedModules` batch path, blocks mixed-format rows and arrangements that need extra rows, and leaves blank-panel stripping as a separate open checklist item so persisted blanks are not deleted implicitly.
+- **2026-06-14:** Refined Remix after real-rack feedback: move output now includes target columns, row-local ordering changes count as valid Remix work, repeated clicks rotate through alternate valid orderings, single-row 1U layouts can be reordered, and successful Remix shows a 10-second Undo snackbar that persists the previous layout if used.

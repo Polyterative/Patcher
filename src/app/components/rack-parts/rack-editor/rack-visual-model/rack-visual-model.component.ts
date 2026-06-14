@@ -497,7 +497,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
 
     const moves = this.layoutAnalysis?.autoArrangeMoves
       .filter(move => move.fromRow === rowId || move.toRow === rowId)
-      .filter(move => move.fromRow !== move.toRow)
+      .filter(move => move.fromRow !== move.toRow || move.fromColumn !== move.toColumn)
       .length ?? 0;
 
     return moves > 0

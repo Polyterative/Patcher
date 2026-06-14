@@ -1,5 +1,13 @@
 # Decision Log
 
+## 14-06-2026 21:18
+
+- **Rack remix refinement:** Count target-column changes as real Remix output, not only cross-row moves. This makes single-row 1U layouts and already-packed racks eligible for alternate ordering while preserving the physical-standard isolation rule. Undo uses the existing snackbar action pattern with a 10-second duration.
+
+## 14-06-2026 21:11
+
+- **Rack remix trigger:** Implemented the first action as a conservative batch row reassignment, not a destructive blank-panel cleanup. Blank panels are left in place for now because deleting persisted blanks during an auto-arrange requires a clearer undo/error strategy.
+
 ## 14-06-2026 21:26
 
 - **Rack remix format partitioning:** Fixed the pure FFD output to partition by exact physical standard before any action layer is wired. This prevents future auto-arrange work from placing Intellijel 1U or Pulp Logic 1U modules into 3U rows, or into each other's rows, even when HP would fit.

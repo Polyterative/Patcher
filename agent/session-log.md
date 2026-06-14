@@ -1,5 +1,23 @@
 # Session Log
 
+## 14-06-2026 21:18 — Rack remix undo and alternate ordering
+
+- **Task selected:** Address user feedback from trying Remix on a packed rack.
+- **Implementation note:** Kept the action in the existing RackDetailDataService and analysis utility. Added target columns to pure move output instead of special-casing UI behavior. Reused the existing undo snackbar helper and made duration configurable.
+- **Actions performed:** Remix now treats row-local order changes as work, supports alternate valid order variants across repeated clicks, reorders single-row 1U layouts, and shows a 10-second Undo action that restores and persists the previous rack layout.
+- **Tests run:** Focused layout utility, rack data service, and rack visual model specs passing.
+- **Docs updated:** Added plan and decision-log entries for undo plus alternate ordering.
+- **Blockers raised:** None.
+
+## 14-06-2026 21:11 — Rack remix action
+
+- **Task selected:** Wire the actual Rack Editor Remix trigger after the user asked how to invoke it.
+- **Implementation note:** Reused the existing floating rack analysis controls, `RackDetailDataService` event pattern, `computeLayoutAnalysis`, optimistic `rowedRackedModules$` updates, and `backend.update.rackedModules` batch persistence. Did not create a new surface or touch backend schema/RLS.
+- **Actions performed:** Added a Layout-mode `Remix layout` button; added `requestLayoutRemix$`; applied FFD move output to placed non-blank modules; blocked mixed-format rows and arrangements that require more rows; kept blank-panel deletion/stripping for a later explicit slice.
+- **Tests run:** Focused rack editor, rack data service, and layout utility specs passing.
+- **Docs updated:** Marked auto-arrange event/persistence path complete while leaving full panel UI, blank stripping, and arrangement counting open.
+- **Blockers raised:** None.
+
 ## 14-06-2026 21:26 — Rack remix format partitioning
 
 - **Task selected:** Tighten the pure Remix layout utility before any future auto-arrange action can consume its move output.

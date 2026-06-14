@@ -112,4 +112,26 @@ describe('computeLayoutAnalysis', () => {
       [3, 1]
     ]);
   });
+
+  it('returns target columns so remix can reorder modules inside a single row', () => {
+    const result = computeLayoutAnalysis([
+      [rackModule(1, 6, 0, 1), rackModule(2, 10, 0, 1), rackModule(3, 4, 0, 1)]
+    ], 84);
+
+    expect(result.autoArrangeMoves.map(move => [move.moduleId, move.toRow, move.toColumn])).toEqual([
+      [2, 0, 0],
+      [1, 0, 1],
+      [3, 0, 2]
+    ]);
+  });
+
+  it('can produce an alternate valid order for repeated remix attempts', () => {
+    const rows = [[rackModule(1, 6, 0, 1), rackModule(2, 10, 0, 1), rackModule(3, 4, 0, 1)]];
+
+    expect(computeLayoutAnalysis(rows, 84, 'all', {variant: 1}).autoArrangeMoves.map(move => [move.moduleId, move.toColumn])).toEqual([
+      [3, 0],
+      [1, 1],
+      [2, 2]
+    ]);
+  });
 });
