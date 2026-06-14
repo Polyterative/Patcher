@@ -6,11 +6,11 @@ import { PublicUser } from './user';
 
 
 export interface RackingData {
-  id: number;
+  id?: number;
   rackid: number;
   moduleid: number;
-  row: number;
-  column: number;
+  row: number | null;
+  column: number | null;
   selectedPanelId?: number | null;
 }
 

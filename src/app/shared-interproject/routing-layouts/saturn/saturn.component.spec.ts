@@ -1,12 +1,13 @@
+import { ActivatedRoute, Data } from '@angular/router';
 import { SaturnComponent } from './saturn.component';
 
 describe('SaturnComponent', () => {
   let comp: SaturnComponent;
-  let mockRoute: { snapshot: { data: Record<string, unknown> } };
+  let mockRoute: ActivatedRoute;
 
-  const makeComp = (data: Record<string, unknown> = {}): SaturnComponent => {
-    mockRoute = { snapshot: { data } };
-    return new SaturnComponent(mockRoute as any);
+  const makeComp = (data: Data = {}): SaturnComponent => {
+    mockRoute = { snapshot: { data } } as ActivatedRoute;
+    return new SaturnComponent(mockRoute);
   };
 
   it('creates without error', () => {

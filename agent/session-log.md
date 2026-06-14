@@ -1,5 +1,163 @@
 # Session Log
 
+## 14-06-2026 14:20 — Type safety explicit-any ratchet
+
+- **Boot state:** Git status was clean aside from `develop` being ahead of origin. `CURRENT_FEATURE.md` had no active feature, so selected the top unblocked HIGH infra task from `TODO.md`.
+- **Task selected:** `Type safety — eliminate any and flow Supabase types end-to-end`, first checkbox only: add `@typescript-eslint/no-explicit-any` as warn and record a baseline.
+- **Implementation note:** Reused `.eslintrc.json`, `package.json` lint/lint-staged wiring, `scripts/check-layering.cjs` baseline conventions, and `scripts/check-px-ts.sh` pre-commit pattern. No UI, SCSS, route, backend query, Supabase schema, RLS, policy, or migration changes.
+- **Actions performed:** Added the ESLint warning, introduced `scripts/check-explicit-any.cjs`, generated `scripts/.explicit-any-baseline.json` with 2,993 AST-counted explicit `any` keywords, wired `pnpm lint` to block per-file increases above the baseline, and wired lint-staged to block staged files whose explicit `any` count increases against `HEAD`.
+- **Tests run:** `node scripts/check-explicit-any.cjs`; staged positive and negative guard checks with a temporary git index; `pnpm lint` → passing with 2,990 new expected `no-explicit-any` warnings plus the existing unrelated `prefer-template` warning; `pnpm build` → passing.
+- **Docs updated:** `TODO.md` marked the broader type-safety plan in progress, `CURRENT_FEATURE.md` now owns the active feature state, and the plan's first checkbox is complete.
+- **Blockers raised:** None.
+- **Next pickup:** Introduce the typed Supabase helper layer for `SupabaseService` namespaces.
+
+## 14-06-2026 14:24 — Type safety Supabase helper layer
+
+- **Task selected:** Continue the active Type Safety plan with the structural helper-layer slice, staying strictly away from schema/RLS/policy/migration/runtime query changes.
+- **Implementation note:** Reused generated `Tables<>`, `TablesInsert<>`, `TablesUpdate<>`, SupabaseService namespace files, and existing backend specs. Introduced `supabase-db.types.ts` as a backend-local helper instead of editing generated types or changing database calls.
+- **Actions performed:** Added table/RPC/response helper aliases plus `responseData`/`responseList`; migrated low-risk response casts in `supabase-get`, `supabase-add`, and `supabase-update`; added focused helper specs; regenerated the explicit-any baseline from 2,993 to 2,979.
+- **Safety decision:** Reverted attempted generic typing for `remapErrors`/`throwIfSupabaseError` because focused tests showed broad inferred-type changes in unrelated app code. The committed direction keeps those shared operators behavior/type-compatible for now.
+- **Tests run:** `pnpm test-headless --include="**/supabase-db.types.spec.ts" --include="**/get-simple-queries.spec.ts" --include="**/add-extended.spec.ts" --include="**/update-extended.spec.ts"` → 47/47 passing.
+- **Blockers raised:** None.
+- **Next pickup:** Continue migrating `SupabaseService` namespace calls in small focused batches, or suspend type-safety work if a batch requires broad shared-operator changes.
+
+## 14-06-2026 14:26 — Type safety get.statistics count cleanup
+
+- **Task selected:** Continue the active helper-layer slice with the remaining explicit `any` casts in `supabase-get.statistics()`.
+- **Actions performed:** Added `responseCount()` to `supabase-db.types.ts`, migrated the three count response maps in `get.statistics()`, extended the helper spec, and regenerated the baseline from 2,979 to 2,976.
+- **Tests run:** `pnpm test-headless --include="**/supabase-db.types.spec.ts" --include="**/get-complex-queries.spec.ts"` → 23/23 passing.
+- **Blockers raised:** None.
+- **Next pickup:** Continue safe namespace batches, likely `supabase-add.ts` / `supabase-update.ts` data-shaping casts, unless they require behavior changes.
+
+## 14-06-2026 14:29 — Type safety pure helper cleanup
+
+- **Task selected:** Continue type-safety cleanup in pure backend helper utilities, avoiding data mutation/query behavior paths.
+- **Actions performed:** Replaced `Record<string, any>` in `applyClientSideSearchFilter` with a metadata-preserving generic based on `unknown` and inferred response row type. Added a local `ManufacturerStatsTarget` type for manufacturer stats enrichment/comparison. Added focused specs for query helpers and manufacturer stats helpers. Regenerated baseline from 2,976 to 2,972.
+- **Tests run:** `pnpm test-headless --include="**/supabase-queries.helpers.spec.ts" --include="**/supabase-queries.manufacturer-stats.spec.ts"` → 8/8 passing.
+- **Blockers raised:** None.
+- **Next pickup:** Continue safe type cleanup only where runtime behavior is unchanged; skip/suspend data-shaping paths if they require broad casts or query changes.
+
+## 14-06-2026 14:31 — Type safety route layout data cleanup
+
+- **Task selected:** Clear low-risk non-spec explicit `any` annotations in shared route layout metadata helper parameters.
+- **Actions performed:** Replaced `{ [key: string]: any }` metadata parameters with Angular `Data` in Saturn, Uranus, and Venus route factory helpers; regenerated baseline from 2,972 to 2,969.
+- **Tests run:** `pnpm test-headless --include="**/saturn.component.spec.ts" --include="**/uranus.component.spec.ts" --include="**/venus.component.spec.ts"` → 15/15 passing.
+- **Blockers raised:** None.
+- **Next pickup:** Continue safe cleanup only where Angular/generated types can replace `any` without altering runtime data shapes.
+
+## 14-06-2026 14:35 — Type safety route layout spec cleanup
+
+- **Task selected:** Clear low-risk explicit `any` casts in Saturn/Uranus/Venus component specs.
+- **Actions performed:** Typed the route test doubles with Angular `ActivatedRoute` and `Data`, preserving the direct constructor-test pattern and route data behavior.
+- **Tests run:** `pnpm test-headless --include="**/saturn.component.spec.ts" --include="**/uranus.component.spec.ts" --include="**/venus.component.spec.ts"` → 15/15 passing.
+- **Blockers raised:** None.
+- **Next pickup:** Continue type-only cleanup in tests/helpers where existing framework types can replace explicit `any`.
+
+## 14-06-2026 14:39 — Type safety ellipsis pipe cleanup
+
+- **Task selected:** Clear low-risk explicit `any` casts in ellipsis pipe specs.
+- **Actions performed:** Added `EllipsisPipe` overloads for the pipe's existing `null` and `undefined` passthrough behavior, then removed the matching spec casts.
+- **Tests run:** `pnpm test-headless --include="**/ellipsis.pipe.spec.ts" --include="**/ellipsis-extra.pipe.spec.ts"` → 15/15 passing.
+- **Blockers raised:** None.
+- **Next pickup:** Continue only type-signature/test-double cleanups that preserve existing runtime behavior.
+
+## 14-06-2026 14:43 — Type safety custom validator spec cleanup
+
+- **Task selected:** Clear redundant explicit `any` casts from custom validator specs.
+- **Actions performed:** Passed `UntypedFormControl` instances directly to validators that already accept Angular `AbstractControl`, with no validator implementation changes.
+- **Tests run:** `pnpm test-headless --include="**/custom-validators-extra.spec.ts"` → 20/20 passing.
+- **Blockers raised:** None.
+- **Next pickup:** Continue safe spec/helper cleanup where framework types already satisfy the APIs under test.
+
+## 14-06-2026 14:48 — Type safety string utility cleanup
+
+- **Task selected:** Clear explicit `any` casts around string utility null/undefined passthrough behavior.
+- **Actions performed:** Added overloads for `removeAccents` and `normalizeForSearch` to reflect existing null/undefined returns, removed matching casts in specs, and typed table-filter reducers as strings so existing normalization call sites remain precise.
+- **Tests run:** `pnpm test-headless --include="**/string-utils.spec.ts" --include="**/string-utils-extended.spec.ts"` → 32/32 passing.
+- **Blockers raised:** None.
+- **Next pickup:** Continue safe helper/spec typing; avoid data-shape changes in search/filter behavior.
+
+## 14-06-2026 14:52 — Type safety mat-form pipe double cleanup
+
+- **Task selected:** Clear remaining small mat-form pipe spec `ChangeDetectorRef` casts.
+- **Actions performed:** Replaced object-literal `as any` doubles with `jasmine.SpyObj<ChangeDetectorRef>` for `GetControlValuePipe` and `FormValidPipe` specs.
+- **Tests run:** `pnpm test-headless --include="**/get-control-value.pipe.spec.ts" --include="**/is-control-valid.pipe.spec.ts"` → 10/10 passing.
+- **Blockers raised:** None.
+- **Next pickup:** Continue safe spec cleanup in mat-form helpers or suspend if a cast hides runtime-shape ambiguity.
+
+## 14-06-2026 14:56 — Type safety form model spec cleanup
+
+- **Task selected:** Clear explicit `any` casts from `form-element-models` specs.
+- **Actions performed:** Passed `UntypedFormControl` instances directly into validators that accept `AbstractControl`, and passed invalid selectable shapes directly into `isOption(unknown)`.
+- **Tests run:** `pnpm test-headless --include="**/form-element-models.spec.ts"` → 9/9 passing.
+- **Blockers raised:** None.
+- **Next pickup:** Review remaining form pipe/app-form utility casts; keep changes test-only or type-only.
+
+## 14-06-2026 15:00 — Type safety form pipes spec cleanup
+
+- **Task selected:** Clear explicit `any` casts in `form-pipes` specs.
+- **Actions performed:** Replaced repeated `ChangeDetectorRef` casts with a typed Jasmine spy factory and read public `subscribed` state directly instead of casting the pipe instances.
+- **Tests run:** `pnpm test-headless --include="**/form-pipes.spec.ts"` → 13/13 passing.
+- **Blockers raised:** None.
+- **Next pickup:** Continue with app-form utility casts if they can be typed without changing sanitizer behavior.
+
+## 14-06-2026 15:04 — Type safety app-form utility spec cleanup
+
+- **Task selected:** Clear explicit `any` casts from `app-form-utils` specs.
+- **Actions performed:** Typed error fixtures as Angular `ValidationErrors`, used a typed mixed-value stream for `sanitizeItemInPipe`, and replaced sanitizer placeholder casts with `DomSanitizer`.
+- **Tests run:** `pnpm test-headless --include="**/app-form-utils.spec.ts"` → 8/8 passing.
+- **Blockers raised:** None.
+- **Next pickup:** Continue scanning for safe test-double casts outside mat-form helpers.
+
+## 14-06-2026 15:08 — Type safety discovery tip fixture cleanup
+
+- **Task selected:** Clear explicit `any` from discovery tip utility specs.
+- **Actions performed:** Replaced a partial `DiscoveryTipDefinition` cast with a complete minimal typed fixture; `normalizeTipState` behavior remains unchanged.
+- **Tests run:** `pnpm test-headless --include="**/discovery-tip.utils.spec.ts"` → 8/8 passing.
+- **Blockers raised:** None.
+- **Next pickup:** Continue safe one-file spec cleanups where full typed fixtures are straightforward.
+
+## 14-06-2026 15:12 — Type safety app-state spec cleanup
+
+- **Task selected:** Clear explicit `any` from app-state layout breakpoint spec.
+- **Actions performed:** Used exported `LayoutFlexWidthState` for the async layout capture instead of an untyped variable.
+- **Tests run:** `pnpm test-headless --include="**/app-state.service.spec.ts"` → 6/6 passing.
+- **Blockers raised:** None.
+- **Next pickup:** Continue safe spec cleanup; prioritize complete typed fixtures over assertions.
+
+## 14-06-2026 14:45 — Type safety PatchDetailDataService cleanup
+
+- **Task selected:** Clear the single explicit `any` in priority-file `PatchDetailDataService` without changing linked-rack runtime behavior or backend query definitions.
+- **Implementation note:** Reused the existing linked-rack reactive flow, `SupabaseService.GET.rackWithId/publicRackWithId`, and `Rack` model response shape. No UI, SCSS, route, schema, RLS, policy, migration, cache-key, or generated-type changes.
+- **Actions performed:** Added a local nullable `RackReadResponse` type, preserved the existing undefined-response fallback with optional chaining, and regenerated the explicit-any baseline from 2,897 to 2,896.
+- **Tests run:** `pnpm test-headless --include="**/patch-detail-data.service.spec.ts"` → 16/16 passing; `pnpm lint` → passing with the existing unrelated `e2e/screenshots/cropper-debug.spec.ts` warning; `pnpm build` → passing.
+- **Blockers raised:** None.
+- **Next pickup:** Continue the type-safety ratchet with small behavior-preserving consumer/test-double cleanups, or return to backend helper migration only when it avoids query/runtime changes.
+
+## 14-06-2026 16:18 — Type safety RackDetailDataService cleanup
+
+- **Task selected:** Continue the active Type Safety plan with the priority-file `RackDetailDataService` optimistic rack-module casts.
+- **Implementation note:** Reused the existing rack detail optimistic update flow, `RackedModule`/`RackingData` model shape, `rack-detail-data.utils` null-coordinate helpers, and rack-detail service specs. No UI, SCSS, route, Supabase schema, RLS, policy, migration, cache-key, backend query, or generated-type changes.
+- **Actions performed:** Updated `RackingData` to represent existing runtime states (`id` optional before persistence, `row`/`column` nullable for unracked modules), removed the matching service casts, and regenerated the explicit-any baseline from 2,896 to 2,890.
+- **Tests run:** `pnpm test-headless --include="**/rack-detail-data.service*.spec.ts" --watch=false` → passing; `pnpm build` → passing; `node scripts/check-explicit-any.cjs --update-baseline && node scripts/check-explicit-any.cjs && pnpm lint` → passing with the existing Node engine warning.
+- **Blockers raised:** None.
+- **Next pickup:** Continue the type-safety ratchet with small behavior-preserving cleanup. The remaining `RackDetailDataService` explicit `any` is the bottom-picker `MinimalModule` to `DbModule` cast and should be handled only if the wider `RackedModule.module` shape can be made precise without forcing broad optional-field churn.
+
+## 14-06-2026 16:31 — Type safety backend module payload cleanup
+
+- **Task selected:** Continue the active Type Safety plan with backend namespace module payload casts in `supabase-add` and `supabase-update`.
+- **Implementation note:** Reused existing module add/update payload normalization, generated `SupabaseTableInsert<'modules'>` / `SupabaseTableUpdate<'modules'>` helpers, and focused backend namespace specs. No UI, SCSS, route, Supabase schema, RLS, policy, migration, cache-key, select-string, or generated-type changes.
+- **Actions performed:** Replaced three `dbData: any` locals with `Record<string, unknown>`, preserved standard/manufacturer normalization and field deletion behavior, cast only at the Supabase insert/update boundary, and regenerated the explicit-any baseline from 2,890 to 2,887.
+- **Tests run:** `pnpm test-headless --include="**/update-module.spec.ts" --include="**/update-extended.spec.ts" --include="**/add-extended.spec.ts" --watch=false` → 38/38 passing; `node scripts/check-explicit-any.cjs --update-baseline && node scripts/check-explicit-any.cjs && pnpm lint && pnpm build` → passing with the existing Node engine warning.
+- **Blockers raised:** None.
+- **Next pickup:** Continue backend query/type cleanup in tiny batches; avoid the larger `supabase-queries.ts` generic query builder casts unless the helper shape can be proven without changing query behavior.
+
+## 14-06-2026 17:08 — Type safety plan closure
+
+- **Task selected:** Close the active Type Safety plan because the user declared it done and does not want to continue working on it.
+- **Actions performed:** Removed the in-progress TODO entry, added a completed-work summary, reset `CURRENT_FEATURE.md` to no active feature, added a closure note to the plan, and archived the plan under `internaldocs/workflow/plans/done/`.
+- **Decision:** The original long-tail goals (`noImplicitAny`, dropping explicit `any` below 500/100, and continuing priority-file migrations) are intentionally not active. Future work should only reopen this direction by explicit request.
+
 ## 14-06-2026 13:00 — Module collection SEO/share metadata
 
 - **Boot state:** Read `internaldocs/README.md`, active `CURRENT_FEATURE.md`, `TODO.md`, module collection plan, architecture/style/design/pattern/testing docs, autonomous agent docs, and `agent/` state. Git status was clean; recent commits showed current work on `develop`.

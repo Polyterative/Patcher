@@ -4,6 +4,7 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import {
   CanActivateFn,
+  Data,
   Route,
   RouterModule,
   Routes
@@ -52,7 +53,7 @@ export function generateUranusRoutes(parentPrefix: string, routes: Routes, title
   };
 }
 
-export function generateUranusRoutesWithData(parentPrefix: string, routes: Routes, data: { [key: string]: any }, title?: string): Route {
+export function generateUranusRoutesWithData(parentPrefix: string, routes: Routes, data: Data, title?: string): Route {
   
   return {
     path:      parentPrefix,

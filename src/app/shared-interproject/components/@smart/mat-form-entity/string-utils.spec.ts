@@ -39,8 +39,8 @@ describe('String Utils', () => {
     
     it('should handle empty and null values', () => {
       expect(removeAccents('')).toBe('');
-      expect(removeAccents(null as any)).toBe(null);
-      expect(removeAccents(undefined as any)).toBe(undefined);
+      expect(removeAccents(null)).toBe(null);
+      expect(removeAccents(undefined)).toBe(undefined);
     });
     
     it('should preserve special characters', () => {
@@ -79,8 +79,8 @@ describe('String Utils', () => {
     
     it('should handle empty and null values', () => {
       expect(normalizeForSearch('')).toBe('');
-      expect(normalizeForSearch(null as any)).toBe(null);
-      expect(normalizeForSearch(undefined as any)).toBe(undefined);
+      expect(normalizeForSearch(null)).toBe(null);
+      expect(normalizeForSearch(undefined)).toBe(undefined);
     });
     
   });

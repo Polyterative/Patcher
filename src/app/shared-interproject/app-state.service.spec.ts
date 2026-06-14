@@ -7,7 +7,7 @@ import { MediaObserver } from '@angular/flex-layout';
 import { of } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-import { AppStateService } from './app-state.service';
+import { AppStateService, LayoutFlexWidthState } from './app-state.service';
 
 
 const BREAKPOINT_KEYS = ['xs', 'sm', 'md', 'lg', 'xl', 'ltsm', 'ltmd', 'ltlg', 'ltxl', 'gtxs', 'gtsm', 'gtmd', 'gtlg'] as const;
@@ -49,18 +49,18 @@ describe('AppStateService', () => {
   
   it('breakpoint keys matching emitted mqAliases are true after a frame-sized batch', fakeAsync(() => {
     const service = buildService();
-    let latestValue: any;
+    let latestValue: LayoutFlexWidthState | undefined;
     service.layoutFlexWidth$.subscribe(val => (latestValue = val));
     
     tick(16);
     
     // 'gt-xs' maps to gtxs, 'sm' maps to sm
-    expect(latestValue.sm).toBeTrue();
-    expect(latestValue.gtxs).toBeTrue();
+    expect(latestValue?.sm).toBeTrue();
+    expect(latestValue?.gtxs).toBeTrue();
     // keys not in the mock emission should be false
-    expect(latestValue.xs).toBeFalse();
-    expect(latestValue.md).toBeFalse();
-    expect(latestValue.lg).toBeFalse();
+    expect(latestValue?.xs).toBeFalse();
+    expect(latestValue?.md).toBeFalse();
+    expect(latestValue?.lg).toBeFalse();
   }));
   
   it('setPreferredPanelColor stores and emits the color', (done) => {

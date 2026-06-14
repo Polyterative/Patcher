@@ -36,6 +36,7 @@
         "max-depth":                          "warn",
         "array-bracket-spacing":              "warn",
         "no-bitwise":                         "warn",
+        "@typescript-eslint/no-explicit-any": "warn",
         "@angular-eslint/directive-selector": [
           "error",
           {

@@ -15,6 +15,8 @@
 
 - **2026-06-14** — MEDIUM: Manufacturer page — catalogue module lists now reuse `app-module-list` client-side filters for standard, HP, tags, reset, search, and standard grouping; rendered standard select ids are mapped back to numeric module standards.
 
+- **2026-06-14** — HIGH: Type safety — explicit `any` ratchet is closed with ESLint warnings, checked-in baseline enforcement, lint-staged ratcheting, typed Supabase helper aliases, and selected safe cleanup lowering the baseline from 2,993 to 2,887; remaining broad strictness work is intentionally not active.
+
 - **2026-06-11** — HIGH: Module Possession States — user-area modules now default to My Modules (HAS+SELLS) with a dedicated Wishlist view for WANTS.
 
 - **2026-06-11** — feat(rack-editor): granular local updates for no-reload animations — rack reloads now preserve DOM identity, row/module mutations stay local, and targeted rack specs pass.

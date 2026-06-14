@@ -45,6 +45,12 @@ import {
   buildModuleCollectionEntries,
   validatePublicModuleCollectionModuleIds
 } from './supabase-module-collections';
+import {
+  responseData,
+  type SupabaseTableInsert,
+  type SupabaseTableUpdate,
+  type SupabaseSingleResponse
+} from './supabase-db.types';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import {
   buildCVInserter,
@@ -71,17 +77,18 @@ export function createUpdateNamespace(
       data.tags = undefined;
       data.panels = undefined;
 
-      const dbData: any = {...data};
-      if (dbData.standard && typeof dbData.standard === 'object') {
-        dbData.standard = dbData.standard.id;
+      const dbData: Record<string, unknown> = {...data};
+      const standard = dbData['standard'];
+      if (standard && typeof standard === 'object' && 'id' in standard) {
+        dbData['standard'] = standard.id;
       }
-      if (dbData.standard === undefined || dbData.standard === null) {
-        dbData.standard = undefined;
+      if (dbData['standard'] === undefined || dbData['standard'] === null) {
+        dbData['standard'] = undefined;
       }
 
-      dbData.updated = new Date().toISOString();
+      dbData['updated'] = new Date().toISOString();
 
-      for (const key in dbData) {
+      for (const key of Object.keys(dbData)) {
         if (dbData[key] === undefined || dbData[key] === null) {
           delete dbData[key];
         }
@@ -92,7 +99,7 @@ export function createUpdateNamespace(
           if (!user) return throwError(() => new Error('Authentication required'));
           return rxFrom(
             supabase.from(DbPaths.modules)
-              .update(dbData)
+              .update(dbData as SupabaseTableUpdate<'modules'>)
               .eq('id', data.id)
               .select('id,updated,created')
           );
@@ -192,7 +199,7 @@ export function createUpdateNamespace(
           })
         );
       }),
-      throwIfSupabaseError(),
+      throwIfSupabaseError<SupabaseSingleResponse<{id: number}>>(),
       cacheBust(['rackWithId', 'racksMinimal'])
     ),
     
@@ -235,17 +242,18 @@ export function createUpdateNamespace(
     
     modules: (data: DbModule[]) => {
       const transformedData = data.map(datum => {
-        const dbData: any = {...datum};
-        dbData.manufacturer = undefined;
-        dbData.ins = undefined;
-        dbData.outs = undefined;
-        dbData.created = undefined;
-        dbData.updated = undefined;
-        dbData.manualURL = undefined;
-        if (dbData.standard && typeof dbData.standard === 'object') {
-          dbData.standard = dbData.standard.id;
+        const dbData: Record<string, unknown> = {...datum};
+        dbData['manufacturer'] = undefined;
+        dbData['ins'] = undefined;
+        dbData['outs'] = undefined;
+        dbData['created'] = undefined;
+        dbData['updated'] = undefined;
+        dbData['manualURL'] = undefined;
+        const standard = dbData['standard'];
+        if (standard && typeof standard === 'object' && 'id' in standard) {
+          dbData['standard'] = standard.id;
         }
-        return dbData;
+        return dbData as SupabaseTableInsert<'modules'>;
       });
       
       return rxFrom(supabase.from(DbPaths.modules).upsert(transformedData))
@@ -271,7 +279,7 @@ export function createUpdateNamespace(
           })
         );
       }),
-      map(({error}: any) => { if (error) throw error; }),
+      map(({error}) => { if (error) throw error; }),
       cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
       showSuccessMessage(snackBar)
     ),
@@ -302,8 +310,8 @@ export function createUpdateNamespace(
               .single()
           ).pipe(
             throwIfSupabaseError(),
-            switchMap((response: any) => {
-              const collectionId = response.data?.id as number | undefined;
+            switchMap((response) => {
+              const collectionId = responseData(response as SupabaseSingleResponse<{id: number}>)?.id;
               if (!collectionId) {
                 return throwError(() => new Error('Collection was not updated.'));
               }
@@ -395,7 +403,7 @@ export function createUpdateNamespace(
         );
       }),
       remapErrors(),
-      map(x => (x as any).data as PatchModuleInstance),
+      map(x => responseData(x as SupabaseSingleResponse<PatchModuleInstance>) as PatchModuleInstance),
       cacheBust(['patchConnections', 'patchModuleInstances'])
     ),
 

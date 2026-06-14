@@ -349,7 +349,7 @@ export class RackDetailDataService extends SubManager {
           const nextRackModules: RackedModule[][] = [...rackModules];
           const duplicatedRow = cloneRackData(nextRackModules[rowId] ?? []);
           duplicatedRow.forEach(module => {
-            module.rackingData.id = undefined as any;
+            module.rackingData.id = undefined;
           });
           nextRackModules.splice(rowId + 1, 0, duplicatedRow);
           this.updateRackRowCoordinates(nextRackModules, nextRack.rows);
@@ -512,7 +512,7 @@ export class RackDetailDataService extends SubManager {
               const blankRackedModule: RackedModule = {
                 module: blankModule,
                 rackingData: {
-                  id: undefined as any,
+                  id: undefined,
                   rackid: rack.id,
                   moduleid: blankModule.id,
                   row: rackedModule.rackingData.row,
@@ -1589,11 +1589,11 @@ export class RackDetailDataService extends SubManager {
     const optimisticModule: RackedModule = {
       module: data.module,
       rackingData: {
-        id: undefined as any,
+        id: undefined,
         rackid: data.rackId,
         moduleid: data.module.id,
-        row: data.row as any,
-        column: data.column as any,
+        row: data.row,
+        column: data.column,
         selectedPanelId: null
       }
     };
@@ -1760,7 +1760,7 @@ export class RackDetailDataService extends SubManager {
 
   private insertRestoredModule(rackModules: RackedModule[][], module: RackedModule, rowCount: number): void {
     const restoredModule = cloneRackData(module);
-    restoredModule.rackingData.id = undefined as any;
+    restoredModule.rackingData.id = undefined;
     const rowId = restoredModule.rackingData.row;
 
     if (rowId == null || rowId >= rowCount) {

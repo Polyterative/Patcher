@@ -22,7 +22,10 @@ const EXTRA_ACCENT_MAP: Record<string, string> = {
  * removeAccents("Blukač") // returns "Blukac"
  * removeAccents("Lùbadh") // returns "Lubadh"
  */
-export function removeAccents(str: string): string {
+export function removeAccents(str: string): string;
+export function removeAccents(str: null): null;
+export function removeAccents(str: undefined): undefined;
+export function removeAccents(str: string | null | undefined): string | null | undefined {
   if (!str || typeof str !== 'string') {
     return str;
   }
@@ -44,7 +47,10 @@ export function removeAccents(str: string): string {
  * normalizeForSearch("Instruō") // returns "instruo"
  * normalizeForSearch("Blukač") // returns "blukac"
  */
-export function normalizeForSearch(str: string): string {
+export function normalizeForSearch(str: string): string;
+export function normalizeForSearch(str: null): null;
+export function normalizeForSearch(str: undefined): undefined;
+export function normalizeForSearch(str: string | null | undefined): string | null | undefined {
   if (!str || typeof str !== 'string') {
     return str;
   }

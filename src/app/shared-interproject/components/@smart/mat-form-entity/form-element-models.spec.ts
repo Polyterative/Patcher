@@ -23,32 +23,32 @@ describe('form-element-models', () => {
       const valid = new UntypedFormControl('https://example.com');
       const invalid = new UntypedFormControl('http://example.com');
       
-      expect(CustomValidators.includesHttps(empty as any)).toBeNull();
-      expect(CustomValidators.includesHttps(valid as any)).toBeNull();
-      expect(CustomValidators.includesHttps(invalid as any)).toEqual({doesNotContainHttps: true});
+      expect(CustomValidators.includesHttps(empty)).toBeNull();
+      expect(CustomValidators.includesHttps(valid)).toBeNull();
+      expect(CustomValidators.includesHttps(invalid)).toEqual({doesNotContainHttps: true});
     });
     
     it('validates integers and non-empty arrays', () => {
-      expect(CustomValidators.onlyIntegers(new UntypedFormControl('10') as any)).toBeNull();
-      expect(CustomValidators.onlyIntegers(new UntypedFormControl('10.5') as any)).toEqual({numberNotInteger: true});
+      expect(CustomValidators.onlyIntegers(new UntypedFormControl('10'))).toBeNull();
+      expect(CustomValidators.onlyIntegers(new UntypedFormControl('10.5'))).toEqual({numberNotInteger: true});
       
-      expect(CustomValidators.atLeastOneObject(new UntypedFormControl([1]) as any)).toBeNull();
-      expect(CustomValidators.atLeastOneObject(new UntypedFormControl([]) as any)).toEqual({lessThanOneElement: true});
+      expect(CustomValidators.atLeastOneObject(new UntypedFormControl([1]))).toBeNull();
+      expect(CustomValidators.atLeastOneObject(new UntypedFormControl([]))).toEqual({lessThanOneElement: true});
     });
     
     it('validates notEmpty for multiple input shapes', () => {
-      expect(CustomValidators.notEmpty(new UntypedFormControl('abc') as any)).toBeNull();
-      expect(CustomValidators.notEmpty(new UntypedFormControl('   ') as any)).toEqual({empty: true});
-      expect(CustomValidators.notEmpty(new UntypedFormControl([1]) as any)).toBeNull();
-      expect(CustomValidators.notEmpty(new UntypedFormControl([]) as any)).toEqual({empty: true});
-      expect(CustomValidators.notEmpty(new UntypedFormControl({a: 1}) as any)).toBeNull();
-      expect(CustomValidators.notEmpty(new UntypedFormControl({}) as any)).toEqual({empty: true});
-      expect(CustomValidators.notEmpty(new UntypedFormControl(undefined) as any)).toEqual({empty: true});
+      expect(CustomValidators.notEmpty(new UntypedFormControl('abc'))).toBeNull();
+      expect(CustomValidators.notEmpty(new UntypedFormControl('   '))).toEqual({empty: true});
+      expect(CustomValidators.notEmpty(new UntypedFormControl([1]))).toBeNull();
+      expect(CustomValidators.notEmpty(new UntypedFormControl([]))).toEqual({empty: true});
+      expect(CustomValidators.notEmpty(new UntypedFormControl({a: 1}))).toBeNull();
+      expect(CustomValidators.notEmpty(new UntypedFormControl({}))).toEqual({empty: true});
+      expect(CustomValidators.notEmpty(new UntypedFormControl(undefined))).toEqual({empty: true});
     });
     
     it('flags unsafe html content', () => {
-      expect(CustomValidators.onlyCleanHtml(new UntypedFormControl('<b>safe</b>') as any)).toBeNull();
-      expect(CustomValidators.onlyCleanHtml(new UntypedFormControl('<img src=x onerror=alert(1)>') as any)).toEqual({invalidContent: true});
+      expect(CustomValidators.onlyCleanHtml(new UntypedFormControl('<b>safe</b>'))).toBeNull();
+      expect(CustomValidators.onlyCleanHtml(new UntypedFormControl('<img src=x onerror=alert(1)>'))).toEqual({invalidContent: true});
     });
   });
   
@@ -79,7 +79,7 @@ describe('form-element-models', () => {
     
     it('detects option shape', () => {
       expect(isOption({id: 'x', name: 'Name'})).toBeTrue();
-      expect(isOption({id: 1, name: 'Name'} as any)).toBeFalse();
+      expect(isOption({id: 1, name: 'Name'})).toBeFalse();
       expect(isOption(null)).toBeFalsy();
     });
     
