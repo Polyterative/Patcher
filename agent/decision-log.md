@@ -4,6 +4,9 @@
 
 - **Module collection SEO polish:** Selected `CURRENT_FEATURE.md` Layer 3 SEO/share metadata as the next unblocked frontend-only slice. Reused the existing detail-page SEO pattern from rack detail and public profile instead of adding a new metadata service or UI. Kept analytics separate because `ModuleCollectionsDetailDataService` already captures `module_collection.viewed`, while the remaining docs item asks for creation/discovery analytics as a distinct follow-up.
 - **Module collection analytics polish:** Reused `AnalyticsService` and the module browser/home discovery event shapes. Chose not to send raw collection search text because searches are user-entered; events use search length/active flags plus order/count metadata instead.
+- **Rack editor optimistic add slice:** Chose bottom-picker add plus blank quick-add as the bounded next step. Existing delete/reorder/row paths already prove the rollback pattern; add paths need generated id reconciliation, so this slice will reuse `applyPersistedRackingIds` instead of adding a second id-mapping helper.
+- **Rack editor optimistic add implementation:** Kept the solution inside `RackDetailDataService` and `rowedRackedModules$` rather than creating UI-level state. Bottom-picker adds use an optimistic unracked row, quick-add blanks fetch the existing blank module data before local insertion, and both paths patch generated ids through `applyPersistedRackingIds` or remove only the optimistic object on failure.
+- **Rack editor full-reload audit:** Treated duplicate-rack hydration as an intentional route handoff instead of same-rack reload debt. The remaining same-rack opportunity was panel switching, which already updated local state but did not roll back on failed persistence; fixed it by restoring the prior `selectedPanelId`.
 
 ## 17-05-2026
 

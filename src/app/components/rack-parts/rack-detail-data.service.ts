@@ -1112,10 +1112,14 @@ export class RackDetailDataService extends SubManager {
       .pipe(
         withLatestFrom(this.rowedRackedModules$),
         switchMap(([{rackedModule, panelId}, rackModules]) => {
+          let targetModule: RackedModule | undefined;
+          let previousPanelId: number | null | undefined;
           if (rackModules) {
             for (const row of rackModules) {
               const target = row.find(m => m.rackingData.id === rackedModule.rackingData.id);
               if (target) {
+                targetModule = target;
+                previousPanelId = target.rackingData.selectedPanelId ?? null;
                 target.rackingData.selectedPanelId = panelId;
                 break;
               }
@@ -1126,6 +1130,10 @@ export class RackDetailDataService extends SubManager {
             tap(() => this.analytics.capture('rack.module_panel_switched', { rack_id: this.singleRackData$.value?.id, module_id: rackedModule.module?.id, panel_id: panelId })),
             catchError((err) => {
               console.error(`Error updating rack module panel: ${ err }`);
+              if (targetModule) {
+                targetModule.rackingData.selectedPanelId = previousPanelId ?? null;
+                this.rowedRackedModules$.next(rackModules);
+              }
               this.snackBar.open(SharedConstants.messages.operationFailed, undefined, {duration: 8000, panelClass: 'snack-error'});
               return of(undefined);
             })
@@ -1249,72 +1257,118 @@ export class RackDetailDataService extends SubManager {
     // add a module from bottom picker
     this.addModuleToRack$
       .pipe(
-        exhaustMap(module => this.backend.add.rackModule(
-          module.id,
-          this.singleRackData$.value.id
-        ).pipe(
-          map(response => this.assertBackendSuccess(response)),
-          map(response => ({module, response}))
-        )),
+        withLatestFrom(this.singleRackData$, this.rowedRackedModules$),
+        exhaustMap(([module, rack, rackModules]) => {
+          if (!rack) {
+            SharedConstants.errorCustom(this.snackBar, 'Rack data is still loading. Try again in a moment.');
+            return EMPTY;
+          }
+
+          const currentRows = cloneRackData(rackModules ?? Array.from({length: rack.rows}, () => []));
+          const optimisticModule = this.insertOptimisticModule(currentRows, {
+            module: module as any,
+            row: null,
+            column: null,
+            rackId: rack.id
+          });
+          this.rowedRackedModules$.next(currentRows);
+
+          return this.backend.add.rackModule(module.id, rack.id).pipe(
+            map(response => this.assertBackendSuccess(response)),
+            tap(response => {
+              this.applyPersistedRackingIds(response, currentRows, [optimisticModule]);
+              this.rowedRackedModules$.next(currentRows);
+            }),
+            map(() => ({module, rack}))
+          ).pipe(
+            catchError((err) => {
+              console.error(`Error adding module to rack: ${ err }`);
+              this.removeRackedModuleByReference(optimisticModule);
+              SharedConstants.errorCustom(this.snackBar, 'Failed to add module — changes reverted. Check your connection and try again.');
+              return EMPTY;
+            })
+          );
+        }),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(({module, response}) => {
-        const insertedRackingData = (response as {
-          data?: Array<{
-            id?: number;
-            moduleid?: number;
-            rackid?: number;
-            row?: number | null;
-            column?: number | null;
-            selected_panel_id?: number | null;
-          }>;
-        }).data?.[0];
-        const rack = this.singleRackData$.value;
-        const currentRows = cloneRackData(this.rowedRackedModules$.value ?? Array.from({length: rack.rows}, () => []));
-        const unrackedModule: RackedModule = {
-          module: module as any,
-          rackingData: {
-            id: insertedRackingData?.id,
-            rackid: insertedRackingData?.rackid ?? rack.id,
-            moduleid: insertedRackingData?.moduleid ?? module.id,
-            row: insertedRackingData?.row ?? null,
-            column: insertedRackingData?.column ?? null,
-            selectedPanelId: insertedRackingData?.selected_panel_id ?? null
-          }
-        };
-        const unrackedRowIndex = currentRows.length > rack.rows ? currentRows.length - 1 : currentRows.length;
-        if (!currentRows[unrackedRowIndex]) {
-          currentRows[unrackedRowIndex] = [];
-        }
-        currentRows[unrackedRowIndex].push(unrackedModule);
-        this.rowedRackedModules$.next(currentRows);
+      .subscribe(({module, rack}) => {
         this.analytics.capture('rack.module_added', {
-          rack_id:   this.singleRackData$.value?.id,
+          rack_id:   rack.id,
           module_id: module.id
         });
-        SharedConstants.successCustom(this.snackBar, `"${ module.name }" added to "${ this.singleRackData$.value.name }". Drag it into a row to place it.`);
+        SharedConstants.successCustom(this.snackBar, `"${ module.name }" added to "${ rack.name }". Drag it into a row to place it.`);
         this.moduleAddedFromPicker$.next(module);
       });
 
     // quick-add blank panel directly to a row
     this.addBlankToRow$
       .pipe(
-        exhaustMap(({rowId, hp}) => {
-          const rackId = this.singleRackData$.value?.id;
-          if (!rackId) return EMPTY;
-          const row = this.rowedRackedModules$.value?.[rowId] ?? [];
-          const column = row.length;
+        withLatestFrom(this.singleRackData$, this.rowedRackedModules$),
+        exhaustMap(([{rowId, hp}, rack, rackModules]) => {
+          if (!rack) {
+            SharedConstants.errorCustom(this.snackBar, 'Rack data is still loading. Try again in a moment.');
+            return EMPTY;
+          }
+          if (rowId < 0 || rowId >= rack.rows) {
+            SharedConstants.errorCustom(this.snackBar, 'This row cannot receive a blank panel.');
+            return EMPTY;
+          }
+
           const blankId = calculateBlankIdForSizeAndStandard(hp);
-          if (blankId === -1) return EMPTY;
-          return this.backend.add.rackModule(blankId, rackId, rowId, column).pipe(
-            tap(() => this.analytics.capture('rack.blank_panel_added', { rack_id: rackId, hp }))
+          if (blankId === -1) {
+            SharedConstants.errorCustom(this.snackBar, 'No matching blank panel was found for this size.');
+            return EMPTY;
+          }
+
+          return this.backend.GET.moduleWithId(blankId).pipe(
+            map(response => this.assertBackendSuccess(response)),
+            switchMap(response => {
+              const blankModule = (response as {data?: RackedModule['module']}).data;
+              if (!blankModule) {
+                throw new Error('Blank module lookup returned no data');
+              }
+
+              const currentRows = cloneRackData(rackModules ?? Array.from({length: rack.rows}, () => []));
+              while (currentRows.length < rack.rows) {
+                currentRows.push([]);
+              }
+              const row = currentRows[rowId] ?? [];
+              currentRows[rowId] = row;
+              const column = row.length;
+              const optimisticBlank = this.insertOptimisticModule(currentRows, {
+                module: blankModule,
+                row: rowId,
+                column,
+                rackId: rack.id
+              });
+              this.updateModulesColumnIds(currentRows, rowId);
+              this.rowedRackedModules$.next(currentRows);
+
+              return this.backend.add.rackModule(blankId, rack.id, rowId, column).pipe(
+                map(addResponse => this.assertBackendSuccess(addResponse)),
+                tap(addResponse => {
+                  this.applyPersistedRackingIds(addResponse, currentRows, [optimisticBlank]);
+                  this.rowedRackedModules$.next(currentRows);
+                  this.analytics.capture('rack.blank_panel_added', { rack_id: rack.id, hp });
+                }),
+                catchError((err) => {
+                  console.error(`Error adding blank panel to rack: ${ err }`);
+                  this.removeRackedModuleByReference(optimisticBlank);
+                  SharedConstants.errorCustom(this.snackBar, 'Failed to add blank panel — changes reverted. Check your connection and try again.');
+                  return EMPTY;
+                })
+              );
+            }),
+            catchError((err) => {
+              console.error(`Error loading blank panel: ${ err }`);
+              SharedConstants.errorCustom(this.snackBar, 'Failed to load the blank panel. Try again in a moment.');
+              return EMPTY;
+            })
           );
         }),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(() => {
-        this.updateSingleRackData$.next(this.singleRackData$.value.id);
-      });
+      .subscribe();
     
     
     // when rack data changes update statistics
@@ -1520,6 +1574,65 @@ export class RackDetailDataService extends SubManager {
         module.rackingData.id = persistedRow.id;
         module.rackingData.selectedPanelId = persistedRow.selected_panel_id ?? null;
       }
+    }
+  }
+
+  private insertOptimisticModule(
+    rackModules: RackedModule[][],
+    data: {
+      module: RackedModule['module'];
+      row: number | null;
+      column: number | null;
+      rackId: number;
+    }
+  ): RackedModule {
+    const optimisticModule: RackedModule = {
+      module: data.module,
+      rackingData: {
+        id: undefined as any,
+        rackid: data.rackId,
+        moduleid: data.module.id,
+        row: data.row as any,
+        column: data.column as any,
+        selectedPanelId: null
+      }
+    };
+
+    if (data.row == null) {
+      const rack = this.singleRackData$.value;
+      const unrackedRowIndex = rack && rackModules.length > rack.rows ? rackModules.length - 1 : rackModules.length;
+      if (!rackModules[unrackedRowIndex]) {
+        rackModules[unrackedRowIndex] = [];
+      }
+      rackModules[unrackedRowIndex].push(optimisticModule);
+      return optimisticModule;
+    }
+
+    if (!rackModules[data.row]) {
+      rackModules[data.row] = [];
+    }
+    rackModules[data.row].splice(data.column ?? rackModules[data.row].length, 0, optimisticModule);
+    return optimisticModule;
+  }
+
+  private removeRackedModuleByReference(target: RackedModule): void {
+    const rack = this.singleRackData$.value;
+    const rows = [...(this.rowedRackedModules$.value ?? [])];
+    for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+      const row = rows[rowIndex];
+      const moduleIndex = row.findIndex(module => module === target);
+      if (moduleIndex < 0) {
+        continue;
+      }
+
+      row.splice(moduleIndex, 1);
+      if (rack && rowIndex >= rack.rows && row.length === 0) {
+        rows.splice(rowIndex, 1);
+      } else if (!rack || rowIndex < rack.rows) {
+        this.updateModulesColumnIds(rows, rowIndex);
+      }
+      this.rowedRackedModules$.next(rows);
+      return;
     }
   }
 

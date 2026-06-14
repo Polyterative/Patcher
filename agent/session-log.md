@@ -20,6 +20,25 @@
 - **Blockers raised:** None.
 - **Next pickup:** Highest-priority open TODO from `internaldocs/workflow/TODO.md`.
 
+## 14-06-2026 13:15 — Rack editor optimistic add operations
+
+- **Task selected:** `Rack Editor — Optimistic / diff-based updates` Layer 2 add-operation slice from the active plan.
+- **Implementation note:** Reused `RackDetailDataService`, `rowedRackedModules$`, `applyPersistedRackingIds`, existing snackbar rollback patterns, and existing focused rack reactive specs. No UI, SCSS, backend, schema, or route changes.
+- **Actions performed:** Made bottom-picker module adds insert an optimistic local unracked module before backend completion, then patch the generated racking id on success or remove only that optimistic object on failure. Made quick-add blank panels fetch the existing blank module data, insert locally into the target row without `updateSingleRackData$`, reconcile the generated id, and roll back on failure.
+- **Tests run:** `pnpm test-headless --include="**/rack-detail-data.service.reactive.spec.ts"` → 55/55 passing; `pnpm build` → passing; `pnpm lint` → passing with one unrelated pre-existing warning in `e2e/screenshots/cropper-debug.spec.ts`.
+- **Blockers raised:** None.
+- **Next pickup:** Continue the rack editor plan with the remaining full-reload write-path audit.
+
+## 14-06-2026 13:20 — Rack editor full-reload audit + archive
+
+- **Task selected:** Remaining audit item from `Rack Editor — Optimistic / diff-based updates`.
+- **Implementation note:** Reused `RackDetailDataService` panel-switch flow and existing rack reactive spec coverage. No UI, SCSS, backend, schema, or route changes.
+- **Actions performed:** Audited `updateSingleRackData$`/`rackWithId` write paths. Confirmed same-rack mutations are local; the only remaining write-triggered rack hydration is duplicate-rack route handoff to a newly created rack. Added rollback for failed panel-selection persistence so failed backend writes restore the previous `selectedPanelId`.
+- **Tests run:** `pnpm test-headless --include="**/rack-detail-data.service.reactive.spec.ts"` → 55/55 passing; `pnpm build` → passing; `pnpm lint` → passing with one unrelated pre-existing warning in `e2e/screenshots/cropper-debug.spec.ts`.
+- **Docs updated:** Completed and archived the rack editor optimistic update plan; moved the TODO entry to `COMPLETED.md`, reset `CURRENT_FEATURE.md`, and cleared `agent/` active state.
+- **Blockers raised:** None.
+- **Next pickup:** Highest-priority open TODO from `internaldocs/workflow/TODO.md`.
+
 ## 17-05-2026 09:15 — Public profile Load More (session start + completion)
 
 - **Boot state:** Read AGENTS.md, mission.md, current-task.md (stale — showed 1U bug already committed as `44e08cab`), TODO.md, ROADMAP.md, FOR_AI_AGENTS.md. Git log confirmed recent work from prior sessions. Ran `git status` (AGENTS.md had an uncommitted human wording improvement — left untouched per rule).
