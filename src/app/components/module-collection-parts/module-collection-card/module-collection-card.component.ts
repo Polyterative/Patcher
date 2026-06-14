@@ -1,7 +1,9 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Input
+  EventEmitter,
+  Input,
+  Output
 } from '@angular/core';
 import { ModuleCollectionSummary } from 'src/app/models/module-collection';
 import { getPublicStorageUrl } from 'src/app/shared-interproject/utils/public-storage-url';
@@ -21,6 +23,7 @@ const MODULE_COLLECTIONS_STORAGE_BUCKET = 'module-collections';
 })
 export class ModuleCollectionCardComponent {
   @Input({ required: true }) collection!: ModuleCollectionSummary;
+  @Output() readonly openCollection = new EventEmitter<ModuleCollectionSummary>();
 
   coverImageSrc(image: string | null | undefined): string | null {
     return getPublicStorageUrl(MODULE_COLLECTIONS_STORAGE_BUCKET, image);

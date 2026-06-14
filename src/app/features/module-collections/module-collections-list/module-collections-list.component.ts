@@ -26,4 +26,5 @@ export class ModuleCollectionsListComponent {
   @Input() hasMore = false;
   @Input() remainingCount = 0;
   @Output() readonly loadMore = new EventEmitter<void>();
+  @Output() readonly collectionOpen = new EventEmitter<{collection: ModuleCollectionSummary; index: number}>();
 }

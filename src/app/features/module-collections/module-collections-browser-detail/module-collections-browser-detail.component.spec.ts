@@ -4,6 +4,8 @@ import { ModuleCollectionDetail } from 'src/app/models/module-collection';
 
 describe('ModuleCollectionsBrowserDetailComponent', () => {
   function build() {
+    const routeParams$ = new Subject();
+    const seoAndUtilsService = { updateSeo: jasmine.createSpy('updateSeo') };
     const dataService = {
       collection$: new BehaviorSubject<ModuleCollectionDetail | undefined>(undefined),
       load$: new Subject<string>(),
@@ -14,11 +16,11 @@ describe('ModuleCollectionsBrowserDetailComponent', () => {
     const component = new ModuleCollectionsBrowserDetailComponent(
       dataService as any,
       { loggedUser$: new BehaviorSubject(null) } as any,
-      { params: new Subject() } as any,
-      { updateSeo: jasmine.createSpy('updateSeo') } as any
+      { params: routeParams$ } as any,
+      seoAndUtilsService as any
     );
 
-    return { component, dataService };
+    return { component, dataService, routeParams$, seoAndUtilsService };
   }
 
   function buildCollection(): ModuleCollectionDetail {
@@ -91,5 +93,48 @@ describe('ModuleCollectionsBrowserDetailComponent', () => {
     expect(stats).toContain(jasmine.objectContaining({label: 'Manufacturers', value: '2'}));
     expect(stats).toContain(jasmine.objectContaining({label: 'Formats', value: '2'}));
     expect(stats.map(stat => stat.label)).toEqual(jasmine.arrayContaining(['Created', 'Updated']));
+  });
+
+  it('emits share-ready SEO metadata for public collection details', () => {
+    const { component, dataService, seoAndUtilsService } = build();
+    const collection = {
+      ...buildCollection(),
+      public: true,
+      image: 'covers/utility-stack.jpg',
+      module_count: 2,
+      entries: [
+        {id: 1, ordinal: 0, module: {id: 1, name: 'Maths', manufacturer: {name: 'Make Noise'}}},
+        {id: 2, ordinal: 1, module: {id: 2, name: 'Plaits', manufacturer: {name: 'Mutable Instruments'}}}
+      ] as any
+    };
+
+    component.ngOnInit();
+    dataService.collection$.next(collection);
+
+    expect(seoAndUtilsService.updateSeo).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        title: 'Utility stack - Module collection',
+        description: jasmine.stringMatching(/Useful utilities.*collector.*2 modules.*Maths, Plaits/),
+        url: 'https://patcher.xyz/collections/utility-stack',
+        author: 'collector',
+        published: '2026-01-01T00:00:00.000Z',
+        modified: '2026-01-01T00:00:00.000Z',
+        keywords: jasmine.stringMatching(/Utility stack.*Make Noise.*Mutable Instruments.*eurorack/),
+        image: jasmine.stringMatching(/\/storage\/v1\/object\/public\/module-collections\/covers\/utility-stack\.jpg$/)
+      }),
+      'Utility stack — Module collection'
+    );
+    component.ngOnDestroy();
+  });
+
+  it('omits SEO image when a collection has no cover image', () => {
+    const { component, dataService, seoAndUtilsService } = build();
+
+    component.ngOnInit();
+    dataService.collection$.next(buildCollection());
+
+    const seoData = seoAndUtilsService.updateSeo.calls.mostRecent().args[0];
+    expect(seoData.image).toBeUndefined();
+    component.ngOnDestroy();
   });
 });

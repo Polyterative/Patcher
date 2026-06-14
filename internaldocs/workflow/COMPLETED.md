@@ -3,6 +3,8 @@
 > Archive of finished work. One-line summaries only. For strategy context see `../product/PRINCIPLES.md` and
 > `../product/ROADMAP.md`.
 
+- **2026-06-14** — MEDIUM: Module Collections — curated discovery playlists now support private-by-default CRUD, ordered module entries, public/owned detail flows, backlinks, public browsing, SEO/share metadata, and creation/discovery analytics.
+
 - **2026-06-11** — HIGH: Module Possession States — user-area modules now default to My Modules (HAS+SELLS) with a dedicated Wishlist view for WANTS.
 
 - **2026-06-11** — feat(rack-editor): granular local updates for no-reload animations — rack reloads now preserve DOM identity, row/module mutations stay local, and targeted rack specs pass.

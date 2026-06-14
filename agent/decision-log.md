@@ -1,5 +1,10 @@
 # Decision Log
 
+## 14-06-2026 13:00
+
+- **Module collection SEO polish:** Selected `CURRENT_FEATURE.md` Layer 3 SEO/share metadata as the next unblocked frontend-only slice. Reused the existing detail-page SEO pattern from rack detail and public profile instead of adding a new metadata service or UI. Kept analytics separate because `ModuleCollectionsDetailDataService` already captures `module_collection.viewed`, while the remaining docs item asks for creation/discovery analytics as a distinct follow-up.
+- **Module collection analytics polish:** Reused `AnalyticsService` and the module browser/home discovery event shapes. Chose not to send raw collection search text because searches are user-entered; events use search length/active flags plus order/count metadata instead.
+
 ## 17-05-2026
 
 - **Load More for public profile tabs:** Followed the established `PatchBrowserDataService` accumulation pattern exactly (skip===0 → replace, skip>0 → append, loading state only on fresh load). Considered keeping `MatPaginator` for simplicity but rejected it — it's inconsistent with every other list view in the app since `25240a44` and `c874817a`. No new pattern introduced. `MatPaginatorModule` removed from the feature module entirely; replaced with `MatButtonModule` which was already present elsewhere.

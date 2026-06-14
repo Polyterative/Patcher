@@ -43,6 +43,7 @@
           [hasMore]="(dataService.hasMore$ | async) ?? false"
           [remainingCount]="(dataService.remainingCount$ | async) ?? 0"
           (loadMore)="dataService.loadMore$.next()"
+          (collectionOpen)="dataService.collectionOpened$.next($event)"
         ></app-module-collections-list>
       </div>
 

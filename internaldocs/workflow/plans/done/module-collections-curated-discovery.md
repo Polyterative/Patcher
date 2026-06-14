@@ -65,5 +65,12 @@ modules they might not otherwise find.
 
 ## Decision log
 
-<!-- Append timestamped one-liners as the plan progresses. -->
-
+- 2026-06-11 — Scoping result pointed to a greenfield collections feature with no existing tables or UI scaffolding.
+- 2026-06-11 — Chose module-only MVP, private default, manual ordering, and existing cover-image upload patterns to keep the first release shippable.
+- 2026-06-11 — Split collection-editor backend access into a co-located data service so the component stayed within the repo layering rules.
+- 2026-06-11 — Extended generated Supabase types manually for the new collection RPCs/tables so the feature could compile before backend type regeneration.
+- 2026-06-11 — Polished the public collections browser/detail surfaces and home discovery rows with tighter hierarchy, clearer empty states, and flatter card chrome.
+- 2026-06-11 — Applied Supabase migration `20260611191437_add_module_collections` to create `module_collections`, `module_collection_entries`, timestamp triggers, public-id trigger, and collection RPCs. RLS/policies were intentionally not changed in this migration and need a separate explicit approval pass.
+- 2026-06-12 — Frontend/backend collection flows intentionally moved off collection RPCs and onto direct `module_collections` / `module_collection_entries` table queries through `SupabaseService`; existing RPCs remain unused until a later DB cleanup pass.
+- 2026-06-14 — Extended public collection detail SEO/share metadata through the existing `SeoAndUtilsService` pattern with collection title, description, canonical URL, author, cover image, keywords, and timestamps.
+- 2026-06-14 — Added collection creation/discovery analytics through `AnalyticsService` without sending raw search text; archived the feature after all active layers were checked off.
