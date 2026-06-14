@@ -8,6 +8,7 @@ import {
 
 
 const MODULE_DETAILS_PATH = '/modules/details/1423';
+const Z_INDEX_MODULE_DETAILS_PATH = '/modules/details/1732';
 const COMPLETE_MODULE_DETAILS_PATH = '/modules/details/4791';
 const UNSAVED_MODULE_DETAILS_PATH = '/modules/details/1423';
 const OUTPUT_DIR = path.resolve(process.cwd(), 'output/playwright/module-editor-ux');
@@ -66,6 +67,36 @@ async function openModuleEditorAtPath(page: Page, modulePath: string): Promise<v
   await page.waitForTimeout(500);
 }
 
+async function expectEditFabIsTopmost(page: Page): Promise<void> {
+  const editFabButton = page.locator('app-edit-fab').getByRole('button', {name: /^Edit$/i}).first();
+  await expect(editFabButton).toBeVisible({timeout: 15_000});
+
+  const box = await editFabButton.boundingBox();
+  const viewport = page.viewportSize();
+  expect(box).not.toBeNull();
+  expect(viewport).not.toBeNull();
+  expect(box!.x).toBeGreaterThanOrEqual(0);
+  expect(box!.y).toBeGreaterThanOrEqual(0);
+  expect(box!.x + box!.width).toBeLessThanOrEqual(viewport!.width + 0.5);
+  expect(box!.y + box!.height).toBeLessThanOrEqual(viewport!.height + 0.5);
+
+  const hitTestResults = await editFabButton.evaluate((button: HTMLButtonElement) => {
+    const rect = button.getBoundingClientRect();
+    const points = [
+      {x: rect.left + rect.width / 2, y: rect.top + rect.height / 2},
+      {x: rect.left + Math.min(rect.width - 4, 8), y: rect.top + rect.height / 2},
+      {x: rect.right - Math.min(rect.width - 4, 8), y: rect.top + rect.height / 2}
+    ];
+
+    return points.map(point => {
+      const topElement = document.elementFromPoint(point.x, point.y);
+      return topElement === button || button.contains(topElement) || topElement?.closest('button') === button;
+    });
+  });
+
+  expect(hitTestResults.every(Boolean)).toBe(true);
+}
+
 async function collectDeleteButtonStats(page: Page): Promise<void> {
   const actionButtons = page.locator('app-module-editor-cv-form-line button.cv-row-action');
   const total = await actionButtons.count();
@@ -103,6 +134,15 @@ async function addUnsavedDraftRows(page: Page): Promise<void> {
 }
 
 test.describe('Module editor UX review snapshots', () => {
+  test('desktop keeps module edit FAB on top of page content', async ({page}) => {
+    await page.setViewportSize({width: 2048, height: 1152});
+    await login(page);
+    await page.goto(Z_INDEX_MODULE_DETAILS_PATH);
+    await page.waitForLoadState('domcontentloaded');
+
+    await expectEditFabIsTopmost(page);
+  });
+
   test('complete module keeps editor controls unavailable', async ({page}) => {
     ensureOutputDir();
     await login(page);

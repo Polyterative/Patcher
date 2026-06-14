@@ -86,14 +86,6 @@
                 Submit similar
               </button>
             }
-            @if (bag.data && bag.user && !bag.data.isComplete) {
-               <app-edit-fab
-                  [@moduleDetailFabEnter]="{ value: '', params: { delay: 332, duration: 165 } }"
-                  [editMode$]="dataService.moduleEditingPanelOpenState$"
-                [hasPendingChanges$]="dataService.moduleEditorHasPendingChanges$"
-                (toggle$)="onEditorToggleRequest(!!bag.editing, !!bag.hasPendingEditorChanges)"
-              ></app-edit-fab>
-            }
             <div class="module-detail-supportRailCards">
           @if (bag.data) {
              <lib-hero-content-card
@@ -449,6 +441,14 @@
         </div>
       </div>
     </lib-hero-content-card>
+    @if (bag.data && bag.user && !bag.data.isComplete) {
+      <app-edit-fab
+        [@moduleDetailFabEnter]="{ value: '', params: { delay: 332, duration: 165 } }"
+        [editMode$]="dataService.moduleEditingPanelOpenState$"
+        [hasPendingChanges$]="dataService.moduleEditorHasPendingChanges$"
+        (toggle$)="onEditorToggleRequest(!!bag.editing, !!bag.hasPendingEditorChanges)"
+      ></app-edit-fab>
+    }
     @if (bag.data?.manufacturer && viewConfig.hideBySameManufacturer === false && !bag.editing) {
       <div class="module-detail-swap-pane"
            [@moduleDetailPaneSwap]
