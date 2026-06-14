@@ -119,6 +119,34 @@ describe('RackDetailDataService reactive flows', () => {
   afterEach(() => {
     createdServices.forEach((service) => service.ngOnDestroy());
   });
+
+  it('derives the weakest rack balance axis from current rowed modules', () => {
+    const {service} = build();
+    let weakestAxisId: string | null | undefined;
+    service.weakestBalanceAxis$.subscribe(axis => weakestAxisId = axis?.id ?? null);
+
+    service.rowedRackedModules$.next([[
+      {
+        ...moduleInRack(1, 0, 0),
+        module: {
+          ...moduleInRack(1, 0, 0).module,
+          tags: [{tag: {name: 'VCO', type: 'NATURE'}}]
+        }
+      }
+    ]]);
+
+    expect(weakestAxisId).toBe('modulation');
+  });
+
+  it('does not derive a weakest balance axis for an empty rack', () => {
+    const {service} = build();
+    let weakestAxisId: string | null | undefined = undefined;
+    service.weakestBalanceAxis$.subscribe(axis => weakestAxisId = axis?.id ?? null);
+
+    service.rowedRackedModules$.next([[]]);
+
+    expect(weakestAxisId).toBeNull();
+  });
   
   it('adds and removes rack rows locally without refreshing rack data', () => {
     const {service, backend} = build();

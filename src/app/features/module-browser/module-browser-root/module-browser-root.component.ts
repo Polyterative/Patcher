@@ -30,6 +30,7 @@ import {
   MinimalModule,
   RackedModule
 } from 'src/app/models/module';
+import { RackBalanceAxisResult } from 'src/app/components/rack-parts/rack-balance-analysis.types';
 import { Tag, TagSuggestionGroup } from 'src/app/models/tag';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { ModuleList } from '../module-browser-data.service';
@@ -79,6 +80,7 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
   @Input() manageSeo = true;
   @Input() moduleAction: ModuleListActionConfig | null = null;
   @Input() moduleActionDisabledIds: ReadonlySet<number> | null = null;
+  @Input() rackWeakestAxis: RackBalanceAxisResult | null = null;
   @Output() readonly moduleAction$ = new EventEmitter<MinimalModule>();
   mobileFiltersExpanded = false;
   readonly recentActivityItems$: Observable<RecentActivityItem[]>;

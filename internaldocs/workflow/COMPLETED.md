@@ -15,6 +15,8 @@
 
 - **2026-06-14** — MEDIUM: Manufacturer page — catalogue module lists now reuse `app-module-list` client-side filters for standard, HP, tags, reset, search, and standard grouping; rendered standard select ids are mapped back to numeric module standards.
 
+- **2026-06-14** — LOW: Rack Editor — module picker now shows an edit-only muted weakest-balance-axis hint derived from the existing rack balance analysis stream and hidden for empty/unrecognized racks.
+
 - **2026-06-14** — MEDIUM: Module / Patch / Rack browser — old-school Material paginators are removed from product surfaces; user-area comments append backend pages and user-area patches grow in-place with the existing explicit Load More pattern.
 
 - **2026-06-14** — MEDIUM: Rack Analytics — rack power analysis now shows derived power-header counts, with passive and unknown module metadata, in rack detail stats and row-level editor power analysis.

@@ -1,5 +1,9 @@
 # Decision Log
 
+## 14-06-2026 20:30
+
+- **Rack picker weakest-axis hint:** Derived the hint in `RackDetailDataService` instead of the browser component so the picker remains a generic embedded browser. Passed the computed axis through the edit-only rack detail template and rendered only the label as the visible chip text, keeping the explanatory "least coverage" copy in the tooltip.
+
 ## 14-06-2026 20:24
 
 - **Rack stale preview indicator:** Put stale detection in `RackImageComponent` rather than the data service because the filename/updated comparison is a pure presentation concern and every image render already has the rack object. Gated the badge behind `canUpdatePreview` so public/list rack images do not grow owner-only actions accidentally.

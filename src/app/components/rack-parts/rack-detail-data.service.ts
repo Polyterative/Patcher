@@ -59,6 +59,8 @@ import {
 import { domToJpeg } from 'modern-screenshot';
 import { MatDialog } from "@angular/material/dialog";
 import { RackAnalysisMode, RACK_ANALYSIS_MODES } from './rack-analysis-mode';
+import { RackBalanceAnalysisService } from './rack-balance-analysis.service';
+import { RackBalanceAxisResult } from './rack-balance-analysis.types';
 import {
   buildFunctionAnalysisCoverageSummary,
   buildFunctionAnalysisLegendItems,
@@ -138,6 +140,17 @@ export class RackDetailDataService extends SubManager {
   isRackDataLoading$ = new BehaviorSubject<boolean>(false);
   
   rowedRackedModules$ = new BehaviorSubject<RackedModule[][] | null>(null);
+  readonly weakestBalanceAxis$: Observable<RackBalanceAxisResult | null> = this.rowedRackedModules$.pipe(
+    map(rowedRackedModules => {
+      const analysis = this.balanceAnalysis.analyze(rowedRackedModules);
+      if (analysis.isEmpty || analysis.recognizedModuleCount === 0) {
+        return null;
+      }
+
+      return [...analysis.axes].sort((a, b) => a.share - b.share)[0] ?? null;
+    }),
+    shareReplay(1)
+  );
   isRackImageCaptureInProgress$ = new BehaviorSubject<boolean>(false);
   readonly functionAnalysisLegendItems$ = this.rowedRackedModules$.pipe(
     map(rowedRackedModules => buildFunctionAnalysisLegendItems(rowedRackedModules)),
@@ -191,6 +204,7 @@ export class RackDetailDataService extends SubManager {
     private dialog: MatDialog,
     private router: Router,
     private analytics: AnalyticsService,
+    private balanceAnalysis: RackBalanceAnalysisService = new RackBalanceAnalysisService(),
   ) {
     super();
     this.isCurrentUserAdmin$ = this.backend.auth.hasAdminRole$().pipe(
