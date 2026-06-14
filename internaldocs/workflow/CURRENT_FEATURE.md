@@ -26,8 +26,8 @@ Plan: [bundle-weight-lazy-boundaries-and-ssr-prerender-coverage.md](./plans/bund
 
 ### Layer 2 — Lazy/deferred boundaries
 
-- [ ] Pick one heavy eager dependency area and move it behind an existing lazy/deferred boundary.
-- [ ] Verify chunk movement against the bundle stats baseline.
+- [x] Pick one heavy eager dependency area and move it behind an existing lazy/deferred boundary.
+- [x] Verify chunk movement against the bundle stats baseline.
 
 ### Layer 3 — Asset and image polish
 
@@ -57,3 +57,10 @@ Ten completed improvements:
 8. Product Hunt badge now declares async decoding alongside existing lazy loading and dimensions.
 9. Manufacturer row logos now declare async decoding and intrinsic dimensions.
 10. A focused static regression (`pnpm test:functions:image-metadata`) now guards the image metadata contract and is wired into `pnpm test:functions`.
+
+### 2026-06-14 lazy boundary slice
+
+- `ApplicationInsightsPageComponent`, `InsightChipComponent`, and `InsightMetricBarComponent` moved out of `InfoPagesModule` into `ApplicationInsightsModule`.
+- `/info/insights` now lazy-loads that feature module while `/info/changelog` stays eager inside the parent info module.
+- Focused route regression: `infoPageRoutes` keeps `insights` behind `loadChildren`.
+- Stats verification: production stats now emit `application-insights.module-*.js` as a lazy chunk at **40.80 KB raw / 7.54 KB estimated transfer**.
