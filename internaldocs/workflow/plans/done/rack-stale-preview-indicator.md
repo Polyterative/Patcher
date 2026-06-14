@@ -25,16 +25,16 @@ column needed.
 
 **Checklist:**
 
-- [ ] Implement `isPreviewStale(rack: Rack): boolean` pure function: parse the date from
+- [x] Implement `isPreviewStale(rack: Rack): boolean` pure function: parse the date from
       `rack.image` filename (regex on `_YYYYMMDDH...` segment), compare to
       `new Date(rack.updated)`. Return `false` if image is null/unparseable.
-- [ ] In `rack-image.component` (or its parent), expose `isStale` as an `@Input` or derive
+- [x] In `rack-image.component` (or its parent), expose `isStale` as an `@Input` or derive
       it from the rack data already available.
-- [ ] Add the overlay badge to the rack image template, guarded by
+- [x] Add the overlay badge to the rack image template, guarded by
       `isOwner && isStale && image !== null`.
-- [ ] Wire the badge click to the existing "Update preview" action (emit through the data
+- [x] Wire the badge click to the existing "Update preview" action (emit through the data
       service, no new backend method needed).
-- [ ] Unit-test `isPreviewStale` with fixture filenames and dates.
+- [x] Unit-test `isPreviewStale` with fixture filenames and dates.
 
 ---
 
@@ -42,3 +42,7 @@ column needed.
 
 <!-- Append timestamped one-liners as the plan progresses. -->
 
+- 2026-06-14T20:24+02:00 — Kept stale detection inside the existing standalone
+  `RackImageComponent` and exposed the owner shortcut through `canUpdatePreview` /
+  `updatePreviewClick`, so list/micro images stay read-only while the editable rack preview can
+  call the existing `updateRackImagePreview$` action.

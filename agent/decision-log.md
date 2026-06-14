@@ -1,5 +1,9 @@
 # Decision Log
 
+## 14-06-2026 20:24
+
+- **Rack stale preview indicator:** Put stale detection in `RackImageComponent` rather than the data service because the filename/updated comparison is a pure presentation concern and every image render already has the rack object. Gated the badge behind `canUpdatePreview` so public/list rack images do not grow owner-only actions accidentally.
+
 ## 14-06-2026 20:20
 
 - **Rack blank shortcut overflow:** Reused the dormant `rack-visual-model` blank strip instead of creating a new rack editor control. Kept six common HP sizes inline and used a compact `MatMenu` for 1–20 HP because it satisfies edge sizes without increasing persistent row chrome.

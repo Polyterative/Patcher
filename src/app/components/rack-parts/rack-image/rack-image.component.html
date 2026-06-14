@@ -1,22 +1,24 @@
 <div fxLayoutAlign="center center"
-   [routerLink]="data.public_id ? ['/racks', data.public_id] : ['/racks/details', data.id]"
-     class="clickable"
-     style="max-width:100%"
+     [routerLink]="data.public_id ? ['/racks', data.public_id] : ['/racks/details', data.id]"
+     class="clickable rackImage"
 >
   @if ({
     height: 20
   }; as bag) {
     @if (containImage) {
       @if (filename && !imageLoadFailed) {
-        <img
-          class="img image-transition"
-          [ngStyle]="{maxHeight:bag.height/sizeDivider+'rem'}"
-          [src]="rackStorageBase+filename"
-          [@enter]
-          loading="lazy"
-          [alt]="'Rack preview for '+data.name"
-          (error)="onPreviewLoadError()"
-        >
+        <div class="rackImage__frame">
+          <img
+            class="img image-transition"
+            [ngStyle]="{maxHeight:bag.height/sizeDivider+'rem'}"
+            [src]="rackStorageBase+filename"
+            [@enter]
+            loading="lazy"
+            [alt]="'Rack preview for '+data.name"
+            (error)="onPreviewLoadError()"
+          >
+          <ng-container *ngTemplateOutlet="stalePreviewBadge"></ng-container>
+        </div>
       } @else if (filename && imageLoadFailed) {
         <div
           class="rack-image-fallback rack-image-fallback--contained image-transition"
@@ -41,15 +43,18 @@
     }
     @if (!containImage) {
       @if (filename && !imageLoadFailed) {
-        <img
-          [ngStyle]="{maxHeight:((bag.height)+'rem')}"
-          [src]="rackStorageBase+filename"
-          [@enter]
-          class="image-transition"
-          loading="lazy"
-          [alt]="'Rack preview for '+data.name"
-          (error)="onPreviewLoadError()"
-        >
+        <div class="rackImage__frame">
+          <img
+            [ngStyle]="{maxHeight:((bag.height)+'rem')}"
+            [src]="rackStorageBase+filename"
+            [@enter]
+            class="image-transition"
+            loading="lazy"
+            [alt]="'Rack preview for '+data.name"
+            (error)="onPreviewLoadError()"
+          >
+          <ng-container *ngTemplateOutlet="stalePreviewBadge"></ng-container>
+        </div>
       } @else if (filename && imageLoadFailed) {
         <div
           class="rack-image-fallback image-transition"
@@ -74,3 +79,17 @@
     }
   }
 </div>
+
+<ng-template #stalePreviewBadge>
+  @if (isStale) {
+    <button mat-icon-button
+            type="button"
+            class="rackImage__staleBadge"
+            aria-label="Update outdated rack preview"
+            matTooltip="Preview outdated — update preview"
+            (click)="requestPreviewUpdate($event)"
+    >
+      <mat-icon>sync</mat-icon>
+    </button>
+  }
+</ng-template>
