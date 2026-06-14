@@ -9,6 +9,7 @@ import {
   throwError
 } from 'rxjs';
 import { RackDetailDataService } from './rack-detail-data.service';
+import { RackedModule } from 'src/app/models/module';
 
 describe('RackDetailDataService', () => {
 
@@ -249,6 +250,103 @@ describe('RackDetailDataService', () => {
     expect(rows[1][0].rackingData.row).toBe(1);
     expect(rows[2]).toBe(rowTwo);
     expect(backend.update.rackedModules).toHaveBeenCalled();
+  }));
+
+  it('remixes rack layout through the existing racked module batch update path', fakeAsync(() => {
+    const {service, backend, snackBar} = build();
+    const wideModule = makeRackedModule({
+      rackingData: {id: 10, rackid: 1, moduleid: 5, row: 0, column: 0, selectedPanelId: null},
+      module: {id: 5, name: 'Wide', hp: 80, standard: {id: 0}, functions: []}
+    });
+    const smallModule = makeRackedModule({
+      rackingData: {id: 11, rackid: 1, moduleid: 6, row: 0, column: 1, selectedPanelId: null},
+      module: {id: 6, name: 'Small', hp: 10, standard: {id: 0}, functions: []}
+    });
+    const mediumModule = makeRackedModule({
+      rackingData: {id: 12, rackid: 1, moduleid: 7, row: 1, column: 0, selectedPanelId: null},
+      module: {id: 7, name: 'Medium', hp: 20, standard: {id: 0}, functions: []}
+    });
+
+    service.singleRackData$.next(makeRack({rows: 2, hp: 84}));
+    service.rowedRackedModules$.next([[wideModule, smallModule], [mediumModule]]);
+    backend.update.rackedModules.calls.reset();
+
+    service.requestLayoutRemix$.next();
+    tick();
+
+    const rows = service.rowedRackedModules$.value!;
+    expect(rows[0].map(module => module.module.id)).toEqual([5]);
+    expect(rows[1].map(module => module.module.id)).toEqual([7, 6]);
+    expect(smallModule.rackingData.row).toBe(1);
+    expect(smallModule.rackingData.column).toBe(1);
+    expect(backend.update.rackedModules).toHaveBeenCalled();
+    const persistedModules = backend.update.rackedModules.calls.mostRecent().args[0] as RackedModule[];
+    expect(persistedModules.find(module => module.module.id === 6)?.rackingData.row).toBe(1);
+    expect(snackBar.open).toHaveBeenCalledWith('Remixed 1 module.', 'Undo', jasmine.objectContaining({duration: 10000}));
+  }));
+
+  it('remixes order inside a single 1u row', fakeAsync(() => {
+    const {service, backend} = build();
+    const smallOneU = makeRackedModule({
+      rackingData: {id: 20, rackid: 1, moduleid: 15, row: 0, column: 0, selectedPanelId: null},
+      module: {id: 15, name: 'Small 1U', hp: 4, standard: {id: 1}, functions: []}
+    });
+    const wideOneU = makeRackedModule({
+      rackingData: {id: 21, rackid: 1, moduleid: 16, row: 0, column: 1, selectedPanelId: null},
+      module: {id: 16, name: 'Wide 1U', hp: 12, standard: {id: 1}, functions: []}
+    });
+
+    service.singleRackData$.next(makeRack({rows: 1, hp: 84}));
+    service.rowedRackedModules$.next([[smallOneU, wideOneU]]);
+    backend.update.rackedModules.calls.reset();
+
+    service.requestLayoutRemix$.next();
+    tick();
+
+    const rows = service.rowedRackedModules$.value!;
+    expect(rows[0].map(module => module.module.id)).toEqual([16, 15]);
+    expect(wideOneU.rackingData.column).toBe(0);
+    expect(smallOneU.rackingData.column).toBe(1);
+    expect(backend.update.rackedModules).toHaveBeenCalled();
+  }));
+
+  it('skips no-op and unavailable remix variants to find a later valid alternative', fakeAsync(() => {
+    const {service, backend, snackBar} = build();
+    const wideA = makeRackedModule({
+      rackingData: {id: 30, rackid: 1, moduleid: 30, row: 0, column: 0, selectedPanelId: null},
+      module: {id: 30, name: 'Wide A', hp: 6, standard: {id: 0}, functions: []}
+    });
+    const smallA = makeRackedModule({
+      rackingData: {id: 31, rackid: 1, moduleid: 31, row: 0, column: 1, selectedPanelId: null},
+      module: {id: 31, name: 'Small A', hp: 4, standard: {id: 0}, functions: []}
+    });
+    const wideB = makeRackedModule({
+      rackingData: {id: 32, rackid: 1, moduleid: 32, row: 1, column: 0, selectedPanelId: null},
+      module: {id: 32, name: 'Wide B', hp: 6, standard: {id: 0}, functions: []}
+    });
+    const smallB = makeRackedModule({
+      rackingData: {id: 33, rackid: 1, moduleid: 33, row: 1, column: 1, selectedPanelId: null},
+      module: {id: 33, name: 'Small B', hp: 4, standard: {id: 0}, functions: []}
+    });
+
+    service.singleRackData$.next(makeRack({rows: 2, hp: 10}));
+    service.rowedRackedModules$.next([[wideA, smallA], [wideB, smallB]]);
+    backend.update.rackedModules.calls.reset();
+
+    service.requestLayoutRemix$.next();
+    tick();
+
+    const rows = service.rowedRackedModules$.value!;
+    expect(rows.map(row => row.map(module => module.module.id))).toEqual([
+      [32, 31],
+      [33, 30]
+    ]);
+    expect(backend.update.rackedModules).toHaveBeenCalled();
+    expect(snackBar.open).not.toHaveBeenCalledWith(
+      'This rack is already arranged as tightly as Remix can make it.',
+      jasmine.anything(),
+      jasmine.anything()
+    );
   }));
 
   it('duplicates a rack row below the source row without recreating existing rows', fakeAsync(() => {

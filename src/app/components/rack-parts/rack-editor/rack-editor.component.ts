@@ -603,6 +603,10 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
     });
   }
 
+  requestLayoutRemix(): void {
+    this.dataService.requestLayoutRemix$.next();
+  }
+
   setShouldShowPanelImages(show: boolean): void {
     this.dataService.shouldShowPanelImages$.next(show);
     this.analytics.capture('rack.panel_images_toggled', {
