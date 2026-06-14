@@ -1,6 +1,6 @@
 {
   "name": "patcher",
-  "version": "6.1.2",
+  "version": "6.2.0",
   "packageManager": "pnpm@10.33.4",
   "scripts": {
     "start": "ng serve --port 5556",
