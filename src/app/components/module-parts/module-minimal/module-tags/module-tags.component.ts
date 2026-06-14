@@ -25,6 +25,7 @@ import {
   Tag,
   TagSuggestionGroup
 } from 'src/app/models/tag';
+import { resolveTagAxis } from 'src/app/components/rack-parts/rack-balance-analysis.utils';
 
 export interface ProposerTag {
   tag: Tag;
@@ -98,6 +99,7 @@ export class ModuleTagsComponent extends SubManager implements OnInit {
   @Input() showCounts = true;
   @Input() readOnly = false;
   @Input() maxTags: number | null = null;
+  @Input() colorTagsByAxis = false;
   @Output() proposerOpenChange = new EventEmitter<boolean>();
 
   proposerOpen$ = new BehaviorSubject<boolean>(false);
@@ -210,6 +212,14 @@ export class ModuleTagsComponent extends SubManager implements OnInit {
         }));
       })
     );
+  }
+
+  axisClassForTag(tagName: string): string | null {
+    if (!this.colorTagsByAxis) {
+      return null;
+    }
+    const axis = resolveTagAxis(tagName);
+    return axis ? `tag-chip--axis-${ axis }` : null;
   }
 
   ngOnInit(): void {

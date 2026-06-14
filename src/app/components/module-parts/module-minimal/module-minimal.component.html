@@ -91,6 +91,7 @@
               [showCounts]="viewConfig.tagsShowCounts"
               [readOnly]="viewConfig.tagsReadOnly"
               [maxTags]="viewConfig.tagsMaxCount"
+              [colorTagsByAxis]="viewConfig.colorTagsByAxis ?? false"
               (proposerOpenChange)="onTagChooserOpenChange($event)"
             ></app-module-tags>
           </div>

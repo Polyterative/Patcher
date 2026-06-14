@@ -1,3 +1,5 @@
+@use "src/app/components/rack-parts/function-analysis-theme" as functionTheme;
+
 mat-chip-option:not([disabled]) {
   cursor: pointer;
 }
@@ -31,6 +33,26 @@ mat-chip-option {
       opacity: 1;
     }
   }
+}
+
+.tag-chip--axis-voices {
+  @include functionTheme.function-analysis-overlay('voices', 0.12, 0.08, 0.22);
+}
+
+.tag-chip--axis-modulation {
+  @include functionTheme.function-analysis-overlay('modulation', 0.12, 0.08, 0.22);
+}
+
+.tag-chip--axis-utilities {
+  @include functionTheme.function-analysis-overlay('utilities', 0.12, 0.08, 0.22);
+}
+
+.tag-chip--axis-timing {
+  @include functionTheme.function-analysis-overlay('timing', 0.12, 0.08, 0.22);
+}
+
+.tag-chip--axis-tone {
+  @include functionTheme.function-analysis-overlay('tone', 0.12, 0.08, 0.22);
 }
 
 .add-perspective-btn {

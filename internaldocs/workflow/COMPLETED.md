@@ -17,6 +17,8 @@
 
 - **2026-06-14** — LOW: Rack Editor — module picker now shows an edit-only muted weakest-balance-axis hint derived from the existing rack balance analysis stream and hidden for empty/unrecognized racks.
 
+- **2026-06-14** — LOW: Module tags — module browser and module detail tag chips can opt into subtle balance-axis tinting through `ModuleMinimalViewConfig.colorTagsByAxis`, backed by a shared `resolveTagAxis()` helper.
+
 - **2026-06-14** — MEDIUM: Module / Patch / Rack browser — old-school Material paginators are removed from product surfaces; user-area comments append backend pages and user-area patches grow in-place with the existing explicit Load More pattern.
 
 - **2026-06-14** — MEDIUM: Rack Analytics — rack power analysis now shows derived power-header counts, with passive and unknown module metadata, in rack detail stats and row-level editor power analysis.

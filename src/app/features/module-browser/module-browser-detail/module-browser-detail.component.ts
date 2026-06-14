@@ -194,7 +194,8 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
     ...defaultModuleMinimalViewConfig,
     ellipseDescription: false,
     bigPanelImage: true,
-    hidePanelsOptions: false
+    hidePanelsOptions: false,
+    colorTagsByAxis: true
   };
   
   @Input() bySameManufacturerViewConfig: ModuleMinimalViewConfig = {
