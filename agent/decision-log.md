@@ -1,5 +1,9 @@
 # Decision Log
 
+## 14-06-2026 20:20
+
+- **Rack blank shortcut overflow:** Reused the dormant `rack-visual-model` blank strip instead of creating a new rack editor control. Kept six common HP sizes inline and used a compact `MatMenu` for 1–20 HP because it satisfies edge sizes without increasing persistent row chrome.
+
 ## 14-06-2026 20:18
 
 - **Backend bandwidth closure:** Treated the stale perf plan as complete after verifying live Vercel and Supabase REST compression headers. Archived the plan without code changes because all query/pagination/image audit implementation work was already done and the only remaining item was external verification.

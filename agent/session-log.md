@@ -1628,6 +1628,19 @@ All `.ts` source files testable with direct instantiation (no Angular TestBed/in
 
 ---
 
+## Session continuation — 14-06-2026 20:20
+
+- Selected **Rack Editor — Quick-add blank panel shortcut** as the next unblocked task. Higher-priority E2E account cleanup needs credentials/secrets, Module possession trends Phase 2 needs schema approval, and Manufacturer Accounts remains RLS/schema-blocked.
+- Implementation note: reused the existing commented-out `app-rack-visual-model` blank strip, existing `RackDetailDataService.addBlankToRow$`, row hover affordance, Material icon/menu/buttons, and rack visual SCSS. Did not touch Supabase/schema, blank ID logic, or unrelated rack editor data flows.
+- Completed the remaining shortcut slice:
+  - Re-enabled the quick common HP strip on hovered editable rows.
+  - Added a `more_horiz` overflow affordance with a compact 1–20 HP Material menu.
+  - Tuned strip/menu styling toward dense tool chrome using existing rack visual colors and `$brand-primary` for exact-fill state.
+  - Added rendered tests for strip visibility, common-size emission, and full menu options.
+- Focused validation: `pnpm test-headless --include="**/rack-visual-model.component.spec.ts"` → 44/44 green.
+
+---
+
 ## 16-05-2026 10:11 — SESSION START
 
 ### Boot summary

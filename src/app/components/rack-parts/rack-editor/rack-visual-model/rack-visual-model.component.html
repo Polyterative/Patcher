@@ -285,7 +285,6 @@
               </app-module-realistic>
             }
           </div>
-          <!-- TODO: re-enable blank panel shortcut strip when ready
           @if (isCurrentRackEditable && isCurrentRackPropertyOfCurrentUser && analysisMode === analysisModes.off && isRowHovered(rowId)) {
             @let remaining = rowRemainingHp(rowId);
             <div class="blankStrip"
@@ -295,15 +294,41 @@
             >
               @for (hp of commonBlankSizes; track hp) {
                 <button mat-icon-button
+                        type="button"
                         class="blankStrip__btn"
                         [class.blankStrip__btn--exact]="hp === remaining"
                         [matTooltip]="hp === remaining ? hp + 'HP — fills remaining space' : hp + 'HP blank'"
                         (click)="rackDetailDataService.addBlankToRow$.next({rowId: rowId, hp: hp})"
                 >{{ hp }}</button>
               }
+              <button mat-icon-button
+                      type="button"
+                      class="blankStrip__btn blankStrip__btn--more"
+                      [matMenuTriggerFor]="blankSizeMenu"
+                      aria-label="Show all blank panel sizes"
+                      matTooltip="More blank sizes"
+              >
+                <mat-icon>more_horiz</mat-icon>
+              </button>
+              <mat-menu #blankSizeMenu="matMenu"
+                        class="blankSizeMenu"
+              >
+                <div class="blankSizeMenu__grid">
+                  @for (hp of allBlankSizes; track hp) {
+                    <button mat-button
+                            type="button"
+                            class="blankSizeMenu__btn"
+                            [class.blankSizeMenu__btn--exact]="hp === remaining"
+                            [attr.aria-label]="hp + ' HP blank panel'"
+                            (click)="rackDetailDataService.addBlankToRow$.next({rowId: rowId, hp: hp})"
+                    >
+                      {{ hp }}
+                    </button>
+                  }
+                </div>
+              </mat-menu>
             </div>
           }
-          -->
         </div>
 
     }
