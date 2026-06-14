@@ -42,7 +42,7 @@ No new backend calls needed — both racks' modules are already loaded via exist
 
 - [ ] Add `compareRacks` route or modal entry point in the user-area rack list
       (e.g. a "Compare" toggle that lets the user select two racks from the list).
-- [ ] Implement `computeRackBalanceDiff(a: RackBalanceAnalysisResult, b: RackBalanceAnalysisResult): RackBalanceDiff`
+- [x] Implement `computeRackBalanceDiff(a: RackBalanceAnalysisResult, b: RackBalanceAnalysisResult): RackBalanceDiff`
       pure function in `rack-balance-analysis.service.ts` (or a sibling utils file).
 - [ ] Build `RackComparisonComponent` (or a dedicated route under user-area) that:
       - Accepts two rack IDs as inputs / route params.
@@ -61,3 +61,4 @@ No new backend calls needed — both racks' modules are already loaded via exist
 
 <!-- Append timestamped one-liners as the plan progresses. -->
 
+- **2026-06-14:** Added the pure diff foundation in `rack-balance-analysis.utils.ts`: `computeRackBalanceDiff()` diffs `share` and `matchedModules` by axis id, and `buildRackBalanceDiffSummary()` produces the first plain-language summary. Current `RackBalanceAxisResult` does not expose matched HP, so HP-specific delta copy remains deferred until the analysis model is extended.
