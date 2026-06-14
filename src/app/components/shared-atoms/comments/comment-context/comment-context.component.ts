@@ -10,8 +10,7 @@ import { AsyncPipe } from "@angular/common";
 import { SubManager } from "src/app/shared-interproject/directives/subscription-manager";
 import { SupabaseService } from "src/app/features/backend/supabase.service";
 import {
-  map,
-  takeUntil
+  map
 } from "rxjs/operators";
 import { BehaviorSubject } from "rxjs";
 import { QueryJoins } from "src/app/features/backend/DatabaseStrings";
@@ -66,7 +65,7 @@ export class CommentContextComponent extends SubManager implements OnInit {
         this.backend.GET.moduleWithId(
           this.data.entityId,
           `name,id,${ QueryJoins.manufacturer }`)
-          .pipe(map(x => x.data), takeUntil(this.destroy$))
+          .pipe(map(x => x.data), this.takeUntilDestroyed())
           .subscribe(module => {
             this._contextInformation$.next({
               description: `${ module.name } by ${ module.manufacturer.name }`,
@@ -77,7 +76,7 @@ export class CommentContextComponent extends SubManager implements OnInit {
         break;
       case this.entityTypes.PATCH:
         this.backend.get.patchWithId(this.data.entityId, 'name,id,public_id')
-          .pipe(map(x => x.data), takeUntil(this.destroy$))
+          .pipe(map(x => x.data), this.takeUntilDestroyed())
           .subscribe(patch => {
             this._contextInformation$.next({
               description: patch.name,
@@ -90,7 +89,7 @@ export class CommentContextComponent extends SubManager implements OnInit {
         break;
       case this.entityTypes.RACK:
         this.backend.GET.rackWithId(this.data.entityId, `name,id,public_id`)
-          .pipe(map(x => x.data), takeUntil(this.destroy$))
+          .pipe(map(x => x.data), this.takeUntilDestroyed())
           .subscribe(rack => {
             this._contextInformation$.next({
               description: rack.name,

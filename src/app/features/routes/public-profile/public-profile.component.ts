@@ -6,7 +6,6 @@ import {
   Observable,
 } from 'rxjs';
 import {
-  takeUntil,
 } from 'rxjs/operators';
 import { defaultPatchMinimalViewConfig } from 'src/app/components/patch-parts/patch-minimal/patch-minimal.component';
 import {
@@ -79,7 +78,7 @@ export class PublicProfileComponent extends SubManager {
     );
 
     this.route.params
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe((params) => {
         const username = `${ params?.['username'] ?? '' }`.trim();
         this.dataService.loadProfile$.next(username);
@@ -91,7 +90,7 @@ export class PublicProfileComponent extends SubManager {
       this.dataService.racksCount$,
       this.dataService.patchesCount$,
     ]).pipe(
-      takeUntil(this.destroy$),
+      this.takeUntilDestroyed(),
     ).subscribe(([state, profile, racksCount, patchesCount]) => {
       if (state === 'ready' && profile) {
         const descriptionParts = [

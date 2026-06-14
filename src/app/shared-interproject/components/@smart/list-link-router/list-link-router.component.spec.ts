@@ -62,18 +62,18 @@ describe('ListLinkRouterComponent', () => {
   });
 
   describe('ngOnDestroy', () => {
-    it('emits destroyEvent$ before completing', () => {
+    it('emits inherited destroy$ before completing', () => {
       const comp = makeComp();
       let received = false;
-      (comp as any).destroyEvent$.subscribe(() => (received = true));
+      (comp as any).destroy$.subscribe(() => (received = true));
       comp.ngOnDestroy();
       expect(received).toBeTrue();
     });
 
-    it('completes destroyEvent$ on destroy', () => {
+    it('completes inherited destroy$ on destroy', () => {
       const comp = makeComp();
       let completed = false;
-      (comp as any).destroyEvent$.subscribe({ complete: () => (completed = true) });
+      (comp as any).destroy$.subscribe({ complete: () => (completed = true) });
       comp.ngOnDestroy();
       expect(completed).toBeTrue();
     });

@@ -22,7 +22,6 @@ import {
 import {
   map,
   startWith,
-  takeUntil
 } from 'rxjs/operators';
 import { SubManager } from '../../directives/subscription-manager';
 import { AppViewportService } from '../../app-viewport.service';
@@ -105,7 +104,7 @@ export class DiscoveryTipSurfaceComponent extends SubManager implements OnInit {
         fromEvent(visualViewport, 'scroll')
       ] : [])
     ).pipe(
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe(() => {
       this.refreshTick$.next(Date.now());
     });

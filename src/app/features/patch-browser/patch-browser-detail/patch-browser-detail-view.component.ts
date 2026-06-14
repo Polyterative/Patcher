@@ -11,8 +11,7 @@ import {
   distinctUntilChanged,
   filter,
   map,
-  take,
-  takeUntil
+  take
 } from 'rxjs/operators';
 import { Patch } from 'src/app/models/patch';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
@@ -77,7 +76,7 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
         distinctUntilChanged()
       )
     ])
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(([publicId, usePublicDetailMode]) => {
         this.dataService.setPublicDetailMode(usePublicDetailMode);
         this.dataService.updateSinglePatchByPublicId$.next(publicId);
@@ -127,7 +126,7 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
     this.dataService.singlePatchData$
       .pipe(
         filter(x => !!x),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(data => {
         this.commentsDataService.requestCommentsUpdate$.next({

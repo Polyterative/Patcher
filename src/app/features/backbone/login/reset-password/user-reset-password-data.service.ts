@@ -1,3 +1,4 @@
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import {
   Injectable,
   OnDestroy
@@ -28,7 +29,7 @@ import { AnalyticsService } from 'src/app/features/backbone/analytics-integratio
 const ERROR_MESSAGES = SharedConstants.messages.resetPassword;
 
 @Injectable()
-export class UserResetPasswordDataService implements OnDestroy {
+export class UserResetPasswordDataService extends SubManager implements OnDestroy {
   
   // State management
   public readonly isRecoverySession$ = new BehaviorSubject<boolean>(false);
@@ -76,13 +77,12 @@ export class UserResetPasswordDataService implements OnDestroy {
   // Action subjects
   public readonly submitPasswordReset$ = new Subject<void>();
   
-  private readonly destroyEvent$ = new Subject<void>();
-  
   constructor(
     private router: Router,
     private supabaseService: SupabaseService,
     private readonly analytics: AnalyticsService
   ) {
+    super();
     this.initializeSubmitHandler();
   }
   
@@ -176,7 +176,7 @@ export class UserResetPasswordDataService implements OnDestroy {
             })
           );
         }),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe();
   }
@@ -242,7 +242,6 @@ export class UserResetPasswordDataService implements OnDestroy {
     if (this.countdownInterval) {
       clearInterval(this.countdownInterval);
     }
-    this.destroyEvent$.next();
-    this.destroyEvent$.complete();
+    super.ngOnDestroy();
   }
 }

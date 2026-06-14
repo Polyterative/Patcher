@@ -21,9 +21,9 @@ describe('PhotosService', () => {
     expect(service.url$.getValue()).toBe('https://example.com/photo.jpg');
   });
 
-  it('ngOnDestroy completes destroyEvent$', () => {
+  it('ngOnDestroy completes inherited destroy$', () => {
     let completed = false;
-    (service as any).destroyEvent$.subscribe({ complete: () => (completed = true) });
+    (service as any).destroy$.subscribe({ complete: () => (completed = true) });
     service.ngOnDestroy();
     expect(completed).toBe(true);
   });

@@ -10,8 +10,7 @@ import { combineLatest } from 'rxjs';
 import {
   filter,
   map,
-  take,
-  takeUntil
+  take
 } from 'rxjs/operators';
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
 import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
@@ -124,7 +123,7 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
     this.dataService.singleRackData$
       .pipe(
         filter(x => !!x),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(data => {
         this.commentsDataService.requestCommentsUpdate$.next({

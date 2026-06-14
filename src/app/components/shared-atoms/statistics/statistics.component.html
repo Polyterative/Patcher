@@ -1,18 +1,18 @@
-@if (shouldRenderCard) {
-  @if (useCleanCard) {
-    <lib-clean-card [class]="cardClass">
+@if (shouldRenderCard()) {
+  @if (useCleanCard()) {
+    <lib-clean-card [class]="cardClass()">
       <div class="statistics-card-content">
-        @if (visibleStatistics.length > 0) {
-          <div class="statistics-grid" [class.statistics-grid--compact]="compact">
-            @for (statistic of visibleStatistics; track statistic.name; let i = $index) {
+        @if (visibleStatistics().length > 0) {
+          <div class="statistics-grid" [class.statistics-grid--compact]="compact()">
+            @for (statistic of visibleStatistics(); track statistic.name; let i = $index) {
               <div class="stat-item"
-                   [class.stat-item--compact]="compact"
+                   [class.stat-item--compact]="compact()"
                    [style.animation-delay]="(i * 40) + 'ms'">
                 <app-label-value-showcase [label]="statistic.name"
                                           [icon]="statistic.icon"
-                                          [bigText]="!compact"
-                                          [valueBelow]="!compact"
-                                          [pushToEnd]="compact">
+                                          [bigText]="!compact()"
+                                          [valueBelow]="!compact()"
+                                          [pushToEnd]="compact()">
                   {{ statistic.value }}
                 </app-label-value-showcase>
               </div>
@@ -21,30 +21,30 @@
         } @else {
           <app-empty-state-tips
             [compact]="true"
-            [icon]="emptyIcon"
-            [title]="emptyTitle ?? ''"
-            [copy]="emptyMessage ?? ''"
+            [icon]="emptyIcon()"
+            [title]="emptyTitle() ?? ''"
+            [copy]="emptyMessage() ?? ''"
           ></app-empty-state-tips>
         }
       </div>
     </lib-clean-card>
   } @else {
-    <lib-hero-content-card [titleNormal]="title ?? ''"
-                           [icon]="icon"
-                           [class]="cardClass"
+    <lib-hero-content-card [titleNormal]="title() ?? ''"
+                           [icon]="icon()"
+                           [class]="cardClass()"
     >
       <div class="statistics-card-content">
-        @if (visibleStatistics.length > 0) {
-          <div class="statistics-grid" [class.statistics-grid--compact]="compact">
-            @for (statistic of visibleStatistics; track statistic.name; let i = $index) {
+        @if (visibleStatistics().length > 0) {
+          <div class="statistics-grid" [class.statistics-grid--compact]="compact()">
+            @for (statistic of visibleStatistics(); track statistic.name; let i = $index) {
               <div class="stat-item"
-                   [class.stat-item--compact]="compact"
+                   [class.stat-item--compact]="compact()"
                    [style.animation-delay]="(i * 40) + 'ms'">
                 <app-label-value-showcase [label]="statistic.name"
                                           [icon]="statistic.icon"
-                                          [bigText]="!compact"
-                                          [valueBelow]="!compact"
-                                          [pushToEnd]="compact">
+                                          [bigText]="!compact()"
+                                          [valueBelow]="!compact()"
+                                          [pushToEnd]="compact()">
                   {{ statistic.value }}
                 </app-label-value-showcase>
               </div>
@@ -53,9 +53,9 @@
         } @else {
           <app-empty-state-tips
             [compact]="true"
-            [icon]="emptyIcon"
-            [title]="emptyTitle ?? ''"
-            [copy]="emptyMessage ?? ''"
+            [icon]="emptyIcon()"
+            [title]="emptyTitle() ?? ''"
+            [copy]="emptyMessage() ?? ''"
           ></app-empty-state-tips>
         }
       </div>

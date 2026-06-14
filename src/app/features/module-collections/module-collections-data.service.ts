@@ -1,4 +1,7 @@
-import { Injectable } from '@angular/core';
+import {
+  DestroyRef,
+  Injectable
+} from '@angular/core';
 import {
   BehaviorSubject,
   ReplaySubject,
@@ -8,7 +11,6 @@ import {
   map,
   tap,
   switchMap,
-  takeUntil,
 } from 'rxjs/operators';
 import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 import { SupabaseService } from '../backend/supabase.service';
@@ -44,15 +46,16 @@ export class ModuleCollectionsDataService extends SubManager {
 
   constructor(
     private backend: SupabaseService,
-    private analytics: AnalyticsService
+    private analytics: AnalyticsService,
+    destroyRef?: DestroyRef
   ) {
-    super();
+    super(destroyRef);
 
     this.updatePublicCollections$
       .pipe(
         tap(() => this._publicCollections$.next(undefined)),
         switchMap(() => this.backend.GET.publicModuleCollections()),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(collections => {
         this._publicCollections$.next(collections);
@@ -63,7 +66,7 @@ export class ModuleCollectionsDataService extends SubManager {
       .pipe(
         tap(() => this._currentUserCollections$.next(undefined)),
         switchMap(() => this.backend.GET.currentUserModuleCollections()),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(collections => {
         this._currentUserCollections$.next(collections);
@@ -77,7 +80,7 @@ export class ModuleCollectionsDataService extends SubManager {
           this._publicCollection$.next(undefined);
         }),
         switchMap(publicId => this.backend.GET.publicModuleCollectionByPublicId(publicId)),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(collection => {
         this._publicCollection$.next(collection);
@@ -98,7 +101,7 @@ export class ModuleCollectionsDataService extends SubManager {
           this._currentUserCollection$.next(undefined);
         }),
         switchMap(collectionId => this.backend.GET.currentUserModuleCollectionById(collectionId)),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(collection => {
         this._currentUserCollection$.next(collection);
@@ -116,12 +119,12 @@ export class ModuleCollectionsDataService extends SubManager {
       .pipe(
         tap(() => this._moduleCollectionsForModule$.next(undefined)),
         switchMap(moduleId => this.backend.GET.moduleCollectionsForModule(moduleId)),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(collections => this._moduleCollectionsForModule$.next(collections));
 
     this.localCurrentUserCollectionUpdated$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(collection => this._currentUserCollection$.next(collection));
   }
 

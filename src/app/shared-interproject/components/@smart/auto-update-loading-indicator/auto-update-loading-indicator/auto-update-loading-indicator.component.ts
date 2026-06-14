@@ -1,3 +1,4 @@
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -33,7 +34,7 @@ import {
     LottieContainerModule
   ]
 })
-export class AutoUpdateLoadingIndicatorComponent implements OnInit, OnDestroy {
+export class AutoUpdateLoadingIndicatorComponent extends SubManager implements OnInit, OnDestroy {
   @Input() data$: Observable<unknown>;
   @Input() updateData$: Observable<unknown>;
   readonly dataLoading$ = new BehaviorSubject<boolean>(true);
@@ -42,16 +43,15 @@ export class AutoUpdateLoadingIndicatorComponent implements OnInit, OnDestroy {
   @Input() loadingLines = 1;
   @Input() skipFirstData = false;
   @Input() loadingLabel = 'Updating results';
-  protected destroyEvent$ = new Subject<void>();
   
   ngOnInit(): void {
     this.dataLoading$.next(this.initialLoading);
     if (this.data$ && this.updateData$) {
       merge(
-        this.updateData$.pipe(takeUntil(this.destroyEvent$), mapTo(true)),
-        this.data$.pipe(observeOn(asapScheduler), takeUntil(this.destroyEvent$), skip(this.skipFirstData ? 1 : 0), mapTo(false))
+        this.updateData$.pipe(this.takeUntilDestroyed(), mapTo(true)),
+        this.data$.pipe(observeOn(asapScheduler), this.takeUntilDestroyed(), skip(this.skipFirstData ? 1 : 0), mapTo(false))
       )
-        .pipe(takeUntil(this.destroyEvent$))
+        .pipe(this.takeUntilDestroyed())
         .subscribe(x => this.dataLoading$.next(x));
     }
     
@@ -59,8 +59,7 @@ export class AutoUpdateLoadingIndicatorComponent implements OnInit, OnDestroy {
   
   ngOnDestroy(): void {
     
-    this.destroyEvent$.next();
-    this.destroyEvent$.complete();
+    super.ngOnDestroy();
     
   }
 }

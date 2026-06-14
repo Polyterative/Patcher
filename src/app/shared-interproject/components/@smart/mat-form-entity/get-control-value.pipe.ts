@@ -1,3 +1,4 @@
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { ChangeDetectorRef, OnDestroy, Pipe, PipeTransform } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { ReplaySubject, Subject } from 'rxjs';
@@ -12,13 +13,13 @@ type LocalType = FormControl | FormGroup;
 @Pipe({
   name: 'getControlValue'
 })
-export class GetControlValuePipe implements PipeTransform, OnDestroy {
+export class GetControlValuePipe extends SubManager implements PipeTransform, OnDestroy {
   value$ = new ReplaySubject<string>(1);
   subscribed = false;
   
-  protected destroyEvent$: Subject<void> = new Subject();
-  
-  constructor(public changeDetection: ChangeDetectorRef) {}
+  constructor(public changeDetection: ChangeDetectorRef) {
+    super();
+  }
   
   transform(control: LocalType): ReplaySubject<string> {
     
@@ -34,7 +35,7 @@ export class GetControlValuePipe implements PipeTransform, OnDestroy {
   private subscribe(control: LocalType): void {
     control.valueChanges
            .pipe(
-             takeUntil(this.destroyEvent$)
+             this.takeUntilDestroyed()
            )
            .subscribe(_ => {
              this.updateResult(control);
@@ -50,8 +51,7 @@ export class GetControlValuePipe implements PipeTransform, OnDestroy {
   }
   
   ngOnDestroy(): void {
-    this.destroyEvent$.next();
-    this.destroyEvent$.complete();
+    super.ngOnDestroy();
     
   }
 }

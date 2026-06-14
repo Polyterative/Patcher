@@ -1,3 +1,4 @@
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import {
   Injectable,
   OnDestroy
@@ -37,7 +38,6 @@ import {
   scan,
   switchMap,
   take,
-  takeUntil,
   tap,
   withLatestFrom
 } from 'rxjs/operators';
@@ -96,7 +96,7 @@ type RackReadResponse = {
 
 
 @Injectable()
-export class PatchDetailDataService implements OnDestroy {
+export class PatchDetailDataService extends SubManager implements OnDestroy {
   private usePublicDetailReads = false;
   readonly updateSinglePatchData$ = new ReplaySubject<number>();
   /**
@@ -166,7 +166,6 @@ export class PatchDetailDataService implements OnDestroy {
    */
   readonly multiInstanceSummary$ = new BehaviorSubject<MultiInstanceModuleSummary[]>([]);
   //
-  protected readonly destroyEvent$ = new Subject<void>();
   readonly shouldShowPanelImages$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
   readonly patchTags$ = new BehaviorSubject<string[]>([]);
   readonly currentUserRacks$ = new BehaviorSubject<Rack[]>([]);
@@ -190,6 +189,7 @@ export class PatchDetailDataService implements OnDestroy {
     private bridge: SelectionPanelBridgeService,
     private analytics: AnalyticsService
   ) {
+    super();
     
     this.updateSinglePatchData$
       .pipe(
@@ -206,7 +206,7 @@ export class PatchDetailDataService implements OnDestroy {
           : this.backend.get.patchWithId(x)
         ),
         catchError(() => of({data: undefined, error: null})),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(x => {
         const patch = x?.data ?? undefined;
@@ -233,7 +233,7 @@ export class PatchDetailDataService implements OnDestroy {
         }),
         switchMap(token => this.backend.GET.patchByPublicId(token)),
         catchError(() => of({data: undefined, error: null})),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(x => {
         const patch = x?.data ?? undefined;
@@ -250,7 +250,7 @@ export class PatchDetailDataService implements OnDestroy {
     this.singlePatchData$
       .pipe(
         filter(x => !!x),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(x => this.isCurrentPatchPrivate$.next(!x.public));
     
@@ -258,7 +258,7 @@ export class PatchDetailDataService implements OnDestroy {
       .pipe(
         exhaustMap(x => this.backend.delete.userPatch(x)),
         withLatestFrom(this.updateSinglePatchData$),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(([_a, b]) => {
         this.analytics.capture('patch.collection_removed', { patch_id: this.singlePatchData$.value?.id });
@@ -285,7 +285,7 @@ export class PatchDetailDataService implements OnDestroy {
             this.analytics.capture('patch.privacy_toggled', { patch_id: patch?.id, public: patch.public });
           })
         )),
-        takeUntil(this.destroyEvent$),
+        this.takeUntilDestroyed(),
       )
       .subscribe();
     
@@ -293,7 +293,7 @@ export class PatchDetailDataService implements OnDestroy {
     this.requestPatchEditingToggle$
       .pipe(
         withLatestFrom(this.patchEditingPanelOpenState$),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(([_, current]) => {
         const opened = !current;
@@ -305,7 +305,7 @@ export class PatchDetailDataService implements OnDestroy {
       .pipe(
         filter(_ => !!this.singlePatchData$.value),
         filter(_ => this.formData.name.control.valid),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(input => this.singlePatchData$.value.name = input);
     //
@@ -314,7 +314,7 @@ export class PatchDetailDataService implements OnDestroy {
         filter(_ => !!this.singlePatchData$.value),
         filter(_ => this.formData.description.control.valid),
         filter(_ => !!this.formData.description.control.value || this.formData.description.control.value === ''),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(input => this.singlePatchData$.value.description = input);
     
@@ -338,13 +338,13 @@ export class PatchDetailDataService implements OnDestroy {
           })
         )
       ),
-      takeUntil(this.destroyEvent$)
+      this.takeUntilDestroyed()
     ).subscribe();
     
     this.singlePatchData$
       .pipe(
         filter(_ => !!this.singlePatchData$.value),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(data => {
         this.formData.name.control.reset(data.name, {emitEvent: false});
@@ -361,12 +361,12 @@ export class PatchDetailDataService implements OnDestroy {
           ? this.backend.get.currentUserRacks()
           : of([])
         ),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(racks => this.currentUserRacks$.next(racks));
 
     this.currentUserRacks$
-      .pipe(takeUntil(this.destroyEvent$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(racks => {
         this.linkedRackOptions$.next(
           racks.map(rack => ({
@@ -378,7 +378,7 @@ export class PatchDetailDataService implements OnDestroy {
       });
 
     this.singlePatchData$
-      .pipe(takeUntil(this.destroyEvent$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(patch => {
         this.syncLinkedRackControl(patch, this.currentUserRacks$.value);
       });
@@ -418,7 +418,7 @@ export class PatchDetailDataService implements OnDestroy {
             catchError(() => of({linkedRack: null as Rack | null, isOwner, isLoggedIn}))
           );
         }),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(({linkedRack, isOwner, isLoggedIn}) => {
         this.linkedRackState$.next(
@@ -427,7 +427,7 @@ export class PatchDetailDataService implements OnDestroy {
       });
 
     this.formData.linkedRack.control.valueChanges
-      .pipe(takeUntil(this.destroyEvent$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(() => this.requestLinkedRackChange$.next(this.getSelectedLinkedRackId()));
 
     this.requestLinkedRackChange$
@@ -469,7 +469,7 @@ export class PatchDetailDataService implements OnDestroy {
             })
           );
         }),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe();
     
@@ -485,7 +485,7 @@ export class PatchDetailDataService implements OnDestroy {
           instance_id_a: c.instance_id_a ?? undefined,
           instance_id_b: c.instance_id_b ?? undefined
         }))),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(data => this.patchConnections$.next(data));
     
@@ -499,7 +499,7 @@ export class PatchDetailDataService implements OnDestroy {
         // check data integrity and if ids exist
         filter(([patch, user]) => !!patch && !!patch.id && user && !!user.id),
         take(1),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(([patch, user]) => {
         // open editing panel only if patch is owned by logged-in user
@@ -512,7 +512,7 @@ export class PatchDetailDataService implements OnDestroy {
     this.patchEditingPanelOpenState$
       .pipe(
         filter(x => !x),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(_ => this.resetSelectedForConnection$.next());
     
@@ -522,7 +522,7 @@ export class PatchDetailDataService implements OnDestroy {
         pairwise(),
         filter(x => x[0] === true && x[1] === false),
         filter(() => !!this.singlePatchData$.value),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(() => {
         this.analytics.capture('patch.editing_panel_closed', { patch_id: this.singlePatchData$.value.id });
@@ -557,7 +557,7 @@ export class PatchDetailDataService implements OnDestroy {
                 : {a: ev.cv, b: state.b};
           }
         }, EMPTY_CV_CONNECTION_STATE),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe((state) => {
         this.selectedForConnection$.next(state);
@@ -596,14 +596,14 @@ export class PatchDetailDataService implements OnDestroy {
         distinctUntilChanged((previous, current) =>
           previous.blocked === current.blocked && previous.hint === current.hint
         ),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(({blocked, hint}) => this.setLinkedRackSelectionBlocked(blocked, hint));
     
     this.confirmSelectedConnection$
       .pipe(
         withLatestFrom(this.editorConnections$),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(([_, patchConnections]) => {
         patchConnections = patchConnections || [];
@@ -644,7 +644,7 @@ export class PatchDetailDataService implements OnDestroy {
       });
     
     this.patchConnections$
-      .pipe(takeUntil(this.destroyEvent$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(x => {
         this.editorConnections$.next(x);
         this.bridge.editorConnections$.next(x);
@@ -653,7 +653,7 @@ export class PatchDetailDataService implements OnDestroy {
     this.removeConnectionFromEditor$
       .pipe(
         withLatestFrom(this.editorConnections$),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(([x, data]) => {
         const next = data.filter(
@@ -698,7 +698,7 @@ export class PatchDetailDataService implements OnDestroy {
             finalize(() => this.connectionSyncPendingCount$.next(Math.max(0, this.connectionSyncPendingCount$.value - 1)))
           );
         }),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe();
     
@@ -714,7 +714,7 @@ export class PatchDetailDataService implements OnDestroy {
             })
           )
         ),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe();
     
@@ -750,7 +750,7 @@ export class PatchDetailDataService implements OnDestroy {
         switchMap((x) => this.backend.delete.patchModuleInstancesForPatch(x)
           .pipe(map(() => x))),
         switchMap((x) => this.backend.delete.patch(x)),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(_ => {
         this.analytics.capture('patch.deleted', { patch_id: this.singlePatchData$.value?.id });
@@ -764,7 +764,7 @@ export class PatchDetailDataService implements OnDestroy {
       .pipe(
         filter(x => !!x),
         switchMap(patch => this.backend.GET.patchModuleInstances(patch.id)),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(instances => this.patchModuleInstances$.next(instances));
     
@@ -784,7 +784,7 @@ export class PatchDetailDataService implements OnDestroy {
           }
           return labelMap;
         }),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(labelMap => this.instanceLabelMap$.next(labelMap));
     
@@ -811,7 +811,7 @@ export class PatchDetailDataService implements OnDestroy {
           }
           return summary;
         }),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(summary => this.multiInstanceSummary$.next(summary));
     
@@ -873,7 +873,7 @@ export class PatchDetailDataService implements OnDestroy {
             })
           );
         }),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(newInstances => {
         this.patchModuleInstances$.next([...this.patchModuleInstances$.value, ...newInstances]);
@@ -929,7 +929,7 @@ export class PatchDetailDataService implements OnDestroy {
             })
           )
         ),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(removed => {
         this.patchModuleInstances$.next(
@@ -980,24 +980,24 @@ export class PatchDetailDataService implements OnDestroy {
     
     // ── Bridge mirroring — push state into SelectionPanelBridgeService ─────
     this.selectedForConnection$
-      .pipe(takeUntil(this.destroyEvent$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(v => this.bridge.selectionState$.next(v));
     
     this.singlePatchData$
-      .pipe(takeUntil(this.destroyEvent$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(v => this.bridge.patchData$.next(v));
     
     this.instanceLabelMap$
-      .pipe(takeUntil(this.destroyEvent$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(v => this.bridge.instanceLabelMap$.next(v));
     
     // ── Bridge action buses (outlet → bridge → service) ───────────────────
     this.bridge.reset$
-      .pipe(takeUntil(this.destroyEvent$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(() => this.resetSelectedForConnection$.next());
     
     this.bridge.confirm$
-      .pipe(takeUntil(this.destroyEvent$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(() => this.confirmSelectedConnection$.next());
 
     // ── Patch tags auto-save ───────────────────────────────────────────────
@@ -1015,7 +1015,7 @@ export class PatchDetailDataService implements OnDestroy {
             })
           );
         }),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe();
   }
@@ -1062,8 +1062,7 @@ export class PatchDetailDataService implements OnDestroy {
     // Clear the bridge so the floating panel disappears when navigating away
     this.bridge.selectionState$.next({a: null, b: null});
     this.bridge.patchData$.next(undefined);
-    this.destroyEvent$.next();
-    this.destroyEvent$.complete();
+    super.ngOnDestroy();
   }
   
   /**

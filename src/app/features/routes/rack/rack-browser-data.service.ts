@@ -1,4 +1,7 @@
-import { Injectable } from '@angular/core';
+import {
+  DestroyRef,
+  Injectable
+} from '@angular/core';
 import { FormControl } from '@angular/forms';
 import {
   BehaviorSubject,
@@ -16,7 +19,6 @@ import {
   shareReplay,
   startWith,
   switchMap,
-  takeUntil
 } from 'rxjs/operators';
 import { RackMinimal } from 'src/app/models/rack';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
@@ -88,8 +90,11 @@ export class RackBrowserDataService extends SubManager {
   readonly fields: RackBrowserFields;
   readonly canReset$: Observable<boolean>;
 
-  constructor(private backend: SupabaseService) {
-    super();
+  constructor(
+    private backend: SupabaseService,
+    destroyRef?: DestroyRef
+  ) {
+    super(destroyRef);
 
     this.fields = {
       search: {
@@ -137,7 +142,7 @@ export class RackBrowserDataService extends SubManager {
     
     // Load more — advance skip to current list length, then re-fetch (append mode)
     this.loadMore$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(() => {
         this.serversideTableRequestData.skip$.next(this.racksList$.value?.length ?? 0);
         this.updateRacksList$.next();
@@ -149,7 +154,7 @@ export class RackBrowserDataService extends SubManager {
       this.fields.order.control.valueChanges
     ).pipe(
       debounceTime(750),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe(() => {
       const orderVal = this.fields.order.control.value;
       const searchVal = this.fields.search.control.value ?? '';
@@ -206,7 +211,7 @@ export class RackBrowserDataService extends SubManager {
           }
           return {count: result.count, data: result.data};
         }),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe((x: any) => {
         this.serversideAdditionalData.itemsCount$.next(x.count);
@@ -219,7 +224,7 @@ export class RackBrowserDataService extends SubManager {
       });
 
     this.resetForm$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(() => {
         const silent = {emitEvent: false};
         this.fields.search.control.setValue('', silent);

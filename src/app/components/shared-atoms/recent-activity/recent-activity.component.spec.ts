@@ -5,6 +5,7 @@ import {
 import { RouterTestingModule } from '@angular/router/testing';
 import { RecentActivityComponent } from './recent-activity.component';
 import { RecentActivityModule } from './recent-activity.module';
+import { RecentActivityItem } from './recent-activity.model';
 
 
 describe('RecentActivityComponent', () => {
@@ -24,7 +25,7 @@ describe('RecentActivityComponent', () => {
   });
   
   it('renders activity entries from input data', () => {
-    component.items = [
+    fixture.componentRef.setInput('items', [
       {
         id: 'activity-1',
         type: 'update',
@@ -34,7 +35,7 @@ describe('RecentActivityComponent', () => {
         contextLabel: 'Module by Make Noise',
         route: ['/modules', 'details', 1]
       }
-    ];
+    ]);
     fixture.detectChanges();
     
     const host = fixture.nativeElement as HTMLElement;
@@ -44,7 +45,7 @@ describe('RecentActivityComponent', () => {
   });
   
   it('renders empty state when items are empty', () => {
-    component.items = [];
+    fixture.componentRef.setInput('items', []);
     fixture.detectChanges();
     
     const host = fixture.nativeElement as HTMLElement;
@@ -53,52 +54,43 @@ describe('RecentActivityComponent', () => {
   });
   
   it('renders loading state when items are undefined', () => {
-    component.items = undefined;
+    fixture.componentRef.setInput('items', undefined);
     fixture.detectChanges();
     
     const host = fixture.nativeElement as HTMLElement;
     expect(host.querySelector('.recent-activity__state--loading')).not.toBeNull();
     expect(host.textContent).toContain('Loading recent activity...');
   });
-});
-
-describe('RecentActivityComponent - pure unit', () => {
-  let comp: RecentActivityComponent;
-
-  beforeEach(() => {
-    comp = new RecentActivityComponent();
-  });
-
   it('title defaults to Recent activity', () => {
-    expect(comp.title).toBe('Recent activity');
+    expect(component.title()).toBe('Recent activity');
   });
 
   it('maxItems defaults to 5', () => {
-    expect(comp.maxItems).toBe(5);
+    expect(component.maxItems()).toBe(5);
   });
 
   it('visibleItems returns empty array when items is null', () => {
-    comp.items = null;
-    expect(comp.visibleItems).toEqual([]);
+    fixture.componentRef.setInput('items', null);
+    expect(component.visibleItems()).toEqual([]);
   });
 
   it('visibleItems respects maxItems', () => {
-    comp.maxItems = 2;
-    comp.items = [
-      {id: 'a', type: 'update', actionLabel: 'x', targetLabel: 'y', timestamp: '', contextLabel: '', route: []},
-      {id: 'b', type: 'update', actionLabel: 'x', targetLabel: 'y', timestamp: '', contextLabel: '', route: []},
-      {id: 'c', type: 'update', actionLabel: 'x', targetLabel: 'y', timestamp: '', contextLabel: '', route: []}
-    ];
-    expect(comp.visibleItems.length).toBe(2);
+    fixture.componentRef.setInput('maxItems', 2);
+    fixture.componentRef.setInput('items', [
+      {id: 'a', type: 'update', actionLabel: 'x', targetLabel: 'y', timestamp: '2025-01-01T00:00:00.000Z', contextLabel: '', route: []},
+      {id: 'b', type: 'update', actionLabel: 'x', targetLabel: 'y', timestamp: '2025-01-02T00:00:00.000Z', contextLabel: '', route: []},
+      {id: 'c', type: 'update', actionLabel: 'x', targetLabel: 'y', timestamp: '2025-01-03T00:00:00.000Z', contextLabel: '', route: []}
+    ]);
+    expect(component.visibleItems().length).toBe(2);
   });
 
   it('resolveIcon returns item.icon when present', () => {
-    const item: any = {id: '1', type: 'update', icon: 'star', actionLabel: '', targetLabel: '', timestamp: '', contextLabel: '', route: []};
-    expect(comp.resolveIcon(item)).toBe('star');
+    const item: RecentActivityItem = {id: '1', type: 'update', icon: 'star', actionLabel: '', targetLabel: '', timestamp: '2025-01-01T00:00:00.000Z', contextLabel: '', route: []};
+    expect(component.resolveIcon(item)).toBe('star');
   });
 
   it('resolveIcon falls back to type icon', () => {
-    const item: any = {id: '2', type: 'comment', actionLabel: '', targetLabel: '', timestamp: '', contextLabel: '', route: []};
-    expect(comp.resolveIcon(item)).toBe('chat_bubble_outline');
+    const item: RecentActivityItem = {id: '2', type: 'comment', actionLabel: '', targetLabel: '', timestamp: '2025-01-01T00:00:00.000Z', contextLabel: '', route: []};
+    expect(component.resolveIcon(item)).toBe('chat_bubble_outline');
   });
 });

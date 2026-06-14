@@ -1,4 +1,7 @@
-import { Injectable } from '@angular/core';
+import {
+  DestroyRef,
+  Injectable
+} from '@angular/core';
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { Router } from '@angular/router';
 import {
@@ -19,7 +22,6 @@ import {
   startWith,
   switchMap,
   take,
-  takeUntil,
   tap,
   withLatestFrom
 } from 'rxjs/operators';
@@ -107,9 +109,10 @@ export class UserManagementService extends SubManager {
     private userBoxService: UserDataHandlerService,
     private dialog: MatDialog,
     private sentryContext: SentryContextService,
-    private analytics: AnalyticsService
+    private analytics: AnalyticsService,
+    destroyRef: DestroyRef
   ) {
-    super();
+    super(destroyRef);
     
     this.checkUserInCookies();
     
@@ -135,7 +138,7 @@ export class UserManagementService extends SubManager {
   private initializeUserBoxHandler(): void {
     this.loggedUserFullProfile$
       .pipe(
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(x => {
         this.userBoxService.store.user$.next({username: x?.username});
@@ -146,7 +149,7 @@ export class UserManagementService extends SubManager {
     // Feed Sentry the current user (id/email/username) so issues group by
     // "users affected" and triage isn't blind. Cleared on logout.
     this.loggedUserFullProfile$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(profile => {
         if (profile && profile.id) {
           this.sentryContext.setUser({
@@ -165,7 +168,7 @@ export class UserManagementService extends SubManager {
     // join across sessions/devices. Reset on logout to drop identity from
     // the local SDK state.
     this.loggedUserFullProfile$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(profile => {
         if (profile && profile.id) {
           this.analytics.identify({
@@ -198,7 +201,7 @@ export class UserManagementService extends SubManager {
             filter(x => !!x && !!x.username && !!x.email)
           )
         ),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(x => {
         this._loggedUserFullProfile$.next(x);
@@ -207,7 +210,7 @@ export class UserManagementService extends SubManager {
   
   private initializeUserBoxLogoffHandler(): void {
     this.userBoxService.logoffButtonClick$.pipe(
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe(() => {
       this.logoffAction$.next();
     });
@@ -222,7 +225,7 @@ export class UserManagementService extends SubManager {
         this._loggedUserFullProfile$.next(undefined);
       }),
       filter(() => !this.router.url.includes('/auth/login')),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe(() => {
       this.router.navigate(['/auth/login']);
     });
@@ -242,7 +245,7 @@ export class UserManagementService extends SubManager {
       tap(user => {
         this._loggedUser$.next(user);
       }),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe();
   }
   
@@ -261,7 +264,7 @@ export class UserManagementService extends SubManager {
         this._loggedUserFullProfile$.next(x.user);
         this.analytics.capture('auth.signed_in', { method: 'password' });
       }),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe();
   }
   
@@ -281,7 +284,7 @@ export class UserManagementService extends SubManager {
         this.router.navigate(['/auth/login']);
         SharedConstants.successLogout(this.snackBar);
       }),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe();
   }
   
@@ -307,7 +310,7 @@ export class UserManagementService extends SubManager {
         this.analytics.capture('auth.password_reset_requested', {});
         SharedConstants.successCustom(this.snackBar, SharedConstants.messages.passwordResetEmailSent);
       }),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe();
   }
   
@@ -325,7 +328,7 @@ export class UserManagementService extends SubManager {
         })
       )),
       // OAuth redirect happens automatically, no further action needed
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe();
   }
   
@@ -347,7 +350,7 @@ export class UserManagementService extends SubManager {
         this._loggedUserFullProfile$.next(user);
         this.analytics.capture('auth.signed_in', { method: 'oauth' });
       }),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe();
   }
   
@@ -462,7 +465,7 @@ export class UserManagementService extends SubManager {
         this.analytics.capture('account.username_changed', {});
         SharedConstants.successCustom(this.snackBar, `Username changed to "${ newUsername }" — your profile has been synced.`);
       }),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe();
   }
   
@@ -564,7 +567,7 @@ export class UserManagementService extends SubManager {
         SharedConstants.successCustom(this.snackBar, 'All your data has been deleted. Your account is still available if you want to sign back in.');
         this.router.navigate(['/auth/login']);
       }),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe();
   }
 
@@ -614,14 +617,14 @@ export class UserManagementService extends SubManager {
         SharedConstants.successCustom(this.snackBar, 'Your account has been permanently deleted.');
         this.router.navigate(['/auth/login']);
       }),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe();
   }
   
   private initializeTogglePasswordFormHandler(): void {
     this.togglePasswordForm$.pipe(
       tap(show => this._showPasswordForm$.next(show)),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe();
   }
   
@@ -640,7 +643,7 @@ export class UserManagementService extends SubManager {
         this.analytics.capture('auth.password_changed', {});
         SharedConstants.successCustom(this.snackBar, 'Password updated successfully.');
       }),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe();
   }
 

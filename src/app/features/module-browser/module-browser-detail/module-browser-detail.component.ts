@@ -1,3 +1,4 @@
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -186,9 +187,7 @@ import { environment } from 'src/environments/environment';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
-  
-  protected destroyEvent$                      = new Subject<void>();
+export class ModuleBrowserDetailComponent extends SubManager implements OnInit, OnDestroy {
   @Input() ignoreSeo                           = false;
   @Input() showManualButton                    = false;
   @Input() viewConfig: ModuleMinimalViewConfig = {
@@ -222,6 +221,7 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
     private commentsDataService: CommentsDataService,
     public userManagementService: UserManagementService,
   ) {
+    super();
     
   }
 
@@ -233,7 +233,7 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
     this.dataService.singleModuleData$
       .pipe(
         filter(x => !!x),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(data => {
         this.commentsDataService.requestCommentsUpdate$.next({entityId: data.id, entityType: CommentableEntityTypes.MODULE});
@@ -243,7 +243,7 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
     this.dataService.updateSingleModuleData$
       .pipe(
         filter(x => !x),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(() => {
         this.commentsDataService.requestReset$.next();
@@ -264,7 +264,7 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
       this.dataService.singleModuleData$
         .pipe(
           filter(x => !!x),
-          takeUntil(this.destroyEvent$)
+          this.takeUntilDestroyed()
         )
         .subscribe(data => {
           const rawTags = data.tags.map(x => x.tag.name).filter(x => !!x);
@@ -355,8 +355,7 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     clearJsonLdScript(JSONLD_SCRIPT_ID);
     this.dataService.singleModuleData$.next(undefined);
-    this.destroyEvent$.next();
-    this.destroyEvent$.complete();
+    super.ngOnDestroy();
   }
 
   private injectModuleJsonLd(data: DbModule): void {

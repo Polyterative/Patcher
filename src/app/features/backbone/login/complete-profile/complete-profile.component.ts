@@ -14,7 +14,6 @@ import { NEVER } from 'rxjs';
 import {
   catchError,
   take,
-  takeUntil,
   tap
 } from 'rxjs/operators';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
@@ -215,7 +214,7 @@ export class CompleteProfileComponent extends SubManager implements OnInit {
         this.cdr.markForCheck();
         return NEVER;
       }),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe({
       complete: () => {
         this.saving = false;

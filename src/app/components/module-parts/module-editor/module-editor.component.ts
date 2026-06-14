@@ -1,3 +1,4 @@
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -37,7 +38,6 @@ import {
   shareReplay,
   startWith,
   switchMap,
-  takeUntil,
   tap,
   withLatestFrom
 } from 'rxjs/operators';
@@ -76,7 +76,7 @@ type CvSectionKind = 'IN' | 'OUT';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class ModuleEditorComponent implements OnInit, OnDestroy {
+export class ModuleEditorComponent extends SubManager implements OnInit, OnDestroy {
   
   // Inputs
   @Input() data: DbModule;
@@ -125,8 +125,6 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   private activeCroppedPanelPreviewUrl: string | null = null;
   @ViewChild(ModuleEditorCropperComponent) private panelCropper?: ModuleEditorCropperComponent;
   
-  protected destroyEvent$ = new Subject<void>();
-  
   // Forms and FormGroups
   formGroupA: UntypedFormGroup;
   formGroupB: UntypedFormGroup;
@@ -172,6 +170,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     public fileDragHostService: FileDragHostService,
     private readonly moduleEditorDataService: ModuleEditorDataService
   ) {
+    super();
     this.panelCropOutputFormat = this.moduleEditorDataService.getPreferredPanelCropFormat();
     this.initializeFormControls();
     this.initializeFormGroups();
@@ -259,8 +258,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     }
     this.resetPanelCropState();
     this.dataService.moduleEditorHasPendingChanges$.next(false);
-    this.destroyEvent$.next();
-    this.destroyEvent$.complete();
+    super.ngOnDestroy();
   }
   
   private initializeFormControls(): void {
@@ -364,7 +362,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   private initializeSubscriptions(): void {
     // Subscriptions for adding INs
     this.addIN$
-      .pipe(takeUntil(this.destroyEvent$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(cv => {
         const formCVs = [...this.INs$.value, this.moduleEditorDataService.createFormCV(cv, this.validatorsName, this.validatorsNum)];
         this.moduleEditorDataService.updateFormGroupAndContainer(formCVs, this.formGroupA, this.INs$);
@@ -372,7 +370,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     
     // Subscriptions for adding OUTs
     this.addOUT$
-      .pipe(takeUntil(this.destroyEvent$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(cv => {
         const formCVs = [...this.OUTs$.value, this.moduleEditorDataService.createFormCV(cv, this.validatorsName, this.validatorsNum)];
         this.moduleEditorDataService.updateFormGroupAndContainer(formCVs, this.formGroupB, this.OUTs$);
@@ -380,14 +378,14 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     
     // Subscriptions for removing INs
     this.removeIN$
-      .pipe(takeUntil(this.destroyEvent$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(index => {
         this.removeCvWithUndo(index, 'IN');
       });
     
     // Subscriptions for removing OUTs
     this.removeOUT$
-      .pipe(takeUntil(this.destroyEvent$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(index => {
         this.removeCvWithUndo(index, 'OUT');
       });
@@ -396,18 +394,18 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       .pipe(
         filter(() => !this.saveInProgress$.value),
         switchMap(() => this.persistAllChanges$()),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe();
 
     this.hasPendingChanges$
-      .pipe(takeUntil(this.destroyEvent$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(hasPending => this.dataService.moduleEditorHasPendingChanges$.next(hasPending));
     
     // Subscription for panelType control value changes
     this.panelType.control.valueChanges
       .pipe(
-        takeUntil(this.destroyEvent$),
+        this.takeUntilDestroyed(),
         startWith(this.panelType.control.value),
         withLatestFrom(this.panelType.options$)
       )
@@ -432,7 +430,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       this.powerRailFiveVolts.control
     ].forEach(control => {
       control.valueChanges
-        .pipe(takeUntil(this.destroyEvent$))
+        .pipe(this.takeUntilDestroyed())
         .subscribe(value => this.autoFillBlankPowerRails(control, value));
     });
     
@@ -441,7 +439,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       this.panelType.control.valueChanges.pipe(startWith(this.panelType.control.value)),
       this._existingPanelColors$
     ])
-      .pipe(takeUntil(this.destroyEvent$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(([panelTypeValue, existingColors]) => {
         const selectedColor: number = panelTypeValue?.value;
         const isDuplicate = existingColors.has(selectedColor);
@@ -453,7 +451,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       .pipe(
         map(files => files[0]),
         distinctUntilChanged(),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(file => {
         if (!file) {
@@ -713,7 +711,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
 
     snackRef
       .onAction()
-      .pipe(takeUntil(this.destroyEvent$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(() => {
         const restored = [...source$.value];
         const restoredIndex = Math.min(index, restored.length);

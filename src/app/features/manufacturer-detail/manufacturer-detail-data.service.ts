@@ -8,7 +8,6 @@ import {
 import {
   catchError,
   switchMap,
-  takeUntil,
   tap
 } from 'rxjs/operators';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
@@ -79,7 +78,7 @@ export class ManufacturerDetailDataService extends SubManager {
           return EMPTY;
         })
       )),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe();
   }
 }

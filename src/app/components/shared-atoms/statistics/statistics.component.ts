@@ -2,7 +2,8 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  Input
+  computed,
+  input
 } from '@angular/core';
 import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-state-tips/empty-state-tips.component';
 import { LabelValueShowcaseComponent } from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.component';
@@ -26,33 +27,27 @@ import { HeroContentCardComponent } from 'src/app/shared-interproject/components
 })
 export class StatisticsComponent {
 
-  @Input() title: string | null = null;
-  @Input() cardClass: string = '';
-  @Input() icon: string | undefined;
-  @Input() emptyMessage: string | null = null;
-  @Input() emptyTitle: string | null = null;
-  @Input() emptyIcon: string = 'insights';
-  @Input() compact = false;
-  @Input() useCleanCard = false;
+  readonly title = input<string | null>(null);
+  readonly cardClass = input('');
+  readonly icon = input<string | undefined>(undefined);
+  readonly emptyMessage = input<string | null>(null);
+  readonly emptyTitle = input<string | null>(null);
+  readonly emptyIcon = input('insights');
+  readonly compact = input(false);
+  readonly useCleanCard = input(false);
 
-  @Input() statistics: {
+  readonly statistics = input<{
     name: string;
     value: number;
     icon?: string;
-  }[] | null;
-  
-  get visibleStatistics() {
-    return this.statistics ?? [];
-  }
+  }[] | null>(null);
 
-  get showEmptyState(): boolean {
-    return !!this.emptyMessage
-      && !!this.statistics
-      && this.visibleStatistics.length === 0;
-  }
+  readonly visibleStatistics = computed(() => this.statistics() ?? []);
 
-  get shouldRenderCard(): boolean {
-    return this.visibleStatistics.length > 0 || this.showEmptyState;
-  }
+  readonly showEmptyState = computed(() => !!this.emptyMessage()
+    && !!this.statistics()
+    && this.visibleStatistics().length === 0);
+
+  readonly shouldRenderCard = computed(() => this.visibleStatistics().length > 0 || this.showEmptyState());
   
 }

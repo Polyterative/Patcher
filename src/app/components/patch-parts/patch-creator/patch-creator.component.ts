@@ -1,3 +1,4 @@
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -56,7 +57,7 @@ export type { PatchCreatorInModel, PatchCreatorOutModel };
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class PatchCreatorComponent implements OnInit, OnDestroy {
+export class PatchCreatorComponent extends SubManager implements OnInit, OnDestroy {
   public readonly save$ = new Subject<void>();
   private readonly _currentUserRacks$ = new BehaviorSubject<Rack[]>([]);
   private readonly _linkedRackOptions$ = new BehaviorSubject<ISelectable[]>([]);
@@ -127,15 +128,13 @@ export class PatchCreatorComponent implements OnInit, OnDestroy {
       control: new FormControl<boolean>(true, { nonNullable: true })
     }
   };
-  protected destroyEvent$ = new Subject<void>();
   
   private generatePatchName(): string {
     return generatePatchName();
   }
   
   ngOnDestroy(): void {
-    this.destroyEvent$.next();
-    this.destroyEvent$.complete();
+    super.ngOnDestroy();
     
   }
   
@@ -146,6 +145,7 @@ export class PatchCreatorComponent implements OnInit, OnDestroy {
     @Inject(MAT_DIALOG_DATA) public data: PatchCreatorInModel,
     private analytics: AnalyticsService
   ) {
+    super();
     
     this.save$
         .pipe(
@@ -183,7 +183,7 @@ export class PatchCreatorComponent implements OnInit, OnDestroy {
               })
             );
           }),
-          takeUntil(this.destroyEvent$)
+          this.takeUntilDestroyed()
         )
         .subscribe(value => {
           this.analytics.capture('patch.created', { patch_id: (value as { data?: Array<{ id?: number }> })?.data?.[0]?.id });
@@ -202,7 +202,7 @@ export class PatchCreatorComponent implements OnInit, OnDestroy {
   
   ngOnInit(): void {
     this.backend.get.currentUserRacks()
-      .pipe(takeUntil(this.destroyEvent$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(racks => {
         this._currentUserRacks$.next(racks);
         const options = racks.map(rack => ({

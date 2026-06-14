@@ -1,6 +1,6 @@
 <div
   class="entityStatGrid"
-  [class.entityStatGrid--stacked]="stacked"
+  [class.entityStatGrid--stacked]="stacked()"
 >
   @for (item of visibleItems(); track itemTrackKey(item, $index); let i = $index) {
     <a

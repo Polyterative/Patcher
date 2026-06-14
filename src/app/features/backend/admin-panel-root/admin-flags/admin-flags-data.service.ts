@@ -1,4 +1,7 @@
-import { Injectable } from '@angular/core';
+import {
+  DestroyRef,
+  Injectable
+} from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   BehaviorSubject,
@@ -14,8 +17,7 @@ import {
   exhaustMap,
   map,
   shareReplay,
-  switchMap,
-  takeUntil
+  switchMap
 } from 'rxjs/operators';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
@@ -74,9 +76,10 @@ export class AdminFlagsDataService extends SubManager {
 
   constructor(
     private backend: SupabaseService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    destroyRef?: DestroyRef
   ) {
-    super();
+    super(destroyRef);
 
     merge(of(null), this._refresh$).pipe(
       switchMap(() => this.backend.get.allModuleFlags().pipe(
@@ -86,7 +89,7 @@ export class AdminFlagsDataService extends SubManager {
         })
       )),
       switchMap(flags => this.enrichFlagsWithReporter$(flags)),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe(flags => this._flags$.next(flags));
 
     this.resolveFlag$.pipe(
@@ -96,7 +99,7 @@ export class AdminFlagsDataService extends SubManager {
           return EMPTY;
         })
       )),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe(() => this._refresh$.next());
 
     this.deleteFlag$.pipe(
@@ -106,7 +109,7 @@ export class AdminFlagsDataService extends SubManager {
           return EMPTY;
         })
       )),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe(() => this._refresh$.next());
   }
 

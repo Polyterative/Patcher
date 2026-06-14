@@ -1,4 +1,7 @@
-import { Injectable } from '@angular/core';
+import {
+  DestroyRef,
+  Injectable
+} from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   BehaviorSubject,
@@ -8,7 +11,6 @@ import {
 import {
   filter,
   switchMap,
-  takeUntil,
   tap,
   withLatestFrom,
 } from 'rxjs/operators';
@@ -60,8 +62,9 @@ export class PublicProfileDataService extends SubManager {
   constructor(
     private readonly backend: SupabaseService,
     private readonly snackBar: MatSnackBar,
+    destroyRef?: DestroyRef,
   ) {
-    super();
+    super(destroyRef);
 
     this.initializeProfileLoadHandler();
     this.initializePatchLoadHandler();
@@ -84,7 +87,7 @@ export class PublicProfileDataService extends SubManager {
           this.racksPagination.skip$.next(0);
         }),
         switchMap((username) => this.backend.get.publicProfileByUsername(username)),
-        takeUntil(this.destroy$),
+        this.takeUntilDestroyed(),
       )
       .subscribe({
         next: (response) => {
@@ -132,7 +135,7 @@ export class PublicProfileDataService extends SubManager {
         filter(([, profile]) => !!profile && profile.public),
         tap(() => this.contributorStats$.next(undefined)),
         switchMap(([, profile]) => this.backend.GET.publicUserContributorStats(profile!.id)),
-        takeUntil(this.destroy$),
+        this.takeUntilDestroyed(),
       )
       .subscribe({
         next: (stats) => {
@@ -148,7 +151,7 @@ export class PublicProfileDataService extends SubManager {
 
   private initializePatchLoadHandler(): void {
     this.loadMorePatches$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(() => {
         this.patchesPagination.skip$.next(this.patchesData$.value?.length ?? 0);
         this.updatePatchesData$.next();
@@ -173,7 +176,7 @@ export class PublicProfileDataService extends SubManager {
             skip + take - 1,
           );
         }),
-        takeUntil(this.destroy$),
+        this.takeUntilDestroyed(),
       )
       .subscribe({
         next: (response) => {
@@ -194,7 +197,7 @@ export class PublicProfileDataService extends SubManager {
 
   private initializeRackLoadHandler(): void {
     this.loadMoreRacks$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(() => {
         this.racksPagination.skip$.next(this.rackData$.value?.length ?? 0);
         this.updateRacksData$.next();
@@ -219,7 +222,7 @@ export class PublicProfileDataService extends SubManager {
             skip + take - 1,
           );
         }),
-        takeUntil(this.destroy$),
+        this.takeUntilDestroyed(),
       )
       .subscribe({
         next: (response) => {

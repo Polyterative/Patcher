@@ -12,8 +12,7 @@ import {
 } from "@angular/router";
 import { SubManager } from "src/app/shared-interproject/directives/subscription-manager";
 import {
-  take,
-  takeUntil
+  take
 } from "rxjs/operators";
 import { SharedConstants } from "src/app/shared-interproject/SharedConstants";
 import { MatSnackBar } from "@angular/material/snack-bar";
@@ -68,7 +67,7 @@ export class LoginPageComponent extends SubManager implements OnInit {
     this.loginInteraction.loggedUser$
       .pipe(
         take(1),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(user => {
         if (user) {

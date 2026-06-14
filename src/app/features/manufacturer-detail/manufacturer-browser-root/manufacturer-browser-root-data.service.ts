@@ -16,7 +16,6 @@ import {
   shareReplay,
   startWith,
   switchMap,
-  takeUntil,
   withLatestFrom
 } from 'rxjs/operators';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
@@ -133,7 +132,7 @@ export class ManufacturerBrowserRootDataService extends SubManager {
       this.fields.order.control.valueChanges,
     ).pipe(
       debounceTime(400),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe(() => {
       const orderVal = this.fields.order.control.value ?? DEFAULT_ORDER;
       const searchVal = this.fields.search.control.value ?? '';
@@ -183,7 +182,7 @@ export class ManufacturerBrowserRootDataService extends SubManager {
         }
         return {count: result.count, data: result.data};
       }),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe(x => {
       const skip = this.serversideTableRequestData.skip$.value;
       const current = this._manufacturers$.value ?? [];
@@ -194,7 +193,7 @@ export class ManufacturerBrowserRootDataService extends SubManager {
     this.loadMore$
       .pipe(
         withLatestFrom(this.manufacturers$),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(([_, current]) => {
         this.serversideTableRequestData.skip$.next(current?.length ?? 0);
@@ -203,7 +202,7 @@ export class ManufacturerBrowserRootDataService extends SubManager {
   }
   
   private initializeResetHandler(): void {
-    this.resetForm$.pipe(takeUntil(this.destroy$)).subscribe(() => {
+    this.resetForm$.pipe(this.takeUntilDestroyed()).subscribe(() => {
       const silent = {emitEvent: false};
       this.fields.search.control.setValue('', silent);
       this.fields.order.control.setValue(DEFAULT_ORDER, silent);

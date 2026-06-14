@@ -4,7 +4,6 @@ import {
   OnInit
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { takeUntil } from 'rxjs/operators';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 
@@ -69,7 +68,7 @@ export class AuthCallbackComponent extends SubManager implements OnInit {
   ngOnInit(): void {
     // Listen for successful authentication
     this.userManagementService.loggedUserFullProfile$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(user => {
         if (user) {
           // Check if username needs to be set (new OAuth user)

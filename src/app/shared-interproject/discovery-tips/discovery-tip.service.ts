@@ -11,8 +11,7 @@ import {
 } from 'rxjs';
 import {
   filter,
-  startWith,
-  takeUntil
+  startWith
 } from 'rxjs/operators';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { SubManager } from '../directives/subscription-manager';
@@ -79,7 +78,7 @@ export class DiscoveryTipService extends SubManager {
       this.userManagementService.loggedUser$.pipe(startWith(undefined)),
       this.userManagementService.loggedUserFullProfile$.pipe(startWith(undefined))
     ]).pipe(
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe(([user, profile]) => {
       const viewerKey = profile?.id ?? user?.id ?? 'guest';
       this._isLoggedIn$.next(!!user);
@@ -95,7 +94,7 @@ export class DiscoveryTipService extends SubManager {
 
     this.router.events.pipe(
       filter((event): event is NavigationEnd => event instanceof NavigationEnd),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe((event) => {
       this.clearQueuedTip();
       this.guidedTourActive = false;
@@ -113,7 +112,7 @@ export class DiscoveryTipService extends SubManager {
       this._sessionActions$,
       this._userAreaSnapshot$,
     ]).pipe(
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe(() => {
       this.refreshActiveTip();
     });

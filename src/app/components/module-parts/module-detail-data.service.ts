@@ -1,3 +1,4 @@
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { Injectable, OnDestroy } from '@angular/core';
 import { MatSnackBar } from "@angular/material/snack-bar";
 import {
@@ -17,7 +18,6 @@ import {
   map,
   switchMap,
   take,
-  takeUntil,
   tap,
   withLatestFrom
 } from 'rxjs/operators';
@@ -47,7 +47,7 @@ export type { HiddenUsageBucket, ModulePossessionCounts, ModuleUsageSummary } fr
 
 
 @Injectable()
-export class ModuleDetailDataService implements OnDestroy {
+export class ModuleDetailDataService extends SubManager implements OnDestroy {
   private readonly collectionsEnabled = environment.features.collectionsEnabled;
   readonly updateSingleModuleData$ = new ReplaySubject<number>();
   readonly singleModuleData$ = new BehaviorSubject<DbModule | null>(null);
@@ -79,7 +79,6 @@ export class ModuleDetailDataService implements OnDestroy {
   /** Toggle the module editing panel open/closed through the service layer. */
   readonly requestModuleEditingToggle$ = new Subject<void>();
   readonly isAdmin$ = new BehaviorSubject<boolean>(false);
-  protected readonly destroyEvent$ = new Subject<void>();
   
   constructor(
     public dialog: MatDialog,
@@ -90,9 +89,10 @@ export class ModuleDetailDataService implements OnDestroy {
     public router: Router,
     private analytics: AnalyticsService,
   ) {
+    super();
     
     this.backend.auth.hasAdminRole$()
-      .pipe(takeUntil(this.destroyEvent$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(x => this.isAdmin$.next(x));
 
     // when delete of the latest panel is requested, perform the deletion
@@ -101,7 +101,7 @@ export class ModuleDetailDataService implements OnDestroy {
         switchMap(module => this.requiresAdminOrDev(module)),
         map((x) => x.panels.sort((a, b) => a.id - b.id).pop()!),
         exhaustMap(x => this.backend.delete.modulePanel(x)),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(x => {
         SharedConstants.successCustom(this.snackBar, 'Panel image removed from module.');
@@ -112,7 +112,7 @@ export class ModuleDetailDataService implements OnDestroy {
     this.copyModuleNameAndManufacturer$
       .pipe(
         withLatestFrom(this.singleModuleData$),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(([a, b]) => {
         if (b) {
@@ -131,7 +131,7 @@ export class ModuleDetailDataService implements OnDestroy {
       .pipe(
         switchMap(x => this.userService.loggedUser$),
         switchMap(x => !!x ? this.backend.GET.currentUserModules(false) : of([])),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(x => {
         this.userModulesList$.next(x);
@@ -159,7 +159,7 @@ export class ModuleDetailDataService implements OnDestroy {
           return this.backend.update.userModulePossession(module.id, kind).pipe(map(() => ({kind, module})));
         }),
         withLatestFrom(this.updateSingleModuleData$),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(([{kind, module}, moduleId]) => {
         const state = kind === null ? 'removed' : 'added';
@@ -179,7 +179,7 @@ export class ModuleDetailDataService implements OnDestroy {
           this.moduleEditorHasPendingChanges$.next(false);
         }),
         switchMap(x => this.backend.GET.moduleWithId(x)),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(x => {
         this.singleModuleData$.next(x.data);
@@ -196,7 +196,7 @@ export class ModuleDetailDataService implements OnDestroy {
       .pipe(
         tap(x => this.racksWithThisModule$.next(undefined)),
         switchMap(x => this.backend.get.racksWithModule(x)),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(x => this.racksWithThisModule$.next((x.data ?? []).map(y => y.rack)));
     
@@ -205,7 +205,7 @@ export class ModuleDetailDataService implements OnDestroy {
       .pipe(
         tap(x => this.patchesWithThisModule$.next(undefined)),
         switchMap(x => this.backend.get.patchesWithModule(x)),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(x => this.patchesWithThisModule$.next(x));
 
@@ -213,7 +213,7 @@ export class ModuleDetailDataService implements OnDestroy {
       .pipe(
         tap(() => this.collectionsWithThisModule$.next(undefined)),
         switchMap(x => this.collectionsEnabled ? this.backend.GET.moduleCollectionsForModule(x) : of([])),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(collections => this.collectionsWithThisModule$.next(collections));
 
@@ -221,7 +221,7 @@ export class ModuleDetailDataService implements OnDestroy {
       .pipe(
         tap(() => this.moduleUsageSummary$.next(undefined)),
         switchMap(x => this.backend.get.moduleUsageSummary(x)),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(summary => this.moduleUsageSummary$.next(summary));
 
@@ -229,7 +229,7 @@ export class ModuleDetailDataService implements OnDestroy {
       .pipe(
         tap(() => this.possessionCounts$.next(undefined)),
         switchMap(x => this.backend.get.modulePossessionCounts(x)),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(counts => this.possessionCounts$.next(counts));
     
@@ -238,7 +238,7 @@ export class ModuleDetailDataService implements OnDestroy {
     //     .pipe(
     //       tap(x => this.modulePatchesList$.next([])),
     //       switchMap(x => this.backend.get.patchWithModule(x)),
-    //       takeUntil(this.destroyEvent$)
+    //       this.takeUntilDestroyed()
     //     )
     //     .subscribe(x => this.modulePatchesList$.next(x.data));
     
@@ -246,7 +246,7 @@ export class ModuleDetailDataService implements OnDestroy {
       .pipe(
         exhaustMap(x => this.backend.add.userModule(x)),
         withLatestFrom(this.updateSingleModuleData$, this.singleModuleData$),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(([a, b, module]) => {
         this.analytics.capture('module.collection_toggled', { module_id: module?.id, state: 'added' });
@@ -258,7 +258,7 @@ export class ModuleDetailDataService implements OnDestroy {
       .pipe(
         exhaustMap(x => this.backend.delete.userModule(x)),
         withLatestFrom(this.updateSingleModuleData$, this.singleModuleData$),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(([a, b, module]) => {
         this.analytics.capture('module.collection_toggled', { module_id: module?.id, state: 'removed' });
@@ -271,7 +271,7 @@ export class ModuleDetailDataService implements OnDestroy {
         switchMap(x => RackModuleAdderDialogComponent.open(this.dialog, {module: x})
           .afterClosed()),
         withLatestFrom(this.updateSingleModuleData$),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(([a, b]) => {
         this.updateSingleModuleData$.next(b);
@@ -280,7 +280,7 @@ export class ModuleDetailDataService implements OnDestroy {
     this.singleModuleData$.pipe(
       filter(x => !!x),
       switchMap(() => this.userService.loggedUser$),
-      takeUntil(this.destroyEvent$)
+      this.takeUntilDestroyed()
     )
       .subscribe(user => {
         if (user) {
@@ -294,7 +294,7 @@ export class ModuleDetailDataService implements OnDestroy {
         switchMap(id => this.requiresAdminOrDev(id)),
         withLatestFrom(this.singleModuleData$),
         exhaustMap(([x, module]) => this.backend.delete.module(x).pipe(map(() => module))),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(module => {
         this.analytics.capture('module.deleted', { module_id: module?.id });
@@ -324,7 +324,7 @@ export class ModuleDetailDataService implements OnDestroy {
             );
           })
         )),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(({module, manufacturerDeleted}) => {
         this.analytics.capture('module.deleted', { module_id: module?.id, manufacturer_deleted: manufacturerDeleted });
@@ -341,7 +341,7 @@ export class ModuleDetailDataService implements OnDestroy {
         switchMap(partial => this.requiresAdminOrDev(partial)),
         withLatestFrom(this.singleModuleData$),
         exhaustMap(([partial, original]) => this.backend.update.module({...original, ...partial}).pipe(map(() => ({...original, ...partial})))),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(module => {
         this.analytics.capture('module.metadata_changed', { module_id: module?.id });
@@ -354,7 +354,7 @@ export class ModuleDetailDataService implements OnDestroy {
         exhaustMap(({id, url}) => this.backend.update.moduleStoreUrl(id, url).pipe(
           catchError(() => EMPTY)
         )),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(() => {
         this.analytics.capture('module.store_url_updated', { module_id: this.singleModuleData$.value?.id });
@@ -365,7 +365,7 @@ export class ModuleDetailDataService implements OnDestroy {
     this.requestModuleEditingToggle$
       .pipe(
         withLatestFrom(this.moduleEditingPanelOpenState$),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(([_, current]) => {
         if (current) {
@@ -378,8 +378,7 @@ export class ModuleDetailDataService implements OnDestroy {
   
   
   ngOnDestroy(): void {
-    this.destroyEvent$.next();
-    this.destroyEvent$.complete();
+    super.ngOnDestroy();
   }
 
   /** Emits `value` only when the current user is an admin or the app is running in dev mode; otherwise completes silently. */

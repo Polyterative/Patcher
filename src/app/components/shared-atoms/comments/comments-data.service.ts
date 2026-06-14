@@ -19,7 +19,6 @@ import {
   exhaustMap,
   map,
   switchMap,
-  takeUntil,
   tap,
   withLatestFrom
 } from "rxjs/operators";
@@ -90,7 +89,7 @@ export class CommentsDataService extends SubManager {
     this.deleteComment$.pipe(
       exhaustMap(x => this.backend.delete.comment(x)),
       withLatestFrom(this.requestCommentsUpdate$),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe(([_, entity]) => {
       SharedConstants.successCustom(this.snackBar, 'Comment removed.');
       this.requestCommentsUpdate$.next(entity);
@@ -104,7 +103,7 @@ export class CommentsDataService extends SubManager {
         this.currentOffset = 0;
       }),
       switchMap(x => this.backend.GET.comments(x.entityId, x.entityType, 0, this.pageSize - 1)),
-      takeUntil(this.destroy$),
+      this.takeUntilDestroyed(),
     ).subscribe(({ data, count }) => {
       this.comments$.next(data ?? []);
       this.commentsCount$.next(count ?? 0);
@@ -124,7 +123,7 @@ export class CommentsDataService extends SubManager {
         )
       ),
       withLatestFrom(this.comments$),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe(([{ data, count }, existing]) => {
       this.comments$.next([...(existing ?? []), ...(data ?? [])]);
       this.commentsCount$.next(count ?? 0);
@@ -133,7 +132,7 @@ export class CommentsDataService extends SubManager {
     
     // when reset has been requested, clean the comments
     this.requestReset$.pipe(
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe(() => {
       this.comments$.next(undefined);
       this.commentsCount$.next(0);
@@ -153,7 +152,7 @@ export class CommentsDataService extends SubManager {
           entityType: entity.entityType
         }).pipe(map(() => entity))
       ),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe({
       next: entity => {
         this.isSubmitting$.next(false);

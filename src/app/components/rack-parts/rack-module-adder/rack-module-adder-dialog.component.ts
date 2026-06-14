@@ -22,7 +22,7 @@ import {
   startWith,
   exhaustMap,
   switchMap,
-  takeUntil
+  takeUntil,
 } from 'rxjs/operators';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area-data.service';
@@ -106,7 +106,7 @@ export class RackModuleAdderDialogComponent extends SubManager implements OnInit
             this.data.module.id,
             this.fields.rack.control.value.id
           )),
-          takeUntil(this.destroy$)
+          this.takeUntilDestroyed()
         )
         .subscribe(() => {
           const moduleName = this.data.module.name;

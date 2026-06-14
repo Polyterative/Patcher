@@ -1,3 +1,4 @@
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { animate, keyframes, style, transition, trigger } from '@angular/animations';
 import {
   ChangeDetectionStrategy,
@@ -54,7 +55,7 @@ const popOnEnter = trigger('popOnEnter', [
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class ModuleCVItemComponent implements OnInit, OnDestroy {
+export class ModuleCVItemComponent extends SubManager implements OnInit, OnDestroy {
   @Input() data: CV;
   @Input() kind: 'in' | 'out';
 
@@ -79,14 +80,14 @@ export class ModuleCVItemComponent implements OnInit, OnDestroy {
 
   /** Reactive mirror of @Input instanceId — updated by the setter on every change. */
   readonly instanceId$ = new BehaviorSubject<number | undefined>(undefined);
-
-  protected destroyEvent$ = new Subject<void>();
   private _instanceId: number | undefined;
 
   constructor(
     public appState: AppStateService,
     public patchService: PatchDetailDataService
-  ) {}
+  ) {
+    super();
+  }
 
   ngOnInit(): void {
 
@@ -99,7 +100,7 @@ export class ModuleCVItemComponent implements OnInit, OnDestroy {
                 ? data.b.cv.id === this.data.id && data.b.cv.instance_id === instanceId
                 : false
             ),
-            takeUntil(this.destroyEvent$)
+            this.takeUntilDestroyed()
           )
           .subscribe(this.highlightedFrom);
         break;
@@ -111,7 +112,7 @@ export class ModuleCVItemComponent implements OnInit, OnDestroy {
                 ? data.a.cv.id === this.data.id && data.a.cv.instance_id === instanceId
                 : false
             ),
-            takeUntil(this.destroyEvent$)
+            this.takeUntilDestroyed()
           )
           .subscribe(this.highlightedTo);
         break;
@@ -131,13 +132,12 @@ export class ModuleCVItemComponent implements OnInit, OnDestroy {
           }).length;
         }),
         distinctUntilChanged(),
-        takeUntil(this.destroyEvent$)
+        this.takeUntilDestroyed()
       )
       .subscribe(this.connectionCount$);
   }
 
   ngOnDestroy(): void {
-    this.destroyEvent$.next();
-    this.destroyEvent$.complete();
+    super.ngOnDestroy();
   }
 }

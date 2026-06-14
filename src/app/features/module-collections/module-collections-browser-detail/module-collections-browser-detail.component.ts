@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { filter, map, take, takeUntil } from 'rxjs/operators';
+import { filter, map, take } from 'rxjs/operators';
 import {
   BehaviorSubject,
   Observable,
@@ -66,7 +66,7 @@ export class ModuleCollectionsBrowserDetailComponent extends SubManager implemen
     this.dataService.collection$
       .pipe(
         filter((collection): collection is ModuleCollectionDetail => !!collection),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(collection => {
         this.seoAndUtilsService.updateSeo(

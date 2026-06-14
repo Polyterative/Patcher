@@ -388,7 +388,7 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
   private bindContextMenuAction(action$: Subject<ContextMenuItem>, callback: () => void): void {
     action$.pipe(
       takeUntil(this.contextMenu.menuClose$),
-      takeUntil(this.destroy$)
+      this.takeUntilDestroyed()
     ).subscribe(() => callback());
   }
 

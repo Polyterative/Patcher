@@ -1,3 +1,4 @@
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -32,7 +33,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class PatchConnectionMinimalComponent implements OnInit, OnDestroy {
+export class PatchConnectionMinimalComponent extends SubManager implements OnInit, OnDestroy {
   @Input() index?: number;
   @Input() data: PatchConnection;
   @Input() isEditing = false;
@@ -66,11 +67,10 @@ export class PatchConnectionMinimalComponent implements OnInit, OnDestroy {
       Validators.max(144)
     ]))
   };
-  
-  protected destroyEvent$ = new Subject<void>();
   showNotes = false;
   
   constructor(private cdr: ChangeDetectorRef) {
+    super();
   }
   
   showNoteInput(): void {
@@ -98,7 +98,7 @@ export class PatchConnectionMinimalComponent implements OnInit, OnDestroy {
     this.notes.control.valueChanges.pipe(
       debounceTime(600),
       distinctUntilChanged(),
-      takeUntil(this.destroyEvent$)
+      this.takeUntilDestroyed()
     ).subscribe(value => {
       this.data.notes = value || undefined;
       this.noteSync$?.next(this.data);
@@ -106,8 +106,7 @@ export class PatchConnectionMinimalComponent implements OnInit, OnDestroy {
   }
   
   ngOnDestroy(): void {
-    this.destroyEvent$.next();
-    this.destroyEvent$.complete();
+    super.ngOnDestroy();
     
   }
   

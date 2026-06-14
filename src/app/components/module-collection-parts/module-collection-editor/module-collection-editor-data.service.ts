@@ -21,7 +21,6 @@ import {
   finalize,
   map,
   switchMap,
-  takeUntil,
   tap
 } from 'rxjs/operators';
 import { ModuleCollectionsDataService } from 'src/app/features/module-collections/module-collections-data.service';
@@ -135,7 +134,7 @@ export class ModuleCollectionEditorDataService extends SubManager {
 
   private initializeAddModuleHandler(): void {
     this.addModule$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(module => {
         const current = this.selectedModules$.value;
         if (current.some(item => item.id === module.id)) {
@@ -147,7 +146,7 @@ export class ModuleCollectionEditorDataService extends SubManager {
 
   private initializeRemoveModuleHandler(): void {
     this.removeSelectedModule$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.takeUntilDestroyed())
       .subscribe(moduleId => {
         this.updateSelectedModules(this.selectedModules$.value.filter(item => item.id !== moduleId));
       });
@@ -185,7 +184,7 @@ export class ModuleCollectionEditorDataService extends SubManager {
             finalize(() => this.saving$.next(false))
           );
         }),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe();
   }
@@ -222,7 +221,7 @@ export class ModuleCollectionEditorDataService extends SubManager {
             finalize(() => this.saving$.next(false))
           );
         }),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe();
   }
@@ -256,7 +255,7 @@ export class ModuleCollectionEditorDataService extends SubManager {
             finalize(() => this.saving$.next(false))
           );
         }),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe();
   }
@@ -319,7 +318,7 @@ export class ModuleCollectionEditorDataService extends SubManager {
             })
           );
         }),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(() => {
         SharedConstants.successCustom(this.snackBar, this.isEditMode ? 'Collection updated.' : 'Collection created.');

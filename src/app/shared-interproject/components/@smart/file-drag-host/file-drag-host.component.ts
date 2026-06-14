@@ -12,8 +12,7 @@ import {
   OnInit
 } from '@angular/core';
 import {
-  merge,
-  takeUntil
+  merge
 } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { SubManager } from '../../../directives/subscription-manager';
@@ -86,7 +85,7 @@ export class FileDragHostComponent extends SubManager implements OnInit {
     )
       .pipe(
         debounceTime(50),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(_ => this.changeDetectorRef.detectChanges());
   }

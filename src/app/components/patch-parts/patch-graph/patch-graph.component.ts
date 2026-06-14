@@ -18,7 +18,6 @@ import {
   filter,
   map,
   switchMap,
-  takeUntil,
   tap,
   withLatestFrom
 } from 'rxjs/operators';
@@ -133,7 +132,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
         .pipe(
           filter(() => this._graphBuiltOnce),
           filter(Boolean),
-          takeUntil(this.destroy$)
+          this.takeUntilDestroyed()
         )
         .subscribe(() => this._isStale$.next(true));
     }
@@ -185,7 +184,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
           ).pipe(map(modules => ({modules, connections})));
         }),
         delay(500),
-        takeUntil(this.destroy$)
+        this.takeUntilDestroyed()
       )
       .subscribe(({modules, connections}) => {
         const sizeConstant = computePatchGraphSizeConstant(
