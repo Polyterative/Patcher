@@ -3,6 +3,8 @@
 
 #### MEDIUM: Rack Comparison — balance diff between two racks
 
+> **Status:** On hold indefinitely by user direction on 2026-06-14. Do not resume unless the user explicitly asks for Rack Comparison work.
+
 **Why:** Users who maintain multiple versions of a rack (e.g. current vs planned rebuild, or
 two rack concepts) have no way to see at a glance what they would gain or lose functionally.
 A diff of the balance analysis radars answers exactly that: *"+12 HP of Voices, −8 HP of
@@ -62,3 +64,4 @@ No new backend calls needed — both racks' modules are already loaded via exist
 <!-- Append timestamped one-liners as the plan progresses. -->
 
 - **2026-06-14:** Added the pure diff foundation in `rack-balance-analysis.utils.ts`: `computeRackBalanceDiff()` diffs `share` and `matchedModules` by axis id, and `buildRackBalanceDiffSummary()` produces the first plain-language summary. Current `RackBalanceAxisResult` does not expose matched HP, so HP-specific delta copy remains deferred until the analysis model is extended.
+- **2026-06-14:** User postponed this feature indefinitely. Stop after the committed pure diff foundation; do not add the user-area entry point, comparison route, or UI until explicitly requested.

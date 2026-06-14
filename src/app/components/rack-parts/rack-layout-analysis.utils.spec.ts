@@ -1,0 +1,76 @@
+import { RackedModule } from 'src/app/models/module';
+import { computeLayoutAnalysis } from './rack-layout-analysis.utils';
+
+
+describe('computeLayoutAnalysis', () => {
+  function rackModule(id: number, hp: number, row: number, standard = 0): RackedModule {
+    return {
+      module: {
+        id,
+        name: `Module ${ id }`,
+        hp,
+        standard: {id: standard}
+      },
+      rackingData: {
+        id,
+        rackid: 1,
+        moduleid: id,
+        row,
+        column: 0
+      }
+    } as RackedModule;
+  }
+
+  it('reports row overflow and wasted hp', () => {
+    const result = computeLayoutAnalysis([
+      [rackModule(1, 60, 0), rackModule(2, 30, 0)],
+      [rackModule(3, 20, 1)]
+    ], 84);
+
+    expect(result.isValid).toBeFalse();
+    expect(result.overflowHp).toEqual([6, 0]);
+    expect(result.wastedHp).toEqual([0, 64]);
+  });
+
+  it('blocks remix when a row mixes module standards', () => {
+    const result = computeLayoutAnalysis([
+      [rackModule(1, 8, 0, 0), rackModule(2, 8, 0, 1)]
+    ], 84);
+
+    expect(result.isValid).toBeFalse();
+    expect(result.mixedRowIssues).toEqual([{rowIndex: 0, standards: [0, 1]}]);
+    expect(result.autoArrangeMoves).toEqual([]);
+  });
+
+  it('excludes blank panels from auto arrangement', () => {
+    const result = computeLayoutAnalysis([
+      [rackModule(4666, 1, 0), rackModule(10, 10, 0)]
+    ], 84);
+
+    expect(result.autoArrangeMoves.map(move => move.moduleId)).toEqual([10]);
+  });
+
+  it('uses first-fit decreasing for auto arrangement moves', () => {
+    const result = computeLayoutAnalysis([
+      [rackModule(1, 10, 0), rackModule(2, 20, 0), rackModule(3, 30, 0), rackModule(4, 40, 0)]
+    ], 84);
+
+    expect(result.autoArrangeMoves.map(move => [move.moduleId, move.toRow])).toEqual([
+      [4, 0],
+      [3, 0],
+      [2, 1],
+      [1, 0]
+    ]);
+  });
+
+  it('honours 1u and 3u scopes', () => {
+    const rows = [
+      [rackModule(1, 8, 0, 0)],
+      [rackModule(2, 8, 1, 1)],
+      [rackModule(3, 8, 2, 2)]
+    ];
+
+    expect(computeLayoutAnalysis(rows, 84, '3u').autoArrangeMoves.map(move => move.moduleId)).toEqual([1]);
+    expect(computeLayoutAnalysis(rows, 84, '1u').autoArrangeMoves.map(move => move.moduleId)).toEqual([2, 3]);
+  });
+});

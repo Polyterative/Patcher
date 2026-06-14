@@ -1,5 +1,13 @@
 # Decision Log
 
+## 14-06-2026 20:58
+
+- **Rack remix layout foundation:** Started with pure analysis utilities rather than toolbar/UI wiring so format isolation, mixed-row blocking, blank exclusion, and FFD behaviour are locked before product interaction work. Did not mark the full `computeLayoutAnalysis` checklist complete because exact/estimated arrangement counting remains intentionally unfinished.
+
+## 14-06-2026 20:54
+
+- **Rack comparison postponement:** User explicitly postponed Rack Comparison indefinitely after the pure diff foundation commit. Keep the plan in TODO as on hold for traceability, but do not continue route/UI work without a fresh explicit request.
+
 ## 14-06-2026 20:52
 
 - **Rack comparison diff foundation:** Implemented comparison as pure utilities before adding entry-point UI. Used existing normalized `share` plus `matchedModules` because `RackBalanceAxisResult` currently has no matched-HP field despite the plan's HP examples; avoided inventing HP data in UI copy until the analysis model is deliberately extended.
