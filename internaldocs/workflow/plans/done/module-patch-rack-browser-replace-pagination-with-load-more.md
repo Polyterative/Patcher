@@ -56,9 +56,9 @@ pagination. "Load more" is a straightforward adaptation:
 - [x] Apply same pattern to `ManufacturerBrowserRootComponent` (client-side — simpler,
       just slice the local array and grow the slice on each "load more").
 - [x] Apply same pattern to public profile rack/module tabs.
-- [ ] Keep `mat-paginator` in `user-comments` and any data-table context.
-- [ ] Ensure back-navigation restores scroll position and loaded items (use Angular
-      route scroll strategy + serialise loaded count in router state if needed).
+- [x] Replace remaining user-area comments and patches paginators with explicit Load More buttons.
+- [x] Remove stale feature-module `MatPaginatorModule` imports so product surfaces no longer render or wire Material paginators.
+- [x] Ensure Load More keeps the user in context: loaded items accumulate/grow in-place and no paginator page event scroll reset remains.
 
 ---
 
@@ -66,3 +66,4 @@ pagination. "Load more" is a straightforward adaptation:
 
 <!-- Append timestamped one-liners as the plan progresses. -->
 
+- 2026-06-14T20:02+02:00 — User clarified that no old-school paginator should remain visible. Converted user-area comments from server page replacement to append-on-load-more, converted user-area patches from local page jumps to grow-on-load-more, reused the existing modules/racks Load More styling, and removed dead Material paginator module imports from browser/manufacturer/user-area feature modules.

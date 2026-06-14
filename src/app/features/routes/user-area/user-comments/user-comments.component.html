@@ -67,14 +67,17 @@
         </div>
       }
     }
-    @if ((dataService.commentsCount$ | async) > 10) {
-      <mat-paginator
-        [pageSize]="dataService.commentsPagination.take$.value"
-        [pageSizeOptions]="[10, 20, 50]"
-        [length]="dataService.commentsCount$ | async"
-        (page)="dataService.commentsPageEvent$.next($event)"
-        showFirstLastButtons
-      ></mat-paginator>
+    @if (dataService.hasMoreComments$ | async) {
+      <div class="loadMore">
+        <button mat-stroked-button
+                color="primary"
+                class="loadMore__btn"
+                (click)="dataService.loadMoreComments$.next()"
+        >
+          Load more
+          <span class="loadMore__count">{{ dataService.remainingCommentsCount$ | async }} remaining</span>
+        </button>
+      </div>
     }
   </div>
 </ng-template>

@@ -36,10 +36,9 @@
 
 ### INFRA (independent; pick any time a product task is blocked)
 
-- [~] **HIGH: Bundle weight, lazy boundaries, and SSR prerender coverage** → [`plans/bundle-weight-lazy-boundaries-and-ssr-prerender-coverage.md`](./plans/bundle-weight-lazy-boundaries-and-ssr-prerender-coverage.md)
+- [ ] **ON HOLD: VERY LONG TERM: Bundle weight, lazy boundaries, and SSR prerender coverage** → [`plans/bundle-weight-lazy-boundaries-and-ssr-prerender-coverage.md`](./plans/bundle-weight-lazy-boundaries-and-ssr-prerender-coverage.md)
 - [ ] **MEDIUM: Module — public possession statistics & trend charts** → [`plans/module-public-possession-statistics-trend-charts.md`](./plans/module-public-possession-statistics-trend-charts.md)
 - [ ] **LOW: Module — "Cool" appreciation button** → [`plans/module-cool-appreciation-button.md`](./plans/module-cool-appreciation-button.md)
-- [ ] **MEDIUM: Module / Patch / Rack browser — replace pagination with "Load more"** → [`plans/module-patch-rack-browser-replace-pagination-with-load-more.md`](./plans/module-patch-rack-browser-replace-pagination-with-load-more.md)
 - [ ] **LOW: Module tags — axis-colour tinting (code-highlighting style)** → [`plans/module-tags-axis-colour-tinting-code-highlighting-style.md`](./plans/module-tags-axis-colour-tinting-code-highlighting-style.md)
 - [ ] **LOW: Rack Editor — "Weakest category" hint in module picker** → [`plans/rack-editor-weakest-category-hint-in-module-picker.md`](./plans/rack-editor-weakest-category-hint-in-module-picker.md)
 - [ ] **MEDIUM: Tag taxonomy — split "PURPOSE" group into sub-groups** → [`plans/tag-taxonomy-split-purpose-group-into-sub-groups.md`](./plans/tag-taxonomy-split-purpose-group-into-sub-groups.md)
@@ -49,7 +48,6 @@
 - [ ] **MEDIUM: Rack Editor — Quick-add blank panel shortcut** → [`plans/rack-editor-quick-add-blank-panel-shortcut.md`](./plans/rack-editor-quick-add-blank-panel-shortcut.md)
 - [ ] **MEDIUM: Rack Analytics — Power Header Count** → [`plans/rack-analytics-power-header-count.md`](./plans/rack-analytics-power-header-count.md)
 - [ ] **MEDIUM: Bug — Rack Preview Not Loading / Updating on Specific Rack** → [`plans/bug-rack-preview-not-loading-updating-on-specific-rack.md`](./plans/bug-rack-preview-not-loading-updating-on-specific-rack.md)
-- [ ] **HIGH: Perf — Investigate Initial Render Flash on Route Open** → [`plans/perf-investigate-initial-render-flash-on-route-open.md`](./plans/perf-investigate-initial-render-flash-on-route-open.md)
 - [ ] **HIGH: Perf — Backend Bandwidth Optimisation (Every Byte Costs Money)** → [`plans/perf-backend-bandwidth-optimisation-every-byte-costs-money.md`](./plans/perf-backend-bandwidth-optimisation-every-byte-costs-money.md)
 - [ ] **MEDIUM: Sentry — Issue Monitoring & Resolution Workflow** → [`plans/sentry-issue-monitoring-resolution-workflow.md`](./plans/sentry-issue-monitoring-resolution-workflow.md)
 - [ ] **MEDIUM: Analytics — PostHog Product Instrumentation** → [`plans/analytics-posthog-product-instrumentation.md`](./plans/analytics-posthog-product-instrumentation.md)

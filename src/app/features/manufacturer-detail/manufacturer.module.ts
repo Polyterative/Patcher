@@ -5,7 +5,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatPaginatorModule } from '@angular/material/paginator';
 import {
   TimeagoModule,
   TimeagoPipe
@@ -77,7 +76,6 @@ import { LibShowcaseGridComponent } from 'src/app/components/rack-parts/rack-edi
     MatIconModule,
     MatSnackBarModule,
     MatTooltipModule,
-    MatPaginatorModule,
     TimeagoModule,
     ModuleListModule,
     ModulePartsModule,

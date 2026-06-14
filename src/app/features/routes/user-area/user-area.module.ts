@@ -29,7 +29,6 @@ import { UserManualsComponent } from "src/app/features/routes/user-area/user-man
 import { UserCommentsComponent } from "src/app/features/routes/user-area/user-comments/user-comments.component";
 import { AppFaqComponent } from "src/app/components/shared-atoms/app-faq/app-faq.component";
 import { StatisticsComponent } from "src/app/components/shared-atoms/statistics/statistics.component";
-import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -78,7 +77,6 @@ import { UserCollectionsComponent } from 'src/app/features/routes/user-area/user
     RackListModule,
     PatchListModule,
     StatisticsComponent,
-    MatPaginatorModule,
     MatChipsModule,
     MatButtonModule,
     MatDialogModule,

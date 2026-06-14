@@ -3,6 +3,8 @@
 
 #### HIGH: Perf — Investigate Initial Render Flash on Route Open
 
+**Status:** COMPLETE — closed after the SCSS font-loading error was fixed.
+
 **Why:** When opening a route there is a noticeable flash roughly 1.5–2s after navigation: all
 text appears to disappear and then reappear. This looks like a late-arriving state update (SSR
 hydration mismatch, late `async` pipe emission swapping placeholder → real content, a guarded
@@ -38,3 +40,4 @@ firing a second emission). Goal: find the root cause and eliminate the visible r
 
 <!-- Append timestamped one-liners as the plan progresses. -->
 
+- 2026-06-14T20:00+02:00 — User confirmed this issue was already fixed recently via the SCSS font-loading error work. Archived as complete; no active implementation remains.

@@ -7,7 +7,7 @@ import {
   AsyncPipe,
   NgTemplateOutlet
 } from "@angular/common";
-import { MatPaginatorModule } from "@angular/material/paginator";
+import { MatButtonModule } from '@angular/material/button';
 import { UserAreaDataService } from "src/app/features/routes/user-area/user-area-data.service";
 import { Animations } from "src/app/shared-interproject/SharedConstants";
 import { HeroContentCardComponent } from "src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component";
@@ -42,7 +42,7 @@ interface FilterOption {
     NgTemplateOutlet,
     HeroContentCardComponent,
     CommentsItemBlockComponent,
-    MatPaginatorModule,
+    MatButtonModule,
     MatChipsModule,
     EmptyStateTipsComponent,
   ]

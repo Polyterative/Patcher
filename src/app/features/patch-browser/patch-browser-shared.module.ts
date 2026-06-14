@@ -7,7 +7,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
-import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -60,7 +59,6 @@ import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@
     MatButtonModule,
     MatTooltipModule,
     MatDividerModule,
-    MatPaginatorModule,
     MatSlideToggleModule,
     MatToolbarModule,
     DragDropModule,

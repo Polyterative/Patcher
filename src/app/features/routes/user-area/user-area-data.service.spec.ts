@@ -85,18 +85,20 @@ describe('UserAreaDataService', () => {
     });
   });
 
-  it('re-requests paged comments when the comments paginator changes', () => {
+  it('loadMoreComments$ appends the next comment page', () => {
     const {service, backend} = build();
+    backend.GET.currentUserComments.and.returnValues(
+      of({data: [{id: 1}], count: 3}),
+      of({data: [{id: 2}, {id: 3}], count: 3}),
+    );
 
-    service.commentsPageEvent$.next({
-      pageIndex: 2,
-      pageSize: 20,
-      length: 100
-    } as any);
+    service.updateCommentsData$.next();
+    service.loadMoreComments$.next();
 
-    expect(service.commentsPagination.skip$.value).toBe(40);
-    expect(service.commentsPagination.take$.value).toBe(20);
-    expect(backend.GET.currentUserComments).toHaveBeenCalledWith(40, 59);
+    expect(service.commentsPagination.skip$.value).toBe(1);
+    expect(backend.GET.currentUserComments).toHaveBeenCalledWith(1, 10);
+    expect(service.commentsData$.value as any).toEqual([{id: 1}, {id: 2}, {id: 3}]);
+    expect(service.commentsCount$.value).toBe(3);
   });
   
   it('loads and sorts only modules with manuals', () => {
@@ -268,7 +270,7 @@ describe('UserAreaDataService', () => {
     expect(service.modulesPagination.skip$.value).toBe(0);
   });
 
-  it('pages patches locally and grows modules via loadMoreModules$ without triggering extra backend calls', () => {
+  it('grows modules and patches via load more without triggering extra backend calls', () => {
     const {service, backend} = build();
 
     service.modulesData$.next([
@@ -284,11 +286,13 @@ describe('UserAreaDataService', () => {
 
     expect(service.modulesPagination.take$.value).toBe(10);
     service.loadMoreModules$.next();
-    service.patchesPageEvent$.next({pageIndex: 1, pageSize: 1, length: 3} as any);
+    service.patchesPagination.take$.next(1);
+    service.loadMorePatches$.next();
 
     expect(service.modulesPagination.skip$.value).toBe(0);
     expect(service.modulesPagination.take$.value).toBe(20);
-    expect(service.patchesPagination.skip$.value).toBe(1);
+    expect(service.patchesPagination.skip$.value).toBe(0);
+    expect(service.patchesPagination.take$.value).toBe(11);
     expect(backend.GET.currentUserModules).not.toHaveBeenCalled();
     expect(backend.get.currentUserPatches).not.toHaveBeenCalled();
 
@@ -296,7 +300,7 @@ describe('UserAreaDataService', () => {
       expect(modules?.map((module) => module.id)).toEqual([1, 2, 3]);
     });
     service.pagedPatchesData$.subscribe((patches) => {
-      expect(patches?.map((patch) => patch.id)).toEqual([2]);
+      expect(patches?.map((patch) => patch.id)).toEqual([1, 2, 3]);
     });
   });
 

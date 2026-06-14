@@ -15,6 +15,10 @@
 
 - **2026-06-14** — MEDIUM: Manufacturer page — catalogue module lists now reuse `app-module-list` client-side filters for standard, HP, tags, reset, search, and standard grouping; rendered standard select ids are mapped back to numeric module standards.
 
+- **2026-06-14** — MEDIUM: Module / Patch / Rack browser — old-school Material paginators are removed from product surfaces; user-area comments append backend pages and user-area patches grow in-place with the existing explicit Load More pattern.
+
+- **2026-06-14** — HIGH: Perf — route-open render flash is closed after the SCSS font-loading error was fixed; no active implementation remains.
+
 - **2026-06-14** — HIGH: Angular modernization — `SubManager` now has a back-compatible optional `DestroyRef`/`takeUntilDestroyed` bridge, with `UserManagementService` piloting the new lifecycle helper and lifecycle regressions covering manual and Angular teardown paths.
 
 - **2026-06-14** — HIGH: Angular modernization — lifecycle modernization is closed for now: covered `destroy$` and `destroyEvent$` adoption targets use the shared `SubManager.takeUntilDestroyed()` bridge, the signal-input pilot is complete, and remaining broader modernization slices are intentionally no longer active.

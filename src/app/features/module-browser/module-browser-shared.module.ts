@@ -18,7 +18,6 @@ import {
   MatMenuItem,
   MatMenuTrigger
 } from '@angular/material/menu';
-import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -84,7 +83,6 @@ import { ModuleListModule } from './module-list/module-list.module';
     MatInputModule,
     MatTooltipModule,
     MatDividerModule,
-    MatPaginatorModule,
     MatButtonToggleModule,
     MatExpansionModule,
     MatToolbarModule,
