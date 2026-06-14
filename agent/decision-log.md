@@ -1,5 +1,13 @@
 # Decision Log
 
+## 14-06-2026 21:26
+
+- **Rack remix format partitioning:** Fixed the pure FFD output to partition by exact physical standard before any action layer is wired. This prevents future auto-arrange work from placing Intellijel 1U or Pulp Logic 1U modules into 3U rows, or into each other's rows, even when HP would fit.
+
+## 14-06-2026 21:18
+
+- **Rack remix visual wiring:** Added only a read-only layout hover panel in the existing visual model instead of building the full floating Remix control panel. This keeps the slice non-destructive while exposing the analysis data in the same interaction pattern as power/function rows.
+
 ## 14-06-2026 21:00
 
 - **Rack remix layout mode:** Added `layout` as a visible analysis option separately from panel implementation. Kept `signal` hidden because existing tests and UI wording describe it as paused; Remix should not accidentally unpause unrelated signal analysis UI.

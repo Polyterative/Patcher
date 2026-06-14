@@ -73,4 +73,43 @@ describe('computeLayoutAnalysis', () => {
     expect(computeLayoutAnalysis(rows, 84, '3u').autoArrangeMoves.map(move => move.moduleId)).toEqual([1]);
     expect(computeLayoutAnalysis(rows, 84, '1u').autoArrangeMoves.map(move => move.moduleId)).toEqual([2, 3]);
   });
+
+  it('runs all-format auto arrangement independently per physical standard', () => {
+    const result = computeLayoutAnalysis([
+      [rackModule(1, 80, 0, 0)],
+      [rackModule(2, 4, 1, 1)],
+      [rackModule(3, 4, 2, 2)]
+    ], 84);
+
+    expect(result.autoArrangeMoves.map(move => [move.moduleId, move.toRow])).toEqual([
+      [1, 0],
+      [2, 1],
+      [3, 2]
+    ]);
+  });
+
+  it('does not merge Intellijel and Pulp Logic rows inside the 1u scope', () => {
+    const rows = [
+      [rackModule(1, 80, 0, 0)],
+      [rackModule(2, 80, 1, 1)],
+      [rackModule(3, 4, 2, 2)]
+    ];
+
+    expect(computeLayoutAnalysis(rows, 84, '1u').autoArrangeMoves.map(move => [move.moduleId, move.toRow])).toEqual([
+      [2, 1],
+      [3, 2]
+    ]);
+  });
+
+  it('keeps single-row scope assignments in the selected row', () => {
+    const result = computeLayoutAnalysis([
+      [rackModule(1, 80, 0, 0)],
+      [rackModule(2, 8, 1, 0), rackModule(3, 8, 1, 0)]
+    ], 84, {rowIndex: 1});
+
+    expect(result.autoArrangeMoves.map(move => [move.moduleId, move.toRow])).toEqual([
+      [2, 1],
+      [3, 1]
+    ]);
+  });
 });

@@ -1,5 +1,23 @@
 # Session Log
 
+## 14-06-2026 21:26 — Rack remix format partitioning
+
+- **Task selected:** Tighten the pure Remix layout utility before any future auto-arrange action can consume its move output.
+- **Implementation note:** Kept the utility pure and reused `module.standard.id` as the format source of truth. No UI, backend, or persistence code changed.
+- **Actions performed:** Changed FFD move generation to group modules by physical standard and map target rows back to rows already containing that standard; kept single-row scope row-local.
+- **Tests run:** Focused layout utility and rack visual model specs passing.
+- **Docs updated:** Added a decision-log entry while keeping the broader `computeLayoutAnalysis` checklist open because exact/estimated arrangement counting remains incomplete.
+- **Blockers raised:** None.
+
+## 14-06-2026 21:18 — Rack remix read-only row panel
+
+- **Task selected:** Continue Rack Editor Remix with the plan's visual-model wiring step.
+- **Implementation note:** Reused the rack visual model's existing hovered row analysis panel pattern, row placement helper, and row panel SCSS. Avoided new page/UI structure and did not add auto-arrange/shuffle controls.
+- **Actions performed:** Computed `computeLayoutAnalysis` inside `RackVisualModelComponent`; added layout-mode row panel summaries for used HP, spare/overflow HP, mixed-format blockers, and auto-arrange move count hints.
+- **Tests run:** Focused rack visual model and layout utility specs passing.
+- **Docs updated:** Marked visual-model wiring complete, leaving full panel/actions/counting work open.
+- **Blockers raised:** None.
+
 ## 14-06-2026 21:00 — Rack remix layout mode
 
 - **Task selected:** Continue Rack Editor Remix after the pure layout foundation with the smallest UI-adjacent model slice.

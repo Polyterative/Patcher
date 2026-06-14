@@ -90,7 +90,7 @@ rack visual model shows a "remix" control panel in the same floating options are
       - Uses FFD for `autoArrange` output (returns new `row` assignments per module).
       - Uses bitmask DP for exact count when `modules.length ≤ 20` per group, randomised
         sampling otherwise.
-- [ ] Wire into `rack-visual-model.component.ts` alongside existing `rowPowerBreakdown`.
+- [x] Wire into `rack-visual-model.component.ts` alongside existing `rowPowerBreakdown`.
 - [ ] Build the layout panel UI in the floating options area (same pattern as power/function
       panels in `rack-editor.component.html`).
 - [ ] "Auto-arrange" emits new row assignments through `rackDetailDataService` using the
@@ -108,3 +108,5 @@ rack visual model shows a "remix" control panel in the same floating options are
 
 - **2026-06-14:** Added the first pure layout-analysis foundation in `rack-layout-analysis.utils.ts`: current row HP validity, mixed-standard row blocking, blank-panel exclusion, scope filtering, and FFD auto-arrange move output. This does **not** complete the full checklist item yet because exact/estimated arrangement counting and UI wiring remain.
 - **2026-06-14:** Added `layout` to the rack analysis mode constants and visible options, while preserving the existing paused `signal` mode as hidden from the UI options.
+- **2026-06-14:** Wired `computeLayoutAnalysis` into the rack visual model as a read-only layout-mode row hover panel. It surfaces used/wasted/overflow HP and mixed-format blockers, but intentionally does not expose auto-arrange/shuffle controls yet.
+- **2026-06-14:** Tightened FFD auto-arrange output to run independently for each physical standard and map moves back onto rows of the same standard. `1u` scope still handles Intellijel and Pulp Logic as separate groups.

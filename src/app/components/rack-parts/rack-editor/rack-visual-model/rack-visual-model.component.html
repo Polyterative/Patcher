@@ -106,6 +106,28 @@
             </div>
           }
         }
+        @if (shouldShowRowLayoutPanel(rowId, analysisMode)) {
+          @if (layoutAnalysis; as layout) {
+            <div class="rowPowerPanel rowPowerPanel--layout"
+                 [ngClass]="rowLayoutPanelClass(rowId)"
+                 [class.rowPowerPanel--below]="isRowPowerPanelBelow(rowId)">
+              <ng-container *ngTemplateOutlet="rowAnalysisPanelTitle; context: {rowId: rowId, moduleCount: row.length}"></ng-container>
+              <div class="rowPowerPanel__rails rowPowerPanel__rails--layout">
+                <div class="rowPowerPanel__rail rowPowerPanel__rail--layout">
+                  <span class="rowPowerPanel__railLabel">Used</span>
+                  <span class="rowPowerPanel__railValue">{{ rowLayoutUsedHp(rowId) }} / {{ rackData.hp }}HP</span>
+                </div>
+                <div class="rowPowerPanel__rail rowPowerPanel__rail--layout">
+                  <span class="rowPowerPanel__railLabel">Layout</span>
+                  <span class="rowPowerPanel__railValue">{{ rowLayoutStatusLabel(rowId) }}</span>
+                </div>
+              </div>
+              <div class="rowPowerPanel__footer">
+                {{ rowLayoutFooterLabel(rowId) }}
+              </div>
+            </div>
+          }
+        }
         <div class="row rackRow"
              [class.row-bg]="!(row|hasUnrackedModules)"
               cdkDropList
