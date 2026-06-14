@@ -5,6 +5,7 @@ import {
   TestBed,
 } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { MatMenuModule } from '@angular/material/menu';
 import {
   BehaviorSubject,
   Subject,
@@ -28,6 +29,7 @@ describe('RackVisualModelComponent', () => {
     signalFocusArea$: BehaviorSubject<any>;
     currentDownloadElementRef$: {next: jasmine.Spy};
     rackOrderChange$: {next: jasmine.Spy};
+    addBlankToRow$: Subject<{rowId: number; hp: number}>;
   };
 
   beforeEach(async () => {
@@ -37,6 +39,7 @@ describe('RackVisualModelComponent', () => {
       signalFocusArea$: new BehaviorSubject(null),
       currentDownloadElementRef$: {next: jasmine.createSpy('next')},
       rackOrderChange$: {next: jasmine.createSpy('next')},
+      addBlankToRow$: new Subject<{rowId: number; hp: number}>(),
     };
 
     await TestBed.configureTestingModule({
@@ -47,6 +50,7 @@ describe('RackVisualModelComponent', () => {
       ],
       imports: [
         CommonModule,
+        MatMenuModule,
         NoopAnimationsModule,
       ],
       providers: [
@@ -166,6 +170,56 @@ describe('RackVisualModelComponent', () => {
     const rackRow = host.querySelector('.rackRow') as HTMLElement | null;
 
     expect(rackRow?.classList.contains('row-bg')).toBeTrue();
+  });
+
+  it('shows the quick-add blank panel strip only for a hovered editable row', () => {
+    fixture.detectChanges();
+
+    let host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('.blankStrip')).toBeNull();
+
+    host.querySelector<HTMLElement>('.rackRowShell')?.dispatchEvent(new MouseEvent('mouseenter'));
+    fixture.detectChanges();
+
+    host = fixture.nativeElement as HTMLElement;
+    const quickButtons = Array.from(host.querySelectorAll<HTMLButtonElement>('.blankStrip__btn'))
+      .map(button => button.textContent?.trim());
+
+    expect(host.querySelector('.blankStrip')).not.toBeNull();
+    expect(quickButtons).toEqual(['1', '2', '3', '4', '6', '8', 'more_horiz']);
+  });
+
+  it('emits the selected common blank HP for the hovered row', () => {
+    const addBlankSpy = spyOn(rackDetailDataService.addBlankToRow$, 'next');
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    host.querySelector<HTMLElement>('.rackRowShell')?.dispatchEvent(new MouseEvent('mouseenter'));
+    fixture.detectChanges();
+
+    const twoHpButton = Array.from(host.querySelectorAll<HTMLButtonElement>('.blankStrip__btn'))
+      .find(button => button.textContent?.trim() === '2');
+
+    twoHpButton?.click();
+
+    expect(addBlankSpy).toHaveBeenCalledWith({rowId: 0, hp: 2});
+  });
+
+  it('renders full 1-20 HP blank sizes behind the overflow affordance', () => {
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    host.querySelector<HTMLElement>('.rackRowShell')?.dispatchEvent(new MouseEvent('mouseenter'));
+    fixture.detectChanges();
+
+    const trigger = host.querySelector<HTMLButtonElement>('.blankStrip__btn--more');
+    trigger?.click();
+    fixture.detectChanges();
+
+    const menuButtons = Array.from(document.body.querySelectorAll<HTMLButtonElement>('.blankSizeMenu__btn'))
+      .map(button => button.textContent?.trim());
+
+    expect(menuButtons).toEqual(Array.from({length: 20}, (_, index) => `${ index + 1 }`));
   });
 
   it('keeps the rack template capped to the configured HP width when rows overflow', () => {

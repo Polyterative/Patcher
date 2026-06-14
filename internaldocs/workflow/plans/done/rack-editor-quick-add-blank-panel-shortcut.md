@@ -38,16 +38,18 @@ rejected because it requires counting taps and gives no visual overview of avail
       blank module ID from `BLANK_MODULE_IDS` (offset by HP value from the base ID 4646 for
       3U blanks), calls `backend.add.rackedModule(...)`, then applies an optimistic local
       update (ties into the diff-based update work).
-- [ ] `…` overflow button opens a compact `MatMenu` or inline number grid showing the full
+- [x] `…` overflow button opens a compact `MatMenu` or inline number grid showing the full
       1–20 HP range for unusual sizes.
+- [x] Ground the strip visual style in `internaldocs/DESIGN_LANGUAGE.md` — should feel like
+      a tool affordance, not a call-to-action button.
 - [x] Intelligently pre-select / highlight the size that exactly fills the remaining free HP
       in that row (computed from `rowUsedHp` vs `rackData.hp`) so one tap fills the gap.
-- [ ] Ground the strip visual style in `internaldocs/DESIGN_LANGUAGE.md` — should feel like
-      a tool affordance, not a call-to-action button.
-
 ---
 
 ## Decision log
 
 <!-- Append timestamped one-liners as the plan progresses. -->
 
+- 2026-06-14T20:20+02:00 — Re-enabled the existing rack visual blank-strip affordance instead
+  of introducing a new control surface. Kept common sizes inline (`1 2 3 4 6 8`) and put the
+  full 1–20 HP range behind a compact Material menu so the row stays dense and tool-like.

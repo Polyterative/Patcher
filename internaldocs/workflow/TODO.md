@@ -45,7 +45,6 @@
 - [ ] **LOW: Rack — Stale preview indicator** → [`plans/rack-stale-preview-indicator.md`](./plans/rack-stale-preview-indicator.md)
 - [ ] **MEDIUM: Rack Comparison — balance diff between two racks** → [`plans/rack-comparison-balance-diff-between-two-racks.md`](./plans/rack-comparison-balance-diff-between-two-racks.md)
 - [ ] **MEDIUM: Rack Editor — "Remix" layout optimizer** → [`plans/rack-editor-remix-layout-optimizer.md`](./plans/rack-editor-remix-layout-optimizer.md)
-- [ ] **MEDIUM: Rack Editor — Quick-add blank panel shortcut** → [`plans/rack-editor-quick-add-blank-panel-shortcut.md`](./plans/rack-editor-quick-add-blank-panel-shortcut.md)
 - [ ] **MEDIUM: Bug — Rack Preview Not Loading / Updating on Specific Rack** → [`plans/bug-rack-preview-not-loading-updating-on-specific-rack.md`](./plans/bug-rack-preview-not-loading-updating-on-specific-rack.md)
 - [ ] **MEDIUM: Sentry — Issue Monitoring & Resolution Workflow** → [`plans/sentry-issue-monitoring-resolution-workflow.md`](./plans/sentry-issue-monitoring-resolution-workflow.md)
 - [ ] **MEDIUM: Analytics — PostHog Product Instrumentation** → [`plans/analytics-posthog-product-instrumentation.md`](./plans/analytics-posthog-product-instrumentation.md)

@@ -407,6 +407,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   }
 
   readonly commonBlankSizes = [1, 2, 3, 4, 6, 8] as const;
+  readonly allBlankSizes = Array.from({length: 20}, (_, index) => index + 1);
 
   shouldShowRowPowerPanel(rowId: number, analysisMode: RackAnalysisMode): boolean {
     return this.shouldShowRowAnalysisPanel(rowId, analysisMode, this.analysisModes.power);

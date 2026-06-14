@@ -354,3 +354,4 @@
 - Archived [Perf — Cache Strategy Review (Hits, Invalidation, Coverage)](./plans/done/perf-cache-strategy-review-hits-invalidation-coverage.md)
 - Archived [Perf — Backend Bandwidth Optimisation (Every Byte Costs Money)](./plans/done/perf-backend-bandwidth-optimisation-every-byte-costs-money.md)
 - Archived [Rack Editor — Row HP overflow indicator](./plans/done/rack-editor-row-hp-overflow-indicator.md)
+- Archived [Rack Editor — Quick-add blank panel shortcut](./plans/done/rack-editor-quick-add-blank-panel-shortcut.md)

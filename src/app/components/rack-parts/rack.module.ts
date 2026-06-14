@@ -46,6 +46,7 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatMenuModule } from '@angular/material/menu';
 import { AdviceTooltipComponent } from "src/app/shared-interproject/components/@visual/advice-tooltip/advice-tooltip/advice-tooltip.component";
 import { MatBadge } from "@angular/material/badge";
 import { CalculateRowInformationPipe } from "src/app/components/rack-parts/rack-editor/calculate-row-information.pipe";
@@ -127,6 +128,7 @@ import { InputDialogModule } from "src/app/shared-interproject/dialogs/input-dia
     RackMicroModule,
     MatSlideToggleModule,
     MatButtonToggleModule,
+    MatMenuModule,
     StatisticsComponent,
     AdviceTooltipComponent,
     DialogInfoBoxComponent,
