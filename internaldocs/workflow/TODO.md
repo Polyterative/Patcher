@@ -43,7 +43,6 @@
 - [ ] **MEDIUM: Module — public possession statistics & trend charts** → [`plans/module-public-possession-statistics-trend-charts.md`](./plans/module-public-possession-statistics-trend-charts.md)
 - [ ] **LOW: Module — "Cool" appreciation button** → [`plans/module-cool-appreciation-button.md`](./plans/module-cool-appreciation-button.md)
 - [ ] **MEDIUM: Module / Patch / Rack browser — replace pagination with "Load more"** → [`plans/module-patch-rack-browser-replace-pagination-with-load-more.md`](./plans/module-patch-rack-browser-replace-pagination-with-load-more.md)
-- [ ] **HIGH: Bug — 1U module placeholder wrong aspect ratio** → [`plans/bug-1u-module-placeholder-wrong-aspect-ratio.md`](./plans/bug-1u-module-placeholder-wrong-aspect-ratio.md)
 - [ ] **LOW: Module tags — axis-colour tinting (code-highlighting style)** → [`plans/module-tags-axis-colour-tinting-code-highlighting-style.md`](./plans/module-tags-axis-colour-tinting-code-highlighting-style.md)
 - [ ] **LOW: Rack Editor — "Weakest category" hint in module picker** → [`plans/rack-editor-weakest-category-hint-in-module-picker.md`](./plans/rack-editor-weakest-category-hint-in-module-picker.md)
 - [ ] **MEDIUM: Tag taxonomy — split "PURPOSE" group into sub-groups** → [`plans/tag-taxonomy-split-purpose-group-into-sub-groups.md`](./plans/tag-taxonomy-split-purpose-group-into-sub-groups.md)

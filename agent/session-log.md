@@ -59,6 +59,17 @@
 - **Blockers raised:** None.
 - **Next pickup:** Highest-priority open TODO from `internaldocs/workflow/TODO.md`.
 
+## 14-06-2026 13:35 — 1U placeholder aspect regression guard
+
+- **Task selected:** `HIGH: Bug — 1U module placeholder wrong aspect ratio`.
+- **Implementation note:** Reused `ModulePartImageComponent`, `GetModuleHeightForStandardPipe`, existing module-card callers (`ModuleMinimalComponent`, `ModuleRealisticComponent`, possession dialog), and the existing module format geometry constants. No production template change was needed because current HEAD already replaced the risky `fxFlex` placeholder sizing with explicit `ngStyle` dimensions.
+- **Actions performed:** Added rendered host tests proving missing-panel Intellijel 1U and Pulp Logic 1U placeholders are wider than tall and use the correct format heights; also pinned fixed-height 1U placeholder width.
+- **Runtime check:** Captured `/modules` with `scripts/agent-snapshot.mjs`; visible 1U module cards render flat, but the first public page contained no `.preview` missing-panel nodes, so the exact no-panel state is covered by the component template tests.
+- **Tests run:** `pnpm test-headless --include="**/module-part-image.component.spec.ts"` → 22/22 passing; `pnpm build` → passing; `pnpm lint` → passing with one unrelated pre-existing warning in `e2e/screenshots/cropper-debug.spec.ts`.
+- **Docs updated:** Completed and archived the 1U placeholder bug plan; moved the TODO entry to `COMPLETED.md`.
+- **Blockers raised:** None.
+- **Next pickup:** Highest-priority open TODO from `internaldocs/workflow/TODO.md`.
+
 ## 17-05-2026 09:15 — Public profile Load More (session start + completion)
 
 - **Boot state:** Read AGENTS.md, mission.md, current-task.md (stale — showed 1U bug already committed as `44e08cab`), TODO.md, ROADMAP.md, FOR_AI_AGENTS.md. Git log confirmed recent work from prior sessions. Ran `git status` (AGENTS.md had an uncommitted human wording improvement — left untouched per rule).

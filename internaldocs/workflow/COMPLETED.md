@@ -11,6 +11,8 @@
 
 - **2026-06-14** — BUG: Rack editor — name field prefill on edit is covered by shared `mat-form-entity` primitive-reset regression tests plus the authenticated rack-name E2E guard.
 
+- **2026-06-14** — HIGH: Bug — 1U module placeholders now have rendered template regressions for Intellijel and Pulp Logic no-panel proportions, covering both dynamic and fixed-height preview modes.
+
 - **2026-06-11** — HIGH: Module Possession States — user-area modules now default to My Modules (HAS+SELLS) with a dedicated Wishlist view for WANTS.
 
 - **2026-06-11** — feat(rack-editor): granular local updates for no-reload animations — rack reloads now preserve DOM identity, row/module mutations stay local, and targeted rack specs pass.
