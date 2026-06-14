@@ -1,5 +1,14 @@
 # Session Log
 
+## 14-06-2026 20:30 — Rack picker weakest-axis hint
+
+- **Task selected:** Rack Editor — "Weakest category" hint in module picker, an unblocked frontend-only ambient guidance slice.
+- **Implementation note:** Reused `RackDetailDataService`, `RackBalanceAnalysisService`, the existing rack detail embedded `ModuleBrowserRootComponent`, `matTooltip`, `mat-icon`, and module browser chip/sidebar styling. No new route, picker component, backend, schema, RLS, policies, or migrations.
+- **Actions performed:** Added `weakestBalanceAxis$`, passed it only from the editable rack detail module browser, rendered a muted one-word axis badge near search, and covered derivation plus render/hide behavior in focused specs.
+- **Tests run:** Focused rack-detail-data/module-browser-root specs passing.
+- **Docs updated:** Completed and archived the weakest-category plan, removed it from TODO, and added it to completed features.
+- **Blockers raised:** None.
+
 ## 14-06-2026 20:16 — Rack power header count
 
 - **Task selected:** Rack Analytics — Power Header Count, a derived-only rack analysis improvement with no backend/schema work.

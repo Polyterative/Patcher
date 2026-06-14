@@ -4,6 +4,7 @@
   isCurrentRackEditable: (dataService.isCurrentRackEditable$|async),
   isCurrentRackPropertyOfCurrentUser: (dataService.isCurrentRackPropertyOfCurrentUser$|async),
   unavailableMessage: (dataService.rackDetailUnavailableMessage$|async),
+  weakestBalanceAxis: (dataService.weakestBalanceAxis$|async),
 }; as bag) {
   <div class="col gap1"
   >
@@ -85,6 +86,7 @@
           [manageSeo]="false"
           [ownedModulesInput]="userAreaDataService.modulesData$ | async"
           [currentRackModulesInput]="bag.rowedRackedModules"
+          [rackWeakestAxis]="bag.weakestBalanceAxis"
           [viewConfig]="viewConfig"
         ></app-module-browser-root>
         }

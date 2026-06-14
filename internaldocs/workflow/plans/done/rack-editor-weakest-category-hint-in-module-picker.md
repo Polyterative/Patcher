@@ -22,11 +22,11 @@ One small chip/badge, one word, always present during module search in edit mode
 
 **Checklist:**
 
-- [ ] Derive `weakestAxis$` observable in `rack-detail-data.service.ts` (or the rack editor
+- [x] Derive `weakestAxis$` observable in `rack-detail-data.service.ts` (or the rack editor
       data service) from the existing balance analysis stream.
-- [ ] Add a single small badge to the module picker / search area template, bound to
+- [x] Add a single small badge to the module picker / search area template, bound to
       `weakestAxis$`. Guard: only show when `modules.length > 0` and edit mode is active.
-- [ ] Style as a secondary/muted chip — not a CTA, not a warning. One word max visible,
+- [x] Style as a secondary/muted chip — not a CTA, not a warning. One word max visible,
       full label in tooltip.
 
 ---
@@ -35,3 +35,4 @@ One small chip/badge, one word, always present during module search in edit mode
 
 <!-- Append timestamped one-liners as the plan progresses. -->
 
+- **2026-06-14:** Completed as an edit-only embedded module browser badge. `RackDetailDataService.weakestBalanceAxis$` reuses `RackBalanceAnalysisService.analyze()`, returns `null` for empty/unrecognized racks, and `ModuleBrowserRootComponent` renders only the axis label with the explanatory tooltip.

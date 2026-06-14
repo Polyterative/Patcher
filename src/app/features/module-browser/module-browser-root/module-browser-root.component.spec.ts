@@ -100,6 +100,30 @@ describe('ModuleBrowserRootComponent', () => {
     expect(component.compactTitleSub).toBeTrue();
   });
 
+  it('renders the optional rack balance hint when embedded in rack editing', () => {
+    fixture.componentRef.setInput('rackWeakestAxis', {
+      id: 'modulation',
+      label: 'Modulation',
+      icon: 'waves',
+      share: 4,
+      matchedModules: 1,
+      guidance: 'Add modulation sources.'
+    });
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const hint = host.querySelector('[data-testid="rack-weakest-axis-hint"]');
+    expect(hint?.textContent?.trim()).toContain('Modulation');
+  });
+
+  it('hides the rack balance hint outside rack editing context', () => {
+    component.rackWeakestAxis = null;
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('[data-testid="rack-weakest-axis-hint"]')).toBeNull();
+  });
+
   it('defaults to full catalog when owned collection is below the adaptive threshold', () => {
     component.enableCollectionBrowseModes = true;
     component.ownedModulesInput = buildOwnedModules(5);

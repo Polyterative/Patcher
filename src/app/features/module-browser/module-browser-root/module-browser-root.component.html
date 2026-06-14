@@ -86,6 +86,16 @@
                                iconL1="search"
           ></lib-mat-form-entity>
         </div>
+
+        @if (rackWeakestAxis) {
+          <div class="module-browser-balance-hint"
+               [matTooltip]="'Your rack has the least coverage in: ' + rackWeakestAxis.label"
+               data-testid="rack-weakest-axis-hint"
+          >
+            <mat-icon aria-hidden="true">{{ rackWeakestAxis.icon }}</mat-icon>
+            <span>{{ rackWeakestAxis.label }}</span>
+          </div>
+        }
         
         <div class="module-filter-control">
           <lib-mat-form-entity [control]="dataService.fields.description.control"
