@@ -319,3 +319,13 @@
 - **16-05-2026** — Module Browser "Load More" pagination (Task 14 partial): `loadMore$: Subject<void>` added to `ModuleBrowserDataService`; `modulesList$` subscriber now appends when `skip > 0`, replaces when `skip === 0`; `pageEvent$`/`handlePageEvent` removed; `mat-paginator` replaced with a stroked "Load more" button + remaining count label; owned-dataset mode now shows all results without client-side slicing; `visibleItemsCount$` async pipe moved outside `@if` block to preserve OnPush re-render trigger; 119/119 tests green
 
 - **19-05-2026** — Module Possession Dialog Layer 1 complete: superseded inline `Own/Want/Sell` toggles with legacy `+` entry point and rich `ModulePossessionDialogComponent`; choices are vertical, include module panel/name/manufacturer preview, and use brand buttons. Existing possession rows show direct `−` removal, with confirmation only for `SELLS`; state changes use `ModuleDetailDataService.setModulePossession$` and success snackbars. `MatButtonToggleModule` removed from module-parts; advisor/planner persona model policy updated so premium models are reserved for consultative `advisor`. Validation: 42 targeted specs green; `pnpm lint` clean except pre-existing `cropper-debug.spec.ts` warning.
+
+## 2026-06-14 — Documentation archival pass
+
+- Archived [Bug — Moving Modules Inside a Rack Does Not Bump `updated` Timestamp](./plans/done/bug-moving-modules-inside-a-rack-does-not-bump-updated-timestamp.md)
+- Archived [Filter inputs — focus-triggered preset chips overlay](./plans/done/filter-inputs-focus-triggered-preset-chips-overlay.md)
+- Archived [Maintenance — audit & fix external search shortcut URLs](./plans/done/maintenance-audit-fix-external-search-shortcut-urls.md)
+- Archived [Module Browser — Tag Filter UX improvements](./plans/done/module-browser-tag-filter-ux-improvements.md)
+- Archived [Perf — Audit Reactive Pipelines & Event Chains for Smoothness](./plans/done/perf-audit-reactive-pipelines-event-chains-for-smoothness.md)
+- Archived [Perf — Cache Strategy Review (Hits, Invalidation, Coverage)](./plans/done/perf-cache-strategy-review-hits-invalidation-coverage.md)
+- Archived [Rack Editor — Row HP overflow indicator](./plans/done/rack-editor-row-hp-overflow-indicator.md)
