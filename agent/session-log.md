@@ -1,5 +1,14 @@
 # Session Log
 
+## 14-06-2026 19:37 — Bundle/prerender baseline slice
+
+- **Task selected:** HIGH bundle weight, lazy boundaries, and SSR prerender coverage; first actionable slice is baseline measurement plus prerender generator coverage.
+- **Implementation note:** Reused `api/sitemap.ts` Supabase REST conventions, `app-routing.module.ts`/feature route paths, and `RoutingService` rack/patch canonical token fallback. Avoided Angular UI, styling, Supabase schema/RLS/policies/migrations, and Angular backend service changes.
+- **Actions performed:** Captured production stats baseline and top vendor offenders, extended `scripts/generate-prerender-routes.mjs` to emit capped public module/patch/rack/profile/manufacturer/collection routes when `SUPABASE_ANON_KEY` is available, preserved static-only fallback for local no-key builds, added focused generator tests, and wired them into `pnpm test:functions`.
+- **Tests run:** `node --test scripts/tests/prerender-routes.test.mjs` passing; `pnpm test:functions:prerender-routes` passing; `pnpm build` passing; `pnpm lint` passing with the existing warning noise.
+- **Docs updated:** Marked the bundle/prerender plan in progress, recorded baseline numbers and decision log, and updated `CURRENT_FEATURE.md`.
+- **Blockers raised:** None; dynamic production route volume remains an approximation by recent public updates until traffic analytics are available.
+
 ## 14-06-2026 19:32 — Angular modernization plan closure
 
 - **Task selected:** Close all remaining active TODO references to the Angular modernization work so the backlog no longer prompts more passes on this plan.
