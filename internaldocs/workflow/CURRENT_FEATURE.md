@@ -78,3 +78,10 @@ Ten completed improvements:
 - Removed the dialog declaration/import from `PatchModule` while preserving the existing inline graph, legend, fullscreen action, and export behavior.
 - Verification artifact: production output now emits `dist/Patcher/browser/patch-graph-fullscreen-dialog.component-*.js`, so the fullscreen/export dialog and `modern-screenshot` are outside the default patch graph path.
 - Scope cut: did not touch `@angular/flex-layout`, inline `LibGraphModule` rendering, or the module-editor cropper because those require broader template/module restructuring.
+
+### 2026-06-14 root leaf route lazy slice
+
+- Exported `appRoutes` from `AppRoutingModule` for route-shape regression coverage.
+- Switched `/404` and `/links/retired` from eager `component` imports to existing standalone `loadComponent` boundaries.
+- Added a focused spec that keeps both low-traffic pages lazy-loaded.
+- Verification artifacts: production build emits `not-found.component-*.js` and `legacy-link-gone-page.component-*.js`; current `main` chunk dropped from ~117.77 KB to ~114.76 KB raw.

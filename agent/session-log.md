@@ -1,5 +1,14 @@
 # Session Log
 
+## 14-06-2026 19:58 — Root leaf route lazy boundary
+
+- **Task selected:** Continue the active bundle plan after the graph dialog split with a safe non-flex lazy boundary.
+- **Implementation note:** Reused the existing standalone 404 and retired-link components and the root router's existing dynamic component pattern from `loadHomeComponent`. No UI, copy, styling, redirects, backend, schema, RLS, policies, or migrations changed.
+- **Actions performed:** Removed eager imports for `NotFoundComponent` and `LegacyLinkGonePageComponent` from `AppRoutingModule`, added `loadComponent` helpers for `/404` and `/links/retired`, exported `appRoutes`, and added a focused route-shape regression.
+- **Tests run:** Focused app-routing spec passing; production build passing and emitting `not-found.component-*.js` plus `legacy-link-gone-page.component-*.js`.
+- **Docs updated:** Recorded the route lazy slice in `CURRENT_FEATURE.md`, the bundle plan checklist, and the durable decision log.
+- **Blockers raised:** None.
+
 ## 14-06-2026 19:55 — Patch graph fullscreen dialog lazy boundary
 
 - **Task selected:** Continue the active bundle plan while respecting the user's direction not to work on flex-layout.

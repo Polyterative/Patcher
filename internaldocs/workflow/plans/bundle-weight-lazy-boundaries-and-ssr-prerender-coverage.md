@@ -44,6 +44,7 @@ initial graph.
 - [ ] Defer the six heavy feature areas listed above.
   - [x] `application-insights` route split into lazy `ApplicationInsightsModule` (`40.80 KB raw / 7.54 KB estimated transfer` lazy chunk).
   - [x] Patch graph fullscreen/export dialog converted to a standalone dynamic `MatDialog` import; production output now emits `patch-graph-fullscreen-dialog.component-*.js` as a separate lazy browser artifact, keeping `modern-screenshot` off the default patch graph path.
+  - [x] Low-traffic root leaf pages (`/404`, `/links/retired`) switched from eager component imports to `loadComponent`; production output now emits `not-found.component-*.js` and `legacy-link-gone-page.component-*.js`, trimming `main` from ~117.77 KB to ~114.76 KB raw in the current build.
 - [x] Extend prerender generator to top-N public entities; verified static fallback locally and covered dynamic routes with focused tests.
 - [x] Image/lazy-loading sweep across hero cards and list rows.
 
@@ -58,3 +59,4 @@ initial graph.
 - 2026-06-14T19:46+02:00 — Split the Application Insights page and its local metric atoms into a lazy child module under `/info/insights`. Kept changelog eager in `InfoPagesModule`, restored `MatIconModule` there because changelog still uses icons, and verified stats output now contains a dedicated `application-insights.module` lazy chunk.
 - 2026-06-14T19:49+02:00 — Source search found no direct lodash imports, so removed the direct `lodash` and `@types/lodash` package entries plus the Angular CommonJS allow-list item. Kept the broader dependency checklist open because `@angular/flex-layout` removal remains.
 - 2026-06-14T19:55+02:00 — Split the patch graph fullscreen/export dialog behind a dynamic import instead of touching the always-visible graph surface. Converted the dialog to standalone so `modern-screenshot` is loaded on fullscreen/export demand and left the module-level `LibGraphModule` usage intact for the existing inline graph.
+- 2026-06-14T19:58+02:00 — Removed eager root-route imports for the 404 and retired-share-link pages. Used existing standalone component boundaries with `loadComponent`, exported `appRoutes` for a small route regression, and preserved the current redirect paths/copy.

@@ -1,11 +1,15 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { LegacyLinkGonePageComponent } from './features/backbone/legacy-link-gone/legacy-link-gone-page.component';
-import { NotFoundComponent } from './features/backbone/404/not-found.component';
 import { environment } from 'src/environments/environment';
 
 const loadHomeComponent = () =>
   import('./features/backbone/home/home.component').then(m => m.HomeComponent);
+
+const loadLegacyLinkGonePageComponent = () =>
+  import('./features/backbone/legacy-link-gone/legacy-link-gone-page.component').then(m => m.LegacyLinkGonePageComponent);
+
+const loadNotFoundComponent = () =>
+  import('./features/backbone/404/not-found.component').then(m => m.NotFoundComponent);
 
 const collectionRoutes: Routes = environment.features.collectionsEnabled
   ? [
@@ -20,7 +24,7 @@ const collectionRoutes: Routes = environment.features.collectionsEnabled
     ]
   : [];
 
-const routes: Routes = [
+export const appRoutes: Routes = [
   {
     path: '',
     pathMatch: 'full',
@@ -74,11 +78,11 @@ const routes: Routes = [
   },
   {
     path:      'links/retired',
-    component: LegacyLinkGonePageComponent
+    loadComponent: loadLegacyLinkGonePageComponent
   },
   {
     path:      '404',
-    component: NotFoundComponent
+    loadComponent: loadNotFoundComponent
   },
   {
     path:       '**',
@@ -87,7 +91,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes, { scrollPositionRestoration: 'enabled' })],
+  imports: [RouterModule.forRoot(appRoutes, { scrollPositionRestoration: 'enabled' })],
   exports: [RouterModule]
 })
 export class AppRoutingModule {}
