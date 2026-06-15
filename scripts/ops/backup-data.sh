@@ -9,7 +9,7 @@ DRY_RUN=false
 
 usage() {
   cat <<'EOF'
-Usage: bash scripts/backup-data.sh [--dry-run]
+Usage: bash scripts/ops/backup-data.sh [--dry-run]
 
 Creates timestamped schema and data backups from the linked Supabase project.
 

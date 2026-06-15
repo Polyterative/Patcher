@@ -134,7 +134,7 @@ Build these in PostHog and pin them to a "Patcher" dashboard folder.
       `capture` resolves without throwing when SDK is absent). ✅ Done (`analytics.service.spec.ts`).
 - [x] Add a lint rule or CI grep that fails if `posthog-js` is imported anywhere
       outside `analytics.service.ts` and `main.ts` (single chokepoint, mirrors
-      the Sentry pattern). ✅ Done (`scripts/check-posthog-imports.sh`, wired into `lint`).
+      the Sentry pattern). ✅ Done (`scripts/checks/check-posthog-imports.sh`, wired into `lint`).
 - [x] Document in `internaldocs/patterns/ANALYTICS.md` how to verify a new event
       reaches PostHog (Live Events filter with `env`, `release`, distinct_id). ✅ Done.
 

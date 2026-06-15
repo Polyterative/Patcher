@@ -11,7 +11,7 @@ mechanically. A per-task plan stays small enough to fully load, stable enough
 to track decisions against, and structured enough to lint.
 
 See [`../../../AGENTS.md`](../../../AGENTS.md) §10 and the doc-splitting
-rationale documented inline in `scripts/split-todo.cjs`.
+rationale documented inline in `scripts/dev/split-todo.cjs`.
 
 ## File contract
 
@@ -34,7 +34,7 @@ Each plan file has:
 
 ## Tooling
 
-- `scripts/split-todo.cjs` — one-shot splitter (already run; kept for repeatability).
+- `scripts/dev/split-todo.cjs` — one-shot splitter (already run; kept for repeatability).
 - New plan: create a file here, then add a one-line link to `../TODO.md`.
 - Avoid editing the index by hand for batch changes — prefer a small script that
   rewrites it deterministically.

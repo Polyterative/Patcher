@@ -168,7 +168,7 @@
 
 - **Task selected:** HIGH bundle weight, lazy boundaries, and SSR prerender coverage; first actionable slice is baseline measurement plus prerender generator coverage.
 - **Implementation note:** Reused `api/sitemap.ts` Supabase REST conventions, `app-routing.module.ts`/feature route paths, and `RoutingService` rack/patch canonical token fallback. Avoided Angular UI, styling, Supabase schema/RLS/policies/migrations, and Angular backend service changes.
-- **Actions performed:** Captured production stats baseline and top vendor offenders, extended `scripts/generate-prerender-routes.mjs` to emit capped public module/patch/rack/profile/manufacturer/collection routes when `SUPABASE_ANON_KEY` is available, preserved static-only fallback for local no-key builds, added focused generator tests, and wired them into `pnpm test:functions`.
+- **Actions performed:** Captured production stats baseline and top vendor offenders, extended `scripts/build/generate-prerender-routes.mjs` to emit capped public module/patch/rack/profile/manufacturer/collection routes when `SUPABASE_ANON_KEY` is available, preserved static-only fallback for local no-key builds, added focused generator tests, and wired them into `pnpm test:functions`.
 - **Tests run:** `node --test scripts/tests/prerender-routes.test.mjs` passing; `pnpm test:functions:prerender-routes` passing; `pnpm build` passing; `pnpm lint` passing with the existing warning noise.
 - **Docs updated:** Marked the bundle/prerender plan in progress, recorded baseline numbers and decision log, and updated `CURRENT_FEATURE.md`.
 - **Blockers raised:** None; dynamic production route volume remains an approximation by recent public updates until traffic analytics are available.
@@ -293,9 +293,9 @@
 
 - **Boot state:** Git status was clean aside from `develop` being ahead of origin. `CURRENT_FEATURE.md` had no active feature, so selected the top unblocked HIGH infra task from `TODO.md`.
 - **Task selected:** `Type safety — eliminate any and flow Supabase types end-to-end`, first checkbox only: add `@typescript-eslint/no-explicit-any` as warn and record a baseline.
-- **Implementation note:** Reused `.eslintrc.json`, `package.json` lint/lint-staged wiring, `scripts/check-layering.cjs` baseline conventions, and `scripts/check-px-ts.sh` pre-commit pattern. No UI, SCSS, route, backend query, Supabase schema, RLS, policy, or migration changes.
-- **Actions performed:** Added the ESLint warning, introduced `scripts/check-explicit-any.cjs`, generated `scripts/.explicit-any-baseline.json` with 2,993 AST-counted explicit `any` keywords, wired `pnpm lint` to block per-file increases above the baseline, and wired lint-staged to block staged files whose explicit `any` count increases against `HEAD`.
-- **Tests run:** `node scripts/check-explicit-any.cjs`; staged positive and negative guard checks with a temporary git index; `pnpm lint` → passing with 2,990 new expected `no-explicit-any` warnings plus the existing unrelated `prefer-template` warning; `pnpm build` → passing.
+- **Implementation note:** Reused `.eslintrc.json`, `package.json` lint/lint-staged wiring, `scripts/checks/check-layering.cjs` baseline conventions, and `scripts/checks/check-px-ts.sh` pre-commit pattern. No UI, SCSS, route, backend query, Supabase schema, RLS, policy, or migration changes.
+- **Actions performed:** Added the ESLint warning, introduced `scripts/checks/check-explicit-any.cjs`, generated `scripts/checks/.explicit-any-baseline.json` with 2,993 AST-counted explicit `any` keywords, wired `pnpm lint` to block per-file increases above the baseline, and wired lint-staged to block staged files whose explicit `any` count increases against `HEAD`.
+- **Tests run:** `node scripts/checks/check-explicit-any.cjs`; staged positive and negative guard checks with a temporary git index; `pnpm lint` → passing with 2,990 new expected `no-explicit-any` warnings plus the existing unrelated `prefer-template` warning; `pnpm build` → passing.
 - **Docs updated:** `TODO.md` marked the broader type-safety plan in progress, `CURRENT_FEATURE.md` now owns the active feature state, and the plan's first checkbox is complete.
 - **Blockers raised:** None.
 - **Next pickup:** Introduce the typed Supabase helper layer for `SupabaseService` namespaces.
@@ -428,7 +428,7 @@
 - **Task selected:** Continue the active Type Safety plan with the priority-file `RackDetailDataService` optimistic rack-module casts.
 - **Implementation note:** Reused the existing rack detail optimistic update flow, `RackedModule`/`RackingData` model shape, `rack-detail-data.utils` null-coordinate helpers, and rack-detail service specs. No UI, SCSS, route, Supabase schema, RLS, policy, migration, cache-key, backend query, or generated-type changes.
 - **Actions performed:** Updated `RackingData` to represent existing runtime states (`id` optional before persistence, `row`/`column` nullable for unracked modules), removed the matching service casts, and regenerated the explicit-any baseline from 2,896 to 2,890.
-- **Tests run:** `pnpm test-headless --include="**/rack-detail-data.service*.spec.ts" --watch=false` → passing; `pnpm build` → passing; `node scripts/check-explicit-any.cjs --update-baseline && node scripts/check-explicit-any.cjs && pnpm lint` → passing with the existing Node engine warning.
+- **Tests run:** `pnpm test-headless --include="**/rack-detail-data.service*.spec.ts" --watch=false` → passing; `pnpm build` → passing; `node scripts/checks/check-explicit-any.cjs --update-baseline && node scripts/checks/check-explicit-any.cjs && pnpm lint` → passing with the existing Node engine warning.
 - **Blockers raised:** None.
 - **Next pickup:** Continue the type-safety ratchet with small behavior-preserving cleanup. The remaining `RackDetailDataService` explicit `any` is the bottom-picker `MinimalModule` to `DbModule` cast and should be handled only if the wider `RackedModule.module` shape can be made precise without forcing broad optional-field churn.
 
@@ -437,7 +437,7 @@
 - **Task selected:** Continue the active Type Safety plan with backend namespace module payload casts in `supabase-add` and `supabase-update`.
 - **Implementation note:** Reused existing module add/update payload normalization, generated `SupabaseTableInsert<'modules'>` / `SupabaseTableUpdate<'modules'>` helpers, and focused backend namespace specs. No UI, SCSS, route, Supabase schema, RLS, policy, migration, cache-key, select-string, or generated-type changes.
 - **Actions performed:** Replaced three `dbData: any` locals with `Record<string, unknown>`, preserved standard/manufacturer normalization and field deletion behavior, cast only at the Supabase insert/update boundary, and regenerated the explicit-any baseline from 2,890 to 2,887.
-- **Tests run:** `pnpm test-headless --include="**/update-module.spec.ts" --include="**/update-extended.spec.ts" --include="**/add-extended.spec.ts" --watch=false` → 38/38 passing; `node scripts/check-explicit-any.cjs --update-baseline && node scripts/check-explicit-any.cjs && pnpm lint && pnpm build` → passing with the existing Node engine warning.
+- **Tests run:** `pnpm test-headless --include="**/update-module.spec.ts" --include="**/update-extended.spec.ts" --include="**/add-extended.spec.ts" --watch=false` → 38/38 passing; `node scripts/checks/check-explicit-any.cjs --update-baseline && node scripts/checks/check-explicit-any.cjs && pnpm lint && pnpm build` → passing with the existing Node engine warning.
 - **Blockers raised:** None.
 - **Next pickup:** Continue backend query/type cleanup in tiny batches; avoid the larger `supabase-queries.ts` generic query builder casts unless the helper shape can be proven without changing query behavior.
 
@@ -511,7 +511,7 @@
 - **Task selected:** `HIGH: Bug — 1U module placeholder wrong aspect ratio`.
 - **Implementation note:** Reused `ModulePartImageComponent`, `GetModuleHeightForStandardPipe`, existing module-card callers (`ModuleMinimalComponent`, `ModuleRealisticComponent`, possession dialog), and the existing module format geometry constants. No production template change was needed because current HEAD already replaced the risky `fxFlex` placeholder sizing with explicit `ngStyle` dimensions.
 - **Actions performed:** Added rendered host tests proving missing-panel Intellijel 1U and Pulp Logic 1U placeholders are wider than tall and use the correct format heights; also pinned fixed-height 1U placeholder width.
-- **Runtime check:** Captured `/modules` with `scripts/agent-snapshot.mjs`; visible 1U module cards render flat, but the first public page contained no `.preview` missing-panel nodes, so the exact no-panel state is covered by the component template tests.
+- **Runtime check:** Captured `/modules` with `scripts/dev/agent-snapshot.mjs`; visible 1U module cards render flat, but the first public page contained no `.preview` missing-panel nodes, so the exact no-panel state is covered by the component template tests.
 - **Tests run:** `pnpm test-headless --include="**/module-part-image.component.spec.ts"` → 22/22 passing; `pnpm build` → passing; `pnpm lint` → passing with one unrelated pre-existing warning in `e2e/screenshots/cropper-debug.spec.ts`.
 - **Docs updated:** Completed and archived the 1U placeholder bug plan; moved the TODO entry to `COMPLETED.md`.
 - **Blockers raised:** None.

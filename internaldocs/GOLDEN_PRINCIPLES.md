@@ -7,7 +7,7 @@
 ## P1 — Layering is non-negotiable
 
 `Component → Data Service → API Service → Supabase`. No skipping layers. Enforced by
-`scripts/check-layering.cjs` (R1, R2, R3). Existing violations are grandfathered; new ones
+`scripts/checks/check-layering.cjs` (R1, R2, R3). Existing violations are grandfathered; new ones
 fail `pnpm lint`.
 
 ## P2 — Files stay legible
@@ -54,7 +54,7 @@ issues. See [`patterns/CACHE_STRATEGY.md`](./patterns/CACHE_STRATEGY.md).
 ## P9 — `px` is a smell in TypeScript
 
 Use `rem`. Annotate intentional `px` (hairline borders, console styles, pixel coords) with a
-trailing `// px-ok` comment. Enforced by `scripts/check-px-ts.sh` on staged files.
+trailing `// px-ok` comment. Enforced by `scripts/checks/check-px-ts.sh` on staged files.
 
 ## P10 — Visual decisions are grounded
 

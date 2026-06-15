@@ -9,14 +9,14 @@
  * each unit small enough that an agent can fully load it without crowding out
  * the actual task context.
  *
- * Usage: node scripts/split-todo.cjs
- *        node scripts/split-todo.cjs --dry-run
+ * Usage: node scripts/dev/split-todo.cjs
+ *        node scripts/dev/split-todo.cjs --dry-run
  */
 
 const fs = require('fs');
 const path = require('path');
 
-const repoRoot = path.resolve(__dirname, '..');
+const repoRoot = path.resolve(__dirname, '..', '..');
 const todoPath = path.join(repoRoot, 'internaldocs/workflow/TODO.md');
 const plansDir = path.join(repoRoot, 'internaldocs/workflow/plans');
 const dryRun = process.argv.includes('--dry-run');
@@ -90,7 +90,7 @@ for (const t of tasks) {
   usedSlugs.add(unique);
   const filename = `${unique}.md`;
   const fileBody = [
-    `<!-- Auto-split from TODO.md by scripts/split-todo.cjs. -->`,
+    `<!-- Auto-split from TODO.md by scripts/dev/split-todo.cjs. -->`,
     `<!-- Section: ${t.section || '(none)'} -->`,
     '',
     t.body,

@@ -1,4 +1,4 @@
-<!-- Auto-split from TODO.md by scripts/split-todo.cjs. -->
+<!-- Auto-split from TODO.md by scripts/dev/split-todo.cjs. -->
 <!-- Section: PRODUCT — Tier 1 (requires Manufacturer Page Phase 2 to be live) -->
 
 #### LOW: Manufacturer API / Widgets Pilot

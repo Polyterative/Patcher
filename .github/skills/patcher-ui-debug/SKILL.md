@@ -30,7 +30,7 @@ pnpm exec playwright install chromium 2>/dev/null || true
 ## Snapshot a route
 
 ```bash
-node scripts/agent-snapshot.mjs --route /modules --out /tmp/snap
+node scripts/dev/agent-snapshot.mjs --route /modules --out /tmp/snap
 ```
 
 Emits to the output dir:
@@ -44,7 +44,7 @@ Emits to the output dir:
 For authenticated routes (rack editor, user area, admin), pass `--auth` after running `pnpm test:e2e:auth` once to seed `playwright/.auth/user.json`:
 
 ```bash
-node scripts/agent-snapshot.mjs --route /user/racks --auth --out /tmp/snap-user
+node scripts/dev/agent-snapshot.mjs --route /user/racks --auth --out /tmp/snap-user
 ```
 
 After capturing, the agent should `view` the screenshot, grep the DOM for relevant testids, and scan `console.log` for errors before reasoning about the bug.

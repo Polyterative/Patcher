@@ -13,13 +13,13 @@
  *   D4  CURRENT_FEATURE.md must either show "_No active feature._" or have
  *       all three Layer headings populated.
  *
- * Run: node scripts/check-docs.cjs
+ * Run: node scripts/checks/check-docs.cjs
  */
 
 const fs = require('fs');
 const path = require('path');
 
-const repoRoot = path.resolve(__dirname, '..');
+const repoRoot = path.resolve(__dirname, '..', '..');
 const errors = [];
 
 function read(rel) {

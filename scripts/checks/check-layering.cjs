@@ -5,11 +5,11 @@
  * Enforces architectural rules from internaldocs/ARCHITECTURE.md so that
  * agent-generated code stays inside the documented Component → Data Service
  * → API Service → Supabase pipeline. Existing violations are recorded in
- * scripts/.layering-baseline.json so the build does not break, but no NEW
+ * scripts/checks/.layering-baseline.json so the build does not break, but no NEW
  * violations are allowed.
  *
- * Run: node scripts/check-layering.cjs
- * Update baseline: node scripts/check-layering.cjs --update-baseline
+ * Run: node scripts/checks/check-layering.cjs
+ * Update baseline: node scripts/checks/check-layering.cjs --update-baseline
  *
  * Rules:
  *   R1  Non-data-service component files must not import SupabaseService
@@ -26,7 +26,7 @@ const fs = require('fs');
 const path = require('path');
 const childProcess = require('child_process');
 
-const repoRoot = path.resolve(__dirname, '..');
+const repoRoot = path.resolve(__dirname, '..', '..');
 const baselinePath = path.join(__dirname, '.layering-baseline.json');
 const updateBaseline = process.argv.includes('--update-baseline');
 
@@ -141,7 +141,7 @@ if (updateBaseline) {
   ]);
   const next = {
     _comment:
-      'Grandfathered layering violations. Do not add by hand — run `node scripts/check-layering.cjs --update-baseline`. New violations should NOT be added; refactor instead.',
+      'Grandfathered layering violations. Do not add by hand — run `node scripts/checks/check-layering.cjs --update-baseline`. New violations should NOT be added; refactor instead.',
     R1: [...ruleListToSet(violations.R1)].sort(),
     R2: [...ruleListToSet(violations.R2)].sort(),
     R3: [...ruleListToSet(violations.R3)].sort(),
@@ -230,7 +230,7 @@ if (newViolations.R4.length) {
 }
 
 console.error(
-  '\nIf the violation is intentional and the rule is wrong here, update\nscripts/.layering-baseline.json via `node scripts/check-layering.cjs --update-baseline`\nand justify in the commit message.'
+  '\nIf the violation is intentional and the rule is wrong here, update\nscripts/checks/.layering-baseline.json via `node scripts/checks/check-layering.cjs --update-baseline`\nand justify in the commit message.'
 );
 
 process.exit(totalNew > 0 ? 1 : 0);

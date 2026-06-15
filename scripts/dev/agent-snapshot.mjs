@@ -18,8 +18,8 @@
  *   - chromium installed (`pnpm exec playwright install chromium` once).
  *
  * Usage:
- *   node scripts/agent-snapshot.mjs --route /modules --out tmp/snap
- *   node scripts/agent-snapshot.mjs --route /racks/123 --auth --out tmp/snap
+ *   node scripts/dev/agent-snapshot.mjs --route /modules --out tmp/snap
+ *   node scripts/dev/agent-snapshot.mjs --route /racks/123 --auth --out tmp/snap
  *
  * Flags:
  *   --route <path>   route under BASE_URL to capture (default "/")

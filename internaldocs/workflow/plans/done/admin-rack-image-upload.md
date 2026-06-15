@@ -1,4 +1,4 @@
-<!-- Auto-split from TODO.md by scripts/split-todo.cjs. -->
+<!-- Auto-split from TODO.md by scripts/dev/split-todo.cjs. -->
 <!-- Section: PRODUCT — Tier 0 (ship in any order; no external dependencies) -->
 
 #### MEDIUM: Admin — Rack Image Upload

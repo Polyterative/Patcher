@@ -24,7 +24,7 @@ reasoning. It produces design direction, not code.
 - Produce a clear design brief or implementation handoff for `frontend-dev`
 - Run the app via `pnpm start` and capture **real screenshots with Playwright** when runtime visual
   context is needed (per `AGENTS.md` § 5). For one-off snapshots use
-  `node scripts/agent-snapshot.mjs --route <path> --out /tmp/snap`
+  `node scripts/dev/agent-snapshot.mjs --route <path> --out /tmp/snap`
   (see `.github/skills/patcher-ui-debug/SKILL.md`)
 - Compare against `internaldocs/UI_CONSISTENCY_AUDIT.md` findings when relevant
 - Recommend inline UI flows over dialog-heavy flows when the interaction design calls for it

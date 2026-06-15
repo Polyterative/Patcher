@@ -4,7 +4,7 @@ set -euo pipefail
 
 usage() {
   cat <<'EOF'
-Usage: bash scripts/restore-data.sh [--yes] <backup-file.sql>
+Usage: bash scripts/ops/restore-data.sh [--yes] <backup-file.sql>
 
 Applies a previously created SQL backup to the database referenced by SUPABASE_DB_URL.
 

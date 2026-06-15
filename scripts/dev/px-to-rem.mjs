@@ -4,9 +4,9 @@
  * Converts hardcoded px values → rem in SCSS and TypeScript source files.
  *
  * Usage:
- *   node scripts/px-to-rem.mjs              # dry-run: preview all changes
- *   node scripts/px-to-rem.mjs --write      # apply changes in place
- *   node scripts/px-to-rem.mjs --write src/app/foo.scss   # specific files
+ *   node scripts/dev/px-to-rem.mjs              # dry-run: preview all changes
+ *   node scripts/dev/px-to-rem.mjs --write      # apply changes in place
+ *   node scripts/dev/px-to-rem.mjs --write src/app/foo.scss   # specific files
  *
  * Skipped automatically:
  *   - 0px  (zero positions)

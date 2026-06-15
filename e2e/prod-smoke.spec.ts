@@ -8,7 +8,7 @@ import {
  * Production-bundle smoke tests.
  *
  * Runs against the *real* prod artefact (served from dist/Patcher/browser via
- * scripts/serve-dist.cjs), not `ng serve`. The dev server's permissive injector
+ * scripts/build/serve-dist.cjs), not `ng serve`. The dev server's permissive injector
  * + HMR-cached module graph + LazySentryErrorHandler swallow boot-time DI
  * failures that the optimized AOT bundle escalates to a blank page — those
  * regressions only surface here.
