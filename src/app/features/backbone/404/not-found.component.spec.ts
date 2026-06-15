@@ -1,4 +1,8 @@
 import { NotFoundComponent } from './not-found.component';
+import {
+  Meta,
+  Title
+} from '@angular/platform-browser';
 
 describe('NotFoundComponent', () => {
   let comp: NotFoundComponent;
@@ -8,7 +12,7 @@ describe('NotFoundComponent', () => {
   beforeEach(() => {
     mockMeta = { updateTag: jasmine.createSpy('updateTag') };
     mockTitle = { setTitle: jasmine.createSpy('setTitle') };
-    comp = new NotFoundComponent(mockMeta as any, mockTitle as any);
+    comp = new NotFoundComponent(mockMeta as unknown as Meta, mockTitle as unknown as Title);
   });
 
   it('creates without error', () => {
@@ -42,5 +46,14 @@ describe('NotFoundComponent', () => {
     expect(mockMeta.updateTag).toHaveBeenCalledWith(
       jasmine.objectContaining({ property: 'og:description' })
     );
+  });
+
+  it('ngOnInit sets the server response status to 404 when available', () => {
+    const responseInit: ResponseInit = {};
+    comp = new NotFoundComponent(mockMeta as unknown as Meta, mockTitle as unknown as Title, responseInit);
+
+    comp.ngOnInit();
+
+    expect(responseInit.status).toBe(404);
   });
 });

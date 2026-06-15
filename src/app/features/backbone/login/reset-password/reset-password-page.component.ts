@@ -81,7 +81,7 @@ export class ResetPasswordPageComponent extends SubManager implements OnInit {
       const type = params['type'];
       
       // Also check hash fragment for access_token (Supabase's standard flow)
-      const hash = window.location.hash;
+      const hash = this.getBrowserLocationHash();
       const hashHasToken = hash.includes('access_token=') || hash.includes('access_token%3D');
       const hashHasRecovery = hash.includes('type=recovery') || hash.includes('type%3Drecovery');
       
@@ -179,4 +179,8 @@ export class ResetPasswordPageComponent extends SubManager implements OnInit {
   }
   
   protected readonly SharedConstants = SharedConstants;
+
+  private getBrowserLocationHash(): string {
+    return typeof window === 'undefined' ? '' : window.location.hash;
+  }
 }

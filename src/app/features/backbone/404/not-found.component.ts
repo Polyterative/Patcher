@@ -1,7 +1,10 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  OnInit
+  Inject,
+  OnInit,
+  Optional,
+  RESPONSE_INIT
 } from '@angular/core';
 import {
   Meta,
@@ -22,10 +25,14 @@ export class NotFoundComponent implements OnInit {
   
   constructor(
     private readonly meta: Meta,
-    private readonly title: Title
+    private readonly title: Title,
+    @Optional() @Inject(RESPONSE_INIT) private readonly responseInit?: ResponseInit | null
   ) { }
   
   ngOnInit(): void {
+    if (this.responseInit) {
+      this.responseInit.status = 404;
+    }
     this.title.setTitle('404 - Not Found | patcher.xyz');
     this.meta.updateTag({name: 'robots', content: 'noindex, nofollow'});
     this.meta.updateTag({name: 'description', content: '404 - Not Found'});
