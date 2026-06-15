@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "installCommand": "corepack enable pnpm && pnpm install --no-frozen-lockfile",
+  "installCommand": "corepack enable pnpm && corepack prepare pnpm@10.33.4 --activate && pnpm install --frozen-lockfile --prefer-offline",
   "buildCommand": "pnpm build:release",
   "outputDirectory": "dist/Patcher/browser",
   "ignoreCommand": "bash scripts/build/vercel-ignore-build.sh",
