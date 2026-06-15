@@ -8,7 +8,8 @@ import {
   OnDestroy,
   Optional,
   Output,
-  SimpleChanges
+  SimpleChanges,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
@@ -32,6 +33,7 @@ export type ModuleCollectionEditorSurface = 'dialog' | 'page';
   templateUrl: './module-collection-editor.component.html',
   styleUrls: ['./module-collection-editor.component.scss'],
   providers: [ModuleCollectionEditorDataService],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class ModuleCollectionEditorComponent extends SubManager implements OnChanges, OnDestroy {

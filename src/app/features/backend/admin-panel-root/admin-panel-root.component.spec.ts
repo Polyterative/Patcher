@@ -1,6 +1,7 @@
 import {
   Component,
-  NO_ERRORS_SCHEMA
+  NO_ERRORS_SCHEMA,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import {
   ComponentFixture,
@@ -13,6 +14,7 @@ import { SupabaseService } from '../supabase.service';
 @Component({
   selector: 'lib-hero-content-card',
   template: '<ng-content></ng-content>',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 class HeroContentCardStub {
@@ -21,6 +23,7 @@ class HeroContentCardStub {
 @Component({
   selector: 'app-admin-flags',
   template: '',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 class AdminFlagsStub {

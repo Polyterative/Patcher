@@ -36,7 +36,7 @@
       },
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:application",
+          "builder": "@angular/build:application",
           "options": {
             "outputPath": {
               "base": "dist/Patcher"
@@ -57,6 +57,11 @@
               "src/app/style/material-theme.scss",
               "src/styles.scss"
             ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "."
+              ]
+            },
             "scripts": [],
             "allowedCommonJsDependencies": [
               "lottie-web",
@@ -119,7 +124,7 @@
           }
         },
         "serve": {
-          "builder": "@angular-devkit/build-angular:dev-server",
+          "builder": "@angular/build:dev-server",
           "options": {
             "buildTarget": "Patcher:build:development"
           },
@@ -133,7 +138,7 @@
           }
         },
         "extract-i18n": {
-          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "builder": "@angular/build:extract-i18n",
           "options": {
             "buildTarget": "Patcher:build"
           }
@@ -149,41 +154,29 @@
           }
         },
         "test": {
-          "builder": "@angular-devkit/build-angular:karma",
+          "builder": "@angular/build:karma",
           "options": {
             "main": "src/test.ts",
-            "polyfills": "src/polyfills.ts",
+            "polyfills": [
+              "src/polyfills.ts"
+            ],
             "tsConfig": "src/tsconfig.spec.json",
             "karmaConfig": "src/karma.conf.js",
             "styles": [
               "src/app/style/material-theme.scss",
               "src/styles.scss"
             ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "."
+              ]
+            },
             "scripts": [],
             "assets": [
               "src/favicon.ico",
               "src/assets",
               "src/llms.txt"
             ]
-          }
-        }
-      }
-    },
-    "Patcher-e2e": {
-      "root": "e2e/",
-      "projectType": "application",
-      "prefix": "",
-      "architect": {
-        "e2e": {
-          "builder": "@angular-devkit/build-angular:protractor",
-          "options": {
-            "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "Patcher:serve"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "Patcher:serve:production"
-            }
           }
         }
       }

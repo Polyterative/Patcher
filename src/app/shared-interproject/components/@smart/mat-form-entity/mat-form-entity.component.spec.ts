@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
@@ -11,6 +11,7 @@ import { IMatFormEntityConfig, MatFormEntityComponent } from './mat-form-entity.
 @Component({
   standalone: true,
   imports: [MatFormEntityComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <lib-mat-form-entity
       [dataPack]="firstField"
