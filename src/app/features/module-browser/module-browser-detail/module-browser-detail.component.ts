@@ -20,11 +20,13 @@ import {
   Router
 } from '@angular/router';
 import { SeoSocialShareData } from 'src/app/models/seo.model';
-import { Subject } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest
+} from 'rxjs';
 import {
   filter,
-  map,
-  takeUntil
+  map
 } from 'rxjs/operators';
 import {
   HiddenUsageBucket,
@@ -58,6 +60,58 @@ import {
   SearchLink,
 } from './module-browser-detail.constants';
 import { environment } from 'src/environments/environment';
+import { getModulePanelAspectRatio } from 'src/app/components/module-parts/get-module-height-for-standard.pipe';
+
+export const MODULE_PANEL_RATIO_ACCEPTANCE_THRESHOLD = 0.01;
+
+export interface PanelImageDimensions {
+  width: number;
+  height: number;
+}
+
+export interface ModulePanelRatioResult {
+  expectedRatio: number;
+  imageRatio: number;
+  relativeDelta: number;
+  deltaPercent: number;
+  accepted: boolean;
+}
+
+export interface ModulePanelRatioDiagnostic {
+  panelId: number;
+  label: string;
+  filename: string;
+  expectedRatio: number;
+  status: 'pending' | 'match' | 'mismatch' | 'unavailable' | 'error';
+  imageWidth?: number;
+  imageHeight?: number;
+  imageRatio?: number;
+  deltaPercent?: number;
+  accepted?: boolean;
+  error?: string;
+}
+
+export function calculateModulePanelRatioResult(
+  module: Pick<DbModule, 'hp' | 'standard'>,
+  dimensions: PanelImageDimensions,
+  threshold = MODULE_PANEL_RATIO_ACCEPTANCE_THRESHOLD
+): ModulePanelRatioResult | null {
+  if (!Number.isFinite(module.hp) || module.hp <= 0 || !Number.isFinite(dimensions.width) || !Number.isFinite(dimensions.height) || dimensions.width <= 0 || dimensions.height <= 0) {
+    return null;
+  }
+
+  const expectedRatio = getModulePanelAspectRatio(module);
+  const imageRatio = dimensions.width / dimensions.height;
+  const relativeDelta = (imageRatio - expectedRatio) / expectedRatio;
+
+  return {
+    expectedRatio,
+    imageRatio,
+    relativeDelta,
+    deltaPercent: relativeDelta * 100,
+    accepted: Math.abs(relativeDelta) <= threshold
+  };
+}
 
 @Component({
   selector: 'app-module-browser-detail',
@@ -212,6 +266,9 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
   };
   readonly searchLinks: SearchLink[] = MODULE_SEARCH_LINKS;
   readonly collectionsEnabled = environment.features.collectionsEnabled;
+  readonly panelRatioAcceptanceThreshold = MODULE_PANEL_RATIO_ACCEPTANCE_THRESHOLD;
+  readonly panelRatioDiagnostics$ = new BehaviorSubject<ModulePanelRatioDiagnostic[]>([]);
+  private panelRatioMeasurementRun = 0;
   
   constructor(
     public dataService: ModuleDetailDataService,
@@ -322,6 +379,21 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
           this.injectModuleJsonLd(data);
         });
     }
+
+    combineLatest([
+      this.dataService.singleModuleData$,
+      this.dataService.isAdmin$
+    ])
+      .pipe(this.takeUntilDestroyed())
+      .subscribe(([module, isAdmin]) => {
+        if (!module || !(this.appState.isDev || isAdmin)) {
+          this.panelRatioMeasurementRun++;
+          this.panelRatioDiagnostics$.next([]);
+          return;
+        }
+
+        this.refreshPanelRatioDiagnostics(module);
+      });
   }
 
   hasHiddenUsage(bucket: HiddenUsageBucket | null | undefined): boolean {
@@ -507,5 +579,87 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
   
   openExternalLink(url: string) {
     window.open(url, '_blank', 'noopener,noreferrer');
+  }
+
+  formatPanelRatio(value: number | null | undefined): string {
+    return Number.isFinite(value) ? value.toFixed(4) : 'n/a';
+  }
+
+  formatPanelRatioDelta(value: number | null | undefined): string {
+    if (!Number.isFinite(value)) {
+      return 'n/a';
+    }
+
+    return `${ value > 0 ? '+' : '' }${ value.toFixed(2) }%`;
+  }
+
+  private refreshPanelRatioDiagnostics(module: DbModule): void {
+    const run = ++this.panelRatioMeasurementRun;
+    const initialDiagnostics = module.panels.map((panel, index): ModulePanelRatioDiagnostic => ({
+      panelId: panel.id,
+      label: `Panel ${ index + 1 }`,
+      filename: panel.filename,
+      expectedRatio: getModulePanelAspectRatio(module),
+      status: panel.filename ? 'pending' : 'unavailable',
+      error: panel.filename ? undefined : 'No filename'
+    }));
+
+    this.panelRatioDiagnostics$.next(initialDiagnostics);
+
+    module.panels.forEach((panel, index) => {
+      if (!panel.filename) {
+        return;
+      }
+
+      this.measurePanelImage(panel.filename)
+        .then(dimensions => {
+          if (run !== this.panelRatioMeasurementRun) {
+            return;
+          }
+
+          const result = calculateModulePanelRatioResult(module, dimensions, this.panelRatioAcceptanceThreshold);
+          this.updatePanelRatioDiagnostic(panel.id, {
+            panelId: panel.id,
+            label: `Panel ${ index + 1 }`,
+            filename: panel.filename,
+            expectedRatio: result?.expectedRatio ?? getModulePanelAspectRatio(module),
+            status: result?.accepted ? 'match' : 'mismatch',
+            imageWidth: dimensions.width,
+            imageHeight: dimensions.height,
+            imageRatio: result?.imageRatio,
+            deltaPercent: result?.deltaPercent,
+            accepted: result?.accepted
+          });
+        })
+        .catch(() => {
+          if (run !== this.panelRatioMeasurementRun) {
+            return;
+          }
+
+          this.updatePanelRatioDiagnostic(panel.id, {
+            ...initialDiagnostics[index],
+            status: 'error',
+            error: 'Image failed to load'
+          });
+        });
+    });
+  }
+
+  private updatePanelRatioDiagnostic(panelId: number, diagnostic: ModulePanelRatioDiagnostic): void {
+    this.panelRatioDiagnostics$.next(
+      this.panelRatioDiagnostics$.value.map(item => item.panelId === panelId ? diagnostic : item)
+    );
+  }
+
+  private measurePanelImage(filename: string): Promise<PanelImageDimensions> {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve({
+        width: image.naturalWidth,
+        height: image.naturalHeight
+      });
+      image.onerror = () => reject(new Error('Panel image failed to load'));
+      image.src = `${ MODULE_PANELS_BASE_URL }${ filename }`;
+    });
   }
 }

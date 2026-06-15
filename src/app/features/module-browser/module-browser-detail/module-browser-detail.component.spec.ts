@@ -16,14 +16,21 @@ import {
 } from 'rxjs';
 import { ModuleDetailDataService } from 'src/app/components/module-parts/module-detail-data.service';
 import { CommentsDataService } from 'src/app/components/shared-atoms/comments/comments-data.service';
+import { DbModule } from 'src/app/models/module';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 import { AppStateService } from "src/app/shared-interproject/app-state.service";
 import { UserManagementService } from "src/app/features/backbone/login/user-management.service";
-import { ModuleBrowserDetailComponent } from './module-browser-detail.component';
+import {
+  calculateModulePanelRatioResult,
+  MODULE_PANEL_RATIO_ACCEPTANCE_THRESHOLD,
+  ModuleBrowserDetailComponent
+} from './module-browser-detail.component';
 import { ModuleUsageCardComponent } from './module-usage-card/module-usage-card.component';
 
 
 describe('ModuleBrowserDetailComponent', () => {
+  type RatioModuleFixture = Pick<DbModule, 'hp' | 'standard'>;
+
   function build() {
     const routeParams$ = new Subject<any>();
     const singleModuleData$ = new BehaviorSubject<any>(undefined);
@@ -36,6 +43,7 @@ describe('ModuleBrowserDetailComponent', () => {
       singleModuleData$,
       updateSingleModuleData$,
       changeModule$,
+      isAdmin$: new BehaviorSubject<boolean>(false),
       requestModuleEditingToggle$,
       deleteModuleAndOrphanManufacturer$
     };
@@ -336,6 +344,42 @@ describe('ModuleBrowserDetailComponent', () => {
       powerNeg12: 0,
       powerPos5: 0
     });
+  });
+
+  it('calculates panel image ratio diagnostics for 3U modules within threshold', () => {
+    const result = calculateModulePanelRatioResult(
+      {hp: 14, standard: {id: 0, name: '3U'}} as RatioModuleFixture,
+      {width: 1006, height: 1837}
+    );
+
+    expect(result?.expectedRatio).toBeCloseTo(14 / 25.4, 6);
+    expect(result?.imageRatio).toBeCloseTo(1006 / 1837, 6);
+    expect(result?.deltaPercent).toBeCloseTo(-0.64, 1);
+    expect(result?.accepted).toBeTrue();
+  });
+
+  it('calculates panel image ratio diagnostics for supported 1U standards', () => {
+    const intellijelResult = calculateModulePanelRatioResult(
+      {hp: 10, standard: {id: 1, name: 'Intellijel 1U'}} as RatioModuleFixture,
+      {width: 1000, height: 784}
+    );
+    const pulpLogicResult = calculateModulePanelRatioResult(
+      {hp: 10, standard: {id: 2, name: 'Pulp Logic 1U'}} as RatioModuleFixture,
+      {width: 1000, height: 854}
+    );
+
+    expect(intellijelResult?.expectedRatio).toBeCloseTo(10 / 7.8374, 6);
+    expect(pulpLogicResult?.expectedRatio).toBeCloseTo(10 / 8.5352, 6);
+  });
+
+  it('marks panel ratios outside the acceptance threshold as mismatches', () => {
+    const result = calculateModulePanelRatioResult(
+      {hp: 14, standard: {id: 0, name: '3U'}} as RatioModuleFixture,
+      {width: 800, height: 1837}
+    );
+
+    expect(MODULE_PANEL_RATIO_ACCEPTANCE_THRESHOLD).toBe(0.01);
+    expect(result?.accepted).toBeFalse();
   });
   
   it('guards editor close by confirmation when there are pending changes', () => {

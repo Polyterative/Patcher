@@ -369,6 +369,44 @@
                                             (click$)="clampDevNumericFields(bag.data)">Clamp negative numbers
                   </app-brand-primary-button>
                 }
+               @if ((panelRatioDiagnostics$ | async); as panelRatioDiagnostics) {
+                 @if (panelRatioDiagnostics.length > 0) {
+                   <div class="col gap1 module-panel-ratio-diagnostics">
+                     <div class="row gap1 module-panel-ratio-diagnostics__header">
+                       <mat-icon>photo_size_select_large</mat-icon>
+                       <span>Panel ratio check</span>
+                       <span class="module-panel-ratio-diagnostics__threshold">
+                         Threshold: {{ formatPanelRatioDelta(panelRatioAcceptanceThreshold * 100) }}
+                       </span>
+                     </div>
+                     @for (diagnostic of panelRatioDiagnostics; track diagnostic.panelId) {
+                       <div class="module-panel-ratio-row"
+                            [class.module-panel-ratio-row--mismatch]="diagnostic.status === 'mismatch'"
+                            [class.module-panel-ratio-row--match]="diagnostic.status === 'match'"
+                            [class.module-panel-ratio-row--pending]="diagnostic.status === 'pending'"
+                       >
+                         <div class="module-panel-ratio-row__label">
+                           <strong>{{ diagnostic.label }}</strong>
+                           <span>{{ diagnostic.filename }}</span>
+                         </div>
+                         <div class="module-panel-ratio-row__metrics">
+                           <span>Expected {{ formatPanelRatio(diagnostic.expectedRatio) }}</span>
+                           @if (diagnostic.status === 'pending') {
+                             <span>Measuring image…</span>
+                           } @else if (diagnostic.status === 'error' || diagnostic.status === 'unavailable') {
+                             <span>{{ diagnostic.error }}</span>
+                           } @else {
+                             <span>Image {{ diagnostic.imageWidth }}×{{ diagnostic.imageHeight }}</span>
+                             <span>Actual {{ formatPanelRatio(diagnostic.imageRatio) }}</span>
+                             <span>Delta {{ formatPanelRatioDelta(diagnostic.deltaPercent) }}</span>
+                             <span>{{ diagnostic.accepted ? 'OK' : 'Check panel or HP/standard' }}</span>
+                           }
+                         </div>
+                       </div>
+                     }
+                   </div>
+                 }
+               }
                 <!--                <pre>-->
                 <!--                  {{ bag.data|json }}-->
                 <!--                </pre>-->
