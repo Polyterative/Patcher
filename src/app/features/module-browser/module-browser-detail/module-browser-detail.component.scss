@@ -191,6 +191,83 @@ a.module-detail-action-button {
   cursor: pointer;
 }
 
+.module-panel-ratio-diagnostics {
+  width: 100%;
+  min-width: 0;
+  padding: 0.75rem;
+  border: 1px solid #d5e2f0;
+  border-radius: 0.85rem;
+  background: #f8fbff;
+}
+
+.module-panel-ratio-diagnostics__header {
+  align-items: center;
+  color: #355476;
+  font-weight: 700;
+
+  .mat-icon {
+    width: 1.1rem;
+    height: 1.1rem;
+    font-size: 1.1rem;
+  }
+}
+
+.module-panel-ratio-diagnostics__threshold {
+  margin-left: auto;
+  color: #60758d;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.module-panel-ratio-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.45rem;
+  padding: 0.65rem;
+  border: 1px solid rgba(96, 117, 141, 0.18);
+  border-radius: 0.7rem;
+  background: #ffffff;
+}
+
+.module-panel-ratio-row--match {
+  border-color: rgba(55, 128, 82, 0.3);
+  background: #f6fff8;
+}
+
+.module-panel-ratio-row--mismatch {
+  border-color: rgba(176, 82, 40, 0.4);
+  background: #fff8f3;
+}
+
+.module-panel-ratio-row--pending {
+  opacity: 0.82;
+}
+
+.module-panel-ratio-row__label,
+.module-panel-ratio-row__metrics {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.65rem;
+  align-items: center;
+}
+
+.module-panel-ratio-row__label {
+  span {
+    min-width: 0;
+    overflow: hidden;
+    color: #60758d;
+    font-size: 0.78rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.module-panel-ratio-row__metrics {
+  color: #4f647d;
+  font-size: 0.78rem;
+}
+
 :host ::ng-deep .module-search-chip .mdc-evolution-chip__action,
 :host ::ng-deep .module-search-chip .mdc-evolution-chip__cell {
   cursor: pointer;
