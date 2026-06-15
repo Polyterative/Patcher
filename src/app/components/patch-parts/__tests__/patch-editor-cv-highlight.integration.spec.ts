@@ -37,7 +37,8 @@
 import {
   Component,
   Input,
-  NO_ERRORS_SCHEMA
+  NO_ERRORS_SCHEMA,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import {
   ComponentFixture,
@@ -107,6 +108,7 @@ const FAKE_INSTANCE: PatchModuleInstance = {
       [instanceId]="instanceId"
     ></app-module-cvs>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 class TestHostComponent {

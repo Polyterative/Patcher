@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import {
   CropperPosition,
   Dimensions,
@@ -11,6 +11,7 @@ import {
   selector: 'app-module-editor-cropper',
   standalone: true,
   imports: [CommonModule, ImageCropperComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <image-cropper
       [imageFile]="imageFile"

@@ -1,7 +1,8 @@
 import {
   Component,
   Input,
-  NO_ERRORS_SCHEMA
+  NO_ERRORS_SCHEMA,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import {
   ComponentFixture,
@@ -18,6 +19,7 @@ import { ModuleCollectionsBrowserRootComponent } from './module-collections-brow
 @Component({
   selector: 'lib-hero-content-card',
   template: '<ng-content></ng-content>',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 class HeroContentCardStubComponent {

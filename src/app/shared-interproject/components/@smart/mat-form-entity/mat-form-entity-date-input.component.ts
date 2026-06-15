@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
 import { ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -21,6 +21,7 @@ import { MatTooltipModule, TooltipPosition } from '@angular/material/tooltip';
     MatNativeDateModule,
     MatTooltipModule
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './mat-form-entity-date-input.component.html'
 })
 export class MatFormEntityDateInputComponent {

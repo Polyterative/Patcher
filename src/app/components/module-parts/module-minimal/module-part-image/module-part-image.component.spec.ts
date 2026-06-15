@@ -1,7 +1,8 @@
 import {
   Component,
   ChangeDetectorRef,
-  ElementRef
+  ElementRef,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -61,6 +62,7 @@ function makeModule(
       [disableEnterAnimation]="true"
     ></app-module-part-image>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 class HostComponent {

@@ -179,7 +179,7 @@
                       </div>
                       <app-module-composite [data]="card.module"
                                             [viewConfig]="modulesViewConfig"
-                                            [instanceId]="card.instance?.id"
+                                            [instanceId]="$safeNavigationMigration(card.instance?.id)"
                                             [nameSuffix]="card.label"
                                             [preferredPanelColor]="appState.preferredPanelColor$ | async"
                       ></app-module-composite>
@@ -237,7 +237,7 @@
                          <app-module-realistic
                           class="patch-editor-rack-visual__module"
                           [data]="previewCard.module"
-                          [showPanelImages]="previewCard.module.panels?.length > 0"
+                          [showPanelImages]="$safeNavigationMigration(previewCard.module.panels?.length) > 0"
                           [selectedPanelId]="previewCard.selectedPanelId"
                           [disablePanelImageEnterAnimation]="true"
                         ></app-module-realistic>
@@ -257,7 +257,7 @@
                             </div>
                             <app-module-cvs
                               [data]="previewCard.module"
-                              [instanceId]="bag.instanceMap?.get(previewCard.trackingId)"
+                              [instanceId]="$safeNavigationMigration(bag.instanceMap?.get(previewCard.trackingId))"
                               [forceNewInstance]="!bag.instanceMap?.has(previewCard.trackingId)"
                             ></app-module-cvs>
                           </div>

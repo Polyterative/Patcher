@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
 import { ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
 import {
   MatAutocompleteModule,
@@ -30,6 +30,7 @@ import {
     MatChipsModule,
     MatInputModule
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './mat-form-entity-chip-input.component.html'
 })
 export class MatFormEntityChipInputComponent {
