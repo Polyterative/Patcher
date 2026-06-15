@@ -89,17 +89,6 @@
     }
   },
   "private": true,
-  "overrides": {
-    "webpack-dev-server>body-parser": "1.20.5",
-    "webpack-dev-server>shell-quote": "1.8.4",
-    "webpack-dev-server>ws": "8.21.0",
-    "webpack-dev-server>express>body-parser": "1.20.5",
-    "webpack-dev-server>express>body-parser>qs": "6.15.1",
-    "karma>tmp": "0.2.7",
-    "socks>ip-address": "10.2.0",
-    "hono": "4.12.25",
-    "@hono/node-server": "2.0.4"
-  },
   "dependencies": {
     "@angular/animations": "^22.0.1",
     "@angular/cdk": "^22.0.1",
@@ -173,7 +162,7 @@
     "@typescript-eslint/types": "^8.61.0",
     "@typescript-eslint/utils": "^8.61.0",
     "angular-build-info": "^2.0.1",
-    "body-parser": "1.20.5",
+    "body-parser": "1.20.4",
     "dompurify": "^3.4.10",
     "eslint": "^10.5.0",
     "express": "^4.22.2",
@@ -186,7 +175,7 @@
     "jasmine-spec-reporter": "^7.0.0",
     "karma": "^6.4.3",
     "karma-chrome-launcher": "^3.2.0",
-    "karma-coverage-istanbul-reporter": "^3.0.3",
+    "karma-coverage": "^2.2.1",
     "karma-jasmine": "^5.1.0",
     "karma-jasmine-html-reporter": "^2.1.0",
     "lint-staged": "^16.2.7",

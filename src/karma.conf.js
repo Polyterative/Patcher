@@ -2,7 +2,6 @@
 // https://karma-runner.github.io/1.0/config/configuration-file.html
 
 module.exports = function (config) {
-    const coverageIstanbulPlugin = require('karma-coverage-istanbul-reporter');
     const configuration = {
         basePath: '',
         frameworks: ['jasmine'],
@@ -10,20 +9,19 @@ module.exports = function (config) {
             require('karma-jasmine'),
             require('karma-chrome-launcher'),
             require('karma-jasmine-html-reporter'),
-            coverageIstanbulPlugin,
-            {
-                // Angular CLI (with --code-coverage) expects a reporter named "coverage".
-                // Alias it to the installed Istanbul reporter to keep CI working offline.
-                'reporter:coverage': coverageIstanbulPlugin['reporter:coverage-istanbul']
-            }
+            require('karma-coverage')
         ],
         client: {
             clearContext: true
         },
-        coverageIstanbulReporter: {
+        coverageReporter: {
             dir: require('path').join(__dirname, '../coverage'),
-            reports: ['html', 'lcovonly', 'text-summary'],
-            fixWebpackSourcePaths: true
+            subdir: '.',
+            reporters: [
+                { type: 'html' },
+                { type: 'lcovonly' },
+                { type: 'text-summary' }
+            ]
         },
         // kjhtml (Jasmine HTML reporter) intentionally omitted: it is only useful
         // when running in a headed browser session and adds overhead in headless CI.
