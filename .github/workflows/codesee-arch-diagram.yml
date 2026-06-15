@@ -21,6 +21,13 @@ name: CodeSee Map
 permissions:
   contents: read
 
+env:
+  COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
+
+defaults:
+  run:
+    shell: bash
+
 jobs:
   test_map_action:
     runs-on: ubuntu-latest
