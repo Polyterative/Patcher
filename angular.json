@@ -91,9 +91,6 @@
                 "server": false
               },
               "production": {
-                "outputMode": "static",
-                "ssr": false,
-                "server": false,
                 "fileReplacements": [
                   {
                    "replace": "src/environments/environment.ts",

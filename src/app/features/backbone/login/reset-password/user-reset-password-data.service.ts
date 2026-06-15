@@ -193,7 +193,7 @@ export class UserResetPasswordDataService extends SubManager implements OnDestro
    * Check if URL contains recovery parameters
    */
   checkForRecoveryInUrl(): boolean {
-    const hash = window.location.hash;
+    const hash = this.getBrowserLocationHash();
     const isRecovery = hash.includes('type=recovery') || hash.includes('type%3Drecovery');
     this.setRecoverySession(isRecovery);
     return isRecovery;
@@ -243,5 +243,9 @@ export class UserResetPasswordDataService extends SubManager implements OnDestro
       clearInterval(this.countdownInterval);
     }
     super.ngOnDestroy();
+  }
+
+  private getBrowserLocationHash(): string {
+    return typeof window === 'undefined' ? '' : window.location.hash;
   }
 }

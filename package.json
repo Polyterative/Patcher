@@ -30,6 +30,8 @@
     "test:functions:image-metadata": "node --test scripts/tests/image-metadata.test.cjs",
     "test:functions:public-id-migrations": "node --test scripts/tests/public-id-migrations.test.cjs",
     "test:functions:panel-ratio-audit": "node --test scripts/tests/panel-ratio-audit.test.mjs",
+    "test:ssr": "pnpm build && node scripts/tests/ssr-smoke.mjs",
+    "test:ssr:smoke": "node scripts/tests/ssr-smoke.mjs",
     "test:ci:full": "pnpm test:functions && pnpm test:unit:ci",
     "e2e": "pnpm test:e2e",
     "pretest:e2e": "pnpm exec playwright install chromium",

@@ -27,6 +27,7 @@ import {
   resolveRequestOrigin,
   resolveSsrAllowedHosts
 } from './ssr-host-config';
+import { environment } from './environments/environment';
 
 
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
@@ -55,6 +56,7 @@ export function app(): express.Express {
   // All other requests → Angular SSR via CommonEngine
   server.use((req, res, next) => {
     const { protocol, originalUrl, baseUrl, headers } = req;
+    const statusCode = resolveSsrStatusCode(originalUrl);
     const requestOrigin = resolveRequestOrigin({
       protocol,
       host: headers.host,
@@ -70,7 +72,7 @@ export function app(): express.Express {
         publicPath: browserDistFolder,
         providers: [{ provide: APP_BASE_HREF, useValue: baseUrl }],
       })
-      .then((html) => res.send(html))
+      .then((html) => res.status(statusCode).send(html))
       .catch(next);
   });
   
@@ -111,3 +113,44 @@ if (isMainModule(import.meta.url)) {
 export const reqHandler = isProd
   ? createNodeRequestHandler(app())
   : ((_req: any, _res: any, next: any) => next?.());
+
+function resolveSsrStatusCode(originalUrl: string): number {
+  try {
+    const pathname = new URL(originalUrl, 'https://patcher.xyz').pathname;
+    return isKnownApplicationRoute(pathname) && pathname !== '/404' ? 200 : 404;
+  } catch {
+    return 200;
+  }
+}
+
+function isKnownApplicationRoute(pathname: string): boolean {
+  return getKnownApplicationRoutePatterns().some(pattern => pattern.test(pathname));
+}
+
+function getKnownApplicationRoutePatterns(): RegExp[] {
+  const routePatterns = [
+    /^\/$/,
+    /^\/home\/?$/,
+    /^\/admin\/?$/,
+    /^\/auth\/(?:login|signup|reset-password|callback|complete-profile)\/?$/,
+    /^\/u\/[^/]+\/?$/,
+    /^\/user\/account\/?$/,
+    /^\/user\/area\/?$/,
+    /^\/racks(?:\/browser|\/details\/\d+|\/[^/]+)?\/?$/,
+    /^\/patches(?:\/browser|\/details\/\d+|\/[^/]+)?\/?$/,
+    /^\/modules(?:\/browser|\/details\/\d+|\/add)?\/?$/,
+    /^\/manufacturers(?:\/browser|\/details\/\d+)?\/?$/,
+    /^\/info\/(?:changelog|insights)\/?$/,
+    /^\/links\/retired\/?$/,
+    /^\/404\/?$/,
+  ];
+
+  if (environment.features.collectionsEnabled) {
+    routePatterns.push(
+      /^\/collections(?:\/browser|\/manage\/[^/]+|\/[^/]+)?\/?$/,
+      /^\/collection\/[^/]+\/?$/,
+    );
+  }
+
+  return routePatterns;
+}

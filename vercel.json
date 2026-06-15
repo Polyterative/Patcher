@@ -7,8 +7,13 @@
   "routes": [
     { "src": "/sitemap.xml", "dest": "/api/sitemap" },
     { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/index.html" }
+    { "src": "/(.*)", "dest": "/api/ssr" }
   ],
+  "functions": {
+    "api/ssr.mjs": {
+      "includeFiles": "dist/Patcher/**"
+    }
+  },
   "headers": [
     {
       "source": "/:file.js",
