@@ -1,4 +1,4 @@
-// This file is required by karma.conf.js and loads recursively all the .spec and framework files
+// Shared unit-test setup loaded by the Angular test builder.
 import 'zone.js';
 import 'zone.js/testing';
 import { getTestBed } from '@angular/core/testing';
@@ -6,7 +6,6 @@ import {
   BrowserDynamicTestingModule,
   platformBrowserDynamicTesting
 } from '@angular/platform-browser-dynamic/testing';
-
 
 const originalConsoleWarn = console.warn.bind(console);
 
@@ -19,10 +18,8 @@ console.warn = (...args: unknown[]): void => {
   originalConsoleWarn(...args);
 };
 
-// First, initialize the Angular testing environment.
 getTestBed().initTestEnvironment(
   BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting(), {
-    teardown: {destroyAfterEach: false}
-  }
+  platformBrowserDynamicTesting(),
+  { teardown: { destroyAfterEach: false } }
 );
