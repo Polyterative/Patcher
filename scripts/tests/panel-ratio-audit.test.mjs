@@ -6,7 +6,7 @@ import {
   DEFAULT_PANEL_RATIO_THRESHOLD,
   getModuleFormatGeometry,
   parseImageDimensions
-} from '../audit-panel-ratios.mjs';
+} from '../audits/audit-panel-ratios.mjs';
 
 test('calculates accepted 3U panel ratio with default threshold', () => {
   const result = calculatePanelRatio({

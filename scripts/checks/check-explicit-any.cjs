@@ -2,13 +2,13 @@
 /**
  * Explicit `any` ratchet.
  *
- * Existing explicit-any usage is recorded in scripts/.explicit-any-baseline.json
+ * Existing explicit-any usage is recorded in scripts/checks/.explicit-any-baseline.json
  * so type-safety cleanup can be incremental, but new or increased usage is
  * blocked by lint and pre-commit checks.
  *
- * Run: node scripts/check-explicit-any.cjs
- * Update baseline: node scripts/check-explicit-any.cjs --update-baseline
- * Staged check: node scripts/check-explicit-any.cjs --staged <files...>
+ * Run: node scripts/checks/check-explicit-any.cjs
+ * Update baseline: node scripts/checks/check-explicit-any.cjs --update-baseline
+ * Staged check: node scripts/checks/check-explicit-any.cjs --staged <files...>
  */
 
 const fs = require('fs');
@@ -16,7 +16,7 @@ const path = require('path');
 const childProcess = require('child_process');
 const ts = require('typescript');
 
-const repoRoot = path.resolve(__dirname, '..');
+const repoRoot = path.resolve(__dirname, '..', '..');
 const baselinePath = path.join(__dirname, '.explicit-any-baseline.json');
 const updateBaseline = process.argv.includes('--update-baseline');
 const stagedMode = process.argv.includes('--staged');
@@ -104,7 +104,7 @@ function writeBaseline() {
   const scan = scanFiles(files, readWorktreeFile);
   const baseline = {
     _comment:
-      'Grandfathered explicit `any` counts. Do not add by hand — run `node scripts/check-explicit-any.cjs --update-baseline` after intentional cleanup.',
+      'Grandfathered explicit `any` counts. Do not add by hand — run `node scripts/checks/check-explicit-any.cjs --update-baseline` after intentional cleanup.',
     totalExplicitAny: scan.total,
     files: Object.fromEntries(Object.entries(scan.files).sort(([a], [b]) => a.localeCompare(b)))
   };
@@ -117,7 +117,7 @@ function writeBaseline() {
 function loadBaseline() {
   if (!fs.existsSync(baselinePath)) {
     console.error(
-      `Missing explicit-any baseline at ${baselinePath}.\nRun: node scripts/check-explicit-any.cjs --update-baseline`
+      `Missing explicit-any baseline at ${baselinePath}.\nRun: node scripts/checks/check-explicit-any.cjs --update-baseline`
     );
     process.exit(1);
   }

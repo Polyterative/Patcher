@@ -23,7 +23,7 @@ mini/haiku-class review pass. Hand confirmed fixes to `frontend-dev` on `gpt-5.5
   `git --no-pager blame`)
 - Trace observable chains, lifecycle hooks, and route data flow with grep / LSP
 - Inspect Sentry payloads if available (via MCP / browser)
-- Capture runtime UI state with `node scripts/agent-snapshot.mjs --route <path> --out /tmp/snap`
+- Capture runtime UI state with `node scripts/dev/agent-snapshot.mjs --route <path> --out /tmp/snap`
   (see `.github/skills/patcher-ui-debug/SKILL.md`) — screenshot, DOM, console, network in one call
 - Write a root-cause writeup before proposing a fix
 

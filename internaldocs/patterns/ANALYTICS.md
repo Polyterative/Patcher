@@ -99,4 +99,4 @@ constructor(private analytics: AnalyticsService) {}
 - 2026-06-10 — Chose PostHog Cloud (EU) over self-host / Mixpanel / GA4 / DIY Supabase.
   Free tier ≤ 1M events/mo; open-source escape hatch available.
 - 2026-06-10 — `AnalyticsService` is the only file importing `posthog-js` (besides
-  `main.ts`). Enforced by `scripts/check-posthog-imports.sh` in CI.
+  `main.ts`). Enforced by `scripts/checks/check-posthog-imports.sh` in CI.

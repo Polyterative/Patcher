@@ -31,7 +31,7 @@ export default defineConfig({
   workers: process.env['CI'] ? 1 : undefined,
   reporter: 'list',
   webServer: {
-    command: `node scripts/serve-dist.cjs`,
+    command: `node scripts/build/serve-dist.cjs`,
     url: BASE_URL,
     env: {PORT: String(PORT)},
     reuseExistingServer: !process.env['CI'],

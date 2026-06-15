@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildPrerenderRoutes, STATIC_ROUTES } from '../generate-prerender-routes.mjs';
+import { buildPrerenderRoutes, STATIC_ROUTES } from '../build/generate-prerender-routes.mjs';
 
 function ok(payload) {
   return {

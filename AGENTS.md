@@ -134,21 +134,21 @@ These run as part of `pnpm lint`. Read the error message — each lint is writte
 to tell you exactly how to fix the violation, and points at the canonical doc.
 Mechanical rules are catalogued in [`internaldocs/GOLDEN_PRINCIPLES.md`](./internaldocs/GOLDEN_PRINCIPLES.md).
 
-- `scripts/check-layering.cjs` — enforces `Component → Data Service → API Service → Supabase`.
+- `scripts/checks/check-layering.cjs` — enforces `Component → Data Service → API Service → Supabase`.
   - **R1** Components must not import `SupabaseService` directly — use a co-located `*-data.service.ts`.
   - **R2** Files outside `features/backend/` must not import `DatabaseStrings`.
   - **R3** API services must not depend on component-scoped data services.
   - **R4** `*.ts` files >500 lines warn, >1000 lines error. Split.
-  - Existing violations are grandfathered in `scripts/.layering-baseline.json`.
+  - Existing violations are grandfathered in `scripts/checks/.layering-baseline.json`.
     Refactor to remove entries; update the baseline only with explicit justification
-    (`node scripts/check-layering.cjs --update-baseline`).
-- `scripts/check-route-module-imports.cjs` — `RouterModule.forRoot()` only in `app-routing.module.ts`; lazy-loaded route modules cannot be imported as shared UI.
-- `scripts/check-px-ts.sh` — hardcoded `px` in `*.ts` (use `rem`; annotate intentional `px` with `// px-ok`).
-- `scripts/check-docs.cjs` — broken markdown links inside `internaldocs/`, missing personas, plan files without a Decision log, `CURRENT_FEATURE.md` partial active feature.
+    (`node scripts/checks/check-layering.cjs --update-baseline`).
+- `scripts/checks/check-route-module-imports.cjs` — `RouterModule.forRoot()` only in `app-routing.module.ts`; lazy-loaded route modules cannot be imported as shared UI.
+- `scripts/checks/check-px-ts.sh` — hardcoded `px` in `*.ts` (use `rem`; annotate intentional `px` with `// px-ok`).
+- `scripts/checks/check-docs.cjs` — broken markdown links inside `internaldocs/`, missing personas, plan files without a Decision log, `CURRENT_FEATURE.md` partial active feature.
 
 ## 12) Runtime legibility for agents
 
 When an agent needs to see the running app (visual bug repro, fix validation, runtime
 console / network state), use the [`patcher-ui-debug` skill](.github/skills/patcher-ui-debug/SKILL.md).
-It wraps `scripts/agent-snapshot.mjs` and the Sentry / Supabase MCP cookbook for one-shot
+It wraps `scripts/dev/agent-snapshot.mjs` and the Sentry / Supabase MCP cookbook for one-shot
 runtime snapshots. Personas `bug-hunter` and `designer` reference it directly.

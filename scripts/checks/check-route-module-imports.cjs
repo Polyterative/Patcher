@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const childProcess = require('child_process');
 
-const repoRoot = path.resolve(__dirname, '..');
+const repoRoot = path.resolve(__dirname, '..', '..');
 const moduleFiles = childProcess
   .execFileSync('find', ['src/app', '-name', '*.module.ts'], {
     cwd: repoRoot,

@@ -1,4 +1,4 @@
-<!-- Auto-split from TODO.md by scripts/split-todo.cjs. -->
+<!-- Auto-split from TODO.md by scripts/dev/split-todo.cjs. -->
 <!-- Section: INFRA (independent; pick any time a product task is blocked) -->
 
 #### LOW: Module Browser — keyword highlighting in descriptions

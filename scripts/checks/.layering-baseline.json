@@ -1,5 +1,5 @@
 {
-  "_comment": "Grandfathered layering violations. Do not add by hand — run `node scripts/check-layering.cjs --update-baseline`. New violations should NOT be added; refactor instead.",
+  "_comment": "Grandfathered layering violations. Do not add by hand — run `node scripts/checks/check-layering.cjs --update-baseline`. New violations should NOT be added; refactor instead.",
   "R1": [
     "src/app/components/format-translator/standards.service.ts",
     "src/app/components/module-parts/module-details/module-details.component.ts",

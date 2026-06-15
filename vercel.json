@@ -3,7 +3,7 @@
   "installCommand": "corepack enable pnpm && pnpm install --no-frozen-lockfile",
   "buildCommand": "pnpm build:release",
   "outputDirectory": "dist/Patcher/browser",
-  "ignoreCommand": "bash scripts/vercel-ignore-build.sh",
+  "ignoreCommand": "bash scripts/build/vercel-ignore-build.sh",
   "routes": [
     { "src": "/sitemap.xml", "dest": "/api/sitemap" },
     { "handle": "filesystem" },

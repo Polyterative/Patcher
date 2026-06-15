@@ -58,7 +58,7 @@ import { ModuleListModule } from '../module-list/module-list.module';
  *
  * Exists so the component can be embedded in non-module-browser feature modules
  * (e.g. the rack editor) without importing the routed ModuleBrowserModule, which
- * is forbidden by scripts/check-route-module-imports.cjs.
+ * is forbidden by scripts/checks/check-route-module-imports.cjs.
  */
 @NgModule({
   declarations: [

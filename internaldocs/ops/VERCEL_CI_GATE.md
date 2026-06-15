@@ -17,8 +17,8 @@ for GitHub Actions.
 
 ## Moving parts
 
-- `vercel.json` sets `"ignoreCommand": "bash scripts/vercel-ignore-build.sh"`.
-- `scripts/vercel-ignore-build.sh` is intentionally shell-only. Do not rely on `node`, package installs, or project
+- `vercel.json` sets `"ignoreCommand": "bash scripts/build/vercel-ignore-build.sh"`.
+- `scripts/build/vercel-ignore-build.sh` is intentionally shell-only. Do not rely on `node`, package installs, or project
   dependencies; the ignored-build step runs before the Vercel install/build phase.
 - Vercel must have a project environment variable named `GITHUB_TOKEN` enabled for **Preview** and **Production**.
 

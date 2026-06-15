@@ -1,4 +1,4 @@
-<!-- Auto-split from TODO.md by scripts/split-todo.cjs. -->
+<!-- Auto-split from TODO.md by scripts/dev/split-todo.cjs. -->
 <!-- Section: INFRA (independent; pick any time a product task is blocked) -->
 
 #### BUG: Rack editor — name field empty when entering edit mode

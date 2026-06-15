@@ -1,4 +1,4 @@
-<!-- Auto-split from TODO.md by scripts/split-todo.cjs. -->
+<!-- Auto-split from TODO.md by scripts/dev/split-todo.cjs. -->
 <!-- Section: INFRA (independent; pick any time a product task is blocked) -->
 
 #### HIGH: Type safety — eliminate `any` and flow Supabase types end-to-end
@@ -43,7 +43,7 @@ strictness/count-reduction goals are intentionally not active work.
 
 <!-- Append timestamped one-liners as the plan progresses. -->
 
-- 2026-06-14T14:15+02:00 — Started with the lint/baseline ratchet slice because it is behavior-preserving and unblocked by schema/RLS approval. Reused the existing `scripts/check-layering.cjs` baseline pattern and lint-staged hooks instead of adding a new lint framework.
+- 2026-06-14T14:15+02:00 — Started with the lint/baseline ratchet slice because it is behavior-preserving and unblocked by schema/RLS approval. Reused the existing `scripts/checks/check-layering.cjs` baseline pattern and lint-staged hooks instead of adding a new lint framework.
 - 2026-06-14T14:20+02:00 — Recorded the current AST-counted baseline at 2,993 explicit `any` keywords (excluding generated Supabase types), wired `pnpm lint` to fail only on per-file increases above baseline, and wired lint-staged to fail staged files whose count increases against `HEAD`.
 - 2026-06-14T14:24+02:00 — Added a type-only/backend-local Supabase helper layer (`supabase-db.types.ts`) and migrated low-risk response casts in `supabase-get`, `supabase-add`, and `supabase-update`. Avoided changing shared operator typing because it caused broad app-level inference churn. Baseline now 2,979.
 - 2026-06-14T14:26+02:00 — Migrated the remaining `get.statistics()` count responses to `responseCount()`, clearing `supabase-get.ts` from the explicit-any baseline. Baseline now 2,976.

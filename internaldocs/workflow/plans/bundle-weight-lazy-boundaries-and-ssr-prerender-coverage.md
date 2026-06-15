@@ -1,4 +1,4 @@
-<!-- Auto-split from TODO.md by scripts/split-todo.cjs. -->
+<!-- Auto-split from TODO.md by scripts/dev/split-todo.cjs. -->
 <!-- Section: INFRA (independent; pick any time a product task is blocked) -->
 
 #### HIGH: Bundle weight, lazy boundaries, and SSR prerender coverage
@@ -29,7 +29,7 @@ initial graph.
   `@angular/flex-layout` in favour of CSS grid/flex utilities already in `tools.scss`.
 - Move admin-panel, `application-insights`, sigma/graph view, `ngx-image-cropper`,
   `ngx-dropzone`, and Lottie behind `@defer` blocks or route-level `loadComponent`.
-- Generalise `scripts/generate-prerender-routes.mjs` to enumerate top public racks / modules /
+- Generalise `scripts/build/generate-prerender-routes.mjs` to enumerate top public racks / modules /
   patches / profiles / manufacturers so they are SSR-cached and crawlable; cap volume to a
   sensible top-N to keep build time manageable.
 - Image audit: add `loading="lazy"`, explicit `width`/`height`, and proper `alt` (only 154
