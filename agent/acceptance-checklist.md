@@ -1,7 +1,7 @@
 # Acceptance Checklist
 
-- [x] Layout panel exposes one scope button per rack row.
-- [x] Row scope active state compares row indexes correctly.
-- [x] Remix execution can reorder only the selected row.
-- [x] Existing All / 3U / 1U scope behavior remains intact.
-- [x] Focused rack editor and rack detail data service tests pass.
+- [x] All-scope button keeps the default "Remix layout" label.
+- [x] 3U scope labels the action "Remix 3U".
+- [x] 1U scope labels the action "Remix 1U".
+- [x] Row scope labels the action with the selected row number.
+- [x] Focused rack editor component tests pass.

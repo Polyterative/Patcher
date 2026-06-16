@@ -1,5 +1,9 @@
 # Decision Log
 
+## 16-06-2026 18:40
+
+- **Rack remix scoped action labels:** Keep the Remix action as one path but label it from the active scope. This avoids ambiguity after adding row scope buttons without creating new action semantics.
+
 ## 16-06-2026 18:30
 
 - **Rack remix row scope:** Implement row scope as explicit `{ rowIndex }` values in the same Layout scope pipeline. Compare row scopes by value instead of object identity, and reuse existing row-local Remix output rather than adding a separate action path.

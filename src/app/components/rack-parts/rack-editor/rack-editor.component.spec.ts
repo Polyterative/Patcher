@@ -627,6 +627,22 @@ describe('RackEditorComponent', () => {
     expect(component.isLayoutScopeActive({rowIndex: 0}, {rowIndex: 1})).toBeFalse();
   });
 
+  it('labels the remix action for the active layout scope', () => {
+    const component = createComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      {} as RackDetailDataService,
+      {} as GeneralContextMenuDataService,
+      {markForCheck: () => undefined} as ChangeDetectorRef,
+      jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
+    );
+
+    expect(component.layoutRemixActionLabel('all')).toBe('Remix layout');
+    expect(component.layoutRemixActionLabel('3u')).toBe('Remix 3U');
+    expect(component.layoutRemixActionLabel('1u')).toBe('Remix 1U');
+    expect(component.layoutRemixActionLabel({rowIndex: 2})).toBe('Remix Row 3');
+  });
+
   it('requests layout remix through the rack data service', () => {
     const requestLayoutRemix$ = new Subject<void>();
     const component = createComponent(

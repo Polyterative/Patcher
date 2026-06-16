@@ -722,6 +722,22 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
     return `Remix would move ${ movedCount } module${ movedCount === 1 ? '' : 's' }.`;
   }
 
+  layoutRemixActionLabel(scope: RackLayoutScope | null | undefined): string {
+    if (!scope) {
+      return 'Remix layout';
+    }
+    if (scope === '3u') {
+      return 'Remix 3U';
+    }
+    if (scope === '1u') {
+      return 'Remix 1U';
+    }
+    if (typeof scope === 'object') {
+      return `Remix Row ${ scope.rowIndex + 1 }`;
+    }
+    return 'Remix layout';
+  }
+
   setShouldShowPanelImages(show: boolean): void {
     this.dataService.shouldShowPanelImages$.next(show);
     this.analytics.capture('rack.panel_images_toggled', {
