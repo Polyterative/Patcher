@@ -3,6 +3,8 @@
 > Archive of finished work. One-line summaries only. For strategy context see `../product/PRINCIPLES.md` and
 > `../product/ROADMAP.md`.
 
+- **2026-06-16** — MEDIUM: Rack Editor — Layout panel now hides the Remix action for mixed-format rows and shows the blocker before the user triggers a no-op action.
+
 - **2026-06-16** — MEDIUM: Rack Editor — Layout analysis panel now shows current validity at a glance, including mixed-format blockers, overflow HP, or spare HP without row hover.
 
 - **2026-06-16** — MEDIUM: Rack Editor — Remix layout now has an All / 3U / 1U scope selector that drives both the Layout panel count and the Remix action.

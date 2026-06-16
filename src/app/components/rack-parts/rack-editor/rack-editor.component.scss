@@ -287,6 +287,12 @@ $floatingSurfaceMaxWidth: 16.5rem;
   color: rgba(47, 67, 88, 0.72);
 }
 
+.rackEditorFloatingOptions__analysisHint--blocked {
+  margin-top: 0.45rem;
+  color: rgba(128, 58, 30, 0.82);
+  font-weight: 700;
+}
+
 .rackEditorFloatingOptions__analysisHint--coverage {
   margin-top: 0.35rem;
   color: rgba(25, 60, 91, 0.76);

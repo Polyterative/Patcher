@@ -1,5 +1,14 @@
 # Session Log
 
+## 16-06-2026 18:10 — Rack remix mixed-format CTA blocker
+
+- **Task selected:** Continue the frontend-only Rack Editor Remix plan by making the existing mixed-format blocker visible before action time.
+- **Source:** `internaldocs/workflow/plans/rack-editor-remix-layout-optimizer.md` mixed-row precondition.
+- **Actions performed:** Added a Layout panel blocker message and hides the editable Remix action when mixed physical formats appear in one row.
+- **Tests run:** `pnpm test-headless --include="**/rack-editor.component.spec.ts"` — 30 specs passed; `pnpm lint` — passed with existing warning baseline.
+- **Docs updated:** Updated Remix plan decision log, completed-features archive, current task, acceptance checklist, and this session log.
+- **Blockers raised:** None.
+
 ## 16-06-2026 18:00 — Rack remix validity summary
 
 - **Task selected:** Continue the frontend-only Rack Editor Remix panel work with the plan's current-layout-validity requirement.

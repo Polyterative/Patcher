@@ -1,7 +1,6 @@
 # Acceptance Checklist
 
-- [x] Layout panel shows current validity without requiring row hover.
-- [x] Mixed-format rows report a clear blocker summary.
-- [x] Overflow rows summarize total HP over capacity.
-- [x] Valid layouts summarize total spare HP.
+- [x] Editable Layout panel does not offer the Remix button while mixed-format rows exist.
+- [x] The panel explains that mixed-format rows must be fixed first.
+- [x] Existing data-service guard remains in place.
 - [x] Focused rack editor component tests pass.

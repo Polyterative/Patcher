@@ -311,14 +311,20 @@
                      <div class="rackEditorFloatingOptions__analysisHint rackEditorFloatingOptions__analysisHint--subtle">
                        {{ analysisPanelCopy.layout.remix }}
                      </div>
-                     <button mat-stroked-button
-                             type="button"
-                             class="rackEditorFloatingOptions__actionButton rackEditorFloatingOptions__actionButton--primary"
-                             (click)="requestLayoutRemix()"
-                     >
-                       <mat-icon>auto_fix_high</mat-icon>
-                       Remix layout
-                     </button>
+                     @if (layoutRemixUnavailableReason(bag.rowedRackedModules); as blockedReason) {
+                       <div class="rackEditorFloatingOptions__analysisHint rackEditorFloatingOptions__analysisHint--blocked">
+                         {{ blockedReason }}
+                       </div>
+                     } @else {
+                       <button mat-stroked-button
+                               type="button"
+                               class="rackEditorFloatingOptions__actionButton rackEditorFloatingOptions__actionButton--primary"
+                               (click)="requestLayoutRemix()"
+                       >
+                         <mat-icon>auto_fix_high</mat-icon>
+                         Remix layout
+                       </button>
+                     }
                    }
                    <div class="rackEditorFloatingOptions__analysisHint rackEditorFloatingOptions__analysisHint--subtle">
                      {{ analysisPanelCopy.layout.detail }}
