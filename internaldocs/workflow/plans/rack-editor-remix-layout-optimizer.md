@@ -95,9 +95,9 @@ rack visual model shows a "remix" control panel in the same floating options are
       panels in `rack-editor.component.html`).
 - [x] "Auto-arrange" emits new row assignments through `rackDetailDataService` using the
       diff-based update path (batch move, not full reload).
-- [ ] Blank panels (`isBlankModule`) are stripped before remix and ignored in HP accounting
+- [x] Blank panels (`isBlankModule`) are stripped before remix and ignored in HP accounting
       for arrangement count.
-- [ ] Unit-test `computeLayoutAnalysis` with known fixtures (e.g. 4 modules × [10, 20, 30,
+- [x] Unit-test `computeLayoutAnalysis` with known fixtures (e.g. 4 modules × [10, 20, 30,
       40] HP into a 84 HP rack).
 
 ---
@@ -117,3 +117,4 @@ rack visual model shows a "remix" control panel in the same floating options are
 - **2026-06-14:** Restored manual drag/drop animation isolation after the Remix FLIP work. Manual CDK drops now suppress only the Remix layout-move animation for a short cooldown so the original drag settle/reveal timing can run without competing transforms.
 - **2026-06-14:** Refined Remix FLIP to capture full module rects, animate any width/height deltas from a top-left origin, disable the base transform transition while WAAPI owns the move, and scale duration by travel distance from a slower 620ms floor. This targets the remaining edge-case wonkiness in long cross-row or dimension-changing transforms.
 - **2026-06-14:** Rejected the ghost-overlay approach after runtime feedback because it combined fade/reappear with awkward movement. Kept direct FLIP, and instead disable Angular enter/leave animations at the rack-screen boundary only during programmatic Remix motion so row-container teardown does not show through while WAAPI owns movement.
+- **2026-06-16:** Replaced the placeholder 0/1 valid-arrangement count with exact dynamic counts for bounded small physical-format groups plus a deterministic sampled estimate for larger groups. Surfaced the live exact/estimated summary in the existing Layout analysis panel, while keeping shuffle and confidence intervals out of scope.

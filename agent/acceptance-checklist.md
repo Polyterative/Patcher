@@ -1,7 +1,6 @@
 # Acceptance Checklist
 
-- [x] Module browser cards opt into description keyword highlighting.
-- [x] Other module contexts keep highlighting disabled by default.
-- [x] Highlights reuse rack balance purpose patterns and cap at two spans.
-- [x] Description HTML is escaped before trusted highlight markup is returned.
-- [x] Focused pipe and component tests pass.
+- [x] `computeLayoutAnalysis` returns a real exact valid-arrangement count for small format groups instead of only 0/1.
+- [x] The count respects rack HP, row count, physical-standard grouping, and impossible arrangements.
+- [x] The existing Layout analysis panel shows a concise exact/estimated/empty/impossible summary.
+- [x] Focused rack layout utility and rack editor component tests pass.

@@ -1,5 +1,9 @@
 # Decision Log
 
+## 16-06-2026 17:34
+
+- **Rack remix arrangement counts:** Continued the existing frontend-only Remix plan rather than blocked backend-dependent roadmap items. Count exact valid arrangements per physical-format group only while the DP state space is bounded, use a deterministic sampled estimate for larger groups, and expose the result in the existing Layout panel; leave shuffle and statistical confidence intervals for later.
+
 ## 16-06-2026 17:08
 
 - **Rack row move motion polish:** Selected the existing Rack Editor granular-update plan's Layer 3 S15 because roadmap Tier 0 frontend-only site-ops banner is already implemented and completed, while the TODO still has this HIGH unblocked frontend-only rack polish item. Keep row motion in `RackVisualModelComponent` as a transient visual observer of `requestMoveRow$`; do not change `RackDetailDataService` persistence or backend calls.

@@ -63,6 +63,37 @@ describe('computeLayoutAnalysis', () => {
     ]);
   });
 
+  it('counts exact valid arrangements across the available rows for small racks', () => {
+    const result = computeLayoutAnalysis([
+      [rackModule(1, 10, 0), rackModule(2, 20, 0)],
+      [rackModule(3, 30, 1), rackModule(4, 40, 1)]
+    ], 84);
+
+    expect(result.validArrangementCount).toBe(12);
+  });
+
+  it('returns zero valid arrangements when scoped modules cannot fit available rows', () => {
+    const result = computeLayoutAnalysis([
+      [rackModule(1, 60, 0), rackModule(2, 30, 0)]
+    ], 84);
+
+    expect(result.validArrangementCount).toBe(0);
+  });
+
+  it('uses an estimate when exact counting would have too many row-state combinations', () => {
+    const result = computeLayoutAnalysis(
+      Array.from({length: 8}, (_, rowIndex) =>
+        Array.from({length: rowIndex < 4 ? 3 : 2}, (_, columnIndex) =>
+          rackModule((rowIndex * 3) + columnIndex + 1, 1, rowIndex)
+        )
+      ),
+      84
+    );
+
+    expect(result.validArrangementCount).toBe('estimated');
+    expect(result.estimate).toBeGreaterThan(0);
+  });
+
   it('honours 1u and 3u scopes', () => {
     const rows = [
       [rackModule(1, 8, 0, 0)],

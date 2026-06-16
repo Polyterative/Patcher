@@ -3,6 +3,8 @@
 > Archive of finished work. One-line summaries only. For strategy context see `../product/PRINCIPLES.md` and
 > `../product/ROADMAP.md`.
 
+- **2026-06-16** — MEDIUM: Rack Editor — Remix layout now reports exact valid-arrangement counts for small physical-format groups in the Layout panel, replacing the old placeholder 0/1 signal.
+
 - **2026-06-16** — LOW: Module Browser — descriptions now opt into two subtle balance-axis keyword highlights in browser cards, using existing rack-balance purpose patterns and sanitized inline spans.
 
 - **2026-06-16** — LOW: Rack Editor — Same-HP hover aid now highlights matching-width modules and dims non-matches only in editable off-analysis mode, with focused component coverage and runtime screenshot validation.
