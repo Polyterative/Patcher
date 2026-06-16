@@ -59,7 +59,7 @@ jobs:
         uses: actions/setup-node@v4
         if: ${{ fromJSON(steps.detect-languages.outputs.languages).javascript }}
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: '.node-version'
 
       - name: Configure Python 3.x
         uses: actions/setup-python@v5

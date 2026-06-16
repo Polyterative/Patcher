@@ -14,7 +14,6 @@ on:
       - 'package.json'
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
-      - '.nvmrc'
       - '.node-version'
       - 'angular.json'
       - 'tsconfig*.json'
@@ -30,7 +29,6 @@ on:
       - 'package.json'
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
-      - '.nvmrc'
       - '.node-version'
       - 'angular.json'
       - 'tsconfig*.json'
@@ -94,7 +92,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: '.node-version'
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
@@ -112,19 +110,19 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .angular/cache
-          key: angular-${{ runner.os }}-node-${{ hashFiles('.nvmrc') }}-${{ matrix.cache_scope }}-${{ hashFiles('angular.json', 'tsconfig*.json', 'package.json', 'pnpm-lock.yaml') }}
+          key: angular-${{ runner.os }}-node-${{ hashFiles('.node-version') }}-${{ matrix.cache_scope }}-${{ hashFiles('angular.json', 'tsconfig*.json', 'package.json', 'pnpm-lock.yaml') }}
           restore-keys: |
-            angular-${{ runner.os }}-node-${{ hashFiles('.nvmrc') }}-${{ matrix.cache_scope }}-
-            angular-${{ runner.os }}-node-${{ hashFiles('.nvmrc') }}-
+            angular-${{ runner.os }}-node-${{ hashFiles('.node-version') }}-${{ matrix.cache_scope }}-
+            angular-${{ runner.os }}-node-${{ hashFiles('.node-version') }}-
 
       - name: Cache Playwright browsers
         if: matrix.name == 'Production build + smoke'
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-node-${{ hashFiles('.nvmrc') }}-${{ hashFiles('package.json', 'pnpm-lock.yaml') }}
+          key: playwright-${{ runner.os }}-node-${{ hashFiles('.node-version') }}-${{ hashFiles('package.json', 'pnpm-lock.yaml') }}
           restore-keys: |
-            playwright-${{ runner.os }}-node-${{ hashFiles('.nvmrc') }}-
+            playwright-${{ runner.os }}-node-${{ hashFiles('.node-version') }}-
             playwright-${{ runner.os }}-
 
       - name: Install Playwright Chromium

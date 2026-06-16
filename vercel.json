@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "installCommand": "corepack enable pnpm && corepack prepare pnpm@10.33.4 --activate && pnpm install --frozen-lockfile --prefer-offline",
-  "buildCommand": "pnpm build:release",
+  "installCommand": "mkdir -p .vercel-corepack && corepack enable --install-directory \"$PWD/.vercel-corepack\" pnpm && PATH=\"$PWD/.vercel-corepack:$PATH\" pnpm install --frozen-lockfile --prefer-offline",
+  "buildCommand": "mkdir -p .vercel-corepack && corepack enable --install-directory \"$PWD/.vercel-corepack\" pnpm && PATH=\"$PWD/.vercel-corepack:$PATH\" pnpm build:release",
   "outputDirectory": "dist/Patcher/browser",
   "ignoreCommand": "bash scripts/build/vercel-ignore-build.sh",
   "routes": [
