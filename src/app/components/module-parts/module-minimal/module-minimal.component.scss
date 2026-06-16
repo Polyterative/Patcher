@@ -114,6 +114,11 @@
   max-height: 14rem;
 }
 
+.module-minimal__focus-hide--full-description {
+  max-height: none;
+  overflow: visible;
+}
+
 .module-minimal__focus-hide--copy:has(> app-module-part-description:hover),
 .module-minimal__focus-hide--copy:has(> app-module-part-description:focus-within) {
   position: relative;
