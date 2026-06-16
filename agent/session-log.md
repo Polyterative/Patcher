@@ -1858,3 +1858,8 @@ Completed Rack Editor — Granular Local Updates S16: replace-with-blank no long
 **[2026-06-16T18:23+02:00 autonomous loop — feature 2/10]**
 
 Completed Rack Editor — Same-HP highlight on hover. Matching same-width neighbors highlight and non-matches dim only in editable off-analysis mode. Validation: `pnpm test-headless --include="**/rack-visual-model.component.spec.ts"` (55/55) and runtime Playwright screenshot/class check (`highlighted: 1`).
+
+---
+**[2026-06-16T18:29+02:00 autonomous loop — feature 3/10]**
+
+Completed Module Browser — keyword highlighting in descriptions. Added `DescriptionKeywordHighlightPipe`, opt-in browser view config, description SCSS axis colours, and focused pipe/component coverage. Validation: `pnpm test-headless --include="**/description-keyword-highlight.pipe.spec.ts" --include="**/module-part-description.component.spec.ts"` (16/16).

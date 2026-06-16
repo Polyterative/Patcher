@@ -55,6 +55,7 @@ import { FormsModule } from "@angular/forms";
 import { CopyableDirective } from "src/app/shared-interproject/app-copy-on-click.directive";
 import { ModulePanelZoomDialogComponent } from './module-details/module-panel-zoom-dialog.component';
 import { ModulePossessionDialogComponent } from './module-possession-dialog/module-possession-dialog.component';
+import { DescriptionKeywordHighlightPipe } from './shared-pipes/description-keyword-highlight.pipe';
 
 
 @NgModule({
@@ -77,7 +78,8 @@ import { ModulePossessionDialogComponent } from './module-possession-dialog/modu
     GetModuleHeightForStandardPipe,
     ModulePartImageComponent,
     ModulePanelZoomDialogComponent,
-    ModulePossessionDialogComponent
+    ModulePossessionDialogComponent,
+    DescriptionKeywordHighlightPipe
   ],
   providers:    [
     ModuleDetailDataService

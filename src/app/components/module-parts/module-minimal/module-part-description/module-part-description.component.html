@@ -10,17 +10,19 @@
       [attr.tabindex]="shouldClampDescription ? 0 : null"
       (mouseenter)="updateReaderAlignment(descriptionTrigger)"
       (focus)="updateReaderAlignment(descriptionTrigger)"
-    >
-      {{ data.description }}
-    </mat-card-subtitle>
+      [innerHTML]="viewConfig.highlightDescriptionKeywords
+        ? (data.description | descriptionKeywordHighlight)
+        : data.description"
+    ></mat-card-subtitle>
     @if (shouldClampDescription) {
       <span
         class="module-description-reader"
         [class.module-description-reader--align-end]="readerAlignEnd"
         aria-hidden="true"
-      >
-        {{ data.description }}
-      </span>
+        [innerHTML]="viewConfig.highlightDescriptionKeywords
+          ? (data.description | descriptionKeywordHighlight)
+          : data.description"
+      ></span>
     }
   </div>
 }
