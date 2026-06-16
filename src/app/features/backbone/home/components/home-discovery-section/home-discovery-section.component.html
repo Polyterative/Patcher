@@ -1,42 +1,63 @@
 @if (discovery$ | async; as discovery) {
-  <lib-hero-content-card titleNormal="Community trends" icon="trending_up" class="home-discovery-card">
+  <lib-hero-content-card
+    titleNormal="Community trends"
+    icon="trending_up"
+    description="See what the community owns, wants, and moves most often."
+    descriptionAlign="alignTextStart"
+    class="home-discovery-card"
+  >
     <div class="home-discovery">
-      <p class="home-discovery__intro">
-        See what the community owns, wants, and moves most often.
-      </p>
-
-      <mat-button-toggle-group
-        class="home-discovery__tabs"
-        [value]="selectedBucket"
-        (change)="onBucketChange($event.value)"
+      <div
+        class="home-discovery__mode-toggle"
+        role="group"
         aria-label="Community discovery buckets"
       >
         @for (bucket of discoveryBuckets; track bucket.key) {
-          <mat-button-toggle [value]="bucket.key">
-            <mat-icon>{{ bucket.icon }}</mat-icon>
+          <button
+            type="button"
+            class="home-discovery__mode-button"
+            [class.home-discovery__mode-button--active]="selectedBucket === bucket.key"
+            [attr.aria-pressed]="selectedBucket === bucket.key"
+            (click)="onBucketChange(bucket.key)"
+          >
+            <mat-icon class="home-discovery__mode-button-icon">{{ bucket.icon }}</mat-icon>
             {{ bucket.label }}
-          </mat-button-toggle>
+          </button>
         }
-      </mat-button-toggle-group>
+      </div>
 
       @if (currentEntries(discovery).length > 0) {
         <div class="home-discovery__rows" [attr.aria-label]="bucketLabel(selectedBucket)">
           @for (entry of currentEntries(discovery); track entry.id; let index = $index) {
-            <a
-              class="home-discovery__row"
+            <lib-clean-card
+              class="home-discovery__card"
               [routerLink]="['/modules/details', entry.id]"
               (click)="onModuleClick(selectedBucket, entry, index + 1)"
+              role="link"
+              tabindex="0"
             >
-              <span class="home-discovery__rank">{{ index + 1 }}</span>
-              <span class="home-discovery__name">{{ entry.name }}</span>
-              <span class="home-discovery__manufacturer">{{ entry.manufacturer.name }}</span>
-              <span class="home-discovery__count">{{ entry.count }}</span>
-            </a>
+              <div class="home-discovery__module-row">
+                <div class="home-discovery__rank">{{ index + 1 }}</div>
+                @if (entry.module; as module) {
+                  <app-module-minimal
+                    class="home-discovery__module"
+                    [data]="module"
+                    [viewConfig]="moduleViewConfig"
+                  ></app-module-minimal>
+                } @else {
+                  <div class="home-discovery__module-fallback">
+                    <span class="home-discovery__name">{{ entry.name }}</span>
+                    <span class="home-discovery__manufacturer">{{ entry.manufacturer.name }}</span>
+                  </div>
+                }
+                <div class="home-discovery__count">{{ entry.count }}</div>
+              </div>
+            </lib-clean-card>
           }
         </div>
       } @else {
         <p class="home-discovery__empty">
-          No modules clear the privacy threshold yet.
+          No community trend data is available yet.
         </p>
       }
     </div>

@@ -734,6 +734,37 @@ export class SupabaseQueriesService {
     })()).pipe(remapErrors());
   }
 
+  @Cacheable({
+    maxAge: smallCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('modules'))),
+    maxCacheCount: 50,
+  })
+  getPublicModulesByIds(moduleIds: number[]): Observable<MinimalModule[]> {
+    const uniqueModuleIds = [...new Set(moduleIds)].filter(id => Number.isFinite(id));
+
+    if (uniqueModuleIds.length === 0) {
+      return of([]);
+    }
+
+    return rxFrom(
+      this.supabase.from(DbPaths.modules)
+        .select(`
+          id,name,hp,description,public,created,updated,manufacturerId,
+          ${ QueryJoins.manufacturer },
+          ${ QueryJoins.standard },
+          ${ QueryJoins.module_panels },
+          ${ QueryJoins.module_tags }
+        `)
+        .filter('public', 'eq', true)
+        .in('id', uniqueModuleIds)
+        .order(`color`, {foreignTable: DbPaths.module_panels, ascending: true})
+        .limit(1, {foreignTable: DbPaths.module_panels})
+    ).pipe(
+      remapErrors(),
+      map((response: {data: MinimalModule[] | null}) => response.data ?? [])
+    );
+  }
+
   searchPublicModulesForCollection(query: string, limit = 24): Observable<MinimalModule[]> {
     const normalizedQuery = query.trim();
     if (normalizedQuery.length < 2) {

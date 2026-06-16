@@ -1,3 +1,5 @@
+import { MinimalModule } from 'src/app/models/module';
+
 export interface ApplicationInsightsTeaser {
   interpretation: string;
   methodology: string;
@@ -112,6 +114,7 @@ export interface ApplicationDiscoveryEntry {
     name: string;
   };
   count: number;
+  module?: MinimalModule;
 }
 
 export interface ApplicationDiscoverySnapshot {

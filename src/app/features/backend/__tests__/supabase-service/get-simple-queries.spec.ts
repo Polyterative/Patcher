@@ -1,5 +1,6 @@
 import { SupabaseService } from '../../supabase.service';
 import { TagType } from 'src/app/models/tag';
+import { MinimalModule } from 'src/app/models/module';
 import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest,
@@ -111,6 +112,63 @@ describe('SupabaseService - get simple queries', () => {
       service.get.userWithId('user-42').subscribe({
         next: (result: any) => {
           expect(result.data).toEqual(mockData);
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+  });
+
+  describe('GET.publicModulesByIds', () => {
+    it('loads public minimal modules by id with existing module joins', (done) => {
+      const mockData: MinimalModule[] = [
+        {
+          id: 5,
+          name: 'Maths',
+          description: '',
+          hp: 20,
+          public: true,
+          created: '2026-01-01T00:00:00.000Z',
+          updated: '2026-01-01T00:00:00.000Z',
+          manufacturerId: 1,
+          manufacturer: {id: 1, name: 'Make Noise'},
+          standard: {id: 0, name: '3U Doepfer'},
+          tags: [],
+          panels: []
+        }
+      ];
+      const mock = chainable({data: mockData, error: null});
+      const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
+      const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
+      const inSpy = spyOn(mock, 'in').and.returnValue(mock);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+      service.GET.publicModulesByIds([5, 5, 8]).subscribe({
+        next: (result) => {
+          expect(selectSpy).toHaveBeenCalledWith(jasmine.stringContaining('panels:module_panels'));
+          expect(selectSpy).toHaveBeenCalledWith(jasmine.stringContaining('tags:module_tags'));
+          expect(filterSpy).toHaveBeenCalledWith('public', 'eq', true);
+          expect(inSpy).toHaveBeenCalledWith('id', [5, 8]);
+          expect(result).toEqual(mockData);
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('does not query Supabase for an empty id list', (done) => {
+      const fromSpy = spyOn(supabaseClient, 'from');
+
+      service.GET.publicModulesByIds([]).subscribe({
+        next: (result) => {
+          expect(fromSpy).not.toHaveBeenCalled();
+          expect(result).toEqual([]);
           done();
         },
         error: (err) => {

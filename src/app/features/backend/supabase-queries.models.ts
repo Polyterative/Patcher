@@ -1,3 +1,5 @@
+import { MinimalModule } from 'src/app/models/module';
+
 export interface CurrentUserContributorStats {
   modulesSubmitted: number;
   approvedModules: number;
@@ -74,6 +76,7 @@ export interface PublicModuleDiscoveryEntry {
     name: string;
   };
   count: number;
+  module?: MinimalModule;
 }
 
 export interface PublicModuleDiscoverySnapshot {

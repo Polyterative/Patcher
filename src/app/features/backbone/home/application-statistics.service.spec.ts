@@ -1,8 +1,25 @@
 import { of } from 'rxjs';
 import { ApplicationStatisticsService } from './application-statistics.service';
+import { MinimalModule } from 'src/app/models/module';
 
 
 describe('ApplicationStatisticsService', () => {
+  function buildModule(id: number, name: string, manufacturerName: string): MinimalModule {
+    return {
+      id,
+      name,
+      description: '',
+      hp: 10,
+      public: true,
+      created: '2026-01-01T00:00:00.000Z',
+      updated: '2026-01-01T00:00:00.000Z',
+      manufacturerId: id,
+      manufacturer: {id, name: manufacturerName},
+      standard: {id: 0, name: '3U Doepfer'},
+      tags: [],
+      panels: []
+    };
+  }
   function build(
     counts = {
       publicModules: 1280,
@@ -124,7 +141,12 @@ describe('ApplicationStatisticsService', () => {
           mostSold: [
             {id: 11, name: 'Dixie II+', manufacturer: {id: 4, name: 'Intellijel'}, count: 13}
           ]
-        }))
+        })),
+        publicModulesByIds: jasmine.createSpy('GET.publicModulesByIds').and.returnValue(of([
+          buildModule(5, 'Maths', 'Intellijel'),
+          buildModule(8, 'Clouds', 'Mutable Instruments'),
+          buildModule(11, 'Dixie II+', 'Intellijel')
+        ]))
       }
     };
 
@@ -351,13 +373,15 @@ describe('ApplicationStatisticsService', () => {
     const {backend, service} = build();
 
     service.discovery$.subscribe((snapshot) => {
-      expect(backend.GET.applicationModuleDiscovery).toHaveBeenCalledWith(6, 3);
-      expect(snapshot.mostOwned[0]).toEqual({
+      expect(backend.GET.applicationModuleDiscovery).toHaveBeenCalledWith(6, 1);
+      expect(backend.GET.publicModulesByIds).toHaveBeenCalledWith([5, 8, 11]);
+      expect(snapshot.mostOwned[0]).toEqual(jasmine.objectContaining({
         id: 5,
         name: 'Maths',
         manufacturer: {id: 2, name: 'Intellijel'},
         count: 41
-      });
+      }));
+      expect(snapshot.mostOwned[0].module?.name).toBe('Maths');
       expect(snapshot.mostWanted[0].name).toBe('Clouds');
       expect(snapshot.mostSold[0].count).toBe(13);
       done();
