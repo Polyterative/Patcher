@@ -25,12 +25,15 @@ const npxCommand = process.platform === 'win32' ? 'npx.cmd' : 'npx';
 runCommand(npxCommand, [
     'tsc',
     sourceFile,
+    '--ignoreConfig',
     '--target',
     'es2022',
     '--module',
     'commonjs',
     '--lib',
     'es2022,dom',
+    '--types',
+    'node',
     '--outDir',
     outDir,
     '--skipLibCheck'

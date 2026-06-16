@@ -16,7 +16,10 @@ const path = require('path');
 
 const PORT = Number(process.env.PORT || 5557);
 const ROOT = path.resolve(process.env.ROOT || 'dist/Patcher/browser');
-const INDEX = path.join(ROOT, 'index.html');
+const INDEX = [
+  path.join(ROOT, 'index.html'),
+  path.join(ROOT, 'index.csr.html')
+].find(candidate => fs.existsSync(candidate));
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -37,8 +40,8 @@ const MIME = {
   '.map':  'application/json; charset=utf-8'
 };
 
-if (!fs.existsSync(INDEX)) {
-  console.error(`[serve-dist] ${INDEX} not found — run \`pnpm build\` first.`);
+if (!INDEX) {
+  console.error(`[serve-dist] neither index.html nor index.csr.html found in ${ROOT} — run \`pnpm build\` first.`);
   process.exit(1);
 }
 
