@@ -1,4 +1,5 @@
 import type { SignalFocusArea } from './rack-signal-analysis.utils';
+import type { RackLayoutScope } from './rack-layout-analysis.utils';
 
 
 export const RACK_ANALYSIS_MODES = {
@@ -35,9 +36,20 @@ export interface RackLayoutHoverModeOption {
   label: string;
 }
 
+export interface RackLayoutScopeOption {
+  scope: RackLayoutScope;
+  label: string;
+}
+
 export const RACK_LAYOUT_HOVER_MODE_OPTIONS: ReadonlyArray<RackLayoutHoverModeOption> = [
   {mode: RACK_LAYOUT_HOVER_MODES.sameHp, label: 'Same HP'},
   {mode: RACK_LAYOUT_HOVER_MODES.combinations, label: 'Combos'}
+];
+
+export const RACK_LAYOUT_SCOPE_OPTIONS: ReadonlyArray<RackLayoutScopeOption> = [
+  {scope: 'all', label: 'All'},
+  {scope: '3u', label: '3U'},
+  {scope: '1u', label: '1U'}
 ];
 
 export interface RackAnalysisLegendItem {

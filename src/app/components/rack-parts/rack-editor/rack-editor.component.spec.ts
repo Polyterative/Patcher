@@ -196,7 +196,8 @@ describe('RackEditorComponent', () => {
 
   it('summarizes the layout arrangement count for the analysis panel', () => {
     const dataService = {
-      singleRackData$: new BehaviorSubject({hp: 84})
+      singleRackData$: new BehaviorSubject({hp: 84}),
+      layoutScope$: new BehaviorSubject('all')
     } as unknown as RackDetailDataService;
     const component = createComponent(
       {} as MatSnackBar,
@@ -224,7 +225,8 @@ describe('RackEditorComponent', () => {
 
   it('summarizes when no layout arrangement fits the current row set', () => {
     const dataService = {
-      singleRackData$: new BehaviorSubject({hp: 84})
+      singleRackData$: new BehaviorSubject({hp: 84}),
+      layoutScope$: new BehaviorSubject('all')
     } as unknown as RackDetailDataService;
     const component = createComponent(
       {} as MatSnackBar,
@@ -493,6 +495,31 @@ describe('RackEditorComponent', () => {
     expect(analytics.capture).toHaveBeenCalledWith('rack.layout_hover_mode_changed', {
       rack_id: 88,
       mode: RACK_LAYOUT_HOVER_MODES.combinations
+    });
+  });
+
+  it('updates layout remix scope through the rack data service', () => {
+    const layoutScope$ = new BehaviorSubject<'all' | '3u' | '1u'>('all');
+    const analytics = jasmine.createSpyObj('AnalyticsService', ['capture']);
+    const component = createComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      {
+        layoutScope$,
+        singleRackData$: new BehaviorSubject({id: 88}),
+      } as unknown as RackDetailDataService,
+      {} as GeneralContextMenuDataService,
+      {markForCheck: () => undefined} as ChangeDetectorRef,
+      jasmine.createSpyObj<MatDialog>('MatDialog', ['open']),
+      analytics
+    );
+
+    component.setLayoutScope('3u');
+
+    expect(layoutScope$.value).toBe('3u');
+    expect(analytics.capture).toHaveBeenCalledWith('rack.layout_scope_changed', {
+      rack_id: 88,
+      scope: '3u'
     });
   });
 

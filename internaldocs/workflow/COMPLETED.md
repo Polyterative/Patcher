@@ -3,6 +3,8 @@
 > Archive of finished work. One-line summaries only. For strategy context see `../product/PRINCIPLES.md` and
 > `../product/ROADMAP.md`.
 
+- **2026-06-16** — MEDIUM: Rack Editor — Remix layout now has an All / 3U / 1U scope selector that drives both the Layout panel count and the Remix action.
+
 - **2026-06-16** — MEDIUM: Rack Editor — Remix layout now reports exact valid-arrangement counts for small physical-format groups in the Layout panel, replacing the old placeholder 0/1 signal.
 
 - **2026-06-16** — LOW: Module Browser — descriptions now opt into two subtle balance-axis keyword highlights in browser cards, using existing rack-balance purpose patterns and sanitized inline spans.
