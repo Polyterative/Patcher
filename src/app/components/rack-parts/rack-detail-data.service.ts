@@ -58,7 +58,12 @@ import {
 } from "@angular/forms";
 import { domToJpeg } from 'modern-screenshot';
 import { MatDialog } from "@angular/material/dialog";
-import { RackAnalysisMode, RACK_ANALYSIS_MODES } from './rack-analysis-mode';
+import {
+  RackAnalysisMode,
+  RackLayoutHoverMode,
+  RACK_ANALYSIS_MODES,
+  RACK_LAYOUT_HOVER_MODES
+} from './rack-analysis-mode';
 import { RackBalanceAnalysisService } from './rack-balance-analysis.service';
 import { RackBalanceAxisResult } from './rack-balance-analysis.types';
 import {
@@ -124,6 +129,7 @@ export class RackDetailDataService extends SubManager {
   readonly moduleAddedFromPicker$ = new Subject<MinimalModule>();
   readonly shouldShowPanelImages$ = new BehaviorSubject<boolean>(true);
   readonly analysisMode$ = new BehaviorSubject<RackAnalysisMode>(RACK_ANALYSIS_MODES.off);
+  readonly layoutHoverMode$ = new BehaviorSubject<RackLayoutHoverMode>(RACK_LAYOUT_HOVER_MODES.sameHp);
   readonly signalFocusArea$ = new BehaviorSubject<SignalFocusArea | null>(null);
   formData = {
     name: {

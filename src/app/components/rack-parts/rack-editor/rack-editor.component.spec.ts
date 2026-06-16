@@ -11,7 +11,11 @@ import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { RackedModule } from 'src/app/models/module';
 import { GeneralContextMenuDataService } from 'src/app/shared-interproject/components/@smart/general-context-menu/general-context-menu-data.service';
 import { RackEditorComponent } from './rack-editor.component';
-import { RACK_ANALYSIS_MODES } from '../rack-analysis-mode';
+import {
+  RACK_ANALYSIS_MODES,
+  RACK_LAYOUT_HOVER_MODES
+} from '../rack-analysis-mode';
+import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 
 
 describe('RackEditorComponent', () => {
@@ -23,7 +27,8 @@ describe('RackEditorComponent', () => {
     dataService: RackDetailDataService = {} as RackDetailDataService,
     contextMenuDataService: GeneralContextMenuDataService = {} as GeneralContextMenuDataService,
     changeDetectorRef: ChangeDetectorRef = {markForCheck: () => undefined} as ChangeDetectorRef,
-    dialog: MatDialog = jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
+    dialog: MatDialog = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']),
+    analytics: Pick<AnalyticsService, 'capture'> = {capture: () => undefined}
   ) {
     const normalizedContextMenu = {
       menuItems$: new BehaviorSubject<any[]>([]),
@@ -39,7 +44,7 @@ describe('RackEditorComponent', () => {
       normalizedContextMenu,
       changeDetectorRef,
       dialog,
-      {capture: () => {}} as any
+      analytics as AnalyticsService
     );
     createdComponents.push(component);
     return component;
@@ -373,6 +378,67 @@ describe('RackEditorComponent', () => {
     ]);
     expect(component.analysisModes.layout).toBe('layout');
     expect(component.analysisModeOptions.map(option => option.mode)).not.toContain(RACK_ANALYSIS_MODES.signal);
+  });
+
+  it('exposes layout analysis legend items for exact and combination highlights', () => {
+    const component = createComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      {} as RackDetailDataService,
+      {} as GeneralContextMenuDataService,
+      {markForCheck: () => undefined} as ChangeDetectorRef,
+      jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
+    );
+
+    expect(component.layoutAnalysisLegendItems.map(item => item.label)).toEqual([
+      'Same HP',
+      'Smaller combo',
+    ]);
+    expect(component.layoutAnalysisLegendItems.map(item => item.swatchClass)).toEqual([
+      'rackEditorFloatingOptions__analysisSwatch--layoutExact',
+      'rackEditorFloatingOptions__analysisSwatch--layoutCombo',
+    ]);
+  });
+
+  it('exposes layout hover mode options for pinned same-HP and cycling combos', () => {
+    const component = createComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      {} as RackDetailDataService,
+      {} as GeneralContextMenuDataService,
+      {markForCheck: () => undefined} as ChangeDetectorRef,
+      jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
+    );
+
+    expect(component.layoutHoverModeOptions.map(option => option.mode)).toEqual([
+      RACK_LAYOUT_HOVER_MODES.sameHp,
+      RACK_LAYOUT_HOVER_MODES.combinations,
+    ]);
+  });
+
+  it('updates layout hover mode through the rack data service', () => {
+    const layoutHoverMode$ = new BehaviorSubject(RACK_LAYOUT_HOVER_MODES.sameHp);
+    const analytics = jasmine.createSpyObj('AnalyticsService', ['capture']);
+    const component = createComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      {
+        layoutHoverMode$,
+        singleRackData$: new BehaviorSubject({id: 88}),
+      } as unknown as RackDetailDataService,
+      {} as GeneralContextMenuDataService,
+      {markForCheck: () => undefined} as ChangeDetectorRef,
+      jasmine.createSpyObj<MatDialog>('MatDialog', ['open']),
+      analytics
+    );
+
+    component.setLayoutHoverMode(RACK_LAYOUT_HOVER_MODES.combinations);
+
+    expect(layoutHoverMode$.value).toBe(RACK_LAYOUT_HOVER_MODES.combinations);
+    expect(analytics.capture).toHaveBeenCalledWith('rack.layout_hover_mode_changed', {
+      rack_id: 88,
+      mode: RACK_LAYOUT_HOVER_MODES.combinations
+    });
   });
 
   it('requests layout remix through the rack data service', () => {

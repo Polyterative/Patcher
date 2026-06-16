@@ -35,7 +35,12 @@ import {
 } from '../../module-parts/module-minimal/module-minimal.component';
 import { derivePanelLabel } from '../../module-parts/panel.constants';
 import { ModulePanelZoomDialogComponent } from '../../module-parts/module-details/module-panel-zoom-dialog.component';
-import { RACK_ANALYSIS_MODES, RACK_ANALYSIS_MODE_OPTIONS } from '../rack-analysis-mode';
+import {
+  RackLayoutHoverMode,
+  RACK_ANALYSIS_MODES,
+  RACK_ANALYSIS_MODE_OPTIONS,
+  RACK_LAYOUT_HOVER_MODE_OPTIONS
+} from '../rack-analysis-mode';
 import { SignalFocusArea } from '../rack-signal-analysis.utils';
 import { prefersTouchInteraction } from 'src/app/shared-interproject/touch-interaction.utils';
 import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
@@ -78,12 +83,17 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
   readonly touchInteractionMode = prefersTouchInteraction();
   readonly analysisModes = RACK_ANALYSIS_MODES;
   readonly analysisModeOptions = RACK_ANALYSIS_MODE_OPTIONS;
+  readonly layoutHoverModeOptions = RACK_LAYOUT_HOVER_MODE_OPTIONS;
   readonly signalAnalysisLegendItems = [
     {label: 'Audio', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--signalAudio'},
     {label: 'Pitch / V-Oct', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--signalPitch'},
     {label: 'Clock / Gate', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--signalClock'},
     {label: 'Modulation', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--signalModulation'},
     {label: 'Other', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--signalOther'},
+  ] as const;
+  readonly layoutAnalysisLegendItems = [
+    {label: 'Same HP', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--layoutExact'},
+    {label: 'Smaller combo', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--layoutCombo'},
   ] as const;
   readonly signalFocusOptions: Array<{value: SignalFocusArea; label: string}> = [
     {value: 'voices', label: 'Voices'},
@@ -600,6 +610,14 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
     this.analytics.capture('rack.signal_focus_changed', {
       rack_id: this.dataService.singleRackData$.value?.id,
       area
+    });
+  }
+
+  setLayoutHoverMode(mode: RackLayoutHoverMode): void {
+    this.dataService.layoutHoverMode$.next(mode);
+    this.analytics.capture('rack.layout_hover_mode_changed', {
+      rack_id: this.dataService.singleRackData$.value?.id,
+      mode
     });
   }
 

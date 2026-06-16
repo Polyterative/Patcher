@@ -48,10 +48,21 @@ import {
   RackLayoutAnalysisResult,
 } from '../../rack-layout-analysis.utils';
 import {
+  buildRackLayoutHoverCandidates,
+  buildRackLayoutHoverVisuals,
+  RackLayoutHoverCandidates,
+  RackLayoutHoverVisual,
+  rackLayoutHoverPhaseCount,
+} from '../../rack-layout-hover-highlight.utils';
+import {
   ModuleRightClick,
   RowOverflowClick,
 } from '../rack-editor.types';
-import { RackAnalysisMode, RACK_ANALYSIS_MODES } from '../../rack-analysis-mode';
+import {
+  RackAnalysisMode,
+  RACK_ANALYSIS_MODES,
+  RACK_LAYOUT_HOVER_MODES
+} from '../../rack-analysis-mode';
 import { prefersTouchInteraction } from 'src/app/shared-interproject/touch-interaction.utils';
 import {
   buildSignalModuleAnalysis,
@@ -135,6 +146,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   private static readonly dropRevealAnimationDurationMs = 225;
   private static readonly layoutMoveAnimationDurationMs = 620;
   private static readonly manualDropLayoutMoveCooldownMs = 520;
+  private static readonly layoutHoverPhaseDurationMs = 1000;
   private static readonly signalHoverCardWidthPx = 224;
   private static readonly signalHoverCardGapPx = 10;
   private static readonly touchContextMenuDelayMs = 550;
@@ -156,6 +168,10 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   private layoutMoveAnimationCancel: ModuleLayoutAnimationCancel | null = null;
   private layoutMoveAnimatingKeys = new Set<string>();
   private layoutMoveSuppressedUntilMs = 0;
+  private layoutHoverCandidates: RackLayoutHoverCandidates | null = null;
+  private layoutHoverVisuals = new Map<string, RackLayoutHoverVisual>();
+  private layoutHoverPhaseIndex = 0;
+  private layoutHoverAnimationTimerId: number | null = null;
   layoutMoveAngularAnimationsDisabled = false;
   private rowPowerBreakdown: RackPowerRowBreakdown[] = [];
   rowHpOverflow: number[] = [];
@@ -200,10 +216,16 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     this.updateRowPowerBreakdown();
     this.dataService.analysisMode$
       .pipe(takeUntil(this.destroyState$))
-      .subscribe(() => this.updateSignalAnalysisState());
+      .subscribe(() => {
+        this.updateLayoutHoverState();
+        this.updateSignalAnalysisState();
+      });
     this.dataService.signalFocusArea$
       .pipe(takeUntil(this.destroyState$))
       .subscribe(() => this.updateSignalAnalysisState());
+    this.dataService.layoutHoverMode$
+      .pipe(takeUntil(this.destroyState$))
+      .subscribe(() => this.updateLayoutHoverState());
   }
   
   // on after edit update reference on that a service of the current HMTL element reference
@@ -227,6 +249,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
 
   ngOnDestroy(): void {
     this.cancelLayoutMoveAnimation();
+    this.clearLayoutHoverState();
     this.clearTouchInteractionState();
     this.destroyState$.next();
     this.destroyState$.complete();
@@ -251,6 +274,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   setHoveredModule(rackedModule: RackedModule, moduleElement?: EventTarget | null): void {
     this.hoveredRackedModule = rackedModule;
     this.hoveredModuleElement = moduleElement instanceof HTMLElement ? moduleElement : null;
+    this.updateLayoutHoverState();
     this.updateSignalAnalysisState();
   }
 
@@ -258,6 +282,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     if (this.hoveredRackedModule === rackedModule) {
       this.hoveredRackedModule = null;
       this.hoveredModuleElement = null;
+      this.clearLayoutHoverState();
       this.signalAnalysis = null;
       this.signalDestinationMatches.clear();
       this.signalOverlayFrame = null;
@@ -347,6 +372,10 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
       && !!this.hoveredRackedModule
       && !this.isHoveredModule(rackedModule)
       && !this.signalDestinationMatches.has(this.moduleDomKey(rackedModule));
+  }
+
+  layoutAnalysisVisual(rackedModule: RackedModule): RackLayoutHoverVisual | null {
+    return this.layoutHoverVisuals.get(this.moduleDomKey(rackedModule)) ?? null;
   }
 
   signalLineOpacity(line: SignalOverlayLine): number {
@@ -553,6 +582,10 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
       return this.functionAnalysisVisual(rackedModule).className;
     }
 
+    if (analysisMode === this.analysisModes.layout) {
+      return this.layoutAnalysisVisual(rackedModule)?.className ?? '';
+    }
+
     return '';
   }
 
@@ -750,6 +783,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
       this.hoveredRowIndex = null;
     }
     this.updateModulePowerHeatmap();
+    this.updateLayoutHoverState();
     this.updateSignalAnalysisState();
   }
 
@@ -802,12 +836,100 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     this.layoutMoveAngularAnimationsDisabled = false;
   }
 
+  private updateLayoutHoverState(): void {
+    this.stopLayoutHoverAnimation();
+
+    if (!this.hoveredRackedModule || !this.isLayoutModeActive()) {
+      this.clearLayoutHoverState(false);
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this.layoutHoverCandidates = buildRackLayoutHoverCandidates(
+      this.rowedRackedModules,
+      this.hoveredRackedModule,
+      module => this.moduleDomKey(module)
+    );
+    this.layoutHoverPhaseIndex = this.initialLayoutHoverPhaseIndex();
+    this.refreshLayoutHoverVisuals();
+
+    if (this.shouldCycleLayoutHoverHighlights()) {
+      this.layoutHoverAnimationTimerId = window.setInterval(() => {
+        this.advanceLayoutHoverPhase();
+      }, RackVisualModelComponent.layoutHoverPhaseDurationMs);
+    }
+
+    this.cdr.markForCheck();
+  }
+
+  private advanceLayoutHoverPhase(): void {
+    const combinationCount = this.layoutHoverCandidates?.combinationGroups.length ?? 0;
+    if (!this.isLayoutCombinationHoverModeActive() || combinationCount <= 1) {
+      return;
+    }
+
+    this.layoutHoverPhaseIndex = ((this.layoutHoverPhaseIndex - 1 + 1) % combinationCount) + 1;
+    this.refreshLayoutHoverVisuals();
+    this.cdr.markForCheck();
+  }
+
+  private refreshLayoutHoverVisuals(): void {
+    this.layoutHoverVisuals = this.layoutHoverCandidates
+      ? buildRackLayoutHoverVisuals(
+        this.rowedRackedModules,
+        this.layoutHoverCandidates,
+        this.layoutHoverPhaseIndex,
+        module => this.moduleDomKey(module)
+      )
+      : new Map<string, RackLayoutHoverVisual>();
+  }
+
+  private clearLayoutHoverState(shouldStopAnimation = true): void {
+    if (shouldStopAnimation) {
+      this.stopLayoutHoverAnimation();
+    }
+    this.layoutHoverCandidates = null;
+    this.layoutHoverVisuals.clear();
+    this.layoutHoverPhaseIndex = 0;
+  }
+
+  private stopLayoutHoverAnimation(): void {
+    if (this.layoutHoverAnimationTimerId == null) {
+      return;
+    }
+
+    window.clearInterval(this.layoutHoverAnimationTimerId);
+    this.layoutHoverAnimationTimerId = null;
+  }
+
+  private shouldCycleLayoutHoverHighlights(): boolean {
+    return typeof window !== 'undefined'
+      && this.isLayoutCombinationHoverModeActive()
+      && (this.layoutHoverCandidates?.combinationGroups.length ?? 0) > 1
+      && !window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+  }
+
+  private initialLayoutHoverPhaseIndex(): number {
+    return this.isLayoutCombinationHoverModeActive()
+      && (this.layoutHoverCandidates?.combinationGroups.length ?? 0) > 0
+      ? 1
+      : 0;
+  }
+
   private shouldRunLayoutMoveAnimation(): boolean {
     return typeof window !== 'undefined'
       && !!window.requestAnimationFrame
       && !window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
       && Date.now() >= this.layoutMoveSuppressedUntilMs
       && !this.suppressPostDropReorder;
+  }
+
+  private isLayoutModeActive(): boolean {
+    return this.dataService.analysisMode$.value === this.analysisModes.layout;
+  }
+
+  private isLayoutCombinationHoverModeActive(): boolean {
+    return this.dataService.layoutHoverMode$.value === RACK_LAYOUT_HOVER_MODES.combinations;
   }
 
   private suppressLayoutMoveAnimationForManualDrop(): void {

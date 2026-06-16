@@ -5,6 +5,7 @@
   isCurrentRackEditable:(dataService.isCurrentRackEditable$|async),
   userRequestedSmallerScale:(dataService.userRequestedSmallerScale$|async),
   analysisMode:(dataService.analysisMode$|async),
+  layoutHoverMode:(dataService.layoutHoverMode$|async),
   signalFocusArea:(dataService.signalFocusArea$|async),
   shouldShowPanelImages:(dataService.shouldShowPanelImages$|async),
   isRackImageCaptureInProgress:(dataService.isRackImageCaptureInProgress$|async),
@@ -250,20 +251,53 @@
                      }
                    </div>
                  }
-                 @if (currentAnalysisMode === analysisModes.layout && bag.isCurrentRackPropertyOfCurrentUser && bag.isCurrentRackEditable) {
+                 @if (currentAnalysisMode === analysisModes.layout) {
                    <div class="rackEditorFloatingOptions__analysisHint">
-                     Remix rearranges placed modules by HP while keeping 3U, Intellijel 1U, and Pulp Logic 1U rows separate.
+                     Hover a module to find layout-compatible swaps. Use Same HP to pin direct matches, or Combos to cycle through smaller modules that add up to the same width.
                    </div>
-                   <button mat-stroked-button
-                           type="button"
-                           class="rackEditorFloatingOptions__actionButton rackEditorFloatingOptions__actionButton--primary"
-                           (click)="requestLayoutRemix()"
-                   >
-                     <mat-icon>auto_fix_high</mat-icon>
-                     Remix layout
-                   </button>
+                   <div class="rackEditorFloatingOptions__analysisFocus rackEditorFloatingOptions__analysisFocus--layout"
+                        role="group"
+                        aria-label="Layout hover highlight">
+                     @for (option of layoutHoverModeOptions; track option.mode) {
+                       <button type="button"
+                               class="rackEditorFloatingOptions__analysisFocusButton"
+                               [class.rackEditorFloatingOptions__analysisFocusButton--active]="bag.layoutHoverMode === option.mode"
+                               [attr.aria-pressed]="bag.layoutHoverMode === option.mode"
+                               (click)="setLayoutHoverMode(option.mode)"
+                       >
+                         @if (bag.layoutHoverMode === option.mode) {
+                           <mat-icon class="rackEditorFloatingOptions__segmentedIcon" aria-hidden="true">radio_button_checked</mat-icon>
+                         }
+                         {{ option.label }}
+                       </button>
+                     }
+                   </div>
+                   <div class="rackEditorFloatingOptions__analysisLegend">
+                     @for (item of layoutAnalysisLegendItems; track item.label) {
+                       <div class="rackEditorFloatingOptions__analysisLegendItem">
+                         <span class="rackEditorFloatingOptions__analysisSwatch"
+                               [class]="item.swatchClass"
+                               aria-hidden="true"
+                         ></span>
+                         <span>{{ item.label }}</span>
+                       </div>
+                     }
+                   </div>
+                   @if (bag.isCurrentRackPropertyOfCurrentUser && bag.isCurrentRackEditable) {
+                     <div class="rackEditorFloatingOptions__analysisHint rackEditorFloatingOptions__analysisHint--subtle">
+                       Remix rearranges placed modules by HP while keeping 3U, Intellijel 1U, and Pulp Logic 1U rows separate.
+                     </div>
+                     <button mat-stroked-button
+                             type="button"
+                             class="rackEditorFloatingOptions__actionButton rackEditorFloatingOptions__actionButton--primary"
+                             (click)="requestLayoutRemix()"
+                     >
+                       <mat-icon>auto_fix_high</mat-icon>
+                       Remix layout
+                     </button>
+                   }
                    <div class="rackEditorFloatingOptions__analysisHint rackEditorFloatingOptions__analysisHint--subtle">
-                     Hover a row to preview overflow, spare HP, and mixed-format blockers before applying.
+                     Hover a row to preview overflow, spare HP, and mixed-format blockers. Green means direct swap; blue means a fitting combination.
                    </div>
                  }
                  @if (currentAnalysisMode === analysisModes.signal) {

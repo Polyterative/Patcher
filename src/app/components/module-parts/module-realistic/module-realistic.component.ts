@@ -63,6 +63,10 @@ export class ModuleRealisticComponent {
   get signalAnalysisMode(): boolean {
     return this.analysisMode === this.analysisModes.signal;
   }
+
+  get layoutAnalysisMode(): boolean {
+    return this.analysisMode === this.analysisModes.layout;
+  }
   
   constructor(
     public rackDetailDataService: RackDetailDataService,
