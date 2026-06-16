@@ -18,7 +18,11 @@ import {
 import { RackDetailDataService } from '../../rack-detail-data.service';
 import { RackPowerHeatmapVisual } from '../../rack-power-heatmap.utils';
 import { MapToModulePipe } from '../../map-to-module.pipe';
-import { RACK_ANALYSIS_MODES, RackAnalysisMode } from '../../rack-analysis-mode';
+import {
+  RackAnalysisMode,
+  RACK_ANALYSIS_MODES,
+  RACK_LAYOUT_HOVER_MODES
+} from '../../rack-analysis-mode';
 import { HasUnrackedModulesPipe } from './has-unracked-modules.pipe';
 import { RackVisualModelComponent } from './rack-visual-model.component';
 import { TagType } from 'src/app/models/tag';
@@ -31,6 +35,7 @@ describe('RackVisualModelComponent', () => {
   let rackDetailDataService: {
     shouldShowPanelImages$: Subject<boolean>;
     analysisMode$: BehaviorSubject<RackAnalysisMode>;
+    layoutHoverMode$: BehaviorSubject<typeof RACK_LAYOUT_HOVER_MODES[keyof typeof RACK_LAYOUT_HOVER_MODES]>;
     signalFocusArea$: BehaviorSubject<any>;
     currentDownloadElementRef$: {next: jasmine.Spy};
     rackOrderChange$: {next: jasmine.Spy};
@@ -41,6 +46,7 @@ describe('RackVisualModelComponent', () => {
     rackDetailDataService = {
       shouldShowPanelImages$: new Subject<boolean>(),
       analysisMode$: new BehaviorSubject<RackAnalysisMode>(RACK_ANALYSIS_MODES.off),
+      layoutHoverMode$: new BehaviorSubject(RACK_LAYOUT_HOVER_MODES.sameHp),
       signalFocusArea$: new BehaviorSubject(null),
       currentDownloadElementRef$: {next: jasmine.createSpy('next')},
       rackOrderChange$: {next: jasmine.createSpy('next')},
@@ -662,6 +668,70 @@ describe('RackVisualModelComponent', () => {
     expect(component.layoutAnalysis?.mixedRowIssues).toEqual([{rowIndex: 0, standards: [0, 1]}]);
     expect(layoutPanel?.textContent).toContain('Mixed formats: 3U + Intellijel 1U');
     expect(layoutPanel?.textContent).toContain('Fix row 1 before remixing.');
+  });
+
+  it('keeps same-HP layout hover highlights pinned in same-HP mode', () => {
+    jasmine.clock().install();
+    try {
+      const hovered = makeRackedModule(10, 0, 0);
+      const exact = makeRackedModule(11, 0, 14);
+      const comboA = makeRackedModule(12, 0, 28);
+      const comboB = makeRackedModule(13, 0, 36);
+      const unrelated = makeRackedModule(14, 0, 42);
+      comboA.module.hp = 8;
+      comboB.module.hp = 6;
+      unrelated.module.hp = 5;
+      component.rowedRackedModules = [[hovered, exact, comboA, comboB, unrelated]];
+      fixture.detectChanges();
+
+      rackDetailDataService.analysisMode$.next(RACK_ANALYSIS_MODES.layout);
+      component.setHoveredModule(hovered);
+
+      expect(component.analysisVisualClass(hovered, RACK_ANALYSIS_MODES.layout)).toBe('layoutAnalysisModule--anchor');
+      expect(component.analysisVisualClass(exact, RACK_ANALYSIS_MODES.layout)).toBe('layoutAnalysisModule--exact');
+      expect(component.analysisVisualClass(comboA, RACK_ANALYSIS_MODES.layout)).toBe('layoutAnalysisModule--inactive');
+
+      jasmine.clock().tick(1000);
+
+      expect(component.analysisVisualClass(exact, RACK_ANALYSIS_MODES.layout)).toBe('layoutAnalysisModule--exact');
+      expect(component.analysisVisualClass(comboA, RACK_ANALYSIS_MODES.layout)).toBe('layoutAnalysisModule--inactive');
+      component.clearHoveredModule(hovered);
+    } finally {
+      jasmine.clock().uninstall();
+    }
+  });
+
+  it('cycles fitting smaller-module combinations in layout combo mode', () => {
+    jasmine.clock().install();
+    try {
+      const hovered = makeRackedModule(10, 0, 0);
+      const exact = makeRackedModule(11, 0, 14);
+      const comboA = makeRackedModule(12, 0, 28);
+      const comboB = makeRackedModule(13, 0, 36);
+      const unrelated = makeRackedModule(14, 0, 42);
+      comboA.module.hp = 8;
+      comboB.module.hp = 6;
+      unrelated.module.hp = 5;
+      component.rowedRackedModules = [[hovered, exact, comboA, comboB, unrelated]];
+      fixture.detectChanges();
+
+      rackDetailDataService.analysisMode$.next(RACK_ANALYSIS_MODES.layout);
+      rackDetailDataService.layoutHoverMode$.next(RACK_LAYOUT_HOVER_MODES.combinations);
+      component.setHoveredModule(hovered);
+
+      expect(component.analysisVisualClass(hovered, RACK_ANALYSIS_MODES.layout)).toBe('layoutAnalysisModule--anchor');
+      expect(component.analysisVisualClass(exact, RACK_ANALYSIS_MODES.layout)).toBe('layoutAnalysisModule--inactive');
+      expect(component.analysisVisualClass(comboA, RACK_ANALYSIS_MODES.layout)).toBe('layoutAnalysisModule--combo');
+      expect(component.analysisVisualClass(comboB, RACK_ANALYSIS_MODES.layout)).toBe('layoutAnalysisModule--combo');
+      expect(component.analysisVisualClass(unrelated, RACK_ANALYSIS_MODES.layout)).toBe('layoutAnalysisModule--inactive');
+
+      jasmine.clock().tick(1000);
+
+      expect(component.analysisVisualClass(comboA, RACK_ANALYSIS_MODES.layout)).toBe('layoutAnalysisModule--combo');
+      component.clearHoveredModule(hovered);
+    } finally {
+      jasmine.clock().uninstall();
+    }
   });
 
   it('places the row power panel below when there is not enough visible space above', () => {

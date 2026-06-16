@@ -186,6 +186,10 @@ $floatingSurfaceMaxWidth: 16.5rem;
   margin-top: 0.55rem;
 }
 
+.rackEditorFloatingOptions__analysisFocus--layout {
+  margin-top: 0.6rem;
+}
+
 .rackEditorFloatingOptions__analysisFocusButton {
   appearance: none;
   display: inline-flex;
@@ -368,6 +372,14 @@ $floatingSurfaceMaxWidth: 16.5rem;
 
 .rackEditorFloatingOptions__analysisSwatch--signalOther {
   background: #76889b;
+}
+
+.rackEditorFloatingOptions__analysisSwatch--layoutExact {
+  background: #17a36b;
+}
+
+.rackEditorFloatingOptions__analysisSwatch--layoutCombo {
+  background: linear-gradient(135deg, #2f80ed 0%, #7b61ff 100%);
 }
 
 .rackEditorFloatingOptions__analysisScale {

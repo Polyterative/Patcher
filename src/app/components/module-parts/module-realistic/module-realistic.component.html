@@ -5,6 +5,7 @@
      [class.root--analysisPower]="powerAnalysisMode"
      [class.root--analysisFunction]="functionAnalysisMode"
      [class.root--analysisSignal]="signalAnalysisMode"
+     [class.root--analysisLayout]="layoutAnalysisMode"
      [class.clickable]="(rackDetailDataService.isCurrentRackEditable$|async)&&(rackDetailDataService.isCurrentRackPropertyOfCurrentUser$|async)"
 >
   <div class="overlayActions">
@@ -65,6 +66,7 @@
     <div class="analysisOverlay__layer analysisOverlay__layer--power"></div>
     <div class="analysisOverlay__layer analysisOverlay__layer--function"></div>
     <div class="analysisOverlay__layer analysisOverlay__layer--signal"></div>
+    <div class="analysisOverlay__layer analysisOverlay__layer--layout"></div>
   </div>
 </div>
 <ng-content select="[moduleOverlay]"></ng-content>
