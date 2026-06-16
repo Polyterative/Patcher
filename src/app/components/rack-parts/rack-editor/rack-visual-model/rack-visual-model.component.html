@@ -37,9 +37,12 @@
         </svg>
       </div>
     }
+    @let rowMoveMotion = (rowMoveMotion$ | async);
     @for (row of rowedRackedModules; track $index; let rowId = $index) {
       <div class="rackRowShell"
            #rowSurface
+           [class.rackRowShell--movingUp]="isRowMovingUp(rowId, rowMoveMotion)"
+           [class.rackRowShell--movingDown]="isRowMovingDown(rowId, rowMoveMotion)"
            (mouseenter)="setHoveredRow(rowId, rowSurface)"
            (mouseleave)="clearHoveredRow(rowId)">
         @if (isCurrentRackEditable && isCurrentRackPropertyOfCurrentUser && analysisMode === analysisModes.off && !(row|hasUnrackedModules)) {

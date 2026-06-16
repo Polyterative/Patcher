@@ -211,7 +211,7 @@ Run `pnpm test-headless --include="**/rack-detail-data*"` and `pnpm test-headles
 
 ### Layer 3 — Polish
 
-**S15 — Row-level move animation (`rack-visual-model.component.html` + `.scss`)**  
+**S15 — Row-level move animation (`rack-visual-model.component.html` + `.scss`)** ✅ 16-06-2026
 - Change outer `@for` track: `track rowId` (i.e. `$index`) so row elements survive swap.
 - In `RackVisualModelComponent`, add `movingRowId$ = new BehaviorSubject<{id: number, dir: 'up'|'down'} | null>(null)`.  
 - Subscribe to `rackDetailDataService.requestMoveRow$`; set `movingRowId$` with the row id and direction; clear it after 350 ms.
@@ -240,3 +240,4 @@ Run `pnpm test-headless --include="**/rack-detail-data*"` and `pnpm test-headles
 - 2025-07-14 — `mergeRefreshedModules` preserves object references by stable `rackingData.id` so Angular's `track` function sees no change for untouched items; only genuinely new/removed items trigger DOM add/remove → enter/leave animations.
 - 2025-07-14 — `backend.add.rackModule` has no `.select()` — we cannot skip the full re-fetch after add/blank/replace. `refreshModulesFromBackend$` + merge is the least-invasive approach without a backend schema change.
 - 2025-07-14 — `requestAddNewRow$` / `requestRemoveRow$` assume the row to remove is the *last* one; the existing guard already enforces the row must be empty before deletion, so trimming the last element of `rowedRackedModules$` is safe for `requestRemoveRow$`. For `requestDeleteRow$` (the newer row-menu path), the handler already uses `splice(rowId, 1)` locally — no change needed.
+- 2026-06-16 — S15 row move motion stays in `RackVisualModelComponent` as a transient observer of `requestMoveRow$`; it marks the source and target row shells for 350ms and leaves `RackDetailDataService` persistence/order handling untouched.

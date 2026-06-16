@@ -1,5 +1,17 @@
 # Session Log
 
+## 16-06-2026 17:08 — Rack row move motion polish
+
+- **Task selected:** Continue the highest-priority unblocked frontend-only TODO: Rack Editor — Granular Local Updates, Layer 3 S15 row-level move animation.
+- **Source:** `internaldocs/workflow/TODO.md` HIGH infra item and `internaldocs/workflow/plans/rack-granular-updates.md`.
+- **Initial plan:** Observe `requestMoveRow$` in the visual model, apply transient directional row classes around row-menu moves, add CSS keyframes, cover the state in focused component tests, and validate with targeted pnpm commands.
+- **Actions performed:** Added a visual-model observer for row-menu move events, transient up/down row-shell classes, reduced-motion-safe SCSS keyframes, and a focused component regression test. Kept all persistence in `RackDetailDataService`.
+- **Subagent:** Ran `code-review` (`rack-row-reviewer`) on the uncommitted diff for lifecycle/race/test risks; result: no significant issues found.
+- **Tests run:** `pnpm test-headless --include="**/rack-visual-model.component.spec.ts"` — 52 specs passed; `pnpm lint` — passed with existing warning baseline; `pnpm build` — passed; `git diff --check` — passed.
+- **Docs updated:** Checked off the acceptance list, recorded the S15 completion in `rack-granular-updates.md`, and reset `current-task.md` to no active task.
+- **Constraints:** No git-state mutation; no backend/database/RLS/migration/Supabase function or SQL changes.
+- **Blockers raised:** None.
+
 ## 14-06-2026 21:36 — Rack remix motion refinement
 
 - **Task selected:** Improve Remix animation quality and delta behavior after user feedback.

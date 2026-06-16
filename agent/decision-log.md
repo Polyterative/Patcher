@@ -1,5 +1,9 @@
 # Decision Log
 
+## 16-06-2026 17:08
+
+- **Rack row move motion polish:** Selected the existing Rack Editor granular-update plan's Layer 3 S15 because roadmap Tier 0 frontend-only site-ops banner is already implemented and completed, while the TODO still has this HIGH unblocked frontend-only rack polish item. Keep row motion in `RackVisualModelComponent` as a transient visual observer of `requestMoveRow$`; do not change `RackDetailDataService` persistence or backend calls.
+
 ## 14-06-2026 21:36
 
 - **Rack remix motion:** Use a FLIP-style compositor animation in `rack-visual-model` instead of making the data service animation-aware. Rows now track by index so row array replacement does not recreate the full rack, while module signal coordinate keys remain separate from stable movement keys.
