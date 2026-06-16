@@ -38,6 +38,7 @@ import { ModuleDetailDataService } from './components/module-parts/module-detail
 import { PatchDetailDataService } from './components/patch-parts/patch-detail-data.service';
 import { RackDetailDataService } from './components/rack-parts/rack-detail-data.service';
 import { WideShellToolbarComponent } from './shared-interproject/components/@visual/wide-shell-toolbar/wide-shell-toolbar.component';
+import { AnalyticsService } from './features/backbone/analytics-integration/analytics.service';
 
 type AppShellArea = 'home' | 'modules' | 'racks' | 'patches' | 'manufacturers' | 'user' | 'manuals' | 'comments' | 'info';
 
@@ -100,6 +101,9 @@ export class AppComponent implements OnDestroy {
     // push real selection state. Otherwise the lazy creation triggered by
     // the panel's first render would clobber the user's selection mid-click.
     _patchDataServiceEagerBoot: PatchDetailDataService,
+    // Eagerly instantiate global analytics so router pageviews are wired at
+    // app boot, before feature-specific lazy chunks load.
+    _analyticsEagerBoot: AnalyticsService,
   ) {
     this.animationsDisabled = isPlatformBrowser(this.platformId)
       && window.matchMedia('(prefers-reduced-motion: reduce)').matches;

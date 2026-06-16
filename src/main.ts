@@ -5,45 +5,12 @@ import {
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
 import { AppModule } from './app/app.module';
+import { initializePostHog } from './app/features/backbone/analytics-integration/posthog-loader';
 import build from './build';
 import { environment } from './environments/environment';
 
 if (environment.production) {
   enableProdMode();
-}
-
-function initializePostHog(): void {
-  if (!environment.production) {
-    return;
-  }
-
-  window.setTimeout(() => {
-    void import('posthog-js')
-      .then(({ default: posthog }) => {
-        posthog.init('phc_nbtdGkoZAjg62Gzo5icdapLoPxWe546zvWyJD6MmqjXu', {
-          api_host:           'https://eu.i.posthog.com',
-          // Capture pageviews manually via Angular Router (see
-          // AnalyticsService) — SPA route changes don't fire window.load.
-          capture_pageview:   false,
-          capture_pageleave:  true,
-          autocapture:        true,
-          persistence:        'localStorage+cookie',
-          respect_dnt:        true,
-          // Don't sample replays by default; flip on per-user later if
-          // needed. Keeps payloads small.
-          disable_session_recording: true
-        });
-
-        // Super-properties on every event — slice dashboards by release/commit.
-        posthog.register({
-          release: build.version,
-          commit:  build.git?.hash ?? 'unknown'
-        });
-      })
-      .catch(phErr => {
-        console.warn('PostHog init failed:', phErr);
-      });
-  }, 1000);
 }
 
 function initializeSentry(): void {
@@ -130,7 +97,7 @@ platformBrowserDynamic()
   .bootstrapModule(AppModule, {applicationProviders: [provideZoneChangeDetection()],})
   .then(appRef => {
     initializeSentry();
-    initializePostHog();
+    void initializePostHog();
     return appRef;
   })
   .catch(err => {
