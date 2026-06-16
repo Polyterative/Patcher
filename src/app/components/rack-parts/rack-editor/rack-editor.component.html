@@ -212,7 +212,7 @@
               <div class="rackEditorFloatingOptions__eyebrow">Analysis</div>
                 @if (currentAnalysisMode === analysisModes.power) {
                   <div class="rackEditorFloatingOptions__analysisHint">
-                    Hover a row for rail totals, or hover a module for its HP and power draw.
+                    {{ analysisPanelCopy.power.description }}
                   </div>
                   <div class="rackEditorFloatingOptions__analysisScale" aria-hidden="true">
                     <span>Colder</span>
@@ -220,12 +220,12 @@
                     <span>Hotter</span>
                   </div>
                  <div class="rackEditorFloatingOptions__analysisHint rackEditorFloatingOptions__analysisHint--subtle">
-                   Heat colors are relative to the rack, and tighten to the hovered row when you focus one.
+                  {{ analysisPanelCopy.power.detail }}
                   </div>
                 }
                  @if (currentAnalysisMode === analysisModes.function) {
                   <div class="rackEditorFloatingOptions__analysisHint">
-                    Colors show each module's primary role so you can read the rack's functional spread by both count and HP.
+                    {{ analysisPanelCopy.function.description }}
                   </div>
                   <div class="rackEditorFloatingOptions__analysisHint rackEditorFloatingOptions__analysisHint--coverage">
                     {{ bag.functionAnalysisCoverageSummary }}
@@ -247,13 +247,13 @@
                     @if (bag.functionAnalysisResidualLabel) {
                       Grey modules are {{ bag.functionAnalysisResidualLabel }}.
                    } @else {
-                      All current modules map to a tracked function role.
+                      {{ analysisPanelCopy.function.fullCoverage }}
                      }
                    </div>
                  }
                  @if (currentAnalysisMode === analysisModes.layout) {
                    <div class="rackEditorFloatingOptions__analysisHint">
-                     Hover a module to find layout-compatible swaps. Use Same HP to pin direct matches, or Combos to cycle through smaller modules that add up to the same width.
+                     {{ analysisPanelCopy.layout.description }}
                    </div>
                    <div class="rackEditorFloatingOptions__analysisFocus rackEditorFloatingOptions__analysisFocus--layout"
                         role="group"
@@ -285,7 +285,7 @@
                    </div>
                    @if (bag.isCurrentRackPropertyOfCurrentUser && bag.isCurrentRackEditable) {
                      <div class="rackEditorFloatingOptions__analysisHint rackEditorFloatingOptions__analysisHint--subtle">
-                       Remix rearranges placed modules by HP while keeping 3U, Intellijel 1U, and Pulp Logic 1U rows separate.
+                       {{ analysisPanelCopy.layout.remix }}
                      </div>
                      <button mat-stroked-button
                              type="button"
@@ -297,12 +297,12 @@
                      </button>
                    }
                    <div class="rackEditorFloatingOptions__analysisHint rackEditorFloatingOptions__analysisHint--subtle">
-                     Hover a row to preview overflow, spare HP, and mixed-format blockers. Green means direct swap; blue means a fitting combination.
+                     {{ analysisPanelCopy.layout.detail }}
                    </div>
                  }
                  @if (currentAnalysisMode === analysisModes.signal) {
                     <div class="rackEditorFloatingOptions__analysisHint">
-                       Hover a module to inspect its inputs, outputs, tags, and the most relevant destinations it could plausibly feed.
+                       {{ analysisPanelCopy.signal.description }}
                      </div>
                      <div class="rackEditorFloatingOptions__analysisFocus"
                           role="group"
@@ -333,7 +333,7 @@
                       }
                      </div>
                      <div class="rackEditorFloatingOptions__analysisHint rackEditorFloatingOptions__analysisHint--subtle">
-                       Signal auto-picks a focused destination intent from the hovered module, and you can override it below.
+                       {{ analysisPanelCopy.signal.detail }}
                      </div>
                    }
                  <div class="rackEditorFloatingOptions__analysisModes"
