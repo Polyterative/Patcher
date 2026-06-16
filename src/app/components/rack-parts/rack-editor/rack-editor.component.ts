@@ -647,6 +647,26 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
     return `${ this.formatArrangementCount(analysis.validArrangementCount) } valid arrangement${ analysis.validArrangementCount === 1 ? '' : 's' } fit the current rows.`;
   }
 
+  layoutValiditySummary(rowedRackedModules: RackedModule[][] | null | undefined): string {
+    const analysis = this.computeLayoutAnalysis(rowedRackedModules);
+    if (!analysis) {
+      return 'Layout validity appears after modules are placed.';
+    }
+
+    if (analysis.mixedRowIssues.length > 0) {
+      const rows = analysis.mixedRowIssues.map(issue => issue.rowIndex + 1).join(', ');
+      return `Mixed-format row${ analysis.mixedRowIssues.length === 1 ? '' : 's' } ${ rows } block Remix.`;
+    }
+
+    const overflowHp = analysis.overflowHp.reduce((sum, hp) => sum + hp, 0);
+    if (overflowHp > 0) {
+      return `${ overflowHp }HP over capacity across the current rows.`;
+    }
+
+    const spareHp = analysis.wastedHp.reduce((sum, hp) => sum + hp, 0);
+    return `Valid layout with ${ spareHp }HP spare across the current rows.`;
+  }
+
   setShouldShowPanelImages(show: boolean): void {
     this.dataService.shouldShowPanelImages$.next(show);
     this.analytics.capture('rack.panel_images_toggled', {

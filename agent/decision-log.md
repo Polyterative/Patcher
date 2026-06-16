@@ -1,5 +1,9 @@
 # Decision Log
 
+## 16-06-2026 18:00
+
+- **Rack remix validity summary:** Keep the Layout panel useful before hover by deriving validity copy from the existing pure `computeLayoutAnalysis()` result. Do not add new Remix state or persistence; this is a read-only presentation slice.
+
 ## 16-06-2026 17:48
 
 - **Rack remix scope selector:** Continue the same frontend-only Remix plan because earlier roadmap items are blocked by backend/product approvals. Use an explicit All / 3U / 1U BehaviorSubject scope so the panel summary and Remix action cannot diverge; defer single-row scope until a row-picking UI is deliberately designed.
