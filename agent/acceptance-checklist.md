@@ -1,7 +1,7 @@
 # Acceptance Checklist
 
-- [x] Replace-with-blank requests suppress staggered enter delay for the affected rack slot.
-- [x] Suppression is transient and does not affect neighboring modules.
-- [x] Focused rack visual model tests cover the delay helper behavior.
-- [x] `pnpm test-headless --include="**/rack-visual-model.component.spec.ts"` passes.
-- [x] Relevant docs/logs reflect completion.
+- [x] Same-HP hover cue only activates in editable owner rack mode while analysis mode is off.
+- [x] Matching-width neighbors highlight; non-matches dim; hovered tile remains unchanged.
+- [x] Analysis modes and non-edit mode suppress the cue.
+- [x] Focused rack visual model tests cover the behavior.
+- [x] Runtime screenshot validation confirmed the highlight class renders.

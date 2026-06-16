@@ -3,7 +3,7 @@
 
 #### LOW: Rack Editor — Same-HP highlight on hover (edit mode)
 
-**Status:** OPEN — backlog item; no implementation started yet.
+**Status:** DONE — implemented 2026-06-16.
 
 **Why:** When deciding whether to swap two modules, the user needs to know which other
 modules are the same width. Currently there is no visual cue — they have to remember or
@@ -30,4 +30,4 @@ analysis overlays take full control and this highlight is suppressed entirely.
 
 ## Decision log
 
-<!-- Append timestamped one-liners as the plan progresses. -->
+- 2026-06-16 — Implemented as a visual-only rack editor hover aid in off-analysis edit mode; reused the existing hovered module state and suppressed the cue whenever analysis overlays own the surface.

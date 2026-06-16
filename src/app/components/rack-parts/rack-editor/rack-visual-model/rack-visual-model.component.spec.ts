@@ -132,6 +132,47 @@ describe('RackVisualModelComponent', () => {
     expect(badge?.textContent?.trim()).toBe('14HP');
   });
 
+  it('highlights same-HP neighbors and dims non-matches while hovering in editable off-analysis mode', () => {
+    const sameHp = makeRackedModule(11, 0, 14);
+    const differentHp = makeRackedModule(12, 0, 28);
+    differentHp.module.hp = 10;
+    component.rowedRackedModules = [[moduleRef, sameHp, differentHp]];
+    fixture.detectChanges();
+
+    component.setHoveredModule(moduleRef);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const hovered = host.querySelector('[data-rack-module-key="10-10-0-0"]');
+    const same = host.querySelector('[data-rack-module-key="11-11-0-14"]');
+    const different = host.querySelector('[data-rack-module-key="12-12-0-28"]');
+
+    expect(hovered?.classList.contains('module--sameHpHighlight')).toBeFalse();
+    expect(hovered?.classList.contains('module--sameHpDim')).toBeFalse();
+    expect(same?.classList.contains('module--sameHpHighlight')).toBeTrue();
+    expect(different?.classList.contains('module--sameHpDim')).toBeTrue();
+  });
+
+  it('suppresses same-HP hover classes outside edit/off-analysis mode', () => {
+    const sameHp = makeRackedModule(11, 0, 14);
+    component.rowedRackedModules = [[moduleRef, sameHp]];
+    fixture.detectChanges();
+
+    component.setHoveredModule(moduleRef);
+    rackDetailDataService.analysisMode$.next(RACK_ANALYSIS_MODES.power);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const same = host.querySelector('[data-rack-module-key="11-11-0-14"]');
+    expect(same?.classList.contains('module--sameHpHighlight')).toBeFalse();
+
+    rackDetailDataService.analysisMode$.next(RACK_ANALYSIS_MODES.off);
+    component.isCurrentRackEditable = false;
+    fixture.detectChanges();
+
+    expect(same?.classList.contains('module--sameHpHighlight')).toBeFalse();
+  });
+
   it('tracks persisted rack modules by racking id instead of object identity or coordinates', () => {
     const cloneOfSameRackModule = makeRackedModule(10, 1, 3);
 

@@ -221,6 +221,18 @@
   touch-action: none;
 }
 
+.module--sameHpHighlight {
+  z-index: 3;
+  filter: brightness(1.08) saturate(1.05);
+  transition: opacity 140ms ease, filter 140ms ease;
+}
+
+.module--sameHpDim {
+  opacity: 0.48;
+  filter: brightness(0.82) saturate(0.72);
+  transition: opacity 140ms ease, filter 140ms ease;
+}
+
 .module--layoutRemixMoving {
   z-index: 18;
   transition: opacity 220ms ease, filter 220ms ease, box-shadow 220ms ease;
