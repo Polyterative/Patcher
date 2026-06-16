@@ -1,7 +1,7 @@
 # Acceptance Checklist
 
-- [x] Layout panel shows how many modules the current Remix preview would move.
-- [x] Layout panel can explain no-op tight layouts.
-- [x] Layout panel can explain when another row is needed.
-- [x] Remix persistence path remains unchanged.
-- [x] Focused rack editor component tests pass.
+- [x] Layout panel exposes one scope button per rack row.
+- [x] Row scope active state compares row indexes correctly.
+- [x] Remix execution can reorder only the selected row.
+- [x] Existing All / 3U / 1U scope behavior remains intact.
+- [x] Focused rack editor and rack detail data service tests pass.

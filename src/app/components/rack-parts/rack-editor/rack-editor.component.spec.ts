@@ -609,6 +609,24 @@ describe('RackEditorComponent', () => {
     });
   });
 
+  it('builds single-row layout scope options', () => {
+    const component = createComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      {} as RackDetailDataService,
+      {} as GeneralContextMenuDataService,
+      {markForCheck: () => undefined} as ChangeDetectorRef,
+      jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
+    );
+
+    expect(component.layoutRowScopeOptions([[], []])).toEqual([
+      {scope: {rowIndex: 0}, label: 'Row 1'},
+      {scope: {rowIndex: 1}, label: 'Row 2'}
+    ]);
+    expect(component.isLayoutScopeActive({rowIndex: 1}, {rowIndex: 1})).toBeTrue();
+    expect(component.isLayoutScopeActive({rowIndex: 0}, {rowIndex: 1})).toBeFalse();
+  });
+
   it('requests layout remix through the rack data service', () => {
     const requestLayoutRemix$ = new Subject<void>();
     const component = createComponent(

@@ -1,5 +1,9 @@
 # Decision Log
 
+## 16-06-2026 18:30
+
+- **Rack remix row scope:** Implement row scope as explicit `{ rowIndex }` values in the same Layout scope pipeline. Compare row scopes by value instead of object identity, and reuse existing row-local Remix output rather than adding a separate action path.
+
 ## 16-06-2026 18:20
 
 - **Rack remix move summary:** Add a read-only pre-action summary using the existing layout analysis moves. This satisfies the plan's diff-summary intent without changing the committed Remix persistence path or adding a new preview state.
