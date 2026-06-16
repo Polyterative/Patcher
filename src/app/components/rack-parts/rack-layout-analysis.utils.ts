@@ -39,6 +39,9 @@ interface RackLayoutBin {
   moduleCount: number;
 }
 
+const MAX_EXACT_ARRANGEMENT_STATES = 100_000;
+const ESTIMATED_ARRANGEMENT_SAMPLE_COUNT = 1024;
+
 export interface RackLayoutAnalysisOptions {
   variant?: number;
 }
@@ -74,6 +77,13 @@ export function computeLayoutAnalysis(
     group.rowIndexes,
     options.variant ?? 0
   ));
+  const canCountExactly = formatGroups.every(group => shouldCountExactly(group));
+  const arrangementCount = canCountExactly
+    ? formatGroups.reduce(
+      (product, group) => product * countExactArrangements(group.modules, rackHp, group.rowIndexes.length),
+      1
+    )
+    : 'estimated';
   const hasOverflow = overflowHp.some(value => value > 0);
 
   return {
@@ -82,8 +92,13 @@ export function computeLayoutAnalysis(
     wastedHp,
     overflowHp,
     autoArrangeMoves,
-    validArrangementCount: modules.length <= 20 ? countGreedyArrangement(modules, rackHp) : 'estimated',
-    ...(modules.length > 20 ? {estimate: countGreedyArrangement(modules.slice(0, 20), rackHp)} : {})
+    validArrangementCount: arrangementCount,
+    ...(!canCountExactly ? {
+      estimate: formatGroups.reduce(
+        (product, group) => product * countEstimatedArrangements(group.modules, rackHp, group.rowIndexes.length),
+        1
+      )
+    } : {})
   };
 }
 
@@ -197,8 +212,113 @@ function firstFitDecreasing(
     });
 }
 
-function countGreedyArrangement(modules: RackedModule[], rackHp: number): number {
-  return firstFitDecreasing(modules, rackHp, []).every(move => move.toRow >= 0) ? 1 : 0;
+function countExactArrangements(modules: RackedModule[], rackHp: number, rowCount: number): number {
+  const targetRowCount = Math.max(1, rowCount);
+  const moduleHp = modules
+    .map(module => module.module.hp ?? 0)
+    .sort((left, right) => right - left);
+  const memo = new Map<string, number>();
+
+  const countFrom = (moduleIndex: number, remainingHpByRow: number[]): number => {
+    if (moduleIndex >= moduleHp.length) {
+      return 1;
+    }
+
+    const memoKey = `${ moduleIndex }|${ remainingHpByRow.join(',') }`;
+    const memoized = memo.get(memoKey);
+    if (memoized != null) {
+      return memoized;
+    }
+
+    const hp = moduleHp[moduleIndex];
+    let count = 0;
+    for (let rowIndex = 0; rowIndex < remainingHpByRow.length; rowIndex++) {
+      if (remainingHpByRow[rowIndex] < hp) {
+        continue;
+      }
+      const nextRemaining = [...remainingHpByRow];
+      nextRemaining[rowIndex] -= hp;
+      count += countFrom(moduleIndex + 1, nextRemaining);
+    }
+
+    memo.set(memoKey, count);
+    return count;
+  };
+
+  return countFrom(0, Array.from({length: targetRowCount}, () => rackHp));
+}
+
+function shouldCountExactly(group: RackLayoutFormatGroup): boolean {
+  return group.modules.length <= 20
+    && estimateExactArrangementStates(group.modules.length, Math.max(1, group.rowIndexes.length))
+    <= MAX_EXACT_ARRANGEMENT_STATES;
+}
+
+function estimateExactArrangementStates(moduleCount: number, rowCount: number): number {
+  let states = 1;
+  const total = moduleCount + rowCount;
+  const choose = Math.min(rowCount, moduleCount);
+  for (let step = 1; step <= choose; step++) {
+    states = states * (total - choose + step) / step;
+    if (states > MAX_EXACT_ARRANGEMENT_STATES) {
+      return Infinity;
+    }
+  }
+  return states;
+}
+
+function countEstimatedArrangements(modules: RackedModule[], rackHp: number, rowCount: number): number {
+  const targetRowCount = Math.max(1, rowCount);
+  if (modules.length === 0) {
+    return 1;
+  }
+  if (!canGreedyFit(modules, rackHp, targetRowCount)) {
+    return 0;
+  }
+
+  const moduleHp = modules.map(module => module.module.hp ?? 0);
+  const totalAssignments = Math.pow(targetRowCount, moduleHp.length);
+  const sampleCount = Math.min(ESTIMATED_ARRANGEMENT_SAMPLE_COUNT, totalAssignments);
+  let validSamples = 0;
+
+  for (let sampleIndex = 0; sampleIndex < sampleCount; sampleIndex++) {
+    let seed = sampleIndex + 1;
+    const remainingHpByRow = Array.from({length: targetRowCount}, () => rackHp);
+    let isValidSample = true;
+
+    for (const hp of moduleHp) {
+      seed = (seed * 1664525 + 1013904223) >>> 0;
+      const rowIndex = seed % targetRowCount;
+      remainingHpByRow[rowIndex] -= hp;
+      if (remainingHpByRow[rowIndex] < 0) {
+        isValidSample = false;
+        break;
+      }
+    }
+
+    if (isValidSample) {
+      validSamples += 1;
+    }
+  }
+
+  const estimate = Math.round((validSamples / sampleCount) * totalAssignments);
+  return Math.max(1, estimate);
+}
+
+function canGreedyFit(modules: RackedModule[], rackHp: number, rowCount: number): boolean {
+  const remainingHpByRow = Array.from({length: rowCount}, () => rackHp);
+  const moduleHp = modules
+    .map(module => module.module.hp ?? 0)
+    .sort((left, right) => right - left);
+
+  return moduleHp.every(hp => {
+    const rowIndex = remainingHpByRow.findIndex(remainingHp => remainingHp >= hp);
+    if (rowIndex < 0) {
+      return false;
+    }
+    remainingHpByRow[rowIndex] -= hp;
+    return true;
+  });
 }
 
 function orderModulesForVariant(modules: RackedModule[], variant: number): RackedModule[] {

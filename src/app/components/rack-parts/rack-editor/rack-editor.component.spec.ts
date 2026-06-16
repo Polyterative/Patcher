@@ -194,6 +194,61 @@ describe('RackEditorComponent', () => {
     expect(component.viewOptionsExpanded).toBeTrue();
   });
 
+  it('summarizes the layout arrangement count for the analysis panel', () => {
+    const dataService = {
+      singleRackData$: new BehaviorSubject({hp: 84})
+    } as unknown as RackDetailDataService;
+    const component = createComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      dataService
+    );
+    const moduleAt = (id: number, hp: number, row: number, column: number) => ({
+      module: {
+        id,
+        hp,
+        moduleFormat: {id: 0}
+      },
+      rackingData: {
+        id,
+        row,
+        column
+      }
+    }) as unknown as RackedModule;
+
+    expect(component.layoutArrangementSummary([
+      [moduleAt(1, 10, 0, 0), moduleAt(2, 20, 0, 1)],
+      [moduleAt(3, 30, 1, 0), moduleAt(4, 40, 1, 1)]
+    ])).toBe('12 valid arrangements fit the current rows.');
+  });
+
+  it('summarizes when no layout arrangement fits the current row set', () => {
+    const dataService = {
+      singleRackData$: new BehaviorSubject({hp: 84})
+    } as unknown as RackDetailDataService;
+    const component = createComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      dataService
+    );
+    const moduleAt = (id: number, hp: number) => ({
+      module: {
+        id,
+        hp,
+        moduleFormat: {id: 0}
+      },
+      rackingData: {
+        id,
+        row: 0,
+        column: id
+      }
+    }) as unknown as RackedModule;
+
+    expect(component.layoutArrangementSummary([
+      [moduleAt(1, 60), moduleAt(2, 30)]
+    ])).toBe('No valid arrangement fits the current row set.');
+  });
+
   it('opens secondary touch actions for the selected module from the visible action tray', () => {
     const menuItems$ = new BehaviorSubject<any[]>([]);
     const open$ = new Subject<MouseEvent>();

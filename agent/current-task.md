@@ -2,5 +2,5 @@
 
 No active task.
 
-Last completed: Module Browser — keyword highlighting in descriptions.
+Last completed: Rack Editor — Remix layout optimizer arrangement count slice.
 Next likely candidate: earliest unblocked frontend-only ROADMAP/TODO item.

@@ -46,6 +46,10 @@ import {
   RACK_SIGNAL_FOCUS_OPTIONS
 } from '../rack-analysis-mode';
 import { SignalFocusArea } from '../rack-signal-analysis.utils';
+import {
+  computeLayoutAnalysis,
+  RackLayoutAnalysisResult
+} from '../rack-layout-analysis.utils';
 import { prefersTouchInteraction } from 'src/app/shared-interproject/touch-interaction.utils';
 import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 import {
@@ -615,6 +619,23 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
     this.dataService.requestLayoutRemix$.next();
   }
 
+  layoutArrangementSummary(rowedRackedModules: RackedModule[][] | null | undefined): string {
+    const analysis = this.computeLayoutAnalysis(rowedRackedModules);
+    if (!analysis) {
+      return 'Add modules to estimate valid arrangements.';
+    }
+
+    if (analysis.validArrangementCount === 'estimated') {
+      return `~${ this.formatArrangementCount(analysis.estimate ?? 0) } sampled valid arrangements.`;
+    }
+
+    if (analysis.validArrangementCount === 0) {
+      return 'No valid arrangement fits the current row set.';
+    }
+
+    return `${ this.formatArrangementCount(analysis.validArrangementCount) } valid arrangement${ analysis.validArrangementCount === 1 ? '' : 's' } fit the current rows.`;
+  }
+
   setShouldShowPanelImages(show: boolean): void {
     this.dataService.shouldShowPanelImages$.next(show);
     this.analytics.capture('rack.panel_images_toggled', {
@@ -637,6 +658,26 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
     if (action.clearsTouchSelection && this.selectedTouchModule === rackedModule) {
       this.clearSelectedTouchModule();
     }
+  }
+
+  private computeLayoutAnalysis(rowedRackedModules: RackedModule[][] | null | undefined): RackLayoutAnalysisResult | null {
+    if (!rowedRackedModules?.length) {
+      return null;
+    }
+
+    const rackHp = this.dataService.singleRackData$.value?.hp;
+    if (!rackHp) {
+      return null;
+    }
+
+    return computeLayoutAnalysis(rowedRackedModules, rackHp);
+  }
+
+  private formatArrangementCount(count: number): string {
+    if (!Number.isFinite(count)) {
+      return 'many';
+    }
+    return count.toLocaleString();
   }
 
   private resolveActivePanelContext(rackedModule: RackedModule): {

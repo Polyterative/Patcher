@@ -255,6 +255,9 @@
                    <div class="rackEditorFloatingOptions__analysisHint">
                      {{ analysisPanelCopy.layout.description }}
                    </div>
+                   <div class="rackEditorFloatingOptions__analysisHint rackEditorFloatingOptions__analysisHint--layoutCount">
+                     {{ layoutArrangementSummary(bag.rowedRackedModules) }}
+                   </div>
                    <div class="rackEditorFloatingOptions__analysisFocus rackEditorFloatingOptions__analysisFocus--layout"
                         role="group"
                         aria-label="Layout hover highlight">

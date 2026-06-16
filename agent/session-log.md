@@ -1,5 +1,15 @@
 # Session Log
 
+## 16-06-2026 17:34 — Rack remix arrangement counts
+
+- **Task selected:** Continue the earliest unblocked frontend-only Rack Editor Remix slice after backend-dependent roadmap items were blocked.
+- **Source:** `internaldocs/workflow/TODO.md` INFRA item and `internaldocs/workflow/plans/rack-editor-remix-layout-optimizer.md`.
+- **Actions performed:** Replaced the placeholder greedy 0/1 arrangement count with exact dynamic counting for small physical-format groups, added a state-space guard plus deterministic sampled estimate for larger groups, kept impossible layouts at zero, and added a live count summary to the existing Layout analysis panel.
+- **Subagent:** Ran `code-review` (`rack-count-reviewer`); fixed its performance finding by bounding exact DP state space before committing.
+- **Tests run:** `pnpm test-headless --include="**/rack-layout-analysis.utils.spec.ts" --include="**/rack-editor.component.spec.ts"` — 40 specs passed; `pnpm lint` — passed with existing warning baseline.
+- **Docs updated:** Updated Remix plan checklist/decision log, completed-features archive, current task, acceptance checklist, and this session log.
+- **Blockers raised:** None.
+
 ## 16-06-2026 17:08 — Rack row move motion polish
 
 - **Task selected:** Continue the highest-priority unblocked frontend-only TODO: Rack Editor — Granular Local Updates, Layer 3 S15 row-level move animation.
