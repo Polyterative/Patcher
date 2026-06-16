@@ -71,6 +71,7 @@
           </div>
         }
         <div class="module-minimal__focus-hide module-minimal__focus-hide--copy"
+             [class.module-minimal__focus-hide--full-description]="!viewConfig.ellipseDescription"
              [@moduleDetailCopyEnter]="{ value: '', params: { delay: 124, duration: 180 } }">
           @if (!viewConfig.hideDates) {
             <app-timestamps-relative
