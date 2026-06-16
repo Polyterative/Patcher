@@ -2,6 +2,44 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.3.0](https://github.com/Polyterative/Patcher/compare/v6.2.0...v6.3.0) (2026-06-16)
+
+
+### Features
+
+* **discovery:** enable community trends ([ff2c85c](https://github.com/Polyterative/Patcher/commit/ff2c85c0aa7f0eee8d6e6ec7eda7856537f8ccad))
+* **module-browser:** add panel ratio diagnostics ([3b62770](https://github.com/Polyterative/Patcher/commit/3b627709b0cff5b06b954470d6388e20bb4faca4))
+* **module-collections:** add public detail seo metadata ([5747812](https://github.com/Polyterative/Patcher/commit/57478126da41667bfc45958a0f5a9797b052192b))
+* **module:** tint tags by balance axis ([5e79c2b](https://github.com/Polyterative/Patcher/commit/5e79c2b9b4e632d322a28c622b2a855c4cb15fdc))
+* **rack-editor:** add blank panel overflow sizes ([f2200d0](https://github.com/Polyterative/Patcher/commit/f2200d0be9b95435118fdd15716a551db8aed4af))
+* **rack-editor:** add optimistic module additions ([ba90db8](https://github.com/Polyterative/Patcher/commit/ba90db816c38cf6c8fa2d91da2c1ae176060728a))
+* **rack-editor:** add remix layout analysis ([ec79b39](https://github.com/Polyterative/Patcher/commit/ec79b39f9c296655021bd9505ecee362625ff9a7))
+* **rack-editor:** animate remix module moves ([2197ae5](https://github.com/Polyterative/Patcher/commit/2197ae56b2315a1e3963d1585b73fb5151be95a2))
+* **rack-editor:** expose layout analysis mode ([af425d3](https://github.com/Polyterative/Patcher/commit/af425d3e79c797ac666a45d7160b72f2ecb3de04))
+* **rack-editor:** show remix row layout hints ([9015ca1](https://github.com/Polyterative/Patcher/commit/9015ca184bb5f504c3344abc4220d726d4cf49a1))
+* **rack-editor:** show weakest picker category ([bcf9b16](https://github.com/Polyterative/Patcher/commit/bcf9b16a696d0e4ada347145b60eac4b0b0a0fd3))
+* **rack-editor:** trigger remix layout ([8922fc5](https://github.com/Polyterative/Patcher/commit/8922fc50c1ac4f84b2eb275f980c7eab6dab4b97))
+* **rack:** add balance diff utilities ([a30fdbc](https://github.com/Polyterative/Patcher/commit/a30fdbccd90a99bcd0ca426a350d97fce5471fac))
+* **rack:** add layout hover analysis highlights ([20eeb79](https://github.com/Polyterative/Patcher/commit/20eeb799549e1bb616740c28897c35b62f5950fc))
+* **rack:** show power header counts ([dff47f0](https://github.com/Polyterative/Patcher/commit/dff47f0e66a8b62363f4bb4f2574450b412c535d))
+* **rack:** show stale preview indicator ([a3c5c47](https://github.com/Polyterative/Patcher/commit/a3c5c474606dbdb1f120d46e25c794b5e2a1c044))
+* **user-area:** replace remaining paginators with load more ([b41b21f](https://github.com/Polyterative/Patcher/commit/b41b21ffa5847691704f8fe1426c7137301f1608))
+
+
+### Bug Fixes
+
+* **account:** delete contributor reset data ([a3cecc2](https://github.com/Polyterative/Patcher/commit/a3cecc2e42a00546028b03ab3304fea4ff89b7a5))
+* **analytics:** boot posthog tracking eagerly ([73018f5](https://github.com/Polyterative/Patcher/commit/73018f556f902f514167108af02286138d097a47))
+* **manufacturer:** map standard filter option ids ([a76c029](https://github.com/Polyterative/Patcher/commit/a76c029448d884589625246d628184d31ddabcdf))
+* **module-detail:** keep edit fab above content ([b701663](https://github.com/Polyterative/Patcher/commit/b701663a2126d81a5b808789ff5719245a801930))
+* **module-details:** gate collections UI by feature flag ([be872d6](https://github.com/Polyterative/Patcher/commit/be872d6e1f6ca5e8c4b298ac81b77a8243d109c3))
+* **module-details:** show full descriptions ([3749565](https://github.com/Polyterative/Patcher/commit/37495652bb97a864ffef2692c0e7877422645c34))
+* **release:** handle inherited git stdio output ([dbf6bf3](https://github.com/Polyterative/Patcher/commit/dbf6bf3ff94ecb056b066a2642dd417911afcc0f))
+* **ssr:** harden route handling and 404 responses ([e2b9c7f](https://github.com/Polyterative/Patcher/commit/e2b9c7f5a07d6ebf81dcff7a5e2eb2a662f7ca05))
+* **vercel:** avoid pnpm engine post-build check ([2fdef0c](https://github.com/Polyterative/Patcher/commit/2fdef0cc63cf4eae4633b9a57a2740ecb8dce40b))
+* **vercel:** support pnpm 9 function reinstall ([3990292](https://github.com/Polyterative/Patcher/commit/39902924e7eb7f066405a257c5ca490ea35923d4))
+* **vercel:** use corepack pnpm shim ([b374ed0](https://github.com/Polyterative/Patcher/commit/b374ed0bc9ec31054b54e5b089e91d1b6f0208cb))
+
 ## [6.2.0](https://github.com/Polyterative/Patcher/compare/v4.0.1...v6.2.0) (2026-06-14)
 
 
