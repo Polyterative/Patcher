@@ -680,6 +680,28 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
     return null;
   }
 
+  layoutRemixMoveSummary(rowedRackedModules: RackedModule[][] | null | undefined): string {
+    const analysis = this.computeLayoutAnalysis(rowedRackedModules);
+    if (!analysis || analysis.mixedRowIssues.length > 0) {
+      return '';
+    }
+
+    const rackRows = this.dataService.singleRackData$.value?.rows ?? rowedRackedModules?.length ?? 0;
+    const needsAnotherRow = analysis.autoArrangeMoves.some(move => move.toRow < 0 || move.toRow >= rackRows);
+    if (needsAnotherRow) {
+      return 'Remix needs another row for this scope.';
+    }
+
+    const movedCount = analysis.autoArrangeMoves.filter(move =>
+      move.fromRow !== move.toRow || move.fromColumn !== move.toColumn
+    ).length;
+    if (movedCount === 0) {
+      return 'Current scope is already tightly arranged.';
+    }
+
+    return `Remix would move ${ movedCount } module${ movedCount === 1 ? '' : 's' }.`;
+  }
+
   setShouldShowPanelImages(show: boolean): void {
     this.dataService.shouldShowPanelImages$.next(show);
     this.analytics.capture('rack.panel_images_toggled', {

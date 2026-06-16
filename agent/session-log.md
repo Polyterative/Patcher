@@ -1,5 +1,14 @@
 # Session Log
 
+## 16-06-2026 18:20 — Rack remix move summary
+
+- **Task selected:** Continue the frontend-only Rack Editor Remix panel work with the plan's diff-summary requirement.
+- **Source:** `internaldocs/workflow/plans/rack-editor-remix-layout-optimizer.md` Layout panel UX.
+- **Actions performed:** Added pre-action Layout panel copy for modules Remix would move, already-tight scopes, or arrangements that need another row.
+- **Tests run:** `pnpm test-headless --include="**/rack-editor.component.spec.ts"` — 31 specs passed; `pnpm lint` — passed with existing warning baseline.
+- **Docs updated:** Updated Remix plan decision log, completed-features archive, current task, acceptance checklist, and this session log.
+- **Blockers raised:** None.
+
 ## 16-06-2026 18:10 — Rack remix mixed-format CTA blocker
 
 - **Task selected:** Continue the frontend-only Rack Editor Remix plan by making the existing mixed-format blocker visible before action time.

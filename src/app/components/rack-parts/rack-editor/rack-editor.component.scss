@@ -310,6 +310,12 @@ $floatingSurfaceMaxWidth: 16.5rem;
   font-weight: 700;
 }
 
+.rackEditorFloatingOptions__analysisHint--remixMove {
+  margin-top: 0.35rem;
+  color: rgba(34, 75, 117, 0.78);
+  font-weight: 600;
+}
+
 .rackEditorFloatingOptions__analysisLegend {
   display: flex;
   flex-wrap: wrap;
