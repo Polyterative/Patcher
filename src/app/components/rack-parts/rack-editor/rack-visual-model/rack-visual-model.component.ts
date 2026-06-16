@@ -178,6 +178,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   private rowFunctionBreakdowns = new Map<number, RowFunctionBreakdown>();
   layoutAnalysis: RackLayoutAnalysisResult | null = null;
   private modulePowerHeatmap = new Map<string, RackPowerHeatmapVisual>();
+  private moduleFunctionVisuals = new Map<string, RackFunctionVisual>();
   private signalAnalysis: SignalModuleAnalysis | null = null;
   private signalDestinationMatches = new Map<string, SignalDestinationMatch>();
   signalHoverCardPlacement: SignalHoverCardPlacement = 'right';
@@ -570,7 +571,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   }
 
   functionAnalysisVisual(rackedModule: RackedModule): RackFunctionVisual {
-    return buildRackFunctionVisual(rackedModule);
+    return this.moduleFunctionVisuals.get(this.moduleDomKey(rackedModule)) ?? buildRackFunctionVisual(rackedModule);
   }
 
   analysisVisualClass(rackedModule: RackedModule, analysisMode: RackAnalysisMode): string {
@@ -778,6 +779,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
       return Math.max(0, used - capacity);
     });
     this.rowFunctionBreakdowns = buildRowFunctionBreakdowns(this.rowedRackedModules);
+    this.updateModuleFunctionVisuals();
     this.layoutAnalysis = computeLayoutAnalysis(this.rowedRackedModules, capacity);
     if (this.hoveredRowIndex != null && this.hoveredRowIndex >= this.rowPowerBreakdown.length) {
       this.hoveredRowIndex = null;
@@ -941,6 +943,14 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     this.modulePowerHeatmap = buildRackPowerHeatmapVisuals(this.rowedRackedModules ?? [], {
       hoveredRowIndex: this.hoveredRowIndex
     });
+  }
+
+  private updateModuleFunctionVisuals(): void {
+    this.moduleFunctionVisuals = new Map(
+      (this.rowedRackedModules ?? [])
+        .flat()
+        .map(module => [this.moduleDomKey(module), buildRackFunctionVisual(module)])
+    );
   }
 
   private resolveRowPowerPanelPlacement(rowElement: HTMLElement | null): 'above' | 'below' {

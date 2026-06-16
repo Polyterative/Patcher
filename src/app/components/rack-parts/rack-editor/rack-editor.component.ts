@@ -37,9 +37,13 @@ import { derivePanelLabel } from '../../module-parts/panel.constants';
 import { ModulePanelZoomDialogComponent } from '../../module-parts/module-details/module-panel-zoom-dialog.component';
 import {
   RackLayoutHoverMode,
+  RACK_LAYOUT_ANALYSIS_LEGEND_ITEMS,
   RACK_ANALYSIS_MODES,
   RACK_ANALYSIS_MODE_OPTIONS,
-  RACK_LAYOUT_HOVER_MODE_OPTIONS
+  RACK_ANALYSIS_PANEL_COPY,
+  RACK_LAYOUT_HOVER_MODE_OPTIONS,
+  RACK_SIGNAL_ANALYSIS_LEGEND_ITEMS,
+  RACK_SIGNAL_FOCUS_OPTIONS
 } from '../rack-analysis-mode';
 import { SignalFocusArea } from '../rack-signal-analysis.utils';
 import { prefersTouchInteraction } from 'src/app/shared-interproject/touch-interaction.utils';
@@ -83,25 +87,11 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
   readonly touchInteractionMode = prefersTouchInteraction();
   readonly analysisModes = RACK_ANALYSIS_MODES;
   readonly analysisModeOptions = RACK_ANALYSIS_MODE_OPTIONS;
+  readonly analysisPanelCopy = RACK_ANALYSIS_PANEL_COPY;
   readonly layoutHoverModeOptions = RACK_LAYOUT_HOVER_MODE_OPTIONS;
-  readonly signalAnalysisLegendItems = [
-    {label: 'Audio', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--signalAudio'},
-    {label: 'Pitch / V-Oct', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--signalPitch'},
-    {label: 'Clock / Gate', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--signalClock'},
-    {label: 'Modulation', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--signalModulation'},
-    {label: 'Other', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--signalOther'},
-  ] as const;
-  readonly layoutAnalysisLegendItems = [
-    {label: 'Same HP', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--layoutExact'},
-    {label: 'Smaller combo', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--layoutCombo'},
-  ] as const;
-  readonly signalFocusOptions: Array<{value: SignalFocusArea; label: string}> = [
-    {value: 'voices', label: 'Voices'},
-    {value: 'tone', label: 'Tone shaping'},
-    {value: 'mixing', label: 'Mixing'},
-    {value: 'modulation', label: 'Modulation'},
-    {value: 'clock', label: 'Clock'},
-  ];
+  readonly signalAnalysisLegendItems = RACK_SIGNAL_ANALYSIS_LEGEND_ITEMS;
+  readonly layoutAnalysisLegendItems = RACK_LAYOUT_ANALYSIS_LEGEND_ITEMS;
+  readonly signalFocusOptions = RACK_SIGNAL_FOCUS_OPTIONS;
   readonly moduleActions: RackEditorModuleAction[];
   readonly touchTrayModuleActions: RackEditorModuleAction[];
 
