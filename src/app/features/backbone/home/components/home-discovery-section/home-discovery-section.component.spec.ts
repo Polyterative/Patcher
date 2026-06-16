@@ -1,4 +1,6 @@
-import { of } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
+import { ModuleDetailDataService } from 'src/app/components/module-parts/module-detail-data.service';
+import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
@@ -7,6 +9,24 @@ import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { HomeDiscoverySectionComponent } from './home-discovery-section.component';
 import { TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { MinimalModule } from 'src/app/models/module';
+
+function buildModule(id: number, name: string, manufacturerName: string): MinimalModule {
+  return {
+    id,
+    name,
+    description: '',
+    hp: 10,
+    public: true,
+    created: '2026-01-01T00:00:00.000Z',
+    updated: '2026-01-01T00:00:00.000Z',
+    manufacturerId: id,
+    manufacturer: {id, name: manufacturerName},
+    standard: {id: 0, name: '3U Doepfer'},
+    tags: [],
+    panels: []
+  };
+}
 
 describe('HomeDiscoverySectionComponent', () => {
   let analytics: jasmine.SpyObj<AnalyticsService>;
@@ -15,8 +35,20 @@ describe('HomeDiscoverySectionComponent', () => {
 
   beforeEach(async () => {
     analytics = jasmine.createSpyObj<AnalyticsService>('AnalyticsService', ['capture']);
+    const moduleDetailDataService = {
+      userModulesList$: new BehaviorSubject([]),
+      singleModuleData$: new BehaviorSubject(undefined),
+      setModulePossession$: new BehaviorSubject(null),
+      requestAddModuleToRack$: new BehaviorSubject(null),
+      copyModuleNameAndManufacturer$: new BehaviorSubject(undefined)
+    };
+    const rackDetailDataService = {
+      singleRackData$: new BehaviorSubject(undefined),
+      isCurrentRackEditable$: new BehaviorSubject(false),
+      addModuleToRack$: new BehaviorSubject(null)
+    };
 
-    await TestBed.configureTestingModule({
+    TestBed.configureTestingModule({
       imports: [
         RouterTestingModule,
         NoopAnimationsModule,
@@ -39,7 +71,12 @@ describe('HomeDiscoverySectionComponent', () => {
                 mostSold: [
                   {id: 303, name: 'Disting EX', manufacturer: {id: 3, name: 'Expert Sleepers'}, count: 12}
                 ]
-              }))
+              })),
+              publicModulesByIds: jasmine.createSpy('GET.publicModulesByIds').and.returnValue(of([
+                buildModule(101, 'Maths', 'Intellijel'),
+                buildModule(202, 'Plaits', 'Mutable Instruments'),
+                buildModule(303, 'Disting EX', 'Expert Sleepers')
+              ]))
             }
           }
         },
@@ -54,7 +91,10 @@ describe('HomeDiscoverySectionComponent', () => {
         },
         {provide: AnalyticsService, useValue: analytics}
       ]
-    }).compileComponents();
+    });
+    TestBed.overrideProvider(ModuleDetailDataService, {useValue: moduleDetailDataService});
+    TestBed.overrideProvider(RackDetailDataService, {useValue: rackDetailDataService});
+    await TestBed.compileComponents();
 
     fixture = TestBed.createComponent(HomeDiscoverySectionComponent);
     component = fixture.componentInstance;

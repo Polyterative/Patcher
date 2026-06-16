@@ -1,12 +1,18 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
+import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.module';
 import { Observable } from 'rxjs';
 import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 import { PublicModuleDiscoveryEntry } from 'src/app/features/backend/supabase-queries.models';
+import {
+  defaultModuleMinimalViewConfig,
+  ModuleMinimalViewConfig
+} from 'src/app/components/module-parts/module-minimal/module-minimal.component';
 import { HeroContentCardComponent } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component';
+import { CleanCardComponent } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.component';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { ApplicationDiscoveryBucket, ApplicationDiscoverySnapshot } from '../../application-statistics.models';
 import { ApplicationStatisticsService } from '../../application-statistics.service';
@@ -14,7 +20,15 @@ import { ApplicationStatisticsService } from '../../application-statistics.servi
 @Component({
   selector: 'app-home-discovery-section',
   standalone: true,
-  imports: [CommonModule, HeroContentCardComponent, MatButtonToggleModule, MatIconModule, RouterLink],
+  imports: [
+    CommonModule,
+    CleanCardComponent,
+    HeroContentCardComponent,
+    MatButtonModule,
+    MatIconModule,
+    ModulePartsModule,
+    RouterLink
+  ],
   templateUrl: './home-discovery-section.component.html',
   styleUrls: ['./home-discovery-section.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -30,6 +44,16 @@ export class HomeDiscoverySectionComponent extends SubManager {
   selectedBucket: ApplicationDiscoveryBucket = 'mostOwned';
 
   readonly discovery$: Observable<ApplicationDiscoverySnapshot>;
+  readonly moduleViewConfig: ModuleMinimalViewConfig = {
+    ...defaultModuleMinimalViewConfig,
+    hideButtons: true,
+    hideDates: true,
+    hideDescription: true,
+    hideTags: true,
+    hideHP: true,
+    hideIoCounts: true,
+    hideReportIssue: true
+  };
 
   constructor(
     readonly applicationStatisticsService: ApplicationStatisticsService,
