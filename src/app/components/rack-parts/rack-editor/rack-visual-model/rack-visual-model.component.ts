@@ -329,6 +329,17 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     return analysisMode !== this.analysisModes.off && this.isHoveredModule(rackedModule);
   }
 
+  isSameHpHighlightedModule(rackedModule: RackedModule, analysisMode: RackAnalysisMode): boolean {
+    return this.isSameHpHighlightActive(analysisMode)
+      && !this.isHoveredModule(rackedModule)
+      && rackedModule.module.hp === this.hoveredRackedModule?.module.hp;
+  }
+
+  isSameHpDimmedModule(rackedModule: RackedModule, analysisMode: RackAnalysisMode): boolean {
+    return this.isSameHpHighlightActive(analysisMode)
+      && rackedModule.module.hp !== this.hoveredRackedModule?.module.hp;
+  }
+
   signalAnalysisAtHover(): SignalModuleAnalysis | null {
     return this.signalAnalysis;
   }
@@ -1088,6 +1099,13 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     targetMode: RackAnalysisMode
   ): boolean {
     return analysisMode === targetMode && this.isRowAnalysisPanelVisible(rowId);
+  }
+
+  private isSameHpHighlightActive(analysisMode: RackAnalysisMode): boolean {
+    return analysisMode === this.analysisModes.off
+      && this.isCurrentRackEditable
+      && this.isCurrentRackPropertyOfCurrentUser
+      && !!this.hoveredRackedModule;
   }
 
   private layoutMixedIssueAt(rowId: number) {

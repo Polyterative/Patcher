@@ -203,3 +203,7 @@
 ## 2026-06-16T18:16+02:00
 
 - **Rack replace-with-blank enter delay:** Suppressed the next enter animation by row/column visual slot rather than racking id, because the optimistic replacement blank starts without a persisted id while preserving the same slot.
+
+## 2026-06-16T18:23+02:00
+
+- **Rack same-HP hover aid:** Kept the cue as opacity/filter-only classes on existing rack tiles so it does not interfere with drag/drop, row animations, or analysis overlay classes. Suppressed it outside off-analysis edit mode because analysis modes already encode their own hover semantics.

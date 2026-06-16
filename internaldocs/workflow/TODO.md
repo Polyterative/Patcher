@@ -40,7 +40,6 @@
 - [ ] **LOW: Module Browser — keyword highlighting in descriptions** → [`plans/module-browser-keyword-highlighting-in-descriptions.md`](./plans/module-browser-keyword-highlighting-in-descriptions.md)
 - [ ] **MEDIUM: Module — public possession statistics & trend charts** → [`plans/module-public-possession-statistics-trend-charts.md`](./plans/module-public-possession-statistics-trend-charts.md)
 - [ ] **LOW: Module — "Cool" appreciation button** → [`plans/module-cool-appreciation-button.md`](./plans/module-cool-appreciation-button.md)
-- [ ] **LOW: Rack Editor — Same-HP highlight on hover (edit mode)** → [`plans/rack-editor-same-hp-highlight-on-hover-edit-mode.md`](./plans/rack-editor-same-hp-highlight-on-hover-edit-mode.md)
 - [ ] **MEDIUM: Tag taxonomy — split "PURPOSE" group into sub-groups** → [`plans/tag-taxonomy-split-purpose-group-into-sub-groups.md`](./plans/tag-taxonomy-split-purpose-group-into-sub-groups.md)
 - [ ] **ON HOLD INDEFINITELY: Rack Comparison — balance diff between two racks** → [`plans/rack-comparison-balance-diff-between-two-racks.md`](./plans/rack-comparison-balance-diff-between-two-racks.md)
 - [ ] **MEDIUM: Rack Editor — "Remix" layout optimizer** → [`plans/rack-editor-remix-layout-optimizer.md`](./plans/rack-editor-remix-layout-optimizer.md)
