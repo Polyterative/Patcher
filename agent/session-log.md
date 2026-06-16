@@ -1,5 +1,15 @@
 # Session Log
 
+## 16-06-2026 18:40 — Rack remix action scope labels
+
+- **Task selected:** Finish the ten-feature autonomous loop with a small clarity slice tied to the new Remix scope controls.
+- **Source:** `internaldocs/workflow/plans/rack-editor-remix-layout-optimizer.md` scope selector UX.
+- **Actions performed:** The Remix action label now reflects the active Layout scope: all, 3U, 1U, or a specific row.
+- **Tests run:** `pnpm test-headless --include="**/rack-editor.component.spec.ts"` — 33 specs passed; `pnpm lint` — passed with existing warning baseline.
+- **Runtime note:** Checked the public rack route in Layout mode, but the scoped Remix CTA is owner/edit-only and was hidden for that rack even with the available auth state, so label rendering is covered by unit tests.
+- **Docs updated:** Updated Remix plan decision log, completed-features archive, current task, acceptance checklist, and this session log.
+- **Blockers raised:** None.
+
 ## 16-06-2026 18:30 — Rack remix single-row scope
 
 - **Task selected:** Continue the frontend-only Rack Editor Remix plan with the remaining single-row scope requirement.

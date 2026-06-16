@@ -123,3 +123,4 @@ rack visual model shows a "remix" control panel in the same floating options are
 - **2026-06-16:** Hid the editable Remix action whenever mixed-format rows are present and replaced it with the same blocker message, leaving the data-service snackbar guard as a second safety layer.
 - **2026-06-16:** Added a pre-action Remix move summary to the Layout panel so users can see whether Remix would move modules, is already tight, or needs another row before clicking.
 - **2026-06-16:** Added single-row scope buttons to the Layout panel. Selecting a row uses the existing `{ rowIndex }` scope path so Remix can tidy one row's order without disturbing the rest of the rack.
+- **2026-06-16:** Made the editable Remix action label reflect the active scope (`Remix layout`, `Remix 3U`, `Remix 1U`, or `Remix Row N`) so scoped actions read clearly at click time.
