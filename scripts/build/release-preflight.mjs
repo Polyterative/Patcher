@@ -7,10 +7,12 @@ const REMOTE = 'origin';
 const REMOTE_PRODUCTION = `${REMOTE}/${PRODUCTION_BRANCH}`;
 
 function git(args, options = {}) {
-  return execFileSync('git', args, {
+  const output = execFileSync('git', args, {
     encoding: 'utf8',
     stdio: options.stdio ?? ['ignore', 'pipe', 'pipe'],
-  }).trim();
+  });
+
+  return typeof output === 'string' ? output.trim() : '';
 }
 
 function gitSucceeds(args) {
