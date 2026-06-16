@@ -79,6 +79,7 @@ supabase/.temp/
 
 # Local generated output artifacts
 /output/
+/.vercel-corepack/
 
 # Local Supabase backups — NEVER commit: contains real user data (public repo)
 /backups/
