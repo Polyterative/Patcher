@@ -310,6 +310,46 @@ describe('RackDetailDataService', () => {
     expect(backend.update.rackedModules).toHaveBeenCalled();
   }));
 
+  it('honours the selected remix scope when applying layout moves', fakeAsync(() => {
+    const {service, backend} = build();
+    const wideThreeU = makeRackedModule({
+      rackingData: {id: 20, rackid: 1, moduleid: 20, row: 0, column: 0, selectedPanelId: null},
+      module: {id: 20, name: 'Wide 3U', hp: 80, standard: {id: 0}, functions: []}
+    });
+    const smallThreeU = makeRackedModule({
+      rackingData: {id: 21, rackid: 1, moduleid: 21, row: 0, column: 1, selectedPanelId: null},
+      module: {id: 21, name: 'Small 3U', hp: 10, standard: {id: 0}, functions: []}
+    });
+    const mediumThreeU = makeRackedModule({
+      rackingData: {id: 22, rackid: 1, moduleid: 22, row: 1, column: 0, selectedPanelId: null},
+      module: {id: 22, name: 'Medium 3U', hp: 20, standard: {id: 0}, functions: []}
+    });
+    const smallOneU = makeRackedModule({
+      rackingData: {id: 23, rackid: 1, moduleid: 23, row: 2, column: 0, selectedPanelId: null},
+      module: {id: 23, name: 'Small 1U', hp: 4, standard: {id: 1}, functions: []}
+    });
+    const wideOneU = makeRackedModule({
+      rackingData: {id: 24, rackid: 1, moduleid: 24, row: 2, column: 1, selectedPanelId: null},
+      module: {id: 24, name: 'Wide 1U', hp: 12, standard: {id: 1}, functions: []}
+    });
+
+    service.singleRackData$.next(makeRack({rows: 3, hp: 84}));
+    service.rowedRackedModules$.next([[wideThreeU, smallThreeU], [mediumThreeU], [smallOneU, wideOneU]]);
+    service.layoutScope$.next('3u');
+    backend.update.rackedModules.calls.reset();
+
+    service.requestLayoutRemix$.next();
+    tick();
+
+    const rows = service.rowedRackedModules$.value!;
+    expect(rows.map(row => row.map(module => module.module.id))).toEqual([
+      [20],
+      [22, 21],
+      [23, 24]
+    ]);
+    expect(backend.update.rackedModules).toHaveBeenCalled();
+  }));
+
   it('skips no-op and unavailable remix variants to find a later valid alternative', fakeAsync(() => {
     const {service, backend, snackBar} = build();
     const wideA = makeRackedModule({

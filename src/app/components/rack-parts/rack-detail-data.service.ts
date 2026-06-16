@@ -88,7 +88,10 @@ import {
   mergeRefreshedModules,
 } from './rack-detail-data.utils';
 import { AnalyticsService } from '../../features/backbone/analytics-integration/analytics.service';
-import { computeLayoutAnalysis } from './rack-layout-analysis.utils';
+import {
+  computeLayoutAnalysis,
+  RackLayoutScope
+} from './rack-layout-analysis.utils';
 import { isBlankModule } from './rack-blank-module.constants';
 
 
@@ -201,6 +204,7 @@ export class RackDetailDataService extends SubManager {
   requestClearRow$ = new Subject<number>();
   requestDeleteRow$ = new Subject<number>();
   requestLayoutRemix$ = new Subject<void>();
+  layoutScope$ = new BehaviorSubject<RackLayoutScope>('all');
   
   requestRackedModulesDbSync$ = new Subject<void>(); // updates the backend with the current state of the rack
   //
@@ -453,14 +457,14 @@ export class RackDetailDataService extends SubManager {
 
     this.requestLayoutRemix$
       .pipe(
-        withLatestFrom(this.rowedRackedModules$, this.singleRackData$),
-        switchMap(([_, rackModules, rack]) => {
+        withLatestFrom(this.rowedRackedModules$, this.singleRackData$, this.layoutScope$),
+        switchMap(([_, rackModules, rack, layoutScope]) => {
           if (!rack || !rackModules) {
             SharedConstants.errorCustom(this.snackBar, 'Rack data is still loading. Try remixing again in a moment.');
             return EMPTY;
           }
 
-          const analysis = computeLayoutAnalysis(rackModules, rack.hp, 'all', {
+          const analysis = computeLayoutAnalysis(rackModules, rack.hp, layoutScope, {
             variant: this.layoutRemixVariant
           });
           if (analysis.mixedRowIssues.length > 0) {
@@ -468,7 +472,7 @@ export class RackDetailDataService extends SubManager {
             return EMPTY;
           }
 
-          const candidate = this.findLayoutRemixCandidate(rackModules, rack.hp, rack.rows);
+          const candidate = this.findLayoutRemixCandidate(rackModules, rack.hp, rack.rows, layoutScope);
           if (!candidate && !analysis.autoArrangeMoves.some(move => move.toRow < 0 || move.toRow >= rack.rows)) {
             SharedConstants.infoCustom(this.snackBar, 'This rack is already arranged as tightly as Remix can make it.');
             return EMPTY;
@@ -1647,14 +1651,15 @@ export class RackDetailDataService extends SubManager {
   private findLayoutRemixCandidate(
     rackModules: RackedModule[][],
     rackHp: number,
-    rackRows: number
+    rackRows: number,
+    layoutScope: RackLayoutScope
   ): {analysis: ReturnType<typeof computeLayoutAnalysis>; changedMoves: ReturnType<typeof computeLayoutAnalysis>['autoArrangeMoves']; nextVariant: number} | null {
     const moduleCount = rackModules.flat().filter(module => !isBlankModule(module.module.id)).length;
     const candidateCount = Math.max(moduleCount + 3, 6);
 
     for (let offset = 0; offset < candidateCount; offset += 1) {
       const variant = this.layoutRemixVariant + offset;
-      const analysis = computeLayoutAnalysis(rackModules, rackHp, 'all', {variant});
+      const analysis = computeLayoutAnalysis(rackModules, rackHp, layoutScope, {variant});
       const changedMoves = analysis.autoArrangeMoves.filter(move =>
         move.fromRow !== move.toRow || move.fromColumn !== move.toColumn
       );

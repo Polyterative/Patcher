@@ -42,12 +42,14 @@ import {
   RACK_ANALYSIS_MODE_OPTIONS,
   RACK_ANALYSIS_PANEL_COPY,
   RACK_LAYOUT_HOVER_MODE_OPTIONS,
+  RACK_LAYOUT_SCOPE_OPTIONS,
   RACK_SIGNAL_ANALYSIS_LEGEND_ITEMS,
   RACK_SIGNAL_FOCUS_OPTIONS
 } from '../rack-analysis-mode';
 import { SignalFocusArea } from '../rack-signal-analysis.utils';
 import {
   computeLayoutAnalysis,
+  RackLayoutScope,
   RackLayoutAnalysisResult
 } from '../rack-layout-analysis.utils';
 import { prefersTouchInteraction } from 'src/app/shared-interproject/touch-interaction.utils';
@@ -93,6 +95,7 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
   readonly analysisModeOptions = RACK_ANALYSIS_MODE_OPTIONS;
   readonly analysisPanelCopy = RACK_ANALYSIS_PANEL_COPY;
   readonly layoutHoverModeOptions = RACK_LAYOUT_HOVER_MODE_OPTIONS;
+  readonly layoutScopeOptions = RACK_LAYOUT_SCOPE_OPTIONS;
   readonly signalAnalysisLegendItems = RACK_SIGNAL_ANALYSIS_LEGEND_ITEMS;
   readonly layoutAnalysisLegendItems = RACK_LAYOUT_ANALYSIS_LEGEND_ITEMS;
   readonly signalFocusOptions = RACK_SIGNAL_FOCUS_OPTIONS;
@@ -615,6 +618,14 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
     });
   }
 
+  setLayoutScope(scope: RackLayoutScope): void {
+    this.dataService.layoutScope$.next(scope);
+    this.analytics.capture('rack.layout_scope_changed', {
+      rack_id: this.dataService.singleRackData$.value?.id,
+      scope
+    });
+  }
+
   requestLayoutRemix(): void {
     this.dataService.requestLayoutRemix$.next();
   }
@@ -670,7 +681,7 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
       return null;
     }
 
-    return computeLayoutAnalysis(rowedRackedModules, rackHp);
+    return computeLayoutAnalysis(rowedRackedModules, rackHp, this.dataService.layoutScope$.value);
   }
 
   private formatArrangementCount(count: number): string {

@@ -1,5 +1,15 @@
 # Session Log
 
+## 16-06-2026 17:48 — Rack remix scope selector
+
+- **Task selected:** Continue the frontend-only Rack Editor Remix plan with the plan's scope-selector requirement.
+- **Source:** `internaldocs/workflow/TODO.md` INFRA item and `internaldocs/workflow/plans/rack-editor-remix-layout-optimizer.md`.
+- **Actions performed:** Added an All / 3U / 1U scope selector to the Layout panel, stored the selected scope on `RackDetailDataService`, and made both arrangement summaries and Remix execution use it.
+- **Subagent:** Ran `code-review` (`rack-scope-reviewer`); result: no significant issues found.
+- **Tests run:** `pnpm test-headless --include="**/rack-editor.component.spec.ts" --include="**/rack-detail-data.service.spec.ts"` — 59 specs passed; `pnpm lint` — passed with existing warning baseline.
+- **Docs updated:** Updated Remix plan decision log, completed-features archive, current task, acceptance checklist, and this session log.
+- **Blockers raised:** None.
+
 ## 16-06-2026 17:34 — Rack remix arrangement counts
 
 - **Task selected:** Continue the earliest unblocked frontend-only Rack Editor Remix slice after backend-dependent roadmap items were blocked.

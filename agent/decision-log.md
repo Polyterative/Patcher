@@ -1,5 +1,9 @@
 # Decision Log
 
+## 16-06-2026 17:48
+
+- **Rack remix scope selector:** Continue the same frontend-only Remix plan because earlier roadmap items are blocked by backend/product approvals. Use an explicit All / 3U / 1U BehaviorSubject scope so the panel summary and Remix action cannot diverge; defer single-row scope until a row-picking UI is deliberately designed.
+
 ## 16-06-2026 17:34
 
 - **Rack remix arrangement counts:** Continued the existing frontend-only Remix plan rather than blocked backend-dependent roadmap items. Count exact valid arrangements per physical-format group only while the DP state space is bounded, use a deterministic sampled estimate for larger groups, and expose the result in the existing Layout panel; leave shuffle and statistical confidence intervals for later.

@@ -1,6 +1,7 @@
 # Acceptance Checklist
 
-- [x] `computeLayoutAnalysis` returns a real exact valid-arrangement count for small format groups instead of only 0/1.
-- [x] The count respects rack HP, row count, physical-standard grouping, and impossible arrangements.
-- [x] The existing Layout analysis panel shows a concise exact/estimated/empty/impossible summary.
-- [x] Focused rack layout utility and rack editor component tests pass.
+- [x] Layout mode exposes an All / 3U / 1U scope selector in the existing floating panel.
+- [x] Changing scope updates `RackDetailDataService.layoutScope$` and records analytics.
+- [x] Remix execution uses the selected scope when computing and applying moves.
+- [x] Arrangement summary uses the same selected scope as Remix.
+- [x] Focused rack editor and rack detail data service tests pass.
