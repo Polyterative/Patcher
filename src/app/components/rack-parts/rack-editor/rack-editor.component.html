@@ -256,6 +256,9 @@
                    <div class="rackEditorFloatingOptions__analysisHint">
                      {{ analysisPanelCopy.layout.description }}
                    </div>
+                   <div class="rackEditorFloatingOptions__analysisHint rackEditorFloatingOptions__analysisHint--layoutStatus">
+                     {{ layoutValiditySummary(bag.rowedRackedModules) }}
+                   </div>
                    <div class="rackEditorFloatingOptions__analysisHint rackEditorFloatingOptions__analysisHint--layoutCount">
                      {{ layoutArrangementSummary(bag.rowedRackedModules) }}
                    </div>

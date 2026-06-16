@@ -251,6 +251,35 @@ describe('RackEditorComponent', () => {
     ])).toBe('No valid arrangement fits the current row set.');
   });
 
+  it('summarizes layout validity for the analysis panel', () => {
+    const dataService = {
+      singleRackData$: new BehaviorSubject({hp: 84}),
+      layoutScope$: new BehaviorSubject('all')
+    } as unknown as RackDetailDataService;
+    const component = createComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      dataService
+    );
+    const moduleAt = (id: number, hp: number, row: number) => ({
+      module: {
+        id,
+        hp,
+        moduleFormat: {id: 0}
+      },
+      rackingData: {
+        id,
+        row,
+        column: id
+      }
+    }) as unknown as RackedModule;
+
+    expect(component.layoutValiditySummary([
+      [moduleAt(1, 80, 0), moduleAt(2, 10, 0)],
+      [moduleAt(3, 20, 1)]
+    ])).toBe('6HP over capacity across the current rows.');
+  });
+
   it('opens secondary touch actions for the selected module from the visible action tray', () => {
     const menuItems$ = new BehaviorSubject<any[]>([]);
     const open$ = new Subject<MouseEvent>();

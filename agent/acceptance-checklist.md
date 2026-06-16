@@ -1,7 +1,7 @@
 # Acceptance Checklist
 
-- [x] Layout mode exposes an All / 3U / 1U scope selector in the existing floating panel.
-- [x] Changing scope updates `RackDetailDataService.layoutScope$` and records analytics.
-- [x] Remix execution uses the selected scope when computing and applying moves.
-- [x] Arrangement summary uses the same selected scope as Remix.
-- [x] Focused rack editor and rack detail data service tests pass.
+- [x] Layout panel shows current validity without requiring row hover.
+- [x] Mixed-format rows report a clear blocker summary.
+- [x] Overflow rows summarize total HP over capacity.
+- [x] Valid layouts summarize total spare HP.
+- [x] Focused rack editor component tests pass.
