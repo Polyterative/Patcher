@@ -25,14 +25,16 @@ recording on top of Sentry replays — see the boundary rules in
   - ❌ `addModuleToRack`, `rack_module_add`
 - No PII in properties. No user email, no raw user-supplied text.
 - Properties: use `snake_case` keys, scalar values only (string | number | boolean).
-- Every event automatically carries `release` and `commit` super-properties (set in `main.ts`).
+- Every event automatically carries `release` and `commit` super-properties (set by the PostHog loader).
 
 ---
 
 ## Capturing events
 
 `AnalyticsService` (`src/app/features/backbone/analytics-integration/analytics.service.ts`)
-is the **only** entry-point. Import `posthog-js` nowhere else.
+is the **only app-facing** entry-point. The SDK import/init lives in
+`src/app/features/backbone/analytics-integration/posthog-loader.ts`; import
+`posthog-js` nowhere else.
 
 ```typescript
 // inject in a data service (not a component, unless it's a dialog-leaf component)
@@ -98,5 +100,6 @@ constructor(private analytics: AnalyticsService) {}
 
 - 2026-06-10 — Chose PostHog Cloud (EU) over self-host / Mixpanel / GA4 / DIY Supabase.
   Free tier ≤ 1M events/mo; open-source escape hatch available.
-- 2026-06-10 — `AnalyticsService` is the only file importing `posthog-js` (besides
-  `main.ts`). Enforced by `scripts/checks/check-posthog-imports.sh` in CI.
+- 2026-06-16 — `posthog-loader.ts` is the only file importing `posthog-js`; `AnalyticsService`
+  is eagerly booted by `AppComponent` so route pageviews are wired before lazy feature chunks load.
+  Enforced by `scripts/checks/check-posthog-imports.sh` in CI.

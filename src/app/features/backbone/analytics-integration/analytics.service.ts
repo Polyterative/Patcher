@@ -1,4 +1,5 @@
 import {
+  Inject,
   Injectable,
   NgZone
 } from '@angular/core';
@@ -8,9 +9,10 @@ import {
 } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-
-type PostHogModule = typeof import('posthog-js');
-type PostHog = PostHogModule['default'];
+import {
+  POSTHOG_CLIENT_LOADER,
+  PostHogLoader
+} from './posthog-loader';
 
 interface MinimalUser {
   id?: string;
@@ -23,17 +25,17 @@ interface MinimalUser {
  * custom event capture). Lazy-loads `posthog-js` once so it stays out of the
  * main chunk; no-op outside production.
  *
- * PostHog itself is initialized in `src/main.ts`. This service is the only
- * surface the rest of the app talks to — never import `posthog-js` directly.
+ * PostHog itself is initialized by the shared loader. This service is the only
+ * surface the rest of the app talks to — never import the SDK directly.
  */
 @Injectable({ providedIn: 'root' })
 export class AnalyticsService {
-  private posthogPromise?: Promise<PostHog | null>;
   private routeWired = false;
 
   constructor(
     private router: Router,
-    private zone: NgZone
+    private zone: NgZone,
+    @Inject(POSTHOG_CLIENT_LOADER) private loadPostHog: PostHogLoader
   ) {
     this.wireRoutePageviews();
   }
@@ -46,7 +48,7 @@ export class AnalyticsService {
     if (!environment.production) {
       return;
     }
-    void this.getPostHog()
+    void this.loadPostHog()
       .then(ph => ph?.capture(event, props))
       .catch(() => { /* swallow */ });
   }
@@ -55,7 +57,7 @@ export class AnalyticsService {
     if (!environment.production) {
       return;
     }
-    void this.getPostHog()
+    void this.loadPostHog()
       .then(ph => {
         if (!ph) {
           return;
@@ -78,7 +80,7 @@ export class AnalyticsService {
     if (!environment.production) {
       return;
     }
-    void this.getPostHog()
+    void this.loadPostHog()
       .then(ph => ph?.reset())
       .catch(() => { /* swallow */ });
   }
@@ -92,27 +94,20 @@ export class AnalyticsService {
     // Outside Angular zone — pageview capture must never schedule change
     // detection.
     this.zone.runOutsideAngular(() => {
+      this.capturePageview(this.router.url);
+
       this.router.events
         .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
         .subscribe(event => {
           const url = event.urlAfterRedirects || event.url;
-          void this.getPostHog()
-            .then(ph => ph?.capture('$pageview', { $current_url: window.location.origin + url }))
-            .catch(() => { /* swallow */ });
+          this.capturePageview(url);
         });
     });
   }
 
-  private getPostHog(): Promise<PostHog | null> {
-    if (!environment.production) {
-      return Promise.resolve(null);
-    }
-    this.posthogPromise ??= import('posthog-js')
-      .then(mod => mod.default)
-      .catch(loadError => {
-        console.warn('PostHog load failed:', loadError);
-        return null;
-      });
-    return this.posthogPromise;
+  private capturePageview(url: string): void {
+    void this.loadPostHog()
+      .then(ph => ph?.capture('$pageview', { $current_url: window.location.origin + url }))
+      .catch(() => { /* swallow */ });
   }
 }
