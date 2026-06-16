@@ -1,6 +1,7 @@
 # Acceptance Checklist
 
-- [x] Editable Layout panel does not offer the Remix button while mixed-format rows exist.
-- [x] The panel explains that mixed-format rows must be fixed first.
-- [x] Existing data-service guard remains in place.
+- [x] Layout panel shows how many modules the current Remix preview would move.
+- [x] Layout panel can explain no-op tight layouts.
+- [x] Layout panel can explain when another row is needed.
+- [x] Remix persistence path remains unchanged.
 - [x] Focused rack editor component tests pass.

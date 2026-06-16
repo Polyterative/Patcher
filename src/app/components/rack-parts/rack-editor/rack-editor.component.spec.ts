@@ -308,6 +308,35 @@ describe('RackEditorComponent', () => {
     ])).toBe('Fix mixed-format rows before remixing.');
   });
 
+  it('summarizes how many modules the next layout remix would move', () => {
+    const dataService = {
+      singleRackData$: new BehaviorSubject({hp: 84, rows: 2}),
+      layoutScope$: new BehaviorSubject('all')
+    } as unknown as RackDetailDataService;
+    const component = createComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      dataService
+    );
+    const moduleAt = (id: number, hp: number, row: number, column: number) => ({
+      module: {
+        id,
+        hp,
+        standard: {id: 0}
+      },
+      rackingData: {
+        id,
+        row,
+        column
+      }
+    }) as unknown as RackedModule;
+
+    expect(component.layoutRemixMoveSummary([
+      [moduleAt(1, 80, 0, 0), moduleAt(2, 10, 0, 1)],
+      [moduleAt(3, 20, 1, 0)]
+    ])).toBe('Remix would move 1 module.');
+  });
+
   it('opens secondary touch actions for the selected module from the visible action tray', () => {
     const menuItems$ = new BehaviorSubject<any[]>([]);
     const open$ = new Subject<MouseEvent>();

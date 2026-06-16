@@ -311,6 +311,11 @@
                      <div class="rackEditorFloatingOptions__analysisHint rackEditorFloatingOptions__analysisHint--subtle">
                        {{ analysisPanelCopy.layout.remix }}
                      </div>
+                     @if (layoutRemixMoveSummary(bag.rowedRackedModules); as moveSummary) {
+                       <div class="rackEditorFloatingOptions__analysisHint rackEditorFloatingOptions__analysisHint--remixMove">
+                         {{ moveSummary }}
+                       </div>
+                     }
                      @if (layoutRemixUnavailableReason(bag.rowedRackedModules); as blockedReason) {
                        <div class="rackEditorFloatingOptions__analysisHint rackEditorFloatingOptions__analysisHint--blocked">
                          {{ blockedReason }}
