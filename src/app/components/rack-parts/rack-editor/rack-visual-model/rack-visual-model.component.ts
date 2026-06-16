@@ -155,6 +155,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   };
   private static readonly rowAnalysisPanelHeightPx = 136;
   private static readonly dropRevealAnimationDurationMs = 225;
+  private static readonly enterDelaySuppressionDurationMs = 225;
   private static readonly layoutMoveAnimationDurationMs = 620;
   private static readonly manualDropLayoutMoveCooldownMs = 520;
   private static readonly rowMoveAnimationDurationMs = 350;
@@ -179,6 +180,8 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   private hoveredRowPowerPanelPlacement: 'above' | 'below' = 'above';
   private layoutMoveAnimationCancel: ModuleLayoutAnimationCancel | null = null;
   private layoutMoveAnimatingKeys = new Set<string>();
+  private readonly enterDelaySuppressedPositions = new Set<string>();
+  private readonly enterDelaySuppressionTimerIds = new Map<string, number>();
   private layoutMoveSuppressedUntilMs = 0;
   private rowMoveAnimationTimerId: number | null = null;
   private layoutHoverCandidates: RackLayoutHoverCandidates | null = null;
@@ -244,6 +247,9 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     this.activeRackDetailDataService().requestMoveRow$
       .pipe(takeUntil(this.destroyState$))
       .subscribe(move => this.startRowMoveAnimation(move));
+    this.activeRackDetailDataService().requestRackedModuleReplaceWithBlank$
+      .pipe(takeUntil(this.destroyState$))
+      .subscribe(module => this.suppressEnterDelayForPosition(module));
   }
   
   // on after edit update reference on that a service of the current HMTL element reference
@@ -268,6 +274,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   ngOnDestroy(): void {
     this.cancelLayoutMoveAnimation();
     this.clearRowMoveAnimation();
+    this.clearEnterDelaySuppressions();
     this.clearLayoutHoverState();
     this.clearTouchInteractionState();
     this.destroyState$.next();
@@ -343,6 +350,10 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     const key = rackedModule.rackingData.id ?? this.moduleDomKey(rackedModule);
     this.rackModuleTrackKeys.set(rackedModule, key);
     return key;
+  }
+
+  enterAnimationDelay(rackedModule: RackedModule, index: number): number {
+    return this.isEnterDelaySuppressed(rackedModule) ? 0 : index * 50;
   }
 
   isSignalSourceModule(rackedModule: RackedModule, analysisMode: RackAnalysisMode): boolean {
@@ -799,6 +810,10 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     return this.isDragImageAnimationSuppressed(module) || this.isModuleLayoutMoveAnimating(module);
   }
 
+  isEnterDelaySuppressed(module: RackedModule): boolean {
+    return this.enterDelaySuppressedPositions.has(this.rackModulePositionKey(module));
+  }
+
   areLayoutMoveAngularAnimationsDisabled(): boolean {
     return this.layoutMoveAngularAnimationsDisabled;
   }
@@ -902,6 +917,42 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     }
     this.rowMoveAnimationTimerId = null;
     this.rowMoveMotion$.next(null);
+  }
+
+  private suppressEnterDelayForPosition(module: RackedModule): void {
+    const key = this.rackModulePositionKey(module);
+    this.enterDelaySuppressedPositions.add(key);
+    this.cdr.markForCheck();
+
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const existingTimerId = this.enterDelaySuppressionTimerIds.get(key);
+    if (existingTimerId != null) {
+      window.clearTimeout(existingTimerId);
+    }
+
+    const timerId = window.setTimeout(() => {
+      this.enterDelaySuppressionTimerIds.delete(key);
+      this.enterDelaySuppressedPositions.delete(key);
+      this.cdr.markForCheck();
+    }, RackVisualModelComponent.enterDelaySuppressionDurationMs);
+    this.enterDelaySuppressionTimerIds.set(key, timerId);
+  }
+
+  private clearEnterDelaySuppressions(): void {
+    if (typeof window !== 'undefined') {
+      for (const timerId of this.enterDelaySuppressionTimerIds.values()) {
+        window.clearTimeout(timerId);
+      }
+    }
+    this.enterDelaySuppressionTimerIds.clear();
+    this.enterDelaySuppressedPositions.clear();
+  }
+
+  private rackModulePositionKey(module: RackedModule): string {
+    return `${ module.rackingData.row ?? 'none' }:${ module.rackingData.column ?? 'none' }`;
   }
 
   private updateLayoutHoverState(): void {

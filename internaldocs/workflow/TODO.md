@@ -44,7 +44,6 @@
 - [ ] **MEDIUM: Tag taxonomy — split "PURPOSE" group into sub-groups** → [`plans/tag-taxonomy-split-purpose-group-into-sub-groups.md`](./plans/tag-taxonomy-split-purpose-group-into-sub-groups.md)
 - [ ] **ON HOLD INDEFINITELY: Rack Comparison — balance diff between two racks** → [`plans/rack-comparison-balance-diff-between-two-racks.md`](./plans/rack-comparison-balance-diff-between-two-racks.md)
 - [ ] **MEDIUM: Rack Editor — "Remix" layout optimizer** → [`plans/rack-editor-remix-layout-optimizer.md`](./plans/rack-editor-remix-layout-optimizer.md)
-- [ ] **HIGH: Rack Editor — Granular Local Updates (no-reload animations)** → [`plans/rack-granular-updates.md`](./plans/rack-granular-updates.md)
 - [ ] **MEDIUM: Bug — Rack Preview Not Loading / Updating on Specific Rack** → [`plans/bug-rack-preview-not-loading-updating-on-specific-rack.md`](./plans/bug-rack-preview-not-loading-updating-on-specific-rack.md)
 - [ ] **MEDIUM: Sentry — Issue Monitoring & Resolution Workflow** → [`plans/sentry-issue-monitoring-resolution-workflow.md`](./plans/sentry-issue-monitoring-resolution-workflow.md)
 - [ ] **MEDIUM: Analytics — PostHog Product Instrumentation** → [`plans/analytics-posthog-product-instrumentation.md`](./plans/analytics-posthog-product-instrumentation.md)

@@ -141,7 +141,7 @@
            @for (rackedModule of row; track rackModuleTrackKey(rackedModule); let i = $index) {
              @let showHoverStats = shouldShowModuleHoverStats(rackedModule, analysisMode);
              @let moduleHp = effectiveHp(rackedModule);
-              <app-module-realistic [@enter]="{ value: '', params: { delay: (i * 50)}}"
+              <app-module-realistic [@enter]="{ value: '', params: { delay: enterAnimationDelay(rackedModule, i)}}"
                                      [@leave]
                                      [@.disabled]="isModuleAnimationSuppressed(rackedModule)"
                                      [data]="rackedModule|mapToModule"

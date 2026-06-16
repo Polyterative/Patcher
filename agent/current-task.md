@@ -2,5 +2,5 @@
 
 No active task.
 
-Last completed: Rack Editor — Row move motion polish (`rack-granular-updates.md` Layer 3 S15).
-Next likely candidate: continue the same plan with S16 replace-with-blank enter-delay suppression, if still product-relevant.
+Last completed: Rack Editor — Granular Local Updates polish (replace-with-blank enter-delay suppression).
+Next likely candidate: earliest unblocked frontend-only ROADMAP/TODO item; rack panel variant switching appears to need persistence review.
