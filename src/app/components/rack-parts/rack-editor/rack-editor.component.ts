@@ -667,6 +667,19 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
     return `Valid layout with ${ spareHp }HP spare across the current rows.`;
   }
 
+  layoutRemixUnavailableReason(rowedRackedModules: RackedModule[][] | null | undefined): string | null {
+    const analysis = this.computeLayoutAnalysis(rowedRackedModules);
+    if (!analysis) {
+      return 'Add modules before remixing the layout.';
+    }
+
+    if (analysis.mixedRowIssues.length > 0) {
+      return 'Fix mixed-format rows before remixing.';
+    }
+
+    return null;
+  }
+
   setShouldShowPanelImages(show: boolean): void {
     this.dataService.shouldShowPanelImages$.next(show);
     this.analytics.capture('rack.panel_images_toggled', {
