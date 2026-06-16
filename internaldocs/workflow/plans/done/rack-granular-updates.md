@@ -1,6 +1,6 @@
 # Rack Editor — Granular Local Updates (no-reload animations)
 
-**Status:** IN PROGRESS — core no-reload behavior is implemented; polish steps remain open.
+**Status:** DONE — core no-reload behavior and polish steps are implemented.
 
 **Goal:** All rack CRUD operations mutate `rowedRackedModules$` in-place so Angular's `@for` tracker preserves existing DOM elements, eliminating the staggered `[@enter]` re-animation that triggers on full reloads. Drag/drop and future row-move animations are preserved.
 
@@ -218,7 +218,7 @@ Run `pnpm test-headless --include="**/rack-detail-data*"` and `pnpm test-headles
 - In template: `[class.rackRow--movingUp]="(movingRowId$|async)?.id === rowId && (movingRowId$|async)?.dir === 'up'"` etc.
 - In SCSS: `@keyframes rowSlideUp` / `rowSlideDown` with `translateY`.
 
-**S16 — Suppress `[@enter]` delay for replace-with-blank result**  
+**S16 — Suppress `[@enter]` delay for replace-with-blank result** ✅ 16-06-2026
 - `RackVisualModelComponent` exposes `suppressEnterDelayIds = new Set<number>()`.
 - After `requestRackedModuleReplaceWithBlank$` fires (subscribe or tap in component), add the target row+column to the set; clear after one animation cycle.
 - Template: `[@enter]="{ value: '', params: { delay: suppressEnterDelayIds.has(rackedModule.rackingData.id) ? 0 : (i * 50)}}"`.
@@ -241,3 +241,4 @@ Run `pnpm test-headless --include="**/rack-detail-data*"` and `pnpm test-headles
 - 2025-07-14 — `backend.add.rackModule` has no `.select()` — we cannot skip the full re-fetch after add/blank/replace. `refreshModulesFromBackend$` + merge is the least-invasive approach without a backend schema change.
 - 2025-07-14 — `requestAddNewRow$` / `requestRemoveRow$` assume the row to remove is the *last* one; the existing guard already enforces the row must be empty before deletion, so trimming the last element of `rowedRackedModules$` is safe for `requestRemoveRow$`. For `requestDeleteRow$` (the newer row-menu path), the handler already uses `splice(rowId, 1)` locally — no change needed.
 - 2026-06-16 — S15 row move motion stays in `RackVisualModelComponent` as a transient observer of `requestMoveRow$`; it marks the source and target row shells for 350ms and leaves `RackDetailDataService` persistence/order handling untouched.
+- 2026-06-16 — S16 tracks replace-with-blank animation suppression by rack row/column rather than racking id, because the optimistic blank starts without a persisted id while occupying the same visual slot.

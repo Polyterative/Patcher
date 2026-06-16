@@ -3,6 +3,8 @@
 > Archive of finished work. One-line summaries only. For strategy context see `../product/PRINCIPLES.md` and
 > `../product/ROADMAP.md`.
 
+- **2026-06-16** — HIGH: Rack Editor — Granular Local Updates polish now suppresses replace-with-blank staggered enter delay by visual slot, completing the no-reload animation plan with focused rack visual coverage.
+
 - **2026-06-14** — MEDIUM: Module Collections — curated discovery playlists now support private-by-default CRUD, ordered module entries, public/owned detail flows, backlinks, public browsing, SEO/share metadata, and creation/discovery analytics.
 
 - **2026-06-14** — HIGH: Rack Editor — Optimistic / diff-based updates now keep delete, reorder, row, add, blank quick-add, preview image, and panel-switch mutations local with rollback/no-reload behavior; remaining rack detail reload is limited to intentional route handoff when duplicating a rack.

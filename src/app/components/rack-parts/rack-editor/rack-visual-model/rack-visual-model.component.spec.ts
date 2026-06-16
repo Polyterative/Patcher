@@ -27,6 +27,7 @@ import { HasUnrackedModulesPipe } from './has-unracked-modules.pipe';
 import { RackVisualModelComponent } from './rack-visual-model.component';
 import { TagType } from 'src/app/models/tag';
 import { RackMinimal } from 'src/app/models/rack';
+import { RackedModule } from 'src/app/models/module';
 
 
 describe('RackVisualModelComponent', () => {
@@ -42,6 +43,7 @@ describe('RackVisualModelComponent', () => {
     rackOrderChange$: {next: jasmine.Spy};
     addBlankToRow$: Subject<{rowId: number; hp: number}>;
     requestMoveRow$: Subject<{rowId: number; direction: 'up' | 'down'}>;
+    requestRackedModuleReplaceWithBlank$: Subject<RackedModule>;
   };
 
   beforeEach(async () => {
@@ -54,6 +56,7 @@ describe('RackVisualModelComponent', () => {
       rackOrderChange$: {next: jasmine.createSpy('next')},
       addBlankToRow$: new Subject<{rowId: number; hp: number}>(),
       requestMoveRow$: new Subject<{rowId: number; direction: 'up' | 'down'}>(),
+      requestRackedModuleReplaceWithBlank$: new Subject<RackedModule>(),
     };
 
     await TestBed.configureTestingModule({
@@ -143,6 +146,29 @@ describe('RackVisualModelComponent', () => {
     optimisticModule.rackingData.id = 44;
 
     expect(component.rackModuleTrackKey(optimisticModule)).toBe(optimisticKey);
+  });
+
+  it('suppresses staggered enter delay for the replacement blank position only during the animation window', () => {
+    jasmine.clock().install();
+    try {
+      const replacementBlank = makeRackedModule(0, 0, 0);
+      replacementBlank.rackingData.id = undefined;
+      const neighboringModule = makeRackedModule(11, 0, 14);
+      component.rowedRackedModules = [[replacementBlank, neighboringModule]];
+      fixture.detectChanges();
+
+      rackDetailDataService.requestRackedModuleReplaceWithBlank$.next(moduleRef);
+      fixture.detectChanges();
+
+      expect(component.enterAnimationDelay(replacementBlank, 1)).toBe(0);
+      expect(component.enterAnimationDelay(neighboringModule, 1)).toBe(50);
+
+      jasmine.clock().tick(225);
+
+      expect(component.enterAnimationDelay(replacementBlank, 1)).toBe(50);
+    } finally {
+      jasmine.clock().uninstall();
+    }
   });
 
   it('renders a stable movement key separately from the coordinate key', () => {

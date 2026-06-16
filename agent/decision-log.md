@@ -199,3 +199,7 @@
 - Discarded alternatives: (a) forcing `flex-direction: row` on `lib-screen-wrapper` — would be
   a broader change with potential layout side-effects; (b) removing `lib-screen-wrapper` — not
   needed; the wrapper is not the root cause.
+
+## 2026-06-16T18:16+02:00
+
+- **Rack replace-with-blank enter delay:** Suppressed the next enter animation by row/column visual slot rather than racking id, because the optimistic replacement blank starts without a persisted id while preserving the same slot.
