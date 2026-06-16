@@ -4,7 +4,9 @@ import {
 } from '@angular/core/testing';
 import { MatCardModule } from '@angular/material/card';
 import { defaultModuleMinimalViewConfig } from '../module-minimal.component';
+import { DescriptionKeywordHighlightPipe } from '../../shared-pipes/description-keyword-highlight.pipe';
 import { ModulePartDescriptionComponent } from './module-part-description.component';
+import { MinimalModule } from 'src/app/models/module';
 
 describe('ModulePartDescriptionComponent', () => {
   let comp: ModulePartDescriptionComponent;
@@ -13,7 +15,10 @@ describe('ModulePartDescriptionComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ModulePartDescriptionComponent],
+      declarations: [
+        ModulePartDescriptionComponent,
+        DescriptionKeywordHighlightPipe
+      ],
       imports: [
         MatCardModule
       ]
@@ -82,6 +87,25 @@ describe('ModulePartDescriptionComponent', () => {
     expect(reader).toBeNull();
     expect(reader).toBeNull();
   });
+
+  it('renders keyword highlight spans only when the view config opts in', () => {
+    comp.data = {
+      id: 1,
+      name: 'Scanner',
+      description: 'Dual VCO with filter routing'
+    } as MinimalModule;
+    comp.viewConfig = {
+      ...defaultModuleMinimalViewConfig,
+      highlightDescriptionKeywords: true
+    };
+
+    fixture.detectChanges();
+
+    const subtitle = fixture.nativeElement.querySelector('mat-card-subtitle') as HTMLElement;
+    expect(subtitle.querySelectorAll('.desc-kw').length).toBe(2);
+    expect(subtitle.querySelector('.desc-kw--voices')?.textContent).toBe('VCO');
+  });
+
   it('keeps short descriptions unclamped when they occupy five lines or fewer', () => {
     const element = document.createElement('div');
     Object.defineProperty(element, 'scrollHeight', {value: 70});

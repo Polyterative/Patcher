@@ -1,3 +1,6 @@
+@use 'sass:map';
+@use 'src/app/components/rack-parts/function-analysis-theme' as functionTheme;
+
 .description {
   position: relative;
   min-width: 0;
@@ -48,6 +51,30 @@
 .module-description-reader--align-end {
   right: 0;
   left: auto;
+}
+
+:host ::ng-deep .desc-kw {
+  font-weight: 500;
+}
+
+:host ::ng-deep .desc-kw--voices {
+  color: map.get(functionTheme.$function-analysis-role-base-colors, 'voices');
+}
+
+:host ::ng-deep .desc-kw--modulation {
+  color: map.get(functionTheme.$function-analysis-role-base-colors, 'modulation');
+}
+
+:host ::ng-deep .desc-kw--utilities {
+  color: map.get(functionTheme.$function-analysis-role-base-colors, 'utilities');
+}
+
+:host ::ng-deep .desc-kw--timing {
+  color: map.get(functionTheme.$function-analysis-role-base-colors, 'timing');
+}
+
+:host ::ng-deep .desc-kw--tone {
+  color: map.get(functionTheme.$function-analysis-role-base-colors, 'tone');
 }
 
 .description--has-reader:has(.module-description--clamped:hover) .module-description-reader,

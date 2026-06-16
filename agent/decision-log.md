@@ -207,3 +207,7 @@
 ## 2026-06-16T18:23+02:00
 
 - **Rack same-HP hover aid:** Kept the cue as opacity/filter-only classes on existing rack tiles so it does not interfere with drag/drop, row animations, or analysis overlay classes. Suppressed it outside off-analysis edit mode because analysis modes already encode their own hover semantics.
+
+## 2026-06-16T18:29+02:00
+
+- **Module description keywords:** Added a dedicated opt-in view-config flag rather than changing all module descriptions, because the plan scopes keyword colour to module-browser scanning only. Escaped DB text before returning trusted highlight markup so `[innerHTML]` does not widen the rendering surface.

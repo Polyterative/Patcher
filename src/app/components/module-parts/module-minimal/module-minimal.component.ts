@@ -251,6 +251,7 @@ export interface ModuleMinimalViewConfig {
   tagsReadOnly: boolean;
   tagsMaxCount: number | null;
   colorTagsByAxis?: boolean;
+  highlightDescriptionKeywords?: boolean;
   hideIoCounts: boolean;
   hideReportIssue: boolean;
 }
@@ -273,6 +274,7 @@ export const defaultModuleMinimalViewConfig: ModuleMinimalViewConfig = {
   tagsReadOnly: false,
   tagsMaxCount: null,
   colorTagsByAxis: false,
+  highlightDescriptionKeywords: false,
   hideIoCounts: false,
   hideReportIssue: false,
 };

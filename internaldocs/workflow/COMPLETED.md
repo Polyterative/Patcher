@@ -3,6 +3,8 @@
 > Archive of finished work. One-line summaries only. For strategy context see `../product/PRINCIPLES.md` and
 > `../product/ROADMAP.md`.
 
+- **2026-06-16** — LOW: Module Browser — descriptions now opt into two subtle balance-axis keyword highlights in browser cards, using existing rack-balance purpose patterns and sanitized inline spans.
+
 - **2026-06-16** — LOW: Rack Editor — Same-HP hover aid now highlights matching-width modules and dims non-matches only in editable off-analysis mode, with focused component coverage and runtime screenshot validation.
 
 - **2026-06-16** — HIGH: Rack Editor — Granular Local Updates polish now suppresses replace-with-blank staggered enter delay by visual slot, completing the no-reload animation plan with focused rack visual coverage.

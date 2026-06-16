@@ -3,7 +3,7 @@
 
 #### LOW: Module Browser — keyword highlighting in descriptions
 
-**Status:** OPEN — backlog item; no implementation started yet.
+**Status:** DONE — implemented 2026-06-16.
 
 **Why:** When scanning module descriptions in the browser, semantic keywords (filter, VCO,
 distortion, LFO, etc.) are currently indistinguishable from surrounding text. Colouring a
@@ -59,4 +59,4 @@ by a `viewConfig` flag so it can be turned off in other display contexts.
 
 ## Decision log
 
-<!-- Append timestamped one-liners as the plan progresses. -->
+- 2026-06-16 — Implemented as an opt-in `highlightDescriptionKeywords` module view config for the module browser root only, backed by a pure sanitized pipe that reuses `RACK_BALANCE_AXES.purposePatterns` and caps highlights at two spans.
