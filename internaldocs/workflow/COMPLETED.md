@@ -3,6 +3,8 @@
 > Archive of finished work. One-line summaries only. For strategy context see `../product/PRINCIPLES.md` and
 > `../product/ROADMAP.md`.
 
+- **2026-06-16** — MEDIUM: Rack Editor — Remix scope now includes per-row buttons so users can tidy one row without disturbing the rest of the rack.
+
 - **2026-06-16** — MEDIUM: Rack Editor — Layout panel now previews Remix impact with move counts, already-tight copy, or needs-another-row guidance before the user clicks.
 
 - **2026-06-16** — MEDIUM: Rack Editor — Layout panel now hides the Remix action for mixed-format rows and shows the blocker before the user triggers a no-op action.

@@ -63,6 +63,11 @@ import {
 
 export type { ModuleRightClick } from './rack-editor.types';
 
+interface RackLayoutRowScopeOption {
+  scope: Extract<RackLayoutScope, {rowIndex: number}>;
+  label: string;
+}
+
 
 @Component({
   selector: 'app-rack-editor',
@@ -624,6 +629,21 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
       rack_id: this.dataService.singleRackData$.value?.id,
       scope
     });
+  }
+
+  layoutRowScopeOptions(rowedRackedModules: RackedModule[][] | null | undefined): RackLayoutRowScopeOption[] {
+    return (rowedRackedModules ?? [])
+      .map((_, rowIndex) => ({
+        scope: {rowIndex},
+        label: `Row ${ rowIndex + 1 }`
+      }));
+  }
+
+  isLayoutScopeActive(currentScope: RackLayoutScope | null | undefined, targetScope: RackLayoutScope): boolean {
+    if (typeof currentScope === 'object' && typeof targetScope === 'object') {
+      return currentScope?.rowIndex === targetScope.rowIndex;
+    }
+    return currentScope === targetScope;
   }
 
   requestLayoutRemix(): void {

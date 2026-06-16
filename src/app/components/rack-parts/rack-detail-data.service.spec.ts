@@ -350,6 +350,41 @@ describe('RackDetailDataService', () => {
     expect(backend.update.rackedModules).toHaveBeenCalled();
   }));
 
+  it('remixes only the selected single row scope', fakeAsync(() => {
+    const {service, backend} = build();
+    const rowZeroA = makeRackedModule({
+      rackingData: {id: 40, rackid: 1, moduleid: 40, row: 0, column: 0, selectedPanelId: null},
+      module: {id: 40, name: 'Row 0 A', hp: 4, standard: {id: 0}, functions: []}
+    });
+    const rowZeroB = makeRackedModule({
+      rackingData: {id: 41, rackid: 1, moduleid: 41, row: 0, column: 1, selectedPanelId: null},
+      module: {id: 41, name: 'Row 0 B', hp: 8, standard: {id: 0}, functions: []}
+    });
+    const rowOneA = makeRackedModule({
+      rackingData: {id: 42, rackid: 1, moduleid: 42, row: 1, column: 0, selectedPanelId: null},
+      module: {id: 42, name: 'Row 1 A', hp: 4, standard: {id: 0}, functions: []}
+    });
+    const rowOneB = makeRackedModule({
+      rackingData: {id: 43, rackid: 1, moduleid: 43, row: 1, column: 1, selectedPanelId: null},
+      module: {id: 43, name: 'Row 1 B', hp: 8, standard: {id: 0}, functions: []}
+    });
+
+    service.singleRackData$.next(makeRack({rows: 2, hp: 84}));
+    service.rowedRackedModules$.next([[rowZeroA, rowZeroB], [rowOneA, rowOneB]]);
+    service.layoutScope$.next({rowIndex: 1});
+    backend.update.rackedModules.calls.reset();
+
+    service.requestLayoutRemix$.next();
+    tick();
+
+    const rows = service.rowedRackedModules$.value!;
+    expect(rows.map(row => row.map(module => module.module.id))).toEqual([
+      [40, 41],
+      [43, 42]
+    ]);
+    expect(backend.update.rackedModules).toHaveBeenCalled();
+  }));
+
   it('skips no-op and unavailable remix variants to find a later valid alternative', fakeAsync(() => {
     const {service, backend, snackBar} = build();
     const wideA = makeRackedModule({

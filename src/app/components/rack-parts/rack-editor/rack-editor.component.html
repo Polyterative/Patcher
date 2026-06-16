@@ -268,11 +268,28 @@
                      @for (option of layoutScopeOptions; track option.label) {
                        <button type="button"
                                class="rackEditorFloatingOptions__analysisFocusButton"
-                               [class.rackEditorFloatingOptions__analysisFocusButton--active]="bag.layoutScope === option.scope"
-                               [attr.aria-pressed]="bag.layoutScope === option.scope"
+                               [class.rackEditorFloatingOptions__analysisFocusButton--active]="isLayoutScopeActive(bag.layoutScope, option.scope)"
+                               [attr.aria-pressed]="isLayoutScopeActive(bag.layoutScope, option.scope)"
                                (click)="setLayoutScope(option.scope)"
                        >
-                         @if (bag.layoutScope === option.scope) {
+                         @if (isLayoutScopeActive(bag.layoutScope, option.scope)) {
+                           <mat-icon class="rackEditorFloatingOptions__segmentedIcon" aria-hidden="true">radio_button_checked</mat-icon>
+                         }
+                         {{ option.label }}
+                       </button>
+                     }
+                   </div>
+                   <div class="rackEditorFloatingOptions__analysisFocus rackEditorFloatingOptions__analysisFocus--layoutRows"
+                        role="group"
+                        aria-label="Single-row remix scope">
+                     @for (option of layoutRowScopeOptions(bag.rowedRackedModules); track option.label) {
+                       <button type="button"
+                               class="rackEditorFloatingOptions__analysisFocusButton"
+                               [class.rackEditorFloatingOptions__analysisFocusButton--active]="isLayoutScopeActive(bag.layoutScope, option.scope)"
+                               [attr.aria-pressed]="isLayoutScopeActive(bag.layoutScope, option.scope)"
+                               (click)="setLayoutScope(option.scope)"
+                       >
+                         @if (isLayoutScopeActive(bag.layoutScope, option.scope)) {
                            <mat-icon class="rackEditorFloatingOptions__segmentedIcon" aria-hidden="true">radio_button_checked</mat-icon>
                          }
                          {{ option.label }}

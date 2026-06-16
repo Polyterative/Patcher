@@ -122,3 +122,4 @@ rack visual model shows a "remix" control panel in the same floating options are
 - **2026-06-16:** Added current layout validity copy to the floating Layout panel so users see mixed-format blockers, total overflow HP, or total spare HP without first hovering a row.
 - **2026-06-16:** Hid the editable Remix action whenever mixed-format rows are present and replaced it with the same blocker message, leaving the data-service snackbar guard as a second safety layer.
 - **2026-06-16:** Added a pre-action Remix move summary to the Layout panel so users can see whether Remix would move modules, is already tight, or needs another row before clicking.
+- **2026-06-16:** Added single-row scope buttons to the Layout panel. Selecting a row uses the existing `{ rowIndex }` scope path so Remix can tidy one row's order without disturbing the rest of the rack.

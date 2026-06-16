@@ -1,5 +1,15 @@
 # Session Log
 
+## 16-06-2026 18:30 — Rack remix single-row scope
+
+- **Task selected:** Continue the frontend-only Rack Editor Remix plan with the remaining single-row scope requirement.
+- **Source:** `internaldocs/workflow/plans/rack-editor-remix-layout-optimizer.md` scope selector UX.
+- **Actions performed:** Added per-row Layout scope buttons, row-scope active comparison, and coverage that Remix can reorder only the selected row.
+- **Tests run:** `pnpm test-headless --include="**/rack-editor.component.spec.ts" --include="**/rack-detail-data.service.spec.ts"` — 64 specs passed; `pnpm lint` — passed with existing warning baseline.
+- **Runtime validation:** Opened `/racks/TSHX38-bjQJS`, switched to Layout, and confirmed the single-row scope group rendered with 6 row buttons. Console showed existing Supabase lock / RackImage `ngTemplateOutlet` errors unrelated to this change.
+- **Docs updated:** Updated Remix plan decision log, completed-features archive, current task, acceptance checklist, and this session log.
+- **Blockers raised:** None.
+
 ## 16-06-2026 18:20 — Rack remix move summary
 
 - **Task selected:** Continue the frontend-only Rack Editor Remix panel work with the plan's diff-summary requirement.
