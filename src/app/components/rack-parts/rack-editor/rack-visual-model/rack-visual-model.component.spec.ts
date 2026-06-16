@@ -26,6 +26,7 @@ import {
 import { HasUnrackedModulesPipe } from './has-unracked-modules.pipe';
 import { RackVisualModelComponent } from './rack-visual-model.component';
 import { TagType } from 'src/app/models/tag';
+import { RackMinimal } from 'src/app/models/rack';
 
 
 describe('RackVisualModelComponent', () => {
@@ -40,6 +41,7 @@ describe('RackVisualModelComponent', () => {
     currentDownloadElementRef$: {next: jasmine.Spy};
     rackOrderChange$: {next: jasmine.Spy};
     addBlankToRow$: Subject<{rowId: number; hp: number}>;
+    requestMoveRow$: Subject<{rowId: number; direction: 'up' | 'down'}>;
   };
 
   beforeEach(async () => {
@@ -51,6 +53,7 @@ describe('RackVisualModelComponent', () => {
       currentDownloadElementRef$: {next: jasmine.createSpy('next')},
       rackOrderChange$: {next: jasmine.createSpy('next')},
       addBlankToRow$: new Subject<{rowId: number; hp: number}>(),
+      requestMoveRow$: new Subject<{rowId: number; direction: 'up' | 'down'}>(),
     };
 
     await TestBed.configureTestingModule({
@@ -170,6 +173,35 @@ describe('RackVisualModelComponent', () => {
     expect(rackRow?.classList.contains('row')).toBeTrue();
     expect(rackRow?.classList.contains('rackRow')).toBeTrue();
     expect(rackRowShell).not.toBeNull();
+  });
+
+  it('marks both affected row shells during row move motion and clears them after the animation window', () => {
+    jasmine.clock().install();
+    try {
+      component.rackData = {hp: 104, rows: 2} as RackMinimal;
+      component.rowedRackedModules = [[makeRackedModule(10, 0, 0)], [makeRackedModule(11, 1, 0)]];
+      fixture.detectChanges();
+
+      rackDetailDataService.requestMoveRow$.next({rowId: 1, direction: 'up'});
+      fixture.detectChanges();
+
+      let rowShells = Array.from(
+        (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('.rackRowShell')
+      );
+      expect(rowShells[0].classList.contains('rackRowShell--movingUp')).toBeTrue();
+      expect(rowShells[1].classList.contains('rackRowShell--movingDown')).toBeTrue();
+
+      jasmine.clock().tick(350);
+      fixture.detectChanges();
+
+      rowShells = Array.from(
+        (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('.rackRowShell')
+      );
+      expect(rowShells.some(row => row.classList.contains('rackRowShell--movingUp'))).toBeFalse();
+      expect(rowShells.some(row => row.classList.contains('rackRowShell--movingDown'))).toBeFalse();
+    } finally {
+      jasmine.clock().uninstall();
+    }
   });
 
   it('keeps blank rack rows pinned to the full rack template width', () => {

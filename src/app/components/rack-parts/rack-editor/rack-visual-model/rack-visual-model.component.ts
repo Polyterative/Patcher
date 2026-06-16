@@ -21,7 +21,10 @@ import {
   ViewChild
 } from '@angular/core';
 import { animate, animateChild, keyframes, query, style, transition, trigger } from '@angular/animations';
-import { Subject } from 'rxjs';
+import {
+  BehaviorSubject,
+  Subject
+} from 'rxjs';
 import { RackedModule } from 'src/app/models/module';
 import { RackMinimal } from 'src/app/models/rack';
 import {
@@ -93,6 +96,14 @@ import {
   withAlpha,
 } from './rack-visual-model.utils';
 
+type RackRowMoveDirection = 'up' | 'down';
+
+interface RackRowMoveMotion {
+  sourceRowId: number;
+  targetRowId: number;
+  direction: RackRowMoveDirection;
+}
+
 
 @Component({
   selector: 'app-rack-visual-model',
@@ -146,6 +157,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   private static readonly dropRevealAnimationDurationMs = 225;
   private static readonly layoutMoveAnimationDurationMs = 620;
   private static readonly manualDropLayoutMoveCooldownMs = 520;
+  private static readonly rowMoveAnimationDurationMs = 350;
   private static readonly layoutHoverPhaseDurationMs = 1000;
   private static readonly signalHoverCardWidthPx = 224;
   private static readonly signalHoverCardGapPx = 10;
@@ -168,11 +180,13 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   private layoutMoveAnimationCancel: ModuleLayoutAnimationCancel | null = null;
   private layoutMoveAnimatingKeys = new Set<string>();
   private layoutMoveSuppressedUntilMs = 0;
+  private rowMoveAnimationTimerId: number | null = null;
   private layoutHoverCandidates: RackLayoutHoverCandidates | null = null;
   private layoutHoverVisuals = new Map<string, RackLayoutHoverVisual>();
   private layoutHoverPhaseIndex = 0;
   private layoutHoverAnimationTimerId: number | null = null;
   layoutMoveAngularAnimationsDisabled = false;
+  readonly rowMoveMotion$ = new BehaviorSubject<RackRowMoveMotion | null>(null);
   private rowPowerBreakdown: RackPowerRowBreakdown[] = [];
   rowHpOverflow: number[] = [];
   private rowFunctionBreakdowns = new Map<number, RowFunctionBreakdown>();
@@ -227,6 +241,9 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     this.dataService.layoutHoverMode$
       .pipe(takeUntil(this.destroyState$))
       .subscribe(() => this.updateLayoutHoverState());
+    this.activeRackDetailDataService().requestMoveRow$
+      .pipe(takeUntil(this.destroyState$))
+      .subscribe(move => this.startRowMoveAnimation(move));
   }
   
   // on after edit update reference on that a service of the current HMTL element reference
@@ -250,6 +267,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
 
   ngOnDestroy(): void {
     this.cancelLayoutMoveAnimation();
+    this.clearRowMoveAnimation();
     this.clearLayoutHoverState();
     this.clearTouchInteractionState();
     this.destroyState$.next();
@@ -759,6 +777,20 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     return this.dropRevealAnimatingModule === module;
   }
 
+  isRowMovingUp(rowId: number, motion: RackRowMoveMotion | null): boolean {
+    return !!motion && (
+      (motion.direction === 'up' && motion.targetRowId === rowId)
+      || (motion.direction === 'down' && motion.sourceRowId === rowId)
+    );
+  }
+
+  isRowMovingDown(rowId: number, motion: RackRowMoveMotion | null): boolean {
+    return !!motion && (
+      (motion.direction === 'down' && motion.targetRowId === rowId)
+      || (motion.direction === 'up' && motion.sourceRowId === rowId)
+    );
+  }
+
   isModuleLayoutMoveAnimating(module: RackedModule): boolean {
     return this.layoutMoveAnimatingKeys.has(this.rackModuleStableDomKey(module));
   }
@@ -836,6 +868,40 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     this.layoutMoveAnimationCancel = null;
     this.layoutMoveAnimatingKeys.clear();
     this.layoutMoveAngularAnimationsDisabled = false;
+  }
+
+  private startRowMoveAnimation(move: {rowId: number; direction: RackRowMoveDirection}): void {
+    const targetRowId = move.direction === 'up' ? move.rowId - 1 : move.rowId + 1;
+    const totalRows = this.rackData?.rows ?? this.rowedRackedModules?.length ?? 0;
+    if (move.rowId < 0 || move.rowId >= totalRows || targetRowId < 0 || targetRowId >= totalRows) {
+      return;
+    }
+
+    this.clearRowMoveAnimation();
+    this.rowMoveMotion$.next({
+      sourceRowId: move.rowId,
+      targetRowId,
+      direction: move.direction,
+    });
+    this.cdr.markForCheck();
+
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    this.rowMoveAnimationTimerId = window.setTimeout(() => {
+      this.rowMoveAnimationTimerId = null;
+      this.rowMoveMotion$.next(null);
+      this.cdr.markForCheck();
+    }, RackVisualModelComponent.rowMoveAnimationDurationMs);
+  }
+
+  private clearRowMoveAnimation(): void {
+    if (this.rowMoveAnimationTimerId != null && typeof window !== 'undefined') {
+      window.clearTimeout(this.rowMoveAnimationTimerId);
+    }
+    this.rowMoveAnimationTimerId = null;
+    this.rowMoveMotion$.next(null);
   }
 
   private updateLayoutHoverState(): void {
@@ -937,6 +1003,10 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   private suppressLayoutMoveAnimationForManualDrop(): void {
     this.layoutMoveSuppressedUntilMs = Date.now() + RackVisualModelComponent.manualDropLayoutMoveCooldownMs;
     this.cancelLayoutMoveAnimation();
+  }
+
+  private activeRackDetailDataService(): RackDetailDataService {
+    return this.rackDetailDataService ?? this.dataService;
   }
 
   private updateModulePowerHeatmap(): void {
