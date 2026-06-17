@@ -14,20 +14,19 @@
 
 ## Active
 
-### LOW: Angular — Replace deprecated ngx-dropzone
+### MEDIUM: Rack Editor — "Remix" layout optimizer
 
-- **Plan:** [`plans/angular-replace-deprecated-ngx-dropzone.md`](./plans/angular-replace-deprecated-ngx-dropzone.md)
-- **Status:** Implemented — awaiting coordinator review.
-- **Started:** 2026-06-17T17:56+02:00
+- **Plan:** [`plans/rack-editor-remix-layout-optimizer.md`](./plans/rack-editor-remix-layout-optimizer.md)
+- **Status:** Staged for next loop — continue the remaining actionable Remix optimizer work.
+- **Started:** 2026-06-17T18:05+02:00
 - **Coordinator:** coordinator-loop
 
 #### Layer checklist
 
-- [x] MVP — Replace `ngx-dropzone` runtime usage with a native file input / drag-drop host while preserving single vs multi-file behavior.
-- [x] Structural — Remove the direct dependency and lockfile entries once no code imports it.
-- [x] Polish — Preserve image/file previews, rejection feedback, and accessible keyboard/click upload affordances.
+- [ ] MVP — Reconcile the plan checklist with the implemented Remix work and identify the highest-value remaining user-visible gap.
+- [ ] Structural — Complete the remaining pure utility / rack editor wiring in a scoped way without Supabase changes.
+- [ ] Polish — Validate Remix behavior with focused unit coverage and, for visual changes, runtime screenshot inspection.
 
 #### Decision log
 
-- 2026-06-17T17:56+02:00 — Picked this over HIGH backlog items because the HIGH manufacturer/security/E2E tasks are blocked by approval, credentials, or broad multi-slice remediation; this is self-contained and removes a deprecated direct dependency.
-- 2026-06-17T17:59+02:00 — Replaced `ngx-dropzone` with a repo-local file-add event and native input/drop validation so no successor dependency is needed.
+- 2026-06-17T18:05+02:00 — Staged after completing the ngx-dropzone migration. Higher-priority open items were skipped because Manufacturer Accounts requires Supabase/RLS approval, Security Audit Remediation spans credential/RLS/dependency slices, Public Possession trend charts require schema approval for remaining work, E2E cleanup needs credentials, and E2E multi-instance depends on that cleanup. Remix has existing implementation context and remaining code-only UI/utility work.

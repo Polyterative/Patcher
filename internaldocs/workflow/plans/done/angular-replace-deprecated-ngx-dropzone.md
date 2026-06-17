@@ -2,7 +2,7 @@
 
 #### LOW: Angular — Replace deprecated ngx-dropzone
 
-**Status:** In progress.
+**Status:** Completed 2026-06-17.
 
 **Why:** `ngx-dropzone` is deprecated and no longer receives updates, so upload UI should move to a maintained option or a small native drag/drop implementation.
 
@@ -45,13 +45,13 @@ The shared `lib-file-drag-host` upload primitive imports `ngx-dropzone`, so ever
 
 ## File-level checklist
 
-- [ ] `src/app/shared-interproject/components/@smart/file-drag-host/file-drag-host.component.ts`
-- [ ] `src/app/shared-interproject/components/@smart/file-drag-host/file-drag-host.component.html`
-- [ ] `src/app/shared-interproject/components/@smart/file-drag-host/file-drag-host.component.scss`
-- [ ] `src/app/shared-interproject/components/@smart/file-drag-host/file-drag-host.service.ts`
-- [ ] `src/app/shared-interproject/components/@smart/file-drag-host/file-drag-host.service.spec.ts`
-- [ ] `package.json`
-- [ ] `pnpm-lock.yaml`
+- [x] `src/app/shared-interproject/components/@smart/file-drag-host/file-drag-host.component.ts`
+- [x] `src/app/shared-interproject/components/@smart/file-drag-host/file-drag-host.component.html`
+- [x] `src/app/shared-interproject/components/@smart/file-drag-host/file-drag-host.component.scss`
+- [x] `src/app/shared-interproject/components/@smart/file-drag-host/file-drag-host.service.ts`
+- [x] `src/app/shared-interproject/components/@smart/file-drag-host/file-drag-host.service.spec.ts`
+- [x] `package.json`
+- [x] `pnpm-lock.yaml`
 
 **Success criteria:**
 - Upload flows work without `ngx-dropzone`.
@@ -77,3 +77,4 @@ The shared `lib-file-drag-host` upload primitive imports `ngx-dropzone`, so ever
 
 - 2026-06-15 — Added as a low-priority follow-up after dependency deprecation review.
 - 2026-06-17T17:56+02:00 — Coordinator selected this as the loop task because higher-priority open tasks are blocked on external approval/secrets or are too broad for one verified cycle.
+- 2026-06-17T18:05+02:00 — Completed with native drag/drop plus file-input support, local accept validation, object URL cleanup on remove/replacement/destroy, focused service coverage, full lint, and reviewer approval.
