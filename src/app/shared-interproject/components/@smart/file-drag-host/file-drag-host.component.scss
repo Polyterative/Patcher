@@ -9,5 +9,93 @@
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  transition: height 500ms;
+  min-height: 9rem;
+  padding: 1rem;
+  border: .125rem dashed rgba(255, 255, 255, .34);
+  border-radius: .75rem;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+}
+
+.dropzone:focus-visible,
+.dropzone--dragging {
+  border-color: rgba(255, 255, 255, .82);
+  background-color: rgba(255, 255, 255, .08);
+  box-shadow: 0 0 0 .1875rem rgba(255, 255, 255, .12);
+}
+
+.dropzone--has-files {
+  cursor: default;
+}
+
+.dropzone-label {
+  padding: 1rem;
+  text-align: center;
+}
+
+.file-input {
+  position: absolute;
+  width: .0625rem;
+  height: .0625rem;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.file-preview,
+.image-preview {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  padding: .75rem;
+  border-radius: .5rem;
+  background-color: rgba(255, 255, 255, .06);
+}
+
+.file-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.image-preview__frame {
+  position: relative;
+  flex: 0 0 8rem;
+  width: 8rem;
+  height: 8rem;
+  overflow: hidden;
+  border-radius: .5rem;
+  background-color: rgba(0, 0, 0, .18);
+}
+
+.image-preview__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.remove-file-button {
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 999rem;
+  color: inherit;
+  background-color: rgba(255, 255, 255, .16);
+  cursor: pointer;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.remove-file-button:hover,
+.remove-file-button:focus-visible {
+  background-color: rgba(255, 255, 255, .28);
+}
+
+.remove-file-button--image {
+  position: absolute;
+  top: .35rem;
+  right: .35rem;
 }

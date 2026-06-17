@@ -5,10 +5,8 @@ import {
   OnDestroy
 } from '@angular/core';
 import { MatSnackBar } from "@angular/material/snack-bar";
-import { NgxDropzoneChangeEvent } from 'ngx-dropzone';
 import {
-  BehaviorSubject,
-  Subject
+  BehaviorSubject
 } from 'rxjs';
 import {
   filter,
@@ -20,10 +18,15 @@ import {
 
 type FileArray = File[];
 
+export interface FileDragHostAddEvent {
+  addedFiles: FileArray;
+  rejectedFiles: FileArray;
+}
+
 @Injectable()
 export class FileDragHostService extends SubManager implements OnDestroy {
   
-  readonly fileAdd$: EventEmitter<NgxDropzoneChangeEvent> = new EventEmitter<NgxDropzoneChangeEvent>();
+  readonly fileAdd$: EventEmitter<FileDragHostAddEvent> = new EventEmitter<FileDragHostAddEvent>();
   readonly files$: BehaviorSubject<FileArray> = new BehaviorSubject<FileArray>([]);
   readonly removeFile$: EventEmitter<File> = new EventEmitter<File>();
   readonly removeAllFiles$: EventEmitter<void> = new EventEmitter<void>();
@@ -42,15 +45,29 @@ export class FileDragHostService extends SubManager implements OnDestroy {
   }
 
 
+  addFiles(files: FileList | FileArray, acceptedFileType?: string): void {
+    const addedFiles: FileArray = [];
+    const rejectedFiles: FileArray = [];
+
+    Array.from(files).forEach(file => {
+      if (this.isAcceptedFile(file, acceptedFileType)) {
+        addedFiles.push(file);
+      } else {
+        rejectedFiles.push(file);
+      }
+    });
+
+    this.fileAdd$.emit({ addedFiles, rejectedFiles });
+  }
+
   private setupFileAdder(): void {
     this.removeFile$
         .pipe(this.takeUntilDestroyed())
         .pipe(
           withLatestFrom(this.files$),
-          map(([deteled, files]) => {
+          map(([deleted, files]) => {
 
-            files.splice(files.indexOf(deteled), 1);
-            return files;
+            return files.filter(file => file !== deleted);
           })
         )
         .subscribe(x => this.files$.next(x));
@@ -58,14 +75,14 @@ export class FileDragHostService extends SubManager implements OnDestroy {
     this.fileAdd$
         .pipe(
           filter(x => !!x.addedFiles),
-          map(x => x.addedFiles),
-          withLatestFrom(this.files$),
-          tap(([newFiles, oldPool]) => {
-            if (newFiles.length === 0) {
+          tap(x => {
+            if ((x.rejectedFiles?.length ?? 0) > 0 || x.addedFiles.length === 0) {
               this.snackBar.open('File not accepted — check the format and try again.', undefined, {duration: 8000, panelClass: 'snack-error'});
             }
           }),
-          filter(([newFiles, oldPool]) => newFiles.length > 0),
+          map(x => x.addedFiles),
+          withLatestFrom(this.files$),
+          filter(([newFiles]) => newFiles.length > 0),
           map(([newFiles, oldPool]) => {
             if (this.singleFileMode$.value) {
               // override old pool with new files, if single file mode is active
@@ -79,6 +96,32 @@ export class FileDragHostService extends SubManager implements OnDestroy {
         .subscribe(x => this.files$.next(x));
 
 
+  }
+
+  private isAcceptedFile(file: File, acceptedFileType?: string): boolean {
+    const acceptList = (acceptedFileType ?? '')
+        .split(',')
+        .map(type => type.trim().toLowerCase())
+        .filter(type => type.length > 0);
+
+    if (acceptList.length === 0) {
+      return true;
+    }
+
+    const fileType = file.type.toLowerCase();
+    const fileName = file.name.toLowerCase();
+
+    return acceptList.some(type => {
+      if (type.startsWith('.')) {
+        return fileName.endsWith(type);
+      }
+
+      if (type.endsWith('/*')) {
+        return fileType.startsWith(type.slice(0, -1));
+      }
+
+      return fileType === type;
+    });
   }
 
   ngOnDestroy(): void {
