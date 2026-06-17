@@ -75,8 +75,9 @@ Use skills / MCPs / subagents when useful.
    trivially derivable from them, ask — write the question into
    `agent/blockers.md` and move on.
 
-5. **Idempotent, reviewable work.** Small logical commits. Each commit must be
-   independently understandable and revertible.
+5. **Idempotent, reviewable work.** Small logical commits at meaningful verified
+   checkpoints. Each commit must be independently understandable, revertible, and
+   backed by relevant validation.
 
 ---
 
@@ -180,7 +181,7 @@ For every change:
 6. If something fails: do not paper over it. Diagnose, decide
    (fix / revert / document as a follow-up), log the decision.
 
-### 5. Document & Commit
+### 5. Document & Commit Verified Chunks
 
 1. Update affected docs in the same change:
    - `internaldocs/workflow/CURRENT_FEATURE.md` — current state
@@ -194,12 +195,18 @@ For every change:
      formalized via decision log
 2. Append a session-log entry: what you did, why, files touched, tests run,
    results, follow-ups discovered.
-3. Commit with a conventional commit message:
+3. Commit only if this is a coherent verified chunk:
+   - relevant targeted tests/checks passed
+   - reviewer/subagent review was run for non-trivial changes
+   - the diff is scoped and independently useful
+   - no skipped/failing tests are hidden in the commit
+4. Commit with a conventional commit message:
    - `feat(scope): ...` / `fix(scope): ...` / `refactor(scope): ...` /
      `docs(scope): ...` / `test(scope): ...` / `chore(scope): ...`
    - Reference the source TODO/spec line in the body.
-4. **One logical change per commit.** If the work spans multiple concerns,
-   split.
+5. **One logical verified change per commit.** If the work spans multiple concerns,
+   split. Do not commit just because an MVP / Structural / Polish stage or loop
+   pass ended; commit when the chunk is useful and verified.
 
 ### 6. Decide: Continue or Pause
 
@@ -255,7 +262,7 @@ task. Hygiene here means "as you pass through".
 - Bypassing existing patterns because they feel verbose
 - Touching backend "just a tiny bit" — it's never tiny
 - Committing failing or skipped tests without explicit `decision-log.md` entry
-- Long-running uncommitted state — commit at every meaningful checkpoint
+- Long-running uncommitted state — commit at every meaningful verified checkpoint
 - Marking a TODO done when only 90% is shipped — keep it open with a clear
   "Remaining:" note
 - Editing `AGENTS.md`, `mission.md`, or `PRINCIPLES.md` autonomously — those

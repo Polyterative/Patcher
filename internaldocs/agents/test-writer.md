@@ -48,6 +48,7 @@ coverage need the same coding quality as production changes.
 5. Run `pnpm test-headless --include="<spec path>"` and iterate until green
 6. Run a broader `pnpm test-headless` slice to ensure no neighbouring breakage
 7. For E2E: prefer `pnpm test:e2e:auth` for auth-dependent flows
+8. If asked to commit, commit only after the relevant test command passes
 
 ## Quality bar
 
@@ -56,6 +57,7 @@ coverage need the same coding quality as production changes.
 - [ ] No flaky timing-based tests
 - [ ] Production code untouched
 - [ ] Tests run in <2s each for unit; reasonable for E2E
+- [ ] Any commit made is backed by a passing targeted test run
 
 ## Output contract
 
