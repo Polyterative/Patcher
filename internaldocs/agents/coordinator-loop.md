@@ -23,7 +23,7 @@ Use `gpt-5.5` for normal coordination. Escalate only if backlog selection or arc
 - Set `internaldocs/workflow/CURRENT_FEATURE.md` and mark the TODO entry in progress.
 - Delegate implementation to the correct persona (`frontend-dev`, `refactorer`, `test-writer`, `bug-hunter`, etc.).
 - Delegate independent verification to `reviewer` before finalizing.
-- Run validation, resolve failures, and archive completed docs.
+- Run validation, resolve failures, archive completed docs, and stage the next task before handing back.
 - Commit major verified chunks when they are coherent, tested, and independently reviewed.
 
 ## Does NOT
@@ -33,7 +33,7 @@ Use `gpt-5.5` for normal coordination. Escalate only if backlog selection or arc
 - Commit after every loop stage/pass mechanically; commit only meaningful verified chunks.
 - Modify unrelated code or overwrite user changes.
 - Apply Supabase RLS, policy, migration, or destructive data changes without explicit approval.
-- Leave `CURRENT_FEATURE.md` active after successful completion.
+- Leave `CURRENT_FEATURE.md` empty after successful completion when an actionable next task exists.
 - Mark work complete based only on an implementation subagent's report; inspect and verify.
 
 ## Inputs expected
@@ -64,14 +64,20 @@ Use `gpt-5.5` for normal coordination. Escalate only if backlog selection or arc
     - reviewer findings are resolved or explicitly documented as non-blocking
     - the commit message is conventional and contains no Copilot attribution
 11. For long tasks, repeat implementation → review → validation → commit at meaningful checkpoints. Do not commit merely because an MVP / Structural / Polish stage ended; commit when the chunk is independently useful and verified.
-12. Complete the documentation loop:
+12. Complete the documentation loop for the finished task:
     - append important choices to the plan Decision log
     - move the TODO line to `COMPLETED.md` with today's date
     - move the plan to `internaldocs/workflow/plans/done/`
-    - reset `CURRENT_FEATURE.md` to `No active feature.`
+13. Stage the next pipeline task before returning:
+    - re-read `TODO.md` and pick the next highest-priority actionable open item
+    - skip held items, tasks blocked on credentials/secrets, and work requiring explicit Supabase RLS / migration approval
+    - mark the selected TODO line `[~]`
+    - populate `CURRENT_FEATURE.md` with the selected task, plan link, status, timestamp, layer checklist, and Decision log entry explaining why it was picked
+    - if no actionable task exists, reset `CURRENT_FEATURE.md` to `No active feature.` and state the blocker in the final response
+14. Complete workflow validation:
     - run `node scripts/checks/check-docs.cjs`
-13. Commit the final docs cleanup only after `node scripts/checks/check-docs.cjs` passes.
-14. Final response: summarize what changed, touched areas, validation results, commits created, and any unrelated dirty worktree entries.
+15. Commit the final docs cleanup only after `node scripts/checks/check-docs.cjs` passes.
+16. Final response: summarize what changed, touched areas, validation results, commits created, the staged next pipeline task (or why none was staged), and any unrelated dirty worktree entries.
 
 ## Quality bar
 
@@ -80,14 +86,16 @@ Use `gpt-5.5` for normal coordination. Escalate only if backlog selection or arc
 - [ ] A different review subagent checked the diff.
 - [ ] Required tests/lint/docs checks were run.
 - [ ] TODO, completed archive, active feature, and plan archive are coherent.
+- [ ] The next actionable task is staged in `CURRENT_FEATURE.md`, or the coordinator explicitly documented why none can be staged.
 - [ ] Every commit corresponds to a meaningful verified chunk, not a mechanical loop stage.
 - [ ] No push was made without explicit user approval.
 
 ## Output contract
 
-Working code changes, verified checkpoint commits, and a completed workflow-doc
-cycle. The repo should be ready for another coordinator loop immediately after the
-final response.
+Working code changes, verified checkpoint commits, a completed workflow-doc
+cycle, and a staged next pipeline task in `CURRENT_FEATURE.md` so the next loop
+can continue without manual setup. If no next task can be staged, the final
+response must say why.
 
 ## Repo references
 
