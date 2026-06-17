@@ -285,8 +285,9 @@ comments, module flags, and later price reports. The private dashboard phase can
 public subset layers on top once profile privacy is stable.
 
 This should incentivise useful contribution and support the trust-tier direction without turning profiles into social-status
-pages. Reuse the shared statistics and recent-activity surfaces where possible. No leaderboards, likes, follows, or streak
-mechanics.
+pages. Reuse the shared statistics and recent-activity surfaces where possible. No leaderboards, follows, friend graphs, or
+streak mechanics. Content-level reactions such as Cool belong on modules, racks, patches, and similar objects — not as a
+profile-ranking system.
 
 **Open questions:** Which metrics are public-safe in v1? Should pending/unapproved submissions remain private? Does public
 contributor display require an explicit opt-in beyond profile visibility?
@@ -545,8 +546,8 @@ This creates a reason for the manufacturer page to stay alive after the initial 
 **UI direction:** keep this as a compact, structured section on the manufacturer page rather than a full blogging system.
 Each entry should be skimmable and strongly tied to modules or brand-level updates.
 
-**Boundary:** no vanity engagement mechanics. No likes, follows, or creator-feed behavior. This is a utility/news layer,
-not the main manufacturer wedge.
+**Boundary:** no vanity engagement mechanics. No follows or creator-feed behavior. Reactions should not attach to
+manufacturer update posts in v1; this is a utility/news layer, not the main manufacturer wedge.
 
 **Constraint direction:** if this ships, it should launch with hard limits (low posting frequency, short entries, clear
 separation from community activity, and a reporting path for spammy use). Without those constraints it turns into a
