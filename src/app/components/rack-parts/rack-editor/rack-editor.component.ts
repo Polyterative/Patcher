@@ -280,20 +280,19 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
       this.dataService.isCurrentRackEditable$
     ));
     
-    this.manageSub(
-      rightClick$
-        .pipe(
-          filter(([, isCurrentRackPropertyOfCurrentUser, isCurrentRackEditable]) =>
-            isCurrentRackPropertyOfCurrentUser && isCurrentRackEditable
-          )
-        )
-        .subscribe(([{
-          $event,
-          rackedModule
-        }]) => {
-          this.openModuleContextMenu(rackedModule, $event);
-        })
-    );
+    rightClick$
+      .pipe(
+        filter(([, isCurrentRackPropertyOfCurrentUser, isCurrentRackEditable]) =>
+          isCurrentRackPropertyOfCurrentUser && isCurrentRackEditable
+        ),
+        this.takeUntilDestroyed()
+      )
+      .subscribe(([{
+        $event,
+        rackedModule
+      }]) => {
+        this.openModuleContextMenu(rackedModule, $event);
+      });
      
   }
 

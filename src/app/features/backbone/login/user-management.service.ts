@@ -691,7 +691,13 @@ export class UserManagementService extends SubManager {
   }
 
   private showOperationError(error: unknown): void {
-    const msg = (error as any)?.message || SharedConstants.messages.operationFailed;
+    const msg = typeof error === 'object'
+      && error !== null
+      && 'message' in error
+      && typeof error.message === 'string'
+      && error.message
+      ? error.message
+      : SharedConstants.messages.operationFailed;
     SharedConstants.errorCustom(this.snackBar, msg);
   }
 
