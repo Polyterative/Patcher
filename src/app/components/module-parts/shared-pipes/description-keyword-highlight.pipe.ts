@@ -7,6 +7,7 @@ import {
   RackBalanceAxisId,
   RACK_BALANCE_AXES
 } from '../../rack-parts/rack-balance-analysis.constants';
+import { normalizeTagName } from 'src/app/models/tag';
 
 interface DescriptionHighlightRange {
   start: number;
@@ -53,6 +54,33 @@ export class DescriptionKeywordHighlightPipe implements PipeTransform {
     const ranges: DescriptionHighlightRange[] = [];
 
     for (const axis of RACK_BALANCE_AXES) {
+      for (const tagName of axis.dbTagNames) {
+        for (const match of source.matchAll(this.toGlobalPattern(this.toKeywordPattern(tagName)))) {
+          const start = match.index ?? -1;
+          const value = match[0] ?? '';
+          if (start < 0 || value.length === 0) {
+            continue;
+          }
+
+          const candidate = {
+            start,
+            end: start + value.length,
+            axisId: axis.id
+          };
+
+          if (this.overlapsExistingRange(candidate, ranges)) {
+            continue;
+          }
+
+          ranges.push(candidate);
+          ranges.sort((left, right) => left.start - right.start);
+
+          if (ranges.length >= max) {
+            return ranges;
+          }
+        }
+      }
+
       for (const pattern of axis.purposePatterns) {
         for (const match of source.matchAll(this.toGlobalPattern(pattern))) {
           const start = match.index ?? -1;
@@ -87,6 +115,14 @@ export class DescriptionKeywordHighlightPipe implements PipeTransform {
   private toGlobalPattern(pattern: RegExp): RegExp {
     const flags = pattern.flags.includes('g') ? pattern.flags : `${ pattern.flags }g`;
     return new RegExp(pattern.source, flags);
+  }
+
+  private toKeywordPattern(keyword: string): RegExp {
+    const tokens = normalizeTagName(keyword).split(' ').filter(Boolean);
+    const tokenPattern = tokens
+      .map(token => token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+      .join('[^\\p{L}\\p{N}]+');
+    return new RegExp(`(?<![\\p{L}\\p{N}])${ tokenPattern }(?![\\p{L}\\p{N}])`, 'iu');
   }
 
   private overlapsExistingRange(

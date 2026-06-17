@@ -54,7 +54,7 @@ export const NUMERIC_TAG_TYPE_NAMES: Readonly<Record<number, string>> = Object.f
  * (replaced the retired type 0 / 'purpose'). Used for balance analysis scoring.
  */
 export const FUNCTIONAL_TAG_TYPES: ReadonlySet<string> = new Set([
-  TagType.Source, TagType.Filter, TagType.Modulation,
+  TagType.Voice, TagType.Source, TagType.Filter, TagType.Modulation,
   TagType.Effect, TagType.Sequencing, TagType.Utility,
 ].map(t => TAG_TYPE_LABELS[t].toLowerCase()));
 

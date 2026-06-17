@@ -29,11 +29,19 @@ export const RACK_BALANCE_AXES: RackBalanceAxisDefinition[] = [
     label: 'Voices',
     icon: 'graphic_eq',
     dbTagNames: [
+      'BASS',
+      'CLAP',
       'Chord',
       'Full Voice',
       'Granular',
+      'HAT',
+      'KICK',
+      'LEAD',
       'Noise',
+      'PAD',
+      'PERC',
       'Sample',
+      'SNARE',
       'VCO'
     ],
     purposePatterns: [
@@ -91,12 +99,14 @@ export const RACK_BALANCE_AXES: RackBalanceAxisDefinition[] = [
     icon: 'build',
     dbTagNames: [
       'Attenuate',
+      'Blank',
       'Compare',
       'Logic',
       'Mix',
       'Multiply',
       'Polarize',
       'Quad',
+      'Sequencial Switch',
       'Switch',
       'Utility',
       'VCA'
@@ -128,7 +138,11 @@ export const RACK_BALANCE_AXES: RackBalanceAxisDefinition[] = [
     label: 'Timing',
     icon: 'timer',
     dbTagNames: [
+      'Arpeggiator',
+      'Clock IN',
       'Clock Mod',
+      'Clock OUT',
+      'Euclidean',
       'Frequency Div.',
       'Quantize',
       'Rhythm',

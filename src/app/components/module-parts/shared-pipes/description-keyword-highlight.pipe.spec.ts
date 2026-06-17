@@ -5,6 +5,7 @@ import {
 import {
   DomSanitizer
 } from '@angular/platform-browser';
+import { resolveTagAxis } from '../../rack-parts/rack-balance-analysis.utils';
 import { DescriptionKeywordHighlightPipe } from './description-keyword-highlight.pipe';
 
 describe('DescriptionKeywordHighlightPipe', () => {
@@ -45,5 +46,35 @@ describe('DescriptionKeywordHighlightPipe', () => {
 
     expect(html).toContain('&lt;img src=x onerror=alert(1)&gt;');
     expect(html).toContain('<span class="desc-kw desc-kw--voices">VCO</span>');
+  });
+
+  it('highlights aligned database tags with the same axes as rack function classification', () => {
+    const sharedTags = [
+      'Clock IN',
+      'Clock OUT',
+      'Arpeggiator',
+      'Euclidean',
+      'Blank',
+      'Sequencial Switch',
+      'KICK',
+      'SNARE',
+    ];
+
+    for (const tagName of sharedTags) {
+      const axis = resolveTagAxis(tagName);
+      const html = render(`Has ${ tagName } support.`, 1);
+
+      expect(axis).withContext(tagName).not.toBeNull();
+      expect(html).withContext(tagName).toContain(`<span class="desc-kw desc-kw--${ axis }">${ tagName }</span>`);
+    }
+  });
+
+  it('uses normalized tag matching for aligned database tag highlights', () => {
+    const tagName = 'Clock-IN';
+    const axis = resolveTagAxis(tagName);
+    const html = render(`Has ${ tagName } support.`, 1);
+
+    expect(axis).toBe('timing');
+    expect(html).toContain('<span class="desc-kw desc-kw--timing">Clock-IN</span>');
   });
 });
