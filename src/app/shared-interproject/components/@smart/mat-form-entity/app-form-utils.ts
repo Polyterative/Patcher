@@ -27,7 +27,9 @@ export class AppFormUtils {
                         input.hasError(ErrorCodes.form.errorCode.custom.numberNotPositiveInteger) ? ErrorMessages.form.error_numberNotPositiveInteger :
                           input.hasError(ErrorCodes.form.errorCode.custom.numberBiggerThanInterval) ? ErrorMessages.form.error_numberBiggerThanInterval :
                             input.hasError(ErrorCodes.form.errorCode.custom.doesNotContainHttps) ? ErrorMessages.form.error_doesNotContainHttps :
-                              input.hasError(ErrorCodes.form.errorCode.min) ? ErrorMessages.form.error_min : noErrorMessageChar;
+                              input.hasError(ErrorCodes.form.errorCode.custom.usernameTaken) ? ErrorMessages.form.error_usernameTaken :
+                                input.hasError(ErrorCodes.form.errorCode.custom.usernameAvailabilityCheckFailed) ? ErrorMessages.form.error_usernameAvailabilityCheckFailed :
+                                  input.hasError(ErrorCodes.form.errorCode.min) ? ErrorMessages.form.error_min : noErrorMessageChar;
     
   }
   
@@ -53,7 +55,9 @@ export class ErrorCodes {
         numberBiggerThanInterval: 'numberBiggerThanOffset',
         doesNotContainHttps: 'doesNotContainHttps',
         invalidContent:      'invalidContent',
-        empty:               'empty'
+        empty:               'empty',
+        usernameTaken:       'usernameTaken',
+        usernameAvailabilityCheckFailed: 'usernameAvailabilityCheckFailed'
       }
     }
   };
@@ -76,7 +80,9 @@ export class ErrorMessages {
     error_doesNotContainHttps:      'The entered URL does not contain https',
     error_numberBiggerThanInterval: 'The number entered is greater than the interval',
     error_invalidContent:           'Invalid content, please check the input',
-    error_empty:                    'The field content is empty'
+    error_empty:                    'The field content is empty',
+    error_usernameTaken:            'That username is already taken',
+    error_usernameAvailabilityCheckFailed: 'Username availability could not be checked'
   };
   
 }

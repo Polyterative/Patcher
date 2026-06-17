@@ -559,6 +559,22 @@ export class UserManagementService extends SubManager {
     );
   }
 
+  isUsernameAvailable$(username: string): Observable<boolean> {
+    return this.loggedUserFullProfile$.pipe(
+      take(1),
+      switchMap(profile => {
+        if (!profile) {
+          return throwError(() => new Error('No user profile available'));
+        }
+        return this.backend.auth.isUsernameAvailable$(username, profile.id);
+      })
+    );
+  }
+
+  isUsernameAvailableForSignup$(username: string): Observable<boolean> {
+    return this.backend.auth.isUsernameAvailable$(username);
+  }
+
   updateProfileVisibility$(isPublic: boolean): Observable<void> {
     return this.loggedUserFullProfile$.pipe(
       take(1),

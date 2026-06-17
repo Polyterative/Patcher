@@ -6,20 +6,25 @@ import {
 } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Router } from '@angular/router';
+import {
+  ActivatedRoute,
+  Router
+} from '@angular/router';
 import {
   of,
   ReplaySubject,
+  Subject,
   throwError
 } from 'rxjs';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatIconModule } from '@angular/material/icon';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { CompleteProfileComponent } from './complete-profile.component';
 import { UserManagementService } from '../user-management.service';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
+import { HeroContentCardComponent } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component';
+import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 
 
 describe('CompleteProfileComponent', () => {
@@ -38,7 +43,8 @@ describe('CompleteProfileComponent', () => {
     
     mockUserManagementService = {
       loggedUserFullProfile$: loggedUserFullProfile$.asObservable(),
-      updateUsername$: jasmine.createSpy('updateUsername$').and.returnValue(of(void 0))
+      updateUsername$: jasmine.createSpy('updateUsername$').and.returnValue(of(void 0)),
+      isUsernameAvailable$: jasmine.createSpy('isUsernameAvailable$').and.returnValue(of(true))
     };
     
     await TestBed.configureTestingModule({
@@ -46,13 +52,15 @@ describe('CompleteProfileComponent', () => {
       imports: [
         ReactiveFormsModule,
         NoopAnimationsModule,
-        MatCardModule,
-        MatButtonModule,
-        MatProgressSpinnerModule,
-        MatFormEntityComponent
+        MatIconModule,
+        MatFormEntityComponent,
+        BrandPrimaryButtonComponent,
+        HeroContentCardComponent,
+        ScreenWrapperComponent
       ],
       providers: [
         {provide: Router, useValue: mockRouter},
+        {provide: ActivatedRoute, useValue: {}},
         {provide: MatSnackBar, useValue: mockSnackBar},
         {provide: UserManagementService, useValue: mockUserManagementService}
       ]
@@ -123,11 +131,91 @@ describe('CompleteProfileComponent', () => {
       enterkeyhint: 'done'
     });
   });
+
+  it('uses the shared auth shell and branded submit control', fakeAsync(() => {
+    fixture.detectChanges();
+    loggedUserFullProfile$.next({id: '1', username: 'user_abc123', email: 'a@b.com'});
+    tick();
+    fixture.detectChanges();
+
+    const nativeElement: HTMLElement = fixture.nativeElement;
+    expect(nativeElement.querySelector('lib-screen-wrapper.auth-page-shell')).toBeTruthy();
+    expect(nativeElement.querySelector('lib-hero-content-card.auth-entry-card')).toBeTruthy();
+    expect(nativeElement.querySelector('app-brand-primary-button.auth-submit-button')).toBeTruthy();
+    expect(nativeElement.querySelector('mat-card')).toBeNull();
+    expect(nativeElement.textContent).toContain('Complete your profile');
+    expect(nativeElement.textContent).toContain('Set username');
+  }));
   
   it('usernameControl is invalid for usernames with special characters', () => {
     component.usernameControl.setValue('bad name!');
     expect(component.usernameControl.invalid).toBeTrue();
   });
+
+  it('checks username availability for valid usernames', fakeAsync(() => {
+    fixture.detectChanges();
+    component.usernameControl.setValue('Polyterative');
+    tick(350);
+
+    expect(mockUserManagementService.isUsernameAvailable$).toHaveBeenCalledWith('Polyterative');
+    expect(component.usernameControl.valid).toBeTrue();
+  }));
+
+  it('blocks save when username is already taken', fakeAsync(() => {
+    mockUserManagementService.isUsernameAvailable$.and.returnValue(of(false));
+    fixture.detectChanges();
+    component.usernameControl.setValue('Polyterative');
+    tick(350);
+
+    expect(component.usernameControl.hasError('usernameTaken')).toBeTrue();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('That username is already taken');
+    component.saveUsername();
+    tick();
+
+    expect(mockUserManagementService.updateUsername$).not.toHaveBeenCalled();
+  }));
+
+  it('shows check-failed text and blocks save when username availability lookup fails', fakeAsync(() => {
+    mockUserManagementService.isUsernameAvailable$.and.returnValue(throwError(() => new Error('lookup failed')));
+    fixture.detectChanges();
+    component.usernameControl.setValue('Polyterative');
+    tick(350);
+
+    expect(component.usernameControl.hasError(component.usernameAvailabilityCheckFailedErrorCode)).toBeTrue();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Username availability could not be checked');
+    component.saveUsername();
+    tick();
+
+    expect(mockUserManagementService.updateUsername$).not.toHaveBeenCalled();
+  }));
+
+  it('ignores stale availability responses for an old username', fakeAsync(() => {
+    const oldAvailability$ = new Subject<boolean>();
+    mockUserManagementService.isUsernameAvailable$.and.returnValues(
+      oldAvailability$.asObservable(),
+      of(true)
+    );
+    fixture.detectChanges();
+    component.usernameControl.setValue('oldname');
+    tick(350);
+
+    component.usernameControl.setValue('newname');
+    oldAvailability$.next(false);
+
+    expect(component.usernameControl.value).toBe('newname');
+    expect(component.usernameControl.hasError(component.usernameTakenErrorCode)).toBeFalse();
+    expect(mockUserManagementService.updateUsername$).not.toHaveBeenCalled();
+  }));
+
+  it('does not check availability until the username format is valid', fakeAsync(() => {
+    fixture.detectChanges();
+    component.usernameControl.setValue('ab');
+    tick(350);
+
+    expect(mockUserManagementService.isUsernameAvailable$).not.toHaveBeenCalled();
+  }));
   
   // ── saveUsername ───────────────────────────────────────────────────────────
   

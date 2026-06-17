@@ -34,6 +34,8 @@
                         <mat-error *ngIf="usernameControl.hasError('minlength')">At least 3 characters required</mat-error>
                         <mat-error *ngIf="usernameControl.hasError('maxlength')">Use 30 characters or fewer</mat-error>
                         <mat-error *ngIf="usernameControl.hasError('pattern')">Use letters, numbers, underscores, or hyphens</mat-error>
+                        <mat-error *ngIf="usernameControl.hasError('usernameTaken')">That display name is already taken</mat-error>
+                        <mat-error *ngIf="usernameControl.hasError('usernameAvailabilityCheckFailed')">Display name availability could not be checked. Try again.</mat-error>
                       </mat-form-field>
                       <div class="row gap1">
                         <button mat-raised-button
@@ -43,7 +45,7 @@
                                 [disabled]="!canSubmitUsernameChange(bag.userProfile.username)"
                         >
                           <mat-icon>check_circle</mat-icon>
-                          Save display name
+                          {{ checkingUsernameAvailability ? 'Checking display name...' : 'Save display name' }}
                         </button>
                         <button mat-stroked-button
                                 type="button"

@@ -8,7 +8,7 @@ import {
 
 function chainable(resolveValue: any = {data: null, error: null}) {
   const m: any = {};
-  ['select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit', 'single',
+  ['select', 'filter', 'eq', 'neq', 'ilike', 'is', 'in', 'range', 'order', 'limit', 'single',
     'insert', 'update', 'delete', 'upsert'].forEach(method => {
     m[method] = () => m;
   });
@@ -146,6 +146,7 @@ describe('SupabaseService - auth signup and profile helpers', () => {
           done();
         }
       });
+
     }, TEST_TIMEOUT);
     
     it('should rethrow generic DB error message', (done) => {
@@ -159,6 +160,107 @@ describe('SupabaseService - auth signup and profile helpers', () => {
         },
         error: (err) => {
           expect(err.message).toContain('Internal error');
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+  });
+
+  describe('isUsernameAvailable$', () => {
+    it('should return false when another profile already uses the username', (done) => {
+      const mock = chainable({data: [{id: 'other-user'}], error: null});
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+      spyOn(mock, 'select').and.callThrough();
+      spyOn(mock, 'ilike').and.callThrough();
+      spyOn(mock, 'neq').and.callThrough();
+      spyOn(mock, 'limit').and.callThrough();
+
+      service.auth.isUsernameAvailable$('Polyterative', 'current-user').subscribe({
+        next: (isAvailable) => {
+          expect(isAvailable).toBeFalse();
+          expect(supabaseClient.from).toHaveBeenCalledWith('profiles');
+          expect(mock.select).toHaveBeenCalledWith('id');
+          expect(mock.ilike).toHaveBeenCalledWith('username', 'Polyterative');
+          expect(mock.neq).toHaveBeenCalledWith('id', 'current-user');
+          expect(mock.limit).toHaveBeenCalledWith(1);
+          done();
+        },
+        error: done.fail
+      });
+    }, TEST_TIMEOUT);
+
+    it('should return true when no other profile uses the username', (done) => {
+      const mock = chainable({data: [], error: null});
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+      service.auth.isUsernameAvailable$('newname', 'current-user').subscribe({
+        next: (isAvailable) => {
+          expect(isAvailable).toBeTrue();
+          done();
+        },
+        error: done.fail
+      });
+    }, TEST_TIMEOUT);
+
+    it('should surface lookup errors', (done) => {
+      const mock = chainable({data: null, error: {message: 'RLS denied'}});
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+      service.auth.isUsernameAvailable$('newname', 'current-user').subscribe({
+        next: () => {
+          fail('should have errored');
+          done();
+        },
+        error: (err) => {
+          expect(err.message).toContain('RLS denied');
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should escape ilike wildcard characters in usernames', (done) => {
+      const mock = chainable({data: [], error: null});
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+      spyOn(mock, 'ilike').and.callThrough();
+
+      service.auth.isUsernameAvailable$('patch_user', 'current-user').subscribe({
+        next: () => {
+          expect(mock.ilike).toHaveBeenCalledWith('username', 'patch\\_user');
+          done();
+        },
+        error: done.fail
+      });
+    }, TEST_TIMEOUT);
+
+    it('should check signup usernames without excluding a current profile', (done) => {
+      const mock = chainable({data: [], error: null});
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+      spyOn(mock, 'neq').and.callThrough();
+
+      service.auth.isUsernameAvailable$('signupname').subscribe({
+        next: (isAvailable) => {
+          expect(isAvailable).toBeTrue();
+          expect(mock.neq).not.toHaveBeenCalled();
+          done();
+        },
+        error: done.fail
+      });
+    }, TEST_TIMEOUT);
+
+    it('should return false for empty or whitespace usernames without querying Supabase', (done) => {
+      const fromSpy = spyOn(supabaseClient, 'from');
+      const results: boolean[] = [];
+
+      service.auth.isUsernameAvailable$('').subscribe({
+        next: (isAvailable) => results.push(isAvailable),
+        error: done.fail
+      });
+      service.auth.isUsernameAvailable$('   ').subscribe({
+        next: (isAvailable) => results.push(isAvailable),
+        error: done.fail,
+        complete: () => {
+          expect(results).toEqual([false, false]);
+          expect(fromSpy).not.toHaveBeenCalled();
           done();
         }
       });

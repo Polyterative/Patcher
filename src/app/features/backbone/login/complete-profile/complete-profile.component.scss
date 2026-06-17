@@ -1,0 +1,117 @@
+@use "src/app/style/brand-resources" as *;
+
+.auth-page-shell {
+  width: 100%;
+}
+
+.auth-page-shell__inner {
+  position: relative;
+  padding-bottom: 4.5rem;
+}
+
+.auth-entry-card {
+  width: 100%;
+}
+
+.auth-surface {
+  width: min(100%, 32rem);
+  margin-inline: auto;
+  padding: 1.15rem 0.7rem 1.25rem;
+  border: 1px solid rgba(87, 109, 132, 0.14);
+  border-radius: 1rem;
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.72), rgba(244, 248, 253, 0.86));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.26), 0 0.45rem 1.2rem rgba(31, 47, 68, 0.05);
+}
+
+.auth-body {
+  width: 100%;
+  margin-inline: auto;
+}
+
+:host ::ng-deep .auth-entry-card .content {
+  padding-top: clamp(0.35rem, 1vh, 0.75rem);
+  padding-bottom: clamp(4rem, 9vh, 6rem);
+}
+
+:host ::ng-deep .auth-entry-card h1.title {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+:host ::ng-deep .auth-entry-card h1.title .title-main {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.auth-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding-block: 0.85rem 0.95rem;
+
+  --mat-form-field-container-height: 52px;
+  --mat-form-field-container-vertical-padding: 14px;
+  --mat-form-field-filled-with-label-container-padding-top: 22px;
+  --mat-form-field-filled-with-label-container-padding-bottom: 6px;
+}
+
+.auth-submit-button {
+  margin-top: 1rem;
+}
+
+.username-state {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin-top: 0.35rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.55rem;
+  font-size: 0.86rem;
+  line-height: 1.35;
+
+  mat-icon {
+    width: 1.05rem;
+    height: 1.05rem;
+    font-size: 1.05rem;
+    flex: 0 0 auto;
+  }
+}
+
+.username-state--error {
+  border: 1px solid rgba($brand-negative, 0.25);
+  background: rgba($brand-negative, 0.08);
+  color: $brand-negative;
+}
+
+.username-state--warning {
+  border: 1px solid rgba($brand-warning, 0.3);
+  background: rgba($brand-warning, 0.1);
+  color: $brand-warning;
+}
+
+@media (max-width: 48rem) {
+  .auth-page-shell__inner {
+    padding-bottom: 5.5rem;
+  }
+
+  :host ::ng-deep .auth-entry-card .content {
+    padding-top: 0.5rem;
+    padding-bottom: clamp(3.25rem, 8vh, 4.5rem);
+  }
+
+  .auth-surface {
+    width: 100%;
+    padding: 1rem 0.75rem 1.1rem;
+    border-radius: 0.85rem;
+  }
+}
+
+@media (max-width: 30rem) {
+  lib-mat-form-entity {
+    margin-bottom: 0.5rem;
+  }
+}

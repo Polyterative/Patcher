@@ -358,6 +358,35 @@ export function createAuthNamespace(
       );
     },
 
+    isUsernameAvailable$(username: string, excludeUserId?: string): Observable<boolean> {
+      const trimmedUsername = username.trim();
+      const escapedUsername = trimmedUsername.replace(/[\\%_]/g, '\\$&');
+
+      if (!trimmedUsername) {
+        return of(false);
+      }
+
+      let query = supabase
+        .from(DbPaths.profiles)
+        .select('id')
+        .ilike('username', escapedUsername);
+
+      if (excludeUserId) {
+        query = query.neq('id', excludeUserId);
+      }
+
+      return rxFrom(
+        query.limit(1)
+      ).pipe(
+        map(response => {
+          if (response.error) {
+            throw new Error(response.error.message || 'Failed to check username availability.');
+          }
+          return (response.data?.length ?? 0) === 0;
+        })
+      );
+    },
+
     updateProfileVisibility$(userId: string, isPublic: boolean): Observable<void> {
       return rxFrom(
         supabase

@@ -3,6 +3,10 @@ import {
   confirmMatchesNewValidator,
   UserManagementComponent
 } from './user-management.component';
+import {
+  of,
+  throwError
+} from 'rxjs';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -17,7 +21,8 @@ function makeUserManagementMock() {
   return {
     changePassword$: { next: jasmine.createSpy('next') },
     updateUsernameAction$: { next: jasmine.createSpy('next') },
-    toggleUsernameForm$: { next: jasmine.createSpy('next') }
+    toggleUsernameForm$: { next: jasmine.createSpy('next') },
+    isUsernameAvailable$: jasmine.createSpy('isUsernameAvailable$').and.returnValue(of(true))
   } as any;
 }
 
@@ -223,6 +228,7 @@ describe('UserManagementComponent', () => {
       const comp = makeComp(userMgmt);
       comp.usernameControl.setValue('bob');
       comp.submitUsernameChange('alice');
+      expect(userMgmt.isUsernameAvailable$).toHaveBeenCalledOnceWith('bob');
       expect(userMgmt.updateUsernameAction$.next).toHaveBeenCalledOnceWith('bob');
     });
 
@@ -231,7 +237,32 @@ describe('UserManagementComponent', () => {
       const comp = makeComp(userMgmt);
       comp.usernameControl.setValue('  bob  ');
       comp.submitUsernameChange('alice');
+      expect(userMgmt.isUsernameAvailable$).toHaveBeenCalledOnceWith('bob');
       expect(userMgmt.updateUsernameAction$.next).toHaveBeenCalledOnceWith('bob');
+    });
+
+    it('sets a usernameTaken error and blocks update when display name is unavailable', () => {
+      const userMgmt = makeUserManagementMock();
+      userMgmt.isUsernameAvailable$.and.returnValue(of(false));
+      const comp = makeComp(userMgmt);
+      comp.usernameControl.setValue('bob');
+
+      comp.submitUsernameChange('alice');
+
+      expect(comp.usernameControl.hasError('usernameTaken')).toBeTrue();
+      expect(userMgmt.updateUsernameAction$.next).not.toHaveBeenCalled();
+    });
+
+    it('sets usernameAvailabilityCheckFailed and blocks update when availability lookup fails', () => {
+      const userMgmt = makeUserManagementMock();
+      userMgmt.isUsernameAvailable$.and.returnValue(throwError(() => new Error('lookup failed')));
+      const comp = makeComp(userMgmt);
+      comp.usernameControl.setValue('bob');
+
+      comp.submitUsernameChange('alice');
+
+      expect(comp.usernameControl.hasError('usernameAvailabilityCheckFailed')).toBeTrue();
+      expect(userMgmt.updateUsernameAction$.next).not.toHaveBeenCalled();
     });
 
     it('marks usernameControl touched when invalid submit is attempted', () => {

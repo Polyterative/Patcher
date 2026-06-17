@@ -1,4 +1,5 @@
 import {
+  ChangeDetectorRef,
   ChangeDetectionStrategy,
   Component,
   Input,
@@ -6,6 +7,10 @@ import {
 } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
+import {
+  applyUsernameAvailabilityError,
+  usernameValidators
+} from 'src/app/features/backbone/login/username-validation';
 import { SeoAndUtilsService } from '../seo-and-utils.service';
 import { ScreenWrapperComponent } from '../../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { HeroContentCardComponent } from '../../../shared-interproject/components/@visual/hero-content-card/hero-content-card.component';
@@ -19,6 +24,12 @@ import { BrandPrimaryButtonComponent } from '../../../shared-interproject/compon
 import { MatTooltip } from '@angular/material/tooltip';
 import { TimeagoModule } from 'ngx-timeago';
 import { SupabaseUtcTimestampPipe } from '../../../shared-interproject/pipes/supabase-utc-timestamp.pipe';
+import {
+  catchError,
+  take
+} from 'rxjs/operators';
+import { of } from 'rxjs';
+import { ErrorCodes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/app-form-utils';
 
 
 /** Cross-field validator: confirm password must match new password */
@@ -45,12 +56,8 @@ export class UserManagementComponent implements OnInit {
   @Input() ignoreSeo: boolean = false;
   
   editingUsername = false;
-  usernameControl = new FormControl('', [
-    Validators.required,
-    Validators.minLength(3),
-    Validators.maxLength(30),
-    Validators.pattern(/^[a-zA-Z0-9_-]+$/)
-  ]);
+  checkingUsernameAvailability = false;
+  readonly usernameControl = new FormControl('', usernameValidators());
   
   passwordForm = new FormGroup(
     {
@@ -66,7 +73,8 @@ export class UserManagementComponent implements OnInit {
   
   constructor(
     public userManagementService: UserManagementService,
-    readonly seoAndUtilsService: SeoAndUtilsService
+    readonly seoAndUtilsService: SeoAndUtilsService,
+    private readonly cdr?: ChangeDetectorRef
   ) { }
   
   ngOnInit(): void {
@@ -90,8 +98,10 @@ export class UserManagementComponent implements OnInit {
   beginUsernameEdit(currentUsername: string): void {
     this.editingUsername = true;
     this.usernameControl.setValue(currentUsername);
+    applyUsernameAvailabilityError(this.usernameControl, null);
     this.usernameControl.markAsPristine();
     this.usernameControl.markAsUntouched();
+    this.checkingUsernameAvailability = false;
   }
   
   cancelUsernameEdit(): void {
@@ -102,7 +112,9 @@ export class UserManagementComponent implements OnInit {
 
   canSubmitUsernameChange(currentUsername: string): boolean {
     const nextUsername = this.usernameControl.value?.trim() || '';
-    return this.isValidUsername(nextUsername) && nextUsername !== currentUsername;
+    return this.usernameControl.valid
+      && !this.checkingUsernameAvailability
+      && nextUsername !== currentUsername;
   }
   
   submitUsernameChange(currentUsername: string): void {
@@ -114,17 +126,34 @@ export class UserManagementComponent implements OnInit {
       return;
     }
 
-    this.userManagementService.updateUsernameAction$.next(nextUsername);
+    this.checkingUsernameAvailability = true;
+    this.cdr?.markForCheck();
+    applyUsernameAvailabilityError(this.usernameControl, null);
+    this.userManagementService.isUsernameAvailable$(nextUsername).pipe(
+      take(1),
+      catchError(error => {
+        console.error('Username availability check failed:', error);
+        applyUsernameAvailabilityError(this.usernameControl, ErrorCodes.form.errorCode.custom.usernameAvailabilityCheckFailed);
+        this.checkingUsernameAvailability = false;
+        this.cdr?.markForCheck();
+        return of(null);
+      })
+    ).subscribe(isAvailable => {
+      this.checkingUsernameAvailability = false;
+      this.cdr?.markForCheck();
+      if (isAvailable === null) {
+        return;
+      }
+      if (!isAvailable) {
+        applyUsernameAvailabilityError(this.usernameControl, ErrorCodes.form.errorCode.custom.usernameTaken);
+        return;
+      }
+      this.userManagementService.updateUsernameAction$.next(nextUsername);
+    });
   }
 
   isEmailOnlyAccount(authProviders: string[] | null | undefined): boolean {
     return !authProviders || authProviders.every(provider => provider === 'email');
   }
 
-  private isValidUsername(username: string): boolean {
-    return username.length >= 3
-      && username.length <= 30
-      && /^[a-zA-Z0-9_-]+$/.test(username);
-  }
-  
 }
