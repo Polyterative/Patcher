@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.3.1](https://github.com/Polyterative/Patcher/compare/v6.3.0...v6.3.1) (2026-06-17)
+
+
+### Bug Fixes
+
+* **vercel:** restore pnpm override metadata ([8353451](https://github.com/Polyterative/Patcher/commit/8353451c7087cbb27f619f289c7bd213bfdeeeab))
+
 ## [6.3.0](https://github.com/Polyterative/Patcher/compare/v6.2.0...v6.3.0) (2026-06-16)
 
 
