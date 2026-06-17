@@ -43,16 +43,18 @@ Use `gpt-5.5` for normal coordination. Escalate only if backlog selection or arc
 
 ## Workflow
 
-1. Read `AGENTS.md`, then `internaldocs/README.md`, then `internaldocs/workflow/TODO.md`.
+1. Read `AGENTS.md` and `internaldocs/workflow/TODO.md`. Read `internaldocs/README.md` only when the TODO/plan lacks enough routing context.
 2. Pick one suitable open task and open its linked plan. If no suitable plan exists, create one before coding.
 3. Ensure the plan has: problem, goals, assumptions, MVP / Structural / Polish layers, file-level checklist, acceptance criteria, validation strategy, and Decision log.
 4. Update `CURRENT_FEATURE.md` with the active task and plan link, and change the TODO line to `[~]`.
 5. Launch the implementation subagent with:
+   - a compact context packet so the subagent does not have to reload broad orientation docs
    - exact plan path
    - relevant repo rules
    - expected files or surfaces
    - acceptance criteria
    - validation commands
+   - docs already consulted, plus "do not re-read `internaldocs/README.md` or the agent index unless blocked or missing context"
    - "no commits, no pushes" unless the coordinator explicitly delegates a verified-checkpoint commit
 6. When implementation returns, inspect the diff yourself and check for unrelated changes.
 7. Launch a separate `reviewer` subagent to review correctness, regressions, conventions, test coverage, and scope control.

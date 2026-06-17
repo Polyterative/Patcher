@@ -16,7 +16,7 @@ Use `claude-opus-4.7` for broad product strategy, roadmap fit, and ambiguity. Us
 
 ## Does
 
-- Read `AGENTS.md`, `internaldocs/README.md`, `internaldocs/product/PRINCIPLES.md`, `internaldocs/product/ROADMAP.md`, and relevant existing plans.
+- Read `AGENTS.md`, product strategy docs, and relevant existing plans; use caller-provided context before opening `internaldocs/README.md`.
 - Research the current implementation surface with LSP / cocoindex before proposing architecture.
 - Compare the requested feature against current product state, adjacent backlog items, and future roadmap direction.
 - Assign priority, product area, dependencies, risks, and implementation layers.
@@ -37,13 +37,14 @@ Use `claude-opus-4.7` for broad product strategy, roadmap fit, and ambiguity. Us
 
 - The user's raw feature indication, even if messy or incomplete.
 - Optional priority hint, desired product area, or urgency.
+- Optional caller-provided context packet listing docs/files already consulted.
 
 ## Workflow
 
 1. Restate the core user intent in one sentence for yourself.
-2. Read the canonical docs and current backlog context:
+2. Read the canonical docs and current backlog context, reusing caller-provided context first:
    - `AGENTS.md`
-   - `internaldocs/README.md`
+   - `internaldocs/README.md` only when routing context is missing
    - `internaldocs/product/PRINCIPLES.md`
    - `internaldocs/product/ROADMAP.md`
    - `internaldocs/workflow/TODO.md`

@@ -19,7 +19,8 @@ use premium reasoning here rather than saving cost at the point where mistakes a
 
 ## Does
 
-- Read `AGENTS.md`, then `internaldocs/README.md`, then the most relevant 1–3 docs for the task
+- Read `AGENTS.md`, then use any caller-provided context packet before opening broad docs
+- Read `internaldocs/README.md` only when the request lacks enough routing context, then open the most relevant 1–3 docs
 - Inspect existing code paths and tests that the change will touch (read-only)
 - Ask clarifying questions when scope, behaviour, or limits are ambiguous (use `ask_user`)
 - Produce a step-ordered plan in `internaldocs/workflow/CURRENT_FEATURE.md`
@@ -37,19 +38,21 @@ use premium reasoning here rather than saving cost at the point where mistakes a
 
 - The raw user request
 - (Optional) link to a TODO entry or a Sentry issue
+- (Optional) caller-provided context packet listing relevant docs/files already consulted
 
 ## Workflow
 
 1. Read `AGENTS.md` end-to-end
-2. Identify the *one* primary outcome of the request and write it as a single sentence
-3. Locate every file the change is likely to touch. **Preferred order:**
+2. Consume any caller-provided context packet; do not re-open `internaldocs/README.md` unless routing context is missing
+3. Identify the *one* primary outcome of the request and write it as a single sentence
+4. Locate every file the change is likely to touch. **Preferred order:**
    - `cocoindex-code-search` MCP for *concept* discovery ("how is X wired?")
    - LSP `workspaceSymbol` / `findReferences` for *named* symbols
    - `grep` / `glob` only as a fallback for literals
-4. Resolve ambiguity with `ask_user` — one question at a time, multiple-choice when possible
-5. Draft the plan in `internaldocs/workflow/CURRENT_FEATURE.md` with: problem, approach,
+5. Resolve ambiguity with `ask_user` — one question at a time, multiple-choice when possible
+6. Draft the plan in `internaldocs/workflow/CURRENT_FEATURE.md` with: problem, approach,
    step-ordered checklist, risks, validation strategy
-6. Stop. Hand back to the user for approval before any execution agent picks it up
+7. Stop. Hand back to the user for approval before any execution agent picks it up
 
 ## Quality bar
 
@@ -58,6 +61,7 @@ use premium reasoning here rather than saving cost at the point where mistakes a
 - [ ] Validation strategy named (which tests/commands prove success)
 - [ ] No code written, no behaviour changed
 - [ ] All assumptions made explicit at the top of the plan
+- [ ] Broad orientation docs were not reloaded when caller context was sufficient
 
 ## Output contract
 
