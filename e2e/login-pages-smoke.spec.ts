@@ -29,6 +29,13 @@ test.describe('Login page — form element smoke tests', () => {
     await expect(signupLink).toContainText('Sign up');
   });
 
+  test('Google SSO option is visible', async ({page}) => {
+    const googleButton = page.getByRole('button', {name: 'Continue with Google account'});
+    await expect(page.locator('section[aria-label="Social login options"]')).toBeVisible();
+    await expect(googleButton).toBeVisible();
+    await expect(googleButton).toContainText('Continue with Google');
+  });
+
   test('"Forgot your password?" link is visible', async ({page}) => {
     const resetLink = page.locator('.reset-link');
     await expect(resetLink).toBeVisible();
@@ -69,6 +76,13 @@ test.describe('Signup page — form element smoke tests', () => {
     await expect(loginLink).toContainText('Log in');
   });
 
+  test('Google SSO option is visible', async ({page}) => {
+    const googleButton = page.getByRole('button', {name: 'Continue with Google account'});
+    await expect(page.locator('section[aria-label="Social signup options"]')).toBeVisible();
+    await expect(googleButton).toBeVisible();
+    await expect(googleButton).toContainText('Continue with Google');
+  });
+
   test('email signup section has correct aria-label', async ({page}) => {
     const section = page.locator('section[aria-label="Email signup"]');
     await expect(section).toBeVisible();
@@ -89,4 +103,28 @@ test.describe('Cross-page auth navigation', () => {
     await page.locator('.login-link').click();
     await expect(page).toHaveURL(/\/auth\/login/);
   });
+});
+
+test.describe('Google SSO handoff', () => {
+  for (const path of ['/auth/login', '/auth/signup']) {
+    test(`clicking Google from ${ path } starts Supabase OAuth`, async ({page}) => {
+      await page.route('**/auth/v1/authorize**', route => route.abort());
+      await page.goto(path);
+      await page.waitForLoadState('domcontentloaded');
+      const expectedRedirectTo = `${ new URL(page.url()).origin }/auth/callback`;
+
+      const authorizeRequestPromise = page.waitForRequest(request => {
+        const requestUrl = new URL(request.url());
+        return requestUrl.pathname.endsWith('/auth/v1/authorize') &&
+          requestUrl.searchParams.get('provider') === 'google';
+      });
+
+      await page.getByRole('button', {name: 'Continue with Google account'}).click();
+
+      const authorizeRequest = await authorizeRequestPromise;
+      const authorizeUrl = new URL(authorizeRequest.url());
+      const redirectTo = authorizeUrl.searchParams.get('redirect_to');
+      expect(redirectTo).toBe(expectedRedirectTo);
+    });
+  }
 });
