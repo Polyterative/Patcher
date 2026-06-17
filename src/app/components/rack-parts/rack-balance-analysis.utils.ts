@@ -1,4 +1,10 @@
 import {
+  isFunctionalTagType,
+  normalizeTagName,
+  normalizeTagType,
+  type Tag,
+} from 'src/app/models/tag';
+import {
   RackBalanceAxisId,
   RACK_BALANCE_AXES
 } from './rack-balance-analysis.constants';
@@ -28,7 +34,7 @@ export function resolveTagAxis(tagName: string | null | undefined): RackBalanceA
   }
 
   for (const axis of RACK_BALANCE_AXES) {
-    if (axis.dbTagNames.some(name => name.toLocaleLowerCase() === normalizedTagName.toLocaleLowerCase())) {
+    if (axis.dbTagNames.some(name => normalizeTagName(name) === normalizeTagName(normalizedTagName))) {
       return axis.id;
     }
 
@@ -38,6 +44,15 @@ export function resolveTagAxis(tagName: string | null | undefined): RackBalanceA
   }
 
   return null;
+}
+
+export function resolveFunctionalTagAxis(tag: Pick<Tag, 'name' | 'type'> | null | undefined): RackBalanceAxisId | null {
+  const tagType = normalizeTagType(tag?.type);
+  if (tagType !== null && !isFunctionalTagType(tagType)) {
+    return null;
+  }
+
+  return resolveTagAxis(tag?.name);
 }
 
 export function computeRackBalanceDiff(

@@ -114,6 +114,34 @@ describe('rackFunctionVisualsUtils', () => {
     }));
   });
 
+  it('keeps nature and character tags neutral even when their labels match functional tags', () => {
+    expect(buildRackFunctionVisual(makeRackedModule(107, [
+      {name: 'VCO', type: TagType.Character}
+    ]))).toEqual(jasmine.objectContaining({
+      className: 'functionAnalysisModule--unclassified',
+      roleLabel: 'Unclassified'
+    }));
+
+    expect(buildRackFunctionVisual(makeRackedModule(108, [
+      {name: 'Blank', type: TagType.Nature}
+    ]))).toEqual(jasmine.objectContaining({
+      className: 'functionAnalysisModule--unclassified',
+      roleLabel: 'Unclassified'
+    }));
+  });
+
+  it('maps aligned timing, utility, and voice instrument tags to function colors', () => {
+    expect(buildRackFunctionVisual(makeRackedModule(109, [
+      {name: 'Clock IN', type: TagType.Sequencing}
+    ])).className).toBe('functionAnalysisModule--timing');
+    expect(buildRackFunctionVisual(makeRackedModule(110, [
+      {name: 'Sequencial Switch', type: TagType.Utility}
+    ])).className).toBe('functionAnalysisModule--utilities');
+    expect(buildRackFunctionVisual(makeRackedModule(111, [
+      {name: 'KICK', type: TagType.Voice}
+    ])).className).toBe('functionAnalysisModule--voices');
+  });
+
   it('treats blank modules as spacers in function analysis mode', () => {
     const visual = buildRackFunctionVisual(makeRackedModule(4647, [
       {name: 'VCO', type: TagType.Source}

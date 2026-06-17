@@ -290,6 +290,10 @@ function scoreTagAgainstAxis(
   tagName: string,
   tagType: string | null
 ): number {
+  if (tagType !== null && !isFunctionalTagType(tagType)) {
+    return 0;
+  }
+
   if (matchesDbTagName(axis, tagName)) {
     return exactMatchWeight(tagType);
   }
@@ -326,18 +330,11 @@ function matchesDbTagName(axis: RackBalanceAxisDefinition, tagName: string): boo
 }
 
 function getPatternsForTagType(axis: RackBalanceAxisDefinition, tagType: string | null): RegExp[] {
-  if (isFunctionalTagType(tagType)) {
+  if (isFunctionalTagType(tagType) || tagType === null) {
     return axis.purposePatterns;
   }
 
-  if (tagType === 'nature') {
-    return axis.naturePatterns;
-  }
-
-  return [
-    ...axis.purposePatterns,
-    ...axis.naturePatterns
-  ];
+  return [];
 }
 
 function exactMatchWeight(tagType: string | null): number {

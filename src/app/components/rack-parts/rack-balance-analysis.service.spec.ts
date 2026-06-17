@@ -72,10 +72,10 @@ describe('RackBalanceAnalysisService', () => {
     expect(result.axes.every(axis => axis.share === 0)).toBeTrue();
   });
 
-  it('scores recognized axes from source and nature tags', () => {
+  it('scores recognized axes from functional tags', () => {
     const rack = [[
       makeRackedModule(1, [{name: 'VCO', type: TagType.Source}]),
-      makeRackedModule(2, [{name: 'Utility', type: TagType.Nature}]),
+      makeRackedModule(2, [{name: 'Utility', type: TagType.Utility}]),
       makeRackedModule(3, [{name: 'Envelope', type: TagType.Modulation}]),
     ]];
 
@@ -128,6 +128,26 @@ describe('RackBalanceAnalysisService', () => {
     expect(result.axes.find(axis => axis.id === 'voices')?.matchedModules).toBe(1);
   });
 
+  it('recognizes aligned timing, utility, and voice instrument database tags', () => {
+    const rack = [[
+      makeRackedModule(1, [{name: 'Clock IN', type: TagType.Sequencing}]),
+      makeRackedModule(2, [{name: 'Clock OUT', type: TagType.Sequencing}]),
+      makeRackedModule(3, [{name: 'Arpeggiator', type: TagType.Sequencing}]),
+      makeRackedModule(4, [{name: 'Euclidean', type: TagType.Sequencing}]),
+      makeRackedModule(5, [{name: 'Blank', type: TagType.Utility}]),
+      makeRackedModule(6, [{name: 'Sequencial Switch', type: TagType.Utility}]),
+      makeRackedModule(7, [{name: 'KICK', type: TagType.Voice}]),
+      makeRackedModule(8, [{name: 'SNARE', type: TagType.Voice}]),
+    ]];
+
+    const result = service.analyze(rack);
+
+    expect(result.recognizedModuleCount).toBe(8);
+    expect(result.axes.find(axis => axis.id === 'timing')?.matchedModules).toBe(4);
+    expect(result.axes.find(axis => axis.id === 'utilities')?.matchedModules).toBe(2);
+    expect(result.axes.find(axis => axis.id === 'voices')?.matchedModules).toBe(2);
+  });
+
   it('recognizes new tags added in the type restructure (Chord, Granular, filter subtypes, new effects)', () => {
     const rack = [[
       makeRackedModule(1, [{name: 'Chord', type: TagType.Source}]),
@@ -155,6 +175,18 @@ describe('RackBalanceAnalysisService', () => {
       makeRackedModule(1, [{name: 'Clock', type: 'technology' as any}]),
       makeRackedModule(2, [{name: 'Utility', type: 'character' as any}]),
       makeRackedModule(3, [{name: 'Filter', type: TagType.Character}])
+    ]];
+
+    const result = service.analyze(rack);
+
+    expect(result.recognizedModuleCount).toBe(0);
+    expect(result.axes.every(axis => axis.matchedModules === 0)).toBeTrue();
+  });
+
+  it('keeps nature and character tags neutral even when their labels match functional tags', () => {
+    const rack = [[
+      makeRackedModule(1, [{name: 'VCO', type: TagType.Character}]),
+      makeRackedModule(2, [{name: 'Blank', type: TagType.Nature}])
     ]];
 
     const result = service.analyze(rack);
@@ -242,7 +274,7 @@ describe('RackBalanceAnalysisService', () => {
     const rack = [[
       makeRackedModule(1, [{name: 'VCO', type: TagType.Source}]),
       makeRackedModule(2, [{name: 'Envelope', type: TagType.Modulation}]),
-      makeRackedModule(3, [{name: 'Utility', type: TagType.Nature}]),
+      makeRackedModule(3, [{name: 'Utility', type: TagType.Utility}]),
       makeRackedModule(4, [{name: 'Clock', type: TagType.Source}]),
       makeRackedModule(5, [{name: 'Filter', type: TagType.Filter}])
     ]];

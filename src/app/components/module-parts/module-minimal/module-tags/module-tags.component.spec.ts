@@ -165,12 +165,20 @@ describe('ModuleTagsComponent', () => {
 
     it('resolves optional axis tint classes for balance tags', () => {
       const { comp } = makeComponent();
-      expect(comp.axisClassForTag('Oscillator')).toBeNull();
+      expect(comp.axisClassForTag(tagPurpose1)).toBeNull();
 
       comp.colorTagsByAxis = true;
 
-      expect(comp.axisClassForTag('Oscillator')).toBe('tag-chip--axis-voices');
-      expect(comp.axisClassForTag('Unmapped')).toBeNull();
+      expect(comp.axisClassForTag(tagPurpose1)).toBe('tag-chip--axis-voices');
+      expect(comp.axisClassForTag({id: 99, name: 'Unmapped', type: TagType.Source})).toBeNull();
+    });
+
+    it('keeps nature and character tags neutral even when their names overlap functional tags', () => {
+      const { comp } = makeComponent();
+      comp.colorTagsByAxis = true;
+
+      expect(comp.axisClassForTag({id: 20, name: 'VCO', type: TagType.Character})).toBeNull();
+      expect(comp.axisClassForTag({id: 21, name: 'Blank', type: TagType.Nature})).toBeNull();
     });
   });
 

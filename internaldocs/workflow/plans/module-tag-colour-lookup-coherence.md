@@ -1,5 +1,22 @@
 #### MEDIUM: Module tags — colour lookup coherence
 
+## Problem
+
+Functional module tag colour lookup is incomplete and risks drifting between rack balance analysis, module details tag tinting, and description keyword highlighting.
+
+## Goals
+
+- Keep `RACK_BALANCE_AXES` as the single source of truth for tag-to-role classification.
+- Add missing database tags to the existing five functional colour roles.
+- Preserve neutral rendering for Nature / Character tags.
+- Add tests that prove rack function classification and details highlighting agree for shared functional tags.
+
+## Assumptions
+
+- No schema, RLS, policy, or data migration changes are needed.
+- The existing five colour roles remain the canonical vocabulary and palette.
+- `Sequencial Switch` is intentionally spelled as currently present in the database taxonomy.
+
 **Why:** Module tag colours now appear across multiple surfaces: the module details tag suggestions, rack editor function analysis overlays, rack editor legends / row summaries, and description keyword highlights. The local functional lookup is close, but it is inconsistent with the current online tag taxonomy and misses several database tags. That makes some tags visually neutral when they should be functional, and risks different surfaces drifting apart.
 
 **Design strategy:**
@@ -32,18 +49,54 @@
 - If tag-chip tinting is too faint in details, adjust the shared role tint/opacity path without changing the rack overlay palette.
 - Do not run schema changes or RLS changes for this task. This is a local lookup / UI coherence fix.
 
-**Checklist:**
+## Layers
 
-- [ ] Add missing DB tags to the relevant `RACK_BALANCE_AXES.dbTagNames`.
-- [ ] Confirm no separate tag-to-colour lookup remains for module details, rack editor, or description highlighting.
-- [ ] Align description keyword highlighting with the same role axis data.
-- [ ] Keep Nature / Character tags visually neutral.
-- [ ] Add unit coverage for `Clock IN`, `Clock OUT`, `Arpeggiator`, `Euclidean`, `Blank`, `Sequencial Switch`, and Voice instrument tags.
-- [ ] Add a regression test proving details highlighting and rack function classification agree for shared functional tags.
-- [ ] Run targeted `pnpm test-headless` for touched specs, then `pnpm lint`.
+### MVP
+
+- [x] Add missing DB tags to the canonical role axis definitions.
+- [x] Preserve existing role palette and neutral Nature / Character rendering.
+
+### Structural
+
+- [x] Confirm module details, rack editor, and description highlighting do not maintain divergent role lookup tables.
+- [x] Align any divergent local lookup with the canonical axis data.
+
+### Polish
+
+- [x] Add unit coverage for newly mapped tags and shared-classification consistency.
+- [x] Run targeted specs and lint.
+
+## File-level checklist
+
+- [x] `src/app/components/rack-parts/rack-balance-analysis.constants.ts`
+- [x] Module details tag/highlight files discovered during implementation
+- [x] Existing or co-located specs for tag role classification and keyword highlighting
+
+## Acceptance criteria
+
+- `Clock IN`, `Clock OUT`, `Arpeggiator`, `Euclidean`, `Blank`, `Sequencial Switch`, and voice instrument tags classify into the expected functional roles.
+- Nature / Character tags stay visually neutral.
+- Description keyword highlighting and rack function classification agree for shared functional tags.
+- No schema, RLS, policy, migration, or Supabase data changes are made.
+
+## Validation strategy
+
+- Run targeted `pnpm test-headless --include="**/<touched-spec>.spec.ts"` for changed specs.
+- Run `pnpm lint` before commit.
+
+## Checklist
+
+- [x] Add missing DB tags to the relevant `RACK_BALANCE_AXES.dbTagNames`.
+- [x] Confirm no separate tag-to-colour lookup remains for module details, rack editor, or description highlighting.
+- [x] Align description keyword highlighting with the same role axis data.
+- [x] Keep Nature / Character tags visually neutral.
+- [x] Add unit coverage for `Clock IN`, `Clock OUT`, `Arpeggiator`, `Euclidean`, `Blank`, `Sequencial Switch`, and Voice instrument tags.
+- [x] Add a regression test proving details highlighting and rack function classification agree for shared functional tags.
+- [x] Run targeted `pnpm test-headless` for touched specs, then `pnpm lint`.
 
 ---
 
 ## Decision log
 
 - 2026-06-17: Plan created from screenshot + read-only Supabase tag query. Decision: preserve five role colours, fix local lookup coverage, and keep role axis constants as the single source of truth.
+- 2026-06-17: Implemented local-only lookup coherence. Exact canonical `dbTagNames` matches take precedence over purpose-pattern fallbacks so database taxonomy labels such as `Sequencial Switch` resolve to their intended utility role.

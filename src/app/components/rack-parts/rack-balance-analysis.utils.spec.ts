@@ -1,9 +1,11 @@
 import { RACK_BALANCE_AXES } from './rack-balance-analysis.constants';
 import { RackBalanceAnalysisResult } from './rack-balance-analysis.types';
+import { TagType } from 'src/app/models/tag';
 import {
   buildRackBalanceDiffSummary,
   computeRackBalanceDiff,
   RackBalanceAxisDiff,
+  resolveFunctionalTagAxis,
   resolveTagAxis
 } from './rack-balance-analysis.utils';
 
@@ -26,6 +28,35 @@ describe('resolveTagAxis', () => {
   it('returns null for blank or unmapped strings', () => {
     expect(resolveTagAxis('')).toBeNull();
     expect(resolveTagAxis('wooden side cheeks')).toBeNull();
+  });
+
+  it('maps newly aligned database tags to their functional axes', () => {
+    const expectedAxes = new Map<string, string>([
+      ['Clock IN', 'timing'],
+      ['Clock OUT', 'timing'],
+      ['Arpeggiator', 'timing'],
+      ['Euclidean', 'timing'],
+      ['Blank', 'utilities'],
+      ['Sequencial Switch', 'utilities'],
+      ['BASS', 'voices'],
+      ['CLAP', 'voices'],
+      ['HAT', 'voices'],
+      ['KICK', 'voices'],
+      ['LEAD', 'voices'],
+      ['PAD', 'voices'],
+      ['PERC', 'voices'],
+      ['SNARE', 'voices'],
+    ]);
+
+    for (const [tagName, axisId] of expectedAxes) {
+      expect(resolveTagAxis(tagName)).withContext(tagName).toBe(axisId);
+    }
+  });
+
+  it('keeps nature and character tags out of functional tag axis tinting', () => {
+    expect(resolveFunctionalTagAxis({name: 'VCO', type: TagType.Character})).toBeNull();
+    expect(resolveFunctionalTagAxis({name: 'Blank', type: TagType.Nature})).toBeNull();
+    expect(resolveFunctionalTagAxis({name: 'KICK', type: TagType.Voice})).toBe('voices');
   });
 });
 

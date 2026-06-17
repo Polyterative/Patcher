@@ -25,7 +25,7 @@ import {
   Tag,
   TagSuggestionGroup
 } from 'src/app/models/tag';
-import { resolveTagAxis } from 'src/app/components/rack-parts/rack-balance-analysis.utils';
+import { resolveFunctionalTagAxis } from 'src/app/components/rack-parts/rack-balance-analysis.utils';
 
 export interface ProposerTag {
   tag: Tag;
@@ -214,11 +214,11 @@ export class ModuleTagsComponent extends SubManager implements OnInit {
     );
   }
 
-  axisClassForTag(tagName: string): string | null {
+  axisClassForTag(tag: Tag): string | null {
     if (!this.colorTagsByAxis) {
       return null;
     }
-    const axis = resolveTagAxis(tagName);
+    const axis = resolveFunctionalTagAxis(tag);
     return axis ? `tag-chip--axis-${ axis }` : null;
   }
 
