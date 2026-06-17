@@ -36,6 +36,7 @@
 
 ### INFRA (independent; pick any time a product task is blocked)
 
+- [ ] **HIGH: Security — Audit Remediation** → [`plans/security-audit-remediation.md`](./plans/security-audit-remediation.md)
 - [ ] **ON HOLD: VERY LONG TERM: Bundle weight, lazy boundaries, and SSR prerender coverage** → [`plans/bundle-weight-lazy-boundaries-and-ssr-prerender-coverage.md`](./plans/bundle-weight-lazy-boundaries-and-ssr-prerender-coverage.md)
 - [ ] **MEDIUM: Module — public possession statistics & trend charts** → [`plans/module-public-possession-statistics-trend-charts.md`](./plans/module-public-possession-statistics-trend-charts.md)
 - [ ] **LOW: Module — "Cool" appreciation button** → [`plans/module-cool-appreciation-button.md`](./plans/module-cool-appreciation-button.md)
