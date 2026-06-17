@@ -452,6 +452,10 @@ $floatingSurfaceMaxWidth: 16.5rem;
   background: rgba(236, 250, 244, 0.9);
 }
 
+.rackEditorFloatingOptions__actionButton + .rackEditorFloatingOptions__actionButton {
+  margin-top: 0.45rem;
+}
+
 .rackEditorFloatingOptions__toggle {
   border: 0.125rem solid #3e638a;
   box-shadow: 0 0.25rem 0.875rem rgba(38, 76, 116, 0.28);

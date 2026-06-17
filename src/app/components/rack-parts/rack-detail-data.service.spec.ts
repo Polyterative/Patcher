@@ -310,6 +310,45 @@ describe('RackDetailDataService', () => {
     expect(backend.update.rackedModules).toHaveBeenCalled();
   }));
 
+  it('shuffles the selected layout scope through the same batch update path', fakeAsync(() => {
+    const {service, backend, snackBar} = build();
+    const rowZeroWide = makeRackedModule({
+      rackingData: {id: 50, rackid: 1, moduleid: 50, row: 0, column: 0, selectedPanelId: null},
+      module: {id: 50, name: 'Row 0 wide', hp: 12, standard: {id: 0}, functions: []}
+    });
+    const rowZeroSmall = makeRackedModule({
+      rackingData: {id: 51, rackid: 1, moduleid: 51, row: 0, column: 1, selectedPanelId: null},
+      module: {id: 51, name: 'Row 0 small', hp: 4, standard: {id: 0}, functions: []}
+    });
+    const rowOneWide = makeRackedModule({
+      rackingData: {id: 52, rackid: 1, moduleid: 52, row: 1, column: 0, selectedPanelId: null},
+      module: {id: 52, name: 'Row 1 wide', hp: 12, standard: {id: 0}, functions: []}
+    });
+    const rowOneSmall = makeRackedModule({
+      rackingData: {id: 53, rackid: 1, moduleid: 53, row: 1, column: 1, selectedPanelId: null},
+      module: {id: 53, name: 'Row 1 small', hp: 4, standard: {id: 0}, functions: []}
+    });
+
+    spyOn(Math, 'random').and.returnValue(0);
+    service.singleRackData$.next(makeRack({rows: 2, hp: 84}));
+    service.rowedRackedModules$.next([[rowZeroWide, rowZeroSmall], [rowOneWide, rowOneSmall]]);
+    service.layoutScope$.next({rowIndex: 1});
+    backend.update.rackedModules.calls.reset();
+
+    service.requestLayoutShuffle$.next();
+    tick();
+
+    const rows = service.rowedRackedModules$.value!;
+    expect(rows.map(row => row.map(module => module.module.id))).toEqual([
+      [50, 51],
+      [53, 52]
+    ]);
+    expect(rowOneSmall.rackingData.column).toBe(0);
+    expect(rowOneWide.rackingData.column).toBe(1);
+    expect(backend.update.rackedModules).toHaveBeenCalled();
+    expect(snackBar.open).toHaveBeenCalledWith('Shuffled 2 modules.', 'Undo', jasmine.objectContaining({duration: 10000}));
+  }));
+
   it('honours the selected remix scope when applying layout moves', fakeAsync(() => {
     const {service, backend} = build();
     const wideThreeU = makeRackedModule({

@@ -643,6 +643,22 @@ describe('RackEditorComponent', () => {
     expect(component.layoutRemixActionLabel({rowIndex: 2})).toBe('Remix Row 3');
   });
 
+  it('labels the shuffle action for the active layout scope', () => {
+    const component = createComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      {} as RackDetailDataService,
+      {} as GeneralContextMenuDataService,
+      {markForCheck: () => undefined} as ChangeDetectorRef,
+      jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
+    );
+
+    expect(component.layoutShuffleActionLabel('all')).toBe('Shuffle');
+    expect(component.layoutShuffleActionLabel('3u')).toBe('Shuffle 3U');
+    expect(component.layoutShuffleActionLabel('1u')).toBe('Shuffle 1U');
+    expect(component.layoutShuffleActionLabel({rowIndex: 2})).toBe('Shuffle Row 3');
+  });
+
   it('requests layout remix through the rack data service', () => {
     const requestLayoutRemix$ = new Subject<void>();
     const component = createComponent(
@@ -658,6 +674,23 @@ describe('RackEditorComponent', () => {
     component.requestLayoutRemix();
 
     expect(remixSpy).toHaveBeenCalled();
+  });
+
+  it('requests layout shuffle through the rack data service', () => {
+    const requestLayoutShuffle$ = new Subject<void>();
+    const component = createComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      {requestLayoutShuffle$} as RackDetailDataService,
+      {} as GeneralContextMenuDataService,
+      {markForCheck: () => undefined} as ChangeDetectorRef,
+      jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
+    );
+    const shuffleSpy = spyOn(requestLayoutShuffle$, 'next');
+
+    component.requestLayoutShuffle();
+
+    expect(shuffleSpy).toHaveBeenCalled();
   });
 
   it('scales the rack down when the viewport is narrower than the rack width', () => {

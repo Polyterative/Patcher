@@ -346,6 +346,14 @@
                          <mat-icon>auto_fix_high</mat-icon>
                          {{ layoutRemixActionLabel(bag.layoutScope) }}
                        </button>
+                       <button mat-stroked-button
+                               type="button"
+                               class="rackEditorFloatingOptions__actionButton"
+                               (click)="requestLayoutShuffle()"
+                       >
+                         <mat-icon>shuffle</mat-icon>
+                         {{ layoutShuffleActionLabel(bag.layoutScope) }}
+                       </button>
                      }
                    }
                    <div class="rackEditorFloatingOptions__analysisHint rackEditorFloatingOptions__analysisHint--subtle">
