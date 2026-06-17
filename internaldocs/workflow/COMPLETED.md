@@ -5,6 +5,8 @@
 
 - **2026-06-17** — HIGH: User Area — Helpful tips now remove the "Why this?" disclosure, throttle automatic tips to one per visit with spacing, and persist viewer baselines so existing users only receive newly introduced tips.
 
+- **2026-06-17** — MEDIUM: Module tags — colour lookup coherence now maps missing timing, utility, and voice database tags through the canonical rack-balance axes, keeps Nature / Character tags neutral, and aligns module tag tinting plus description keyword highlights with rack function classification (commit `2bb65c2c`).
+
 - **2026-06-16** — MEDIUM: Rack Editor — Remix action label now reflects the selected Layout scope, including 3U, 1U, and per-row scopes.
 
 - **2026-06-16** — MEDIUM: Rack Editor — Remix scope now includes per-row buttons so users can tidy one row without disturbing the rest of the rack.
