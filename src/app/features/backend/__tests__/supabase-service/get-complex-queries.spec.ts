@@ -1,4 +1,5 @@
 import { SupabaseService } from '../../supabase.service';
+import type { MinimalModule } from 'src/app/models/module';
 import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest,
@@ -15,6 +16,29 @@ function chainable(resolveValue: any = {data: null, error: null}) {
   m.then = (res: Function, rej?: Function) =>
     Promise.resolve(resolveValue).then(res as any, rej as any);
   return m;
+}
+
+function makeMinimalModule(id: number, name: string): MinimalModule {
+  return {
+    id,
+    name,
+    description: '',
+    hp: 4,
+    public: true,
+    manufacturer: {
+      id: 3,
+      name: 'Maker'
+    },
+    manufacturerId: 3,
+    standard: {
+      id: 0,
+      name: 'Eurorack'
+    },
+    tags: [],
+    panels: [],
+    created: '2026-01-01T00:00:00Z',
+    updated: '2026-01-02T00:00:00Z'
+  };
 }
 
 describe('SupabaseService - get complex queries', () => {
@@ -636,11 +660,11 @@ describe('SupabaseService - get complex queries', () => {
   
   describe('get.modulesBySameManufacturer', () => {
     it('should return the data array from the query result', (done) => {
-      const mockModules = [{id: 1, name: 'VCO'}, {id: 2, name: 'VCF'}];
+      const mockModules = [makeMinimalModule(1, 'VCO'), makeMinimalModule(2, 'VCF')];
       spyOn(supabaseClient, 'from').and.returnValue(chainable({data: mockModules, error: null}));
       
       service.get.modulesBySameManufacturer(3).subscribe({
-        next: (result: any) => {
+        next: (result) => {
           expect(result).toEqual(mockModules);
           done();
         },

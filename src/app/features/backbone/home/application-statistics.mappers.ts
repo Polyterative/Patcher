@@ -79,6 +79,9 @@ export class ApplicationStatisticsMappers {
     const updatedLast30Days = moduleInsights.freshnessWindows[1]?.count ?? 0;
     const updatedLast90Days = moduleInsights.freshnessWindows[2]?.count ?? 0;
     const updatedLast365Days = moduleInsights.freshnessWindows[3]?.count ?? 0;
+    const recentFreshnessCount = Math.max(updatedLast30Days - updatedLast7Days, 0);
+    const deceleratingFreshnessCount = Math.max(updatedLast90Days - updatedLast30Days, 0);
+    const longTailFreshnessCount = Math.max(updatedLast365Days - updatedLast90Days, 0);
     const last7Days = sumActivityWindow(activitySeries, -7);
     const prev7Days = sumActivityWindow(activitySeries, -14, -7);
     const lastSevenDaysTotal = last7Days.modules + last7Days.racks + last7Days.patches;
@@ -156,18 +159,18 @@ export class ApplicationStatisticsMappers {
       },
       {
         label: 'Recent (8-30 days)',
-        count: Math.max(updatedLast30Days - updatedLast7Days, 0),
-        detail: `${ this.formatCount(Math.max(updatedLast30Days - updatedLast7Days, 0)) } public modules moved earlier this month`
+        count: recentFreshnessCount,
+        detail: `${ this.formatCount(recentFreshnessCount) } public modules moved earlier this month`
       },
       {
         label: 'Deceleration zone (31-90 days)',
-        count: Math.max(updatedLast90Days - updatedLast30Days, 0),
-        detail: `${ this.formatCount(Math.max(updatedLast90Days - updatedLast30Days, 0)) } public modules were active this quarter but not in the last 30 days`
+        count: deceleratingFreshnessCount,
+        detail: `${ this.formatCount(deceleratingFreshnessCount) } public modules were active this quarter but not in the last 30 days`
       },
       {
         label: 'Long-tail maintenance (91-365 days)',
-        count: Math.max(updatedLast365Days - updatedLast90Days, 0),
-        detail: `${ this.formatCount(Math.max(updatedLast365Days - updatedLast90Days, 0)) } public modules were maintained this year without recent churn`
+        count: longTailFreshnessCount,
+        detail: `${ this.formatCount(longTailFreshnessCount) } public modules were maintained this year without recent churn`
       },
       {
         label: 'Older than a year',
@@ -240,7 +243,7 @@ export class ApplicationStatisticsMappers {
     const patchSharingRateMetric = sharingRateMetrics.find((metric) => metric.label.startsWith('Patch-sharing'));
 
     const patchDepthMetrics = [
-        createRateDatum(
+      createRateDatum(
         'Active patches / 100 shared patches (30d)',
         statistics.publicPatchesUpdatedLast30Days,
         statistics.publicPatches,

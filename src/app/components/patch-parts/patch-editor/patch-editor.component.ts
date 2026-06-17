@@ -49,7 +49,10 @@ import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
 } from '../../module-parts/module-minimal/module-minimal.component';
-import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import {
+  FormTypes,
+  ISelectable
+} from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 import {
@@ -143,8 +146,8 @@ export class PatchEditorComponent extends SubManager implements OnInit, OnDestro
   readonly operationMode$: BehaviorSubject<PatchEditorOperationMode>;
   readonly hasLinkedRack$: Observable<boolean>;
   readonly linkedRackPreviewState$ = new BehaviorSubject<LinkedRackPreviewState>(defaultLinkedRackPreviewState);
-  readonly sortModeOptions$: Observable<any[]> = of(PATCH_EDITOR_SORT_MODE_OPTIONS);
-  readonly groupModeOptions$: Observable<any[]> = of(PATCH_EDITOR_GROUP_MODE_OPTIONS);
+  readonly sortModeOptions$: Observable<ISelectable[]> = of(PATCH_EDITOR_SORT_MODE_OPTIONS);
+  readonly groupModeOptions$: Observable<ISelectable[]> = of(PATCH_EDITOR_GROUP_MODE_OPTIONS);
   readonly moduleSortControl = new UntypedFormControl(PATCH_EDITOR_SORT_MODE_OPTIONS[0]);
   readonly moduleGroupControl = new UntypedFormControl(PATCH_EDITOR_GROUP_MODE_OPTIONS[0]);
   readonly moduleSortModeId$ = this.moduleSortControl.valueChanges.pipe(

@@ -405,9 +405,9 @@ export class ModuleEditorComponent extends SubManager implements OnInit, OnDestr
     // Subscription for panelType control value changes
     this.panelType.control.valueChanges
       .pipe(
-        this.takeUntilDestroyed(),
         startWith(this.panelType.control.value),
-        withLatestFrom(this.panelType.options$)
+        withLatestFrom(this.panelType.options$),
+        this.takeUntilDestroyed()
       )
       .subscribe(([panelTypeValue, options]) => {
         if (this.selectedPanelSourceFile$.value && !this.suppressPanelTypeManualOverride) {

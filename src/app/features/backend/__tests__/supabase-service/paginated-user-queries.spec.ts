@@ -1244,16 +1244,16 @@ describe('SupabaseService - get.allTags', () => {
   
   it('should return a flat array of all tags ordered by type and name', (done) => {
     const mockTags = [
-      {id: 1, name: 'Envelope', type: 'function'},
-      {id: 2, name: 'Oscillator', type: 'function'},
-      {id: 3, name: 'Digital', type: 'technology'}
+      {id: 1, name: 'Envelope', type: 6},
+      {id: 2, name: 'Oscillator', type: 7},
+      {id: 3, name: 'Digital', type: 2}
     ];
     const mock = chainable({data: mockTags, error: null});
     const orderSpy = spyOn(mock, 'order').and.returnValue(mock);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
     service.get.allTags().subscribe({
-      next: (result: any) => {
+      next: (result) => {
         expect(result).toEqual(mockTags);
         expect(orderSpy).toHaveBeenCalledWith('type', {ascending: true});
         expect(orderSpy).toHaveBeenCalledWith('name', {ascending: true});
@@ -1270,7 +1270,7 @@ describe('SupabaseService - get.allTags', () => {
     spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: null}));
     
     service.get.allTags().subscribe({
-      next: (result: any) => {
+      next: (result) => {
         expect(result).toEqual([]);
         done();
       },

@@ -72,6 +72,7 @@ import {
   ModuleCollectionSummary
 } from 'src/app/models/module-collection';
 import { MinimalModule } from 'src/app/models/module';
+import { Tag } from 'src/app/models/tag';
 import {
   applyClientSideSearchFilter,
   escapeIlikePattern,
@@ -2297,11 +2298,11 @@ export class SupabaseQueriesService {
     )),
   })
   getModulesBySameManufacturer(
-    manufacturerId: any,
+    manufacturerId: number,
     from = 0,
     to: number = this.defaultPag,
     columns = '*'
-  ) {
+  ): Observable<MinimalModule[] | null> {
     return rxFrom(
       this.supabase.from(DbPaths.modules)
         .select(`${ columns },
@@ -2320,21 +2321,21 @@ export class SupabaseQueriesService {
         .range(from, to)
     ).pipe(
       remapErrors(),
-      map((x: any) => x.data)
+      map(response => response.data as MinimalModule[] | null)
     );
   }
 
   @Cacheable({
     maxAge: longCacheTime,
   })
-  getAllTagsCached(): Observable<any[]> {
+  getAllTagsCached(): Observable<Tag[]> {
     return rxFrom(
       this.supabase.from(DbPaths.tags)
         .select('*')
         .order('type', {ascending: true})
         .order('name', {ascending: true})
     ).pipe(
-      map((x: any) => (x.data ?? []))
+      map(response => (response.data ?? []) as Tag[])
     );
   }
 }

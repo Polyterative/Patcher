@@ -87,13 +87,13 @@ describe('SupabaseService - get.myVotes, get.allTags and password reset errors',
   describe('get.allTags', () => {
     it('should return all tags sorted by type and name', (done) => {
       const mockTags = [
-        {id: 1, name: 'Envelope', type: 'function'},
-        {id: 2, name: 'VCO', type: 'module_type'}
+        {id: 1, name: 'Envelope', type: 6},
+        {id: 2, name: 'VCO', type: 7}
       ];
       spyOn(supabaseClient, 'from').and.returnValue(chainable({data: mockTags, error: null}));
       
       service.get.allTags().subscribe({
-        next: (result: any) => {
+        next: (result) => {
           expect(result).toEqual(mockTags);
           done();
         },
@@ -108,7 +108,7 @@ describe('SupabaseService - get.myVotes, get.allTags and password reset errors',
       spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: null}));
       
       service.get.allTags().subscribe({
-        next: (result: any) => {
+        next: (result) => {
           expect(result).toEqual([]);
           done();
         },
