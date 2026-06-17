@@ -37,7 +37,7 @@ second source of rules.
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | Service layers, project structure, and state boundaries |
 | [STYLE_GUIDE.md](./STYLE_GUIDE.md) | Naming conventions and HTML/SCSS conventions |
 | [DESIGN_LANGUAGE.md](./DESIGN_LANGUAGE.md) | Visual philosophy, character, inspirations, responsive rules, and anti-patterns |
-| [agents/README.md](./agents/README.md) | Specialised agent personas (planner, frontend-dev, designer, reviewer, refactorer, test-writer, bug-hunter) |
+| [agents/README.md](./agents/README.md) | Specialised agent personas, including [`feature-notetaker`](./agents/feature-notetaker.md) for idea intake and [`coordinator-loop`](./agents/coordinator-loop.md) for the full TODO → implementation → review → archive cycle |
 
 ### Patterns and Testing
 

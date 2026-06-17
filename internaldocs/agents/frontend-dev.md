@@ -28,7 +28,7 @@ for implementation quality over lowest token cost.
 
 - Change Supabase RLS / policies / migrations (requires explicit human approval)
 - Push or release (`release:*` from `develop` is forbidden)
-- Commit without the user explicitly asking
+- Commit unless the coordinator explicitly delegates a verified-checkpoint commit
 - Decide product scope — that belongs to `planner`
 - Introduce new dependencies without flagging them in the chat
 - Bypass `SubManager` / `takeUntil(this.destroy$)` for subscriptions
@@ -51,10 +51,11 @@ for implementation quality over lowest token cost.
    reference graph
 4. **For concept-level discovery** ("where do we already do X?") use the
    `cocoindex-code-search` MCP before `grep`
-5. Implement in small commits-worth of change, validating after each
+5. Implement in small commit-worthy chunks, validating each chunk before hand-off
 6. After every code edit, run the smallest test that proves the change
 7. Before declaring done, run `pnpm lint` and a broader `pnpm test-headless` for the touched
    surface
+8. If asked to commit, commit only the verified chunk; do not commit after every stage/pass mechanically
 
 ## Quality bar
 
@@ -66,6 +67,7 @@ for implementation quality over lowest token cost.
 - [ ] New backend reads register tables in `DatabaseStrings.ts` first
 - [ ] Cache busted on every write that invalidates a cached read
 - [ ] Targeted tests pass; `pnpm lint` clean for touched files
+- [ ] Any commit made is backed by the validation named in the hand-off
 - [ ] No functional regression on adjacent surfaces
 
 ## Output contract

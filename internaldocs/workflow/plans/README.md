@@ -31,10 +31,16 @@ Each plan file has:
 - **Done:** move the file to `plans/done/<slug>.md`, add a one-line entry to
   [`../COMPLETED.md`](../COMPLETED.md) with the date, and remove the index entry
   from `../TODO.md`.
+- **Automated loop:** use [`../../agents/coordinator-loop.md`](../../agents/coordinator-loop.md)
+  when an agent should select one TODO item, delegate implementation, run independent
+  review, validate, and perform the cleanup above.
 
 ## Tooling
 
 - `scripts/dev/split-todo.cjs` — one-shot splitter (already run; kept for repeatability).
 - New plan: create a file here, then add a one-line link to `../TODO.md`.
+- Rough feature intake: use [`../../agents/feature-notetaker.md`](../../agents/feature-notetaker.md)
+  to research the request, assign priority/roadmap fit, create exactly one plan
+  file here, and add the matching one-line TODO entry.
 - Avoid editing the index by hand for batch changes — prefer a small script that
   rewrites it deterministically.

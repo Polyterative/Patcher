@@ -82,7 +82,7 @@ Key paths:
 - Use helper scripts such as `pnpm switch:develop`, `pnpm switch:production`, and `pnpm merge:dev-to-prod`.
 - Commit format: `<type>(<scope>): <description>` in one line, imperative, lowercase, no trailing period.
 - Do not add `Co-authored-by` trailers or Copilot attribution lines to commits in this repository.
-- Ask before committing unless the user explicitly requested a commit.
+- Ask before committing unless the user explicitly requested commits or invoked a persona/workflow that documents autonomous verified-checkpoint commits (for example `coordinator-loop` / "begin loop").
 - Never push unless the user explicitly requested it.
 - Never run `release:*` from `develop`.
 
@@ -113,7 +113,7 @@ If any of these tools is missing from your environment, surface it to the user b
 
 ## 9) Specialised agent personas
 
-For known roles (planning, UI polish, review, refactor, test-writing, bug diagnosis), delegate to a sub-agent using the matching persona spec from `internaldocs/agents/` as the system prompt. `internaldocs/agents/README.md` has the full index plus composition patterns (Plan → Build → Review, Bug fix, Refactor sweep, UI polish).
+For known roles (planning, UI polish, review, refactor, test-writing, bug diagnosis), delegate to a sub-agent using the matching persona spec from `internaldocs/agents/` as the system prompt. `internaldocs/agents/README.md` has the full index plus composition patterns (Idea intake → Backlog, Plan → Build → Review, Bug fix, Refactor sweep, UI polish). For rough feature intake that should become a future backlog plan, use `internaldocs/agents/feature-notetaker.md`. For a full automated backlog cycle that selects one TODO item, delegates implementation, delegates review, validates, creates verified checkpoint commits, and archives workflow docs, use `internaldocs/agents/coordinator-loop.md`.
 
 Project-scoped Copilot CLI skills in `.github/skills/`:
 

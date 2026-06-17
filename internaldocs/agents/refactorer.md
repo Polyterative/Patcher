@@ -47,7 +47,7 @@ observable contracts, and tests.
    preserved" refactors that actually break things
 3. Identify ONE structural improvement and apply it
 4. Re-run the same tests. They must remain green with **no test edits**
-5. Commit-worthy chunk = passing tests. If tests fail and you need to edit them, stop and
+5. Commit-worthy chunk = passing tests plus a coherent behaviour-preserving diff. If tests fail and you need to edit them, stop and
    reassess — you've changed behaviour
 6. Repeat for the next improvement
 7. After all improvements: `pnpm lint` + broader `pnpm test-headless`
@@ -59,6 +59,7 @@ observable contracts, and tests.
 - [ ] Cyclomatic complexity reduced or unchanged in touched functions
 - [ ] No `select('*')` introduced; no cache invalidations dropped
 - [ ] Behaviour-preserving on all touched surfaces (sanity-check manually if no test exists)
+- [ ] Any commit made is for a verified structural chunk, not every refactor pass
 
 ## Output contract
 
