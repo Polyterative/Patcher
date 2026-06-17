@@ -15,6 +15,9 @@ specific behaviour.
 5. **Match model cost to task shape.** Coding-heavy executors mostly use `gpt-5.5`; visual design
    uses Sonnet; deep planning/advice uses Opus; read-only review starts on cheaper OpenAI models.
 6. **Token-cheap.** Keep each file under ~120 lines. Cut prose, keep checklists.
+7. **Caller context first.** When a coordinator/planner passes a context packet, trust it and read
+   only the named task docs/files. Do not reload `internaldocs/README.md` or the agent index unless
+   the packet is missing routing context or you are blocked.
 
 ## Personas
 
@@ -42,6 +45,21 @@ specific behaviour.
 - **UI polish:** `designer` → `frontend-dev` → `reviewer`
 - **Backlog automation loop:** `coordinator-loop` → executor persona → `reviewer` → workflow doc cleanup
 
+## Context packet handoff
+
+Coordinators should load repo orientation once, then pass subagents a compact packet:
+
+- applicable `AGENTS.md` rules
+- exact plan / issue / task path
+- likely files or surfaces
+- acceptance criteria and non-goals
+- validation commands
+- docs already consulted
+
+Subagents should start from that packet, read the exact plan and touched files, and avoid broad
+orientation docs unless the packet is insufficient. This prevents repeated README/index loading
+across coordinator → executor → reviewer chains.
+
 ## Persona file template
 
 ```markdown
@@ -62,9 +80,10 @@ specific behaviour.
 
 ## Inputs expected
 - <what the caller must provide>
+- caller-provided context packet when delegated by another agent
 
 ## Workflow
-1. ...
+1. Use the caller-provided context packet first; load broad docs only when context is missing
 2. ...
 
 ## Quality bar (must pass before declaring done)
