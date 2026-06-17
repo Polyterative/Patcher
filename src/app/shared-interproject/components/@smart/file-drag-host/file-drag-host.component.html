@@ -3,16 +3,30 @@
        fxLayout="column"
        fxLayoutGap=".5rem"
   >
-    <ngx-dropzone
-      (change)="service.fileAdd$.emit($event)"
-      [accept]="acceptedFileType"
-      [multiple]="multipleFilesMode"
-      [expandable]="true"
+    <div
       class="dropzone"
+      [class.dropzone--dragging]="isDraggingOver"
+      [class.dropzone--has-files]="bag.files.length > 0"
+      role="button"
+      tabindex="0"
+      (click)="openFilePicker(fileInput, $event)"
+      (keydown.enter)="openFilePicker(fileInput, $event)"
+      (keydown.space)="openFilePicker(fileInput, $event)"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onDrop($event)"
     >
+      <input
+        #fileInput
+        class="file-input"
+        type="file"
+        [attr.accept]="acceptedFileType || null"
+        [multiple]="multipleFilesMode"
+        (change)="onFilePickerChange($event, fileInput)"
+      >
       @if (bag.files.length === 0) {
-        <ngx-dropzone-label [@fadeIn]
-                            style="padding: 1rem"
+        <div [@fadeIn]
+             class="dropzone-label"
         >
           <div fxFlex="100"
                fxLayout="column"
@@ -27,14 +41,12 @@
               fxFlex="100">{{ "Drag the  " + (multipleFilesMode ? "files" : "file") + " here or click to pick one" }}
             </div>
           </div>
-        </ngx-dropzone-label>
+        </div>
       }
       @if (!isImageOnlyMode) {
         @for (file of bag.files; track file) {
-          <ngx-dropzone-preview
-            [removable]="true"
-            (removed)="service.removeFile$.emit(file)"
-            [file]="file"
+          <div
+            class="file-preview"
             [@fadeInOut]
           >
             <mat-card-subtitle class="label">
@@ -42,24 +54,43 @@
               <br>
               {{ file.lastModified|date }}
             </mat-card-subtitle>
-          </ngx-dropzone-preview>
+            <button
+              type="button"
+              class="remove-file-button"
+              [attr.aria-label]="'Remove ' + file.name"
+              (click)="removeFile(file, $event)"
+            >
+              ×
+            </button>
+          </div>
         }
       }
       @if (isImageOnlyMode) {
         @for (file of bag.files; track file) {
           <div fxFlex="100"
-               fxLayout="row"
-               fxLayoutGap="1rem"
+              fxLayout="row"
+              fxLayoutGap="1rem"
+              class="image-preview"
+              [@fadeInOut]
           >
-            <ngx-dropzone-image-preview ngProjectAs="ngx-dropzone-preview"
-                                        [file]="file"
-                                        [removable]="true"
-                                        (removed)="service.removeFile$.emit(file)"
-            >
-            </ngx-dropzone-image-preview>
+            <div class="image-preview__frame">
+              <img
+               class="image-preview__image"
+               [src]="getImagePreviewUrl(file)"
+               [alt]="file.name + ' preview'"
+              >
+              <button
+               type="button"
+               class="remove-file-button remove-file-button--image"
+               [attr.aria-label]="'Remove ' + file.name"
+               (click)="removeFile(file, $event)"
+              >
+               ×
+              </button>
+            </div>
             <div fxFlex="100"
-                 fxLayout="column"
-                 fxLayoutGap="1rem"
+                fxLayout="column"
+                fxLayoutGap="1rem"
                  class="label"
             >
               <mat-card-subtitle fxFlex="100"
@@ -75,20 +106,6 @@
           </div>
         }
       }
-    </ngx-dropzone>
-    <!--    <ng-container *ngFor="let item of bag.files;">-->
-    <!--      <div fxFlex="auto"-->
-    <!--           fxLayout="column"-->
-    <!--           fxLayoutGap=".5rem"-->
-    <!--      >-->
-    <!--        <mat-card-subtitle>-->
-    <!--          {{item.name}}-->
-    <!--        </mat-card-subtitle>-->
-    <!--        <ngx-dropzone-image-preview ngProjectAs="ngx-dropzone-preview"-->
-    <!--                                    [file]="item"-->
-    <!--        >-->
-    <!--        </ngx-dropzone-image-preview>-->
-    <!--      </div>-->
-    <!--    </ng-container>-->
+    </div>
   </div>
 }

@@ -133,9 +133,6 @@ importers:
       modern-screenshot:
         specifier: ^4.6.8
         version: 4.6.8
-      ngx-dropzone:
-        specifier: 3.1.0
-        version: 3.1.0
       ngx-image-cropper:
         specifier: 9.1.6
         version: 9.1.6(@angular/common@22.0.1(@angular/core@22.0.1(@angular/compiler@22.0.1)(rxjs@7.8.2)(zone.js@0.16.2))(rxjs@7.8.2))(@angular/core@22.0.1(@angular/compiler@22.0.1)(rxjs@7.8.2)(zone.js@0.16.2))
@@ -4569,10 +4566,6 @@ packages:
 
   neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
-
-  ngx-dropzone@3.1.0:
-    resolution: {integrity: sha512-5RBaEl07QUcY6sv/BBPyIxN6nbWY/KqTGheEKgbuGS0N1QPFY7NJUo8+X3fYUwQgLS+wjJeqPiR37dd0YNDtWA==}
-    deprecated: This package is deprecated and will no longer receive any updates. Please take a look at the official successor repo at hackingharold/ngx-dropzone
 
   ngx-image-cropper@9.1.6:
     resolution: {integrity: sha512-b250YJ+jZovfqIj8vdEOrpEFay34be5f1Hpvg6Db68VMlvdyyuzboJdR0gCupbXtVcG6qQ86L7YG+SYxXJwApw==}
@@ -10484,10 +10477,6 @@ snapshots:
   negotiator@1.0.0: {}
 
   neo-async@2.6.2: {}
-
-  ngx-dropzone@3.1.0:
-    dependencies:
-      tslib: 2.8.1
 
   ngx-image-cropper@9.1.6(@angular/common@22.0.1(@angular/core@22.0.1(@angular/compiler@22.0.1)(rxjs@7.8.2)(zone.js@0.16.2))(rxjs@7.8.2))(@angular/core@22.0.1(@angular/compiler@22.0.1)(rxjs@7.8.2)(zone.js@0.16.2)):
     dependencies:
