@@ -49,10 +49,14 @@ export class UserManagementService extends SubManager {
   // STATE - Private subjects
   private readonly _loggedUser$ = new ReplaySubject<SimpleUserModel | undefined>(1);
   private readonly _loggedUserFullProfile$ = new ReplaySubject<RichUserModel | undefined>(1);
+  private readonly _authRestored$ = new BehaviorSubject<boolean>(false);
+  private readonly _profileRestored$ = new BehaviorSubject<boolean>(false);
   
   // PUBLIC - Read-only observables
   public readonly loggedUser$ = this._loggedUser$.asObservable();
   public readonly loggedUserFullProfile$ = this._loggedUserFullProfile$.asObservable();
+  public readonly authRestored$ = this._authRestored$.asObservable();
+  public readonly profileRestored$ = this._profileRestored$.asObservable();
   public readonly isAdmin$ = this.loggedUser$.pipe(
     startWith(undefined),
     switchMap(user => user ? this._getAdminRole() : of(false))
@@ -134,6 +138,46 @@ export class UserManagementService extends SubManager {
     this.initializeSentryIdentityHandler();
     this.initializeAnalyticsIdentityHandler();
   }
+
+  private publishLoggedUser(user: SimpleUserModel | undefined): void {
+    this.currentUserId = user?.id;
+    this._loggedUser$.next(user);
+    this._authRestored$.next(true);
+  }
+
+  private publishSignedInProfile(profile: RichUserModel): void {
+    this._loggedUserFullProfile$.next(profile);
+    this._profileRestored$.next(true);
+    this.publishLoggedUser(profile);
+  }
+
+  private publishSignedOut(): void {
+    this.currentUserId = undefined;
+    this._loggedUser$.next(undefined);
+    this._loggedUserFullProfile$.next(undefined);
+    this._authRestored$.next(true);
+    this._profileRestored$.next(true);
+  }
+
+  private publishRestoredProfile(profile: RichUserModel | undefined): void {
+    this._loggedUserFullProfile$.next(profile);
+    this._profileRestored$.next(true);
+  }
+
+  private hasCompleteRichProfile(profile: RichUserModel | null | undefined): profile is RichUserModel {
+    return !!profile && !!profile.username && !!profile.email;
+  }
+
+  private restoreCurrentUserProfile$(): Observable<RichUserModel | undefined> {
+    return this.backend.auth.getRichUserSession$().pipe(
+      take(1),
+      map(profile => this.hasCompleteRichProfile(profile) ? profile : undefined),
+      catchError((error) => {
+        console.error('Profile restoration failed:', error);
+        return of(undefined);
+      })
+    );
+  }
   
   private initializeUserBoxHandler(): void {
     this.loggedUserFullProfile$
@@ -190,21 +234,26 @@ export class UserManagementService extends SubManager {
       .pipe(
         tap((user) => {
           this.currentUserId = user?.id;
+          if (!user) {
+            this.publishRestoredProfile(undefined);
+          }
         }),
-        filter(x => !!x),
+        filter((user): user is SimpleUserModel => !!user),
         // Check if we already have a profile for this user
         withLatestFrom(this.loggedUserFullProfile$.pipe(startWith(undefined))),
+        tap(([user, profile]) => {
+          this._profileRestored$.next(!!profile && profile.id === user.id);
+        }),
         // Only fetch if we don't have a profile or it's for a different user
         filter(([user, profile]) => !profile || profile.id !== user.id),
-        switchMap(([_user]) =>
-          this.backend.auth.getRichUserSession$().pipe(
-            filter(x => !!x && !!x.username && !!x.email)
-          )
-        ),
+        tap(() => {
+          this._profileRestored$.next(false);
+        }),
+        switchMap(() => this.restoreCurrentUserProfile$()),
         this.takeUntilDestroyed()
       )
       .subscribe(x => {
-        this._loggedUserFullProfile$.next(x);
+        this.publishRestoredProfile(x);
       });
   }
   
@@ -221,8 +270,7 @@ export class UserManagementService extends SubManager {
     // This enables cross-tab logout without showing the success message again
     this.backend.user.logout$.pipe(
       tap(() => {
-        this._loggedUser$.next(undefined);
-        this._loggedUserFullProfile$.next(undefined);
+        this.publishSignedOut();
       }),
       filter(() => !this.router.url.includes('/auth/login')),
       this.takeUntilDestroyed()
@@ -243,7 +291,7 @@ export class UserManagementService extends SubManager {
       // This prevents unnecessary updates when already logged in as the same user
       filter(user => !this.currentUserId || this.currentUserId !== user!.id),
       tap(user => {
-        this._loggedUser$.next(user);
+        this.publishLoggedUser(user ?? undefined);
       }),
       this.takeUntilDestroyed()
     ).subscribe();
@@ -260,8 +308,7 @@ export class UserManagementService extends SubManager {
       tap(x => {
         // Emit the full user data directly to avoid duplicate database calls
         // The login$ already fetches the username, so we have complete data
-        this._loggedUser$.next(x.user);
-        this._loggedUserFullProfile$.next(x.user);
+        this.publishSignedInProfile(x.user);
         this.analytics.capture('auth.signed_in', { method: 'password' });
       }),
       this.takeUntilDestroyed()
@@ -346,8 +393,7 @@ export class UserManagementService extends SubManager {
       )),
       filter(user => !!user),
       tap(user => {
-        this._loggedUser$.next(user);
-        this._loggedUserFullProfile$.next(user);
+        this.publishSignedInProfile(user);
         this.analytics.capture('auth.signed_in', { method: 'oauth' });
       }),
       this.takeUntilDestroyed()
@@ -374,8 +420,7 @@ export class UserManagementService extends SubManager {
         return NEVER;
       }),
       tap(x => {
-        this._loggedUser$.next(x.user);
-        this._loggedUserFullProfile$.next(x.user);
+        this.publishSignedInProfile(x.user);
       })
     );
   }
@@ -440,7 +485,7 @@ export class UserManagementService extends SubManager {
       take(1),
       catchError(() => of(undefined))
     ).subscribe(x => {
-      this._loggedUser$.next(x ?? undefined);
+      this.publishLoggedUser(x ?? undefined);
     });
   }
   
@@ -461,7 +506,7 @@ export class UserManagementService extends SubManager {
       switchMap((newUsername) => this.backend.auth.getRichUserSession$().pipe(map(profile => ({profile, newUsername})))),
       filter(({profile}) => !!profile),
       tap(({profile, newUsername}) => {
-        this._loggedUserFullProfile$.next(profile);
+        this.publishRestoredProfile(profile);
         this.analytics.capture('account.username_changed', {});
         SharedConstants.successCustom(this.snackBar, `Username changed to "${ newUsername }" — your profile has been synced.`);
       }),
@@ -495,7 +540,7 @@ export class UserManagementService extends SubManager {
       switchMap(() => this.backend.auth.getRichUserSession$()),
       filter(x => !!x),
       tap(updatedProfile => {
-        this._loggedUserFullProfile$.next(updatedProfile);
+        this.publishRestoredProfile(updatedProfile);
         SharedConstants.successCustom(this.snackBar, `Username changed to "${ newUsername }" — your profile has been synced.`);
       }),
       map(() => void 0)
@@ -513,7 +558,7 @@ export class UserManagementService extends SubManager {
 
         return this.backend.auth.updateProfileVisibility$(profile.id, isPublic).pipe(
           tap(() => {
-            this._loggedUserFullProfile$.next({...profile, public: isPublic});
+            this.publishRestoredProfile({...profile, public: isPublic});
             SharedConstants.successCustom(
               this.snackBar,
               isPublic
@@ -556,8 +601,7 @@ export class UserManagementService extends SubManager {
         })
       )),
       tap(() => {
-        this._loggedUser$.next(undefined);
-        this._loggedUserFullProfile$.next(undefined);
+        this.publishSignedOut();
         this.analytics.capture('account.data_deleted', {});
       }),
       switchMap(() => from(this.backend.auth.logoff$()).pipe(
@@ -603,8 +647,7 @@ export class UserManagementService extends SubManager {
         })
       )),
       tap(() => {
-        this._loggedUser$.next(undefined);
-        this._loggedUserFullProfile$.next(undefined);
+        this.publishSignedOut();
         this.analytics.capture('account.deleted', {});
       }),
       switchMap(() => this.backend.auth.logoffLocal$().pipe(

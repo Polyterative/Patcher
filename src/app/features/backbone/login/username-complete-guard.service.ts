@@ -7,11 +7,11 @@ import {
   Router
 } from '@angular/router';
 import {
+  filter,
   map,
   take,
-  timeout
+  switchMap
 } from 'rxjs/operators';
-import { of } from 'rxjs';
 import { UserManagementService } from './user-management.service';
 
 
@@ -32,17 +32,24 @@ export class UsernameCompleteGuard {
     private router: Router
   ) {
   }
+
+  private redirectToCompleteProfile(): false {
+    this.router.navigate(['/auth/complete-profile']);
+    return false;
+  }
   
   canActivate() {
-    return this.userManagementService.loggedUserFullProfile$.pipe(
+    return this.userManagementService.profileRestored$.pipe(
+      filter(Boolean),
       take(1),
-      timeout({ first: 8000, with: () => of(undefined) }),
+      switchMap(() => this.userManagementService.loggedUserFullProfile$.pipe(
+        take(1)
+      )),
       map(user => {
         if (isUsernameComplete(user?.username)) {
           return true;
         }
-        this.router.navigate(['/auth/complete-profile']);
-        return false;
+        return this.redirectToCompleteProfile();
       })
     );
   }

@@ -2,7 +2,11 @@ import {
   inject,
   Injectable
 } from '@angular/core';
-import { MatSnackBar } from "@angular/material/snack-bar";
+import {
+  MatSnackBar,
+  MatSnackBarRef,
+  TextOnlySnackBar
+} from "@angular/material/snack-bar";
 import {
   ActivatedRouteSnapshot,
   CanActivateFn,
@@ -10,56 +14,74 @@ import {
   RouterStateSnapshot
 } from '@angular/router';
 import {
+  filter,
   map,
-  of,
   tap
 } from 'rxjs';
 import { UserManagementService } from './user-management.service';
 import {
   switchMap,
-  take,
-  timeout
+  take
 } from "rxjs/operators";
 
 
 @Injectable()
 export class UserAuthGuard {
+  private signInSnack?: MatSnackBarRef<TextOnlySnackBar>;
+
   constructor(
     private snackBar: MatSnackBar,
     private router: Router,
     private authenticationService: UserManagementService
   ) { }
+
+  private showSignInPrompt(returnUrl: string): void {
+    if (!this.signInSnack) {
+      this.signInSnack = this.snackBar.open('Sign in to use this feature.', 'Sign in', {
+        duration: 10000,
+        panelClass: 'snack-info'
+      });
+
+      this.signInSnack.onAction()
+          .pipe(take(1))
+          .subscribe(() => this.router.navigate(['/auth/login'], {queryParams: {returnUrl}}));
+
+      this.signInSnack.afterDismissed()
+          .pipe(take(1))
+          .subscribe(() => {
+            this.signInSnack = undefined;
+          });
+    }
+
+    this.router.navigate(['/auth/login'], {queryParams: {returnUrl}});
+  }
+
+  private dismissSignInPrompt(): void {
+    this.signInSnack?.dismiss();
+    this.signInSnack = undefined;
+  }
   
   canActivate(
     route: ActivatedRouteSnapshot, state: RouterStateSnapshot
   ) {
-    return of(undefined).pipe(
+    return this.authenticationService.authRestored$.pipe(
+      filter(Boolean),
+      take(1),
       switchMap(() => this.authenticationService.loggedUser$.pipe(
-        take(1),
-        timeout({ first: 8000, with: () => of(undefined) })
+        take(1)
       )),
       tap((user) => {
         if (!user) {
-          const snack = this.snackBar.open('Sign in to use this feature.', 'Sign in', {
-            duration: 10000,
-            panelClass: 'snack-info'
-          });
-      
-          snack.onAction()
-               .subscribe(x => this.router.navigate(['/auth/login'], {queryParams: {returnUrl: state.url}}));
-        
-          snack._open();
-          
-          // route to the login page if the user is not logged in
-          this.router.navigate(['/auth/login'], {queryParams: {returnUrl: state.url}});
-        
+          this.showSignInPrompt(state.url);
+        } else {
+          this.dismissSignInPrompt();
         }
-      
+
       }),
       map((user) => !!user)
     );
-  
-  
+
+
   }
 }
 
