@@ -15,7 +15,6 @@ export interface DiscoveryTipHighlight {
 export interface DiscoveryTipViewModel extends DiscoveryTipPosition {
   title: string;
   body: string;
-  reason?: string;
   guidedStepLabel?: string;
   isGuided: boolean;
   isLastGuidedStep: boolean;

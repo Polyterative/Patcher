@@ -9,4 +9,11 @@ describe('discoveryTipRegistry', () => {
       expect(tip.placement?.targetKind).toBe('control');
     });
   });
+
+  it('declares an introduction timestamp for every registered tip', () => {
+    discoveryTipRegistry.forEach((tip) => {
+      expect(tip.introducedAt).toBeTruthy();
+      expect(Number.isNaN(new Date(tip.introducedAt).getTime())).toBeFalse();
+    });
+  });
 });

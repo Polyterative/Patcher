@@ -69,26 +69,6 @@
   line-height: 1.45;
 }
 
-.reason {
-  margin-top: 0.7rem;
-  border-top: 1px solid rgba(138, 109, 26, 0.18);
-  padding-top: 0.55rem;
-  color: rgba(47, 40, 22, 0.72);
-  font-size: 0.82rem;
-  line-height: 1.35;
-
-  summary {
-    width: fit-content;
-    cursor: pointer;
-    color: rgba(47, 40, 22, 0.62);
-    font-weight: 700;
-  }
-
-  p {
-    margin: 0.35rem 0 0;
-  }
-}
-
 .actions {
   display: flex;
   flex-wrap: wrap;

@@ -1,4 +1,102 @@
-import { calculateDiscoveryTipPosition } from './discovery-tip-surface.component';
+import { PLATFORM_ID } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { BehaviorSubject } from 'rxjs';
+import { AppViewportService } from '../../app-viewport.service';
+import { DiscoveryTipActive } from '../discovery-tip.models';
+import { DiscoveryTipService } from '../discovery-tip.service';
+import { DiscoveryTipSurfaceComponent, calculateDiscoveryTipPosition } from './discovery-tip-surface.component';
+
+
+describe('DiscoveryTipSurfaceComponent', () => {
+  let fixture: ComponentFixture<DiscoveryTipSurfaceComponent>;
+  let activeTip$: BehaviorSubject<DiscoveryTipActive | null>;
+
+  function rect({
+    left = 0,
+    top = 0,
+    width = 100,
+    height = 40
+  }: { left?: number; top?: number; width?: number; height?: number }): DOMRect {
+    return {
+      left,
+      top,
+      width,
+      height,
+      right: left + width,
+      bottom: top + height,
+      x: left,
+      y: top,
+      toJSON: () => ({})
+    } as DOMRect;
+  }
+
+  beforeEach(async () => {
+    activeTip$ = new BehaviorSubject<DiscoveryTipActive | null>(null);
+    class ResizeObserverStub {
+      constructor(_callback: ResizeObserverCallback) {}
+      observe(): void {}
+      unobserve(): void {}
+      disconnect(): void {}
+    }
+    (window as unknown as {ResizeObserver: typeof ResizeObserver}).ResizeObserver = ResizeObserverStub;
+
+    await TestBed.configureTestingModule({
+      imports: [DiscoveryTipSurfaceComponent],
+      providers: [
+        {provide: PLATFORM_ID, useValue: 'browser'},
+        {
+          provide: DiscoveryTipService,
+          useValue: {
+            activeTip$: activeTip$.asObservable(),
+            acknowledgeActiveTip: jasmine.createSpy('acknowledgeActiveTip'),
+            snoozeActiveTip: jasmine.createSpy('snoozeActiveTip'),
+            pauseAllTips: jasmine.createSpy('pauseAllTips'),
+            startUserAreaTour: jasmine.createSpy('startUserAreaTour'),
+            endGuidedTour: jasmine.createSpy('endGuidedTour')
+          }
+        },
+        {
+          provide: AppViewportService,
+          useValue: {
+            currentViewport: () => ({width: 1280, height: 720, offsetLeft: 0, offsetTop: 0})
+          }
+        }
+      ]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(DiscoveryTipSurfaceComponent);
+    fixture.detectChanges();
+  });
+
+  it('renders tip content without the removed Why this details UI', () => {
+    const anchorElement = document.createElement('button');
+    anchorElement.getBoundingClientRect = () => rect({left: 100, top: 100, width: 120, height: 40});
+    anchorElement.scrollIntoView = () => undefined;
+
+    activeTip$.next({
+      definition: {
+        id: 'tip-without-reason-ui',
+        version: 1,
+        introducedAt: '2026-06-17T00:00:00.000Z',
+        anchorId: 'tip-anchor',
+        title: 'Helpful title',
+        body: 'Helpful body',
+        routePrefixes: ['/user/area'],
+        priority: 1,
+        audience: 'all',
+        isEligible: () => true
+      },
+      anchorElement
+    });
+    fixture.detectChanges();
+
+    const textContent = fixture.nativeElement.textContent as string;
+    expect(textContent).toContain('Helpful title');
+    expect(textContent).toContain('Helpful body');
+    expect(textContent).not.toContain('Why this?');
+    expect(fixture.nativeElement.querySelector('details.reason')).toBeNull();
+  });
+});
 
 
 describe('calculateDiscoveryTipPosition', () => {
@@ -65,7 +163,6 @@ describe('calculateDiscoveryTipPosition', () => {
       720
     );
 
-    // anchor center = 640, tip half = 160, so unclamped left = 480 which is within bounds
     expect(position.left).toBeGreaterThanOrEqual(16);
     expect(position.left).toBeLessThanOrEqual(1280 - 16);
   });

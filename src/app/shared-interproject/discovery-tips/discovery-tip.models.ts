@@ -43,13 +43,14 @@ export interface DiscoveryTipDefinition {
   anchorId: string;
   title: string;
   body: string;
-  reason?: string | ((snapshot: DiscoveryTipContextSnapshot) => string);
   placement?: DiscoveryTipPlacement;
   guidedTourOrder?: number;
   routePrefixes: string[];
   priority: number;
   audience: 'all' | 'signed-in';
   displayDelayMs?: number;
+  introducedAt: string;
+  minSpacingMs?: number;
   maxShowCount?: number;
   snoozeDurationMs?: number;
   completionActions?: string[];
@@ -59,12 +60,23 @@ export interface DiscoveryTipDefinition {
 export interface DiscoveryTipActive {
   definition: DiscoveryTipDefinition;
   anchorElement: HTMLElement;
-  reason?: string;
   guidedStepIndex?: number;
   guidedStepTotal?: number;
 }
 
+export interface DiscoveryTipViewerState {
+  onboardingAt: string;
+  lastTipShownAt?: string;
+  lastShownTipId?: string;
+  tips: Record<string, DiscoveryTipStateRecord>;
+}
+
 export interface DiscoveryTipStorageShape {
+  schemaVersion: 2;
+  viewers: Record<string, DiscoveryTipViewerState>;
+}
+
+export interface LegacyDiscoveryTipStorageShape {
   viewers: Record<string, Record<string, DiscoveryTipStateRecord>>;
 }
 

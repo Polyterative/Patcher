@@ -25,12 +25,6 @@
     <div class="eyebrow">{{ tip.guidedStepLabel ?? 'Helpful tip' }}</div>
     <div class="title">{{ tip.title }}</div>
     <div class="body">{{ tip.body }}</div>
-    @if (tip.reason) {
-      <details class="reason">
-        <summary>Why this?</summary>
-        <p>{{ tip.reason }}</p>
-      </details>
-    }
 
     <div class="actions">
       @if (tip.isGuided) {
