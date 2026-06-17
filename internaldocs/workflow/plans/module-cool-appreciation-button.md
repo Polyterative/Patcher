@@ -1,54 +1,158 @@
 <!-- Auto-split from TODO.md by scripts/dev/split-todo.cjs. -->
 <!-- Section: INFRA (independent; pick any time a product task is blocked) -->
 
-#### LOW: Module — "Cool" appreciation button
+#### LOW: Cross-entity Cool reactions
 
-**Why:** Users want a lightweight, low-commitment way to bookmark a module they find
-interesting or aesthetically appealing — separate from ownership intent. "I think this is
-cool" is not "I want to buy it" and not "I own it". It is a pure appreciation signal,
-useful for personal curation and potentially for community interest signals later.
+**Why:** Users need a lightweight, expressive way to say "this is cool" about modules, racks, patches, and future content
+objects. Cool is intentionally closer to how people actually talk than enterprise terms like "notable" or "appreciation".
+It is separate from ownership intent: "I think this is cool" is not "I want to buy it", "I own it", or "I endorse the
+author". It is both personal curation and a useful aggregate discovery signal.
 
-**Product concept:**
-- A single tap button on the module card/detail (edit mode not required — visible to any
-  logged-in user on any module page).
-- Label/icon: something expressive and playful — e.g. a spark/star/flame icon, not a
-  thumbs-up (too generic). Animation on tap: small burst/pop effect (similar to the iOS
-  like animation pattern).
-- Togglable: tap again to un-cool.
-- Count visible publicly on the module (e.g. `✦ 42`) so it doubles as a community signal.
-- The personal state (did *I* cool this?) is private per user.
+**Product principle update:** Cool reactions are allowed. Patcher still should not become a generic social network with
+follows, friend graphs, streaks, or profile leaderboards, but content-level reactions are in scope when they make the tool
+more useful and more alive.
 
-**DB approach (minimal schema change):**
-Add `COOL` to the existing `"user module possession"` Postgres enum on `user_modules.kind`.
-Current enum: `HAS | WANTS | SELLS` → becomes `HAS | WANTS | SELLS | COOL`.
-This means a user can have exactly one kind per module row (the PK is `user_id + module_id`).
-**Open question:** should a user be able to mark a module as both `COOL` and `WANTS`
-simultaneously? With the current single-kind model they cannot. Decide before implementing:
-- **Option A (simple):** `COOL` is exclusive like the others — if you mark cool, it replaces
-  any existing kind. Simplest, lowest risk.
-- **Option B (additive):** `COOL` lives in a separate `user_module_appreciations` table so
-  it is independent of possession state. More flexible, requires a new table.
-*Recommendation: start with Option A for MVP; migrate to B if the use case demands it.*
+## Product concept
 
-**Requires explicit user approval** before any DB enum change or migration (per `AGENTS.md §5`).
+- A single-tap **Cool** button on eligible modules, racks, patches, and later other content objects.
+- The interaction should be **delightful and uniquely Patcher**: immediate state change, satisfying press feedback, and a
+  small tasteful burst/pop animation inspired by social likes without copying generic heart/thumb behavior.
+- Togglable: tap once to cool, tap again to un-cool.
+- Public aggregate count can be shown where it helps discovery.
+- Personal state is private: other users can see that an entity is cool to the community, not exactly who cooled it.
+- Users can review their own cooled items in a dedicated user-area surface, similar in spirit to owned/wanted/for-sale
+  module collections.
 
-**Checklist (do not implement until design questions resolved):**
+## MVP / Structural / Polish layers
 
-- [ ] Decide Option A vs B with product owner.
-- [ ] If Option A: add `COOL` to the `"user module possession"` enum via migration
-      (requires approval). Update `UserModulePossessionKind` type and generated DB types.
-- [ ] Add `backend.update.userModulePossession(moduleId, 'COOL' | null)` action (reuses
-      existing upsert pattern in `ModuleDetailDataService`).
-- [ ] Add the Cool button to `module-minimal` (and/or module detail) alongside the existing
-      `HAS | WANTS | SELLS` toggle group — visually distinct (not part of the segmented
-      control, separate smaller affordance).
-- [ ] Tap animation: CSS keyframe burst or Angular animation on the button icon.
-- [ ] Public cool count: aggregate query or cached counter on the module row.
-- [ ] Unit-test the toggle action and the count display.
+### MVP
+
+- Modules and public racks are reactable.
+- Signed-in users can toggle Cool.
+- Anonymous users can see public counts where the surface already supports aggregate stats.
+- User area gets a Cool collection view grouped by entity type.
+- No homepage discovery section yet; keep the first slice focused on the core data path and interaction.
+
+### Structural
+
+- Add patches as a reactable entity.
+- Add batch count reads for list/card surfaces.
+- Add browser sort/filter support such as "Cool" or "Most cool" where it helps discovery.
+- Make Cool available to reusable entity card/detail patterns instead of one-off module/rack wiring.
+
+### Polish
+
+- Add a homepage or browse-surface showcase for cool entities.
+- Introduce a public-safe discovery RPC/materialized snapshot if live count sorting becomes expensive.
+- Refine the tap animation and responsive touch behavior after screenshot review.
+
+## Data model
+
+Use a new polymorphic table rather than extending `user_modules.kind`.
+
+Do **not** add `COOL` to the existing `HAS | WANTS | SELLS` module possession model. Cool must be additive: a user can own
+a module and think it is cool at the same time. It also needs to work for racks and patches, which are not module
+possession records.
+
+Recommended tables:
+
+- `reactions`
+  - `user_id uuid`
+  - `entity_type smallint` or equivalent shared enum value
+  - `entity_id bigint`
+  - `kind text default 'COOL'`
+  - `created_at timestamptz default now()`
+  - unique key on `(user_id, entity_type, entity_id, kind)`
+- `reaction_counts`
+  - `entity_type`
+  - `entity_id`
+  - `kind`
+  - `total`
+  - `updated_at`
+
+Default behavior:
+
+- One active Cool row per user/entity.
+- `created_at` records when the user first cooled the entity.
+- Un-cool deletes the row.
+- If full press-by-press analytics are needed later, capture toggle events through the analytics pipeline instead of making
+  the operational table append-only.
+
+## Privacy and eligibility
+
+- Modules are globally reactable.
+- Racks and patches are reactable only when public.
+- If a public rack/patch later becomes private, public discovery/count surfaces must stop exposing it.
+- Users may cool their own public rack/patch unless product later decides otherwise.
+- Public views show aggregate counts only; no "who cooled this" list in the initial feature.
+
+**Requires explicit user approval** before any migration, RLS, policy, or SECURITY DEFINER RPC work.
+
+## Backend/service plan
+
+- Read `internaldocs/patterns/BACKEND_METHODS.md` schema-change preflight before writing SQL.
+- Register `reactions` and `reaction_counts` in `DatabaseStrings.ts`.
+- Add generated Supabase types with `pnpm updateBackendTypes` after migration.
+- Add backend methods through `SupabaseService` only:
+  - `add.reaction(entityType, entityId, kind = 'COOL')`
+  - `delete.reaction(entityType, entityId, kind = 'COOL')`
+  - `get.currentUserReactions(entityType?, kind = 'COOL')`
+  - `get.reactionCount(entityType, entityId, kind = 'COOL')`
+  - `get.reactionCountsForEntities(entityType, entityIds, kind = 'COOL')`
+- Add cache keys for reaction state, reaction counts, current-user reactions, and future reaction discovery.
+- Bust all reaction caches after add/delete.
+- Avoid N+1 queries: list surfaces should batch counts and share the current user's reaction state.
+
+## UI plan
+
+- Create a shared Cool button component with component-scoped data service.
+- Inputs should include entity type, entity id, public/eligible state, and count display mode.
+- Components must not call `SupabaseService` directly.
+- Button copy:
+  - Off: "Cool"
+  - On: "Cooled"
+  - Tooltip/ARIA off: "Mark as cool"
+  - Tooltip/ARIA on: "Remove cool"
+- Icon direction: expressive but not generic. Evaluate Material icons such as `auto_awesome`, `flare`, `bolt`, or a custom
+  in-system treatment if Material cannot carry the right character. Avoid thumbs-up; it is too generic.
+- Cards: compact always-visible icon button; no hover-only affordance.
+- Detail pages: larger action in the existing action area, with count if the surrounding stats pattern supports it.
+- User area: add a Cool view grouped by Modules / Racks / Patches, newest first, with inline remove action and no
+  confirmation dialog.
+
+## Delight requirements
+
+- Cool must feel satisfying, not administrative.
+- State should flip immediately, then rollback on backend error with a snackbar.
+- Press feedback should be short, functional, and characterful: burst/pop/radiating accent, under 150ms unless there is a
+  strong reason.
+- Respect `prefers-reduced-motion`.
+- No decorative idle animation.
+- Touch target must be large enough on mobile/tablet; never rely on hover.
+
+## Discovery plan
+
+- Use aggregate Cool counts to help users find interesting modules/racks/patches.
+- Copy can be direct and human: "Cool modules", "Cool racks", "People think this is cool".
+- Avoid profile leaderboards and creator-status rankings.
+- Hide weak-signal discovery sections below a minimum threshold rather than showing fake precision.
+- Public discovery must only include public-safe entities.
+
+## Testing / validation
+
+- Unit-test Cool button state, optimistic toggle, rollback, disabled/loading state, and ARIA state.
+- Unit-test backend methods and cache busting.
+- Unit-test user-area Cool grouping and newest-first ordering.
+- Add auth E2E coverage: user A cools a module/rack, user B sees the aggregate count, user A sees it in Cool, un-cooling
+  removes it.
+- Run targeted `pnpm test-headless --include=...`, then `pnpm lint`.
+- For visual polish, use the Patcher UI debug screenshot workflow before considering the interaction done.
 
 ---
 
 ## Decision log
 
-<!-- Append timestamped one-liners as the plan progresses. -->
-
+- 2026-06-17: Keep the product term **Cool**. Do not rename to "Notable"; the interaction should feel human, playful, and
+  delightful while staying content-scoped rather than social-graph-driven.
+- 2026-06-17: Supersede the old module-only enum idea. Cool needs a separate polymorphic reactions table so it remains
+  additive to ownership/wishlist/sale state and can support racks, patches, and future entities.

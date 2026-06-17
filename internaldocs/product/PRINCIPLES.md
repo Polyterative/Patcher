@@ -13,9 +13,10 @@ the marketplace, the price hub, and collection-aware patch discovery simultaneou
 
 The solo core must never regress. Users who never make anything public should still get full value from the tool.
 
-**Hard boundary:** Patcher is not becoming a social network. No follows, no friend graphs, no likes.
-The community layer exists to make the tool more useful — not to create engagement loops. Features that require a social
-graph are out of scope indefinitely.
+**Hard boundary:** Patcher is not becoming a generic social network. No follows or friend graphs. Lightweight reactions
+can exist when they are attached to concrete content and make the tool more useful: personal curation, aggregate discovery,
+or catalogue insight. They should feel human and delightful, but they must not require a social graph or turn into
+creator-status loops.
 
 **Comments are in scope — on content, not on people.** Comments on patches, racks, and modules already exist and are a
 live feature. They add direct utility: questions about a patch, corrections to module data, feedback on a rack layout.
@@ -165,8 +166,8 @@ This creates four rules:
    insight. Do not render precise-looking charts from weak signal.
 3. **Interpretation beats raw dashboards.** Visuals should be paired with plain-language explanation and, where useful, a
    route back to the underlying browse surface.
-4. **No gamified status loops.** No leaderboards, streaks, or popularity mechanics. Contributor or community stats can exist
-   as trust/context signals without becoming competitive scoring.
+4. **No gamified status loops.** No leaderboards, streaks, or profile-ranking mechanics. Content-level signals such as Cool
+   counts can exist when they help discovery or personal curation, but they should not become competitive scoring.
 
 This is the same product instinct behind advisory surfaces such as rack balance analysis: visually compelling, grounded in
 real data, explicit about uncertainty, and helpful without pretending the system has perfect knowledge.
