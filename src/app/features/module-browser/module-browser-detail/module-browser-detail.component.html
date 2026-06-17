@@ -14,7 +14,7 @@
   >
     <lib-hero-content-card class="modulesBG module-browser-detail__header"
                            titleBig="Module details"
-                           [titleSub]="getModuleDetailTitleSub($safeNavigationMigration(bag.data?.name), bag.currentModulePossession)"
+                           [titleSub]="getModuleDetailTitleSub(bag.data?.name, bag.currentModulePossession)"
       >
         <div class="module-detail-layout"
              [@moduleDetailModeTransition]="!!bag.editing"
@@ -440,10 +440,10 @@
                     [updateData$]="dataService.updateSingleModuleData$"
                     [items]="bag.racksWithThisModule"
                     entityType="rack"
-                    [showHiddenUsageNote]="hasHiddenUsage($safeNavigationMigration(bag.moduleUsageSummary?.hidden_rack_bucket))"
-                    [hiddenUsageSupplementCopy]="getHiddenUsageSupplementCopy('rack', $safeNavigationMigration(bag.moduleUsageSummary?.hidden_rack_bucket))"
+                    [showHiddenUsageNote]="hasHiddenUsage(bag.moduleUsageSummary?.hidden_rack_bucket)"
+                    [hiddenUsageSupplementCopy]="getHiddenUsageSupplementCopy('rack', bag.moduleUsageSummary?.hidden_rack_bucket)"
                     [usagePendingCopy]="getUsagePendingCopy('rack')"
-                    [noPublicUsageCopy]="getNoPublicUsageCopy('rack', $safeNavigationMigration(bag.moduleUsageSummary?.hidden_rack_bucket))"
+                    [noPublicUsageCopy]="getNoPublicUsageCopy('rack', bag.moduleUsageSummary?.hidden_rack_bucket)"
                     [isUsageSummaryLoaded]="bag.moduleUsageSummary != null"
                     [animationDelay]="680"
                   ></app-module-usage-card>
@@ -455,10 +455,10 @@
                     [updateData$]="dataService.updateSingleModuleData$"
                     [items]="bag.patchesWithThisModule"
                     entityType="patch"
-                    [showHiddenUsageNote]="hasHiddenUsage($safeNavigationMigration(bag.moduleUsageSummary?.hidden_patch_bucket))"
-                    [hiddenUsageSupplementCopy]="getHiddenUsageSupplementCopy('patch', $safeNavigationMigration(bag.moduleUsageSummary?.hidden_patch_bucket))"
+                    [showHiddenUsageNote]="hasHiddenUsage(bag.moduleUsageSummary?.hidden_patch_bucket)"
+                    [hiddenUsageSupplementCopy]="getHiddenUsageSupplementCopy('patch', bag.moduleUsageSummary?.hidden_patch_bucket)"
                     [usagePendingCopy]="getUsagePendingCopy('patch')"
-                    [noPublicUsageCopy]="getNoPublicUsageCopy('patch', $safeNavigationMigration(bag.moduleUsageSummary?.hidden_patch_bucket))"
+                    [noPublicUsageCopy]="getNoPublicUsageCopy('patch', bag.moduleUsageSummary?.hidden_patch_bucket)"
                     [isUsageSummaryLoaded]="bag.moduleUsageSummary != null"
                     [animationDelay]="730"
                   ></app-module-usage-card>

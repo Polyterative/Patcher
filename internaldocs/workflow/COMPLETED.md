@@ -3,6 +3,8 @@
 > Archive of finished work. One-line summaries only. For strategy context see `../product/PRINCIPLES.md` and
 > `../product/ROADMAP.md`.
 
+- **2026-06-17** — LOW: Angular — safe-navigation migration wrappers are removed from patch-editor and module-detail templates with equivalent optional-chain/nullish expressions, leaving no `$safeNavigationMigration` usages in app templates.
+
 - **2026-06-17** — HIGH: User Area — Helpful tips now remove the "Why this?" disclosure, throttle automatic tips to one per visit with spacing, and persist viewer baselines so existing users only receive newly introduced tips.
 
 - **2026-06-17** — MEDIUM: Module tags — colour lookup coherence now maps missing timing, utility, and voice database tags through the canonical rack-balance axes, keeps Nature / Character tags neutral, and aligns module tag tinting plus description keyword highlights with rack function classification (commit `2bb65c2c`).
