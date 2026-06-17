@@ -1,18 +1,24 @@
 import { Router } from '@angular/router';
-import { of } from 'rxjs';
+import {
+  BehaviorSubject,
+  of,
+  ReplaySubject
+} from 'rxjs';
 import {
   isUsernameComplete,
   UsernameCompleteGuard
 } from './username-complete-guard.service';
+import { UserManagementService } from './user-management.service';
 
 
 function buildGuard(username: string | null | undefined) {
   const mockUserManagementService = {
-    loggedUserFullProfile$: of(username !== undefined ? {username} : undefined)
+    loggedUserFullProfile$: of(username !== undefined ? {username} : undefined),
+    profileRestored$: of(true)
   };
   const mockRouter = jasmine.createSpyObj<Router>('Router', ['navigate']);
   return {
-    guard: new UsernameCompleteGuard(mockUserManagementService as any, mockRouter),
+    guard: new UsernameCompleteGuard(mockUserManagementService as unknown as UserManagementService, mockRouter),
     router: mockRouter
   };
 }
@@ -80,5 +86,47 @@ describe('UsernameCompleteGuard', () => {
       expect(result).toBeTrue();
       done();
     });
+  });
+
+  it('waits for profile restoration before checking username', (done) => {
+    const loggedUserFullProfile$ = new ReplaySubject<{ username: string }>(1);
+    const profileRestored$ = new BehaviorSubject<boolean>(false);
+    const router = jasmine.createSpyObj<Router>('Router', ['navigate']);
+    const guard = new UsernameCompleteGuard(
+      {loggedUserFullProfile$, profileRestored$} as unknown as UserManagementService,
+      router
+    );
+
+    guard.canActivate().subscribe(result => {
+      expect(result).toBeTrue();
+      expect(router.navigate).not.toHaveBeenCalled();
+      done();
+    });
+
+    loggedUserFullProfile$.next({username: 'alice'});
+    expect(router.navigate).not.toHaveBeenCalled();
+
+    profileRestored$.next(true);
+  });
+
+  it('waits for profile restoration before redirecting for a missing profile', (done) => {
+    const loggedUserFullProfile$ = new ReplaySubject<{ username: string } | undefined>(1);
+    const profileRestored$ = new BehaviorSubject<boolean>(false);
+    const router = jasmine.createSpyObj<Router>('Router', ['navigate']);
+    const guard = new UsernameCompleteGuard(
+      {loggedUserFullProfile$, profileRestored$} as unknown as UserManagementService,
+      router
+    );
+
+    guard.canActivate().subscribe(result => {
+      expect(result).toBeFalse();
+      expect(router.navigate).toHaveBeenCalledWith(['/auth/complete-profile']);
+      done();
+    });
+
+    loggedUserFullProfile$.next(undefined);
+    expect(router.navigate).not.toHaveBeenCalled();
+
+    profileRestored$.next(true);
   });
 });
