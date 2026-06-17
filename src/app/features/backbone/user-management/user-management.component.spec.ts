@@ -1,5 +1,4 @@
 import { FormControl, FormGroup } from '@angular/forms';
-import { of, throwError } from 'rxjs';
 import {
   confirmMatchesNewValidator,
   UserManagementComponent
@@ -17,7 +16,8 @@ function makeGroup(newPassword: string, confirmPassword: string) {
 function makeUserManagementMock() {
   return {
     changePassword$: { next: jasmine.createSpy('next') },
-    updateUsername$: jasmine.createSpy('updateUsername$').and.returnValue(of(void 0))
+    updateUsernameAction$: { next: jasmine.createSpy('next') },
+    toggleUsernameForm$: { next: jasmine.createSpy('next') }
   } as any;
 }
 
@@ -25,21 +25,11 @@ function makeSeoMock() {
   return { updateSeo: jasmine.createSpy('updateSeo') } as any;
 }
 
-function makeCdrMock() {
-  return { markForCheck: jasmine.createSpy('markForCheck') } as any;
-}
-
-function makeNgZoneMock() {
-  return { run: (fn: () => void) => fn() } as any;
-}
-
 function makeComp(
   userMgmt = makeUserManagementMock(),
-  seo = makeSeoMock(),
-  cdr = makeCdrMock(),
-  ngZone = makeNgZoneMock()
+  seo = makeSeoMock()
 ): UserManagementComponent {
-  return new UserManagementComponent(userMgmt, seo, cdr, ngZone);
+  return new UserManagementComponent(userMgmt, seo);
 }
 
 // ─── confirmMatchesNewValidator ───────────────────────────────────────────────
@@ -182,6 +172,33 @@ describe('UserManagementComponent', () => {
       comp.cancelUsernameEdit();
       expect(comp.usernameControl.value).toBe('');
     });
+
+    it('hides the username form through the service toggle', () => {
+      const userMgmt = makeUserManagementMock();
+      const comp = makeComp(userMgmt);
+      comp.cancelUsernameEdit();
+      expect(userMgmt.toggleUsernameForm$.next).toHaveBeenCalledOnceWith(false);
+    });
+  });
+
+  describe('canSubmitUsernameChange', () => {
+    it('returns false when usernameControl is invalid', () => {
+      const comp = makeComp();
+      comp.usernameControl.setValue('ab');
+      expect(comp.canSubmitUsernameChange('alice')).toBeFalse();
+    });
+
+    it('returns false when trimmed value equals current username', () => {
+      const comp = makeComp();
+      comp.usernameControl.setValue('alice');
+      expect(comp.canSubmitUsernameChange('alice')).toBeFalse();
+    });
+
+    it('returns true when valid and changed', () => {
+      const comp = makeComp();
+      comp.usernameControl.setValue('bob');
+      expect(comp.canSubmitUsernameChange('alice')).toBeTrue();
+    });
   });
 
   describe('submitUsernameChange', () => {
@@ -190,7 +207,7 @@ describe('UserManagementComponent', () => {
       const comp = makeComp(userMgmt);
       comp.usernameControl.setValue('ab'); // too short (min 3)
       comp.submitUsernameChange('alice');
-      expect(userMgmt.updateUsername$).not.toHaveBeenCalled();
+      expect(userMgmt.updateUsernameAction$.next).not.toHaveBeenCalled();
     });
 
     it('does nothing when trimmed value equals current username', () => {
@@ -198,36 +215,30 @@ describe('UserManagementComponent', () => {
       const comp = makeComp(userMgmt);
       comp.usernameControl.setValue('alice');
       comp.submitUsernameChange('alice');
-      expect(userMgmt.updateUsername$).not.toHaveBeenCalled();
+      expect(userMgmt.updateUsernameAction$.next).not.toHaveBeenCalled();
     });
 
-    it('calls updateUsername$ with new value when valid and changed', () => {
+    it('emits updateUsernameAction$ with new value when valid and changed', () => {
       const userMgmt = makeUserManagementMock();
       const comp = makeComp(userMgmt);
       comp.usernameControl.setValue('bob');
       comp.submitUsernameChange('alice');
-      expect(userMgmt.updateUsername$).toHaveBeenCalledOnceWith('bob');
+      expect(userMgmt.updateUsernameAction$.next).toHaveBeenCalledOnceWith('bob');
     });
 
-    it('calls cancelUsernameEdit and cdr.markForCheck on success', () => {
+    it('trims the submitted username', () => {
       const userMgmt = makeUserManagementMock();
-      const cdr = makeCdrMock();
-      const comp = makeComp(userMgmt, makeSeoMock(), cdr);
-      comp.usernameControl.setValue('bob');
-      comp.editingUsername = true;
-      comp.submitUsernameChange('alice');
-      expect(comp.editingUsername).toBeFalse();
-      expect(cdr.markForCheck).toHaveBeenCalled();
-    });
-
-    it('handles error without rethrowing', () => {
-      const userMgmt = makeUserManagementMock();
-      userMgmt.updateUsername$ = jasmine.createSpy().and.returnValue(
-        throwError(() => new Error('network'))
-      );
       const comp = makeComp(userMgmt);
-      comp.usernameControl.setValue('bob');
-      expect(() => comp.submitUsernameChange('alice')).not.toThrow();
+      comp.usernameControl.setValue('  bob  ');
+      comp.submitUsernameChange('alice');
+      expect(userMgmt.updateUsernameAction$.next).toHaveBeenCalledOnceWith('bob');
+    });
+
+    it('marks usernameControl touched when invalid submit is attempted', () => {
+      const comp = makeComp();
+      comp.usernameControl.setValue('ab');
+      comp.submitUsernameChange('alice');
+      expect(comp.usernameControl.touched).toBeTrue();
     });
   });
 

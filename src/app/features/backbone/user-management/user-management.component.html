@@ -19,12 +19,56 @@
               <div class="account-body">
                 <div class="col gap1 account-sections"
                 >
-                  <div class="row gap1 section-surface" fxLayoutAlign="start center">
-                    <app-label-value-showcase label="Display Name"
-                                              fxFlex="grow"
-                    >{{ bag.userProfile.username }}
-                    </app-label-value-showcase>
-                  </div>
+                  @if (userManagementService.showUsernameForm$ | async) {
+                    <form class="col gap1 section-surface"
+                          (ngSubmit)="submitUsernameChange(bag.userProfile.username)"
+                    >
+                      <mat-form-field appearance="outline">
+                        <mat-label>Display name</mat-label>
+                        <input matInput
+                               [formControl]="usernameControl"
+                               autocomplete="username"
+                               enterkeyhint="done"
+                        >
+                        <mat-error *ngIf="usernameControl.hasError('required')">Display name is required</mat-error>
+                        <mat-error *ngIf="usernameControl.hasError('minlength')">At least 3 characters required</mat-error>
+                        <mat-error *ngIf="usernameControl.hasError('maxlength')">Use 30 characters or fewer</mat-error>
+                        <mat-error *ngIf="usernameControl.hasError('pattern')">Use letters, numbers, underscores, or hyphens</mat-error>
+                      </mat-form-field>
+                      <div class="row gap1">
+                        <button mat-raised-button
+                                class="primary-action"
+                                color="primary"
+                                type="submit"
+                                [disabled]="!canSubmitUsernameChange(bag.userProfile.username)"
+                        >
+                          <mat-icon>check_circle</mat-icon>
+                          Save display name
+                        </button>
+                        <button mat-stroked-button
+                                type="button"
+                                (click)="cancelUsernameEdit()"
+                        >
+                          <mat-icon>close</mat-icon>
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  } @else {
+                    <div class="row gap1 section-surface" fxLayoutAlign="start center">
+                      <app-label-value-showcase label="Display Name"
+                                                fxFlex="grow"
+                      >{{ bag.userProfile.username }}
+                      </app-label-value-showcase>
+                      <app-brand-primary-button
+                        (click$)="beginUsernameEdit(bag.userProfile.username); userManagementService.toggleUsernameForm$.next(true)"
+                        icon="person"
+                        matTooltip="Change your display name directly without leaving this page"
+                        theme="primary"
+                      >Change
+                      </app-brand-primary-button>
+                    </div>
+                  }
                   <div class="section-surface">
                     <app-label-value-showcase label="Email Address">{{ bag.userProfile.email }}</app-label-value-showcase>
                   </div>

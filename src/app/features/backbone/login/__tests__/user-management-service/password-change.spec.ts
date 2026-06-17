@@ -14,11 +14,11 @@ import {
 
 
 /**
- * In-Session Password Change Tests
+ * In-session account form tests
  *
- * Tests for UserManagementService.changePassword$ and showPasswordForm$ toggle.
+ * Tests for UserManagementService password and username inline form toggles.
  */
-describe('UserManagementService - Password Change', () => {
+describe('UserManagementService - Account Form Changes', () => {
   let service: UserManagementService;
   let mockSnackBar: any;
   let mockSupabaseService: any;
@@ -53,6 +53,20 @@ describe('UserManagementService - Password Change', () => {
       
       expect(visible).toBe(true);
     }));
+
+    it('should hide the username form when password form opens', fakeAsync(() => {
+      let usernameVisible: boolean | undefined;
+      service.showUsernameForm$.subscribe(v => usernameVisible = v);
+
+      service.toggleUsernameForm$.next(true);
+      tick();
+      expect(usernameVisible).toBe(true);
+
+      service.togglePasswordForm$.next(true);
+      tick();
+
+      expect(usernameVisible).toBe(false);
+    }));
     
     it('should hide form when false is emitted after showing', fakeAsync(() => {
       let visible: boolean | undefined;
@@ -64,6 +78,51 @@ describe('UserManagementService - Password Change', () => {
       tick();
       
       expect(visible).toBe(false);
+    }));
+  });
+
+  describe('toggleUsernameForm$', () => {
+    it('should start with form hidden', fakeAsync(() => {
+      let visible: boolean | undefined;
+      service.showUsernameForm$.subscribe(v => visible = v);
+      tick();
+      expect(visible).toBe(false);
+    }));
+
+    it('should show form when true is emitted', fakeAsync(() => {
+      let visible: boolean | undefined;
+      service.showUsernameForm$.subscribe(v => visible = v);
+
+      service.toggleUsernameForm$.next(true);
+      tick();
+
+      expect(visible).toBe(true);
+    }));
+
+    it('should hide form when false is emitted after showing', fakeAsync(() => {
+      let visible: boolean | undefined;
+      service.showUsernameForm$.subscribe(v => visible = v);
+
+      service.toggleUsernameForm$.next(true);
+      tick();
+      service.toggleUsernameForm$.next(false);
+      tick();
+
+      expect(visible).toBe(false);
+    }));
+
+    it('should hide the password form when username form opens', fakeAsync(() => {
+      let passwordVisible: boolean | undefined;
+      service.showPasswordForm$.subscribe(v => passwordVisible = v);
+
+      service.togglePasswordForm$.next(true);
+      tick();
+      expect(passwordVisible).toBe(true);
+
+      service.toggleUsernameForm$.next(true);
+      tick();
+
+      expect(passwordVisible).toBe(false);
     }));
   });
   

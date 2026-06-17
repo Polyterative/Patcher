@@ -98,7 +98,11 @@ export class UserManagementService extends SubManager {
     newPassword: string
   }>();
   
-  // Password form toggle
+  // Account form toggles
+  private readonly _showUsernameForm$ = new BehaviorSubject<boolean>(false);
+  public readonly showUsernameForm$ = this._showUsernameForm$.asObservable();
+  public toggleUsernameForm$ = new Subject<boolean>();
+
   private readonly _showPasswordForm$ = new BehaviorSubject<boolean>(false);
   public readonly showPasswordForm$ = this._showPasswordForm$.asObservable();
   public togglePasswordForm$ = new Subject<boolean>();
@@ -133,6 +137,7 @@ export class UserManagementService extends SubManager {
     this.initializeUpdateUsernameHandler();
     this.initializeResetUserDataHandler();
     this.initializeDeleteAccountHandler();
+    this.initializeToggleUsernameFormHandler();
     this.initializeChangePasswordHandler();
     this.initializeTogglePasswordFormHandler();
     this.initializeSentryIdentityHandler();
@@ -503,10 +508,17 @@ export class UserManagementService extends SubManager {
         )
       ),
       // Refresh the user profile after successful update
-      switchMap((newUsername) => this.backend.auth.getRichUserSession$().pipe(map(profile => ({profile, newUsername})))),
+      switchMap((newUsername) => this.backend.auth.getRichUserSession$().pipe(
+        map(profile => ({profile, newUsername})),
+        catchError((error) => {
+          this.showOperationError(error);
+          return NEVER;
+        })
+      )),
       filter(({profile}) => !!profile),
       tap(({profile, newUsername}) => {
         this.publishRestoredProfile(profile);
+        this._showUsernameForm$.next(false);
         this.analytics.capture('account.username_changed', {});
         SharedConstants.successCustom(this.snackBar, `Username changed to "${ newUsername }" — your profile has been synced.`);
       }),
@@ -666,7 +678,24 @@ export class UserManagementService extends SubManager {
   
   private initializeTogglePasswordFormHandler(): void {
     this.togglePasswordForm$.pipe(
-      tap(show => this._showPasswordForm$.next(show)),
+      tap(show => {
+        this._showPasswordForm$.next(show);
+        if (show) {
+          this._showUsernameForm$.next(false);
+        }
+      }),
+      this.takeUntilDestroyed()
+    ).subscribe();
+  }
+
+  private initializeToggleUsernameFormHandler(): void {
+    this.toggleUsernameForm$.pipe(
+      tap(show => {
+        this._showUsernameForm$.next(show);
+        if (show) {
+          this._showPasswordForm$.next(false);
+        }
+      }),
       this.takeUntilDestroyed()
     ).subscribe();
   }
