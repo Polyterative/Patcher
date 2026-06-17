@@ -50,7 +50,6 @@
 - [ ] **LOW: Angular — Replace deprecated ngx-dropzone** → [`plans/angular-replace-deprecated-ngx-dropzone.md`](./plans/angular-replace-deprecated-ngx-dropzone.md)
 - [ ] **LOW: Angular — Migrate deprecated animations package usage** → [`plans/angular-migrate-deprecated-animations-package-usage.md`](./plans/angular-migrate-deprecated-animations-package-usage.md)
 - [ ] **LOW: Angular — Audit migration-added eager change detection** → [`plans/angular-audit-migration-added-eager-change-detection.md`](./plans/angular-audit-migration-added-eager-change-detection.md)
-- [ ] **LOW: Angular — Clean up safe-navigation migration wrappers** → [`plans/angular-clean-up-safe-navigation-migration-wrappers.md`](./plans/angular-clean-up-safe-navigation-migration-wrappers.md)
 - [ ] **LOW: Maintenance — Dependency deprecation audit** → [`plans/maintenance-dependency-deprecation-audit.md`](./plans/maintenance-dependency-deprecation-audit.md)
 - [ ] **HIGH: E2E — Dedicated Test Account Cleanup** → [`plans/e2e-dedicated-test-account-cleanup.md`](./plans/e2e-dedicated-test-account-cleanup.md)
 - [ ] **HIGH: E2E — Multi-Instance Patching** → [`plans/e2e-multi-instance-patching.md`](./plans/e2e-multi-instance-patching.md)
