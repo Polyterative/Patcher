@@ -3,11 +3,15 @@ import {
   DiscoveryTipContextSnapshot,
   DiscoveryTipDefinition,
   DiscoveryTipStateRecord,
-  DiscoveryTipStorageShape
+  DiscoveryTipStorageShape,
+  DiscoveryTipViewerState,
+  LegacyDiscoveryTipStorageShape
 } from './discovery-tip.models';
 import {
   DEFAULT_STORAGE_SHAPE,
-  DISCOVERY_TIP_STORAGE_KEY
+  DISCOVERY_TIP_NEW_VIEWER_BASELINE_AT,
+  DISCOVERY_TIP_STORAGE_KEY,
+  LEGACY_DISCOVERY_TIP_STORAGE_KEY
 } from './discovery-tip.constants';
 
 
@@ -48,34 +52,36 @@ export function guidedDiscoveryTips(definitions: DiscoveryTipDefinition[]): Disc
 export function buildDiscoveryTipActive(
   definition: DiscoveryTipDefinition,
   anchorElement: HTMLElement,
-  snapshot: DiscoveryTipContextSnapshot,
   guidedStepIndex?: number,
   guidedStepTotal?: number
 ): DiscoveryTipActive {
   return {
     definition,
     anchorElement,
-    reason: resolveTipReason(definition, snapshot),
     guidedStepIndex,
     guidedStepTotal
   };
 }
 
+export function emptyDiscoveryTipStorage(): DiscoveryTipStorageShape {
+  return {
+    schemaVersion: DEFAULT_STORAGE_SHAPE.schemaVersion,
+    viewers: {}
+  };
+}
+
 export function readDiscoveryTipStorage(isBrowser: boolean): DiscoveryTipStorageShape {
   if (!isBrowser) {
-    return DEFAULT_STORAGE_SHAPE;
+    return emptyDiscoveryTipStorage();
   }
 
-  try {
-    const rawValue = window.localStorage.getItem(DISCOVERY_TIP_STORAGE_KEY);
-    if (!rawValue) {
-      return DEFAULT_STORAGE_SHAPE;
-    }
-    const parsed = JSON.parse(rawValue) as DiscoveryTipStorageShape;
-    return parsed?.viewers ? parsed : DEFAULT_STORAGE_SHAPE;
-  } catch {
-    return DEFAULT_STORAGE_SHAPE;
+  const currentStorage = readCurrentDiscoveryTipStorage();
+  if (currentStorage) {
+    return currentStorage;
   }
+
+  const legacyStorage = readLegacyDiscoveryTipStorage();
+  return legacyStorage ? migrateLegacyDiscoveryTipStorage(legacyStorage) : emptyDiscoveryTipStorage();
 }
 
 export function writeDiscoveryTipStorage(
@@ -88,15 +94,139 @@ export function writeDiscoveryTipStorage(
   window.localStorage.setItem(DISCOVERY_TIP_STORAGE_KEY, JSON.stringify(storage));
 }
 
-function resolveTipReason(
-  definition: DiscoveryTipDefinition,
-  snapshot: DiscoveryTipContextSnapshot
-): string | undefined {
-  if (!definition.reason) {
-    return undefined;
+export function initializeDiscoveryTipViewerState(
+  definitions: DiscoveryTipDefinition[],
+  onboardingAt = DISCOVERY_TIP_NEW_VIEWER_BASELINE_AT,
+  tips: Record<string, DiscoveryTipStateRecord> = {}
+): DiscoveryTipViewerState {
+  return grandfatherDiscoveryTips({onboardingAt, tips}, definitions).viewerState;
+}
+
+export function ensureDiscoveryTipViewerState(
+  storage: DiscoveryTipStorageShape,
+  viewerKey: string,
+  definitions: DiscoveryTipDefinition[],
+  onboardingAt = DISCOVERY_TIP_NEW_VIEWER_BASELINE_AT
+): {storage: DiscoveryTipStorageShape; viewerState: DiscoveryTipViewerState; changed: boolean} {
+  const existingViewerState = storage.viewers[viewerKey];
+  if (!existingViewerState) {
+    const viewerState = initializeDiscoveryTipViewerState(definitions, onboardingAt);
+    return {
+      storage: {
+        ...storage,
+        viewers: {
+          ...storage.viewers,
+          [viewerKey]: viewerState
+        }
+      },
+      viewerState,
+      changed: true
+    };
   }
 
-  return typeof definition.reason === 'function'
-    ? definition.reason(snapshot)
-    : definition.reason;
+  const grandfathered = grandfatherDiscoveryTips(existingViewerState, definitions);
+  if (!grandfathered.changed) {
+    return {storage, viewerState: existingViewerState, changed: false};
+  }
+
+  return {
+    storage: {
+      ...storage,
+      viewers: {
+        ...storage.viewers,
+        [viewerKey]: grandfathered.viewerState
+      }
+    },
+    viewerState: grandfathered.viewerState,
+    changed: true
+  };
+}
+
+export function grandfatherDiscoveryTips(
+  viewerState: DiscoveryTipViewerState,
+  definitions: DiscoveryTipDefinition[]
+): {viewerState: DiscoveryTipViewerState; changed: boolean} {
+  const onboardingTime = new Date(viewerState.onboardingAt).getTime();
+  if (Number.isNaN(onboardingTime)) {
+    return {viewerState, changed: false};
+  }
+
+  let changed = false;
+  const nextTips = {...viewerState.tips};
+  definitions.forEach((definition) => {
+    const introducedTime = new Date(definition.introducedAt).getTime();
+    if (Number.isNaN(introducedTime) || introducedTime > onboardingTime) {
+      return;
+    }
+
+    const currentTipState = nextTips[definition.id];
+    if (currentTipState?.learnedAt && currentTipState.version === definition.version) {
+      return;
+    }
+
+    nextTips[definition.id] = {
+      ...currentTipState,
+      version: definition.version,
+      shownCount: currentTipState?.shownCount ?? 0,
+      learnedAt: currentTipState?.learnedAt ?? viewerState.onboardingAt
+    };
+    changed = true;
+  });
+
+  if (!changed) {
+    return {viewerState, changed: false};
+  }
+
+  return {
+    viewerState: {
+      ...viewerState,
+      tips: nextTips
+    },
+    changed: true
+  };
+}
+
+function readCurrentDiscoveryTipStorage(): DiscoveryTipStorageShape | null {
+  try {
+    const rawValue = window.localStorage.getItem(DISCOVERY_TIP_STORAGE_KEY);
+    if (!rawValue) {
+      return null;
+    }
+
+    const parsed = JSON.parse(rawValue) as Partial<DiscoveryTipStorageShape> | null;
+    return parsed?.schemaVersion === 2 && parsed.viewers ? parsed as DiscoveryTipStorageShape : null;
+  } catch {
+    return null;
+  }
+}
+
+function readLegacyDiscoveryTipStorage(): LegacyDiscoveryTipStorageShape | null {
+  try {
+    const rawValue = window.localStorage.getItem(LEGACY_DISCOVERY_TIP_STORAGE_KEY);
+    if (!rawValue) {
+      return null;
+    }
+
+    const parsed = JSON.parse(rawValue) as Partial<LegacyDiscoveryTipStorageShape> | null;
+    return parsed?.viewers ? parsed as LegacyDiscoveryTipStorageShape : null;
+  } catch {
+    return null;
+  }
+}
+
+function migrateLegacyDiscoveryTipStorage(legacyStorage: LegacyDiscoveryTipStorageShape): DiscoveryTipStorageShape {
+  const onboardingAt = new Date().toISOString();
+  return {
+    schemaVersion: 2,
+    viewers: Object.entries(legacyStorage.viewers).reduce<Record<string, DiscoveryTipViewerState>>(
+      (viewers, [viewerKey, tips]) => ({
+        ...viewers,
+        [viewerKey]: {
+          onboardingAt,
+          tips: {...tips}
+        }
+      }),
+      {}
+    )
+  };
 }

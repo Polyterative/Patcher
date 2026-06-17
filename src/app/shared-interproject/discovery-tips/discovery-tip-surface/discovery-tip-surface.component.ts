@@ -151,7 +151,6 @@ export class DiscoveryTipSurfaceComponent extends SubManager implements OnInit {
       ...position,
       title: activeTip.definition.title,
       body: activeTip.definition.body,
-      reason: activeTip.reason,
       guidedStepLabel,
       isGuided: !!activeTip.guidedStepTotal,
       isLastGuidedStep: activeTip.guidedStepIndex === activeTip.guidedStepTotal,

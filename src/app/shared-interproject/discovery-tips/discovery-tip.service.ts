@@ -22,9 +22,11 @@ import {
   DiscoveryTipContextSnapshot,
   DiscoveryTipDefinition,
   DiscoveryTipStateRecord,
+  DiscoveryTipViewerState,
   DiscoveryTipUserAreaSnapshot
 } from './discovery-tip.models';
 import {
+  DEFAULT_TIP_SPACING_MS,
   DEFAULT_GLOBAL_DISCOVERY_TIP_PAUSE_MS,
   DISCOVERY_TIP_GLOBAL_PAUSE_ID,
   DISCOVERY_TIP_STORAGE_KEY
@@ -32,7 +34,9 @@ import {
 import {
   buildDiscoveryTipActive,
   canShowTipOnCurrentRoute,
+  ensureDiscoveryTipViewerState,
   guidedDiscoveryTips,
+  initializeDiscoveryTipViewerState,
   isSnoozed,
   normalizeTipState,
   readDiscoveryTipStorage,
@@ -52,7 +56,9 @@ export class DiscoveryTipService extends SubManager {
   private readonly _viewerKey$ = new BehaviorSubject<string>('guest');
   private readonly _isLoggedIn$ = new BehaviorSubject<boolean>(false);
   private readonly _anchorsRevision$ = new BehaviorSubject<number>(0);
-  private readonly _tipStates$ = new BehaviorSubject<Record<string, DiscoveryTipStateRecord>>({});
+  private readonly _viewerState$ = new BehaviorSubject<DiscoveryTipViewerState>(
+    initializeDiscoveryTipViewerState(discoveryTipRegistry)
+  );
   private readonly _sessionActions$ = new BehaviorSubject<Record<string, number>>({});
   private readonly _userAreaSnapshot$ = new BehaviorSubject<DiscoveryTipUserAreaSnapshot>(defaultDiscoveryTipUserAreaSnapshot);
 
@@ -60,6 +66,7 @@ export class DiscoveryTipService extends SubManager {
   private queueTimer: ReturnType<typeof setTimeout> | undefined;
   private guidedTourActive = false;
   private guidedTourIndex = 0;
+  private automaticTipShownThisVisit = false;
 
   readonly activeTip$ = this._activeTip$.asObservable();
 
@@ -72,7 +79,7 @@ export class DiscoveryTipService extends SubManager {
     this.isBrowser = isPlatformBrowser(platformId);
 
     this._route$.next(this.router.url ?? '');
-    this._tipStates$.next(this.readViewerTipStates('guest'));
+    this._viewerState$.next(this.readViewerState('guest'));
 
     combineLatest([
       this.userManagementService.loggedUser$.pipe(startWith(undefined)),
@@ -84,10 +91,11 @@ export class DiscoveryTipService extends SubManager {
       this._isLoggedIn$.next(!!user);
       if (this._viewerKey$.value !== viewerKey) {
         this._viewerKey$.next(viewerKey);
-        this._tipStates$.next(this.readViewerTipStates(viewerKey));
+        this._viewerState$.next(this.readViewerState(viewerKey));
         this._sessionActions$.next({});
         this.guidedTourActive = false;
         this.guidedTourIndex = 0;
+        this.automaticTipShownThisVisit = false;
         this._activeTip$.next(null);
       }
     });
@@ -99,6 +107,7 @@ export class DiscoveryTipService extends SubManager {
       this.clearQueuedTip();
       this.guidedTourActive = false;
       this.guidedTourIndex = 0;
+      this.automaticTipShownThisVisit = false;
       this._activeTip$.next(null);
       this._route$.next(event.urlAfterRedirects);
     });
@@ -108,7 +117,7 @@ export class DiscoveryTipService extends SubManager {
       this._viewerKey$,
       this._isLoggedIn$,
       this._anchorsRevision$,
-      this._tipStates$,
+      this._viewerState$,
       this._sessionActions$,
       this._userAreaSnapshot$,
     ]).pipe(
@@ -204,8 +213,9 @@ export class DiscoveryTipService extends SubManager {
 
   pauseAllTips(durationMs = DEFAULT_GLOBAL_DISCOVERY_TIP_PAUSE_MS): void {
     const pausedUntil = new Date(Date.now() + durationMs).toISOString();
+    const viewerState = this._viewerState$.value;
     const nextStates = {
-      ...this._tipStates$.value,
+      ...viewerState.tips,
       [DISCOVERY_TIP_GLOBAL_PAUSE_ID]: {
         version: 1,
         shownCount: 0,
@@ -213,8 +223,10 @@ export class DiscoveryTipService extends SubManager {
       }
     };
 
-    this._tipStates$.next(nextStates);
-    this.persistViewerTipStates(this._viewerKey$.value, nextStates);
+    this.updateViewerState({
+      ...viewerState,
+      tips: nextStates
+    });
     this.clearQueuedTip();
     this._activeTip$.next(null);
   }
@@ -258,6 +270,12 @@ export class DiscoveryTipService extends SubManager {
       this._activeTip$.next(null);
     }
 
+    if (this.automaticTipShownThisVisit) {
+      this.clearQueuedTip();
+      this._activeTip$.next(null);
+      return;
+    }
+
     const candidate = this.findCandidate();
 
     if (!candidate) {
@@ -289,16 +307,8 @@ export class DiscoveryTipService extends SubManager {
         return;
       }
 
-      this._activeTip$.next({
-        ...buildDiscoveryTipActive(latestCandidate, anchorElement, this.buildSnapshot())
-      });
-
-      this.updateTipState(latestCandidate, (currentState) => ({
-        ...currentState,
-        shownCount: currentState.shownCount + 1,
-        lastShownAt: new Date().toISOString(),
-        snoozedUntil: undefined
-      }));
+      this._activeTip$.next(buildDiscoveryTipActive(latestCandidate, anchorElement));
+      this.recordAutomaticTipActivated(latestCandidate);
     }, delay);
   }
 
@@ -383,7 +393,6 @@ export class DiscoveryTipService extends SubManager {
       this._activeTip$.next(buildDiscoveryTipActive(
         definition,
         anchorElement,
-        snapshot,
         index + 1,
         guidedTips.length
       ));
@@ -400,8 +409,12 @@ export class DiscoveryTipService extends SubManager {
   }
 
   private isTipEligible(definition: DiscoveryTipDefinition, snapshot: DiscoveryTipContextSnapshot): boolean {
-    const globalPauseState = this._tipStates$.value[DISCOVERY_TIP_GLOBAL_PAUSE_ID];
+    const globalPauseState = this._viewerState$.value.tips[DISCOVERY_TIP_GLOBAL_PAUSE_ID];
     if (isSnoozed(globalPauseState?.snoozedUntil)) {
+      return false;
+    }
+
+    if (this.isWithinAutomaticSpacingWindow(definition)) {
       return false;
     }
 
@@ -436,49 +449,100 @@ export class DiscoveryTipService extends SubManager {
       return;
     }
 
+    if (this._activeTip$.value?.definition.id === tipId) {
+      this._activeTip$.next(null);
+    }
+
     this.updateTipState(definition, (currentState) => ({
       ...currentState,
       learnedAt: new Date().toISOString(),
       snoozedUntil: undefined
     }));
-
-    if (this._activeTip$.value?.definition.id === tipId) {
-      this._activeTip$.next(null);
-    }
   }
 
   private getTipState(definition: DiscoveryTipDefinition): DiscoveryTipStateRecord {
-    return normalizeTipState(definition, this._tipStates$.value[definition.id]);
+    return normalizeTipState(definition, this._viewerState$.value.tips[definition.id]);
   }
 
   private updateTipState(
     definition: DiscoveryTipDefinition,
     updater: (currentState: DiscoveryTipStateRecord) => DiscoveryTipStateRecord
   ): void {
+    const viewerState = this._viewerState$.value;
     const nextStates = {
-      ...this._tipStates$.value,
+      ...viewerState.tips,
       [definition.id]: updater(this.getTipState(definition))
     };
 
-    this._tipStates$.next(nextStates);
-    this.persistViewerTipStates(this._viewerKey$.value, nextStates);
+    this.updateViewerState({
+      ...viewerState,
+      tips: nextStates
+    });
   }
 
-  private readViewerTipStates(viewerKey: string): Record<string, DiscoveryTipStateRecord> {
+  private recordAutomaticTipActivated(definition: DiscoveryTipDefinition): void {
+    const shownAt = new Date().toISOString();
+    const viewerState = this._viewerState$.value;
+    const nextStates = {
+      ...viewerState.tips,
+      [definition.id]: {
+        ...this.getTipState(definition),
+        shownCount: this.getTipState(definition).shownCount + 1,
+        lastShownAt: shownAt,
+        snoozedUntil: undefined
+      }
+    };
+
+    this.automaticTipShownThisVisit = true;
+    this.updateViewerState({
+      ...viewerState,
+      lastTipShownAt: shownAt,
+      lastShownTipId: definition.id,
+      tips: nextStates
+    });
+  }
+
+  private isWithinAutomaticSpacingWindow(definition: DiscoveryTipDefinition): boolean {
+    const lastTipShownAt = this._viewerState$.value.lastTipShownAt;
+    if (!lastTipShownAt) {
+      return false;
+    }
+
+    const lastTipShownTime = new Date(lastTipShownAt).getTime();
+    if (Number.isNaN(lastTipShownTime)) {
+      return false;
+    }
+
+    const minSpacingMs = definition.minSpacingMs ?? DEFAULT_TIP_SPACING_MS;
+    return Date.now() - lastTipShownTime < minSpacingMs;
+  }
+
+  private updateViewerState(viewerState: DiscoveryTipViewerState): void {
+    this._viewerState$.next(viewerState);
+    this.persistViewerState(this._viewerKey$.value, viewerState);
+  }
+
+  private readViewerState(viewerKey: string): DiscoveryTipViewerState {
+    const shouldPersistMigratedStorage = this.isBrowser
+      && !window.localStorage.getItem(DISCOVERY_TIP_STORAGE_KEY);
     const storage = readDiscoveryTipStorage(this.isBrowser);
-    return storage.viewers[viewerKey] ?? {};
+    const result = ensureDiscoveryTipViewerState(storage, viewerKey, discoveryTipRegistry);
+    if (result.changed || shouldPersistMigratedStorage) {
+      writeDiscoveryTipStorage(this.isBrowser, result.storage);
+    }
+    return result.viewerState;
   }
 
-  private persistViewerTipStates(
+  private persistViewerState(
     viewerKey: string,
-    tipStates: Record<string, DiscoveryTipStateRecord>
+    viewerState: DiscoveryTipViewerState
   ): void {
     if (!this.isBrowser) {
       return;
     }
 
     const storage = readDiscoveryTipStorage(this.isBrowser);
-    storage.viewers[viewerKey] = tipStates;
+    storage.viewers[viewerKey] = viewerState;
     writeDiscoveryTipStorage(this.isBrowser, storage);
   }
 

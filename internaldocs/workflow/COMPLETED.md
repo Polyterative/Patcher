@@ -3,6 +3,8 @@
 > Archive of finished work. One-line summaries only. For strategy context see `../product/PRINCIPLES.md` and
 > `../product/ROADMAP.md`.
 
+- **2026-06-17** — HIGH: User Area — Helpful tips now remove the "Why this?" disclosure, throttle automatic tips to one per visit with spacing, and persist viewer baselines so existing users only receive newly introduced tips.
+
 - **2026-06-16** — MEDIUM: Rack Editor — Remix action label now reflects the selected Layout scope, including 3U, 1U, and per-row scopes.
 
 - **2026-06-16** — MEDIUM: Rack Editor — Remix scope now includes per-row buttons so users can tidy one row without disturbing the rest of the rack.
