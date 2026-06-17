@@ -6,21 +6,38 @@ import {
 } from '@angular/core';
 import {
   UntypedFormControl,
-  Validators
 } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { NEVER } from 'rxjs';
+import {
+  NEVER,
+  of
+} from 'rxjs';
 import {
   catchError,
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  map,
+  startWith,
+  switchMap,
   take,
   tap
 } from 'rxjs/operators';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import { ErrorCodes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/app-form-utils';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { IMatFormEntityConfig } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { UserManagementService } from '../user-management.service';
+import {
+  applyUsernameAvailabilityError,
+  hasValidUsernameFormat,
+  USERNAME_MAX_LENGTH,
+  USERNAME_MIN_LENGTH,
+  USERNAME_PATTERN_MESSAGE,
+  usernameValidators
+} from '../username-validation';
 
 
 /**
@@ -39,115 +56,56 @@ import { UserManagementService } from '../user-management.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-complete-profile',
   template: `
-    <div class="complete-profile-container">
-      <mat-card class="profile-card">
-        <mat-card-header>
-          <mat-card-title>Complete Your Profile</mat-card-title>
-          <mat-card-subtitle>Choose a username to get started</mat-card-subtitle>
-        </mat-card-header>
-        
-        <mat-card-content>
-          <p class="welcome-text">
-            Welcome! Please choose a username for your account.
-          </p>
-          
-          <lib-mat-form-entity
-            class="full-width"
-            [dataPack]="usernameField"
-            formFieldAppearanceType="outline"
-            (enterPressed)="saveUsername()"
-          ></lib-mat-form-entity>
-        </mat-card-content>
-        
-        <mat-card-actions align="end">
-          <button
-            mat-raised-button
-            color="primary"
-            (click)="saveUsername()"
-            [disabled]="usernameControl.invalid || saving"
-          >
-            <mat-spinner *ngIf="saving" diameter="20" class="button-spinner"></mat-spinner>
-            <span *ngIf="!saving">Continue</span>
-          </button>
-        </mat-card-actions>
-      </mat-card>
-    </div>
+    <lib-screen-wrapper sizePreset="full-bleed" class="auth-page-shell">
+      <div class="auth-page-shell__inner col gap1">
+        <lib-hero-content-card
+          titleBig="Complete your profile"
+          icon="badge"
+          class="auth-entry-card">
+          <div class="col gap1">
+            <div class="auth-surface">
+              <div class="auth-body">
+                <div class="auth-container">
+                  <lib-mat-form-entity
+                    [dataPack]="usernameField"
+                    formFieldAppearanceType="fill"
+                    (enterPressed)="saveUsername()"
+                  ></lib-mat-form-entity>
+
+                  @if (usernameControl.hasError(usernameTakenErrorCode)) {
+                    <div class="username-state username-state--error" role="alert">
+                      <mat-icon>block</mat-icon>
+                      <span>That username is already taken. Pick a different one.</span>
+                    </div>
+                  } @else if (usernameControl.hasError(usernameAvailabilityCheckFailedErrorCode)) {
+                    <div class="username-state username-state--warning" role="alert">
+                      <mat-icon>warning</mat-icon>
+                      <span>Username availability could not be checked. Try again in a moment.</span>
+                    </div>
+                  }
+
+                  <app-brand-primary-button
+                    class="auth-submit-button"
+                    [disabled]="usernameControl.invalid || checkingUsernameAvailability || saving"
+                    innerFlex="auto"
+                    theme="positive"
+                    icon="person"
+                    (click$)="saveUsername()">
+                    {{ checkingUsernameAvailability ? 'Checking username...' : saving ? 'Setting username...' : 'Set username' }}
+                  </app-brand-primary-button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </lib-hero-content-card>
+      </div>
+    </lib-screen-wrapper>
   `,
-  styles: [`
-       .complete-profile-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: var(--app-viewport-height, 100vh);
-            padding: calc(env(safe-area-inset-top) + 1.25rem) 1.25rem calc(env(safe-area-inset-bottom) + var(--app-keyboard-inset-bottom, 0px) + 1.25rem);
-            background:
-              radial-gradient(circle at top left, rgba(61, 115, 188, 0.08), transparent 24rem),
-              linear-gradient(180deg, rgba(247, 250, 253, 0.96), rgba(255, 255, 255, 0.99));
-            box-sizing: border-box;
-        }
-
-       .profile-card {
-           max-width: 31.25rem;
-           width: 100%;
-           border: 1px solid rgba(34, 75, 117, 0.12);
-           border-radius: 1rem;
-           background: rgba(255, 255, 255, 0.96);
-           box-shadow: 0 0.5rem 1.5rem rgba(15, 30, 52, 0.08);
-       }
-
-       mat-card-header {
-           padding-bottom: 0.25rem;
-       }
-
-       mat-card-title {
-           color: #163f70;
-       }
-
-       mat-card-subtitle {
-           color: rgba(24, 37, 53, 0.68);
-       }
-
-       .welcome-text {
-           margin: 1rem 0;
-           color: rgba(24, 37, 53, 0.78);
-       }
-
-       .full-width {
-           width: 100%;
-            margin-top: 0.5rem;
-       }
-
-       .hint-text {
-           font-size: 0.8rem;
-           color: rgba(24, 37, 53, 0.62);
-           margin-top: -0.25rem;
-           line-height: 1.5;
-       }
-
-       .button-spinner {
-           display: inline-block;
-           margin-right: 0.5rem;
-      }
-
-       mat-card-actions {
-           padding: 0 1rem 1rem;
-       }
-
-       button[mat-raised-button] {
-           min-height: 2.75rem;
-           padding-inline: 1rem;
-           border-radius: 62.4375rem;
-       }
-   `],
+  styleUrl: './complete-profile.component.scss',
   standalone: false
 })
 export class CompleteProfileComponent extends SubManager implements OnInit {
-  readonly usernameControl = new UntypedFormControl('', [
-    Validators.required,
-    Validators.minLength(3),
-    Validators.maxLength(20),
-    Validators.pattern(/^[a-zA-Z0-9_]+$/)
-  ]);
+  readonly usernameControl = new UntypedFormControl('', usernameValidators());
 
   readonly usernameField: IMatFormEntityConfig = {
     type: FormTypes.TEXT,
@@ -155,7 +113,7 @@ export class CompleteProfileComponent extends SubManager implements OnInit {
     label: 'Username',
     code: 'complete-profile-username',
     flex: '100%',
-    hint: 'Choose a unique username between 3-20 characters. Use only letters, numbers, and underscores.',
+    hint: `Choose a unique username between ${ USERNAME_MIN_LENGTH }-${ USERNAME_MAX_LENGTH } characters. ${ USERNAME_PATTERN_MESSAGE }.`,
     iconL1: 'person',
     ergonomics: {
       autofocus: true,
@@ -164,6 +122,9 @@ export class CompleteProfileComponent extends SubManager implements OnInit {
   };
   
   saving = false;
+  checkingUsernameAvailability = false;
+  readonly usernameTakenErrorCode = ErrorCodes.form.errorCode.custom.usernameTaken;
+  readonly usernameAvailabilityCheckFailedErrorCode = ErrorCodes.form.errorCode.custom.usernameAvailabilityCheckFailed;
   
   constructor(
     private userManagementService: UserManagementService,
@@ -175,6 +136,7 @@ export class CompleteProfileComponent extends SubManager implements OnInit {
   }
   
   ngOnInit(): void {
+    this.initializeUsernameAvailabilityCheck();
     // Check if user is already authenticated
     this.userManagementService.loggedUserFullProfile$
       .pipe(take(1))
@@ -190,6 +152,16 @@ export class CompleteProfileComponent extends SubManager implements OnInit {
   }
   
   saveUsername(): void {
+    if (this.checkingUsernameAvailability) {
+      SharedConstants.infoCustom(this.snackBar, 'Checking username availability — try again in a moment.');
+      return;
+    }
+
+    if (this.usernameControl.hasError(ErrorCodes.form.errorCode.custom.usernameTaken)) {
+      SharedConstants.errorCustom(this.snackBar, 'That username is already taken — pick a different one.');
+      return;
+    }
+
     if (this.usernameControl.invalid || this.saving) {
       return;
     }
@@ -220,6 +192,51 @@ export class CompleteProfileComponent extends SubManager implements OnInit {
         this.saving = false;
         this.cdr.markForCheck();
       }
+    });
+  }
+
+  private initializeUsernameAvailabilityCheck(): void {
+    this.usernameControl.valueChanges.pipe(
+      startWith(this.usernameControl.value),
+      map(value => `${ value ?? '' }`.trim()),
+      distinctUntilChanged(),
+      tap(username => {
+        applyUsernameAvailabilityError(this.usernameControl, null);
+        if (!hasValidUsernameFormat(username)) {
+          this.checkingUsernameAvailability = false;
+          this.cdr.markForCheck();
+        }
+      }),
+      filter(username => hasValidUsernameFormat(username)),
+      tap(() => {
+        this.checkingUsernameAvailability = true;
+        this.cdr.markForCheck();
+      }),
+      debounceTime(350),
+      switchMap(username =>
+        this.userManagementService.isUsernameAvailable$(username).pipe(
+          map(isAvailable => ({username, isAvailable, checkFailed: false})),
+          catchError(error => {
+            console.error('Username availability check failed:', error);
+            return of({username, isAvailable: false, checkFailed: true});
+          })
+        )
+      ),
+      this.takeUntilDestroyed()
+    ).subscribe(({username, isAvailable, checkFailed}) => {
+      if (`${ this.usernameControl.value ?? '' }`.trim() !== username) {
+        return;
+      }
+      this.checkingUsernameAvailability = false;
+      applyUsernameAvailabilityError(
+        this.usernameControl,
+        checkFailed
+          ? ErrorCodes.form.errorCode.custom.usernameAvailabilityCheckFailed
+          : !isAvailable
+            ? ErrorCodes.form.errorCode.custom.usernameTaken
+            : null
+      );
+      this.cdr.markForCheck();
     });
   }
 }

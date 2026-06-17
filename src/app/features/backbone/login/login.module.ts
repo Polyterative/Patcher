@@ -18,6 +18,9 @@ import { ResetPasswordPageComponent } from './reset-password/reset-password-page
 import { AuthCallbackComponent } from 'src/app/features/backbone/login/auth-callback.component';
 import { CompleteProfileComponent } from './complete-profile/complete-profile.component';
 import { SSOButtonsComponent } from './sso-buttons/sso-buttons.component';
+import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
+import { HeroContentCardComponent } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component';
+import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 
 
 @NgModule({
@@ -35,6 +38,9 @@ import { SSOButtonsComponent } from './sso-buttons/sso-buttons.component';
     MatProgressSpinnerModule,
     MatIconModule,
     MatFormEntityComponent,
+    BrandPrimaryButtonComponent,
+    HeroContentCardComponent,
+    ScreenWrapperComponent,
     LoginPageModule,
     SignupPageModule,
     SSOButtonsComponent,

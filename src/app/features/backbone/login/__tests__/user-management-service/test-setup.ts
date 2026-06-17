@@ -78,6 +78,7 @@ export function setupUserManagementServiceTest() {
     'loginWithOAuth$',
     'handleOAuthCallback$',
     'updateUsername$',
+    'isUsernameAvailable$',
     'updateProfileVisibility$',
     'deleteCurrentUserAccount$',
     'logoffLocal$'

@@ -37,6 +37,8 @@ describe('AppFormUtils', () => {
       {error: {[ErrorCodes.form.errorCode.custom.numberNotPositiveInteger]: true}, expected: ErrorMessages.form.error_numberNotPositiveInteger},
       {error: {[ErrorCodes.form.errorCode.custom.numberBiggerThanInterval]: true}, expected: ErrorMessages.form.error_numberBiggerThanInterval},
       {error: {[ErrorCodes.form.errorCode.custom.doesNotContainHttps]: true}, expected: ErrorMessages.form.error_doesNotContainHttps},
+      {error: {[ErrorCodes.form.errorCode.custom.usernameTaken]: true}, expected: ErrorMessages.form.error_usernameTaken},
+      {error: {[ErrorCodes.form.errorCode.custom.usernameAvailabilityCheckFailed]: true}, expected: ErrorMessages.form.error_usernameAvailabilityCheckFailed},
       {error: {min: true}, expected: ErrorMessages.form.error_min}
     ];
     

@@ -18,7 +18,7 @@ describe('UserSignupDataService', () => {
   let analytics: jasmine.SpyObj<AnalyticsService>;
 
   beforeEach(() => {
-    userManagementService = jasmine.createSpyObj<UserManagementService>('UserManagementService', ['signup', 'login$']);
+    userManagementService = jasmine.createSpyObj<UserManagementService>('UserManagementService', ['signup', 'login$', 'isUsernameAvailableForSignup$']);
     router = jasmine.createSpyObj<Router>('Router', ['navigate']);
     analytics = jasmine.createSpyObj<AnalyticsService>('AnalyticsService', ['capture', 'identify', 'reset']);
 
@@ -46,6 +46,8 @@ describe('UserSignupDataService', () => {
     service.fields.username.control.setValue('newuser');
     service.fields.email.control.setValue('new@example.com');
     service.fields.password.control.setValue('password123');
+    service.fields.passwordAgain.control.setValue('password123');
+    userManagementService.isUsernameAvailableForSignup$.and.returnValue(of(true));
   });
 
   it('shows confirm-mail feedback without attempting login when signup needs email confirmation', () => {
@@ -136,8 +138,11 @@ describe('UserSignupDataService', () => {
       ]
     });
     const svc = TestBed.inject(UserSignupDataService);
+    svc.fields.username.control.setValue('returnuser');
     svc.fields.email.control.setValue('x@x.com');
     svc.fields.password.control.setValue('pass1234');
+    svc.fields.passwordAgain.control.setValue('pass1234');
+    userManagementService.isUsernameAvailableForSignup$.and.returnValue(of(true));
 
     spyOn(SharedConstants, 'successSignup').and.callFake(() => {});
     userManagementService.signup.and.returnValue(of({
@@ -165,5 +170,39 @@ describe('UserSignupDataService', () => {
     expect(service.fields.email).toBeDefined();
     expect(service.fields.password).toBeDefined();
     expect(service.fields.passwordAgain).toBeDefined();
+  });
+
+  it('blocks signup when the username is already taken', () => {
+    userManagementService.isUsernameAvailableForSignup$.and.returnValue(of(false));
+
+    service.mailSignClick$.next();
+
+    expect(userManagementService.isUsernameAvailableForSignup$).toHaveBeenCalledWith('newuser');
+    expect(service.fields.username.control.hasError('usernameTaken')).toBeTrue();
+    expect(userManagementService.signup).not.toHaveBeenCalled();
+  });
+
+  it('trims username before checking availability and signing up', () => {
+    spyOn(SharedConstants, 'confirmMail').and.callFake(() => {});
+    service.fields.username.control.setValue('  trimuser  ');
+    userManagementService.signup.and.returnValue(of({
+      user: {id: 'u-1', email: 'new@example.com', created_at: '', updated_at: ''},
+      requiresEmailConfirmation: true
+    }));
+
+    service.mailSignClick$.next();
+
+    expect(service.fields.username.control.value).toBe('trimuser');
+    expect(userManagementService.isUsernameAvailableForSignup$).toHaveBeenCalledOnceWith('trimuser');
+    expect(userManagementService.signup).toHaveBeenCalledOnceWith('trimuser', 'new@example.com', 'password123');
+  });
+
+  it('uses the shared username format rules before checking availability', () => {
+    service.fields.username.control.setValue('bad name!');
+
+    service.mailSignClick$.next();
+
+    expect(userManagementService.isUsernameAvailableForSignup$).not.toHaveBeenCalled();
+    expect(userManagementService.signup).not.toHaveBeenCalled();
   });
 });

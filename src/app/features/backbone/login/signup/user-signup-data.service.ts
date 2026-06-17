@@ -26,6 +26,11 @@ import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { UserManagementService } from '../user-management.service';
 import { SubManager } from "src/app/shared-interproject/directives/subscription-manager";
 import { AnalyticsService } from '../../analytics-integration/analytics.service';
+import { ErrorCodes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/app-form-utils';
+import {
+  applyUsernameAvailabilityError,
+  usernameValidators
+} from '../username-validation';
 
 
 @Injectable()
@@ -42,12 +47,7 @@ export class UserSignupDataService extends SubManager {
       label: 'Username',
       code: 'username',
       flex: '6rem',
-      control: new UntypedFormControl('', Validators.compose([
-        Validators.required,
-        Validators.pattern(/\S/),
-        Validators.maxLength(128),
-        Validators.minLength(3)
-      ])),
+      control: new UntypedFormControl('', Validators.compose(usernameValidators())),
       type: FormTypes.TEXT,
       hint: 'Visible by other users',
       iconL1: 'person',
@@ -116,16 +116,49 @@ export class UserSignupDataService extends SubManager {
     
     this.mailSignClick$
       .pipe(
-        exhaustMap(() => this.loginInteraction.signup(
-          this.fields.username.control.value.trim(),
-          this.fields.email.control.value,
-          this.fields.password.control.value
-        ).pipe(
-          catchError((error: Error) => {
-            SharedConstants.errorSignup(snackBar, error?.message);
+        exhaustMap(() => {
+          const username = `${ this.fields.username.control.value ?? '' }`.trim();
+          this.fields.username.control.setValue(username);
+          applyUsernameAvailabilityError(this.fields.username.control, null);
+          this.fields.username.control.updateValueAndValidity();
+
+          if (this.fields.username.control.invalid ||
+            this.fields.email.control.invalid ||
+            this.fields.password.control.invalid ||
+            this.fields.passwordAgain.control.invalid ||
+            this.fields.password.control.value !== this.fields.passwordAgain.control.value) {
+            this.fields.username.control.markAsTouched();
+            this.fields.email.control.markAsTouched();
+            this.fields.password.control.markAsTouched();
+            this.fields.passwordAgain.control.markAsTouched();
             return EMPTY;
-          })
-        )),
+          }
+
+          return this.loginInteraction.isUsernameAvailableForSignup$(username).pipe(
+            catchError((error: Error) => {
+              applyUsernameAvailabilityError(this.fields.username.control, ErrorCodes.form.errorCode.custom.usernameAvailabilityCheckFailed);
+              SharedConstants.errorSignup(snackBar, error?.message);
+              return EMPTY;
+            }),
+            switchMap(isAvailable => {
+              if (!isAvailable) {
+                applyUsernameAvailabilityError(this.fields.username.control, ErrorCodes.form.errorCode.custom.usernameTaken);
+                return EMPTY;
+              }
+
+              return this.loginInteraction.signup(
+                username,
+                this.fields.email.control.value,
+                this.fields.password.control.value
+              ).pipe(
+                catchError((error: Error) => {
+                  SharedConstants.errorSignup(snackBar, error?.message);
+                  return EMPTY;
+                })
+              );
+            })
+          );
+        }),
         tap(result => {
           this.analytics.capture('auth.signed_up', {
             method: 'password',
