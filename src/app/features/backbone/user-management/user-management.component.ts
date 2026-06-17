@@ -1,9 +1,7 @@
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   Input,
-  NgZone,
   OnInit
 } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -68,9 +66,7 @@ export class UserManagementComponent implements OnInit {
   
   constructor(
     public userManagementService: UserManagementService,
-    readonly seoAndUtilsService: SeoAndUtilsService,
-    private cdr: ChangeDetectorRef,
-    private ngZone: NgZone
+    readonly seoAndUtilsService: SeoAndUtilsService
   ) { }
   
   ngOnInit(): void {
@@ -100,26 +96,35 @@ export class UserManagementComponent implements OnInit {
   
   cancelUsernameEdit(): void {
     this.editingUsername = false;
+    this.userManagementService.toggleUsernameForm$.next(false);
     this.usernameControl.reset('');
+  }
+
+  canSubmitUsernameChange(currentUsername: string): boolean {
+    const nextUsername = this.usernameControl.value?.trim() || '';
+    return this.isValidUsername(nextUsername) && nextUsername !== currentUsername;
   }
   
   submitUsernameChange(currentUsername: string): void {
     const nextUsername = this.usernameControl.value?.trim() || '';
+    this.usernameControl.setValue(nextUsername);
+    this.usernameControl.updateValueAndValidity();
     if (this.usernameControl.invalid || nextUsername === currentUsername) {
+      this.usernameControl.markAsTouched();
       return;
     }
-    
-    this.userManagementService.updateUsername$(nextUsername).subscribe({
-      next:  () => this.ngZone.run(() => {
-        this.cancelUsernameEdit();
-        this.cdr.markForCheck();
-      }),
-      error: () => { /* error already shown via snackbar in service */ }
-    });
+
+    this.userManagementService.updateUsernameAction$.next(nextUsername);
   }
 
   isEmailOnlyAccount(authProviders: string[] | null | undefined): boolean {
     return !authProviders || authProviders.every(provider => provider === 'email');
+  }
+
+  private isValidUsername(username: string): boolean {
+    return username.length >= 3
+      && username.length <= 30
+      && /^[a-zA-Z0-9_-]+$/.test(username);
   }
   
 }

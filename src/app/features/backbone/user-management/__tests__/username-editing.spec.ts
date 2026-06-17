@@ -72,55 +72,70 @@ describe('UserManagementComponent - Username Editing', () => {
   // ─── submitUsernameChange ─────────────────────────────────────────────────
   
   describe('submitUsernameChange()', () => {
-    it('should call updateUsername$ with new username when valid and changed', fakeAsync(() => {
+    it('should emit updateUsernameAction$ with new username when valid and changed', fakeAsync(() => {
+      spyOn(mockUserManagementService.updateUsernameAction$, 'next');
       component.beginUsernameEdit('oldname');
       component.usernameControl.setValue('newname');
       
       component.submitUsernameChange('oldname');
       tick();
       
-      expect(mockUserManagementService.updateUsername$).toHaveBeenCalledWith('newname');
+      expect(mockUserManagementService.updateUsernameAction$.next).toHaveBeenCalledOnceWith('newname');
     }));
     
-    it('should cancel editing after a successful submit', fakeAsync(() => {
+    it('should keep editing state until the service publishes a successful profile update', fakeAsync(() => {
       component.beginUsernameEdit('oldname');
       component.usernameControl.setValue('newname');
       
       component.submitUsernameChange('oldname');
       tick();
       
-      expect(component.editingUsername).toBe(false);
-      expect(component.usernameControl.value).toBe('');
+      expect(component.editingUsername).toBe(true);
+      expect(component.usernameControl.value).toBe('newname');
     }));
     
-    it('should NOT call updateUsername$ when the new value equals the current username', fakeAsync(() => {
+    it('should NOT emit updateUsernameAction$ when the new value equals the current username', fakeAsync(() => {
+      spyOn(mockUserManagementService.updateUsernameAction$, 'next');
       component.beginUsernameEdit('sameuser');
       component.usernameControl.setValue('sameuser');
       
       component.submitUsernameChange('sameuser');
       tick();
       
-      expect(mockUserManagementService.updateUsername$).not.toHaveBeenCalled();
+      expect(mockUserManagementService.updateUsernameAction$.next).not.toHaveBeenCalled();
     }));
     
-    it('should NOT call updateUsername$ when the trimmed new value equals the current username', fakeAsync(() => {
+    it('should NOT emit updateUsernameAction$ when the trimmed new value equals the current username', fakeAsync(() => {
+      spyOn(mockUserManagementService.updateUsernameAction$, 'next');
       component.beginUsernameEdit('sameuser');
       component.usernameControl.setValue('  sameuser  ');
       
       component.submitUsernameChange('sameuser');
       tick();
       
-      expect(mockUserManagementService.updateUsername$).not.toHaveBeenCalled();
+      expect(mockUserManagementService.updateUsernameAction$.next).not.toHaveBeenCalled();
     }));
     
-    it('should NOT call updateUsername$ when usernameControl is invalid', fakeAsync(() => {
+    it('should NOT emit updateUsernameAction$ when usernameControl is invalid', fakeAsync(() => {
+      spyOn(mockUserManagementService.updateUsernameAction$, 'next');
       component.beginUsernameEdit('testuser');
       component.usernameControl.setValue('ab'); // too short — minLength 3
       
       component.submitUsernameChange('testuser');
       tick();
       
-      expect(mockUserManagementService.updateUsername$).not.toHaveBeenCalled();
+      expect(mockUserManagementService.updateUsernameAction$.next).not.toHaveBeenCalled();
+    }));
+
+    it('should emit a trimmed username value', fakeAsync(() => {
+      spyOn(mockUserManagementService.updateUsernameAction$, 'next');
+      component.beginUsernameEdit('oldname');
+      component.usernameControl.setValue('  newname  ');
+
+      component.submitUsernameChange('oldname');
+      tick();
+
+      expect(mockUserManagementService.updateUsernameAction$.next).toHaveBeenCalledOnceWith('newname');
     }));
   });
   

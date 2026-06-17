@@ -1,7 +1,3 @@
-import {
-  ChangeDetectorRef,
-  NgZone
-} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
@@ -37,6 +33,9 @@ export const MOCK_RICH_USER = {
 export function createMockUserManagementService() {
   const loggedUser$ = new ReplaySubject<any>(1);
   const loggedUserFullProfile$ = new ReplaySubject<any>(1);
+  const showUsernameForm$ = new BehaviorSubject<boolean>(false);
+  const toggleUsernameForm$ = new Subject<boolean>();
+  const updateUsernameAction$ = new Subject<string>();
   const showPasswordForm$ = new BehaviorSubject<boolean>(false);
   const togglePasswordForm$ = new Subject<boolean>();
   const changePassword$ = new Subject<{
@@ -51,6 +50,9 @@ export function createMockUserManagementService() {
   return {
     loggedUser$: loggedUser$.asObservable(),
     loggedUserFullProfile$: loggedUserFullProfile$.asObservable(),
+    showUsernameForm$: showUsernameForm$.asObservable(),
+    toggleUsernameForm$,
+    updateUsernameAction$,
     showPasswordForm$: showPasswordForm$.asObservable(),
     togglePasswordForm$,
     changePassword$,
@@ -61,6 +63,7 @@ export function createMockUserManagementService() {
     // internal subjects exposed for test control
     _loggedUser$: loggedUser$,
     _loggedUserFullProfile$: loggedUserFullProfile$,
+    _showUsernameForm$: showUsernameForm$,
     _showPasswordForm$: showPasswordForm$,
   };
 }
@@ -87,9 +90,7 @@ export function setupComponentTest(ignoreSeo = false) {
     providers: [
       UserManagementComponent,
       {provide: UserManagementService, useValue: mockUserManagementService},
-      {provide: SeoAndUtilsService, useValue: mockSeoAndUtilsService},
-      {provide: ChangeDetectorRef, useValue: {markForCheck: jasmine.createSpy('markForCheck')}},
-      {provide: NgZone, useValue: {run: (fn: () => any) => fn()}}
+      {provide: SeoAndUtilsService, useValue: mockSeoAndUtilsService}
     ]
   });
   

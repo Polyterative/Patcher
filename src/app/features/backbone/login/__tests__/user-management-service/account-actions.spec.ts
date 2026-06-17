@@ -19,6 +19,14 @@ describe('UserManagementService - Account Actions', () => {
   let service: UserManagementService;
   let mockSupabaseService: any;
   let mockRouter: any;
+
+  function publishRichProfile(profile: typeof MOCK_RICH_USER): void {
+    (service as unknown as {
+      _loggedUserFullProfile$: {
+        next(value: typeof MOCK_RICH_USER): void;
+      };
+    })._loggedUserFullProfile$.next(profile);
+  }
   
   beforeEach(() => {
     const setup = setupUserManagementServiceTest();
@@ -114,7 +122,7 @@ describe('UserManagementService - Account Actions', () => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {
     });
     mockSupabaseService.auth.getRichUserSession$.and.returnValue(of({...MOCK_RICH_USER, username: 'newname'}));
-    (service as any)._loggedUserFullProfile$.next(MOCK_RICH_USER);
+    publishRichProfile(MOCK_RICH_USER);
     
     service.updateUsernameAction$.next('newname');
     tick();
@@ -126,11 +134,46 @@ describe('UserManagementService - Account Actions', () => {
     tick();
     expect(SharedConstants.errorCustom).toHaveBeenCalled();
   }));
+
+  it('hides the username form after updateUsernameAction$ succeeds', fakeAsync(() => {
+    mockSupabaseService.auth.getRichUserSession$.and.returnValue(of({...MOCK_RICH_USER, username: 'newname'}));
+    publishRichProfile(MOCK_RICH_USER);
+
+    service.toggleUsernameForm$.next(true);
+    tick();
+
+    let visible: boolean | undefined;
+    service.showUsernameForm$.subscribe(v => visible = v);
+    expect(visible).toBe(true);
+
+    service.updateUsernameAction$.next('newname');
+    tick();
+
+    expect(visible).toBe(false);
+  }));
+
+  it('keeps the username form open when updateUsernameAction$ fails', fakeAsync(() => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
+    });
+    publishRichProfile(MOCK_RICH_USER);
+    mockSupabaseService.auth.updateUsername$.and.returnValue(throwError(() => new Error('taken')));
+
+    service.toggleUsernameForm$.next(true);
+    tick();
+
+    let visible: boolean | undefined;
+    service.showUsernameForm$.subscribe(v => visible = v);
+
+    service.updateUsernameAction$.next('newname');
+    tick();
+
+    expect(visible).toBe(true);
+  }));
   
   it('public updateUsername$ refreshes profile and emits success', fakeAsync(() => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {
     });
-    (service as any)._loggedUserFullProfile$.next(MOCK_RICH_USER);
+    publishRichProfile(MOCK_RICH_USER);
     mockSupabaseService.auth.updateUsername$.and.returnValue(of(void 0));
     mockSupabaseService.auth.getRichUserSession$.and.returnValue(of({...MOCK_RICH_USER, username: 'after'}));
     
@@ -147,7 +190,7 @@ describe('UserManagementService - Account Actions', () => {
   it('public updateUsername$ rethrows backend errors', fakeAsync(() => {
     spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
     });
-    (service as any)._loggedUserFullProfile$.next(MOCK_RICH_USER);
+    publishRichProfile(MOCK_RICH_USER);
     mockSupabaseService.auth.updateUsername$.and.returnValue(throwError(() => new Error('update failed')));
     
     let failed = false;
@@ -163,7 +206,7 @@ describe('UserManagementService - Account Actions', () => {
   it('public updateProfileVisibility$ updates the local rich profile and emits success', fakeAsync(() => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {
     });
-    (service as any)._loggedUserFullProfile$.next(MOCK_RICH_USER);
+    publishRichProfile(MOCK_RICH_USER);
     mockSupabaseService.auth.updateProfileVisibility$.and.returnValue(of(void 0));
 
     let completed = false;
