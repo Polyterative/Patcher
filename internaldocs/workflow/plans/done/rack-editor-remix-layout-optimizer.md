@@ -80,7 +80,7 @@ rack visual model shows a "remix" control panel in the same floating options are
 **Checklist:**
 
 - [x] Add `layout` to `RACK_ANALYSIS_MODES` and `RACK_ANALYSIS_MODE_OPTIONS`.
-- [ ] Implement `computeLayoutAnalysis(modules: RackedModule[], rackHp: number)` pure
+- [x] Implement `computeLayoutAnalysis(modules: RackedModule[], rackHp: number)` pure
       function in a new `rack-layout-analysis.utils.ts`:
       - **First step:** partition input by `module.standard.id` into format groups.
       - Run FFD and arrangement counting independently per group — never mix groups.
@@ -91,7 +91,7 @@ rack visual model shows a "remix" control panel in the same floating options are
       - Uses bitmask DP for exact count when `modules.length ≤ 20` per group, randomised
         sampling otherwise.
 - [x] Wire into `rack-visual-model.component.ts` alongside existing `rowPowerBreakdown`.
-- [ ] Build the layout panel UI in the floating options area (same pattern as power/function
+- [x] Build the layout panel UI in the floating options area (same pattern as power/function
       panels in `rack-editor.component.html`).
 - [x] "Auto-arrange" emits new row assignments through `rackDetailDataService` using the
       diff-based update path (batch move, not full reload).
@@ -125,3 +125,5 @@ rack visual model shows a "remix" control panel in the same floating options are
 - **2026-06-16:** Added single-row scope buttons to the Layout panel. Selecting a row uses the existing `{ rowIndex }` scope path so Remix can tidy one row's order without disturbing the rest of the rack.
 - **2026-06-16:** Made the editable Remix action label reflect the active scope (`Remix layout`, `Remix 3U`, `Remix 1U`, or `Remix Row N`) so scoped actions read clearly at click time.
 - **2026-06-17T18:05+02:00:** Staged as the next coordinator-loop task because it is the highest-priority open item with actionable code-only follow-up after skipping tasks blocked on explicit approval, credentials, or schema/RLS work.
+- **2026-06-17T18:12+02:00:** Added the user-visible Shuffle action beside Remix in the editable Layout panel. Shuffle reuses the existing scoped variant candidate search, mixed-format/unavailable-row guards, batch racked-module update path, and Undo snackbar, with a randomized starting variant so 3U, Intellijel 1U, Pulp Logic 1U, and single-row scopes stay isolated.
+- **2026-06-17T18:15+02:00:** Validated the Shuffle slice with the targeted rack layout/unit specs. Runtime snapshotting the rack detail route was attempted, but the session hit a Supabase auth navigator-lock console error before exposing an editable Layout panel.

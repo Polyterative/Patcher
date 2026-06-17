@@ -649,6 +649,10 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
     this.dataService.requestLayoutRemix$.next();
   }
 
+  requestLayoutShuffle(): void {
+    this.dataService.requestLayoutShuffle$.next();
+  }
+
   layoutArrangementSummary(rowedRackedModules: RackedModule[][] | null | undefined): string {
     const analysis = this.computeLayoutAnalysis(rowedRackedModules);
     if (!analysis) {
@@ -735,6 +739,19 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
       return `Remix Row ${ scope.rowIndex + 1 }`;
     }
     return 'Remix layout';
+  }
+
+  layoutShuffleActionLabel(scope: RackLayoutScope | null | undefined): string {
+    if (scope === '3u') {
+      return 'Shuffle 3U';
+    }
+    if (scope === '1u') {
+      return 'Shuffle 1U';
+    }
+    if (scope && typeof scope === 'object') {
+      return `Shuffle Row ${ scope.rowIndex + 1 }`;
+    }
+    return 'Shuffle';
   }
 
   setShouldShowPanelImages(show: boolean): void {

@@ -204,6 +204,7 @@ export class RackDetailDataService extends SubManager {
   requestClearRow$ = new Subject<number>();
   requestDeleteRow$ = new Subject<number>();
   requestLayoutRemix$ = new Subject<void>();
+  requestLayoutShuffle$ = new Subject<void>();
   layoutScope$ = new BehaviorSubject<RackLayoutScope>('all');
   
   requestRackedModulesDbSync$ = new Subject<void>(); // updates the backend with the current state of the rack
@@ -459,56 +460,17 @@ export class RackDetailDataService extends SubManager {
       .pipe(
         withLatestFrom(this.rowedRackedModules$, this.singleRackData$, this.layoutScope$),
         switchMap(([_, rackModules, rack, layoutScope]) => {
-          if (!rack || !rackModules) {
-            SharedConstants.errorCustom(this.snackBar, 'Rack data is still loading. Try remixing again in a moment.');
-            return EMPTY;
-          }
+          return this.applyLayoutVariantAction(rackModules, rack, layoutScope, 'remix');
+        }),
+        this.takeUntilDestroyed()
+      )
+      .subscribe();
 
-          const analysis = computeLayoutAnalysis(rackModules, rack.hp, layoutScope, {
-            variant: this.layoutRemixVariant
-          });
-          if (analysis.mixedRowIssues.length > 0) {
-            SharedConstants.errorCustom(this.snackBar, 'Fix mixed-format rows before remixing.');
-            return EMPTY;
-          }
-
-          const candidate = this.findLayoutRemixCandidate(rackModules, rack.hp, rack.rows, layoutScope);
-          if (!candidate && !analysis.autoArrangeMoves.some(move => move.toRow < 0 || move.toRow >= rack.rows)) {
-            SharedConstants.infoCustom(this.snackBar, 'This rack is already arranged as tightly as Remix can make it.');
-            return EMPTY;
-          }
-
-          if (!candidate) {
-            SharedConstants.infoCustom(this.snackBar, 'Remix needs another row for these modules. Add a row, then try again.');
-            return EMPTY;
-          }
-
-          const snapshot: RackedModule[][] = cloneRackData(rackModules);
-          const nextRackModules = this.buildRemixedRackRows(rackModules, candidate.analysis.autoArrangeMoves, rack.rows);
-          this.updateRackRowCoordinates(nextRackModules, rack.rows);
-          this.rowedRackedModules$.next(nextRackModules);
-
-          return this.callBackendToUpdateModulesOfRack(nextRackModules, rack).pipe(
-            tap(() => {
-              this.layoutRemixVariant = candidate.nextVariant;
-              this.analytics.capture('rack.layout_remixed', {
-                rack_id: rack.id,
-                moved_count: candidate.changedMoves.length
-              });
-              this.showUndoSnackBar(
-                `Remixed ${ candidate.changedMoves.length } module${ candidate.changedMoves.length === 1 ? '' : 's' }.`,
-                () => this.restoreRackLayout$(snapshot),
-                'Previous layout restored.',
-                10000
-              );
-            }),
-            catchError((err) => {
-              console.error(`Error remixing rack layout: ${ err }`);
-              this.rowedRackedModules$.next(snapshot);
-              SharedConstants.errorCustom(this.snackBar, 'Failed to remix layout — changes reverted. Check your connection and try again.');
-              return EMPTY;
-            })
-          );
+    this.requestLayoutShuffle$
+      .pipe(
+        withLatestFrom(this.rowedRackedModules$, this.singleRackData$, this.layoutScope$),
+        switchMap(([_, rackModules, rack, layoutScope]) => {
+          return this.applyLayoutVariantAction(rackModules, rack, layoutScope, 'shuffle');
         }),
         this.takeUntilDestroyed()
       )
@@ -1652,13 +1614,14 @@ export class RackDetailDataService extends SubManager {
     rackModules: RackedModule[][],
     rackHp: number,
     rackRows: number,
-    layoutScope: RackLayoutScope
+    layoutScope: RackLayoutScope,
+    startVariant = this.layoutRemixVariant
   ): {analysis: ReturnType<typeof computeLayoutAnalysis>; changedMoves: ReturnType<typeof computeLayoutAnalysis>['autoArrangeMoves']; nextVariant: number} | null {
     const moduleCount = rackModules.flat().filter(module => !isBlankModule(module.module.id)).length;
     const candidateCount = Math.max(moduleCount + 3, 6);
 
     for (let offset = 0; offset < candidateCount; offset += 1) {
-      const variant = this.layoutRemixVariant + offset;
+      const variant = startVariant + offset;
       const analysis = computeLayoutAnalysis(rackModules, rackHp, layoutScope, {variant});
       const changedMoves = analysis.autoArrangeMoves.filter(move =>
         move.fromRow !== move.toRow || move.fromColumn !== move.toColumn
@@ -1675,6 +1638,75 @@ export class RackDetailDataService extends SubManager {
     }
 
     return null;
+  }
+
+  private applyLayoutVariantAction(
+    rackModules: RackedModule[][] | null,
+    rack: Rack | undefined,
+    layoutScope: RackLayoutScope,
+    action: 'remix' | 'shuffle'
+  ): Observable<unknown> {
+    if (!rack || !rackModules) {
+      SharedConstants.errorCustom(this.snackBar, `Rack data is still loading. Try ${ action === 'shuffle' ? 'shuffling' : 'remixing' } again in a moment.`);
+      return EMPTY;
+    }
+
+    const startVariant = action === 'shuffle'
+      ? this.randomLayoutVariant(rackModules)
+      : this.layoutRemixVariant;
+    const analysis = computeLayoutAnalysis(rackModules, rack.hp, layoutScope, {
+      variant: startVariant
+    });
+    if (analysis.mixedRowIssues.length > 0) {
+      SharedConstants.errorCustom(this.snackBar, 'Fix mixed-format rows before remixing.');
+      return EMPTY;
+    }
+
+    const candidate = this.findLayoutRemixCandidate(rackModules, rack.hp, rack.rows, layoutScope, startVariant);
+    if (!candidate && !analysis.autoArrangeMoves.some(move => move.toRow < 0 || move.toRow >= rack.rows)) {
+      SharedConstants.infoCustom(this.snackBar, action === 'shuffle'
+        ? 'No shuffled alternative is available for this scope.'
+        : 'This rack is already arranged as tightly as Remix can make it.');
+      return EMPTY;
+    }
+
+    if (!candidate) {
+      SharedConstants.infoCustom(this.snackBar, 'Remix needs another row for these modules. Add a row, then try again.');
+      return EMPTY;
+    }
+
+    const snapshot: RackedModule[][] = cloneRackData(rackModules);
+    const nextRackModules = this.buildRemixedRackRows(rackModules, candidate.analysis.autoArrangeMoves, rack.rows);
+    this.updateRackRowCoordinates(nextRackModules, rack.rows);
+    this.rowedRackedModules$.next(nextRackModules);
+
+    return this.callBackendToUpdateModulesOfRack(nextRackModules, rack).pipe(
+      tap(() => {
+        this.layoutRemixVariant = candidate.nextVariant;
+        this.analytics.capture(action === 'shuffle' ? 'rack.layout_shuffled' : 'rack.layout_remixed', {
+          rack_id: rack.id,
+          moved_count: candidate.changedMoves.length
+        });
+        this.showUndoSnackBar(
+          `${ action === 'shuffle' ? 'Shuffled' : 'Remixed' } ${ candidate.changedMoves.length } module${ candidate.changedMoves.length === 1 ? '' : 's' }.`,
+          () => this.restoreRackLayout$(snapshot),
+          'Previous layout restored.',
+          10000
+        );
+      }),
+      catchError((err) => {
+        console.error(`Error ${ action === 'shuffle' ? 'shuffling' : 'remixing' } rack layout: ${ err }`);
+        this.rowedRackedModules$.next(snapshot);
+        SharedConstants.errorCustom(this.snackBar, `Failed to ${ action } layout — changes reverted. Check your connection and try again.`);
+        return EMPTY;
+      })
+    );
+  }
+
+  private randomLayoutVariant(rackModules: RackedModule[][]): number {
+    const moduleCount = rackModules.flat().filter(module => !isBlankModule(module.module.id)).length;
+    const variantWindow = Math.max(moduleCount * 12, 12);
+    return this.layoutRemixVariant + 1 + Math.floor(Math.random() * variantWindow);
   }
 
   private assertBackendSuccess<T>(response: T): T {

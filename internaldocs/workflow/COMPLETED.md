@@ -3,6 +3,7 @@
 > Archive of finished work. One-line summaries only. For strategy context see `../product/PRINCIPLES.md` and
 > `../product/ROADMAP.md`.
 
+- **2026-06-17** — MEDIUM: Rack Editor — Layout panel now includes a scoped Shuffle action that reuses Remix guardrails, format isolation, batch persistence, and Undo for randomized valid arrangements.
 - **2026-06-17** — HIGH: Bug — Native upload click now opens the browser file picker reliably on macOS by making the transparent file input the direct dropzone click target while preserving drag/drop, remove controls, and keyboard activation.
 
 - **2026-06-17** — LOW: Angular — Replace deprecated ngx-dropzone with a native accessible file input / drag-drop host, preserving single/multi uploads, validation feedback, file/image previews, and removing the deprecated dependency (commit `98a519bb`).
