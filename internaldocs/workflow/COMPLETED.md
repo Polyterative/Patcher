@@ -3,6 +3,8 @@
 > Archive of finished work. One-line summaries only. For strategy context see `../product/PRINCIPLES.md` and
 > `../product/ROADMAP.md`.
 
+- **2026-06-17** — HIGH: Bug — Native upload click now opens the browser file picker reliably on macOS by making the transparent file input the direct dropzone click target while preserving drag/drop, remove controls, and keyboard activation.
+
 - **2026-06-17** — LOW: Angular — Replace deprecated ngx-dropzone with a native accessible file input / drag-drop host, preserving single/multi uploads, validation feedback, file/image previews, and removing the deprecated dependency (commit `98a519bb`).
 
 - **2026-06-17** — LOW: Angular — safe-navigation migration wrappers are removed from patch-editor and module-detail templates with equivalent optional-chain/nullish expressions, leaving no `$safeNavigationMigration` usages in app templates.

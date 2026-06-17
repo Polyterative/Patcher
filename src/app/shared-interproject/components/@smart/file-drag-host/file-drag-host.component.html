@@ -9,7 +9,6 @@
       [class.dropzone--has-files]="bag.files.length > 0"
       role="button"
       tabindex="0"
-      (click)="openFilePicker(fileInput, $event)"
       (keydown.enter)="openFilePicker(fileInput, $event)"
       (keydown.space)="openFilePicker(fileInput, $event)"
       (dragover)="onDragOver($event)"
@@ -22,6 +21,7 @@
         type="file"
         [attr.accept]="acceptedFileType || null"
         [multiple]="multipleFilesMode"
+        (click)="$event.stopPropagation()"
         (change)="onFilePickerChange($event, fileInput)"
       >
       @if (bag.files.length === 0) {

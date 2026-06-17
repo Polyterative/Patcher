@@ -30,6 +30,20 @@ describe('FileDragHostComponent', () => {
     });
   });
 
+  describe('openFilePicker', () => {
+    it('opens the native file picker from keyboard activation', () => {
+      const comp = makeComp();
+      const input = { click: jasmine.createSpy('click') } as Pick<HTMLInputElement, 'click'> as HTMLInputElement;
+      const event = jasmine.createSpyObj<Event>('event', ['preventDefault', 'stopPropagation']);
+
+      comp.openFilePicker(input, event);
+
+      expect(event.preventDefault).toHaveBeenCalled();
+      expect(event.stopPropagation).toHaveBeenCalled();
+      expect(input.click).toHaveBeenCalled();
+    });
+  });
+
   describe('ngOnInit — singleFileMode', () => {
     it('sets singleFileMode$ to true when multipleFilesMode is falsy', () => {
       const service = makeServiceMock();

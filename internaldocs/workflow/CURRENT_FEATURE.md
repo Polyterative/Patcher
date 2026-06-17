@@ -29,4 +29,4 @@
 
 #### Decision log
 
-- 2026-06-17T18:05+02:00 — Staged after completing the ngx-dropzone migration. Higher-priority open items were skipped because Manufacturer Accounts requires Supabase/RLS approval, Security Audit Remediation spans credential/RLS/dependency slices, Public Possession trend charts require schema approval for remaining work, E2E cleanup needs credentials, and E2E multi-instance depends on that cleanup. Remix has existing implementation context and remaining code-only UI/utility work.
+- 2026-06-17T18:05+02:00 — Staged after completing the ngx-dropzone migration and its follow-up macOS click regression. Higher-priority open items were skipped because Manufacturer Accounts requires Supabase/RLS approval, Security Audit Remediation spans credential/RLS/dependency slices, Public Possession trend charts require schema approval for remaining work, E2E cleanup needs credentials, and E2E multi-instance depends on that cleanup. Remix has existing implementation context and remaining code-only UI/utility work.
