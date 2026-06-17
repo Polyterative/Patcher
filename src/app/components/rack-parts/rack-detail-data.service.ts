@@ -524,7 +524,7 @@ export class RackDetailDataService extends SubManager {
           return x;
         }),
         exhaustMap(x => this.backend.update.rack(x)),
-        this.takeUntilDestroyed(),
+        this.takeUntilDestroyed()
       )
       .subscribe(x => {
         this.analytics.capture('rack.privacy_toggled', { rack_id: this.singleRackData$.value?.id, public: this.singleRackData$.value?.public });
@@ -836,12 +836,12 @@ export class RackDetailDataService extends SubManager {
         );
       }),
       tap((updatedRackData: Rack) => this.singleRackData$.next(updatedRackData)),
-      this.takeUntilDestroyed(),
       catchError((err) => {
         console.error('Failed to update rack preview image:', err);
         SharedConstants.errorCustom(this.snackBar, 'Failed to update preview image. Please try again.');
         return EMPTY;
-      })
+      }),
+      this.takeUntilDestroyed()
     )
       .subscribe((updatedRackData: Rack) => {
         SharedConstants.successCustom(this.snackBar, `Preview image updated for "${ updatedRackData.name }".`);
@@ -862,7 +862,7 @@ export class RackDetailDataService extends SubManager {
           return x;
         }),
         switchMap(x => this.backend.update.rack(x)),
-        this.takeUntilDestroyed(),
+        this.takeUntilDestroyed()
       )
       .subscribe(x => {
         this.analytics.capture('rack.lock_toggled', { rack_id: this.singleRackData$.value?.id, locked: this.singleRackData$.value?.locked });
@@ -972,7 +972,7 @@ export class RackDetailDataService extends SubManager {
           SharedConstants.errorCustom(this.snackBar, 'Failed to load this rack. Refresh the page and try again.');
           return EMPTY;
         }),
-        this.takeUntilDestroyed(),
+        this.takeUntilDestroyed()
       )
       .subscribe(x => {
         if (!x?.data) {
@@ -1005,7 +1005,7 @@ export class RackDetailDataService extends SubManager {
           this.rackDetailUnavailableMessage$.next(this.buildUnavailableMessage());
           return EMPTY;
         }),
-        this.takeUntilDestroyed(),
+        this.takeUntilDestroyed()
       )
       .subscribe(x => {
         if (!x?.data) {
@@ -1023,7 +1023,7 @@ export class RackDetailDataService extends SubManager {
     this.singleRackData$
       .pipe(
         filter(x => !!x),
-        this.takeUntilDestroyed(),
+        this.takeUntilDestroyed()
       )
       .subscribe(rack => {
         this.isCurrentRackEditable$.next(!rack.locked);
@@ -1069,7 +1069,7 @@ export class RackDetailDataService extends SubManager {
       )),
       withLatestFrom(this.singleRackData$),
       filter(([{rackId}, rack]) => !!rack && rack.id === rackId),
-      this.takeUntilDestroyed(),
+      this.takeUntilDestroyed()
     )
       .subscribe(([{rackedModules}, rack]: [{rackedModules: RackedModule[]; rackId: number}, Rack]) => {
         // create a 2d array of racked modules and sort them by row
@@ -1082,7 +1082,7 @@ export class RackDetailDataService extends SubManager {
     this.rackOrderChange$
       .pipe(
         withLatestFrom(this.rowedRackedModules$, this.singleRackData$),
-        this.takeUntilDestroyed(),
+        this.takeUntilDestroyed()
       )
       .subscribe(([
                     {

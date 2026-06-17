@@ -398,8 +398,8 @@ export class PatchEditorComponent extends SubManager implements OnInit, OnDestro
             ? this.backend.GET.rackWithId(linkedRackId)
             : this.backend.GET.publicRackWithId(linkedRackId);
           return rackRead$.pipe(
-            switchMap((response: any) => {
-              const rack = response?.data as Rack | undefined;
+            switchMap((response: {data?: Rack | null}) => {
+              const rack = response?.data ?? undefined;
               if (!rack) {
                 return of(buildLinkedRackPreviewState(undefined));
               }

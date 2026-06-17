@@ -285,7 +285,7 @@ export class PatchDetailDataService extends SubManager implements OnDestroy {
             this.analytics.capture('patch.privacy_toggled', { patch_id: patch?.id, public: patch.public });
           })
         )),
-        this.takeUntilDestroyed(),
+        this.takeUntilDestroyed()
       )
       .subscribe();
     
