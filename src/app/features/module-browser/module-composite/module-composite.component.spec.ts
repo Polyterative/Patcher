@@ -1,8 +1,28 @@
+import {
+  Component,
+  Input,
+  NO_ERRORS_SCHEMA
+} from '@angular/core';
+import {
+  ComponentFixture,
+  TestBed
+} from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { ModuleCompositeComponent } from './module-composite.component';
 import {
   defaultModuleMinimalViewConfig
 } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
+import { ModulePossessionCounts } from 'src/app/components/module-parts/module-detail-data.models';
 import { DbModule } from 'src/app/models/module';
+
+@Component({
+  selector: 'app-module-details',
+  template: '',
+  standalone: false
+})
+class ModuleDetailsStubComponent {
+  @Input() possessionCounts: ModulePossessionCounts | undefined;
+}
 
 function makeModule(hp = 4, standard = 1): DbModule {
   return { hp, standard } as unknown as DbModule;
@@ -39,6 +59,10 @@ describe('ModuleCompositeComponent', () => {
     it('preferPortraitDetailSplit defaults to false', () => {
       expect(comp.preferPortraitDetailSplit).toBeFalse();
     });
+
+    it('possessionCounts defaults to undefined', () => {
+      expect(comp.possessionCounts).toBeUndefined();
+    });
   });
 
   describe('shouldUsePortraitDetailSplit', () => {
@@ -61,6 +85,38 @@ describe('ModuleCompositeComponent', () => {
     it('does not throw', () => {
       comp.data = makeModule();
       expect(() => comp.ngOnInit()).not.toThrow();
+    });
+  });
+
+  describe('template', () => {
+    let fixture: ComponentFixture<ModuleCompositeComponent>;
+
+    beforeEach(async () => {
+      await TestBed.configureTestingModule({
+        declarations: [ModuleCompositeComponent, ModuleDetailsStubComponent],
+        schemas: [NO_ERRORS_SCHEMA]
+      }).compileComponents();
+
+      fixture = TestBed.createComponent(ModuleCompositeComponent);
+      fixture.componentInstance.data = makeModule();
+    });
+
+    it('passes public possession counts to module details', () => {
+      fixture.componentInstance.possessionCounts = {
+        hasCount: 9,
+        wantsCount: 3,
+        sellsCount: 0
+      };
+
+      fixture.detectChanges();
+
+      const details = fixture.debugElement.query(By.directive(ModuleDetailsStubComponent))
+        .componentInstance as ModuleDetailsStubComponent;
+      expect(details.possessionCounts).toEqual({
+        hasCount: 9,
+        wantsCount: 3,
+        sellsCount: 0
+      });
     });
   });
 });

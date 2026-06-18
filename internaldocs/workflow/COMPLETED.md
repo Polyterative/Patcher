@@ -1,4 +1,5 @@
 # Completed Features
+- **2026-06-18** — MEDIUM: Module public possession statistics now render static owned/wanted/selling counts on module detail pages with a minimum-3 privacy threshold and pass-through/rendering coverage; schema-backed trend charts were split into an approval-gated follow-up.
 - **2026-06-18** — MEDIUM: Sentry — Issue Monitoring & Resolution Workflow now has a credential-safe operations guide, no-network readiness helper, triage/fix/closing rubric, and a separate on-hold live-audit follow-up.
 - **2026-06-18** — LOW: Dev utils — module detail dev tools now include a guarded Merge into target module flow that moves safe common duplicate references through `SupabaseService`, aborts on patch/rack blockers, deletes through the existing module delete path, and reports counts.
 - **2026-06-18** — HIGH: Security — Audit Remediation completed the safe repo-code hardening slice: removed tracked `.env`, added placeholder env template, disabled production source maps/named chunks, added noopener links, replaced bootstrap inline fallback, and normalized auth return URLs.
