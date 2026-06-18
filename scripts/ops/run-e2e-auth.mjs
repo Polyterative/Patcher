@@ -40,7 +40,8 @@ const envPath = resolve(rootDir, '.env');
 if (existsSync(envPath)) {
     for (const line of readFileSync(envPath, 'utf8').split('\n')) {
         const match = line.match(/^\s*([\w]+)\s*=\s*(.*)$/);
-        if (match) process.env[match[1]] ??= match[2].replace(/^['"]|['"]$/g, '');
+        const value = match?.[2].replace(/^['"]|['"]$/g, '').trim();
+        if (match && value) process.env[match[1]] ??= value;
     }
 }
 
@@ -50,6 +51,9 @@ if (!process.env['E2E_TEST_EMAIL'] || !process.env['E2E_TEST_PASSWORD']) {
 }
 
 const args = ['test', '--reporter=list', '--project=chromium-auth', ...normalizePlaywrightArgs(process.argv.slice(2))];
+if (!args.some(arg => arg === '--workers' || arg.startsWith('--workers='))) {
+    args.splice(1, 0, '--workers=1');
+}
 const result = spawnSync('playwright', args, {stdio: 'inherit', cwd: rootDir});
 
 if (result.error) {

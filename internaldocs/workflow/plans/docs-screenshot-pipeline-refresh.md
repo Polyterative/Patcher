@@ -2,7 +2,7 @@
 
 ## Status
 
-Backlog — MEDIUM. Two-phase work (in-repo capture pipeline first, external docs sync second). Not active in `CURRENT_FEATURE.md`.
+Staged for next coordinator-loop — MEDIUM. Two-phase work (in-repo capture pipeline first, external docs sync second). Dedicated E2E account cleanup is now complete; start with in-repo audit only and do not edit `../Patcher-docs` autonomously.
 
 ## User intent
 
@@ -191,3 +191,4 @@ When this plan is picked up by `coordinator-loop`:
 <!-- Append timestamped one-liners as the plan progresses. -->
 
 - 2026-06-18 — Plan filed by feature-notetaker. Phase split (in-repo pipeline trust → external docs sync) chosen because the user explicitly flagged uncertainty about whether current E2E specs capture good data; sync should not run until that uncertainty is resolved.
+- 2026-06-18T20:07+02:00 — Coordinator staged this next after dedicated E2E account cleanup because it is the smallest unblocked quality task, directly depends on the now-working auth E2E account, and can begin safely with an in-repo screenshot audit before any external docs sync.

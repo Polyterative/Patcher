@@ -235,7 +235,15 @@ export function createAuthNamespace(
           const authProviders = (sessionUser.app_metadata?.['providers'] as string[]) || [authProvider];
           return ns._getUserNameFromDatabase(sessionUser.id).pipe(
             map(usernameGetterResponse => {
-              const profile = usernameGetterResponse.data[0];
+              if (usernameGetterResponse.error) {
+                return null;
+              }
+
+              const profile = usernameGetterResponse.data?.[0];
+              if (!profile) {
+                return null;
+              }
+
               return {
                 id: sessionUser.id,
                 email: sessionUser.email,

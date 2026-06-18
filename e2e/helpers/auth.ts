@@ -16,15 +16,19 @@ export interface E2EAuthCredentials {
 }
 
 export function loadE2EEnvFromDotEnv(): void {
-  try {
-    process.loadEnvFile(E2E_ENV_PATH);
-  } catch (error: unknown) {
-    const errorCode = (error as {
-      code?: string;
-    })?.code;
+  if (!fs.existsSync(E2E_ENV_PATH)) {
+    return;
+  }
 
-    if (errorCode !== 'ENOENT') {
-      throw error;
+  for (const line of fs.readFileSync(E2E_ENV_PATH, 'utf8').split(/\r?\n/)) {
+    const match = line.match(/^\s*([\w]+)\s*=\s*(.*)$/);
+    if (!match) {
+      continue;
+    }
+
+    const value = match[2].replace(/^['"]|['"]$/g, '').trim();
+    if (value) {
+      process.env[match[1]] ??= value;
     }
   }
 }
@@ -62,9 +66,36 @@ async function loginWithCredentials(page: Page, credentials: E2EAuthCredentials,
   await page.locator('vite-error-overlay').waitFor({state: 'hidden', timeout: 5_000}).catch(() => undefined);
   await loginButton.click({force: true});
 
+  await page.waitForURL(url => /\/user\/area/.test(url.pathname) || /\/auth\/complete-profile/.test(url.pathname), {
+    timeout: 30_000
+  });
+
+  if (/\/auth\/complete-profile/.test(page.url())) {
+    await completeProfile(page, credentials.email);
+    await page.waitForURL(/\/user\/area/, {timeout: 30_000});
+  }
+
   await expect(page).toHaveURL(/\/user\/area/, {timeout: 30_000});
   await page.waitForLoadState('networkidle');
   await expect(page.locator('app-user-area-root').first()).toBeVisible({timeout: 20_000});
+}
+
+async function completeProfile(page: Page, email: string): Promise<void> {
+  const username = buildE2EUsername(email);
+  const usernameInput = page.locator('app-complete-profile input').first();
+  const submitButton = page.locator('app-complete-profile app-brand-primary-button a.brand-button:not(.disabled):not([disabled])').first();
+
+  await expect(usernameInput).toBeVisible({timeout: 20_000});
+  await usernameInput.fill(username);
+  await expect(submitButton).toBeVisible({timeout: 10_000});
+  await submitButton.click({force: true});
+}
+
+function buildE2EUsername(email: string): string {
+  return email
+    .split('@')[0]
+    .replace(/[^a-zA-Z0-9_-]/g, '-')
+    .slice(0, 30);
 }
 
 export async function loginAndSaveStorageState(baseURL: string, storageStatePath = AUTH_STORAGE_STATE_PATH): Promise<void> {
