@@ -37,9 +37,9 @@ The user explicitly does not remember whether the current end-to-end tests are c
 
 ### Package scripts
 
-- `pnpm test:e2e:screenshots` — wipes `src/assets/screenshots/major-area-screenshots/`, installs Chromium, then runs **only** `auth-major-area-screenshots.spec.ts` on the `chromium-screenshots` project at 8 workers.
-- Pretest hook `pretest:e2e:screenshots` does the wipe/mkdir.
-- No script currently copies output to `../Patcher-docs/.gitbook/assets/`.
+- `pnpm test:e2e:screenshots` — installs Chromium, loads `.env`, skips safely when E2E credentials are missing, and only after credentials are present wipes `src/assets/screenshots/major-area-screenshots/` before running **only** `auth-major-area-screenshots.spec.ts` on the `chromium-screenshots` project at 8 workers.
+- Pretest hook `pretest:e2e:screenshots` installs Chromium only; guarded deletion/mkdir now happens inside `scripts/ops/run-e2e-screenshots.mjs` after auth credentials are confirmed.
+- `scripts/dev/sync-docs-screenshots.mjs` previews the current in-repo → docs asset mapping, verifies the sibling docs worktree is clean/on the expected branch, and refuses mutating sync while the checked-in JPEG captures would overwrite existing PNG docs assets.
 
 ### Documentation repo (`../Patcher-docs`)
 
@@ -192,3 +192,6 @@ When this plan is picked up by `coordinator-loop`:
 
 - 2026-06-18 — Plan filed by feature-notetaker. Phase split (in-repo pipeline trust → external docs sync) chosen because the user explicitly flagged uncertainty about whether current E2E specs capture good data; sync should not run until that uncertainty is resolved.
 - 2026-06-18T20:07+02:00 — Coordinator staged this next after dedicated E2E account cleanup because it is the smallest unblocked quality task, directly depends on the now-working auth E2E account, and can begin safely with an in-repo screenshot audit before any external docs sync.
+- 2026-06-18T20:02+02:00 — Safe runner work completed without production changes: `pnpm test:e2e:screenshots` now loads `.env`, skips with `[e2e-screenshots]` when `E2E_TEST_EMAIL` / `E2E_TEST_PASSWORD` are missing, and only deletes/recreates `src/assets/screenshots/major-area-screenshots` after credentials are present. The forced-empty credential validation preserved all 8 existing images.
+- 2026-06-18T20:02+02:00 — Real screenshot capture/review remains queued because sanctioned local E2E credentials were unavailable. No visual audit approval was recorded and no selectors/data prep were changed.
+- 2026-06-18T20:02+02:00 — Phase-2 sync tooling was added in dry-run-safe form only. Current source JPEGs map to existing docs PNG assets, so mutating sync is blocked until the maintainer approves the framing/naming/format decision and external `../Patcher-docs` changes. GitHub Actions secret rotation remains blocked by current token permissions.

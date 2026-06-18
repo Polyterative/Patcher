@@ -48,6 +48,7 @@ second source of rules.
 | [patterns/UI_PATTERNS.md](./patterns/UI_PATTERNS.md) | UI interaction and shared surface patterns |
 | [patterns/RXJS_GOTCHAS.md](./patterns/RXJS_GOTCHAS.md) | Small reactive edge cases and ordering gotchas |
 | [testing/UNIT_TESTING.md](./testing/UNIT_TESTING.md) | Shared unit test conventions and examples |
+| [testing/DOCS_SCREENSHOTS.md](./testing/DOCS_SCREENSHOTS.md) | Docs screenshot regeneration, review, and guarded sync workflow |
 
 ### Feature Specs
 

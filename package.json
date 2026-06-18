@@ -38,8 +38,8 @@
     "test:e2e": "playwright test --reporter=list --project=chromium",
     "pretest:e2e:auth": "pnpm exec playwright install chromium",
     "test:e2e:auth": "node scripts/ops/run-e2e-auth.mjs",
-    "pretest:e2e:screenshots": "rm -rf src/assets/screenshots/major-area-screenshots && mkdir -p src/assets/screenshots/major-area-screenshots && pnpm exec playwright install chromium",
-    "test:e2e:screenshots": "playwright test --reporter=list --workers=8 --project=chromium-screenshots e2e/screenshots/auth-major-area-screenshots.spec.ts",
+    "pretest:e2e:screenshots": "pnpm exec playwright install chromium",
+    "test:e2e:screenshots": "node scripts/ops/run-e2e-screenshots.mjs",
     "pretest:e2e:ci": "pnpm exec playwright install chromium",
     "test:e2e:ci": "playwright test --reporter=list --workers=1",
     "test:e2e:prod": "pnpm build && pnpm test:e2e:prod:run",
@@ -60,7 +60,8 @@
     "switch:production": "git update-index --no-skip-worktree src/build.ts && git checkout -- src/build.ts && git checkout production && git update-index --skip-worktree src/build.ts",
     "merge:prod-to-dev": "pnpm switch:develop && git merge production",
     "merge:dev-to-prod": "pnpm switch:production && git merge develop",
-    "prepare": "husky"
+    "prepare": "husky",
+    "sync:docs-screenshots": "node scripts/dev/sync-docs-screenshots.mjs"
   },
   "lint-staged": {
     "src/**/*.scss": [
