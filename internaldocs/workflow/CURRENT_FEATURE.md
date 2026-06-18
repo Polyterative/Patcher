@@ -18,7 +18,7 @@ Status: **No active feature.** Patch SVG previews backend/storage direction is a
 
 #### Why this is next
 
-- Docs screenshot refresh is gated on sanctioned credentials and approval for external docs sync.
+- Docs screenshot refresh has product-owner format approval: canonical docs screenshots are the desktop JPEGs produced by the current E2E output. Credentialed capture/review and any `../Patcher-docs` mutation remain separate gates.
 - Patch SVG previews backend/storage direction is approved, but actual migrations/storage/RLS were not applied in this docs-only checkpoint.
 - Marketplace Purchase Price History is gated on `user_module_acquisitions` schema/RLS approval after the pure helper foundation.
 - Cross-entity Cool reactions and Module I/O support require schema/RLS/data-model approval before implementation.
@@ -41,3 +41,4 @@ Status: **No active feature.** Patch SVG previews backend/storage direction is a
 - 2026-06-18T20:30+02:00 — Implemented import-safe marketplace money helpers for ISO currency normalization, integer minor-unit parsing, and Intl display formatting with targeted unit coverage; schema/RLS/backend work remains blocked on approval.
 - 2026-06-18T20:34+02:00 — No further safe backlog implementation remains after the helper foundation: all remaining open candidates are approval-, credential-, external-docs-, dependency-, or schema/RLS-gated.
 - 2026-06-18T20:58+02:00 — Product owner approved Patch SVG previews backend/storage direction (`patches.image`, dedicated `patches` bucket, owner-only writes, visibility-aligned reads, deterministic patch id/version filename); no migrations/storage/RLS were applied here.
+- 2026-06-18T20:59+02:00 — Product owner chose the canonical docs screenshot format: desktop JPEG as produced by the current E2E output. This records format/framing approval only; no credentials are required and `../Patcher-docs` must not be mutated in this checkpoint.

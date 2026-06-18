@@ -2,7 +2,7 @@
 
 ## Status
 
-Staged for next coordinator-loop — MEDIUM. Two-phase work (in-repo capture pipeline first, external docs sync second). Dedicated E2E account cleanup is now complete; start with in-repo audit only and do not edit `../Patcher-docs` autonomously.
+Staged for next coordinator-loop — MEDIUM. Two-phase work (in-repo capture pipeline first, external docs sync second). Dedicated E2E account cleanup is now complete; canonical docs screenshots are the desktop JPEGs produced by the current E2E output. Start with in-repo audit only and do not edit `../Patcher-docs` autonomously.
 
 ## User intent
 
@@ -39,7 +39,7 @@ The user explicitly does not remember whether the current end-to-end tests are c
 
 - `pnpm test:e2e:screenshots` — installs Chromium, loads `.env`, skips safely when E2E credentials are missing, and only after credentials are present wipes `src/assets/screenshots/major-area-screenshots/` before running **only** `auth-major-area-screenshots.spec.ts` on the `chromium-screenshots` project at 8 workers.
 - Pretest hook `pretest:e2e:screenshots` installs Chromium only; guarded deletion/mkdir now happens inside `scripts/ops/run-e2e-screenshots.mjs` after auth credentials are confirmed.
-- `scripts/dev/sync-docs-screenshots.mjs` previews the current in-repo → docs asset mapping, verifies the sibling docs worktree is clean/on the expected branch, and refuses mutating sync while the checked-in JPEG captures would overwrite existing PNG docs assets.
+- `scripts/dev/sync-docs-screenshots.mjs` previews the current in-repo → docs asset mapping and verifies the sibling docs worktree is clean/on the expected branch. Product-owner format approval is now settled on the checked-in desktop JPEG captures, but mutating sync into `../Patcher-docs` still needs separate explicit approval.
 
 ### Documentation repo (`../Patcher-docs`)
 
@@ -49,7 +49,7 @@ The user explicitly does not remember whether the current end-to-end tests are c
   - `README.md` (home hero)
   - `learn-patcher.xyz/{patches,modules,racks,user-area,public-profiles,account-and-privacy}.md`
   - `the-project/high-res-official-images.md` ("Current product screenshots" + press boilerplate)
-- File names are PNG and "iPad Pro" framed; in-repo specs currently produce desktop-viewport JPGs with different names (`01-home.jpg` …). **Names, format, and viewport do not match.** Any sync step needs an explicit mapping or a new framing target.
+- File names are PNG and "iPad Pro" framed; in-repo specs currently produce desktop-viewport JPGs with different names (`01-home.jpg` …). Product owner chose the current E2E desktop JPEGs as canonical, so the docs side should migrate to that format/framing via an explicit mapping instead of adding a new iPad framing target.
 
 ### Gaps and risks observed
 
@@ -57,7 +57,7 @@ The user explicitly does not remember whether the current end-to-end tests are c
 - **No determinism contract:** screenshots depend on the dedicated test account's data — if that account drifts, so do the images. The dedicated test account cleanup plan must land first or be sequenced together.
 - **No visual diff / manual approval gate:** today the only signal a screenshot is "good" is whether the test passed; nothing flags a regressed layout, empty state, or content drift.
 - **No sync mechanism to Patcher-docs:** copying is fully manual today.
-- **Format / framing mismatch** between in-repo desktop JPGs and docs "ipad-pro" PNGs.
+- **Docs migration mismatch** between canonical in-repo desktop JPGs and existing docs "ipad-pro" PNG references.
 - **Auth required for almost all targets** — the public-facing home is the only unauthenticated capture; everything else needs `E2E_TEST_EMAIL` / `E2E_TEST_PASSWORD`. Any "regenerate docs" workflow must run somewhere those secrets are available.
 
 ## Future strategy
@@ -74,7 +74,7 @@ Goal: when a maintainer runs `pnpm test:e2e:screenshots`, they get a folder of i
   - Confirm no stale / debug overlays leak into output.
 - Decide and document the canonical "good capture" criteria (viewport, dpi, framing, light/dark, empty vs populated, what content to show).
 - Add the missing surfaces the docs need but the spec doesn't cover (`account-and-privacy`, `public-profiles`).
-- Decide whether docs ship the desktop frame we already capture or a separate "ipad-pro" framing — recommend keeping the desktop captures and updating docs naming/markdown to match, rather than maintaining two frame profiles.
+- Use the approved desktop JPEG frame produced by the existing E2E capture output; update docs naming/markdown to match during the separately approved docs sync instead of maintaining two frame profiles.
 - Add a manual-review checklist (developer opens `src/assets/screenshots/major-area-screenshots/` after a run and signs off in the plan's Decision log).
 
 ### Phase 2 — External docs sync
@@ -108,7 +108,7 @@ Goal: a low-risk, repeatable way to push validated images into `../Patcher-docs`
 - The dedicated test account has (or will have, after `e2e-dedicated-test-account-cleanup`) deterministic modules / racks / patches sufficient to render a credible screenshot for each surface.
 - Maintainers running this workflow have `E2E_TEST_EMAIL` / `E2E_TEST_PASSWORD` set locally.
 - `../Patcher-docs` lives next to `Patcher` on every machine where the sync runs (consistent with current dev layout).
-- Desktop viewport captures are an acceptable replacement for the existing "ipad-pro" framed PNGs; if not, the plan grows a framing sub-task.
+- Desktop viewport JPEG captures are the approved replacement for the existing "ipad-pro" framed PNGs; no separate framing sub-task is needed.
 
 ## Dependencies and sequencing
 
@@ -126,7 +126,7 @@ Goal: a low-risk, repeatable way to push validated images into `../Patcher-docs`
 ## Structural layer
 
 - Extend `SCREENSHOT_TARGETS` to cover every docs page that currently shows an iPad Pro screenshot (`account-and-privacy`, `public-profiles`, plus parity with existing ones).
-- Settle the naming / format question (keep `NN-area.jpg` desktop or rename to `patcher-<area>.png`); update either the spec output or the docs markdown to match, exactly once.
+- Settle the final stable JPEG naming (`NN-area.jpg` desktop versus docs-oriented `patcher-<area>.jpg`); update either the spec output or the docs markdown to match, exactly once.
 - Add `scripts/dev/sync-docs-screenshots.mjs` that copies the validated set into `../Patcher-docs`, with safety checks (sibling exists, clean working tree, expected branch) and a printed diff. Never commits.
 - Add a short ops doc (under `internaldocs/testing/` or `internaldocs/patterns/`) describing: when to regen, how to validate, how to sync, who reviews.
 
@@ -171,7 +171,7 @@ External (sibling repo, separate git history — must not be auto-committed by t
 ## Risks and open questions
 
 - **Test account drift:** if the dedicated test account loses content, captures degrade silently. Sequencing answer: land `e2e-dedicated-test-account-cleanup` first.
-- **Framing decision:** keeping desktop JPGs is simpler; switching to an iPad Pro frame is closer to the historical look. Need an explicit call before phase 2 begins.
+- **Naming decision remains:** format/framing is settled on desktop JPEGs; before phase 2 mutates docs, choose whether to preserve the current `NN-area.jpg` names or migrate to docs-oriented `patcher-<area>.jpg` names.
 - **External repo safety:** auto-pushing into `Patcher-docs` is out of scope, but even local copy needs guardrails to avoid clobbering uncommitted edits there.
 - **Auth secrets in regen workflow:** running the auth pipeline outside a single maintainer's machine (e.g. CI) requires secret handling — explicitly out of scope for MVP.
 - **Module / patch / rack id stability:** module `1025`, owned patch / rack lookups via helpers — confirm these will not change identity over time, or pin them via a fixture-managed identifier.
@@ -180,7 +180,7 @@ External (sibling repo, separate git history — must not be auto-committed by t
 ## Approval queue
 
 - **Credential gate:** provide sanctioned local `E2E_TEST_EMAIL` and `E2E_TEST_PASSWORD` values (or confirm which maintainer machine should run them) so `pnpm test:e2e:screenshots` can capture current artifacts and a coordinator can visually review every generated image.
-- **External docs gate:** approve whether the next sync should keep current in-repo desktop JPEGs, switch the capture output to PNG, or preserve the historical `patcher-*-ipad-pro.png` framed naming before any mutating `../Patcher-docs` copy.
+- **External docs format gate: approved 2026-06-18T20:59+02:00.** Use desktop JPEGs as produced by the current E2E output; do not switch capture output to PNG or preserve the historical iPad-Pro framed PNG format.
 - **Docs repo mutation gate:** after the format/framing decision, explicitly approve a local-only sync into a clean `../Patcher-docs` checkout; the script will not commit or push.
 
 ## Coordinator-loop handoff
@@ -200,4 +200,5 @@ When this plan is picked up by `coordinator-loop`:
 - 2026-06-18T20:07+02:00 — Coordinator staged this next after dedicated E2E account cleanup because it is the smallest unblocked quality task, directly depends on the now-working auth E2E account, and can begin safely with an in-repo screenshot audit before any external docs sync.
 - 2026-06-18T20:02+02:00 — Safe runner work completed without production changes: `pnpm test:e2e:screenshots` now loads `.env`, skips with `[e2e-screenshots]` when `E2E_TEST_EMAIL` / `E2E_TEST_PASSWORD` are missing, and only deletes/recreates `src/assets/screenshots/major-area-screenshots` after credentials are present. The forced-empty credential validation preserved all 8 existing images.
 - 2026-06-18T20:02+02:00 — Real screenshot capture/review remains queued because sanctioned local E2E credentials were unavailable. No visual audit approval was recorded and no selectors/data prep were changed.
-- 2026-06-18T20:02+02:00 — Phase-2 sync tooling was added in dry-run-safe form only. Current source JPEGs map to existing docs PNG assets, so mutating sync is blocked until the maintainer approves the framing/naming/format decision and external `../Patcher-docs` changes. GitHub Actions secret rotation remains blocked by current token permissions.
+- 2026-06-18T20:02+02:00 — Phase-2 sync tooling was added in dry-run-safe form only. Current source JPEGs map to existing docs PNG assets, so mutating sync is blocked until the maintainer approves final JPEG asset naming and external `../Patcher-docs` changes. GitHub Actions secret rotation remains blocked by current token permissions.
+- 2026-06-18T20:59+02:00 — Product owner approved the canonical docs screenshot format as desktop JPEG exactly as produced by the current E2E output. This removes the PNG/iPad-Pro framing question; credentialed capture/visual review and any local-only `../Patcher-docs` mutation remain separately gated, and this checkpoint must not touch the sibling docs repo.
