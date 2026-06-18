@@ -2,35 +2,18 @@
   <div class="row gap1"
   >
     @if (name) {
-      <!--            <div fxFlex='2rem'-->
-      <!--                 fxLayoutAlign='top'-->
-      <!--                 [ngStyle]='{"background-image": "url("+ backgroundImagePath + ")"}'-->
-      <!--                 class='bg'-->
-      <!--            >-->
-      <!--                -->
-        <!--            </div>-->
-      <div fxLayout="column "
-           fxFlex="grow"
-           fxLayoutGap="1rem"
+      <div class="layout-column layout-flex-grow layout-gap-1"
       >
-        <div fxLayout="row"
-             fxFlex="100"
-             fxLayoutGap="1rem"
+        <div class="layout-row layout-flex-full layout-gap-1"
         >
-          <!--          <div fxFlex="100"-->
-          <!--               style="font-size: 2rem; margin-right: 1rem"-->
-          <!--          >👤-->
-          <!--          </div>-->
-          <div fxFlex="grow"
-               class="name"
-               fxLayoutAlign="start"
+          <div
+               class="name layout-flex-grow layout-align-start"
           >
             {{ name }}
           </div>
         </div>
         @if (!hideLogoff) {
-          <div fxFlex="100"
-               fxLayoutAlign="end"
+          <div class="layout-flex-full layout-align-end"
         >
             <app-brand-primary-button theme="warning"
                                       (click$)="logoff$.emit()"

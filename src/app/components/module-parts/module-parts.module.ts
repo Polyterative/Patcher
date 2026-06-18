@@ -3,7 +3,6 @@ import {
   NgOptimizedImage
 } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { RouterModule } from '@angular/router';
 import { TimeagoModule } from 'ngx-timeago';
 import { SharedAtomsModule } from 'src/app/components/shared-atoms/shared-atoms.module';
@@ -89,7 +88,6 @@ import { DescriptionKeywordHighlightPipe } from './shared-pipes/description-keyw
     TimeagoModule.forChild(),
     MatCardModule,
     BrandPrimaryButtonComponent,
-    FlexLayoutModule,
     MatDividerModule,
     MatFormEntityComponent,
     FormValidPipe,

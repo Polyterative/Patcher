@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import {
   CanActivateFn,
@@ -21,7 +20,6 @@ import { AppFaqComponent } from "src/app/components/shared-atoms/app-faq/app-faq
   imports: [
     RouterModule,
     CommonModule,
-    FlexLayoutModule,
     ScreenWrapperComponent,
     MatToolbarModule,
     FaqComponent,

@@ -1,10 +1,9 @@
 @if ({user: userDataHandlerService.store.user$|async}; as bag) {
-  <lib-clean-card fxLayout="column"
+  <lib-clean-card class="layout-column layout-gap-1"
                   style="background-color: rgba(0, 0, 0, 50)"
-                  fxLayoutGap="1rem"
   >
     @if (bag.user) {
-      <div fxFlex="100"
+      <div class="layout-flex-full"
       >
         <app-user-avatar
           [name]="bag.user.username"
@@ -16,7 +15,7 @@
       </div>
     } @else {
       <lib-clean-card>
-        <app-brand-primary-button fxFlex="grow"
+        <app-brand-primary-button class="layout-flex-grow"
                                   innerFlex="grow"
                                   (click$)="userDataHandlerService.loginButtonClick$.next()"
         >Login/Signup

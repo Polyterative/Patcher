@@ -30,17 +30,16 @@
         ></app-module-part-manufacturer>
       }
       @if (data.standard.id === 0) {
-        <div fxFlex="grow"
+        <div class="layout-flex-grow"
         ></div>
       }
       @if (data.standard.id === 0) {
-        <div fxFlex="grow"
+        <div class="layout-flex-grow"
         ></div>
       }
       <app-module-part-name [data]="data"
-                            [fxLayoutAlign]="data.hp<=6?'start center':'center center'"
                             [ngClass]="{'half-sizing':data.hp<3,'rotated':data.hp<6}"
-                            [textSize]="calculateTextSize(data)"
+                            [textSize]="calculateTextSize(data)" [class.layout-align-start-center]="data.hp <= 6" [class.layout-align-center-center]="data.hp > 6"
       ></app-module-part-name>
     </div>
     <app-module-realistic-holeline [data]="data"

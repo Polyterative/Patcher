@@ -4,8 +4,7 @@
   @let analysisMode = (rackDetailDataService.analysisMode$ | async) ?? analysisModes.off;
   @let shouldShowPanelImages = (rackDetailDataService.shouldShowPanelImages$ | async);
   <mat-card-subtitle [ngStyle]="{width: rackData.hp+'rem'}"
-                     fxLayoutAlign="center center"
-                     class="widthRuler"
+                     class="widthRuler layout-align-center-center"
   >{{rackData.hp}}</mat-card-subtitle>
 
   <div class="col gap0 rackScreen"
@@ -401,7 +400,7 @@
         </app-brand-primary-button>
       </div>
     }
-    <div fxFlex="1 1 auto"></div>
+    <div class="layout-flex-auto"></div>
     
     @if (isCurrentRackEditable && isCurrentRackPropertyOfCurrentUser) {
       <div
@@ -418,5 +417,5 @@
     }
   </div>
   
-  <div fxFlex="100"></div>
+  <div class="layout-flex-full"></div>
 </div>

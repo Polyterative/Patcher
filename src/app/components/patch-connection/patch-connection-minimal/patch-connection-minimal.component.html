@@ -114,8 +114,7 @@
   <ng-template #ordinal>
     @if (index) {
         <mat-card-subtitle
-          fxLayoutAlign="end center"
-          class="monospace"
+          class="monospace layout-align-end-center"
           [ngClass]="index % 5 !== 0 ? 'fade-ordinal' : ''"
         >#{{ index }}
         </mat-card-subtitle>

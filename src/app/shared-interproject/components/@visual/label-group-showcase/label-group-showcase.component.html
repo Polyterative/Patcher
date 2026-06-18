@@ -1,19 +1,14 @@
-<div class="value-showcase"
-     [fxLayout]="valueBelow ? 'column' : 'row'"
-     fxLayoutGap="0.2rem"
+<div class="value-showcase layout-gap-02" [class.layout-column]="valueBelow" [class.layout-row]="!valueBelow"
 >
-  <div fxFlex="grow"
-       class="label"
+  <div
+       class="label layout-flex-grow"
   >{{ label }}</div>
-  <div fxFlex="100"
-       fxLayout="row"
-       fxLayoutAlign="end"
+  <div class="layout-flex-full layout-row layout-align-end"
   >
-    <div fxFlex="100"
+    <div class="layout-flex-full"
          [class]="bigText ? 'value' : null"
     >
-      <div *ngIf="pushToEnd"
-           fxFlex="grow"
+      <div class="layout-flex-grow" *ngIf="pushToEnd"
       ></div>
       <ng-content></ng-content>
     </div>

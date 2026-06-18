@@ -14,7 +14,6 @@ import {
 import { SeoAndUtilsService } from '../seo-and-utils.service';
 import { ScreenWrapperComponent } from '../../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component';
 import { HeroContentCardComponent } from '../../../shared-interproject/components/@visual/hero-content-card/hero-content-card.component';
-import { FlexModule } from '@angular/flex-layout/flex';
 import { LabelValueShowcaseComponent } from '../../../shared-interproject/components/@visual/label-value-showcase/label-value-showcase.component';
 import { MatFormField, MatLabel, MatInput, MatError } from '@angular/material/input';
 import { NgIf, AsyncPipe, TitleCasePipe } from '@angular/common';
@@ -50,7 +49,7 @@ export function confirmMatchesNewValidator(): ValidatorFn {
     templateUrl: './user-management.component.html',
     styleUrls: ['./user-management.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [ScreenWrapperComponent, HeroContentCardComponent, FlexModule, LabelValueShowcaseComponent, FormsModule, ReactiveFormsModule, MatFormField, MatLabel, MatInput, NgIf, MatError, MatButton, MatIcon, BrandPrimaryButtonComponent, MatTooltip, AsyncPipe, TitleCasePipe, TimeagoModule, SupabaseUtcTimestampPipe]
+    imports: [ScreenWrapperComponent, HeroContentCardComponent, LabelValueShowcaseComponent, FormsModule, ReactiveFormsModule, MatFormField, MatLabel, MatInput, NgIf, MatError, MatButton, MatIcon, BrandPrimaryButtonComponent, MatTooltip, AsyncPipe, TitleCasePipe, TimeagoModule, SupabaseUtcTimestampPipe]
 })
 export class UserManagementComponent implements OnInit {
   @Input() ignoreSeo: boolean = false;

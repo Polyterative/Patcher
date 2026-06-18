@@ -3,7 +3,6 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -85,7 +84,6 @@ import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-s
     MatCardModule,
     ReactiveFormsModule,
     BrandPrimaryButtonComponent,
-    FlexLayoutModule,
     MatDividerModule,
     MatFormEntityComponent,
     MatIconModule,

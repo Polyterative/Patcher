@@ -2,7 +2,6 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { RouterModule } from '@angular/router';
 import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.module';
 import { PatchModule } from 'src/app/components/patch-parts/patch.module';
@@ -93,7 +92,6 @@ import { SharedAtomsModule } from 'src/app/components/shared-atoms/shared-atoms.
       }
     ]),
     PatchModule,
-    FlexLayoutModule,
     MatCardModule,
     HeroContentCardComponent,
     DragDropModule,

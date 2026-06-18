@@ -3,10 +3,8 @@
   >
     <div class="row gap1"
     >
-      <div fxLayout="column"
-           fxLayoutGap="1rem"
-           fxFlex.gt-lg="15rem"
-           class="sidebar"
+      <div
+           class="sidebar layout-column layout-gap-1 layout-flex-15rem-gt-lg"
       >
         <div>
           <router-outlet name="user"></router-outlet>
@@ -15,20 +13,16 @@
           <router-outlet name="sidebar"></router-outlet>
         </div>
       </div>
-      <div fxFlex="100"
-           fxLayout="row"
-           fxLayoutGap="1rem"
+      <div class="layout-flex-full layout-row layout-gap-1"
       >
-        <div fxFlex="grow"
-             class="content"
+        <div
+             class="content layout-flex-grow"
         >
           <ng-container *ngIf="title else content ">
       
-            <div fxFlex="100"
-                 fxLayout="column"
-                 fxLayoutGap=".5rem"
+            <div class="layout-flex-full layout-column layout-gap-05"
             >
-              <mat-toolbar fxFlex="4rem"
+              <mat-toolbar class="layout-flex-4rem"
                            style="background-color: #778698"
                            color="primary"
                            id="navbar"
@@ -45,12 +39,12 @@
             <router-outlet></router-outlet>
           </ng-template>
         </div>
-        <div fxFlex="100">
+        <div class="layout-flex-full">
           <router-outlet name="sidebar-right"></router-outlet>
         </div>
       </div>
     </div>
-    <div fxFlex="100">
+    <div class="layout-flex-full">
       <router-outlet name="content-below"></router-outlet>
     </div>
   </div>

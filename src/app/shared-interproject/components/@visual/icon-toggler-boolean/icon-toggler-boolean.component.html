@@ -1,12 +1,9 @@
-<div fxFlex="100"
-     fxLayout="column"
-     fxLayoutGap=".5rem"
+<div
      [matTooltip]="description"
      matTooltipPosition="above"
-     class="item"
+     class="item layout-flex-full layout-column layout-gap-05"
 >
-  <div fxFlex="100"
-       fxLayoutAlign="center center"
+  <div class="layout-flex-full layout-align-center-center"
   >
     <mat-icon *ngIf="icon">
       <ng-container *ngIf="(!iconOff)||(data|async)">{{icon}}</ng-container>

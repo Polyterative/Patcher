@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatCardModule } from "@angular/material/card";
 import { RouterModule } from '@angular/router';
 import { UserLoginDataService } from 'src/app/features/backbone/login/login-page/user-login-data.service';
@@ -33,7 +32,6 @@ import { SSOButtonsComponent } from '../sso-buttons/sso-buttons.component';
     EmptyStateComponent,
     ScreenWrapperComponent,
     HeroContentCardComponent,
-    FlexLayoutModule,
     LoginEmailModule,
     RouterModule,
     MatCardModule,

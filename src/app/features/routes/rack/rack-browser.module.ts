@@ -2,7 +2,6 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.module';
 import { RackModule } from 'src/app/components/rack-parts/rack.module';
 import { ModuleBrowserRootModule } from 'src/app/features/module-browser/module-browser-root/module-browser-root.module';
@@ -101,7 +100,6 @@ import { AdviceTooltipComponent } from "src/app/shared-interproject/components/@
     ]),
     RackModule,
     ModuleBrowserRootModule,
-    FlexLayoutModule,
     MatCardModule,
     HeroContentCardComponent,
     DragDropModule,

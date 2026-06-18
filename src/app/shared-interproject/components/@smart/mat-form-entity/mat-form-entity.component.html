@@ -2,13 +2,12 @@
   options:(options$|async)
 }; as bag) {
   @if (!(type === types.DATE)) {
-    <mat-form-field
+    <mat-form-field class="layout-flex-full"
       [appearance]="formFieldAppearanceType"
       [floatLabel]="styleOptions.floatLabel"
       [hideRequiredMarker]="styleOptions.hideRequired"
       [matTooltipPosition]="tooltipPosition"
       [matTooltip]="tooltip"
-      fxFlex="100"
     >
       <mat-label>
         @if (iconL1) {
@@ -19,9 +18,6 @@
         {{ label }}
       </mat-label>
       <!--  <ng-container *ngIf="type===types.OKKO">-->
-      <!--    <div fxFlex="grow"-->
-      <!--         fxLayout="row"-->
-      <!--         fxLayoutGap=".5rem"-->
       <!--    >-->
       <!--      <button mat-stroked-button-->
       <!--              color="primary"-->
@@ -114,10 +110,9 @@
         />
       }
       @if ((type === types.SELECT)) {
-        <mat-select [formControl]="control"
+        <mat-select class="layout-flex-full" [formControl]="control"
                     [placeholder]="placeholder"
                     [compareWith]="compareFunctionStrictObject"
-                    fxFlex="100"
         >
           @if (!disableVoidSelection) {
             <mat-option>{{ voidSelectionLabel }}</mat-option>
@@ -135,10 +130,9 @@
         </mat-select>
       }
       @if ((type === types.MULTISELECT_GROUPED)) {
-        <mat-select [formControl]="control"
+        <mat-select class="layout-flex-full" [formControl]="control"
                     [placeholder]="placeholder"
                     [compareWith]="compareFunctionStrictObject"
-                    fxFlex="100"
                     multiple
         >
           @for (group of (bag.options); track group) {
@@ -161,10 +155,9 @@
         </mat-select>
       }
       @if ((type === types.MULTISELECT)) {
-        <mat-select [formControl]="control"
+        <mat-select class="layout-flex-full" [formControl]="control"
                     [placeholder]="placeholder"
                     [compareWith]="compareFunctionStrictObject"
-                    fxFlex="100"
                     multiple
         >
           @for (option of (bag.options); track option) {

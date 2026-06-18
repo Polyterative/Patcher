@@ -3,6 +3,7 @@
 > Archive of finished work. One-line summaries only. For strategy context see `../product/PRINCIPLES.md` and
 > `../product/ROADMAP.md`.
 
+- **2026-06-18** — LOW: Angular — Deprecated Flex Layout usage is removed from app code, replacing `fx*` templates with native CSS/layout helpers, migrating breakpoint observation to CDK, and dropping the package dependency.
 - **2026-06-18** — LOW: Maintenance — Dependency batch updated Angular patch packages, Sentry browser/angular 10.x alignment, PostHog, Playwright, TypeScript ESLint, DOMPurify, GSAP, modern-screenshot, and security overrides while refreshing pnpm lockfile and removing ignored duplicate overrides.
 - **2026-06-18** — MEDIUM: Bug — Rack preview now flags stale generated JPEGs from filename timestamps versus `rack.updated`, keeps the update affordance visible when the stored preview is unavailable, and preserves the completed filename-persistence fix.
 - **2026-06-17** — MEDIUM: Rack Editor — Layout panel now includes a scoped Shuffle action that reuses Remix guardrails, format isolation, batch persistence, and Undo for randomized valid arrangements.

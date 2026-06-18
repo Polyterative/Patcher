@@ -1,6 +1,5 @@
 import { CommonModule }                   from '@angular/common';
 import { NgModule }                       from '@angular/core';
-import { FlexLayoutModule }               from '@angular/flex-layout';
 import { MatIconModule }                  from '@angular/material/icon';
 import { TimeagoModule }                  from 'ngx-timeago';
 import { RouterModule }                   from '@angular/router';
@@ -29,7 +28,6 @@ import { SupabaseUtcTimestampPipe } from 'src/app/shared-interproject/pipes/supa
   ],
   imports: [
     CommonModule,
-    FlexLayoutModule,
     RouterModule,
     TimeagoModule.forChild(),
     MatCardModule,

@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.module';
 import { SharedAtomsModule } from 'src/app/components/shared-atoms/shared-atoms.module';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
@@ -24,7 +23,6 @@ import { MatCardModule } from "@angular/material/card";
     CommonModule,
     
     ModulePartsModule,
-    FlexLayoutModule,
     SharedAtomsModule,
     MatIconModule,
     MatTooltipModule,

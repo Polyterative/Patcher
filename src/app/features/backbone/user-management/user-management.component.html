@@ -57,9 +57,8 @@
                       </div>
                     </form>
                   } @else {
-                    <div class="row gap1 section-surface" fxLayoutAlign="start center">
-                      <app-label-value-showcase label="Display Name"
-                                                fxFlex="grow"
+                    <div class="row gap1 section-surface layout-align-start-center">
+                      <app-label-value-showcase class="layout-flex-grow" label="Display Name"
                       >{{ bag.userProfile.username }}
                       </app-label-value-showcase>
                       <app-brand-primary-button
@@ -138,9 +137,8 @@
                       </div>
                     </form>
                   } @else if (isEmailOnlyAccount(bag.userProfile.auth_providers)) {
-                    <div class="row gap1 section-surface" fxLayoutAlign="start center">
-                      <app-label-value-showcase label="Password"
-                                                fxFlex="grow"
+                    <div class="row gap1 section-surface layout-align-start-center">
+                      <app-label-value-showcase class="layout-flex-grow" label="Password"
                       >••••••••
                       </app-label-value-showcase>
                       <app-brand-primary-button
@@ -194,8 +192,8 @@
   </div>
   
   <ng-template #noData>
-    <div fxFlex="100">
-      <!--    <mat-card-subtitle fxLayoutAlign="center center">It looks like you haven't added any racks-->
+    <div class="layout-flex-full">
+      <!--    <mat-card-subtitle class="layout-align-center-center">It looks like you haven't added any racks-->
       <!--                                                     to your collection yet.-->
       <!--                                                     Try adding some!-->
       <!--    </mat-card-subtitle>-->

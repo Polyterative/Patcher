@@ -3,7 +3,7 @@ import {
   TestBed,
   tick
 } from '@angular/core/testing';
-import { MediaObserver } from '@angular/flex-layout';
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { of } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
@@ -13,15 +13,21 @@ import { AppStateService, LayoutFlexWidthState } from './app-state.service';
 const BREAKPOINT_KEYS = ['xs', 'sm', 'md', 'lg', 'xl', 'ltsm', 'ltmd', 'ltlg', 'ltxl', 'gtxs', 'gtsm', 'gtmd', 'gtlg'] as const;
 
 describe('AppStateService', () => {
-  const mockMediaObserver = {
-    asObservable: () => of([{mqAlias: 'gt-xs'}, {mqAlias: 'sm'}])
+  const mockBreakpointObserver = {
+    observe: () => of({
+      matches: true,
+      breakpoints: {
+        '(min-width: 37.5rem) and (max-width: 59.9375rem)': true,
+        '(min-width: 37.5rem)': true
+      }
+    })
   };
   
   function buildService(): AppStateService {
     TestBed.configureTestingModule({
       providers: [
         AppStateService,
-        {provide: MediaObserver, useValue: mockMediaObserver}
+        {provide: BreakpointObserver, useValue: mockBreakpointObserver}
       ]
     });
     return TestBed.inject(AppStateService);
@@ -54,7 +60,6 @@ describe('AppStateService', () => {
     
     tick(16);
     
-    // 'gt-xs' maps to gtxs, 'sm' maps to sm
     expect(latestValue?.sm).toBeTrue();
     expect(latestValue?.gtxs).toBeTrue();
     // keys not in the mock emission should be false

@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatCardModule } from "@angular/material/card";
 import { RouterModule } from '@angular/router';
 import { EmptyStateComponent } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.component';
@@ -27,7 +26,6 @@ import { MatError } from "@angular/material/input";
     HeroContentCardComponent,
     EmptyStateComponent,
     ScreenWrapperComponent,
-    FlexLayoutModule,
     MatFormEntityComponent,
     MatCardModule,
     RouterModule,

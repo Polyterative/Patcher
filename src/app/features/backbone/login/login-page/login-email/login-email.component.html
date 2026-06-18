@@ -1,13 +1,12 @@
-<div fxFlex="100"
-     fxLayout="column"
+<div class="layout-flex-full layout-column"
 >
-  <lib-mat-form-entity fxFlex="100"
+  <lib-mat-form-entity class="layout-flex-full"
                        [dataPack]="dataService.fields.user"
                        formFieldAppearanceType="fill"
   >
   </lib-mat-form-entity>
   
-  <lib-mat-form-entity fxFlex="100"
+  <lib-mat-form-entity class="layout-flex-full"
                        [dataPack]="dataService.fields.password"
                        (enterPressed)="dataService.mailLoginClick$.next()"
                        formFieldAppearanceType="fill"

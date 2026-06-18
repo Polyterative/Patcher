@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { GraphComponent } from './graph.component';
 
 @NgModule({
@@ -8,8 +7,7 @@ import { GraphComponent } from './graph.component';
     GraphComponent
   ],
   imports:      [
-    CommonModule,
-    FlexLayoutModule
+    CommonModule
   ],
   exports:      [
     GraphComponent

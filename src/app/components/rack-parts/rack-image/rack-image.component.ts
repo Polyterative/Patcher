@@ -13,7 +13,6 @@ import {
   Output
 } from '@angular/core';
 import { animate, style, transition, trigger } from '@angular/animations';
-import { FlexLayoutModule } from "@angular/flex-layout";
 import { RouterLink } from "@angular/router";
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -94,7 +93,6 @@ export function isPreviewStale(rack: Pick<Rack, 'image' | 'updated'> | null | un
   styleUrls: ['./rack-image.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    FlexLayoutModule,
     RouterLink,
     MatButtonModule,
     MatIconModule,

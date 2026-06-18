@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { Data, Route, RouterModule, Routes } from '@angular/router';
 import { ScreenWrapperComponent } from '../../components/@visual/screen-wrapper/screen-wrapper.component';
@@ -11,7 +10,6 @@ import { VenusComponent } from './venus.component';
   imports:      [
     RouterModule,
     CommonModule,
-    FlexLayoutModule,
     ScreenWrapperComponent,
     MatToolbarModule
   ],
