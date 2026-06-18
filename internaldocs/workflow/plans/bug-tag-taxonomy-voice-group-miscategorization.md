@@ -2,9 +2,9 @@
 
 ## Status
 
-`[ ]` Backlog — proposal-only intake. No data, schema, or code changes until the
-revised categorization is reviewed and **manually approved** by the product
-owner per `AGENTS.md §5`.
+`[x]` Proposal/read-only phase complete; awaiting manual approval. No data,
+schema, or code changes until the revised categorization is reviewed and
+**manually approved** by the product owner per `AGENTS.md §5`.
 
 ## User intent
 
@@ -94,14 +94,135 @@ The grouping UI is data-driven, so once the DB rows carry the right `type`,
 the surface re-groups automatically. **No app code change is required to fix
 the categorization itself**, only if a brand-new `TagType` value is introduced.
 
-### What is unknown until DB read-back
+### Read-only production read-back (2026-06-18T18:55+02:00 loop)
 
-- Whether `Voice` contains additional tags beyond what the screenshot shows.
-- Whether `Character` (`type = 2`) and `Nature` (`type = 1`) currently hold
-  any tags that overlap semantically with the drum/voice character set.
-- Whether VCA · 1 is a single canonical row or a duplicate alongside `VCA`.
+Source: Supabase MCP read-only `SELECT` against production project
+`sozmatmywjpstwidzlss` (`Patcher`). Query covered every row currently in
+`type IN (1, 2, 3)` plus VCA/VCO/VCF/LPG/EQ/Noise and the screenshot voice
+tags wherever they live. No writes, migrations, RLS changes, or tag data
+mutations were performed.
 
-The implementing agent must read these before drafting a proposal.
+| Tag | Current type | Read-back note |
+|---|---|---|
+| Analog | `1` / Nature | Current Nature member. |
+| Digital | `1` / Nature | Current Nature member. |
+| Expansion | `1` / Nature | Current Nature member. |
+| Expression | `1` / Nature | Current Nature member. |
+| External | `1` / Nature | Current Nature member. |
+| Hybrid | `1` / Nature | Current Nature member. |
+| MIDI | `1` / Nature | Current Nature member. |
+| Open Source | `1` / Nature | Current Nature member. |
+| Passive | `1` / Nature | Current Nature member. |
+| Power | `1` / Nature | Current Nature member. |
+| PreAmp | `1` / Nature | Current Nature member. |
+| Tube | `1` / Nature | Current Nature member. |
+| Tuner | `1` / Nature | Current Nature member. |
+| USB | `1` / Nature | Current Nature member. |
+| Video | `1` / Nature | Current Nature member. |
+| Aggressive | `2` / Character | Current Character member. |
+| Atmosferic | `2` / Character | Current Character member; spelling preserved. |
+| Cinematic | `2` / Character | Current Character member. |
+| Creative | `2` / Character | Current Character member. |
+| Dark | `2` / Character | Current Character member. |
+| Destructive | `2` / Character | Current Character member. |
+| Esoteric | `2` / Character | Current Character member. |
+| Experimental | `2` / Character | Current Character member. |
+| Liquid | `2` / Character | Current Character member. |
+| Organic | `2` / Character | Current Character member. |
+| Utilitarian | `2` / Character | Current Character member. |
+| Vintage | `2` / Character | Current Character member. |
+| Warm | `2` / Character | Current Character member. |
+| BASS | `3` / Voice | Voice member from screenshot. |
+| CLAP | `3` / Voice | Voice member from screenshot. |
+| Full Voice | `3` / Voice | Voice member from prior split migration. |
+| HAT | `3` / Voice | Voice member from screenshot. |
+| KICK | `3` / Voice | Voice member from screenshot. |
+| LEAD | `3` / Voice | Voice member from screenshot. |
+| PAD | `3` / Voice | Voice member from screenshot. |
+| PERC | `3` / Voice | Voice member from screenshot. |
+| SNARE | `3` / Voice | Voice member from screenshot. |
+| VCA | `3` / Voice | Architecture tag currently misgrouped under Voice. |
+| VCO | `3` / Voice | Architecture tag currently misgrouped under Voice. |
+| Noise | `4` / Source | Neighbouring source/building-block evidence. |
+| EQ | `5` / Filter | Neighbouring functional evidence. |
+| LPG | `5` / Filter | Neighbouring functional evidence. |
+| VCF | `5` / Filter | Neighbouring architecture/filter evidence. |
+
+Read-back resolved the unknowns:
+
+- `Voice` contains exactly the screenshot set: BASS, CLAP, Full Voice, HAT,
+  KICK, LEAD, PAD, PERC, SNARE, VCA, VCO.
+- `Nature` and `Character` do not currently contain overlapping drum/voice
+  identity tags.
+- `VCA · 1` in the UI corresponds to the canonical `VCA` row (`id = 2`) plus a
+  usage-count badge; there is no separate `VCA · 1` tag row in the read-back.
+
+## Revised categorization proposal (approval required before migration draft)
+
+Proposal summary: keep the existing `Voice` group as the sonic-identity group,
+move only architectural/building-block outliers out of it, and avoid introducing
+a new `TagType` enum value. This means no app-code change is proposed for this
+phase; an approved implementation would be a data-only `tags.type` migration
+touching `VCA` and `VCO` only.
+
+| Tag | Current type → proposed type | Rationale |
+|---|---|---|
+| Analog | Nature → Nature | Describes module implementation nature, not sonic voice identity. |
+| Digital | Nature → Nature | Describes implementation nature, not sonic voice identity. |
+| Expansion | Nature → Nature | Describes module relationship/form factor, not a sound made. |
+| Expression | Nature → Nature | Describes control/interface nature, not a sound made. |
+| External | Nature → Nature | Describes external integration, not a sound made. |
+| Hybrid | Nature → Nature | Describes mixed implementation nature, not sonic identity. |
+| MIDI | Nature → Nature | Describes control protocol nature, not sonic identity. |
+| Open Source | Nature → Nature | Describes product/source nature, not module sound. |
+| Passive | Nature → Nature | Describes electrical nature, not module sound. |
+| Power | Nature → Nature | Describes power infrastructure, not module sound. |
+| PreAmp | Nature → Nature | Current taxonomy treats it as nature; do not broaden this bug fix. |
+| Tube | Nature → Nature | Describes implementation/material character, not a voice category. |
+| Tuner | Nature → Nature | Current taxonomy treats it as nature; do not broaden this bug fix. |
+| USB | Nature → Nature | Describes connectivity nature, not module sound. |
+| Video | Nature → Nature | Describes signal/media domain, not audible voice identity. |
+| Aggressive | Character → Character | Describes subjective sound/interaction character, not a voice class. |
+| Atmosferic | Character → Character | Describes mood/character; spelling preserved and no rename proposed. |
+| Cinematic | Character → Character | Describes aesthetic character, not a voice class. |
+| Creative | Character → Character | Describes use/character, not a specific sound made. |
+| Dark | Character → Character | Describes timbral mood, not a voice class. |
+| Destructive | Character → Character | Describes processing/result character, not a voice class. |
+| Esoteric | Character → Character | Describes module character, not a voice class. |
+| Experimental | Character → Character | Describes usage/design character, not a voice class. |
+| Liquid | Character → Character | Describes timbral character, not a voice class. |
+| Organic | Character → Character | Describes timbral character, not a voice class. |
+| Utilitarian | Character → Character | Describes practical character, not a voice class. |
+| Vintage | Character → Character | Describes aesthetic/era character, not a voice class. |
+| Warm | Character → Character | Describes timbral character, not a voice class. |
+| BASS | Voice → Voice | Describes the kind of sound/voice the module makes. |
+| CLAP | Voice → Voice | Describes a drum voice sound class. |
+| Full Voice | Voice → Voice | Describes a self-contained voice sound role; keep until product chooses finer taxonomy. |
+| HAT | Voice → Voice | Describes a drum voice sound class. |
+| KICK | Voice → Voice | Describes a drum voice sound class. |
+| LEAD | Voice → Voice | Describes a melodic voice sound class. |
+| PAD | Voice → Voice | Describes a sustained/chord voice sound class. |
+| PERC | Voice → Voice | Describes a percussion voice sound class. |
+| SNARE | Voice → Voice | Describes a drum voice sound class. |
+| VCA | Voice → Utility | VCA is a gain/control building block, not a sound identity; `Utility` is the existing functional group for signal/control helpers such as Attenuate, Mix, Pan, Switch. |
+| VCO | Voice → Source | VCO is an oscillator/source building block, not a voice identity; `Source` already contains `Noise`, the other source-generator tag from the split migration. |
+| Noise | Source → Source | Already models a source-generator building block. |
+| EQ | Filter → Filter | Already models a filtering/tone-shaping function. |
+| LPG | Filter → Filter | Already models a filter/gate function in current taxonomy. |
+| VCF | Filter → Filter | Already models a filter architecture/function. |
+
+Approval gate notes:
+
+- **Manual proposal approval required next.** The product owner must explicitly
+  approve this table in the Decision log before any migration is drafted.
+- **No migration has been drafted in this loop.** The approved migration, if
+  accepted, should update only `VCA` to `type = 9` and `VCO` to `type = 4`,
+  using `where type is distinct from <target>`.
+- **No Supabase mutation approval exists yet.** Applying any migration remains a
+  separate second manual-approval gate per `AGENTS.md §5`.
+- **No new group is proposed.** If product instead wants a dedicated
+  `Architecture` or `Voice Character` group, that is a different proposal and
+  would require `src/app/models/tag.ts` and rack-balance impact review.
 
 ## Future strategy
 
@@ -328,3 +449,10 @@ When `coordinator-loop` selects this task it must:
   Voice, HAT, KICK, LEAD, PAD, PERC, SNARE, VCA · 1, VCO. User explicitly
   requested a proposed revised categorization with manual approval before
   any data change. No code, schema, or data was touched during intake.
+- 2026-06-18T18:55+02:00 — Executor completed the proposal/read-only phase via
+  Supabase MCP production `SELECT` on project `sozmatmywjpstwidzlss`
+  (`Patcher`). Proposal: keep BASS, CLAP, Full Voice, HAT, KICK, LEAD, PAD,
+  PERC, SNARE in `Voice`; move `VCA` from `Voice` to `Utility`; move `VCO`
+  from `Voice` to `Source`; leave `Nature`, `Character`, `Noise`, `EQ`, `LPG`,
+  and `VCF` unchanged. No migration was drafted or applied; manual proposal
+  approval remains required before any migration draft.
