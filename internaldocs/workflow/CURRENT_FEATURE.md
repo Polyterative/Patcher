@@ -14,20 +14,20 @@
 
 No active feature.
 
-Status: **No active feature.** Docs screenshot refresh is complete locally. Next staged safe task is Marketplace Purchase Price History strategic planning; implementation, migrations, policies, backend methods, and schema changes remain gated until the detailed plan is approved.
+Status: **No active feature.** Docs screenshot refresh is complete locally. Marketplace Purchase Price History strategic planning is drafted; implementation, migrations, policies, backend methods, and schema changes remain gated until the detailed plan is approved.
 
 #### Why this is next
 
 - Docs screenshot refresh completed local capture and local-only `../Patcher-docs` sync; do not push the docs repo unless explicitly requested.
 - Patch SVG previews backend/storage direction is approved, but actual migrations/storage/RLS were not applied in this docs-only checkpoint.
-- Marketplace Purchase Price History has product-owner approval for detailed strategic planning of schema/RLS/currency/edit policy; implementation, migration drafts, and applying migrations/RLS remain gated until that plan is shown and approved.
+- Marketplace Purchase Price History strategic plan is drafted for product-owner review; implementation, migration drafts, and applying migrations/RLS remain gated until that plan is approved.
 - Cross-entity Cool reactions and Module I/O support require schema/RLS/data-model approval before implementation.
 
 #### Layer checklist
 
 - [x] Marketplace helper foundation committed-ready: deterministic integer-minor-unit money parsing/formatting helpers with targeted unit coverage.
 - [x] Patch SVG previews backend/storage direction approval recorded.
-- [~] Draft Marketplace Purchase Price History strategic plan in a separate checkpoint; do not draft/apply migrations or policies until the plan is approved.
+- [x] Draft Marketplace Purchase Price History strategic plan in a separate checkpoint; do not draft/apply migrations or policies until the plan is approved.
 - [ ] Select the next implementation task in a separate checkpoint.
 
 #### Validation strategy
@@ -46,3 +46,4 @@ Status: **No active feature.** Docs screenshot refresh is complete locally. Next
 - 2026-06-18T21:00+02:00 — Product owner approved Marketplace Purchase Price History detailed strategic planning for schema/RLS/currency/edit policy; do not draft/apply migrations, policies, backend methods, or schema changes until the plan is shown and separately approved.
 - 2026-06-18T21:00+02:00 — Product owner approved the Docs screenshot pipeline to use the already-created and locally verified dedicated E2E account for screenshot credentials. Store/use the credentials only through existing local/secret mechanisms; do not print, document, or commit secret values. Visual review and docs repo mutation remain separate gates.
 - 2026-06-18T21:02+02:00 — Completed Docs screenshot pipeline refresh: authenticated capture produced 10 desktop JPEGs, account screenshot text was redacted before capture, docs sync wrote seven stable JPEG assets into local `../Patcher-docs`, and old iPad-Pro PNG references were migrated locally without pushing.
+- 2026-06-18T21:02+02:00 — Drafted the Marketplace Purchase Price History strategic plan covering schema strategy, owner-only RLS strategy, MVP currency policy, edit/delete policy, and the post-approval UI/API slice. No migrations, policies, backend methods, schema changes, or real data mutations were attempted.
