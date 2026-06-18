@@ -20,7 +20,7 @@ Status: **No active feature.** Docs screenshot refresh is complete locally. Mark
 
 - Docs screenshot refresh completed local capture and local-only `../Patcher-docs` sync; do not push the docs repo unless explicitly requested.
 - Patch SVG previews backend/storage and simple SVG visibility direction are approved, but actual migrations/storage/RLS were not applied in these docs-only checkpoints.
-- Marketplace Purchase Price History strategic plan is drafted for product-owner review; implementation, migration drafts, and applying migrations/RLS remain gated until that plan is approved.
+- Marketplace Purchase Price History strategic plan records the approved Option A data model and `acquired_at` default/editability decision; implementation, migration drafts, and applying migrations/RLS remain gated until the detailed plan is approved.
 - Cross-entity Cool reactions and Module I/O support require schema/RLS/data-model approval before implementation.
 
 #### Layer checklist
@@ -49,3 +49,5 @@ Status: **No active feature.** Docs screenshot refresh is complete locally. Mark
 - 2026-06-18T21:02+02:00 — Completed Docs screenshot pipeline refresh: authenticated capture produced 10 desktop JPEGs, account screenshot text was redacted before capture, docs sync wrote seven stable JPEG assets into local `../Patcher-docs`, and old iPad-Pro PNG references were migrated locally without pushing.
 - 2026-06-18T21:02+02:00 — Drafted the Marketplace Purchase Price History strategic plan covering schema strategy, owner-only RLS strategy, MVP currency policy, edit/delete policy, and the post-approval UI/API slice. No migrations, policies, backend methods, schema changes, or real data mutations were attempted.
 - 2026-06-18T21:24+02:00 — Product owner approved Marketplace Purchase Price History planner Option A for the MVP data model: keep `user_modules` ownership as a single boolean/current relationship toggle; record purchase price/date/source as an optional additive acquisition ledger/list underneath the module; no `quantity` field and no per-instance registration in UI or DB for MVP, with a path to dedicated instances later. No code, migrations, RLS, backend methods, schema changes, or data mutations were attempted.
+- 2026-06-18T21:25+02:00 — Product owner approved Marketplace Purchase Price History MVP currency policy: only `EUR` and `USD` are supported for user acquisition entries, and the default currency is `EUR` because the initial target is Europe. No code, migrations, RLS, backend methods, schema changes, or data mutations were attempted.
+- 2026-06-18T21:25+02:00 — Product owner decided Marketplace Purchase Price History `acquired_at` defaults to today when creating an acquisition entry, and remains editable/backdatable by the user. Recorder only: no code, migrations, RLS, backend methods, schema changes, or data mutations were attempted.
