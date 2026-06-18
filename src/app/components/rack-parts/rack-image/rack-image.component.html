@@ -7,14 +7,15 @@
   }; as bag) {
     @if (containImage) {
       @if (filename && !imageLoadFailed) {
-        <div class="rackImage__frame">
+        <div class="rackImage__frame rackImage__frame--contained" [style.min-height.rem]="bag.height / sizeDivider">
           <img
-            class="img image-transition"
+            class="img rackImage__previewImage"
+            [class.rackImage__previewImage--loaded]="imageLoaded"
             [ngStyle]="{maxHeight:bag.height/sizeDivider+'rem'}"
             [src]="rackStorageBase+filename"
-            animate.enter="rack-image-enter"
             loading="lazy"
             [alt]="'Rack preview for '+data.name"
+            (load)="onPreviewImageLoad()"
             (error)="onPreviewLoadError()"
           >
           <ng-container *ngTemplateOutlet="stalePreviewBadge"></ng-container>
@@ -44,14 +45,15 @@
     }
     @if (!containImage) {
       @if (filename && !imageLoadFailed) {
-        <div class="rackImage__frame">
+        <div class="rackImage__frame" [style.min-height.rem]="bag.height">
           <img
             [ngStyle]="{maxHeight:((bag.height)+'rem')}"
             [src]="rackStorageBase+filename"
-            animate.enter="rack-image-enter"
-            class="image-transition"
+            class="rackImage__previewImage"
+            [class.rackImage__previewImage--loaded]="imageLoaded"
             loading="lazy"
             [alt]="'Rack preview for '+data.name"
+            (load)="onPreviewImageLoad()"
             (error)="onPreviewLoadError()"
           >
           <ng-container *ngTemplateOutlet="stalePreviewBadge"></ng-container>

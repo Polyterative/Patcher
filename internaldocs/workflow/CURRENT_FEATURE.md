@@ -12,29 +12,28 @@
 
 ## Active
 
-### Bug — Rack list image load fade
+### Bug — Tag taxonomy Voice group proposal
 
-Plan: [`plans/bug-rack-list-image-load-pop-in.md`](./plans/bug-rack-list-image-load-pop-in.md)
+Plan: [`plans/bug-tag-taxonomy-voice-group-miscategorization.md`](./plans/bug-tag-taxonomy-voice-group-miscategorization.md)
 
-Status: **Active — selected for loop 5.** Frontend image-load/motion fix; no backend, schema, migration, RLS, or Supabase data changes.
+Status: **Staged for the next loop.** Proposal/read-only phase only; do not apply migrations, RLS/policy changes, or tag data mutations without explicit human approval.
 
 #### Why this is next
 
-After the comments composer fix, this is the next bounded visible UI regression not blocked by approvals. It improves the core `/racks` browse surface and can be validated with component tests plus runtime snapshots.
+Five requested implementation loops are complete. The remaining HIGH/product work is blocked by schema/RLS/manual approval or upstream dependencies, and screenshot refresh is still soft-blocked by dedicated test-account cleanup. The tag taxonomy item has an actionable proposal-first phase that can be done read-only while respecting the manual approval gate.
 
 #### Layer checklist
 
-- [ ] MVP: make `<app-rack-image>` fade the bitmap in on actual load/error state instead of element insertion.
-- [ ] Structural: add component regression coverage for load/reset/error state.
-- [ ] Polish: preserve reduced-motion and fallback tile behavior without changing rack preview generation.
+- [ ] MVP: read current tag group state and draft a revised categorization proposal table.
+- [ ] Structural: if a new group is proposed, outline enum/display/balance-analysis changes without applying them.
+- [ ] Polish: capture follow-up notes for missing modulation tags or canonical taxonomy docs.
 
 #### Validation strategy
 
-- `pnpm test-headless --include="**/rack-image.component.spec.ts"`
-- `pnpm lint`
-- `node scripts/checks/check-docs.cjs`
-- Runtime `/racks` snapshot if dev server is available.
+- Read-only Supabase/tag inspection only.
+- `node scripts/checks/check-docs.cjs` after proposal doc edits.
+- No code/data migration validation until explicit approval exists.
 
 #### Decision log
 
-- 2026-06-18T18:18+02:00 — Coordinator selected this task for loop 5 as the next bounded visible UI regression after comments width; schema/RLS/manual-approval tasks remain skipped.
+- 2026-06-18T18:25+02:00 — Coordinator staged this proposal-first task for the next loop because it is the next actionable non-destructive backlog item; all mutation/apply steps remain approval-gated.

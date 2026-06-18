@@ -56,6 +56,10 @@ describe('RackImageComponent', () => {
     it('imageLoadFailed defaults to false', () => {
       expect(new RackImageComponent(cdr).imageLoadFailed).toBeFalse();
     });
+
+    it('imageLoaded defaults to false', () => {
+      expect(new RackImageComponent(cdr).imageLoaded).toBeFalse();
+    });
   });
 
   describe('ngOnInit', () => {
@@ -107,6 +111,26 @@ describe('RackImageComponent', () => {
 
       expect(comp.imageLoadFailed).toBeFalse();
     });
+
+    it('clears loaded state when the image filename changes', () => {
+      const comp = new RackImageComponent(cdr);
+      comp.data = makeRack('old.jpg');
+      comp.ngOnChanges();
+      comp.onPreviewImageLoad();
+
+      comp.data = makeRack('new.jpg');
+      comp.ngOnChanges();
+
+      expect(comp.imageLoaded).toBeFalse();
+    });
+  });
+
+  describe('onPreviewImageLoad', () => {
+    it('marks the preview as loaded', () => {
+      const comp = new RackImageComponent(cdr);
+      comp.onPreviewImageLoad();
+      expect(comp.imageLoaded).toBeTrue();
+    });
   });
 
   describe('onPreviewLoadError', () => {
@@ -114,6 +138,13 @@ describe('RackImageComponent', () => {
       const comp = new RackImageComponent(cdr);
       comp.onPreviewLoadError();
       expect(comp.imageLoadFailed).toBeTrue();
+    });
+
+    it('does not keep the preview marked loaded', () => {
+      const comp = new RackImageComponent(cdr);
+      comp.onPreviewImageLoad();
+      comp.onPreviewLoadError();
+      expect(comp.imageLoaded).toBeFalse();
     });
   });
 
@@ -246,6 +277,41 @@ describe('RackImageComponent', () => {
 
       expect(fixture.nativeElement.querySelector('.rack-image-fallback')?.textContent).toContain('Preview unavailable');
       expect(fixture.nativeElement.querySelector('.rackImage__staleBadge')).toBeNull();
+    });
+
+
+    it('reserves the preview frame height before the image loads', () => {
+      fixture.detectChanges();
+
+      const frame = fixture.nativeElement.querySelector('.rackImage__frame') as HTMLElement;
+      expect(Number.parseFloat(frame.style.minHeight)).toBeCloseTo(20 / comp.sizeDivider, 3);
+    });
+
+    it('keeps the preview image hidden until the bitmap load event', () => {
+      fixture.detectChanges();
+
+      const image = fixture.nativeElement.querySelector('img') as HTMLImageElement;
+      expect(image.classList).toContain('rackImage__previewImage');
+      expect(image.classList).not.toContain('rackImage__previewImage--loaded');
+      expect(comp.imageLoaded).toBeFalse();
+
+      image.dispatchEvent(new Event('load'));
+      fixture.detectChanges();
+
+      expect(comp.imageLoaded).toBeTrue();
+      expect(image.classList).toContain('rackImage__previewImage--loaded');
+    });
+
+    it('keeps the preview image unloaded and shows the fallback after an error event', () => {
+      fixture.detectChanges();
+      const image = fixture.nativeElement.querySelector('img') as HTMLImageElement;
+
+      image.dispatchEvent(new Event('error'));
+      fixture.detectChanges();
+
+      expect(comp.imageLoaded).toBeFalse();
+      expect(fixture.nativeElement.querySelector('img')).toBeNull();
+      expect(fixture.nativeElement.querySelector('.rack-image-fallback')?.textContent).toContain('Preview unavailable');
     });
   });
 });
