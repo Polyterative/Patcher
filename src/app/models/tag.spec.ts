@@ -28,7 +28,7 @@ describe('tag model utilities', () => {
 
   describe('FUNCTIONAL_TAG_TYPES', () => {
     it('includes all signal-chain role types', () => {
-      for (const t of [TagType.Source, TagType.Filter, TagType.Modulation, TagType.Effect, TagType.Sequencing, TagType.Utility]) {
+      for (const t of [TagType.Voice, TagType.Source, TagType.Filter, TagType.Modulation, TagType.Effect, TagType.Sequencing, TagType.Utility, TagType.Blank]) {
         expect(FUNCTIONAL_TAG_TYPES.has(TAG_TYPE_LABELS[t].toLowerCase())).toBeTrue();
       }
     });
@@ -36,7 +36,6 @@ describe('tag model utilities', () => {
     it('does not include aesthetic types', () => {
       expect(FUNCTIONAL_TAG_TYPES.has('nature')).toBeFalse();
       expect(FUNCTIONAL_TAG_TYPES.has('character')).toBeFalse();
-      expect(FUNCTIONAL_TAG_TYPES.has('voice')).toBeFalse();
     });
   });
 
@@ -45,6 +44,7 @@ describe('tag model utilities', () => {
       expect(normalizeTagType(4)).toBe('source');
       expect(normalizeTagType(1)).toBe('nature');
       expect(normalizeTagType(9)).toBe('utility');
+      expect(normalizeTagType(10)).toBe('blank');
     });
 
     it('returns null for unknown numeric types', () => {
@@ -66,7 +66,7 @@ describe('tag model utilities', () => {
 
   describe('isFunctionalTagType', () => {
     it('returns true for all current functional type names', () => {
-      for (const name of ['source', 'filter', 'modulation', 'effect', 'sequencing', 'utility']) {
+      for (const name of ['voice', 'source', 'filter', 'modulation', 'effect', 'sequencing', 'utility', 'blank']) {
         expect(isFunctionalTagType(name)).toBeTrue();
       }
     });
@@ -80,7 +80,6 @@ describe('tag model utilities', () => {
     it('returns false for aesthetic / unrelated types', () => {
       expect(isFunctionalTagType('nature')).toBeFalse();
       expect(isFunctionalTagType('character')).toBeFalse();
-      expect(isFunctionalTagType('voice')).toBeFalse();
       expect(isFunctionalTagType(null)).toBeFalse();
       expect(isFunctionalTagType('unknown')).toBeFalse();
     });

@@ -2,6 +2,7 @@ export enum TagType {
   Nature = 1, Character = 2, Voice = 3,
   Source = 4, Filter = 5, Modulation = 6,
   Effect = 7, Sequencing = 8, Utility = 9,
+  Blank = 10,
 }
 
 export interface Tag {
@@ -25,6 +26,7 @@ export const TAG_TYPE_LABELS: Record<TagType, string> = {
   [TagType.Effect]: 'Effect',
   [TagType.Sequencing]: 'Sequencing',
   [TagType.Utility]: 'Utility',
+  [TagType.Blank]: 'Blank',
 };
 
 export const TAG_TYPE_DISPLAY_ORDER: TagType[] = [
@@ -34,6 +36,7 @@ export const TAG_TYPE_DISPLAY_ORDER: TagType[] = [
   TagType.Filter,
   TagType.Sequencing,
   TagType.Effect,
+  TagType.Blank,
   TagType.Nature,
   TagType.Character,
   TagType.Voice,
@@ -55,7 +58,7 @@ export const NUMERIC_TAG_TYPE_NAMES: Readonly<Record<number, string>> = Object.f
  */
 export const FUNCTIONAL_TAG_TYPES: ReadonlySet<string> = new Set([
   TagType.Voice, TagType.Source, TagType.Filter, TagType.Modulation,
-  TagType.Effect, TagType.Sequencing, TagType.Utility,
+  TagType.Effect, TagType.Sequencing, TagType.Utility, TagType.Blank,
 ].map(t => TAG_TYPE_LABELS[t].toLowerCase()));
 
 /**
