@@ -20,7 +20,7 @@ Status: **No active feature.** Docs screenshot refresh is complete locally. Mark
 
 - Docs screenshot refresh completed local capture and local-only `../Patcher-docs` sync; do not push the docs repo unless explicitly requested.
 - Patch SVG previews backend/storage and simple SVG visibility direction are approved, but actual migrations/storage/RLS were not applied in these docs-only checkpoints.
-- Marketplace Purchase Price History strategic plan records the approved Option A data model and `acquired_at` default/editability decision; implementation, migration drafts, and applying migrations/RLS remain gated until the detailed plan is approved.
+- Marketplace Purchase Price History strategic plan records the approved Option A data model, `acquired_at` default/editability decision, and MVP currency policy; implementation, migration drafts, and applying migrations/RLS remain gated until separate approval.
 - Cross-entity Cool reactions and Module I/O support require schema/RLS/data-model approval before implementation.
 
 #### Layer checklist

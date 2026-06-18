@@ -22,7 +22,7 @@
 
 ### PRODUCT — Tier 0 (ship in any order; no external dependencies)
 
-- [ ] **HIGH: Marketplace — Purchase Price History (Option A + acquired_at default approved; implementation/migrations still gated)** → [`plans/marketplace-purchase-price-history.md`](./plans/marketplace-purchase-price-history.md)
+- [ ] **HIGH: Marketplace — Purchase Price History (Option A + acquired_at + EUR/USD currency policy approved; implementation/migrations still gated)** → [`plans/marketplace-purchase-price-history.md`](./plans/marketplace-purchase-price-history.md)
 
 ### PRODUCT — Tier 1 (requires Manufacturer Page Phase 2 to be live)
 
