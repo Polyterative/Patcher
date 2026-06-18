@@ -2,7 +2,7 @@
 
 ## Status
 
-`[ ]` Backlog — visual / layout polish on a live core surface.
+`[x]` Implemented — visual / layout polish on a live core surface, pending coordinator review.
 No data, schema, or RLS work. Pure component-level SCSS (and possibly
 shared `lib-mat-form-entity` host display) fix with regression coverage.
 
@@ -30,7 +30,7 @@ as the rest of the composer column.
 ## Product / roadmap fit
 
 - Comments are an **explicit live, load-bearing community surface** per
-  [`internaldocs/product/PRINCIPLES.md`](../../product/PRINCIPLES.md):
+  [`internaldocs/product/PRINCIPLES.md`](../../../product/PRINCIPLES.md):
   "Comments are in scope — on content, not on people. … Comments on
   patches, racks, and modules already exist and are a live feature."
 - The same doc lists "future direction for comments: keep evolving them as
@@ -38,9 +38,9 @@ as the rest of the composer column.
   making the composer feel like a credible utility, not a half-broken form.
 - Visual coherence on every public-content detail page (module, rack,
   patch) protects the trust dividend the marketplace and price-hub features
-  in [`internaldocs/product/ROADMAP.md`](../../product/ROADMAP.md) will
+  in [`internaldocs/product/ROADMAP.md`](../../../product/ROADMAP.md) will
   rely on.
-- Aligns with [`internaldocs/DESIGN_LANGUAGE.md`](../../DESIGN_LANGUAGE.md):
+- Aligns with [`internaldocs/DESIGN_LANGUAGE.md`](../../../DESIGN_LANGUAGE.md):
   "1px off is 1px wrong" / "every element on screen must earn its place".
   A narrow textarea inside a wide card is a precision regression — the
   rail's geometry says "this is the writable column"; the input must honour
@@ -52,16 +52,16 @@ as the rest of the composer column.
 
 `app-comments-root` is reused on every comment-bearing detail page:
 
-- [`src/app/features/module-browser/module-browser-detail/module-browser-detail.component.html`](../../../src/app/features/module-browser/module-browser-detail/module-browser-detail.component.html) (module detail)
-- [`src/app/features/routes/rack/rack-browser-detail/rack-browser-detail-view.component.html`](../../../src/app/features/routes/rack/rack-browser-detail/rack-browser-detail-view.component.html) (rack detail)
-- [`src/app/features/patch-browser/patch-composite/patch-composite.component.html`](../../../src/app/features/patch-browser/patch-composite/patch-composite.component.html) (patch detail)
+- [`src/app/features/module-browser/module-browser-detail/module-browser-detail.component.html`](../../../../src/app/features/module-browser/module-browser-detail/module-browser-detail.component.html) (module detail)
+- [`src/app/features/routes/rack/rack-browser-detail/rack-browser-detail-view.component.html`](../../../../src/app/features/routes/rack/rack-browser-detail/rack-browser-detail-view.component.html) (rack detail)
+- [`src/app/features/patch-browser/patch-composite/patch-composite.component.html`](../../../../src/app/features/patch-browser/patch-composite/patch-composite.component.html) (patch detail)
 
 Fixing the composer once in `app-comments-root` repairs all three.
 
 ### Layout chain
 
 `app-comments-root` template
-([`comments-root.component.html`](../../../src/app/components/shared-atoms/comments/comments-root/comments-root.component.html)):
+([`comments-root.component.html`](../../../../src/app/components/shared-atoms/comments/comments-root/comments-root.component.html)):
 
 ```text
 lib-hero-content-card.comments-root-card
@@ -79,19 +79,19 @@ lib-hero-content-card.comments-root-card
 Relevant CSS already in place:
 
 - `--app-readable-section-max-width: 49.3rem` (set in
-  [`src/styles.scss`](../../../src/styles.scss)) — sets the rail's maximum
+  [`src/styles.scss`](../../../../src/styles.scss)) — sets the rail's maximum
   inline size to ~789 px, so the composer column is bounded but still wide
   enough to need a full-width textarea.
 - `.commentsRoot__rail { max-inline-size: var(--app-readable-section-max-width); margin-inline: auto; }`
-  ([`comments-root.component.scss`](../../../src/app/components/shared-atoms/comments/comments-root/comments-root.component.scss)).
+  ([`comments-root.component.scss`](../../../../src/app/components/shared-atoms/comments/comments-root/comments-root.component.scss)).
 - `.commentsRoot__composer { display: grid; gap: 0.75rem; padding-block: 1rem; }` — single-column
   grid; every grid item should naturally stretch to the rail's inline size.
 - `.commentsRoot__composerField { min-width: 0; }` — block-level grid child,
   no width constraint of its own.
 - `.layout-flex-full { flex: 1 1 100%; max-width: 100%; }`
-  ([`src/app/style/tools-utilities.scss`](../../../src/app/style/tools-utilities.scss))
+  ([`src/app/style/tools-utilities.scss`](../../../../src/app/style/tools-utilities.scss))
   applied to `mat-form-field` inside `lib-mat-form-entity`'s template
-  ([`mat-form-entity.component.html`](../../../src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component.html)).
+  ([`mat-form-entity.component.html`](../../../../src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component.html)).
 
 ### Root-cause hypotheses (in order of likelihood)
 
@@ -139,7 +139,7 @@ patcher-ui-debug snapshot before committing.
 
 ## Future strategy
 
-Per [`internaldocs/product/PRINCIPLES.md`](../../product/PRINCIPLES.md) the
+Per [`internaldocs/product/PRINCIPLES.md`](../../../product/PRINCIPLES.md) the
 comment composer is going to keep accumulating utility-layer upgrades
 (realtime refresh, short edit window, reporting, possibly reply threads).
 Each of those will hang UI off the same composer. Fixing the geometry now
@@ -198,7 +198,7 @@ Strategy:
 - The fix can be expressed as a small, additive SCSS change without
   touching `mat-form-entity.component.ts` logic.
 - Existing co-located spec
-  ([`comments-root.component.spec.ts`](../../../src/app/components/shared-atoms/comments/comments-root/comments-root.component.spec.ts))
+  ([`comments-root.component.spec.ts`](../../../../src/app/components/shared-atoms/comments/comments-root/comments-root.component.spec.ts))
   is the right home for a regression assertion; an additional Playwright
   visual snapshot covers the rendered geometry.
 
@@ -236,7 +236,7 @@ Sequence:
 The minimum that resolves the user's reported bug:
 
 - A scoped SCSS rule in
-  [`comments-root.component.scss`](../../../src/app/components/shared-atoms/comments/comments-root/comments-root.component.scss)
+  [`comments-root.component.scss`](../../../../src/app/components/shared-atoms/comments/comments-root/comments-root.component.scss)
   that forces `lib-mat-form-entity` and its inner `mat-form-field` to
   block-level full width inside `.commentsRoot__composerField`, e.g.
   (illustrative — implementing agent picks the exact selectors):
@@ -258,7 +258,7 @@ The minimum that resolves the user's reported bug:
   detail page at desktop width (≥1280 px) confirming the textarea now
   spans the rail.
 - An assertion in
-  [`comments-root.component.spec.ts`](../../../src/app/components/shared-atoms/comments/comments-root/comments-root.component.spec.ts)
+  [`comments-root.component.spec.ts`](../../../../src/app/components/shared-atoms/comments/comments-root/comments-root.component.spec.ts)
   that the composer field element's `getBoundingClientRect().width`
   equals (within a tolerance) the rail's inline width when both are
   rendered in the same fixture.
@@ -269,9 +269,9 @@ If the MVP scoped fix has to escalate to a global change:
 
 - Add `:host { display: block; width: 100%; }` (or `inline-size: 100%;`)
   to
-  [`mat-form-entity.component.scss`](../../../src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component.scss).
+  [`mat-form-entity.component.scss`](../../../../src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component.scss).
 - Document the change in
-  [`internaldocs/patterns/UI_PATTERNS.md`](../../patterns/UI_PATTERNS.md)
+  [`internaldocs/patterns/UI_PATTERNS.md`](../../../patterns/UI_PATTERNS.md)
   (or the closest existing UI primitive doc) so future authors know
   `lib-mat-form-entity` is a block-level form primitive.
 - Snapshot a sampling of consumer surfaces (one form-in-flex, one
@@ -296,21 +296,21 @@ local to the comments composer.
   fix should not alter label colour or position).
 - Cross-check the textarea autosize minimum row count
   (`cdkAutosizeMinRows="1"` in
-  [`mat-form-entity.component.html`](../../../src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component.html))
+  [`mat-form-entity.component.html`](../../../../src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component.html))
   still renders at a sensible idle height after the width fix.
 
 ## File / surface map
 
 Read-only inspection (implementing agent must read):
 
-- [`src/app/components/shared-atoms/comments/comments-root/comments-root.component.html`](../../../src/app/components/shared-atoms/comments/comments-root/comments-root.component.html)
-- [`src/app/components/shared-atoms/comments/comments-root/comments-root.component.scss`](../../../src/app/components/shared-atoms/comments/comments-root/comments-root.component.scss)
-- [`src/app/components/shared-atoms/comments/comments-root/comments-root.component.spec.ts`](../../../src/app/components/shared-atoms/comments/comments-root/comments-root.component.spec.ts)
-- [`src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component.html`](../../../src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component.html)
-- [`src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component.scss`](../../../src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component.scss)
-- [`src/app/style/tools-utilities.scss`](../../../src/app/style/tools-utilities.scss) (definition of `.layout-flex-full`)
-- [`src/styles.scss`](../../../src/styles.scss) (definition of `--app-readable-section-max-width`)
-- [`internaldocs/DESIGN_LANGUAGE.md`](../../DESIGN_LANGUAGE.md)
+- [`src/app/components/shared-atoms/comments/comments-root/comments-root.component.html`](../../../../src/app/components/shared-atoms/comments/comments-root/comments-root.component.html)
+- [`src/app/components/shared-atoms/comments/comments-root/comments-root.component.scss`](../../../../src/app/components/shared-atoms/comments/comments-root/comments-root.component.scss)
+- [`src/app/components/shared-atoms/comments/comments-root/comments-root.component.spec.ts`](../../../../src/app/components/shared-atoms/comments/comments-root/comments-root.component.spec.ts)
+- [`src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component.html`](../../../../src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component.html)
+- [`src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component.scss`](../../../../src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component.scss)
+- [`src/app/style/tools-utilities.scss`](../../../../src/app/style/tools-utilities.scss) (definition of `.layout-flex-full`)
+- [`src/styles.scss`](../../../../src/styles.scss) (definition of `--app-readable-section-max-width`)
+- [`internaldocs/DESIGN_LANGUAGE.md`](../../../DESIGN_LANGUAGE.md)
 - The three consumer pages listed under **Surfaces affected**.
 
 Likely write targets (MVP path):
@@ -352,7 +352,7 @@ insufficient):
    `comments-root.component.spec.ts` continue to pass.
 7. **No layering or lint regressions:** `pnpm lint` clean; if any custom
    check in
-   [`scripts/checks/`](../../../scripts/checks/) baseline was modified,
+   [`scripts/checks/`](../../../../scripts/checks/) baseline was modified,
    justification recorded in `Decision log` per `AGENTS.md §11`.
 8. **No backend touch:** no migration, no RLS change, no Supabase write
    in the diff.
@@ -364,14 +364,14 @@ insufficient):
 ## Validation strategy
 
 - **Reproduction snapshot:** `node scripts/dev/agent-snapshot.mjs` via
-  the [`patcher-ui-debug` skill](../../../.github/skills/patcher-ui-debug/SKILL.md)
+  the [`patcher-ui-debug` skill](../../../../.github/skills/patcher-ui-debug/SKILL.md)
   on `/module/<id>` (or `/rack/<id>` / `/patch/<id>`) at desktop width
   before any change, capturing the narrow-field bug.
 - **Fix snapshot:** repeat the same snapshot after the fix to confirm
   full-rail width. Capture both desktop (≥1280 px) and mobile (≤480 px)
   viewports.
 - **Unit regression:** extend
-  [`comments-root.component.spec.ts`](../../../src/app/components/shared-atoms/comments/comments-root/comments-root.component.spec.ts)
+  [`comments-root.component.spec.ts`](../../../../src/app/components/shared-atoms/comments/comments-root/comments-root.component.spec.ts)
   with one assertion that the composer field's rendered width meets or
   exceeds the rail's rendered width (allowing for sub-pixel rounding).
   Run via `pnpm test-headless --include="**/comments-root.component.spec.ts"`.
@@ -470,3 +470,14 @@ When `coordinator-loop` picks this task it must:
   impact, sitting alongside the existing MEDIUM tag-taxonomy bug rather
   than the HIGH rack-sizing bugs in `TODO.md`. No code, schema, or data
   changes during intake.
+- 2026-06-18T18:10+02:00 — Frontend executor used the scoped MVP path in
+  `comments-root.component.scss`: `.commentsRoot__composerField` now makes
+  the `lib-mat-form-entity` host block/full-width, and a composer-scoped
+  `::ng-deep` rule makes the nested `.mat-mdc-form-field` block/full-width.
+  This preserves the shared `lib-mat-form-entity` host behavior elsewhere.
+- 2026-06-18T18:12+02:00 — Runtime snapshot on the running dev server used
+  authenticated `/modules/details/1734` at 1440×900 and 480×900. Measured
+  rail/composer/form-field widths matched exactly (desktop: 605.44 px;
+  mobile: 428.81 px) with `bodyOverflow: 0`; submit row remained flex and
+  full rail width. Snapshot files were written under `.agent-snapshots/` for
+  inspection and removed before handoff per coordinator instruction.

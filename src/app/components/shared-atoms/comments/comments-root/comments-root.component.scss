@@ -38,7 +38,21 @@
 }
 
 .commentsRoot__composerField {
+  display: block;
   min-width: 0;
+  width: 100%;
+
+  lib-mat-form-entity {
+    display: block;
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+:host ::ng-deep .commentsRoot__composerField .mat-mdc-form-field {
+  display: block;
+  max-width: 100%;
+  width: 100%;
 }
 
 :host ::ng-deep .commentsRoot__composer textarea[cdktextareaautosize] {

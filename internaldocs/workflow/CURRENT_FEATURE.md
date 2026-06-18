@@ -12,29 +12,29 @@
 
 ## Active
 
-### Bug — Comments composer input width
+### Bug — Rack list image load fade
 
-Plan: [`plans/bug-comments-composer-input-narrow-width.md`](./plans/bug-comments-composer-input-narrow-width.md)
+Plan: [`plans/bug-rack-list-image-load-pop-in.md`](./plans/bug-rack-list-image-load-pop-in.md)
 
-Status: **Active — selected for loop 4.** Pure component-level SCSS/spec visual polish; no backend, schema, migration, RLS, or Supabase data changes.
+Status: **Active — selected for loop 5.** Frontend image-load/motion fix; no backend, schema, migration, RLS, or Supabase data changes.
 
 #### Why this is next
 
-The HIGH actionable rack regressions are complete. Remaining HIGH/product tasks are blocked by manual schema/RLS approval or upstream dependencies; this comments composer bug is the next visible, bounded, non-schema backlog item with a clear plan and regression-test path.
+After the comments composer fix, this is the next bounded visible UI regression not blocked by approvals. It improves the core `/racks` browse surface and can be validated with component tests plus runtime snapshots.
 
 #### Layer checklist
 
-- [ ] MVP: make the Add a comment textarea/form-field fill the comments rail on desktop and stay contained on mobile.
-- [ ] Structural: add regression coverage for composer field width without global form primitive regressions.
-- [ ] Polish: verify submit row/autosize/clear button remain visually coherent.
+- [ ] MVP: make `<app-rack-image>` fade the bitmap in on actual load/error state instead of element insertion.
+- [ ] Structural: add component regression coverage for load/reset/error state.
+- [ ] Polish: preserve reduced-motion and fallback tile behavior without changing rack preview generation.
 
 #### Validation strategy
 
-- `pnpm test-headless --include="**/comments-root.component.spec.ts"`
+- `pnpm test-headless --include="**/rack-image.component.spec.ts"`
 - `pnpm lint`
 - `node scripts/checks/check-docs.cjs`
-- Runtime snapshot with `scripts/dev/agent-snapshot.mjs` if dev server is available.
+- Runtime `/racks` snapshot if dev server is available.
 
 #### Decision log
 
-- 2026-06-18T18:05+02:00 — Coordinator selected this task for loop 4 as the next bounded visible UI regression not blocked by schema/RLS/manual approval.
+- 2026-06-18T18:18+02:00 — Coordinator selected this task for loop 5 as the next bounded visible UI regression after comments width; schema/RLS/manual-approval tasks remain skipped.
