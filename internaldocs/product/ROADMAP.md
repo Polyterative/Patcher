@@ -341,14 +341,25 @@ general resale platforms (Reverb, eBay) require users to describe modules in fre
 **Scope:**
 
 - Listings linked to the canonical module catalogue (no free-text module names).
-- Condition, asking price, currency, and optionally an external listing link (Reverb, eBay, etc.).
-- No in-app payment processing in v1; contact/redirect model only.
+- Condition, asking price, currency, listing media, shipping scope, and optionally an external listing link (Reverb,
+  eBay, etc.).
+- No in-app payment processing in v1; marketplace transactions remain seller/buyer-attested unless a future escrow plan is
+  explicitly approved.
+- Reusable private shipping addresses for buyers/sellers, with transaction-time snapshots rather than live address FKs.
+- Structured inquiry / offer payloads first, stored as marketplace transaction seeds so the later lifecycle layer is
+  additive instead of a migration from loose email.
+- Transaction lifecycle management in later layers: proposed, negotiating, accepted, paid, shipped, received, closed,
+  cancelled, and disputed.
+- Realtime messaging is in scope only when scoped to a listing/transaction conversation, not as generic profile-to-profile
+  DMs.
+- Feedback and reputation are later trust layers based on completed transactions plus bounded account/contribution signals;
+  no leaderboards, star ratings, follows, or public reputation scoreboards.
 - Listings expire or are marked sold; collection membership is not automatically updated (seller intent may differ).
 
-**Design decision — buyer-seller contact:** No in-app payment or persistent chat in v1. Preferred model: a one-way "send
-inquiry" form that delivers a notification to the seller (no chat thread stored). This keeps Patcher out of the
-messaging business while avoiding pure redirect-aggregator status. Sellers may optionally expose an external contact
-link (Reverb, email) on their profile as a fallback.
+**Design decision — buyer-seller contact:** v1 should avoid generic chat and payments, but it should still create a
+structured inquiry / offer record tied to the listing. That record can reveal agreed contact/shipping details only after
+both parties accept. Persistent realtime messaging is a Wave 2 layer, scoped to the transaction so Patcher does not become
+a generic DM product.
 
 **Cold-start strategy for listings:** The marketplace has a chicken-and-egg problem — no buyers without listings, no
 listings without buyers. Seeding strategy: (1) at launch, invite a small cohort of active users to list modules they've
@@ -356,7 +367,8 @@ already marked in their collection; (2) the Price Hub's store-link data gives bu
 reducing the "is this a fair ask?" friction that kills first-time listings; (3) a user who completes a sale has a strong
 reason to update their collection — creating a natural loop back to the solo core.
 
-**Open questions:** Moderation of listings? Geographic filtering? Trade (swap) listings vs sell-only?
+**Open questions:** Launch geography? Moderation budget? Trade (swap) listings vs sell-only? Whether completed-sale price
+points feed the public Price Hub by default or require an explicit transaction-level opt-in?
 
 ---
 
