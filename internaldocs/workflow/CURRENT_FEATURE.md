@@ -14,19 +14,10 @@
 
 ## Active
 
-### MEDIUM: Sentry — Issue Monitoring & Resolution Workflow
+No active feature.
 
-- **Plan:** [`plans/sentry-issue-monitoring-resolution-workflow.md`](./plans/sentry-issue-monitoring-resolution-workflow.md)
-- **Status:** Staged for loop round 5 — complete the repo-owned Sentry monitoring workflow documentation/tooling slice; if live Sentry access is unavailable, document that blocker and close only the autonomous repo-owned setup.
-- **Started:** 2026-06-18T10:35+02:00
-- **Coordinator:** coordinator-loop
+### Next-task staging decision
 
-#### Layer checklist
-
-- [ ] MVP — Create a concrete Sentry triage workflow/checklist and identify available local/MCP access constraints.
-- [ ] Structural — Add any safe repo-owned helper/check documentation that future agents can run without exposing credentials.
-- [ ] Polish — Validate docs/lint as applicable, archive if live issue resolution is blocked by external Sentry access.
-
-#### Decision log
-
-- 2026-06-18T10:35+02:00 — Staged after dev-utils merge. Higher-priority remaining items need schema/RLS approval, credentials, or blocked dependencies; this Sentry plan has an autonomous repo-owned workflow slice even if live issue resolution requires external access.
+- **Status:** No actionable autonomous task staged after the fifth requested loop.
+- **Checked:** 2026-06-18T10:40+02:00
+- **Reason:** Remaining open items are blocked by explicit Supabase/RLS or schema approval, credential/account setup, external Sentry access, product-owner confirmation, or prerequisite manufacturer-account work. Held/on-hold items remain in `TODO.md` for manual resumption.

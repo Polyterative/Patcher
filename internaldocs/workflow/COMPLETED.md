@@ -1,4 +1,5 @@
 # Completed Features
+- **2026-06-18** — MEDIUM: Sentry — Issue Monitoring & Resolution Workflow now has a credential-safe operations guide, no-network readiness helper, triage/fix/closing rubric, and a separate on-hold live-audit follow-up.
 - **2026-06-18** — LOW: Dev utils — module detail dev tools now include a guarded Merge into target module flow that moves safe common duplicate references through `SupabaseService`, aborts on patch/rack blockers, deletes through the existing module delete path, and reports counts.
 - **2026-06-18** — HIGH: Security — Audit Remediation completed the safe repo-code hardening slice: removed tracked `.env`, added placeholder env template, disabled production source maps/named chunks, added noopener links, replaced bootstrap inline fallback, and normalized auth return URLs.
 - **2026-06-18** — MEDIUM: Analytics — PostHog instrumentation now covers remaining code-owned feedback/admin events, documents collection events, and masks auth/report text from autocapture; external dashboard setup is documented as manual.

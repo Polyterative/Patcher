@@ -41,7 +41,7 @@
 - [ ] **LOW: Cross-entity Cool reactions** → [`plans/module-cool-appreciation-button.md`](./plans/module-cool-appreciation-button.md)
 - [ ] **MEDIUM: Tag taxonomy — split "PURPOSE" group into sub-groups** → [`plans/tag-taxonomy-split-purpose-group-into-sub-groups.md`](./plans/tag-taxonomy-split-purpose-group-into-sub-groups.md)
 - [ ] **ON HOLD INDEFINITELY: Rack Comparison — balance diff between two racks** → [`plans/rack-comparison-balance-diff-between-two-racks.md`](./plans/rack-comparison-balance-diff-between-two-racks.md)
-- [~] **MEDIUM: Sentry — Issue Monitoring & Resolution Workflow** → [`plans/sentry-issue-monitoring-resolution-workflow.md`](./plans/sentry-issue-monitoring-resolution-workflow.md)
+- [ ] **ON HOLD: MEDIUM: Sentry — Live Issue Audit** → [`plans/sentry-live-issue-audit.md`](./plans/sentry-live-issue-audit.md)
 - [ ] **HIGH: E2E — Dedicated Test Account Cleanup** → [`plans/e2e-dedicated-test-account-cleanup.md`](./plans/e2e-dedicated-test-account-cleanup.md)
 - [ ] **HIGH: E2E — Multi-Instance Patching** → [`plans/e2e-multi-instance-patching.md`](./plans/e2e-multi-instance-patching.md)
 - [ ] **ON HOLD: SEO — OG Image Generation** → [`plans/on-seo-og-image-generation.md`](./plans/on-seo-og-image-generation.md)
