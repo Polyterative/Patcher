@@ -12,24 +12,25 @@
 
 ## Active
 
-Patch SVG previews — approved storage/RLS checkpoint
+Patch SVG previews — preview update semantics gate
 
 Plan: [patch-svg-previews.md](./plans/patch-svg-previews.md)
-Status: **Product-approved for additive `patches.image` + public `patches` SVG bucket + owner/admin storage writes. Applying the smallest backend/storage checkpoint.**
+Status: **Backend/storage checkpoint committed. Next safe task: reconcile remote migration/typegen drift, then verify how `patches.image` row updates interact with `patches.updated` before wiring generation UI/data-service.**
 Staged: 2026-06-18T22:15+02:00
 Approval recorded: 2026-06-18T22:43+02:00
 
 #### Why this is next
 
-- Marketplace Purchase Price History MVP implementation is complete in repo and archived.
-- Patch SVG previews already has backend/storage direction and simple visibility decisions recorded, but its plan still requires an exact migration/storage-policy proposal checkpoint before maintainer approval to apply anything.
-- This next slice can safely draft/review exact SQL and storage policy text without mutating production.
+- Patch SVG preview storage backend is now present locally in commit `31d7242b`.
+- Remote Supabase migration history is behind local repo migrations, so applying this migration remotely or regenerating backend types is unsafe until drift is reconciled.
+- The next implementation slice must also confirm whether persisting `patches.image` bumps `patches.updated`; if it does, generation needs an approved RPC/update strategy before UI/data-service wiring.
 
 #### Safety gate
 
 - Read `internaldocs/patterns/BACKEND_METHODS.md` schema-change preflight before drafting SQL.
 - Product owner approved the drafted SQL/storage shape at 2026-06-18T22:43+02:00.
-- Apply only the approved additive column/bucket/policy shape. If remote migration drift or advisor findings make production application risky, record the exact gate and continue local safe work only.
+- Do not apply the patch preview migration remotely or run `pnpm updateBackendTypes` until the linked remote migration drift is reconciled.
+- Do not wire `updatePatchPreview$` until `patches.image` update semantics are verified; stale detection depends on preserving `patches.updated` as the graph edit timestamp.
 
 #### Layer checklist
 
@@ -40,6 +41,9 @@ Approval recorded: 2026-06-18T22:43+02:00
 - [x] Add local migration for `patches.image` and the public `patches` SVG bucket policies.
 - [x] Update local types/storage constants and patch preview storage API methods.
 - [x] Validate and commit the verified checkpoint.
+- [ ] Reconcile linked remote migration drift or switch typegen to a project with all local migrations applied.
+- [ ] Verify whether updating only `patches.image` changes `patches.updated`; propose an approved RPC if needed.
+- [ ] Only then wire patch preview generation through `PatchDetailDataService`.
 
 #### Approval queue
 
