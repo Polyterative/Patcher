@@ -12,30 +12,29 @@
 
 ## Active
 
-### Bug — Rack module sizing and analysis-overlay regressions
+### Bug — Comments composer input width
 
-Plan: [`plans/bug-new-modules-stretched-vertically-in-mixed-format-row.md`](./plans/bug-new-modules-stretched-vertically-in-mixed-format-row.md)
+Plan: [`plans/bug-comments-composer-input-narrow-width.md`](./plans/bug-comments-composer-input-narrow-width.md)
 
-Status: **Active — selected for loop 3.** Frontend-only rack visual/blank/analysis overlay regression work; no backend, schema, migration, RLS, or Supabase data changes.
+Status: **Active — selected for loop 4.** Pure component-level SCSS/spec visual polish; no backend, schema, migration, RLS, or Supabase data changes.
 
 #### Why this is next
 
-After the arrangement-count regression, this is the remaining HIGH actionable INFRA bug that is not blocked by manual approval. It is production-visible rack accuracy work and should land before screenshot refresh so generated docs do not capture stretched modules or leaked analysis overlays.
+The HIGH actionable rack regressions are complete. Remaining HIGH/product tasks are blocked by manual schema/RLS approval or upstream dependencies; this comments composer bug is the next visible, bounded, non-schema backlog item with a clear plan and regression-test path.
 
 #### Layer checklist
 
-- [ ] MVP: prevent module-realistic hosts from stretching in rack rows and patch/editor contexts.
-- [ ] Structural: add regression tests for natural module heights, quick-blank majority standard, and analysis-overlay gating.
-- [ ] Polish: document/finalize alignment/fallback decisions without redesigning mixed-format rows.
+- [ ] MVP: make the Add a comment textarea/form-field fill the comments rail on desktop and stay contained on mobile.
+- [ ] Structural: add regression coverage for composer field width without global form primitive regressions.
+- [ ] Polish: verify submit row/autosize/clear button remain visually coherent.
 
 #### Validation strategy
 
-- `pnpm test-headless --include="**/rack-visual-model.component.spec.ts"`
-- `pnpm test-headless --include="**/module-realistic.component.spec.ts"`
-- Targeted quick-blank / rack-editor spec found during implementation
+- `pnpm test-headless --include="**/comments-root.component.spec.ts"`
 - `pnpm lint`
 - `node scripts/checks/check-docs.cjs`
+- Runtime snapshot with `scripts/dev/agent-snapshot.mjs` if dev server is available.
 
 #### Decision log
 
-- 2026-06-18T17:35+02:00 — Coordinator selected this task for loop 3 as the highest-priority actionable backlog item after the count fix; schema/RLS/manual-approval tasks remain skipped.
+- 2026-06-18T18:05+02:00 — Coordinator selected this task for loop 4 as the next bounded visible UI regression not blocked by schema/RLS/manual approval.

@@ -5,7 +5,8 @@ import {
   isAnyModuleWithoutRackingId,
   buildRowedModulesArray,
   mergeRefreshedModules,
-  calculateBlankIdForSizeAndStandard
+  calculateBlankIdForSizeAndStandard,
+  resolveQuickBlankStandardForRow
 } from './rack-detail-data.utils';
 import { RackedModule } from '../../models/module';
 import { RackMinimal } from '../../models/rack';
@@ -136,6 +137,51 @@ describe('rack-detail-data.utils', () => {
     });
   });
 
+  describe('resolveQuickBlankStandardForRow', () => {
+    it('chooses Intellijel 1U when it is more than half the row', () => {
+      const row = [
+        makeRackedModule(1, 4, 1, 1, 0, 0),
+        makeRackedModule(2, 6, 1, 2, 0, 1),
+        makeRackedModule(3, 8, 0, 3, 0, 2)
+      ];
+
+      expect(resolveQuickBlankStandardForRow(row)).toBe(1);
+    });
+
+    it('chooses 3U when it is more than half the row', () => {
+      const row = [
+        makeRackedModule(1, 4, 0, 1, 0, 0),
+        makeRackedModule(2, 6, 0, 2, 0, 1),
+        makeRackedModule(3, 8, 1, 3, 0, 2)
+      ];
+
+      expect(resolveQuickBlankStandardForRow(row)).toBe(0);
+    });
+
+    it('chooses Pulp Logic 1U when it is more than half the row', () => {
+      const row = [
+        makeRackedModule(1, 4, 2, 1, 0, 0),
+        makeRackedModule(2, 6, 2, 2, 0, 1),
+        makeRackedModule(3, 8, 0, 3, 0, 2)
+      ];
+
+      expect(resolveQuickBlankStandardForRow(row)).toBe(2);
+    });
+
+    it('falls back to the leftmost module standard when no row standard is a majority', () => {
+      const row = [
+        makeRackedModule(1, 4, 1, 1, 0, 0),
+        makeRackedModule(2, 6, 0, 2, 0, 1)
+      ];
+
+      expect(resolveQuickBlankStandardForRow(row)).toBe(1);
+    });
+
+    it('falls back to 3U for an empty row', () => {
+      expect(resolveQuickBlankStandardForRow([])).toBe(0);
+    });
+  });
+
   describe('calculateBlankIdForSizeAndStandard', () => {
     it('returns correct id for 3U eurorack standard 0', () => {
       expect(calculateBlankIdForSizeAndStandard(2, 0)).toBe(4647);
@@ -143,7 +189,8 @@ describe('rack-detail-data.utils', () => {
     it('returns correct id for Intellijel standard 1', () => {
       expect(calculateBlankIdForSizeAndStandard(1, 1)).toBe(4711);
     });
-    it('returns -1 for unknown standard', () => {
+    it('returns -1 for unsupported standards that do not have blank ids yet', () => {
+      expect(calculateBlankIdForSizeAndStandard(4, 2)).toBe(-1);
       expect(calculateBlankIdForSizeAndStandard(4, 9)).toBe(-1);
     });
     it('returns -1 for unknown HP in standard 0', () => {

@@ -1,5 +1,10 @@
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ModuleRealisticComponent } from './module-realistic.component';
 import { RACK_ANALYSIS_MODES } from '../../rack-parts/rack-analysis-mode';
+import { MODULE_FORMAT_GEOMETRY } from '../module-format-geometry.constants';
+import { RackDetailDataService } from '../../rack-parts/rack-detail-data.service';
+import { ModuleDetailDataService } from '../module-detail-data.service';
 import {
   MinimalModule,
   ModulePanel
@@ -43,6 +48,35 @@ describe('ModuleRealisticComponent', () => {
       updated: '',
       ...overrides
     };
+  }
+
+
+
+  async function renderInStretchingFlexParent(standardId: number): Promise<{fixture: ComponentFixture<ModuleRealisticComponent>; host: HTMLElement; expectedHeightPx: number}> {
+    await TestBed.configureTestingModule({
+      declarations: [ModuleRealisticComponent],
+      providers: [
+        {provide: RackDetailDataService, useValue: {}},
+        {provide: ModuleDetailDataService, useValue: {}}
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(ModuleRealisticComponent);
+    fixture.componentInstance.data = makeMinimalModule({standard: {id: standardId, name: `Standard ${ standardId }`}});
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const parent = document.createElement('div');
+    parent.style.display = 'flex';
+    parent.style.alignItems = 'stretch';
+    parent.style.height = '50rem';
+    host.parentElement?.insertBefore(parent, host);
+    parent.appendChild(host);
+    fixture.detectChanges();
+
+    const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize || '16');
+    return {fixture, host, expectedHeightPx: fixture.componentInstance.hostHeightRem * rootFontSize};
   }
 
   it('omits HP from the panel image tooltip copy', () => {
@@ -133,11 +167,38 @@ describe('ModuleRealisticComponent', () => {
     expect(component.hostWidthRem).toBe(14);
   });
 
-  it('binds the host height to module format geometry', () => {
-    const component = build();
-    component.data = makeMinimalModule();
 
-    expect(component.hostHeightRem).toBeGreaterThan(0);
+  it('keeps rendered host height natural inside a stretching flex parent', async () => {
+    for (const standardId of [0, 1, 2]) {
+      TestBed.resetTestingModule();
+      const {fixture, host, expectedHeightPx} = await renderInStretchingFlexParent(standardId);
+
+      expect(getComputedStyle(host).alignSelf).toBe('flex-start');
+      expect(Math.abs(host.getBoundingClientRect().height - expectedHeightPx)).toBeLessThan(1);
+
+      fixture.destroy();
+    }
+  });
+
+  it('binds the host height to 3U module geometry', () => {
+    const component = build();
+    component.data = makeMinimalModule({standard: {id: 0, name: 'Eurorack'}});
+
+    expect(component.hostHeightRem).toBe(MODULE_FORMAT_GEOMETRY.EURORACK_3U.heightRem);
+  });
+
+  it('binds the host height to Intellijel 1U module geometry', () => {
+    const component = build();
+    component.data = makeMinimalModule({standard: {id: 1, name: 'Intellijel 1U'}});
+
+    expect(component.hostHeightRem).toBe(MODULE_FORMAT_GEOMETRY.INTELLIJEL_1U.heightRem);
+  });
+
+  it('binds the host height to Pulp Logic 1U module geometry', () => {
+    const component = build();
+    component.data = makeMinimalModule({standard: {id: 2, name: 'Pulp Logic 1U'}});
+
+    expect(component.hostHeightRem).toBe(MODULE_FORMAT_GEOMETRY.PULP_LOGIC_1U.heightRem);
   });
 
 });

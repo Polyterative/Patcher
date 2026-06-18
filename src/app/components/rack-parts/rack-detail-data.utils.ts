@@ -124,7 +124,32 @@ export function mergeRefreshedModules(
   }));
 }
 
-export function calculateBlankIdForSizeAndStandard(hp: number, standard: number = 0): number {
+export const DEFAULT_QUICK_BLANK_STANDARD_ID = 0;
+
+export function resolveQuickBlankStandardForRow(row: RackedModule[] | null | undefined): number {
+  const modules = row ?? [];
+  if (modules.length === 0) {
+    return DEFAULT_QUICK_BLANK_STANDARD_ID;
+  }
+
+  const counts = modules.reduce((map, module) => {
+    const standard = module.module?.standard?.id;
+    if (standard == null) {
+      return map;
+    }
+    return map.set(standard, (map.get(standard) ?? 0) + 1);
+  }, new Map<number, number>());
+
+  for (const [standard, count] of counts.entries()) {
+    if (count > modules.length / 2) {
+      return standard;
+    }
+  }
+
+  return modules[0]?.module?.standard?.id ?? DEFAULT_QUICK_BLANK_STANDARD_ID;
+}
+
+export function calculateBlankIdForSizeAndStandard(hp: number, standard: number = DEFAULT_QUICK_BLANK_STANDARD_ID): number {
   const map = standard === 0 ? BLANK_IDS_STANDARD_0
     : standard === 1 ? BLANK_IDS_STANDARD_1
       : null;

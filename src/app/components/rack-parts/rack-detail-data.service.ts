@@ -86,6 +86,7 @@ import {
   extractCreatedPublicId,
   isAnyModuleWithoutRackingId,
   mergeRefreshedModules,
+  resolveQuickBlankStandardForRow,
 } from './rack-detail-data.utils';
 import { AnalyticsService } from '../../features/backbone/analytics-integration/analytics.service';
 import {
@@ -1361,9 +1362,11 @@ export class RackDetailDataService extends SubManager {
             return EMPTY;
           }
 
-          const blankId = calculateBlankIdForSizeAndStandard(hp);
+          const row = rackModules?.[rowId] ?? [];
+          const blankStandard = resolveQuickBlankStandardForRow(row);
+          const blankId = calculateBlankIdForSizeAndStandard(hp, blankStandard);
           if (blankId === -1) {
-            SharedConstants.errorCustom(this.snackBar, 'No matching blank panel was found for this size.');
+            SharedConstants.errorCustom(this.snackBar, 'No matching blank panel was found for this row format and size.');
             return EMPTY;
           }
 

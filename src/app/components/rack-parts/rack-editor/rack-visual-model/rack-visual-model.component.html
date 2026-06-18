@@ -194,7 +194,7 @@
                 @if (isModuleOverflowing(rowId, i)) {
                   <div moduleOverlay [@overflowBorder] class="overflowBorderOverlay"></div>
                 }
-                @if (isCurrentRackEditable && isCurrentRackPropertyOfCurrentUser && !suppressHpIndicators && analysisMode === analysisModes.off) {
+                @if (shouldShowLayoutHpIndicator(analysisMode)) {
                   <div class="hpIndicator"
                        (mousedown)="$event.stopPropagation()"
                   >

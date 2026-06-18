@@ -378,6 +378,16 @@ duplicate it.
   screenshots) and one paragraph confirming the new tests fail without
   the production fix.
 
+
+## Loop 3 implementation checklist
+
+- [x] Bounded rack/patch flex fix: `.rackRow`, rack module hosts, and linked-rack patch preview rows now align modules to `flex-start` so mixed-format rows preserve each module's natural host height.
+- [x] Quick blank majority rule: quick blanks derive the target standard from a >50% row majority; no-majority fallback is deterministic (`leftmost module standard`, then 3U for empty rows).
+- [x] Analysis-overlay gating: same-HP opacity classes and per-module HP badges are layout-analysis-only, not editing-mode affordances.
+- [x] Targeted tests added for format heights, quick-blank majority/fallback, and analysis off/on gating.
+- [x] Runtime smoke captured on `/racks` with `scripts/dev/agent-snapshot.mjs` under `.agent-snapshots/loop3-racks` (not committed); component-level computed-style tests cover the mixed-row stretch invariant.
+- [x] Pulp Logic quick blanks remain unsupported because no blank ID map exists; the selector returns standard `2`, then surfaces the existing “no matching blank” path instead of silently creating a 3U blank.
+
 ## Decision log
 
 - 2026-06-18 — Plan created by feature-notetaker from a user screenshot
@@ -395,3 +405,7 @@ duplicate it.
   off even if editing mode is on. Kept this as one HIGH infra bug plan because
   all three issues share the rack visual geometry / analysis presentation
   surface and need coordinated regression coverage.
+
+- 2026-06-18T17:55+02:00 — Frontend executor implemented the bounded fix: rack and patch preview rows use `flex-start` cross-axis alignment, `app-module-realistic` hosts self-align to `flex-start`, quick blank creation resolves row standard by >50% majority with deterministic leftmost/3U fallback, and edit-mode-only same-HP opacity / HP badges are now gated to layout analysis. Pulp Logic blank selection intentionally remains a surfaced unsupported-blank path because the existing blank ID maps only cover 3U and Intellijel 1U.
+
+- 2026-06-18T17:58+02:00 — Reviewer requested stronger geometry proof; added rendered flex-parent/component computed-style regressions and captured a `/racks` runtime smoke snapshot. The snapshot showed only the known dev HMR/Supabase navigator-lock console noise, with no new rack rendering errors.

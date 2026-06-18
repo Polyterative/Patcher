@@ -340,6 +340,10 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
       && rackedModule.module.hp !== this.hoveredRackedModule?.module.hp;
   }
 
+  shouldShowLayoutHpIndicator(analysisMode: RackAnalysisMode): boolean {
+    return !this.suppressHpIndicators && analysisMode === this.analysisModes.layout;
+  }
+
   signalAnalysisAtHover(): SignalModuleAnalysis | null {
     return this.signalAnalysis;
   }
@@ -1102,9 +1106,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   }
 
   private isSameHpHighlightActive(analysisMode: RackAnalysisMode): boolean {
-    return analysisMode === this.analysisModes.off
-      && this.isCurrentRackEditable
-      && this.isCurrentRackPropertyOfCurrentUser
+    return analysisMode === this.analysisModes.layout
       && !!this.hoveredRackedModule;
   }
 

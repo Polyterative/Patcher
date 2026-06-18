@@ -30,6 +30,8 @@ export class ModuleRealisticComponent {
   @Input() analysisClass = '';
   @Input() disablePanelImageEnterAnimation = false;
 
+  // Rack and patch rows can mix formats; host geometry is fixed module size,
+  // not a flex-row suggestion.
   @HostBinding('style.width.rem')
   get hostWidthRem(): number {
     return this.data?.hp ?? 0;

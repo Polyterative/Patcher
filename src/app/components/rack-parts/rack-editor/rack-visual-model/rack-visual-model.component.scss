@@ -154,6 +154,7 @@
 .rackRow {
   position: relative;
   display: flex;
+  align-items: flex-start;
   width: 100%;
   min-width: 100%;
   box-sizing: border-box;
@@ -211,6 +212,7 @@
 
 .module {
   position: relative;
+  align-self: flex-start;
   z-index: 2;
   transition: transform 150ms cubic-bezier(0, 0, 0.2, 1), opacity 220ms ease, filter 220ms ease, box-shadow 220ms ease;
   -webkit-user-select: none;
