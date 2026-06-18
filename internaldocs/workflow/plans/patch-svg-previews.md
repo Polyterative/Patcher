@@ -4,7 +4,7 @@
 
 ## Status
 
-- [ ] Open — backlog. Not active. Not in `CURRENT_FEATURE.md`.
+- [~] In progress — no-schema SVG renderer foundation completed; backend/storage/UI slices remain blocked until approval.
 - Priority: **MEDIUM**
 - TODO section: **INFRA**
 - Owner persona on pickup: `coordinator-loop` → `planner` → `frontend-dev` → `code-reviewer`.
@@ -164,6 +164,18 @@ The rack preview pipeline already exists and is the explicit template to copy.
   `patch-detail-data.service.ts`'s mutation pipeline — coordinate via
   `CURRENT_FEATURE.md` at pickup time.
 
+## Approval queue
+
+- **Approve schema/storage foundation?** Permit a migration adding
+  `patches.image text null` plus a manually reviewed Supabase storage bucket
+  named `patches` with public reads and owner/admin writes. Default
+  recommendation: approve the rack-preview-shaped model, but apply no RLS or
+  policy changes until the maintainer reviews the exact SQL/policies.
+- **Confirm stored filename convention.** Use rack-style timestamped SVG
+  filenames and store only the filename on `patches.image`. Default
+  recommendation: match racks exactly so stale detection can compare filename
+  timestamp against `patches.updated`.
+
 ## MVP layer
 
 Smallest end-to-end slice that proves the loop works on the patch detail page.
@@ -177,10 +189,10 @@ Smallest end-to-end slice that proves the loop works on the patch detail page.
 - [ ] Add `uploadPatchPreview(file, name)` (svg) and `deletePatchPreview(name)`
       to `supabase-storage.ts`, mirroring the rack methods 1:1, content-type
       `image/svg+xml`, cache-bust whatever key reads patch detail.
-- [ ] New pure utility `patch-graph-svg.utils.ts` (alongside
-      `patch-graph-build.utils.ts`) that turns
-      `{nodes, edges, layout}` into a self-contained SVG string. Unit-tested
-      with golden snapshots in `__tests__/`.
+- [x] New pure utility `patch-graph-svg.utils.ts` (alongside
+      `patch-graph-build.utils.ts`) that turns already-built `{nodes, edges}`
+      graph data into a self-contained SVG string. Unit-tested with a
+      co-located `patch-graph-svg.utils.spec.ts`.
 - [ ] Wire `updatePatchPreview$` action into `PatchDetailDataService`,
       modelled on `RackDetailDataService.updateRackImagePreview$`
       (owner/admin gate, snackbars, analytics event
@@ -339,6 +351,8 @@ When `coordinator-loop` picks this up:
 
 <!-- append-only, timestamped one-liners for non-obvious choices -->
 
+- 2026-06-18T20:18+02:00 — First autonomous implementation slice intentionally avoids schema, storage, RLS, Supabase calls, model fields, UI components, and upload flows; it lands only the pure SVG renderer/test foundation while screenshot refresh remains credential/approval gated.
+- 2026-06-18T20:23+02:00 — Reviewer findings on duplicate marker IDs and long-label clipping were fixed by replacing SVG marker IDs with inline arrowhead polygons and estimating label bounds in the generated viewBox.
 - 2026-06-18 — Plan filed by `feature-notetaker` from a verbatim user
   indication ("visual previews of the patches, saving SVG files… same
   behavior as racks… different folder… preview placeholders"). Classified
