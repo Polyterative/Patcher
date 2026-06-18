@@ -11,7 +11,9 @@ loadE2EEnvFromDotEnv();
 
 const DESKTOP_VIEWPORT = {width: 1280, height: 960} as const;
 const SUPABASE_URL = (process.env['SUPABASE_URL']?.trim() || 'https://sozmatmywjpstwidzlss.supabase.co').replace(/\/+$/, '');
-const SUPABASE_ANON_KEY = process.env['SUPABASE_ANON_KEY']?.trim() ?? '';
+const SUPABASE_ANON_KEY =
+  process.env['SUPABASE_ANON_KEY']?.trim()
+  || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTYxODA4NDU1OCwiZXhwIjoxOTMzNjYwNTU4fQ.3pSLsqyaCAGgISvOrHMt2CIX9hQowty2r8etzMwlpy8';
 
 type OwnedModule = {
   id: number;
@@ -419,7 +421,7 @@ async function expectModuleCopies(page: Page, moduleName: string, labels: string
 
 function collectionModuleCards(page: Page, moduleName: string): Locator {
   return page.locator('app-patch-editor lib-clean-card').filter({
-    has: page.locator('app-module-composite').filter({has: page.getByText(moduleName, {exact: true})})
+    has: page.locator('app-module-composite').filter({has: page.locator('app-module-part-name', {hasText: moduleName})})
   });
 }
 
