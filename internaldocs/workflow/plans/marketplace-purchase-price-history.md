@@ -4,7 +4,7 @@
 
 ## Status
 
-Detailed strategic plan drafted — no-schema money-helper foundation implemented. Implementation remains gated: do not draft/apply migrations, policies, backend methods, or schema changes until this plan is shown to and approved by the product owner. Priority: HIGH. Product area: marketplace / price hub foundation.
+Detailed strategic plan drafted — no-schema money-helper foundation implemented. Product-owner data-model direction recorded: use planner Option A for MVP. Implementation remains gated: do not draft/apply migrations, policies, backend methods, or schema changes in this recorder. Priority: HIGH. Product area: marketplace / price hub foundation.
 This can ship before public profiles because it is private collection metadata with immediate solo-tool value.
 
 ## User intent
@@ -23,8 +23,8 @@ history is a separate acquisition ledger, not another property on the collection
 - `user_modules.kind` already distinguishes `HAS`, `WANTS`, and `SELLS`.
 - The current module possession UI already lets users mark modules owned / wanted / for sale.
 - Existing backend access must stay behind `SupabaseService`; new tables must be registered in `DatabaseStrings.ts`.
-- Existing module collection logic treats ownership as boolean membership; no quantity or multi-copy concept should leak
-  into this feature.
+- Existing module collection logic treats ownership as a single current relationship toggle; no quantity, copy count,
+  or per-instance registration concept should leak into this MVP.
 
 ## Future strategy
 
@@ -40,7 +40,7 @@ Store user-acquisition events as append-only-ish rows so the same data can later
 - Add an optional price-paid capture when a module transitions to `HAS`.
 - Let users add / edit / remove their own acquisition rows from a private collection detail surface.
 - Store amount as integer minor units plus ISO currency code; never store money as floats.
-- Preserve module membership semantics: acquisition rows do not imply current ownership.
+- Preserve module membership semantics: acquisition rows do not imply current ownership and are not module instances.
 - Keep all rows owner-only until a later explicit aggregation path exists.
 
 ## Non-goals
@@ -48,6 +48,7 @@ Store user-acquisition events as append-only-ish rows so the same data can later
 - No public price reports in this task.
 - No current collection valuation dashboard in MVP.
 - No support for "I own three copies" or per-copy inventory.
+- No per-instance registration in UI or DB for MVP.
 - No automatic listing or sale status changes.
 
 ## Assumptions
@@ -66,7 +67,7 @@ because it proves the money-value type, currency handling, UI copy, and owner-on
 - [x] No-schema foundation: add import-safe helpers for normalizing currency, parsing user-entered prices into integer minor
       units, and formatting integer minor-unit values for display.
 - [x] Draft detailed strategic plan for `user_module_acquisitions` schema, owner-only RLS, MVP currency policy, and acquisition edit/delete policy; show it for product-owner approval before any migration/policy draft or implementation.
-- [ ] Add optional price-paid fields to the add-to-collection / possession transition flow.
+- [ ] Add optional price/date/source fields to the add-to-collection / possession transition flow without changing `user_modules` into quantity or instance ownership.
 - [ ] Create owner-only backend methods for acquisition rows.
 - [ ] Show latest acquisition price in the user's module collection detail context.
 - [x] Validate currency and integer minor-unit conversion with unit tests.
@@ -74,7 +75,7 @@ because it proves the money-value type, currency handling, UI copy, and owner-on
 ## Structural layer
 
 - [ ] Add acquisition history list / edit surface for the current user.
-- [ ] Support source labels: new, used, gift, trade, marketplace, unknown.
+- [ ] Support source labels: new, used, gift, trade, marketplace, unknown, as ledger metadata rather than instance metadata.
 - [ ] Add import-safe helpers for normalizing currency and display formatting.
 - [ ] Prepare a private aggregate query for "total known acquisition spend" without exposing it publicly.
 
@@ -94,15 +95,25 @@ Product owner approved the detailed strategic planning phase on 2026-06-18T21:00
 - MVP currency policy.
 - Acquisition edit/delete policy.
 
-This approval is **planning-only**. Do not implement, draft, or apply migrations/RLS/backend/schema changes until the detailed plan is shown and explicitly approved.
+This approval is **planning-only**. The product owner later chose the MVP data-model direction (Option A): keep ownership in `user_modules` as a single current relationship toggle, and record purchase price/date/source as an optional additive acquisition ledger/list underneath the module. Do not implement, draft, or apply migrations/RLS/backend/schema changes in this recorder.
 
-## Proposed data model
+## Approved MVP data-model direction
+
+Use planner recommendation **Option A** now: keep `user_modules` as the single current ownership / wants / sells relationship, and add purchase history as an optional additive ledger/list underneath each module. The ledger captures acquisition facts without turning modules into registered instances.
+
+MVP constraints:
+
+- No `quantity` field.
+- No copy count semantics.
+- No per-instance registration in UI.
+- No per-instance registration table or instance id in DB.
+- Future instance support, if needed, can be introduced later by linking or migrating ledger rows into a dedicated instance model after a separate product/data-model approval.
 
 `user_module_acquisitions`
 
 - `id` — generated primary key.
 - `profileid` — owner profile id. Required; all access policies are anchored here.
-- `moduleid` — referenced module id. Required; acquisition rows describe module purchases, not collection membership rows.
+- `moduleid` — referenced module id. Required; acquisition rows describe module purchases, not collection membership rows or registered instances.
 - `acquired_at` — optional calendar date or timestamp for when the module was acquired. Default to current date when the user creates a row from an "I own this" flow; allow the user to backdate.
 - `price_amount_minor` — optional non-negative integer amount in the currency's minor unit. Empty price is allowed only when the row records non-price metadata such as source/note.
 - `currency` — optional normalized ISO 4217 code when `price_amount_minor` is present.
@@ -112,13 +123,14 @@ This approval is **planning-only**. Do not implement, draft, or apply migrations
 - `updated_at`
 
 Do not put `price_paid` directly on `user_modules`; that would collapse history into one mutable number and block future
-completed-sale / re-acquisition workflows.
+completed-sale / re-acquisition workflows. Do not add `quantity`, `instanceid`, or per-copy ownership fields for MVP.
 
 ### Schema strategy to approve before implementation
 
 - Add the table as a new private ledger; do not add columns to `user_modules`.
+- Keep `user_modules` ownership as a single current relationship toggle.
 - Keep acquisition rows independent from current ownership so users can preserve history after selling/removing a module.
-- Use one row per acquisition event. Multiple rows for the same `(profileid, moduleid)` are allowed because users may buy, sell, and later reacquire the same module.
+- Use one row per acquisition event in a module-level ledger/list. Multiple rows for the same `(profileid, moduleid)` are allowed for history, but those rows are not registered module instances and must not imply quantity.
 - Enforce non-negative `price_amount_minor` when present.
 - Enforce `currency` presence when `price_amount_minor` is present, and keep `currency` empty when no price is stored.
 - Keep source labels constrained by the database so UI typos cannot create new categories.
@@ -183,9 +195,9 @@ completed-sale / re-acquisition workflows.
 ## Acceptance criteria
 
 - A user can add a module to owned collection without entering a price.
-- A user can optionally enter price + currency during or immediately after that transition.
+- A user can optionally enter price + currency, acquisition date, and source during or immediately after that transition.
 - Only the owner can read or edit the acquisition data.
-- The collection still behaves as membership-only for racks, patches, and collection-aware features.
+- The collection still behaves as single-relationship membership-only for racks, patches, and collection-aware features; no quantity or per-instance UI/DB behavior is introduced.
 
 ## Validation strategy
 
@@ -203,6 +215,7 @@ completed-sale / re-acquisition workflows.
 ## Approval queue
 
 - **Planning phase approved 2026-06-18T21:00+02:00.** Prepare the detailed schema/RLS/currency/edit-policy plan, but do not draft/apply migrations, policies, backend methods, or schema changes until the plan is shown and approved.
+- **Data-model direction approved 2026-06-18T21:24+02:00.** Use Option A for MVP: single current `user_modules` relationship plus optional additive acquisition ledger/list underneath the module; no `quantity` and no per-instance registration in UI or DB.
 - **Implementation approval still required.** The exact SQL, policies, backend methods, cache busting, and generated type updates remain blocked until separate product-owner approval.
 - **Confirm MVP currency policy.** Default recommendation: accept ISO 4217 currency codes, normalize to uppercase, and start
   with common currencies (`EUR`, `USD`, `GBP`, `CHF`, `JPY`, `CAD`, `AUD`) in UI suggestions while the helper remains
@@ -213,7 +226,7 @@ completed-sale / re-acquisition workflows.
 ## Coordinator-loop handoff
 
 Start here before any other marketplace item if the user wants early market-value progress without public-profile or PII
-dependencies. Stop before any migration/RLS work until the user approves the proposed schema and policies.
+dependencies. Stop before any migration/RLS work until the user separately approves the exact schema and policies. Preserve the approved Option A boundary: ledger rows are purchase history, not instances.
 
 ## Decision log
 
@@ -224,3 +237,4 @@ dependencies. Stop before any migration/RLS work until the user approves the pro
 - 2026-06-18T20:34+02:00 — Parked the remaining MVP steps on explicit schema/RLS approval; no backend methods, migrations, policies, or real data mutations were attempted.
 - 2026-06-18T21:00+02:00 — Product owner approved the planning-only phase for detailed schema/RLS/currency/edit-policy strategy; implementation remains blocked until the plan is shown and separately approved, and no migrations/policies should be drafted or applied yet.
 - 2026-06-18T21:02+02:00 — Drafted the detailed strategic plan: separate private acquisition ledger, owner-only RLS, integer-minor-unit ISO currency policy, indefinite private edit/delete, and a post-approval UI/API sequence. No SQL, migrations, policies, backend methods, schema changes, or data mutations were attempted.
+- 2026-06-18T21:24+02:00 — Product owner approved planner recommendation Option A for the MVP data model: keep `user_modules` ownership as a single boolean/current relationship toggle; record purchase price/date/source as an optional additive acquisition ledger/list underneath the module; add no `quantity` field and no per-instance registration in UI or DB for MVP, while leaving a path to a dedicated instance model later. No code, migrations, RLS, backend methods, schema changes, or data mutations were attempted.
