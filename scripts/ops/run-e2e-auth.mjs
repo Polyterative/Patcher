@@ -5,9 +5,35 @@
  */
 import {spawnSync} from 'child_process';
 import {existsSync, readFileSync} from 'fs';
+import {fileURLToPath} from 'url';
 import {resolve} from 'path';
 
-const rootDir = new URL('..', import.meta.url).pathname;
+const rootDir = fileURLToPath(new URL('../..', import.meta.url));
+
+function normalizePlaywrightArgs(args) {
+    const normalized = [];
+
+    for (let index = 0; index < args.length; index++) {
+        const arg = args[index];
+        if (arg === '--include') {
+            const include = args[index + 1];
+            if (include) {
+                normalized.push(include.replace(/^\*\*\//, ''));
+                index++;
+            }
+            continue;
+        }
+
+        if (arg.startsWith('--include=')) {
+            normalized.push(arg.slice('--include='.length).replace(/^\*\*\//, ''));
+            continue;
+        }
+
+        normalized.push(arg);
+    }
+
+    return normalized;
+}
 
 // Load .env if present (mirrors auth helper logic)
 const envPath = resolve(rootDir, '.env');
@@ -23,7 +49,7 @@ if (!process.env['E2E_TEST_EMAIL'] || !process.env['E2E_TEST_PASSWORD']) {
     process.exit(0);
 }
 
-const args = ['test', '--reporter=list', '--project=chromium-auth', ...process.argv.slice(2)];
+const args = ['test', '--reporter=list', '--project=chromium-auth', ...normalizePlaywrightArgs(process.argv.slice(2))];
 const result = spawnSync('playwright', args, {stdio: 'inherit', cwd: rootDir});
 
 if (result.error) {

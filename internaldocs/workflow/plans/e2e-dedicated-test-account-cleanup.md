@@ -15,3 +15,4 @@
 
 <!-- Append timestamped one-liners as the plan progresses. -->
 
+- 2026-06-18T12:17+02:00 — CTO approved treating local `.env` E2E credentials as approved for local E2E work when populated. In this worktree the keys are present but empty, so local auth verification could not run; GitHub Actions secret rotation is deferred and not completed.
