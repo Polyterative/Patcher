@@ -4,7 +4,7 @@
 
 ## Status
 
-- [ ] On hold — no-schema SVG renderer foundation completed; backend/storage/UI slices remain blocked until approval.
+- [ ] Backend/storage direction approved — no-schema SVG renderer foundation completed; migrations/storage/RLS not applied yet.
 - Priority: **MEDIUM**
 - TODO section: **INFRA**
 - Owner persona on pickup: `coordinator-loop` → `planner` → `frontend-dev` → `code-reviewer`.
@@ -154,8 +154,7 @@ The rack preview pipeline already exists and is the explicit template to copy.
 
 ## Dependencies and sequencing
 
-- **Hard prerequisite:** schema-change preflight read + maintainer approval on
-  the migration and storage bucket RLS.
+- **Hard prerequisite:** schema-change preflight read remains required before writing SQL. Product owner approved the backend/storage direction; migrations/storage/RLS still must be proposed/reviewed and must not be applied autonomously.
 - **No dependency** on marketplace, manufacturer pages, profiles, or any Tier
   1/2 work.
 - **Soft dependency:** if `on-seo-og-image-generation.md` is scheduled, land
@@ -166,15 +165,7 @@ The rack preview pipeline already exists and is the explicit template to copy.
 
 ## Approval queue
 
-- **Approve schema/storage foundation?** Permit a migration adding
-  `patches.image text null` plus a manually reviewed Supabase storage bucket
-  named `patches` with public reads and owner/admin writes. Default
-  recommendation: approve the rack-preview-shaped model, but apply no RLS or
-  policy changes until the maintainer reviews the exact SQL/policies.
-- **Confirm stored filename convention.** Use rack-style timestamped SVG
-  filenames and store only the filename on `patches.image`. Default
-  recommendation: match racks exactly so stale detection can compare filename
-  timestamp against `patches.updated`.
+- **Approved 2026-06-18T20:58+02:00:** backend/storage direction is approved with a new `patches.image` column for the SVG URL/path, a dedicated `patches` storage bucket, RLS writes limited to the patch owner, reads aligned with patch visibility, and a deterministic filename based on patch id/version. Do not apply migrations/storage/RLS from this docs-only approval checkpoint.
 
 ## MVP layer
 
@@ -317,8 +308,7 @@ Reusable surfaces + list consumers.
   schema-preflight doc; if the trigger does fire, write the row update via a
   dedicated RPC that bypasses the `updated` bump, mirroring what was done for
   racks (see `BACKEND_METHODS.md`).
-- **Storage RLS for `patches` bucket.** Maintainer must approve the policy
-  (owner write, public read). Agent should propose, not apply.
+- **Storage RLS for `patches` bucket.** Direction is approved: owner-only writes and reads aligned with patch visibility. Agent should propose exact policies, not apply them autonomously.
 - **Shared helper extraction.** `previewGeneratedAt` / `isPreviewStale` exist
   in `rack-image.component.ts`. Duplicating them is the smaller, safer change;
   extracting to a shared util is cleaner but touches rack tests. Decision
@@ -351,6 +341,7 @@ When `coordinator-loop` picks this up:
 
 <!-- append-only, timestamped one-liners for non-obvious choices -->
 
+- 2026-06-18T20:58+02:00 — Product owner approved the Patch SVG previews backend/storage direction: add `patches.image` for SVG URL/path, use a dedicated `patches` storage bucket, limit RLS writes to the patch owner, align reads with patch visibility, and use a deterministic filename based on patch id/version; no migrations/storage/RLS were applied in this docs-only checkpoint.
 - 2026-06-18T20:18+02:00 — First autonomous implementation slice intentionally avoids schema, storage, RLS, Supabase calls, model fields, UI components, and upload flows; it lands only the pure SVG renderer/test foundation while screenshot refresh remains credential/approval gated.
 - 2026-06-18T20:23+02:00 — Reviewer findings on duplicate marker IDs and long-label clipping were fixed by replacing SVG marker IDs with inline arrowhead polygons and estimating label bounds in the generated viewBox.
 - 2026-06-18 — Plan filed by `feature-notetaker` from a verbatim user
