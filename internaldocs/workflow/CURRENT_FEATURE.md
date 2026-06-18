@@ -12,29 +12,28 @@
 
 ## Active
 
-### Bug — Tag taxonomy Voice group proposal
+### E2E — Dedicated Test Account Cleanup
 
-Plan: [`plans/bug-tag-taxonomy-voice-group-miscategorization.md`](./plans/bug-tag-taxonomy-voice-group-miscategorization.md)
+Plan: [`plans/e2e-dedicated-test-account-cleanup.md`](./plans/e2e-dedicated-test-account-cleanup.md)
 
-Status: **Proposal drafted; awaiting manual approval.** Proposal/read-only phase only; do not apply migrations, RLS/policy changes, or tag data mutations without explicit human approval.
+Status: **Staged for next coordinator-loop.** Product owner approved cleanup/creation of dedicated test-account data when needed, with the explicit boundary that real user data must not be touched.
 
 #### Why this is next
 
-Five requested implementation loops are complete. The remaining HIGH/product work is blocked by schema/RLS/manual approval or upstream dependencies, and screenshot refresh is still soft-blocked by dedicated test-account cleanup. The tag taxonomy item has an actionable proposal-first phase that can be done read-only while respecting the manual approval gate.
+The just-completed tag-taxonomy bug is closed and archived. Per user priority, the loop should prefer small bugs/fixes and fastest-to-close tactical work before larger Marketplace/schema features. This E2E infrastructure item is already approved, unblocks screenshot/auth validation reliability, and has a narrow data-safety boundary.
 
 #### Layer checklist
 
-- [x] MVP: read current tag group state and draft a revised categorization proposal table.
-- [x] Structural: proposed no new group; documented that enum/display/balance-analysis changes are not needed unless product chooses a different taxonomy.
-- [x] Polish: captured approval-gate notes and deferred follow-ups in the plan.
+- [ ] MVP: inspect current E2E credential wiring, test-account identifiers, and existing auth E2E data dependencies without touching real user data.
+- [ ] Structural: create or repair only dedicated test-account fixtures/data as needed, and document the safe cleanup path.
+- [ ] Polish: run `pnpm test:e2e:auth` when credentials are available, record any secret-rotation follow-up, and keep generated E2E artifacts out of git.
 
 #### Validation strategy
 
-- Read-only Supabase/tag inspection only.
-- `node scripts/checks/check-docs.cjs` after proposal doc edits.
-- No code/data migration validation until explicit approval exists.
+- Inspect relevant E2E scripts/specs and local env wiring first.
+- Run targeted auth E2E validation with `pnpm test:e2e:auth` if dedicated credentials are configured in this environment.
+- Run `node scripts/checks/check-docs.cjs` after workflow doc updates.
 
 #### Decision log
 
-- 2026-06-18T18:25+02:00 — Coordinator staged this proposal-first task for the next loop because it is the next actionable non-destructive backlog item; all mutation/apply steps remain approval-gated.
-- 2026-06-18T18:55+02:00 — Executor completed the read-only proposal phase using Supabase MCP production read-back only. Proposal keeps voice-character tags in `Voice`, moves `VCA` to `Utility`, moves `VCO` to `Source`, and requires manual approval before any migration draft or Supabase mutation.
+- 2026-06-18T19:17+02:00 — Staged this as the next actionable task because the product owner pre-approved it, it is narrower than remaining Marketplace/schema work, and it must not touch real user data.

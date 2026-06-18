@@ -1,4 +1,5 @@
 # Completed Features
+- **2026-06-18** — MEDIUM: Bug — Tag taxonomy Voice group now contains only hypothetical instrument/sound tags; production `tags.type` data moved `Full Voice` and `VCO` to Source and `VCA` to Utility with read-back verification.
 - **2026-06-18** — MEDIUM: Bug — Rack list preview images now reserve their frame, fade in on actual bitmap load, reset load state on filename changes, and preserve fallback/reduced-motion behavior with component regressions.
 - **2026-06-18** — MEDIUM: Bug — Comments composer input now fills the comments rail with scoped full-width form-field styles, rendered-width regression coverage, and desktop/mobile runtime snapshot verification.
 - **2026-06-18** — HIGH: Bug — Rack module sizing and analysis-overlay regressions fixed module host stretch with flex-start geometry guards, quick blank majority-standard selection, and layout-analysis-only opacity/HP overlays with rendered/style regression coverage.

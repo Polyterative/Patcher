@@ -2,9 +2,10 @@
 
 ## Status
 
-`[x]` Proposal/read-only phase complete; awaiting manual approval. No data,
-schema, or code changes until the revised categorization is reviewed and
-**manually approved** by the product owner per `AGENTS.md §5`.
+`[x]` Completed. The approved data-only Supabase migration was applied and
+production read-back confirmed `Voice` now contains only the approved
+hypothetical instrument / sound tags; `Full Voice` and `VCO` are `Source`, and
+`VCA` is `Utility`.
 
 ## User intent
 
@@ -15,26 +16,27 @@ schema, or code changes until the revised categorization is reviewed and
 The user spotted that the `Voice` tag-type group on the live tag taxonomy
 surface lists tags that mix two different semantic axes:
 
-- **Voice character** (the kind of sound the module makes): BASS, CLAP,
-  Full Voice, HAT, KICK, LEAD, PAD, PERC, SNARE
-- **Architecture / signal-chain role** (the kind of building block): VCA · 1, VCO
+- **Voice character** (hypothetical instrument / sound tags): BASS, CLAP,
+  HAT, KICK, LEAD, PAD, PERC, SNARE
+- **Architecture / signal-chain role** (the kind of building block):
+  Full Voice, VCA · 1, VCO
 
-Per the user, only the first set belongs in `Voice`. The second set (VCA, VCO)
-describes module architecture, not the sonic identity of a voice, and should
-move to a different functional group.
+Per the user, only the first set belongs in `Voice`. The second set
+(`Full Voice`, VCA, VCO) describes module architecture, not hypothetical
+instrument / sound identity, and should move to a different functional group.
 
 ## Product / roadmap fit
 
 - This is a direct follow-up to the just-completed "Tag taxonomy — split
   PURPOSE group into sub-groups" task (see
-  [`done/tag-taxonomy-split-purpose-group-into-sub-groups.md`](./done/tag-taxonomy-split-purpose-group-into-sub-groups.md),
+  [`done/tag-taxonomy-split-purpose-group-into-sub-groups.md`](./tag-taxonomy-split-purpose-group-into-sub-groups.md),
   archived 2026-06-18). That task resolved the flat-list scanability problem
   but, on first inspection, the chosen grouping does not match the user's
   mental model of `Voice`.
 - Coherent tag taxonomy is foundational for: rack-balance analysis
   (`rack-balance-analysis.service.ts`), the tag proposer panel, the module
   browser tag filter, and any future "search modules by sound" surface
-  ([`product/ROADMAP.md`](../../product/ROADMAP.md)).
+  ([`product/ROADMAP.md`](../../../product/ROADMAP.md)).
 - Aligns with `internaldocs/product/PRINCIPLES.md`: clarity over cleverness,
   and a domain model that mirrors how synth users actually think about modules.
 
@@ -48,7 +50,7 @@ From the user-supplied screenshot of the tag taxonomy surface:
 |---|---|---|
 | BASS | voice character | sub-bass / bass voice |
 | CLAP | voice character | drum voice |
-| Full Voice | voice character | self-contained voice module |
+| Full Voice | architecture | self-contained voice module |
 | HAT | voice character | drum voice |
 | KICK | voice character | drum voice |
 | LEAD | voice character | melodic lead voice |
@@ -60,15 +62,16 @@ From the user-supplied screenshot of the tag taxonomy surface:
 
 ### Why the mismatch happened
 
-The prior split task ([`done/tag-taxonomy-split-purpose-group-into-sub-groups.md`](./done/tag-taxonomy-split-purpose-group-into-sub-groups.md))
+The prior split task ([`done/tag-taxonomy-split-purpose-group-into-sub-groups.md`](./tag-taxonomy-split-purpose-group-into-sub-groups.md))
 defined `type = 3 (Voice)` as `Full Voice, VCA, VCO` and only migrated tags
 that were previously in `type = 0 (purpose)`. The drum/character tags
 (BASS, CLAP, HAT, KICK, LEAD, PAD, PERC, SNARE) almost certainly already
 carried `type = 3` in production from earlier seed/edit history, and were
 **not** touched by either migration:
 
-- [`20260618105927_split_purpose_tag_groups.sql`](../../../supabase/migrations/20260618105927_split_purpose_tag_groups.sql)
-- [`20260618121100_correct_split_purpose_tag_groups.sql`](../../../supabase/migrations/20260618121100_correct_split_purpose_tag_groups.sql)
+- [`20260618105927_split_purpose_tag_groups.sql`](../../../../supabase/migrations/20260618105927_split_purpose_tag_groups.sql)
+- [`20260618121100_correct_split_purpose_tag_groups.sql`](../../../../supabase/migrations/20260618121100_correct_split_purpose_tag_groups.sql)
+- [`20260618190400_correct_voice_tag_taxonomy.sql`](../../../../supabase/migrations/20260618190400_correct_voice_tag_taxonomy.sql)
 
 Both migrations only `UPDATE` rows whose `name IN (...approved list...)` and
 explicitly skip rows whose `type` already matches. So drum-voice tags stayed
@@ -83,7 +86,7 @@ implementing agent in case product wants to backfill.
 
 | File | Role |
 |---|---|
-| [`src/app/models/tag.ts`](../../../src/app/models/tag.ts) | `TagType` enum, `TAG_TYPE_LABELS`, `TAG_TYPE_DISPLAY_ORDER`, `FUNCTIONAL_TAG_TYPES`, `NUMERIC_TAG_TYPE_NAMES` |
+| [`src/app/models/tag.ts`](../../../../src/app/models/tag.ts) | `TagType` enum, `TAG_TYPE_LABELS`, `TAG_TYPE_DISPLAY_ORDER`, `FUNCTIONAL_TAG_TYPES`, `NUMERIC_TAG_TYPE_NAMES` |
 | `src/app/components/module-parts/module-minimal/module-tags/module-tags.component.html` | Tag proposer panel — groups dynamically by `type` label |
 | `src/app/components/module-parts/module-minimal/module-tags/order-tags-by-type.pipe.ts` | Display ordering by `TAG_TYPE_DISPLAY_ORDER` |
 | `src/app/features/rack-balance/rack-balance-analysis.service.ts` | `isBalanceRelevantTagType`, `getPatternsForTagType` — must understand any new group ID |
@@ -157,13 +160,13 @@ Read-back resolved the unknowns:
 - `VCA · 1` in the UI corresponds to the canonical `VCA` row (`id = 2`) plus a
   usage-count badge; there is no separate `VCA · 1` tag row in the read-back.
 
-## Revised categorization proposal (approval required before migration draft)
+## Revised categorization proposal (approved for handoff)
 
-Proposal summary: keep the existing `Voice` group as the sonic-identity group,
-move only architectural/building-block outliers out of it, and avoid introducing
-a new `TagType` enum value. This means no app-code change is proposed for this
-phase; an approved implementation would be a data-only `tags.type` migration
-touching `VCA` and `VCO` only.
+Proposal summary: keep the existing `Voice` group as the hypothetical
+instrument / sound group, move architectural/building-block outliers out of it,
+and avoid introducing a new `TagType` enum value. This means no app-code change
+is proposed for this phase; the approved handoff is a data-only `tags.type`
+migration draft touching `Full Voice`, `VCA`, and `VCO` only.
 
 | Tag | Current type → proposed type | Rationale |
 |---|---|---|
@@ -197,7 +200,7 @@ touching `VCA` and `VCO` only.
 | Warm | Character → Character | Describes timbral character, not a voice class. |
 | BASS | Voice → Voice | Describes the kind of sound/voice the module makes. |
 | CLAP | Voice → Voice | Describes a drum voice sound class. |
-| Full Voice | Voice → Voice | Describes a self-contained voice sound role; keep until product chooses finer taxonomy. |
+| Full Voice | Voice → Source | Describes a complete technical sound source/voice module, not a hypothetical instrument/sound category like KICK or PAD. |
 | HAT | Voice → Voice | Describes a drum voice sound class. |
 | KICK | Voice → Voice | Describes a drum voice sound class. |
 | LEAD | Voice → Voice | Describes a melodic voice sound class. |
@@ -213,13 +216,15 @@ touching `VCA` and `VCO` only.
 
 Approval gate notes:
 
-- **Manual proposal approval required next.** The product owner must explicitly
-  approve this table in the Decision log before any migration is drafted.
-- **No migration has been drafted in this loop.** The approved migration, if
-  accepted, should update only `VCA` to `type = 9` and `VCO` to `type = 4`,
-  using `where type is distinct from <target>`.
-- **No Supabase mutation approval exists yet.** Applying any migration remains a
-  separate second manual-approval gate per `AGENTS.md §5`.
+- **Manual proposal and Supabase application approval captured.** On
+  2026-06-18T19:04+02:00, the product owner approved the migration draft with
+  one adjustment: move `Full Voice` out of `Voice` too, and clarified that
+  permission to apply Supabase is granted for the executor.
+- The approved migration updates only `Full Voice` and `VCO` to `type = 4`
+  (`Source`) and `VCA` to `type = 9` (`Utility`), using
+  `where type is distinct from <target>`.
+- This approval authorizes Supabase application by the executor, but this
+  assistant/session must not apply the migration directly.
 - **No new group is proposed.** If product instead wants a dedicated
   `Architecture` or `Voice Character` group, that is a different proposal and
   would require `src/app/models/tag.ts` and rack-balance impact review.
@@ -234,7 +239,8 @@ Approval gate notes:
   prior split's no-name-rename rule.
 - Decide once whether voice-character tags warrant their own dedicated
   group (e.g. "Voice Character" or "Drum Voice") or fit cleanly inside the
-  existing `Voice` (renamed/clarified) and a separate destination for VCA/VCO.
+  existing `Voice` (renamed/clarified) and a separate destination for
+  architecture/building-block tags.
 
 ## Goals
 
@@ -244,12 +250,11 @@ Approval gate notes:
 2. Produce a written **revised categorization proposal table** — exactly one
    tag → group assignment per row, with a one-line rationale per row — and
    present it to the user for explicit manual approval.
-3. Once approved, draft (do not apply) a single new migration that updates
-   only `tags.type` for the approved set, following the patterns in
+3. Draft a single approved migration that updates only `tags.type` for
+   `Full Voice`, `VCA`, and `VCO`, following the patterns in
    `20260618121100_correct_split_purpose_tag_groups.sql` (skip no-op rewrites
    via `where type is distinct from <target>`).
-4. After explicit approval to apply, run the migration on production and
-   verify the surface re-groups correctly.
+4. Hand the approved draft to the executor that will apply and verify it.
 
 ## Non-goals
 
@@ -303,7 +308,7 @@ The minimum that resolves the user's reported bug:
 - A proposal table with explicit destination `TagType` per tag and a
   one-line rationale per row.
 - Explicit human approval recorded in this plan's `Decision log`.
-- A single new dated migration (drafted, not applied) that contains only
+- A single new dated migration that contains only
   `UPDATE public.tags SET type = <id> WHERE type is distinct from <id> AND
   name IN (...)` statements.
 
@@ -343,15 +348,16 @@ is required.
 
 Read-only inspection (implementing agent must read):
 
-- [`src/app/models/tag.ts`](../../../src/app/models/tag.ts)
-- [`supabase/migrations/20260618105927_split_purpose_tag_groups.sql`](../../../supabase/migrations/20260618105927_split_purpose_tag_groups.sql)
-- [`supabase/migrations/20260618121100_correct_split_purpose_tag_groups.sql`](../../../supabase/migrations/20260618121100_correct_split_purpose_tag_groups.sql)
-- [`done/tag-taxonomy-split-purpose-group-into-sub-groups.md`](./done/tag-taxonomy-split-purpose-group-into-sub-groups.md)
+- [`src/app/models/tag.ts`](../../../../src/app/models/tag.ts)
+- [`supabase/migrations/20260618105927_split_purpose_tag_groups.sql`](../../../../supabase/migrations/20260618105927_split_purpose_tag_groups.sql)
+- [`supabase/migrations/20260618121100_correct_split_purpose_tag_groups.sql`](../../../../supabase/migrations/20260618121100_correct_split_purpose_tag_groups.sql)
+- [`supabase/migrations/20260618190400_correct_voice_tag_taxonomy.sql`](../../../../supabase/migrations/20260618190400_correct_voice_tag_taxonomy.sql)
+- [`done/tag-taxonomy-split-purpose-group-into-sub-groups.md`](./tag-taxonomy-split-purpose-group-into-sub-groups.md)
 - Live `public.tags` table (read-only via Supabase MCP).
 
 Potential write targets (only after explicit approval):
 
-- One new file under `supabase/migrations/<UTC>_revise_voice_tag_grouping.sql`.
+- New approved data-only migration: `supabase/migrations/20260618190400_correct_voice_tag_taxonomy.sql`.
 - `src/app/models/tag.ts` only if a new `TagType` value is approved.
 - `src/app/features/rack-balance/rack-balance-analysis.service.ts` only if
   the new group affects balance scoring.
@@ -364,9 +370,8 @@ Potential write targets (only after explicit approval):
 2. **Proposal table delivered:** every tag from the read-back has exactly
    one proposed destination `TagType`, with a one-line rationale and a
    "current type → new type" delta column. The `Voice` group in the
-   proposal contains *only* tags that describe sonic identity (kind of
-   sound made), and explicitly excludes VCA, VCO, and similar architectural
-   tags.
+   proposal contains *only* hypothetical instrument / sound tags, and
+   explicitly excludes Full Voice, VCA, VCO, and similar architectural tags.
 4. **Manual-approval gate cleared:** the product owner records explicit
    approval in this plan's `Decision log` (timestamp + decision text)
    before any migration is drafted as final.
@@ -380,8 +385,8 @@ Potential write targets (only after explicit approval):
    approved `type`. Rack-balance analysis specs and tag-related component
    specs still pass via targeted `pnpm test-headless --include=...` runs.
 8. **Surface check:** the `Voice` group in the live tag taxonomy view shows
-   only the approved voice-character set; VCA, VCO appear in their new
-   group.
+   only the approved voice-character set; Full Voice, VCA, and VCO appear in
+   their new groups.
 
 ## Validation strategy
 
@@ -396,30 +401,29 @@ Potential write targets (only after explicit approval):
   - `pnpm test-headless --include="**/rack-balance*.spec.ts"`
 - **Surface check:** open the tag taxonomy view (the surface in the user's
   screenshot) via `scripts/dev/agent-snapshot.mjs` per the
-  [`patcher-ui-debug` skill](../../../.github/skills/patcher-ui-debug/SKILL.md)
+  [`patcher-ui-debug` skill](../../../../.github/skills/patcher-ui-debug/SKILL.md)
   and visually confirm group contents match the approved table.
 - **Lint:** `pnpm lint`. **Docs check:** `node scripts/checks/check-docs.cjs`
   on this plan only (no app-code changes during the proposal phase).
 
 ## Risks and open questions
 
-- **Risk: balance-analysis drift.** Moving VCA/VCO out of `Voice` may shift
+- **Risk: balance-analysis drift.** Moving Full Voice/VCA/VCO out of `Voice` may shift
   `rack-balance-analysis.service.ts` scoring for many existing racks. The
   proposal must explicitly call out which functional groups VCA/VCO end up
   in and whether scoring patterns need adjustment.
 - **Risk: hidden tags.** The screenshot is not exhaustive. There may be
   additional tags currently in `Voice` that the read-back will surface;
   the proposal must cover all of them, not just the screenshotted ones.
-- **Risk: ambiguous names.** "Full Voice" sits on the boundary — it could
-  read as architecture (a self-contained voice module) or as voice
-  character (the sonic identity is "a complete voice"). The proposal must
-  pick one and justify it.
+- **Decision: ambiguous name resolved.** "Full Voice" reads as architecture
+  (a self-contained voice module), not a hypothetical instrument / sound tag;
+  approved destination is `Source`.
 - **Open question: dedicated drum-voice group?** Should
   BASS/KICK/SNARE/HAT/CLAP/PERC be split out as their own group separate
   from melodic-voice tags (LEAD/PAD), or kept together inside `Voice`?
-- **Open question: where do VCA/VCO go?** Candidate destinations include
-  an existing functional group (e.g. `Utility` for VCA, `Source` for VCO)
-  or a new dedicated `Architecture` group. The proposal must pick one.
+- **Decision: where do Full Voice/VCA/VCO go?** Use existing functional groups:
+  `Source` for Full Voice and VCO, `Utility` for VCA. No new `Architecture`
+  group in this pass.
 - **Open question: backfill of the four missing Modulation names.** Out of
   scope here, but the read-back may surface them; flag and defer.
 
@@ -430,11 +434,11 @@ When `coordinator-loop` selects this task it must:
 1. Treat the work as **proposal-first**: do not draft any migration or
    touch `tags.type` until the proposal is approved in `Decision log`.
 2. Use Supabase MCP only in read-only mode for the read-back step.
-3. Pause and request explicit user approval **twice**:
-   - once to approve the proposal table,
-   - once to approve applying the drafted migration (per `AGENTS.md §5`).
-4. After both approvals, apply the migration, run targeted specs, run
-   `pnpm lint`, and capture verification in `Decision log`.
+3. Approval has been captured for the proposal, migration draft handoff, and
+   Supabase application by the executor:
+   - move `Full Voice` and `VCO` to `Source`,
+   - move `VCA` to `Utility`.
+4. The delegated executor applied the approved migration and verified the production read-back.
 5. Move this plan to `done/` and update `TODO.md` and `COMPLETED.md` only
    after surface check confirms the new grouping.
 6. Do **not** commit any data-mutation work without explicit user approval
@@ -456,3 +460,16 @@ When `coordinator-loop` selects this task it must:
   from `Voice` to `Source`; leave `Nature`, `Character`, `Noise`, `EQ`, `LPG`,
   and `VCF` unchanged. No migration was drafted or applied; manual proposal
   approval remains required before any migration draft.
+- 2026-06-18T19:04+02:00 — Product owner clarified that `Voice` should contain
+  only hypothetical instrument / sound tags, not technical module-role tags,
+  approved a local migration draft for handoff, and granted permission for the
+  executor to apply the Supabase mutation. Approved destination changes:
+  `Full Voice` and `VCO` from `Voice` to `Source`; `VCA` from `Voice` to
+  `Utility`. This session must not apply the Supabase mutation directly.
+- 2026-06-18T19:08+02:00 — Product owner confirmed that if the executor follows
+  these instructions and read-back verification confirms the approved grouping,
+  the task is considered closed. Approved post-verification workflow cleanup:
+  move the TODO entry to `COMPLETED.md`, archive this plan under `plans/done/`,
+  and stage the next actionable task in `CURRENT_FEATURE.md`.
+
+- 2026-06-18T19:17+02:00 — Delegated executor applied the approved data-only Supabase migration `correct_voice_tag_taxonomy` (no RLS or policy changes). Production read-back confirmed `BASS`, `CLAP`, `HAT`, `KICK`, `LEAD`, `PAD`, `PERC`, and `SNARE` remain `Voice` (`type = 3`); `Full Voice` and `VCO` are now `Source` (`type = 4`); `VCA` is now `Utility` (`type = 9`).
