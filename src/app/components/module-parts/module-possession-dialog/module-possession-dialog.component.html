@@ -44,6 +44,60 @@
       </button>
     }
   </div>
+
+  @if (selectedKind === 'HAS') {
+    <section class="module-possession-acquisition" aria-label="Private purchase history">
+      <div class="module-possession-acquisition__header">
+        <mat-icon aria-hidden="true">lock</mat-icon>
+        <span>Optional private purchase history</span>
+      </div>
+      <div class="module-possession-acquisition__grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Acquired</mat-label>
+          <input matInput type="date" [(ngModel)]="acquiredAt" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Price paid</mat-label>
+          <input
+            matInput
+            type="text"
+            inputmode="decimal"
+            [(ngModel)]="priceInput"
+            placeholder="Optional"
+          />
+        </mat-form-field>
+        @if (priceError) {
+          <p class="module-possession-acquisition__price-error" role="alert">{{ priceError }}</p>
+        }
+        <mat-form-field appearance="outline">
+          <mat-label>Currency</mat-label>
+          <mat-select [(ngModel)]="currency">
+            @for (currencyOption of currencies; track currencyOption) {
+              <mat-option [value]="currencyOption">{{ currencyOption }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Source</mat-label>
+          <mat-select [(ngModel)]="source">
+            @for (sourceOption of sources; track sourceOption) {
+              <mat-option [value]="sourceOption">{{ sourceOption }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <mat-form-field appearance="outline" class="module-possession-acquisition__note">
+        <mat-label>Note</mat-label>
+        <textarea
+          matInput
+          rows="2"
+          maxlength="500"
+          [(ngModel)]="note"
+          placeholder="Optional seller, condition, or deal note"
+        ></textarea>
+      </mat-form-field>
+    </section>
+  }
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

@@ -72,6 +72,7 @@ import {
   ModuleCollectionSummary
 } from 'src/app/models/module-collection';
 import { MinimalModule } from 'src/app/models/module';
+import { UserModuleAcquisition } from 'src/app/models/user-module-acquisition';
 import { Tag } from 'src/app/models/tag';
 import {
   applyClientSideSearchFilter,
@@ -2004,6 +2005,25 @@ export class SupabaseQueriesService {
         }
         return counts;
       })
+    );
+  }
+
+  getUserModuleAcquisitionsForModule(moduleId: number): Observable<UserModuleAcquisition[]> {
+    return this.getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return of([]);
+        return rxFrom(
+          this.supabase
+            .from(DbPaths.user_module_acquisitions)
+            .select('id,profileid,moduleid,acquired_at,price_amount_minor,currency,source,note,created_at,updated_at')
+            .eq('profileid', user.id)
+            .eq('moduleid', moduleId)
+            .order('acquired_at', {ascending: false})
+            .order('id', {ascending: false})
+        );
+      }),
+      remapErrors(),
+      map(response => (response.data ?? []) as UserModuleAcquisition[])
     );
   }
 

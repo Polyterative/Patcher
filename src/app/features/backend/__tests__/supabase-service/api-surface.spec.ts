@@ -80,6 +80,7 @@ describe('SupabaseService - API Surface', () => {
         'patchWithId',
         'patchesWithModule',
         'moduleUsageSummary',
+        'userModuleAcquisitionsForModule',
         'standards',
         'tagVotesForModule',
         'myVotes',
@@ -105,6 +106,7 @@ describe('SupabaseService - API Surface', () => {
         'rack',
         'comment',
         'userModule',
+        'userModuleAcquisition',
         'userModuleTag',
         'moduleINs',
         'moduleOUTs',
@@ -129,7 +131,8 @@ describe('SupabaseService - API Surface', () => {
         'patch',
         'rack',
         'module',
-        'patchConnections'
+        'patchConnections',
+        'userModuleAcquisition'
       ];
       
       expectedMethods.forEach(method => {
@@ -150,7 +153,8 @@ describe('SupabaseService - API Surface', () => {
         'module',
         'comment',
         'rackedModule',
-        'userModuleTag'
+        'userModuleTag',
+        'userModuleAcquisition'
       ];
       
       expectedMethods.forEach(method => {

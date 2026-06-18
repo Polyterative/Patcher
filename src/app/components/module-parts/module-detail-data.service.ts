@@ -43,9 +43,11 @@ import {
 } from './module-detail-data.models';
 import { AnalyticsService } from '../../features/backbone/analytics-integration/analytics.service';
 import { environment } from 'src/environments/environment';
+import { UserModuleAcquisition, UserModuleAcquisitionDraft } from 'src/app/models/user-module-acquisition';
+import { ModulePossessionDialogResult } from './module-possession-dialog/module-possession-dialog.component';
+import { formatMarketplaceMinorUnits } from 'src/app/features/marketplace/marketplace-money.utils';
 
 export type { HiddenUsageBucket, ModulePossessionCounts, ModuleUsageSummary } from './module-detail-data.models';
-
 
 @Injectable()
 export class ModuleDetailDataService extends SubManager implements OnDestroy {
@@ -56,22 +58,19 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
   readonly moduleEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
   readonly moduleEditorHasPendingChanges$ = new BehaviorSubject<boolean>(false);
   readonly userModulesList$: BehaviorSubject<DbModule[]> = new BehaviorSubject<DbModule[]>([]);
-  // modulePatchesList$: BehaviorSubject<Patch[]> = new BehaviorSubject<Patch[]>([]);
   readonly addModuleToCollection$ = new Subject<number>();
   readonly requestAddModuleToRack$ = new Subject<DbModule>();
   readonly removeModuleFromCollection$ = new Subject<number>();
-  /** Unified possession-state action. Pass null to remove from collection. */
-  readonly setModulePossession$ = new Subject<UserModulePossessionKind | null>();
-  /** Current possession kind for the viewed module, or null if not in collection. */
+  readonly setModulePossession$ = new Subject<UserModulePossessionKind | ModulePossessionDialogResult | null>();
   readonly currentModulePossession$: Observable<UserModulePossessionKind | null>;
+  readonly userModuleAcquisitions$ = new BehaviorSubject<UserModuleAcquisition[] | undefined>(undefined);
+  readonly latestFormattedAcquisitionValue$: Observable<string | null>;
   readonly copyModuleNameAndManufacturer$ = new Subject<void>();
-  //
   readonly racksWithThisModule$ = new BehaviorSubject<RackMinimal[] | undefined>(undefined);
   readonly patchesWithThisModule$ = new BehaviorSubject<PatchMinimal[] | undefined>(undefined);
   readonly collectionsWithThisModule$ = new BehaviorSubject<ModuleCollectionSummary[] | undefined>(undefined);
   readonly moduleUsageSummary$ = new BehaviorSubject<ModuleUsageSummary | undefined>(undefined);
   readonly possessionCounts$ = new BehaviorSubject<ModulePossessionCounts | undefined>(undefined);
-  //
   readonly deleteModule$ = new Subject<number>();
   readonly deleteModuleAndOrphanManufacturer$ = new Subject<DbModule>();
   readonly mergeIntoTargetModule$ = new Subject<{ sourceId: number; targetId: number }>();
@@ -79,7 +78,6 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
   readonly deleteLastPanel$ = new Subject<DbModule>();
   readonly changeModule$ = new Subject<Partial<DbModule>>();
   readonly setStoreUrl$ = new Subject<{ id: number; url: string | null }>();
-  /** Toggle the module editing panel open/closed through the service layer. */
   readonly requestModuleEditingToggle$ = new Subject<void>();
   readonly isAdmin$ = new BehaviorSubject<boolean>(false);
   
@@ -151,15 +149,44 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
       })
     );
 
+    this.latestFormattedAcquisitionValue$ = this.userModuleAcquisitions$.pipe(
+      map(rows => {
+        const latest = rows?.[0];
+        if (!latest) return null;
+        if (latest.price_amount_minor !== null && latest.currency) {
+          return formatMarketplaceMinorUnits(latest.price_amount_minor, latest.currency);
+        }
+        return `Acquired ${ latest.acquired_at }`;
+      })
+    );
+
     this.setModulePossession$
       .pipe(
         withLatestFrom(this.singleModuleData$, this.updateSingleModuleData$),
-        exhaustMap(([kind, module]) => {
+        exhaustMap(([request, module]) => {
           if (!module) return EMPTY;
+          const kind = this.getPossessionRequestKind(request);
           if (kind === null) {
             return this.backend.delete.userModule(module.id).pipe(map(() => ({kind, module})));
           }
-          return this.backend.update.userModulePossession(module.id, kind).pipe(map(() => ({kind, module})));
+          return this.backend.update.userModulePossession(module.id, kind).pipe(
+            switchMap(() => {
+              const acquisition = this.getMeaningfulAcquisitionDraft(request);
+              return acquisition
+                ? this.backend.add.userModuleAcquisition(module.id, acquisition)
+                  .pipe(
+                    map(() => ({kind, module})),
+                    catchError(() => {
+                      this.snackBar.open('Ownership saved, but purchase history could not be recorded.', undefined, {
+                        duration: 5000,
+                        panelClass: 'snack-error'
+                      });
+                      return of({kind, module});
+                    })
+                  )
+                : of({kind, module});
+            })
+          );
         }),
         withLatestFrom(this.updateSingleModuleData$),
         this.takeUntilDestroyed()
@@ -235,6 +262,20 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
         this.takeUntilDestroyed()
       )
       .subscribe(counts => this.possessionCounts$.next(counts));
+
+    combineLatest([
+      this.updateSingleModuleData$,
+      this.userService.loggedUser$
+    ])
+      .pipe(
+        tap(() => this.userModuleAcquisitions$.next(undefined)),
+        switchMap(([moduleId, user]) => user
+          ? this.backend.get.userModuleAcquisitionsForModule(moduleId)
+          : of([])
+        ),
+        this.takeUntilDestroyed()
+      )
+      .subscribe(rows => this.userModuleAcquisitions$.next(rows));
     
     // hidden cause circular dependency
     // this.updateSingleModuleData$
@@ -431,6 +472,24 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
       case 'SELLS':
         return 'for sale';
     }
+  }
+
+  private getPossessionRequestKind(
+    request: UserModulePossessionKind | ModulePossessionDialogResult | null
+  ): UserModulePossessionKind | null {
+    if (request === null) return null;
+    return typeof request === 'object' ? request.kind : request;
+  }
+
+  private getMeaningfulAcquisitionDraft(
+    request: UserModulePossessionKind | ModulePossessionDialogResult | null
+  ): UserModuleAcquisitionDraft | undefined {
+    if (typeof request !== 'object' || request?.kind !== 'HAS' || !request.acquisition) {
+      return undefined;
+    }
+
+    const note = request.acquisition.note?.trim() || null;
+    return {...request.acquisition, note};
   }
 
   private formatMergeResultMessage(result: MergeModuleResult): string {

@@ -5,6 +5,7 @@ export class DbPaths {
   static moduleOUTs = 'module_outs' as const;
   static manufacturers = 'manufacturers' as const;
   static user_modules = 'user_modules' as const;
+  static user_module_acquisitions = 'user_module_acquisitions' as const;
   static module_collections = 'module_collections' as const;
   static module_collection_entries = 'module_collection_entries' as const;
   static racks = 'racks' as const;

@@ -34,7 +34,10 @@ import { MatDialog } from '@angular/material/dialog';
 import { RackMinimal } from 'src/app/models/rack';
 import { RackDetailDataService } from '../../rack-parts/rack-detail-data.service';
 import { ModuleDetailDataService } from '../module-detail-data.service';
-import { ModulePossessionDialogComponent } from '../module-possession-dialog/module-possession-dialog.component';
+import {
+  ModulePossessionDialogComponent,
+  ModulePossessionDialogResult
+} from '../module-possession-dialog/module-possession-dialog.component';
 
 
 @Component({
@@ -156,7 +159,7 @@ export class ModuleMinimalComponent extends SubManager implements OnInit, OnDest
   }
 
   openPossessionDialog(): void {
-    this.dialog.open<ModulePossessionDialogComponent, { module: MinimalModule }, UserModulePossessionKind | undefined>(
+    this.dialog.open<ModulePossessionDialogComponent, { module: MinimalModule }, ModulePossessionDialogResult | undefined>(
       ModulePossessionDialogComponent,
       {
         width: '34rem',
@@ -169,10 +172,10 @@ export class ModuleMinimalComponent extends SubManager implements OnInit, OnDest
     )
       .afterClosed()
       .pipe(
-        filter((kind): kind is UserModulePossessionKind => !!kind),
+        filter((result): result is ModulePossessionDialogResult => !!result),
         this.takeUntilDestroyed()
       )
-      .subscribe(kind => this.dataService.setModulePossession$.next(kind));
+      .subscribe(result => this.dataService.setModulePossession$.next(result));
   }
 
   removePossession(kind: UserModulePossessionKind | null): void {

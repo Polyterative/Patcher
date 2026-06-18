@@ -62,6 +62,11 @@ import {
 } from './module-browser-detail.constants';
 import { environment } from 'src/environments/environment';
 import { getModulePanelAspectRatio } from 'src/app/components/module-parts/get-module-height-for-standard.pipe';
+import {
+  UserModuleAcquisition,
+  UserModuleAcquisitionSource
+} from 'src/app/models/user-module-acquisition';
+import { formatMarketplaceMinorUnits } from 'src/app/features/marketplace/marketplace-money.utils';
 
 export const MODULE_PANEL_RATIO_ACCEPTANCE_THRESHOLD = 0.01;
 
@@ -450,6 +455,19 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
     ].filter(stat => Number(stat.value) > 0);
 
     return stats.length > 0 ? stats : undefined;
+  }
+
+  formatAcquisitionValue(acquisition: UserModuleAcquisition): string {
+    if (acquisition.price_amount_minor === null || !acquisition.currency) {
+      return 'No price recorded';
+    }
+    return formatMarketplaceMinorUnits(acquisition.price_amount_minor, acquisition.currency);
+  }
+
+  getAcquisitionSourceLabel(source: UserModuleAcquisitionSource): string {
+    return source === 'unknown'
+      ? 'source unknown'
+      : source.replace('_', ' ');
   }
 
   ngOnDestroy(): void {
