@@ -145,6 +145,10 @@ The rack preview pipeline already exists and is the explicit template to copy.
 - `patches.image` `text | null` is the right shape (matches `racks.image`); no
   separate `preview_generated_at` column needed — the filename timestamp +
   `patches.updated` reproduce the rack stale-detection trick exactly.
+- SVG preview storage visibility should stay simple: privacy is about whether
+  private patches are listed in public registries, while link-based access to a
+  known preview URL is acceptable for now, matching the current rack-preview
+  posture. No special owner-only SVG read restriction is required.
 - The Sigma graph data model in `patch-graph-build.utils.ts` is sufficient to
   produce a meaningful static SVG without re-running force-atlas2; we can
   either (a) snapshot Sigma's current node positions when the user clicks
@@ -165,7 +169,8 @@ The rack preview pipeline already exists and is the explicit template to copy.
 
 ## Approval queue
 
-- **Approved 2026-06-18T20:58+02:00:** backend/storage direction is approved with a new `patches.image` column for the SVG URL/path, a dedicated `patches` storage bucket, RLS writes limited to the patch owner, reads aligned with patch visibility, and a deterministic filename based on patch id/version. Do not apply migrations/storage/RLS from this docs-only approval checkpoint.
+- **Approved 2026-06-18T20:58+02:00:** backend/storage direction is approved with a new `patches.image` column for the SVG URL/path, a dedicated `patches` storage bucket, RLS writes limited to the patch owner, reads aligned with patch visibility, and a deterministic filename based on patch id/version. Read-visibility direction was simplified by the 2026-06-18T21:24+02:00 decision below. Do not apply migrations/storage/RLS from this docs-only approval checkpoint.
+- **Approved 2026-06-18T21:24+02:00:** preview storage visibility stays simple: public-registry listing is the privacy boundary, link-based access to a known SVG URL is acceptable like rack previews, and no special owner-only SVG read restriction is required for now. Do not apply migrations/storage/RLS from this docs-only approval checkpoint.
 
 ## MVP layer
 
@@ -228,8 +233,8 @@ Reusable surfaces + list consumers.
   - new SQL migration adding `patches.image text null` (preserve `updated`
     semantics — see preflight doc, don't accidentally bump `updated` on
     backfill).
-  - manual: create `patches` storage bucket + RLS policies (owner write,
-    public read).
+  - manual: create `patches` storage bucket + storage policies (owner write,
+    simple link-readable SVG access; no owner-only SVG read restriction for now).
 - **Generated types**
   - `src/backend/database.types.ts` (regenerated).
 - **Backend layer**
@@ -308,7 +313,7 @@ Reusable surfaces + list consumers.
   schema-preflight doc; if the trigger does fire, write the row update via a
   dedicated RPC that bypasses the `updated` bump, mirroring what was done for
   racks (see `BACKEND_METHODS.md`).
-- **Storage RLS for `patches` bucket.** Direction is approved: owner-only writes and reads aligned with patch visibility. Agent should propose exact policies, not apply them autonomously.
+- **Storage visibility for `patches` bucket.** Direction is approved: owner-only writes and simple link-readable SVG access, with privacy handled by avoiding public-registry listing for private patches. No owner-only SVG read restriction is required for now. Agent should propose exact policies, not apply them autonomously.
 - **Shared helper extraction.** `previewGeneratedAt` / `isPreviewStale` exist
   in `rack-image.component.ts`. Duplicating them is the smaller, safer change;
   extracting to a shared util is cleaner but touches rack tests. Decision
@@ -342,6 +347,7 @@ When `coordinator-loop` picks this up:
 <!-- append-only, timestamped one-liners for non-obvious choices -->
 
 - 2026-06-18T20:58+02:00 — Product owner approved the Patch SVG previews backend/storage direction: add `patches.image` for SVG URL/path, use a dedicated `patches` storage bucket, limit RLS writes to the patch owner, align reads with patch visibility, and use a deterministic filename based on patch id/version; no migrations/storage/RLS were applied in this docs-only checkpoint.
+- 2026-06-18T21:24+02:00 — Product owner decided Patch SVG preview storage visibility should stay simple: privacy is about avoiding public-registry listing, link-based access to a known SVG URL is acceptable like current rack previews, and no special owner-only SVG read restriction is required for now; no migrations/storage/RLS were applied in this docs-only checkpoint.
 - 2026-06-18T20:18+02:00 — First autonomous implementation slice intentionally avoids schema, storage, RLS, Supabase calls, model fields, UI components, and upload flows; it lands only the pure SVG renderer/test foundation while screenshot refresh remains credential/approval gated.
 - 2026-06-18T20:23+02:00 — Reviewer findings on duplicate marker IDs and long-label clipping were fixed by replacing SVG marker IDs with inline arrowhead polygons and estimating label bounds in the generated viewBox.
 - 2026-06-18 — Plan filed by `feature-notetaker` from a verbatim user
