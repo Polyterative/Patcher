@@ -771,6 +771,7 @@ export type Database = {
           created: string
           description: string | null
           id: number
+          image: string | null
           linked_rack_id: number | null
           name: string | null
           public: boolean
@@ -783,6 +784,7 @@ export type Database = {
           created?: string
           description?: string | null
           id?: number
+          image?: string | null
           linked_rack_id?: number | null
           name?: string | null
           public?: boolean
@@ -795,6 +797,7 @@ export type Database = {
           created?: string
           description?: string | null
           id?: number
+          image?: string | null
           linked_rack_id?: number | null
           name?: string | null
           public?: boolean

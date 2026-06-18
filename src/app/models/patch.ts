@@ -13,6 +13,7 @@ export interface PatchMinimal extends Timestamped, Privatable {
   author: PublicUser;
   name: string;
   description?: string;
+  image?: string | null;
   linked_rack_id?: number | null;
   tags?: string[];
   /** Opaque ~71-bit URL token. Used by `/patches/:publicId` routes. */
