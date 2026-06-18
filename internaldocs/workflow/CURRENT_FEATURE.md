@@ -12,31 +12,30 @@
 
 ## Active
 
-### Docs screenshot pipeline refresh
+### Patch SVG previews
 
-Plan: [`plans/docs-screenshot-pipeline-refresh.md`](./plans/docs-screenshot-pipeline-refresh.md)
+Plan: [`plans/patch-svg-previews.md`](./plans/patch-svg-previews.md)
 
-Status: **Partially advanced / gated.** A guarded screenshot runner now prevents credential-less runs from deleting existing images. The credentialless path was validated with empty E2E credential env vars; missing sanctioned local credentials still prevent real capture review. Do not edit or commit anything in `../Patcher-docs` autonomously.
+Status: **No-schema utility slice completed / approval-gated.** The pure patch graph SVG renderer and co-located tests are in place. Schema, storage, Supabase calls, model `image` fields, UI components, and upload flows remain out of scope until explicit maintainer approval.
 
 #### Why this is next
 
-The completed E2E cleanup unblocks authenticated screenshot reliability. Per user priority, this is smaller and safer than the remaining Marketplace/schema work, and the MVP can be limited to auditing/fixing in-repo screenshot captures before any external docs sync.
+Docs screenshot refresh is gated on sanctioned credentials and approval for any external docs sync. Patch SVG previews has a safe independent foundation slice that reuses existing patch graph data/layout primitives without touching backend schema or real data.
 
 #### Layer checklist
 
-- [ ] MVP: run/audit `pnpm test:e2e:screenshots`, inspect generated major-area images, and fix only in-repo capture selectors/data prep if outputs are stale or empty. Gated by a passing sanctioned credentialed run plus manual visual review.
-- [ ] Structural: add missing docs-parity surfaces and a guarded sync script only after captures are trustworthy. Guarded dry-run sync exists, but mutating sync is blocked by JPEG → PNG format mismatch until maintainer approves naming/framing.
-- [x] Polish: document the regenerate/review/sync procedure and record any manual visual approval gates.
+- [x] MVP foundation: render already-built patch graph nodes/edges into deterministic, XML-safe, self-contained SVG with targeted unit coverage.
+- [ ] MVP backend/storage: blocked until schema/storage/RLS approval and preflight.
+- [ ] Structural: patch preview component and list/detail embeds after backend shape is approved.
+- [ ] Polish: visual tuning and design review after the preview surface exists.
 
 #### Validation strategy
 
-- Run `pnpm test:e2e:screenshots` with the dedicated auth account.
-- Inspect generated images from `src/assets/screenshots/major-area-screenshots/` before treating them as publishable.
-- Run `node scripts/checks/check-docs.cjs` after workflow/doc updates.
+- Run `pnpm test-headless --include="**/patch-graph-svg.utils.spec.ts"` for the pure renderer slice.
+- Run broader patch graph/unit coverage when later UI/data-service wiring is added.
+- Run `pnpm lint` before any final checkpoint that includes docs and UI/backend changes.
 
 #### Decision log
 
-- 2026-06-18T20:07+02:00 — Staged after E2E cleanup because the auth account dependency is now satisfied and the MVP is a bounded, no-schema, in-repo quality audit; external `Patcher-docs` changes remain out of scope without an explicit later sync step.
-- 2026-06-18T20:02+02:00 — Added guarded screenshot runner so missing `E2E_TEST_EMAIL` / `E2E_TEST_PASSWORD` skips safely without deleting `src/assets/screenshots/major-area-screenshots`; the forced-empty credential validation passed with the existing 8 images preserved.
-- 2026-06-18T20:02+02:00 — Real screenshot capture/review remains queued because sanctioned local `E2E_TEST_EMAIL` / `E2E_TEST_PASSWORD` values were unavailable; no selectors/data prep were changed without reviewed artifacts.
-- 2026-06-18T20:02+02:00 — Added dry-run docs sync tooling and ops docs only; mutating `../Patcher-docs` changes still need maintainer approval, the JPEG-vs-PNG framing/naming decision, and clean external worktree confirmation. GitHub Actions secret rotation remains blocked by current token permissions.
+- 2026-06-18T20:18+02:00 — Selected the no-schema SVG renderer utility as the next autonomous slice because screenshot refresh is credential/approval gated, while this foundation is pure TypeScript with no storage, RLS, migration, Supabase, or real-data risk.
+- 2026-06-18T20:23+02:00 — Renderer foundation is ready to commit after targeted tests, docs check, lint, and reviewer approval. Next implementation step is blocked on maintainer approval for the `patches.image` migration and `patches` storage bucket/RLS policy shape.

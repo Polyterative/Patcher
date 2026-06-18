@@ -54,6 +54,6 @@
 - [ ] **LOW: Cross-entity Cool reactions** → [`plans/module-cool-appreciation-button.md`](./plans/module-cool-appreciation-button.md)
 - [ ] **ON HOLD INDEFINITELY: Rack Comparison — balance diff between two racks** → [`plans/rack-comparison-balance-diff-between-two-racks.md`](./plans/rack-comparison-balance-diff-between-two-racks.md)
 - [ ] **ON HOLD: MEDIUM: Sentry — Live Issue Audit** → [`plans/sentry-live-issue-audit.md`](./plans/sentry-live-issue-audit.md)
-- [~] **MEDIUM: Docs screenshot pipeline refresh (audit E2E captures, then sync to Patcher-docs)** → [`plans/docs-screenshot-pipeline-refresh.md`](./plans/docs-screenshot-pipeline-refresh.md)
-- [ ] **MEDIUM: Patch SVG previews (mirror rack JPEG preview UX/backend, but store SVG of the patch graph)** → [`plans/patch-svg-previews.md`](./plans/patch-svg-previews.md)
+- [ ] **ON HOLD: MEDIUM: Docs screenshot pipeline refresh (gated on credentials/approval)** → [`plans/docs-screenshot-pipeline-refresh.md`](./plans/docs-screenshot-pipeline-refresh.md)
+- [~] **MEDIUM: Patch SVG previews (pure SVG renderer foundation active)** → [`plans/patch-svg-previews.md`](./plans/patch-svg-previews.md)
 - [ ] **ON HOLD: SEO — OG Image Generation** → [`plans/on-seo-og-image-generation.md`](./plans/on-seo-og-image-generation.md)
