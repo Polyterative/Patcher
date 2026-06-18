@@ -1,23 +1,38 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import {
   of,
   throwError
 } from 'rxjs';
+import { SupabaseLoginResponse } from 'src/app/features/backend/supabase.types';
+import { UserManagementService } from '../user-management.service';
 import { UserLoginDataService } from './user-login-data.service';
 
 
 describe('UserLoginDataService', () => {
-  function build() {
-    const loginInteraction = {
-      login$: jasmine.createSpy('login$').and.returnValue(of({returnUrl: null})),
-      resetPassword$: jasmine.createSpy('resetPassword$').and.returnValue(of(undefined))
+  function loginResponse(returnUrl: string | null): SupabaseLoginResponse {
+    return {
+      returnUrl,
+      user: {
+        id: 'u-1',
+        email: 'user@example.com',
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-01T00:00:00Z',
+        username: 'user'
+      }
     };
-    const router = jasmine.createSpyObj('Router', ['navigate']);
+  }
+
+  function build() {
+    const loginInteraction = jasmine.createSpyObj<UserManagementService>('UserManagementService', ['login$', 'resetPassword$']);
+    loginInteraction.login$.and.returnValue(of(loginResponse(null)));
+    loginInteraction.resetPassword$.and.returnValue(of(undefined));
+    const router = jasmine.createSpyObj<Router>('Router', ['navigateByUrl']);
     const snackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
 
     const service = new UserLoginDataService(
       router,
-      loginInteraction as any,
+      loginInteraction,
       snackBar
     );
     return {service, loginInteraction, router, snackBar};
@@ -25,25 +40,36 @@ describe('UserLoginDataService', () => {
 
   it('navigates to user area after successful login', () => {
     const {service, loginInteraction, router} = build();
-    loginInteraction.login$.and.returnValue(of({returnUrl: null}));
+    loginInteraction.login$.and.returnValue(of(loginResponse(null)));
     service.fields.user.control.setValue('user@example.com');
     service.fields.password.control.setValue('password123');
 
     service.mailLoginClick$.next();
 
     expect(loginInteraction.login$).toHaveBeenCalledWith('user@example.com', 'password123');
-    expect(router.navigate).toHaveBeenCalledWith(['/user/area']);
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/user/area');
   });
 
   it('navigates to returnUrl after login when one is provided', () => {
     const {service, loginInteraction, router} = build();
-    loginInteraction.login$.and.returnValue(of({returnUrl: '/modules/browser'}));
+    loginInteraction.login$.and.returnValue(of(loginResponse('/modules/browser')));
     service.fields.user.control.setValue('user@example.com');
     service.fields.password.control.setValue('password123');
 
     service.mailLoginClick$.next();
 
-    expect(router.navigate).toHaveBeenCalledWith(['/modules/browser']);
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/modules/browser');
+  });
+
+  it('falls back when login returns an external returnUrl', () => {
+    const {service, loginInteraction, router} = build();
+    loginInteraction.login$.and.returnValue(of(loginResponse('https://evil.example/phish')));
+    service.fields.user.control.setValue('user@example.com');
+    service.fields.password.control.setValue('password123');
+
+    service.mailLoginClick$.next();
+
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/user/area');
   });
 
   it('shows password reset form and clears messages when toggle is true', () => {

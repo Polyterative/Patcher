@@ -104,8 +104,8 @@
               "optimization": true,
               "aot": true,
               "outputHashing": "all",
-              "sourceMap": true,
-              "namedChunks": true,
+              "sourceMap": false,
+              "namedChunks": false,
               "extractLicenses": true,
               "budgets": [
                 {

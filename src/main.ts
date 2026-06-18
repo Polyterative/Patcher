@@ -104,11 +104,35 @@ platformBrowserDynamic()
     console.error('Angular bootstrap failed:', err);
     const root = document.querySelector('app-root');
     if (root) {
-      (root as HTMLElement).innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;flex-direction:column;gap:1rem;background:#121212;color:#aaa;">
-          <p style="font-size:0.875rem;margin:0;">Something went wrong. Please reload the page.</p>
-          <button onclick="location.reload()" style="padding:0.5rem 1.25rem;background:#7c4dff;color:white;border:none;border-radius:0.375rem;cursor:pointer;font-size:0.875rem;">Reload</button>
-        </div>
-      `;
+      const fallback = document.createElement('div');
+      fallback.style.display = 'flex';
+      fallback.style.alignItems = 'center';
+      fallback.style.justifyContent = 'center';
+      fallback.style.height = '100vh';
+      fallback.style.fontFamily = 'sans-serif';
+      fallback.style.flexDirection = 'column';
+      fallback.style.gap = '1rem';
+      fallback.style.background = '#121212';
+      fallback.style.color = '#aaa';
+
+      const message = document.createElement('p');
+      message.style.fontSize = '0.875rem';
+      message.style.margin = '0';
+      message.textContent = 'Something went wrong. Please reload the page.';
+
+      const reloadButton = document.createElement('button');
+      reloadButton.type = 'button';
+      reloadButton.style.padding = '0.5rem 1.25rem';
+      reloadButton.style.background = '#7c4dff';
+      reloadButton.style.color = 'white';
+      reloadButton.style.border = 'none';
+      reloadButton.style.borderRadius = '0.375rem';
+      reloadButton.style.cursor = 'pointer';
+      reloadButton.style.fontSize = '0.875rem';
+      reloadButton.textContent = 'Reload';
+      reloadButton.addEventListener('click', () => window.location.reload());
+
+      fallback.append(message, reloadButton);
+      root.replaceChildren(fallback);
     }
   });

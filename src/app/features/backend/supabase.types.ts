@@ -39,7 +39,7 @@ export type RichUserModel =
 };
 
 export interface SupabaseLoginResponse {
-  returnUrl: any;
+  returnUrl: string | null | undefined;
   user: RichUserModel;
 }
 

@@ -46,8 +46,9 @@ Thumbs.db
 !/package-lock.json
 
 # Secrets & credentials
-# .env is tracked with safe defaults — use `git update-index --skip-worktree .env` to ignore local overrides
+.env
 .env.*
+!.env.example
 .mcp.json
 *.pem
 *.key

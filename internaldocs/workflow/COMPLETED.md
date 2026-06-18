@@ -1,4 +1,5 @@
 # Completed Features
+- **2026-06-18** — HIGH: Security — Audit Remediation completed the safe repo-code hardening slice: removed tracked `.env`, added placeholder env template, disabled production source maps/named chunks, added noopener links, replaced bootstrap inline fallback, and normalized auth return URLs.
 - **2026-06-18** — MEDIUM: Analytics — PostHog instrumentation now covers remaining code-owned feedback/admin events, documents collection events, and masks auth/report text from autocapture; external dashboard setup is documented as manual.
 - **2026-06-18** — LOW: Maintenance — Dependency deprecation audit removed unused direct dependencies, refreshed the pnpm lockfile, and documented remaining Angular/release-tooling deprecation decisions.
 
