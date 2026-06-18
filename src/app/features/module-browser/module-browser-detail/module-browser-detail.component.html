@@ -5,6 +5,8 @@
   collectionsWithThisModule: (dataService.collectionsWithThisModule$|async),
   moduleUsageSummary: (dataService.moduleUsageSummary$|async),
   possessionCounts: (dataService.possessionCounts$|async),
+  userModuleAcquisitions: (dataService.userModuleAcquisitions$|async),
+  latestFormattedAcquisitionValue: (dataService.latestFormattedAcquisitionValue$|async),
   currentModulePossession: (dataService.currentModulePossession$|async),
   user: (userManagementService.loggedUser$|async),
   editing: (dataService.moduleEditingPanelOpenState$|async),
@@ -146,6 +148,41 @@
                     [animationDelay]="240"
                     [data]="possessionData"
                   ></app-module-detail-data-card>
+                }
+                @if (bag.userModuleAcquisitions && bag.userModuleAcquisitions.length > 0) {
+                  <section class="module-detail-acquisitions">
+                    <div class="module-detail-acquisitions__header">
+                      <span>Private purchase history</span>
+                      <mat-icon
+                        aria-hidden="true"
+                        matTooltip="Only you can see these acquisition rows."
+                      >lock</mat-icon>
+                    </div>
+                    @if (bag.latestFormattedAcquisitionValue) {
+                      <div class="module-detail-acquisitions__latest">
+                        Latest: {{ bag.latestFormattedAcquisitionValue }}
+                      </div>
+                    }
+                    <div class="module-detail-acquisitions__list">
+                      @for (acquisition of bag.userModuleAcquisitions; track acquisition.id) {
+                        <div class="module-detail-acquisition-row">
+                          <div>
+                            <strong>
+                              @if (acquisition.price_amount_minor !== null && acquisition.currency) {
+                                {{ formatAcquisitionValue(acquisition) }}
+                              } @else {
+                                No price recorded
+                              }
+                            </strong>
+                            <span>{{ acquisition.acquired_at }} · {{ getAcquisitionSourceLabel(acquisition.source) }}</span>
+                          </div>
+                          @if (acquisition.note) {
+                            <p>{{ acquisition.note }}</p>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </section>
                 }
               </div>
             </lib-hero-content-card>

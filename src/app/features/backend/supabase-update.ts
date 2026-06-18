@@ -52,6 +52,7 @@ import {
   type SupabaseSingleResponse
 } from './supabase-db.types';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import { UserModuleAcquisitionDraft } from 'src/app/models/user-module-acquisition';
 import {
   buildCVInserter,
   buildCVUpdater,
@@ -438,6 +439,32 @@ export function createUpdateNamespace(
         );
       }),
       cacheBust(['currentUserModules', 'modulePossessionCounts']),
+      remapErrors()
+    ),
+
+    userModuleAcquisition: (id: number, data: UserModuleAcquisitionDraft) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        const updateData: SupabaseTableUpdate<'user_module_acquisitions'> = {
+          acquired_at: data.acquired_at,
+          price_amount_minor: data.price_amount_minor ?? null,
+          currency: data.price_amount_minor == null ? null : data.currency,
+          source: data.source ?? 'unknown',
+          note: data.note?.trim() || null,
+          updated_at: new Date().toISOString()
+        };
+        return rxFrom(
+          supabase
+            .from(DbPaths.user_module_acquisitions)
+            .update(updateData)
+            .eq('id', id)
+            .eq('profileid', user.id)
+            .select('id,profileid,moduleid,acquired_at,price_amount_minor,currency,source,note,created_at,updated_at')
+            .single()
+        );
+      }),
+      throwIfSupabaseError(),
+      cacheBust(['userModuleAcquisitions']),
       remapErrors()
     )
   };

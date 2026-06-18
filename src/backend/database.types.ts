@@ -272,6 +272,67 @@ export type Database = {
           },
         ]
       }
+      user_module_acquisitions: {
+        Row: {
+          acquired_at: string
+          created_at: string
+          currency: "EUR" | "USD" | null
+          id: number
+          moduleid: number
+          note: string | null
+          price_amount_minor: number | null
+          profileid: string
+          source: "unknown" | "new" | "used" | "gift" | "trade" | "marketplace" | "other"
+          updated_at: string
+        }
+        Insert: {
+          acquired_at?: string
+          created_at?: string
+          currency?: "EUR" | "USD" | null
+          id?: number
+          moduleid: number
+          note?: string | null
+          price_amount_minor?: number | null
+          profileid: string
+          source?: "unknown" | "new" | "used" | "gift" | "trade" | "marketplace" | "other"
+          updated_at?: string
+        }
+        Update: {
+          acquired_at?: string
+          created_at?: string
+          currency?: "EUR" | "USD" | null
+          id?: number
+          moduleid?: number
+          note?: string | null
+          price_amount_minor?: number | null
+          profileid?: string
+          source?: "unknown" | "new" | "used" | "gift" | "trade" | "marketplace" | "other"
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_module_acquisitions_moduleid_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_module_acquisitions_moduleid_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
+            referencedRelation: "patches_for_modules"
+            referencedColumns: ["moduleid"]
+          },
+          {
+            foreignKeyName: "user_module_acquisitions_profileid_fkey"
+            columns: ["profileid"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       module_ins: {
         Row: {
           authorid: string | null

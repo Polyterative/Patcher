@@ -112,6 +112,20 @@ export function createDeleteNamespace(
       cacheBust(['userModuleTags']),
       remapErrors()
     ),
+
+    userModuleAcquisition: (id: number) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return rxFrom(
+          supabase.from(DbPaths.user_module_acquisitions)
+            .delete()
+            .filter('id', 'eq', id)
+            .filter('profileid', 'eq', user.id)
+        );
+      }),
+      cacheBust(['userModuleAcquisitions']),
+      remapErrors()
+    ),
     
     rackedModule: (id: number) => getUserSession$().pipe(
       switchMap(user => {

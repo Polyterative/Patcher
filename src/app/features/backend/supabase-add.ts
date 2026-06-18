@@ -35,6 +35,7 @@ import {
   type SupabaseTableUpdate,
   type SupabaseSingleResponse
 } from './supabase-db.types';
+import { UserModuleAcquisitionDraft } from 'src/app/models/user-module-acquisition';
 
 
 export function createAddNamespace(
@@ -100,6 +101,32 @@ export function createAddNamespace(
             })
         )),
         cacheBust(['currentUserModules', 'modulePossessionCounts']),
+        remapErrors()
+      ),
+
+    userModuleAcquisition: (moduleId: number, data: UserModuleAcquisitionDraft) => getUserSession$()
+      .pipe(
+        switchMap(user => {
+          if (!user) return throwError(() => new Error('Authentication required'));
+          const insertData: SupabaseTableInsert<'user_module_acquisitions'> = {
+            moduleid: moduleId,
+            profileid: user.id,
+            acquired_at: data.acquired_at,
+            price_amount_minor: data.price_amount_minor ?? null,
+            currency: data.price_amount_minor == null ? null : data.currency,
+            source: data.source ?? 'unknown',
+            note: data.note?.trim() || null
+          };
+          return rxFrom(
+            supabase
+              .from(DbPaths.user_module_acquisitions)
+              .insert(insertData)
+              .select('id,profileid,moduleid,acquired_at,price_amount_minor,currency,source,note,created_at,updated_at')
+              .single()
+          );
+        }),
+        throwIfSupabaseError(),
+        cacheBust(['userModuleAcquisitions']),
         remapErrors()
       ),
     

@@ -28,6 +28,7 @@ import {
   type SupabaseTableRow
 } from './supabase-db.types';
 import { DbModule, RackedModule } from 'src/app/models/module';
+import { UserModuleAcquisition } from 'src/app/models/user-module-acquisition';
 
 
 export interface AdminFlagRow {
@@ -160,6 +161,8 @@ export function createGetNamespace(
     myVotes: () => queries.getMyVotes(),
     allTags: () => queries.getAllTagsCached(),
     modulePossessionCounts: (moduleId: number) => queries.getModulePossessionCounts(moduleId),
+    userModuleAcquisitionsForModule: (moduleId: number): Observable<UserModuleAcquisition[]> =>
+      queries.getUserModuleAcquisitionsForModule(moduleId),
     tagVotesForModule: (moduleTagIds: number[]) => rxFrom(
       supabase
         .from(DbPaths.user_module_tags)

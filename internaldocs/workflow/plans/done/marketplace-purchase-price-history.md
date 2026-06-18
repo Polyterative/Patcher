@@ -4,7 +4,7 @@
 
 ## Status
 
-Detailed strategic plan drafted — no-schema money-helper foundation implemented. Product-owner data-model and MVP currency policy directions recorded: use planner Option A, support only EUR/USD for user acquisition entries, and default to EUR for the Europe-first MVP. Implementation remains gated: do not draft/apply migrations, policies, backend methods, or schema changes in this recorder. Priority: HIGH. Product area: marketplace / price hub foundation.
+Completed MVP implementation in repo: additive `user_module_acquisitions` migration/RLS draft, owner-scoped backend methods, optional owned-module acquisition capture, and private module-detail acquisition display. Migration/RLS were added as versioned SQL but not applied to a remote database in this checkpoint. Priority: HIGH. Product area: marketplace / price hub foundation.
 This can ship before public profiles because it is private collection metadata with immediate solo-tool value.
 
 ## User intent
@@ -67,15 +67,15 @@ because it proves the money-value type, currency handling, UI copy, and owner-on
 - [x] No-schema foundation: add import-safe helpers for normalizing currency, parsing user-entered prices into integer minor
       units, and formatting integer minor-unit values for display.
 - [x] Draft detailed strategic plan for `user_module_acquisitions` schema, owner-only RLS, MVP currency policy, and acquisition edit/delete policy; show it for product-owner approval before any migration/policy draft or implementation.
-- [ ] Add optional price/date/source fields to the add-to-collection / possession transition flow without changing `user_modules` into quantity or instance ownership.
-- [ ] Create owner-only backend methods for acquisition rows.
-- [ ] Show latest acquisition price in the user's module collection detail context.
+- [x] Add optional price/date/source fields to the add-to-collection / possession transition flow without changing `user_modules` into quantity or instance ownership.
+- [x] Create owner-only backend methods for acquisition rows.
+- [x] Show latest acquisition price in the user's module collection detail context.
 - [x] Validate currency and integer minor-unit conversion with unit tests.
 
 ## Structural layer
 
-- [ ] Add acquisition history list / edit surface for the current user.
-- [ ] Support source labels: new, used, gift, trade, marketplace, unknown, as ledger metadata rather than instance metadata.
+- [x] Add acquisition history list / edit surface for the current user. (List display implemented; edit/delete backend methods added; full edit/delete UI deferred.)
+- [x] Support source labels: new, used, gift, trade, marketplace, unknown, as ledger metadata rather than instance metadata.
 - [ ] Add import-safe helpers for normalizing currency and display formatting.
 - [ ] Prepare a private aggregate query for "total known acquisition spend" without exposing it publicly.
 
@@ -216,9 +216,8 @@ completed-sale / re-acquisition workflows. Do not add `quantity`, `instanceid`, 
 - **Data-model direction approved 2026-06-18T21:24+02:00.** Use Option A for MVP: single current `user_modules` relationship plus optional additive acquisition ledger/list underneath the module; no `quantity` and no per-instance registration in UI or DB.
 - **Acquisition date default approved 2026-06-18T21:25+02:00.** `acquired_at` defaults to today when creating an acquisition entry, and remains editable/backdatable by the user.
 - **Currency policy approved 2026-06-18T21:25+02:00.** MVP user acquisition entries support only `EUR` and `USD`; default to `EUR` because the initial target is Europe.
-- **Implementation approval still required.** The exact SQL, policies, backend methods, cache busting, and generated type updates remain blocked until separate product-owner approval.
-- **Confirm acquisition edit policy.** Default recommendation: allow owner edits/deletes indefinitely for MVP because rows are
-  private self-tracking data, then revisit locking only if rows feed public aggregate market data.
+- **Implementation approval received 2026-06-18T21:32+02:00.** Proceed only with additive/non-breaking SQL, owner-only RLS for `user_module_acquisitions`, backend methods, cache busting, generated type updates, and MVP UI. Stop and queue a precise question for any breaking production behavior risk.
+- **Resolved in MVP implementation.** Owner edit/delete methods are supported indefinitely for private self-tracking data; any future public aggregate feed needs a separate locking/aggregation plan.
 
 ## Coordinator-loop handoff
 
@@ -237,3 +236,9 @@ dependencies. Stop before any migration/RLS work until the user separately appro
 - 2026-06-18T21:24+02:00 — Product owner approved planner recommendation Option A for the MVP data model: keep `user_modules` ownership as a single boolean/current relationship toggle; record purchase price/date/source as an optional additive acquisition ledger/list underneath the module; add no `quantity` field and no per-instance registration in UI or DB for MVP, while leaving a path to a dedicated instance model later. No code, migrations, RLS, backend methods, schema changes, or data mutations were attempted.
 - 2026-06-18T21:25+02:00 — Product owner approved the MVP currency policy: support only `EUR` and `USD` for user acquisition entries, and default currency to `EUR` because the initial target is Europe. No code, migrations, RLS, backend methods, schema changes, or data mutations were attempted.
 - 2026-06-18T21:25+02:00 — Product owner decided `acquired_at` defaults to today when creating an acquisition entry, and remains editable/backdatable by the user. This records product behavior only; no code, migrations, RLS, backend methods, schema changes, or data mutations were attempted.
+
+- 2026-06-18T21:32+02:00 — Product owner gave critical implementation approval for the additive/non-breaking MVP only: create optional `user_module_acquisitions`, owner-only RLS for that table, no ownership semantic changes, no quantity/per-instance fields, no destructive changes/backfills, EUR/USD default EUR, `acquired_at` defaults today and remains editable.
+
+- 2026-06-18T21:39+02:00 — Implemented the approved additive MVP locally: `user_module_acquisitions` migration with owner-only policies, EUR/USD price capture on HAS flow, owner-scoped list/add/update/delete methods with cache busting, private module detail history display, and targeted tests. Manual generated type patch was used because `SUPABASE_PROJECT_ID` was unavailable; no production migration was applied. Full acquisition edit/delete UI remains deferred beyond the minimal list/capture surface.
+- 2026-06-18T21:48+02:00 — Code review caught private-data cache/auth-switch and partial-save stream risks. Removed caching from the owner-scoped acquisition read, refetch/clear rows on auth changes, and isolate acquisition insert errors so ownership saves remain usable. Follow-up review found no remaining issues.
+- 2026-06-18T22:15+02:00 — Completed repo implementation and validation. Chose not to cache `getUserModuleAcquisitionsForModule` because rows are private/user-scoped and method arguments only include module id; this avoids cross-account cache leakage in shared browsers. `pnpm updateBackendTypes` was skipped because `SUPABASE_PROJECT_ID` is unset, so generated types were patched manually for the additive table. Migration/RLS SQL was committed as a draft file and not applied remotely in this checkpoint.

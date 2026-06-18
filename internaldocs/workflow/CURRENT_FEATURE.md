@@ -12,42 +12,34 @@
 
 ## Active
 
-No active feature.
+Patch SVG previews — proposal-only storage/RLS checkpoint
 
-Status: **No active feature.** Docs screenshot refresh is complete locally. Marketplace Purchase Price History strategic planning is drafted; implementation, migrations, policies, backend methods, and schema changes remain gated until the detailed plan is approved.
+Plan: [patch-svg-previews.md](./plans/patch-svg-previews.md)
+Status: **Staged for next coordinator-loop. Do not apply storage/RLS/migrations autonomously.**
+Staged: 2026-06-18T22:15+02:00
 
 #### Why this is next
 
-- Docs screenshot refresh completed local capture and local-only `../Patcher-docs` sync; do not push the docs repo unless explicitly requested.
-- Patch SVG previews backend/storage and simple SVG visibility direction are approved, but actual migrations/storage/RLS were not applied in these docs-only checkpoints.
-- Marketplace Purchase Price History strategic plan records the approved Option A data model, `acquired_at` default/editability decision, and MVP currency policy; implementation, migration drafts, and applying migrations/RLS remain gated until separate approval.
-- Cross-entity Cool reactions and Module I/O support require schema/RLS/data-model approval before implementation.
+- Marketplace Purchase Price History MVP implementation is complete in repo and archived.
+- Patch SVG previews already has backend/storage direction and simple visibility decisions recorded, but its plan still requires an exact migration/storage-policy proposal checkpoint before maintainer approval to apply anything.
+- This next slice can safely draft/review exact SQL and storage policy text without mutating production.
+
+#### Safety gate
+
+- Read `internaldocs/patterns/BACKEND_METHODS.md` schema-change preflight before drafting SQL.
+- Do not apply migrations, create buckets, or change storage/RLS policies. Draft exact SQL/policy only and record any approval question in the plan.
 
 #### Layer checklist
 
-- [x] Marketplace helper foundation committed-ready: deterministic integer-minor-unit money parsing/formatting helpers with targeted unit coverage.
-- [x] Patch SVG previews backend/storage and simple SVG visibility approvals recorded.
-- [x] Draft Marketplace Purchase Price History strategic plan in a separate checkpoint; do not draft/apply migrations or policies until the plan is approved.
-- [ ] Select the next implementation task in a separate checkpoint.
+- [ ] Re-read `internaldocs/workflow/plans/patch-svg-previews.md` approval queue.
+- [ ] Draft exact additive `patches.image` migration and `patches` bucket/storage policy proposal.
+- [ ] Record maintainer approval questions clearly; stop before any remote/storage/RLS mutation.
 
 #### Validation strategy
 
-- Run the targeted helper spec for the pure money parsing/formatting slice before commit.
-- Run `node scripts/checks/check-docs.cjs` for workflow documentation coherence.
-- Run `pnpm lint` before any final checkpoint that includes code and docs changes.
+- `node scripts/checks/check-docs.cjs` after docs/proposal updates.
+- No app tests required for proposal-only docs unless code is changed.
 
 #### Decision log
 
-- 2026-06-18T20:28+02:00 — Parked Patch SVG previews on its explicit migration/storage/RLS approval gate and selected Purchase Price History's money-helper foundation as the next safe high-priority slice because it is pure TypeScript, testable, and avoids secrets, schema, RLS, external docs mutation, and real data.
-- 2026-06-18T20:30+02:00 — Implemented import-safe marketplace money helpers for ISO currency normalization, integer minor-unit parsing, and Intl display formatting with targeted unit coverage; schema/RLS/backend work remains blocked on approval.
-- 2026-06-18T20:34+02:00 — No further safe backlog implementation remains after the helper foundation: all remaining open candidates are approval-, credential-, external-docs-, dependency-, or schema/RLS-gated.
-- 2026-06-18T20:58+02:00 — Product owner approved Patch SVG previews backend/storage direction (`patches.image`, dedicated `patches` bucket, owner-only writes, initial visibility-aligned reads later simplified by the 21:24 decision, deterministic patch id/version filename); no migrations/storage/RLS were applied here.
-- 2026-06-18T21:24+02:00 — Product owner decided Patch SVG preview storage visibility should stay simple: privacy is about avoiding public-registry listing, link-based access to a known SVG URL is acceptable like current rack previews, and no special owner-only SVG read restriction is required for now. No migrations/storage/RLS were applied.
-- 2026-06-18T20:59+02:00 — Product owner chose the canonical docs screenshot format: desktop JPEG as produced by the current E2E output. This records format/framing approval only; no credentials are required and `../Patcher-docs` must not be mutated in this checkpoint.
-- 2026-06-18T21:00+02:00 — Product owner approved Marketplace Purchase Price History detailed strategic planning for schema/RLS/currency/edit policy; do not draft/apply migrations, policies, backend methods, or schema changes until the plan is shown and separately approved.
-- 2026-06-18T21:00+02:00 — Product owner approved the Docs screenshot pipeline to use the already-created and locally verified dedicated E2E account for screenshot credentials. Store/use the credentials only through existing local/secret mechanisms; do not print, document, or commit secret values. Visual review and docs repo mutation remain separate gates.
-- 2026-06-18T21:02+02:00 — Completed Docs screenshot pipeline refresh: authenticated capture produced 10 desktop JPEGs, account screenshot text was redacted before capture, docs sync wrote seven stable JPEG assets into local `../Patcher-docs`, and old iPad-Pro PNG references were migrated locally without pushing.
-- 2026-06-18T21:02+02:00 — Drafted the Marketplace Purchase Price History strategic plan covering schema strategy, owner-only RLS strategy, MVP currency policy, edit/delete policy, and the post-approval UI/API slice. No migrations, policies, backend methods, schema changes, or real data mutations were attempted.
-- 2026-06-18T21:24+02:00 — Product owner approved Marketplace Purchase Price History planner Option A for the MVP data model: keep `user_modules` ownership as a single boolean/current relationship toggle; record purchase price/date/source as an optional additive acquisition ledger/list underneath the module; no `quantity` field and no per-instance registration in UI or DB for MVP, with a path to dedicated instances later. No code, migrations, RLS, backend methods, schema changes, or data mutations were attempted.
-- 2026-06-18T21:25+02:00 — Product owner approved Marketplace Purchase Price History MVP currency policy: only `EUR` and `USD` are supported for user acquisition entries, and the default currency is `EUR` because the initial target is Europe. No code, migrations, RLS, backend methods, schema changes, or data mutations were attempted.
-- 2026-06-18T21:25+02:00 — Product owner decided Marketplace Purchase Price History `acquired_at` defaults to today when creating an acquisition entry, and remains editable/backdatable by the user. Recorder only: no code, migrations, RLS, backend methods, schema changes, or data mutations were attempted.
+- 2026-06-18T22:15+02:00 — Staged Patch SVG previews as the next safe checkpoint because the next step is proposal-only exact SQL/storage-policy drafting, not applying migrations/RLS.

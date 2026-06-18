@@ -52,13 +52,15 @@ describe('ModuleDetailDataService', () => {
           wantsCount: 2,
           sellsCount: 1
         })),
+        userModuleAcquisitionsForModule: jasmine.createSpy('userModuleAcquisitionsForModule').and.returnValue(of([])),
         modulesBySameManufacturer: jasmine.createSpy('modulesBySameManufacturer').and.returnValue(of(options.modulesBySameManufacturer ?? [
           {id: 10, manufacturerId: 7, manufacturer: {name: 'Maker'}},
           {id: 11, manufacturerId: 7, manufacturer: {name: 'Maker'}}
         ]))
       },
       add: {
-        userModule: jasmine.createSpy('userModule').and.returnValue(of({}))
+        userModule: jasmine.createSpy('userModule').and.returnValue(of({})),
+        userModuleAcquisition: jasmine.createSpy('userModuleAcquisition').and.returnValue(of({}))
       },
       delete: {
         userModule: jasmine.createSpy('userModule').and.returnValue(of({})),
@@ -125,6 +127,7 @@ describe('ModuleDetailDataService', () => {
     expect(backend.get.patchesWithModule).toHaveBeenCalledWith(10);
     expect(backend.GET.moduleCollectionsForModule).toHaveBeenCalledWith(10);
     expect(backend.get.moduleUsageSummary).toHaveBeenCalledWith(10);
+    expect(backend.get.userModuleAcquisitionsForModule).toHaveBeenCalledWith(10);
     expect(service.singleModuleData$.value?.id).toBe(10);
     expect(service.racksWithThisModule$.value).toEqual([{id: 1} as any]);
     expect(service.patchesWithThisModule$.value).toEqual([{id: 21} as any]);
@@ -161,6 +164,38 @@ describe('ModuleDetailDataService', () => {
     expect(backend.update.userModulePossession).toHaveBeenCalledWith(10, 'WANTS');
     expect(backend.delete.userModule).toHaveBeenCalledWith(10);
     expect(nextSpy).toHaveBeenCalledWith(10);
+  });
+
+  it('does not add acquisition when HAS payload has no meaningful acquisition data', () => {
+    const {service, backend} = build();
+
+    service.updateSingleModuleData$.next(10);
+    service.setModulePossession$.next({kind: 'HAS'});
+
+    expect(backend.update.userModulePossession).toHaveBeenCalledWith(10, 'HAS');
+    expect(backend.add.userModuleAcquisition).not.toHaveBeenCalled();
+  });
+
+  it('adds acquisition after marking module as owned when payload includes price', () => {
+    const {service, backend} = build();
+
+    service.updateSingleModuleData$.next(10);
+    service.setModulePossession$.next({
+      kind: 'HAS',
+      acquisition: {
+        acquired_at: '2026-06-18',
+        price_amount_minor: 19900,
+        currency: 'EUR',
+        source: 'used',
+        note: null
+      }
+    });
+
+    expect(backend.update.userModulePossession).toHaveBeenCalledWith(10, 'HAS');
+    expect(backend.add.userModuleAcquisition).toHaveBeenCalledWith(10, jasmine.objectContaining({
+      price_amount_minor: 19900,
+      currency: 'EUR'
+    }));
   });
 
   it('derives currentModulePossession$ from current user modules and viewed module', () => {

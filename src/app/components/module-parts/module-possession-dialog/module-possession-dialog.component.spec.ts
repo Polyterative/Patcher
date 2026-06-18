@@ -30,6 +30,44 @@ describe('ModulePossessionDialogComponent', () => {
     component.select('SELLS');
     component.save();
 
-    expect(dialogRef.close).toHaveBeenCalledWith('SELLS');
+    expect(dialogRef.close).toHaveBeenCalledWith({kind: 'SELLS'});
+  });
+
+  it('returns only HAS kind when acquisition fields are empty defaults', () => {
+    const {component, dialogRef} = build();
+
+    component.select('HAS');
+    component.save();
+
+    expect(dialogRef.close).toHaveBeenCalledWith({kind: 'HAS'});
+  });
+
+  it('parses HAS price into minor units with currency', () => {
+    const {component, dialogRef} = build();
+
+    component.select('HAS');
+    component.priceInput = '123.45';
+    component.currency = 'USD';
+    component.save();
+
+    expect(dialogRef.close).toHaveBeenCalledWith({
+      kind: 'HAS',
+      acquisition: jasmine.objectContaining({
+        price_amount_minor: 12345,
+        currency: 'USD',
+        source: 'unknown'
+      })
+    });
+  });
+
+  it('keeps dialog open and exposes an error for invalid price input', () => {
+    const {component, dialogRef} = build();
+
+    component.select('HAS');
+    component.priceInput = '-12';
+    component.save();
+
+    expect(dialogRef.close).not.toHaveBeenCalled();
+    expect(component.priceError).toBe('Enter a valid non-negative price.');
   });
 });
