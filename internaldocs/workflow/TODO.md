@@ -54,6 +54,6 @@
 - [ ] **LOW: Cross-entity Cool reactions** → [`plans/module-cool-appreciation-button.md`](./plans/module-cool-appreciation-button.md)
 - [ ] **ON HOLD INDEFINITELY: Rack Comparison — balance diff between two racks** → [`plans/rack-comparison-balance-diff-between-two-racks.md`](./plans/rack-comparison-balance-diff-between-two-racks.md)
 - [ ] **ON HOLD: MEDIUM: Sentry — Live Issue Audit** → [`plans/sentry-live-issue-audit.md`](./plans/sentry-live-issue-audit.md)
-- [ ] **ON HOLD: MEDIUM: Docs screenshot pipeline refresh (desktop JPEG format approved; credentialed capture/docs sync still gated)** → [`plans/docs-screenshot-pipeline-refresh.md`](./plans/docs-screenshot-pipeline-refresh.md)
+- [ ] **ON HOLD: MEDIUM: Docs screenshot pipeline refresh (desktop JPEG and dedicated E2E credentials approved; visual review/docs sync still gated)** → [`plans/docs-screenshot-pipeline-refresh.md`](./plans/docs-screenshot-pipeline-refresh.md)
 - [ ] **MEDIUM: Patch SVG previews (backend/storage direction approved; migration/storage/RLS not applied)** → [`plans/patch-svg-previews.md`](./plans/patch-svg-previews.md)
 - [ ] **ON HOLD: SEO — OG Image Generation** → [`plans/on-seo-og-image-generation.md`](./plans/on-seo-og-image-generation.md)
