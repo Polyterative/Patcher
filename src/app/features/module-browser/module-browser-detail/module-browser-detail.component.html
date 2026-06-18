@@ -35,7 +35,6 @@
                                       [viewConfig]="viewConfig"
                                        [preferredPanelColor]="appState.preferredPanelColor$ | async"
                                       [preferPortraitDetailSplit]="true"
-                                      [possessionCounts]="bag.possessionCounts"
                 ></app-module-composite>
               }
             </lib-clean-card>
@@ -138,6 +137,14 @@
                       { label: 'Total Jacks', value: (bag.data.outs.length + bag.data.ins.length).toString(), icon: 'settings_input_composite', hidden: (bag.data.outs.length + bag.data.ins.length) === 0, size: 'auto' },
                       { label: 'Density (in+out/hp)', value: ((bag.data.outs.length + bag.data.ins.length) / bag.data.hp).toPrecision(3), icon: 'bar_chart', size: 'auto' }
                     ]"
+                  ></app-module-detail-data-card>
+                }
+                <!-- Community Stats Card -->
+                @if (getPossessionCommunityData(bag.possessionCounts); as possessionData) {
+                  <app-module-detail-data-card
+                    title="Community"
+                    [animationDelay]="240"
+                    [data]="possessionData"
                   ></app-module-detail-data-card>
                 }
               </div>

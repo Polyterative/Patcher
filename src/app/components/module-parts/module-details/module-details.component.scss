@@ -51,32 +51,6 @@
   white-space: nowrap;
 }
 
-.module-possession-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem 0.75rem;
-  align-items: center;
-  color: var(--mat-sys-on-surface-variant, rgba(0, 0, 0, 0.62));
-  font-size: 0.82rem;
-}
-
-.module-possession-stat {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  line-height: 1.2;
-
-  mat-icon {
-    width: 1rem;
-    height: 1rem;
-    font-size: 1rem;
-  }
-}
-
-.module-possession-stat__count {
-  color: var(--mat-sys-on-surface, rgba(0, 0, 0, 0.87));
-  font-weight: 600;
-}
 
 .panel-preview-list {
   align-items: flex-start;

@@ -1,6 +1,5 @@
 import {
   Component,
-  Input,
   NO_ERRORS_SCHEMA
 } from '@angular/core';
 import {
@@ -12,7 +11,6 @@ import { ModuleCompositeComponent } from './module-composite.component';
 import {
   defaultModuleMinimalViewConfig
 } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
-import { ModulePossessionCounts } from 'src/app/components/module-parts/module-detail-data.models';
 import { DbModule } from 'src/app/models/module';
 
 @Component({
@@ -21,7 +19,6 @@ import { DbModule } from 'src/app/models/module';
   standalone: false
 })
 class ModuleDetailsStubComponent {
-  @Input() possessionCounts: ModulePossessionCounts | undefined;
 }
 
 function makeModule(hp = 4, standard = 1): DbModule {
@@ -60,9 +57,6 @@ describe('ModuleCompositeComponent', () => {
       expect(comp.preferPortraitDetailSplit).toBeFalse();
     });
 
-    it('possessionCounts defaults to undefined', () => {
-      expect(comp.possessionCounts).toBeUndefined();
-    });
   });
 
   describe('shouldUsePortraitDetailSplit', () => {
@@ -101,22 +95,10 @@ describe('ModuleCompositeComponent', () => {
       fixture.componentInstance.data = makeModule();
     });
 
-    it('passes public possession counts to module details', () => {
-      fixture.componentInstance.possessionCounts = {
-        hasCount: 9,
-        wantsCount: 3,
-        sellsCount: 0
-      };
-
+    it('renders module details inside the minimal card', () => {
       fixture.detectChanges();
 
-      const details = fixture.debugElement.query(By.directive(ModuleDetailsStubComponent))
-        .componentInstance as ModuleDetailsStubComponent;
-      expect(details.possessionCounts).toEqual({
-        hasCount: 9,
-        wantsCount: 3,
-        sellsCount: 0
-      });
+      expect(fixture.debugElement.query(By.directive(ModuleDetailsStubComponent))).not.toBeNull();
     });
   });
 });

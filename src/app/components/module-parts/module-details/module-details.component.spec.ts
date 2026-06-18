@@ -59,26 +59,4 @@ describe('ModuleDetailsComponent', () => {
     expect(component.getPanelColorBadge('proto-panel.png', 'Prototype panel', 999, 0)).toBeNull();
   });
 
-  it('does not show possession stats before counts load', () => {
-    expect(component.getVisiblePossessionStats(undefined)).toEqual([]);
-  });
-
-  it('hides possession stat cohorts below the public threshold', () => {
-    expect(component.getVisiblePossessionStats({
-      hasCount: 2,
-      wantsCount: 0,
-      sellsCount: 1
-    })).toEqual([]);
-  });
-
-  it('returns only possession stats that meet the public threshold', () => {
-    expect(component.getVisiblePossessionStats({
-      hasCount: 12,
-      wantsCount: 3,
-      sellsCount: 2
-    })).toEqual([
-      { label: 'own', count: 12, icon: 'inventory_2' },
-      { label: 'want', count: 3, icon: 'star_outline' }
-    ]);
-  });
 });

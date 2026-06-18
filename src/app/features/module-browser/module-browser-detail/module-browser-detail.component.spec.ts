@@ -1,6 +1,5 @@
 import {
   Component,
-  Input,
   NO_ERRORS_SCHEMA
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -8,7 +7,6 @@ import {
   ComponentFixture,
   TestBed
 } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -29,7 +27,6 @@ import {
   ModuleBrowserDetailComponent
 } from './module-browser-detail.component';
 import { ModuleUsageCardComponent } from './module-usage-card/module-usage-card.component';
-import { ModulePossessionCounts } from 'src/app/components/module-parts/module-detail-data.models';
 
 @Component({
   selector: 'app-module-composite',
@@ -37,7 +34,6 @@ import { ModulePossessionCounts } from 'src/app/components/module-parts/module-d
   standalone: false
 })
 class ModuleCompositeStubComponent {
-  @Input() possessionCounts: ModulePossessionCounts | undefined;
 }
 
 
@@ -290,23 +286,47 @@ describe('ModuleBrowserDetailComponent', () => {
     expect(text).toContain('Plus 5+ private or otherwise hidden patches.');
   });
 
-  it('passes public possession counts to the module composite', async () => {
-    const {fixture, dataService} = await render();
+  it('builds raw public possession stats for the Community data card', () => {
+    const {component} = build();
 
-    dataService.possessionCounts$.next({
+    expect(component.getPossessionCommunityData({
       hasCount: 8,
       wantsCount: 4,
       sellsCount: 3
-    });
-    fixture.detectChanges();
+    })).toEqual([
+      { label: 'Owners', value: '8', icon: 'inventory_2', size: 'auto' },
+      { label: 'Wishlist', value: '4', icon: 'star_outline', size: 'auto' },
+      { label: 'For Sale', value: '3', icon: 'sell', size: 'auto' }
+    ]);
+  });
 
-    const composite = fixture.debugElement.query(By.directive(ModuleCompositeStubComponent))
-      .componentInstance as ModuleCompositeStubComponent;
-    expect(composite.possessionCounts).toEqual({
-      hasCount: 8,
-      wantsCount: 4,
-      sellsCount: 3
-    });
+  it('hides zero public possession counts once loaded', () => {
+    const {component} = build();
+
+    expect(component.getPossessionCommunityData({
+      hasCount: 1,
+      wantsCount: 0,
+      sellsCount: 2
+    })).toEqual([
+      { label: 'Owners', value: '1', icon: 'inventory_2', size: 'auto' },
+      { label: 'For Sale', value: '2', icon: 'sell', size: 'auto' }
+    ]);
+  });
+
+  it('waits to render public possession stats until counts load', () => {
+    const {component} = build();
+
+    expect(component.getPossessionCommunityData(undefined)).toBeUndefined();
+  });
+
+  it('hides the Community possession card when every count is zero', () => {
+    const {component} = build();
+
+    expect(component.getPossessionCommunityData({
+      hasCount: 0,
+      wantsCount: 0,
+      sellsCount: 0
+    })).toBeUndefined();
   });
   
   it('emits expected patch payloads for dev helpers', () => {

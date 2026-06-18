@@ -9,7 +9,6 @@ import {
   ModuleMinimalViewConfig
 } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
 import { getModulePanelAspectRatio } from 'src/app/components/module-parts/get-module-height-for-standard.pipe';
-import { ModulePossessionCounts } from 'src/app/components/module-parts/module-detail-data.models';
 import { DbModule } from 'src/app/models/module';
 
 
@@ -30,7 +29,6 @@ export class ModuleCompositeComponent implements OnInit {
   @Input() nameSuffix: string | undefined;
   @Input() preferredPanelColor: number | null = null;
   @Input() preferPortraitDetailSplit = false;
-  @Input() possessionCounts: ModulePossessionCounts | undefined;
 
   get shouldUsePortraitDetailSplit(): boolean {
     return this.preferPortraitDetailSplit

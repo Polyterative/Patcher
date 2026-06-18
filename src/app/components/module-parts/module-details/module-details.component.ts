@@ -15,16 +15,6 @@ import { derivePanelLabel, PANEL_COLORS } from '../panel.constants';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import { StorageUrls } from 'src/app/features/backend/DatabaseStrings';
 import { ModulePanelZoomDialogComponent } from './module-panel-zoom-dialog.component';
-import { ModulePossessionCounts } from '../module-detail-data.models';
-
-interface VisiblePossessionStat {
-  label: string;
-  count: number;
-  icon: string;
-}
-
-const MIN_PUBLIC_POSSESSION_COUNT = 3;
-
 
 @Component({
   selector:    'app-module-details',
@@ -47,7 +37,6 @@ export class ModuleDetailsComponent {
   @Input() viewConfig: ModuleMinimalViewConfig = defaultModuleMinimalViewConfig;
   /** Passed through to app-module-cvs for instance-aware CV clicks */
   @Input() instanceId: number | undefined;
-  @Input() possessionCounts: ModulePossessionCounts | undefined;
 
   switches = [];
   previewPanelId: number | null = null;
@@ -105,13 +94,4 @@ export class ModuleDetailsComponent {
     return label.toLowerCase() === colorName.toLowerCase() ? null : colorName;
   }
 
-  getVisiblePossessionStats(counts: ModulePossessionCounts | undefined): VisiblePossessionStat[] {
-    if (!counts) return [];
-
-    return [
-      { label: 'own', count: counts.hasCount, icon: 'inventory_2' },
-      { label: 'want', count: counts.wantsCount, icon: 'star_outline' },
-      { label: 'selling', count: counts.sellsCount, icon: 'sell' }
-    ].filter(stat => stat.count >= MIN_PUBLIC_POSSESSION_COUNT);
-  }
 }
