@@ -12,7 +12,6 @@ import {
   OnInit,
   Output
 } from '@angular/core';
-import { animate, style, transition, trigger } from '@angular/animations';
 import { RouterLink } from "@angular/router";
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -100,14 +99,6 @@ export function isPreviewStale(rack: Pick<Rack, 'image' | 'updated'> | null | un
     NgStyle,
     NgTemplateOutlet
   ],
-  animations: [
-    trigger('enter', [
-      transition(':enter', [
-        style({opacity: 0}),
-        animate('725ms ease', style({opacity: 1}))
-      ])
-    ])
-  ]
 })
 export class RackImageComponent implements OnInit, OnChanges {
   

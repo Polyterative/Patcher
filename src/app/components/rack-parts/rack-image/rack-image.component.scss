@@ -17,6 +17,20 @@ img {
   max-width: 100% !important;
 }
 
+.rack-image-enter {
+  animation: rack-image-fade-in 725ms ease;
+}
+
+@keyframes rack-image-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
 .rackImage__staleBadge {
   position: absolute;
   right: 0.45rem;
