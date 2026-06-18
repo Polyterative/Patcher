@@ -45,3 +45,4 @@
 - 2026-06-18T11:32+02:00 — M1 read-only schema inspection found `manufacturers.adminUser` is existing `text`; local policies compare verified ownership with `auth.uid()::text` while new decision/audit FKs use `profiles(id)` UUIDs.
 - 2026-06-18T11:32+02:00 — M1 read-only storage inspection found no existing `manufacturer-logos` bucket; the local migration explicitly creates a public bucket before adding owner/admin write policies.
 - 2026-06-18T11:32+02:00 — M1 local type generation is blocked because the Supabase CLI cannot reach Docker/local Supabase; `src/backend/database.types.ts` is intentionally unchanged.
+- 2026-06-18T11:46+02:00 — User clarified that migrations should remain blocked until local frontend changes have been executed and verified; next work should prove the frontend flow before schema execution/type generation resumes.
