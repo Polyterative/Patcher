@@ -33,7 +33,7 @@ export type ModuleCollectionEditorSurface = 'dialog' | 'page';
   templateUrl: './module-collection-editor.component.html',
   styleUrls: ['./module-collection-editor.component.scss'],
   providers: [ModuleCollectionEditorDataService],
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
 export class ModuleCollectionEditorComponent extends SubManager implements OnChanges, OnDestroy {

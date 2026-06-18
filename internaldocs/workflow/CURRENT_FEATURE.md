@@ -14,19 +14,19 @@
 
 ## Active
 
-### LOW: Angular — Audit migration-added eager change detection
+### LOW: Maintenance — Dependency deprecation audit
 
-- **Plan:** [`plans/angular-audit-migration-added-eager-change-detection.md`](./plans/angular-audit-migration-added-eager-change-detection.md)
-- **Status:** Staged for next loop — audit Angular 22 migration-added `ChangeDetectionStrategy.Eager` usages, convert safe candidates to OnPush, and document cases that must stay eager.
-- **Started:** 2026-06-18T09:22+02:00
+- **Plan:** [`plans/maintenance-dependency-deprecation-audit.md`](./plans/maintenance-dependency-deprecation-audit.md)
+- **Status:** Staged for next loop — audit remaining deprecated/direct dependency warnings after the safe update batch, categorize replace/defer/accept, and remove unused deprecated packages if any are proven unused.
+- **Started:** 2026-06-18T09:29+02:00
 - **Coordinator:** coordinator-loop
 
 #### Layer checklist
 
-- [ ] MVP — Inventory production and spec-only `ChangeDetectionStrategy.Eager` usages and choose safe candidates.
-- [ ] Structural — Convert candidates to `OnPush` or document why they remain eager.
-- [ ] Polish — Run targeted specs plus lint/build/docs checks.
+- [ ] MVP — Run `pnpm outdated` / deprecation inventory and identify direct deprecated packages.
+- [ ] Structural — Categorize each as replace, defer, or accept; remove only proven-unused dependencies.
+- [ ] Polish — Validate manifest/lock/doc changes with install, lint/build/docs checks.
 
 #### Decision log
 
-- 2026-06-18T09:22+02:00 — Staged after migrating the rack-image animation slice. Higher-priority open tasks remain skipped for approval/credential/tooling reasons; eager change detection audit is the next TODO-order low-risk Angular maintenance task.
+- 2026-06-18T09:29+02:00 — Staged after completing five requested loops. Higher-priority open tasks remain skipped for approval/credential/tooling reasons; this dependency audit is next in TODO order and follows naturally after the completed safe dependency update and Angular deprecation slices.

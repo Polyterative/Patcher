@@ -7,6 +7,7 @@ import { BehaviorSubject, of, Subject } from 'rxjs';
 import { MODULE_FORMAT_GEOMETRY } from '../module-format-geometry.constants';
 import { FormCV } from './module-editor-data.service';
 import { ModuleEditorComponent } from './module-editor.component';
+import { ModuleEditorCropperComponent } from './module-editor-cropper.component';
 
 function makeComponent(preferredPanelCropFormat: 'webp' | 'jpeg' = 'webp') {
   const dataService = {
@@ -256,6 +257,25 @@ describe('ModuleEditorComponent panel crop flow', () => {
       } as any;
 
       expect(component.panelCropAspectRatio).toBeCloseTo(12 / testCase.expectedHeightRem, 6);
+    });
+  });
+
+  describe('ModuleEditorCropperComponent', () => {
+    it('delegates imperative cropper controls to the wrapped image cropper', () => {
+      const component = new ModuleEditorCropperComponent();
+      const keyboardEvent = new KeyboardEvent('keydown', {key: 'ArrowLeft'});
+      const cropper = {
+        resetCropperPosition: jasmine.createSpy('resetCropperPosition'),
+        keyboardAccess: jasmine.createSpy('keyboardAccess')
+      };
+
+      Object.defineProperty(component, 'cropperComponent', {value: cropper});
+
+      component.resetCropperPosition();
+      component.keyboardAccess(keyboardEvent);
+
+      expect(cropper.resetCropperPosition).toHaveBeenCalled();
+      expect(cropper.keyboardAccess).toHaveBeenCalledOnceWith(keyboardEvent);
     });
   });
 

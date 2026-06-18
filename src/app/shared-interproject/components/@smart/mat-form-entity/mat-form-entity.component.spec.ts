@@ -6,6 +6,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject } from 'rxjs';
 import { FormTypes } from './form-element-models';
 import { IMatFormEntityConfig, MatFormEntityComponent } from './mat-form-entity.component';
+import { MatFormEntityDateInputComponent } from './mat-form-entity-date-input.component';
 
 
 @Component({
@@ -202,4 +203,42 @@ describe('MatFormEntityComponent ergonomics', () => {
   function getRenderedInputs(): HTMLInputElement[] {
     return Array.from(fixture.nativeElement.querySelectorAll('input')) as HTMLInputElement[];
   }
+});
+
+describe('MatFormEntityDateInputComponent', () => {
+  let fixture: ComponentFixture<MatFormEntityDateInputComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [MatFormEntityDateInputComponent, NoopAnimationsModule]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(MatFormEntityDateInputComponent);
+    fixture.componentInstance.control = new UntypedFormControl('');
+    fixture.componentInstance.label = 'Release date';
+    fixture.detectChanges();
+  });
+
+  it('renders input metadata and validation messages from inputs', () => {
+    fixture.componentRef.setInput('placeholder', 'Pick a date');
+    fixture.componentRef.setInput('invalid', true);
+    fixture.componentRef.setInput('errors', 'Date is required');
+    fixture.componentInstance.control.setErrors({required: true});
+    fixture.componentInstance.control.markAsTouched();
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+    expect(input.getAttribute('placeholder')).toBe('Pick a date');
+    expect(fixture.nativeElement.textContent).toContain('Date is required');
+  });
+
+  it('emits enter key events from the date input', () => {
+    spyOn(fixture.componentInstance.inputEnter, 'emit');
+    const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+    const event = new KeyboardEvent('keydown', {key: 'Enter', bubbles: true});
+
+    input.dispatchEvent(event);
+
+    expect(fixture.componentInstance.inputEnter.emit).toHaveBeenCalledOnceWith(event);
+  });
 });
