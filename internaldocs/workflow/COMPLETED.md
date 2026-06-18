@@ -1,4 +1,5 @@
 # Completed Features
+- **2026-06-18** — MEDIUM: Bug — Comments composer input now fills the comments rail with scoped full-width form-field styles, rendered-width regression coverage, and desktop/mobile runtime snapshot verification.
 - **2026-06-18** — HIGH: Bug — Rack module sizing and analysis-overlay regressions fixed module host stretch with flex-start geometry guards, quick blank majority-standard selection, and layout-analysis-only opacity/HP overlays with rendered/style regression coverage.
 - **2026-06-18** — HIGH: Bug — Rack layout analysis arrangement counts now use safe typed exact/sampled/capped handling, avoid negative/NaN/Infinity display, and show huge sampled counts as order-of-magnitude estimates with focused utility/editor regressions.
 - **2026-06-18** — HIGH: E2E — Multi-Instance Patching now covers authenticated auto-instance patch editing end-to-end, including copy labels, persistence, instance-aware connections, duplicate refusal, connected-instance deletion, scrub/renumber persistence, and legacy no-instance patch loading.

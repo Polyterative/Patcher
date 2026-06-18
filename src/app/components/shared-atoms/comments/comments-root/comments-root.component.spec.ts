@@ -1,13 +1,46 @@
 import { CommonModule } from '@angular/common';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { Component, Input, NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormControl } from '@angular/forms';
+import { ReactiveFormsModule, FormControl } from '@angular/forms';
+import { TextFieldModule } from '@angular/cdk/text-field';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, ReplaySubject, Subject } from 'rxjs';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import { CommentsDataService } from '../comments-data.service';
 import { CommentsRootComponent } from './comments-root.component';
+
+interface MatFormEntityStubDataPack {
+  label?: string;
+  control: FormControl<string | null>;
+}
+
+@Component({
+  selector: 'lib-mat-form-entity',
+  template: `
+    <mat-form-field class="layout-flex-full">
+      <mat-label>{{ dataPack?.label ?? 'Add a comment' }}</mat-label>
+      <textarea
+        [formControl]="dataPack.control"
+        cdkAutosizeMinRows="1"
+        cdkTextareaAutosize
+        matInput
+      ></textarea>
+      <button
+        [disabled]="dataPack.control.value === '' || dataPack.control.value == null"
+        matSuffix
+        type="button"
+      >×</button>
+    </mat-form-field>
+  `,
+  standalone: false,
+})
+class MatFormEntityStubComponent {
+  @Input({ required: true }) dataPack!: MatFormEntityStubDataPack;
+  @Input() hint = '';
+}
 
 describe('CommentsRootComponent', () => {
   let fixture: ComponentFixture<CommentsRootComponent>;
@@ -30,8 +63,15 @@ describe('CommentsRootComponent', () => {
     const loggedUser$ = new BehaviorSubject<any>(user);
 
     TestBed.configureTestingModule({
-      declarations: [CommentsRootComponent],
-      imports: [CommonModule, NoopAnimationsModule],
+      declarations: [CommentsRootComponent, MatFormEntityStubComponent],
+      imports: [
+        CommonModule,
+        MatFormFieldModule,
+        MatInputModule,
+        NoopAnimationsModule,
+        ReactiveFormsModule,
+        TextFieldModule,
+      ],
       providers: [
         {
           provide: CommentsDataService,
@@ -45,6 +85,7 @@ describe('CommentsRootComponent', () => {
             maxLength: 1000,
             fields: {
               submit: {
+                label: 'Add a comment',
                 control: new FormControl('Ready to post'),
               },
             },
@@ -81,6 +122,32 @@ describe('CommentsRootComponent', () => {
 
     expect(rail).not.toBeNull();
     expect(composer).not.toBeNull();
+  });
+
+  it('stretches the composer form field to the rendered rail width', () => {
+    build();
+
+    const host: HTMLElement = fixture.nativeElement;
+    host.style.display = 'block';
+    host.style.width = '45rem';
+    fixture.detectChanges();
+
+    const rail: HTMLElement = host.querySelector('.commentsRoot__rail');
+    const composerField: HTMLElement = host.querySelector('.commentsRoot__composerField');
+    const formEntity: HTMLElement = host.querySelector('.commentsRoot__composerField lib-mat-form-entity');
+    const formField: HTMLElement = host.querySelector('.commentsRoot__composerField .mat-mdc-form-field');
+
+    const formEntityStyle = getComputedStyle(formEntity);
+    const formFieldStyle = getComputedStyle(formField);
+    const railWidth = rail.getBoundingClientRect().width;
+    const composerFieldWidth = composerField.getBoundingClientRect().width;
+    const formFieldWidth = formField.getBoundingClientRect().width;
+
+    expect(formEntityStyle.display).toBe('block');
+    expect(formFieldStyle.display).toBe('block');
+    expect(composerFieldWidth).toBeGreaterThanOrEqual(railWidth - 1);
+    expect(formFieldWidth).toBeGreaterThanOrEqual(railWidth - 1);
+    expect(formFieldWidth).toBeLessThanOrEqual(railWidth + 1);
   });
 
   it('renders the load-more action inside the same rail when more comments exist', () => {
