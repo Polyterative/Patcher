@@ -26,6 +26,8 @@ recording on top of Sentry replays — see the boundary rules in
 - No PII in properties. No user email, no raw user-supplied text.
 - Properties: use `snake_case` keys, scalar values only (string | number | boolean).
 - Every event automatically carries `release` and `commit` super-properties (set by the PostHog loader).
+- The PostHog loader sets `respect_dnt: true`; browsers with Do Not Track enabled must not emit events.
+- Mark auth credentials and raw feedback text inputs with `data-ph-no-capture` even when PostHog would mask them by default.
 
 ---
 
@@ -68,8 +70,20 @@ constructor(private analytics: AnalyticsService) {}
 | `patch.connection_removed` | `PatchDetailDataService.removeConnectionFromEditor$` subscribe | `patch_id` |
 | `module.viewed` | `ModuleDetailDataService` on first data load | `module_id`, `manufacturer_id` |
 | `module.collection_toggled` | `ModuleDetailDataService` add/remove/setModulePossession subscribes | `module_id`, `state` (added \| removed) |
+| `module_collection.browser_viewed` | `ModuleCollectionsDataService` / `ModuleCollectionsBrowserDataService` list load success | `view` (public \| user_area) |
+| `module_collection.viewed` | `ModuleCollectionsDataService` / `ModuleCollectionsDetailDataService` collection load success | `collection_id`, `source` |
+| `module_collection.created` | `ModuleCollectionsDataService.saveCollection` create success | `collection_id`, `module_count`, `public` |
+| `module_collection.updated` | `ModuleCollectionsDataService.saveCollection` update success | `collection_id`, `module_count`, `public` |
+| `module_collection.deleted` | `ModuleCollectionsDataService.deleteCollection` delete success | `collection_id` |
+| `module_collection.discovery_filter_changed` | `ModuleCollectionsBrowserDataService` filter change after initial load | `search_active`, `search_length`, `order` |
+| `module_collection.discovery_filters_reset` | `ModuleCollectionsBrowserDataService.resetForm$` | — |
+| `module_collection.discovery_search_performed` | `ModuleCollectionsBrowserDataService` page load after search/filter state | `search_active`, `search_length`, `order`, `result_count`, `total`, `remaining`, `failed` |
+| `module_collection.discovery_load_more` | `ModuleCollectionsBrowserDataService.loadMore$` | `loaded_count`, `remaining`, `order`, `search_active` |
+| `module_collection.discovery_collection_clicked` | `ModuleCollectionsBrowserDataService.collectionOpened$` | `collection_id`, `public_id`, `rank`, `module_count` |
 | `search.performed` | `ModuleBrowserDataService.updateModulesList$` subscribe | `query_len`, `filters_active`, `result_count` |
 | `manufacturer.viewed` | `ManufacturerDetailDataService` on data load | `manufacturer_id` |
+| `feedback.submitted` | `ModuleFlagDataService.submitFlag$` backend success | `category`, `length` |
+| `admin.action_performed` | `AdminFlagsDataService` resolve/reopen/delete flag success | `action` |
 
 ---
 

@@ -4,6 +4,7 @@ import {
 } from '@angular/cdk/keycodes';
 import {
   AfterViewInit,
+  booleanAttribute,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -212,6 +213,7 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
   @Input() inputmode?: AppInputMode;
   @Input() enterkeyhint?: AppEnterKeyHint;
   @Input() autofocus = false;
+  @Input({ transform: booleanAttribute }) noCapture = false;
   /** Optional preset values shown as quick-select chips when the input is focused. */
   @Input() presets: (string | number)[] = [];
   @Output() enterPressed = new EventEmitter<KeyboardEvent>();

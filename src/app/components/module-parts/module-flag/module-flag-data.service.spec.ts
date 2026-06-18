@@ -12,23 +12,26 @@ import {
   ModuleFlagDataService
 } from './module-flag-data.service';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 
 
 function setupTest() {
   const mockModuleFlag = jasmine.createSpy('add.moduleFlag').and.returnValue(of({}));
   const mockBackend = {add: {moduleFlag: mockModuleFlag}};
   const mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
+  const mockAnalytics = jasmine.createSpyObj<AnalyticsService>('AnalyticsService', ['capture']);
 
   TestBed.configureTestingModule({
     providers: [
       ModuleFlagDataService,
       {provide: SupabaseService, useValue: mockBackend},
-      {provide: MatSnackBar, useValue: mockSnackBar}
+      {provide: MatSnackBar, useValue: mockSnackBar},
+      {provide: AnalyticsService, useValue: mockAnalytics}
     ]
   });
 
   const service = TestBed.inject(ModuleFlagDataService);
-  return {service, mockBackend, mockSnackBar};
+  return {service, mockBackend, mockSnackBar, mockAnalytics};
 }
 
 function cleanup() {
@@ -171,6 +174,19 @@ describe('ModuleFlagDataService', () => {
       service.submitFlag$.next({category: 'other', note: 'some note'});
       setTimeout(() => {
         expect(mockSnackBar.open).toHaveBeenCalled();
+        done();
+      }, 0);
+    });
+
+    it('should capture feedback analytics without note content', done => {
+      const {service, mockAnalytics} = setupTest();
+      service.moduleId$.next(1);
+      service.submitFlag$.next({category: 'wrong-power', note: '  Should only use +12V  '});
+      setTimeout(() => {
+        expect(mockAnalytics.capture).toHaveBeenCalledWith('feedback.submitted', {
+          category: 'wrong-power',
+          length:   20
+        });
         done();
       }, 0);
     });

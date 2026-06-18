@@ -7,6 +7,7 @@ import {
   AdminFlagsDataService
 } from './admin-flags-data.service';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 
 
 const makeFlag = (partial: Partial<AdminFlagRow>): AdminFlagRow => ({
@@ -37,17 +38,19 @@ function setupTest() {
     delete: {moduleFlag: jasmine.createSpy().and.returnValue(of(null))}
   };
   const mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
+  const mockAnalytics = jasmine.createSpyObj<AnalyticsService>('AnalyticsService', ['capture']);
 
   TestBed.configureTestingModule({
     providers: [
       AdminFlagsDataService,
       {provide: SupabaseService, useValue: mockBackend},
-      {provide: MatSnackBar, useValue: mockSnackBar}
+      {provide: MatSnackBar, useValue: mockSnackBar},
+      {provide: AnalyticsService, useValue: mockAnalytics}
     ]
   });
 
   const service = TestBed.inject(AdminFlagsDataService);
-  return {service, mockBackend, mockSnackBar};
+  return {service, mockBackend, mockSnackBar, mockAnalytics};
 }
 
 
@@ -236,6 +239,30 @@ describe('AdminFlagsDataService', () => {
       const {service} = setupTest();
       expect(service.getCategoryLabel('wrong-specs')).toBe('Wrong specs');
       expect(service.getCategoryTone('wrong-specs')).toBe('legacy');
+    });
+
+    describe('admin analytics', () => {
+      it('captures resolved and reopened actions', done => {
+        const {service, mockAnalytics} = setupTest();
+        service.resolveFlag$.next({id: 1, resolved: true});
+        service.resolveFlag$.next({id: 1, resolved: false});
+
+        setTimeout(() => {
+          expect(mockAnalytics.capture).toHaveBeenCalledWith('admin.action_performed', { action: 'flag_resolved' });
+          expect(mockAnalytics.capture).toHaveBeenCalledWith('admin.action_performed', { action: 'flag_reopened' });
+          done();
+        }, 0);
+      });
+
+      it('captures deleted actions', done => {
+        const {service, mockAnalytics} = setupTest();
+        service.deleteFlag$.next(1);
+
+        setTimeout(() => {
+          expect(mockAnalytics.capture).toHaveBeenCalledWith('admin.action_performed', { action: 'flag_deleted' });
+          done();
+        }, 0);
+      });
     });
   });
 });

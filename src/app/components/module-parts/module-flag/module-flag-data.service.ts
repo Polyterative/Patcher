@@ -13,6 +13,7 @@ import {
 } from 'rxjs';
 import {
   catchError,
+  map,
   shareReplay,
   switchMap,
   withLatestFrom
@@ -20,6 +21,7 @@ import {
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 import {
   FlagCategoryGroup,
   FlagCategoryOption,
@@ -56,6 +58,7 @@ export class ModuleFlagDataService extends SubManager {
   constructor(
     private backend: SupabaseService,
     private snackBar: MatSnackBar,
+    private analytics: AnalyticsService,
     destroyRef?: DestroyRef
   ) {
     super(destroyRef);
@@ -75,6 +78,7 @@ export class ModuleFlagDataService extends SubManager {
           category: payload.category,
           note: payload.note || null
         }).pipe(
+          map(() => payload),
           catchError(() => {
             SharedConstants.errorCustom(this.snackBar, 'Failed to submit report. Please try again.');
             return EMPTY;
@@ -82,7 +86,11 @@ export class ModuleFlagDataService extends SubManager {
         )
       ),
       this.takeUntilDestroyed()
-    ).subscribe(() => {
+    ).subscribe(payload => {
+      this.analytics.capture('feedback.submitted', {
+        category: payload.category,
+        length:   (payload.note ?? '').trim().length
+      });
       SharedConstants.successCustom(this.snackBar, 'Report submitted. Thanks for helping improve the catalogue!');
       this._formVisible$.next(false);
       this._refreshCount$.next();
