@@ -22,7 +22,7 @@
 
 ### PRODUCT — Tier 0 (ship in any order; no external dependencies)
 
-- [ ] **HIGH: Marketplace — Purchase Price History** → [`plans/marketplace-purchase-price-history.md`](./plans/marketplace-purchase-price-history.md)
+- [ ] **ON HOLD: HIGH: Marketplace — Purchase Price History (approval-gated after money-helper foundation)** → [`plans/marketplace-purchase-price-history.md`](./plans/marketplace-purchase-price-history.md)
 
 ### PRODUCT — Tier 1 (requires Manufacturer Page Phase 2 to be live)
 
@@ -55,5 +55,5 @@
 - [ ] **ON HOLD INDEFINITELY: Rack Comparison — balance diff between two racks** → [`plans/rack-comparison-balance-diff-between-two-racks.md`](./plans/rack-comparison-balance-diff-between-two-racks.md)
 - [ ] **ON HOLD: MEDIUM: Sentry — Live Issue Audit** → [`plans/sentry-live-issue-audit.md`](./plans/sentry-live-issue-audit.md)
 - [ ] **ON HOLD: MEDIUM: Docs screenshot pipeline refresh (gated on credentials/approval)** → [`plans/docs-screenshot-pipeline-refresh.md`](./plans/docs-screenshot-pipeline-refresh.md)
-- [~] **MEDIUM: Patch SVG previews (pure SVG renderer foundation active)** → [`plans/patch-svg-previews.md`](./plans/patch-svg-previews.md)
+- [ ] **ON HOLD: MEDIUM: Patch SVG previews (approval-gated after pure SVG renderer foundation)** → [`plans/patch-svg-previews.md`](./plans/patch-svg-previews.md)
 - [ ] **ON HOLD: SEO — OG Image Generation** → [`plans/on-seo-og-image-generation.md`](./plans/on-seo-og-image-generation.md)
