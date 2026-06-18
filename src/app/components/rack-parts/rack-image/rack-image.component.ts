@@ -1,4 +1,8 @@
 import {
+  NgStyle,
+  NgTemplateOutlet
+} from '@angular/common';
+import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -26,24 +30,58 @@ export function previewGeneratedAt(filename: string | null | undefined): Date | 
   }
 
   const [, year, month, day, hour, minute, second, millisecond = '0'] = match;
-  const generatedAt = new Date(
-    Number(year),
-    Number(month) - 1,
-    Number(day),
-    Number(hour),
-    Number(minute),
-    Number(second),
-    Number(millisecond)
-  );
+  const dateParts = {
+    year: Number(year),
+    month: Number(month),
+    day: Number(day),
+    hour: Number(hour),
+    minute: Number(minute),
+    second: Number(second),
+    millisecond: Number(millisecond)
+  };
+  const generatedAt = new Date(Date.UTC(
+    dateParts.year,
+    dateParts.month - 1,
+    dateParts.day,
+    dateParts.hour,
+    dateParts.minute,
+    dateParts.second,
+    dateParts.millisecond
+  ));
+
+  if (
+    generatedAt.getUTCFullYear() !== dateParts.year
+    || generatedAt.getUTCMonth() !== dateParts.month - 1
+    || generatedAt.getUTCDate() !== dateParts.day
+    || generatedAt.getUTCHours() !== dateParts.hour
+    || generatedAt.getUTCMinutes() !== dateParts.minute
+    || generatedAt.getUTCSeconds() !== dateParts.second
+    || generatedAt.getUTCMilliseconds() !== dateParts.millisecond
+  ) {
+    return null;
+  }
 
   return Number.isNaN(generatedAt.getTime()) ? null : generatedAt;
 }
 
+function rackUpdatedAt(updated: string | null | undefined): Date | null {
+  if (!updated) {
+    return null;
+  }
+
+  const timestamp = /(?:z|[+-]\d{2}:?\d{2})$/i.test(updated)
+    ? updated
+    : `${ updated }Z`;
+  const updatedAt = new Date(timestamp);
+
+  return Number.isNaN(updatedAt.getTime()) ? null : updatedAt;
+}
+
 export function isPreviewStale(rack: Pick<Rack, 'image' | 'updated'> | null | undefined): boolean {
   const generatedAt = previewGeneratedAt(rack?.image);
-  const updatedAt = rack?.updated ? new Date(rack.updated) : null;
+  const updatedAt = rackUpdatedAt(rack?.updated);
 
-  if (!generatedAt || !updatedAt || Number.isNaN(updatedAt.getTime())) {
+  if (!generatedAt || !updatedAt) {
     return false;
   }
 
@@ -60,7 +98,9 @@ export function isPreviewStale(rack: Pick<Rack, 'image' | 'updated'> | null | un
     RouterLink,
     MatButtonModule,
     MatIconModule,
-    MatTooltipModule
+    MatTooltipModule,
+    NgStyle,
+    NgTemplateOutlet
   ],
   animations: [
     trigger('enter', [
@@ -105,7 +145,7 @@ export class RackImageComponent implements OnInit, OnChanges {
   }
 
   get isStale(): boolean {
-    return this.canUpdatePreview && !!this.filename && !this.imageLoadFailed && isPreviewStale(this.data);
+    return this.canUpdatePreview && !!this.filename && isPreviewStale(this.data);
   }
 
   requestPreviewUpdate(event: MouseEvent): void {

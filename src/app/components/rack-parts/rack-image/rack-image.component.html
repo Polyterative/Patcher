@@ -28,6 +28,7 @@
           [attr.aria-label]="'Rack preview unavailable for '+data.name"
         >
           <span class="rack-image-fallback__eyebrow">Preview unavailable</span>
+          <ng-container *ngTemplateOutlet="stalePreviewBadge"></ng-container>
         </div>
       } @else {
         <div
@@ -64,6 +65,7 @@
           [attr.aria-label]="'Rack preview unavailable for '+data.name"
         >
           <span class="rack-image-fallback__eyebrow">Preview unavailable</span>
+          <ng-container *ngTemplateOutlet="stalePreviewBadge"></ng-container>
         </div>
       } @else {
         <div
