@@ -50,6 +50,7 @@ import { SignalFocusArea } from '../rack-signal-analysis.utils';
 import {
   computeLayoutAnalysis,
   RackLayoutScope,
+  RackArrangementCount,
   RackLayoutAnalysisResult
 } from '../rack-layout-analysis.utils';
 import { prefersTouchInteraction } from 'src/app/shared-interproject/touch-interaction.utils';
@@ -659,15 +660,23 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
       return 'Add modules to estimate valid arrangements.';
     }
 
-    if (analysis.validArrangementCount === 'estimated') {
-      return `~${ this.formatArrangementCount(analysis.estimate ?? 0) } sampled valid arrangements.`;
-    }
-
-    if (analysis.validArrangementCount === 0) {
+    if (analysis.arrangementCount.kind === 'impossible') {
       return 'No valid arrangement fits the current row set.';
     }
 
-    return `${ this.formatArrangementCount(analysis.validArrangementCount) } valid arrangement${ analysis.validArrangementCount === 1 ? '' : 's' } fit the current rows.`;
+    if (analysis.arrangementCount.kind === 'sampled') {
+      return `~${ this.formatArrangementCount(analysis.arrangementCount.value) } sampled valid arrangements (estimate).`;
+    }
+
+    if (analysis.arrangementCount.kind === 'capped') {
+      const prefix = analysis.arrangementCount.source === 'exact' ? '' : '~';
+      const qualifier = analysis.arrangementCount.source === 'exact'
+        ? 'exact valid arrangements (capped display)'
+        : 'sampled valid arrangements (order-of-magnitude estimate)';
+      return `${ prefix }${ this.formatArrangementMagnitude(analysis.arrangementCount) } ${ qualifier }.`;
+    }
+
+    return `${ this.formatArrangementCount(analysis.arrangementCount.value) } valid arrangement${ analysis.arrangementCount.value === 1 ? '' : 's' } fit the current rows.`;
   }
 
   layoutValiditySummary(rowedRackedModules: RackedModule[][] | null | undefined): string {
@@ -792,10 +801,14 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
   }
 
   private formatArrangementCount(count: number): string {
-    if (!Number.isFinite(count)) {
-      return 'many';
+    if (!Number.isFinite(count) || count < 0) {
+      return '0';
     }
-    return count.toLocaleString();
+    return Math.round(count).toLocaleString();
+  }
+
+  private formatArrangementMagnitude(count: Extract<RackArrangementCount, { kind: 'capped' }>): string {
+    return `10^${ Math.max(0, count.orderOfMagnitude) }+`;
   }
 
   private resolveActivePanelContext(rackedModule: RackedModule): {

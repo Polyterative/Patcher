@@ -12,29 +12,30 @@
 
 ## Active
 
-### Bug — Rack layout arrangement count is sometimes negative / overflowed
+### Bug — Rack module sizing and analysis-overlay regressions
 
-Plan: [`plans/bug-rack-layout-arrangement-count-negative-or-overflowed.md`](./plans/bug-rack-layout-arrangement-count-negative-or-overflowed.md)
+Plan: [`plans/bug-new-modules-stretched-vertically-in-mixed-format-row.md`](./plans/bug-new-modules-stretched-vertically-in-mixed-format-row.md)
 
-Status: **Active — selected for loop 2.** Pure frontend numeric/display hardening; no backend, schema, migration, RLS, or Supabase data changes.
+Status: **Active — selected for loop 3.** Frontend-only rack visual/blank/analysis overlay regression work; no backend, schema, migration, RLS, or Supabase data changes.
 
 #### Why this is next
 
-The completed multi-instance E2E work unblocks the auth patch regression suite. The remaining HIGH product tasks are blocked by schema/RLS/manual approval or upstream dependencies; this rack-analysis bug is HIGH, production-visible, bounded to frontend utilities/editor copy plus specs, and requires no manual approval.
+After the arrangement-count regression, this is the remaining HIGH actionable INFRA bug that is not blocked by manual approval. It is production-visible rack accuracy work and should land before screenshot refresh so generated docs do not capture stretched modules or leaked analysis overlays.
 
 #### Layer checklist
 
-- [ ] MVP: reproduce/fixture the high-cardinality sampled-count class and prevent negative/NaN/Infinity counts.
-- [ ] Structural: encode exact/estimated/capped count handling in typed helpers and focused regression tests.
-- [ ] Polish: keep user copy honest about exact vs sampled/capped values without redesigning the panel.
+- [ ] MVP: prevent module-realistic hosts from stretching in rack rows and patch/editor contexts.
+- [ ] Structural: add regression tests for natural module heights, quick-blank majority standard, and analysis-overlay gating.
+- [ ] Polish: document/finalize alignment/fallback decisions without redesigning mixed-format rows.
 
 #### Validation strategy
 
-- `pnpm test-headless --include="**/rack-layout-analysis.utils.spec.ts"`
-- `pnpm test-headless --include="**/rack-editor.component.spec.ts"`
+- `pnpm test-headless --include="**/rack-visual-model.component.spec.ts"`
+- `pnpm test-headless --include="**/module-realistic.component.spec.ts"`
+- Targeted quick-blank / rack-editor spec found during implementation
 - `pnpm lint`
 - `node scripts/checks/check-docs.cjs`
 
 #### Decision log
 
-- 2026-06-18T17:15+02:00 — Coordinator selected this task for loop 2 because it is the next highest-priority actionable item not blocked by schema/RLS/manual approval and is bounded to frontend numeric/display hardening with regression tests.
+- 2026-06-18T17:35+02:00 — Coordinator selected this task for loop 3 as the highest-priority actionable backlog item after the count fix; schema/RLS/manual-approval tasks remain skipped.

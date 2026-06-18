@@ -4,7 +4,7 @@
 
 ## Status
 
-Open. Backlog intake from feature-notetaker. Reported as a production-visible
+Implemented; awaiting coordinator review. Backlog intake from feature-notetaker. Reported as a production-visible
 regression in the Rack Editor's floating **Layout analysis** panel: the
 "sampled valid arrangements" line periodically renders a *negative*
 integer (e.g. `-1,139,371,499,222 sampled valid arrangements.`), even though
@@ -51,21 +51,21 @@ the analysis surface as a whole.
   there read as "this app is broken", which is far more damaging on a
   public surface than in the solo editor.
 - **Backlog precedent.** Sits alongside the existing
-  [`bug-new-modules-stretched-vertically-in-mixed-format-row.md`](./bug-new-modules-stretched-vertically-in-mixed-format-row.md)
+  [`bug-new-modules-stretched-vertically-in-mixed-format-row.md`](../bug-new-modules-stretched-vertically-in-mixed-format-row.md)
   rack regression bundle — both are INFRA / HIGH and both demand
   regression tests as part of the fix because the surface has now
   regressed visibly more than once.
 
 This is **not** a roadmap-extending feature; it is hardening of the
 already-shipped Rack Editor Remix layout optimizer (see
-[`plans/done/rack-editor-remix-layout-optimizer.md`](./done/rack-editor-remix-layout-optimizer.md)).
+[`plans/done/rack-editor-remix-layout-optimizer.md`](./rack-editor-remix-layout-optimizer.md)).
 
 ## Current system analysis
 
 Pure analysis lives in
-[`src/app/components/rack-parts/rack-layout-analysis.utils.ts`](../../../src/app/components/rack-parts/rack-layout-analysis.utils.ts).
+[`src/app/components/rack-parts/rack-layout-analysis.utils.ts`](../../../../src/app/components/rack-parts/rack-layout-analysis.utils.ts).
 The display layer is in
-[`src/app/components/rack-parts/rack-editor/rack-editor.component.ts`](../../../src/app/components/rack-parts/rack-editor/rack-editor.component.ts)
+[`src/app/components/rack-parts/rack-editor/rack-editor.component.ts`](../../../../src/app/components/rack-parts/rack-editor/rack-editor.component.ts)
 (`layoutArrangementSummary()` + `formatArrangementCount()`).
 
 Key shape of the computation today:
@@ -184,7 +184,7 @@ Out of scope for this fix (left to follow-up plans):
 
 - Adding statistical confidence intervals to the estimate (already
   explicitly deferred in
-  [`done/rack-editor-remix-layout-optimizer.md`](./done/rack-editor-remix-layout-optimizer.md)).
+  [`done/rack-editor-remix-layout-optimizer.md`](./rack-editor-remix-layout-optimizer.md)).
 - Replacing the Monte-Carlo sampler with a smarter estimator.
 - Showing arrangement counts on shared / public rack views.
 
@@ -242,7 +242,7 @@ Out of scope for this fix (left to follow-up plans):
 - **Hard dependency:** none. Pure frontend, no schema, no backend, no
   RLS. Can be picked up at any time.
 - **Soft dependency:** the existing rack regression bundle
-  [`bug-new-modules-stretched-vertically-in-mixed-format-row.md`](./bug-new-modules-stretched-vertically-in-mixed-format-row.md)
+  [`bug-new-modules-stretched-vertically-in-mixed-format-row.md`](../bug-new-modules-stretched-vertically-in-mixed-format-row.md)
   also expands the rack analysis regression-test suite — if it is
   scheduled at the same time, both fixes should land their regression
   tests next to each other so the test file does not get split twice.
@@ -377,7 +377,7 @@ on completion):
 - `pnpm lint`
 - Manual visual smoke against a reproducer rack (steps captured in
   the Decision log when reproducing). For UI / visual confirmation,
-  follow the [`patcher-ui-debug`](../../../.github/skills/patcher-ui-debug/SKILL.md)
+  follow the [`patcher-ui-debug`](../../../../.github/skills/patcher-ui-debug/SKILL.md)
   snapshot flow — open a rack matching the reported class and capture
   the Layout analysis panel after at least one module add / remove
   toggle.
@@ -408,7 +408,7 @@ on completion):
   (`> 10⁵³ arrangements`), or a single word ("many"), or three
   separate forms based on which threshold is tripped? Designer-style
   preference: lean on the existing voice in
-  [`DESIGN_LANGUAGE.md`](../../DESIGN_LANGUAGE.md).
+  [`DESIGN_LANGUAGE.md`](../../../DESIGN_LANGUAGE.md).
 - **Open question:** is the negative output deterministic on a given
   rack, or does the LCG seed sequence make it intermittent? Lock
   the answer in the regression test.
@@ -445,3 +445,12 @@ on completion):
   untouched. Filed under `INFRA / HIGH` to mirror the existing
   rack-regression bundle and to match the production-visibility
   threshold used for prior rack accuracy bugs.
+- **2026-06-18T17:30+02:00:** Frontend implementation chose
+  `Number.MAX_SAFE_INTEGER` as the display cap because values above it
+  cannot be rendered as exact JavaScript integers. Exact counts now use
+  `bigint` internally, sampled estimates carry a typed
+  exact/sampled/capped result, invalid module HP is clamped to
+  non-negative finite values, and capped sampled counts render as
+  `~10^n+ sampled valid arrangements (order-of-magnitude estimate).`
+  No backend, schema, RLS, migration, RPC, generated-type, or
+  `RackDetailDataService` changes were made.
