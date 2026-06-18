@@ -22,12 +22,24 @@
 
 ### PRODUCT — Tier 0 (ship in any order; no external dependencies)
 
+- [ ] **HIGH: Marketplace — Purchase Price History** → [`plans/marketplace-purchase-price-history.md`](./plans/marketplace-purchase-price-history.md)
+
 ### PRODUCT — Tier 1 (requires Manufacturer Page Phase 2 to be live)
 
 - [ ] **HIGH: Manufacturer Accounts & Verification** → [`plans/manufacturer-accounts-verification.md`](./plans/manufacturer-accounts-verification.md)
 - [ ] **LOW: Manufacturer Updates / Featured Surface** → [`plans/manufacturer-updates-featured-surface.md`](./plans/manufacturer-updates-featured-surface.md)
 - [ ] **LOW: Manufacturer Analytics** → [`plans/manufacturer-analytics.md`](./plans/manufacturer-analytics.md)
 - [ ] **LOW: Manufacturer API / Widgets Pilot** → [`plans/manufacturer-api-widgets-pilot.md`](./plans/manufacturer-api-widgets-pilot.md)
+
+### PRODUCT — Tier 2 (requires stable public profiles / community trust layer)
+
+- [ ] **HIGH: Marketplace — Shipping Address Book** → [`plans/marketplace-shipping-address-book.md`](./plans/marketplace-shipping-address-book.md)
+- [ ] **HIGH: Marketplace — Browse, Detail, and Cockpits** → [`plans/marketplace-browse-detail-and-cockpits.md`](./plans/marketplace-browse-detail-and-cockpits.md)
+- [ ] **HIGH: Marketplace — Listings Core and Media** → [`plans/marketplace-listings-core-and-media.md`](./plans/marketplace-listings-core-and-media.md)
+- [ ] **HIGH: Marketplace — Structured Inquiry and Offers** → [`plans/marketplace-structured-inquiry-and-offers.md`](./plans/marketplace-structured-inquiry-and-offers.md)
+- [ ] **HIGH: Marketplace — Transaction Lifecycle** → [`plans/marketplace-transaction-lifecycle.md`](./plans/marketplace-transaction-lifecycle.md)
+- [ ] **MEDIUM: Marketplace — Realtime Messaging** → [`plans/marketplace-realtime-messaging.md`](./plans/marketplace-realtime-messaging.md)
+- [ ] **MEDIUM: Marketplace — Feedback and Reputation** → [`plans/marketplace-feedback-and-reputation.md`](./plans/marketplace-feedback-and-reputation.md)
 
 ### DATA MODEL (schema / domain gaps to address)
 
