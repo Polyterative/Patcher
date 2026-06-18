@@ -111,6 +111,7 @@ export class RackImageComponent implements OnInit, OnChanges {
   
   filename: string | undefined;
   imageLoadFailed = false;
+  imageLoaded = false;
   
   // proportion between contained and full size
   sizeDivider: number = 1.5;
@@ -129,8 +130,18 @@ export class RackImageComponent implements OnInit, OnChanges {
     this.changeDetection.detectChanges();
   }
 
+  onPreviewImageLoad(): void {
+    if (this.imageLoadFailed) {
+      return;
+    }
+
+    this.imageLoaded = true;
+    this.changeDetection.detectChanges();
+  }
+
   onPreviewLoadError(): void {
     this.imageLoadFailed = true;
+    this.imageLoaded = false;
   }
 
   get isStale(): boolean {
@@ -147,6 +158,7 @@ export class RackImageComponent implements OnInit, OnChanges {
     const nextFilename = this.data.image || undefined;
     if (this.filename !== nextFilename) {
       this.imageLoadFailed = false;
+      this.imageLoaded = false;
     }
     this.filename = nextFilename;
   }

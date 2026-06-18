@@ -2,7 +2,7 @@
 
 ## Status
 
-`[ ]` Backlog — visual / motion polish on a core browsing surface (`/racks`).
+`[x]` Implemented in loop 5 — visual / motion polish on a core browsing surface (`/racks`).
 No data, schema, or RLS work. Component-level Angular animation + small CSS
 fix, ideally extracted as a shared image-load-fade helper used by both
 `app-module-part-image` and `app-rack-image`. Regression coverage with a
@@ -27,10 +27,10 @@ the modules panel images.
 - `/racks` is one of the four canonical browsing surfaces (along with
   `/modules`, `/patches`, `/users`) and is the public entry point to the
   Rack content type, which is **load-bearing for the marketplace and trust
-  layer** described in [`internaldocs/product/ROADMAP.md`](../../product/ROADMAP.md).
+  layer** described in [`internaldocs/product/ROADMAP.md`](../../../product/ROADMAP.md).
   Visual instability on this surface erodes the same trust that listings,
   shipping, and reputation features will later depend on.
-- Aligns with [`internaldocs/DESIGN_LANGUAGE.md`](../../DESIGN_LANGUAGE.md):
+- Aligns with [`internaldocs/DESIGN_LANGUAGE.md`](../../../DESIGN_LANGUAGE.md):
   - "Functional animation only — feedback loops that convey state, not
     decoration." A load-driven fade is exactly that: it conveys
     *"the bitmap is now present"*.
@@ -54,15 +54,15 @@ the modules panel images.
 ### Surfaces affected (where rack preview images render)
 
 - `/racks` list — the abrupt one, primary target of this plan.
-  - [`src/app/features/routes/rack/rack-browser-root/rack-browser-root.component.html`](../../../src/app/features/routes/rack/rack-browser-root/rack-browser-root.component.html)
+  - [`src/app/features/routes/rack/rack-browser-root/rack-browser-root.component.html`](../../../../src/app/features/routes/rack/rack-browser-root/rack-browser-root.component.html)
     hosts `<app-rack-list>` inside `.rack-results-shell`.
-  - [`src/app/components/rack-list/rack-list.component.html`](../../../src/app/components/rack-list/rack-list.component.html)
+  - [`src/app/components/rack-list/rack-list.component.html`](../../../../src/app/components/rack-list/rack-list.component.html)
     iterates racks into `<lib-clean-card>` with the card-level
     `[@enter]`/`[@leave]` stagger, and inside each card renders
     `<app-rack-micro>`.
-  - [`src/app/components/rack-micro/rack-micro.component.html`](../../../src/app/components/rack-micro/rack-micro.component.html)
+  - [`src/app/components/rack-micro/rack-micro.component.html`](../../../../src/app/components/rack-micro/rack-micro.component.html)
     contains `<app-rack-image>` and the title/author/HP row.
-  - [`src/app/components/rack-parts/rack-image/rack-image.component.html`](../../../src/app/components/rack-parts/rack-image/rack-image.component.html)
+  - [`src/app/components/rack-parts/rack-image/rack-image.component.html`](../../../../src/app/components/rack-parts/rack-image/rack-image.component.html)
     renders the `<img>` (or fallback tile) with the `rack-image-enter`
     keyframe and the shared `image-transition` class.
 
@@ -76,7 +76,7 @@ the modules panel images.
 ### Why modules feel smooth and racks do not
 
 - Module list cards render `<app-module-minimal>` → `<app-module-part-image>`
-  ([`src/app/components/module-parts/module-minimal/module-part-image/module-part-image.component.ts`](../../../src/app/components/module-parts/module-minimal/module-part-image/module-part-image.component.ts)),
+  ([`src/app/components/module-parts/module-minimal/module-part-image/module-part-image.component.ts`](../../../../src/app/components/module-parts/module-minimal/module-part-image/module-part-image.component.ts)),
   which combines:
   - A per-image Angular `@enter` trigger
     (`opacity 0 → 1`, `725ms ease`) defined in the component's `animations:`.
@@ -93,12 +93,12 @@ the modules panel images.
     The visible effect is a single smooth fade.
 
 - Rack cards render `<app-rack-micro>` → `<app-rack-image>`
-  ([`rack-image.component.html`](../../../src/app/components/rack-parts/rack-image/rack-image.component.html))
+  ([`rack-image.component.html`](../../../../src/app/components/rack-parts/rack-image/rack-image.component.html))
   which has:
   - `animate.enter="rack-image-enter"` (Angular 21 native-CSS enter binding)
     with a `rack-image-fade-in` keyframe of `725ms ease`.
   - The shared `.image-transition` class
-    ([`src/app/style/commons_customizations.scss`](../../../src/app/style/commons_customizations.scss)
+    ([`src/app/style/commons_customizations.scss`](../../../../src/app/style/commons_customizations.scss)
     line 208: `transition: opacity 0.3s; transition-delay: 0.2s;`).
   - `loading="lazy"`, `(error)` → `imageLoadFailed` fallback tile.
   - **No `(load)` binding.** The enter fade runs on element insertion, not
@@ -132,7 +132,7 @@ report.
 
 ### Shared helpers worth knowing about
 
-- `.image-transition` in [`src/app/style/commons_customizations.scss`](../../../src/app/style/commons_customizations.scss).
+- `.image-transition` in [`src/app/style/commons_customizations.scss`](../../../../src/app/style/commons_customizations.scss).
 - Angular `:enter` animation idiom — used by both module-part-image and
   module-minimal; the canonical Patcher way to fade content in.
 - `prefers-reduced-motion` is already respected via
@@ -148,8 +148,8 @@ report.
 
 - **Default-correct image loading is a product-wide primitive.** Marketplace
   listings, manufacturer hero images, patch SVG previews
-  ([`plans/patch-svg-previews.md`](./patch-svg-previews.md)), and OG image
-  previews ([`plans/on-seo-og-image-generation.md`](./on-seo-og-image-generation.md))
+  ([`plans/patch-svg-previews.md`](../patch-svg-previews.md)), and OG image
+  previews ([`plans/on-seo-og-image-generation.md`](../on-seo-og-image-generation.md))
   will all need the same "fade in once the bitmap is actually ready"
   behaviour. Extracting one helper now is cheaper than patching each
   surface later.
@@ -218,7 +218,7 @@ report.
 - Standalone task. Can be picked up by `coordinator-loop` independently of
   the marketplace, manufacturer, or e2e workstreams.
 - Soft adjacency: if implemented as a shared directive/wrapper, future plans
-  ([`patch-svg-previews.md`](./patch-svg-previews.md),
+  ([`patch-svg-previews.md`](../patch-svg-previews.md),
   marketplace listings core, manufacturer hero) should adopt it instead of
   reinventing fades.
 
@@ -226,24 +226,24 @@ report.
 
 Goal: close the user's report with the smallest correct change.
 
-- Add `(load)` + `(error)` bindings to the `<img>` in
-  [`rack-image.component.html`](../../../src/app/components/rack-parts/rack-image/rack-image.component.html).
-- Track an `imageLoaded` boolean on `RackImageComponent` (defaults `false`,
+- [x] Add `(load)` + `(error)` bindings to the `<img>` in
+  [`rack-image.component.html`](../../../../src/app/components/rack-parts/rack-image/rack-image.component.html).
+- [x] Track an `imageLoaded` boolean on `RackImageComponent` (defaults `false`,
   reset to `false` in `syncFilename()` whenever the filename changes so a
   navigation between racks does not skip the fade).
-- On the `<img>`, apply `opacity: 0` until `imageLoaded` is `true`, then
+- [x] On the `<img>`, apply `opacity: 0` until `imageLoaded` is `true`, then
   transition to `opacity: 1` over the same duration/easing the modules
   panel image uses (`725ms ease` — matches both `rack-image-fade-in`
   and the modules `@enter` today; no new motion budget required).
-- Render the existing placeholder geometry (the `.rackImage__frame` box and,
+- [x] Render the existing placeholder geometry (the `.rackImage__frame` box and,
   for the empty/error fallbacks, the `.rack-image-fallback` tile) at the
   computed `maxHeight` *behind* the image so layout is reserved and the
   fade has something honest to reveal.
-- Replace (or supplement) the current `animate.enter="rack-image-enter"`
+- [x] Replace (or supplement) the current `animate.enter="rack-image-enter"`
   CSS-enter binding on the `<img>` so the visual fade is driven by the
   load event, not by element insertion. The keyframe can stay for the
   fallback tiles, where there is no `(load)` event to wait for.
-- Respect `prefers-reduced-motion: reduce` — when active, skip the
+- [x] Respect `prefers-reduced-motion: reduce` — when active, skip the
   opacity transition and render the image immediately at `opacity: 1` once
   loaded. Use the same SCSS pattern other rack-area components already use
   (`@media (prefers-reduced-motion: reduce)` block in the component SCSS).
@@ -299,38 +299,38 @@ Goal: bring rack cards up to the modules card's level of composed entry.
 
 Primary edit surfaces (MVP + Structural):
 
-- [`src/app/components/rack-parts/rack-image/rack-image.component.html`](../../../src/app/components/rack-parts/rack-image/rack-image.component.html)
+- [`src/app/components/rack-parts/rack-image/rack-image.component.html`](../../../../src/app/components/rack-parts/rack-image/rack-image.component.html)
   — add `(load)`/`(error)`, conditional opacity class, drop reliance on
   `animate.enter` for the `<img>` (keep it for fallback tiles).
-- [`src/app/components/rack-parts/rack-image/rack-image.component.ts`](../../../src/app/components/rack-parts/rack-image/rack-image.component.ts)
+- [`src/app/components/rack-parts/rack-image/rack-image.component.ts`](../../../../src/app/components/rack-parts/rack-image/rack-image.component.ts)
   — `imageLoaded` flag, reset in `syncFilename`, `onImageLoad()` handler,
   CDR notify under OnPush.
-- [`src/app/components/rack-parts/rack-image/rack-image.component.scss`](../../../src/app/components/rack-parts/rack-image/rack-image.component.scss)
+- [`src/app/components/rack-parts/rack-image/rack-image.component.scss`](../../../../src/app/components/rack-parts/rack-image/rack-image.component.scss)
   — `.rackImage__frame img` initial `opacity: 0`, `.is-loaded`
   modifier → `opacity: 1` with the standard transition; `prefers-reduced-motion`
   guard.
 - (Structural option A) `src/app/shared-interproject/directives/image-fade.directive.ts`
   + spec — new shared directive.
-- [`src/app/components/module-parts/module-minimal/module-part-image/module-part-image.component.ts`](../../../src/app/components/module-parts/module-minimal/module-part-image/module-part-image.component.ts)
-  + [`module-part-image.component.html`](../../../src/app/components/module-parts/module-minimal/module-part-image/module-part-image.component.html)
+- [`src/app/components/module-parts/module-minimal/module-part-image/module-part-image.component.ts`](../../../../src/app/components/module-parts/module-minimal/module-part-image/module-part-image.component.ts)
+  + [`module-part-image.component.html`](../../../../src/app/components/module-parts/module-minimal/module-part-image/module-part-image.component.html)
   — adopt the shared directive once extracted; remove the local `@enter`
   animation only if behaviour is byte-equivalent in tests.
 
 Reference / read-only:
 
-- [`src/app/components/rack-list/rack-list.component.html`](../../../src/app/components/rack-list/rack-list.component.html)
-- [`src/app/components/rack-micro/rack-micro.component.html`](../../../src/app/components/rack-micro/rack-micro.component.html)
-- [`src/app/components/module-parts/module-minimal/module-minimal.component.ts`](../../../src/app/components/module-parts/module-minimal/module-minimal.component.ts)
+- [`src/app/components/rack-list/rack-list.component.html`](../../../../src/app/components/rack-list/rack-list.component.html)
+- [`src/app/components/rack-micro/rack-micro.component.html`](../../../../src/app/components/rack-micro/rack-micro.component.html)
+- [`src/app/components/module-parts/module-minimal/module-minimal.component.ts`](../../../../src/app/components/module-parts/module-minimal/module-minimal.component.ts)
   (motion vocabulary reference)
-- [`src/app/style/commons_customizations.scss`](../../../src/app/style/commons_customizations.scss)
+- [`src/app/style/commons_customizations.scss`](../../../../src/app/style/commons_customizations.scss)
   (the existing `.image-transition` class — verify whether it is still
   needed after the change; remove if orphaned).
-- [`internaldocs/DESIGN_LANGUAGE.md`](../../DESIGN_LANGUAGE.md) §Motion
+- [`internaldocs/DESIGN_LANGUAGE.md`](../../../DESIGN_LANGUAGE.md) §Motion
   and Animation (constraints the implementation must satisfy).
 
 Specs:
 
-- [`src/app/components/rack-parts/rack-image/rack-image.component.spec.ts`](../../../src/app/components/rack-parts/rack-image/rack-image.component.spec.ts)
+- [`src/app/components/rack-parts/rack-image/rack-image.component.spec.ts`](../../../../src/app/components/rack-parts/rack-image/rack-image.component.spec.ts)
   — extend with `imageLoaded` regression cases.
 - (If directive extracted) `image-fade.directive.spec.ts` with state-class
   transitions.
@@ -469,3 +469,10 @@ backlog item.
   reuse/extraction over a parallel rack-only animation per
   `DESIGN_LANGUAGE.md` "one motion grammar" guidance. Priority set to
   MEDIUM (polish on a load-bearing public surface, no blocker).
+- 2026-06-18T17:54+02:00 — Loop 5 executor shipped the scoped MVP in
+  `RackImageComponent` instead of extracting `[appImageFade]`. This keeps
+  `/modules` untouched, follows the handoff preference for an in-component
+  fix, and still preserves the shared motion grammar (`725ms ease`) plus
+  reduced-motion behavior.
+
+- 2026-06-18T18:02+02:00 — Reviewer caught that opacity-only loading still allowed preview-frame collapse before intrinsic image dimensions arrived; the final MVP reserves frame height with the same rack image geometry before fading the bitmap on `load`.

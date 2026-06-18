@@ -10,11 +10,25 @@
 .rackImage__frame {
   position: relative;
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
   max-width: 100%;
+  background: rgba(0, 0, 0, 0.06);
 }
 
 img {
   max-width: 100% !important;
+}
+
+.rackImage__previewImage {
+  display: block;
+  opacity: 0;
+  transition: opacity 725ms ease;
+}
+
+.rackImage__previewImage--loaded {
+  opacity: 1;
 }
 
 .rack-image-enter {
@@ -77,4 +91,14 @@ img {
   line-height: 1;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rackImage__previewImage {
+    transition: none;
+  }
+
+  .rack-image-enter {
+    animation: none;
+  }
 }
