@@ -10,26 +10,26 @@ Logic, Mix, Modulate, Multiply, Noise, Pan, Phase Shift, Pitch Shift, Polarize, 
 Quantize, Reverb, Rhythm, Ring Mod, S&H, Sample, Sequence, Slew Limit, Switch, Uncertainty,
 Utility, VCA, VCF, VCO, Waveshape). This is unmanageable to scan.
 
-**Proposed new type groups** (DB `tags.type` value, new integers to be assigned):
+**Approved type groups** (DB `tags.type` value):
 
-| New type name      | Tags                                                                                     |
-|--------------------|------------------------------------------------------------------------------------------|
-| `purpose_voice`    | VCO, VCF, VCA, LPG, Full Voice, Noise, Waveshape, Ring Mod, Distort, Phase Shift, EQ    |
-| `purpose_modulation` | LFO, Envelope Gen., Env. Follow, Function Gen., S&H, Slew Limit, Quantize, Clock Gen., Clock Mod, Frequency Div., Uncertainty |
-| `purpose_utility`  | Attenuate, Mix, Pan, Multiply, Compare, Polarize, Quad, Switch, Logic, Control, Utility |
-| `purpose_time_fx`  | Delay, Reverb, FX, Pitch Shift                                                           |
-| `purpose_sequencing` | Sequence, Rhythm, Sample, Modulate                                                     |
-| `purpose_blank`    | Blank *(keep separate or merge into utility — decide before migrating)*                  |
+| Type ID | Group label | Tags |
+|---------|-------------|------|
+| `3` | `Voice` | Full Voice, VCA, VCO |
+| `4` | `Source` | Noise |
+| `5` | `Filter` | VCF, LPG, EQ |
+| `6` | `Modulation` | Clock Gen., Clock Mod, Env. Follow, Envelope Gen., Frequency Div., Function Gen., LFO, Modulate, Quantize, S&H, Slew Limit, Uncertainty |
+| `7` | `Effect` | Delay, Distort, FX, Phase Shift, Pitch Shift, Reverb, Ring Mod, Waveshape |
+| `8` | `Sequencing` | Rhythm, Sample, Sequence |
+| `9` | `Utility` | Attenuate, Compare, Control, Logic, Mix, Multiply, Pan, Polarize, Quad, Switch, Utility |
+| `10` | `Blank` | Blank |
 
-> **Note:** exact assignment of edge cases (e.g. "Modulate" could be modulation or
-> sequencing; "Control" could be utility or sequencing) should be confirmed with the product
-> owner before the migration runs.
+> **Note:** Tag name strings must not be changed. This task only changes the `tags.type`
+> grouping values.
 
 **Implementation notes:**
 
 - `tags.type` is stored as an integer in the DB (`0 = purpose`, `1 = nature`, `2 = character`).
-  New type IDs for the sub-groups need to be defined (e.g. `3–8`) and the mapping added to
-  `NUMERIC_TAG_TYPE_NAMES` in `rack-balance-analysis.service.ts`.
+  The app already maps functional groups `3–9`; this pass adds `10 = Blank`.
 - The split is a **data migration** (UPDATE statements on `tags` rows) — requires explicit
   user approval per `AGENTS.md §5` before running. Draft the migration SQL but do not apply
   autonomously.
@@ -42,13 +42,14 @@ Utility, VCA, VCF, VCO, Waveshape). This is unmanageable to scan.
 
 **Checklist:**
 
-- [ ] Confirm final group assignments with product owner (edge cases above).
-- [ ] Define new integer IDs for each new type and add to `NUMERIC_TAG_TYPE_NAMES`.
-- [ ] Draft migration SQL: `UPDATE tags SET type = <new_id> WHERE name IN (...)` for each
+- [x] Confirm final group assignments with product owner (edge cases above).
+- [x] Define new integer IDs for each new type and add to `NUMERIC_TAG_TYPE_NAMES`.
+- [x] Draft migration SQL: `UPDATE tags SET type = <new_id> WHERE name IN (...)` for each
       group — one statement per group for clarity and reviewability.
-- [ ] Get explicit user approval, then run migration on production.
-- [ ] Update `isBalanceRelevantTagType` to include new type names.
-- [ ] Update `getPatternsForTagType` if the new types need different pattern sets.
+- [x] Get explicit user approval for regrouping.
+- [ ] Apply migration to production.
+- [x] Update `isBalanceRelevantTagType` to include new type names.
+- [x] Update `getPatternsForTagType` if the new types need different pattern sets.
 - [ ] Run `pnpm updateBackendTypes` after any schema changes (not needed here — `tags.type`
       column type does not change).
 - [ ] Smoke-test the tag proposer panel and balance analysis after migration.
@@ -57,5 +58,5 @@ Utility, VCA, VCF, VCO, Waveshape). This is unmanageable to scan.
 
 ## Decision log
 
-<!-- Append timestamped one-liners as the plan progresses. -->
-
+- 2026-06-18T10:57+02:00 — Product owner approved regrouping the existing tag names and keeping `Blank` as its own group; tag name strings must remain unchanged.
+- 2026-06-18T10:59+02:00 — Implemented code support for `TagType.Blank = 10` and drafted migration `20260618105927_split_purpose_tag_groups.sql`, which updates only `tags.type`.
