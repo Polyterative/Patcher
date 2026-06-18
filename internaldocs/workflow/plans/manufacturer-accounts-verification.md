@@ -3,14 +3,14 @@
 
 #### HIGH: Manufacturer Accounts & Verification
 
-**Why:** Manufacturer pages need a trustable ownership model before official-field editing, updates, analytics, or B2B surfaces can ship.
-**Blocked on:** Explicit user approval for any required Supabase/RLS policy work around `manufacturer_accounts`.
+**Why:** Manufacturer pages need a trustable ownership model before claim review, verified-owner editing, analytics, or B2B surfaces can ship.
+**Blocked on:** Local Supabase/Docker availability for M1 type generation; any remote Supabase/RLS policy work still needs explicit approval.
 
-- [ ] Add the minimal `manufacturer_accounts` table shape and generated types once policy work is approved
-- [ ] Add claim read/create methods scoped to manufacturer detail surfaces
-- [ ] Add CTA states for claim, pending review, and ownership-review request
-- [ ] Limit first verified edits to official profile fields, MSRP, and official links
-- [ ] Keep shared catalogue edits audited or review-gated
+- [ ] Add the claims-backed ownership model and generated types once local type generation is available
+- [ ] Add claim read/create/withdraw methods scoped to manufacturer detail surfaces
+- [ ] Add CTA states for claim, pending review, needs-more-info, rejection, and owner mode
+- [ ] Allow verified owners to edit official profile fields, logo, social links, MSRP, and availability tags inline
+- [ ] Keep authoritative manufacturer availability separate from community `module_tags`
 
 ## Execution plan files
 
@@ -28,7 +28,7 @@
 ## Decision log
 
 <!-- Append timestamped one-liners as the plan progresses. -->
-- 2026-06-18T11:07+02:00 — User approved designing and implementing the minimal `manufacturer_accounts` schema/RLS work locally, with agents stopping before applying any remote Supabase migration.
+- 2026-06-18T11:07+02:00 — User approved designing and implementing the local-only manufacturer ownership and claim-review schema/RLS work, with agents stopping before applying any remote Supabase migration.
 - 2026-06-18T11:07+02:00 — MVP claim requests require a manufacturer page plus a proof note only; no email/domain or document-upload requirement for the first pass.
 - 2026-06-18T11:07+02:00 — MVP supports exactly one verified owner per manufacturer; multi-owner/collaborator support is deferred until traction justifies it.
 - 2026-06-18T11:07+02:00 — MVP should include a minimal in-app admin review queue for approving pending manufacturer claims.
