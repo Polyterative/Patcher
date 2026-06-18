@@ -4,7 +4,7 @@
 
 ## Status
 
-Detailed strategic plan drafted — no-schema money-helper foundation implemented. Product-owner data-model direction recorded: use planner Option A for MVP. Implementation remains gated: do not draft/apply migrations, policies, backend methods, or schema changes in this recorder. Priority: HIGH. Product area: marketplace / price hub foundation.
+Detailed strategic plan drafted — no-schema money-helper foundation implemented. Product-owner data-model and MVP currency policy directions recorded: use planner Option A, support only EUR/USD for user acquisition entries, and default to EUR for the Europe-first MVP. Implementation remains gated: do not draft/apply migrations, policies, backend methods, or schema changes in this recorder. Priority: HIGH. Product area: marketplace / price hub foundation.
 This can ship before public profiles because it is private collection metadata with immediate solo-tool value.
 
 ## User intent
@@ -114,7 +114,7 @@ MVP constraints:
 - `id` — generated primary key.
 - `profileid` — owner profile id. Required; all access policies are anchored here.
 - `moduleid` — referenced module id. Required; acquisition rows describe module purchases, not collection membership rows or registered instances.
-- `acquired_at` — optional calendar date or timestamp for when the module was acquired. Default to current date when the user creates a row from an "I own this" flow; allow the user to backdate.
+- `acquired_at` — optional calendar date or timestamp for when the module was acquired. Product-owner MVP decision: default to today when creating an acquisition entry, and keep the field editable/backdatable by the user.
 - `price_amount_minor` — optional non-negative integer amount in the currency's minor unit. Empty price is allowed only when the row records non-price metadata such as source/note.
 - `currency` — optional normalized ISO 4217 code when `price_amount_minor` is present.
 - `source` — constrained source label: `unknown`, `new`, `used`, `gift`, `trade`, `marketplace`, `other`.
@@ -160,9 +160,8 @@ completed-sale / re-acquisition workflows. Do not add `quantity`, `instanceid`, 
 
 - Store money as integer minor units plus uppercase ISO 4217 currency code.
 - Reuse the committed import-safe money helpers for parsing, normalization, and display.
-- UI should suggest common currencies first: `EUR`, `USD`, `GBP`, `CHF`, `JPY`, `CAD`, `AUD`.
-- The backend should not be limited to only the suggested list if the helper accepts a valid ISO-like code; this keeps imported/backfilled data possible later.
-- Respect zero-decimal currencies such as JPY in parsing and formatting.
+- MVP user acquisition entries support only `EUR` and `USD`.
+- Default currency is `EUR` because the initial acquisition target is Europe.
 - Do not perform currency conversion, exchange-rate lookup, or collection valuation in MVP.
 
 ## Acquisition edit/delete policy
@@ -195,7 +194,7 @@ completed-sale / re-acquisition workflows. Do not add `quantity`, `instanceid`, 
 ## Acceptance criteria
 
 - A user can add a module to owned collection without entering a price.
-- A user can optionally enter price + currency, acquisition date, and source during or immediately after that transition.
+- A user can optionally enter price + currency, acquisition date, and source during or immediately after that transition; `acquired_at` defaults to today on creation and remains editable/backdatable.
 - Only the owner can read or edit the acquisition data.
 - The collection still behaves as single-relationship membership-only for racks, patches, and collection-aware features; no quantity or per-instance UI/DB behavior is introduced.
 
@@ -208,7 +207,6 @@ completed-sale / re-acquisition workflows. Do not add `quantity`, `instanceid`, 
 
 ## Risks and open questions
 
-- Decide the supported currency set for MVP.
 - Decide whether older acquisition rows are editable forever or locked after a short correction window.
 - Decide if private acquisition rows ever contribute to public aggregates; default should be no.
 
@@ -216,10 +214,9 @@ completed-sale / re-acquisition workflows. Do not add `quantity`, `instanceid`, 
 
 - **Planning phase approved 2026-06-18T21:00+02:00.** Prepare the detailed schema/RLS/currency/edit-policy plan, but do not draft/apply migrations, policies, backend methods, or schema changes until the plan is shown and approved.
 - **Data-model direction approved 2026-06-18T21:24+02:00.** Use Option A for MVP: single current `user_modules` relationship plus optional additive acquisition ledger/list underneath the module; no `quantity` and no per-instance registration in UI or DB.
+- **Acquisition date default approved 2026-06-18T21:25+02:00.** `acquired_at` defaults to today when creating an acquisition entry, and remains editable/backdatable by the user.
+- **Currency policy approved 2026-06-18T21:25+02:00.** MVP user acquisition entries support only `EUR` and `USD`; default to `EUR` because the initial target is Europe.
 - **Implementation approval still required.** The exact SQL, policies, backend methods, cache busting, and generated type updates remain blocked until separate product-owner approval.
-- **Confirm MVP currency policy.** Default recommendation: accept ISO 4217 currency codes, normalize to uppercase, and start
-  with common currencies (`EUR`, `USD`, `GBP`, `CHF`, `JPY`, `CAD`, `AUD`) in UI suggestions while the helper remains
-  generic.
 - **Confirm acquisition edit policy.** Default recommendation: allow owner edits/deletes indefinitely for MVP because rows are
   private self-tracking data, then revisit locking only if rows feed public aggregate market data.
 
@@ -238,3 +235,5 @@ dependencies. Stop before any migration/RLS work until the user separately appro
 - 2026-06-18T21:00+02:00 — Product owner approved the planning-only phase for detailed schema/RLS/currency/edit-policy strategy; implementation remains blocked until the plan is shown and separately approved, and no migrations/policies should be drafted or applied yet.
 - 2026-06-18T21:02+02:00 — Drafted the detailed strategic plan: separate private acquisition ledger, owner-only RLS, integer-minor-unit ISO currency policy, indefinite private edit/delete, and a post-approval UI/API sequence. No SQL, migrations, policies, backend methods, schema changes, or data mutations were attempted.
 - 2026-06-18T21:24+02:00 — Product owner approved planner recommendation Option A for the MVP data model: keep `user_modules` ownership as a single boolean/current relationship toggle; record purchase price/date/source as an optional additive acquisition ledger/list underneath the module; add no `quantity` field and no per-instance registration in UI or DB for MVP, while leaving a path to a dedicated instance model later. No code, migrations, RLS, backend methods, schema changes, or data mutations were attempted.
+- 2026-06-18T21:25+02:00 — Product owner approved the MVP currency policy: support only `EUR` and `USD` for user acquisition entries, and default currency to `EUR` because the initial target is Europe. No code, migrations, RLS, backend methods, schema changes, or data mutations were attempted.
+- 2026-06-18T21:25+02:00 — Product owner decided `acquired_at` defaults to today when creating an acquisition entry, and remains editable/backdatable by the user. This records product behavior only; no code, migrations, RLS, backend methods, schema changes, or data mutations were attempted.
