@@ -14,19 +14,20 @@
 
 No active feature.
 
-Status: **No safe unblocked implementation task remains in the active backlog.** The completed Marketplace money-helper foundation is ready to commit, while the remaining active tasks require schema/RLS/storage approval, credentials/secrets, external docs mutation, or on-hold product dependencies.
+Status: **No active feature.** Patch SVG previews backend/storage direction is approved for future implementation; this checkpoint only records approval and does not apply migrations/storage/RLS.
 
 #### Why this is next
 
 - Docs screenshot refresh is gated on sanctioned credentials and approval for external docs sync.
-- Patch SVG previews is gated on the `patches.image` migration and `patches` storage bucket/RLS decision.
+- Patch SVG previews backend/storage direction is approved, but actual migrations/storage/RLS were not applied in this docs-only checkpoint.
 - Marketplace Purchase Price History is gated on `user_module_acquisitions` schema/RLS approval after the pure helper foundation.
 - Cross-entity Cool reactions and Module I/O support require schema/RLS/data-model approval before implementation.
 
 #### Layer checklist
 
 - [x] Marketplace helper foundation committed-ready: deterministic integer-minor-unit money parsing/formatting helpers with targeted unit coverage.
-- [ ] Await product-owner approvals before selecting the next implementation task.
+- [x] Patch SVG previews backend/storage direction approval recorded.
+- [ ] Select the next implementation task in a separate checkpoint.
 
 #### Validation strategy
 
@@ -39,3 +40,4 @@ Status: **No safe unblocked implementation task remains in the active backlog.**
 - 2026-06-18T20:28+02:00 — Parked Patch SVG previews on its explicit migration/storage/RLS approval gate and selected Purchase Price History's money-helper foundation as the next safe high-priority slice because it is pure TypeScript, testable, and avoids secrets, schema, RLS, external docs mutation, and real data.
 - 2026-06-18T20:30+02:00 — Implemented import-safe marketplace money helpers for ISO currency normalization, integer minor-unit parsing, and Intl display formatting with targeted unit coverage; schema/RLS/backend work remains blocked on approval.
 - 2026-06-18T20:34+02:00 — No further safe backlog implementation remains after the helper foundation: all remaining open candidates are approval-, credential-, external-docs-, dependency-, or schema/RLS-gated.
+- 2026-06-18T20:58+02:00 — Product owner approved Patch SVG previews backend/storage direction (`patches.image`, dedicated `patches` bucket, owner-only writes, visibility-aligned reads, deterministic patch id/version filename); no migrations/storage/RLS were applied here.
