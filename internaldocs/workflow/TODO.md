@@ -47,6 +47,11 @@
 
 ### INFRA (independent; pick any time a product task is blocked)
 
+- [ ] **HIGH: Bug — Rack module sizing and analysis-overlay regressions (with regression tests)** → [`plans/bug-new-modules-stretched-vertically-in-mixed-format-row.md`](./plans/bug-new-modules-stretched-vertically-in-mixed-format-row.md)
+- [ ] **HIGH: Bug — Rack layout arrangement count is sometimes negative / overflowed (with regression tests)** → [`plans/bug-rack-layout-arrangement-count-negative-or-overflowed.md`](./plans/bug-rack-layout-arrangement-count-negative-or-overflowed.md)
+- [ ] **MEDIUM: Bug — Tag taxonomy: `Voice` group contains non-voice-character tags (proposal-first, manual approval gate)** → [`plans/bug-tag-taxonomy-voice-group-miscategorization.md`](./plans/bug-tag-taxonomy-voice-group-miscategorization.md)
+- [ ] **MEDIUM: Bug — Comments composer "Add a comment" input is narrow inside a wide card (with regression test + snapshot)** → [`plans/bug-comments-composer-input-narrow-width.md`](./plans/bug-comments-composer-input-narrow-width.md)
+- [ ] **MEDIUM: Bug — Rack list images pop in abruptly on `/racks`; reuse the modules panel-image load-fade pattern (with regression test + visual snapshot)** → [`plans/bug-rack-list-image-load-pop-in.md`](./plans/bug-rack-list-image-load-pop-in.md)
 - [ ] **ON HOLD: HIGH: Security — Manual Approval Follow-ups** → [`plans/security-manual-approval-followups.md`](./plans/security-manual-approval-followups.md)
 - [ ] **ON HOLD: LOW: FUI-inspired instrument components** → [`plans/fui-inspired-instrument-components.md`](./plans/fui-inspired-instrument-components.md)
 - [ ] **ON HOLD: VERY LONG TERM: Bundle weight, lazy boundaries, and SSR prerender coverage** → [`plans/bundle-weight-lazy-boundaries-and-ssr-prerender-coverage.md`](./plans/bundle-weight-lazy-boundaries-and-ssr-prerender-coverage.md)
@@ -57,4 +62,5 @@
 - [~] **HIGH: E2E — Dedicated Test Account Cleanup** → [`plans/e2e-dedicated-test-account-cleanup.md`](./plans/e2e-dedicated-test-account-cleanup.md)
 - [~] **HIGH: E2E — Multi-Instance Patching** → [`plans/e2e-multi-instance-patching.md`](./plans/e2e-multi-instance-patching.md)
 - [ ] **MEDIUM: Docs screenshot pipeline refresh (audit E2E captures, then sync to Patcher-docs)** → [`plans/docs-screenshot-pipeline-refresh.md`](./plans/docs-screenshot-pipeline-refresh.md)
+- [ ] **MEDIUM: Patch SVG previews (mirror rack JPEG preview UX/backend, but store SVG of the patch graph)** → [`plans/patch-svg-previews.md`](./plans/patch-svg-previews.md)
 - [ ] **ON HOLD: SEO — OG Image Generation** → [`plans/on-seo-og-image-generation.md`](./plans/on-seo-og-image-generation.md)
