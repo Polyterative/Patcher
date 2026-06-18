@@ -18,7 +18,7 @@
 
 - [x] Create dedicated Supabase test account (email/password)
 - [x] Update local `.env` with dedicated credentials
-- [ ] Rotate GitHub secrets `E2E_TEST_EMAIL` + `E2E_TEST_PASSWORD` — blocked by current GitHub token permissions
+- [x] GitHub Actions secret rotation decision recorded — intentionally not prioritized; keep CI state as-is unless explicitly requested later
 - [x] Re-run `pnpm test:e2e:auth` to confirm
 
 ---
@@ -34,8 +34,8 @@
 - 2026-06-18T19:51+02:00 — GitHub secret rotation attempted with `gh secret set E2E_TEST_EMAIL` / `E2E_TEST_PASSWORD` but the token lacks repository secret permissions (`HTTP 403`); queueing this as a maintainer-permission follow-up rather than blocking local E2E cleanup.
 - 2026-06-18T19:57+02:00 — Auth harness now ignores blank `.env` template values, completes first-login profile setup, and runs auth E2E with one worker by default because the suite mutates a single dedicated account.
 - 2026-06-18T20:05+02:00 — Validation passed: targeted auth service unit tests, auth login E2E, rack context-menu E2E, multi-instance E2E, and full `pnpm test:e2e:auth`; reviewer approved after the duplicate profile-submit race was fixed.
+- 2026-06-18T21:21+02:00 — Product owner decided not to prioritize rotating GitHub Actions secrets for the dedicated E2E account. Local E2E with local environment credentials is acceptable, and these expensive E2E flows do not need to run in GitHub Actions beyond the current CI setup; keep CI state as-is unless a future explicit request changes it.
 
 ## Approval queue / follow-up
 
-- **GitHub secret rotation:** current CLI token cannot write repository Actions secrets. Maintainer with `actions:secrets` permission should set `E2E_TEST_EMAIL` and `E2E_TEST_PASSWORD` to the dedicated local `.env` values, then re-run the auth E2E workflow in CI if/when a workflow consumes those secrets.
-
+- **GitHub secret rotation / E2E CI:** no active follow-up. Product owner decided not to prioritize rotating `E2E_TEST_EMAIL` / `E2E_TEST_PASSWORD`; local E2E with local environment credentials is acceptable, and expensive authenticated E2E flows do not need to run in GitHub Actions beyond the current CI setup. Keep CI state as-is unless a future explicit request changes it.
