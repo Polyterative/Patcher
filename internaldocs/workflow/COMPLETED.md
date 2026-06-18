@@ -1,4 +1,5 @@
 # Completed Features
+- **2026-06-18** — HIGH: Bug — Rack module sizing and analysis-overlay regressions fixed module host stretch with flex-start geometry guards, quick blank majority-standard selection, and layout-analysis-only opacity/HP overlays with rendered/style regression coverage.
 - **2026-06-18** — HIGH: Bug — Rack layout analysis arrangement counts now use safe typed exact/sampled/capped handling, avoid negative/NaN/Infinity display, and show huge sampled counts as order-of-magnitude estimates with focused utility/editor regressions.
 - **2026-06-18** — HIGH: E2E — Multi-Instance Patching now covers authenticated auto-instance patch editing end-to-end, including copy labels, persistence, instance-aware connections, duplicate refusal, connected-instance deletion, scrub/renumber persistence, and legacy no-instance patch loading.
 - **2026-06-18** — MEDIUM: Tag taxonomy split the legacy flat PURPOSE group into Voice/Source/Filter/Modulation/Effect/Sequencing/Utility/Blank production tag types, with corrective migration coverage and tag/balance smoke tests.

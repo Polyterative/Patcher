@@ -45,6 +45,9 @@ describe('RackDetailDataService', () => {
         ),
         publicRackWithId: jasmine.createSpy('publicRackWithId').and.callFake((id: number) =>
           of({data: makeRack({id})})
+        ),
+        moduleWithId: jasmine.createSpy('moduleWithId').and.callFake((id: number) =>
+          of({data: {id, name: `Blank ${ id }`, hp: 2, standard: {id: id >= 4711 ? 1 : 0}, functions: [], panels: []}})
         )
       },
       get: {
@@ -218,6 +221,30 @@ describe('RackDetailDataService', () => {
 
     expect(backend.update.rack).toHaveBeenCalled();
     expect(service.isCurrentRackEditable$.value).toBeFalse();
+  }));
+
+  it('quick-adds a blank using the majority row standard', fakeAsync(() => {
+    const {service, backend} = build();
+    const intellijelA = makeRackedModule({
+      rackingData: {id: 11, rackid: 1, moduleid: 11, row: 0, column: 0, selectedPanelId: null},
+      module: {id: 11, name: '1U A', hp: 4, standard: {id: 1}, functions: [], panels: []}
+    });
+    const intellijelB = makeRackedModule({
+      rackingData: {id: 12, rackid: 1, moduleid: 12, row: 0, column: 1, selectedPanelId: null},
+      module: {id: 12, name: '1U B', hp: 4, standard: {id: 1}, functions: [], panels: []}
+    });
+    const eurorack = makeRackedModule({
+      rackingData: {id: 13, rackid: 1, moduleid: 13, row: 0, column: 2, selectedPanelId: null},
+      module: {id: 13, name: '3U', hp: 4, standard: {id: 0}, functions: [], panels: []}
+    });
+    service.singleRackData$.next(makeRack({rows: 1}));
+    service.rowedRackedModules$.next([[intellijelA, intellijelB, eurorack]]);
+
+    service.addBlankToRow$.next({rowId: 0, hp: 2});
+    tick();
+
+    expect(backend.GET.moduleWithId).toHaveBeenCalledWith(4712);
+    expect(backend.add.rackModule).toHaveBeenCalledWith(4712, 1, 0, 3);
   }));
 
   it('moves a rack row up and persists updated module coordinates', fakeAsync(() => {

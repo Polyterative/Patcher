@@ -47,9 +47,8 @@
 
 ### INFRA (independent; pick any time a product task is blocked)
 
-- [~] **HIGH: Bug — Rack module sizing and analysis-overlay regressions (with regression tests)** → [`plans/bug-new-modules-stretched-vertically-in-mixed-format-row.md`](./plans/bug-new-modules-stretched-vertically-in-mixed-format-row.md)
 - [ ] **MEDIUM: Bug — Tag taxonomy: `Voice` group contains non-voice-character tags (proposal-first, manual approval gate)** → [`plans/bug-tag-taxonomy-voice-group-miscategorization.md`](./plans/bug-tag-taxonomy-voice-group-miscategorization.md)
-- [ ] **MEDIUM: Bug — Comments composer "Add a comment" input is narrow inside a wide card (with regression test + snapshot)** → [`plans/bug-comments-composer-input-narrow-width.md`](./plans/bug-comments-composer-input-narrow-width.md)
+- [~] **MEDIUM: Bug — Comments composer "Add a comment" input is narrow inside a wide card (with regression test + snapshot)** → [`plans/bug-comments-composer-input-narrow-width.md`](./plans/bug-comments-composer-input-narrow-width.md)
 - [ ] **MEDIUM: Bug — Rack list images pop in abruptly on `/racks`; reuse the modules panel-image load-fade pattern (with regression test + visual snapshot)** → [`plans/bug-rack-list-image-load-pop-in.md`](./plans/bug-rack-list-image-load-pop-in.md)
 - [ ] **ON HOLD: HIGH: Security — Manual Approval Follow-ups** → [`plans/security-manual-approval-followups.md`](./plans/security-manual-approval-followups.md)
 - [ ] **ON HOLD: LOW: FUI-inspired instrument components** → [`plans/fui-inspired-instrument-components.md`](./plans/fui-inspired-instrument-components.md)

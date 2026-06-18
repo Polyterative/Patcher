@@ -122,7 +122,16 @@ describe('RackVisualModelComponent', () => {
     } as any;
   }
 
-  it('shows the per-module HP badge in edit mode', () => {
+  it('hides the per-module HP badge in edit mode when analysis is off', () => {
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+
+    expect(host.querySelector('.hpIndicator')).toBeNull();
+  });
+
+  it('shows the per-module HP badge while layout analysis is active', () => {
+    rackDetailDataService.analysisMode$.next(RACK_ANALYSIS_MODES.layout);
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
@@ -132,7 +141,7 @@ describe('RackVisualModelComponent', () => {
     expect(badge?.textContent?.trim()).toBe('14HP');
   });
 
-  it('highlights same-HP neighbors and dims non-matches while hovering in editable off-analysis mode', () => {
+  it('does not apply same-HP opacity highlighting while editing with analysis off', () => {
     const sameHp = makeRackedModule(11, 0, 14);
     const differentHp = makeRackedModule(12, 0, 28);
     differentHp.module.hp = 10;
@@ -149,11 +158,30 @@ describe('RackVisualModelComponent', () => {
 
     expect(hovered?.classList.contains('module--sameHpHighlight')).toBeFalse();
     expect(hovered?.classList.contains('module--sameHpDim')).toBeFalse();
+    expect(same?.classList.contains('module--sameHpHighlight')).toBeFalse();
+    expect(different?.classList.contains('module--sameHpDim')).toBeFalse();
+  });
+
+  it('applies same-HP opacity highlighting only while layout analysis is active', () => {
+    const sameHp = makeRackedModule(11, 0, 14);
+    const differentHp = makeRackedModule(12, 0, 28);
+    differentHp.module.hp = 10;
+    component.rowedRackedModules = [[moduleRef, sameHp, differentHp]];
+    rackDetailDataService.analysisMode$.next(RACK_ANALYSIS_MODES.layout);
+    fixture.detectChanges();
+
+    component.setHoveredModule(moduleRef);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const same = host.querySelector('[data-rack-module-key="11-11-0-14"]');
+    const different = host.querySelector('[data-rack-module-key="12-12-0-28"]');
+
     expect(same?.classList.contains('module--sameHpHighlight')).toBeTrue();
     expect(different?.classList.contains('module--sameHpDim')).toBeTrue();
   });
 
-  it('suppresses same-HP hover classes outside edit/off-analysis mode', () => {
+  it('suppresses same-HP hover classes outside layout analysis mode', () => {
     const sameHp = makeRackedModule(11, 0, 14);
     component.rowedRackedModules = [[moduleRef, sameHp]];
     fixture.detectChanges();
@@ -167,7 +195,6 @@ describe('RackVisualModelComponent', () => {
     expect(same?.classList.contains('module--sameHpHighlight')).toBeFalse();
 
     rackDetailDataService.analysisMode$.next(RACK_ANALYSIS_MODES.off);
-    component.isCurrentRackEditable = false;
     fixture.detectChanges();
 
     expect(same?.classList.contains('module--sameHpHighlight')).toBeFalse();
@@ -224,10 +251,23 @@ describe('RackVisualModelComponent', () => {
 
   it('hides the per-module HP badge during rack image capture', () => {
     component.suppressHpIndicators = true;
+    rackDetailDataService.analysisMode$.next(RACK_ANALYSIS_MODES.layout);
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
     expect(host.querySelector('.hpIndicator')).toBeNull();
+  });
+
+
+  it('uses flex-start cross-axis alignment so rack modules do not stretch with tall rows', () => {
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const rackRow = host.querySelector('.rackRow') as HTMLElement | null;
+    const module = host.querySelector('.module') as HTMLElement | null;
+
+    expect(getComputedStyle(rackRow!).alignItems).toBe('flex-start');
+    expect(getComputedStyle(module!).alignSelf).toBe('flex-start');
   });
 
   it('keeps rack rows using the shared horizontal row layout class', () => {

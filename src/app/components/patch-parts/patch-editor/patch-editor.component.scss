@@ -282,7 +282,7 @@ $rack-grid-weight: 0.1rem;
 .patch-editor-rack-visual__row {
   display: flex;
   flex-wrap: nowrap;
-  align-items: stretch;
+  align-items: flex-start;
   background-color: rgba(255, 255, 255, 0.25);
   background-image: linear-gradient(to right, $rack-grid-color $rack-grid-weight, transparent $rack-grid-weight);
   background-size: 1rem;
@@ -304,6 +304,7 @@ $rack-grid-weight: 0.1rem;
 }
 
 .patch-editor-rack-visual__module-wrapper {
+  align-self: flex-start;
   cursor: pointer;
   position: relative;
   transition: opacity 220ms ease, filter 220ms ease, transform 220ms ease;
