@@ -6,9 +6,32 @@ Run one complete Patcher development cycle by selecting backlog work, coordinati
 executor subagents, verifying independently, and cleaning workflow documentation so
 the next loop can begin.
 
+## Decision-coordinator layer ("via loop")
+
+When the user says **"via loop"**, **"run loops"**, or asks to resume the
+autonomous workflow, the active assistant should act as a decision coordinator,
+not as the primary implementer:
+
+- Keep a lightweight command center with the product owner in the foreground.
+- Delegate implementation, planning, review, and recorder tasks to subagents.
+- Ask product questions through `ask_user`, one focused question at a time.
+- While subagents run, keep collecting independent approvals/decisions that can
+  unblock future work.
+- When a subagent finishes, read its result, update the queue, and immediately
+  continue with the next safe step instead of stopping at a status report.
+- Treat stopping as a last resort: stop only when no safe work remains and the
+  remaining queue genuinely needs product-owner answers.
+
+This is a higher-level loop over the normal coordinator-loop: the foreground
+assistant manages approvals, priorities, and subagent orchestration; executor
+subagents do the coding and verification.
+
 ## When to invoke
 
 - User asks to "begin loop", "pick up next work", "run the loop", "execute a backlog cycle", or automate the TODO → done flow.
+- User says "via loop" to return to the decision-coordinator mode where the
+  assistant asks questions, delegates work, reads agent results, and keeps the
+  backlog moving.
 - A coordinator should manage multiple subagents rather than directly implementing all changes.
 - Work needs the full documentation lifecycle: `TODO.md` → `CURRENT_FEATURE.md` → implementation → review → `COMPLETED.md`.
 
@@ -28,6 +51,11 @@ Use `gpt-5.5` for normal coordination. Escalate only if backlog selection or arc
   with other unblocked work instead of stopping the whole loop when possible.
 - Periodically batch accumulated approval questions for the product owner so a
   coordinator can unblock multiple tasks in one pass.
+- Keep asking unrelated, independent approval questions while long-running
+  subagents work, so future gates are cleared before the executor reaches them.
+- Read completed subagent results and either launch the next safe loop step or
+  ask the next queued product question; do not end merely because a subagent
+  completed successfully.
 - Delegate implementation to the correct persona (`frontend-dev`, `refactorer`, `test-writer`, `bug-hunter`, etc.).
 - Delegate independent verification to `reviewer` before finalizing.
 - Run validation, resolve failures, archive completed docs, and stage the next task before handing back.
@@ -44,6 +72,8 @@ Use `gpt-5.5` for normal coordination. Escalate only if backlog selection or arc
 - Mark work complete based only on an implementation subagent's report; inspect and verify.
 - Block the whole automation run merely because one task needs approval when
   there is other safe backlog work available.
+- Turn "via loop" into a single executor prompt and then go idle; the foreground
+  assistant owns ongoing orchestration until no safe work remains.
 
 ## Inputs expected
 
@@ -52,6 +82,9 @@ Use `gpt-5.5` for normal coordination. Escalate only if backlog selection or arc
 
 ## Workflow
 
+0. In "via loop" mode, first inventory active/completed subagents, `git status`,
+   `CURRENT_FEATURE.md`, and `TODO.md`; read any completed agent output before
+   launching duplicate work.
 1. Read `AGENTS.md` and `internaldocs/workflow/TODO.md`. Read `internaldocs/README.md` only when the TODO/plan lacks enough routing context.
 2. Pick one suitable open task and open its linked plan. If no suitable plan exists, create one before coding.
 3. Ensure the plan has: problem, goals, assumptions, MVP / Structural / Polish layers, file-level checklist, acceptance criteria, validation strategy, and Decision log.
@@ -98,6 +131,34 @@ Use `gpt-5.5` for normal coordination. Escalate only if backlog selection or arc
 16. Commit the final docs cleanup only after `node scripts/checks/check-docs.cjs` passes.
 17. Final response: summarize what changed, touched areas, validation results, commits created, the staged next pipeline task (or why none was staged), accumulated approval questions, and any unrelated dirty worktree entries.
 
+## Foreground decision-coordinator loop
+
+Use this outer loop when the user wants to work the way this session evolved:
+
+1. **Audit state:** list running agents, read completed agent results, check
+   worktree state, and inspect `CURRENT_FEATURE.md`/`TODO.md`.
+2. **Harvest gates:** collect approval questions from agent reports, plan
+   "Approval queue" sections, and blocked TODO notes.
+3. **Ask while workers work:** if an executor is running, ask independent
+   approval/product questions that do not depend on that executor's result.
+4. **Record decisions:** delegate small recorder subagents for docs-only
+   decision updates and commits, so the foreground assistant stays available
+   for the product owner.
+5. **Resume execution:** once enough gates are cleared, launch the next executor
+   with the exact approved scope and explicit stop conditions.
+6. **Continue automatically:** after every completion notification, read the
+   result and either continue to the next safe task or ask the next queued
+   question.
+
+Default priority in this outer loop:
+
+1. Finish already-started safe work.
+2. Ask/record decisions that unblock multiple queued tasks.
+3. Pick small bugs/fixes first, fastest to close first.
+4. Move to larger feature planning only when small actionable work is exhausted.
+5. For large/schema work, plan first, get product approval, then stop again at
+   any migration/RLS/breaking-change gate.
+
 ## Quality bar
 
 - [ ] Exactly one backlog task was selected unless the user requested a batch.
@@ -108,6 +169,9 @@ Use `gpt-5.5` for normal coordination. Escalate only if backlog selection or arc
 - [ ] The next actionable task is staged in `CURRENT_FEATURE.md`, or the coordinator explicitly documented why none can be staged.
 - [ ] Approval-gated work is queued with precise questions instead of silently
       blocking unrelated safe work.
+- [ ] In "via loop" mode, completed subagent results were read and acted on;
+      the assistant did not stop while safe work or independent questions
+      remained.
 - [ ] Every commit corresponds to a meaningful verified chunk, not a mechanical loop stage.
 - [ ] No push was made without explicit user approval.
 

@@ -28,7 +28,7 @@ When the user's request matches one of these, **delegate to a sub-agent** using 
 | Restructure code without changing behaviour | **refactorer** | `gpt-5.5` | `internaldocs/agents/refactorer.md` |
 | Add unit / E2E test coverage | **test-writer** | `gpt-5.5` | `internaldocs/agents/test-writer.md` |
 | Diagnose a defect to root cause | **bug-hunter** | `gpt-5.4` | `internaldocs/agents/bug-hunter.md` |
-| "Begin loop", "run the loop", or run one full TODO → implementation → review → documentation cleanup cycle | **coordinator-loop** | `gpt-5.5` | `internaldocs/agents/coordinator-loop.md` |
+| "Begin loop", "run the loop", "via loop", or run one/full/multiple TODO → implementation → review → documentation cleanup cycles | **coordinator-loop** | `gpt-5.5` | `internaldocs/agents/coordinator-loop.md` |
 | Boot a long-running autonomous loop driven by `agent/` and `internaldocs/workflow/` (replaces pasting a 10 KB mission prompt by hand) | **autonomous-engineer** | `gpt-5.5` | `internaldocs/agents/autonomous-engineer.md` |
 
 **Model policy:** use `gpt-5.5` for coding-heavy executors (`frontend-dev`, `refactorer`, `test-writer`, `autonomous-engineer`), `claude-sonnet-4.6` for non-coding visual/structural design work, and `claude-opus-4.7` for planning and premium counsel. Use cheaper OpenAI models for read-heavy tasks: `gpt-5.4` for root-cause diagnosis and `gpt-5.4-mini` for diff review. Escalate review/diagnosis only for hard architecture, security, or data-loss risk.
@@ -41,7 +41,22 @@ When the user's request matches one of these, **delegate to a sub-agent** using 
 - Bug fix: `bug-hunter` → `frontend-dev` → `test-writer`
 - Cleanup: `refactorer` → `reviewer`
 - Visual: `designer` → `frontend-dev` → `reviewer`
-- Backlog automation: `coordinator-loop` → executor persona → `reviewer` → docs cleanup
+- Backlog automation: foreground decision coordinator ("via loop") → `coordinator-loop` / executor persona → `reviewer` → docs cleanup → next safe task or next queued product question
+
+### "Via loop" operating mode
+
+When the user says **"via loop"**, resume the collaborative orchestration mode:
+
+1. Act as the foreground decision coordinator, not the main coder.
+2. Read active/completed subagent results, `git status`, `CURRENT_FEATURE.md`,
+   and `TODO.md`.
+3. Delegate implementation/review/recorder work to subagents.
+4. Ask product-owner questions with `ask_user` while subagents run when the
+   questions are independent of the running work.
+5. Record approvals in workflow docs through small recorder tasks.
+6. Immediately continue after each subagent completes while safe work remains.
+7. Stop only when no safe work remains without product-owner answers; then ask
+   the next highest-leverage queued question.
 
 ## Tooling that is configured but easy to miss
 
