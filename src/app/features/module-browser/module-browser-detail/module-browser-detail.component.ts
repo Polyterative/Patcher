@@ -268,6 +268,9 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
   readonly collectionsEnabled = environment.features.collectionsEnabled;
   readonly panelRatioAcceptanceThreshold = MODULE_PANEL_RATIO_ACCEPTANCE_THRESHOLD;
   readonly panelRatioDiagnostics$ = new BehaviorSubject<ModulePanelRatioDiagnostic[]>([]);
+  readonly mergeIntoTargetOpen$ = new BehaviorSubject<boolean>(false);
+  readonly mergeIntoTargetError$ = new BehaviorSubject<string | null>(null);
+  mergeTargetModuleIdDraft = '';
   private panelRatioMeasurementRun = 0;
   
   constructor(
@@ -317,6 +320,10 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
         // debugger
         this.dataService.updateSingleModuleData$.next(data);
       });
+
+    this.dataService.moduleMergeResult$
+      .pipe(this.takeUntilDestroyed())
+      .subscribe(() => this.cancelMergeIntoTarget());
     
     if (!this.ignoreSeo) {
       this.dataService.singleModuleData$
@@ -523,6 +530,38 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
   
   clearDevManualUrl(): void {
     this.patchDevModule({manualURL: ''});
+  }
+
+  openMergeIntoTargetForm(): void {
+    this.mergeTargetModuleIdDraft = '';
+    this.mergeIntoTargetError$.next(null);
+    this.mergeIntoTargetOpen$.next(true);
+  }
+
+  cancelMergeIntoTarget(): void {
+    this.mergeTargetModuleIdDraft = '';
+    this.mergeIntoTargetError$.next(null);
+    this.mergeIntoTargetOpen$.next(false);
+  }
+
+  confirmMergeIntoTarget(source: DbModule): void {
+    const targetId = Number.parseInt(this.mergeTargetModuleIdDraft, 10);
+    if (!Number.isInteger(targetId) || targetId <= 0) {
+      this.mergeIntoTargetError$.next('Enter a valid positive numeric target module ID.');
+      return;
+    }
+
+    if (targetId === source.id) {
+      this.mergeIntoTargetError$.next('Target module must be different from this source module.');
+      return;
+    }
+
+    this.mergeIntoTargetError$.next(null);
+    const confirmed = window.confirm(`Merge "${ source.name }" (${ source.id }) into target module ${ targetId }, then delete the source module?`);
+    if (!confirmed) {
+      return;
+    }
+    this.dataService.mergeIntoTargetModule$.next({sourceId: source.id, targetId});
   }
 
   manualUrlDraft: string = '';

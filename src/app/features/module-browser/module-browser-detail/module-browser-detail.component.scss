@@ -200,6 +200,21 @@ a.module-detail-action-button {
   background: #f8fbff;
 }
 
+.merge-into-target-form {
+  width: 100%;
+  min-width: 0;
+  padding: 0.75rem;
+  border: 0.0625rem solid rgba(176, 82, 40, 0.28);
+  border-radius: 0.85rem;
+  background: #fff8f3;
+}
+
+.merge-into-target-form__error {
+  color: #9b3d23;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
 .module-panel-ratio-diagnostics__header {
   align-items: center;
   color: #355476;

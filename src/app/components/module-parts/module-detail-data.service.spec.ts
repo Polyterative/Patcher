@@ -9,6 +9,7 @@ import {
 } from 'rxjs';
 import { RackModuleAdderDialogComponent } from '../rack-parts/rack-module-adder/rack-module-adder-dialog.component';
 import { ModuleDetailDataService } from './module-detail-data.service';
+import { MergeModuleResult } from '../../features/backend/supabase-merge';
 
 
 describe('ModuleDetailDataService', () => {
@@ -69,6 +70,17 @@ describe('ModuleDetailDataService', () => {
         module: jasmine.createSpy('module').and.callFake((module: any) => of(module)),
         moduleStoreUrl: jasmine.createSpy('moduleStoreUrl').and.returnValue(of(null)),
         userModulePossession: jasmine.createSpy('userModulePossession').and.returnValue(of(null))
+      },
+      merge: {
+        moduleInto: jasmine.createSpy('moduleInto').and.returnValue(of({
+          sourceId: 10,
+          targetId: 20,
+          duplicateOwnershipRowsRemoved: 1,
+          duplicateTagRowsRemoved: 2,
+          ownershipRowsMoved: 3,
+          tagRowsMoved: 4,
+          rackModuleRowsMoved: 5
+        }))
       }
     };
     
@@ -278,6 +290,38 @@ describe('ModuleDetailDataService', () => {
     expect(backend.get.modulesBySameManufacturer).not.toHaveBeenCalled();
     expect(backend.delete.module).not.toHaveBeenCalled();
     expect(backend.delete.manufacturer).not.toHaveBeenCalled();
+    expect(backend.merge.moduleInto).not.toHaveBeenCalled();
+  });
+
+  it('merges source module into target and routes to the target detail page', () => {
+    const {service, backend, router, snackBar} = build();
+    const emitted: MergeModuleResult[] = [];
+    service.moduleMergeResult$.subscribe(result => emitted.push(result));
+
+    service.mergeIntoTargetModule$.next({sourceId: 10, targetId: 20});
+
+    expect(backend.merge.moduleInto).toHaveBeenCalledWith(10, 20);
+    expect(emitted[0]).toEqual(jasmine.objectContaining({
+      sourceId: 10,
+      targetId: 20,
+      rackModuleRowsMoved: 5
+    }));
+    expect(snackBar.open).toHaveBeenCalledWith(
+      jasmine.stringContaining('moved 3 ownership, 4 tag, 5 rack rows'),
+      undefined,
+      {duration: 5000, panelClass: 'snack-success'}
+    );
+    expect(router.navigate).toHaveBeenCalledWith(['/modules', 'details', 20]);
+  });
+
+  it('blocks merge source module into target for non-admin non-dev users', () => {
+    const {service, backend, appState} = build();
+    appState.isDev = false;
+    backend.auth.hasAdminRole$.and.returnValue(of(false));
+
+    service.mergeIntoTargetModule$.next({sourceId: 10, targetId: 20});
+
+    expect(backend.merge.moduleInto).not.toHaveBeenCalled();
   });
 
   it('updates isAdmin$ when auth session role changes', () => {

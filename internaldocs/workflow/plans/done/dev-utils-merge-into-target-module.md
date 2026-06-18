@@ -37,7 +37,7 @@ namespaces — not via hand-written SQL — and then deletes the source module.
   `Mark as complete`, etc.). It belongs next to those buttons.
 - Keeps duplicate cleanup safely **inside the app**, not driven by ad-hoc Supabase SQL,
   reducing the chance of foot-guns documented in
-  [`internaldocs/patterns/BACKEND_METHODS.md` §"Schema-change preflight"](../../patterns/BACKEND_METHODS.md#schema-change-preflight-read-before-writing-sql)
+  [`internaldocs/patterns/BACKEND_METHODS.md` §"Schema-change preflight"](../../../patterns/BACKEND_METHODS.md#schema-change-preflight-read-before-writing-sql)
   (e.g. backfill UPDATEs accidentally wiping `updated` timestamps).
 - Stays compatible with the longer-term direction of pushing schema-aware bulk operations
   behind typed backend methods (see AGENTS.md §5 "Reuse and backend access").
@@ -221,17 +221,17 @@ mainly orchestration + conflict-resolution, not new RLS.
 
 ## Acceptance criteria
 
-- [ ] Acting on `/modules/details/<source>`, an admin sees a "Merge into target module…" button only when the existing dev-utils gate is true.
-- [ ] Clicking it reveals an inline numeric input + Confirm + Cancel.
-- [ ] Entering an invalid ID (non-numeric, same as source, non-existent module) shows an inline error and does not write.
-- [ ] On confirm, the source's `rack_modules`, `user_modules`, and `module_tags` references are merged into the target with conflict pre-removal as in the skill.
-- [ ] The source module is deleted via the existing `delete.module(id)` path.
-- [ ] All relevant cache keys are busted (at minimum the keys already busted by `delete.module`).
-- [ ] A snackbar reports per-table moved/removed counts.
-- [ ] The router navigates the dev to `/modules/details/<target>` after success.
-- [ ] If the source has any `module_ins`, `module_outs`, or `patch_module_instances` rows, the operation aborts before any writes and explains why.
-- [ ] No raw SQL strings or `supabase.rpc(...)` calls are added outside `SupabaseService`.
-- [ ] Existing dev-utils spec coverage continues to pass.
+- [x] Acting on `/modules/details/<source>`, an admin sees a "Merge into target module…" button only when the existing dev-utils gate is true.
+- [x] Clicking it reveals an inline numeric input + Confirm + Cancel.
+- [x] Entering an invalid ID (non-numeric, same as source) shows an inline error and does not write; non-existent targets are rejected by the backend before writes and shown in the snackbar.
+- [x] On confirm, the source's `rack_modules`, `user_modules`, and `module_tags` references are merged into the target with ownership/tag conflict pre-removal and rack-placement conflict aborts as in the skill.
+- [x] The source module is deleted via the existing `delete.module(id)` path.
+- [x] All relevant cache keys are busted (at minimum the keys already busted by `delete.module`).
+- [x] A snackbar reports per-table moved/removed counts.
+- [x] The router navigates the dev to `/modules/details/<target>` after success.
+- [x] If the source has any `module_ins`, `module_outs`, or `patch_module_instances` rows, the operation aborts before any writes and explains why.
+- [x] No raw SQL strings or `supabase.rpc(...)` calls are added outside `SupabaseService`.
+- [x] Existing dev-utils spec coverage continues to pass.
 
 ## Validation strategy
 
@@ -264,3 +264,9 @@ mainly orchestration + conflict-resolution, not new RLS.
 ## Decision log
 
 - 2026-06-18 — Plan created from a user intake to productize the duplicate-module merge that has previously been performed manually via the skill workflow. Priority set to LOW per explicit user instruction. (`feature-notetaker`)
+- 2026-06-18 — Implemented the MVP as a client-side `SupabaseService.merge.moduleInto` namespace with explicit selects and idempotent common-case writes. The flow aborts before writes for source `module_ins`, `module_outs`, or `patch_module_instances`; it does not attempt patch-port remapping or server-side atomicity because schema/RPC changes are out of scope.
+- 2026-06-18 — Non-existent targets are validated in the backend rather than by a separate UI preflight to avoid duplicate fetch orchestration. The data service surfaces that clear backend error via snackbar; inline validation covers malformed and same-source IDs before dispatch.
+
+- 2026-06-18 — Reviewer follow-up added a pre-write rack-position overlap abort and a timeout around source deletion so the UI receives an error if the existing delete path completes as `NEVER` after a failure.
+
+- 2026-06-18 — Archived after reviewer approval and green targeted merge specs, docs check, and `pnpm lint`.

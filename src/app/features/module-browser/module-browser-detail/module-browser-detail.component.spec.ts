@@ -38,6 +38,8 @@ describe('ModuleBrowserDetailComponent', () => {
     const changeModule$ = new Subject<any>();
     const requestModuleEditingToggle$ = new Subject<void>();
     const deleteModuleAndOrphanManufacturer$ = new Subject<any>();
+    const mergeIntoTargetModule$ = new Subject<{ sourceId: number; targetId: number }>();
+    const moduleMergeResult$ = new Subject<unknown>();
     
     const dataService = {
       singleModuleData$,
@@ -45,7 +47,9 @@ describe('ModuleBrowserDetailComponent', () => {
       changeModule$,
       isAdmin$: new BehaviorSubject<boolean>(false),
       requestModuleEditingToggle$,
-      deleteModuleAndOrphanManufacturer$
+      deleteModuleAndOrphanManufacturer$,
+      mergeIntoTargetModule$,
+      moduleMergeResult$
     };
     
     const route = {
@@ -128,6 +132,8 @@ describe('ModuleBrowserDetailComponent', () => {
       changeModule$: new Subject<any>(),
       requestModuleEditingToggle$: new Subject<void>(),
       deleteModuleAndOrphanManufacturer$: new Subject<any>(),
+      mergeIntoTargetModule$: new Subject<{ sourceId: number; targetId: number }>(),
+      moduleMergeResult$: new Subject<unknown>(),
       deleteModule$: new Subject<number>(),
       deleteLastPanel$: new Subject<any>()
     };
@@ -413,6 +419,46 @@ describe('ModuleBrowserDetailComponent', () => {
     component.confirmDeleteModuleAndOrphanManufacturer(module as any);
     expect(deleteSpy).toHaveBeenCalledWith(module);
   });
+
+  it('validates and dispatches merge into target module requests', () => {
+    const {component, dataService} = build();
+    const mergeSpy = spyOn(dataService.mergeIntoTargetModule$, 'next').and.callThrough();
+    const confirmSpy = spyOn(window, 'confirm').and.returnValue(true);
+    const module = moduleFixture() as DbModule;
+
+    component.ngOnInit();
+    component.openMergeIntoTargetForm();
+    component.mergeTargetModuleIdDraft = 'abc';
+    component.confirmMergeIntoTarget(module);
+    expect(component.mergeIntoTargetError$.value).toContain('valid positive');
+    expect(mergeSpy).not.toHaveBeenCalled();
+
+    component.mergeTargetModuleIdDraft = '99';
+    component.confirmMergeIntoTarget(module);
+    expect(component.mergeIntoTargetError$.value).toContain('different');
+    expect(mergeSpy).not.toHaveBeenCalled();
+
+    component.mergeTargetModuleIdDraft = '1896';
+    component.confirmMergeIntoTarget(module);
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(mergeSpy).toHaveBeenCalledOnceWith({sourceId: 99, targetId: 1896});
+    expect(component.mergeIntoTargetOpen$.value).toBeTrue();
+    dataService.moduleMergeResult$.next({sourceId: 99, targetId: 1896});
+    expect(component.mergeIntoTargetOpen$.value).toBeFalse();
+  });
+
+  it('cancels merge into target module without dispatching', () => {
+    const {component, dataService} = build();
+    const mergeSpy = spyOn(dataService.mergeIntoTargetModule$, 'next').and.callThrough();
+
+    component.openMergeIntoTargetForm();
+    component.mergeTargetModuleIdDraft = '1896';
+    component.cancelMergeIntoTarget();
+
+    expect(mergeSpy).not.toHaveBeenCalled();
+    expect(component.mergeIntoTargetOpen$.value).toBeFalse();
+    expect(component.mergeTargetModuleIdDraft).toBe('');
+  });
   
   it('opens manual/similar/external links via window.open', () => {
     const {component} = build();
@@ -446,6 +492,7 @@ describe('ModuleBrowserDetailComponent', () => {
     const {fixture} = await render({isDev: false, isAdmin: true});
 
     expect(fixture.nativeElement.querySelector('lib-hero-content-card[titleNormal="Dev utils"]')).not.toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Merge into target module');
   });
 
   it('getUsagePendingCopy describes pending rack check', () => {
