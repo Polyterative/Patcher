@@ -251,6 +251,38 @@ describe('RackEditorComponent', () => {
     ])).toBe('No valid arrangement fits the current row set.');
   });
 
+  it('summarizes huge sampled layout counts as capped order-of-magnitude estimates', () => {
+    const dataService = {
+      singleRackData$: new BehaviorSubject({hp: 84}),
+      layoutScope$: new BehaviorSubject('all')
+    } as unknown as RackDetailDataService;
+    const component = createComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      dataService
+    );
+    const moduleAt = (id: number, row: number, column: number) => ({
+      module: {
+        id,
+        hp: 1,
+        moduleFormat: {id: 0}
+      },
+      rackingData: {
+        id,
+        row,
+        column
+      }
+    }) as unknown as RackedModule;
+
+    expect(component.layoutArrangementSummary(
+      Array.from({length: 8}, (_, rowIndex) =>
+        Array.from({length: 8}, (_, columnIndex) =>
+          moduleAt((rowIndex * 8) + columnIndex + 1, rowIndex, columnIndex)
+        )
+      )
+    )).toBe('~10^57+ sampled valid arrangements (order-of-magnitude estimate).');
+  });
+
   it('summarizes layout validity for the analysis panel', () => {
     const dataService = {
       singleRackData$: new BehaviorSubject({hp: 84}),

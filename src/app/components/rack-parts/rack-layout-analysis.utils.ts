@@ -24,9 +24,16 @@ export interface RackLayoutAnalysisResult {
   wastedHp: number[];
   overflowHp: number[];
   autoArrangeMoves: RackLayoutAutoArrangeMove[];
-  validArrangementCount: number | 'estimated';
+  arrangementCount: RackArrangementCount;
+  validArrangementCount: number | 'estimated' | 'capped';
   estimate?: number;
 }
+
+export type RackArrangementCount =
+  | { kind: 'exact'; value: number }
+  | { kind: 'sampled'; value: number }
+  | { kind: 'capped'; source: 'exact' | 'sampled'; orderOfMagnitude: number }
+  | { kind: 'impossible'; value: 0 };
 
 interface RackLayoutFormatGroup {
   modules: RackedModule[];
@@ -41,6 +48,8 @@ interface RackLayoutBin {
 
 const MAX_EXACT_ARRANGEMENT_STATES = 100_000;
 const ESTIMATED_ARRANGEMENT_SAMPLE_COUNT = 1024;
+export const RACK_ARRANGEMENT_DISPLAY_SAFE_INTEGER_CAP = Number.MAX_SAFE_INTEGER;
+const RACK_ARRANGEMENT_DISPLAY_SAFE_INTEGER_CAP_LOG10 = Math.log10(RACK_ARRANGEMENT_DISPLAY_SAFE_INTEGER_CAP);
 
 export interface RackLayoutAnalysisOptions {
   variant?: number;
@@ -54,9 +63,10 @@ export function computeLayoutAnalysis(
 ): RackLayoutAnalysisResult {
   const rows = rowedModules ?? [];
   const mixedRowIssues = findMixedRowIssues(rows);
-  const usedHpByRow = rows.map(row => row.reduce((sum, module) => sum + (module.module.hp ?? 0), 0));
-  const overflowHp = usedHpByRow.map(usedHp => Math.max(usedHp - rackHp, 0));
-  const wastedHp = usedHpByRow.map(usedHp => Math.max(rackHp - usedHp, 0));
+  const safeRackHp = nonNegativeHp(rackHp);
+  const usedHpByRow = rows.map(row => row.reduce((sum, module) => sum + moduleHp(module), 0));
+  const overflowHp = usedHpByRow.map(usedHp => Math.max(usedHp - safeRackHp, 0));
+  const wastedHp = usedHpByRow.map(usedHp => Math.max(safeRackHp - usedHp, 0));
 
   if (mixedRowIssues.length > 0) {
     return {
@@ -65,6 +75,7 @@ export function computeLayoutAnalysis(
       wastedHp,
       overflowHp,
       autoArrangeMoves: [],
+      arrangementCount: {kind: 'impossible', value: 0},
       validArrangementCount: 0
     };
   }
@@ -73,17 +84,14 @@ export function computeLayoutAnalysis(
   const formatGroups = buildFormatGroups(rows, modules, scope);
   const autoArrangeMoves = formatGroups.flatMap(group => firstFitDecreasing(
     group.modules,
-    rackHp,
+    safeRackHp,
     group.rowIndexes,
     options.variant ?? 0
   ));
   const canCountExactly = formatGroups.every(group => shouldCountExactly(group));
   const arrangementCount = canCountExactly
-    ? formatGroups.reduce(
-      (product, group) => product * countExactArrangements(group.modules, rackHp, group.rowIndexes.length),
-      1
-    )
-    : 'estimated';
+    ? buildExactArrangementCount(formatGroups, safeRackHp)
+    : buildEstimatedArrangementCount(formatGroups, safeRackHp);
   const hasOverflow = overflowHp.some(value => value > 0);
 
   return {
@@ -92,12 +100,10 @@ export function computeLayoutAnalysis(
     wastedHp,
     overflowHp,
     autoArrangeMoves,
-    validArrangementCount: arrangementCount,
-    ...(!canCountExactly ? {
-      estimate: formatGroups.reduce(
-        (product, group) => product * countEstimatedArrangements(group.modules, rackHp, group.rowIndexes.length),
-        1
-      )
+    arrangementCount,
+    validArrangementCount: legacyArrangementCount(arrangementCount),
+    ...(arrangementCount.kind === 'sampled' ? {
+      estimate: arrangementCount.value
     } : {})
   };
 }
@@ -186,7 +192,7 @@ function firstFitDecreasing(
 
   return orderModulesForVariant(modules, variant)
     .map(module => {
-      const hp = module.module.hp ?? 0;
+      const hp = moduleHp(module);
       let targetBin = bins.find(row => row.usedHp + hp <= rackHp);
       if (!targetBin) {
         targetBin = {
@@ -212,16 +218,25 @@ function firstFitDecreasing(
     });
 }
 
-function countExactArrangements(modules: RackedModule[], rackHp: number, rowCount: number): number {
-  const targetRowCount = Math.max(1, rowCount);
-  const moduleHp = modules
-    .map(module => module.module.hp ?? 0)
-    .sort((left, right) => right - left);
-  const memo = new Map<string, number>();
+function buildExactArrangementCount(formatGroups: RackLayoutFormatGroup[], rackHp: number): RackArrangementCount {
+  const count = formatGroups.reduce(
+    (product, group) => product * countExactArrangements(group.modules, rackHp, group.rowIndexes.length),
+    1n
+  );
 
-  const countFrom = (moduleIndex: number, remainingHpByRow: number[]): number => {
-    if (moduleIndex >= moduleHp.length) {
-      return 1;
+  return bigintToArrangementCount(count, 'exact');
+}
+
+function countExactArrangements(modules: RackedModule[], rackHp: number, rowCount: number): bigint {
+  const targetRowCount = Math.max(1, rowCount);
+  const moduleHpValues = modules
+    .map(module => moduleHp(module))
+    .sort((left, right) => right - left);
+  const memo = new Map<string, bigint>();
+
+  const countFrom = (moduleIndex: number, remainingHpByRow: number[]): bigint => {
+    if (moduleIndex >= moduleHpValues.length) {
+      return 1n;
     }
 
     const memoKey = `${ moduleIndex }|${ remainingHpByRow.join(',') }`;
@@ -230,8 +245,8 @@ function countExactArrangements(modules: RackedModule[], rackHp: number, rowCoun
       return memoized;
     }
 
-    const hp = moduleHp[moduleIndex];
-    let count = 0;
+    const hp = moduleHpValues[moduleIndex];
+    let count = 0n;
     for (let rowIndex = 0; rowIndex < remainingHpByRow.length; rowIndex++) {
       if (remainingHpByRow[rowIndex] < hp) {
         continue;
@@ -267,17 +282,55 @@ function estimateExactArrangementStates(moduleCount: number, rowCount: number): 
   return states;
 }
 
-function countEstimatedArrangements(modules: RackedModule[], rackHp: number, rowCount: number): number {
-  const targetRowCount = Math.max(1, rowCount);
-  if (modules.length === 0) {
-    return 1;
-  }
-  if (!canGreedyFit(modules, rackHp, targetRowCount)) {
-    return 0;
+interface RackEstimatedArrangementCount {
+  value: number;
+  log10: number;
+  isCapped: boolean;
+}
+
+function buildEstimatedArrangementCount(formatGroups: RackLayoutFormatGroup[], rackHp: number): RackArrangementCount {
+  const counts = formatGroups.map(group =>
+    countEstimatedArrangements(group.modules, rackHp, group.rowIndexes.length)
+  );
+  if (counts.some(count => count.value === 0)) {
+    return {kind: 'impossible', value: 0};
   }
 
-  const moduleHp = modules.map(module => module.module.hp ?? 0);
-  const totalAssignments = Math.pow(targetRowCount, moduleHp.length);
+  const log10 = counts.reduce((sum, count) => sum + count.log10, 0);
+  if (!Number.isFinite(log10) || log10 > RACK_ARRANGEMENT_DISPLAY_SAFE_INTEGER_CAP_LOG10) {
+    return {
+      kind: 'capped',
+      source: 'sampled',
+      orderOfMagnitude: safeOrderOfMagnitude(log10)
+    };
+  }
+
+  const value = counts.reduce((product, count) => product * count.value, 1);
+  if (!Number.isSafeInteger(value) || value < 0 || counts.some(count => count.isCapped)) {
+    return {
+      kind: 'capped',
+      source: 'sampled',
+      orderOfMagnitude: safeOrderOfMagnitude(log10)
+    };
+  }
+
+  return {kind: 'sampled', value};
+}
+
+function countEstimatedArrangements(modules: RackedModule[], rackHp: number, rowCount: number): RackEstimatedArrangementCount {
+  const targetRowCount = Math.max(1, rowCount);
+  if (modules.length === 0) {
+    return {value: 1, log10: 0, isCapped: false};
+  }
+  if (!canGreedyFit(modules, rackHp, targetRowCount)) {
+    return {value: 0, log10: -Infinity, isCapped: false};
+  }
+
+  const moduleHpValues = modules.map(module => moduleHp(module));
+  const totalAssignmentsLog10 = moduleHpValues.length * Math.log10(targetRowCount);
+  const totalAssignments = totalAssignmentsLog10 <= RACK_ARRANGEMENT_DISPLAY_SAFE_INTEGER_CAP_LOG10
+    ? Math.pow(targetRowCount, moduleHpValues.length)
+    : Infinity;
   const sampleCount = Math.min(ESTIMATED_ARRANGEMENT_SAMPLE_COUNT, totalAssignments);
   let validSamples = 0;
 
@@ -286,7 +339,7 @@ function countEstimatedArrangements(modules: RackedModule[], rackHp: number, row
     const remainingHpByRow = Array.from({length: targetRowCount}, () => rackHp);
     let isValidSample = true;
 
-    for (const hp of moduleHp) {
+    for (const hp of moduleHpValues) {
       seed = (seed * 1664525 + 1013904223) >>> 0;
       const rowIndex = seed % targetRowCount;
       remainingHpByRow[rowIndex] -= hp;
@@ -301,17 +354,35 @@ function countEstimatedArrangements(modules: RackedModule[], rackHp: number, row
     }
   }
 
-  const estimate = Math.round((validSamples / sampleCount) * totalAssignments);
-  return Math.max(1, estimate);
+  const validRatio = validSamples / sampleCount;
+  if (validRatio <= 0) {
+    return {value: 1, log10: 0, isCapped: false};
+  }
+
+  const estimateLog10 = Math.log10(validRatio) + totalAssignmentsLog10;
+  if (!Number.isFinite(estimateLog10) || estimateLog10 > RACK_ARRANGEMENT_DISPLAY_SAFE_INTEGER_CAP_LOG10) {
+    return {
+      value: RACK_ARRANGEMENT_DISPLAY_SAFE_INTEGER_CAP,
+      log10: estimateLog10,
+      isCapped: true
+    };
+  }
+
+  const estimate = Math.round(validRatio * Math.pow(10, totalAssignmentsLog10));
+  return {
+    value: clampArrangementCount(estimate, 1),
+    log10: estimateLog10,
+    isCapped: false
+  };
 }
 
 function canGreedyFit(modules: RackedModule[], rackHp: number, rowCount: number): boolean {
   const remainingHpByRow = Array.from({length: rowCount}, () => rackHp);
-  const moduleHp = modules
-    .map(module => module.module.hp ?? 0)
+  const moduleHpValues = modules
+    .map(module => moduleHp(module))
     .sort((left, right) => right - left);
 
-  return moduleHp.every(hp => {
+  return moduleHpValues.every(hp => {
     const rowIndex = remainingHpByRow.findIndex(remainingHp => remainingHp >= hp);
     if (rowIndex < 0) {
       return false;
@@ -323,7 +394,7 @@ function canGreedyFit(modules: RackedModule[], rackHp: number, rowCount: number)
 
 function orderModulesForVariant(modules: RackedModule[], variant: number): RackedModule[] {
   const ordered = [...modules].sort((a, b) => {
-    const hpDiff = (b.module.hp ?? 0) - (a.module.hp ?? 0);
+    const hpDiff = moduleHp(b) - moduleHp(a);
     if (hpDiff !== 0) {
       return hpDiff;
     }
@@ -342,6 +413,63 @@ function orderModulesForVariant(modules: RackedModule[], variant: number): Racke
   }
 
   return ordered;
+}
+
+function legacyArrangementCount(count: RackArrangementCount): number | 'estimated' | 'capped' {
+  if (count.kind === 'exact') {
+    return count.value;
+  }
+  if (count.kind === 'impossible') {
+    return 0;
+  }
+  if (count.kind === 'sampled') {
+    return 'estimated';
+  }
+  return 'capped';
+}
+
+function bigintToArrangementCount(count: bigint, source: 'exact' | 'sampled'): RackArrangementCount {
+  if (count <= 0n) {
+    return {kind: 'impossible', value: 0};
+  }
+
+  if (count <= BigInt(RACK_ARRANGEMENT_DISPLAY_SAFE_INTEGER_CAP)) {
+    return {
+      kind: source === 'exact' ? 'exact' : 'sampled',
+      value: Number(count)
+    };
+  }
+
+  return {
+    kind: 'capped',
+    source,
+    orderOfMagnitude: count.toString().length - 1
+  };
+}
+
+function clampArrangementCount(value: number, minimum = 0): number {
+  if (!Number.isFinite(value) || value < minimum) {
+    return minimum;
+  }
+  return Math.min(Math.round(value), RACK_ARRANGEMENT_DISPLAY_SAFE_INTEGER_CAP);
+}
+
+function safeOrderOfMagnitude(log10: number): number {
+  if (!Number.isFinite(log10) || log10 < 0) {
+    return 0;
+  }
+  return Math.floor(log10);
+}
+
+function moduleHp(module: RackedModule): number {
+  return nonNegativeHp(module.module.hp ?? 0);
+}
+
+function nonNegativeHp(value: number): number {
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+  return Math.max(0, value);
 }
 
 function moduleStandardId(module: RackedModule): number {

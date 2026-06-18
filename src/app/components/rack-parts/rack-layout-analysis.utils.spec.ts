@@ -1,5 +1,8 @@
 import { RackedModule } from 'src/app/models/module';
-import { computeLayoutAnalysis } from './rack-layout-analysis.utils';
+import {
+  computeLayoutAnalysis,
+  RACK_ARRANGEMENT_DISPLAY_SAFE_INTEGER_CAP
+} from './rack-layout-analysis.utils';
 
 
 describe('computeLayoutAnalysis', () => {
@@ -70,6 +73,7 @@ describe('computeLayoutAnalysis', () => {
     ], 84);
 
     expect(result.validArrangementCount).toBe(12);
+    expect(result.arrangementCount).toEqual({kind: 'exact', value: 12});
   });
 
   it('returns zero valid arrangements when scoped modules cannot fit available rows', () => {
@@ -78,11 +82,12 @@ describe('computeLayoutAnalysis', () => {
     ], 84);
 
     expect(result.validArrangementCount).toBe(0);
+    expect(result.arrangementCount).toEqual({kind: 'impossible', value: 0});
   });
 
   it('uses an estimate when exact counting would have too many row-state combinations', () => {
     const result = computeLayoutAnalysis(
-      Array.from({length: 8}, (_, rowIndex) =>
+      Array.from({length: 7}, (_, rowIndex) =>
         Array.from({length: rowIndex < 4 ? 3 : 2}, (_, columnIndex) =>
           rackModule((rowIndex * 3) + columnIndex + 1, 1, rowIndex)
         )
@@ -91,7 +96,53 @@ describe('computeLayoutAnalysis', () => {
     );
 
     expect(result.validArrangementCount).toBe('estimated');
+    expect(result.arrangementCount.kind).toBe('sampled');
     expect(result.estimate).toBeGreaterThan(0);
+  });
+
+  it('caps huge sampled estimates before they exceed the safe integer display range', () => {
+    const result = computeLayoutAnalysis(
+      Array.from({length: 8}, (_, rowIndex) =>
+        Array.from({length: 8}, (_, columnIndex) =>
+          rackModule((rowIndex * 8) + columnIndex + 1, 1, rowIndex)
+        )
+      ),
+      84
+    );
+
+    expect(result.validArrangementCount).toBe('capped');
+    expect(result.estimate).toBeUndefined();
+    expect(result.arrangementCount).toEqual({
+      kind: 'capped',
+      source: 'sampled',
+      orderOfMagnitude: 57
+    });
+  });
+
+  it('guards invalid module HP before calculating capacity and arrangement counts', () => {
+    const result = computeLayoutAnalysis([
+      [rackModule(1, -5, 0), rackModule(2, Number.NaN, 0), rackModule(3, Number.POSITIVE_INFINITY, 0)]
+    ], 84);
+
+    expect(result.isValid).toBeTrue();
+    expect(result.overflowHp).toEqual([0]);
+    expect(result.wastedHp).toEqual([84]);
+    expect(result.arrangementCount).toEqual({kind: 'exact', value: 1});
+  });
+
+  it('never returns unsafe sampled count values for extreme rack sizes', () => {
+    const result = computeLayoutAnalysis(
+      Array.from({length: 12}, (_, rowIndex) =>
+        Array.from({length: 8}, (_, columnIndex) =>
+          rackModule((rowIndex * 8) + columnIndex + 1, 1, rowIndex)
+        )
+      ),
+      84
+    );
+
+    expect(result.arrangementCount.kind).toBe('capped');
+    expect(result.arrangementCount.kind === 'capped' && result.arrangementCount.orderOfMagnitude).toBeGreaterThan(0);
+    expect(result.estimate ?? RACK_ARRANGEMENT_DISPLAY_SAFE_INTEGER_CAP).toBeGreaterThanOrEqual(0);
   });
 
   it('honours 1u and 3u scopes', () => {
