@@ -12,7 +12,7 @@
             class="img image-transition"
             [ngStyle]="{maxHeight:bag.height/sizeDivider+'rem'}"
             [src]="rackStorageBase+filename"
-            [@enter]
+            animate.enter="rack-image-enter"
             loading="lazy"
             [alt]="'Rack preview for '+data.name"
             (error)="onPreviewLoadError()"
@@ -23,7 +23,7 @@
         <div
           class="rack-image-fallback rack-image-fallback--contained image-transition"
           [ngStyle]="{maxHeight:bag.height/sizeDivider+'rem'}"
-          [@enter]
+          animate.enter="rack-image-enter"
           role="img"
           [attr.aria-label]="'Rack preview unavailable for '+data.name"
         >
@@ -34,7 +34,7 @@
         <div
           class="rack-image-fallback rack-image-fallback--contained rack-image-fallback--empty image-transition"
           [ngStyle]="{maxHeight:bag.height/sizeDivider+'rem'}"
-          [@enter]
+          animate.enter="rack-image-enter"
           role="img"
           [attr.aria-label]="'No rack preview yet for '+data.name"
         >
@@ -48,7 +48,7 @@
           <img
             [ngStyle]="{maxHeight:((bag.height)+'rem')}"
             [src]="rackStorageBase+filename"
-            [@enter]
+            animate.enter="rack-image-enter"
             class="image-transition"
             loading="lazy"
             [alt]="'Rack preview for '+data.name"
@@ -60,7 +60,7 @@
         <div
           class="rack-image-fallback image-transition"
           [ngStyle]="{maxHeight:bag.height+'rem'}"
-          [@enter]
+          animate.enter="rack-image-enter"
           role="img"
           [attr.aria-label]="'Rack preview unavailable for '+data.name"
         >
@@ -71,7 +71,7 @@
         <div
           class="rack-image-fallback rack-image-fallback--empty image-transition"
           [ngStyle]="{maxHeight:bag.height+'rem'}"
-          [@enter]
+          animate.enter="rack-image-enter"
           role="img"
           [attr.aria-label]="'No rack preview yet for '+data.name"
         >
