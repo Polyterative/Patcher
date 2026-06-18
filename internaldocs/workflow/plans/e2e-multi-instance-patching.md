@@ -17,9 +17,14 @@
 - [ ] Save + reload → connections and instances survive roundtrip
 - [ ] Legacy patch (pre-instance) → loads and displays correctly
 
+Progress note: `e2e/auth-patch-multi-instance.spec.ts` now covers the local-unblocked happy paths for opening collection cards, adding two copies, adding a third copy, and reload label persistence. These boxes stay unchecked until a non-skipped auth E2E run verifies them against non-empty local credentials.
+
 ---
 
 ## Decision log
 
 <!-- Append timestamped one-liners as the plan progresses. -->
 
+- 2026-06-18T12:17+02:00 — Local `.env` E2E credentials are approved for local authoring, but secret values must never be printed, committed, or exposed. GitHub Actions secret rotation remains deferred and incomplete.
+- 2026-06-18T12:17+02:00 — Added `e2e/auth-patch-multi-instance.spec.ts` with the four Chunk B happy paths and fixed the auth runner so `--include="**/auth-patch-multi-instance.spec.ts"` maps to Playwright file selection. Connection, destructive, and legacy cases remain deferred pending live auth verification and deterministic data.
+- 2026-06-18T12:17+02:00 — Targeted auth command exited 0 but skipped because this worktree's `.env` keys are present with empty values; do not mark the checklist complete until the command executes the spec with non-empty local credentials.
