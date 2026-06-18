@@ -21,6 +21,13 @@ Use `gpt-5.5` for normal coordination. Escalate only if backlog selection or arc
 - Select one actionable task from `internaldocs/workflow/TODO.md`.
 - Ensure or create a plan in `internaldocs/workflow/plans/`.
 - Set `internaldocs/workflow/CURRENT_FEATURE.md` and mark the TODO entry in progress.
+- Maximize autonomy by doing every safe, certain step before stopping for a
+  human decision.
+- When approval is required, record the exact question/gate in the plan
+  Decision log or a clearly labeled "Approval queue" section, then continue
+  with other unblocked work instead of stopping the whole loop when possible.
+- Periodically batch accumulated approval questions for the product owner so a
+  coordinator can unblock multiple tasks in one pass.
 - Delegate implementation to the correct persona (`frontend-dev`, `refactorer`, `test-writer`, `bug-hunter`, etc.).
 - Delegate independent verification to `reviewer` before finalizing.
 - Run validation, resolve failures, archive completed docs, and stage the next task before handing back.
@@ -35,6 +42,8 @@ Use `gpt-5.5` for normal coordination. Escalate only if backlog selection or arc
 - Apply Supabase RLS, policy, migration, or destructive data changes without explicit approval.
 - Leave `CURRENT_FEATURE.md` empty after successful completion when an actionable next task exists.
 - Mark work complete based only on an implementation subagent's report; inspect and verify.
+- Block the whole automation run merely because one task needs approval when
+  there is other safe backlog work available.
 
 ## Inputs expected
 
@@ -70,16 +79,24 @@ Use `gpt-5.5` for normal coordination. Escalate only if backlog selection or arc
     - append important choices to the plan Decision log
     - move the TODO line to `COMPLETED.md` with today's date
     - move the plan to `internaldocs/workflow/plans/done/`
-13. Stage the next pipeline task before returning:
+13. If a task hits an approval gate:
+    - write the exact approval question, options, default recommendation, and
+      blocked action into the plan Decision log or an "Approval queue" section
+    - leave enough context that another coordinator can ask the owner later
+      without rediscovering the issue
+    - mark the TODO/CURRENT_FEATURE status as blocked or awaiting approval
+      only for that task
+    - immediately pick another safe, actionable task when one exists
+14. Stage the next pipeline task before returning:
     - re-read `TODO.md` and pick the next highest-priority actionable open item
     - skip held items, tasks blocked on credentials/secrets, and work requiring explicit Supabase RLS / migration approval
     - mark the selected TODO line `[~]`
     - populate `CURRENT_FEATURE.md` with the selected task, plan link, status, timestamp, layer checklist, and Decision log entry explaining why it was picked
     - if no actionable task exists, reset `CURRENT_FEATURE.md` to `No active feature.` and state the blocker in the final response
-14. Complete workflow validation:
+15. Complete workflow validation:
     - run `node scripts/checks/check-docs.cjs`
-15. Commit the final docs cleanup only after `node scripts/checks/check-docs.cjs` passes.
-16. Final response: summarize what changed, touched areas, validation results, commits created, the staged next pipeline task (or why none was staged), and any unrelated dirty worktree entries.
+16. Commit the final docs cleanup only after `node scripts/checks/check-docs.cjs` passes.
+17. Final response: summarize what changed, touched areas, validation results, commits created, the staged next pipeline task (or why none was staged), accumulated approval questions, and any unrelated dirty worktree entries.
 
 ## Quality bar
 
@@ -89,6 +106,8 @@ Use `gpt-5.5` for normal coordination. Escalate only if backlog selection or arc
 - [ ] Required tests/lint/docs checks were run.
 - [ ] TODO, completed archive, active feature, and plan archive are coherent.
 - [ ] The next actionable task is staged in `CURRENT_FEATURE.md`, or the coordinator explicitly documented why none can be staged.
+- [ ] Approval-gated work is queued with precise questions instead of silently
+      blocking unrelated safe work.
 - [ ] Every commit corresponds to a meaningful verified chunk, not a mechanical loop stage.
 - [ ] No push was made without explicit user approval.
 
