@@ -346,7 +346,7 @@ Depends on M3 + M4 + M5 + M6.
 
 - Suggested execution order: implementer takes Chunk M1 first, **pauses at step 8 for remote-apply approval**, then M2 through M6 in order, then M7. Each chunk is small enough that a single implementer can own it end-to-end.
 - After M1 implementer pauses, planner does not need to be re-engaged unless a CTO decision above must be revisited.
-- After M6, run the `code-review` persona on the cumulative diff (use `internaldocs/agents/code-reviewer.md`) before M7's manual verification. UI verification of M5 and M6 is best paired with the `designer` persona because it touches visible surfaces.
+- After M6, run the `reviewer` persona on the cumulative diff (use `internaldocs/agents/reviewer.md`) before M7's manual verification. UI verification of M5 and M6 is best paired with the `designer` persona because it touches visible surfaces.
 - The `bug-hunter` persona should be on standby for any RLS-related runtime errors surfaced by the Supabase logs after remote apply.
 
 ### Next-task staging decision
