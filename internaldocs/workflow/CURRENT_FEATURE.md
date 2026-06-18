@@ -31,9 +31,13 @@ Staged: 2026-06-18T22:15+02:00
 
 #### Layer checklist
 
-- [ ] Re-read `internaldocs/workflow/plans/patch-svg-previews.md` approval queue.
-- [ ] Draft exact additive `patches.image` migration and `patches` bucket/storage policy proposal.
-- [ ] Record maintainer approval questions clearly; stop before any remote/storage/RLS mutation.
+- [x] Re-read `internaldocs/workflow/plans/patch-svg-previews.md` approval queue.
+- [x] Draft exact additive `patches.image` migration and `patches` bucket/storage policy proposal.
+- [x] Record maintainer approval questions clearly; stop before any remote/storage/RLS mutation.
+
+#### Approval queue
+
+- **Approval requested 2026-06-18T22:17+02:00:** May the next implementation checkpoint apply the proposal-only SQL/storage shape in the plan: nullable `public.patches.image`, public `patches` SVG bucket, authenticated owner/admin write/delete policies, and link-readable preview access?
 
 #### Validation strategy
 
@@ -42,4 +46,5 @@ Staged: 2026-06-18T22:15+02:00
 
 #### Decision log
 
+- 2026-06-18T22:17+02:00 — Completed the proposal-only storage/RLS checkpoint in the plan and recorded the remaining approval question; no migrations, storage buckets, or RLS policies were applied.
 - 2026-06-18T22:15+02:00 — Staged Patch SVG previews as the next safe checkpoint because the next step is proposal-only exact SQL/storage-policy drafting, not applying migrations/RLS.

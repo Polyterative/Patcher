@@ -171,6 +171,163 @@ The rack preview pipeline already exists and is the explicit template to copy.
 
 - **Approved 2026-06-18T20:58+02:00:** backend/storage direction is approved with a new `patches.image` column for the SVG URL/path, a dedicated `patches` storage bucket, RLS writes limited to the patch owner, reads aligned with patch visibility, and a deterministic filename based on patch id/version. Read-visibility direction was simplified by the 2026-06-18T21:24+02:00 decision below. Do not apply migrations/storage/RLS from this docs-only approval checkpoint.
 - **Approved 2026-06-18T21:24+02:00:** preview storage visibility stays simple: public-registry listing is the privacy boundary, link-based access to a known SVG URL is acceptable like rack previews, and no special owner-only SVG read restriction is required for now. Do not apply migrations/storage/RLS from this docs-only approval checkpoint.
+- **Approval requested 2026-06-18T22:17+02:00:** May the next implementation checkpoint apply the exact additive SQL/storage shape below: add nullable `public.patches.image`, create a public `patches` storage bucket, and add authenticated owner/admin write/delete policies while keeping preview reads link-readable?
+
+## Proposal-only SQL/storage checkpoint
+
+This section is a draft for maintainer review only. It has not been applied as a
+migration, Supabase MCP mutation, storage bucket change, or RLS/policy change.
+
+### Proposed additive migration
+
+```sql
+-- Draft only: do not apply until maintainer approval is recorded.
+-- Adds the patch preview filename/path without touching existing rows.
+-- `add column ... null` has no backfill and must not fire `patches.updated`
+-- triggers on existing rows.
+alter table public.patches
+  add column if not exists image text null;
+
+comment on column public.patches.image is
+  'Supabase Storage filename for the generated SVG patch preview in the patches bucket.';
+```
+
+### Proposed storage bucket
+
+```sql
+-- Draft only: do not apply until maintainer approval is recorded.
+-- Public bucket keeps preview reads simple/link-readable, matching rack preview
+-- posture. Privacy remains the public-listing boundary, not secret SVG URLs.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('patches', 'patches', true, 1048576, array['image/svg+xml'])
+on conflict (id) do update
+set public = excluded.public,
+    file_size_limit = excluded.file_size_limit,
+    allowed_mime_types = excluded.allowed_mime_types;
+```
+
+### Proposed filename convention
+
+- Store only the basename in `public.patches.image`, not a full URL.
+- Format: `patch_<patch_id>_v<patch_updated_stamp>.svg`.
+  - Example: `patch_42_v20260618t201530123z.svg`.
+  - `<patch_updated_stamp>` is derived from the patch row's current `updated`
+    value at generation time, normalized to lowercase UTC
+    `yyyymmddtHHMMSSmmmz` with non-alphanumerics removed.
+- This keeps the path deterministic for a patch/version while still changing
+  when the patch graph changes. Regenerating the same patch version may upsert
+  the same object path; once a later patch edit changes `updated`, the next
+  preview writes a new filename and can delete the previous object after the DB
+  row update succeeds.
+
+### Proposed storage policy shape
+
+The bucket is public, so no owner-only SVG read policy is proposed. The app must
+still gate generation through the owner/admin backend flow, and storage writes
+remain constrained by policies that parse the patch id from the filename.
+
+```sql
+-- Draft only: RLS/storage policy changes require explicit maintainer approval.
+
+drop policy if exists "patch_previews_insert_owner_or_admin" on storage.objects;
+create policy "patch_previews_insert_owner_or_admin"
+  on storage.objects
+  for insert
+  to authenticated
+  with check (
+    bucket_id = 'patches'
+    and lower(storage.extension(name)) = 'svg'
+    and storage.filename(name) ~ '^patch_[0-9]+_v[0-9]{8}t[0-9]{9}z\.svg$'
+    and (
+      coalesce(auth.jwt() -> 'app_metadata' ->> 'role', '') = 'admin'
+      or exists (
+        select 1
+        from public.patches p
+        where p.id = substring(storage.filename(name) from '^patch_([0-9]+)_')::integer
+          and p.authorid = auth.uid()::text
+      )
+    )
+  );
+
+drop policy if exists "patch_previews_update_owner_or_admin" on storage.objects;
+create policy "patch_previews_update_owner_or_admin"
+  on storage.objects
+  for update
+  to authenticated
+  using (
+    bucket_id = 'patches'
+    and (
+      coalesce(auth.jwt() -> 'app_metadata' ->> 'role', '') = 'admin'
+      or exists (
+        select 1
+        from public.patches p
+        where p.id = substring(storage.filename(name) from '^patch_([0-9]+)_')::integer
+          and p.authorid = auth.uid()::text
+      )
+    )
+  )
+  with check (
+    bucket_id = 'patches'
+    and lower(storage.extension(name)) = 'svg'
+    and storage.filename(name) ~ '^patch_[0-9]+_v[0-9]{8}t[0-9]{9}z\.svg$'
+    and (
+      coalesce(auth.jwt() -> 'app_metadata' ->> 'role', '') = 'admin'
+      or exists (
+        select 1
+        from public.patches p
+        where p.id = substring(storage.filename(name) from '^patch_([0-9]+)_')::integer
+          and p.authorid = auth.uid()::text
+      )
+    )
+  );
+
+drop policy if exists "patch_previews_delete_owner_or_admin" on storage.objects;
+create policy "patch_previews_delete_owner_or_admin"
+  on storage.objects
+  for delete
+  to authenticated
+  using (
+    bucket_id = 'patches'
+    and (
+      coalesce(auth.jwt() -> 'app_metadata' ->> 'role', '') = 'admin'
+      or exists (
+        select 1
+        from public.patches p
+        where p.id = substring(storage.filename(name) from '^patch_([0-9]+)_')::integer
+          and p.authorid = auth.uid()::text
+      )
+    )
+  );
+```
+
+### Visibility reconciliation
+
+- The earlier owner/admin write direction still stands for generating, replacing,
+  and deleting previews. It is enforced twice: UI/data-service owner/admin
+  checks and storage policies for authenticated writes.
+- The later visibility simplification supersedes owner-only reads. The proposed
+  `patches` bucket is public, so anyone with the exact SVG URL can read it, as
+  with rack previews. Private patch privacy is handled by not listing private
+  patches publicly, not by making preview URLs secret.
+- Remaining approval gate: applying the bucket and policies is a storage/RLS
+  mutation and must be manually approved before any migration or Supabase change
+  is executed.
+
+### Non-breaking validation plan
+
+1. Before applying: confirm the target Supabase project has no existing
+   `public.patches.image` column or `patches` bucket/policies that would require
+   a rename/migration merge.
+2. Apply only after approval; then run `pnpm updateBackendTypes` and confirm
+   `patches.Row/Insert/Update` include optional nullable `image`.
+3. Verify the column-only migration does not update existing `public.patches.updated`
+   values (no backfill/update statement is present).
+4. Verify the row update used by the app to persist `image` does not
+   unintentionally bump `patches.updated`; if it does, propose a second approved
+   RPC/policy checkpoint before wiring generation.
+5. Run Supabase advisors after the approved storage/RLS change and record any
+   warnings in this plan before implementation proceeds.
+
 
 ## MVP layer
 
@@ -313,7 +470,7 @@ Reusable surfaces + list consumers.
   schema-preflight doc; if the trigger does fire, write the row update via a
   dedicated RPC that bypasses the `updated` bump, mirroring what was done for
   racks (see `BACKEND_METHODS.md`).
-- **Storage visibility for `patches` bucket.** Direction is approved: owner-only writes and simple link-readable SVG access, with privacy handled by avoiding public-registry listing for private patches. No owner-only SVG read restriction is required for now. Agent should propose exact policies, not apply them autonomously.
+- **Storage visibility for `patches` bucket.** Direction is approved: owner-only writes and simple link-readable SVG access, with privacy handled by avoiding public-registry listing for private patches. No owner-only SVG read restriction is required for now. Exact public-bucket + owner/admin write policy SQL is now drafted above; do not apply it without maintainer approval.
 - **Shared helper extraction.** `previewGeneratedAt` / `isPreviewStale` exist
   in `rack-image.component.ts`. Duplicating them is the smaller, safer change;
   extracting to a shared util is cleaner but touches rack tests. Decision
@@ -347,6 +504,7 @@ When `coordinator-loop` picks this up:
 <!-- append-only, timestamped one-liners for non-obvious choices -->
 
 - 2026-06-18T20:58+02:00 — Product owner approved the Patch SVG previews backend/storage direction: add `patches.image` for SVG URL/path, use a dedicated `patches` storage bucket, limit RLS writes to the patch owner, align reads with patch visibility, and use a deterministic filename based on patch id/version; no migrations/storage/RLS were applied in this docs-only checkpoint.
+- 2026-06-18T22:17+02:00 — Drafted the exact proposal-only SQL/storage checkpoint: nullable `patches.image`, public `patches` SVG bucket, deterministic `patch_<id>_v<updated>.svg` filenames, and authenticated owner/admin insert/update/delete storage policies; no migrations/storage/RLS were applied.
 - 2026-06-18T21:24+02:00 — Product owner decided Patch SVG preview storage visibility should stay simple: privacy is about avoiding public-registry listing, link-based access to a known SVG URL is acceptable like current rack previews, and no special owner-only SVG read restriction is required for now; no migrations/storage/RLS were applied in this docs-only checkpoint.
 - 2026-06-18T20:18+02:00 — First autonomous implementation slice intentionally avoids schema, storage, RLS, Supabase calls, model fields, UI components, and upload flows; it lands only the pure SVG renderer/test foundation while screenshot refresh remains credential/approval gated.
 - 2026-06-18T20:23+02:00 — Reviewer findings on duplicate marker IDs and long-label clipping were fixed by replacing SVG marker IDs with inline arrowhead polygons and estimating label bounds in the generated viewBox.
