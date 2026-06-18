@@ -14,19 +14,19 @@
 
 ## Active
 
-### LOW: Dev utils — "Merge into target module" action
+### MEDIUM: Sentry — Issue Monitoring & Resolution Workflow
 
-- **Plan:** [`plans/dev-utils-merge-into-target-module.md`](./plans/dev-utils-merge-into-target-module.md)
-- **Status:** Staged for loop round 4 — implement the dev-only duplicate module merge action without schema/RLS changes or raw SQL.
-- **Started:** 2026-06-18T10:25+02:00
+- **Plan:** [`plans/sentry-issue-monitoring-resolution-workflow.md`](./plans/sentry-issue-monitoring-resolution-workflow.md)
+- **Status:** Staged for loop round 5 — complete the repo-owned Sentry monitoring workflow documentation/tooling slice; if live Sentry access is unavailable, document that blocker and close only the autonomous repo-owned setup.
+- **Started:** 2026-06-18T10:35+02:00
 - **Coordinator:** coordinator-loop
 
 #### Layer checklist
 
-- [ ] MVP — Add safe backend merge orchestration for common reference tables and abort on patch-port/instance blockers.
-- [ ] Structural — Wire module-detail data service and dev-utils inline form with cache/error handling.
-- [ ] Polish — Add focused tests, reviewer pass, lint/docs validation, and archive.
+- [ ] MVP — Create a concrete Sentry triage workflow/checklist and identify available local/MCP access constraints.
+- [ ] Structural — Add any safe repo-owned helper/check documentation that future agents can run without exposing credentials.
+- [ ] Polish — Validate docs/lint as applicable, archive if live issue resolution is blocked by external Sentry access.
 
 #### Decision log
 
-- 2026-06-18T10:25+02:00 — Staged after the security safe-code slice. Higher-priority remaining items are blocked by credentials, explicit Supabase approval, or external services; this dev-only tool has a detailed no-migration plan and is actionable in repo code.
+- 2026-06-18T10:35+02:00 — Staged after dev-utils merge. Higher-priority remaining items need schema/RLS approval, credentials, or blocked dependencies; this Sentry plan has an autonomous repo-owned workflow slice even if live issue resolution requires external access.

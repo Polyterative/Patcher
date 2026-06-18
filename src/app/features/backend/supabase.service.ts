@@ -37,6 +37,7 @@ import { createStorageNamespace } from './supabase-storage';
 import { SupabaseQueriesService } from './supabase-queries';
 import { createGetNamespace } from './supabase-get';
 import { createAuthNamespace } from './supabase-auth';
+import { createMergeNamespace } from './supabase-merge';
 
 
 export type {
@@ -134,6 +135,12 @@ export class SupabaseService extends SubManager {
       () => this.auth.getUserSession$(),
       (id: number) => this.delete.patchConnectionsForPatch(id),
       () => !environment.production ? of(true) : this.auth.hasAdminRole$()
+    );
+
+    this.merge = createMergeNamespace(
+      this.supabase,
+      () => this.auth.getUserSession$(),
+      (id: number) => this.delete.module(id)
     );
 
     this.queries = new SupabaseQueriesService(
@@ -262,5 +269,6 @@ export class SupabaseService extends SubManager {
   readonly add!: ReturnType<typeof createAddNamespace>;
   readonly delete!: ReturnType<typeof createDeleteNamespace>;
   readonly update!: ReturnType<typeof createUpdateNamespace>;
+  readonly merge!: ReturnType<typeof createMergeNamespace>;
   readonly storage!: ReturnType<typeof createStorageNamespace>;
 }

@@ -158,6 +158,14 @@ describe('SupabaseService - API Surface', () => {
       });
     });
   });
+
+  describe('merge API Methods', () => {
+    it('should expose merge object with mutation methods', () => {
+      expect(service.merge).toBeDefined();
+      expect(typeof service.merge).toBe('object');
+      expect(typeof service.merge.moduleInto).toBe('function');
+    });
+  });
   
   describe('Authentication Methods', () => {
     it('should expose auth namespace with all authentication methods', () => {

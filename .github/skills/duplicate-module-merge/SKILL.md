@@ -11,6 +11,10 @@ Use this skill when handling duplicate rows in `public.modules`, for example:
 - "migrate racks/ownership from one duplicate module to another"
 - "delete duplicate module after moving references"
 
+See also: the app has a dev-utils "Merge into target module…" action on module detail pages for the safe common case
+(`user_modules`, `module_tags`, and `rack_modules`, aborting on patch ports/instances). Use this skill for read-only
+preflight, unusual references, and manual data operations.
+
 Follow `AGENTS.md`: Supabase inspection is allowed, but **do not mutate data until the user explicitly confirms the exact migration/delete action**. Never apply migrations or RLS changes as part of this workflow.
 
 ## Terms
@@ -212,4 +216,3 @@ delete from public.modules
 where id = :source_id
 returning id, name;
 ```
-

@@ -232,6 +232,39 @@
                 }
                 @if (bag.data) {
                   <app-brand-primary-button theme="negative"
+                                            matTooltip="Move ownership, tags, and rack placements to a canonical target module, then delete this source"
+                                            matTooltipPosition="above"
+                                            (click$)="openMergeIntoTargetForm()">Merge into target module…
+                  </app-brand-primary-button>
+                }
+                @if ((mergeIntoTargetOpen$ | async) && bag.data) {
+                  <div class="col gap1 merge-into-target-form">
+                    <mat-form-field appearance="outline">
+                      <mat-label>Target module ID to keep</mat-label>
+                      <input matInput
+                             type="number"
+                             min="1"
+                             inputmode="numeric"
+                             [(ngModel)]="mergeTargetModuleIdDraft"
+                             placeholder="e.g. 1896"
+                      />
+                      <mat-icon matSuffix>merge_type</mat-icon>
+                    </mat-form-field>
+                    @if ((mergeIntoTargetError$ | async); as mergeIntoTargetError) {
+                      <div class="merge-into-target-form__error">{{ mergeIntoTargetError }}</div>
+                    }
+                    <div class="row gap1">
+                      <app-brand-primary-button theme="negative"
+                                                (click$)="confirmMergeIntoTarget(bag.data)">Confirm merge
+                      </app-brand-primary-button>
+                      <app-brand-primary-button theme="warning"
+                                                (click$)="cancelMergeIntoTarget()">Cancel
+                      </app-brand-primary-button>
+                    </div>
+                  </div>
+                }
+                @if (bag.data) {
+                  <app-brand-primary-button theme="negative"
                                             matTooltip="Remove the newest panel image from this module"
                                             matTooltipPosition="above"
                                             (click$)="dataService.deleteLastPanel$.next(bag.data)">Delete last panel

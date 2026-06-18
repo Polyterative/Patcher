@@ -24,6 +24,7 @@ import {
 import { RackModuleAdderDialogComponent } from 'src/app/components/rack-parts/rack-module-adder/rack-module-adder-dialog.component';
 import { UserManagementService } from '../../features/backbone/login/user-management.service';
 import { SupabaseService } from '../../features/backend/supabase.service';
+import { MergeModuleResult } from '../../features/backend/supabase-merge';
 import {
   DbModule,
   UserModulePossessionKind
@@ -73,6 +74,8 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
   //
   readonly deleteModule$ = new Subject<number>();
   readonly deleteModuleAndOrphanManufacturer$ = new Subject<DbModule>();
+  readonly mergeIntoTargetModule$ = new Subject<{ sourceId: number; targetId: number }>();
+  readonly moduleMergeResult$ = new Subject<MergeModuleResult>();
   readonly deleteLastPanel$ = new Subject<DbModule>();
   readonly changeModule$ = new Subject<Partial<DbModule>>();
   readonly setStoreUrl$ = new Subject<{ id: number; url: string | null }>();
@@ -335,6 +338,36 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
         snackBar.open(successMessage, undefined, {duration: 2000, panelClass: 'snack-success'});
         this.router.navigate(['/modules', 'browser']);
       });
+
+    this.mergeIntoTargetModule$
+      .pipe(
+        filter(({sourceId, targetId}) => sourceId > 0 && targetId > 0),
+        switchMap(request => this.requiresAdminOrDev(request)),
+        exhaustMap(({sourceId, targetId}) => this.backend.merge.moduleInto(sourceId, targetId).pipe(
+          catchError(error => {
+            this.snackBar.open(error?.message || 'Module merge failed.', undefined, {
+              duration: 6000,
+              panelClass: 'snack-error'
+            });
+            return EMPTY;
+          })
+        )),
+        this.takeUntilDestroyed()
+      )
+      .subscribe(result => {
+        this.moduleMergeResult$.next(result);
+        this.analytics.capture('module.merged', {
+          source_id: result.sourceId,
+          target_id: result.targetId,
+          duplicate_ownership_rows_removed: result.duplicateOwnershipRowsRemoved,
+          duplicate_tag_rows_removed: result.duplicateTagRowsRemoved,
+          ownership_rows_moved: result.ownershipRowsMoved,
+          tag_rows_moved: result.tagRowsMoved,
+          rack_module_rows_moved: result.rackModuleRowsMoved
+        });
+        this.snackBar.open(this.formatMergeResultMessage(result), undefined, {duration: 5000, panelClass: 'snack-success'});
+        this.router.navigate(['/modules', 'details', result.targetId]);
+      });
     
     this.changeModule$
       .pipe(
@@ -398,5 +431,9 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
       case 'SELLS':
         return 'for sale';
     }
+  }
+
+  private formatMergeResultMessage(result: MergeModuleResult): string {
+    return `Merged module ${ result.sourceId } into ${ result.targetId }: moved ${ result.ownershipRowsMoved } ownership, ${ result.tagRowsMoved } tag, ${ result.rackModuleRowsMoved } rack rows; removed ${ result.duplicateOwnershipRowsRemoved } duplicate ownership and ${ result.duplicateTagRowsRemoved } duplicate tag rows.`;
   }
 }
