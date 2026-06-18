@@ -30,6 +30,7 @@ export class DbPaths {
 export class DbStoragePaths {
   static module_panels = 'module-panels' as const;
   static racks = 'racks' as const;
+  static patches = 'patches' as const;
   static manufacturer_logos = 'manufacturer-logos' as const;
   static module_collections = 'module-collections' as const;
 }
@@ -42,6 +43,7 @@ export class StorageUrls {
   static manufacturerLogos = `${SUPABASE_STORAGE_BASE}${DbStoragePaths.manufacturer_logos}/`;
   static moduleCollections = `${SUPABASE_STORAGE_BASE}${DbStoragePaths.module_collections}/`;
   static racks = `${SUPABASE_STORAGE_BASE}${DbStoragePaths.racks}/`;
+  static patches = `${SUPABASE_STORAGE_BASE}${DbStoragePaths.patches}/`;
 }
 
 export class QueryJoins {

@@ -76,6 +76,29 @@ export function createStorageNamespace(
       );
     },
 
+    uploadPatchPreview: (file: SupabaseStorageFile, filenameAndExtension: string) => {
+      filenameAndExtension = cleanUpFileName(filenameAndExtension);
+
+      return getUserSession$().pipe(
+        switchMap(user => {
+          if (!user) return throwError(() => new Error('Authentication required'));
+          return rxFrom(
+            supabase.storage
+              .from(DbStoragePaths.patches)
+              .upload(filenameAndExtension, file, {
+                cacheControl: '31536000',
+                contentType: 'image/svg+xml',
+                upsert: true
+              })
+          ).pipe(
+            throwIfSupabaseError(),
+            cacheBust(['patches', 'patchesWithModule']),
+            map(() => filenameAndExtension)
+          );
+        })
+      );
+    },
+
     uploadCollectionCover: (file: SupabaseStorageFile, filenameAndExtension: string) => {
       filenameAndExtension = cleanUpFileName(filenameAndExtension);
       filenameAndExtension = filenameAndExtension.split('.').join(
@@ -125,6 +148,21 @@ export function createStorageNamespace(
           ).pipe(throwIfSupabaseError());
         }),
         cacheBust(['rackWithId'])
+      );
+    },
+
+    deletePatchPreview: (filenameAndExtension: string) => {
+      filenameAndExtension = cleanUpFileName(filenameAndExtension);
+      return getUserSession$().pipe(
+        switchMap(user => {
+          if (!user) return throwError(() => new Error('Authentication required'));
+          return rxFrom(
+            supabase.storage
+              .from(DbStoragePaths.patches)
+              .remove([filenameAndExtension])
+          ).pipe(throwIfSupabaseError());
+        }),
+        cacheBust(['patches', 'patchesWithModule'])
       );
     },
 

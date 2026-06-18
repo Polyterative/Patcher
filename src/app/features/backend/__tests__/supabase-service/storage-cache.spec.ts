@@ -116,7 +116,9 @@ describe('SupabaseService - Storage & Cache', () => {
       const expectedMethods = [
         'uploadModulePanel',
         'uploadRackImage',
+        'uploadPatchPreview',
         'deleteRackImage',
+        'deletePatchPreview',
         'deletePanelFile'
       ];
       

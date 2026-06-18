@@ -54,8 +54,8 @@ describe('SupabaseService - storage', () => {
     it('should bust modules, moduleWithId and rackWithId caches', (done) => {
       spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
       setupStorageMock();
-      const bustedKeys: any[] = [];
-      service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
+      const bustedKeys: string[] = [];
+      service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as string[])));
 
       service.storage.deletePanelFile('test.jpg').subscribe({
         next: () => {
@@ -108,8 +108,8 @@ describe('SupabaseService - storage', () => {
     it('should bust rackWithId cache', (done) => {
       spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
       setupStorageMock();
-      const bustedKeys: any[] = [];
-      service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
+      const bustedKeys: string[] = [];
+      service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as string[])));
 
       service.storage.deleteRackImage('rack.jpg').subscribe({
         next: () => {
@@ -127,6 +127,59 @@ describe('SupabaseService - storage', () => {
       spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
 
       service.storage.deleteRackImage('rack.jpg').subscribe({
+        next: () => {
+          fail('Expected error for unauthenticated call');
+          done();
+        },
+        error: (err) => {
+          expect(err.message).toContain('Authentication required');
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+  });
+
+  describe('storage.deletePatchPreview', () => {
+    it('should normalise filename and call remove on the patches bucket', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
+      setupStorageMock();
+
+      service.storage.deletePatchPreview('PATCH_1_V20260618T201530123Z.SVG').subscribe({
+        next: () => {
+          expect(supabaseClient.storage.from).toHaveBeenCalledWith('patches');
+          expect(mockBucket.remove).toHaveBeenCalledWith(['patch_1_v20260618t201530123z.svg']);
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should bust patch list caches', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
+      setupStorageMock();
+      const bustedKeys: string[] = [];
+      service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as string[])));
+
+      service.storage.deletePatchPreview('patch_1_v20260618t201530123z.svg').subscribe({
+        next: () => {
+          expect(bustedKeys).toContain('patches');
+          expect(bustedKeys).toContain('patchesWithModule');
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should error when user is not authenticated', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+
+      service.storage.deletePatchPreview('patch_1_v20260618t201530123z.svg').subscribe({
         next: () => {
           fail('Expected error for unauthenticated call');
           done();
@@ -215,8 +268,8 @@ describe('SupabaseService - storage', () => {
     it('should bust module caches after successful upload', (done) => {
       spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
       setupStorageMock();
-      const bustedKeys: any[] = [];
-      service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
+      const bustedKeys: string[] = [];
+      service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as string[])));
 
       service.storage.uploadModulePanel(new Blob(), 'panel.jpg').subscribe({
         next: () => {
@@ -269,8 +322,8 @@ describe('SupabaseService - storage', () => {
     it('should bust rackWithId cache', (done) => {
       spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
       setupStorageMock();
-      const bustedKeys: any[] = [];
-      service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
+      const bustedKeys: string[] = [];
+      service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as string[])));
       
       service.storage.uploadRackImage(new Blob(), 'rack.jpg').subscribe({
         next: () => {
@@ -279,6 +332,68 @@ describe('SupabaseService - storage', () => {
         },
         error: (err) => {
           fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+  });
+
+  describe('storage.uploadPatchPreview', () => {
+    it('should upload SVG to patches bucket and return the normalised filename', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
+      setupStorageMock({data: {path: 'patch_1_v20260618t201530123z.svg'}, error: null});
+
+      service.storage.uploadPatchPreview(new Blob([], {type: 'image/svg+xml'}), 'PATCH_1_V20260618T201530123Z.SVG').subscribe({
+        next: (filename) => {
+          expect(filename).toBe('patch_1_v20260618t201530123z.svg');
+          expect(supabaseClient.storage.from).toHaveBeenCalledWith('patches');
+          expect(mockBucket.upload).toHaveBeenCalledWith(
+            'patch_1_v20260618t201530123z.svg',
+            jasmine.any(Blob),
+            jasmine.objectContaining({
+              cacheControl: '31536000',
+              contentType: 'image/svg+xml',
+              upsert: true
+            })
+          );
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should bust patch list caches', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
+      setupStorageMock();
+      const bustedKeys: string[] = [];
+      service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as string[])));
+
+      service.storage.uploadPatchPreview(new Blob([], {type: 'image/svg+xml'}), 'patch_1_v20260618t201530123z.svg').subscribe({
+        next: () => {
+          expect(bustedKeys).toContain('patches');
+          expect(bustedKeys).toContain('patchesWithModule');
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should error when user is not authenticated', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+
+      service.storage.uploadPatchPreview(new Blob([], {type: 'image/svg+xml'}), 'patch_1_v20260618t201530123z.svg').subscribe({
+        next: () => {
+          fail('Expected error for unauthenticated call');
+          done();
+        },
+        error: (err) => {
+          expect(err.message).toContain('Authentication required');
           done();
         }
       });

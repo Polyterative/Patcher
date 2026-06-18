@@ -4,7 +4,7 @@
 
 ## Status
 
-- [ ] Backend/storage direction approved — no-schema SVG renderer foundation completed; migrations/storage/RLS not applied yet.
+- [ ] Backend/storage direction approved — storage/RLS application checkpoint in progress; SVG renderer foundation completed.
 - Priority: **MEDIUM**
 - TODO section: **INFRA**
 - Owner persona on pickup: `coordinator-loop` → `planner` → `frontend-dev` → `code-reviewer`.
@@ -171,12 +171,14 @@ The rack preview pipeline already exists and is the explicit template to copy.
 
 - **Approved 2026-06-18T20:58+02:00:** backend/storage direction is approved with a new `patches.image` column for the SVG URL/path, a dedicated `patches` storage bucket, RLS writes limited to the patch owner, reads aligned with patch visibility, and a deterministic filename based on patch id/version. Read-visibility direction was simplified by the 2026-06-18T21:24+02:00 decision below. Do not apply migrations/storage/RLS from this docs-only approval checkpoint.
 - **Approved 2026-06-18T21:24+02:00:** preview storage visibility stays simple: public-registry listing is the privacy boundary, link-based access to a known SVG URL is acceptable like rack previews, and no special owner-only SVG read restriction is required for now. Do not apply migrations/storage/RLS from this docs-only approval checkpoint.
-- **Approval requested 2026-06-18T22:17+02:00:** May the next implementation checkpoint apply the exact additive SQL/storage shape below: add nullable `public.patches.image`, create a public `patches` storage bucket, and add authenticated owner/admin write/delete policies while keeping preview reads link-readable?
+- **Approved 2026-06-18T22:43+02:00:** Apply the exact additive SQL/storage shape below: add nullable `public.patches.image`, create/use a public `patches` storage bucket for link-readable SVG previews, and add authenticated owner/admin insert/update/delete storage policies. No unrelated RLS/policy changes are approved.
 
 ## Proposal-only SQL/storage checkpoint
 
-This section is a draft for maintainer review only. It has not been applied as a
-migration, Supabase MCP mutation, storage bucket change, or RLS/policy change.
+This section was approved by the product owner at 2026-06-18T22:43+02:00 for
+the next implementation checkpoint. Apply only this additive column, bucket, and
+storage-policy shape; stop any remote/backend step if tooling reveals migration
+drift, advisor failures, or a breaking production risk.
 
 ### Proposed additive migration
 
@@ -333,13 +335,14 @@ create policy "patch_previews_delete_owner_or_admin"
 
 Smallest end-to-end slice that proves the loop works on the patch detail page.
 
-- [ ] Migration: add `patches.image text null` + (separately) maintainer-created
+- [x] Migration: add `patches.image text null` + approved public
       `patches` storage bucket; capture both in the plan's Decision log.
-- [ ] Run `pnpm updateBackendTypes` and update `Patch` / `PatchMinimal` models
-      with `image?: string | null`.
-- [ ] Register `DbStoragePaths.patches = 'patches'` and
+- [x] Update generated types and `Patch` / `PatchMinimal` models with
+      `image?: string | null` (manual type patch only; `pnpm updateBackendTypes`
+      is gated by remote migration drift).
+- [x] Register `DbStoragePaths.patches = 'patches'` and
       `StorageUrls.patches = ...` in `DatabaseStrings.ts`.
-- [ ] Add `uploadPatchPreview(file, name)` (svg) and `deletePatchPreview(name)`
+- [x] Add `uploadPatchPreview(file, name)` (svg) and `deletePatchPreview(name)`
       to `supabase-storage.ts`, mirroring the rack methods 1:1, content-type
       `image/svg+xml`, cache-bust whatever key reads patch detail.
 - [x] New pure utility `patch-graph-svg.utils.ts` (alongside
@@ -503,6 +506,9 @@ When `coordinator-loop` picks this up:
 
 <!-- append-only, timestamped one-liners for non-obvious choices -->
 
+- 2026-06-18T22:50+02:00 — Added local migration `20260618224500_add_patch_svg_previews_storage.sql` for `patches.image`, public `patches` SVG bucket, and owner/admin storage write policies. Remote Supabase apply and `pnpm updateBackendTypes` were skipped because MCP migration inspection showed the linked remote is behind current local migrations; manually patched `database.types.ts` only for the additive `patches.image` shape.
+- 2026-06-18T22:55+02:00 — Reviewer approved the local backend/storage slice after fixes. Validation passed with `pnpm test-headless --include="**/supabase-service/storage*.spec.ts"`, `pnpm lint`, `node scripts/checks/check-docs.cjs`, and `git diff --check`; Supabase advisors were skipped because remote DDL/RLS was not applied.
+- 2026-06-18T22:43+02:00 — Product owner approved applying the drafted Patch SVG preview storage/RLS checkpoint: additive nullable `patches.image`, public link-readable `patches` SVG bucket, and authenticated owner/admin insert/update/delete storage policies. No unrelated RLS/policy changes are approved.
 - 2026-06-18T20:58+02:00 — Product owner approved the Patch SVG previews backend/storage direction: add `patches.image` for SVG URL/path, use a dedicated `patches` storage bucket, limit RLS writes to the patch owner, align reads with patch visibility, and use a deterministic filename based on patch id/version; no migrations/storage/RLS were applied in this docs-only checkpoint.
 - 2026-06-18T22:17+02:00 — Drafted the exact proposal-only SQL/storage checkpoint: nullable `patches.image`, public `patches` SVG bucket, deterministic `patch_<id>_v<updated>.svg` filenames, and authenticated owner/admin insert/update/delete storage policies; no migrations/storage/RLS were applied.
 - 2026-06-18T21:24+02:00 — Product owner decided Patch SVG preview storage visibility should stay simple: privacy is about avoiding public-registry listing, link-based access to a known SVG URL is acceptable like current rack previews, and no special owner-only SVG read restriction is required for now; no migrations/storage/RLS were applied in this docs-only checkpoint.
