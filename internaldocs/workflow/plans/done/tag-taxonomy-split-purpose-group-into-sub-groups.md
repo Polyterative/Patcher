@@ -47,12 +47,12 @@ Utility, VCA, VCF, VCO, Waveshape). This is unmanageable to scan.
 - [x] Draft migration SQL: `UPDATE tags SET type = <new_id> WHERE name IN (...)` for each
       group — one statement per group for clarity and reviewability.
 - [x] Get explicit user approval for regrouping.
-- [ ] Apply migration to production.
+- [x] Apply migration to production.
 - [x] Update `isBalanceRelevantTagType` to include new type names.
 - [x] Update `getPatternsForTagType` if the new types need different pattern sets.
-- [ ] Run `pnpm updateBackendTypes` after any schema changes (not needed here — `tags.type`
+- [x] Run `pnpm updateBackendTypes` after any schema changes (not needed here — `tags.type`
       column type does not change).
-- [ ] Smoke-test the tag proposer panel and balance analysis after migration.
+- [x] Smoke-test the tag proposer panel and balance analysis after migration.
 
 ---
 
@@ -60,3 +60,4 @@ Utility, VCA, VCF, VCO, Waveshape). This is unmanageable to scan.
 
 - 2026-06-18T10:57+02:00 — Product owner approved regrouping the existing tag names and keeping `Blank` as its own group; tag name strings must remain unchanged.
 - 2026-06-18T10:59+02:00 — Implemented code support for `TagType.Blank = 10` and drafted migration `20260618105927_split_purpose_tag_groups.sql`, which updates only `tags.type`.
+- 2026-06-18T12:13+02:00 — Applied production migrations `split_purpose_tag_groups` and corrective `correct_split_purpose_tag_groups`; read-back found all present approved tags on their target type, with four approved names absent from production (`Clock Gen.`, `Env. Follow`, `Envelope Gen.`, `Uncertainty`). Targeted tag/model, tag proposer, and rack-balance specs passed.
