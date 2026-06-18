@@ -68,7 +68,6 @@
               "dompurify",
               "graphology",
               "graphology-layout-forceatlas2",
-              "graphology-layout",
               "sigma",
               "dom-to-image",
               "ws"

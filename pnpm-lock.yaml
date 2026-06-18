@@ -64,15 +64,6 @@ importers:
       '@angular/ssr':
         specifier: ^22.0.2
         version: 22.0.2(62607e610fa15a49be9c0d87b9313b54)
-      '@fortawesome/angular-fontawesome':
-        specifier: 5.0.0
-        version: 5.0.0(@angular/core@22.0.2(@angular/compiler@22.0.2)(rxjs@7.8.2)(zone.js@0.16.2))
-      '@fortawesome/fontawesome-svg-core':
-        specifier: 7.2.0
-        version: 7.2.0
-      '@fortawesome/free-brands-svg-icons':
-        specifier: 7.2.0
-        version: 7.2.0
       '@ngx-pwa/local-storage':
         specifier: ^22.0.0
         version: 22.0.0(@angular/common@22.0.2(@angular/core@22.0.2(@angular/compiler@22.0.2)(rxjs@7.8.2)(zone.js@0.16.2))(rxjs@7.8.2))(@angular/core@22.0.2(@angular/compiler@22.0.2)(rxjs@7.8.2)(zone.js@0.16.2))(rxjs@7.8.2)
@@ -88,36 +79,12 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.46.1
         version: 2.99.3
-      angular-animations:
-        specifier: ^0.11.0
-        version: 0.11.0(@angular/animations@22.0.2(@angular/core@22.0.2(@angular/compiler@22.0.2)(rxjs@7.8.2)(zone.js@0.16.2)))
-      angular-html-parser:
-        specifier: ^1.8.0
-        version: 1.8.0
-      core-js:
-        specifier: ^3.23.3
-        version: 3.49.0
       graphology:
         specifier: ^0.24.1
         version: 0.24.1(graphology-types@0.24.8)
-      graphology-generators:
-        specifier: ^0.11.2
-        version: 0.11.2(graphology-types@0.24.8)
-      graphology-layout:
-        specifier: ^0.5.0
-        version: 0.5.0(graphology-types@0.24.8)
-      graphology-layout-force:
-        specifier: ^0.2.4
-        version: 0.2.4(graphology-types@0.24.8)
       graphology-layout-forceatlas2:
         specifier: ^0.8.2
         version: 0.8.2(graphology-types@0.24.8)
-      graphology-types:
-        specifier: ^0.24.3
-        version: 0.24.8
-      gsap:
-        specifier: ^3.15.0
-        version: 3.15.0
       lottie-web:
         specifier: ^5.12.2
         version: 5.13.0
@@ -1245,23 +1212,6 @@ packages:
     peerDependenciesMeta:
       '@noble/hashes':
         optional: true
-
-  '@fortawesome/angular-fontawesome@5.0.0':
-    resolution: {integrity: sha512-kxYOKI4DBz/Sl8xHVET1nJeAZYV8O+b6Gh6oY9JUBWIxlKWKyRlR9AqLl2QKpsW8n/NdRzUmz1UmKoIDuhhFAQ==}
-    peerDependencies:
-      '@angular/core': ^22.0.0
-
-  '@fortawesome/fontawesome-common-types@7.2.0':
-    resolution: {integrity: sha512-IpR0bER9FY25p+e7BmFH25MZKEwFHTfRAfhOyJubgiDnoJNsSvJ7nigLraHtp4VOG/cy8D7uiV0dLkHOne5Fhw==}
-    engines: {node: '>=6'}
-
-  '@fortawesome/fontawesome-svg-core@7.2.0':
-    resolution: {integrity: sha512-6639htZMjEkwskf3J+e6/iar+4cTNM9qhoWuRfj9F3eJD6r7iCzV1SWnQr2Mdv0QT0suuqU8BoJCZUyCtP9R4Q==}
-    engines: {node: '>=6'}
-
-  '@fortawesome/free-brands-svg-icons@7.2.0':
-    resolution: {integrity: sha512-VNG8xqOip1JuJcC3zsVsKRQ60oXG9+oYNDCosjoU/H9pgYmLTEwWw8pE0jhPz/JWdHeUuK6+NQ3qsM4gIbdbYQ==}
-    engines: {node: '>=6'}
 
   '@gar/promise-retry@1.0.3':
     resolution: {integrity: sha512-GmzA9ckNokPypTg10pgpeHNQe7ph+iIKKmhKu3Ob9ANkswreCx7R3cKmY781K8QK3AqVL3xVh9A42JvIAbkkSA==}
@@ -2656,18 +2606,9 @@ packages:
     resolution: {integrity: sha512-0ZzY9mjqV7gop/AH8pIBiAS8giXP7WcSiUfoFYIzYAK9QC5c37E4SIVtJVBMwlURc0/uNt2o4RcNRvdHa4CJ5w==}
     engines: {node: '>= 14.0.0'}
 
-  angular-animations@0.11.0:
-    resolution: {integrity: sha512-P2RuOe+T97bhgGDLtOYK9V45QA5y+kFUxoJfRAua8Ymo0bI5lWyw8oiVmBoEIZUU+nooYoJvQXgVKuZJA7/z3g==}
-    peerDependencies:
-      '@angular/animations': '>=6.0.0'
-
   angular-build-info@2.0.1:
     resolution: {integrity: sha512-WO8tSjEKIjKY2+lSpZjLztIijZUv7QgQ2+wjUxZ4crbnrl8EGmxVfWLErlDuYOLBjnJrzw8kC9Yx8c1Hk8z8Qw==}
     hasBin: true
-
-  angular-html-parser@1.8.0:
-    resolution: {integrity: sha512-n5ZowjJJs1OPG3DHDSyUXZvscQzy7uQG227ncL1NzbJEPzfb2XtBZ9qT0PW7cbD7MViho3ijawXoRLCM0ih1rw==}
-    engines: {node: '>= 6'}
 
   ansi-escapes@7.3.0:
     resolution: {integrity: sha512-BvU8nYgGQBxcmMuEeUEmNTvrMVjJNSH7RgW24vXexN4Ven6qCvy4TntnvlnwnMLTVlcRQQdbRY8NKnaIoeWDNg==}
@@ -3708,40 +3649,10 @@ packages:
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
 
-  graphology-generators@0.11.2:
-    resolution: {integrity: sha512-hx+F0OZRkVdoQ0B1tWrpxoakmHZNex0c6RAoR0PrqJ+6fz/gz6CQ88Qlw78C6yD9nlZVRgepIoDYhRTFV+bEHg==}
-    peerDependencies:
-      graphology-types: '>=0.19.0'
-
-  graphology-indices@0.17.0:
-    resolution: {integrity: sha512-A7RXuKQvdqSWOpn7ZVQo4S33O0vCfPBnUSf7FwE0zNCasqwZVUaCXePuWo5HBpWw68KJcwObZDHpFk6HKH6MYQ==}
-    peerDependencies:
-      graphology-types: '>=0.20.0'
-
-  graphology-layout-force@0.2.4:
-    resolution: {integrity: sha512-NYZz0YAnDkn5pkm30cvB0IScFoWGtbzJMrqaiH070dYlYJiag12Oc89dbVfaMaVR/w8DMIKxn/ix9Bqj+Umm9Q==}
-    peerDependencies:
-      graphology-types: '>=0.19.0'
-
   graphology-layout-forceatlas2@0.8.2:
     resolution: {integrity: sha512-OsmOuQP0xiav5Iau9W9G4eb4cGx5tDcdzx9NudG6fhi6japqD+Z45zUBcwnp/12BPBXp/PKc5pvUe3Va6AsOUA==}
     peerDependencies:
       graphology-types: '>=0.19.0'
-
-  graphology-layout@0.5.0:
-    resolution: {integrity: sha512-aIeXYPLeGMLvXIkO41TlhBv0ROFWUx1bqR2VQoJ7Mp2IW+TF+rxqMeRUrmyLHoe3HtKo8jhloB2KHp7g6fcDSg==}
-    peerDependencies:
-      graphology-types: '>=0.19.0'
-
-  graphology-metrics@2.4.0:
-    resolution: {integrity: sha512-7WOfOP+mFLCaTJx55Qg4eY+211vr1/b3D/R3biz3SXGhAaCVcWYkfabnmO4O4WBNWANEHtVnFrGgJ0kj6MM6xw==}
-    peerDependencies:
-      graphology-types: '>=0.20.0'
-
-  graphology-shortest-path@2.1.0:
-    resolution: {integrity: sha512-KbT9CTkP/u72vGEJzyRr24xFC7usI9Es3LMmCPHGwQ1KTsoZjxwA9lMKxfU0syvT/w+7fZUdB/Hu2wWYcJBm6Q==}
-    peerDependencies:
-      graphology-types: '>=0.20.0'
 
   graphology-types@0.24.8:
     resolution: {integrity: sha512-hDRKYXa8TsoZHjgEaysSRyPdT6uB78Ci8WnjgbStlQysz7xR52PInxNsmnB7IBOM1BhikxkNyCVEFgmPKnpx3Q==}
@@ -3755,9 +3666,6 @@ packages:
     resolution: {integrity: sha512-6lNz1PNTAe9Q6ioHKrXu0Lp047sgvOoHa4qmP/8mnJWCGv2iIZPQkuHPUb2/OWDWCqHpw2hKgJLJ55X/66xmHg==}
     peerDependencies:
       graphology-types: '>=0.24.0'
-
-  gsap@3.15.0:
-    resolution: {integrity: sha512-dMW4CWBTUK1AEEDeZc1g4xpPGIrSf9fJF960qbTZmN/QwZIWY5wgliS6JWl9/25fpTGJrMRtSjGtOmPnfjZB+A==}
 
   handle-thing@2.0.1:
     resolution: {integrity: sha512-9Qn4yBxelxoh2Ow62nP+Ka/kMnOXRi8BXnRaUwezLNhqelnN49xKz4F/dPP8OYLxLxq6JDtZb2i9XznUQbNPTg==}
@@ -4493,9 +4401,6 @@ packages:
     resolution: {integrity: sha512-FP+p8RB8OWpF3YZBCrP5gtADmtXApB5AMLn+vdyA+PyxCjrCs00mjyUozssO33cwDeT3wNGdLxJ5M//YqtHAJw==}
     hasBin: true
 
-  mnemonist@0.39.8:
-    resolution: {integrity: sha512-vyWo2K3fjrUw8YeeZ1zF0fy6Mu59RHokURlld8ymdUPjMlD9EC9ov1/YPqTgqRvUN9nTr3Gqfz29LYAmu0PHPQ==}
-
   modern-screenshot@4.7.0:
     resolution: {integrity: sha512-9YxN+ddPSMMlhylOv25VHzXrl9u67QRxoh7+SEewGtgUw7t6hHTrjptSDJUSne9oG4Xk/h2cwG15nIt4Hc9ujg==}
 
@@ -4753,12 +4658,6 @@ packages:
     resolution: {integrity: sha512-KvcJ9iy3crysCsgqc4+PknH/w6jkrp8JN36mpZBPwNaDRwTfMZD37YzRazNstiZUOhuF5pno9f78n9mEJBavwg==}
     engines: {node: ^20.17.0 || >=22.9.0}
     hasBin: true
-
-  pandemonium@1.5.0:
-    resolution: {integrity: sha512-9PU9fy93rJhZHLMjX+4M1RwZPEYl6g7DdWKGmGNhkgBZR5+tOBVExNZc00kzdEGMxbaAvWdQy9MqGAScGwYlcA==}
-
-  pandemonium@2.4.1:
-    resolution: {integrity: sha512-wRqjisUyiUfXowgm7MFH2rwJzKIr20rca5FsHXCMNm1W5YPP1hCtrZfgmQ62kP7OZ7Xt+cR858aB28lu5NX55g==}
 
   parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
@@ -6890,22 +6789,6 @@ snapshots:
   '@exodus/bytes@1.15.1':
     optional: true
 
-  '@fortawesome/angular-fontawesome@5.0.0(@angular/core@22.0.2(@angular/compiler@22.0.2)(rxjs@7.8.2)(zone.js@0.16.2))':
-    dependencies:
-      '@angular/core': 22.0.2(@angular/compiler@22.0.2)(rxjs@7.8.2)(zone.js@0.16.2)
-      '@fortawesome/fontawesome-svg-core': 7.2.0
-      tslib: 2.8.1
-
-  '@fortawesome/fontawesome-common-types@7.2.0': {}
-
-  '@fortawesome/fontawesome-svg-core@7.2.0':
-    dependencies:
-      '@fortawesome/fontawesome-common-types': 7.2.0
-
-  '@fortawesome/free-brands-svg-icons@7.2.0':
-    dependencies:
-      '@fortawesome/fontawesome-common-types': 7.2.0
-
   '@gar/promise-retry@1.0.3': {}
 
   '@harperfast/extended-iterable@1.0.3':
@@ -8339,20 +8222,11 @@ snapshots:
       '@algolia/requester-fetch': 5.52.0
       '@algolia/requester-node-http': 5.52.0
 
-  angular-animations@0.11.0(@angular/animations@22.0.2(@angular/core@22.0.2(@angular/compiler@22.0.2)(rxjs@7.8.2)(zone.js@0.16.2))):
-    dependencies:
-      '@angular/animations': 22.0.2(@angular/core@22.0.2(@angular/compiler@22.0.2)(rxjs@7.8.2)(zone.js@0.16.2))
-      tslib: 2.8.1
-
   angular-build-info@2.0.1:
     dependencies:
       prompts: 2.4.2
       signale: 1.4.0
       yargs: 16.2.0
-
-  angular-html-parser@1.8.0:
-    dependencies:
-      tslib: 1.14.1
 
   ansi-escapes@7.3.0:
     dependencies:
@@ -9561,50 +9435,10 @@ snapshots:
 
   graceful-fs@4.2.11: {}
 
-  graphology-generators@0.11.2(graphology-types@0.24.8):
-    dependencies:
-      graphology-metrics: 2.4.0(graphology-types@0.24.8)
-      graphology-types: 0.24.8
-      graphology-utils: 2.5.2(graphology-types@0.24.8)
-
-  graphology-indices@0.17.0(graphology-types@0.24.8):
-    dependencies:
-      graphology-types: 0.24.8
-      graphology-utils: 2.5.2(graphology-types@0.24.8)
-      mnemonist: 0.39.8
-
-  graphology-layout-force@0.2.4(graphology-types@0.24.8):
-    dependencies:
-      graphology-types: 0.24.8
-      graphology-utils: 2.5.2(graphology-types@0.24.8)
-
   graphology-layout-forceatlas2@0.8.2(graphology-types@0.24.8):
     dependencies:
       graphology-types: 0.24.8
       graphology-utils: 2.5.2(graphology-types@0.24.8)
-
-  graphology-layout@0.5.0(graphology-types@0.24.8):
-    dependencies:
-      graphology-types: 0.24.8
-      graphology-utils: 2.5.2(graphology-types@0.24.8)
-      pandemonium: 1.5.0
-
-  graphology-metrics@2.4.0(graphology-types@0.24.8):
-    dependencies:
-      graphology-indices: 0.17.0(graphology-types@0.24.8)
-      graphology-shortest-path: 2.1.0(graphology-types@0.24.8)
-      graphology-types: 0.24.8
-      graphology-utils: 2.5.2(graphology-types@0.24.8)
-      mnemonist: 0.39.8
-      pandemonium: 2.4.1
-
-  graphology-shortest-path@2.1.0(graphology-types@0.24.8):
-    dependencies:
-      '@yomguithereal/helpers': 1.1.1
-      graphology-indices: 0.17.0(graphology-types@0.24.8)
-      graphology-types: 0.24.8
-      graphology-utils: 2.5.2(graphology-types@0.24.8)
-      mnemonist: 0.39.8
 
   graphology-types@0.24.8: {}
 
@@ -9617,8 +9451,6 @@ snapshots:
       events: 3.3.0
       graphology-types: 0.24.8
       obliterator: 2.0.5
-
-  gsap@3.15.0: {}
 
   handle-thing@2.0.1: {}
 
@@ -10410,10 +10242,6 @@ snapshots:
     dependencies:
       minimist: 1.2.8
 
-  mnemonist@0.39.8:
-    dependencies:
-      obliterator: 2.0.5
-
   modern-screenshot@4.7.0: {}
 
   modify-values@1.0.1: {}
@@ -10715,12 +10543,6 @@ snapshots:
       tar: 7.5.13
     transitivePeerDependencies:
       - supports-color
-
-  pandemonium@1.5.0: {}
-
-  pandemonium@2.4.1:
-    dependencies:
-      mnemonist: 0.39.8
 
   parent-module@1.0.1:
     dependencies:

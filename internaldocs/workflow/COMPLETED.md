@@ -1,4 +1,5 @@
 # Completed Features
+- **2026-06-18** — LOW: Maintenance — Dependency deprecation audit removed unused direct dependencies, refreshed the pnpm lockfile, and documented remaining Angular/release-tooling deprecation decisions.
 
 > Archive of finished work. One-line summaries only. For strategy context see `../product/PRINCIPLES.md` and
 > `../product/ROADMAP.md`.

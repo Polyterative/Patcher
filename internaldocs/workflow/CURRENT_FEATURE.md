@@ -14,19 +14,19 @@
 
 ## Active
 
-### LOW: Maintenance — Dependency deprecation audit
+### MEDIUM: Analytics — PostHog Product Instrumentation
 
-- **Plan:** [`plans/maintenance-dependency-deprecation-audit.md`](./plans/maintenance-dependency-deprecation-audit.md)
-- **Status:** Staged for next loop — audit remaining deprecated/direct dependency warnings after the safe update batch, categorize replace/defer/accept, and remove unused deprecated packages if any are proven unused.
-- **Started:** 2026-06-18T09:29+02:00
+- **Plan:** [`plans/analytics-posthog-product-instrumentation.md`](./plans/analytics-posthog-product-instrumentation.md)
+- **Status:** Staged for loop round 2 — finish remaining code-owned instrumentation/hygiene that does not require PostHog dashboard access.
+- **Started:** 2026-06-18T09:36+02:00
 - **Coordinator:** coordinator-loop
 
 #### Layer checklist
 
-- [ ] MVP — Run `pnpm outdated` / deprecation inventory and identify direct deprecated packages.
-- [ ] Structural — Categorize each as replace, defer, or accept; remove only proven-unused dependencies.
-- [ ] Polish — Validate manifest/lock/doc changes with install, lint/build/docs checks.
+- [ ] MVP — Complete remaining production event calls for collection, feedback, and admin surfaces where existing flows support them.
+- [ ] Structural — Verify consent/DNT and no-capture safeguards in code/docs; keep analytics imports centralized.
+- [ ] Polish — Validate analytics tests/lint/docs and archive the plan if only external dashboard work remains blocked.
 
 #### Decision log
 
-- 2026-06-18T09:29+02:00 — Staged after completing five requested loops. Higher-priority open tasks remain skipped for approval/credential/tooling reasons; this dependency audit is next in TODO order and follows naturally after the completed safe dependency update and Angular deprecation slices.
+- 2026-06-18T09:36+02:00 — Staged after completing the dependency audit. Higher-priority account/security/schema tasks are skipped because they require credentials, explicit Supabase approval, or broader human coordination; this analytics slice has concrete app-code work and no schema/RLS changes.
