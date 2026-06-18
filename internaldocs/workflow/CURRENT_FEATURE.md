@@ -18,7 +18,7 @@ Status: **No active feature.** Patch SVG previews backend/storage direction is a
 
 #### Why this is next
 
-- Docs screenshot refresh has product-owner format approval: canonical docs screenshots are the desktop JPEGs produced by the current E2E output. Credentialed capture/review and any `../Patcher-docs` mutation remain separate gates.
+- Docs screenshot refresh has product-owner approvals for canonical desktop JPEG output and for using the already-created, locally verified dedicated E2E account as screenshot credentials. Visual review and any `../Patcher-docs` mutation remain separate gates; do not record or print secrets.
 - Patch SVG previews backend/storage direction is approved, but actual migrations/storage/RLS were not applied in this docs-only checkpoint.
 - Marketplace Purchase Price History has product-owner approval for detailed strategic planning of schema/RLS/currency/edit policy; implementation, migration drafts, and applying migrations/RLS remain gated until that plan is shown and approved.
 - Cross-entity Cool reactions and Module I/O support require schema/RLS/data-model approval before implementation.
