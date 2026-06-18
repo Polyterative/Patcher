@@ -32,6 +32,7 @@ import {
   HiddenUsageBucket,
   ModuleDetailDataService
 } from 'src/app/components/module-parts/module-detail-data.service';
+import { ModulePossessionCounts } from 'src/app/components/module-parts/module-detail-data.models';
 import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
@@ -89,6 +90,13 @@ export interface ModulePanelRatioDiagnostic {
   deltaPercent?: number;
   accepted?: boolean;
   error?: string;
+}
+
+interface ModulePossessionCommunityStat {
+  label: string;
+  value: string;
+  icon: string;
+  size: string;
 }
 
 export function calculateModulePanelRatioResult(
@@ -430,6 +438,18 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
 
     const possessionLabel = this.getPossessionLabel(possessionKind);
     return possessionLabel ? `${ moduleName } (${ possessionLabel })` : moduleName;
+  }
+
+  getPossessionCommunityData(counts: ModulePossessionCounts | undefined): ModulePossessionCommunityStat[] | undefined {
+    if (!counts) return undefined;
+
+    const stats: ModulePossessionCommunityStat[] = [
+      { label: 'Owners', value: counts.hasCount.toString(), icon: 'inventory_2', size: 'auto' },
+      { label: 'Wishlist', value: counts.wantsCount.toString(), icon: 'star_outline', size: 'auto' },
+      { label: 'For Sale', value: counts.sellsCount.toString(), icon: 'sell', size: 'auto' }
+    ].filter(stat => Number(stat.value) > 0);
+
+    return stats.length > 0 ? stats : undefined;
   }
 
   ngOnDestroy(): void {
