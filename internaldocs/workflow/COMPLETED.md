@@ -1,4 +1,5 @@
 # Completed Features
+- **2026-06-18** — MEDIUM: Tag taxonomy split the legacy flat PURPOSE group into Voice/Source/Filter/Modulation/Effect/Sequencing/Utility/Blank production tag types, with corrective migration coverage and tag/balance smoke tests.
 - **2026-06-18** — MEDIUM: Module public possession statistics now render static owned/wanted/selling counts on module detail pages with a minimum-3 privacy threshold and pass-through/rendering coverage; schema-backed trend charts were split into an approval-gated follow-up.
 - **2026-06-18** — MEDIUM: Sentry — Issue Monitoring & Resolution Workflow now has a credential-safe operations guide, no-network readiness helper, triage/fix/closing rubric, and a separate on-hold live-audit follow-up.
 - **2026-06-18** — LOW: Dev utils — module detail dev tools now include a guarded Merge into target module flow that moves safe common duplicate references through `SupabaseService`, aborts on patch/rack blockers, deletes through the existing module delete path, and reports counts.
