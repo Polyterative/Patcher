@@ -5,7 +5,7 @@
  */
 import {execFileSync} from 'node:child_process';
 import {copyFileSync, existsSync, readdirSync, statSync} from 'node:fs';
-import {extname, relative, resolve} from 'node:path';
+import {relative, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 const rootDir = fileURLToPath(new URL('../..', import.meta.url));
@@ -18,11 +18,13 @@ const dryRun = args.has('--dry-run');
 const help = args.has('--help') || args.has('-h');
 
 const screenshotMap = [
-  ['01-home.jpg', 'patcher-home-ipad-pro.png'],
-  ['02-modules.jpg', 'patcher-modules-ipad-pro.png'],
-  ['04-patches.jpg', 'patcher-patches-ipad-pro.png'],
-  ['06-racks.jpg', 'patcher-racks-ipad-pro.png'],
-  ['08-user-area.jpg', 'patcher-user-area-ipad-pro.png']
+  ['01-home.jpg', 'patcher-home.jpg'],
+  ['02-modules.jpg', 'patcher-modules.jpg'],
+  ['04-patches.jpg', 'patcher-patches.jpg'],
+  ['06-racks.jpg', 'patcher-racks.jpg'],
+  ['08-user-area.jpg', 'patcher-user-area.jpg'],
+  ['09-account.jpg', 'patcher-account.jpg'],
+  ['10-public-profile.jpg', 'patcher-public-profile.jpg']
 ];
 
 function usage() {
@@ -72,10 +74,6 @@ function bytes(path) {
   return statSync(path).size;
 }
 
-function hasMatchingExtension(sourceName, targetName) {
-  return extname(sourceName).toLowerCase() === extname(targetName).toLowerCase();
-}
-
 function summarizeAssetInventory() {
   const docsAssets = readdirSync(docsAssetsDir)
     .filter(fileName => /^patcher-.*\.(png|jpe?g)$/i.test(fileName))
@@ -112,9 +110,6 @@ function main() {
     if (!existsSync(sourcePath)) {
       throw new Error(`Missing source screenshot: ${ relative(rootDir, sourcePath) }`);
     }
-    if (!existsSync(targetPath)) {
-      throw new Error(`Missing existing docs asset for mapped target: ${ relative(rootDir, targetPath) }`);
-    }
 
     return {
       sourceName,
@@ -122,32 +117,21 @@ function main() {
       sourcePath,
       targetPath,
       sourceBytes: bytes(sourcePath),
-      targetBytes: bytes(targetPath),
-      canCopy: hasMatchingExtension(sourceName, targetName)
+      targetBytes: existsSync(targetPath) ? bytes(targetPath) : 0,
+      targetExists: existsSync(targetPath)
     };
   });
-  const blockedOperations = operations.filter(operation => !operation.canCopy);
-  const blockedMessage = blockedOperations.length
-    ? `Current in-repo captures are JPEGs while existing docs assets are PNGs (${ blockedOperations.map(operation => `${ operation.sourceName } -> ${ operation.targetName }`).join(', ') }). Settle the framing/naming/format decision before a mutating sync.`
-    : '';
 
   console.log(`[docs-screenshots] ${ dryRun ? 'Dry run: reviewed' : 'Preparing' } ${ operations.length } screenshot mappings for ../Patcher-docs/.gitbook/assets.`);
   for (const operation of operations) {
     const sourceLabel = relative(rootDir, operation.sourcePath);
     const targetLabel = relative(rootDir, operation.targetPath);
-    const status = operation.canCopy ? 'ready' : 'blocked: extension mismatch';
+    const status = operation.targetExists ? 'overwrite' : 'create';
     console.log(`- ${ sourceLabel } (${ operation.sourceBytes } bytes) -> ${ targetLabel } (${ operation.targetBytes } bytes currently) [${ status }]`);
 
-    if (!dryRun && !blockedMessage && operation.canCopy) {
+    if (!dryRun) {
       copyFileSync(operation.sourcePath, operation.targetPath);
     }
-  }
-
-  if (blockedMessage) {
-    if (!dryRun) {
-      throw new Error(blockedMessage);
-    }
-    console.log(`[docs-screenshots] ${ blockedMessage }`);
   }
 
   if (inventory.unmappedSourceAssets.length) {
