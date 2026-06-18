@@ -1,7 +1,5 @@
 @if ({files: service.files$|async}; as bag) {
-  <div fxFlex="auto"
-       fxLayout="column"
-       fxLayoutGap=".5rem"
+  <div class="layout-flex-auto layout-column layout-gap-05"
   >
     <div
       class="dropzone"
@@ -28,17 +26,13 @@
         <div [@fadeIn]
              class="dropzone-label"
         >
-          <div fxFlex="100"
-               fxLayout="column"
-               fxLayoutGap="2rem"
-               fxLayoutGap.xs="0rem"
+          <div class="layout-flex-full layout-column layout-gap-2 layout-gap-xs-0"
           >
-            <div fxFlex="100"
+            <div class="layout-flex-full"
                  style="font-size: 3.5rem"
             >{{ isImageOnlyMode ? "📷" : multipleFilesMode ? "🗃️" : "📁" }}
             </div>
-            <div
-              fxFlex="100">{{ "Drag the  " + (multipleFilesMode ? "files" : "file") + " here or click to pick one" }}
+            <div class="layout-flex-full">{{ "Drag the  " + (multipleFilesMode ? "files" : "file") + " here or click to pick one" }}
             </div>
           </div>
         </div>
@@ -67,10 +61,8 @@
       }
       @if (isImageOnlyMode) {
         @for (file of bag.files; track file) {
-          <div fxFlex="100"
-              fxLayout="row"
-              fxLayoutGap="1rem"
-              class="image-preview"
+          <div
+              class="image-preview layout-flex-full layout-row layout-gap-1"
               [@fadeInOut]
           >
             <div class="image-preview__frame">
@@ -88,18 +80,16 @@
                ×
               </button>
             </div>
-            <div fxFlex="100"
-                fxLayout="column"
-                fxLayoutGap="1rem"
-                 class="label"
+            <div
+                 class="label layout-flex-full layout-column layout-gap-1"
             >
-              <mat-card-subtitle fxFlex="100"
+              <mat-card-subtitle class="layout-flex-full"
               >{{ file.name.length > 144 ? (file.name | slice:0:144) + '...' : file.name }}
               </mat-card-subtitle>
-              <mat-card-subtitle fxFlex="100"
+              <mat-card-subtitle class="layout-flex-full"
               >[{{ file.type }}]
               </mat-card-subtitle>
-              <mat-card-subtitle fxFlex="100"
+              <mat-card-subtitle class="layout-flex-full"
               >{{ file.lastModified|date }}
               </mat-card-subtitle>
             </div>

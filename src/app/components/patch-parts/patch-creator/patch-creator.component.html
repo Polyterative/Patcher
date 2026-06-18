@@ -61,13 +61,13 @@
           size: 'auto'
         }
       ]"></app-lib-showcase-grid>
-      <!--          <lib-mat-form-entity fxFlex="100"-->
+      <!--          <lib-mat-form-entity-- class="layout-flex-full">
       <!--                               [type]="fields.hp.type"-->
       <!--                               [control]="fields.hp.control"-->
       <!--                               [label]="fields.hp.label"-->
       <!--          >-->
       <!--          </lib-mat-form-entity>-->
-      <!--          <lib-mat-form-entity fxFlex="100"-->
+      <!--          <lib-mat-form-entity-- class="layout-flex-full">
       <!--                               [type]="fields.rows.type"-->
       <!--                               [control]="fields.rows.control"-->
       <!--                               [label]="fields.rows.label"-->
@@ -87,12 +87,9 @@
         <mat-slide-toggle [formControl]="fields.public.control" color="primary"></mat-slide-toggle>
       </div>
       <mat-divider></mat-divider>
-      <div fxFlex
-           fxLayout="row"
-           fxLayoutGap="2rem"
-           fxLayoutGap.xs="0rem"
+      <div class="layout-flex-grow layout-row layout-gap-2 layout-gap-xs-0"
       >
-        <div fxFlex="grow"></div>
+        <div class="layout-flex-grow"></div>
         <app-brand-primary-button
           theme="positive"
           icon="add"

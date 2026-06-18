@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { RouterModule } from '@angular/router';
 import { LuxonModule } from 'luxon-angular';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -35,7 +34,6 @@ import { SupabaseService } from './supabase.service';
         canActivate: [AdminGuardService]
       }
     ]),
-    FlexLayoutModule,
     BrandPrimaryButtonComponent,
     LibGraphModule,
     HeroContentCardComponent,

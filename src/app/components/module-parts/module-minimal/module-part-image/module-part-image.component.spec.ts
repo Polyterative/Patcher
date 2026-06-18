@@ -8,7 +8,6 @@ import { TestBed } from '@angular/core/testing';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { AppViewportService } from 'src/app/shared-interproject/app-viewport.service';
 import { GetModuleHeightForStandardPipe } from '../../get-module-height-for-standard.pipe';
 import { MODULE_FORMAT_GEOMETRY } from '../../module-format-geometry.constants';
@@ -235,7 +234,6 @@ describe('ModulePartImageComponent — placeholder proportions', () => {
         GetModuleHeightForStandardPipe
       ],
       imports: [
-        FlexLayoutModule,
         MatTooltipModule,
         NoopAnimationsModule,
         RouterTestingModule

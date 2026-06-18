@@ -1,10 +1,9 @@
 <!--<lib-graph [nodes]="nodes$|async"-->
 <!--           [links]="links$|async"-->
 <!--           [clusters]="clusters$|async"-->
-<!--           fxFlex="grow"-->
+
 <!--&gt;</lib-graph>-->
-<div class="graph-overlay graph-overlay--legend"
-     fxLayoutAlign="start center">
+<div class="graph-overlay graph-overlay--legend layout-align-start-center">
 
   @for (item of legend; track item) {
     <div class="graph-legend-item"
@@ -51,10 +50,10 @@
                        [class.stale]="isStale$ | async"
             ></lib-graph>
           } @else {
-            <div fxFlex="100">
+            <div class="layout-flex-full">
               <div class="col gap1 animate-fadein-slowest"
               >
-                <mat-card-subtitle fxLayoutAlign="center start"
+                <mat-card-subtitle class="layout-align-center-start"
                                    style="padding: 4rem"
                 >Building graph...
                 </mat-card-subtitle>
@@ -62,10 +61,10 @@
             </div>
           }
         } @else {
-          <div fxFlex="100">
+          <div class="layout-flex-full">
             <div class="col gap1 animate-fadein-slowest"
             >
-              <mat-card-subtitle fxLayoutAlign="center start"
+              <mat-card-subtitle class="layout-align-center-start"
                                  style="padding: 1rem"
               >No connections in this patch
               </mat-card-subtitle>

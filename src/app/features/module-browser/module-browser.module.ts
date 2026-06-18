@@ -3,7 +3,6 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { ModuleCompositeComponent } from 'src/app/features/module-browser/module-composite/module-composite.component';
 import { AutoContentLoadingIndicatorComponent } from 'src/app/shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator/auto-content-loading-indicator.component';
 import { DevOnlyWindowComponent } from 'src/app/shared-interproject/components/@smart/dev-only-window/dev-only-window/dev-only-window.component';
@@ -107,7 +106,6 @@ import { ModuleBrowserSharedModule } from 'src/app/features/module-browser/modul
         }
       ])
     ]),
-    FlexLayoutModule,
     MatCardModule,
     HeroContentCardComponent,
     MatChipsModule,

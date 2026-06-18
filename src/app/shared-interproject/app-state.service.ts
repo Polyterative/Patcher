@@ -1,9 +1,6 @@
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { Injectable, OnDestroy } from '@angular/core';
-import {
-  MediaChange,
-  MediaObserver
-} from '@angular/flex-layout';
+import { BreakpointObserver, BreakpointState } from '@angular/cdk/layout';
 import { UntypedFormControl } from '@angular/forms';
 import {
   BehaviorSubject,
@@ -15,8 +12,7 @@ import {
   distinctUntilChanged,
   map,
   shareReplay,
-  startWith,
-  takeUntil
+  startWith
 } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { AppFormUtils } from "src/app/shared-interproject/components/@smart/mat-form-entity/app-form-utils";
@@ -53,22 +49,40 @@ const DEFAULT_LAYOUT_FLEX_WIDTH_STATE: LayoutFlexWidthState = {
   gtlg: false
 };
 
-function buildLayoutFlexWidthState(changes: MediaChange[]): LayoutFlexWidthState {
-  const aliases = new Set(changes.map((change) => change.mqAlias));
+const LAYOUT_FLEX_MEDIA_QUERIES = {
+  xs: '(max-width: 37.4375rem)',
+  sm: '(min-width: 37.5rem) and (max-width: 59.9375rem)',
+  md: '(min-width: 60rem) and (max-width: 79.9375rem)',
+  lg: '(min-width: 80rem) and (max-width: 119.9375rem)',
+  xl: '(min-width: 120rem)',
+  ltsm: '(max-width: 37.4375rem)',
+  ltmd: '(max-width: 59.9375rem)',
+  ltlg: '(max-width: 79.9375rem)',
+  ltxl: '(max-width: 119.9375rem)',
+  gtxs: '(min-width: 37.5rem)',
+  gtsm: '(min-width: 60rem)',
+  gtmd: '(min-width: 80rem)',
+  gtlg: '(min-width: 120rem)'
+} satisfies Record<keyof LayoutFlexWidthState, string>;
+
+const LAYOUT_FLEX_MEDIA_QUERY_LIST = Object.values(LAYOUT_FLEX_MEDIA_QUERIES);
+
+function buildLayoutFlexWidthState(state: BreakpointState): LayoutFlexWidthState {
+  const matches = (key: keyof LayoutFlexWidthState): boolean => !!state.breakpoints[LAYOUT_FLEX_MEDIA_QUERIES[key]];
   return {
-    xs: aliases.has('xs'),
-    sm: aliases.has('sm'),
-    md: aliases.has('md'),
-    lg: aliases.has('lg'),
-    xl: aliases.has('xl'),
-    ltsm: aliases.has('lt-sm'),
-    ltmd: aliases.has('lt-md'),
-    ltlg: aliases.has('lt-lg'),
-    ltxl: aliases.has('lt-xl'),
-    gtxs: aliases.has('gt-xs'),
-    gtsm: aliases.has('gt-sm'),
-    gtmd: aliases.has('gt-md'),
-    gtlg: aliases.has('gt-lg')
+    xs: matches('xs'),
+    sm: matches('sm'),
+    md: matches('md'),
+    lg: matches('lg'),
+    xl: matches('xl'),
+    ltsm: matches('ltsm'),
+    ltmd: matches('ltmd'),
+    ltlg: matches('ltlg'),
+    ltxl: matches('ltxl'),
+    gtxs: matches('gtxs'),
+    gtsm: matches('gtsm'),
+    gtmd: matches('gtmd'),
+    gtlg: matches('gtlg')
   };
 }
 
@@ -124,13 +138,13 @@ export class AppStateService extends SubManager implements OnDestroy {
   readonly layoutFlexWidth$: Observable<LayoutFlexWidthState>;
   
   constructor(
-    public mediaObserver: MediaObserver
+    private readonly breakpointObserver: BreakpointObserver
   ) {
     super();
-    this.layoutFlexWidth$ = this.mediaObserver.asObservable()
+    this.layoutFlexWidth$ = this.breakpointObserver.observe(LAYOUT_FLEX_MEDIA_QUERY_LIST)
       .pipe(
         this.takeUntilDestroyed(),
-        map((changes) => buildLayoutFlexWidthState(changes)),
+        map((state) => buildLayoutFlexWidthState(state)),
         auditTime(16),
         startWith(DEFAULT_LAYOUT_FLEX_WIDTH_STATE),
         distinctUntilChanged(sameLayoutFlexWidthState),

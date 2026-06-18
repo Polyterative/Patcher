@@ -3,7 +3,6 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
@@ -69,7 +68,6 @@ import { ModuleListModule } from './module-list/module-list.module';
   imports: [
     CommonModule,
     ModuleBrowserRootModule,
-    FlexLayoutModule,
     FormsModule,
     ReactiveFormsModule,
     DragDropModule,

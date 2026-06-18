@@ -1,23 +1,16 @@
-<div fxLayout="row"
-     fxLayoutGap="1rem"
+<div class="layout-row layout-gap-1"
      *ngIf="controls.length>0"
 >
   <ng-container *ngFor="let controGroup of controls; let iRow = index">
-    <div fxLayout="row wrap"
-         fxFlex="100"
-         fxLayoutGap="0.2rem"
-         class="contentRow"
+    <div
+         class="contentRow layout-row-wrap layout-flex-full layout-gap-02"
     >
       <ng-container *ngFor="let control of controGroup; let iColumn = index">
         <div [@list]="controGroup.length">
-          <div fxFlex="100"
-               fxLayout="column"
-               fxLayout.xl="row"
-               fxLayout.md="column"
-               fxLayoutGap.xl="1rem"
-               class="contentLine"
+          <div
+               class="contentLine layout-flex-full layout-column layout-row-xl layout-column-md layout-gap-1-xl"
           >
-            <lib-mat-form-entity fxFlex="100"
+            <lib-mat-form-entity class="layout-flex-full"
                                  [type]="control.type"
                                  [options$]="control.options||[]"
                                  [control]="control.control"
@@ -27,7 +20,7 @@
             </lib-mat-form-entity>
           </div>
         </div>
-        <div fxFlex="100"
+        <div class="layout-flex-full"
              [ngStyle]='{"padding-bottom": (iColumn+1)%separationTreshold===0?"4rem":"0rem"}'
         ></div>
       </ng-container>

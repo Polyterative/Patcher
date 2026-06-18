@@ -14,19 +14,19 @@
 
 ## Active
 
-### LOW: Angular — Replace deprecated Flex Layout
+### LOW: Angular — Migrate deprecated animations package usage
 
-- **Plan:** [`plans/angular-replace-deprecated-flex-layout.md`](./plans/angular-replace-deprecated-flex-layout.md)
-- **Status:** Staged for next loop — replace a coherent slice of deprecated `@angular/flex-layout` usage with native CSS/layout helpers, starting from small shared atoms and rack-image surfaces.
-- **Started:** 2026-06-18T09:03+02:00
+- **Plan:** [`plans/angular-migrate-deprecated-animations-package-usage.md`](./plans/angular-migrate-deprecated-animations-package-usage.md)
+- **Status:** Staged for next loop — inventory Angular animation triggers and migrate simple enter/leave cases where current primitives are safe; defer complex animation-package dependencies if needed.
+- **Started:** 2026-06-18T09:10+02:00
 - **Coordinator:** coordinator-loop
 
 #### Layer checklist
 
-- [ ] MVP — Inventory current `@angular/flex-layout` imports/templates and choose a small removable slice.
-- [ ] Structural — Replace the selected slice with native CSS/flex/grid while preserving responsive behavior.
-- [ ] Polish — Add or update focused tests where behavior can regress and run targeted validation plus lint.
+- [ ] MVP — Inventory `@angular/animations` imports/triggers and classify simple vs complex usages.
+- [ ] Structural — Migrate simple enter/leave usage or document blockers for cases that cannot safely move yet.
+- [ ] Polish — Run targeted animation/component tests plus lint/build/docs checks.
 
 #### Decision log
 
-- 2026-06-18T09:03+02:00 — Staged after completing the safe dependency batch. Higher-priority open tasks remain skipped for explicit approval/credential/tooling reasons; among remaining LOW Angular maintenance tasks, Flex Layout appears first in TODO order and can be advanced through a scoped non-schema code slice.
+- 2026-06-18T09:10+02:00 — Staged after completing Flex Layout removal. Higher-priority open tasks remain skipped for approval/credential/tooling reasons; among remaining LOW Angular maintenance tasks, animation deprecation is next in TODO order and can be approached as a code-only migration/audit.

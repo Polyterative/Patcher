@@ -1,12 +1,10 @@
 <lib-clean-card>
-  <div fxLayout="column"
-       fxLayoutGap="0.2em"
+  <div class="layout-column layout-gap-02"
   >
-    <div fxFlex="100"
-         class="mat-display-1"
+    <div
+         class="mat-display-1 layout-flex-full"
     >{{label}}</div>
-    <div fxFlex="100"
-         fxLayoutAlign="end"
+    <div class="layout-flex-full layout-align-end"
          style="padding-right:2rem; padding-bottom:2rem"
     >
       <mat-icon style="font-size:4rem"
@@ -16,10 +14,7 @@
       </mat-icon>
     </div>
     <mat-dialog-content>
-      <div fxFlex="100"
-           fxLayout="column"
-           fxLayoutGap="2rem"
-           fxLayoutGap.xs="0rem"
+      <div class="layout-flex-full layout-column layout-gap-2 layout-gap-xs-0"
            style="padding-bottom: 1rem"
       ></div>
 
@@ -27,14 +22,10 @@
 
   </div>
   <mat-dialog-actions>
-    <div fxFlex="100"
-         fxLayout="row"
-         fxLayoutGap="2rem"
-         fxLayoutGap.xs="0rem"
+    <div class="layout-flex-full layout-row layout-gap-2 layout-gap-xs-0"
     >
-      <app-brand-primary-button
+      <app-brand-primary-button class="layout-flex-grow"
         theme="primary"
-              fxFlex="grow"
               [routerLink]="!disabled?link:null"
               [disabled]="disabled"
       >Apri

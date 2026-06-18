@@ -1,7 +1,7 @@
 @if (containImage) {
-  <div fxLayoutAlign="center center"
+  <div
        [routerLink]="disableNavigation ? null : ['/modules/details',data.id]"
-       class="clickable modulePartImageHost"
+       class="clickable modulePartImageHost layout-align-center-center"
        [@.disabled]="disableEnterAnimation"
        #tooltipAnchor
        [matTooltip]="tooltip"

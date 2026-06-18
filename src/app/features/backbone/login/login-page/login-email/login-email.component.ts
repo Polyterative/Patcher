@@ -7,7 +7,6 @@ import {
 } from '@angular/core';
 import { UserLoginDataService } from '../user-login-data.service';
 import { FormControl } from '@angular/forms';
-import { FlexModule } from '@angular/flex-layout/flex';
 import { MatFormEntityComponent } from '../../../../../shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { BrandPrimaryButtonComponent } from '../../../../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 
@@ -17,7 +16,7 @@ import { BrandPrimaryButtonComponent } from '../../../../../shared-interproject/
     templateUrl: './login-email.component.html',
     styleUrls: ['./login-email.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [FlexModule, MatFormEntityComponent, BrandPrimaryButtonComponent]
+    imports: [MatFormEntityComponent, BrandPrimaryButtonComponent]
 })
 export class LoginEmailComponent implements OnInit {
   

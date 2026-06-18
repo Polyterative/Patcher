@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
@@ -61,7 +60,6 @@ import { UserCollectionsComponent } from 'src/app/features/routes/user-area/user
         canActivate: [AuthGuard, UsernameGuard],
       }
     ]),
-    FlexLayoutModule,
     BrandPrimaryButtonComponent,
     ScreenWrapperComponent,
     MatExpansionModule,

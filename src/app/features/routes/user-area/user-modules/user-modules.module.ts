@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatDividerModule } from '@angular/material/divider';
 import { ModuleListModule } from 'src/app/features/module-browser/module-list/module-list.module';
 import { UserModulesComponent } from 'src/app/features/routes/user-area/user-modules/user-modules.component';
@@ -24,7 +23,6 @@ import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-s
     CommonModule,
     ModuleListModule,
     HeroContentCardComponent,
-    FlexLayoutModule,
     BrandPrimaryButtonComponent,
     MatCardModule,
     MatButtonModule,

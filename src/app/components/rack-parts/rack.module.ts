@@ -2,7 +2,6 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { RouterModule } from '@angular/router';
 import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.module';
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
@@ -104,7 +103,6 @@ import { InputDialogModule } from "src/app/shared-interproject/dialogs/input-dia
     ReactiveFormsModule,
     MatCardModule,
     BrandPrimaryButtonComponent,
-    FlexLayoutModule,
     MatDividerModule,
     MatFormEntityComponent,
     MatIconModule,

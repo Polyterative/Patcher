@@ -70,7 +70,6 @@ import {
   TooltipPosition
 } from "@angular/material/tooltip";
 import { CommonModule } from '@angular/common';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatButtonModule } from "@angular/material/button";
 import { MatInputModule } from "@angular/material/input";
 import { MatIconModule } from "@angular/material/icon";
@@ -103,7 +102,6 @@ export interface IMatFormEntityConfig {
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    FlexLayoutModule,
     MatButtonModule,
     MatTooltipModule,
     MatInputModule,

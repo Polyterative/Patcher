@@ -1,9 +1,8 @@
 @if (linksData.links.length > 0) {
-  <div fxLayout="column "
-       fxLayoutGap="1rem"
+  <div class="layout-column layout-gap-1"
   >
     @for (group of linksData.links; track group) {
-      <div fxFlex="100">
+      <div class="layout-flex-full">
         <lib-clean-card class="depadding"
         >
           <mat-nav-list class="depadding"
@@ -24,13 +23,11 @@
                        [disableRipple]="bag.disabled"
                     >
                       @if (cardLink.label) {
-                        <span matLine
-                              fxLayoutAlign="baseline"
+                        <span class="layout-align-baseline" matLine
                         >{{ cardLink.label }}</span>
                       }
                       @if (cardLink.icon) {
-                        <mat-icon
-                          fxLayoutAlign="baseline"
+                        <mat-icon class="layout-align-baseline"
                         >{{ cardLink.icon }}
                         </mat-icon>
                       }
@@ -45,13 +42,11 @@
                        [disableRipple]="bag.disabled"
                     >
                       @if (cardLink.label) {
-                        <span matLine
-                              fxLayoutAlign="baseline"
+                        <span class="layout-align-baseline" matLine
                         >{{ cardLink.label }}</span>
                       }
                       @if (cardLink.icon) {
-                        <mat-icon
-                          fxLayoutAlign="baseline"
+                        <mat-icon class="layout-align-baseline"
                         >{{ cardLink.icon }}
                         </mat-icon>
                       }

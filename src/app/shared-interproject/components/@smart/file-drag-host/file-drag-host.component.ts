@@ -18,7 +18,6 @@ import {
 import { debounceTime } from 'rxjs/operators';
 import { SubManager } from '../../../directives/subscription-manager';
 import { FileDragHostService } from './file-drag-host.service';
-import { FlexModule } from '@angular/flex-layout/flex';
 import { MatCardSubtitle } from '@angular/material/card';
 import { AsyncPipe, SlicePipe, DatePipe } from '@angular/common';
 
@@ -54,7 +53,7 @@ import { AsyncPipe, SlicePipe, DatePipe } from '@angular/common';
             ])
         ])
     ],
-    imports: [FlexModule, MatCardSubtitle, AsyncPipe, SlicePipe, DatePipe]
+    imports: [MatCardSubtitle, AsyncPipe, SlicePipe, DatePipe]
 })
 export class FileDragHostComponent extends SubManager implements OnInit, OnDestroy {
   @Input()

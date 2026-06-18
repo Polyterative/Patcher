@@ -3,7 +3,6 @@ import {
   Component,
   Input
 } from '@angular/core';
-import { FlexLayoutModule } from '@angular/flex-layout';
 
 
 @Component({
@@ -11,8 +10,7 @@ import { FlexLayoutModule } from '@angular/flex-layout';
   templateUrl: './restricted-entity.component.html',
   styleUrls: ['./restricted-entity.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
-  imports: [FlexLayoutModule]
+  standalone: true
 })
 export class RestrictedEntityComponent {
   @Input() disabled: boolean = false;

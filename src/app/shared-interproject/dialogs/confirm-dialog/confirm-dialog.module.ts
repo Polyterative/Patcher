@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { BrandPrimaryButtonComponent } from '../../components/@visual/brand-primary-button/brand-primary-button.component';
 import { ConfirmDialogComponent } from './confirm-dialog.component';
 import { MatFormEntityComponent } from "../../components/@smart/mat-form-entity/mat-form-entity.component";
@@ -14,7 +13,6 @@ import { MatButtonModule } from "@angular/material/button";
   imports: [
     CommonModule,
     MatDialogModule,
-    FlexLayoutModule,
     MatButtonModule,
     BrandPrimaryButtonComponent,
     MatDialogModule,

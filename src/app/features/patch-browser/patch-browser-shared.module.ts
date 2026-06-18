@@ -2,7 +2,6 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
@@ -52,7 +51,6 @@ import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@
   imports: [
     CommonModule,
     PatchModule,
-    FlexLayoutModule,
     MatCardModule,
     MatIconModule,
     MatSnackBarModule,
