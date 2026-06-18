@@ -2,7 +2,7 @@
 
 ## Status
 
-Staged for next coordinator-loop — MEDIUM. Two-phase work (in-repo capture pipeline first, external docs sync second). Dedicated E2E account cleanup is now complete; canonical docs screenshots are the desktop JPEGs produced by the current E2E output, and product owner has approved using that already-created/locally verified dedicated E2E account for screenshot credentials. Product owner has approved local-only mutation of the sibling `../Patcher-docs` repo during guarded screenshot sync; pushing `../Patcher-docs` remains out of scope unless explicitly requested.
+Completed 2026-06-18 — MEDIUM. Two-phase work (in-repo capture pipeline first, external docs sync second). Dedicated E2E account cleanup is now complete; canonical docs screenshots are the desktop JPEGs produced by the current E2E output, and product owner has approved using that already-created/locally verified dedicated E2E account for screenshot credentials. Product owner has approved local-only mutation of the sibling `../Patcher-docs` repo during guarded screenshot sync; pushing `../Patcher-docs` remains out of scope unless explicitly requested.
 
 ## User intent
 
@@ -204,3 +204,5 @@ When this plan is picked up by `coordinator-loop`:
 - 2026-06-18T20:59+02:00 — Product owner approved the canonical docs screenshot format as desktop JPEG exactly as produced by the current E2E output. This removes the PNG/iPad-Pro framing question; credentialed capture/visual review remains separately gated.
 - 2026-06-18T20:59+02:00 — Product owner approved the docs screenshot pipeline to mutate the local sibling `../Patcher-docs` checkout during guarded screenshot sync. This approval is local-only: the sync must not commit or push `../Patcher-docs`, and pushing remains out of scope unless explicitly requested.
 - 2026-06-18T21:00+02:00 — Product owner approved using the already-created and locally verified dedicated E2E account for Docs screenshot credentials via the existing local/secret mechanisms. Do not print or commit the credential values; visual review remains a separate approval gate.
+
+- 2026-06-18T21:02+02:00 — Product owner resumed the approved gates. Authenticated desktop JPEG capture succeeded for 10 surfaces; account screenshot text was redacted before capture; local-only `../Patcher-docs` sync created stable JPEG assets and migrated markdown references without committing or pushing the docs repo. Visual review used the generated contact sheet and account preview.

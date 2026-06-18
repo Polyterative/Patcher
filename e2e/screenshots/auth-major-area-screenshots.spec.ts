@@ -7,8 +7,7 @@ import {
   test
 } from '@playwright/test';
 import {
-  openOwnedPatchDetailsInEditMode,
-  openOwnedRackDetailsInEditMode
+  openOwnedPatchDetailsInEditMode
 } from '../helpers/user-owned-entities';
 
 
@@ -108,23 +107,21 @@ async function getPublicConnectedPatchId(): Promise<number> {
 
 async function setHomeHeroPatch(page: Page, patchId: number): Promise<void> {
   await page.waitForTimeout(1_200);
-  const patchInjected = await page.evaluate((resolvedPatchId: number) => {
+  await page.waitForFunction((resolvedPatchId: number) => {
     const ng = (window as {ng?: {getComponent?: (element: Element) => any}}).ng;
     if (!ng?.getComponent) {
       return false;
     }
 
-    const homeRoot = document.querySelector('app-home');
-    if (!homeRoot) {
+    const heroRoot = document.querySelector('app-home-experience-hero');
+    if (!heroRoot) {
       return false;
     }
 
-    const component = ng.getComponent(homeRoot);
-    component.patchDetailDataService.updateSinglePatchData$.next(resolvedPatchId);
+    const component = ng.getComponent(heroRoot);
+    component?.patchDetailDataService?.updateSinglePatchData$?.next(resolvedPatchId);
     return true;
-  }, patchId);
-
-  expect(patchInjected).toBeTruthy();
+  }, patchId, {timeout: 20_000});
 }
 
 async function revealHomeHeroGraph(page: Page): Promise<boolean> {
@@ -132,29 +129,17 @@ async function revealHomeHeroGraph(page: Page): Promise<boolean> {
     () => {
       const ng = (window as {ng?: {getComponent?: (element: Element) => any}}).ng;
       const patchGraphHost = document.querySelector('app-home-experience-hero .patch-graph-shell app-patch-graph');
-      const graphHost = document.querySelector('app-home-experience-hero .patch-graph-shell lib-graph');
-      if (!ng?.getComponent || !patchGraphHost || !graphHost) {
+      if (!ng?.getComponent || !patchGraphHost) {
         return false;
       }
 
       const patchGraphComponent = ng.getComponent(patchGraphHost);
-      const graphComponent = ng.getComponent(graphHost);
       const hasGraphData = (patchGraphComponent?.nodes$?.value?.length ?? 0) > 0;
-      if (!hasGraphData || !graphComponent) {
+      if (!hasGraphData) {
         return false;
       }
 
-      graphComponent.loaded = true;
-      graphComponent.cd?.detectChanges?.();
-      graphComponent.renderer?.resize?.();
-      graphComponent.renderer?.refresh?.();
-
-      const invisibleContainer = graphHost.querySelector('.invisible');
-      if (invisibleContainer instanceof HTMLElement) {
-        invisibleContainer.classList.remove('invisible');
-      }
-
-      return !graphHost.textContent?.includes('Graph loading...');
+      return !patchGraphHost.textContent?.includes('Building graph...');
     },
     undefined,
     {timeout: 20_000}
@@ -170,11 +155,35 @@ async function captureViewport(
 ): Promise<void> {
   await waitForScreenshotReady(page, focusSelector, readyScopeSelector);
   await page.waitForTimeout(settleDelayMs);
+  if (fileName === '09-account.jpg') {
+    await redactAccountScreenshotData(page);
+  }
   await page.screenshot({
     path: path.join(OUTPUT_DIR, fileName),
     fullPage: false,
     type: 'jpeg',
     quality: 82
+  });
+}
+
+async function redactAccountScreenshotData(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const replacements: Array<[RegExp, string]> = [
+      [/\bpatcher-e2e-\d+@patcher\.xyz\b/gi, 'docs-screenshot@patcher.xyz'],
+      [/\bpatcher-e2e-\d+\b/gi, 'Docs screenshot account'],
+      [/\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi, 'Dedicated docs screenshot account']
+    ];
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    let textNode = walker.nextNode();
+
+    while (textNode) {
+      let text = textNode.textContent ?? '';
+      for (const [pattern, replacement] of replacements) {
+        text = text.replace(pattern, replacement);
+      }
+      textNode.textContent = text;
+      textNode = walker.nextNode();
+    }
   });
 }
 
@@ -320,7 +329,9 @@ async function prepareHome(page: Page): Promise<void> {
   await expect(page.getByRole('link', {name: /log in/i}).first()).toBeVisible({timeout: 20_000});
   await expect(page.getByRole('link', {name: /my profile/i})).toHaveCount(0);
   await setHomeHeroPatch(page, patchId);
-  await expect(page.locator('app-home-experience-hero .patch-graph-shell lib-graph').first()).toBeVisible({timeout: 20_000});
+  await expect(page.locator('app-home-experience-hero .patch-graph-shell app-patch-graph').first()).toBeVisible({
+    timeout: 20_000
+  });
   await revealHomeHeroGraph(page);
 }
 
@@ -369,8 +380,25 @@ async function prepareUserArea(page: Page): Promise<void> {
   await expect(page.locator('app-user-modules, app-user-racks, app-user-patches').first()).toBeVisible({timeout: 20_000});
 }
 
-async function prepareRackDetailsEditingCentered(page: Page): Promise<void> {
-  await openOwnedRackDetailsInEditMode(page);
+async function prepareAccount(page: Page): Promise<void> {
+  await page.goto('/user/account');
+  await expect(page).toHaveURL(/\/user\/account/, {timeout: 20_000});
+  await expect(page.locator('app-user-management .account-shell').first()).toBeVisible({timeout: 20_000});
+  await expect(page.getByRole('heading', {name: /Account management/i}).first()).toBeVisible({timeout: 20_000});
+}
+
+async function preparePublicProfile(page: Page): Promise<void> {
+  await page.goto('/u/Polyterative');
+  await expect(page).toHaveURL(/\/u\/Polyterative/, {timeout: 20_000});
+  await expect(page.locator('app-public-profile .public-profile-page').first()).toBeVisible({timeout: 20_000});
+  await expect(page.getByRole('heading', {name: /Public profile/i}).first()).toBeVisible({timeout: 20_000});
+}
+
+async function prepareRackDetailsCentered(page: Page): Promise<void> {
+  await page.goto('/racks/tmS5m7-YosQr');
+  await expect(page).toHaveURL(/\/racks\/tmS5m7-YosQr/, {timeout: 20_000});
+  await expect(page.getByRole('heading', {name: /Rack details/i}).first()).toBeVisible({timeout: 20_000});
+  await expect(page.locator('app-rack-composite').first()).toBeVisible({timeout: 20_000});
   await centerElementOnViewport(page, 'app-rack-composite');
 }
 
@@ -399,8 +427,15 @@ const SCREENSHOT_TARGETS: ScreenshotTarget[] = [
     focusSelector: 'app-rack-micro, app-empty-state',
     readyScopeSelector: 'app-rack-list'
   },
-  {fileName: '07-rack-details.jpg', prepare: prepareRackDetailsEditingCentered, focusSelector: 'app-rack-composite'},
-  {fileName: '08-user-area.jpg', prepare: prepareUserArea, focusSelector: 'app-user-area-root', settleDelayMs: 1_500}
+  {fileName: '07-rack-details.jpg', prepare: prepareRackDetailsCentered, focusSelector: 'app-rack-composite'},
+  {fileName: '08-user-area.jpg', prepare: prepareUserArea, focusSelector: 'app-user-area-root', settleDelayMs: 1_500},
+  {fileName: '09-account.jpg', prepare: prepareAccount, focusSelector: 'app-user-management .account-shell', settleDelayMs: 1_500},
+  {
+    fileName: '10-public-profile.jpg',
+    prepare: preparePublicProfile,
+    focusSelector: 'app-public-profile .public-profile-page',
+    settleDelayMs: 1_500
+  }
 ];
 
 test.describe('Major area screenshot automation', () => {

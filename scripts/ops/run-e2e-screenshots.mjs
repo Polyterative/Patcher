@@ -64,6 +64,10 @@ function normalizeForwardedArgs(args) {
 
   for (let index = 0; index < args.length; index++) {
     const arg = args[index];
+    if (arg === '--') {
+      continue;
+    }
+
     const blocked = [...blockedForwardedOptions].some(option => arg === option || arg.startsWith(option));
 
     if (blocked) {
