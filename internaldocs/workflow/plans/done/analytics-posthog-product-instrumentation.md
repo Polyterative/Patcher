@@ -2,6 +2,8 @@
 
 #### MEDIUM: Analytics — PostHog Product Instrumentation
 
+**Status:** Done for code-owned repository work; PostHog dashboard creation remains external/manual.
+
 **Why:** Sentry catches errors but tells us nothing about *what users actually do*.
 We want per-feature usage stats, funnels, and per-event detail dashboards so product
 decisions stop being guesswork. PostHog Cloud (EU, free tier ≤1M events/mo) was
@@ -30,13 +32,15 @@ that answers concrete product questions.
 
 - [x] Re-add prod-only guards to `AnalyticsService.capture/identify/reset` and
       `getPostHog()` once dev verification is done.
-- [ ] Add a `cookie_consent` / `respect_dnt` confirmation pass — verify no events
+- [x] Add a `cookie_consent` / `respect_dnt` confirmation pass — verify no events
       fire when DNT is on; mention PostHog in privacy copy if not already covered.
+      ✅ Code pass: `posthog-loader.ts` sets `respect_dnt: true`; live browser verification remains a deploy/manual check.
 - [x] Add a build-time super-property: `register({ release: build.version, commit: build.git.hash })`
       so dashboards can slice by release. ✅ Done in `main.ts`.
-- [ ] Mask sensitive autocapture surfaces: confirm password fields and any email
+- [x] Mask sensitive autocapture surfaces: confirm password fields and any email
       inputs carry `data-ph-no-capture` (PostHog autocapture default already skips
-      `<input type="password">`, but verify on login + reset-password forms).
+      `<input type="password">`, but verify on login + reset-password forms). ✅ Added markers to login,
+      signup, password reset, password-reset request, and raw module-flag note fields.
 
 ### Sentry ↔ PostHog boundary (do NOT cross these lines)
 
@@ -77,8 +81,8 @@ duplicate alerts, and confused dashboards. Keep them split:
 | `module.collection_toggled` | collection toggle | `module_id`, `state` (added / removed) |
 | `search.performed` | module browser search submit | `query_len`, `filters_active`, `result_count` |
 | `manufacturer.viewed` | mfr page | `manufacturer_id` |
-| `feedback.submitted` | feedback box | `length` |
-| `admin.action_performed` | admin panel | `action` |
+| `feedback.submitted` | module report / feedback submission | `category`, `length` |
+| `admin.action_performed` | admin flag panel | `action` |
 
 ## Layer 2 — Instrument the pipelines
 
@@ -91,9 +95,12 @@ reactive pipelines so events fire next to the side effect that produces them.
 - [x] **Patch domain** — create / delete / connection add / remove. ✅ Done.
 - [x] **Module browser** — `search.performed`; `module.viewed`; `source` param deferred. ✅ Done.
 - [x] **Manufacturer page** — `manufacturer.viewed` on enter. ✅ Done.
-- [ ] **Collection / Cool / Feedback / Admin** — sprinkle remaining events.
+- [x] **Collection / Cool / Feedback / Admin** — sprinkle remaining events. ✅ Collection events already
+      exist; feedback is captured from the existing module-flag submission flow with category/length only;
+      admin flag resolve/reopen/delete actions now emit `admin.action_performed`; no distinct "Cool"
+      action flow exists in current app code.
 - [ ] Spot-check every PR in PostHog Live Events with `env = development` filter
-      before merging.
+      before merging. **Blocked/manual:** requires PostHog dashboard access and deploy/dev verification setup.
 
 ## Layer 3 — Dashboards (PostHog UI, no code)
 
@@ -163,3 +170,11 @@ Build these in PostHog and pin them to a "Patcher" dashboard folder.
 - 2026-06-10 — Initial wiring landed (posthog-js, AnalyticsService, identity
   handler, AdGuard allowlist). Currently enabled in dev for verification —
   Layer 0 must revert that before this plan is closed.
+- 2026-06-18 — Round 2 closed the code-owned slice: DNT is handled by
+  `respect_dnt: true`; auth/password-reset inputs and module-flag notes are marked
+  `data-ph-no-capture`; existing collection instrumentation was documented; module
+  reports emit `feedback.submitted` with category/length only; admin flag
+  resolve/reopen/delete emits `admin.action_performed`. PostHog Live Events and
+  dashboard creation remain external/manual because they require PostHog UI access.
+
+- 2026-06-18 — Archived after reviewer approval and green targeted checks, PostHog import check, docs check, and `pnpm lint`.

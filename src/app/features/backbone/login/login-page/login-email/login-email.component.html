@@ -2,12 +2,14 @@
 >
   <lib-mat-form-entity class="layout-flex-full"
                        [dataPack]="dataService.fields.user"
+                       noCapture
                        formFieldAppearanceType="fill"
   >
   </lib-mat-form-entity>
   
   <lib-mat-form-entity class="layout-flex-full"
                        [dataPack]="dataService.fields.password"
+                       noCapture
                        (enterPressed)="dataService.mailLoginClick$.next()"
                        formFieldAppearanceType="fill"
   >

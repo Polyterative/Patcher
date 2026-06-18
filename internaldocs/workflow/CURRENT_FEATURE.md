@@ -14,19 +14,19 @@
 
 ## Active
 
-### MEDIUM: Analytics — PostHog Product Instrumentation
+### HIGH: Security — Audit Remediation
 
-- **Plan:** [`plans/analytics-posthog-product-instrumentation.md`](./plans/analytics-posthog-product-instrumentation.md)
-- **Status:** Staged for loop round 2 — finish remaining code-owned instrumentation/hygiene that does not require PostHog dashboard access.
-- **Started:** 2026-06-18T09:36+02:00
+- **Plan:** [`plans/security-audit-remediation.md`](./plans/security-audit-remediation.md)
+- **Status:** Staged for loop round 3 — apply safe repo-code security remediations that do not require credential rotation, RLS/policy changes, migrations, or external service access.
+- **Started:** 2026-06-18T09:45+02:00
 - **Coordinator:** coordinator-loop
 
 #### Layer checklist
 
-- [ ] MVP — Complete remaining production event calls for collection, feedback, and admin surfaces where existing flows support them.
-- [ ] Structural — Verify consent/DNT and no-capture safeguards in code/docs; keep analytics imports centralized.
-- [ ] Polish — Validate analytics tests/lint/docs and archive the plan if only external dashboard work remains blocked.
+- [ ] MVP — Remove tracked/local secret values from committed config templates and disable public production source maps/named chunks.
+- [ ] Structural — Add safe redirect/noopener/bootstrap-error hardening where code-owned and low risk.
+- [ ] Polish — Validate focused checks, lint, and docs; document any remaining manual/approval-only audit items.
 
 #### Decision log
 
-- 2026-06-18T09:36+02:00 — Staged after completing the dependency audit. Higher-priority account/security/schema tasks are skipped because they require credentials, explicit Supabase approval, or broader human coordination; this analytics slice has concrete app-code work and no schema/RLS changes.
+- 2026-06-18T09:45+02:00 — Staged after analytics because credential/account and Supabase/RLS items remain blocked, but this plan still contains safe repo-code hardening that can be completed without external approval.

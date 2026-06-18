@@ -1,4 +1,5 @@
 # Completed Features
+- **2026-06-18** — MEDIUM: Analytics — PostHog instrumentation now covers remaining code-owned feedback/admin events, documents collection events, and masks auth/report text from autocapture; external dashboard setup is documented as manual.
 - **2026-06-18** — LOW: Maintenance — Dependency deprecation audit removed unused direct dependencies, refreshed the pnpm lockfile, and documented remaining Angular/release-tooling deprecation decisions.
 
 > Archive of finished work. One-line summaries only. For strategy context see `../product/PRINCIPLES.md` and

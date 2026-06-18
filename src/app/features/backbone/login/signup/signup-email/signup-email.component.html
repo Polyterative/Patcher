@@ -1,19 +1,23 @@
 <div class="col"
 >
   <lib-mat-form-entity [dataPack]="dataService.fields.username"
+                       noCapture
                        formFieldAppearanceType="fill"
   >
   </lib-mat-form-entity>
   <lib-mat-form-entity [dataPack]="dataService.fields.email"
+                       noCapture
                        formFieldAppearanceType="fill"
   >
   </lib-mat-form-entity>
 
   <lib-mat-form-entity [dataPack]="dataService.fields.password"
+                       noCapture
                        formFieldAppearanceType="fill"
   >
   </lib-mat-form-entity>
   <lib-mat-form-entity [dataPack]="dataService.fields.passwordAgain"
+                       noCapture
                        (enterPressed)="dataService.mailSignClick$.next()"
                        formFieldAppearanceType="fill"
   >

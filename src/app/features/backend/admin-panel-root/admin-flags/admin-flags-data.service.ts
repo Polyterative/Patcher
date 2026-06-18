@@ -21,6 +21,7 @@ import {
 } from 'rxjs/operators';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 import { AdminFlagRow } from 'src/app/features/backend/supabase-get';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import {
@@ -77,6 +78,7 @@ export class AdminFlagsDataService extends SubManager {
   constructor(
     private backend: SupabaseService,
     private snackBar: MatSnackBar,
+    private analytics: AnalyticsService,
     destroyRef?: DestroyRef
   ) {
     super(destroyRef);
@@ -94,23 +96,33 @@ export class AdminFlagsDataService extends SubManager {
 
     this.resolveFlag$.pipe(
       exhaustMap(({id, resolved}) => this.backend.update.moduleFlagResolved(id, resolved).pipe(
+        map(() => resolved),
         catchError(() => {
           SharedConstants.errorCustom(this.snackBar, 'Failed to update flag.');
           return EMPTY;
         })
       )),
       this.takeUntilDestroyed()
-    ).subscribe(() => this._refresh$.next());
+    ).subscribe(resolved => {
+      this.analytics.capture('admin.action_performed', {
+        action: resolved ? 'flag_resolved' : 'flag_reopened'
+      });
+      this._refresh$.next();
+    });
 
     this.deleteFlag$.pipe(
       exhaustMap(id => this.backend.delete.moduleFlag(id).pipe(
+        map(() => undefined),
         catchError(() => {
           SharedConstants.errorCustom(this.snackBar, 'Failed to delete flag.');
           return EMPTY;
         })
       )),
       this.takeUntilDestroyed()
-    ).subscribe(() => this._refresh$.next());
+    ).subscribe(() => {
+      this.analytics.capture('admin.action_performed', { action: 'flag_deleted' });
+      this._refresh$.next();
+    });
   }
 
   getCategoryLabel(category: string): string {
