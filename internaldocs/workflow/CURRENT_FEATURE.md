@@ -14,19 +14,19 @@
 
 ## Active
 
-### LOW: Maintenance — Update libraries (Sentry SDK and others)
+### LOW: Angular — Replace deprecated Flex Layout
 
-- **Plan:** [`plans/maintenance-update-libraries.md`](./plans/maintenance-update-libraries.md)
-- **Status:** Staged for next loop — run a safe patch/minor dependency update batch, prioritising Sentry and security-relevant overrides; avoid framework major changes.
-- **Started:** 2026-06-18T08:49+02:00
+- **Plan:** [`plans/angular-replace-deprecated-flex-layout.md`](./plans/angular-replace-deprecated-flex-layout.md)
+- **Status:** Staged for next loop — replace a coherent slice of deprecated `@angular/flex-layout` usage with native CSS/layout helpers, starting from small shared atoms and rack-image surfaces.
+- **Started:** 2026-06-18T09:03+02:00
 - **Coordinator:** coordinator-loop
 
 #### Layer checklist
 
-- [ ] MVP — Align Sentry Angular/browser packages and security-relevant overrides without major framework changes.
-- [ ] Structural — Apply safe patch/minor dependency bumps and refresh the pnpm lockfile with `pnpm install`.
-- [ ] Polish — Run package-update validation (`pnpm lint`, targeted tests, and build if practical) and document any deferred major updates.
+- [ ] MVP — Inventory current `@angular/flex-layout` imports/templates and choose a small removable slice.
+- [ ] Structural — Replace the selected slice with native CSS/flex/grid while preserving responsive behavior.
+- [ ] Polish — Add or update focused tests where behavior can regress and run targeted validation plus lint.
 
 #### Decision log
 
-- 2026-06-18T08:49+02:00 — Staged after completing rack preview. Higher-priority open tasks remain skipped because Manufacturer Accounts / Cool / tag taxonomy / public possession trends require explicit schema/RLS or product approval, E2E cleanup needs credential/secret rotation, Security Audit Remediation mixes approval-sensitive credential/RLS work, and Sentry triage tooling is unavailable in this CLI environment. The dependency update plan has a safe code/package slice with no external approval.
+- 2026-06-18T09:03+02:00 — Staged after completing the safe dependency batch. Higher-priority open tasks remain skipped for explicit approval/credential/tooling reasons; among remaining LOW Angular maintenance tasks, Flex Layout appears first in TODO order and can be advanced through a scoped non-schema code slice.
