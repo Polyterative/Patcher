@@ -51,6 +51,10 @@ The safe repository-code security hardening slice is complete, but several audit
 - Any Supabase RLS/policy/migration changes have explicit user approval and generated types are refreshed when applicable.
 - Production deployment security settings are validated after rollout.
 
+## Approval queue
+
+- **GitHub Actions secret rotation:** current available token lacks permission to read/write Actions secrets. Please either grant a token/session with Actions secret permissions or rotate the relevant secrets manually in GitHub, then confirm which secret names were updated.
+
 ## Validation strategy
 
 - Credential/history work: owner confirmation plus clean secret scan.
@@ -60,3 +64,4 @@ The safe repository-code security hardening slice is complete, but several audit
 ## Decision log
 
 - 2026-06-18T10:25+02:00 — Split from `security-audit-remediation.md` after completing the autonomous safe repo-code slice; kept on hold because remaining items require human approval, external credentials, production deployment, or shared-history coordination.
+- 2026-06-18T20:02+02:00 — GitHub Actions secret rotation remains queued: the current token lacks Actions secret permissions, so an owner must grant a suitably scoped session or rotate the secrets manually before automation can continue.

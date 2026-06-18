@@ -177,6 +177,12 @@ External (sibling repo, separate git history — must not be auto-committed by t
 - **Module / patch / rack id stability:** module `1025`, owned patch / rack lookups via helpers — confirm these will not change identity over time, or pin them via a fixture-managed identifier.
 - **Open question:** should screenshots live in this repo (under `src/assets/screenshots/`) or only in `Patcher-docs`? Today they live in both implicitly. The plan recommends keeping them generated-but-gitignored here and committed only in `Patcher-docs`, but this needs a maintainer call.
 
+## Approval queue
+
+- **Credential gate:** provide sanctioned local `E2E_TEST_EMAIL` and `E2E_TEST_PASSWORD` values (or confirm which maintainer machine should run them) so `pnpm test:e2e:screenshots` can capture current artifacts and a coordinator can visually review every generated image.
+- **External docs gate:** approve whether the next sync should keep current in-repo desktop JPEGs, switch the capture output to PNG, or preserve the historical `patcher-*-ipad-pro.png` framed naming before any mutating `../Patcher-docs` copy.
+- **Docs repo mutation gate:** after the format/framing decision, explicitly approve a local-only sync into a clean `../Patcher-docs` checkout; the script will not commit or push.
+
 ## Coordinator-loop handoff
 
 When this plan is picked up by `coordinator-loop`:
