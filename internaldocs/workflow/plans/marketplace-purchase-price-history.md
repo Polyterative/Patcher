@@ -4,8 +4,8 @@
 
 ## Status
 
-Backlog intake. Priority: HIGH. Product area: marketplace / price hub foundation. This can ship before public profiles
-because it is private collection metadata with immediate solo-tool value.
+On hold — no-schema money-helper foundation implemented; schema/RLS approval remains blocked. Priority: HIGH. Product area: marketplace / price hub foundation.
+This can ship before public profiles because it is private collection metadata with immediate solo-tool value.
 
 ## User intent
 
@@ -63,11 +63,13 @@ because it proves the money-value type, currency handling, UI copy, and owner-on
 
 ## MVP layer
 
+- [x] No-schema foundation: add import-safe helpers for normalizing currency, parsing user-entered prices into integer minor
+      units, and formatting integer minor-unit values for display.
 - [ ] Propose and approve `user_module_acquisitions` schema / RLS before migration work.
 - [ ] Add optional price-paid fields to the add-to-collection / possession transition flow.
 - [ ] Create owner-only backend methods for acquisition rows.
 - [ ] Show latest acquisition price in the user's module collection detail context.
-- [ ] Validate currency and integer minor-unit conversion with unit tests.
+- [x] Validate currency and integer minor-unit conversion with unit tests.
 
 ## Structural layer
 
@@ -138,6 +140,17 @@ completed-sale / re-acquisition workflows.
 - Decide whether older acquisition rows are editable forever or locked after a short correction window.
 - Decide if private acquisition rows ever contribute to public aggregates; default should be no.
 
+## Approval queue
+
+- **Approve `user_module_acquisitions` schema/RLS?** Permit a new owner-only acquisition ledger table with integer minor
+  unit amounts, ISO currency codes, optional source/note, and no public reads. Default recommendation: approve the private
+  ledger shape, but do not apply migrations/RLS until the exact SQL and policies are reviewed.
+- **Confirm MVP currency policy.** Default recommendation: accept ISO 4217 currency codes, normalize to uppercase, and start
+  with common currencies (`EUR`, `USD`, `GBP`, `CHF`, `JPY`, `CAD`, `AUD`) in UI suggestions while the helper remains
+  generic.
+- **Confirm acquisition edit policy.** Default recommendation: allow owner edits/deletes indefinitely for MVP because rows are
+  private self-tracking data, then revisit locking only if rows feed public aggregate market data.
+
 ## Coordinator-loop handoff
 
 Start here before any other marketplace item if the user wants early market-value progress without public-profile or PII
@@ -147,3 +160,6 @@ dependencies. Stop before any migration/RLS work until the user approves the pro
 
 <!-- Append timestamped one-liners as the plan progresses. -->
 - 2026-06-18T11:26+02:00 — Intake split purchase-price history from public marketplace because it delivers solo value and avoids profile/chat/address dependencies.
+- 2026-06-18T20:28+02:00 — Selected a no-schema money-helper foundation slice while schema/RLS work remains gated; this unblocks parsing/formatting tests without touching backend state or real user data.
+- 2026-06-18T20:30+02:00 — Completed the import-safe money-helper foundation with targeted tests for normalization, decimal parsing, separator handling, JPY zero-decimal behavior, and display fallbacks.
+- 2026-06-18T20:34+02:00 — Parked the remaining MVP steps on explicit schema/RLS approval; no backend methods, migrations, policies, or real data mutations were attempted.

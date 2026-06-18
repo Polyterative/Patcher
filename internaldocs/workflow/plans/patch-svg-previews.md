@@ -4,7 +4,7 @@
 
 ## Status
 
-- [~] In progress — no-schema SVG renderer foundation completed; backend/storage/UI slices remain blocked until approval.
+- [ ] On hold — no-schema SVG renderer foundation completed; backend/storage/UI slices remain blocked until approval.
 - Priority: **MEDIUM**
 - TODO section: **INFRA**
 - Owner persona on pickup: `coordinator-loop` → `planner` → `frontend-dev` → `code-reviewer`.
