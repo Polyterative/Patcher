@@ -119,6 +119,48 @@ describe('SupabaseService - auth methods', () => {
         }
       });
     }, TEST_TIMEOUT);
+
+    it('should return null when profile lookup returns no data', (done) => {
+      const sessionUser = {
+        id: 'rich-user-without-profile',
+        email: 'missing-profile@test.com',
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-01T00:00:00Z',
+        app_metadata: {provider: 'email'}
+      };
+      spyOn(supabaseClient.auth, 'getSession').and.returnValue(
+        Promise.resolve({data: {session: {user: sessionUser}}, error: null})
+      );
+
+      type ProfileLookupResponse = {
+        data: null;
+        error: null;
+      };
+      type ProfileQueryMock = {
+        select: () => ProfileQueryMock;
+        filter: () => ProfileQueryMock;
+        then: Promise<ProfileLookupResponse>['then'];
+      };
+      const profileLookupResponse: ProfileLookupResponse = {data: null, error: null};
+      const profileMock: ProfileQueryMock = {
+        select: () => profileMock,
+        filter: () => profileMock,
+        then: (onfulfilled, onrejected) => Promise.resolve(profileLookupResponse).then(onfulfilled, onrejected)
+      };
+
+      spyOn(supabaseClient, 'from').and.returnValue(profileMock as never);
+
+      service.auth.getRichUserSession$().subscribe({
+        next: (user) => {
+          expect(user).toBeNull();
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
   });
 
   describe('hasAdminRole$', () => {

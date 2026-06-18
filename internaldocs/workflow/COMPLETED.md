@@ -1,4 +1,5 @@
 # Completed Features
+- **2026-06-18** — HIGH: E2E — Dedicated Test Account Cleanup created a login-verified dedicated test account, updated local credentials, hardened auth setup/profile restoration, serialized auth E2E to avoid single-account races, and documented GitHub secret rotation as a permission follow-up.
 - **2026-06-18** — MEDIUM: Bug — Tag taxonomy Voice group now contains only hypothetical instrument/sound tags; production `tags.type` data moved `Full Voice` and `VCO` to Source and `VCA` to Utility with read-back verification.
 - **2026-06-18** — MEDIUM: Bug — Rack list preview images now reserve their frame, fade in on actual bitmap load, reset load state on filename changes, and preserve fallback/reduced-motion behavior with component regressions.
 - **2026-06-18** — MEDIUM: Bug — Comments composer input now fills the comments rail with scoped full-width form-field styles, rendered-width regression coverage, and desktop/mobile runtime snapshot verification.

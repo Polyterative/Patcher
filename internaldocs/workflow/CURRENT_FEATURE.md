@@ -12,28 +12,28 @@
 
 ## Active
 
-### E2E — Dedicated Test Account Cleanup
+### Docs screenshot pipeline refresh
 
-Plan: [`plans/e2e-dedicated-test-account-cleanup.md`](./plans/e2e-dedicated-test-account-cleanup.md)
+Plan: [`plans/docs-screenshot-pipeline-refresh.md`](./plans/docs-screenshot-pipeline-refresh.md)
 
-Status: **Staged for next coordinator-loop.** Product owner approved cleanup/creation of dedicated test-account data when needed, with the explicit boundary that real user data must not be touched.
+Status: **Staged for next coordinator-loop.** Dedicated E2E test account cleanup is complete locally; start with an in-repo screenshot capture audit. Do not edit or commit anything in `../Patcher-docs` autonomously.
 
 #### Why this is next
 
-The just-completed tag-taxonomy bug is closed and archived. Per user priority, the loop should prefer small bugs/fixes and fastest-to-close tactical work before larger Marketplace/schema features. This E2E infrastructure item is already approved, unblocks screenshot/auth validation reliability, and has a narrow data-safety boundary.
+The completed E2E cleanup unblocks authenticated screenshot reliability. Per user priority, this is smaller and safer than the remaining Marketplace/schema work, and the MVP can be limited to auditing/fixing in-repo screenshot captures before any external docs sync.
 
 #### Layer checklist
 
-- [ ] MVP: inspect current E2E credential wiring, test-account identifiers, and existing auth E2E data dependencies without touching real user data.
-- [ ] Structural: create or repair only dedicated test-account fixtures/data as needed, and document the safe cleanup path.
-- [ ] Polish: run `pnpm test:e2e:auth` when credentials are available, record any secret-rotation follow-up, and keep generated E2E artifacts out of git.
+- [ ] MVP: run/audit `pnpm test:e2e:screenshots`, inspect generated major-area images, and fix only in-repo capture selectors/data prep if outputs are stale or empty.
+- [ ] Structural: add missing docs-parity surfaces and a guarded sync script only after captures are trustworthy.
+- [ ] Polish: document the regenerate/review/sync procedure and record any manual visual approval gates.
 
 #### Validation strategy
 
-- Inspect relevant E2E scripts/specs and local env wiring first.
-- Run targeted auth E2E validation with `pnpm test:e2e:auth` if dedicated credentials are configured in this environment.
-- Run `node scripts/checks/check-docs.cjs` after workflow doc updates.
+- Run `pnpm test:e2e:screenshots` with the dedicated auth account.
+- Inspect generated images from `src/assets/screenshots/major-area-screenshots/` before treating them as publishable.
+- Run `node scripts/checks/check-docs.cjs` after workflow/doc updates.
 
 #### Decision log
 
-- 2026-06-18T19:17+02:00 — Staged this as the next actionable task because the product owner pre-approved it, it is narrower than remaining Marketplace/schema work, and it must not touch real user data.
+- 2026-06-18T20:07+02:00 — Staged after E2E cleanup because the auth account dependency is now satisfied and the MVP is a bounded, no-schema, in-repo quality audit; external `Patcher-docs` changes remain out of scope without an explicit later sync step.
