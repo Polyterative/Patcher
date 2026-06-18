@@ -16,7 +16,7 @@
 
 Plan: [`plans/bug-tag-taxonomy-voice-group-miscategorization.md`](./plans/bug-tag-taxonomy-voice-group-miscategorization.md)
 
-Status: **Staged for the next loop.** Proposal/read-only phase only; do not apply migrations, RLS/policy changes, or tag data mutations without explicit human approval.
+Status: **Proposal drafted; awaiting manual approval.** Proposal/read-only phase only; do not apply migrations, RLS/policy changes, or tag data mutations without explicit human approval.
 
 #### Why this is next
 
@@ -24,9 +24,9 @@ Five requested implementation loops are complete. The remaining HIGH/product wor
 
 #### Layer checklist
 
-- [ ] MVP: read current tag group state and draft a revised categorization proposal table.
-- [ ] Structural: if a new group is proposed, outline enum/display/balance-analysis changes without applying them.
-- [ ] Polish: capture follow-up notes for missing modulation tags or canonical taxonomy docs.
+- [x] MVP: read current tag group state and draft a revised categorization proposal table.
+- [x] Structural: proposed no new group; documented that enum/display/balance-analysis changes are not needed unless product chooses a different taxonomy.
+- [x] Polish: captured approval-gate notes and deferred follow-ups in the plan.
 
 #### Validation strategy
 
@@ -37,3 +37,4 @@ Five requested implementation loops are complete. The remaining HIGH/product wor
 #### Decision log
 
 - 2026-06-18T18:25+02:00 — Coordinator staged this proposal-first task for the next loop because it is the next actionable non-destructive backlog item; all mutation/apply steps remain approval-gated.
+- 2026-06-18T18:55+02:00 — Executor completed the read-only proposal phase using Supabase MCP production read-back only. Proposal keeps voice-character tags in `Voice`, moves `VCA` to `Utility`, moves `VCO` to `Source`, and requires manual approval before any migration draft or Supabase mutation.
