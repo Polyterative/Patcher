@@ -6,6 +6,7 @@ import {
 } from '@angular/router';
 import { of } from 'rxjs';
 import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
+import { SupabaseLoginResponse } from 'src/app/features/backend/supabase.types';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { UserManagementService } from '../user-management.service';
 import { UserSignupDataService } from './user-signup-data.service';
@@ -17,9 +18,22 @@ describe('UserSignupDataService', () => {
   let router: jasmine.SpyObj<Router>;
   let analytics: jasmine.SpyObj<AnalyticsService>;
 
+  function loginResponse(returnUrl: string | null): SupabaseLoginResponse {
+    return {
+      returnUrl,
+      user: {
+        id: 'u-1',
+        email: 'new@example.com',
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-01T00:00:00Z',
+        username: 'newuser'
+      }
+    };
+  }
+
   beforeEach(() => {
     userManagementService = jasmine.createSpyObj<UserManagementService>('UserManagementService', ['signup', 'login$', 'isUsernameAvailableForSignup$']);
-    router = jasmine.createSpyObj<Router>('Router', ['navigate']);
+    router = jasmine.createSpyObj<Router>('Router', ['navigateByUrl']);
     analytics = jasmine.createSpyObj<AnalyticsService>('AnalyticsService', ['capture', 'identify', 'reset']);
 
     TestBed.configureTestingModule({
@@ -72,7 +86,7 @@ describe('UserSignupDataService', () => {
     });
     expect(SharedConstants.successSignup).not.toHaveBeenCalled();
     expect(userManagementService.login$).not.toHaveBeenCalled();
-    expect(router.navigate).not.toHaveBeenCalled();
+    expect(router.navigateByUrl).not.toHaveBeenCalled();
   });
 
   it('logs the user in after signup when no confirmation step is required', () => {
@@ -87,16 +101,7 @@ describe('UserSignupDataService', () => {
       },
       requiresEmailConfirmation: false
     }));
-    userManagementService.login$.and.returnValue(of({
-      returnUrl: null,
-      user: {
-        id: 'u-1',
-        email: 'new@example.com',
-        created_at: '2024-01-01T00:00:00Z',
-        updated_at: '2024-01-01T00:00:00Z',
-        username: 'newuser'
-      }
-    } as any));
+    userManagementService.login$.and.returnValue(of(loginResponse(null)));
 
     service.mailSignClick$.next();
 
@@ -107,7 +112,7 @@ describe('UserSignupDataService', () => {
     expect(SharedConstants.successSignup).toHaveBeenCalled();
     expect(SharedConstants.confirmMail).not.toHaveBeenCalled();
     expect(userManagementService.login$).toHaveBeenCalledWith('new@example.com', 'password123');
-    expect(router.navigate).toHaveBeenCalledWith(['/user/area']);
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/user/area');
   });
 
   it('shows errorSignup feedback and stops when signup throws', () => {
@@ -119,7 +124,7 @@ describe('UserSignupDataService', () => {
     service.mailSignClick$.next();
 
     expect(SharedConstants.errorSignup).toHaveBeenCalledWith(jasmine.anything(), errorMsg);
-    expect(router.navigate).not.toHaveBeenCalled();
+    expect(router.navigateByUrl).not.toHaveBeenCalled();
   });
 
   it('navigates to returnUrl from query params when present', () => {
@@ -134,6 +139,7 @@ describe('UserSignupDataService', () => {
         {provide: Router, useValue: router},
         {provide: ActivatedRoute, useValue: routeWithReturn},
         {provide: UserManagementService, useValue: userManagementService},
+        {provide: AnalyticsService, useValue: analytics},
         {provide: MatSnackBar, useValue: jasmine.createSpyObj('MatSnackBar', ['open'])}
       ]
     });
@@ -149,11 +155,46 @@ describe('UserSignupDataService', () => {
       user: {id: 'u-1', email: 'x@x.com', created_at: '', updated_at: ''},
       requiresEmailConfirmation: false
     }));
-    userManagementService.login$.and.returnValue(of({returnUrl: null, user: {}} as any));
+    userManagementService.login$.and.returnValue(of(loginResponse(null)));
 
     svc.mailSignClick$.next();
 
-    expect(router.navigate).toHaveBeenCalledWith(['/modules/browser']);
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/modules/browser');
+  });
+
+  it('falls back when signup returnUrl points outside the app', () => {
+    const routeWithReturn = {
+      snapshot: {queryParamMap: {get: () => 'https://evil.example/phish'}}
+    };
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        UserSignupDataService,
+        {provide: Router, useValue: router},
+        {provide: ActivatedRoute, useValue: routeWithReturn},
+        {provide: UserManagementService, useValue: userManagementService},
+        {provide: AnalyticsService, useValue: analytics},
+        {provide: MatSnackBar, useValue: jasmine.createSpyObj('MatSnackBar', ['open'])}
+      ]
+    });
+    const svc = TestBed.inject(UserSignupDataService);
+    svc.fields.username.control.setValue('returnuser');
+    svc.fields.email.control.setValue('x@x.com');
+    svc.fields.password.control.setValue('pass1234');
+    svc.fields.passwordAgain.control.setValue('pass1234');
+    userManagementService.isUsernameAvailableForSignup$.and.returnValue(of(true));
+
+    spyOn(SharedConstants, 'successSignup').and.callFake(() => {});
+    userManagementService.signup.and.returnValue(of({
+      user: {id: 'u-1', email: 'x@x.com', created_at: '', updated_at: ''},
+      requiresEmailConfirmation: false
+    }));
+    userManagementService.login$.and.returnValue(of(loginResponse(null)));
+
+    svc.mailSignClick$.next();
+
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/user/area');
   });
 
   it('fields start with empty values', () => {

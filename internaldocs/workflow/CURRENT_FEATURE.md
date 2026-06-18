@@ -14,19 +14,19 @@
 
 ## Active
 
-### HIGH: Security — Audit Remediation
+### LOW: Dev utils — "Merge into target module" action
 
-- **Plan:** [`plans/security-audit-remediation.md`](./plans/security-audit-remediation.md)
-- **Status:** Staged for loop round 3 — apply safe repo-code security remediations that do not require credential rotation, RLS/policy changes, migrations, or external service access.
-- **Started:** 2026-06-18T09:45+02:00
+- **Plan:** [`plans/dev-utils-merge-into-target-module.md`](./plans/dev-utils-merge-into-target-module.md)
+- **Status:** Staged for loop round 4 — implement the dev-only duplicate module merge action without schema/RLS changes or raw SQL.
+- **Started:** 2026-06-18T10:25+02:00
 - **Coordinator:** coordinator-loop
 
 #### Layer checklist
 
-- [ ] MVP — Remove tracked/local secret values from committed config templates and disable public production source maps/named chunks.
-- [ ] Structural — Add safe redirect/noopener/bootstrap-error hardening where code-owned and low risk.
-- [ ] Polish — Validate focused checks, lint, and docs; document any remaining manual/approval-only audit items.
+- [ ] MVP — Add safe backend merge orchestration for common reference tables and abort on patch-port/instance blockers.
+- [ ] Structural — Wire module-detail data service and dev-utils inline form with cache/error handling.
+- [ ] Polish — Add focused tests, reviewer pass, lint/docs validation, and archive.
 
 #### Decision log
 
-- 2026-06-18T09:45+02:00 — Staged after analytics because credential/account and Supabase/RLS items remain blocked, but this plan still contains safe repo-code hardening that can be completed without external approval.
+- 2026-06-18T10:25+02:00 — Staged after the security safe-code slice. Higher-priority remaining items are blocked by credentials, explicit Supabase approval, or external services; this dev-only tool has a detailed no-migration plan and is actionable in repo code.

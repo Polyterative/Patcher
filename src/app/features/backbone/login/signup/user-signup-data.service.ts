@@ -31,6 +31,7 @@ import {
   applyUsernameAvailabilityError,
   usernameValidators
 } from '../username-validation';
+import { normalizeInternalReturnUrl } from '../safe-return-url';
 
 
 @Injectable()
@@ -179,7 +180,7 @@ export class UserSignupDataService extends SubManager {
       )
       .subscribe(x => {
         const returnUrl = this.activated.snapshot.queryParamMap.get('returnUrl');
-        this.router.navigate([returnUrl || x.returnUrl || '/user/area']);
+        this.router.navigateByUrl(normalizeInternalReturnUrl(returnUrl || x.returnUrl));
       });
     
   }

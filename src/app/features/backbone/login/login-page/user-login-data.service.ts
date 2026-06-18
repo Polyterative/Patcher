@@ -24,6 +24,7 @@ import { IMatFormEntityConfig } from 'src/app/shared-interproject/components/@sm
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { UserManagementService } from '../user-management.service';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
+import { normalizeInternalReturnUrl } from '../safe-return-url';
 
 
 interface PasswordResetResult {
@@ -108,7 +109,7 @@ export class UserLoginDataService extends SubManager {
         this.takeUntilDestroyed()
       )
       .subscribe(x => {
-        this.router.navigate([x.returnUrl ? x.returnUrl : '/user/area']);
+        this.router.navigateByUrl(normalizeInternalReturnUrl(x.returnUrl));
       });
   }
   
