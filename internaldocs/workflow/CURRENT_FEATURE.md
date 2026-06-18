@@ -20,7 +20,7 @@ Backlog entries:
 - `internaldocs/workflow/plans/e2e-dedicated-test-account-cleanup.md` (folded as Chunk A — prerequisite)
 - `internaldocs/workflow/plans/e2e-multi-instance-patching.md` (Chunks B–D — primary deliverable)
 
-Status: **Active. No migrations, no schema, no RLS. Pure E2E + harness work. Local happy-path scaffold landed; runtime auth verification still needs non-empty local credentials.**
+Status: **Active / partially blocked. No migrations, no schema, no RLS. Pure E2E + harness work. Local happy-path scaffold now executes non-skipped and passes; connection cases are blocked on deterministic connectable module data.**
 
 #### Why this is the next chunk (CTO call)
 
@@ -51,9 +51,9 @@ Strategically, the right move is to fold the cleanup into the same workstream as
 - The auto-instance feature in the patch editor (multiple copies of the same module, labelled `(1)`, `(2)`, …, with per-instance CV connections) is exercised by ~30 unit specs but never validated through the real DOM, the real router, the real data services, and the real Supabase persistence path. Every refactor of the patch editor is one regression away from breaking instance numbering, duplicate-connection rejection, instance-deletion fallout, or legacy-patch back-compat — and we wouldn't know until a user reports it.
 - E2E credentials currently live on a personal Supabase account (per `e2e-dedicated-test-account-cleanup.md`). That couples the test harness to one developer's identity, leaks personal data into CI artefacts, and risks a credential rotation breaking everyone else's pipeline.
 
-#### Primary outcome
+#### Target outcome
 
-Every box in `plans/e2e-multi-instance-patching.md` is checked, running green from a dedicated, shareable test account whose secrets live only in the standard `.env` + GitHub Actions secrets. Locally, `pnpm test:e2e:auth --include="**/auth-patch-multi-instance*.spec.ts"` exits 0; in CI, the auth E2E job runs against the new account.
+The remaining open boxes in `plans/e2e-multi-instance-patching.md` are checked after deterministic test data exists, running green from a dedicated, shareable test account whose secrets live only in the standard `.env` + GitHub Actions secrets. Locally, `pnpm test:e2e:auth --include="**/auth-patch-multi-instance*.spec.ts"` exits 0 with non-skipped tests; in CI, the auth E2E job runs against the new account once secret rotation is completed.
 
 #### Assumptions and CTO decisions
 
@@ -164,3 +164,4 @@ The chunk order below is the contract for any execution agent. Do not reorder.
 - 2026-06-18T11:49+02:00 — Locked: spec lives in `e2e/auth-patch-multi-instance.spec.ts` as a single file with ten `test()` cases mapping 1:1 to the plan checklist.
 - 2026-06-18T12:17+02:00 — CTO approved local `.env` E2E credentials for local auth E2E authoring, with secret values protected and CI/GitHub Actions secret rotation explicitly deferred.
 - 2026-06-18T12:17+02:00 — Coordinator round landed the local-unblocked multi-instance happy-path scaffold and auth runner include handling. Runtime `pnpm test:e2e:auth --include="**/auth-patch-multi-instance.spec.ts"` currently skips because this worktree's `.env` keys are present but empty, so the plan stays active and unchecked until non-empty local values are supplied and the spec executes.
+- 2026-06-18T13:04+02:00 — Local `.env` auth credentials are now non-empty. The multi-instance spec uses the same committed Supabase URL/anon-key fallback pattern as sibling auth E2E specs, and `pnpm test:e2e:auth --include="**/auth-patch-multi-instance.spec.ts"` ran 4/4 non-skipped tests green. Connection cases remain blocked until the test account/catalogue exposes an approved module with a manufacturer plus at least one input CV and one output CV; CI secret rotation remains deferred.
