@@ -20,13 +20,14 @@ Status: **No active feature.** Patch SVG previews backend/storage direction is a
 
 - Docs screenshot refresh has product-owner format approval: canonical docs screenshots are the desktop JPEGs produced by the current E2E output. Credentialed capture/review and any `../Patcher-docs` mutation remain separate gates.
 - Patch SVG previews backend/storage direction is approved, but actual migrations/storage/RLS were not applied in this docs-only checkpoint.
-- Marketplace Purchase Price History is gated on `user_module_acquisitions` schema/RLS approval after the pure helper foundation.
+- Marketplace Purchase Price History has product-owner approval for detailed strategic planning of schema/RLS/currency/edit policy; implementation, migration drafts, and applying migrations/RLS remain gated until that plan is shown and approved.
 - Cross-entity Cool reactions and Module I/O support require schema/RLS/data-model approval before implementation.
 
 #### Layer checklist
 
 - [x] Marketplace helper foundation committed-ready: deterministic integer-minor-unit money parsing/formatting helpers with targeted unit coverage.
 - [x] Patch SVG previews backend/storage direction approval recorded.
+- [ ] Draft Marketplace Purchase Price History strategic plan in a separate checkpoint; do not draft/apply migrations or policies until the plan is approved.
 - [ ] Select the next implementation task in a separate checkpoint.
 
 #### Validation strategy
@@ -42,3 +43,5 @@ Status: **No active feature.** Patch SVG previews backend/storage direction is a
 - 2026-06-18T20:34+02:00 — No further safe backlog implementation remains after the helper foundation: all remaining open candidates are approval-, credential-, external-docs-, dependency-, or schema/RLS-gated.
 - 2026-06-18T20:58+02:00 — Product owner approved Patch SVG previews backend/storage direction (`patches.image`, dedicated `patches` bucket, owner-only writes, visibility-aligned reads, deterministic patch id/version filename); no migrations/storage/RLS were applied here.
 - 2026-06-18T20:59+02:00 — Product owner chose the canonical docs screenshot format: desktop JPEG as produced by the current E2E output. This records format/framing approval only; no credentials are required and `../Patcher-docs` must not be mutated in this checkpoint.
+- 2026-06-18T21:00+02:00 — Product owner approved Marketplace Purchase Price History detailed strategic planning for schema/RLS/currency/edit policy; do not draft/apply migrations, policies, backend methods, or schema changes until the plan is shown and separately approved.
+- 2026-06-18T21:00+02:00 — Product owner approved the Docs screenshot pipeline to use the already-created and locally verified dedicated E2E account for screenshot credentials. Store/use the credentials only through existing local/secret mechanisms; do not print, document, or commit secret values. Visual review and docs repo mutation remain separate gates.

@@ -4,7 +4,7 @@
 
 ## Status
 
-On hold — no-schema money-helper foundation implemented; schema/RLS approval remains blocked. Priority: HIGH. Product area: marketplace / price hub foundation.
+Planning approved — no-schema money-helper foundation implemented; detailed strategic planning for schema/RLS/currency/edit policy is approved. Implementation remains gated: do not draft/apply migrations, policies, backend methods, or schema changes until the detailed plan is shown to and approved by the product owner. Priority: HIGH. Product area: marketplace / price hub foundation.
 This can ship before public profiles because it is private collection metadata with immediate solo-tool value.
 
 ## User intent
@@ -65,7 +65,7 @@ because it proves the money-value type, currency handling, UI copy, and owner-on
 
 - [x] No-schema foundation: add import-safe helpers for normalizing currency, parsing user-entered prices into integer minor
       units, and formatting integer minor-unit values for display.
-- [ ] Propose and approve `user_module_acquisitions` schema / RLS before migration work.
+- [~] Draft detailed strategic plan for `user_module_acquisitions` schema, owner-only RLS, MVP currency policy, and acquisition edit/delete policy; show it for product-owner approval before any migration/policy draft or implementation.
 - [ ] Add optional price-paid fields to the add-to-collection / possession transition flow.
 - [ ] Create owner-only backend methods for acquisition rows.
 - [ ] Show latest acquisition price in the user's module collection detail context.
@@ -84,6 +84,17 @@ because it proves the money-value type, currency handling, UI copy, and owner-on
 - [ ] Add gentle explanation that private price data may later contribute to aggregate market insight only if explicitly
       enabled.
 - [ ] Add empty states for users who own modules but have not recorded prices.
+
+## Planning-only approval
+
+Product owner approved the detailed strategic planning phase on 2026-06-18T21:00+02:00 for:
+
+- `user_module_acquisitions` schema strategy.
+- Owner-only RLS strategy.
+- MVP currency policy.
+- Acquisition edit/delete policy.
+
+This approval is **planning-only**. Do not implement, draft, or apply migrations/RLS/backend/schema changes until the detailed plan is shown and explicitly approved.
 
 ## Proposed data model
 
@@ -142,9 +153,8 @@ completed-sale / re-acquisition workflows.
 
 ## Approval queue
 
-- **Approve `user_module_acquisitions` schema/RLS?** Permit a new owner-only acquisition ledger table with integer minor
-  unit amounts, ISO currency codes, optional source/note, and no public reads. Default recommendation: approve the private
-  ledger shape, but do not apply migrations/RLS until the exact SQL and policies are reviewed.
+- **Planning phase approved 2026-06-18T21:00+02:00.** Prepare the detailed schema/RLS/currency/edit-policy plan, but do not draft/apply migrations, policies, backend methods, or schema changes until the plan is shown and approved.
+- **Implementation approval still required.** The exact SQL, policies, backend methods, cache busting, and generated type updates remain blocked until separate product-owner approval.
 - **Confirm MVP currency policy.** Default recommendation: accept ISO 4217 currency codes, normalize to uppercase, and start
   with common currencies (`EUR`, `USD`, `GBP`, `CHF`, `JPY`, `CAD`, `AUD`) in UI suggestions while the helper remains
   generic.
@@ -163,3 +173,4 @@ dependencies. Stop before any migration/RLS work until the user approves the pro
 - 2026-06-18T20:28+02:00 — Selected a no-schema money-helper foundation slice while schema/RLS work remains gated; this unblocks parsing/formatting tests without touching backend state or real user data.
 - 2026-06-18T20:30+02:00 — Completed the import-safe money-helper foundation with targeted tests for normalization, decimal parsing, separator handling, JPY zero-decimal behavior, and display fallbacks.
 - 2026-06-18T20:34+02:00 — Parked the remaining MVP steps on explicit schema/RLS approval; no backend methods, migrations, policies, or real data mutations were attempted.
+- 2026-06-18T21:00+02:00 — Product owner approved the planning-only phase for detailed schema/RLS/currency/edit-policy strategy; implementation remains blocked until the plan is shown and separately approved, and no migrations/policies should be drafted or applied yet.
