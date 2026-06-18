@@ -33,6 +33,17 @@ type CreatedPatch = {
   url: string;
 };
 
+type PersistedPatchModuleInstance = {
+  id: number;
+  instance_label: string | null;
+};
+
+type PersistedPatchConnection = {
+  ordinal: number;
+  instance_id_a: number | null;
+  instance_id_b: number | null;
+};
+
 test.describe('Authenticated patch — multi-instance', () => {
   test.describe.configure({mode: 'serial'});
   test.skip(!SUPABASE_ANON_KEY, 'SUPABASE_ANON_KEY not configured');
@@ -40,6 +51,7 @@ test.describe('Authenticated patch — multi-instance', () => {
   let ownedModule: OwnedModule | undefined;
   let seededModuleId: number | null = null;
   let createdPatch: CreatedPatch | undefined;
+  let legacyPatch: CreatedPatch | undefined;
 
   test.beforeAll(async ({browser}) => {
     const context = await browser.newContext({
@@ -51,6 +63,7 @@ test.describe('Authenticated patch — multi-instance', () => {
     ownedModule = prepared.module;
     seededModuleId = prepared.seededModuleId;
     createdPatch = await createOwnedPatch(page);
+    legacyPatch = await createOwnedPatch(page);
     await context.close();
   });
 
@@ -63,6 +76,9 @@ test.describe('Authenticated patch — multi-instance', () => {
 
     if (createdPatch) {
       await deletePatch(page, createdPatch);
+    }
+    if (legacyPatch) {
+      await deletePatch(page, legacyPatch);
     }
     if (seededModuleId != null) {
       await removeOwnedModule(page, seededModuleId);
@@ -191,6 +207,124 @@ test.describe('Authenticated patch — multi-instance', () => {
 
     await expectDuplicateConnectionRejected(page);
     await expectPatchConnectionCount(page, 2);
+    expect(errors()).toEqual([]);
+  });
+
+  test('persists instance labels and connections after closing and reloading the patch', async ({page}) => {
+    test.setTimeout(120_000);
+    expect(ownedModule).toBeDefined();
+    expect(createdPatch).toBeDefined();
+    const errors = collectCriticalErrors(page);
+
+    await openPatchEditor(page, createdPatch!);
+    await switchToCollectionMode(page);
+    await focusCollectionModule(page, ownedModule!.name);
+    await expectModuleCopies(page, ownedModule!.name, ['(1)', '(2)', '(3)']);
+    await expectPatchConnectionCount(page, 2);
+
+    await closePatchEditor(page);
+    await page.reload();
+    await openPatchEditor(page, createdPatch!);
+    await switchToCollectionMode(page);
+    await focusCollectionModule(page, ownedModule!.name);
+    await expectModuleCopies(page, ownedModule!.name, ['(1)', '(2)', '(3)']);
+    await expectPatchConnectionCount(page, 2);
+
+    expect(errors()).toEqual([]);
+  });
+
+  test('shows a confirmation dialog when deleting an instance with connections', async ({page}) => {
+    test.setTimeout(120_000);
+    expect(ownedModule).toBeDefined();
+    expect(createdPatch).toBeDefined();
+    const errors = collectCriticalErrors(page);
+
+    await openPatchEditor(page, createdPatch!);
+    await switchToCollectionMode(page);
+    await focusCollectionModule(page, ownedModule!.name);
+    await expectModuleCopies(page, ownedModule!.name, ['(1)', '(2)', '(3)']);
+    await expectPatchConnectionCount(page, 2);
+
+    await clickRemoveCopy(page, ownedModule!.name, '(1)');
+    const dialog = page.locator('mat-dialog-container').last();
+    await expect(dialog.getByRole('heading', {name: /Remove this copy\?/i})).toBeVisible({timeout: 10_000});
+    await expect(dialog).toContainText(/This copy has 2 connections that will be disconnected\./i);
+
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden({timeout: 10_000});
+    await expectModuleCopies(page, ownedModule!.name, ['(1)', '(2)', '(3)']);
+    await expectPatchConnectionCount(page, 2);
+
+    expect(errors()).toEqual([]);
+  });
+
+  test('removes a connected instance, scrubs its persisted connection references, and renumbers survivors', async ({page}) => {
+    test.setTimeout(120_000);
+    expect(ownedModule).toBeDefined();
+    expect(createdPatch).toBeDefined();
+    const errors = collectCriticalErrors(page);
+
+    await openPatchEditor(page, createdPatch!);
+    await switchToCollectionMode(page);
+    await focusCollectionModule(page, ownedModule!.name);
+    await expectModuleCopies(page, ownedModule!.name, ['(1)', '(2)', '(3)']);
+    await expectPatchConnectionCount(page, 2);
+
+    const beforeDelete = await readPatchPersistence(page, createdPatch!.id, ownedModule!.id);
+    const removedInstanceId = beforeDelete.instances.find(instance => instance.instance_label === '(1)')?.id;
+    expect(removedInstanceId).toBeTruthy();
+
+    await clickRemoveCopy(page, ownedModule!.name, '(1)');
+    const dialog = page.locator('mat-dialog-container').last();
+    await expect(dialog.getByRole('heading', {name: /Remove this copy\?/i})).toBeVisible({timeout: 10_000});
+    await dialog.locator('app-brand-primary-button').filter({hasText: /Remove/i}).locator('a').first().click({
+      force: true
+    });
+
+    await expect(page.getByText(/Instance removed\./i).first()).toBeVisible({timeout: 10_000});
+    await expectModuleCopies(page, ownedModule!.name, ['(1)', '(2)']);
+    await expectPatchConnectionCount(page, 2);
+
+    await expect.poll(async () => {
+      const persisted = await readPatchPersistence(page, createdPatch!.id, ownedModule!.id);
+      return JSON.stringify({
+        labels: persisted.instances.map(instance => instance.instance_label).sort(),
+        containsRemovedInstance: persisted.instances.some(instance => instance.id === removedInstanceId),
+        connectionCount: persisted.connections.length,
+        containsRemovedConnectionReference: persisted.connections.some(connection =>
+          connection.instance_id_a === removedInstanceId || connection.instance_id_b === removedInstanceId
+        )
+      });
+    }, {timeout: 20_000}).toBe(JSON.stringify({
+      labels: ['(1)', '(2)'],
+      containsRemovedInstance: false,
+      connectionCount: 2,
+      containsRemovedConnectionReference: false
+    }));
+
+    expect(errors()).toEqual([]);
+  });
+
+  test('loads a patch with no instance rows as the legacy single-copy shape', async ({page}) => {
+    test.setTimeout(120_000);
+    expect(ownedModule).toBeDefined();
+    expect(legacyPatch).toBeDefined();
+    const errors = collectCriticalErrors(page);
+
+    await page.goto('/user/area');
+    await expect(page.locator('app-user-area-root')).toBeVisible({timeout: 20_000});
+    const persisted = await readPatchPersistence(page, legacyPatch!.id, ownedModule!.id);
+    expect(persisted.instances).toHaveLength(0);
+
+    await openPatchEditor(page, legacyPatch!);
+    await switchToCollectionMode(page);
+    await focusCollectionModule(page, ownedModule!.name);
+
+    const cards = collectionModuleCards(page, ownedModule!.name);
+    await expect(cards).toHaveCount(1, {timeout: 20_000});
+    await expect(cards.first().locator('.instance-suffix')).toHaveCount(0);
+    expect(persisted.connections).toHaveLength(0);
+
     expect(errors()).toEqual([]);
   });
 });
@@ -457,6 +591,14 @@ async function addCopyFromFirstVisibleCard(page: Page, moduleName: string): Prom
   await addResponse;
 }
 
+async function clickRemoveCopy(page: Page, moduleName: string, label: string): Promise<void> {
+  const card = collectionModuleCardWithLabel(page, moduleName, label);
+  await expect(card).toBeVisible({timeout: 20_000});
+  const removeCopyButton = card.getByRole('button', {name: /Remove this copy/i}).first();
+  await expect(removeCopyButton).toBeVisible({timeout: 20_000});
+  await removeCopyButton.click();
+}
+
 async function expectModuleCopies(page: Page, moduleName: string, labels: string[]): Promise<void> {
   const cards = collectionModuleCards(page, moduleName);
   await expect(cards).toHaveCount(labels.length, {timeout: 20_000});
@@ -524,6 +666,71 @@ async function expectDuplicateConnectionRejected(page: Page): Promise<void> {
   await expect(selectionPanel).toBeVisible({timeout: 10_000});
   await expect(selectionPanel.getByRole('button', {name: /^Recorded$/i}).first()).toBeVisible({timeout: 10_000});
   await expect(confirm).toBeHidden();
+}
+
+async function readPatchPersistence(
+  page: Page,
+  patchId: number,
+  moduleId: number
+): Promise<{instances: PersistedPatchModuleInstance[]; connections: PersistedPatchConnection[]}> {
+  const result = await page.evaluate(async ({patchId: pId, moduleId: mId, supabaseUrl, anonKey}) => {
+    const lsKey = Object.keys(localStorage).find(key => key.includes('auth-token'));
+    if (!lsKey) {
+      return {status: 'missing auth token', instances: [], connections: []};
+    }
+
+    const authData = JSON.parse(localStorage.getItem(lsKey) ?? '{}') as {
+      access_token?: string;
+      currentSession?: {access_token?: string};
+      session?: {access_token?: string};
+    };
+    const accessToken = authData.access_token
+      ?? authData.currentSession?.access_token
+      ?? authData.session?.access_token;
+    if (!accessToken) {
+      return {status: 'missing access token', instances: [], connections: []};
+    }
+    if (!anonKey) {
+      return {status: 'missing anon key', instances: [], connections: []};
+    }
+
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${ accessToken }`,
+      apikey: anonKey
+    };
+    const [instancesResponse, connectionsResponse] = await Promise.all([
+      fetch(
+        `${ supabaseUrl }/rest/v1/patch_module_instances?select=${ encodeURIComponent('id,instance_label') }&patch_id=eq.${ pId }&module_id=eq.${ mId }&order=id.asc`,
+        {headers}
+      ),
+      fetch(
+        `${ supabaseUrl }/rest/v1/patch_connections?select=${ encodeURIComponent('ordinal,instance_id_a,instance_id_b') }&patchid=eq.${ pId }&order=ordinal.asc`,
+        {headers}
+      )
+    ]);
+
+    if (!instancesResponse.ok) {
+      return {status: `instances read failed ${ instancesResponse.status }`, instances: [], connections: []};
+    }
+    if (!connectionsResponse.ok) {
+      return {status: `connections read failed ${ connectionsResponse.status }`, instances: [], connections: []};
+    }
+
+    return {
+      status: 'ok',
+      instances: await instancesResponse.json() as PersistedPatchModuleInstance[],
+      connections: await connectionsResponse.json() as PersistedPatchConnection[]
+    };
+  }, {patchId, moduleId, supabaseUrl: SUPABASE_URL, anonKey: SUPABASE_ANON_KEY});
+
+  if (result.status !== 'ok') {
+    throw new Error(`Unable to read patch persistence for multi-instance E2E: ${ result.status }`);
+  }
+
+  return {
+    instances: result.instances,
+    connections: result.connections
+  };
 }
 
 function collectionModuleCardWithLabel(page: Page, moduleName: string, label: string): Locator {
