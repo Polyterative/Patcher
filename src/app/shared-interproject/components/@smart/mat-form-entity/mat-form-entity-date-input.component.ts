@@ -21,7 +21,7 @@ import { MatTooltipModule, TooltipPosition } from '@angular/material/tooltip';
     MatNativeDateModule,
     MatTooltipModule
   ],
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './mat-form-entity-date-input.component.html'
 })
 export class MatFormEntityDateInputComponent {

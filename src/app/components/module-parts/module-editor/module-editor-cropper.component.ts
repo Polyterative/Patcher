@@ -11,7 +11,7 @@ import {
   selector: 'app-module-editor-cropper',
   standalone: true,
   imports: [CommonModule, ImageCropperComponent],
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <image-cropper
       [imageFile]="imageFile"

@@ -3,6 +3,7 @@
 > Archive of finished work. One-line summaries only. For strategy context see `../product/PRINCIPLES.md` and
 > `../product/ROADMAP.md`.
 
+- **2026-06-18** — LOW: Angular — Eager change-detection audit converted safe production components to OnPush, added focused cropper/date-input coverage, and documented remaining chip-input/spec-only Eager reasons.
 - **2026-06-18** — LOW: Angular — Rack preview enter animation now uses Angular compiler `animate.enter` with scoped CSS keyframes, while complex `@angular/animations` usages are inventoried and deferred for visual migration.
 - **2026-06-18** — LOW: Angular — Deprecated Flex Layout usage is removed from app code, replacing `fx*` templates with native CSS/layout helpers, migrating breakpoint observation to CDK, and dropping the package dependency.
 - **2026-06-18** — LOW: Maintenance — Dependency batch updated Angular patch packages, Sentry browser/angular 10.x alignment, PostHog, Playwright, TypeScript ESLint, DOMPurify, GSAP, modern-screenshot, and security overrides while refreshing pnpm lockfile and removing ignored duplicate overrides.
