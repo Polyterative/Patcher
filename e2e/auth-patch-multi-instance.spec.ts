@@ -20,6 +20,14 @@ type OwnedModule = {
   name: string;
 };
 
+const TARGET_MODULE: OwnedModule = {
+  id: 1025,
+  name: 'Maths'
+};
+const OUTPUT_CV_NAME = 'End Of Rise';
+const INSTANCE_ONE_INPUT_CV_NAME = 'CH 1 Both';
+const INSTANCE_TWO_INPUT_CV_NAME = 'CH 2 Signal';
+
 type CreatedPatch = {
   id: number;
   url: string;
@@ -132,6 +140,59 @@ test.describe('Authenticated patch — multi-instance', () => {
 
     expect(errors()).toEqual([]);
   });
+
+  test('connects one output CV from instance one to an input CV on instance one', async ({page}) => {
+    test.setTimeout(120_000);
+    expect(ownedModule).toBeDefined();
+    expect(createdPatch).toBeDefined();
+    const errors = collectCriticalErrors(page);
+
+    await openPatchEditor(page, createdPatch!);
+    await switchToCollectionMode(page);
+    await focusCollectionModule(page, ownedModule!.name);
+    await expectModuleCopies(page, ownedModule!.name, ['(1)', '(2)', '(3)']);
+
+    await selectConnectionBetweenInstances(page, ownedModule!.name, '(1)', '(1)', INSTANCE_ONE_INPUT_CV_NAME);
+    await confirmPendingConnection(page, 1);
+
+    expect(errors()).toEqual([]);
+  });
+
+  test('connects the same output CV from instance one to an input CV on instance two', async ({page}) => {
+    test.setTimeout(120_000);
+    expect(ownedModule).toBeDefined();
+    expect(createdPatch).toBeDefined();
+    const errors = collectCriticalErrors(page);
+
+    await openPatchEditor(page, createdPatch!);
+    await switchToCollectionMode(page);
+    await focusCollectionModule(page, ownedModule!.name);
+    await expectModuleCopies(page, ownedModule!.name, ['(1)', '(2)', '(3)']);
+
+    await selectConnectionBetweenInstances(page, ownedModule!.name, '(1)', '(2)', INSTANCE_TWO_INPUT_CV_NAME);
+    await confirmPendingConnection(page, 2);
+
+    expect(errors()).toEqual([]);
+  });
+
+  test('rejects the same instance-aware connection as a duplicate', async ({page}) => {
+    test.setTimeout(120_000);
+    expect(ownedModule).toBeDefined();
+    expect(createdPatch).toBeDefined();
+    const errors = collectCriticalErrors(page);
+
+    await openPatchEditor(page, createdPatch!);
+    await switchToCollectionMode(page);
+    await focusCollectionModule(page, ownedModule!.name);
+    await expectModuleCopies(page, ownedModule!.name, ['(1)', '(2)', '(3)']);
+    await expectPatchConnectionCount(page, 2);
+
+    await selectConnectionBetweenInstances(page, ownedModule!.name, '(1)', '(2)', INSTANCE_TWO_INPUT_CV_NAME);
+
+    await expectDuplicateConnectionRejected(page);
+    await expectPatchConnectionCount(page, 2);
+    expect(errors()).toEqual([]);
+  });
 });
 
 async function ensureOwnedModule(page: Page): Promise<{module: OwnedModule; seededModuleId: number | null}> {
@@ -139,7 +200,7 @@ async function ensureOwnedModule(page: Page): Promise<{module: OwnedModule; seed
   await expect(page.locator('app-user-area-root')).toBeVisible({timeout: 20_000});
   await page.evaluate(() => localStorage.removeItem('CACHE_STORAGE'));
 
-  const result = await page.evaluate(async ({supabaseUrl, anonKey}) => {
+  const result = await page.evaluate(async ({supabaseUrl, anonKey, targetModule}) => {
     const lsKey = Object.keys(localStorage).find(key => key.includes('auth-token'));
     if (!lsKey) {
       return {status: 'missing auth token', module: null, seededModuleId: null};
@@ -177,50 +238,38 @@ async function ensureOwnedModule(page: Page): Promise<{module: OwnedModule; seed
       'Content-Type': 'application/json'
     };
 
-    const userModuleSelect = 'kind,module:modules!user_modules_moduleid_fkey(id,name,manufacturer:manufacturerId(id,name))';
+    const userModuleSelect = 'kind,moduleid';
     const existingResponse = await fetch(
-      `${ supabaseUrl }/rest/v1/user_modules?select=${ encodeURIComponent(userModuleSelect) }&profileid=eq.${ profileId }&limit=10`,
+      `${ supabaseUrl }/rest/v1/user_modules?select=${ encodeURIComponent(userModuleSelect) }&profileid=eq.${ profileId }&moduleid=eq.${ targetModule.id }&limit=1`,
       {headers}
     );
     const existingRows = await existingResponse.json() as Array<{
       kind: string | null;
-      module: {id: number; name: string; manufacturer: {id: number} | null} | null;
+      moduleid: number | null;
     }>;
-    const existingOwned = Array.isArray(existingRows)
-      ? existingRows.find(row =>
-        (row.kind === 'HAS' || row.kind === 'SELLS')
-        && row.module?.id != null
-        && row.module.manufacturer != null
-      )
+    const existingRow = Array.isArray(existingRows)
+      ? existingRows.find(row => row.moduleid === targetModule.id)
       : undefined;
-    if (existingOwned?.module) {
+    const existingUsableCollectionRow = existingRow?.kind === 'HAS' || existingRow?.kind === 'SELLS';
+    if (existingUsableCollectionRow) {
       return {
         status: 'already owned',
-        module: {id: existingOwned.module.id, name: existingOwned.module.name},
+        module: targetModule,
         seededModuleId: null
       };
     }
-
-    const moduleResponse = await fetch(
-      `${ supabaseUrl }/rest/v1/modules?select=id,name,manufacturer:manufacturerId(id)&isApproved=eq.true&limit=10`,
-      {headers}
-    );
-    const modules = await moduleResponse.json() as Array<{
-      id: number;
-      name: string;
-      manufacturer: {id: number} | null;
-    }>;
-    const module = Array.isArray(modules)
-      ? modules.find(candidate => candidate.id != null && candidate.manufacturer?.id != null)
-      : undefined;
-    if (!module) {
-      return {status: 'no approved module available', module: null, seededModuleId: null};
+    if (existingRow) {
+      return {
+        status: `module ${ targetModule.id } already has non-collection user_modules kind ${ existingRow.kind ?? 'null' }; refusing to mutate it`,
+        module: null,
+        seededModuleId: null
+      };
     }
 
     const insertResponse = await fetch(`${ supabaseUrl }/rest/v1/user_modules?on_conflict=profileid,moduleid`, {
       method: 'POST',
       headers: {...headers, Prefer: 'return=minimal,resolution=merge-duplicates'},
-      body: JSON.stringify({profileid: profileId, moduleid: module.id, kind: 'HAS'})
+      body: JSON.stringify({profileid: profileId, moduleid: targetModule.id, kind: 'HAS'})
     });
     if (!insertResponse.ok) {
       return {status: `insert failed ${ insertResponse.status }`, module: null, seededModuleId: null};
@@ -228,11 +277,11 @@ async function ensureOwnedModule(page: Page): Promise<{module: OwnedModule; seed
 
     return {
       status: 'seeded',
-      module: {id: module.id, name: module.name},
-      seededModuleId: module.id
+      module: targetModule,
+      seededModuleId: targetModule.id
     };
 
-  }, {supabaseUrl: SUPABASE_URL, anonKey: SUPABASE_ANON_KEY});
+  }, {supabaseUrl: SUPABASE_URL, anonKey: SUPABASE_ANON_KEY, targetModule: TARGET_MODULE});
 
   if (!result.module) {
     throw new Error(`Unable to prepare an owned module for multi-instance E2E: ${ result.status }`);
@@ -417,6 +466,70 @@ async function expectModuleCopies(page: Page, moduleName: string, labels: string
       timeout: 20_000
     });
   }
+}
+
+async function selectConnectionBetweenInstances(
+  page: Page,
+  moduleName: string,
+  outputLabel: string,
+  inputLabel: string,
+  inputCvName: string
+): Promise<void> {
+  const outputCard = collectionModuleCardWithLabel(page, moduleName, outputLabel);
+  const inputCard = collectionModuleCardWithLabel(page, moduleName, inputLabel);
+
+  await clickCardCv(outputCard, 'out', OUTPUT_CV_NAME);
+  await expect(page.getByText(/Output selected — now pick an input/i)).toBeVisible({timeout: 10_000});
+  await clickCardCv(inputCard, 'in', inputCvName);
+}
+
+async function clickCardCv(card: Locator, kind: 'in' | 'out', cvName: string): Promise<void> {
+  await expect(card).toBeVisible({timeout: 20_000});
+  const cv = card.locator(`app-module-cvitem .${ kind }`).filter({hasText: cvName}).first();
+  await expect(cv).toBeVisible({timeout: 10_000});
+  await cv.click();
+}
+
+async function confirmPendingConnection(page: Page, expectedCount: number): Promise<void> {
+  const saveResponse = page.waitForResponse(response =>
+    response.url().includes('/rest/v1/patch_connections')
+    && response.request().method() === 'POST', {timeout: 20_000});
+
+  const confirm = page.locator('app-brand-primary-button', {hasText: /Confirm connection/i}).last();
+  await expect(confirm).toBeVisible({timeout: 10_000});
+  await confirm.click();
+
+  await expect(page.getByText(/recorded/i).first()).toBeVisible({timeout: 10_000});
+  const response = await saveResponse;
+  expect(response.ok(), `patch_connections POST failed (${ response.status() }): ${ await response.text() }`).toBe(true);
+  await expectPatchConnectionCount(page, expectedCount);
+}
+
+async function expectPatchConnectionCount(page: Page, expectedCount: number): Promise<void> {
+  await expect(page.getByText(new RegExp(`Patch connections \\(${ expectedCount }\\)`, 'i')).first()).toBeVisible({
+    timeout: 20_000
+  });
+}
+
+async function expectDuplicateConnectionRejected(page: Page): Promise<void> {
+  const selectionPanel = page.locator('.panel-card').filter({hasText: /Your selection/i}).last();
+  const duplicateNotice = page.getByText(/already in this patch/i).first();
+  const confirm = selectionPanel.locator('app-brand-primary-button', {hasText: /Confirm connection/i}).last();
+  if (await confirm.isVisible().catch(() => false)) {
+    await confirm.click();
+    await expect(duplicateNotice).toBeVisible({timeout: 10_000});
+    return;
+  }
+
+  await expect(selectionPanel).toBeVisible({timeout: 10_000});
+  await expect(selectionPanel.getByRole('button', {name: /^Recorded$/i}).first()).toBeVisible({timeout: 10_000});
+  await expect(confirm).toBeHidden();
+}
+
+function collectionModuleCardWithLabel(page: Page, moduleName: string, label: string): Locator {
+  return collectionModuleCards(page, moduleName).filter({
+    has: page.locator('.instance-suffix', {hasText: label})
+  }).first();
 }
 
 function collectionModuleCards(page: Page, moduleName: string): Locator {

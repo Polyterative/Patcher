@@ -20,7 +20,7 @@ Backlog entries:
 - `internaldocs/workflow/plans/e2e-dedicated-test-account-cleanup.md` (folded as Chunk A — prerequisite)
 - `internaldocs/workflow/plans/e2e-multi-instance-patching.md` (Chunks B–D — primary deliverable)
 
-Status: **Active / partially blocked. No migrations, no schema, no RLS. Pure E2E + harness work. Local happy-path scaffold now executes non-skipped and passes; connection cases are blocked on deterministic connectable module data.**
+Status: **Active. No migrations, no schema, no RLS. Pure E2E + harness work. Local happy-path and connection-case specs now execute non-skipped and pass; destructive, full connection reload, and legacy-patch cases remain open.**
 
 #### Why this is the next chunk (CTO call)
 
@@ -165,3 +165,4 @@ The chunk order below is the contract for any execution agent. Do not reorder.
 - 2026-06-18T12:17+02:00 — CTO approved local `.env` E2E credentials for local auth E2E authoring, with secret values protected and CI/GitHub Actions secret rotation explicitly deferred.
 - 2026-06-18T12:17+02:00 — Coordinator round landed the local-unblocked multi-instance happy-path scaffold and auth runner include handling. Runtime `pnpm test:e2e:auth --include="**/auth-patch-multi-instance.spec.ts"` currently skips because this worktree's `.env` keys are present but empty, so the plan stays active and unchecked until non-empty local values are supplied and the spec executes.
 - 2026-06-18T13:04+02:00 — Local `.env` auth credentials are now non-empty. The multi-instance spec uses the same committed Supabase URL/anon-key fallback pattern as sibling auth E2E specs, and `pnpm test:e2e:auth --include="**/auth-patch-multi-instance.spec.ts"` ran 4/4 non-skipped tests green. Connection cases remain blocked until the test account/catalogue exposes an approved module with a manufacturer plus at least one input CV and one output CV; CI secret rotation remains deferred.
+- 2026-06-18T14:18+02:00 — CTO selected homepage proof module 1025 as the stable read-only fixture; read-only verification confirmed manufacturer + ≥1 input CV + ≥1 output CV. Chunk C connection tests now pass locally (7/7 targeted spec): instance (1) records, same output to instance (2) is accepted, and duplicate selection is refused without adding a third connection. CI secret rotation remains deferred.
