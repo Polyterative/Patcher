@@ -1,6 +1,21 @@
 <div class="col gap1 parent"
 >
   <app-module-cvs [data]="data" [instanceId]="instanceId"></app-module-cvs>
+  @if (getVisiblePossessionStats(possessionCounts); as possessionStats) {
+    @if (possessionStats.length > 0) {
+      <div class="module-possession-stats"
+           aria-label="Public module possession statistics"
+      >
+        @for (stat of possessionStats; track stat.label) {
+          <span class="module-possession-stat">
+            <mat-icon aria-hidden="true">{{stat.icon}}</mat-icon>
+            <span class="module-possession-stat__count">{{stat.count}}</span>
+            <span>{{stat.label}}</span>
+          </span>
+        }
+      </div>
+    }
+  }
   @if (switches.length > 0) {
     <mat-card-subtitle>{{data.switches.length}} Switches:</mat-card-subtitle>
     <div class="rowwrap gap1"></div>

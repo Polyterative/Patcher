@@ -1,4 +1,6 @@
 import {
+  Component,
+  Input,
   NO_ERRORS_SCHEMA
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -6,6 +8,7 @@ import {
   ComponentFixture,
   TestBed
 } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -26,6 +29,16 @@ import {
   ModuleBrowserDetailComponent
 } from './module-browser-detail.component';
 import { ModuleUsageCardComponent } from './module-usage-card/module-usage-card.component';
+import { ModulePossessionCounts } from 'src/app/components/module-parts/module-detail-data.models';
+
+@Component({
+  selector: 'app-module-composite',
+  template: '',
+  standalone: false
+})
+class ModuleCompositeStubComponent {
+  @Input() possessionCounts: ModulePossessionCounts | undefined;
+}
 
 
 describe('ModuleBrowserDetailComponent', () => {
@@ -105,14 +118,14 @@ describe('ModuleBrowserDetailComponent', () => {
     };
   }
 
-  async function render(options: {isDev?: boolean; isAdmin?: boolean; user?: any} = {}): Promise<{
+  async function render(options: {isDev?: boolean; isAdmin?: boolean; user?: unknown} = {}): Promise<{
     fixture: ComponentFixture<ModuleBrowserDetailComponent>;
     dataService: any;
-    loggedUser$: BehaviorSubject<any>;
+    loggedUser$: BehaviorSubject<unknown>;
   }> {
     TestBed.resetTestingModule();
 
-    const loggedUser$ = new BehaviorSubject<any>(options.user ?? {id: 'user-1'});
+    const loggedUser$ = new BehaviorSubject<unknown>(options.user ?? {id: 'user-1'});
     const dataService = {
       singleModuleData$: new BehaviorSubject<any>(moduleFixture()),
       racksWithThisModule$: new BehaviorSubject<any[]>([]),
@@ -122,6 +135,11 @@ describe('ModuleBrowserDetailComponent', () => {
         hidden_rack_bucket: 'none',
         public_patch_count: 0,
         hidden_patch_bucket: 'none'
+      }),
+      possessionCounts$: new BehaviorSubject<any>({
+        hasCount: 0,
+        wantsCount: 0,
+        sellsCount: 0
       }),
       currentModulePossession$: new BehaviorSubject<any>(null),
       modulesBySameManufacturer$: new BehaviorSubject<any[]>([]),
@@ -143,7 +161,7 @@ describe('ModuleBrowserDetailComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      declarations: [ModuleBrowserDetailComponent, ModuleUsageCardComponent],
+      declarations: [ModuleBrowserDetailComponent, ModuleUsageCardComponent, ModuleCompositeStubComponent],
       imports: [CommonModule, FormsModule, NoopAnimationsModule],
       providers: [
         {provide: ModuleDetailDataService, useValue: dataService},
@@ -270,6 +288,25 @@ describe('ModuleBrowserDetailComponent', () => {
     const text = fixture.nativeElement.textContent;
     expect(text).toContain('Plus 10+ private or otherwise hidden racks.');
     expect(text).toContain('Plus 5+ private or otherwise hidden patches.');
+  });
+
+  it('passes public possession counts to the module composite', async () => {
+    const {fixture, dataService} = await render();
+
+    dataService.possessionCounts$.next({
+      hasCount: 8,
+      wantsCount: 4,
+      sellsCount: 3
+    });
+    fixture.detectChanges();
+
+    const composite = fixture.debugElement.query(By.directive(ModuleCompositeStubComponent))
+      .componentInstance as ModuleCompositeStubComponent;
+    expect(composite.possessionCounts).toEqual({
+      hasCount: 8,
+      wantsCount: 4,
+      sellsCount: 3
+    });
   });
   
   it('emits expected patch payloads for dev helpers', () => {

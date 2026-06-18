@@ -18,6 +18,6 @@ No active feature.
 
 ### Next-task staging decision
 
-- **Status:** No actionable autonomous task staged after the fifth requested loop.
-- **Checked:** 2026-06-18T10:40+02:00
-- **Reason:** Remaining open items are blocked by explicit Supabase/RLS or schema approval, credential/account setup, external Sentry access, product-owner confirmation, or prerequisite manufacturer-account work. Held/on-hold items remain in `TODO.md` for manual resumption.
+- 2026-06-18T10:30+02:00 — Round 1 selected `module-public-possession-statistics-trend-charts` because its Phase 1 query path exists but the public detail rendering/coverage still needs completion; Phase 2 is schema-approval blocked.
+- 2026-06-18T10:34+02:00 — Implemented the Phase 1 stat row in `app-module-details`, passing counts from the detail data service through `app-module-composite`; removed the heavier Community data card so sub-threshold cohorts cannot leak through a second rendering path.
+- 2026-06-18T10:40+02:00 — Round 1 completed and archived. Round 2 / 5 checked the remaining backlog and selected no task: all remaining open items are blocked by explicit Supabase/RLS/schema approval, credential/account setup, external service access, product-owner validation, or prerequisite manufacturer-account work.
