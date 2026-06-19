@@ -5,7 +5,7 @@
 
 ## Status
 
-- [~] Conditional schema/RLS approval recorded; implementation has not started.
+- [~] Backend checkpoint implemented locally; UI/data-service wiring has not started.
 - Priority: **LOW**
 - TODO section: **INFRA**
 - Owner persona on pickup: `coordinator-loop` → `planner` → `frontend-dev` after explicit schema/RLS approval.
@@ -87,7 +87,7 @@ Default behavior:
 
 ## Privacy and eligibility
 
-- Modules are globally reactable.
+- Public modules are reactable in the first backend checkpoint; non-public module rows are excluded to avoid exposing hidden IDs through aggregate counts.
 - Racks and patches are reactable only when public.
 - If a public rack/patch later becomes private, public discovery/count surfaces must stop exposing it.
 - Users may cool their own public rack/patch unless product later decides otherwise.
@@ -104,7 +104,7 @@ Default behavior:
 
 - Read `internaldocs/patterns/BACKEND_METHODS.md` schema-change preflight before writing SQL.
 - Register `reactions` and `reaction_counts` in `DatabaseStrings.ts`.
-- Add generated Supabase types with `pnpm updateBackendTypes` after migration.
+- Add generated Supabase types with `pnpm updateBackendTypes` after migration when remote drift is safe; this checkpoint uses manually maintained local types for `reactions` and `reaction_counts` because linked remote drift is already recorded.
 - Add backend methods through `SupabaseService` only:
   - `add.reaction(entityType, entityId, kind = 'COOL')`
   - `delete.reaction(entityType, entityId, kind = 'COOL')`
@@ -179,3 +179,4 @@ Default behavior:
   additive to ownership/wishlist/sale state and can support racks, patches, and future entities.
 - 2026-06-19T09:21+02:00 — Staged as the next safe coordinator-loop task after Patch SVG previews remained blocked by linked migration/typegen drift. Because Cool requires new schema/RLS/policy work, the active checkpoint is planning and an explicit approval gate only; no SQL, generated types, or backend code should be changed before approval.
 - 2026-06-19T09:20+02:00 — User conditionally approved the next Cool reactions schema/RLS checkpoint only if it is non-breaking for the current production build. The approval is limited to additive/narrow support for a polymorphic `reactions` table plus aggregate `reaction_counts`, modules + public racks initially, with no unrelated RLS/policy changes; stop before any breaking change or risky production behavior.
+- 2026-06-19T09:32+02:00 — Added local migration `20260619092800_add_cool_reactions.sql` creating only new Cool reaction objects: `reactions`, `reaction_counts`, helper/trigger functions, indexes, and RLS policies. Application access now goes through `SupabaseService` namespaces with explicit columns and reaction cache busting. Remote typegen was intentionally not run due to recorded linked Supabase drift; `src/backend/database.types.ts` was manually updated for the two new tables and validated with focused backend/static tests. Reviewer pass narrowed module eligibility to public modules, matching the production-safe aggregate-count exposure model already used for racks.

@@ -973,6 +973,62 @@ export type Database = {
           },
         ]
       }
+      reaction_counts: {
+        Row: {
+          entity_id: number
+          entity_type: number
+          kind: string
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          entity_id: number
+          entity_type: number
+          kind?: string
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          entity_id?: number
+          entity_type?: number
+          kind?: string
+          total?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reactions: {
+        Row: {
+          created_at: string
+          entity_id: number
+          entity_type: number
+          kind: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id: number
+          entity_type: number
+          kind?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: number
+          entity_type?: number
+          kind?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       standards: {
         Row: {
           id: number

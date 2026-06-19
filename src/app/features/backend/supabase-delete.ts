@@ -21,6 +21,11 @@ import {
 import { SimpleUserModel } from './supabase.types';
 import { CommentableEntityTypes } from 'src/app/components/shared-atoms/comments/comments-data.service';
 import { deleteAllUserData } from './supabase-delete-account-reset';
+import {
+  REACTION_KIND_COOL,
+  REACTION_ROW_COLUMNS,
+  type ReactionKind
+} from './supabase-reactions';
 
 
 export function createDeleteNamespace(
@@ -32,6 +37,27 @@ export function createDeleteNamespace(
   hasAdminRole$: () => Observable<boolean> = () => rxFrom(Promise.resolve(false))
 ) {
   return {
+    reaction: (
+      entityType: number,
+      entityId: number,
+      kind: ReactionKind = REACTION_KIND_COOL
+    ) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return rxFrom(
+          supabase.from(DbPaths.reactions)
+            .delete()
+            .filter('user_id', 'eq', user.id)
+            .filter('entity_type', 'eq', entityType)
+            .filter('entity_id', 'eq', entityId)
+            .filter('kind', 'eq', kind)
+            .select(REACTION_ROW_COLUMNS)
+        );
+      }),
+      cacheBust(['currentUserReactions', 'reactionCounts', 'reactionDiscovery']),
+      remapErrors()
+    ),
+
     comment: (id: number) => getUserSession$().pipe(
       switchMap(user => {
         if (!user) return throwError(() => new Error('Authentication required'));
@@ -81,7 +107,7 @@ export function createDeleteNamespace(
         );
       }),
       remapErrors(),
-      cacheBust(['modules', 'currentUserModules', 'modulePossessionCounts', 'moduleWithId', 'currentUserComments']),
+      cacheBust(['modules', 'currentUserModules', 'modulePossessionCounts', 'moduleWithId', 'currentUserComments', 'reactionCounts']),
       catchErrors(snackBar)
     ),
     
@@ -249,7 +275,7 @@ export function createDeleteNamespace(
             .filter('id', 'eq', id)
         )),
         remapErrors(),
-        cacheBust(['rackWithId', 'racksMinimal'])
+        cacheBust(['rackWithId', 'racksMinimal', 'reactionCounts'])
       ),
 
     moduleCollection: (id: number) => getUserSession$().pipe(
@@ -277,7 +303,7 @@ export function createDeleteNamespace(
         );
       }),
       remapErrors(),
-      cacheBust(['modules', 'currentUserModules', 'moduleWithId'])
+      cacheBust(['modules', 'currentUserModules', 'moduleWithId', 'reactionCounts'])
     ),
 
     manufacturers: (from = 0, to = defaultPag) => getUserSession$().pipe(

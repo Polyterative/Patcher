@@ -29,6 +29,10 @@ import {
 } from './supabase-db.types';
 import { DbModule, RackedModule } from 'src/app/models/module';
 import { UserModuleAcquisition } from 'src/app/models/user-module-acquisition';
+import {
+  REACTION_KIND_COOL,
+  type ReactionKind
+} from './supabase-reactions';
 
 
 export interface AdminFlagRow {
@@ -82,6 +86,12 @@ export function createGetNamespace(
       )
     ),
     currentUserContributorStats: () => queries.getCurrentUserContributorStats(),
+    currentUserReactions: (entityType?: number, kind: ReactionKind = REACTION_KIND_COOL) =>
+      queries.getCurrentUserReactions(entityType, kind),
+    reactionCount: (entityType: number, entityId: number, kind: ReactionKind = REACTION_KIND_COOL) =>
+      queries.getReactionCount(entityType, entityId, kind),
+    reactionCountsForEntities: (entityType: number, entityIds: number[], kind: ReactionKind = REACTION_KIND_COOL) =>
+      queries.getReactionCountsForEntities(entityType, entityIds, kind),
     rackedModules: (rackid: number) => rxFrom(
       supabase.from(DbPaths.rack_modules)
         .select(`*, ${ QueryJoins.module_fk_rackmodules }`)

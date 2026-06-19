@@ -94,6 +94,14 @@ import {
   withManufacturerModuleStats,
   compareManufacturersByLatestModuleActivity
 } from './supabase-queries.manufacturer-stats';
+import {
+  REACTION_COUNT_COLUMNS,
+  REACTION_KIND_COOL,
+  REACTION_ROW_COLUMNS,
+  type ReactionCountRow,
+  type ReactionKind,
+  type ReactionRow
+} from './supabase-reactions';
 
 
 export class SupabaseQueriesService {
@@ -1549,7 +1557,84 @@ export class SupabaseQueriesService {
         remapErrors()
       );
   }
-  
+
+  getCurrentUserReactions(
+    entityType?: number,
+    kind: ReactionKind = REACTION_KIND_COOL
+  ): Observable<ReactionRow[]> {
+    return this.getUserSession$().pipe(
+      switchMap(user => {
+        if (!user?.id) return of([]);
+
+        let query = this.supabase
+          .from(DbPaths.reactions)
+          .select(REACTION_ROW_COLUMNS)
+          .filter('user_id', 'eq', user.id)
+          .filter('kind', 'eq', kind)
+          .order('created_at', {ascending: false});
+
+        if (entityType !== undefined) {
+          query = query.filter('entity_type', 'eq', entityType);
+        }
+
+        return rxFrom(query).pipe(
+          remapErrors(),
+          map(result => (result.data ?? []) as ReactionRow[])
+        );
+      })
+    );
+  }
+
+  @Cacheable({
+    maxAge: smallCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('reactionCounts'))),
+    maxCacheCount: 200
+  })
+  getReactionCount(
+    entityType: number,
+    entityId: number,
+    kind: ReactionKind = REACTION_KIND_COOL
+  ): Observable<number> {
+    return rxFrom(
+      this.supabase
+        .from(DbPaths.reaction_counts)
+        .select(REACTION_COUNT_COLUMNS)
+        .filter('entity_type', 'eq', entityType)
+        .filter('entity_id', 'eq', entityId)
+        .filter('kind', 'eq', kind)
+        .maybeSingle()
+    ).pipe(
+      remapErrors(),
+      map(result => ((result.data as ReactionCountRow | null)?.total ?? 0))
+    );
+  }
+
+  @Cacheable({
+    maxAge: smallCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('reactionCounts'))),
+    maxCacheCount: 100
+  })
+  getReactionCountsForEntities(
+    entityType: number,
+    entityIds: number[],
+    kind: ReactionKind = REACTION_KIND_COOL
+  ): Observable<ReactionCountRow[]> {
+    const uniqueEntityIds = Array.from(new Set(entityIds));
+    if (!uniqueEntityIds.length) return of([]);
+
+    return rxFrom(
+      this.supabase
+        .from(DbPaths.reaction_counts)
+        .select(REACTION_COUNT_COLUMNS)
+        .filter('entity_type', 'eq', entityType)
+        .filter('kind', 'eq', kind)
+        .in('entity_id', uniqueEntityIds)
+    ).pipe(
+      remapErrors(),
+      map(result => (result.data ?? []) as ReactionCountRow[])
+    );
+  }
+
   @Cacheable({
     maxAge: defaultCacheTime,
     cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('comments'))),
