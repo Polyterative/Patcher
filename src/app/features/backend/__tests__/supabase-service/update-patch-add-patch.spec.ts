@@ -1,4 +1,5 @@
 import { SupabaseService } from '../../supabase.service';
+import { createUpdateNamespace } from '../../supabase-update';
 import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest,
@@ -173,6 +174,131 @@ describe('SupabaseService - update.patchSilent', () => {
       },
       error: (err) => {
         expect(err.code).toBe('PGRST204');
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+});
+
+describe('SupabaseService - update.patchPreviewImage', () => {
+  let service: SupabaseService;
+  let supabaseClient: { from: (table: string) => unknown };
+
+  beforeEach(() => {
+    const setup = setupSupabaseServiceTest();
+    service = setup.service;
+    supabaseClient = (service as unknown as { supabase: { from: (table: string) => unknown } }).supabase;
+  });
+
+  afterEach(() => {
+    cleanupSupabaseServiceTest();
+  });
+
+  it('updates only the image column and selects explicit columns', (done) => {
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of({
+      id: 'patch-user',
+      email: 'patch@example.com',
+      created_at: '',
+      updated_at: ''
+    }));
+    const mock = chainable({
+      data: {id: 10, image: 'patch_10_v20260618t201530123z.svg', updated: '2026-06-18T20:15:30.123Z'},
+      error: null
+    });
+    const updateSpy = spyOn(mock, 'update').and.callThrough();
+    const eqSpy = spyOn(mock, 'eq').and.callThrough();
+    const selectSpy = spyOn(mock, 'select').and.callThrough();
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+    service.update.patchPreviewImage(10, 'patch_10_v20260618t201530123z.svg').subscribe({
+      next: () => {
+        expect(supabaseClient.from).toHaveBeenCalledWith('patches');
+        expect(updateSpy).toHaveBeenCalledOnceWith({image: 'patch_10_v20260618t201530123z.svg'});
+        expect(eqSpy.calls.allArgs()).toEqual([
+          ['id', 10]
+        ]);
+        expect(selectSpy).toHaveBeenCalledOnceWith('id,image,updated');
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+
+  it('filters by current user for non-admin calls', (done) => {
+    const mock = chainable({
+      data: {id: 10, image: 'patch_10_v20260618t201530123z.svg', updated: '2026-06-18T20:15:30.123Z'},
+      error: null
+    });
+    const eqSpy = spyOn(mock, 'eq').and.callThrough();
+    const supabase = {from: jasmine.createSpy('from').and.returnValue(mock)};
+    const update = createUpdateNamespace(
+      supabase as unknown as Parameters<typeof createUpdateNamespace>[0],
+      {} as Parameters<typeof createUpdateNamespace>[1],
+      () => of({
+        id: 'patch-user',
+        email: 'patch@example.com',
+        created_at: '',
+        updated_at: ''
+      }),
+      () => of([]),
+      () => of(false)
+    );
+
+    update.patchPreviewImage(10, 'patch_10_v20260618t201530123z.svg').subscribe({
+      next: () => {
+        expect(eqSpy.calls.allArgs()).toEqual([
+          ['id', 10],
+          ['authorid', 'patch-user']
+        ]);
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+
+  it('allows clearing the image and busts patch list/detail caches', (done) => {
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of({
+      id: 'patch-user',
+      email: 'patch@example.com',
+      created_at: '',
+      updated_at: ''
+    }));
+    const mock = chainable({data: {id: 10, image: null}, error: null});
+    const updateSpy = spyOn(mock, 'update').and.callThrough();
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+    const bustedKeys: string[] = [];
+    service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as string[])));
+
+    service.update.patchPreviewImage(10, null).subscribe({
+      next: () => {
+        expect(updateSpy).toHaveBeenCalledOnceWith({image: null});
+        expect(bustedKeys).toContain('patches');
+        expect(bustedKeys).toContain('patchesWithModule');
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+
+  it('requires authentication', (done) => {
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(null));
+
+    service.update.patchPreviewImage(10, 'patch_10_v20260618t201530123z.svg').subscribe({
+      next: () => {
+        fail('Expected error for unauthenticated call');
+        done();
+      },
+      error: (err) => {
+        expect(err.message).toContain('Authentication required');
         done();
       }
     });

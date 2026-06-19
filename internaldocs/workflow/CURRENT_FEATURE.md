@@ -15,7 +15,7 @@
 Patch SVG previews — preview update semantics gate
 
 Plan: [patch-svg-previews.md](./plans/patch-svg-previews.md)
-Status: **Backend/storage checkpoint committed. Product owner approved maintainer reconciliation of remote migration/typegen drift and a narrow image-only timestamp-preservation SQL strategy; preview UI/data-service wiring remains blocked until drift is reconciled and that SQL checkpoint exists.**
+Status: **Backend/storage and image-only timestamp-preservation checkpoints exist locally. Product owner approved maintainer reconciliation of remote migration/typegen drift; preview UI/data-service wiring remains blocked until drift is reconciled and the new SQL checkpoint is applied/typegen is safe.**
 Staged: 2026-06-18T22:15+02:00
 Approval recorded: 2026-06-18T22:43+02:00
 
@@ -23,14 +23,14 @@ Approval recorded: 2026-06-18T22:43+02:00
 
 - Patch SVG preview storage backend is now present locally in commit `31d7242b`.
 - Remote Supabase migration history is behind/divergent from local repo migrations, so applying this migration remotely or regenerating backend types is unsafe until drift is reconciled.
-- Read-only trigger inspection confirmed persisting `patches.image` through a normal row update would bump `patches.updated`; generation needs an approved timestamp-preservation SQL/update strategy before UI/data-service wiring.
+- Read-only trigger inspection confirmed persisting `patches.image` through a normal row update would bump `patches.updated`; local SQL/backend now preserves the timestamp for image-only preview writes, but remote reconciliation/application is still blocked.
 
 #### Safety gate
 
 - Read `internaldocs/patterns/BACKEND_METHODS.md` schema-change preflight before drafting SQL.
 - Product owner approved the drafted SQL/storage shape at 2026-06-18T22:43+02:00.
 - Do not apply the patch preview migration remotely or run `pnpm updateBackendTypes` until the linked remote migration drift is reconciled.
-- Do not wire `updatePatchPreview$` until migration drift is reconciled and the approved narrow `public.patches.image` timestamp-preservation SQL checkpoint exists; stale detection depends on preserving `patches.updated` as the graph edit timestamp.
+- Do not wire `updatePatchPreview$` until migration drift is reconciled and the approved narrow `public.patches.image` timestamp-preservation SQL checkpoint can be applied/typegen is safe; stale detection depends on preserving `patches.updated` as the graph edit timestamp.
 
 #### Layer checklist
 
@@ -43,6 +43,7 @@ Approval recorded: 2026-06-18T22:43+02:00
 - [x] Validate and commit the verified checkpoint.
 - [ ] Reconcile linked remote migration drift or switch typegen to a project with all local migrations applied.
 - [x] Verify whether updating only `patches.image` changes `patches.updated`; propose an approved RPC/update strategy if needed.
+- [x] Add local image-only timestamp-preservation SQL checkpoint and narrow `update.patchPreviewImage(id, image)` backend method.
 - [ ] Only then wire patch preview generation through `PatchDetailDataService`.
 
 #### Approval queue
@@ -54,11 +55,12 @@ Approval recorded: 2026-06-18T22:43+02:00
 - **Approved 2026-06-19T09:05+02:00:** Product owner approved maintainer reconciliation of the linked Supabase migration/typegen drift only, so the patch preview migration and `pnpm updateBackendTypes` can proceed safely after reconciliation. This does not approve unrelated RLS/policy changes, timestamp-preservation SQL, or pushing.
 - **Approval requested 2026-06-19T09:05+02:00:** May the next SQL checkpoint add an image-only timestamp-preservation strategy for `public.patches` before `updatePatchPreview$` is wired? Default: keep preview generation blocked.
 - **Approved 2026-06-19T09:05+02:00:** Product owner approved a narrow image-only timestamp-preservation SQL strategy for `public.patches.image` updates, so preview row writes do not alter graph-edit freshness semantics. No broad patch RLS changes, unrelated migration/policy changes, or push are approved; preview UI/data-service wiring may proceed only after migration drift is reconciled and this SQL checkpoint exists.
+- **Implemented locally 2026-06-19T09:12+02:00:** Added `20260619091200_preserve_patch_preview_image_updated.sql` and `update.patchPreviewImage(id, image)` with focused tests. No remote Supabase changes or typegen were run.
 
 #### Validation strategy
 
 - `node scripts/checks/check-docs.cjs` after docs/proposal updates.
-- No app tests required for proposal-only docs unless code is changed.
+- Run targeted SupabaseService update specs and `pnpm test:functions:patch-preview-migrations` after the local SQL/backend checkpoint.
 
 #### Decision log
 
@@ -70,3 +72,4 @@ Approval recorded: 2026-06-18T22:43+02:00
 - 2026-06-19T09:05+02:00 — Read-only Supabase inspection confirmed the linked remote still has local/remote migration drift, no `patches.image` column, no `patches` bucket, and `public.patches.handle_updated_auto` uses `moddatetime('updated')`; image-only updates would bump `patches.updated`. Recorded approval gates for migration reconciliation and timestamp-preservation SQL; no remote changes were applied.
 - 2026-06-19T09:05+02:00 — Product owner approved maintainer reconciliation of the linked Supabase migration/typegen drift only. Timestamp-preservation SQL remains a separate pending approval gate; no unrelated RLS/policy changes or push are approved.
 - 2026-06-19T09:05+02:00 — Product owner separately approved a narrow image-only timestamp-preservation SQL strategy for `public.patches.image` updates, so preview row writes do not alter graph-edit freshness semantics. Preview UI/data-service wiring remains blocked until migration drift is reconciled and the approved SQL checkpoint exists; no broad patch RLS changes, unrelated migration/policy changes, or push are approved.
+- 2026-06-19T09:12+02:00 — Added local migration `20260619091200_preserve_patch_preview_image_updated.sql` and narrow `update.patchPreviewImage(id, image)` backend method. This safely persists only `patches.image`, cache-busts `patches`/`patchesWithModule`, and leaves remote typegen/migration reconciliation blocked/remaining.
