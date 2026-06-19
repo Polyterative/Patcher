@@ -240,6 +240,33 @@ export function createUpdateNamespace(
         cacheBust(['patches', 'patchConnections'])
       );
     },
+
+    patchPreviewImage: (id: number, image: string | null) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return hasAdminRole$().pipe(
+          take(1),
+          switchMap(isAdmin => {
+            const patchUpdate: SupabaseTableUpdate<'patches'> = {image};
+            let query = supabase.from(DbPaths.patches)
+              .update(patchUpdate)
+              .eq('id', id);
+
+            if (!isAdmin) {
+              query = query.eq('authorid', user.id);
+            }
+
+            return rxFrom(
+              query
+                .select('id,image,updated')
+                .single()
+            );
+          })
+        );
+      }),
+      throwIfSupabaseError(),
+      cacheBust(['patches', 'patchesWithModule'])
+    ),
     
     modules: (data: DbModule[]) => {
       const transformedData = data.map(datum => {
