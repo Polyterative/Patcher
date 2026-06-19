@@ -134,6 +134,28 @@
   max-height: 9rem;
 }
 
+.module-action-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.module-action-row__primary,
+.module-action-row__secondary {
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.module-action-row__secondary {
+  justify-content: flex-end;
+  margin-inline-start: auto;
+}
+
+.module-action-row__cool {
+  margin-inline-start: 0.35rem;
+}
+
 .parent--tagPickerOpen {
   .module-minimal__focus-hide {
     opacity: 0;

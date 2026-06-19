@@ -41,7 +41,7 @@ export class UserModulesComponent extends SubManager {
     {value: 'MY_MODULES', label: 'Owned', icon: 'inventory_2'},
     {value: 'WISHLIST', label: 'Wanted', icon: 'bookmark'},
     {value: 'FOR_SALE', label: 'For Sale', icon: 'sell'},
-    {value: 'COOL', label: 'Cool', icon: 'auto_awesome'},
+    {value: 'COOL', label: 'Cool!', icon: 'auto_awesome'},
   ];
   readonly emptyStateCopyByFilter: Record<UserModuleCollectionFilter, string> = {
     MY_MODULES: 'Add the modules you own here so they are available when you build racks and patches.',

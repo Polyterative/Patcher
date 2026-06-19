@@ -132,6 +132,9 @@ export class CoolButtonDataService extends SubManager {
 
         return request$.pipe(
           tap(() => {
+            if (this.configsEqual(this.latestConfig, config) && this.canUseBackend(config)) {
+              this.vm$.next(this.buildVm(nextActive, nextCount));
+            }
             SharedConstants.successCustom(this.snackBar, nextActive ? 'Marked cool.' : 'Removed cool.');
           }),
           catchError(() => {
@@ -176,7 +179,7 @@ export class CoolButtonDataService extends SubManager {
       count,
       disabled,
       loading: false,
-      label: active ? 'Cooled' : 'Cool',
+      label: active ? 'Cool!' : 'Cool',
       ariaLabel: active ? 'Remove cool' : 'Mark as cool'
     };
   }

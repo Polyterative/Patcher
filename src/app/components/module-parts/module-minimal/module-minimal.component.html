@@ -107,9 +107,9 @@
             <mat-divider [inset]="true"
                          style="margin-top:.5rem"
             ></mat-divider>
-            <div class="row gap2 opacizeOnHover layout-gap-xs-0"
+            <div class="module-action-row row gap2 opacizeOnHover layout-gap-xs-0"
             >
-              <div class="layout-flex-full layout-row layout-gap-1"
+              <div class="module-action-row__primary layout-row layout-gap-1"
               >
                 @if (bag.user && bag.singleModuleData && bag.singleModuleData.manufacturer.id !== 10000) {
                   @if (bag.possessionKind) {
@@ -145,14 +145,6 @@
                     <mat-icon>playlist_add</mat-icon>
                   </button>
                 }
-                @if (showCoolAction) {
-                  <app-cool-button
-                    [entityType]="ReactionEntityTypes.MODULE"
-                    [entityId]="data.id"
-                    [eligible]="data.public === true"
-                    countDisplayMode="count"
-                  ></app-cool-button>
-                }
                 @if (bag.currentRackData; as rackData) {
                   @if (bag.isCurrentRackEditable) {
                     <button (click)="rackDataService.addModuleToRack$.next(data)"
@@ -167,7 +159,7 @@
                 }
               </div>
               <div class="layout-flex-grow"></div>
-              <div class="row gap1">
+              <div class="module-action-row__secondary row gap1">
                 @if ((bag.singleModuleData && bag.user)) {
                 }
                 @if (bag.singleModuleData) {
@@ -190,6 +182,15 @@
                   >
                     <mat-icon>content_copy</mat-icon>
                   </a>
+                }
+                @if (showCoolAction) {
+                  <app-cool-button
+                    class="module-action-row__cool"
+                    [entityType]="ReactionEntityTypes.MODULE"
+                    [entityId]="data.id"
+                    [eligible]="data.public === true"
+                    countDisplayMode="count"
+                  ></app-cool-button>
                 }
                 <!--          <ng-container *ngIf="!bag.singleModuleData">-->
                 <!--            <a mat-icon-button-->
