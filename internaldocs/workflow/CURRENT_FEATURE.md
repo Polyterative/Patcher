@@ -15,7 +15,7 @@
 Cross-entity Cool reactions — gated surface wiring checkpoint complete
 
 Plan: [module-cool-appreciation-button.md](./plans/module-cool-appreciation-button.md)
-Status: **Local additive backend checkpoint, disabled-by-default shared UI/data-service checkpoint, and modules/public-racks surface wiring checkpoint are implemented. Approved Patch preview and Cool migrations are applied on the linked Supabase project, but broader linked-database migration/typegen drift remains. A local `pnpm updateBackendTypes` candidate was rejected as regressive, so production-visible Cool wiring stays gated pending final operational verification.**
+Status: **Local additive backend checkpoint, shared UI/data-service checkpoint, and modules/public-racks surface wiring checkpoint are implemented. Cool UI is intentionally visible in generated development builds for review, while generated production builds remain off. Approved Patch preview and Cool migrations are applied on the linked Supabase project, but broader linked-database migration/typegen drift remains. A local `pnpm updateBackendTypes` candidate was rejected as regressive, so manual backend types remain for now.**
 Staged: 2026-06-19T09:21+02:00
 
 #### Why this is next
@@ -27,8 +27,8 @@ Staged: 2026-06-19T09:21+02:00
 #### Safety gate
 
 - Read `internaldocs/patterns/BACKEND_METHODS.md` schema-change preflight before any SQL draft.
-- Do not switch to `production`, release, push, or expose Cool frontend code to users while this feature is still in development.
-- Keep `coolReactionsEnabled` default `false` for dev/prod; production-visible Cool UI must remain hidden/default-off.
+- Do not switch to `production`, release, push, or expose Cool frontend code through production while this feature is still in development.
+- Keep generated development/local `coolReactionsEnabled` `true` so the user can review Cool on `develop`; generated production must remain `false`.
 - `pnpm updateBackendTypes` is allowed only as a local candidate diff on `develop`. Keep it only if it is non-regressive; if linked remote drift removes/regresses unrelated local schema/types, revert the generated type-file changes and document the blocker.
 - Do not enable production-visible Cool UI or wire Patch preview generation until remaining linked Supabase drift is reconciled or explicitly accepted.
 - Typegen blocker: 2026-06-19 candidate generation against linked project `sozmatmywjpstwidzlss` removed the local `user_module_acquisitions` table type, dropped the `reactions_user_id_fkey` relationship, and made `patches.public_id` / `racks.public_id` inserts required again. The generated `src/backend/database.types.ts` diff was reverted.
@@ -68,3 +68,4 @@ Staged: 2026-06-19T09:21+02:00
 - 2026-06-19T10:47+02:00 — Wired the shared Cool button into module detail, module list cards, rack detail, and rack list cards only. Hosts additionally check `environment.features.coolReactionsEnabled` before instantiating the button, so the default-off dev/prod flag renders no control and performs no reaction backend calls; eligibility remains `public === true` for modules and racks. Patches remain intentionally unwired.
 - 2026-06-19T09:20+02:00 — User clarified operational constraints: stay on `develop`, do not switch to `production`, do not release or push, and keep the Cool frontend hidden/default-off while the feature is still being developed. Local backend typegen is allowed only as a candidate diff; reject it if linked remote drift regresses unrelated local schema/types.
 - 2026-06-19T10:57+02:00 — Evaluated `SUPABASE_PROJECT_ID=sozmatmywjpstwidzlss pnpm updateBackendTypes` as a local candidate. Rejected and reverted the generated `src/backend/database.types.ts` diff because it regressed unrelated local schema/types: removed `user_module_acquisitions`, removed the `reactions_user_id_fkey` relationship, and made DB-default `public_id` inserts required for patches/racks. Keep manual local types until linked migration/typegen drift is reconciled.
+- 2026-06-19T10:59+02:00 — User clarified that Cool should be visible on `develop` for review. Production/release remains blocked: do not switch branches, release, push, or expose Cool via production. Keep generated dev/local `coolReactionsEnabled` on and generated production off; typegen remains manual because the linked project still produces regressive unrelated type drift.
