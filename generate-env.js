@@ -33,7 +33,8 @@ export const environment = {
     key: '${supabaseAnonKey}' // SAFE to expose — anon key with RLS enforced
   },
   features: {
-    collectionsEnabled: false
+    collectionsEnabled: false,
+    coolReactionsEnabled: false
   }
 };
 `;
@@ -48,7 +49,8 @@ export const environment = {
     key: '${supabaseAnonKey}' // SAFE to expose — anon key with RLS enforced
   },
   features: {
-    collectionsEnabled: true
+    collectionsEnabled: true,
+    coolReactionsEnabled: false
   }
 };
 `;

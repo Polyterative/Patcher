@@ -12,17 +12,17 @@
 
 ## Active
 
-Cross-entity Cool reactions — local backend checkpoint complete
+Cross-entity Cool reactions — gated UI checkpoint complete
 
 Plan: [module-cool-appreciation-button.md](./plans/module-cool-appreciation-button.md)
-Status: **Local additive backend checkpoint is implemented and committed. Remote Supabase migration/typegen application remains blocked by recorded linked-database drift. The next UI/data-service checkpoint must be feature-gated or otherwise prove it makes no production calls to missing `reactions` / `reaction_counts` objects before those remote objects exist.**
+Status: **Local additive backend checkpoint and disabled-by-default shared UI/data-service checkpoint are implemented. Remote Supabase migration/typegen application remains blocked by recorded linked-database drift, so production-visible Cool wiring must stay gated off until the remote Cool objects exist.**
 Staged: 2026-06-19T09:21+02:00
 
 #### Why this is next
 
 - Patch SVG preview backend/storage and timestamp-preservation checkpoints exist locally, but read-only Supabase MCP inspection still shows the linked remote lacks `patches.image`, lacks the `patches` bucket, and has divergent migration history.
 - The remaining Patch SVG preview UI/data-service work depends on remote migration/typegen reconciliation and must stay blocked.
-- Cross-entity Cool reactions is the next highest-priority non-held INFRA item with a plan. The local backend checkpoint is complete; production-facing UI remains gated until remote schema/typegen drift is reconciled.
+- Cross-entity Cool reactions is the next highest-priority non-held INFRA item with a plan. The local backend and shared guarded UI checkpoints are complete; production-facing UI remains gated until remote schema/typegen drift is reconciled.
 
 #### Safety gate
 
@@ -38,7 +38,7 @@ Staged: 2026-06-19T09:21+02:00
 - [x] Record conditional user approval for the narrow, non-breaking schema/RLS checkpoint.
 - [x] Draft the narrow schema/RLS/trigger checkpoint for reactions and reaction counts.
 - [x] Implement backend methods through `SupabaseService` only, with cache keys and focused tests.
-- [ ] Add disabled-by-default shared Cool UI/data-service wiring for the approved MVP surfaces, with tests proving no backend calls when gated off.
+- [x] Add disabled-by-default shared Cool UI/data-service wiring for the approved MVP surfaces, with tests proving no backend calls when gated off.
 
 #### Approval queue
 
@@ -57,3 +57,4 @@ Staged: 2026-06-19T09:21+02:00
 - 2026-06-19T09:20+02:00 — User conditionally approved the next Cool reactions schema/RLS checkpoint only if it is non-breaking for the current production build. Scope remains additive and narrow: polymorphic `reactions` plus aggregate `reaction_counts`, modules + public racks initially, no unrelated RLS/policy changes, and stop before any breaking change or risky production behavior.
 - 2026-06-19T09:32+02:00 — Implemented the local-only backend checkpoint with additive `reactions` / `reaction_counts` migration objects, narrow RLS, SupabaseService add/delete/get methods, cache keys, and focused tests. Skipped remote typegen because linked Supabase drift is already recorded; manually updated `src/backend/database.types.ts` for the two new tables. Reviewer pass narrowed module eligibility to `modules.public = true` so aggregate counts cannot expose non-public module IDs.
 - 2026-06-19T09:43+02:00 — Reconciled workflow state after the backend checkpoint. Because the current production database may not have the new Cool objects yet, the next UI/data-service work is only safe if it is disabled by default and tests prove it performs no Cool backend reads/writes while gated off.
+- 2026-06-19T09:45+02:00 — Added disabled-by-default `coolReactionsEnabled` environment flag plus shared `app-cool-button` / component-scoped data service. The service routes enabled reads/writes through `SupabaseService`, optimistically toggles with rollback, and focused specs prove feature-off and ineligible paths render no button and make no Cool backend calls.

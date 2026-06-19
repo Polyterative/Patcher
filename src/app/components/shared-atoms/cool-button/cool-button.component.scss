@@ -1,0 +1,17 @@
+.coolButton {
+  border-radius: 999rem;
+  min-height: 2.25rem;
+
+  &--active {
+    --mdc-outlined-button-label-text-color: var(--theme-highlight, currentColor);
+  }
+
+  &__icon {
+    margin-inline-end: 0.25rem;
+  }
+
+  &__count {
+    opacity: 0.72;
+    padding-inline-start: 0.125rem;
+  }
+}

@@ -1,0 +1,20 @@
+@if (dataService.vm$ | async; as vm) {
+  @if (vm.visible) {
+    <button
+      mat-stroked-button
+      type="button"
+      class="coolButton"
+      [class.coolButton--active]="vm.active"
+      [disabled]="vm.disabled || vm.loading"
+      [attr.aria-label]="vm.ariaLabel"
+      [attr.aria-pressed]="vm.active"
+      (click)="dataService.requestToggle$.next()"
+    >
+      <mat-icon class="coolButton__icon">{{ vm.active ? 'auto_awesome' : 'auto_awesome_outline' }}</mat-icon>
+      <span>{{ vm.label }}</span>
+      @if (vm.count !== null) {
+        <span class="coolButton__count">{{ vm.count }}</span>
+      }
+    </button>
+  }
+}
