@@ -40,7 +40,8 @@ describe('UserAreaRootComponent - Initialization', () => {
       mockBackend as any,
       mockDataService as any,
       mockSeoService as any,
-      createMockUrlCreatorService() as any
+      createMockUrlCreatorService() as any,
+      true
     );
     component.ignoreSeo = ignoreSeo;
     component.ngOnInit();
@@ -120,7 +121,8 @@ describe('UserAreaRootComponent - Initialization', () => {
       mockBackend as any,
       mockDataService as any,
       mockSeoService as any,
-      createMockUrlCreatorService() as any
+      createMockUrlCreatorService() as any,
+      true
     );
     component.ignoreSeo = true;
 
@@ -142,7 +144,8 @@ describe('UserAreaRootComponent - Initialization', () => {
       mockBackend as any,
       mockDataService as any,
       mockSeoService as any,
-      createMockUrlCreatorService() as any
+      createMockUrlCreatorService() as any,
+      true
     );
     component.ignoreSeo = true;
 
@@ -184,7 +187,8 @@ describe('UserAreaRootComponent - miscStats$', () => {
       mockBackend as any,
       mockDataService as any,
       mockSeoService as any,
-      createMockUrlCreatorService() as any
+      createMockUrlCreatorService() as any,
+      true
     );
     component.ignoreSeo = true;
     component.ngOnInit();
@@ -290,7 +294,8 @@ describe('UserAreaRootComponent - contributorStats$', () => {
       mockBackend as any,
       mockDataService as any,
       mockSeoService as any,
-      createMockUrlCreatorService() as any
+      createMockUrlCreatorService() as any,
+      true
     );
     component.ignoreSeo = true;
   }
@@ -345,7 +350,8 @@ describe('UserAreaRootComponent - Global Search', () => {
       mockBackend as any,
       mockDataService as any,
       mockSeoService as any,
-      createMockUrlCreatorService() as any
+      createMockUrlCreatorService() as any,
+      true
     );
     component.ignoreSeo = true;
     component.ngOnInit();

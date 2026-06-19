@@ -8,6 +8,7 @@ import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.serv
 import { UrlCreatorService } from 'src/app/features/backend/url-creator.service';
 import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area-data.service';
 import { UserAreaRootComponent } from '../user-area-root/user-area-root.component';
+import { COOL_REACTIONS_ENABLED } from 'src/app/components/shared-atoms/cool-button/cool-button-feature.token';
 import {
   createMockSeoAndUtilsService,
   createMockSupabaseService,
@@ -37,6 +38,7 @@ describe('UserAreaRootComponent - Layout Shell', () => {
         { provide: SeoAndUtilsService, useValue: mockSeoService },
         { provide: SupabaseService, useValue: mockBackend },
         { provide: UrlCreatorService, useValue: createMockUrlCreatorService() },
+        { provide: COOL_REACTIONS_ENABLED, useValue: false },
       ],
       schemas: [NO_ERRORS_SCHEMA],
     });
