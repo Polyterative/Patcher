@@ -125,7 +125,8 @@ Default behavior:
 - Gate production behind a feature flag that stays off in generated production builds; generated development builds may enable the flag for review.
 - Inputs should include entity type, entity id, public/eligible state, and count display mode.
 - Shared `app-cool-button` and its component-scoped data service are available behind `environment.features.coolReactionsEnabled`; feature-off and ineligible paths render no button and do not call Cool backend methods.
-- Module detail/list and rack detail/list surfaces now instantiate `app-cool-button` only when `coolReactionsEnabled` is true, pass module/rack `ReactionEntityTypes`, ids, public eligibility, and count display mode, and leave patches unwired for the structural layer.
+- Module detail and rack detail surfaces instantiate `app-cool-button` only when `coolReactionsEnabled` is true, pass module/rack `ReactionEntityTypes`, ids, public eligibility, and count display mode, and leave patches unwired for the structural layer.
+- Repeated module/rack list-card surfaces must not render Cool buttons, even on develop, because rows of Cool buttons are visually noisy and feel wrong in detail pages that include embedded lists.
 - Components must not call `SupabaseService` directly.
 - Button copy:
   - Off: "Cool"
@@ -134,7 +135,7 @@ Default behavior:
   - Tooltip/ARIA on: "Remove cool"
 - Icon direction: expressive but not generic. Evaluate Material icons such as `auto_awesome`, `flare`, `bolt`, or a custom
   in-system treatment if Material cannot carry the right character. Avoid thumbs-up; it is too generic.
-- Cards: compact always-visible icon button; no hover-only affordance.
+- Cards: do not show Cool in repeated card/list rows for the MVP. Revisit only with an explicit view-configuration guard if a future surface can guarantee one-at-a-time or low-density placement.
 - Detail pages: larger action in the existing action area, with count if the surrounding stats pattern supports it.
 - User area: add a Cool view grouped by Modules / Racks / Patches, newest first, with inline remove action and no
   confirmation dialog.
@@ -194,4 +195,5 @@ Default behavior:
 - 2026-06-19T09:20+02:00 — User clarified operational constraints for the remainder of this development slice: stay on `develop`, do not switch to `production`, do not release or push, and do not expose Cool frontend code to users. Keep `coolReactionsEnabled` default `false`. Local backend typegen may be evaluated only as a candidate diff; if it removes/regresses unrelated local schema/types due linked remote drift, revert the generated type-file changes and keep typegen blocked.
 - 2026-06-19T10:57+02:00 — Ran `SUPABASE_PROJECT_ID=sozmatmywjpstwidzlss pnpm updateBackendTypes` locally and inspected the generated candidate. Rejected it because it removed the local `user_module_acquisitions` type, dropped the generated `reactions_user_id_fkey` relationship, and made `patches.public_id` / `racks.public_id` insert fields required despite DB defaults. Reverted only `src/backend/database.types.ts`; no remote changes were made.
 - 2026-06-19T10:59+02:00 — User clarified the development visibility policy: Cool should be visible on `develop` so it can be reviewed, but remains blocked from production/release. Set the generated development/local flag on and keep generated production off. Typegen remains manual because the linked-project candidate still regresses unrelated schema/types.
+- 2026-06-19T11:19+02:00 — User clarified placement after seeing develop: no rows of Cool buttons in repeated module/rack list cards, including embedded lists inside detail pages. Keep Cool on slash/detail-style pages and the user-area Cool collection, near existing community/statistics/action areas where only one entity is in focus.
 - 2026-06-19T11:05+02:00 — Added the user-area Cool collection checkpoint as a gated root-section surface. It intentionally covers only modules and public racks for MVP, batches entity detail reads, groups Modules / Racks newest-first by reaction timestamp, and supports inline Uncool via `backend.delete.reaction`; patches remain in the structural layer.

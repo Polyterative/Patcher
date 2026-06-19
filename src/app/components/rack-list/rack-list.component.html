@@ -23,15 +23,6 @@
                           [@leave]="{ value: '', params: { delay:  0 }}"
                           class="item"
           >
-            @if (coolReactionsEnabled) {
-              <app-cool-button
-                class="rack-list-card-cool"
-                [entityType]="ReactionEntityTypes.RACK"
-                [entityId]="item.id"
-                [eligible]="item.public === true"
-                countDisplayMode="count"
-              ></app-cool-button>
-            }
             <app-rack-micro [data]="item"
                             [viewConfig]="viewConfig"
             ></app-rack-micro>
