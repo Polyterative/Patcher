@@ -50,7 +50,7 @@
 - [ ] **ON HOLD: LOW: FUI-inspired instrument components** → [`plans/fui-inspired-instrument-components.md`](./plans/fui-inspired-instrument-components.md)
 - [ ] **ON HOLD: VERY LONG TERM: Bundle weight, lazy boundaries, and SSR prerender coverage** → [`plans/bundle-weight-lazy-boundaries-and-ssr-prerender-coverage.md`](./plans/bundle-weight-lazy-boundaries-and-ssr-prerender-coverage.md)
 - [ ] **ON HOLD: MEDIUM: Module possession trend charts (schema approval follow-up)** → [`plans/module-possession-trend-charts-schema-followup.md`](./plans/module-possession-trend-charts-schema-followup.md)
-- [~] **LOW: Cross-entity Cool reactions (planning/approval gate; no schema/RLS changes yet)** → [`plans/module-cool-appreciation-button.md`](./plans/module-cool-appreciation-button.md)
+- [~] **LOW: Cross-entity Cool reactions (backend checkpoint local; production UI gated until remote migration/typegen reconciliation)** → [`plans/module-cool-appreciation-button.md`](./plans/module-cool-appreciation-button.md)
 - [ ] **ON HOLD INDEFINITELY: Rack Comparison — balance diff between two racks** → [`plans/rack-comparison-balance-diff-between-two-racks.md`](./plans/rack-comparison-balance-diff-between-two-racks.md)
 - [ ] **ON HOLD: MEDIUM: Sentry — Live Issue Audit** → [`plans/sentry-live-issue-audit.md`](./plans/sentry-live-issue-audit.md)
 - [ ] **ON HOLD: MEDIUM: Patch SVG previews (blocked: linked migration/typegen drift; do not apply storage/RLS autonomously)** → [`plans/patch-svg-previews.md`](./plans/patch-svg-previews.md)

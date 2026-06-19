@@ -12,23 +12,24 @@
 
 ## Active
 
-Cross-entity Cool reactions — planning/approval gate
+Cross-entity Cool reactions — local backend checkpoint complete
 
 Plan: [module-cool-appreciation-button.md](./plans/module-cool-appreciation-button.md)
-Status: **Approval recorded for the next implementation checkpoint only if it remains non-breaking for the current production build. The approved path is additive/narrow Cool reactions schema/RLS planning and application for modules + public racks initially; stop before any breaking change, unrelated RLS/policy change, risky production behavior, or broader entity scope.**
+Status: **Local additive backend checkpoint is implemented and committed. Remote Supabase migration/typegen application remains blocked by recorded linked-database drift. The next UI/data-service checkpoint must be feature-gated or otherwise prove it makes no production calls to missing `reactions` / `reaction_counts` objects before those remote objects exist.**
 Staged: 2026-06-19T09:21+02:00
 
 #### Why this is next
 
 - Patch SVG preview backend/storage and timestamp-preservation checkpoints exist locally, but read-only Supabase MCP inspection still shows the linked remote lacks `patches.image`, lacks the `patches` bucket, and has divergent migration history.
 - The remaining Patch SVG preview UI/data-service work depends on remote migration/typegen reconciliation and must stay blocked.
-- Cross-entity Cool reactions is the next highest-priority non-held INFRA item with a plan; only planning/approval-gate work is safe before schema/RLS approval.
+- Cross-entity Cool reactions is the next highest-priority non-held INFRA item with a plan. The local backend checkpoint is complete; production-facing UI remains gated until remote schema/typegen drift is reconciled.
 
 #### Safety gate
 
 - Read `internaldocs/patterns/BACKEND_METHODS.md` schema-change preflight before any SQL draft.
-- Do not apply migrations, RLS/policies, grants, RPCs, generated types, or Supabase mutations for Cool until explicit approval is recorded.
+- Do not remotely apply migrations, RLS/policies, grants, RPCs, generated types, or Supabase mutations for Cool until the linked Supabase drift is reconciled and explicit operational approval is recorded.
 - Initial implementation scope should be narrow: modules and public racks first, patches in the structural layer after the data path is proven.
+- Any UI wiring before remote migration application must be behind a disabled-by-default feature guard so the current production build never queries missing Cool backend objects.
 
 #### Layer checklist
 
@@ -37,7 +38,7 @@ Staged: 2026-06-19T09:21+02:00
 - [x] Record conditional user approval for the narrow, non-breaking schema/RLS checkpoint.
 - [x] Draft the narrow schema/RLS/trigger checkpoint for reactions and reaction counts.
 - [x] Implement backend methods through `SupabaseService` only, with cache keys and focused tests.
-- [ ] Add shared Cool UI/data-service wiring for the approved MVP surfaces.
+- [ ] Add disabled-by-default shared Cool UI/data-service wiring for the approved MVP surfaces, with tests proving no backend calls when gated off.
 
 #### Approval queue
 
@@ -47,10 +48,12 @@ Staged: 2026-06-19T09:21+02:00
 #### Validation strategy
 
 - Docs-only gate: `node scripts/checks/check-docs.cjs` and `git diff --check`.
-- After approval and implementation: focused backend/cache specs, Cool button/user-area specs, then `pnpm lint`.
+- Gated UI checkpoint: focused Cool button/data-service specs proving gate-off no-op behavior, plus `pnpm lint`.
+- After remote migration/typegen reconciliation: focused backend/cache specs, Cool button/user-area specs, auth E2E where practical, then `pnpm lint`.
 
 #### Decision log
 
 - 2026-06-19T09:21+02:00 — Pivoted from Patch SVG previews after read-only Supabase inspection reconfirmed linked migration/typegen drift and missing patch preview remote objects. Staged Cross-entity Cool reactions as planning/approval-gate only because it requires schema/RLS/policy work before code can safely start.
 - 2026-06-19T09:20+02:00 — User conditionally approved the next Cool reactions schema/RLS checkpoint only if it is non-breaking for the current production build. Scope remains additive and narrow: polymorphic `reactions` plus aggregate `reaction_counts`, modules + public racks initially, no unrelated RLS/policy changes, and stop before any breaking change or risky production behavior.
 - 2026-06-19T09:32+02:00 — Implemented the local-only backend checkpoint with additive `reactions` / `reaction_counts` migration objects, narrow RLS, SupabaseService add/delete/get methods, cache keys, and focused tests. Skipped remote typegen because linked Supabase drift is already recorded; manually updated `src/backend/database.types.ts` for the two new tables. Reviewer pass narrowed module eligibility to `modules.public = true` so aggregate counts cannot expose non-public module IDs.
+- 2026-06-19T09:43+02:00 — Reconciled workflow state after the backend checkpoint. Because the current production database may not have the new Cool objects yet, the next UI/data-service work is only safe if it is disabled by default and tests prove it performs no Cool backend reads/writes while gated off.
