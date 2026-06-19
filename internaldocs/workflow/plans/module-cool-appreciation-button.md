@@ -5,7 +5,7 @@
 
 ## Status
 
-- [~] Planning/approval gate staged as the active safe task after Patch SVG previews became blocked on linked Supabase migration/typegen drift.
+- [~] Conditional schema/RLS approval recorded; implementation has not started.
 - Priority: **LOW**
 - TODO section: **INFRA**
 - Owner persona on pickup: `coordinator-loop` → `planner` → `frontend-dev` after explicit schema/RLS approval.
@@ -98,6 +98,7 @@ Default behavior:
 ## Approval queue
 
 - **Approval requested 2026-06-19T09:21+02:00:** May the next implementation checkpoint draft and apply a narrow Cool reactions schema/RLS plan for a polymorphic `reactions` table plus aggregate `reaction_counts` support, limited initially to modules and public racks? Default if not approved: keep work planning/docs-only and do not create migrations, policies, RPCs, or generated type changes.
+- **Approval recorded 2026-06-19T09:20+02:00:** User approved “as usual” only if the checkpoint is not a breaking change to the current production build. This authorizes additive/narrow work only: modules + public racks initially, no unrelated RLS/policy changes, and stop before any breaking change or risky production behavior.
 
 ## Backend/service plan
 
@@ -177,3 +178,4 @@ Default behavior:
 - 2026-06-17: Supersede the old module-only enum idea. Cool needs a separate polymorphic reactions table so it remains
   additive to ownership/wishlist/sale state and can support racks, patches, and future entities.
 - 2026-06-19T09:21+02:00 — Staged as the next safe coordinator-loop task after Patch SVG previews remained blocked by linked migration/typegen drift. Because Cool requires new schema/RLS/policy work, the active checkpoint is planning and an explicit approval gate only; no SQL, generated types, or backend code should be changed before approval.
+- 2026-06-19T09:20+02:00 — User conditionally approved the next Cool reactions schema/RLS checkpoint only if it is non-breaking for the current production build. The approval is limited to additive/narrow support for a polymorphic `reactions` table plus aggregate `reaction_counts`, modules + public racks initially, with no unrelated RLS/policy changes; stop before any breaking change or risky production behavior.

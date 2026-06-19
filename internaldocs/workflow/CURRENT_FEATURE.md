@@ -15,7 +15,7 @@
 Cross-entity Cool reactions — planning/approval gate
 
 Plan: [module-cool-appreciation-button.md](./plans/module-cool-appreciation-button.md)
-Status: **Staged as the next safe task after Patch SVG previews remained blocked by linked Supabase migration/typegen drift. This checkpoint is planning and approval-queue only; do not create migrations, policies, RPCs, generated types, or backend/UI code until explicit schema/RLS approval is recorded.**
+Status: **Approval recorded for the next implementation checkpoint only if it remains non-breaking for the current production build. The approved path is additive/narrow Cool reactions schema/RLS planning and application for modules + public racks initially; stop before any breaking change, unrelated RLS/policy change, risky production behavior, or broader entity scope.**
 Staged: 2026-06-19T09:21+02:00
 
 #### Why this is next
@@ -34,13 +34,15 @@ Staged: 2026-06-19T09:21+02:00
 
 - [x] Re-read the existing Cool plan and stage it as the active safe task.
 - [x] Record the explicit schema/RLS approval question in the plan.
-- [ ] After approval, draft the narrow schema/RLS/RPC checkpoint for reactions and reaction counts.
+- [x] Record conditional user approval for the narrow, non-breaking schema/RLS checkpoint.
+- [ ] Draft the narrow schema/RLS/RPC checkpoint for reactions and reaction counts.
 - [ ] Implement backend methods through `SupabaseService` only, with cache keys and focused tests.
 - [ ] Add shared Cool UI/data-service wiring for the approved MVP surfaces.
 
 #### Approval queue
 
 - **Approval requested 2026-06-19T09:21+02:00:** May the next implementation checkpoint draft and apply a narrow Cool reactions schema/RLS plan for a polymorphic `reactions` table plus aggregate `reaction_counts` support, limited initially to modules and public racks? Default if not approved: keep work planning/docs-only and do not create migrations, policies, RPCs, or generated type changes.
+- **Approval recorded 2026-06-19T09:20+02:00:** User approved “as usual” only if the checkpoint is not a breaking change to the current production build. Treat this as conditional approval for additive/narrow schema/RLS work only: modules + public racks initially, no unrelated RLS/policy changes, and stop before any breaking change or risky production behavior.
 
 #### Validation strategy
 
@@ -50,3 +52,4 @@ Staged: 2026-06-19T09:21+02:00
 #### Decision log
 
 - 2026-06-19T09:21+02:00 — Pivoted from Patch SVG previews after read-only Supabase inspection reconfirmed linked migration/typegen drift and missing patch preview remote objects. Staged Cross-entity Cool reactions as planning/approval-gate only because it requires schema/RLS/policy work before code can safely start.
+- 2026-06-19T09:20+02:00 — User conditionally approved the next Cool reactions schema/RLS checkpoint only if it is non-breaking for the current production build. Scope remains additive and narrow: polymorphic `reactions` plus aggregate `reaction_counts`, modules + public racks initially, no unrelated RLS/policy changes, and stop before any breaking change or risky production behavior.
