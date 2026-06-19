@@ -64,6 +64,9 @@ Key paths:
 - **Before any schema / migration / RPC change, read [`internaldocs/patterns/BACKEND_METHODS.md` §"Schema-change preflight"](internaldocs/patterns/BACKEND_METHODS.md#schema-change-preflight-read-before-writing-sql).** It lists past mistakes (e.g., backfill UPDATEs wiping `updated` timestamps) and the mitigations.
 - Never make Supabase RLS/policy changes without explicit manual user approval. Agents may inspect and propose RLS changes, but
   must not apply them autonomously.
+- Avoid backend-breaking changes that could break the currently published production app. Production is assumed to be live and stable
+  while agents work on `develop`; backend-breaking changes require explicit manual approval with the user present. Prefer additive,
+  backward-compatible schema/API changes and keep existing production clients working.
 - Before a new backend method: register the table in `DatabaseStrings.ts`; make reads cacheable when appropriate; bust all
   invalidated cache keys after writes.
 - Run `pnpm updateBackendTypes` after schema changes.
@@ -75,6 +78,11 @@ Key paths:
 - Observables/Subjects use a `$` suffix; private `BehaviorSubject`s use an `_` prefix.
 - For visual UI fixes or responsive-layout tweaks, capture and inspect real screenshots with Playwright before concluding the work.
 - All visual decisions must be grounded in [`internaldocs/DESIGN_LANGUAGE.md`](internaldocs/DESIGN_LANGUAGE.md) — the canonical design philosophy, character, inspirations, and anti-patterns for Patcher.
+- **Code autonomous, UX co-designed:** agents should execute implementation details autonomously, but ask for confirmation on meaningful
+  user-visible UX placement/hierarchy decisions before coding new UI surfaces. For UI work, present a short placement brief covering
+  where the element lives, its visual weight, affected surfaces, and excluded surfaces. After approval, proceed autonomously.
+- Use `designer` before implementation when UI placement, information architecture, hierarchy, or density is ambiguous. For low-risk
+  visual questions, ask the user directly with 2-3 concise options and a recommended default.
 
 ## 6) Git and delivery
 
@@ -85,6 +93,10 @@ Key paths:
 - Ask before committing unless the user explicitly requested commits or invoked a persona/workflow that documents autonomous verified-checkpoint commits (for example `coordinator-loop` / "begin loop").
 - Never push unless the user explicitly requested it.
 - Never run `release:*` from `develop`.
+- Work normally happens on `develop`; the user decides when to release/merge to `production`. Do not switch to `production`, run release
+  commands, or treat `develop` visibility as production exposure unless the user explicitly asks.
+- Feature flags are not mandatory for every new feature. Use them when the user requests a hidden/incomplete feature, when production
+  must stay shielded while `develop` remains reviewable, or when a backend rollout needs a safe off switch.
 
 ## 7) Output and context preferences
 
