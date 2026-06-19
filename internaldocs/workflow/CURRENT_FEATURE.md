@@ -15,7 +15,7 @@
 Cross-entity Cool reactions — gated surface wiring checkpoint complete
 
 Plan: [module-cool-appreciation-button.md](./plans/module-cool-appreciation-button.md)
-Status: **Local additive backend checkpoint, disabled-by-default shared UI/data-service checkpoint, and modules/public-racks surface wiring checkpoint are implemented. Approved Patch preview and Cool migrations are applied on the linked Supabase project, but broader linked-database migration/typegen drift remains, so `pnpm updateBackendTypes` is still unsafe and production-visible Cool wiring stays gated pending final operational verification.**
+Status: **Local additive backend checkpoint, disabled-by-default shared UI/data-service checkpoint, and modules/public-racks surface wiring checkpoint are implemented. Approved Patch preview and Cool migrations are applied on the linked Supabase project, but broader linked-database migration/typegen drift remains. A local `pnpm updateBackendTypes` candidate was rejected as regressive, so production-visible Cool wiring stays gated pending final operational verification.**
 Staged: 2026-06-19T09:21+02:00
 
 #### Why this is next
@@ -27,7 +27,11 @@ Staged: 2026-06-19T09:21+02:00
 #### Safety gate
 
 - Read `internaldocs/patterns/BACKEND_METHODS.md` schema-change preflight before any SQL draft.
-- Do not run `pnpm updateBackendTypes`, enable production-visible Cool UI, or wire Patch preview generation until remaining linked Supabase drift is reconciled or explicitly accepted.
+- Do not switch to `production`, release, push, or expose Cool frontend code to users while this feature is still in development.
+- Keep `coolReactionsEnabled` default `false` for dev/prod; production-visible Cool UI must remain hidden/default-off.
+- `pnpm updateBackendTypes` is allowed only as a local candidate diff on `develop`. Keep it only if it is non-regressive; if linked remote drift removes/regresses unrelated local schema/types, revert the generated type-file changes and document the blocker.
+- Do not enable production-visible Cool UI or wire Patch preview generation until remaining linked Supabase drift is reconciled or explicitly accepted.
+- Typegen blocker: 2026-06-19 candidate generation against linked project `sozmatmywjpstwidzlss` removed the local `user_module_acquisitions` table type, dropped the `reactions_user_id_fkey` relationship, and made `patches.public_id` / `racks.public_id` inserts required again. The generated `src/backend/database.types.ts` diff was reverted.
 - Initial implementation scope should be narrow: modules and public racks first, patches in the structural layer after the data path is proven.
 - Any UI wiring before remote migration application must be behind a disabled-by-default feature guard so the current production build never queries missing Cool backend objects.
 
@@ -45,6 +49,7 @@ Staged: 2026-06-19T09:21+02:00
 
 - **Approval requested 2026-06-19T09:21+02:00:** May the next implementation checkpoint draft and apply a narrow Cool reactions schema/RLS plan for a polymorphic `reactions` table plus aggregate `reaction_counts` support, limited initially to modules and public racks? Default if not approved: keep work planning/docs-only and do not create migrations, policies, RPCs, or generated type changes.
 - **Approval recorded 2026-06-19T09:20+02:00:** User approved “as usual” only if the checkpoint is not a breaking change to the current production build. Treat this as conditional approval for additive/narrow schema/RLS work only: modules + public racks initially, no unrelated RLS/policy changes, and stop before any breaking change or risky production behavior.
+- **Operational constraint recorded 2026-06-19T09:20+02:00:** Do not use the production branch, release, push, or expose Cool frontend code. Backend type updates may be tried locally on `develop` only if the resulting diff is non-regressive.
 
 #### Validation strategy
 
@@ -61,3 +66,5 @@ Staged: 2026-06-19T09:21+02:00
 - 2026-06-19T09:45+02:00 — Added disabled-by-default `coolReactionsEnabled` environment flag plus shared `app-cool-button` / component-scoped data service. The service routes enabled reads/writes through `SupabaseService`, optimistically toggles with rollback, and focused specs prove feature-off and ineligible paths render no button and make no Cool backend calls.
 - 2026-06-19T09:45+02:00 — With explicit operational approval, applied only the already-approved Patch preview and Cool additive migrations to linked Supabase project `sozmatmywjpstwidzlss`. Verified `patches.image`, public `patches` bucket, patch timestamp trigger, `reactions`, and `reaction_counts` now exist remotely. `pnpm updateBackendTypes` remains blocked because unrelated local migration families are still absent/divergent on the linked project.
 - 2026-06-19T10:47+02:00 — Wired the shared Cool button into module detail, module list cards, rack detail, and rack list cards only. Hosts additionally check `environment.features.coolReactionsEnabled` before instantiating the button, so the default-off dev/prod flag renders no control and performs no reaction backend calls; eligibility remains `public === true` for modules and racks. Patches remain intentionally unwired.
+- 2026-06-19T09:20+02:00 — User clarified operational constraints: stay on `develop`, do not switch to `production`, do not release or push, and keep the Cool frontend hidden/default-off while the feature is still being developed. Local backend typegen is allowed only as a candidate diff; reject it if linked remote drift regresses unrelated local schema/types.
+- 2026-06-19T10:57+02:00 — Evaluated `SUPABASE_PROJECT_ID=sozmatmywjpstwidzlss pnpm updateBackendTypes` as a local candidate. Rejected and reverted the generated `src/backend/database.types.ts` diff because it regressed unrelated local schema/types: removed `user_module_acquisitions`, removed the `reactions_user_id_fkey` relationship, and made DB-default `public_id` inserts required for patches/racks. Keep manual local types until linked migration/typegen drift is reconciled.
