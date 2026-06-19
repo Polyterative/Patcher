@@ -137,8 +137,7 @@ export class UserCoolCollectionDataService extends SubManager {
           return EMPTY;
         }
 
-        const previousVm = this._vm$.value;
-        this._vm$.next(this.removeItem(previousVm, item));
+        this._vm$.next(this.removeItem(this._vm$.value, item));
 
         return this.backend.delete.reaction(
           this.toBackendEntityType(item.entityType),
@@ -147,7 +146,7 @@ export class UserCoolCollectionDataService extends SubManager {
         ).pipe(
           tap(() => SharedConstants.successCustom(this.snackBar, 'Removed cool.')),
           catchError(() => {
-            this._vm$.next(previousVm);
+            this._vm$.next(this.restoreItem(this._vm$.value, item));
             SharedConstants.errorCustom(this.snackBar, 'Cool could not be removed.');
             return EMPTY;
           })
@@ -294,6 +293,38 @@ export class UserCoolCollectionDataService extends SubManager {
       groups,
       total: groups.reduce((sum, group) => sum + group.items.length, 0)
     };
+  }
+
+  private restoreItem(
+    vm: UserCoolCollectionViewModel,
+    item: UserCoolCollectionItem
+  ): UserCoolCollectionViewModel {
+    if (vm.groups.some(group => group.items.some(current =>
+      current.entityType === item.entityType && current.entityId === item.entityId
+    ))) {
+      return vm;
+    }
+
+    const groups = vm.groups.map(group => {
+      if (group.entityType !== item.entityType) {
+        return group;
+      }
+
+      return {
+        ...group,
+        items: [...group.items, item].sort(this.sortItemNewestFirst)
+      };
+    });
+
+    return {
+      ...vm,
+      groups,
+      total: groups.reduce((sum, group) => sum + group.items.length, 0)
+    };
+  }
+
+  private sortItemNewestFirst(first: UserCoolCollectionItem, second: UserCoolCollectionItem): number {
+    return new Date(second.reactionCreatedAt).getTime() - new Date(first.reactionCreatedAt).getTime();
   }
 
   private sortReactionNewestFirst(first: ReactionRow, second: ReactionRow): number {

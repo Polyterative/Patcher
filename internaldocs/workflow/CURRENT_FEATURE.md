@@ -12,10 +12,10 @@
 
 ## Active
 
-Cross-entity Cool reactions — design refinement checkpoint complete
+Cross-entity Cool reactions — MVP review checkpoint complete
 
 Plan: [module-cool-appreciation-button.md](./plans/module-cool-appreciation-button.md)
-Status: **Local additive backend checkpoint, shared UI/data-service checkpoint, modules/public-racks surface wiring checkpoint, user-area Cool collection, and the Cool design-refinement placement checkpoint are implemented. Cool UI is intentionally visible in generated development builds for review, while generated production builds remain off. Approved Patch preview and Cool migrations are applied on the linked Supabase project, but broader linked-database migration/typegen drift remains. A local `pnpm updateBackendTypes` candidate was rejected as regressive, so manual backend types remain for now.**
+Status: **Local additive backend checkpoint, shared UI/data-service checkpoint, modules/public-racks surface wiring checkpoint, user-area Cool collection, Cool design-refinement placement checkpoint, and reviewer-requested inline uncool rollback hardening are implemented. Cool UI is intentionally visible in generated development builds for review, while generated production builds remain off. Approved Patch preview and Cool migrations are applied on the linked Supabase project, but broader linked-database migration/typegen drift remains. A local `pnpm updateBackendTypes` candidate was rejected as regressive, so manual backend types remain for now. The next structural patch-support checkpoint is blocked on explicit schema/RLS and UX placement approval.**
 Staged: 2026-06-19T09:21+02:00
 
 #### Why this is next
@@ -52,12 +52,15 @@ Staged: 2026-06-19T09:21+02:00
 - [x] Wire `app-cool-button` into module and rack detail pages only for modules plus public racks; repeated list/card surfaces must not show Cool buttons.
 - [x] Add the gated user-area Cool collection for cooled modules and public racks only, grouped by entity type, newest-first, with inline uncool.
 - [x] Refine Cool placement: module detail Cool lives in the top-left module action row, rack detail Cool lives in the left rack action strip, and user-area Cool is a Modules tab/filter rather than a root section.
+- [x] Address reviewer finding: overlapping inline uncool failures now restore only the failed item instead of rolling back the whole collection snapshot.
+- [ ] Blocked pending approval: decide whether to extend Cool to public patches by adding patch eligibility to the Cool schema/RLS support and approving exact patch detail/user-area placement.
 
 #### Approval queue
 
 - **Approval requested 2026-06-19T09:21+02:00:** May the next implementation checkpoint draft and apply a narrow Cool reactions schema/RLS plan for a polymorphic `reactions` table plus aggregate `reaction_counts` support, limited initially to modules and public racks? Default if not approved: keep work planning/docs-only and do not create migrations, policies, RPCs, or generated type changes.
 - **Approval recorded 2026-06-19T09:20+02:00:** User approved “as usual” only if the checkpoint is not a breaking change to the current production build. Treat this as conditional approval for additive/narrow schema/RLS work only: modules + public racks initially, no unrelated RLS/policy changes, and stop before any breaking change or risky production behavior.
 - **Operational constraint recorded 2026-06-19T09:20+02:00:** Do not use the production branch, release, push, or expose Cool frontend code. Backend type updates may be tried locally on `develop` only if the resulting diff is non-regressive.
+- **Approval requested 2026-06-19T17:23+02:00:** May the next structural checkpoint extend Cool to public patches by updating the already-added Cool reaction schema/RLS eligibility from modules+racks to modules+racks+public patches, and where should the single patch Cool control live? Recommended default: one detail-page action beside existing patch metadata/actions, no repeated patch list/card controls, and user-area Cool keeps patches as a grouped section inside Modules > Cool until a broader IA decision.
 
 #### Validation strategy
 
@@ -81,3 +84,4 @@ Staged: 2026-06-19T09:21+02:00
 - 2026-06-19T11:05+02:00 — Implemented the next user-area Cool collection checkpoint for modules and public racks only; patches remain deferred to the structural layer. The collection stays behind `COOL_REACTIONS_ENABLED`, performs no Cool backend calls while disabled, fetches public module/rack details in batch, groups by entity type newest-first, and removes Cool inline through the existing reaction delete path.
 - 2026-06-19T11:52+02:00 — Applied the Cool design handoff: removed the standalone module detail Community/Cool card, projected Cool into the module primary action row, moved rack Cool from the right insight grid into the left rack action strip, and made Cool a Modules-area tab/filter with grouped module/rack results. Repeated module/rack list cards remain free of Cool buttons; production flag remains off and dev/local remains on.
 - 2026-06-19T12:31+02:00 — User clarified loop operating policy: agents should work freely on `develop`, keep production/release/push out of scope, and avoid backend-breaking changes that could break the currently published production app unless explicitly approved. Feature flags are optional and only needed for hidden/incomplete work or rollout safety. UX planning should be more collaborative: ask on visible placement/hierarchy decisions, then execute autonomously.
+- 2026-06-19T17:23+02:00 — Independent reviewer found a real overlapping inline-uncool rollback bug in the user-area Cool collection. Fixed rollback to restore only the failed item and added focused concurrent-removal coverage. Structural patch support is now the next layer, but it requires explicit schema/RLS approval and patch UI placement approval before implementation.
