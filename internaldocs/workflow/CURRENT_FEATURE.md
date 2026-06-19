@@ -15,7 +15,7 @@
 Patch SVG previews — preview update semantics gate
 
 Plan: [patch-svg-previews.md](./plans/patch-svg-previews.md)
-Status: **Backend/storage checkpoint committed. Product owner approved maintainer reconciliation of remote migration/typegen drift only; preview UI/data-service wiring remains blocked pending separate approval for timestamp-preservation SQL.**
+Status: **Backend/storage checkpoint committed. Product owner approved maintainer reconciliation of remote migration/typegen drift and a narrow image-only timestamp-preservation SQL strategy; preview UI/data-service wiring remains blocked until drift is reconciled and that SQL checkpoint exists.**
 Staged: 2026-06-18T22:15+02:00
 Approval recorded: 2026-06-18T22:43+02:00
 
@@ -30,7 +30,7 @@ Approval recorded: 2026-06-18T22:43+02:00
 - Read `internaldocs/patterns/BACKEND_METHODS.md` schema-change preflight before drafting SQL.
 - Product owner approved the drafted SQL/storage shape at 2026-06-18T22:43+02:00.
 - Do not apply the patch preview migration remotely or run `pnpm updateBackendTypes` until the linked remote migration drift is reconciled.
-- Do not wire `updatePatchPreview$` until `patches.image` update semantics are verified; stale detection depends on preserving `patches.updated` as the graph edit timestamp.
+- Do not wire `updatePatchPreview$` until migration drift is reconciled and the approved narrow `public.patches.image` timestamp-preservation SQL checkpoint exists; stale detection depends on preserving `patches.updated` as the graph edit timestamp.
 
 #### Layer checklist
 
@@ -53,6 +53,7 @@ Approval recorded: 2026-06-18T22:43+02:00
 - **Approval requested 2026-06-19T09:05+02:00:** May a maintainer reconcile the linked Supabase migration history (repair/apply drift or switch typegen to a project with all local migrations) so `pnpm updateBackendTypes` and the patch preview migration can proceed safely?
 - **Approved 2026-06-19T09:05+02:00:** Product owner approved maintainer reconciliation of the linked Supabase migration/typegen drift only, so the patch preview migration and `pnpm updateBackendTypes` can proceed safely after reconciliation. This does not approve unrelated RLS/policy changes, timestamp-preservation SQL, or pushing.
 - **Approval requested 2026-06-19T09:05+02:00:** May the next SQL checkpoint add an image-only timestamp-preservation strategy for `public.patches` before `updatePatchPreview$` is wired? Default: keep preview generation blocked.
+- **Approved 2026-06-19T09:05+02:00:** Product owner approved a narrow image-only timestamp-preservation SQL strategy for `public.patches.image` updates, so preview row writes do not alter graph-edit freshness semantics. No broad patch RLS changes, unrelated migration/policy changes, or push are approved; preview UI/data-service wiring may proceed only after migration drift is reconciled and this SQL checkpoint exists.
 
 #### Validation strategy
 
@@ -68,3 +69,4 @@ Approval recorded: 2026-06-18T22:43+02:00
 - 2026-06-18T22:55+02:00 — Reviewer approved the backend/storage checkpoint after fixing test-suite nesting and docs wording. Validation passed: targeted storage specs, `pnpm lint`, docs check, and `git diff --check`. Supabase advisors were not run because no remote DDL/RLS was applied.
 - 2026-06-19T09:05+02:00 — Read-only Supabase inspection confirmed the linked remote still has local/remote migration drift, no `patches.image` column, no `patches` bucket, and `public.patches.handle_updated_auto` uses `moddatetime('updated')`; image-only updates would bump `patches.updated`. Recorded approval gates for migration reconciliation and timestamp-preservation SQL; no remote changes were applied.
 - 2026-06-19T09:05+02:00 — Product owner approved maintainer reconciliation of the linked Supabase migration/typegen drift only. Timestamp-preservation SQL remains a separate pending approval gate; no unrelated RLS/policy changes or push are approved.
+- 2026-06-19T09:05+02:00 — Product owner separately approved a narrow image-only timestamp-preservation SQL strategy for `public.patches.image` updates, so preview row writes do not alter graph-edit freshness semantics. Preview UI/data-service wiring remains blocked until migration drift is reconciled and the approved SQL checkpoint exists; no broad patch RLS changes, unrelated migration/policy changes, or push are approved.
