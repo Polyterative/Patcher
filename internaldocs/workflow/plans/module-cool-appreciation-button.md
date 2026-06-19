@@ -5,7 +5,7 @@
 
 ## Status
 
-- [~] Backend checkpoint, disabled-by-default shared UI/data-service checkpoint, and modules/public-racks surface wiring checkpoint are implemented locally. Approved Cool backend objects are applied on the linked Supabase project, but broader linked migration/typegen drift remains, so production-visible Cool wiring stays gated off pending safe typegen/operational verification.
+- [~] Backend checkpoint, disabled-by-default shared UI/data-service checkpoint, and modules/public-racks surface wiring checkpoint are implemented locally. Approved Cool backend objects are applied on the linked Supabase project, but broader linked migration/typegen drift remains; the latest local typegen candidate was rejected as regressive, so production-visible Cool wiring stays gated off pending safe typegen/operational verification. User clarified that the feature must stay on `develop`, with no production branch/release/push and `coolReactionsEnabled` default-off.
 - Priority: **LOW**
 - TODO section: **INFRA**
 - Owner persona on pickup: `coordinator-loop` → `planner` → `frontend-dev` after explicit schema/RLS approval.
@@ -99,12 +99,14 @@ Default behavior:
 
 - **Approval requested 2026-06-19T09:21+02:00:** May the next implementation checkpoint draft and apply a narrow Cool reactions schema/RLS plan for a polymorphic `reactions` table plus aggregate `reaction_counts` support, limited initially to modules and public racks? Default if not approved: keep work planning/docs-only and do not create migrations, policies, RPCs, or generated type changes.
 - **Approval recorded 2026-06-19T09:20+02:00:** User approved “as usual” only if the checkpoint is not a breaking change to the current production build. This authorizes additive/narrow work only: modules + public racks initially, no unrelated RLS/policy changes, and stop before any breaking change or risky production behavior.
+- **Operational constraint recorded 2026-06-19T09:20+02:00:** Do not switch to `production`, release, push, or expose Cool frontend code. Keep `coolReactionsEnabled` default `false`. `pnpm updateBackendTypes` may be run only as a local candidate diff and must be reverted if it removes/regresses unrelated local schema/types.
+- **Typegen blocker recorded 2026-06-19T10:57+02:00:** Linked-project typegen currently regresses unrelated local types (`user_module_acquisitions`, `reactions` FK relationship, DB-default `public_id` insert optionality). Keep `src/backend/database.types.ts` unchanged until the linked migration history is reconciled or the generated diff can be safely hand-corrected with explicit scope.
 
 ## Backend/service plan
 
 - Read `internaldocs/patterns/BACKEND_METHODS.md` schema-change preflight before writing SQL.
 - Register `reactions` and `reaction_counts` in `DatabaseStrings.ts`.
-- Add generated Supabase types with `pnpm updateBackendTypes` after remaining linked migration drift is safe; this checkpoint uses manually maintained local types for `reactions` and `reaction_counts` because unrelated linked remote drift is still recorded.
+- Add generated Supabase types with `pnpm updateBackendTypes` only when the candidate diff is safe/non-regressive; this checkpoint uses manually maintained local types for `reactions` and `reaction_counts` because unrelated linked remote drift is still recorded.
 - Do not wire production-visible UI to these methods until safe typegen/operational verification is complete, unless a disabled-by-default feature guard proves the UI makes no Cool backend calls while off.
 - Add backend methods through `SupabaseService` only:
   - `add.reaction(entityType, entityId, kind = 'COOL')`
@@ -188,3 +190,5 @@ Default behavior:
 - 2026-06-19T09:45+02:00 — Implemented the safe shared UI checkpoint: `coolReactionsEnabled` is generated false for dev and prod, `app-cool-button` accepts entity type/id, eligibility, and count display mode, and its component-scoped data service makes no backend calls unless the flag is on and the entity is eligible. Focused specs cover gate-off no-call behavior, ineligible no-call behavior, enabled state/count loading, optimistic rollback, and rendered ARIA/count output.
 - 2026-06-19T09:45+02:00 — With explicit operational approval, applied the approved additive Cool migration to linked Supabase project `sozmatmywjpstwidzlss` and verified `reactions` / `reaction_counts` exist remotely. `pnpm updateBackendTypes` remains blocked because unrelated local migration families are still absent/divergent on the linked project; keep `coolReactionsEnabled` disabled by default until safe typegen/operational verification is complete.
 - 2026-06-19T10:47+02:00 — Completed the gated modules/public-racks surface wiring checkpoint. `app-cool-button` is present on module detail, module list cards, rack detail, and rack list cards with `public === true` eligibility and count mode, while host-level `coolReactionsEnabled` guards prevent even component instantiation with the default-off flag. Focused surface specs import the real Cool button, provide `COOL_REACTIONS_ENABLED=false`, and verify no `.coolButton` rendering or reaction backend calls. Patches remain out of scope for this checkpoint.
+- 2026-06-19T09:20+02:00 — User clarified operational constraints for the remainder of this development slice: stay on `develop`, do not switch to `production`, do not release or push, and do not expose Cool frontend code to users. Keep `coolReactionsEnabled` default `false`. Local backend typegen may be evaluated only as a candidate diff; if it removes/regresses unrelated local schema/types due linked remote drift, revert the generated type-file changes and keep typegen blocked.
+- 2026-06-19T10:57+02:00 — Ran `SUPABASE_PROJECT_ID=sozmatmywjpstwidzlss pnpm updateBackendTypes` locally and inspected the generated candidate. Rejected it because it removed the local `user_module_acquisitions` type, dropped the generated `reactions_user_id_fkey` relationship, and made `patches.public_id` / `racks.public_id` insert fields required despite DB defaults. Reverted only `src/backend/database.types.ts`; no remote changes were made.
