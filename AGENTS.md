@@ -123,6 +123,19 @@ Other MCPs:
 
 If any of these tools is missing from your environment, surface it to the user before falling back to `grep` — it's a config problem, not a silent fallback.
 
+### Orchestrate skill in Copilot sessions
+
+Use the user-level **`orchestrate`** skill when the user explicitly asks for Orchestrate, multi-session coordination, multi-repo work,
+parallel branches, stacked PRs, or an alternative exploration that should not disturb the current branch. It is a Copilot-session
+coordination tool, not a Patcher coding persona: keep normal single-repo Patcher implementation in the current session unless the work
+really benefits from separate sessions/branches.
+
+- For single-repo research in this checkout, stay inline.
+- For cross-repo research, multi-repo edits, stacked/dependent PRs, parallel fan-out, or "try an alternative", load `orchestrate` and
+  use its session tools (`list_projects`, `create_session`, `fork_session`, `send_session_message`) as directed by the skill.
+- Before spawning sessions, tell the user the session plan: how many sessions, which repo/branch, and what each one owns.
+- Child-session prompts must be standalone and include the relevant Patcher rules from this file.
+
 ## 9) Specialised agent personas
 
 For known roles (planning, UI polish, review, refactor, test-writing, bug diagnosis), delegate to a sub-agent using the matching persona spec from `internaldocs/agents/` as the system prompt. `internaldocs/agents/README.md` has the full index plus composition patterns (Idea intake → Backlog, Plan → Build → Review, Bug fix, Refactor sweep, UI polish). For rough feature intake that should become a future backlog plan, use `internaldocs/agents/feature-notetaker.md`. For a full automated backlog cycle that selects one TODO item, delegates implementation, delegates review, validates, creates verified checkpoint commits, and archives workflow docs, use `internaldocs/agents/coordinator-loop.md`.
@@ -130,6 +143,8 @@ For known roles (planning, UI polish, review, refactor, test-writing, bug diagno
 Project-scoped Copilot CLI skills in `.github/skills/`:
 
 - **`patcher`** — auto-surfaces persona routing + tool preferences for normal dev work. Keep in sync with `internaldocs/agents/`.
+- **`orchestrate`** — user-level Copilot session coordination for multi-session / multi-repo / stacked-PR work. Use only when the
+  task shape calls for separate sessions, or when the user explicitly asks for it.
 - **`ai-dlc`** — opt-in only. Loads the AWS AI-DLC phased workflow from `.aidlc-rule-details/` on explicit request.
 
 ## 10) Internal docs map

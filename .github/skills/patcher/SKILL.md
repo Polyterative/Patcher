@@ -70,6 +70,17 @@ The repo has these wired up in `.github/` — **prefer them over `grep` / `find`
 
 **Search order:** LSP (named symbols) → cocoindex (concepts) → grep+glob (literals only).
 
+## Copilot session coordination: Orchestrate
+
+The user-level **`orchestrate`** skill is available in the GitHub Copilot session UI. Use it when the user explicitly asks for
+Orchestrate, or when the work should be split across separate sessions/branches because it is multi-repo, stacked/dependent PR work,
+parallel fan-out, or an alternative exploration.
+
+Do **not** replace ordinary Patcher persona delegation with Orchestrate. For a single change in this repo, stay in this session and use
+the persona routing above. For single-repo research in this checkout, stay inline. When Orchestrate is appropriate, load the skill,
+announce the session plan before spawning anything, and give each child session a standalone prompt that includes the relevant Patcher
+rules from `AGENTS.md`.
+
 ## Hard rules (copy from AGENTS.md, surfaced here for visibility)
 
 - Package manager: `pnpm` only. Prefer `pnpm test-headless`, `pnpm lint`, `pnpm test:e2e:auth`, `pnpm updateBackendTypes`. Never `npm install`, `ng test`, or watch variants unless explicitly asked.
