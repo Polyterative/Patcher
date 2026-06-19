@@ -57,8 +57,6 @@ import {
 } from '../module-browser-data.utils';
 import { Tag } from 'src/app/models/tag';
 import { MinimalModule } from 'src/app/models/module';
-import { ReactionEntityTypes } from 'src/app/features/backend/supabase-reactions';
-import { environment } from 'src/environments/environment';
 
 // Re-export so existing consumers that imported these from here still compile.
 export type ModuleListSortId = ModuleSortId;
@@ -115,8 +113,6 @@ export class ModuleListComponent extends SubManager implements OnInit {
   @Input() moduleAction: ModuleListActionConfig | null = null;
   @Input() moduleActionDisabledIds: ReadonlySet<number> | null = null;
   @Output() readonly moduleAction$ = new EventEmitter<MinimalModule>();
-  readonly coolReactionsEnabled = environment.features.coolReactionsEnabled;
-  readonly ReactionEntityTypes = ReactionEntityTypes;
 
   private readonly externalSearchQuery$ = new BehaviorSubject<string>('');
 

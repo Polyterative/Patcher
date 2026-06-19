@@ -21,8 +21,6 @@ import { RackMinimalViewConfig } from '../rack-parts/rack-minimal/rack-minimal.c
 import { LocalDataFilterService } from '../shared-atoms/local-data-filter/local-data-filter.service';
 import { matchesSearchQuery } from '../../shared-interproject/components/@smart/mat-form-entity/string-utils';
 import { RackMinimal } from 'src/app/models/rack';
-import { ReactionEntityTypes } from 'src/app/features/backend/supabase-reactions';
-import { environment } from 'src/environments/environment';
 
 
 @Component({
@@ -54,8 +52,6 @@ export class RackListComponent extends SubManager implements OnInit {
   @Input() readonly showSearch = false;
   @Input() encloseVertically = true;
   @Input() viewConfig: RackMinimalViewConfig;
-  readonly coolReactionsEnabled = environment.features.coolReactionsEnabled;
-  readonly ReactionEntityTypes = ReactionEntityTypes;
   private readonly externalSearchQuery$ = new BehaviorSubject<string>('');
   
   @Input()

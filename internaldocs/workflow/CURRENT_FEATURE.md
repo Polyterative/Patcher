@@ -43,7 +43,7 @@ Staged: 2026-06-19T09:21+02:00
 - [x] Draft the narrow schema/RLS/trigger checkpoint for reactions and reaction counts.
 - [x] Implement backend methods through `SupabaseService` only, with cache keys and focused tests.
 - [x] Add disabled-by-default shared Cool UI/data-service wiring for the approved MVP surfaces, with tests proving no backend calls when gated off.
-- [x] Wire `app-cool-button` into module detail/list and rack detail/list surfaces for modules plus public racks only, still behind the disabled-by-default feature guard.
+- [x] Wire `app-cool-button` into module and rack detail pages only for modules plus public racks; repeated list/card surfaces must not show Cool buttons.
 - [x] Add the gated user-area Cool collection for cooled modules and public racks only, grouped by entity type, newest-first, with inline uncool.
 
 #### Approval queue
@@ -70,4 +70,5 @@ Staged: 2026-06-19T09:21+02:00
 - 2026-06-19T09:20+02:00 — User clarified operational constraints: stay on `develop`, do not switch to `production`, do not release or push, and keep the Cool frontend hidden/default-off while the feature is still being developed. Local backend typegen is allowed only as a candidate diff; reject it if linked remote drift regresses unrelated local schema/types.
 - 2026-06-19T10:57+02:00 — Evaluated `SUPABASE_PROJECT_ID=sozmatmywjpstwidzlss pnpm updateBackendTypes` as a local candidate. Rejected and reverted the generated `src/backend/database.types.ts` diff because it regressed unrelated local schema/types: removed `user_module_acquisitions`, removed the `reactions_user_id_fkey` relationship, and made DB-default `public_id` inserts required for patches/racks. Keep manual local types until linked migration/typegen drift is reconciled.
 - 2026-06-19T10:59+02:00 — User clarified that Cool should be visible on `develop` for review. Production/release remains blocked: do not switch branches, release, push, or expose Cool via production. Keep generated dev/local `coolReactionsEnabled` on and generated production off; typegen remains manual because the linked project still produces regressive unrelated type drift.
+- 2026-06-19T11:19+02:00 — User clarified Cool placement after reviewing develop: avoid many Cool buttons in a row. Keep Cool visible for review only on slash/detail-style pages and user-owned Cool collection interactions; remove repeated module/rack list card controls even when the develop flag is on. Detail-page placement can stay near the existing community/statistics/action rail.
 - 2026-06-19T11:05+02:00 — Implemented the next user-area Cool collection checkpoint for modules and public racks only; patches remain deferred to the structural layer. The collection stays behind `COOL_REACTIONS_ENABLED`, performs no Cool backend calls while disabled, fetches public module/rack details in batch, groups by entity type newest-first, and removes Cool inline through the existing reaction delete path.

@@ -12,7 +12,6 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
 import { MinimalModule } from 'src/app/models/module';
 import { LocalDataFilterService } from 'src/app/components/shared-atoms/local-data-filter/local-data-filter.service';
 import { COOL_REACTIONS_ENABLED } from 'src/app/components/shared-atoms/cool-button/cool-button-feature.token';
-import { CoolButtonComponent } from 'src/app/components/shared-atoms/cool-button/cool-button.component';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
@@ -232,17 +231,17 @@ describe('ModuleListComponent', () => {
     component.ngOnDestroy();
   });
 
-  it('does not render or query Cool reactions when the feature flag is off', async () => {
+  it('does not render or query Cool reactions in repeated module lists', async () => {
     const reactionBackend = makeReactionBackendSpy();
 
     await TestBed.configureTestingModule({
       declarations: [ModuleListComponent],
-      imports: [CommonModule, FormsModule, NoopAnimationsModule, CoolButtonComponent],
+      imports: [CommonModule, FormsModule, NoopAnimationsModule],
       providers: [
         {provide: PatchDetailDataService, useValue: {}},
         {provide: LocalDataFilterService, useClass: LocalDataFilterService},
         {provide: AppStateService, useValue: {preferredPanelColor$: of(null)}},
-        {provide: COOL_REACTIONS_ENABLED, useValue: false},
+        {provide: COOL_REACTIONS_ENABLED, useValue: true},
         {provide: SupabaseService, useValue: reactionBackend},
         {provide: MatSnackBar, useValue: jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open'])},
       ],

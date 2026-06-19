@@ -7,7 +7,6 @@ import { BehaviorSubject, of, Subject } from 'rxjs';
 import { RackListComponent } from './rack-list.component';
 import { LocalDataFilterService } from '../shared-atoms/local-data-filter/local-data-filter.service';
 import { COOL_REACTIONS_ENABLED } from '../shared-atoms/cool-button/cool-button-feature.token';
-import { CoolButtonComponent } from '../shared-atoms/cool-button/cool-button.component';
 import { RackMinimal } from 'src/app/models/rack';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 
@@ -186,15 +185,15 @@ describe('RackListComponent', () => {
       expect(result.length).toBe(1);
     });
 
-    it('does not render or query Cool reactions when the feature flag is off', async () => {
+    it('does not render or query Cool reactions in repeated rack lists', async () => {
       const reactionBackend = makeReactionBackendSpy();
 
       await TestBed.configureTestingModule({
         declarations: [RackListComponent],
-        imports: [CommonModule, NoopAnimationsModule, CoolButtonComponent],
+        imports: [CommonModule, NoopAnimationsModule],
         providers: [
           {provide: LocalDataFilterService, useValue: makeFilterService()},
-          {provide: COOL_REACTIONS_ENABLED, useValue: false},
+          {provide: COOL_REACTIONS_ENABLED, useValue: true},
           {provide: SupabaseService, useValue: reactionBackend},
           {provide: MatSnackBar, useValue: jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open'])},
         ],
