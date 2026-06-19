@@ -129,7 +129,7 @@ describe('CoolButtonDataService', () => {
       visible: true,
       active: true,
       count: 3,
-      label: 'Cooled'
+      label: 'Cool!'
     }));
   });
 
@@ -158,6 +158,55 @@ describe('CoolButtonDataService', () => {
     expect(service.vm$.value.active).toBeFalse();
     expect(service.vm$.value.count).toBe(0);
     expect(snackBar.open).toHaveBeenCalledWith('Cool update failed — try again.', undefined, jasmine.any(Object));
+  });
+
+  it('re-enables the control after a successful Cool toggle so it can be removed', () => {
+    const addResult$ = new Subject<unknown>();
+    const deleteResult$ = new Subject<unknown>();
+    const {service, backend} = build(true, {
+      add: {
+        reaction: jasmine.createSpy('addReaction').and.returnValue(addResult$)
+      },
+      delete: {
+        reaction: jasmine.createSpy('deleteReaction').and.returnValue(deleteResult$)
+      }
+    });
+
+    service.setEntity({
+      entityType: ReactionEntityTypes.MODULE,
+      entityId: 42,
+      eligible: true,
+      countDisplayMode: 'count'
+    });
+    service.requestToggle$.next();
+    expect(service.vm$.value.disabled).toBeTrue();
+
+    addResult$.next(null);
+    addResult$.complete();
+
+    expect(service.vm$.value).toEqual(jasmine.objectContaining({
+      active: true,
+      disabled: false,
+      count: 1
+    }));
+
+    service.requestToggle$.next();
+
+    expect(service.vm$.value).toEqual(jasmine.objectContaining({
+      active: false,
+      disabled: true,
+      count: 0
+    }));
+    expect(backend.delete.reaction).toHaveBeenCalledWith(ReactionEntityTypes.MODULE, 42, REACTION_KIND_COOL);
+
+    deleteResult$.next(null);
+    deleteResult$.complete();
+
+    expect(service.vm$.value).toEqual(jasmine.objectContaining({
+      active: false,
+      disabled: false,
+      count: 0
+    }));
   });
 
   it('hides the control if enabled loading unexpectedly fails', () => {
@@ -345,8 +394,10 @@ describe('CoolButtonComponent', () => {
     fixture.detectChanges();
 
     const button = fixture.debugElement.query(By.css('button.coolButton')).nativeElement as HTMLButtonElement;
+    const count = fixture.debugElement.query(By.css('.coolButton__count')).nativeElement as HTMLElement;
     expect(button.textContent).toContain('Cool');
-    expect(button.textContent).toContain('2');
+    expect(count.textContent?.trim()).toBe('2');
+    expect(count.getAttribute('aria-label')).toBe('2 cool reactions');
     expect(button.getAttribute('aria-label')).toBe('Mark as cool');
   });
 });

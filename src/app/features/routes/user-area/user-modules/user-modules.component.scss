@@ -41,6 +41,13 @@
     height: 1rem;
     font-size: 1rem;
   }
+
+  ::ng-deep .module-collection-filter__cool.mat-button-toggle-checked {
+    background:
+      linear-gradient(120deg, rgba(234, 243, 255, 0.92), rgba(246, 235, 255, 0.92)) padding-box,
+      linear-gradient(115deg, #5d9cff, #d65cff) border-box;
+    color: #1d3354;
+  }
 }
 
 .section-empty {

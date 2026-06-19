@@ -25,7 +25,10 @@
           aria-label="Filter modules by view"
         >
           @for (filter of visibleFilters(); track filter.value) {
-            <mat-button-toggle [value]="filter.value">
+            <mat-button-toggle
+              [value]="filter.value"
+              [class.module-collection-filter__cool]="filter.value === 'COOL'"
+            >
               <mat-icon aria-hidden="true">{{ filter.icon }}</mat-icon>
               <span>{{ filter.label }}</span>
             </mat-button-toggle>
@@ -41,7 +44,7 @@
                                   routerLink="/modules/browser"
                                   (click$)="dataService.addModulesToCollection$.next()"
                                   icon="add"
-        >Add modules to collection
+        >Add modules
         </app-brand-primary-button>
       </div>
       <mat-divider inset="true"></mat-divider>
