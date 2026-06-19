@@ -5,7 +5,7 @@
 
 ## Status
 
-- [~] Backend checkpoint and disabled-by-default shared UI/data-service checkpoint are implemented locally. Remote migration/typegen application remains blocked by linked Supabase drift, so production-visible Cool wiring must stay gated off until production has the Cool backend objects.
+- [~] Backend checkpoint and disabled-by-default shared UI/data-service checkpoint are implemented locally. Approved Cool backend objects are applied on the linked Supabase project, but broader linked migration/typegen drift remains, so production-visible Cool wiring stays gated off pending safe typegen/operational verification.
 - Priority: **LOW**
 - TODO section: **INFRA**
 - Owner persona on pickup: `coordinator-loop` → `planner` → `frontend-dev` after explicit schema/RLS approval.
@@ -104,8 +104,8 @@ Default behavior:
 
 - Read `internaldocs/patterns/BACKEND_METHODS.md` schema-change preflight before writing SQL.
 - Register `reactions` and `reaction_counts` in `DatabaseStrings.ts`.
-- Add generated Supabase types with `pnpm updateBackendTypes` after migration when remote drift is safe; this checkpoint uses manually maintained local types for `reactions` and `reaction_counts` because linked remote drift is already recorded.
-- Do not wire production-visible UI to these methods until the remote Cool objects exist, unless a disabled-by-default feature guard proves the UI makes no Cool backend calls while off.
+- Add generated Supabase types with `pnpm updateBackendTypes` after remaining linked migration drift is safe; this checkpoint uses manually maintained local types for `reactions` and `reaction_counts` because unrelated linked remote drift is still recorded.
+- Do not wire production-visible UI to these methods until safe typegen/operational verification is complete, unless a disabled-by-default feature guard proves the UI makes no Cool backend calls while off.
 - Add backend methods through `SupabaseService` only:
   - `add.reaction(entityType, entityId, kind = 'COOL')`
   - `delete.reaction(entityType, entityId, kind = 'COOL')`
@@ -185,3 +185,4 @@ Default behavior:
 - 2026-06-19T09:32+02:00 — Added local migration `20260619092800_add_cool_reactions.sql` creating only new Cool reaction objects: `reactions`, `reaction_counts`, helper/trigger functions, indexes, and RLS policies. Application access now goes through `SupabaseService` namespaces with explicit columns and reaction cache busting. Remote typegen was intentionally not run due to recorded linked Supabase drift; `src/backend/database.types.ts` was manually updated for the two new tables and validated with focused backend/static tests. Reviewer pass narrowed module eligibility to public modules, matching the production-safe aggregate-count exposure model already used for racks.
 - 2026-06-19T09:43+02:00 — Reconciled the workflow docs after the local backend checkpoint. The next safe loop action can only be disabled-by-default shared UI/data-service wiring, with tests that prove the gate-off path performs no Cool backend reads/writes; otherwise UI remains blocked until remote migration/typegen reconciliation.
 - 2026-06-19T09:45+02:00 — Implemented the safe shared UI checkpoint: `coolReactionsEnabled` is generated false for dev and prod, `app-cool-button` accepts entity type/id, eligibility, and count display mode, and its component-scoped data service makes no backend calls unless the flag is on and the entity is eligible. Focused specs cover gate-off no-call behavior, ineligible no-call behavior, enabled state/count loading, optimistic rollback, and rendered ARIA/count output.
+- 2026-06-19T09:45+02:00 — With explicit operational approval, applied the approved additive Cool migration to linked Supabase project `sozmatmywjpstwidzlss` and verified `reactions` / `reaction_counts` exist remotely. `pnpm updateBackendTypes` remains blocked because unrelated local migration families are still absent/divergent on the linked project; keep `coolReactionsEnabled` disabled by default until safe typegen/operational verification is complete.

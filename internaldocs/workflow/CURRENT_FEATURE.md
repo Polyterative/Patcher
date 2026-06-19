@@ -15,19 +15,19 @@
 Cross-entity Cool reactions — gated UI checkpoint complete
 
 Plan: [module-cool-appreciation-button.md](./plans/module-cool-appreciation-button.md)
-Status: **Local additive backend checkpoint and disabled-by-default shared UI/data-service checkpoint are implemented. Remote Supabase migration/typegen application remains blocked by recorded linked-database drift, so production-visible Cool wiring must stay gated off until the remote Cool objects exist.**
+Status: **Local additive backend checkpoint and disabled-by-default shared UI/data-service checkpoint are implemented. Approved Patch preview and Cool migrations are applied on the linked Supabase project, but broader linked-database migration/typegen drift remains, so `pnpm updateBackendTypes` is still unsafe and production-visible Cool wiring stays gated pending final operational verification.**
 Staged: 2026-06-19T09:21+02:00
 
 #### Why this is next
 
-- Patch SVG preview backend/storage and timestamp-preservation checkpoints exist locally, but read-only Supabase MCP inspection still shows the linked remote lacks `patches.image`, lacks the `patches` bucket, and has divergent migration history.
-- The remaining Patch SVG preview UI/data-service work depends on remote migration/typegen reconciliation and must stay blocked.
-- Cross-entity Cool reactions is the next highest-priority non-held INFRA item with a plan. The local backend and shared guarded UI checkpoints are complete; production-facing UI remains gated until remote schema/typegen drift is reconciled.
+- Patch SVG preview backend/storage and timestamp-preservation checkpoints now exist locally and on the linked Supabase project, but broader migration history still differs from the local repo.
+- The remaining Patch SVG preview UI/data-service work depends on safe typegen/operational verification and must stay blocked until the remaining drift is resolved or explicitly accepted.
+- Cross-entity Cool reactions is the next highest-priority non-held INFRA item with a plan. The local backend and shared guarded UI checkpoints are complete, and the approved remote Cool objects now exist; production-facing UI remains gated until typegen/operational verification is safe.
 
 #### Safety gate
 
 - Read `internaldocs/patterns/BACKEND_METHODS.md` schema-change preflight before any SQL draft.
-- Do not remotely apply migrations, RLS/policies, grants, RPCs, generated types, or Supabase mutations for Cool until the linked Supabase drift is reconciled and explicit operational approval is recorded.
+- Do not run `pnpm updateBackendTypes`, enable production-visible Cool UI, or wire Patch preview generation until remaining linked Supabase drift is reconciled or explicitly accepted.
 - Initial implementation scope should be narrow: modules and public racks first, patches in the structural layer after the data path is proven.
 - Any UI wiring before remote migration application must be behind a disabled-by-default feature guard so the current production build never queries missing Cool backend objects.
 
@@ -58,3 +58,4 @@ Staged: 2026-06-19T09:21+02:00
 - 2026-06-19T09:32+02:00 — Implemented the local-only backend checkpoint with additive `reactions` / `reaction_counts` migration objects, narrow RLS, SupabaseService add/delete/get methods, cache keys, and focused tests. Skipped remote typegen because linked Supabase drift is already recorded; manually updated `src/backend/database.types.ts` for the two new tables. Reviewer pass narrowed module eligibility to `modules.public = true` so aggregate counts cannot expose non-public module IDs.
 - 2026-06-19T09:43+02:00 — Reconciled workflow state after the backend checkpoint. Because the current production database may not have the new Cool objects yet, the next UI/data-service work is only safe if it is disabled by default and tests prove it performs no Cool backend reads/writes while gated off.
 - 2026-06-19T09:45+02:00 — Added disabled-by-default `coolReactionsEnabled` environment flag plus shared `app-cool-button` / component-scoped data service. The service routes enabled reads/writes through `SupabaseService`, optimistically toggles with rollback, and focused specs prove feature-off and ineligible paths render no button and make no Cool backend calls.
+- 2026-06-19T09:45+02:00 — With explicit operational approval, applied only the already-approved Patch preview and Cool additive migrations to linked Supabase project `sozmatmywjpstwidzlss`. Verified `patches.image`, public `patches` bucket, patch timestamp trigger, `reactions`, and `reaction_counts` now exist remotely. `pnpm updateBackendTypes` remains blocked because unrelated local migration families are still absent/divergent on the linked project.

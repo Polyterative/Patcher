@@ -31,7 +31,7 @@ create policy "patch_previews_insert_owner_or_admin"
         select 1
         from public.patches p
         where p.id = substring(storage.filename(name) from '^patch_([0-9]+)_')::integer
-          and p.authorid = auth.uid()::text
+          and p.authorid::text = auth.uid()::text
       )
     )
   );
@@ -49,7 +49,7 @@ create policy "patch_previews_update_owner_or_admin"
         select 1
         from public.patches p
         where p.id = substring(storage.filename(name) from '^patch_([0-9]+)_')::integer
-          and p.authorid = auth.uid()::text
+          and p.authorid::text = auth.uid()::text
       )
     )
   )
@@ -63,7 +63,7 @@ create policy "patch_previews_update_owner_or_admin"
         select 1
         from public.patches p
         where p.id = substring(storage.filename(name) from '^patch_([0-9]+)_')::integer
-          and p.authorid = auth.uid()::text
+          and p.authorid::text = auth.uid()::text
       )
     )
   );
@@ -81,7 +81,7 @@ create policy "patch_previews_delete_owner_or_admin"
         select 1
         from public.patches p
         where p.id = substring(storage.filename(name) from '^patch_([0-9]+)_')::integer
-          and p.authorid = auth.uid()::text
+          and p.authorid::text = auth.uid()::text
       )
     )
   );

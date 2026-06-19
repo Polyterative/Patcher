@@ -4,7 +4,7 @@
 
 ## Status
 
-- [ ] Blocked — local backend/storage and image-only timestamp-preservation checkpoints are in place; 2026-06-19 read-only inspection still shows linked remote migration/typegen drift, no `patches.image`, no `patches` bucket, and no timestamp-preservation trigger, so preview UI/data-service wiring remains gated.
+- [ ] Blocked — local and linked-remote backend/storage plus image-only timestamp-preservation checkpoints are in place; broader linked migration/typegen drift remains, so preview UI/data-service wiring remains gated until safe typegen/operational verification is complete.
 - Priority: **MEDIUM**
 - TODO section: **INFRA**
 - Owner persona on pickup: `coordinator-loop` → `planner` → `frontend-dev` → `code-reviewer`.
@@ -178,6 +178,7 @@ The rack preview pipeline already exists and is the explicit template to copy.
 - **Approved 2026-06-19T09:05+02:00:** Product owner approved a narrow image-only timestamp-preservation SQL strategy for `public.patches.image` updates, so preview row writes do not alter graph-edit freshness semantics. No broad patch RLS changes, unrelated migration/policy changes, or push are approved; preview UI/data-service wiring may proceed only after migration drift is reconciled and this SQL checkpoint exists.
 - **Implemented locally 2026-06-19T09:12+02:00:** Added local migration `20260619091200_preserve_patch_preview_image_updated.sql` and narrow backend method `update.patchPreviewImage(id, image)`. This checkpoint was not applied remotely, and remote typegen/migration reconciliation remains blocked/remaining.
 - **Blocked/pivoted 2026-06-19T09:21+02:00:** Read-only Supabase MCP inspection reconfirmed the linked project still lacks `patches.image` and the `patches` storage bucket, still has only `handle_updated_auto`/`trg_patches_public_id` triggers on `public.patches`, and still has divergent migration history. Keep UI/data-service wiring blocked until a maintainer completes approved migration/typegen reconciliation; no remote DDL/storage/RLS changes were applied.
+- **Applied remotely 2026-06-19T09:45+02:00:** With explicit operational approval, applied only the approved Patch preview storage and timestamp-preservation migrations to linked Supabase project `sozmatmywjpstwidzlss`. Production uses UUID `patches.authorid`, so the storage policies were applied with `p.authorid::text = auth.uid()::text`; local migration SQL was updated to match. Verified `patches.image`, public `patches` bucket, and `tg_preserve_patch_preview_image_updated` now exist remotely. `pnpm updateBackendTypes` remains blocked by unrelated linked migration drift.
 
 ## Proposal-only SQL/storage checkpoint
 
@@ -357,10 +358,10 @@ migration application:
    `20260618121100`, `20260618190400`.
 - Remote is missing local migration families for manufacturer verification,
   manufacturer claims, module availability tags, manufacturer owner policies,
-  manufacturer logo storage policies, user module acquisitions, and patch SVG
-  previews.
-- Remote currently has no `public.patches.image` column and no `patches` storage
-  bucket.
+  manufacturer logo storage policies, and user module acquisitions.
+- Patch SVG preview objects were applied remotely on 2026-06-19T09:45+02:00:
+  `public.patches.image`, the public `patches` storage bucket, and the
+  image-only timestamp-preservation trigger now exist.
 
 Do not run `pnpm updateBackendTypes`, `supabase db push`, Supabase MCP
 migrations, or migration repair until the maintainer explicitly approves the
