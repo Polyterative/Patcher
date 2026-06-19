@@ -42,6 +42,7 @@ import { PatchModule } from 'src/app/components/patch-parts/patch.module';
 import { ModuleCollectionPartsModule } from 'src/app/components/module-collection-parts/module-collection-parts.module';
 import { ModuleCollectionsDataService } from 'src/app/features/module-collections/module-collections-data.service';
 import { UserCollectionsComponent } from 'src/app/features/routes/user-area/user-collections/user-collections.component';
+import { UserCoolCollectionComponent } from 'src/app/features/routes/user-area/user-cool-collection/user-cool-collection.component';
 
 
 @NgModule({
@@ -49,7 +50,8 @@ import { UserCollectionsComponent } from 'src/app/features/routes/user-area/user
     UserAreaRootComponent,
     UserRacksComponent,
     UserPatchesComponent,
-    UserCollectionsComponent
+    UserCollectionsComponent,
+    UserCoolCollectionComponent
   ],
   imports: [
     CommonModule,

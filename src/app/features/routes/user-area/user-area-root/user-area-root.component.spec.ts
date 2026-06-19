@@ -58,7 +58,7 @@ function makeComp(overrides: { ignoreSeo?: boolean } = {}): {
   const seo = mockSeo();
   const userService = mockUserService();
   const urlCreator = mockUrlCreator();
-  const comp = new UserAreaRootComponent(userService, mockBackend(), ds, seo, urlCreator);
+  const comp = new UserAreaRootComponent(userService, mockBackend(), ds, seo, urlCreator, true);
   if (overrides.ignoreSeo !== undefined) comp.ignoreSeo = overrides.ignoreSeo;
   return { comp, ds, seo, userService, urlCreator };
 }

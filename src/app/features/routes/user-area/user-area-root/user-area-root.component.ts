@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  Inject,
   Input,
   OnDestroy,
   OnInit
@@ -28,6 +29,7 @@ import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-for
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { UrlCreatorService } from 'src/app/features/backend/url-creator.service';
 import { CurrentUserContributorStats } from 'src/app/features/backend/supabase-queries';
+import { COOL_REACTIONS_ENABLED } from 'src/app/components/shared-atoms/cool-button/cool-button-feature.token';
 
 
 @Component({
@@ -71,7 +73,8 @@ export class UserAreaRootComponent extends SubManager implements OnInit, OnDestr
     public backend: SupabaseService,
     public dataService: UserAreaDataService,
     readonly seoAndUtilsService: SeoAndUtilsService,
-    public urlCreatorService: UrlCreatorService
+    public urlCreatorService: UrlCreatorService,
+    @Inject(COOL_REACTIONS_ENABLED) public readonly coolReactionsEnabled: boolean
   ) {
     super();
     this.miscStats$ = combineLatest([

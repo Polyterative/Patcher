@@ -12,10 +12,10 @@
 
 ## Active
 
-Cross-entity Cool reactions — gated surface wiring checkpoint complete
+Cross-entity Cool reactions — user-area Cool collection checkpoint complete
 
 Plan: [module-cool-appreciation-button.md](./plans/module-cool-appreciation-button.md)
-Status: **Local additive backend checkpoint, shared UI/data-service checkpoint, and modules/public-racks surface wiring checkpoint are implemented. Cool UI is intentionally visible in generated development builds for review, while generated production builds remain off. Approved Patch preview and Cool migrations are applied on the linked Supabase project, but broader linked-database migration/typegen drift remains. A local `pnpm updateBackendTypes` candidate was rejected as regressive, so manual backend types remain for now.**
+Status: **Local additive backend checkpoint, shared UI/data-service checkpoint, modules/public-racks surface wiring checkpoint, and the user-area Cool collection for modules + public racks are implemented. Cool UI is intentionally visible in generated development builds for review, while generated production builds remain off. Approved Patch preview and Cool migrations are applied on the linked Supabase project, but broader linked-database migration/typegen drift remains. A local `pnpm updateBackendTypes` candidate was rejected as regressive, so manual backend types remain for now.**
 Staged: 2026-06-19T09:21+02:00
 
 #### Why this is next
@@ -44,6 +44,7 @@ Staged: 2026-06-19T09:21+02:00
 - [x] Implement backend methods through `SupabaseService` only, with cache keys and focused tests.
 - [x] Add disabled-by-default shared Cool UI/data-service wiring for the approved MVP surfaces, with tests proving no backend calls when gated off.
 - [x] Wire `app-cool-button` into module detail/list and rack detail/list surfaces for modules plus public racks only, still behind the disabled-by-default feature guard.
+- [x] Add the gated user-area Cool collection for cooled modules and public racks only, grouped by entity type, newest-first, with inline uncool.
 
 #### Approval queue
 
@@ -69,3 +70,4 @@ Staged: 2026-06-19T09:21+02:00
 - 2026-06-19T09:20+02:00 — User clarified operational constraints: stay on `develop`, do not switch to `production`, do not release or push, and keep the Cool frontend hidden/default-off while the feature is still being developed. Local backend typegen is allowed only as a candidate diff; reject it if linked remote drift regresses unrelated local schema/types.
 - 2026-06-19T10:57+02:00 — Evaluated `SUPABASE_PROJECT_ID=sozmatmywjpstwidzlss pnpm updateBackendTypes` as a local candidate. Rejected and reverted the generated `src/backend/database.types.ts` diff because it regressed unrelated local schema/types: removed `user_module_acquisitions`, removed the `reactions_user_id_fkey` relationship, and made DB-default `public_id` inserts required for patches/racks. Keep manual local types until linked migration/typegen drift is reconciled.
 - 2026-06-19T10:59+02:00 — User clarified that Cool should be visible on `develop` for review. Production/release remains blocked: do not switch branches, release, push, or expose Cool via production. Keep generated dev/local `coolReactionsEnabled` on and generated production off; typegen remains manual because the linked project still produces regressive unrelated type drift.
+- 2026-06-19T11:05+02:00 — Implemented the next user-area Cool collection checkpoint for modules and public racks only; patches remain deferred to the structural layer. The collection stays behind `COOL_REACTIONS_ENABLED`, performs no Cool backend calls while disabled, fetches public module/rack details in batch, groups by entity type newest-first, and removes Cool inline through the existing reaction delete path.

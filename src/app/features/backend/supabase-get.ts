@@ -92,6 +92,7 @@ export function createGetNamespace(
       queries.getReactionCount(entityType, entityId, kind),
     reactionCountsForEntities: (entityType: number, entityIds: number[], kind: ReactionKind = REACTION_KIND_COOL) =>
       queries.getReactionCountsForEntities(entityType, entityIds, kind),
+    publicRacksByIds: (rackIds: number[]) => queries.getPublicRacksByIds(rackIds),
     rackedModules: (rackid: number) => rxFrom(
       supabase.from(DbPaths.rack_modules)
         .select(`*, ${ QueryJoins.module_fk_rackmodules }`)
