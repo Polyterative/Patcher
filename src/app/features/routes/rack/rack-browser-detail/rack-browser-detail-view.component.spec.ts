@@ -331,6 +331,14 @@ describe('RackBrowserDetailViewComponent', () => {
       expect(reactionBackend.add.reaction).not.toHaveBeenCalled();
       expect(reactionBackend.delete.reaction).not.toHaveBeenCalled();
     });
+
+    it('passes Cool into the left rack composite instead of rendering it in the right stats grid', () => {
+      fixture.detectChanges();
+
+      const leftComposite = fixture.nativeElement.querySelector('.rackBrowserDetailView__summaryColumn--left app-rack-composite');
+      expect(leftComposite).not.toBeNull();
+      expect(fixture.nativeElement.querySelector('.rackBrowserDetailView__summaryInsights app-cool-button')).toBeNull();
+    });
   });
 
   /**

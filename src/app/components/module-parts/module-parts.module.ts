@@ -55,6 +55,7 @@ import { CopyableDirective } from "src/app/shared-interproject/app-copy-on-click
 import { ModulePanelZoomDialogComponent } from './module-details/module-panel-zoom-dialog.component';
 import { ModulePossessionDialogComponent } from './module-possession-dialog/module-possession-dialog.component';
 import { DescriptionKeywordHighlightPipe } from './shared-pipes/description-keyword-highlight.pipe';
+import { CoolButtonComponent } from '../shared-atoms/cool-button/cool-button.component';
 
 
 @NgModule({
@@ -116,7 +117,8 @@ import { DescriptionKeywordHighlightPipe } from './shared-pipes/description-keyw
     ConfirmDialogModule,
     FormsModule,
     NgOptimizedImage,
-    CopyableDirective
+    CopyableDirective,
+    CoolButtonComponent
   ],
   exports:      [
     ModuleCVItemComponent,

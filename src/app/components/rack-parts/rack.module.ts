@@ -59,6 +59,7 @@ import { TotalWeightOfRackPipe } from "src/app/components/rack-parts/total-weigh
 import { EditFabComponent } from "src/app/shared-interproject/components/@visual/edit-fab/edit-fab.component";
 import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-state-tips/empty-state-tips.component';
 import { InputDialogModule } from "src/app/shared-interproject/dialogs/input-dialog/input-dialog.module";
+import { CoolButtonComponent } from '../shared-atoms/cool-button/cool-button.component';
 
 
 @NgModule({
@@ -142,6 +143,7 @@ import { InputDialogModule } from "src/app/shared-interproject/dialogs/input-dia
     EditFabComponent,
     EmptyStateTipsComponent,
     InputDialogModule,
+    CoolButtonComponent,
   ]
 })
 export class RackModule {

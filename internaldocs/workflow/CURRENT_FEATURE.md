@@ -12,10 +12,10 @@
 
 ## Active
 
-Cross-entity Cool reactions — user-area Cool collection checkpoint complete
+Cross-entity Cool reactions — design refinement checkpoint complete
 
 Plan: [module-cool-appreciation-button.md](./plans/module-cool-appreciation-button.md)
-Status: **Local additive backend checkpoint, shared UI/data-service checkpoint, modules/public-racks surface wiring checkpoint, and the user-area Cool collection for modules + public racks are implemented. Cool UI is intentionally visible in generated development builds for review, while generated production builds remain off. Approved Patch preview and Cool migrations are applied on the linked Supabase project, but broader linked-database migration/typegen drift remains. A local `pnpm updateBackendTypes` candidate was rejected as regressive, so manual backend types remain for now.**
+Status: **Local additive backend checkpoint, shared UI/data-service checkpoint, modules/public-racks surface wiring checkpoint, user-area Cool collection, and the Cool design-refinement placement checkpoint are implemented. Cool UI is intentionally visible in generated development builds for review, while generated production builds remain off. Approved Patch preview and Cool migrations are applied on the linked Supabase project, but broader linked-database migration/typegen drift remains. A local `pnpm updateBackendTypes` candidate was rejected as regressive, so manual backend types remain for now.**
 Staged: 2026-06-19T09:21+02:00
 
 #### Why this is next
@@ -45,6 +45,7 @@ Staged: 2026-06-19T09:21+02:00
 - [x] Add disabled-by-default shared Cool UI/data-service wiring for the approved MVP surfaces, with tests proving no backend calls when gated off.
 - [x] Wire `app-cool-button` into module and rack detail pages only for modules plus public racks; repeated list/card surfaces must not show Cool buttons.
 - [x] Add the gated user-area Cool collection for cooled modules and public racks only, grouped by entity type, newest-first, with inline uncool.
+- [x] Refine Cool placement: module detail Cool lives in the top-left module action row, rack detail Cool lives in the left rack action strip, and user-area Cool is a Modules tab/filter rather than a root section.
 
 #### Approval queue
 
@@ -72,3 +73,4 @@ Staged: 2026-06-19T09:21+02:00
 - 2026-06-19T10:59+02:00 — User clarified that Cool should be visible on `develop` for review. Production/release remains blocked: do not switch branches, release, push, or expose Cool via production. Keep generated dev/local `coolReactionsEnabled` on and generated production off; typegen remains manual because the linked project still produces regressive unrelated type drift.
 - 2026-06-19T11:19+02:00 — User clarified Cool placement after reviewing develop: avoid many Cool buttons in a row. Keep Cool visible for review only on slash/detail-style pages and user-owned Cool collection interactions; remove repeated module/rack list card controls even when the develop flag is on. Detail-page placement can stay near the existing community/statistics/action rail.
 - 2026-06-19T11:05+02:00 — Implemented the next user-area Cool collection checkpoint for modules and public racks only; patches remain deferred to the structural layer. The collection stays behind `COOL_REACTIONS_ENABLED`, performs no Cool backend calls while disabled, fetches public module/rack details in batch, groups by entity type newest-first, and removes Cool inline through the existing reaction delete path.
+- 2026-06-19T11:52+02:00 — Applied the Cool design handoff: removed the standalone module detail Community/Cool card, projected Cool into the module primary action row, moved rack Cool from the right insight grid into the left rack action strip, and made Cool a Modules-area tab/filter with grouped module/rack results. Repeated module/rack list cards remain free of Cool buttons; production flag remains off and dev/local remains on.

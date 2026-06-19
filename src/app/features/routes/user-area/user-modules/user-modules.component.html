@@ -1,7 +1,7 @@
 <div class="col gap1"
 >
   <lib-hero-content-card titleNormal="My Modules"
-                         [description]="sectionDescriptionByFilter[(dataService.moduleCollectionFilter$ | async) ?? 'MY_MODULES']"
+                         [description]="sectionDescriptionByFilter[(activeSectionFilter$ | async) ?? 'MY_MODULES']"
                          class="modulesBG"
                          icon="view_module"
                          id="modules"
@@ -20,11 +20,11 @@
       <div class="row gap1 section-actions">
         <mat-button-toggle-group
           class="module-collection-filter"
-          [value]="dataService.moduleCollectionFilter$ | async"
-          (change)="dataService.moduleCollectionFilter$.next($event.value)"
+          [value]="activeSectionFilter$ | async"
+          (change)="selectFilter($event.value)"
           aria-label="Filter modules by view"
         >
-          @for (filter of collectionFilters; track filter.value) {
+          @for (filter of visibleFilters(); track filter.value) {
             <mat-button-toggle [value]="filter.value">
               <mat-icon aria-hidden="true">{{ filter.icon }}</mat-icon>
               <span>{{ filter.label }}</span>
@@ -47,49 +47,53 @@
       <mat-divider inset="true"></mat-divider>
     }
     
-    <lib-auto-update-loading-indicator [data$]="dataService.modulesData$"
-                                       [updateData$]="dataService.updateModulesData$"
-    >
-      @if ((dataService.pagedModulesData$ | async); as data) {
-        @if (data.length > 0) {
-          <div class="section-scroll">
-            <app-module-list class="section-list"
-                             [data$]="dataService.pagedModulesData$"
-                             [viewConfig]="modulesViewConfig"
-                             [showSearch]="false"
-                             [encloseVertically]="encloseVertically"
-            ></app-module-list>
-          </div>
-        } @else {
-          <div class="section-empty">
-            @if (globalSearchQuery.trim()) {
-              <app-empty-state-tips
-                [compact]="true"
-                icon="search_off"
-                title="No matches"
-                [copy]="'No modules in your collection match &quot;<strong>' + globalSearchQuery.trim() + '</strong>&quot;.'"
-              ></app-empty-state-tips>
-            } @else {
-              <app-empty-state-tips
-                icon="view_module"
-                title="No modules here yet"
-                [copy]="emptyStateCopyByFilter[(dataService.moduleCollectionFilter$ | async) ?? 'MY_MODULES']"
-                [tips]="emptyStateTipsByFilter[(dataService.moduleCollectionFilter$ | async) ?? 'MY_MODULES']"
-              ></app-empty-state-tips>
-            }
-          </div>
+    @if ((activeSectionFilter$ | async) === 'COOL') {
+      <ng-content select="[moduleCoolTabContent]"></ng-content>
+    } @else {
+      <lib-auto-update-loading-indicator [data$]="dataService.modulesData$"
+                                         [updateData$]="dataService.updateModulesData$"
+      >
+        @if ((dataService.pagedModulesData$ | async); as data) {
+          @if (data.length > 0) {
+            <div class="section-scroll">
+              <app-module-list class="section-list"
+                               [data$]="dataService.pagedModulesData$"
+                               [viewConfig]="modulesViewConfig"
+                               [showSearch]="false"
+                               [encloseVertically]="encloseVertically"
+              ></app-module-list>
+            </div>
+          } @else {
+            <div class="section-empty">
+              @if (globalSearchQuery.trim()) {
+                <app-empty-state-tips
+                  [compact]="true"
+                  icon="search_off"
+                  title="No matches"
+                  [copy]="'No modules in your collection match &quot;<strong>' + globalSearchQuery.trim() + '</strong>&quot;.'"
+                ></app-empty-state-tips>
+              } @else {
+                <app-empty-state-tips
+                  icon="view_module"
+                  title="No modules here yet"
+                  [copy]="emptyStateCopyByFilter[(dataService.moduleCollectionFilter$ | async) ?? 'MY_MODULES']"
+                  [tips]="emptyStateTipsByFilter[(dataService.moduleCollectionFilter$ | async) ?? 'MY_MODULES']"
+                ></app-empty-state-tips>
+              }
+            </div>
+          }
         }
+      </lib-auto-update-loading-indicator>
+      @if ((dataService.hasMoreModules$ | async)) {
+        <div class="loadMore">
+          <button mat-stroked-button
+                  class="loadMore__btn"
+                  (click)="dataService.loadMoreModules$.next()"
+          >Load more
+            <span class="loadMore__count">{{ dataService.remainingModulesCount$ | async }} remaining</span>
+          </button>
+        </div>
       }
-    </lib-auto-update-loading-indicator>
-    @if ((dataService.hasMoreModules$ | async)) {
-      <div class="loadMore">
-        <button mat-stroked-button
-                class="loadMore__btn"
-                (click)="dataService.loadMoreModules$.next()"
-        >Load more
-          <span class="loadMore__count">{{ dataService.remainingModulesCount$ | async }} remaining</span>
-        </button>
-      </div>
     }
 
   </div>

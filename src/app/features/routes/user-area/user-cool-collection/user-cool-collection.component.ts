@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   Inject,
+  Input,
   OnInit
 } from '@angular/core';
 import { COOL_REACTIONS_ENABLED } from 'src/app/components/shared-atoms/cool-button/cool-button-feature.token';
@@ -16,6 +17,8 @@ import { UserCoolCollectionDataService } from './user-cool-collection-data.servi
   standalone: false
 })
 export class UserCoolCollectionComponent implements OnInit {
+  @Input() embedded = false;
+
   constructor(
     public readonly dataService: UserCoolCollectionDataService,
     @Inject(COOL_REACTIONS_ENABLED) public readonly coolReactionsEnabled: boolean

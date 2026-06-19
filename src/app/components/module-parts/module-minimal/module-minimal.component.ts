@@ -38,6 +38,7 @@ import {
   ModulePossessionDialogComponent,
   ModulePossessionDialogResult
 } from '../module-possession-dialog/module-possession-dialog.component';
+import { ReactionEntityTypes } from 'src/app/features/backend/supabase-reactions';
 
 
 @Component({
@@ -104,6 +105,8 @@ export class ModuleMinimalComponent extends SubManager implements OnInit, OnDest
   @Input() nameSuffix: string | undefined = undefined;
   @Input() preferredPanelColor: number | null = null;
   @Input() portraitDetailSplit = false;
+  @Input() showCoolAction = false;
+  readonly ReactionEntityTypes = ReactionEntityTypes;
   isTagChooserOpen = false;
 
   isInCollection$: Observable<boolean>;

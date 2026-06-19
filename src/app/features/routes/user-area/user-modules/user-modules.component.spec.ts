@@ -13,7 +13,8 @@ function mockBackend(): SupabaseService {
 function mockDataService(): UserAreaDataService {
   return {
     updateModulesData$: new Subject<void>(),
-    modulesData$: new BehaviorSubject(undefined)
+    modulesData$: new BehaviorSubject(undefined),
+    moduleCollectionFilter$: new BehaviorSubject('MY_MODULES')
   } as unknown as UserAreaDataService;
 }
 
@@ -50,8 +51,20 @@ describe('UserModulesComponent', () => {
     expect(comp.globalSearchQuery).toBe('');
   });
 
-  it('shows Owned, Wanted, and For Sale filters', () => {
-    expect(comp.collectionFilters.map((filter) => filter.value)).toEqual(['MY_MODULES', 'WISHLIST', 'FOR_SALE']);
+  it('hides Cool from visible filters until the feature is enabled', () => {
+    expect(comp.visibleFilters().map((filter) => filter.value)).toEqual(['MY_MODULES', 'WISHLIST', 'FOR_SALE']);
+    comp.showCoolFilter = true;
+    expect(comp.visibleFilters().map((filter) => filter.value)).toEqual(['MY_MODULES', 'WISHLIST', 'FOR_SALE', 'COOL']);
+  });
+
+  it('keeps Cool selection local and forwards ownership filters to shared data', () => {
+    comp.selectFilter('COOL');
+    expect(comp.activeSectionFilter$.value).toBe('COOL');
+    expect(ds.moduleCollectionFilter$.value).toBe('MY_MODULES');
+
+    comp.selectFilter('WISHLIST');
+    expect(comp.activeSectionFilter$.value).toBe('WISHLIST');
+    expect(ds.moduleCollectionFilter$.value).toBe('WISHLIST');
   });
 });
 
