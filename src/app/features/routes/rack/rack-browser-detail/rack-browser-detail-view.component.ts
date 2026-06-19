@@ -38,7 +38,6 @@ import {
   buildRackPowerBreakdown,
   formatPowerRailValue
 } from 'src/app/components/rack-parts/rack-power-breakdown.utils';
-import { ReactionEntityTypes } from 'src/app/features/backend/supabase-reactions';
 import { environment } from 'src/environments/environment';
 
 
@@ -59,7 +58,6 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
   };
   @Input() ignoreSeo = false;
   readonly coolReactionsEnabled = environment.features.coolReactionsEnabled;
-  readonly ReactionEntityTypes = ReactionEntityTypes;
 
   constructor(
     public dataService: RackDetailDataService,

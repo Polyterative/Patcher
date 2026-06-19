@@ -5,7 +5,7 @@
 
 ## Status
 
-- [~] Backend checkpoint, shared UI/data-service checkpoint, modules/public-racks surface wiring checkpoint, and user-area Cool collection checkpoint are implemented locally. Approved Cool backend objects are applied on the linked Supabase project, but broader linked migration/typegen drift remains; the latest local typegen candidate was rejected as regressive, so manual backend types remain for now. User clarified that Cool should be visible on generated development builds for review, while generated production builds must keep `coolReactionsEnabled` off; no production branch/release/push.
+- [~] Backend checkpoint, shared UI/data-service checkpoint, modules/public-racks surface wiring checkpoint, user-area Cool collection checkpoint, and design-refinement placement checkpoint are implemented locally. Approved Cool backend objects are applied on the linked Supabase project, but broader linked migration/typegen drift remains; the latest local typegen candidate was rejected as regressive, so manual backend types remain for now. User clarified that Cool should be visible on generated development builds for review, while generated production builds must keep `coolReactionsEnabled` off; no production branch/release/push.
 - Priority: **LOW**
 - TODO section: **INFRA**
 - Owner persona on pickup: `coordinator-loop` → `planner` → `frontend-dev` after explicit schema/RLS approval.
@@ -137,8 +137,13 @@ Default behavior:
   in-system treatment if Material cannot carry the right character. Avoid thumbs-up; it is too generic.
 - Cards: do not show Cool in repeated card/list rows for the MVP. Revisit only with an explicit view-configuration guard if a future surface can guarantee one-at-a-time or low-density placement.
 - Detail pages: larger action in the existing action area, with count if the surrounding stats pattern supports it.
+- Design refinement checkpoint:
+  - Module detail must not render a standalone Community/Cool rail card. Project the single interactive Cool control into the top-left module info card's bottom action row beside the add-to-collection/add-to-rack style controls. Any additional Cool aggregate in DATA > Community must be read-only, not a second button.
+  - Rack detail must keep Cool out of the right stats grid. Place the single interactive Cool control in the left rack metadata/action strip next to existing rack actions.
+  - User area must not expose Cool as a root-level section. Add Cool as a Modules section tab/filter peer of Owned / Wanted / For Sale.
+  - Repeated module/rack list cards stay free of Cool buttons.
 - User area: add a Cool view grouped by Modules / Racks / Patches, newest first, with inline remove action and no
-  confirmation dialog.
+  confirmation dialog. MVP currently groups modules and public racks inside the Modules > Cool tab so rack reactions are visible rather than silently dropped.
 
 ## Delight requirements
 
@@ -173,6 +178,11 @@ Default behavior:
 - Signed-in users can optimistically toggle Cool on eligible modules and public racks, with rollback + snackbar on backend failure.
 - Anonymous users can see aggregate Cool counts where the card/detail surface already shows public aggregate stats.
 - User-area Cool collection groups cooled modules/racks (patches in the structural layer) newest-first and supports inline uncool.
+- Module detail has no standalone Community/Cool card; the only interactive Cool control is in the top-left module action row.
+- Rack detail keeps Cool adjacent to the left-column rack action strip and out of the right stats grid.
+- User area has no root-level Cool section; Cool is available under the Modules tab/filter with rack reactions shown as a labeled group in that tab.
+- Repeated module/rack list-card rows do not render Cool controls.
+- Generated development/local keeps `coolReactionsEnabled: true`; generated production keeps it `false`.
 - Private racks/patches never appear in public Cool discovery/count surfaces.
 - Backend methods live behind `SupabaseService`, use explicit columns, and cache-bust all reaction state/count reads after writes.
 - Relevant focused unit tests and `pnpm lint` pass before any verified checkpoint commit.
@@ -197,3 +207,4 @@ Default behavior:
 - 2026-06-19T10:59+02:00 — User clarified the development visibility policy: Cool should be visible on `develop` so it can be reviewed, but remains blocked from production/release. Set the generated development/local flag on and keep generated production off. Typegen remains manual because the linked-project candidate still regresses unrelated schema/types.
 - 2026-06-19T11:19+02:00 — User clarified placement after seeing develop: no rows of Cool buttons in repeated module/rack list cards, including embedded lists inside detail pages. Keep Cool on slash/detail-style pages and the user-area Cool collection, near existing community/statistics/action areas where only one entity is in focus.
 - 2026-06-19T11:05+02:00 — Added the user-area Cool collection checkpoint as a gated root-section surface. It intentionally covers only modules and public racks for MVP, batches entity detail reads, groups Modules / Racks newest-first by reaction timestamp, and supports inline Uncool via `backend.delete.reaction`; patches remain in the structural layer.
+- 2026-06-19T11:52+02:00 — Implemented the designer handoff: module detail no longer has a separate Community/Cool card; Cool is projected into the primary module card action row. Rack Cool moved from the right insight/stat area into the left rack action strip. User-area Cool moved from a root section into a Modules tab/filter, reusing the existing grouped Modules/Racks collection so rack data remains visible for MVP. Repeated module/rack list cards remain Cool-free, production flag remains off, and dev/local remains on for review.

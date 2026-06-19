@@ -50,6 +50,14 @@
             <mat-icon>delete_forever</mat-icon>
           </button>
         }
+        @if (showCoolAction) {
+          <app-cool-button
+            [entityType]="ReactionEntityTypes.RACK"
+            [entityId]="data.id"
+            [eligible]="data.public === true"
+            countDisplayMode="count"
+          ></app-cool-button>
+        }
         <div class="layout-flex-grow"></div>
         @if (bag.user && bag.isCurrentRackPropertyOfCurrentUser) {
           <button mat-icon-button

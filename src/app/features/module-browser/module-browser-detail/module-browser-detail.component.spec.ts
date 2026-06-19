@@ -1,5 +1,6 @@
 import {
   Component,
+  Input,
   NO_ERRORS_SCHEMA
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -9,6 +10,7 @@ import {
 } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { By } from '@angular/platform-browser';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
@@ -34,10 +36,11 @@ import { ModuleUsageCardComponent } from './module-usage-card/module-usage-card.
 
 @Component({
   selector: 'app-module-composite',
-  template: '',
+  template: '<ng-content></ng-content>',
   standalone: false
 })
 class ModuleCompositeStubComponent {
+  @Input() showCoolAction = false;
 }
 
 
@@ -129,11 +132,12 @@ describe('ModuleBrowserDetailComponent', () => {
       tags: [{tag: {name: 'fm'}}, {tag: {name: 'analog'}}],
       ins: [{name: 'cv in'}],
       outs: [{name: 'audio out'}],
-      manualURL: 'https://example.com/manual'
+      manualURL: 'https://example.com/manual',
+      public: true
     };
   }
 
-  async function render(options: {isDev?: boolean; isAdmin?: boolean; user?: unknown} = {}): Promise<{
+  async function render(options: {isDev?: boolean; isAdmin?: boolean; user?: unknown; coolToken?: boolean} = {}): Promise<{
     fixture: ComponentFixture<ModuleBrowserDetailComponent>;
     dataService: any;
     loggedUser$: BehaviorSubject<unknown>;
@@ -193,7 +197,7 @@ describe('ModuleBrowserDetailComponent', () => {
           }
         },
         {provide: UserManagementService, useValue: {loggedUser$}},
-        {provide: COOL_REACTIONS_ENABLED, useValue: false},
+        {provide: COOL_REACTIONS_ENABLED, useValue: options.coolToken ?? false},
         {provide: SupabaseService, useValue: reactionBackend},
         {provide: MatSnackBar, useValue: jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open'])}
       ],
@@ -318,6 +322,15 @@ describe('ModuleBrowserDetailComponent', () => {
     expect(reactionBackend.get.reactionCount).not.toHaveBeenCalled();
     expect(reactionBackend.add.reaction).not.toHaveBeenCalled();
     expect(reactionBackend.delete.reaction).not.toHaveBeenCalled();
+  });
+
+  it('projects Cool into the primary module action card instead of a Community rail card', async () => {
+    const {fixture} = await render();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('lib-hero-content-card[titleNormal="Community"] app-cool-button')).toBeNull();
+    const composite = fixture.debugElement.query(By.directive(ModuleCompositeStubComponent));
+    expect(composite.componentInstance.showCoolAction).toBeTrue();
   });
 
   it('builds raw public possession stats for the Community data card', () => {

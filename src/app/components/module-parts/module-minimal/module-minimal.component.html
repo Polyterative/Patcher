@@ -145,6 +145,14 @@
                     <mat-icon>playlist_add</mat-icon>
                   </button>
                 }
+                @if (showCoolAction) {
+                  <app-cool-button
+                    [entityType]="ReactionEntityTypes.MODULE"
+                    [entityId]="data.id"
+                    [eligible]="data.public === true"
+                    countDisplayMode="count"
+                  ></app-cool-button>
+                }
                 @if (bag.currentRackData; as rackData) {
                   @if (bag.isCurrentRackEditable) {
                     <button (click)="rackDataService.addModuleToRack$.next(data)"

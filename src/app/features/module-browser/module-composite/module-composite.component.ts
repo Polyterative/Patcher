@@ -29,6 +29,7 @@ export class ModuleCompositeComponent implements OnInit {
   @Input() nameSuffix: string | undefined;
   @Input() preferredPanelColor: number | null = null;
   @Input() preferPortraitDetailSplit = false;
+  @Input() showCoolAction = false;
 
   get shouldUsePortraitDetailSplit(): boolean {
     return this.preferPortraitDetailSplit

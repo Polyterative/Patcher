@@ -10,6 +10,7 @@ import {
   UserAreaDataService,
   UserModuleCollectionFilter
 } from 'src/app/features/routes/user-area/user-area-data.service';
+import { BehaviorSubject } from 'rxjs';
 
 
 export interface UserModulesComponentViewConfig {
@@ -19,6 +20,8 @@ export interface UserModulesComponentViewConfig {
 export const userModulesDefaultViewConfig: UserModulesComponentViewConfig = {
   hideAddModulesButton: false
 };
+
+type UserModulesSectionFilter = UserModuleCollectionFilter | 'COOL';
 
 @Component({
   selector: 'app-user-modules',
@@ -32,10 +35,13 @@ export class UserModulesComponent extends SubManager {
   @Input() userModulesComponentViewConfig: UserModulesComponentViewConfig = userModulesDefaultViewConfig;
   @Input() readonly encloseVertically = true;
   @Input() globalSearchQuery = '';
-  readonly collectionFilters: {value: UserModuleCollectionFilter; label: string; icon: string}[] = [
+  @Input() showCoolFilter = false;
+  readonly activeSectionFilter$ = new BehaviorSubject<UserModulesSectionFilter>('MY_MODULES');
+  readonly collectionFilters: {value: UserModulesSectionFilter; label: string; icon: string}[] = [
     {value: 'MY_MODULES', label: 'Owned', icon: 'inventory_2'},
     {value: 'WISHLIST', label: 'Wanted', icon: 'bookmark'},
     {value: 'FOR_SALE', label: 'For Sale', icon: 'sell'},
+    {value: 'COOL', label: 'Cool', icon: 'auto_awesome'},
   ];
   readonly emptyStateCopyByFilter: Record<UserModuleCollectionFilter, string> = {
     MY_MODULES: 'Add the modules you own here so they are available when you build racks and patches.',
@@ -56,10 +62,11 @@ export class UserModulesComponent extends SubManager {
       { icon: 'upload', html: 'Missing one? <strong>Submit NEW</strong> to add it to Patcher.' }
     ]
   };
-  readonly sectionDescriptionByFilter: Record<UserModuleCollectionFilter, string> = {
+  readonly sectionDescriptionByFilter: Record<UserModulesSectionFilter, string> = {
     MY_MODULES: 'Owned modules are available when you build racks and patches.',
     WISHLIST: 'Wanted modules help you keep track of gear you are considering.',
-    FOR_SALE: 'For-sale modules help you keep track of gear you want to move.'
+    FOR_SALE: 'For-sale modules help you keep track of gear you want to move.',
+    COOL: 'Modules and public racks you have marked cool, newest first.'
   };
 
   constructor(
@@ -69,6 +76,19 @@ export class UserModulesComponent extends SubManager {
     super();
     this.dataService.updateModulesData$.next();
     
+  }
+
+  visibleFilters(): {value: UserModulesSectionFilter; label: string; icon: string}[] {
+    return this.showCoolFilter
+      ? this.collectionFilters
+      : this.collectionFilters.filter(filter => filter.value !== 'COOL');
+  }
+
+  selectFilter(filter: UserModulesSectionFilter): void {
+    this.activeSectionFilter$.next(filter);
+    if (filter !== 'COOL') {
+      this.dataService.moduleCollectionFilter$.next(filter);
+    }
   }
   
 }

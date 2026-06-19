@@ -1,73 +1,81 @@
 @if (dataService.vm$ | async; as vm) {
   @if (vm.enabled) {
-    <div class="col gap1">
-      <lib-hero-content-card titleNormal="Cool"
-                             description="Modules and public racks you have marked cool, newest first."
-                             class="coolBG"
-                             icon="auto_awesome"
-                             id="cool"
-      >
-        <div class="col gap1 section-shell user-cool">
-          <div class="user-cool__summary">
-            <mat-icon aria-hidden="true">auto_awesome</mat-icon>
-            <span>{{ vm.total }} cooled item{{ vm.total === 1 ? '' : 's' }}</span>
-          </div>
-          <mat-divider inset="true"></mat-divider>
-
-          @if (vm.loading) {
-            <div class="user-cool__loading">Loading your Cool collection…</div>
-          } @else if (vm.total > 0) {
-            <div class="user-cool__groups">
-              @for (group of vm.groups; track dataService.trackGroup($index, group)) {
-                <section class="user-cool-group"
-                         [class.user-cool-group--empty]="group.items.length === 0"
-                         [attr.aria-label]="group.title"
-                >
-                  <div class="user-cool-group__heading">
-                    <mat-icon aria-hidden="true">{{ group.icon }}</mat-icon>
-                    <h3>{{ group.title }}</h3>
-                    <span>{{ group.items.length }}</span>
-                  </div>
-
-                  @if (group.items.length > 0) {
-                    <div class="user-cool-list">
-                      @for (item of group.items; track dataService.trackItem($index, item)) {
-                        <lib-clean-card>
-                          <article class="user-cool-card">
-                            <div class="user-cool-card__copy">
-                              <span class="user-cool-card__meta">{{ dataService.itemSubtitle(item) }}</span>
-                              <a class="user-cool-card__title"
-                                 [routerLink]="dataService.itemRouterLink(item)"
-                              >{{ dataService.itemTitle(item) }}</a>
-                              <p>{{ dataService.itemDescription(item) }}</p>
-                            </div>
-                            <button mat-stroked-button
-                                    type="button"
-                                    class="user-cool-card__remove"
-                                    (click)="dataService.removeCool$.next(item)"
-                                    [attr.aria-label]="'Remove cool from ' + dataService.itemTitle(item)"
-                            >
-                              <mat-icon aria-hidden="true">auto_awesome_motion</mat-icon>
-                              Uncool
-                            </button>
-                          </article>
-                        </lib-clean-card>
-                      }
-                    </div>
-                  } @else {
-                    <p class="user-cool-group__empty">{{ group.emptyCopy }}</p>
-                  }
-                </section>
-              }
-            </div>
-          } @else {
-            <app-empty-state icon="auto_awesome"
-                             title="Nothing cooled yet"
-                             copy="Tap Cool on a public module or rack to build this collection."
-            ></app-empty-state>
-          }
-        </div>
-      </lib-hero-content-card>
-    </div>
+    @if (embedded) {
+      <ng-container *ngTemplateOutlet="coolContent; context: {$implicit: vm}"></ng-container>
+    } @else {
+      <div class="col gap1">
+        <lib-hero-content-card titleNormal="Cool"
+                               description="Modules and public racks you have marked cool, newest first."
+                               class="coolBG"
+                               icon="auto_awesome"
+                               id="cool"
+        >
+          <ng-container *ngTemplateOutlet="coolContent; context: {$implicit: vm}"></ng-container>
+        </lib-hero-content-card>
+      </div>
+    }
   }
 }
+
+<ng-template #coolContent let-vm>
+  <div class="col gap1 section-shell user-cool">
+    <div class="user-cool__summary">
+      <mat-icon aria-hidden="true">auto_awesome</mat-icon>
+      <span>{{ vm.total }} cooled item{{ vm.total === 1 ? '' : 's' }}</span>
+    </div>
+    <mat-divider inset="true"></mat-divider>
+
+    @if (vm.loading) {
+      <div class="user-cool__loading">Loading your Cool collection…</div>
+    } @else if (vm.total > 0) {
+      <div class="user-cool__groups">
+        @for (group of vm.groups; track dataService.trackGroup($index, group)) {
+          <section class="user-cool-group"
+                   [class.user-cool-group--empty]="group.items.length === 0"
+                   [attr.aria-label]="group.title"
+          >
+            <div class="user-cool-group__heading">
+              <mat-icon aria-hidden="true">{{ group.icon }}</mat-icon>
+              <h3>{{ group.title }}</h3>
+              <span>{{ group.items.length }}</span>
+            </div>
+
+            @if (group.items.length > 0) {
+              <div class="user-cool-list">
+                @for (item of group.items; track dataService.trackItem($index, item)) {
+                  <lib-clean-card>
+                    <article class="user-cool-card">
+                      <div class="user-cool-card__copy">
+                        <span class="user-cool-card__meta">{{ dataService.itemSubtitle(item) }}</span>
+                        <a class="user-cool-card__title"
+                           [routerLink]="dataService.itemRouterLink(item)"
+                        >{{ dataService.itemTitle(item) }}</a>
+                        <p>{{ dataService.itemDescription(item) }}</p>
+                      </div>
+                      <button mat-stroked-button
+                              type="button"
+                              class="user-cool-card__remove"
+                              (click)="dataService.removeCool$.next(item)"
+                              [attr.aria-label]="'Remove cool from ' + dataService.itemTitle(item)"
+                      >
+                        <mat-icon aria-hidden="true">auto_awesome_motion</mat-icon>
+                        Uncool
+                      </button>
+                    </article>
+                  </lib-clean-card>
+                }
+              </div>
+            } @else {
+              <p class="user-cool-group__empty">{{ group.emptyCopy }}</p>
+            }
+          </section>
+        }
+      </div>
+    } @else {
+      <app-empty-state icon="auto_awesome"
+                       title="Nothing cooled yet"
+                       copy="Tap Cool on a public module or rack to build this collection."
+      ></app-empty-state>
+    }
+  </div>
+</ng-template>
