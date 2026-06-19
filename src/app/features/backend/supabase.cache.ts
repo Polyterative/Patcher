@@ -50,6 +50,9 @@ export type CachedEntity =
   | 'moduleCollections'
   | 'moduleCollectionWithId'
   | 'moduleCollectionsByModule'
+  | 'currentUserReactions'
+  | 'reactionCounts'
+  | 'reactionDiscovery'
   | void;
 
 export const cacheBuster$ = new Subject<CachedEntity[]>();

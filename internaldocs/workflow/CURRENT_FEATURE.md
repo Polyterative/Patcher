@@ -35,8 +35,8 @@ Staged: 2026-06-19T09:21+02:00
 - [x] Re-read the existing Cool plan and stage it as the active safe task.
 - [x] Record the explicit schema/RLS approval question in the plan.
 - [x] Record conditional user approval for the narrow, non-breaking schema/RLS checkpoint.
-- [ ] Draft the narrow schema/RLS/RPC checkpoint for reactions and reaction counts.
-- [ ] Implement backend methods through `SupabaseService` only, with cache keys and focused tests.
+- [x] Draft the narrow schema/RLS/trigger checkpoint for reactions and reaction counts.
+- [x] Implement backend methods through `SupabaseService` only, with cache keys and focused tests.
 - [ ] Add shared Cool UI/data-service wiring for the approved MVP surfaces.
 
 #### Approval queue
@@ -53,3 +53,4 @@ Staged: 2026-06-19T09:21+02:00
 
 - 2026-06-19T09:21+02:00 — Pivoted from Patch SVG previews after read-only Supabase inspection reconfirmed linked migration/typegen drift and missing patch preview remote objects. Staged Cross-entity Cool reactions as planning/approval-gate only because it requires schema/RLS/policy work before code can safely start.
 - 2026-06-19T09:20+02:00 — User conditionally approved the next Cool reactions schema/RLS checkpoint only if it is non-breaking for the current production build. Scope remains additive and narrow: polymorphic `reactions` plus aggregate `reaction_counts`, modules + public racks initially, no unrelated RLS/policy changes, and stop before any breaking change or risky production behavior.
+- 2026-06-19T09:32+02:00 — Implemented the local-only backend checkpoint with additive `reactions` / `reaction_counts` migration objects, narrow RLS, SupabaseService add/delete/get methods, cache keys, and focused tests. Skipped remote typegen because linked Supabase drift is already recorded; manually updated `src/backend/database.types.ts` for the two new tables. Reviewer pass narrowed module eligibility to `modules.public = true` so aggregate counts cannot expose non-public module IDs.

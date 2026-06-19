@@ -24,6 +24,8 @@ export class DbPaths {
   static comments = 'comments' as const;
   static module_flags = 'module_flags' as const;
   static module_flag_counts = 'module_flag_counts' as const;
+  static reactions = 'reactions' as const;
+  static reaction_counts = 'reaction_counts' as const;
 
 }
 

@@ -36,6 +36,11 @@ import {
   type SupabaseSingleResponse
 } from './supabase-db.types';
 import { UserModuleAcquisitionDraft } from 'src/app/models/user-module-acquisition';
+import {
+  REACTION_KIND_COOL,
+  REACTION_ROW_COLUMNS,
+  type ReactionKind
+} from './supabase-reactions';
 
 
 export function createAddNamespace(
@@ -60,6 +65,36 @@ export function createAddNamespace(
               user_id: user.id
             })
         )),
+        remapErrors()
+      ),
+
+    reaction: (
+      entityType: number,
+      entityId: number,
+      kind: ReactionKind = REACTION_KIND_COOL
+    ) => getUserSession$()
+      .pipe(
+        switchMap(user => {
+          if (!user) return throwError(() => new Error('Authentication required'));
+          const insertData: SupabaseTableInsert<'reactions'> = {
+            user_id: user.id,
+            entity_type: entityType,
+            entity_id: entityId,
+            kind
+          };
+          return rxFrom(
+            supabase
+              .from(DbPaths.reactions)
+              .upsert(insertData, {
+                onConflict: 'user_id,entity_type,entity_id,kind',
+                ignoreDuplicates: true
+              })
+              .select(REACTION_ROW_COLUMNS)
+              .maybeSingle()
+          );
+        }),
+        throwIfSupabaseError(),
+        cacheBust(['currentUserReactions', 'reactionCounts', 'reactionDiscovery']),
         remapErrors()
       ),
 

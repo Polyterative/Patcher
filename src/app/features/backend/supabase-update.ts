@@ -106,7 +106,7 @@ export function createUpdateNamespace(
           );
         }),
         showSuccessMessage(snackBar),
-        cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
+        cacheBust(['modules', 'currentUserModules', 'moduleWithId', 'reactionCounts']),
       );
     },
     
@@ -201,7 +201,7 @@ export function createUpdateNamespace(
         );
       }),
       throwIfSupabaseError<SupabaseSingleResponse<{id: number}>>(),
-      cacheBust(['rackWithId', 'racksMinimal'])
+      cacheBust(['rackWithId', 'racksMinimal', 'reactionCounts'])
     ),
     
     patch: (data: Patch) => {
