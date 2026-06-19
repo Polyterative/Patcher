@@ -5,7 +5,7 @@
 
 ## Status
 
-- [~] Backend checkpoint, shared UI/data-service checkpoint, modules/public-racks surface wiring checkpoint, user-area Cool collection checkpoint, and design-refinement placement checkpoint are implemented locally. Approved Cool backend objects are applied on the linked Supabase project, but broader linked migration/typegen drift remains; the latest local typegen candidate was rejected as regressive, so manual backend types remain for now. User clarified that Cool should be visible on generated development builds for review, while generated production builds must keep `coolReactionsEnabled` off; no production branch/release/push.
+- [~] Backend checkpoint, shared UI/data-service checkpoint, modules/public-racks surface wiring checkpoint, user-area Cool collection checkpoint, design-refinement placement checkpoint, and reviewer-requested inline uncool rollback hardening are implemented locally. Approved Cool backend objects are applied on the linked Supabase project, but broader linked migration/typegen drift remains; the latest local typegen candidate was rejected as regressive, so manual backend types remain for now. User clarified that Cool should be visible on generated development builds for review, while generated production builds must keep `coolReactionsEnabled` off; no production branch/release/push. The next structural patch-support checkpoint is blocked on explicit schema/RLS and UX placement approval.
 - Priority: **LOW**
 - TODO section: **INFRA**
 - Owner persona on pickup: `coordinator-loop` → `planner` → `frontend-dev` after explicit schema/RLS approval.
@@ -102,6 +102,7 @@ Default behavior:
 - **Operational constraint recorded 2026-06-19T09:20+02:00:** Do not switch to `production`, release, push, or expose Cool frontend code through production. `pnpm updateBackendTypes` may be run only as a local candidate diff and must be reverted if it removes/regresses unrelated local schema/types.
 - **Typegen blocker recorded 2026-06-19T10:57+02:00:** Linked-project typegen currently regresses unrelated local types (`user_module_acquisitions`, `reactions` FK relationship, DB-default `public_id` insert optionality). Keep `src/backend/database.types.ts` unchanged until the linked migration history is reconciled or the generated diff can be safely hand-corrected with explicit scope.
 - **Develop visibility recorded 2026-06-19T10:59+02:00:** User wants to see Cool on `develop` for review. Generated local/development env may set `coolReactionsEnabled: true`; generated production must remain `false`.
+- **Approval requested 2026-06-19T17:23+02:00:** May the structural layer extend Cool to public patches by updating the already-added Cool reaction schema/RLS eligibility from modules+racks to modules+racks+public patches, and where should the single patch Cool control live? Recommended default: one detail-page action beside existing patch metadata/actions, no repeated patch list/card controls, and user-area Cool keeps patches as a grouped section inside Modules > Cool until broader IA is revisited.
 
 ## Backend/service plan
 
@@ -168,10 +169,21 @@ Default behavior:
 - Unit-test Cool button state, optimistic toggle, rollback, disabled/loading state, and ARIA state.
 - Unit-test backend methods and cache busting.
 - Unit-test user-area Cool grouping and newest-first ordering.
+- Unit-test overlapping user-area inline uncool failures so one failed deletion cannot restore other successfully removed items.
 - Add auth E2E coverage: user A cools a module/rack, user B sees the aggregate count, user A sees it in Cool, un-cooling
   removes it.
 - Run targeted `pnpm test-headless --include=...`, then `pnpm lint`.
 - For visual polish, use the Patcher UI debug screenshot workflow before considering the interaction done.
+
+## File-level checklist
+
+- [x] `supabase/migrations/20260619092800_add_cool_reactions.sql` — additive modules+racks Cool schema/RLS/count support.
+- [x] `src/app/features/backend/DatabaseStrings.ts`, `supabase-add.ts`, `supabase-delete.ts`, `supabase-get.ts`, `supabase-queries.ts`, `supabase-reactions.ts` — SupabaseService-only reaction reads/writes/counts with explicit columns and cache busting.
+- [x] `src/app/components/shared-atoms/cool-button/*` — shared feature-gated Cool button and component-scoped data service.
+- [x] `src/app/features/module-browser/module-browser-detail/*`, `src/app/components/module-parts/module-minimal/*` — single module-detail Cool placement without repeated module list/card controls.
+- [x] `src/app/features/routes/rack/rack-browser-detail/*`, `src/app/components/rack-parts/rack-minimal/*` — single rack-detail Cool placement without repeated rack list/card controls.
+- [x] `src/app/features/routes/user-area/user-modules/*`, `src/app/features/routes/user-area/user-cool-collection/*` — Modules-tab Cool collection with grouped modules/racks and inline uncool rollback coverage.
+- [ ] Blocked: patch browser/detail files and Cool migration/type updates for public patch support, pending explicit schema/RLS and placement approval.
 
 ## Acceptance criteria
 
@@ -208,3 +220,4 @@ Default behavior:
 - 2026-06-19T11:19+02:00 — User clarified placement after seeing develop: no rows of Cool buttons in repeated module/rack list cards, including embedded lists inside detail pages. Keep Cool on slash/detail-style pages and the user-area Cool collection, near existing community/statistics/action areas where only one entity is in focus.
 - 2026-06-19T11:05+02:00 — Added the user-area Cool collection checkpoint as a gated root-section surface. It intentionally covers only modules and public racks for MVP, batches entity detail reads, groups Modules / Racks newest-first by reaction timestamp, and supports inline Uncool via `backend.delete.reaction`; patches remain in the structural layer.
 - 2026-06-19T11:52+02:00 — Implemented the designer handoff: module detail no longer has a separate Community/Cool card; Cool is projected into the primary module card action row. Rack Cool moved from the right insight/stat area into the left rack action strip. User-area Cool moved from a root section into a Modules tab/filter, reusing the existing grouped Modules/Racks collection so rack data remains visible for MVP. Repeated module/rack list cards remain Cool-free, production flag remains off, and dev/local remains on for review.
+- 2026-06-19T17:23+02:00 — Independent review found that overlapping user-area inline uncool failures could restore a stale whole-view snapshot. Fixed rollback to restore only the failed item, preserving other concurrent removals, and added focused coverage. Structural patch support remains blocked because the current Cool migration constrains entity types to modules+racks and any patch UI placement is a meaningful visible hierarchy decision requiring approval.

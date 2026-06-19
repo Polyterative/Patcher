@@ -1,5 +1,5 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { firstValueFrom, of, throwError } from 'rxjs';
+import { firstValueFrom, of, Subject, throwError } from 'rxjs';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import {
   REACTION_KIND_COOL,
@@ -155,6 +155,41 @@ describe('UserCoolCollectionDataService', () => {
       1,
       REACTION_KIND_COOL
     );
+    service.ngOnDestroy();
+  });
+
+  it('restores only the failed item when overlapping removals fail', async () => {
+    const firstDelete$ = new Subject<never[]>();
+    const secondDelete$ = new Subject<never[]>();
+    const backend = backendMock({
+      reactions: [
+        reaction(ReactionEntityTypes.MODULE, 1, '2026-06-19T08:00:00.000Z'),
+        reaction(ReactionEntityTypes.MODULE, 2, '2026-06-19T09:00:00.000Z')
+      ],
+      modules: [moduleOne, moduleTwo],
+      racks: []
+    });
+    (backend.delete.reaction as jasmine.Spy).and.returnValues(firstDelete$, secondDelete$);
+    const service = new UserCoolCollectionDataService(backend, snackBarMock(), true);
+
+    service.load$.next();
+    let vm = await firstValueFrom(service.vm$);
+    const olderItem = vm.groups[0].items.find(item => item.entityId === 1);
+    const newerItem = vm.groups[0].items.find(item => item.entityId === 2);
+    expect(olderItem).toBeDefined();
+    expect(newerItem).toBeDefined();
+
+    service.removeCool$.next(olderItem!);
+    service.removeCool$.next(newerItem!);
+    vm = await firstValueFrom(service.vm$);
+    expect(vm.total).toBe(0);
+
+    firstDelete$.complete();
+    secondDelete$.error(new Error('failed'));
+    vm = await firstValueFrom(service.vm$);
+
+    expect(vm.total).toBe(1);
+    expect(vm.groups[0].items.map(item => item.entityId)).toEqual([2]);
     service.ngOnDestroy();
   });
 });
