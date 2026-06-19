@@ -53,5 +53,5 @@
 - [ ] **LOW: Cross-entity Cool reactions** → [`plans/module-cool-appreciation-button.md`](./plans/module-cool-appreciation-button.md)
 - [ ] **ON HOLD INDEFINITELY: Rack Comparison — balance diff between two racks** → [`plans/rack-comparison-balance-diff-between-two-racks.md`](./plans/rack-comparison-balance-diff-between-two-racks.md)
 - [ ] **ON HOLD: MEDIUM: Sentry — Live Issue Audit** → [`plans/sentry-live-issue-audit.md`](./plans/sentry-live-issue-audit.md)
-- [~] **MEDIUM: Patch SVG previews (proposal-only next checkpoint; do not apply storage/RLS autonomously)** → [`plans/patch-svg-previews.md`](./plans/patch-svg-previews.md)
+- [~] **MEDIUM: Patch SVG previews (migration/typegen drift + timestamp semantics gates; do not apply storage/RLS autonomously)** → [`plans/patch-svg-previews.md`](./plans/patch-svg-previews.md)
 - [ ] **ON HOLD: SEO — OG Image Generation** → [`plans/on-seo-og-image-generation.md`](./plans/on-seo-og-image-generation.md)
