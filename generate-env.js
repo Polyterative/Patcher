@@ -50,7 +50,7 @@ export const environment = {
   },
   features: {
     collectionsEnabled: true,
-    coolReactionsEnabled: false
+    coolReactionsEnabled: true
   }
 };
 `;
