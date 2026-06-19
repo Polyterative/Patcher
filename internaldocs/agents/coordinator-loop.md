@@ -46,6 +46,10 @@ Use `gpt-5.5` for normal coordination. Escalate only if backlog selection or arc
 - Set `internaldocs/workflow/CURRENT_FEATURE.md` and mark the TODO entry in progress.
 - Maximize autonomy by doing every safe, certain step before stopping for a
   human decision.
+- Treat autonomy as execution autonomy, not unilateral UX/product planning.
+  Before implementing meaningful new UI placement, hierarchy, navigation, or
+  information architecture, record a short placement brief and ask the user to
+  approve the visible direction. After approval, execute autonomously.
 - When approval is required, record the exact question/gate in the plan
   Decision log or a clearly labeled "Approval queue" section, then continue
   with other unblocked work instead of stopping the whole loop when possible.
@@ -64,10 +68,14 @@ Use `gpt-5.5` for normal coordination. Escalate only if backlog selection or arc
 ## Does NOT
 
 - Push unless the user explicitly asks.
+- Switch to `production`, run release commands, or treat `develop` changes as
+  production rollout. The user owns releases.
 - Commit unverified work, failing tests, skipped tests, or code that has not been reviewed when review is required.
 - Commit after every loop stage/pass mechanically; commit only meaningful verified chunks.
 - Modify unrelated code or overwrite user changes.
 - Apply Supabase RLS, policy, migration, or destructive data changes without explicit approval.
+- Make backend-breaking changes that could break the currently published
+  production app without explicit manual approval with the user present.
 - Leave `CURRENT_FEATURE.md` empty after successful completion when an actionable next task exists.
 - Mark work complete based only on an implementation subagent's report; inspect and verify.
 - Block the whole automation run merely because one task needs approval when

@@ -28,6 +28,12 @@ Staged: 2026-06-19T09:21+02:00
 
 - Read `internaldocs/patterns/BACKEND_METHODS.md` schema-change preflight before any SQL draft.
 - Do not switch to `production`, release, push, or expose Cool frontend code through production while this feature is still in development.
+- Work on `develop` is allowed to be review-visible. Production rollout is a separate manual user action; agents must not switch to
+  `production`, release, or push.
+- Before adding/changing meaningful Cool UI placement, ask for a short UX placement approval or route through `designer`; code execution
+  can remain autonomous after the visible direction is approved.
+- Backend changes must remain additive/backward-compatible unless the user explicitly approves a breaking production-risking backend change
+  while present.
 - Keep generated development/local `coolReactionsEnabled` `true` so the user can review Cool on `develop`; generated production must remain `false`.
 - `pnpm updateBackendTypes` is allowed only as a local candidate diff on `develop`. Keep it only if it is non-regressive; if linked remote drift removes/regresses unrelated local schema/types, revert the generated type-file changes and document the blocker.
 - Do not enable production-visible Cool UI or wire Patch preview generation until remaining linked Supabase drift is reconciled or explicitly accepted.
@@ -74,3 +80,4 @@ Staged: 2026-06-19T09:21+02:00
 - 2026-06-19T11:19+02:00 — User clarified Cool placement after reviewing develop: avoid many Cool buttons in a row. Keep Cool visible for review only on slash/detail-style pages and user-owned Cool collection interactions; remove repeated module/rack list card controls even when the develop flag is on. Detail-page placement can stay near the existing community/statistics/action rail.
 - 2026-06-19T11:05+02:00 — Implemented the next user-area Cool collection checkpoint for modules and public racks only; patches remain deferred to the structural layer. The collection stays behind `COOL_REACTIONS_ENABLED`, performs no Cool backend calls while disabled, fetches public module/rack details in batch, groups by entity type newest-first, and removes Cool inline through the existing reaction delete path.
 - 2026-06-19T11:52+02:00 — Applied the Cool design handoff: removed the standalone module detail Community/Cool card, projected Cool into the module primary action row, moved rack Cool from the right insight grid into the left rack action strip, and made Cool a Modules-area tab/filter with grouped module/rack results. Repeated module/rack list cards remain free of Cool buttons; production flag remains off and dev/local remains on.
+- 2026-06-19T12:31+02:00 — User clarified loop operating policy: agents should work freely on `develop`, keep production/release/push out of scope, and avoid backend-breaking changes that could break the currently published production app unless explicitly approved. Feature flags are optional and only needed for hidden/incomplete work or rollout safety. UX planning should be more collaborative: ask on visible placement/hierarchy decisions, then execute autonomously.

@@ -81,6 +81,10 @@ The repo has these wired up in `.github/` — **prefer them over `grep` / `find`
 - Git: branch `develop` is primary, never run `release:*` from `develop`. Ask before committing unless the user requested commits or invoked `coordinator-loop` / "begin loop", which commits verified checkpoints by design. Never push unless explicitly requested.
 - **No `Co-authored-by` trailers** on commits in this repo.
 - **No Supabase RLS / migration changes** without explicit human approval.
+- Work on `develop` by default. Do not switch to `production`, release, or push unless explicitly asked; the user owns production rollout.
+- Avoid backend-breaking changes that could break the currently published production app unless the user explicitly approves them while present. Prefer additive/backward-compatible backend changes.
+- Code execution is autonomous, but UX placement/hierarchy is co-designed: before implementing meaningful new UI surfaces, ask for a short placement approval (where it lives, visual weight, affected/excluded surfaces). Use `designer` first when visual hierarchy or information architecture is ambiguous.
+- Feature flags are optional, not required for every new feature. Use them when the user wants something hidden, when production needs shielding while `develop` remains reviewable, or as a safe backend rollout switch.
 
 ## When NOT to delegate
 
