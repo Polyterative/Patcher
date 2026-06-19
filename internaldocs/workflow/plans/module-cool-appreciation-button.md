@@ -5,7 +5,7 @@
 
 ## Status
 
-- [~] Backend checkpoint and disabled-by-default shared UI/data-service checkpoint are implemented locally. Approved Cool backend objects are applied on the linked Supabase project, but broader linked migration/typegen drift remains, so production-visible Cool wiring stays gated off pending safe typegen/operational verification.
+- [~] Backend checkpoint, disabled-by-default shared UI/data-service checkpoint, and modules/public-racks surface wiring checkpoint are implemented locally. Approved Cool backend objects are applied on the linked Supabase project, but broader linked migration/typegen drift remains, so production-visible Cool wiring stays gated off pending safe typegen/operational verification.
 - Priority: **LOW**
 - TODO section: **INFRA**
 - Owner persona on pickup: `coordinator-loop` → `planner` → `frontend-dev` after explicit schema/RLS approval.
@@ -122,6 +122,7 @@ Default behavior:
 - Gate the first UI/data-service checkpoint behind a disabled-by-default feature flag; when disabled, the component must not query or mutate `reactions` / `reaction_counts`.
 - Inputs should include entity type, entity id, public/eligible state, and count display mode.
 - Shared `app-cool-button` and its component-scoped data service are available behind `environment.features.coolReactionsEnabled`; feature-off and ineligible paths render no button and do not call Cool backend methods.
+- Module detail/list and rack detail/list surfaces now instantiate `app-cool-button` only when `coolReactionsEnabled` is true, pass module/rack `ReactionEntityTypes`, ids, public eligibility, and count display mode, and leave patches unwired for the structural layer.
 - Components must not call `SupabaseService` directly.
 - Button copy:
   - Off: "Cool"
@@ -186,3 +187,4 @@ Default behavior:
 - 2026-06-19T09:43+02:00 — Reconciled the workflow docs after the local backend checkpoint. The next safe loop action can only be disabled-by-default shared UI/data-service wiring, with tests that prove the gate-off path performs no Cool backend reads/writes; otherwise UI remains blocked until remote migration/typegen reconciliation.
 - 2026-06-19T09:45+02:00 — Implemented the safe shared UI checkpoint: `coolReactionsEnabled` is generated false for dev and prod, `app-cool-button` accepts entity type/id, eligibility, and count display mode, and its component-scoped data service makes no backend calls unless the flag is on and the entity is eligible. Focused specs cover gate-off no-call behavior, ineligible no-call behavior, enabled state/count loading, optimistic rollback, and rendered ARIA/count output.
 - 2026-06-19T09:45+02:00 — With explicit operational approval, applied the approved additive Cool migration to linked Supabase project `sozmatmywjpstwidzlss` and verified `reactions` / `reaction_counts` exist remotely. `pnpm updateBackendTypes` remains blocked because unrelated local migration families are still absent/divergent on the linked project; keep `coolReactionsEnabled` disabled by default until safe typegen/operational verification is complete.
+- 2026-06-19T10:47+02:00 — Completed the gated modules/public-racks surface wiring checkpoint. `app-cool-button` is present on module detail, module list cards, rack detail, and rack list cards with `public === true` eligibility and count mode, while host-level `coolReactionsEnabled` guards prevent even component instantiation with the default-off flag. Focused surface specs import the real Cool button, provide `COOL_REACTIONS_ENABLED=false`, and verify no `.coolButton` rendering or reaction backend calls. Patches remain out of scope for this checkpoint.

@@ -1,7 +1,15 @@
+import { CommonModule } from '@angular/common';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of, Subject } from 'rxjs';
 import { RackListComponent } from './rack-list.component';
 import { LocalDataFilterService } from '../shared-atoms/local-data-filter/local-data-filter.service';
+import { COOL_REACTIONS_ENABLED } from '../shared-atoms/cool-button/cool-button-feature.token';
+import { CoolButtonComponent } from '../shared-atoms/cool-button/cool-button.component';
 import { RackMinimal } from 'src/app/models/rack';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
 
 function makeRack(overrides: Partial<RackMinimal> = {}): RackMinimal {
   return {
@@ -26,6 +34,21 @@ function makeFilterService(): LocalDataFilterService {
 function makeComp(filterService = makeFilterService()): RackListComponent {
   const comp = new RackListComponent(filterService);
   return comp;
+}
+
+function makeReactionBackendSpy() {
+  return {
+    get: {
+      currentUserReactions: jasmine.createSpy('currentUserReactions').and.returnValue(of([])),
+      reactionCount: jasmine.createSpy('reactionCount').and.returnValue(of(0)),
+    },
+    add: {
+      reaction: jasmine.createSpy('addReaction').and.returnValue(of(null)),
+    },
+    delete: {
+      reaction: jasmine.createSpy('deleteReaction').and.returnValue(of(null)),
+    }
+  };
 }
 
 describe('RackListComponent', () => {
@@ -161,6 +184,32 @@ describe('RackListComponent', () => {
       let result: any;
       comp.filteredData$.subscribe(v => (result = v)).unsubscribe();
       expect(result.length).toBe(1);
+    });
+
+    it('does not render or query Cool reactions when the feature flag is off', async () => {
+      const reactionBackend = makeReactionBackendSpy();
+
+      await TestBed.configureTestingModule({
+        declarations: [RackListComponent],
+        imports: [CommonModule, NoopAnimationsModule, CoolButtonComponent],
+        providers: [
+          {provide: LocalDataFilterService, useValue: makeFilterService()},
+          {provide: COOL_REACTIONS_ENABLED, useValue: false},
+          {provide: SupabaseService, useValue: reactionBackend},
+          {provide: MatSnackBar, useValue: jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open'])},
+        ],
+        schemas: [NO_ERRORS_SCHEMA],
+      }).compileComponents();
+
+      const fixture = TestBed.createComponent(RackListComponent);
+      fixture.componentRef.setInput('data$', of([makeRack({id: 42, public: true})]));
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('.coolButton')).toBeNull();
+      expect(reactionBackend.get.currentUserReactions).not.toHaveBeenCalled();
+      expect(reactionBackend.get.reactionCount).not.toHaveBeenCalled();
+      expect(reactionBackend.add.reaction).not.toHaveBeenCalled();
+      expect(reactionBackend.delete.reaction).not.toHaveBeenCalled();
     });
   });
 

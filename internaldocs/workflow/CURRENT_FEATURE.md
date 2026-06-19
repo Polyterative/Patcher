@@ -12,10 +12,10 @@
 
 ## Active
 
-Cross-entity Cool reactions — gated UI checkpoint complete
+Cross-entity Cool reactions — gated surface wiring checkpoint complete
 
 Plan: [module-cool-appreciation-button.md](./plans/module-cool-appreciation-button.md)
-Status: **Local additive backend checkpoint and disabled-by-default shared UI/data-service checkpoint are implemented. Approved Patch preview and Cool migrations are applied on the linked Supabase project, but broader linked-database migration/typegen drift remains, so `pnpm updateBackendTypes` is still unsafe and production-visible Cool wiring stays gated pending final operational verification.**
+Status: **Local additive backend checkpoint, disabled-by-default shared UI/data-service checkpoint, and modules/public-racks surface wiring checkpoint are implemented. Approved Patch preview and Cool migrations are applied on the linked Supabase project, but broader linked-database migration/typegen drift remains, so `pnpm updateBackendTypes` is still unsafe and production-visible Cool wiring stays gated pending final operational verification.**
 Staged: 2026-06-19T09:21+02:00
 
 #### Why this is next
@@ -39,6 +39,7 @@ Staged: 2026-06-19T09:21+02:00
 - [x] Draft the narrow schema/RLS/trigger checkpoint for reactions and reaction counts.
 - [x] Implement backend methods through `SupabaseService` only, with cache keys and focused tests.
 - [x] Add disabled-by-default shared Cool UI/data-service wiring for the approved MVP surfaces, with tests proving no backend calls when gated off.
+- [x] Wire `app-cool-button` into module detail/list and rack detail/list surfaces for modules plus public racks only, still behind the disabled-by-default feature guard.
 
 #### Approval queue
 
@@ -59,3 +60,4 @@ Staged: 2026-06-19T09:21+02:00
 - 2026-06-19T09:43+02:00 — Reconciled workflow state after the backend checkpoint. Because the current production database may not have the new Cool objects yet, the next UI/data-service work is only safe if it is disabled by default and tests prove it performs no Cool backend reads/writes while gated off.
 - 2026-06-19T09:45+02:00 — Added disabled-by-default `coolReactionsEnabled` environment flag plus shared `app-cool-button` / component-scoped data service. The service routes enabled reads/writes through `SupabaseService`, optimistically toggles with rollback, and focused specs prove feature-off and ineligible paths render no button and make no Cool backend calls.
 - 2026-06-19T09:45+02:00 — With explicit operational approval, applied only the already-approved Patch preview and Cool additive migrations to linked Supabase project `sozmatmywjpstwidzlss`. Verified `patches.image`, public `patches` bucket, patch timestamp trigger, `reactions`, and `reaction_counts` now exist remotely. `pnpm updateBackendTypes` remains blocked because unrelated local migration families are still absent/divergent on the linked project.
+- 2026-06-19T10:47+02:00 — Wired the shared Cool button into module detail, module list cards, rack detail, and rack list cards only. Hosts additionally check `environment.features.coolReactionsEnabled` before instantiating the button, so the default-off dev/prod flag renders no control and performs no reaction backend calls; eligibility remains `public === true` for modules and racks. Patches remain intentionally unwired.

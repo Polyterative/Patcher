@@ -4,6 +4,7 @@ import {
   ComponentFixture,
   TestBed,
 } from '@angular/core/testing';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ActivatedRoute } from '@angular/router';
 import {
@@ -13,8 +14,11 @@ import {
 } from 'rxjs';
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
 import { CommentsDataService } from 'src/app/components/shared-atoms/comments/comments-data.service';
+import { COOL_REACTIONS_ENABLED } from 'src/app/components/shared-atoms/cool-button/cool-button-feature.token';
+import { CoolButtonComponent } from 'src/app/components/shared-atoms/cool-button/cool-button.component';
 import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area-data.service';
 import { RackBrowserDetailViewComponent } from './rack-browser-detail-view.component';
 
@@ -27,6 +31,21 @@ describe('RackBrowserDetailViewComponent', () => {
   let userManagementService: any;
   let singleRackData$: BehaviorSubject<any>;
   let rowedRackedModules$: BehaviorSubject<any>;
+
+  function makeReactionBackendSpy() {
+    return {
+      get: {
+        currentUserReactions: jasmine.createSpy('currentUserReactions').and.returnValue(of([])),
+        reactionCount: jasmine.createSpy('reactionCount').and.returnValue(of(0)),
+      },
+      add: {
+        reaction: jasmine.createSpy('addReaction').and.returnValue(of(null)),
+      },
+      delete: {
+        reaction: jasmine.createSpy('deleteReaction').and.returnValue(of(null)),
+      }
+    };
+  }
 
   beforeEach(() => {
     singleRackData$ = new BehaviorSubject<any>(undefined);
@@ -214,6 +233,7 @@ describe('RackBrowserDetailViewComponent', () => {
     let rowedRackedModules$: BehaviorSubject<any>;
     let isCurrentRackEditable$: BehaviorSubject<boolean>;
     let isCurrentRackPropertyOfCurrentUser$: BehaviorSubject<boolean>;
+    let reactionBackend: ReturnType<typeof makeReactionBackendSpy>;
 
     beforeEach(async () => {
       singleRackData$ = new BehaviorSubject<any>({
@@ -221,6 +241,7 @@ describe('RackBrowserDetailViewComponent', () => {
         name: 'Rack',
         hp: 84,
         rows: 2,
+        public: true,
       });
       rowedRackedModules$ = new BehaviorSubject<any>([[makeRackedModule(101, 8, 50, -20, 0)]]);
       isCurrentRackEditable$ = new BehaviorSubject<boolean>(false);
@@ -233,6 +254,8 @@ describe('RackBrowserDetailViewComponent', () => {
         rowedRackedModules$,
         isCurrentRackEditable$,
         isCurrentRackPropertyOfCurrentUser$,
+        rackDetailUnavailableMessage$: new BehaviorSubject<string | null>(null),
+        weakestBalanceAxis$: new BehaviorSubject<string | null>(null),
         moduleAddedFromPicker$: new Subject<void>(),
       };
       templateUserAreaDataService = {
@@ -243,12 +266,14 @@ describe('RackBrowserDetailViewComponent', () => {
         requestCommentsUpdate$: {next: jasmine.createSpy('requestCommentsUpdate$.next')},
       };
       templateUserManagementService = {loggedUser$: of({id: 'u1'})};
+      reactionBackend = makeReactionBackendSpy();
 
       await TestBed.configureTestingModule({
         declarations: [RackBrowserDetailViewComponent],
         imports: [
           CommonModule,
           NoopAnimationsModule,
+          CoolButtonComponent,
         ],
         providers: [
           {provide: RackDetailDataService, useValue: templateDataService},
@@ -257,6 +282,9 @@ describe('RackBrowserDetailViewComponent', () => {
           {provide: CommentsDataService, useValue: templateCommentsDataService},
           {provide: UserManagementService, useValue: templateUserManagementService},
           {provide: ActivatedRoute, useValue: {params: of({publicId: 'route1XYZ_-0'})}},
+          {provide: COOL_REACTIONS_ENABLED, useValue: false},
+          {provide: SupabaseService, useValue: reactionBackend},
+          {provide: MatSnackBar, useValue: jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open'])},
         ],
         schemas: [NO_ERRORS_SCHEMA],
       })
@@ -266,7 +294,6 @@ describe('RackBrowserDetailViewComponent', () => {
           }
         })
         .compileComponents();
-
       fixture = TestBed.createComponent(RackBrowserDetailViewComponent);
       fixture.componentInstance.ignoreSeo = true;
     });
@@ -293,6 +320,16 @@ describe('RackBrowserDetailViewComponent', () => {
       fixture.detectChanges();
 
       expect(fixture.nativeElement.querySelector('app-comments-root')).not.toBeNull();
+    });
+
+    it('does not render or query Cool reactions when the feature flag is off', () => {
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('.coolButton')).toBeNull();
+      expect(reactionBackend.get.currentUserReactions).not.toHaveBeenCalled();
+      expect(reactionBackend.get.reactionCount).not.toHaveBeenCalled();
+      expect(reactionBackend.add.reaction).not.toHaveBeenCalled();
+      expect(reactionBackend.delete.reaction).not.toHaveBeenCalled();
     });
   });
 

@@ -1,10 +1,21 @@
 import {
   fakeAsync,
+  TestBed,
   tick
 } from '@angular/core/testing';
+import { CommonModule } from '@angular/common';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { MinimalModule } from 'src/app/models/module';
 import { LocalDataFilterService } from 'src/app/components/shared-atoms/local-data-filter/local-data-filter.service';
+import { COOL_REACTIONS_ENABLED } from 'src/app/components/shared-atoms/cool-button/cool-button-feature.token';
+import { CoolButtonComponent } from 'src/app/components/shared-atoms/cool-button/cool-button.component';
+import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import { ModuleListComponent } from './module-list.component';
 
 
@@ -29,6 +40,21 @@ function currentVal<T>(obs: Observable<T>): T | undefined {
   let val: T | undefined;
   obs.subscribe(v => val = v).unsubscribe();
   return val;
+}
+
+function makeReactionBackendSpy() {
+  return {
+    get: {
+      currentUserReactions: jasmine.createSpy('currentUserReactions').and.returnValue(of([])),
+      reactionCount: jasmine.createSpy('reactionCount').and.returnValue(of(0)),
+    },
+    add: {
+      reaction: jasmine.createSpy('addReaction').and.returnValue(of(null)),
+    },
+    delete: {
+      reaction: jasmine.createSpy('deleteReaction').and.returnValue(of(null)),
+    }
+  };
 }
 
 describe('ModuleListComponent', () => {
@@ -204,6 +230,34 @@ describe('ModuleListComponent', () => {
     expect(component.getModuleActionIcon(module)).toBe('check');
     expect(component.getModuleActionLabel(module)).toBe('Already in playlist');
     component.ngOnDestroy();
+  });
+
+  it('does not render or query Cool reactions when the feature flag is off', async () => {
+    const reactionBackend = makeReactionBackendSpy();
+
+    await TestBed.configureTestingModule({
+      declarations: [ModuleListComponent],
+      imports: [CommonModule, FormsModule, NoopAnimationsModule, CoolButtonComponent],
+      providers: [
+        {provide: PatchDetailDataService, useValue: {}},
+        {provide: LocalDataFilterService, useClass: LocalDataFilterService},
+        {provide: AppStateService, useValue: {preferredPanelColor$: of(null)}},
+        {provide: COOL_REACTIONS_ENABLED, useValue: false},
+        {provide: SupabaseService, useValue: reactionBackend},
+        {provide: MatSnackBar, useValue: jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open'])},
+      ],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(ModuleListComponent);
+    fixture.componentInstance.data$ = of([buildModule({id: 42, public: true})]);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.coolButton')).toBeNull();
+    expect(reactionBackend.get.currentUserReactions).not.toHaveBeenCalled();
+    expect(reactionBackend.get.reactionCount).not.toHaveBeenCalled();
+    expect(reactionBackend.add.reaction).not.toHaveBeenCalled();
+    expect(reactionBackend.delete.reaction).not.toHaveBeenCalled();
   });
 
   describe('showFilters=true', () => {

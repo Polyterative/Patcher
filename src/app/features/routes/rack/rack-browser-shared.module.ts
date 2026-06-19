@@ -14,6 +14,7 @@ import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.
 import { RackListModule } from 'src/app/components/rack-list/rack-list.module';
 import { RackModule } from 'src/app/components/rack-parts/rack.module';
 import { CommentsModule } from 'src/app/components/shared-atoms/comments/comments.module';
+import { CoolButtonComponent } from 'src/app/components/shared-atoms/cool-button/cool-button.component';
 import { SharedAtomsModule } from 'src/app/components/shared-atoms/shared-atoms.module';
 import { StatisticsComponent } from 'src/app/components/shared-atoms/statistics/statistics.component';
 import { ModuleBrowserRootModule } from 'src/app/features/module-browser/module-browser-root/module-browser-root.module';
@@ -77,6 +78,7 @@ import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@
     RackListModule,
     StatisticsComponent,
     CommentsModule,
+    CoolButtonComponent,
     SharedAtomsModule,
     AdviceTooltipComponent
   ]

@@ -14,6 +14,7 @@ import { CleanCardComponent } from 'src/app/shared-interproject/components/@visu
 import { FlexboxRowFastComponent } from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.component';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
+import { CoolButtonComponent } from 'src/app/components/shared-atoms/cool-button/cool-button.component';
 import { ModuleListComponent } from './module-list.component';
 
 @NgModule({
@@ -33,6 +34,7 @@ import { ModuleListComponent } from './module-list.component';
     MatFormEntityComponent,
     CleanCardComponent,
     FlexboxRowFastComponent,
+    CoolButtonComponent,
   ],
   exports: [ModuleListComponent],
 })

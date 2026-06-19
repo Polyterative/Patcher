@@ -1,3 +1,11 @@
 .item {
   //max-width: 26rem;
+  position: relative;
+}
+
+.rack-list-card-cool {
+  position: absolute;
+  right: 0.35rem;
+  bottom: 0.35rem;
+  z-index: 4;
 }

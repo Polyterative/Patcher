@@ -9,6 +9,7 @@ import {
 } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   BehaviorSubject,
@@ -17,6 +18,9 @@ import {
 } from 'rxjs';
 import { ModuleDetailDataService } from 'src/app/components/module-parts/module-detail-data.service';
 import { CommentsDataService } from 'src/app/components/shared-atoms/comments/comments-data.service';
+import { COOL_REACTIONS_ENABLED } from 'src/app/components/shared-atoms/cool-button/cool-button-feature.token';
+import { CoolButtonComponent } from 'src/app/components/shared-atoms/cool-button/cool-button.component';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { DbModule } from 'src/app/models/module';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 import { AppStateService } from "src/app/shared-interproject/app-state.service";
@@ -39,6 +43,21 @@ class ModuleCompositeStubComponent {
 
 describe('ModuleBrowserDetailComponent', () => {
   type RatioModuleFixture = Pick<DbModule, 'hp' | 'standard'>;
+
+  function makeReactionBackendSpy() {
+    return {
+      get: {
+        currentUserReactions: jasmine.createSpy('currentUserReactions').and.returnValue(of([])),
+        reactionCount: jasmine.createSpy('reactionCount').and.returnValue(of(0)),
+      },
+      add: {
+        reaction: jasmine.createSpy('addReaction').and.returnValue(of(null)),
+      },
+      delete: {
+        reaction: jasmine.createSpy('deleteReaction').and.returnValue(of(null)),
+      }
+    };
+  }
 
   function build() {
     const routeParams$ = new Subject<any>();
@@ -118,6 +137,7 @@ describe('ModuleBrowserDetailComponent', () => {
     fixture: ComponentFixture<ModuleBrowserDetailComponent>;
     dataService: any;
     loggedUser$: BehaviorSubject<unknown>;
+    reactionBackend: ReturnType<typeof makeReactionBackendSpy>;
   }> {
     TestBed.resetTestingModule();
 
@@ -155,10 +175,11 @@ describe('ModuleBrowserDetailComponent', () => {
       requestCommentsUpdate$: {next: jasmine.createSpy('requestCommentsUpdate.next')},
       requestReset$: {next: jasmine.createSpy('requestReset.next')}
     };
+    const reactionBackend = makeReactionBackendSpy();
 
     await TestBed.configureTestingModule({
       declarations: [ModuleBrowserDetailComponent, ModuleUsageCardComponent, ModuleCompositeStubComponent],
-      imports: [CommonModule, FormsModule, NoopAnimationsModule],
+      imports: [CommonModule, FormsModule, NoopAnimationsModule, CoolButtonComponent],
       providers: [
         {provide: ModuleDetailDataService, useValue: dataService},
         {provide: ActivatedRoute, useValue: {params: of({})}},
@@ -171,7 +192,10 @@ describe('ModuleBrowserDetailComponent', () => {
             preferredPanelColor$: of(null)
           }
         },
-        {provide: UserManagementService, useValue: {loggedUser$}}
+        {provide: UserManagementService, useValue: {loggedUser$}},
+        {provide: COOL_REACTIONS_ENABLED, useValue: false},
+        {provide: SupabaseService, useValue: reactionBackend},
+        {provide: MatSnackBar, useValue: jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open'])}
       ],
       schemas: [NO_ERRORS_SCHEMA]
     })
@@ -186,7 +210,7 @@ describe('ModuleBrowserDetailComponent', () => {
     fixture.componentInstance.ignoreSeo = true;
     fixture.detectChanges();
 
-    return {fixture, dataService, loggedUser$};
+    return {fixture, dataService, loggedUser$, reactionBackend};
   }
   
   it('initializes SEO baseline and parses route id updates', () => {
@@ -284,6 +308,16 @@ describe('ModuleBrowserDetailComponent', () => {
     const text = fixture.nativeElement.textContent;
     expect(text).toContain('Plus 10+ private or otherwise hidden racks.');
     expect(text).toContain('Plus 5+ private or otherwise hidden patches.');
+  });
+
+  it('does not render or query Cool reactions when the feature flag is off', async () => {
+    const {fixture, reactionBackend} = await render();
+
+    expect(fixture.nativeElement.querySelector('.coolButton')).toBeNull();
+    expect(reactionBackend.get.currentUserReactions).not.toHaveBeenCalled();
+    expect(reactionBackend.get.reactionCount).not.toHaveBeenCalled();
+    expect(reactionBackend.add.reaction).not.toHaveBeenCalled();
+    expect(reactionBackend.delete.reaction).not.toHaveBeenCalled();
   });
 
   it('builds raw public possession stats for the Community data card', () => {
