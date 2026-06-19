@@ -4,7 +4,7 @@
 
 ## Status
 
-- [ ] Backend/storage direction approved — storage/RLS application checkpoint in progress; SVG renderer foundation completed.
+- [ ] Backend/storage direction approved — local backend/storage checkpoint committed; remote migration/typegen drift and `patches.updated` preview-update semantics are now explicit approval gates.
 - Priority: **MEDIUM**
 - TODO section: **INFRA**
 - Owner persona on pickup: `coordinator-loop` → `planner` → `frontend-dev` → `code-reviewer`.
@@ -172,6 +172,8 @@ The rack preview pipeline already exists and is the explicit template to copy.
 - **Approved 2026-06-18T20:58+02:00:** backend/storage direction is approved with a new `patches.image` column for the SVG URL/path, a dedicated `patches` storage bucket, RLS writes limited to the patch owner, reads aligned with patch visibility, and a deterministic filename based on patch id/version. Read-visibility direction was simplified by the 2026-06-18T21:24+02:00 decision below. Do not apply migrations/storage/RLS from this docs-only approval checkpoint.
 - **Approved 2026-06-18T21:24+02:00:** preview storage visibility stays simple: public-registry listing is the privacy boundary, link-based access to a known SVG URL is acceptable like rack previews, and no special owner-only SVG read restriction is required for now. Do not apply migrations/storage/RLS from this docs-only approval checkpoint.
 - **Approved 2026-06-18T22:43+02:00:** Apply the exact additive SQL/storage shape below: add nullable `public.patches.image`, create/use a public `patches` storage bucket for link-readable SVG previews, and add authenticated owner/admin insert/update/delete storage policies. No unrelated RLS/policy changes are approved.
+- **Approval requested 2026-06-19T09:05+02:00:** May a maintainer reconcile the linked Supabase migration history before typegen by repairing/applying the local-vs-remote drift listed below? Default if not approved: keep `pnpm updateBackendTypes`, remote migration apply, and preview UI wiring blocked.
+- **Approval requested 2026-06-19T09:05+02:00:** Because `public.patches` currently has `handle_updated_auto BEFORE UPDATE ... moddatetime('updated')`, image-only row updates will bump `patches.updated` and break preview stale detection. May the next SQL checkpoint include a trigger/RPC-style preservation strategy for image-only updates (draft below), with no broad patch RLS changes? Default if not approved: do not wire `updatePatchPreview$`.
 
 ## Proposal-only SQL/storage checkpoint
 
@@ -329,6 +331,83 @@ create policy "patch_previews_delete_owner_or_admin"
    RPC/policy checkpoint before wiring generation.
 5. Run Supabase advisors after the approved storage/RLS change and record any
    warnings in this plan before implementation proceeds.
+
+### Remote migration/typegen drift inventory
+
+Read-only inspection on 2026-06-19T09:05+02:00 confirmed the linked project
+`sozmatmywjpstwidzlss` is still not safe for remote typegen or additional
+migration application:
+
+- `supabase migration list --linked` shows timestamp drift where remote history
+  has old versions for equivalent local migration names:
+  - public-id/checkpoint family: remote `20260515092813`…
+   `20260515110711`; local `20260515112000`…`20260515130700`.
+  - module usage/admin/module-discovery family: remote `20260609212909`,
+   `20260610124954`, no local `20260611130000`; local has
+   `20260609212500`, `20260610144900`, `20260611130000`.
+  - generate-public-id grant and module snapshot: remote `20260611193541`,
+   `20260616135552`; local `20260611193200`, `20260616155154`.
+  - taxonomy split/correction: remote `20260618101252`,
+   `20260618101259`, `20260618171152`; local `20260618105927`,
+   `20260618121100`, `20260618190400`.
+- Remote is missing local migration families for manufacturer verification,
+  manufacturer claims, module availability tags, manufacturer owner policies,
+  manufacturer logo storage policies, user module acquisitions, and patch SVG
+  previews.
+- Remote currently has no `public.patches.image` column and no `patches` storage
+  bucket.
+
+Do not run `pnpm updateBackendTypes`, `supabase db push`, Supabase MCP
+migrations, or migration repair until the maintainer explicitly approves the
+reconciliation plan.
+
+### Preview update timestamp semantics gate
+
+Read-only inspection on 2026-06-19T09:05+02:00 confirmed
+`public.patches` has:
+
+```sql
+CREATE TRIGGER handle_updated_auto
+BEFORE UPDATE ON public.patches
+FOR EACH ROW EXECUTE FUNCTION moddatetime('updated')
+```
+
+`moddatetime` updates `patches.updated` for every row update, including an
+image-only update. That would make a freshly persisted preview look non-stale
+because the graph edit timestamp changes to the preview write time. The UI/data
+service must not wire preview generation until an approved persistence strategy
+preserves `updated` for image-only writes.
+
+Draft preservation strategy for the next approval-only SQL checkpoint:
+
+```sql
+-- Draft only: do not apply without explicit maintainer approval.
+-- Runs after handle_updated_auto by trigger-name ordering and restores OLD.updated
+-- only when the preview filename is the only logical row change.
+create or replace function public.tg_preserve_patch_preview_image_updated()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+  if NEW.image is distinct from OLD.image
+    and (to_jsonb(NEW) - 'image' - 'updated') = (to_jsonb(OLD) - 'image' - 'updated') then
+   NEW.updated := OLD.updated;
+  end if;
+  return NEW;
+end;
+$$;
+
+drop trigger if exists zz_preserve_patch_preview_image_updated on public.patches;
+create trigger zz_preserve_patch_preview_image_updated
+  before update on public.patches
+  for each row execute function public.tg_preserve_patch_preview_image_updated();
+```
+
+If approved, pair this with a narrow backend method that updates only
+`patches.image` (rather than sending a full `Patch` object) and cache-busts
+`patches`, `patchesWithModule`, and any single-patch cache key introduced during
+implementation.
 
 
 ## MVP layer
@@ -509,6 +588,7 @@ When `coordinator-loop` picks this up:
 - 2026-06-18T22:50+02:00 — Added local migration `20260618224500_add_patch_svg_previews_storage.sql` for `patches.image`, public `patches` SVG bucket, and owner/admin storage write policies. Remote Supabase apply and `pnpm updateBackendTypes` were skipped because MCP migration inspection showed the linked remote is behind current local migrations; manually patched `database.types.ts` only for the additive `patches.image` shape.
 - 2026-06-18T22:55+02:00 — Reviewer approved the local backend/storage slice after fixes. Validation passed with `pnpm test-headless --include="**/supabase-service/storage*.spec.ts"`, `pnpm lint`, `node scripts/checks/check-docs.cjs`, and `git diff --check`; Supabase advisors were skipped because remote DDL/RLS was not applied.
 - 2026-06-18T22:58+02:00 — Staged the next safe gate: reconcile remote migration/typegen drift, then verify whether persisting `patches.image` changes `patches.updated` before any `PatchDetailDataService` generation wiring.
+- 2026-06-19T09:05+02:00 — Read-only Supabase inspection confirmed linked remote migration/typegen drift remains unresolved, remote lacks `patches.image`/`patches` bucket, and `public.patches.handle_updated_auto` uses `moddatetime('updated')`, so image-only row updates would bump `patches.updated`. Added maintainer approval gates for migration reconciliation and an image-only timestamp preservation strategy; no remote schema/storage/RLS changes were applied.
 - 2026-06-18T22:43+02:00 — Product owner approved applying the drafted Patch SVG preview storage/RLS checkpoint: additive nullable `patches.image`, public link-readable `patches` SVG bucket, and authenticated owner/admin insert/update/delete storage policies. No unrelated RLS/policy changes are approved.
 - 2026-06-18T20:58+02:00 — Product owner approved the Patch SVG previews backend/storage direction: add `patches.image` for SVG URL/path, use a dedicated `patches` storage bucket, limit RLS writes to the patch owner, align reads with patch visibility, and use a deterministic filename based on patch id/version; no migrations/storage/RLS were applied in this docs-only checkpoint.
 - 2026-06-18T22:17+02:00 — Drafted the exact proposal-only SQL/storage checkpoint: nullable `patches.image`, public `patches` SVG bucket, deterministic `patch_<id>_v<updated>.svg` filenames, and authenticated owner/admin insert/update/delete storage policies; no migrations/storage/RLS were applied.
