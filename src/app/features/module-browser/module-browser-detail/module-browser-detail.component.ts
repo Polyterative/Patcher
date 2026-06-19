@@ -67,6 +67,7 @@ import {
   UserModuleAcquisitionSource
 } from 'src/app/models/user-module-acquisition';
 import { formatMarketplaceMinorUnits } from 'src/app/features/marketplace/marketplace-money.utils';
+import { ReactionEntityTypes } from 'src/app/features/backend/supabase-reactions';
 
 export const MODULE_PANEL_RATIO_ACCEPTANCE_THRESHOLD = 0.01;
 
@@ -279,6 +280,8 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
   };
   readonly searchLinks: SearchLink[] = MODULE_SEARCH_LINKS;
   readonly collectionsEnabled = environment.features.collectionsEnabled;
+  readonly coolReactionsEnabled = environment.features.coolReactionsEnabled;
+  readonly ReactionEntityTypes = ReactionEntityTypes;
   readonly panelRatioAcceptanceThreshold = MODULE_PANEL_RATIO_ACCEPTANCE_THRESHOLD;
   readonly panelRatioDiagnostics$ = new BehaviorSubject<ModulePanelRatioDiagnostic[]>([]);
   readonly mergeIntoTargetOpen$ = new BehaviorSubject<boolean>(false);

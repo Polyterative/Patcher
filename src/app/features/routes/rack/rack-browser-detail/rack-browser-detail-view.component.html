@@ -23,6 +23,14 @@
                </div>
               <div class="col gap1 rackBrowserDetailView__summaryColumn rackBrowserDetailView__summaryColumn--right">
                 <div class="rackBrowserDetailView__summaryInsights">
+                  @if (coolReactionsEnabled) {
+                    <app-cool-button
+                      [entityType]="ReactionEntityTypes.RACK"
+                      [entityId]="bag.data.id"
+                      [eligible]="bag.data.public === true"
+                      countDisplayMode="count"
+                    ></app-cool-button>
+                  }
                   @if (bag.rowedRackedModules) {
                     <app-entity-stat-card
                       class="rackBrowserDetailView__summaryStats"

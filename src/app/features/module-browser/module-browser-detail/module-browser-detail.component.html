@@ -89,9 +89,25 @@
               </button>
             }
             <div class="module-detail-supportRailCards">
-          @if (bag.data) {
+          @if (bag.data && coolReactionsEnabled) {
              <lib-hero-content-card
-                [@moduleDetailDataEnter]="{ value: '', params: { delay: 80, duration: 180 } }"
+               [@moduleDetailDataEnter]="{ value: '', params: { delay: 64, duration: 170 } }"
+               titleNormal="Community"
+              [sidesPadding]="false"
+            >
+             <div class="col gap1">
+               <app-cool-button
+                 [entityType]="ReactionEntityTypes.MODULE"
+                 [entityId]="bag.data.id"
+                 [eligible]="bag.data.public === true"
+                 countDisplayMode="count"
+               ></app-cool-button>
+             </div>
+            </lib-hero-content-card>
+          }
+          @if (bag.data) {
+            <lib-hero-content-card
+               [@moduleDetailDataEnter]="{ value: '', params: { delay: 80, duration: 180 } }"
                 titleNormal="Data"
                [sidesPadding]="false"
             >

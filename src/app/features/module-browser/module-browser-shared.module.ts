@@ -24,6 +24,7 @@ import { ModuleEditorModule } from 'src/app/components/module-parts/module-edito
 import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.module';
 import { LibShowcaseGridComponent } from 'src/app/components/rack-parts/rack-editor/lib-showcase-grid/lib-showcase-grid.component';
 import { CommentsModule } from 'src/app/components/shared-atoms/comments/comments.module';
+import { CoolButtonComponent } from 'src/app/components/shared-atoms/cool-button/cool-button.component';
 import { RecentActivityModule } from 'src/app/components/shared-atoms/recent-activity/recent-activity.module';
 import { ManufacturerRowComponent } from 'src/app/features/manufacturer-detail/manufacturer-browser-root/manufacturer-row/manufacturer-row.component';
 import { ModuleBrowserDetailComponent } from 'src/app/features/module-browser/module-browser-detail/module-browser-detail.component';
@@ -105,6 +106,7 @@ import { ModuleListModule } from './module-list/module-list.module';
     ModuleListModule,
     ModuleEditorModule,
     CommentsModule,
+    CoolButtonComponent,
     CopyableDirective,
     LibShowcaseGridComponent,
     EditFabComponent,

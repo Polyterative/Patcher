@@ -38,6 +38,8 @@ import {
   buildRackPowerBreakdown,
   formatPowerRailValue
 } from 'src/app/components/rack-parts/rack-power-breakdown.utils';
+import { ReactionEntityTypes } from 'src/app/features/backend/supabase-reactions';
+import { environment } from 'src/environments/environment';
 
 
 const JSONLD_SCRIPT_ID = 'rack-jsonld';
@@ -56,6 +58,8 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
     tagsShowCounts: false
   };
   @Input() ignoreSeo = false;
+  readonly coolReactionsEnabled = environment.features.coolReactionsEnabled;
+  readonly ReactionEntityTypes = ReactionEntityTypes;
 
   constructor(
     public dataService: RackDetailDataService,

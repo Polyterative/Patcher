@@ -112,6 +112,15 @@
                 <mat-icon>{{ getModuleActionIcon(item) }}</mat-icon>
               </button>
             }
+            @if (coolReactionsEnabled) {
+              <app-cool-button
+                class="module-list-card-cool"
+                [entityType]="ReactionEntityTypes.MODULE"
+                [entityId]="item.id"
+                [eligible]="item.public === true"
+                countDisplayMode="count"
+              ></app-cool-button>
+            }
             <app-module-minimal
               [data]="item"
               [viewConfig]="viewConfig"
