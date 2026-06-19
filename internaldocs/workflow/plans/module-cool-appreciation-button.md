@@ -3,6 +3,13 @@
 
 #### LOW: Cross-entity Cool reactions
 
+## Status
+
+- [~] Planning/approval gate staged as the active safe task after Patch SVG previews became blocked on linked Supabase migration/typegen drift.
+- Priority: **LOW**
+- TODO section: **INFRA**
+- Owner persona on pickup: `coordinator-loop` → `planner` → `frontend-dev` after explicit schema/RLS approval.
+
 **Why:** Users need a lightweight, expressive way to say "this is cool" about modules, racks, patches, and future content
 objects. Cool is intentionally closer to how people actually talk than enterprise terms like "notable" or "appreciation".
 It is separate from ownership intent: "I think this is cool" is not "I want to buy it", "I own it", or "I endorse the
@@ -88,6 +95,10 @@ Default behavior:
 
 **Requires explicit user approval** before any migration, RLS, policy, or SECURITY DEFINER RPC work.
 
+## Approval queue
+
+- **Approval requested 2026-06-19T09:21+02:00:** May the next implementation checkpoint draft and apply a narrow Cool reactions schema/RLS plan for a polymorphic `reactions` table plus aggregate `reaction_counts` support, limited initially to modules and public racks? Default if not approved: keep work planning/docs-only and do not create migrations, policies, RPCs, or generated type changes.
+
 ## Backend/service plan
 
 - Read `internaldocs/patterns/BACKEND_METHODS.md` schema-change preflight before writing SQL.
@@ -148,6 +159,15 @@ Default behavior:
 - Run targeted `pnpm test-headless --include=...`, then `pnpm lint`.
 - For visual polish, use the Patcher UI debug screenshot workflow before considering the interaction done.
 
+## Acceptance criteria
+
+- Signed-in users can optimistically toggle Cool on eligible modules and public racks, with rollback + snackbar on backend failure.
+- Anonymous users can see aggregate Cool counts where the card/detail surface already shows public aggregate stats.
+- User-area Cool collection groups cooled modules/racks (patches in the structural layer) newest-first and supports inline uncool.
+- Private racks/patches never appear in public Cool discovery/count surfaces.
+- Backend methods live behind `SupabaseService`, use explicit columns, and cache-bust all reaction state/count reads after writes.
+- Relevant focused unit tests and `pnpm lint` pass before any verified checkpoint commit.
+
 ---
 
 ## Decision log
@@ -156,3 +176,4 @@ Default behavior:
   delightful while staying content-scoped rather than social-graph-driven.
 - 2026-06-17: Supersede the old module-only enum idea. Cool needs a separate polymorphic reactions table so it remains
   additive to ownership/wishlist/sale state and can support racks, patches, and future entities.
+- 2026-06-19T09:21+02:00 — Staged as the next safe coordinator-loop task after Patch SVG previews remained blocked by linked migration/typegen drift. Because Cool requires new schema/RLS/policy work, the active checkpoint is planning and an explicit approval gate only; no SQL, generated types, or backend code should be changed before approval.
