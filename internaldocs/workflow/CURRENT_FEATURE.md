@@ -15,7 +15,7 @@
 Patch SVG previews — preview update semantics gate
 
 Plan: [patch-svg-previews.md](./plans/patch-svg-previews.md)
-Status: **Backend/storage checkpoint committed. Read-only inspection confirmed remote migration/typegen drift and confirmed image-only `patches.image` updates would bump `patches.updated`; preview UI/data-service wiring remains blocked pending maintainer approval for migration reconciliation and timestamp-preservation SQL.**
+Status: **Backend/storage checkpoint committed. Product owner approved maintainer reconciliation of remote migration/typegen drift only; preview UI/data-service wiring remains blocked pending separate approval for timestamp-preservation SQL.**
 Staged: 2026-06-18T22:15+02:00
 Approval recorded: 2026-06-18T22:43+02:00
 
@@ -51,6 +51,7 @@ Approval recorded: 2026-06-18T22:43+02:00
 - **Approved 2026-06-18T22:43+02:00:** Apply the drafted SQL/storage shape: nullable `public.patches.image`, public `patches` SVG bucket for link-readable SVG previews, and authenticated owner/admin insert/update/delete storage policies. No unrelated RLS/policy changes are approved.
 - **Remote gate 2026-06-18T22:50+02:00:** Supabase MCP inspection showed the linked remote does not yet have the recent local migration history (`manufacturer_*`, module acquisitions, taxonomy corrections). Do not run remote typegen or apply this migration remotely until migration drift is reconciled; otherwise generated types could regress local schema. Local migration is staged in the working tree for the deploy/migration pipeline.
 - **Approval requested 2026-06-19T09:05+02:00:** May a maintainer reconcile the linked Supabase migration history (repair/apply drift or switch typegen to a project with all local migrations) so `pnpm updateBackendTypes` and the patch preview migration can proceed safely?
+- **Approved 2026-06-19T09:05+02:00:** Product owner approved maintainer reconciliation of the linked Supabase migration/typegen drift only, so the patch preview migration and `pnpm updateBackendTypes` can proceed safely after reconciliation. This does not approve unrelated RLS/policy changes, timestamp-preservation SQL, or pushing.
 - **Approval requested 2026-06-19T09:05+02:00:** May the next SQL checkpoint add an image-only timestamp-preservation strategy for `public.patches` before `updatePatchPreview$` is wired? Default: keep preview generation blocked.
 
 #### Validation strategy
@@ -66,3 +67,4 @@ Approval recorded: 2026-06-18T22:43+02:00
 - 2026-06-18T22:50+02:00 — Added local migration `20260618224500_add_patch_svg_previews_storage.sql`, manually patched local generated types for `patches.image`, and skipped `pnpm updateBackendTypes`/remote apply because the linked remote migration history is behind local repo migrations.
 - 2026-06-18T22:55+02:00 — Reviewer approved the backend/storage checkpoint after fixing test-suite nesting and docs wording. Validation passed: targeted storage specs, `pnpm lint`, docs check, and `git diff --check`. Supabase advisors were not run because no remote DDL/RLS was applied.
 - 2026-06-19T09:05+02:00 — Read-only Supabase inspection confirmed the linked remote still has local/remote migration drift, no `patches.image` column, no `patches` bucket, and `public.patches.handle_updated_auto` uses `moddatetime('updated')`; image-only updates would bump `patches.updated`. Recorded approval gates for migration reconciliation and timestamp-preservation SQL; no remote changes were applied.
+- 2026-06-19T09:05+02:00 — Product owner approved maintainer reconciliation of the linked Supabase migration/typegen drift only. Timestamp-preservation SQL remains a separate pending approval gate; no unrelated RLS/policy changes or push are approved.
