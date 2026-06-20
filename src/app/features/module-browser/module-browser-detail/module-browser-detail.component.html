@@ -35,10 +35,9 @@
               } @else {
                 <app-module-composite [data]="(bag.data)"
                                       [viewConfig]="viewConfig"
-                                       [preferredPanelColor]="appState.preferredPanelColor$ | async"
+                                      [preferredPanelColor]="appState.preferredPanelColor$ | async"
                                       [preferPortraitDetailSplit]="true"
-                                      [showCoolAction]="coolReactionsEnabled"
-               ></app-module-composite>
+                ></app-module-composite>
               }
             </lib-clean-card>
           </div>
@@ -76,18 +75,20 @@
               </lib-hero-content-card>
             }
             @if (bag.data && bag.user) {
-               <button
-                 [@moduleDetailFabEnter]="{ value: '', params: { delay: 312, duration: 165 } }"
-                 mat-fab
-                extended
-                class="module-submit-similar-fab"
-                (click)="submitSimilar(bag.data)"
-                matTooltip="Open the prefilled module submission form in a new tab"
-                matTooltipPosition="above"
-              >
-                <mat-icon>open_in_new</mat-icon>
-                Submit similar
-              </button>
+              <div class="module-detail-submit-floating-action"
+                   [@moduleDetailFabEnter]="{ value: '', params: { delay: 312, duration: 165 } }">
+                <button
+                  mat-fab
+                  extended
+                  class="module-submit-similar-fab"
+                  (click)="submitSimilar(bag.data)"
+                  matTooltip="Open the prefilled module submission form in a new tab"
+                  matTooltipPosition="above"
+                >
+                  <mat-icon>open_in_new</mat-icon>
+                  Submit similar
+                </button>
+              </div>
             }
             <div class="module-detail-supportRailCards">
           @if (bag.data) {
@@ -488,8 +489,7 @@
                                      titleNormal="Module Editor"
                                      description="Update setup and port data, then use Done and Save."
               >
-                <app-module-editor [data]="(bag.data)"
-                ></app-module-editor>
+                <app-module-editor [data]="(bag.data)"></app-module-editor>
               </lib-hero-content-card>
             </div>
           }
@@ -544,13 +544,44 @@
         </div>
       </div>
     </lib-hero-content-card>
-    @if (bag.data && bag.user && !bag.data.isComplete) {
-      <app-edit-fab
-        [@moduleDetailFabEnter]="{ value: '', params: { delay: 332, duration: 165 } }"
-        [editMode$]="dataService.moduleEditingPanelOpenState$"
-        [hasPendingChanges$]="dataService.moduleEditorHasPendingChanges$"
-        (toggle$)="onEditorToggleRequest(!!bag.editing, !!bag.hasPendingEditorChanges)"
-      ></app-edit-fab>
+    @if (bag.data && bag.user && (!bag.data.isComplete || (coolReactionsEnabled && !bag.currentModulePossession))) {
+      <div class="module-detail-editor-floating-actions"
+           [@moduleDetailFabEnter]="{ value: '', params: { delay: 332, duration: 165 } }"
+      >
+        @if (coolReactionsEnabled && !bag.currentModulePossession) {
+          <app-cool-button
+            class="module-detail-cool-floating-action"
+            [entityType]="ReactionEntityTypes.MODULE"
+            [entityId]="bag.data.id"
+            [eligible]="bag.data.public === true"
+            countDisplayMode="count"
+          ></app-cool-button>
+        }
+        @if (bag.editing && moduleEditor) {
+          <button
+            class="module-detail-save-floating-action"
+            mat-fab
+            extended
+            [disabled]="moduleEditor.isSaveFabDisabled"
+            (click)="moduleEditor.saveAll$.next()"
+            [class.module-detail-save-floating-action--saving]="moduleEditor.saveInProgress$ | async"
+            [attr.aria-label]="moduleEditor.saveFabAriaLabel"
+            [matTooltip]="moduleEditor.saveFabDisabledReason || 'Save all pending changes'"
+            matTooltipPosition="above"
+            matTooltipShowDelay="120"
+          >
+            <mat-icon>{{ moduleEditor.saveFabIcon }}</mat-icon>
+            {{ moduleEditor.saveFabLabel }}
+          </button>
+        }
+        @if (!bag.data.isComplete) {
+          <app-edit-fab
+            [editMode$]="dataService.moduleEditingPanelOpenState$"
+            [hasPendingChanges$]="dataService.moduleEditorHasPendingChanges$"
+            (toggle$)="onEditorToggleRequest(!!bag.editing, !!bag.hasPendingEditorChanges)"
+          ></app-edit-fab>
+        }
+      </div>
     }
     @if (bag.data?.manufacturer && viewConfig.hideBySameManufacturer === false && !bag.editing) {
       <div class="module-detail-swap-pane"

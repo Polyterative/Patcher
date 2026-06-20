@@ -151,12 +151,85 @@ a.module-detail-action-button {
   min-width: 0;
 }
 
-.module-submit-similar-fab {
+.module-detail-submit-floating-action {
   position: fixed;
   left: calc(var(--app-floating-inset-inline, 1rem) + env(safe-area-inset-left));
   bottom: calc(var(--app-floating-inset-block, 1rem) + env(safe-area-inset-bottom) + var(--app-floating-bottom-offset, 0px));
   right: auto;
   z-index: 98;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.module-detail-editor-floating-actions {
+  position: fixed;
+  right: calc(var(--app-floating-inset-inline, 1rem) + env(safe-area-inset-right));
+  bottom: calc(var(--app-floating-inset-block, 1rem) + env(safe-area-inset-bottom) + var(--app-floating-bottom-offset, 0px));
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: var(--module-editor-fab-gap, 0.8rem);
+}
+
+.module-detail-save-floating-action {
+  width: var(--module-editor-save-fab-width, 9.25rem);
+  min-height: var(--module-editor-close-fab-height, var(--app-floating-action-height, 3.5rem));
+  border: 0.125rem solid #3e638a;
+  border-radius: var(--app-floating-action-radius, 1.75rem);
+  background: #ffffff;
+  color: #365777;
+  box-shadow: var(--app-floating-action-shadow, 0 0.25rem 0.875rem rgba(38, 76, 116, 0.22));
+  transition: opacity 140ms ease-in-out, transform 140ms ease-in-out, background-color 140ms ease-in-out;
+
+  &:hover:not(:disabled) {
+    background: #f2f7fc;
+    transform: translateY(-0.0625rem);
+  }
+
+  &:disabled {
+    opacity: 0.62;
+    background: #edf2f8;
+    color: #7c8da0;
+  }
+}
+
+.module-detail-save-floating-action--saving .mat-icon {
+  animation: module-detail-save-fab-spin 0.8s linear infinite;
+}
+
+.module-detail-cool-floating-action {
+  display: flex;
+}
+
+:host ::ng-deep .module-detail-cool-floating-action .coolButton {
+  box-sizing: border-box;
+  justify-content: center;
+  height: var(--module-editor-close-fab-height, var(--app-floating-action-height, 3.5rem));
+  min-height: var(--module-editor-close-fab-height, var(--app-floating-action-height, 3.5rem));
+  padding: 0.625rem 1.45rem;
+  border-width: 0.125rem;
+  border-color: #3e638a;
+  border-radius: var(--app-floating-action-radius, 1.75rem);
+  box-shadow: var(--app-floating-action-shadow, 0 0.25rem 0.875rem rgba(38, 76, 116, 0.22));
+}
+
+.module-detail-editor-floating-actions app-edit-fab {
+  inset: auto;
+  position: relative;
+}
+
+@keyframes module-detail-save-fab-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.module-submit-similar-fab {
   width: auto;
   min-width: 9.6rem;
   height: 2.85rem;
@@ -510,6 +583,10 @@ a.module-detail-action-button {
 
   .module-detail-empty-state-copy {
     padding: 0.7rem;
+  }
+
+  .module-detail-submit-floating-action {
+    gap: 0.4rem;
   }
 
   .module-submit-similar-fab {

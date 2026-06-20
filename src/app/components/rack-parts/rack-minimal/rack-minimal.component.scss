@@ -4,6 +4,10 @@
   transition: opacity 125ms ease-in-out;
 }
 
+.parent {
+  position: relative;
+}
+
 .rackMinimal__editingPreview {
   display: block;
   opacity: 0.5;
@@ -17,10 +21,6 @@
 .rack-action-row {
   align-items: center;
   flex-wrap: wrap;
-}
-
-.rack-action-row__cool {
-  margin-inline-end: 0.25rem;
 }
 
 @media (hover: hover) and (pointer: fine) {

@@ -348,46 +348,6 @@
   margin-top: 0.15rem !important;
 }
 
-.save-fab {
-  position: fixed;
-  right: calc(var(--app-floating-inset-inline, 1rem) + env(safe-area-inset-right) + var(--module-editor-close-fab-width, 12.6rem) + var(--module-editor-fab-gap, var(--app-floating-surface-gap, 0.8rem)));
-  bottom: calc(var(--app-floating-inset-block, 1rem) + env(safe-area-inset-bottom) + var(--app-floating-bottom-offset, 0px));
-  z-index: 99;
-  width: var(--module-editor-save-fab-width, 9.25rem);
-  opacity: 1;
-  background: #ffffff;
-  color: #365777;
-  border: 0.125rem solid #3e638a;
-  box-shadow: 0 0.25rem 0.875rem rgba(38, 76, 116, 0.26);
-  transition: opacity 140ms ease-in-out, transform 140ms ease-in-out, background-color 140ms ease-in-out;
-
-  &:hover:not(:disabled) {
-    transform: translateY(-1px);
-    background: #f2f7fc;
-  }
-
-  &:disabled {
-    opacity: 0.62;
-    background: #edf2f8;
-    color: #7c8da0;
-  }
-}
-
-.save-fab--saving {
-  .mat-icon {
-    animation: save-fab-spin 0.8s linear infinite;
-  }
-}
-
-@keyframes save-fab-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 @keyframes panel-workspace-enter {
   from {
     opacity: 0;
@@ -431,24 +391,17 @@
   .setup-panel-crop-stage image-cropper,
   .setup-panel-preview,
   .setup-panel-preview-image,
-  .setup-panel-type-shell,
-  .save-fab {
+  .setup-panel-type-shell {
     animation: none !important;
     transition: none !important;
   }
 
-  .save-fab--saving .mat-icon,
   .setup-panel-type-shell--auto-selected {
     animation: none !important;
   }
 }
 
 @media (max-width: 72.5rem) {
-  .save-fab {
-    right: calc(var(--app-floating-inset-inline, 0.75rem) + env(safe-area-inset-right) + var(--module-editor-close-fab-width, 12.6rem) + var(--module-editor-fab-gap, var(--app-floating-surface-gap, 0.65rem)));
-    bottom: calc(var(--app-floating-inset-block, 0.75rem) + env(safe-area-inset-bottom) + var(--app-floating-bottom-offset, 0px));
-  }
-
   .cv-row-legend {
     grid-template-columns: var(--cv-row-grid-tablet);
     width: min(100%, var(--cv-row-max-width-tablet));
@@ -474,13 +427,6 @@
       width: var(--app-touch-target-prominent-min, 3.5rem);
       height: var(--app-touch-target-prominent-min, 3.5rem);
     }
-  }
-}
-
-@media (max-width: 25rem) {
-  .save-fab {
-    right: calc(var(--app-floating-inset-inline, 0.75rem) + env(safe-area-inset-right));
-    bottom: calc(var(--app-floating-inset-block, 0.75rem) + env(safe-area-inset-bottom) + var(--app-floating-bottom-offset, 0px) + var(--app-floating-secondary-lane-offset, 4.15rem));
   }
 }
 

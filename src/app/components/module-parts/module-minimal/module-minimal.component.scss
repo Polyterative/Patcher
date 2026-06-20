@@ -32,9 +32,30 @@
   gap: 0.75rem;
 }
 
+.parent {
+  position: relative;
+}
+
 .module-minimal__media,
 .module-minimal__content {
   min-width: 0;
+}
+
+.module-title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.module-title-row app-module-part-name {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.module-title-row__cool {
+  flex: 0 0 auto;
+  margin-left: auto;
 }
 
 .module-minimal__content {
@@ -150,10 +171,6 @@
 .module-action-row__secondary {
   justify-content: flex-end;
   margin-inline-start: auto;
-}
-
-.module-action-row__cool {
-  margin-inline-start: 0.35rem;
 }
 
 .parent--tagPickerOpen {

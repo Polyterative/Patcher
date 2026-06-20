@@ -1,0 +1,16 @@
+.rack-micro__titleRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.rack-micro__titleRow app-hero-clickable-title {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.rack-micro__cool {
+  flex: 0 0 auto;
+  margin-left: auto;
+}

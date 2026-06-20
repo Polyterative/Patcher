@@ -4,7 +4,8 @@ import {
   Component,
   Input,
   OnDestroy,
-  OnInit
+  OnInit,
+  ViewChild
 } from '@angular/core';
 import {
   animateChild,
@@ -67,6 +68,8 @@ import {
   UserModuleAcquisitionSource
 } from 'src/app/models/user-module-acquisition';
 import { formatMarketplaceMinorUnits } from 'src/app/features/marketplace/marketplace-money.utils';
+import { ReactionEntityTypes } from 'src/app/features/backend/supabase-reactions';
+import { ModuleEditorComponent } from 'src/app/components/module-parts/module-editor/module-editor.component';
 
 export const MODULE_PANEL_RATIO_ACCEPTANCE_THRESHOLD = 0.01;
 
@@ -255,6 +258,8 @@ export function calculateModulePanelRatioResult(
   standalone: false
 })
 export class ModuleBrowserDetailComponent extends SubManager implements OnInit, OnDestroy {
+  readonly ReactionEntityTypes = ReactionEntityTypes;
+  @ViewChild(ModuleEditorComponent) moduleEditor?: ModuleEditorComponent;
   @Input() ignoreSeo                           = false;
   @Input() showManualButton                    = false;
   @Input() viewConfig: ModuleMinimalViewConfig = {

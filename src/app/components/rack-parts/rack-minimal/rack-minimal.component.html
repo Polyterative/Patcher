@@ -22,6 +22,7 @@
     } @else {
       <app-rack-micro [data]="data"
                       [viewConfig]="viewConfig"
+                      [showCoolAction]="showCoolAction && !bag.isCurrentRackPropertyOfCurrentUser"
       ></app-rack-micro>
     }
     <ng-content></ng-content>
@@ -51,15 +52,6 @@
           </button>
         }
         <div class="layout-flex-grow"></div>
-        @if (showCoolAction) {
-          <app-cool-button
-            class="rack-action-row__cool"
-            [entityType]="ReactionEntityTypes.RACK"
-            [entityId]="data.id"
-            [eligible]="data.public === true"
-            countDisplayMode="count"
-          ></app-cool-button>
-        }
         @if (bag.user && bag.isCurrentRackPropertyOfCurrentUser) {
           <button mat-icon-button
                   matTooltip="Create patch from this rack"

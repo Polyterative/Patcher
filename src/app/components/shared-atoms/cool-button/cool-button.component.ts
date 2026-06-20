@@ -27,6 +27,7 @@ export class CoolButtonComponent implements OnChanges {
   @Input() entityId: number | null | undefined = null;
   @Input() eligible: boolean | null | undefined = false;
   @Input() countDisplayMode: CoolCountDisplayMode | null | undefined = 'count';
+  @Input() variant: 'default' | 'overlay' | 'title' = 'default';
 
   constructor(readonly dataService: CoolButtonDataService) {}
 

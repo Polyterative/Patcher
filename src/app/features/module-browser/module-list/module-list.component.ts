@@ -105,6 +105,7 @@ export class ModuleListComponent extends SubManager implements OnInit {
   @Input() showFilters = false;
   @Input() encloseVertically = true;
   @Input() emptyStateCopy = '';
+  @Input() showCoolAction = false;
   /** When true, suppresses the empty-state block even if the list is empty.
    *  Use when the parent knows more items are available to load. */
   @Input() suppressEmpty = false;
