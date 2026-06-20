@@ -5,9 +5,11 @@ import {
 } from '@angular/core';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { MatDialog } from "@angular/material/dialog";
-import { PatchMinimal } from 'src/app/models/patch';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area-data.service';
+import { BehaviorSubject } from 'rxjs';
+
+type UserPatchesSectionFilter = 'PERSONAL' | 'COOL';
 
 
 @Component({
@@ -27,6 +29,16 @@ import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area
 })
 export class UserPatchesComponent {
   @Input() globalSearchQuery = '';
+  @Input() showCoolFilter = false;
+  readonly activeSectionFilter$ = new BehaviorSubject<UserPatchesSectionFilter>('PERSONAL');
+  readonly sectionFilters: {value: UserPatchesSectionFilter; label: string; icon: string}[] = [
+    {value: 'PERSONAL', label: 'Personal', icon: 'settings_input_composite'},
+    {value: 'COOL', label: 'Cool!', icon: 'auto_awesome'},
+  ];
+  readonly sectionDescriptionByFilter: Record<UserPatchesSectionFilter, string> = {
+    PERSONAL: "So many patches, so little time. Patches you've created and those you're currently working on",
+    COOL: 'Public patches you have marked cool, newest first.'
+  };
   
   constructor(
     public dialog: MatDialog,
@@ -35,6 +47,16 @@ export class UserPatchesComponent {
   ) {
     this.dataService.updatePatchesData$.next();
    
+  }
+
+  visibleFilters(): {value: UserPatchesSectionFilter; label: string; icon: string}[] {
+    return this.showCoolFilter
+      ? this.sectionFilters
+      : this.sectionFilters.filter(filter => filter.value !== 'COOL');
+  }
+
+  selectFilter(filter: UserPatchesSectionFilter): void {
+    this.activeSectionFilter$.next(filter);
   }
 
 }

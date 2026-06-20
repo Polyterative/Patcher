@@ -67,6 +67,9 @@
              <app-user-cool-collection
                moduleCoolTabContent
                [embedded]="true"
+               entityType="module"
+               [modulesViewConfig]="viewConfig"
+               emptyCopy="Tap Cool on a public module to build this collection."
              ></app-user-cool-collection>
            }
           </app-user-modules>
@@ -74,12 +77,32 @@
                           class="block user-area-section"
                           [style.--section-enter-delay.ms]="120"
                           [globalSearchQuery]="bag.globalSearchQuery ?? ''"
-          ></app-user-racks>
+                          [showCoolFilter]="coolReactionsEnabled"
+          >
+            @if (coolReactionsEnabled) {
+              <app-user-cool-collection
+                rackCoolTabContent
+                [embedded]="true"
+                entityType="rack"
+                emptyCopy="Tap Cool on a public rack to build this collection."
+              ></app-user-cool-collection>
+            }
+          </app-user-racks>
           <app-user-patches appDiscoveryTipAnchor="user-area-patches-section"
                             class="block user-area-section"
                             [style.--section-enter-delay.ms]="240"
                             [globalSearchQuery]="bag.globalSearchQuery ?? ''"
-          ></app-user-patches>
+                            [showCoolFilter]="coolReactionsEnabled"
+          >
+            @if (coolReactionsEnabled) {
+              <app-user-cool-collection
+                patchCoolTabContent
+                [embedded]="true"
+                entityType="patch"
+                emptyCopy="Tap Cool on a public patch to build this collection."
+              ></app-user-cool-collection>
+            }
+          </app-user-patches>
           <!-- Collections section hidden via feature flag - enable in environment.ts -->
           <app-user-manuals appDiscoveryTipAnchor="user-area-manuals"
                             class="block user-area-section"

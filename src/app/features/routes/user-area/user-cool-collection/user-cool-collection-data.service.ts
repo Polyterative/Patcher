@@ -6,7 +6,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   BehaviorSubject,
   EMPTY,
-  forkJoin,
   of,
   Subject
 } from 'rxjs';
@@ -25,11 +24,12 @@ import {
   type ReactionRow
 } from 'src/app/features/backend/supabase-reactions';
 import { MinimalModule } from 'src/app/models/module';
+import { Patch } from 'src/app/models/patch';
 import { Rack } from 'src/app/models/rack';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 
-export type UserCoolCollectionEntityType = 'module' | 'rack';
+export type UserCoolCollectionEntityType = 'module' | 'rack' | 'patch';
 
 export interface UserCoolCollectionModuleItem {
   entityType: 'module';
@@ -45,7 +45,17 @@ export interface UserCoolCollectionRackItem {
   rack: Rack;
 }
 
-export type UserCoolCollectionItem = UserCoolCollectionModuleItem | UserCoolCollectionRackItem;
+export interface UserCoolCollectionPatchItem {
+  entityType: 'patch';
+  entityId: number;
+  reactionCreatedAt: string;
+  patch: Patch;
+}
+
+export type UserCoolCollectionItem =
+  | UserCoolCollectionModuleItem
+  | UserCoolCollectionRackItem
+  | UserCoolCollectionPatchItem;
 
 export interface UserCoolCollectionGroup {
   entityType: UserCoolCollectionEntityType;
@@ -62,34 +72,57 @@ export interface UserCoolCollectionViewModel {
   total: number;
 }
 
-const EMPTY_GROUPS: UserCoolCollectionGroup[] = [
-  {
+const GROUP_META: Record<UserCoolCollectionEntityType, Omit<UserCoolCollectionGroup, 'items'>> = {
+  module: {
     entityType: 'module',
     title: 'Modules',
     icon: 'view_module',
-    emptyCopy: 'Cooled modules will appear here.',
-    items: []
+    emptyCopy: 'Cooled modules will appear here.'
   },
-  {
+  rack: {
     entityType: 'rack',
     title: 'Racks',
     icon: 'view_stream',
-    emptyCopy: 'Cooled public racks will appear here.',
-    items: []
+    emptyCopy: 'Cooled public racks will appear here.'
+  },
+  patch: {
+    entityType: 'patch',
+    title: 'Patches',
+    icon: 'settings_input_composite',
+    emptyCopy: 'Cooled public patches will appear here.'
   }
-];
+};
+
+function emptyGroups(entityType: UserCoolCollectionEntityType): UserCoolCollectionGroup[] {
+  return [{...GROUP_META[entityType], items: []}];
+}
 
 @Injectable()
 export class UserCoolCollectionDataService extends SubManager {
   private readonly _vm$ = new BehaviorSubject<UserCoolCollectionViewModel>({
     enabled: false,
     loading: false,
-    groups: EMPTY_GROUPS,
+    groups: emptyGroups('module'),
     total: 0
   });
 
   readonly vm$ = this._vm$.asObservable();
-  readonly load$ = new Subject<void>();
+  readonly moduleData$ = this.vm$.pipe(
+    map(vm => vm.groups.flatMap(group => group.items)
+      .filter((item): item is UserCoolCollectionModuleItem => item.entityType === 'module')
+      .map(item => item.module))
+  );
+  readonly rackData$ = this.vm$.pipe(
+    map(vm => vm.groups.flatMap(group => group.items)
+      .filter((item): item is UserCoolCollectionRackItem => item.entityType === 'rack')
+      .map(item => item.rack))
+  );
+  readonly patchData$ = this.vm$.pipe(
+    map(vm => vm.groups.flatMap(group => group.items)
+      .filter((item): item is UserCoolCollectionPatchItem => item.entityType === 'patch')
+      .map(item => item.patch))
+  );
+  readonly load$ = new Subject<UserCoolCollectionEntityType | undefined>();
   readonly removeCool$ = new Subject<UserCoolCollectionItem>();
 
   constructor(
@@ -104,20 +137,22 @@ export class UserCoolCollectionDataService extends SubManager {
     });
 
     this.load$.pipe(
-      tap(() => {
+      map((entityType): UserCoolCollectionEntityType => entityType ?? 'module'),
+      tap(entityType => {
         if (this.coolReactionsEnabled) {
           this._vm$.next({
             ...this._vm$.value,
+            groups: emptyGroups(entityType),
             loading: true
           });
         }
       }),
-      switchMap(() => this.coolReactionsEnabled
-        ? this.loadCollection()
+      switchMap(entityType => this.coolReactionsEnabled
+        ? this.loadCollection(entityType)
         : of({
           enabled: false,
           loading: false,
-          groups: EMPTY_GROUPS,
+          groups: emptyGroups(entityType),
           total: 0
         })
       ),
@@ -156,65 +191,36 @@ export class UserCoolCollectionDataService extends SubManager {
     ).subscribe();
   }
 
-  trackGroup(_index: number, group: UserCoolCollectionGroup): UserCoolCollectionEntityType {
-    return group.entityType;
-  }
+  private loadCollection(entityType: UserCoolCollectionEntityType) {
+    return this.backend.get.currentUserReactions(this.toBackendEntityType(entityType), REACTION_KIND_COOL).pipe(
+      switchMap(reactions => {
+        const sortedReactions = this.sortReactionsNewestFirst(reactions);
+        const entityIds = sortedReactions.map(reaction => reaction.entity_id);
 
-  trackItem(_index: number, item: UserCoolCollectionItem): string {
-    return `${ item.entityType }-${ item.entityId }`;
-  }
-
-  itemTitle(item: UserCoolCollectionItem): string {
-    return item.entityType === 'module'
-      ? item.module.name
-      : item.rack.name;
-  }
-
-  itemSubtitle(item: UserCoolCollectionItem): string {
-    if (item.entityType === 'module') {
-      return item.module.manufacturer?.name ?? 'Module';
-    }
-
-    return `${ item.rack.hp } HP · ${ item.rack.rows } row${ item.rack.rows === 1 ? '' : 's' }`;
-  }
-
-  itemDescription(item: UserCoolCollectionItem): string {
-    const description = item.entityType === 'module'
-      ? item.module.description
-      : item.rack.description;
-
-    return description?.trim() || 'No description yet.';
-  }
-
-  itemRouterLink(item: UserCoolCollectionItem): string[] {
-    if (item.entityType === 'module') {
-      return ['/modules/details', `${ item.entityId }`];
-    }
-
-    return item.rack.public_id
-      ? ['/racks', item.rack.public_id]
-      : ['/racks/details', `${ item.entityId }`];
-  }
-
-  private loadCollection() {
-    return forkJoin({
-      moduleReactions: this.backend.get.currentUserReactions(ReactionEntityTypes.MODULE, REACTION_KIND_COOL),
-      rackReactions: this.backend.get.currentUserReactions(ReactionEntityTypes.RACK, REACTION_KIND_COOL)
-    }).pipe(
-      switchMap(({moduleReactions, rackReactions}) => {
-        const sortedModuleReactions = this.sortReactionsNewestFirst(moduleReactions);
-        const sortedRackReactions = this.sortReactionsNewestFirst(rackReactions);
-        const moduleIds = sortedModuleReactions.map(reaction => reaction.entity_id);
-        const rackIds = sortedRackReactions.map(reaction => reaction.entity_id);
-
-        return forkJoin({
-          modules: moduleIds.length ? this.backend.GET.publicModulesByIds(moduleIds) : of([]),
-          racks: rackIds.length ? this.backend.get.publicRacksByIds(rackIds) : of([]),
-        }).pipe(
-          map(({modules, racks}) => this.buildVm(sortedModuleReactions, sortedRackReactions, modules, racks))
+        return this.loadPublicEntities(entityType, entityIds).pipe(
+          map(entities => this.buildVm(entityType, sortedReactions, entities))
         );
       })
     );
+  }
+
+  private loadPublicEntities(
+    entityType: UserCoolCollectionEntityType,
+    entityIds: number[]
+  ) {
+    if (entityIds.length === 0) {
+      return of([]);
+    }
+
+    if (entityType === 'module') {
+      return this.backend.GET.publicModulesByIds(entityIds);
+    }
+
+    if (entityType === 'rack') {
+      return this.backend.get.publicRacksByIds(entityIds);
+    }
+
+    return this.backend.GET.publicPatchesByIds(entityIds);
   }
 
   private sortReactionsNewestFirst(reactions: ReactionRow[]): ReactionRow[] {
@@ -222,40 +228,15 @@ export class UserCoolCollectionDataService extends SubManager {
   }
 
   private buildVm(
-    moduleReactions: ReactionRow[],
-    rackReactions: ReactionRow[],
-    modules: MinimalModule[],
-    racks: Rack[]
+    entityType: UserCoolCollectionEntityType,
+    reactions: ReactionRow[],
+    entities: (MinimalModule | Rack | Patch)[]
   ): UserCoolCollectionViewModel {
-    const moduleById = new Map(modules.map(module => [module.id, module]));
-    const rackById = new Map(racks.map(rack => [rack.id, rack]));
-    const moduleItems: UserCoolCollectionModuleItem[] = moduleReactions
-      .map(reaction => {
-        const module = moduleById.get(reaction.entity_id);
-        return module
-          ? {
-            entityType: 'module' as const,
-            entityId: reaction.entity_id,
-            reactionCreatedAt: reaction.created_at,
-            module
-          }
-          : null;
-      })
-      .filter((item): item is UserCoolCollectionModuleItem => item !== null);
-    const rackItems: UserCoolCollectionRackItem[] = rackReactions
-      .map(reaction => {
-        const rack = rackById.get(reaction.entity_id);
-        return rack
-          ? {
-            entityType: 'rack' as const,
-            entityId: reaction.entity_id,
-            reactionCreatedAt: reaction.created_at,
-            rack
-          }
-          : null;
-      })
-      .filter((item): item is UserCoolCollectionRackItem => item !== null);
-    const groups = this.buildGroups(moduleItems, rackItems);
+    const entityById = new Map(entities.map(entity => [entity.id, entity]));
+    const items = reactions
+      .map(reaction => this.toItem(entityType, reaction, entityById.get(reaction.entity_id)))
+      .filter((item): item is UserCoolCollectionItem => item !== null);
+    const groups = [{...GROUP_META[entityType], items}];
 
     return {
       enabled: true,
@@ -265,16 +246,39 @@ export class UserCoolCollectionDataService extends SubManager {
     };
   }
 
-  private buildGroups(
-    moduleItems: UserCoolCollectionModuleItem[],
-    rackItems: UserCoolCollectionRackItem[]
-  ): UserCoolCollectionGroup[] {
-    return EMPTY_GROUPS.map(group => ({
-      ...group,
-      items: group.entityType === 'module'
-        ? [...moduleItems]
-        : [...rackItems]
-    }));
+  private toItem(
+    entityType: UserCoolCollectionEntityType,
+    reaction: ReactionRow,
+    entity: MinimalModule | Rack | Patch | undefined
+  ): UserCoolCollectionItem | null {
+    if (!entity) {
+      return null;
+    }
+
+    if (entityType === 'module') {
+      return {
+        entityType,
+        entityId: reaction.entity_id,
+        reactionCreatedAt: reaction.created_at,
+        module: entity as MinimalModule
+      };
+    }
+
+    if (entityType === 'rack') {
+      return {
+        entityType,
+        entityId: reaction.entity_id,
+        reactionCreatedAt: reaction.created_at,
+        rack: entity as Rack
+      };
+    }
+
+    return {
+      entityType,
+      entityId: reaction.entity_id,
+      reactionCreatedAt: reaction.created_at,
+      patch: entity as Patch
+    };
   }
 
   private removeItem(
@@ -332,8 +336,14 @@ export class UserCoolCollectionDataService extends SubManager {
   }
 
   private toBackendEntityType(entityType: UserCoolCollectionEntityType): number {
-    return entityType === 'module'
-      ? ReactionEntityTypes.MODULE
-      : ReactionEntityTypes.RACK;
+    if (entityType === 'module') {
+      return ReactionEntityTypes.MODULE;
+    }
+
+    if (entityType === 'rack') {
+      return ReactionEntityTypes.RACK;
+    }
+
+    return ReactionEntityTypes.PATCH;
   }
 }

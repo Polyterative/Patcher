@@ -1,7 +1,7 @@
 <div class="col gap1"
 >
   <lib-hero-content-card titleNormal="Racks"
-                         description="Keep track of your racks, check if your modules fit, and share them with your friends"
+                         [description]="sectionDescriptionByFilter[(activeSectionFilter$ | async) ?? 'PERSONAL']"
                          class="racksBG"
                          icon="view_stream"
                          id="racks"
@@ -9,6 +9,24 @@
     <div class="col gap1 section-shell"
     >
       <div class="row gap1 auto-left section-actions">
+        @if (showCoolFilter) {
+          <mat-button-toggle-group
+            class="section-filter"
+            [value]="activeSectionFilter$ | async"
+            (change)="selectFilter($event.value)"
+            aria-label="Filter racks by view"
+          >
+            @for (filter of visibleFilters(); track filter.value) {
+              <mat-button-toggle
+                [value]="filter.value"
+                [class.section-filter__cool]="filter.value === 'COOL'"
+              >
+                <mat-icon aria-hidden="true">{{ filter.icon }}</mat-icon>
+                <span>{{ filter.label }}</span>
+              </mat-button-toggle>
+            }
+          </mat-button-toggle-group>
+        }
         <app-brand-primary-button appDiscoveryTipAnchor="user-area-racks-create"
                                   (click$)="dataService.addRack$.next()"
                                   icon="add"
@@ -16,7 +34,9 @@
         </app-brand-primary-button>
       </div>
       <mat-divider inset="true"></mat-divider>
-      @if ((dataService.pagedRacksData$|async); as data) {
+      @if ((activeSectionFilter$ | async) === 'COOL') {
+        <ng-content select="[rackCoolTabContent]"></ng-content>
+      } @else if ((dataService.pagedRacksData$|async); as data) {
         @if (data.length > 0) {
           <div class="section-scroll">
             <flexbox-row-fast class="section-list">
@@ -52,7 +72,7 @@
         }
       }
       
-      @if ((dataService.hasMoreRacks$ | async)) {
+      @if ((activeSectionFilter$ | async) !== 'COOL' && (dataService.hasMoreRacks$ | async)) {
         <div class="loadMore">
           <button mat-stroked-button
                   class="loadMore__btn"

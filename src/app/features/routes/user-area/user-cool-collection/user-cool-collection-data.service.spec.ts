@@ -7,6 +7,7 @@ import {
   type ReactionRow
 } from 'src/app/features/backend/supabase-reactions';
 import { MinimalModule } from 'src/app/models/module';
+import { Patch } from 'src/app/models/patch';
 import { Rack } from 'src/app/models/rack';
 import { UserCoolCollectionDataService } from './user-cool-collection-data.service';
 
@@ -45,6 +46,18 @@ const rackOne = {
   public_id: 'rack-one'
 } as Rack;
 
+const patchOne = {
+  id: 20,
+  name: 'Patch One',
+  description: 'First patch',
+  public: true,
+  author: {id: 'author-1', username: 'maker'},
+  created: '2026-06-01T00:00:00.000Z',
+  updated: '2026-06-01T00:00:00.000Z',
+  public_id: 'patch-one',
+  tags: []
+} as Patch;
+
 function reaction(entityType: number, entityId: number, createdAt: string): ReactionRow {
   return {
     user_id: 'user-1',
@@ -59,6 +72,7 @@ function backendMock(overrides: {
   reactions?: ReactionRow[];
   modules?: MinimalModule[];
   racks?: Rack[];
+  patches?: Patch[];
   deleteFails?: boolean;
 } = {}): SupabaseService {
   const reactions = overrides.reactions ?? [];
@@ -73,7 +87,8 @@ function backendMock(overrides: {
       publicRacksByIds: jasmine.createSpy('publicRacksByIds').and.returnValue(of(overrides.racks ?? []))
     },
     GET: {
-      publicModulesByIds: jasmine.createSpy('publicModulesByIds').and.returnValue(of(overrides.modules ?? []))
+      publicModulesByIds: jasmine.createSpy('publicModulesByIds').and.returnValue(of(overrides.modules ?? [])),
+      publicPatchesByIds: jasmine.createSpy('publicPatchesByIds').and.returnValue(of(overrides.patches ?? []))
     },
     delete: {
       reaction: jasmine.createSpy('reaction').and.returnValue(overrides.deleteFails
@@ -95,42 +110,86 @@ describe('UserCoolCollectionDataService', () => {
     const backend = backendMock();
     const service = new UserCoolCollectionDataService(backend, snackBarMock(), false);
 
-    service.load$.next();
+    service.load$.next('module');
     const vm = await firstValueFrom(service.vm$);
 
     expect(vm.enabled).toBeFalse();
     expect(backend.get.currentUserReactions).not.toHaveBeenCalled();
     expect(backend.GET.publicModulesByIds).not.toHaveBeenCalled();
+    expect(backend.GET.publicPatchesByIds).not.toHaveBeenCalled();
     expect(backend.get.publicRacksByIds).not.toHaveBeenCalled();
     service.ngOnDestroy();
   });
 
-  it('groups cooled modules and racks newest-first without loading patch reactions', async () => {
+  it('loads only cooled modules for the module Cool section', async () => {
     const backend = backendMock({
       reactions: [
         reaction(ReactionEntityTypes.MODULE, 1, '2026-06-19T08:00:00.000Z'),
         reaction(ReactionEntityTypes.RACK, 10, '2026-06-19T10:00:00.000Z'),
         reaction(ReactionEntityTypes.MODULE, 2, '2026-06-19T11:00:00.000Z'),
-        reaction(3, 99, '2026-06-19T12:00:00.000Z')
+        reaction(ReactionEntityTypes.PATCH, 20, '2026-06-19T12:00:00.000Z')
       ],
       modules: [moduleOne, moduleTwo],
+      racks: [rackOne],
+      patches: [patchOne]
+    });
+    const service = new UserCoolCollectionDataService(backend, snackBarMock(), true);
+
+    service.load$.next('module');
+    const vm = await firstValueFrom(service.vm$);
+
+    expect(vm.total).toBe(2);
+    expect(vm.groups.map(group => group.entityType)).toEqual(['module']);
+    expect(vm.groups[0].items.map(item => item.entityId)).toEqual([2, 1]);
+    expect(backend.get.currentUserReactions).toHaveBeenCalledWith(ReactionEntityTypes.MODULE, REACTION_KIND_COOL);
+    expect(backend.GET.publicModulesByIds).toHaveBeenCalledOnceWith([2, 1]);
+    expect(backend.get.publicRacksByIds).not.toHaveBeenCalled();
+    expect(backend.GET.publicPatchesByIds).not.toHaveBeenCalled();
+    service.ngOnDestroy();
+  });
+
+  it('loads only cooled racks for the rack Cool section', async () => {
+    const backend = backendMock({
+      reactions: [
+        reaction(ReactionEntityTypes.MODULE, 1, '2026-06-19T08:00:00.000Z'),
+        reaction(ReactionEntityTypes.RACK, 10, '2026-06-19T10:00:00.000Z')
+      ],
+      modules: [moduleOne],
       racks: [rackOne]
     });
     const service = new UserCoolCollectionDataService(backend, snackBarMock(), true);
 
-    service.load$.next();
+    service.load$.next('rack');
     const vm = await firstValueFrom(service.vm$);
 
-    const moduleGroup = vm.groups.find(group => group.entityType === 'module');
-    const rackGroup = vm.groups.find(group => group.entityType === 'rack');
-    expect(vm.total).toBe(3);
-    expect(moduleGroup?.items.map(item => item.entityId)).toEqual([2, 1]);
-    expect(rackGroup?.items.map(item => item.entityId)).toEqual([10]);
-    expect(backend.get.currentUserReactions).toHaveBeenCalledWith(ReactionEntityTypes.MODULE, REACTION_KIND_COOL);
+    expect(vm.total).toBe(1);
+    expect(vm.groups.map(group => group.entityType)).toEqual(['rack']);
+    expect(vm.groups[0].items.map(item => item.entityId)).toEqual([10]);
     expect(backend.get.currentUserReactions).toHaveBeenCalledWith(ReactionEntityTypes.RACK, REACTION_KIND_COOL);
-    expect(backend.get.currentUserReactions).not.toHaveBeenCalledWith(undefined, REACTION_KIND_COOL);
-    expect(backend.GET.publicModulesByIds).toHaveBeenCalledOnceWith([2, 1]);
     expect(backend.get.publicRacksByIds).toHaveBeenCalledOnceWith([10]);
+    expect(backend.GET.publicModulesByIds).not.toHaveBeenCalled();
+    service.ngOnDestroy();
+  });
+
+  it('loads only cooled patches for the patch Cool section', async () => {
+    const backend = backendMock({
+      reactions: [
+        reaction(ReactionEntityTypes.PATCH, 20, '2026-06-19T12:00:00.000Z')
+      ],
+      patches: [patchOne]
+    });
+    const service = new UserCoolCollectionDataService(backend, snackBarMock(), true);
+
+    service.load$.next('patch');
+    const vm = await firstValueFrom(service.vm$);
+
+    expect(vm.total).toBe(1);
+    expect(vm.groups.map(group => group.entityType)).toEqual(['patch']);
+    expect(vm.groups[0].items.map(item => item.entityId)).toEqual([20]);
+    expect(backend.get.currentUserReactions).toHaveBeenCalledWith(ReactionEntityTypes.PATCH, REACTION_KIND_COOL);
+    expect(backend.GET.publicPatchesByIds).toHaveBeenCalledOnceWith([20]);
+    expect(backend.GET.publicModulesByIds).not.toHaveBeenCalled();
+    expect(backend.get.publicRacksByIds).not.toHaveBeenCalled();
     service.ngOnDestroy();
   });
 
@@ -142,7 +201,7 @@ describe('UserCoolCollectionDataService', () => {
     });
     const service = new UserCoolCollectionDataService(backend, snackBarMock(), true);
 
-    service.load$.next();
+    service.load$.next('module');
     let vm = await firstValueFrom(service.vm$);
     const item = vm.groups[0].items[0];
 
@@ -172,7 +231,7 @@ describe('UserCoolCollectionDataService', () => {
     (backend.delete.reaction as jasmine.Spy).and.returnValues(firstDelete$, secondDelete$);
     const service = new UserCoolCollectionDataService(backend, snackBarMock(), true);
 
-    service.load$.next();
+    service.load$.next('module');
     let vm = await firstValueFrom(service.vm$);
     const olderItem = vm.groups[0].items.find(item => item.entityId === 1);
     const newerItem = vm.groups[0].items.find(item => item.entityId === 2);

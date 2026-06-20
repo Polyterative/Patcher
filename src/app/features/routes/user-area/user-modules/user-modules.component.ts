@@ -44,7 +44,7 @@ export class UserModulesComponent extends SubManager {
     {value: 'COOL', label: 'Cool!', icon: 'auto_awesome'},
   ];
   readonly emptyStateCopyByFilter: Record<UserModuleCollectionFilter, string> = {
-    MY_MODULES: 'Add the modules you own here so they are available when you build racks and patches.',
+    MY_MODULES: 'Add the modules you own here to keep your collection organized.',
     WISHLIST: 'Mark modules as wanted from the library to build your wishlist.',
     FOR_SALE: 'Mark modules as for sale from the library to keep track of gear you want to move.'
   };
@@ -63,10 +63,10 @@ export class UserModulesComponent extends SubManager {
     ]
   };
   readonly sectionDescriptionByFilter: Record<UserModulesSectionFilter, string> = {
-    MY_MODULES: 'Owned modules are available when you build racks and patches.',
+    MY_MODULES: 'Owned modules in your collection.',
     WISHLIST: 'Wanted modules help you keep track of gear you are considering.',
     FOR_SALE: 'For-sale modules help you keep track of gear you want to move.',
-    COOL: 'Modules and public racks you have marked cool, newest first.'
+    COOL: 'Modules you have marked cool, newest first.'
   };
 
   constructor(
