@@ -5,7 +5,7 @@
     } @else {
       <div class="col gap1">
         <lib-hero-content-card titleNormal="Cool"
-                               description="Modules and public racks you have marked cool, newest first."
+                               description="Items you have marked cool, newest first."
                                class="coolBG"
                                icon="auto_awesome"
                                id="cool"
@@ -19,62 +19,50 @@
 
 <ng-template #coolContent let-vm>
   <div class="col gap1 section-shell user-cool">
-    <div class="user-cool__summary">
-      <mat-icon aria-hidden="true">auto_awesome</mat-icon>
-      <span>{{ vm.total }} cooled item{{ vm.total === 1 ? '' : 's' }}</span>
-    </div>
-    <mat-divider inset="true"></mat-divider>
-
     @if (vm.loading) {
       <div class="user-cool__loading">Loading your Cool collection…</div>
     } @else if (vm.total > 0) {
-      <div class="user-cool__groups">
-        @for (group of vm.groups; track dataService.trackGroup($index, group)) {
-          <section class="user-cool-group"
-                   [class.user-cool-group--empty]="group.items.length === 0"
-                   [attr.aria-label]="group.title"
-          >
-            <div class="user-cool-group__heading">
-              <mat-icon aria-hidden="true">{{ group.icon }}</mat-icon>
-              <h3>{{ group.title }}</h3>
-              <span>{{ group.items.length }}</span>
-            </div>
-
-            @if (group.items.length > 0) {
-              <div class="user-cool-list">
-                @for (item of group.items; track dataService.trackItem($index, item)) {
-                  <lib-clean-card>
-                    <article class="user-cool-card">
-                      <div class="user-cool-card__copy">
-                        <span class="user-cool-card__meta">{{ dataService.itemSubtitle(item) }}</span>
-                        <a class="user-cool-card__title"
-                           [routerLink]="dataService.itemRouterLink(item)"
-                        >{{ dataService.itemTitle(item) }}</a>
-                        <p>{{ dataService.itemDescription(item) }}</p>
-                      </div>
-                      <button mat-stroked-button
-                              type="button"
-                              class="user-cool-card__remove"
-                              (click)="dataService.removeCool$.next(item)"
-                              [attr.aria-label]="'Remove cool from ' + dataService.itemTitle(item)"
-                      >
-                        <mat-icon aria-hidden="true">auto_awesome_motion</mat-icon>
-                        Uncool
-                      </button>
-                    </article>
-                  </lib-clean-card>
-                }
-              </div>
-            } @else {
-              <p class="user-cool-group__empty">{{ group.emptyCopy }}</p>
-            }
-          </section>
+      @if (entityType === 'module') {
+        <app-module-list
+          class="section-list"
+          [data$]="dataService.moduleData$"
+          [viewConfig]="modulesViewConfig"
+          [showSearch]="false"
+          [encloseVertically]="true"
+          [suppressEmpty]="true"
+        ></app-module-list>
+      } @else if (entityType === 'rack') {
+        @if (dataService.rackData$ | async; as racks) {
+          <div class="section-scroll">
+            <flexbox-row-fast class="section-list">
+              @for (rack of racks; track rack.id; let i = $index) {
+                <lib-clean-card>
+                  <app-rack-micro
+                    [data]="rack"
+                    [viewConfig]="rackViewConfig"
+                  ></app-rack-micro>
+                </lib-clean-card>
+              }
+            </flexbox-row-fast>
+          </div>
         }
-      </div>
+      } @else {
+        @if (dataService.patchData$ | async; as patches) {
+          <div class="section-scroll">
+            <flexbox-row-fast class="section-list">
+              @for (patch of patches; track patch.id; let i = $index) {
+                <lib-clean-card>
+                  <app-patch-micro [data]="patch"></app-patch-micro>
+                </lib-clean-card>
+              }
+            </flexbox-row-fast>
+          </div>
+        }
+      }
     } @else {
       <app-empty-state icon="auto_awesome"
                        title="Nothing cooled yet"
-                       copy="Tap Cool on a public module or rack to build this collection."
+                       [copy]="emptyCopy"
       ></app-empty-state>
     }
   </div>

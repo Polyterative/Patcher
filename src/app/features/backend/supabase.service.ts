@@ -175,6 +175,7 @@ export class SupabaseService extends SubManager {
       currentUserModuleCollectionById: this.queries.getCurrentUserModuleCollectionById.bind(this.queries),
       moduleCollectionsForModule: this.queries.getModuleCollectionsForModule.bind(this.queries),
       patches: this.queries.getPatches.bind(this.queries),
+      publicPatchesByIds: this.queries.getPublicPatchesByIds.bind(this.queries),
       publicPatchWithId: this.queries.getPublicPatchWithId.bind(this.queries),
       publicUserContributorStats: this.queries.getPublicUserContributorStats.bind(this.queries),
       rackWithId: this.queries.getRackWithId.bind(this.queries),
@@ -241,6 +242,7 @@ export class SupabaseService extends SubManager {
     currentUserModuleCollectionById: typeof SupabaseQueriesService.prototype.getCurrentUserModuleCollectionById;
     moduleCollectionsForModule: typeof SupabaseQueriesService.prototype.getModuleCollectionsForModule;
     patches: typeof SupabaseQueriesService.prototype.getPatches;
+    publicPatchesByIds: typeof SupabaseQueriesService.prototype.getPublicPatchesByIds;
     publicPatchWithId: typeof SupabaseQueriesService.prototype.getPublicPatchWithId;
     publicUserContributorStats: typeof SupabaseQueriesService.prototype.getPublicUserContributorStats;
     rackWithId: typeof SupabaseQueriesService.prototype.getRackWithId;

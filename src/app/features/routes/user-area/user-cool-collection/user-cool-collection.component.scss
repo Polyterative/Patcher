@@ -2,118 +2,27 @@
   min-width: 0;
 }
 
-.user-cool__summary,
-.user-cool-group__heading {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.user-cool__summary {
-  color: rgba(24, 42, 65, 0.72);
-  font-size: 0.9rem;
-}
-
-.user-cool__summary mat-icon {
-  color: rgba(221, 145, 35, 0.95);
-}
-
 .user-cool__loading {
   color: rgba(24, 42, 65, 0.62);
   font-size: 0.92rem;
 }
 
-.user-cool__groups {
-  display: grid;
-  gap: 1rem;
-}
-
-.user-cool-group {
-  display: grid;
-  gap: 0.55rem;
+.section-shell,
+.section-list {
   min-width: 0;
 }
 
-.user-cool-group__heading h3 {
-  margin: 0;
-  min-width: 0;
-  color: rgba(24, 42, 65, 0.88);
-  font-size: 1rem;
-  font-weight: 700;
+.section-scroll {
+  max-block-size: clamp(24rem, calc(var(--app-viewport-height, 100vh) - 23rem), 50rem);
+  overflow: auto;
+  scrollbar-gutter: stable;
+  padding-right: 0.15rem;
 }
 
-.user-cool-group__heading span {
-  margin-left: auto;
-  color: rgba(24, 42, 65, 0.58);
-  font-size: 0.82rem;
-}
-
-.user-cool-group__empty {
-  margin: 0;
-  color: rgba(24, 42, 65, 0.58);
-  font-size: 0.9rem;
-}
-
-.user-cool-list {
-  display: grid;
-  gap: 0.6rem;
-}
-
-.user-cool-card {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.75rem;
-  align-items: start;
-  min-width: 0;
-  padding: 0.75rem;
-}
-
-.user-cool-card__copy {
-  display: grid;
-  gap: 0.25rem;
-  min-width: 0;
-}
-
-.user-cool-card__meta {
-  color: rgba(24, 42, 65, 0.58);
-  font-size: 0.78rem;
-  line-height: 1.25;
-}
-
-.user-cool-card__title {
-  color: rgba(24, 42, 65, 0.92);
-  font-weight: 700;
-  line-height: 1.2;
-  text-decoration: none;
-  overflow-wrap: anywhere;
-}
-
-.user-cool-card__title:hover,
-.user-cool-card__title:focus-visible {
-  text-decoration: underline;
-}
-
-.user-cool-card p {
-  display: -webkit-box;
-  margin: 0;
-  overflow: hidden;
-  color: rgba(24, 42, 65, 0.66);
-  font-size: 0.86rem;
-  line-height: 1.35;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.user-cool-card__remove {
-  white-space: nowrap;
-}
-
-@media (max-width: 48rem) {
-  .user-cool-card {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .user-cool-card__remove {
-    justify-self: start;
+@media (max-width: 60rem) {
+  .section-scroll {
+    max-block-size: none;
+    overflow: visible;
+    padding-right: 0;
   }
 }

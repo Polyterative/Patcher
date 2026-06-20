@@ -3,10 +3,23 @@ import {
   Component,
   Inject,
   Input,
-  OnInit
+  OnChanges,
+  OnInit,
+  SimpleChanges
 } from '@angular/core';
 import { COOL_REACTIONS_ENABLED } from 'src/app/components/shared-atoms/cool-button/cool-button-feature.token';
-import { UserCoolCollectionDataService } from './user-cool-collection-data.service';
+import {
+  defaultModuleMinimalViewConfig,
+  ModuleMinimalViewConfig
+} from 'src/app/components/module-parts/module-minimal/module-minimal.component';
+import {
+  defaultRackMinimalViewConfig,
+  RackMinimalViewConfig
+} from 'src/app/components/rack-parts/rack-minimal/rack-minimal.component';
+import {
+  UserCoolCollectionDataService,
+  UserCoolCollectionEntityType
+} from './user-cool-collection-data.service';
 
 @Component({
   selector: 'app-user-cool-collection',
@@ -16,8 +29,12 @@ import { UserCoolCollectionDataService } from './user-cool-collection-data.servi
   providers: [UserCoolCollectionDataService],
   standalone: false
 })
-export class UserCoolCollectionComponent implements OnInit {
+export class UserCoolCollectionComponent implements OnChanges, OnInit {
   @Input() embedded = false;
+  @Input() entityType: UserCoolCollectionEntityType = 'module';
+  @Input() emptyCopy = 'Tap Cool on a public item to build this collection.';
+  @Input() modulesViewConfig: ModuleMinimalViewConfig = {...defaultModuleMinimalViewConfig};
+  @Input() rackViewConfig: RackMinimalViewConfig = {...defaultRackMinimalViewConfig};
 
   constructor(
     public readonly dataService: UserCoolCollectionDataService,
@@ -25,8 +42,18 @@ export class UserCoolCollectionComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.load();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['entityType'] && !changes['entityType'].firstChange) {
+      this.load();
+    }
+  }
+
+  private load(): void {
     if (this.coolReactionsEnabled) {
-      this.dataService.load$.next();
+      this.dataService.load$.next(this.entityType);
     }
   }
 }

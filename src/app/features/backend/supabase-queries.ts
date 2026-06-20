@@ -971,6 +971,48 @@ export class SupabaseQueriesService {
   }
 
   @Cacheable({
+    maxAge: smallCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('patches') || x.includes('profiles'))),
+    maxCacheCount: 50,
+  })
+  getPublicPatchesByIds(patchIds: number[]): Observable<Patch[]> {
+    const uniquePatchIds = [...new Set(patchIds)].filter(id => Number.isFinite(id));
+
+    if (uniquePatchIds.length === 0) {
+      return of([]);
+    }
+
+    const publicAuthorGateJoin = QueryJoins.publicAuthorGate(SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS);
+    const columns = [
+      'id',
+      'name',
+      'description',
+      'image',
+      'linked_rack_id',
+      'tags',
+      'public',
+      'created',
+      'updated',
+      'authorid',
+      'public_id',
+      QueryJoins.author,
+      publicAuthorGateJoin
+    ].join(',');
+
+    return rxFrom(
+      this.supabase.from(DbPaths.patches)
+        .select(columns)
+        .filter('public', 'eq', true)
+        .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
+        .in('id', uniquePatchIds)
+    ).pipe(
+      remapErrors(),
+      map(response => this.stripPublicAuthorGate<Patch>(response)),
+      map((response: { data: Patch[] | null }) => response.data ?? [])
+    );
+  }
+
+  @Cacheable({
     maxAge: defaultCacheTime,
     cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('rackWithId'))),
     maxCacheCount: 50,

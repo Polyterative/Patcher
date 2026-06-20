@@ -30,6 +30,7 @@ import { AppFaqComponent } from "src/app/components/shared-atoms/app-faq/app-faq
 import { StatisticsComponent } from "src/app/components/shared-atoms/statistics/statistics.component";
 import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { DiscoveryTipsModule } from 'src/app/shared-interproject/discovery-tips/discovery-tips.module';
@@ -43,6 +44,7 @@ import { ModuleCollectionPartsModule } from 'src/app/components/module-collectio
 import { ModuleCollectionsDataService } from 'src/app/features/module-collections/module-collections-data.service';
 import { UserCollectionsComponent } from 'src/app/features/routes/user-area/user-collections/user-collections.component';
 import { UserCoolCollectionComponent } from 'src/app/features/routes/user-area/user-cool-collection/user-cool-collection.component';
+import { ModuleListModule } from 'src/app/features/module-browser/module-list/module-list.module';
 
 
 @NgModule({
@@ -70,6 +72,7 @@ import { UserCoolCollectionComponent } from 'src/app/features/routes/user-area/u
     HeroContentCardComponent,
     EmptyStateComponent,
     UserModulesModule,
+    ModuleListModule,
     MatDividerModule,
     LabelValueShowcaseComponent,
     CleanCardComponent,
@@ -79,6 +82,7 @@ import { UserCoolCollectionComponent } from 'src/app/features/routes/user-area/u
     StatisticsComponent,
     MatChipsModule,
     MatButtonModule,
+    MatButtonToggleModule,
     MatDialogModule,
     UserManualsComponent,
     UserCommentsComponent,

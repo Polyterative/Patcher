@@ -60,10 +60,10 @@
           @if (data.length > 0) {
             <div class="section-scroll">
               <app-module-list class="section-list"
-                               [data$]="dataService.pagedModulesData$"
-                               [viewConfig]="modulesViewConfig"
-                               [showSearch]="false"
-                               [encloseVertically]="encloseVertically"
+                              [data$]="dataService.pagedModulesData$"
+                              [viewConfig]="modulesViewConfig"
+                              [showSearch]="false"
+                              [encloseVertically]="encloseVertically"
               ></app-module-list>
             </div>
           } @else {

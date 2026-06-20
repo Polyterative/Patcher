@@ -6,7 +6,8 @@ export type ReactionKind = typeof REACTION_KIND_COOL;
 
 export const ReactionEntityTypes = {
   MODULE: 1,
-  RACK: 2
+  RACK: 2,
+  PATCH: 3
 } as const;
 
 export type ReactionEntityType =
