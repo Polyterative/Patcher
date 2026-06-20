@@ -289,20 +289,5 @@
 
       </div>
     </section>
-
-    <button class="save-fab"
-            mat-fab
-            extended
-            [disabled]="isSaveFabDisabled"
-            (click)="saveAll$.next()"
-            [class.save-fab--saving]="saveInProgress$ | async"
-            [attr.aria-label]="saveFabAriaLabel"
-            [matTooltip]="saveFabDisabledReason || 'Save all pending changes'"
-            matTooltipPosition="above"
-            matTooltipShowDelay="120"
-    >
-      <mat-icon>{{ saveFabIcon }}</mat-icon>
-      {{ saveFabLabel }}
-    </button>
   </div>
 </lib-clean-card>

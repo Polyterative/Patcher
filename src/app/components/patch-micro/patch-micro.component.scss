@@ -1,0 +1,39 @@
+.patch-micro__titleRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.patch-micro__titleRow app-hero-clickable-title {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.patch-micro__cool {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 0.34rem;
+  min-height: 2.15rem;
+  margin-left: auto;
+  padding: 0.25rem 0.52rem 0.25rem 0.6rem;
+  border: 0.1rem solid transparent;
+  border-radius: 999px;
+  background:
+    linear-gradient(118deg, rgba(255, 255, 255, 0.96), rgba(239, 249, 255, 0.96)) padding-box,
+    linear-gradient(115deg, #266fff, #d65cff 52%, #27dcb8) border-box;
+  color: #263142;
+  font-size: 0.76rem;
+  font-weight: 760;
+  letter-spacing: 0.018em;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.patch-micro__cool mat-icon {
+  width: 0.95rem;
+  height: 0.95rem;
+  font-size: 0.95rem;
+  line-height: 0.95rem;
+}

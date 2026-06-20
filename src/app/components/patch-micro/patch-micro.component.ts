@@ -27,6 +27,7 @@ export class PatchMicroComponent implements OnInit {
   @Input() data: PatchMinimal | null = null;
   
   @Input() viewConfig: PatchMinimalViewConfig = defaultPatchMinimalViewConfig;
+  @Input() showCoolOverlayPoc = false;
 
   constructor() { }
   

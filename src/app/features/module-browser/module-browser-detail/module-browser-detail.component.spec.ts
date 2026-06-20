@@ -324,13 +324,14 @@ describe('ModuleBrowserDetailComponent', () => {
     expect(reactionBackend.delete.reaction).not.toHaveBeenCalled();
   });
 
-  it('projects Cool into the primary module action card instead of a Community rail card', async () => {
+  it('renders Cool as a floating action instead of inside the primary module card', async () => {
     const {fixture} = await render();
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('lib-hero-content-card[titleNormal="Community"] app-cool-button')).toBeNull();
     const composite = fixture.debugElement.query(By.directive(ModuleCompositeStubComponent));
-    expect(composite.componentInstance.showCoolAction).toBeTrue();
+    expect(composite.componentInstance.showCoolAction).toBeFalse();
+    expect(fixture.nativeElement.querySelector('.module-detail-editor-floating-actions .module-detail-cool-floating-action')).not.toBeNull();
   });
 
   it('builds raw public possession stats for the Community data card', () => {

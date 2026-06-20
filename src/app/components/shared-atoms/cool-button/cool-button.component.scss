@@ -66,6 +66,56 @@
     opacity: 0.64;
   }
 
+  &--overlay {
+    justify-content: center;
+    min-width: 1.85rem;
+    min-height: 1.85rem;
+    gap: 0;
+    padding: 0;
+    border-width: 0.0625rem;
+    border-color: rgba(24, 34, 48, 0.22);
+    background: rgba(247, 250, 252, 0.78);
+    box-shadow: none;
+    backdrop-filter: blur(0.25rem);
+
+    .coolButton__icon {
+      width: 0.95rem;
+      height: 0.95rem;
+      font-size: 0.95rem;
+      line-height: 0.95rem;
+    }
+
+    &--title {
+      min-height: 2.15rem;
+      padding: 0.25rem 0.52rem 0.25rem 0.6rem;
+      font-size: 0.76rem;
+      gap: 0.34rem;
+
+      .coolButton__icon {
+        width: 0.95rem;
+        height: 0.95rem;
+        font-size: 0.95rem;
+        line-height: 0.95rem;
+      }
+
+      .coolButton__count {
+        min-inline-size: 1.15rem;
+        padding: 0.08rem 0.28rem;
+        font-size: 0.68rem;
+      }
+    }
+
+    .coolButton__count {
+      position: absolute;
+      top: -0.32rem;
+      right: -0.32rem;
+      min-inline-size: 1.1rem;
+      padding: 0.08rem 0.25rem;
+      font-size: 0.68rem;
+      box-shadow: 0 0.1rem 0.3rem rgba(16, 40, 70, 0.16);
+    }
+  }
+
   &__icon {
     font-size: 1.05rem;
     height: 1.12rem;

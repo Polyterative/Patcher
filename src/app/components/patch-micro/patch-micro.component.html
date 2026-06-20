@@ -1,10 +1,20 @@
 @if (data) {
-  <div class="col gap0">
-    <app-hero-clickable-title [link]="data.public_id ? ['/patches', data.public_id] : ['/patches/details', data.id]"
-                              infoBox
-                              infoText="Patch name"
-    >{{ data.name }}
-    </app-hero-clickable-title>
+  <div class="col gap0 patch-micro">
+    <div class="patch-micro__titleRow">
+      <app-hero-clickable-title [link]="data.public_id ? ['/patches', data.public_id] : ['/patches/details', data.id]"
+                                infoBox
+                                infoText="Patch name"
+      >{{ data.name }}
+      </app-hero-clickable-title>
+      @if (showCoolOverlayPoc) {
+        <div class="patch-micro__cool"
+             aria-label="Cool overlay placement preview"
+        >
+          <mat-icon aria-hidden="true">auto_awesome</mat-icon>
+          <span>Cool</span>
+        </div>
+      }
+    </div>
     <app-entity-author [data]="data.author"></app-entity-author>
     
     @if (!viewConfig.hideDates) {
