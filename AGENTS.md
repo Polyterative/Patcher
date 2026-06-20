@@ -92,6 +92,7 @@ Key paths:
 - Do not add `Co-authored-by` trailers or Copilot attribution lines to commits in this repository.
 - Ask before committing unless the user explicitly requested commits or invoked a persona/workflow that documents autonomous verified-checkpoint commits (for example `coordinator-loop` / "begin loop").
 - Never push unless the user explicitly requested it.
+- Do not create or use separate worktrees / child project sessions for Patcher work unless the user explicitly asks for a separate worktree/session. The user's running dev server is expected to serve the main checkout, so visual POCs and runtime validation must happen in the active checkout by default.
 - Never run `release:*` from `develop`.
 - Work normally happens on `develop`; the user decides when to release/merge to `production`. Do not switch to `production`, run release
   commands, or treat `develop` visibility as production exposure unless the user explicitly asks.
@@ -131,6 +132,7 @@ coordination tool, not a Patcher coding persona: keep normal single-repo Patcher
 really benefits from separate sessions/branches.
 
 - For single-repo research in this checkout, stay inline.
+- For normal single-repo Patcher work, including `coordinator-loop` unless explicitly instructed otherwise, stay in the active checkout. Do not spawn a separate worktree/session just to run the loop.
 - For cross-repo research, multi-repo edits, stacked/dependent PRs, parallel fan-out, or "try an alternative", load `orchestrate` and
   use its session tools (`list_projects`, `create_session`, `fork_session`, `send_session_message`) as directed by the skill.
 - Before spawning sessions, tell the user the session plan: how many sessions, which repo/branch, and what each one owns.
