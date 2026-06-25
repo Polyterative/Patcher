@@ -14,12 +14,23 @@ import { UrlCreatorService } from 'src/app/features/backend/url-creator.service'
 import {
   BrandPrimaryButtonComponent
 } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
+import { PatchMinimal } from 'src/app/models/patch';
 
 
 describe('PatchMinimalComponent - linked rack UI', () => {
   let fixture: ComponentFixture<PatchMinimalComponent>;
   let component: PatchMinimalComponent;
   let dataService: any;
+
+  const patchData = (partial: Partial<PatchMinimal> = {}): PatchMinimal => ({
+    id: 10,
+    name: 'Patch A',
+    public: false,
+    created: '2026-06-25T00:00:00Z',
+    updated: '2026-06-25T00:00:00Z',
+    author: {id: 'user-1', username: 'owner'},
+    ...partial
+  });
 
   const linkedState = (partial: Partial<LinkedRackUiState>): LinkedRackUiState => ({
     kind: 'unlinked',
@@ -33,11 +44,7 @@ describe('PatchMinimalComponent - linked rack UI', () => {
   beforeEach(async () => {
     dataService = {
       patchEditingPanelOpenState$: new BehaviorSubject<boolean>(false),
-      singlePatchData$: new BehaviorSubject<any>({
-        id: 10,
-        name: 'Patch A',
-        author: {id: 'user-1', username: 'owner'}
-      }),
+      singlePatchData$: new BehaviorSubject<PatchMinimal>(patchData()),
       linkedRackState$: new BehaviorSubject<LinkedRackUiState>(linkedState({
         kind: 'linked',
         statusTone: 'positive',
@@ -87,11 +94,7 @@ describe('PatchMinimalComponent - linked rack UI', () => {
 
     fixture = TestBed.createComponent(PatchMinimalComponent);
     component = fixture.componentInstance;
-    component.data = {
-      id: 10,
-      name: 'Patch A',
-      author: {id: 'user-1', username: 'owner'}
-    } as any;
+    component.data = patchData();
     component.viewConfig = {
       hideLabels: false,
       hideManufacturer: false,
@@ -112,6 +115,22 @@ describe('PatchMinimalComponent - linked rack UI', () => {
     expect(host.querySelector('.patch-linked-rack__info')).not.toBeNull();
   });
 
+  it('does not render the patch Cool action by default', () => {
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('app-cool-button')).toBeNull();
+  });
+
+  it('renders the patch Cool action only when the detail host opts in', () => {
+    component.showCoolAction = true;
+    component.data = patchData({public: true});
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('app-cool-button')).not.toBeNull();
+  });
+
   it('renders a small linked rack preview when an image is available', () => {
     fixture.detectChanges();
 
@@ -126,16 +145,12 @@ describe('PatchMinimalComponent - linked rack UI', () => {
   });
 
   it('renders the linked rack summary for non-owners in read-only mode', () => {
-    dataService.singlePatchData$.next({
-      id: 10,
-      name: 'Patch A',
+    dataService.singlePatchData$.next(patchData({
+      author: {id: 'user-2', username: 'other-user'}
+    }));
+    component.data = patchData({
       author: {id: 'user-2', username: 'other-user'}
     });
-    component.data = {
-      id: 10,
-      name: 'Patch A',
-      author: {id: 'user-2', username: 'other-user'}
-    } as any;
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
@@ -144,16 +159,12 @@ describe('PatchMinimalComponent - linked rack UI', () => {
   });
 
   it('keeps unavailable linked-rack state privacy-safe for non-owners', () => {
-    dataService.singlePatchData$.next({
-      id: 10,
-      name: 'Patch A',
+    dataService.singlePatchData$.next(patchData({
+      author: {id: 'user-2', username: 'other-user'}
+    }));
+    component.data = patchData({
       author: {id: 'user-2', username: 'other-user'}
     });
-    component.data = {
-      id: 10,
-      name: 'Patch A',
-      author: {id: 'user-2', username: 'other-user'}
-    } as any;
     dataService.linkedRackState$.next(linkedState({
       kind: 'unavailable',
       statusTone: 'warning',
@@ -181,13 +192,11 @@ describe('PatchMinimalComponent - linked rack UI', () => {
   });
 
   it('builds descriptive patch text for clipboard export', () => {
-    dataService.singlePatchData$.next({
-      id: 10,
-      name: 'Patch A',
+    dataService.singlePatchData$.next(patchData({
       description: 'Warm evolving texture',
       public: true,
       author: {id: 'user-1', username: 'owner'}
-    });
+    }));
     dataService.patchTags$.next(['ambient', 'stereo']);
     dataService.instanceLabelMap$.next(new Map([[101, '(1)']]));
     dataService.patchModuleInstances$.next([

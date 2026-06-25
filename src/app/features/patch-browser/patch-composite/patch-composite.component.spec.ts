@@ -25,6 +25,10 @@ describe('PatchCompositeComponent', () => {
       expect(comp.isEditing).toBeFalse();
     });
 
+    it('showCoolAction defaults to false', () => {
+      expect(comp.showCoolAction).toBeFalse();
+    });
+
     it('viewConfig defaults to defaultPatchMinimalViewConfig', () => {
       expect(comp.viewConfig).toEqual(defaultPatchMinimalViewConfig);
     });

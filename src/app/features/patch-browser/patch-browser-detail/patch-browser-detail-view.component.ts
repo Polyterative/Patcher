@@ -30,6 +30,7 @@ import {
   upsertJsonLdScript
 } from 'src/app/shared-interproject/json-ld-dom';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
+import { environment } from 'src/environments/environment';
 
 
 const JSONLD_SCRIPT_ID = 'patch-jsonld';
@@ -51,6 +52,7 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
     ...defaultPatchMinimalViewConfig,
     hideButtons: false
   };
+  readonly coolReactionsEnabled = environment.features.coolReactionsEnabled;
   
   constructor(
     public dataService: PatchDetailDataService,

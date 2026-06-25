@@ -40,6 +40,7 @@
       <app-patch-composite [data]="(bag.data)"
                            [isEditing]="bag.patchEditingPanelOpenState"
                            [viewConfig]="viewConfig"
+                           [showCoolAction]="coolReactionsEnabled"
       ></app-patch-composite>
     } @else if (bag.unavailableMessage) {
       <app-advice-tooltip title="Unavailable" tone="info">
