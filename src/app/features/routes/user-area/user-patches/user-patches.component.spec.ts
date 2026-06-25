@@ -39,4 +39,14 @@ describe('UserPatchesComponent', () => {
     comp.globalSearchQuery = 'bass';
     expect(comp.globalSearchQuery).toBe('bass');
   });
+
+  it('hides Cool from visible filters until patch Cool support is approved', () => {
+    expect(comp.visibleFilters().map(filter => filter.value)).toEqual(['PERSONAL']);
+  });
+
+  it('can expose the dormant Cool filter when an approved parent opts in later', () => {
+    comp.showCoolFilter = true;
+
+    expect(comp.visibleFilters().map(filter => filter.value)).toEqual(['PERSONAL', 'COOL']);
+  });
 });

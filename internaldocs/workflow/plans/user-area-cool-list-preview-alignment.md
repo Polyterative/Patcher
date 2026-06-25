@@ -2,7 +2,7 @@
 
 ## Status
 
-- [ ] Backlog plan, not active implementation.
+- [~] Core module/rack alignment checkpoints are implemented; runtime screenshot approval remains pending because no local dev server was listening on `localhost:5556` during the latest loop pass. Patch Cool UI remains dormant until the parent Cool plan's schema/RLS and placement approval is granted.
 - Priority: **MEDIUM**
 - TODO section: **INFRA**
 - Owner persona on pickup: `coordinator-loop` -> `designer` -> `frontend-dev` -> `reviewer`.
@@ -195,3 +195,4 @@ Run this work in the active/main checkout unless the user explicitly requests a 
 - 2026-06-20: User refined the IA: Modules Cool must contain modules only. Racks and patches need their own section-level Personal / Cool subsections. User also flagged the module minimal footer as misaligned, with the Cool control taking too much space and using an undesirable design.
 - 2026-06-20: User clarified the visual direction: Cool should not simply become smaller inside the footer. The existing mat-icon action rows should remain exactly as before, like `production`. Cool needs a separate absolute/overlay placement that can work across module, rack, and patch cards. Implementation must start with a proof of concept and ask for approval before continuing.
 - 2026-06-20: User clarified workflow preference: do not use separate worktrees / child project sessions unless explicitly requested. POCs must be made visible in the active checkout/dev-server context by default.
+- 2026-06-25T11:14+02:00 — Reconciled the plan against recent implementation commits: modules/racks now own separate Cool subsections and use existing preview paths, but the route-level Patch Cool tab was hidden again because patch reaction eligibility is still blocked by the parent Cool plan. The component/data scaffolding may remain dormant for future approved patch support, but the root user area must not call patch Cool backend paths before approval. Focused user-area Cool collection, modules, racks, and patches specs pass; visual screenshot approval is still pending on a running dev server.
