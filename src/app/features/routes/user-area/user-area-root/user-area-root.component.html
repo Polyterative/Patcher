@@ -92,16 +92,7 @@
                             class="block user-area-section"
                             [style.--section-enter-delay.ms]="240"
                             [globalSearchQuery]="bag.globalSearchQuery ?? ''"
-                            [showCoolFilter]="coolReactionsEnabled"
           >
-            @if (coolReactionsEnabled) {
-              <app-user-cool-collection
-                patchCoolTabContent
-                [embedded]="true"
-                entityType="patch"
-                emptyCopy="Tap Cool on a public patch to build this collection."
-              ></app-user-cool-collection>
-            }
           </app-user-patches>
           <!-- Collections section hidden via feature flag - enable in environment.ts -->
           <app-user-manuals appDiscoveryTipAnchor="user-area-manuals"
