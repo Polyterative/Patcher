@@ -21,11 +21,11 @@
   position: relative;
   z-index: 0;
   transition:
-    background 140ms ease,
-    border-color 140ms ease,
-    color 140ms ease,
-    filter 140ms ease,
-    box-shadow 140ms ease,
+    background 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 420ms ease,
+    filter 520ms ease,
+    box-shadow 520ms cubic-bezier(0.22, 1, 0.36, 1),
     transform 120ms ease;
   white-space: nowrap;
 
@@ -39,13 +39,31 @@
     color: #f7fbff;
     filter: drop-shadow(0 0.18rem 0.45rem var(--cool-glow));
 
-    .coolButton__spark {
-      animation: cool-pop 145ms ease-out;
-    }
-
     .coolButton__count {
       background: rgba(255, 255, 255, 0.16);
       color: #ffffff;
+    }
+  }
+
+  &--burst {
+    .coolButton__spark--core {
+      animation: cool-core-flash 760ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .coolButton__spark--ring {
+      animation: cool-ring-discharge 980ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .coolButton__spark--scatter {
+      animation: cool-scatter-pop 900ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .coolButton__icon {
+      animation: cool-icon-pop 820ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .coolButton__count {
+      animation: cool-count-pop 860ms cubic-bezier(0.16, 1, 0.3, 1);
     }
   }
 
@@ -121,6 +139,7 @@
     height: 1.12rem;
     line-height: 1.12rem;
     position: relative;
+    transform-origin: center;
     width: 1.05rem;
     z-index: 1;
   }
@@ -128,6 +147,7 @@
   &__label {
     line-height: 1;
     position: relative;
+    transition: color 420ms ease;
     z-index: 1;
   }
 
@@ -142,19 +162,22 @@
     font-variant-numeric: tabular-nums;
     font-weight: 750;
     justify-content: center;
+    overflow: hidden;
     min-inline-size: 1.35rem;
     padding: 0.12rem 0.34rem;
     position: relative;
+    transform-origin: center;
+    transition:
+      background 520ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 520ms cubic-bezier(0.22, 1, 0.36, 1),
+      color 420ms ease,
+      opacity 420ms ease,
+      transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
     z-index: 1;
   }
 
   &__spark {
-    background:
-      radial-gradient(circle, rgba(255, 219, 102, 0.95) 0 18%, transparent 19%),
-      conic-gradient(from 20deg, transparent 0 12%, rgba(101, 228, 255, 0.9) 13% 18%, transparent 19% 38%, rgba(255, 119, 225, 0.9) 39% 44%, transparent 45% 100%);
-    block-size: 2.9rem;
     border-radius: 50%;
-    inline-size: 2.9rem;
     inset-block-start: 50%;
     inset-inline-start: 50%;
     opacity: 0;
@@ -162,6 +185,32 @@
     position: absolute;
     transform: translate(-50%, -50%) scale(0.6);
     z-index: 0;
+
+    &--core {
+      background:
+        radial-gradient(circle, rgba(255, 248, 164, 1) 0 15%, rgba(101, 228, 255, 0.72) 16% 39%, rgba(170, 124, 255, 0.32) 40% 58%, transparent 61%);
+      block-size: 1.25rem;
+      filter: blur(0.015rem);
+      inline-size: 1.25rem;
+    }
+
+    &--ring {
+      block-size: 3.55rem;
+      box-shadow:
+        0 0 0 0.08rem rgba(101, 228, 255, 0.9),
+        0 0 0 0.18rem rgba(255, 219, 102, 0.18),
+        0 0 0.62rem rgba(101, 228, 255, 0.46),
+        inset 0 0 0.4rem rgba(255, 219, 102, 0.22);
+      inline-size: 3.55rem;
+    }
+
+    &--scatter {
+      background:
+        radial-gradient(circle, rgba(255, 219, 102, 0.88) 0 9%, transparent 10%),
+        conic-gradient(from 20deg, transparent 0 7%, rgba(101, 228, 255, 0.98) 8% 14%, transparent 15% 25%, rgba(255, 119, 225, 0.95) 26% 31%, transparent 32% 44%, rgba(255, 200, 60, 0.92) 45% 51%, transparent 52% 64%, rgba(39, 220, 184, 0.92) 65% 69%, transparent 70% 100%);
+      block-size: 3.7rem;
+      inline-size: 3.7rem;
+    }
   }
 }
 
@@ -173,17 +222,94 @@
   }
 }
 
-@keyframes cool-pop {
+@keyframes cool-core-flash {
   0% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.58) rotate(-8deg);
+    transform: translate(-50%, -50%) scale(0.28);
   }
-  55% {
+  12% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1.08) rotate(4deg);
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+  42% {
+    opacity: 0.72;
+    transform: translate(-50%, -50%) scale(1.34);
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(1.18) rotate(8deg);
+    transform: translate(-50%, -50%) scale(1.8);
+  }
+}
+
+@keyframes cool-ring-discharge {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.24) rotate(-18deg);
+  }
+  10% {
+    opacity: 1;
+  }
+  48% {
+    opacity: 0.7;
+    transform: translate(-50%, -50%) scale(1.08) rotate(7deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.72) rotate(18deg);
+  }
+}
+
+@keyframes cool-scatter-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.42) rotate(-22deg);
+  }
+  16% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.02) rotate(2deg);
+  }
+  58% {
+    opacity: 0.64;
+    transform: translate(-50%, -50%) scale(1.22) rotate(16deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.46) rotate(34deg);
+  }
+}
+
+@keyframes cool-count-pop {
+  0% {
+    transform: scale(1);
+  }
+  18% {
+    transform: scale(1.42);
+  }
+  45% {
+    transform: scale(0.92);
+  }
+  68% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes cool-icon-pop {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  16% {
+    transform: scale(1.28) rotate(-8deg);
+  }
+  42% {
+    transform: scale(0.94) rotate(6deg);
+  }
+  68% {
+    transform: scale(1.08) rotate(-2deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
   }
 }

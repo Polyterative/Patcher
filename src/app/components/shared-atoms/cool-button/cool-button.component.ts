@@ -1,9 +1,17 @@
 import { CommonModule } from '@angular/common';
 import {
+  animate,
+  style,
+  transition,
+  trigger
+} from '@angular/animations';
+import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   Input,
-  OnChanges
+  OnChanges,
+  OnDestroy
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -20,16 +28,55 @@ import {
   providers: [CoolButtonDataService],
   templateUrl: './cool-button.component.html',
   styleUrls: ['./cool-button.component.scss'],
+  animations: [
+    trigger('coolCountResize', [
+      transition(':enter', [
+        style({
+          maxInlineSize: '0',
+          minInlineSize: '0',
+          opacity: 0,
+          paddingInline: '0',
+          transform: 'scale(0.72)'
+        }),
+        animate('520ms cubic-bezier(0.22, 1, 0.36, 1)', style({
+          maxInlineSize: '4rem',
+          minInlineSize: '*',
+          opacity: 1,
+          paddingInline: '*',
+          transform: 'scale(1)'
+        }))
+      ]),
+      transition(':leave', [
+        style({
+          maxInlineSize: '4rem',
+          overflow: 'hidden'
+        }),
+        animate('360ms cubic-bezier(0.4, 0, 0.2, 1)', style({
+          maxInlineSize: '0',
+          minInlineSize: '0',
+          opacity: 0,
+          paddingInline: '0',
+          transform: 'scale(0.72)'
+        }))
+      ])
+    ])
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CoolButtonComponent implements OnChanges {
+export class CoolButtonComponent implements OnChanges, OnDestroy {
   @Input() entityType: ReactionEntityType | null | undefined = null;
   @Input() entityId: number | null | undefined = null;
   @Input() eligible: boolean | null | undefined = false;
   @Input() countDisplayMode: CoolCountDisplayMode | null | undefined = 'count';
   @Input() variant: 'default' | 'overlay' | 'title' = 'default';
 
-  constructor(readonly dataService: CoolButtonDataService) {}
+  bursting = false;
+  private burstResetId: ReturnType<typeof setTimeout> | null = null;
+
+  constructor(
+    readonly dataService: CoolButtonDataService,
+    private readonly cdr: ChangeDetectorRef
+  ) {}
 
   ngOnChanges(): void {
     this.dataService.setEntity({
@@ -38,5 +85,33 @@ export class CoolButtonComponent implements OnChanges {
       eligible: this.eligible === true,
       countDisplayMode: this.countDisplayMode ?? 'count'
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.burstResetId != null) {
+      clearTimeout(this.burstResetId);
+    }
+  }
+
+  requestToggle(): void {
+    const vm = this.dataService.vm$.value;
+    if (!vm.visible || vm.disabled || vm.loading) {
+      return;
+    }
+
+    this.dataService.requestToggle$.next();
+    if (this.bursting) {
+      this.bursting = false;
+      this.cdr.detectChanges();
+    }
+    this.bursting = true;
+    if (this.burstResetId != null) {
+      clearTimeout(this.burstResetId);
+    }
+    this.burstResetId = setTimeout(() => {
+      this.bursting = false;
+      this.burstResetId = null;
+      this.cdr.markForCheck();
+    }, 1050);
   }
 }
