@@ -1,5 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick
+} from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
@@ -129,7 +134,7 @@ describe('CoolButtonDataService', () => {
       visible: true,
       active: true,
       count: 3,
-      label: 'Cool!'
+      label: 'Cool'
     }));
   });
 
@@ -339,11 +344,11 @@ describe('CoolButtonDataService', () => {
 describe('CoolButtonComponent', () => {
   let fixture: ComponentFixture<CoolButtonComponent>;
 
-  function build(enabled: boolean, eligible = true) {
+  function build(enabled: boolean, eligible = true, count = 2) {
     const backend: BackendStub = {
       get: {
         currentUserReactions: jasmine.createSpy('currentUserReactions').and.returnValue(of([])),
-        reactionCount: jasmine.createSpy('reactionCount').and.returnValue(of(2))
+        reactionCount: jasmine.createSpy('reactionCount').and.returnValue(of(count))
       },
       add: {
         reaction: jasmine.createSpy('addReaction').and.returnValue(of(null))
@@ -400,4 +405,50 @@ describe('CoolButtonComponent', () => {
     expect(count.getAttribute('aria-label')).toBe('2 cool reactions');
     expect(button.getAttribute('aria-label')).toBe('Mark as cool');
   });
+
+  it('does not reserve count badge space before a count exists', () => {
+    build(true, true, 0);
+    fixture.detectChanges();
+
+    expect(fixture.debugElement.query(By.css('.coolButton__count'))).toBeNull();
+  });
+
+  it('plays a short burst only for enabled Cool clicks', fakeAsync(() => {
+    build(true);
+    fixture.detectChanges();
+
+    const button = fixture.debugElement.query(By.css('button.coolButton'));
+    button.triggerEventHandler('click');
+    fixture.detectChanges();
+
+    expect(fixture.debugElement.query(By.css('button.coolButton--burst'))).not.toBeNull();
+
+    tick(1050);
+    fixture.detectChanges();
+
+    expect(fixture.debugElement.query(By.css('button.coolButton--burst'))).toBeNull();
+  }));
+
+  it('restarts the burst for repeated clicks before the previous burst reset finishes', fakeAsync(() => {
+    build(true);
+    fixture.detectChanges();
+
+    const button = fixture.debugElement.query(By.css('button.coolButton'));
+    button.triggerEventHandler('click');
+    fixture.detectChanges();
+    expect(fixture.componentInstance.bursting).toBeTrue();
+
+    tick(400);
+    button.triggerEventHandler('click');
+    fixture.detectChanges();
+    tick(640);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.bursting).toBeTrue();
+
+    tick(410);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.bursting).toBeFalse();
+  }));
 });

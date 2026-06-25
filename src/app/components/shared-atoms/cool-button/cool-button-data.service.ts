@@ -179,7 +179,7 @@ export class CoolButtonDataService extends SubManager {
       count,
       disabled,
       loading: false,
-      label: active ? 'Cool!' : 'Cool',
+      label: 'Cool',
       ariaLabel: active ? 'Remove cool' : 'Mark as cool'
     };
   }

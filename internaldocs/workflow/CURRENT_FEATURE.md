@@ -12,10 +12,10 @@
 
 ## Active
 
-Cross-entity Cool reactions — MVP review checkpoint complete
+Cross-entity Cool reactions — interaction polish checkpoint complete
 
 Plan: [module-cool-appreciation-button.md](./plans/module-cool-appreciation-button.md)
-Status: **Local additive backend checkpoint, shared UI/data-service checkpoint, modules/public-racks surface wiring checkpoint, user-area Cool collection, Cool design-refinement placement checkpoint, and reviewer-requested inline uncool rollback hardening are implemented. Cool UI is intentionally visible in generated development builds for review, while generated production builds remain off. Approved Patch preview and Cool migrations are applied on the linked Supabase project, but broader linked-database migration/typegen drift remains. A local `pnpm updateBackendTypes` candidate was rejected as regressive, so manual backend types remain for now. The next structural patch-support checkpoint is blocked on explicit schema/RLS and UX placement approval.**
+Status: **Local additive backend checkpoint, shared UI/data-service checkpoint, modules/public-racks surface wiring checkpoint, user-area Cool collection, Cool design-refinement placement checkpoint, reviewer-requested inline uncool rollback hardening, and Cool button interaction polish are implemented. Cool UI is intentionally visible in generated development builds for review, while generated production builds remain off. Approved Patch preview and Cool migrations are applied on the linked Supabase project, but broader linked-database migration/typegen drift remains. A local `pnpm updateBackendTypes` candidate was rejected as regressive, so manual backend types remain for now. The next structural patch-support checkpoint is blocked on explicit schema/RLS and UX placement approval.**
 Staged: 2026-06-19T09:21+02:00
 
 #### Why this is next
@@ -53,6 +53,7 @@ Staged: 2026-06-19T09:21+02:00
 - [x] Add the gated user-area Cool collection for cooled modules and public racks only, grouped by entity type, newest-first, with inline uncool.
 - [x] Refine Cool placement: module detail Cool lives in the top-left module action row, rack detail Cool lives in the left rack action strip, and user-area Cool is a Modules tab/filter rather than a root section.
 - [x] Address reviewer finding: overlapping inline uncool failures now restore only the failed item instead of rolling back the whole collection snapshot.
+- [x] Refine the shared Cool button press feedback with a stateful burst/count animation while preserving existing toggle, rollback, and self-cooling eligibility behavior.
 - [ ] Blocked pending approval: decide whether to extend Cool to public patches by adding patch eligibility to the Cool schema/RLS support and approving exact patch detail/user-area placement.
 
 #### Approval queue
@@ -85,3 +86,4 @@ Staged: 2026-06-19T09:21+02:00
 - 2026-06-19T11:52+02:00 — Applied the Cool design handoff: removed the standalone module detail Community/Cool card, projected Cool into the module primary action row, moved rack Cool from the right insight grid into the left rack action strip, and made Cool a Modules-area tab/filter with grouped module/rack results. Repeated module/rack list cards remain free of Cool buttons; production flag remains off and dev/local remains on.
 - 2026-06-19T12:31+02:00 — User clarified loop operating policy: agents should work freely on `develop`, keep production/release/push out of scope, and avoid backend-breaking changes that could break the currently published production app unless explicitly approved. Feature flags are optional and only needed for hidden/incomplete work or rollout safety. UX planning should be more collaborative: ask on visible placement/hierarchy decisions, then execute autonomously.
 - 2026-06-19T17:23+02:00 — Independent reviewer found a real overlapping inline-uncool rollback bug in the user-area Cool collection. Fixed rollback to restore only the failed item and added focused concurrent-removal coverage. Structural patch support is now the next layer, but it requires explicit schema/RLS approval and patch UI placement approval before implementation.
+- 2026-06-25T10:56+02:00 — Polished the shared Cool button interaction with a deliberate burst/count transition and stable "Cool" label, keeping the animation click-scoped rather than decorative idle motion. Independent review initially caught an overreach that blocked owner-authored/self-cooling entities; that gate was removed so the plan's existing eligibility model remains intact. Focused Cool button specs, lint, docs, and whitespace checks pass. Runtime screenshot validation is still pending because no local dev server was listening on `localhost:5556` during this loop pass.
