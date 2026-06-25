@@ -36,6 +36,7 @@ import { Patch } from 'src/app/models/patch';
 export class PatchCompositeComponent {
   @Input() data: Patch;
   @Input() isEditing = false;
+  @Input() showCoolAction = false;
   @Input() readonly viewConfig: PatchMinimalViewConfig = defaultPatchMinimalViewConfig;
 
   constructor(

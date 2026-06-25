@@ -12,10 +12,10 @@
 
 ## Active
 
-Cross-entity Cool reactions — interaction polish checkpoint complete
+Cross-entity Cool reactions — public patch support checkpoint
 
 Plan: [module-cool-appreciation-button.md](./plans/module-cool-appreciation-button.md)
-Status: **Local additive backend checkpoint, shared UI/data-service checkpoint, modules/public-racks surface wiring checkpoint, user-area Cool collection, Cool design-refinement placement checkpoint, reviewer-requested inline uncool rollback hardening, and Cool button interaction polish are implemented. Cool UI is intentionally visible in generated development builds for review, while generated production builds remain off. Approved Patch preview and Cool migrations are applied on the linked Supabase project, but broader linked-database migration/typegen drift remains. A local `pnpm updateBackendTypes` candidate was rejected as regressive, so manual backend types remain for now. The next structural patch-support checkpoint is blocked on explicit schema/RLS and UX placement approval.**
+Status: **Local additive backend checkpoint, shared UI/data-service checkpoint, modules/public-racks surface wiring checkpoint, user-area Cool collection, Cool design-refinement placement checkpoint, reviewer-requested inline uncool rollback hardening, Cool button interaction polish, and public-patch Cool support are implemented. Cool UI is intentionally visible in generated development builds for review, while generated production builds remain off. Approved Patch preview and Cool migrations, including public-patch eligibility, are applied on the linked Supabase project, but broader linked-database migration/typegen drift remains. A local `pnpm updateBackendTypes` candidate was rejected as regressive, so manual backend types remain for now. Public patch Cool support is in final validation before checkpoint commit.**
 Staged: 2026-06-19T09:21+02:00
 
 #### Why this is next
@@ -55,7 +55,9 @@ Staged: 2026-06-19T09:21+02:00
 - [x] Address reviewer finding: overlapping inline uncool failures now restore only the failed item instead of rolling back the whole collection snapshot.
 - [x] Refine the shared Cool button press feedback with a stateful burst/count animation while preserving existing toggle, rollback, and self-cooling eligibility behavior.
 - [x] Keep dormant patch Cool user-area scaffolding hidden from the root route until patch schema/RLS and placement approval are recorded.
-- [ ] Blocked pending approval: decide whether to extend Cool to public patches by adding patch eligibility to the Cool schema/RLS support and approving exact patch detail/user-area placement.
+- [x] Record conditional approval for a non-breaking public patch Cool checkpoint: additive patch eligibility plus one patch-detail action, no repeated patch list/card controls, no production branch/release/push.
+- [x] Add local public patch Cool eligibility migration and gated patch-detail action wiring.
+- [x] Apply the approved public patch Cool migration to the linked Supabase project, run advisors, and verify the remote constraints/function include public patches.
 
 #### Approval queue
 
@@ -63,6 +65,7 @@ Staged: 2026-06-19T09:21+02:00
 - **Approval recorded 2026-06-19T09:20+02:00:** User approved “as usual” only if the checkpoint is not a breaking change to the current production build. Treat this as conditional approval for additive/narrow schema/RLS work only: modules + public racks initially, no unrelated RLS/policy changes, and stop before any breaking change or risky production behavior.
 - **Operational constraint recorded 2026-06-19T09:20+02:00:** Do not use the production branch, release, push, or expose Cool frontend code. Backend type updates may be tried locally on `develop` only if the resulting diff is non-regressive.
 - **Approval requested 2026-06-19T17:23+02:00:** May the next structural checkpoint extend Cool to public patches by updating the already-added Cool reaction schema/RLS eligibility from modules+racks to modules+racks+public patches, and where should the single patch Cool control live? Recommended default: one detail-page action beside existing patch metadata/actions, no repeated patch list/card controls, and user-area Cool keeps patches as a grouped section inside Modules > Cool until a broader IA decision.
+- **Approval recorded 2026-06-25T11:16+02:00:** User approved the recommended patch Cool checkpoint if it does not break production features. Treat this as conditional approval for additive public-patch schema/RLS eligibility and a single patch-detail Cool action only. Keep user-area Patch Cool hidden and do not add repeated patch list/card controls in this checkpoint.
 
 #### Validation strategy
 
@@ -89,3 +92,6 @@ Staged: 2026-06-19T09:21+02:00
 - 2026-06-19T17:23+02:00 — Independent reviewer found a real overlapping inline-uncool rollback bug in the user-area Cool collection. Fixed rollback to restore only the failed item and added focused concurrent-removal coverage. Structural patch support is now the next layer, but it requires explicit schema/RLS approval and patch UI placement approval before implementation.
 - 2026-06-25T10:56+02:00 — Polished the shared Cool button interaction with a deliberate burst/count transition and stable "Cool" label, keeping the animation click-scoped rather than decorative idle motion. Independent review initially caught an overreach that blocked owner-authored/self-cooling entities; that gate was removed so the plan's existing eligibility model remains intact. Focused Cool button specs, lint, docs, and whitespace checks pass. Runtime screenshot validation is still pending because no local dev server was listening on `localhost:5556` during this loop pass.
 - 2026-06-25T11:14+02:00 — During loop continuation, found the adjacent user-area Cool alignment scaffolding had prematurely wired a Patch Cool tab from the root route. Removed the root-level patch Cool opt-in so patch collection loading remains dormant until the already-recorded schema/RLS and placement approval is granted. Focused user-area Cool/module/rack/patch component specs pass.
+- 2026-06-25T11:16+02:00 — User conditionally approved public patch Cool support if it does not break production features. Implemented the local additive migration by widening existing Cool reaction entity-type constraints from modules+racks to modules+racks+patches and extending `is_reaction_entity_eligible` to public patches only; no existing rows are updated. Added one gated patch-detail Cool action through `PatchMinimal`/`PatchComposite`/`PatchBrowserDetail`, with `showCoolAction` defaulting false so repeated patch list/card surfaces remain unchanged. User-area Patch Cool remains hidden.
+- 2026-06-25T11:28+02:00 — Independent review found no blocking issues in the uncommitted patch Cool checkpoint. Applied migration `extend_cool_reactions_to_public_patches` to linked Supabase project `sozmatmywjpstwidzlss` and verified both Cool reaction constraints allow entity type `3` plus the helper checks `public.patches.public = true`. Supabase advisors still report existing security/performance warnings, including SECURITY DEFINER function executability for the original Cool helper/trigger and older RLS policy performance warnings, but no patch-specific data mutation or new schema shape change was introduced.
+- 2026-06-25T11:30+02:00 — Final validation for the public patch Cool checkpoint passed: focused patch-minimal, patch-composite, Cool button, and user-patches specs; `pnpm lint`; docs check; and whitespace check. Runtime screenshot validation remains pending because no dev server was reachable at `localhost:5556`.
