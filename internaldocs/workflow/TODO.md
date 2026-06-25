@@ -42,7 +42,7 @@
 
 ### DATA MODEL (schema / domain gaps to address)
 
-- [ ] **LOW: Module I/O — bidirectional and passive port support** → [`plans/module-io-bidirectional-passive-port-support.md`](./plans/module-io-bidirectional-passive-port-support.md)
+- [~] **LOW: Module I/O — bidirectional and passive port support** → [`plans/module-io-bidirectional-passive-port-support.md`](./plans/module-io-bidirectional-passive-port-support.md)
 
 ### INFRA (independent; pick any time a product task is blocked)
 

@@ -12,87 +12,45 @@
 
 ## Active
 
-Cross-entity Cool reactions — public patch support checkpoint
+Module I/O — bidirectional and passive port planning
 
-Plan: [module-cool-appreciation-button.md](./plans/module-cool-appreciation-button.md)
-Status: **Local additive backend checkpoint, shared UI/data-service checkpoint, modules/public-racks surface wiring checkpoint, user-area Cool collection, Cool design-refinement placement checkpoint, reviewer-requested inline uncool rollback hardening, Cool button interaction polish, and public-patch Cool support are implemented and checkpointed. Cool UI is intentionally visible in generated development builds for review, while generated production builds remain off. Approved Patch preview and Cool migrations, including public-patch eligibility, are applied on the linked Supabase project, but broader linked-database migration/typegen drift remains. A local `pnpm updateBackendTypes` candidate was rejected as regressive, so manual backend types remain for now. Runtime visual validation remains blocked until the local dev server is available.**
-Staged: 2026-06-19T09:21+02:00
+Plan: [module-io-bidirectional-passive-port-support.md](./plans/module-io-bidirectional-passive-port-support.md)
+Status: **Planning/approval gate active. The user selected separate `bidirectional` and `passive` direction values. Current implementation uses split `module_ins` / `module_outs` tables and `backend.update.moduleINsOUTs`, so the next checkpoint must be a backward-compatible local schema proposal only. No SQL, backend type generation, RLS, or remote Supabase changes are approved yet.**
+Staged: 2026-06-25T16:21+02:00
 
 #### Why this is next
 
-- Patch SVG preview backend/storage and timestamp-preservation checkpoints now exist locally and on the linked Supabase project, but broader migration history still differs from the local repo.
-- The remaining Patch SVG preview UI/data-service work depends on safe typegen/operational verification and must stay blocked until the remaining drift is resolved or explicitly accepted.
-- Cross-entity Cool reactions is the next highest-priority non-held INFRA item with a plan. The local backend and shared guarded UI checkpoints are complete, and the approved remote Cool objects now exist; production-facing UI remains gated until typegen/operational verification is safe.
+- Cross-entity Cool patch support is checkpointed; remaining Cool alignment work is gated on runtime screenshot approval, and the user chose to skip visual validation for now.
+- Manufacturer Accounts remains blocked behind local type generation/backend-access dependencies.
+- Module I/O is the next non-held backlog item, but it has schema semantics that must be decided before implementation.
 
 #### Safety gate
 
-- Read `internaldocs/patterns/BACKEND_METHODS.md` schema-change preflight before any SQL draft.
-- Do not switch to `production`, release, push, or expose Cool frontend code through production while this feature is still in development.
-- Work on `develop` is allowed to be review-visible. Production rollout is a separate manual user action; agents must not switch to
-  `production`, release, or push.
-- Before adding/changing meaningful Cool UI placement, ask for a short UX placement approval or route through `designer`; code execution
-  can remain autonomous after the visible direction is approved.
-- Backend changes must remain additive/backward-compatible unless the user explicitly approves a breaking production-risking backend change
-  while present.
-- Keep generated development/local `coolReactionsEnabled` `true` so the user can review Cool on `develop`; generated production must remain `false`.
-- `pnpm updateBackendTypes` is allowed only as a local candidate diff on `develop`. Keep it only if it is non-regressive; if linked remote drift removes/regresses unrelated local schema/types, revert the generated type-file changes and document the blocker.
-- Do not enable production-visible Cool UI or wire Patch preview generation until remaining linked Supabase drift is reconciled or explicitly accepted.
-- Typegen blocker: 2026-06-19 candidate generation against linked project `sozmatmywjpstwidzlss` removed the local `user_module_acquisitions` table type, dropped the `reactions_user_id_fkey` relationship, and made `patches.public_id` / `racks.public_id` inserts required again. The generated `src/backend/database.types.ts` diff was reverted.
-- Initial implementation scope should be narrow: modules and public racks first, patches in the structural layer after the data path is proven.
-- Any UI wiring before remote migration application must be behind a disabled-by-default feature guard so the current production build never queries missing Cool backend objects.
+- Before any schema / migration / RPC work, read `internaldocs/patterns/BACKEND_METHODS.md` schema-change preflight.
+- No Supabase migration, RLS, or backend type-generation changes before explicit user approval.
+- Any migration proposal must be additive/backward-compatible with existing `module_ins` and `module_outs` data.
+- Do not rewrite existing port rows, alter production behavior, switch branches, release, or push.
+- If typegen is evaluated later, treat it as a local candidate diff and revert unrelated regressions.
 
 #### Layer checklist
 
-- [x] Re-read the existing Cool plan and stage it as the active safe task.
-- [x] Record the explicit schema/RLS approval question in the plan.
-- [x] Record conditional user approval for the narrow, non-breaking schema/RLS checkpoint.
-- [x] Draft the narrow schema/RLS/trigger checkpoint for reactions and reaction counts.
-- [x] Implement backend methods through `SupabaseService` only, with cache keys and focused tests.
-- [x] Add disabled-by-default shared Cool UI/data-service wiring for the approved MVP surfaces, with tests proving no backend calls when gated off.
-- [x] Wire `app-cool-button` into module and rack detail pages only for modules plus public racks; repeated list/card surfaces must not show Cool buttons.
-- [x] Add the gated user-area Cool collection for cooled modules and public racks only, grouped by entity type, newest-first, with inline uncool.
-- [x] Refine Cool placement: module detail Cool lives in the top-left module action row, rack detail Cool lives in the left rack action strip, and user-area Cool is a Modules tab/filter rather than a root section.
-- [x] Address reviewer finding: overlapping inline uncool failures now restore only the failed item instead of rolling back the whole collection snapshot.
-- [x] Refine the shared Cool button press feedback with a stateful burst/count animation while preserving existing toggle, rollback, and self-cooling eligibility behavior.
-- [x] Keep dormant patch Cool user-area scaffolding hidden from the root route until patch schema/RLS and placement approval are recorded.
-- [x] Record conditional approval for a non-breaking public patch Cool checkpoint: additive patch eligibility plus one patch-detail action, no repeated patch list/card controls, no production branch/release/push.
-- [x] Add local public patch Cool eligibility migration and gated patch-detail action wiring.
-- [x] Apply the approved public patch Cool migration to the linked Supabase project, run advisors, and verify the remote constraints/function include public patches.
+- [x] Select Module I/O as the next non-held, non-visual backlog item.
+- [x] Record the product-owner decision to use separate `bidirectional` and `passive` direction values.
+- [x] Inspect the current implementation shape: split `module_ins` / `module_outs` tables, `DbModule.ins` / `DbModule.outs`, and `backend.update.moduleINsOUTs`.
+- [x] Record a schema/RLS approval question for the next checkpoint.
+- [ ] After approval, draft a local-only additive migration proposal.
 
 #### Approval queue
 
-- **Approval requested 2026-06-19T09:21+02:00:** May the next implementation checkpoint draft and apply a narrow Cool reactions schema/RLS plan for a polymorphic `reactions` table plus aggregate `reaction_counts` support, limited initially to modules and public racks? Default if not approved: keep work planning/docs-only and do not create migrations, policies, RPCs, or generated type changes.
-- **Approval recorded 2026-06-19T09:20+02:00:** User approved “as usual” only if the checkpoint is not a breaking change to the current production build. Treat this as conditional approval for additive/narrow schema/RLS work only: modules + public racks initially, no unrelated RLS/policy changes, and stop before any breaking change or risky production behavior.
-- **Operational constraint recorded 2026-06-19T09:20+02:00:** Do not use the production branch, release, push, or expose Cool frontend code. Backend type updates may be tried locally on `develop` only if the resulting diff is non-regressive.
-- **Approval requested 2026-06-19T17:23+02:00:** May the next structural checkpoint extend Cool to public patches by updating the already-added Cool reaction schema/RLS eligibility from modules+racks to modules+racks+public patches, and where should the single patch Cool control live? Recommended default: one detail-page action beside existing patch metadata/actions, no repeated patch list/card controls, and user-area Cool keeps patches as a grouped section inside Modules > Cool until a broader IA decision.
-- **Approval recorded 2026-06-25T11:16+02:00:** User approved the recommended patch Cool checkpoint if it does not break production features. Treat this as conditional approval for additive public-patch schema/RLS eligibility and a single patch-detail Cool action only. Keep user-area Patch Cool hidden and do not add repeated patch list/card controls in this checkpoint.
+- **Approval requested 2026-06-25T16:21+02:00:** May the next checkpoint draft a local-only, additive schema migration proposal for separate bidirectional and passive module port directions, with no remote Supabase apply and no production-breaking rewrite of existing `module_ins` / `module_outs` data? Default if not approved: keep this task planning/docs-only.
 
 #### Validation strategy
 
 - Docs-only gate: `node scripts/checks/check-docs.cjs` and `git diff --check`.
-- Gated UI checkpoint: focused Cool button/data-service specs proving gate-off no-op behavior, plus `pnpm lint`.
-- After remote migration/typegen reconciliation: focused backend/cache specs, Cool button/user-area specs, auth E2E where practical, then `pnpm lint`.
+- Migration proposal checkpoint: schema preflight read, focused backend type/mapping tests if code changes occur, and `pnpm lint`.
+- UI/editor checkpoint: focused module-editor I/O tests and patch-connection tests.
 
 #### Decision log
 
-- 2026-06-19T09:21+02:00 — Pivoted from Patch SVG previews after read-only Supabase inspection reconfirmed linked migration/typegen drift and missing patch preview remote objects. Staged Cross-entity Cool reactions as planning/approval-gate only because it requires schema/RLS/policy work before code can safely start.
-- 2026-06-19T09:20+02:00 — User conditionally approved the next Cool reactions schema/RLS checkpoint only if it is non-breaking for the current production build. Scope remains additive and narrow: polymorphic `reactions` plus aggregate `reaction_counts`, modules + public racks initially, no unrelated RLS/policy changes, and stop before any breaking change or risky production behavior.
-- 2026-06-19T09:32+02:00 — Implemented the local-only backend checkpoint with additive `reactions` / `reaction_counts` migration objects, narrow RLS, SupabaseService add/delete/get methods, cache keys, and focused tests. Skipped remote typegen because linked Supabase drift is already recorded; manually updated `src/backend/database.types.ts` for the two new tables. Reviewer pass narrowed module eligibility to `modules.public = true` so aggregate counts cannot expose non-public module IDs.
-- 2026-06-19T09:43+02:00 — Reconciled workflow state after the backend checkpoint. Because the current production database may not have the new Cool objects yet, the next UI/data-service work is only safe if it is disabled by default and tests prove it performs no Cool backend reads/writes while gated off.
-- 2026-06-19T09:45+02:00 — Added disabled-by-default `coolReactionsEnabled` environment flag plus shared `app-cool-button` / component-scoped data service. The service routes enabled reads/writes through `SupabaseService`, optimistically toggles with rollback, and focused specs prove feature-off and ineligible paths render no button and make no Cool backend calls.
-- 2026-06-19T09:45+02:00 — With explicit operational approval, applied only the already-approved Patch preview and Cool additive migrations to linked Supabase project `sozmatmywjpstwidzlss`. Verified `patches.image`, public `patches` bucket, patch timestamp trigger, `reactions`, and `reaction_counts` now exist remotely. `pnpm updateBackendTypes` remains blocked because unrelated local migration families are still absent/divergent on the linked project.
-- 2026-06-19T10:47+02:00 — Wired the shared Cool button into module detail, module list cards, rack detail, and rack list cards only. Hosts additionally check `environment.features.coolReactionsEnabled` before instantiating the button, so the default-off dev/prod flag renders no control and performs no reaction backend calls; eligibility remains `public === true` for modules and racks. Patches remain intentionally unwired.
-- 2026-06-19T09:20+02:00 — User clarified operational constraints: stay on `develop`, do not switch to `production`, do not release or push, and keep the Cool frontend hidden/default-off while the feature is still being developed. Local backend typegen is allowed only as a candidate diff; reject it if linked remote drift regresses unrelated local schema/types.
-- 2026-06-19T10:57+02:00 — Evaluated `SUPABASE_PROJECT_ID=sozmatmywjpstwidzlss pnpm updateBackendTypes` as a local candidate. Rejected and reverted the generated `src/backend/database.types.ts` diff because it regressed unrelated local schema/types: removed `user_module_acquisitions`, removed the `reactions_user_id_fkey` relationship, and made DB-default `public_id` inserts required for patches/racks. Keep manual local types until linked migration/typegen drift is reconciled.
-- 2026-06-19T10:59+02:00 — User clarified that Cool should be visible on `develop` for review. Production/release remains blocked: do not switch branches, release, push, or expose Cool via production. Keep generated dev/local `coolReactionsEnabled` on and generated production off; typegen remains manual because the linked project still produces regressive unrelated type drift.
-- 2026-06-19T11:19+02:00 — User clarified Cool placement after reviewing develop: avoid many Cool buttons in a row. Keep Cool visible for review only on slash/detail-style pages and user-owned Cool collection interactions; remove repeated module/rack list card controls even when the develop flag is on. Detail-page placement can stay near the existing community/statistics/action rail.
-- 2026-06-19T11:05+02:00 — Implemented the next user-area Cool collection checkpoint for modules and public racks only; patches remain deferred to the structural layer. The collection stays behind `COOL_REACTIONS_ENABLED`, performs no Cool backend calls while disabled, fetches public module/rack details in batch, groups by entity type newest-first, and removes Cool inline through the existing reaction delete path.
-- 2026-06-19T11:52+02:00 — Applied the Cool design handoff: removed the standalone module detail Community/Cool card, projected Cool into the module primary action row, moved rack Cool from the right insight grid into the left rack action strip, and made Cool a Modules-area tab/filter with grouped module/rack results. Repeated module/rack list cards remain free of Cool buttons; production flag remains off and dev/local remains on.
-- 2026-06-19T12:31+02:00 — User clarified loop operating policy: agents should work freely on `develop`, keep production/release/push out of scope, and avoid backend-breaking changes that could break the currently published production app unless explicitly approved. Feature flags are optional and only needed for hidden/incomplete work or rollout safety. UX planning should be more collaborative: ask on visible placement/hierarchy decisions, then execute autonomously.
-- 2026-06-19T17:23+02:00 — Independent reviewer found a real overlapping inline-uncool rollback bug in the user-area Cool collection. Fixed rollback to restore only the failed item and added focused concurrent-removal coverage. Structural patch support is now the next layer, but it requires explicit schema/RLS approval and patch UI placement approval before implementation.
-- 2026-06-25T10:56+02:00 — Polished the shared Cool button interaction with a deliberate burst/count transition and stable "Cool" label, keeping the animation click-scoped rather than decorative idle motion. Independent review initially caught an overreach that blocked owner-authored/self-cooling entities; that gate was removed so the plan's existing eligibility model remains intact. Focused Cool button specs, lint, docs, and whitespace checks pass. Runtime screenshot validation is still pending because no local dev server was listening on `localhost:5556` during this loop pass.
-- 2026-06-25T11:14+02:00 — During loop continuation, found the adjacent user-area Cool alignment scaffolding had prematurely wired a Patch Cool tab from the root route. Removed the root-level patch Cool opt-in so patch collection loading remains dormant until the already-recorded schema/RLS and placement approval is granted. Focused user-area Cool/module/rack/patch component specs pass.
-- 2026-06-25T11:16+02:00 — User conditionally approved public patch Cool support if it does not break production features. Implemented the local additive migration by widening existing Cool reaction entity-type constraints from modules+racks to modules+racks+patches and extending `is_reaction_entity_eligible` to public patches only; no existing rows are updated. Added one gated patch-detail Cool action through `PatchMinimal`/`PatchComposite`/`PatchBrowserDetail`, with `showCoolAction` defaulting false so repeated patch list/card surfaces remain unchanged. User-area Patch Cool remains hidden.
-- 2026-06-25T11:28+02:00 — Independent review found no blocking issues in the uncommitted patch Cool checkpoint. Applied migration `extend_cool_reactions_to_public_patches` to linked Supabase project `sozmatmywjpstwidzlss` and verified both Cool reaction constraints allow entity type `3` plus the helper checks `public.patches.public = true`. Supabase advisors still report existing security/performance warnings, including SECURITY DEFINER function executability for the original Cool helper/trigger and older RLS policy performance warnings, but no patch-specific data mutation or new schema shape change was introduced.
-- 2026-06-25T11:30+02:00 — Final validation for the public patch Cool checkpoint passed: focused patch-minimal, patch-composite, Cool button, and user-patches specs; `pnpm lint`; docs check; and whitespace check. Runtime screenshot validation remains pending because no dev server was reachable at `localhost:5556`.
-- 2026-06-25T11:31+02:00 — Created checkpoint commit `00b1a711 feat(cool): extend reactions to patches`.
+- 2026-06-25T16:21+02:00 — User chose separate `bidirectional` and `passive` direction values for Module I/O support.
+- 2026-06-25T16:21+02:00 — Current implementation inspection found split `module_ins` / `module_outs` persistence rather than a unified direction column. The next checkpoint is therefore approval-gated planning/schema work, not immediate UI implementation.
