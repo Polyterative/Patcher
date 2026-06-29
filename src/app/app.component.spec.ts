@@ -107,6 +107,16 @@ describe('AppComponent', () => {
     expect(fixture.nativeElement.querySelector('.app-shell__wide-toolbar app-wide-shell-toolbar')).not.toBeNull();
   });
 
+  it('keeps the modern toolbar and wide-shell class on home routes with marketing query params', () => {
+    routerMock.url = '/?utm_source=chatgpt.com';
+    wideShell$.next(true);
+    fixture.detectChanges();
+
+    const shell = fixture.debugElement.query(By.css('.app-shell')).nativeElement as HTMLElement;
+    expect(shell.classList.contains('app-shell--wide')).toBeTrue();
+    expect(fixture.nativeElement.querySelector('.app-shell__wide-toolbar app-wide-shell-toolbar')).not.toBeNull();
+  });
+
   it('renders the wide-shell toolbar at the app shell level on embedded routes', () => {
     wideShell$.next(true);
     fixture.detectChanges();
@@ -117,16 +127,19 @@ describe('AppComponent', () => {
   });
 
   it('marks the wide-shell toolbar as stuck whenever the page is scrolled', () => {
-    spyOnProperty(window, 'scrollY', 'get').and.returnValues(0, 24, 0);
+    let scrollY = 0;
+    spyOnProperty(window, 'scrollY', 'get').and.callFake(() => scrollY);
     wideShell$.next(true);
     fixture.detectChanges();
 
+    scrollY = 24;
     window.dispatchEvent(new Event('scroll'));
     fixture.detectChanges();
 
     const toolbar = fixture.nativeElement.querySelector('.app-shell__wide-toolbar') as HTMLElement;
     expect(toolbar.classList.contains('app-shell__wide-toolbar--stuck')).toBeTrue();
 
+    scrollY = 0;
     window.dispatchEvent(new Event('scroll'));
     fixture.detectChanges();
 
@@ -195,6 +208,41 @@ describe('AppComponent', () => {
 
     const shell = fixture.debugElement.query(By.css('.app-shell')).nativeElement as HTMLElement;
     expect(shell.classList.contains('app-shell--wide')).toBeTrue();
+  });
+
+  it('uses the embedded shell on admin routes with query params and fragments', () => {
+    routerMock.url = '/admin?x=1';
+    wideShell$.next(true);
+    fixture.detectChanges();
+
+    const shell = fixture.debugElement.query(By.css('.app-shell')).nativeElement as HTMLElement;
+    expect(shell.classList.contains('app-shell--wide')).toBeTrue();
+
+    routerMock.url = '/admin#top';
+    routerEvents$.next(new NavigationEnd(1, '/admin?x=1', '/admin#top'));
+    fixture.detectChanges();
+
+    expect(shell.classList.contains('app-shell--wide')).toBeTrue();
+  });
+
+  it('suppresses supporting content on collection detail routes with query params and fragments', () => {
+    routerMock.url = '/collection/123?utm_source=x#top';
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('.app-shell__supporting')).toBeNull();
+    expect(host.querySelector('app-footer')).toBeNull();
+    expect(host.querySelector('.app-shell__wide-toolbar app-wide-shell-toolbar')).not.toBeNull();
+  });
+
+  it('uses the path for shell area classes when routes include query params', () => {
+    routerMock.url = '/modules/browser?utm_source=x';
+    wideShell$.next(true);
+    fixture.detectChanges();
+
+    const shell = fixture.debugElement.query(By.css('.app-shell')).nativeElement as HTMLElement;
+    expect(shell.classList.contains('app-shell--area-modules')).toBeTrue();
+    expect(shell.classList.contains('app-shell--area-home')).toBeFalse();
   });
 
   it('uses the embedded shell on /user/area when wide-shell is active', () => {
