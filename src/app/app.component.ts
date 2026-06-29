@@ -39,6 +39,7 @@ import { PatchDetailDataService } from './components/patch-parts/patch-detail-da
 import { RackDetailDataService } from './components/rack-parts/rack-detail-data.service';
 import { WideShellToolbarComponent } from './shared-interproject/components/@visual/wide-shell-toolbar/wide-shell-toolbar.component';
 import { AnalyticsService } from './features/backbone/analytics-integration/analytics.service';
+import { normalizeUrlPath } from './shared-interproject/url-path.util';
 
 type AppShellArea = 'home' | 'modules' | 'racks' | 'patches' | 'manufacturers' | 'user' | 'manuals' | 'comments' | 'info';
 
@@ -187,7 +188,7 @@ export class AppComponent implements OnDestroy {
   }
 
   private supportsEmbeddedShell(url: string): boolean {
-    const normalizedUrl = url.toLowerCase();
+    const normalizedUrl = normalizeUrlPath(url);
     const isAuthShellRoute = normalizedUrl === '/auth'
       || normalizedUrl.startsWith('/auth/')
       || normalizedUrl.startsWith('/login')
@@ -214,14 +215,13 @@ export class AppComponent implements OnDestroy {
  }
 
  private supportsSupportingContent(url: string): boolean {
-   const normalizedUrl = url.toLowerCase();
+   const normalizedUrl = normalizeUrlPath(url);
    return !/^\/collection\/\d+(?:[/?#]|$)/.test(normalizedUrl)
      && !/^\/collections\/manage\/\d+(?:[/?#]|$)/.test(normalizedUrl);
  }
 
  private getShellArea(url: string): AppShellArea {
-   const normalizedUrl = url.toLowerCase();
-   const path = normalizedUrl.split(/[?#]/, 1)[0];
+   const path = normalizeUrlPath(url);
    const userAreaSection = /^\/user\/area\/([^/]+)/.exec(path)?.[1];
    const section = userAreaSection ?? path.split('/')[1] ?? '';
 
@@ -247,23 +247,23 @@ export class AppComponent implements OnDestroy {
      return 'comments';
    }
 
-   if (normalizedUrl.startsWith('/manufacturers')) {
+   if (path.startsWith('/manufacturers')) {
      return 'manufacturers';
    }
 
-   if (normalizedUrl.startsWith('/user/')
-     || normalizedUrl.startsWith('/u/')
-     || normalizedUrl.startsWith('/auth')
-     || normalizedUrl.startsWith('/login')
-     || normalizedUrl.startsWith('/signup')
-     || normalizedUrl.startsWith('/reset-password')
-     || normalizedUrl.startsWith('/complete-profile')
-     || normalizedUrl.startsWith('/callback')
-     || normalizedUrl.startsWith('/admin')) {
+   if (path.startsWith('/user/')
+     || path.startsWith('/u/')
+     || path.startsWith('/auth')
+     || path.startsWith('/login')
+     || path.startsWith('/signup')
+     || path.startsWith('/reset-password')
+     || path.startsWith('/complete-profile')
+     || path.startsWith('/callback')
+     || path.startsWith('/admin')) {
      return 'user';
    }
 
-   if (normalizedUrl.startsWith('/info/')) {
+   if (path.startsWith('/info/')) {
      return 'info';
    }
 

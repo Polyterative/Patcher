@@ -40,6 +40,7 @@ import {
   getRouteClickableLinkKey,
   RouteClickableLink
 } from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.component';
+import { normalizeUrlPath } from 'src/app/shared-interproject/url-path.util';
 
 
 @Component({
@@ -136,8 +137,8 @@ export class WideShellToolbarComponent {
   }
 
   isWideShellTargetActive(item: RouteClickableLink, currentUrl: string): boolean {
-    const normalizedUrl = currentUrl.toLowerCase();
-    const normalizedRoute = item.route?.toLowerCase();
+    const normalizedUrl = normalizeUrlPath(currentUrl);
+    const normalizedRoute = item.route ? normalizeUrlPath(item.route) : undefined;
 
     if (!normalizedRoute) {
       return false;
@@ -174,8 +175,8 @@ export class WideShellToolbarComponent {
       return true;
     }
 
-    const normalizedUrl = currentUrl.toLowerCase();
-    const normalizedRoute = item.route?.toLowerCase();
+    const normalizedUrl = normalizeUrlPath(currentUrl);
+    const normalizedRoute = item.route ? normalizeUrlPath(item.route) : undefined;
     return !!normalizedRoute && (normalizedRoute === normalizedUrl || normalizedUrl.startsWith(`${ normalizedRoute }/`));
   }
 
