@@ -22,10 +22,11 @@ input/output logic.
 
 ## Status
 
-- [~] Product-owner direction decision recorded: model bidirectional and
-  passive as separate semantic direction values.
-- Blocked before implementation: schema/RLS/migration approval is required
-  before adding local migrations or changing backend types.
+- [~] Product-owner direction decision recorded and local-only additive schema
+  proposal drafted.
+- Blocked before backend/model implementation: proposal review and explicit
+  approval are required before backend type generation, RLS/GRANT work, remote
+  Supabase application, or behavior changes.
 
 ## Current system analysis
 
@@ -91,6 +92,9 @@ checkpoint is a schema/design spike with no UI behavior change:
   passive module port directions, with no remote Supabase apply and no
   production-breaking rewrite of existing `module_ins` / `module_outs` data?
   Default if not approved: keep this task planning/docs-only.
+- **Approval recorded 2026-06-25T16:22+02:00:** User approved drafting the
+  local-only additive schema proposal. This does not approve remote Supabase
+  application, RLS/GRANT changes, backend type generation, or behavior changes.
 
 ## Decision log
 
@@ -103,3 +107,10 @@ checkpoint is a schema/design spike with no UI behavior change:
   `module_outs` tables and `backend.update.moduleINsOUTs`, so implementation
   must be explicitly backward-compatible with that shape rather than assuming an
   existing unified `direction` column.
+- 2026-06-25T16:22+02:00 — Drafted local migration
+  `20260625162200_add_module_port_directions.sql`. It adds defaulted
+  `direction` text columns to `module_ins` and `module_outs` with check
+  constraints: input rows allow `input` / `bidirectional` / `passive`; output
+  rows allow `output` / `bidirectional` / `passive`. The proposal avoids UPDATE
+  backfills, keeps existing rows valid, and does not touch RLS, grants, or
+  remote Supabase.
