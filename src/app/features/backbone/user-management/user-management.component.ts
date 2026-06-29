@@ -3,7 +3,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
-  OnInit
+  OnInit,
+  Optional
 } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
@@ -73,6 +74,7 @@ export class UserManagementComponent implements OnInit {
   constructor(
     public userManagementService: UserManagementService,
     readonly seoAndUtilsService: SeoAndUtilsService,
+    @Optional()
     private readonly cdr?: ChangeDetectorRef
   ) { }
   

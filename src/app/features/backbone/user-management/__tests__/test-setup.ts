@@ -59,6 +59,7 @@ export function createMockUserManagementService() {
     resetUserDataAction$,
     deleteAccountAction$,
     logoff$: jasmine.createSpy('logoff$'),
+    isUsernameAvailable$: jasmine.createSpy('isUsernameAvailable$').and.returnValue(of(true)),
     updateUsername$: jasmine.createSpy('updateUsername$').and.returnValue(of(void 0)),
     // internal subjects exposed for test control
     _loggedUser$: loggedUser$,

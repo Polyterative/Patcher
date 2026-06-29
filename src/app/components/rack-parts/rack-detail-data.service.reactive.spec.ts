@@ -4,6 +4,7 @@ import {
   Subject,
   throwError
 } from 'rxjs';
+import { TagType } from 'src/app/models/tag';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { RackDetailDataService } from './rack-detail-data.service';
 
@@ -130,7 +131,7 @@ describe('RackDetailDataService reactive flows', () => {
         ...moduleInRack(1, 0, 0),
         module: {
           ...moduleInRack(1, 0, 0).module,
-          tags: [{tag: {name: 'VCO', type: 'NATURE'}}]
+          tags: [{tag: {name: 'VCO', type: TagType.Source}}]
         }
       }
     ]]);
