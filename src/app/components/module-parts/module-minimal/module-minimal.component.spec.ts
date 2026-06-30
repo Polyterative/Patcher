@@ -1,4 +1,7 @@
-import { BehaviorSubject } from 'rxjs';
+import {
+  BehaviorSubject,
+  Subject
+} from 'rxjs';
 import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalComponent
@@ -9,9 +12,10 @@ describe('ModuleMinimalComponent', () => {
   function build() {
     const userModulesList$ = new BehaviorSubject<any[]>([]);
     const setModulePossession$ = new BehaviorSubject<any>(undefined);
+    const afterClosed$ = new Subject<any>();
     const dialog = {
       open: jasmine.createSpy('open').and.returnValue({
-        afterClosed: () => new BehaviorSubject<any>(undefined)
+        afterClosed: () => afterClosed$.asObservable()
       })
     };
     const component = new ModuleMinimalComponent(
@@ -24,7 +28,7 @@ describe('ModuleMinimalComponent', () => {
       dialog as any
     );
     component.data = {id: 42, name: 'Maths'} as any;
-    return {component, userModulesList$, setModulePossession$, dialog};
+    return {component, userModulesList$, setModulePossession$, dialog, afterClosed$};
   }
   
   it('maps owned membership state from userModulesList$', () => {
@@ -144,22 +148,50 @@ describe('ModuleMinimalComponent', () => {
 
     component.openPossessionDialog();
 
-    expect(dialog.open).toHaveBeenCalled();
+    expect(dialog.open).toHaveBeenCalledWith(jasmine.any(Function), jasmine.objectContaining({
+      data: {
+        module: component.data,
+        initialKind: null
+      },
+      ariaLabel: 'Add module to your collection'
+    }));
   });
 
-  it('removes non-selling possession immediately', () => {
-    const {component, setModulePossession$} = build();
+  it('opens the possession dialog with the current state from the manage action', () => {
+    const {component, dialog} = build();
+
+    component.openPossessionDialog('WANTS');
+
+    expect(dialog.open).toHaveBeenCalledWith(jasmine.any(Function), jasmine.objectContaining({
+      data: {
+        module: component.data,
+        initialKind: 'WANTS'
+      },
+      ariaLabel: 'Manage module collection status'
+    }));
+  });
+
+  it('passes dialog changes and removal requests to the data service', () => {
+    const {component, setModulePossession$, afterClosed$} = build();
     const nextSpy = spyOn(setModulePossession$, 'next');
 
-    component.removePossession('WANTS');
+    component.openPossessionDialog('WANTS');
+    afterClosed$.next({kind: 'HAS'});
+    afterClosed$.next(null);
+    afterClosed$.next(undefined);
 
+    expect(nextSpy).toHaveBeenCalledWith({kind: 'HAS'});
     expect(nextSpy).toHaveBeenCalledWith(null);
+    expect(nextSpy).toHaveBeenCalledTimes(2);
   });
 
-  it('describes the current state and click action in the remove tooltip', () => {
+  it('describes the current state and click action in the manage tooltip', () => {
     const {component} = build();
 
-    expect(component.getRemovePossessionTooltip('WANTS'))
-      .toBe('Current status: Wanted. Click to remove this module from your collection.');
+    expect(component.getPossessionActionTooltip('WANTS'))
+      .toBe('Current status: Wanted. Click to change or remove this module from your collection.');
+    expect(component.getPossessionActionTooltip(null)).toBe('Add module to your collection');
+    expect(component.getPossessionActionIcon('WANTS')).toBe('edit_note');
+    expect(component.getPossessionActionIcon(null)).toBe('add');
   });
 });

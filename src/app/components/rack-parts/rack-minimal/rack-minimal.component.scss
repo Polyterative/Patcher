@@ -20,7 +20,19 @@
 
 .rack-action-row {
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  width: 100%;
+}
+
+.rack-action-row__primary,
+.rack-action-row__secondary {
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.rack-action-row__secondary {
+  justify-content: flex-end;
+  margin-inline-start: auto;
 }
 
 @media (hover: hover) and (pointer: fine) {

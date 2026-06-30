@@ -5,6 +5,7 @@
   collectionsWithThisModule: (dataService.collectionsWithThisModule$|async),
   moduleUsageSummary: (dataService.moduleUsageSummary$|async),
   possessionCounts: (dataService.possessionCounts$|async),
+  coolCount: (dataService.coolCount$|async),
   userModuleAcquisitions: (dataService.userModuleAcquisitions$|async),
   latestFormattedAcquisitionValue: (dataService.latestFormattedAcquisitionValue$|async),
   currentModulePossession: (dataService.currentModulePossession$|async),
@@ -144,11 +145,11 @@
                   ></app-module-detail-data-card>
                 }
                 <!-- Community Stats Card -->
-                @if (getPossessionCommunityData(bag.possessionCounts); as possessionData) {
+                @if (getCommunityData(bag.possessionCounts, bag.coolCount); as communityData) {
                   <app-module-detail-data-card
                     title="Community"
                     [animationDelay]="240"
-                    [data]="possessionData"
+                    [data]="communityData"
                   ></app-module-detail-data-card>
                 }
                 @if (bag.userModuleAcquisitions && bag.userModuleAcquisitions.length > 0) {
@@ -544,17 +545,18 @@
         </div>
       </div>
     </lib-hero-content-card>
-    @if (bag.data && bag.user && (!bag.data.isComplete || (coolReactionsEnabled && !bag.currentModulePossession))) {
+    @if (bag.data && bag.user && (!bag.data.isComplete || coolReactionsEnabled)) {
       <div class="module-detail-editor-floating-actions"
            [@moduleDetailFabEnter]="{ value: '', params: { delay: 332, duration: 165 } }"
       >
-        @if (coolReactionsEnabled && !bag.currentModulePossession) {
+        @if (coolReactionsEnabled) {
           <app-cool-button
             class="module-detail-cool-floating-action"
             [entityType]="ReactionEntityTypes.MODULE"
             [entityId]="bag.data.id"
             [eligible]="bag.data.public === true"
             countDisplayMode="count"
+            (coolToggled)="dataService.coolCountUpdate$.next($event.count)"
           ></app-cool-button>
         }
         @if (bag.editing && moduleEditor) {

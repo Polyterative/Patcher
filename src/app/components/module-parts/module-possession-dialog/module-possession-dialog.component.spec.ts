@@ -1,11 +1,12 @@
 import { ModulePossessionDialogComponent } from './module-possession-dialog.component';
+import { UserModulePossessionKind } from 'src/app/models/module';
 
 describe('ModulePossessionDialogComponent', () => {
-  function build() {
+  function build(initialKind: UserModulePossessionKind | null = null) {
     const dialogRef = {close: jasmine.createSpy('close')};
     const component = new ModulePossessionDialogComponent(
       dialogRef as any,
-      {module: {id: 42, name: 'Maths', manufacturer: {name: 'Make Noise'}}} as any
+      {module: {id: 42, name: 'Maths', manufacturer: {name: 'Make Noise'}}, initialKind} as any
     );
     return {component, dialogRef};
   }
@@ -14,6 +15,28 @@ describe('ModulePossessionDialogComponent', () => {
     const {component} = build();
 
     expect(component.choices.map(choice => choice.kind)).toEqual(['HAS', 'WANTS', 'SELLS']);
+  });
+
+  it('defaults acquisition source to new', () => {
+    const {component} = build();
+
+    expect(component.source).toBe('new');
+  });
+
+  it('preselects the existing state when managing a module collection status', () => {
+    const {component} = build('WANTS');
+
+    expect(component.selectedKind).toBe('WANTS');
+    expect(component.title).toBe('Manage collection status');
+    expect(component.intro).toContain('Change how this module belongs');
+    expect(component.removeLabel).toBe('Remove wanted');
+  });
+
+  it('uses status-specific remove labels', () => {
+    expect(build('HAS').component.removeLabel).toBe('Remove owned');
+    expect(build('WANTS').component.removeLabel).toBe('Remove wanted');
+    expect(build('SELLS').component.removeLabel).toBe('Remove for sale');
+    expect(build().component.removeLabel).toBe('Remove status');
   });
 
   it('does not save without a selected kind', () => {
@@ -31,6 +54,14 @@ describe('ModulePossessionDialogComponent', () => {
     component.save();
 
     expect(dialogRef.close).toHaveBeenCalledWith({kind: 'SELLS'});
+  });
+
+  it('returns null when removing an existing status', () => {
+    const {component, dialogRef} = build('HAS');
+
+    component.remove();
+
+    expect(dialogRef.close).toHaveBeenCalledWith(null);
   });
 
   it('returns only HAS kind when acquisition fields are empty defaults', () => {
@@ -55,7 +86,7 @@ describe('ModulePossessionDialogComponent', () => {
       acquisition: jasmine.objectContaining({
         price_amount_minor: 12345,
         currency: 'USD',
-        source: 'unknown'
+        source: 'new'
       })
     });
   });

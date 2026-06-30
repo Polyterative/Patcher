@@ -7,7 +7,6 @@ import {
 } from '@angular/core';
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
-import { ReactionEntityTypes } from 'src/app/features/backend/supabase-reactions';
 import { RackMinimal } from 'src/app/models/rack';
 
 
@@ -24,8 +23,6 @@ export class RackMinimalComponent implements OnInit, OnDestroy {
     ...defaultRackMinimalViewConfig,
     containImage: false
   };
-  @Input() showCoolAction = false;
-  readonly ReactionEntityTypes = ReactionEntityTypes;
 
   constructor(
     public userManagerService: UserManagementService,

@@ -165,8 +165,21 @@
 }
 
 .module-possession-dialog__actions {
+  display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: 1rem;
   width: 100%;
+}
+
+.module-possession-dialog__destructive-action {
+  margin-right: auto;
+}
+
+.module-possession-dialog__confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -179,5 +192,15 @@
   .module-possession-dialog__module,
   .module-possession-acquisition__grid {
     grid-template-columns: 1fr;
+  }
+
+  .module-possession-dialog__actions,
+  .module-possession-dialog__confirm-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .module-possession-dialog__destructive-action {
+    margin-right: 0;
   }
 }

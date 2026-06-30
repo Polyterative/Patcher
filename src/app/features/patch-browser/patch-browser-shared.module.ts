@@ -15,6 +15,7 @@ import { PatchModule } from 'src/app/components/patch-parts/patch.module';
 import { PatchListModule } from 'src/app/components/patch-list/patch-list.module';
 import { CommentsModule } from 'src/app/components/shared-atoms/comments/comments.module';
 import { SharedAtomsModule } from 'src/app/components/shared-atoms/shared-atoms.module';
+import { CoolButtonComponent } from 'src/app/components/shared-atoms/cool-button/cool-button.component';
 import { StatisticsComponent } from 'src/app/components/shared-atoms/statistics/statistics.component';
 import { PatchBrowserDataService } from 'src/app/features/patch-browser/patch-browser-data.service';
 import { PatchBrowserDetailViewComponent } from 'src/app/features/patch-browser/patch-browser-detail/patch-browser-detail-view.component';
@@ -76,7 +77,8 @@ import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@
     PatchListModule,
     CommentsModule,
     StatisticsComponent,
-    SharedAtomsModule
+    SharedAtomsModule,
+    CoolButtonComponent
   ]
 })
 export class PatchBrowserSharedModule {}

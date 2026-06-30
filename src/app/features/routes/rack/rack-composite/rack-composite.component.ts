@@ -15,7 +15,6 @@ import { Rack } from 'src/app/models/rack';
 })
 export class RackCompositeComponent {
   @Input() data: Rack;
-  @Input() showCoolAction = false;
   
   constructor() {}
 }

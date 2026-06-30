@@ -289,6 +289,16 @@
 
 .user-area-utility-search__field {
   min-width: 0;
+  width: 100%;
+}
+
+.user-area-utility-search__field lib-mat-form-entity {
+  display: block;
+  width: 100%;
+}
+
+:host ::ng-deep .user-area-utility-search__field .mat-mdc-form-field {
+  width: 100%;
 }
 
 @media (max-width: 116rem) {

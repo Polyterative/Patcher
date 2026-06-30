@@ -9,16 +9,19 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  EventEmitter,
   Input,
   OnChanges,
-  OnDestroy
+  OnDestroy,
+  Output
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { type ReactionEntityType } from 'src/app/features/backend/supabase-reactions';
 import {
   CoolButtonDataService,
-  type CoolCountDisplayMode
+  type CoolCountDisplayMode,
+  type CoolToggleResult
 } from './cool-button-data.service';
 
 @Component({
@@ -69,8 +72,10 @@ export class CoolButtonComponent implements OnChanges, OnDestroy {
   @Input() eligible: boolean | null | undefined = false;
   @Input() countDisplayMode: CoolCountDisplayMode | null | undefined = 'count';
   @Input() variant: 'default' | 'overlay' | 'title' = 'default';
+  @Output() coolToggled = new EventEmitter<CoolToggleResult>();
 
   bursting = false;
+  releasing = false;
   private burstResetId: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
@@ -99,17 +104,24 @@ export class CoolButtonComponent implements OnChanges, OnDestroy {
       return;
     }
 
-    this.dataService.requestToggle$.next();
-    if (this.bursting) {
+    const shouldBurst = !vm.active;
+    this.dataService.requestToggle$.next({
+      onSuccess: result => this.coolToggled.emit(result)
+    });
+    if (this.bursting || this.releasing) {
       this.bursting = false;
+      this.releasing = false;
       this.cdr.detectChanges();
     }
-    this.bursting = true;
+    this.bursting = shouldBurst;
+    this.releasing = !shouldBurst;
+    this.cdr.markForCheck();
     if (this.burstResetId != null) {
       clearTimeout(this.burstResetId);
     }
     this.burstResetId = setTimeout(() => {
       this.bursting = false;
+      this.releasing = false;
       this.burstResetId = null;
       this.cdr.markForCheck();
     }, 1050);

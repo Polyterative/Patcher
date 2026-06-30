@@ -7,16 +7,6 @@
     <app-hero-clickable-title [link]="data.public_id ? ['/racks', data.public_id] : ['/racks/details', data.id]"
     >{{ data.name }}
     </app-hero-clickable-title>
-    @if (showCoolAction) {
-      <app-cool-button
-        class="rack-micro__cool"
-        [entityType]="ReactionEntityTypes.RACK"
-        [entityId]="data.id"
-        [eligible]="data.public === true"
-        countDisplayMode="count"
-        variant="title"
-      ></app-cool-button>
-    }
   </div>
   <div class="row gap1 space-between"
   >

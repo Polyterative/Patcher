@@ -21,7 +21,7 @@ import {
 describe('UserAreaRootComponent - Layout Shell', () => {
   let fixture: ComponentFixture<UserAreaRootComponent>;
 
-  function build() {
+  function build(coolReactionsEnabled = false) {
     const mockUserService = createMockUserManagementService();
     const mockDataService = createMockUserAreaDataService();
     const mockSeoService = createMockSeoAndUtilsService();
@@ -38,7 +38,7 @@ describe('UserAreaRootComponent - Layout Shell', () => {
         { provide: SeoAndUtilsService, useValue: mockSeoService },
         { provide: SupabaseService, useValue: mockBackend },
         { provide: UrlCreatorService, useValue: createMockUrlCreatorService() },
-        { provide: COOL_REACTIONS_ENABLED, useValue: false },
+        { provide: COOL_REACTIONS_ENABLED, useValue: coolReactionsEnabled },
       ],
       schemas: [NO_ERRORS_SCHEMA],
     });
@@ -80,5 +80,15 @@ describe('UserAreaRootComponent - Layout Shell', () => {
     expect(host.querySelector('.user-area-utility-search__header')).not.toBeNull();
     expect(host.querySelector('.user-area-floating-search')).toBeNull();
     expect(host.querySelectorAll('.utility-rail-group').length).toBe(1);
+  });
+
+  it('wires Cool collections into modules, racks, and patches when enabled', () => {
+    build(true);
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelectorAll('app-user-cool-collection').length).toBe(3);
+    expect(host.querySelector('app-user-modules app-user-cool-collection[modulecooltabcontent]')).not.toBeNull();
+    expect(host.querySelector('app-user-racks app-user-cool-collection[rackcooltabcontent]')).not.toBeNull();
+    expect(host.querySelector('app-user-patches app-user-cool-collection[patchcooltabcontent]')).not.toBeNull();
   });
 });

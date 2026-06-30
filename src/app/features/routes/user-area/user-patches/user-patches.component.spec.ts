@@ -40,11 +40,11 @@ describe('UserPatchesComponent', () => {
     expect(comp.globalSearchQuery).toBe('bass');
   });
 
-  it('hides Cool from visible filters until patch Cool support is approved', () => {
+  it('hides Cool from visible filters unless the parent opts in', () => {
     expect(comp.visibleFilters().map(filter => filter.value)).toEqual(['PERSONAL']);
   });
 
-  it('can expose the dormant Cool filter when an approved parent opts in later', () => {
+  it('exposes the Cool filter when the parent opts in', () => {
     comp.showCoolFilter = true;
 
     expect(comp.visibleFilters().map(filter => filter.value)).toEqual(['PERSONAL', 'COOL']);

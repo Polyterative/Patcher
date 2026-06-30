@@ -115,17 +115,6 @@
         [data]="data"
         [viewConfig]="viewConfig"
       ></app-patch-micro>
-      @if (showCoolAction) {
-        <div class="patch-cool-action">
-          <app-cool-button
-            [entityType]="ReactionEntityTypes.PATCH"
-            [entityId]="data.id"
-            [eligible]="data.public === true"
-            countDisplayMode="count"
-            variant="title"
-          ></app-cool-button>
-        </div>
-      }
     }
       @if (!bag.patchEditingPanelOpenState && bag.linkedRackState.kind !== 'unlinked') {
         <div class="patch-linked-rack patch-linked-rack--summary">

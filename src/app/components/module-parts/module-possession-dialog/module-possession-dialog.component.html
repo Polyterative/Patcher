@@ -1,4 +1,4 @@
-<h1 mat-dialog-title [id]="titleId">Add to your collection</h1>
+<h1 mat-dialog-title [id]="titleId">{{ title }}</h1>
 
 <mat-dialog-content class="module-possession-dialog">
   <div class="module-possession-dialog__module">
@@ -18,7 +18,7 @@
   </div>
 
   <p class="module-possession-dialog__intro" [id]="descriptionId">
-    Choose how this module belongs in your modular workflow.
+    {{ intro }}
   </p>
 
   <div
@@ -101,19 +101,31 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <div class="module-possession-dialog__actions row gap1">
-    <app-brand-primary-button
-      theme="negative"
-      (click$)="dialogRef.close(undefined)"
-    >
-      Cancel
-    </app-brand-primary-button>
-    <app-brand-primary-button
-      theme="positive"
-      [disabled]="!selectedKind"
-      (click$)="save()"
-    >
-      Save
-    </app-brand-primary-button>
+  <div class="module-possession-dialog__actions">
+    @if (isEditing) {
+      <div class="module-possession-dialog__destructive-action">
+        <app-brand-primary-button
+          theme="negative"
+          (click$)="remove()"
+        >
+          {{ removeLabel }}
+        </app-brand-primary-button>
+      </div>
+    }
+    <div class="module-possession-dialog__confirm-actions">
+      <app-brand-primary-button
+        theme="light"
+        (click$)="dialogRef.close(undefined)"
+      >
+        Cancel
+      </app-brand-primary-button>
+      <app-brand-primary-button
+        theme="positive"
+        [disabled]="!selectedKind"
+        (click$)="save()"
+      >
+        Save
+      </app-brand-primary-button>
+    </div>
   </div>
 </mat-dialog-actions>
