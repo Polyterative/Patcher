@@ -46,3 +46,29 @@
   display: block;
   color: rgba(0, 0, 0, 0.72);
 }
+
+.patch-detail-floating-actions {
+  position: fixed;
+  right: calc(var(--app-floating-inset-inline, 1rem) + env(safe-area-inset-right));
+  bottom: calc(var(--app-floating-inset-block, 1rem) + env(safe-area-inset-bottom) + var(--app-floating-bottom-offset, 0px));
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: var(--module-editor-fab-gap, 0.8rem);
+}
+
+.patch-detail-cool-floating-action {
+  display: flex;
+}
+
+:host ::ng-deep .patch-detail-cool-floating-action .coolButton {
+  box-sizing: border-box;
+  justify-content: center;
+  height: var(--module-editor-close-fab-height, var(--app-floating-action-height, 3.5rem));
+  min-height: var(--module-editor-close-fab-height, var(--app-floating-action-height, 3.5rem));
+  padding: 0.625rem 1.45rem;
+  border-width: 0.125rem;
+  border-color: #3e638a;
+  border-radius: var(--app-floating-action-radius, 1.75rem);
+  box-shadow: var(--app-floating-action-shadow, 0 0.25rem 0.875rem rgba(38, 76, 116, 0.22));
+}

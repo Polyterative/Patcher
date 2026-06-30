@@ -1,7 +1,8 @@
 @if ({
   patchEditingPanelOpenState: (dataService.patchEditingPanelOpenState$|async),
   data: (dataService.singlePatchData$|async),
-  unavailableMessage: (dataService.patchDetailUnavailableMessage$|async)
+  unavailableMessage: (dataService.patchDetailUnavailableMessage$|async),
+  user: (loggedUser$|async)
 }; as bag) {
   @if (!bag.patchEditingPanelOpenState) {
     <div class="col gap1 patch-browser-detail-shell patch-browser-detail-shell--details"
@@ -40,7 +41,6 @@
       <app-patch-composite [data]="(bag.data)"
                            [isEditing]="bag.patchEditingPanelOpenState"
                            [viewConfig]="viewConfig"
-                           [showCoolAction]="coolReactionsEnabled"
       ></app-patch-composite>
     } @else if (bag.unavailableMessage) {
       <app-advice-tooltip title="Unavailable" tone="info">
@@ -52,4 +52,15 @@
       ></lib-auto-content-loading-indicator>
     }
   </ng-template>
+  @if (bag.data && coolReactionsEnabled && (!bag.user || bag.data.author?.id !== bag.user.id)) {
+    <div class="patch-detail-floating-actions">
+      <app-cool-button
+        class="patch-detail-cool-floating-action"
+        [entityType]="ReactionEntityTypes.PATCH"
+        [entityId]="bag.data.id"
+        [eligible]="bag.data.public === true"
+        countDisplayMode="count"
+      ></app-cool-button>
+    </div>
+  }
 }

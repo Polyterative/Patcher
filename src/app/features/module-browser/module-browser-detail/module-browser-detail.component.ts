@@ -100,7 +100,7 @@ export interface ModulePanelRatioDiagnostic {
   error?: string;
 }
 
-interface ModulePossessionCommunityStat {
+interface ModuleCommunityStat {
   label: string;
   value: string;
   icon: string;
@@ -451,10 +451,11 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
     return possessionLabel ? `${ moduleName } (${ possessionLabel })` : moduleName;
   }
 
-  getPossessionCommunityData(counts: ModulePossessionCounts | undefined): ModulePossessionCommunityStat[] | undefined {
-    if (!counts) return undefined;
+  getCommunityData(counts: ModulePossessionCounts | undefined, coolCount: number | undefined): ModuleCommunityStat[] | undefined {
+    if (!counts || coolCount === undefined) return undefined;
 
-    const stats: ModulePossessionCommunityStat[] = [
+    const stats: ModuleCommunityStat[] = [
+      { label: 'Cool', value: coolCount.toString(), icon: 'auto_awesome', size: 'auto' },
       { label: 'Owners', value: counts.hasCount.toString(), icon: 'inventory_2', size: 'auto' },
       { label: 'Wishlist', value: counts.wantsCount.toString(), icon: 'star_outline', size: 'auto' },
       { label: 'For Sale', value: counts.sellsCount.toString(), icon: 'sell', size: 'auto' }

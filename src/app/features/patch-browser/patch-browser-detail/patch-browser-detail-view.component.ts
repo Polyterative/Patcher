@@ -31,6 +31,7 @@ import {
 } from 'src/app/shared-interproject/json-ld-dom';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { environment } from 'src/environments/environment';
+import { ReactionEntityTypes } from 'src/app/features/backend/supabase-reactions';
 
 
 const JSONLD_SCRIPT_ID = 'patch-jsonld';
@@ -53,6 +54,8 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
     hideButtons: false
   };
   readonly coolReactionsEnabled = environment.features.coolReactionsEnabled;
+  readonly ReactionEntityTypes = ReactionEntityTypes;
+  readonly loggedUser$: UserManagementService['loggedUser$'];
   
   constructor(
     public dataService: PatchDetailDataService,
@@ -62,6 +65,7 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
     private userManagementService: UserManagementService
   ) {
     super();
+    this.loggedUser$ = this.userManagementService.loggedUser$;
   }
   
   ngOnInit(): void {

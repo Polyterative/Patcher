@@ -13,6 +13,7 @@ import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import {
   REACTION_KIND_COOL,
   ReactionEntityTypes,
+  type ReactionEntityType,
   type ReactionRow
 } from 'src/app/features/backend/supabase-reactions';
 import { COOL_REACTIONS_ENABLED } from './cool-button-feature.token';
@@ -413,7 +414,7 @@ describe('CoolButtonComponent', () => {
     expect(fixture.debugElement.query(By.css('.coolButton__count'))).toBeNull();
   });
 
-  it('plays a short burst only for enabled Cool clicks', fakeAsync(() => {
+  it('plays a short burst when marking something Cool', fakeAsync(() => {
     build(true);
     fixture.detectChanges();
 
@@ -422,6 +423,7 @@ describe('CoolButtonComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.debugElement.query(By.css('button.coolButton--burst'))).not.toBeNull();
+    expect(fixture.debugElement.query(By.css('button.coolButton--release'))).toBeNull();
 
     tick(1050);
     fixture.detectChanges();
@@ -429,7 +431,28 @@ describe('CoolButtonComponent', () => {
     expect(fixture.debugElement.query(By.css('button.coolButton--burst'))).toBeNull();
   }));
 
-  it('restarts the burst for repeated clicks before the previous burst reset finishes', fakeAsync(() => {
+  it('emits the successful next Cool count after toggling', () => {
+    build(true);
+    const emitted: Array<{
+      entityType: ReactionEntityType;
+      entityId: number;
+      active: boolean;
+      count: number | null;
+    }> = [];
+    fixture.componentInstance.coolToggled.subscribe(result => emitted.push(result));
+    fixture.detectChanges();
+
+    fixture.debugElement.query(By.css('button.coolButton')).triggerEventHandler('click');
+
+    expect(emitted).toEqual([{
+      entityType: ReactionEntityTypes.MODULE,
+      entityId: 42,
+      active: true,
+      count: 3
+    }]);
+  });
+
+  it('plays a distinct release animation when removing Cool', fakeAsync(() => {
     build(true);
     fixture.detectChanges();
 
@@ -437,6 +460,7 @@ describe('CoolButtonComponent', () => {
     button.triggerEventHandler('click');
     fixture.detectChanges();
     expect(fixture.componentInstance.bursting).toBeTrue();
+    expect(fixture.componentInstance.releasing).toBeFalse();
 
     tick(400);
     button.triggerEventHandler('click');
@@ -444,11 +468,14 @@ describe('CoolButtonComponent', () => {
     tick(640);
     fixture.detectChanges();
 
-    expect(fixture.componentInstance.bursting).toBeTrue();
+    expect(fixture.componentInstance.bursting).toBeFalse();
+    expect(fixture.componentInstance.releasing).toBeTrue();
+    expect(fixture.debugElement.query(By.css('button.coolButton--release'))).not.toBeNull();
 
     tick(410);
     fixture.detectChanges();
 
     expect(fixture.componentInstance.bursting).toBeFalse();
+    expect(fixture.componentInstance.releasing).toBeFalse();
   }));
 });

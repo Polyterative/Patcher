@@ -46,12 +46,14 @@ import { environment } from 'src/environments/environment';
 import { UserModuleAcquisition, UserModuleAcquisitionDraft } from 'src/app/models/user-module-acquisition';
 import { ModulePossessionDialogResult } from './module-possession-dialog/module-possession-dialog.component';
 import { formatMarketplaceMinorUnits } from 'src/app/features/marketplace/marketplace-money.utils';
+import { ReactionEntityTypes } from 'src/app/features/backend/supabase-reactions';
 
 export type { HiddenUsageBucket, ModulePossessionCounts, ModuleUsageSummary } from './module-detail-data.models';
 
 @Injectable()
 export class ModuleDetailDataService extends SubManager implements OnDestroy {
   private readonly collectionsEnabled = environment.features.collectionsEnabled;
+  private readonly coolReactionsEnabled = environment.features.coolReactionsEnabled;
   readonly updateSingleModuleData$ = new ReplaySubject<number>();
   readonly singleModuleData$ = new BehaviorSubject<DbModule | null>(null);
   //
@@ -71,6 +73,8 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
   readonly collectionsWithThisModule$ = new BehaviorSubject<ModuleCollectionSummary[] | undefined>(undefined);
   readonly moduleUsageSummary$ = new BehaviorSubject<ModuleUsageSummary | undefined>(undefined);
   readonly possessionCounts$ = new BehaviorSubject<ModulePossessionCounts | undefined>(undefined);
+  readonly coolCount$ = new BehaviorSubject<number | undefined>(undefined);
+  readonly coolCountUpdate$ = new Subject<number | null>();
   readonly deleteModule$ = new Subject<number>();
   readonly deleteModuleAndOrphanManufacturer$ = new Subject<DbModule>();
   readonly mergeIntoTargetModule$ = new Subject<{ sourceId: number; targetId: number }>();
@@ -225,7 +229,12 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
     this.updateSingleModuleData$
       .pipe(
         tap(x => this.racksWithThisModule$.next(undefined)),
-        switchMap(x => this.backend.get.racksWithModule(x)),
+        switchMap(x => this.backend.get.racksWithModule(x).pipe(
+          catchError(error => {
+            console.error('Racked-in module usage could not be loaded.', error);
+            return of({data: []});
+          })
+        )),
         this.takeUntilDestroyed()
       )
       .subscribe(x => this.racksWithThisModule$.next((x.data ?? []).map(y => y.rack)));
@@ -234,7 +243,12 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
     this.updateSingleModuleData$
       .pipe(
         tap(x => this.patchesWithThisModule$.next(undefined)),
-        switchMap(x => this.backend.get.patchesWithModule(x)),
+        switchMap(x => this.backend.get.patchesWithModule(x).pipe(
+          catchError(error => {
+            console.error('Patched-in module usage could not be loaded.', error);
+            return of([]);
+          })
+        )),
         this.takeUntilDestroyed()
       )
       .subscribe(x => this.patchesWithThisModule$.next(x));
@@ -262,6 +276,24 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
         this.takeUntilDestroyed()
       )
       .subscribe(counts => this.possessionCounts$.next(counts));
+
+    this.updateSingleModuleData$
+      .pipe(
+        tap(() => this.coolCount$.next(undefined)),
+        switchMap(x => this.coolReactionsEnabled
+          ? this.backend.get.reactionCount(ReactionEntityTypes.MODULE, x)
+          : of(0)
+        ),
+        this.takeUntilDestroyed()
+      )
+      .subscribe(count => this.coolCount$.next(count));
+
+    this.coolCountUpdate$
+      .pipe(
+        filter((count): count is number => count !== null),
+        this.takeUntilDestroyed()
+      )
+      .subscribe(count => this.coolCount$.next(count));
 
     combineLatest([
       this.updateSingleModuleData$,

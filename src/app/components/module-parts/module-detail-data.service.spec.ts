@@ -5,11 +5,13 @@ import {
 import {
   BehaviorSubject,
   of,
-  ReplaySubject
+  ReplaySubject,
+  throwError
 } from 'rxjs';
 import { RackModuleAdderDialogComponent } from '../rack-parts/rack-module-adder/rack-module-adder-dialog.component';
 import { ModuleDetailDataService } from './module-detail-data.service';
 import { MergeModuleResult } from '../../features/backend/supabase-merge';
+import { ReactionEntityTypes } from '../../features/backend/supabase-reactions';
 
 
 describe('ModuleDetailDataService', () => {
@@ -52,6 +54,7 @@ describe('ModuleDetailDataService', () => {
           wantsCount: 2,
           sellsCount: 1
         })),
+        reactionCount: jasmine.createSpy('reactionCount').and.returnValue(of(7)),
         userModuleAcquisitionsForModule: jasmine.createSpy('userModuleAcquisitionsForModule').and.returnValue(of([])),
         modulesBySameManufacturer: jasmine.createSpy('modulesBySameManufacturer').and.returnValue(of(options.modulesBySameManufacturer ?? [
           {id: 10, manufacturerId: 7, manufacturer: {name: 'Maker'}},
@@ -127,6 +130,7 @@ describe('ModuleDetailDataService', () => {
     expect(backend.get.patchesWithModule).toHaveBeenCalledWith(10);
     expect(backend.GET.moduleCollectionsForModule).toHaveBeenCalledWith(10);
     expect(backend.get.moduleUsageSummary).toHaveBeenCalledWith(10);
+    expect(backend.get.reactionCount).toHaveBeenCalledWith(ReactionEntityTypes.MODULE, 10);
     expect(backend.get.userModuleAcquisitionsForModule).toHaveBeenCalledWith(10);
     expect(service.singleModuleData$.value?.id).toBe(10);
     expect(service.racksWithThisModule$.value).toEqual([{id: 1} as any]);
@@ -138,6 +142,28 @@ describe('ModuleDetailDataService', () => {
       public_patch_count: 1,
       hidden_patch_bucket: '5_plus'
     });
+  }));
+
+  it('falls back to empty usage lists when side-panel usage queries fail', fakeAsync(() => {
+    const {service, backend} = build();
+    spyOn(console, 'error');
+    backend.get.racksWithModule.and.returnValue(throwError(() => new Error('rack usage failed')));
+    backend.get.patchesWithModule.and.returnValue(throwError(() => new Error('patch usage failed')));
+
+    service.updateSingleModuleData$.next(10);
+    tick(260);
+
+    expect(service.racksWithThisModule$.value).toEqual([]);
+    expect(service.patchesWithThisModule$.value).toEqual([]);
+
+    backend.get.racksWithModule.and.returnValue(of({data: [{rack: {id: 2}}]}));
+    backend.get.patchesWithModule.and.returnValue(of([{id: 22}]));
+
+    service.updateSingleModuleData$.next(10);
+    tick(260);
+
+    expect(service.racksWithThisModule$.value?.[0]?.id).toBe(2);
+    expect(service.patchesWithThisModule$.value?.[0]?.id).toBe(22);
   }));
   
   it('adds and removes module from collection then refreshes current module', () => {
@@ -471,6 +497,7 @@ describe('ModuleDetailDataService', () => {
     expect(service.racksWithThisModule$.value).toBeUndefined();
     expect(service.patchesWithThisModule$.value).toBeUndefined();
     expect(service.moduleUsageSummary$.value).toBeUndefined();
+    expect(service.coolCount$.value).toBeUndefined();
     expect(service.moduleEditingPanelOpenState$.value).toBeFalse();
     expect(service.moduleEditorHasPendingChanges$.value).toBeFalse();
     expect(service.isAdmin$.value).toBeFalse();
@@ -484,19 +511,38 @@ describe('ModuleDetailDataService', () => {
     const rackEmissions: any[] = [];
     const patchEmissions: any[] = [];
     const summaryEmissions: any[] = [];
+    const coolCountEmissions: Array<number | undefined> = [];
     service.racksWithThisModule$.subscribe(v => rackEmissions.push(v));
     service.patchesWithThisModule$.subscribe(v => patchEmissions.push(v));
     service.moduleUsageSummary$.subscribe(v => summaryEmissions.push(v));
+    service.coolCount$.subscribe(v => coolCountEmissions.push(v));
 
     service.updateSingleModuleData$.next(10);
     // The tap() reset emits undefined before the backend response replaces it.
     expect(rackEmissions).toContain(undefined);
     expect(patchEmissions).toContain(undefined);
     expect(summaryEmissions).toContain(undefined);
+    expect(coolCountEmissions).toContain(undefined);
 
     tick(260); // clear delays
     expect(service.singleModuleData$.value?.id).toBe(10);
+    expect(service.coolCount$.value).toBe(7);
   }));
+
+  it('applies successful Cool count updates without reloading module detail data', () => {
+    const {service, backend} = build();
+
+    service.coolCount$.next(0);
+    service.coolCountUpdate$.next(1);
+
+    expect(service.coolCount$.value).toBe(1);
+    expect(backend.GET.moduleWithId).not.toHaveBeenCalled();
+    expect(backend.get.reactionCount).not.toHaveBeenCalled();
+
+    service.coolCountUpdate$.next(null);
+
+    expect(service.coolCount$.value).toBe(1);
+  });
 
   it('clears moduleEditorHasPendingChanges$ when updateSingleModuleData$ fires', fakeAsync(() => {
     const {service} = build();

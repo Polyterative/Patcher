@@ -332,12 +332,14 @@ describe('RackBrowserDetailViewComponent', () => {
       expect(reactionBackend.delete.reaction).not.toHaveBeenCalled();
     });
 
-    it('passes Cool into the left rack composite instead of rendering it in the right stats grid', () => {
+    it('renders Cool as a floating rack detail action instead of inside the primary rack card', () => {
+      isCurrentRackPropertyOfCurrentUser$.next(false);
       fixture.detectChanges();
 
       const leftComposite = fixture.nativeElement.querySelector('.rackBrowserDetailView__summaryColumn--left app-rack-composite');
       expect(leftComposite).not.toBeNull();
-      expect(fixture.nativeElement.querySelector('.rackBrowserDetailView__summaryInsights app-cool-button')).toBeNull();
+      expect(fixture.nativeElement.querySelector('.rackBrowserDetailView__summaryColumn--left app-rack-composite app-cool-button')).toBeNull();
+      expect(fixture.nativeElement.querySelector('.rack-detail-floating-actions .rack-detail-cool-floating-action')).not.toBeNull();
     });
   });
 

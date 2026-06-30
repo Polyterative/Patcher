@@ -22,7 +22,6 @@
     } @else {
       <app-rack-micro [data]="data"
                       [viewConfig]="viewConfig"
-                      [showCoolAction]="showCoolAction && !bag.isCurrentRackPropertyOfCurrentUser"
       ></app-rack-micro>
     }
     <ng-content></ng-content>
@@ -30,45 +29,48 @@
                  style="margin-top:.5rem"
     ></mat-divider>
     @if (!viewConfig.hideButtons) {
-      <div class="rack-action-row row gap2 opacizeOnHover"
+      <div class="rack-action-row row gap1 opacizeOnHover"
       >
-        @if (bag.user && bag.isCurrentRackPropertyOfCurrentUser) {
+        <div class="rack-action-row__primary row gap1">
+          @if (bag.user && bag.isCurrentRackPropertyOfCurrentUser) {
+            <button mat-icon-button
+                    [matTooltip]="data.public ? 'Make rack private' : 'Make rack public'"
+                    [attr.aria-label]="data.public ? 'Make rack private' : 'Make rack public'"
+                    (click)="dataService.requestRackPrivacyStatusChange$.next()"
+                    [disabled]="!bag.isCurrentRackEditable"
+            >
+              <mat-icon>{{ (dataService.isCurrentRackPrivate$|async) ? 'lock' : 'public' }}</mat-icon>
+            </button>
+            <button mat-icon-button
+                    [matTooltip]="bag.isCurrentRackEditable ? 'Delete rack' : 'Edit rack to delete'"
+                    [attr.aria-label]="bag.isCurrentRackEditable ? 'Delete rack' : 'Edit rack to delete'"
+                    [disabled]="!bag.isCurrentRackEditable"
+                    (click)="dataService.deleteRack$.next(data)"
+                    [class.danger-action]="bag.isCurrentRackEditable"
+            >
+              <mat-icon>delete_forever</mat-icon>
+            </button>
+          }
+        </div>
+        <div class="rack-action-row__secondary row gap1">
+          @if (bag.user && bag.isCurrentRackPropertyOfCurrentUser) {
+            <button mat-icon-button
+                    matTooltip="Create patch from this rack"
+                    aria-label="Create patch from this rack"
+                    (click)="dataService.requestCreatePatchFromRack$.next()"
+            >
+              <mat-icon>settings_input_composite</mat-icon>
+            </button>
+          }
           <button mat-icon-button
-                  [matTooltip]="data.public ? 'Make rack private' : 'Make rack public'"
-                  [attr.aria-label]="data.public ? 'Make rack private' : 'Make rack public'"
-                  (click)="dataService.requestRackPrivacyStatusChange$.next()"
-                  [disabled]="!bag.isCurrentRackEditable"
+                  [matTooltip]="(userManagerService.loggedUser$|async) ? 'Duplicate rack' : 'Login to duplicate rack'"
+                  [attr.aria-label]="(userManagerService.loggedUser$|async) ? 'Duplicate rack' : 'Login to duplicate rack'"
+                  [disabled]="!(userManagerService.loggedUser$|async)"
+                  (click)="dataService.duplicateRack$.next(data)"
           >
-            <mat-icon>{{ (dataService.isCurrentRackPrivate$|async) ? 'lock' : 'public' }}</mat-icon>
+            <mat-icon>file_copy</mat-icon>
           </button>
-          <button mat-icon-button
-                  [matTooltip]="bag.isCurrentRackEditable ? 'Delete rack' : 'Edit rack to delete'"
-                  [attr.aria-label]="bag.isCurrentRackEditable ? 'Delete rack' : 'Edit rack to delete'"
-                  [disabled]="!bag.isCurrentRackEditable"
-                  (click)="dataService.deleteRack$.next(data)"
-                  [class.danger-action]="bag.isCurrentRackEditable"
-          >
-            <mat-icon>delete_forever</mat-icon>
-          </button>
-        }
-        <div class="layout-flex-grow"></div>
-        @if (bag.user && bag.isCurrentRackPropertyOfCurrentUser) {
-          <button mat-icon-button
-                  matTooltip="Create patch from this rack"
-                  aria-label="Create patch from this rack"
-                  (click)="dataService.requestCreatePatchFromRack$.next()"
-          >
-            <mat-icon>settings_input_composite</mat-icon>
-          </button>
-        }
-        <button mat-icon-button
-                [matTooltip]="(userManagerService.loggedUser$|async) ? 'Duplicate rack' : 'Login to duplicate rack'"
-                [attr.aria-label]="(userManagerService.loggedUser$|async) ? 'Duplicate rack' : 'Login to duplicate rack'"
-                [disabled]="!(userManagerService.loggedUser$|async)"
-                (click)="dataService.duplicateRack$.next(data)"
-        >
-          <mat-icon>file_copy</mat-icon>
-        </button>
+        </div>
       </div>
       @if (bag.user && bag.isCurrentRackPropertyOfCurrentUser) {
         <app-edit-fab

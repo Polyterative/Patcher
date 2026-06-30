@@ -13,19 +13,12 @@ import {
 } from '@angular/animations';
 import {
   Observable,
-  Subject
 } from 'rxjs';
 import {
   map,
   filter,
-  takeUntil
 } from 'rxjs/operators';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
-import {
-  ConfirmDialogComponent,
-  ConfirmDialogDataInModel,
-  ConfirmDialogDataOutModel
-} from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
 import {
   MinimalModule,
   UserModulePossessionKind
@@ -161,49 +154,25 @@ export class ModuleMinimalComponent extends SubManager implements OnInit, OnDest
     this.isTagChooserOpen = isOpen;
   }
 
-  openPossessionDialog(): void {
-    this.dialog.open<ModulePossessionDialogComponent, { module: MinimalModule }, ModulePossessionDialogResult | undefined>(
+  openPossessionDialog(initialKind: UserModulePossessionKind | null = null): void {
+    this.dialog.open<ModulePossessionDialogComponent, { module: MinimalModule; initialKind: UserModulePossessionKind | null }, ModulePossessionDialogResult | null | undefined>(
       ModulePossessionDialogComponent,
       {
         width: '34rem',
         maxWidth: '95vw',
         data: {
-          module: this.data
+          module: this.data,
+          initialKind
         },
-        ariaLabel: 'Add module to your collection'
+        ariaLabel: initialKind ? 'Manage module collection status' : 'Add module to your collection'
       }
     )
       .afterClosed()
       .pipe(
-        filter((result): result is ModulePossessionDialogResult => !!result),
+        filter((result): result is ModulePossessionDialogResult | null => result !== undefined),
         this.takeUntilDestroyed()
       )
       .subscribe(result => this.dataService.setModulePossession$.next(result));
-  }
-
-  removePossession(kind: UserModulePossessionKind | null): void {
-    if (kind !== 'SELLS') {
-      this.dataService.setModulePossession$.next(null);
-      return;
-    }
-
-    const data: ConfirmDialogDataInModel = {
-      title: 'Remove for-sale status?',
-      description: 'This will remove the module from your collection state. Any future sale details would be cleared too.',
-      negative: {label: 'Cancel'},
-      positive: {label: 'Remove'}
-    };
-
-    this.dialog.open<ConfirmDialogComponent, ConfirmDialogDataInModel, ConfirmDialogDataOutModel>(
-      ConfirmDialogComponent,
-      {data}
-    )
-      .afterClosed()
-      .pipe(
-        filter(result => result?.answer === true),
-        this.takeUntilDestroyed()
-      )
-      .subscribe(() => this.dataService.setModulePossession$.next(null));
   }
 
   getPossessionLabel(kind: UserModulePossessionKind | null | undefined): string | null {
@@ -219,11 +188,15 @@ export class ModuleMinimalComponent extends SubManager implements OnInit, OnDest
     }
   }
 
-  getRemovePossessionTooltip(kind: UserModulePossessionKind | null | undefined): string {
+  getPossessionActionTooltip(kind: UserModulePossessionKind | null | undefined): string {
     const label = this.getPossessionLabel(kind);
     return label
-      ? `Current status: ${ label }. Click to remove this module from your collection.`
-      : 'Remove from your collection';
+      ? `Current status: ${ label }. Click to change or remove this module from your collection.`
+      : 'Add module to your collection';
+  }
+
+  getPossessionActionIcon(kind: UserModulePossessionKind | null | undefined): string {
+    return kind ? 'edit_note' : 'add';
   }
 
   shouldShowPanelVariantsBadge(): boolean {

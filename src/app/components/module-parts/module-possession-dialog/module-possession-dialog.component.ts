@@ -22,6 +22,7 @@ import { parseMarketplacePriceToMinorUnits } from 'src/app/features/marketplace/
 
 export interface ModulePossessionDialogData {
   module: MinimalModule;
+  initialKind?: UserModulePossessionKind | null;
 }
 
 export interface ModulePossessionDialogResult {
@@ -71,9 +72,28 @@ export class ModulePossessionDialogComponent {
   acquiredAt = getTodayInputValue();
   priceInput = '';
   currency: UserModuleAcquisitionCurrency = 'EUR';
-  source: UserModuleAcquisitionSource = 'unknown';
+  source: UserModuleAcquisitionSource = 'new';
   note = '';
   priceError: string | null = null;
+
+  get isEditing(): boolean {
+    return !!this.data.initialKind;
+  }
+
+  get title(): string {
+    return this.isEditing ? 'Manage collection status' : 'Add to your collection';
+  }
+
+  get intro(): string {
+    return this.isEditing
+      ? 'Change how this module belongs in your modular workflow, or remove it from your collection status.'
+      : 'Choose how this module belongs in your modular workflow.';
+  }
+
+  get removeLabel(): string {
+    const label = this.getPossessionLabel(this.data.initialKind);
+    return label ? `Remove ${ label.toLowerCase() }` : 'Remove status';
+  }
 
   get titleId(): string {
     return `module-possession-dialog-title-${this.data.module.id}`;
@@ -84,9 +104,11 @@ export class ModulePossessionDialogComponent {
   }
 
   constructor(
-    public dialogRef: MatDialogRef<ModulePossessionDialogComponent, ModulePossessionDialogResult | undefined>,
+    public dialogRef: MatDialogRef<ModulePossessionDialogComponent, ModulePossessionDialogResult | null | undefined>,
     @Inject(MAT_DIALOG_DATA) public data: ModulePossessionDialogData
-  ) {}
+  ) {
+    this.selectedKind = data.initialKind ?? null;
+  }
 
   select(kind: UserModulePossessionKind): void {
     this.selectedKind = kind;
@@ -110,6 +132,23 @@ export class ModulePossessionDialogComponent {
     this.dialogRef.close(acquisition ? {kind: this.selectedKind, acquisition} : {kind: this.selectedKind});
   }
 
+  remove(): void {
+    this.dialogRef.close(null);
+  }
+
+  private getPossessionLabel(kind: UserModulePossessionKind | null | undefined): string | null {
+    switch (kind) {
+      case 'HAS':
+        return 'Owned';
+      case 'WANTS':
+        return 'Wanted';
+      case 'SELLS':
+        return 'For sale';
+      default:
+        return null;
+    }
+  }
+
   private buildAcquisitionDraft(): UserModuleAcquisitionDraft | undefined {
     this.priceError = null;
     const trimmedPrice = this.priceInput.trim();
@@ -125,7 +164,7 @@ export class ModulePossessionDialogComponent {
 
     const hasMeaningfulAcquisitionData =
       priceAmountMinor !== undefined ||
-      this.source !== 'unknown' ||
+      this.source !== 'new' ||
       !!trimmedNote ||
       this.acquiredAt !== getTodayInputValue();
 

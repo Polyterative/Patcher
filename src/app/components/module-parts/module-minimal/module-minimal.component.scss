@@ -158,14 +158,14 @@
 .module-action-row {
   align-items: center;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   width: 100%;
 }
 
 .module-action-row__primary,
 .module-action-row__secondary {
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .module-action-row__secondary {

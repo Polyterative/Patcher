@@ -48,6 +48,17 @@ export interface CoolButtonViewModel {
   ariaLabel: string;
 }
 
+export interface CoolToggleResult {
+  entityType: ReactionEntityType;
+  entityId: number;
+  active: boolean;
+  count: number | null;
+}
+
+interface CoolToggleRequest {
+  onSuccess?: (result: CoolToggleResult) => void;
+}
+
 const HIDDEN_VM: CoolButtonViewModel = {
   visible: false,
   active: false,
@@ -61,7 +72,7 @@ const HIDDEN_VM: CoolButtonViewModel = {
 @Injectable()
 export class CoolButtonDataService extends SubManager {
   readonly vm$ = new BehaviorSubject<CoolButtonViewModel>(HIDDEN_VM);
-  readonly requestToggle$ = new Subject<void>();
+  readonly requestToggle$ = new Subject<CoolToggleRequest | void>();
 
   private readonly _config$ = new ReplaySubject<CoolButtonConfig>(1);
   private latestConfig: CoolButtonConfig | null = null;
@@ -115,7 +126,7 @@ export class CoolButtonDataService extends SubManager {
 
     this.requestToggle$.pipe(
       withLatestFrom(this._config$, this.vm$),
-      exhaustMap(([_, config, vm]) => {
+      exhaustMap(([request, config, vm]) => {
         if (!this.canUseBackend(config) || vm.disabled || vm.loading) {
           return EMPTY;
         }
@@ -134,6 +145,14 @@ export class CoolButtonDataService extends SubManager {
           tap(() => {
             if (this.configsEqual(this.latestConfig, config) && this.canUseBackend(config)) {
               this.vm$.next(this.buildVm(nextActive, nextCount));
+              if (request) {
+                request.onSuccess?.({
+                  entityType: config.entityType,
+                  entityId: config.entityId,
+                  active: nextActive,
+                  count: nextCount
+                });
+              }
             }
             SharedConstants.successCustom(this.snackBar, nextActive ? 'Marked cool.' : 'Removed cool.');
           }),

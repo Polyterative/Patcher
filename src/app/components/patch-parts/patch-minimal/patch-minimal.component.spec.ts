@@ -122,13 +122,12 @@ describe('PatchMinimalComponent - linked rack UI', () => {
     expect(host.querySelector('app-cool-button')).toBeNull();
   });
 
-  it('renders the patch Cool action only when the detail host opts in', () => {
-    component.showCoolAction = true;
+  it('does not render an inline patch Cool action in the primary card', () => {
     component.data = patchData({public: true});
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
-    expect(host.querySelector('app-cool-button')).not.toBeNull();
+    expect(host.querySelector('app-patch-micro app-cool-button')).toBeNull();
   });
 
   it('renders a small linked rack preview when an image is available', () => {

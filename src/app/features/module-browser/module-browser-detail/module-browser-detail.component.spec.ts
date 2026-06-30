@@ -146,6 +146,13 @@ describe('ModuleBrowserDetailComponent', () => {
     TestBed.resetTestingModule();
 
     const loggedUser$ = new BehaviorSubject<unknown>(options.user ?? {id: 'user-1'});
+    const coolCount$ = new BehaviorSubject<number | undefined>(0);
+    const coolCountUpdate$ = new Subject<number | null>();
+    coolCountUpdate$.subscribe(count => {
+      if (count !== null) {
+        coolCount$.next(count);
+      }
+    });
     const dataService = {
       singleModuleData$: new BehaviorSubject<any>(moduleFixture()),
       racksWithThisModule$: new BehaviorSubject<any[]>([]),
@@ -161,6 +168,8 @@ describe('ModuleBrowserDetailComponent', () => {
         wantsCount: 0,
         sellsCount: 0
       }),
+      coolCount$,
+      coolCountUpdate$,
       currentModulePossession$: new BehaviorSubject<any>(null),
       modulesBySameManufacturer$: new BehaviorSubject<any[]>([]),
       moduleEditingPanelOpenState$: new BehaviorSubject<boolean>(false),
@@ -334,14 +343,35 @@ describe('ModuleBrowserDetailComponent', () => {
     expect(fixture.nativeElement.querySelector('.module-detail-editor-floating-actions .module-detail-cool-floating-action')).not.toBeNull();
   });
 
-  it('builds raw public possession stats for the Community data card', () => {
+  it('keeps the floating Cool action visible for owned modules', async () => {
+    const {fixture, dataService} = await render();
+    dataService.currentModulePossession$.next('HAS');
+
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.module-detail-editor-floating-actions .module-detail-cool-floating-action')).not.toBeNull();
+  });
+
+  it('updates the page Cool count from the floating Cool action success event', async () => {
+    const {fixture, dataService} = await render({coolToken: true});
+    const countUpdateSpy = spyOn(dataService.coolCountUpdate$, 'next').and.callThrough();
+
+    fixture.debugElement.query(By.css('.module-detail-cool-floating-action button.coolButton')).triggerEventHandler('click');
+    fixture.detectChanges();
+
+    expect(countUpdateSpy).toHaveBeenCalledWith(1);
+    expect(dataService.coolCount$.value).toBe(1);
+  });
+
+  it('builds raw public stats for the Community data card', () => {
     const {component} = build();
 
-    expect(component.getPossessionCommunityData({
+    expect(component.getCommunityData({
       hasCount: 8,
       wantsCount: 4,
       sellsCount: 3
-    })).toEqual([
+    }, 6)).toEqual([
+      { label: 'Cool', value: '6', icon: 'auto_awesome', size: 'auto' },
       { label: 'Owners', value: '8', icon: 'inventory_2', size: 'auto' },
       { label: 'Wishlist', value: '4', icon: 'star_outline', size: 'auto' },
       { label: 'For Sale', value: '3', icon: 'sell', size: 'auto' }
@@ -351,30 +381,31 @@ describe('ModuleBrowserDetailComponent', () => {
   it('hides zero public possession counts once loaded', () => {
     const {component} = build();
 
-    expect(component.getPossessionCommunityData({
+    expect(component.getCommunityData({
       hasCount: 1,
       wantsCount: 0,
       sellsCount: 2
-    })).toEqual([
+    }, 0)).toEqual([
       { label: 'Owners', value: '1', icon: 'inventory_2', size: 'auto' },
       { label: 'For Sale', value: '2', icon: 'sell', size: 'auto' }
     ]);
   });
 
-  it('waits to render public possession stats until counts load', () => {
+  it('waits to render public community stats until counts load', () => {
     const {component} = build();
 
-    expect(component.getPossessionCommunityData(undefined)).toBeUndefined();
+    expect(component.getCommunityData(undefined, 1)).toBeUndefined();
+    expect(component.getCommunityData({hasCount: 1, wantsCount: 0, sellsCount: 0}, undefined)).toBeUndefined();
   });
 
-  it('hides the Community possession card when every count is zero', () => {
+  it('hides the Community card when every count is zero', () => {
     const {component} = build();
 
-    expect(component.getPossessionCommunityData({
+    expect(component.getCommunityData({
       hasCount: 0,
       wantsCount: 0,
       sellsCount: 0
-    })).toBeUndefined();
+    }, 0)).toBeUndefined();
   });
   
   it('emits expected patch payloads for dev helpers', () => {

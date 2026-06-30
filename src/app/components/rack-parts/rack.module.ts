@@ -8,7 +8,6 @@ import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail
 import { RackDetailsComponent } from 'src/app/components/rack-parts/rack-details/rack-details.component';
 import { RackEditorComponent } from 'src/app/components/rack-parts/rack-editor/rack-editor.component';
 import { RackMinimalComponent } from 'src/app/components/rack-parts/rack-minimal/rack-minimal.component';
-import { RackModuleAdderDialogComponent } from 'src/app/components/rack-parts/rack-module-adder/rack-module-adder-dialog.component';
 import { SharedAtomsModule } from 'src/app/components/shared-atoms/shared-atoms.module';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
@@ -67,7 +66,6 @@ import { CoolButtonComponent } from '../shared-atoms/cool-button/cool-button.com
     RackEditorComponent,
     RackMinimalComponent,
     RackCreatorComponent,
-    RackModuleAdderDialogComponent,
     RackDetailsComponent,
     RackBalancePanelComponent,
     TotalHpOfModulesPipe,
@@ -85,7 +83,6 @@ import { CoolButtonComponent } from '../shared-atoms/cool-button/cool-button.com
     RackMinimalComponent,
     RackEditorComponent,
     RackCreatorComponent,
-    RackModuleAdderDialogComponent,
     RackDetailsComponent,
     RackBalancePanelComponent,
     RackDetailsRemainingIndicatorComponent,
