@@ -21,7 +21,7 @@ describe('StandardsService', () => {
       }
     };
     
-    const service = new StandardsService(backend as any);
+    const service = new StandardsService(backend as unknown as ConstructorParameters<typeof StandardsService>[0]);
     
     expect(backend.get.standards).toHaveBeenCalledTimes(1);
     expect(service.standards.data$.value?.map(x => x.id)).toEqual([1, 2, 3]);
@@ -44,7 +44,7 @@ describe('StandardsService', () => {
       }
     };
 
-    const service = new StandardsService(backend as any);
+    const service = new StandardsService(backend as unknown as ConstructorParameters<typeof StandardsService>[0]);
     expect(service.standards.data$.value).toBeUndefined();
     resolveStandards(null);
   });
@@ -56,6 +56,16 @@ describe('StandardsService', () => {
       }
     };
     const service = new StandardsService(backend as any);
+    expect(service.standards.data$.value).toEqual([]);
+  });
+
+  it('handles null standards responses gracefully', () => {
+    const backend = {
+      get: {
+        standards: jasmine.createSpy('standards').and.returnValue(of({ data: null }))
+      }
+    };
+    const service = new StandardsService(backend as unknown as ConstructorParameters<typeof StandardsService>[0]);
     expect(service.standards.data$.value).toEqual([]);
   });
 
