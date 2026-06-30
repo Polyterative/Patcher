@@ -23,6 +23,7 @@ import {
   ReactionEntityTypes,
   type ReactionRow
 } from 'src/app/features/backend/supabase-reactions';
+import { COOL_REACTION_SNACK_COPY } from 'src/app/components/shared-atoms/cool-button/cool-reaction-copy';
 import { MinimalModule } from 'src/app/models/module';
 import { Patch } from 'src/app/models/patch';
 import { Rack } from 'src/app/models/rack';
@@ -77,19 +78,19 @@ const GROUP_META: Record<UserCoolCollectionEntityType, Omit<UserCoolCollectionGr
     entityType: 'module',
     title: 'Modules',
     icon: 'view_module',
-    emptyCopy: 'Cooled modules will appear here.'
+    emptyCopy: 'Modules you mark Cool will land here.'
   },
   rack: {
     entityType: 'rack',
     title: 'Racks',
     icon: 'view_stream',
-    emptyCopy: 'Cooled public racks will appear here.'
+    emptyCopy: 'Public racks you mark Cool will land here.'
   },
   patch: {
     entityType: 'patch',
     title: 'Patches',
     icon: 'settings_input_composite',
-    emptyCopy: 'Cooled public patches will appear here.'
+    emptyCopy: 'Public patches you mark Cool will land here.'
   }
 };
 
@@ -179,7 +180,7 @@ export class UserCoolCollectionDataService extends SubManager {
           item.entityId,
           REACTION_KIND_COOL
         ).pipe(
-          tap(() => SharedConstants.successCustom(this.snackBar, 'Removed cool.')),
+          tap(() => SharedConstants.successCustom(this.snackBar, COOL_REACTION_SNACK_COPY.removed)),
           catchError(() => {
             this._vm$.next(this.restoreItem(this._vm$.value, item));
             SharedConstants.errorCustom(this.snackBar, 'Cool could not be removed.');

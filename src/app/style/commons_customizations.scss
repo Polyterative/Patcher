@@ -342,17 +342,26 @@ mat-expansion-panel {
 // panelClass is applied to .mat-mdc-snack-bar-container.
 // We style the container and its inner surface directly to override MDC defaults.
 
-// Push all snackbars below the sticky toolbar (3em) + breathing gap.
+// Push all snackbars below the sticky toolbar (3em), with enough clearance for toolbar actions.
 // Applied globally since every snackbar in this app sits top-right.
-$snack-toolbar-offset: 5em;
+$snack-toolbar-offset: calc(5em + 2rem);
 
 .mat-mdc-snack-bar-container {
   margin-top: $snack-toolbar-offset !important;
+  pointer-events: none;
 
   @media (max-width: 37.4375rem) {
     max-width: calc(100vw - 1rem) !important;
     min-width: 0 !important;
   }
+}
+
+.cdk-overlay-pane:has(.mat-mdc-snack-bar-container) {
+  pointer-events: none;
+}
+
+.mat-mdc-snack-bar-container .mdc-snackbar__surface {
+  pointer-events: auto;
 }
 
 .snack-success {
