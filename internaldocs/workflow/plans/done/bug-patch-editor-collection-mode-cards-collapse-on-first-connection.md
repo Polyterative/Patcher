@@ -10,8 +10,8 @@ content. Reproduces with a real account that has modules in the collection;
 the test/auth fixture used for E2E has an empty collection so Playwright
 snapshots cannot reproduce it as-is.
 
-**Status:** OPEN — two prior fix attempts in `c32753bc` session did NOT
-resolve it. User confirmed the bug is still present after both attempts.
+**Status:** ARCHIVED — resolved and verified; see `../COMPLETED.md` for the
+final regression summary.
 
 **Context — what already changed (and was not enough):**
 
