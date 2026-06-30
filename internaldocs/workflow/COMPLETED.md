@@ -388,7 +388,7 @@
 
 - **14-05-2026** — Reactive Pipeline Audit complete: all 13 bullets checked; 9 exhaustMap fixes (commit `aecd4f3c`); 81 combineLatest calls verified; no fan-out/leak issues; debounceTime coverage confirmed; OnPush sweep pre-done; caching.spec.ts expanded to 5 tests
 - **14-05-2026** — Cache Strategy Review complete: all bullets checked; DatabaseStrings.ts join audit done (no issues found); all cache invalidation gaps fixed; CACHE_STRATEGY.md documents full inventory
-- **14-05-2026** — Bandwidth audit complete: all queries checked, queries already well-optimised, no rewrites needed; detailed findings in TODO.md
+- **14-05-2026** — Bandwidth audit complete: all queries checked, queries already well-optimised, no rewrites needed; details archived in `./plans/done/perf-backend-bandwidth-optimisation-every-byte-costs-money.md`
 - **14-05-2026** — Cleared expired Superbooth 2026 event banner (ended 2026-05-10)
 - **16-05-2026** — Module detail Community stat card (Phase 1): `getModulePossessionCounts` added to `SupabaseQueriesService` (5-min cache, 100-entry max), wired into `ModuleDetailDataService.possessionCounts$`, Community card rendered in module detail sidebar with ≥3 threshold; 25/25 tests green (commit TBD)
 - **16-05-2026** — Rack Editor Layer 2 optimistic rollback: remove-module pipeline now captures pre-mutation snapshot and restores on backend error (+ error snackbar); `requestRackedModulesDbSync$` also gets rollback snapshot; outer `catchError` replaced with inner `catchError` per-switchMap to keep pipeline alive after errors; rollback regression test added (20/20 green, commit TBD)

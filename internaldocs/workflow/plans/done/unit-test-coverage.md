@@ -3,7 +3,7 @@
 
 #### POLICY: Unit Test Coverage
 
-**Status:** HISTORICAL SNAPSHOT — the completed coverage batches are summarized in `../COMPLETED.md`.
+**Status:** ARCHIVED — historical snapshot; the completed coverage batches are summarized in `../COMPLETED.md`.
 
 Target: statements and lines ≥ 75% (baseline 03-02: ~57%).
 Not a blocking task — coverage rises naturally as new features ship with tests.

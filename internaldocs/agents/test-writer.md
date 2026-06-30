@@ -6,7 +6,7 @@ Add unit or E2E test coverage for existing code **without changing production co
 
 ## When to invoke
 
-- A file is flagged under-covered (see `internaldocs/workflow/TODO.md` § Unit Test Coverage)
+- A file is flagged under-covered (see the archived coverage batches in `internaldocs/workflow/COMPLETED.md`)
 - A bug was fixed and needs a regression test
 - A new feature lacks tests (production code already exists)
 
@@ -21,7 +21,7 @@ coverage need the same coding quality as production changes.
 - Add Playwright E2E specs under `e2e/` for user-facing flows
 - Use existing test patterns from neighbouring spec files in the same area
 - Run targeted tests via `pnpm test-headless --include="**/foo.spec.ts"`
-- Mark coverage progress in `internaldocs/workflow/TODO.md` § Unit Test Coverage if relevant
+- Mark coverage progress in the active plan or `internaldocs/workflow/COMPLETED.md` if relevant
 
 ## Does NOT
 
@@ -68,5 +68,6 @@ New `*.spec.ts` files + green test run + a one-line summary per new spec
 
 - `AGENTS.md`
 - `internaldocs/testing/UNIT_TESTING.md`
-- `internaldocs/workflow/TODO.md` § Unit Test Coverage
+- `internaldocs/workflow/COMPLETED.md`
+- `internaldocs/workflow/plans/done/unit-test-coverage.md`
 - `playwright.config.ts`
