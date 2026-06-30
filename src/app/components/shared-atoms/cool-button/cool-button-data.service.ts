@@ -27,6 +27,7 @@ import {
 } from 'src/app/features/backend/supabase-reactions';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
+import { COOL_REACTION_SNACK_COPY } from './cool-reaction-copy';
 import { COOL_REACTIONS_ENABLED } from './cool-button-feature.token';
 
 export type CoolCountDisplayMode = 'hidden' | 'count';
@@ -66,7 +67,7 @@ const HIDDEN_VM: CoolButtonViewModel = {
   disabled: true,
   loading: false,
   label: 'Cool',
-  ariaLabel: 'Mark as cool'
+  ariaLabel: 'Mark as Cool'
 };
 
 @Injectable()
@@ -154,7 +155,9 @@ export class CoolButtonDataService extends SubManager {
                 });
               }
             }
-            SharedConstants.successCustom(this.snackBar, nextActive ? 'Marked cool.' : 'Removed cool.');
+            SharedConstants.successCustom(this.snackBar, nextActive
+              ? COOL_REACTION_SNACK_COPY.marked
+              : COOL_REACTION_SNACK_COPY.removed);
           }),
           catchError(() => {
             if (this.configsEqual(this.latestConfig, config) && this.canUseBackend(config)) {
@@ -199,7 +202,7 @@ export class CoolButtonDataService extends SubManager {
       disabled,
       loading: false,
       label: 'Cool',
-      ariaLabel: active ? 'Remove cool' : 'Mark as cool'
+      ariaLabel: active ? 'Remove Cool' : 'Mark as Cool'
     };
   }
 }

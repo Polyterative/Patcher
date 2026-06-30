@@ -404,7 +404,7 @@ describe('CoolButtonComponent', () => {
     expect(button.textContent).toContain('Cool');
     expect(count.textContent?.trim()).toBe('2');
     expect(count.getAttribute('aria-label')).toBe('2 cool reactions');
-    expect(button.getAttribute('aria-label')).toBe('Mark as cool');
+    expect(button.getAttribute('aria-label')).toBe('Mark as Cool');
   });
 
   it('does not reserve count badge space before a count exists', () => {

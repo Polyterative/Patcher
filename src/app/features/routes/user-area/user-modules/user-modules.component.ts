@@ -66,7 +66,7 @@ export class UserModulesComponent extends SubManager {
     MY_MODULES: 'Owned modules in your collection.',
     WISHLIST: 'Wanted modules help you keep track of gear you are considering.',
     FOR_SALE: 'For-sale modules help you keep track of gear you want to move.',
-    COOL: 'Modules you have marked cool, newest first.'
+    COOL: 'Your Cool module picks, newest first.'
   };
 
   constructor(

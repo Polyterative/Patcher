@@ -37,7 +37,7 @@ export class UserPatchesComponent {
   ];
   readonly sectionDescriptionByFilter: Record<UserPatchesSectionFilter, string> = {
     PERSONAL: "So many patches, so little time. Patches you've created and those you're currently working on",
-    COOL: 'Public patches you have marked cool, newest first.'
+    COOL: 'Your Cool public patch picks, newest first.'
   };
   
   constructor(

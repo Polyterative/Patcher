@@ -42,7 +42,7 @@ export class UserRacksComponent {
   ];
   readonly sectionDescriptionByFilter: Record<UserRacksSectionFilter, string> = {
     PERSONAL: 'Keep track of your racks, check if your modules fit, and share them with your friends',
-    COOL: 'Public racks you have marked cool, newest first.'
+    COOL: 'Your Cool public rack picks, newest first.'
   };
   
   constructor(

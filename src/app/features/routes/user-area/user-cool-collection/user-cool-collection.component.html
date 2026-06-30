@@ -5,7 +5,7 @@
     } @else {
       <div class="col gap1">
         <lib-hero-content-card titleNormal="Cool"
-                               description="Items you have marked cool, newest first."
+                               description="Your Cool picks, newest first."
                                class="coolBG"
                                icon="auto_awesome"
                                id="cool"
@@ -20,7 +20,7 @@
 <ng-template #coolContent let-vm>
   <div class="col gap1 section-shell user-cool">
     @if (vm.loading) {
-      <div class="user-cool__loading">Loading your Cool collection…</div>
+      <div class="user-cool__loading">Loading your Cool picks…</div>
     } @else if (vm.total > 0) {
       @if (entityType === 'module') {
         <app-module-list
@@ -61,7 +61,7 @@
       }
     } @else {
       <app-empty-state icon="auto_awesome"
-                       title="Nothing cooled yet"
+                       title="No Cool picks yet"
                        [copy]="emptyCopy"
       ></app-empty-state>
     }
