@@ -27,9 +27,8 @@ export class StandardsService extends SubManager {
             switchMap(() => this.backend.get.standards())
           )
           .subscribe(x => {
-            // sort by id
             this.standards.data$.next(
-              x.data.sort((a, b) => a.id - b.id)
+              (x.data ?? []).sort((a, b) => a.id - b.id)
             );
           })
     );
