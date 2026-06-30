@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Vercel "Ignored Build Step" gate.
+# Vercel "Ignored Build Step" CI gate.
 #
 # Vercel exit-code semantics (per docs):
 #   exit 0 → SKIP deployment
