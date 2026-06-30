@@ -59,6 +59,18 @@
   --mat-form-field-filled-with-label-container-padding-bottom: 6px;
 }
 
+:host ::ng-deep .auth-container lib-mat-form-entity {
+  display: block;
+  min-width: 0;
+  width: 100%;
+}
+
+:host ::ng-deep .auth-container .mat-mdc-form-field {
+  display: block;
+  max-width: 100%;
+  width: 100%;
+}
+
 .auth-submit-button {
   margin-top: 1rem;
 }
