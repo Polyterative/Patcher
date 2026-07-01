@@ -28,3 +28,32 @@ export type ManufacturerInsightStats = {
   totalHp: number;
   oneUModules: number;
 };
+
+export type ModulePriceStoreRow = {
+  id: number;
+  slug: string;
+  name: string;
+  country_code: string | null;
+  currency_hint: string | null;
+};
+
+export type ModuleStoreListingRow = {
+  id: number;
+  module_id: number;
+  store_id: number;
+  product_url: string;
+  verification_status: string;
+  last_checked_at: string | null;
+  store: ModulePriceStoreRow | null;
+  latestSnapshot: ModulePriceSnapshotRow[] | null;
+};
+
+export type ModulePriceSnapshotRow = {
+  id: number;
+  listing_id: number;
+  observed_at: string;
+  price_amount_minor: number | null;
+  currency: string | null;
+  availability: string;
+  source: string;
+};

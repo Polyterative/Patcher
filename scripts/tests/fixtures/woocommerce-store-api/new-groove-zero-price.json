@@ -1,0 +1,23 @@
+{
+  "id": 132755,
+  "name": "Make Noise PoliMATHS",
+  "slug": "make-noise-polimaths",
+  "permalink": "https://www.newgroove.it/vendita/make-noise-polimaths/",
+  "prices": {
+    "price": "0",
+    "regular_price": "0",
+    "sale_price": "0",
+    "currency_code": "EUR"
+  },
+  "price_html": "",
+  "is_in_stock": true,
+  "stock_status": "instock",
+  "stock_availability": {
+    "text": "Disponibile"
+  },
+  "images": [
+    {
+      "src": "https://www.newgroove.it/wp-content/uploads/2025/10/Make-Noise-Polimaths.jpg"
+    }
+  ]
+}

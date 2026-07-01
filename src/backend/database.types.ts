@@ -95,6 +95,13 @@ export type Database = {
             foreignKeyName: "comments_duplicate_moduleId_fkey"
             columns: ["moduleId"]
             isOneToOne: false
+            referencedRelation: "module_discovery_snapshot"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_duplicate_moduleId_fkey"
+            columns: ["moduleId"]
+            isOneToOne: false
             referencedRelation: "modules"
             referencedColumns: ["id"]
           },
@@ -165,6 +172,13 @@ export type Database = {
             columns: ["collection_id"]
             isOneToOne: false
             referencedRelation: "module_collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_collection_entries_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "module_discovery_snapshot"
             referencedColumns: ["id"]
           },
           {
@@ -256,6 +270,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "module_flags_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "module_discovery_snapshot"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "module_flags_module_id_fkey"
             columns: ["module_id"]
@@ -382,6 +403,13 @@ export type Database = {
             foreignKeyName: "moduleINs_moduleId_fkey"
             columns: ["moduleid"]
             isOneToOne: false
+            referencedRelation: "module_discovery_snapshot"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moduleINs_moduleId_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
             referencedRelation: "modules"
             referencedColumns: ["id"]
           },
@@ -443,6 +471,13 @@ export type Database = {
             foreignKeyName: "moduleOUTs_moduleId_fkey"
             columns: ["moduleid"]
             isOneToOne: false
+            referencedRelation: "module_discovery_snapshot"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moduleOUTs_moduleId_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
             referencedRelation: "modules"
             referencedColumns: ["id"]
           },
@@ -491,6 +526,13 @@ export type Database = {
             foreignKeyName: "module_panels_moduleid_fkey"
             columns: ["moduleid"]
             isOneToOne: false
+            referencedRelation: "module_discovery_snapshot"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_panels_moduleid_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
             referencedRelation: "modules"
             referencedColumns: ["id"]
           },
@@ -500,6 +542,133 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "patches_for_modules"
             referencedColumns: ["moduleid"]
+          },
+        ]
+      }
+      module_price_snapshots: {
+        Row: {
+          availability: string
+          created_at: string
+          currency: string | null
+          id: number
+          listing_id: number
+          observed_at: string
+          price_amount_minor: number | null
+          raw_meta: Json
+          source: string
+        }
+        Insert: {
+          availability?: string
+          created_at?: string
+          currency?: string | null
+          id?: number
+          listing_id: number
+          observed_at?: string
+          price_amount_minor?: number | null
+          raw_meta?: Json
+          source?: string
+        }
+        Update: {
+          availability?: string
+          created_at?: string
+          currency?: string | null
+          id?: number
+          listing_id?: number
+          observed_at?: string
+          price_amount_minor?: number | null
+          raw_meta?: Json
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_price_snapshots_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "module_store_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      module_store_listings: {
+        Row: {
+          active: boolean
+          created_at: string
+          external_handle: string | null
+          external_product_id: string | null
+          failure_count: number
+          id: number
+          last_checked_at: string | null
+          last_error: string | null
+          last_success_at: string | null
+          module_id: number
+          next_check_at: string
+          product_url: string
+          store_id: number
+          updated_at: string
+          verification_status: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          external_handle?: string | null
+          external_product_id?: string | null
+          failure_count?: number
+          id?: number
+          last_checked_at?: string | null
+          last_error?: string | null
+          last_success_at?: string | null
+          module_id: number
+          next_check_at?: string
+          product_url: string
+          store_id: number
+          updated_at?: string
+          verification_status?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          external_handle?: string | null
+          external_product_id?: string | null
+          failure_count?: number
+          id?: number
+          last_checked_at?: string | null
+          last_error?: string | null
+          last_success_at?: string | null
+          module_id?: number
+          next_check_at?: string
+          product_url?: string
+          store_id?: number
+          updated_at?: string
+          verification_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_store_listings_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "module_discovery_snapshot"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_store_listings_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_store_listings_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "patches_for_modules"
+            referencedColumns: ["moduleid"]
+          },
+          {
+            foreignKeyName: "module_store_listings_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -520,6 +689,13 @@ export type Database = {
           tagid?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "module_tags_moduleid_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
+            referencedRelation: "module_discovery_snapshot"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "module_tags_moduleid_fkey"
             columns: ["moduleid"]
@@ -634,6 +810,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "modules_manufacturerId_fkey"
+            columns: ["manufacturerId"]
+            isOneToOne: false
+            referencedRelation: "module_discovery_snapshot"
+            referencedColumns: ["manufacturer_id"]
+          },
+          {
             foreignKeyName: "modules_standard_fkey"
             columns: ["standard"]
             isOneToOne: false
@@ -735,6 +918,13 @@ export type Database = {
           patch_id?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "patch_module_instances_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "module_discovery_snapshot"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "patch_module_instances_module_id_fkey"
             columns: ["module_id"]
@@ -894,6 +1084,13 @@ export type Database = {
             foreignKeyName: "rack_modules_moduleid_fkey"
             columns: ["moduleid"]
             isOneToOne: false
+            referencedRelation: "module_discovery_snapshot"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rack_modules_moduleid_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
             referencedRelation: "modules"
             referencedColumns: ["id"]
           },
@@ -1019,15 +1216,7 @@ export type Database = {
           kind?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "reactions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       standards: {
         Row: {
@@ -1041,6 +1230,54 @@ export type Database = {
         Update: {
           id?: number
           name?: string
+        }
+        Relationships: []
+      }
+      stores: {
+        Row: {
+          active: boolean
+          adapter_kind: string
+          base_url: string
+          country_code: string | null
+          created_at: string
+          currency_hint: string | null
+          id: number
+          name: string
+          price_tracking_enabled: boolean
+          rate_limit_per_day: number
+          search_url_template: string | null
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          adapter_kind?: string
+          base_url: string
+          country_code?: string | null
+          created_at?: string
+          currency_hint?: string | null
+          id?: number
+          name: string
+          price_tracking_enabled?: boolean
+          rate_limit_per_day?: number
+          search_url_template?: string | null
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          adapter_kind?: string
+          base_url?: string
+          country_code?: string | null
+          created_at?: string
+          currency_hint?: string | null
+          id?: number
+          name?: string
+          price_tracking_enabled?: boolean
+          rate_limit_per_day?: number
+          search_url_template?: string | null
+          slug?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -1116,6 +1353,13 @@ export type Database = {
             foreignKeyName: "user_modules_moduleid_fkey"
             columns: ["moduleid"]
             isOneToOne: false
+            referencedRelation: "module_discovery_snapshot"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_modules_moduleid_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
             referencedRelation: "modules"
             referencedColumns: ["id"]
           },
@@ -1137,12 +1381,30 @@ export type Database = {
       }
     }
     Views: {
+      module_discovery_snapshot: {
+        Row: {
+          bucket: string | null
+          id: number | null
+          manufacturer_id: number | null
+          manufacturer_name: string | null
+          name: string | null
+          trend_count: number | null
+        }
+        Relationships: []
+      }
       module_flag_counts: {
         Row: {
           module_id: number | null
           open_count: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "module_flags_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "module_discovery_snapshot"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "module_flags_module_id_fkey"
             columns: ["module_id"]
@@ -1177,6 +1439,13 @@ export type Database = {
           updated: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "rack_modules_moduleid_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
+            referencedRelation: "module_discovery_snapshot"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "rack_modules_moduleid_fkey"
             columns: ["moduleid"]
@@ -1263,6 +1532,14 @@ export type Database = {
           public: boolean
           public_id: string
           updated: string
+        }[]
+      }
+      get_module_discovery_snapshot: {
+        Args: { p_limit?: number; p_min_count?: number }
+        Returns: {
+          most_owned: Json
+          most_sold: Json
+          most_wanted: Json
         }[]
       }
       get_module_open_flag_count: {
@@ -1373,6 +1650,11 @@ export type Database = {
           updated: string
         }[]
       }
+      is_reaction_entity_eligible: {
+        Args: { p_entity_id: number; p_entity_type: number }
+        Returns: boolean
+      }
+      refresh_module_discovery_snapshot: { Args: never; Returns: undefined }
       resolve_public_patch_legacy_id: {
         Args: { p_id: number }
         Returns: string

@@ -3,6 +3,7 @@
   racksWithThisModule: (dataService.racksWithThisModule$|async),
   patchesWithThisModule: (dataService.patchesWithThisModule$|async),
   collectionsWithThisModule: (dataService.collectionsWithThisModule$|async),
+  modulePriceListings: (dataService.modulePriceListings$|async),
   moduleUsageSummary: (dataService.moduleUsageSummary$|async),
   possessionCounts: (dataService.possessionCounts$|async),
   coolCount: (dataService.coolCount$|async),
@@ -41,6 +42,10 @@
                 ></app-module-composite>
               }
             </lib-clean-card>
+            <app-module-price-listings-card
+              class="module-detail-price-card module-detail-price-card--primary"
+              [listings]="bag.modulePriceListings"
+            ></app-module-price-listings-card>
           </div>
         </div>
         <div class="col gap2 module-detail-column module-detail-column--middle">

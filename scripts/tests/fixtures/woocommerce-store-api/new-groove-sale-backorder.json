@@ -1,0 +1,18 @@
+{
+  "id": 9312,
+  "name": "Mutable Instruments Plaits",
+  "slug": "mutable-instruments-plaits",
+  "permalink": "https://newgroove.it/product/mutable-instruments-plaits/",
+  "prices": {
+    "price": "17900",
+    "regular_price": "21900",
+    "sale_price": "17900",
+    "currency_code": "eur"
+  },
+  "is_in_stock": false,
+  "stock_status": "onbackorder",
+  "stock_availability": {
+    "text": "Available on backorder"
+  },
+  "images": []
+}

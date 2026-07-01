@@ -44,6 +44,8 @@ import {
   PublicApplicationModuleInsightBucket,
   PublicApplicationModuleInsights,
   PublicApplicationStatistics,
+  ModulePriceListing,
+  ModulePriceLatestSnapshot,
   PublicModuleDiscoveryEntry,
   PublicModuleDiscoverySnapshot,
   PublicUserContributorStats
@@ -56,6 +58,8 @@ export type {
   PublicApplicationModuleInsightBucket,
   PublicApplicationModuleInsights,
   PublicApplicationStatistics,
+  ModulePriceListing,
+  ModulePriceLatestSnapshot,
   PublicModuleDiscoveryEntry,
   PublicModuleDiscoverySnapshot,
   PublicUserContributorStats
@@ -63,6 +67,8 @@ export type {
 import {
   ManufacturerModuleStats,
   ModuleActivityRow,
+  ModulePriceSnapshotRow,
+  ModuleStoreListingRow,
   PublicModuleInsightRow,
   ManufacturerInsightStats
 } from './supabase-queries.types';
@@ -1641,6 +1647,91 @@ export class SupabaseQueriesService {
       .pipe(
         remapErrors()
       );
+  }
+
+  @Cacheable({
+    maxAge: smallCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('priceHub'))),
+    maxCacheCount: 100
+  })
+  getModulePriceListings(moduleId: number): Observable<ModulePriceListing[]> {
+    if (!Number.isFinite(moduleId) || moduleId <= 0) {
+      return of([]);
+    }
+
+    return rxFrom(
+      this.supabase
+        .from(DbPaths.module_store_listings)
+        .select(`
+          id,
+          module_id,
+          store_id,
+          product_url,
+          verification_status,
+          last_checked_at,
+          store:${ DbPaths.stores }!module_store_listings_store_id_fkey(
+            id,
+            slug,
+            name,
+            country_code,
+            currency_hint
+          ),
+          latestSnapshot:${ DbPaths.module_price_snapshots }!module_price_snapshots_listing_id_fkey(
+            id,
+            listing_id,
+            observed_at,
+            price_amount_minor,
+            currency,
+            availability,
+            source
+          )
+        `)
+        .filter('module_id', 'eq', moduleId)
+        .filter('active', 'eq', true)
+        .order('store_id', {ascending: true})
+        .order('observed_at', {referencedTable: DbPaths.module_price_snapshots, ascending: false})
+        .order('id', {referencedTable: DbPaths.module_price_snapshots, ascending: false})
+        .limit(1, {referencedTable: DbPaths.module_price_snapshots})
+    ).pipe(
+      remapErrors(),
+      map((listingResponse: {data: ModuleStoreListingRow[] | null}) =>
+        this.mapModulePriceListings(listingResponse.data ?? [])
+      )
+    );
+  }
+
+  private mapModulePriceListings(
+    listings: readonly ModuleStoreListingRow[]
+  ): ModulePriceListing[] {
+    return listings
+      .filter((listing): listing is ModuleStoreListingRow & {store: NonNullable<ModuleStoreListingRow['store']>} => !!listing.store)
+      .map((listing) => ({
+        listingId: listing.id,
+        storeId: listing.store_id,
+        storeSlug: listing.store.slug,
+        storeName: listing.store.name,
+        countryCode: listing.store.country_code,
+        currencyHint: listing.store.currency_hint,
+        productUrl: listing.product_url,
+        verificationStatus: listing.verification_status,
+        lastCheckedAt: listing.last_checked_at,
+        latestSnapshot: this.mapLatestModulePriceSnapshot(listing.latestSnapshot?.[0] ?? null)
+      }));
+  }
+
+  private mapLatestModulePriceSnapshot(snapshot: ModulePriceSnapshotRow | null): ModulePriceLatestSnapshot | null {
+    if (!snapshot) {
+      return null;
+    }
+
+    return {
+      id: snapshot.id,
+      observedAt: snapshot.observed_at,
+      priceAmountMinor: snapshot.price_amount_minor,
+      currency: snapshot.currency,
+      availability: snapshot.availability,
+      source: snapshot.source
+    };
   }
 
   getCurrentUserReactions(

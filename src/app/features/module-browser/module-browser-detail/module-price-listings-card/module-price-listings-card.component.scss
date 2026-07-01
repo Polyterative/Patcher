@@ -1,0 +1,341 @@
+:host {
+  container-type: inline-size;
+  display: block;
+}
+
+.module-price-listings {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.module-price-listings__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.85rem;
+  align-items: center;
+  padding: 0;
+}
+
+.module-price-listings__control-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.module-price-listings__control-label {
+  flex: 0 0 auto;
+  font-size: 0.72rem;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.6;
+}
+
+.module-price-listings__control-group mat-chip-listbox,
+.module-price-listings__control-group mat-button-toggle-group {
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.module-price-listing {
+  --module-price-listing-rail-width: 0%;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(6.25rem, max-content) minmax(0, 1fr) minmax(6rem, auto);
+  grid-template-areas: "price details meta";
+  align-items: end;
+  gap: 0.4rem 0.82rem;
+  padding: 0.68rem 0.75rem;
+  border-radius: 0.25rem;
+  color: inherit;
+  text-decoration: none;
+  background: color-mix(in srgb, var(--color-surface-container-low, #ffffff) 82%, transparent);
+  border: 0.0625rem solid color-mix(in srgb, currentColor 9%, transparent);
+  overflow: hidden;
+  transition: border-color 120ms ease, background-color 120ms ease, color 120ms ease;
+
+  &:hover,
+  &:focus-visible {
+    border-color: color-mix(in srgb, var(--color-accent, currentColor) 42%, transparent);
+    background: color-mix(in srgb, var(--color-accent, currentColor) 8%, var(--color-surface-container-low, #ffffff));
+  }
+
+  &:hover .module-price-listing__price-rail-fill,
+  &:focus-visible .module-price-listing__price-rail-fill {
+    transform: scaleY(1.5);
+  }
+}
+
+.module-price-listing--best-now {
+  border-color: color-mix(in srgb, var(--color-success, #1b7f4d) 26%, color-mix(in srgb, currentColor 9%, transparent));
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-success, #1b7f4d) 10%, transparent),
+      transparent 38%
+    ),
+    color-mix(in srgb, var(--color-surface-container-low, #ffffff) 86%, transparent);
+}
+
+.module-price-listing--best-now .module-price-listing__price {
+  color: color-mix(in srgb, var(--color-success, #1b7f4d) 78%, currentColor);
+}
+
+.module-price-listing__price-rail {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 0.125rem;
+  background: color-mix(in srgb, currentColor 8%, transparent);
+  pointer-events: none;
+}
+
+.module-price-listing__price-rail-fill {
+  display: block;
+  width: var(--module-price-listing-rail-width);
+  min-width: 0.35rem;
+  height: 100%;
+  background: color-mix(in srgb, currentColor 36%, transparent);
+  transform-origin: bottom;
+  transition: transform 100ms ease-out, background-color 120ms ease, opacity 120ms ease;
+}
+
+.module-price-listing__price-rail--best .module-price-listing__price-rail-fill {
+  background: color-mix(in srgb, var(--color-success, #1b7f4d) 80%, currentColor);
+}
+
+.module-price-listing__price-rail--unavailable .module-price-listing__price-rail-fill {
+  opacity: 0.48;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      color-mix(in srgb, currentColor 36%, transparent) 0,
+      color-mix(in srgb, currentColor 36%, transparent) 0.12rem,
+      transparent 0.12rem,
+      transparent 0.24rem
+    ),
+    color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.module-price-listing__price-block {
+  grid-area: price;
+  display: flex;
+  align-items: center;
+  align-self: center;
+  min-width: 0;
+}
+
+.module-price-listing__price-block--muted .module-price-listing__price {
+  opacity: 0.68;
+}
+
+.module-price-listing__price {
+  font-size: clamp(1.28rem, 1.55vw, 1.62rem);
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.module-price-listing__details {
+  grid-area: details;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  align-self: center;
+  min-width: 0;
+}
+
+.module-price-listing__store {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 0.35rem 0.55rem;
+  font-weight: 650;
+}
+
+.module-price-listing__store-name {
+  min-width: 0;
+  overflow: hidden;
+  color: color-mix(in srgb, var(--module-price-listing-store-color, currentColor) 72%, currentColor);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.module-price-listing__country,
+.module-price-listing__availability,
+.module-price-listing__insight {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex: 0 0 auto;
+  border-radius: 0.25rem;
+  padding: 0.12rem 0.45rem;
+  font-size: 0.72rem;
+  line-height: 1.2;
+  background: color-mix(in srgb, currentColor 8%, transparent);
+}
+
+.module-price-listing__country {
+  color: color-mix(in srgb, var(--module-price-listing-store-color, currentColor) 68%, currentColor);
+}
+
+.module-price-listing__meta {
+  grid-area: meta;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-self: end;
+  gap: 0.25rem 0.55rem;
+  min-width: 0;
+  text-align: end;
+}
+
+.module-price-listing__status-dot {
+  width: 0.48rem;
+  height: 0.48rem;
+  border-radius: 999rem;
+  background: currentColor;
+  box-shadow: 0 0 0 0.12rem color-mix(in srgb, currentColor 16%, transparent);
+}
+
+.module-price-listing__country mat-icon {
+  width: 0.9rem;
+  height: 0.9rem;
+  font-size: 0.9rem;
+}
+
+.module-price-listing__country-label {
+  max-width: 9.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.module-price-listing__insight {
+  font-weight: 750;
+}
+
+.module-price-listing__availability--available {
+  color: var(--color-success, #1b7f4d);
+}
+
+.module-price-listing__availability--unavailable {
+  color: var(--color-danger, #ad2f2f);
+}
+
+.module-price-listing__availability--discontinued {
+  color: #697386;
+}
+
+.module-price-listing__availability--pending {
+  color: var(--color-warning, #8a5b00);
+}
+
+.module-price-listing__availability--unknown {
+  color: color-mix(in srgb, currentColor 68%, transparent);
+}
+
+.module-price-listing__insight--best {
+  color: color-mix(in srgb, currentColor 68%, transparent);
+}
+
+.module-price-listing__insight--opportunity {
+  color: color-mix(in srgb, currentColor 70%, transparent);
+}
+
+.module-price-listing__insight--premium {
+  color: color-mix(in srgb, currentColor 66%, transparent);
+}
+
+.module-price-listing__insight--muted {
+  color: color-mix(in srgb, currentColor 60%, transparent);
+}
+
+.module-price-listing__checked {
+  font-size: 0.74rem;
+  opacity: 0.68;
+  white-space: nowrap;
+}
+
+.module-price-listings__empty {
+  margin: 0;
+  padding: 0.78rem 0.82rem;
+  border-radius: 0.25rem;
+  color: color-mix(in srgb, currentColor 72%, transparent);
+  font-size: 0.82rem;
+  background: color-mix(in srgb, currentColor 6%, transparent);
+  border: 0.0625rem dashed color-mix(in srgb, currentColor 14%, transparent);
+}
+
+@container (max-width: 34rem) {
+  .module-price-listings__controls {
+    align-items: flex-start;
+  }
+
+  .module-price-listings__control-group {
+    flex-wrap: wrap;
+  }
+
+  .module-price-listing {
+    grid-template-columns: minmax(5.6rem, max-content) minmax(0, 1fr);
+    grid-template-areas:
+      "price details"
+      "meta meta";
+    align-items: center;
+    gap: 0.35rem 0.7rem;
+  }
+
+  .module-price-listing__meta {
+    justify-content: flex-end;
+    padding-top: 0.05rem;
+  }
+}
+
+@container (max-width: 24rem) {
+  .module-price-listings__controls,
+  .module-price-listings__control-group {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .module-price-listings__control-group mat-chip-listbox,
+  .module-price-listings__control-group mat-button-toggle-group {
+    width: 100%;
+  }
+
+  .module-price-listing {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "price"
+      "details"
+      "meta";
+  }
+
+  .module-price-listing__price {
+    font-size: 1.28rem;
+  }
+
+  .module-price-listing__store {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .module-price-listing__meta {
+    justify-content: flex-end;
+    text-align: end;
+  }
+
+  .module-price-listing__checked {
+    white-space: normal;
+  }
+}

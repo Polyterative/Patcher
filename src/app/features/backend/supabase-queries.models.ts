@@ -84,3 +84,25 @@ export interface PublicModuleDiscoverySnapshot {
   mostWanted: PublicModuleDiscoveryEntry[];
   mostSold: PublicModuleDiscoveryEntry[];
 }
+
+export interface ModulePriceLatestSnapshot {
+  id: number;
+  observedAt: string;
+  priceAmountMinor: number | null;
+  currency: string | null;
+  availability: string;
+  source: string;
+}
+
+export interface ModulePriceListing {
+  listingId: number;
+  storeId: number;
+  storeSlug: string;
+  storeName: string;
+  countryCode: string | null;
+  currencyHint: string | null;
+  productUrl: string;
+  verificationStatus: string;
+  lastCheckedAt: string | null;
+  latestSnapshot: ModulePriceLatestSnapshot | null;
+}

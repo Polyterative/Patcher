@@ -6,7 +6,7 @@ export const JSONLD_SCRIPT_ID = 'module-jsonld';
 // Last audited: 2026-05-16. Re-check all URLs periodically (sites redesign).
 // Verified: Google, YouTube, Modwiggler, Lines, Elektronauts, Modulargrid,
 //           VCV Library, Wigglehunt, Thomann (geo-redirects to regional), Signalsounds,
-//           Exploding Shed, Elevatorsound, Perfect Circuit, Milk Audio, New Groove,
+//           Exploding Shed, Elevator Sound, Perfect Circuit, Milk Audio, New Groove,
 //           Escape From Noise, Machineroom, Control, Patchwerks, Found Sound, Synthshop.
 // Schneidersladen: migrated to Shopware 6 — use `?search=` instead of `?sSearch=`.
 
@@ -123,12 +123,13 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     tooltip: 'Search on Exploding Shed'
   },
   {
-    url: (name: string) => buildSearchUrl('https://eu.elevatorsound.com/shop/', {
-      _sf_s: name
+    url: (name: string) => buildSearchUrl('https://www.elevatorsound.com/', {
+      s: name,
+      post_type: 'product'
     }),
-    label: 'Elevatorsound 🇬🇧',
+    label: 'Elevator Sound 🇬🇧',
     icon: 'store',
-    tooltip: 'Search on Elevatorsound'
+    tooltip: 'Search on Elevator Sound'
   },
   {
     url: (name: string) => buildSearchUrl('https://www.perfectcircuit.com/catalogsearch/result/', {
