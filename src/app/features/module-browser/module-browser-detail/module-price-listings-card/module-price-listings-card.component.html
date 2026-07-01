@@ -1,0 +1,120 @@
+@if (hasListings) {
+  <lib-hero-content-card
+    titleNormal="Store prices"
+  >
+    <div class="module-price-listings">
+      <div
+        class="module-price-listings__controls"
+        aria-label="Store price controls"
+      >
+        <div class="module-price-listings__control-group">
+          <span class="module-price-listings__control-label">Show</span>
+          <mat-chip-listbox
+            aria-label="Filter by availability"
+            [value]="availabilityFilter"
+            (change)="setAvailabilityFilter($event.value)"
+          >
+            @for (option of availabilityFilterOptions; track option.value) {
+              <mat-chip-option [value]="option.value">
+                {{ option.label }}
+              </mat-chip-option>
+            }
+          </mat-chip-listbox>
+        </div>
+        <div class="module-price-listings__control-group">
+          <span class="module-price-listings__control-label">Order</span>
+          <mat-button-toggle-group
+            aria-label="Sort listings"
+            [value]="listingOrder"
+            (change)="setListingOrder($event.value)"
+          >
+            @for (option of listingOrderOptions; track option.value) {
+              <mat-button-toggle [value]="option.value">
+                {{ option.label }}
+              </mat-button-toggle>
+            }
+          </mat-button-toggle-group>
+        </div>
+      </div>
+
+      @if (displayListings.length > 0) {
+        @for (listing of displayListings; track listing.listingId) {
+          <a
+            class="module-price-listing"
+            [class.module-price-listing--best-now]="isBestAvailableNowListing(listing)"
+            [style.--module-price-listing-store-color]="getStoreHeroColor(listing)"
+            [href]="listing.productUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            [attr.aria-label]="'Open ' + listing.storeName + ' listing'"
+          >
+            <div
+              class="module-price-listing__price-block"
+              [class.module-price-listing__price-block--muted]="!isAvailableNow(listing)"
+            >
+              <strong class="module-price-listing__price">{{ formatPrice(listing) }}</strong>
+            </div>
+            <div class="module-price-listing__details">
+              <div class="module-price-listing__store">
+                <span class="module-price-listing__store-name">{{ listing.storeName }}</span>
+                <span
+                  class="module-price-listing__availability {{ getAvailabilityClass(listing) }}"
+                >
+                  <span
+                    class="module-price-listing__status-dot"
+                    aria-hidden="true"
+                  ></span>
+                  {{ getAvailabilityLabel(listing) }}
+                </span>
+                @if (!isBestAvailableNowListing(listing) && getPriceInsightLabel(listing); as priceInsightLabel) {
+                  <span class="module-price-listing__insight {{ getPriceInsightClass(listing) }}">
+                    {{ priceInsightLabel }}
+                  </span>
+                }
+              </div>
+            </div>
+            <div class="module-price-listing__meta">
+              @if (getShippingOriginLabel(listing); as shippingOriginLabel) {
+                <span
+                  class="module-price-listing__country"
+                  [attr.aria-label]="shippingOriginLabel"
+                  [matTooltip]="shippingOriginLabel"
+                >
+                  <mat-icon aria-hidden="true">local_shipping</mat-icon>
+                  <span
+                    class="module-price-listing__country-label"
+                  >
+                    {{ shippingOriginLabel }}
+                  </span>
+                </span>
+              }
+              @if (listing.latestSnapshot?.observedAt) {
+                <span class="module-price-listing__checked">
+                  Checked {{ listing.latestSnapshot?.observedAt | supabaseUtcTimestamp | timeago }}
+                </span>
+              }
+            </div>
+            @if (getPriceComparisonPoint(listing); as priceComparisonPoint) {
+              <div
+                class="module-price-listing__price-rail"
+                [style.--module-price-listing-rail-width]="priceComparisonPoint.widthPercent + '%'"
+                [class.module-price-listing__price-rail--best]="priceComparisonPoint.relation === 'best'"
+                [class.module-price-listing__price-rail--unavailable]="!isAvailableNow(listing)"
+                aria-hidden="true"
+              >
+                <span class="module-price-listing__price-rail-fill"></span>
+              </div>
+            }
+          </a>
+        }
+      } @else {
+        <div
+          class="module-price-listings__empty"
+          role="status"
+        >
+          No store prices match this filter.
+        </div>
+      }
+    </div>
+  </lib-hero-content-card>
+}

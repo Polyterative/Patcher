@@ -20,6 +20,7 @@ import {
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { TimeagoModule } from 'ngx-timeago';
 import { ModuleEditorModule } from 'src/app/components/module-parts/module-editor/module-editor.module';
 import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.module';
 import { LibShowcaseGridComponent } from 'src/app/components/rack-parts/rack-editor/lib-showcase-grid/lib-showcase-grid.component';
@@ -28,6 +29,7 @@ import { CoolButtonComponent } from 'src/app/components/shared-atoms/cool-button
 import { RecentActivityModule } from 'src/app/components/shared-atoms/recent-activity/recent-activity.module';
 import { ManufacturerRowComponent } from 'src/app/features/manufacturer-detail/manufacturer-browser-root/manufacturer-row/manufacturer-row.component';
 import { ModuleBrowserDetailComponent } from 'src/app/features/module-browser/module-browser-detail/module-browser-detail.component';
+import { ModulePriceListingsCardComponent } from 'src/app/features/module-browser/module-browser-detail/module-price-listings-card/module-price-listings-card.component';
 import { ModuleCompositeComponent } from 'src/app/features/module-browser/module-composite/module-composite.component';
 import { CopyableDirective } from 'src/app/shared-interproject/app-copy-on-click.directive';
 import { AutoContentLoadingIndicatorComponent } from 'src/app/shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator/auto-content-loading-indicator.component';
@@ -49,6 +51,7 @@ import { ModuleBrowserRootModule } from './module-browser-root/module-browser-ro
 import { ModuleDetailDataCardComponent } from './module-browser-detail/module-detail-data-card/module-detail-data-card.component';
 import { ModuleUsageCardComponent } from './module-browser-detail/module-usage-card/module-usage-card.component';
 import { ModuleListModule } from './module-list/module-list.module';
+import { SupabaseUtcTimestampPipe } from 'src/app/shared-interproject/pipes/supabase-utc-timestamp.pipe';
 
 /**
  * Non-routing slice of ModuleBrowserModule. See PatchBrowserSharedModule
@@ -60,6 +63,7 @@ import { ModuleListModule } from './module-list/module-list.module';
     ModuleBrowserDetailComponent,
     ModuleCompositeComponent,
     ModuleDetailDataCardComponent,
+    ModulePriceListingsCardComponent,
     ModuleUsageCardComponent
   ],
   exports: [
@@ -88,6 +92,7 @@ import { ModuleListModule } from './module-list/module-list.module';
     MatMenu,
     MatMenuItem,
     MatMenuTrigger,
+    TimeagoModule.forChild(),
     HeroContentCardComponent,
     LabelValueShowcaseComponent,
     ScreenWrapperComponent,
@@ -111,7 +116,8 @@ import { ModuleListModule } from './module-list/module-list.module';
     LibShowcaseGridComponent,
     EditFabComponent,
     ManufacturerRowComponent,
-    RecentActivityModule
+    RecentActivityModule,
+    SupabaseUtcTimestampPipe
   ]
 })
 export class ModuleBrowserSharedModule {}

@@ -47,6 +47,7 @@ import { UserModuleAcquisition, UserModuleAcquisitionDraft } from 'src/app/model
 import { ModulePossessionDialogResult } from './module-possession-dialog/module-possession-dialog.component';
 import { formatMarketplaceMinorUnits } from 'src/app/features/marketplace/marketplace-money.utils';
 import { ReactionEntityTypes } from 'src/app/features/backend/supabase-reactions';
+import { ModulePriceListing } from 'src/app/features/backend/supabase-queries';
 
 export type { HiddenUsageBucket, ModulePossessionCounts, ModuleUsageSummary } from './module-detail-data.models';
 
@@ -71,6 +72,7 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
   readonly racksWithThisModule$ = new BehaviorSubject<RackMinimal[] | undefined>(undefined);
   readonly patchesWithThisModule$ = new BehaviorSubject<PatchMinimal[] | undefined>(undefined);
   readonly collectionsWithThisModule$ = new BehaviorSubject<ModuleCollectionSummary[] | undefined>(undefined);
+  readonly modulePriceListings$ = new BehaviorSubject<ModulePriceListing[] | undefined>(undefined);
   readonly moduleUsageSummary$ = new BehaviorSubject<ModuleUsageSummary | undefined>(undefined);
   readonly possessionCounts$ = new BehaviorSubject<ModulePossessionCounts | undefined>(undefined);
   readonly coolCount$ = new BehaviorSubject<number | undefined>(undefined);
@@ -260,6 +262,19 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
         this.takeUntilDestroyed()
       )
       .subscribe(collections => this.collectionsWithThisModule$.next(collections));
+
+    this.updateSingleModuleData$
+      .pipe(
+        tap(() => this.modulePriceListings$.next(undefined)),
+        switchMap(x => this.backend.GET.modulePriceListings(x).pipe(
+          catchError(error => {
+            console.warn('Module price listings could not be loaded.', error);
+            return of([]);
+          })
+        )),
+        this.takeUntilDestroyed()
+      )
+      .subscribe(listings => this.modulePriceListings$.next(listings));
 
     this.updateSingleModuleData$
       .pipe(

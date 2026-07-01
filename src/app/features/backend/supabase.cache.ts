@@ -47,6 +47,7 @@ export type CachedEntity =
   | 'modulesBySameManufacturer'
   | 'userModuleTags'
   | 'modulePossessionCounts'
+  | 'priceHub'
   | 'moduleCollections'
   | 'moduleCollectionWithId'
   | 'moduleCollectionsByModule'
