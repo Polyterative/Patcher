@@ -1,0 +1,47 @@
+@if (waveforms.length) {
+  <section class="moduleWaveformPaletteAnalysis" aria-label="Waveform palette analysis">
+    <div class="moduleWaveformPaletteAnalysis__header">Waveform palette</div>
+    <div class="moduleWaveformPaletteAnalysis__tokens">
+      @for (waveform of waveforms; track waveform.kind) {
+        <span class="moduleWaveformPaletteAnalysis__token">
+          <svg
+            class="moduleWaveformPaletteAnalysis__glyph"
+            viewBox="0 0 28 14"
+            aria-hidden="true"
+          >
+            @switch (waveform.kind) {
+              @case ('sine') {
+                <path d="M1 7 C4 1, 8 1, 11 7 S18 13, 21 7 S25 1, 27 7"></path>
+              }
+              @case ('triangle') {
+                <path d="M1 12 L7.5 2 L14 12 L20.5 2 L27 12"></path>
+              }
+              @case ('saw') {
+                <path d="M1 12 L13 2 L13 12 L26 2 L26 12"></path>
+              }
+              @case ('ramp') {
+                <path d="M2 12 L25 2"></path>
+              }
+              @case ('square') {
+                <path d="M1 12 L1 3 L10 3 L10 12 L19 12 L19 3 L27 3"></path>
+              }
+              @case ('pulse') {
+                <path d="M1 12 L1 3 L7 3 L7 12 L19 12 L19 3 L27 3"></path>
+              }
+              @case ('noise') {
+                <path d="M1 8 L4 4 L7 10 L10 2 L13 12 L16 5 L19 9 L22 3 L27 11"></path>
+              }
+              @case ('random') {
+                <path d="M1 9 L5 9 L5 4 L10 4 L10 11 L15 11 L15 2 L21 2 L21 7 L27 7"></path>
+              }
+              @case ('chaos') {
+                <path d="M1 8 C5 1, 8 13, 12 6 C16 0, 18 14, 22 5 C24 2, 26 4, 27 8"></path>
+              }
+            }
+          </svg>
+          <span>{{ waveform.label }}</span>
+        </span>
+      }
+    </div>
+  </section>
+}

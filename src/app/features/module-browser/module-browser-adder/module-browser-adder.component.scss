@@ -415,6 +415,18 @@
     border-color: rgba(63,81,181, 0.4);
     box-shadow: 0 4px 18px rgba(63,81,181, 0.1);
   }
+
+  lib-mat-form-entity {
+    display: block;
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+:host ::ng-deep .form-card lib-mat-form-entity .mat-mdc-form-field {
+  display: block;
+  max-width: 100%;
+  width: 100%;
 }
 
 .form-section.is-ready .form-card {

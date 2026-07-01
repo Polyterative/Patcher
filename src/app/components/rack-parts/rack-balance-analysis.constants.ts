@@ -194,9 +194,11 @@ export const RACK_BALANCE_AXES: RackBalanceAxisDefinition[] = [
     purposePatterns: [
       /\bfilter\b/i,
       /\beq\b/i,
+      /\bequali[sz](?:e[rd]?|ing|ation)?\b/i,
       /\bwave\b/i,
       /\bshaper\b/i,
       /\beffect\b/i,
+      /\bcompress(?:or|ion|ed|ing)?\b/i,
       /\bdelay\b/i,
       /\breverb\b/i,
       /\bdistortion\b/i

@@ -1,0 +1,13 @@
+@if (features.length) {
+  <section class="moduleTimeRateAnalysis" aria-label="Time and rate analysis">
+    <div class="moduleTimeRateAnalysis__header">Time / rate</div>
+    <div class="moduleTimeRateAnalysis__chips">
+      @for (feature of features; track feature.kind + feature.label + feature.value) {
+        <span class="moduleTimeRateAnalysis__chip">
+          <span class="moduleTimeRateAnalysis__label">{{ feature.label }}</span>
+          <span class="moduleTimeRateAnalysis__value">{{ feature.value }}</span>
+        </span>
+      }
+    </div>
+  </section>
+}

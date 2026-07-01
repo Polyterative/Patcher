@@ -25,7 +25,7 @@ describe('DescriptionKeywordHighlightPipe', () => {
   }
 
   it('wraps matched purpose keywords with the matching axis class', () => {
-    const html = render('Dual VCO with wave shaping and filter tone.');
+    const html = render('Dual VCO with filter tone.');
 
     expect(html).toContain('<span class="desc-kw desc-kw--voices">VCO</span>');
     expect(html).toContain('<span class="desc-kw desc-kw--tone">filter</span>');
@@ -76,5 +76,37 @@ describe('DescriptionKeywordHighlightPipe', () => {
 
     expect(axis).toBe('timing');
     expect(html).toContain('<span class="desc-kw desc-kw--timing">Clock-IN</span>');
+  });
+
+  it('prioritizes the earliest lowercase tone keywords in descriptions', () => {
+    const html = render(
+      'Messor is a stereo compressor with lots of tricks up its sleeves. '
+        + 'It has a low noise signal path and internal sidechain envelope.',
+      2
+    );
+
+    expect(html).toContain('<span class="desc-kw desc-kw--tone">stereo</span>');
+    expect(html).toContain('<span class="desc-kw desc-kw--tone">compressor</span>');
+    expect(html).not.toContain('<span class="desc-kw desc-kw--voices">noise</span>');
+    expect(html).not.toContain('<span class="desc-kw desc-kw--modulation">envelope</span>');
+  });
+
+  it('highlights equalizer words as tone keywords', () => {
+    const html = render('Stereo or mono 3-band equalizer preamp with equalization.', 3);
+
+    expect(html).toContain('<span class="desc-kw desc-kw--tone">Stereo</span>');
+    expect(html).toContain('<span class="desc-kw desc-kw--tone">equalizer</span>');
+    expect(html).toContain('<span class="desc-kw desc-kw--tone">equalization</span>');
+  });
+
+  it('expands prefix pattern matches to complete words', () => {
+    const html = render('Compact mixer with oscillator sequencer.', 3);
+
+    expect(html).toContain('<span class="desc-kw desc-kw--utilities">mixer</span>');
+    expect(html).toContain('<span class="desc-kw desc-kw--voices">oscillator</span>');
+    expect(html).toContain('<span class="desc-kw desc-kw--timing">sequencer</span>');
+    expect(html).not.toContain('>mix</span>er');
+    expect(html).not.toContain('>osc</span>illator');
+    expect(html).not.toContain('>sequenc</span>er');
   });
 });

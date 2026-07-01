@@ -1,0 +1,72 @@
+:host {
+  display: block;
+}
+
+.moduleClockDivisionAnalysis {
+  margin-top: 0.45rem;
+  color: rgba(19, 54, 89, 0.78);
+}
+
+.moduleClockDivisionAnalysis__header {
+  margin-bottom: 0.28rem;
+  color: rgba(19, 54, 89, 0.62);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.moduleClockDivisionAnalysis__ladder {
+  position: relative;
+  height: 1.25rem;
+}
+
+.moduleClockDivisionAnalysis__axis {
+  position: absolute;
+  right: 0;
+  bottom: 0.42rem;
+  left: 0;
+  height: 1px;
+  background: rgba(19, 54, 89, 0.23);
+}
+
+.moduleClockDivisionAnalysis__one {
+  position: absolute;
+  bottom: 0.58rem;
+  left: 50%;
+  color: rgba(19, 54, 89, 0.46);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.52rem;
+  letter-spacing: 0.04em;
+  transform: translateX(-50%);
+}
+
+.moduleClockDivisionAnalysis__mark {
+  position: absolute;
+  bottom: 0.14rem;
+  width: 1px;
+  height: 0.72rem;
+  background: color-mix(in srgb, var(--mat-sys-primary, #2f7d76) 82%, rgba(19, 54, 89, 0.22));
+  transform: translateX(-50%);
+}
+
+.moduleClockDivisionAnalysis__mark--behavior {
+  height: 0.38rem;
+  background: rgba(19, 54, 89, 0.34);
+}
+
+.moduleClockDivisionAnalysis__labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.38rem;
+}
+
+.moduleClockDivisionAnalysis__label {
+  color: rgba(19, 54, 89, 0.72);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.045em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}

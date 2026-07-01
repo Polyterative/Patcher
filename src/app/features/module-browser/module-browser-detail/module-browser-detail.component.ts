@@ -267,7 +267,10 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
     ellipseDescription: false,
     bigPanelImage: true,
     hidePanelsOptions: false,
-    colorTagsByAxis: true
+    colorTagsByAxis: true,
+    highlightDescriptionKeywords: true,
+    showDescriptionAnalysis: true,
+    showFrequencyAnalysis: true
   };
   
   @Input() bySameManufacturerViewConfig: ModuleMinimalViewConfig = {

@@ -1,0 +1,81 @@
+:host {
+  display: block;
+}
+
+.moduleVoltageAnalysis {
+  margin-top: 0.45rem;
+  color: rgba(19, 54, 89, 0.78);
+}
+
+.moduleVoltageAnalysis__header {
+  margin-bottom: 0.3rem;
+  color: rgba(19, 54, 89, 0.62);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.moduleVoltageAnalysis__ruler {
+  position: relative;
+  height: 1.35rem;
+}
+
+.moduleVoltageAnalysis__axis {
+  position: absolute;
+  right: 0;
+  bottom: 0.45rem;
+  left: 0;
+  height: 1px;
+  background: rgba(19, 54, 89, 0.25);
+}
+
+.moduleVoltageAnalysis__tick {
+  position: absolute;
+  bottom: 0.25rem;
+  width: 1px;
+  height: 0.55rem;
+  background: rgba(19, 54, 89, 0.18);
+  transform: translateX(-50%);
+}
+
+.moduleVoltageAnalysis__span {
+  position: absolute;
+  bottom: 0.41rem;
+  height: 0.18rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--mat-sys-primary, #2f7d76) 64%, rgba(19, 54, 89, 0.2));
+}
+
+.moduleVoltageAnalysis__marker {
+  position: absolute;
+  bottom: 0.17rem;
+  width: 1px;
+  height: 0.75rem;
+  background: color-mix(in srgb, var(--mat-sys-primary, #2f7d76) 88%, rgba(19, 54, 89, 0.18));
+  transform: translateX(-50%);
+}
+
+.moduleVoltageAnalysis__labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.4rem;
+}
+
+.moduleVoltageAnalysis__label {
+  display: inline-flex;
+  gap: 0.28rem;
+  align-items: baseline;
+  color: rgba(19, 54, 89, 0.76);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.045em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.moduleVoltageAnalysis__value {
+  color: color-mix(in srgb, var(--mat-sys-primary, #2f7d76) 78%, rgba(19, 54, 89, 0.48));
+  text-transform: none;
+}

@@ -23,5 +23,13 @@
           : data.description"
       ></span>
     }
+    @if (viewConfig.showDescriptionAnalysis || viewConfig.showFrequencyAnalysis) {
+      <app-module-description-analysis-suite
+        class="module-description-analysis"
+        [description]="data.description"
+        [showDescriptionAnalysis]="viewConfig.showDescriptionAnalysis ?? false"
+        [showFrequencyAnalysis]="viewConfig.showFrequencyAnalysis ?? false"
+      ></app-module-description-analysis-suite>
+    }
   </div>
 }
