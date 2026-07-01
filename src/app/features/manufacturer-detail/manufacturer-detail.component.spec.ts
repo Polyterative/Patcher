@@ -80,6 +80,13 @@ function statsSnapshot(component: ManufacturerDetailComponent): LabelValueData[]
 
 describe('ManufacturerDetailComponent', () => {
 
+  it('enables module description keyword highlights on manufacturer detail module cards', () => {
+    const {component} = build();
+
+    expect(component.moduleViewConfig.highlightDescriptionKeywords).toBeTrue();
+    component.ngOnDestroy();
+  });
+
   describe('stats$', () => {
 
     it('returns [] when manufacturerData$ is null', () => {

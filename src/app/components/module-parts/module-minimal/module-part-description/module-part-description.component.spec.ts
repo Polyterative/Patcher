@@ -3,8 +3,12 @@ import {
   TestBed
 } from '@angular/core/testing';
 import { MatCardModule } from '@angular/material/card';
+import { By } from '@angular/platform-browser';
 import { defaultModuleMinimalViewConfig } from '../module-minimal.component';
 import { DescriptionKeywordHighlightPipe } from '../../shared-pipes/description-keyword-highlight.pipe';
+import {
+  ModuleDescriptionAnalysisSuiteComponent
+} from '../../module-description-analysis/suite/module-description-analysis-suite.component';
 import { ModulePartDescriptionComponent } from './module-part-description.component';
 import { MinimalModule } from 'src/app/models/module';
 
@@ -20,6 +24,7 @@ describe('ModulePartDescriptionComponent', () => {
         DescriptionKeywordHighlightPipe
       ],
       imports: [
+        ModuleDescriptionAnalysisSuiteComponent,
         MatCardModule
       ]
     }).compileComponents();
@@ -104,6 +109,36 @@ describe('ModulePartDescriptionComponent', () => {
     const subtitle = fixture.nativeElement.querySelector('mat-card-subtitle') as HTMLElement;
     expect(subtitle.querySelectorAll('.desc-kw').length).toBe(2);
     expect(subtitle.querySelector('.desc-kw--voices')?.textContent).toBe('VCO');
+  });
+
+  it('renders the description analysis suite only when the view config opts in', () => {
+    comp.data = {
+      id: 1,
+      name: 'EQ',
+      description: 'The high band offers boost between 5kHz and 20kHz.'
+    } as MinimalModule;
+    comp.viewConfig = {
+      ...defaultModuleMinimalViewConfig,
+      showFrequencyAnalysis: false
+    };
+
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-module-description-analysis-suite')).toBeNull();
+
+    const optInFixture = TestBed.createComponent(ModulePartDescriptionComponent);
+    optInFixture.componentInstance.data = comp.data;
+    optInFixture.componentInstance.viewConfig = {
+      ...defaultModuleMinimalViewConfig,
+      showFrequencyAnalysis: true
+    };
+    optInFixture.detectChanges();
+    expect(optInFixture.nativeElement.querySelector('app-module-description-analysis-suite')).toBeTruthy();
+    const suiteDebugElement = optInFixture.debugElement.query(By.directive(ModuleDescriptionAnalysisSuiteComponent));
+    const suite = suiteDebugElement.componentInstance as ModuleDescriptionAnalysisSuiteComponent;
+
+    expect(suiteDebugElement).toBeTruthy();
+    expect(suite.showFrequencyAnalysis).toBeTrue();
+    expect(suite.showDescriptionAnalysis).toBeFalse();
   });
 
   it('keeps short descriptions unclamped when they occupy five lines or fewer', () => {

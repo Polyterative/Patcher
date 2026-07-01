@@ -60,6 +60,7 @@ export class ManufacturerDetailComponent extends SubManager {
     hidePatchedIn: true,
     hideRackedIn: true,
     hideBySameManufacturer: true,
+    highlightDescriptionKeywords: true,
   };
   
   stats$: Observable<LabelValueData[]>;

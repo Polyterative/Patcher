@@ -1,0 +1,26 @@
+@if (description) {
+  <div class="moduleDescriptionAnalysisSuite">
+    @if (showFrequencyWidget) {
+      @defer (when true) {
+      <app-module-frequency-analysis [description]="description"></app-module-frequency-analysis>
+      }
+    }
+    @if (showDescriptionAnalysis) {
+      @defer (when true) {
+        <app-module-voltage-analysis [description]="description"></app-module-voltage-analysis>
+      }
+      @defer (when true) {
+        <app-module-time-rate-analysis [description]="description"></app-module-time-rate-analysis>
+      }
+      @defer (when true) {
+        <app-module-clock-division-analysis [description]="description"></app-module-clock-division-analysis>
+      }
+      @defer (when true) {
+        <app-module-waveform-palette-analysis [description]="description"></app-module-waveform-palette-analysis>
+      }
+      @defer (when true) {
+        <app-module-utility-operations-analysis [description]="description"></app-module-utility-operations-analysis>
+      }
+    }
+  </div>
+}

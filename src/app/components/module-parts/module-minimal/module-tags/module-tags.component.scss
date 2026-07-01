@@ -24,7 +24,7 @@ mat-chip-option:not([disabled]) {
 
 
 mat-chip-option {
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease, outline-color 0.15s ease;
 
   &.zero-votes {
     opacity: 0.55;
@@ -32,6 +32,13 @@ mat-chip-option {
     &:hover {
       opacity: 1;
     }
+  }
+
+  &.tag-chip--text-match {
+    opacity: 1;
+    box-shadow:
+      inset 0 0 0 0.18rem rgba(225, 142, 34, 0.96),
+      0 0 0.22rem rgba(225, 142, 34, 0.7);
   }
 }
 

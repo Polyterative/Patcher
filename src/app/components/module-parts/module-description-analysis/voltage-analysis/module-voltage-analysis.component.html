@@ -1,0 +1,36 @@
+@if (featureViews.length) {
+  <section class="moduleVoltageAnalysis" aria-label="Voltage analysis">
+    <div class="moduleVoltageAnalysis__header">Voltage</div>
+    <div class="moduleVoltageAnalysis__ruler" aria-hidden="true">
+      <div class="moduleVoltageAnalysis__axis"></div>
+      @for (tick of ticks; track tick) {
+        <span
+          class="moduleVoltageAnalysis__tick"
+          [style.left.%]="tickPosition(tick)"
+        ></span>
+      }
+      @for (feature of featureViews; track feature.label + feature.lowV + feature.highV) {
+        @if (feature.lowV !== feature.highV) {
+          <span
+            class="moduleVoltageAnalysis__span"
+            [style.left.%]="feature.start"
+            [style.width.%]="feature.width"
+          ></span>
+        } @else {
+          <span
+            class="moduleVoltageAnalysis__marker"
+            [style.left.%]="feature.marker"
+          ></span>
+        }
+      }
+    </div>
+    <div class="moduleVoltageAnalysis__labels">
+      @for (feature of featureViews; track feature.label + feature.lowV + feature.highV) {
+        <span class="moduleVoltageAnalysis__label">
+          <span>{{ feature.label }}</span>
+          <span class="moduleVoltageAnalysis__value">{{ feature.displayValue }}</span>
+        </span>
+      }
+    </div>
+  </section>
+}

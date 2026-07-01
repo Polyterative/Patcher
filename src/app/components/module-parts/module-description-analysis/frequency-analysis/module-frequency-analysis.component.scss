@@ -1,0 +1,121 @@
+:host {
+  display: block;
+}
+
+.moduleFrequencyAnalysis {
+  margin-top: 0.5rem;
+  color: rgba(19, 54, 89, 0.78);
+}
+
+.moduleFrequencyAnalysis__header {
+  margin-bottom: 0.25rem;
+  color: rgba(19, 54, 89, 0.62);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.moduleFrequencyAnalysis__panel {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.45rem 0 0;
+}
+
+.moduleFrequencyAnalysis__chart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.moduleFrequencyAnalysis__axis,
+.moduleFrequencyAnalysis__gridLine,
+.moduleFrequencyAnalysis__scaleGuide,
+.moduleFrequencyAnalysis__rangeRail,
+.moduleFrequencyAnalysis__bandEdge,
+.moduleFrequencyAnalysis__centerGlow,
+.moduleFrequencyAnalysis__centerLine {
+  vector-effect: non-scaling-stroke;
+}
+
+.moduleFrequencyAnalysis__axis {
+  stroke: rgba(19, 54, 89, 0.32);
+  stroke-width: 1;
+}
+
+.moduleFrequencyAnalysis__gridLine {
+  stroke: rgba(19, 54, 89, 0.095);
+  stroke-width: 1;
+}
+
+.moduleFrequencyAnalysis__scaleGuide {
+  stroke: rgba(19, 54, 89, 0.26);
+  stroke-width: 1;
+  stroke-dasharray: 2.5 3.5;
+}
+
+.moduleFrequencyAnalysis__tickLabel {
+  fill: rgba(19, 54, 89, 0.68);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.42rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+}
+
+.moduleFrequencyAnalysis__rangeRail {
+  stroke: color-mix(in srgb, var(--mat-sys-primary, #2f7d76) 58%, rgba(19, 54, 89, 0.24));
+  stroke-linecap: round;
+  stroke-width: 2;
+}
+
+.moduleFrequencyAnalysis__bandEdge {
+  stroke: color-mix(in srgb, var(--mat-sys-primary, #2f7d76) 62%, rgba(19, 54, 89, 0.22));
+  stroke-width: 1;
+}
+
+.moduleFrequencyAnalysis__centerGlow {
+  stroke: color-mix(in srgb, var(--mat-sys-primary, #2f7d76) 16%, transparent);
+  stroke-width: 3;
+}
+
+.moduleFrequencyAnalysis__centerLine {
+  stroke: color-mix(in srgb, var(--mat-sys-primary, #2f7d76) 90%, rgba(19, 54, 89, 0.28));
+  stroke-width: 1;
+}
+
+.moduleFrequencyAnalysis__legend {
+  display: grid;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid rgba(19, 54, 89, 0.08);
+}
+
+.moduleFrequencyAnalysis__legendRow {
+  display: grid;
+  grid-template-columns: minmax(4.8rem, 0.9fr) minmax(5rem, 1fr);
+  gap: 0.5rem;
+  align-items: baseline;
+  color: rgba(19, 54, 89, 0.64);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.045em;
+  line-height: 1.25;
+}
+
+.moduleFrequencyAnalysis__legendName {
+  color: rgba(19, 54, 89, 0.82);
+  text-transform: uppercase;
+}
+
+.moduleFrequencyAnalysis__legendValue {
+  color: color-mix(in srgb, var(--mat-sys-primary, #2f7d76) 78%, rgba(19, 54, 89, 0.5));
+}
+
+@media (max-width: 30rem) {
+  .moduleFrequencyAnalysis__legendRow {
+    grid-template-columns: 1fr;
+    gap: 0.12rem;
+  }
+}

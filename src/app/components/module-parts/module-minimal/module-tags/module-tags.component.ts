@@ -23,7 +23,8 @@ import {
   TAG_TYPE_DISPLAY_ORDER,
   TAG_TYPE_LABELS,
   Tag,
-  TagSuggestionGroup
+  TagSuggestionGroup,
+  normalizeTagName
 } from 'src/app/models/tag';
 import { resolveFunctionalTagAxis } from 'src/app/components/rack-parts/rack-balance-analysis.utils';
 
@@ -33,6 +34,7 @@ export interface ProposerTag {
   moduleTagId: number | null;
   isLinked: boolean;
   isVotedByMe: boolean;
+  isTextMatch: boolean;
   voteCount: number;
 }
 
@@ -40,6 +42,10 @@ export interface ProposerTagGroup {
   label: string;
   tags: ProposerTag[];
 }
+
+const TAG_TEXT_MATCH_ALIASES: Readonly<Record<string, readonly string[]>> = {
+  eq: ['equalizer', 'equaliser', 'equalization', 'equalisation', 'equalized', 'equalised', 'equalizing', 'equalising']
+};
 
 @Component({
   selector: 'app-module-tags',
@@ -176,6 +182,7 @@ export class ModuleTagsComponent extends SubManager implements OnInit {
     ]).pipe(
       map(([allTags, proposed, myVotes, tagVotes]) => {
         const serverTags = this.data?.tags ?? [];
+        const textMatchedTagIds = this.getTextMatchedTagIds(allTags);
 
         // Build tagId → moduleTagId map from both server tags and locally proposed ones
         const linkedTagMap = new Map<number, number>();
@@ -192,8 +199,9 @@ export class ModuleTagsComponent extends SubManager implements OnInit {
           const moduleTagId = linkedTagMap.get(tag.id) ?? null;
           const isLinked = moduleTagId !== null;
           const isVotedByMe = isLinked ? myVotes.has(moduleTagId!) : false;
+          const isTextMatch = textMatchedTagIds.has(tag.id);
           const voteCount = isLinked ? (tagVotes.get(moduleTagId!) ?? 0) : 0;
-          return { tag, moduleTagId, isLinked, isVotedByMe, voteCount };
+          return { tag, moduleTagId, isLinked, isVotedByMe, isTextMatch, voteCount };
         });
 
         const grouped = new Map<string, ProposerTag[]>();
@@ -251,5 +259,56 @@ export class ModuleTagsComponent extends SubManager implements OnInit {
     } else {
       this.tagVoteService.proposeTag$.next({moduleId: this.data.id, tagId: pt.tag.id});
     }
+  }
+
+  tooltipForProposerTag(pt: ProposerTag): string {
+    const action = pt.isLinked
+      ? (pt.isVotedByMe ? `Remove your vote from '${ pt.tag.name }'` : `Vote for '${ pt.tag.name }'`)
+      : `Add '${ pt.tag.name }' to this module`;
+    return pt.isTextMatch ? `${ action } - mentioned in title or description` : action;
+  }
+
+  private getTextMatchedTagIds(tags: Tag[]): Set<number> {
+    const sourceTokens = this.getModuleTextTokens();
+    if (sourceTokens.length === 0) {
+      return new Set();
+    }
+
+    return new Set(
+      tags
+        .filter(tag => this.tagNameMatchesSourceTokens(tag.name, sourceTokens))
+        .map(tag => tag.id)
+    );
+  }
+
+  private getModuleTextTokens(): string[] {
+    return normalizeTagName(`${ this.data?.name ?? '' } ${ this.data?.description ?? '' }`)
+      .split(' ')
+      .filter(Boolean);
+  }
+
+  private tagNameMatchesSourceTokens(tagName: string, sourceTokens: readonly string[]): boolean {
+    return this.getTagEvidenceNames(tagName)
+      .some(evidenceName => this.evidenceNameMatchesSourceTokens(evidenceName, sourceTokens));
+  }
+
+  private getTagEvidenceNames(tagName: string): string[] {
+    const normalizedTagName = normalizeTagName(tagName);
+    return [tagName, ...(TAG_TEXT_MATCH_ALIASES[normalizedTagName] ?? [])];
+  }
+
+  private evidenceNameMatchesSourceTokens(evidenceName: string, sourceTokens: readonly string[]): boolean {
+    const tagTokens = normalizeTagName(evidenceName).split(' ').filter(Boolean);
+    if (tagTokens.length === 0 || tagTokens.length > sourceTokens.length) {
+      return false;
+    }
+
+    for (let start = 0; start <= sourceTokens.length - tagTokens.length; start++) {
+      if (tagTokens.every((token, offset) => sourceTokens[start + offset] === token)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }

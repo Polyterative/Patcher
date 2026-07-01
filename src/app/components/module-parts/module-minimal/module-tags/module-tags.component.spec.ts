@@ -10,6 +10,10 @@ const tagPurpose1: Tag = { id: 1, name: 'Oscillator', type: TagType.Source };
 const tagPurpose2: Tag = { id: 4, name: 'Drone', type: TagType.Source };
 const tagCharacter: Tag = { id: 2, name: 'Dark', type: TagType.Character };
 const tagNature: Tag = { id: 3, name: 'Digital', type: TagType.Nature };
+const tagStereo: Tag = { id: 5, name: 'Stereo', type: TagType.Utility };
+const tagClockIn: Tag = { id: 6, name: 'Clock IN', type: TagType.Utility };
+const tagPan: Tag = { id: 7, name: 'Pan', type: TagType.Utility };
+const tagEq: Tag = { id: 8, name: 'EQ', type: TagType.Filter };
 
 type ModuleTag = MinimalModule['tags'][number];
 
@@ -21,7 +25,7 @@ function makeModuleTag(id: number, tag: Tag, votes: number): ModuleTag {
   };
 }
 
-function makeModule(tags: ModuleTag[] = []): MinimalModule {
+function makeModule(tags: ModuleTag[] = [], overrides: Partial<MinimalModule> = {}): MinimalModule {
   return {
     id: 100,
     name: 'Test Module',
@@ -35,6 +39,7 @@ function makeModule(tags: ModuleTag[] = []): MinimalModule {
     panels: [],
     createdAt: '',
     updatedAt: '',
+    ...overrides
   } as any;
 }
 
@@ -44,19 +49,24 @@ function makeService() {
   const _proposedTags$ = new BehaviorSubject<ProposedTag[]>([]);
   const _tagVotes$ = new BehaviorSubject<Map<number, number>>(new Map());
   const _allTags$ = new BehaviorSubject<Tag[]>([]);
+  const _myVotes$ = new BehaviorSubject<Set<number>>(new Set());
   const loadVotes$ = new Subject<TagVoteCount[]>();
   const proposeTag$ = new Subject<{ moduleId: number; tagId: number }>();
+  const toggleVote$ = new Subject<number>();
 
   return {
     proposedTags$: _proposedTags$.asObservable(),
     tagVotes$: _tagVotes$.asObservable(),
     allTags$: _allTags$.asObservable(),
+    myVotes$: _myVotes$.asObservable(),
     loadVotes$,
     proposeTag$,
+    toggleVote$,
     // BehaviorSubject refs for direct mutation in tests
     _proposedTags$,
     _tagVotes$,
     _allTags$,
+    _myVotes$,
   };
 }
 
@@ -233,6 +243,46 @@ describe('ModuleTagsComponent', () => {
       const { comp } = makeComponent(makeModule([]));
       // allTags$ starts empty
       expect(snapshot(comp.availableTagGroups$)).toEqual([]);
+    });
+  });
+
+  describe('proposerTagGroups$', () => {
+    it('marks tag candidates mentioned in the module title or description', () => {
+      const { comp, svc } = makeComponent(makeModule([], {
+        name: 'Stereo EQ',
+        description: 'Clock-in compatible equalizer.'
+      }));
+      svc._allTags$.next([tagStereo, tagClockIn, tagPurpose1]);
+
+      const tags = snapshot(comp.proposerTagGroups$).flatMap(group => group.tags);
+
+      expect(tags.find(pt => pt.tag.id === tagStereo.id)?.isTextMatch).toBeTrue();
+      expect(tags.find(pt => pt.tag.id === tagClockIn.id)?.isTextMatch).toBeTrue();
+      expect(tags.find(pt => pt.tag.id === tagPurpose1.id)?.isTextMatch).toBeFalse();
+    });
+
+    it('marks EQ when the module description mentions equalizer variants', () => {
+      const { comp, svc } = makeComponent(makeModule([], {
+        name: 'pEq',
+        description: 'A compact parametric equalizer for tone shaping.'
+      }));
+      svc._allTags$.next([tagEq]);
+
+      const tags = snapshot(comp.proposerTagGroups$).flatMap(group => group.tags);
+
+      expect(tags.find(pt => pt.tag.id === tagEq.id)?.isTextMatch).toBeTrue();
+    });
+
+    it('does not mark substring matches as title or description evidence', () => {
+      const { comp, svc } = makeComponent(makeModule([], {
+        name: 'Panel utility',
+        description: 'Compact controls.'
+      }));
+      svc._allTags$.next([tagPan]);
+
+      const tags = snapshot(comp.proposerTagGroups$).flatMap(group => group.tags);
+
+      expect(tags.find(pt => pt.tag.id === tagPan.id)?.isTextMatch).toBeFalse();
     });
   });
 

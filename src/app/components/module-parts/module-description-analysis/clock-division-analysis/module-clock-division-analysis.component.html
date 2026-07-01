@@ -1,0 +1,21 @@
+@if (featureViews.length) {
+  <section class="moduleClockDivisionAnalysis" aria-label="Clock division analysis">
+    <div class="moduleClockDivisionAnalysis__header">Clock / division</div>
+    <div class="moduleClockDivisionAnalysis__ladder" aria-hidden="true">
+      <span class="moduleClockDivisionAnalysis__axis"></span>
+      <span class="moduleClockDivisionAnalysis__one">/1</span>
+      @for (feature of featureViews; track feature.kind + feature.label) {
+        <span
+          class="moduleClockDivisionAnalysis__mark"
+          [class.moduleClockDivisionAnalysis__mark--behavior]="feature.kind === 'behavior'"
+          [style.left.%]="feature.offset"
+        ></span>
+      }
+    </div>
+    <div class="moduleClockDivisionAnalysis__labels">
+      @for (feature of featureViews; track feature.kind + feature.label) {
+        <span class="moduleClockDivisionAnalysis__label">{{ feature.label }}</span>
+      }
+    </div>
+  </section>
+}

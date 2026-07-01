@@ -26,6 +26,9 @@ import { ModuleCVsComponent } from './module-cvs/module-cvs.component';
 import { ModuleDetailDataService } from './module-detail-data.service';
 import { ModuleDetailsComponent } from './module-details/module-details.component';
 import { ModuleFlagComponent } from './module-flag/module-flag.component';
+import {
+  ModuleDescriptionAnalysisSuiteComponent
+} from './module-description-analysis/suite/module-description-analysis-suite.component';
 import { ModuleMinimalComponent } from './module-minimal/module-minimal.component';
 import { ModulePartDescriptionComponent } from './module-minimal/module-part-description/module-part-description.component';
 import { ModulePartHpComponent } from './module-minimal/module-part-hp/module-part-hp.component';
@@ -122,7 +125,8 @@ import { RackModuleAdderDialogComponent } from '../rack-parts/rack-module-adder/
     ReactiveFormsModule,
     NgOptimizedImage,
     CopyableDirective,
-    CoolButtonComponent
+    CoolButtonComponent,
+    ModuleDescriptionAnalysisSuiteComponent
   ],
   exports:      [
     ModuleCVItemComponent,

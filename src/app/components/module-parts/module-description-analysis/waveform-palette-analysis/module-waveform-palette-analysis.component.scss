@@ -1,0 +1,51 @@
+:host {
+  display: block;
+}
+
+.moduleWaveformPaletteAnalysis {
+  margin-top: 0.45rem;
+  color: rgba(19, 54, 89, 0.78);
+}
+
+.moduleWaveformPaletteAnalysis__header {
+  margin-bottom: 0.28rem;
+  color: rgba(19, 54, 89, 0.62);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.moduleWaveformPaletteAnalysis__tokens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.26rem 0.42rem;
+}
+
+.moduleWaveformPaletteAnalysis__token {
+  display: inline-flex;
+  gap: 0.28rem;
+  align-items: center;
+  color: rgba(19, 54, 89, 0.72);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.045em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.moduleWaveformPaletteAnalysis__glyph {
+  width: 1.55rem;
+  height: 0.78rem;
+  overflow: visible;
+}
+
+.moduleWaveformPaletteAnalysis__glyph path {
+  fill: none;
+  stroke: color-mix(in srgb, var(--mat-sys-primary, #2f7d76) 82%, rgba(19, 54, 89, 0.26));
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.2;
+  vector-effect: non-scaling-stroke;
+}

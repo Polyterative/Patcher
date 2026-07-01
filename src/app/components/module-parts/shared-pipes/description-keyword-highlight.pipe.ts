@@ -51,69 +51,27 @@ export class DescriptionKeywordHighlightPipe implements PipeTransform {
       return [];
     }
 
-    const ranges: DescriptionHighlightRange[] = [];
+    const candidates: DescriptionHighlightRange[] = [];
 
     for (const axis of RACK_BALANCE_AXES) {
       for (const tagName of axis.dbTagNames) {
         for (const match of source.matchAll(this.toGlobalPattern(this.toKeywordPattern(tagName)))) {
-          const start = match.index ?? -1;
-          const value = match[0] ?? '';
-          if (start < 0 || value.length === 0) {
-            continue;
-          }
-
-          const candidate = {
-            start,
-            end: start + value.length,
-            axisId: axis.id
-          };
-
-          if (this.overlapsExistingRange(candidate, ranges)) {
-            continue;
-          }
-
-          ranges.push(candidate);
-          ranges.sort((left, right) => left.start - right.start);
-
-          if (ranges.length >= max) {
-            return ranges;
-          }
+          this.addCandidate(match, axis.id, candidates, source);
         }
       }
 
       for (const pattern of axis.purposePatterns) {
         for (const match of source.matchAll(this.toGlobalPattern(pattern))) {
-          const start = match.index ?? -1;
-          const value = match[0] ?? '';
-          if (start < 0 || value.length === 0) {
-            continue;
-          }
-
-          const candidate = {
-            start,
-            end: start + value.length,
-            axisId: axis.id
-          };
-
-          if (this.overlapsExistingRange(candidate, ranges)) {
-            continue;
-          }
-
-          ranges.push(candidate);
-          ranges.sort((left, right) => left.start - right.start);
-
-          if (ranges.length >= max) {
-            return ranges;
-          }
+          this.addCandidate(match, axis.id, candidates, source, true);
         }
       }
     }
 
-    return ranges;
+    return this.selectEarliestNonOverlappingRanges(candidates, max);
   }
 
   private toGlobalPattern(pattern: RegExp): RegExp {
-    const flags = pattern.flags.includes('g') ? pattern.flags : `${ pattern.flags }g`;
+    const flags = Array.from(new Set(`${ pattern.flags }gi`)).join('');
     return new RegExp(pattern.source, flags);
   }
 
@@ -125,11 +83,82 @@ export class DescriptionKeywordHighlightPipe implements PipeTransform {
     return new RegExp(`(?<![\\p{L}\\p{N}])${ tokenPattern }(?![\\p{L}\\p{N}])`, 'iu');
   }
 
+  private addCandidate(
+    match: RegExpMatchArray,
+    axisId: RackBalanceAxisId,
+    candidates: DescriptionHighlightRange[],
+    source: string,
+    expandToWord = false
+  ): void {
+    let start = match.index ?? -1;
+    const value = match[0] ?? '';
+    if (start < 0 || value.length === 0) {
+      return;
+    }
+
+    let end = start + value.length;
+    if (expandToWord) {
+      start = this.expandStartToWordBoundary(source, start);
+      end = this.expandEndToWordBoundary(source, end);
+    }
+
+    candidates.push({
+      start,
+      end,
+      axisId
+    });
+  }
+
+  private selectEarliestNonOverlappingRanges(
+    candidates: DescriptionHighlightRange[],
+    max: number
+  ): DescriptionHighlightRange[] {
+    const ranges: DescriptionHighlightRange[] = [];
+    const sortedCandidates = [...candidates]
+      .sort((left, right) => left.start - right.start || (right.end - right.start) - (left.end - left.start));
+
+    for (const candidate of sortedCandidates) {
+      if (this.overlapsExistingRange(candidate, ranges)) {
+        continue;
+      }
+
+      ranges.push(candidate);
+
+      if (ranges.length >= max) {
+        return ranges;
+      }
+    }
+
+    return ranges;
+  }
+
   private overlapsExistingRange(
     candidate: DescriptionHighlightRange,
     ranges: DescriptionHighlightRange[]
   ): boolean {
     return ranges.some(range => candidate.start < range.end && candidate.end > range.start);
+  }
+
+  private expandStartToWordBoundary(source: string, start: number): number {
+    let cursor = start;
+    while (cursor > 0 && this.isWordCharacter(source[cursor - 1])) {
+      cursor -= 1;
+    }
+
+    return cursor;
+  }
+
+  private expandEndToWordBoundary(source: string, end: number): number {
+    let cursor = end;
+    while (cursor < source.length && this.isWordCharacter(source[cursor])) {
+      cursor += 1;
+    }
+
+    return cursor;
+  }
+
+  private isWordCharacter(value: string | undefined): boolean {
+    return value !== undefined && /[\p{L}\p{N}]/u.test(value);
   }
 
   private escapeHtml(source: string): string {

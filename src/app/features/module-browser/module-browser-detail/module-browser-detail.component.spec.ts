@@ -22,6 +22,7 @@ import { ModuleDetailDataService } from 'src/app/components/module-parts/module-
 import { CommentsDataService } from 'src/app/components/shared-atoms/comments/comments-data.service';
 import { COOL_REACTIONS_ENABLED } from 'src/app/components/shared-atoms/cool-button/cool-button-feature.token';
 import { CoolButtonComponent } from 'src/app/components/shared-atoms/cool-button/cool-button.component';
+import { ModuleMinimalViewConfig } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { DbModule } from 'src/app/models/module';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
@@ -40,6 +41,8 @@ import { ModuleUsageCardComponent } from './module-usage-card/module-usage-card.
   standalone: false
 })
 class ModuleCompositeStubComponent {
+  @Input() data: DbModule | undefined;
+  @Input() viewConfig: ModuleMinimalViewConfig | undefined;
   @Input() showCoolAction = false;
 }
 
@@ -225,7 +228,28 @@ describe('ModuleBrowserDetailComponent', () => {
 
     return {fixture, dataService, loggedUser$, reactionBackend};
   }
-  
+
+  it('enables description keyword highlights for the primary detail card', async () => {
+    const {fixture} = await render();
+
+    const moduleComposite = fixture.debugElement.query(By.directive(ModuleCompositeStubComponent))
+      .componentInstance as ModuleCompositeStubComponent;
+
+    expect(moduleComposite.viewConfig?.highlightDescriptionKeywords).toBeTrue();
+  });
+
+  it('enables description analysis only for the primary detail card', async () => {
+    const {fixture} = await render();
+
+    const moduleComposite = fixture.debugElement.query(By.directive(ModuleCompositeStubComponent))
+      .componentInstance as ModuleCompositeStubComponent;
+
+    expect(moduleComposite.viewConfig?.showDescriptionAnalysis).toBeTrue();
+    expect(moduleComposite.viewConfig?.showFrequencyAnalysis).toBeTrue();
+    expect(fixture.componentInstance.bySameManufacturerViewConfig.showDescriptionAnalysis).toBeFalse();
+    expect(fixture.componentInstance.bySameManufacturerViewConfig.showFrequencyAnalysis).toBeFalse();
+  });
+
   it('initializes SEO baseline and parses route id updates', () => {
     const {component, routeParams$, dataService, seoAndUtilsService} = build();
     const updateSpy = spyOn(dataService.updateSingleModuleData$, 'next').and.callThrough();

@@ -92,6 +92,7 @@ Key paths:
 - Do not add `Co-authored-by` trailers or Copilot attribution lines to commits in this repository.
 - Ask before committing unless the user explicitly requested commits or invoked a persona/workflow that documents autonomous verified-checkpoint commits (for example `coordinator-loop` / "begin loop").
 - Never push unless the user explicitly requested it.
+- Never force-push (`--force`, `--force-with-lease`, or equivalent history-rewriting ref updates) unless the user explicitly requests a force push in that turn.
 - Do not create or use separate worktrees / child project sessions for Patcher work unless the user explicitly asks for a separate worktree/session. The user's running dev server is expected to serve the main checkout, so visual POCs and runtime validation must happen in the active checkout by default.
 - Never run `release:*` from `develop`.
 - Work normally happens on `develop`; the user decides when to release/merge to `production`. Do not switch to `production`, run release

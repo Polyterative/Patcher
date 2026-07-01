@@ -1,0 +1,90 @@
+@if (bandViews.length) {
+  <section class="moduleFrequencyAnalysis" aria-label="Frequency range analysis">
+    <div class="moduleFrequencyAnalysis__header">Frequency range</div>
+    <div class="moduleFrequencyAnalysis__panel">
+      <svg
+        class="moduleFrequencyAnalysis__chart"
+        viewBox="0 0 320 88"
+        role="img"
+        aria-label="Detected frequency bands from 20 hertz to 20 kilohertz"
+      >
+        <line class="moduleFrequencyAnalysis__axis" x1="18" y1="64" x2="302" y2="64"></line>
+
+        @for (gridValue of minorGridValues; track gridValue) {
+          <line
+            class="moduleFrequencyAnalysis__gridLine"
+            [attr.x1]="tickX(gridValue)"
+            [attr.y1]="plotTop"
+            [attr.x2]="tickX(gridValue)"
+            [attr.y2]="plotBottom"
+          ></line>
+        }
+
+        @for (tick of scaleTicks; track tick.value) {
+          <line
+            class="moduleFrequencyAnalysis__scaleGuide"
+            [attr.x1]="tickX(tick.value)"
+            [attr.y1]="plotTop"
+            [attr.x2]="tickX(tick.value)"
+            [attr.y2]="plotBottom"
+          ></line>
+          <text
+            class="moduleFrequencyAnalysis__tickLabel"
+            [attr.x]="tickX(tick.value)"
+            y="80"
+            text-anchor="middle"
+          >{{ tick.label }}</text>
+        }
+
+        @for (band of bandViews; track $index + band.label + band.lowHz + band.highHz) {
+          @if (band.isPoint) {
+            <line
+              class="moduleFrequencyAnalysis__centerGlow"
+              [attr.x1]="band.centerX"
+              [attr.y1]="dataTop"
+              [attr.x2]="band.centerX"
+              [attr.y2]="dataBottom"
+            ></line>
+            <line
+              class="moduleFrequencyAnalysis__centerLine"
+              [attr.x1]="band.centerX"
+              [attr.y1]="dataTop"
+              [attr.x2]="band.centerX"
+              [attr.y2]="dataBottom"
+            ></line>
+          } @else {
+            <line
+              class="moduleFrequencyAnalysis__rangeRail"
+              [attr.x1]="band.x"
+              [attr.y1]="rangeY"
+              [attr.x2]="band.x + band.width"
+              [attr.y2]="rangeY"
+            ></line>
+            <line
+              class="moduleFrequencyAnalysis__bandEdge"
+              [attr.x1]="band.x"
+              [attr.y1]="dataTop"
+              [attr.x2]="band.x"
+              [attr.y2]="dataBottom"
+            ></line>
+            <line
+              class="moduleFrequencyAnalysis__bandEdge"
+              [attr.x1]="band.x + band.width"
+              [attr.y1]="dataTop"
+              [attr.x2]="band.x + band.width"
+              [attr.y2]="dataBottom"
+            ></line>
+          }
+        }
+      </svg>
+      <div class="moduleFrequencyAnalysis__legend">
+        @for (band of bandViews; track $index + band.label + band.lowHz + band.highHz) {
+          <div class="moduleFrequencyAnalysis__legendRow">
+            <span class="moduleFrequencyAnalysis__legendName">{{ band.label }}</span>
+            <span class="moduleFrequencyAnalysis__legendValue">{{ band.displayValue }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+}

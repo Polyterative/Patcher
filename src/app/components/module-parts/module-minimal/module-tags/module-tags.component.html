@@ -58,8 +58,9 @@
                       [@leave]="{ value: '', params: { delay: 0 }}"
                       [selected]="pt.isVotedByMe"
                       [ngClass]="axisClassForTag(pt.tag)"
+                      [class.tag-chip--text-match]="pt.isTextMatch"
                       (click)="proposeOrToggle(pt)"
-                      [matTooltip]="pt.isLinked ? (pt.isVotedByMe ? 'Remove your vote from \'' + pt.tag.name + '\'' : 'Vote for \'' + pt.tag.name + '\'') : 'Add \'' + pt.tag.name + '\' to this module'"
+                      [matTooltip]="tooltipForProposerTag(pt)"
                     >{{ pt.tag.name }}@if (pt.isLinked && pt.voteCount > 0) {
                       · {{ pt.voteCount }}
                     }

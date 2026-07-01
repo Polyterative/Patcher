@@ -105,6 +105,11 @@ describe('ModuleMinimalComponent', () => {
     expect(component.shouldShowPanelVariantsBadge()).toBeFalse();
   });
 
+  it('disables description-derived analysis by default for minimal module views', () => {
+    expect(defaultModuleMinimalViewConfig.showDescriptionAnalysis).toBeFalse();
+    expect(defaultModuleMinimalViewConfig.showFrequencyAnalysis).toBeFalse();
+  });
+
   it('shows the panel variants badge when multiple panels exist and panel options are visible', () => {
     const {component} = build();
     component.data = {id: 42, panels: [{id: 1}, {id: 2}]} as any;
