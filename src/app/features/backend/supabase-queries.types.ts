@@ -48,6 +48,15 @@ export type ModuleStoreListingRow = {
   latestSnapshot: ModulePriceSnapshotRow[] | null;
 };
 
+export type ModuleRecentMarketPriceListingRow = {
+  module_id: number;
+  store_id: number;
+  latestSnapshot: Pick<
+    ModulePriceSnapshotRow,
+    'observed_at' | 'price_amount_minor' | 'currency' | 'availability'
+  >[] | null;
+};
+
 export type ModulePriceSnapshotRow = {
   id: number;
   listing_id: number;

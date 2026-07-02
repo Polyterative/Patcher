@@ -9,6 +9,8 @@ import { ModuleTimeRateAnalysisComponent } from '../time-rate-analysis/module-ti
 import { ModuleUtilityOperationsAnalysisComponent } from '../utility-operations-analysis/module-utility-operations-analysis.component';
 import { ModuleVoltageAnalysisComponent } from '../voltage-analysis/module-voltage-analysis.component';
 import { ModuleWaveformPaletteAnalysisComponent } from '../waveform-palette-analysis/module-waveform-palette-analysis.component';
+import { extractUtilityOperationFeatures } from '../utility-operations-analysis/module-utility-operations-analysis.utils';
+import { extractWaveformFeatures } from '../waveform-palette-analysis/module-waveform-palette-analysis.utils';
 
 @Component({
   selector: 'app-module-description-analysis-suite',
@@ -26,7 +28,18 @@ import { ModuleWaveformPaletteAnalysisComponent } from '../waveform-palette-anal
   standalone: true
 })
 export class ModuleDescriptionAnalysisSuiteComponent {
-  @Input() description: string | null | undefined;
+  private _description: string | null | undefined;
+  descriptionSignalMetadataVisible = false;
+
+  @Input() set description(value: string | null | undefined) {
+    this._description = value;
+    this.descriptionSignalMetadataVisible = extractWaveformFeatures(value).length > 0 || extractUtilityOperationFeatures(value).length > 1;
+  }
+
+  get description(): string | null | undefined {
+    return this._description;
+  }
+
   @Input() showDescriptionAnalysis = false;
   @Input() showFrequencyAnalysis = false;
 

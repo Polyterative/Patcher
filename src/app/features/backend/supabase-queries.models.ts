@@ -96,6 +96,7 @@ export interface ModulePriceLatestSnapshot {
 
 export interface ModulePriceListing {
   listingId: number;
+  moduleId: number;
   storeId: number;
   storeSlug: string;
   storeName: string;
@@ -105,4 +106,13 @@ export interface ModulePriceListing {
   verificationStatus: string;
   lastCheckedAt: string | null;
   latestSnapshot: ModulePriceLatestSnapshot | null;
+}
+
+export interface ModuleRecentMarketPrice {
+  moduleId: number;
+  estimatedPriceEurMinor: number;
+  displayPrice: string;
+  storeCount: number;
+  latestObservedAt: string;
+  tooltip: string;
 }

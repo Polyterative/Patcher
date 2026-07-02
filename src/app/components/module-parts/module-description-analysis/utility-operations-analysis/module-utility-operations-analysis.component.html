@@ -1,13 +1,11 @@
 @if (operations.length) {
   <section class="moduleUtilityOperationsAnalysis" aria-label="Utility operation analysis">
-    <div class="moduleUtilityOperationsAnalysis__header">Utility operations</div>
-    <div class="moduleUtilityOperationsAnalysis__matrix">
+    <div class="moduleUtilityOperationsAnalysis__tokens">
       @for (operation of operations; track operation.group + operation.label) {
         <span
           class="moduleUtilityOperationsAnalysis__token"
           [attr.data-group]="operation.group"
         >
-          <span class="moduleUtilityOperationsAnalysis__group">{{ operation.group }}</span>
           <span>{{ operation.label }}</span>
         </span>
       }

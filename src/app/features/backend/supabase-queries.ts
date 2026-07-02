@@ -25,6 +25,7 @@ import {
   cacheBuster$,
   defaultCacheTime,
   longCacheTime,
+  priceHubCacheTime,
   remapErrors,
   smallCacheTime
 } from './supabase.cache';
@@ -46,10 +47,15 @@ import {
   PublicApplicationStatistics,
   ModulePriceListing,
   ModulePriceLatestSnapshot,
+  ModuleRecentMarketPrice,
   PublicModuleDiscoveryEntry,
   PublicModuleDiscoverySnapshot,
   PublicUserContributorStats
 } from './supabase-queries.models';
+import {
+  getModuleRecentMarketPrice,
+  ModuleRecentMarketPriceListing
+} from './module-price-summary.utils';
 
 export type {
   CurrentUserContributorStats,
@@ -60,6 +66,7 @@ export type {
   PublicApplicationStatistics,
   ModulePriceListing,
   ModulePriceLatestSnapshot,
+  ModuleRecentMarketPrice,
   PublicModuleDiscoveryEntry,
   PublicModuleDiscoverySnapshot,
   PublicUserContributorStats
@@ -67,6 +74,7 @@ export type {
 import {
   ManufacturerModuleStats,
   ModuleActivityRow,
+  ModuleRecentMarketPriceListingRow,
   ModulePriceSnapshotRow,
   ModuleStoreListingRow,
   PublicModuleInsightRow,
@@ -1650,8 +1658,9 @@ export class SupabaseQueriesService {
   }
 
   @Cacheable({
-    maxAge: smallCacheTime,
+    maxAge: priceHubCacheTime,
     cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('priceHub'))),
+    cacheKey: 'priceHubModulePriceListings',
     maxCacheCount: 100
   })
   getModulePriceListings(moduleId: number): Observable<ModulePriceListing[]> {
@@ -1700,6 +1709,61 @@ export class SupabaseQueriesService {
     );
   }
 
+  @Cacheable({
+    maxAge: priceHubCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('priceHub'))),
+    cacheKey: 'priceHubRecentModuleMarketPrices',
+    cacheHasher: ([moduleIds]) => [SupabaseQueriesService.normalizeModulePriceIds(moduleIds)],
+    maxCacheCount: 100
+  })
+  getRecentModuleMarketPrices(moduleIds: number[]): Observable<ModuleRecentMarketPrice[]> {
+    const ids = SupabaseQueriesService.normalizeModulePriceIds(moduleIds);
+
+    if (ids.length === 0) {
+      return of([]);
+    }
+
+    return rxFrom(
+      this.supabase
+        .from(DbPaths.module_store_listings)
+        .select(`
+          module_id,
+          store_id,
+          latestSnapshot:${ DbPaths.module_price_snapshots }!module_price_snapshots_listing_id_fkey(
+            observed_at,
+            price_amount_minor,
+            currency,
+            availability
+          )
+        `)
+        .in('module_id', ids)
+        .filter('active', 'eq', true)
+        .order('module_id', {ascending: true})
+        .order('store_id', {ascending: true})
+        .order('observed_at', {referencedTable: DbPaths.module_price_snapshots, ascending: false})
+        .order('id', {referencedTable: DbPaths.module_price_snapshots, ascending: false})
+        .limit(1, {referencedTable: DbPaths.module_price_snapshots})
+    ).pipe(
+      remapErrors(),
+      map((listingResponse: {data: ModuleRecentMarketPriceListingRow[] | null}) => {
+        const listingsByModuleId = new Map<number, ModuleRecentMarketPriceListing[]>();
+
+        for (const listing of this.mapRecentModuleMarketPriceListings(listingResponse.data ?? [])) {
+          const listings = listingsByModuleId.get(listing.moduleId) ?? [];
+          listings.push(listing);
+          listingsByModuleId.set(listing.moduleId, listings);
+        }
+
+        return ids
+          .map(moduleId => getModuleRecentMarketPrice(
+            moduleId,
+            listingsByModuleId.get(moduleId) ?? []
+          ))
+          .filter((summary): summary is ModuleRecentMarketPrice => summary !== null);
+      })
+    );
+  }
+
   private mapModulePriceListings(
     listings: readonly ModuleStoreListingRow[]
   ): ModulePriceListing[] {
@@ -1707,6 +1771,7 @@ export class SupabaseQueriesService {
       .filter((listing): listing is ModuleStoreListingRow & {store: NonNullable<ModuleStoreListingRow['store']>} => !!listing.store)
       .map((listing) => ({
         listingId: listing.id,
+        moduleId: listing.module_id,
         storeId: listing.store_id,
         storeSlug: listing.store.slug,
         storeName: listing.store.name,
@@ -1717,6 +1782,39 @@ export class SupabaseQueriesService {
         lastCheckedAt: listing.last_checked_at,
         latestSnapshot: this.mapLatestModulePriceSnapshot(listing.latestSnapshot?.[0] ?? null)
       }));
+  }
+
+  private static normalizeModulePriceIds(moduleIds: unknown): number[] {
+    return [...new Set(
+      (Array.isArray(moduleIds) ? moduleIds : [])
+        .filter((id): id is number => typeof id === 'number' && Number.isFinite(id) && id > 0)
+        .map(id => Math.trunc(id))
+    )].sort((first, second) => first - second);
+  }
+
+  private mapRecentModuleMarketPriceListings(
+    listings: readonly ModuleRecentMarketPriceListingRow[]
+  ): ModuleRecentMarketPriceListing[] {
+    return listings.map((listing) => ({
+      moduleId: listing.module_id,
+      storeId: listing.store_id,
+      latestSnapshot: this.mapLatestRecentModulePriceSnapshot(listing.latestSnapshot?.[0] ?? null)
+    }));
+  }
+
+  private mapLatestRecentModulePriceSnapshot(
+    snapshot: NonNullable<ModuleRecentMarketPriceListingRow['latestSnapshot']>[number] | null
+  ): ModuleRecentMarketPriceListing['latestSnapshot'] {
+    if (!snapshot) {
+      return null;
+    }
+
+    return {
+      observedAt: snapshot.observed_at,
+      priceAmountMinor: snapshot.price_amount_minor,
+      currency: snapshot.currency,
+      availability: snapshot.availability
+    };
   }
 
   private mapLatestModulePriceSnapshot(snapshot: ModulePriceSnapshotRow | null): ModulePriceLatestSnapshot | null {

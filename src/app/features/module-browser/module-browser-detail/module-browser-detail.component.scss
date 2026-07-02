@@ -264,6 +264,31 @@ a.module-detail-action-button {
   cursor: pointer;
 }
 
+.module-search-groups {
+  display: grid;
+  gap: 0.72rem;
+}
+
+.module-search-group {
+  display: grid;
+  gap: 0.42rem;
+  min-width: 0;
+}
+
+.module-search-group + .module-search-group {
+  padding-top: 0.42rem;
+  border-top: 0.0625rem solid color-mix(in srgb, currentColor 8%, transparent);
+}
+
+.module-search-group__label {
+  color: color-mix(in srgb, currentColor 56%, transparent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.055em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
 .module-detail-acquisitions {
   display: grid;
   gap: 0.75rem;
@@ -322,6 +347,44 @@ a.module-detail-action-button {
   color: rgba(32, 47, 62, 0.68);
   font-size: 0.82rem;
   line-height: 1.35;
+}
+
+.module-detail-dev-utils {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.65rem 0.75rem 0.75rem;
+}
+
+.module-detail-dev-group {
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+  padding-top: 0.45rem;
+  border-top: 0.0625rem solid rgba(96, 117, 141, 0.18);
+}
+
+.module-detail-dev-group__label {
+  color: #60758d;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.module-detail-dev-group--danger .module-detail-dev-group__label {
+  color: #700d0d;
+}
+
+.module-detail-dev-group__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.55rem;
+  align-items: center;
+}
+
+.module-detail-dev-group__form {
+  width: 100%;
 }
 
 .module-panel-ratio-diagnostics {

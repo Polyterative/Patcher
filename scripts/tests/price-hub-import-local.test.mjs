@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { buildImportRows, filterRowsWithConflictingProductUrls, readCliOptions } from '../price-hub/import-local-snapshots.ts';
+import { buildImportRows, filterRowsWithConflictingProductUrls, filterRowsWithExistingModules, readCliOptions } from '../price-hub/import-local-snapshots.ts';
 
 test('builds import rows only from strong matches with matching products', () => {
   const productUrl = 'https://signalsounds.eu/noise-engineering-melotus-versio-eurorack-stereo-grnaular-processor-module-black';
@@ -121,6 +121,55 @@ test('requires explicit import paths and service role key for live writes', () =
   assert.equal(options.dryRun, true);
 });
 
+test('skips strong matches when the source has no usable price', () => {
+  const productUrl = 'https://www.thonk.co.uk/shop/befaco-trolley-bus-assembled/';
+  const zeroPriceUrl = 'https://joranalogue.com/products/filter-8';
+  const placeholderPriceUrl = 'https://busycircuits.com/products/alm-pg003';
+  const lowPriceUrl = 'https://busycircuits.com/products/alm-pg009';
+  const rows = buildImportRows([
+    productSnapshot(productUrl, 'Befaco ON/OFF Module & Trolley Bus - Assembled', null, {
+      adapter: 'woocommerce_store_api',
+    }),
+    productSnapshot(zeroPriceUrl, 'Filter 8', 0, {
+      adapter: 'shopify_product_json',
+    }),
+    productSnapshot(placeholderPriceUrl, 'MFX DigiVerbs', 9999999900, {
+      adapter: 'shopify_product_json',
+    }),
+    productSnapshot(lowPriceUrl, 'MUM M8 DSP', 1000, {
+      adapter: 'shopify_product_json',
+    }),
+    productSnapshot('https://www.thonk.co.uk/shop/plinky-expander-assembled/', 'Plinky Expander - Assembled Module', 5500, {
+      adapter: 'woocommerce_store_api',
+    }),
+  ], [
+    matchCandidate('6506', productUrl, 1, {
+      moduleName: 'ON/OFF',
+      manufacturerName: 'Befaco',
+    }),
+    matchCandidate('1907', zeroPriceUrl, 1, {
+      moduleName: 'Filter 8',
+      manufacturerName: 'Joranalogue Audio Design',
+    }),
+    matchCandidate('4749', placeholderPriceUrl, 1, {
+      moduleName: 'MFX DigiVerbs',
+      manufacturerName: 'ALM Busy Circuits',
+    }),
+    matchCandidate('9211', lowPriceUrl, 1, {
+      moduleName: 'MUM M8',
+      manufacturerName: 'ALM Busy Circuits',
+    }),
+    matchCandidate('5349', 'https://www.thonk.co.uk/shop/plinky-expander-assembled/', 1, {
+      moduleName: 'Plinky Eurorack Expander',
+      manufacturerName: 'Making Sound Machines',
+    }),
+  ]);
+
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].moduleId, 5349);
+  assert.equal(rows[0].priceAmountMinor, 5500);
+});
+
 test('prefers an in-stock panel variant and records variant ambiguity', () => {
   const blackUrl = 'https://schneidersladen.de/en/ajh-synth-finaliser-r-eq-black';
   const silverUrl = 'https://schneidersladen.de/en/ajh-synth-finaliser-r-eq-silver';
@@ -203,6 +252,32 @@ test('skips import rows whose product URL is already linked to another module', 
 
   assert.deepEqual(filtered.rows, [availableRow]);
   assert.deepEqual(filtered.skippedConflictingListings, [conflictingRow]);
+});
+
+test('skips product URL conflicts even when another existing variant matches the incoming module', () => {
+  const productUrl = 'https://signalsounds.eu/doepfer-a-118-2-random-noise-eurorack-module-slim';
+  const conflictingRow = importRow(1872, `${productUrl}/`);
+
+  const filtered = filterRowsWithConflictingProductUrls([conflictingRow], [
+    { module_id: 2195, product_url: `${productUrl}/` },
+    { module_id: 1872, product_url: productUrl },
+  ]);
+
+  assert.deepEqual(filtered.rows, []);
+  assert.deepEqual(filtered.skippedConflictingListings, [conflictingRow]);
+});
+
+test('skips import rows whose module ID is not present in Patcher', () => {
+  const knownRow = importRow(4831, 'https://signalsounds.eu/schlappi-engineering-nibbler-eurorack-digital-shift-register-module-silver/');
+  const unknownRow = importRow(999999, 'https://signalsounds.eu/unknown-module');
+
+  const filtered = filterRowsWithExistingModules(
+    [knownRow, unknownRow],
+    new Set([4831]),
+  );
+
+  assert.deepEqual(filtered.rows, [knownRow]);
+  assert.deepEqual(filtered.skippedUnknownModuleRows, [unknownRow]);
 });
 
 function productSnapshot(productUrl, productName, priceAmountMinor, overrides = {}) {

@@ -1,7 +1,15 @@
+import { execFile } from 'node:child_process';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { gunzipSync } from 'node:zlib';
+import { Readable } from 'node:stream';
+import { promisify } from 'node:util';
+import { createGunzip } from 'node:zlib';
 import { normalizeBigCommerceProductPage } from '../../supabase/functions/_shared/price-hub/bigcommerce-metadata.ts';
+import { normalizeProductMetadataPage } from '../../supabase/functions/_shared/price-hub/product-metadata-page.ts';
+import {
+  normalizeShopifyProductJsonProduct,
+  type ShopifyProductJsonProduct,
+} from '../../supabase/functions/_shared/price-hub/shopify-product-json.ts';
 import { normalizeShopwareProductPage } from '../../supabase/functions/_shared/price-hub/shopware-metadata.ts';
 import {
   normalizeWooCommerceStoreApiProduct,
@@ -12,12 +20,21 @@ import type { ApprovedPriceHubStoreConfig } from './store-configs.ts';
 
 export const DEFAULT_CATALOG_MAX_PAGES = 100;
 export const DEFAULT_CATALOG_PER_PAGE = 100;
+export const DEFAULT_SHOPIFY_CATALOG_PER_PAGE = 250;
 export const DEFAULT_SITEMAP_MAX_PRODUCTS = 100;
+const SHOPIFY_CATALOG_RETRY_STATUSES = new Set([429, 500, 502, 503, 504]);
+const SHOPIFY_CATALOG_MAX_ATTEMPTS = 10;
+const PRICE_HUB_CRAWLER_HEADERS = {
+  accept: 'application/json, text/html, application/xml, text/xml;q=0.9, */*;q=0.8',
+  'user-agent': 'Patcher Price Hub local catalog crawler',
+} as const;
+const execFileAsync = promisify(execFile);
 
 export interface PriceHubFetchResponse {
   ok: boolean;
   status: number;
   statusText: string;
+  body?: ReadableStream<Uint8Array> | AsyncIterable<Uint8Array>;
   arrayBuffer?(): Promise<ArrayBuffer>;
   json?(): Promise<unknown>;
   text?(): Promise<string>;
@@ -64,7 +81,10 @@ export async function crawlWooCommerceStoreCatalog(
       break;
     }
 
-    products.push(...pageProducts.map((product) => normalizeWooCommerceStoreApiProduct(product)));
+    products.push(...pageProducts.map((product) => addStoreConfiguredMetadata(
+      normalizeWooCommerceStoreApiProduct(product),
+      store,
+    )));
 
     if (pageProducts.length < perPage) {
       break;
@@ -82,15 +102,58 @@ export async function crawlPriceHubStoreCatalog(
     return crawlWooCommerceStoreCatalog(store, options);
   }
 
+  if (store.adapter === 'shopify_product_json') {
+    return crawlShopifyProductJsonCatalog(store, options);
+  }
+
   if (store.adapter === 'bigcommerce_metadata') {
     return crawlSitemapMetadataCatalog(store, options);
   }
 
-  if (store.adapter === 'shopware_metadata') {
+  if (store.adapter === 'shopware_metadata' || store.adapter === 'custom') {
     return crawlSitemapMetadataCatalog(store, options);
   }
 
   throw new Error(`Unsupported Price Hub adapter "${store.adapter}" for local catalog crawl.`);
+}
+
+export async function crawlShopifyProductJsonCatalog(
+  store: ApprovedPriceHubStoreConfig,
+  options: CrawlWooCommerceStoreCatalogOptions = {},
+): Promise<CrawledWooCommerceStoreCatalog> {
+  if (store.adapter !== 'shopify_product_json') {
+    throw new Error(`Unsupported Price Hub adapter "${store.adapter}" for Shopify product JSON crawl.`);
+  }
+
+  const fetchFn = options.fetchFn ?? fetchShopifyJsonWithCurl;
+  const maxPages = readPositiveInteger(options.maxPages, DEFAULT_CATALOG_MAX_PAGES, 'maxPages');
+  const perPage = readPositiveInteger(options.perPage, DEFAULT_SHOPIFY_CATALOG_PER_PAGE, 'perPage');
+  const products: NormalizedStoreListingSnapshot[] = [];
+  let pagesFetched = 0;
+
+  for (let page = 1; page <= maxPages; page += 1) {
+    const pageProducts = await fetchShopifyCatalogPage(store, page, perPage, fetchFn);
+    pagesFetched = page;
+
+    if (pageProducts.length === 0) {
+      break;
+    }
+
+    products.push(...pageProducts.map((product) => addStoreConfiguredMetadata(
+      normalizeShopifyProductJsonProduct(product, {
+        baseUrl: store.baseUrl,
+        currencyHint: readShopifyCurrencyHint(store),
+        ignoredMatchNoiseTags: readShopifyIgnoredMatchNoiseTags(store),
+      }),
+      store,
+    )));
+
+    if (pageProducts.length < perPage) {
+      break;
+    }
+  }
+
+  return { store, products, pagesFetched };
 }
 
 export async function crawlBigCommerceMetadataCatalog(
@@ -108,24 +171,39 @@ export async function crawlSitemapMetadataCatalog(
   store: ApprovedPriceHubStoreConfig,
   options: CrawlWooCommerceStoreCatalogOptions = {},
 ): Promise<CrawledWooCommerceStoreCatalog> {
-  if (store.adapter !== 'bigcommerce_metadata' && store.adapter !== 'shopware_metadata') {
+  if (store.adapter !== 'bigcommerce_metadata' && store.adapter !== 'shopware_metadata' && store.adapter !== 'custom') {
     throw new Error(`Unsupported Price Hub adapter "${store.adapter}" for sitemap metadata crawl.`);
   }
 
   const fetchFn = options.fetchFn ?? fetch;
   const maxProducts = readPositiveInteger(options.maxProducts, DEFAULT_SITEMAP_MAX_PRODUCTS, 'maxProducts');
   const concurrency = readPositiveInteger(options.metadataConcurrency, DEFAULT_METADATA_CONCURRENCY, 'metadataConcurrency');
-  const productUrls = await fetchSitemapMetadataProductUrls(store, fetchFn);
   const products: NormalizedStoreListingSnapshot[] = [];
   let skippedProducts = 0;
   const skippedProductUrls: string[] = [];
+  let totalProductUrls = 0;
+  let exhaustedProductUrls = false;
 
-  for (let index = 0; index < productUrls.length && products.length < maxProducts; index += concurrency) {
-    if (products.length >= maxProducts) {
+  const productUrlIterator = iterateSitemapMetadataProductUrls(store, fetchFn)[Symbol.asyncIterator]();
+  while (products.length < maxProducts) {
+    const batch: string[] = [];
+    const batchSize = Math.min(concurrency, maxProducts - products.length);
+
+    while (batch.length < batchSize) {
+      const nextProductUrl = await productUrlIterator.next();
+      if (nextProductUrl.done) {
+        exhaustedProductUrls = true;
+        break;
+      }
+
+      totalProductUrls += 1;
+      batch.push(nextProductUrl.value);
+    }
+
+    if (batch.length === 0) {
       break;
     }
 
-    const batch = productUrls.slice(index, index + concurrency);
     const batchResults = await Promise.all(batch.map((productUrl) => crawlSitemapMetadataProductUrl(store, productUrl, fetchFn)));
     for (const result of batchResults) {
       if (!result.product) {
@@ -142,11 +220,17 @@ export async function crawlSitemapMetadataCatalog(
     }
   }
 
+  await productUrlIterator.return?.();
+
+  if (totalProductUrls === 0 && exhaustedProductUrls) {
+    throw new Error(`Sitemap metadata for ${store.slug} did not include any approved product URLs.`);
+  }
+
   const productsWithStoreAvailability = isSignalSoundsStore(store)
     ? await applySignalSoundsInventoryOverrides(store, products, fetchFn)
     : products;
 
-  return { store, products: productsWithStoreAvailability, pagesFetched: 1, skippedProducts, skippedProductUrls, totalProductUrls: productUrls.length };
+  return { store, products: productsWithStoreAvailability, pagesFetched: 1, skippedProducts, skippedProductUrls, totalProductUrls };
 }
 
 export async function writeCrawledProducts(
@@ -166,6 +250,34 @@ function buildWooCommerceCatalogPageUrl(store: ApprovedPriceHubStoreConfig, page
   url.searchParams.set('per_page', String(perPage));
   url.searchParams.set('page', String(page));
   return url.toString();
+}
+
+function buildShopifyCatalogPageUrl(store: ApprovedPriceHubStoreConfig, page: number, perPage: number): string {
+  const url = new URL(readShopifyCatalogPath(store), store.baseUrl);
+  url.searchParams.set('limit', String(perPage));
+  url.searchParams.set('page', String(page));
+  return url.toString();
+}
+
+function readShopifyCatalogPath(store: ApprovedPriceHubStoreConfig): string {
+  return store.catalogPath ?? '/products.json';
+}
+
+function addStoreConfiguredMetadata(
+  product: NormalizedStoreListingSnapshot,
+  store: ApprovedPriceHubStoreConfig,
+): NormalizedStoreListingSnapshot {
+  if (!store.productBrandHint) {
+    return product;
+  }
+
+  return {
+    ...product,
+    rawMeta: {
+      ...product.rawMeta,
+      brand: store.productBrandHint,
+    },
+  };
 }
 
 async function fetchWooCommerceCatalogPage(
@@ -192,6 +304,88 @@ async function fetchWooCommerceCatalogPage(
   return body.map(readWooCommerceProduct);
 }
 
+async function fetchShopifyCatalogPage(
+  store: ApprovedPriceHubStoreConfig,
+  page: number,
+  perPage: number,
+  fetchFn: PriceHubFetch,
+): Promise<ShopifyProductJsonProduct[]> {
+  const url = buildShopifyCatalogPageUrl(store, page, perPage);
+  const response = await fetchShopifyCatalogPageWithRetry(url, store, page, fetchFn);
+  if (!response.ok) {
+    throw new Error(`Shopify catalog fetch failed for ${store.slug} page ${page}: ${response.status} ${response.statusText}`);
+  }
+
+  const body = await readJsonResponse(response, `Shopify catalog response for ${store.slug} page ${page}`);
+  if (!isRecord(body) || !Array.isArray(body.products)) {
+    throw new Error(`Shopify catalog response for ${store.slug} page ${page} must contain a products array.`);
+  }
+
+  return body.products.map(readShopifyProduct);
+}
+
+async function fetchShopifyCatalogPageWithRetry(
+  url: string,
+  store: ApprovedPriceHubStoreConfig,
+  page: number,
+  fetchFn: PriceHubFetch,
+): Promise<PriceHubFetchResponse> {
+  let response: PriceHubFetchResponse | null = null;
+  for (let attempt = 1; attempt <= SHOPIFY_CATALOG_MAX_ATTEMPTS; attempt += 1) {
+    response = await fetchFn(url, { headers: PRICE_HUB_CRAWLER_HEADERS });
+    if (response.ok || !SHOPIFY_CATALOG_RETRY_STATUSES.has(response.status) || attempt === SHOPIFY_CATALOG_MAX_ATTEMPTS) {
+      return response;
+    }
+
+    await sleep(readShopifyRetryDelayMs(response.status, attempt));
+    console.warn(`Retrying Shopify catalog fetch for ${store.slug} page ${page} after ${response.status} ${response.statusText}.`);
+  }
+
+  return response!;
+}
+
+function readShopifyRetryDelayMs(status: number, attempt: number): number {
+  if (status === 429) {
+    return 2000 * attempt;
+  }
+
+  return 500 * attempt;
+}
+
+function sleep(delayMs: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, delayMs));
+}
+
+async function fetchShopifyJsonWithCurl(url: string): Promise<PriceHubFetchResponse> {
+  const { stdout } = await execFileAsync('curl', [
+    '-sS',
+    '-L',
+    '--compressed',
+    '-A',
+    'Patcher Price Hub local catalog crawler',
+    '-H',
+    'Accept: application/json',
+    '-w',
+    '\n%{http_code}',
+    url,
+  ], { maxBuffer: 20 * 1024 * 1024 });
+  const separatorIndex = stdout.lastIndexOf('\n');
+  const body = separatorIndex >= 0 ? stdout.slice(0, separatorIndex) : stdout;
+  const status = separatorIndex >= 0 ? Number.parseInt(stdout.slice(separatorIndex + 1), 10) : 0;
+
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    statusText: status >= 200 && status < 300 ? 'OK' : 'HTTP error',
+    async json() {
+      return JSON.parse(body) as unknown;
+    },
+    async text() {
+      return body;
+    },
+  };
+}
+
 function buildBigCommerceProductSitemapUrl(store: ApprovedPriceHubStoreConfig): string {
   const url = new URL('/xmlsitemap.php', store.baseUrl);
   url.searchParams.set('type', 'products');
@@ -203,13 +397,20 @@ function buildShopwareSitemapIndexUrl(store: ApprovedPriceHubStoreConfig): strin
   return new URL('sitemap.xml', store.baseUrl).toString();
 }
 
-async function fetchSitemapMetadataProductUrls(store: ApprovedPriceHubStoreConfig, fetchFn: PriceHubFetch): Promise<string[]> {
+async function* iterateSitemapMetadataProductUrls(store: ApprovedPriceHubStoreConfig, fetchFn: PriceHubFetch): AsyncGenerator<string> {
   if (store.adapter === 'bigcommerce_metadata') {
-    return fetchBigCommerceProductSitemap(store, fetchFn);
+    yield* await fetchBigCommerceProductSitemap(store, fetchFn);
+    return;
   }
 
   if (store.adapter === 'shopware_metadata') {
-    return fetchShopwareProductSitemap(store, fetchFn);
+    yield* iterateShopwareProductSitemap(store, fetchFn);
+    return;
+  }
+
+  if (store.adapter === 'custom') {
+    yield* await fetchCustomProductSitemap(store, fetchFn);
+    return;
   }
 
   throw new Error(`Unsupported sitemap metadata adapter "${store.adapter}".`);
@@ -217,7 +418,7 @@ async function fetchSitemapMetadataProductUrls(store: ApprovedPriceHubStoreConfi
 
 async function fetchBigCommerceProductSitemap(store: ApprovedPriceHubStoreConfig, fetchFn: PriceHubFetch): Promise<string[]> {
   const url = buildBigCommerceProductSitemapUrl(store);
-  const response = await fetchFn(url);
+  const response = await fetchFn(url, { headers: PRICE_HUB_CRAWLER_HEADERS });
   if (!response.ok) {
     throw new Error(`BigCommerce product sitemap fetch failed for ${store.slug}: ${response.status} ${response.statusText}`);
   }
@@ -232,33 +433,71 @@ async function fetchBigCommerceProductSitemap(store: ApprovedPriceHubStoreConfig
   return productUrls;
 }
 
-async function fetchShopwareProductSitemap(store: ApprovedPriceHubStoreConfig, fetchFn: PriceHubFetch): Promise<string[]> {
+async function* iterateShopwareProductSitemap(store: ApprovedPriceHubStoreConfig, fetchFn: PriceHubFetch): AsyncGenerator<string> {
   const indexUrl = buildShopwareSitemapIndexUrl(store);
-  const indexResponse = await fetchFn(indexUrl);
+  const indexResponse = await fetchFn(indexUrl, { headers: PRICE_HUB_CRAWLER_HEADERS });
   if (!indexResponse.ok) {
     throw new Error(`Shopware sitemap index fetch failed for ${store.slug}: ${indexResponse.status} ${indexResponse.statusText}`);
   }
 
   const indexBody = await readTextResponse(indexResponse, `Shopware sitemap index response for ${store.slug}`);
   const sitemapUrls = parseSitemapLocations(indexBody).filter((location) => isApprovedStoreProductUrl(store, location));
-  const productUrls: string[] = [];
+  const productUrls = new Set<string>();
   for (const sitemapUrl of sitemapUrls) {
-    const sitemapResponse = await fetchFn(sitemapUrl);
+    const sitemapResponse = await fetchFn(sitemapUrl, { headers: PRICE_HUB_CRAWLER_HEADERS });
     if (!sitemapResponse.ok) {
       throw new Error(`Shopware sitemap fetch failed for ${store.slug} (${sitemapUrl}): ${sitemapResponse.status} ${sitemapResponse.statusText}`);
     }
 
-    const sitemapBody = await readSitemapResponse(sitemapResponse, `Shopware sitemap response for ${store.slug}`, sitemapUrl);
-    productUrls.push(...parseSitemapLocations(sitemapBody)
-      .filter((location) => isApprovedStoreProductUrl(store, location))
-      .filter((location) => isLikelyShopwareProductUrl(store, location)));
+    for await (const location of readSitemapLocations(sitemapResponse, `Shopware sitemap response for ${store.slug}`, sitemapUrl)) {
+      if (!isApprovedStoreProductUrl(store, location) || !isLikelyShopwareProductUrl(store, location) || productUrls.has(location)) {
+        continue;
+      }
+
+      productUrls.add(location);
+      yield location;
+    }
   }
 
-  if (productUrls.length === 0) {
+  if (productUrls.size === 0) {
     throw new Error(`Shopware sitemap for ${store.slug} did not include any approved URLs.`);
   }
+}
 
-  return productUrls;
+async function fetchCustomProductSitemap(store: ApprovedPriceHubStoreConfig, fetchFn: PriceHubFetch): Promise<string[]> {
+  const startUrl = new URL(store.catalogPath ?? '/sitemap.xml', store.baseUrl).toString();
+  const visitedSitemaps = new Set<string>();
+  const pendingSitemaps = [startUrl];
+  const productUrls: string[] = [];
+
+  while (pendingSitemaps.length > 0 && visitedSitemaps.size < CUSTOM_SITEMAP_MAX_FILES) {
+    const sitemapUrl = pendingSitemaps.shift()!;
+    if (visitedSitemaps.has(sitemapUrl)) {
+      continue;
+    }
+    visitedSitemaps.add(sitemapUrl);
+
+    const sitemapResponse = await fetchFn(sitemapUrl, { headers: PRICE_HUB_CRAWLER_HEADERS });
+    if (!sitemapResponse.ok) {
+      throw new Error(`Custom sitemap fetch failed for ${store.slug} (${sitemapUrl}): ${sitemapResponse.status} ${sitemapResponse.statusText}`);
+    }
+
+    const sitemapBody = await readSitemapResponse(sitemapResponse, `Custom sitemap response for ${store.slug}`, sitemapUrl);
+    for (const location of parseSitemapLocations(sitemapBody).filter((candidate) => isApprovedStoreProductUrl(store, candidate))) {
+      if (isLikelySitemapUrl(location)) {
+        pendingSitemaps.push(location);
+      } else if (isAllowedCustomProductUrl(store, location)) {
+        productUrls.push(location);
+      }
+    }
+  }
+
+  const uniqueProductUrls = uniqueStrings(productUrls);
+  if (uniqueProductUrls.length === 0) {
+    throw new Error(`Custom sitemap for ${store.slug} did not include any approved product URLs.`);
+  }
+
+  return uniqueProductUrls;
 }
 
 async function fetchMetadataProductPage(
@@ -266,7 +505,7 @@ async function fetchMetadataProductPage(
   productUrl: string,
   fetchFn: PriceHubFetch,
 ): Promise<string> {
-  const response = await fetchFn(productUrl);
+  const response = await fetchFn(productUrl, { headers: PRICE_HUB_CRAWLER_HEADERS });
   if (!response.ok) {
     throw new Error(`BigCommerce product fetch failed for ${store.slug} (${productUrl}): ${response.status} ${response.statusText}`);
   }
@@ -307,7 +546,9 @@ async function crawlSitemapMetadataProductUrl(
 
   const product = store.adapter === 'bigcommerce_metadata'
     ? normalizeBigCommerceProductPage(html, productUrl)
-    : normalizeShopwareProductPage(html, productUrl);
+    : store.adapter === 'shopware_metadata'
+      ? normalizeShopwareProductPage(html, productUrl)
+      : normalizeProductMetadataPage(html, productUrl, 'custom');
 
   return { productUrl, product: isUsableMetadataProduct(product) ? product : null };
 }
@@ -333,7 +574,7 @@ export async function applySignalSoundsInventoryOverrides(
     if (!sku) {
       return {
         ...product,
-        availability: 'unknown',
+        availability: readSignalSoundsFallbackAvailability(product),
         rawMeta: {
           ...product.rawMeta,
           signalSoundsAvailabilitySource: 'missing_sku',
@@ -345,7 +586,7 @@ export async function applySignalSoundsInventoryOverrides(
     if (!inventory) {
       return {
         ...product,
-        availability: 'unknown',
+        availability: readSignalSoundsFallbackAvailability(product),
         rawMeta: {
           ...product.rawMeta,
           signalSoundsAvailabilitySource: 'randem_location_api_missing',
@@ -366,6 +607,20 @@ export async function applySignalSoundsInventoryOverrides(
       },
     };
   });
+}
+
+function readSignalSoundsFallbackAvailability(
+  product: NormalizedStoreListingSnapshot,
+): NormalizedStoreListingSnapshot['availability'] {
+  return isSignalSoundsTerminalPageAvailability(product.availability)
+    ? product.availability
+    : 'unknown';
+}
+
+function isSignalSoundsTerminalPageAvailability(
+  availability: NormalizedStoreListingSnapshot['availability'],
+): boolean {
+  return availability === 'out_of_stock' || availability === 'discontinued';
 }
 
 function readSignalSoundsProductSku(product: NormalizedStoreListingSnapshot): string | null {
@@ -528,6 +783,14 @@ function readSignalSoundsTargetStoreExternalId(store: ApprovedPriceHubStoreConfi
   return store.slug === 'signal-sounds-eu' ? 'SS Europe' : 'HQ';
 }
 
+function readShopifyCurrencyHint(store: ApprovedPriceHubStoreConfig): string | null {
+  return store.currencyHint ?? null;
+}
+
+function readShopifyIgnoredMatchNoiseTags(store: ApprovedPriceHubStoreConfig): readonly string[] {
+  return store.ignoredMatchNoiseTags ?? [];
+}
+
 async function readTextResponse(response: PriceHubFetchResponse, context: string): Promise<string> {
   if (!response.text) {
     throw new Error(`${context} did not expose text.`);
@@ -536,17 +799,71 @@ async function readTextResponse(response: PriceHubFetchResponse, context: string
   return response.text();
 }
 
+async function* readSitemapLocations(
+  response: PriceHubFetchResponse,
+  context: string,
+  url: string,
+): AsyncGenerator<string> {
+  yield* parseSitemapLocationsFromChunks(readSitemapTextChunks(response, context, url));
+}
+
 async function readSitemapResponse(response: PriceHubFetchResponse, context: string, url: string): Promise<string> {
-  if (!url.endsWith('.gz')) {
-    return readTextResponse(response, context);
+  const chunks: string[] = [];
+  for await (const chunk of readSitemapTextChunks(response, context, url)) {
+    chunks.push(chunk);
   }
 
-  if (!response.arrayBuffer) {
+  return chunks.join('');
+}
+
+async function* readSitemapTextChunks(
+  response: PriceHubFetchResponse,
+  context: string,
+  url: string,
+): AsyncGenerator<string> {
+  if (!url.endsWith('.gz')) {
+    yield await readTextResponse(response, context);
+    return;
+  }
+
+  if (!response.body && !response.arrayBuffer) {
     throw new Error(`${context} did not expose bytes for gzip sitemap.`);
   }
 
-  const buffer = Buffer.from(await response.arrayBuffer());
-  return gunzipSync(buffer).toString('utf8');
+  const compressedStream = response.body
+    ? readFetchBody(response.body)
+    : Readable.from([Buffer.from(await response.arrayBuffer!())]);
+  const decompressedStream = compressedStream.pipe(createGunzip());
+  const decoder = new TextDecoder();
+
+  for await (const chunk of decompressedStream) {
+    yield decoder.decode(chunk, { stream: true });
+  }
+
+  const remainingText = decoder.decode();
+  if (remainingText) {
+    yield remainingText;
+  }
+}
+
+function readFetchBody(body: ReadableStream<Uint8Array> | AsyncIterable<Uint8Array>): Readable {
+  if (Symbol.asyncIterator in body) {
+    return Readable.from(body as AsyncIterable<Uint8Array>);
+  }
+
+  return Readable.fromWeb(body);
+}
+
+async function* parseSitemapLocationsFromChunks(chunks: AsyncIterable<string>): AsyncGenerator<string> {
+  let buffer = '';
+
+  for await (const chunk of chunks) {
+    buffer += chunk;
+    yield* drainSitemapLocationBuffer(buffer);
+    buffer = keepSitemapLocationTail(buffer);
+  }
+
+  yield* drainSitemapLocationBuffer(buffer);
 }
 
 function parseSitemapLocations(xml: string): string[] {
@@ -559,6 +876,29 @@ function parseSitemapLocations(xml: string): string[] {
   }
 
   return urls;
+}
+
+function* drainSitemapLocationBuffer(buffer: string): Generator<string> {
+  const locationPattern = /<loc>(.*?)<\/loc>/gis;
+  let locationMatch: RegExpExecArray | null;
+
+  while ((locationMatch = locationPattern.exec(buffer))) {
+    yield decodeXmlEntities(locationMatch[1].trim());
+  }
+}
+
+function keepSitemapLocationTail(buffer: string): string {
+  const lastClosingIndex = buffer.toLowerCase().lastIndexOf('</loc>');
+  if (lastClosingIndex >= 0) {
+    return buffer.slice(lastClosingIndex + '</loc>'.length);
+  }
+
+  const lastOpeningIndex = buffer.toLowerCase().lastIndexOf('<loc>');
+  if (lastOpeningIndex >= 0) {
+    return buffer.slice(lastOpeningIndex);
+  }
+
+  return buffer.slice(-16);
 }
 
 function isApprovedStoreProductUrl(store: ApprovedPriceHubStoreConfig, productUrl: string): boolean {
@@ -618,6 +958,33 @@ const SHOPWARE_NON_PRODUCT_SLUGS = new Set([
   'studio-recording',
 ]);
 
+const CUSTOM_SITEMAP_MAX_FILES = 30;
+
+function isLikelySitemapUrl(url: string): boolean {
+  try {
+    const parsedUrl = new URL(url);
+    return parsedUrl.pathname.endsWith('.xml')
+      || parsedUrl.pathname.endsWith('.xml.gz')
+      || parsedUrl.searchParams.has('urlset')
+      || parsedUrl.pathname.includes('sitemap');
+  } catch {
+    return false;
+  }
+}
+
+function isAllowedCustomProductUrl(store: ApprovedPriceHubStoreConfig, productUrl: string): boolean {
+  try {
+    const url = new URL(productUrl);
+    const path = url.pathname;
+    const includes = store.productUrlPathIncludes ?? [];
+    const excludes = store.productUrlPathExcludes ?? [];
+    return (includes.length === 0 || includes.some((pathPart) => path.includes(pathPart)))
+      && !excludes.some((pathPart) => path.includes(pathPart));
+  } catch {
+    return false;
+  }
+}
+
 function readWooCommerceProduct(value: unknown): WooCommerceStoreApiProduct {
   if (!isRecord(value)) {
     return {};
@@ -639,11 +1006,29 @@ function readWooCommerceProduct(value: unknown): WooCommerceStoreApiProduct {
     stock_status: readStringOrNull(value.stock_status),
     stock_availability: isRecord(value.stock_availability) ? {
       text: readStringOrNull(value.stock_availability.text),
+      class: readStringOrNull(value.stock_availability.class),
     } : null,
     images: Array.isArray(value.images)
       ? value.images.filter(isRecord).map((image) => ({ src: readStringOrNull(image.src) }))
       : null,
+    brands: readWooCommerceTerms(value.brands),
+    categories: readWooCommerceTerms(value.categories),
+    tags: readWooCommerceTerms(value.tags),
   };
+}
+
+function readWooCommerceTerms(value: unknown): { name: string | null; slug: string | null; link: string | null }[] | null {
+  if (!Array.isArray(value)) {
+    return null;
+  }
+
+  return value
+    .filter(isRecord)
+    .map((term) => ({
+      name: readStringOrNull(term.name),
+      slug: readStringOrNull(term.slug),
+      link: readStringOrNull(term.link),
+    }));
 }
 
 function readPositiveInteger(value: number | undefined, fallback: number, fieldName: string): number {
@@ -653,6 +1038,14 @@ function readPositiveInteger(value: number | undefined, fallback: number, fieldN
 
   if (!Number.isInteger(value) || value < 1) {
     throw new Error(`${fieldName} must be a positive integer.`);
+  }
+
+  return value;
+}
+
+function readShopifyProduct(value: unknown): ShopifyProductJsonProduct {
+  if (!isRecord(value)) {
+    throw new Error('Every Shopify product must be an object.');
   }
 
   return value;

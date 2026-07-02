@@ -1,6 +1,7 @@
 @if ({
   filteredData:(filteredData$|async),
   data:(data$|async),
+  priceSummaryByModuleId:(priceSummaryByModuleId$|async),
   availableTags:(availableTags$|async),
   canReset:(canReset$|async),
   selectedTagIds:(tagsControl.valueChanges|async)
@@ -117,6 +118,7 @@
               [viewConfig]="viewConfig"
               [preferredPanelColor]="appState.preferredPanelColor$ | async"
               [showCoolAction]="showCoolAction"
+              [priceSummary]="showPriceSummary ? (bag.priceSummaryByModuleId?.get(item.id) ?? null) : null"
             ></app-module-minimal>
           </lib-clean-card>
         } @empty {

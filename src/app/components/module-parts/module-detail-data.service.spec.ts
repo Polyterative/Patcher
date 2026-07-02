@@ -24,7 +24,11 @@ describe('ModuleDetailDataService', () => {
       name: 'Main Module',
       manufacturerId: 7,
       manufacturer: {name: 'Maker'},
-      panels: [{id: 1}, {id: 3}, {id: 2}]
+      panels: [
+        {id: 1, moduleid: 10, filename: 'light.jpg', description: 'Light', color: 1},
+        {id: 3, moduleid: 10, filename: 'dark.jpg', description: 'Dark', color: 2},
+        {id: 2, moduleid: 10, filename: 'silver.jpg', description: 'Silver', color: 1}
+      ]
     };
     
     const backend = {
@@ -36,6 +40,7 @@ describe('ModuleDetailDataService', () => {
         moduleWithId: jasmine.createSpy('moduleWithId').and.callFake((id: number) => of({
           data: {...baseModule, id}
         })),
+        modulePriceListings: jasmine.createSpy('modulePriceListings').and.returnValue(of([])),
         moduleCollectionsForModule: jasmine.createSpy('moduleCollectionsForModule').and.returnValue(of([
           {id: 81, name: 'Ambient starters', public: true, public_id: 'ambient', author: {username: 'Curator'}, module_count: 3}
         ]))
@@ -344,7 +349,7 @@ describe('ModuleDetailDataService', () => {
     backend.auth.hasAdminRole$.and.returnValue(of(false));
     service.singleModuleData$.next(baseModule as any);
 
-    service.deleteLastPanel$.next(baseModule as any);
+    service.deletePanel$.next(baseModule.panels[0] as any);
     service.deleteModuleAndOrphanManufacturer$.next(baseModule as any);
 
     expect(backend.delete.modulePanel).not.toHaveBeenCalled();
@@ -424,14 +429,14 @@ describe('ModuleDetailDataService', () => {
     expect(writeText).toHaveBeenCalledWith('Main Module by Maker');
   });
   
-  it('deletes the panel with highest id when requested in dev mode', () => {
+  it('deletes the requested panel in dev mode', () => {
     const {service, backend, baseModule} = build();
     const nextSpy = spyOn(service.updateSingleModuleData$, 'next').and.callThrough();
     service.singleModuleData$.next(baseModule as any);
     
-    service.deleteLastPanel$.next(baseModule as any);
+    service.deletePanel$.next(baseModule.panels[1] as any);
     
-    expect(backend.delete.modulePanel).toHaveBeenCalledWith({id: 3});
+    expect(backend.delete.modulePanel).toHaveBeenCalledWith(baseModule.panels[1]);
     expect(nextSpy).toHaveBeenCalledWith(10);
   });
 

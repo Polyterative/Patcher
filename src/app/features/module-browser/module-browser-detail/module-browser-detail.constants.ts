@@ -15,6 +15,9 @@ export interface SearchLink {
   label: string;
   icon: string;
   tooltip: string;
+  kind: 'community' | 'retailer';
+  storeSlugs?: readonly string[];
+  storeIds?: readonly number[];
 }
 
 function buildSearchUrl(baseUrl: string, params: Record<string, string>): string {
@@ -32,7 +35,8 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     }),
     label: 'Google',
     icon: 'search',
-    tooltip: 'Search on Google'
+    tooltip: 'Search on Google',
+    kind: 'community'
   },
   {
     url: (name: string, manufacturer: string) => buildSearchUrl('https://www.youtube.com/results', {
@@ -40,7 +44,8 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     }),
     label: 'YouTube',
     icon: 'video_library',
-    tooltip: 'Search on YouTube'
+    tooltip: 'Search on YouTube',
+    kind: 'community'
   },
   {
     url: (name: string) => buildSearchUrl('https://www.modwiggler.com/forum/search.php', {
@@ -48,7 +53,8 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     }),
     label: 'Modwiggler',
     icon: 'forum',
-    tooltip: 'Search on Modwiggler'
+    tooltip: 'Search on Modwiggler',
+    kind: 'community'
   },
   {
     url: (name: string) => buildSearchUrl('https://llllllll.co/search', {
@@ -56,7 +62,8 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     }),
     label: 'Lines',
     icon: 'forum',
-    tooltip: 'Search on Lines'
+    tooltip: 'Search on Lines',
+    kind: 'community'
   },
   {
     url: (name: string) => buildSearchUrl('https://www.elektronauts.com/search', {
@@ -64,7 +71,8 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     }),
     label: 'Elektronauts',
     icon: 'forum',
-    tooltip: 'Search on Elektronauts'
+    tooltip: 'Search on Elektronauts',
+    kind: 'community'
   },
   {
     url: (name: string) => buildSearchUrl('https://modulargrid.net/e/modules/browser', {
@@ -72,7 +80,8 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     }),
     label: 'Modulargrid',
     icon: 'power',
-    tooltip: 'Search on Modulargrid'
+    tooltip: 'Search on Modulargrid',
+    kind: 'community'
   },
   {
     url: (name: string) => buildSearchUrl('https://library.vcvrack.com/', {
@@ -80,7 +89,8 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     }),
     label: 'VCV Library',
     icon: 'power',
-    tooltip: 'Search on VCV Library'
+    tooltip: 'Search on VCV Library',
+    kind: 'community'
   },
   {
     url: (name: string) => buildSearchUrl('https://wigglehunt.com/', {
@@ -88,7 +98,8 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     }),
     label: 'Wigglehunt',
     icon: 'attach_money',
-    tooltip: 'Search on Wigglehunt'
+    tooltip: 'Search on Wigglehunt',
+    kind: 'community'
   },
   {
     url: (name: string) => buildSearchUrl('https://www.thomann.de/intl/search_dir.html', {
@@ -96,7 +107,9 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     }),
     label: 'Thomann 🇩🇪',
     icon: 'store',
-    tooltip: 'Search on Thomann'
+    tooltip: 'Search on Thomann',
+    kind: 'retailer',
+    storeSlugs: ['thomann']
   },
   {
     url: (name: string) => buildSearchUrl('https://schneidersladen.de/en/search', {
@@ -104,7 +117,9 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     }),
     label: 'Schneidersladen 🇩🇪',
     icon: 'store',
-    tooltip: 'Search on Schneidersladen'
+    tooltip: 'Search on Schneidersladen',
+    kind: 'retailer',
+    storeSlugs: ['schneidersladen']
   },
   {
     url: (name: string) => buildSearchUrl('https://www.signalsounds.com/search.php', {
@@ -112,7 +127,9 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     }),
     label: 'Signalsounds 🇬🇧',
     icon: 'store',
-    tooltip: 'Search on Signalsounds'
+    tooltip: 'Search on Signalsounds',
+    kind: 'retailer',
+    storeSlugs: ['signal-sounds-uk', 'signal-sounds-eu', 'signalsounds', 'signal-sounds']
   },
   {
     url: (name: string) => buildSearchUrl('https://www.exploding-shed.com/search', {
@@ -120,7 +137,9 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     }),
     label: 'Exploding Shed 🇩🇪',
     icon: 'store',
-    tooltip: 'Search on Exploding Shed'
+    tooltip: 'Search on Exploding Shed',
+    kind: 'retailer',
+    storeSlugs: ['exploding-shed']
   },
   {
     url: (name: string) => buildSearchUrl('https://www.elevatorsound.com/', {
@@ -129,7 +148,9 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     }),
     label: 'Elevator Sound 🇬🇧',
     icon: 'store',
-    tooltip: 'Search on Elevator Sound'
+    tooltip: 'Search on Elevator Sound',
+    kind: 'retailer',
+    storeSlugs: ['elevator-sound']
   },
   {
     url: (name: string) => buildSearchUrl('https://www.perfectcircuit.com/catalogsearch/result/', {
@@ -137,7 +158,9 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     }),
     label: 'Perfect Circuit 🇺🇸',
     icon: 'store',
-    tooltip: 'Search on Perfect Circuit'
+    tooltip: 'Search on Perfect Circuit',
+    kind: 'retailer',
+    storeSlugs: ['perfect-circuit', 'perfectcircuit']
   },
   {
     url: (name: string) => buildSearchUrl('https://www.milkaudiostore.com/it/search', {
@@ -145,7 +168,9 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     }),
     label: 'Milk Audio Store 🇮🇹',
     icon: 'store',
-    tooltip: 'Search on Milk Audio Store'
+    tooltip: 'Search on Milk Audio Store',
+    kind: 'retailer',
+    storeSlugs: ['milk-audio-store', 'milk-audio']
   },
   {
     url: (name: string) => buildSearchUrl('https://www.newgroove.it/', {
@@ -156,7 +181,9 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     }),
     label: 'New Groove 🇮🇹',
     icon: 'store',
-    tooltip: 'Search on New Groove'
+    tooltip: 'Search on New Groove',
+    kind: 'retailer',
+    storeSlugs: ['new-groove']
   },
   {
     url: (name: string) => buildSearchUrl('https://escapefromnoise.com/search/', {
@@ -165,7 +192,9 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     }),
     label: 'Escape From Noise 🇸🇪',
     icon: 'store',
-    tooltip: 'Search on Escape From Noise'
+    tooltip: 'Search on Escape From Noise',
+    kind: 'retailer',
+    storeSlugs: ['escape-from-noise']
   },
   {
     url: (name: string) => buildSearchUrl('https://machineroom.com.ua/', {
@@ -173,7 +202,9 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     }),
     label: 'Machineroom 🇺🇦',
     icon: 'store',
-    tooltip: 'Search on Machineroom'
+    tooltip: 'Search on Machineroom',
+    kind: 'retailer',
+    storeSlugs: ['machineroom', 'machine-room']
   },
   {
     url: (name) => buildSearchUrl('https://www.ctrl-mod.com/search', {
@@ -182,7 +213,9 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     }),
     label: 'Control 🇺🇸',
     icon: 'store',
-    tooltip: 'Search on Control'
+    tooltip: 'Search on Control',
+    kind: 'retailer',
+    storeSlugs: ['control']
   },
   {
     url: (name) => buildSearchUrl('https://www.patchwerks.com/search', {
@@ -190,7 +223,9 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     }),
     label: 'Patchwerks 🇺🇸',
     icon: 'store',
-    tooltip: 'Search on Patchwerks'
+    tooltip: 'Search on Patchwerks',
+    kind: 'retailer',
+    storeSlugs: ['patchwerks']
   },
   {
     url: (name) => buildSearchUrl('https://foundsound.com.au/search', {
@@ -198,7 +233,9 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     }),
     label: 'Found Sound 🇦🇺',
     icon: 'store',
-    tooltip: 'Search on Found Sound'
+    tooltip: 'Search on Found Sound',
+    kind: 'retailer',
+    storeSlugs: ['found-sound']
   },
   {
     url: (name) => buildSearchUrl('https://synthshop.no/search', {
@@ -206,6 +243,8 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     }),
     label: 'Synthshop 🇳🇴',
     icon: 'store',
-    tooltip: 'Search on Synthshop'
+    tooltip: 'Search on Synthshop',
+    kind: 'retailer',
+    storeSlugs: ['synthshop']
   },
 ];

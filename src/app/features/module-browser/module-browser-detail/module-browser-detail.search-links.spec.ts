@@ -3,14 +3,32 @@ import {
   Subject
 } from 'rxjs';
 import { ModuleBrowserDetailComponent } from './module-browser-detail.component';
+import { ModulePriceListing } from 'src/app/features/backend/supabase-queries.models';
 
 
 describe('ModuleBrowserDetailComponent search links', () => {
+  function buildListing(storeSlug: string, storeId = 1): ModulePriceListing {
+    return {
+      listingId: storeId,
+      moduleId: 99,
+      storeId,
+      storeSlug,
+      storeName: storeSlug,
+      countryCode: null,
+      currencyHint: null,
+      productUrl: 'https://example.com/product',
+      verificationStatus: 'verified',
+      lastCheckedAt: null,
+      latestSnapshot: null
+    };
+  }
+
   function build() {
     const routeParams$ = new Subject<any>();
     const component = new ModuleBrowserDetailComponent(
       {
         singleModuleData$: new BehaviorSubject<any>(undefined),
+        modulePriceListings$: new BehaviorSubject<ModulePriceListing[] | undefined>(undefined),
         updateSingleModuleData$: new Subject<number>(),
         changeModule$: new Subject<any>(),
         requestModuleEditingToggle$: new Subject<void>()
@@ -67,5 +85,43 @@ describe('ModuleBrowserDetailComponent search links', () => {
   it('has at least 4 search links configured', () => {
     const {component} = build();
     expect(component.searchLinks.length).toBeGreaterThanOrEqual(4);
+  });
+
+  it('keeps community/reference links in their own always-visible group', () => {
+    const {component} = build();
+    const communityLabels = component.communitySearchLinks.map(link => link.label);
+
+    expect(communityLabels).toContain('Google');
+    expect(communityLabels).toContain('YouTube');
+    expect(communityLabels).toContain('Wigglehunt');
+    expect(component.communitySearchLinks.every(link => link.kind === 'community')).toBeTrue();
+  });
+
+  it('does not suppress retailer links before price listings resolve', () => {
+    const {component} = build();
+
+    expect(component.getAvailableRetailerSearchLinks(undefined)).toEqual(component.retailerSearchLinks);
+  });
+
+  it('hides retailer search links with matching price listings and leaves unmatched retailers visible', () => {
+    const {component} = build();
+    const labels = component.getAvailableRetailerSearchLinks([buildListing('control')]).map(link => link.label);
+
+    expect(labels).not.toContain('Control 🇺🇸');
+    expect(labels).toContain('Patchwerks 🇺🇸');
+  });
+
+  it('hides the shared Signal Sounds retailer link for UK or EU price listing variants', () => {
+    const {component} = build();
+    const labels = component.getAvailableRetailerSearchLinks([buildListing('signal-sounds-eu', 2)]).map(link => link.label);
+
+    expect(labels).not.toContain('Signalsounds 🇬🇧');
+  });
+
+  it('can suppress every retailer link so the Other Stores group can disappear', () => {
+    const {component} = build();
+    const listings = component.retailerSearchLinks.map((link, index) => buildListing(link.storeSlugs![0], index + 1));
+
+    expect(component.getAvailableRetailerSearchLinks(listings)).toEqual([]);
   });
 });

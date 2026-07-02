@@ -30,6 +30,8 @@
           [showSearch]="false"
           [encloseVertically]="true"
           [suppressEmpty]="true"
+          [showPriceSummary]="true"
+          [priceSummarySourceData$]="dataService.moduleData$"
         ></app-module-list>
       } @else if (entityType === 'rack') {
         @if (dataService.rackData$ | async; as racks) {

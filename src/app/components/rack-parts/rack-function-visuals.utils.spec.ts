@@ -140,6 +140,21 @@ describe('rackFunctionVisualsUtils', () => {
     expect(buildRackFunctionVisual(makeRackedModule(111, [
       {name: 'KICK', type: TagType.Voice}
     ])).className).toBe('functionAnalysisModule--voices');
+    expect(buildRackFunctionVisual(makeRackedModule(114, [
+      {name: 'Crossfade', type: TagType.Utility}
+    ])).className).toBe('functionAnalysisModule--utilities');
+    expect(buildRackFunctionVisual(makeRackedModule(115, [
+      {name: 'Drone', type: TagType.Source}
+    ])).className).toBe('functionAnalysisModule--voices');
+  });
+
+  it('maps filterbank and feedback tags to tone function colors', () => {
+    expect(buildRackFunctionVisual(makeRackedModule(112, [
+      {name: 'Filterbank', type: TagType.Filter}
+    ])).className).toBe('functionAnalysisModule--tone');
+    expect(buildRackFunctionVisual(makeRackedModule(113, [
+      {name: 'Feedback', type: TagType.Effect}
+    ])).className).toBe('functionAnalysisModule--tone');
   });
 
   it('treats blank modules as spacers in function analysis mode', () => {

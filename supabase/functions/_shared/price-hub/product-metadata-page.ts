@@ -9,23 +9,28 @@ interface ProductPageMetadata {
   availability: string | null;
   productId: string | null;
   sku: string | null;
+  brand: string | null;
 }
+
+export type ProductMetadataAdapter = 'bigcommerce_metadata' | 'shopware_metadata' | 'custom';
 
 export function normalizeProductMetadataPage(
   html: string,
   productUrl: string,
-  adapter: 'bigcommerce_metadata' | 'shopware_metadata',
+  adapter: ProductMetadataAdapter,
 ): NormalizedStoreListingSnapshot {
   const metadata = readProductPageMetadata(html);
   const availabilityText = readAvailabilityText(html);
   const slug = slugFromUrl(metadata.productUrl ?? productUrl);
-  const panelVariant = readPanelVariant(`${metadata.productName ?? ''} ${slug ?? ''}`);
+  const productName = normalizeProductName(metadata.productName, adapter);
+  const brand = metadata.brand ?? readSkuBrand(metadata.sku);
+  const panelVariant = readPanelVariant(`${productName ?? ''} ${slug ?? ''}`);
 
   return {
     priceAmountMinor: parseDecimalPriceMinor(metadata.priceAmount),
     currency: normalizeCurrency(metadata.priceCurrency),
     availability: normalizeAvailability(chooseAvailabilityText(metadata.availability, availabilityText)),
-    productName: normalizeOptionalText(metadata.productName),
+    productName: normalizeOptionalText(productName),
     productUrl: normalizeOptionalText(metadata.productUrl) ?? productUrl,
     imageUrl: normalizeOptionalText(metadata.imageUrl),
     rawMeta: {
@@ -33,6 +38,7 @@ export function normalizeProductMetadataPage(
       sourceUrl: productUrl,
       ...(metadata.productId ? { externalProductId: metadata.productId } : {}),
       ...(metadata.sku ? { sku: metadata.sku } : {}),
+      ...(brand ? { brand } : {}),
       slug,
       ...(panelVariant ? { panelVariant } : {}),
       ogAvailability: metadata.availability,
@@ -44,17 +50,176 @@ export function normalizeProductMetadataPage(
 
 function readProductPageMetadata(html: string): ProductPageMetadata {
   const meta = readMetaTags(html);
+  const jsonLd = readProductJsonLdMetadata(html);
 
   return {
-    priceAmount: meta.get('product:price:amount') ?? meta.get('price') ?? null,
-    priceCurrency: meta.get('product:price:currency') ?? meta.get('pricecurrency') ?? null,
-    productName: meta.get('og:title') ?? readTitle(html),
+    priceAmount: meta.get('product:price:amount') ?? meta.get('og:price:amount') ?? meta.get('price') ?? jsonLd.priceAmount ?? null,
+    priceCurrency: meta.get('product:price:currency') ?? meta.get('og:price:currency') ?? meta.get('pricecurrency') ?? jsonLd.priceCurrency ?? null,
+    productName: meta.get('og:title') ?? jsonLd.productName ?? readTitle(html),
     productUrl: meta.get('og:url') ?? meta.get('product:product_link') ?? null,
-    imageUrl: meta.get('og:image') ?? null,
-    availability: meta.get('og:availability') ?? null,
-    productId: meta.get('productid') ?? null,
-    sku: meta.get('sku') ?? readSku(html),
+    imageUrl: meta.get('og:image') ?? jsonLd.imageUrl ?? null,
+    availability: meta.get('product:availability') ?? meta.get('og:availability') ?? jsonLd.availability ?? null,
+    productId: meta.get('productid') ?? jsonLd.productId ?? null,
+    sku: meta.get('sku') ?? jsonLd.sku ?? readSku(html),
+    brand: meta.get('product:brand') ?? meta.get('brand') ?? meta.get('manufacturer') ?? jsonLd.brand ?? null,
   };
+}
+
+function readProductJsonLdMetadata(html: string): ProductPageMetadata {
+  for (const jsonLd of readJsonLdObjects(html)) {
+    const product = findProductJsonLd(jsonLd);
+    if (product) {
+      const offers = readJsonLdOffer(product);
+      return {
+        priceAmount: readStringNumberOrNull(offers?.price) ?? null,
+        priceCurrency: readStringOrNull(offers?.priceCurrency) ?? null,
+        productName: readStringOrNull(product.name),
+        productUrl: readStringOrNull(product.url),
+        imageUrl: readJsonLdImage(product.image),
+        availability: readStringOrNull(offers?.availability),
+        productId: readStringNumberOrNull(product.productID) ?? readStringNumberOrNull(product.productId) ?? null,
+        sku: readStringNumberOrNull(product.sku) ?? null,
+        brand: readJsonLdBrand(product),
+      };
+    }
+  }
+
+  return {
+    priceAmount: null,
+    priceCurrency: null,
+    productName: null,
+    productUrl: null,
+    imageUrl: null,
+    availability: null,
+    productId: null,
+    sku: null,
+    brand: null,
+  };
+}
+
+function readJsonLdObjects(html: string): unknown[] {
+  const objects: unknown[] = [];
+  const scriptPattern = /<script\b(?=[^>]*type=["']application\/ld\+json["'])[^>]*>([\s\S]*?)<\/script>/gi;
+  let scriptMatch: RegExpExecArray | null;
+
+  while ((scriptMatch = scriptPattern.exec(html))) {
+    try {
+      objects.push(JSON.parse(decodeHtmlEntities(scriptMatch[1].trim())) as unknown);
+    } catch {
+      // Ignore malformed structured data; metadata tags may still contain usable product data.
+    }
+  }
+
+  return objects;
+}
+
+function findProductJsonLd(value: unknown): Record<string, unknown> | null {
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const product = findProductJsonLd(item);
+      if (product) {
+        return product;
+      }
+    }
+    return null;
+  }
+
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  const type = value['@type'];
+  if (typeof type === 'string' && type.toLowerCase() === 'product') {
+    return value;
+  }
+
+  if (Array.isArray(type) && type.some((item) => typeof item === 'string' && item.toLowerCase() === 'product')) {
+    return value;
+  }
+
+  return findProductJsonLd(value['@graph']);
+}
+
+function readJsonLdOffer(product: Record<string, unknown>): Record<string, unknown> | null {
+  const offers = product.offers;
+  if (Array.isArray(offers)) {
+    return offers.find(isRecord) ?? null;
+  }
+
+  return isRecord(offers) ? offers : null;
+}
+
+function readJsonLdImage(value: unknown): string | null {
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    return value.find((item): item is string => typeof item === 'string' && item.trim().length > 0) ?? null;
+  }
+
+  if (isRecord(value)) {
+    return readStringOrNull(value.url);
+  }
+
+  return null;
+}
+
+function readJsonLdBrand(product: Record<string, unknown>): string | null {
+  const brand = product.brand;
+  if (typeof brand === 'string') {
+    return readStringOrNull(brand);
+  }
+
+  if (isRecord(brand)) {
+    const brandName = readStringOrNull(brand.name);
+    if (brandName) {
+      return brandName;
+    }
+  }
+
+  return readJsonLdAdditionalProperty(product, 'pa_brand')
+    ?? readJsonLdAdditionalProperty(product, 'brand')
+    ?? null;
+}
+
+function readJsonLdAdditionalProperty(product: Record<string, unknown>, propertyName: string): string | null {
+  const additionalProperty = product.additionalProperty;
+  const properties = Array.isArray(additionalProperty)
+    ? additionalProperty.filter(isRecord)
+    : isRecord(additionalProperty)
+      ? [additionalProperty]
+      : [];
+
+  for (const property of properties) {
+    const name = readStringOrNull(property.name);
+    if (name?.toLowerCase() !== propertyName) {
+      continue;
+    }
+
+    const value = readStringNumberOrNull(property.value);
+    if (value) {
+      return value;
+    }
+  }
+
+  return null;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function readStringOrNull(value: unknown): string | null {
+  return typeof value === 'string' && value.trim().length > 0 ? decodeHtmlEntities(value.trim()) : null;
+}
+
+function readStringNumberOrNull(value: unknown): string | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return String(value);
+  }
+
+  return readStringOrNull(value);
 }
 
 function readMetaTags(html: string): Map<string, string> {
@@ -115,7 +280,12 @@ function normalizeAvailability(value: string | null): SnapshotAvailability {
     return 'preorder';
   }
 
-  if (availability.includes('backorder')) {
+  if (
+    availability.includes('backorder')
+    || availability.includes('available on order')
+    || availability.includes('on order')
+    || availability.includes('su ordinazione')
+  ) {
     return 'backorder';
   }
 
@@ -141,6 +311,7 @@ function normalizeAvailability(value: string | null): SnapshotAvailability {
     availability.includes('instock')
     || availability.includes('in stock')
     || availability.includes('available immediately')
+    || availability === 'disponibile'
   ) {
     return 'in_stock';
   }
@@ -166,6 +337,26 @@ function readAvailabilityText(html: string): string | null {
   ]);
   if (terminalUnavailableText) {
     return terminalUnavailableText;
+  }
+
+  const orderStatusText = readScopedAvailabilityMatch(html, [
+    /Su ordinazione/i,
+    /Available on order/i,
+    /On order/i,
+    /Backorder/i,
+    /Pre-order/i,
+    /Preorder/i,
+  ]);
+  if (orderStatusText) {
+    return orderStatusText;
+  }
+
+  const availableStatusText = readScopedAvailabilityMatch(html, [
+    /Disponibile/i,
+    /In stock/i,
+  ]);
+  if (availableStatusText) {
+    return availableStatusText;
   }
 
   const structuredAvailableText = readStructuredAvailableText(html);
@@ -208,6 +399,7 @@ function readPrimaryAvailabilitySnippets(html: string): string[] {
     ...readElementSnippetsByClass(html, 'delivery-information'),
     ...readElementSnippetsByClass(html, 'product-detail-buy'),
     ...readElementSnippetsByClass(html, 'buy-widget'),
+    ...readElementSnippetsByClass(html, 'tag'),
     ...readDisabledBuyButtonSnippets(html),
   ];
 }
@@ -261,7 +453,12 @@ function escapeRegExp(value: string): string {
 
 function chooseAvailabilityText(metadataAvailability: string | null, pageAvailabilityText: string | null): string | null {
   const normalizedPageAvailability = normalizeAvailability(pageAvailabilityText);
-  if (normalizedPageAvailability === 'discontinued' || normalizedPageAvailability === 'out_of_stock') {
+  if (
+    normalizedPageAvailability === 'discontinued'
+    || normalizedPageAvailability === 'out_of_stock'
+    || normalizedPageAvailability === 'backorder'
+    || normalizedPageAvailability === 'preorder'
+  ) {
     return pageAvailabilityText;
   }
 
@@ -304,10 +501,33 @@ function readTitle(html: string): string | null {
   return titleMatch ? decodeHtmlEntities(titleMatch[1].replace(/\s+/g, ' ').trim()) : null;
 }
 
-const PANEL_VARIANTS = ['black', 'silver', 'white', 'grey', 'gray', 'natural'] as const;
-
 function normalizeOptionalText(value: string | null): string | null {
   return value && value.trim().length > 0 ? value.trim() : null;
+}
+
+function normalizeProductName(value: string | null, adapter: ProductMetadataAdapter): string | null {
+  if (adapter !== 'custom' || !value) {
+    return value;
+  }
+
+  const withoutStoreSuffix = CUSTOM_PRODUCT_TITLE_SUFFIXES.reduce(
+    (name, suffix) => name.endsWith(suffix) ? name.slice(0, -suffix.length).trim() : name,
+    value,
+  );
+  return withoutStoreSuffix.replace(/\s+\|\s*\d+$/, '').trim();
+}
+
+function readSkuBrand(value: string | null): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const delimiterIndex = value.indexOf('_.');
+  if (delimiterIndex <= 0) {
+    return null;
+  }
+
+  return value.slice(0, delimiterIndex).replace(/_/g, ' ').trim() || null;
 }
 
 function slugFromUrl(value: string): string | null {
@@ -318,6 +538,9 @@ function slugFromUrl(value: string): string | null {
     return null;
   }
 }
+
+const PANEL_VARIANTS = ['black', 'silver', 'white', 'grey', 'gray', 'natural'] as const;
+const CUSTOM_PRODUCT_TITLE_SUFFIXES = [' - MachineRoom', ' - Milk Audio Store', ' - postmodular', ' - Escape from Noise'] as const;
 
 function decodeHtmlEntities(value: string): string {
   return value

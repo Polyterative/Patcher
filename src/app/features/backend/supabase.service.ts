@@ -160,6 +160,7 @@ export class SupabaseService extends SubManager {
       tags: this.queries.getTags.bind(this.queries),
       moduleWithId: this.queries.getModuleWithId.bind(this.queries),
       modulePriceListings: this.queries.getModulePriceListings.bind(this.queries),
+      recentModuleMarketPrices: this.queries.getRecentModuleMarketPrices.bind(this.queries),
       patchConnections: this.queries.getPatchConnections.bind(this.queries),
       patchModuleInstances: this.queries.getPatchModuleInstances.bind(this.queries),
       currentUserComments: this.queries.getCurrentUserComments.bind(this.queries),
@@ -228,6 +229,7 @@ export class SupabaseService extends SubManager {
     tags: typeof SupabaseQueriesService.prototype.getTags;
     moduleWithId: typeof SupabaseQueriesService.prototype.getModuleWithId;
     modulePriceListings: typeof SupabaseQueriesService.prototype.getModulePriceListings;
+    recentModuleMarketPrices: typeof SupabaseQueriesService.prototype.getRecentModuleMarketPrices;
     patchConnections: typeof SupabaseQueriesService.prototype.getPatchConnections;
     patchModuleInstances: typeof SupabaseQueriesService.prototype.getPatchModuleInstances;
     currentUserComments: typeof SupabaseQueriesService.prototype.getCurrentUserComments;

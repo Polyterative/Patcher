@@ -7,7 +7,7 @@ describe('extractWaveformFeatures', () => {
   });
 
   it('extracts waveform names once', () => {
-    const features = extractWaveformFeatures('Sine, triangle, saw, ramp, square, pulse, noise, random and chaos outputs.');
+    const features = extractWaveformFeatures('Sine, triangle, saw, ramp, square, pulse, noise output, random voltage and chaos outputs.');
 
     expect(features).toEqual([
       jasmine.objectContaining({kind: 'sine'}),
@@ -20,5 +20,13 @@ describe('extractWaveformFeatures', () => {
       jasmine.objectContaining({kind: 'random'}),
       jasmine.objectContaining({kind: 'chaos'})
     ]);
+  });
+
+  it('does not treat low-noise compressor prose as a noise waveform', () => {
+    expect(extractWaveformFeatures('A VCA compressor with a high quality low noise signal path.')).toEqual([]);
+  });
+
+  it('does not duplicate sample and hold as a random waveform', () => {
+    expect(extractWaveformFeatures('VCO / Comparator / Sample & Hold // downsampler & lo-fi')).toEqual([]);
   });
 });

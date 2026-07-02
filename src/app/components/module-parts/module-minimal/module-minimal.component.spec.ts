@@ -199,4 +199,19 @@ describe('ModuleMinimalComponent', () => {
     expect(component.getPossessionActionIcon('WANTS')).toBe('edit_note');
     expect(component.getPossessionActionIcon(null)).toBe('add');
   });
+
+  it('exposes recent market price label and tooltip for the title badge', () => {
+    const {component} = build();
+    component.priceSummary = {
+      moduleId: 42,
+      estimatedPriceEurMinor: 39900,
+      displayPrice: '~€399',
+      storeCount: 4,
+      latestObservedAt: '2026-07-01T00:00:00.000Z',
+      tooltip: 'Recent market price: ~€399 from 4 stores, latest check Jul 1, 2026.'
+    };
+
+    expect(component.priceSummaryLabel).toBe('~€399');
+    expect(component.priceSummaryTooltip).toBe('Recent market price: ~€399 from 4 stores, latest check Jul 1, 2026.');
+  });
 });

@@ -1,26 +1,18 @@
 :host {
-  display: block;
+  display: contents;
 }
 
 .moduleWaveformPaletteAnalysis {
-  margin-top: 0.45rem;
+  display: inline-flex;
+  align-items: baseline;
   color: rgba(19, 54, 89, 0.78);
 }
 
-.moduleWaveformPaletteAnalysis__header {
-  margin-bottom: 0.28rem;
-  color: rgba(19, 54, 89, 0.62);
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  line-height: 1;
-  text-transform: uppercase;
-}
-
 .moduleWaveformPaletteAnalysis__tokens {
-  display: flex;
+  display: inline-flex;
   flex-wrap: wrap;
-  gap: 0.26rem 0.42rem;
+  gap: 0.18rem 0.44rem;
+  align-items: center;
 }
 
 .moduleWaveformPaletteAnalysis__token {
@@ -30,7 +22,8 @@
   color: rgba(19, 54, 89, 0.72);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.58rem;
-  letter-spacing: 0.045em;
+  font-weight: 650;
+  letter-spacing: 0.055em;
   line-height: 1.25;
   text-transform: uppercase;
 }
