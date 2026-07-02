@@ -16,8 +16,8 @@ const WAVEFORM_PATTERNS: Array<{kind: WaveformFeature['kind']; label: string; pa
   {kind: 'ramp', label: 'Ramp', pattern: /\bramps?\b/i},
   {kind: 'square', label: 'Square', pattern: /\bsquares?\b/i},
   {kind: 'pulse', label: 'Pulse', pattern: /\bpulses?\b|\bpwm\b/i},
-  {kind: 'noise', label: 'Noise', pattern: /\bnoise\b|\bwhite\s+noise\b|\bpink\s+noise\b/i},
-  {kind: 'random', label: 'Random', pattern: /\brandom\b|\bs&h\b|\bsample\s+and\s+hold\b/i},
+  {kind: 'noise', label: 'Noise', pattern: /\b(?:white|pink|digital)\s+noise\b|\bnoise\s+(?:source|generator|output|waveform|oscillator)\b/i},
+  {kind: 'random', label: 'Random', pattern: /\brandom\s+(?:voltage|source|generator|output|waveform|cv)\b/i},
   {kind: 'chaos', label: 'Chaos', pattern: /\bchaos\b|\bchaotic\b/i}
 ];
 

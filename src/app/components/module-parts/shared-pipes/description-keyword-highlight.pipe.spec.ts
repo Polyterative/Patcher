@@ -54,10 +54,14 @@ describe('DescriptionKeywordHighlightPipe', () => {
       'Clock OUT',
       'Arpeggiator',
       'Euclidean',
+      'Crossfade',
       'Blank',
       'Sequencial Switch',
       'KICK',
       'SNARE',
+      'Drone',
+      'Filterbank',
+      'Feedback',
     ];
 
     for (const tagName of sharedTags) {
@@ -97,6 +101,13 @@ describe('DescriptionKeywordHighlightPipe', () => {
     expect(html).toContain('<span class="desc-kw desc-kw--tone">Stereo</span>');
     expect(html).toContain('<span class="desc-kw desc-kw--tone">equalizer</span>');
     expect(html).toContain('<span class="desc-kw desc-kw--tone">equalization</span>');
+  });
+
+  it('highlights filterbank and feedback tone keywords', () => {
+    const html = render('Filterbank with controllable feedback.', 2);
+
+    expect(html).toContain('<span class="desc-kw desc-kw--tone">Filterbank</span>');
+    expect(html).toContain('<span class="desc-kw desc-kw--tone">feedback</span>');
   });
 
   it('expands prefix pattern matches to complete words', () => {

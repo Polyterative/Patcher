@@ -32,6 +32,7 @@ import {
   ModulePossessionDialogResult
 } from '../module-possession-dialog/module-possession-dialog.component';
 import { ReactionEntityTypes } from 'src/app/features/backend/supabase-reactions';
+import { ModuleRecentMarketPrice } from 'src/app/features/backend/supabase-queries';
 
 
 @Component({
@@ -99,6 +100,7 @@ export class ModuleMinimalComponent extends SubManager implements OnInit, OnDest
   @Input() preferredPanelColor: number | null = null;
   @Input() portraitDetailSplit = false;
   @Input() showCoolAction = false;
+  @Input() priceSummary: ModuleRecentMarketPrice | null | undefined = undefined;
   readonly ReactionEntityTypes = ReactionEntityTypes;
   isTagChooserOpen = false;
 
@@ -115,6 +117,14 @@ export class ModuleMinimalComponent extends SubManager implements OnInit, OnDest
   
   get hasIO(): boolean {
     return this.insCount > 0 || this.outsCount > 0;
+  }
+
+  get priceSummaryLabel(): string {
+    return this.priceSummary?.displayPrice ?? '';
+  }
+
+  get priceSummaryTooltip(): string {
+    return this.priceSummary?.tooltip ?? '';
   }
   
   constructor(

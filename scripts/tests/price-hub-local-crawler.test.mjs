@@ -2,15 +2,30 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { gzipSync } from 'node:zlib';
 import { normalizeBigCommerceProductPage } from '../../supabase/functions/_shared/price-hub/bigcommerce-metadata.ts';
+import { normalizeShopifyProductJsonProduct } from '../../supabase/functions/_shared/price-hub/shopify-product-json.ts';
 import { normalizeShopwareProductPage } from '../../supabase/functions/_shared/price-hub/shopware-metadata.ts';
-import { crawlPriceHubStoreCatalog, crawlWooCommerceStoreCatalog } from '../price-hub/catalog-crawler.ts';
+import { crawlPriceHubStoreCatalog, crawlShopifyProductJsonCatalog, crawlWooCommerceStoreCatalog } from '../price-hub/catalog-crawler.ts';
 import { matchModulesToProducts } from '../price-hub/matcher.ts';
 import { readApprovedPriceHubStore } from '../price-hub/store-configs.ts';
 
+const clockfaceStore = readApprovedPriceHubStore('clockface-modular');
+const controlStore = readApprovedPriceHubStore('control');
+const animatoStore = readApprovedPriceHubStore('animato-audio');
+const bigCityStore = readApprovedPriceHubStore('big-city-music');
+const busyCircuitsStore = readApprovedPriceHubStore('busy-circuits');
 const elevatorStore = readApprovedPriceHubStore('elevator-sound');
+const foundSoundStore = readApprovedPriceHubStore('found-sound');
+const instruoStore = readApprovedPriceHubStore('instruo');
+const machineroomStore = readApprovedPriceHubStore('machineroom');
+const milkAudioStore = readApprovedPriceHubStore('milk-audio-store');
+const postmodularStore = readApprovedPriceHubStore('postmodular');
 const signalUkStore = readApprovedPriceHubStore('signal-sounds-uk');
 const signalEuStore = readApprovedPriceHubStore('signal-sounds-eu');
 const schneidersStore = readApprovedPriceHubStore('schneidersladen');
+const soundiumStore = readApprovedPriceHubStore('soundium');
+const synthshopStore = readApprovedPriceHubStore('synthshop');
+const technosynthStore = readApprovedPriceHubStore('technosynth');
+const whimsicalRapsStore = readApprovedPriceHubStore('whimsical-raps');
 
 function response(body) {
   return {
@@ -19,6 +34,17 @@ function response(body) {
     statusText: 'OK',
     async json() {
       return body;
+    },
+  };
+}
+
+function errorResponse(status, statusText) {
+  return {
+    ok: false,
+    status,
+    statusText,
+    async json() {
+      return {};
     },
   };
 }
@@ -138,9 +164,552 @@ test('stops crawling at configured max pages even when pages are full', async ()
     },
   });
 
+  test('crawls Shopify product JSON pages and normalizes Control product variants', async () => {
+    const requestedUrls = [];
+    const pages = [
+      [
+        shopifyProduct({
+          id: 12502662938942,
+          title: 'Blukac Fractalist - Fractal Waveform Generator',
+          handle: 'blukac-fractalist-fractal-waveform-generator',
+          vendor: 'Blukac',
+          productType: 'Module',
+          tags: ['Digital Oscillator', 'In Stock', 'width:12HP'],
+          variants: [
+            {
+              id: 53843111805246,
+              title: 'Default Title',
+              sku: 'BLUKAC-FRACTALIST',
+              available: true,
+              price: '349.00',
+            },
+          ],
+        }),
+        shopifyProduct({
+          id: 2,
+          title: 'Make Noise Maths (Used)',
+          handle: 'make-noise-maths-used',
+          vendor: 'Make Noise',
+          productType: 'Used Gear',
+          tags: ['consignment'],
+          variants: [{ id: 20, available: false, price: '250.00' }],
+        }),
+      ],
+    ];
+
+    const crawl = await crawlShopifyProductJsonCatalog(controlStore, {
+      perPage: 2,
+      maxPages: 3,
+      fetchFn: async (url) => {
+        requestedUrls.push(url);
+        return response({ products: pages[requestedUrls.length - 1] ?? [] });
+      },
+    });
+
+    assert.equal(crawl.products.length, 2);
+    assert.equal(crawl.pagesFetched, 2);
+    assert.deepEqual(requestedUrls.map((url) => new URL(url).search), ['?limit=2&page=1', '?limit=2&page=2']);
+    assert.deepEqual(crawl.products[0], {
+      priceAmountMinor: 34900,
+      currency: 'USD',
+      availability: 'in_stock',
+      productName: 'Blukac Fractalist - Fractal Waveform Generator',
+      productUrl: 'https://www.ctrl-mod.com/products/blukac-fractalist-fractal-waveform-generator',
+      imageUrl: 'https://cdn.shopify.com/fractalist.jpg',
+      rawMeta: {
+        adapter: 'shopify_product_json',
+        externalProductId: 12502662938942,
+        slug: 'blukac-fractalist-fractal-waveform-generator',
+        vendor: 'Blukac',
+        productType: 'Module',
+        tags: ['Digital Oscillator', 'In Stock', 'width:12HP'],
+        variantCount: 1,
+        selectedVariantId: 53843111805246,
+        selectedVariantTitle: 'Default Title',
+        selectedVariantSku: 'BLUKAC-FRACTALIST',
+        selectedVariantAvailable: true,
+        availableVariantIds: [53843111805246],
+      },
+    });
+  });
+
+  test('normalizes Shopify pre-order tags before variant availability', () => {
+    const product = normalizeShopifyProductJsonProduct(shopifyProduct({
+      title: 'Fractalist - Fractal Waveform Generator',
+      handle: 'blukac-fractalist-fractal-waveform-generator',
+      vendor: 'Blukac',
+      productType: 'Module',
+      tags: ['Pre-Order'],
+      variants: [{ id: 1, available: true, price: '349.00' }],
+    }), { baseUrl: 'https://www.ctrl-mod.com/', currencyHint: 'USD' });
+
+    assert.equal(product.availability, 'preorder');
+    assert.equal(product.priceAmountMinor, 34900);
+    assert.equal(product.currency, 'USD');
+  });
+
+  test('keeps ignored Shopify match-noise tags available for availability', () => {
+    const product = normalizeShopifyProductJsonProduct(shopifyProduct({
+      title: 'WMD Voltera Metron Expander',
+      handle: 'wmd-voltera-metron-expander',
+      vendor: 'WMD',
+      productType: 'NEW',
+      tags: ['brand-new', 'preorder', 'shopfront', 'visible'],
+      variants: [{ id: 1, available: true, price: '409.00' }],
+    }), {
+      baseUrl: 'https://foundsound.com.au/',
+      currencyHint: 'AUD',
+      ignoredMatchNoiseTags: ['preorder'],
+    });
+
+    assert.equal(product.availability, 'preorder');
+    assert.equal(product.rawMeta.matchNoiseText, 'NEW brand-new shopfront visible');
+    assert.deepEqual(product.rawMeta.ignoredMatchNoiseTags, ['preorder']);
+  });
+
+  test('normalizes Shopify discontinued text before variant availability', () => {
+    const product = normalizeShopifyProductJsonProduct(shopifyProduct({
+      title: 'Electrosmith 2144 LPF : Discontinued',
+      handle: 'electrosmith-2144-lpf',
+      vendor: 'Electrosmith',
+      productType: 'Module',
+      tags: ['status:no-longer-available'],
+      variants: [{ id: 1, available: true, price: '119.00' }],
+    }), { baseUrl: 'https://www.detroitmodular.com/', currencyHint: 'USD' });
+
+    assert.equal(product.availability, 'discontinued');
+    assert.equal(product.priceAmountMinor, 11900);
+    assert.equal(product.currency, 'USD');
+  });
+
   assert.equal(calls, 2);
   assert.equal(crawl.products.length, 2);
   assert.equal(crawl.pagesFetched, 2);
+});
+
+test('crawls Found Sound Shopify product JSON and treats preorder tags as preorder availability', async () => {
+  const requestedUrls = [];
+  const crawl = await crawlShopifyProductJsonCatalog(foundSoundStore, {
+    perPage: 2,
+    maxPages: 3,
+    fetchFn: async (url) => {
+      requestedUrls.push(url);
+      return response({
+        products: requestedUrls.length === 1
+          ? [
+              shopifyProduct({
+                id: 9302144450796,
+                title: 'WMD Modbox MKII Dual LFO - 3 Phase & Skew, with S&H, Noise, and Turing Machine Eurorack Module',
+                handle: '42592',
+                vendor: 'WMD',
+                productType: 'NEW',
+                tags: ['brand-new', 'eurorack', 'preorder', 'shopfront', 'visible'],
+                variants: [{ id: 1, title: 'Default Title', sku: '42592', available: true, price: '499.00' }],
+              }),
+            ]
+          : [],
+      });
+    },
+  });
+
+  assert.equal(crawl.products.length, 1);
+  assert.equal(new URL(requestedUrls[0]).pathname, '/collections/eurorack/products.json');
+  assert.equal(crawl.products[0].priceAmountMinor, 49900);
+  assert.equal(crawl.products[0].currency, 'AUD');
+  assert.equal(crawl.products[0].availability, 'preorder');
+  assert.equal(crawl.products[0].productUrl, 'https://foundsound.com.au/products/42592');
+  assert.equal(crawl.products[0].rawMeta.matchNoiseText, 'NEW brand-new eurorack shopfront visible');
+  assert.deepEqual(crawl.products[0].rawMeta.ignoredMatchNoiseTags, ['preorder']);
+});
+
+test('uses configured Shopify catalog paths and currency hints for new stores', async () => {
+  const requestedUrls = [];
+  const crawl = await crawlShopifyProductJsonCatalog(clockfaceStore, {
+    perPage: 2,
+    maxPages: 1,
+    fetchFn: async (url) => {
+      requestedUrls.push(url);
+      return response({
+        products: [
+          shopifyProduct({
+            id: 100,
+            title: 'Make Noise Maths Eurorack Module',
+            handle: 'make-noise-maths',
+            vendor: 'Make Noise',
+            productType: 'Eurorack Module',
+            tags: ['eurorack', 'module'],
+            variants: [{ id: 101, title: 'Default Title', sku: 'MATHS', available: true, price: '77000' }],
+          }),
+        ],
+      });
+    },
+  });
+
+  assert.equal(new URL(requestedUrls[0]).pathname, '/products.json');
+  assert.equal(crawl.products[0].currency, 'JPY');
+  assert.equal(crawl.products[0].productUrl, 'https://clockfacemodular.com/products/make-noise-maths');
+});
+
+test('uses Synthshop Shopify product JSON with NOK currency metadata', async () => {
+  const requestedUrls = [];
+  const crawl = await crawlShopifyProductJsonCatalog(synthshopStore, {
+    perPage: 1,
+    maxPages: 1,
+    fetchFn: async (url) => {
+      requestedUrls.push(url);
+      return response({
+        products: [
+          shopifyProduct({
+            id: 400,
+            title: 'Make Noise Maths',
+            handle: 'make-noise-maths',
+            vendor: 'Make Noise',
+            productType: 'Eurorack',
+            tags: ['module'],
+            variants: [{ id: 401, title: 'Default Title', sku: 'MATHS', available: true, price: '7299.00' }],
+          }),
+        ],
+      });
+    },
+  });
+
+  assert.equal(new URL(requestedUrls[0]).pathname, '/products.json');
+  assert.equal(crawl.products[0].currency, 'NOK');
+  assert.equal(crawl.products[0].priceAmountMinor, 729900);
+  assert.equal(crawl.products[0].productUrl, 'https://synthshop.no/products/make-noise-maths');
+});
+
+test('uses Soundium Eurorack collection feed instead of the full Shopify catalog', async () => {
+  const requestedUrls = [];
+  const crawl = await crawlShopifyProductJsonCatalog(soundiumStore, {
+    perPage: 1,
+    maxPages: 1,
+    fetchFn: async (url) => {
+      requestedUrls.push(url);
+      return response({
+        products: [
+          shopifyProduct({
+            id: 500,
+            title: 'OXI Instruments Pipe MKII',
+            handle: 'oxi-instruments-pipe-mkii',
+            vendor: 'OXI Instruments',
+            productType: 'Eurorack',
+            tags: ['Eurorack'],
+            variants: [{ id: 501, title: 'Default Title', sku: 'PIPE-MKII', available: true, price: '195.00' }],
+          }),
+        ],
+      });
+    },
+  });
+
+  assert.equal(new URL(requestedUrls[0]).pathname, '/collections/eurorack/products.json');
+  assert.equal(crawl.products[0].currency, 'EUR');
+  assert.equal(crawl.products[0].productUrl, 'https://soundium.lt/products/oxi-instruments-pipe-mkii');
+});
+
+test('uses added source-expansion Shopify product JSON configs', async () => {
+  const cases = [
+    {
+      store: animatoStore,
+      title: 'Buchla 259t Eurorack Module',
+      handle: 'buchla-259t',
+      vendor: 'Buchla',
+      currency: 'HKD',
+      productUrl: 'https://animatoaudio.com/products/buchla-259t',
+    },
+    {
+      store: bigCityStore,
+      title: '4ms Ensemble Oscillator Eurorack Module',
+      handle: '4ms-ensemble-oscillator',
+      vendor: '4ms',
+      currency: 'USD',
+      productUrl: 'https://bigcitymusic.com/products/4ms-ensemble-oscillator',
+    },
+    {
+      store: whimsicalRapsStore,
+      title: 'Just Friends',
+      handle: 'just-friends',
+      vendor: 'Whimsical Raps',
+      currency: 'USD',
+      productUrl: 'https://whimsicalraps.com/products/just-friends',
+      brand: 'Whimsical Raps',
+    },
+  ];
+
+  for (const {store, title, handle, vendor, currency, productUrl, brand} of cases) {
+    const requestedUrls = [];
+    const crawl = await crawlShopifyProductJsonCatalog(store, {
+      perPage: 1,
+      maxPages: 1,
+      fetchFn: async (url) => {
+        requestedUrls.push(url);
+        return response({
+          products: [
+            shopifyProduct({
+              id: 900,
+              title,
+              handle,
+              vendor,
+              productType: 'Eurorack Module',
+              tags: ['eurorack', 'module'],
+              variants: [{ id: 901, title: 'Default Title', sku: handle.toUpperCase(), available: true, price: '100.00' }],
+            }),
+          ],
+        });
+      },
+    });
+
+    assert.equal(new URL(requestedUrls[0]).pathname, '/products.json');
+    assert.equal(crawl.products[0].currency, currency);
+    assert.equal(crawl.products[0].productUrl, productUrl);
+    if (brand) {
+      assert.equal(crawl.products[0].rawMeta.brand, brand);
+    }
+  }
+});
+
+test('uses TechnoSynth WooCommerce Store API config', async () => {
+  const requestedUrls = [];
+  const crawl = await crawlWooCommerceStoreCatalog(technosynthStore, {
+    perPage: 1,
+    maxPages: 1,
+    fetchFn: async (url) => {
+      requestedUrls.push(url);
+      return response([
+        {
+          id: 700,
+          name: 'Buchla 259t Eurorack Module',
+          slug: 'buchla-259t',
+          permalink: 'https://technosynth.com/product/buchla-259t/',
+          prices: {
+            price: '79900',
+            currency_code: 'cad',
+          },
+          is_in_stock: false,
+          stock_status: 'outofstock',
+          stock_availability: {
+            text: 'Out of stock',
+          },
+          categories: [{name: 'Eurorack'}],
+          tags: [{name: 'Tiptop Audio &amp; Buchla'}],
+          images: [{ src: 'https://technosynth.com/buchla.jpg' }],
+        },
+      ]);
+    },
+  });
+
+  assert.equal(new URL(requestedUrls[0]).pathname, '/wp-json/wc/store/v1/products');
+  assert.equal(crawl.products[0].currency, 'CAD');
+  assert.equal(crawl.products[0].availability, 'out_of_stock');
+  assert.equal(crawl.products[0].productUrl, 'https://technosynth.com/product/buchla-259t/');
+  assert.equal(crawl.products[0].rawMeta.brand, 'Tiptop Audio & Buchla');
+});
+
+test('uses Postmodular maker taxonomy as WooCommerce brand metadata', async () => {
+  const crawl = await crawlWooCommerceStoreCatalog(postmodularStore, {
+    perPage: 1,
+    maxPages: 1,
+    fetchFn: async () => response([
+      {
+        id: 701,
+        name: 'MOON',
+        sku: 'Landscape_.MOON',
+        slug: 'moon',
+        permalink: 'https://postmodular.co.uk/modules/moon/',
+        prices: {
+          price: '34400',
+          currency_code: 'gbp',
+        },
+        is_in_stock: true,
+        stock_status: 'instock',
+        stock_availability: null,
+        brands: [],
+        categories: [{ name: 'Landscape', slug: 'landscape', link: 'https://postmodular.co.uk/makers/landscape/' }],
+        tags: [{ name: 'Passive analogue drum synth', slug: 'passive-analogue-drum-synth', link: 'https://postmodular.co.uk/types/passive-analogue-drum-synth/' }],
+        images: [{ src: 'https://postmodular.co.uk/moon.jpg' }],
+      },
+    ]),
+  });
+
+  assert.equal(crawl.products[0].currency, 'GBP');
+  assert.equal(crawl.products[0].availability, 'in_stock');
+  assert.equal(crawl.products[0].rawMeta.brand, 'Landscape');
+});
+
+test('applies configured direct-store brand hints to crawled products', async () => {
+  const shopifyCrawl = await crawlShopifyProductJsonCatalog(busyCircuitsStore, {
+    perPage: 1,
+    maxPages: 1,
+    fetchFn: async () => response({
+      products: [
+        shopifyProduct({
+          id: 200,
+          title: 'Tangle Quartet',
+          handle: 'alm009',
+          vendor: 'ALM',
+          productType: 'Module',
+          tags: [],
+          variants: [{ id: 201, title: 'Default Title', sku: 'ALM009', available: true, price: '165.00' }],
+        }),
+      ],
+    }),
+  });
+  const wooCrawl = await crawlWooCommerceStoreCatalog(instruoStore, {
+    perPage: 1,
+    maxPages: 1,
+    fetchFn: async () => response([
+      product({
+        id: 300,
+        name: 'tàin',
+        slug: 'tain',
+        permalink: 'https://www.instruomodular.com/product/tain/',
+      }),
+    ]),
+  });
+
+  assert.equal(shopifyCrawl.products[0].rawMeta.brand, 'ALM Busy Circuits');
+  assert.equal(wooCrawl.products[0].rawMeta.brand, 'Instruo');
+});
+
+test('retries rate-limited Shopify product JSON pages', async () => {
+  let calls = 0;
+  const crawl = await crawlShopifyProductJsonCatalog(foundSoundStore, {
+    perPage: 250,
+    maxPages: 1,
+    fetchFn: async () => {
+      calls += 1;
+      return calls === 1
+        ? errorResponse(429, 'Too Many Requests')
+        : response({ products: [] });
+    },
+  });
+
+  assert.equal(calls, 2);
+  assert.equal(crawl.products.length, 0);
+});
+
+test('matcher omits Shopify condition and status hazards from broad imports', () => {
+  const modules = [
+    { id: 'maths-id', name: 'Maths', manufacturerName: 'Make Noise' },
+    { id: 'quad-vca-id', name: 'Quad VCA', manufacturerName: 'Intellijel' },
+    { id: 'drum-farm-id', name: 'Drum Farm', manufacturerName: 'Knobula' },
+    { id: 'oberhausen-id', name: 'Oberhausen', manufacturerName: 'ST Modular' },
+    { id: 'plinky-id', name: 'Plinky Eurorack Expander', manufacturerName: 'Making Sound Machines' },
+    { id: 'trommelmaschine-id', name: 'Trommelmaschine', manufacturerName: 'ST Modular' },
+    { id: 'geiger-id', name: 'Geiger Counter', manufacturerName: 'WMD' },
+    { id: 'mfx-id', name: 'MFX', manufacturerName: 'ALM Busy Circuits' },
+    { id: 'pams-id', name: "Pamela's Disco", manufacturerName: 'ALM Busy Circuits' },
+  ];
+  const products = [
+    {
+      ...normalizedProduct('Make Noise Maths Open Box', 'make-noise-maths-open-box'),
+      rawMeta: { adapter: 'shopify_product_json', slug: 'make-noise-maths-open-box', tags: ['Open_Box', 'eurorack'] },
+    },
+    {
+      ...normalizedProduct('Intellijel Quad VCA', 'intellijel-quad-vca'),
+      rawMeta: { adapter: 'shopify_product_json', slug: 'intellijel-quad-vca', tags: ['status:no-longer-available'] },
+    },
+    {
+      ...normalizedProduct('Knobula Drum Farm Eurorack Drum Module', 'knobula-drum-farm'),
+      rawMeta: { adapter: 'shopify_product_json', slug: 'knobula-drum-farm', tags: ['status:special-order'] },
+    },
+    {
+      ...normalizedProduct('ST Modular Oberhausen', 'st-modular-oberhausen'),
+      rawMeta: { adapter: 'shopify_product_json', slug: 'st-modular-oberhausen', productType: 'Eurorack module', selectedVariantTitle: 'pcb/panel set' },
+    },
+    {
+      ...normalizedProduct('Making Sound Machines Plinky Eurorack Expander Kitbag', 'making-sound-machines-plinky-expander-kitbag'),
+      rawMeta: { adapter: 'woocommerce_store_api', slug: 'making-sound-machines-plinky-expander-kitbag' },
+    },
+    {
+      ...normalizedProduct('BOURNS B100K Slide Pot for Trommelmaschine', 'bourns-b100k-slide-pot-for-trommelmaschine'),
+      rawMeta: { adapter: 'shopify_product_json', slug: 'bourns-b100k-slide-pot-for-trommelmaschine', productType: 'PARTS', tags: ['Bourns', 'Parts', 'Potentiometers', 'Slider'] },
+    },
+    {
+      ...normalizedProduct('Geiger Counter', 'geiger-counter'),
+      rawMeta: { adapter: 'shopify_product_json', slug: 'geiger-counter', vendor: 'WMD', productType: 'Pedal', tags: ['distortion'] },
+    },
+    {
+      ...normalizedProduct('MFX Pedal', 'alm-sb001'),
+      rawMeta: { adapter: 'shopify_product_json', slug: 'alm-sb001', vendor: 'ALM', brand: 'ALM Busy Circuits', productType: 'Pedal', tags: [] },
+    },
+    {
+      ...normalizedProduct("Pamela's Disco Slipmat", 'alm-disco-slipmat'),
+      rawMeta: { adapter: 'shopify_product_json', slug: 'alm-disco-slipmat', vendor: 'ALM', brand: 'ALM Busy Circuits', productType: '', tags: [] },
+    },
+  ];
+
+  const matches = matchModulesToProducts(modules, products, { includeIgnored: false });
+
+  assert.equal(matches.length, 0);
+});
+
+test('matcher keeps Found Sound preorders but omits used consignment and cover hazards', () => {
+  const products = [
+    {
+      ...normalizedProduct('WMD Modbox MKII Dual LFO Eurorack Module', '42592'),
+      availability: 'preorder',
+      rawMeta: {
+        adapter: 'shopify_product_json',
+        slug: '42592',
+        productType: 'NEW',
+        tags: ['brand-new', 'eurorack', 'preorder'],
+        matchNoiseText: 'NEW brand-new eurorack',
+        ignoredMatchNoiseTags: ['preorder'],
+      },
+    },
+    {
+      ...normalizedProduct('Befaco 1U STMix Eurorack Mixer Module', '42424'),
+      rawMeta: {
+        adapter: 'shopify_product_json',
+        slug: '42424',
+        productType: 'USED',
+        tags: ['consignment', 'second-hand', 'eurorack'],
+      },
+    },
+    {
+      ...normalizedProduct('Decksaver Oxi Instruments Oxi One MK2 Cover', '40924'),
+      rawMeta: {
+        adapter: 'shopify_product_json',
+        slug: '40924',
+        productType: 'NEW',
+        tags: ['brand-new', 'keyboard-and-synth-covers'],
+      },
+    },
+    {
+      ...normalizedProduct('Make Noise 0-CTRL Power Adapter', '9928'),
+      rawMeta: {
+        adapter: 'shopify_product_json',
+        slug: '9928',
+        productType: 'NEW',
+        tags: ['brand-new', 'eurorack'],
+        matchNoiseText: 'NEW brand-new eurorack',
+      },
+    },
+    {
+      ...normalizedProduct('Tiptop Audio Mr. Shorty 12cm Orange Stackcable (each)', '40617'),
+      rawMeta: {
+        adapter: 'shopify_product_json',
+        slug: '40617',
+        productType: 'NEW',
+        tags: ['brand-new', 'eurorack'],
+        matchNoiseText: 'NEW brand-new eurorack',
+      },
+    },
+  ];
+  const modules = [
+    { id: 'modbox-id', name: 'Modbox MKII', manufacturerName: 'WMD' },
+    { id: 'stmix-id', name: '1U STMix', manufacturerName: 'Befaco' },
+    { id: 'oxi-one-id', name: 'Oxi One MK2', manufacturerName: 'Oxi Instruments' },
+    { id: 'zero-ctrl-id', name: '0-CTRL', manufacturerName: 'Make Noise' },
+    { id: 'm-id', name: 'M', manufacturerName: 'Tiptop Audio' },
+  ];
+
+  const matches = matchModulesToProducts(modules, products, { includeIgnored: false });
+
+  assert.equal(matches.length, 1);
+  assert.equal(matches[0].moduleId, 'modbox-id');
+  assert.equal(matches[0].productUrl, 'https://store.test/product/42592/');
 });
 
 test('crawls BigCommerce product sitemap and normalizes product metadata pages', async () => {
@@ -169,6 +738,195 @@ test('crawls BigCommerce product sitemap and normalizes product metadata pages',
           image: 'https://cdn11.bigcommerce.com/s-mfjemmh3xf/products/25680/images/35625/pamela.jpg',
         }));
     },
+  });
+
+  test('crawls recursive custom product sitemaps and normalizes metadata pages', async () => {
+    const requestedUrls = [];
+    const productUrl = 'https://machineroom.com.ua/product/erica-synths-black-sequencer/';
+    const ignoredPageUrl = 'https://machineroom.com.ua/page/about/';
+
+    const crawl = await crawlPriceHubStoreCatalog(machineroomStore, {
+      maxProducts: 1,
+      fetchFn: async (url) => {
+        requestedUrls.push(url);
+        if (url.endsWith('/sitemap_index.xml')) {
+          return textResponse(`<sitemapindex><sitemap><loc>https://machineroom.com.ua/product-sitemap1.xml</loc></sitemap></sitemapindex>`);
+        }
+        if (url.endsWith('/product-sitemap1.xml')) {
+          return textResponse(`<urlset><url><loc>${ignoredPageUrl}</loc></url><url><loc>${productUrl}</loc></url></urlset>`);
+        }
+
+        return textResponse(productMetadataPage({
+          name: 'Black Sequencer - MachineRoom',
+          url: productUrl,
+          price: '550',
+          currency: 'EUR',
+          availability: 'instock',
+        }));
+      },
+    });
+
+    assert.equal(crawl.products.length, 1);
+    assert.deepEqual(requestedUrls, [
+      'https://machineroom.com.ua/sitemap_index.xml',
+      'https://machineroom.com.ua/product-sitemap1.xml',
+      productUrl,
+    ]);
+    assert.equal(crawl.products[0].rawMeta.adapter, 'custom');
+    assert.equal(crawl.products[0].priceAmountMinor, 55000);
+    assert.equal(crawl.products[0].currency, 'EUR');
+    assert.equal(crawl.products[0].availability, 'in_stock');
+    assert.equal(crawl.products[0].productName, 'Black Sequencer');
+  });
+
+  test('normalizes JSON-LD product offers for custom metadata stores', async () => {
+    const productUrl = 'https://www.milkaudiostore.com/it/shop/noise-engineering-horologic-solum-silver/';
+    const crawl = await crawlPriceHubStoreCatalog(milkAudioStore, {
+      maxProducts: 1,
+      fetchFn: async (url) => {
+        if (url.endsWith('/product-sitemap_index.xml')) {
+          return textResponse(`<sitemapindex><sitemap><loc>https://www.milkaudiostore.com/sitemaps/it/product-sitemap_it.xml</loc></sitemap></sitemapindex>`);
+        }
+        if (url.endsWith('/sitemaps/it/product-sitemap_it.xml')) {
+          return textResponse(`<urlset><url><loc>${productUrl}</loc></url></urlset>`);
+        }
+
+        return textResponse(jsonLdProductPage({
+          name: 'Noise Engineering Horologic Solum (Silver)',
+          url: productUrl,
+          price: '129.00',
+          currency: 'EUR',
+          availability: 'https://schema.org/InStock',
+          image: 'https://www.milkaudiostore.com/horologic.jpg',
+          sku: 'NE-HS-SILVER',
+          brand: 'Noise Engineering',
+        }));
+      },
+    });
+
+    assert.equal(crawl.products.length, 1);
+    assert.equal(crawl.products[0].rawMeta.adapter, 'custom');
+    assert.equal(crawl.products[0].priceAmountMinor, 12900);
+    assert.equal(crawl.products[0].currency, 'EUR');
+    assert.equal(crawl.products[0].availability, 'in_stock');
+    assert.equal(crawl.products[0].productName, 'Noise Engineering Horologic Solum (Silver)');
+    assert.equal(crawl.products[0].imageUrl, 'https://www.milkaudiostore.com/horologic.jpg');
+    assert.equal(crawl.products[0].rawMeta.sku, 'NE-HS-SILVER');
+    assert.equal(crawl.products[0].rawMeta.brand, 'Noise Engineering');
+  });
+
+  test('detects Milk Audio order-only product badges as backorder availability', async () => {
+    const productUrl = 'https://www.milkaudiostore.com/it/shop/2hp-3-1-black/';
+    const crawl = await crawlPriceHubStoreCatalog(milkAudioStore, {
+      maxProducts: 1,
+      fetchFn: async (url) => {
+        if (url.endsWith('/product-sitemap_index.xml')) {
+          return textResponse(`<sitemapindex><sitemap><loc>https://www.milkaudiostore.com/sitemaps/product-sitemap_it.xml</loc></sitemap></sitemapindex>`);
+        }
+        if (url.endsWith('/sitemaps/product-sitemap_it.xml')) {
+          return textResponse(`<urlset><url><loc>${productUrl}</loc></url></urlset>`);
+        }
+
+        return textResponse(jsonLdProductPage({
+          name: '2hp 3:1 Black',
+          url: productUrl,
+          price: '94.50',
+          currency: 'EUR',
+          image: 'https://www.milkaudiostore.com/2hp-3-1-black.jpg',
+          brand: '2hp',
+          body: `
+            <li class="tag me-2 mb-1 text-uppercase">Su ordinazione</li>
+            <button id="buttonAddToCart" type="button">Aggiungi al carrello</button>
+          `,
+        }));
+      },
+    });
+
+    assert.equal(crawl.products.length, 1);
+    assert.equal(crawl.products[0].availability, 'backorder');
+    assert.equal(crawl.products[0].rawMeta.pageAvailabilityText, 'Su ordinazione');
+  });
+
+  test('detects Milk Audio available product badges as in-stock availability', async () => {
+    const productUrl = 'https://www.milkaudiostore.com/it/shop/2hp-buff-black/';
+    const crawl = await crawlPriceHubStoreCatalog(milkAudioStore, {
+      maxProducts: 1,
+      fetchFn: async (url) => {
+        if (url.endsWith('/product-sitemap_index.xml')) {
+          return textResponse(`<sitemapindex><sitemap><loc>https://www.milkaudiostore.com/sitemaps/product-sitemap_it.xml</loc></sitemap></sitemapindex>`);
+        }
+        if (url.endsWith('/sitemaps/product-sitemap_it.xml')) {
+          return textResponse(`<urlset><url><loc>${productUrl}</loc></url></urlset>`);
+        }
+
+        return textResponse(jsonLdProductPage({
+          name: '2hp Buff Black',
+          url: productUrl,
+          price: '62.20',
+          currency: 'EUR',
+          image: 'https://www.milkaudiostore.com/2hp-buff-black.jpg',
+          brand: '2hp',
+          body: `
+            <noscript>Disponibile pagamento rateale con Alma</noscript>
+            <li class="tag me-2 mb-1 text-uppercase">Disponibile</li>
+            <button id="buttonAddToCart" type="button">Aggiungi al carrello</button>
+          `,
+        }));
+      },
+    });
+
+    assert.equal(crawl.products.length, 1);
+    assert.equal(crawl.products[0].availability, 'in_stock');
+    assert.equal(crawl.products[0].rawMeta.pageAvailabilityText, 'Disponibile');
+  });
+
+  test('uses custom metadata product brand tags and strips catalog SKU suffixes', async () => {
+    const productUrl = 'https://www.exploding-shed.com/333modules-4xlfo/100425';
+    const crawl = await crawlPriceHubStoreCatalog(readApprovedPriceHubStore('exploding-shed'), {
+      maxProducts: 1,
+      fetchFn: async (url) => {
+        if (url.endsWith('/sitemap.xml')) {
+          return textResponse(`<urlset><url><loc>${productUrl}</loc></url></urlset>`);
+        }
+
+        return textResponse(productMetadataPage({
+          name: '333modules - 4xLFO | 100425',
+          url: productUrl,
+          price: '101.15',
+          currency: 'EUR',
+          availability: 'In stock',
+          body: '<meta property="product:brand" content="333modules">',
+        }));
+      },
+    });
+
+    assert.equal(crawl.products.length, 1);
+    assert.equal(crawl.products[0].productName, '333modules - 4xLFO');
+    assert.equal(crawl.products[0].rawMeta.brand, '333modules');
+  });
+
+  test('strips Escape From Noise store suffix from custom product titles', async () => {
+    const productUrl = 'https://escapefromnoise.com/en/modular/2hp-31.html';
+    const crawl = await crawlPriceHubStoreCatalog(readApprovedPriceHubStore('escape-from-noise'), {
+      maxProducts: 1,
+      fetchFn: async (url) => {
+        if (url.endsWith('/sitemap.xml')) {
+          return textResponse(`<urlset><url><loc>${productUrl}</loc></url></urlset>`);
+        }
+
+        return textResponse(productMetadataPage({
+          name: '2HP 3:1 - Escape from Noise',
+          url: productUrl,
+          price: '67.80',
+          currency: 'EUR',
+          availability: 'http://schema.org/OutOfStock',
+        }));
+      },
+    });
+
+    assert.equal(crawl.products.length, 1);
+    assert.equal(crawl.products[0].productName, '2HP 3:1');
+    assert.equal(crawl.products[0].availability, 'out_of_stock');
   });
 
   assert.equal(crawl.products.length, 1);
@@ -273,6 +1031,39 @@ test('uses Signal Sounds Randem inventory instead of stale BigCommerce availabil
   assert.equal(crawl.products[0].rawMeta.signalSoundsInventoryQuantity, 0);
   assert.equal(requestedUrls[2].url, 'https://api.randemretail.online/public/api/location');
   assert.equal(requestedUrls[2].init.headers['x-randem-application-id'], '5a9c3766-6d6c-4237-8965-9968f2572106');
+});
+
+test('preserves Signal Sounds out-of-stock page text when Randem inventory is missing', async () => {
+  const productUrl = 'https://www.signalsounds.com/acl-audio-interface-eurorack-module';
+  const crawl = await crawlPriceHubStoreCatalog(signalUkStore, {
+    maxProducts: 1,
+    fetchFn: async (url) => {
+      if (url.includes('xmlsitemap.php')) {
+        return textResponse(`<urlset><url><loc>${productUrl}</loc></url></urlset>`);
+      }
+
+      if (url.includes('api.randemretail.online')) {
+        return textResponse(JSON.stringify({ perSKU: [] }));
+      }
+
+      return textResponse(bigCommerceProductPage({
+        name: 'ACL Audio Interface Eurorack Module',
+        url: productUrl,
+        price: '408',
+        currency: 'GBP',
+        availability: 'instock',
+        sku: 'ACL01',
+        body: '<div class="buy-widget">Out of stock</div>',
+      }));
+    },
+  });
+
+  assert.equal(crawl.products.length, 1);
+  assert.equal(crawl.products[0].availability, 'out_of_stock');
+  assert.equal(crawl.products[0].rawMeta.ogAvailability, 'instock');
+  assert.equal(crawl.products[0].rawMeta.pageAvailabilityText, 'Out of stock');
+  assert.equal(crawl.products[0].rawMeta.signalSoundsAvailabilitySource, 'randem_location_api_missing');
+  assert.equal(crawl.products[0].rawMeta.signalSoundsStoreExternalId, 'HQ');
 });
 
 test('keeps Signal Sounds inventory unknown when tracking metadata is missing', async () => {
@@ -436,6 +1227,97 @@ test('crawls Shopware gzip sitemap and skips category pages without product meta
   });
 });
 
+test('stops Shopware product fetches once capped output is satisfied', async () => {
+  const requestedUrls = [];
+  const sitemapUrl = 'https://schneidersladen.de/en/sitemap/salesChannel/large-sitemap.xml.gz';
+  const productUrl = 'https://schneidersladen.de/en/make-noise-maths-2-silver';
+  const unfetchedProductUrls = Array.from({ length: 5000 }, (_, index) => `https://schneidersladen.de/en/unfetched-product-${index}`);
+  const productSitemap = `
+    <urlset>
+      <url><loc>${productUrl}</loc></url>
+      ${unfetchedProductUrls.map((url) => `<url><loc>${url}</loc></url>`).join('')}
+    </urlset>
+  `;
+
+  const crawl = await crawlPriceHubStoreCatalog(schneidersStore, {
+    maxProducts: 1,
+    metadataConcurrency: 6,
+    fetchFn: async (url) => {
+      requestedUrls.push(url);
+      if (url.endsWith('/sitemap.xml')) {
+        return textResponse(`<sitemapindex><sitemap><loc>${sitemapUrl}</loc></sitemap></sitemapindex>`);
+      }
+
+      if (url.endsWith('.xml.gz')) {
+        return bytesResponse(gzipSync(productSitemap));
+      }
+
+      assert.equal(url, productUrl);
+      return textResponse(shopwareProductPage({
+        name: 'Make Noise Maths 2 (Silber) - SchneidersLaden',
+        url: productUrl,
+        price: '329',
+        currency: 'EUR',
+        productId: '019364372943708b8d06c198957c90c7',
+      }));
+    },
+  });
+
+  assert.equal(crawl.products.length, 1);
+  assert.equal(crawl.totalProductUrls, 1);
+  assert.deepEqual(requestedUrls, [
+    'https://schneidersladen.de/en/sitemap.xml',
+    sitemapUrl,
+    productUrl,
+  ]);
+});
+
+test('dedupes Shopware sitemap URLs before fetching product pages', async () => {
+  const requestedUrls = [];
+  const sitemapUrl = 'https://schneidersladen.de/en/sitemap/salesChannel/duplicate-sitemap.xml.gz';
+  const firstProductUrl = 'https://schneidersladen.de/en/make-noise-maths-2-silver';
+  const secondProductUrl = 'https://schneidersladen.de/en/intellijel-quad-vca';
+  const productSitemap = `
+    <urlset>
+      <url><loc>${firstProductUrl}</loc></url>
+      <url><loc>${firstProductUrl}</loc></url>
+      <url><loc>${secondProductUrl}</loc></url>
+    </urlset>
+  `;
+
+  const crawl = await crawlPriceHubStoreCatalog(schneidersStore, {
+    maxProducts: 2,
+    metadataConcurrency: 6,
+    fetchFn: async (url) => {
+      requestedUrls.push(url);
+      if (url.endsWith('/sitemap.xml')) {
+        return textResponse(`<sitemapindex><sitemap><loc>${sitemapUrl}</loc></sitemap></sitemapindex>`);
+      }
+
+      if (url.endsWith('.xml.gz')) {
+        return bytesResponse(gzipSync(productSitemap));
+      }
+
+      return textResponse(shopwareProductPage({
+        name: url === firstProductUrl ? 'Make Noise Maths 2 (Silber) - SchneidersLaden' : 'Intellijel Quad VCA - SchneidersLaden',
+        url,
+        price: url === firstProductUrl ? '329' : '189',
+        currency: 'EUR',
+        productId: url === firstProductUrl ? '019364372943708b8d06c198957c90c7' : '019364372943708b8d06c198957c90c8',
+      }));
+    },
+  });
+
+  assert.equal(crawl.products.length, 2);
+  assert.equal(crawl.totalProductUrls, 2);
+  assert.deepEqual(requestedUrls, [
+    'https://schneidersladen.de/en/sitemap.xml',
+    sitemapUrl,
+    firstProductUrl,
+    secondProductUrl,
+  ]);
+});
+
 test('normalizes archived SchneidersLaden Shopware product pages as discontinued', () => {
   const product = normalizeShopwareProductPage(shopwareProductPage({
     name: 'ADDAC - 812V LED Voltage Meter - SchneidersLaden',
@@ -564,6 +1446,43 @@ test('matcher returns strong candidates for exact manufacturer and module names'
   assert.equal(candidate.reasons.includes('module phrase found in product name'), true);
 });
 
+test('matcher uses Shopify vendor metadata as manufacturer support', () => {
+  const products = [
+    {
+      ...normalizedProduct('Tangle Quartet', 'products/tangle-quartet'),
+      rawMeta: {
+        adapter: 'shopify_product_json',
+        slug: 'tangle-quartet',
+        vendor: 'ALM Busy Circuits',
+        productType: 'Module',
+        tags: ['eurorack'],
+      },
+    },
+    {
+      ...normalizedProduct('Maths black panel kit', 'make-noise-maths-black-panel-kit'),
+      rawMeta: {
+        adapter: 'shopify_product_json',
+        slug: 'make-noise-maths-black-panel-kit',
+        vendor: 'Make Noise',
+        productType: 'Accessory',
+        tags: ['panel'],
+      },
+    },
+  ];
+  const modules = [
+    { id: 'tangle-id', name: 'Tangle Quartet', manufacturerName: 'ALM Busy Circuits' },
+    { id: 'maths-id', name: 'Maths', manufacturerName: 'Make Noise' },
+  ];
+
+  const matches = matchModulesToProducts(modules, products, { includeIgnored: false });
+
+  assert.equal(matches.length, 1);
+  assert.equal(matches[0].moduleId, 'tangle-id');
+  assert.equal(matches[0].status, 'strong_candidate');
+  assert.equal(matches[0].reasons.includes('manufacturer phrase found in product brand'), true);
+  assert.equal(matches[0].reasons.includes('vendor-backed exact module title'), true);
+});
+
 test('matcher supports manufacturer object and combined slug matching', () => {
   const [candidate] = matchModulesToProducts([
     { id: 'plaits-id', name: 'Plaits', manufacturer: { name: 'Mutable Instruments' } },
@@ -652,6 +1571,53 @@ test('matcher omits Elevator Sound b-stock ex-demo preorder and accessory varian
   assert.equal(matches[0].productUrl, 'https://store.test/product/rossum-electro-music-evolution-eurorack-vcf-module/');
 });
 
+test('matcher omits pre-owned and frontpanel variants during full catalog runs', () => {
+  const products = [
+    normalizedProduct('Doepfer A-111-3 Precision VCO Eurorack Module (Pre-owned)', 'doepfer-a-111-3-precision-vco-eurorack-module-pre-owned'),
+    normalizedProduct('XAOC Devices Batumi II Black Frontpanel', 'xaoc-devices-batumi-ii-black-frontpanel'),
+    normalizedProduct('Doepfer A-111-3 Precision VCO Eurorack Module', 'doepfer-a-111-3-precision-vco-eurorack-module'),
+  ];
+  const modules = [
+    { id: 'vco-id', name: 'A-111-3', manufacturerName: 'Doepfer' },
+    { id: 'batumi-id', name: 'Batumi II', manufacturerName: 'XAOC Devices' },
+  ];
+
+  const matches = matchModulesToProducts(modules, products, { includeIgnored: false });
+
+  assert.equal(matches.length, 1);
+  assert.equal(matches[0].moduleId, 'vco-id');
+  assert.equal(matches[0].productUrl, 'https://store.test/product/doepfer-a-111-3-precision-vco-eurorack-module/');
+});
+
+test('matcher omits Shopify used and consignment products from raw metadata', () => {
+  const products = [
+    {
+      ...normalizedProduct('Make Noise Maths', 'make-noise-maths-used'),
+      rawMeta: {
+        adapter: 'shopify_product_json',
+        slug: 'make-noise-maths-used',
+        productType: 'Used Gear',
+        tags: ['consignment'],
+      },
+    },
+    {
+      ...normalizedProduct('Make Noise Maths', 'make-noise-maths'),
+      rawMeta: {
+        adapter: 'shopify_product_json',
+        slug: 'make-noise-maths',
+        productType: 'Module',
+        tags: ['In Stock'],
+      },
+    },
+  ];
+  const modules = [{ id: 'maths-id', name: 'Maths', manufacturerName: 'Make Noise' }];
+
+  const matches = matchModulesToProducts(modules, products, { includeIgnored: false });
+
+  assert.equal(matches.length, 1);
+  assert.equal(matches[0].productUrl, 'https://store.test/product/make-noise-maths/');
+});
+
 test('matcher supports compact manufacturer-prefixed module codes', () => {
   const matches = matchModulesToProducts([
     { id: 4524, name: 'ADDAC812VU', manufacturerName: 'ADDAC System' },
@@ -695,7 +1661,20 @@ function normalizedProduct(productName, slug) {
   };
 }
 
-function bigCommerceProductPage({ name, url, price, currency, availability, image = 'https://cdn.test/image.jpg', sku = null }) {
+function shopifyProduct({ id = 1, title, handle, vendor, productType, tags, variants }) {
+  return {
+    id,
+    title,
+    handle,
+    vendor,
+    product_type: productType,
+    tags,
+    variants,
+    images: [{ src: 'https://cdn.shopify.com/fractalist.jpg' }],
+  };
+}
+
+function bigCommerceProductPage({ name, url, price, currency, availability, image = 'https://cdn.test/image.jpg', sku = null, body = '' }) {
   return `
     <!doctype html>
     <html>
@@ -709,6 +1688,53 @@ function bigCommerceProductPage({ name, url, price, currency, availability, imag
         <meta property="og:availability" content="${availability}">
         ${sku ? `<script>var BCData = {"product_attributes":{"sku":"${sku}","instock":true}};</script>` : ''}
       </head>
+      <body>${body}</body>
+    </html>
+  `;
+}
+
+function productMetadataPage({ name, url, price, currency, availability, image = 'https://cdn.test/image.jpg', body = '' }) {
+  return `
+    <!doctype html>
+    <html>
+      <head>
+        <title>${name}</title>
+        <meta property="product:price:amount" content="${price}">
+        <meta property="product:price:currency" content="${currency}">
+        <meta property="product:availability" content="${availability}">
+        <meta property="og:url" content="${url}">
+        <meta property="og:title" content="${name}">
+        <meta property="og:image" content="${image}">
+      </head>
+      <body>${body}</body>
+    </html>
+  `;
+}
+
+function jsonLdProductPage({ name, url, price, currency, availability, image, sku, brand, body = '' }) {
+  return `
+    <!doctype html>
+    <html>
+      <head>
+        <script type="application/ld+json">
+          ${JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Product',
+            name,
+            url,
+            image,
+            sku,
+            ...(brand ? { additionalProperty: [{ '@type': 'PropertyValue', name: 'pa_brand', value: brand }] } : {}),
+            offers: {
+              '@type': 'Offer',
+              price,
+              priceCurrency: currency,
+              availability,
+            },
+          })}
+        </script>
+      </head>
+      <body>${body}</body>
     </html>
   `;
 }

@@ -20,9 +20,12 @@ import {
   of
 } from 'rxjs';
 import {
+  catchError,
+  distinctUntilChanged,
   filter,
   map,
-  startWith
+  startWith,
+  switchMap
 } from 'rxjs/operators';
 import {
   defaultModuleMinimalViewConfig,
@@ -57,6 +60,8 @@ import {
 } from '../module-browser-data.utils';
 import { Tag } from 'src/app/models/tag';
 import { MinimalModule } from 'src/app/models/module';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import { ModuleRecentMarketPrice } from 'src/app/features/backend/supabase-queries';
 
 // Re-export so existing consumers that imported these from here still compile.
 export type ModuleListSortId = ModuleSortId;
@@ -73,6 +78,7 @@ export interface ModuleListActionConfig {
   disabledLabel?: string;
 }
 
+type ModulePriceSummarySource = ReadonlyArray<MinimalModule> | null | undefined;
 
 @Component({
   selector: 'app-module-list',
@@ -113,6 +119,18 @@ export class ModuleListComponent extends SubManager implements OnInit {
   @Input() defaultGroupId: ModuleGroupId = 'none';
   @Input() moduleAction: ModuleListActionConfig | null = null;
   @Input() moduleActionDisabledIds: ReadonlySet<number> | null = null;
+  private readonly _showPriceSummary$ = new BehaviorSubject(false);
+
+  @Input()
+  set showPriceSummary(value: boolean) {
+    this._showPriceSummary$.next(value);
+  }
+
+  get showPriceSummary(): boolean {
+    return this._showPriceSummary$.value;
+  }
+
+  @Input() priceSummarySourceData$: Observable<ModulePriceSummarySource> | undefined;
   @Output() readonly moduleAction$ = new EventEmitter<MinimalModule>();
 
   private readonly externalSearchQuery$ = new BehaviorSubject<string>('');
@@ -124,6 +142,8 @@ export class ModuleListComponent extends SubManager implements OnInit {
 
   private readonly _filteredData$ = new BehaviorSubject<ModuleList>([]);
   readonly filteredData$ = this._filteredData$.asObservable();
+  private readonly _priceSummaryByModuleId$ = new BehaviorSubject<ReadonlyMap<number, ModuleRecentMarketPrice>>(new Map());
+  readonly priceSummaryByModuleId$ = this._priceSummaryByModuleId$.asObservable();
   private readonly visibleModuleIds = signal<ReadonlySet<number>>(new Set<number>());
   private readonly enterDelayByModuleId = signal<ReadonlyMap<number, number>>(new Map<number, number>());
   
@@ -161,6 +181,7 @@ export class ModuleListComponent extends SubManager implements OnInit {
     public patchingService: PatchDetailDataService,
     public filterService: LocalDataFilterService,
     public appState: AppStateService,
+    private backend?: SupabaseService,
     destroyRef?: DestroyRef
   ) {
     super(destroyRef);
@@ -200,6 +221,36 @@ export class ModuleListComponent extends SubManager implements OnInit {
         map(([std, hp, tags]) =>
           this.selectedStandardId(std) !== undefined || (hp !== '' && hp !== null) || tags.length > 0
         )
+      );
+    }
+
+    if (this.backend?.GET?.recentModuleMarketPrices) {
+      const priceSummarySourceData$ = this.priceSummarySourceData$ ?? this.data$;
+
+      this.manageSub(
+        combineLatest([
+          this._showPriceSummary$,
+          priceSummarySourceData$
+        ]).pipe(
+          map(([showPriceSummary, data]) => ({
+            showPriceSummary,
+            moduleIds: showPriceSummary ? this.getSortedModuleIds(data ?? []) : []
+          })),
+          distinctUntilChanged((first, second) =>
+            first.showPriceSummary === second.showPriceSummary && first.moduleIds.join(',') === second.moduleIds.join(',')
+          ),
+          switchMap(({showPriceSummary, moduleIds}) => !showPriceSummary || moduleIds.length === 0
+            ? of([])
+            : this.backend!.GET.recentModuleMarketPrices(moduleIds).pipe(
+                catchError(error => {
+                  console.warn('Recent market prices could not be loaded.', error);
+                  return of([]);
+                })
+              )
+          )
+        ).subscribe(summaries => {
+          this._priceSummaryByModuleId$.next(this.createPriceSummaryMap(summaries));
+        })
       );
     }
 
@@ -332,6 +383,20 @@ export class ModuleListComponent extends SubManager implements OnInit {
     this.visibleModuleIds.set(nextVisibleIds);
     this.enterDelayByModuleId.set(nextEnterDelayByModuleId);
     this._filteredData$.next(data);
+  }
+
+  private getSortedModuleIds(data: ReadonlyArray<MinimalModule>): number[] {
+    return [...new Set(
+      data
+        .map(module => module.id)
+        .filter(id => Number.isFinite(id) && id > 0)
+    )].sort((first, second) => first - second);
+  }
+
+  private createPriceSummaryMap(
+    summaries: ReadonlyArray<ModuleRecentMarketPrice>
+  ): ReadonlyMap<number, ModuleRecentMarketPrice> {
+    return new Map(summaries.map(summary => [summary.moduleId, summary]));
   }
 
   private selectedStandardId(option: ISelectable | null | undefined): number | undefined {

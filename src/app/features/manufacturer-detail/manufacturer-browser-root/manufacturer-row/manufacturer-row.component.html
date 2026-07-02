@@ -47,32 +47,38 @@
     </div>
   </div>
 
-  @if (modules$ | async; as modules) {
-    @if (modules.length === 0) {
-      <span class="manufacturer-row-empty">No modules yet</span>
-    } @else {
-      <div class="manufacturer-row-modules">
-        <div class="module-strip">
-          @for (module of modules; track module.id; let i = $index) {
-            <lib-clean-card
-              class="module-strip-card module-card-appear"
-              [style.--module-index]="i"
-              [routerLink]="['/modules/details', module.id]"
-              role="link"
-              tabindex="0"
-              style="cursor: pointer; position: relative; z-index: 3;"
-            >
-              <app-module-minimal
-                [data]="module"
-                [viewConfig]="moduleViewConfig"
-              ></app-module-minimal>
-            </lib-clean-card>
-          }
+  @if ({
+    modules: (modules$ | async),
+    priceSummaryByModuleId: (priceSummaryByModuleId$ | async)
+  }; as bag) {
+    @if (bag.modules) {
+      @if (bag.modules.length === 0) {
+        <span class="manufacturer-row-empty">No modules yet</span>
+      } @else {
+        <div class="manufacturer-row-modules">
+          <div class="module-strip">
+            @for (module of bag.modules; track module.id; let i = $index) {
+              <lib-clean-card
+                class="module-strip-card module-card-appear"
+                [style.--module-index]="i"
+                [routerLink]="['/modules/details', module.id]"
+                role="link"
+                tabindex="0"
+                style="cursor: pointer; position: relative; z-index: 3;"
+              >
+                <app-module-minimal
+                  [data]="module"
+                  [viewConfig]="moduleViewConfig"
+                  [priceSummary]="showPriceSummary ? (bag.priceSummaryByModuleId?.get(module.id) ?? null) : null"
+                ></app-module-minimal>
+              </lib-clean-card>
+            }
+          </div>
         </div>
-      </div>
+      }
+    } @else {
+      <lib-auto-content-loading-indicator [loadingLines]="1" [skipFirstData]="true">
+      </lib-auto-content-loading-indicator>
     }
-  } @else {
-    <lib-auto-content-loading-indicator [loadingLines]="1" [skipFirstData]="true">
-    </lib-auto-content-loading-indicator>
   }
 </div>

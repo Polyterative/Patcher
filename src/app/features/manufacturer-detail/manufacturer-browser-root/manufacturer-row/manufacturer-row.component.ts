@@ -6,7 +6,17 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
+import {
+  BehaviorSubject,
+  of
+} from 'rxjs';
+import {
+  catchError,
+  distinctUntilChanged,
+  filter,
+  map,
+  switchMap
+} from 'rxjs/operators';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { ModuleList } from 'src/app/features/module-browser/module-browser-data.service';
 import { ManufacturerDetail } from '../../manufacturer-detail-data.service';
@@ -20,6 +30,7 @@ import { AutoContentLoadingIndicatorComponent } from 'src/app/shared-interprojec
 import { CleanCardComponent } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.component';
 import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.module';
 import { ManufacturerUpdatedBadgeComponent } from './manufacturer-updated-badge/manufacturer-updated-badge.component';
+import { ModuleRecentMarketPrice } from 'src/app/features/backend/supabase-queries';
 
 
 @Component({
@@ -40,11 +51,14 @@ import { ManufacturerUpdatedBadgeComponent } from './manufacturer-updated-badge/
 export class ManufacturerRowComponent extends SubManager implements OnInit {
   @Input() manufacturer!: ManufacturerDetail;
   @Input() hideRowLink = false;
+  @Input() showPriceSummary = false;
 
   readonly logoStorageBase = StorageUrls.manufacturerLogos;
 
   private readonly _modules$ = new BehaviorSubject<ModuleList>(null);
   readonly modules$ = this._modules$.asObservable();
+  private readonly _priceSummaryByModuleId$ = new BehaviorSubject<ReadonlyMap<number, ModuleRecentMarketPrice>>(new Map());
+  readonly priceSummaryByModuleId$ = this._priceSummaryByModuleId$.asObservable();
 
   readonly moduleViewConfig: ModuleMinimalViewConfig = {
     ...defaultModuleMinimalViewConfig,
@@ -71,5 +85,38 @@ export class ManufacturerRowComponent extends SubManager implements OnInit {
     this.backend.get.modulesBySameManufacturer(this.manufacturer.id, 0, 29)
       .pipe(this.takeUntilDestroyed())
       .subscribe(modules => this._modules$.next(modules ?? []));
+
+    if (!this.showPriceSummary || !this.backend.GET?.recentModuleMarketPrices) {
+      return;
+    }
+
+    this.modules$.pipe(
+      filter((modules): modules is NonNullable<ModuleList> => Array.isArray(modules)),
+      map(modules => this.getSortedModuleIds(modules)),
+      distinctUntilChanged((first, second) => first.join(',') === second.join(',')),
+      switchMap(moduleIds => {
+        if (moduleIds.length === 0) {
+          return of([]);
+        }
+
+        return this.backend.GET.recentModuleMarketPrices(moduleIds).pipe(
+          catchError(error => {
+            console.warn('Recent market prices could not be loaded for manufacturer row.', error);
+            return of([]);
+          })
+        );
+      }),
+      this.takeUntilDestroyed()
+    ).subscribe(summaries => {
+      this._priceSummaryByModuleId$.next(new Map(summaries.map(summary => [summary.moduleId, summary])));
+    });
+  }
+
+  private getSortedModuleIds(data: ReadonlyArray<{ id: number }>): number[] {
+    return [...new Set(
+      data
+        .map(module => module.id)
+        .filter(id => Number.isFinite(id) && id > 0)
+    )].sort((first, second) => first - second);
   }
 }

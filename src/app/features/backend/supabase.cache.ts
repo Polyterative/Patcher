@@ -25,6 +25,7 @@ GlobalCacheConfig.storageStrategy =
 
 export const defaultCacheTime = 5 * 60 * 1000;
 export const longCacheTime = defaultCacheTime * 10;
+export const priceHubCacheTime = 60 * 60 * 1000;
 export const smallCacheTime = defaultCacheTime / 5;
 
 export type CachedEntity =

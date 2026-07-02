@@ -106,6 +106,7 @@
 
 .setup-field-stack > lib-mat-form-entity {
   display: block;
+  width: 100%;
   min-width: 0;
 }
 
@@ -297,6 +298,8 @@
 
 .setup-panel-type-shell {
   border-radius: 0.5rem;
+  width: 100%;
+  min-width: 0;
   transition: box-shadow 180ms ease, background-color 180ms ease;
 }
 

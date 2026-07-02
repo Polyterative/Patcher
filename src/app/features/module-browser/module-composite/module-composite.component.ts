@@ -9,6 +9,7 @@ import {
   ModuleMinimalViewConfig
 } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
 import { getModulePanelAspectRatio } from 'src/app/components/module-parts/get-module-height-for-standard.pipe';
+import { ModuleRecentMarketPrice } from 'src/app/features/backend/supabase-queries';
 import { DbModule } from 'src/app/models/module';
 
 
@@ -30,6 +31,7 @@ export class ModuleCompositeComponent implements OnInit {
   @Input() preferredPanelColor: number | null = null;
   @Input() preferPortraitDetailSplit = false;
   @Input() showCoolAction = false;
+  @Input() priceSummary: ModuleRecentMarketPrice | null | undefined = undefined;
 
   get shouldUsePortraitDetailSplit(): boolean {
     return this.preferPortraitDetailSplit

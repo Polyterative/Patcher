@@ -27,6 +27,7 @@ import { SupabaseService } from '../../features/backend/supabase.service';
 import { MergeModuleResult } from '../../features/backend/supabase-merge';
 import {
   DbModule,
+  ModulePanel,
   UserModulePossessionKind
 } from '../../models/module';
 import { PatchMinimal } from '../../models/patch';
@@ -47,7 +48,11 @@ import { UserModuleAcquisition, UserModuleAcquisitionDraft } from 'src/app/model
 import { ModulePossessionDialogResult } from './module-possession-dialog/module-possession-dialog.component';
 import { formatMarketplaceMinorUnits } from 'src/app/features/marketplace/marketplace-money.utils';
 import { ReactionEntityTypes } from 'src/app/features/backend/supabase-reactions';
-import { ModulePriceListing } from 'src/app/features/backend/supabase-queries';
+import {
+  ModulePriceListing,
+  ModuleRecentMarketPrice
+} from 'src/app/features/backend/supabase-queries';
+import { getModuleRecentMarketPrice } from 'src/app/features/backend/module-price-summary.utils';
 
 export type { HiddenUsageBucket, ModulePossessionCounts, ModuleUsageSummary } from './module-detail-data.models';
 
@@ -73,6 +78,7 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
   readonly patchesWithThisModule$ = new BehaviorSubject<PatchMinimal[] | undefined>(undefined);
   readonly collectionsWithThisModule$ = new BehaviorSubject<ModuleCollectionSummary[] | undefined>(undefined);
   readonly modulePriceListings$ = new BehaviorSubject<ModulePriceListing[] | undefined>(undefined);
+  readonly recentMarketPrice$: Observable<ModuleRecentMarketPrice | null>;
   readonly moduleUsageSummary$ = new BehaviorSubject<ModuleUsageSummary | undefined>(undefined);
   readonly possessionCounts$ = new BehaviorSubject<ModulePossessionCounts | undefined>(undefined);
   readonly coolCount$ = new BehaviorSubject<number | undefined>(undefined);
@@ -81,7 +87,7 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
   readonly deleteModuleAndOrphanManufacturer$ = new Subject<DbModule>();
   readonly mergeIntoTargetModule$ = new Subject<{ sourceId: number; targetId: number }>();
   readonly moduleMergeResult$ = new Subject<MergeModuleResult>();
-  readonly deleteLastPanel$ = new Subject<DbModule>();
+  readonly deletePanel$ = new Subject<ModulePanel>();
   readonly changeModule$ = new Subject<Partial<DbModule>>();
   readonly setStoreUrl$ = new Subject<{ id: number; url: string | null }>();
   readonly requestModuleEditingToggle$ = new Subject<void>();
@@ -102,18 +108,28 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
       .pipe(this.takeUntilDestroyed())
       .subscribe(x => this.isAdmin$.next(x));
 
-    // when delete of the latest panel is requested, perform the deletion
-    this.deleteLastPanel$
+    this.deletePanel$
       .pipe(
-        switchMap(module => this.requiresAdminOrDev(module)),
-        map((x) => x.panels.sort((a, b) => a.id - b.id).pop()!),
-        exhaustMap(x => this.backend.delete.modulePanel(x)),
+        filter((panel): panel is ModulePanel => !!panel?.id),
+        switchMap(panel => this.requiresAdminOrDev(panel)),
+        withLatestFrom(this.singleModuleData$),
+        exhaustMap(([panel, module]) => this.backend.delete.modulePanel(panel).pipe(
+          map(() => ({
+            panel,
+            moduleId: panel.moduleid ?? module?.id
+          }))
+        )),
         this.takeUntilDestroyed()
       )
-      .subscribe(x => {
+      .subscribe(({panel, moduleId}) => {
         SharedConstants.successCustom(this.snackBar, 'Panel image removed from module.');
-        this.analytics.capture('module.panel_deleted', { module_id: this.singleModuleData$.value?.id });
-        this.updateSingleModuleData$.next(this.singleModuleData$.value.id);
+        this.analytics.capture('module.panel_deleted', {
+          module_id: moduleId,
+          panel_id: panel.id
+        });
+        if (moduleId) {
+          this.updateSingleModuleData$.next(moduleId);
+        }
       });
     
     this.copyModuleNameAndManufacturer$
@@ -164,6 +180,16 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
         }
         return `Acquired ${ latest.acquired_at }`;
       })
+    );
+
+    this.recentMarketPrice$ = this.modulePriceListings$.pipe(
+      map(listings => listings === undefined
+        ? null
+        : getModuleRecentMarketPrice(
+            listings[0]?.moduleId ?? this.singleModuleData$.value?.id ?? 0,
+            listings
+          )
+      )
     );
 
     this.setModulePossession$

@@ -21,8 +21,15 @@ interface WooCommerceStoreApiImage {
   src?: string | null;
 }
 
+interface WooCommerceStoreApiTerm {
+  name?: string | null;
+  slug?: string | null;
+  link?: string | null;
+}
+
 interface WooCommerceStoreApiStockAvailability {
   text?: string | null;
+  class?: string | null;
 }
 
 export interface WooCommerceStoreApiProduct {
@@ -36,6 +43,9 @@ export interface WooCommerceStoreApiProduct {
   stock_status?: string | null;
   stock_availability?: WooCommerceStoreApiStockAvailability | null;
   images?: WooCommerceStoreApiImage[] | null;
+  brands?: WooCommerceStoreApiTerm[] | null;
+  categories?: WooCommerceStoreApiTerm[] | null;
+  tags?: WooCommerceStoreApiTerm[] | null;
 }
 
 export function normalizeWooCommerceStoreApiProduct(product: WooCommerceStoreApiProduct): NormalizedStoreListingSnapshot {
@@ -47,6 +57,11 @@ export function normalizeWooCommerceStoreApiProduct(product: WooCommerceStoreApi
   const imageUrl = Array.isArray(product.images) ? product.images.find((image) => isNonBlank(image.src))?.src?.trim() ?? null : null;
   const priceWasZero = rawPriceAmountMinor === 0;
   const priceHtmlEmpty = typeof product.price_html === 'string' && product.price_html.trim().length === 0;
+  const brands = readTermNames(product.brands);
+  const categories = readTermNames(product.categories);
+  const tags = readTermNames(product.tags);
+  const makerCategories = readMakerTermNames(product.categories);
+  const brand = brands[0] ?? makerCategories[0] ?? tags[0] ?? null;
 
   return {
     priceAmountMinor,
@@ -61,6 +76,9 @@ export function normalizeWooCommerceStoreApiProduct(product: WooCommerceStoreApi
       slug: product.slug ?? null,
       stockStatus: product.stock_status ?? null,
       stockText: product.stock_availability?.text ?? null,
+      ...(product.stock_availability?.class ? { stockClass: product.stock_availability.class } : {}),
+      ...(brand ? { brand } : {}),
+      ...(categories.length > 0 || tags.length > 0 ? { tags: [...categories, ...tags] } : {}),
       ...(priceWasZero ? { priceWasZero: true } : {}),
       ...(priceHtmlEmpty ? { priceHtmlEmpty: true } : {}),
     },
@@ -115,8 +133,14 @@ function normalizeCurrency(value: string | null): string | null {
 function normalizeAvailability(product: WooCommerceStoreApiProduct): SnapshotAvailability {
   const status = product.stock_status?.trim().toLowerCase() ?? '';
   const stockText = product.stock_availability?.text?.trim().toLowerCase() ?? '';
+  const stockClass = product.stock_availability?.class?.trim().toLowerCase() ?? '';
+  const stockEvidence = `${status} ${stockText} ${stockClass}`;
 
-  if (status.includes('backorder') || stockText.includes('backorder')) {
+  if (
+    stockEvidence.includes('backorder')
+    || stockEvidence.includes('back-order')
+    || stockEvidence.includes('back order')
+  ) {
     return 'backorder';
   }
 
@@ -141,6 +165,39 @@ function normalizeAvailability(product: WooCommerceStoreApiProduct): SnapshotAva
 
 function normalizeOptionalText(value: string | null): string | null {
   return isNonBlank(value) ? value.trim() : null;
+}
+
+function readTermNames(terms: WooCommerceStoreApiTerm[] | null | undefined): string[] {
+  if (!Array.isArray(terms)) {
+    return [];
+  }
+
+  return terms
+    .map((term) => normalizeTermText(term.name ?? null))
+    .filter((term): term is string => term !== null);
+}
+
+function readMakerTermNames(terms: WooCommerceStoreApiTerm[] | null | undefined): string[] {
+  if (!Array.isArray(terms)) {
+    return [];
+  }
+
+  return terms
+    .filter((term) => typeof term.link === 'string' && term.link.includes('/makers/'))
+    .map((term) => normalizeTermText(term.name ?? null))
+    .filter((term): term is string => term !== null);
+}
+
+function normalizeTermText(value: string | null): string | null {
+  if (!isNonBlank(value)) {
+    return null;
+  }
+
+  return value
+    .replace(/&amp;/g, '&')
+    .replace(/&#(\d+);/g, (_, code: string) => String.fromCodePoint(Number.parseInt(code, 10)))
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function normalizeComparableUrl(value: string): string {

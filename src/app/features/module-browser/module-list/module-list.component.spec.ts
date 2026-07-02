@@ -259,6 +259,116 @@ describe('ModuleListComponent', () => {
     expect(reactionBackend.delete.reaction).not.toHaveBeenCalled();
   });
 
+  it('fetches price summaries from source data without refetching for local filters', fakeAsync(() => {
+    const filterService = new LocalDataFilterService();
+    const data$ = new BehaviorSubject<MinimalModule[] | null>([
+      buildModule({id: 3, name: 'Belgrad'}),
+      buildModule({id: 1, name: 'Maths'}),
+      buildModule({id: 3, name: 'Belgrad duplicate'}),
+    ]);
+    const summary = {
+      moduleId: 1,
+      estimatedPriceEurMinor: 39900,
+      displayPrice: '~€399',
+      storeCount: 4,
+      latestObservedAt: '2026-07-01T00:00:00.000Z',
+      tooltip: 'Recent market price: ~€399 from 4 stores, latest check Jul 1, 2026.'
+    };
+    const backend = {
+      GET: {
+        recentModuleMarketPrices: jasmine.createSpy('recentModuleMarketPrices').and.returnValue(of([summary]))
+      }
+    };
+    const component = new ModuleListComponent(
+      {} as PatchDetailDataService,
+      filterService,
+      {preferredPanelColor$: of(null)} as AppStateService,
+      backend as unknown as SupabaseService
+    );
+    component.data$ = data$;
+    component.showSearch = true;
+    component.showPriceSummary = true;
+
+    component.ngOnInit();
+    tick();
+
+    expect(backend.GET.recentModuleMarketPrices).toHaveBeenCalledOnceWith([1, 3]);
+    expect(currentVal(component.priceSummaryByModuleId$)?.get(1)).toEqual(summary);
+
+    filterService.search.control.setValue('maths');
+    tick(350);
+
+    expect(backend.GET.recentModuleMarketPrices).toHaveBeenCalledTimes(1);
+    component.ngOnDestroy();
+  }));
+
+  it('uses the optional price summary source instead of the visible module slice', fakeAsync(() => {
+    const filterService = new LocalDataFilterService();
+    const visibleData$ = new BehaviorSubject<MinimalModule[] | null>([
+      buildModule({id: 1, name: 'Maths'}),
+    ]);
+    const priceSourceData$ = new BehaviorSubject<MinimalModule[] | null>([
+      buildModule({id: 1, name: 'Maths'}),
+      buildModule({id: 2, name: 'Mimeophon'}),
+    ]);
+    const backend = {
+      GET: {
+        recentModuleMarketPrices: jasmine.createSpy('recentModuleMarketPrices').and.returnValue(of([]))
+      }
+    };
+    const component = new ModuleListComponent(
+      {} as PatchDetailDataService,
+      filterService,
+      {preferredPanelColor$: of(null)} as AppStateService,
+      backend as unknown as SupabaseService
+    );
+    component.data$ = visibleData$;
+    component.priceSummarySourceData$ = priceSourceData$;
+    component.showPriceSummary = true;
+
+    component.ngOnInit();
+    tick();
+
+    expect(backend.GET.recentModuleMarketPrices).toHaveBeenCalledOnceWith([1, 2]);
+
+    visibleData$.next([buildModule({id: 1, name: 'Maths'})]);
+    tick();
+
+    expect(backend.GET.recentModuleMarketPrices).toHaveBeenCalledTimes(1);
+    component.ngOnDestroy();
+  }));
+
+  it('fetches price summaries when the input is enabled after init', fakeAsync(() => {
+    const filterService = new LocalDataFilterService();
+    const data$ = new BehaviorSubject<MinimalModule[] | null>([
+      buildModule({id: 1, name: 'Maths'}),
+      buildModule({id: 2, name: 'Mimeophon'}),
+    ]);
+    const backend = {
+      GET: {
+        recentModuleMarketPrices: jasmine.createSpy('recentModuleMarketPrices').and.returnValue(of([]))
+      }
+    };
+    const component = new ModuleListComponent(
+      {} as PatchDetailDataService,
+      filterService,
+      {preferredPanelColor$: of(null)} as AppStateService,
+      backend as unknown as SupabaseService
+    );
+    component.data$ = data$;
+
+    component.ngOnInit();
+    tick();
+
+    expect(backend.GET.recentModuleMarketPrices).not.toHaveBeenCalled();
+
+    component.showPriceSummary = true;
+    tick();
+
+    expect(backend.GET.recentModuleMarketPrices).toHaveBeenCalledOnceWith([1, 2]);
+    component.ngOnDestroy();
+  }));
+
   describe('showFilters=true', () => {
     function buildWithFilters() {
       const filterService = new LocalDataFilterService();

@@ -23,7 +23,8 @@ import {
 import { SeoSocialShareData } from 'src/app/models/seo.model';
 import {
   BehaviorSubject,
-  combineLatest
+  combineLatest,
+  Observable
 } from 'rxjs';
 import {
   filter,
@@ -43,6 +44,7 @@ import { AppStateService } from "src/app/shared-interproject/app-state.service";
 import { Animations } from 'src/app/shared-interproject/SharedConstants';
 import {
   DbModule,
+  ModulePanel,
   UserModulePossessionKind
 } from "src/app/models/module";
 import {
@@ -70,6 +72,8 @@ import {
 import { formatMarketplaceMinorUnits } from 'src/app/features/marketplace/marketplace-money.utils';
 import { ReactionEntityTypes } from 'src/app/features/backend/supabase-reactions';
 import { ModuleEditorComponent } from 'src/app/components/module-parts/module-editor/module-editor.component';
+import { derivePanelLabel } from 'src/app/components/module-parts/panel.constants';
+import { ModulePriceListing } from 'src/app/features/backend/supabase-queries.models';
 
 export const MODULE_PANEL_RATIO_ACCEPTANCE_THRESHOLD = 0.01;
 
@@ -286,6 +290,9 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
     tagsMaxCount: 5
   };
   readonly searchLinks: SearchLink[] = MODULE_SEARCH_LINKS;
+  readonly communitySearchLinks: SearchLink[] = MODULE_SEARCH_LINKS.filter(link => link.kind === 'community');
+  readonly retailerSearchLinks: SearchLink[] = MODULE_SEARCH_LINKS.filter(link => link.kind === 'retailer');
+  readonly availableRetailerSearchLinks$: Observable<SearchLink[]>;
   readonly collectionsEnabled = environment.features.collectionsEnabled;
   readonly coolReactionsEnabled = environment.features.coolReactionsEnabled;
   readonly panelRatioAcceptanceThreshold = MODULE_PANEL_RATIO_ACCEPTANCE_THRESHOLD;
@@ -305,7 +312,8 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
     public userManagementService: UserManagementService,
   ) {
     super();
-    
+    this.availableRetailerSearchLinks$ = this.dataService.modulePriceListings$
+      .pipe(map(listings => this.getAvailableRetailerSearchLinks(listings)));
   }
 
   
@@ -467,6 +475,33 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
     return stats.length > 0 ? stats : undefined;
   }
 
+  getAvailableRetailerSearchLinks(listings: readonly ModulePriceListing[] | null | undefined): SearchLink[] {
+    if (!listings) {
+      return this.retailerSearchLinks;
+    }
+
+    const listedStoreSlugs = new Set(
+      listings
+        .map(listing => this.normalizeStoreSlug(listing.storeSlug))
+        .filter((slug): slug is string => !!slug)
+    );
+    const listedStoreIds = new Set(
+      listings
+        .map(listing => listing.storeId)
+        .filter((storeId): storeId is number => Number.isFinite(storeId))
+    );
+
+    return this.retailerSearchLinks.filter(link => !this.searchLinkHasPriceListing(link, listedStoreSlugs, listedStoreIds));
+  }
+
+  getDevDeletePanelLabel(panel: ModulePanel, index: number): string {
+    return `Delete ${ this.getDevPanelDisplayName(panel, index) }`;
+  }
+
+  getDevDeletePanelTooltip(panel: ModulePanel, index: number): string {
+    return `Remove ${ this.getDevPanelDisplayName(panel, index) } image from this module`;
+  }
+
   formatAcquisitionValue(acquisition: UserModuleAcquisition): string {
     if (acquisition.price_amount_minor === null || !acquisition.currency) {
       return 'No price recorded';
@@ -540,7 +575,32 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
         return null;
     }
   }
-  
+
+  private searchLinkHasPriceListing(
+    link: SearchLink,
+    listedStoreSlugs: ReadonlySet<string>,
+    listedStoreIds: ReadonlySet<number>
+  ): boolean {
+    return (link.storeSlugs ?? []).some(slug => {
+      const normalizedSlug = this.normalizeStoreSlug(slug);
+      return !!normalizedSlug && listedStoreSlugs.has(normalizedSlug);
+    }) || (link.storeIds ?? []).some(storeId => listedStoreIds.has(storeId));
+  }
+
+  private normalizeStoreSlug(slug: string | null | undefined): string | null {
+    const normalizedSlug = slug?.trim().toLowerCase();
+    return normalizedSlug || null;
+  }
+
+  private getDevPanelDisplayName(panel: ModulePanel, index: number): string {
+    const label = derivePanelLabel(panel.filename, panel.description, index);
+    const normalizedLabel = label.toLowerCase();
+
+    return normalizedLabel.startsWith('panel ') || normalizedLabel.endsWith(' panel')
+      ? label
+      : `${ label } panel`;
+  }
+
   setDevStandard(id: number): void {
     this.patchDevModule({
       standard: {

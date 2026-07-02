@@ -34,23 +34,65 @@ const NOISE_TERMS = [
   'accessories',
   'b-stock',
   'b stock',
+  'bourns',
   'bundle',
   'case',
   'cable',
+  'cables',
+  'cap',
+  'consignment',
+  'cover',
+  'covers',
   'deposit',
+  'embroidered',
   'ex-demo',
   'ex demo',
   'faceplate',
+  'frontpanel',
+  'guide',
+  'hat',
+  'hoodie',
   'kit',
+  'kitbag',
+  'kitbags',
   'manual',
+  'memory card',
+  'no-longer-available',
+  'no longer available',
   'occasione',
+  'open-box',
+  'open box',
+  'opening soon',
   'panel',
+  'panel set',
+  'parts',
+  'pcb',
+  'pcb panel',
+  'pedal',
+  'potentiometer',
+  'potentiometers',
   'pre-order',
   'pre order',
   'preorder',
   'prenotazione',
   'preordine',
+  'pre-owned',
+  'pre owned',
+  'power adapter',
+  'refurbished',
+  'replacement parts',
+  'special-order',
+  'special order',
   'spares',
+  'stackcable',
+  'sticker',
+  'stickers',
+  'slide pot',
+  'slider',
+  'slipmat',
+  't-shirt',
+  't shirt',
+  'tee',
   'used',
   'usato',
 ];
@@ -122,28 +164,42 @@ interface ModuleProfile {
 interface ProductProfile {
   product: NormalizedStoreListingSnapshot;
   productName: string;
+  productBrandPhrase: string;
+  productBrandSlug: string;
   productSlug: string;
   productNamePhrase: string;
   productNameSlug: string;
   searchableSlug: string;
   searchablePhrase: string;
+  noisePhrase: string;
+  noiseSlug: string;
+  noiseTokens: Set<string>;
   searchableTokens: Set<string>;
 }
 
 function readProductProfile(product: NormalizedStoreListingSnapshot): ProductProfile {
   const productName = product.productName ?? '';
+  const productBrand = readProductBrand(product);
+  const productBrandSlug = slugify(productBrand);
   const productSlug = readProductSlug(product);
   const productNameSlug = slugify(productName);
-  const searchableSlug = productSlug ? `${productSlug} ${productNameSlug}` : productNameSlug;
+  const searchableSlug = [productSlug, productNameSlug, productBrandSlug].filter((part) => part.length > 0).join(' ');
+  const noiseText = readProductNoiseText(product);
+  const noiseSlug = slugify(`${productName} ${productSlug} ${noiseText}`);
 
   return {
     product,
     productName,
+    productBrandPhrase: normalizePhrase(productBrand),
+    productBrandSlug,
     productSlug,
     productNamePhrase: normalizePhrase(productName),
     productNameSlug,
     searchableSlug,
-    searchablePhrase: normalizePhrase(`${productName} ${productSlug}`),
+    searchablePhrase: normalizePhrase(`${productName} ${productSlug} ${productBrand}`),
+    noisePhrase: normalizePhrase(`${productName} ${productSlug} ${noiseText}`),
+    noiseSlug,
+    noiseTokens: tokenSet(noiseSlug),
     searchableTokens: tokenSet(searchableSlug),
   };
 }
@@ -173,10 +229,16 @@ function scoreProductForModule(
   const moduleNameMatched = includesPhrase(productProfile.searchablePhrase, moduleProfile.modulePhrase)
     || includesPhrase(productProfile.searchableSlug, moduleProfile.moduleSlug);
   const moduleCodeAliasMatched = moduleProfile.moduleCodeAliases.some((alias) => includesPhrase(productProfile.searchableSlug, alias));
+  const productBrandMatched = includesPhrase(productProfile.productBrandPhrase, moduleProfile.manufacturerPhrase);
+  const moduleTitleMatched = includesPhrase(productProfile.productNamePhrase, moduleProfile.modulePhrase)
+    || includesPhrase(productProfile.productNameSlug, moduleProfile.moduleSlug);
 
   if (includesPhrase(productProfile.productNamePhrase, moduleProfile.manufacturerPhrase)) {
     score += 0.35;
     reasons.push('manufacturer phrase found in product name');
+  } else if (productBrandMatched) {
+    score += 0.35;
+    reasons.push('manufacturer phrase found in product brand');
   } else if (includesPhrase(productProfile.searchableSlug, moduleProfile.manufacturerSlug)) {
     score += 0.2;
     reasons.push('manufacturer phrase found in product slug');
@@ -193,6 +255,11 @@ function scoreProductForModule(
   if (moduleProfile.combinedSlug.length > 0 && includesPhrase(productProfile.searchableSlug, moduleProfile.combinedSlug)) {
     score += 0.3;
     reasons.push('combined manufacturer and module slug found');
+  }
+
+  if (productBrandMatched && moduleTitleMatched) {
+    score += 0.15;
+    reasons.push('vendor-backed exact module title');
   }
 
   if (!moduleNameMatched && manufacturerMatched && moduleCodeAliasMatched) {
@@ -300,6 +367,18 @@ function readProductSlug(product: NormalizedStoreListingSnapshot): string {
   return typeof slug === 'string' ? slug : '';
 }
 
+function readProductBrand(product: NormalizedStoreListingSnapshot): string {
+  const parts: string[] = [];
+  for (const key of ['vendor', 'brand', 'manufacturer']) {
+    const value = product.rawMeta[key];
+    if (typeof value === 'string' && value.trim().length > 0) {
+      parts.push(value.trim());
+    }
+  }
+
+  return uniqueStrings(parts).join(' ');
+}
+
 function normalizeSourceText(value: string): string {
   return value.replace(/\s+/g, ' ').trim();
 }
@@ -333,14 +412,36 @@ function tokenSet(slug: string): Set<string> {
 function findNoiseHits(productProfile: ProductProfile): string[] {
   return NOISE_TERMS.filter((term) => {
     if (!term.includes('-') && !term.includes(' ')) {
-      return productProfile.searchableTokens.has(term);
+      return productProfile.noiseTokens.has(term);
     }
 
     const phrase = normalizePhrase(term);
     const slug = slugify(term);
-    return includesPhrase(productProfile.searchablePhrase, phrase)
-      || includesPhrase(productProfile.searchableSlug, slug);
+    return includesPhrase(productProfile.noisePhrase, phrase)
+      || includesPhrase(productProfile.noiseSlug, slug);
   });
+}
+
+function readProductNoiseText(product: NormalizedStoreListingSnapshot): string {
+  const matchNoiseText = product.rawMeta.matchNoiseText;
+  if (typeof matchNoiseText === 'string') {
+    return matchNoiseText;
+  }
+
+  const tags = product.rawMeta.tags;
+  const productType = product.rawMeta.productType;
+  const selectedVariantTitle = product.rawMeta.selectedVariantTitle;
+  const parts: string[] = [];
+  if (Array.isArray(tags)) {
+    parts.push(...tags.filter((tag): tag is string => typeof tag === 'string'));
+  }
+  if (typeof productType === 'string') {
+    parts.push(productType);
+  }
+  if (typeof selectedVariantTitle === 'string') {
+    parts.push(selectedVariantTitle);
+  }
+  return parts.join(' ');
 }
 
 function tokenCoverage(tokens: readonly string[], searchableTokens: ReadonlySet<string>): number {

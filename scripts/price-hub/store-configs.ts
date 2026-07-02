@@ -1,19 +1,124 @@
 export type ApprovedPriceHubStoreSlug =
+  | 'after-later-audio'
+  | 'animato-audio'
+  | 'big-city-music'
+  | 'busy-circuits'
+  | 'cicada-sound'
+  | 'clockface-modular'
+  | 'control'
+  | 'detroit-modular'
+  | 'dreadbox'
   | 'elevator-sound'
+  | 'escape-from-noise'
+  | 'exploding-shed'
+  | 'found-sound'
+  | 'instruo'
+  | 'intellijel'
+  | 'machineroom'
+  | 'milk-audio-store'
+  | 'michigan-synth-works'
+  | 'moog-audio'
+  | 'nano-modules'
+  | 'nightlife-electronics'
   | 'new-groove'
+  | 'noisebug'
+  | 'patch-point'
+  | 'postmodular'
+  | 'pusherman-productions'
+  | 'robotspeak'
+  | 'rubadub'
+  | 'schlappi-engineering'
   | 'signal-sounds-uk'
   | 'signal-sounds-eu'
-  | 'schneidersladen';
-export type PriceHubStoreAdapter = 'woocommerce_store_api' | 'bigcommerce_metadata' | 'shopware_metadata';
+  | 'schneidersladen'
+  | 'soundium'
+  | 'synthshop'
+  | 'technosynth'
+  | 'thonk'
+  | 'whimsical-raps'
+  | 'wmdevices'
+  | 'zlob-modular';
+export type PriceHubStoreAdapter = 'woocommerce_store_api' | 'shopify_product_json' | 'bigcommerce_metadata' | 'shopware_metadata' | 'custom';
 
 export interface ApprovedPriceHubStoreConfig {
   slug: ApprovedPriceHubStoreSlug;
   name: string;
   baseUrl: string;
   adapter: PriceHubStoreAdapter;
+  catalogPath?: string;
+  currencyHint?: string;
+  ignoredMatchNoiseTags?: readonly string[];
+  productUrlPathExcludes?: readonly string[];
+  productUrlPathIncludes?: readonly string[];
+  productBrandHint?: string;
 }
 
 export const APPROVED_PRICE_HUB_STORES: readonly ApprovedPriceHubStoreConfig[] = [
+  {
+    slug: 'after-later-audio',
+    name: 'After Later Audio',
+    baseUrl: 'https://afterlateraudio.com/',
+    adapter: 'shopify_product_json',
+    currencyHint: 'USD',
+  },
+  {
+    slug: 'animato-audio',
+    name: 'Animato Audio',
+    baseUrl: 'https://animatoaudio.com/',
+    adapter: 'shopify_product_json',
+    currencyHint: 'HKD',
+  },
+  {
+    slug: 'big-city-music',
+    name: 'Big City Music',
+    baseUrl: 'https://bigcitymusic.com/',
+    adapter: 'shopify_product_json',
+    currencyHint: 'USD',
+  },
+  {
+    slug: 'busy-circuits',
+    name: 'ALM / Busy Circuits',
+    baseUrl: 'https://busycircuits.com/',
+    adapter: 'shopify_product_json',
+    currencyHint: 'GBP',
+    productBrandHint: 'ALM Busy Circuits',
+  },
+  {
+    slug: 'cicada-sound',
+    name: 'Cicada Sound',
+    baseUrl: 'https://cicadasound.ca/',
+    adapter: 'shopify_product_json',
+    currencyHint: 'CAD',
+  },
+  {
+    slug: 'clockface-modular',
+    name: 'Clockface Modular',
+    baseUrl: 'https://clockfacemodular.com/',
+    adapter: 'shopify_product_json',
+    currencyHint: 'JPY',
+  },
+  {
+    slug: 'control',
+    name: 'Control',
+    baseUrl: 'https://www.ctrl-mod.com/',
+    adapter: 'shopify_product_json',
+    currencyHint: 'USD',
+  },
+  {
+    slug: 'detroit-modular',
+    name: 'Detroit Modular',
+    baseUrl: 'https://www.detroitmodular.com/',
+    adapter: 'shopify_product_json',
+    catalogPath: '/collections/eurorack-modules/products.json',
+    currencyHint: 'USD',
+  },
+  {
+    slug: 'dreadbox',
+    name: 'Dreadbox',
+    baseUrl: 'https://www.dreadbox-fx.com/',
+    adapter: 'woocommerce_store_api',
+    productBrandHint: 'Dreadbox',
+  },
   {
     slug: 'elevator-sound',
     name: 'Elevator Sound',
@@ -21,10 +126,158 @@ export const APPROVED_PRICE_HUB_STORES: readonly ApprovedPriceHubStoreConfig[] =
     adapter: 'woocommerce_store_api',
   },
   {
+    slug: 'escape-from-noise',
+    name: 'Escape From Noise',
+    baseUrl: 'https://escapefromnoise.com/',
+    adapter: 'custom',
+    catalogPath: '/sitemap.xml',
+    currencyHint: 'EUR',
+    productUrlPathIncludes: ['/en/modular/'],
+    productUrlPathExcludes: ['/used/'],
+  },
+  {
+    slug: 'exploding-shed',
+    name: 'Exploding Shed',
+    baseUrl: 'https://www.exploding-shed.com/',
+    adapter: 'custom',
+    catalogPath: '/sitemap.xml',
+    currencyHint: 'EUR',
+    productUrlPathExcludes: [
+      '/manuals-tutorials/',
+      '/navigation/',
+      '/information/',
+      '/about-us/',
+      '/new-products/',
+    ],
+  },
+  {
+    slug: 'found-sound',
+    name: 'Found Sound',
+    baseUrl: 'https://foundsound.com.au/',
+    adapter: 'shopify_product_json',
+    catalogPath: '/collections/eurorack/products.json',
+    currencyHint: 'AUD',
+    ignoredMatchNoiseTags: ['preorder'],
+  },
+  {
+    slug: 'instruo',
+    name: 'Instruo',
+    baseUrl: 'https://www.instruomodular.com/',
+    adapter: 'woocommerce_store_api',
+    productBrandHint: 'Instruo',
+  },
+  {
+    slug: 'intellijel',
+    name: 'Intellijel',
+    baseUrl: 'https://intellijel.com/',
+    adapter: 'woocommerce_store_api',
+    productBrandHint: 'Intellijel',
+  },
+  {
+    slug: 'machineroom',
+    name: 'Machineroom',
+    baseUrl: 'https://machineroom.com.ua/',
+    adapter: 'custom',
+    catalogPath: '/sitemap_index.xml',
+    currencyHint: 'EUR',
+    productUrlPathIncludes: ['/product/'],
+  },
+  {
+    slug: 'milk-audio-store',
+    name: 'Milk Audio Store',
+    baseUrl: 'https://www.milkaudiostore.com/',
+    adapter: 'custom',
+    catalogPath: '/product-sitemap_index.xml',
+    currencyHint: 'EUR',
+    productUrlPathIncludes: ['/it/shop/'],
+    productUrlPathExcludes: ['/usato/', '/occasioni/', '-used/'],
+  },
+  {
+    slug: 'michigan-synth-works',
+    name: 'Michigan Synth Works',
+    baseUrl: 'https://michigansynthworks.com/',
+    adapter: 'shopify_product_json',
+    currencyHint: 'USD',
+    productBrandHint: 'Michigan Synth Works',
+  },
+  {
+    slug: 'moog-audio',
+    name: 'Moog Audio',
+    baseUrl: 'https://moogaudio.com/',
+    adapter: 'shopify_product_json',
+    catalogPath: '/collections/modules/products.json',
+    currencyHint: 'CAD',
+  },
+  {
+    slug: 'nano-modules',
+    name: 'Nano Modules',
+    baseUrl: 'https://nano-modules.com/',
+    adapter: 'woocommerce_store_api',
+    productBrandHint: 'Nano Modules',
+  },
+  {
+    slug: 'nightlife-electronics',
+    name: 'Nightlife Electronics',
+    baseUrl: 'https://nightlife-electronics.com/',
+    adapter: 'shopify_product_json',
+    catalogPath: '/collections/modular/products.json',
+    currencyHint: 'CAD',
+  },
+  {
     slug: 'new-groove',
     name: 'New Groove',
     baseUrl: 'https://newgroove.it/',
     adapter: 'woocommerce_store_api',
+  },
+  {
+    slug: 'noisebug',
+    name: 'Noisebug',
+    baseUrl: 'https://www.noisebug.net/',
+    adapter: 'shopify_product_json',
+    currencyHint: 'USD',
+  },
+  {
+    slug: 'patch-point',
+    name: 'Patch Point',
+    baseUrl: 'https://patch-point.com/',
+    adapter: 'shopify_product_json',
+    currencyHint: 'EUR',
+  },
+  {
+    slug: 'postmodular',
+    name: 'Post Modular',
+    baseUrl: 'https://postmodular.co.uk/',
+    adapter: 'woocommerce_store_api',
+  },
+  {
+    slug: 'pusherman-productions',
+    name: 'Pusherman Productions',
+    baseUrl: 'https://pushermanproductions.com/',
+    adapter: 'shopify_product_json',
+    currencyHint: 'GBP',
+  },
+  {
+    slug: 'robotspeak',
+    name: 'RobotSpeak',
+    baseUrl: 'https://robotspeak.com/',
+    adapter: 'shopify_product_json',
+    currencyHint: 'USD',
+  },
+  {
+    slug: 'rubadub',
+    name: 'Rubadub',
+    baseUrl: 'https://rubadub.co.uk/',
+    adapter: 'shopify_product_json',
+    catalogPath: '/collections/eurorack/products.json',
+    currencyHint: 'GBP',
+  },
+  {
+    slug: 'schlappi-engineering',
+    name: 'Schlappi Engineering',
+    baseUrl: 'https://schlappiengineering.com/',
+    adapter: 'shopify_product_json',
+    currencyHint: 'USD',
+    productBrandHint: 'Schlappi Engineering',
   },
   {
     slug: 'signal-sounds-uk',
@@ -44,12 +297,61 @@ export const APPROVED_PRICE_HUB_STORES: readonly ApprovedPriceHubStoreConfig[] =
     baseUrl: 'https://schneidersladen.de/en/',
     adapter: 'shopware_metadata',
   },
+  {
+    slug: 'soundium',
+    name: 'Soundium',
+    baseUrl: 'https://soundium.lt/',
+    adapter: 'shopify_product_json',
+    catalogPath: '/collections/eurorack/products.json',
+    currencyHint: 'EUR',
+  },
+  {
+    slug: 'synthshop',
+    name: 'Synthshop',
+    baseUrl: 'https://synthshop.no/',
+    adapter: 'shopify_product_json',
+    currencyHint: 'NOK',
+  },
+  {
+    slug: 'technosynth',
+    name: 'TechnoSynth',
+    baseUrl: 'https://technosynth.com/',
+    adapter: 'woocommerce_store_api',
+  },
+  {
+    slug: 'thonk',
+    name: 'Thonk',
+    baseUrl: 'https://www.thonk.co.uk/',
+    adapter: 'woocommerce_store_api',
+  },
+  {
+    slug: 'whimsical-raps',
+    name: 'Whimsical Raps',
+    baseUrl: 'https://whimsicalraps.com/',
+    adapter: 'shopify_product_json',
+    currencyHint: 'USD',
+    productBrandHint: 'Whimsical Raps',
+  },
+  {
+    slug: 'wmdevices',
+    name: 'WMD',
+    baseUrl: 'https://wmdevices.com/',
+    adapter: 'shopify_product_json',
+    currencyHint: 'USD',
+  },
+  {
+    slug: 'zlob-modular',
+    name: 'Zlob Modular',
+    baseUrl: 'https://zlobmodular.com/',
+    adapter: 'woocommerce_store_api',
+    productBrandHint: 'Zlob Modular',
+  },
 ];
 
 export function readApprovedPriceHubStore(slug: string): ApprovedPriceHubStoreConfig {
   const store = APPROVED_PRICE_HUB_STORES.find((candidate) => candidate.slug === slug);
   if (!store) {
-    throw new Error(`Unsupported Price Hub store "${slug}". Use elevator-sound, new-groove, signal-sounds-uk, signal-sounds-eu, schneidersladen, or all.`);
+    throw new Error(`Unsupported Price Hub store "${slug}". Use ${APPROVED_PRICE_HUB_STORES.map((candidate) => candidate.slug).join(', ')}, or all.`);
   }
 
   assertHttpsBaseUrl(store.baseUrl);

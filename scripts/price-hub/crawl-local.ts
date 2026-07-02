@@ -32,7 +32,7 @@ async function main(): Promise<void> {
       metadataConcurrency: options.metadataConcurrency,
     });
     const productsPath = await writeCrawledProducts(options.out, store.slug, crawl.products);
-    const urlCount = crawl.totalProductUrls ? ` from ${crawl.totalProductUrls} discovered product URLs` : '';
+    const urlCount = crawl.totalProductUrls ? ` after checking ${crawl.totalProductUrls} product URLs` : '';
     console.log(`Wrote ${crawl.products.length} products for ${store.slug}${urlCount} (${crawl.pagesFetched} pages): ${productsPath}`);
     if (crawl.skippedProducts) {
       console.warn(`Skipped ${crawl.skippedProducts} sitemap pages without usable product metadata for ${store.slug}. Sample: ${(crawl.skippedProductUrls ?? []).join(', ')}`);
@@ -181,7 +181,7 @@ function readBoolean(value: string, fieldName: string): boolean {
 }
 
 function printHelpAndExit(): never {
-  console.log('Usage: pnpm price-hub:crawl-local --store=elevator-sound|new-groove|signal-sounds-uk|signal-sounds-eu|schneidersladen|all --max-pages=100 --max-products=100 --metadata-concurrency=6 --out=tmp/price-hub --modules=modules.json --min-score=0.72 --include-ignored-matches=false');
+  console.log('Usage: pnpm price-hub:crawl-local --store=after-later-audio|busy-circuits|cicada-sound|clockface-modular|control|detroit-modular|dreadbox|elevator-sound|escape-from-noise|exploding-shed|found-sound|instruo|intellijel|machineroom|milk-audio-store|michigan-synth-works|moog-audio|nano-modules|nightlife-electronics|new-groove|noisebug|patch-point|postmodular|pusherman-productions|robotspeak|rubadub|schlappi-engineering|signal-sounds-uk|signal-sounds-eu|schneidersladen|soundium|synthshop|thonk|wmdevices|zlob-modular|all --max-pages=100 --max-products=100 --metadata-concurrency=6 --out=tmp/price-hub --modules=modules.json --min-score=0.72 --include-ignored-matches=false');
   process.exit(0);
 }
 

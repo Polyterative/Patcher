@@ -125,6 +125,18 @@ insert into public.stores (
 )
 values
   (
+    'control',
+    'Control',
+    'US',
+    'https://www.ctrl-mod.com/',
+    'https://www.ctrl-mod.com/search?q={query}',
+    'shopify_product_json',
+    'USD',
+    true,
+    true,
+    100
+  ),
+  (
     'elevator-sound',
     'Elevator Sound',
     'GB',
@@ -135,6 +147,18 @@ values
     true,
     true,
     20
+  ),
+  (
+    'found-sound',
+    'Found Sound',
+    'AU',
+    'https://foundsound.com.au/',
+    'https://foundsound.com.au/search?q={query}',
+    'shopify_product_json',
+    'AUD',
+    true,
+    true,
+    100
   ),
   (
     'new-groove',

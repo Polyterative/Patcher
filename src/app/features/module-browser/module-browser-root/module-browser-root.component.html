@@ -290,6 +290,8 @@
                            [encloseVertically]="false"
                            [moduleAction]="moduleAction"
                            [moduleActionDisabledIds]="moduleActionDisabledIds"
+                           [showPriceSummary]="true"
+                           [priceSummarySourceData$]="dataService.modulesList$"
                            (moduleAction$)="moduleAction$.emit($event)"
           ></app-module-list>
         </div>

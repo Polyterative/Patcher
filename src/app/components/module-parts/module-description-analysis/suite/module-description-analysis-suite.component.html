@@ -15,11 +15,13 @@
       @defer (when true) {
         <app-module-clock-division-analysis [description]="description"></app-module-clock-division-analysis>
       }
-      @defer (when true) {
-        <app-module-waveform-palette-analysis [description]="description"></app-module-waveform-palette-analysis>
-      }
-      @defer (when true) {
-        <app-module-utility-operations-analysis [description]="description"></app-module-utility-operations-analysis>
+      @if (descriptionSignalMetadataVisible) {
+        @defer (when true) {
+          <div class="moduleDescriptionAnalysisSuite__signalMetadata" aria-label="Description signal metadata">
+            <app-module-waveform-palette-analysis [description]="description"></app-module-waveform-palette-analysis>
+            <app-module-utility-operations-analysis [description]="description"></app-module-utility-operations-analysis>
+          </div>
+        }
       }
     }
   </div>

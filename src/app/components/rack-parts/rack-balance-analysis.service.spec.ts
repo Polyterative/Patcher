@@ -77,6 +77,8 @@ describe('RackBalanceAnalysisService', () => {
       makeRackedModule(1, [{name: 'VCO', type: TagType.Source}]),
       makeRackedModule(2, [{name: 'Utility', type: TagType.Utility}]),
       makeRackedModule(3, [{name: 'Envelope', type: TagType.Modulation}]),
+      makeRackedModule(4, [{name: 'Drone', type: TagType.Source}]),
+      makeRackedModule(5, [{name: 'Crossfade', type: TagType.Utility}]),
     ]];
 
     const result = service.analyze(rack);
@@ -85,9 +87,9 @@ describe('RackBalanceAnalysisService', () => {
     const modulation = result.axes.find(axis => axis.id === 'modulation');
 
     expect(result.isEmpty).toBeFalse();
-    expect(result.recognizedModuleCount).toBe(3);
-    expect(voices?.matchedModules).toBe(1);
-    expect(utilities?.matchedModules).toBe(1);
+    expect(result.recognizedModuleCount).toBe(5);
+    expect(voices?.matchedModules).toBe(2);
+    expect(utilities?.matchedModules).toBe(2);
     expect(modulation?.matchedModules).toBe(1);
   });
 
@@ -148,7 +150,7 @@ describe('RackBalanceAnalysisService', () => {
     expect(result.axes.find(axis => axis.id === 'voices')?.matchedModules).toBe(2);
   });
 
-  it('recognizes new tags added in the type restructure (Chord, Granular, filter subtypes, new effects)', () => {
+  it('recognizes new tags added in the type restructure and later tone-shaping additions', () => {
     const rack = [[
       makeRackedModule(1, [{name: 'Chord', type: TagType.Source}]),
       makeRackedModule(2, [{name: 'Granular', type: TagType.Source}]),
@@ -160,13 +162,15 @@ describe('RackBalanceAnalysisService', () => {
       makeRackedModule(8, [{name: 'Looper', type: TagType.Effect}]),
       makeRackedModule(9, [{name: 'Randomness', type: TagType.Modulation}]),
       makeRackedModule(10, [{name: 'Envelope Follow', type: TagType.Modulation}]),
+      makeRackedModule(11, [{name: 'Filterbank', type: TagType.Filter}]),
+      makeRackedModule(12, [{name: 'Feedback', type: TagType.Effect}]),
     ]];
 
     const result = service.analyze(rack);
 
-    expect(result.recognizedModuleCount).toBe(10);
+    expect(result.recognizedModuleCount).toBe(12);
     expect(result.axes.find(a => a.id === 'voices')?.matchedModules).toBe(2);    // Chord + Granular
-    expect(result.axes.find(a => a.id === 'tone')?.matchedModules).toBe(6);      // Bandpass + Lowpass + Hipass + Bitcrush + Resonator + Looper
+    expect(result.axes.find(a => a.id === 'tone')?.matchedModules).toBe(8);      // Filter/effect tone tags
     expect(result.axes.find(a => a.id === 'modulation')?.matchedModules).toBe(2); // Randomness + Envelope Follow
   });
 

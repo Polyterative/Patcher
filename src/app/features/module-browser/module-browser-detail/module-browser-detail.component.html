@@ -4,12 +4,14 @@
   patchesWithThisModule: (dataService.patchesWithThisModule$|async),
   collectionsWithThisModule: (dataService.collectionsWithThisModule$|async),
   modulePriceListings: (dataService.modulePriceListings$|async),
+  recentMarketPrice: (dataService.recentMarketPrice$|async),
   moduleUsageSummary: (dataService.moduleUsageSummary$|async),
   possessionCounts: (dataService.possessionCounts$|async),
   coolCount: (dataService.coolCount$|async),
   userModuleAcquisitions: (dataService.userModuleAcquisitions$|async),
   latestFormattedAcquisitionValue: (dataService.latestFormattedAcquisitionValue$|async),
   currentModulePossession: (dataService.currentModulePossession$|async),
+  availableRetailerSearchLinks: (availableRetailerSearchLinks$|async),
   user: (userManagementService.loggedUser$|async),
   editing: (dataService.moduleEditingPanelOpenState$|async),
   hasPendingEditorChanges: (dataService.moduleEditorHasPendingChanges$|async)
@@ -39,6 +41,7 @@
                                       [viewConfig]="viewConfig"
                                       [preferredPanelColor]="appState.preferredPanelColor$ | async"
                                       [preferPortraitDetailSplit]="true"
+                                      [priceSummary]="bag.recentMarketPrice"
                 ></app-module-composite>
               }
             </lib-clean-card>
@@ -202,18 +205,42 @@
                <lib-hero-content-card titleNormal="Search on"
                                        [@moduleDetailSupportEnter]="{ value: '', params: { delay: 388, duration: 185 } }"
                                       [sidesPadding]="false">
-                <mat-chip-set class="rowwrap gap1">
-                  @for (link of searchLinks; track link) {
-                    <mat-chip
-                      class="module-search-chip"
-                      [matTooltip]="link.tooltip"
-                      (click)="openExternalLink(link.url(bag.data.name, bag.data.manufacturer.name))"
-                    >
-                      <mat-icon matChipAvatar>{{ link.icon }}</mat-icon>
-                      {{ link.label }}
-                    </mat-chip>
+                <div class="module-search-groups">
+                  <section class="module-search-group">
+                    <div class="module-search-group__label">Community</div>
+                    <mat-chip-set class="rowwrap gap1">
+                      @for (link of communitySearchLinks; track link) {
+                        <mat-chip
+                          class="module-search-chip"
+                          [matTooltip]="link.tooltip"
+                          (click)="openExternalLink(link.url(bag.data.name, bag.data.manufacturer.name))"
+                        >
+                          <mat-icon matChipAvatar>{{ link.icon }}</mat-icon>
+                          {{ link.label }}
+                        </mat-chip>
+                      }
+                    </mat-chip-set>
+                  </section>
+                  @if (bag.availableRetailerSearchLinks; as retailerSearchLinks) {
+                    @if (retailerSearchLinks.length > 0) {
+                      <section class="module-search-group">
+                        <div class="module-search-group__label">Other stores</div>
+                        <mat-chip-set class="rowwrap gap1">
+                          @for (link of retailerSearchLinks; track link) {
+                            <mat-chip
+                              class="module-search-chip"
+                              [matTooltip]="link.tooltip"
+                              (click)="openExternalLink(link.url(bag.data.name, bag.data.manufacturer.name))"
+                            >
+                              <mat-icon matChipAvatar>{{ link.icon }}</mat-icon>
+                              {{ link.label }}
+                            </mat-chip>
+                          }
+                        </mat-chip-set>
+                      </section>
+                    }
                   }
-                </mat-chip-set>
+                </div>
               </lib-hero-content-card>
               @if (collectionsEnabled && bag.collectionsWithThisModule && bag.collectionsWithThisModule.length > 0) {
                 <lib-hero-content-card titleNormal="Appears in collections"
@@ -254,29 +281,50 @@
              <lib-hero-content-card titleNormal="Dev utils"
                                     [@moduleDetailSupportEnter]="{ value: '', params: { delay: 428, duration: 190 } }"
                                     [sidesPadding]="false">
-              <div class="rowwrap gap2">
-                @if (bag.data) {
+              <div class="module-detail-dev-utils">
+                <section class="module-detail-dev-group module-detail-dev-group--danger"
+                         aria-labelledby="module-detail-dev-danger-label">
+                  <div class="module-detail-dev-group__label"
+                       id="module-detail-dev-danger-label">Danger
+                  </div>
+                  <div class="module-detail-dev-group__actions">
                   <app-brand-primary-button theme="negative"
                                             matTooltip="Permanently delete this module from the database"
                                             matTooltipPosition="above"
                                             (click$)="dataService.deleteModule$.next(bag.data.id)">Delete module
                   </app-brand-primary-button>
-                }
-                @if (bag.data && bag.data.manufacturerId) {
+                  @if (bag.data.manufacturerId) {
                   <app-brand-primary-button theme="negative"
                                             matTooltip="Delete this module and remove its manufacturer only if it becomes orphaned"
                                             matTooltipPosition="above"
                                             (click$)="confirmDeleteModuleAndOrphanManufacturer(bag.data)">Delete module + orphan manufacturer
                   </app-brand-primary-button>
-                }
-                @if (bag.data) {
+                  }
+                  @if (bag.data.panels?.length) {
+                    @for (panel of bag.data.panels; track panel.id; let panelIndex = $index) {
+                      <app-brand-primary-button theme="negative"
+                                                [matTooltip]="getDevDeletePanelTooltip(panel, panelIndex)"
+                                                matTooltipPosition="above"
+                                                (click$)="dataService.deletePanel$.next(panel)">{{ getDevDeletePanelLabel(panel, panelIndex) }}
+                      </app-brand-primary-button>
+                    }
+                  }
+                  </div>
+                </section>
+
+                <section class="module-detail-dev-group"
+                         aria-labelledby="module-detail-dev-merge-label">
+                  <div class="module-detail-dev-group__label"
+                       id="module-detail-dev-merge-label">Merge
+                  </div>
+                  <div class="module-detail-dev-group__actions">
                   <app-brand-primary-button theme="negative"
                                             matTooltip="Move ownership, tags, and rack placements to a canonical target module, then delete this source"
                                             matTooltipPosition="above"
                                             (click$)="openMergeIntoTargetForm()">Merge into target module…
                   </app-brand-primary-button>
-                }
-                @if ((mergeIntoTargetOpen$ | async) && bag.data) {
+                  </div>
+                @if ((mergeIntoTargetOpen$ | async)) {
                   <div class="col gap1 merge-into-target-form">
                     <mat-form-field appearance="outline">
                       <mat-label>Target module ID to keep</mat-label>
@@ -302,14 +350,15 @@
                     </div>
                   </div>
                 }
-                @if (bag.data) {
-                  <app-brand-primary-button theme="negative"
-                                            matTooltip="Remove the newest panel image from this module"
-                                            matTooltipPosition="above"
-                                            (click$)="dataService.deleteLastPanel$.next(bag.data)">Delete last panel
-                  </app-brand-primary-button>
-                }
-                @if (bag.data && bag.data.standard.id !== 1) {
+                </section>
+
+                <section class="module-detail-dev-group"
+                         aria-labelledby="module-detail-dev-convert-label">
+                  <div class="module-detail-dev-group__label"
+                       id="module-detail-dev-convert-label">Convert
+                  </div>
+                  <div class="module-detail-dev-group__actions">
+                @if (bag.data.standard.id !== 1) {
                   <app-brand-primary-button theme="primary"
                                             matTooltip="Set panel standard to Intellijel 1U"
                                             matTooltipPosition="above"
@@ -317,14 +366,14 @@
                     Convert to 1U Intellijel
                   </app-brand-primary-button>
                 }
-                @if (bag.data && bag.data.standard.id !== 0) {
+                @if (bag.data.standard.id !== 0) {
                   <app-brand-primary-button theme="primary"
                                             matTooltip="Set panel standard to Doepfer 3U"
                                             matTooltipPosition="above"
                                             (click$)="setDevStandard(0)">Convert to 3U Doepfer
                   </app-brand-primary-button>
                 }
-                @if (bag.data && bag.data.standard.id !== 2) {
+                @if (bag.data.standard.id !== 2) {
                   <app-brand-primary-button theme="primary"
                                             matTooltip="Set panel standard to Pulp Logic 1U"
                                             matTooltipPosition="above"
@@ -332,85 +381,107 @@
                     Convert to 1U Pulp Logic
                   </app-brand-primary-button>
                 }
-                @if (bag.data && bag.data.isComplete === false) {
+                  </div>
+                </section>
+
+                <section class="module-detail-dev-group"
+                         aria-labelledby="module-detail-dev-status-label">
+                  <div class="module-detail-dev-group__label"
+                       id="module-detail-dev-status-label">Status
+                  </div>
+                  <div class="module-detail-dev-group__actions">
+                @if (bag.data.isComplete === false) {
                   <app-brand-primary-button theme="positive"
                                             matTooltip="Mark this module as complete"
                                             matTooltipPosition="above"
                                             (click$)="setDevComplete(true)">Mark as complete
                   </app-brand-primary-button>
                 }
-                @if (bag.data && bag.data.isComplete === true) {
+                @if (bag.data.isComplete === true) {
                   <app-brand-primary-button theme="warning"
                                             matTooltip="Mark this module as incomplete"
                                             matTooltipPosition="above"
                                             (click$)="setDevComplete(false)">Mark as incomplete
                   </app-brand-primary-button>
                 }
-                @if (bag.data && bag.data.isApproved === false) {
+                @if (bag.data.isApproved === false) {
                   <app-brand-primary-button theme="positive"
                                             matTooltip="Approve this module for public quality standards"
                                             matTooltipPosition="above"
                                             (click$)="setDevApproved(true)">Mark as approved
                   </app-brand-primary-button>
                 }
-                @if (bag.data && bag.data.isApproved === true) {
+                @if (bag.data.isApproved === true) {
                   <app-brand-primary-button theme="warning"
                                             matTooltip="Remove approved status from this module"
                                             matTooltipPosition="above"
                                             (click$)="setDevApproved(false)">Mark as unapproved
                   </app-brand-primary-button>
                 }
-                @if (bag.data && bag.data.isDIY === false) {
+                @if (bag.data.isDIY === false) {
                   <app-brand-primary-button theme="positive"
                                             matTooltip="Flag this module as DIY"
                                             matTooltipPosition="above"
                                             (click$)="setDevDIY(true)">Mark as DIY
                   </app-brand-primary-button>
                 }
-                @if (bag.data && bag.data.isDIY === true) {
+                @if (bag.data.isDIY === true) {
                   <app-brand-primary-button theme="warning"
                                             matTooltip="Remove DIY flag from this module"
                                             matTooltipPosition="above"
                                             (click$)="setDevDIY(false)">Mark as non-DIY
                   </app-brand-primary-button>
                 }
-                @if (bag.data) {
+                  </div>
+                </section>
+
+                <section class="module-detail-dev-group"
+                         aria-labelledby="module-detail-dev-dimensions-label">
+                  <div class="module-detail-dev-group__label"
+                       id="module-detail-dev-dimensions-label">Dimensions
+                  </div>
+                  <div class="module-detail-dev-group__actions">
                   <app-brand-primary-button theme="warning"
                                             matTooltip="Lower module width by 5 HP"
                                             matTooltipPosition="above"
                                             (click$)="adjustDevHp(bag.data, -5)">HP -5
                   </app-brand-primary-button>
-                }
-                @if (bag.data) {
                   <app-brand-primary-button theme="warning"
                                             matTooltip="Lower module width by 1 HP"
                                             matTooltipPosition="above"
                                             (click$)="adjustDevHp(bag.data, -1)">HP -1
                   </app-brand-primary-button>
-                }
-                @if (bag.data) {
                   <app-brand-primary-button theme="positive"
                                             matTooltip="Increase module width by 1 HP"
                                             matTooltipPosition="above"
                                             (click$)="adjustDevHp(bag.data, 1)">HP +1
                   </app-brand-primary-button>
-                }
-                @if (bag.data) {
                   <app-brand-primary-button theme="positive"
                                             matTooltip="Increase module width by 5 HP"
                                             matTooltipPosition="above"
                                             (click$)="adjustDevHp(bag.data, 5)">HP +5
                   </app-brand-primary-button>
-                }
-                @if (bag.data) {
+                  </div>
+                </section>
+
+                <section class="module-detail-dev-group"
+                         aria-labelledby="module-detail-dev-data-hygiene-label">
+                  <div class="module-detail-dev-group__label"
+                       id="module-detail-dev-data-hygiene-label">Data hygiene
+                  </div>
+                  <div class="module-detail-dev-group__actions">
                   <app-brand-primary-button theme="primary"
                                             matTooltip="Trim and normalize whitespace in name, description, and manual URL"
                                             matTooltipPosition="above"
                                             (click$)="trimDevTextFields(bag.data)">Trim text fields
                   </app-brand-primary-button>
-                }
-                @if (bag.data) {
-                  <div class="col gap1 store-url-edit" style="width: 100%">
+                  <app-brand-primary-button theme="warning"
+                                            matTooltip="Set negative numeric values to zero (HP, depth, weight, power)"
+                                            matTooltipPosition="above"
+                                            (click$)="clampDevNumericFields(bag.data)">Clamp negative numbers
+                  </app-brand-primary-button>
+                  </div>
+                  <div class="col gap1 store-url-edit module-detail-dev-group__form">
                     <mat-form-field appearance="outline" style="width: 100%">
                       <mat-label>Manual URL</mat-label>
                       <input matInput
@@ -433,16 +504,15 @@
                       }
                     </div>
                   </div>
-                }
-                @if (bag.data) {
-                  <app-brand-primary-button theme="warning"
-                                            matTooltip="Set negative numeric values to zero (HP, depth, weight, power)"
-                                            matTooltipPosition="above"
-                                            (click$)="clampDevNumericFields(bag.data)">Clamp negative numbers
-                  </app-brand-primary-button>
-                }
+                </section>
+
                @if ((panelRatioDiagnostics$ | async); as panelRatioDiagnostics) {
                  @if (panelRatioDiagnostics.length > 0) {
+                   <section class="module-detail-dev-group"
+                            aria-labelledby="module-detail-dev-diagnostics-label">
+                     <div class="module-detail-dev-group__label"
+                          id="module-detail-dev-diagnostics-label">Diagnostics
+                     </div>
                    <div class="col gap1 module-panel-ratio-diagnostics">
                      <div class="row gap1 module-panel-ratio-diagnostics__header">
                        <mat-icon>photo_size_select_large</mat-icon>
@@ -477,6 +547,7 @@
                        </div>
                      }
                    </div>
+                   </section>
                  }
                }
                 <!--                <pre>-->
@@ -594,7 +665,11 @@
       <div class="module-detail-swap-pane"
            [@moduleDetailPaneSwap]
       >
-        <app-manufacturer-row [manufacturer]="$any(bag.data.manufacturer)" [hideRowLink]="true"></app-manufacturer-row>
+        <app-manufacturer-row
+          [manufacturer]="$any(bag.data.manufacturer)"
+          [hideRowLink]="true"
+          [showPriceSummary]="true"
+        ></app-manufacturer-row>
       </div>
     }
   </div>

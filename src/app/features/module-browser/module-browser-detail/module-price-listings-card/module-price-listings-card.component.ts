@@ -1,264 +1,54 @@
 import { Component, Input } from '@angular/core';
 import { ModulePriceListing } from 'src/app/features/backend/supabase-queries';
-
-export type ModulePriceAvailabilityFilter =
-  | 'all'
-  | 'in_stock'
-  | 'available_soon'
-  | 'unavailable'
-  | 'unknown';
-
-export type ModulePriceAvailabilityGroup = Exclude<
+import {
+  buildModulePriceRegionFilterOptions,
+  compareListingsByKnownPriceOnly,
+  countryCodeToFlag,
+  detectPreferredModulePriceContinent,
+  filterAndOrderModulePriceListings,
+  formatPricePercentDelta,
+  getAvailableNowPriority,
+  getKnownPriceListings,
+  getListingPriceAmount,
+  getRegionFilterResultLabel,
+  getShippingOriginCode,
+  groupModulePriceListingsByContinent,
+  isModulePriceAvailabilityFilter,
+  isModulePriceListingOrder,
+  isModulePriceRegionFilter,
+  MODULE_PRICE_AVAILABILITY_FILTER_OPTIONS,
+  MODULE_PRICE_AVAILABILITY_RESULT_LABELS,
+  MODULE_PRICE_LISTING_ORDER_OPTIONS,
+  MODULE_PRICE_ORDER_RESULT_LABELS,
+  REGION_LABELS,
+  regionDisplayNames,
+  STORE_HERO_COLORS
+} from './module-price-listings-card.utils';
+import type {
   ModulePriceAvailabilityFilter,
-  'all'
->;
+  ModulePriceContinentCode,
+  ModulePriceComparisonPoint,
+  ModulePriceListingGroup,
+  ModulePriceListingsDerivedState,
+  ModulePriceListingOrder,
+  ModulePriceRegionFilter
+} from './module-price-listings-card.utils';
 
-export type ModulePriceListingOrder =
-  | 'price_asc'
-  | 'price_desc'
-  | 'availability'
-  | 'store_name';
-
-interface ModulePriceSelectOption<T extends string> {
-  value: T;
-  label: string;
-}
-
-export interface ModulePriceComparisonPoint {
-  listing: ModulePriceListing;
-  relation: 'best' | 'above' | 'below' | 'same';
-  widthPercent: number;
-  normalizedPriceEurMinor: number;
-}
-
-export const MODULE_PRICE_AVAILABILITY_FILTER_OPTIONS: ReadonlyArray<
-  ModulePriceSelectOption<ModulePriceAvailabilityFilter>
-> = [
-  {value: 'all', label: 'All'},
-  {value: 'in_stock', label: 'Available now'},
-  {value: 'available_soon', label: 'Available soon'},
-  {value: 'unavailable', label: 'Unavailable'},
-  {value: 'unknown', label: 'Unknown'}
-];
-
-export const MODULE_PRICE_LISTING_ORDER_OPTIONS: ReadonlyArray<
-  ModulePriceSelectOption<ModulePriceListingOrder>
-> = [
-  {value: 'price_asc', label: '↓ Price'},
-  {value: 'price_desc', label: '↑ Price'},
-  {value: 'availability', label: 'Avail.'},
-  {value: 'store_name', label: 'Store'}
-];
-
-const AVAILABILITY_GROUP_ORDER: Record<ModulePriceAvailabilityGroup, number> = {
-  in_stock: 0,
-  available_soon: 1,
-  unavailable: 2,
-  unknown: 3
-};
-
-const REGION_LABELS: Readonly<Record<string, string>> = {
-  GB: 'United Kingdom',
-  UK: 'United Kingdom'
-};
-
-const SHIPPING_ORIGIN_NEEDS_REVIEW_LABEL = 'Shipping origin needs review';
-const SHIPPING_ORIGIN_NEEDS_REVIEW_CODES = new Set(['EU']);
-
-const STORE_HERO_COLORS: Readonly<Record<string, string>> = {
-  'elevator-sound': '#6f685d',
-  'new-groove': '#70685f',
-  'signal-sounds-uk': '#676976',
-  'signal-sounds-eu': '#647078',
-  schneidersladen: '#706765'
-};
-
-const CURRENCY_TO_EUR_RATE: Readonly<Record<string, number>> = {
-  CHF: 1.07,
-  EUR: 1,
-  GBP: 1.17,
-  USD: 0.92
-};
-
-const regionDisplayNames =
-  typeof Intl.DisplayNames === 'function'
-    ? new Intl.DisplayNames(undefined, {type: 'region'})
-    : null;
-
-export function getModulePriceAvailabilityGroup(
-  listing: ModulePriceListing
-): ModulePriceAvailabilityGroup {
-  switch (listing.latestSnapshot?.availability) {
-    case 'in_stock':
-      return 'in_stock';
-    case 'preorder':
-    case 'backorder':
-      return 'available_soon';
-    case 'out_of_stock':
-    case 'discontinued':
-      return 'unavailable';
-    default:
-      return 'unknown';
-  }
-}
-
-export function filterAndOrderModulePriceListings(
-  listings: ReadonlyArray<ModulePriceListing>,
-  availabilityFilter: ModulePriceAvailabilityFilter,
-  listingOrder: ModulePriceListingOrder
-): ModulePriceListing[] {
-  const filteredListings =
-    availabilityFilter === 'all'
-      ? [...listings]
-      : listings.filter(
-          listing => getModulePriceAvailabilityGroup(listing) === availabilityFilter
-        );
-
-  return filteredListings.sort((first, second) => {
-    switch (listingOrder) {
-      case 'price_desc':
-        return compareListingsByPrice(first, second, 'desc');
-      case 'availability':
-        return compareListingsByAvailability(first, second);
-      case 'store_name':
-        return compareListingsByStoreName(first, second);
-      case 'price_asc':
-      default:
-        return compareListingsByPrice(first, second, 'asc');
-    }
-  });
-}
-
-function compareListingsByPrice(
-  first: ModulePriceListing,
-  second: ModulePriceListing,
-  direction: 'asc' | 'desc'
-): number {
-  const firstPrice = getListingPriceAmount(first);
-  const secondPrice = getListingPriceAmount(second);
-  const firstHasPrice = firstPrice !== null && firstPrice !== undefined;
-  const secondHasPrice = secondPrice !== null && secondPrice !== undefined;
-
-  if (!firstHasPrice || !secondHasPrice) {
-    if (firstHasPrice === secondHasPrice) {
-      return compareListingsByStoreName(first, second);
-    }
-
-    return firstHasPrice ? -1 : 1;
-  }
-
-  const availabilityDelta =
-    getAvailableNowPriority(first) - getAvailableNowPriority(second);
-
-  if (availabilityDelta !== 0) {
-    return availabilityDelta;
-  }
-
-  const priceDelta =
-    direction === 'asc' ? firstPrice - secondPrice : secondPrice - firstPrice;
-
-  return priceDelta || compareListingsByStoreName(first, second);
-}
-
-function getAvailableNowPriority(listing: ModulePriceListing): number {
-  return listing.latestSnapshot?.availability === 'in_stock' ? 0 : 1;
-}
-
-function getListingPriceAmount(listing: ModulePriceListing): number | null {
-  const snapshot = listing.latestSnapshot;
-  const priceAmountMinor = snapshot?.priceAmountMinor;
-  const currency = snapshot?.currency?.trim().toUpperCase();
-
-  if (priceAmountMinor === null || priceAmountMinor === undefined || !currency) {
-    return null;
-  }
-
-  const eurRate = CURRENCY_TO_EUR_RATE[currency];
-  return eurRate === undefined ? null : Math.round(priceAmountMinor * eurRate);
-}
-
-function getKnownPriceListings(
-  listings: ReadonlyArray<ModulePriceListing>
-): ModulePriceListing[] {
-  return listings.filter(listing => getListingPriceAmount(listing) !== null);
-}
-
-function compareListingsByKnownPriceOnly(
-  first: ModulePriceListing,
-  second: ModulePriceListing
-): number {
-  return (
-    (getListingPriceAmount(first) ?? Number.POSITIVE_INFINITY) -
-    (getListingPriceAmount(second) ?? Number.POSITIVE_INFINITY) ||
-    compareListingsByStoreName(first, second)
-  );
-}
-
-function formatPricePercentDelta(
-  basePrice: number,
-  comparisonPrice: number
-): string {
-  if (basePrice <= 0) {
-    return '0%';
-  }
-
-  const rawPercent = Math.abs((comparisonPrice - basePrice) / basePrice * 100);
-  const roundedPercent = rawPercent > 0 ? Math.max(1, Math.round(rawPercent)) : 0;
-
-  return `${roundedPercent}%`;
-}
-
-function getShippingOriginCode(listing: ModulePriceListing): string {
-  const originCode = listing.countryCode?.trim().toUpperCase();
-
-  if (!originCode) {
-    return '';
-  }
-
-  return originCode === 'UK' ? 'GB' : originCode;
-}
-
-function compareListingsByAvailability(
-  first: ModulePriceListing,
-  second: ModulePriceListing
-): number {
-  const groupDelta =
-    AVAILABILITY_GROUP_ORDER[getModulePriceAvailabilityGroup(first)] -
-    AVAILABILITY_GROUP_ORDER[getModulePriceAvailabilityGroup(second)];
-
-  return groupDelta || compareListingsByPrice(first, second, 'asc');
-}
-
-function compareListingsByStoreName(
-  first: ModulePriceListing,
-  second: ModulePriceListing
-): number {
-  return (
-    first.storeName.localeCompare(second.storeName, undefined, {
-      sensitivity: 'base'
-    }) || first.listingId - second.listingId
-  );
-}
-
-function isModulePriceAvailabilityFilter(
-  value: unknown
-): value is ModulePriceAvailabilityFilter {
-  if (typeof value !== 'string') {
-    return false;
-  }
-
-  return MODULE_PRICE_AVAILABILITY_FILTER_OPTIONS.some(
-    option => option.value === value
-  );
-}
-
-function isModulePriceListingOrder(value: unknown): value is ModulePriceListingOrder {
-  if (typeof value !== 'string') {
-    return false;
-  }
-
-  return MODULE_PRICE_LISTING_ORDER_OPTIONS.some(option => option.value === value);
-}
+export {
+  detectPreferredModulePriceContinent,
+  filterAndOrderModulePriceListings,
+  getContinentForRegionCode,
+  getModulePriceAvailabilityGroup
+} from './module-price-listings-card.utils';
+export type {
+  ModulePriceAvailabilityFilter,
+  ModulePriceAvailabilityGroup,
+  ModulePriceContinentCode,
+  ModulePriceComparisonPoint,
+  ModulePriceListingGroup,
+  ModulePriceListingOrder,
+  ModulePriceRegionFilter
+} from './module-price-listings-card.utils';
 
 @Component({
   selector: 'app-module-price-listings-card',
@@ -267,10 +57,24 @@ function isModulePriceListingOrder(value: unknown): value is ModulePriceListingO
   standalone: false
 })
 export class ModulePriceListingsCardComponent {
-  @Input() listings: ModulePriceListing[] | null | undefined;
+  private _listings: ModulePriceListing[] | null | undefined;
+  private derivedState: ModulePriceListingsDerivedState | null = null;
+
+  @Input()
+  set listings(value: ModulePriceListing[] | null | undefined) {
+    this._listings = value;
+    this.syncRegionFilterWithAvailableOptions();
+    this.invalidateDerivedState();
+  }
+
+  get listings(): ModulePriceListing[] | null | undefined {
+    return this._listings;
+  }
 
   availabilityFilter: ModulePriceAvailabilityFilter = 'all';
   listingOrder: ModulePriceListingOrder = 'price_asc';
+  preferredContinent: ModulePriceContinentCode = detectPreferredModulePriceContinent();
+  regionFilter: ModulePriceRegionFilter = this.preferredContinent;
 
   readonly availabilityFilterOptions = MODULE_PRICE_AVAILABILITY_FILTER_OPTIONS;
   readonly listingOrderOptions = MODULE_PRICE_LISTING_ORDER_OPTIONS;
@@ -280,59 +84,48 @@ export class ModulePriceListingsCardComponent {
   }
 
   get displayListings(): ModulePriceListing[] {
-    return filterAndOrderModulePriceListings(
-      this.listings ?? [],
-      this.availabilityFilter,
-      this.listingOrder
-    );
+    return this.getDerivedState().displayListings;
+  }
+
+  get displayListingGroups(): ModulePriceListingGroup[] {
+    return this.getDerivedState().displayListingGroups;
+  }
+
+  get regionFilterOptions(): ReadonlyArray<{value: ModulePriceRegionFilter; label: string}> {
+    return this.getDerivedState().regionFilterOptions;
   }
 
   get priceComparisonPoints(): ModulePriceComparisonPoint[] {
-    const pricedListings = getKnownPriceListings(this.displayListings)
-      .sort(compareListingsByKnownPriceOnly);
+    return this.getDerivedState().priceComparisonPoints;
+  }
 
-    if (pricedListings.length < 2) {
-      return [];
-    }
-
-    const benchmarkListing = this.getBestAvailableNowListing() ?? pricedListings[0];
-    const benchmarkPrice = getListingPriceAmount(benchmarkListing);
-
-    if (benchmarkPrice === null || benchmarkPrice <= 0) {
-      return [];
-    }
-
-    const normalizedPrices = pricedListings.map(
-      listing => getListingPriceAmount(listing) ?? benchmarkPrice
-    );
-    const minPrice = Math.min(...normalizedPrices);
-    const maxPrice = Math.max(...normalizedPrices);
-    const spread = maxPrice - minPrice;
-    const rangePadding = Math.max(Math.round(spread * 0.14), Math.round(minPrice * 0.015), 100);
-    const axisMin = Math.max(0, minPrice - rangePadding);
-    const axisMax = maxPrice + rangePadding;
-
-    return pricedListings.map(listing => ({
-      listing,
-      relation: this.getComparisonRelation(listing, benchmarkListing, benchmarkPrice),
-      normalizedPriceEurMinor: getListingPriceAmount(listing) ?? benchmarkPrice,
-      widthPercent: this.getComparisonRailWidthPercent(
-        getListingPriceAmount(listing) ?? benchmarkPrice,
-        axisMin,
-        axisMax
-      )
-    }));
+  get resultSummaryLabel(): string {
+    return [
+      MODULE_PRICE_AVAILABILITY_RESULT_LABELS[this.availabilityFilter],
+      MODULE_PRICE_ORDER_RESULT_LABELS[this.listingOrder],
+      getRegionFilterResultLabel(this.regionFilter, this.preferredContinent)
+    ].join(', ');
   }
 
   setAvailabilityFilter(value: unknown): void {
-    if (isModulePriceAvailabilityFilter(value)) {
+    if (isModulePriceAvailabilityFilter(value) && this.availabilityFilter !== value) {
       this.availabilityFilter = value;
+      this.syncRegionFilterWithAvailableOptions();
+      this.invalidateDerivedState();
     }
   }
 
   setListingOrder(value: unknown): void {
-    if (isModulePriceListingOrder(value)) {
+    if (isModulePriceListingOrder(value) && this.listingOrder !== value) {
       this.listingOrder = value;
+      this.invalidateDerivedState();
+    }
+  }
+
+  setRegionFilter(value: unknown): void {
+    if (isModulePriceRegionFilter(value) && this.regionFilter !== value) {
+      this.regionFilter = value;
+      this.invalidateDerivedState();
     }
   }
 
@@ -391,18 +184,23 @@ export class ModulePriceListingsCardComponent {
   }
 
   getBestAvailableNowListing(): ModulePriceListing | null {
-    return getKnownPriceListings(this.displayListings)
-      .filter(listing => this.isAvailableNow(listing))
-      .sort(compareListingsByKnownPriceOnly)[0] ?? null;
+    return this.getDerivedState().bestAvailableNowListing;
   }
 
   getPriceInsightLabel(listing: ModulePriceListing): string {
+    return this.getDerivedState().priceInsightLabelByListingId.get(listing.listingId) ?? '';
+  }
+
+  private buildPriceInsightLabel(
+    listing: ModulePriceListing,
+    bestAvailableNow: ModulePriceListing | null,
+    cheapestKnown: ModulePriceListing | null
+  ): string {
     const price = getListingPriceAmount(listing);
     if (price === null) {
       return '';
     }
 
-    const bestAvailableNow = this.getBestAvailableNowListing();
     const bestAvailablePrice =
       bestAvailableNow ? getListingPriceAmount(bestAvailableNow) : null;
 
@@ -412,18 +210,16 @@ export class ModulePriceListingsCardComponent {
       }
 
       if (!this.isAvailableNow(listing) && price < bestAvailablePrice) {
-        return `Could be ${formatPricePercentDelta(bestAvailablePrice, price)} less if available`;
+        return `Save ${formatPricePercentDelta(bestAvailablePrice, price)} if available`;
       }
 
       if (this.isAvailableNow(listing)) {
         return `+${formatPricePercentDelta(bestAvailablePrice, price)} vs best`;
       }
 
-      return 'Not available';
+      return `+${formatPricePercentDelta(bestAvailablePrice, price)} vs best`;
     }
 
-    const cheapestKnown = getKnownPriceListings(this.displayListings)
-      .sort(compareListingsByKnownPriceOnly)[0];
     const cheapestKnownPrice = cheapestKnown ? getListingPriceAmount(cheapestKnown) : null;
 
     if (!cheapestKnown || cheapestKnownPrice === null) {
@@ -436,13 +232,16 @@ export class ModulePriceListingsCardComponent {
   }
 
   getPriceInsightClass(listing: ModulePriceListing): string {
-    const label = this.getPriceInsightLabel(listing);
+    return this.getDerivedState().priceInsightClassByListingId.get(listing.listingId)
+      ?? 'module-price-listing__insight--muted';
+  }
 
+  private getPriceInsightClassForLabel(label: string): string {
     if (label === 'Best now' || label === 'Lowest listed') {
       return 'module-price-listing__insight--best';
     }
 
-    if (label.startsWith('Could be ')) {
+    if (label.startsWith('Save ')) {
       return 'module-price-listing__insight--opportunity';
     }
 
@@ -454,7 +253,7 @@ export class ModulePriceListingsCardComponent {
   }
 
   isBestAvailableNowListing(listing: ModulePriceListing): boolean {
-    return this.getBestAvailableNowListing()?.listingId === listing.listingId;
+    return this.getDerivedState().bestAvailableNowListing?.listingId === listing.listingId;
   }
 
   getShippingOriginLabel(listing: ModulePriceListing): string {
@@ -463,14 +262,15 @@ export class ModulePriceListingsCardComponent {
       return '';
     }
 
-    if (SHIPPING_ORIGIN_NEEDS_REVIEW_CODES.has(originCode)) {
-      return SHIPPING_ORIGIN_NEEDS_REVIEW_LABEL;
-    }
-
     const originName =
       REGION_LABELS[originCode] ?? regionDisplayNames?.of(originCode) ?? originCode;
 
     return originName;
+  }
+
+  getShippingOriginFlag(listing: ModulePriceListing): string {
+    const originCode = getShippingOriginCode(listing);
+    return originCode ? countryCodeToFlag(originCode) : '';
   }
 
   private getComparisonRelation(
@@ -505,8 +305,131 @@ export class ModulePriceListingsCardComponent {
   }
 
   getPriceComparisonPoint(listing: ModulePriceListing): ModulePriceComparisonPoint | null {
-    return this.priceComparisonPoints.find(
-      point => point.listing.listingId === listing.listingId
-    ) ?? null;
+    return this.getDerivedState().priceComparisonPointByListingId.get(listing.listingId) ?? null;
+  }
+
+  private getDerivedState(): ModulePriceListingsDerivedState {
+    if (this.derivedState) {
+      return this.derivedState;
+    }
+
+    const displayListings = filterAndOrderModulePriceListings(
+      this.listings ?? [],
+      this.availabilityFilter,
+      this.listingOrder,
+      this.regionFilter,
+      this.preferredContinent
+    );
+    const displayListingGroups = groupModulePriceListingsByContinent(displayListings);
+    const regionFilterOptions = buildModulePriceRegionFilterOptions(
+      this.listings ?? [],
+      this.availabilityFilter,
+      this.preferredContinent
+    );
+    const knownPriceListings = getKnownPriceListings(displayListings)
+      .sort(compareListingsByKnownPriceOnly);
+    const bestAvailableNowListing = knownPriceListings
+      .filter(listing => this.isAvailableNow(listing))[0] ?? null;
+    const cheapestKnownListing = knownPriceListings[0] ?? null;
+    const priceComparisonPoints = this.buildPriceComparisonPoints(
+      knownPriceListings,
+      bestAvailableNowListing
+    );
+    const priceComparisonPointByListingId = new Map(
+      priceComparisonPoints.map(point => [point.listing.listingId, point])
+    );
+    const priceInsightLabelByListingId = new Map(
+      displayListings.map(listing => [
+        listing.listingId,
+        this.buildPriceInsightLabel(
+          listing,
+          bestAvailableNowListing,
+          cheapestKnownListing
+        )
+      ])
+    );
+    const priceInsightClassByListingId = new Map(
+      displayListings.map(listing => [
+        listing.listingId,
+        this.getPriceInsightClassForLabel(
+          priceInsightLabelByListingId.get(listing.listingId) ?? ''
+        )
+      ])
+    );
+
+    this.derivedState = {
+      displayListings,
+      displayListingGroups,
+      regionFilterOptions,
+      priceComparisonPoints,
+      priceComparisonPointByListingId,
+      bestAvailableNowListing,
+      cheapestKnownListing,
+      priceInsightLabelByListingId,
+      priceInsightClassByListingId
+    };
+
+    return this.derivedState;
+  }
+
+  private buildPriceComparisonPoints(
+    pricedListings: ModulePriceListing[],
+    bestAvailableNowListing: ModulePriceListing | null
+  ): ModulePriceComparisonPoint[] {
+    if (pricedListings.length < 2) {
+      return [];
+    }
+
+    const benchmarkListing = bestAvailableNowListing ?? pricedListings[0];
+    const benchmarkPrice = getListingPriceAmount(benchmarkListing);
+
+    if (benchmarkPrice === null || benchmarkPrice <= 0) {
+      return [];
+    }
+
+    const normalizedPrices = pricedListings.map(
+      listing => getListingPriceAmount(listing) ?? benchmarkPrice
+    );
+    const minPrice = Math.min(...normalizedPrices);
+    const maxPrice = Math.max(...normalizedPrices);
+    const spread = maxPrice - minPrice;
+    const rangePadding = Math.max(Math.round(spread * 0.14), Math.round(minPrice * 0.015), 100);
+    const axisMin = Math.max(0, minPrice - rangePadding);
+    const axisMax = maxPrice + rangePadding;
+
+    return pricedListings.map(listing => {
+      const normalizedPriceEurMinor = getListingPriceAmount(listing) ?? benchmarkPrice;
+
+      return {
+        listing,
+        relation: this.getComparisonRelation(listing, benchmarkListing, benchmarkPrice),
+        normalizedPriceEurMinor,
+        widthPercent: this.getComparisonRailWidthPercent(
+          normalizedPriceEurMinor,
+          axisMin,
+          axisMax
+        )
+      };
+    });
+  }
+
+  private invalidateDerivedState(): void {
+    this.derivedState = null;
+  }
+
+  private syncRegionFilterWithAvailableOptions(): void {
+    if (this.regionFilter === 'all') {
+      return;
+    }
+
+    const hasSelectedRegion = buildModulePriceRegionFilterOptions(
+      this.listings ?? [],
+      this.availabilityFilter,
+      this.preferredContinent
+    ).some(option => option.value === this.regionFilter);
+
+    if (!hasSelectedRegion) {
+      this.regionFilter = 'all';
+    }
   }
 }

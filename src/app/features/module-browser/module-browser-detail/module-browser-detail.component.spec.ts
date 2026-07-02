@@ -34,6 +34,7 @@ import {
   ModuleBrowserDetailComponent
 } from './module-browser-detail.component';
 import { ModuleUsageCardComponent } from './module-usage-card/module-usage-card.component';
+import { ModulePriceListing } from '../../backend/supabase-queries.models';
 
 @Component({
   selector: 'app-module-composite',
@@ -49,6 +50,7 @@ class ModuleCompositeStubComponent {
 
 describe('ModuleBrowserDetailComponent', () => {
   type RatioModuleFixture = Pick<DbModule, 'hp' | 'standard'>;
+  type SearchLinkPriceListing = Pick<ModulePriceListing, 'storeId' | 'storeSlug'>;
 
   function makeReactionBackendSpy() {
     return {
@@ -77,6 +79,7 @@ describe('ModuleBrowserDetailComponent', () => {
     
     const dataService = {
       singleModuleData$,
+      modulePriceListings$: new BehaviorSubject<SearchLinkPriceListing[] | undefined>(undefined),
       updateSingleModuleData$,
       changeModule$,
       isAdmin$: new BehaviorSubject<boolean>(false),
@@ -175,6 +178,7 @@ describe('ModuleBrowserDetailComponent', () => {
       coolCountUpdate$,
       currentModulePossession$: new BehaviorSubject<any>(null),
       modulesBySameManufacturer$: new BehaviorSubject<any[]>([]),
+      modulePriceListings$: new BehaviorSubject<SearchLinkPriceListing[] | undefined>(undefined),
       moduleEditingPanelOpenState$: new BehaviorSubject<boolean>(false),
       moduleEditorHasPendingChanges$: new BehaviorSubject<boolean>(false),
       isAdmin$: new BehaviorSubject<boolean>(!!options.isAdmin),
@@ -185,7 +189,7 @@ describe('ModuleBrowserDetailComponent', () => {
       mergeIntoTargetModule$: new Subject<{ sourceId: number; targetId: number }>(),
       moduleMergeResult$: new Subject<unknown>(),
       deleteModule$: new Subject<number>(),
-      deleteLastPanel$: new Subject<any>()
+      deletePanel$: new Subject<any>()
     };
     const commentsDataService = {
       requestCommentsUpdate$: {next: jasmine.createSpy('requestCommentsUpdate.next')},
@@ -345,6 +349,37 @@ describe('ModuleBrowserDetailComponent', () => {
     const text = fixture.nativeElement.textContent;
     expect(text).toContain('Plus 10+ private or otherwise hidden racks.');
     expect(text).toContain('Plus 5+ private or otherwise hidden patches.');
+  });
+
+  it('renders community search links while suppressing retailers with current price listings', async () => {
+    const {fixture, dataService} = await render();
+
+    dataService.modulePriceListings$.next([{storeId: 1, storeSlug: 'control'}]);
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent;
+    expect(text).toContain('Community');
+    expect(text).toContain('Google');
+    expect(text).toContain('Wigglehunt');
+    expect(text).toContain('Other stores');
+    expect(text).not.toContain('Control 🇺🇸');
+    expect(text).toContain('Patchwerks 🇺🇸');
+  });
+
+  it('hides the Other Stores search group when every retailer has a current price listing', async () => {
+    const {fixture, dataService} = await render();
+    const listings = fixture.componentInstance.retailerSearchLinks.map((link, index) => ({
+      storeId: index + 1,
+      storeSlug: link.storeSlugs![0]
+    }));
+
+    dataService.modulePriceListings$.next(listings);
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent;
+    expect(text).toContain('Community');
+    expect(text).toContain('Google');
+    expect(text).not.toContain('Other stores');
   });
 
   it('does not render or query Cool reactions when the feature flag is off', async () => {
@@ -653,6 +688,61 @@ describe('ModuleBrowserDetailComponent', () => {
 
     expect(fixture.nativeElement.querySelector('lib-hero-content-card[titleNormal="Dev utils"]')).not.toBeNull();
     expect(fixture.nativeElement.textContent).toContain('Merge into target module');
+  });
+
+  it('renders compact labeled dev utility groups', async () => {
+    const {fixture} = await render({isDev: true});
+
+    const labels = Array.from(
+      fixture.nativeElement.querySelectorAll('.module-detail-dev-group__label')
+    ).map((label: Element) => label.textContent?.trim());
+
+    expect(labels).toEqual([
+      'Danger',
+      'Merge',
+      'Convert',
+      'Status',
+      'Dimensions',
+      'Data hygiene'
+    ]);
+    expect(fixture.nativeElement.querySelector('.module-detail-dev-group--danger')?.textContent).toContain('Delete module');
+    expect(fixture.nativeElement.querySelector('[aria-labelledby="module-detail-dev-merge-label"]')?.textContent)
+      .toContain('Merge into target module');
+  });
+
+  it('renders specific dev panel delete buttons for present panels only', async () => {
+    const {fixture, dataService} = await render({isDev: true});
+    const deleteSpy = spyOn(dataService.deletePanel$, 'next').and.callThrough();
+    const darkPanel = {id: 11, moduleid: 99, filename: 'mega-osc-dark.jpg', description: 'Dark', color: 2};
+    const silverPanel = {id: 12, moduleid: 99, filename: 'mega-osc-silver.jpg', description: 'Silver', color: 1};
+
+    dataService.singleModuleData$.next({
+      ...moduleFixture(),
+      panels: [darkPanel, silverPanel]
+    });
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent;
+    expect(text).not.toContain('Delete last panel');
+    expect(text).toContain('Delete Dark panel');
+    expect(text).toContain('Delete Silver panel');
+    expect(fixture.nativeElement.querySelector('.module-detail-dev-group--danger')?.textContent).toContain('Delete Dark panel');
+
+    const panelDeleteButton = fixture.debugElement
+      .queryAll(By.css('.module-detail-dev-group--danger app-brand-primary-button'))
+      .find(button => button.nativeElement.textContent.includes('Delete Dark panel'));
+    expect(panelDeleteButton).toBeTruthy();
+
+    panelDeleteButton!.triggerEventHandler('click$', undefined);
+
+    expect(deleteSpy).toHaveBeenCalledWith(darkPanel);
+  });
+
+  it('does not render panel delete controls when the module has no panels', async () => {
+    const {fixture} = await render({isDev: true});
+
+    expect(fixture.nativeElement.textContent).not.toContain('Delete last panel');
+    expect(fixture.nativeElement.textContent).not.toContain('Delete Panel 1 panel');
   });
 
   it('getUsagePendingCopy describes pending rack check', () => {

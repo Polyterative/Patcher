@@ -36,6 +36,7 @@ describe('resolveTagAxis', () => {
       ['Clock OUT', 'timing'],
       ['Arpeggiator', 'timing'],
       ['Euclidean', 'timing'],
+      ['Crossfade', 'utilities'],
       ['Blank', 'utilities'],
       ['Sequencial Switch', 'utilities'],
       ['BASS', 'voices'],
@@ -46,6 +47,9 @@ describe('resolveTagAxis', () => {
       ['PAD', 'voices'],
       ['PERC', 'voices'],
       ['SNARE', 'voices'],
+      ['Drone', 'voices'],
+      ['Filterbank', 'tone'],
+      ['Feedback', 'tone'],
     ]);
 
     for (const [tagName, axisId] of expectedAxes) {
@@ -57,6 +61,16 @@ describe('resolveTagAxis', () => {
     expect(resolveFunctionalTagAxis({name: 'VCO', type: TagType.Character})).toBeNull();
     expect(resolveFunctionalTagAxis({name: 'Blank', type: TagType.Nature})).toBeNull();
     expect(resolveFunctionalTagAxis({name: 'KICK', type: TagType.Voice})).toBe('voices');
+  });
+
+  it('recognizes spaced filter bank and feedback tone keywords by pattern', () => {
+    expect(resolveTagAxis('triple filter bank')).toBe('tone');
+    expect(resolveTagAxis('feedback processor')).toBe('tone');
+  });
+
+  it('recognizes drone and cross fade keywords by pattern', () => {
+    expect(resolveTagAxis('analog drone source')).toBe('voices');
+    expect(resolveTagAxis('quad cross fade mixer')).toBe('utilities');
   });
 });
 

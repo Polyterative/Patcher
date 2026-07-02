@@ -8,3 +8,11 @@
   gap: 0.05rem;
   width: 100%;
 }
+
+.moduleDescriptionAnalysisSuite__signalMetadata {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.22rem 0.72rem;
+  align-items: baseline;
+  margin-top: 0.18rem;
+}

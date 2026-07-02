@@ -53,9 +53,37 @@
   flex: 1 1 auto;
 }
 
+.module-title-row__identity {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.42rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.module-title-row__identity app-module-part-name {
+  flex: 0 1 auto;
+}
+
 .module-title-row__cool {
   flex: 0 0 auto;
   margin-left: auto;
+}
+
+.module-title-row__price {
+  flex: 0 0 auto;
+  align-self: baseline;
+  white-space: nowrap;
+  font-family: 'GangsterGrotesk', XXIIAven, sans-serif;
+  font-size: clamp(1.02rem, 1.16vw, 1.28rem);
+  font-feature-settings: "lnum" 1, "tnum" 1;
+  font-variant-numeric: lining-nums tabular-nums;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: var(--mat-sys-on-surface, currentColor);
+  opacity: 0.58;
+  margin-top: 0.04rem;
 }
 
 .module-minimal__content {

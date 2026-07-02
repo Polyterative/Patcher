@@ -8,6 +8,9 @@ import type { PriceHubMatchCandidate, PriceHubMatchStatus } from './matcher.ts';
 const DEFAULT_SUPABASE_URL = 'https://sozmatmywjpstwidzlss.supabase.co';
 const ACCEPTED_STATUSES: readonly PriceHubMatchStatus[] = ['strong_candidate'];
 const EXISTING_LISTING_LOOKUP_BATCH_SIZE = 1000;
+const MODULE_ID_LOOKUP_BATCH_SIZE = 1000;
+const MIN_REASONABLE_MODULE_PRICE_MINOR = 3000;
+const MAX_REASONABLE_MODULE_PRICE_MINOR = 2000000;
 
 interface ImportLocalSnapshotsOptions {
   storeSlug: ApprovedPriceHubStoreSlug;
@@ -29,6 +32,16 @@ export interface FilteredPriceHubSnapshotImportRows {
   skippedConflictingListings: PriceHubSnapshotImportRow[];
 }
 
+export interface FilteredPriceHubSnapshotModuleRows {
+  rows: PriceHubSnapshotImportRow[];
+  skippedUnknownModuleRows: PriceHubSnapshotImportRow[];
+}
+
+interface PriceHubImportInputs {
+  products: NormalizedStoreListingSnapshot[];
+  matches: PriceHubMatchCandidate[];
+}
+
 export interface PriceHubSnapshotImportRow {
   moduleId: number;
   productUrl: string;
@@ -46,6 +59,7 @@ interface ImportSummary {
   acceptedMatches: number;
   upsertedListings: number;
   insertedSnapshots: number;
+  skippedUnknownModules: number;
   skippedConflictingListings: number;
 }
 
@@ -59,9 +73,8 @@ async function main(): Promise<void> {
   if (!options.dryRun && !options.supabaseKey) {
     throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY. Live Price Hub imports require a service role key.');
   }
-  const rows = await readImportRows(options);
-
   if (options.dryRun) {
+    const rows = await readImportRows(options);
     console.log(`Dry run: would import ${rows.length} snapshots for ${options.storeSlug}.`);
     for (const row of rows.slice(0, 10)) {
       console.log(`${row.moduleId}: ${row.productName ?? row.productUrl} (${row.currency ?? '---'} ${row.priceAmountMinor ?? 'unknown'}, ${row.availability})`);
@@ -72,6 +85,12 @@ async function main(): Promise<void> {
   const supabase = createClient<Database>(options.supabaseUrl, options.supabaseKey, {
     auth: { persistSession: false },
   });
+  const inputs = await readImportInputs(options);
+  const preflightedMatches = await readMatchesWithExistingModules(supabase, inputs.matches, options.acceptedStatuses);
+  if (preflightedMatches.skippedUnknownModuleIds.length > 0) {
+    console.warn(`Skipped ${preflightedMatches.skippedUnknownModuleIds.length} accepted Price Hub module IDs that do not exist: ${formatIdSample(preflightedMatches.skippedUnknownModuleIds)}.`);
+  }
+  const rows = buildImportRows(inputs.products, preflightedMatches.matches, options.acceptedStatuses);
   const summary = await importRows(supabase, options.storeSlug, rows);
   console.log(`Imported ${summary.insertedSnapshots} Price Hub snapshots for ${summary.storeSlug} (${summary.upsertedListings} listings).`);
 }
@@ -108,9 +127,14 @@ export function readCliOptions(args: readonly string[], env: NodeJS.ProcessEnv =
 }
 
 export async function readImportRows(options: Pick<ImportLocalSnapshotsOptions, 'productsPath' | 'matchesPath' | 'acceptedStatuses'>): Promise<PriceHubSnapshotImportRow[]> {
+  const inputs = await readImportInputs(options);
+  return buildImportRows(inputs.products, inputs.matches, options.acceptedStatuses);
+}
+
+async function readImportInputs(options: Pick<ImportLocalSnapshotsOptions, 'productsPath' | 'matchesPath'>): Promise<PriceHubImportInputs> {
   const products = await readJsonArray(options.productsPath, readProductSnapshot);
   const matches = await readJsonArray(options.matchesPath, readMatchCandidate);
-  return buildImportRows(products, matches, options.acceptedStatuses);
+  return { products, matches };
 }
 
 export function buildImportRows(
@@ -129,6 +153,14 @@ export function buildImportRows(
       }
       const product = productByUrl.get(normalizeComparableUrl(match.productUrl));
       if (!product) {
+        return null;
+      }
+      if (
+        product.priceAmountMinor === null
+        || product.priceAmountMinor < MIN_REASONABLE_MODULE_PRICE_MINOR
+        || product.priceAmountMinor > MAX_REASONABLE_MODULE_PRICE_MINOR
+        || product.currency === null
+      ) {
         return null;
       }
       const moduleId = Number.parseInt(match.moduleId, 10);
@@ -165,17 +197,36 @@ export async function importRows(
   rows: readonly PriceHubSnapshotImportRow[],
 ): Promise<ImportSummary> {
   if (rows.length === 0) {
-    return { storeSlug, acceptedMatches: 0, upsertedListings: 0, insertedSnapshots: 0, skippedConflictingListings: 0 };
+    return { storeSlug, acceptedMatches: 0, upsertedListings: 0, insertedSnapshots: 0, skippedUnknownModules: 0, skippedConflictingListings: 0 };
+  }
+
+  const moduleFilteredRows = await readRowsWithExistingModules(supabase, rows);
+  if (moduleFilteredRows.skippedUnknownModuleRows.length > 0) {
+    console.warn(`Skipped ${moduleFilteredRows.skippedUnknownModuleRows.length} Price Hub import rows with unknown module IDs: ${formatIdSample(uniqueModuleIds(moduleFilteredRows.skippedUnknownModuleRows))}.`);
+  }
+  if (moduleFilteredRows.rows.length === 0) {
+    return {
+      storeSlug,
+      acceptedMatches: rows.length,
+      upsertedListings: 0,
+      insertedSnapshots: 0,
+      skippedUnknownModules: moduleFilteredRows.skippedUnknownModuleRows.length,
+      skippedConflictingListings: 0,
+    };
   }
 
   const store = await readStore(supabase, storeSlug);
-  const filteredRows = await readRowsWithoutConflictingProductUrls(supabase, store.id, rows);
+  const filteredRows = await readRowsWithoutConflictingProductUrls(supabase, store.id, moduleFilteredRows.rows);
+  if (filteredRows.skippedConflictingListings.length > 0) {
+    console.warn(`Skipped ${filteredRows.skippedConflictingListings.length} Price Hub import rows whose product URLs are already linked to another module.`);
+  }
   if (filteredRows.rows.length === 0) {
     return {
       storeSlug,
       acceptedMatches: rows.length,
       upsertedListings: 0,
       insertedSnapshots: 0,
+      skippedUnknownModules: moduleFilteredRows.skippedUnknownModuleRows.length,
       skippedConflictingListings: filteredRows.skippedConflictingListings.length,
     };
   }
@@ -214,19 +265,36 @@ export async function importRows(
     acceptedMatches: rows.length,
     upsertedListings: listingRows.length,
     insertedSnapshots: snapshots.length,
+    skippedUnknownModules: moduleFilteredRows.skippedUnknownModuleRows.length,
     skippedConflictingListings: filteredRows.skippedConflictingListings.length,
   };
+}
+
+export function filterRowsWithExistingModules(
+  rows: readonly PriceHubSnapshotImportRow[],
+  existingModuleIds: ReadonlySet<number>,
+): FilteredPriceHubSnapshotModuleRows {
+  const skippedUnknownModuleRows: PriceHubSnapshotImportRow[] = [];
+  const filteredRows = rows.filter((row) => {
+    if (existingModuleIds.has(row.moduleId)) {
+      return true;
+    }
+
+    skippedUnknownModuleRows.push(row);
+    return false;
+  });
+
+  return { rows: filteredRows, skippedUnknownModuleRows };
 }
 
 export function filterRowsWithConflictingProductUrls(
   rows: readonly PriceHubSnapshotImportRow[],
   existingListings: readonly ExistingPriceHubListingReference[],
 ): FilteredPriceHubSnapshotImportRows {
-  const existingModuleByProductUrl = new Map(existingListings.map((listing) => [normalizeComparableUrl(listing.product_url), listing.module_id]));
+  const existingListingsByProductUrl = groupExistingListingsByProductUrl(existingListings);
   const skippedConflictingListings: PriceHubSnapshotImportRow[] = [];
   const filteredRows = rows.filter((row) => {
-    const existingModuleId = existingModuleByProductUrl.get(normalizeComparableUrl(row.productUrl));
-    if (existingModuleId === undefined || existingModuleId === row.moduleId) {
+    if (!hasConflictingExistingProductUrl(row, existingListingsByProductUrl)) {
       return true;
     }
 
@@ -235,6 +303,27 @@ export function filterRowsWithConflictingProductUrls(
   });
 
   return { rows: filteredRows, skippedConflictingListings };
+}
+
+function groupExistingListingsByProductUrl(
+  existingListings: readonly ExistingPriceHubListingReference[],
+): Map<string, ExistingPriceHubListingReference[]> {
+  const existingListingsByProductUrl = new Map<string, ExistingPriceHubListingReference[]>();
+  for (const listing of existingListings) {
+    const key = normalizeComparableUrl(listing.product_url);
+    const existingListingsForUrl = existingListingsByProductUrl.get(key) ?? [];
+    existingListingsByProductUrl.set(key, [...existingListingsForUrl, listing]);
+  }
+
+  return existingListingsByProductUrl;
+}
+
+function hasConflictingExistingProductUrl(
+  row: PriceHubSnapshotImportRow,
+  existingListingsByProductUrl: ReadonlyMap<string, readonly ExistingPriceHubListingReference[]>,
+): boolean {
+  const existingListings = existingListingsByProductUrl.get(normalizeComparableUrl(row.productUrl)) ?? [];
+  return existingListings.some((listing) => listing.module_id !== row.moduleId);
 }
 
 async function readRowsWithoutConflictingProductUrls(
@@ -261,6 +350,69 @@ async function readRowsWithoutConflictingProductUrls(
   }
 
   return filterRowsWithConflictingProductUrls(rows, existingListings);
+}
+
+async function readRowsWithExistingModules(
+  supabase: SupabaseClient<Database>,
+  rows: readonly PriceHubSnapshotImportRow[],
+): Promise<FilteredPriceHubSnapshotModuleRows> {
+  return filterRowsWithExistingModules(
+    rows,
+    await readExistingModuleIds(supabase, uniqueModuleIds(rows)),
+  );
+}
+
+async function readMatchesWithExistingModules(
+  supabase: SupabaseClient<Database>,
+  matches: readonly PriceHubMatchCandidate[],
+  acceptedStatuses: readonly PriceHubMatchStatus[],
+): Promise<{ matches: PriceHubMatchCandidate[]; skippedUnknownModuleIds: number[] }> {
+  const acceptedModuleIds = uniqueMatchModuleIds(matches, acceptedStatuses);
+  if (acceptedModuleIds.length === 0) {
+    return { matches: [...matches], skippedUnknownModuleIds: [] };
+  }
+
+  const existingModuleIds = await readExistingModuleIds(supabase, acceptedModuleIds);
+  const skippedUnknownModuleIds = acceptedModuleIds.filter((moduleId) => !existingModuleIds.has(moduleId));
+  if (skippedUnknownModuleIds.length === 0) {
+    return { matches: [...matches], skippedUnknownModuleIds };
+  }
+
+  return {
+    matches: matches.filter((match) => {
+      if (!acceptedStatuses.includes(match.status)) {
+        return true;
+      }
+
+      const moduleId = parseModuleId(match.moduleId);
+      return moduleId === null || existingModuleIds.has(moduleId);
+    }),
+    skippedUnknownModuleIds,
+  };
+}
+
+async function readExistingModuleIds(
+  supabase: SupabaseClient<Database>,
+  moduleIds: readonly number[],
+): Promise<ReadonlySet<number>> {
+  const existingModuleIds = new Set<number>();
+  for (let start = 0; start < moduleIds.length; start += MODULE_ID_LOOKUP_BATCH_SIZE) {
+    const pageIds = moduleIds.slice(start, start + MODULE_ID_LOOKUP_BATCH_SIZE);
+    const { data, error } = await supabase
+      .from('modules')
+      .select('id')
+      .in('id', pageIds);
+
+    if (error) {
+      throw new Error(`Module preflight lookup failed: ${error.message}`);
+    }
+
+    for (const row of data ?? []) {
+      existingModuleIds.add(row.id);
+    }
+  }
+
+  return existingModuleIds;
 }
 
 async function readStore(supabase: SupabaseClient<Database>, storeSlug: ApprovedPriceHubStoreSlug): Promise<StoreRow> {
@@ -481,6 +633,34 @@ function readStringMeta(row: PriceHubSnapshotImportRow, key: string): string | n
 
 function uniqueStrings(values: readonly (string | null)[]): string[] {
   return Array.from(new Set(values.filter((value): value is string => value !== null))).sort();
+}
+
+function uniqueModuleIds(rows: readonly PriceHubSnapshotImportRow[]): number[] {
+  return Array.from(new Set(rows.map((row) => row.moduleId)))
+    .sort((left, right) => left - right);
+}
+
+function uniqueMatchModuleIds(
+  matches: readonly PriceHubMatchCandidate[],
+  acceptedStatuses: readonly PriceHubMatchStatus[],
+): number[] {
+  return Array.from(new Set(
+    matches
+      .filter((match) => acceptedStatuses.includes(match.status))
+      .map((match) => parseModuleId(match.moduleId))
+      .filter((moduleId): moduleId is number => moduleId !== null)
+  )).sort((left, right) => left - right);
+}
+
+function parseModuleId(value: string): number | null {
+  const moduleId = Number.parseInt(value, 10);
+  return Number.isSafeInteger(moduleId) && moduleId > 0 ? moduleId : null;
+}
+
+function formatIdSample(ids: readonly number[]): string {
+  const sortedIds = [...ids].sort((left, right) => left - right);
+  const sample = sortedIds.slice(0, 12).join(', ');
+  return sortedIds.length > 12 ? `${sample}, …` : sample;
 }
 
 function listingKey(moduleId: number, productUrl: string): string {
