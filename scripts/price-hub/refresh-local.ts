@@ -4,12 +4,14 @@ import { join } from 'node:path';
 import { crawlPriceHubStoreCatalog, DEFAULT_CATALOG_MAX_PAGES, writeCrawledProducts } from './catalog-crawler.ts';
 import { DEFAULT_MATCH_MIN_SCORE, type PriceHubModuleInput, writeModuleProductMatches } from './matcher.ts';
 import { importRows, readImportRows } from './import-local-snapshots.ts';
-import { readPriceHubScriptEnv, readSupabaseServiceRoleKey } from './local-env.ts';
+import { readPriceHubScriptEnv, readSupabaseReadKey, readSupabaseWriteKey } from './local-env.ts';
 import { readApprovedPriceHubStores, type ApprovedPriceHubStoreConfig } from './store-configs.ts';
 import type { Database } from '../../src/backend/database.types.ts';
 
 const DEFAULT_SUPABASE_URL = 'https://sozmatmywjpstwidzlss.supabase.co';
-const SERVICE_ROLE_KEY_HELP = 'Set SUPABASE_SERVICE_ROLE_KEY in your shell, .env, or .env.local at the repository root, or pass --supabase-key=...';
+const WRITE_KEY_HELP = 'Set SUPABASE_ANON_KEY or SUPABASE_SERVICE_ROLE_KEY in your shell, .env, or .env.local at the repository root, or pass --supabase-key=...';
+const MODULE_INPUT_HELP = 'Pass --modules=modules.json, or set SUPABASE_ANON_KEY/SUPABASE_SERVICE_ROLE_KEY in .env so the script can fetch approved modules itself.';
+const MODULE_FETCH_PAGE_SIZE = 500;
 
 interface RefreshLocalOptions {
   store: string;
@@ -23,6 +25,13 @@ interface RefreshLocalOptions {
   dryRun: boolean;
   supabaseUrl: string;
   supabaseKey: string;
+  supabaseReadKey: string;
+}
+
+interface SupabaseModuleRow {
+  id: number;
+  name: string;
+  manufacturer: { name: string | null } | { name: string | null }[] | null;
 }
 
 interface StoreRefreshSummary {
@@ -39,11 +48,11 @@ interface StoreRefreshSummary {
 async function main(): Promise<void> {
   const options = readRefreshCliOptions(process.argv.slice(2), readPriceHubScriptEnv());
   if (!options.dryRun && !options.supabaseKey) {
-    throw new Error(`Missing SUPABASE_SERVICE_ROLE_KEY. A local Price Hub refresh must import verified data; use --dry-run only for diagnostics. ${SERVICE_ROLE_KEY_HELP}`);
+    throw new Error(`Missing Supabase write key. A local Price Hub refresh must import verified data; use --dry-run only for diagnostics. ${WRITE_KEY_HELP}`);
   }
 
   const stores = readApprovedPriceHubStores(options.store);
-  const modules = await readModules(options.modulesPath);
+  const modules = await resolveModules(options);
   const supabase = options.dryRun
     ? null
     : createClient<Database>(options.supabaseUrl, options.supabaseKey, { auth: { persistSession: false } });
@@ -85,7 +94,8 @@ export function readRefreshCliOptions(args: readonly string[], env: NodeJS.Proce
     includeIgnoredMatches: false,
     dryRun: false,
     supabaseUrl: stripTrailingSlash(env.SUPABASE_URL ?? DEFAULT_SUPABASE_URL),
-    supabaseKey: readSupabaseServiceRoleKey(env),
+    supabaseKey: readSupabaseWriteKey(env),
+    supabaseReadKey: readSupabaseReadKey(env),
   };
 
   for (const arg of args) {
@@ -132,10 +142,6 @@ export function readRefreshCliOptions(args: readonly string[], env: NodeJS.Proce
       default:
         throw new Error(`Unknown argument "${key}". Use --help for usage.`);
     }
-  }
-
-  if (!options.modulesPath) {
-    throw new Error('Missing required argument --modules. A local Price Hub refresh needs the module input JSON used for matching.');
   }
 
   readApprovedPriceHubStores(options.store);
@@ -247,6 +253,70 @@ async function readModules(path: string): Promise<PriceHubModuleInput[]> {
   return body.map(readModuleInput);
 }
 
+async function resolveModules(options: RefreshLocalOptions): Promise<PriceHubModuleInput[]> {
+  if (options.modulesPath) {
+    return readModules(options.modulesPath);
+  }
+  if (!options.supabaseReadKey) {
+    throw new Error(`Missing module input. ${MODULE_INPUT_HELP}`);
+  }
+
+  const supabase = createClient<Database>(options.supabaseUrl, options.supabaseReadKey, {
+    auth: { persistSession: false },
+  });
+  return fetchModulesFromSupabase(supabase);
+}
+
+export async function fetchModulesFromSupabase(
+  supabase: Pick<ReturnType<typeof createClient<Database>>, 'from'>,
+): Promise<PriceHubModuleInput[]> {
+  const modules: PriceHubModuleInput[] = [];
+  for (let from = 0; ; from += MODULE_FETCH_PAGE_SIZE) {
+    const to = from + MODULE_FETCH_PAGE_SIZE - 1;
+    const { data, error } = await supabase
+      .from('modules')
+      .select('id,name,manufacturer:manufacturerId(name)')
+      .eq('isApproved', true)
+      .order('id', { ascending: true })
+      .range(from, to);
+
+    if (error) {
+      throw new Error(`Failed to fetch Price Hub module input from Supabase: ${error.message}`);
+    }
+    const page = (data ?? []).map(readSupabaseModuleInput);
+    modules.push(...page);
+    if (page.length < MODULE_FETCH_PAGE_SIZE) {
+      break;
+    }
+  }
+
+  if (modules.length === 0) {
+    throw new Error('Fetched zero approved modules for Price Hub matching.');
+  }
+  return modules;
+}
+
+function readSupabaseModuleInput(value: unknown): PriceHubModuleInput {
+  if (!isRecord(value)) {
+    throw new Error('Every Supabase module row must be an object.');
+  }
+  if (typeof value.id !== 'number' || typeof value.name !== 'string') {
+    throw new Error('Every Supabase module row must include numeric id and string name.');
+  }
+  const manufacturer = Array.isArray(value.manufacturer)
+    ? value.manufacturer[0]
+    : value.manufacturer;
+  const manufacturerName = isRecord(manufacturer) && typeof manufacturer.name === 'string'
+    ? manufacturer.name
+    : undefined;
+  return {
+    id: value.id,
+    name: value.name,
+    manufacturerName,
+    manufacturer: manufacturerName ? { name: manufacturerName } : undefined,
+  };
+}
+
 function readModuleInput(value: unknown): PriceHubModuleInput {
   if (!isRecord(value)) {
     throw new Error('Every module entry must be an object.');
@@ -323,8 +393,9 @@ function stripTrailingSlash(value: string): string {
 }
 
 function printHelpAndExit(): never {
-  console.log('Usage: pnpm price-hub:refresh-local --modules=modules.json --store=all --out=tmp/price-hub [--supabase-key=service-role-key]');
-  console.log(`Runs crawl, matching, sanity checks, and live Supabase import. Requires SUPABASE_SERVICE_ROLE_KEY unless --dry-run is explicitly supplied. ${SERVICE_ROLE_KEY_HELP}`);
+  console.log('Usage: pnpm price-hub:refresh-local --store=all --out=tmp/price-hub [--modules=modules.json] [--supabase-key=service-role-key]');
+  console.log(`Runs crawl, matching, sanity checks, and live Supabase import. ${MODULE_INPUT_HELP}`);
+  console.log(`Requires a Supabase write key unless --dry-run is explicitly supplied. ${WRITE_KEY_HELP}`);
   process.exit(0);
 }
 

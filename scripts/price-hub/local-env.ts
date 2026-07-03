@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url';
 
 const DEFAULT_ENV_FILE_NAMES: readonly string[] = ['.env', '.env.local'];
 const SERVICE_ROLE_KEY_NAMES: readonly string[] = ['SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_SERVICE_KEY'];
+const SUPABASE_READ_KEY_NAMES: readonly string[] = [...SERVICE_ROLE_KEY_NAMES, 'SUPABASE_ANON_KEY', 'SUPABASE_PUBLISHABLE_KEY'];
+const SUPABASE_WRITE_KEY_NAMES: readonly string[] = [...SERVICE_ROLE_KEY_NAMES, 'SUPABASE_ANON_KEY', 'SUPABASE_PUBLISHABLE_KEY'];
 
 interface ReadLocalEnvOptions {
   rootDir?: string;
@@ -28,7 +30,19 @@ export function readPriceHubScriptEnv(
 }
 
 export function readSupabaseServiceRoleKey(env: EnvSource): string {
-  for (const key of SERVICE_ROLE_KEY_NAMES) {
+  return readFirstNonEmptyEnvValue(env, SERVICE_ROLE_KEY_NAMES);
+}
+
+export function readSupabaseReadKey(env: EnvSource): string {
+  return readFirstNonEmptyEnvValue(env, SUPABASE_READ_KEY_NAMES);
+}
+
+export function readSupabaseWriteKey(env: EnvSource): string {
+  return readFirstNonEmptyEnvValue(env, SUPABASE_WRITE_KEY_NAMES);
+}
+
+function readFirstNonEmptyEnvValue(env: EnvSource, keys: readonly string[]): string {
+  for (const key of keys) {
     const value = env[key];
     if (typeof value === 'string' && value.trim().length > 0) {
       return value;

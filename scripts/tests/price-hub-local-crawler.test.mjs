@@ -11,7 +11,7 @@ import { readCliOptions as readCrawlCliOptions } from '../price-hub/crawl-local.
 import { crawlPriceHubStoreCatalog, crawlShopifyProductJsonCatalog, crawlWooCommerceStoreCatalog } from '../price-hub/catalog-crawler.ts';
 import { readPriceHubScriptEnv } from '../price-hub/local-env.ts';
 import { matchModulesToProducts } from '../price-hub/matcher.ts';
-import { readRefreshCliOptions } from '../price-hub/refresh-local.ts';
+import { fetchModulesFromSupabase, readRefreshCliOptions } from '../price-hub/refresh-local.ts';
 import { readApprovedPriceHubStore } from '../price-hub/store-configs.ts';
 
 const clockfaceStore = readApprovedPriceHubStore('clockface-modular');
@@ -42,19 +42,26 @@ test('local crawl CLI defaults to full metadata crawls and accepted-match export
   assert.equal(options.includeIgnoredMatches, false);
 });
 
-test('local refresh CLI defaults to live import and requires module input', () => {
-  assert.throws(
-    () => readRefreshCliOptions([], {}),
-    /Missing required argument --modules/,
-  );
-
-  const options = readRefreshCliOptions(['--modules=modules.json'], {
-    SUPABASE_SERVICE_ROLE_KEY: 'service-role-key',
+test('local refresh CLI defaults to live import and can fetch module input from Supabase', () => {
+  const options = readRefreshCliOptions(['--store=signal-sounds-uk'], {
+    SUPABASE_ANON_KEY: 'anon-key',
   });
 
   assert.equal(options.dryRun, false);
-  assert.equal(options.modulesPath, 'modules.json');
+  assert.equal(options.store, 'signal-sounds-uk');
+  assert.equal(options.modulesPath, '');
+  assert.equal(options.supabaseKey, 'anon-key');
+  assert.equal(options.supabaseReadKey, 'anon-key');
+});
+
+test('local refresh CLI prefers service role over anon when both are available', () => {
+  const options = readRefreshCliOptions(['--store=signal-sounds-uk'], {
+    SUPABASE_ANON_KEY: 'anon-key',
+    SUPABASE_SERVICE_ROLE_KEY: 'service-role-key',
+  });
+
   assert.equal(options.supabaseKey, 'service-role-key');
+  assert.equal(options.supabaseReadKey, 'service-role-key');
 });
 
 test('local refresh CLI can read service role credentials from local env files', () => {
@@ -90,6 +97,65 @@ test('local refresh CLI keeps explicit process credentials ahead of local env fi
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
+});
+
+test('local refresh can fetch approved module matcher input with the Supabase read key', async () => {
+  const ranges = [];
+  const pages = [
+    Array.from({ length: 500 }, (_, index) => ({
+      id: index + 1,
+      name: `Module ${index + 1}`,
+      manufacturer: { name: `Manufacturer ${index + 1}` },
+    })),
+    [
+      { id: 501, name: 'Plaits', manufacturer: [{ name: 'Mutable Instruments' }] },
+    ],
+  ];
+  const supabase = {
+    from(table) {
+      assert.equal(table, 'modules');
+      return {
+        select(columns) {
+          assert.equal(columns, 'id,name,manufacturer:manufacturerId(name)');
+          return this;
+        },
+        eq(column, value) {
+          assert.equal(column, 'isApproved');
+          assert.equal(value, true);
+          return this;
+        },
+        order(column, options) {
+          assert.equal(column, 'id');
+          assert.deepEqual(options, { ascending: true });
+          return this;
+        },
+        async range(from, to) {
+          ranges.push([from, to]);
+          return {
+            data: pages[ranges.length - 1] ?? [],
+            error: null,
+          };
+        },
+      };
+    },
+  };
+
+  const modules = await fetchModulesFromSupabase(supabase);
+
+  assert.deepEqual(ranges, [[0, 499], [500, 999]]);
+  assert.equal(modules.length, 501);
+  assert.deepEqual(modules[0], {
+    id: 1,
+    name: 'Module 1',
+    manufacturerName: 'Manufacturer 1',
+    manufacturer: { name: 'Manufacturer 1' },
+  });
+  assert.deepEqual(modules[500], {
+    id: 501,
+    name: 'Plaits',
+    manufacturerName: 'Mutable Instruments',
+    manufacturer: { name: 'Mutable Instruments' },
+  });
 });
 
 function response(body) {
