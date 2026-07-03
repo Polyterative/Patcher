@@ -129,6 +129,8 @@ describe('AppComponent', () => {
   it('marks the wide-shell toolbar as stuck whenever the page is scrolled', () => {
     let scrollY = 0;
     spyOnProperty(window, 'scrollY', 'get').and.callFake(() => scrollY);
+    spyOnProperty(document.documentElement, 'scrollTop', 'get').and.callFake(() => scrollY);
+    spyOnProperty(document.body, 'scrollTop', 'get').and.callFake(() => scrollY);
     wideShell$.next(true);
     fixture.detectChanges();
 
