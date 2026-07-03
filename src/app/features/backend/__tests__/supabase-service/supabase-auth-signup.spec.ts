@@ -17,14 +17,22 @@ function chainable(resolveValue: any = {data: null, error: null}) {
   return m;
 }
 
+type AuthSessionTestHarness = {
+  authSession$: {
+    next: (session: {user: unknown} | null) => void;
+  };
+};
+
 describe('SupabaseService - auth signup and profile helpers', () => {
   let service: SupabaseService;
   let supabaseClient: any;
+  let authSession$: AuthSessionTestHarness['authSession$'];
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
     supabaseClient = (service as any).supabase;
+    authSession$ = (service as unknown as AuthSessionTestHarness).authSession$;
   });
   
   afterEach(() => {
@@ -267,24 +275,22 @@ describe('SupabaseService - auth signup and profile helpers', () => {
     }, TEST_TIMEOUT);
   });
   
-  // ── getUserSession$ shareReplay ───────────────────────────────────────────
+  // ── getUserSession$ session stream ────────────────────────────────────────
   
-  describe('getUserSession$ shareReplay', () => {
-    it('should only call getSession once for multiple subscribers', (done) => {
+  describe('getUserSession$ session stream', () => {
+    it('should reuse the restored auth session without calling getSession', (done) => {
       const mockSession = {
         user: {id: 'u1', email: 'a@b.com', created_at: '', updated_at: ''}
       };
-      const getSessionSpy = spyOn(supabaseClient.auth, 'getSession').and.returnValue(
-        Promise.resolve({data: {session: mockSession}, error: null})
-      );
+      const getSessionSpy = spyOn(supabaseClient.auth, 'getSession')
+        .and.callFake(() => Promise.reject(new Error('lock failed')));
+      authSession$.next(mockSession);
       
       let completedCount = 0;
       const onComplete = () => {
         completedCount++;
         if (completedCount === 2) {
-          // shareReplay caches but due to async Promise each call can vary;
-          // key thing is the spy was called at most twice (one per subscribe)
-          expect(getSessionSpy.calls.count()).toBeLessThanOrEqual(2);
+          expect(getSessionSpy).not.toHaveBeenCalled();
           done();
         }
       };

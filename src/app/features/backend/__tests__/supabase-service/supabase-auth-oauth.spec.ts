@@ -1,5 +1,15 @@
-import { of } from 'rxjs';
-import { SupabaseService } from '../../supabase.service';
+import {
+  Observable,
+  of
+} from 'rxjs';
+import {
+  fakeAsync,
+  tick
+} from '@angular/core/testing';
+import {
+  RichUserModel,
+  SupabaseService
+} from '../../supabase.service';
 import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest,
@@ -7,14 +17,28 @@ import {
 } from './test-setup';
 
 
+type AuthSessionTestHarness = {
+  authSession$: {
+    next: (session: {user: unknown} | null) => void;
+  };
+};
+
+type AuthNamespaceTestHarness = {
+  _ensureOAuthUserProfile$: (user: unknown) => Observable<void>;
+};
+
 describe('SupabaseService - auth OAuth and helpers', () => {
   let service: SupabaseService;
   let supabaseClient: any;
+  let authSession$: AuthSessionTestHarness['authSession$'];
+  let authNamespace: AuthNamespaceTestHarness;
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
     supabaseClient = (service as any).supabase;
+    authSession$ = (service as unknown as AuthSessionTestHarness).authSession$;
+    authNamespace = service.auth as unknown as AuthNamespaceTestHarness;
   });
   
   afterEach(() => {
@@ -143,46 +167,58 @@ describe('SupabaseService - auth OAuth and helpers', () => {
   // ── handleOAuthCallback$ ──────────────────────────────────────────────────
   
   describe('handleOAuthCallback$', () => {
-    it('should return null when session has an error', (done) => {
-      spyOn(supabaseClient.auth, 'getSession').and.returnValue(
-        Promise.resolve({data: {session: null}, error: {message: 'no session'}})
-      );
+    it('should return null when callback session never arrives', fakeAsync(() => {
+      let result: unknown;
+      authSession$.next(null);
       
       service.auth.handleOAuthCallback$().subscribe({
-        next: (result) => {
-          expect(result).toBeNull();
-          done();
+        next: (user) => {
+          result = user;
         },
         error: (err) => {
           fail(err);
-          done();
         }
       });
-    }, TEST_TIMEOUT);
-    
-    it('should return null when session data is null', (done) => {
-      spyOn(supabaseClient.auth, 'getSession').and.returnValue(
-        Promise.resolve({data: {session: null}, error: null})
-      );
-      
+      tick(10000);
+
+      expect(result).toBeNull();
+    }));
+
+    it('should wait through an initial null auth event for the OAuth session', fakeAsync(() => {
+      const mockUser = {id: 'delayed-user', email: 'delayed@example.com', created_at: new Date().toISOString()};
+      const existingRichUser: RichUserModel = {
+        id: 'delayed-user',
+        email: 'delayed@example.com',
+        username: 'delayeduser',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      let result: unknown;
+      spyOn(service.auth, 'getRichUserSession$').and.returnValue(of(existingRichUser));
+      spyOn(authNamespace, '_ensureOAuthUserProfile$').and.returnValue(of(void 0));
+
+      authSession$.next(null);
       service.auth.handleOAuthCallback$().subscribe({
-        next: (result) => {
-          expect(result).toBeNull();
-          done();
+        next: (user) => {
+          result = user;
         },
         error: (err) => {
           fail(err);
-          done();
         }
       });
-    }, TEST_TIMEOUT);
+      tick();
+      expect(result).toBeUndefined();
+
+      authSession$.next({user: mockUser});
+      tick();
+
+      expect(result).toEqual(existingRichUser);
+      expect(authNamespace._ensureOAuthUserProfile$).not.toHaveBeenCalled();
+    }));
     
     it('should return richUser directly when existing user has a proper username', (done) => {
       const mockUser = {id: 'existing-user', email: 'existing@example.com', created_at: new Date().toISOString()};
-      
-      spyOn(supabaseClient.auth, 'getSession').and.returnValue(
-        Promise.resolve({data: {session: {user: mockUser}}, error: null})
-      );
+      authSession$.next({user: mockUser});
       
       const existingRichUser = {
         id: 'existing-user',
@@ -209,10 +245,7 @@ describe('SupabaseService - auth OAuth and helpers', () => {
     
     it('should call _ensureOAuthUserProfile$ and re-fetch when user has no username (new user)', (done) => {
       const mockUser = {id: 'new-user', email: 'newuser@example.com', created_at: new Date().toISOString()};
-      
-      spyOn(supabaseClient.auth, 'getSession').and.returnValue(
-        Promise.resolve({data: {session: {user: mockUser}}, error: null})
-      );
+      authSession$.next({user: mockUser});
       
       const userWithNoUsername = {
         id: 'new-user',
@@ -248,10 +281,7 @@ describe('SupabaseService - auth OAuth and helpers', () => {
     
     it('should call _ensureOAuthUserProfile$ and re-fetch when richUser is null (profile missing)', (done) => {
       const mockUser = {id: 'ghost-user', email: 'ghost@example.com', created_at: new Date().toISOString()};
-      
-      spyOn(supabaseClient.auth, 'getSession').and.returnValue(
-        Promise.resolve({data: {session: {user: mockUser}}, error: null})
-      );
+      authSession$.next({user: mockUser});
       
       const createdProfile = {
         id: 'ghost-user',

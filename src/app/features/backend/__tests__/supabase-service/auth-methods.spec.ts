@@ -1,4 +1,11 @@
-import { SupabaseService } from '../../supabase.service';
+import {
+  SimpleUserModel,
+  SupabaseService
+} from '../../supabase.service';
+import {
+  fakeAsync,
+  tick
+} from '@angular/core/testing';
 import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest,
@@ -6,14 +13,22 @@ import {
 } from './test-setup';
 
 
+type AuthSessionTestHarness = {
+  authSession$: {
+    next: (session: {user: unknown} | null) => void;
+  };
+};
+
 describe('SupabaseService - auth methods', () => {
   let service: SupabaseService;
   let supabaseClient: any;
+  let authSession$: AuthSessionTestHarness['authSession$'];
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
     supabaseClient = (service as any).supabase;
+    authSession$ = (service as unknown as AuthSessionTestHarness).authSession$;
   });
   
   afterEach(() => {
@@ -21,22 +36,52 @@ describe('SupabaseService - auth methods', () => {
   });
   
   describe('getUserSession$', () => {
-    it('should return null when there is no active session', (done) => {
-      spyOn(supabaseClient.auth, 'getSession').and.returnValue(
-        Promise.resolve({data: {session: null}, error: null})
-      );
+    it('should return null when there is no active session', fakeAsync(() => {
+      let user: SimpleUserModel | null | undefined;
+      authSession$.next(null);
       
       service.auth.getUserSession$().subscribe({
-        next: (user) => {
-          expect(user).toBeNull();
-          done();
+        next: (sessionUser) => {
+          user = sessionUser;
         },
         error: (err) => {
           fail(err);
-          done();
         }
       });
-    }, TEST_TIMEOUT);
+      tick(1500);
+
+      expect(user).toBeNull();
+    }));
+
+    it('should wait through an initial null auth event for a restored session', fakeAsync(() => {
+      const mockSession = {
+        user: {
+          id: 'restored-user-id',
+          email: 'restored@test.com',
+          created_at: '2024-01-01T00:00:00Z',
+          updated_at: '2024-06-01T00:00:00Z'
+        }
+      };
+      let user: SimpleUserModel | null | undefined;
+
+      authSession$.next(null);
+      service.auth.getUserSession$().subscribe({
+        next: (sessionUser) => {
+          user = sessionUser;
+        },
+        error: (err) => {
+          fail(err);
+        }
+      });
+      tick(500);
+      expect(user).toBeUndefined();
+
+      authSession$.next(mockSession);
+      tick();
+
+      expect(user?.id).toBe('restored-user-id');
+      expect(user?.email).toBe('restored@test.com');
+    }));
     
     it('should return a SimpleUserModel when session is active', (done) => {
       const mockSession = {
@@ -47,9 +92,7 @@ describe('SupabaseService - auth methods', () => {
           updated_at: '2024-06-01T00:00:00Z'
         }
       };
-      spyOn(supabaseClient.auth, 'getSession').and.returnValue(
-        Promise.resolve({data: {session: mockSession}, error: null})
-      );
+      authSession$.next(mockSession);
       
       service.auth.getUserSession$().subscribe({
         next: (user: any) => {
@@ -67,22 +110,22 @@ describe('SupabaseService - auth methods', () => {
   });
   
   describe('getRichUserSession$', () => {
-    it('should return null when session is null', (done) => {
-      spyOn(supabaseClient.auth, 'getSession').and.returnValue(
-        Promise.resolve({data: {session: null}, error: null})
-      );
+    it('should return null when session is null', fakeAsync(() => {
+      let user: unknown;
+      authSession$.next(null);
       
       service.auth.getRichUserSession$().subscribe({
-        next: (user) => {
-          expect(user).toBeNull();
-          done();
+        next: (sessionUser) => {
+          user = sessionUser;
         },
         error: (err) => {
           fail(err);
-          done();
         }
       });
-    }, TEST_TIMEOUT);
+      tick(1500);
+
+      expect(user).toBeNull();
+    }));
     
     it('should enrich user with username and auth_provider from session', (done) => {
       const sessionUser = {
@@ -92,9 +135,7 @@ describe('SupabaseService - auth methods', () => {
         updated_at: '2024-01-01T00:00:00Z',
         app_metadata: {provider: 'google'}
       };
-      spyOn(supabaseClient.auth, 'getSession').and.returnValue(
-        Promise.resolve({data: {session: {user: sessionUser}}, error: null})
-      );
+      authSession$.next({user: sessionUser});
       
       const profileMock: any = {};
       ['select', 'filter'].forEach(m => {
@@ -128,9 +169,7 @@ describe('SupabaseService - auth methods', () => {
         updated_at: '2024-01-01T00:00:00Z',
         app_metadata: {provider: 'email'}
       };
-      spyOn(supabaseClient.auth, 'getSession').and.returnValue(
-        Promise.resolve({data: {session: {user: sessionUser}}, error: null})
-      );
+      authSession$.next({user: sessionUser});
 
       type ProfileLookupResponse = {
         data: null;
