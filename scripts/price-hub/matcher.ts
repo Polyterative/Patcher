@@ -1,3 +1,6 @@
+import { once } from 'node:events';
+import { createWriteStream } from 'node:fs';
+
 import type { NormalizedStoreListingSnapshot } from '../../supabase/functions/_shared/price-hub/woocommerce-store-api.ts';
 
 export const DEFAULT_MATCH_MIN_SCORE = 0.72;
@@ -124,9 +127,41 @@ export function matchModulesToProducts(
   products: readonly NormalizedStoreListingSnapshot[],
   options: PriceHubMatchOptions = {},
 ): PriceHubMatchCandidate[] {
+  return Array.from(iterateModuleProductMatches(modules, products, options))
+    .sort((left, right) => right.score - left.score || left.moduleName.localeCompare(right.moduleName));
+}
+
+export async function writeModuleProductMatches(
+  path: string,
+  modules: readonly PriceHubModuleInput[],
+  products: readonly NormalizedStoreListingSnapshot[],
+  options: PriceHubMatchOptions = {},
+): Promise<number> {
+  const stream = createWriteStream(path, { encoding: 'utf8' });
+  let count = 0;
+
+  stream.write('[\n');
+  for (const candidate of iterateModuleProductMatches(modules, products, options)) {
+    if (count > 0) {
+      await writeStreamChunk(stream, ',\n');
+    }
+    await writeStreamChunk(stream, `  ${JSON.stringify(candidate)}`);
+    count += 1;
+  }
+  await writeStreamChunk(stream, '\n]\n');
+  stream.end();
+  await once(stream, 'finish');
+
+  return count;
+}
+
+export function* iterateModuleProductMatches(
+  modules: readonly PriceHubModuleInput[],
+  products: readonly NormalizedStoreListingSnapshot[],
+  options: PriceHubMatchOptions = {},
+): Generator<PriceHubMatchCandidate> {
   const minScore = options.minScore ?? DEFAULT_MATCH_MIN_SCORE;
   const includeIgnored = options.includeIgnored ?? true;
-  const candidates: PriceHubMatchCandidate[] = [];
   const productProfiles = products.map(readProductProfile);
 
   for (const moduleInput of modules) {
@@ -142,13 +177,16 @@ export function matchModulesToProducts(
 
       const candidate = scoreProductForModule(moduleProfile, productProfile, minScore);
       if (candidate.score > 0 && (includeIgnored || candidate.status !== 'ignored')) {
-        candidates.push(candidate);
+        yield candidate;
       }
     }
   }
+}
 
-  return candidates
-    .sort((left, right) => right.score - left.score || left.moduleName.localeCompare(right.moduleName));
+async function writeStreamChunk(stream: NodeJS.WritableStream, chunk: string): Promise<void> {
+  if (!stream.write(chunk)) {
+    await once(stream, 'drain');
+  }
 }
 
 interface ModuleProfile {

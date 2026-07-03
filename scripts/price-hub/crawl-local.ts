@@ -1,18 +1,17 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
   crawlPriceHubStoreCatalog,
   DEFAULT_CATALOG_MAX_PAGES,
-  DEFAULT_SITEMAP_MAX_PRODUCTS,
   writeCrawledProducts,
 } from './catalog-crawler.ts';
-import { DEFAULT_MATCH_MIN_SCORE, matchModulesToProducts, type PriceHubModuleInput } from './matcher.ts';
+import { DEFAULT_MATCH_MIN_SCORE, type PriceHubModuleInput, writeModuleProductMatches } from './matcher.ts';
 import { readApprovedPriceHubStores } from './store-configs.ts';
 
 interface LocalCrawlerCliOptions {
   store: string;
   maxPages: number;
-  maxProducts: number;
+  maxProducts?: number;
   metadataConcurrency: number;
   out: string;
   modulesPath: string | null;
@@ -37,15 +36,17 @@ async function main(): Promise<void> {
     if (crawl.skippedProducts) {
       console.warn(`Skipped ${crawl.skippedProducts} sitemap pages without usable product metadata for ${store.slug}. Sample: ${(crawl.skippedProductUrls ?? []).join(', ')}`);
     }
+    if (crawl.hitMaxProducts) {
+      console.warn(`Stopped ${store.slug} after reaching --max-products=${options.maxProducts}. Omit --max-products for a full metadata crawl.`);
+    }
 
     if (modules) {
-      const matches = matchModulesToProducts(modules, crawl.products, {
+      const matchesPath = join(options.out, store.slug, 'matches.json');
+      const matchCount = await writeModuleProductMatches(matchesPath, modules, crawl.products, {
         minScore: options.minScore,
         includeIgnored: options.includeIgnoredMatches,
       });
-      const matchesPath = join(options.out, store.slug, 'matches.json');
-      await writeFile(matchesPath, `${JSON.stringify(matches, null, 2)}\n`, 'utf8');
-      console.log(`Wrote ${matches.length} match candidates for ${store.slug}: ${matchesPath}`);
+      console.log(`Wrote ${matchCount} match candidates for ${store.slug}: ${matchesPath}`);
     }
   }
 }
@@ -54,12 +55,11 @@ export function readCliOptions(args: readonly string[]): LocalCrawlerCliOptions 
   const options: LocalCrawlerCliOptions = {
     store: 'all',
     maxPages: DEFAULT_CATALOG_MAX_PAGES,
-    maxProducts: DEFAULT_SITEMAP_MAX_PRODUCTS,
     metadataConcurrency: 6,
     out: 'tmp/price-hub',
     modulesPath: null,
     minScore: DEFAULT_MATCH_MIN_SCORE,
-    includeIgnoredMatches: true,
+    includeIgnoredMatches: false,
   };
 
   for (const arg of args) {
@@ -181,7 +181,8 @@ function readBoolean(value: string, fieldName: string): boolean {
 }
 
 function printHelpAndExit(): never {
-  console.log('Usage: pnpm price-hub:crawl-local --store=after-later-audio|busy-circuits|cicada-sound|clockface-modular|control|detroit-modular|dreadbox|elevator-sound|escape-from-noise|exploding-shed|found-sound|instruo|intellijel|machineroom|milk-audio-store|michigan-synth-works|moog-audio|nano-modules|nightlife-electronics|new-groove|noisebug|patch-point|postmodular|pusherman-productions|robotspeak|rubadub|schlappi-engineering|signal-sounds-uk|signal-sounds-eu|schneidersladen|soundium|synthshop|thonk|wmdevices|zlob-modular|all --max-pages=100 --max-products=100 --metadata-concurrency=6 --out=tmp/price-hub --modules=modules.json --min-score=0.72 --include-ignored-matches=false');
+  console.log('Usage: pnpm price-hub:crawl-local --store=after-later-audio|animato-audio|big-city-music|busy-circuits|cicada-sound|clockface-modular|control|detroit-modular|dreadbox|elevator-sound|escape-from-noise|exploding-shed|found-sound|instruo|intellijel|machineroom|martin-pas|milk-audio-store|michigan-synth-works|moog-audio|nano-modules|nightlife-electronics|new-groove|noisebug|patch-point|postmodular|pusherman-productions|robotspeak|rubadub|schlappi-engineering|signal-sounds-uk|signal-sounds-eu|schneidersladen|soundium|synthshop|technosynth|thonk|turnlab|whimsical-raps|wmdevices|zlob-modular|all --max-pages=100 --metadata-concurrency=6 --out=tmp/price-hub --modules=modules.json --min-score=0.72 --include-ignored-matches=false');
+  console.log('Omit --max-products for a full metadata/sitemap crawl. Use pnpm price-hub:refresh-local for crawl, sanity checks, and live import.');
   process.exit(0);
 }
 

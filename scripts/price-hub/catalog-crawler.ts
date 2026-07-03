@@ -57,6 +57,7 @@ export interface CrawledWooCommerceStoreCatalog {
   skippedProducts?: number;
   skippedProductUrls?: string[];
   totalProductUrls?: number;
+  hitMaxProducts?: boolean;
 }
 
 export async function crawlWooCommerceStoreCatalog(
@@ -176,7 +177,7 @@ export async function crawlSitemapMetadataCatalog(
   }
 
   const fetchFn = options.fetchFn ?? fetch;
-  const maxProducts = readPositiveInteger(options.maxProducts, DEFAULT_SITEMAP_MAX_PRODUCTS, 'maxProducts');
+  const maxProducts = readOptionalPositiveInteger(options.maxProducts, 'maxProducts');
   const concurrency = readPositiveInteger(options.metadataConcurrency, DEFAULT_METADATA_CONCURRENCY, 'metadataConcurrency');
   const products: NormalizedStoreListingSnapshot[] = [];
   let skippedProducts = 0;
@@ -185,9 +186,11 @@ export async function crawlSitemapMetadataCatalog(
   let exhaustedProductUrls = false;
 
   const productUrlIterator = iterateSitemapMetadataProductUrls(store, fetchFn)[Symbol.asyncIterator]();
-  while (products.length < maxProducts) {
+  while (maxProducts === undefined || products.length < maxProducts) {
     const batch: string[] = [];
-    const batchSize = Math.min(concurrency, maxProducts - products.length);
+    const batchSize = maxProducts === undefined
+      ? concurrency
+      : Math.min(concurrency, maxProducts - products.length);
 
     while (batch.length < batchSize) {
       const nextProductUrl = await productUrlIterator.next();
@@ -214,7 +217,7 @@ export async function crawlSitemapMetadataCatalog(
         continue;
       }
 
-      if (products.length < maxProducts) {
+      if (maxProducts === undefined || products.length < maxProducts) {
         products.push(result.product);
       }
     }
@@ -230,7 +233,15 @@ export async function crawlSitemapMetadataCatalog(
     ? await applySignalSoundsInventoryOverrides(store, products, fetchFn)
     : products;
 
-  return { store, products: productsWithStoreAvailability, pagesFetched: 1, skippedProducts, skippedProductUrls, totalProductUrls };
+  return {
+    store,
+    products: productsWithStoreAvailability,
+    pagesFetched: 1,
+    skippedProducts,
+    skippedProductUrls,
+    totalProductUrls,
+    hitMaxProducts: maxProducts !== undefined && products.length >= maxProducts && !exhaustedProductUrls,
+  };
 }
 
 export async function writeCrawledProducts(
@@ -1083,6 +1094,18 @@ function readWooCommerceTerms(value: unknown): { name: string | null; slug: stri
 function readPositiveInteger(value: number | undefined, fallback: number, fieldName: string): number {
   if (value === undefined) {
     return fallback;
+  }
+
+  if (!Number.isInteger(value) || value < 1) {
+    throw new Error(`${fieldName} must be a positive integer.`);
+  }
+
+  return value;
+}
+
+function readOptionalPositiveInteger(value: number | undefined, fieldName: string): number | undefined {
+  if (value === undefined) {
+    return undefined;
   }
 
   if (!Number.isInteger(value) || value < 1) {

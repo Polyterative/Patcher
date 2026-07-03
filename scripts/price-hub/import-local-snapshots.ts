@@ -3,9 +3,11 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { NormalizedStoreListingSnapshot, SnapshotAvailability } from '../../supabase/functions/_shared/price-hub/woocommerce-store-api.ts';
 import type { Database, Json } from '../../src/backend/database.types.ts';
 import { readApprovedPriceHubStore, type ApprovedPriceHubStoreSlug } from './store-configs.ts';
+import { readPriceHubScriptEnv, readSupabaseServiceRoleKey } from './local-env.ts';
 import type { PriceHubMatchCandidate, PriceHubMatchStatus } from './matcher.ts';
 
 const DEFAULT_SUPABASE_URL = 'https://sozmatmywjpstwidzlss.supabase.co';
+const SERVICE_ROLE_KEY_HELP = 'Set SUPABASE_SERVICE_ROLE_KEY in your shell, .env, or .env.local at the repository root, or pass --supabase-key=...';
 const ACCEPTED_STATUSES: readonly PriceHubMatchStatus[] = ['strong_candidate'];
 const EXISTING_LISTING_LOOKUP_BATCH_SIZE = 1000;
 const MODULE_ID_LOOKUP_BATCH_SIZE = 1000;
@@ -69,9 +71,9 @@ type ListingInsert = Database['public']['Tables']['module_store_listings']['Inse
 type SnapshotInsert = Database['public']['Tables']['module_price_snapshots']['Insert'];
 
 async function main(): Promise<void> {
-  const options = readCliOptions(process.argv.slice(2), process.env);
+  const options = readCliOptions(process.argv.slice(2), readPriceHubScriptEnv());
   if (!options.dryRun && !options.supabaseKey) {
-    throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY. Live Price Hub imports require a service role key.');
+    throw new Error(`Missing SUPABASE_SERVICE_ROLE_KEY. Live Price Hub imports require a service role key. ${SERVICE_ROLE_KEY_HELP}`);
   }
   if (options.dryRun) {
     const rows = await readImportRows(options);
@@ -120,7 +122,7 @@ export function readCliOptions(args: readonly string[], env: NodeJS.ProcessEnv =
     productsPath: readRequiredValue(values, '--products'),
     matchesPath: readRequiredValue(values, '--matches'),
     supabaseUrl: stripTrailingSlash(values.get('--supabase-url') ?? env.SUPABASE_URL ?? DEFAULT_SUPABASE_URL),
-    supabaseKey: values.get('--supabase-key') ?? env.SUPABASE_SERVICE_ROLE_KEY ?? '',
+    supabaseKey: values.get('--supabase-key') ?? readSupabaseServiceRoleKey(env),
     dryRun,
     acceptedStatuses: ACCEPTED_STATUSES,
   };
@@ -755,7 +757,7 @@ function stripTrailingSlash(value: string): string {
 
 function printHelpAndExit(): never {
   console.log('Usage: pnpm price-hub:import-local --store=signal-sounds-uk --products=tmp/price-hub/signal-sounds-uk/products.json --matches=tmp/price-hub/signal-sounds-uk/matches.json [--dry-run]');
-  console.log('Requires SUPABASE_SERVICE_ROLE_KEY unless --dry-run is used. SUPABASE_URL defaults to the Patcher project.');
+  console.log(`Requires SUPABASE_SERVICE_ROLE_KEY unless --dry-run is used. SUPABASE_URL defaults to the Patcher project. ${SERVICE_ROLE_KEY_HELP}`);
   process.exit(0);
 }
 
