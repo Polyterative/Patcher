@@ -111,11 +111,34 @@ describe('ModuleBrowserDetailComponent search links', () => {
     expect(labels).toContain('Patchwerks 🇺🇸');
   });
 
-  it('hides the shared Signal Sounds retailer link for UK or EU price listing variants', () => {
+  it('keeps Signal Sounds UK and EU retailer suppression independent', () => {
     const {component} = build();
     const labels = component.getAvailableRetailerSearchLinks([buildListing('signal-sounds-eu', 2)]).map(link => link.label);
 
-    expect(labels).not.toContain('Signalsounds 🇬🇧');
+    expect(labels).toContain('Signal Sounds UK 🇬🇧');
+    expect(labels).not.toContain('Signal Sounds EU 🇪🇺');
+  });
+
+  it('includes the pictured EU, UK, and Switzerland retailer links', () => {
+    const {component} = build();
+    const labels = component.retailerSearchLinks.map(link => link.label);
+
+    [
+      'Milk Audio Store 🇮🇹',
+      'Modular Square 🇫🇷',
+      'MIDI Amsterdam 🇳🇱',
+      'Modularsynthesizers.nl 🇳🇱',
+      'Escape From Noise 🇸🇪',
+      'Elevator Sound 🇬🇧',
+      'Signal Sounds EU 🇪🇺',
+      'Triangle Core Rocks 🇩🇪',
+      'Post Modular 🇬🇧',
+      'Rubadub 🇬🇧',
+      'Signal Sounds UK 🇬🇧',
+      'Machineroom 🇺🇦',
+      'Synthshop 🇳🇴',
+      'House of Sound 🇨🇭',
+    ].forEach(label => expect(labels).toContain(label));
   });
 
   it('can suppress every retailer link so the Other Stores group can disappear', () => {

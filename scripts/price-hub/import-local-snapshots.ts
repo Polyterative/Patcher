@@ -9,7 +9,7 @@ import type { PriceHubMatchCandidate, PriceHubMatchStatus } from './matcher.ts';
 const DEFAULT_SUPABASE_URL = 'https://sozmatmywjpstwidzlss.supabase.co';
 const WRITE_KEY_HELP = 'Set SUPABASE_ANON_KEY or SUPABASE_SERVICE_ROLE_KEY in your shell, .env, or .env.local at the repository root, or pass --supabase-key=...';
 const ACCEPTED_STATUSES: readonly PriceHubMatchStatus[] = ['strong_candidate'];
-const EXISTING_LISTING_LOOKUP_BATCH_SIZE = 1000;
+const PRODUCT_URL_LOOKUP_BATCH_SIZE = 100;
 const MODULE_ID_LOOKUP_BATCH_SIZE = 1000;
 const MIN_REASONABLE_MODULE_PRICE_MINOR = 3000;
 const MAX_REASONABLE_MODULE_PRICE_MINOR = 2000000;
@@ -26,6 +26,7 @@ interface ImportLocalSnapshotsOptions {
 
 export interface ExistingPriceHubListingReference {
   module_id: number;
+  store_id: number;
   product_url: string;
 }
 
@@ -218,7 +219,8 @@ export async function importRows(
   }
 
   const store = await readStore(supabase, storeSlug);
-  const filteredRows = await readRowsWithoutConflictingProductUrls(supabase, store.id, moduleFilteredRows.rows);
+  const knownModuleRows = chooseBestRowPerProductUrl(moduleFilteredRows.rows);
+  const filteredRows = await readRowsWithoutConflictingProductUrls(supabase, store.id, knownModuleRows);
   if (filteredRows.skippedConflictingListings.length > 0) {
     console.warn(`Skipped ${filteredRows.skippedConflictingListings.length} Price Hub import rows whose product URLs are already linked to another module.`);
   }
@@ -292,11 +294,12 @@ export function filterRowsWithExistingModules(
 export function filterRowsWithConflictingProductUrls(
   rows: readonly PriceHubSnapshotImportRow[],
   existingListings: readonly ExistingPriceHubListingReference[],
+  storeId?: number,
 ): FilteredPriceHubSnapshotImportRows {
   const existingListingsByProductUrl = groupExistingListingsByProductUrl(existingListings);
   const skippedConflictingListings: PriceHubSnapshotImportRow[] = [];
   const filteredRows = rows.filter((row) => {
-    if (!hasConflictingExistingProductUrl(row, existingListingsByProductUrl)) {
+    if (!hasConflictingExistingProductUrl(row, existingListingsByProductUrl, storeId)) {
       return true;
     }
 
@@ -323,9 +326,10 @@ function groupExistingListingsByProductUrl(
 function hasConflictingExistingProductUrl(
   row: PriceHubSnapshotImportRow,
   existingListingsByProductUrl: ReadonlyMap<string, readonly ExistingPriceHubListingReference[]>,
+  storeId?: number,
 ): boolean {
   const existingListings = existingListingsByProductUrl.get(normalizeComparableUrl(row.productUrl)) ?? [];
-  return existingListings.some((listing) => listing.module_id !== row.moduleId);
+  return existingListings.some((listing) => listing.module_id !== row.moduleId || (storeId !== undefined && listing.store_id !== storeId));
 }
 
 async function readRowsWithoutConflictingProductUrls(
@@ -334,24 +338,31 @@ async function readRowsWithoutConflictingProductUrls(
   rows: readonly PriceHubSnapshotImportRow[],
 ): Promise<FilteredPriceHubSnapshotImportRows> {
   const existingListings: ExistingPriceHubListingReference[] = [];
-  for (let start = 0; ; start += EXISTING_LISTING_LOOKUP_BATCH_SIZE) {
+  const lookupUrls = uniqueProductUrlLookupValues(rows);
+  for (let start = 0; start < lookupUrls.length; start += PRODUCT_URL_LOOKUP_BATCH_SIZE) {
+    const pageUrls = lookupUrls.slice(start, start + PRODUCT_URL_LOOKUP_BATCH_SIZE);
     const { data, error } = await supabase
       .from('module_store_listings')
-      .select('module_id,product_url')
-      .eq('store_id', storeId)
-      .range(start, start + EXISTING_LISTING_LOOKUP_BATCH_SIZE - 1);
+      .select('module_id,store_id,product_url')
+      .in('product_url', pageUrls);
     if (error) {
       throw new Error(`Existing listing lookup failed: ${error.message}`);
     }
 
-    const page = data ?? [];
-    existingListings.push(...page);
-    if (page.length < EXISTING_LISTING_LOOKUP_BATCH_SIZE) {
-      break;
-    }
+    existingListings.push(...(data ?? []));
   }
 
-  return filterRowsWithConflictingProductUrls(rows, existingListings);
+  return filterRowsWithConflictingProductUrls(rows, existingListings, storeId);
+}
+
+function uniqueProductUrlLookupValues(rows: readonly PriceHubSnapshotImportRow[]): string[] {
+  const values = new Set<string>();
+  for (const row of rows) {
+    values.add(row.productUrl);
+    values.add(row.productUrl.replace(/\/$/, ''));
+    values.add(row.productUrl.endsWith('/') ? row.productUrl : `${row.productUrl}/`);
+  }
+  return Array.from(values).filter((value) => value.length > 0);
 }
 
 async function readRowsWithExistingModules(

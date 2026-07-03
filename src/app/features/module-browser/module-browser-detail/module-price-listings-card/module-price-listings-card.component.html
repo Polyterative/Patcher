@@ -62,7 +62,13 @@
           class="module-price-listings__section-content"
           aria-label="Store price results"
         >
-          <mat-card-title class="module-price-listings__section-title">{{ resultSummaryLabel }}</mat-card-title>
+          <div class="module-price-listings__section-heading">
+            <mat-card-title class="module-price-listings__section-title">{{ resultSummaryLabel }}</mat-card-title>
+            <span
+              class="module-price-listings__beta-badge"
+              aria-label="Store prices beta"
+            >beta</span>
+          </div>
           <div class="module-price-listings__results">
             @if (displayListings.length > 0) {
               @for (group of displayListingGroups; track group.continentCode) {

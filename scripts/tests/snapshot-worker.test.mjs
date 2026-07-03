@@ -5,11 +5,13 @@ import {
   backoffDaysForFailureCount,
   buildFailureUpdate,
   buildWooCommerceStoreApiUrl,
+  isSnapshotRefreshAdapterKind,
   normalizeErrorMessage,
   parseProbeListingInput,
   readSnapshotLimit,
   readSnapshotWorkerMode,
   SnapshotWorkerInputError,
+  SUPPORTED_SNAPSHOT_ADAPTER_KINDS,
 } from '../../supabase/functions/_shared/price-hub/snapshot-worker.ts';
 
 const baseListing = {
@@ -36,6 +38,14 @@ test('reads snapshot limit with default lower bound and hard cap', () => {
 test('detects local-only probe mode from the request URL', () => {
   assert.equal(readSnapshotWorkerMode('https://worker.test/snapshot-store-listings'), 'scheduled');
   assert.equal(readSnapshotWorkerMode('https://worker.test/snapshot-store-listings?mode=probe'), 'probe');
+});
+
+test('scheduled worker refreshes WooCommerce API and Shopware metadata listings', () => {
+  assert.deepEqual(SUPPORTED_SNAPSHOT_ADAPTER_KINDS, ['woocommerce_store_api', 'shopware_metadata']);
+  assert.equal(isSnapshotRefreshAdapterKind('woocommerce_store_api'), true);
+  assert.equal(isSnapshotRefreshAdapterKind('shopware_metadata'), true);
+  assert.equal(isSnapshotRefreshAdapterKind('shopify_product_json'), false);
+  assert.equal(isSnapshotRefreshAdapterKind('custom'), false);
 });
 
 test('parses probe input into DB-free listing shape', () => {

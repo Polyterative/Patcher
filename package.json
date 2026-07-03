@@ -69,7 +69,7 @@
     "sync:docs-screenshots": "node scripts/dev/sync-docs-screenshots.mjs",
     "price-hub:crawl-local": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/price-hub/crawl-local.ts",
     "price-hub:import-local": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/price-hub/import-local-snapshots.ts",
-    "price-hub:refresh-local": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/price-hub/refresh-local.ts",
+    "price-hub:refresh-local": "node --max-old-space-size=8192 --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/price-hub/refresh-local.ts",
     "test:functions:price-hub-local-crawler": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test scripts/tests/price-hub-local-crawler.test.mjs",
     "test:functions:price-hub-import-local": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test scripts/tests/price-hub-import-local.test.mjs"
   },

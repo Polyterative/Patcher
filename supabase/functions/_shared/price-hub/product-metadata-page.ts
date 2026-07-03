@@ -14,13 +14,18 @@ interface ProductPageMetadata {
 
 export type ProductMetadataAdapter = 'bigcommerce_metadata' | 'shopware_metadata' | 'custom';
 
+interface ProductMetadataContext {
+  storeSlug?: string;
+}
+
 export function normalizeProductMetadataPage(
   html: string,
   productUrl: string,
   adapter: ProductMetadataAdapter,
+  context: ProductMetadataContext = {},
 ): NormalizedStoreListingSnapshot {
   const metadata = readProductPageMetadata(html);
-  const availabilityText = readAvailabilityText(html);
+  const availabilityText = readAvailabilityText(html, context);
   const slug = slugFromUrl(metadata.productUrl ?? productUrl);
   const productName = normalizeProductName(metadata.productName, adapter);
   const brand = metadata.brand ?? readSkuBrand(metadata.sku);
@@ -303,6 +308,7 @@ function normalizeAvailability(value: string | null): SnapshotAvailability {
     || availability.includes('available on order')
     || availability.includes('on order')
     || availability.includes('su ordinazione')
+    || /shipping\s+in\s+\d+(?:\s*(?:-|\u2013|to)\s*\d+)?\s+days?/.test(availability)
   ) {
     return 'backorder';
   }
@@ -337,7 +343,7 @@ function normalizeAvailability(value: string | null): SnapshotAvailability {
   return 'unknown';
 }
 
-function readAvailabilityText(html: string): string | null {
+function readAvailabilityText(html: string, context: ProductMetadataContext): string | null {
   const archivedText = readFirstAvailabilityMatch(html, [
     /Product is archived/i,
   ]);
@@ -357,8 +363,14 @@ function readAvailabilityText(html: string): string | null {
     return terminalUnavailableText;
   }
 
+  const storeSpecificOrderStatusText = readStoreSpecificOrderStatusText(html, context);
+  if (storeSpecificOrderStatusText) {
+    return storeSpecificOrderStatusText;
+  }
+
   const orderStatusText = readScopedAvailabilityMatch(html, [
     /Su ordinazione/i,
+    /Available on backorder/i,
     /Available on order/i,
     /On order/i,
     /Backorder/i,
@@ -377,7 +389,7 @@ function readAvailabilityText(html: string): string | null {
     return availableStatusText;
   }
 
-  const structuredAvailableText = readStructuredAvailableText(html);
+  const structuredAvailableText = readStructuredAvailableText(html, context);
   if (structuredAvailableText) {
     return structuredAvailableText;
   }
@@ -388,6 +400,16 @@ function readAvailabilityText(html: string): string | null {
     /Available immediately/i,
     /In stock/i,
   ]);
+}
+
+function readStoreSpecificOrderStatusText(html: string, context: ProductMetadataContext): string | null {
+  if (context.storeSlug === 'turnlab') {
+    return readFirstSnippetAvailabilityMatch(readElementSnippetsByClass(html, 'delivery'), [
+      /Shipping in\s+\d+(?:\s*(?:-|\u2013|to)\s*\d+)?\s+days?/i,
+    ]);
+  }
+
+  return null;
 }
 
 function readFirstAvailabilityMatch(html: string, patterns: readonly RegExp[]): string | null {
@@ -402,7 +424,11 @@ function readFirstAvailabilityMatch(html: string, patterns: readonly RegExp[]): 
 }
 
 function readScopedAvailabilityMatch(html: string, patterns: readonly RegExp[]): string | null {
-  for (const snippet of readPrimaryAvailabilitySnippets(html)) {
+  return readFirstSnippetAvailabilityMatch(readPrimaryAvailabilitySnippets(html), patterns);
+}
+
+function readFirstSnippetAvailabilityMatch(snippets: readonly string[], patterns: readonly RegExp[]): string | null {
+  for (const snippet of snippets) {
     const match = readFirstAvailabilityMatch(snippet, patterns);
     if (match) {
       return match;
@@ -414,6 +440,7 @@ function readScopedAvailabilityMatch(html: string, patterns: readonly RegExp[]):
 
 function readPrimaryAvailabilitySnippets(html: string): string[] {
   return [
+    ...readElementSnippetsByClass(html, 'stock'),
     ...readElementSnippetsByClass(html, 'delivery-information'),
     ...readElementSnippetsByClass(html, 'product-detail-buy'),
     ...readElementSnippetsByClass(html, 'buy-widget'),
@@ -449,7 +476,11 @@ function readDisabledBuyButtonSnippets(html: string): string[] {
   return snippets;
 }
 
-function readStructuredAvailableText(html: string): string | null {
+function readStructuredAvailableText(html: string, context: ProductMetadataContext): string | null {
+  if (context.storeSlug === 'turnlab') {
+    return readTurnlabStructuredAvailableText(html);
+  }
+
   if (/schema\.org\/InStock/i.test(html)) {
     return 'In stock';
   }
@@ -467,6 +498,18 @@ function readStructuredAvailableText(html: string): string | null {
   }
 
   if (/<span\b[^>]*\bclass=["'][^"']*\bsubtitle-product-popup\b[^"']*["'][^>]*>[\s\S]{0,500}?\bAdd to cart\b/i.test(html)) {
+    return 'In stock';
+  }
+
+  return null;
+}
+
+function readTurnlabStructuredAvailableText(html: string): string | null {
+  if (/<form\b(?=[^>]*\bid=["']product_configure_form["'])[^>]*>[\s\S]{0,2000}?\bAdd to cart\b/i.test(html)) {
+    return 'In stock';
+  }
+
+  if (/<form\b(?=[^>]*\baction=["'][^"']*\/cart\/add\/)(?![^>]*\bid=["']popup_form_)[^>]*>[\s\S]{0,1500}?\bAdd to cart\b/i.test(html)) {
     return 'In stock';
   }
 

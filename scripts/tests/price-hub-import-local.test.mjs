@@ -279,9 +279,9 @@ test('skips import rows whose product URL is already linked to another module', 
   const availableRow = importRow(4831, availableUrl);
 
   const filtered = filterRowsWithConflictingProductUrls([conflictingRow, availableRow], [
-    { module_id: 2195, product_url: `${conflictingUrl}/` },
-    { module_id: 4831, product_url: availableUrl },
-  ]);
+    { module_id: 2195, store_id: 9, product_url: `${conflictingUrl}/` },
+    { module_id: 4831, store_id: 10, product_url: availableUrl },
+  ], 10);
 
   assert.deepEqual(filtered.rows, [availableRow]);
   assert.deepEqual(filtered.skippedConflictingListings, [conflictingRow]);
@@ -292,9 +292,21 @@ test('skips product URL conflicts even when another existing variant matches the
   const conflictingRow = importRow(1872, `${productUrl}/`);
 
   const filtered = filterRowsWithConflictingProductUrls([conflictingRow], [
-    { module_id: 2195, product_url: `${productUrl}/` },
-    { module_id: 1872, product_url: productUrl },
-  ]);
+    { module_id: 2195, store_id: 9, product_url: `${productUrl}/` },
+    { module_id: 1872, store_id: 10, product_url: productUrl },
+  ], 10);
+
+  assert.deepEqual(filtered.rows, []);
+  assert.deepEqual(filtered.skippedConflictingListings, [conflictingRow]);
+});
+
+test('skips product URL conflicts from another existing store listing', () => {
+  const productUrl = 'https://signalsounds.eu/doepfer-a-118-2-random-noise-eurorack-module-slim';
+  const conflictingRow = importRow(1872, productUrl);
+
+  const filtered = filterRowsWithConflictingProductUrls([conflictingRow], [
+    { module_id: 1872, store_id: 9, product_url: `${productUrl}/` },
+  ], 10);
 
   assert.deepEqual(filtered.rows, []);
   assert.deepEqual(filtered.skippedConflictingListings, [conflictingRow]);

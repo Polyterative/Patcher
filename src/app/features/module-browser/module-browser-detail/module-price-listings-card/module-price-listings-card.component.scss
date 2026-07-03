@@ -25,6 +25,26 @@
   margin: 0;
 }
 
+.module-price-listings__section-heading {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.34rem;
+  min-width: 0;
+}
+
+.module-price-listings__beta-badge {
+  flex: 0 0 auto;
+  padding: 0.04rem 0.22rem;
+  border: 0.0625rem solid color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: 0.18rem;
+  color: color-mix(in srgb, currentColor 52%, transparent);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.075em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
 .module-price-listings__controls {
   display: flex;
   flex-wrap: wrap;
