@@ -105,7 +105,7 @@ test('builds import rows only from strong matches with matching products', () =>
   });
 });
 
-test('requires explicit import paths and service role key for live writes', () => {
+test('requires explicit import paths and allows dry run without a write key', () => {
   const options = readCliOptions([
     '--store=signal-sounds-uk',
     '--products=products.json',
@@ -121,7 +121,17 @@ test('requires explicit import paths and service role key for live writes', () =
   assert.equal(options.dryRun, true);
 });
 
-test('reads service role key aliases and explicit import credentials', () => {
+test('reads Supabase write key aliases and explicit import credentials', () => {
+  const anonOptions = readCliOptions([
+    '--store=signal-sounds-uk',
+    '--products=products.json',
+    '--matches=matches.json',
+  ], {
+    SUPABASE_ANON_KEY: 'anon-key',
+  });
+
+  assert.equal(anonOptions.supabaseKey, 'anon-key');
+
   const aliasOptions = readCliOptions([
     '--store=signal-sounds-uk',
     '--products=products.json',
