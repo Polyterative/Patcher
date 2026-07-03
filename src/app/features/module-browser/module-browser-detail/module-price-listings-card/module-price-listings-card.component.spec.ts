@@ -345,6 +345,18 @@ describe('ModulePriceListingsCardComponent', () => {
     expect(comp.displayListings.map(listing => listing.storeName)).toEqual(['EU store']);
   });
 
+  it('keeps the preferred continent through transient empty listing states', () => {
+    comp.listings = undefined;
+
+    comp.listings = [
+      createListing({id: 1, storeName: 'EU store', countryCode: 'DE'}),
+      createListing({id: 2, storeName: 'US store', countryCode: 'US'})
+    ];
+
+    expect(comp.regionFilter).toBe('europe');
+    expect(comp.displayListings.map(listing => listing.storeName)).toEqual(['EU store']);
+  });
+
   it('keeps UK listings separate from Europe for import-sensitive shipping', () => {
     comp.listings = [
       createListing({id: 1, storeName: 'EU store', countryCode: 'DE'}),

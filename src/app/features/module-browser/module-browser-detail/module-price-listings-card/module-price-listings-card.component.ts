@@ -422,8 +422,13 @@ export class ModulePriceListingsCardComponent {
       return;
     }
 
+    const listings = this.listings ?? [];
+    if (listings.length === 0) {
+      return;
+    }
+
     const hasSelectedRegion = buildModulePriceRegionFilterOptions(
-      this.listings ?? [],
+      listings,
       this.availabilityFilter,
       this.preferredContinent
     ).some(option => option.value === this.regionFilter);
