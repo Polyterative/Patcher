@@ -84,14 +84,6 @@ export class SupabaseService extends SubManager {
       }
     );
 
-    void this.supabase.auth.getSession()
-      .then(({data}) => {
-        this.authSession$.next(data.session ?? null);
-      })
-      .catch(() => {
-        this.authSession$.next(null);
-      });
-
     const {data: authListener} = this.supabase.auth.onAuthStateChange((event, session) => {
       this.authSession$.next(session ?? null);
       if (event === 'SIGNED_OUT') {

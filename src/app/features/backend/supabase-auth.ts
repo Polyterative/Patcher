@@ -10,13 +10,15 @@ import {
   from as rxFrom,
   Observable,
   of,
-  shareReplay,
-  throwError
+  throwError,
+  timeout
 } from 'rxjs';
 import {
   catchError,
+  filter,
   map,
   switchMap,
+  take,
   withLatestFrom
 } from 'rxjs/operators';
 import { Database } from 'src/backend/database.types';
@@ -33,6 +35,10 @@ import {
   SupabaseLoginResponse,
   SupabaseSignupResponse
 } from './supabase.types';
+
+
+const AUTH_NULL_SESSION_SETTLE_TIMEOUT_MS = 1500;
+const OAUTH_CALLBACK_SESSION_TIMEOUT_MS = 10000;
 
 
 class PasswordResetError extends Error {
@@ -54,6 +60,22 @@ export function createAuthNamespace(
   snackBar: MatSnackBar,
   authSession$: Observable<Session | null>
 ) {
+  const getSettledAuthSession$ = (nullSessionTimeoutMs = AUTH_NULL_SESSION_SETTLE_TIMEOUT_MS): Observable<Session | null> =>
+    authSession$.pipe(
+      take(1),
+      switchMap(session => {
+        if (session) return of(session);
+        return authSession$.pipe(
+          filter((nextSession): nextSession is Session => !!nextSession),
+          take(1),
+          timeout({
+            first: nullSessionTimeoutMs,
+            with: () => of(null)
+          })
+        );
+      })
+    );
+
   const ns = {
     login$(email: string, password: string): Observable<SupabaseLoginResponse> {
       const params$ = of('').pipe(
@@ -121,12 +143,12 @@ export function createAuthNamespace(
     },
     
     handleOAuthCallback$(): Observable<RichUserModel | null> {
-      return rxFrom(supabase.auth.getSession()).pipe(
-        switchMap(sessionResponse => {
-          if (sessionResponse.error || !sessionResponse.data.session) {
+      return getSettledAuthSession$(OAUTH_CALLBACK_SESSION_TIMEOUT_MS).pipe(
+        switchMap(session => {
+          if (!session) {
             return of(null);
           }
-          const user = sessionResponse.data.session.user;
+          const user = session.user;
           return ns.getRichUserSession$().pipe(
             switchMap(richUser => {
               if (!richUser || !richUser.username) {
@@ -211,26 +233,25 @@ export function createAuthNamespace(
     },
     
     getUserSession$(): Observable<SimpleUserModel | null> {
-      return rxFrom(supabase.auth.getSession()).pipe(
-        switchMap(sessionOutput => {
-          if (sessionOutput.data.session == null) return of(null);
-          const { user } = sessionOutput.data.session;
-          return of({
+      return getSettledAuthSession$().pipe(
+        map(session => {
+          if (session == null) return null;
+          const { user } = session;
+          return {
             id: user.id,
             email: user.email,
             created_at: user.created_at,
             updated_at: user.updated_at
-          });
-        }),
-        shareReplay(1)
+          };
+        })
       );
     },
     
     getRichUserSession$(): Observable<RichUserModel | null> {
-      return rxFrom(supabase.auth.getSession()).pipe(
-        switchMap(sessionOutput => {
-          if (!sessionOutput.data.session) return of(null);
-          const sessionUser = sessionOutput.data.session.user;
+      return getSettledAuthSession$().pipe(
+        switchMap(session => {
+          if (!session) return of(null);
+          const sessionUser = session.user;
           const authProvider = (sessionUser.app_metadata?.['provider'] as string) || 'email';
           const authProviders = (sessionUser.app_metadata?.['providers'] as string[]) || [authProvider];
           return ns._getUserNameFromDatabase(sessionUser.id).pipe(
@@ -258,8 +279,7 @@ export function createAuthNamespace(
               };
             })
           );
-        }),
-        shareReplay(1)
+        })
       );
     },
     

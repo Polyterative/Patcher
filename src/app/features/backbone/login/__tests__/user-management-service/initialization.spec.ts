@@ -1,8 +1,15 @@
 import {
   cleanupUserManagementServiceTest,
+  MOCK_SIMPLE_USER,
   setupUserManagementServiceTest
 } from './test-setup';
 import { UserManagementService } from '../../user-management.service';
+import { ReplaySubject } from 'rxjs';
+import {
+  fakeAsync,
+  tick
+} from '@angular/core/testing';
+import { SimpleUserModel } from 'src/app/features/backend/supabase.service';
 
 
 /**
@@ -72,4 +79,26 @@ describe('UserManagementService - Initialization', () => {
       done();
     }, 100);
   });
+
+  it('should wait for auth session restoration before marking auth as restored', fakeAsync(() => {
+    cleanupUserManagementServiceTest();
+    const pendingSession$ = new ReplaySubject<typeof MOCK_SIMPLE_USER | null>(1);
+    const setup = setupUserManagementServiceTest({initialUserSession$: pendingSession$});
+    const pendingService = setup.service;
+    let authRestored: boolean | undefined;
+    let loggedUser: SimpleUserModel | undefined;
+
+    pendingService.authRestored$.subscribe(value => authRestored = value);
+    pendingService.loggedUser$.subscribe(user => loggedUser = user);
+    tick();
+
+    expect(authRestored).toBeFalse();
+    expect(loggedUser).toBeUndefined();
+
+    pendingSession$.next(MOCK_SIMPLE_USER);
+    tick();
+
+    expect(authRestored).toBeTrue();
+    expect(loggedUser).toEqual(MOCK_SIMPLE_USER);
+  }));
 });

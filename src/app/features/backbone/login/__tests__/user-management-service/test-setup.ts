@@ -6,6 +6,7 @@ import {
 } from '@angular/router';
 import { EventEmitter } from '@angular/core';
 import {
+  Observable,
   of,
   ReplaySubject
 } from 'rxjs';
@@ -54,7 +55,10 @@ export const MOCK_RICH_USER_2 = {
 /**
  * Creates and configures the test environment for UserManagementService
  */
-export function setupUserManagementServiceTest() {
+export function setupUserManagementServiceTest(options: {
+  initialUserSession$?: Observable<typeof MOCK_SIMPLE_USER | typeof MOCK_SIMPLE_USER_2 | null>;
+  initialRichUserSession$?: Observable<typeof MOCK_RICH_USER | typeof MOCK_RICH_USER_2 | null>;
+} = {}) {
   const mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open', 'openFromComponent', 'dismiss']);
   
   const mockRouter = jasmine.createSpyObj('Router', ['navigate'], {
@@ -83,8 +87,8 @@ export function setupUserManagementServiceTest() {
     'deleteCurrentUserAccount$',
     'logoffLocal$'
   ]);
-  mockAuthNamespace.getUserSession$.and.returnValue(of(null));
-  mockAuthNamespace.getRichUserSession$.and.returnValue(of(null));
+  mockAuthNamespace.getUserSession$.and.returnValue(options.initialUserSession$ ?? of(null));
+  mockAuthNamespace.getRichUserSession$.and.returnValue(options.initialRichUserSession$ ?? of(null));
   mockAuthNamespace.logoff$.and.returnValue(of({error: null}));
   mockAuthNamespace.logoffLocal$.and.returnValue(of({error: null}));
   
