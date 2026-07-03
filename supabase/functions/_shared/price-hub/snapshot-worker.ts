@@ -5,6 +5,7 @@ export const MAX_SNAPSHOT_LIMIT = 20;
 export const ONE_DAY_MS = 86_400_000;
 export const STALE_FAILURE_THRESHOLD = 4;
 export const MAX_ERROR_MESSAGE_LENGTH = 500;
+export const SUPPORTED_SNAPSHOT_ADAPTER_KINDS = ['woocommerce_store_api', 'shopware_metadata'] as const;
 const APPROVED_PROBE_STORE_HOSTS = new Set([
   'elevatorsound.com',
   'www.elevatorsound.com',
@@ -13,6 +14,7 @@ const APPROVED_PROBE_STORE_HOSTS = new Set([
 ]);
 
 export type SnapshotWorkerMode = 'scheduled' | 'probe';
+export type SupportedSnapshotAdapterKind = typeof SUPPORTED_SNAPSHOT_ADAPTER_KINDS[number];
 
 export interface StoreApiListingInput {
   product_url: string;
@@ -53,6 +55,10 @@ export function readSnapshotLimit(url: string, defaultLimit = DEFAULT_SNAPSHOT_L
 
 export function readSnapshotWorkerMode(url: string): SnapshotWorkerMode {
   return new URL(url).searchParams.get('mode') === 'probe' ? 'probe' : 'scheduled';
+}
+
+export function isSnapshotRefreshAdapterKind(adapterKind: string): adapterKind is SupportedSnapshotAdapterKind {
+  return SUPPORTED_SNAPSHOT_ADAPTER_KINDS.includes(adapterKind as SupportedSnapshotAdapterKind);
 }
 
 export function parseProbeListingInput(body: unknown): StoreApiListingInput {

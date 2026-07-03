@@ -1,4 +1,5 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { normalizeShopwareProductPage } from '../_shared/price-hub/shopware-metadata.ts';
 import {
   chooseWooCommerceProduct,
   normalizeWooCommerceStoreApiProduct,
@@ -14,6 +15,7 @@ import {
   readSnapshotLimit,
   readSnapshotWorkerMode,
   SnapshotWorkerInputError,
+  SUPPORTED_SNAPSHOT_ADAPTER_KINDS,
   type StoreApiListingInput,
 } from '../_shared/price-hub/snapshot-worker.ts';
 
@@ -97,7 +99,7 @@ Deno.serve(async (request) => {
       .eq('active', true)
       .eq('stores.active', true)
       .eq('stores.price_tracking_enabled', true)
-      .eq('stores.adapter_kind', 'woocommerce_store_api')
+      .in('stores.adapter_kind', [...SUPPORTED_SNAPSHOT_ADAPTER_KINDS])
       .lte('next_check_at', new Date().toISOString())
       .order('next_check_at', { ascending: true })
       .limit(limit);
@@ -144,7 +146,7 @@ async function processListing(supabase: ReturnType<typeof createClient>, listing
   const observedAt = new Date().toISOString();
 
   try {
-    const { snapshot } = await fetchWooCommerceSnapshot(listing);
+    const { snapshot } = await fetchListingSnapshot(listing);
 
     const { error: insertError } = await supabase
       .from('module_price_snapshots')
@@ -197,31 +199,26 @@ async function processListing(supabase: ReturnType<typeof createClient>, listing
   }
 }
 
+async function fetchListingSnapshot(
+  listing: ListingRow,
+): Promise<{ snapshot: NormalizedStoreListingSnapshot }> {
+  switch (listing.stores.adapter_kind) {
+    case 'woocommerce_store_api':
+      return fetchWooCommerceSnapshot(listing);
+    case 'shopware_metadata':
+      return fetchProductMetadataSnapshot(listing);
+    default:
+      throw new Error(`Unsupported snapshot adapter: ${listing.stores.adapter_kind}`);
+  }
+}
+
 async function fetchWooCommerceSnapshot(
   listing: StoreApiListingInput,
 ): Promise<{ apiUrl: string; snapshot: NormalizedStoreListingSnapshot }> {
   const apiUrl = buildWooCommerceStoreApiUrl(listing);
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-  let response: Response;
-
-  try {
-    response = await fetch(apiUrl, {
-      signal: controller.signal,
-      headers: {
-        accept: 'application/json',
-        'user-agent': 'PatcherPriceHubPilot/0.1 (+https://patcher.xyz)',
-      },
-    });
-  } catch (error) {
-    if (error instanceof DOMException && error.name === 'AbortError') {
-      throw new Error(`WooCommerce Store API timed out after ${FETCH_TIMEOUT_MS}ms`);
-    }
-
-    throw error;
-  } finally {
-    clearTimeout(timeout);
-  }
+  const response = await fetchWithTimeout(apiUrl, {
+    accept: 'application/json',
+  }, 'WooCommerce Store API');
 
   if (!response.ok) {
     throw new Error(`WooCommerce Store API returned ${response.status}`);
@@ -238,6 +235,44 @@ async function fetchWooCommerceSnapshot(
     apiUrl,
     snapshot: normalizeWooCommerceStoreApiProduct(product),
   };
+}
+
+async function fetchProductMetadataSnapshot(
+  listing: ListingRow,
+): Promise<{ snapshot: NormalizedStoreListingSnapshot }> {
+  const response = await fetchWithTimeout(listing.product_url, {
+    accept: 'text/html,application/xhtml+xml',
+  }, 'Product metadata page');
+
+  if (!response.ok) {
+    throw new Error(`Product metadata page returned ${response.status}`);
+  }
+  return {
+    snapshot: normalizeShopwareProductPage(await response.text(), listing.product_url),
+  };
+}
+
+async function fetchWithTimeout(url: string, headers: Record<string, string>, label: string): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+  try {
+    return await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        ...headers,
+        'user-agent': 'PatcherPriceHubPilot/0.1 (+https://patcher.xyz)',
+      },
+    });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new Error(`${label} timed out after ${FETCH_TIMEOUT_MS}ms`);
+    }
+
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 async function recordFailure(

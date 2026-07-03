@@ -571,7 +571,7 @@ async function crawlSitemapMetadataProductUrl(
     ? normalizeBigCommerceProductPage(html, productUrl)
     : store.adapter === 'shopware_metadata'
       ? normalizeShopwareProductPage(html, productUrl)
-      : normalizeProductMetadataPage(html, productUrl, 'custom');
+      : normalizeProductMetadataPage(html, productUrl, 'custom', { storeSlug: store.slug });
 
   return { productUrl, product: isUsableMetadataProduct(product) ? product : null };
 }

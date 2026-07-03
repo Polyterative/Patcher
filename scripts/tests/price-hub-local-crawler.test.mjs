@@ -977,6 +977,38 @@ test('crawls BigCommerce product sitemap and normalizes product metadata pages',
     assert.equal(crawl.products[0].productName, 'Black Sequencer');
   });
 
+  test('detects MachineRoom WooCommerce backorder stock badges over in-stock metadata', async () => {
+    const productUrl = 'https://machineroom.com.ua/product/knight-s-gallop/';
+    const crawl = await crawlPriceHubStoreCatalog(machineroomStore, {
+      maxProducts: 1,
+      fetchFn: async (url) => {
+        if (url.endsWith('/sitemap_index.xml')) {
+          return textResponse(`<sitemapindex><sitemap><loc>https://machineroom.com.ua/product-sitemap1.xml</loc></sitemap></sitemapindex>`);
+        }
+        if (url.endsWith('/product-sitemap1.xml')) {
+          return textResponse(`<urlset><url><loc>${productUrl}</loc></url></urlset>`);
+        }
+
+        return textResponse(productMetadataPage({
+          name: 'Knight’s Gallop - MachineRoom',
+          url: productUrl,
+          price: '129',
+          currency: 'EUR',
+          availability: 'instock',
+          body: `
+            <link itemprop="availability" href="https://schema.org/InStock">
+            <p class="stock available-on-backorder">Available on backorder</p>
+            <button type="submit" name="add-to-cart" value="123">Add to cart</button>
+          `,
+        }));
+      },
+    });
+
+    assert.equal(crawl.products.length, 1);
+    assert.equal(crawl.products[0].availability, 'backorder');
+    assert.equal(crawl.products[0].rawMeta.pageAvailabilityText, 'Available on backorder');
+  });
+
   test('normalizes JSON-LD product offers for custom metadata stores', async () => {
     const productUrl = 'https://www.milkaudiostore.com/it/shop/noise-engineering-horologic-solum-silver/';
     const crawl = await crawlPriceHubStoreCatalog(milkAudioStore, {
@@ -1236,7 +1268,7 @@ test('crawls BigCommerce product sitemap and normalizes product metadata pages',
     assert.equal(crawl.products[0].rawMeta.brand, 'Make Noise');
   });
 
-  test('detects Turnlab popup add-to-cart state as in stock', async () => {
+  test('detects Turnlab main product add-to-cart state as in stock', async () => {
     const productUrl = 'https://www.turnlab.be/make-noise-maths-2.html';
     const crawl = await crawlPriceHubStoreCatalog(turnlabStore, {
       maxProducts: 1,
@@ -1256,9 +1288,9 @@ test('crawls BigCommerce product sitemap and normalizes product metadata pages',
               <meta itemprop="brand" content="Make Noise">
             </head>
             <body>
-              <span class="subtitle-product-popup">
-                <i class="sutitle-product-popup-icon green fa fa-check"></i> Add to cart
-              </span>
+              <form id="product_configure_form" action="https://www.turnlab.be/cart/add/137744510/" method="post">
+                <a href="javascript:;" title="Add to cart">Add to cart</a>
+              </form>
             </body>
           </html>
         `);
@@ -1268,6 +1300,45 @@ test('crawls BigCommerce product sitemap and normalizes product metadata pages',
     assert.equal(crawl.products.length, 1);
     assert.equal(crawl.products[0].availability, 'in_stock');
     assert.equal(crawl.products[0].rawMeta.pageAvailabilityText, 'In stock');
+  });
+
+  test('detects Turnlab delayed shipping state as backorder despite popup add-to-cart markup', async () => {
+    const productUrl = 'https://www.turnlab.be/shakmat-modular-knights-gallop.html';
+    const crawl = await crawlPriceHubStoreCatalog(turnlabStore, {
+      maxProducts: 1,
+      fetchFn: async (url) => {
+        if (url.endsWith('/eurorack/')) {
+          return textResponse(`<html><a href="${productUrl}">Shakmat Modular Knight's Gallop</a></html>`);
+        }
+
+        return textResponse(`
+          <!doctype html>
+          <html>
+            <head>
+              <meta property="og:url" content="${productUrl}">
+              <meta property="og:title" content="Shakmat Modular Knight's Gallop">
+              <meta itemprop="priceCurrency" content="EUR">
+              <meta itemprop="price" content="195.00">
+              <meta itemprop="brand" content="Shakmat Modular">
+            </head>
+            <body>
+              <a class="btn btn-info btn-lg btn-mail-us" title="Mail Us">Mail Us</a>
+              <div class="delivery"><strong>Delivery time</strong><span class="green"> (Shipping in 3-5 days)</span></div>
+              <span class="subtitle-product-popup">
+                <i class="sutitle-product-popup-icon green fa fa-check"></i>Add to cart
+              </span>
+              <form action="https://www.turnlab.be/cart/add/144759692/" id="popup_form_73259528 round-corners" method="post">
+                <a href="javascript:;" onclick="$(this).closest('form').submit();" title="Checkout">Checkout</a>
+              </form>
+            </body>
+          </html>
+        `);
+      },
+    });
+
+    assert.equal(crawl.products.length, 1);
+    assert.equal(crawl.products[0].availability, 'backorder');
+    assert.equal(crawl.products[0].rawMeta.pageAvailabilityText, 'Shipping in 3-5 days');
   });
 
   assert.equal(crawl.products.length, 1);
@@ -1739,6 +1810,38 @@ test('prefers Shopware structured in-stock state over hidden unavailable variant
 
   assert.equal(product.availability, 'in_stock');
   assert.equal(product.rawMeta.pageAvailabilityText, 'In stock');
+});
+
+test('normalizes Schneider ordered preorder state despite add-to-cart text', () => {
+  const productUrl = 'https://schneidersladen.de/en/tiptop-audio-vca';
+  const product = normalizeShopwareProductPage(shopwareProductPage({
+    name: 'Tiptop Audio - VCA - SchneidersLaden',
+    url: productUrl,
+    price: '99',
+    currency: 'EUR',
+    productId: '019364372943708b8d06c198957c90c9',
+    body: `
+      <script type="application/ld+json">
+        ${JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'Product',
+          name: 'Tiptop Audio - VCA - SchneidersLaden',
+          url: productUrl,
+          offers: {
+            '@type': 'Offer',
+            price: '99',
+            priceCurrency: 'EUR',
+            availability: 'https://schema.org/PreOrder',
+          },
+        })}
+      </script>
+      <p class="delivery-information delivery-preorder">Ordered</p>
+      <button class="btn btn-primary btn-buy" title="Add to cart" aria-label="Add to cart">Add to cart</button>
+    `,
+  }), productUrl);
+
+  assert.equal(product.availability, 'preorder');
+  assert.equal(product.rawMeta.ogAvailability, 'https://schema.org/PreOrder');
 });
 
 test('normalizes primary Shopware unavailable delivery state as out of stock', () => {

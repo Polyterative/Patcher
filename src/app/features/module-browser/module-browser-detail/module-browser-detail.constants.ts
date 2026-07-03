@@ -7,7 +7,9 @@ export const JSONLD_SCRIPT_ID = 'module-jsonld';
 // Verified: Google, YouTube, Modwiggler, Lines, Elektronauts, Modulargrid,
 //           VCV Library, Wigglehunt, Thomann (geo-redirects to regional), Signalsounds,
 //           Exploding Shed, Elevator Sound, Perfect Circuit, Milk Audio, New Groove,
-//           Escape From Noise, Machineroom, Control, Patchwerks, Found Sound, Synthshop.
+//           Escape From Noise, Machineroom, Control, Patchwerks, Found Sound, Synthshop,
+//           Post Modular, Rubadub, Modular Square, MIDI Amsterdam, Modularsynthesizers.nl,
+//           Triangle Core Rocks, House of Sound.
 // Schneidersladen: migrated to Shopware 6 — use `?search=` instead of `?sSearch=`.
 
 export interface SearchLink {
@@ -125,11 +127,21 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     url: (name: string) => buildSearchUrl('https://www.signalsounds.com/search.php', {
       search_query: name
     }),
-    label: 'Signalsounds 🇬🇧',
+    label: 'Signal Sounds UK 🇬🇧',
     icon: 'store',
-    tooltip: 'Search on Signalsounds',
+    tooltip: 'Search on Signal Sounds UK',
     kind: 'retailer',
-    storeSlugs: ['signal-sounds-uk', 'signal-sounds-eu', 'signalsounds', 'signal-sounds']
+    storeSlugs: ['signal-sounds-uk', 'signalsounds', 'signal-sounds']
+  },
+  {
+    url: (name: string) => buildSearchUrl('https://signalsounds.eu/search.php', {
+      search_query: name
+    }),
+    label: 'Signal Sounds EU 🇪🇺',
+    icon: 'store',
+    tooltip: 'Search on Signal Sounds EU',
+    kind: 'retailer',
+    storeSlugs: ['signal-sounds-eu', 'signalsounds-eu']
   },
   {
     url: (name: string) => buildSearchUrl('https://www.exploding-shed.com/search', {
@@ -246,5 +258,79 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     tooltip: 'Search on Synthshop',
     kind: 'retailer',
     storeSlugs: ['synthshop']
+  },
+  {
+    url: (name) => buildSearchUrl('https://postmodular.co.uk/', {
+      s: name,
+      post_type: 'product'
+    }),
+    label: 'Post Modular 🇬🇧',
+    icon: 'store',
+    tooltip: 'Search on Post Modular',
+    kind: 'retailer',
+    storeSlugs: ['postmodular', 'post-modular']
+  },
+  {
+    url: (name) => buildSearchUrl('https://rubadub.co.uk/search', {
+      type: 'product',
+      q: name
+    }),
+    label: 'Rubadub 🇬🇧',
+    icon: 'store',
+    tooltip: 'Search on Rubadub',
+    kind: 'retailer',
+    storeSlugs: ['rubadub']
+  },
+  {
+    url: (name) => buildSearchUrl('https://www.modularsquare.com/search', {
+      controller: 'search',
+      s: name
+    }),
+    label: 'Modular Square 🇫🇷',
+    icon: 'store',
+    tooltip: 'Search on Modular Square',
+    kind: 'retailer',
+    storeSlugs: ['modular-square', 'modularsquare']
+  },
+  {
+    url: (name) => buildSearchUrl('https://www.midiamsterdam.nl/search', {
+      type: 'product',
+      q: name
+    }),
+    label: 'MIDI Amsterdam 🇳🇱',
+    icon: 'store',
+    tooltip: 'Search on MIDI Amsterdam',
+    kind: 'retailer',
+    storeSlugs: ['midi-amsterdam', 'midiamsterdam']
+  },
+  {
+    url: (name) => buildSearchUrl('https://www.modularsynthesizers.nl/search/', {
+      q: name
+    }),
+    label: 'Modularsynthesizers.nl 🇳🇱',
+    icon: 'store',
+    tooltip: 'Search on Modularsynthesizers.nl',
+    kind: 'retailer',
+    storeSlugs: ['modularsynthesizers', 'modularsynthesizers-nl']
+  },
+  {
+    url: (name) => buildSearchUrl('https://trianglecore.rocks/store/eurorack', {
+      search: name
+    }),
+    label: 'Triangle Core Rocks 🇩🇪',
+    icon: 'store',
+    tooltip: 'Search on Triangle Core Rocks',
+    kind: 'retailer',
+    storeSlugs: ['triangle-core-rocks', 'trianglecore']
+  },
+  {
+    url: (name) => buildSearchUrl('https://www.houseofsound.ch/search', {
+      sSearch: name
+    }),
+    label: 'House of Sound 🇨🇭',
+    icon: 'store',
+    tooltip: 'Search on House of Sound',
+    kind: 'retailer',
+    storeSlugs: ['house-of-sound', 'houseofsound']
   },
 ];
