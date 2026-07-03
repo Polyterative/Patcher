@@ -15,6 +15,7 @@ export type ApprovedPriceHubStoreSlug =
   | 'instruo'
   | 'intellijel'
   | 'machineroom'
+  | 'martin-pas'
   | 'milk-audio-store'
   | 'michigan-synth-works'
   | 'moog-audio'
@@ -35,6 +36,7 @@ export type ApprovedPriceHubStoreSlug =
   | 'synthshop'
   | 'technosynth'
   | 'thonk'
+  | 'turnlab'
   | 'whimsical-raps'
   | 'wmdevices'
   | 'zlob-modular';
@@ -183,6 +185,15 @@ export const APPROVED_PRICE_HUB_STORES: readonly ApprovedPriceHubStoreConfig[] =
     productUrlPathIncludes: ['/product/'],
   },
   {
+    slug: 'martin-pas',
+    name: 'Martin Pas',
+    baseUrl: 'https://www.martinpas.com/',
+    adapter: 'custom',
+    catalogPath: '/categories/modular-systems',
+    currencyHint: 'EUR',
+    productUrlPathIncludes: ['/products/'],
+  },
+  {
     slug: 'milk-audio-store',
     name: 'Milk Audio Store',
     baseUrl: 'https://www.milkaudiostore.com/',
@@ -323,6 +334,15 @@ export const APPROVED_PRICE_HUB_STORES: readonly ApprovedPriceHubStoreConfig[] =
     name: 'Thonk',
     baseUrl: 'https://www.thonk.co.uk/',
     adapter: 'woocommerce_store_api',
+  },
+  {
+    slug: 'turnlab',
+    name: 'Turnlab',
+    baseUrl: 'https://www.turnlab.be/',
+    adapter: 'custom',
+    catalogPath: '/keys-synths/synths/modular-synths/eurorack/',
+    currencyHint: 'EUR',
+    productUrlPathIncludes: ['.html'],
   },
   {
     slug: 'whimsical-raps',

@@ -114,6 +114,11 @@ const GENERIC_MODULE_NAMES = new Set([
   'vca',
 ]);
 
+const MANUFACTURER_NAME_ALIASES = new Map<string, readonly string[]>([
+  ['alm', ['ALM Busy Circuits']],
+  ['alm-busy-circuits', ['ALM']],
+]);
+
 export function matchModulesToProducts(
   modules: readonly PriceHubModuleInput[],
   products: readonly NormalizedStoreListingSnapshot[],
@@ -347,6 +352,10 @@ function readModuleCodeAliases(moduleSlug: string): string[] {
   }
 
   const [, prefix, code] = compactCodeMatch;
+  if (/^\d+hp$/.test(code)) {
+    return [];
+  }
+
   const aliases = [`${prefix}-${code}`, `${prefix}${code}`];
   if (/[a-z]/.test(code)) {
     aliases.push(code);
@@ -372,11 +381,20 @@ function readProductBrand(product: NormalizedStoreListingSnapshot): string {
   for (const key of ['vendor', 'brand', 'manufacturer']) {
     const value = product.rawMeta[key];
     if (typeof value === 'string' && value.trim().length > 0) {
-      parts.push(value.trim());
+      parts.push(...readManufacturerNameVariants(value));
     }
   }
 
   return uniqueStrings(parts).join(' ');
+}
+
+function readManufacturerNameVariants(value: string): string[] {
+  const normalizedValue = normalizeSourceText(value);
+  if (!normalizedValue) {
+    return [];
+  }
+
+  return [normalizedValue, ...(MANUFACTURER_NAME_ALIASES.get(slugify(normalizedValue)) ?? [])];
 }
 
 function normalizeSourceText(value: string): string {

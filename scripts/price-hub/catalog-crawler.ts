@@ -483,7 +483,19 @@ async function fetchCustomProductSitemap(store: ApprovedPriceHubStoreConfig, fet
     }
 
     const sitemapBody = await readSitemapResponse(sitemapResponse, `Custom sitemap response for ${store.slug}`, sitemapUrl);
-    for (const location of parseSitemapLocations(sitemapBody).filter((candidate) => isApprovedStoreProductUrl(store, candidate))) {
+    const locations = parseSitemapLocations(sitemapBody);
+    if (locations.length === 0 && isAllowedCustomCatalogPageUrl(store, sitemapUrl)) {
+      for (const location of parseHtmlLinks(sitemapBody, sitemapUrl).filter((candidate) => isApprovedStoreProductUrl(store, candidate))) {
+        if (isAllowedCustomCatalogPageUrl(store, location)) {
+          pendingSitemaps.push(location);
+        } else if (isAllowedCustomProductUrl(store, location)) {
+          productUrls.push(location);
+        }
+      }
+      continue;
+    }
+
+    for (const location of locations.filter((candidate) => isApprovedStoreProductUrl(store, candidate))) {
       if (isLikelySitemapUrl(location)) {
         pendingSitemaps.push(location);
       } else if (isAllowedCustomProductUrl(store, location)) {
@@ -878,6 +890,27 @@ function parseSitemapLocations(xml: string): string[] {
   return urls;
 }
 
+function parseHtmlLinks(html: string, baseUrl: string): string[] {
+  const urls: string[] = [];
+  const hrefPattern = /\bhref=["']([^"']+)["']/gi;
+  let hrefMatch: RegExpExecArray | null;
+
+  while ((hrefMatch = hrefPattern.exec(html))) {
+    const href = decodeXmlEntities(hrefMatch[1].trim());
+    if (!href || href.includes('{{') || href.includes('}}') || href.startsWith('javascript:') || href.startsWith('#')) {
+      continue;
+    }
+
+    try {
+      urls.push(new URL(href, baseUrl).toString());
+    } catch {
+      // Ignore malformed category links; other product links may still be usable.
+    }
+  }
+
+  return urls;
+}
+
 function* drainSitemapLocationBuffer(buffer: string): Generator<string> {
   const locationPattern = /<loc>(.*?)<\/loc>/gis;
   let locationMatch: RegExpExecArray | null;
@@ -980,6 +1013,22 @@ function isAllowedCustomProductUrl(store: ApprovedPriceHubStoreConfig, productUr
     const excludes = store.productUrlPathExcludes ?? [];
     return (includes.length === 0 || includes.some((pathPart) => path.includes(pathPart)))
       && !excludes.some((pathPart) => path.includes(pathPart));
+  } catch {
+    return false;
+  }
+}
+
+function isAllowedCustomCatalogPageUrl(store: ApprovedPriceHubStoreConfig, productUrl: string): boolean {
+  if (!store.catalogPath || isLikelySitemapUrl(productUrl)) {
+    return false;
+  }
+
+  try {
+    const catalogUrl = new URL(store.catalogPath, store.baseUrl);
+    const url = new URL(productUrl);
+    const catalogPath = catalogUrl.pathname.endsWith('/') ? catalogUrl.pathname : `${catalogUrl.pathname}/`;
+    return isApprovedStoreProductUrl(store, productUrl)
+      && (url.pathname === catalogUrl.pathname || url.pathname.startsWith(catalogPath));
   } catch {
     return false;
   }
