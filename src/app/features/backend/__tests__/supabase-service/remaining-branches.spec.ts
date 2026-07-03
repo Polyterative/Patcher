@@ -25,14 +25,22 @@ function chainable(resolveValue: any = {data: null, error: null}) {
   return m;
 }
 
+type AuthSessionTestHarness = {
+  authSession$: {
+    next: (session: {user: unknown} | null) => void;
+  };
+};
+
 describe('SupabaseService - Remaining Branches', () => {
   let service: SupabaseService;
   let supabaseClient: any;
+  let authSession$: AuthSessionTestHarness['authSession$'];
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
     supabaseClient = (service as any).supabase;
+    authSession$ = (service as unknown as AuthSessionTestHarness).authSession$;
   });
   
   afterEach(() => {
@@ -173,12 +181,7 @@ describe('SupabaseService - Remaining Branches', () => {
   }, TEST_TIMEOUT);
   
   it('handleOAuthCallback creates a profile for first-time OAuth users', (done) => {
-    spyOn(supabaseClient.auth, 'getSession').and.returnValue(
-      Promise.resolve({
-        data: {session: {user: {id: 'oauth-user', email: 'newuser@example.com', created_at: '2026-01-01T00:00:00Z'}}},
-        error: null
-      })
-    );
+    authSession$.next({user: {id: 'oauth-user', email: 'newuser@example.com', created_at: '2026-01-01T00:00:00Z'}});
     spyOn(service.auth as any, 'getRichUserSession$').and.returnValue(of(null));
 
     const profileQuery = chainable({data: {}, error: null});
@@ -202,12 +205,7 @@ describe('SupabaseService - Remaining Branches', () => {
       updated_at: '2026-01-01T00:00:00Z',
       username: 'hasname'
     } as any;
-    spyOn(supabaseClient.auth, 'getSession').and.returnValue(
-      Promise.resolve({
-        data: {session: {user: {id: 'oauth-u2', email: 'hasname@example.com', created_at: '2026-01-01T00:00:00Z'}}},
-        error: null
-      })
-    );
+    authSession$.next({user: {id: 'oauth-u2', email: 'hasname@example.com', created_at: '2026-01-01T00:00:00Z'}});
     spyOn(service.auth as any, 'getRichUserSession$').and.returnValue(of(rich));
     
     service.auth.handleOAuthCallback$().subscribe({
