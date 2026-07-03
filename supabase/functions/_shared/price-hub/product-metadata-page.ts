@@ -53,16 +53,34 @@ function readProductPageMetadata(html: string): ProductPageMetadata {
   const jsonLd = readProductJsonLdMetadata(html);
 
   return {
-    priceAmount: meta.get('product:price:amount') ?? meta.get('og:price:amount') ?? meta.get('price') ?? jsonLd.priceAmount ?? null,
+    priceAmount: meta.get('product:price:amount') ?? meta.get('og:price:amount') ?? meta.get('price') ?? jsonLd.priceAmount ?? readEmbeddedMinorUnitPriceAmount(html),
     priceCurrency: meta.get('product:price:currency') ?? meta.get('og:price:currency') ?? meta.get('pricecurrency') ?? jsonLd.priceCurrency ?? null,
     productName: meta.get('og:title') ?? jsonLd.productName ?? readTitle(html),
-    productUrl: meta.get('og:url') ?? meta.get('product:product_link') ?? null,
+    productUrl: normalizeProductUrl(meta.get('og:url') ?? meta.get('product:product_link')),
     imageUrl: meta.get('og:image') ?? jsonLd.imageUrl ?? null,
     availability: meta.get('product:availability') ?? meta.get('og:availability') ?? jsonLd.availability ?? null,
     productId: meta.get('productid') ?? jsonLd.productId ?? null,
     sku: meta.get('sku') ?? jsonLd.sku ?? readSku(html),
     brand: meta.get('product:brand') ?? meta.get('brand') ?? meta.get('manufacturer') ?? jsonLd.brand ?? null,
   };
+}
+
+function readEmbeddedMinorUnitPriceAmount(html: string): string | null {
+  const reducedPrice = readEmbeddedMinorUnitPrice(html, 'reducedPrice');
+  const price = readEmbeddedMinorUnitPrice(html, 'price');
+  const amountMinor = reducedPrice ?? price;
+  return amountMinor === null ? null : (amountMinor / 100).toFixed(2);
+}
+
+function readEmbeddedMinorUnitPrice(html: string, fieldName: string): number | null {
+  const pattern = new RegExp(`"${escapeRegExp(fieldName)}"\\s*:\\s*(\\d+)`);
+  const match = pattern.exec(html);
+  if (!match) {
+    return null;
+  }
+
+  const value = Number.parseInt(match[1], 10);
+  return Number.isSafeInteger(value) && value > 0 ? value : null;
 }
 
 function readProductJsonLdMetadata(html: string): ProductPageMetadata {
@@ -444,6 +462,14 @@ function readStructuredAvailableText(html: string): string | null {
     return 'In stock';
   }
 
+  if (/<form\b(?=[^>]*\baction=["'][^"']*\/cart\/add\/)[^>]*>[\s\S]{0,1500}?\bAdd to cart\b/i.test(html)) {
+    return 'In stock';
+  }
+
+  if (/<span\b[^>]*\bclass=["'][^"']*\bsubtitle-product-popup\b[^"']*["'][^>]*>[\s\S]{0,500}?\bAdd to cart\b/i.test(html)) {
+    return 'In stock';
+  }
+
   return null;
 }
 
@@ -514,7 +540,10 @@ function normalizeProductName(value: string | null, adapter: ProductMetadataAdap
     (name, suffix) => name.endsWith(suffix) ? name.slice(0, -suffix.length).trim() : name,
     value,
   );
-  return withoutStoreSuffix.replace(/\s+\|\s*\d+$/, '').trim();
+  return withoutStoreSuffix
+    .replace(/\s+by\s+[^|]+\s+\|\s+Shop\b.*$/i, '')
+    .replace(/\s+\|\s*\d+$/, '')
+    .trim();
 }
 
 function readSkuBrand(value: string | null): string | null {
@@ -530,6 +559,20 @@ function readSkuBrand(value: string | null): string | null {
   return value.slice(0, delimiterIndex).replace(/_/g, ' ').trim() || null;
 }
 
+function normalizeProductUrl(value: string | null): string | null {
+  if (!value) {
+    return null;
+  }
+
+  try {
+    const url = new URL(value);
+    url.searchParams.delete('source');
+    return url.toString();
+  } catch {
+    return value;
+  }
+}
+
 function slugFromUrl(value: string): string | null {
   try {
     const url = new URL(value);
@@ -540,7 +583,13 @@ function slugFromUrl(value: string): string | null {
 }
 
 const PANEL_VARIANTS = ['black', 'silver', 'white', 'grey', 'gray', 'natural'] as const;
-const CUSTOM_PRODUCT_TITLE_SUFFIXES = [' - MachineRoom', ' - Milk Audio Store', ' - postmodular', ' - Escape from Noise'] as const;
+const CUSTOM_PRODUCT_TITLE_SUFFIXES = [
+  ' - MachineRoom',
+  ' - Milk Audio Store',
+  ' - postmodular',
+  ' - Escape from Noise',
+  ' | Martin Pas',
+] as const;
 
 function decodeHtmlEntities(value: string): string {
   return value

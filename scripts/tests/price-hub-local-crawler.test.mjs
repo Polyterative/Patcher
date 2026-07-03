@@ -17,6 +17,7 @@ const elevatorStore = readApprovedPriceHubStore('elevator-sound');
 const foundSoundStore = readApprovedPriceHubStore('found-sound');
 const instruoStore = readApprovedPriceHubStore('instruo');
 const machineroomStore = readApprovedPriceHubStore('machineroom');
+const martinPasStore = readApprovedPriceHubStore('martin-pas');
 const milkAudioStore = readApprovedPriceHubStore('milk-audio-store');
 const postmodularStore = readApprovedPriceHubStore('postmodular');
 const signalUkStore = readApprovedPriceHubStore('signal-sounds-uk');
@@ -25,6 +26,7 @@ const schneidersStore = readApprovedPriceHubStore('schneidersladen');
 const soundiumStore = readApprovedPriceHubStore('soundium');
 const synthshopStore = readApprovedPriceHubStore('synthshop');
 const technosynthStore = readApprovedPriceHubStore('technosynth');
+const turnlabStore = readApprovedPriceHubStore('turnlab');
 const whimsicalRapsStore = readApprovedPriceHubStore('whimsical-raps');
 
 function response(body) {
@@ -929,6 +931,149 @@ test('crawls BigCommerce product sitemap and normalizes product metadata pages',
     assert.equal(crawl.products[0].availability, 'out_of_stock');
   });
 
+  test('uses Martin Pas modular category products and strips storefront suffixes', async () => {
+    const productUrl = 'https://www.martinpas.com/products/make-noise/0-coast';
+    const crawl = await crawlPriceHubStoreCatalog(martinPasStore, {
+      maxProducts: 1,
+      fetchFn: async (url) => {
+        if (url.endsWith('/categories/modular-systems')) {
+          return textResponse(`
+            <html>
+              <a href="/products/make-noise">Make Noise brand page</a>
+              <a href="${productUrl}">0-Coast</a>
+            </html>
+          `);
+        }
+
+        return textResponse(`
+          <!doctype html>
+          <html>
+            <head>
+              <meta property="og:url" content="${productUrl}">
+              <meta property="og:title" content="0-Coast by Make Noise | Shop 0-Coast desktop and synthesizers | Martin Pas">
+              <meta property="og:image" content="https://www.martinpas.com/0-coast.jpg">
+              <script type="application/ld+json">
+                ${JSON.stringify({
+                  '@context': 'https://schema.org',
+                  '@type': 'Product',
+                  name: '0-Coast by Make Noise | Shop 0-Coast desktop and synthesizers | Martin Pas',
+                  url: productUrl,
+                  image: 'https://www.martinpas.com/0-coast.jpg',
+                  brand: { '@type': 'Brand', name: 'Make Noise' },
+                  productID: 'MN-0COAST',
+                  offers: {
+                    '@type': 'Offer',
+                    price: null,
+                    priceCurrency: 'EUR',
+                    availability: 'https://schema.org/InStock',
+                  },
+                })}
+              </script>
+            </head>
+            <body>
+              <script>self.__next_f.push([1, '{"price":55500,"reducedPrice":49900}'])</script>
+            </body>
+          </html>
+        `);
+      },
+    });
+
+    assert.equal(crawl.products.length, 1);
+    assert.equal(crawl.products[0].currency, 'EUR');
+    assert.equal(crawl.products[0].priceAmountMinor, 49900);
+    assert.equal(crawl.products[0].availability, 'in_stock');
+    assert.equal(crawl.products[0].productName, '0-Coast');
+    assert.equal(crawl.products[0].rawMeta.brand, 'Make Noise');
+  });
+
+  test('crawls configured custom category pages for Turnlab product links', async () => {
+    const productUrl = 'https://www.turnlab.be/make-noise-maths-2.html';
+    const pageTwoUrl = 'https://www.turnlab.be/keys-synths/synths/modular-synths/eurorack/page2.html';
+    const requestedUrls = [];
+    const crawl = await crawlPriceHubStoreCatalog(turnlabStore, {
+      maxProducts: 1,
+      fetchFn: async (url) => {
+        requestedUrls.push(url);
+        if (url.endsWith('/eurorack/')) {
+          return textResponse(`
+            <html>
+              <a href="{{link}}">Template placeholder</a>
+              <a href="${pageTwoUrl}">2</a>
+              <a href="https://www.turnlab.be/service/about/">About</a>
+            </html>
+          `);
+        }
+        if (url === pageTwoUrl) {
+          return textResponse(`<html><a href="${productUrl}">Make Noise Maths</a></html>`);
+        }
+
+        return textResponse(`
+          <!doctype html>
+          <html>
+            <head>
+              <meta property="og:url" content="${productUrl}?source=facebook">
+              <meta property="og:title" content="Make Noise Maths">
+              <meta itemprop="priceCurrency" content="EUR">
+              <meta itemprop="price" content="299.00">
+              <meta itemprop="brand" content="Make Noise">
+            </head>
+            <body>
+              <form action="https://www.turnlab.be/cart/add/123/" method="post">
+                <a title="Add to cart">Add to cart</a>
+              </form>
+            </body>
+          </html>
+        `);
+      },
+    });
+
+    assert.equal(crawl.products.length, 1);
+    assert.deepEqual(requestedUrls, [
+      'https://www.turnlab.be/keys-synths/synths/modular-synths/eurorack/',
+      pageTwoUrl,
+      productUrl,
+    ]);
+    assert.equal(crawl.products[0].currency, 'EUR');
+    assert.equal(crawl.products[0].priceAmountMinor, 29900);
+    assert.equal(crawl.products[0].availability, 'in_stock');
+    assert.equal(crawl.products[0].productUrl, productUrl);
+    assert.equal(crawl.products[0].rawMeta.brand, 'Make Noise');
+  });
+
+  test('detects Turnlab popup add-to-cart state as in stock', async () => {
+    const productUrl = 'https://www.turnlab.be/make-noise-maths-2.html';
+    const crawl = await crawlPriceHubStoreCatalog(turnlabStore, {
+      maxProducts: 1,
+      fetchFn: async (url) => {
+        if (url.endsWith('/eurorack/')) {
+          return textResponse(`<html><a href="${productUrl}">Make Noise Maths 2</a></html>`);
+        }
+
+        return textResponse(`
+          <!doctype html>
+          <html>
+            <head>
+              <meta property="og:url" content="${productUrl}">
+              <meta property="og:title" content="Make Noise Maths 2">
+              <meta itemprop="priceCurrency" content="EUR">
+              <meta itemprop="price" content="329.00">
+              <meta itemprop="brand" content="Make Noise">
+            </head>
+            <body>
+              <span class="subtitle-product-popup">
+                <i class="sutitle-product-popup-icon green fa fa-check"></i> Add to cart
+              </span>
+            </body>
+          </html>
+        `);
+      },
+    });
+
+    assert.equal(crawl.products.length, 1);
+    assert.equal(crawl.products[0].availability, 'in_stock');
+    assert.equal(crawl.products[0].rawMeta.pageAvailabilityText, 'In stock');
+  });
+
   assert.equal(crawl.products.length, 1);
   assert.equal(crawl.pagesFetched, 1);
   assert.equal(requestedUrls.length, 2);
@@ -1483,6 +1628,30 @@ test('matcher uses Shopify vendor metadata as manufacturer support', () => {
   assert.equal(matches[0].reasons.includes('vendor-backed exact module title'), true);
 });
 
+test('matcher treats ALM product vendor metadata as ALM Busy Circuits manufacturer support', () => {
+  const matches = matchModulesToProducts([
+    { id: 'fmco-id', name: 'FMco', manufacturerName: 'ALM Busy Circuits' },
+  ], [
+    {
+      ...normalizedProduct('ALM FMco VCO & Voice Eurorack Module', 'alm-fmco-vco-voice-eurorack-module'),
+      rawMeta: {
+        adapter: 'shopify_product_json',
+        slug: 'alm-fmco-vco-voice-eurorack-module',
+        vendor: 'ALM',
+        productType: 'Eurorack Module',
+        tags: ['eurorack'],
+      },
+    },
+  ], { includeIgnored: false });
+
+  assert.equal(matches.length, 1);
+  assert.equal(matches[0].moduleId, 'fmco-id');
+  assert.equal(matches[0].status, 'strong_candidate');
+  assert.equal(matches[0].score >= 0.86, true);
+  assert.equal(matches[0].reasons.includes('manufacturer phrase found in product brand'), true);
+  assert.equal(matches[0].reasons.includes('vendor-backed exact module title'), true);
+});
+
 test('matcher supports manufacturer object and combined slug matching', () => {
   const [candidate] = matchModulesToProducts([
     { id: 'plaits-id', name: 'Plaits', manufacturer: { name: 'Mutable Instruments' } },
@@ -1641,6 +1810,19 @@ test('matcher does not treat shared numeric suffixes as compact code aliases', (
 
   assert.equal(matches.length, 1);
   assert.equal(matches[0].moduleId, 'sd909-id');
+});
+
+test('matcher does not treat HP width text as compact module code aliases', () => {
+  const matches = matchModulesToProducts([
+    { id: 'blank-panel-id', name: 'Blank Panel 2HP', manufacturerName: 'Verbos Electronics' },
+  ], [
+    {
+      ...normalizedProduct('Black Box 42HP', 'verbos-electronics-black-box-42hp'),
+      rawMeta: { adapter: 'custom', slug: 'black-box-42hp', brand: 'Verbos Electronics' },
+    },
+  ], { includeIgnored: false });
+
+  assert.equal(matches.length, 0);
 });
 
 function normalizedProduct(productName, slug) {
