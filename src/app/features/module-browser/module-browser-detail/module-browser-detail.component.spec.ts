@@ -47,6 +47,17 @@ class ModuleCompositeStubComponent {
   @Input() showCoolAction = false;
 }
 
+@Component({
+  selector: 'app-manufacturer-row',
+  template: '',
+  standalone: false
+})
+class ManufacturerRowStubComponent {
+  @Input() manufacturer: unknown;
+  @Input() hideRowLink = false;
+  @Input() showPriceSummary = false;
+}
+
 
 describe('ModuleBrowserDetailComponent', () => {
   type RatioModuleFixture = Pick<DbModule, 'hp' | 'standard'>;
@@ -198,7 +209,12 @@ describe('ModuleBrowserDetailComponent', () => {
     const reactionBackend = makeReactionBackendSpy();
 
     await TestBed.configureTestingModule({
-      declarations: [ModuleBrowserDetailComponent, ModuleUsageCardComponent, ModuleCompositeStubComponent],
+      declarations: [
+        ModuleBrowserDetailComponent,
+        ModuleUsageCardComponent,
+        ModuleCompositeStubComponent,
+        ManufacturerRowStubComponent
+      ],
       imports: [CommonModule, FormsModule, NoopAnimationsModule, CoolButtonComponent],
       providers: [
         {provide: ModuleDetailDataService, useValue: dataService},
@@ -252,6 +268,15 @@ describe('ModuleBrowserDetailComponent', () => {
     expect(moduleComposite.viewConfig?.showFrequencyAnalysis).toBeTrue();
     expect(fixture.componentInstance.bySameManufacturerViewConfig.showDescriptionAnalysis).toBeFalse();
     expect(fixture.componentInstance.bySameManufacturerViewConfig.showFrequencyAnalysis).toBeFalse();
+  });
+
+  it('keeps price summaries hidden in the same-manufacturer detail strip', async () => {
+    const {fixture} = await render();
+
+    const manufacturerRow = fixture.debugElement.query(By.directive(ManufacturerRowStubComponent))
+      .componentInstance as ManufacturerRowStubComponent;
+
+    expect(manufacturerRow.showPriceSummary).toBeFalse();
   });
 
   it('initializes SEO baseline and parses route id updates', () => {
