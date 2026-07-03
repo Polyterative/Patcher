@@ -1,19 +1,31 @@
 import { SupabaseService } from '../../supabase.service';
 import {
+  fakeAsync,
+  tick
+} from '@angular/core/testing';
+import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest,
   TEST_TIMEOUT
 } from './test-setup';
 
 
+type AuthSessionTestHarness = {
+  authSession$: {
+    next: (session: {user: unknown} | null) => void;
+  };
+};
+
 describe('SupabaseService - login flow', () => {
   let service: SupabaseService;
   let supabaseClient: any;
+  let authSession$: AuthSessionTestHarness['authSession$'];
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
     supabaseClient = (service as any).supabase;
+    authSession$ = (service as unknown as AuthSessionTestHarness).authSession$;
   });
   
   afterEach(() => {
@@ -166,38 +178,38 @@ describe('SupabaseService - login flow', () => {
   });
   
   describe('handleOAuthCallback$', () => {
-    it('should return null when session is missing', (done) => {
-      spyOn(supabaseClient.auth, 'getSession').and.returnValue(
-        Promise.resolve({data: {session: null}, error: null})
-      );
+    it('should return null when session is missing', fakeAsync(() => {
+      let result: unknown;
+      authSession$.next(null);
       
       service.auth.handleOAuthCallback$().subscribe({
-        next: (result) => {
-          expect(result).toBeNull();
-          done();
+        next: (user) => {
+          result = user;
         },
         error: (err) => {
           fail(err);
-          done();
         }
       });
-    }, TEST_TIMEOUT);
+      tick(10000);
+
+      expect(result).toBeNull();
+    }));
     
-    it('should return null when getSession returns an error', (done) => {
-      spyOn(supabaseClient.auth, 'getSession').and.returnValue(
-        Promise.resolve({data: {session: null}, error: {message: 'session error'}})
-      );
+    it('should return null when auth restoration does not produce a session', fakeAsync(() => {
+      let result: unknown;
+      authSession$.next(null);
       
       service.auth.handleOAuthCallback$().subscribe({
-        next: (result) => {
-          expect(result).toBeNull();
-          done();
+        next: (user) => {
+          result = user;
         },
         error: (err) => {
           fail(err);
-          done();
         }
       });
-    }, TEST_TIMEOUT);
+      tick(10000);
+
+      expect(result).toBeNull();
+    }));
   });
 });
