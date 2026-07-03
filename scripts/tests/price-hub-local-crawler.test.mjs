@@ -1,11 +1,17 @@
 import assert from 'node:assert/strict';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { test } from 'node:test';
 import { gzipSync } from 'node:zlib';
 import { normalizeBigCommerceProductPage } from '../../supabase/functions/_shared/price-hub/bigcommerce-metadata.ts';
 import { normalizeShopifyProductJsonProduct } from '../../supabase/functions/_shared/price-hub/shopify-product-json.ts';
 import { normalizeShopwareProductPage } from '../../supabase/functions/_shared/price-hub/shopware-metadata.ts';
+import { readCliOptions as readCrawlCliOptions } from '../price-hub/crawl-local.ts';
 import { crawlPriceHubStoreCatalog, crawlShopifyProductJsonCatalog, crawlWooCommerceStoreCatalog } from '../price-hub/catalog-crawler.ts';
+import { readPriceHubScriptEnv } from '../price-hub/local-env.ts';
 import { matchModulesToProducts } from '../price-hub/matcher.ts';
+import { readRefreshCliOptions } from '../price-hub/refresh-local.ts';
 import { readApprovedPriceHubStore } from '../price-hub/store-configs.ts';
 
 const clockfaceStore = readApprovedPriceHubStore('clockface-modular');
@@ -28,6 +34,63 @@ const synthshopStore = readApprovedPriceHubStore('synthshop');
 const technosynthStore = readApprovedPriceHubStore('technosynth');
 const turnlabStore = readApprovedPriceHubStore('turnlab');
 const whimsicalRapsStore = readApprovedPriceHubStore('whimsical-raps');
+
+test('local crawl CLI defaults to full metadata crawls and accepted-match export', () => {
+  const options = readCrawlCliOptions([]);
+
+  assert.equal(options.maxProducts, undefined);
+  assert.equal(options.includeIgnoredMatches, false);
+});
+
+test('local refresh CLI defaults to live import and requires module input', () => {
+  assert.throws(
+    () => readRefreshCliOptions([], {}),
+    /Missing required argument --modules/,
+  );
+
+  const options = readRefreshCliOptions(['--modules=modules.json'], {
+    SUPABASE_SERVICE_ROLE_KEY: 'service-role-key',
+  });
+
+  assert.equal(options.dryRun, false);
+  assert.equal(options.modulesPath, 'modules.json');
+  assert.equal(options.supabaseKey, 'service-role-key');
+});
+
+test('local refresh CLI can read service role credentials from local env files', () => {
+  const rootDir = mkdtempSync(join(tmpdir(), 'patcher-price-hub-env-'));
+  try {
+    writeFileSync(join(rootDir, 'package.json'), '{}');
+    writeFileSync(join(rootDir, '.env'), [
+      'SUPABASE_URL=https://env.example.supabase.co',
+      'SUPABASE_SERVICE_ROLE_KEY=from-env',
+    ].join('\n'));
+    writeFileSync(join(rootDir, '.env.local'), 'SUPABASE_SERVICE_ROLE_KEY=from-local\n');
+
+    const loadedEnv = readPriceHubScriptEnv({}, { rootDir });
+    const options = readRefreshCliOptions(['--modules=modules.json'], loadedEnv);
+
+    assert.equal(options.supabaseUrl, 'https://env.example.supabase.co');
+    assert.equal(options.supabaseKey, 'from-local');
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test('local refresh CLI keeps explicit process credentials ahead of local env files', () => {
+  const rootDir = mkdtempSync(join(tmpdir(), 'patcher-price-hub-env-'));
+  try {
+    writeFileSync(join(rootDir, 'package.json'), '{}');
+    writeFileSync(join(rootDir, '.env'), 'SUPABASE_SERVICE_ROLE_KEY=from-env\n');
+
+    const loadedEnv = readPriceHubScriptEnv({ SUPABASE_SERVICE_ROLE_KEY: 'from-process' }, { rootDir });
+    const options = readRefreshCliOptions(['--modules=modules.json'], loadedEnv);
+
+    assert.equal(options.supabaseKey, 'from-process');
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
 
 function response(body) {
   return {
@@ -536,6 +599,73 @@ test('uses Postmodular maker taxonomy as WooCommerce brand metadata', async () =
   assert.equal(crawl.products[0].currency, 'GBP');
   assert.equal(crawl.products[0].availability, 'in_stock');
   assert.equal(crawl.products[0].rawMeta.brand, 'Landscape');
+});
+
+test('crawls metadata stores past 100 products when maxProducts is omitted', async () => {
+  const productUrls = Array.from(
+    { length: 105 },
+    (_, index) => `https://machineroom.com.ua/product/test-module-${index}/`,
+  );
+
+  const crawl = await crawlPriceHubStoreCatalog(machineroomStore, {
+    metadataConcurrency: 25,
+    fetchFn: async (url) => {
+      if (url.endsWith('/sitemap_index.xml')) {
+        return textResponse('<sitemapindex><sitemap><loc>https://machineroom.com.ua/product-sitemap.xml</loc></sitemap></sitemapindex>');
+      }
+      if (url.endsWith('/product-sitemap.xml')) {
+        return textResponse(`<urlset>${productUrls.map((productUrl) => `<url><loc>${productUrl}</loc></url>`).join('')}</urlset>`);
+      }
+
+      const index = productUrls.indexOf(url);
+      assert.notEqual(index, -1);
+      return textResponse(productMetadataPage({
+        name: `Test Module ${index}`,
+        url,
+        price: '199.00',
+        currency: 'EUR',
+        availability: 'instock',
+      }));
+    },
+  });
+
+  assert.equal(crawl.products.length, 105);
+  assert.equal(crawl.totalProductUrls, 105);
+  assert.equal(crawl.hitMaxProducts, false);
+});
+
+test('marks metadata crawls as truncated when an explicit product cap is reached', async () => {
+  const productUrls = [
+    'https://machineroom.com.ua/product/test-module-a/',
+    'https://machineroom.com.ua/product/test-module-b/',
+    'https://machineroom.com.ua/product/test-module-c/',
+  ];
+
+  const crawl = await crawlPriceHubStoreCatalog(machineroomStore, {
+    maxProducts: 1,
+    metadataConcurrency: 6,
+    fetchFn: async (url) => {
+      if (url.endsWith('/sitemap_index.xml')) {
+        return textResponse('<sitemapindex><sitemap><loc>https://machineroom.com.ua/product-sitemap.xml</loc></sitemap></sitemapindex>');
+      }
+      if (url.endsWith('/product-sitemap.xml')) {
+        return textResponse(`<urlset>${productUrls.map((productUrl) => `<url><loc>${productUrl}</loc></url>`).join('')}</urlset>`);
+      }
+
+      assert.equal(url, productUrls[0]);
+      return textResponse(productMetadataPage({
+        name: 'Test Module A',
+        url,
+        price: '199.00',
+        currency: 'EUR',
+        availability: 'instock',
+      }));
+    },
+  });
+
+  assert.equal(crawl.products.length, 1);
+  assert.equal(crawl.totalProductUrls, 1);
+  assert.equal(crawl.hitMaxProducts, true);
 });
 
 test('applies configured direct-store brand hints to crawled products', async () => {

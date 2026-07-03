@@ -121,6 +121,29 @@ test('requires explicit import paths and service role key for live writes', () =
   assert.equal(options.dryRun, true);
 });
 
+test('reads service role key aliases and explicit import credentials', () => {
+  const aliasOptions = readCliOptions([
+    '--store=signal-sounds-uk',
+    '--products=products.json',
+    '--matches=matches.json',
+  ], {
+    SUPABASE_SERVICE_KEY: 'legacy-service-key',
+  });
+
+  assert.equal(aliasOptions.supabaseKey, 'legacy-service-key');
+
+  const explicitOptions = readCliOptions([
+    '--store=signal-sounds-uk',
+    '--products=products.json',
+    '--matches=matches.json',
+    '--supabase-key=explicit-service-key',
+  ], {
+    SUPABASE_SERVICE_ROLE_KEY: 'env-service-key',
+  });
+
+  assert.equal(explicitOptions.supabaseKey, 'explicit-service-key');
+});
+
 test('skips strong matches when the source has no usable price', () => {
   const productUrl = 'https://www.thonk.co.uk/shop/befaco-trolley-bus-assembled/';
   const zeroPriceUrl = 'https://joranalogue.com/products/filter-8';
