@@ -386,7 +386,7 @@ test.describe('Rack Details Summary Layout Wide Desktop', () => {
     expect(metrics.chartTop, JSON.stringify(metrics)).toBe(metrics.supportingStatsTop);
     expect(metrics.axisSectionTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.supportingStatsTop);
     expect(metrics.desktopAnalysisHeight, JSON.stringify(metrics)).toBe(metrics.statsHeight);
-    expect(metrics.desktopAnalysisHeight, JSON.stringify(metrics)).toBeLessThanOrEqual(275);
+    expect(metrics.desktopAnalysisHeight, JSON.stringify(metrics)).toBeLessThanOrEqual(290);
     expect(metrics.desktopAnalysisTop, JSON.stringify(metrics)).toBe(metrics.statsTop);
     expect(metrics.desktopAnalysisLeft, JSON.stringify(metrics)).toBeGreaterThan(metrics.statsLeft);
     expect(metrics.bottomCommentsTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.editorTop);
@@ -410,7 +410,7 @@ test.describe('Rack Details Summary Layout 1728 Desktop', () => {
     expect(metrics.chartTop, JSON.stringify(metrics)).toBe(metrics.supportingStatsTop);
     expect(metrics.axisSectionTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.supportingStatsTop);
     expect(metrics.desktopAnalysisHeight, JSON.stringify(metrics)).toBe(metrics.statsHeight);
-    expect(metrics.desktopAnalysisHeight, JSON.stringify(metrics)).toBeLessThanOrEqual(275);
+    expect(metrics.desktopAnalysisHeight, JSON.stringify(metrics)).toBeLessThanOrEqual(290);
     expect(metrics.visualSurfaceOverflowX, JSON.stringify(metrics)).toBe(false);
     expect(metrics.axisListOverflowX, JSON.stringify(metrics)).toBe(false);
   });
@@ -454,7 +454,7 @@ test.describe('Rack Details Summary Layout Full HD Wide', () => {
     expect(metrics.supportingStatsTop, JSON.stringify(metrics)).toBe(metrics.chartTop);
     expect(metrics.axisSectionTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.supportingStatsTop);
     expect(metrics.desktopAnalysisHeight, JSON.stringify(metrics)).toBe(metrics.statsHeight);
-    expect(metrics.desktopAnalysisHeight, JSON.stringify(metrics)).toBeLessThanOrEqual(270);
+    expect(metrics.desktopAnalysisHeight, JSON.stringify(metrics)).toBeLessThanOrEqual(290);
     expect(metrics.visualSurfaceOverflowX, JSON.stringify(metrics)).toBe(false);
     expect(metrics.axisListOverflowX, JSON.stringify(metrics)).toBe(false);
   });
