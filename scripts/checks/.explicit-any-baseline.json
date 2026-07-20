@@ -1,6 +1,6 @@
 {
   "_comment": "Grandfathered explicit `any` counts. Do not add by hand — run `node scripts/checks/check-explicit-any.cjs --update-baseline` after intentional cleanup.",
-  "totalExplicitAny": 2607,
+  "totalExplicitAny": 2597,
   "files": {
     "api/sitemap.ts": 3,
     "e2e/auth-rack-context-menu.spec.ts": 6,
@@ -80,9 +80,6 @@
     "src/app/components/rack-parts/total-placed-modules-of-rack.pipe.spec.ts": 2,
     "src/app/components/shared-atoms/comments/comment-text.pipe.spec.ts": 2,
     "src/app/components/shared-atoms/comments/comments-data.service.spec.ts": 4,
-    "src/app/components/shared-atoms/comments/comments-item/comments-item.component.spec.ts": 4,
-    "src/app/components/shared-atoms/comments/comments-root/comments-item-block/comments-item-block.component.spec.ts": 2,
-    "src/app/components/shared-atoms/comments/comments-root/comments-root.component.spec.ts": 4,
     "src/app/components/shared-atoms/entity-author/entity-author.component.spec.ts": 2,
     "src/app/components/shared-atoms/timestamps-relative/timestamps-relative.component.spec.ts": 4,
     "src/app/features/backbone/home/application-statistics.utils.spec.ts": 8,
