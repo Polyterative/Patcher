@@ -105,8 +105,9 @@ describe('ModuleFlagDataService', () => {
     });
 
     it('should flatten all grouped options into FLAG_CATEGORIES', () => {
-      const groupedValues = FLAG_CATEGORY_GROUPS.flatMap(group => group.options.map(option => option.value));
-      expect(FLAG_CATEGORIES.map(category => category.value)).toEqual(groupedValues as any);
+      const groupedValues: Array<typeof FLAG_CATEGORIES[number]['value']> = FLAG_CATEGORY_GROUPS
+        .flatMap(group => group.options.map(option => option.value));
+      expect(FLAG_CATEGORIES.map(category => category.value)).toEqual(groupedValues);
     });
   });
 

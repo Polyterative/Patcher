@@ -1,4 +1,20 @@
 import { ModulePartNameComponent } from './module-part-name.component';
+import { MinimalModule } from 'src/app/models/module';
+
+const makeMinimalModule = (id: number, name: string, hp: number): MinimalModule => ({
+  id,
+  created: '',
+  updated: '',
+  name,
+  description: '',
+  hp,
+  public: true,
+  manufacturer: {id: 1, name: 'Test Maker'},
+  manufacturerId: 1,
+  standard: {id: 0, name: 'Eurorack'},
+  tags: [],
+  panels: []
+});
 
 describe('ModulePartNameComponent', () => {
   let comp: ModulePartNameComponent;
@@ -24,7 +40,7 @@ describe('ModulePartNameComponent', () => {
   });
 
   it('data input can be set without error', () => {
-    comp.data = {id: 42, name: 'Clouds', hp: 12} as any;
+    comp.data = makeMinimalModule(42, 'Clouds', 12);
     expect(comp.data.id).toBe(42);
   });
 });
