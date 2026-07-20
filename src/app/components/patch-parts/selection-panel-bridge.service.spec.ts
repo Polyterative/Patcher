@@ -1,35 +1,99 @@
-import { SelectionPanelBridgeService } from './selection-panel-bridge.service';
+import {
+  CVSelectionState,
+  SelectionPanelBridgeService
+} from './selection-panel-bridge.service';
+import { PatchConnection } from '../../models/connection';
+import {
+  CVConnectionEntity,
+  CVwithModule
+} from '../../models/cv';
+import { MinimalModule } from '../../models/module';
+import { Patch } from '../../models/patch';
+import { PublicUser } from '../../models/user';
+
+const TEST_USER: PublicUser = {
+  id: 'user-1',
+  username: 'tester'
+};
+
+function makeModule(id: number, name = `M${id}`): MinimalModule {
+  return {
+    id,
+    name,
+    description: '',
+    hp: 10,
+    public: true,
+    created: '2026-01-01T00:00:00.000Z',
+    updated: '2026-01-01T00:00:00.000Z',
+    manufacturerId: id,
+    manufacturer: {id, name: `Maker ${id}`},
+    standard: {id: 0, name: '3U Doepfer'},
+    tags: [],
+    panels: []
+  };
+}
+
+function makeCv(id: number, name: string, moduleId: number, instanceId?: number): CVwithModule {
+  return {
+    id,
+    name,
+    module: makeModule(moduleId),
+    ...(instanceId === undefined ? {} : {instance_id: instanceId})
+  };
+}
+
+function makeSelectionEntity(
+  kind: CVConnectionEntity['kind'],
+  cvId: number,
+  name: string,
+  moduleId: number,
+  instanceId?: number
+): CVConnectionEntity {
+  return {
+    kind,
+    cv: makeCv(cvId, name, moduleId, instanceId)
+  };
+}
+
+function makePatch(): Patch {
+  return {
+    id: 1,
+    name: 'Patch',
+    author: TEST_USER,
+    public: true,
+    created: '2026-01-01T00:00:00.000Z',
+    updated: '2026-01-01T00:00:00.000Z'
+  };
+}
+
+function makeConnection(aId: number, bId: number, instanceA?: number, instanceB?: number): PatchConnection {
+  return {
+    patch: makePatch(),
+    a: makeCv(aId, `A${aId}`, 1),
+    b: makeCv(bId, `B${bId}`, 2),
+    ...(instanceA === undefined ? {} : {instance_id_a: instanceA}),
+    ...(instanceB === undefined ? {} : {instance_id_b: instanceB})
+  };
+}
 
 
 describe('SelectionPanelBridgeService', () => {
-  function sel(cvIdA?: number, cvIdB?: number, instanceA?: number, instanceB?: number) {
+  function sel(cvIdA?: number, cvIdB?: number, instanceA?: number, instanceB?: number): CVSelectionState {
     return {
       a: cvIdA
-        ? {
-          kind: 'out',
-          cv: {id: cvIdA, name: `A${ cvIdA }`, module: {id: 1, name: 'M1'}, instance_id: instanceA}
-        }
+        ? makeSelectionEntity('out', cvIdA, `A${ cvIdA }`, 1, instanceA)
         : null,
       b: cvIdB
-        ? {
-          kind: 'in',
-          cv: {id: cvIdB, name: `B${ cvIdB }`, module: {id: 2, name: 'M2'}, instance_id: instanceB}
-        }
+        ? makeSelectionEntity('in', cvIdB, `B${ cvIdB }`, 2, instanceB)
         : null
-    } as any;
+    };
   }
   
   it('returns confirmed=true when a matching editor connection exists', (done) => {
     const service = new SelectionPanelBridgeService();
     service.selectionState$.next(sel(10, 20, 1, 2));
     service.editorConnections$.next([
-      {
-        patch: {id: 1},
-        a: {id: 10, name: 'A10'},
-        b: {id: 20, name: 'B20'},
-        instance_id_a: 1,
-        instance_id_b: 2
-      } as any
+      makeConnection(10, 20, 1, 2)
     ]);
     
     service.confirmed$.subscribe(v => {
@@ -54,11 +118,11 @@ describe('SelectionPanelBridgeService', () => {
 
 
 describe('SelectionPanelBridgeService — record$ captures selection into recordedKey$', () => {
-  function sel(cvIdA: number, cvIdB: number, instanceA?: number, instanceB?: number) {
+  function sel(cvIdA: number, cvIdB: number, instanceA?: number, instanceB?: number): CVSelectionState {
     return {
-      a: {kind: 'out', cv: {id: cvIdA, name: `A${cvIdA}`, module: {id: 1, name: 'M1'}, instance_id: instanceA}},
-      b: {kind: 'in',  cv: {id: cvIdB, name: `B${cvIdB}`, module: {id: 2, name: 'M2'}, instance_id: instanceB}},
-    } as any;
+      a: makeSelectionEntity('out', cvIdA, `A${cvIdA}`, 1, instanceA),
+      b: makeSelectionEntity('in', cvIdB, `B${cvIdB}`, 2, instanceB),
+    };
   }
 
   it('sets recordedKey$ when record$ fires with a complete selection', () => {
@@ -73,7 +137,7 @@ describe('SelectionPanelBridgeService — record$ captures selection into record
 
   it('does NOT update recordedKey$ when record$ fires with incomplete selection', () => {
     const service = new SelectionPanelBridgeService();
-    service.selectionState$.next({a: null, b: null} as any);
+    service.selectionState$.next({a: null, b: null});
     service.record$.next();
 
     expect(service.recordedKey$.value).toBeNull();
@@ -96,13 +160,7 @@ describe('SelectionPanelBridgeService — record$ captures selection into record
     const service = new SelectionPanelBridgeService();
     // Leave editorConnections$ as null (default) so the auto-clear guard skips.
     // Adding the recorded connection to the list instead confirms via that path.
-    service.editorConnections$.next([{
-      a: {id: 10, name: 'A'},
-      b: {id: 20, name: 'B'},
-      instance_id_a: null,
-      instance_id_b: null,
-      patch: {id: 1}
-    } as any]);
+    service.editorConnections$.next([makeConnection(10, 20)]);
     service.selectionState$.next(sel(10, 20));
     service.record$.next();
 
@@ -117,8 +175,8 @@ describe('SelectionPanelBridgeService — record$ captures selection into record
 
   it('confirmed$ emits false for incomplete selection even with matching connections', done => {
     const service = new SelectionPanelBridgeService();
-    service.selectionState$.next({a: null, b: null} as any);
-    service.editorConnections$.next([{a: {id: 10}, b: {id: 20}, instance_id_a: null, instance_id_b: null} as any]);
+    service.selectionState$.next({a: null, b: null});
+    service.editorConnections$.next([makeConnection(10, 20)]);
 
     service.confirmed$.subscribe(v => {
       if (v === false) {

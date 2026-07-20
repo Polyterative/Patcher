@@ -1,39 +1,49 @@
 import { of } from 'rxjs';
 import { LoginPageComponent } from './login-page.component';
 import { SSOProvider } from '../sso-buttons/sso-buttons.component';
+import {
+  ActivatedRoute,
+  Router
+} from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { SeoAndUtilsService } from '../../seo-and-utils.service';
+import { UserManagementService } from '../user-management.service';
+import { UserLoginDataService } from './user-login-data.service';
+import { SimpleUserModel } from '../../../backend/supabase.service';
 
-function makeDataServiceMock() {
-  return {} as any;
+function makeDataServiceMock(): UserLoginDataService {
+  return {} as UserLoginDataService;
 }
 
-function makeSeoMock() {
-  return { updateSeo: jasmine.createSpy('updateSeo') } as any;
+function makeSeoMock(): jasmine.SpyObj<SeoAndUtilsService> {
+  return jasmine.createSpyObj<SeoAndUtilsService>('SeoAndUtilsService', ['updateSeo']);
 }
 
-function makeLoginInteractionMock(loggedUser: any = null) {
-  return {
-    loggedUser$: of(loggedUser),
-    loginWithSSO: jasmine.createSpy('loginWithSSO')
-  } as any;
+function makeLoginInteractionMock(
+  loggedUser: SimpleUserModel | null = null
+): jasmine.SpyObj<UserManagementService> {
+  return jasmine.createSpyObj<UserManagementService>('UserManagementService', ['loginWithSSO'], {
+    loggedUser$: of(loggedUser ?? undefined)
+  });
 }
 
-function makeRouterMock() {
-  return { navigate: jasmine.createSpy('navigate') } as any;
+function makeRouterMock(): jasmine.SpyObj<Router> {
+  return jasmine.createSpyObj<Router>('Router', ['navigate']);
 }
 
-function makeRouteMock(params: Record<string, string> = {}) {
-  return { queryParams: of(params) } as any;
+function makeRouteMock(params: Record<string, string> = {}): ActivatedRoute {
+  return { queryParams: of(params) } as ActivatedRoute;
 }
 
-function makeSnackBarMock() {
-  return { open: jasmine.createSpy('open') } as any;
+function makeSnackBarMock(): jasmine.SpyObj<MatSnackBar> {
+  return jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
 }
 
 function makeComp(
   overrides: {
-    loggedUser?: any;
+    loggedUser?: SimpleUserModel | null;
     routeParams?: Record<string, string>;
-    loginInteraction?: any;
+    loginInteraction?: jasmine.SpyObj<UserManagementService>;
   } = {}
 ) {
   const seo = makeSeoMock();
@@ -95,7 +105,14 @@ describe('LoginPageComponent', () => {
 
   describe('ngOnInit — checkLoggedInUser', () => {
     it('navigates to /user/area when user is already logged in', () => {
-      const { comp, router } = makeComp({ loggedUser: { id: 'u1' } });
+      const { comp, router } = makeComp({
+        loggedUser: {
+          id: 'u1',
+          email: 'u1@example.com',
+          created_at: '2026-01-01T00:00:00.000Z',
+          updated_at: '2026-01-01T00:00:00.000Z'
+        }
+      });
       comp.ngOnInit();
       expect(router.navigate).toHaveBeenCalledWith(['/user/area']);
     });
@@ -107,7 +124,14 @@ describe('LoginPageComponent', () => {
     });
 
     it('calls SharedConstants.successLogin when user is logged in', () => {
-      const { comp, snackBar } = makeComp({ loggedUser: { id: 'u1' } });
+      const { comp, snackBar } = makeComp({
+        loggedUser: {
+          id: 'u1',
+          email: 'u1@example.com',
+          created_at: '2026-01-01T00:00:00.000Z',
+          updated_at: '2026-01-01T00:00:00.000Z'
+        }
+      });
       comp.ngOnInit();
       // successLogin opens the snackBar
       expect(snackBar.open).toHaveBeenCalled();

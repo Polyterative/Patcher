@@ -1,23 +1,29 @@
 import { of } from 'rxjs';
 import { SignupPageComponent } from './signup-page.component';
 import { SSOProvider } from '../sso-buttons/sso-buttons.component';
+import { ActivatedRoute } from '@angular/router';
+import { SeoAndUtilsService } from '../../seo-and-utils.service';
+import { UserManagementService } from '../user-management.service';
+import { UserSignupDataService } from './user-signup-data.service';
 
-function makeSeoMock() {
-  return { updateSeo: jasmine.createSpy('updateSeo') } as any;
+function makeSeoMock(): jasmine.SpyObj<SeoAndUtilsService> {
+  return jasmine.createSpyObj<SeoAndUtilsService>('SeoAndUtilsService', ['updateSeo']);
 }
 
-function makeLoginInteractionMock() {
-  return {
-    loginWithSSO: jasmine.createSpy('loginWithSSO')
-  } as any;
+function makeLoginInteractionMock(): jasmine.SpyObj<UserManagementService> {
+  return jasmine.createSpyObj<UserManagementService>('UserManagementService', ['loginWithSSO']);
 }
 
 function makeComp(
   seo = makeSeoMock(),
   loginInteraction = makeLoginInteractionMock()
-): { comp: SignupPageComponent; seo: any; loginInteraction: any } {
-  const activated = { queryParams: of({}) } as any;
-  const dataService = {} as any;
+): {
+  comp: SignupPageComponent;
+  seo: jasmine.SpyObj<SeoAndUtilsService>;
+  loginInteraction: jasmine.SpyObj<UserManagementService>;
+} {
+  const activated = { queryParams: of({}) } as ActivatedRoute;
+  const dataService = {} as UserSignupDataService;
 
   const comp = new SignupPageComponent(activated, dataService, seo, loginInteraction);
   return { comp, seo, loginInteraction };

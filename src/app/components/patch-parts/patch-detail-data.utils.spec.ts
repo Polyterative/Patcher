@@ -6,18 +6,41 @@ import {
 import { PatchModuleInstance } from '../../models/connection';
 import { Patch } from '../../models/patch';
 import { Rack } from '../../models/rack';
+import { PublicUser } from '../../models/user';
+
+const TEST_USER: PublicUser = {
+  id: 'user-1',
+  username: 'tester'
+};
 
 const makeInstance = (id: number, module_id: number): PatchModuleInstance => ({
-  id, module_id
-} as any);
+  id,
+  patch_id: 1,
+  module_id,
+  instance_label: null
+});
 
 const makePatch = (linked_rack_id: number | null = null): Patch => ({
-  id: 1, name: 'P', linked_rack_id
-} as any);
+  id: 1,
+  name: 'P',
+  author: TEST_USER,
+  public: true,
+  created: '2026-01-01T00:00:00.000Z',
+  updated: '2026-01-01T00:00:00.000Z',
+  linked_rack_id
+});
 
 const makeRack = (id: number, name = 'Rack'): Rack => ({
-  id, name, image: null
-} as any);
+  id,
+  name,
+  hp: 84,
+  rows: 2,
+  author: TEST_USER,
+  locked: false,
+  public: true,
+  created: '2026-01-01T00:00:00.000Z',
+  updated: '2026-01-01T00:00:00.000Z'
+});
 
 describe('patch-detail-data.utils', () => {
   describe('groupInstancesByModuleId', () => {
@@ -51,13 +74,13 @@ describe('patch-detail-data.utils', () => {
     it('returns unavailable with owner-specific description when patch owner', () => {
       const state = buildLinkedRackUiState(makePatch(99), [], null, true, true);
       expect(state.kind).toBe('unavailable');
-      expect((state as any).description).toContain('another rack or clear');
+      expect(state.description).toContain('another rack or clear');
     });
 
     it('returns unavailable with logged-in visitor description', () => {
       const state = buildLinkedRackUiState(makePatch(99), [], null, false, true);
       expect(state.kind).toBe('unavailable');
-      expect((state as any).description).toContain('not publicly available');
+      expect(state.description).toContain('not publicly available');
     });
   });
 });
