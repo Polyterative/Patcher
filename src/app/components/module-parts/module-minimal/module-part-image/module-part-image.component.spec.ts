@@ -12,6 +12,10 @@ import { AppViewportService } from 'src/app/shared-interproject/app-viewport.ser
 import { GetModuleHeightForStandardPipe } from '../../get-module-height-for-standard.pipe';
 import { MODULE_FORMAT_GEOMETRY } from '../../module-format-geometry.constants';
 import {
+  MinimalModule,
+  ModulePanel
+} from 'src/app/models/module';
+import {
   ModulePartImageComponent,
   resolveSurfaceTooltipPosition
 } from './module-part-image.component';
@@ -26,7 +30,7 @@ function buildComponent(options: {
   viewportWidth?: number;
   viewportOffsetLeft?: number;
 } = {}): ModulePartImageComponent {
-  const cdr = {detectChanges: () => {}} as unknown as ChangeDetectorRef;
+  const cdr = jasmine.createSpyObj<ChangeDetectorRef>('ChangeDetectorRef', ['detectChanges']);
   const hostRect = options.hostRect ?? {left: 120, right: 180};
   const elementRef = {
     nativeElement: {
@@ -47,15 +51,39 @@ function buildComponent(options: {
   return new ModulePartImageComponent(cdr, dataService, elementRef, viewportService);
 }
 
-const PANEL_DARK = {id: 1, filename: 'dark.png', color: 0, description: 'Dark', moduleid: 10};
-const PANEL_LIGHT = {id: 2, filename: 'light.png', color: 1, description: 'Light', moduleid: 10};
+const PANEL_DARK: ModulePanel = {id: 1, filename: 'dark.png', color: 0, description: 'Dark', moduleid: 10};
+const PANEL_LIGHT: ModulePanel = {id: 2, filename: 'light.png', color: 1, description: 'Light', moduleid: 10};
+
+type MinimalModuleWithOptionalPanels = Omit<MinimalModule, 'panels'> & {
+  panels?: MinimalModule['panels'];
+};
 
 function makeModule(
-  panels: any[] = [PANEL_DARK, PANEL_LIGHT],
-  standard: {id: number; name: string} = {id: 0, name: '3U'},
+  panels: ModulePanel[] = [PANEL_DARK, PANEL_LIGHT],
+  standard: MinimalModule['standard'] = {id: 0, name: '3U'},
   hp = 10
-): any {
-  return {id: 10, name: 'VCO', hp, panels, manufacturer: {name: 'Make Noise'}, standard};
+): MinimalModule {
+  return {
+    id: 10,
+    created: '',
+    updated: '',
+    name: 'VCO',
+    description: '',
+    hp,
+    public: true,
+    manufacturer: {id: 1, name: 'Make Noise'},
+    manufacturerId: 1,
+    standard,
+    tags: [],
+    panels
+  };
+}
+
+function makeModuleWithoutPanels(): MinimalModule {
+  const module: MinimalModuleWithOptionalPanels = makeModule();
+  delete module.panels;
+
+  return module as MinimalModule;
 }
 
 @Component({
@@ -120,7 +148,7 @@ describe('ModulePartImageComponent — panel resolution', () => {
 
   it('returns undefined when panels is undefined', () => {
     const c = buildComponent();
-    c.data = {id: 10, name: 'VCO', manufacturer: {name: 'Make Noise'}, standard: {name: '3U'}} as any;
+    c.data = makeModuleWithoutPanels();
     c.selectedPanelId = null;
     c.ngOnChanges();
     expect(c.filename).toBeUndefined();
