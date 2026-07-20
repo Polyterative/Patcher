@@ -1,5 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
 import { ModuleBrowserRecentActivityService } from './module-browser-recent-activity.service';
+import { MinimalModule } from 'src/app/models/module';
+import { RecentActivityItem } from 'src/app/components/shared-atoms/recent-activity/recent-activity.model';
 
 
 describe('ModuleBrowserRecentActivityService', () => {
@@ -7,39 +9,30 @@ describe('ModuleBrowserRecentActivityService', () => {
     const service = new ModuleBrowserRecentActivityService();
     return {service};
   }
+
+  function makeModule(id: number, name: string, created: string, updated: string, manufacturerName = 'Maker'): MinimalModule {
+    return {
+      id,
+      name,
+      description: '',
+      hp: 8,
+      public: true,
+      manufacturerId: 1,
+      manufacturer: {id: 1, name: manufacturerName},
+      standard: {id: 0, name: '3U'},
+      tags: [],
+      panels: [],
+      created,
+      updated
+    };
+  }
   
   it('maps module list into recent activity sorted by updated timestamp', () => {
     const {service} = build();
     const modules = [
-      {
-        id: 2,
-        name: 'Older Module',
-        description: '',
-        hp: 8,
-        public: true,
-        manufacturerId: 10,
-        manufacturer: {name: 'Maker A'},
-        standard: 0,
-        tags: [],
-        panels: [],
-        created: '2025-01-01T00:00:00.000Z',
-        updated: '2025-01-02T00:00:00.000Z'
-      },
-      {
-        id: 1,
-        name: 'Newest Module',
-        description: '',
-        hp: 10,
-        public: true,
-        manufacturerId: 11,
-        manufacturer: {name: 'Maker B'},
-        standard: 0,
-        tags: [],
-        panels: [],
-        created: '2025-01-03T00:00:00.000Z',
-        updated: '2025-01-04T00:00:00.000Z'
-      }
-    ] as any;
+      makeModule(2, 'Older Module', '2025-01-01T00:00:00.000Z', '2025-01-02T00:00:00.000Z', 'Maker A'),
+      makeModule(1, 'Newest Module', '2025-01-03T00:00:00.000Z', '2025-01-04T00:00:00.000Z', 'Maker B')
+    ];
     
     const result = service.mapModulesToRecentActivityItems(modules, 5);
     
@@ -53,21 +46,8 @@ describe('ModuleBrowserRecentActivityService', () => {
   it('uses create activity when module created and updated timestamps match', () => {
     const {service} = build();
     const modules = [
-      {
-        id: 7,
-        name: 'Fresh Module',
-        description: '',
-        hp: 6,
-        public: true,
-        manufacturerId: 22,
-        manufacturer: {name: 'Maker C'},
-        standard: 0,
-        tags: [],
-        panels: [],
-        created: '2025-03-01T10:00:00.000Z',
-        updated: '2025-03-01T10:00:00.000Z'
-      }
-    ] as any;
+      makeModule(7, 'Fresh Module', '2025-03-01T10:00:00.000Z', '2025-03-01T10:00:00.000Z', 'Maker C')
+    ];
     
     const result = service.mapModulesToRecentActivityItems(modules, 5);
     
@@ -78,28 +58,15 @@ describe('ModuleBrowserRecentActivityService', () => {
   
   it('derives activity stream from module stream', () => {
     const {service} = build();
-    const modules$ = new BehaviorSubject<any>(null);
-    const output: any[] = [];
+    const modules$ = new BehaviorSubject<MinimalModule[] | null>(null);
+    const output: RecentActivityItem[] = [];
     
     service.getRecentActivityItems$(modules$).subscribe(items => {
       output.splice(0, output.length, ...items);
     });
     
     modules$.next([
-      {
-        id: 9,
-        name: 'Activity Source',
-        description: '',
-        hp: 6,
-        public: true,
-        manufacturerId: 1,
-        manufacturer: {name: 'Maker'},
-        standard: 0,
-        tags: [],
-        panels: [],
-        created: '2025-02-01T00:00:00.000Z',
-        updated: '2025-02-02T00:00:00.000Z'
-      }
+      makeModule(9, 'Activity Source', '2025-02-01T00:00:00.000Z', '2025-02-02T00:00:00.000Z')
     ]);
     
     expect(output.length).toBe(1);
@@ -113,22 +80,24 @@ describe('ModuleBrowserRecentActivityService', () => {
 
   it('returns empty array when maxItems is 0', () => {
     const {service} = build();
-    const modules = [{
-      id: 1, name: 'M', description: '', hp: 4, public: true, manufacturerId: 1,
-      manufacturer: {name: 'X'}, standard: 0, tags: [], panels: [],
-      created: '2025-01-01T00:00:00.000Z', updated: '2025-01-01T00:00:00.000Z'
-    }] as any;
+    const modules = [
+      makeModule(1, 'M', '2025-01-01T00:00:00.000Z', '2025-01-01T00:00:00.000Z', 'X')
+    ];
     expect(service.mapModulesToRecentActivityItems(modules, 0)).toEqual([]);
   });
 
   it('slices to maxItems when more modules are provided', () => {
     const {service} = build();
     const modules = Array.from({length: 10}, (_, i) => ({
-      id: i + 1, name: `Module ${i}`, description: '', hp: 4, public: true, manufacturerId: 1,
-      manufacturer: {name: 'X'}, standard: 0, tags: [], panels: [],
-      created: `2025-01-${String(i + 1).padStart(2, '0')}T00:00:00.000Z`,
-      updated: `2025-01-${String(i + 1).padStart(2, '0')}T00:00:00.000Z`
-    })) as any;
+      ...makeModule(
+        i + 1,
+        `Module ${i}`,
+        `2025-01-${String(i + 1).padStart(2, '0')}T00:00:00.000Z`,
+        `2025-01-${String(i + 1).padStart(2, '0')}T00:00:00.000Z`,
+        'X'
+      ),
+      hp: 4
+    }));
     expect(service.mapModulesToRecentActivityItems(modules, 3).length).toBe(3);
   });
 });

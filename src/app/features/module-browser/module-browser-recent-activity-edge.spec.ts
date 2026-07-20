@@ -59,8 +59,8 @@ describe('ModuleBrowserRecentActivityService - edge cases', () => {
   });
   
   it('actorLabel falls back to Unknown author when manufacturer name is missing', () => {
-    const modules = [makeModule(1, 'X', '2025-01-01T00:00:00.000Z', '2025-01-02T00:00:00.000Z')] as any;
-    modules[0].manufacturer = null;
+    const modules = [makeModule(1, 'X', '2025-01-01T00:00:00.000Z', '2025-01-02T00:00:00.000Z')];
+    Reflect.set(modules[0], 'manufacturer', null);
     const items = service.mapModulesToRecentActivityItems(modules, 5);
     expect(items[0].actorLabel).toBe('Unknown author');
   });
