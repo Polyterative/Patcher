@@ -4,15 +4,19 @@ import {
   assertSnapshotWorkerAuthorized,
   backoffDaysForFailureCount,
   buildFailureUpdate,
+  buildShopifyProductJsonUrl,
   buildWooCommerceStoreApiUrl,
   isSnapshotRefreshAdapterKind,
   normalizeErrorMessage,
   parseProbeListingInput,
   readSnapshotLimit,
   readSnapshotWorkerMode,
+  readShopifyProductJsonSnapshotProduct,
+  SnapshotWorkerAuthError,
   SnapshotWorkerInputError,
   SUPPORTED_SNAPSHOT_ADAPTER_KINDS,
 } from '../../supabase/functions/_shared/price-hub/snapshot-worker.ts';
+import { normalizeShopifyProductJsonProduct } from '../../supabase/functions/_shared/price-hub/shopify-product-json.ts';
 
 const baseListing = {
   product_url: 'https://www.elevatorsound.com/product/make-noise-maths/?utm_source=ignored',
@@ -40,12 +44,20 @@ test('detects local-only probe mode from the request URL', () => {
   assert.equal(readSnapshotWorkerMode('https://worker.test/snapshot-store-listings?mode=probe'), 'probe');
 });
 
-test('scheduled worker refreshes WooCommerce API and Shopware metadata listings', () => {
-  assert.deepEqual(SUPPORTED_SNAPSHOT_ADAPTER_KINDS, ['woocommerce_store_api', 'shopware_metadata']);
+test('scheduled worker refreshes all locally supported snapshot adapter listings', () => {
+  assert.deepEqual(SUPPORTED_SNAPSHOT_ADAPTER_KINDS, [
+    'woocommerce_store_api',
+    'shopify_product_json',
+    'bigcommerce_metadata',
+    'shopware_metadata',
+    'custom',
+  ]);
   assert.equal(isSnapshotRefreshAdapterKind('woocommerce_store_api'), true);
+  assert.equal(isSnapshotRefreshAdapterKind('shopify_product_json'), true);
+  assert.equal(isSnapshotRefreshAdapterKind('bigcommerce_metadata'), true);
   assert.equal(isSnapshotRefreshAdapterKind('shopware_metadata'), true);
-  assert.equal(isSnapshotRefreshAdapterKind('shopify_product_json'), false);
-  assert.equal(isSnapshotRefreshAdapterKind('custom'), false);
+  assert.equal(isSnapshotRefreshAdapterKind('custom'), true);
+  assert.equal(isSnapshotRefreshAdapterKind('unsupported'), false);
 });
 
 test('parses probe input into DB-free listing shape', () => {
@@ -134,12 +146,105 @@ test('omits WooCommerce slug when product URL has no safe slug', () => {
   assert.equal(url.searchParams.get('per_page'), '5');
 });
 
+test('builds Shopify product JSON URL from external handle first', () => {
+  const url = buildShopifyProductJsonUrl({
+    ...baseListing,
+    product_url: 'https://shop.example.test/products/ignored-slug',
+    external_handle: ' make-noise-maths ',
+    stores: {
+      base_url: 'https://shop.example.test/',
+    },
+  });
+
+  assert.equal(url, 'https://shop.example.test/products/make-noise-maths.js');
+});
+
+test('builds Shopify product JSON URL from product URL slug fallback', () => {
+  const url = buildShopifyProductJsonUrl({
+    ...baseListing,
+    product_url: 'https://shop.example.test/products/make-noise-maths?variant=123',
+    stores: {
+      base_url: 'https://shop.example.test/',
+    },
+  });
+
+  assert.equal(url, 'https://shop.example.test/products/make-noise-maths.js');
+});
+
+test('rejects Shopify product JSON URL when listing has no handle or slug', () => {
+  assert.throws(() => buildShopifyProductJsonUrl({
+    ...baseListing,
+    product_url: 'not a url',
+    stores: {
+      base_url: 'https://shop.example.test/',
+    },
+  }), /external handle or product URL slug/);
+});
+
+test('normalizes Shopify product.js minor-unit prices before snapshot conversion', () => {
+  const product = readShopifyProductJsonSnapshotProduct({
+    product: {
+      id: 10,
+      title: 'Just Friends',
+      handle: 'just-friends',
+      vendor: 'Whimsical Raps',
+      variants: [
+        {
+          id: 11,
+          title: 'Default Title',
+          available: true,
+          price: 59900,
+          compare_at_price: 64900,
+        },
+      ],
+    },
+  });
+  const snapshot = normalizeShopifyProductJsonProduct(product, {
+    baseUrl: 'https://whimsicalraps.com/',
+    currencyHint: 'USD',
+  });
+
+  assert.equal(product.variants?.[0]?.price, '599.00');
+  assert.equal(product.variants?.[0]?.compare_at_price, '649.00');
+  assert.equal(snapshot.priceAmountMinor, 59900);
+  assert.equal(snapshot.productUrl, 'https://whimsicalraps.com/products/just-friends');
+});
+
+test('normalizes Shopify product.js zero-decimal fixed two-decimal prices with currency hint', () => {
+  const product = readShopifyProductJsonSnapshotProduct({
+    product: {
+      id: 10,
+      title: 'Maths',
+      handle: 'make-noise-maths',
+      variants: [
+        {
+          id: 11,
+          title: 'Default Title',
+          available: true,
+          price: 5390000,
+        },
+      ],
+    },
+  }, 'JPY');
+  const snapshot = normalizeShopifyProductJsonProduct(product, {
+    baseUrl: 'https://clockfacemodular.com/',
+    currencyHint: 'JPY',
+  });
+
+  assert.equal(product.variants?.[0]?.price, '53900');
+  assert.equal(snapshot.priceAmountMinor, 53900);
+});
+
+test('rejects malformed Shopify product JSON snapshots', () => {
+  assert.throws(() => readShopifyProductJsonSnapshotProduct(null), /product object/);
+});
+
 test('auth token check fails closed when missing or mismatched', () => {
   assert.doesNotThrow(() => assertSnapshotWorkerAuthorized('secret-token', 'Bearer secret-token'));
   assert.throws(() => assertSnapshotWorkerAuthorized(undefined, 'Bearer secret-token'), /Missing PRICE_HUB_SNAPSHOT_TOKEN/);
   assert.throws(() => assertSnapshotWorkerAuthorized('', 'Bearer secret-token'), /Missing PRICE_HUB_SNAPSHOT_TOKEN/);
-  assert.throws(() => assertSnapshotWorkerAuthorized('secret-token', null), /Unauthorized/);
-  assert.throws(() => assertSnapshotWorkerAuthorized('secret-token', 'Bearer wrong-token'), /Unauthorized/);
+  assert.throws(() => assertSnapshotWorkerAuthorized('secret-token', null), SnapshotWorkerAuthError);
+  assert.throws(() => assertSnapshotWorkerAuthorized('secret-token', 'Bearer wrong-token'), SnapshotWorkerAuthError);
 });
 
 test('failure updates use bounded backoff and mark stale at threshold', () => {

@@ -140,6 +140,91 @@ test('treats zero WooCommerce prices as unknown suspicious data', async () => {
   assert.equal(normalized.rawMeta.priceHtmlEmpty, true);
 });
 
+test('uses positive WooCommerce sale or regular prices when current price is a zero placeholder', () => {
+  for (const { salePrice, regularPrice, expectedPriceAmountMinor } of [
+    { salePrice: '23900', regularPrice: '25900', expectedPriceAmountMinor: 23900 },
+    { salePrice: '0', regularPrice: '25900', expectedPriceAmountMinor: 25900 },
+  ]) {
+    const normalized = normalizeWooCommerceStoreApiProduct({
+      id: 320,
+      name: 'Befaco Trolley Bus Assembled',
+      slug: 'befaco-trolley-bus-assembled',
+      permalink: 'https://www.thonk.co.uk/shop/befaco-trolley-bus-assembled/',
+      prices: {
+        price: '0',
+        sale_price: salePrice,
+        regular_price: regularPrice,
+        currency_code: 'GBP',
+      },
+      price_html: '',
+      is_in_stock: true,
+      stock_status: 'instock',
+      stock_availability: { text: 'In stock' },
+      images: [],
+    });
+
+    assert.equal(normalized.priceAmountMinor, expectedPriceAmountMinor);
+    assert.equal(normalized.currency, 'GBP');
+    assert.equal(normalized.rawMeta.priceWasZero, true);
+    assert.equal(normalized.rawMeta.priceSource, undefined);
+  }
+});
+
+test('uses WooCommerce price_html sale amount when Store API price is zero', () => {
+  const normalized = normalizeWooCommerceStoreApiProduct({
+    id: 321,
+    name: 'Befaco Trolley Bus Assembled',
+    slug: 'befaco-trolley-bus-assembled',
+    permalink: 'https://www.thonk.co.uk/shop/befaco-trolley-bus-assembled/',
+    prices: {
+      price: '0',
+      currency_code: 'GBP',
+    },
+    price_html: '<del><span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">£</span>259.00</bdi></span></del> <ins><span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">£</span>239.00</bdi></span></ins>',
+    is_in_stock: true,
+    stock_status: 'instock',
+    stock_availability: { text: 'In stock' },
+    images: [],
+  });
+
+  assert.equal(normalized.priceAmountMinor, 23900);
+  assert.equal(normalized.currency, 'GBP');
+  assert.equal(normalized.rawMeta.priceWasZero, true);
+  assert.equal(normalized.rawMeta.priceSource, 'price_html');
+});
+
+test('uses localized WooCommerce price_html amount when numeric prices are missing', () => {
+  for (const { priceHtml, expectedPriceAmountMinor } of [
+    { priceHtml: '<span class="woocommerce-Price-amount amount"><bdi>€1,299</bdi></span>', expectedPriceAmountMinor: 129900 },
+    { priceHtml: '<span class="woocommerce-Price-amount amount"><bdi>€1.299</bdi></span>', expectedPriceAmountMinor: 129900 },
+    { priceHtml: '<span class="woocommerce-Price-amount amount"><bdi>€1,299.50</bdi></span>', expectedPriceAmountMinor: 129950 },
+    { priceHtml: '<span class="woocommerce-Price-amount amount"><bdi>€1.299,50</bdi></span>', expectedPriceAmountMinor: 129950 },
+    { priceHtml: '<span class="woocommerce-Price-amount amount"><bdi>€12,34</bdi></span>', expectedPriceAmountMinor: 1234 },
+    { priceHtml: '<span class="woocommerce-Price-amount amount"><bdi>€12.34</bdi></span>', expectedPriceAmountMinor: 1234 },
+    { priceHtml: '<span class="woocommerce-Price-amount amount"><bdi>€1,299 – €1,499</bdi></span>', expectedPriceAmountMinor: 129900 },
+  ]) {
+    const normalized = normalizeWooCommerceStoreApiProduct({
+      id: 322,
+      name: 'Make Noise Maths',
+      slug: 'make-noise-maths',
+      permalink: 'https://www.thonk.co.uk/shop/make-noise-maths/',
+      prices: {
+        price: '',
+        currency_code: 'EUR',
+      },
+      price_html: priceHtml,
+      is_in_stock: true,
+      stock_status: 'instock',
+      stock_availability: { text: 'In stock' },
+      images: [],
+    });
+
+    assert.equal(normalized.priceAmountMinor, expectedPriceAmountMinor);
+    assert.equal(normalized.currency, 'EUR');
+    assert.equal(normalized.rawMeta.priceSource, 'price_html');
+  }
+});
+
 test('matches WooCommerce search results by permalink', async () => {
   const elevatorProduct = await readFixture('elevator-sound-in-stock.json');
   const newGrooveProduct = await readFixture('new-groove-sale-backorder.json');

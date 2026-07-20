@@ -5,10 +5,10 @@ import {
   DEFAULT_CATALOG_MAX_PAGES,
   writeCrawledProducts,
 } from './catalog-crawler.ts';
-import { DEFAULT_MATCH_MIN_SCORE, type PriceHubModuleInput, writeModuleProductMatches } from './matcher.ts';
-import { readApprovedPriceHubStores } from './store-configs.ts';
+import { type PriceHubModuleInput, writeModuleProductMatches } from './matcher.ts';
+import { type ApprovedPriceHubStoreConfig, DEFAULT_PRICE_HUB_MATCH_CONFIG, readApprovedPriceHubStores } from './store-configs.ts';
 
-interface LocalCrawlerCliOptions {
+export interface LocalCrawlerCliOptions {
   store: string;
   maxPages: number;
   maxProducts?: number;
@@ -16,39 +16,86 @@ interface LocalCrawlerCliOptions {
   out: string;
   modulesPath: string | null;
   minScore: number;
+  minScoreOverride?: number;
   includeIgnoredMatches: boolean;
+}
+
+export interface LocalCrawlerRunFailure {
+  storeSlug: string;
+  error: unknown;
+}
+
+export interface LocalCrawlerRunResult {
+  attemptedStores: number;
+  failures: LocalCrawlerRunFailure[];
+}
+
+export interface LocalCrawlerRunDeps {
+  crawlStoreCatalog: typeof crawlPriceHubStoreCatalog;
+  writeProducts: typeof writeCrawledProducts;
+  writeMatches: typeof writeModuleProductMatches;
+  log: Pick<Console, 'log' | 'warn' | 'error'>;
 }
 
 async function main(): Promise<void> {
   const options = readCliOptions(process.argv.slice(2));
   const stores = readApprovedPriceHubStores(options.store);
   const modules = options.modulesPath ? await readModules(options.modulesPath) : null;
+  const result = await runLocalCrawlerStores(stores, options, modules);
 
+  if (result.failures.length > 0) {
+    process.exitCode = 1;
+  }
+}
+
+export async function runLocalCrawlerStores(
+  stores: readonly ApprovedPriceHubStoreConfig[],
+  options: LocalCrawlerCliOptions,
+  modules: readonly PriceHubModuleInput[] | null,
+  deps: LocalCrawlerRunDeps = {
+    crawlStoreCatalog: crawlPriceHubStoreCatalog,
+    writeProducts: writeCrawledProducts,
+    writeMatches: writeModuleProductMatches,
+    log: console,
+  },
+): Promise<LocalCrawlerRunResult> {
+  const failures: LocalCrawlerRunFailure[] = [];
   for (const store of stores) {
-    const crawl = await crawlPriceHubStoreCatalog(store, {
-      maxPages: options.maxPages,
-      maxProducts: options.maxProducts,
-      metadataConcurrency: options.metadataConcurrency,
-    });
-    const productsPath = await writeCrawledProducts(options.out, store.slug, crawl.products);
-    const urlCount = crawl.totalProductUrls ? ` after checking ${crawl.totalProductUrls} product URLs` : '';
-    console.log(`Wrote ${crawl.products.length} products for ${store.slug}${urlCount} (${crawl.pagesFetched} pages): ${productsPath}`);
-    if (crawl.skippedProducts) {
-      console.warn(`Skipped ${crawl.skippedProducts} sitemap pages without usable product metadata for ${store.slug}. Sample: ${(crawl.skippedProductUrls ?? []).join(', ')}`);
-    }
-    if (crawl.hitMaxProducts) {
-      console.warn(`Stopped ${store.slug} after reaching --max-products=${options.maxProducts}. Omit --max-products for a full metadata crawl.`);
-    }
-
-    if (modules) {
-      const matchesPath = join(options.out, store.slug, 'matches.json');
-      const matchCount = await writeModuleProductMatches(matchesPath, modules, crawl.products, {
-        minScore: options.minScore,
-        includeIgnored: options.includeIgnoredMatches,
+    try {
+      const crawl = await deps.crawlStoreCatalog(store, {
+        maxPages: options.maxPages,
+        maxProducts: options.maxProducts,
+        metadataConcurrency: options.metadataConcurrency,
       });
-      console.log(`Wrote ${matchCount} match candidates for ${store.slug}: ${matchesPath}`);
+      const productsPath = await deps.writeProducts(options.out, store.slug, crawl.products);
+      const urlCount = crawl.totalProductUrls ? ` after checking ${crawl.totalProductUrls} product URLs` : '';
+      deps.log.log(`Wrote ${crawl.products.length} products for ${store.slug}${urlCount} (${crawl.pagesFetched} pages): ${productsPath}`);
+      if (crawl.skippedProducts) {
+        deps.log.warn(`Skipped ${crawl.skippedProducts} sitemap pages without usable product metadata for ${store.slug}. Sample: ${(crawl.skippedProductUrls ?? []).slice(0, 10).join(', ')}`);
+      }
+      if (crawl.hitMaxProducts) {
+        deps.log.warn(`Stopped ${store.slug} after reaching --max-products=${options.maxProducts}. Omit --max-products for a full metadata crawl.`);
+      }
+
+      if (modules) {
+        const matchesPath = join(options.out, store.slug, 'matches.json');
+        const matchCount = await deps.writeMatches(matchesPath, modules, crawl.products, {
+          minScore: options.minScoreOverride,
+          store,
+          includeIgnored: options.includeIgnoredMatches,
+        });
+        deps.log.log(`Wrote ${matchCount} match candidates for ${store.slug}: ${matchesPath}`);
+      }
+    } catch (error: unknown) {
+      failures.push({ storeSlug: store.slug, error });
+      deps.log.error(`Failed ${store.slug}: ${readErrorMessage(error)}`);
     }
   }
+
+  return {
+    attemptedStores: stores.length,
+    failures,
+  };
 }
 
 export function readCliOptions(args: readonly string[]): LocalCrawlerCliOptions {
@@ -58,7 +105,7 @@ export function readCliOptions(args: readonly string[]): LocalCrawlerCliOptions 
     metadataConcurrency: 6,
     out: 'tmp/price-hub',
     modulesPath: null,
-    minScore: DEFAULT_MATCH_MIN_SCORE,
+    minScore: DEFAULT_PRICE_HUB_MATCH_CONFIG.scoreThresholds.reviewCandidate,
     includeIgnoredMatches: false,
   };
 
@@ -89,6 +136,7 @@ export function readCliOptions(args: readonly string[]): LocalCrawlerCliOptions 
         break;
       case '--min-score':
         options.minScore = readScore(value, '--min-score');
+        options.minScoreOverride = options.minScore;
         break;
       case '--include-ignored-matches':
         options.includeIgnoredMatches = readBoolean(value, '--include-ignored-matches');
@@ -180,8 +228,12 @@ function readBoolean(value: string, fieldName: string): boolean {
   throw new Error(`${fieldName} must be true or false.`);
 }
 
+function readErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 function printHelpAndExit(): never {
-  console.log('Usage: pnpm price-hub:crawl-local --store=after-later-audio|animato-audio|big-city-music|busy-circuits|cicada-sound|clockface-modular|control|detroit-modular|dreadbox|elevator-sound|escape-from-noise|exploding-shed|found-sound|instruo|intellijel|machineroom|martin-pas|milk-audio-store|michigan-synth-works|moog-audio|nano-modules|nightlife-electronics|new-groove|noisebug|patch-point|postmodular|pusherman-productions|robotspeak|rubadub|schlappi-engineering|signal-sounds-uk|signal-sounds-eu|schneidersladen|soundium|synthshop|technosynth|thonk|turnlab|whimsical-raps|wmdevices|zlob-modular|all --max-pages=100 --metadata-concurrency=6 --out=tmp/price-hub --modules=modules.json --min-score=0.72 --include-ignored-matches=false');
+  console.log(`Usage: pnpm price-hub:crawl-local --store=after-later-audio|animato-audio|big-city-music|busy-circuits|cicada-sound|clockface-modular|control|detroit-modular|dreadbox|elevator-sound|escape-from-noise|exploding-shed|found-sound|instruo|intellijel|machineroom|martin-pas|milk-audio-store|michigan-synth-works|moog-audio|nano-modules|nightlife-electronics|new-groove|noisebug|patch-point|postmodular|pusherman-productions|robotspeak|rubadub|schlappi-engineering|signal-sounds-uk|signal-sounds-eu|schneidersladen|soundium|synthshop|technosynth|thonk|turnlab|whimsical-raps|wmdevices|zlob-modular|all --max-pages=100 --metadata-concurrency=6 --out=tmp/price-hub --modules=modules.json --min-score=${DEFAULT_PRICE_HUB_MATCH_CONFIG.scoreThresholds.reviewCandidate} --include-ignored-matches=false`);
   console.log('Omit --max-products for a full metadata/sitemap crawl. Use pnpm price-hub:refresh-local for crawl, sanity checks, and live import.');
   process.exit(0);
 }
@@ -192,8 +244,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch((error: unknown) => {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error(message);
+    console.error(readErrorMessage(error));
     process.exitCode = 1;
   });
 }
