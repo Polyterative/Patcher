@@ -5,13 +5,14 @@ import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 
 describe('PatchCreatorComponent', () => {
   function build(data: any = {}) {
-    const backend = {
-      get: {
-        currentUserRacks: jasmine.createSpy('currentUserRacks').and.returnValue(of([]))
-      },
-      add: {
-        patch: jasmine.createSpy('patch').and.returnValue(of({id: 1}))
-      }
+    const dataService = {
+      currentUserRacks$: jasmine.createSpy('currentUserRacks$').and.returnValue(of([])),
+      createPatch$: jasmine.createSpy('createPatch$').and.returnValue(of({id: 1}))
+    };
+    const analytics = {
+      capture: jasmine.createSpy('capture'),
+      identify: () => {},
+      reset: () => {}
     };
     const snackBar = {
       open: jasmine.createSpy('open').and.returnValue({
@@ -23,22 +24,21 @@ describe('PatchCreatorComponent', () => {
     };
     const component = new PatchCreatorComponent(
       snackBar as any,
-      backend as any,
       dialogRef as any,
-      data
-    ,
-      {capture: () => {}, identify: () => {}, reset: () => {}} as any
+      data,
+      analytics as any,
+      dataService as any
     );
-    return {component, backend, snackBar, dialogRef};
+    return {component, dataService, analytics, snackBar, dialogRef};
   }
   
   it('creates a patch and closes the dialog on save', () => {
-    const {component, backend, snackBar, dialogRef} = build();
+    const {component, dataService, snackBar, dialogRef} = build();
     component.fields.name.control.setValue('My Patch');
     
     component.save$.next();
     
-    expect(backend.add.patch).toHaveBeenCalledWith({name: 'My Patch', public: true});
+    expect(dataService.createPatch$).toHaveBeenCalledWith({name: 'My Patch', public: true});
     expect(snackBar.open).toHaveBeenCalledWith(
       '"My Patch" created and saved to your library.',
       undefined,
@@ -48,23 +48,23 @@ describe('PatchCreatorComponent', () => {
   });
   
   it('passes the selected privacy value when saving', () => {
-    const {component, backend} = build();
+    const {component, dataService} = build();
     component.fields.name.control.setValue('Private Patch');
     component.fields.public.control.setValue(false);
     
     component.save$.next();
     
-    expect(backend.add.patch).toHaveBeenCalledWith({name: 'Private Patch', public: false});
+    expect(dataService.createPatch$).toHaveBeenCalledWith({name: 'Private Patch', public: false});
   });
 
   it('includes linked_rack_id when a linked rack is selected', () => {
-    const {component, backend} = build();
+    const {component, dataService} = build();
     component.fields.name.control.setValue('Linked Patch');
     component.fields.linkedRack.control.setValue({id: '42', name: 'Studio Rack'});
 
     component.save$.next();
 
-    expect(backend.add.patch).toHaveBeenCalledWith({
+    expect(dataService.createPatch$).toHaveBeenCalledWith({
       name: 'Linked Patch',
       public: true,
       linked_rack_id: 42
@@ -77,16 +77,26 @@ describe('PatchCreatorComponent', () => {
     expect(component.fields.public.control.value).toBeTrue();
   });
 
+  it('captures the created patch id from the data service response', () => {
+    const {component, dataService, analytics} = build();
+    dataService.createPatch$.and.returnValue(of({data: [{id: 73}]}));
+    component.fields.name.control.setValue('Tracked Patch');
+
+    component.save$.next();
+
+    expect(analytics.capture).toHaveBeenCalledWith('patch.created', {patch_id: 73});
+  });
+
   it('loads the current user racks into linked rack options on init', () => {
-    const {component, backend} = build();
-    backend.get.currentUserRacks.and.returnValue(of([
+    const {component, dataService} = build();
+    dataService.currentUserRacks$.and.returnValue(of([
       {id: 7, name: 'Studio Rack'},
       {id: 11, name: 'Travel Case'}
     ]));
 
     component.ngOnInit();
 
-    expect(backend.get.currentUserRacks).toHaveBeenCalled();
+    expect(dataService.currentUserRacks$).toHaveBeenCalled();
     let options: { id: string; name: string }[] | undefined;
     component.linkedRackOptions$.subscribe(v => options = v).unsubscribe();
     expect(options).toEqual([
@@ -96,8 +106,8 @@ describe('PatchCreatorComponent', () => {
   });
 
   it('preselects the linked rack from dialog data when provided', () => {
-    const {component, backend} = build({linkedRackId: 11});
-    backend.get.currentUserRacks.and.returnValue(of([
+    const {component, dataService} = build({linkedRackId: 11});
+    dataService.currentUserRacks$.and.returnValue(of([
       {id: 7, name: 'Studio Rack'},
       {id: 11, name: 'Travel Case'}
     ]));
@@ -111,12 +121,12 @@ describe('PatchCreatorComponent', () => {
   });
   
   it('stops reacting to save after destroy', () => {
-    const {component, backend} = build();
+    const {component, dataService} = build();
     
     component.ngOnDestroy();
     component.save$.next();
     
-    expect(backend.add.patch).not.toHaveBeenCalled();
+    expect(dataService.createPatch$).not.toHaveBeenCalled();
   });
   
   it('initializes with a generated non-empty patch name', () => {
@@ -127,10 +137,10 @@ describe('PatchCreatorComponent', () => {
 
   it('blocks linked-rack selection when the environment cannot save linked racks yet', () => {
     spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
-    const {component, backend, dialogRef} = build();
+    const {component, dataService, dialogRef} = build();
     component.fields.name.control.setValue('Linked Patch');
     component.fields.linkedRack.control.setValue({id: '42', name: 'Studio Rack'});
-    backend.add.patch.and.returnValue(throwError(() => ({
+    dataService.createPatch$.and.returnValue(throwError(() => ({
       code: 'PGRST204',
       message: "Column 'linked_rack_id' of relation 'patches' does not exist"
     })));

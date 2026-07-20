@@ -203,13 +203,18 @@
   flex: 0 0 auto;
 }
 
+.patch-action-row--cool-visible {
+  opacity: 1;
+}
+
 @media (hover: hover) and (pointer: fine) {
   .parent > .opacizeOnHover {
     opacity: 0.2;
   }
 
-  .parent:hover > .opacizeOnHover {
-    opacity:            1;
+  .parent:hover > .opacizeOnHover,
+  .parent > .patch-action-row--cool-visible {
+    opacity: 1;
     -webkit-transition: opacity 125ms ease-in-out;
     -moz-transition:    opacity 125ms ease-in-out;
     -ms-transition:     opacity 125ms ease-in-out;

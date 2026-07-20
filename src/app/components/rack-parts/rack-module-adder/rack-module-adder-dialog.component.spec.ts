@@ -8,6 +8,7 @@ import {
   take
 } from 'rxjs/operators';
 import { RackModuleAdderDialogComponent } from './rack-module-adder-dialog.component';
+import { RackModuleAdderDataService } from './rack-module-adder-data.service';
 
 
 describe('RackModuleAdderDialogComponent', () => {
@@ -20,10 +21,8 @@ describe('RackModuleAdderDialogComponent', () => {
         onAction: () => action$.asObservable()
       })
     };
-    const backend = {
-      add: {
-        rackModule: jasmine.createSpy('rackModule').and.returnValue(of({}))
-      }
+    const rackModuleAdderDataService = {
+      addModuleToRack$: jasmine.createSpy('addModuleToRack$').and.returnValue(of({}))
     };
     const userAreaDataService = {
       rackData$: new BehaviorSubject<any[]>([
@@ -42,7 +41,7 @@ describe('RackModuleAdderDialogComponent', () => {
     
     const component = new RackModuleAdderDialogComponent(
       snackBar as any,
-      backend as any,
+      rackModuleAdderDataService as unknown as RackModuleAdderDataService,
       timeagoPipe as any,
       userAreaDataService as any,
       dialogRef as any,
@@ -53,7 +52,7 @@ describe('RackModuleAdderDialogComponent', () => {
     
     return {
       component,
-      backend,
+      rackModuleAdderDataService,
       snackBar,
       action$,
       userAreaDataService,
@@ -91,12 +90,12 @@ describe('RackModuleAdderDialogComponent', () => {
   });
   
   it('adds selected module to selected rack and closes dialog', () => {
-    const {component, backend, dialogRef} = build();
+    const {component, rackModuleAdderDataService, dialogRef} = build();
     component.fields.rack.control.patchValue({id: '2', name: 'New Rack'});
     
     component.saveRackedModule$.next();
     
-    expect(backend.add.rackModule).toHaveBeenCalledWith(77, '2');
+    expect(rackModuleAdderDataService.addModuleToRack$).toHaveBeenCalledWith(77, '2');
     expect(dialogRef.close).toHaveBeenCalled();
   });
   

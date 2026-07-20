@@ -11,7 +11,7 @@ import { TimeagoModule } from 'ngx-timeago';
 import { PatchConnectionModule } from 'src/app/components/patch-connection/patch-connection.module';
 import { PatchCreatorComponent } from 'src/app/components/patch-parts/patch-creator/patch-creator.component';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
-import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
+import { RACK_DETAIL_DATA_PROVIDERS } from 'src/app/components/rack-parts/rack-detail-data.service';
 import { PatchDetailsComponent } from 'src/app/components/patch-parts/patch-details/patch-details.component';
 import { PatchEditorComponent } from 'src/app/components/patch-parts/patch-editor/patch-editor.component';
 import { PatchMinimalComponent } from 'src/app/components/patch-parts/patch-minimal/patch-minimal.component';
@@ -77,7 +77,7 @@ import { CoolButtonComponent } from 'src/app/components/shared-atoms/cool-button
     PatchConnectionStatsPipe,
     PatchConnectionUniqueModulesPipe
   ],
-  providers:    [PatchDetailDataService, RackDetailDataService],
+  providers:    [PatchDetailDataService, ...RACK_DETAIL_DATA_PROVIDERS],
   imports: [
     CommonModule,
     ConfirmDialogModule,

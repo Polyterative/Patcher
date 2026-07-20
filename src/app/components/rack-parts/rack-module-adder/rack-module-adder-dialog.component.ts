@@ -21,12 +21,9 @@ import {
   share,
   startWith,
   exhaustMap,
-  switchMap,
   takeUntil,
 } from 'rxjs/operators';
-import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area-data.service';
-import { DbModule } from 'src/app/models/module';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import {
@@ -40,6 +37,7 @@ import {
   RackModuleAdderOutModel
 } from './rack-module-adder-dialog.types';
 import { normalizeSupabaseUtcTimestamp } from 'src/app/shared-interproject/pipes/supabase-utc-timestamp.pipe';
+import { RackModuleAdderDataService } from './rack-module-adder-data.service';
 
 export type { RackModuleAdderInModel, RackModuleAdderOutModel };
 
@@ -49,6 +47,7 @@ export type { RackModuleAdderInModel, RackModuleAdderOutModel };
   styleUrls: ['./rack-module-adder-dialog.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
+    RackModuleAdderDataService,
     UserAreaDataService,
     TimeagoPipe
   ],
@@ -78,7 +77,7 @@ export class RackModuleAdderDialogComponent extends SubManager implements OnInit
   
   constructor(
     public snackBar: MatSnackBar,
-    public backend: SupabaseService,
+    private readonly rackModuleAdderDataService: RackModuleAdderDataService,
     public timeagoPipe: TimeagoPipe,
     public userAreaDataService: UserAreaDataService,
     public dialogRef: MatDialogRef<RackModuleAdderDialogComponent, RackModuleAdderOutModel>,
@@ -102,7 +101,7 @@ export class RackModuleAdderDialogComponent extends SubManager implements OnInit
     
       this.saveRackedModule$
         .pipe(
-          exhaustMap(() => this.backend.add.rackModule(
+          exhaustMap(() => this.rackModuleAdderDataService.addModuleToRack$(
             this.data.module.id,
             this.fields.rack.control.value.id
           )),

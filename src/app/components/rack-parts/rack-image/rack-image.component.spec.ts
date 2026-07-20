@@ -8,6 +8,10 @@ import {
   RackImageComponent
 } from './rack-image.component';
 import { Rack } from 'src/app/models/rack';
+import { RackImageDataService } from './rack-image-data.service';
+import { environment } from 'src/environments/environment';
+
+const TEST_SUPABASE_URL = 'https://sozmatmywjpstwidzlss.supabase.co';
 
 function mockCdr(): ChangeDetectorRef {
   return { detectChanges: jasmine.createSpy('detectChanges') } as unknown as ChangeDetectorRef;
@@ -28,8 +32,22 @@ function makeRack(image?: string, updated = '2024-01-01'): Rack {
   } as unknown as Rack;
 }
 
+function buildComponent(cdr: ChangeDetectorRef): RackImageComponent {
+  return new RackImageComponent(cdr, new RackImageDataService());
+}
+
 describe('RackImageComponent', () => {
   let cdr: ChangeDetectorRef;
+  let previousSupabaseUrl: string;
+
+  beforeAll(() => {
+    previousSupabaseUrl = environment.supabase.url;
+    environment.supabase.url = TEST_SUPABASE_URL;
+  });
+
+  afterAll(() => {
+    environment.supabase.url = previousSupabaseUrl;
+  });
 
   beforeEach(() => {
     cdr = mockCdr();
@@ -37,48 +55,48 @@ describe('RackImageComponent', () => {
 
   describe('construction', () => {
     it('creates without error', () => {
-      expect(() => new RackImageComponent(cdr)).not.toThrow();
+      expect(() => buildComponent(cdr)).not.toThrow();
     });
 
     it('containImage defaults to true', () => {
-      const comp = new RackImageComponent(cdr);
+      const comp = buildComponent(cdr);
       expect(comp.containImage).toBeTrue();
     });
 
     it('sizeDivider defaults to 1.5', () => {
-      expect(new RackImageComponent(cdr).sizeDivider).toBe(1.5);
+      expect(buildComponent(cdr).sizeDivider).toBe(1.5);
     });
 
     it('filename is initially undefined', () => {
-      expect(new RackImageComponent(cdr).filename).toBeUndefined();
+      expect(buildComponent(cdr).filename).toBeUndefined();
     });
 
     it('imageLoadFailed defaults to false', () => {
-      expect(new RackImageComponent(cdr).imageLoadFailed).toBeFalse();
+      expect(buildComponent(cdr).imageLoadFailed).toBeFalse();
     });
 
     it('imageLoaded defaults to false', () => {
-      expect(new RackImageComponent(cdr).imageLoaded).toBeFalse();
+      expect(buildComponent(cdr).imageLoaded).toBeFalse();
     });
   });
 
   describe('ngOnInit', () => {
     it('sets filename from data.image when present', () => {
-      const comp = new RackImageComponent(cdr);
+      const comp = buildComponent(cdr);
       comp.data = makeRack('my-image.jpg');
       comp.ngOnInit();
       expect(comp.filename).toBe('my-image.jpg');
     });
 
     it('sets filename to undefined when data.image is absent', () => {
-      const comp = new RackImageComponent(cdr);
+      const comp = buildComponent(cdr);
       comp.data = makeRack(undefined);
       comp.ngOnInit();
       expect(comp.filename).toBeUndefined();
     });
 
     it('calls detectChanges', () => {
-      const comp = new RackImageComponent(cdr);
+      const comp = buildComponent(cdr);
       comp.data = makeRack();
       comp.ngOnInit();
       expect(cdr.detectChanges).toHaveBeenCalled();
@@ -87,23 +105,24 @@ describe('RackImageComponent', () => {
 
   describe('ngOnChanges', () => {
     it('sets filename from data.image when present', () => {
-      const comp = new RackImageComponent(cdr);
+      const comp = buildComponent(cdr);
       comp.data = makeRack('changed.jpg');
       comp.ngOnChanges();
       expect(comp.filename).toBe('changed.jpg');
     });
 
     it('sets filename to undefined when data.image is absent', () => {
-      const comp = new RackImageComponent(cdr);
+      const comp = buildComponent(cdr);
       comp.data = makeRack(undefined);
       comp.ngOnChanges();
       expect(comp.filename).toBeUndefined();
     });
 
     it('clears failed state when the image filename changes', () => {
-      const comp = new RackImageComponent(cdr);
+      const comp = buildComponent(cdr);
       comp.data = makeRack('old.jpg');
       comp.ngOnChanges();
+      comp.onPreviewLoadError();
       comp.onPreviewLoadError();
 
       comp.data = makeRack('new.jpg');
@@ -113,7 +132,7 @@ describe('RackImageComponent', () => {
     });
 
     it('clears loaded state when the image filename changes', () => {
-      const comp = new RackImageComponent(cdr);
+      const comp = buildComponent(cdr);
       comp.data = makeRack('old.jpg');
       comp.ngOnChanges();
       comp.onPreviewImageLoad();
@@ -127,7 +146,7 @@ describe('RackImageComponent', () => {
 
   describe('onPreviewImageLoad', () => {
     it('marks the preview as loaded', () => {
-      const comp = new RackImageComponent(cdr);
+      const comp = buildComponent(cdr);
       comp.onPreviewImageLoad();
       expect(comp.imageLoaded).toBeTrue();
     });
@@ -135,22 +154,59 @@ describe('RackImageComponent', () => {
 
   describe('onPreviewLoadError', () => {
     it('marks the preview as failed', () => {
-      const comp = new RackImageComponent(cdr);
+      const comp = buildComponent(cdr);
+      comp.data = makeRack('preview.jpg');
+      comp.ngOnChanges();
+      comp.onPreviewLoadError();
       comp.onPreviewLoadError();
       expect(comp.imageLoadFailed).toBeTrue();
     });
 
     it('does not keep the preview marked loaded', () => {
-      const comp = new RackImageComponent(cdr);
+      const comp = buildComponent(cdr);
+      comp.data = makeRack('preview.jpg');
+      comp.ngOnChanges();
       comp.onPreviewImageLoad();
       comp.onPreviewLoadError();
+      expect(comp.imageLoaded).toBeFalse();
+    });
+
+    it('uses the Cloudflare proxy image URL before any load failure', () => {
+      const comp = buildComponent(cdr);
+      comp.data = makeRack('preview.jpg');
+      comp.ngOnChanges();
+
+      expect(comp.previewImageSrc).toBe('https://images.patcher.xyz/racks/preview.jpg');
+    });
+
+    it('falls back to the direct Supabase storage URL on the first proxy image load failure', () => {
+      const comp = buildComponent(cdr);
+      comp.data = makeRack('preview.jpg');
+      comp.ngOnChanges();
+
+      comp.onPreviewLoadError();
+
+      expect(comp.useDirectStorageFallback).toBeTrue();
+      expect(comp.imageLoadFailed).toBeFalse();
+      expect(comp.previewImageSrc).toBe('https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/racks/preview.jpg');
+    });
+
+    it('marks the preview as failed only after the direct storage fallback also fails', () => {
+      const comp = buildComponent(cdr);
+      comp.data = makeRack('preview.jpg');
+      comp.ngOnChanges();
+
+      comp.onPreviewLoadError();
+      comp.onPreviewLoadError();
+
+      expect(comp.imageLoadFailed).toBeTrue();
       expect(comp.imageLoaded).toBeFalse();
     });
   });
 
   describe('requestPreviewUpdate', () => {
     it('keeps the update click from following the rack link', () => {
-      const comp = new RackImageComponent(cdr);
+      const comp = buildComponent(cdr);
       const emitSpy = jasmine.createSpy('updatePreviewClick');
       const event = {
         preventDefault: jasmine.createSpy('preventDefault'),
@@ -199,7 +255,7 @@ describe('RackImageComponent', () => {
     });
 
     it('surfaces stale previews when the preview is updateable even after a load failure', () => {
-      const comp = new RackImageComponent(cdr);
+      const comp = buildComponent(cdr);
       comp.data = makeRack('336_2026-05-1509-54-15073.jpeg', '2026-05-15T10:00:00Z');
       comp.canUpdatePreview = true;
       comp.ngOnChanges();
@@ -207,11 +263,12 @@ describe('RackImageComponent', () => {
       expect(comp.isStale).toBeTrue();
 
       comp.onPreviewLoadError();
+      comp.onPreviewLoadError();
       expect(comp.isStale).toBeTrue();
     });
 
     it('does not surface stale previews for missing, legacy, or invalid filenames', () => {
-      const comp = new RackImageComponent(cdr);
+      const comp = buildComponent(cdr);
       comp.canUpdatePreview = true;
 
       comp.data = makeRack(undefined, '2026-05-15T10:00:00Z');
@@ -255,6 +312,9 @@ describe('RackImageComponent', () => {
       const image = fixture.nativeElement.querySelector('img') as HTMLImageElement;
       image.dispatchEvent(new Event('error'));
       fixture.detectChanges();
+      const fallbackImage = fixture.nativeElement.querySelector('img') as HTMLImageElement;
+      fallbackImage.dispatchEvent(new Event('error'));
+      fixture.detectChanges();
 
       const fallback = fixture.nativeElement.querySelector('.rack-image-fallback');
       const staleButton = fixture.nativeElement.querySelector('.rackImage__staleBadge') as HTMLButtonElement;
@@ -274,6 +334,9 @@ describe('RackImageComponent', () => {
       const image = fixture.nativeElement.querySelector('img') as HTMLImageElement;
       image.dispatchEvent(new Event('error'));
       fixture.detectChanges();
+      const fallbackImage = fixture.nativeElement.querySelector('img') as HTMLImageElement;
+      fallbackImage.dispatchEvent(new Event('error'));
+      fixture.detectChanges();
 
       expect(fixture.nativeElement.querySelector('.rack-image-fallback')?.textContent).toContain('Preview unavailable');
       expect(fixture.nativeElement.querySelector('.rackImage__staleBadge')).toBeNull();
@@ -285,6 +348,14 @@ describe('RackImageComponent', () => {
 
       const frame = fixture.nativeElement.querySelector('.rackImage__frame') as HTMLElement;
       expect(Number.parseFloat(frame.style.minHeight)).toBeCloseTo(20 / comp.sizeDivider, 3);
+    });
+
+    it('does not send page referrers with proxied rack preview requests', () => {
+      fixture.detectChanges();
+
+      const image = fixture.nativeElement.querySelector('img') as HTMLImageElement;
+
+      expect(image.referrerPolicy).toBe('no-referrer');
     });
 
     it('keeps the preview image hidden until the bitmap load event', () => {
@@ -307,6 +378,9 @@ describe('RackImageComponent', () => {
       const image = fixture.nativeElement.querySelector('img') as HTMLImageElement;
 
       image.dispatchEvent(new Event('error'));
+      fixture.detectChanges();
+      const fallbackImage = fixture.nativeElement.querySelector('img') as HTMLImageElement;
+      fallbackImage.dispatchEvent(new Event('error'));
       fixture.detectChanges();
 
       expect(comp.imageLoaded).toBeFalse();

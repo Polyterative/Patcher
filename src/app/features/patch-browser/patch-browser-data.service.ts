@@ -23,6 +23,7 @@ import { PatchMinimal } from '../../models/patch';
 import { FormTypes } from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SubManager } from '../../shared-interproject/directives/subscription-manager';
 import { SupabaseService } from '../backend/supabase.service';
+import { recoverBrowserListRequest } from '../browser-data-recovery';
 
 
 export type PatchList = PatchMinimal[] | null;
@@ -154,14 +155,25 @@ export class PatchBrowserDataService extends SubManager {
           const take = this.serversideTableRequestData.take$.value;
           const filter = this.serversideTableRequestData.filter$.value;
           const [sortCol, sortDir] = this.serversideTableRequestData.sort$.value;
-          return this.backend.GET.patches(
-            skip,
-            (skip + take) - 1,
-            filter,
-            sortCol || null,
-            sortDir,
-            undefined,
-            skip === 0
+          const previousData = this.patchesList$.value ?? [];
+          const previousCount = this.serversideAdditionalData.itemsCount$.value ?? previousData.length;
+
+          return recoverBrowserListRequest(
+            () => this.backend.GET.patches(
+              skip,
+              (skip + take) - 1,
+              filter,
+              sortCol || null,
+              sortDir,
+              undefined,
+              skip === 0
+            ),
+            {
+              data: skip === 0 ? previousData : [],
+              count: previousCount
+            },
+            '[patch-browser] Failed to load patches list',
+            {beforeRetry: () => this.backend.cacheResetter$.next(['patches'])}
           );
         }),
         this.takeUntilDestroyed()
