@@ -51,7 +51,7 @@ export interface RouteClickableLink {
   icon?: string;
   href?: string;
   hrefNewTab?: boolean;
-  style?: { [param: string]: any };
+  style?: Record<string, string | number | null | undefined>;
 }
 
 export function getRouteClickableLinkKey(item: RouteClickableLink): string {

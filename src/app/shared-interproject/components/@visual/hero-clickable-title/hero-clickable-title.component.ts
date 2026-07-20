@@ -17,6 +17,6 @@ import { RouterModule } from '@angular/router';
   imports: [CommonModule, MatCardModule, RouterModule]
 })
 export class HeroClickableTitleComponent {
- @Input() link: string | any[] = undefined;
+ @Input() link: string | readonly unknown[] = undefined;
  @Input() textSize: number | undefined = undefined;
 }

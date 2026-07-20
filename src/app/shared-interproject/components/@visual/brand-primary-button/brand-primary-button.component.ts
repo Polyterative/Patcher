@@ -48,7 +48,7 @@ export class BrandPrimaryButtonComponent {
   @Input() theme: BrandPrimaryButtonTheme = 'primary';
   @Output() readonly click$ = new EventEmitter<void>();
   @Input() innerFlex: string = undefined;
-  @Input() routerLink: string | any[] = undefined;
+  @Input() routerLink: string | readonly unknown[] = undefined;
   @Input() fragment: string | undefined = undefined;
   @Input() autoFocus = false;
   @Input() icon: string | undefined = undefined;
