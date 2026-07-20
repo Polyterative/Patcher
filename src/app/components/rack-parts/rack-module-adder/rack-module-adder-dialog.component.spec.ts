@@ -1,5 +1,17 @@
 import {
+  MatDialog,
+  MatDialogRef
+} from '@angular/material/dialog';
+import {
+  MatSnackBar,
+  MatSnackBarRef,
+  TextOnlySnackBar
+} from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
+import { TimeagoPipe } from 'ngx-timeago';
+import {
   BehaviorSubject,
+  Observable,
   of,
   Subject
 } from 'rxjs';
@@ -9,44 +21,114 @@ import {
 } from 'rxjs/operators';
 import { RackModuleAdderDialogComponent } from './rack-module-adder-dialog.component';
 import { RackModuleAdderDataService } from './rack-module-adder-data.service';
+import {
+  RackModuleAdderInModel,
+  RackModuleAdderOutModel
+} from './rack-module-adder-dialog.types';
+import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area-data.service';
+import { DbModule } from 'src/app/models/module';
+import { Rack } from 'src/app/models/rack';
+
+interface Harness {
+  component: RackModuleAdderDialogComponent;
+  rackModuleAdderDataService: Pick<RackModuleAdderDataService, 'addModuleToRack$'>;
+  snackBar: jasmine.SpyObj<MatSnackBar>;
+  action$: Subject<void>;
+  userAreaDataService: Pick<UserAreaDataService, 'rackData$' | 'updateRackData$'>;
+  timeagoPipe: Pick<TimeagoPipe, 'transform'>;
+  dialogRef: jasmine.SpyObj<MatDialogRef<RackModuleAdderDialogComponent, RackModuleAdderOutModel>>;
+  router: jasmine.SpyObj<Router>;
+}
 
 
 describe('RackModuleAdderDialogComponent', () => {
   let createdComponents: RackModuleAdderDialogComponent[];
 
-  function build() {
+  function moduleFixture(overrides: Partial<DbModule> = {}): DbModule {
+    return {
+      id: 77,
+      name: 'Oscillator',
+      description: 'Module',
+      hp: 10,
+      public: true,
+      manufacturer: {id: 1, name: 'Maker'},
+      manufacturerId: 1,
+      standard: {id: 0, name: 'Eurorack'},
+      tags: [],
+      panels: [],
+      ins: [],
+      outs: [],
+      switches: [],
+      manualURL: '',
+      store_url: null,
+      additional: null,
+      isComplete: true,
+      isApproved: true,
+      isDIY: false,
+      powerPos12: null,
+      powerNeg12: null,
+      powerPos5: null,
+      depth: 0,
+      weight: 0,
+      created: '2024-01-01T00:00:00Z',
+      updated: '2024-01-01T00:00:00Z',
+      ...overrides
+    };
+  }
+
+  function rackFixture(overrides: Partial<Rack> = {}): Rack {
+    return {
+      id: 1,
+      name: 'Rack',
+      created: '2024-01-01T00:00:00Z',
+      updated: '2024-01-01T00:00:00Z',
+      hp: 84,
+      rows: 2,
+      public: true,
+      locked: false,
+      author: {id: 'u1', username: 'user'},
+      ...overrides
+    };
+  }
+
+  function build(): Harness {
     const action$ = new Subject<void>();
-    const snackBar = {
-      open: jasmine.createSpy('open').and.returnValue({
-        onAction: () => action$.asObservable()
-      })
+    const snackBarRef = {
+      onAction: () => action$.asObservable()
+    } as MatSnackBarRef<TextOnlySnackBar>;
+    const snackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
+    snackBar.open.and.returnValue(snackBarRef);
+    const rackModuleAdderDataService: Pick<RackModuleAdderDataService, 'addModuleToRack$'> = {
+      addModuleToRack$: jasmine.createSpy<(moduleId: number, rackId: string | number) => Observable<unknown>>('addModuleToRack$')
+        .and.returnValue(of({}))
     };
-    const rackModuleAdderDataService = {
-      addModuleToRack$: jasmine.createSpy('addModuleToRack$').and.returnValue(of({}))
-    };
-    const userAreaDataService = {
-      rackData$: new BehaviorSubject<any[]>([
-        {id: 1, name: 'Old Rack', hp: 84, rows: 2, updated: '2024-01-01T00:00:00Z'},
-        {id: 2, name: 'New Rack', hp: 104, rows: 3, updated: '2025-01-01T00:00:00Z'}
+    const updateRackData$ = new Subject<string | undefined>();
+    spyOn(updateRackData$, 'next').and.callThrough();
+    const userAreaDataService: Pick<UserAreaDataService, 'rackData$' | 'updateRackData$'> = {
+      rackData$: new BehaviorSubject<Rack[] | undefined>([
+        rackFixture({id: 1, name: 'Old Rack', hp: 84, rows: 2, updated: '2024-01-01T00:00:00Z'}),
+        rackFixture({id: 2, name: 'New Rack', hp: 104, rows: 3, updated: '2025-01-01T00:00:00Z'})
       ]),
-      updateRackData$: {next: jasmine.createSpy('updateRackData.next')}
+      updateRackData$
     };
-    const timeagoPipe = {
+    const timeagoPipe: Pick<TimeagoPipe, 'transform'> = {
       transform: jasmine.createSpy('transform').and.returnValue('recently')
     };
-    const dialogRef = {
-      close: jasmine.createSpy('close')
-    };
-    const router = jasmine.createSpyObj('Router', ['navigate']);
+    const dialogRef = jasmine.createSpyObj<MatDialogRef<RackModuleAdderDialogComponent, RackModuleAdderOutModel>>(
+      'MatDialogRef',
+      ['close']
+    );
+    const router = jasmine.createSpyObj<Router>('Router', ['navigate']);
+    const data: RackModuleAdderInModel = {module: moduleFixture()};
     
     const component = new RackModuleAdderDialogComponent(
-      snackBar as any,
+      snackBar,
       rackModuleAdderDataService as unknown as RackModuleAdderDataService,
-      timeagoPipe as any,
-      userAreaDataService as any,
-      dialogRef as any,
+      timeagoPipe as TimeagoPipe,
+      userAreaDataService as unknown as UserAreaDataService,
+      dialogRef,
       router,
-      {module: {id: 77, name: 'Oscillator'}} as any
+      data
     );
     createdComponents.push(component);
     
@@ -110,14 +192,15 @@ describe('RackModuleAdderDialogComponent', () => {
   });
   
   it('uses static open helper with expected dialog config', () => {
-    const dialog = jasmine.createSpyObj('MatDialog', ['open']);
-    const fakeRef = {} as any;
+    const dialog = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
+    const fakeRef = {} as MatDialogRef<RackModuleAdderDialogComponent, RackModuleAdderOutModel>;
+    const data: RackModuleAdderInModel = {module: moduleFixture({id: 1})};
     dialog.open.and.returnValue(fakeRef);
     
-    const result = RackModuleAdderDialogComponent.open(dialog as any, {module: {id: 1}} as any);
+    const result = RackModuleAdderDialogComponent.open(dialog, data);
     
     expect(dialog.open).toHaveBeenCalledWith(RackModuleAdderDialogComponent, {
-      data: {module: {id: 1}},
+      data,
       width: '70%',
       maxWidth: '40rem'
     });

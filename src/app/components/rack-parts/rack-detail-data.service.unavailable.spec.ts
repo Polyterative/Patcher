@@ -1,9 +1,63 @@
 import {
+  MatDialog,
+  MatDialogRef
+} from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
+import {
   BehaviorSubject,
+  Observable,
   of
 } from 'rxjs';
+import { AnalyticsService } from '../../features/backbone/analytics-integration/analytics.service';
+import {
+  SimpleUserModel,
+  SupabaseService
+} from '../../features/backend/supabase.service';
+import { UserManagementService } from '../../features/backbone/login/user-management.service';
+import { Rack } from '../../models/rack';
 import { RackDetailDataService } from './rack-detail-data.service';
 
+type RackLookupResponse = {data: Rack | null};
+type EmptyResponse = Record<string, never>;
+
+interface BackendDouble {
+  update: {
+    rack: jasmine.Spy<(rack: Rack) => Observable<{data: Array<{id: number}>}>>;
+    rackedModules: jasmine.Spy<() => Observable<EmptyResponse>>;
+    rackModulePanel: jasmine.Spy<() => Observable<EmptyResponse>>;
+  };
+  delete: {
+    rackedModule: jasmine.Spy<() => Observable<EmptyResponse>>;
+    modulesOfRack: jasmine.Spy<() => Observable<EmptyResponse>>;
+    commentsForRack: jasmine.Spy<() => Observable<EmptyResponse>>;
+    userRack: jasmine.Spy<() => Observable<EmptyResponse>>;
+  };
+  add: {
+    rackModule: jasmine.Spy<() => Observable<EmptyResponse>>;
+    rack: jasmine.Spy<() => Observable<{data: Array<{id: number}>}>>;
+    patch: jasmine.Spy<() => Observable<{data: Array<{id: number}>}>>;
+  };
+  get: {
+    rackedModules: jasmine.Spy<() => Observable<unknown[]>>;
+  };
+  GET: {
+    rackWithId: jasmine.Spy<(rackId: number) => Observable<RackLookupResponse>>;
+    publicRackWithId: jasmine.Spy<(rackId: number) => Observable<RackLookupResponse>>;
+  };
+  storage: {
+    uploadRackImage: jasmine.Spy<() => Observable<string>>;
+    deleteRackImage: jasmine.Spy<() => Observable<EmptyResponse>>;
+  };
+  auth: {
+    hasAdminRole$: jasmine.Spy<() => Observable<boolean>>;
+  };
+}
+
+interface Harness {
+  service: RackDetailDataService;
+  backend: BackendDouble;
+}
 
 /**
  * Regression specs for the "private rack opens to a blank page" bug.
@@ -24,73 +78,83 @@ import { RackDetailDataService } from './rack-detail-data.service';
 describe('RackDetailDataService — unavailable / blank-page regression', () => {
   let createdServices: RackDetailDataService[];
 
-  function rack(partial: any = {}) {
+  function rack(partial: Partial<Rack> = {}): Rack {
     return {
       id: 1,
       name: 'Rack',
+      created: '2024-01-01T00:00:00Z',
+      updated: '2024-01-01T00:00:00Z',
       rows: 2,
       hp: 84,
       public: true,
       locked: false,
       author: {id: 'u1', username: 'user'},
       ...partial
-    } as any;
+    };
   }
 
-  function build(options: {firstResponse?: any} = {}) {
-    const loggedUser$ = new BehaviorSubject<any>(undefined);
+  function build(options: {firstResponse?: RackLookupResponse} = {}): Harness {
+    const loggedUser$ = new BehaviorSubject<SimpleUserModel | undefined>(undefined);
 
     const firstResponse = 'firstResponse' in options
       ? options.firstResponse
       : {data: null};
 
-    const backend = {
+    const backend: BackendDouble = {
       update: {
-        rack: jasmine.createSpy('update.rack').and.returnValue(of({data: [{id: 1}]})),
-        rackedModules: jasmine.createSpy('update.rackedModules').and.returnValue(of({})),
-        rackModulePanel: jasmine.createSpy('update.rackModulePanel').and.returnValue(of({}))
+        rack: jasmine.createSpy<(rackToUpdate: Rack) => Observable<{data: Array<{id: number}>}>>('update.rack')
+          .and.returnValue(of({data: [{id: 1}]})),
+        rackedModules: jasmine.createSpy<() => Observable<EmptyResponse>>('update.rackedModules').and.returnValue(of({})),
+        rackModulePanel: jasmine.createSpy<() => Observable<EmptyResponse>>('update.rackModulePanel').and.returnValue(of({}))
       },
       delete: {
-        rackedModule: jasmine.createSpy('delete.rackedModule').and.returnValue(of({})),
-        modulesOfRack: jasmine.createSpy('delete.modulesOfRack').and.returnValue(of({})),
-        commentsForRack: jasmine.createSpy('delete.commentsForRack').and.returnValue(of({})),
-        userRack: jasmine.createSpy('delete.userRack').and.returnValue(of({}))
+        rackedModule: jasmine.createSpy<() => Observable<EmptyResponse>>('delete.rackedModule').and.returnValue(of({})),
+        modulesOfRack: jasmine.createSpy<() => Observable<EmptyResponse>>('delete.modulesOfRack').and.returnValue(of({})),
+        commentsForRack: jasmine.createSpy<() => Observable<EmptyResponse>>('delete.commentsForRack').and.returnValue(of({})),
+        userRack: jasmine.createSpy<() => Observable<EmptyResponse>>('delete.userRack').and.returnValue(of({}))
       },
       add: {
-        rackModule: jasmine.createSpy('add.rackModule').and.returnValue(of({})),
-        rack: jasmine.createSpy('add.rack').and.returnValue(of({data: [{id: 99}]})),
-        patch: jasmine.createSpy('add.patch').and.returnValue(of({data: [{id: 321}]}))
+        rackModule: jasmine.createSpy<() => Observable<EmptyResponse>>('add.rackModule').and.returnValue(of({})),
+        rack: jasmine.createSpy<() => Observable<{data: Array<{id: number}>}>>('add.rack')
+          .and.returnValue(of({data: [{id: 99}]})),
+        patch: jasmine.createSpy<() => Observable<{data: Array<{id: number}>}>>('add.patch')
+          .and.returnValue(of({data: [{id: 321}]}))
       },
       get: {
-        rackedModules: jasmine.createSpy('get.rackedModules').and.returnValue(of([]))
+        rackedModules: jasmine.createSpy<() => Observable<unknown[]>>('get.rackedModules').and.returnValue(of([]))
       },
       GET: {
-        rackWithId: jasmine.createSpy('GET.rackWithId').and.returnValue(of(firstResponse)),
-        publicRackWithId: jasmine.createSpy('GET.publicRackWithId').and.returnValue(of(firstResponse))
+        rackWithId: jasmine.createSpy<(rackId: number) => Observable<RackLookupResponse>>('GET.rackWithId')
+          .and.returnValue(of(firstResponse)),
+        publicRackWithId: jasmine.createSpy<(rackId: number) => Observable<RackLookupResponse>>('GET.publicRackWithId')
+          .and.returnValue(of(firstResponse))
       },
       storage: {
-        uploadRackImage: jasmine.createSpy('storage.uploadRackImage').and.returnValue(of('img.jpg')),
-        deleteRackImage: jasmine.createSpy('storage.deleteRackImage').and.returnValue(of({}))
+        uploadRackImage: jasmine.createSpy<() => Observable<string>>('storage.uploadRackImage').and.returnValue(of('img.jpg')),
+        deleteRackImage: jasmine.createSpy<() => Observable<EmptyResponse>>('storage.deleteRackImage').and.returnValue(of({}))
       },
       auth: {
-        hasAdminRole$: jasmine.createSpy('auth.hasAdminRole$').and.returnValue(of(false))
+        hasAdminRole$: jasmine.createSpy<() => Observable<boolean>>('auth.hasAdminRole$').and.returnValue(of(false))
       }
     };
+    const confirmDialogRef = {
+      afterClosed: () => of({answer: false})
+    } as MatDialogRef<unknown, {answer: boolean}>;
     const dialog = {
-      open: jasmine.createSpy('dialog.open').and.returnValue({
-        afterClosed: () => of({answer: false})
-      })
+      open: jasmine.createSpy('dialog.open').and.returnValue(confirmDialogRef)
     };
-    const snackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
-    const router = jasmine.createSpyObj('Router', ['navigate']);
+    const snackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
+    const router = jasmine.createSpyObj<Router>('Router', ['navigate']);
+    const analytics = jasmine.createSpyObj<AnalyticsService>('AnalyticsService', ['capture', 'identify', 'reset']);
+    const userService: Pick<UserManagementService, 'loggedUser$'> = {loggedUser$};
 
     const service = new RackDetailDataService(
       snackBar,
-      {loggedUser$} as any,
-      backend as any,
-      dialog as any,
+      userService as unknown as UserManagementService,
+      backend as unknown as SupabaseService,
+      dialog as unknown as MatDialog,
       router,
-      {capture: () => {}, identify: () => {}, reset: () => {}} as any
+      analytics
     );
     createdServices.push(service);
 
@@ -108,9 +172,7 @@ describe('RackDetailDataService — unavailable / blank-page regression', () => 
   it('exposes a rackDetailUnavailableMessage$ observable (mirrors patchDetailUnavailableMessage$)', () => {
     const {service} = build();
 
-    // Cast to any so the spec compiles before the fix lands; the test still
-    // fails meaningfully at runtime until the property exists.
-    const unavailable$ = (service as any).rackDetailUnavailableMessage$;
+    const unavailable$ = service.rackDetailUnavailableMessage$;
 
     expect(unavailable$)
       .withContext('RackDetailDataService should expose rackDetailUnavailableMessage$ ' +
@@ -126,7 +188,7 @@ describe('RackDetailDataService — unavailable / blank-page regression', () => 
 
     service.updateSingleRackData$.next(1018);
 
-    const unavailable$ = (service as any).rackDetailUnavailableMessage$;
+    const unavailable$ = service.rackDetailUnavailableMessage$;
     const value: unknown = unavailable$?.value;
 
     expect(value)
@@ -147,7 +209,7 @@ describe('RackDetailDataService — unavailable / blank-page regression', () => 
 
     service.updateSingleRackData$.next(1018);
 
-    const unavailable$ = (service as any).rackDetailUnavailableMessage$;
+    const unavailable$ = service.rackDetailUnavailableMessage$;
     expect(unavailable$?.value).withContext('precondition: message is set after a null fetch').toBeTruthy();
 
     // Next fetch succeeds — the stale "unavailable" must be cleared at request time
