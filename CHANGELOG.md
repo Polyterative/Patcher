@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.5.0](https://github.com/Polyterative/Patcher/compare/v6.4.3...v6.5.0) (2026-07-20)
+
+
+### Features
+
+* **backend:** add marketplace and media foundations ([343aa31](https://github.com/Polyterative/Patcher/commit/343aa31b387c5dfa23d59fb39c168cd160b34474))
+* **marketplace:** consolidate marketplace experiences ([1aec50b](https://github.com/Polyterative/Patcher/commit/1aec50b359b4b106109fa5ab3ba70991e49957af))
+* **media:** add staged R2 delivery support ([ee47a3d](https://github.com/Polyterative/Patcher/commit/ee47a3dd08718f66c38ceaf6516e584c9f4ef26c))
+* **price-hub:** consolidate store discovery automation ([711e520](https://github.com/Polyterative/Patcher/commit/711e5207e901b376e86e20f8bacd2753c1ef4ab2))
+
 ### [6.4.3](https://github.com/Polyterative/Patcher/compare/v6.4.2...v6.4.3) (2026-07-03)
 
 ### [6.4.2](https://github.com/Polyterative/Patcher/compare/v6.4.1...v6.4.2) (2026-07-03)
