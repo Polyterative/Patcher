@@ -3,7 +3,10 @@
  * (IDs 4647–4666 for 3U, 4711–4735 for Intellijel 1U) are excluded
  * from all rack statistics calculations.
  */
+import { MinimalManufacturer } from 'src/app/models/manufacturer';
 import { DbModule, RackedModule } from 'src/app/models/module';
+import { RackingData } from 'src/app/models/rack';
+import { Standard } from 'src/app/models/standard';
 import { BLANK_MODULE_IDS, isBlankModule } from './rack-blank-module.constants';
 import { TotalModulesOfRackPipe } from './total-modules-of-rack.pipe';
 import { TotalHpOfRackPipe } from './total-hp-of-rack.pipe';
@@ -13,8 +16,13 @@ import { TotalDepthOfRackPipe } from './total-depth-of-rack.pipe';
 import { TotalMissingPowerDataInRackPipe } from './total-missing-power-data-in-rack.pipe';
 
 
+type RackStatsRackingData = RackingData & { col: number };
+
+const TEST_MANUFACTURER: MinimalManufacturer = { id: 1, name: 'Test' };
+const TEST_STANDARD: Standard = { id: 0, name: '3U Eurorack' };
+
 function makeModule(id: number, overrides: Partial<DbModule> = {}): DbModule {
-  return {
+  const module: DbModule = {
     id,
     name: `Module ${id}`,
     hp: 4,
@@ -25,15 +33,16 @@ function makeModule(id: number, overrides: Partial<DbModule> = {}): DbModule {
     depth: 25,
     description: '',
     public: true,
-    manufacturer: { id: 1, name: 'Test', slug: 'test' } as any,
+    manufacturer: TEST_MANUFACTURER,
     manufacturerId: 1,
-    standard: { id: 0, name: '3U Eurorack' } as any,
+    standard: TEST_STANDARD,
     tags: [],
     panels: [],
     ins: [],
     outs: [],
     switches: [],
     manualURL: '',
+    store_url: null,
     additional: null,
     isComplete: true,
     isApproved: true,
@@ -41,13 +50,27 @@ function makeModule(id: number, overrides: Partial<DbModule> = {}): DbModule {
     created: '',
     updated: '',
     ...overrides
-  } as DbModule;
+  };
+
+  return module;
+}
+
+function makeRackingData(moduleid: number): RackStatsRackingData {
+  return {
+    id: 0,
+    rackid: 0,
+    moduleid,
+    row: 0,
+    column: 0,
+    col: 0,
+    selectedPanelId: null
+  };
 }
 
 function makeRackedModule(id: number, overrides: Partial<DbModule> = {}): RackedModule {
   return {
     module: makeModule(id, overrides),
-    rackingData: { id: 0, row: 0, col: 0 } as any
+    rackingData: makeRackingData(id)
   };
 }
 
@@ -177,7 +200,7 @@ describe('TotalPowerOfRackPipe', () => {
 
   it('should treat missing power data as zero draw', () => {
     const modules: RackedModule[][] = [[
-      makeRackedModule(REAL_MODULE_ID, { powerPos12: null as any, powerNeg12: null as any, powerPos5: null as any })
+      makeRackedModule(REAL_MODULE_ID, { powerPos12: null, powerNeg12: null, powerPos5: null })
     ]];
     expect(pipe.transform(modules)).toEqual([0, 0, 0]);
   });
@@ -231,7 +254,7 @@ describe('TotalMissingPowerDataInRackPipe', () => {
 
   it('should not count blanks as missing power data', () => {
     const modules: RackedModule[][] = [[
-      makeRackedModule(BLANK_3U_ID, { powerPos12: null as any, powerNeg12: null as any, powerPos5: null as any }),
+      makeRackedModule(BLANK_3U_ID, { powerPos12: null, powerNeg12: null, powerPos5: null }),
       makeRackedModule(REAL_MODULE_ID, { powerPos12: 10, powerNeg12: -5, powerPos5: 0 })
     ]];
     expect(pipe.transform(modules)).toBe(0);
@@ -239,8 +262,8 @@ describe('TotalMissingPowerDataInRackPipe', () => {
 
   it('should count non-blank modules with missing power data', () => {
     const modules: RackedModule[][] = [[
-      makeRackedModule(REAL_MODULE_ID, { powerPos12: null as any, powerNeg12: null as any, powerPos5: null as any }),
-      makeRackedModule(BLANK_3U_ID, { powerPos12: null as any, powerNeg12: null as any, powerPos5: null as any })
+      makeRackedModule(REAL_MODULE_ID, { powerPos12: null, powerNeg12: null, powerPos5: null }),
+      makeRackedModule(BLANK_3U_ID, { powerPos12: null, powerNeg12: null, powerPos5: null })
     ]];
     expect(pipe.transform(modules)).toBe(1);
   });
