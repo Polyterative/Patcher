@@ -2,13 +2,16 @@
 
 > **Rules for AI agents:**
 > 1. Read this file when the task is about the active in-flight feature or explicitly references the current plan.
-> 2. Keep it updated — check off steps, add discoveries.
-> 3. One feature at a time — archive to [COMPLETED.md](./COMPLETED.md) when done, then reset.
-> 4. This file owns implementation detail; `TODO.md` owns the backlog index **and the Approvals
->    ledger** (standing approvals, pending questions, denials), `plans/` owns per-task detail.
->    Do not keep an approval queue here — register gates in the TODO Approvals ledger.
+> 2. This file owns **only** the pointer to the active plan file and the live layer checklist.
+>    Every durable fact — validation notes, decisions, discoveries, acceptance evidence — goes
+>    directly into the linked `plans/<slug>.md`, so nothing needs migrating at archive time.
+> 3. One feature at a time — when done, add one line to [COMPLETED.md](./COMPLETED.md), move the
+>    plan to `plans/done/`, and reset this file to `_No active feature._` (bump `Updated:`).
+> 4. `TODO.md` owns the backlog index **and the Approvals ledger** (standing approvals, pending
+>    questions, denials). Do not keep an approval queue here — register gates there.
 > 5. **Every feature uses three layers** (MVP → Structural → Polish). Define all three before coding. Complete each layer before starting the next. Layout before interactions.
-> 6. **Append to the Decision log** for any non-obvious choice (library pick, data shape, fallback policy, scope cut). Future agents read this to avoid relitigating settled questions.
+> 6. **Append non-obvious choices to the plan file's Decision log** (library pick, data shape, fallback policy, scope cut) — not to this file.
+> 7. Bump the `Updated:` date whenever you touch this file. A stale date is lint-flagged.
 
 ---
 
@@ -29,9 +32,10 @@ notes and decisions live in the matching plan files (e.g.
 ## Empty template
 
 Copy this skeleton when a new feature becomes active; keep all three layers defined before coding.
+Validation notes and the Decision log live in the linked plan file, not here.
 
 ```markdown
-### <Feature name> (from plans/<slug>.md)
+### <Feature name> — plan: [plans/<slug>.md](./plans/<slug>.md)
 
 #### Layer 1 — MVP
 
@@ -44,8 +48,4 @@ Copy this skeleton when a new feature becomes active; keep all three layers defi
 #### Layer 3 — Polish
 
 - [ ] ...
-
-#### Validation notes
-
-#### Decision log
 ```

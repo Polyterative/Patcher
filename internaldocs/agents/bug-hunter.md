@@ -65,7 +65,7 @@ cheap-review pass. Hand confirmed fixes to `frontend-dev` on the `executor` tier
 
 ## Output contract
 
-A Markdown writeup in chat (and optionally appended to `internaldocs/workflow/CURRENT_FEATURE.md`):
+A Markdown writeup in chat (and optionally appended to the active plan file's Decision log):
 
 ```
 ## Bug: <one-line description>

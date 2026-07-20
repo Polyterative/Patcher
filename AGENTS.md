@@ -15,7 +15,7 @@ Load docs lazily — only what the task needs.
 - Read `internaldocs/workflow/CURRENT_FEATURE.md` only if the prompt continues in-flight feature work or references the active plan.
 - For small fixes, targeted refactors, or debugging, skip planning docs.
 - For more context, open `internaldocs/README.md` first, then the specific file(s) that match the task.
-- During feature work: keep agreed state in `CURRENT_FEATURE.md`; on completion, archive to `COMPLETED.md` and reset `CURRENT_FEATURE.md`.
+- During feature work: `CURRENT_FEATURE.md` holds only the active-plan pointer + live layer checklist; durable decisions/validation notes go in the task's `internaldocs/workflow/plans/<slug>.md`; on completion, archive to `COMPLETED.md` and reset `CURRENT_FEATURE.md`.
 - Approval gates live in the **Approvals ledger** inside `internaldocs/workflow/TODO.md` (standing approvals / pending questions / denials). Check it before declaring work blocked or re-asking the user; register new gates there.
 
 ## 3) Command policy

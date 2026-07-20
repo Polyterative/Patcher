@@ -27,7 +27,9 @@ Each plan file has:
 ## Lifecycle
 
 - **Open:** plan file lives directly under `plans/`.
-- **Active:** mirror the active plan into [`../CURRENT_FEATURE.md`](../CURRENT_FEATURE.md).
+- **Active:** point [`../CURRENT_FEATURE.md`](../CURRENT_FEATURE.md) at the plan (link + live
+  layer checklist only). Validation notes and Decision-log entries are written **in the plan
+  file**, never in `CURRENT_FEATURE.md`.
 - **Done:** move the file to `plans/done/<slug>.md`, add a one-line entry to
   [`../COMPLETED.md`](../COMPLETED.md) with the date, and remove the index entry
   from `../TODO.md`.

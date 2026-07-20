@@ -99,7 +99,7 @@ Use the `executor` tier (see [README.md](./README.md#model-tiers)) for normal co
    pending approvals, layering-baseline size, orphan docs).
 2. Reconcile a dirty working tree before selecting a task:
    - changes clearly belonging to a finished verified chunk → commit them under the normal rules
-   - changes belonging to in-flight work → note them in `CURRENT_FEATURE.md` and continue that work
+   - changes belonging to in-flight work → note them in the active plan file (`plans/<slug>.md`) and continue that work
    - unidentifiable changes → ask the user; never discard silently, never mix them into new work.
 3. Fix status drift: tasks marked `[~]` that are actually waiting on an approval become `[!]`
    with a matching line in the TODO Approvals ledger.
@@ -170,7 +170,7 @@ validation, verified commit.
     - re-read `TODO.md` and pick the next highest-priority actionable open item
     - skip held items, tasks blocked on credentials/secrets, and work requiring explicit Supabase RLS / migration approval
     - mark the selected TODO line `[~]`
-    - populate `CURRENT_FEATURE.md` with the selected task, plan link, status, timestamp, layer checklist, and Decision log entry explaining why it was picked
+    - populate `CURRENT_FEATURE.md` with the selected task, plan link, status, timestamp, and layer checklist; record the pick rationale in the plan file's Decision log
     - if no actionable product task exists, stage a **fallback work queue** chunk instead;
       reset `CURRENT_FEATURE.md` to `No active feature.` only when the fallback queue is also empty
 16. Complete workflow validation:

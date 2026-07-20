@@ -37,7 +37,7 @@ time. When a better model ships, update **only this table**.
 
 | Persona | Tier | Strategy | Output |
 | --- | --- | --- | --- |
-| [`planner.md`](./planner.md) | `deep-reasoning` | Use premium reasoning for cross-cutting plans where bad scope is expensive. | Plan in `internaldocs/workflow/CURRENT_FEATURE.md` |
+| [`planner.md`](./planner.md) | `deep-reasoning` | Use premium reasoning for cross-cutting plans where bad scope is expensive. | Plan in `workflow/plans/<slug>.md` + `CURRENT_FEATURE.md` pointer |
 | [`backend-plan-reviewer.md`](./backend-plan-reviewer.md) | `deep-reasoning` | Adversarially review backend/storage plans before approval so representation and migration mistakes are caught before code exists. | Plan findings + BLOCK / APPROVE verdict |
 | [`feature-notetaker.md`](./feature-notetaker.md) | `deep-reasoning` | Turn rough feature ideas into researched backlog plans with priority, roadmap fit, and coordinator-loop handoff. | One plan file in `workflow/plans/` + TODO line |
 | [`advisor.md`](./advisor.md) | `deep-reasoning` | Reserve premium reasoning for hard ambiguity, architecture tradeoffs, and second opinions. | Concise recommendation, no edits |
