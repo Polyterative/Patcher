@@ -18,10 +18,11 @@ export interface PanelAppearanceMetrics {
 }
 
 export type DecodedPanelImage = ImageBitmap | HTMLImageElement;
+export type ReleasablePanelImage = DecodedPanelImage | Pick<ImageBitmap, 'close'>;
 
 // --- CV comparison ---
 
-export function toComparableCv(cv: CV): {
+export function toComparableCv(cv: CV | null | undefined): {
   id: number;
   name: string;
   min: number | null;
@@ -159,7 +160,7 @@ export function loadImageElement(objectUrl: string): Promise<HTMLImageElement> {
   });
 }
 
-export function releaseDecodedPanelImage(image: DecodedPanelImage): void {
+export function releaseDecodedPanelImage(image: ReleasablePanelImage): void {
   if ('close' in image && typeof image.close === 'function') {
     image.close();
   }

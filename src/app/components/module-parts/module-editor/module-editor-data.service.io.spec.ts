@@ -1,40 +1,140 @@
 import {
   BehaviorSubject,
+  Observable,
   of
 } from 'rxjs';
 import {
   UntypedFormControl,
   UntypedFormGroup
 } from '@angular/forms';
-import { ModuleEditorDataService } from './module-editor-data.service';
+import { TestBed } from '@angular/core/testing';
+import { CV } from 'src/app/models/cv';
+import { DbModule } from 'src/app/models/module';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import { SupabaseStorageFile } from 'src/app/features/backend/supabase.types';
+import { Database } from 'src/backend/database.types';
+import {
+  FormCV,
+  ModuleEditorDataService
+} from './module-editor-data.service';
+
+type BackendResponse<T> = {
+  data: T;
+  error: null;
+};
+
+type ModulePanelInsert = Database['public']['Tables']['module_panels']['Insert'];
+type ModuleUpdate = (data: Partial<DbModule>) => Observable<BackendResponse<null>>;
+type ModuleInsOutsUpdate = (moduleId: number, ins: CV[], outs: CV[]) => Observable<BackendResponse<CV[]>>;
+type UploadModulePanel = (
+  file: SupabaseStorageFile,
+  filenameAndExtension: string,
+  contentType?: string
+) => Observable<string>;
+type AddPanel = (data: ModulePanelInsert[]) => Observable<BackendResponse<ModulePanelInsert[]>>;
+
+type ModuleUpdateSpy = jasmine.Spy<ModuleUpdate>;
+type ModuleInsOutsUpdateSpy = jasmine.Spy<ModuleInsOutsUpdate>;
+type UploadModulePanelSpy = jasmine.Spy<UploadModulePanel>;
+type AddPanelSpy = jasmine.Spy<AddPanel>;
+
+interface ModuleEditorBackendDouble {
+  update: {
+    module: ModuleUpdateSpy;
+    moduleINsOUTs: ModuleInsOutsUpdateSpy;
+  };
+  storage: {
+    uploadModulePanel: UploadModulePanelSpy;
+  };
+  add: {
+    panel: AddPanelSpy;
+  };
+}
+
+function backendResponse<T>(data: T): BackendResponse<T> {
+  return {
+    data,
+    error: null
+  };
+}
+
+function makeDbModule(partial: Partial<DbModule> = {}): DbModule {
+  return {
+    id: 1,
+    name: 'Test Module',
+    hp: 4,
+    ins: [],
+    outs: [],
+    switches: [],
+    manualURL: '',
+    store_url: null,
+    additional: null,
+    isComplete: false,
+    isApproved: false,
+    isDIY: false,
+    powerPos12: 0,
+    powerNeg12: 0,
+    powerPos5: 0,
+    depth: 0,
+    weight: 0,
+    public: true,
+    manufacturer: {id: 1, name: 'Test Manufacturer'},
+    manufacturerId: 1,
+    standard: {id: 1, name: '3U'},
+    tags: [],
+    panels: [],
+    description: '',
+    created: '',
+    updated: '',
+    ...partial
+  };
+}
+
+function makeBackendDouble(): ModuleEditorBackendDouble {
+  return {
+    update: {
+      module: jasmine
+        .createSpy<ModuleUpdate>('update.module')
+        .and.returnValue(of(backendResponse(null))),
+      moduleINsOUTs: jasmine
+        .createSpy<ModuleInsOutsUpdate>('update.moduleINsOUTs')
+        .and.returnValue(of(backendResponse([])))
+    },
+    storage: {
+      uploadModulePanel: jasmine
+        .createSpy<UploadModulePanel>('storage.uploadModulePanel')
+        .and.returnValue(of('panel-db.jpg'))
+    },
+    add: {
+      panel: jasmine
+        .createSpy<AddPanel>('add.panel')
+        .and.returnValue(of(backendResponse([])))
+    }
+  };
+}
 
 
 describe('ModuleEditorDataService I/O branches', () => {
   let service: ModuleEditorDataService;
-  let backend: any;
+  let backend: ModuleEditorBackendDouble;
   
   beforeEach(() => {
-    backend = {
-      update: {
-        module: jasmine.createSpy('update.module').and.returnValue(of({})),
-        moduleINsOUTs: jasmine.createSpy('update.moduleINsOUTs').and.returnValue(of({}))
-      },
-      storage: {
-        uploadModulePanel: jasmine.createSpy('storage.uploadModulePanel').and.returnValue(of('panel-db.jpg'))
-      },
-      add: {
-        panel: jasmine.createSpy('add.panel').and.returnValue(of({}))
-      }
-    };
-    service = new ModuleEditorDataService(backend as any);
+    backend = makeBackendDouble();
+    TestBed.configureTestingModule({
+      providers: [
+        ModuleEditorDataService,
+        {provide: SupabaseService, useValue: backend}
+      ]
+    });
+    service = TestBed.inject(ModuleEditorDataService);
   });
   
   it('rebuilds CV controls and publishes container value', () => {
     const group = new UntypedFormGroup({
       old: new UntypedFormControl('old')
     });
-    const subject = new BehaviorSubject<any[]>([]);
-    const cvs = [
+    const subject = new BehaviorSubject<FormCV[]>([]);
+    const cvs: FormCV[] = [
       {
         id: 0,
         isApproved: false,
@@ -51,14 +151,14 @@ describe('ModuleEditorDataService I/O branches', () => {
       }
     ];
     
-    service.updateFormGroupAndContainer(cvs as any, group, subject as any);
+    service.updateFormGroupAndContainer(cvs, group, subject);
     
     expect(group.contains('old')).toBeFalse();
     expect(group.contains('name0')).toBeTrue();
     expect(group.contains('a0')).toBeTrue();
     expect(group.contains('b0')).toBeTrue();
     expect(group.contains('name1')).toBeFalse();
-    expect(subject.value).toEqual(cvs as any);
+    expect(subject.value).toEqual(cvs);
   });
   
   it('touchModule$ delegates to backend update.module', () => {
@@ -68,12 +168,12 @@ describe('ModuleEditorDataService I/O branches', () => {
 
   it('queues a module power update with the entered rail values', () => {
     service.buildPersistPlan({
-      module: {
+      module: makeDbModule({
         id: 17,
         name: 'Power Test',
-        manufacturer: {name: 'Acme'},
-        standard: {name: '3U'}
-      } as any,
+        manufacturer: {id: 1, name: 'Acme'},
+        standard: {id: 1, name: '3U'}
+      }),
       pendingState: {
         ins: [],
         outs: [],
@@ -102,19 +202,15 @@ describe('ModuleEditorDataService I/O branches', () => {
   });
   
   it('creates and executes panel-save operation when panel file exists', (done) => {
-    const file = {
-      name: 'frontpanel',
-      type: 'image/png',
-      arrayBuffer: () => Promise.resolve(new ArrayBuffer(4))
-    } as any as File;
+    const file = new File([new Uint8Array([0, 0, 0, 0])], 'frontpanel', {type: 'image/png'});
     
     const result = service.buildPersistPlan({
-      module: {
+      module: makeDbModule({
         id: 7,
         name: 'My Module',
-        manufacturer: {name: 'Acme Co'},
-        standard: {name: '3U'}
-      } as any,
+        manufacturer: {id: 1, name: 'Acme Co'},
+        standard: {id: 1, name: '3U'}
+      }),
       pendingState: {
         ins: [],
         outs: [],
@@ -157,12 +253,12 @@ describe('ModuleEditorDataService I/O branches', () => {
   
   it('panel operation is a no-op when file is missing', (done) => {
     const result = service.buildPersistPlan({
-      module: {
+      module: makeDbModule({
         id: 7,
         name: 'My Module',
-        manufacturer: {name: 'Acme Co'},
-        standard: {name: '3U'}
-      } as any,
+        manufacturer: {id: 1, name: 'Acme Co'},
+        standard: {id: 1, name: '3U'}
+      }),
       pendingState: {
         ins: [],
         outs: [],
@@ -192,16 +288,18 @@ describe('ModuleEditorDataService I/O branches', () => {
   });
 
   it('queues IN/OUT persistence and reports the saved section', () => {
+    const ins: CV[] = [{id: 1, name: 'In', min: 0, max: 5, isApproved: false}];
+    const outs: CV[] = [{id: 2, name: 'Out', min: -5, max: 5, isApproved: false}];
     const result = service.buildPersistPlan({
-      module: {
+      module: makeDbModule({
         id: 7,
         name: 'Signal Module',
-        manufacturer: {name: 'Acme Co'},
-        standard: {name: '3U'}
-      } as any,
+        manufacturer: {id: 1, name: 'Acme Co'},
+        standard: {id: 1, name: '3U'}
+      }),
       pendingState: {
-        ins: [{id: 1, name: 'In', min: 0, max: 5, isApproved: false}],
-        outs: [{id: 2, name: 'Out', min: -5, max: 5, isApproved: false}],
+        ins,
+        outs,
         shouldSaveInsOuts: true,
         shouldSavePower: false,
         shouldSavePhysical: false,
@@ -222,8 +320,8 @@ describe('ModuleEditorDataService I/O branches', () => {
     expect(result.operations.length).toBe(1);
     expect(backend.update.moduleINsOUTs).toHaveBeenCalledWith(
       7,
-      [{id: 1, name: 'In', min: 0, max: 5, isApproved: false}],
-      [{id: 2, name: 'Out', min: -5, max: 5, isApproved: false}]
+      ins,
+      outs
     );
     expect(backend.update.module).not.toHaveBeenCalled();
     expect(backend.storage.uploadModulePanel).not.toHaveBeenCalled();
