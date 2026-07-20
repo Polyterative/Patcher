@@ -1,27 +1,152 @@
 import {
   firstValueFrom,
+  Observable,
   of,
   Subject,
   throwError
 } from 'rxjs';
 import { filter, take } from 'rxjs/operators';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialogRef } from '@angular/material/dialog';
 import { MinimalModule } from 'src/app/models/module';
+import { RackMinimal } from 'src/app/models/rack';
+import { SimpleUserModel } from 'src/app/features/backend/supabase.types';
 import { FileDragHostService } from 'src/app/shared-interproject/components/@smart/file-drag-host/file-drag-host.service';
+import {
+  AnalyticsService
+} from 'src/app/features/backbone/analytics-integration/analytics.service';
+import {
+  ModuleCollectionAnalysisService,
+  RackAnalysis,
+} from '../module-collection-analysis.service';
 import {
   RackCreatorComponent,
   RACK_CREATOR_IMPORT_DIALOG_WIDTH,
   RACK_CREATOR_MANUAL_DIALOG_WIDTH
 } from './rack-creator.component';
 import { STANDARDS } from '../module-collection-analysis.service';
-import { ModularGridMatchPreview } from './modulargrid-import/modulargrid-import.types';
-import { RackCreatorCreateResult } from './rack-creator-data.service';
+import {
+  ModularGridMatchPreview,
+  ModularGridRackModulePlacement,
+  ModularGridSourceModule
+} from './modulargrid-import/modulargrid-import.types';
+import {
+  RackCreatorCreateResult,
+  RackCreatorDataService
+} from './rack-creator-data.service';
+import {
+  RackCreatorInModel,
+  RackCreatorOutModel
+} from './rack-creator.types';
 
 
 describe('RackCreatorComponent', () => {
   let createdComponents: RackCreatorComponent[];
 
-  function makeFileDragHostService(snackBar: {open: jasmine.Spy}): FileDragHostService {
+  const TEST_TIMESTAMP = '2026-01-01T00:00:00.000Z';
+
+  type RackCreatorRackDraft = Omit<RackMinimal, 'author' | 'created' | 'updated' | 'id'>;
+  type SnackBarOpen = (
+    message: string,
+    action?: string,
+    config?: {duration?: number}
+  ) => {onAction: () => Observable<void>};
+
+  interface SnackBarDouble {
+    open: jasmine.Spy<SnackBarOpen>;
+  }
+
+  interface DialogRefDouble {
+    close: jasmine.Spy<(result?: RackCreatorOutModel) => void>;
+    updateSize: jasmine.Spy<(width?: string, height?: string) => void>;
+  }
+
+  interface ModuleCollectionAnalysisServiceDouble
+    extends Pick<ModuleCollectionAnalysisService, 'analyzeRackConfiguration'> {
+    analyzeRackConfiguration: jasmine.Spy<ModuleCollectionAnalysisService['analyzeRackConfiguration']>;
+  }
+
+  interface AnalyticsServiceDouble extends Pick<AnalyticsService, 'capture' | 'identify' | 'reset'> {
+    capture: jasmine.Spy<AnalyticsService['capture']>;
+    identify: jasmine.Spy<AnalyticsService['identify']>;
+    reset: jasmine.Spy<AnalyticsService['reset']>;
+  }
+
+  interface RackCreatorDataServiceDouble
+    extends Pick<RackCreatorDataService,
+      'getUserSession$' | 'loadModuleCatalogue$' | 'createRack$' | 'createRackWithPlacements$'> {
+    getUserSession$: jasmine.Spy<() => Observable<SimpleUserModel | null>>;
+    loadModuleCatalogue$: jasmine.Spy<(
+      fallbackModules: MinimalModule[],
+      sourceModules?: ModularGridSourceModule[]
+    ) => Observable<MinimalModule[]>>;
+    createRack$: jasmine.Spy<(rackDraft: RackCreatorRackDraft) => Observable<RackCreatorCreateResult>>;
+    createRackWithPlacements$: jasmine.Spy<(
+      rackDraft: RackCreatorRackDraft,
+      placements: ModularGridRackModulePlacement[]
+    ) => Observable<RackCreatorCreateResult>>;
+  }
+
+  function simpleUserFixture(id = 'user-1'): SimpleUserModel {
+    return {
+      id,
+      email: `${ id }@example.test`,
+      created_at: TEST_TIMESTAMP,
+      updated_at: TEST_TIMESTAMP
+    };
+  }
+
+  function standardName(standardId: number): string {
+    if (standardId === STANDARDS.INTELLIJEL_1U.id) {
+      return STANDARDS.INTELLIJEL_1U.name;
+    }
+    if (standardId === STANDARDS.PULPLOGIC_1U.id) {
+      return STANDARDS.PULPLOGIC_1U.name;
+    }
+    return STANDARDS.EURORACK_3U.name;
+  }
+
+  function moduleFixture(
+    id: number,
+    name = `Module ${ id }`,
+    hp = 8,
+    standardId: number = STANDARDS.EURORACK_3U.id
+  ): MinimalModule {
+    return {
+      id,
+      name,
+      description: '',
+      hp,
+      public: true,
+      manufacturer: {
+        id: 1,
+        name: 'Fixture Maker'
+      },
+      manufacturerId: 1,
+      standard: {
+        id: standardId,
+        name: standardName(standardId)
+      },
+      tags: [],
+      panels: [],
+      created: TEST_TIMESTAMP,
+      updated: TEST_TIMESTAMP
+    };
+  }
+
+  function rackAnalysisFixture(overrides: Partial<RackAnalysis> = {}): RackAnalysis {
+    return {
+      totalCapacity: 84,
+      moduleCount: 1,
+      totalModulesHp: 8,
+      utilizationPercent: 10,
+      recommendation: '',
+      standardAnalyses: [],
+      ...overrides
+    };
+  }
+
+  function makeFileDragHostService(snackBar: SnackBarDouble): FileDragHostService {
     const service = new FileDragHostService(snackBar as unknown as MatSnackBar);
     spyOn(service.removeAllFiles$, 'emit').and.callThrough();
     return service;
@@ -79,42 +204,55 @@ describe('RackCreatorComponent', () => {
     };
   }
 
-  function build(user: any = {id: 'user-1'}, userModules: any[] = []) {
-    const dataService = {
-      getUserSession$: jasmine.createSpy('getUserSession$').and.returnValue(of(user)),
-      loadModuleCatalogue$: jasmine.createSpy('loadModuleCatalogue$').and.returnValue(of(userModules)),
-      createRack$: jasmine.createSpy('createRack$').and.returnValue(of({
+  function build(user: SimpleUserModel | null = simpleUserFixture(), userModules: MinimalModule[] = []) {
+    const dataService: RackCreatorDataServiceDouble = {
+      getUserSession$: jasmine.createSpy<() => Observable<SimpleUserModel | null>>('getUserSession$')
+        .and.returnValue(of(user)),
+      loadModuleCatalogue$: jasmine.createSpy<(
+        fallbackModules: MinimalModule[],
+        sourceModules?: ModularGridSourceModule[]
+      ) => Observable<MinimalModule[]>>('loadModuleCatalogue$').and.returnValue(of(userModules)),
+      createRack$: jasmine.createSpy<(rackDraft: RackCreatorRackDraft) => Observable<RackCreatorCreateResult>>('createRack$').and.returnValue(of({
         rackId: 1,
         placementSummary: {placed: 0, failed: 0}
       })),
-      createRackWithPlacements$: jasmine.createSpy('createRackWithPlacements$').and.returnValue(of({
+      createRackWithPlacements$: jasmine.createSpy<(
+        rackDraft: RackCreatorRackDraft,
+        placements: ModularGridRackModulePlacement[]
+      ) => Observable<RackCreatorCreateResult>>('createRackWithPlacements$').and.returnValue(of({
         rackId: 1,
         placementSummary: {placed: 1, failed: 0}
       }))
     };
-    const snackBar = {
-      open: jasmine.createSpy('open').and.returnValue({
+    const snackBar: SnackBarDouble = {
+      open: jasmine.createSpy<SnackBarOpen>('open').and.returnValue({
         onAction: () => of(undefined)
       })
     };
-    const dialogRef = {
-      close: jasmine.createSpy('close'),
-      updateSize: jasmine.createSpy('updateSize')
+    const dialogRef: DialogRefDouble = {
+      close: jasmine.createSpy<(result?: RackCreatorOutModel) => void>('close'),
+      updateSize: jasmine.createSpy<(width?: string, height?: string) => void>('updateSize')
     };
-    const moduleCollectionAnalysisService = {
-      analyzeRackConfiguration: jasmine.createSpy('analyzeRackConfiguration').and.returnValue({
-        moduleCount: 1
-      })
+    const moduleCollectionAnalysisService: ModuleCollectionAnalysisServiceDouble = {
+      analyzeRackConfiguration: jasmine.createSpy<ModuleCollectionAnalysisService['analyzeRackConfiguration']>(
+        'analyzeRackConfiguration'
+      ).and.returnValue(rackAnalysisFixture())
+    };
+    const analytics: AnalyticsServiceDouble = {
+      capture: jasmine.createSpy<AnalyticsService['capture']>('capture'),
+      identify: jasmine.createSpy<AnalyticsService['identify']>('identify'),
+      reset: jasmine.createSpy<AnalyticsService['reset']>('reset')
     };
     const fileDragHostService = makeFileDragHostService(snackBar);
+    const dialogData: RackCreatorInModel = {userModules};
     
     const component = new RackCreatorComponent(
-      snackBar as any,
-      dialogRef as any,
-      {userModules} as any,
-      moduleCollectionAnalysisService as any,
-      {capture: () => {}, identify: () => {}, reset: () => {}} as any,
-      dataService as any,
+      snackBar as unknown as MatSnackBar,
+      dialogRef as unknown as MatDialogRef<RackCreatorComponent, RackCreatorOutModel>,
+      dialogData,
+      moduleCollectionAnalysisService as unknown as ModuleCollectionAnalysisService,
+      analytics as unknown as AnalyticsService,
+      dataService as unknown as RackCreatorDataService,
       fileDragHostService
     );
     createdComponents.push(component);
@@ -139,22 +277,22 @@ describe('RackCreatorComponent', () => {
   
   it('filters out small 1U formats from rack analysis input', (done) => {
     const modules = [
-      {id: 1, standard: {id: STANDARDS.EURORACK_3U.id}, hp: 8},
-      {id: 2, standard: {id: STANDARDS.INTELLIJEL_1U.id}, hp: 4},
-      {id: 3, standard: {id: STANDARDS.PULPLOGIC_1U.id}, hp: 4}
+      moduleFixture(1, '3U Module', 8, STANDARDS.EURORACK_3U.id),
+      moduleFixture(2, 'Intellijel Module', 4, STANDARDS.INTELLIJEL_1U.id),
+      moduleFixture(3, 'Pulp Logic Module', 4, STANDARDS.PULPLOGIC_1U.id)
     ];
-    const {component, moduleCollectionAnalysisService} = build({id: 'u1'}, modules);
+    const {component, moduleCollectionAnalysisService} = build(simpleUserFixture('u1'), modules);
     
     component.rackAnalysis$.subscribe(() => {
       expect(moduleCollectionAnalysisService.analyzeRackConfiguration).toHaveBeenCalled();
-      const args = moduleCollectionAnalysisService.analyzeRackConfiguration.calls.mostRecent().args;
-      expect(args[2].map((m: any) => m.id)).toEqual([1]);
+      const analyzedModules = moduleCollectionAnalysisService.analyzeRackConfiguration.calls.mostRecent().args[2] ?? [];
+      expect(analyzedModules.map(module => module.id)).toEqual([1]);
       done();
     });
   });
   
   it('creates a rack and closes dialog when save is triggered for logged user', () => {
-    const {component, dataService, dialogRef} = build({id: 'u1'}, []);
+    const {component, dataService, dialogRef} = build(simpleUserFixture('u1'), []);
     component.fields.name.control.setValue('My Rack');
     component.fields.hp.control.setValue(84);
     component.fields.rows.control.setValue(3);
@@ -172,7 +310,7 @@ describe('RackCreatorComponent', () => {
   });
 
   it('marks creation in progress, disables create, and blocks duplicate manual saves', async () => {
-    const {component, dataService, dialogRef} = build({id: 'u1'}, []);
+    const {component, dataService, dialogRef} = build(simpleUserFixture('u1'), []);
     const createRack$ = new Subject<RackCreatorCreateResult>();
     dataService.createRack$.and.returnValue(createRack$);
     component.fields.name.control.setValue('My Rack');
@@ -201,7 +339,7 @@ describe('RackCreatorComponent', () => {
   });
 
   it('clears creation progress and allows retry when manual create fails', async () => {
-    const {component, dataService, dialogRef, snackBar} = build({id: 'u1'}, []);
+    const {component, dataService, dialogRef, snackBar} = build(simpleUserFixture('u1'), []);
     const failedCreate$ = new Subject<RackCreatorCreateResult>();
     const retryCreate$ = new Subject<RackCreatorCreateResult>();
     dataService.createRack$.and.returnValues(failedCreate$, retryCreate$);
@@ -233,19 +371,19 @@ describe('RackCreatorComponent', () => {
   });
 
   it('defaults new racks to public visibility', () => {
-    const {component} = build({id: 'u1'}, []);
+    const {component} = build(simpleUserFixture('u1'), []);
 
     expect(component.fields.public.control.value).toBeTrue();
   });
 
   it('defaults HP to 84 and rows to 2', () => {
-    const {component} = build({id: 'u1'}, []);
+    const {component} = build(simpleUserFixture('u1'), []);
     expect(Number(component.fields.hp.control.value)).toBe(84);
     expect(Number(component.fields.rows.control.value)).toBe(2);
   });
 
   it('HP control rejects values outside 2–216', () => {
-    const {component} = build({id: 'u1'}, []);
+    const {component} = build(simpleUserFixture('u1'), []);
     component.fields.hp.control.setValue(1);
     expect(component.fields.hp.control.valid).toBeFalse();
     component.fields.hp.control.setValue(217);
@@ -255,7 +393,7 @@ describe('RackCreatorComponent', () => {
   });
 
   it('rows control rejects values outside 1–16', () => {
-    const {component} = build({id: 'u1'}, []);
+    const {component} = build(simpleUserFixture('u1'), []);
     component.fields.rows.control.setValue(0);
     expect(component.fields.rows.control.valid).toBeFalse();
     component.fields.rows.control.setValue(17);
@@ -274,13 +412,13 @@ describe('RackCreatorComponent', () => {
   });
 
   it('name field starts with a non-empty generated value', () => {
-    const {component} = build({id: 'u1'}, []);
+    const {component} = build(simpleUserFixture('u1'), []);
     expect(typeof component.fields.name.control.value).toBe('string');
     expect(component.fields.name.control.value.length).toBeGreaterThan(0);
   });
 
   it('passes public flag correctly when saving rack', () => {
-    const {component, dataService} = build({id: 'u1'}, []);
+    const {component, dataService} = build(simpleUserFixture('u1'), []);
     component.fields.name.control.setValue('Test Rack');
     component.fields.hp.control.setValue(60);
     component.fields.rows.control.setValue(2);
@@ -292,7 +430,7 @@ describe('RackCreatorComponent', () => {
   });
 
   it('rackAnalysis$ emits after hp value changes', (done) => {
-    const {component, moduleCollectionAnalysisService} = build({id: 'u1'}, []);
+    const {component, moduleCollectionAnalysisService} = build(simpleUserFixture('u1'), []);
     let emitCount = 0;
     component.rackAnalysis$.subscribe(() => {
       emitCount++;
@@ -306,14 +444,14 @@ describe('RackCreatorComponent', () => {
   });
 
   it('keeps create enabled when import is off', async () => {
-    const {component} = build({id: 'u1'}, []);
+    const {component} = build(simpleUserFixture('u1'), []);
 
     await expectAsync(firstValueFrom(component.canCreate$.pipe(take(1)))).toBeResolvedTo(true);
   });
 
   it('gates create on valid ModularGrid JSON when import is on', async () => {
-    const {component} = build({id: 'u1'}, [
-      {id: 1, name: '6x MIX', hp: 6}
+    const {component} = build(simpleUserFixture('u1'), [
+      moduleFixture(1, '6x MIX', 6)
     ]);
     component.importEnabledControl.setValue(true);
     setImportJson(component, '{ nope');
@@ -337,8 +475,8 @@ describe('RackCreatorComponent', () => {
   });
 
   it('clamps imported ModularGrid rack names to the rack name limit', async () => {
-    const {component} = build({id: 'u1'}, [
-      {id: 1, name: '6x MIX', hp: 6}
+    const {component} = build(simpleUserFixture('u1'), [
+      moduleFixture(1, '6x MIX', 6)
     ]);
     component.importEnabledControl.setValue(true);
     setImportJson(component, JSON.stringify({
@@ -357,8 +495,8 @@ describe('RackCreatorComponent', () => {
   });
 
   it('keeps imported create disabled for wrong-shape JSON', async () => {
-    const {component} = build({id: 'u1'}, [
-      {id: 1, name: '6x MIX', hp: 6}
+    const {component} = build(simpleUserFixture('u1'), [
+      moduleFixture(1, '6x MIX', 6)
     ]);
     component.importEnabledControl.setValue(true);
     setImportJson(component, JSON.stringify({Rack: {}, Module: []}));
@@ -367,9 +505,9 @@ describe('RackCreatorComponent', () => {
   });
 
   it('keeps imported create enabled when ambiguous modules are left skipped by default', async () => {
-    const {component} = build({id: 'u1'}, [
-      {id: 1, name: 'Microcell', hp: 14},
-      {id: 2, name: 'Microcell Black', hp: 14}
+    const {component} = build(simpleUserFixture('u1'), [
+      moduleFixture(1, 'Microcell', 14),
+      moduleFixture(2, 'Microcell Black', 14)
     ]);
     component.importEnabledControl.setValue(true);
     setImportJson(component, JSON.stringify({
@@ -391,7 +529,7 @@ describe('RackCreatorComponent', () => {
   });
 
   it('reports ambiguous resolution status for default skipped, resolved, and explicitly skipped choices', () => {
-    const {component} = build({id: 'u1'}, []);
+    const {component} = build(simpleUserFixture('u1'), []);
 
     expect(component.ambiguousResolutionState('module-key')).toBe('skip');
     expect(component.ambiguousResolutionIcon('module-key')).toBe('remove_circle_outline');
@@ -407,7 +545,7 @@ describe('RackCreatorComponent', () => {
   });
 
   it('formats candidate manufacturer names with a safe fallback', () => {
-    const {component} = build({id: 'u1'}, []);
+    const {component} = build(simpleUserFixture('u1'), []);
 
     expect(component.moduleManufacturerName({
       manufacturer: {name: ' Make Noise '}
@@ -419,7 +557,7 @@ describe('RackCreatorComponent', () => {
   });
 
   it('builds a plain text list of missing imported modules', () => {
-    const {component} = build({id: 'u1'}, []);
+    const {component} = build(simpleUserFixture('u1'), []);
 
     expect(component.missingModulesText(unmatchedPreview())).toBe([
       'Missing ModularGrid modules for "Import Rack":',
@@ -429,7 +567,7 @@ describe('RackCreatorComponent', () => {
   });
 
   it('copies missing imported modules to the clipboard', async () => {
-    const {component, snackBar} = build({id: 'u1'}, []);
+    const {component, snackBar} = build(simpleUserFixture('u1'), []);
     const clipboard = {
       writeText: jasmine.createSpy('writeText').and.returnValue(Promise.resolve())
     };
@@ -453,7 +591,7 @@ describe('RackCreatorComponent', () => {
   });
 
   it('surfaces clipboard copy failures for missing imported modules', async () => {
-    const {component, snackBar} = build({id: 'u1'}, []);
+    const {component, snackBar} = build(simpleUserFixture('u1'), []);
     Object.defineProperty(navigator, 'clipboard', {
       value: {
         writeText: jasmine.createSpy('writeText').and.returnValue(Promise.reject(new Error('denied')))
@@ -471,7 +609,7 @@ describe('RackCreatorComponent', () => {
   });
 
   it('widens the dialog only while ModularGrid import is enabled', () => {
-    const {component, dialogRef} = build({id: 'u1'}, []);
+    const {component, dialogRef} = build(simpleUserFixture('u1'), []);
 
     component.importEnabledControl.setValue(true);
     expect(dialogRef.updateSize).toHaveBeenCalledWith(RACK_CREATOR_IMPORT_DIALOG_WIDTH);
@@ -481,8 +619,8 @@ describe('RackCreatorComponent', () => {
   });
 
   it('waits for the catalogue load before enabling imported create', () => {
-    const {component, dataService} = build({id: 'u1'}, [
-      {id: 1, name: '6x MIX', hp: 6}
+    const {component, dataService} = build(simpleUserFixture('u1'), [
+      moduleFixture(1, '6x MIX', 6)
     ]);
     const catalogue$ = new Subject<MinimalModule[]>();
     dataService.loadModuleCatalogue$.and.returnValue(catalogue$);
@@ -502,7 +640,7 @@ describe('RackCreatorComponent', () => {
 
     expect(canCreateValues[canCreateValues.length - 1]).toBeFalse();
 
-    catalogue$.next([{id: 1, name: '6x MIX', hp: 6} as MinimalModule]);
+    catalogue$.next([moduleFixture(1, '6x MIX', 6)]);
     catalogue$.complete();
 
     expect(canCreateValues[canCreateValues.length - 1]).toBeTrue();
@@ -510,8 +648,8 @@ describe('RackCreatorComponent', () => {
   });
 
   it('defers catalogue loading until imported JSON is valid', () => {
-    const {component, dataService} = build({id: 'u1'}, [
-      {id: 1, name: '6x MIX', hp: 6}
+    const {component, dataService} = build(simpleUserFixture('u1'), [
+      moduleFixture(1, '6x MIX', 6)
     ]);
     const stateValues: boolean[] = [];
     const subscription = component.moduleCatalogueState$
@@ -533,16 +671,20 @@ describe('RackCreatorComponent', () => {
       }]
     }));
 
-    expect(dataService.loadModuleCatalogue$).toHaveBeenCalledOnceWith(
-      [{id: 1, name: '6x MIX', hp: 6}],
-      [jasmine.objectContaining({name: '6x MIX - black'})]
-    );
+    expect(dataService.loadModuleCatalogue$).toHaveBeenCalled();
+    const [fallbackModules, sourceModules] = dataService.loadModuleCatalogue$.calls.mostRecent().args;
+    expect(fallbackModules.map(module => ({
+      id: module.id,
+      name: module.name,
+      hp: module.hp
+    }))).toEqual([{id: 1, name: '6x MIX', hp: 6}]);
+    expect(sourceModules).toEqual([jasmine.objectContaining({name: '6x MIX - black'})]);
     subscription.unsubscribe();
   });
 
   it('keeps imported create disabled when the catalogue load fails', () => {
-    const {component, dataService} = build({id: 'u1'}, [
-      {id: 1, name: '6x MIX', hp: 6}
+    const {component, dataService} = build(simpleUserFixture('u1'), [
+      moduleFixture(1, '6x MIX', 6)
     ]);
     dataService.loadModuleCatalogue$.and.returnValue(throwError(() => new Error('catalogue failed')));
     const canCreateValues: boolean[] = [];
@@ -569,8 +711,8 @@ describe('RackCreatorComponent', () => {
   });
 
   it('creates imported rack placements with skipped count in notification', () => {
-    const {component, dataService, snackBar} = build({id: 'u1'}, [
-      {id: 1, name: '6x MIX', hp: 6}
+    const {component, dataService, snackBar} = build(simpleUserFixture('u1'), [
+      moduleFixture(1, '6x MIX', 6)
     ]);
     dataService.createRackWithPlacements$.and.returnValue(of({
       rackId: 1,
@@ -618,8 +760,8 @@ describe('RackCreatorComponent', () => {
   });
 
   it('marks imported creation in progress and blocks duplicate imported saves', async () => {
-    const {component, dataService, dialogRef} = build({id: 'u1'}, [
-      {id: 1, name: '6x MIX', hp: 6}
+    const {component, dataService, dialogRef} = build(simpleUserFixture('u1'), [
+      moduleFixture(1, '6x MIX', 6)
     ]);
     const createRackWithPlacements$ = new Subject<RackCreatorCreateResult>();
     dataService.createRackWithPlacements$.and.returnValue(createRackWithPlacements$);
@@ -654,8 +796,8 @@ describe('RackCreatorComponent', () => {
   });
 
   it('shows placement failure counts when an imported create reports partial placement failure', () => {
-    const {component, dataService, snackBar, dialogRef} = build({id: 'u1'}, [
-      {id: 1, name: '6x MIX', hp: 6}
+    const {component, dataService, snackBar, dialogRef} = build(simpleUserFixture('u1'), [
+      moduleFixture(1, '6x MIX', 6)
     ]);
     dataService.createRackWithPlacements$.and.returnValue(of({
       rackId: 1,
@@ -683,9 +825,9 @@ describe('RackCreatorComponent', () => {
   });
 
   it('clears ambiguous selections when imported JSON changes', async () => {
-    const {component} = build({id: 'u1'}, [
-      {id: 1, name: 'Microcell', hp: 14},
-      {id: 2, name: 'Microcell Black', hp: 14}
+    const {component} = build(simpleUserFixture('u1'), [
+      moduleFixture(1, 'Microcell', 14),
+      moduleFixture(2, 'Microcell Black', 14)
     ]);
     component.importEnabledControl.setValue(true);
     setImportJson(component, JSON.stringify({
@@ -716,9 +858,9 @@ describe('RackCreatorComponent', () => {
   });
 
   it('clears file-driven ModularGrid state when import is turned off', () => {
-    const {component, fileDragHostService} = build({id: 'u1'}, [
-      {id: 1, name: 'Microcell', hp: 14},
-      {id: 2, name: 'Microcell Black', hp: 14}
+    const {component, fileDragHostService} = build(simpleUserFixture('u1'), [
+      moduleFixture(1, 'Microcell', 14),
+      moduleFixture(2, 'Microcell Black', 14)
     ]);
     component.fields.name.control.setValue('Manual Rack');
     component.fields.hp.control.setValue('104');
@@ -746,8 +888,8 @@ describe('RackCreatorComponent', () => {
   });
 
   it('reads selected ModularGrid JSON file content into the import gate', async () => {
-    const {component, fileDragHostService} = build({id: 'u1'}, [
-      {id: 1, name: '6x MIX', hp: 6}
+    const {component, fileDragHostService} = build(simpleUserFixture('u1'), [
+      moduleFixture(1, '6x MIX', 6)
     ]);
     component.importEnabledControl.setValue(true);
 
