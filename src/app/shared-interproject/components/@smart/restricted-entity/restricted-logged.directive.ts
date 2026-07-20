@@ -14,7 +14,7 @@ export class RestrictedLoggedDirective {
   private hasView = false;
   
   constructor(
-    private templateRef: TemplateRef<any>,
+    private templateRef: TemplateRef<unknown>,
     private viewContainer: ViewContainerRef
   ) { }
   

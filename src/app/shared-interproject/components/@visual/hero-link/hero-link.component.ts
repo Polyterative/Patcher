@@ -14,7 +14,7 @@ export class HeroLinkComponent implements OnInit {
   @Input()
   iconColor: string='black';
   @Input()
-  link: string|any[];
+  link: string | readonly unknown[];
   @Input()
   disabled: boolean = false;
 

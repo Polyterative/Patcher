@@ -177,10 +177,10 @@ export class ModuleBrowserAdderComponent extends SubManager implements OnInit, O
     const hp$   = fd.hp.control.valueChanges.pipe(startWith(fd.hp.control.value));
     const std$  = fd.standard.control.valueChanges.pipe(startWith(fd.standard.control.value));
 
-    const isFilled = (v: any): boolean => {
+    const isFilled = (v: unknown): boolean => {
       if (v === null || v === undefined) return false;
       if (typeof v === 'string') return v.trim().length > 0;
-      if (typeof v === 'object') return !!v.id;
+      if (typeof v === 'object') return 'id' in v && !!v.id;
       return !!v;
     };
 
