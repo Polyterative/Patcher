@@ -1,3 +1,5 @@
+import { CV } from 'src/app/models/cv';
+import { DbModule, RackedModule } from 'src/app/models/module';
 import { TagType } from 'src/app/models/tag';
 import {
   buildSignalDestinationGroups,
@@ -6,33 +8,70 @@ import {
 } from './rack-signal-analysis.utils';
 
 describe('rackSignalAnalysisUtils', () => {
+  type CvConfig = Omit<CV, 'id'> & {name: string};
+
+  function makeDbModule(
+    moduleId: number,
+    config: {
+      ins?: CvConfig[];
+      outs?: CvConfig[];
+      tags?: Array<{name: string; type?: TagType; votes?: number}>;
+      name?: string;
+    }
+  ): DbModule {
+    return {
+      id: moduleId,
+      created: '',
+      updated: '',
+      name: config.name ?? `Module ${ moduleId }`,
+      description: '',
+      hp: 8,
+      public: true,
+      manufacturer: {id: 1, name: 'Test Maker'},
+      manufacturerId: 1,
+      standard: {id: 0, name: 'Eurorack'},
+      tags: (config.tags ?? []).map((tag, index) => ({
+        id: index + 1,
+        tag: {
+          id: index + 1,
+          name: tag.name,
+          type: tag.type ?? TagType.Source
+        },
+        voteCount: Array.from({length: tag.votes ?? 0}, () => ({moduletagid: index + 1}))
+      })),
+      panels: [],
+      ins: (config.ins ?? []).map((cv, index) => ({id: index + 1, ...cv})),
+      outs: (config.outs ?? []).map((cv, index) => ({id: index + 101, ...cv})),
+      switches: [],
+      manualURL: '',
+      store_url: null,
+      additional: null,
+      isComplete: true,
+      isApproved: true,
+      isDIY: false,
+      powerPos12: null,
+      powerNeg12: null,
+      powerPos5: null,
+      depth: 0,
+      weight: 0
+    };
+  }
+
   function makeRackedModule(
     moduleId: number,
     config: {
-      ins?: Array<Record<string, unknown> & {name: string}>;
-      outs?: Array<Record<string, unknown> & {name: string}>;
+      ins?: CvConfig[];
+      outs?: CvConfig[];
       tags?: Array<{name: string; type?: TagType; votes?: number}>;
       name?: string;
     } = {}
-  ): any {
+  ): RackedModule {
     return {
-      module: {
-        id: moduleId,
-        name: config.name ?? `Module ${ moduleId }`,
-        ins: (config.ins ?? []).map((cv, index) => ({id: index + 1, ...cv})),
-        outs: (config.outs ?? []).map((cv, index) => ({id: index + 101, ...cv})),
-        tags: (config.tags ?? []).map((tag, index) => ({
-          id: index + 1,
-          tag: {
-            id: index + 1,
-            name: tag.name,
-            type: tag.type ?? TagType.Source
-          },
-          voteCount: Array.from({length: tag.votes ?? 0}, () => ({moduletagid: index + 1}))
-        })),
-      },
+      module: makeDbModule(moduleId, config),
       rackingData: {
         id: moduleId,
+        rackid: 1,
+        moduleid: moduleId,
         row: 0,
         column: 0
       }

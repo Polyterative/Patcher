@@ -1,3 +1,4 @@
+import { DbModule, RackedModule } from 'src/app/models/module';
 import {
   buildRackPowerBreakdown,
   formatPowerRailValue,
@@ -5,21 +6,54 @@ import {
 } from './rack-power-breakdown.utils';
 
 describe('rackPowerBreakdownUtils', () => {
+  function makeDbModule(
+    moduleId: number,
+    powerPos12: number | null,
+    powerNeg12: number | null,
+    powerPos5: number | null
+  ): DbModule {
+    return {
+      id: moduleId,
+      created: '',
+      updated: '',
+      name: `Module ${ moduleId }`,
+      description: '',
+      hp: 8,
+      public: true,
+      manufacturer: {id: 1, name: 'Test Maker'},
+      manufacturerId: 1,
+      standard: {id: 0, name: 'Eurorack'},
+      tags: [],
+      panels: [],
+      ins: [],
+      outs: [],
+      switches: [],
+      manualURL: '',
+      store_url: null,
+      additional: null,
+      isComplete: true,
+      isApproved: true,
+      isDIY: false,
+      powerPos12,
+      powerNeg12,
+      powerPos5,
+      depth: 0,
+      weight: 0
+    };
+  }
+
   function makeRackedModule(
     moduleId: number,
     powerPos12: number | null,
     powerNeg12: number | null,
     powerPos5: number | null
-  ): any {
+  ): RackedModule {
     return {
-      module: {
-        id: moduleId,
-        hp: 8,
-        powerPos12,
-        powerNeg12,
-        powerPos5
-      },
+      module: makeDbModule(moduleId, powerPos12, powerNeg12, powerPos5),
       rackingData: {
+        id: moduleId,
+        rackid: 1,
+        moduleid: moduleId,
         row: 0,
         column: 0
       }

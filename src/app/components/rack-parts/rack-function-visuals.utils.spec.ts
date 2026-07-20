@@ -1,3 +1,4 @@
+import { DbModule, RackedModule } from 'src/app/models/module';
 import { TagType } from 'src/app/models/tag';
 import {
   buildFunctionAnalysisCoverageSummary,
@@ -10,27 +11,60 @@ import {
 } from './rack-function-visuals.utils';
 
 describe('rackFunctionVisualsUtils', () => {
+  function makeDbModule(
+    moduleId: number,
+    tags: Array<{name: string; type: TagType; votes?: number}>,
+    hp: number
+  ): DbModule {
+    return {
+      id: moduleId,
+      created: '',
+      updated: '',
+      name: `Module ${ moduleId }`,
+      description: '',
+      hp,
+      public: true,
+      manufacturer: {id: 1, name: 'Test Maker'},
+      manufacturerId: 1,
+      standard: {id: 0, name: 'Eurorack'},
+      tags: tags.map((tag, index) => ({
+        id: index + 1,
+        tag: {
+          id: index + 1,
+          name: tag.name,
+          type: tag.type
+        },
+        voteCount: Array.from({length: tag.votes ?? 0}, () => ({moduletagid: index + 1}))
+      })),
+      panels: [],
+      ins: [],
+      outs: [],
+      switches: [],
+      manualURL: '',
+      store_url: null,
+      additional: null,
+      isComplete: true,
+      isApproved: true,
+      isDIY: false,
+      powerPos12: null,
+      powerNeg12: null,
+      powerPos5: null,
+      depth: 0,
+      weight: 0
+    };
+  }
+
   function makeRackedModule(
     moduleId: number,
-    tags: Array<{name: string; type: TagType | string | number; votes?: number}> = [],
+    tags: Array<{name: string; type: TagType; votes?: number}> = [],
     hp = 8
-  ): any {
+  ): RackedModule {
     return {
-      module: {
-        id: moduleId,
-        hp,
-        tags: tags.map((tag, index) => ({
-          id: index + 1,
-          tag: {
-            id: index + 1,
-            name: tag.name,
-            type: tag.type
-          },
-          voteCount: Array.from({length: tag.votes ?? 0}, () => ({moduletagid: index + 1}))
-        }))
-      },
+      module: makeDbModule(moduleId, tags, hp),
       rackingData: {
         id: moduleId,
+        rackid: 1,
+        moduleid: moduleId,
         row: 0,
         column: 0
       }
