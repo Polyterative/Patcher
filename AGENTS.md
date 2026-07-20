@@ -97,7 +97,12 @@ Key paths:
 - Use helper scripts such as `pnpm switch:develop`, `pnpm switch:production`, and `pnpm merge:dev-to-prod`.
 - Commit format: `<type>(<scope>): <description>` in one line, imperative, lowercase, no trailing period.
 - Do not add `Co-authored-by` trailers or Copilot attribution lines to commits in this repository.
-- Ask before committing unless the user explicitly requested commits or invoked a persona/workflow that documents autonomous verified-checkpoint commits (for example `coordinator-loop` / "begin loop").
+- **Commit every completed chunk, immediately and in isolation** (standing approval — do not ask):
+  - As soon as a chunk of work is finished and validated, commit it as its own commit before starting the next chunk. Never leave finished work sitting uncommitted in the tree.
+  - One chunk = one commit. Stage only the files belonging to that chunk (never `git add -A` / `git add .` while unrelated changes exist in the tree).
+  - A "chunk" is one coherent unit a real developer would commit: one fix, one doc theme, one refactor step — not a whole session's mixed output.
+  - Pre-existing changes you did not author are left untouched and unstaged; surface them to the user instead.
+  - Exploratory/scratch edits that were abandoned must be reverted, not committed.
 - Never push unless the user explicitly requested it.
 - Never force-push (`--force`, `--force-with-lease`, or equivalent history-rewriting ref updates) unless the user explicitly requests a force push in that turn.
 - Do not create or use separate worktrees / child project sessions for Patcher work unless the user explicitly asks for a separate worktree/session. The user's running dev server is expected to serve the main checkout, so visual POCs and runtime validation must happen in the active checkout by default.
