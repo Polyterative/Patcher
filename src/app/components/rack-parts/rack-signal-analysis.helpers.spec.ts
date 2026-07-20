@@ -9,13 +9,58 @@ import {
   sortCvNames,
   flattenRackedModules
 } from './rack-signal-analysis.helpers';
+import { CV } from 'src/app/models/cv';
+import { RackedModule } from 'src/app/models/module';
+import { TagType } from 'src/app/models/tag';
 
-const makeRackedModule = (name: string, description = '', tags: string[] = []): any => ({
+const makeCv = (
+  name: string,
+  flags: Pick<CV, 'isVOCT' | 'isAudio' | 'isDCC'>
+): CV => ({
+  id: 1,
+  name,
+  ...flags
+});
+
+const makeRackedModule = (name: string, description = '', tags: string[] = []): RackedModule => ({
+  rackingData: {
+    id: 1,
+    row: 0,
+    column: 0,
+    moduleid: 1,
+    rackid: 1
+  },
   module: {
     id: 1,
     name,
     description,
-    tags: tags.map(t => ({ tag: { name: t }, voteCount: [] }))
+    hp: 8,
+    public: true,
+    manufacturer: {id: 1, name: 'Maker'},
+    manufacturerId: 1,
+    standard: {id: 0, name: '3U Eurorack'},
+    tags: tags.map((tagName, index) => ({
+      id: index + 1,
+      tag: {id: index + 1, name: tagName, type: TagType.Source},
+      voteCount: []
+    })),
+    panels: [],
+    ins: [],
+    outs: [],
+    switches: [],
+    manualURL: '',
+    store_url: null,
+    additional: null,
+    isComplete: true,
+    isApproved: true,
+    isDIY: false,
+    powerPos12: 0,
+    powerNeg12: 0,
+    powerPos5: 0,
+    depth: 0,
+    weight: 0,
+    created: '',
+    updated: ''
   }
 });
 
@@ -54,19 +99,19 @@ describe('rack-signal-analysis.helpers', () => {
     });
 
     it('returns pitch for V/OCT', () => {
-      expect(classifySignalFamily({ isVOCT: true, isAudio: false, isDCC: false, name: 'V/Oct' } as any)).toBe('pitch');
+      expect(classifySignalFamily(makeCv('V/Oct', {isVOCT: true, isAudio: false, isDCC: false}))).toBe('pitch');
     });
 
     it('returns audio for audio cv', () => {
-      expect(classifySignalFamily({ isVOCT: false, isAudio: true, isDCC: false, name: 'Audio Out' } as any)).toBe('audio');
+      expect(classifySignalFamily(makeCv('Audio Out', {isVOCT: false, isAudio: true, isDCC: false}))).toBe('audio');
     });
 
     it('returns clock for DCC cv', () => {
-      expect(classifySignalFamily({ isVOCT: false, isAudio: false, isDCC: true, name: 'Clock' } as any)).toBe('clock');
+      expect(classifySignalFamily(makeCv('Clock', {isVOCT: false, isAudio: false, isDCC: true}))).toBe('clock');
     });
 
     it('returns other for unknown cv without flags', () => {
-      expect(classifySignalFamily({ isVOCT: false, isAudio: false, isDCC: false, name: 'x' } as any)).toBe('other');
+      expect(classifySignalFamily(makeCv('x', {isVOCT: false, isAudio: false, isDCC: false}))).toBe('other');
     });
   });
 
@@ -133,7 +178,7 @@ describe('rack-signal-analysis.helpers', () => {
     });
 
     it('sorts cv names', () => {
-      const cvs = [{ name: 'Out' }, { name: 'In' }] as any[];
+      const cvs: CV[] = [{id: 1, name: 'Out'}, {id: 2, name: 'In'}];
       expect(sortCvNames(cvs)).toEqual(['In', 'Out']);
     });
   });
@@ -144,7 +189,7 @@ describe('rack-signal-analysis.helpers', () => {
     });
 
     it('flattens nested rows and excludes blank modules', () => {
-      const mod1: any = { module: { id: 1, name: 'VCO', tags: [] } };
+      const mod1 = makeRackedModule('VCO');
       const result = flattenRackedModules([[mod1]]);
       expect(result.length).toBe(1);
       expect(result[0].module.name).toBe('VCO');

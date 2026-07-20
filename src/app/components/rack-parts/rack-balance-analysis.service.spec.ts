@@ -4,8 +4,9 @@ import { TagType } from 'src/app/models/tag';
 import { RackBalanceAnalysisService } from './rack-balance-analysis.service';
 
 const BLANK_3U_MODULE_ID = 4647;
+type BalanceTagType = TagType | 'module_type' | 'function' | 'technology' | 'character';
 
-function makeRackedModule(id: number, tagData: Array<{name: string; type: unknown}> = [], hp = 8): RackedModule {
+function makeRackedModule(id: number, tagData: Array<{name: string; type: BalanceTagType}> = [], hp = 8): RackedModule {
   return {
     rackingData: {
       id,
@@ -95,10 +96,10 @@ describe('RackBalanceAnalysisService', () => {
 
   it('recognizes legacy string tag types from live backend payloads', () => {
     const rack = [[
-      makeRackedModule(1, [{name: 'VCO', type: 'module_type' as any}]),
-      makeRackedModule(2, [{name: 'Envelope', type: 'function' as any}]),
-      makeRackedModule(3, [{name: 'Utility', type: 'module_type' as any}]),
-      makeRackedModule(4, [{name: 'Filter', type: 'function' as any}]),
+      makeRackedModule(1, [{name: 'VCO', type: 'module_type'}]),
+      makeRackedModule(2, [{name: 'Envelope', type: 'function'}]),
+      makeRackedModule(3, [{name: 'Utility', type: 'module_type'}]),
+      makeRackedModule(4, [{name: 'Filter', type: 'function'}]),
     ]];
 
     const result = service.analyze(rack);
@@ -176,8 +177,8 @@ describe('RackBalanceAnalysisService', () => {
 
   it('ignores non-role database tag categories even when their label matches a balance axis', () => {
     const rack = [[
-      makeRackedModule(1, [{name: 'Clock', type: 'technology' as any}]),
-      makeRackedModule(2, [{name: 'Utility', type: 'character' as any}]),
+      makeRackedModule(1, [{name: 'Clock', type: 'technology'}]),
+      makeRackedModule(2, [{name: 'Utility', type: 'character'}]),
       makeRackedModule(3, [{name: 'Filter', type: TagType.Character}])
     ]];
 
