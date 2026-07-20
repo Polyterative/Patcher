@@ -1,16 +1,54 @@
-import { of } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { TestBed } from '@angular/core/testing';
+import { Observable, of } from 'rxjs';
 import { CommentsDataService } from './comments-data.service';
-import { CommentableEntityTypes } from 'src/app/models/comment';
+import { CommentableEntityTypes, DbComment } from 'src/app/models/comment';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
+
+interface CommentsBackendDouble {
+  GET: {
+    comments: jasmine.Spy<(
+      entityId: number,
+      entityType: CommentableEntityTypes,
+      from?: number,
+      to?: number
+    ) => Observable<{ data: DbComment[] | null; count: number | null }>>;
+  };
+  add: {
+    comment: jasmine.Spy<(data: {
+      entityId: number;
+      entityType: CommentableEntityTypes;
+      content: string;
+    }) => Observable<unknown>>;
+  };
+  delete: {
+    comment: jasmine.Spy<(id: number) => Observable<unknown>>;
+  };
+}
+
+const commentFixture = (overrides: Partial<DbComment>): DbComment => ({
+  id: 1,
+  content: 'c1',
+  entityId: 7,
+  entityType: CommentableEntityTypes.MODULE,
+  profile: {
+    id: 'profile-1',
+    username: 'commenter'
+  },
+  created: '2026-01-01T00:00:00.000Z',
+  updated: '2026-01-01T00:00:00.000Z',
+  ...overrides
+});
 
 
 describe('CommentsDataService', () => {
   let createdServices: CommentsDataService[];
 
   function build() {
-    const backend = {
+    const backend: CommentsBackendDouble = {
       GET: {
         comments: jasmine.createSpy('comments')
-          .and.returnValue(of({ data: [{ id: 1, content: 'c1' }], count: 1 }))
+          .and.returnValue(of({ data: [commentFixture({})], count: 1 }))
       },
       add: {
         comment: jasmine.createSpy('comment').and.returnValue(of({ id: 2 }))
@@ -19,11 +57,16 @@ describe('CommentsDataService', () => {
         comment: jasmine.createSpy('deleteComment').and.returnValue(of({}))
       }
     };
-    const snackBar = {
-      open: jasmine.createSpy('open').and.returnValue({ onAction: () => of() })
-    };
+    const snackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
     
-    const service = new CommentsDataService(backend as any, snackBar as any);
+    TestBed.configureTestingModule({
+      providers: [
+        CommentsDataService,
+        { provide: SupabaseService, useValue: backend },
+        { provide: MatSnackBar, useValue: snackBar },
+      ],
+    });
+    const service = TestBed.inject(CommentsDataService);
     createdServices.push(service);
     return { service, backend, snackBar };
   }
@@ -34,6 +77,7 @@ describe('CommentsDataService', () => {
 
   afterEach(() => {
     createdServices.forEach((service) => service.ngOnDestroy());
+    TestBed.resetTestingModule();
   });
   
   it('loads comments and resets the field when update is requested', () => {
@@ -44,7 +88,7 @@ describe('CommentsDataService', () => {
     service.requestCommentsUpdate$.next({ entityId: 7, entityType: CommentableEntityTypes.MODULE });
     
     expect(backend.GET.comments).toHaveBeenCalledWith(7, CommentableEntityTypes.MODULE, 0, service.pageSize - 1);
-    expect(service.comments$.value).toEqual([{ id: 1, content: 'c1' } as any]);
+    expect(service.comments$.value).toEqual([commentFixture({})]);
     expect(service.fields.submit.control.value).toBe('');
     expect(service.fields.submit.control.touched).toBeFalse();
   });
@@ -100,7 +144,7 @@ describe('CommentsDataService', () => {
 
   it('resets state when requestReset is emitted', () => {
     const { service } = build();
-    service.comments$.next([{ id: 9 } as any]);
+    service.comments$.next([commentFixture({ id: 9 })]);
     service.fields.submit.control.setValue('text');
     
     service.requestReset$.next();

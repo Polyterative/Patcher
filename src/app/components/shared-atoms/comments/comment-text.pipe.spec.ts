@@ -9,11 +9,11 @@ describe('CommentTextPipe', () => {
     });
 
     it('returns empty string for null', () => {
-      expect(pipe.transform(null as any)).toBe('');
+      expect(pipe.transform(null!)).toBe('');
     });
 
     it('returns empty string for undefined', () => {
-      expect(pipe.transform(undefined as any)).toBe('');
+      expect(pipe.transform(undefined!)).toBe('');
     });
   });
 
