@@ -1,44 +1,105 @@
 import {
   BehaviorSubject,
+  Observable,
   of,
+  Subject,
   throwError
 } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
+import { StandardsService } from 'src/app/components/format-translator/standards.service';
+import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import { DBManufacturer } from 'src/app/models/manufacturer';
+import { MinimalModule } from 'src/app/models/module';
+import { Standard } from 'src/app/models/standard';
 import { ModuleAdderDataService } from './module-adder-data.service';
 
+
+type ManufacturerFixture = Pick<DBManufacturer, 'id' | 'name'>;
+type CreatedModuleFixture = { id: number };
+type NewModulePayload = readonly Record<string, unknown>[];
+type NewManufacturerPayload = readonly Pick<DBManufacturer, 'name'>[];
+type BackendResult<T> = { data: T[] };
+type GetModulesArgs = Parameters<SupabaseService['GET']['modules']>;
+type GetModulesSpy = jasmine.Spy<(...args: GetModulesArgs) => Observable<BackendResult<MinimalModule>>>;
+type GetManufacturersSpy = jasmine.Spy<(
+  from?: number,
+  to?: number,
+  columns?: string,
+  orderBy?: string
+) => Observable<BackendResult<ManufacturerFixture>>>;
+type AddModulesSpy = jasmine.Spy<(data: NewModulePayload) => Observable<BackendResult<CreatedModuleFixture>>>;
+type AddManufacturersSpy = jasmine.Spy<(data: NewManufacturerPayload) => Observable<BackendResult<ManufacturerFixture>>>;
+
+interface BackendDouble {
+  GET: {
+    manufacturers: GetManufacturersSpy;
+    modules: GetModulesSpy;
+  };
+  add: {
+    modules: AddModulesSpy;
+    manufacturers: AddManufacturersSpy;
+  };
+  cacheResetter$: {
+    next: jasmine.Spy<(keys: string[]) => void>;
+  };
+}
+
+interface DialogDouble {
+  open: jasmine.Spy<() => { afterClosed: () => Observable<{ answer: boolean }> }>;
+}
 
 describe('ModuleAdderDataService - Form Validation', () => {
   let createdServices: ModuleAdderDataService[];
 
   function build() {
-    const standards$ = new BehaviorSubject<any[]>([]);
-    const backend = {
-      GET: {
-        manufacturers: jasmine.createSpy('GET.manufacturers').and.returnValue(of({
-          data: [{id: 1, name: 'Doepfer'}]
-        })),
-        modules: jasmine.createSpy('GET.modules').and.returnValue(of({data: []}))
-      },
-      add: {
-        modules: jasmine.createSpy('add.modules').and.returnValue(of({data: [{id: 111}]})),
-        manufacturers: jasmine.createSpy('add.manufacturers').and.returnValue(of({data: [{id: 55, name: 'NewCo'}]}))
+    const standards$ = new BehaviorSubject<Standard[] | undefined>([]);
+    const standardsService: Pick<StandardsService, 'standards'> = {
+      standards: {
+        update$: new Subject<void>(),
+        data$:   standards$
       }
     };
-    // dialog defaults to cancelled so submission tests must override when needed
-    const dialog = {
-      open: jasmine.createSpy('open').and.returnValue({
-        afterClosed: () => of({answer: false})
-      })
+    const getManufacturers = jasmine.createSpy('GET.manufacturers') as GetManufacturersSpy;
+    getManufacturers.and.returnValue(of({
+      data: [{id: 1, name: 'Doepfer'}]
+    }));
+    const getModules = jasmine.createSpy('GET.modules') as GetModulesSpy;
+    getModules.and.returnValue(of({data: []}));
+    const addModules = jasmine.createSpy('add.modules') as AddModulesSpy;
+    addModules.and.returnValue(of({data: [{id: 111}]}));
+    const addManufacturers = jasmine.createSpy('add.manufacturers') as AddManufacturersSpy;
+    addManufacturers.and.returnValue(of({data: [{id: 55, name: 'NewCo'}]}));
+    const backend: BackendDouble = {
+      GET: {
+        manufacturers: getManufacturers,
+        modules: getModules
+      },
+      add: {
+        modules: addModules,
+        manufacturers: addManufacturers
+      },
+      cacheResetter$: {next: jasmine.createSpy('cacheResetter$.next')}
     };
-    const snackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
-    const router = jasmine.createSpyObj('Router', ['navigate']);
+    // dialog defaults to cancelled so submission tests must override when needed
+    const dialog: DialogDouble = {
+      open: jasmine.createSpy('open') as DialogDouble['open']
+    };
+    dialog.open.and.returnValue({
+      afterClosed: () => of({answer: false})
+    });
+    const snackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
+    const router = jasmine.createSpyObj<Router>('Router', ['navigate']);
+    const analytics = jasmine.createSpyObj<AnalyticsService>('AnalyticsService', ['capture', 'identify', 'reset']);
     
     const service = new ModuleAdderDataService(
-      {standards: {data$: standards$.asObservable()}} as any,
-      backend as any,
-      dialog as any,
+      standardsService as ConstructorParameters<typeof ModuleAdderDataService>[0],
+      backend as unknown as ConstructorParameters<typeof ModuleAdderDataService>[1],
+      dialog as unknown as ConstructorParameters<typeof ModuleAdderDataService>[2],
       snackBar,
       router,
-      {capture: () => {}, identify: () => {}, reset: () => {}} as any
+      analytics
     );
     createdServices.push(service);
     

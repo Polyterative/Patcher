@@ -4,13 +4,47 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import {
   BehaviorSubject,
+  Observable,
   of,
   Subject
 } from 'rxjs';
 import { ModuleAdderDataService } from './module-adder-data.service';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { StandardsService } from 'src/app/components/format-translator/standards.service';
+import { Standard } from 'src/app/models/standard';
+import { MinimalModule } from 'src/app/models/module';
+import { DBManufacturer } from 'src/app/models/manufacturer';
+import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 
+
+type ManufacturerFixture = Pick<DBManufacturer, 'id' | 'name'>;
+type BackendResult<T> = { data: T[]; error: null };
+type NewManufacturerPayload = readonly Pick<DBManufacturer, 'name'>[];
+type NewModulePayload = readonly Record<string, unknown>[];
+type GetModulesArgs = Parameters<SupabaseService['GET']['modules']>;
+type GetModulesSpy = jasmine.Spy<(...args: GetModulesArgs) => Observable<BackendResult<MinimalModule>>>;
+type GetManufacturersSpy = jasmine.Spy<(
+  from?: number,
+  to?: number,
+  columns?: string,
+  orderBy?: string
+) => Observable<BackendResult<ManufacturerFixture>>>;
+type AddManufacturersSpy = jasmine.Spy<(data: NewManufacturerPayload) => Observable<BackendResult<ManufacturerFixture>>>;
+type AddModulesSpy = jasmine.Spy<(data: NewModulePayload) => Observable<BackendResult<MinimalModule>>>;
+
+interface BackendDouble {
+  GET: {
+    manufacturers: GetManufacturersSpy;
+    modules: GetModulesSpy;
+  };
+  add: {
+    manufacturers: AddManufacturersSpy;
+    modules: AddModulesSpy;
+  };
+  cacheResetter$: {
+    next: jasmine.Spy<(keys: string[]) => void>;
+  };
+}
 
 /**
  * Unit Tests - ModuleAdderDataService Manufacturer Creation Feature
@@ -20,39 +54,50 @@ import { StandardsService } from 'src/app/components/format-translator/standards
  */
 describe('ModuleAdderDataService - Manufacturer Creation', () => {
   let service: ModuleAdderDataService;
-  let mockSupabaseService: any;
-  let mockStandardsService: any;
-  let mockRouter: any;
+  let mockSupabaseService: BackendDouble;
+  let mockStandardsService: Pick<StandardsService, 'standards'>;
+  let mockRouter: jasmine.SpyObj<Router>;
+  let mockAnalyticsService: jasmine.SpyObj<AnalyticsService>;
 
-  const mockManufacturers = [
+  const mockManufacturers: ManufacturerFixture[] = [
     { id: 1, name: 'Doepfer' },
     { id: 2, name: 'Make Noise' },
     { id: 3, name: 'Mutable Instruments' }
   ];
 
   beforeEach(() => {
+    const getManufacturers = jasmine.createSpy('manufacturers') as GetManufacturersSpy;
+    getManufacturers.and.returnValue(
+      of({ data: mockManufacturers, error: null })
+    );
+    const getModules = jasmine.createSpy('modules') as GetModulesSpy;
+    getModules.and.returnValue(
+      of({ data: [], error: null })
+    );
+    const addManufacturers = jasmine.createSpy('manufacturers') as AddManufacturersSpy;
+    addManufacturers.and.returnValue(
+      of({ data: [{ id: 42, name: 'New Modular Co' }], error: null })
+    );
+    const addModules = jasmine.createSpy('modules') as AddModulesSpy;
+    addModules.and.returnValue(
+      of({ data: [], error: null })
+    );
     mockSupabaseService = {
       GET: {
-        manufacturers: jasmine.createSpy('manufacturers').and.returnValue(
-          of({ data: mockManufacturers, error: null })
-        ),
-        modules: jasmine.createSpy('modules').and.returnValue(
-          of({ data: [], error: null })
-        )
+        manufacturers: getManufacturers,
+        modules: getModules
       },
       add: {
-        manufacturers: jasmine.createSpy('manufacturers').and.returnValue(
-          of({ data: [{ id: 42, name: 'New Modular Co' }], error: null })
-        ),
-        modules: jasmine.createSpy('modules').and.returnValue(
-          of({ data: [], error: null })
-        )
-      }
+        manufacturers: addManufacturers,
+        modules: addModules
+      },
+      cacheResetter$: {next: jasmine.createSpy('cacheResetter$.next')}
     };
 
     mockStandardsService = {
       standards: {
-        data$: new BehaviorSubject([
+        update$: new Subject<void>(),
+        data$: new BehaviorSubject<Standard[] | undefined>([
           { id: 0, name: 'Eurorack' },
           { id: 1, name: 'Frac' }
         ])
@@ -60,6 +105,7 @@ describe('ModuleAdderDataService - Manufacturer Creation', () => {
     };
 
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
+    mockAnalyticsService = jasmine.createSpyObj<AnalyticsService>('AnalyticsService', ['capture', 'identify', 'reset']);
 
     TestBed.configureTestingModule({
       imports: [MatSnackBarModule, MatDialogModule],
@@ -67,7 +113,8 @@ describe('ModuleAdderDataService - Manufacturer Creation', () => {
         ModuleAdderDataService,
         { provide: SupabaseService, useValue: mockSupabaseService },
         { provide: StandardsService, useValue: mockStandardsService },
-        { provide: Router, useValue: mockRouter }
+        { provide: Router, useValue: mockRouter },
+        { provide: AnalyticsService, useValue: mockAnalyticsService }
       ]
     });
 
