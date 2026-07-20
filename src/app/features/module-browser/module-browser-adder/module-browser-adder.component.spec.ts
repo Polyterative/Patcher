@@ -1,38 +1,76 @@
 import { BehaviorSubject, Subject } from 'rxjs';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { ModuleBrowserAdderComponent } from './module-browser-adder.component';
+import { ActivatedRoute } from '@angular/router';
+import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
+import { ModuleAdderDataService } from './module-adder-data.service';
+import { MinimalModule } from 'src/app/models/module';
+import { ModuleAdderFormData } from './module-adder-data.models';
+import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+
+
+type QueryParamsFixture = Record<string, string | undefined>;
+type SelectOption = { id: string; name: string };
+type SubmitSuccessPayload = Parameters<ModuleAdderDataService['submitSuccess$']['next']>[0];
+
+interface ComponentDataServiceDouble {
+  formData: Pick<ModuleAdderFormData, 'manufacturer' | 'standard' | 'hp' | 'name'>;
+  similarModulesData$: BehaviorSubject<MinimalModule[] | undefined>;
+  submitSuccess$: Subject<SubmitSuccessPayload>;
+  submitModuleForm$: Subject<void>;
+  formGroup: UntypedFormGroup;
+}
 
 
 describe('ModuleBrowserAdderComponent', () => {
-  function build(initialQueryParams: any = {}) {
-    const queryParams$ = new BehaviorSubject<any>(initialQueryParams);
-    const manufacturerOptions$ = new BehaviorSubject<any[]>([]);
-    const standardOptions$ = new BehaviorSubject<any[]>([]);
+  function build(initialQueryParams: QueryParamsFixture = {}) {
+    const queryParams$ = new BehaviorSubject<QueryParamsFixture>(initialQueryParams);
+    const manufacturerOptions$ = new BehaviorSubject<SelectOption[]>([]);
+    const standardOptions$ = new BehaviorSubject<SelectOption[]>([]);
     
     const manufacturerControl = new UntypedFormControl('');
     const standardControl = new UntypedFormControl('');
     const hpControl = new UntypedFormControl('8');
     const nameControl = new UntypedFormControl('');
     
-    const dataService = {
+    const dataService: ComponentDataServiceDouble = {
       formData: {
         manufacturer: {
+          label: 'Manufacturer',
+          code: 'manufacturer',
+          flex: '6rem',
+          hint: 'Example: Doepfer',
           control: manufacturerControl,
+          type: FormTypes.AUTOCOMPLETE,
           options$: manufacturerOptions$.asObservable()
         },
         standard: {
+          label: 'Standard',
+          code: 'format',
+          flex: '6rem',
           control: standardControl,
+          type: FormTypes.SELECT,
           options$: standardOptions$.asObservable()
         },
         hp: {
-          control: hpControl
+          label: 'HP',
+          code: 'hp',
+          flex: '6rem',
+          control: hpControl,
+          type: FormTypes.NUMBER
         },
         name: {
-          control: nameControl
+          label: 'Name',
+          code: 'name',
+          flex: '6rem',
+          hint: 'Example: Maths',
+          control: nameControl,
+          type: FormTypes.TEXT
         }
       },
-      similarModulesData$: new BehaviorSubject<any>(undefined),
-      submitSuccess$: new Subject<any>(),
+      similarModulesData$: new BehaviorSubject<MinimalModule[] | undefined>(undefined),
+      submitSuccess$: new Subject<SubmitSuccessPayload>(),
+      submitModuleForm$: new Subject<void>(),
       formGroup: new UntypedFormGroup({
         manufacturer: manufacturerControl,
         standard: standardControl,
@@ -41,15 +79,15 @@ describe('ModuleBrowserAdderComponent', () => {
       })
     };
     
-    const route = {queryParams: queryParams$.asObservable()};
-    const seoAndUtilsService = {updateSeo: jasmine.createSpy('updateSeo')};
-    const userService = {};
+    const route: Pick<ActivatedRoute, 'queryParams'> = {queryParams: queryParams$.asObservable()};
+    const seoAndUtilsService = jasmine.createSpyObj<SeoAndUtilsService>('SeoAndUtilsService', ['updateSeo']);
+    const userService = {} as ConstructorParameters<typeof ModuleBrowserAdderComponent>[3];
     
     const component = new ModuleBrowserAdderComponent(
-      dataService as any,
-      route as any,
-      seoAndUtilsService as any,
-      userService as any
+      dataService as unknown as ConstructorParameters<typeof ModuleBrowserAdderComponent>[0],
+      route as ConstructorParameters<typeof ModuleBrowserAdderComponent>[1],
+      seoAndUtilsService,
+      userService
     );
     
     return {

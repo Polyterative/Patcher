@@ -1,5 +1,6 @@
 import {
   BehaviorSubject,
+  Observable,
   of,
   Subject,
   throwError
@@ -7,48 +8,122 @@ import {
 import { fakeAsync, tick } from '@angular/core/testing';
 import { ModuleAdderDataService } from './module-adder-data.service';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import { Standard } from 'src/app/models/standard';
+import { MinimalModule } from 'src/app/models/module';
+import { DBManufacturer } from 'src/app/models/manufacturer';
+import { StandardsService } from 'src/app/components/format-translator/standards.service';
+import { SupabaseService } from '../../backend/supabase.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
+import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
+
+
+type ManufacturerFixture = Pick<DBManufacturer, 'id' | 'name'>;
+type CreatedModuleFixture = { id: number };
+type NewModulePayload = readonly Record<string, unknown>[];
+type NewManufacturerPayload = readonly Pick<DBManufacturer, 'name'>[];
+type BackendResult<T> = { data: T[] };
+type GetModulesArgs = Parameters<SupabaseService['GET']['modules']>;
+type GetModulesSpy = jasmine.Spy<(...args: GetModulesArgs) => Observable<BackendResult<MinimalModule>>>;
+type GetManufacturersSpy = jasmine.Spy<(
+  from?: number,
+  to?: number,
+  columns?: string,
+  orderBy?: string
+) => Observable<BackendResult<ManufacturerFixture>>>;
+type AddModulesSpy = jasmine.Spy<(data: NewModulePayload) => Observable<BackendResult<CreatedModuleFixture>>>;
+type AddManufacturersSpy = jasmine.Spy<(data: NewManufacturerPayload) => Observable<BackendResult<ManufacturerFixture>>>;
+
+interface BackendDouble {
+  GET: {
+    manufacturers: GetManufacturersSpy;
+    modules: GetModulesSpy;
+  };
+  add: {
+    modules: AddModulesSpy;
+    manufacturers: AddManufacturersSpy;
+  };
+  cacheResetter$: {
+    next: jasmine.Spy<(keys: string[]) => void>;
+  };
+}
+
+interface DialogDouble {
+  open: jasmine.Spy<() => { afterClosed: () => Observable<{ answer: boolean }> }>;
+}
+
+const standard3U: Standard = {id: 0, name: '3U'};
+const defaultManufacturer: ManufacturerFixture = {id: 1, name: 'Make Noise'};
+
+function moduleFixture(overrides: Pick<MinimalModule, 'id' | 'name'> & Partial<MinimalModule>): MinimalModule {
+  return {
+    id:             overrides.id,
+    name:           overrides.name,
+    description:    '',
+    hp:             8,
+    public:         true,
+    manufacturer:   defaultManufacturer,
+    manufacturerId: defaultManufacturer.id,
+    standard:       standard3U,
+    tags:           [],
+    panels:         [],
+    created:        '2026-07-20T00:00:00.000Z',
+    updated:        '2026-07-20T00:00:00.000Z',
+    ...overrides
+  };
+}
 
 
 describe('ModuleAdderDataService', () => {
   let createdServices: ModuleAdderDataService[];
 
   function build(options?: {
-    manufacturers?: { id: number; name: string }[];
-    modules?: { id: number; name: string }[];
+    manufacturers?: ManufacturerFixture[];
+    modules?: MinimalModule[];
   }) {
-    const standards$ = new BehaviorSubject<any[]>([]);
-    const manufacturers = options?.manufacturers ?? [{id: 1, name: 'Make Noise'}];
-    const modules = options?.modules ?? [{id: 12, name: 'Maths'}];
-    const backend = {
+    const standards$ = new BehaviorSubject<Standard[] | undefined>([]);
+    const standardsService: Pick<StandardsService, 'standards'> = {
+      standards: {
+        update$: new Subject<void>(),
+        data$:   standards$
+      }
+    };
+    const manufacturers = options?.manufacturers ?? [defaultManufacturer];
+    const modules = options?.modules ?? [moduleFixture({id: 12, name: 'Maths'})];
+    const getManufacturers = jasmine.createSpy('GET.manufacturers') as GetManufacturersSpy;
+    getManufacturers.and.returnValue(of({data: manufacturers}));
+    const getModules = jasmine.createSpy('GET.modules') as GetModulesSpy;
+    getModules.and.returnValue(of({data: modules}));
+    const addModules = jasmine.createSpy('add.modules') as AddModulesSpy;
+    addModules.and.returnValue(of({data: [{id: 111}]}));
+    const addManufacturers = jasmine.createSpy('add.manufacturers') as AddManufacturersSpy;
+    addManufacturers.and.returnValue(of({data: [{id: 55, name: 'NewCo'}]}));
+    const backend: BackendDouble = {
       GET: {
-        manufacturers: jasmine.createSpy('GET.manufacturers').and.returnValue(of({
-          data: manufacturers
-        })),
-        modules: jasmine.createSpy('GET.modules').and.returnValue(of({
-          data: modules
-        }))
+        manufacturers: getManufacturers,
+        modules: getModules
       },
       add: {
-        modules: jasmine.createSpy('add.modules').and.returnValue(of({data: [{id: 111}]})),
-        manufacturers: jasmine.createSpy('add.manufacturers').and.returnValue(of({data: [{id: 55, name: 'NewCo'}]}))
+        modules: addModules,
+        manufacturers: addManufacturers
       },
       cacheResetter$: {next: jasmine.createSpy('cacheResetter$.next')}
     };
-    const dialog = {
-      open: jasmine.createSpy('open').and.returnValue({
-        afterClosed: () => of({answer: true})
-      })
+    const dialog: DialogDouble = {
+      open: jasmine.createSpy('open') as DialogDouble['open']
     };
-    const snackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
-    const router = jasmine.createSpyObj('Router', ['navigate']);
+    dialog.open.and.returnValue({afterClosed: () => of({answer: true})});
+    const snackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
+    const router = jasmine.createSpyObj<Router>('Router', ['navigate']);
+    const analytics = jasmine.createSpyObj<AnalyticsService>('AnalyticsService', ['capture', 'identify', 'reset']);
     
     const service = new ModuleAdderDataService(
-      {standards: {data$: standards$.asObservable()}} as any,
-      backend as any,
-      dialog as any,
+      standardsService as ConstructorParameters<typeof ModuleAdderDataService>[0],
+      backend as unknown as ConstructorParameters<typeof ModuleAdderDataService>[1],
+      dialog as unknown as ConstructorParameters<typeof ModuleAdderDataService>[2],
       snackBar,
       router,
-      {capture: () => {}, identify: () => {}, reset: () => {}} as any
+      analytics
     );
     createdServices.push(service);
     
@@ -69,8 +144,8 @@ describe('ModuleAdderDataService', () => {
     expect(backend.cacheResetter$.next).toHaveBeenCalledWith(['manufacturers']);
     expect(service.formData.manufacturer.control.enabled).toBeTrue();
     
-    standards$.next([{id: 0, name: '3U'}] as any);
-    expect(service.formData.standard.control.value).toEqual({id: '0', name: '3U'} as any);
+    standards$.next([standard3U]);
+    expect(service.formData.standard.control.value).toEqual({id: '0', name: '3U'});
   });
   
   it('updates similar module list when name/manufacturer changes', () => {
@@ -79,21 +154,23 @@ describe('ModuleAdderDataService', () => {
     service.formData.manufacturer.control.setValue({id: '1', name: 'Make Noise'});
     
     expect(backend.GET.modules).toHaveBeenCalled();
-    expect(service.similarModulesData$.value).toEqual([{id: 12, name: 'Maths'}] as any);
+    expect(service.similarModulesData$.value).toEqual([moduleFixture({id: 12, name: 'Maths'})]);
   });
 
   it('shows a loading state while submit-module similar search is pending', () => {
     const {service, backend} = build();
-    const response$ = new Subject<{data: { id: number; name: string }[]}>();
+    const previousModule = moduleFixture({id: 1, name: 'Previous'});
+    const ringsModule = moduleFixture({id: 2, name: 'Rings'});
+    const response$ = new Subject<BackendResult<MinimalModule>>();
     backend.GET.modules.and.returnValue(response$.asObservable());
-    service.similarModulesData$.next([{id: 1, name: 'Previous'}] as any);
+    service.similarModulesData$.next([previousModule]);
 
     service.formData.name.control.setValue('Rings');
 
     expect(service.similarModulesData$.value).toBeUndefined();
-    response$.next({data: [{id: 2, name: 'Rings'}]});
+    response$.next({data: [ringsModule]});
     response$.complete();
-    expect(service.similarModulesData$.value).toEqual([{id: 2, name: 'Rings'}] as any);
+    expect(service.similarModulesData$.value).toEqual([ringsModule]);
   });
 
   it('supports manufacturer-only similar search for empty-state discovery', () => {
@@ -101,7 +178,7 @@ describe('ModuleAdderDataService', () => {
 
     service.formData.manufacturer.control.setValue({id: '1', name: 'Make Noise'});
 
-    const args = backend.GET.modules.calls.mostRecent().args as any[];
+    const args = backend.GET.modules.calls.mostRecent().args;
     expect(args[2]).toBe('');
     expect(args[5]).toBe(1);
     expect(args[10]).toBeFalse();
@@ -123,7 +200,7 @@ describe('ModuleAdderDataService', () => {
     });
     backend.GET.modules.and.returnValues(
       throwError(() => new Error('network')),
-      of({data: [{id: 42, name: 'Recovered'}]})
+      of({data: [moduleFixture({id: 42, name: 'Recovered'})]})
     );
 
     service.formData.name.control.setValue('Broken');
@@ -131,7 +208,7 @@ describe('ModuleAdderDataService', () => {
     expect(SharedConstants.errorCustom).toHaveBeenCalledWith(jasmine.anything(), 'Failed to search similar modules');
 
     service.formData.name.control.setValue('Recovered');
-    expect(service.similarModulesData$.value).toEqual([{id: 42, name: 'Recovered'}] as any);
+    expect(service.similarModulesData$.value).toEqual([moduleFixture({id: 42, name: 'Recovered'})]);
     expect(console.error).toHaveBeenCalledWith('Failed to search similar modules:', jasmine.any(Error));
   });
 
@@ -142,21 +219,22 @@ describe('ModuleAdderDataService', () => {
 
     service.newManufacturerNameControl.setValue('Instruo');
 
-    expect(service.duplicateManufacturer$.value).toEqual({id: '1', name: 'Instruō'} as any);
+    expect(service.duplicateManufacturer$.value).toEqual({id: '1', name: 'Instruō'});
   });
 
   it('shows accent-matched similar modules on the submit-module page', () => {
+    const lubadhModule = moduleFixture({id: 2075, name: 'Lùbadh'});
     const {service} = build({
-      modules: [{id: 2075, name: 'Lùbadh'}]
+      modules: [lubadhModule]
     });
 
     service.formData.name.control.setValue('Lubadh');
 
-    expect(service.similarModulesData$.value).toEqual([{id: 2075, name: 'Lùbadh'}] as any);
+    expect(service.similarModulesData$.value).toEqual([lubadhModule]);
   });
   
   it('submits module immediately and resets form fields', fakeAsync(() => {
-    const {service, backend, snackBar, router} = build();
+    const {service, backend, router} = build();
     service.formData.name.control.setValue('Sample');
     service.formData.description.control.setValue('Desc');
     service.formData.manufacturer.control.setValue({id: '1', name: 'Make Noise'});
@@ -189,7 +267,7 @@ describe('ModuleAdderDataService', () => {
     service.createManufacturer$.next();
     
     expect(backend.add.manufacturers).toHaveBeenCalled();
-    expect(service.formData.manufacturer.control.value).toEqual({id: '55', name: 'NewCo'} as any);
+    expect(service.formData.manufacturer.control.value).toEqual({id: '55', name: 'NewCo'});
     expect(service.newManufacturerNameControl.value).toBe('');
     expect(service.showNewManufacturerForm$.value).toBeFalse();
   });
@@ -208,6 +286,7 @@ describe('ModuleAdderDataService', () => {
   
   it('handles manufacturer-create backend error', () => {
     const {service, backend} = build();
+    spyOn(console, 'error');
     spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
     });
     backend.add.manufacturers.and.returnValue(throwError(() => new Error('network')));
@@ -217,13 +296,14 @@ describe('ModuleAdderDataService', () => {
 
     expect(SharedConstants.errorCustom).toHaveBeenCalled();
     expect(service.isCreatingManufacturer$.value).toBeFalse();
+    expect(console.error).toHaveBeenCalledWith('Failed to create manufacturer:', jasmine.any(Error));
   });
 
   it('formGroup is valid when all fields are filled', () => {
     const {service, standards$} = build();
 
     // standard control is auto-applied by the options$ subscription
-    standards$.next([{id: 0, name: '3U'}] as any);
+    standards$.next([standard3U]);
 
     service.formData.name.control.setValue('Maths');
     service.formData.description.control.setValue('Analog computer designed for musical purposes');
