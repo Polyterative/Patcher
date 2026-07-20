@@ -5,7 +5,6 @@ import {
 } from '@angular/core';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { MatDialog } from '@angular/material/dialog';
-import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { DbModule } from 'src/app/models/module';
 import {
   defaultModuleMinimalViewConfig,
@@ -13,8 +12,8 @@ import {
 } from '../module-minimal/module-minimal.component';
 import { derivePanelLabel, PANEL_COLORS } from '../panel.constants';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
-import { StorageUrls } from 'src/app/features/backend/DatabaseStrings';
 import { ModulePanelZoomDialogComponent } from './module-panel-zoom-dialog.component';
+import { ModuleDetailDataService } from '../module-detail-data.service';
 
 @Component({
   selector:    'app-module-details',
@@ -32,7 +31,6 @@ import { ModulePanelZoomDialogComponent } from './module-panel-zoom-dialog.compo
   standalone:      false
 })
 export class ModuleDetailsComponent {
-  readonly panelStorageBaseUrl = StorageUrls.modulePanels;
   @Input() data: DbModule;
   @Input() viewConfig: ModuleMinimalViewConfig = defaultModuleMinimalViewConfig;
   /** Passed through to app-module-cvs for instance-aware CV clicks */
@@ -47,7 +45,7 @@ export class ModuleDetailsComponent {
   }
 
   constructor(
-    public backend: SupabaseService,
+    private readonly dataService: ModuleDetailDataService,
     public appState: AppStateService,
     private readonly dialog: MatDialog
   ) {
@@ -79,7 +77,7 @@ export class ModuleDetailsComponent {
   }
 
   getPanelImageUrl(filename: string): string {
-    return `${ this.panelStorageBaseUrl }${ filename }`;
+    return this.dataService.getPanelImageUrl(filename);
   }
 
   getPanelColorName(color: number): string | null {

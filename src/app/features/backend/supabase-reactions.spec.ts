@@ -166,6 +166,44 @@ describe('cool reaction backend API', () => {
     expect(builder.calls).toContain(jasmine.objectContaining({method: 'filter', args: ['entity_type', 'eq', ReactionEntityTypes.MODULE]}));
   });
 
+  it('falls back by default and throws in strict mode when Supabase returns an error response for current user reactions', async () => {
+    const transientError = {
+      code: 'PGRST003',
+      details: null,
+      hint: null,
+      message: 'Service temporarily unavailable'
+    };
+    const builder = chainable({data: null, error: transientError});
+    const fromSpy = jasmine.createSpy('from').and.returnValue(builder);
+    const queries = new SupabaseQueriesService(
+      {from: fromSpy} as never,
+      () => of(currentUser),
+      20
+    );
+
+    await expectAsync(firstValueFrom(
+      queries.getCurrentUserReactions(ReactionEntityTypes.MODULE)
+    )).toBeResolvedTo([]);
+
+    await expectAsync(firstValueFrom(
+      queries.getCurrentUserReactions(ReactionEntityTypes.MODULE, REACTION_KIND_COOL, true)
+    )).toBeRejectedWith(transientError);
+  });
+
+  it('returns an empty array for successful empty current user reaction responses', async () => {
+    const builder = chainable({data: [], error: null});
+    const fromSpy = jasmine.createSpy('from').and.returnValue(builder);
+    const queries = new SupabaseQueriesService(
+      {from: fromSpy} as never,
+      () => of(currentUser),
+      20
+    );
+
+    await expectAsync(firstValueFrom(
+      queries.getCurrentUserReactions(ReactionEntityTypes.PATCH)
+    )).toBeResolvedTo([]);
+  });
+
   it('returns no current user reactions without querying when signed out', async () => {
     const fromSpy = jasmine.createSpy('from');
     const queries = new SupabaseQueriesService(

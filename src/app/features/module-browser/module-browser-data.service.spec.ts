@@ -187,24 +187,77 @@ describe('ModuleBrowserDataService', () => {
     service.ngOnDestroy();
   }));
 
-  it('keeps the remote search stream alive after a backend error', fakeAsync(() => {
+  it('retries a thrown backend failure and renders recovered modules', () => {
     const {service, backend} = build();
-    spyOn(console, 'error');
+    backend.cacheResetter$.next.calls.reset();
     backend.GET.modules.and.returnValues(
       throwError(() => new Error('network')),
       of({data: [moduleFactory({id: 22, name: 'Recovered'})], count: 1})
     );
 
     service.updateModulesList$.next();
+
+    expect(backend.GET.modules.calls.count()).toBe(2);
+    expect(backend.cacheResetter$.next.calls.allArgs()).toEqual([[['modules']]]);
+    expect(service.modulesList$.value?.map(module => module.name)).toEqual(['Recovered']);
+    expect(service.serversideAdditionalData.itemsCount$.value).toBe(1);
+    service.ngOnDestroy();
+  });
+
+  it('retries an emitted backend response error and renders recovered modules', () => {
+    const {service, backend} = build();
+    backend.cacheResetter$.next.calls.reset();
+    backend.GET.modules.and.returnValues(
+      of({error: 'response error', data: null, count: 0}),
+      of({data: [moduleFactory({id: 23, name: 'Response Recovered'})], count: 1})
+    );
+
+    service.updateModulesList$.next();
+
+    expect(backend.GET.modules.calls.count()).toBe(2);
+    expect(backend.cacheResetter$.next.calls.allArgs()).toEqual([[['modules']]]);
+    expect(service.modulesList$.value?.map(module => module.name)).toEqual(['Response Recovered']);
+    expect(service.serversideAdditionalData.itemsCount$.value).toBe(1);
+    service.ngOnDestroy();
+  });
+
+  it('does not retry a successful empty modules response', () => {
+    const {service, backend} = build();
+    backend.cacheResetter$.next.calls.reset();
+
+    service.updateModulesList$.next();
+
+    expect(backend.GET.modules.calls.count()).toBe(1);
+    expect(backend.cacheResetter$.next).not.toHaveBeenCalled();
     expect(service.modulesList$.value).toEqual([]);
     expect(service.serversideAdditionalData.itemsCount$.value).toBe(0);
+    service.ngOnDestroy();
+  });
+
+  it('keeps the remote search stream alive after retries are exhausted', fakeAsync(() => {
+    const {service, backend} = build();
+    spyOn(console, 'error');
+    backend.cacheResetter$.next.calls.reset();
+    service.modulesList$.next([moduleFactory({id: 11, name: 'Existing'})]);
+    service.serversideAdditionalData.itemsCount$.next(7);
+    backend.GET.modules.and.returnValues(
+      throwError(() => new Error('network')),
+      throwError(() => new Error('still offline')),
+      of({data: [moduleFactory({id: 22, name: 'Recovered'})], count: 1})
+    );
+
+    service.updateModulesList$.next();
+    expect(service.modulesList$.value?.map(module => module.name)).toEqual(['Existing']);
+    expect(service.serversideAdditionalData.itemsCount$.value).toBe(7);
 
     service.fields.name.control.setValue('recovered');
     tick(750);
 
     expect(service.modulesList$.value?.map(module => module.name)).toEqual(['Recovered']);
     expect(service.serversideAdditionalData.itemsCount$.value).toBe(1);
-    expect(console.error).toHaveBeenCalledWith('Failed to load modules:', jasmine.any(Error));
+    expect(console.error).toHaveBeenCalledWith('[module-browser] Failed to load modules list', jasmine.any(Error));
+    expect(console.error).toHaveBeenCalledTimes(1);
+    expect(backend.cacheResetter$.next.calls.allArgs()).toEqual([[['modules']]]);
     service.ngOnDestroy();
   }));
   
@@ -388,7 +441,7 @@ describe('ModuleBrowserDataService', () => {
     tick(750);
 
     expect(service.remoteTagFilterLoading$.value).toBeFalse();
-    expect(service.modulesList$.value).toEqual([]);
+    expect(service.modulesList$.value?.map(module => module.id)).toEqual([1]);
     service.ngOnDestroy();
   }));
 

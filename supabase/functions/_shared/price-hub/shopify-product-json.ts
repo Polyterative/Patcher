@@ -1,4 +1,8 @@
 import type { NormalizedStoreListingSnapshot, SnapshotAvailability } from './woocommerce-store-api.ts';
+import {
+  normalizePriceHubCurrency,
+  parsePriceHubDecimalAmountToMinorUnits,
+} from './currency-minor-units.ts';
 
 export interface ShopifyProductJsonVariant {
   id?: number | string | null;
@@ -24,10 +28,16 @@ export interface ShopifyProductJsonProduct {
   images?: ShopifyProductJsonImage[] | null;
 }
 
+export interface ShopifyVariantTitlePreference {
+  prefer?: readonly string[];
+  avoid?: readonly string[];
+}
+
 interface ShopifyNormalizeOptions {
   baseUrl: string;
   currencyHint: string | null;
   ignoredMatchNoiseTags?: readonly string[];
+  variantTitlePreference?: ShopifyVariantTitlePreference;
 }
 
 export function normalizeShopifyProductJsonProduct(
@@ -35,15 +45,16 @@ export function normalizeShopifyProductJsonProduct(
   options: ShopifyNormalizeOptions,
 ): NormalizedStoreListingSnapshot {
   const variants = Array.isArray(product.variants) ? product.variants : [];
-  const selectedVariant = chooseShopifyVariant(variants);
+  const currency = normalizePriceHubCurrency(options.currencyHint);
+  const selectedVariant = chooseShopifyVariant(variants, currency, options.variantTitlePreference);
   const tags = normalizeTags(product.tags);
   const handle = normalizeOptionalText(product.handle ?? null);
   const ignoredMatchNoiseTags = readIgnoredMatchNoiseTags(tags, options.ignoredMatchNoiseTags ?? []);
   const matchNoiseText = buildMatchNoiseText(product.product_type ?? null, tags, ignoredMatchNoiseTags);
 
   return {
-    priceAmountMinor: parseDecimalPriceMinor(selectedVariant?.price ?? null),
-    currency: normalizeCurrency(options.currencyHint),
+    priceAmountMinor: parsePriceHubDecimalAmountToMinorUnits(selectedVariant?.price ?? null, currency),
+    currency,
     availability: normalizeAvailability(product, variants),
     productName: normalizeOptionalText(product.title ?? null),
     productUrl: handle ? new URL(`/products/${handle}`, options.baseUrl).toString() : null,
@@ -92,11 +103,53 @@ function readIgnoredMatchNoiseTags(tags: readonly string[], configuredTags: read
   return tags.filter((tag) => configured.has(tag.toLowerCase()));
 }
 
-function chooseShopifyVariant(variants: readonly ShopifyProductJsonVariant[]): ShopifyProductJsonVariant | null {
-  return variants.find((variant) => variant.available === true && parseDecimalPriceMinor(variant.price ?? null) !== null)
-    ?? variants.find((variant) => parseDecimalPriceMinor(variant.price ?? null) !== null)
+export function chooseShopifyVariant(
+  variants: readonly ShopifyProductJsonVariant[],
+  currency: string | null,
+  titlePreference: ShopifyVariantTitlePreference = {},
+): ShopifyProductJsonVariant | null {
+  const availablePriced = variants.filter((variant) => variant.available === true && hasPrice(variant, currency));
+  const priced = variants.filter((variant) => hasPrice(variant, currency));
+  const candidates = availablePriced.length > 0
+    ? availablePriced
+    : priced.length > 0
+      ? priced
+      : variants;
+
+  return choosePreferredShopifyVariant(candidates, titlePreference)
+    ?? null;
+}
+
+function choosePreferredShopifyVariant(
+  variants: readonly ShopifyProductJsonVariant[],
+  titlePreference: ShopifyVariantTitlePreference,
+): ShopifyProductJsonVariant | null {
+  if (variants.length === 0) {
+    return null;
+  }
+
+  const preferredVariant = variants.find((variant) => variantTitleMatches(variant, titlePreference.prefer ?? [])
+    && !variantTitleMatches(variant, titlePreference.avoid ?? []));
+  if (preferredVariant) {
+    return preferredVariant;
+  }
+
+  return variants.find((variant) => !variantTitleMatches(variant, titlePreference.avoid ?? []))
     ?? variants[0]
     ?? null;
+}
+
+function hasPrice(variant: ShopifyProductJsonVariant, currency: string | null): boolean {
+  return parsePriceHubDecimalAmountToMinorUnits(variant.price ?? null, currency) !== null;
+}
+
+function variantTitleMatches(variant: ShopifyProductJsonVariant, terms: readonly string[]): boolean {
+  if (terms.length === 0 || !isNonBlank(variant.title)) {
+    return false;
+  }
+
+  const title = variant.title.toLowerCase();
+  return terms.some((term) => title.includes(term.toLowerCase()));
 }
 
 function normalizeAvailability(
@@ -126,32 +179,6 @@ function normalizeAvailability(
   }
 
   return 'unknown';
-}
-
-function parseDecimalPriceMinor(value: string | number | null): number | null {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return Math.round(value * 100);
-  }
-
-  if (typeof value !== 'string') {
-    return null;
-  }
-
-  const normalized = value.trim().replace(/\s/g, '').replace(',', '.');
-  if (!/^\d+(?:\.\d{1,2})?$/.test(normalized)) {
-    return null;
-  }
-
-  return Math.round(Number.parseFloat(normalized) * 100);
-}
-
-function normalizeCurrency(value: string | null): string | null {
-  if (!isNonBlank(value)) {
-    return null;
-  }
-
-  const currency = value.trim().toUpperCase();
-  return /^[A-Z]{3}$/.test(currency) ? currency : null;
 }
 
 function normalizeTags(value: string[] | string | null | undefined): string[] {

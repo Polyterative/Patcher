@@ -7,6 +7,10 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 import { SupabaseService } from '../../supabase.service';
 import { of } from 'rxjs';
+import {
+  globalCacheBusterNotifier,
+  promiseGlobalCacheBusterNotifier
+} from 'ts-cacheable';
 
 
 /**
@@ -55,6 +59,9 @@ export function setupSupabaseServiceTest() {
 export function cleanupSupabaseServiceTest() {
   const service = TestBed.inject(SupabaseService, null);
   service?.ngOnDestroy();
+  // @Cacheable stores values outside Angular TestBed; clear it so specs never share mock responses.
+  globalCacheBusterNotifier.next();
+  promiseGlobalCacheBusterNotifier.next();
   localStorage.clear();
   sessionStorage.clear();
   TestBed.resetTestingModule();

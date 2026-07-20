@@ -22,8 +22,8 @@ input/output logic.
 
 ## Status
 
-- [~] Product-owner direction decision recorded and local-only additive schema
-  proposal drafted.
+- [ ] Product-owner direction decision recorded, local-only additive schema
+  proposal drafted, and static safety test added for the migration draft.
 - Blocked before backend/model implementation: proposal review and explicit
   approval are required before backend type generation, RLS/GRANT work, remote
   Supabase application, or behavior changes.
@@ -114,3 +114,4 @@ checkpoint is a schema/design spike with no UI behavior change:
   rows allow `output` / `bidirectional` / `passive`. The proposal avoids UPDATE
   backfills, keeps existing rows valid, and does not touch RLS, grants, or
   remote Supabase.
+- 2026-07-06T18:02+02:00 — Added a safe local Node static migration test for module port direction proposal; no schema/RLS/remote apply/UI/deploy was done.

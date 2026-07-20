@@ -5,6 +5,7 @@
   collectionsWithThisModule: (dataService.collectionsWithThisModule$|async),
   modulePriceListings: (dataService.modulePriceListings$|async),
   recentMarketPrice: (dataService.recentMarketPrice$|async),
+  sparsePriceHistorySummary: (dataService.sparsePriceHistorySummary$|async),
   moduleUsageSummary: (dataService.moduleUsageSummary$|async),
   possessionCounts: (dataService.possessionCounts$|async),
   coolCount: (dataService.coolCount$|async),
@@ -41,7 +42,10 @@
                                       [viewConfig]="viewConfig"
                                       [preferredPanelColor]="appState.preferredPanelColor$ | async"
                                       [preferPortraitDetailSplit]="true"
+                                      [showCoolAction]="coolReactionsEnabled && !!bag.user"
                                       [priceSummary]="bag.recentMarketPrice"
+                                      [priceHistorySummary]="bag.sparsePriceHistorySummary"
+                                      (coolToggled)="dataService.coolCountUpdate$.next($event.count)"
                 ></app-module-composite>
               }
             </lib-clean-card>
@@ -621,20 +625,10 @@
         </div>
       </div>
     </lib-hero-content-card>
-    @if (bag.data && bag.user && (!bag.data.isComplete || coolReactionsEnabled)) {
+    @if (bag.data && bag.user && (!bag.data.isComplete || (bag.editing && moduleEditor))) {
       <div class="module-detail-editor-floating-actions"
            [@moduleDetailFabEnter]="{ value: '', params: { delay: 332, duration: 165 } }"
       >
-        @if (coolReactionsEnabled) {
-          <app-cool-button
-            class="module-detail-cool-floating-action"
-            [entityType]="ReactionEntityTypes.MODULE"
-            [entityId]="bag.data.id"
-            [eligible]="bag.data.public === true"
-            countDisplayMode="count"
-            (coolToggled)="dataService.coolCountUpdate$.next($event.count)"
-          ></app-cool-button>
-        }
         @if (bag.editing && moduleEditor) {
           <button
             class="module-detail-save-floating-action"

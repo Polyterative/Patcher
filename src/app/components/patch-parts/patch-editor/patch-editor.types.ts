@@ -7,7 +7,10 @@ import {
   PatchConnection,
   PatchModuleInstance
 } from 'src/app/models/connection';
-import { Rack } from 'src/app/models/rack';
+import {
+  Rack,
+  RackModuleOrientation
+} from 'src/app/models/rack';
 
 /** One card in the editor module list */
 export interface EditorModuleCard {
@@ -82,6 +85,7 @@ export interface LinkedRackPreviewCard {
   row: number;
   column: number;
   selectedPanelId: number | null;
+  orientation: RackModuleOrientation;
 }
 
 export interface LinkedRackPreviewRow {

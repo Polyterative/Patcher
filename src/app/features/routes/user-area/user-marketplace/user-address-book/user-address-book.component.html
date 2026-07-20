@@ -1,0 +1,203 @@
+<lib-hero-content-card
+  titleNormal="Shipping addresses"
+  description="Private. Saved for marketplace use only."
+  class="addressesBG"
+  icon="local_shipping"
+>
+  @if ({vm: (vm$ | async), editor: (editor$ | async), validation: (validation$ | async), canSave: (canSave$ | async), deleteConfirmId: (deleteConfirmId$ | async)}; as bag) {
+    @if (bag.vm; as vm) {
+      <section class="address-book" aria-label="Private shipping addresses">
+        <div class="address-book__toolbar">
+          <p class="address-book__privacy">
+            <mat-icon aria-hidden="true">lock</mat-icon>
+            Only visible in your account area.
+          </p>
+          <button
+            mat-stroked-button
+            color="primary"
+            type="button"
+            class="address-book__add"
+            [disabled]="!!bag.editor || vm.loading"
+            (click)="openCreate()"
+          >
+            <mat-icon aria-hidden="true">add</mat-icon>
+            Add address
+          </button>
+        </div>
+
+        @if (bag.editor?.mode === 'create') {
+          <ng-container
+            *ngTemplateOutlet="addressEditor; context: {validation: bag.validation, canSave: bag.canSave, vm: vm}"
+          ></ng-container>
+        }
+
+        @if (vm.loading) {
+          <div class="address-book__state" role="status">
+            <mat-icon aria-hidden="true">sync</mat-icon>
+            Loading private addresses…
+          </div>
+        } @else if (vm.listError) {
+          <div class="address-book__state address-book__state--error" role="alert">
+            <mat-icon aria-hidden="true">error_outline</mat-icon>
+            <span>{{ vm.listError }}</span>
+            <button mat-button type="button" (click)="retryLoad()">Retry</button>
+          </div>
+        } @else if (vm.addresses.length === 0) {
+          <app-empty-state-tips
+            [compact]="true"
+            icon="local_shipping"
+            title="No saved addresses"
+            copy="Add one private shipping address to reuse when marketplace offers arrive."
+          ></app-empty-state-tips>
+        } @else {
+          <div class="address-book__list" aria-live="polite">
+            @for (address of vm.addresses; track address.id) {
+              <article class="address-row" [class.address-row--default]="address.isDefault">
+                <div class="address-row__summary">
+                  <div class="address-row__copy">
+                    <strong>{{ address.label }}</strong>
+                    <span>{{ summary(address) }}</span>
+                  </div>
+                  @if (address.isDefault) {
+                    <span class="address-row__badge">Default</span>
+                  }
+                </div>
+
+                <div class="address-row__actions" [attr.aria-label]="'Actions for ' + address.label">
+                  @if (!address.isDefault) {
+                    <button
+                      mat-button
+                      type="button"
+                      class="address-row__action"
+                      [disabled]="!!bag.editor || vm.saving || !!vm.deletingId"
+                      (click)="makeDefault(address)"
+                    >Make default</button>
+                  }
+                  <button
+                    mat-button
+                    type="button"
+                    class="address-row__action"
+                    [disabled]="!!bag.editor || vm.saving || !!vm.deletingId"
+                    [attr.aria-expanded]="bag.editor?.id === address.id"
+                    (click)="openEdit(address)"
+                  >Edit</button>
+                  <button
+                    mat-button
+                    type="button"
+                    class="address-row__action address-row__action--danger"
+                    [disabled]="!!bag.editor || vm.saving || !!vm.deletingId"
+                    (click)="requestDelete(address)"
+                  >Delete</button>
+                </div>
+
+                @if (bag.deleteConfirmId === address.id) {
+                  <div class="address-row__confirm" role="alert">
+                    <span>Delete “{{ address.label }}”?</span>
+                    <button
+                      mat-button
+                      type="button"
+                      class="address-row__action--danger"
+                      [disabled]="vm.saving || !!vm.deletingId"
+                      (click)="confirmDelete(address)"
+                    >Confirm delete</button>
+                    <button mat-button type="button" (click)="cancelDelete()">Cancel</button>
+                  </div>
+                }
+
+                @if (bag.editor?.id === address.id) {
+                  <ng-container
+                    *ngTemplateOutlet="addressEditor; context: {validation: bag.validation, canSave: bag.canSave, vm: vm}"
+                  ></ng-container>
+                }
+              </article>
+            }
+          </div>
+        }
+
+        @if (vm.mutationError) {
+          <p class="address-book__mutation-error" role="alert">{{ vm.mutationError }}</p>
+        }
+      </section>
+    }
+  }
+</lib-hero-content-card>
+
+<ng-template #addressEditor let-validation="validation" let-canSave="canSave" let-vm="vm">
+  <form class="address-editor" [formGroup]="form" (ngSubmit)="save()" aria-label="Shipping address editor">
+    <div class="address-editor__grid">
+      <label class="address-editor__field">
+        <span>Label</span>
+        <input type="text" formControlName="label" autocomplete="section-shipping address-level4">
+        @if (fieldError(validation, 'label'); as error) {
+          <small role="alert">{{ error }}</small>
+        }
+      </label>
+
+      <label class="address-editor__field">
+        <span>Recipient name</span>
+        <input type="text" formControlName="recipientName" autocomplete="section-shipping name">
+        @if (fieldError(validation, 'recipientName'); as error) {
+          <small role="alert">{{ error }}</small>
+        }
+      </label>
+
+      <label class="address-editor__field address-editor__field--wide">
+        <span>Street / line 1</span>
+        <input type="text" formControlName="line1" autocomplete="section-shipping address-line1">
+        @if (fieldError(validation, 'line1'); as error) {
+          <small role="alert">{{ error }}</small>
+        }
+      </label>
+
+      <label class="address-editor__field address-editor__field--wide">
+        <span>Line 2 <em>optional</em></span>
+        <input type="text" formControlName="line2" autocomplete="section-shipping address-line2">
+      </label>
+
+      <label class="address-editor__field">
+        <span>City</span>
+        <input type="text" formControlName="city" autocomplete="section-shipping address-level2">
+        @if (fieldError(validation, 'city'); as error) {
+          <small role="alert">{{ error }}</small>
+        }
+      </label>
+
+      <label class="address-editor__field">
+        <span>Region <em>optional</em></span>
+        <input type="text" formControlName="region" autocomplete="section-shipping address-level1">
+      </label>
+
+      <label class="address-editor__field">
+        <span>Postal code <em>optional</em></span>
+        <input type="text" formControlName="postalCode" autocomplete="section-shipping postal-code">
+      </label>
+
+      <label class="address-editor__field">
+        <span>Country code</span>
+        <input
+          type="text"
+          maxlength="2"
+          formControlName="countryCode"
+          autocomplete="section-shipping country"
+          (blur)="normalizeCountryInput()"
+        >
+        @if (fieldError(validation, 'countryCode'); as error) {
+          <small role="alert">{{ error }}</small>
+        }
+      </label>
+    </div>
+
+    <label class="address-editor__toggle">
+      <input type="checkbox" formControlName="isDefault">
+      <span>Use as default address</span>
+    </label>
+
+    <div class="address-editor__actions">
+      <button mat-stroked-button color="primary" type="submit" [disabled]="!canSave">
+        <mat-icon aria-hidden="true">save</mat-icon>
+        {{ vm.saving ? 'Saving…' : 'Save address' }}
+      </button>
+      <button mat-button type="button" [disabled]="vm.saving" (click)="closeEditor()">Cancel</button>
+    </div>
+  </form>
+</ng-template>

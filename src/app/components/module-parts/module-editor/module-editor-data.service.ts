@@ -15,6 +15,11 @@ import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { CV } from 'src/app/models/cv';
 import { DbModule } from 'src/app/models/module';
 import {
+  ModulePanelCompressionResult,
+  ModulePanelUploadMimeType,
+  compressModulePanelImage
+} from 'src/app/shared-interproject/upload-guardrails/browser-image-compression';
+import {
   areCvListsEqual,
   classifyPanelType,
   decodePanelImage,
@@ -66,6 +71,21 @@ export class ModuleEditorDataService {
       type: fileType,
       lastModified: Date.now()
     });
+  }
+
+  async buildGuardedCroppedPanelFile(
+    sourceFile: File,
+    blob: Blob,
+    preferredMimeType: ModulePanelUploadMimeType
+  ): Promise<{
+    file: File;
+    compression: ModulePanelCompressionResult;
+  }> {
+    const compression = await compressModulePanelImage(blob, preferredMimeType);
+    return {
+      file: this.buildCroppedPanelFile(sourceFile, compression.blob),
+      compression
+    };
   }
 
   buildCvSummary(cvs: FormCV[]): CvSectionSummary {

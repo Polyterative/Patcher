@@ -2,6 +2,7 @@ import { ModulePriceListing } from './supabase-queries.models';
 import {
   formatEstimatedEurPrice,
   getModuleRecentMarketPrice,
+  getModuleSparsePriceHistorySummary,
   normalizeModulePriceToEurMinor
 } from './module-price-summary.utils';
 
@@ -31,6 +32,28 @@ function buildListing(
   };
 }
 
+function buildHistorySnapshot(overrides: {
+  id?: number;
+  listingId?: number;
+  storeId?: number;
+  observedAt?: string;
+  priceAmountMinor?: number | null;
+  currency?: string | null;
+  availability?: string;
+  source?: string;
+} = {}) {
+  return {
+    id: overrides.id ?? 1,
+    listingId: overrides.listingId ?? 1,
+    storeId: overrides.storeId ?? 1,
+    observedAt: overrides.observedAt ?? '2026-07-01T00:00:00.000Z',
+    priceAmountMinor: overrides.priceAmountMinor ?? 40000,
+    currency: overrides.currency ?? 'EUR',
+    availability: overrides.availability ?? 'in_stock',
+    source: overrides.source ?? 'crawler'
+  };
+}
+
 describe('module price summary utils', () => {
   const referenceDate = new Date('2026-07-02T00:00:00.000Z');
 
@@ -39,7 +62,11 @@ describe('module price summary utils', () => {
     expect(normalizeModulePriceToEurMinor(10000, 'USD')).toBe(9200);
     expect(normalizeModulePriceToEurMinor(10000, 'GBP')).toBe(11700);
     expect(normalizeModulePriceToEurMinor(10000, 'CHF')).toBe(10700);
-    expect(normalizeModulePriceToEurMinor(10000, 'JPY')).toBeNull();
+    expect(normalizeModulePriceToEurMinor(10000, 'AUD')).toBe(6100);
+    expect(normalizeModulePriceToEurMinor(10000, 'CAD')).toBe(6800);
+    expect(normalizeModulePriceToEurMinor(40000, 'JPY')).toBe(24800);
+    expect(normalizeModulePriceToEurMinor(10000, 'NOK')).toBe(850);
+    expect(normalizeModulePriceToEurMinor(10000, 'XYZ')).toBeNull();
   });
 
   it('builds a weighted recent market price from recent supported snapshots', () => {
@@ -65,9 +92,39 @@ describe('module price summary utils', () => {
       storeCount: 2,
       latestObservedAt: '2026-07-01T00:00:00.000Z'
     }));
-    expect(summary?.tooltip).toContain('Recent market price:');
+    expect(summary?.tooltip).toContain('Estimated recent market price:');
     expect(summary?.tooltip).toContain('from 2 stores');
     expect(summary?.tooltip).toContain('latest check');
+  });
+
+  it('includes seeded non-EUR store currencies in the market rollup', () => {
+    const summary = getModuleRecentMarketPrice(42, [
+      buildListing({listingId: 1, storeId: 1}, {
+        priceAmountMinor: 10000,
+        currency: 'EUR'
+      }),
+      buildListing({listingId: 2, storeId: 2}, {
+        priceAmountMinor: 10000,
+        currency: 'AUD'
+      }),
+      buildListing({listingId: 3, storeId: 3}, {
+        priceAmountMinor: 10000,
+        currency: 'CAD'
+      }),
+      buildListing({listingId: 4, storeId: 4}, {
+        priceAmountMinor: 40000,
+        currency: 'JPY'
+      }),
+      buildListing({listingId: 5, storeId: 5}, {
+        priceAmountMinor: 10000,
+        currency: 'NOK'
+      })
+    ], referenceDate);
+
+    expect(summary).toEqual(jasmine.objectContaining({
+      estimatedPriceEurMinor: 9710,
+      storeCount: 5
+    }));
   });
 
   it('returns null when no recent supported price was observed', () => {
@@ -80,13 +137,81 @@ describe('module price summary utils', () => {
       buildListing({listingId: 2}, {
         observedAt: '2026-07-01T00:00:00.000Z',
         priceAmountMinor: 40000,
-        currency: 'JPY'
+        currency: 'XYZ'
       }),
       buildListing({listingId: 3}, {
         observedAt: '2026-07-01T00:00:00.000Z',
         priceAmountMinor: null,
         currency: 'EUR'
       }),
+    ], referenceDate)).toBeNull();
+  });
+
+  it('builds a sparse 60-day history trend from eligible normalized snapshots', () => {
+    const summary = getModuleSparsePriceHistorySummary(42, [
+      buildHistorySnapshot({
+        id: 1,
+        storeId: 1,
+        observedAt: '2026-05-15T00:00:00.000Z',
+        priceAmountMinor: 40000,
+        currency: 'EUR'
+      }),
+      buildHistorySnapshot({
+        id: 2,
+        storeId: 2,
+        observedAt: '2026-06-15T00:00:00.000Z',
+        priceAmountMinor: 50000,
+        currency: 'USD'
+      }),
+      buildHistorySnapshot({
+        id: 3,
+        storeId: 1,
+        observedAt: '2026-07-01T00:00:00.000Z',
+        priceAmountMinor: 38000,
+        currency: 'EUR'
+      }),
+    ], referenceDate);
+
+    expect(summary).toEqual(jasmine.objectContaining({
+      moduleId: 42,
+      eligiblePointCount: 3,
+      storeCount: 2,
+      earliestPriceEurMinor: 40000,
+      latestPriceEurMinor: 38000,
+      minPriceEurMinor: 38000,
+      maxPriceEurMinor: 46000,
+      trendPercent: -5,
+      trendDirection: 'down',
+      label: '↓5% 60d',
+      rangeLabel: '~€380–€460'
+    }));
+    expect(summary?.tooltip).toContain('60-day Price Hub history');
+    expect(summary?.tooltip).toContain('Estimated EUR values');
+  });
+
+  it('returns a flat sparse history label for tiny movement', () => {
+    const summary = getModuleSparsePriceHistorySummary(42, [
+      buildHistorySnapshot({
+        id: 1,
+        observedAt: '2026-06-01T00:00:00.000Z',
+        priceAmountMinor: 40000
+      }),
+      buildHistorySnapshot({
+        id: 2,
+        observedAt: '2026-07-01T00:00:00.000Z',
+        priceAmountMinor: 40400
+      }),
+    ], referenceDate);
+
+    expect(summary?.trendDirection).toBe('flat');
+    expect(summary?.label).toBe('Flat 60d');
+  });
+
+  it('returns null for sparse history when fewer than two eligible points exist', () => {
+    expect(getModuleSparsePriceHistorySummary(42, [
+      buildHistorySnapshot({observedAt: '2026-04-01T00:00:00.000Z'}),
+      buildHistorySnapshot({observedAt: '2026-07-01T00:00:00.000Z', currency: 'XYZ'}),
+      buildHistorySnapshot({observedAt: '2026-07-01T00:00:00.000Z', priceAmountMinor: null}),
     ], referenceDate)).toBeNull();
   });
 });

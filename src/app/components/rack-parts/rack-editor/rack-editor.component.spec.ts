@@ -7,9 +7,12 @@ import {
 } from 'rxjs';
 import { ModulePanelZoomDialogComponent } from 'src/app/components/module-parts/module-details/module-panel-zoom-dialog.component';
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
-import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { RackedModule } from 'src/app/models/module';
-import { GeneralContextMenuDataService } from 'src/app/shared-interproject/components/@smart/general-context-menu/general-context-menu-data.service';
+import { RackMinimal } from 'src/app/models/rack';
+import {
+  ContextMenuItem,
+  GeneralContextMenuDataService
+} from 'src/app/shared-interproject/components/@smart/general-context-menu/general-context-menu-data.service';
 import { RackEditorComponent } from './rack-editor.component';
 import {
   RACK_ANALYSIS_MODES,
@@ -23,7 +26,6 @@ describe('RackEditorComponent', () => {
 
   function createComponent(
     snackBar: MatSnackBar = {} as MatSnackBar,
-    supabaseService: SupabaseService = {} as SupabaseService,
     dataService: RackDetailDataService = {} as RackDetailDataService,
     contextMenuDataService: GeneralContextMenuDataService = {} as GeneralContextMenuDataService,
     changeDetectorRef: ChangeDetectorRef = {markForCheck: () => undefined} as ChangeDetectorRef,
@@ -31,15 +33,14 @@ describe('RackEditorComponent', () => {
     analytics: Pick<AnalyticsService, 'capture'> = {capture: () => undefined}
   ) {
     const normalizedContextMenu = {
-      menuItems$: new BehaviorSubject<any[]>([]),
+      menuItems$: new BehaviorSubject<ContextMenuItem[]>([]),
       open$: new Subject<MouseEvent>(),
-      menuClose$: new Subject<any>(),
+      menuClose$: new Subject<ContextMenuItem>(),
       ...contextMenuDataService
     } as GeneralContextMenuDataService;
 
     const component = new RackEditorComponent(
       snackBar,
-      supabaseService,
       dataService,
       normalizedContextMenu,
       changeDetectorRef,
@@ -63,7 +64,6 @@ describe('RackEditorComponent', () => {
 
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       {} as RackDetailDataService,
       {} as GeneralContextMenuDataService,
       {markForCheck: () => undefined} as ChangeDetectorRef,
@@ -86,7 +86,7 @@ describe('RackEditorComponent', () => {
       ModulePanelZoomDialogComponent,
       jasmine.objectContaining({
         data: jasmine.objectContaining({
-          imageUrl: 'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/dark.png'
+          imageUrl: 'https://images.patcher.xyz/module-panels/dark.png'
         })
       })
     );
@@ -97,7 +97,6 @@ describe('RackEditorComponent', () => {
 
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       {} as RackDetailDataService,
       {} as GeneralContextMenuDataService,
       {markForCheck: () => undefined} as ChangeDetectorRef,
@@ -119,7 +118,7 @@ describe('RackEditorComponent', () => {
   });
 
   it('does not expose HP override actions in the module context menu', () => {
-    const menuItems$ = new BehaviorSubject<any[]>([]);
+    const menuItems$ = new BehaviorSubject<ContextMenuItem[]>([]);
     const open$ = new Subject<MouseEvent>();
     const dataService = {
       isCurrentRackPropertyOfCurrentUser$: new BehaviorSubject(true),
@@ -134,7 +133,6 @@ describe('RackEditorComponent', () => {
 
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       dataService as any,
       {menuItems$, open$} as GeneralContextMenuDataService,
       {markForCheck: () => undefined} as ChangeDetectorRef,
@@ -153,7 +151,7 @@ describe('RackEditorComponent', () => {
             manufacturer: {name: 'Xaoc Devices'},
             panels: []
           }
-        } as any
+        } as unknown as RackedModule
       });
 
     const ids = menuItems$.value.map(item => item.id);
@@ -176,10 +174,82 @@ describe('RackEditorComponent', () => {
     expect(menuItems$.value[0].label).toBe('Belgrad (Xaoc Devices, 14 HP)');
   });
 
+  it('routes shared module mutation actions through the rack data service', () => {
+    const duplicate$ = new Subject<RackedModule>();
+    const replaceWithBlank$ = new Subject<RackedModule>();
+    const remove$ = new Subject<RackedModule>();
+    const component = createComponent(
+      {} as MatSnackBar,
+      {
+        requestRackedModuleDuplication$: duplicate$,
+        requestRackedModuleReplaceWithBlank$: replaceWithBlank$,
+        requestRackedModuleRemoval$: remove$
+      } as RackDetailDataService
+    );
+    const moduleRef = {
+      module: {
+        name: 'Belgrad'
+      }
+    } as RackedModule;
+    const duplicateSpy = spyOn(duplicate$, 'next');
+    const replaceSpy = spyOn(replaceWithBlank$, 'next');
+    const removeSpy = spyOn(remove$, 'next');
+
+    component.moduleActions.find(action => action.id === 'duplicate')?.run(moduleRef);
+    component.moduleActions.find(action => action.id === 'replace-with-blank')?.run(moduleRef);
+    component.moduleActions.find(action => action.id === 'delete')?.run(moduleRef);
+
+    expect(duplicateSpy).toHaveBeenCalledWith(moduleRef);
+    expect(replaceSpy).toHaveBeenCalledWith(moduleRef);
+    expect(removeSpy).toHaveBeenCalledWith(moduleRef);
+  });
+
+  it('stops module context menu subscriptions when destroyed', () => {
+    const menuItems$ = new BehaviorSubject<ContextMenuItem[]>([]);
+    const open$ = new Subject<MouseEvent>();
+    const dataService = {
+      isCurrentRackPropertyOfCurrentUser$: new BehaviorSubject(true),
+      isCurrentRackEditable$: new BehaviorSubject(true),
+      requestRackedModuleDuplication$: new Subject<RackedModule>(),
+      requestRackedModuleRemoval$: new Subject<RackedModule>(),
+      requestRackedModuleReplaceWithBlank$: new Subject<RackedModule>(),
+      requestRackedModuleRowClearing$: new Subject<RackedModule>(),
+      requestClearRow$: new Subject<number>(),
+      requestRackedModulePanelSwitch$: new Subject<{ rackedModule: RackedModule; panelId: number | null }>(),
+    };
+    const component = createComponent(
+      {} as MatSnackBar,
+      dataService as Partial<RackDetailDataService> as RackDetailDataService,
+      {menuItems$, open$} as GeneralContextMenuDataService,
+      {markForCheck: () => undefined} as ChangeDetectorRef,
+      jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
+    );
+    const openSpy = spyOn(open$, 'next');
+
+    component.data = {hp: 104} as RackMinimal;
+    component.ngOnInit();
+    component.ngOnDestroy();
+    createdComponents = createdComponents.filter(createdComponent => createdComponent !== component);
+
+    component.moduleRightClick$.next({
+      $event: new MouseEvent('contextmenu'),
+      rackedModule: {
+        module: {
+          name: 'Belgrad',
+          hp: 14,
+          manufacturer: {name: 'Xaoc Devices'},
+          panels: []
+        }
+      } as RackedModule
+    });
+
+    expect(openSpy).not.toHaveBeenCalled();
+    expect(menuItems$.value).toEqual([]);
+  });
+
   it('toggles the view options panel', () => {
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       {} as RackDetailDataService,
       {} as GeneralContextMenuDataService,
       {markForCheck: () => undefined} as ChangeDetectorRef,
@@ -201,7 +271,6 @@ describe('RackEditorComponent', () => {
     } as unknown as RackDetailDataService;
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       dataService
     );
     const moduleAt = (id: number, hp: number, row: number, column: number) => ({
@@ -230,7 +299,6 @@ describe('RackEditorComponent', () => {
     } as unknown as RackDetailDataService;
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       dataService
     );
     const moduleAt = (id: number, hp: number) => ({
@@ -258,7 +326,6 @@ describe('RackEditorComponent', () => {
     } as unknown as RackDetailDataService;
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       dataService
     );
     const moduleAt = (id: number, row: number, column: number) => ({
@@ -290,7 +357,6 @@ describe('RackEditorComponent', () => {
     } as unknown as RackDetailDataService;
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       dataService
     );
     const moduleAt = (id: number, hp: number, row: number) => ({
@@ -319,7 +385,6 @@ describe('RackEditorComponent', () => {
     } as unknown as RackDetailDataService;
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       dataService
     );
     const moduleAt = (id: number, standardId: number) => ({
@@ -347,7 +412,6 @@ describe('RackEditorComponent', () => {
     } as unknown as RackDetailDataService;
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       dataService
     );
     const moduleAt = (id: number, hp: number, row: number, column: number) => ({
@@ -381,12 +445,18 @@ describe('RackEditorComponent', () => {
       requestRackedModuleRowClearing$: new Subject<RackedModule>(),
       requestClearRow$: new Subject<number>(),
       requestRackedModulePanelSwitch$: new Subject<any>(),
+      canToggleRackModuleOrientation: jasmine.createSpy('canToggleRackModuleOrientation').and.returnValue(false),
+      isRackModuleOrientationUpdating: jasmine.createSpy('isRackModuleOrientationUpdating').and.returnValue(false),
+      isAnyRackModuleOrientationUpdating: jasmine.createSpy('isAnyRackModuleOrientationUpdating').and.returnValue(false),
+      rackModuleOrientationActionLabel: jasmine.createSpy('rackModuleOrientationActionLabel').and.returnValue('Flip 180°'),
+      rackModuleOrientationActionIcon: jasmine.createSpy('rackModuleOrientationActionIcon').and.returnValue('rotate_right'),
+      rackModuleOrientationActionTooltip: jasmine.createSpy('rackModuleOrientationActionTooltip').and.returnValue('Flip module 180°'),
+      requestRackedModuleOrientationToggle$: new Subject<RackedModule>(),
     };
     const contextMenu = {menuItems$, open$} as GeneralContextMenuDataService;
 
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       dataService as any,
       contextMenu,
       {markForCheck: () => undefined} as ChangeDetectorRef,
@@ -430,7 +500,6 @@ describe('RackEditorComponent', () => {
   it('uses the same shared action ids for the touch tray and the context menu', () => {
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       {} as RackDetailDataService,
       {} as GeneralContextMenuDataService,
       {markForCheck: () => undefined} as ChangeDetectorRef,
@@ -439,12 +508,14 @@ describe('RackEditorComponent', () => {
 
     expect(component.touchTrayModuleActions.map(action => action.id)).toEqual([
       'inspect',
+      'flip-orientation',
       'duplicate',
       'replace-with-blank',
       'delete'
     ]);
     expect(component.moduleActions.filter(action => action.includeInContextMenu).map(action => action.id)).toEqual([
       'inspect',
+      'flip-orientation',
       'duplicate',
       'replace-with-blank',
       'delete'
@@ -458,12 +529,12 @@ describe('RackEditorComponent', () => {
     const requestClearRow$ = new Subject<number>();
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       {
         requestMoveRow$: new Subject<{rowId: number; direction: 'up' | 'down'}>(),
         requestDuplicateRow$,
         requestClearRow$,
-        requestDeleteRow$: new Subject<number>()
+        requestDeleteRow$: new Subject<number>(),
+        isAnyRackModuleOrientationUpdating: jasmine.createSpy('isAnyRackModuleOrientationUpdating').and.returnValue(false)
       } as any,
       {menuItems$, open$} as GeneralContextMenuDataService,
       {markForCheck: () => undefined} as ChangeDetectorRef,
@@ -510,7 +581,6 @@ describe('RackEditorComponent', () => {
     const replaceWithBlank$ = new Subject<RackedModule>();
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       {
         requestRackedModuleReplaceWithBlank$: replaceWithBlank$
       } as RackDetailDataService,
@@ -535,10 +605,37 @@ describe('RackEditorComponent', () => {
     expect(component.selectedTouchModule).toBeNull();
   });
 
+  it('clears the touch selection after running a destructive context menu action', () => {
+    const menuItems$ = new BehaviorSubject<ContextMenuItem[]>([]);
+    const replaceWithBlank$ = new Subject<RackedModule>();
+    const component = createComponent(
+      {} as MatSnackBar,
+      {
+        requestRackedModuleReplaceWithBlank$: replaceWithBlank$
+      } as RackDetailDataService,
+      {menuItems$} as GeneralContextMenuDataService
+    );
+    const moduleRef = {
+      module: {
+        name: 'Belgrad',
+        hp: 14,
+        manufacturer: {name: 'Xaoc Devices'},
+        panels: []
+      }
+    } as RackedModule;
+    const replaceSpy = spyOn(replaceWithBlank$, 'next');
+
+    component.selectedTouchModule = moduleRef;
+    component.openSelectedTouchModuleMenu(null);
+    menuItems$.value.find(item => item.id === 'replace-with-blank')?.click$.next({} as ContextMenuItem);
+
+    expect(replaceSpy).toHaveBeenCalledWith(moduleRef);
+    expect(component.selectedTouchModule).toBeNull();
+  });
+
   it('exposes active rack analysis modes while keeping paused signal mode hidden', () => {
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       {} as RackDetailDataService,
       {} as GeneralContextMenuDataService,
       {markForCheck: () => undefined} as ChangeDetectorRef,
@@ -558,7 +655,6 @@ describe('RackEditorComponent', () => {
   it('exposes layout analysis legend items for exact and combination highlights', () => {
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       {} as RackDetailDataService,
       {} as GeneralContextMenuDataService,
       {markForCheck: () => undefined} as ChangeDetectorRef,
@@ -578,7 +674,6 @@ describe('RackEditorComponent', () => {
   it('exposes layout hover mode options for pinned same-HP and cycling combos', () => {
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       {} as RackDetailDataService,
       {} as GeneralContextMenuDataService,
       {markForCheck: () => undefined} as ChangeDetectorRef,
@@ -596,7 +691,6 @@ describe('RackEditorComponent', () => {
     const analytics = jasmine.createSpyObj('AnalyticsService', ['capture']);
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       {
         layoutHoverMode$,
         singleRackData$: new BehaviorSubject({id: 88}),
@@ -621,7 +715,6 @@ describe('RackEditorComponent', () => {
     const analytics = jasmine.createSpyObj('AnalyticsService', ['capture']);
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       {
         layoutScope$,
         singleRackData$: new BehaviorSubject({id: 88}),
@@ -644,7 +737,6 @@ describe('RackEditorComponent', () => {
   it('builds single-row layout scope options', () => {
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       {} as RackDetailDataService,
       {} as GeneralContextMenuDataService,
       {markForCheck: () => undefined} as ChangeDetectorRef,
@@ -662,7 +754,6 @@ describe('RackEditorComponent', () => {
   it('labels the remix action for the active layout scope', () => {
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       {} as RackDetailDataService,
       {} as GeneralContextMenuDataService,
       {markForCheck: () => undefined} as ChangeDetectorRef,
@@ -678,7 +769,6 @@ describe('RackEditorComponent', () => {
   it('labels the shuffle action for the active layout scope', () => {
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       {} as RackDetailDataService,
       {} as GeneralContextMenuDataService,
       {markForCheck: () => undefined} as ChangeDetectorRef,
@@ -695,7 +785,6 @@ describe('RackEditorComponent', () => {
     const requestLayoutRemix$ = new Subject<void>();
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       {requestLayoutRemix$} as RackDetailDataService,
       {} as GeneralContextMenuDataService,
       {markForCheck: () => undefined} as ChangeDetectorRef,
@@ -712,7 +801,6 @@ describe('RackEditorComponent', () => {
     const requestLayoutShuffle$ = new Subject<void>();
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       {requestLayoutShuffle$} as RackDetailDataService,
       {} as GeneralContextMenuDataService,
       {markForCheck: () => undefined} as ChangeDetectorRef,
@@ -728,7 +816,6 @@ describe('RackEditorComponent', () => {
   it('scales the rack down when the viewport is narrower than the rack width', () => {
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       {} as RackDetailDataService,
       {} as GeneralContextMenuDataService,
       {markForCheck: () => undefined} as ChangeDetectorRef,
@@ -751,7 +838,6 @@ describe('RackEditorComponent', () => {
   it('combines auto scale and reduced scale into the drag surface scale', () => {
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       {} as RackDetailDataService,
       {} as GeneralContextMenuDataService,
       {markForCheck: () => undefined} as ChangeDetectorRef,
@@ -775,7 +861,6 @@ describe('RackEditorComponent', () => {
   it('returns compensated rack frame dimensions for transform scaling', () => {
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       {} as RackDetailDataService,
       {} as GeneralContextMenuDataService,
       {markForCheck: () => undefined} as ChangeDetectorRef,
@@ -807,7 +892,6 @@ describe('RackEditorComponent', () => {
   it('disables drop animations only for the explicit reduced-scale mode', () => {
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       {} as RackDetailDataService,
       {} as GeneralContextMenuDataService,
       {markForCheck: () => undefined} as ChangeDetectorRef,
@@ -827,7 +911,6 @@ describe('RackEditorComponent', () => {
   it('caps the rack scale at full size when the viewport is wide enough', () => {
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       {} as RackDetailDataService,
       {} as GeneralContextMenuDataService,
       {markForCheck: () => undefined} as ChangeDetectorRef,
@@ -850,7 +933,6 @@ describe('RackEditorComponent', () => {
   it('falls back to the window width when no rack viewport reference is available', () => {
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       {} as RackDetailDataService,
       {} as GeneralContextMenuDataService,
       {markForCheck: () => undefined} as ChangeDetectorRef,
@@ -871,7 +953,6 @@ describe('RackEditorComponent', () => {
     const cdr = jasmine.createSpyObj<ChangeDetectorRef>('ChangeDetectorRef', ['markForCheck']);
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       {} as RackDetailDataService,
       {} as GeneralContextMenuDataService,
       cdr,
@@ -897,7 +978,6 @@ describe('RackEditorComponent', () => {
     const cdr = jasmine.createSpyObj<ChangeDetectorRef>('ChangeDetectorRef', ['markForCheck']);
     const component = createComponent(
       {} as MatSnackBar,
-      {} as SupabaseService,
       {} as RackDetailDataService,
       {} as GeneralContextMenuDataService,
       cdr,

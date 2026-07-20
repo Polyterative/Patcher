@@ -1,0 +1,427 @@
+<lib-hero-content-card
+  titleNormal="My listings"
+  description="Private seller controls. Your public marketplace only sees active listing data."
+  class="listingsBG"
+  icon="storefront"
+>
+  @if ({
+    vm: (vm$ | async),
+    editor: (editor$ | async),
+    filter: (filter$ | async),
+    listings: (filteredListings$ | async),
+    modules: (availableModules$ | async),
+    validation: (validation$ | async),
+    duplicate: (duplicateWarning$ | async),
+    canSave: (canSave$ | async),
+    pendingFiles: (pendingFiles$ | async),
+    mediaMessage: (mediaValidationMessage$ | async)
+  }; as bag) {
+    @if (bag.vm; as vm) {
+      <section class="user-listings" aria-label="Private marketplace seller listings" data-testid="user-listings">
+        <div class="user-listings__toolbar rowwrap gap1">
+          <p class="user-listings__privacy row gap0">
+            <mat-icon aria-hidden="true">lock</mat-icon>
+            Only visible in your account area.
+          </p>
+          <mat-button-toggle-group
+            class="module-collection-filter"
+            [value]="bag.filter"
+            (change)="setFilter($event.value)"
+            aria-label="Listing status filter"
+            hideSingleSelectionIndicator
+          >
+            @for (filter of filterOptions; track filter.value) {
+              <mat-button-toggle
+                [value]="filter.value"
+                [attr.data-testid]="'user-listings-filter-' + filter.value"
+              >
+                <mat-icon aria-hidden="true">{{ filter.icon }}</mat-icon>
+                <span>{{ filter.label }}</span>
+              </mat-button-toggle>
+            }
+          </mat-button-toggle-group>
+        </div>
+
+        @if (vm.loading) {
+          <div class="user-listings__state" role="status" data-testid="user-listings-loading">
+            <mat-icon aria-hidden="true">sync</mat-icon>
+            Loading seller listings…
+          </div>
+        } @else if (vm.listError) {
+          <div class="user-listings__state user-listings__state--error" role="alert" data-testid="user-listings-error">
+            <mat-icon aria-hidden="true">error_outline</mat-icon>
+            <span>{{ vm.listError }}</span>
+            <button mat-button type="button" (click)="retryLoad()">Retry</button>
+          </div>
+        } @else if (bag.filter !== 'all' && (bag.listings?.length ?? 0) === 0) {
+          <app-empty-state-tips
+            data-testid="user-listings-filter-empty"
+            [compact]="true"
+            icon="filter_alt_off"
+            [title]="'No ' + bag.filter + ' listings'"
+            copy="Choose another status, or use All to create a listing from a For Sale module."
+          ></app-empty-state-tips>
+        } @else if ((bag.listings?.length ?? 0) === 0 && (bag.modules?.length ?? 0) === 0) {
+          <app-empty-state-tips
+            data-testid="user-listings-empty"
+            [compact]="true"
+            icon="sell"
+            title="No sellable modules"
+            copy="Mark a module For Sale in your module collection to start a marketplace listing here."
+          ></app-empty-state-tips>
+        } @else {
+          <div class="user-listings__list" aria-live="polite">
+            @for (listing of bag.listings; track listing.id) {
+              <article class="listing-row" [class.listing-row--selected]="bag.editor?.listingId === listing.id" data-testid="user-listing-row">
+                <div class="listing-row__summary">
+                  <div class="listing-row__copy">
+                    <span class="listing-row__manufacturer">{{ manufacturerForListing(listing) }}</span>
+                    <strong>{{ titleForListing(listing) }}</strong>
+                    <span>{{ priceForListing(listing) }} · {{ listing.condition }} · ships from {{ listing.shipsFromCountry }}</span>
+                  </div>
+                  <div class="listing-row__meta">
+                    <span class="listing-row__badge">{{ statusLabel(listing.status) }}</span>
+                    <span class="listing-row__price">{{ priceForListing(listing) }}</span>
+                  </div>
+                </div>
+
+                <div class="listing-row__actions" [attr.aria-label]="'Actions for ' + titleForListing(listing)">
+                  <button
+                    mat-stroked-button
+                    color="primary"
+                    type="button"
+                    [disabled]="vm.busy || !!bag.editor"
+                    [attr.aria-expanded]="bag.editor?.listingId === listing.id"
+                    data-testid="user-listing-edit"
+                    (click)="openEdit(listing)"
+                  >Edit</button>
+                  @if (canPublish(listing)) {
+                    <button mat-button type="button" [disabled]="vm.busy || !!bag.editor" (click)="changeLifecycle(listing, 'active')">
+                      Publish active
+                    </button>
+                  }
+                  @if (canPause(listing)) {
+                    <button mat-button type="button" [disabled]="vm.busy || !!bag.editor" (click)="changeLifecycle(listing, 'paused')">
+                      Pause
+                    </button>
+                  }
+                  @if (canClose(listing)) {
+                    <button mat-button type="button" class="listing-row__action--danger" [disabled]="vm.busy || !!bag.editor" (click)="changeLifecycle(listing, 'closed_sold')">
+                      Close sold
+                    </button>
+                    <button mat-button type="button" class="listing-row__action--danger" [disabled]="vm.busy || !!bag.editor" (click)="changeLifecycle(listing, 'closed_unsold')">
+                      Close unsold
+                    </button>
+                  }
+                </div>
+
+                @if (canClose(listing)) {
+                  <p class="listing-row__close-note">Closing only changes listing status. Your module collection state is unchanged.</p>
+                }
+                @if (listing.status === 'active' || listing.status === 'reserved' || listing.status === 'paused' || listing.status === 'draft') {
+                  <p class="listing-row__close-note" data-testid="user-listing-open-warning">
+                    One active/open listing per seller/module. Edit this listing instead of creating another.
+                  </p>
+                }
+
+                @if (bag.editor?.listingId === listing.id) {
+                  <ng-container
+                    *ngTemplateOutlet="listingEditor; context: {vm: vm, editor: bag.editor, listing: listing, validation: bag.validation, duplicate: bag.duplicate, canSave: bag.canSave, pendingFiles: bag.pendingFiles, mediaMessage: bag.mediaMessage}"
+                  ></ng-container>
+                }
+              </article>
+            }
+
+            @for (module of bag.modules; track module.id) {
+              <article class="listing-row listing-row--module" data-testid="user-listing-module-row">
+                <div class="listing-row__summary">
+                  <div class="listing-row__copy">
+                    <span class="listing-row__manufacturer">{{ manufacturerForModule(module) }}</span>
+                    <strong>{{ module.name }}</strong>
+                    <span>Marked For Sale. No listing draft yet.</span>
+                  </div>
+                  <span class="listing-row__badge">eligible</span>
+                </div>
+                <div class="listing-row__actions" [attr.aria-label]="'Create listing for ' + module.name">
+                  <button
+                    mat-stroked-button
+                    color="primary"
+                    type="button"
+                    [disabled]="vm.busy || !!bag.editor"
+                    data-testid="user-listing-create"
+                    (click)="openCreate(module)"
+                  >Create listing</button>
+                </div>
+
+                @if (bag.editor?.mode === 'create' && bag.editor?.moduleId === module.id) {
+                  <ng-container
+                    *ngTemplateOutlet="listingEditor; context: {vm: vm, editor: bag.editor, listing: null, validation: bag.validation, duplicate: bag.duplicate, canSave: bag.canSave, pendingFiles: bag.pendingFiles, mediaMessage: bag.mediaMessage}"
+                  ></ng-container>
+                }
+              </article>
+            }
+          </div>
+        }
+
+        @if (vm.busyLabel) {
+          <p class="user-listings__status" role="status" data-testid="user-listings-busy">{{ vm.busyLabel }}</p>
+        }
+        @if (vm.statusMessage) {
+          <p class="user-listings__status" role="status" data-testid="user-listings-status">{{ vm.statusMessage }}</p>
+        }
+        @if (vm.mutationError) {
+          <p class="user-listings__mutation-error" role="alert" data-testid="user-listings-mutation-error">{{ vm.mutationError }}</p>
+        }
+      </section>
+    }
+  }
+</lib-hero-content-card>
+
+<ng-template
+  #listingEditor
+  let-vm="vm"
+  let-editor="editor"
+  let-listing="listing"
+  let-validation="validation"
+  let-duplicate="duplicate"
+  let-canSave="canSave"
+  let-pendingFiles="pendingFiles"
+  let-mediaMessage="mediaMessage"
+>
+  <form class="listing-editor" [formGroup]="form" (ngSubmit)="save('draft')" aria-label="Marketplace listing editor" data-testid="user-listing-editor">
+    <div class="listing-editor__notice" role="note">
+      <mat-icon aria-hidden="true">info</mat-icon>
+      Shipping notes are stored in the listing shipping notes field. Text-only active listings are allowed; images are recommended.
+    </div>
+
+    @if (duplicate?.hasDuplicate) {
+      <p class="listing-editor__warning" role="alert" data-testid="user-listing-duplicate-warning">
+        {{ duplicate.message }}
+      </p>
+    }
+
+    <div class="listing-editor__grid">
+      <div class="listing-editor__field">
+        <lib-mat-form-entity
+          [control]="listingFields.condition.control"
+          [type]="listingFields.condition.type"
+          [options$]="listingFields.condition.options$"
+          [label]="listingFields.condition.label"
+          [iconL1]="listingFields.condition.iconL1"
+          [disableVoidSelection]="true"
+          data-testid="user-listing-condition"
+        ></lib-mat-form-entity>
+        @if (showFieldError(validation, 'condition', listingFields.condition.control); as error) {
+          <small role="alert">{{ error }}</small>
+        }
+      </div>
+
+      <div class="listing-editor__field">
+        <lib-mat-form-entity
+          [control]="listingFields.askingPrice.control"
+          [type]="listingFields.askingPrice.type"
+          [label]="listingFields.askingPrice.label"
+          [iconL1]="listingFields.askingPrice.iconL1"
+          data-testid="user-listing-price"
+        ></lib-mat-form-entity>
+        @if (showFieldError(validation, 'askingPrice', listingFields.askingPrice.control); as error) {
+          <small role="alert">{{ error }}</small>
+        }
+      </div>
+
+      <div class="listing-editor__field">
+        <lib-mat-form-entity
+          [control]="listingFields.currency.control"
+          [type]="listingFields.currency.type"
+          [options$]="listingFields.currency.options$"
+          [label]="listingFields.currency.label"
+          [iconL1]="listingFields.currency.iconL1"
+          [disableVoidSelection]="true"
+          data-testid="user-listing-currency"
+        ></lib-mat-form-entity>
+        @if (showFieldError(validation, 'askingPriceCurrency', listingFields.currency.control); as error) {
+          <small role="alert">{{ error }}</small>
+        }
+      </div>
+
+      <div class="listing-editor__field">
+        <lib-mat-form-entity
+          [control]="listingFields.shipsFromCountry.control"
+          [type]="listingFields.shipsFromCountry.type"
+          [label]="listingFields.shipsFromCountry.label"
+          [iconL1]="listingFields.shipsFromCountry.iconL1"
+          (focusout)="normalizeCountryInput()"
+          data-testid="user-listing-ships-from"
+        ></lib-mat-form-entity>
+        @if (showFieldError(validation, 'shipsFromCountry', listingFields.shipsFromCountry.control); as error) {
+          <small role="alert">{{ error }}</small>
+        }
+      </div>
+
+      <fieldset class="listing-editor__field listing-editor__field--wide listing-editor__fieldset" formGroupName="shippingOptions">
+        <legend>Shipping options</legend>
+        <div class="rowwrap gap1">
+          @for (option of shippingOptionLabels; track option.control) {
+            <mat-checkbox [formControlName]="option.control">{{ option.label }}</mat-checkbox>
+          }
+        </div>
+      </fieldset>
+
+      <div class="listing-editor__field listing-editor__field--wide">
+        <lib-mat-form-entity
+          [control]="listingFields.shippingNotes.control"
+          [type]="listingFields.shippingNotes.type"
+          [label]="listingFields.shippingNotes.label"
+          [hint]="listingFields.shippingNotes.hint"
+          [iconL1]="listingFields.shippingNotes.iconL1"
+          data-testid="user-listing-shipping-notes"
+        ></lib-mat-form-entity>
+        @if (showFieldError(validation, 'shippingNotes', listingFields.shippingNotes.control); as error) {
+          <small role="alert">{{ error }}</small>
+        }
+      </div>
+
+      <div class="listing-editor__field listing-editor__field--wide">
+        <lib-mat-form-entity
+          [control]="listingFields.titleOverride.control"
+          [type]="listingFields.titleOverride.type"
+          [label]="listingFields.titleOverride.label"
+          [hint]="listingFields.titleOverride.hint"
+          [iconL1]="listingFields.titleOverride.iconL1"
+          data-testid="user-listing-title"
+        ></lib-mat-form-entity>
+        @if (showFieldError(validation, 'titleOverride', listingFields.titleOverride.control); as error) {
+          <small role="alert">{{ error }}</small>
+        }
+      </div>
+
+      <div class="listing-editor__field listing-editor__field--wide">
+        <lib-mat-form-entity
+          [control]="listingFields.description.control"
+          [type]="listingFields.description.type"
+          [label]="listingFields.description.label"
+          [hint]="listingFields.description.hint"
+          [iconL1]="listingFields.description.iconL1"
+          data-testid="user-listing-description"
+        ></lib-mat-form-entity>
+        @if (showFieldError(validation, 'description', listingFields.description.control); as error) {
+          <small role="alert">{{ error }}</small>
+        }
+      </div>
+
+      <div class="listing-editor__field listing-editor__field--wide">
+        <lib-mat-form-entity
+          [control]="listingFields.externalLink.control"
+          [type]="listingFields.externalLink.type"
+          [label]="listingFields.externalLink.label"
+          [hint]="listingFields.externalLink.hint"
+          [iconL1]="listingFields.externalLink.iconL1"
+          data-testid="user-listing-link"
+        ></lib-mat-form-entity>
+        @if (showFieldError(validation, 'externalLink', listingFields.externalLink.control); as error) {
+          <small role="alert">{{ error }}</small>
+        }
+      </div>
+    </div>
+
+    <mat-checkbox formControlName="openToOffers" data-testid="user-listing-open-offers">Open to offers</mat-checkbox>
+
+    <div class="listing-editor__media" aria-label="Listing images">
+      <div class="listing-editor__media-head">
+        <strong>Images</strong>
+        <input
+          #imageInput
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          multiple
+          hidden
+          [disabled]="vm.busy || ((listing?.media?.length ?? 0) + (pendingFiles?.length ?? 0)) >= 8"
+          (change)="onFilesSelected($event, listing)"
+          data-testid="user-listing-image-input"
+        >
+        <button
+          mat-stroked-button
+          type="button"
+          [disabled]="imageInput.disabled"
+          (click)="imageInput.click()"
+        >
+          <mat-icon aria-hidden="true">add_photo_alternate</mat-icon>
+          Add images
+        </button>
+      </div>
+      <p class="listing-editor__media-copy">JPEG, PNG, or WebP. Max 8 images, 10 MB each.</p>
+
+      @if (listing?.media?.length) {
+        <div class="listing-editor__thumbs">
+          @for (media of sortedMedia(listing); track media.id; let first = $first; let last = $last) {
+            <figure class="listing-editor__thumb">
+              <img [src]="media.url" [alt]="'Listing image ' + ($index + 1)">
+              <figcaption>
+                <button
+                  mat-icon-button
+                  type="button"
+                  [disabled]="vm.busy || first"
+                  [attr.aria-label]="'Move image ' + ($index + 1) + ' left'"
+                  [matTooltip]="'Move image ' + ($index + 1) + ' left'"
+                  (click)="moveMedia(listing, media, -1)"
+                >
+                  <mat-icon>chevron_left</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  type="button"
+                  [disabled]="vm.busy || last"
+                  [attr.aria-label]="'Move image ' + ($index + 1) + ' right'"
+                  [matTooltip]="'Move image ' + ($index + 1) + ' right'"
+                  (click)="moveMedia(listing, media, 1)"
+                >
+                  <mat-icon>chevron_right</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  type="button"
+                  class="listing-row__action--danger"
+                  [disabled]="vm.busy"
+                  [attr.aria-label]="'Delete image ' + ($index + 1)"
+                  [matTooltip]="'Delete image ' + ($index + 1)"
+                  (click)="deleteMedia(listing, media)"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </figcaption>
+            </figure>
+          }
+        </div>
+      }
+
+      @if (pendingFiles?.length) {
+        <div class="listing-editor__pending" aria-label="Pending image uploads">
+          @for (file of pendingFiles; track file.name + $index) {
+            <span>
+              {{ file.name }}
+              <button mat-button type="button" [disabled]="vm.busy" [attr.aria-label]="'Remove pending image ' + file.name" (click)="clearPendingFile($index)">
+                Remove
+              </button>
+            </span>
+          }
+        </div>
+      }
+
+      @if (mediaMessage) {
+        <p class="listing-editor__media-message" role="status" data-testid="user-listing-media-message">{{ mediaMessage }}</p>
+      }
+    </div>
+
+    <div class="listing-editor__actions">
+      <button mat-stroked-button color="primary" type="submit" [disabled]="!canSave" data-testid="user-listing-save-draft">
+        <mat-icon aria-hidden="true">save</mat-icon>
+        Save draft
+      </button>
+      <button mat-stroked-button color="primary" type="button" [disabled]="!canSave" data-testid="user-listing-publish" (click)="save('active')">
+        <mat-icon aria-hidden="true">publish</mat-icon>
+        Publish active
+      </button>
+      <button mat-button type="button" [disabled]="vm.busy" (click)="closeEditor()">Cancel</button>
+    </div>
+  </form>
+</ng-template>

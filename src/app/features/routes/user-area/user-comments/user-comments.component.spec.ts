@@ -1,6 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
 import { UserCommentsComponent } from './user-comments.component';
-import { CommentableEntityTypes } from 'src/app/components/shared-atoms/comments/comments-data.service';
+import { CommentableEntityTypes } from 'src/app/models/comment';
 
 describe('UserCommentsComponent', () => {
   function build() {

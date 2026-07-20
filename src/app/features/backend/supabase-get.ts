@@ -12,6 +12,7 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from 'src/backend/database.types';
 import { Patch } from '../../models/patch';
 import { Rack } from '../../models/rack';
+import { normalizeRackModuleOrientation } from '../../models/rack';
 import {
   DbPaths,
   QueryJoins
@@ -73,29 +74,31 @@ export function createGetNamespace(
   getUserSession$: () => Observable<SimpleUserModel | null>
 ) {
   return {
-    currentUserPatches: (): Observable<Patch[]> => getUserSession$().pipe(
+    currentUserPatches: (strictErrors = false): Observable<Patch[]> => getUserSession$().pipe(
       switchMap((user: SimpleUserModel | null) => user?.id
-        ? queries.getCurrentUserPatchesForAuthor(user.id)
+        ? queries.getCurrentUserPatchesForAuthor(user.id, strictErrors)
         : of([])
       )
     ),
-    currentUserRacks: (): Observable<Rack[]> => getUserSession$().pipe(
+    currentUserRacks: (strictErrors = false): Observable<Rack[]> => getUserSession$().pipe(
       switchMap((user: SimpleUserModel | null) => user?.id
-        ? queries.getCurrentUserRacksForAuthor(user.id)
+        ? queries.getCurrentUserRacksForAuthor(user.id, strictErrors)
         : of([])
       )
     ),
     currentUserContributorStats: () => queries.getCurrentUserContributorStats(),
-    currentUserReactions: (entityType?: number, kind: ReactionKind = REACTION_KIND_COOL) =>
-      queries.getCurrentUserReactions(entityType, kind),
+    currentUserShippingAddresses: () => queries.getCurrentUserShippingAddresses(),
+    currentUserMarketplaceListings: () => queries.getCurrentUserMarketplaceListings(),
+    currentUserReactions: (entityType?: number, kind: ReactionKind = REACTION_KIND_COOL, strictErrors = false) =>
+      queries.getCurrentUserReactions(entityType, kind, strictErrors),
     reactionCount: (entityType: number, entityId: number, kind: ReactionKind = REACTION_KIND_COOL) =>
       queries.getReactionCount(entityType, entityId, kind),
     reactionCountsForEntities: (entityType: number, entityIds: number[], kind: ReactionKind = REACTION_KIND_COOL) =>
       queries.getReactionCountsForEntities(entityType, entityIds, kind),
-    publicRacksByIds: (rackIds: number[]) => queries.getPublicRacksByIds(rackIds),
+    publicRacksByIds: (rackIds: number[], strictErrors = false) => queries.getPublicRacksByIds(rackIds, strictErrors),
     rackedModules: (rackid: number) => rxFrom(
       supabase.from(DbPaths.rack_modules)
-        .select(`*, ${ QueryJoins.module_fk_rackmodules }`)
+        .select(`id,moduleid,rackid,row,column,selected_panel_id,orientation, ${ QueryJoins.module_fk_rackmodules }`)
         .filter('rackid', 'eq', rackid)
         .order('row', {ascending: true})
         .order('column', {ascending: true})
@@ -111,7 +114,8 @@ export function createGetNamespace(
             column: row.column,
             moduleid: row.moduleid,
             rackid: row.rackid,
-            selectedPanelId: row.selected_panel_id ?? null
+            selectedPanelId: row.selected_panel_id ?? null,
+            orientation: normalizeRackModuleOrientation(row.orientation)
           }
         })))),
     

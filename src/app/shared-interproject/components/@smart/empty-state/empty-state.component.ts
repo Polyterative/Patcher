@@ -38,16 +38,7 @@ export class EmptyStateComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const providedImage = this.route.snapshot.data.backgroundImage;
-
-    if (!this.backgroundImage) {
-      if (providedImage) {
-        this.backgroundImage = providedImage;
-      } else {
-        console.warn('Please provide path to background');
-      }
-    }
-
-
+    const routeBackgroundImage = this.route.snapshot.data.backgroundImage;
+    this.backgroundImage = this.backgroundImage || routeBackgroundImage;
   }
 }

@@ -34,20 +34,13 @@
           [priceSummarySourceData$]="dataService.moduleData$"
         ></app-module-list>
       } @else if (entityType === 'rack') {
-        @if (dataService.rackData$ | async; as racks) {
-          <div class="section-scroll">
-            <flexbox-row-fast class="section-list">
-              @for (rack of racks; track rack.id; let i = $index) {
-                <lib-clean-card>
-                  <app-rack-micro
-                    [data]="rack"
-                    [viewConfig]="rackViewConfig"
-                  ></app-rack-micro>
-                </lib-clean-card>
-              }
-            </flexbox-row-fast>
-          </div>
-        }
+        <app-rack-list
+          class="section-list"
+          [data$]="dataService.rackData$"
+          [viewConfig]="rackViewConfig"
+          [showSearch]="false"
+          [encloseVertically]="true"
+        ></app-rack-list>
       } @else {
         @if (dataService.patchData$ | async; as patches) {
           <div class="section-scroll">

@@ -74,6 +74,7 @@ e2e/flow-0*.spec.ts
 
 # AI agent tmp output
 /.tmp/
+/.session-artifacts/
 
 # Supabase CLI cache
 supabase/.temp/

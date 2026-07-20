@@ -5,6 +5,8 @@ import {
   setupSupabaseServiceTest,
   TEST_TIMEOUT
 } from './test-setup';
+import { CommentableEntityTypes } from '../../supabase-comments';
+import { SimpleUserModel } from '../../supabase.types';
 
 
 function chainable(resolveValue: any = {data: null, error: null}) {
@@ -16,6 +18,23 @@ function chainable(resolveValue: any = {data: null, error: null}) {
   m.then = (res: Function, rej?: Function) =>
     Promise.resolve(resolveValue).then(res as any, rej as any);
   return m;
+}
+
+interface ChainableQueryMock {
+  filter: (column: string, operator: string, value: unknown) => ChainableQueryMock;
+}
+
+function trackFilters(mock: ChainableQueryMock) {
+  const filters: Array<{
+    column: string;
+    operator: string;
+    value: unknown;
+  }> = [];
+  spyOn(mock, 'filter').and.callFake((column: string, operator: string, value: unknown) => {
+    filters.push({column, operator, value});
+    return mock;
+  });
+  return filters;
 }
 
 describe('SupabaseService - delete complex operations', () => {
@@ -49,6 +68,36 @@ describe('SupabaseService - delete complex operations', () => {
         next: () => {
           expect(tablesAccessed).toContain('comments');
           expect(tablesAccessed).toContain('modules');
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should scope deleted comments to the module entity id and type', (done) => {
+      const commentMock = chainable({data: null, error: null});
+      const commentFilters = trackFilters(commentMock);
+
+      spyOn(supabaseClient, 'from').and.callFake((table: string) => {
+        if (table === 'comments') return commentMock;
+        return chainable({data: [{id: 42}], error: null});
+      });
+
+      service.delete.module(42).subscribe({
+        next: () => {
+          expect(commentFilters).toContain(jasmine.objectContaining({
+            column: 'entityId',
+            operator: 'eq',
+            value: 42
+          }));
+          expect(commentFilters).toContain(jasmine.objectContaining({
+            column: 'entityType',
+            operator: 'eq',
+            value: CommentableEntityTypes.MODULE
+          }));
           done();
         },
         error: (err) => {
@@ -95,6 +144,36 @@ describe('SupabaseService - delete complex operations', () => {
           expect(tablesAccessed).toContain('patch_module_instances');
           expect(tablesAccessed).toContain('patches');
           expect(tablesAccessed).toContain('comments');
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should scope deleted comments to the patch entity id and type', (done) => {
+      const commentMock = chainable({data: null, error: null});
+      const commentFilters = trackFilters(commentMock);
+
+      spyOn(supabaseClient, 'from').and.callFake((table: string) => {
+        if (table === 'comments') return commentMock;
+        return chainable({data: null, error: null});
+      });
+
+      service.delete.patch(5).subscribe({
+        next: () => {
+          expect(commentFilters).toContain(jasmine.objectContaining({
+            column: 'entityId',
+            operator: 'eq',
+            value: 5
+          }));
+          expect(commentFilters).toContain(jasmine.objectContaining({
+            column: 'entityType',
+            operator: 'eq',
+            value: CommentableEntityTypes.PATCH
+          }));
           done();
         },
         error: (err) => {
@@ -205,6 +284,43 @@ describe('SupabaseService - delete complex operations', () => {
       service.delete.userRack(9).subscribe({
         next: () => {
           expect(bustedKeys).toContain('rackWithId');
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+  });
+
+  describe('delete.commentsForRack', () => {
+    it('should scope deleted comments to the rack entity id and type', (done) => {
+      const rackCommentOwner: SimpleUserModel = {
+        id: 'rack-comment-owner',
+        email: undefined,
+        created_at: '2026-01-01T00:00:00.000Z',
+        updated_at: undefined
+      };
+      spyOn(service.auth, 'getUserSession$')
+        .and.returnValue(of(rackCommentOwner));
+
+      const commentMock = chainable({data: null, error: null});
+      const commentFilters = trackFilters(commentMock);
+      spyOn(supabaseClient, 'from').and.returnValue(commentMock);
+
+      service.delete.commentsForRack(12).subscribe({
+        next: () => {
+          expect(commentFilters).toContain(jasmine.objectContaining({
+            column: 'entityId',
+            operator: 'eq',
+            value: 12
+          }));
+          expect(commentFilters).toContain(jasmine.objectContaining({
+            column: 'entityType',
+            operator: 'eq',
+            value: CommentableEntityTypes.RACK
+          }));
           done();
         },
         error: (err) => {

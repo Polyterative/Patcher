@@ -108,11 +108,35 @@ export interface ModulePriceListing {
   latestSnapshot: ModulePriceLatestSnapshot | null;
 }
 
+export interface ModulePriceHistorySnapshot extends ModulePriceLatestSnapshot {
+  listingId: number;
+  storeId: number;
+}
+
 export interface ModuleRecentMarketPrice {
   moduleId: number;
   estimatedPriceEurMinor: number;
   displayPrice: string;
   storeCount: number;
   latestObservedAt: string;
+  tooltip: string;
+}
+
+export type ModuleSparsePriceHistoryTrendDirection = 'up' | 'down' | 'flat';
+
+export interface ModuleSparsePriceHistorySummary {
+  moduleId: number;
+  eligiblePointCount: number;
+  storeCount: number;
+  earliestObservedAt: string;
+  latestObservedAt: string;
+  earliestPriceEurMinor: number;
+  latestPriceEurMinor: number;
+  minPriceEurMinor: number;
+  maxPriceEurMinor: number;
+  trendPercent: number;
+  trendDirection: ModuleSparsePriceHistoryTrendDirection;
+  label: string;
+  rangeLabel: string;
   tooltip: string;
 }

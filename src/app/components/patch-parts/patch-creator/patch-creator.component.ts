@@ -18,11 +18,9 @@ import {
 import {
   catchError,
   filter,
-  switchMap,
-  takeUntil
+  switchMap
 } from 'rxjs/operators';
 import { Rack } from 'src/app/models/rack';
-import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import {
   FormTypes,
   findAndApplyOptionForId,
@@ -45,6 +43,7 @@ import {
   PatchCreatorInModel,
   PatchCreatorOutModel
 } from './patch-creator.types';
+import { PatchCreatorDataService } from './patch-creator-data.service';
 
 import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 
@@ -55,7 +54,8 @@ export type { PatchCreatorInModel, PatchCreatorOutModel };
   templateUrl: './patch-creator.component.html',
   styleUrls: ['./patch-creator.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+  standalone: false,
+  providers: [PatchCreatorDataService]
 })
 export class PatchCreatorComponent extends SubManager implements OnInit, OnDestroy {
   public readonly save$ = new Subject<void>();
@@ -140,10 +140,10 @@ export class PatchCreatorComponent extends SubManager implements OnInit, OnDestr
   
   constructor(
     public snackBar: MatSnackBar,
-    public backend: SupabaseService,
     public dialogRef: MatDialogRef<PatchCreatorComponent, PatchCreatorOutModel>,
     @Inject(MAT_DIALOG_DATA) public data: PatchCreatorInModel,
-    private analytics: AnalyticsService
+    private readonly analytics: AnalyticsService,
+    private readonly dataService: PatchCreatorDataService
   ) {
     super();
     
@@ -160,7 +160,7 @@ export class PatchCreatorComponent extends SubManager implements OnInit, OnDestr
           }),
           switchMap(_ => {
             const selectedLinkedRackId = this.getSelectedLinkedRackId();
-            return this.backend.add.patch(
+            return this.dataService.createPatch$(
               {
                 name: this.fields.name.control.value,
                 public: this.fields.public.control.value,
@@ -186,7 +186,7 @@ export class PatchCreatorComponent extends SubManager implements OnInit, OnDestr
           this.takeUntilDestroyed()
         )
         .subscribe(value => {
-          this.analytics.capture('patch.created', { patch_id: (value as { data?: Array<{ id?: number }> })?.data?.[0]?.id });
+          this.analytics.capture('patch.created', { patch_id: this.createdPatchId(value) });
           const patchName = this.fields.name.control.value;
           this.snackBar.open(`"${ patchName }" created and saved to your library.`, undefined, {
             duration: 3000,
@@ -201,7 +201,7 @@ export class PatchCreatorComponent extends SubManager implements OnInit, OnDestr
   }
   
   ngOnInit(): void {
-    this.backend.get.currentUserRacks()
+    this.dataService.currentUserRacks$()
       .pipe(this.takeUntilDestroyed())
       .subscribe(racks => {
         this._currentUserRacks$.next(racks);
@@ -232,6 +232,23 @@ export class PatchCreatorComponent extends SubManager implements OnInit, OnDestr
     }
 
     this.fields.linkedRack.control.enable({emitEvent: false});
+  }
+
+  private createdPatchId(response: unknown): number | undefined {
+    const patchResponse = response as {
+      id?: number;
+      data?: Array<{ id?: number }> | { id?: number } | null;
+    };
+
+    if (typeof patchResponse?.id === 'number') {
+      return patchResponse.id;
+    }
+
+    if (Array.isArray(patchResponse?.data)) {
+      return patchResponse.data[0]?.id;
+    }
+
+    return patchResponse?.data?.id;
   }
   
 }

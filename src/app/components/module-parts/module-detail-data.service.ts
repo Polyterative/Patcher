@@ -1,35 +1,13 @@
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { Injectable, OnDestroy } from '@angular/core';
 import { MatSnackBar } from "@angular/material/snack-bar";
-import {
-  BehaviorSubject,
-  combineLatest,
-  EMPTY,
-  merge,
-  Observable,
-  of,
-  ReplaySubject,
-  Subject
-} from 'rxjs';
-import {
-  filter,
-  catchError,
-  exhaustMap,
-  map,
-  switchMap,
-  take,
-  tap,
-  withLatestFrom
-} from 'rxjs/operators';
+import { BehaviorSubject, combineLatest, EMPTY, merge, Observable, of, ReplaySubject, Subject } from 'rxjs';
+import { catchError, exhaustMap, filter, map, switchMap, take, tap, withLatestFrom } from 'rxjs/operators';
 import { RackModuleAdderDialogComponent } from 'src/app/components/rack-parts/rack-module-adder/rack-module-adder-dialog.component';
 import { UserManagementService } from '../../features/backbone/login/user-management.service';
 import { SupabaseService } from '../../features/backend/supabase.service';
 import { MergeModuleResult } from '../../features/backend/supabase-merge';
-import {
-  DbModule,
-  ModulePanel,
-  UserModulePossessionKind
-} from '../../models/module';
+import { DbModule, ModulePanel, UserModulePossessionKind } from '../../models/module';
 import { PatchMinimal } from '../../models/patch';
 import { RackMinimal } from '../../models/rack';
 import { ModuleCollectionSummary } from '../../models/module-collection';
@@ -37,22 +15,20 @@ import { MatDialog } from "@angular/material/dialog";
 import { AppStateService } from "src/app/shared-interproject/app-state.service";
 import { Router } from "@angular/router";
 import { SharedConstants } from "src/app/shared-interproject/SharedConstants";
-import {
-  HiddenUsageBucket,
-  ModulePossessionCounts,
-  ModuleUsageSummary
-} from './module-detail-data.models';
+import { HiddenUsageBucket, ModulePossessionCounts, ModuleUsageSummary } from './module-detail-data.models';
 import { AnalyticsService } from '../../features/backbone/analytics-integration/analytics.service';
 import { environment } from 'src/environments/environment';
-import { UserModuleAcquisition, UserModuleAcquisitionDraft } from 'src/app/models/user-module-acquisition';
+import { UserModuleAcquisition } from 'src/app/models/user-module-acquisition';
 import { ModulePossessionDialogResult } from './module-possession-dialog/module-possession-dialog.component';
-import { formatMarketplaceMinorUnits } from 'src/app/features/marketplace/marketplace-money.utils';
 import { ReactionEntityTypes } from 'src/app/features/backend/supabase-reactions';
+import { ModulePriceHistorySnapshot, ModulePriceListing, ModuleRecentMarketPrice, ModuleSparsePriceHistorySummary } from 'src/app/features/backend/supabase-queries';
+import { getModulePanelPublicUrl } from 'src/app/features/backend/supabase-storage';
 import {
-  ModulePriceListing,
-  ModuleRecentMarketPrice
-} from 'src/app/features/backend/supabase-queries';
-import { getModuleRecentMarketPrice } from 'src/app/features/backend/module-price-summary.utils';
+  createCurrentModulePossession$, createRecentMarketPrice$, createSparsePriceHistorySummary$,
+  formatDeleteModuleSuccessMessage, formatLatestAcquisitionValue, formatMergeResultMessage,
+  getMeaningfulAcquisitionDraft, getPossessionRequestKind, loadModulePriceHistorySnapshots$,
+  loadModulePriceListings$, possessionKindLabel, shouldDeleteManufacturerWithModule
+} from './module-detail-data.helpers';
 
 export type { HiddenUsageBucket, ModulePossessionCounts, ModuleUsageSummary } from './module-detail-data.models';
 
@@ -78,7 +54,9 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
   readonly patchesWithThisModule$ = new BehaviorSubject<PatchMinimal[] | undefined>(undefined);
   readonly collectionsWithThisModule$ = new BehaviorSubject<ModuleCollectionSummary[] | undefined>(undefined);
   readonly modulePriceListings$ = new BehaviorSubject<ModulePriceListing[] | undefined>(undefined);
+  readonly modulePriceHistorySnapshots$ = new BehaviorSubject<ModulePriceHistorySnapshot[] | undefined>(undefined);
   readonly recentMarketPrice$: Observable<ModuleRecentMarketPrice | null>;
+  readonly sparsePriceHistorySummary$: Observable<ModuleSparsePriceHistorySummary | null>;
   readonly moduleUsageSummary$ = new BehaviorSubject<ModuleUsageSummary | undefined>(undefined);
   readonly possessionCounts$ = new BehaviorSubject<ModulePossessionCounts | undefined>(undefined);
   readonly coolCount$ = new BehaviorSubject<number | undefined>(undefined);
@@ -160,50 +138,28 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
         this.userModulesList$.next(x);
       });
 
-    this.currentModulePossession$ = combineLatest([
-      this.userModulesList$,
-      this.singleModuleData$
-    ]).pipe(
-      map(([list, module]) => {
-        if (!module) return null;
-        const row = list.find(userModule => userModule.id === module.id);
-        return row?.possessionKind ?? null;
-      })
-    );
+    this.currentModulePossession$ = createCurrentModulePossession$(this.userModulesList$, this.singleModuleData$);
 
     this.latestFormattedAcquisitionValue$ = this.userModuleAcquisitions$.pipe(
-      map(rows => {
-        const latest = rows?.[0];
-        if (!latest) return null;
-        if (latest.price_amount_minor !== null && latest.currency) {
-          return formatMarketplaceMinorUnits(latest.price_amount_minor, latest.currency);
-        }
-        return `Acquired ${ latest.acquired_at }`;
-      })
+      map(formatLatestAcquisitionValue)
     );
 
-    this.recentMarketPrice$ = this.modulePriceListings$.pipe(
-      map(listings => listings === undefined
-        ? null
-        : getModuleRecentMarketPrice(
-            listings[0]?.moduleId ?? this.singleModuleData$.value?.id ?? 0,
-            listings
-          )
-      )
-    );
+    this.recentMarketPrice$ = createRecentMarketPrice$(this.modulePriceListings$, () => this.singleModuleData$.value?.id ?? 0);
+
+    this.sparsePriceHistorySummary$ = createSparsePriceHistorySummary$(this.modulePriceHistorySnapshots$, this.singleModuleData$);
 
     this.setModulePossession$
       .pipe(
         withLatestFrom(this.singleModuleData$, this.updateSingleModuleData$),
         exhaustMap(([request, module]) => {
           if (!module) return EMPTY;
-          const kind = this.getPossessionRequestKind(request);
+          const kind = getPossessionRequestKind(request);
           if (kind === null) {
             return this.backend.delete.userModule(module.id).pipe(map(() => ({kind, module})));
           }
           return this.backend.update.userModulePossession(module.id, kind).pipe(
             switchMap(() => {
-              const acquisition = this.getMeaningfulAcquisitionDraft(request);
+              const acquisition = getMeaningfulAcquisitionDraft(request);
               return acquisition
                 ? this.backend.add.userModuleAcquisition(module.id, acquisition)
                   .pipe(
@@ -228,7 +184,7 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
         this.analytics.capture('module.collection_toggled', { module_id: module?.id, state });
         const message = kind === null
           ? `"${module.name}" removed from your collection.`
-          : `"${module.name}" marked as ${this.possessionKindLabel(kind)}.`;
+          : `"${module.name}" marked as ${possessionKindLabel(kind)}.`;
         SharedConstants.successCustom(this.snackBar, message);
         this.updateSingleModuleData$.next(moduleId);
       });
@@ -289,18 +245,20 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
       )
       .subscribe(collections => this.collectionsWithThisModule$.next(collections));
 
-    this.updateSingleModuleData$
+    loadModulePriceListings$(this.updateSingleModuleData$, moduleId => this.backend.GET.modulePriceListings(moduleId))
       .pipe(
-        tap(() => this.modulePriceListings$.next(undefined)),
-        switchMap(x => this.backend.GET.modulePriceListings(x).pipe(
-          catchError(error => {
-            console.warn('Module price listings could not be loaded.', error);
-            return of([]);
-          })
-        )),
         this.takeUntilDestroyed()
       )
       .subscribe(listings => this.modulePriceListings$.next(listings));
+
+    loadModulePriceHistorySnapshots$(
+      this.updateSingleModuleData$,
+      moduleId => this.backend.GET.modulePriceHistorySnapshots(moduleId)
+    )
+      .pipe(
+        this.takeUntilDestroyed()
+      )
+      .subscribe(snapshots => this.modulePriceHistorySnapshots$.next(snapshots));
 
     this.updateSingleModuleData$
       .pipe(
@@ -426,8 +384,7 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
         switchMap(module => this.backend.get.modulesBySameManufacturer(module.manufacturerId, 0, 20, 'id,manufacturerId').pipe(
           map(modules => ({
             module,
-            shouldDeleteManufacturer: module.manufacturerId != null
-              && modules.every(relatedModule => relatedModule.id === module.id)
+            shouldDeleteManufacturer: shouldDeleteManufacturerWithModule(module, modules)
           }))
         )),
         exhaustMap(({module, shouldDeleteManufacturer}) => this.backend.delete.module(module.id).pipe(
@@ -445,9 +402,7 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
       )
       .subscribe(({module, manufacturerDeleted}) => {
         this.analytics.capture('module.deleted', { module_id: module?.id, manufacturer_deleted: manufacturerDeleted });
-        const successMessage = manufacturerDeleted
-          ? `"${ module.name }" and orphan manufacturer "${ module.manufacturer.name }" deleted from the database.`
-          : `"${ module.name }" deleted from the database.`;
+        const successMessage = formatDeleteModuleSuccessMessage(module, manufacturerDeleted);
 
         snackBar.open(successMessage, undefined, {duration: 2000, panelClass: 'snack-success'});
         this.router.navigate(['/modules', 'browser']);
@@ -479,7 +434,7 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
           tag_rows_moved: result.tagRowsMoved,
           rack_module_rows_moved: result.rackModuleRowsMoved
         });
-        this.snackBar.open(this.formatMergeResultMessage(result), undefined, {duration: 5000, panelClass: 'snack-success'});
+        this.snackBar.open(formatMergeResultMessage(result), undefined, {duration: 5000, panelClass: 'snack-success'});
         this.router.navigate(['/modules', 'details', result.targetId]);
       });
     
@@ -528,6 +483,10 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
     super.ngOnDestroy();
   }
 
+  getPanelImageUrl(filename: string): string {
+    return getModulePanelPublicUrl(filename);
+  }
+
   /** Emits `value` only when the current user is an admin or the app is running in dev mode; otherwise completes silently. */
   private requiresAdminOrDev<T>(value: T): Observable<T> {
     return this.backend.auth.hasAdminRole$().pipe(
@@ -536,36 +495,4 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
     );
   }
 
-  private possessionKindLabel(kind: UserModulePossessionKind): string {
-    switch (kind) {
-      case 'HAS':
-        return 'owned';
-      case 'WANTS':
-        return 'wanted';
-      case 'SELLS':
-        return 'for sale';
-    }
-  }
-
-  private getPossessionRequestKind(
-    request: UserModulePossessionKind | ModulePossessionDialogResult | null
-  ): UserModulePossessionKind | null {
-    if (request === null) return null;
-    return typeof request === 'object' ? request.kind : request;
-  }
-
-  private getMeaningfulAcquisitionDraft(
-    request: UserModulePossessionKind | ModulePossessionDialogResult | null
-  ): UserModuleAcquisitionDraft | undefined {
-    if (typeof request !== 'object' || request?.kind !== 'HAS' || !request.acquisition) {
-      return undefined;
-    }
-
-    const note = request.acquisition.note?.trim() || null;
-    return {...request.acquisition, note};
-  }
-
-  private formatMergeResultMessage(result: MergeModuleResult): string {
-    return `Merged module ${ result.sourceId } into ${ result.targetId }: moved ${ result.ownershipRowsMoved } ownership, ${ result.tagRowsMoved } tag, ${ result.rackModuleRowsMoved } rack rows; removed ${ result.duplicateOwnershipRowsRemoved } duplicate ownership and ${ result.duplicateTagRowsRemoved } duplicate tag rows.`;
-  }
 }

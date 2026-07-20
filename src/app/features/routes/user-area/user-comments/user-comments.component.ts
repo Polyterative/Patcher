@@ -19,8 +19,10 @@ import {
 import { BehaviorSubject, combineLatest, Observable } from "rxjs";
 import { map } from "rxjs/operators";
 import { MatChipsModule } from "@angular/material/chips";
-import { CommentableEntityTypes } from "src/app/components/shared-atoms/comments/comments-data.service";
-import { DbComment } from "src/app/models/comment";
+import {
+  CommentableEntityTypes,
+  DbComment
+} from "src/app/models/comment";
 import { EmptyStateTipsComponent } from "src/app/components/shared-atoms/empty-state-tips/empty-state-tips.component";
 
 

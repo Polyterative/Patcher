@@ -1,17 +1,20 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { spawnSync } from 'node:child_process';
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { gzipSync } from 'node:zlib';
 import { normalizeBigCommerceProductPage } from '../../supabase/functions/_shared/price-hub/bigcommerce-metadata.ts';
+import { normalizeProductMetadataPage } from '../../supabase/functions/_shared/price-hub/product-metadata-page.ts';
 import { normalizeShopifyProductJsonProduct } from '../../supabase/functions/_shared/price-hub/shopify-product-json.ts';
 import { normalizeShopwareProductPage } from '../../supabase/functions/_shared/price-hub/shopware-metadata.ts';
-import { readCliOptions as readCrawlCliOptions } from '../price-hub/crawl-local.ts';
-import { crawlPriceHubStoreCatalog, crawlShopifyProductJsonCatalog, crawlWooCommerceStoreCatalog } from '../price-hub/catalog-crawler.ts';
+import { readCliOptions as readCrawlCliOptions, runLocalCrawlerStores } from '../price-hub/crawl-local.ts';
+import { applySignalSoundsInventoryOverrides, crawlPriceHubStoreCatalog, crawlShopifyProductJsonCatalog, crawlWooCommerceStoreCatalog } from '../price-hub/catalog-crawler.ts';
+import { fetchShopifyJsonStdoutWithCurl, parseShopifyJsonCurlStdout, readShopifyRetryDelayMs } from '../price-hub/crawlers/shopify.ts';
+import { isAllowedCustomProductUrl } from '../price-hub/crawlers/sitemap-utils.ts';
 import { readPriceHubScriptEnv } from '../price-hub/local-env.ts';
 import { matchModulesToProducts } from '../price-hub/matcher.ts';
-import { fetchModulesFromSupabase, readRefreshCliOptions } from '../price-hub/refresh-local.ts';
+import { fetchModulesFromSupabase, readRefreshCliOptions, readSanityWarnings } from '../price-hub/refresh-local.ts';
 import { readApprovedPriceHubStore } from '../price-hub/store-configs.ts';
 
 const clockfaceStore = readApprovedPriceHubStore('clockface-modular');
@@ -20,12 +23,14 @@ const animatoStore = readApprovedPriceHubStore('animato-audio');
 const bigCityStore = readApprovedPriceHubStore('big-city-music');
 const busyCircuitsStore = readApprovedPriceHubStore('busy-circuits');
 const elevatorStore = readApprovedPriceHubStore('elevator-sound');
+const escapeFromNoiseStore = readApprovedPriceHubStore('escape-from-noise');
 const foundSoundStore = readApprovedPriceHubStore('found-sound');
 const instruoStore = readApprovedPriceHubStore('instruo');
 const machineroomStore = readApprovedPriceHubStore('machineroom');
 const martinPasStore = readApprovedPriceHubStore('martin-pas');
 const milkAudioStore = readApprovedPriceHubStore('milk-audio-store');
 const postmodularStore = readApprovedPriceHubStore('postmodular');
+const pushermanStore = readApprovedPriceHubStore('pusherman-productions');
 const signalUkStore = readApprovedPriceHubStore('signal-sounds-uk');
 const signalEuStore = readApprovedPriceHubStore('signal-sounds-eu');
 const schneidersStore = readApprovedPriceHubStore('schneidersladen');
@@ -42,6 +47,48 @@ test('local crawl CLI defaults to full metadata crawls and accepted-match export
   assert.equal(options.includeIgnoredMatches, false);
 });
 
+test('local crawl all-store runner reports one store failure and continues remaining stores', async () => {
+  const calls = [];
+  const errors = [];
+  const writtenStores = [];
+  const options = readCrawlCliOptions(['--max-products=1']);
+
+  const result = await runLocalCrawlerStores([clockfaceStore, controlStore], options, null, {
+    crawlStoreCatalog: async (store) => {
+      calls.push(store.slug);
+      if (store.slug === clockfaceStore.slug) {
+        throw new Error('simulated crawl failure');
+      }
+
+      return {
+        store,
+        products: [],
+        pagesFetched: 1,
+        totalProductUrls: 0,
+        hitMaxProducts: false,
+        hitMaxPages: false,
+      };
+    },
+    writeProducts: async (_out, storeSlug) => {
+      writtenStores.push(storeSlug);
+      return `memory://${storeSlug}/products.json`;
+    },
+    writeMatches: async () => 0,
+    log: {
+      log: () => {},
+      warn: () => {},
+      error: (message) => errors.push(message),
+    },
+  });
+
+  assert.deepEqual(calls, [clockfaceStore.slug, controlStore.slug]);
+  assert.deepEqual(writtenStores, [controlStore.slug]);
+  assert.equal(result.attemptedStores, 2);
+  assert.equal(result.failures.length, 1);
+  assert.equal(result.failures[0].storeSlug, clockfaceStore.slug);
+  assert.match(errors[0], /Failed clockface-modular: simulated crawl failure/);
+});
+
 test('local refresh CLI defaults to live import and can fetch module input from Supabase', () => {
   const options = readRefreshCliOptions(['--store=signal-sounds-uk'], {
     SUPABASE_ANON_KEY: 'anon-key',
@@ -50,7 +97,7 @@ test('local refresh CLI defaults to live import and can fetch module input from 
   assert.equal(options.dryRun, false);
   assert.equal(options.store, 'signal-sounds-uk');
   assert.equal(options.modulesPath, '');
-  assert.equal(options.supabaseKey, 'anon-key');
+  assert.equal(options.supabaseKey, '');
   assert.equal(options.supabaseReadKey, 'anon-key');
 });
 
@@ -65,7 +112,9 @@ test('local refresh CLI prefers service role over anon when both are available',
 });
 
 test('local refresh CLI can read service role credentials from local env files', () => {
-  const rootDir = mkdtempSync(join(tmpdir(), 'patcher-price-hub-env-'));
+  const rootDir = join(process.cwd(), 'tmp', 'price-hub-local-crawler-env-files');
+  rmSync(rootDir, { recursive: true, force: true });
+  mkdirSync(rootDir, { recursive: true });
   try {
     writeFileSync(join(rootDir, 'package.json'), '{}');
     writeFileSync(join(rootDir, '.env'), [
@@ -84,8 +133,47 @@ test('local refresh CLI can read service role credentials from local env files',
   }
 });
 
+test('local refresh CLI can read credentials from an explicit Price Hub env file', () => {
+  const rootDir = join(process.cwd(), 'tmp', 'price-hub-local-crawler-explicit-env');
+  rmSync(rootDir, { recursive: true, force: true });
+  mkdirSync(rootDir, { recursive: true });
+  try {
+    writeFileSync(join(rootDir, 'package.json'), '{}');
+    const envFilePath = join(rootDir, 'crawler.env');
+    writeFileSync(envFilePath, [
+      'SUPABASE_URL=https://env-file.example.supabase.co',
+      'SUPABASE_SERVICE_ROLE_KEY=from-explicit-env-file',
+    ].join('\n'));
+
+    const loadedEnv = readPriceHubScriptEnv({ PRICE_HUB_ENV_FILE: envFilePath }, { rootDir });
+    const options = readRefreshCliOptions(['--modules=modules.json'], loadedEnv);
+
+    assert.equal(options.supabaseUrl, 'https://env-file.example.supabase.co');
+    assert.equal(options.supabaseKey, 'from-explicit-env-file');
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test('local refresh CLI fails clearly when the explicit Price Hub env file is missing', () => {
+  const rootDir = join(process.cwd(), 'tmp', 'price-hub-local-crawler-missing-env');
+  rmSync(rootDir, { recursive: true, force: true });
+  mkdirSync(rootDir, { recursive: true });
+  try {
+    writeFileSync(join(rootDir, 'package.json'), '{}');
+    assert.throws(
+      () => readPriceHubScriptEnv({ PRICE_HUB_ENV_FILE: join(rootDir, 'missing.env') }, { rootDir }),
+      /PRICE_HUB_ENV_FILE points to a file that does not exist/,
+    );
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
 test('local refresh CLI keeps explicit process credentials ahead of local env files', () => {
-  const rootDir = mkdtempSync(join(tmpdir(), 'patcher-price-hub-env-'));
+  const rootDir = join(process.cwd(), 'tmp', 'price-hub-local-crawler-process-env');
+  rmSync(rootDir, { recursive: true, force: true });
+  mkdirSync(rootDir, { recursive: true });
   try {
     writeFileSync(join(rootDir, 'package.json'), '{}');
     writeFileSync(join(rootDir, '.env'), 'SUPABASE_SERVICE_ROLE_KEY=from-env\n');
@@ -97,6 +185,219 @@ test('local refresh CLI keeps explicit process credentials ahead of local env fi
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
+});
+
+test('local refresh treats bounded partial crawls as importable warnings', () => {
+  const warnings = readSanityWarnings(synthshopStore, 5, 3, 2, true, true);
+
+  assert.deepEqual(warnings, [
+    'synthshop reached --max-products before exhausting product URLs; importing this bounded partial crawl.',
+  ]);
+  assert.equal(warnings.some((warning) => warning.startsWith('BLOCKING:')), false);
+});
+
+test('local refresh treats skipped metadata pages as importable warnings', () => {
+  const warnings = readSanityWarnings(synthshopStore, 30, 20, 10, false, false, {
+    skippedProducts: 2,
+  });
+
+  assert.deepEqual(warnings, [
+    'synthshop skipped 2 product pages without usable metadata; importing matched rows while disappearance deactivation remains guarded.',
+  ]);
+  assert.equal(warnings.some((warning) => warning.startsWith('BLOCKING:')), false);
+});
+
+test('local refresh can continue with zero accepted rows when active listings can be refreshed', () => {
+  const warnings = readSanityWarnings(synthshopStore, 30, 20, 0, false, false, {
+    canRefreshObservedActiveListings: true,
+  });
+
+  assert.deepEqual(warnings, [
+    'synthshop generated zero accepted import rows; checking observed active listings before import.',
+  ]);
+  assert.equal(warnings.some((warning) => warning.startsWith('BLOCKING:')), false);
+});
+
+test('local refresh can continue with zero match candidates when active listings can be refreshed', () => {
+  const warnings = readSanityWarnings(synthshopStore, 30, 0, 0, false, false, {
+    canRefreshObservedActiveListings: true,
+  });
+
+  assert.deepEqual(warnings, [
+    'synthshop generated zero match candidates; checking observed active listings before import.',
+    'synthshop generated zero accepted import rows; checking observed active listings before import.',
+  ]);
+  assert.equal(warnings.some((warning) => warning.startsWith('BLOCKING:')), false);
+});
+
+test('local metadata crawler times out hung custom sitemap fetches', async () => {
+  let fetchSignal;
+  let fetchAborted = false;
+
+  await assert.rejects(
+    crawlPriceHubStoreCatalog(escapeFromNoiseStore, {
+      fetchFn: async (_url, init) => {
+        fetchSignal = init?.signal;
+        fetchSignal?.addEventListener('abort', () => {
+          fetchAborted = true;
+        });
+        return new Promise(() => {});
+      },
+      fetchTimeoutMs: 5,
+    }),
+    /Custom sitemap fetch for escape-from-noise timed out after 5ms/,
+  );
+  assert.ok(fetchSignal instanceof AbortSignal);
+  assert.equal(fetchAborted, true);
+});
+
+test('local metadata crawler times out hung custom sitemap body reads', async () => {
+  let fetchSignal;
+  let fetchAborted = false;
+
+  await assert.rejects(
+    crawlPriceHubStoreCatalog(escapeFromNoiseStore, {
+      fetchFn: async (_url, init) => {
+        fetchSignal = init?.signal;
+        fetchSignal?.addEventListener('abort', () => {
+          fetchAborted = true;
+        });
+        return {
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          text: async () => new Promise(() => {}),
+        };
+      },
+      fetchTimeoutMs: 5,
+    }),
+    /Custom sitemap response for escape-from-noise timed out after 5ms/,
+  );
+  assert.ok(fetchSignal instanceof AbortSignal);
+  assert.equal(fetchAborted, true);
+});
+
+test('local WooCommerce crawler times out hung catalog body reads', async () => {
+  await assert.rejects(
+    crawlWooCommerceStoreCatalog(elevatorStore, {
+      fetchFn: async () => ({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        json: async () => new Promise(() => {}),
+      }),
+      fetchTimeoutMs: 5,
+    }),
+    /WooCommerce catalog response for elevator-sound page 1 timed out after 5ms/,
+  );
+});
+
+test('local Shopify crawler times out hung catalog body reads', async () => {
+  await assert.rejects(
+    crawlShopifyProductJsonCatalog(controlStore, {
+      fetchFn: async () => ({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        json: async () => new Promise(() => {}),
+      }),
+      fetchTimeoutMs: 5,
+    }),
+    /Shopify catalog response for control page 1 timed out after 5ms/,
+  );
+});
+
+test('local Shopify crawler sends a browser-compatible user agent', async () => {
+  const seenUserAgents = [];
+
+  const crawl = await crawlShopifyProductJsonCatalog(controlStore, {
+    fetchFn: async (_url, init) => {
+      seenUserAgents.push(init?.headers?.['user-agent']);
+      return {
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        json: async () => ({ products: [] }),
+      };
+    },
+  });
+
+  assert.equal(crawl.products.length, 0);
+  assert.deepEqual(seenUserAgents, [
+    'Mozilla/5.0',
+  ]);
+});
+
+test('local metadata crawler skips products whose body read times out', async () => {
+  const productUrl = 'https://www.signalsounds.com/alm-busy-circuits-pamela-s-workout-pro-eurorack-module';
+  const crawl = await crawlPriceHubStoreCatalog(signalUkStore, {
+    maxProducts: 1,
+    fetchFn: async (url) => url.includes('xmlsitemap.php')
+      ? textResponse(`<urlset><url><loc>${productUrl}</loc></url></urlset>`)
+      : {
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          text: async () => new Promise(() => {}),
+        },
+    fetchTimeoutMs: 5,
+  });
+
+  assert.equal(crawl.products.length, 0);
+  assert.equal(crawl.skippedProducts, 1);
+  assert.deepEqual(crawl.skippedProductUrls, [productUrl]);
+});
+
+test('Signal Sounds inventory overrides time out hung response body reads', async () => {
+  const warnings = [];
+  const originalWarn = console.warn;
+  console.warn = (message) => warnings.push(String(message));
+  try {
+    const [product] = await applySignalSoundsInventoryOverrides(signalUkStore, [{
+      priceAmountMinor: 25000,
+      currency: 'GBP',
+      availability: 'in_stock',
+      productName: 'Pamela’s Pro Workout',
+      productUrl: 'https://www.signalsounds.com/alm-busy-circuits-pamela-s-workout-pro-eurorack-module',
+      imageUrl: null,
+      rawMeta: { sku: 'ALM-PAM-PRO' },
+    }], async () => ({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      json: async () => new Promise(() => {}),
+    }), 5);
+
+    assert.equal(product.availability, 'unknown');
+    assert.equal(product.rawMeta.signalSoundsAvailabilitySource, 'randem_location_api_missing');
+    assert.deepEqual(warnings, ['Signal Sounds inventory batch response for signal-sounds-uk timed out after 5ms.']);
+  } finally {
+    console.warn = originalWarn;
+  }
+});
+
+test('local refresh fails closed for broad bounded partial crawls', () => {
+  const warnings = readSanityWarnings(synthshopStore, 5, 3, 2, true, false);
+
+  assert.deepEqual(warnings, [
+    'BLOCKING: synthshop reached --max-products before exhausting product URLs; rerun without --max-products or target one store explicitly.',
+  ]);
+  assert.equal(warnings.some((warning) => warning.startsWith('BLOCKING:')), true);
+});
+
+test('local refresh fails closed for broad truncated crawls while warning on skipped metadata pages', () => {
+  const warnings = readSanityWarnings(synthshopStore, 30, 20, 10, false, false, {
+    hitMaxPages: true,
+    hitMaxSitemapFiles: true,
+    skippedProducts: 2,
+  });
+
+  assert.deepEqual(warnings, [
+    'BLOCKING: synthshop reached the page limit before proving catalog exhaustion; target one store explicitly before importing partial data.',
+    'BLOCKING: synthshop reached the sitemap file limit before proving catalog exhaustion; target one store explicitly before importing partial data.',
+    'synthshop skipped 2 product pages without usable metadata; importing matched rows while disappearance deactivation remains guarded.',
+  ]);
+  assert.equal(warnings.filter((warning) => warning.startsWith('BLOCKING:')).length, 2);
 });
 
 test('local refresh can fetch approved module matcher input with the Supabase read key', async () => {
@@ -169,13 +470,23 @@ function response(body) {
   };
 }
 
-function errorResponse(status, statusText) {
+function errorResponse(status, statusText, headers = {}) {
   return {
     ok: false,
     status,
     statusText,
+    headers: headersLike(headers),
     async json() {
       return {};
+    },
+  };
+}
+
+function headersLike(headers) {
+  const normalizedHeaders = new Map(Object.entries(headers).map(([name, value]) => [name.toLowerCase(), value]));
+  return {
+    get(name) {
+      return normalizedHeaders.get(name.toLowerCase()) ?? null;
     },
   };
 }
@@ -259,6 +570,7 @@ test('crawls WooCommerce catalog pages and stops on a short page', async () => {
 
   assert.equal(crawl.products.length, 3);
   assert.equal(crawl.pagesFetched, 2);
+  assert.equal(crawl.hitMaxPages, false);
   assert.deepEqual(requestedUrls.map((url) => new URL(url).search), ['?per_page=2&page=1', '?per_page=2&page=2']);
   assert.deepEqual(crawl.products[0], {
     priceAmountMinor: 28900,
@@ -275,6 +587,62 @@ test('crawls WooCommerce catalog pages and stops on a short page', async () => {
       stockText: 'In stock',
     },
   });
+});
+
+test('caps WooCommerce catalog products when maxProducts is configured', async () => {
+  const requestedUrls = [];
+  const crawl = await crawlWooCommerceStoreCatalog(elevatorStore, {
+    perPage: 10,
+    maxPages: 5,
+    maxProducts: 2,
+    fetchFn: async (url) => {
+      requestedUrls.push(url);
+      return response([
+        product({
+          id: 1,
+          name: 'Make Noise Maths',
+          slug: 'make-noise-maths',
+          permalink: 'https://www.elevatorsound.com/product/make-noise-maths/',
+        }),
+        product({
+          id: 2,
+          name: 'Mutable Instruments Plaits',
+          slug: 'mutable-instruments-plaits',
+          permalink: 'https://www.elevatorsound.com/product/mutable-instruments-plaits/',
+        }),
+      ]);
+    },
+  });
+
+  assert.equal(crawl.products.length, 2);
+  assert.equal(crawl.pagesFetched, 1);
+  assert.equal(crawl.hitMaxProducts, true);
+  assert.equal(crawl.hitMaxPages, false);
+  assert.deepEqual(requestedUrls.map((url) => new URL(url).search), ['?per_page=2&page=1']);
+});
+
+test('marks WooCommerce crawls as max-page truncated when the capped final page is full', async () => {
+  let calls = 0;
+  const crawl = await crawlWooCommerceStoreCatalog(elevatorStore, {
+    perPage: 1,
+    maxPages: 2,
+    fetchFn: async () => {
+      calls += 1;
+      return response([
+        product({
+          id: calls,
+          name: `Make Noise Maths ${calls}`,
+          slug: `make-noise-maths-${calls}`,
+          permalink: `https://www.elevatorsound.com/product/make-noise-maths-${calls}/`,
+        }),
+      ]);
+    },
+  });
+
+  assert.equal(calls, 2);
+  assert.equal(crawl.products.length, 2);
+  assert.equal(crawl.pagesFetched, 2);
+  assert.equal(crawl.hitMaxPages, true);
 });
 
 test('stops crawling at configured max pages even when pages are full', async () => {
@@ -364,6 +732,44 @@ test('stops crawling at configured max pages even when pages are full', async ()
     });
   });
 
+  test('caps Shopify product JSON products when maxProducts is configured', async () => {
+    const requestedUrls = [];
+    const crawl = await crawlShopifyProductJsonCatalog(controlStore, {
+      perPage: 250,
+      maxPages: 5,
+      maxProducts: 2,
+      fetchFn: async (url) => {
+        requestedUrls.push(url);
+        return response({
+          products: [
+            shopifyProduct({
+              id: 1,
+              title: 'Make Noise Maths',
+              handle: 'make-noise-maths',
+              vendor: 'Make Noise',
+              productType: 'Module',
+              variants: [{ id: 10, available: true, price: '319.00' }],
+            }),
+            shopifyProduct({
+              id: 2,
+              title: 'Mutable Instruments Plaits',
+              handle: 'mutable-instruments-plaits',
+              vendor: 'Mutable Instruments',
+              productType: 'Module',
+              variants: [{ id: 20, available: true, price: '259.00' }],
+            }),
+          ],
+        });
+      },
+    });
+
+    assert.equal(crawl.products.length, 2);
+    assert.equal(crawl.pagesFetched, 1);
+    assert.equal(crawl.hitMaxProducts, true);
+    assert.equal(crawl.hitMaxPages, false);
+    assert.deepEqual(requestedUrls.map((url) => new URL(url).search), ['?limit=2&page=1']);
+  });
+
   test('normalizes Shopify pre-order tags before variant availability', () => {
     const product = normalizeShopifyProductJsonProduct(shopifyProduct({
       title: 'Fractalist - Fractal Waveform Generator',
@@ -413,9 +819,78 @@ test('stops crawling at configured max pages even when pages are full', async ()
     assert.equal(product.currency, 'USD');
   });
 
+  test('uses Pusherman built-module Shopify variants before kit and PCB variants', async () => {
+    const crawl = await crawlShopifyProductJsonCatalog(pushermanStore, {
+      perPage: 1,
+      maxPages: 1,
+      fetchFn: async () => response({
+        products: [
+          shopifyProduct({
+            id: 600,
+            title: 'ST Modular Oberhausen',
+            handle: 'st-modular-oberhausen',
+            vendor: 'ST Modular',
+            productType: 'Eurorack module',
+            tags: ['eurorack'],
+            variants: [
+              { id: 601, title: 'PCB/Panel Set', sku: 'OBERHAUSEN-PCB', available: true, price: '38.00' },
+              { id: 602, title: 'Built Module - Assembled', sku: 'OBERHAUSEN-BUILT', available: true, price: '299.00' },
+            ],
+          }),
+        ],
+      }),
+    });
+
+    assert.equal(crawl.products[0].priceAmountMinor, 29900);
+    assert.equal(crawl.products[0].rawMeta.selectedVariantId, 602);
+    assert.equal(crawl.products[0].rawMeta.selectedVariantTitle, 'Built Module - Assembled');
+  });
+
+  test('keeps the only priced Shopify variant even when it matches avoided variant terms', () => {
+    const product = normalizeShopifyProductJsonProduct(shopifyProduct({
+      title: 'ST Modular Oberhausen',
+      handle: 'st-modular-oberhausen',
+      vendor: 'ST Modular',
+      productType: 'Eurorack module',
+      tags: ['eurorack'],
+      variants: [{ id: 601, title: 'PCB/Panel Set', sku: 'OBERHAUSEN-PCB', available: true, price: '38.00' }],
+    }), {
+      baseUrl: 'https://pushermanproductions.com/',
+      currencyHint: 'GBP',
+      variantTitlePreference: pushermanStore.shopifyVariantTitlePreference,
+    });
+
+    assert.equal(product.priceAmountMinor, 3800);
+    assert.equal(product.rawMeta.selectedVariantTitle, 'PCB/Panel Set');
+  });
+
   assert.equal(calls, 2);
   assert.equal(crawl.products.length, 2);
   assert.equal(crawl.pagesFetched, 2);
+  assert.equal(crawl.hitMaxPages, true);
+});
+
+test('marks Shopify crawls as max-page truncated when the capped final page is full', async () => {
+  const crawl = await crawlShopifyProductJsonCatalog(controlStore, {
+    perPage: 1,
+    maxPages: 1,
+    fetchFn: async () => response({
+      products: [
+        shopifyProduct({
+          id: 1,
+          title: 'Make Noise Maths',
+          handle: 'make-noise-maths',
+          vendor: 'Make Noise',
+          productType: 'Module',
+          variants: [{ id: 10, available: true, price: '319.00' }],
+        }),
+      ],
+    }),
+  });
+
+  assert.equal(crawl.products.length, 1);
+  assert.equal(crawl.pagesFetched, 1);
+  assert.equal(crawl.hitMaxPages, true);
 });
 
 test('crawls Found Sound Shopify product JSON and treats preorder tags as preorder availability', async () => {
@@ -478,6 +953,7 @@ test('uses configured Shopify catalog paths and currency hints for new stores', 
 
   assert.equal(new URL(requestedUrls[0]).pathname, '/products.json');
   assert.equal(crawl.products[0].currency, 'JPY');
+  assert.equal(crawl.products[0].priceAmountMinor, 77000);
   assert.equal(crawl.products[0].productUrl, 'https://clockfacemodular.com/products/make-noise-maths');
 });
 
@@ -510,32 +986,60 @@ test('uses Synthshop Shopify product JSON with NOK currency metadata', async () 
   assert.equal(crawl.products[0].productUrl, 'https://synthshop.no/products/make-noise-maths');
 });
 
-test('uses Soundium Eurorack collection feed instead of the full Shopify catalog', async () => {
+test('uses Soundium full Shopify catalog instead of the stale narrow Eurorack collection', async () => {
   const requestedUrls = [];
   const crawl = await crawlShopifyProductJsonCatalog(soundiumStore, {
-    perPage: 1,
-    maxPages: 1,
+    perPage: 2,
+    maxPages: 2,
     fetchFn: async (url) => {
       requestedUrls.push(url);
       return response({
-        products: [
-          shopifyProduct({
-            id: 500,
-            title: 'OXI Instruments Pipe MKII',
-            handle: 'oxi-instruments-pipe-mkii',
-            vendor: 'OXI Instruments',
-            productType: 'Eurorack',
-            tags: ['Eurorack'],
-            variants: [{ id: 501, title: 'Default Title', sku: 'PIPE-MKII', available: true, price: '195.00' }],
-          }),
-        ],
+        products: requestedUrls.length === 1
+          ? [
+              shopifyProduct({
+                id: 500,
+                title: 'OXI Instruments Coral',
+                handle: 'oxi-instruments-coral',
+                vendor: 'OXI Instruments',
+                productType: 'Eurorack',
+                tags: ['Eurorack'],
+                variants: [{ id: 501, title: 'Default Title', sku: 'CORAL', available: true, price: '469.00' }],
+              }),
+              shopifyProduct({
+                id: 502,
+                title: 'Moog Mother-32',
+                handle: 'moog-mother-32',
+                vendor: 'Moog',
+                productType: 'Synthesizer',
+                tags: ['Semi Modular'],
+                variants: [{ id: 503, title: 'Default Title', sku: 'MOTHER32', available: true, price: '649.00' }],
+              }),
+            ]
+          : [
+              shopifyProduct({
+                id: 504,
+                title: '1010music Bluebox Eurorack Edition',
+                handle: '1010music-bluebox-eurorack-edition',
+                vendor: '1010music',
+                productType: 'Eurorack',
+                tags: ['Eurorack'],
+                variants: [{ id: 505, title: 'Default Title', sku: 'BLUEBOX-EURO', available: true, price: '689.00' }],
+              }),
+            ],
       });
     },
   });
 
-  assert.equal(new URL(requestedUrls[0]).pathname, '/collections/eurorack/products.json');
-  assert.equal(crawl.products[0].currency, 'EUR');
-  assert.equal(crawl.products[0].productUrl, 'https://soundium.lt/products/oxi-instruments-pipe-mkii');
+  assert.equal(soundiumStore.adapter, 'shopify_product_json');
+  assert.equal(new URL(requestedUrls[0]).pathname, '/products.json');
+  assert.equal(new URL(requestedUrls[0]).searchParams.get('limit'), '2');
+  assert.equal(new URL(requestedUrls[1]).searchParams.get('page'), '2');
+  assert.equal(crawl.products.length, 3);
+  const coral = crawl.products.find((product) => product.productName === 'OXI Instruments Coral');
+  const bluebox = crawl.products.find((product) => product.productName === '1010music Bluebox Eurorack Edition');
+  assert.equal(coral?.currency, 'EUR');
+  assert.equal(coral?.priceAmountMinor, 46900);
+  assert.equal(bluebox?.priceAmountMinor, 68900);
 });
 
 test('uses added source-expansion Shopify product JSON configs', async () => {
@@ -597,6 +1101,83 @@ test('uses added source-expansion Shopify product JSON configs', async () => {
       assert.equal(crawl.products[0].rawMeta.brand, brand);
     }
   }
+});
+
+test('Shopify curl fetch retries with native CA certificates after local TLS trust failure', async () => {
+  const calls = [];
+  const stdout = await fetchShopifyJsonStdoutWithCurl('https://whimsicalraps.com/products.json', async (url, extraArgs) => {
+    calls.push({ url, extraArgs });
+    if (calls.length === 1) {
+      const error = new Error('curl failed');
+      error.code = 60;
+      error.stderr = 'curl: (60) SSL certificate problem: unable to get local issuer certificate';
+      throw error;
+    }
+
+    return '{"products":[]}\n200';
+  });
+
+  assert.equal(stdout, '{"products":[]}\n200');
+  assert.deepEqual(calls, [
+    { url: 'https://whimsicalraps.com/products.json', extraArgs: [] },
+    { url: 'https://whimsicalraps.com/products.json', extraArgs: ['--ca-native'] },
+  ]);
+});
+
+test('Shopify curl fetch forwards abort signal and timeout to the runner', async () => {
+  const controller = new AbortController();
+  const calls = [];
+  const stdout = await fetchShopifyJsonStdoutWithCurl(
+    'https://whimsicalraps.com/products.json',
+    async (url, extraArgs, options) => {
+      calls.push({ url, extraArgs, signal: options?.signal, timeoutMs: options?.timeoutMs });
+      return '{"products":[]}\n200';
+    },
+    { signal: controller.signal, timeoutMs: 123 },
+  );
+
+  assert.equal(stdout, '{"products":[]}\n200');
+  assert.deepEqual(calls, [
+    {
+      url: 'https://whimsicalraps.com/products.json',
+      extraArgs: [],
+      signal: controller.signal,
+      timeoutMs: 123,
+    },
+  ]);
+});
+
+test('Shopify curl response parsing preserves final response headers for retry handling', () => {
+  const parsed = parseShopifyJsonCurlStdout([
+    'HTTP/2 301',
+    'location: https://shop.example/products.json',
+    '',
+    'HTTP/2 429',
+    'retry-after: 3',
+    'content-type: application/json',
+    '',
+    '{"errors":"rate limited"}',
+    '429',
+  ].join('\n'));
+
+  assert.equal(parsed.status, 429);
+  assert.equal(parsed.headers.get('Retry-After'), '3');
+  assert.equal(parsed.body, '{"errors":"rate limited"}');
+});
+
+test('Shopify retry delay honors bounded Retry-After seconds and dates', () => {
+  assert.equal(readShopifyRetryDelayMs({
+    status: 429,
+    headers: headersLike({ 'retry-after': '7' }),
+  }, 1), 7000);
+  assert.equal(readShopifyRetryDelayMs({
+    status: 429,
+    headers: headersLike({ 'retry-after': 'Thu, 16 Jul 2026 17:25:35 GMT' }),
+  }, 1, Date.parse('Thu, 16 Jul 2026 17:25:30 GMT')), 5000);
+  assert.equal(readShopifyRetryDelayMs({
+    status: 429,
+    headers: headersLike({ 'retry-after': '120' }),
+  }, 1), 30000);
 });
 
 test('uses TechnoSynth WooCommerce Store API config', async () => {
@@ -777,7 +1358,7 @@ test('retries rate-limited Shopify product JSON pages', async () => {
     fetchFn: async () => {
       calls += 1;
       return calls === 1
-        ? errorResponse(429, 'Too Many Requests')
+        ? errorResponse(429, 'Too Many Requests', { 'retry-after': '0' })
         : response({ products: [] });
     },
   });
@@ -938,6 +1519,20 @@ test('crawls BigCommerce product sitemap and normalizes product metadata pages',
     },
   });
 
+  test('normalizes zero-decimal product metadata prices as whole minor units', () => {
+    const productUrl = 'https://clockfacemodular.com/products/make-noise-maths';
+    const product = normalizeBigCommerceProductPage(productMetadataPage({
+      name: 'Make Noise Maths',
+      url: productUrl,
+      price: '77000',
+      currency: 'JPY',
+      availability: 'instock',
+    }), productUrl);
+
+    assert.equal(product.currency, 'JPY');
+    assert.equal(product.priceAmountMinor, 77000);
+  });
+
   test('crawls recursive custom product sitemaps and normalizes metadata pages', async () => {
     const requestedUrls = [];
     const productUrl = 'https://machineroom.com.ua/product/erica-synths-black-sequencer/';
@@ -977,6 +1572,37 @@ test('crawls BigCommerce product sitemap and normalizes product metadata pages',
     assert.equal(crawl.products[0].productName, 'Black Sequencer');
   });
 
+  test('marks custom sitemap crawls truncated when the sitemap file cap is reached', async () => {
+    const productUrl = 'https://machineroom.com.ua/product/erica-synths-black-sequencer/';
+    const sitemapUrls = Array.from(
+      { length: 31 },
+      (_, index) => `https://machineroom.com.ua/product-sitemap${index + 1}.xml`
+    );
+
+    const crawl = await crawlPriceHubStoreCatalog(machineroomStore, {
+      maxProducts: 1,
+      fetchFn: async (url) => {
+        if (url.endsWith('/sitemap_index.xml')) {
+          return textResponse(`<sitemapindex>${sitemapUrls.map((sitemapUrl) => `<sitemap><loc>${sitemapUrl}</loc></sitemap>`).join('')}</sitemapindex>`);
+        }
+        if (sitemapUrls.includes(url)) {
+          return textResponse(`<urlset><url><loc>${productUrl}</loc></url></urlset>`);
+        }
+
+        return textResponse(productMetadataPage({
+          name: 'Black Sequencer - MachineRoom',
+          url: productUrl,
+          price: '550',
+          currency: 'EUR',
+          availability: 'instock',
+        }));
+      },
+    });
+
+    assert.equal(crawl.products.length, 1);
+    assert.equal(crawl.hitMaxSitemapFiles, true);
+  });
+
   test('detects MachineRoom WooCommerce backorder stock badges over in-stock metadata', async () => {
     const productUrl = 'https://machineroom.com.ua/product/knight-s-gallop/';
     const crawl = await crawlPriceHubStoreCatalog(machineroomStore, {
@@ -1014,22 +1640,19 @@ test('crawls BigCommerce product sitemap and normalizes product metadata pages',
     const crawl = await crawlPriceHubStoreCatalog(milkAudioStore, {
       maxProducts: 1,
       fetchFn: async (url) => {
-        if (url.endsWith('/product-sitemap_index.xml')) {
-          return textResponse(`<sitemapindex><sitemap><loc>https://www.milkaudiostore.com/sitemaps/it/product-sitemap_it.xml</loc></sitemap></sitemapindex>`);
-        }
         if (url.endsWith('/sitemaps/it/product-sitemap_it.xml')) {
           return textResponse(`<urlset><url><loc>${productUrl}</loc></url></urlset>`);
         }
 
         return textResponse(jsonLdProductPage({
-          name: 'Noise Engineering Horologic Solum (Silver)',
+          name: 'Noise&nbsp;Engineering Horologic Solum (Silver)',
           url: productUrl,
           price: '129.00',
           currency: 'EUR',
           availability: 'https://schema.org/InStock',
           image: 'https://www.milkaudiostore.com/horologic.jpg',
           sku: 'NE-HS-SILVER',
-          brand: 'Noise Engineering',
+          brand: 'Noise&nbsp;Engineering',
         }));
       },
     });
@@ -1045,15 +1668,16 @@ test('crawls BigCommerce product sitemap and normalizes product metadata pages',
     assert.equal(crawl.products[0].rawMeta.brand, 'Noise Engineering');
   });
 
+  test('uses Milk Audio direct Italian product sitemap to avoid sitemap-index truncation', async () => {
+    assert.equal(milkAudioStore.catalogPath, '/sitemaps/it/product-sitemap_it.xml');
+  });
+
   test('detects Milk Audio order-only product badges as backorder availability', async () => {
     const productUrl = 'https://www.milkaudiostore.com/it/shop/2hp-3-1-black/';
     const crawl = await crawlPriceHubStoreCatalog(milkAudioStore, {
       maxProducts: 1,
       fetchFn: async (url) => {
-        if (url.endsWith('/product-sitemap_index.xml')) {
-          return textResponse(`<sitemapindex><sitemap><loc>https://www.milkaudiostore.com/sitemaps/product-sitemap_it.xml</loc></sitemap></sitemapindex>`);
-        }
-        if (url.endsWith('/sitemaps/product-sitemap_it.xml')) {
+        if (url.endsWith('/sitemaps/it/product-sitemap_it.xml')) {
           return textResponse(`<urlset><url><loc>${productUrl}</loc></url></urlset>`);
         }
 
@@ -1082,10 +1706,7 @@ test('crawls BigCommerce product sitemap and normalizes product metadata pages',
     const crawl = await crawlPriceHubStoreCatalog(milkAudioStore, {
       maxProducts: 1,
       fetchFn: async (url) => {
-        if (url.endsWith('/product-sitemap_index.xml')) {
-          return textResponse(`<sitemapindex><sitemap><loc>https://www.milkaudiostore.com/sitemaps/product-sitemap_it.xml</loc></sitemap></sitemapindex>`);
-        }
-        if (url.endsWith('/sitemaps/product-sitemap_it.xml')) {
+        if (url.endsWith('/sitemaps/it/product-sitemap_it.xml')) {
           return textResponse(`<urlset><url><loc>${productUrl}</loc></url></urlset>`);
         }
 
@@ -1135,6 +1756,16 @@ test('crawls BigCommerce product sitemap and normalizes product metadata pages',
     assert.equal(crawl.products[0].rawMeta.brand, '333modules');
   });
 
+  test('filters Martin Pas and Exploding Shed custom sitemap URL shapes safely', () => {
+    assert.equal(isAllowedCustomProductUrl(martinPasStore, 'https://www.martinpas.com/products/intellijel/quad-vca'), true);
+    assert.equal(isAllowedCustomProductUrl(martinPasStore, 'https://www.martinpas.com/products/intellijel'), false);
+
+    assert.equal(isAllowedCustomProductUrl(readApprovedPriceHubStore('exploding-shed'), 'https://www.exploding-shed.com/333modules-4xlfo/100425'), true);
+    assert.equal(isAllowedCustomProductUrl(readApprovedPriceHubStore('exploding-shed'), 'https://www.exploding-shed.com/333modules/'), false);
+    assert.equal(isAllowedCustomProductUrl(readApprovedPriceHubStore('exploding-shed'), 'https://www.exploding-shed.com/landingPage/summer'), false);
+    assert.equal(isAllowedCustomProductUrl(readApprovedPriceHubStore('exploding-shed'), 'https://www.exploding-shed.com/test'), false);
+  });
+
   test('strips Escape From Noise store suffix from custom product titles', async () => {
     const productUrl = 'https://escapefromnoise.com/en/modular/2hp-31.html';
     const crawl = await crawlPriceHubStoreCatalog(readApprovedPriceHubStore('escape-from-noise'), {
@@ -1157,6 +1788,204 @@ test('crawls BigCommerce product sitemap and normalizes product metadata pages',
     assert.equal(crawl.products.length, 1);
     assert.equal(crawl.products[0].productName, '2HP 3:1');
     assert.equal(crawl.products[0].availability, 'out_of_stock');
+  });
+
+  test('extracts current Escape From Noise AbiCart/Textalk article metadata by exact product URL', async () => {
+    const productUrl = 'https://escapefromnoise.com/en/modular/synth-voice/gen-thalz-hnw-machine-xl-eurorack.html';
+    const crawl = await crawlPriceHubStoreCatalog(readApprovedPriceHubStore('escape-from-noise'), {
+      maxProducts: 1,
+      fetchFn: async (url) => {
+        if (url.endsWith('/sitemap.xml')) {
+          return textResponse(`<urlset><url><loc>${productUrl}</loc></url></urlset>`);
+        }
+
+        return textResponse(abiCartTextalkProductPage({
+          currency: 'EUR',
+          articles: [
+            {
+              uid: 999,
+              articleNumber: 'OTHER',
+              name: { en: 'Other Module' },
+              url: { en: 'https://escapefromnoise.com/en/modular/other-module.html' },
+              isBuyable: true,
+              price: { current: { EUR: 999.99 } },
+              images: ['https://cdn.abicart.com/other.jpg'],
+            },
+            {
+              uid: 222421837,
+              articleNumber: 'GTHNW',
+              name: { en: 'Gen Thalz HNW Machine XL Eurorack' },
+              url: { en: productUrl },
+              isBuyable: true,
+              price: { current: { EUR: 263.60999999999996 } },
+              images: ['https://cdn.abicart.com/hnw.jpg'],
+            },
+          ],
+        }));
+      },
+    });
+
+    assert.equal(crawl.products.length, 1);
+    assert.equal(crawl.products[0].priceAmountMinor, 26361);
+    assert.equal(crawl.products[0].currency, 'EUR');
+    assert.equal(crawl.products[0].availability, 'in_stock');
+    assert.equal(crawl.products[0].productName, 'Gen Thalz HNW Machine XL Eurorack');
+    assert.equal(crawl.products[0].productUrl, productUrl);
+    assert.equal(crawl.products[0].imageUrl, 'https://cdn.abicart.com/hnw.jpg');
+    assert.equal(crawl.products[0].rawMeta.externalProductId, '222421837');
+    assert.equal(crawl.products[0].rawMeta.sku, 'GTHNW');
+  });
+
+  test('extracts Escape From Noise AbiCart/Textalk article metadata from localized current-state URLs', () => {
+    const productUrl = 'https://escapefromnoise.com/en/modular/synth-voice/gen-thalz-hnw-machine-xl-eurorack.html';
+    const product = normalizeProductMetadataPage(abiCartTextalkProductPage({
+      currency: 'EUR',
+      articles: [
+        {
+          uid: 222421837,
+          articleNumber: 'GTHNW',
+          name: { sv: 'Gen Thalz HNW Machine XL Eurorack' },
+          url: { sv: 'https://escapefromnoise.com/sv/modular/synth-voice/gen-thalz-hnw-machine-xl-eurorack.html' },
+          isBuyable: true,
+          price: { current: { EUR: 263.60999999999996 } },
+          images: ['https://cdn.abicart.com/hnw.jpg'],
+        },
+      ],
+    }), productUrl, 'custom', { storeSlug: 'escape-from-noise' });
+
+    assert.equal(product.priceAmountMinor, 26361);
+    assert.equal(product.currency, 'EUR');
+    assert.equal(product.availability, 'in_stock');
+    assert.equal(product.productName, 'Gen Thalz HNW Machine XL Eurorack');
+    assert.equal(product.productUrl, productUrl);
+    assert.equal(product.imageUrl, 'https://cdn.abicart.com/hnw.jpg');
+    assert.equal(product.rawMeta.externalProductId, '222421837');
+    assert.equal(product.rawMeta.sku, 'GTHNW');
+  });
+
+  test('does not select unrelated Escape From Noise recommendation articles', () => {
+    const productUrl = 'https://escapefromnoise.com/en/modular/not-the-recommendation.html';
+    const product = normalizeProductMetadataPage(abiCartTextalkProductPage({
+      currency: 'EUR',
+      articles: [
+        {
+          uid: 219847803,
+          articleNumber: 'MNBruxa',
+          name: { en: 'Make Noise Bruxa' },
+          url: { en: 'https://escapefromnoise.com/en/sale/make-noise-bruxa.html' },
+          isBuyable: true,
+          price: { current: { EUR: 357.91875 } },
+          images: ['https://cdn.abicart.com/bruxa.jpg'],
+        },
+      ],
+    }), productUrl, 'custom', { storeSlug: 'escape-from-noise' });
+
+    assert.equal(product.priceAmountMinor, null);
+    assert.notEqual(product.productName, 'Make Noise Bruxa');
+    assert.equal(product.rawMeta.externalProductId, undefined);
+  });
+
+  test('detaches metadata strings so retained snapshots do not retain large product HTML pages', () => {
+    const code = `
+      import assert from 'node:assert/strict';
+      import { normalizeProductMetadataPage } from './supabase/functions/_shared/price-hub/product-metadata-page.ts';
+
+      const snapshots = [];
+      for (let index = 0; index < 650; index += 1) {
+        const productUrl = 'https://signalsounds.example/products/module-' + index;
+        const html = '<!doctype html><html><head>'
+          + '<meta property="og:title" content="Module ' + index + '">'
+          + '<meta property="og:url" content="' + productUrl + '">'
+          + '<meta property="og:image" content="https://signalsounds.example/module-' + index + '.jpg">'
+          + '<meta property="product:price:amount" content="123.45">'
+          + '<meta property="product:price:currency" content="GBP">'
+          + '<meta property="product:availability" content="InStock">'
+          + '<meta property="product:brand" content="Signal Brand">'
+          + '<meta property="sku" content="SKU-' + index + '">'
+          + '</head><body><div class="stock">In stock</div>'
+          + 'x'.repeat(520 * 1024)
+          + '</body></html>';
+        const snapshot = normalizeProductMetadataPage(html, productUrl, 'custom', { storeSlug: 'signal-sounds-uk' });
+        assert.equal(snapshot.productName, 'Module ' + index);
+        snapshots.push(snapshot);
+      }
+
+      globalThis.gc();
+      assert.equal(snapshots.length, 650);
+      assert.equal(snapshots.at(-1).rawMeta.pageAvailabilityText, 'In stock');
+    `;
+    const child = spawnSync(process.execPath, [
+      '--max-old-space-size=256',
+      '--expose-gc',
+      '--disable-warning=MODULE_TYPELESS_PACKAGE_JSON',
+      '--input-type=module',
+      '--eval',
+      code,
+    ], {
+      cwd: process.cwd(),
+      encoding: 'utf8',
+      timeout: 30000,
+      maxBuffer: 1024 * 1024,
+    });
+
+    assert.equal(child.status, 0, child.stderr || child.stdout);
+  });
+
+  test('normalizes JSON-LD priceSpecification fallback prices for metadata pages', () => {
+    const productUrl = 'https://www.thonk.co.uk/shop/befaco-trolley-bus-assembled/';
+    for (const { price, priceCurrency, priceSpecification, expectedPriceAmountMinor } of [
+      {
+        price: undefined,
+        priceCurrency: undefined,
+        priceSpecification: { '@type': 'PriceSpecification', price: '239.00', priceCurrency: 'GBP' },
+        expectedPriceAmountMinor: 23900,
+      },
+      {
+        price: 0,
+        priceCurrency: 'GBP',
+        priceSpecification: { '@type': 'PriceSpecification', price: '239.00', priceCurrency: 'GBP' },
+        expectedPriceAmountMinor: 23900,
+      },
+      {
+        price: '249.00',
+        priceCurrency: 'GBP',
+        priceSpecification: { '@type': 'PriceSpecification', price: '239.00', priceCurrency: 'GBP' },
+        expectedPriceAmountMinor: 24900,
+      },
+      {
+        price: 0,
+        priceCurrency: 'GBP',
+        priceSpecification: { '@type': 'PriceSpecification', price: '0', priceCurrency: 'GBP' },
+        expectedPriceAmountMinor: 0,
+      },
+    ]) {
+      const product = normalizeBigCommerceProductPage(`
+        <!doctype html>
+        <html>
+          <head>
+            <script type="application/ld+json">
+              ${JSON.stringify({
+                '@context': 'https://schema.org',
+                '@type': 'Product',
+                name: 'Befaco Trolley Bus Assembled',
+                url: productUrl,
+                image: 'https://www.thonk.co.uk/trolley.jpg',
+                offers: {
+                  '@type': 'Offer',
+                  availability: 'https://schema.org/InStock',
+                  ...(price !== undefined ? { price } : {}),
+                  ...(priceCurrency !== undefined ? { priceCurrency } : {}),
+                  priceSpecification,
+                },
+              })}
+            </script>
+          </head>
+        </html>
+      `, productUrl);
+
+      assert.equal(product.priceAmountMinor, expectedPriceAmountMinor);
+      assert.equal(product.currency, 'GBP');
+    }
   });
 
   test('uses Martin Pas modular category products and strips storefront suffixes', async () => {
@@ -1212,6 +2041,27 @@ test('crawls BigCommerce product sitemap and normalizes product metadata pages',
     assert.equal(crawl.products[0].availability, 'in_stock');
     assert.equal(crawl.products[0].productName, '0-Coast');
     assert.equal(crawl.products[0].rawMeta.brand, 'Make Noise');
+  });
+
+  test('normalizes embedded zero-decimal minor-unit metadata with currency context', () => {
+    const productUrl = 'https://clockfacemodular.com/products/make-noise-maths';
+    const product = normalizeBigCommerceProductPage(`
+      <!doctype html>
+      <html>
+        <head>
+          <meta property="product:price:currency" content="JPY">
+          <meta property="product:availability" content="instock">
+          <meta property="og:url" content="${productUrl}">
+          <meta property="og:title" content="Make Noise Maths">
+        </head>
+        <body>
+          <script>self.__next_f.push([1, '{"price":77000}'])</script>
+        </body>
+      </html>
+    `, productUrl);
+
+    assert.equal(product.currency, 'JPY');
+    assert.equal(product.priceAmountMinor, 77000);
   });
 
   test('crawls configured custom category pages for Turnlab product links', async () => {
@@ -1639,6 +2489,47 @@ test('crawls Shopware gzip sitemap and skips category pages without product meta
   });
 });
 
+test('skips SchneidersLaden redirect-loop product fetch failures without aborting the crawl', async () => {
+  const sitemapUrl = 'https://schneidersladen.de/en/sitemap/salesChannel/redirect-loop-sitemap.xml.gz';
+  const redirectLoopUrl = 'https://schneidersladen.de/en/redirect-loop-product';
+  const productUrl = 'https://schneidersladen.de/en/make-noise-maths-2-silver';
+  const productSitemap = `
+    <urlset>
+      <url><loc>${redirectLoopUrl}</loc></url>
+      <url><loc>${productUrl}</loc></url>
+    </urlset>
+  `;
+
+  const crawl = await crawlPriceHubStoreCatalog(schneidersStore, {
+    maxProducts: 1,
+    fetchFn: async (url) => {
+      if (url.endsWith('/sitemap.xml')) {
+        return textResponse(`<sitemapindex><sitemap><loc>${sitemapUrl}</loc></sitemap></sitemapindex>`);
+      }
+
+      if (url.endsWith('.xml.gz')) {
+        return bytesResponse(gzipSync(productSitemap));
+      }
+
+      if (url === redirectLoopUrl) {
+        throw new TypeError('fetch failed: redirect count exceeded');
+      }
+
+      return textResponse(shopwareProductPage({
+        name: 'Make Noise Maths 2 (Silber) - SchneidersLaden',
+        url: productUrl,
+        price: '329',
+        currency: 'EUR',
+        productId: '019364372943708b8d06c198957c90c7',
+      }));
+    },
+  });
+
+  assert.equal(crawl.products.length, 1);
+  assert.equal(crawl.skippedProducts, 1);
+  assert.deepEqual(crawl.skippedProductUrls, [redirectLoopUrl]);
+});
+
 test('stops Shopware product fetches once capped output is satisfied', async () => {
   const requestedUrls = [];
   const sitemapUrl = 'https://schneidersladen.de/en/sitemap/salesChannel/large-sitemap.xml.gz';
@@ -1961,6 +2852,37 @@ test('matcher supports manufacturer object and combined slug matching', () => {
   assert.equal(candidate.reasons.includes('combined manufacturer and module slug found'), true);
 });
 
+test('matcher reads score thresholds from store match config', () => {
+  const modules = [{ id: 'plaits-id', name: 'Plaits', manufacturerName: 'Mutable Instruments' }];
+  const products = [normalizedProduct('MI macro oscillator', 'mutable-instruments-plaits')];
+
+  const [defaultCandidate] = matchModulesToProducts(modules, products, { includeIgnored: false });
+  const stricterMatches = matchModulesToProducts(modules, products, {
+    includeIgnored: false,
+    matchConfig: { scoreThresholds: { reviewCandidate: 0.8 } },
+  });
+  const [promotedCandidate] = matchModulesToProducts(modules, products, {
+    includeIgnored: false,
+    matchConfig: { scoreThresholds: { strongCandidate: 0.7 } },
+  });
+
+  assert.equal(defaultCandidate.status, 'review_candidate');
+  assert.deepEqual(stricterMatches, []);
+  assert.equal(promotedCandidate.status, 'strong_candidate');
+});
+
+test('matcher reads noise terms from store match config', () => {
+  const [candidate] = matchModulesToProducts([
+    { id: 'maths-id', name: 'Maths', manufacturerName: 'Make Noise' },
+  ], [normalizedProduct('Make Noise Maths exclusive hazard', 'make-noise-maths-exclusive-hazard')], {
+    matchConfig: { noiseTerms: ['exclusive hazard'] },
+  });
+
+  assert.equal(candidate.status, 'ignored');
+  assert.equal(candidate.score < 0.72, true);
+  assert.equal(candidate.reasons.some((reason) => reason === 'noise penalty: exclusive hazard'), true);
+});
+
 test('matcher penalizes noisy accessory false positives', () => {
   const [candidate] = matchModulesToProducts([
     { id: 'maths-id', name: 'Maths', manufacturerName: 'Make Noise' },
@@ -2084,6 +3006,61 @@ test('matcher omits Shopify used and consignment products from raw metadata', ()
 
   assert.equal(matches.length, 1);
   assert.equal(matches[0].productUrl, 'https://store.test/product/make-noise-maths/');
+});
+
+test('matcher allows Found Sound preorder tags but penalizes preorder titles and handles', () => {
+  const module = { id: 'modbox-id', name: 'Modbox MKII', manufacturerName: 'WMD' };
+  const legitimatePreorder = normalizeShopifyProductJsonProduct(shopifyProduct({
+    title: 'WMD Modbox MKII Dual LFO Eurorack Module',
+    handle: '42592',
+    vendor: 'WMD',
+    productType: 'NEW',
+    tags: ['brand-new', 'eurorack', 'preorder'],
+    variants: [{ id: 1, title: 'Default Title', sku: '42592', available: true, price: '499.00' }],
+  }), {
+    baseUrl: foundSoundStore.baseUrl,
+    currencyHint: foundSoundStore.currencyHint,
+    ignoredMatchNoiseTags: foundSoundStore.ignoredMatchNoiseTags,
+  });
+  const titleHazard = normalizeShopifyProductJsonProduct(shopifyProduct({
+    title: 'WMD Modbox MKII Dual LFO Eurorack Module Preorder',
+    handle: 'wmd-modbox-mkii-dual-lfo-eurorack-module',
+    vendor: 'WMD',
+    productType: 'NEW',
+    tags: ['brand-new', 'eurorack'],
+    variants: [{ id: 2, title: 'Default Title', sku: '42592-title', available: true, price: '499.00' }],
+  }), {
+    baseUrl: foundSoundStore.baseUrl,
+    currencyHint: foundSoundStore.currencyHint,
+    ignoredMatchNoiseTags: foundSoundStore.ignoredMatchNoiseTags,
+  });
+  const handleHazard = normalizeShopifyProductJsonProduct(shopifyProduct({
+    title: 'WMD Modbox MKII Dual LFO Eurorack Module',
+    handle: 'wmd-modbox-mkii-dual-lfo-eurorack-module-preorder',
+    vendor: 'WMD',
+    productType: 'NEW',
+    tags: ['brand-new', 'eurorack'],
+    variants: [{ id: 3, title: 'Default Title', sku: '42592-handle', available: true, price: '499.00' }],
+  }), {
+    baseUrl: foundSoundStore.baseUrl,
+    currencyHint: foundSoundStore.currencyHint,
+    ignoredMatchNoiseTags: foundSoundStore.ignoredMatchNoiseTags,
+  });
+
+  const acceptedMatches = matchModulesToProducts([module], [legitimatePreorder, titleHazard, handleHazard], {
+    includeIgnored: false,
+    store: foundSoundStore,
+  });
+  const titleCandidate = matchModulesToProducts([module], [titleHazard], { store: foundSoundStore })[0];
+  const handleCandidate = matchModulesToProducts([module], [handleHazard], { store: foundSoundStore })[0];
+
+  assert.equal(legitimatePreorder.availability, 'preorder');
+  assert.equal(legitimatePreorder.rawMeta.matchNoiseText, 'NEW brand-new eurorack');
+  assert.deepEqual(acceptedMatches.map((match) => match.productUrl), ['https://foundsound.com.au/products/42592']);
+  assert.equal(titleCandidate.status, 'ignored');
+  assert.equal(handleCandidate.status, 'ignored');
+  assert.equal(titleCandidate.reasons.some((reason) => reason.includes('preorder')), true);
+  assert.equal(handleCandidate.reasons.some((reason) => reason.includes('preorder')), true);
 });
 
 test('matcher supports compact manufacturer-prefixed module codes', () => {
@@ -2216,6 +3193,25 @@ function jsonLdProductPage({ name, url, price, currency, availability, image, sk
         </script>
       </head>
       <body>${body}</body>
+    </html>
+  `;
+}
+
+function abiCartTextalkProductPage({ currency, articles }) {
+  return `
+    <!doctype html>
+    <html>
+      <head><title>Escape from Noise</title></head>
+      <body>
+        <script slot="redux">
+          window.twsReduxStartState = ${JSON.stringify({
+            currency,
+            articleState: {
+              articles,
+            },
+          })};
+        </script>
+      </body>
     </html>
   `;
 }

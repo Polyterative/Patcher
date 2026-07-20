@@ -1,7 +1,7 @@
 import {
   AfterViewInit,
-  ChangeDetectorRef,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   HostListener,
@@ -12,20 +12,18 @@ import {
   ViewChild
 } from '@angular/core';
 import { animate, animateChild, query, style, transition, trigger } from '@angular/animations';
-import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
 import {
   filter,
-  takeUntil,
   withLatestFrom
 } from 'rxjs/operators';
-import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
-import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 import { RackedModule } from 'src/app/models/module';
 import { RackMinimal } from 'src/app/models/rack';
+import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
 import {
-  ContextMenuItem,
   GeneralContextMenuDataService
 } from 'src/app/shared-interproject/components/@smart/general-context-menu/general-context-menu-data.service';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
@@ -33,49 +31,46 @@ import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
 } from '../../module-parts/module-minimal/module-minimal.component';
-import { derivePanelLabel } from '../../module-parts/panel.constants';
-import { ModulePanelZoomDialogComponent } from '../../module-parts/module-details/module-panel-zoom-dialog.component';
 import {
+  RackAnalysisMode,
   RackLayoutHoverMode,
-  RACK_LAYOUT_ANALYSIS_LEGEND_ITEMS,
-  RACK_ANALYSIS_MODES,
   RACK_ANALYSIS_MODE_OPTIONS,
+  RACK_ANALYSIS_MODES,
   RACK_ANALYSIS_PANEL_COPY,
+  RACK_LAYOUT_ANALYSIS_LEGEND_ITEMS,
   RACK_LAYOUT_HOVER_MODE_OPTIONS,
   RACK_LAYOUT_SCOPE_OPTIONS,
   RACK_SIGNAL_ANALYSIS_LEGEND_ITEMS,
   RACK_SIGNAL_FOCUS_OPTIONS
 } from '../rack-analysis-mode';
+import { RackLayoutScope } from '../rack-layout-analysis.utils';
 import { SignalFocusArea } from '../rack-signal-analysis.utils';
-import {
-  computeLayoutAnalysis,
-  RackLayoutScope,
-  RackArrangementCount,
-  RackLayoutAnalysisResult
-} from '../rack-layout-analysis.utils';
 import { prefersTouchInteraction } from 'src/app/shared-interproject/touch-interaction.utils';
-import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 import {
   ModuleRightClick,
-  PANEL_IMAGE_BASE,
   RackEditorModuleAction,
   RowOverflowClick
 } from './rack-editor.types';
+import { RackEditorViewportService } from './rack-editor-viewport.service';
+import { RackEditorModuleActionsService } from './rack-editor-module-actions.service';
+import {
+  RackEditorLayoutAnalysisService,
+  RackLayoutRowScopeOption
+} from './rack-editor-layout-analysis.service';
 
 export type { ModuleRightClick } from './rack-editor.types';
-
-interface RackLayoutRowScopeOption {
-  scope: Extract<RackLayoutScope, {rowIndex: number}>;
-  label: string;
-}
-
 
 @Component({
   selector: 'app-rack-editor',
   templateUrl: './rack-editor.component.html',
   styleUrls: ['./rack-editor.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [GeneralContextMenuDataService],
+  providers: [
+    GeneralContextMenuDataService,
+    RackEditorViewportService,
+    RackEditorModuleActionsService,
+    RackEditorLayoutAnalysisService
+  ],
   animations: [
     trigger('enter', [
       transition(':enter', [
@@ -94,8 +89,7 @@ interface RackLayoutRowScopeOption {
 })
 export class RackEditorComponent extends SubManager implements OnInit, OnChanges, AfterViewInit {
   @Input() data: RackMinimal;
-  
-  private static readonly reducedScaleMultiplier = 0.65;
+
   readonly touchInteractionMode = prefersTouchInteraction();
   readonly analysisModes = RACK_ANALYSIS_MODES;
   readonly analysisModeOptions = RACK_ANALYSIS_MODE_OPTIONS;
@@ -111,67 +105,164 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
   moduleRightClick$ = new Subject<ModuleRightClick>();
   selectedTouchModule: RackedModule | null = null;
 
-  autoScale = 1;
-  viewOptionsExpanded = false;
-  private rackViewportRef?: ElementRef<HTMLElement>;
-  private rackScaleSurfaceRef?: ElementRef<HTMLElement>;
-  private rackScaleSurfaceResizeObserver?: ResizeObserver;
-  private rackSurfaceBaseHeightPx = 0;
+  viewConfig: ModuleMinimalViewConfig = {
+    ...defaultModuleMinimalViewConfig,
+    hideLabels: true,
+    hideManufacturer: false,
+    hideDescription: false,
+    hideButtons: true,
+    hideHP: false,
+    hideDates: true,
+    hideTags: true
+  };
+
+  @ViewChild('screen') screenReference: ElementRef;
+  @ViewChild('rackViewport') set rackViewport(reference: ElementRef<HTMLElement> | undefined) {
+    this.syncViewportRackData();
+    this.viewport.setRackViewport(reference);
+  }
+  @ViewChild('rackScaleSurface', {read: ElementRef}) set rackScaleSurface(reference: ElementRef<HTMLElement> | undefined) {
+    this.syncViewportRackData();
+    this.viewport.setRackScaleSurface(reference);
+  }
+  @ViewChild('canvas') canvasReference: ElementRef;
+  @ViewChild('download') downloadReference: ElementRef;
+
+  constructor(
+    public snackBar: MatSnackBar,
+    public dataService: RackDetailDataService,
+    public contextMenu: GeneralContextMenuDataService,
+    private cdr: ChangeDetectorRef,
+    dialog: MatDialog,
+    analytics: AnalyticsService,
+    private readonly viewport: RackEditorViewportService = new RackEditorViewportService(cdr),
+    private readonly moduleActionService: RackEditorModuleActionsService = new RackEditorModuleActionsService(
+      dataService,
+      contextMenu,
+      dialog,
+      analytics
+    ),
+    private readonly layoutAnalysisService: RackEditorLayoutAnalysisService = new RackEditorLayoutAnalysisService(
+      dataService,
+      analytics
+    )
+  ) {
+    super();
+    this.moduleActions = this.moduleActionService.moduleActions;
+    this.touchTrayModuleActions = this.moduleActionService.touchTrayModuleActions;
+  }
+
+  get autoScale(): number {
+    return this.viewport.autoScale;
+  }
+
+  set autoScale(value: number) {
+    this.viewport.autoScale = value;
+  }
+
+  get viewOptionsExpanded(): boolean {
+    return this.viewport.viewOptionsExpanded;
+  }
+
+  set viewOptionsExpanded(value: boolean) {
+    this.viewport.viewOptionsExpanded = value;
+  }
+
+  private get rackViewportRef(): ElementRef<HTMLElement> | undefined {
+    return this.viewport.rackViewportRef;
+  }
+
+  private set rackViewportRef(reference: ElementRef<HTMLElement> | undefined) {
+    this.viewport.rackViewportRef = reference;
+  }
+
+  private get rackScaleSurfaceRef(): ElementRef<HTMLElement> | undefined {
+    return this.viewport.rackScaleSurfaceRef;
+  }
+
+  private set rackScaleSurfaceRef(reference: ElementRef<HTMLElement> | undefined) {
+    this.viewport.rackScaleSurfaceRef = reference;
+  }
 
   @HostListener('window:resize')
   onWindowResize(): void {
-    this.updateAutoScale();
-    this.cdr.markForCheck();
+    this.syncViewportRackData();
+    this.viewport.onWindowResize();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['data']) {
       this.selectedTouchModule = null;
-      this.updateAutoScale();
-      queueMicrotask(() => {
-        this.updateRackSurfaceFrame();
-        this.cdr.markForCheck();
-      });
+      this.viewport.setRackData(this.data, true);
     }
   }
 
-  private updateAutoScale(): void {
-    const rackWidth = this.rackWidthPx;
-    const availableWidth = this.rackViewportRef?.nativeElement.clientWidth ?? window.innerWidth;
-    this.autoScale = rackWidth > 0
-      ? Math.min(1, availableWidth / rackWidth)
-      : 1;
-    this.updateRackSurfaceFrame();
+  ngOnInit(): void {
+    this.updateAutoScale();
+
+    this.moduleRightClick$.pipe(
+      withLatestFrom(
+        this.dataService.isCurrentRackPropertyOfCurrentUser$,
+        this.dataService.isCurrentRackEditable$
+      ),
+      filter(([, isCurrentRackPropertyOfCurrentUser, isCurrentRackEditable]) =>
+        isCurrentRackPropertyOfCurrentUser && isCurrentRackEditable
+      ),
+      this.takeUntilDestroyed()
+    ).subscribe(([{
+      $event,
+      rackedModule
+    }]) => {
+      this.moduleActionService.openModuleContextMenu(
+        rackedModule,
+        $event,
+        (action, target) => this.runModuleAction(action, target)
+      );
+    });
+  }
+
+  ngAfterViewInit(): void {
+    this.updateAutoScale();
+    this.cdr.markForCheck();
+  }
+
+  override ngOnDestroy(): void {
+    this.viewport.ngOnDestroy();
+    this.moduleActionService.ngOnDestroy();
+    super.ngOnDestroy();
   }
 
   rackWidthRem(): number {
-    return this.data?.hp ?? 0;
+    this.syncViewportRackData();
+    return this.viewport.rackWidthRem();
   }
 
   effectiveScale(userRequestedSmallerScale: boolean | null | undefined): number {
-    return this.autoScale * (userRequestedSmallerScale ? RackEditorComponent.reducedScaleMultiplier : 1);
+    this.syncViewportRackData();
+    return this.viewport.effectiveScale(userRequestedSmallerScale);
   }
 
   scaledRackWidthPx(userRequestedSmallerScale: boolean | null | undefined): number {
-    return this.rackWidthPx * this.effectiveScale(userRequestedSmallerScale);
+    this.syncViewportRackData();
+    return this.viewport.scaledRackWidthPx(userRequestedSmallerScale);
   }
 
   scaledRackHeightPx(userRequestedSmallerScale: boolean | null | undefined): number {
-    const baseHeight = this.rackSurfaceBaseHeightPx || this.rackScaleSurfaceRef?.nativeElement.offsetHeight || 0;
-    return baseHeight * this.effectiveScale(userRequestedSmallerScale);
+    this.syncViewportRackData();
+    return this.viewport.scaledRackHeightPx(userRequestedSmallerScale);
   }
 
   rackSurfaceTransform(userRequestedSmallerScale: boolean | null | undefined): string {
-    return `scale(${ this.effectiveScale(userRequestedSmallerScale) })`;
+    this.syncViewportRackData();
+    return this.viewport.rackSurfaceTransform(userRequestedSmallerScale);
   }
 
   shouldDisableDropAnimations(userRequestedSmallerScale: boolean | null | undefined): boolean {
-    return !!userRequestedSmallerScale;
+    return this.viewport.shouldDisableDropAnimations(userRequestedSmallerScale);
   }
 
   toggleViewOptions(): void {
-    this.viewOptionsExpanded = !this.viewOptionsExpanded;
-    this.cdr.markForCheck();
+    this.viewport.toggleViewOptions();
   }
 
   rackDescription(isCurrentRackPropertyOfCurrentUser: boolean, isCurrentRackEditable: boolean): string {
@@ -188,150 +279,8 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
       : 'Changes saved automatically / Right click on modules for more options / Add modules from below';
   }
 
-  viewConfig: ModuleMinimalViewConfig = {
-    ...defaultModuleMinimalViewConfig,
-    hideLabels: true,
-    hideManufacturer: false,
-    hideDescription: false,
-    hideButtons: true,
-    hideHP: false,
-    hideDates: true,
-    hideTags: true
-  };
-  //
-  @ViewChild('screen') screenReference: ElementRef;
-  @ViewChild('rackViewport') set rackViewport(reference: ElementRef<HTMLElement> | undefined) {
-    this.rackViewportRef = reference;
-    if (reference) {
-      queueMicrotask(() => {
-        this.updateAutoScale();
-        this.cdr.markForCheck();
-      });
-    }
-  }
-  @ViewChild('rackScaleSurface', {read: ElementRef}) set rackScaleSurface(reference: ElementRef<HTMLElement> | undefined) {
-    this.rackScaleSurfaceRef = reference;
-    this.observeRackScaleSurface(reference?.nativeElement);
-    if (reference) {
-      queueMicrotask(() => {
-        this.updateRackSurfaceFrame();
-        this.cdr.markForCheck();
-      });
-    }
-  }
-  @ViewChild('canvas') canvasReference: ElementRef;
-  @ViewChild('download') downloadReference: ElementRef;
-  
-  //
-  constructor(
-    public snackBar: MatSnackBar,
-    public backend: SupabaseService,
-    public dataService: RackDetailDataService,
-    public contextMenu: GeneralContextMenuDataService,
-    private cdr: ChangeDetectorRef,
-    private readonly dialog: MatDialog,
-    private readonly analytics: AnalyticsService
-  ) {
-    super();
-    this.moduleActions = [
-      {
-        id: 'inspect',
-        label: 'Inspect panel',
-        icon: 'zoom_in',
-        includeInTouchTray: true,
-        includeInContextMenu: true,
-        run: (rackedModule) => this.openInspectPanel(rackedModule)
-      },
-      {
-        id: 'duplicate',
-        label: 'Duplicate',
-        icon: 'content_copy',
-        includeInTouchTray: true,
-        includeInContextMenu: true,
-        run: (rackedModule) => this.dataService.requestRackedModuleDuplication$.next(rackedModule)
-      },
-      {
-        id: 'replace-with-blank',
-        label: 'Replace with blank',
-        icon: 'space_bar',
-        includeInTouchTray: true,
-        includeInContextMenu: true,
-        clearsTouchSelection: true,
-        run: (rackedModule) => this.dataService.requestRackedModuleReplaceWithBlank$.next(rackedModule)
-      },
-      {
-        id: 'delete',
-        label: 'Remove from rack',
-        icon: 'delete',
-        danger: true,
-        includeInTouchTray: true,
-        includeInContextMenu: true,
-        clearsTouchSelection: true,
-        run: (rackedModule) => this.dataService.requestRackedModuleRemoval$.next(rackedModule)
-      }
-    ];
-    this.touchTrayModuleActions = this.moduleActions.filter(action => action.includeInTouchTray);
-  }
-
-  ngOnInit(): void {
-    this.updateAutoScale();
-    
-    const rightClick$ = this.moduleRightClick$.pipe(withLatestFrom(
-      this.dataService.isCurrentRackPropertyOfCurrentUser$,
-      this.dataService.isCurrentRackEditable$
-    ));
-    
-    rightClick$
-      .pipe(
-        filter(([, isCurrentRackPropertyOfCurrentUser, isCurrentRackEditable]) =>
-          isCurrentRackPropertyOfCurrentUser && isCurrentRackEditable
-        ),
-        this.takeUntilDestroyed()
-      )
-      .subscribe(([{
-        $event,
-        rackedModule
-      }]) => {
-        this.openModuleContextMenu(rackedModule, $event);
-      });
-     
-  }
-
-  ngAfterViewInit(): void {
-    this.updateAutoScale();
-    this.cdr.markForCheck();
-  }
-
-  override ngOnDestroy(): void {
-    this.rackScaleSurfaceResizeObserver?.disconnect();
-    super.ngOnDestroy();
-  }
-  
   openInspectPanel(rackedModule: RackedModule): void {
-    const {
-      activePanel,
-      activePanelIndex
-    } = this.resolveActivePanelContext(rackedModule);
-
-    if (!activePanel?.filename) {
-      return;
-    }
-
-    this.analytics.capture('rack.module_panel_inspected', {
-      rack_id: this.dataService.singleRackData$?.value?.id,
-      module_id: rackedModule.module.id
-    });
-    this.dialog.open(ModulePanelZoomDialogComponent, {
-      width: 'min(96vw, 90rem)',
-      maxWidth: '96vw',
-      height: 'min(92vh, 64rem)',
-      autoFocus: false,
-      panelClass: 'panel-zoom-dialog-shell',
-      data: {
-        imageUrl: PANEL_IMAGE_BASE + activePanel.filename,
-        label: derivePanelLabel(activePanel.filename, activePanel.description, activePanelIndex)
-      }
-    });
+    this.moduleActionService.openInspectPanel(rackedModule);
   }
 
   onTouchModuleSelected(rackedModule: RackedModule): void {
@@ -352,482 +301,111 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
     this.runModuleAction(action, this.selectedTouchModule);
   }
 
+  shouldShowModuleAction(action: RackEditorModuleAction, rackedModule: RackedModule): boolean {
+    return this.moduleActionService.shouldShowModuleAction(action, rackedModule);
+  }
+
+  isModuleActionDisabled(action: RackEditorModuleAction, rackedModule: RackedModule): boolean {
+    return this.moduleActionService.isModuleActionDisabled(action, rackedModule);
+  }
+
+  resolveModuleActionPresentation(action: RackEditorModuleAction, rackedModule: RackedModule): RackEditorModuleAction {
+    return this.moduleActionService.resolveModuleActionPresentation(action, rackedModule);
+  }
+
   openSelectedTouchModuleMenu(anchor: HTMLElement | null): void {
     if (!this.selectedTouchModule) {
       return;
     }
 
-    this.openModuleContextMenu(this.selectedTouchModule, this.createContextMenuAnchorEvent(anchor));
-  }
-
-  openRowOverflowMenu({$event, rowId, totalRows, rowModuleCount}: RowOverflowClick): void {
-    this.contextMenu.menuItems$.next(this.buildRowContextMenuItems(rowId, totalRows, rowModuleCount));
-    this.contextMenu.open$.next($event);
-  }
-
-  private get rackWidthPx(): number {
-    const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
-    const rem = Number.isFinite(fontSize) && fontSize > 0 ? fontSize : 16;
-    return (this.data?.hp ?? 0) * rem;
-  }
-
-  private observeRackScaleSurface(element: HTMLElement | undefined): void {
-    this.rackScaleSurfaceResizeObserver?.disconnect();
-    this.rackScaleSurfaceResizeObserver = undefined;
-
-    if (!element || typeof ResizeObserver === 'undefined') {
-      return;
-    }
-
-    this.rackScaleSurfaceResizeObserver = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (!entry) {
-        return;
-      }
-
-      this.updateRackSurfaceFrame(entry.contentRect.height);
-      this.cdr.markForCheck();
-    });
-
-    this.rackScaleSurfaceResizeObserver.observe(element);
-  }
-
-  private updateRackSurfaceFrame(surfaceHeightPx?: number): void {
-    const measuredHeight = surfaceHeightPx ?? this.rackScaleSurfaceRef?.nativeElement.offsetHeight ?? 0;
-    this.rackSurfaceBaseHeightPx = measuredHeight;
-  }
-
-  private bindContextMenuAction(action$: Subject<ContextMenuItem>, callback: () => void): void {
-    action$.pipe(
-      takeUntil(this.contextMenu.menuClose$),
-      this.takeUntilDestroyed()
-    ).subscribe(() => callback());
-  }
-
-  private openModuleContextMenu(rackedModule: RackedModule, event: MouseEvent): void {
-    const panels = rackedModule.module.panels ?? [];
-    const effectiveHp = rackedModule.module.hp;
-    const panelSubmenuItem = this.buildPanelSubmenuItem(rackedModule);
-
-    this.contextMenu.menuItems$.next(this.buildModuleContextMenuItems(
-      rackedModule,
-      effectiveHp,
-      panelSubmenuItem
-    ));
-
-    this.contextMenu.open$.next(event);
-  }
-
-  private createContextMenuAnchorEvent(anchor: HTMLElement | null): MouseEvent {
-    const fallbackWidth = typeof window !== 'undefined' ? window.innerWidth : 0;
-    const fallbackHeight = typeof window !== 'undefined' ? window.innerHeight : 0;
-    const rect = anchor?.getBoundingClientRect();
-    const clientX = rect ? rect.left + (rect.width / 2) : fallbackWidth / 2;
-    const clientY = rect ? rect.top + (rect.height / 2) : fallbackHeight / 2;
-
-    return new MouseEvent('contextmenu', {
-      bubbles: true,
-      cancelable: true,
-      clientX,
-      clientY
-    });
-  }
-
-  private buildPanelSubmenuItem(
-    rackedModule: RackedModule
-  ): ContextMenuItem | null {
-    const panels = rackedModule.module.panels ?? [];
-
-    if (panels.length <= 1) {
-      return null;
-    }
-
-    const {
-      activePanelId
-    } = this.resolveActivePanelContext(rackedModule);
-
-    return {
-      id: 'switch-panel',
-      label: 'Switch panel',
-      icon: 'contrast',
-      disabled: false,
-      data: rackedModule,
-      click$: new Subject<ContextMenuItem>(),
-      submenu: panels.map((panel, idx) => ({
-        id: `panel-${ panel.id }`,
-        label: `${ derivePanelLabel(panel.filename, panel.description, idx) }${ panel.id === activePanelId ? ' ✓' : '' }`,
-        icon: 'contrast',
-        disabled: false,
-        imageUrl: panel.filename ? PANEL_IMAGE_BASE + panel.filename : undefined,
-        data: rackedModule,
-        click$: this.createMenuActionSubject(() => {
-          this.dataService.requestRackedModulePanelSwitch$.next({
-            rackedModule,
-            panelId: panels[idx]?.id ?? null
-          });
-        })
-      }))
-    };
-  }
-
-  private buildModuleContextMenuItems(
-    rackedModule: RackedModule,
-    effectiveHp: number,
-    panelSubmenuItem: ContextMenuItem | null
-  ): ContextMenuItem[] {
-    const contextMenuActions = this.moduleActions
-      .filter(action => action.includeInContextMenu)
-      .map(action => this.createContextMenuActionItem(action, rackedModule));
-    const inspectAction = contextMenuActions.find(action => action.id === 'inspect');
-    const cautionActions = contextMenuActions.filter(action => action.id === 'replace-with-blank');
-    const standardActions = contextMenuActions.filter(action =>
-      action.id !== 'inspect'
-      && action.id !== 'replace-with-blank'
-      && !action.danger
+    this.moduleActionService.openModuleContextMenu(
+      this.selectedTouchModule,
+      this.moduleActionService.createContextMenuAnchorEvent(anchor),
+      (action, target) => this.runModuleAction(action, target)
     );
-    const dangerousActions = contextMenuActions.filter(action => action.danger);
-
-    return [
-      {
-        id: 'name',
-        label: `${ rackedModule.module.name } (${ rackedModule.module.manufacturer.name }, ${ effectiveHp } HP)`,
-        data: rackedModule,
-        disabled: true,
-        click$: new Subject<ContextMenuItem>()
-      },
-      ...(inspectAction ? [inspectAction] : []),
-      ...(panelSubmenuItem ? [panelSubmenuItem] : []),
-      ...standardActions,
-      ...(cautionActions.length > 0 ? [
-        this.createContextMenuSpacerItem(1),
-        ...cautionActions
-      ] : []),
-      ...(dangerousActions.length > 0 ? [
-        this.createContextMenuSpacerItem(2),
-        ...dangerousActions
-      ] : [])
-    ];
   }
 
-  private createContextMenuActionItem(action: RackEditorModuleAction, rackedModule: RackedModule): ContextMenuItem {
-    return {
-      id: action.id,
-      label: action.label,
-      icon: action.icon,
-      data: rackedModule,
-      disabled: false,
-      danger: action.danger,
-      click$: this.createMenuActionSubject(() => this.runModuleAction(action, rackedModule))
-    };
+  openRowOverflowMenu(event: RowOverflowClick): void {
+    this.moduleActionService.openRowOverflowMenu(event);
   }
 
-  private createMenuActionSubject(callback: () => void): Subject<ContextMenuItem> {
-    const action$ = new Subject<ContextMenuItem>();
-    this.bindContextMenuAction(action$, callback);
-    return action$;
-  }
-
-  private createContextMenuSpacerItem(index: number): ContextMenuItem {
-    return {
-      id: `void-spacer-${ index }`,
-      label: '-',
-      icon: '',
-      data: undefined,
-      disabled: true,
-      separator: true,
-      click$: new Subject<ContextMenuItem>()
-    };
-  }
-
-  private buildRowContextMenuItems(rowId: number, totalRows: number, rowModuleCount: number): ContextMenuItem[] {
-    const rowLabel = `Row ${ rowId + 1 }`;
-    const isFirstRow = rowId === 0;
-    const isLastRow = rowId >= totalRows - 1;
-    const canDeleteRow = totalRows > 1 && rowModuleCount === 0;
-
-    return [
-      {
-        id: 'row-name',
-        label: rowLabel,
-        disabled: true,
-        click$: new Subject<ContextMenuItem>()
-      },
-      {
-        id: 'move-row-up',
-        label: 'Move row up',
-        icon: 'keyboard_arrow_up',
-        disabled: isFirstRow,
-        click$: this.createMenuActionSubject(() => this.dataService.requestMoveRow$.next({
-          rowId,
-          direction: 'up'
-        }))
-      },
-      {
-        id: 'move-row-down',
-        label: 'Move row down',
-        icon: 'keyboard_arrow_down',
-        disabled: isLastRow,
-        click$: this.createMenuActionSubject(() => this.dataService.requestMoveRow$.next({
-          rowId,
-          direction: 'down'
-        }))
-      },
-      {
-        id: 'duplicate-row',
-        label: 'Duplicate row',
-        icon: 'content_copy',
-        disabled: false,
-        click$: this.createMenuActionSubject(() => this.dataService.requestDuplicateRow$.next(rowId))
-      },
-      this.createContextMenuSpacerItem(1),
-      {
-        id: 'clear-row',
-        label: 'Clear row',
-        icon: 'delete_sweep',
-        disabled: rowModuleCount === 0,
-        danger: true,
-        click$: this.createMenuActionSubject(() => this.dataService.requestClearRow$.next(rowId))
-      },
-      {
-        id: 'delete-row',
-        label: 'Delete row',
-        icon: 'delete',
-        disabled: !canDeleteRow,
-        danger: true,
-        click$: this.createMenuActionSubject(() => this.dataService.requestDeleteRow$.next(rowId))
-      }
-    ];
-  }
-
-  setAnalysisMode(mode: typeof this.dataService.analysisMode$.value): void {
-    this.dataService.analysisMode$.next(mode);
-    this.analytics.capture('rack.analysis_mode_changed', {
-      rack_id: this.dataService.singleRackData$.value?.id,
-      mode
-    });
+  setAnalysisMode(mode: RackAnalysisMode): void {
+    this.layoutAnalysisService.setAnalysisMode(mode);
   }
 
   setSignalFocusArea(area: SignalFocusArea): void {
-    this.dataService.signalFocusArea$.next(area);
-    this.analytics.capture('rack.signal_focus_changed', {
-      rack_id: this.dataService.singleRackData$.value?.id,
-      area
-    });
+    this.layoutAnalysisService.setSignalFocusArea(area);
   }
 
   setLayoutHoverMode(mode: RackLayoutHoverMode): void {
-    this.dataService.layoutHoverMode$.next(mode);
-    this.analytics.capture('rack.layout_hover_mode_changed', {
-      rack_id: this.dataService.singleRackData$.value?.id,
-      mode
-    });
+    this.layoutAnalysisService.setLayoutHoverMode(mode);
   }
 
   setLayoutScope(scope: RackLayoutScope): void {
-    this.dataService.layoutScope$.next(scope);
-    this.analytics.capture('rack.layout_scope_changed', {
-      rack_id: this.dataService.singleRackData$.value?.id,
-      scope
-    });
+    this.layoutAnalysisService.setLayoutScope(scope);
   }
 
   layoutRowScopeOptions(rowedRackedModules: RackedModule[][] | null | undefined): RackLayoutRowScopeOption[] {
-    return (rowedRackedModules ?? [])
-      .map((_, rowIndex) => ({
-        scope: {rowIndex},
-        label: `Row ${ rowIndex + 1 }`
-      }));
+    return this.layoutAnalysisService.layoutRowScopeOptions(rowedRackedModules);
   }
 
   isLayoutScopeActive(currentScope: RackLayoutScope | null | undefined, targetScope: RackLayoutScope): boolean {
-    if (typeof currentScope === 'object' && typeof targetScope === 'object') {
-      return currentScope?.rowIndex === targetScope.rowIndex;
-    }
-    return currentScope === targetScope;
+    return this.layoutAnalysisService.isLayoutScopeActive(currentScope, targetScope);
   }
 
   requestLayoutRemix(): void {
-    this.dataService.requestLayoutRemix$.next();
+    this.layoutAnalysisService.requestLayoutRemix();
   }
 
   requestLayoutShuffle(): void {
-    this.dataService.requestLayoutShuffle$.next();
+    this.layoutAnalysisService.requestLayoutShuffle();
   }
 
   layoutArrangementSummary(rowedRackedModules: RackedModule[][] | null | undefined): string {
-    const analysis = this.computeLayoutAnalysis(rowedRackedModules);
-    if (!analysis) {
-      return 'Add modules to estimate valid arrangements.';
-    }
-
-    if (analysis.arrangementCount.kind === 'impossible') {
-      return 'No valid arrangement fits the current row set.';
-    }
-
-    if (analysis.arrangementCount.kind === 'sampled') {
-      return `~${ this.formatArrangementCount(analysis.arrangementCount.value) } sampled valid arrangements (estimate).`;
-    }
-
-    if (analysis.arrangementCount.kind === 'capped') {
-      const prefix = analysis.arrangementCount.source === 'exact' ? '' : '~';
-      const qualifier = analysis.arrangementCount.source === 'exact'
-        ? 'exact valid arrangements (capped display)'
-        : 'sampled valid arrangements (order-of-magnitude estimate)';
-      return `${ prefix }${ this.formatArrangementMagnitude(analysis.arrangementCount) } ${ qualifier }.`;
-    }
-
-    return `${ this.formatArrangementCount(analysis.arrangementCount.value) } valid arrangement${ analysis.arrangementCount.value === 1 ? '' : 's' } fit the current rows.`;
+    return this.layoutAnalysisService.layoutArrangementSummary(rowedRackedModules);
   }
 
   layoutValiditySummary(rowedRackedModules: RackedModule[][] | null | undefined): string {
-    const analysis = this.computeLayoutAnalysis(rowedRackedModules);
-    if (!analysis) {
-      return 'Layout validity appears after modules are placed.';
-    }
-
-    if (analysis.mixedRowIssues.length > 0) {
-      const rows = analysis.mixedRowIssues.map(issue => issue.rowIndex + 1).join(', ');
-      return `Mixed-format row${ analysis.mixedRowIssues.length === 1 ? '' : 's' } ${ rows } block Remix.`;
-    }
-
-    const overflowHp = analysis.overflowHp.reduce((sum, hp) => sum + hp, 0);
-    if (overflowHp > 0) {
-      return `${ overflowHp }HP over capacity across the current rows.`;
-    }
-
-    const spareHp = analysis.wastedHp.reduce((sum, hp) => sum + hp, 0);
-    return `Valid layout with ${ spareHp }HP spare across the current rows.`;
+    return this.layoutAnalysisService.layoutValiditySummary(rowedRackedModules);
   }
 
   layoutRemixUnavailableReason(rowedRackedModules: RackedModule[][] | null | undefined): string | null {
-    const analysis = this.computeLayoutAnalysis(rowedRackedModules);
-    if (!analysis) {
-      return 'Add modules before remixing the layout.';
-    }
-
-    if (analysis.mixedRowIssues.length > 0) {
-      return 'Fix mixed-format rows before remixing.';
-    }
-
-    return null;
+    return this.layoutAnalysisService.layoutRemixUnavailableReason(rowedRackedModules);
   }
 
   layoutRemixMoveSummary(rowedRackedModules: RackedModule[][] | null | undefined): string {
-    const analysis = this.computeLayoutAnalysis(rowedRackedModules);
-    if (!analysis || analysis.mixedRowIssues.length > 0) {
-      return '';
-    }
-
-    const rackRows = this.dataService.singleRackData$.value?.rows ?? rowedRackedModules?.length ?? 0;
-    const needsAnotherRow = analysis.autoArrangeMoves.some(move => move.toRow < 0 || move.toRow >= rackRows);
-    if (needsAnotherRow) {
-      return 'Remix needs another row for this scope.';
-    }
-
-    const movedCount = analysis.autoArrangeMoves.filter(move =>
-      move.fromRow !== move.toRow || move.fromColumn !== move.toColumn
-    ).length;
-    if (movedCount === 0) {
-      return 'Current scope is already tightly arranged.';
-    }
-
-    return `Remix would move ${ movedCount } module${ movedCount === 1 ? '' : 's' }.`;
+    return this.layoutAnalysisService.layoutRemixMoveSummary(rowedRackedModules);
   }
 
   layoutRemixActionLabel(scope: RackLayoutScope | null | undefined): string {
-    if (!scope) {
-      return 'Remix layout';
-    }
-    if (scope === '3u') {
-      return 'Remix 3U';
-    }
-    if (scope === '1u') {
-      return 'Remix 1U';
-    }
-    if (typeof scope === 'object') {
-      return `Remix Row ${ scope.rowIndex + 1 }`;
-    }
-    return 'Remix layout';
+    return this.layoutAnalysisService.layoutRemixActionLabel(scope);
   }
 
   layoutShuffleActionLabel(scope: RackLayoutScope | null | undefined): string {
-    if (scope === '3u') {
-      return 'Shuffle 3U';
-    }
-    if (scope === '1u') {
-      return 'Shuffle 1U';
-    }
-    if (scope && typeof scope === 'object') {
-      return `Shuffle Row ${ scope.rowIndex + 1 }`;
-    }
-    return 'Shuffle';
+    return this.layoutAnalysisService.layoutShuffleActionLabel(scope);
   }
 
   setShouldShowPanelImages(show: boolean): void {
-    this.dataService.shouldShowPanelImages$.next(show);
-    this.analytics.capture('rack.panel_images_toggled', {
-      rack_id: this.dataService.singleRackData$.value?.id,
-      visible: show
-    });
+    this.layoutAnalysisService.setShouldShowPanelImages(show);
   }
 
   setReducedScale(reduced: boolean): void {
-    this.dataService.userRequestedSmallerScale$.next(reduced);
-    this.analytics.capture('rack.scale_toggled', {
-      rack_id: this.dataService.singleRackData$.value?.id,
-      reduced
-    });
+    this.layoutAnalysisService.setReducedScale(reduced);
   }
 
   private runModuleAction(action: RackEditorModuleAction, rackedModule: RackedModule): void {
-    action.run(rackedModule);
+    this.moduleActionService.runModuleAction(action, rackedModule);
 
     if (action.clearsTouchSelection && this.selectedTouchModule === rackedModule) {
       this.clearSelectedTouchModule();
     }
   }
 
-  private computeLayoutAnalysis(rowedRackedModules: RackedModule[][] | null | undefined): RackLayoutAnalysisResult | null {
-    if (!rowedRackedModules?.length) {
-      return null;
-    }
-
-    const rackHp = this.dataService.singleRackData$.value?.hp;
-    if (!rackHp) {
-      return null;
-    }
-
-    return computeLayoutAnalysis(rowedRackedModules, rackHp, this.dataService.layoutScope$.value);
+  private updateAutoScale(): void {
+    this.viewport.setRackData(this.data);
   }
 
-  private formatArrangementCount(count: number): string {
-    if (!Number.isFinite(count) || count < 0) {
-      return '0';
-    }
-    return Math.round(count).toLocaleString();
+  private syncViewportRackData(): void {
+    this.viewport.setRackHp(this.data?.hp ?? 0);
   }
-
-  private formatArrangementMagnitude(count: Extract<RackArrangementCount, { kind: 'capped' }>): string {
-    return `10^${ Math.max(0, count.orderOfMagnitude) }+`;
-  }
-
-  private resolveActivePanelContext(rackedModule: RackedModule): {
-    panels: RackedModule['module']['panels'];
-    activePanelId: number | undefined;
-    activePanelIndex: number;
-    activePanel: RackedModule['module']['panels'][number] | undefined;
-  } {
-    const panels = rackedModule.module.panels ?? [];
-    const activePanelId = rackedModule.rackingData?.selectedPanelId ?? panels[0]?.id;
-    const activePanelIndex = panels.findIndex(panel => panel.id === activePanelId);
-    const panelIndex = activePanelIndex >= 0 ? activePanelIndex : 0;
-
-    return {
-      panels,
-      activePanelId,
-      activePanelIndex: panelIndex,
-      activePanel: panels[panelIndex]
-    };
-  }
-
 }

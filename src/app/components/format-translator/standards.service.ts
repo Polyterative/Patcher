@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { switchMap, tap } from 'rxjs/operators';
-import { SupabaseService } from '../../features/backend/supabase.service';
+import { StandardsApiService } from '../../features/backend/standards-api.service';
 import { Standard } from '../../models/standard';
 import { SubManager } from '../../shared-interproject/directives/subscription-manager';
 
@@ -15,7 +15,7 @@ export class StandardsService extends SubManager {
   };
   
   constructor(
-    readonly backend: SupabaseService
+    readonly standardsApi: StandardsApiService
   ) {
     
     super();
@@ -24,7 +24,7 @@ export class StandardsService extends SubManager {
       this.standards.update$
           .pipe(
             tap(() => this.standards.data$.next(undefined)),
-            switchMap(() => this.backend.get.standards())
+            switchMap(() => this.standardsApi.list())
           )
           .subscribe(x => {
             this.standards.data$.next(

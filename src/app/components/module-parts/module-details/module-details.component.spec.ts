@@ -2,19 +2,23 @@ import { MatDialog } from '@angular/material/dialog';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import { ModuleDetailsComponent } from './module-details.component';
 import { ModulePanelZoomDialogComponent } from './module-panel-zoom-dialog.component';
+import { ModuleDetailDataService } from '../module-detail-data.service';
 
 
 describe('ModuleDetailsComponent', () => {
   let dialog: jasmine.SpyObj<MatDialog>;
+  let dataService: jasmine.SpyObj<ModuleDetailDataService>;
   let component: ModuleDetailsComponent;
 
   beforeEach(() => {
     dialog = jasmine.createSpyObj('MatDialog', ['open']);
+    dataService = jasmine.createSpyObj('ModuleDetailDataService', ['getPanelImageUrl']);
+    dataService.getPanelImageUrl.and.callFake(filename => `https://images.patcher.xyz/module-panels/${ filename }`);
     const appState = {
       preferredPanelColor$: { subscribe: () => ({ unsubscribe() {} }) }
     } as unknown as AppStateService;
 
-    component = new ModuleDetailsComponent({} as any, appState, dialog);
+    component = new ModuleDetailsComponent(dataService, appState, dialog);
   });
 
   it('opens the panel zoom dialog with the selected panel image and label', () => {
@@ -25,7 +29,7 @@ describe('ModuleDetailsComponent', () => {
       ModulePanelZoomDialogComponent,
       jasmine.objectContaining({
         data: {
-          imageUrl: 'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/panel.png',
+          imageUrl: 'https://images.patcher.xyz/module-panels/panel.png',
           label: jasmine.any(String)
         }
       })
@@ -41,9 +45,11 @@ describe('ModuleDetailsComponent', () => {
 
   it('builds panel URLs transparently for both legacy jpg and new webp filenames', () => {
     expect(component.getPanelImageUrl('panel.jpg'))
-      .toBe('https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/panel.jpg');
+      .toBe('https://images.patcher.xyz/module-panels/panel.jpg');
     expect(component.getPanelImageUrl('panel.webp'))
-      .toBe('https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/panel.webp');
+      .toBe('https://images.patcher.xyz/module-panels/panel.webp');
+    expect(dataService.getPanelImageUrl).toHaveBeenCalledWith('panel.jpg');
+    expect(dataService.getPanelImageUrl).toHaveBeenCalledWith('panel.webp');
   });
 
   it('returns null when panel color is unknown', () => {

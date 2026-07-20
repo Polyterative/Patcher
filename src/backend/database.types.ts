@@ -114,29 +114,296 @@ export type Database = {
           },
         ]
       }
+      listing_media: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          listing_id: string
+          mime_type: string
+          position: number
+          storage_path: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind?: string
+          listing_id: string
+          mime_type: string
+          position: number
+          storage_path: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          listing_id?: string
+          mime_type?: string
+          position?: number
+          storage_path?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_media_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      manufacturer_claims: {
+        Row: {
+          admin_note: string | null
+          claimant_id: string
+          created: string
+          decided_at: string | null
+          decided_by: string | null
+          id: number
+          manufacturer_id: number
+          proof_note: string
+          status: string
+          updated: string
+        }
+        Insert: {
+          admin_note?: string | null
+          claimant_id: string
+          created?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: number
+          manufacturer_id: number
+          proof_note: string
+          status?: string
+          updated?: string
+        }
+        Update: {
+          admin_note?: string | null
+          claimant_id?: string
+          created?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: number
+          manufacturer_id?: number
+          proof_note?: string
+          status?: string
+          updated?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manufacturer_claims_claimant_id_fkey"
+            columns: ["claimant_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manufacturer_claims_decided_by_fkey"
+            columns: ["decided_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manufacturer_claims_manufacturer_id_fkey"
+            columns: ["manufacturer_id"]
+            isOneToOne: false
+            referencedRelation: "manufacturers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       manufacturers: {
         Row: {
           adminUser: string | null
+          description: string | null
           id: number
           logo: string | null
           name: string | null
+          social_links: Json | null
+          tagline: string | null
+          verified_at: string | null
+          verified_by: string | null
           websiteURL: string | null
         }
         Insert: {
           adminUser?: string | null
+          description?: string | null
           id?: number
           logo?: string | null
           name?: string | null
+          social_links?: Json | null
+          tagline?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
           websiteURL?: string | null
         }
         Update: {
           adminUser?: string | null
+          description?: string | null
           id?: number
           logo?: string | null
           name?: string | null
+          social_links?: Json | null
+          tagline?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
           websiteURL?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "manufacturers_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      module_availability_tags: {
+        Row: {
+          module_id: number
+          set_at: string
+          set_by: string
+          tag: string
+        }
+        Insert: {
+          module_id: number
+          set_at?: string
+          set_by: string
+          tag: string
+        }
+        Update: {
+          module_id?: number
+          set_at?: string
+          set_by?: string
+          tag?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_availability_tags_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "module_discovery_snapshot"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_availability_tags_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_availability_tags_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "patches_for_modules"
+            referencedColumns: ["moduleid"]
+          },
+          {
+            foreignKeyName: "module_availability_tags_set_by_fkey"
+            columns: ["set_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_listings: {
+        Row: {
+          asking_price_amount_minor: number
+          asking_price_currency: string
+          condition: string
+          created_at: string
+          description: string | null
+          expires_at: string | null
+          external_link: string | null
+          id: string
+          moduleid: number
+          open_to_offers: boolean
+          public_id: string
+          seller_profileid: string
+          shipping_notes: string | null
+          shipping_options: string[]
+          ships_from_country: string
+          status: string
+          title_override: string | null
+          updated_at: string
+        }
+        Insert: {
+          asking_price_amount_minor: number
+          asking_price_currency: string
+          condition: string
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          external_link?: string | null
+          id?: string
+          moduleid: number
+          open_to_offers?: boolean
+          public_id?: string
+          seller_profileid: string
+          shipping_notes?: string | null
+          shipping_options?: string[]
+          ships_from_country: string
+          status?: string
+          title_override?: string | null
+          updated_at?: string
+        }
+        Update: {
+          asking_price_amount_minor?: number
+          asking_price_currency?: string
+          condition?: string
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          external_link?: string | null
+          id?: string
+          moduleid?: number
+          open_to_offers?: boolean
+          public_id?: string
+          seller_profileid?: string
+          shipping_notes?: string | null
+          shipping_options?: string[]
+          ships_from_country?: string
+          status?: string
+          title_override?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_listings_moduleid_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
+            referencedRelation: "module_discovery_snapshot"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_listings_moduleid_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_listings_moduleid_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
+            referencedRelation: "patches_for_modules"
+            referencedColumns: ["moduleid"]
+          },
+          {
+            foreignKeyName: "marketplace_listings_seller_profileid_fkey"
+            columns: ["seller_profileid"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       module_collection_entries: {
         Row: {
@@ -1048,12 +1315,69 @@ export type Database = {
         }
         Relationships: []
       }
+      shipping_addresses: {
+        Row: {
+          city: string
+          country_code: string
+          created_at: string
+          id: string
+          is_default: boolean
+          label: string
+          line1: string
+          line2: string | null
+          postal_code: string | null
+          profileid: string
+          recipient_name: string
+          region: string | null
+          updated_at: string
+        }
+        Insert: {
+          city: string
+          country_code: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          label: string
+          line1: string
+          line2?: string | null
+          postal_code?: string | null
+          profileid: string
+          recipient_name: string
+          region?: string | null
+          updated_at?: string
+        }
+        Update: {
+          city?: string
+          country_code?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          label?: string
+          line1?: string
+          line2?: string | null
+          postal_code?: string | null
+          profileid?: string
+          recipient_name?: string
+          region?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipping_addresses_profileid_fkey"
+            columns: ["profileid"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rack_modules: {
         Row: {
           column: number | null
           created: string
           id: number
           moduleid: number
+          orientation: "normal" | "rot180"
           rackid: number
           row: number | null
           selected_panel_id: number | null
@@ -1064,6 +1388,7 @@ export type Database = {
           created?: string
           id?: number
           moduleid: number
+          orientation?: "normal" | "rot180"
           rackid: number
           row?: number | null
           selected_panel_id?: number | null
@@ -1074,6 +1399,7 @@ export type Database = {
           created?: string
           id?: number
           moduleid?: number
+          orientation?: "normal" | "rot180"
           rackid?: number
           row?: number | null
           selected_panel_id?: number | null
@@ -1216,7 +1542,15 @@ export type Database = {
           kind?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       standards: {
         Row: {
@@ -1655,6 +1989,25 @@ export type Database = {
         Returns: boolean
       }
       refresh_module_discovery_snapshot: { Args: never; Returns: undefined }
+      reorder_listing_media: {
+        Args: { p_listing_id: string; p_media_ids: string[] }
+        Returns: {
+          created_at: string
+          id: string
+          kind: string
+          listing_id: string
+          mime_type: string
+          position: number
+          storage_path: string
+          url: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "listing_media"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       resolve_public_patch_legacy_id: {
         Args: { p_id: number }
         Returns: string

@@ -227,6 +227,17 @@ describe('AppComponent', () => {
     expect(shell.classList.contains('app-shell--wide')).toBeTrue();
   });
 
+  it('uses the embedded shell and marketplace area on marketplace routes', () => {
+    routerMock.url = '/marketplace/maths-public';
+    wideShell$.next(true);
+    fixture.detectChanges();
+
+    const shell = fixture.debugElement.query(By.css('.app-shell')).nativeElement as HTMLElement;
+    expect(shell.classList.contains('app-shell--wide')).toBeTrue();
+    expect(shell.classList.contains('app-shell--area-marketplace')).toBeTrue();
+    expect(shell.classList.contains('app-shell--area-home')).toBeFalse();
+  });
+
   it('suppresses supporting content on collection detail routes with query params and fragments', () => {
     routerMock.url = '/collection/123?utm_source=x#top';
     fixture.detectChanges();

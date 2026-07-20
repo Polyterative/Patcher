@@ -24,6 +24,10 @@
   width: 100%;
 }
 
+.rack-action-row--cool-visible {
+  opacity: 1;
+}
+
 .rack-action-row__primary,
 .rack-action-row__secondary {
   align-items: center;
@@ -44,7 +48,8 @@
     opacity: 0;
   }
 
-  .parent:hover > .opacizeOnHover {
+  .parent:hover > .opacizeOnHover,
+  .parent > .rack-action-row--cool-visible {
     opacity: 1;
   }
 }

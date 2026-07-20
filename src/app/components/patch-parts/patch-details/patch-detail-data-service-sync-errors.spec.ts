@@ -10,6 +10,8 @@ import {
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { PatchDetailDataService } from '../patch-detail-data.service';
 import { SelectionPanelBridgeService } from '../selection-panel-bridge.service';
+import { PatchEditorSortStrategy, LinkedRackPreviewState } from '../patch-editor/patch-editor.types';
+import { DbModule, RackedModule } from 'src/app/models/module';
 
 
 describe('PatchDetailDataService - Sync and Error Paths', () => {
@@ -48,9 +50,11 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
       },
       get: {
         patchWithId: jasmine.createSpy('get.patchWithId').and.returnValue(of({data: patch({id: 44, name: 'Loaded'})})),
-        currentUserRacks: jasmine.createSpy('get.currentUserRacks').and.returnValue(of([]))
+        currentUserRacks: jasmine.createSpy('get.currentUserRacks').and.returnValue(of([])),
+        rackedModules: jasmine.createSpy('get.rackedModules').and.returnValue(of([]))
       },
       GET: {
+        currentUserModules: jasmine.createSpy('GET.currentUserModules').and.returnValue(of([])),
         patchConnections: jasmine.createSpy('GET.patchConnections').and.returnValue(of([])),
         patchModuleInstances: jasmine.createSpy('GET.patchModuleInstances').and.returnValue(of([])),
         rackWithId: jasmine.createSpy('GET.rackWithId').and.returnValue(of({data: {id: 42, name: 'Public Rack'}})),
@@ -180,6 +184,54 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
     expect(service.linkedRackState$.value.kind).toBe('linked');
     expect(service.linkedRackState$.value.statusTone).toBe('positive');
     expect(service.linkedRackState$.value.rackName).toBe('Studio Rack');
+  });
+
+  it('loads editor collection modules through the data service and excludes wishlist modules', () => {
+    const {service, backend} = build();
+    const order = {key: 'collectionUpdated', direction: 'desc'} as const;
+    backend.GET.currentUserModules.and.returnValue(of([
+      {id: 1, name: 'Owned', possessionKind: 'HAS'} as unknown as DbModule,
+      {id: 2, name: 'Wishlist', possessionKind: 'WANTS'} as unknown as DbModule,
+      {id: 3, name: 'Selling', possessionKind: 'SELLS'} as unknown as DbModule
+    ]));
+    let result: DbModule[] = [];
+
+    service.loadEditorCollectionModules$({backendOrder: order} as PatchEditorSortStrategy).subscribe(modules => result = modules);
+
+    expect(backend.GET.currentUserModules).toHaveBeenCalledWith(true, false, order);
+    expect(result.map(module => module.id)).toEqual([1, 3]);
+  });
+
+  it('loads linked-rack previews through authenticated rack reads and racked modules', () => {
+    const {service, backend} = build();
+    backend.GET.rackWithId.and.returnValue(of({data: {id: 42, name: 'Studio Rack'}}));
+    backend.get.rackedModules.and.returnValue(of([
+      {module: {id: 7, name: 'Maths'}, rackingData: {id: 7001, row: 1, column: 4}} as unknown as RackedModule
+    ]));
+    let result: LinkedRackPreviewState | undefined;
+
+    service.loadLinkedRackPreview$(42).subscribe(state => result = state);
+
+    expect(backend.GET.rackWithId).toHaveBeenCalledWith(42);
+    expect(backend.GET.publicRackWithId).not.toHaveBeenCalled();
+    expect(backend.get.rackedModules).toHaveBeenCalledWith(42);
+    expect(result?.kind).toBe('ready');
+    expect(result?.moduleCount).toBe(1);
+    expect(result?.rows[0].modules[0].trackingId).toBe(7001);
+  });
+
+  it('uses public rack reads for anonymous linked-rack previews and reports unavailable failures', () => {
+    const {service, backend} = build();
+    backend.auth.getUserSession$.and.returnValue(of(null));
+    backend.GET.publicRackWithId.and.returnValue(of({data: null}));
+    let result: LinkedRackPreviewState | undefined;
+
+    service.loadLinkedRackPreview$(77).subscribe(state => result = state);
+
+    expect(backend.GET.publicRackWithId).toHaveBeenCalledWith(77);
+    expect(backend.GET.rackWithId).not.toHaveBeenCalled();
+    expect(backend.get.rackedModules).not.toHaveBeenCalledWith(77);
+    expect(result?.kind).toBe('unavailable');
   });
 
   it('derives linked-rack select options from owned racks and syncs the selected rack', () => {

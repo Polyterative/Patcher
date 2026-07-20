@@ -145,15 +145,18 @@
                     </div>
                       <div class="rackEditorResponsiveActions__selectionActions">
                         @for (action of touchTrayModuleActions; track action.id) {
-                          @if (action.id !== 'delete') {
+                          @if (action.id !== 'delete' && shouldShowModuleAction(action, selectedModule)) {
+                            @let resolvedAction = resolveModuleActionPresentation(action, selectedModule);
                             <button mat-stroked-button
                                     type="button"
                                     class="rackEditorResponsiveActions__button"
-                                    [class.rackEditorResponsiveActions__button--danger]="action.danger"
+                                    [class.rackEditorResponsiveActions__button--danger]="resolvedAction.danger"
+                                    [disabled]="isModuleActionDisabled(action, selectedModule)"
+                                    [matTooltip]="resolvedAction.tooltip ?? resolvedAction.label"
                                     (click)="runSelectedTouchAction(action)"
                             >
-                              <mat-icon>{{ action.icon }}</mat-icon>
-                              {{ action.label }}
+                              <mat-icon>{{ resolvedAction.icon }}</mat-icon>
+                              {{ resolvedAction.label }}
                             </button>
                           }
                         }
@@ -167,6 +170,7 @@
                           Row / panel
                         </button>
                         @if (touchTrayModuleActions[touchTrayModuleActions.length - 1]; as destructiveAction) {
+                          @if (shouldShowModuleAction(destructiveAction, selectedModule)) {
                           <button mat-stroked-button
                                   type="button"
                                   class="rackEditorResponsiveActions__button"
@@ -176,6 +180,7 @@
                             <mat-icon>{{ destructiveAction.icon }}</mat-icon>
                             {{ destructiveAction.label }}
                           </button>
+                          }
                         }
                       </div>
                       <div class="rackEditorResponsiveActions__selectionHint">

@@ -15,7 +15,11 @@ import {
   ModulePartImageComponent,
   resolveSurfaceTooltipPosition
 } from './module-part-image.component';
+import { ModulePartImageDataService } from './module-part-image-data.service';
+import { environment } from 'src/environments/environment';
 
+
+const TEST_SUPABASE_URL = 'https://sozmatmywjpstwidzlss.supabase.co';
 
 function buildComponent(options: {
   hostRect?: {left: number; right: number};
@@ -39,7 +43,8 @@ function buildComponent(options: {
       keyboardInsetBottom: 0
     })
   } as AppViewportService;
-  return new ModulePartImageComponent(cdr, elementRef, viewportService);
+  const dataService = new ModulePartImageDataService();
+  return new ModulePartImageComponent(cdr, dataService, elementRef, viewportService);
 }
 
 const PANEL_DARK = {id: 1, filename: 'dark.png', color: 0, description: 'Dark', moduleid: 10};
@@ -70,6 +75,16 @@ class HostComponent {
 }
 
 describe('ModulePartImageComponent — panel resolution', () => {
+  let previousSupabaseUrl: string;
+
+  beforeAll(() => {
+    previousSupabaseUrl = environment.supabase.url;
+    environment.supabase.url = TEST_SUPABASE_URL;
+  });
+
+  afterAll(() => {
+    environment.supabase.url = previousSupabaseUrl;
+  });
 
   it('uses panels[0] when selectedPanelId is null', () => {
     const c = buildComponent();
@@ -130,6 +145,38 @@ describe('ModulePartImageComponent — panel resolution', () => {
     c.ngOnChanges();
 
     expect(c.filename).toBe('optimized-panel.webp');
+  });
+
+  it('uses the Cloudflare proxy image URL before any load failure', () => {
+    const c = buildComponent();
+    c.data = makeModule([{...PANEL_DARK, filename: 'panel.png'}]);
+    c.ngOnChanges();
+
+    expect(c.imageSrc).toBe('https://images.patcher.xyz/module-panels/panel.png');
+  });
+
+  it('falls back to the direct Supabase storage URL after a proxy image load failure', () => {
+    const c = buildComponent();
+    c.data = makeModule([{...PANEL_DARK, filename: 'panel.png'}]);
+    c.ngOnChanges();
+
+    c.onImageLoadError();
+
+    expect(c.useDirectStorageFallback).toBeTrue();
+    expect(c.imageSrc).toBe('https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/panel.png');
+  });
+
+  it('resets the direct storage fallback when the resolved panel filename changes', () => {
+    const c = buildComponent();
+    c.data = makeModule([{...PANEL_DARK, filename: 'old-panel.png'}]);
+    c.ngOnChanges();
+    c.onImageLoadError();
+
+    c.data = makeModule([{...PANEL_DARK, filename: 'new-panel.png'}]);
+    c.ngOnChanges();
+
+    expect(c.useDirectStorageFallback).toBeFalse();
+    expect(c.imageSrc).toBe('https://images.patcher.xyz/module-panels/new-panel.png');
   });
 
   it('prefers an explicit selectedPanelId over preferredPanelColor', () => {
@@ -250,6 +297,16 @@ describe('ModulePartImageComponent — placeholder proportions', () => {
     expectRemValue(placeholder.style.width, 10 / 2.7 / 2);
     expectRemValue(placeholder.style.height, MODULE_FORMAT_GEOMETRY.INTELLIJEL_1U.heightRem / 2.7 / 2);
     expect(parseFloat(placeholder.style.width)).toBeGreaterThan(parseFloat(placeholder.style.height));
+  });
+
+  it('does not send page referrers with proxied panel image requests', () => {
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.componentInstance.data = makeModule([{...PANEL_DARK, filename: 'panel.jpg'}]);
+    fixture.detectChanges();
+
+    const image = fixture.nativeElement.querySelector('img') as HTMLImageElement;
+
+    expect(image.referrerPolicy).toBe('no-referrer');
   });
 
   it('uses Pulp Logic 1U height when sizing missing-panel placeholders', () => {

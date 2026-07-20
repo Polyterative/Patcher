@@ -5,8 +5,6 @@ import {
   map,
   Observable,
 } from 'rxjs';
-import {
-} from 'rxjs/operators';
 import { defaultPatchMinimalViewConfig } from 'src/app/components/patch-parts/patch-minimal/patch-minimal.component';
 import {
   defaultRackMinimalViewConfig,

@@ -1,7 +1,10 @@
 import {
   buildManufacturerActivityRank,
+  MANUFACTURER_ANALYTICS_THRESHOLDS,
+  buildManufacturerAnalyticsSummary,
   buildManufacturerModuleStats,
   compareManufacturersByLatestModuleActivity,
+  maskManufacturerAnalyticsMetric,
   parseModuleUpdatedTimestampMs,
   withManufacturerModuleStats
 } from './supabase-queries.manufacturer-stats';
@@ -54,5 +57,43 @@ describe('supabase manufacturer stats helpers', () => {
     ].sort((a, b) => compareManufacturersByLatestModuleActivity(a, b, rank));
 
     expect(sorted.map(item => item.id)).toEqual([2, 1, 4, 3]);
+  });
+
+  it('masks manufacturer analytics metrics below privacy thresholds', () => {
+    const hidden = maskManufacturerAnalyticsMetric('views', MANUFACTURER_ANALYTICS_THRESHOLDS.views - 1);
+
+    expect(hidden.state).toBe('hidden');
+    expect(hidden.value).toBeUndefined();
+    expect(hidden.copy).toContain(`at least ${MANUFACTURER_ANALYTICS_THRESHOLDS.views}`);
+  });
+
+  it('shows only aggregate manufacturer analytics metrics at or above thresholds', () => {
+    const visible = maskManufacturerAnalyticsMetric('outboundClicks', 12.8);
+
+    expect(visible).toEqual({
+      copy: 'Aggregate total only; no user-level detail is exposed.',
+      key: 'outboundClicks',
+      label: 'Outbound clicks',
+      state: 'visible',
+      value: 12
+    });
+  });
+
+  it('builds privacy-safe manufacturer analytics summaries without ownership detail', () => {
+    const summary = buildManufacturerAnalyticsSummary({
+      collectionAdds: 4,
+      outboundClicks: 5,
+      publicPatchUses: 3,
+      publicRackUses: 1,
+      views: 10
+    });
+
+    expect(summary.visibleMetricCount).toBe(3);
+    expect(summary.metrics.filter(metric => metric.state === 'hidden').map(metric => metric.value)).toEqual([
+      undefined,
+      undefined
+    ]);
+    expect(summary.privacyCopy).toContain('User-level ownership');
+    expect(summary.privacyCopy).toContain('private rack or patch detail stays hidden');
   });
 });

@@ -4,7 +4,8 @@
 #### HIGH: Manufacturer Accounts & Verification
 
 **Why:** Manufacturer pages need a trustable ownership model before claim review, verified-owner editing, analytics, or B2B surfaces can ship.
-**Blocked on:** Local Supabase/Docker availability for M1 type generation; any remote Supabase/RLS policy work still needs explicit approval.
+**Current gate:** Local Supabase/Docker validation and type generation are approved; any remote Supabase/RLS policy work still
+needs explicit approval.
 
 - [ ] Add the claims-backed ownership model and generated types once local type generation is available
 - [ ] Add claim read/create/withdraw methods scoped to manufacturer detail surfaces
@@ -46,3 +47,7 @@
 - 2026-06-18T11:32+02:00 — M1 read-only storage inspection found no existing `manufacturer-logos` bucket; the local migration explicitly creates a public bucket before adding owner/admin write policies.
 - 2026-06-18T11:32+02:00 — M1 local type generation is blocked because the Supabase CLI cannot reach Docker/local Supabase; `src/backend/database.types.ts` is intentionally unchanged.
 - 2026-06-18T11:46+02:00 — User clarified that migrations should remain blocked until local frontend changes have been executed and verified; next work should prove the frontend flow before schema execution/type generation resumes.
+- 2026-07-07T14:07+02:00 — User approved future loop runs to implement the full verified-owner foundation: additive schema/migrations, RLS policies, backend methods, and an admin review workflow, while keeping changes backward-compatible and validated before commit.
+- 2026-07-08T14:13+02:00 — Coordinator decision after user deferred the technical choice: keep M1 schema/RLS/type changes blocked until local Supabase/Docker type generation is reliable. Do not work around this with remote-only typegen; use loop capacity for other approved Marketplace/Cool/Price Hub work meanwhile.
+- 2026-07-17 — Product owner approved Docker/local Supabase migration validation, local type generation, and generated-type diff review for M1. This does not authorize any remote migration, RLS, policy, storage, or data mutation.
+- 2026-07-17T11:26+02:00 — M1 local validation/typegen checkpoint completed in a disposable Supabase stack only. Full local migration reset is still blocked by the repo lacking a baseline schema migration before historical ALTER migrations; the five M1 migrations were validated against a minimal local baseline and no remote Supabase project was contacted or mutated.

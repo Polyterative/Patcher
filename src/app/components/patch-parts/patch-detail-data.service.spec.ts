@@ -30,7 +30,8 @@ describe('PatchDetailDataService selection behavior', () => {
     const backendStub: any = {
       auth: {getUserSession$: () => of(null)},
       GET: {patchConnections: (_: any) => of([])},
-      delete: {patchModuleInstance: (_: any) => of({})}
+      delete: {patchModuleInstance: (_: any) => of({})},
+      storage: {publicUrlBases: {racks: 'https://images.patcher.xyz/racks/'}}
     };
     const router = routerStub as any;
     const snack = snackStub as any;
@@ -213,6 +214,10 @@ describe('PatchDetailDataService selection behavior', () => {
 
   it('shouldShowPanelImages$ starts as true', () => {
     expect(service.shouldShowPanelImages$.value).toBeTrue();
+  });
+
+  it('builds rack preview URLs from the backend storage namespace', () => {
+    expect(service.getRackPreviewUrl('studio-rack.jpeg')).toBe('https://images.patcher.xyz/racks/studio-rack.jpeg');
   });
 
   it('patchTags$ starts as empty array', () => {

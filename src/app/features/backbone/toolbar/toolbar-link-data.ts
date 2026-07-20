@@ -28,6 +28,15 @@ const MAIN_LINKS: RouteClickableLink[] = [
     icon: 'view_stream',
     disabled: false
   },
+  ...(environment.features.marketplaceEnabled
+    ? [{
+        label: 'Marketplace',
+        route: '/marketplace',
+        icon: 'storefront',
+        disabled: false
+      }]
+    : []
+  ),
   ...(environment.features.collectionsEnabled
     ? [{
         label: 'Collections',
@@ -67,10 +76,13 @@ const ADMIN_LINKS: RouteClickableLink[] = [
   }
 ];
 
+const manufacturerLinkIndex = MAIN_LINKS.findIndex(link => link.route === '/manufacturers/browser');
+const devInsightsInsertIndex = manufacturerLinkIndex >= 0 ? manufacturerLinkIndex : MAIN_LINKS.length;
+
 const DEV_MAIN_LINKS: RouteClickableLink[] = [
-  ...MAIN_LINKS.slice(0, 4),
+  ...MAIN_LINKS.slice(0, devInsightsInsertIndex),
   INSIGHTS_LINK,
-  ...MAIN_LINKS.slice(4)
+  ...MAIN_LINKS.slice(devInsightsInsertIndex)
 ];
 
 const guestLinksCache = [

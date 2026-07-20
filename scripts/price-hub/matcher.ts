@@ -2,8 +2,14 @@ import { once } from 'node:events';
 import { createWriteStream } from 'node:fs';
 
 import type { NormalizedStoreListingSnapshot } from '../../supabase/functions/_shared/price-hub/woocommerce-store-api.ts';
+import {
+  DEFAULT_PRICE_HUB_MATCH_CONFIG,
+  readPriceHubStoreMatchConfig,
+  type ApprovedPriceHubStoreConfig,
+  type PriceHubStoreMatchConfig,
+} from './store-configs.ts';
 
-export const DEFAULT_MATCH_MIN_SCORE = 0.72;
+export const DEFAULT_MATCH_MIN_SCORE = DEFAULT_PRICE_HUB_MATCH_CONFIG.scoreThresholds.reviewCandidate;
 
 export type PriceHubMatchStatus = 'strong_candidate' | 'review_candidate' | 'ignored';
 
@@ -29,76 +35,11 @@ export interface PriceHubMatchCandidate {
 
 interface PriceHubMatchOptions {
   minScore?: number;
+  store?: ApprovedPriceHubStoreConfig;
+  matchConfig?: PriceHubStoreMatchConfig;
   includeIgnored?: boolean;
 }
 
-const NOISE_TERMS = [
-  'accessory',
-  'accessories',
-  'b-stock',
-  'b stock',
-  'bourns',
-  'bundle',
-  'case',
-  'cable',
-  'cables',
-  'cap',
-  'consignment',
-  'cover',
-  'covers',
-  'deposit',
-  'embroidered',
-  'ex-demo',
-  'ex demo',
-  'faceplate',
-  'frontpanel',
-  'guide',
-  'hat',
-  'hoodie',
-  'kit',
-  'kitbag',
-  'kitbags',
-  'manual',
-  'memory card',
-  'no-longer-available',
-  'no longer available',
-  'occasione',
-  'open-box',
-  'open box',
-  'opening soon',
-  'panel',
-  'panel set',
-  'parts',
-  'pcb',
-  'pcb panel',
-  'pedal',
-  'potentiometer',
-  'potentiometers',
-  'pre-order',
-  'pre order',
-  'preorder',
-  'prenotazione',
-  'preordine',
-  'pre-owned',
-  'pre owned',
-  'power adapter',
-  'refurbished',
-  'replacement parts',
-  'special-order',
-  'special order',
-  'spares',
-  'stackcable',
-  'sticker',
-  'stickers',
-  'slide pot',
-  'slider',
-  'slipmat',
-  't-shirt',
-  't shirt',
-  'tee',
-  'used',
-  'usato',
-];
 const GENERIC_MODULE_NAMES = new Set([
   'adsr',
   'case',
@@ -160,7 +101,8 @@ export function* iterateModuleProductMatches(
   products: readonly NormalizedStoreListingSnapshot[],
   options: PriceHubMatchOptions = {},
 ): Generator<PriceHubMatchCandidate> {
-  const minScore = options.minScore ?? DEFAULT_MATCH_MIN_SCORE;
+  const matchConfig = readPriceHubStoreMatchConfig(options.matchConfig ?? options.store);
+  const minScore = options.minScore ?? matchConfig.scoreThresholds.reviewCandidate;
   const includeIgnored = options.includeIgnored ?? true;
   const productProfiles = products.map(readProductProfile);
 
@@ -175,7 +117,11 @@ export function* iterateModuleProductMatches(
         continue;
       }
 
-      const candidate = scoreProductForModule(moduleProfile, productProfile, minScore);
+      const candidate = scoreProductForModule(moduleProfile, productProfile, {
+        minScore,
+        strongScore: matchConfig.scoreThresholds.strongCandidate,
+        noiseTerms: matchConfig.noiseTerms,
+      });
       if (candidate.score > 0 && (includeIgnored || candidate.status !== 'ignored')) {
         yield candidate;
       }
@@ -261,7 +207,11 @@ function couldMatchProduct(moduleProfile: ModuleProfile, productProfile: Product
 function scoreProductForModule(
   moduleProfile: ModuleProfile,
   productProfile: ProductProfile,
-  minScore: number,
+  config: {
+    minScore: number;
+    strongScore: number;
+    noiseTerms: readonly string[];
+  },
 ): PriceHubMatchCandidate {
   const product = productProfile.product;
   const reasons: string[] = [];
@@ -327,7 +277,7 @@ function scoreProductForModule(
     reasons.push('all manufacturer tokens found');
   }
 
-  const noiseHits = findNoiseHits(productProfile);
+  const noiseHits = findNoiseHits(productProfile, config.noiseTerms);
   if (noiseHits.length > 0) {
     const penalty = Math.min(0.8, noiseHits.length * 0.65);
     score -= penalty;
@@ -348,7 +298,7 @@ function scoreProductForModule(
     productUrl: product.productUrl,
     productName: product.productName,
     score,
-    status: score >= 0.86 ? 'strong_candidate' : score >= minScore ? 'review_candidate' : 'ignored',
+    status: score >= config.strongScore ? 'strong_candidate' : score >= config.minScore ? 'review_candidate' : 'ignored',
     reasons,
   };
 }
@@ -465,8 +415,8 @@ function tokenSet(slug: string): Set<string> {
   return new Set(tokenize(slug));
 }
 
-function findNoiseHits(productProfile: ProductProfile): string[] {
-  return NOISE_TERMS.filter((term) => {
+function findNoiseHits(productProfile: ProductProfile, noiseTerms: readonly string[]): string[] {
+  return noiseTerms.filter((term) => {
     if (!term.includes('-') && !term.includes(' ')) {
       return productProfile.noiseTokens.has(term);
     }

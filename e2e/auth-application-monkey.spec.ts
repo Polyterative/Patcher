@@ -3,6 +3,10 @@ import {
   type Page,
   test
 } from '@playwright/test';
+import {
+  BROWSER_DATA_CONTRACTS,
+  expectBrowserDataPage
+} from './helpers/browser-data-contract';
 
 
 const WEIRD_QUERY = '   __ % Ω≈ç√∫˜µ≤≥÷ " \' ; <script>nope</script>   ';
@@ -11,7 +15,15 @@ test.describe('Authenticated application monkey flows', () => {
   test('survives a route storm with browser back and forward', async ({page}) => {
     const errors = collectCriticalErrors(page);
 
-    for (const route of ['/home', '/modules/browser', '/racks/browser', '/patches/browser', '/manufacturers/browser', '/user/area']) {
+    await page.goto('/home');
+    await expect(page).not.toHaveURL(/404/);
+    await expect(page.locator('body')).toBeVisible();
+
+    await expectBrowserDataPage(page, BROWSER_DATA_CONTRACTS.modules);
+    await expectBrowserDataPage(page, BROWSER_DATA_CONTRACTS.racks);
+    await expectBrowserDataPage(page, BROWSER_DATA_CONTRACTS.patches);
+
+    for (const route of ['/manufacturers/browser', '/user/area']) {
       await page.goto(route);
       await expect(page).not.toHaveURL(/404/);
       await expect(page.locator('body')).toBeVisible();

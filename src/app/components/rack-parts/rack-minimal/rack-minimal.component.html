@@ -30,6 +30,7 @@
     ></mat-divider>
     @if (!viewConfig.hideButtons) {
       <div class="rack-action-row row gap1 opacizeOnHover"
+           [class.rack-action-row--cool-visible]="showCoolAction"
       >
         <div class="rack-action-row__primary row gap1">
           @if (bag.user && bag.isCurrentRackPropertyOfCurrentUser) {
@@ -53,6 +54,15 @@
           }
         </div>
         <div class="rack-action-row__secondary row gap1">
+          @if (showCoolAction) {
+            <app-cool-button
+              class="rack-action-row__cool"
+              [entityType]="ReactionEntityTypes.RACK"
+              [entityId]="data.id"
+              [eligible]="data.public === true"
+              countDisplayMode="count"
+            ></app-cool-button>
+          }
           @if (bag.user && bag.isCurrentRackPropertyOfCurrentUser) {
             <button mat-icon-button
                     matTooltip="Create patch from this rack"

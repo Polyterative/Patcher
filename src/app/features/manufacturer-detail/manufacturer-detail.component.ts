@@ -24,16 +24,12 @@ import {
 import { LabelValueData } from 'src/app/components/rack-parts/rack-editor/lib-showcase-grid/lib-showcase-grid.component';
 import { TimeagoPipe } from 'ngx-timeago';
 import {
-  StorageUrls
-} from 'src/app/features/backend/DatabaseStrings';
-import {
   clearJsonLdScript,
   upsertJsonLdScript
 } from 'src/app/shared-interproject/json-ld-dom';
 import { normalizeSupabaseUtcTimestamp } from 'src/app/shared-interproject/pipes/supabase-utc-timestamp.pipe';
 
 
-const LOGO_BASE_URL = StorageUrls.manufacturerLogos;
 const JSONLD_SCRIPT_ID = 'manufacturer-jsonld';
 
 @Component({
@@ -123,7 +119,7 @@ export class ManufacturerDetailComponent extends SubManager {
           description: `Browse all Eurorack modules by ${ manufacturer.name } on patcher.xyz.`,
           keywords: `eurorack, modular, ${ manufacturer.name }, modules`,
           url: `https://patcher.xyz/manufacturers/details/${ manufacturer.id }`,
-          image: manufacturer.logo ? `${ LOGO_BASE_URL }${ manufacturer.logo }` : undefined,
+          image: this.logoUrl(manufacturer) ?? undefined,
         },
         `${ manufacturer.name } — Manufacturer`
       );
@@ -138,7 +134,7 @@ export class ManufacturerDetailComponent extends SubManager {
   
   
   logoUrl(manufacturer: ManufacturerDetail): string | null {
-    return manufacturer.logo ? `${ LOGO_BASE_URL }${ manufacturer.logo }` : null;
+    return manufacturer.logo ? `${ this.dataService.logoStorageBase }${ manufacturer.logo }` : null;
   }
   
   private injectManufacturerJsonLd(manufacturer: ManufacturerDetail): void {
@@ -148,7 +144,7 @@ export class ManufacturerDetailComponent extends SubManager {
       '@type': 'Organization',
       'name': manufacturer.name ?? undefined,
       'url': manufacturer.websiteURL ?? undefined,
-      'logo': manufacturer.logo ? `${ LOGO_BASE_URL }${ manufacturer.logo }` : undefined,
+      'logo': this.logoUrl(manufacturer) ?? undefined,
     };
     Object.keys(jsonLd).forEach(k => jsonLd[k] === undefined && delete jsonLd[k]);
     upsertJsonLdScript(JSONLD_SCRIPT_ID, jsonLd);

@@ -9,7 +9,6 @@ import {
 import {
   BehaviorSubject,
   delay,
-  forkJoin,
   merge,
   Subject
 } from 'rxjs';
@@ -22,7 +21,6 @@ import {
   withLatestFrom
 } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
-import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { GraphViewService } from 'src/app/shared-interproject/components/@visual/graph-view/graph-view.service';
 import {
   GraphEdge,
@@ -31,8 +29,7 @@ import {
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import {
   buildPatchGraphData,
-  computePatchGraphSizeConstant,
-  extractPatchGraphModuleInstances
+  computePatchGraphSizeConstant
 } from './patch-graph-build.utils';
 import {
   advanceFlowAnimationState,
@@ -42,6 +39,7 @@ import {
   interpolateHexColor,
   PatchGraphFlowPalette
 } from './patch-graph-flow.utils';
+import { PatchGraphDataService } from './patch-graph-data.service';
 import { PatchGraphRevealController } from './patch-graph-reveal.controller';
 import { PatchDetailDataService } from '../patch-detail-data.service';
 import type { PatchGraphFullscreenDialogData } from './patch-graph-fullscreen-dialog.component';
@@ -52,7 +50,7 @@ import type { PatchGraphFullscreenDialogData } from './patch-graph-fullscreen-di
   templateUrl: './patch-graph.component.html',
   styleUrls: ['./patch-graph.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [GraphViewService],
+  providers: [GraphViewService, PatchGraphDataService],
   standalone: false
 })
 export class PatchGraphComponent extends SubManager implements OnInit {
@@ -105,7 +103,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
 
   constructor(
     public patchDetailDataService: PatchDetailDataService,
-    public backend: SupabaseService,
+    private readonly patchGraphDataService: PatchGraphDataService,
     public graphViewService: GraphViewService,
     private readonly dialog: MatDialog
   ) {
@@ -171,15 +169,8 @@ export class PatchGraphComponent extends SubManager implements OnInit {
         tap(() => this._nodes$.next([])),
         tap(() => this._edges$.next([])),
         tap(() => this._isStale$.next(false)),
-        switchMap(connections => {
-          const uniqueModuleIds = [...new Set(
-            extractPatchGraphModuleInstances(connections).map(instance => instance.moduleId)
-          )];
-
-          return forkJoin(
-            uniqueModuleIds.map(moduleId => this.backend.GET.moduleWithId(moduleId).pipe(map(module => module.data)))
-          ).pipe(map(modules => ({modules, connections})));
-        }),
+        switchMap(connections => this.patchGraphDataService.modulesForConnections(connections)
+          .pipe(map(modules => ({modules, connections})))),
         delay(500),
         this.takeUntilDestroyed()
       )

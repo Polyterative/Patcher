@@ -32,6 +32,7 @@ describe('SupabaseService - API Surface', () => {
     it('should have all expected GET methods bound correctly', () => {
       const expectedMethods = [
         'modules',
+        'publicModuleImportCandidates',
         'manufacturers',
         'currentUserModules',
         'comments',
@@ -49,7 +50,9 @@ describe('SupabaseService - API Surface', () => {
         'userPatchesPaginated',
         'userRacksPaginated',
         'publicUserPatchesPaginated',
-        'publicUserRacksPaginated'
+        'publicUserRacksPaginated',
+        'activeMarketplaceListings',
+        'marketplaceListingByPublicId'
       ];
       
       expectedMethods.forEach(method => {
@@ -81,6 +84,8 @@ describe('SupabaseService - API Surface', () => {
         'patchesWithModule',
         'moduleUsageSummary',
         'userModuleAcquisitionsForModule',
+        'currentUserShippingAddresses',
+        'currentUserMarketplaceListings',
         'standards',
         'tagVotesForModule',
         'myVotes',
@@ -107,6 +112,9 @@ describe('SupabaseService - API Surface', () => {
         'comment',
         'userModule',
         'userModuleAcquisition',
+        'shippingAddress',
+        'marketplaceListing',
+        'marketplaceListingMedia',
         'userModuleTag',
         'moduleINs',
         'moduleOUTs',
@@ -132,7 +140,10 @@ describe('SupabaseService - API Surface', () => {
         'rack',
         'module',
         'patchConnections',
-        'userModuleAcquisition'
+        'userModuleAcquisition',
+        'shippingAddress',
+        'marketplaceListing',
+        'marketplaceListingMediaOrder'
       ];
       
       expectedMethods.forEach(method => {
@@ -154,7 +165,10 @@ describe('SupabaseService - API Surface', () => {
         'comment',
         'rackedModule',
         'userModuleTag',
-        'userModuleAcquisition'
+        'userModuleAcquisition',
+        'shippingAddress',
+        'marketplaceListing',
+        'marketplaceListingMedia'
       ];
       
       expectedMethods.forEach(method => {

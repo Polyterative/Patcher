@@ -18,7 +18,7 @@ import FA2LayoutSupervisor, { FA2LayoutSupervisorParameters } from 'graphology-l
 import { Sigma } from 'sigma';
 import { GraphViewService } from './graph-view.service';
 import { GraphComponentState, GraphEdge, GraphNode } from './graph.types';
-import { interpolateColor, renderNodeLabel } from './graph.utils';
+import { computeGraphLayoutRuntimeMs, interpolateColor, renderNodeLabel } from './graph.utils';
 
 export type { GraphNode, GraphEdge } from './graph.types';
 
@@ -479,7 +479,7 @@ export class GraphComponent implements AfterViewInit, OnChanges, OnDestroy {
     this.fa2LayoutSupervisor.start();
     
     this.clearLayoutStopTimer();
-    const layoutRuntimeMs = this.computeLayoutRuntimeMs();
+    const layoutRuntimeMs = computeGraphLayoutRuntimeMs(this.graph.order, this.graph.size);
     this.fa2StopTimer = setTimeout(() => {
       this.fa2LayoutSupervisor?.stop();
       this.fa2StopTimer = undefined;
@@ -491,10 +491,5 @@ export class GraphComponent implements AfterViewInit, OnChanges, OnDestroy {
       clearTimeout(this.fa2StopTimer);
       this.fa2StopTimer = undefined;
     }
-  }
-  
-  private computeLayoutRuntimeMs(): number {
-    const complexity = this.graph.order + this.graph.size;
-    return Math.max(1200, Math.min(3200, 900 + complexity * 15));
   }
 }

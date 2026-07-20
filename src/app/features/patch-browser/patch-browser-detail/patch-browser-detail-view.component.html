@@ -41,6 +41,7 @@
       <app-patch-composite [data]="(bag.data)"
                            [isEditing]="bag.patchEditingPanelOpenState"
                            [viewConfig]="viewConfig"
+                           [showCoolAction]="coolReactionsEnabled && (!bag.user || bag.data.author?.id !== bag.user.id)"
       ></app-patch-composite>
     } @else if (bag.unavailableMessage) {
       <app-advice-tooltip title="Unavailable" tone="info">
@@ -52,15 +53,4 @@
       ></lib-auto-content-loading-indicator>
     }
   </ng-template>
-  @if (bag.data && coolReactionsEnabled && (!bag.user || bag.data.author?.id !== bag.user.id)) {
-    <div class="patch-detail-floating-actions">
-      <app-cool-button
-        class="patch-detail-cool-floating-action"
-        [entityType]="ReactionEntityTypes.PATCH"
-        [entityId]="bag.data.id"
-        [eligible]="bag.data.public === true"
-        countDisplayMode="count"
-      ></app-cool-button>
-    </div>
-  }
 }

@@ -73,6 +73,8 @@ describe('PatchMinimalComponent - linked rack UI', () => {
       },
       removePatchTag: jasmine.createSpy('removePatchTag'),
       addPatchTag: jasmine.createSpy('addPatchTag'),
+      getRackPreviewUrl: jasmine.createSpy('getRackPreviewUrl')
+        .and.callFake((filename: string) => `https://images.patcher.xyz/racks/${ filename }`),
       requestPatchPrivacyStatusChange$: {next: jasmine.createSpy('requestPatchPrivacyStatusChange$.next')},
       deletePatch$: {next: jasmine.createSpy('deletePatch$.next')},
       requestPatchEditingToggle$: {next: jasmine.createSpy('requestPatchEditingToggle$.next')}
@@ -122,12 +124,14 @@ describe('PatchMinimalComponent - linked rack UI', () => {
     expect(host.querySelector('app-cool-button')).toBeNull();
   });
 
-  it('does not render an inline patch Cool action in the primary card', () => {
+  it('renders the patch Cool action in the action row when requested, not inside patch micro', () => {
     component.data = patchData({public: true});
+    component.showCoolAction = true;
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
     expect(host.querySelector('app-patch-micro app-cool-button')).toBeNull();
+    expect(host.querySelector('.patch-action-row__cool')).not.toBeNull();
   });
 
   it('renders a small linked rack preview when an image is available', () => {
@@ -140,7 +144,12 @@ describe('PatchMinimalComponent - linked rack UI', () => {
     expect(preview).not.toBeNull();
     expect(previewLink).not.toBeNull();
     expect(previewLink?.getAttribute('aria-label')).toBe('Open linked rack');
-    expect(preview?.src).toContain('/storage/v1/object/public/racks/studio-rack.jpeg');
+    expect(preview?.src).toBe('https://images.patcher.xyz/racks/studio-rack.jpeg');
+  });
+
+  it('delegates linked rack preview URL construction to the data service', () => {
+    expect(component.getRackPreviewUrl('studio-rack.jpeg')).toBe('https://images.patcher.xyz/racks/studio-rack.jpeg');
+    expect(dataService.getRackPreviewUrl).toHaveBeenCalledWith('studio-rack.jpeg');
   });
 
   it('renders the linked rack summary for non-owners in read-only mode', () => {

@@ -1,17 +1,6 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
-import {
-  forkJoin,
-  from as rxFrom,
-  Observable,
-  of,
-  throwError
-} from 'rxjs';
-import {
-  map,
-  switchMap,
-  take,
-  tap
-} from 'rxjs/operators';
+import { forkJoin, from as rxFrom, Observable, of, throwError } from 'rxjs';
+import { map, switchMap, take, tap } from 'rxjs/operators';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from 'src/backend/database.types';
 import {
@@ -23,10 +12,7 @@ import {
   RackedModule,
   UserModulePossessionKind
 } from '../../models/module';
-import {
-  RackingData,
-  RackMinimal
-} from '../../models/rack';
+import { DEFAULT_RACK_MODULE_ORIENTATION, normalizeRackModuleOrientation, RackingData, RackModuleOrientation, RackMinimal } from '../../models/rack';
 import { Patch } from '../../models/patch';
 import {
   PatchConnection,
@@ -53,6 +39,8 @@ import {
 } from './supabase-db.types';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { UserModuleAcquisitionDraft } from 'src/app/models/user-module-acquisition';
+import { MarketplaceShippingAddressDraft } from 'src/app/features/marketplace/marketplace-address-book.utils';
+import { type MarketplaceListingDraft } from 'src/app/features/marketplace/marketplace-listing.utils';
 import {
   buildCVInserter,
   buildCVUpdater,
@@ -60,6 +48,20 @@ import {
   getCvMapper,
   normalizeCvRangeForDb
 } from './supabase-update.helpers';
+import {
+  buildShippingAddressUpdate,
+  mapShippingAddressResponse,
+  SHIPPING_ADDRESS_COLUMNS,
+  type ShippingAddressRow
+} from './supabase-shipping-addresses';
+import {
+  buildMarketplaceListingUpdate,
+  mapListingMediaRow,
+  mapMarketplaceListingResponse,
+  MARKETPLACE_LISTING_COLUMNS,
+  type ListingMediaRow,
+  type MarketplaceListingRow
+} from './supabase-marketplace-listings';
 
 export { getCvMapper, buildCVInserter, buildCVUpdater, buildPatchConnectionInserter };
 
@@ -115,33 +117,28 @@ export function createUpdateNamespace(
         if (!user) return throwError(() => new Error('Authentication required'));
         const toSimplyUpdate = data.filter(x => x.rackingData.id !== undefined)
           .map(rackedModule => ({
-            id: rackedModule.rackingData.id,
-            moduleid: rackedModule.rackingData.moduleid,
-            rackid: rackedModule.rackingData.rackid,
-            row: rackedModule.rackingData.row,
-            column: rackedModule.rackingData.column,
+            id: rackedModule.rackingData.id, moduleid: rackedModule.rackingData.moduleid, rackid: rackedModule.rackingData.rackid,
+            row: rackedModule.rackingData.row, column: rackedModule.rackingData.column,
             selected_panel_id: rackedModule.rackingData.selectedPanelId ?? null
           }));
-        
         return rxFrom(
           supabase.from(DbPaths.rack_modules).upsert(toSimplyUpdate)
-            .select('id,moduleid,rackid,row,column,selected_panel_id')
+            .select('id,moduleid,rackid,row,column,selected_panel_id,orientation')
         ).pipe(
           switchMap(x => {
             const newRackedModules = data
               .filter(x => x.rackingData.id === undefined)
               .map(rackedModule => ({
-                moduleid: rackedModule.rackingData.moduleid,
-                rackid: rackedModule.rackingData.rackid,
-                row: rackedModule.rackingData.row,
-                column: rackedModule.rackingData.column,
-                selected_panel_id: rackedModule.rackingData.selectedPanelId ?? null
+                moduleid: rackedModule.rackingData.moduleid, rackid: rackedModule.rackingData.rackid,
+                row: rackedModule.rackingData.row, column: rackedModule.rackingData.column,
+                selected_panel_id: rackedModule.rackingData.selectedPanelId ?? null,
+                orientation: normalizeRackModuleOrientation(rackedModule.rackingData.orientation)
               }));
             
             const insertNew$ = rxFrom(
               supabase.from(DbPaths.rack_modules)
                 .insert(newRackedModules)
-                .select('id,moduleid,rackid,row,column,selected_panel_id')
+                .select('id,moduleid,rackid,row,column,selected_panel_id,orientation')
             );
             return newRackedModules.length > 0 ? insertNew$ : of(x);
           }),
@@ -154,12 +151,19 @@ export function createUpdateNamespace(
     rackModulePanel: (rackModuleId: number, panelId: number | null) => getUserSession$().pipe(
       switchMap(user => {
         if (!user) return throwError(() => new Error('Authentication required'));
+        return rxFrom(supabase.from(DbPaths.rack_modules).update({selected_panel_id: panelId}).eq('id', rackModuleId)).pipe(remapErrors());
+      }),
+      cacheBust(['rackWithId'])
+    ),
+
+    rackModuleOrientation: (rackModuleId: number, orientation: RackModuleOrientation = DEFAULT_RACK_MODULE_ORIENTATION) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
         return rxFrom(
-          supabase.from(DbPaths.rack_modules)
-            .update({selected_panel_id: panelId})
-            .eq('id', rackModuleId)
+          supabase.from(DbPaths.rack_modules).update({orientation}).eq('id', rackModuleId).select('id,orientation').single()
         ).pipe(remapErrors());
       }),
+      throwIfSupabaseError(),
       cacheBust(['rackWithId'])
     ),
 
@@ -492,6 +496,66 @@ export function createUpdateNamespace(
       }),
       throwIfSupabaseError(),
       cacheBust(['userModuleAcquisitions']),
+      remapErrors()
+    ),
+
+    shippingAddress: (id: string, data: MarketplaceShippingAddressDraft) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        const updateData = buildShippingAddressUpdate(data);
+        return rxFrom(
+          supabase.from(DbPaths.shipping_addresses)
+            .update(updateData)
+            .eq('id', id)
+            .eq('profileid', user.id)
+            .select(SHIPPING_ADDRESS_COLUMNS)
+            .single()
+        );
+      }),
+      throwIfSupabaseError<SupabaseSingleResponse<ShippingAddressRow>>(),
+      map(response => mapShippingAddressResponse(response)),
+      cacheBust(['shippingAddresses']),
+      remapErrors()
+    ),
+
+    marketplaceListing: (id: string, data: MarketplaceListingDraft) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return rxFrom(
+          supabase.from(DbPaths.marketplace_listings)
+            .update(buildMarketplaceListingUpdate(user.id, data))
+            .eq('id', id)
+            .eq('seller_profileid', user.id)
+            .select(MARKETPLACE_LISTING_COLUMNS)
+            .single()
+        );
+      }),
+      throwIfSupabaseError<SupabaseSingleResponse<MarketplaceListingRow>>(),
+      map(mapMarketplaceListingResponse),
+      cacheBust(['marketplaceListings', 'marketplaceListingWithId', 'currentUserMarketplaceListings']),
+      remapErrors()
+    ),
+
+    marketplaceListingMediaOrder: (listingId: string, mediaIds: string[]) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        if (mediaIds.length > 8) {
+          return throwError(() => new Error('Marketplace listings support at most 8 images'));
+        }
+        if (new Set(mediaIds).size !== mediaIds.length) {
+          return throwError(() => new Error('Media order contains duplicate ids'));
+        }
+
+        return rxFrom(
+          supabase.rpc('reorder_listing_media', {
+            p_listing_id: listingId,
+            p_media_ids: mediaIds
+          })
+        );
+      }),
+      throwIfSupabaseError<SupabaseSingleResponse<ListingMediaRow[]>>(),
+      map(response => ((response.data ?? []) as ListingMediaRow[]).map(mapListingMediaRow)),
+      cacheBust(['marketplaceListings', 'marketplaceListingWithId', 'currentUserMarketplaceListings']),
       remapErrors()
     )
   };

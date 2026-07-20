@@ -4,8 +4,10 @@ export class DbPaths {
   static moduleINs = 'module_ins' as const;
   static moduleOUTs = 'module_outs' as const;
   static manufacturers = 'manufacturers' as const;
+  static manufacturer_claims = 'manufacturer_claims' as const;
   static user_modules = 'user_modules' as const;
   static user_module_acquisitions = 'user_module_acquisitions' as const;
+  static module_availability_tags = 'module_availability_tags' as const;
   static module_collections = 'module_collections' as const;
   static module_collection_entries = 'module_collection_entries' as const;
   static racks = 'racks' as const;
@@ -29,6 +31,9 @@ export class DbPaths {
   static stores = 'stores' as const;
   static module_store_listings = 'module_store_listings' as const;
   static module_price_snapshots = 'module_price_snapshots' as const;
+  static shipping_addresses = 'shipping_addresses' as const;
+  static marketplace_listings = 'marketplace_listings' as const;
+  static listing_media = 'listing_media' as const;
 
 }
 
@@ -38,17 +43,19 @@ export class DbStoragePaths {
   static patches = 'patches' as const;
   static manufacturer_logos = 'manufacturer-logos' as const;
   static module_collections = 'module-collections' as const;
+  static marketplace_listings = 'marketplace-listings' as const;
 }
 
-const SUPABASE_STORAGE_BASE = 'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/';
+const PUBLIC_IMAGE_PROXY_BASE = 'https://images.patcher.xyz/';
 
 /** Ready-to-use public base URLs for each storage bucket. Append a filename to get a full asset URL. */
 export class StorageUrls {
-  static modulePanels = `${SUPABASE_STORAGE_BASE}${DbStoragePaths.module_panels}/`;
-  static manufacturerLogos = `${SUPABASE_STORAGE_BASE}${DbStoragePaths.manufacturer_logos}/`;
-  static moduleCollections = `${SUPABASE_STORAGE_BASE}${DbStoragePaths.module_collections}/`;
-  static racks = `${SUPABASE_STORAGE_BASE}${DbStoragePaths.racks}/`;
-  static patches = `${SUPABASE_STORAGE_BASE}${DbStoragePaths.patches}/`;
+  static modulePanels = `${PUBLIC_IMAGE_PROXY_BASE}${DbStoragePaths.module_panels}/`;
+  static manufacturerLogos = `${PUBLIC_IMAGE_PROXY_BASE}${DbStoragePaths.manufacturer_logos}/`;
+  static moduleCollections = `${PUBLIC_IMAGE_PROXY_BASE}${DbStoragePaths.module_collections}/`;
+  static racks = `${PUBLIC_IMAGE_PROXY_BASE}${DbStoragePaths.racks}/`;
+  static patches = `${PUBLIC_IMAGE_PROXY_BASE}${DbStoragePaths.patches}/`;
+  static marketplaceListings = `${PUBLIC_IMAGE_PROXY_BASE}${DbStoragePaths.marketplace_listings}/`;
 }
 
 export class QueryJoins {

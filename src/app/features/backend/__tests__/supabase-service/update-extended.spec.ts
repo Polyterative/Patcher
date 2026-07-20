@@ -1,5 +1,6 @@
 import { of } from 'rxjs';
 import { SupabaseService } from '../../supabase.service';
+import { RackedModule } from 'src/app/models/module';
 import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest,
@@ -198,7 +199,7 @@ describe('SupabaseService - update extended', () => {
       spyOn(supabaseClient, 'from').and.returnValue(chainable({data: mockInstance, error: null}));
       
       service.update.patchModuleInstanceLabel(3, 'VCO #2').subscribe({
-        next: (result: any) => {
+        next: (result) => {
           expect(result.instance_label).toBe('VCO #2');
           done();
         },
@@ -253,7 +254,7 @@ describe('SupabaseService - update extended', () => {
             column: 0,
             selected_panel_id: null
           }]);
-          expect(selectSpy).toHaveBeenCalledWith('id,moduleid,rackid,row,column,selected_panel_id');
+          expect(selectSpy).toHaveBeenCalledWith('id,moduleid,rackid,row,column,selected_panel_id,orientation');
           done();
         },
         error: (err) => {
@@ -275,8 +276,31 @@ describe('SupabaseService - update extended', () => {
       
       service.update.rackedModules(data).subscribe({
         next: () => {
-          const payload = upsertSpy.calls.mostRecent().args[0] as any[];
+          const payload = upsertSpy.calls.mostRecent().args[0] as Array<{selected_panel_id: number | null}>;
           expect(payload[0].selected_panel_id).toBe(7);
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should leave existing rack module orientation untouched during batch upserts', (done) => {
+      const mock = chainable({data: null, error: null});
+      const upsertSpy = spyOn(mock, 'upsert').and.returnValue(mock);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+      const data: RackedModule[] = [{
+        rackingData: {id: 1, rackid: 5, moduleid: 10, row: 0, column: 0, orientation: 'rot180'},
+        module: {id: 10} as RackedModule['module']
+      }];
+
+      service.update.rackedModules(data).subscribe({
+        next: () => {
+          const payload = upsertSpy.calls.mostRecent().args[0] as Array<{orientation?: string}>;
+          expect(payload[0].orientation).toBeUndefined();
           done();
         },
         error: (err) => {
@@ -298,7 +322,7 @@ describe('SupabaseService - update extended', () => {
       
       service.update.rackedModules(data).subscribe({
         next: () => {
-          const payload = upsertSpy.calls.mostRecent().args[0] as any[];
+          const payload = upsertSpy.calls.mostRecent().args[0] as Array<{selected_panel_id: number | null}>;
           expect(payload[0].selected_panel_id).toBeNull();
           done();
         },
@@ -327,9 +351,10 @@ describe('SupabaseService - update extended', () => {
             rackid: 5,
             row: 1,
             column: 2,
-            selected_panel_id: null
+            selected_panel_id: null,
+            orientation: 'normal'
           }]);
-          expect(selectSpy).toHaveBeenCalledWith('id,moduleid,rackid,row,column,selected_panel_id');
+          expect(selectSpy).toHaveBeenCalledWith('id,moduleid,rackid,row,column,selected_panel_id,orientation');
           done();
         },
         error: (err) => {
@@ -345,7 +370,7 @@ describe('SupabaseService - update extended', () => {
     beforeEach(() => {
       spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'test-user'}));
     });
-    
+
     it('should update selected_panel_id for the given rack module id', (done) => {
       const mock = chainable({data: null, error: null});
       const updateSpy = spyOn(mock, 'update').and.returnValue(mock);
@@ -391,6 +416,53 @@ describe('SupabaseService - update extended', () => {
       service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
       
       service.update.rackModulePanel(1, 3).subscribe({
+        next: () => {
+          expect(bustedKeys).toContain('rackWithId');
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+  });
+
+  describe('update.rackModuleOrientation', () => {
+    beforeEach(() => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'test-user'}));
+    });
+
+    it('should update orientation for the given rack module id', (done) => {
+      const mock = chainable({data: {id: 42, orientation: 'rot180'}, error: null});
+      const updateSpy = spyOn(mock, 'update').and.returnValue(mock);
+      const eqSpy = spyOn(mock, 'eq').and.returnValue(mock);
+      const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
+      const singleSpy = spyOn(mock, 'single').and.returnValue(mock);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+      service.update.rackModuleOrientation(42, 'rot180').subscribe({
+        next: () => {
+          expect(updateSpy).toHaveBeenCalledWith({orientation: 'rot180'});
+          expect(eqSpy).toHaveBeenCalledWith('id', 42);
+          expect(selectSpy).toHaveBeenCalledWith('id,orientation');
+          expect(singleSpy).toHaveBeenCalled();
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should bust rackWithId cache', (done) => {
+      const mock = chainable({data: {id: 1, orientation: 'normal'}, error: null});
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+      const bustedKeys: any[] = [];
+      service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
+
+      service.update.rackModuleOrientation(1, 'normal').subscribe({
         next: () => {
           expect(bustedKeys).toContain('rackWithId');
           done();

@@ -56,7 +56,8 @@ describe('RackDetailDataService', () => {
       update: {
         rack: jasmine.createSpy('rack').and.callFake((r: any) => of(r)),
         rackedModules: jasmine.createSpy('rackedModules').and.returnValue(of({})),
-        rackModulePanel: jasmine.createSpy('rackModulePanel').and.returnValue(of({}))
+        rackModulePanel: jasmine.createSpy('rackModulePanel').and.returnValue(of({})),
+        rackModuleOrientation: jasmine.createSpy('rackModuleOrientation').and.returnValue(of({}))
       },
       delete: {
         rackedModule: jasmine.createSpy('rackedModule').and.returnValue(of({})),
@@ -83,20 +84,21 @@ describe('RackDetailDataService', () => {
     const router = jasmine.createSpyObj('Router', ['navigate']);
     const userService = {loggedUser$};
 
+    const analytics = {capture: jasmine.createSpy('capture'), identify: () => {}, reset: () => {}};
     const service = new RackDetailDataService(
       snackBar as any,
       userService as any,
       backend as any,
       dialog as any,
       router,
-      {capture: () => {}, identify: () => {}, reset: () => {}} as any
+      analytics as any
     );
 
     if (options.usePublicReads) {
       service.setPublicDetailMode(true);
     }
 
-    return {service, backend, snackBar, router, loggedUser$};
+    return {service, backend, snackBar, router, loggedUser$, analytics};
   }
 
   it('starts with expected default state', () => {
@@ -182,6 +184,339 @@ describe('RackDetailDataService', () => {
 
     expect(service.isCurrentRackPropertyOfCurrentUser$.value).toBeTrue();
   }));
+
+  it('toggles 3U rack module orientation after persistence and analytics', fakeAsync(() => {
+    const {service, backend, analytics} = build();
+    const module = makeRackedModule({
+      rackingData: {id: 10, rackid: 1, moduleid: 5, row: 0, column: 0, selectedPanelId: null, orientation: 'normal'},
+      module: {id: 5, name: 'VCO', hp: 8, standard: {id: 0}, functions: []}
+    });
+    service.singleRackData$.next(makeRack({id: 1}));
+    service.rowedRackedModules$.next([[module]]);
+    service.isCurrentRackPropertyOfCurrentUser$.next(true);
+    service.isCurrentRackEditable$.next(true);
+
+    service.requestRackedModuleOrientationToggle$.next(module);
+    tick();
+
+    expect(module.rackingData.orientation).toBe('rot180');
+    expect(backend.update.rackModuleOrientation).toHaveBeenCalledWith(10, 'rot180');
+    expect(analytics.capture).toHaveBeenCalledWith('rack_module_orientation_flipped', {
+      rack_id: 1,
+      module_id: 5,
+      standard_id: 0,
+      from: 'normal',
+      to: 'rot180'
+    });
+    expect(service.rackedModuleOrientationUpdatingId$.value).toBeNull();
+  }));
+
+  it('keeps all live rack module references unchanged when orientation save fails', fakeAsync(() => {
+    const {service, backend, snackBar, analytics} = build();
+    const module = makeRackedModule({
+      rackingData: {id: 10, rackid: 1, moduleid: 5, row: 0, column: 0, selectedPanelId: null, orientation: 'normal'},
+      module: {id: 5, name: 'VCO', hp: 8, standard: {id: 0}, functions: []}
+    });
+    const selectedReference = module;
+    service.singleRackData$.next(makeRack({id: 1}));
+    service.rowedRackedModules$.next([[module]]);
+    service.isCurrentRackPropertyOfCurrentUser$.next(true);
+    service.isCurrentRackEditable$.next(true);
+    backend.update.rackModuleOrientation.and.returnValue(throwError(() => new Error('save failed')));
+
+    service.requestRackedModuleOrientationToggle$.next(selectedReference);
+    tick();
+
+    expect(module.rackingData.orientation).toBe('normal');
+    expect(selectedReference.rackingData.orientation).toBe('normal');
+    expect(service.rowedRackedModules$.value![0][0].rackingData.orientation).toBe('normal');
+    expect(backend.update.rackModuleOrientation).toHaveBeenCalledWith(10, 'rot180');
+    expect(backend.update.rackedModules).not.toHaveBeenCalled();
+    expect(analytics.capture).not.toHaveBeenCalledWith('rack_module_orientation_flipped', jasmine.anything());
+    expect(snackBar.open).toHaveBeenCalled();
+    expect(service.rackedModuleOrientationUpdatingId$.value).toBeNull();
+  }));
+
+  it('suppresses rapid repeated orientation flips while a save is in flight', fakeAsync(() => {
+    const {service, backend, analytics} = build();
+    const save$ = new Subject<object>();
+    const module = makeRackedModule({
+      rackingData: {id: 10, rackid: 1, moduleid: 5, row: 0, column: 0, selectedPanelId: null, orientation: 'normal'},
+      module: {id: 5, name: 'VCO', hp: 8, standard: {id: 0}, functions: []}
+    });
+    service.singleRackData$.next(makeRack({id: 1}));
+    service.rowedRackedModules$.next([[module]]);
+    service.isCurrentRackPropertyOfCurrentUser$.next(true);
+    service.isCurrentRackEditable$.next(true);
+    backend.update.rackModuleOrientation.and.returnValue(save$.asObservable());
+
+    service.requestRackedModuleOrientationToggle$.next(module);
+    service.requestRackedModuleOrientationToggle$.next(module);
+    tick();
+
+    expect(backend.update.rackModuleOrientation).toHaveBeenCalledTimes(1);
+    expect(module.rackingData.orientation).toBe('normal');
+    expect(service.rackedModuleOrientationUpdatingId$.value).toBe(10);
+
+    save$.next({});
+    save$.complete();
+    tick();
+
+    expect(module.rackingData.orientation).toBe('rot180');
+    const orientationEvents = analytics.capture.calls.allArgs()
+      .filter(([eventName]) => eventName === 'rack_module_orientation_flipped');
+    expect(orientationEvents.length).toBe(1);
+    expect(service.rackedModuleOrientationUpdatingId$.value).toBeNull();
+  }));
+
+  it('waits to persist other rack writes until an in-flight orientation save settles', fakeAsync(() => {
+    const {service, backend} = build();
+    const save$ = new Subject<object>();
+    const module = makeRackedModule({
+      rackingData: {id: 10, rackid: 1, moduleid: 5, row: 0, column: 0, selectedPanelId: null, orientation: 'normal'},
+      module: {id: 5, name: 'VCO', hp: 8, standard: {id: 0}, functions: []}
+    });
+    service.singleRackData$.next(makeRack({id: 1}));
+    service.rowedRackedModules$.next([[module]]);
+    service.isCurrentRackPropertyOfCurrentUser$.next(true);
+    service.isCurrentRackEditable$.next(true);
+    backend.update.rackModuleOrientation.and.returnValue(save$.asObservable());
+    backend.update.rackedModules.calls.reset();
+
+    service.requestRackedModuleOrientationToggle$.next(module);
+    tick();
+    service.requestRackedModulesDbSync$.next();
+    tick();
+
+    expect(backend.update.rackedModules).not.toHaveBeenCalled();
+    expect(module.rackingData.orientation).toBe('normal');
+
+    save$.next({});
+    save$.complete();
+    tick();
+
+    expect(module.rackingData.orientation).toBe('rot180');
+    expect(backend.update.rackedModules).toHaveBeenCalledTimes(1);
+    const persistedModules = backend.update.rackedModules.calls.mostRecent().args[0] as RackedModule[];
+    expect(persistedModules[0].rackingData.orientation).toBe('rot180');
+  }));
+
+  it('persists latest live rows after a delayed batch helper call waits for orientation idle', fakeAsync(() => {
+    const {service, backend} = build();
+    const save$ = new Subject<object>();
+    const targetModule = makeRackedModule({
+      rackingData: {id: 10, rackid: 1, moduleid: 5, row: 0, column: 0, selectedPanelId: null, orientation: 'normal'},
+      module: {id: 5, name: 'VCO', hp: 8, standard: {id: 0}, functions: []}
+    });
+    const movedModule = makeRackedModule({
+      rackingData: {id: 11, rackid: 1, moduleid: 6, row: 1, column: 0, selectedPanelId: null, orientation: 'normal'},
+      module: {id: 6, name: 'VCF', hp: 10, standard: {id: 0}, functions: []}
+    });
+    service.singleRackData$.next(makeRack({id: 1, rows: 2}));
+    service.rowedRackedModules$.next([[targetModule], [movedModule]]);
+    service.isCurrentRackPropertyOfCurrentUser$.next(true);
+    service.isCurrentRackEditable$.next(true);
+    backend.update.rackModuleOrientation.and.returnValue(save$.asObservable());
+    backend.update.rackedModules.calls.reset();
+
+    service.requestRackedModuleOrientationToggle$.next(targetModule);
+    tick();
+    service.requestMoveRow$.next({rowId: 1, direction: 'up'});
+    tick();
+
+    expect(backend.update.rackedModules).not.toHaveBeenCalled();
+
+    const latestTargetModule = makeRackedModule({
+      rackingData: {id: 10, rackid: 1, moduleid: 5, row: 0, column: 0, selectedPanelId: 99, orientation: 'normal'},
+      module: {id: 5, name: 'VCO edited', hp: 8, standard: {id: 0}, functions: []}
+    });
+    const latestMovedModule = makeRackedModule({
+      rackingData: {id: 11, rackid: 1, moduleid: 6, row: 1, column: 0, selectedPanelId: 7, orientation: 'normal'},
+      module: {id: 6, name: 'VCF edited', hp: 10, standard: {id: 0}, functions: []}
+    });
+    service.rowedRackedModules$.next([[latestTargetModule], [latestMovedModule]]);
+
+    save$.next({});
+    save$.complete();
+    tick();
+
+    expect(backend.update.rackedModules).toHaveBeenCalledTimes(1);
+    const persistedModules = backend.update.rackedModules.calls.mostRecent().args[0] as RackedModule[];
+    expect(persistedModules.map(module => module.rackingData.id)).toEqual([11, 10]);
+    expect(persistedModules.map(module => module.rackingData.row)).toEqual([0, 1]);
+    expect(persistedModules[0].module.name).toBe('VCF edited');
+    expect(persistedModules[0].rackingData.selectedPanelId).toBe(7);
+    expect(persistedModules[1].module.name).toBe('VCO edited');
+    expect(persistedModules[1].rackingData.selectedPanelId).toBe(99);
+    expect(persistedModules[1].rackingData.orientation).toBe('rot180');
+    expect(service.rowedRackedModules$.value!.flat().map(module => module.rackingData.id)).toEqual([11, 10]);
+    expect(service.rowedRackedModules$.value!.flat().map(module => module.rackingData.row)).toEqual([0, 1]);
+  }));
+
+  it('retains a settled flip when queued row move persistence fails after waiting for orientation idle', fakeAsync(() => {
+    const {service, backend, snackBar} = build();
+    const save$ = new Subject<object>();
+    const targetModule = makeRackedModule({
+      rackingData: {id: 10, rackid: 1, moduleid: 5, row: 0, column: 0, selectedPanelId: null, orientation: 'normal'},
+      module: {id: 5, name: 'VCO', hp: 8, standard: {id: 0}, functions: []}
+    });
+    const movedModule = makeRackedModule({
+      rackingData: {id: 11, rackid: 1, moduleid: 6, row: 1, column: 0, selectedPanelId: null, orientation: 'normal'},
+      module: {id: 6, name: 'VCF', hp: 10, standard: {id: 0}, functions: []}
+    });
+    service.singleRackData$.next(makeRack({id: 1, rows: 2}));
+    service.rowedRackedModules$.next([[targetModule], [movedModule]]);
+    service.isCurrentRackPropertyOfCurrentUser$.next(true);
+    service.isCurrentRackEditable$.next(true);
+    backend.update.rackModuleOrientation.and.returnValue(save$.asObservable());
+    backend.update.rackedModules.and.returnValue(throwError(() => new Error('move save failed')));
+
+    service.requestRackedModuleOrientationToggle$.next(targetModule);
+    tick();
+    service.requestMoveRow$.next({rowId: 1, direction: 'up'});
+    tick();
+
+    expect(backend.update.rackedModules).not.toHaveBeenCalled();
+    expect(service.rowedRackedModules$.value).toEqual([[targetModule], [movedModule]]);
+    expect(targetModule.rackingData.orientation).toBe('normal');
+
+    save$.next({});
+    save$.complete();
+    tick();
+
+    expect(backend.update.rackedModules).toHaveBeenCalledTimes(1);
+    const restoredRows = service.rowedRackedModules$.value!;
+    expect(restoredRows.flat().map(module => module.rackingData.id)).toEqual([10, 11]);
+    expect(restoredRows.flat().map(module => module.rackingData.row)).toEqual([0, 1]);
+    expect(restoredRows[0][0].rackingData.orientation).toBe('rot180');
+    expect(restoredRows[1][0].rackingData.orientation).toBe('normal');
+    expect(snackBar.open).toHaveBeenCalled();
+  }));
+
+  it('merges flip success into latest live rack state without overwriting concurrent edits', fakeAsync(() => {
+    const {service, backend} = build();
+    const save$ = new Subject<object>();
+    const requestedModule = makeRackedModule({
+      rackingData: {id: 10, rackid: 1, moduleid: 5, row: 0, column: 0, selectedPanelId: null, orientation: 'normal'},
+      module: {id: 5, name: 'VCO', hp: 8, standard: {id: 0}, functions: []}
+    });
+    const otherModule = makeRackedModule({
+      rackingData: {id: 11, rackid: 1, moduleid: 6, row: 0, column: 1, selectedPanelId: null, orientation: 'normal'},
+      module: {id: 6, name: 'VCF', hp: 10, standard: {id: 0}, functions: []}
+    });
+    service.singleRackData$.next(makeRack({id: 1}));
+    service.rowedRackedModules$.next([[requestedModule, otherModule]]);
+    service.isCurrentRackPropertyOfCurrentUser$.next(true);
+    service.isCurrentRackEditable$.next(true);
+    backend.update.rackModuleOrientation.and.returnValue(save$.asObservable());
+
+    service.requestRackedModuleOrientationToggle$.next(requestedModule);
+    tick();
+
+    const latestTarget = makeRackedModule({
+      rackingData: {id: 10, rackid: 1, moduleid: 5, row: 0, column: 1, selectedPanelId: 99, orientation: 'normal'},
+      module: {id: 5, name: 'VCO moved', hp: 8, standard: {id: 0}, functions: []}
+    });
+    const latestOther = makeRackedModule({
+      rackingData: {id: 11, rackid: 1, moduleid: 6, row: 0, column: 0, selectedPanelId: 7, orientation: 'normal'},
+      module: {id: 6, name: 'VCF edited', hp: 10, standard: {id: 0}, functions: []}
+    });
+    const latestRows = [[latestOther, latestTarget]];
+    service.rowedRackedModules$.next(latestRows);
+
+    save$.next({});
+    save$.complete();
+    tick();
+
+    expect(service.rowedRackedModules$.value).not.toBe(latestRows);
+    expect(service.rowedRackedModules$.value).toEqual(latestRows);
+    expect(service.rowedRackedModules$.value![0].map(module => module.module.name)).toEqual(['VCF edited', 'VCO moved']);
+    expect(latestOther.rackingData.selectedPanelId).toBe(7);
+    expect(latestOther.rackingData.orientation).toBe('normal');
+    expect(latestTarget.rackingData.column).toBe(1);
+    expect(latestTarget.rackingData.selectedPanelId).toBe(99);
+    expect(latestTarget.rackingData.orientation).toBe('rot180');
+    expect(requestedModule.rackingData.orientation).toBe('rot180');
+  }));
+
+  it('does not resurrect a module removed while orientation save is in flight', fakeAsync(() => {
+    const {service, backend} = build();
+    const save$ = new Subject<object>();
+    const module = makeRackedModule({
+      rackingData: {id: 10, rackid: 1, moduleid: 5, row: 0, column: 0, selectedPanelId: null, orientation: 'normal'},
+      module: {id: 5, name: 'VCO', hp: 8, standard: {id: 0}, functions: []}
+    });
+    const remainingModule = makeRackedModule({
+      rackingData: {id: 11, rackid: 1, moduleid: 6, row: 0, column: 0, selectedPanelId: null, orientation: 'normal'},
+      module: {id: 6, name: 'VCF', hp: 10, standard: {id: 0}, functions: []}
+    });
+    service.singleRackData$.next(makeRack({id: 1}));
+    service.rowedRackedModules$.next([[module, remainingModule]]);
+    service.isCurrentRackPropertyOfCurrentUser$.next(true);
+    service.isCurrentRackEditable$.next(true);
+    backend.update.rackModuleOrientation.and.returnValue(save$.asObservable());
+
+    service.requestRackedModuleOrientationToggle$.next(module);
+    tick();
+    service.rowedRackedModules$.next([[remainingModule]]);
+
+    save$.next({});
+    save$.complete();
+    tick();
+
+    expect(service.rowedRackedModules$.value![0]).toEqual([remainingModule]);
+    expect(service.rowedRackedModules$.value!.flat().some(rowModule => rowModule.rackingData.id === 10)).toBeFalse();
+    expect(remainingModule.rackingData.orientation).toBe('normal');
+  }));
+
+  it('retains a completed orientation flip when a waiting batch save later fails', fakeAsync(() => {
+    const {service, backend, snackBar} = build();
+    const save$ = new Subject<object>();
+    const module = makeRackedModule({
+      rackingData: {id: 10, rackid: 1, moduleid: 5, row: 0, column: 0, selectedPanelId: null, orientation: 'normal'},
+      module: {id: 5, name: 'VCO', hp: 8, standard: {id: 0}, functions: []}
+    });
+    service.singleRackData$.next(makeRack({id: 1}));
+    service.rowedRackedModules$.next([[module]]);
+    service.isCurrentRackPropertyOfCurrentUser$.next(true);
+    service.isCurrentRackEditable$.next(true);
+    backend.update.rackModuleOrientation.and.returnValue(save$.asObservable());
+    backend.update.rackedModules.and.returnValue(throwError(() => new Error('batch save failed')));
+
+    service.requestRackedModuleOrientationToggle$.next(module);
+    tick();
+    service.requestRackedModulesDbSync$.next();
+    tick();
+
+    expect(backend.update.rackedModules).not.toHaveBeenCalled();
+    expect(module.rackingData.orientation).toBe('normal');
+
+    save$.next({});
+    save$.complete();
+    tick();
+
+    expect(backend.update.rackedModules).toHaveBeenCalledTimes(1);
+    expect(module.rackingData.orientation).toBe('rot180');
+    expect(service.rowedRackedModules$.value![0][0].rackingData.orientation).toBe('rot180');
+    expect(snackBar.open).toHaveBeenCalled();
+  }));
+
+  it('hides orientation toggles for non-3U standards and non-editable racks', () => {
+    const {service} = build();
+    const threeU = makeRackedModule({
+      rackingData: {id: 10, rackid: 1, moduleid: 5, row: 0, column: 0, selectedPanelId: null},
+      module: {id: 5, name: '3U', hp: 8, standard: {id: 1000}, functions: []}
+    });
+    const oneU = makeRackedModule({
+      rackingData: {id: 11, rackid: 1, moduleid: 6, row: 0, column: 1, selectedPanelId: null},
+      module: {id: 6, name: '1U', hp: 8, standard: {id: 1}, functions: []}
+    });
+
+    expect(service.canToggleRackModuleOrientation(threeU, true, true)).toBeTrue();
+    expect(service.canToggleRackModuleOrientation(oneU, true, true)).toBeFalse();
+    expect(service.canToggleRackModuleOrientation(threeU, false, true)).toBeFalse();
+    expect(service.canToggleRackModuleOrientation(threeU, true, false)).toBeFalse();
+  });
 
   it('sets isCurrentRackPropertyOfCurrentUser$ false when rack belongs to another user', fakeAsync(() => {
     const {service, backend} = build();
@@ -277,6 +612,101 @@ describe('RackDetailDataService', () => {
     expect(rows[1][0].rackingData.row).toBe(1);
     expect(rows[2]).toBe(rowTwo);
     expect(backend.update.rackedModules).toHaveBeenCalled();
+  }));
+
+  it('queues rapid row moves and persists them in order', fakeAsync(() => {
+    const {service, backend} = build();
+    const firstSave$ = new Subject<object>();
+    const secondSave$ = new Subject<object>();
+    const persistedSnapshots: number[][] = [];
+    const rowZeroModule = makeRackedModule({
+      rackingData: {id: 10, rackid: 1, moduleid: 5, row: 0, column: 0, selectedPanelId: null},
+      module: {id: 5, name: 'VCO', hp: 8, standard: {id: 0}, functions: []}
+    });
+    const rowOneModule = makeRackedModule({
+      rackingData: {id: 11, rackid: 1, moduleid: 6, row: 1, column: 0, selectedPanelId: null},
+      module: {id: 6, name: 'VCF', hp: 10, standard: {id: 0}, functions: []}
+    });
+    const rowTwoModule = makeRackedModule({
+      rackingData: {id: 12, rackid: 1, moduleid: 7, row: 2, column: 0, selectedPanelId: null},
+      module: {id: 7, name: 'VCA', hp: 6, standard: {id: 0}, functions: []}
+    });
+    backend.update.rackedModules.and.callFake((modules: RackedModule[]) => {
+      persistedSnapshots.push(modules.map(module => module.rackingData.id!));
+      return persistedSnapshots.length === 1 ? firstSave$.asObservable() : secondSave$.asObservable();
+    });
+    service.singleRackData$.next(makeRack({rows: 3}));
+    service.rowedRackedModules$.next([[rowZeroModule], [rowOneModule], [rowTwoModule]]);
+
+    service.requestMoveRow$.next({rowId: 1, direction: 'up'});
+    tick();
+    service.requestMoveRow$.next({rowId: 2, direction: 'up'});
+    tick();
+
+    expect(backend.update.rackedModules).toHaveBeenCalledTimes(1);
+    expect(persistedSnapshots).toEqual([[11, 10, 12]]);
+
+    firstSave$.next({});
+    firstSave$.complete();
+    tick();
+
+    expect(backend.update.rackedModules).toHaveBeenCalledTimes(2);
+    expect(persistedSnapshots).toEqual([[11, 10, 12], [11, 12, 10]]);
+
+    secondSave$.next({});
+    secondSave$.complete();
+    tick();
+
+    expect(service.rowedRackedModules$.value!.map(row => row.map(module => module.rackingData.id))).toEqual([
+      [11],
+      [12],
+      [10]
+    ]);
+    expect(service.rowedRackedModules$.value!.flat().map(module => module.rackingData.row)).toEqual([0, 1, 2]);
+  }));
+
+  it('continues queued row moves when the first persistence fails', fakeAsync(() => {
+    const {service, backend, snackBar} = build();
+    const firstSave$ = new Subject<object>();
+    const persistedSnapshots: number[][] = [];
+    const rowZeroModule = makeRackedModule({
+      rackingData: {id: 10, rackid: 1, moduleid: 5, row: 0, column: 0, selectedPanelId: null},
+      module: {id: 5, name: 'VCO', hp: 8, standard: {id: 0}, functions: []}
+    });
+    const rowOneModule = makeRackedModule({
+      rackingData: {id: 11, rackid: 1, moduleid: 6, row: 1, column: 0, selectedPanelId: null},
+      module: {id: 6, name: 'VCF', hp: 10, standard: {id: 0}, functions: []}
+    });
+    const rowTwoModule = makeRackedModule({
+      rackingData: {id: 12, rackid: 1, moduleid: 7, row: 2, column: 0, selectedPanelId: null},
+      module: {id: 7, name: 'VCA', hp: 6, standard: {id: 0}, functions: []}
+    });
+    backend.update.rackedModules.and.callFake((modules: RackedModule[]) => {
+      persistedSnapshots.push(modules.map(module => module.rackingData.id!));
+      return persistedSnapshots.length === 1 ? firstSave$.asObservable() : of({});
+    });
+    service.singleRackData$.next(makeRack({rows: 3}));
+    service.rowedRackedModules$.next([[rowZeroModule], [rowOneModule], [rowTwoModule]]);
+
+    service.requestMoveRow$.next({rowId: 1, direction: 'up'});
+    tick();
+    service.requestMoveRow$.next({rowId: 2, direction: 'up'});
+    tick();
+
+    expect(backend.update.rackedModules).toHaveBeenCalledTimes(1);
+
+    firstSave$.error(new Error('first move failed'));
+    tick();
+
+    expect(backend.update.rackedModules).toHaveBeenCalledTimes(2);
+    expect(persistedSnapshots).toEqual([[11, 10, 12], [10, 12, 11]]);
+    expect(service.rowedRackedModules$.value!.map(row => row.map(module => module.rackingData.id))).toEqual([
+      [10],
+      [12],
+      [11]
+    ]);
+    expect(service.rowedRackedModules$.value!.flat().map(module => module.rackingData.row)).toEqual([0, 1, 2]);
+    expect(snackBar.open).toHaveBeenCalled();
   }));
 
   it('remixes rack layout through the existing racked module batch update path', fakeAsync(() => {
@@ -490,6 +920,53 @@ describe('RackDetailDataService', () => {
     );
   }));
 
+  it('retains a settled flip when queued remix persistence fails after waiting for orientation idle', fakeAsync(() => {
+    const {service, backend, snackBar} = build();
+    const orientationSave$ = new Subject<object>();
+    const wideA = makeRackedModule({
+      rackingData: {id: 30, rackid: 1, moduleid: 30, row: 0, column: 0, selectedPanelId: null, orientation: 'normal'},
+      module: {id: 30, name: 'Wide A', hp: 6, standard: {id: 0}, functions: []}
+    });
+    const smallA = makeRackedModule({
+      rackingData: {id: 31, rackid: 1, moduleid: 31, row: 0, column: 1, selectedPanelId: null, orientation: 'normal'},
+      module: {id: 31, name: 'Small A', hp: 4, standard: {id: 0}, functions: []}
+    });
+    const wideB = makeRackedModule({
+      rackingData: {id: 32, rackid: 1, moduleid: 32, row: 1, column: 0, selectedPanelId: null, orientation: 'normal'},
+      module: {id: 32, name: 'Wide B', hp: 6, standard: {id: 0}, functions: []}
+    });
+    const smallB = makeRackedModule({
+      rackingData: {id: 33, rackid: 1, moduleid: 33, row: 1, column: 1, selectedPanelId: null, orientation: 'normal'},
+      module: {id: 33, name: 'Small B', hp: 4, standard: {id: 0}, functions: []}
+    });
+
+    service.singleRackData$.next(makeRack({rows: 2, hp: 10}));
+    service.rowedRackedModules$.next([[wideA, smallA], [wideB, smallB]]);
+    service.isCurrentRackPropertyOfCurrentUser$.next(true);
+    service.isCurrentRackEditable$.next(true);
+    backend.update.rackModuleOrientation.and.returnValue(orientationSave$.asObservable());
+    backend.update.rackedModules.and.returnValue(throwError(() => new Error('remix save failed')));
+
+    service.requestRackedModuleOrientationToggle$.next(wideA);
+    tick();
+    service.requestLayoutRemix$.next();
+    tick();
+
+    expect(backend.update.rackedModules).not.toHaveBeenCalled();
+
+    orientationSave$.next({});
+    orientationSave$.complete();
+    tick();
+
+    expect(backend.update.rackedModules).toHaveBeenCalledTimes(1);
+    expect(service.rowedRackedModules$.value!.map(row => row.map(module => module.rackingData.id))).toEqual([
+      [30, 31],
+      [32, 33]
+    ]);
+    expect(service.rowedRackedModules$.value![0][0].rackingData.orientation).toBe('rot180');
+    expect(snackBar.open).toHaveBeenCalled();
+  }));
+
   it('duplicates a rack row below the source row without recreating existing rows', fakeAsync(() => {
     const {service, backend} = build();
     const rowZeroModule = makeRackedModule({
@@ -530,6 +1007,47 @@ describe('RackDetailDataService', () => {
     expect(unrackedModule.rackingData.row).toBeNull();
     expect(backend.update.rack).toHaveBeenCalledWith(jasmine.objectContaining({rows: 3}));
     expect(backend.update.rackedModules).toHaveBeenCalled();
+  }));
+
+  it('waits for an in-flight orientation flip before cloning a duplicated row', fakeAsync(() => {
+    const {service, backend} = build();
+    const orientationSave$ = new Subject<object>();
+    const rowZeroModule = makeRackedModule({
+      rackingData: {id: 10, rackid: 1, moduleid: 5, row: 0, column: 0, selectedPanelId: null, orientation: 'normal'},
+      module: {id: 5, name: 'VCO', hp: 8, standard: {id: 0}, functions: []}
+    });
+    const rowOneModule = makeRackedModule({
+      rackingData: {id: 11, rackid: 1, moduleid: 6, row: 1, column: 0, selectedPanelId: null, orientation: 'normal'},
+      module: {id: 6, name: 'VCF', hp: 10, standard: {id: 0}, functions: []}
+    });
+    service.singleRackData$.next(makeRack({rows: 2}));
+    service.rowedRackedModules$.next([[rowZeroModule], [rowOneModule]]);
+    service.isCurrentRackPropertyOfCurrentUser$.next(true);
+    service.isCurrentRackEditable$.next(true);
+    backend.update.rackModuleOrientation.and.returnValue(orientationSave$.asObservable());
+    backend.update.rackedModules.calls.reset();
+    backend.update.rack.calls.reset();
+
+    service.requestRackedModuleOrientationToggle$.next(rowZeroModule);
+    tick();
+    service.requestDuplicateRow$.next(0);
+    tick();
+
+    expect(service.rowedRackedModules$.value!.length).toBe(2);
+    expect(backend.update.rackedModules).not.toHaveBeenCalled();
+    expect(backend.update.rack).not.toHaveBeenCalled();
+
+    orientationSave$.next({});
+    orientationSave$.complete();
+    tick();
+
+    const rows = service.rowedRackedModules$.value!;
+    expect(rows.length).toBe(3);
+    expect(rows[0][0].rackingData.orientation).toBe('rot180');
+    expect(rows[1][0].rackingData.id).toBeUndefined();
+    expect(rows[1][0].rackingData.orientation).toBe('rot180');
+    expect(backend.update.rackedModules).toHaveBeenCalled();
+    expect(backend.update.rack).toHaveBeenCalledWith(jasmine.objectContaining({rows: 3}));
   }));
 
   it('patches duplicated row module ids by object reference after the row moves before persistence returns', fakeAsync(() => {
@@ -726,6 +1244,59 @@ describe('RackDetailDataService', () => {
 
     // State should be restored to 1 module after rollback
     expect(service.rowedRackedModules$.value!.flat().length).toBe(1);
+    expect(snackBar.open).toHaveBeenCalled();
+  }));
+
+  it('waits for an in-flight orientation flip before cloning a duplicated module', fakeAsync(() => {
+    const {service, backend} = build();
+    const orientationSave$ = new Subject<object>();
+    const module = makeRackedModule({
+      rackingData: {id: 10, rackid: 1, moduleid: 5, row: 0, column: 0, selectedPanelId: null, orientation: 'normal'},
+      module: {id: 5, name: 'VCO', hp: 8, standard: {id: 0}, functions: []}
+    });
+    service.singleRackData$.next(makeRack({rows: 1}));
+    service.rowedRackedModules$.next([[module]]);
+    service.isCurrentRackPropertyOfCurrentUser$.next(true);
+    service.isCurrentRackEditable$.next(true);
+    backend.update.rackModuleOrientation.and.returnValue(orientationSave$.asObservable());
+    backend.update.rackedModules.calls.reset();
+
+    service.requestRackedModuleOrientationToggle$.next(module);
+    tick();
+    service.requestRackedModuleDuplication$.next(module);
+    tick();
+
+    expect(service.rowedRackedModules$.value![0].length).toBe(1);
+    expect(backend.update.rackedModules).not.toHaveBeenCalled();
+
+    orientationSave$.next({});
+    orientationSave$.complete();
+    tick();
+
+    const row = service.rowedRackedModules$.value![0];
+    expect(row.length).toBe(2);
+    expect(row[0].rackingData.orientation).toBe('rot180');
+    expect(row[1].rackingData.id).toBeUndefined();
+    expect(row[1].rackingData.orientation).toBe('rot180');
+    expect(backend.update.rackedModules).toHaveBeenCalled();
+  }));
+
+  it('does not duplicate a stale persisted module request when the placement was removed', fakeAsync(() => {
+    const {service, backend, snackBar, analytics} = build();
+    const module = makeRackedModule({
+      rackingData: {id: 10, rackid: 1, moduleid: 5, row: 0, column: 0, selectedPanelId: null, orientation: 'normal'},
+      module: {id: 5, name: 'VCO', hp: 8, standard: {id: 0}, functions: []}
+    });
+    service.singleRackData$.next(makeRack({rows: 1}));
+    service.rowedRackedModules$.next([[]]);
+    backend.update.rackedModules.calls.reset();
+
+    service.requestRackedModuleDuplication$.next(module);
+    tick();
+
+    expect(service.rowedRackedModules$.value).toEqual([[]]);
+    expect(backend.update.rackedModules).not.toHaveBeenCalled();
+    expect(analytics.capture).not.toHaveBeenCalledWith('rack.module_duplicated', jasmine.anything());
     expect(snackBar.open).toHaveBeenCalled();
   }));
 

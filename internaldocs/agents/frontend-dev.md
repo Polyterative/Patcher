@@ -13,7 +13,7 @@ layering and reactive patterns.
 
 ## Suggested model
 
-Use `gpt-5.5`. This is the primary coding executor for Angular, RxJS, services, and tests; optimize
+Use the `executor` tier (see [README.md](./README.md#model-tiers)). This is the primary coding executor for Angular, RxJS, services, and tests; optimize
 for implementation quality over lowest token cost.
 
 ## Does

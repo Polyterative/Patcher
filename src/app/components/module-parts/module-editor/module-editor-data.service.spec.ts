@@ -121,6 +121,40 @@ describe('ModuleEditorDataService', () => {
     });
   });
 
+  describe('buildGuardedCroppedPanelFile', () => {
+    const imageBitmapTarget = window as Window & {createImageBitmap?: (blob: Blob) => Promise<unknown>};
+    let previousCreateImageBitmap: typeof imageBitmapTarget.createImageBitmap;
+    let closeSpy: jasmine.Spy;
+
+    beforeEach(() => {
+      closeSpy = jasmine.createSpy('close');
+      previousCreateImageBitmap = imageBitmapTarget.createImageBitmap;
+      imageBitmapTarget.createImageBitmap = jasmine.createSpy('createImageBitmap').and.resolveTo({
+        width: 320,
+        height: 640,
+        close: closeSpy
+      } as ImageBitmap);
+    });
+
+    afterEach(() => {
+      imageBitmapTarget.createImageBitmap = previousCreateImageBitmap;
+    });
+
+    it('returns a structured advisory for the cropped panel file at the data-service seam', async () => {
+      const sourceFile = new File(['source'], 'front-panel.jpeg', {type: 'image/jpeg'});
+      const croppedBlob = new Blob(['cropped'], {type: 'image/webp'});
+
+      const result = await service.buildGuardedCroppedPanelFile(sourceFile, croppedBlob, 'image/webp');
+
+      expect(result.file.name).toBe('front-panel-cropped.webp');
+      expect(result.file.type).toBe('image/webp');
+      expect(result.compression.advisory.status).toBe('within-limits');
+      expect(result.compression.widthPx).toBe(320);
+      expect(result.compression.heightPx).toBe(640);
+      expect(closeSpy).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('getPreferredPanelCropFormat', () => {
     it('prefers webp when canvas encoding is supported', () => {
       const nativeCreateElement = document.createElement.bind(document);

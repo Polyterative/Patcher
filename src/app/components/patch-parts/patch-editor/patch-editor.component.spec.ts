@@ -16,7 +16,12 @@ import {
 } from './patch-editor.component';
 import { BehaviorSubject, of } from 'rxjs';
 import { PatchModuleInstance } from 'src/app/models/connection';
-import { LinkedRackUiState } from '../patch-detail-data.service';
+import { ElementRef, ChangeDetectorRef } from '@angular/core';
+import { AppStateService } from 'src/app/shared-interproject/app-state.service';
+import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
+import { PatchDetailDataService, LinkedRackUiState } from '../patch-detail-data.service';
+import { DbModule } from 'src/app/models/module';
+import { Rack } from 'src/app/models/rack';
 
 function createPatchEditorComponent(): PatchEditorComponent {
   const linkedRackState$ = new BehaviorSubject<LinkedRackUiState>({
@@ -28,11 +33,11 @@ function createPatchEditorComponent(): PatchEditorComponent {
   });
   const editorOperationMode$ = new BehaviorSubject(PATCH_EDITOR_OPERATION_MODES.collection);
   return new PatchEditorComponent(
-    {} as any,
     {
       singlePatchData$: of(undefined),
       linkedRackState$,
-      editorOperationMode$
+      editorOperationMode$,
+      confirmSelectedConnection$: of(undefined)
     } as any,
     {} as any,
     {nativeElement: document.createElement('div')} as any,
@@ -90,11 +95,11 @@ describe('PatchEditorComponent', () => {
     });
     const editorOperationMode$ = new BehaviorSubject(PATCH_EDITOR_OPERATION_MODES.collection);
     const component = new PatchEditorComponent(
-      {} as any,
       {
         singlePatchData$: of(undefined),
         linkedRackState$,
-        editorOperationMode$
+        editorOperationMode$,
+        confirmSelectedConnection$: of(undefined)
       } as any,
       {} as any,
       {nativeElement: document.createElement('div')} as any,
@@ -117,6 +122,81 @@ describe('PatchEditorComponent', () => {
       sub.unsubscribe();
       done();
     }, 0);
+  });
+
+  it('loads collection modules through the data service on init', () => {
+    const linkedRackState$ = new BehaviorSubject<LinkedRackUiState>({
+      kind: 'unlinked',
+      statusTone: 'neutral',
+      statusLabel: 'Collection-first',
+      description: 'No rack is linked yet.',
+      rackId: null
+    });
+    const collectionModules$ = new BehaviorSubject<DbModule[]>([]);
+    const dataService = {
+      singlePatchData$: of(undefined),
+      linkedRackState$,
+      editorOperationMode$: new BehaviorSubject(PATCH_EDITOR_OPERATION_MODES.collection),
+      confirmSelectedConnection$: of(undefined),
+      collectionModules$,
+      patchModuleInstances$: new BehaviorSubject<PatchModuleInstance[]>([]),
+      editorConnections$: new BehaviorSubject([]),
+      patchConnections$: new BehaviorSubject([]),
+      loadEditorCollectionModules$: jasmine.createSpy('loadEditorCollectionModules$').and.returnValue(of([
+        {id: 10, name: 'Maths', possessionKind: 'HAS'} as unknown as DbModule
+      ]))
+    } as unknown as PatchDetailDataService;
+    const component = new PatchEditorComponent(
+      dataService,
+      {} as AppStateService,
+      {nativeElement: document.createElement('div')} as ElementRef,
+      {markForCheck: () => {}} as ChangeDetectorRef,
+      {capture: () => {}} as unknown as AnalyticsService
+    );
+
+    component.ngOnInit();
+
+    expect(dataService.loadEditorCollectionModules$).toHaveBeenCalledWith(jasmine.objectContaining({
+      id: 'nameAsc'
+    }));
+    expect(collectionModules$.value.map(module => module.id)).toEqual([10]);
+    component.ngOnDestroy();
+  });
+
+  it('loads linked-rack previews through the data service on init', () => {
+    const linkedRackState$ = new BehaviorSubject<LinkedRackUiState>({
+      kind: 'linked',
+      statusTone: 'positive',
+      statusLabel: 'Linked rack active',
+      description: 'Linked.',
+      rackId: 42
+    });
+    const preview = buildLinkedRackPreviewState({id: 42, name: 'Studio Rack', hp: 84, rows: 2} as unknown as Rack, []);
+    const dataService = {
+      singlePatchData$: of(undefined),
+      linkedRackState$,
+      editorOperationMode$: new BehaviorSubject(PATCH_EDITOR_OPERATION_MODES.collection),
+      confirmSelectedConnection$: of(undefined),
+      collectionModules$: new BehaviorSubject<DbModule[]>([]),
+      patchModuleInstances$: new BehaviorSubject<PatchModuleInstance[]>([]),
+      editorConnections$: new BehaviorSubject([]),
+      patchConnections$: new BehaviorSubject([]),
+      loadEditorCollectionModules$: jasmine.createSpy('loadEditorCollectionModules$').and.returnValue(of([])),
+      loadLinkedRackPreview$: jasmine.createSpy('loadLinkedRackPreview$').and.returnValue(of(preview))
+    } as unknown as PatchDetailDataService;
+    const component = new PatchEditorComponent(
+      dataService,
+      {} as AppStateService,
+      {nativeElement: document.createElement('div')} as ElementRef,
+      {markForCheck: () => {}} as ChangeDetectorRef,
+      {capture: () => {}} as unknown as AnalyticsService
+    );
+
+    component.ngOnInit();
+
+    expect(dataService.loadLinkedRackPreview$).toHaveBeenCalledWith(42);
+    expect(component.linkedRackPreviewState$.value).toEqual(preview);
+    component.ngOnDestroy();
   });
 
   it('exposes collection and linked-rack operation modes', () => {
@@ -283,7 +363,7 @@ describe('PatchEditorComponent', () => {
       description: 'Loading',
       rows: [{
         row: 1,
-        modules: [{trackingId: 1001, module: {id: 7} as any, row: 1, column: 1, selectedPanelId: null}]
+        modules: [{trackingId: 1001, module: {id: 7} as any, row: 1, column: 1, selectedPanelId: null, orientation: 'normal'}]
       }],
       moduleCount: 1
     }, [
@@ -615,7 +695,7 @@ describe('PatchEditorComponent', () => {
       const rows = new Map<number, any[]>();
       for (const m of modules) {
         const row = rows.get(m.row) ?? [];
-        row.push({trackingId: m.id, module: {id: m.moduleId} as any, row: m.row, column: m.col, selectedPanelId: null});
+        row.push({trackingId: m.id, module: {id: m.moduleId} as any, row: m.row, column: m.col, selectedPanelId: null, orientation: 'normal'});
         rows.set(m.row, row);
       }
       return {
@@ -972,7 +1052,7 @@ describe('PatchEditorComponent', () => {
       component.linkedRackPreviewState$.next({
         kind: 'ready',
         description: '',
-        rows: [{row: 0, modules: [{trackingId: 10, module: {id: 1} as any, row: 0, column: 0, selectedPanelId: null}]}],
+        rows: [{row: 0, modules: [{trackingId: 10, module: {id: 1} as any, row: 0, column: 0, selectedPanelId: null, orientation: 'normal'}]}],
         moduleCount: 1
       } as any);
 
@@ -986,8 +1066,8 @@ describe('PatchEditorComponent', () => {
         rows: [{
           row: 0,
           modules: [
-            {trackingId: 10, module: {id: 1} as any, row: 0, column: 0, selectedPanelId: null},
-            {trackingId: 20, module: {id: 1} as any, row: 0, column: 8, selectedPanelId: null}
+            {trackingId: 10, module: {id: 1} as any, row: 0, column: 0, selectedPanelId: null, orientation: 'normal'},
+            {trackingId: 20, module: {id: 1} as any, row: 0, column: 8, selectedPanelId: null, orientation: 'normal'}
           ]
         }],
         moduleCount: 2
@@ -1008,8 +1088,8 @@ describe('PatchEditorComponent', () => {
         kind: 'ready',
         description: '',
         rows: [
-          {row: 1, modules: [{trackingId: 30, module: {id: 1} as any, row: 1, column: 0, selectedPanelId: null}]},
-          {row: 0, modules: [{trackingId: 10, module: {id: 1} as any, row: 0, column: 5, selectedPanelId: null}]}
+          {row: 1, modules: [{trackingId: 30, module: {id: 1} as any, row: 1, column: 0, selectedPanelId: null, orientation: 'normal'}]},
+          {row: 0, modules: [{trackingId: 10, module: {id: 1} as any, row: 0, column: 5, selectedPanelId: null, orientation: 'normal'}]}
         ],
         moduleCount: 2
       } as any);
@@ -1172,7 +1252,8 @@ describe('PatchEditorComponent', () => {
           module: { id: m.id, name: m.name } as any,
           row: m.row,
           column: m.col,
-          selectedPanelId: null
+          selectedPanelId: null,
+          orientation: 'normal'
         }))
       }],
       moduleCount: modules.length

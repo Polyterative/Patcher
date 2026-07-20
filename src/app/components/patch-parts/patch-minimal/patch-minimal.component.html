@@ -150,6 +150,7 @@
                   [alt]="'Rack preview for ' + (bag.linkedRackState.rackName || 'linked rack')"
                   loading="lazy"
                   decoding="async"
+                  referrerpolicy="no-referrer"
                   width="320"
                   height="180"
                 >
@@ -172,7 +173,8 @@
       <mat-divider [inset]="true"
                    style="margin-top:.5rem"
       ></mat-divider>
-      <div class="row opacizeOnHover"
+      <div class="row opacizeOnHover patch-action-row"
+           [class.patch-action-row--cool-visible]="showCoolAction"
       >
         @if ((bag.singlePatchData) && bag.user && bag.singlePatchData.author.id === bag.user.id) {
           <button mat-icon-button
@@ -193,6 +195,15 @@
           </button>
         }
         <div class="layout-flex-grow"></div>
+        @if (showCoolAction) {
+          <app-cool-button
+            class="patch-action-row__cool"
+            [entityType]="ReactionEntityTypes.PATCH"
+            [entityId]="data.id"
+            [eligible]="data.public === true"
+            countDisplayMode="count"
+          ></app-cool-button>
+        }
         @if (bag.linkedRackState.kind === 'linked' && bag.linkedRackState.rackId != null) {
           <button mat-icon-button
                   matTooltip="Open linked rack"

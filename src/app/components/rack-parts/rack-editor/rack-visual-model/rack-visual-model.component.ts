@@ -1,12 +1,12 @@
 import {
-  CdkDragEnd,
   CdkDragDrop,
+  CdkDragEnd,
   CdkDragStart,
 } from '@angular/cdk/drag-drop';
 import {
   AfterViewInit,
-  ChangeDetectorRef,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
@@ -21,94 +21,51 @@ import {
   ViewChild
 } from '@angular/core';
 import { animate, animateChild, keyframes, query, style, transition, trigger } from '@angular/animations';
-import {
-  BehaviorSubject,
-  Subject
-} from 'rxjs';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { RackedModule } from 'src/app/models/module';
 import { RackMinimal } from 'src/app/models/rack';
-import {
-  buildRackPowerBreakdown,
-  RackPowerRowBreakdown
-} from '../../rack-power-breakdown.utils';
-import {
-  buildRackPowerHeatmapVisuals,
-  defaultRackPowerHeatmapVisual,
-  RackPowerHeatmapVisual,
-  rackPowerHeatmapKey
-} from '../../rack-power-heatmap.utils';
-import {
-  buildRackFunctionVisual,
-  buildRowFunctionBreakdowns,
-  buildRowFunctionResidualLabel,
-  RackFunctionVisual,
-  RowFunctionBreakdown
-} from '../../rack-function-visuals.utils';
-import { hasCompletePowerData } from '../../rack-power-data.utils';
 import { RackDetailDataService } from '../../rack-detail-data.service';
-import {
-  computeLayoutAnalysis,
-  RackLayoutAnalysisResult,
-} from '../../rack-layout-analysis.utils';
-import {
-  buildRackLayoutHoverCandidates,
-  buildRackLayoutHoverVisuals,
-  RackLayoutHoverCandidates,
-  RackLayoutHoverVisual,
-  rackLayoutHoverPhaseCount,
-} from '../../rack-layout-hover-highlight.utils';
-import {
-  ModuleRightClick,
-  RowOverflowClick,
-} from '../rack-editor.types';
 import {
   RackAnalysisMode,
   RACK_ANALYSIS_MODES,
   RACK_LAYOUT_HOVER_MODES
 } from '../../rack-analysis-mode';
-import { prefersTouchInteraction } from 'src/app/shared-interproject/touch-interaction.utils';
+import { RackPowerRowBreakdown } from '../../rack-power-breakdown.utils';
+import { RackPowerHeatmapVisual } from '../../rack-power-heatmap.utils';
+import { RackFunctionVisual, RowFunctionBreakdown } from '../../rack-function-visuals.utils';
+import { RackLayoutAnalysisResult } from '../../rack-layout-analysis.utils';
+import { RackLayoutHoverVisual } from '../../rack-layout-hover-highlight.utils';
 import {
-  buildSignalModuleAnalysis,
-  SignalDestinationConfidence,
   SignalDestinationMatch,
   SignalModuleAnalysis,
-  suggestSignalFocusArea,
   SignalTypeFamily
 } from '../../rack-signal-analysis.utils';
-import { takeUntil } from 'rxjs/operators';
 import {
-  ModuleRenderRect,
-  ModuleLayoutAnimationCancel,
+  ModuleRightClick,
+  RowOverflowClick,
+} from '../rack-editor.types';
+import {
+  RackRowMoveMotion,
   SignalHoverCardPlacement,
   SignalOverlayFrame,
   SignalOverlayLine,
 } from './rack-visual-model.types';
-import {
-  buildCurvedSignalPath,
-  captureModuleLayoutMoveRects,
-  buildRenderedModuleElementMap,
-  findMovedRackModuleKeys,
-  playModuleLayoutMoveAnimations,
-  buildSignalOverlayFrame,
-  resolveRenderedModuleRect,
-  resolveRowPowerPanelPlacement,
-  resolveSignalHoverCardPlacement,
-  withAlpha,
-} from './rack-visual-model.utils';
-
-type RackRowMoveDirection = 'up' | 'down';
-
-interface RackRowMoveMotion {
-  sourceRowId: number;
-  targetRowId: number;
-  direction: RackRowMoveDirection;
-}
-
+import { RackVisualModelInteractionService } from './rack-visual-model-interaction.service';
+import { RackVisualModelLayoutService } from './rack-visual-model-layout.service';
+import { RackVisualModelRenderService } from './rack-visual-model-render.service';
+import { RackVisualModelSignalService } from './rack-visual-model-signal.service';
 
 @Component({
   selector: 'app-rack-visual-model',
   templateUrl: './rack-visual-model.component.html',
   styleUrls: ['./rack-visual-model.component.scss'],
+  providers: [
+    RackVisualModelInteractionService,
+    RackVisualModelLayoutService,
+    RackVisualModelRenderService,
+    RackVisualModelSignalService,
+  ],
   animations: [
     trigger('enter', [
       transition(':enter', [
@@ -146,65 +103,11 @@ interface RackRowMoveMotion {
 })
 export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
   readonly analysisModes = RACK_ANALYSIS_MODES;
-  private static readonly signalFamilyColors: Record<SignalTypeFamily, string> = {
-    audio: '#e2523c',
-    pitch: '#7b61ff',
-    clock: '#17a36b',
-    modulation: '#2f80ed',
-    other: '#76889b',
-  };
-  private static readonly rowAnalysisPanelHeightPx = 136;
-  private static readonly dropRevealAnimationDurationMs = 225;
-  private static readonly enterDelaySuppressionDurationMs = 225;
-  private static readonly layoutMoveAnimationDurationMs = 620;
-  private static readonly manualDropLayoutMoveCooldownMs = 520;
-  private static readonly rowMoveAnimationDurationMs = 350;
-  private static readonly layoutHoverPhaseDurationMs = 1000;
-  private static readonly signalHoverCardWidthPx = 224;
-  private static readonly signalHoverCardGapPx = 10;
-  private static readonly touchContextMenuDelayMs = 550;
-  private static readonly touchLongPressMoveTolerancePx = 12;
-  readonly touchInteractionMode = prefersTouchInteraction();
   private readonly destroyState$ = new Subject<void>();
-  private hoveredRackedModule: RackedModule | null = null;
-  private hoveredModuleElement: HTMLElement | null = null;
-  private dragImageAnimationSuppressedModule: RackedModule | null = null;
-  private dropRevealSuppressedModule: RackedModule | null = null;
-  private dropRevealAnimatingModule: RackedModule | null = null;
-  private readonly rackModuleTrackKeys = new WeakMap<RackedModule, number | string>();
-  private touchLongPressTimerId: number | null = null;
-  private touchLongPressModule: RackedModule | null = null;
-  private touchLongPressStartPoint: {x: number; y: number} | null = null;
-  private touchContextMenuBlockedModule: RackedModule | null = null;
-  private hoveredRowIndex: number | null = null;
-  private hoveredRowPowerPanelPlacement: 'above' | 'below' = 'above';
-  private layoutMoveAnimationCancel: ModuleLayoutAnimationCancel | null = null;
-  private layoutMoveAnimatingKeys = new Set<string>();
-  private readonly enterDelaySuppressedPositions = new Set<string>();
-  private readonly enterDelaySuppressionTimerIds = new Map<string, number>();
-  private layoutMoveSuppressedUntilMs = 0;
-  private rowMoveAnimationTimerId: number | null = null;
-  private layoutHoverCandidates: RackLayoutHoverCandidates | null = null;
-  private layoutHoverVisuals = new Map<string, RackLayoutHoverVisual>();
-  private layoutHoverPhaseIndex = 0;
-  private layoutHoverAnimationTimerId: number | null = null;
-  layoutMoveAngularAnimationsDisabled = false;
-  readonly rowMoveMotion$ = new BehaviorSubject<RackRowMoveMotion | null>(null);
-  private rowPowerBreakdown: RackPowerRowBreakdown[] = [];
-  rowHpOverflow: number[] = [];
-  private rowFunctionBreakdowns = new Map<number, RowFunctionBreakdown>();
-  layoutAnalysis: RackLayoutAnalysisResult | null = null;
-  private modulePowerHeatmap = new Map<string, RackPowerHeatmapVisual>();
-  private moduleFunctionVisuals = new Map<string, RackFunctionVisual>();
-  private signalAnalysis: SignalModuleAnalysis | null = null;
-  private signalDestinationMatches = new Map<string, SignalDestinationMatch>();
-  signalHoverCardPlacement: SignalHoverCardPlacement = 'right';
-  signalOverlayFrame: SignalOverlayFrame | null = null;
-  signalOverlayLines: SignalOverlayLine[] = [];
+
   @HostBinding('class.rackVisualModel--suppressPostDropReorder') suppressPostDropReorder = false;
-  
+
   @Input() rackData: RackMinimal;
-  
   @Input() rowedRackedModules: RackedModule[][];
   @Input() rackViewportElement: HTMLElement | null = null;
   @Input() isCurrentRackPropertyOfCurrentUser: boolean;
@@ -213,31 +116,70 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   @Input() selectedTouchModule: RackedModule | null = null;
   @Input() touchPrimaryActionsEnabled = false;
   @Input() dragScale = 1;
-  
   @Input() rackDetailDataService: RackDetailDataService;
-  
   @Input() moduleRightClick$: Subject<ModuleRightClick>;
+
   @Output() touchModuleSelected = new EventEmitter<RackedModule>();
   @Output() rowOverflowClick = new EventEmitter<RowOverflowClick>();
-  
-  @ViewChild('screen') screenReference: ElementRef;
-  
-  
+
+  @ViewChild('screen') screenReference: ElementRef<HTMLElement>;
+
+  get rowHpOverflow(): number[] {
+    return this.render.rowHpOverflow;
+  }
+
+  get commonBlankSizes(): readonly number[] {
+    return this.render.commonBlankSizes;
+  }
+
+  get allBlankSizes(): number[] {
+    return this.render.allBlankSizes;
+  }
+
+  get touchInteractionMode(): boolean {
+    return this.interactions.touchInteractionMode;
+  }
+
+  set touchInteractionMode(value: boolean) {
+    this.interactions.touchInteractionMode = value;
+  }
+
+  get rowMoveMotion$() {
+    return this.layout.rowMoveMotion$;
+  }
+
+  get layoutAnalysis(): RackLayoutAnalysisResult | null {
+    return this.render.layoutAnalysis;
+  }
+
+  get signalHoverCardPlacement(): SignalHoverCardPlacement {
+    return this.signal.signalHoverCardPlacement;
+  }
+
+  get signalOverlayFrame(): SignalOverlayFrame | null {
+    return this.signal.signalOverlayFrame;
+  }
+
+  get signalOverlayLines(): SignalOverlayLine[] {
+    return this.signal.signalOverlayLines;
+  }
+
   constructor(
     private readonly hostElementRef: ElementRef<HTMLElement>,
     public dataService: RackDetailDataService,
     private readonly cdr: ChangeDetectorRef,
+    private readonly interactions: RackVisualModelInteractionService,
+    private readonly layout: RackVisualModelLayoutService,
+    private readonly render: RackVisualModelRenderService,
+    private readonly signal: RackVisualModelSignalService,
   ) {
   }
-  
+
   ngOnInit(): void {
-    this.updateRowPowerBreakdown();
+    this.updateVisualState();
     this.dataService.analysisMode$
       .pipe(takeUntil(this.destroyState$))
-      .subscribe(() => {
-        this.updateLayoutHoverState();
-        this.updateSignalAnalysisState();
-      });
+      .subscribe(() => this.syncAnalysisPresentation());
     this.dataService.signalFocusArea$
       .pipe(takeUntil(this.destroyState$))
       .subscribe(() => this.updateSignalAnalysisState());
@@ -246,12 +188,19 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
       .subscribe(() => this.updateLayoutHoverState());
     this.activeRackDetailDataService().requestMoveRow$
       .pipe(takeUntil(this.destroyState$))
-      .subscribe(move => this.startRowMoveAnimation(move));
+      .subscribe(move => this.layout.startRowMoveAnimation(
+        move,
+        this.rackData?.rows ?? this.rowedRackedModules?.length ?? 0,
+        () => this.cdr.markForCheck()
+      ));
     this.activeRackDetailDataService().requestRackedModuleReplaceWithBlank$
       .pipe(takeUntil(this.destroyState$))
-      .subscribe(module => this.suppressEnterDelayForPosition(module));
+      .subscribe(module => this.layout.suppressEnterDelayForPosition(
+        this.render.rackModulePositionKey(module),
+        () => this.cdr.markForCheck()
+      ));
   }
-  
+
   // on after edit update reference on that a service of the current HMTL element reference
   ngAfterViewInit(): void {
     this.dataService.currentDownloadElementRef$.next({
@@ -261,22 +210,25 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['rowedRackedModules'] && !changes['rowedRackedModules'].firstChange) {
-      this.prepareLayoutMoveAnimation(
-        changes['rowedRackedModules'].previousValue,
-        changes['rowedRackedModules'].currentValue
-      );
+      this.layout.prepareLayoutMoveAnimation({
+        previousRows: changes['rowedRackedModules'].previousValue,
+        nextRows: changes['rowedRackedModules'].currentValue,
+        screenElement: this.screenReference?.nativeElement,
+        dragScale: this.dragScale,
+        suppressPostDropReorder: this.suppressPostDropReorder,
+        keyForModule: module => this.render.rackModuleStableDomKey(module),
+        markForCheck: () => this.cdr.markForCheck(),
+      });
     }
     if (changes['rowedRackedModules'] || changes['dragScale'] || changes['rackData']) {
-      this.updateRowPowerBreakdown();
+      this.updateVisualState();
     }
   }
 
   ngOnDestroy(): void {
-    this.cancelLayoutMoveAnimation();
-    this.clearRowMoveAnimation();
-    this.clearEnterDelaySuppressions();
-    this.clearLayoutHoverState();
-    this.clearTouchInteractionState();
+    this.layout.destroy();
+    this.interactions.clearTouchInteractionState();
+    this.signal.clear();
     this.destroyState$.next();
     this.destroyState$.complete();
   }
@@ -284,360 +236,118 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   @HostListener('window:resize')
   @HostListener('window:scroll')
   onViewportChanged(): void {
-    if (this.hoveredRackedModule && this.isSignalModeActive()) {
-      this.refreshSignalPresentation();
+    if (this.render.hoveredRackedModule && this.isSignalModeActive()) {
+      this.signal.refreshSignalPresentation(this.signalPresentationParams());
     }
   }
-  
-  isLastRowEmpty(rowedRackedModules: RackedModule[][]): boolean {
-    return rowedRackedModules[rowedRackedModules.length - 1].length === 0;
-  }
 
-  effectiveHp(rackedModule: RackedModule): number {
-    return rackedModule.module.hp;
-  }
+  isLastRowEmpty(rowedRackedModules: RackedModule[][]): boolean { return rowedRackedModules[rowedRackedModules.length - 1].length === 0; }
+  effectiveHp(rackedModule: RackedModule): number { return this.render.effectiveHp(rackedModule); }
 
   setHoveredModule(rackedModule: RackedModule, moduleElement?: EventTarget | null): void {
-    this.hoveredRackedModule = rackedModule;
-    this.hoveredModuleElement = moduleElement instanceof HTMLElement ? moduleElement : null;
-    this.updateLayoutHoverState();
-    this.updateSignalAnalysisState();
+    this.render.setHoveredModule(rackedModule, moduleElement);
+    this.syncAnalysisPresentation();
   }
 
   clearHoveredModule(rackedModule: RackedModule): void {
-    if (this.hoveredRackedModule === rackedModule) {
-      this.hoveredRackedModule = null;
-      this.hoveredModuleElement = null;
-      this.clearLayoutHoverState();
-      this.signalAnalysis = null;
-      this.signalDestinationMatches.clear();
-      this.signalOverlayFrame = null;
-      this.signalOverlayLines = [];
-      this.cdr.markForCheck();
+    if (this.render.clearHoveredModule(rackedModule)) {
+      this.layout.clearLayoutHoverState();
+      this.signal.clear(() => this.cdr.markForCheck());
     }
   }
 
-  isHoveredModule(rackedModule: RackedModule): boolean {
-    return this.hoveredRackedModule === rackedModule;
-  }
-
-  isTouchSelectedModule(rackedModule: RackedModule): boolean {
-    return this.selectedTouchModule === rackedModule;
-  }
-
-  shouldShowModuleHoverStats(rackedModule: RackedModule, analysisMode: RackAnalysisMode): boolean {
-    return analysisMode !== this.analysisModes.off && this.isHoveredModule(rackedModule);
-  }
-
-  isSameHpHighlightedModule(rackedModule: RackedModule, analysisMode: RackAnalysisMode): boolean {
-    return this.isSameHpHighlightActive(analysisMode)
-      && !this.isHoveredModule(rackedModule)
-      && rackedModule.module.hp === this.hoveredRackedModule?.module.hp;
-  }
-
-  isSameHpDimmedModule(rackedModule: RackedModule, analysisMode: RackAnalysisMode): boolean {
-    return this.isSameHpHighlightActive(analysisMode)
-      && rackedModule.module.hp !== this.hoveredRackedModule?.module.hp;
-  }
-
-  shouldShowLayoutHpIndicator(analysisMode: RackAnalysisMode): boolean {
-    return !this.suppressHpIndicators && analysisMode === this.analysisModes.layout;
-  }
-
-  signalAnalysisAtHover(): SignalModuleAnalysis | null {
-    return this.signalAnalysis;
-  }
-
-  moduleDomKey(rackedModule: RackedModule): string {
-    return `${ rackedModule.rackingData.id }-${ rackedModule.module.id }-${ rackedModule.rackingData.row }-${ rackedModule.rackingData.column }`;
-  }
-
-  rackModuleStableDomKey(rackedModule: RackedModule): string {
-    return String(this.rackModuleTrackKey(rackedModule));
-  }
-
-  rackModuleTrackKey(rackedModule: RackedModule): number | string {
-    const existingKey = this.rackModuleTrackKeys.get(rackedModule);
-    if (existingKey != null) {
-      return existingKey;
-    }
-
-    const key = rackedModule.rackingData.id ?? this.moduleDomKey(rackedModule);
-    this.rackModuleTrackKeys.set(rackedModule, key);
-    return key;
-  }
-
-  enterAnimationDelay(rackedModule: RackedModule, index: number): number {
-    return this.isEnterDelaySuppressed(rackedModule) ? 0 : index * 50;
-  }
+  isHoveredModule(rackedModule: RackedModule): boolean { return this.render.isHoveredModule(rackedModule); }
+  isTouchSelectedModule(rackedModule: RackedModule): boolean { return this.selectedTouchModule === rackedModule; }
+  shouldShowModuleHoverStats(rackedModule: RackedModule, analysisMode: RackAnalysisMode): boolean { return this.render.shouldShowModuleHoverStats(rackedModule, analysisMode); }
+  isSameHpHighlightedModule(rackedModule: RackedModule, analysisMode: RackAnalysisMode): boolean { return this.render.isSameHpHighlightedModule(rackedModule, analysisMode); }
+  isSameHpDimmedModule(rackedModule: RackedModule, analysisMode: RackAnalysisMode): boolean { return this.render.isSameHpDimmedModule(rackedModule, analysisMode); }
+  shouldShowLayoutHpIndicator(analysisMode: RackAnalysisMode): boolean { return this.render.shouldShowLayoutHpIndicator(analysisMode, this.suppressHpIndicators); }
+  signalAnalysisAtHover(): SignalModuleAnalysis | null { return this.signal.signalAnalysisAtHover(); }
+  moduleDomKey(rackedModule: RackedModule): string { return this.render.moduleDomKey(rackedModule); }
+  rackModuleStableDomKey(rackedModule: RackedModule): string { return this.render.rackModuleStableDomKey(rackedModule); }
+  rackModuleTrackKey(rackedModule: RackedModule): number | string { return this.render.rackModuleTrackKey(rackedModule); }
+  enterAnimationDelay(rackedModule: RackedModule, index: number): number { return this.layout.enterAnimationDelay(this.render.rackModulePositionKey(rackedModule), index); }
 
   isSignalSourceModule(rackedModule: RackedModule, analysisMode: RackAnalysisMode): boolean {
-    return analysisMode === this.analysisModes.signal && this.isHoveredModule(rackedModule);
+    return this.signal.isSignalSourceModule(
+      rackedModule,
+      analysisMode === this.analysisModes.signal,
+      this.render.isHoveredModule(rackedModule)
+    );
   }
 
   signalDestinationMatchFor(rackedModule: RackedModule, analysisMode: RackAnalysisMode): SignalDestinationMatch | null {
-    if (analysisMode !== this.analysisModes.signal || this.isHoveredModule(rackedModule)) {
-      return null;
-    }
-
-    return this.signalDestinationMatches.get(this.moduleDomKey(rackedModule)) ?? null;
+    return this.signal.signalDestinationMatchFor(
+      rackedModule,
+      analysisMode === this.analysisModes.signal,
+      this.render.isHoveredModule(rackedModule),
+      this.render.moduleDomKey(rackedModule)
+    );
   }
 
   signalDestinationFamily(rackedModule: RackedModule, analysisMode: RackAnalysisMode): SignalTypeFamily | null {
-    return this.signalDestinationMatchFor(rackedModule, analysisMode)?.family ?? null;
+    return this.signal.signalDestinationFamily(
+      rackedModule,
+      analysisMode === this.analysisModes.signal,
+      this.render.isHoveredModule(rackedModule),
+      this.render.moduleDomKey(rackedModule)
+    );
   }
 
-  signalDestinationRingColor(rackedModule: RackedModule, analysisMode: RackAnalysisMode): string | null {
-    const family = this.signalDestinationFamily(rackedModule, analysisMode);
-    return family ? withAlpha(RackVisualModelComponent.signalFamilyColors[family], 0.18) : null;
-  }
-
-  signalDestinationGlowColor(rackedModule: RackedModule, analysisMode: RackAnalysisMode): string | null {
-    const family = this.signalDestinationFamily(rackedModule, analysisMode);
-    return family ? withAlpha(RackVisualModelComponent.signalFamilyColors[family], 0.08) : null;
-  }
-
-  signalDestinationPanelTopColor(rackedModule: RackedModule, analysisMode: RackAnalysisMode): string | null {
-    const family = this.signalDestinationFamily(rackedModule, analysisMode);
-    return family ? withAlpha(RackVisualModelComponent.signalFamilyColors[family], 0.2) : null;
-  }
-
-  signalDestinationPanelBottomColor(rackedModule: RackedModule, analysisMode: RackAnalysisMode): string | null {
-    const family = this.signalDestinationFamily(rackedModule, analysisMode);
-    return family ? withAlpha(RackVisualModelComponent.signalFamilyColors[family], 0.34) : null;
-  }
-
-  signalDestinationPanelBorderColor(rackedModule: RackedModule, analysisMode: RackAnalysisMode): string | null {
-    const family = this.signalDestinationFamily(rackedModule, analysisMode);
-    return family ? withAlpha(RackVisualModelComponent.signalFamilyColors[family], 0.24) : null;
-  }
+  signalDestinationRingColor(rackedModule: RackedModule, analysisMode: RackAnalysisMode): string | null { return this.signal.signalDestinationRingColor(this.signalDestinationFamily(rackedModule, analysisMode)); }
+  signalDestinationGlowColor(rackedModule: RackedModule, analysisMode: RackAnalysisMode): string | null { return this.signal.signalDestinationGlowColor(this.signalDestinationFamily(rackedModule, analysisMode)); }
+  signalDestinationPanelTopColor(rackedModule: RackedModule, analysisMode: RackAnalysisMode): string | null { return this.signal.signalDestinationPanelTopColor(this.signalDestinationFamily(rackedModule, analysisMode)); }
+  signalDestinationPanelBottomColor(rackedModule: RackedModule, analysisMode: RackAnalysisMode): string | null { return this.signal.signalDestinationPanelBottomColor(this.signalDestinationFamily(rackedModule, analysisMode)); }
+  signalDestinationPanelBorderColor(rackedModule: RackedModule, analysisMode: RackAnalysisMode): string | null { return this.signal.signalDestinationPanelBorderColor(this.signalDestinationFamily(rackedModule, analysisMode)); }
 
   isSignalMutedModule(rackedModule: RackedModule, analysisMode: RackAnalysisMode): boolean {
-    return analysisMode === this.analysisModes.signal
-      && !!this.hoveredRackedModule
-      && !this.isHoveredModule(rackedModule)
-      && !this.signalDestinationMatches.has(this.moduleDomKey(rackedModule));
+    return this.signal.isSignalMutedModule(
+      rackedModule,
+      analysisMode === this.analysisModes.signal,
+      this.render.hoveredRackedModule,
+      this.render.isHoveredModule(rackedModule),
+      this.render.moduleDomKey(rackedModule)
+    );
   }
 
-  layoutAnalysisVisual(rackedModule: RackedModule): RackLayoutHoverVisual | null {
-    return this.layoutHoverVisuals.get(this.moduleDomKey(rackedModule)) ?? null;
-  }
-
-  signalLineOpacity(line: SignalOverlayLine): number {
-    return line.confidence === 'likely' ? 0.82 : 0.48;
-  }
-
-  signalLineStrokeWidth(line: SignalOverlayLine): number {
-    return line.confidence === 'likely' ? 3.1 : 2.1;
-  }
-
-  signalLineColor(line: SignalOverlayLine): string {
-    return RackVisualModelComponent.signalFamilyColors[line.family];
-  }
-
-  signalLineShadow(line: SignalOverlayLine): string {
-    return `drop-shadow(0 0 0.2rem ${ this.signalLineColor(line) }55)`;
-  }
-
-  hasCompletePowerData(rackedModule: RackedModule): boolean {
-    return hasCompletePowerData(rackedModule);
-  }
-
-  absolutePower(value: number | null | undefined): number {
-    return Math.abs(value ?? 0);
-  }
-
-  setHoveredRow(rowId: number, rowElement?: HTMLElement | null): void {
-    this.hoveredRowIndex = rowId;
-    this.hoveredRowPowerPanelPlacement = this.resolveRowPowerPanelPlacement(rowElement ?? null);
-    this.updateModulePowerHeatmap();
-  }
-
-  clearHoveredRow(rowId: number): void {
-    if (this.hoveredRowIndex === rowId) {
-      this.hoveredRowIndex = null;
-      this.updateModulePowerHeatmap();
-    }
-  }
-
-  rowPowerBreakdownAt(rowId: number): RackPowerRowBreakdown | null {
-    return this.rowPowerBreakdown[rowId] ?? null;
-  }
-
-  rowHpOverflowAt(rowId: number): number {
-    return this.rowHpOverflow[rowId] ?? 0;
-  }
-
-  isModuleOverflowing(rowId: number, moduleIndex: number): boolean {
-    if ((this.rowHpOverflow[rowId] ?? 0) <= 0) return false;
-    const row = this.rowedRackedModules?.[rowId];
-    if (!row) return false;
-    const capacity = this.rackData?.hp ?? 0;
-    let cumulative = 0;
-    for (let i = 0; i < moduleIndex; i++) {
-      cumulative += row[i]?.module?.hp ?? 0;
-    }
-    return cumulative + (row[moduleIndex]?.module?.hp ?? 0) > capacity;
-  }
-
-  rowHpTooltip(rowId: number): string {
-    const capacity = this.rackData?.hp ?? 0;
-    const row = this.rowedRackedModules?.[rowId] ?? [];
-    const used = row.reduce((sum, m) => sum + (m.module?.hp ?? 0), 0);
-    const overflow = this.rowHpOverflow[rowId] ?? 0;
-    return `Row ${rowId + 1}: ${used} / ${capacity} HP — ${overflow} HP over capacity`;
-  }
+  layoutAnalysisVisual(rackedModule: RackedModule): RackLayoutHoverVisual | null { return this.layout.layoutAnalysisVisual(this.render.moduleDomKey(rackedModule)); }
+  signalLineOpacity(line: SignalOverlayLine): number { return this.signal.signalLineOpacity(line); }
+  signalLineStrokeWidth(line: SignalOverlayLine): number { return this.signal.signalLineStrokeWidth(line); }
+  signalLineColor(line: SignalOverlayLine): string { return this.signal.signalLineColor(line); }
+  signalLineShadow(line: SignalOverlayLine): string { return this.signal.signalLineShadow(line); }
+  hasCompletePowerData(rackedModule: RackedModule): boolean { return this.render.hasCompletePowerData(rackedModule); }
+  absolutePower(value: number | null | undefined): number { return Math.abs(value ?? 0); }
+  setHoveredRow(rowId: number, rowElement?: HTMLElement | null): void { this.render.setHoveredRow(rowId, rowElement, this.rackViewportElement, this.rowedRackedModules); }
+  clearHoveredRow(rowId: number): void { this.render.clearHoveredRow(rowId, this.rowedRackedModules); }
+  rowPowerBreakdownAt(rowId: number): RackPowerRowBreakdown | null { return this.render.rowPowerBreakdownAt(rowId); }
+  rowHpOverflowAt(rowId: number): number { return this.render.rowHpOverflowAt(rowId); }
+  isModuleOverflowing(rowId: number, moduleIndex: number): boolean { return this.render.isModuleOverflowing(rowId, moduleIndex, this.rowedRackedModules, this.rackData); }
+  rowHpTooltip(rowId: number): string { return this.render.rowHpTooltip(rowId, this.rowedRackedModules, this.rackData); }
 
   get totalHpOverflow(): number {
-    return this.rowHpOverflow.reduce((sum, v) => sum + v, 0);
+    return this.render.totalHpOverflow();
   }
 
-  isRowAnalysisPanelVisible(rowId: number): boolean {
-    return this.hoveredRowIndex === rowId && ((this.rowedRackedModules?.[rowId]?.length ?? 0) > 0);
-  }
+  isRowAnalysisPanelVisible(rowId: number): boolean { return this.render.isRowAnalysisPanelVisible(rowId, this.rowedRackedModules); }
+  isRowHovered(rowId: number): boolean { return this.render.isRowHovered(rowId); }
+  rowRemainingHp(rowId: number): number { return this.render.rowRemainingHp(rowId, this.rowedRackedModules, this.rackData); }
+  shouldShowRowPowerPanel(rowId: number, analysisMode: RackAnalysisMode): boolean { return this.render.shouldShowRowPowerPanel(rowId, analysisMode, this.rowedRackedModules); }
+  shouldShowRowFunctionPanel(rowId: number, analysisMode: RackAnalysisMode): boolean { return this.render.shouldShowRowFunctionPanel(rowId, analysisMode, this.rowedRackedModules); }
+  shouldShowRowLayoutPanel(rowId: number, analysisMode: RackAnalysisMode): boolean { return this.render.shouldShowRowLayoutPanel(rowId, analysisMode, this.rowedRackedModules); }
+  isRowPowerPanelBelow(rowId: number): boolean { return this.render.isRowPowerPanelBelow(rowId); }
+  rowPowerMissingLabel(rowId: number): string { return this.render.rowPowerMissingLabel(rowId); }
+  rowPowerHeaderLabel(rowId: number): string { return this.render.rowPowerHeaderLabel(rowId); }
+  rowFunctionBreakdownAt(rowId: number): RowFunctionBreakdown | null { return this.render.rowFunctionBreakdownAt(rowId); }
+  rowFunctionResidualLabel(rowId: number): string { return this.render.rowFunctionResidualLabel(rowId); }
+  rowLayoutUsedHp(rowId: number): number { return this.render.rowLayoutUsedHp(rowId, this.rackData); }
+  rowLayoutStatusLabel(rowId: number): string { return this.render.rowLayoutStatusLabel(rowId); }
+  rowLayoutFooterLabel(rowId: number): string { return this.render.rowLayoutFooterLabel(rowId); }
+  rowLayoutPanelClass(rowId: number): string { return this.render.rowLayoutPanelClass(rowId); }
+  powerAnalysisVisual(rackedModule: RackedModule): RackPowerHeatmapVisual { return this.render.powerAnalysisVisual(rackedModule); }
+  functionAnalysisVisual(rackedModule: RackedModule): RackFunctionVisual { return this.render.functionAnalysisVisual(rackedModule); }
+  analysisVisualClass(rackedModule: RackedModule, analysisMode: RackAnalysisMode): string { return this.render.analysisVisualClass(rackedModule, analysisMode, this.layoutAnalysisVisual(rackedModule)); }
 
-  isRowHovered(rowId: number): boolean {
-    return this.hoveredRowIndex === rowId;
-  }
-
-  rowRemainingHp(rowId: number): number {
-    const row = this.rowedRackedModules?.[rowId] ?? [];
-    const used = row.reduce((sum, m) => sum + (m.module?.hp ?? 0), 0);
-    return Math.max(0, (this.rackData?.hp ?? 0) - used);
-  }
-
-  readonly commonBlankSizes = [1, 2, 3, 4, 6, 8] as const;
-  readonly allBlankSizes = Array.from({length: 20}, (_, index) => index + 1);
-
-  shouldShowRowPowerPanel(rowId: number, analysisMode: RackAnalysisMode): boolean {
-    return this.shouldShowRowAnalysisPanel(rowId, analysisMode, this.analysisModes.power);
-  }
-
-  shouldShowRowFunctionPanel(rowId: number, analysisMode: RackAnalysisMode): boolean {
-    return this.shouldShowRowAnalysisPanel(rowId, analysisMode, this.analysisModes.function);
-  }
-
-  shouldShowRowLayoutPanel(rowId: number, analysisMode: RackAnalysisMode): boolean {
-    return this.shouldShowRowAnalysisPanel(rowId, analysisMode, this.analysisModes.layout);
-  }
-
-  isRowPowerPanelBelow(rowId: number): boolean {
-    return this.hoveredRowIndex === rowId && this.hoveredRowPowerPanelPlacement === 'below';
-  }
-
-  rowPowerMissingLabel(rowId: number): string {
-    const rowPower = this.rowPowerBreakdown[rowId];
-
-    if (!rowPower || rowPower.moduleCount === 0) {
-      return '';
-    }
-
-    return rowPower.missingPowerDataCount > 0
-      ? `${ rowPower.missingPowerDataCount } module${ rowPower.missingPowerDataCount === 1 ? '' : 's' } missing power data`
-      : 'All module power data available';
-  }
-
-  rowPowerHeaderLabel(rowId: number): string {
-    const rowPower = this.rowPowerBreakdown[rowId];
-
-    if (!rowPower || rowPower.moduleCount === 0) {
-      return '';
-    }
-
-    const qualifiers = [
-      rowPower.passiveModuleCount > 0 ? `${ rowPower.passiveModuleCount } passive` : '',
-      rowPower.unknownPowerModuleCount > 0 ? `${ rowPower.unknownPowerModuleCount } unknown` : '',
-    ].filter(Boolean);
-
-    return qualifiers.length
-      ? `${ rowPower.rowPowerHeaderCount } headers · ${ qualifiers.join(' · ') }`
-      : `${ rowPower.rowPowerHeaderCount } headers`;
-  }
-
-  rowFunctionBreakdownAt(rowId: number): RowFunctionBreakdown | null {
-    return this.rowFunctionBreakdowns.get(rowId) ?? null;
-  }
-
-  rowFunctionResidualLabel(rowId: number): string {
-    return buildRowFunctionResidualLabel(this.rowFunctionBreakdownAt(rowId));
-  }
-
-  rowLayoutUsedHp(rowId: number): number {
-    const overflow = this.layoutAnalysis?.overflowHp[rowId] ?? 0;
-    const wasted = this.layoutAnalysis?.wastedHp[rowId] ?? 0;
-    const capacity = this.rackData?.hp ?? 0;
-    return capacity + overflow - wasted;
-  }
-
-  rowLayoutStatusLabel(rowId: number): string {
-    const mixedIssue = this.layoutMixedIssueAt(rowId);
-    if (mixedIssue) {
-      return `Mixed formats: ${ mixedIssue.standards.map(standard => this.layoutStandardLabel(standard)).join(' + ') }`;
-    }
-
-    const overflow = this.layoutAnalysis?.overflowHp[rowId] ?? 0;
-    if (overflow > 0) {
-      return `${ overflow }HP over capacity`;
-    }
-
-    const wasted = this.layoutAnalysis?.wastedHp[rowId] ?? 0;
-    return wasted > 0 ? `${ wasted }HP spare` : 'Perfectly filled';
-  }
-
-  rowLayoutFooterLabel(rowId: number): string {
-    const mixedIssue = this.layoutMixedIssueAt(rowId);
-    if (mixedIssue) {
-      return `Fix row ${ rowId + 1 } before remixing.`;
-    }
-
-    const moves = this.layoutAnalysis?.autoArrangeMoves
-      .filter(move => move.fromRow === rowId || move.toRow === rowId)
-      .filter(move => move.fromRow !== move.toRow || move.fromColumn !== move.toColumn)
-      .length ?? 0;
-
-    return moves > 0
-      ? `${ moves } module${ moves === 1 ? '' : 's' } would move in auto-arrange.`
-      : 'No cross-row moves suggested for this row.';
-  }
-
-  rowLayoutPanelClass(rowId: number): string {
-    if (this.layoutMixedIssueAt(rowId)) {
-      return 'rowPowerPanel--layoutWarning';
-    }
-
-    return (this.layoutAnalysis?.overflowHp[rowId] ?? 0) > 0
-      ? 'rowPowerPanel--layoutOverflow'
-      : 'rowPowerPanel--layout';
-  }
-
-  powerAnalysisVisual(rackedModule: RackedModule): RackPowerHeatmapVisual {
-    return this.modulePowerHeatmap.get(rackPowerHeatmapKey(rackedModule)) ?? defaultRackPowerHeatmapVisual();
-  }
-
-  functionAnalysisVisual(rackedModule: RackedModule): RackFunctionVisual {
-    return this.moduleFunctionVisuals.get(this.moduleDomKey(rackedModule)) ?? buildRackFunctionVisual(rackedModule);
-  }
-
-  analysisVisualClass(rackedModule: RackedModule, analysisMode: RackAnalysisMode): string {
-    if (analysisMode === this.analysisModes.power) {
-      return this.powerAnalysisVisual(rackedModule).className;
-    }
-
-    if (analysisMode === this.analysisModes.function) {
-      return this.functionAnalysisVisual(rackedModule).className;
-    }
-
-    if (analysisMode === this.analysisModes.layout) {
-      return this.layoutAnalysisVisual(rackedModule)?.className ?? '';
-    }
-
-    return '';
-  }
-
-  isModuleDragDisabled(rackedModule: RackedModule): boolean {
-    return !(this.isCurrentRackEditable && this.isCurrentRackPropertyOfCurrentUser)
-      || this.touchContextMenuBlockedModule === rackedModule;
-  }
+  isModuleDragDisabled(rackedModule: RackedModule): boolean { return this.interactions.isModuleDragDisabled(rackedModule, this.isCurrentRackEditable, this.isCurrentRackPropertyOfCurrentUser); }
 
   openRowOverflow(event: MouseEvent, rowId: number): void {
     event.preventDefault();
@@ -651,619 +361,101 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   }
 
   onModulePointerDown(event: PointerEvent, rackedModule: RackedModule): void {
-    if (!this.shouldTrackTouchLongPress(event)) {
-      return;
-    }
-
-    this.clearTouchInteractionState();
-    this.touchLongPressModule = rackedModule;
-    this.touchLongPressStartPoint = {
-      x: event.clientX,
-      y: event.clientY
-    };
-    this.touchLongPressTimerId = window.setTimeout(() => {
-      if (this.touchLongPressModule !== rackedModule || !this.touchLongPressStartPoint) {
-        return;
-      }
-
-      this.touchLongPressTimerId = null;
-      this.touchContextMenuBlockedModule = rackedModule;
-      this.emitTouchContextMenu(rackedModule, this.touchLongPressStartPoint.x, this.touchLongPressStartPoint.y);
-      this.cdr.markForCheck();
-    }, RackVisualModelComponent.touchContextMenuDelayMs);
+    this.interactions.onModulePointerDown(
+      event,
+      rackedModule,
+      this.isCurrentRackEditable,
+      this.isCurrentRackPropertyOfCurrentUser,
+      this.moduleRightClick$,
+      () => this.cdr.markForCheck()
+    );
   }
 
-  onModulePointerMove(event: PointerEvent, rackedModule: RackedModule): void {
-    if (
-      !this.touchInteractionMode
-      || event.pointerType !== 'touch'
-      || this.touchLongPressModule !== rackedModule
-      || !this.touchLongPressStartPoint
-    ) {
-      return;
-    }
-
-    const distanceX = event.clientX - this.touchLongPressStartPoint.x;
-    const distanceY = event.clientY - this.touchLongPressStartPoint.y;
-    const distanceSquared = (distanceX ** 2) + (distanceY ** 2);
-
-    if (distanceSquared > RackVisualModelComponent.touchLongPressMoveTolerancePx ** 2) {
-      this.cancelPendingTouchLongPress(rackedModule);
-    }
-  }
+  onModulePointerMove(event: PointerEvent, rackedModule: RackedModule): void { this.interactions.onModulePointerMove(event, rackedModule); }
 
   onModulePointerUp(eventOrModule: PointerEvent | RackedModule, maybeRackedModule?: RackedModule): void {
-    const rackedModule = maybeRackedModule ?? eventOrModule as RackedModule;
-    const event = maybeRackedModule ? eventOrModule as PointerEvent : null;
-    const shouldEmitSelection = this.touchPrimaryActionsEnabled
-      && this.touchInteractionMode
-      && event?.pointerType === 'touch'
-      && this.touchLongPressModule === rackedModule
-      && this.touchLongPressStartPoint !== null
-      && this.touchContextMenuBlockedModule !== rackedModule;
-    this.clearTouchInteractionState(rackedModule);
-    if (shouldEmitSelection) {
-      this.touchModuleSelected.emit(rackedModule);
-    }
+    this.interactions.onModulePointerUp(
+      eventOrModule,
+      maybeRackedModule,
+      this.touchPrimaryActionsEnabled,
+      module => this.touchModuleSelected.emit(module)
+    );
   }
 
-  onModulePointerCancel(rackedModule: RackedModule): void {
-    this.clearTouchInteractionState(rackedModule);
-  }
+  onModulePointerCancel(rackedModule: RackedModule): void { this.interactions.onModulePointerCancel(rackedModule); }
 
   onDropListDropped(event: CdkDragDrop<ElementRef>, rowId: number, module: RackedModule): void {
-    const shouldAnimateDropReveal = event.previousContainer === event.container;
-    this.suppressLayoutMoveAnimationForManualDrop();
-    this.suppressPostDropReorder = true;
-    this.cdr.markForCheck();
-    this.rackDetailDataService.rackOrderChange$.next({event, newRow: rowId, module});
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (this.dropRevealSuppressedModule === module) {
-          this.dropRevealSuppressedModule = null;
-        }
-        if (shouldAnimateDropReveal) {
-          this.dropRevealAnimatingModule = module;
-        }
-        if (this.dragImageAnimationSuppressedModule === module) {
-          this.dragImageAnimationSuppressedModule = null;
-        }
-        this.suppressPostDropReorder = false;
-        this.cdr.markForCheck();
-        if (shouldAnimateDropReveal) {
-          window.setTimeout(() => {
-            if (this.dropRevealAnimatingModule === module) {
-              this.dropRevealAnimatingModule = null;
-              this.cdr.markForCheck();
-            }
-          }, RackVisualModelComponent.dropRevealAnimationDurationMs);
-        }
-      });
-    });
-  }
-
-  onDragStarted(_event: CdkDragStart<RackedModule>, module: RackedModule): void {
-    this.cancelPendingTouchLongPress(module);
-    this.touchContextMenuBlockedModule = null;
-    this.dragImageAnimationSuppressedModule = module;
-    if (this.dropRevealAnimatingModule === module) {
-      this.dropRevealAnimatingModule = null;
-    }
-    this.cdr.markForCheck();
-  }
-
-  onDragReleased(_event: unknown, module: RackedModule): void {
-    this.clearTouchInteractionState(module);
-    this.dropRevealSuppressedModule = module;
-    this.cdr.markForCheck();
-  }
-
-  onDragEnded(_event: CdkDragEnd<RackedModule>, module: RackedModule): void {
-    this.clearTouchInteractionState(module);
-    const shouldClearDragImageSuppression = this.dragImageAnimationSuppressedModule === module;
-    const shouldClearDropRevealSuppression = this.dropRevealSuppressedModule === module;
-
-    if (!shouldClearDragImageSuppression && !shouldClearDropRevealSuppression) {
-      return;
-    }
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (
-          shouldClearDropRevealSuppression
-          && this.dropRevealSuppressedModule === module
-          && !this.suppressPostDropReorder
-        ) {
-          this.dropRevealSuppressedModule = null;
-        }
-
-        if (
-          shouldClearDragImageSuppression
-          && this.dragImageAnimationSuppressedModule === module
-          && !this.suppressPostDropReorder
-          && this.dropRevealSuppressedModule !== module
-        ) {
-          this.dragImageAnimationSuppressedModule = null;
-        }
-
-        this.cdr.markForCheck();
-      });
-    });
-  }
-
-  isDragImageAnimationSuppressed(module: RackedModule): boolean {
-    return this.dragImageAnimationSuppressedModule === module;
-  }
-
-  isDropRevealSuppressed(module: RackedModule): boolean {
-    return this.dropRevealSuppressedModule === module;
-  }
-
-  isDropRevealAnimating(module: RackedModule): boolean {
-    return this.dropRevealAnimatingModule === module;
-  }
-
-  isRowMovingUp(rowId: number, motion: RackRowMoveMotion | null): boolean {
-    return !!motion && (
-      (motion.direction === 'up' && motion.targetRowId === rowId)
-      || (motion.direction === 'down' && motion.sourceRowId === rowId)
+    this.interactions.onDropListDropped(
+      event,
+      rowId,
+      module,
+      this.rackDetailDataService,
+      () => this.layout.suppressLayoutMoveAnimationForManualDrop(),
+      value => this.suppressPostDropReorder = value,
+      () => this.cdr.markForCheck()
     );
   }
 
-  isRowMovingDown(rowId: number, motion: RackRowMoveMotion | null): boolean {
-    return !!motion && (
-      (motion.direction === 'down' && motion.targetRowId === rowId)
-      || (motion.direction === 'up' && motion.sourceRowId === rowId)
+  onDragStarted(event: CdkDragStart<RackedModule>, module: RackedModule): void { this.interactions.onDragStarted(event, module, () => this.cdr.markForCheck()); }
+  onDragReleased(event: unknown, module: RackedModule): void { this.interactions.onDragReleased(event, module, () => this.cdr.markForCheck()); }
+
+  onDragEnded(event: CdkDragEnd<RackedModule>, module: RackedModule): void {
+    this.interactions.onDragEnded(
+      event,
+      module,
+      () => this.suppressPostDropReorder,
+      () => this.cdr.markForCheck()
     );
   }
 
-  isModuleLayoutMoveAnimating(module: RackedModule): boolean {
-    return this.layoutMoveAnimatingKeys.has(this.rackModuleStableDomKey(module));
-  }
+  isDragImageAnimationSuppressed(module: RackedModule): boolean { return this.interactions.isDragImageAnimationSuppressed(module); }
+  isDropRevealSuppressed(module: RackedModule): boolean { return this.interactions.isDropRevealSuppressed(module); }
+  isDropRevealAnimating(module: RackedModule): boolean { return this.interactions.isDropRevealAnimating(module); }
+  isRowMovingUp(rowId: number, motion: RackRowMoveMotion | null): boolean { return this.layout.isRowMovingUp(rowId, motion); }
+  isRowMovingDown(rowId: number, motion: RackRowMoveMotion | null): boolean { return this.layout.isRowMovingDown(rowId, motion); }
+  isModuleLayoutMoveAnimating(module: RackedModule): boolean { return this.layout.isModuleLayoutMoveAnimating(this.render.rackModuleStableDomKey(module)); }
+  isModuleAnimationSuppressed(module: RackedModule): boolean { return this.isDragImageAnimationSuppressed(module) || this.isModuleLayoutMoveAnimating(module); }
+  isEnterDelaySuppressed(module: RackedModule): boolean { return this.layout.isEnterDelaySuppressed(this.render.rackModulePositionKey(module)); }
+  areLayoutMoveAngularAnimationsDisabled(): boolean { return this.layout.areLayoutMoveAngularAnimationsDisabled(); }
+  signalOverlayViewBox(): string | null { return this.signal.signalOverlayViewBox(); }
 
-  isModuleAnimationSuppressed(module: RackedModule): boolean {
-    return this.isDragImageAnimationSuppressed(module) || this.isModuleLayoutMoveAnimating(module);
-  }
-
-  isEnterDelaySuppressed(module: RackedModule): boolean {
-    return this.enterDelaySuppressedPositions.has(this.rackModulePositionKey(module));
-  }
-
-  areLayoutMoveAngularAnimationsDisabled(): boolean {
-    return this.layoutMoveAngularAnimationsDisabled;
-  }
-
-  private updateRowPowerBreakdown(): void {
-    this.rowPowerBreakdown = buildRackPowerBreakdown(this.rowedRackedModules ?? []).rows;
-    const capacity = this.rackData?.hp ?? 0;
-    this.rowHpOverflow = (this.rowedRackedModules ?? []).map(row => {
-      const used = row.reduce((sum, m) => sum + (m.module?.hp ?? 0), 0);
-      return Math.max(0, used - capacity);
-    });
-    this.rowFunctionBreakdowns = buildRowFunctionBreakdowns(this.rowedRackedModules);
-    this.updateModuleFunctionVisuals();
-    this.layoutAnalysis = computeLayoutAnalysis(this.rowedRackedModules, capacity);
-    if (this.hoveredRowIndex != null && this.hoveredRowIndex >= this.rowPowerBreakdown.length) {
-      this.hoveredRowIndex = null;
-    }
-    this.updateModulePowerHeatmap();
-    this.updateLayoutHoverState();
-    this.updateSignalAnalysisState();
-  }
-
-  private prepareLayoutMoveAnimation(
-    previousRows: RackedModule[][] | null | undefined,
-    nextRows: RackedModule[][] | null | undefined
-  ): void {
-    if (!this.shouldRunLayoutMoveAnimation()) {
-      this.cancelLayoutMoveAnimation();
-      return;
-    }
-
-    const movedKeys = findMovedRackModuleKeys(previousRows, nextRows, module => this.rackModuleStableDomKey(module));
-    if (movedKeys.size === 0) {
-      this.cancelLayoutMoveAnimation();
-      return;
-    }
-
-    const screenElement = this.screenReference?.nativeElement;
-    if (!screenElement) {
-      return;
-    }
-
-    const snapshots = captureModuleLayoutMoveRects(screenElement, movedKeys);
-    this.cancelLayoutMoveAnimation();
-    if (snapshots.size === 0) {
-      return;
-    }
-
-    this.layoutMoveAngularAnimationsDisabled = true;
-    this.layoutMoveAnimatingKeys = movedKeys;
-    this.layoutMoveAnimationCancel = playModuleLayoutMoveAnimations(
-      screenElement,
-      snapshots,
-      RackVisualModelComponent.layoutMoveAnimationDurationMs,
-      this.dragScale,
-      () => {
-        this.layoutMoveAnimatingKeys.clear();
-        this.layoutMoveAngularAnimationsDisabled = false;
-        this.layoutMoveAnimationCancel = null;
-        this.cdr.markForCheck();
-      }
-    );
-  }
-
-  private cancelLayoutMoveAnimation(): void {
-    this.layoutMoveAnimationCancel?.();
-    this.layoutMoveAnimationCancel = null;
-    this.layoutMoveAnimatingKeys.clear();
-    this.layoutMoveAngularAnimationsDisabled = false;
-  }
-
-  private startRowMoveAnimation(move: {rowId: number; direction: RackRowMoveDirection}): void {
-    const targetRowId = move.direction === 'up' ? move.rowId - 1 : move.rowId + 1;
-    const totalRows = this.rackData?.rows ?? this.rowedRackedModules?.length ?? 0;
-    if (move.rowId < 0 || move.rowId >= totalRows || targetRowId < 0 || targetRowId >= totalRows) {
-      return;
-    }
-
-    this.clearRowMoveAnimation();
-    this.rowMoveMotion$.next({
-      sourceRowId: move.rowId,
-      targetRowId,
-      direction: move.direction,
-    });
-    this.cdr.markForCheck();
-
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    this.rowMoveAnimationTimerId = window.setTimeout(() => {
-      this.rowMoveAnimationTimerId = null;
-      this.rowMoveMotion$.next(null);
-      this.cdr.markForCheck();
-    }, RackVisualModelComponent.rowMoveAnimationDurationMs);
-  }
-
-  private clearRowMoveAnimation(): void {
-    if (this.rowMoveAnimationTimerId != null && typeof window !== 'undefined') {
-      window.clearTimeout(this.rowMoveAnimationTimerId);
-    }
-    this.rowMoveAnimationTimerId = null;
-    this.rowMoveMotion$.next(null);
-  }
-
-  private suppressEnterDelayForPosition(module: RackedModule): void {
-    const key = this.rackModulePositionKey(module);
-    this.enterDelaySuppressedPositions.add(key);
-    this.cdr.markForCheck();
-
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    const existingTimerId = this.enterDelaySuppressionTimerIds.get(key);
-    if (existingTimerId != null) {
-      window.clearTimeout(existingTimerId);
-    }
-
-    const timerId = window.setTimeout(() => {
-      this.enterDelaySuppressionTimerIds.delete(key);
-      this.enterDelaySuppressedPositions.delete(key);
-      this.cdr.markForCheck();
-    }, RackVisualModelComponent.enterDelaySuppressionDurationMs);
-    this.enterDelaySuppressionTimerIds.set(key, timerId);
-  }
-
-  private clearEnterDelaySuppressions(): void {
-    if (typeof window !== 'undefined') {
-      for (const timerId of this.enterDelaySuppressionTimerIds.values()) {
-        window.clearTimeout(timerId);
-      }
-    }
-    this.enterDelaySuppressionTimerIds.clear();
-    this.enterDelaySuppressedPositions.clear();
-  }
-
-  private rackModulePositionKey(module: RackedModule): string {
-    return `${ module.rackingData.row ?? 'none' }:${ module.rackingData.column ?? 'none' }`;
-  }
+  private updateVisualState(): void { this.render.update(this.rowedRackedModules, this.rackData); this.syncAnalysisPresentation(); }
+  private syncAnalysisPresentation(): void { this.updateLayoutHoverState(); this.updateSignalAnalysisState(); }
 
   private updateLayoutHoverState(): void {
-    this.stopLayoutHoverAnimation();
-
-    if (!this.hoveredRackedModule || !this.isLayoutModeActive()) {
-      this.clearLayoutHoverState(false);
-      this.cdr.markForCheck();
-      return;
-    }
-
-    this.layoutHoverCandidates = buildRackLayoutHoverCandidates(
-      this.rowedRackedModules,
-      this.hoveredRackedModule,
-      module => this.moduleDomKey(module)
-    );
-    this.layoutHoverPhaseIndex = this.initialLayoutHoverPhaseIndex();
-    this.refreshLayoutHoverVisuals();
-
-    if (this.shouldCycleLayoutHoverHighlights()) {
-      this.layoutHoverAnimationTimerId = window.setInterval(() => {
-        this.advanceLayoutHoverPhase();
-      }, RackVisualModelComponent.layoutHoverPhaseDurationMs);
-    }
-
-    this.cdr.markForCheck();
-  }
-
-  private advanceLayoutHoverPhase(): void {
-    const combinationCount = this.layoutHoverCandidates?.combinationGroups.length ?? 0;
-    if (!this.isLayoutCombinationHoverModeActive() || combinationCount <= 1) {
-      return;
-    }
-
-    this.layoutHoverPhaseIndex = ((this.layoutHoverPhaseIndex - 1 + 1) % combinationCount) + 1;
-    this.refreshLayoutHoverVisuals();
-    this.cdr.markForCheck();
-  }
-
-  private refreshLayoutHoverVisuals(): void {
-    this.layoutHoverVisuals = this.layoutHoverCandidates
-      ? buildRackLayoutHoverVisuals(
-        this.rowedRackedModules,
-        this.layoutHoverCandidates,
-        this.layoutHoverPhaseIndex,
-        module => this.moduleDomKey(module)
-      )
-      : new Map<string, RackLayoutHoverVisual>();
-  }
-
-  private clearLayoutHoverState(shouldStopAnimation = true): void {
-    if (shouldStopAnimation) {
-      this.stopLayoutHoverAnimation();
-    }
-    this.layoutHoverCandidates = null;
-    this.layoutHoverVisuals.clear();
-    this.layoutHoverPhaseIndex = 0;
-  }
-
-  private stopLayoutHoverAnimation(): void {
-    if (this.layoutHoverAnimationTimerId == null) {
-      return;
-    }
-
-    window.clearInterval(this.layoutHoverAnimationTimerId);
-    this.layoutHoverAnimationTimerId = null;
-  }
-
-  private shouldCycleLayoutHoverHighlights(): boolean {
-    return typeof window !== 'undefined'
-      && this.isLayoutCombinationHoverModeActive()
-      && (this.layoutHoverCandidates?.combinationGroups.length ?? 0) > 1
-      && !window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-  }
-
-  private initialLayoutHoverPhaseIndex(): number {
-    return this.isLayoutCombinationHoverModeActive()
-      && (this.layoutHoverCandidates?.combinationGroups.length ?? 0) > 0
-      ? 1
-      : 0;
-  }
-
-  private shouldRunLayoutMoveAnimation(): boolean {
-    return typeof window !== 'undefined'
-      && !!window.requestAnimationFrame
-      && !window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
-      && Date.now() >= this.layoutMoveSuppressedUntilMs
-      && !this.suppressPostDropReorder;
-  }
-
-  private isLayoutModeActive(): boolean {
-    return this.dataService.analysisMode$.value === this.analysisModes.layout;
-  }
-
-  private isLayoutCombinationHoverModeActive(): boolean {
-    return this.dataService.layoutHoverMode$.value === RACK_LAYOUT_HOVER_MODES.combinations;
-  }
-
-  private suppressLayoutMoveAnimationForManualDrop(): void {
-    this.layoutMoveSuppressedUntilMs = Date.now() + RackVisualModelComponent.manualDropLayoutMoveCooldownMs;
-    this.cancelLayoutMoveAnimation();
-  }
-
-  private activeRackDetailDataService(): RackDetailDataService {
-    return this.rackDetailDataService ?? this.dataService;
-  }
-
-  private updateModulePowerHeatmap(): void {
-    this.modulePowerHeatmap = buildRackPowerHeatmapVisuals(this.rowedRackedModules ?? [], {
-      hoveredRowIndex: this.hoveredRowIndex
+    this.layout.updateLayoutHoverState({
+      rowedRackedModules: this.rowedRackedModules,
+      hoveredRackedModule: this.render.hoveredRackedModule,
+      isLayoutModeActive: this.isLayoutModeActive(),
+      isLayoutCombinationHoverModeActive: this.isLayoutCombinationHoverModeActive(),
+      moduleDomKey: module => this.render.moduleDomKey(module),
+      markForCheck: () => this.cdr.markForCheck(),
     });
-  }
-
-  private updateModuleFunctionVisuals(): void {
-    this.moduleFunctionVisuals = new Map(
-      (this.rowedRackedModules ?? [])
-        .flat()
-        .map(module => [this.moduleDomKey(module), buildRackFunctionVisual(module)])
-    );
-  }
-
-  private resolveRowPowerPanelPlacement(rowElement: HTMLElement | null): 'above' | 'below' {
-    return resolveRowPowerPanelPlacement(
-      this.rackViewportElement,
-      rowElement,
-      RackVisualModelComponent.rowAnalysisPanelHeightPx
-    );
-  }
-
-  private shouldShowRowAnalysisPanel(
-    rowId: number,
-    analysisMode: RackAnalysisMode,
-    targetMode: RackAnalysisMode
-  ): boolean {
-    return analysisMode === targetMode && this.isRowAnalysisPanelVisible(rowId);
-  }
-
-  private isSameHpHighlightActive(analysisMode: RackAnalysisMode): boolean {
-    return analysisMode === this.analysisModes.layout
-      && !!this.hoveredRackedModule;
-  }
-
-  private layoutMixedIssueAt(rowId: number) {
-    return this.layoutAnalysis?.mixedRowIssues.find(issue => issue.rowIndex === rowId) ?? null;
-  }
-
-  private layoutStandardLabel(standard: number): string {
-    if (standard === 1) {
-      return 'Intellijel 1U';
-    }
-    if (standard === 2) {
-      return 'Pulp Logic 1U';
-    }
-    return '3U';
-  }
-
-  private shouldTrackTouchLongPress(event: PointerEvent): boolean {
-    return this.touchInteractionMode
-      && event.pointerType === 'touch'
-      && this.isCurrentRackEditable
-      && this.isCurrentRackPropertyOfCurrentUser;
   }
 
   private updateSignalAnalysisState(): void {
-    if (!this.hoveredRackedModule || !this.isSignalModeActive()) {
-      this.signalAnalysis = null;
-      this.signalDestinationMatches.clear();
-      this.signalHoverCardPlacement = 'right';
-      this.signalOverlayFrame = null;
-      this.signalOverlayLines = [];
-      this.cdr.markForCheck();
-      return;
-    }
-
-    this.signalAnalysis = buildSignalModuleAnalysis(this.hoveredRackedModule, this.rowedRackedModules, {
-      focusArea: this.dataService.signalFocusArea$.value ?? suggestSignalFocusArea(this.hoveredRackedModule),
-      maxMatches: 8,
-    });
-    this.signalDestinationMatches = new Map(
-      this.signalAnalysis.destinationMatches
-        .map(match => [this.moduleDomKey(match.destination), match])
-    );
-    this.refreshSignalPresentation();
-    this.cdr.markForCheck();
-  }
-
-  private refreshSignalPresentation(): void {
-    if (!this.hoveredRackedModule || !this.screenReference?.nativeElement) {
-      this.signalOverlayFrame = null;
-      this.signalOverlayLines = [];
-      return;
-    }
-
-    const candidateElement = this.hoveredModuleElement
-      ?? (this.hoveredRackedModule
-        ? (this.screenReference?.nativeElement?.querySelector?.(`[data-rack-module-key="${ this.moduleDomKey(this.hoveredRackedModule) }"]`) as HTMLElement | null)
-        : null);
-    this.signalHoverCardPlacement = resolveSignalHoverCardPlacement(
-      candidateElement,
-      this.rackViewportElement,
-      RackVisualModelComponent.signalHoverCardWidthPx,
-      RackVisualModelComponent.signalHoverCardGapPx
-    );
-    this.signalOverlayLines = this.buildSignalOverlayLines();
-  }
-
-  private buildSignalOverlayLines(): SignalOverlayLine[] {
-    const hoveredModule = this.hoveredRackedModule;
-
-    if (!hoveredModule || !this.screenReference?.nativeElement) {
-      this.signalOverlayFrame = null;
-      return [];
-    }
-
-    const screenElement = this.screenReference.nativeElement as HTMLElement;
-    const hostRect = this.hostElementRef.nativeElement.getBoundingClientRect();
-    const screenRect = screenElement.getBoundingClientRect();
-    const moduleElements = buildRenderedModuleElementMap(screenElement);
-    const sourceElement = this.hoveredModuleElement ?? moduleElements.get(this.moduleDomKey(hoveredModule)) ?? null;
-    this.signalOverlayFrame = buildSignalOverlayFrame(screenRect, hostRect);
-    const sourceRect = resolveRenderedModuleRect(sourceElement, screenRect);
-
-    if (!sourceRect) {
-      this.signalOverlayFrame = null;
-      return [];
-    }
-
-    return Array.from(this.signalDestinationMatches.values())
-      .map(match => {
-        const destinationRect = resolveRenderedModuleRect(
-          moduleElements.get(this.moduleDomKey(match.destination)) ?? null,
-          screenRect
-        );
-        if (!destinationRect) {
-          return null;
-        }
-
-        return {
-          key: `${ this.moduleDomKey(hoveredModule) }->${ this.moduleDomKey(match.destination) }`,
-          path: buildCurvedSignalPath(sourceRect, destinationRect),
-          family: match.family,
-          confidence: match.confidence
-        };
-      })
-      .filter((line): line is SignalOverlayLine => !!line);
-  }
-
-  private resolveRenderedModuleRect(candidateElement: HTMLElement | null, screenRect: DOMRect): ModuleRenderRect | null {
-    return resolveRenderedModuleRect(candidateElement, screenRect);
-  }
-
-  signalOverlayViewBox(): string | null {
-    if (!this.signalOverlayFrame) {
-      return null;
-    }
-
-    return `0 0 ${ this.signalOverlayFrame.width } ${ this.signalOverlayFrame.height }`;
-  }
-
-  private isSignalModeActive(): boolean {
-    return this.dataService.analysisMode$.value === this.analysisModes.signal;
-  }
-
-  private emitTouchContextMenu(rackedModule: RackedModule, clientX: number, clientY: number): void {
-    this.moduleRightClick$.next({
-      $event: new MouseEvent('contextmenu', {
-        bubbles: true,
-        cancelable: true,
-        clientX,
-        clientY
-      }),
-      rackedModule
+    this.signal.updateSignalAnalysisState({
+      ...this.signalPresentationParams(),
+      focusArea: this.dataService.signalFocusArea$.value,
+      isSignalModeActive: this.isSignalModeActive(),
+      markForCheck: () => this.cdr.markForCheck(),
     });
   }
 
-  private cancelPendingTouchLongPress(rackedModule?: RackedModule): void {
-    if (rackedModule && this.touchLongPressModule !== rackedModule) {
-      return;
-    }
-
-    if (this.touchLongPressTimerId != null) {
-      clearTimeout(this.touchLongPressTimerId);
-      this.touchLongPressTimerId = null;
-    }
-
-    if (!rackedModule || this.touchLongPressModule === rackedModule) {
-      this.touchLongPressModule = null;
-      this.touchLongPressStartPoint = null;
-    }
+  private signalPresentationParams() {
+    return {
+      hoveredRackedModule: this.render.hoveredRackedModule,
+      hoveredModuleElement: this.render.hoveredModuleElement,
+      rowedRackedModules: this.rowedRackedModules,
+      screenElement: this.screenReference?.nativeElement,
+      hostElement: this.hostElementRef.nativeElement,
+      rackViewportElement: this.rackViewportElement,
+      moduleDomKey: (module: RackedModule) => this.render.moduleDomKey(module),
+    };
   }
 
-  private clearTouchInteractionState(rackedModule?: RackedModule): void {
-    this.cancelPendingTouchLongPress(rackedModule);
-
-    if (!rackedModule || this.touchContextMenuBlockedModule === rackedModule) {
-      this.touchContextMenuBlockedModule = null;
-    }
-  }
+  private isLayoutModeActive(): boolean { return this.dataService.analysisMode$.value === this.analysisModes.layout; }
+  private isLayoutCombinationHoverModeActive(): boolean { return this.dataService.layoutHoverMode$.value === RACK_LAYOUT_HOVER_MODES.combinations; }
+  private isSignalModeActive(): boolean { return this.dataService.analysisMode$.value === this.analysisModes.signal; }
+  private activeRackDetailDataService(): RackDetailDataService { return this.rackDetailDataService ?? this.dataService; }
 }
