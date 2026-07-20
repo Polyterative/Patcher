@@ -1,11 +1,22 @@
 import { slugFromUrl } from './woocommerce-store-api.ts';
+import type { ShopifyProductJsonProduct, ShopifyProductJsonVariant } from './shopify-product-json.ts';
+import {
+  formatPriceHubMinorUnitsAsDecimalString,
+  getPriceHubCurrencyFractionDigits,
+} from './currency-minor-units.ts';
 
 export const DEFAULT_SNAPSHOT_LIMIT = 20;
 export const MAX_SNAPSHOT_LIMIT = 20;
 export const ONE_DAY_MS = 86_400_000;
 export const STALE_FAILURE_THRESHOLD = 4;
 export const MAX_ERROR_MESSAGE_LENGTH = 500;
-export const SUPPORTED_SNAPSHOT_ADAPTER_KINDS = ['woocommerce_store_api', 'shopware_metadata'] as const;
+export const SUPPORTED_SNAPSHOT_ADAPTER_KINDS = [
+  'woocommerce_store_api',
+  'shopify_product_json',
+  'bigcommerce_metadata',
+  'shopware_metadata',
+  'custom',
+] as const;
 const APPROVED_PROBE_STORE_HOSTS = new Set([
   'elevatorsound.com',
   'www.elevatorsound.com',
@@ -40,6 +51,13 @@ export class SnapshotWorkerInputError extends Error {
   constructor(message: string) {
     super(normalizeErrorMessage(message));
     this.name = 'SnapshotWorkerInputError';
+  }
+}
+
+export class SnapshotWorkerAuthError extends Error {
+  constructor(message: string) {
+    super(normalizeErrorMessage(message));
+    this.name = 'SnapshotWorkerAuthError';
   }
 }
 
@@ -84,7 +102,7 @@ export function assertSnapshotWorkerAuthorized(expectedToken: string | undefined
   }
 
   if (authorizationHeader !== `Bearer ${expectedToken}`) {
-    throw new Error('Unauthorized');
+    throw new SnapshotWorkerAuthError('Unauthorized');
   }
 }
 
@@ -105,6 +123,32 @@ export function buildWooCommerceStoreApiUrl(listing: StoreApiListingInput): stri
 
   url.searchParams.set('per_page', '5');
   return url.toString();
+}
+
+export function buildShopifyProductJsonUrl(listing: StoreApiListingInput): string {
+  const handle = normalizeOptionalText(listing.external_handle) ?? slugFromUrl(listing.product_url);
+  if (!handle) {
+    throw new Error('Shopify product JSON snapshot requires an external handle or product URL slug.');
+  }
+
+  return new URL(`/products/${encodeURIComponent(handle)}.js`, listing.stores.base_url).toString();
+}
+
+export function readShopifyProductJsonSnapshotProduct(
+  value: unknown,
+  currencyHint: string | null = null,
+): ShopifyProductJsonProduct {
+  const product = isRecord(value) && isRecord(value.product) ? value.product : value;
+  if (!isRecord(product)) {
+    throw new Error('Shopify product JSON response must be a product object.');
+  }
+
+  return {
+    ...product,
+    variants: Array.isArray(product.variants)
+      ? product.variants.map((variant) => readShopifyProductJsonSnapshotVariant(variant, currencyHint))
+      : product.variants as ShopifyProductJsonProduct['variants'],
+  };
 }
 
 export function backoffDaysForFailureCount(failureCount: number): number {
@@ -186,6 +230,47 @@ function readOptionalProbeText(value: unknown, fieldName: string): string | null
   }
 
   return normalizeOptionalText(value);
+}
+
+function readShopifyProductJsonSnapshotVariant(
+  value: unknown,
+  currencyHint: string | null,
+): ShopifyProductJsonVariant {
+  if (!isRecord(value)) {
+    return {};
+  }
+
+  return {
+    ...value,
+    price: normalizeShopifyProductJsonSnapshotPrice(value.price, currencyHint),
+    compare_at_price: normalizeShopifyProductJsonSnapshotPrice(value.compare_at_price, currencyHint),
+  };
+}
+
+function normalizeShopifyProductJsonSnapshotPrice(
+  value: unknown,
+  currencyHint: string | null,
+): string | number | null | undefined {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return formatShopifyFixedTwoDecimalAmountAsCurrencyDecimalString(Math.round(value), currencyHint);
+  }
+
+  return typeof value === 'string' || value === null || value === undefined ? value : null;
+}
+
+function formatShopifyFixedTwoDecimalAmountAsCurrencyDecimalString(
+  amountFixedTwoMinor: number,
+  currencyHint: string | null,
+): string | null {
+  const fractionDigits = getPriceHubCurrencyFractionDigits(currencyHint);
+  const digitDelta = fractionDigits - 2;
+  const amountMinor = digitDelta === 0
+    ? amountFixedTwoMinor
+    : digitDelta > 0
+    ? amountFixedTwoMinor * (10 ** digitDelta)
+    : Math.round(amountFixedTwoMinor / (10 ** Math.abs(digitDelta)));
+
+  return formatPriceHubMinorUnitsAsDecimalString(amountMinor, currencyHint);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
