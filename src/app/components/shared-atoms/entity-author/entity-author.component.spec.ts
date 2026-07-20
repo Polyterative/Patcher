@@ -1,4 +1,17 @@
 import { EntityAuthorComponent } from './entity-author.component';
+import { PublicUser } from 'src/app/models/user';
+
+
+function setReadonlyInput<TComponent, TKey extends keyof TComponent>(
+  component: TComponent,
+  key: TKey,
+  value: TComponent[TKey]
+): void {
+  Object.defineProperty(component, key, {
+    value,
+    configurable: true
+  });
+}
 
 describe('EntityAuthorComponent', () => {
   let comp: EntityAuthorComponent;
@@ -15,8 +28,14 @@ describe('EntityAuthorComponent', () => {
     expect(() => comp.ngOnInit()).not.toThrow();
   });
 
-  it('data input can be assigned via cast', () => {
-    (comp as any)['data'] = {username: 'alice'};
-    expect((comp as any)['data'].username).toBe('alice');
+  it('data input can be assigned', () => {
+    const user: PublicUser = {
+      id: 'user-1',
+      username: 'alice'
+    };
+
+    setReadonlyInput(comp, 'data', user);
+
+    expect(comp.data.username).toBe('alice');
   });
 });

@@ -4,13 +4,35 @@ import {
 } from '@angular/core/testing';
 import { MatCardModule } from '@angular/material/card';
 import { By } from '@angular/platform-browser';
-import { defaultModuleMinimalViewConfig } from '../module-minimal.component';
+import {
+  defaultModuleMinimalViewConfig,
+  ModuleMinimalViewConfig
+} from '../module-minimal.component';
 import { DescriptionKeywordHighlightPipe } from '../../shared-pipes/description-keyword-highlight.pipe';
 import {
   ModuleDescriptionAnalysisSuiteComponent
 } from '../../module-description-analysis/suite/module-description-analysis-suite.component';
 import { ModulePartDescriptionComponent } from './module-part-description.component';
 import { MinimalModule } from 'src/app/models/module';
+
+
+function makeMinimalModule(overrides: Partial<MinimalModule> = {}): MinimalModule {
+  return {
+    id: 1,
+    created: '',
+    updated: '',
+    name: 'VCO',
+    description: '',
+    hp: 10,
+    public: true,
+    manufacturer: {id: 1, name: 'Make Noise'},
+    manufacturerId: 1,
+    standard: {id: 0, name: 'Eurorack'},
+    tags: [],
+    panels: [],
+    ...overrides
+  };
+}
 
 describe('ModulePartDescriptionComponent', () => {
   let comp: ModulePartDescriptionComponent;
@@ -31,7 +53,7 @@ describe('ModulePartDescriptionComponent', () => {
 
     fixture = TestBed.createComponent(ModulePartDescriptionComponent);
     comp = fixture.componentInstance;
-    comp.data = {id: 1, name: 'VCO', description} as any;
+    comp.data = makeMinimalModule({description});
     comp.viewConfig = {...defaultModuleMinimalViewConfig};
   });
 
@@ -44,12 +66,15 @@ describe('ModulePartDescriptionComponent', () => {
   });
 
   it('data input can be assigned', () => {
-    comp.data = {id: 1, name: 'VCO', description: 'A voltage controlled oscillator'} as any;
+    comp.data = makeMinimalModule({description: 'A voltage controlled oscillator'});
     expect(comp.data.name).toBe('VCO');
   });
 
   it('viewConfig input can be assigned', () => {
-    const cfg = {showDescription: true} as any;
+    const cfg: ModuleMinimalViewConfig = {
+      ...defaultModuleMinimalViewConfig,
+      showDescriptionAnalysis: true
+    };
     comp.viewConfig = cfg;
     expect(comp.viewConfig).toBe(cfg);
   });

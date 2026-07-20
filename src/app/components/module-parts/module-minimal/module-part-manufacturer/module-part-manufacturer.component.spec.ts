@@ -1,4 +1,24 @@
 import { ModulePartManufacturerComponent } from './module-part-manufacturer.component';
+import { MinimalModule } from 'src/app/models/module';
+
+
+function makeMinimalModule(overrides: Partial<MinimalModule> = {}): MinimalModule {
+  return {
+    id: 1,
+    created: '',
+    updated: '',
+    name: 'VCO',
+    description: '',
+    hp: 10,
+    public: true,
+    manufacturer: {id: 1, name: 'Make Noise'},
+    manufacturerId: 1,
+    standard: {id: 0, name: 'Eurorack'},
+    tags: [],
+    panels: [],
+    ...overrides
+  };
+}
 
 describe('ModulePartManufacturerComponent', () => {
   let comp: ModulePartManufacturerComponent;
@@ -16,12 +36,12 @@ describe('ModulePartManufacturerComponent', () => {
   });
 
   it('data input can be assigned', () => {
-    comp.data = {id: 2, manufacturer: {name: 'Make Noise'}} as any;
-    expect((comp.data as any).manufacturer.name).toBe('Make Noise');
+    comp.data = makeMinimalModule({id: 2, manufacturer: {id: 1, name: 'Make Noise'}});
+    expect(comp.data.manufacturer.name).toBe('Make Noise');
   });
 
   it('data id is preserved after assignment', () => {
-    comp.data = {id: 99} as any;
+    comp.data = makeMinimalModule({id: 99});
     expect(comp.data.id).toBe(99);
   });
 });
