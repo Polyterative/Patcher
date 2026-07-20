@@ -1,7 +1,7 @@
 {
   "name": "patcher",
   "version": "6.5.0",
-  "packageManager": "pnpm@9.15.9",
+  "packageManager": "pnpm@10.0.0",
   "scripts": {
     "prestart": "node generate-env.js",
     "start": "ng serve --port 5556",
