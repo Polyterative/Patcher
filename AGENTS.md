@@ -23,6 +23,7 @@ Load docs lazily — only what the task needs.
 - Package manager: `pnpm` only; use existing `package.json` scripts.
 - Preferred: `pnpm lint`, `pnpm test-headless` (add `--include="**/foo.spec.ts"` to target), `pnpm test:e2e` / `pnpm test:e2e:auth`, `pnpm updateBackendTypes`. Use `pnpm start` / `start:ssr` only when needed. `pnpm loop:health` prints a loop-state snapshot (dirty tree, blocked markers, pending approvals, baseline size, docs check).
 - Never run `npm install`, `ng test`, `npx ng test`, or any watch/interactive variant unless the user explicitly asks.
+- E2E credentials (`E2E_TEST_EMAIL` / `E2E_TEST_PASSWORD`) live **only** in the gitignored root `.env` — the single location every loader reads. If they are missing, ask the user once and write them into `.env` immediately (it is gitignored, so this does not commit secrets). Never keep them shell-only, never print their values, and never regenerate `.env` wholesale.
 
 ## 4) Architecture guardrails
 

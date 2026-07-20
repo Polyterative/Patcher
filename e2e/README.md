@@ -23,6 +23,13 @@ cp .env.example .env
 - `E2E_TEST_EMAIL`
 - `E2E_TEST_PASSWORD`
 
+> The root `.env` is the **only** canonical credential location — `e2e/helpers/auth.ts`,
+> `playwright.config.ts`, and the `scripts/ops/run-e2e-*.mjs` runners all load it.
+> Agents: if these keys are missing, ask the user once and write the values into `.env`
+> (gitignored) rather than exporting them in a shell — shell env does not persist across
+> sessions and is the historical cause of repeated "missing credentials" skips.
+> `pnpm loop:health` reports whether the keys are present.
+
 3. Run authenticated tests:
 
 ```bash
