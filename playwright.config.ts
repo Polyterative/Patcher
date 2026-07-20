@@ -44,6 +44,7 @@ export default defineConfig({
   testDir: './e2e',
   testMatch: [
     '**/manufacturer-browser.spec.ts',
+    '**/data-source-browser.spec.ts',
     '**/module-browser.spec.ts',
     '**/module-browser-pagination.spec.ts',
     '**/module-browser-tags.spec.ts',

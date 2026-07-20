@@ -17,9 +17,17 @@ function loadEnvFile(filePath) {
 }
 
 loadEnvFile(path.join(__dirname, '.env'));
+loadEnvFile(path.join(__dirname, '.env.local'));
 
-const supabaseUrl = process.env.SUPABASE_URL || '';
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || '';
+function readExistingEnvironmentValue(filePath, propertyName) {
+  if (!fs.existsSync(filePath)) return '';
+  const content = fs.readFileSync(filePath, 'utf8');
+  return content.match(new RegExp(`${propertyName}:\\\\s*['"]([^'"]+)['"]`))?.[1] || '';
+}
+
+const existingDevEnvPath = path.join(__dirname, 'src/environments/environment.ts');
+const supabaseUrl = process.env.SUPABASE_URL || readExistingEnvironmentValue(existingDevEnvPath, 'url');
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || readExistingEnvironmentValue(existingDevEnvPath, 'key');
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('[generate-env] WARNING: SUPABASE_URL or SUPABASE_ANON_KEY is not set. Environment files will have empty values.');
@@ -34,7 +42,8 @@ export const environment = {
   },
   features: {
     collectionsEnabled: false,
-    coolReactionsEnabled: false
+    coolReactionsEnabled: false,
+    marketplaceEnabled: false
   }
 };
 `;
@@ -50,7 +59,8 @@ export const environment = {
   },
   features: {
     collectionsEnabled: true,
-    coolReactionsEnabled: true
+    coolReactionsEnabled: true,
+    marketplaceEnabled: true
   }
 };
 `;
