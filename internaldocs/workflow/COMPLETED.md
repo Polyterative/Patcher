@@ -1,4 +1,8 @@
 # Completed Features
+
+> Archive of finished work. One-line summaries only. For strategy context see `../product/PRINCIPLES.md` and
+> `../product/ROADMAP.md`.
+
 - **2026-07-19** — MEDIUM: Rack module orientation — 3U flip adds placement-level `normal` / `rot180` orientation for eligible 3U rack modules, additive schema/types/backend preservation, editor and touch toggle affordances, public/patch rendering, drag-preview rotation, analytics, and focused concurrency coverage without RLS/policy/grant/release changes.
 - **2026-07-08** — Cross-entity Cool detail placement polish uses screenshot-backed review to move module, rack, and patch Cool actions out of fixed floating controls and into the approved in-context detail card/action rows, preserving repeated-list exclusions and production/backend/typegen gates.
 - **2026-07-08** — Price Hub frontend cleanup removes the declined Store prices report-mismatch prototype/local acknowledgement state and restores each listing row as one explicit external store link; Supabase Cron, retention/backfill, schema/data mutations, release, and push remain gated.
@@ -30,9 +34,6 @@
 - **2026-06-18** — HIGH: Security — Audit Remediation completed the safe repo-code hardening slice: removed tracked `.env`, added placeholder env template, disabled production source maps/named chunks, added noopener links, replaced bootstrap inline fallback, and normalized auth return URLs.
 - **2026-06-18** — MEDIUM: Analytics — PostHog instrumentation now covers remaining code-owned feedback/admin events, documents collection events, and masks auth/report text from autocapture; external dashboard setup is documented as manual.
 - **2026-06-18** — LOW: Maintenance — Dependency deprecation audit removed unused direct dependencies, refreshed the pnpm lockfile, and documented remaining Angular/release-tooling deprecation decisions.
-
-> Archive of finished work. One-line summaries only. For strategy context see `../product/PRINCIPLES.md` and
-> `../product/ROADMAP.md`.
 
 - **2026-06-18** — LOW: Angular — Eager change-detection audit converted safe production components to OnPush, added focused cropper/date-input coverage, and documented remaining chip-input/spec-only Eager reasons.
 - **2026-06-18** — LOW: Angular — Rack preview enter animation now uses Angular compiler `animate.enter` with scoped CSS keyframes, while complex `@angular/animations` usages are inventoried and deferred for visual migration.
