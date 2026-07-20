@@ -30,11 +30,11 @@ class AdminFlagsStub {
 }
 
 describe('AdminPanelRootComponent', () => {
-  let mockBackend: any;
+  let mockBackend: SupabaseService;
   let fixture: ComponentFixture<AdminPanelRootComponent>;
 
   beforeEach(async () => {
-    mockBackend = {};
+    mockBackend = Object.create(SupabaseService.prototype) as SupabaseService;
     await TestBed.configureTestingModule({
       declarations: [
         AdminPanelRootComponent,

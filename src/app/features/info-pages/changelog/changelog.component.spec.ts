@@ -1,12 +1,13 @@
 import { ChangelogComponent } from './changelog.component';
+import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 
 describe('ChangelogComponent', () => {
   let comp: ChangelogComponent;
-  let mockSeoService: { updateSeo: jasmine.Spy };
+  let mockSeoService: jasmine.SpyObj<SeoAndUtilsService>;
 
   beforeEach(() => {
-    mockSeoService = { updateSeo: jasmine.createSpy('updateSeo') };
-    comp = new ChangelogComponent(mockSeoService as any);
+    mockSeoService = jasmine.createSpyObj<SeoAndUtilsService>('SeoAndUtilsService', ['updateSeo']);
+    comp = new ChangelogComponent(mockSeoService);
   });
 
   it('creates without error', () => {

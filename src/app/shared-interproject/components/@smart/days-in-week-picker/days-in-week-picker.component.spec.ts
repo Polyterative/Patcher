@@ -1,4 +1,7 @@
-import { FormBuilder } from '@angular/forms';
+import {
+  ControlValueAccessor,
+  FormBuilder
+} from '@angular/forms';
 import { DaysInWeekPickerComponent } from './days-in-week-picker.component';
 
 // ── Factory ───────────────────────────────────────────────────────────────────
@@ -89,7 +92,8 @@ describe('DaysInWeekPickerComponent', () => {
     it('sets all controls to false for a non-array input', () => {
       const comp = makeComponent();
       comp.ngOnInit();
-      comp.writeValue(null as any);
+      const accessor: ControlValueAccessor = comp;
+      accessor.writeValue(null);
       const values: boolean[] = Object.values(comp.checkboxGroupForm.value);
       expect(values.every(v => v === false)).toBeTrue();
     });
