@@ -5,6 +5,7 @@ import {
   TEST_TIMEOUT
 } from './test-setup';
 import { SupabaseService } from '../../supabase.service';
+import { DEFAULT_RACK_MODULE_ORIENTATION } from 'src/app/models/rack';
 
 function chainable(resolveValue: any = {data: null, error: null}) {
   const m: any = {};
@@ -316,9 +317,10 @@ describe('SupabaseService - CRUD Operations', () => {
             moduleid: 10,
             rackid: 5,
             row: 2,
-            column: 3
+            column: 3,
+            orientation: DEFAULT_RACK_MODULE_ORIENTATION
           });
-          expect(selectSpy).toHaveBeenCalledWith('id,moduleid,rackid,row,column,selected_panel_id');
+          expect(selectSpy).toHaveBeenCalledWith('id,moduleid,rackid,row,column,selected_panel_id,orientation');
           done();
         },
         error: (err) => {
@@ -342,9 +344,10 @@ describe('SupabaseService - CRUD Operations', () => {
             moduleid: 10,
             rackid: 5,
             row: undefined,
-            column: undefined
+            column: undefined,
+            orientation: DEFAULT_RACK_MODULE_ORIENTATION
           });
-          expect(selectSpy).toHaveBeenCalledWith('id,moduleid,rackid,row,column,selected_panel_id');
+          expect(selectSpy).toHaveBeenCalledWith('id,moduleid,rackid,row,column,selected_panel_id,orientation');
           done();
         },
         error: (err) => {
