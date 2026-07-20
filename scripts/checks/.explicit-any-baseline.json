@@ -1,6 +1,6 @@
 {
   "_comment": "Grandfathered explicit `any` counts. Do not add by hand — run `node scripts/checks/check-explicit-any.cjs --update-baseline` after intentional cleanup.",
-  "totalExplicitAny": 2504,
+  "totalExplicitAny": 2493,
   "files": {
     "api/sitemap.ts": 3,
     "e2e/auth-rack-context-menu.spec.ts": 6,
@@ -50,12 +50,8 @@
     "src/app/components/rack-parts/rack-detail-data.utils.spec.ts": 4,
     "src/app/components/rack-parts/rack-details/rack-details-remaining-indicator/rack-details-remaining-indicator.component.spec.ts": 2,
     "src/app/components/rack-parts/rack-details/rack-details.component.spec.ts": 2,
-    "src/app/components/rack-parts/rack-editor/calculate-row-information.pipe.spec.ts": 2,
     "src/app/components/rack-parts/rack-editor/rack-editor.component.spec.ts": 37,
-    "src/app/components/rack-parts/rack-editor/rack-visual-model/has-unracked-modules-list.pipe.spec.ts": 2,
-    "src/app/components/rack-parts/rack-editor/rack-visual-model/has-unracked-modules.pipe.spec.ts": 2,
     "src/app/components/rack-parts/rack-editor/rack-visual-model/rack-visual-model.component.spec.ts": 39,
-    "src/app/components/rack-parts/rack-editor/rack-visual-model/rack-visual-model.utils.spec.ts": 5,
     "src/app/components/rack-parts/rack-minimal/rack-minimal.component.spec.ts": 2,
     "src/app/components/rack-parts/rack-module-adder/rack-module-adder-dialog.component.spec.ts": 9,
     "src/app/components/rack-parts/rack-signal-analysis.helpers.spec.ts": 7,

@@ -1,9 +1,40 @@
 import { HasUnrackedModulesListPipe } from './has-unracked-modules-list.pipe';
-import { RackedModule } from 'src/app/models/module';
+import { DbModule, RackedModule } from 'src/app/models/module';
+
+type RackRows = RackedModule[][];
+
+const makeDbModule = (id: number): DbModule => ({
+  id,
+  created: '',
+  updated: '',
+  name: `Module ${ id }`,
+  description: '',
+  hp: 4,
+  public: true,
+  manufacturer: {id: 1, name: 'Test Maker'},
+  manufacturerId: 1,
+  standard: {id: 0, name: 'Eurorack'},
+  tags: [],
+  panels: [],
+  ins: [],
+  outs: [],
+  switches: [],
+  manualURL: '',
+  store_url: null,
+  additional: null,
+  isComplete: true,
+  isApproved: true,
+  isDIY: false,
+  powerPos12: null,
+  powerNeg12: null,
+  powerPos5: null,
+  depth: 0,
+  weight: 0
+});
 
 const makeModule = (id: number, row: number | null | undefined, col: number | null | undefined): RackedModule => ({
-  module: { id, hp: 4 } as any,
-  rackingData: { id: 1, row, column: col, rack_id: 1, moduleid: id } as any
+  module: makeDbModule(id),
+  rackingData: { id: 1, row, column: col, rackid: 1, moduleid: id }
 });
 
 describe('HasUnrackedModulesListPipe', () => {
@@ -20,32 +51,32 @@ describe('HasUnrackedModulesListPipe', () => {
   });
 
   it('returns false when all modules are placed', () => {
-    const rows = [[makeModule(1, 0, 0), makeModule(2, 0, 1)]];
+    const rows: RackRows = [[makeModule(1, 0, 0), makeModule(2, 0, 1)]];
     expect(pipe.transform(rows)).toBeFalse();
   });
 
   it('returns true when a module has null row', () => {
-    const rows = [[makeModule(1, 0, 0), makeModule(2, null, 0)]];
+    const rows: RackRows = [[makeModule(1, 0, 0), makeModule(2, null, 0)]];
     expect(pipe.transform(rows)).toBeTrue();
   });
 
   it('returns true when a module has null column', () => {
-    const rows = [[makeModule(1, 0, null)]];
+    const rows: RackRows = [[makeModule(1, 0, null)]];
     expect(pipe.transform(rows)).toBeTrue();
   });
 
   it('returns true when a module has undefined row', () => {
-    const rows = [[makeModule(1, undefined, 0)]];
+    const rows: RackRows = [[makeModule(1, undefined, 0)]];
     expect(pipe.transform(rows)).toBeTrue();
   });
 
   it('returns true when a module has undefined column', () => {
-    const rows = [[makeModule(1, 0, undefined)]];
+    const rows: RackRows = [[makeModule(1, 0, undefined)]];
     expect(pipe.transform(rows)).toBeTrue();
   });
 
   it('returns true when a later row has an unracked module', () => {
-    const rows = [
+    const rows: RackRows = [
       [makeModule(1, 0, 0)],
       [makeModule(2, null, null)]
     ];

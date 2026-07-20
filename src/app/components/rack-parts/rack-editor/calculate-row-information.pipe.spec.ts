@@ -1,9 +1,38 @@
 import { CalculateRowInformationPipe } from './calculate-row-information.pipe';
-import { RackedModule } from 'src/app/models/module';
+import { DbModule, RackedModule } from 'src/app/models/module';
+
+const makeDbModule = (id: number, hp: number): DbModule => ({
+  id,
+  created: '',
+  updated: '',
+  name: `Module ${ id }`,
+  description: '',
+  hp,
+  public: true,
+  manufacturer: {id: 1, name: 'Test Maker'},
+  manufacturerId: 1,
+  standard: {id: 0, name: 'Eurorack'},
+  tags: [],
+  panels: [],
+  ins: [],
+  outs: [],
+  switches: [],
+  manualURL: '',
+  store_url: null,
+  additional: null,
+  isComplete: true,
+  isApproved: true,
+  isDIY: false,
+  powerPos12: null,
+  powerNeg12: null,
+  powerPos5: null,
+  depth: 30,
+  weight: 0
+});
 
 const makeRackedModule = (id: number, hp: number, row = 0, col = 0): RackedModule => ({
-  module: { id, hp, name: '', description: '', manufacturer_id: 1, depth: 30, powerPos12: null, powerNeg12: null, powerPos5: null } as any,
-  rackingData: { id: 1, row, column: col, rackid: 1, moduleid: id } as any
+  module: makeDbModule(id, hp),
+  rackingData: { id: 1, row, column: col, rackid: 1, moduleid: id }
 });
 
 describe('CalculateRowInformationPipe', () => {
