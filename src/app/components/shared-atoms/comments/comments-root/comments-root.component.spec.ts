@@ -7,7 +7,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, ReplaySubject, Subject } from 'rxjs';
+import { SimpleUserModel } from 'src/app/features/backend/supabase.service';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
+import { CommentableEntityTypes, DbComment } from 'src/app/models/comment';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import { CommentsDataService } from '../comments-data.service';
 import { CommentsRootComponent } from './comments-root.component';
@@ -15,6 +17,34 @@ import { CommentsRootComponent } from './comments-root.component';
 interface MatFormEntityStubDataPack {
   label?: string;
   control: FormControl<string | null>;
+}
+
+interface CommentEntityReference {
+  entityId: number;
+  entityType: CommentableEntityTypes;
+}
+
+interface CommentsDataServiceDouble {
+  comments$: BehaviorSubject<DbComment[] | undefined>;
+  commentsCount$: BehaviorSubject<number>;
+  isSubmitting$: BehaviorSubject<boolean>;
+  requestCommentsUpdate$: ReplaySubject<CommentEntityReference>;
+  loadMore$: Subject<void>;
+  submitComment$: Subject<string>;
+  maxLength: number;
+  fields: {
+    submit: MatFormEntityStubDataPack;
+  };
+}
+
+interface UserManagementServiceDouble {
+  loggedUser$: BehaviorSubject<SimpleUserModel | undefined>;
+}
+
+interface BuildOptions {
+  comments?: DbComment[];
+  count?: number;
+  user?: SimpleUserModel;
 }
 
 @Component({
@@ -45,22 +75,56 @@ class MatFormEntityStubComponent {
 describe('CommentsRootComponent', () => {
   let fixture: ComponentFixture<CommentsRootComponent>;
 
-  function build({
-    comments = [{ id: 1, content: 'First comment' }],
-    count = 1,
-    user = { id: 'user-1' },
-  }: {
-    comments?: Array<Record<string, unknown>>;
-    count?: number;
-    user?: Record<string, unknown> | null;
-  } = {}) {
-    const comments$ = new BehaviorSubject<any[] | undefined>(comments as any[]);
+  function makeComment(id = 1, content = 'First comment'): DbComment {
+    return {
+      id,
+      content,
+      entityId: 5,
+      entityType: CommentableEntityTypes.PATCH,
+      profile: { id: 'user-1', username: 'alice' },
+      created: '2024-01-01T00:00:00Z',
+      updated: '2024-01-01T00:00:00Z',
+    };
+  }
+
+  function makeUser(id = 'user-1'): SimpleUserModel {
+    return {
+      id,
+      email: `${ id }@example.com`,
+      created_at: '2024-01-01T00:00:00Z',
+      updated_at: '2024-01-01T00:00:00Z',
+    };
+  }
+
+  function build(options: BuildOptions = {}) {
+    const comments = options.comments ?? [makeComment()];
+    const count = options.count ?? 1;
+    const user = 'user' in options ? options.user : makeUser();
+    const comments$ = new BehaviorSubject<DbComment[] | undefined>(comments);
     const commentsCount$ = new BehaviorSubject<number>(count);
     const isSubmitting$ = new BehaviorSubject<boolean>(false);
-    const requestCommentsUpdate$ = new ReplaySubject<any>(1);
+    const requestCommentsUpdate$ = new ReplaySubject<CommentEntityReference>(1);
     const loadMore$ = new Subject<void>();
     const submitComment$ = new Subject<string>();
-    const loggedUser$ = new BehaviorSubject<any>(user);
+    const loggedUser$ = new BehaviorSubject<SimpleUserModel | undefined>(user);
+    const dataService: CommentsDataServiceDouble = {
+      comments$,
+      commentsCount$,
+      isSubmitting$,
+      requestCommentsUpdate$,
+      loadMore$,
+      submitComment$,
+      maxLength: 1000,
+      fields: {
+        submit: {
+          label: 'Add a comment',
+          control: new FormControl('Ready to post'),
+        },
+      },
+    };
+    const userManagementService: UserManagementServiceDouble = {
+      loggedUser$,
+    };
 
     TestBed.configureTestingModule({
       declarations: [CommentsRootComponent, MatFormEntityStubComponent],
@@ -75,27 +139,11 @@ describe('CommentsRootComponent', () => {
       providers: [
         {
           provide: CommentsDataService,
-          useValue: {
-            comments$,
-            commentsCount$,
-            isSubmitting$,
-            requestCommentsUpdate$,
-            loadMore$,
-            submitComment$,
-            maxLength: 1000,
-            fields: {
-              submit: {
-                label: 'Add a comment',
-                control: new FormControl('Ready to post'),
-              },
-            },
-          },
+          useValue: dataService,
         },
         {
           provide: UserManagementService,
-          useValue: {
-            loggedUser$,
-          },
+          useValue: userManagementService,
         },
         {
           provide: AppStateService,
@@ -152,7 +200,7 @@ describe('CommentsRootComponent', () => {
 
   it('renders the load-more action inside the same rail when more comments exist', () => {
     build({
-      comments: [{ id: 1, content: 'First comment' }],
+      comments: [makeComment()],
       count: 4,
     });
 
@@ -165,7 +213,7 @@ describe('CommentsRootComponent', () => {
 
   it('hides the load-more button when count equals loaded comments', () => {
     build({
-      comments: [{ id: 1, content: 'Only comment' }],
+      comments: [makeComment(1, 'Only comment')],
       count: 1,
     });
 
@@ -174,7 +222,7 @@ describe('CommentsRootComponent', () => {
   });
 
   it('hides the composer when user is not logged in', () => {
-    build({ user: null });
+    build({ user: undefined });
 
     const composer = fixture.nativeElement.querySelector('.commentsRoot__composer');
     expect(composer).toBeNull();
@@ -182,7 +230,7 @@ describe('CommentsRootComponent', () => {
 
   it('shows remaining count in load-more label', () => {
     build({
-      comments: [{ id: 1, content: 'First' }],
+      comments: [makeComment(1, 'First')],
       count: 5,
     });
 

@@ -1,38 +1,46 @@
 import { of, Subject } from 'rxjs';
 import { CommentsItemComponent, defaultCommentViewConfig } from './comments-item.component';
+import { MatSnackBar, MatSnackBarRef, TextOnlySnackBar } from '@angular/material/snack-bar';
+import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
+import { CommentsDataService } from 'src/app/components/shared-atoms/comments/comments-data.service';
 import { DbComment } from 'src/app/models/comment';
+import { PublicUser } from 'src/app/models/user';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function makeComment(id = 10): DbComment {
+  const profile: PublicUser = { id: 'user1', username: 'alice' };
+
   return {
     id,
     content: 'Great patch!',
     entityId: 5,
     entityType: 3,
-    profile: { id: 'user1', username: 'alice' } as any,
+    profile,
     created: '2024-01-01T00:00:00Z',
     updated: '2024-01-01T00:00:00Z',
   };
 }
 
-function makeSnackBarRef(emitAction = false) {
-  return {
-    onAction: () => emitAction ? of(undefined) : new Subject<void>().asObservable(),
-  };
+function makeSnackBarRef(emitAction = false): jasmine.SpyObj<MatSnackBarRef<TextOnlySnackBar>> {
+  const snackBarRef = jasmine.createSpyObj<MatSnackBarRef<TextOnlySnackBar>>('MatSnackBarRef', ['onAction']);
+  snackBarRef.onAction.and.returnValue(emitAction ? of(undefined) : new Subject<void>().asObservable());
+
+  return snackBarRef;
 }
 
 function makeComponent(snackBarEmitsAction = false) {
   const deleteComment$ = new Subject<number>();
-  const dataService = { deleteComment$ };
-  const userService = {};
+  const dataService = jasmine.createSpyObj<CommentsDataService>('CommentsDataService', [], { deleteComment$ });
+  const userService = jasmine.createSpyObj<UserManagementService>('UserManagementService', [], { loggedUser$: of(undefined) });
   const snackBarRef = makeSnackBarRef(snackBarEmitsAction);
-  const snackBar = { open: jasmine.createSpy('open').and.returnValue(snackBarRef) };
+  const snackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
+  snackBar.open.and.returnValue(snackBarRef);
 
   const comp = new CommentsItemComponent(
-    dataService as any,
-    userService as any,
-    snackBar as any
+    dataService,
+    userService,
+    snackBar
   );
   comp.data = makeComment();
   return { comp, dataService, snackBar, deleteComment$ };
