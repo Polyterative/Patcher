@@ -23,7 +23,8 @@ use premium reasoning here rather than saving cost at the point where mistakes a
 - Read `internaldocs/README.md` only when the request lacks enough routing context, then open the most relevant 1–3 docs
 - Inspect existing code paths and tests that the change will touch (read-only)
 - Ask clarifying questions when scope, behaviour, or limits are ambiguous (use `ask_user`)
-- Produce a step-ordered plan in `internaldocs/workflow/CURRENT_FEATURE.md`
+- Produce a step-ordered plan in the task's `internaldocs/workflow/plans/<slug>.md` file
+  (create it if missing) and point `CURRENT_FEATURE.md` at it (link + layer checklist only)
 - Identify risks, unknowns, and dependencies up front
 - For backend plans, compare the semantic domain model with the physical storage
   representation instead of assuming they should use the same type
@@ -52,8 +53,9 @@ use premium reasoning here rather than saving cost at the point where mistakes a
    - LSP `workspaceSymbol` / `findReferences` for *named* symbols
    - `grep` / `glob` only as a fallback for literals
 5. Resolve ambiguity with `ask_user` — one question at a time, multiple-choice when possible
-6. Draft the plan in `internaldocs/workflow/CURRENT_FEATURE.md` with: problem, approach,
-   step-ordered checklist, risks, validation strategy.
+6. Draft the plan in `internaldocs/workflow/plans/<slug>.md` with: problem, approach,
+   step-ordered checklist, risks, validation strategy, Decision log. Point
+   `CURRENT_FEATURE.md` at the plan (link + live layer checklist only).
 7. If the plan changes persistent data shape, column types, migrations, RPCs, storage
    contracts, or published-client compatibility, hand the draft to
    `backend-plan-reviewer` before asking the user to approve it. Incorporate every
@@ -75,8 +77,9 @@ use premium reasoning here rather than saving cost at the point where mistakes a
 
 ## Output contract
 
-Single Markdown document at `internaldocs/workflow/CURRENT_FEATURE.md` (overwrite previous
-plan if archived to `COMPLETED.md`). Brief summary echoed in the chat reply.
+Single Markdown plan at `internaldocs/workflow/plans/<slug>.md` (plus the matching one-line
+`TODO.md` index entry), with `CURRENT_FEATURE.md` updated to point at it. Brief summary echoed
+in the chat reply.
 
 ## Repo references
 
