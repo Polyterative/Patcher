@@ -17,8 +17,8 @@ import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import { MinimalModule } from 'src/app/models/module';
-import { AnalyticsService } from '../../backbone/analytics-integration/analytics.service';
 import { SupabaseService } from '../../backend/supabase.service';
+import { AnalyticsService } from '../../backbone/analytics-integration/analytics.service';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 import { ModuleBrowserRootComponent } from './module-browser-root.component';
 import { ModuleBrowserRootModule } from './module-browser-root.module';
@@ -27,6 +27,7 @@ import { ModuleBrowserRootModule } from './module-browser-root.module';
 describe('ModuleBrowserRootComponent', () => {
   let fixture: ComponentFixture<ModuleBrowserRootComponent>;
   let component: ModuleBrowserRootComponent;
+  let analytics: jasmine.SpyObj<AnalyticsService>;
 
   function buildOwnedModules(count: number): MinimalModule[] {
     return Array.from({length: count}, (_, index) => ({
@@ -47,6 +48,8 @@ describe('ModuleBrowserRootComponent', () => {
   }
   
   beforeEach(async () => {
+    analytics = jasmine.createSpyObj<AnalyticsService>('AnalyticsService', ['capture', 'identify', 'reset']);
+
     await TestBed.configureTestingModule({
       imports: [
         ModuleBrowserRootModule,
@@ -72,7 +75,7 @@ describe('ModuleBrowserRootComponent', () => {
         },
         {
           provide: AnalyticsService,
-          useValue: {capture: jasmine.createSpy('capture')}
+          useValue: analytics
         },
         {
           provide: ActivatedRoute,
@@ -142,6 +145,18 @@ describe('ModuleBrowserRootComponent', () => {
     expect(host.textContent).toContain('Search module...');
     expect(host.textContent).toContain('Order by');
   });
+
+  it('does not track search.performed while embedded default browse mode settles', fakeAsync(() => {
+    analytics.capture.calls.reset();
+
+    component.enableCollectionBrowseModes = true;
+    component.ownedModulesInput = buildOwnedModules(20);
+    fixture.detectChanges();
+    tick(750);
+
+    const eventNames = analytics.capture.calls.allArgs().map(args => args[0]);
+    expect(eventNames).not.toContain('search.performed');
+  }));
 
   it('shows the wide-shell nav by default on standalone module browser pages', () => {
   });

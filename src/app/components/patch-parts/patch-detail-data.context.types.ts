@@ -15,6 +15,7 @@ import { ISelectable } from 'src/app/shared-interproject/components/@smart/mat-f
 import { SelectionPanelBridgeService } from './selection-panel-bridge.service';
 import { PatchEditorOperationMode } from './patch-editor/patch-editor.types';
 import { CVConnectionState, LinkedRackUiState, MultiInstanceModuleSummary } from './patch-detail-data.models';
+import { DetailAnalyticsSurface } from '../detail-analytics-surface';
 
 export interface PatchDetailFormData {
   name: { control: UntypedFormControl };
@@ -26,6 +27,7 @@ export interface PatchDetailDataContext {
   updateSinglePatchData$: ReplaySubject<number>;
   updateSinglePatchByPublicId$: ReplaySubject<string>;
   singlePatchData$: BehaviorSubject<Patch | undefined>;
+  detailAnalyticsSurface$: BehaviorSubject<DetailAnalyticsSurface>;
   patchEditingPanelOpenState$: BehaviorSubject<boolean>;
   patchConnections$: BehaviorSubject<PatchConnection[] | null>;
   editorConnections$: BehaviorSubject<PatchConnection[] | null>;

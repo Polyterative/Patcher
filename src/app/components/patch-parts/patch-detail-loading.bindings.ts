@@ -1,6 +1,7 @@
 import { of } from 'rxjs';
 import { catchError, filter, map, pairwise, switchMap, take, takeUntil, tap, withLatestFrom } from 'rxjs/operators';
 import { PatchConnection } from '../../models/connection';
+import { shouldCaptureCanonicalDetailView } from '../detail-analytics-surface';
 import { MultiInstanceModuleSummary } from './patch-detail-data.models';
 import { PatchDetailDataContext, PatchDetailDataDependencies } from './patch-detail-data.context.types';
 import { groupInstancesByModuleId } from './patch-detail-data.utils';
@@ -25,17 +26,21 @@ export function bindPatchLoadByNumericId(
         ctx.patchDetailUnavailableMessage$.next(null);
         deps.backend.cacheResetter$.next(['patchModuleInstances', 'rackWithId']);
       }),
-      switchMap(x => access.isPublicDetailMode()
+      withLatestFrom(ctx.detailAnalyticsSurface$),
+      switchMap(([x, surface]) => (access.isPublicDetailMode()
         ? deps.backend.GET.publicPatchWithId(x)
         : deps.backend.get.patchWithId(x)
+      ).pipe(
+        map(result => ({result, surface})),
+        catchError(() => of({result: {data: undefined, error: null}, surface}))
+      )
       ),
-      catchError(() => of({data: undefined, error: null})),
       takeUntil(ctx.destroy$)
     )
-    .subscribe(x => {
-      const patch = x?.data ?? undefined;
+    .subscribe(({result, surface}) => {
+      const patch = result?.data ?? undefined;
       ctx.singlePatchData$.next(patch);
-      if (patch) {
+      if (patch && shouldCaptureCanonicalDetailView(surface)) {
         deps.analytics.capture('patch.viewed', { patch_id: patch.id });
       }
       if (!patch) {
@@ -59,14 +64,17 @@ export function bindPatchLoadByPublicId(
         ctx.patchDetailUnavailableMessage$.next(null);
         deps.backend.cacheResetter$.next(['patchModuleInstances', 'rackWithId']);
       }),
-      switchMap(token => deps.backend.GET.patchByPublicId(token)),
-      catchError(() => of({data: undefined, error: null})),
+      withLatestFrom(ctx.detailAnalyticsSurface$),
+      switchMap(([token, surface]) => deps.backend.GET.patchByPublicId(token).pipe(
+        map(result => ({result, surface})),
+        catchError(() => of({result: {data: undefined, error: null}, surface}))
+      )),
       takeUntil(ctx.destroy$)
     )
-    .subscribe(x => {
-      const patch = x?.data ?? undefined;
+    .subscribe(({result, surface}) => {
+      const patch = result?.data ?? undefined;
       ctx.singlePatchData$.next(patch);
-      if (patch) {
+      if (patch && shouldCaptureCanonicalDetailView(surface)) {
         deps.analytics.capture('patch.viewed', { patch_id: patch.id });
       }
       if (!patch) {
@@ -132,7 +140,8 @@ export function bindOwnedPatchEditorOpen(ctx: PatchDetailDataContext, deps: Patc
 export function bindEditorPanelCloseSelectionReset(ctx: PatchDetailDataContext): void {
   ctx.patchEditingPanelOpenState$
     .pipe(
-      filter(x => !x),
+      pairwise(),
+      filter(([wasOpen, isOpen]) => wasOpen === true && isOpen === false),
       takeUntil(ctx.destroy$)
     )
     .subscribe(_ => ctx.resetSelectedForConnection$.next());

@@ -48,12 +48,12 @@
                   @for (tag of uniqueTags; track tag) {
                     <mat-chip
                       [highlighted]="activeTag === tag"
-                      (click)="dataService.activeTagFilter$.next(activeTag === tag ? null : tag)"
+                      (click)="dataService.selectPatchTagFilter$.next(activeTag === tag ? null : tag)"
                     >{{ tag }}</mat-chip>
                   }
                 </mat-chip-set>
                 @if (activeTag) {
-                  <button mat-button color="primary" (click)="dataService.activeTagFilter$.next(null)">
+                  <button mat-button color="primary" (click)="dataService.selectPatchTagFilter$.next(null)">
                     <mat-icon>close</mat-icon> Clear filter
                   </button>
                 }

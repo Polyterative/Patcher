@@ -103,6 +103,8 @@ export class UserAreaDataService extends SubManager {
   readonly remainingModulesCount$: Observable<number>;
   readonly moduleCollectionFilter$ = new BehaviorSubject<UserModuleCollectionFilter>('MY_MODULES');
   readonly activeTagFilter$ = new BehaviorSubject<string | null>(null);
+  readonly selectModuleCollectionFilter$ = new Subject<UserModuleCollectionFilter>();
+  readonly selectPatchTagFilter$ = new Subject<string | null>();
   readonly filteredRacksData$: Observable<Rack[] | undefined>;
   readonly filteredRacksCount$: Observable<number>;
   readonly pagedRacksData$: Observable<Rack[] | undefined>;
@@ -437,10 +439,19 @@ export class UserAreaDataService extends SubManager {
       )
       .subscribe();
 
-    this.moduleCollectionFilter$
+    this.selectModuleCollectionFilter$
       .pipe(
         tap((filter) => {
           this.analytics.capture('user_area.modules.collection_filter_changed', { collection_filter: filter });
+          this.moduleCollectionFilter$.next(filter);
+        }),
+        this.takeUntilDestroyed()
+      )
+      .subscribe();
+
+    this.moduleCollectionFilter$
+      .pipe(
+        tap(() => {
           this.modulesPagination.skip$.next(0);
           this.modulesPagination.take$.next(10);
         }),
@@ -448,10 +459,19 @@ export class UserAreaDataService extends SubManager {
       )
       .subscribe();
 
-    this.activeTagFilter$
+    this.selectPatchTagFilter$
       .pipe(
         tap((tag) => {
           this.analytics.capture('user_area.patches.tag_filter_changed', { tag_filter: tag });
+          this.activeTagFilter$.next(tag);
+        }),
+        this.takeUntilDestroyed()
+      )
+      .subscribe();
+
+    this.activeTagFilter$
+      .pipe(
+        tap(() => {
           this.patchesPagination.skip$.next(0);
         }),
         this.takeUntilDestroyed()

@@ -1,5 +1,6 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
+import { DETAIL_ANALYTICS_SURFACES } from 'src/app/components/detail-analytics-surface';
 import { RouterLink } from '@angular/router';
 import { take, timer } from 'rxjs';
 import { ModuleDetailDataService } from 'src/app/components/module-parts/module-detail-data.service';
@@ -70,7 +71,7 @@ const HOME_PROOF_DELAY_STEP_MS = 500;
     ModuleBrowserSharedModule,
   ],
 })
-export class HomeComponent extends SubManager implements OnInit {
+export class HomeComponent extends SubManager implements OnInit, OnDestroy {
   readonly showHomepageInsights = false;
   readonly showCommunityTrends = true;
 
@@ -233,6 +234,9 @@ export class HomeComponent extends SubManager implements OnInit {
     @Inject(PLATFORM_ID) private readonly platformId: object,
   ) {
     super();
+    this.patchDetailDataService.setDetailAnalyticsSurface(DETAIL_ANALYTICS_SURFACES.homePreview);
+    this.rackDetailDataService.setDetailAnalyticsSurface(DETAIL_ANALYTICS_SURFACES.homePreview);
+    this.moduleDetailDataService.setDetailAnalyticsSurface(DETAIL_ANALYTICS_SURFACES.homePreview);
     this.showInsightsPageEntry = this.appState.isDev;
     this.communityLinks = this.showInsightsPageEntry
       ? [
@@ -275,5 +279,12 @@ export class HomeComponent extends SubManager implements OnInit {
       .subscribe(() => {
         this.rackDetailDataService.updateSingleRackData$.next(HOME_PROOF_RACK_ID);
       });
+  }
+
+  override ngOnDestroy(): void {
+    this.patchDetailDataService.setDetailAnalyticsSurface(DETAIL_ANALYTICS_SURFACES.detailRoute);
+    this.rackDetailDataService.setDetailAnalyticsSurface(DETAIL_ANALYTICS_SURFACES.detailRoute);
+    this.moduleDetailDataService.setDetailAnalyticsSurface(DETAIL_ANALYTICS_SURFACES.detailRoute);
+    super.ngOnDestroy();
   }
 }

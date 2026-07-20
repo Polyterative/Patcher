@@ -72,10 +72,27 @@ describe('ModuleBrowserDataService', () => {
     return [args[3], args[4]];
   }
 
+  function searchPerformedCalls(
+    analytics: { capture: jasmine.Spy }
+  ): unknown[][] {
+    return analytics.capture.calls.allArgs()
+      .filter(([eventName]: [string]) => eventName === 'search.performed');
+  }
+
   it('calls backend with updated/desc when updateModulesList$ fires', () => {
     const {service, backend} = build();
     service.updateModulesList$.next();
     expect(sortArgs(backend)).toEqual(['updated', 'desc']);
+  });
+
+  it('does not track search.performed for default first-page loads', () => {
+    const {service, analytics} = build();
+    analytics.capture.calls.reset();
+
+    service.updateModulesList$.next();
+
+    expect(searchPerformedCalls(analytics)).toEqual([]);
+    service.ngOnDestroy();
   });
 
   it('updates sort$ and re-fetches after order control changes (debounced)', fakeAsync(() => {
@@ -160,6 +177,27 @@ describe('ModuleBrowserDataService', () => {
     service.ngOnDestroy();
   }));
 
+  it('tracks search.performed once with derived result metadata after a query search', fakeAsync(() => {
+    const {service, backend, analytics} = build();
+    backend.GET.modules.and.returnValue(of({
+      data: [moduleFactory({id: 41, name: 'Rings'})],
+      count: 13
+    }));
+    analytics.capture.calls.reset();
+
+    service.fields.name.control.setValue('rings');
+    tick(750);
+
+    const calls = searchPerformedCalls(analytics);
+    expect(calls.length).toBe(1);
+    expect(calls[0]).toEqual(['search.performed', {
+      query_len:      5,
+      filters_active: 0,
+      result_count:   13
+    }]);
+    service.ngOnDestroy();
+  }));
+
   it('passes the debounced description search term to GET.modules', fakeAsync(() => {
     const {service, backend} = build();
     service.fields.description.control.setValue('analog filter');
@@ -188,8 +226,9 @@ describe('ModuleBrowserDataService', () => {
   }));
 
   it('retries a thrown backend failure and renders recovered modules', () => {
-    const {service, backend} = build();
+    const {service, backend, analytics} = build();
     backend.cacheResetter$.next.calls.reset();
+    analytics.capture.calls.reset();
     backend.GET.modules.and.returnValues(
       throwError(() => new Error('network')),
       of({data: [moduleFactory({id: 22, name: 'Recovered'})], count: 1})
@@ -201,6 +240,7 @@ describe('ModuleBrowserDataService', () => {
     expect(backend.cacheResetter$.next.calls.allArgs()).toEqual([[['modules']]]);
     expect(service.modulesList$.value?.map(module => module.name)).toEqual(['Recovered']);
     expect(service.serversideAdditionalData.itemsCount$.value).toBe(1);
+    expect(searchPerformedCalls(analytics)).toEqual([]);
     service.ngOnDestroy();
   });
 
@@ -329,6 +369,30 @@ describe('ModuleBrowserDataService', () => {
     const args = backend.GET.modules.calls.mostRecent().args as any[];
     // tagIds is the 12th argument (index 11)
     expect(args[11]).toEqual([3, 7]);
+    service.ngOnDestroy();
+  }));
+
+  it('tracks search.performed once after a tag filter action that also changes ordering', fakeAsync(() => {
+    const {service, backend, analytics} = build();
+    backend.GET.modules.and.returnValue(of({
+      data: [
+        moduleFactory({id: 51, name: 'Filtered One'}),
+        moduleFactory({id: 52, name: 'Filtered Two'})
+      ],
+      count: 2
+    }));
+    analytics.capture.calls.reset();
+
+    service.fields.tags.control.setValue([{id: '5', name: 'Oscillator'}]);
+    tick(750);
+
+    const calls = searchPerformedCalls(analytics);
+    expect(calls.length).toBe(1);
+    expect(calls[0]).toEqual(['search.performed', {
+      query_len:      0,
+      filters_active: 1,
+      result_count:   2
+    }]);
     service.ngOnDestroy();
   }));
 

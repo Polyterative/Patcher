@@ -71,6 +71,8 @@ export function createMockUserAreaDataService() {
   const manualsData$ = new BehaviorSubject<DbModule[] | undefined>(undefined);
   const commentsData$ = new BehaviorSubject<DbComment[] | undefined>(undefined);
   const contributorStats$ = new BehaviorSubject<CurrentUserContributorStats | undefined>(undefined);
+  const moduleCollectionFilter$ = new BehaviorSubject<'MY_MODULES' | 'WISHLIST' | 'FOR_SALE'>('MY_MODULES');
+  const activeTagFilter$ = new BehaviorSubject<string | null>(null);
   
   const updateModulesData$ = new Subject<void>();
   const updatePatchesData$ = new Subject<void>();
@@ -81,6 +83,10 @@ export function createMockUserAreaDataService() {
   const addPatch$ = new Subject<void>();
   const addRack$ = new Subject<void>();
   const addModulesToCollection$ = new Subject<void>();
+  const selectModuleCollectionFilter$ = new Subject<'MY_MODULES' | 'WISHLIST' | 'FOR_SALE'>();
+  const selectPatchTagFilter$ = new Subject<string | null>();
+  selectModuleCollectionFilter$.subscribe(filter => moduleCollectionFilter$.next(filter));
+  selectPatchTagFilter$.subscribe(tag => activeTagFilter$.next(tag));
   
   return {
     modulesData$,
@@ -89,6 +95,8 @@ export function createMockUserAreaDataService() {
     manualsData$,
     commentsData$,
     contributorStats$,
+    moduleCollectionFilter$,
+    activeTagFilter$,
     updateModulesData$,
     updatePatchesData$,
     updateRackData$,
@@ -98,6 +106,8 @@ export function createMockUserAreaDataService() {
     addPatch$,
     addRack$,
     addModulesToCollection$,
+    selectModuleCollectionFilter$,
+    selectPatchTagFilter$,
     connectDiscovery: jasmine.createSpy('connectDiscovery'),
     resetUiState: jasmine.createSpy('resetUiState'),
   };

@@ -15,6 +15,7 @@ import {
 import { RackedModule } from '../../models/module';
 import { Rack } from '../../models/rack';
 import { SharedConstants } from '../../shared-interproject/SharedConstants';
+import { shouldCaptureCanonicalDetailView } from '../detail-analytics-surface';
 import {
   buildRackStatistics,
   mergeRefreshedModules
@@ -38,22 +39,26 @@ export class RackDetailLoadingDataService {
           context.rowedRackedModules$.next(null);
           context.rackDetailUnavailableMessage$.next(null);
         }),
-        switchMap(x => this.usePublicDetailReads
+        withLatestFrom(context.detailAnalyticsSurface$),
+        switchMap(([x, surface]) => (this.usePublicDetailReads
           ? context.backend.GET.publicRackWithId(x)
-          : context.backend.GET.rackWithId(x)),
-        catchError((err) => {
-          console.error('Failed to load rack details:', err);
-          context.singleRackData$.next(undefined);
-          context.rowedRackedModules$.next([]);
-          context.isRackDataLoading$.next(false);
-          context.rackDetailUnavailableMessage$.next(this.buildUnavailableMessage());
-          SharedConstants.errorCustom(context.snackBar, 'Failed to load this rack. Refresh the page and try again.');
-          return EMPTY;
-        }),
+          : context.backend.GET.rackWithId(x)
+        ).pipe(
+          map(result => ({result, surface})),
+          catchError((err) => {
+            console.error('Failed to load rack details:', err);
+            context.singleRackData$.next(undefined);
+            context.rowedRackedModules$.next([]);
+            context.isRackDataLoading$.next(false);
+            context.rackDetailUnavailableMessage$.next(this.buildUnavailableMessage());
+            SharedConstants.errorCustom(context.snackBar, 'Failed to load this rack. Refresh the page and try again.');
+            return EMPTY;
+          })
+        )),
         context.takeUntilDestroyed()
       )
-      .subscribe(x => {
-        if (!x?.data) {
+      .subscribe(({result, surface}) => {
+        if (!result?.data) {
           context.singleRackData$.next(undefined);
           context.rowedRackedModules$.next([]);
           context.isRackDataLoading$.next(false);
@@ -61,8 +66,9 @@ export class RackDetailLoadingDataService {
           return;
         }
 
-        context.singleRackData$.next(x.data);
-        context.loadModulesForRack$.next(x.data.id);
+        context.loadedRackAnalyticsSurface$.next(surface);
+        context.singleRackData$.next(result.data);
+        context.loadModulesForRack$.next(result.data.id);
       });
 
     context.updateSingleRackByPublicId$
@@ -72,27 +78,31 @@ export class RackDetailLoadingDataService {
           context.rowedRackedModules$.next(null);
           context.rackDetailUnavailableMessage$.next(null);
         }),
-        switchMap(token => context.backend.GET.rackByPublicId(token)),
-        catchError((err) => {
-          console.error('Failed to load rack by token:', err);
-          context.singleRackData$.next(undefined);
-          context.rowedRackedModules$.next([]);
-          context.isRackDataLoading$.next(false);
-          context.rackDetailUnavailableMessage$.next(this.buildUnavailableMessage());
-          return EMPTY;
-        }),
+        withLatestFrom(context.detailAnalyticsSurface$),
+        switchMap(([token, surface]) => context.backend.GET.rackByPublicId(token).pipe(
+          map(result => ({result, surface})),
+          catchError((err) => {
+            console.error('Failed to load rack by token:', err);
+            context.singleRackData$.next(undefined);
+            context.rowedRackedModules$.next([]);
+            context.isRackDataLoading$.next(false);
+            context.rackDetailUnavailableMessage$.next(this.buildUnavailableMessage());
+            return EMPTY;
+          })
+        )),
         context.takeUntilDestroyed()
       )
-      .subscribe(x => {
-        if (!x?.data) {
+      .subscribe(({result, surface}) => {
+        if (!result?.data) {
           context.singleRackData$.next(undefined);
           context.rowedRackedModules$.next([]);
           context.isRackDataLoading$.next(false);
           context.rackDetailUnavailableMessage$.next(this.buildUnavailableMessage());
           return;
         }
-        context.singleRackData$.next(x.data);
-        context.loadModulesForRack$.next(x.data.id);
+        context.loadedRackAnalyticsSurface$.next(surface);
+        context.singleRackData$.next(result.data);
+        context.loadModulesForRack$.next(result.data.id);
       });
 
     context.singleRackData$
@@ -105,7 +115,7 @@ export class RackDetailLoadingDataService {
         context.isCurrentRackPrivate$.next(!rack.public);
         context.formData.name.control.reset(rack.name, {emitEvent: false});
 
-        if (!this.rackViewedFired) {
+        if (!this.rackViewedFired && shouldCaptureCanonicalDetailView(context.loadedRackAnalyticsSurface$.value)) {
           this.rackViewedFired = true;
           const isOwner = context.isCurrentRackPropertyOfCurrentUser$.value;
           context.analytics.capture('rack.viewed', {

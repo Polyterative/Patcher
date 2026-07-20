@@ -23,29 +23,56 @@ import { PatchDetailDataService, LinkedRackUiState } from '../patch-detail-data.
 import { DbModule } from 'src/app/models/module';
 import { Rack } from 'src/app/models/rack';
 
-function createPatchEditorComponent(): PatchEditorComponent {
-  const linkedRackState$ = new BehaviorSubject<LinkedRackUiState>({
+function unlinkedRackState(): LinkedRackUiState {
+  return {
     kind: 'unlinked',
     statusTone: 'neutral',
     statusLabel: 'Collection-first',
     description: 'No rack is linked yet.',
     rackId: null
-  });
-  const editorOperationMode$ = new BehaviorSubject(PATCH_EDITOR_OPERATION_MODES.collection);
-  return new PatchEditorComponent(
-    {
-      singlePatchData$: of(undefined),
-      linkedRackState$,
-      editorOperationMode$,
-      confirmSelectedConnection$: of(undefined)
-    } as any,
-    {} as any,
-    {nativeElement: document.createElement('div')} as any,
-    {markForCheck: () => {}} as any,
-    {capture: () => {}} as any
-  );
+  };
 }
 
+function linkedRackState(rackId = 42): LinkedRackUiState {
+  return {
+    kind: 'linked',
+    statusTone: 'positive',
+    statusLabel: 'Linked rack active',
+    description: 'Linked.',
+    rackId
+  };
+}
+
+function createPatchEditorHarness(options: {linkedRackState?: LinkedRackUiState} = {}) {
+  const linkedRackState$ = new BehaviorSubject<LinkedRackUiState>(options.linkedRackState ?? unlinkedRackState());
+  const editorOperationMode$ = new BehaviorSubject(PATCH_EDITOR_OPERATION_MODES.collection);
+  const preview = buildLinkedRackPreviewState({id: 42, name: 'Studio Rack', hp: 84, rows: 2} as unknown as Rack, []);
+  const dataService = {
+    singlePatchData$: new BehaviorSubject({id: 44}),
+    linkedRackState$,
+    editorOperationMode$,
+    confirmSelectedConnection$: of(undefined),
+    collectionModules$: new BehaviorSubject<DbModule[]>([]),
+    patchModuleInstances$: new BehaviorSubject<PatchModuleInstance[]>([]),
+    editorConnections$: new BehaviorSubject([]),
+    patchConnections$: new BehaviorSubject([]),
+    loadEditorCollectionModules$: jasmine.createSpy('loadEditorCollectionModules$').and.returnValue(of([])),
+    loadLinkedRackPreview$: jasmine.createSpy('loadLinkedRackPreview$').and.returnValue(of(preview))
+  } as unknown as PatchDetailDataService;
+  const analytics = jasmine.createSpyObj<AnalyticsService>('AnalyticsService', ['capture']);
+  const component = new PatchEditorComponent(
+    dataService,
+    {} as AppStateService,
+    {nativeElement: document.createElement('div')} as ElementRef,
+    {markForCheck: () => {}} as ChangeDetectorRef,
+    analytics
+  );
+  return {component, dataService, analytics, linkedRackState$, editorOperationMode$};
+}
+
+function createPatchEditorComponent(): PatchEditorComponent {
+  return createPatchEditorHarness().component;
+}
 
 const createCard = (
   moduleName: string,
@@ -85,14 +112,41 @@ describe('PatchEditorComponent', () => {
     expect(component.operationMode$.value).toBe('collection');
   });
 
-  it('derives hasLinkedRack$ from linked-rack state instead of patch re-emissions', (done) => {
-    const linkedRackState$ = new BehaviorSubject<LinkedRackUiState>({
-      kind: 'unlinked',
-      statusTone: 'neutral',
-      statusLabel: 'Collection-first',
-      description: 'No rack is linked yet.',
-      rackId: null
+  it('does not capture a mode-change event during linked-rack editable initialization', () => {
+    const {component, analytics} = createPatchEditorHarness({linkedRackState: linkedRackState()});
+
+    component.ngOnInit();
+
+    expect(component.operationMode$.value).toBe('linkedRack');
+    expect(analytics.capture).not.toHaveBeenCalledWith('patch.editor_mode_changed', jasmine.anything());
+    component.ngOnDestroy();
+  });
+
+  it('does not capture a mode-change event during readonly linked-rack preview initialization', () => {
+    const {component, analytics} = createPatchEditorHarness({linkedRackState: linkedRackState()});
+    component.readonly = true;
+
+    component.ngOnInit();
+
+    expect(component.operationMode$.value).toBe('linkedRack');
+    expect(analytics.capture).not.toHaveBeenCalledWith('patch.editor_mode_changed', jasmine.anything());
+    component.ngOnDestroy();
+  });
+
+  it('captures one mode-change event for an explicit editor mode change', () => {
+    const {component, analytics} = createPatchEditorHarness({linkedRackState: linkedRackState()});
+
+    component.setOperationMode('collection');
+
+    expect(analytics.capture).toHaveBeenCalledOnceWith('patch.editor_mode_changed', {
+      patch_id: 44,
+      mode: 'collection',
+      trigger: 'user'
     });
+  });
+
+  it('derives hasLinkedRack$ from linked-rack state instead of patch re-emissions', (done) => {
+    const linkedRackState$ = new BehaviorSubject<LinkedRackUiState>(unlinkedRackState());
     const editorOperationMode$ = new BehaviorSubject(PATCH_EDITOR_OPERATION_MODES.collection);
     const component = new PatchEditorComponent(
       {

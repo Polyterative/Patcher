@@ -19,7 +19,6 @@ import {
   PatchModuleInstance
 } from 'src/app/models/connection';
 import { DbModule } from 'src/app/models/module';
-import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { ISelectable } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import {
@@ -82,8 +81,7 @@ export class PatchEditorStateService extends SubManager {
   readonly addingCopy = new Set<number>();
 
   constructor(
-    public dataService: PatchDetailDataService,
-    private analytics: AnalyticsService
+    public dataService: PatchDetailDataService
   ) {
     super();
     this.operationMode$ = this.dataService.editorOperationMode$;
@@ -249,11 +247,6 @@ export class PatchEditorStateService extends SubManager {
           ? PATCH_EDITOR_OPERATION_MODES.linkedRack
           : PATCH_EDITOR_OPERATION_MODES.collection;
         this.operationMode$.next(mode);
-        this.analytics.capture('patch.editor_mode_changed', {
-          patch_id: this.dataService.singlePatchData$.value?.id,
-          mode,
-          trigger: 'linked_rack_auto'
-        });
       });
   }
 

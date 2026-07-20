@@ -10,6 +10,7 @@ import {
 } from 'rxjs';
 import { RackDetailDataService } from './rack-detail-data.service';
 import { RackedModule } from 'src/app/models/module';
+import { DETAIL_ANALYTICS_SURFACES } from '../detail-analytics-surface';
 
 describe('RackDetailDataService', () => {
 
@@ -46,6 +47,7 @@ describe('RackDetailDataService', () => {
         publicRackWithId: jasmine.createSpy('publicRackWithId').and.callFake((id: number) =>
           of({data: makeRack({id})})
         ),
+        rackByPublicId: jasmine.createSpy('rackByPublicId').and.returnValue(of({data: makeRack({id: 1})})),
         moduleWithId: jasmine.createSpy('moduleWithId').and.callFake((id: number) =>
           of({data: {id, name: `Blank ${ id }`, hp: 2, standard: {id: id >= 4711 ? 1 : 0}, functions: [], panels: []}})
         )
@@ -135,6 +137,30 @@ describe('RackDetailDataService', () => {
 
     expect(backend.GET.publicRackWithId).toHaveBeenCalledWith(2);
     expect(backend.GET.rackWithId).not.toHaveBeenCalled();
+  }));
+
+  it('captures rack.viewed once for a direct public detail load', fakeAsync(() => {
+    const {service, analytics} = build();
+    service.updateSingleRackByPublicId$.next('rack-token');
+    tick();
+    tick();
+
+    const viewedCalls = analytics.capture.calls.allArgs()
+      .filter(([eventName]) => eventName === 'rack.viewed');
+    expect(viewedCalls).toEqual([
+      ['rack.viewed', {rack_id: 1, is_owner: false}]
+    ]);
+  }));
+
+  it('does not capture rack.viewed for a home preview load', fakeAsync(() => {
+    const {service, analytics} = build();
+
+    service.setDetailAnalyticsSurface(DETAIL_ANALYTICS_SURFACES.homePreview);
+    service.updateSingleRackData$.next(1);
+    tick();
+
+    expect(service.singleRackData$.value?.id).toBe(1);
+    expect(analytics.capture.calls.allArgs().some(([eventName]) => eventName === 'rack.viewed')).toBeFalse();
   }));
 
   it('fetches racked modules after rack data arrives and sets rowedRackedModules$', fakeAsync(() => {

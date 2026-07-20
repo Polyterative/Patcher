@@ -23,6 +23,7 @@ import { ModulePossessionDialogResult } from './module-possession-dialog/module-
 import { ReactionEntityTypes } from 'src/app/features/backend/supabase-reactions';
 import { ModulePriceHistorySnapshot, ModulePriceListing, ModuleRecentMarketPrice, ModuleSparsePriceHistorySummary } from 'src/app/features/backend/supabase-queries';
 import { getModulePanelPublicUrl } from 'src/app/features/backend/supabase-storage';
+import { DETAIL_ANALYTICS_SURFACES, DetailAnalyticsSurface, shouldCaptureCanonicalDetailView } from '../detail-analytics-surface';
 import {
   createCurrentModulePossession$, createRecentMarketPrice$, createSparsePriceHistorySummary$,
   formatDeleteModuleSuccessMessage, formatLatestAcquisitionValue, formatMergeResultMessage,
@@ -31,13 +32,13 @@ import {
 } from './module-detail-data.helpers';
 
 export type { HiddenUsageBucket, ModulePossessionCounts, ModuleUsageSummary } from './module-detail-data.models';
-
 @Injectable()
 export class ModuleDetailDataService extends SubManager implements OnDestroy {
   private readonly collectionsEnabled = environment.features.collectionsEnabled;
   private readonly coolReactionsEnabled = environment.features.coolReactionsEnabled;
   readonly updateSingleModuleData$ = new ReplaySubject<number>();
   readonly singleModuleData$ = new BehaviorSubject<DbModule | null>(null);
+  readonly detailAnalyticsSurface$ = new BehaviorSubject<DetailAnalyticsSurface>(DETAIL_ANALYTICS_SURFACES.detailRoute);
   //
   readonly moduleEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
   readonly moduleEditorHasPendingChanges$ = new BehaviorSubject<boolean>(false);
@@ -196,15 +197,18 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
           this.singleModuleData$.next(undefined);
           this.moduleEditorHasPendingChanges$.next(false);
         }),
-        switchMap(x => this.backend.GET.moduleWithId(x)),
+        withLatestFrom(this.detailAnalyticsSurface$),
+        switchMap(([moduleId, surface]) => this.backend.GET.moduleWithId(moduleId).pipe(
+          map(result => ({result, surface}))
+        )),
         this.takeUntilDestroyed()
       )
-      .subscribe(x => {
-        this.singleModuleData$.next(x.data);
-        if (x.data) {
+      .subscribe(({result, surface}) => {
+        this.singleModuleData$.next(result.data);
+        if (result.data && shouldCaptureCanonicalDetailView(surface)) {
           this.analytics.capture('module.viewed', {
-            module_id:       x.data.id,
-            manufacturer_id: x.data.manufacturer?.id
+            module_id:       result.data.id,
+            manufacturer_id: result.data.manufacturer?.id
           });
         }
       });
@@ -475,13 +479,10 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
         }
         this.moduleEditingPanelOpenState$.next(!current);
       });
-    
   }
-  
-  
-  ngOnDestroy(): void {
-    super.ngOnDestroy();
-  }
+
+  ngOnDestroy(): void { super.ngOnDestroy(); }
+  setDetailAnalyticsSurface(surface: DetailAnalyticsSurface): void { this.detailAnalyticsSurface$.next(surface); }
 
   getPanelImageUrl(filename: string): string {
     return getModulePanelPublicUrl(filename);

@@ -118,15 +118,24 @@ describe('UserAreaDataService', () => {
       updateUserAreaSnapshot: jasmine.createSpy('updateUserAreaSnapshot'),
       recordAction: jasmine.createSpy('recordAction')
     };
+    const analytics = {
+      capture: jasmine.createSpy('capture'),
+      identify: jasmine.createSpy('identify'),
+      reset: jasmine.createSpy('reset')
+    };
     
-    const service = new UserAreaDataService(dialog as any, backend as any, discoveryTipService as any, {capture: () => {}, identify: () => {}, reset: () => {}} as any);
-    return {service, backend, dialog, discoveryTipService};
+    const service = new UserAreaDataService(dialog as any, backend as any, discoveryTipService as any, analytics as any);
+    return {service, backend, dialog, discoveryTipService, analytics};
   }
 
   function collectCacheBusts(backend: ReturnType<typeof build>['backend']): CachedEntity[][] {
     const bustedKeys: CachedEntity[][] = [];
     backend.cacheResetter$.subscribe(keys => bustedKeys.push(keys));
     return bustedKeys;
+  }
+
+  function capturedEventNames(analytics: ReturnType<typeof build>['analytics']): string[] {
+    return analytics.capture.calls.allArgs().map(args => args[0]);
   }
   
   it('loads comments/modules/patches/racks on update requests', () => {
@@ -492,6 +501,51 @@ describe('UserAreaDataService', () => {
     service.moduleCollectionFilter$.next('WISHLIST');
 
     expect(service.modulesPagination.skip$.value).toBe(0);
+  });
+
+  it('does not capture filter telemetry during construction', () => {
+    const {analytics} = build();
+
+    expect(capturedEventNames(analytics)).not.toContain('user_area.modules.collection_filter_changed');
+    expect(capturedEventNames(analytics)).not.toContain('user_area.patches.tag_filter_changed');
+  });
+
+  it('does not capture filter telemetry when UI state resets', () => {
+    const {service, analytics} = build();
+    service.selectModuleCollectionFilter$.next('WISHLIST');
+    service.selectPatchTagFilter$.next('ambient');
+    analytics.capture.calls.reset();
+
+    service.resetUiState();
+
+    expect(service.moduleCollectionFilter$.value).toBe('MY_MODULES');
+    expect(service.activeTagFilter$.value).toBeNull();
+    expect(capturedEventNames(analytics)).not.toContain('user_area.modules.collection_filter_changed');
+    expect(capturedEventNames(analytics)).not.toContain('user_area.patches.tag_filter_changed');
+  });
+
+  it('captures a real module collection filter interaction once', () => {
+    const {service, analytics} = build();
+
+    service.selectModuleCollectionFilter$.next('WISHLIST');
+
+    expect(service.moduleCollectionFilter$.value).toBe('WISHLIST');
+    expect(analytics.capture).toHaveBeenCalledOnceWith(
+      'user_area.modules.collection_filter_changed',
+      { collection_filter: 'WISHLIST' }
+    );
+  });
+
+  it('captures a real patch tag filter interaction once', () => {
+    const {service, analytics} = build();
+
+    service.selectPatchTagFilter$.next('ambient');
+
+    expect(service.activeTagFilter$.value).toBe('ambient');
+    expect(analytics.capture).toHaveBeenCalledOnceWith(
+      'user_area.patches.tag_filter_changed',
+      { tag_filter: 'ambient' }
+    );
   });
 
   it('grows modules and patches via load more without triggering extra backend calls', () => {
