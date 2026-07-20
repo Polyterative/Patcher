@@ -78,12 +78,14 @@
                 [control]="dataService.fields.minPrice.control"
                 [type]="dataService.fields.minPrice.type"
                 [label]="dataService.fields.minPrice.label"
+                [disabled]="vm.priceControlsDisabled"
                 iconL1="remove"
               ></lib-mat-form-entity>
               <lib-mat-form-entity
                 [control]="dataService.fields.maxPrice.control"
                 [type]="dataService.fields.maxPrice.type"
                 [label]="dataService.fields.maxPrice.label"
+                [disabled]="vm.priceControlsDisabled"
                 iconL1="add"
               ></lib-mat-form-entity>
             </div>

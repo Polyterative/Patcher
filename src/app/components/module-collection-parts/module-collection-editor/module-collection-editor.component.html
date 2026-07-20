@@ -50,7 +50,10 @@
           <mat-icon>{{ publicControl.value ? 'public' : 'lock' }}</mat-icon>
           <span>{{ publicControl.value ? 'Public collection' : 'Private collection' }}</span>
         </div>
-        <mat-slide-toggle [formControl]="publicControl"></mat-slide-toggle>
+        <mat-slide-toggle
+          [checked]="publicControl.value"
+          (change)="publicControl.setValue($event.checked)"
+        ></mat-slide-toggle>
       </div>
     </section>
 

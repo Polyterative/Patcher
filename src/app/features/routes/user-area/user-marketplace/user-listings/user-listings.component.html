@@ -258,11 +258,15 @@
         }
       </div>
 
-      <fieldset class="listing-editor__field listing-editor__field--wide listing-editor__fieldset" formGroupName="shippingOptions">
+      <fieldset class="listing-editor__field listing-editor__field--wide listing-editor__fieldset">
         <legend>Shipping options</legend>
         <div class="rowwrap gap1">
           @for (option of shippingOptionLabels; track option.control) {
-            <mat-checkbox [formControlName]="option.control">{{ option.label }}</mat-checkbox>
+            <mat-checkbox
+              [checked]="form.controls.shippingOptions.controls[option.control].value"
+              (change)="setShippingOption(option.control, $event.checked)"
+              [attr.data-testid]="'user-listing-shipping-' + option.control"
+            >{{ option.label }}</mat-checkbox>
           }
         </div>
       </fieldset>
@@ -324,7 +328,11 @@
       </div>
     </div>
 
-    <mat-checkbox formControlName="openToOffers" data-testid="user-listing-open-offers">Open to offers</mat-checkbox>
+    <mat-checkbox
+      [checked]="form.controls.openToOffers.value"
+      (change)="setOpenToOffers($event.checked)"
+      data-testid="user-listing-open-offers"
+    >Open to offers</mat-checkbox>
 
     <div class="listing-editor__media" aria-label="Listing images">
       <div class="listing-editor__media-head">

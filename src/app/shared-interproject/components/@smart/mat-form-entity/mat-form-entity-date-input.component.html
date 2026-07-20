@@ -28,6 +28,6 @@
   </mat-datepicker-toggle>
   <mat-datepicker #picker [startAt]="dateOpenPosition"></mat-datepicker>
   @if (invalid) {
-    <mat-error>{{ errors }}</mat-error>
+    <mat-hint class="mat-error">{{ errors }}</mat-hint>
   }
 </mat-form-field>

@@ -1,23 +1,27 @@
-import { CommonModule } from '@angular/common';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
 import {
   ComponentFixture,
   fakeAsync,
   tick,
   TestBed
 } from '@angular/core/testing';
-import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import {
+  BehaviorSubject,
   of,
   Subject
 } from 'rxjs';
+import { ModuleDetailDataService } from 'src/app/components/module-parts/module-detail-data.service';
+import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
+import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
+import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
+import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import { MinimalModule } from 'src/app/models/module';
+import { AnalyticsService } from '../../backbone/analytics-integration/analytics.service';
 import { SupabaseService } from '../../backend/supabase.service';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
-import { ModuleBrowserDataService } from '../module-browser-data.service';
 import { ModuleBrowserRootComponent } from './module-browser-root.component';
+import { ModuleBrowserRootModule } from './module-browser-root.module';
 
 
 describe('ModuleBrowserRootComponent', () => {
@@ -44,14 +48,11 @@ describe('ModuleBrowserRootComponent', () => {
   
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ModuleBrowserRootComponent],
       imports: [
-        CommonModule,
-        ReactiveFormsModule,
+        ModuleBrowserRootModule,
         NoopAnimationsModule
       ],
       providers: [
-        ModuleBrowserDataService,
         {
           provide: SupabaseService,
           useValue: {
@@ -70,11 +71,55 @@ describe('ModuleBrowserRootComponent', () => {
           useValue: {updateSeo: jasmine.createSpy('updateSeo')}
         },
         {
+          provide: AnalyticsService,
+          useValue: {capture: jasmine.createSpy('capture')}
+        },
+        {
           provide: ActivatedRoute,
-          useValue: {queryParams: of({})}
+          useValue: {
+            queryParams: of({}),
+            snapshot: {data: {}}
+          }
+        },
+        {
+          provide: UserManagementService,
+          useValue: {
+            loggedUser$: new BehaviorSubject(undefined),
+            loggedUserFullProfile$: new BehaviorSubject(undefined),
+            isAdmin$: new BehaviorSubject(false),
+            hasAdminRole$: new BehaviorSubject(false)
+          }
+        },
+        {
+          provide: PatchDetailDataService,
+          useValue: {}
+        },
+        {
+          provide: ModuleDetailDataService,
+          useValue: {
+            userModulesList$: new BehaviorSubject([]),
+            singleModuleData$: new BehaviorSubject(undefined),
+            setModulePossession$: new BehaviorSubject(null),
+            requestAddModuleToRack$: new BehaviorSubject(null),
+            copyModuleNameAndManufacturer$: new BehaviorSubject(undefined)
+          }
+        },
+        {
+          provide: RackDetailDataService,
+          useValue: {
+            singleRackData$: new BehaviorSubject(undefined),
+            isCurrentRackEditable$: new BehaviorSubject(false),
+            addModuleToRack$: new BehaviorSubject(null)
+          }
+        },
+        {
+          provide: AppStateService,
+          useValue: {
+            isDev: false,
+            preferredPanelColor$: new BehaviorSubject(null)
+          }
         }
-      ],
-      schemas: [NO_ERRORS_SCHEMA]
+      ]
     }).compileComponents();
     
     fixture = TestBed.createComponent(ModuleBrowserRootComponent);
@@ -87,6 +132,15 @@ describe('ModuleBrowserRootComponent', () => {
     const sidebar = host.querySelector('.filter-sidebar');
     const recentActivity = sidebar?.querySelector('app-recent-activity');
     expect(recentActivity).not.toBeNull();
+  });
+
+  it('renders the real shared form-entity browser filters', () => {
+    const host = fixture.nativeElement as HTMLElement;
+    const formEntities = host.querySelectorAll('.filter-sidebar lib-mat-form-entity');
+
+    expect(formEntities.length).toBeGreaterThan(0);
+    expect(host.textContent).toContain('Search module...');
+    expect(host.textContent).toContain('Order by');
   });
 
   it('shows the wide-shell nav by default on standalone module browser pages', () => {

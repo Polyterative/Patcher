@@ -1,3 +1,4 @@
+<ng-container *ngIf="control">
 @if ({
   options:(options$|async)
 }; as bag) {
@@ -52,6 +53,7 @@
                [attr.enterkeyhint]="resolvedEnterKeyHint"
                [attr.data-ph-no-capture]="noCapture ? '' : null"
                [formControl]="control"
+               [attr.disabled]="resolvedDisabled ? '' : null"
                [placeholder]="placeholder"
                [type]="type"
                (keydown.enter)="onInputEnterPressed($event)"
@@ -379,3 +381,4 @@
     }
   }
 }
+</ng-container>

@@ -127,15 +127,14 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
     
   }
   
-  @Input()
+  disabledInput = false;
+  private hasDisabledInput = false;
+
+  @Input({ transform: booleanAttribute })
   set disabled(value: boolean) {
-    if (value) {
-      this.control.disable();
-      this.ghostControl?.disable();
-    } else {
-      this.control.enable();
-      this.ghostControl?.enable();
-    }
+    this.hasDisabledInput = true;
+    this.disabledInput = value;
+    this.applyDisabledInput();
   }
   
   @Input()
@@ -235,12 +234,17 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
   get resolvedEnterKeyHint(): AppEnterKeyHint | null {
     return resolveEnterKeyHint(this.type, this.enterkeyhint, this.isSearchField);
   }
+
+  get resolvedDisabled(): boolean {
+    return this.hasDisabledInput ? this.disabledInput : !!this.control?.disabled;
+  }
   
   ngOnDestroy(): void {
-    this.control.setAsyncValidators([]);
+    this.control?.setAsyncValidators([]);
   }
 
   ngAfterViewInit(): void {
+    this.syncNativeDisabledState();
     if (!this.autofocus) {
       return;
     }
@@ -295,7 +299,7 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
         this.autofocus = this.dataPack.ergonomics.autofocus;
       }
     }
-    
+    this.applyDisabledInput();
     connectFormEntityValidationStreams({
       control: this.control,
       options$: this.options$,
@@ -401,5 +405,35 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
 
   private get isSearchField(): boolean {
     return this.iconL1 === 'search';
+  }
+
+  private applyDisabledInput(): void {
+    if (!this.hasDisabledInput || !this.control) {
+      this.changeDetectorRef.markForCheck();
+      return;
+    }
+
+    if (this.disabledInput && this.control.enabled) {
+      this.control.disable();
+    } else if (!this.disabledInput && this.control.disabled) {
+      this.control.enable();
+    }
+
+    if (this.disabledInput && this.ghostControl?.enabled) {
+      this.ghostControl.disable();
+    } else if (!this.disabledInput && this.ghostControl?.disabled) {
+      this.ghostControl?.enable();
+    }
+    this.changeDetectorRef.markForCheck();
+    this.syncNativeDisabledState();
+  }
+
+  private syncNativeDisabledState(): void {
+    const element = this.primaryInput?.nativeElement as HTMLInputElement | HTMLTextAreaElement | undefined;
+    if (!element) {
+      return;
+    }
+    element.disabled = this.resolvedDisabled;
+    element.toggleAttribute('disabled', this.resolvedDisabled);
   }
 }

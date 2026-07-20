@@ -12,7 +12,7 @@ import {
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatCheckbox } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
@@ -68,6 +68,8 @@ interface UserListingsFilterOption {
   value: UserListingsStatusFilter;
 }
 
+type ShippingOptionControlName = 'localPickup' | 'domesticShipping' | 'euShipping' | 'internationalShipping';
+
 const OPEN_LISTING_STATUSES: MarketplaceListingStatus[] = ['active', 'reserved', 'paused', 'draft'];
 const CLOSED_LISTING_STATUSES: MarketplaceListingStatus[] = ['closed_sold', 'closed_unsold', 'expired'];
 
@@ -84,7 +86,7 @@ const CLOSED_LISTING_STATUSES: MarketplaceListingStatus[] = ['closed_sold', 'clo
     HeroContentCardComponent,
     MatButtonModule,
     MatButtonToggleModule,
-    MatCheckboxModule,
+    MatCheckbox,
     MatFormEntityComponent,
     MatIconModule,
     MatTooltipModule,
@@ -116,7 +118,7 @@ export class UserListingsComponent extends SubManager implements OnInit {
     {control: 'domesticShipping', label: 'Domestic shipping'},
     {control: 'euShipping', label: 'EU shipping'},
     {control: 'internationalShipping', label: 'International shipping'}
-  ] as const;
+  ] satisfies {control: ShippingOptionControlName; label: string}[];
 
   readonly form = new FormGroup({
     askingPrice: new FormControl('', {nonNullable: true}),
@@ -321,6 +323,14 @@ export class UserListingsComponent extends SubManager implements OnInit {
     this.form.controls.askingPriceCurrency.setValue(currency.trim().toUpperCase());
   }
 
+  setOpenToOffers(checked: boolean): void {
+    this.setBooleanControl(this.form.controls.openToOffers, checked);
+  }
+
+  setShippingOption(control: ShippingOptionControlName, checked: boolean): void {
+    this.setBooleanControl(this.form.controls.shippingOptions.controls[control], checked);
+  }
+
   titleForListing(listing: MarketplaceListing): string {
     return listing.titleOverride || listing.module?.name || `Module #${listing.moduleId}`;
   }
@@ -458,6 +468,12 @@ export class UserListingsComponent extends SubManager implements OnInit {
 
   private selectableValue(value: string | ISelectable): string {
     return typeof value === 'string' ? value : value.id;
+  }
+
+  private setBooleanControl(control: FormControl<boolean>, checked: boolean): void {
+    control.setValue(checked);
+    control.markAsDirty();
+    control.markAsTouched();
   }
 
   private conditionOption(condition: MarketplaceListingCondition): ISelectable {

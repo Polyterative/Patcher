@@ -71,18 +71,25 @@ describe('MarketplaceBrowserComponent', () => {
 
   it('shows currency selection before enabling price filters', () => {
     const host = fixture.nativeElement as HTMLElement;
-    const priceInputs = host.querySelectorAll<HTMLInputElement>('input[type="number"]');
+    const priceInputs = () => host.querySelectorAll<HTMLInputElement>('input[type="number"]');
 
     expect(host.textContent).toContain('Select a currency to enable price range and price sorting.');
-    expect(priceInputs[0].disabled).toBeTrue();
-    expect(priceInputs[1].disabled).toBeTrue();
+    expect(priceInputs()[0].disabled).toBeTrue();
+    expect(priceInputs()[1].disabled).toBeTrue();
 
     fixture.componentInstance.updateFilter('currency', 'EUR');
     fixture.detectChanges();
 
-    expect(priceInputs[0].disabled).toBeFalse();
-    expect(priceInputs[1].disabled).toBeFalse();
+    expect(priceInputs()[0].disabled).toBeFalse();
+    expect(priceInputs()[1].disabled).toBeFalse();
     expect(host.querySelector('[data-testid="marketplace-active-chips"]')?.textContent).toContain('Currency: EUR');
+
+    fixture.componentInstance.clearFilter('currency');
+    fixture.detectChanges();
+
+    expect(host.textContent).toContain('Select a currency to enable price range and price sorting.');
+    expect(priceInputs()[0].disabled).toBeTrue();
+    expect(priceInputs()[1].disabled).toBeTrue();
   });
 
   it('preserves the browse return URL when login is required', () => {
