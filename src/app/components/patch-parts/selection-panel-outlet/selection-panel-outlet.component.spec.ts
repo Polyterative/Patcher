@@ -2,24 +2,14 @@ import { CommonModule } from '@angular/common';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { BehaviorSubject, Subject } from 'rxjs';
 import { CVConnectionEntity } from 'src/app/models/cv';
 import { SelectionPanelBridgeService } from '../selection-panel-bridge.service';
 import { SelectionPanelOutletComponent } from './selection-panel-outlet.component';
+import { minimalModuleFixture } from '../patch-graph/patch-graph-test-fixtures';
 
 
 function mockBridge(): SelectionPanelBridgeService {
-  return {
-    selectionState$: new BehaviorSubject({a: null, b: null}),
-    patchData$: new BehaviorSubject(undefined),
-    instanceLabelMap$: new BehaviorSubject(new Map()),
-    confirmed$: new BehaviorSubject(false),
-    editorConnections$: new BehaviorSubject(null),
-    reset$: new Subject(),
-    confirm$: new Subject(),
-    resetA$: new Subject(),
-    resetB$: new Subject()
-  } as unknown as SelectionPanelBridgeService;
+  return new SelectionPanelBridgeService();
 }
 
 function makeEntity(cvId: number, moduleId: number, kind: 'in' | 'out'): CVConnectionEntity {
@@ -28,9 +18,9 @@ function makeEntity(cvId: number, moduleId: number, kind: 'in' | 'out'): CVConne
     cv: {
       id: cvId,
       name: kind === 'out' ? 'OUT' : 'IN',
-      module: {id: moduleId, name: `Module ${moduleId}`} as any,
+      module: minimalModuleFixture(moduleId),
       instance_id: moduleId * 100
-    } as any
+    }
   };
 }
 

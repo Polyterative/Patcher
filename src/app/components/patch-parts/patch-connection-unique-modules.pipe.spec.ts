@@ -1,6 +1,23 @@
 import { PatchConnectionUniqueModulesPipe } from './patch-connection-unique-modules.pipe';
 import { PatchConnection } from 'src/app/models/connection';
+import {
+  cvWithModuleFixture,
+  patchFixture
+} from './patch-graph/patch-graph-test-fixtures';
+import { CVwithModule } from 'src/app/models/cv';
 
+
+function makeCV(cvId: number, name: string, moduleId: number, moduleName: string, manufacturerName: string): CVwithModule {
+  const cv = cvWithModuleFixture(cvId, moduleId, moduleName, name);
+  return {
+    ...cv,
+    module: {
+      ...cv.module,
+      manufacturer: {id: moduleId, name: manufacturerName},
+      manufacturerId: moduleId
+    }
+  };
+}
 
 function makeConnection(
   aModuleId: number, aModuleName: string, aManufacturer: string,
@@ -8,12 +25,12 @@ function makeConnection(
   instanceIdA?: number, instanceIdB?: number
 ): PatchConnection {
   return {
-    patch: {} as any,
+    patch: patchFixture(),
     instance_id_a: instanceIdA,
     instance_id_b: instanceIdB,
-    a: {id: 1, name: 'CV Out', module: {id: aModuleId, name: aModuleName, manufacturer: {id: 1, name: aManufacturer}} as any} as any,
-    b: {id: 2, name: 'CV In', module: {id: bModuleId, name: bModuleName, manufacturer: {id: 2, name: bManufacturer}} as any} as any
-  } as PatchConnection;
+    a: makeCV(1, 'CV Out', aModuleId, aModuleName, aManufacturer),
+    b: makeCV(2, 'CV In', bModuleId, bModuleName, bManufacturer)
+  };
 }
 
 
@@ -85,8 +102,8 @@ describe('PatchConnectionUniqueModulesPipe', () => {
   
   it('handles missing manufacturer without crashing', () => {
     const conn = makeConnection(1, 'Rings', '', 2, 'Plaits', '');
-    (conn.a.module as any).manufacturer = undefined;
-    (conn.b.module as any).manufacturer = undefined;
+    (conn.a.module as Partial<typeof conn.a.module>).manufacturer = undefined;
+    (conn.b.module as Partial<typeof conn.b.module>).manufacturer = undefined;
     expect(() => pipe.transform([conn])).not.toThrow();
     const result = pipe.transform([conn]);
     result.forEach(r => expect(r.manufacturerName).toBe(''));

@@ -3,6 +3,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialogModule } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import {
+  Observable,
   of,
   Subject
 } from 'rxjs';
@@ -10,6 +11,38 @@ import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-det
 import { SelectionPanelBridgeService } from 'src/app/components/patch-parts/selection-panel-bridge.service';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
+
+interface PatchDetailSupabaseServiceMock {
+  cacheResetter$: Subject<string[]>;
+  get: {
+    patchWithId: jasmine.Spy;
+    currentUserPatches: jasmine.Spy;
+    currentUserRacks: jasmine.Spy;
+  };
+  GET: {
+    patchConnections: jasmine.Spy;
+    publicPatchWithId: jasmine.Spy;
+  };
+  update: {
+    patch: jasmine.Spy;
+    patchSilent: jasmine.Spy;
+    patchConnectionsSilent: jasmine.Spy;
+  };
+  delete: {
+    userPatch: jasmine.Spy;
+    patchConnectionsForPatch: jasmine.Spy;
+  };
+  add: {
+    patchConnection: jasmine.Spy;
+  };
+  auth: {
+    getUserSession$: jasmine.Spy;
+  };
+}
+
+interface UserManagementServiceMock {
+  loggedUser$: Observable<{ id: string; username: string; email: string }>;
+}
 
 
 /**
@@ -22,9 +55,9 @@ import { UserManagementService } from 'src/app/features/backbone/login/user-mana
  */
 describe('PatchDetailDataService - Privacy API Surface', () => {
   let service: PatchDetailDataService;
-  let mockSupabaseService: any;
-  let mockUserService: any;
-  let mockRouter: any;
+  let mockSupabaseService: PatchDetailSupabaseServiceMock;
+  let mockUserService: UserManagementServiceMock;
+  let mockRouter: jasmine.SpyObj<Router>;
   
   beforeEach(() => {
     // Create minimal mocks to allow service initialization

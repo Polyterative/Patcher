@@ -1,33 +1,65 @@
 import { of, throwError } from 'rxjs';
 import { PatchCreatorComponent } from './patch-creator.component';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import {
+  MatSnackBar,
+  MatSnackBarRef,
+  TextOnlySnackBar
+} from '@angular/material/snack-bar';
+import { MatDialogRef } from '@angular/material/dialog';
+import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
+import { PatchCreatorDataService } from './patch-creator-data.service';
+import {
+  PatchCreatorInModel,
+  PatchCreatorOutModel
+} from './patch-creator.types';
+import { Rack } from 'src/app/models/rack';
+
+type CreatePatchResponse = ReturnType<PatchCreatorDataService['createPatch$']>;
+type CurrentUserRacksResponse = ReturnType<PatchCreatorDataService['currentUserRacks$']>;
+
+function createPatchResponse(value: unknown): CreatePatchResponse {
+  return of(value) as CreatePatchResponse;
+}
+
+function currentUserRacksResponse(racks: Rack[]): CurrentUserRacksResponse {
+  return of(racks) as CurrentUserRacksResponse;
+}
+
+function rackFixture(id: number, name: string): Rack {
+  return {
+    id,
+    name,
+    description: '',
+    hp: 84,
+    rows: 2,
+    author: {id: 'user-1', username: 'owner'},
+    locked: false,
+    public: true,
+    created: '2026-01-01T00:00:00.000Z',
+    updated: '2026-01-01T00:00:00.000Z'
+  };
+}
 
 
 describe('PatchCreatorComponent', () => {
-  function build(data: any = {}) {
-    const dataService = {
-      currentUserRacks$: jasmine.createSpy('currentUserRacks$').and.returnValue(of([])),
-      createPatch$: jasmine.createSpy('createPatch$').and.returnValue(of({id: 1}))
-    };
-    const analytics = {
-      capture: jasmine.createSpy('capture'),
-      identify: () => {},
-      reset: () => {}
-    };
-    const snackBar = {
-      open: jasmine.createSpy('open').and.returnValue({
-        onAction: () => of(undefined)
-      })
-    };
-    const dialogRef = {
-      close: jasmine.createSpy('close')
-    };
+  function build(data: PatchCreatorInModel = {}) {
+    const dataService = jasmine.createSpyObj<PatchCreatorDataService>('PatchCreatorDataService', ['currentUserRacks$', 'createPatch$']);
+    dataService.currentUserRacks$.and.returnValue(currentUserRacksResponse([]));
+    dataService.createPatch$.and.returnValue(createPatchResponse({id: 1}));
+
+    const analytics = jasmine.createSpyObj<AnalyticsService>('AnalyticsService', ['capture', 'identify', 'reset']);
+    const snackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
+    snackBar.open.and.returnValue({
+      onAction: () => of(undefined)
+    } as MatSnackBarRef<TextOnlySnackBar>);
+    const dialogRef = jasmine.createSpyObj<MatDialogRef<PatchCreatorComponent, PatchCreatorOutModel>>('MatDialogRef', ['close']);
     const component = new PatchCreatorComponent(
-      snackBar as any,
-      dialogRef as any,
+      snackBar,
+      dialogRef,
       data,
-      analytics as any,
-      dataService as any
+      analytics,
+      dataService
     );
     return {component, dataService, analytics, snackBar, dialogRef};
   }
@@ -79,7 +111,7 @@ describe('PatchCreatorComponent', () => {
 
   it('captures the created patch id from the data service response', () => {
     const {component, dataService, analytics} = build();
-    dataService.createPatch$.and.returnValue(of({data: [{id: 73}]}));
+    dataService.createPatch$.and.returnValue(createPatchResponse({data: [{id: 73}]}));
     component.fields.name.control.setValue('Tracked Patch');
 
     component.save$.next();
@@ -89,9 +121,9 @@ describe('PatchCreatorComponent', () => {
 
   it('loads the current user racks into linked rack options on init', () => {
     const {component, dataService} = build();
-    dataService.currentUserRacks$.and.returnValue(of([
-      {id: 7, name: 'Studio Rack'},
-      {id: 11, name: 'Travel Case'}
+    dataService.currentUserRacks$.and.returnValue(currentUserRacksResponse([
+      rackFixture(7, 'Studio Rack'),
+      rackFixture(11, 'Travel Case')
     ]));
 
     component.ngOnInit();
@@ -107,9 +139,9 @@ describe('PatchCreatorComponent', () => {
 
   it('preselects the linked rack from dialog data when provided', () => {
     const {component, dataService} = build({linkedRackId: 11});
-    dataService.currentUserRacks$.and.returnValue(of([
-      {id: 7, name: 'Studio Rack'},
-      {id: 11, name: 'Travel Case'}
+    dataService.currentUserRacks$.and.returnValue(currentUserRacksResponse([
+      rackFixture(7, 'Studio Rack'),
+      rackFixture(11, 'Travel Case')
     ]));
 
     component.ngOnInit();
@@ -131,8 +163,9 @@ describe('PatchCreatorComponent', () => {
   
   it('initializes with a generated non-empty patch name', () => {
     const {component} = build();
-    expect(component.fields.name.control.value).toEqual(jasmine.any(String));
-    expect(component.fields.name.control.value.length).toBeGreaterThan(0);
+    const patchName = component.fields.name.control.value;
+    expect(typeof patchName).toBe('string');
+    expect(patchName.length).toBeGreaterThan(0);
   });
 
   it('blocks linked-rack selection when the environment cannot save linked racks yet', () => {
@@ -143,7 +176,7 @@ describe('PatchCreatorComponent', () => {
     dataService.createPatch$.and.returnValue(throwError(() => ({
       code: 'PGRST204',
       message: "Column 'linked_rack_id' of relation 'patches' does not exist"
-    })));
+    })) as CreatePatchResponse);
 
     component.save$.next();
 

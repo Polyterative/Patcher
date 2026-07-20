@@ -75,18 +75,21 @@ import {
   PatchModuleInstance
 } from 'src/app/models/connection';
 import { DbModule } from 'src/app/models/module';
+import { dbModuleFixture } from '../patch-graph/patch-graph-test-fixtures';
 
 
 // ─── Fake module data ────────────────────────────────────────────────────────
 
 const FAKE_MODULE: DbModule = {
-  id: 10,
-  name: 'TestMod',
-  outs: [{id: 7, name: 'Out1', min: -5, max: 5} as CV],
-  ins: [{id: 42, name: 'In1'} as CV],
-  panels: [],
-  manufacturer: {id: 1, name: 'TestMaker'} as any
-} as any;
+  ...dbModuleFixture(
+    10,
+    'TestMod',
+    [{id: 42, name: 'In1'}],
+    [{id: 7, name: 'Out1', min: -5, max: 5}]
+  ),
+  manufacturer: {id: 1, name: 'TestMaker'},
+  manufacturerId: 1
+};
 
 const FAKE_INSTANCE: PatchModuleInstance = {
   id: 501,
@@ -173,8 +176,8 @@ function buildMockPatchService() {
      * run CD (updating instanceId on the cvitem) BEFORE clickOnModuleCV$.next() fires.
      * But the cvitem's subscription closure still has the old instanceId=undefined.
      */
-    ensureModuleInstance$: (module: any) => {
-      const existing = patchModuleInstances$.value.find((i: any) => i.module_id === module.id);
+    ensureModuleInstance$: (module: DbModule) => {
+      const existing = patchModuleInstances$.value.find(i => i.module_id === module.id);
       if (existing) return of(existing.id);
       // Step A: update instances list (triggers CD in real app)
       patchModuleInstances$.next([...patchModuleInstances$.value, FAKE_INSTANCE]);
