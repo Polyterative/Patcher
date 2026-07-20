@@ -13,7 +13,7 @@ ratio** — surface only issues that genuinely matter.
 
 ## Suggested model
 
-Use `gpt-5.4-mini`. Review is read-only and should be cost-efficient. Escalate to `gpt-5.5` only
+Use the `cheap-review` tier (see [README.md](./README.md#model-tiers)). Review is read-only and should be cost-efficient. Escalate to the `executor` tier only
 for security-sensitive, data-loss-prone, or broad architectural diffs.
 
 ## Does

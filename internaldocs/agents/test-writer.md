@@ -12,7 +12,7 @@ Add unit or E2E test coverage for existing code **without changing production co
 
 ## Suggested model
 
-Use `gpt-5.5`. Test writing is implementation work: fixtures, mocks, async flows, and regression
+Use the `executor` tier (see [README.md](./README.md#model-tiers)). Test writing is implementation work: fixtures, mocks, async flows, and regression
 coverage need the same coding quality as production changes.
 
 ## Does

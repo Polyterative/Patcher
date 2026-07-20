@@ -105,6 +105,26 @@ addNewThing: (data: NewThingInsert) =>
 
 Before touching `supabase/migrations/`, RPCs, columns, indexes, or policies — even via the Supabase MCP — walk through this list. Past mistakes live here so we don't repeat them.
 
+### 0. Did the plan pass backend plan review?
+
+Before product approval or implementation, run the draft through
+`internaldocs/agents/backend-plan-reviewer.md`. This is a separate gate from the
+post-implementation diff review.
+
+The review must explicitly compare:
+
+- semantic domain type vs physical database representation;
+- boolean, integer/smallint, text, enum, JSON, normalized relation, and no-new-column
+  alternatives where relevant;
+- cardinality, future states, storage/wire/index cost, query ergonomics, and invalid
+  state prevention;
+- migration rewrite/lock/backfill/trigger cost and rollback strategy;
+- old/new client compatibility, RLS, cache invalidation, type generation, and data
+  retention.
+
+Record the chosen representation and rejected alternatives in the plan Decision log.
+No SQL should be written from an unreviewed backend plan.
+
 ### 1. Will my migration trigger `updated`/`modified` timestamps on existing rows?
 
 `racks` and `patches` (and likely other tables) have **`BEFORE UPDATE` triggers that auto-set `updated = now()`**. Any `UPDATE ... WHERE ...` you run as part of a backfill will reset `updated` on every touched row — wiping the real edit history visible to users.

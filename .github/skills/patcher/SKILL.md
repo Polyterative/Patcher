@@ -21,6 +21,7 @@ When the user's request matches one of these, **delegate to a sub-agent** using 
 |---|---|---|---|
 | Rough feature idea / future work intake that should become a TODO-linked plan | **feature-notetaker** | `claude-opus-4.7` | `internaldocs/agents/feature-notetaker.md` |
 | "Plan X", multi-step or cross-cutting work, ambiguous scope | **planner** | `claude-opus-4.7` | `internaldocs/agents/planner.md` |
+| Review a backend/storage/schema plan before approval or implementation | **backend-plan-reviewer** | `claude-opus-4.7` | `internaldocs/agents/backend-plan-reviewer.md` |
 | Hard ambiguous problem, high-risk decision, or explicit premium-model counsel request | **advisor** | `claude-opus-4.7` | `internaldocs/agents/advisor.md` |
 | Implement Angular component / service / RxJS pipeline | **frontend-dev** | `gpt-5.5` | `internaldocs/agents/frontend-dev.md` |
 | Design visual / spacing / responsive direction, UI structure, or product organization | **designer** | `claude-sonnet-4.6` | `internaldocs/agents/designer.md` |
@@ -36,7 +37,8 @@ When the user's request matches one of these, **delegate to a sub-agent** using 
 **Composition flows:**
 
 - Idea intake: `feature-notetaker` → backlog plan → `coordinator-loop` later
-- New feature: `planner` → `frontend-dev` → `reviewer`
+- Frontend feature: `planner` → `frontend-dev` → `reviewer`
+- Backend/schema feature: `planner` → `backend-plan-reviewer` → executor → `reviewer`
 - Hard decision: normal investigation → `advisor` → appropriate executor
 - Bug fix: `bug-hunter` → `frontend-dev` → `test-writer`
 - Cleanup: `refactorer` → `reviewer`
@@ -79,7 +81,8 @@ parallel fan-out, or an alternative exploration.
 Do **not** replace ordinary Patcher persona delegation with Orchestrate. For a single change in this repo, stay in this session and use
 the persona routing above. For single-repo research in this checkout, stay inline. When Orchestrate is appropriate, load the skill,
 announce the session plan before spawning anything, and give each child session a standalone prompt that includes the relevant Patcher
-rules from `AGENTS.md`.
+rules from `AGENTS.md`. After consuming each child result, complete the lifecycle by archiving the session and verifying that its
+worktree and local branch were removed; preserve anything dirty or not yet reconciled.
 
 ## Hard rules (copy from AGENTS.md, surfaced here for visibility)
 
