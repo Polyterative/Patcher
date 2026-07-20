@@ -112,6 +112,16 @@
                              class="block user-area-section"
                              [style.--section-enter-delay.ms]="600"
           ></app-user-comments>
+          @if (marketplaceEnabled) {
+            <app-user-listings appDiscoveryTipAnchor="user-area-marketplace-listings"
+                               class="block user-area-section"
+                               [style.--section-enter-delay.ms]="720"
+            ></app-user-listings>
+            <app-user-address-book appDiscoveryTipAnchor="user-area-address-book"
+                                   class="block user-area-section"
+                                   [style.--section-enter-delay.ms]="840"
+            ></app-user-address-book>
+          }
         </div>
         <div class="sidebar col gap1">
           <div class="col gap1 utility-rail-group utility-rail-group--primary">

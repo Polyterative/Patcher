@@ -3,6 +3,9 @@
   profile: (dataService.profile$ | async),
   racks: (dataService.rackData$ | async),
   patches: (dataService.patchesData$ | async),
+  marketplaceListings: (dataService.marketplaceListings$ | async),
+  marketplaceLoading: (dataService.marketplaceListingsLoading$ | async),
+  marketplaceError: (dataService.marketplaceListingsError$ | async),
   stats: (publicStats$ | async),
   isOwnProfile: (isOwnProfile$ | async),
 }; as bag) {
@@ -97,6 +100,40 @@
               }
             </div>
           </lib-hero-content-card>
+
+          @if (dataService.marketplaceEnabled && (bag.marketplaceLoading || bag.marketplaceError || (bag.marketplaceListings?.length ?? 0) > 0)) {
+            <lib-hero-content-card
+              class="userBG profile-marketplace"
+              titleNormal="For sale"
+              description="Active Marketplace listings from this profile."
+              icon="storefront"
+              data-testid="public-profile-marketplace-section"
+            >
+              @if (bag.marketplaceLoading) {
+                <div class="profile-marketplace__state" role="status" data-testid="public-profile-marketplace-loading">
+                  <mat-icon aria-hidden="true">sync</mat-icon>
+                  Loading listings…
+                </div>
+              } @else if (bag.marketplaceError) {
+                <div class="profile-marketplace__state profile-marketplace__state--error" role="alert" data-testid="public-profile-marketplace-error">
+                  <mat-icon aria-hidden="true">error_outline</mat-icon>
+                  <span>{{ bag.marketplaceError }}</span>
+                  <button
+                    type="button"
+                    mat-stroked-button
+                    color="primary"
+                    (click)="dataService.retryMarketplaceListings$.next()"
+                  >Retry</button>
+                </div>
+              } @else if (bag.marketplaceListings?.length) {
+                <div class="profile-marketplace__grid" data-testid="public-profile-marketplace-grid">
+                  @for (listing of bag.marketplaceListings; track listing.publicId) {
+                    <app-marketplace-listing-card [listing]="listing"></app-marketplace-listing-card>
+                  }
+                </div>
+              }
+            </lib-hero-content-card>
+          }
         </div>
 
         <div class="sidebar col gap1">

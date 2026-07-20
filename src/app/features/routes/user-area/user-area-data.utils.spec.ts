@@ -1,15 +1,22 @@
 import {
   buildDiscoverySnapshot,
+  collectPatchTags,
   filterModules,
+  filterPatches,
   filterRacks,
   filterManuals,
   filterComments,
+  hasMoreFromTake$,
+  hasMoreLoaded$,
   pagedSlice$,
+  remainingFromTake$,
+  remainingLoaded$,
 } from './user-area-data.utils';
 import {
   BehaviorSubject,
-  of,
+  firstValueFrom,
 } from 'rxjs';
+import { Patch } from 'src/app/models/patch';
 
 const makeModule = (name: string, mfr = '', desc = '', tags: string[] = []) => ({
   name, description: desc,
@@ -20,6 +27,7 @@ const makeModule = (name: string, mfr = '', desc = '', tags: string[] = []) => (
 const makeRack = (name: string, desc = '') => ({ name, description: desc } as any);
 const makeManual = (name: string, mfr = '', desc = '') => ({ name, description: desc, manufacturer: { name: mfr } } as any);
 const makeComment = (content: string, username = '') => ({ content, profile: { username } } as any);
+const makePatch = (name: string, desc = '', tags: string[] = []) => ({ name, description: desc, tags } as Patch);
 
 describe('user-area-data.utils', () => {
   describe('buildDiscoverySnapshot', () => {
@@ -98,6 +106,35 @@ describe('user-area-data.utils', () => {
       expect(filterComments(comments, 'great')?.length).toBe(1);
     });
   });
+
+  describe('filterPatches', () => {
+    it('returns undefined for undefined input', () => {
+      expect(filterPatches(undefined, null, 'q')).toBeUndefined();
+    });
+
+    it('filters by selected tag and search query', () => {
+      const patches = [
+        makePatch('Ambient Clouds', 'dreamy pad', ['ambient', 'delay']),
+        makePatch('Bass Growl', 'acid line', ['bass'])
+      ];
+
+      expect(filterPatches(patches, 'ambient', 'clouds')).toEqual([patches[0]]);
+      expect(filterPatches(patches, 'ambient', 'bass')).toEqual([]);
+    });
+  });
+
+  describe('collectPatchTags', () => {
+    it('returns sorted unique patch tags', () => {
+      expect(collectPatchTags([
+        makePatch('A', '', ['zeta', 'alpha']),
+        makePatch('B', '', ['alpha', 'mid'])
+      ])).toEqual(['alpha', 'mid', 'zeta']);
+    });
+
+    it('returns an empty list before patches load', () => {
+      expect(collectPatchTags(undefined)).toEqual([]);
+    });
+  });
 });
 
 describe('pagedSlice$', () => {
@@ -150,5 +187,27 @@ describe('pagedSlice$', () => {
     });
 
     skip$.next(2);
+  });
+});
+
+describe('pagination helpers', () => {
+  it('reports whether take-based pagination has more items', async () => {
+    expect(await firstValueFrom(hasMoreFromTake$(new BehaviorSubject(11), new BehaviorSubject(10)))).toBeTrue();
+    expect(await firstValueFrom(hasMoreFromTake$(new BehaviorSubject(10), new BehaviorSubject(10)))).toBeFalse();
+  });
+
+  it('calculates remaining take-based items without going negative', async () => {
+    expect(await firstValueFrom(remainingFromTake$(new BehaviorSubject(14), new BehaviorSubject(10)))).toBe(4);
+    expect(await firstValueFrom(remainingFromTake$(new BehaviorSubject(4), new BehaviorSubject(10)))).toBe(0);
+  });
+
+  it('reports whether loaded-data pagination has more items', async () => {
+    expect(await firstValueFrom(hasMoreLoaded$(new BehaviorSubject(3), new BehaviorSubject([1, 2])))).toBeTrue();
+    expect(await firstValueFrom(hasMoreLoaded$(new BehaviorSubject(2), new BehaviorSubject([1, 2])))).toBeFalse();
+  });
+
+  it('calculates remaining loaded-data items without going negative', async () => {
+    expect(await firstValueFrom(remainingLoaded$(new BehaviorSubject(5), new BehaviorSubject([1, 2])))).toBe(3);
+    expect(await firstValueFrom(remainingLoaded$(new BehaviorSubject(1), new BehaviorSubject([1, 2])))).toBe(0);
   });
 });

@@ -232,12 +232,17 @@
   --user-area-section-tint: 104, 126, 191;
 }
 
+:host ::ng-deep .main-content .user-area-section lib-hero-content-card.addressesBG {
+  --user-area-section-tint: 160, 180, 220;
+}
+
 :host ::ng-deep .main-content .user-area-section lib-hero-content-card.modulesBG,
 :host ::ng-deep .main-content .user-area-section lib-hero-content-card.racksBG,
 :host ::ng-deep .main-content .user-area-section lib-hero-content-card.patchesBG,
 :host ::ng-deep .main-content .user-area-section lib-hero-content-card.coolBG,
 :host ::ng-deep .main-content .user-area-section lib-hero-content-card.manualsBG,
-:host ::ng-deep .main-content .user-area-section lib-hero-content-card.commentsBG {
+:host ::ng-deep .main-content .user-area-section lib-hero-content-card.commentsBG,
+:host ::ng-deep .main-content .user-area-section lib-hero-content-card.addressesBG {
   background:
     linear-gradient(135deg, rgba(var(--user-area-section-tint), 0.32) 0%, rgba(255, 255, 255, 0) 100%);
   background-color: transparent;
@@ -250,7 +255,8 @@
 :host ::ng-deep .main-content .user-area-section lib-hero-content-card.patchesBG .content,
 :host ::ng-deep .main-content .user-area-section lib-hero-content-card.coolBG .content,
 :host ::ng-deep .main-content .user-area-section lib-hero-content-card.manualsBG .content,
-:host ::ng-deep .main-content .user-area-section lib-hero-content-card.commentsBG .content {
+:host ::ng-deep .main-content .user-area-section lib-hero-content-card.commentsBG .content,
+:host ::ng-deep .main-content .user-area-section lib-hero-content-card.addressesBG .content {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.08) 100%),
     linear-gradient(135deg, rgba(var(--user-area-section-tint), 0.16) 0%, rgba(255, 255, 255, 0) 72%);

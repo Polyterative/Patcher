@@ -45,6 +45,8 @@ import { ModuleCollectionsDataService } from 'src/app/features/module-collection
 import { UserCollectionsComponent } from 'src/app/features/routes/user-area/user-collections/user-collections.component';
 import { UserCoolCollectionComponent } from 'src/app/features/routes/user-area/user-cool-collection/user-cool-collection.component';
 import { ModuleListModule } from 'src/app/features/module-browser/module-list/module-list.module';
+import { UserAddressBookComponent } from 'src/app/features/routes/user-area/user-marketplace/user-address-book/user-address-book.component';
+import { UserListingsComponent } from 'src/app/features/routes/user-area/user-marketplace/user-listings/user-listings.component';
 
 
 @NgModule({
@@ -95,7 +97,9 @@ import { ModuleListModule } from 'src/app/features/module-browser/module-list/mo
     PatchMicroModule,
     RackMicroModule,
     RackModule,
-    PatchModule
+    PatchModule,
+    UserAddressBookComponent,
+    UserListingsComponent
   ],
   exports:      [
     UserAreaRootComponent

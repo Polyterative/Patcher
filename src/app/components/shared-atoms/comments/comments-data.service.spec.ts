@@ -1,8 +1,6 @@
 import { of } from 'rxjs';
-import {
-  CommentableEntityTypes,
-  CommentsDataService
-} from './comments-data.service';
+import { CommentsDataService } from './comments-data.service';
+import { CommentableEntityTypes } from 'src/app/models/comment';
 
 
 describe('CommentsDataService', () => {

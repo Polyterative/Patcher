@@ -1,0 +1,178 @@
+@if (vm$ | async; as vm) {
+  <section class="marketplace-detail col gap1" aria-label="Marketplace listing" data-testid="marketplace-detail">
+    @if (vm.loading) {
+      <div class="marketplace-detail__state" role="status" data-testid="marketplace-detail-loading">
+        <mat-icon aria-hidden="true">sync</mat-icon>
+        Loading listing…
+      </div>
+    } @else if (vm.error) {
+      <div class="marketplace-detail__state marketplace-detail__state--error" role="alert" data-testid="marketplace-detail-error">
+        <mat-icon aria-hidden="true">error_outline</mat-icon>
+        {{ vm.error }}
+      </div>
+    } @else if (vm.notFound) {
+      <app-empty-state
+        data-testid="marketplace-detail-not-found"
+        icon="visibility_off"
+        title="Listing unavailable"
+        copy="This public listing is not active, was removed, or cannot be viewed anonymously."
+      ></app-empty-state>
+    } @else if (vm.listing; as listing) {
+      <lib-hero-content-card
+        class="marketplaceBG marketplace-detail__header"
+        titleBig="Marketplace listing"
+        [titleSub]="listing.title"
+        [description]="listing.manufacturerName + ' · ' + listing.priceLabel"
+      >
+        <div class="marketplace-detail__actions rowwrap gap1">
+          <a mat-stroked-button routerLink="/marketplace">
+            <mat-icon aria-hidden="true">arrow_back</mat-icon>
+            Marketplace
+          </a>
+          @if (listing.sellerProfileUrl || (listing.module?.public && listing.module?.id)) {
+            <div class="rowwrap gap1">
+              @if (listing.sellerProfileUrl) {
+                <a mat-stroked-button [routerLink]="listing.sellerProfileUrl">
+                  <mat-icon aria-hidden="true">person</mat-icon>
+                  Seller profile
+                </a>
+              }
+              @if (listing.module; as module) {
+                @if (module.public && module.id) {
+                  <a mat-stroked-button [routerLink]="['/modules/details', module.id]" data-testid="marketplace-detail-module-link">
+                    <mat-icon aria-hidden="true">view_in_ar</mat-icon>
+                    View module
+                  </a>
+                }
+              }
+            </div>
+          }
+        </div>
+
+        <div class="marketplace-detail__grid">
+          <section
+            class="marketplace-detail__gallery col gap1"
+            aria-label="Listing media gallery"
+            tabindex="0"
+            (keydown.arrowleft)="selectAdjacentMedia(-1, listing.media.length)"
+            (keydown.arrowright)="selectAdjacentMedia(1, listing.media.length)"
+          >
+            <div class="marketplace-detail__hero-media">
+              @if (selectedMedia$ | async; as selectedMedia) {
+                <img [src]="selectedMedia.url" [alt]="selectedMedia.alt">
+              } @else if (listing.module; as module) {
+                @if (module.panels.length) {
+                  <app-module-part-image
+                    class="marketplace-detail__module-image"
+                    data-testid="marketplace-detail-module-image"
+                    [data]="module"
+                    [big]="true"
+                    [disableNavigation]="true"
+                    [tooltipDisabled]="true"
+                  ></app-module-part-image>
+                } @else {
+                  <div class="marketplace-detail__placeholder" aria-hidden="true">
+                    {{ listing.manufacturerName.slice(0, 2).toUpperCase() }}
+                  </div>
+                }
+              } @else {
+                <div class="marketplace-detail__placeholder" aria-hidden="true">
+                  {{ listing.manufacturerName.slice(0, 2).toUpperCase() }}
+                </div>
+              }
+            </div>
+
+            @if (listing.media.length > 1) {
+              <div class="marketplace-detail__thumbs row gap1" aria-label="Choose listing image">
+                @for (media of listing.media; track media.id; let i = $index) {
+                  <button
+                    type="button"
+                    class="marketplace-detail__thumb"
+                    [class.marketplace-detail__thumb--active]="(selectedMediaIndex$ | async) === i"
+                    [attr.aria-label]="'Show image ' + (i + 1) + ' for ' + listing.title"
+                    [attr.aria-pressed]="(selectedMediaIndex$ | async) === i"
+                    (click)="selectMedia(i)"
+                    (keydown.enter)="selectMedia(i)"
+                    (keydown.space)="$event.preventDefault(); selectMedia(i)"
+                  >
+                    <img [src]="media.url" [alt]="media.alt">
+                  </button>
+                }
+              </div>
+            }
+          </section>
+
+          <aside class="marketplace-detail__facts col gap1" aria-label="Listing facts">
+            <div class="marketplace-detail__price-row">
+              <strong>{{ listing.priceLabel }}</strong>
+              <span>{{ listing.conditionLabel }}</span>
+            </div>
+
+            <dl class="marketplace-detail__fact-list">
+              <div>
+                <dt>Status</dt>
+                <dd>{{ listing.statusLabel }}</dd>
+              </div>
+              <div>
+                <dt>Seller</dt>
+                <dd>
+                  @if (listing.sellerProfileUrl) {
+                    <a [routerLink]="listing.sellerProfileUrl">{{ listing.sellerLabel }}</a>
+                  } @else {
+                    {{ listing.sellerLabel }}
+                  }
+                </dd>
+              </div>
+              <div>
+                <dt>Origin</dt>
+                <dd>{{ listing.originSummary }}</dd>
+              </div>
+              <div>
+                <dt>Shipping</dt>
+                <dd>{{ listing.shippingOptions.length ? listing.shippingOptions.join(', ') : 'Not listed' }}</dd>
+              </div>
+              <div>
+                <dt>Offers</dt>
+                <dd>{{ listing.openToOffers ? 'Open to offers' : 'Fixed asking price' }}</dd>
+              </div>
+              <div>
+                <dt>Age</dt>
+                <dd>{{ listing.ageLabel }} · {{ listing.updatedLabel }}</dd>
+              </div>
+            </dl>
+
+            @if (listing.description) {
+              <section class="marketplace-detail__section col gap05">
+                <h2 class="marketplace-detail__label">Description</h2>
+                <p>{{ listing.description }}</p>
+              </section>
+            }
+
+            @if (listing.shippingNotes) {
+              <section class="marketplace-detail__section col gap05">
+                <h2 class="marketplace-detail__label">Shipping notes</h2>
+                <p>{{ listing.shippingNotes }}</p>
+              </section>
+            }
+
+            <div class="marketplace-detail__cta col gap05" data-testid="marketplace-detail-cta">
+              @if (isLoggedIn$ | async) {
+                <button mat-stroked-button type="button" disabled>Contact unavailable</button>
+                <p>Offers, contact persistence, and messaging are coming in a later Marketplace slice.</p>
+              } @else {
+                <a
+                  mat-flat-button
+                  color="primary"
+                  [routerLink]="['/auth/login']"
+                  [queryParams]="{returnUrl: currentUrl}"
+                  data-testid="marketplace-login-cta"
+                >Log in to contact seller</a>
+                <p>Anonymous browse is public. Contact requires a Patcher account.</p>
+              }
+            </div>
+          </aside>
+        </div>
+      </lib-hero-content-card>
+    }
+  </section>
+}

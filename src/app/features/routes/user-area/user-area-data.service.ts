@@ -3,7 +3,9 @@ import {
   BehaviorSubject,
   combineLatest,
   Observable,
-  Subject
+  of,
+  Subject,
+  throwError
 } from 'rxjs';
 import {
   filter,
@@ -18,6 +20,8 @@ import {
 } from 'src/app/components/patch-parts/patch-creator/patch-creator.component';
 import {
   RackCreatorComponent,
+  RACK_CREATOR_IMPORT_DIALOG_WIDTH,
+  RACK_CREATOR_MANUAL_DIALOG_WIDTH,
   RackCreatorInModel
 } from 'src/app/components/rack-parts/rack-creator/rack-creator.component';
 import {
@@ -35,19 +39,31 @@ import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { MatDialog } from "@angular/material/dialog";
 import { DbComment } from "src/app/models/comment";
 import { CurrentUserContributorStats } from 'src/app/features/backend/supabase-queries';
-import { matchesSearchQuery } from 'src/app/shared-interproject/components/@smart/mat-form-entity/string-utils';
+import { recoverListRequest } from 'src/app/features/browser-data-recovery';
 import {
   buildDiscoverySnapshot,
+  collectPatchTags,
   filterComments,
   filterManuals,
-  filterModulesByPossession,
   filterModules,
+  filterModulesByPossession,
+  filterPatches,
   filterRacks,
-  pagedSlice$
+  hasMoreFromTake$,
+  hasMoreLoaded$,
+  pagedSlice$,
+  remainingFromTake$,
+  remainingLoaded$
 } from './user-area-data.utils';
 import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 
 export type UserModuleCollectionFilter = 'MY_MODULES' | 'WISHLIST' | 'FOR_SALE';
+
+interface UserAreaCommentsPage {
+  data: DbComment[] | undefined;
+  count: number;
+  replace: boolean;
+}
 
 @Injectable()
 export class UserAreaDataService extends SubManager {
@@ -153,15 +169,9 @@ export class UserAreaDataService extends SubManager {
       this.modulesPagination.take$
     );
 
-    this.hasMoreModules$ = combineLatest([
-      this.filteredModulesCount$,
-      this.modulesPagination.take$
-    ]).pipe(map(([count, take]) => count > take));
+    this.hasMoreModules$ = hasMoreFromTake$(this.filteredModulesCount$, this.modulesPagination.take$);
 
-    this.remainingModulesCount$ = combineLatest([
-      this.filteredModulesCount$,
-      this.modulesPagination.take$
-    ]).pipe(map(([count, take]) => Math.max(0, count - take)));
+    this.remainingModulesCount$ = remainingFromTake$(this.filteredModulesCount$, this.modulesPagination.take$);
 
     this.filteredRacksData$ = combineLatest([
       this.rackData$,
@@ -180,34 +190,16 @@ export class UserAreaDataService extends SubManager {
       this.racksPagination.take$
     );
 
-    this.hasMoreRacks$ = combineLatest([
-      this.filteredRacksCount$,
-      this.racksPagination.take$
-    ]).pipe(map(([count, take]) => count > take));
+    this.hasMoreRacks$ = hasMoreFromTake$(this.filteredRacksCount$, this.racksPagination.take$);
 
-    this.remainingRacksCount$ = combineLatest([
-      this.filteredRacksCount$,
-      this.racksPagination.take$
-    ]).pipe(map(([count, take]) => Math.max(0, count - take)));
+    this.remainingRacksCount$ = remainingFromTake$(this.filteredRacksCount$, this.racksPagination.take$);
 
     this.filteredPatchesData$ = combineLatest([
       this.patchesData$,
       this.activeTagFilter$,
       this.searchQuery$
     ]).pipe(
-      map(([patches, tag, query]) => {
-        if (!patches) { return undefined; }
-
-        return patches.filter((patch) => {
-          const matchesTag = !tag || (patch.tags ?? []).includes(tag);
-          if (!matchesTag) {
-            return false;
-          }
-
-          const searchFields = [patch.name, patch.description, ...(patch.tags ?? [])];
-          return matchesSearchQuery(query, ...searchFields);
-        });
-      })
+      map(([patches, tag, query]) => filterPatches(patches, tag, query))
     );
 
     this.filteredPatchesCount$ = this.filteredPatchesData$.pipe(
@@ -234,32 +226,17 @@ export class UserAreaDataService extends SubManager {
       map(([comments, query]) => filterComments(comments, query))
     );
 
-    this.hasMoreComments$ = combineLatest([
-      this.commentsCount$,
-      this.commentsData$
-    ]).pipe(map(([count, comments]) => count > (comments?.length ?? 0)));
+    this.hasMoreComments$ = hasMoreLoaded$(this.commentsCount$, this.commentsData$);
 
-    this.remainingCommentsCount$ = combineLatest([
-      this.commentsCount$,
-      this.commentsData$
-    ]).pipe(map(([count, comments]) => Math.max(0, count - (comments?.length ?? 0))));
+    this.remainingCommentsCount$ = remainingLoaded$(this.commentsCount$, this.commentsData$);
 
     this.allPatchTags$ = this.patchesData$.pipe(
-      map(patches => patches
-        ? Array.from(new Set(patches.flatMap(p => p.tags ?? []))).sort()
-        : []
-      )
+      map(patches => collectPatchTags(patches))
     );
 
-    this.hasMorePatches$ = combineLatest([
-      this.filteredPatchesCount$,
-      this.patchesPagination.take$
-    ]).pipe(map(([count, take]) => count > take));
+    this.hasMorePatches$ = hasMoreFromTake$(this.filteredPatchesCount$, this.patchesPagination.take$);
 
-    this.remainingPatchesCount$ = combineLatest([
-      this.filteredPatchesCount$,
-      this.patchesPagination.take$
-    ]).pipe(map(([count, take]) => Math.max(0, count - take)));
+    this.remainingPatchesCount$ = remainingFromTake$(this.filteredPatchesCount$, this.patchesPagination.take$);
 
     this.loadMoreComments$
       .pipe(this.takeUntilDestroyed())
@@ -292,30 +269,60 @@ export class UserAreaDataService extends SubManager {
 
     this.updateCommentsData$
       .pipe(
-        tap(() => {
-          if (this.commentsPagination.skip$.value === 0) {
-            this.commentsData$.next(undefined);
-          }
-        }),
         switchMap(() => {
           const skip = this.commentsPagination.skip$.value;
           const take = this.commentsPagination.take$.value;
-          return this.backend.GET.currentUserComments(skip, skip + take - 1);
+          const previousData = this.commentsData$.value;
+          const previousCount = this.commentsCount$.value;
+          if (skip === 0) {
+            this.commentsData$.next(undefined);
+          }
+
+          return recoverListRequest<UserAreaCommentsPage>(
+            () => this.backend.GET.currentUserComments(skip, skip + take - 1).pipe(
+              switchMap(response => response?.error
+                ? throwError(() => response.error)
+                : of({
+                  data: response?.data ?? [],
+                  count: response?.count ?? previousCount,
+                  replace: skip === 0
+                })
+              )
+            ),
+            {
+              data: previousData,
+              count: previousCount,
+              replace: true
+            },
+            '[user-area] Failed to load comments',
+            {beforeRetry: () => this.backend.cacheResetter$.next(['currentUserComments'])}
+          );
         }),
         this.takeUntilDestroyed()
       )
       .subscribe(response => {
-        const skip = this.commentsPagination.skip$.value;
-        const incoming = response?.data ?? [];
+        if (response.data === undefined) {
+          return;
+        }
+
+        const incoming = response.data;
         const current = this.commentsData$.value ?? [];
-        this.commentsData$.next(skip === 0 ? incoming : [...current, ...incoming]);
-        this.commentsCount$.next(response?.count ?? 0);
+        this.commentsData$.next(response.replace ? incoming : [...current, ...incoming]);
+        this.commentsCount$.next(response.count);
       });
 
     this.updateModulesData$
       .pipe(
-        tap(() => this.modulesData$.next(undefined)),
-        switchMap(() => this.backend.GET.currentUserModules()),
+        switchMap(() => {
+          const previousData = this.modulesData$.value;
+          this.modulesData$.next(undefined);
+          return this.recoverUserAreaList(
+            () => this.backend.GET.currentUserModules(true, false, undefined, true),
+            previousData,
+            '[user-area] Failed to load modules',
+            ['currentUserModules']
+          );
+        }),
         this.takeUntilDestroyed()
       )
       .subscribe(x => this.modulesData$.next(x));
@@ -330,39 +337,68 @@ export class UserAreaDataService extends SubManager {
 
     this.updatePatchesData$
       .pipe(
-        tap(() => this.patchesData$.next(undefined)),
-        switchMap(() => this.backend.get.currentUserPatches()),
+        switchMap(() => {
+          const previousData = this.patchesData$.value;
+          this.patchesData$.next(undefined);
+          return this.recoverUserAreaList(
+            () => this.backend.get.currentUserPatches(true),
+            previousData,
+            '[user-area] Failed to load patches',
+            ['patches']
+          );
+        }),
         this.takeUntilDestroyed()
       )
       .subscribe(patches => {
-        const nextPatches = patches ?? [];
-        this.patchesData$.next(nextPatches);
-        this.patchesCount$.next(nextPatches.length);
+        this.patchesData$.next(patches);
+        if (patches !== undefined) {
+          this.patchesCount$.next(patches.length);
+        }
       });
 
     this.updateRackData$
       .pipe(
-        tap(() => this.rackData$.next(undefined)),
-        switchMap(() => this.backend.get.currentUserRacks()),
+        switchMap(() => {
+          const previousData = this.rackData$.value;
+          this.rackData$.next(undefined);
+          return this.recoverUserAreaList(
+            () => this.backend.get.currentUserRacks(true),
+            previousData,
+            '[user-area] Failed to load racks',
+            ['rackWithId']
+          );
+        }),
         this.takeUntilDestroyed()
       )
       .subscribe(racks => {
-        const nextRacks = racks ?? [];
-        this.rackData$.next(nextRacks);
-        this.racksCount$.next(nextRacks.length);
+        this.rackData$.next(racks);
+        if (racks !== undefined) {
+          this.racksCount$.next(racks.length);
+        }
       });
     
     this.updateManualsData$
       .pipe(
-        tap(() => this.manualsData$.next(undefined)),
-        switchMap(() => this.backend.GET.currentUserModules(
-          false,
-          true
-        )),
-        map(x => x
-          .filter(y => !!y.manualURL)
-          .sort((a, b) => a.name.localeCompare(b.name))
-        ),
+        switchMap(() => {
+          const previousData = this.manualsData$.value;
+          this.manualsData$.next(undefined);
+          return this.recoverUserAreaList(
+            () => this.backend.GET.currentUserModules(
+              false,
+              true,
+              undefined,
+              true
+            ).pipe(
+              map(x => x
+                .filter(y => !!y.manualURL)
+                .sort((a, b) => a.name.localeCompare(b.name))
+              )
+            ),
+            previousData,
+            '[user-area] Failed to load manuals',
+            ['currentUserModules']
+          );
+        }),
         this.takeUntilDestroyed()
       )
       .subscribe(x => this.manualsData$.next(x));
@@ -470,7 +506,8 @@ export class UserAreaDataService extends SubManager {
             RackCreatorComponent,
             {
               data,
-              width: '24rem',
+              width: RACK_CREATOR_MANUAL_DIALOG_WIDTH,
+              maxWidth: RACK_CREATOR_IMPORT_DIALOG_WIDTH,
               disableClose: false
             }
           )
@@ -481,6 +518,20 @@ export class UserAreaDataService extends SubManager {
       .subscribe(() => this.updateRackData$.next(undefined));
     
     
+  }
+
+  private recoverUserAreaList<T>(
+    requestFactory: () => Observable<T[]>,
+    previousData: T[] | undefined,
+    logMessage: string,
+    cacheKeys: Parameters<SupabaseService['cacheResetter$']['next']>[0]
+  ): Observable<T[] | undefined> {
+    return recoverListRequest<T[] | undefined>(
+      requestFactory,
+      previousData,
+      logMessage,
+      {beforeRetry: () => this.backend.cacheResetter$.next(cacheKeys)}
+    );
   }
 
   connectDiscovery(searchQuery$: Observable<string>): void {
