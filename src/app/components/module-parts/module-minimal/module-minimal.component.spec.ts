@@ -212,6 +212,38 @@ describe('ModuleMinimalComponent', () => {
     };
 
     expect(component.priceSummaryLabel).toBe('~€399');
+    expect(component.priceBadgeLabel).toBe('~€399');
     expect(component.priceSummaryTooltip).toBe('Recent market price: ~€399 from 4 stores, latest check Jul 1, 2026.');
+  });
+
+  it('appends sparse price history to the title badge label and tooltip', () => {
+    const {component} = build();
+    component.priceSummary = {
+      moduleId: 42,
+      estimatedPriceEurMinor: 39900,
+      displayPrice: '~€399',
+      storeCount: 4,
+      latestObservedAt: '2026-07-01T00:00:00.000Z',
+      tooltip: 'Estimated recent market price.'
+    };
+    component.priceHistorySummary = {
+      moduleId: 42,
+      eligiblePointCount: 3,
+      storeCount: 2,
+      earliestObservedAt: '2026-05-15T00:00:00.000Z',
+      latestObservedAt: '2026-07-01T00:00:00.000Z',
+      earliestPriceEurMinor: 42000,
+      latestPriceEurMinor: 39900,
+      minPriceEurMinor: 39900,
+      maxPriceEurMinor: 46000,
+      trendPercent: -5,
+      trendDirection: 'down',
+      label: '↓5% 60d',
+      rangeLabel: '~€399–€460',
+      tooltip: '60-day Price Hub history.'
+    };
+
+    expect(component.priceBadgeLabel).toBe('~€399 · ↓5% 60d');
+    expect(component.priceSummaryTooltip).toBe('Estimated recent market price. 60-day Price Hub history.');
   });
 });

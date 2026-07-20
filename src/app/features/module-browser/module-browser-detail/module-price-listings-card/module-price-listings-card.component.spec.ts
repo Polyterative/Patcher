@@ -1,4 +1,8 @@
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { TimeagoModule } from 'ngx-timeago';
 import { ModulePriceListing } from 'src/app/features/backend/supabase-queries';
+import { SupabaseUtcTimestampPipe } from 'src/app/shared-interproject/pipes/supabase-utc-timestamp.pipe';
 import {
   detectPreferredModulePriceContinent,
   filterAndOrderModulePriceListings,
@@ -7,6 +11,12 @@ import {
   ModulePriceAvailabilityFilter,
   ModulePriceListingsCardComponent
 } from './module-price-listings-card.component';
+import {
+  getListingPriceAmount,
+  getStoreHeroColor,
+  isModulePriceListingStale,
+  MODULE_PRICE_STALE_THRESHOLD_DAYS
+} from './module-price-listings-card.utils';
 
 interface ListingFixtureOptions {
   id: number;
@@ -16,6 +26,7 @@ interface ListingFixtureOptions {
   availability?: string;
   countryCode?: string | null;
   currency?: string;
+  lastCheckedAt?: string | null;
   latestSnapshot?: ModulePriceListing['latestSnapshot'];
 }
 
@@ -30,7 +41,7 @@ function createListing(options: ListingFixtureOptions): ModulePriceListing {
     currencyHint: null,
     productUrl: `https://example.com/${options.id}`,
     verificationStatus: 'verified',
-    lastCheckedAt: null,
+    lastCheckedAt: options.lastCheckedAt ?? '2999-01-01T00:00:00Z',
     latestSnapshot:
       options.latestSnapshot === undefined
         ? {
@@ -191,6 +202,42 @@ describe('ModulePriceListingsCardComponent', () => {
     expect(comp.isAvailableNow(listing)).toBeTrue();
   });
 
+  it('labels stale listings with last-seen copy instead of a current price', () => {
+    const staleListing = createListing({
+      id: 1,
+      storeName: 'Old store',
+      priceAmountMinor: 20000,
+      lastCheckedAt: '2000-01-01T00:00:00Z'
+    });
+
+    expect(comp.isStaleListing(staleListing)).toBeTrue();
+    expect(comp.formatPrice(staleListing)).toBe('Last seen');
+    expect(comp.getAvailabilityLabel(staleListing)).toBe('Stale data');
+    expect(comp.getAvailabilityClass(staleListing)).toBe(
+      'module-price-listing__availability--stale'
+    );
+    expect(comp.isAvailableNow(staleListing)).toBeFalse();
+    expect(comp.getFreshnessIso(staleListing)).toBe('2000-01-01T00:00:00Z');
+  });
+
+  it('splits uncommon currency symbols into their own display part', () => {
+    const listing = createListing({
+      id: 1,
+      storeName: 'UAH price',
+      priceAmountMinor: 123456,
+      currency: 'UAH'
+    });
+    const priceParts = comp.formatPriceParts(listing);
+
+    expect(priceParts.map(part => part.value).join('')).toBe(comp.formatPrice(listing));
+    expect(priceParts).toContain(jasmine.objectContaining({
+      kind: 'currency',
+      value: '₴'
+    }));
+    expect(priceParts.some(part => part.kind === 'amount' && part.value.includes('1,234.56')))
+      .toBeTrue();
+  });
+
   it('returns muted hero colors for known store slugs', () => {
     expect(
       comp.getStoreHeroColor(createListing({
@@ -199,6 +246,45 @@ describe('ModulePriceListingsCardComponent', () => {
         storeSlug: 'signal-sounds-uk'
       }))
     ).toBe('#676976');
+  });
+
+  it('derives deterministic muted hero colors for unlisted store slugs', () => {
+    const firstColor = getStoreHeroColor('midiverse-modular');
+    const secondColor = getStoreHeroColor('midiverse-modular');
+
+    expect(firstColor).toBe(secondColor);
+    expect(firstColor).toMatch(/^#[0-9a-f]{6}$/);
+    expect(firstColor).not.toBe('#536170');
+    expect(comp.getStoreHeroColor(createListing({
+      id: 1,
+      storeName: 'Midiverse Modular',
+      storeSlug: 'midiverse-modular'
+    }))).toBe(firstColor);
+  });
+
+  it('spreads different unlisted store slugs across plausible subdued colors', () => {
+    const colors = [
+      getStoreHeroColor('midiverse-modular'),
+      getStoreHeroColor('soundium'),
+      getStoreHeroColor('synthshop')
+    ];
+
+    expect(new Set(colors).size).toBe(colors.length);
+    colors.forEach(color => {
+      const channels = color.match(/[0-9a-f]{2}/g)?.map(channel => parseInt(channel, 16)) ?? [];
+      const channelSpread = Math.max(...channels) - Math.min(...channels);
+      const averageChannel =
+        channels.reduce((total, channel) => total + channel, 0) / channels.length;
+
+      expect(channelSpread).toBeLessThanOrEqual(36);
+      expect(averageChannel).toBeGreaterThanOrEqual(90);
+      expect(averageChannel).toBeLessThanOrEqual(112);
+    });
+  });
+
+  it('keeps hand-tuned store hero color overrides ahead of hash fallback', () => {
+    expect(getStoreHeroColor('signal-sounds-uk')).toBe('#676976');
+    expect(getStoreHeroColor(' Signal-Sounds-UK ')).toBe('#676976');
   });
 
   it('builds price comparison rails from EUR-normalized prices', () => {
@@ -277,6 +363,30 @@ describe('ModulePriceListingsCardComponent', () => {
     expect(comp.getPriceInsightLabel(premium)).toBe('+25% vs best');
   });
 
+  it('excludes stale prices from best-current comparisons', () => {
+    const staleCheap = createListing({
+      id: 1,
+      storeName: 'Stale cheap',
+      priceAmountMinor: 10000,
+      lastCheckedAt: '2000-01-01T00:00:00Z'
+    });
+    const currentPrice = createListing({
+      id: 2,
+      storeName: 'Current price',
+      priceAmountMinor: 20000
+    });
+    comp.listings = [staleCheap, currentPrice];
+
+    expect(comp.displayListings.map(listing => listing.storeName)).toEqual([
+      'Current price',
+      'Stale cheap'
+    ]);
+    expect(comp.isBestAvailableNowListing(currentPrice)).toBeTrue();
+    expect(comp.isBestAvailableNowListing(staleCheap)).toBeFalse();
+    expect(comp.getPriceInsightLabel(staleCheap)).toBe('');
+    expect(comp.priceComparisonPoints).toEqual([]);
+  });
+
   it('calculates savings against normalized EUR prices while preserving original currencies', () => {
     const bestNow = createListing({
       id: 1,
@@ -298,6 +408,17 @@ describe('ModulePriceListingsCardComponent', () => {
     ]);
     expect(comp.formatPrice(premium)).toContain('100');
     expect(comp.getPriceInsightLabel(premium)).toBe('+17% vs best');
+  });
+
+  it('formats zero-decimal store currencies without cents scaling', () => {
+    const listing = createListing({
+      id: 1,
+      storeName: 'Clockface',
+      priceAmountMinor: 40000,
+      currency: 'JPY'
+    });
+
+    expect(comp.formatPrice(listing)).toContain('40,000');
   });
 
   it('puts preferred-continent listings first without changing price order inside groups', () => {
@@ -425,6 +546,47 @@ describe('ModulePriceListingsCardComponent', () => {
   });
 });
 
+describe('ModulePriceListingsCardComponent template', () => {
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      declarations: [ModulePriceListingsCardComponent],
+      imports: [
+        TimeagoModule.forRoot(),
+        SupabaseUtcTimestampPipe
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
+    }).compileComponents();
+  });
+
+  it('renders each listing row as one explicit external listing link', () => {
+    const listing = createListing({
+      id: 1,
+      storeName: 'Signal Sounds EU',
+      countryCode: 'DE',
+      priceAmountMinor: 32000
+    });
+    const fixture = TestBed.createComponent(ModulePriceListingsCardComponent);
+    fixture.componentInstance.preferredContinent = 'europe';
+    fixture.componentInstance.regionFilter = 'europe';
+    fixture.componentInstance.listings = [listing];
+
+    fixture.detectChanges();
+
+    const row = fixture.nativeElement.querySelector(
+      '.module-price-listing'
+    ) as HTMLAnchorElement | null;
+
+    expect(row).not.toBeNull();
+    expect(row?.tagName).toBe('A');
+    expect(row?.href).toBe(listing.productUrl);
+    expect(row?.target).toBe('_blank');
+    expect(row?.rel).toContain('noopener');
+    expect(row?.rel).toContain('noreferrer');
+    expect(row?.textContent).toContain('Open listing');
+    expect(row?.querySelectorAll('a, button').length).toBe(0);
+  });
+});
+
 describe('module price listing helpers', () => {
   it('maps availability values into filter groups', () => {
     expect(
@@ -456,6 +618,96 @@ describe('module price listing helpers', () => {
         createListing({id: 5, storeName: 'Missing snapshot', latestSnapshot: null})
       )
     ).toBe('unknown');
+    expect(
+      getModulePriceAvailabilityGroup(
+        createListing({
+          id: 6,
+          storeName: 'Stale stock',
+          availability: 'in_stock',
+          lastCheckedAt: '2000-01-01T00:00:00Z'
+        })
+      )
+    ).toBe('unknown');
+  });
+
+  it('treats listings older than the documented stale threshold as non-current', () => {
+    const referenceDate = new Date('2026-07-20T12:00:00Z');
+    const exactlyThreshold = createListing({
+      id: 1,
+      storeName: 'Fresh edge',
+      lastCheckedAt: '2026-07-06T12:00:00Z'
+    });
+    const olderThanThreshold = createListing({
+      id: 2,
+      storeName: 'Stale edge',
+      lastCheckedAt: '2026-07-06T11:59:59Z'
+    });
+
+    expect(MODULE_PRICE_STALE_THRESHOLD_DAYS).toBe(14);
+    expect(isModulePriceListingStale(exactlyThreshold, referenceDate)).toBeFalse();
+    expect(isModulePriceListingStale(olderThanThreshold, referenceDate)).toBeTrue();
+    expect(
+      getListingPriceAmount(
+        createListing({
+          id: 3,
+          storeName: 'Long stale',
+          priceAmountMinor: 10000,
+          lastCheckedAt: '2000-01-01T00:00:00Z'
+        })
+      )
+    ).toBeNull();
+  });
+
+  it('orders seeded non-EUR store currencies by estimated EUR price', () => {
+    const orderedListings = filterAndOrderModulePriceListings(
+      [
+        createListing({
+          id: 1,
+          storeName: 'Found Sound AUD',
+          priceAmountMinor: 10000,
+          currency: 'AUD',
+          countryCode: 'DE'
+        }),
+        createListing({
+          id: 2,
+          storeName: 'Nightlife CAD',
+          priceAmountMinor: 10000,
+          currency: 'CAD',
+          countryCode: 'DE'
+        }),
+        createListing({
+          id: 3,
+          storeName: 'Clockface JPY',
+          priceAmountMinor: 40000,
+          currency: 'JPY',
+          countryCode: 'DE'
+        }),
+        createListing({
+          id: 4,
+          storeName: 'Synthshop NOK',
+          priceAmountMinor: 10000,
+          currency: 'NOK',
+          countryCode: 'DE'
+        }),
+        createListing({
+          id: 5,
+          storeName: 'Unknown FX',
+          priceAmountMinor: 10000,
+          currency: 'XYZ',
+          countryCode: 'DE'
+        })
+      ],
+      'all',
+      'price_asc'
+    );
+
+    expect(orderedListings.map(listing => listing.storeName)).toEqual([
+      'Synthshop NOK',
+      'Found Sound AUD',
+      'Nightlife CAD',
+      'Clockface JPY',
+      'Unknown FX'
+    ]);
   });
 
   it('orders by highest known price without putting unknown prices first', () => {
@@ -480,6 +732,29 @@ describe('module price listing helpers', () => {
       'Low',
       'Unavailable highest',
       'Unknown'
+    ]);
+  });
+
+  it('keeps stale rows visible but after current known prices when ordering', () => {
+    const orderedListings = filterAndOrderModulePriceListings(
+      [
+        createListing({
+          id: 1,
+          storeName: 'Stale low',
+          priceAmountMinor: 10000,
+          lastCheckedAt: '2000-01-01T00:00:00Z'
+        }),
+        createListing({id: 2, storeName: 'Current high', priceAmountMinor: 25000}),
+        createListing({id: 3, storeName: 'Current low', priceAmountMinor: 20000})
+      ],
+      'all',
+      'price_asc'
+    );
+
+    expect(orderedListings.map(listing => listing.storeName)).toEqual([
+      'Current low',
+      'Current high',
+      'Stale low'
     ]);
   });
 

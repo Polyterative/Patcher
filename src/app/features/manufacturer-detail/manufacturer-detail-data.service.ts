@@ -42,6 +42,10 @@ export class ManufacturerDetailDataService extends SubManager {
   readonly manufacturerData$ = this._manufacturerData$.asObservable();
   readonly modulesData$ = this._modulesData$.asObservable();
   readonly isLoading$ = this._isLoading$.asObservable();
+
+  get logoStorageBase(): string {
+    return this.backend.storage.publicUrlBases.manufacturerLogos;
+  }
   
   constructor(
     private readonly backend: SupabaseService,

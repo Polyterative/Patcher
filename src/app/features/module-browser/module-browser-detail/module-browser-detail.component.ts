@@ -8,19 +8,9 @@ import {
   ViewChild
 } from '@angular/core';
 import {
-  animateChild,
-  animate,
-  group,
-  query,
-  style,
-  transition,
-  trigger
-} from '@angular/animations';
-import {
   ActivatedRoute,
   Router
 } from '@angular/router';
-import { SeoSocialShareData } from 'src/app/models/seo.model';
 import {
   BehaviorSubject,
   combineLatest,
@@ -41,228 +31,59 @@ import {
 } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 import { AppStateService } from "src/app/shared-interproject/app-state.service";
-import { Animations } from 'src/app/shared-interproject/SharedConstants';
 import {
   DbModule,
   ModulePanel,
   UserModulePossessionKind
 } from "src/app/models/module";
-import {
-  CommentableEntityTypes,
-  CommentsDataService
-} from "src/app/components/shared-atoms/comments/comments-data.service";
+import { CommentsDataService } from "src/app/components/shared-atoms/comments/comments-data.service";
+import { CommentableEntityTypes } from "src/app/models/comment";
 import { UserManagementService } from "src/app/features/backbone/login/user-management.service";
-import { normalizeForSearch } from "src/app/shared-interproject/components/@smart/mat-form-entity/string-utils";
-import {
-  clearJsonLdScript,
-  upsertJsonLdScript
-} from "src/app/shared-interproject/json-ld-dom";
+import { clearJsonLdScript } from "src/app/shared-interproject/json-ld-dom";
 import {
   JSONLD_SCRIPT_ID,
-  MODULE_PANELS_BASE_URL,
   MODULE_SEARCH_LINKS,
   SearchLink,
 } from './module-browser-detail.constants';
 import { environment } from 'src/environments/environment';
-import { getModulePanelAspectRatio } from 'src/app/components/module-parts/get-module-height-for-standard.pipe';
 import {
   UserModuleAcquisition,
   UserModuleAcquisitionSource
 } from 'src/app/models/user-module-acquisition';
-import { formatMarketplaceMinorUnits } from 'src/app/features/marketplace/marketplace-money.utils';
-import { ReactionEntityTypes } from 'src/app/features/backend/supabase-reactions';
 import { ModuleEditorComponent } from 'src/app/components/module-parts/module-editor/module-editor.component';
 import { derivePanelLabel } from 'src/app/components/module-parts/panel.constants';
 import { ModulePriceListing } from 'src/app/features/backend/supabase-queries.models';
+import { moduleBrowserDetailAnimations } from './module-browser-detail.animations';
+import { buildModuleDetailSeoData, injectModuleJsonLd } from './module-browser-detail.seo';
+import * as detailPresentation from './module-browser-detail.presentation';
+import { ModuleCommunityStat } from './module-browser-detail.presentation';
+import { getAvailableRetailerSearchLinks as getAvailableRetailerSearchLinksForListings } from './module-browser-detail.search-links';
+import {
+  createInitialPanelRatioDiagnostics,
+  createMeasuredPanelRatioDiagnostic,
+  measurePanelImage,
+  MODULE_PANEL_RATIO_ACCEPTANCE_THRESHOLD,
+  ModulePanelRatioDiagnostic
+} from './module-browser-detail.panel-ratio';
 
-export const MODULE_PANEL_RATIO_ACCEPTANCE_THRESHOLD = 0.01;
-
-export interface PanelImageDimensions {
-  width: number;
-  height: number;
-}
-
-export interface ModulePanelRatioResult {
-  expectedRatio: number;
-  imageRatio: number;
-  relativeDelta: number;
-  deltaPercent: number;
-  accepted: boolean;
-}
-
-export interface ModulePanelRatioDiagnostic {
-  panelId: number;
-  label: string;
-  filename: string;
-  expectedRatio: number;
-  status: 'pending' | 'match' | 'mismatch' | 'unavailable' | 'error';
-  imageWidth?: number;
-  imageHeight?: number;
-  imageRatio?: number;
-  deltaPercent?: number;
-  accepted?: boolean;
-  error?: string;
-}
-
-interface ModuleCommunityStat {
-  label: string;
-  value: string;
-  icon: string;
-  size: string;
-}
-
-export function calculateModulePanelRatioResult(
-  module: Pick<DbModule, 'hp' | 'standard'>,
-  dimensions: PanelImageDimensions,
-  threshold = MODULE_PANEL_RATIO_ACCEPTANCE_THRESHOLD
-): ModulePanelRatioResult | null {
-  if (!Number.isFinite(module.hp) || module.hp <= 0 || !Number.isFinite(dimensions.width) || !Number.isFinite(dimensions.height) || dimensions.width <= 0 || dimensions.height <= 0) {
-    return null;
-  }
-
-  const expectedRatio = getModulePanelAspectRatio(module);
-  const imageRatio = dimensions.width / dimensions.height;
-  const relativeDelta = (imageRatio - expectedRatio) / expectedRatio;
-
-  return {
-    expectedRatio,
-    imageRatio,
-    relativeDelta,
-    deltaPercent: relativeDelta * 100,
-    accepted: Math.abs(relativeDelta) <= threshold
-  };
-}
+export {
+  calculateModulePanelRatioResult,
+  MODULE_PANEL_RATIO_ACCEPTANCE_THRESHOLD,
+  ModulePanelRatioDiagnostic,
+  ModulePanelRatioResult,
+  PanelImageDimensions
+} from './module-browser-detail.panel-ratio';
 
 @Component({
   selector: 'app-module-browser-detail',
   templateUrl: './module-browser-detail.component.html',
   styleUrls: ['./module-browser-detail.component.scss'],
   providers: [CommentsDataService],
-  animations: [
-    Animations.fadeInOnEnter,
-    trigger('moduleDetailRailEnter', [
-      transition(':enter', [
-        style({
-          opacity: 0,
-        }),
-        animate('{{ duration }}ms {{ delay }}ms cubic-bezier(0.2, 0, 0, 1)', style({
-          opacity: 1,
-        }))
-      ], {
-        params: { delay: 0, duration: 185 }
-      })
-    ]),
-    trigger('moduleDetailSupportEnter', [
-      transition(':enter', [
-        style({
-          opacity: 0,
-        }),
-        animate('{{ duration }}ms {{ delay }}ms cubic-bezier(0.22, 1, 0.36, 1)', style({
-          opacity: 1,
-        }))
-      ], {
-        params: { delay: 0, duration: 190 }
-      })
-    ]),
-    trigger('moduleDetailDataEnter', [
-      transition(':enter', [
-        style({
-          opacity: 0,
-        }),
-        animate('{{ duration }}ms {{ delay }}ms cubic-bezier(0.2, 0, 0, 1)', style({
-          opacity: 1,
-        })),
-        query('@moduleDetailSupportEnter', animateChild(), { optional: true })
-      ], {
-        params: { delay: 0, duration: 180 }
-      })
-    ]),
-    trigger('moduleDetailFabEnter', [
-      transition(':enter', [
-        style({
-          opacity: 0,
-        }),
-        animate('{{ duration }}ms {{ delay }}ms cubic-bezier(0.22, 1, 0.36, 1)', style({
-          opacity: 1,
-        }))
-      ], {
-        params: { delay: 0, duration: 175 }
-      })
-    ]),
-    trigger('moduleDetailPaneSwap', [
-      transition(':enter', [
-        style({
-          opacity: 0,
-          height: 0,
-          transform: 'translateY(0.9rem)',
-          overflow: 'hidden'
-        }),
-        group([
-          animate('280ms cubic-bezier(0.22, 1, 0.36, 1)', style({
-            opacity: 1,
-            height: '*',
-            transform: 'translateY(0)'
-          })),
-          query('@*', animateChild(), { optional: true })
-        ])
-      ]),
-      transition(':leave', [
-        style({
-          overflow: 'hidden'
-        }),
-        animate('210ms cubic-bezier(0.4, 0, 1, 1)', style({
-          opacity: 0,
-          height: 0,
-          transform: 'translateY(-0.55rem)'
-        }))
-      ])
-    ]),
-    trigger('moduleDetailModeTransition', [
-      transition('false => true', [
-        group([
-          query('.module-detail-column--middle', [
-            animate('240ms cubic-bezier(0.2, 0, 0, 1)', style({
-              transform: 'translateY(0.35rem)'
-            }))
-          ], {optional: true}),
-          query('.module-detail-column--right', [
-            style({
-              transform: 'translateY(0.55rem) scale(0.992)',
-              opacity: 0.92
-            }),
-            animate('280ms cubic-bezier(0.22, 1, 0.36, 1)', style({
-              transform: 'translateY(0) scale(1)',
-              opacity: 1
-            }))
-          ], {optional: true})
-        ])
-      ]),
-      transition('true => false', [
-        group([
-          query('.module-detail-column--middle', [
-            animate('220ms cubic-bezier(0.22, 1, 0.36, 1)', style({
-              transform: 'translateY(0)'
-            }))
-          ], {optional: true}),
-          query('.module-detail-column--right', [
-            style({
-              transform: 'translateY(-0.35rem) scale(0.992)',
-              opacity: 0.92
-            }),
-            animate('260ms cubic-bezier(0.22, 1, 0.36, 1)', style({
-              transform: 'translateY(0) scale(1)',
-              opacity: 1
-            }))
-          ], {optional: true})
-        ])
-      ])
-    ])
-  ],
+  animations: moduleBrowserDetailAnimations,
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
 export class ModuleBrowserDetailComponent extends SubManager implements OnInit, OnDestroy {
-  readonly ReactionEntityTypes = ReactionEntityTypes;
   @ViewChild(ModuleEditorComponent) moduleEditor?: ModuleEditorComponent;
   @Input() ignoreSeo                           = false;
   @Input() showManualButton                    = false;
@@ -276,7 +97,7 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
     showDescriptionAnalysis: true,
     showFrequencyAnalysis: true
   };
-  
+
   @Input() bySameManufacturerViewConfig: ModuleMinimalViewConfig = {
     ...defaultModuleMinimalViewConfig,
     ellipseDescription: true,
@@ -300,8 +121,9 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
   readonly mergeIntoTargetOpen$ = new BehaviorSubject<boolean>(false);
   readonly mergeIntoTargetError$ = new BehaviorSubject<string | null>(null);
   mergeTargetModuleIdDraft = '';
+  manualUrlDraft: string = '';
   private panelRatioMeasurementRun = 0;
-  
+
   constructor(
     public dataService: ModuleDetailDataService,
     public route: ActivatedRoute,
@@ -316,11 +138,9 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
       .pipe(map(listings => this.getAvailableRetailerSearchLinks(listings)));
   }
 
-  
   ngOnInit(): void {
     if (!this.ignoreSeo) { this.seoAndUtilsService.updateSeo({}, 'Module Details'); }
-    
-    // every time we get the new data for the new module, send the data about the context to the comments service
+
     this.dataService.singleModuleData$
       .pipe(
         filter(x => !!x),
@@ -329,8 +149,7 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
       .subscribe(data => {
         this.commentsDataService.requestCommentsUpdate$.next({entityId: data.id, entityType: CommentableEntityTypes.MODULE});
       });
-    
-    // every time we are waiting for new data, tell the comments service to reset its contents
+
     this.dataService.updateSingleModuleData$
       .pipe(
         filter(x => !x),
@@ -339,22 +158,20 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
       .subscribe(() => {
         this.commentsDataService.requestReset$.next();
       });
-    
+
     this.route.params
       .pipe(
         map(x => x && x.id && parseInt(x.id) ? parseInt(x.id) : 0),
         filter(x => x > 0)
-        // take(1)
       )
       .subscribe(data => {
-        // debugger
         this.dataService.updateSingleModuleData$.next(data);
       });
 
     this.dataService.moduleMergeResult$
       .pipe(this.takeUntilDestroyed())
       .subscribe(() => this.cancelMergeIntoTarget());
-    
+
     if (!this.ignoreSeo) {
       this.dataService.singleModuleData$
         .pipe(
@@ -362,58 +179,11 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
           this.takeUntilDestroyed()
         )
         .subscribe(data => {
-          const rawTags = data.tags.map(x => x.tag.name).filter(x => !!x);
-          
-          const ins  = data.ins.map(x => x.name);
-          const outs = data.outs.map(x => x.name);
-          
-          const keywords = [
-            'eurorack',
-            'module',
-            data.manufacturer.name,
-            data.name,
-            rawTags,
-            ins,
-            outs
-          ]
-            .flatMap(x => x)
-            .map(x => normalizeForSearch(x))
-            .map(x => x.replace(/[^a-z0-9]/g, ''))
-            .filter(x => !!x)
-            .map(x => x.trim())
-            .join(', ');
-          
-          const tagsClean = rawTags.map(x => x.replace(/[^a-z0-9]/g, '')).filter(x => !!x).map(x => x.trim()).join(', ');
-          
-          const descParts: string[] = [];
-          if (data.description) { descParts.push(data.description.trim()); }
-          descParts.push(`${ data.hp } HP wide eurorack module by ${ data.manufacturer.name }.`);
-          if (data.ins.length || data.outs.length) {
-            descParts.push(`${ data.ins.length } input${ data.ins.length !== 1 ? 's' : '' } and ${ data.outs.length } output${ data.outs.length !== 1 ? 's' : '' }.`);
-          }
-          const powerParts: string[] = [];
-          if (data.powerPos12 != null) { powerParts.push(`+12V: ${ data.powerPos12 }mA`); }
-          if (data.powerNeg12 != null) { powerParts.push(`-12V: ${ data.powerNeg12 }mA`); }
-          if (data.powerPos5 != null) { powerParts.push(`+5V: ${ data.powerPos5 }mA`); }
-          if (powerParts.length) { descParts.push(`Power draw — ${ powerParts.join(', ') }.`); }
-          if (data.depth) { descParts.push(`Depth: ${ data.depth }mm.`); }
-          if (data.isDIY) { descParts.push(`DIY module.`); }
-          if (tagsClean) { descParts.push(`Tags: ${ tagsClean }.`); }
-
-          const panelImage = data.panels?.[0]?.filename
-            ? `${ MODULE_PANELS_BASE_URL }${ data.panels[0].filename }`
-            : undefined;
-          const seoData: SeoSocialShareData = {
-            title: `${ data.name } - details.`,
-            description: descParts.join(' '),
-            keywords: keywords,
-            published: data.created,
-            modified: data.updated,
-            image: panelImage,
-          };
-          this.seoAndUtilsService.updateSeo(seoData,
-            `${ data.name } by ${ data.manufacturer.name } - Module Details`);
-          this.injectModuleJsonLd(data);
+          this.seoAndUtilsService.updateSeo(
+            buildModuleDetailSeoData(data),
+            `${ data.name } by ${ data.manufacturer.name } - Module Details`
+          );
+          injectModuleJsonLd(data);
         });
     }
 
@@ -434,64 +204,31 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
   }
 
   hasHiddenUsage(bucket: HiddenUsageBucket | null | undefined): boolean {
-    return !!bucket && bucket !== 'none';
+    return detailPresentation.hasHiddenUsage(bucket);
   }
 
   getHiddenUsageSupplementCopy(kind: 'rack' | 'patch', bucket: HiddenUsageBucket | null | undefined): string {
-    return `Plus ${ this.getHiddenUsageDescriptor(bucket) } private or otherwise hidden ${ this.getHiddenUsageNoun(kind) }.`;
+    return detailPresentation.getHiddenUsageSupplementCopy(kind, bucket);
   }
 
   getNoPublicUsageCopy(kind: 'rack' | 'patch', bucket: HiddenUsageBucket | null | undefined): string {
-    if (!this.hasHiddenUsage(bucket)) {
-      return `No ${ this.getHiddenUsageNoun(kind) } using this module yet. Try adding it to yours!`;
-    }
-
-    return `No public ${ this.getHiddenUsageNoun(kind) } using this module yet. It still appears in ${ this.getHiddenUsageDescriptor(bucket) } private or otherwise hidden ${ this.getHiddenUsageNoun(kind) }.`;
+    return detailPresentation.getNoPublicUsageCopy(kind, bucket);
   }
 
   getUsagePendingCopy(kind: 'rack' | 'patch'): string {
-    return `Checking private and hidden ${ kind } usage...`;
+    return detailPresentation.getUsagePendingCopy(kind);
   }
 
   getModuleDetailTitleSub(moduleName: string | null | undefined, possessionKind: UserModulePossessionKind | null | undefined): string | undefined {
-    if (!moduleName) {
-      return 'Loading...';
-    }
-
-    const possessionLabel = this.getPossessionLabel(possessionKind);
-    return possessionLabel ? `${ moduleName } (${ possessionLabel })` : moduleName;
+    return detailPresentation.getModuleDetailTitleSub(moduleName, possessionKind);
   }
 
   getCommunityData(counts: ModulePossessionCounts | undefined, coolCount: number | undefined): ModuleCommunityStat[] | undefined {
-    if (!counts || coolCount === undefined) return undefined;
-
-    const stats: ModuleCommunityStat[] = [
-      { label: 'Cool', value: coolCount.toString(), icon: 'auto_awesome', size: 'auto' },
-      { label: 'Owners', value: counts.hasCount.toString(), icon: 'inventory_2', size: 'auto' },
-      { label: 'Wishlist', value: counts.wantsCount.toString(), icon: 'star_outline', size: 'auto' },
-      { label: 'For Sale', value: counts.sellsCount.toString(), icon: 'sell', size: 'auto' }
-    ].filter(stat => Number(stat.value) > 0);
-
-    return stats.length > 0 ? stats : undefined;
+    return detailPresentation.getCommunityData(counts, coolCount);
   }
 
   getAvailableRetailerSearchLinks(listings: readonly ModulePriceListing[] | null | undefined): SearchLink[] {
-    if (!listings) {
-      return this.retailerSearchLinks;
-    }
-
-    const listedStoreSlugs = new Set(
-      listings
-        .map(listing => this.normalizeStoreSlug(listing.storeSlug))
-        .filter((slug): slug is string => !!slug)
-    );
-    const listedStoreIds = new Set(
-      listings
-        .map(listing => listing.storeId)
-        .filter((storeId): storeId is number => Number.isFinite(storeId))
-    );
-
-    return this.retailerSearchLinks.filter(link => !this.searchLinkHasPriceListing(link, listedStoreSlugs, listedStoreIds));
+    return getAvailableRetailerSearchLinksForListings(this.retailerSearchLinks, listings);
   }
 
   getDevDeletePanelLabel(panel: ModulePanel, index: number): string {
@@ -503,16 +240,11 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
   }
 
   formatAcquisitionValue(acquisition: UserModuleAcquisition): string {
-    if (acquisition.price_amount_minor === null || !acquisition.currency) {
-      return 'No price recorded';
-    }
-    return formatMarketplaceMinorUnits(acquisition.price_amount_minor, acquisition.currency);
+    return detailPresentation.formatAcquisitionValue(acquisition);
   }
 
   getAcquisitionSourceLabel(source: UserModuleAcquisitionSource): string {
-    return source === 'unknown'
-      ? 'source unknown'
-      : source.replace('_', ' ');
+    return detailPresentation.getAcquisitionSourceLabel(source);
   }
 
   ngOnDestroy(): void {
@@ -521,103 +253,18 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
     super.ngOnDestroy();
   }
 
-  private injectModuleJsonLd(data: DbModule): void {
-    clearJsonLdScript(JSONLD_SCRIPT_ID);
-    const panelFilename = data.panels?.[0]?.filename;
-    const jsonLd: Record<string, unknown> = {
-      '@context': 'https://schema.org',
-      '@type': 'Product',
-      'name': data.name ?? undefined,
-      'description': data.description ?? undefined,
-      'brand': {
-        '@type': 'Brand',
-        'name': data.manufacturer?.name ?? undefined,
-      },
-      'url': `https://patcher.xyz/modules/details/${ data.id }`,
-      'image': panelFilename ? `${ MODULE_PANELS_BASE_URL }${ panelFilename }` : undefined,
-    };
-    Object.keys(jsonLd).forEach(k => jsonLd[k] === undefined && delete jsonLd[k]);
-    upsertJsonLdScript(JSONLD_SCRIPT_ID, jsonLd);
-  }
-  
-  private patchDevModule(changes: Partial<DbModule>): void {
-    this.dataService.changeModule$.next(changes);
-  }
-
-  private getHiddenUsageDescriptor(bucket: HiddenUsageBucket | null | undefined): string {
-    switch (bucket) {
-      case 'some':
-        return 'some';
-      case '5_plus':
-        return '5+';
-      case '10_plus':
-        return '10+';
-      case '25_plus':
-        return '25+';
-      default:
-        return 'no';
-    }
-  }
-
-  private getHiddenUsageNoun(kind: 'rack' | 'patch'): 'racks' | 'patches' {
-    return kind === 'rack' ? 'racks' : 'patches';
-  }
-
-  private getPossessionLabel(kind: UserModulePossessionKind | null | undefined): string | null {
-    switch (kind) {
-      case 'HAS':
-        return 'Owned';
-      case 'WANTS':
-        return 'Wanted';
-      case 'SELLS':
-        return 'For sale';
-      default:
-        return null;
-    }
-  }
-
-  private searchLinkHasPriceListing(
-    link: SearchLink,
-    listedStoreSlugs: ReadonlySet<string>,
-    listedStoreIds: ReadonlySet<number>
-  ): boolean {
-    return (link.storeSlugs ?? []).some(slug => {
-      const normalizedSlug = this.normalizeStoreSlug(slug);
-      return !!normalizedSlug && listedStoreSlugs.has(normalizedSlug);
-    }) || (link.storeIds ?? []).some(storeId => listedStoreIds.has(storeId));
-  }
-
-  private normalizeStoreSlug(slug: string | null | undefined): string | null {
-    const normalizedSlug = slug?.trim().toLowerCase();
-    return normalizedSlug || null;
-  }
-
-  private getDevPanelDisplayName(panel: ModulePanel, index: number): string {
-    const label = derivePanelLabel(panel.filename, panel.description, index);
-    const normalizedLabel = label.toLowerCase();
-
-    return normalizedLabel.startsWith('panel ') || normalizedLabel.endsWith(' panel')
-      ? label
-      : `${ label } panel`;
-  }
-
   setDevStandard(id: number): void {
-    this.patchDevModule({
-      standard: {
-        id,
-        name: ''
-      }
-    });
+    this.patchDevModule({standard: {id, name: ''}});
   }
-  
+
   setDevComplete(isComplete: boolean): void {
     this.patchDevModule({isComplete});
   }
-  
+
   setDevApproved(isApproved: boolean): void {
     this.patchDevModule({isApproved});
   }
-  
+
   setDevDIY(isDIY: boolean): void {
     this.patchDevModule({isDIY});
   }
@@ -626,7 +273,7 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
     const currentHp = Number.isFinite(module.hp) ? module.hp : 0;
     this.patchDevModule({hp: Math.max(0, currentHp + delta)});
   }
-  
+
   trimDevTextFields(module: DbModule): void {
     const normalizeText = (value: string) => value.replace(/\s+/g, ' ').trim();
     this.patchDevModule({
@@ -635,7 +282,7 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
       manualURL: (module.manualURL || '').trim()
     });
   }
-  
+
   clearDevManualUrl(): void {
     this.patchDevModule({manualURL: ''});
   }
@@ -672,14 +319,12 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
     this.dataService.mergeIntoTargetModule$.next({sourceId: source.id, targetId});
   }
 
-  manualUrlDraft: string = '';
-
   setDevManualUrl(): void {
     if (!this.manualUrlDraft) return;
     this.patchDevModule({manualURL: this.manualUrlDraft.trim()});
     this.manualUrlDraft = '';
   }
-  
+
   clampDevNumericFields(module: DbModule): void {
     const clamp = (value: number | null | undefined) => Number.isFinite(value) ? Math.max(0, value) : 0;
     this.patchDevModule({
@@ -691,13 +336,11 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
       powerPos5: clamp(module.powerPos5)
     });
   }
-  
-  submitSimilar(
-    data: Partial<DbModule>
-  ) {
+
+  submitSimilar(data: Partial<DbModule>) {
     window.open(`/modules/add?manufacturer=${ data.manufacturerId }&HP=${ data.hp }&standard=${ data.standard.id }`, '_blank');
   }
-  
+
   openManual(data: DbModule) {
     window.open(data.manualURL, '_blank');
   }
@@ -723,7 +366,7 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
 
     this.dataService.deleteModuleAndOrphanManufacturer$.next(module);
   }
-  
+
   openExternalLink(url: string) {
     window.open(url, '_blank', 'noopener,noreferrer');
   }
@@ -740,16 +383,22 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
     return `${ value > 0 ? '+' : '' }${ value.toFixed(2) }%`;
   }
 
+  private patchDevModule(changes: Partial<DbModule>): void {
+    this.dataService.changeModule$.next(changes);
+  }
+
+  private getDevPanelDisplayName(panel: ModulePanel, index: number): string {
+    const label = derivePanelLabel(panel.filename, panel.description, index);
+    const normalizedLabel = label.toLowerCase();
+
+    return normalizedLabel.startsWith('panel ') || normalizedLabel.endsWith(' panel')
+      ? label
+      : `${ label } panel`;
+  }
+
   private refreshPanelRatioDiagnostics(module: DbModule): void {
     const run = ++this.panelRatioMeasurementRun;
-    const initialDiagnostics = module.panels.map((panel, index): ModulePanelRatioDiagnostic => ({
-      panelId: panel.id,
-      label: `Panel ${ index + 1 }`,
-      filename: panel.filename,
-      expectedRatio: getModulePanelAspectRatio(module),
-      status: panel.filename ? 'pending' : 'unavailable',
-      error: panel.filename ? undefined : 'No filename'
-    }));
+    const initialDiagnostics = createInitialPanelRatioDiagnostics(module);
 
     this.panelRatioDiagnostics$.next(initialDiagnostics);
 
@@ -758,25 +407,20 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
         return;
       }
 
-      this.measurePanelImage(panel.filename)
+      measurePanelImage(panel.filename)
         .then(dimensions => {
           if (run !== this.panelRatioMeasurementRun) {
             return;
           }
 
-          const result = calculateModulePanelRatioResult(module, dimensions, this.panelRatioAcceptanceThreshold);
-          this.updatePanelRatioDiagnostic(panel.id, {
-            panelId: panel.id,
-            label: `Panel ${ index + 1 }`,
-            filename: panel.filename,
-            expectedRatio: result?.expectedRatio ?? getModulePanelAspectRatio(module),
-            status: result?.accepted ? 'match' : 'mismatch',
-            imageWidth: dimensions.width,
-            imageHeight: dimensions.height,
-            imageRatio: result?.imageRatio,
-            deltaPercent: result?.deltaPercent,
-            accepted: result?.accepted
-          });
+          this.updatePanelRatioDiagnostic(panel.id, createMeasuredPanelRatioDiagnostic(
+            module,
+            panel.id,
+            panel.filename,
+            `Panel ${ index + 1 }`,
+            dimensions,
+            this.panelRatioAcceptanceThreshold
+          ));
         })
         .catch(() => {
           if (run !== this.panelRatioMeasurementRun) {
@@ -796,17 +440,5 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
     this.panelRatioDiagnostics$.next(
       this.panelRatioDiagnostics$.value.map(item => item.panelId === panelId ? diagnostic : item)
     );
-  }
-
-  private measurePanelImage(filename: string): Promise<PanelImageDimensions> {
-    return new Promise((resolve, reject) => {
-      const image = new Image();
-      image.onload = () => resolve({
-        width: image.naturalWidth,
-        height: image.naturalHeight
-      });
-      image.onerror = () => reject(new Error('Panel image failed to load'));
-      image.src = `${ MODULE_PANELS_BASE_URL }${ filename }`;
-    });
   }
 }
