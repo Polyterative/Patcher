@@ -10,13 +10,28 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { MinimalModule } from 'src/app/models/module';
+import { Standard } from 'src/app/models/standard';
+import { Tag, TagType } from 'src/app/models/tag';
 import { LocalDataFilterService } from 'src/app/components/shared-atoms/local-data-filter/local-data-filter.service';
 import { COOL_REACTIONS_ENABLED } from 'src/app/components/shared-atoms/cool-button/cool-button-feature.token';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import { ModuleRecentMarketPrice } from 'src/app/features/backend/supabase-queries';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
+import { ISelectable } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { ModuleListComponent } from './module-list.component';
 
+
+const THREE_U_STANDARD: Standard = {id: 0, name: '3U Doepfer'};
+const INTELLIJEL_STANDARD: Standard = {id: 1, name: '1U Intellijel'};
+
+function buildTag(id: number, name: string, type: TagType = TagType.Effect): Tag {
+  return {id, name, type};
+}
+
+function buildModuleTag(id: number, name: string, type?: TagType): MinimalModule['tags'][number] {
+  return {id, tag: buildTag(id, name, type), voteCount: []};
+}
 
 function buildModule(overrides: Partial<MinimalModule> = {}): MinimalModule {
   return {
@@ -28,8 +43,8 @@ function buildModule(overrides: Partial<MinimalModule> = {}): MinimalModule {
     created: overrides.created ?? '2026-01-01T00:00:00.000Z',
     updated: overrides.updated ?? '2026-01-01T00:00:00.000Z',
     manufacturerId: overrides.manufacturerId ?? 1,
-    manufacturer: overrides.manufacturer ?? ({id: 1, name: 'Maker'} as any),
-    standard: overrides.standard ?? ({id: 0, name: '3U Doepfer'} as any),
+    manufacturer: overrides.manufacturer ?? {id: 1, name: 'Maker'},
+    standard: overrides.standard ?? THREE_U_STANDARD,
     tags: overrides.tags ?? [],
     panels: overrides.panels ?? [],
   };
@@ -56,6 +71,39 @@ function makeReactionBackendSpy() {
   };
 }
 
+function createPatchDetailDataServiceDouble(): jasmine.SpyObj<PatchDetailDataService> {
+  return jasmine.createSpyObj<PatchDetailDataService>('PatchDetailDataService', ['ngOnDestroy']);
+}
+
+function createAppStateServiceDouble(): jasmine.SpyObj<AppStateService> {
+  return jasmine.createSpyObj<AppStateService>('AppStateService', ['ngOnDestroy'], {
+    preferredPanelColor$: of(null)
+  });
+}
+
+function createPriceBackendDouble(summaries: ModuleRecentMarketPrice[] = []) {
+  const recentModuleMarketPrices =
+    jasmine.createSpy<(moduleIds: number[]) => Observable<ModuleRecentMarketPrice[]>>('recentModuleMarketPrices')
+      .and.returnValue(of(summaries));
+  const getNamespace = Object.assign(Object.create(null) as SupabaseService['GET'], {recentModuleMarketPrices});
+  const backend = Object.assign(Object.create(null) as SupabaseService, {
+    GET: getNamespace
+  });
+  return {backend, recentModuleMarketPrices};
+}
+
+function createComponent(
+  filterService: LocalDataFilterService,
+  backend?: SupabaseService
+): ModuleListComponent {
+  return new ModuleListComponent(
+    createPatchDetailDataServiceDouble(),
+    filterService,
+    createAppStateServiceDouble(),
+    backend
+  );
+}
+
 describe('ModuleListComponent', () => {
   function build() {
     const filterService = new LocalDataFilterService();
@@ -65,23 +113,19 @@ describe('ModuleListComponent', () => {
         id: 2,
         name: 'Mimeophon',
         description: 'Stereo color delay',
-        manufacturer: {id: 2, name: 'Make Noise'} as any,
-        tags: [{id: 8, tag: {id: 8, name: 'Delay'} as any, voteCount: []}]
+        manufacturer: {id: 2, name: 'Make Noise'},
+        tags: [buildModuleTag(8, 'Delay')]
       }),
       buildModule({
         id: 3,
         name: 'Belgrad',
         description: 'Dual peak filter',
-        manufacturer: {id: 3, name: 'Xaoc Devices'} as any,
-        tags: [{id: 9, tag: {id: 9, name: 'Filtèr'} as any, voteCount: []}]
+        manufacturer: {id: 3, name: 'Xaoc Devices'},
+        tags: [buildModuleTag(9, 'Filtèr')]
       }),
     ]);
 
-    const component = new ModuleListComponent(
-      {} as any,
-      filterService,
-      {preferredPanelColor$: of(null)} as any
-    );
+    const component = createComponent(filterService);
     component.data$ = data$;
     component.showSearch = true;
     component.ngOnInit();
@@ -125,11 +169,7 @@ describe('ModuleListComponent', () => {
   it('keeps loading/null data out of filtered results until modules arrive', fakeAsync(() => {
     const filterService = new LocalDataFilterService();
     const data$ = new BehaviorSubject<MinimalModule[] | null>(null);
-    const component = new ModuleListComponent(
-      {} as any,
-      filterService,
-      {preferredPanelColor$: of(null)} as any
-    );
+    const component = createComponent(filterService);
     component.data$ = data$;
     component.ngOnInit();
 
@@ -152,7 +192,7 @@ describe('ModuleListComponent', () => {
   it('returns empty array when data$ emits empty list', fakeAsync(() => {
     const filterService = new LocalDataFilterService();
     const data$ = new BehaviorSubject<MinimalModule[] | null>([]);
-    const component = new ModuleListComponent({} as any, filterService, {preferredPanelColor$: of(null)} as any);
+    const component = createComponent(filterService);
     component.data$ = data$;
     component.ngOnInit();
     tick(0);
@@ -168,7 +208,7 @@ describe('ModuleListComponent', () => {
       buildModule({id: 3, name: 'Module 3'}),
     ];
     const data$ = new BehaviorSubject<MinimalModule[] | null>(firstPage);
-    const component = new ModuleListComponent({} as any, filterService, {preferredPanelColor$: of(null)} as any);
+    const component = createComponent(filterService);
     component.data$ = data$;
     component.ngOnInit();
     tick();
@@ -188,7 +228,7 @@ describe('ModuleListComponent', () => {
   it('defaultGroupId none keeps groupControl at first option', fakeAsync(() => {
     const filterService = new LocalDataFilterService();
     const data$ = new BehaviorSubject<MinimalModule[] | null>([]);
-    const component = new ModuleListComponent({} as any, filterService, {preferredPanelColor$: of(null)} as any);
+    const component = createComponent(filterService);
     component.data$ = data$;
     component.defaultGroupId = 'none';
     component.ngOnInit();
@@ -199,7 +239,7 @@ describe('ModuleListComponent', () => {
   it('defaultGroupId standard preselects standard group option', fakeAsync(() => {
     const filterService = new LocalDataFilterService();
     const data$ = new BehaviorSubject<MinimalModule[] | null>([]);
-    const component = new ModuleListComponent({} as any, filterService, {preferredPanelColor$: of(null)} as any);
+    const component = createComponent(filterService);
     component.data$ = data$;
     component.defaultGroupId = 'standard';
     component.ngOnInit();
@@ -238,9 +278,9 @@ describe('ModuleListComponent', () => {
       declarations: [ModuleListComponent],
       imports: [CommonModule, FormsModule, NoopAnimationsModule],
       providers: [
-        {provide: PatchDetailDataService, useValue: {}},
+        {provide: PatchDetailDataService, useValue: createPatchDetailDataServiceDouble()},
         {provide: LocalDataFilterService, useClass: LocalDataFilterService},
-        {provide: AppStateService, useValue: {preferredPanelColor$: of(null)}},
+        {provide: AppStateService, useValue: createAppStateServiceDouble()},
         {provide: COOL_REACTIONS_ENABLED, useValue: true},
         {provide: SupabaseService, useValue: reactionBackend},
         {provide: MatSnackBar, useValue: jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open'])},
@@ -274,17 +314,8 @@ describe('ModuleListComponent', () => {
       latestObservedAt: '2026-07-01T00:00:00.000Z',
       tooltip: 'Recent market price: ~€399 from 4 stores, latest check Jul 1, 2026.'
     };
-    const backend = {
-      GET: {
-        recentModuleMarketPrices: jasmine.createSpy('recentModuleMarketPrices').and.returnValue(of([summary]))
-      }
-    };
-    const component = new ModuleListComponent(
-      {} as PatchDetailDataService,
-      filterService,
-      {preferredPanelColor$: of(null)} as AppStateService,
-      backend as unknown as SupabaseService
-    );
+    const {backend, recentModuleMarketPrices} = createPriceBackendDouble([summary]);
+    const component = createComponent(filterService, backend);
     component.data$ = data$;
     component.showSearch = true;
     component.showPriceSummary = true;
@@ -292,13 +323,13 @@ describe('ModuleListComponent', () => {
     component.ngOnInit();
     tick();
 
-    expect(backend.GET.recentModuleMarketPrices).toHaveBeenCalledOnceWith([1, 3]);
+    expect(recentModuleMarketPrices).toHaveBeenCalledOnceWith([1, 3]);
     expect(currentVal(component.priceSummaryByModuleId$)?.get(1)).toEqual(summary);
 
     filterService.search.control.setValue('maths');
     tick(350);
 
-    expect(backend.GET.recentModuleMarketPrices).toHaveBeenCalledTimes(1);
+    expect(recentModuleMarketPrices).toHaveBeenCalledTimes(1);
     component.ngOnDestroy();
   }));
 
@@ -311,17 +342,8 @@ describe('ModuleListComponent', () => {
       buildModule({id: 1, name: 'Maths'}),
       buildModule({id: 2, name: 'Mimeophon'}),
     ]);
-    const backend = {
-      GET: {
-        recentModuleMarketPrices: jasmine.createSpy('recentModuleMarketPrices').and.returnValue(of([]))
-      }
-    };
-    const component = new ModuleListComponent(
-      {} as PatchDetailDataService,
-      filterService,
-      {preferredPanelColor$: of(null)} as AppStateService,
-      backend as unknown as SupabaseService
-    );
+    const {backend, recentModuleMarketPrices} = createPriceBackendDouble();
+    const component = createComponent(filterService, backend);
     component.data$ = visibleData$;
     component.priceSummarySourceData$ = priceSourceData$;
     component.showPriceSummary = true;
@@ -329,12 +351,12 @@ describe('ModuleListComponent', () => {
     component.ngOnInit();
     tick();
 
-    expect(backend.GET.recentModuleMarketPrices).toHaveBeenCalledOnceWith([1, 2]);
+    expect(recentModuleMarketPrices).toHaveBeenCalledOnceWith([1, 2]);
 
     visibleData$.next([buildModule({id: 1, name: 'Maths'})]);
     tick();
 
-    expect(backend.GET.recentModuleMarketPrices).toHaveBeenCalledTimes(1);
+    expect(recentModuleMarketPrices).toHaveBeenCalledTimes(1);
     component.ngOnDestroy();
   }));
 
@@ -344,28 +366,19 @@ describe('ModuleListComponent', () => {
       buildModule({id: 1, name: 'Maths'}),
       buildModule({id: 2, name: 'Mimeophon'}),
     ]);
-    const backend = {
-      GET: {
-        recentModuleMarketPrices: jasmine.createSpy('recentModuleMarketPrices').and.returnValue(of([]))
-      }
-    };
-    const component = new ModuleListComponent(
-      {} as PatchDetailDataService,
-      filterService,
-      {preferredPanelColor$: of(null)} as AppStateService,
-      backend as unknown as SupabaseService
-    );
+    const {backend, recentModuleMarketPrices} = createPriceBackendDouble();
+    const component = createComponent(filterService, backend);
     component.data$ = data$;
 
     component.ngOnInit();
     tick();
 
-    expect(backend.GET.recentModuleMarketPrices).not.toHaveBeenCalled();
+    expect(recentModuleMarketPrices).not.toHaveBeenCalled();
 
     component.showPriceSummary = true;
     tick();
 
-    expect(backend.GET.recentModuleMarketPrices).toHaveBeenCalledOnceWith([1, 2]);
+    expect(recentModuleMarketPrices).toHaveBeenCalledOnceWith([1, 2]);
     component.ngOnDestroy();
   }));
 
@@ -373,12 +386,12 @@ describe('ModuleListComponent', () => {
     function buildWithFilters() {
       const filterService = new LocalDataFilterService();
       const data$ = new BehaviorSubject<MinimalModule[] | null>([
-        buildModule({id: 1, name: 'Maths', hp: 20, standard: {id: 0, name: '3U Doepfer'} as any}),
-        buildModule({id: 2, name: '1U Thing', hp: 4, standard: {id: 1, name: '1U Intellijel'} as any,
-          tags: [{id: 5, tag: {id: 5, name: 'LFO'} as any, voteCount: []}]}),
-        buildModule({id: 3, name: 'Big 3U', hp: 28, standard: {id: 0, name: '3U Doepfer'} as any}),
+        buildModule({id: 1, name: 'Maths', hp: 20, standard: THREE_U_STANDARD}),
+        buildModule({id: 2, name: '1U Thing', hp: 4, standard: INTELLIJEL_STANDARD,
+          tags: [buildModuleTag(5, 'LFO', TagType.Modulation)]}),
+        buildModule({id: 3, name: 'Big 3U', hp: 28, standard: THREE_U_STANDARD}),
       ]);
-      const component = new ModuleListComponent({} as any, filterService, {preferredPanelColor$: of(null)} as any);
+      const component = createComponent(filterService);
       component.data$ = data$;
       component.showFilters = true;
       component.ngOnInit();
@@ -396,7 +409,7 @@ describe('ModuleListComponent', () => {
 
     it('maps rendered standard option ids to numeric module standards', fakeAsync(() => {
       const {component} = buildWithFilters();
-      let options: any[] = [];
+      let options: ISelectable[] = [];
       component.standardOptions$.subscribe(value => options = value).unsubscribe();
 
       expect(options.map(option => option.id)).toEqual(['', '0', '1', '2']);
