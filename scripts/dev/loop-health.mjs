@@ -8,6 +8,7 @@
  *   H3  Approvals-ledger pending questions count (owner attention needed)
  *   H4  Layering-baseline size (fallback-queue burn-down target)
  *   H5  Docs check status (orphans / broken links via check-docs.cjs)
+ *   H6  E2E credentials presence in root .env (existence only, never values)
  *
  * Run: pnpm loop:health
  * Exit code is always 0 — this is a report, not a gate.
@@ -85,5 +86,23 @@ if (existsSync(baselinePath)) {
 section('H5 Docs check');
 const docsOut = sh('node scripts/checks/check-docs.cjs 2>&1');
 console.log(docsOut || 'pass');
+
+// H6: E2E credentials in root .env (existence only — never print values)
+section('H6 E2E credentials (.env)');
+const envPath = path.join(repoRoot, '.env');
+if (existsSync(envPath)) {
+  const envKeys = readFileSync(envPath, 'utf8')
+    .split('\n')
+    .map((l) => l.split('=')[0].trim())
+    .filter(Boolean);
+  for (const key of ['E2E_TEST_EMAIL', 'E2E_TEST_PASSWORD']) {
+    console.log(`${key}: ${envKeys.includes(key) ? 'present' : 'MISSING'}`);
+  }
+  if (!envKeys.includes('E2E_TEST_EMAIL') || !envKeys.includes('E2E_TEST_PASSWORD')) {
+    console.log('→ Ask the user once, then write values into the gitignored root .env (see e2e/README.md).');
+  }
+} else {
+  console.log('.env missing — run node generate-env.js, then add E2E credentials (see e2e/README.md).');
+}
 
 console.log('');
