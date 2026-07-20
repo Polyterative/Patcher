@@ -15,6 +15,12 @@
  *   D5  Orphaned docs: every .md under internaldocs/ (except archived plans in
  *       workflow/plans/done/) must be linked from at least one other doc, so
  *       agents can reach it from the internaldocs/README.md router.
+ *   D6  CURRENT_FEATURE.md must carry an "Updated: YYYY-MM-DD" stamp; errors
+ *       when missing or older than 30 days (warns from 14 days).
+ *   D7  Pending questions in the TODO Approvals ledger must carry an
+ *       "(added YYYY-MM-DD)" stamp; warns when older than 28 days.
+ *   D8  COMPLETED.md entries dated 2026-07-21 or later must reference at least
+ *       one backticked commit hash so evidence checks stay grep-cheap.
  *
  * Run: node scripts/checks/check-docs.cjs
  */
@@ -24,6 +30,11 @@ const path = require('path');
 
 const repoRoot = path.resolve(__dirname, '..', '..');
 const errors = [];
+const warnings = [];
+
+function daysSince(isoDate) {
+  return Math.floor((Date.now() - new Date(`${isoDate}T00:00:00`).getTime()) / 86400000);
+}
 
 function read(rel) {
   return fs.readFileSync(path.join(repoRoot, rel), 'utf8');
@@ -131,6 +142,66 @@ if (activeIdx >= 0 && templateIdx > activeIdx) {
   }
 }
 
+// ── D6: CURRENT_FEATURE.md Updated: stamp freshness ──────────────────────────
+{
+  const updatedMatch = cf.match(/^Updated:\s*(\d{4}-\d{2}-\d{2})\s*$/m);
+  if (!updatedMatch) {
+    errors.push(
+      'D6 internaldocs/workflow/CURRENT_FEATURE.md: missing "Updated: YYYY-MM-DD" stamp.\n' +
+        '   Fix: add an Updated: line in the Active section and bump it whenever the file changes.'
+    );
+  } else {
+    const age = daysSince(updatedMatch[1]);
+    if (age > 30) {
+      errors.push(
+        `D6 internaldocs/workflow/CURRENT_FEATURE.md: Updated: ${updatedMatch[1]} is ${age} days old (limit 30).\n` +
+          '   Fix: re-verify the Active section against reality (plans/, COMPLETED.md, git log), then bump the date.'
+      );
+    } else if (age > 14) {
+      warnings.push(
+        `D6 internaldocs/workflow/CURRENT_FEATURE.md: Updated: ${updatedMatch[1]} is ${age} days old — re-verify and bump soon.`
+      );
+    }
+  }
+}
+
+// ── D7: Approvals-ledger pending questions must be dated ─────────────────────
+{
+  const todo = read('internaldocs/workflow/TODO.md');
+  const pendingSection = todo.split(/^### Pending questions.*$/m)[1]?.split(/^### /m)[0] ?? '';
+  const bullets = pendingSection.split(/\n(?=- \[ \])/).filter((b) => b.trimStart().startsWith('- [ ]'));
+  for (const bullet of bullets) {
+    const oneLine = bullet.replace(/\s+/g, ' ').trim();
+    const added = oneLine.match(/\(added (\d{4}-\d{2}-\d{2})\)/);
+    if (!added) {
+      errors.push(
+        `D7 internaldocs/workflow/TODO.md: pending question lacks an "(added YYYY-MM-DD)" stamp:\n` +
+          `   "${oneLine.slice(0, 90)}..."\n` +
+          '   Fix: append (added YYYY-MM-DD) so gate age is trackable.'
+      );
+    } else if (daysSince(added[1]) > 28) {
+      warnings.push(
+        `D7 internaldocs/workflow/TODO.md: pending question from ${added[1]} is over 28 days old — batch it for the owner or move it to Denials/ON HOLD: "${oneLine.slice(0, 70)}..."`
+      );
+    }
+  }
+}
+
+// ── D8: new COMPLETED.md entries must cite a commit hash ─────────────────────
+{
+  const completed = read('internaldocs/workflow/COMPLETED.md');
+  const entryRe = /^- \*\*(\d{4}-\d{2}-\d{2})\*\*(.*)$/gm;
+  let m;
+  while ((m = entryRe.exec(completed)) !== null) {
+    if (m[1] >= '2026-07-21' && !/`[0-9a-f]{7,40}`/.test(m[2])) {
+      errors.push(
+        `D8 internaldocs/workflow/COMPLETED.md: entry dated ${m[1]} has no backticked commit hash.\n` +
+          '   Fix: cite at least one checkpoint commit (e.g. `97f03387`) so future agents can verify evidence cheaply.'
+      );
+    }
+  }
+}
+
 // ── D5: orphaned internaldocs files (unreachable from any other doc) ─────────
 for (const rel of listMd('internaldocs')) {
   const norm = rel.split(path.sep).join('/');
@@ -143,6 +214,11 @@ for (const rel of listMd('internaldocs')) {
         '   or delete/merge it if it is obsolete.'
     );
   }
+}
+
+if (warnings.length > 0) {
+  console.warn('\nDoc-freshness warnings (non-blocking):\n');
+  for (const w of warnings) console.warn(`  - ${w}`);
 }
 
 if (errors.length === 0) {

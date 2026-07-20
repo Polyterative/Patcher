@@ -183,7 +183,7 @@ Mechanical rules are catalogued in [`internaldocs/GOLDEN_PRINCIPLES.md`](./inter
     (`node scripts/checks/check-layering.cjs --update-baseline`).
 - `scripts/checks/check-route-module-imports.cjs` — `RouterModule.forRoot()` only in `app-routing.module.ts`; lazy-loaded route modules cannot be imported as shared UI.
 - `scripts/checks/check-px-ts.sh` — hardcoded `px` in `*.ts` (use `rem`; annotate intentional `px` with `// px-ok`).
-- `scripts/checks/check-docs.cjs` — broken markdown links inside `internaldocs/`, missing personas, plan files without a Decision log, `CURRENT_FEATURE.md` partial active feature.
+- `scripts/checks/check-docs.cjs` — broken markdown links inside `internaldocs/`, missing personas, plan files without a Decision log, `CURRENT_FEATURE.md` partial active feature or stale `Updated:` stamp, undated pending Approvals-ledger questions, and new `COMPLETED.md` entries without a commit hash.
 
 ## 12) Runtime legibility for agents
 
