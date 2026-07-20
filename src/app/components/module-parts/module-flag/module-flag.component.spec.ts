@@ -1,20 +1,48 @@
-import { BehaviorSubject, Subject } from 'rxjs';
+import {
+  BehaviorSubject,
+  ReplaySubject,
+  Subject
+} from 'rxjs';
+import { SimpleChange } from '@angular/core';
+import { SimpleUserModel } from 'src/app/features/backend/supabase.types';
+import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { ModuleFlagComponent } from './module-flag.component';
+import {
+  FlagPayload,
+  ModuleFlagDataService
+} from './module-flag-data.service';
 
+type ModuleFlagDataServiceDouble = Pick<
+  ModuleFlagDataService,
+  'moduleId$' | 'toggleForm$' | 'submitFlag$' | 'formVisible$' | 'openFlagCount$'
+>;
+type UserManagementServiceDouble = Pick<UserManagementService, 'loggedUser$'>;
+
+function simpleUserFixture(): SimpleUserModel {
+  return {
+    id: 'user-1',
+    email: 'user@example.com',
+    created_at: '2026-01-01T00:00:00.000Z',
+    updated_at: '2026-01-01T00:00:00.000Z'
+  };
+}
 
 function makeComponent() {
-  const flagService = {
-    moduleId$: new Subject<number>(),
+  const flagService: ModuleFlagDataServiceDouble = {
+    moduleId$: new ReplaySubject<number>(1),
     toggleForm$: new Subject<void>(),
-    submitFlag$: new Subject<{category: string; note: string}>(),
+    submitFlag$: new Subject<FlagPayload>(),
     formVisible$: new BehaviorSubject<boolean>(false),
     openFlagCount$: new BehaviorSubject<number>(0)
   };
-  const userService = {
-    loggedUser$: new BehaviorSubject({id: 'user-1'})
+  const userService: UserManagementServiceDouble = {
+    loggedUser$: new BehaviorSubject<SimpleUserModel | undefined>(simpleUserFixture())
   };
 
-  const component = new ModuleFlagComponent(flagService as any, userService as any);
+  const component = new ModuleFlagComponent(
+    flagService as ModuleFlagDataService,
+    userService as UserManagementService
+  );
 
   return {component, flagService};
 }
@@ -104,7 +132,7 @@ describe('ModuleFlagComponent', () => {
     flagService.moduleId$.subscribe(id => received.push(id));
 
     component.moduleId = 42;
-    component.ngOnChanges({ moduleId: { currentValue: 42, previousValue: undefined, firstChange: true, isFirstChange: () => true } });
+    component.ngOnChanges({ moduleId: new SimpleChange(undefined, 42, true) });
 
     expect(received).toEqual([42]);
   });

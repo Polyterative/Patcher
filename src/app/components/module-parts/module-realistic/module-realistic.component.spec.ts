@@ -13,7 +13,10 @@ import {
 
 describe('ModuleRealisticComponent', () => {
   function build(): ModuleRealisticComponent {
-    return new ModuleRealisticComponent({} as any, {} as any);
+    return new ModuleRealisticComponent(
+      jasmine.createSpyObj<RackDetailDataService>('RackDetailDataService', ['ngOnDestroy']),
+      jasmine.createSpyObj<ModuleDetailDataService>('ModuleDetailDataService', ['ngOnDestroy'])
+    );
   }
 
   function makePanel(id: number, description: string, filename: string): ModulePanel {

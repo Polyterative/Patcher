@@ -1,12 +1,17 @@
+import { MatDialogRef } from '@angular/material/dialog';
 import { ModulePanelZoomDialogComponent } from './module-panel-zoom-dialog.component';
+import { ModulePanelZoomDialogData } from './module-panel-zoom-dialog.component';
 
 describe('ModulePanelZoomDialogComponent', () => {
   let comp: ModulePanelZoomDialogComponent;
-  let mockDialogRef: any;
-  let mockData: any;
+  let mockDialogRef: jasmine.SpyObj<MatDialogRef<ModulePanelZoomDialogComponent>>;
+  let mockData: ModulePanelZoomDialogData;
 
   beforeEach(() => {
-    mockDialogRef = { close: jasmine.createSpy('close') };
+    mockDialogRef = jasmine.createSpyObj<MatDialogRef<ModulePanelZoomDialogComponent>>(
+      'MatDialogRef',
+      ['close']
+    );
     mockData = { imageUrl: 'https://example.com/image.png', label: 'Test Module' };
     comp = new ModulePanelZoomDialogComponent(mockDialogRef, mockData);
   });

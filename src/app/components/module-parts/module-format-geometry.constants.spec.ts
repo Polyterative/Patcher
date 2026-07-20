@@ -1,4 +1,12 @@
+import { Standard } from '../../models/standard';
 import { getModuleFormatGeometry, MODULE_FORMAT_GEOMETRY } from './module-format-geometry.constants';
+
+function standardFixture(id: number): Standard {
+  return {
+    id,
+    name: `standard-${ id }`
+  };
+}
 
 describe('module-format-geometry.constants', () => {
   describe('getModuleFormatGeometry', () => {
@@ -7,19 +15,19 @@ describe('module-format-geometry.constants', () => {
     });
 
     it('returns EURORACK_3U for standard id 0', () => {
-      expect(getModuleFormatGeometry({ id: 0 } as any)).toBe(MODULE_FORMAT_GEOMETRY.EURORACK_3U);
+      expect(getModuleFormatGeometry(standardFixture(0))).toBe(MODULE_FORMAT_GEOMETRY.EURORACK_3U);
     });
 
     it('returns INTELLIJEL_1U for standard id 1', () => {
-      expect(getModuleFormatGeometry({ id: 1 } as any)).toBe(MODULE_FORMAT_GEOMETRY.INTELLIJEL_1U);
+      expect(getModuleFormatGeometry(standardFixture(1))).toBe(MODULE_FORMAT_GEOMETRY.INTELLIJEL_1U);
     });
 
     it('returns PULP_LOGIC_1U for standard id 2', () => {
-      expect(getModuleFormatGeometry({ id: 2 } as any)).toBe(MODULE_FORMAT_GEOMETRY.PULP_LOGIC_1U);
+      expect(getModuleFormatGeometry(standardFixture(2))).toBe(MODULE_FORMAT_GEOMETRY.PULP_LOGIC_1U);
     });
 
     it('falls back to INTELLIJEL_1U for unknown standard id', () => {
-      expect(getModuleFormatGeometry({ id: 999 } as any)).toBe(MODULE_FORMAT_GEOMETRY.INTELLIJEL_1U);
+      expect(getModuleFormatGeometry(standardFixture(999))).toBe(MODULE_FORMAT_GEOMETRY.INTELLIJEL_1U);
     });
   });
 
