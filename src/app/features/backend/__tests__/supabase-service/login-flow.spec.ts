@@ -1,4 +1,8 @@
-import { SupabaseService } from '../../supabase.service';
+import {
+  SupabaseService,
+  type OAuthProvider,
+  type SupabaseLoginResponse
+} from '../../supabase.service';
 import {
   fakeAsync,
   tick
@@ -16,17 +20,96 @@ type AuthSessionTestHarness = {
   };
 };
 
-type ProfileResponse = {data: unknown; error: {message?: string} | null};
+type AuthErrorLike = {message: string; status?: number};
+type AuthUser = {
+  id: string;
+  email: string;
+  created_at: string;
+  updated_at: string;
+  app_metadata?: Record<string, string>;
+};
+type PasswordAuthResponse = {
+  data: {
+    user: AuthUser | null;
+    session: {access_token: string} | null;
+  };
+  error: AuthErrorLike | null;
+};
+type OAuthAuthResponse = {
+  data: {provider: OAuthProvider; url: string} | null;
+  error: AuthErrorLike | null;
+};
+type LoginProfileRow = {
+  username: string;
+  public?: boolean;
+  website?: string | null;
+  avatar_url?: string | null;
+};
+type ProfileResponse = {data: LoginProfileRow[] | null; error: {message?: string} | null};
+type WriteResponse = {data: Record<string, never>; error: null};
+type LoginQueryResponse = ProfileResponse | WriteResponse;
+type SupabaseClientHarness = {
+  auth: {
+    signInWithPassword: (credentials: {email: string; password: string}) => Promise<PasswordAuthResponse>;
+    signInWithOAuth: (credentials: {provider: OAuthProvider; options?: {redirectTo?: string; scopes?: string}}) => Promise<OAuthAuthResponse>;
+  };
+  from: (table: string) => LoginQueryMock;
+};
+type SupabaseServiceHarness = {
+  supabase: SupabaseClientHarness;
+};
+
+class LoginQueryMock implements PromiseLike<LoginQueryResponse> {
+  private operation: 'select' | 'update' | 'upsert' = 'select';
+
+  constructor(
+    private readonly queuedProfileResponses: ProfileResponse[],
+    private readonly defaultProfileResponse: ProfileResponse
+  ) {}
+
+  filter(): this {
+    return this;
+  }
+
+  eq(): this {
+    return this;
+  }
+
+  select(): this {
+    this.operation = 'select';
+    return this;
+  }
+
+  update(): this {
+    this.operation = 'update';
+    return this;
+  }
+
+  upsert(): this {
+    this.operation = 'upsert';
+    return this;
+  }
+
+  then<TResult1 = LoginQueryResponse, TResult2 = never>(
+    onfulfilled?: ((value: LoginQueryResponse) => TResult1 | PromiseLike<TResult1>) | null,
+    onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+  ): Promise<TResult1 | TResult2> {
+    const response: LoginQueryResponse = this.operation === 'select'
+      ? this.queuedProfileResponses.shift() || this.defaultProfileResponse
+      : {data: {}, error: null};
+    return Promise.resolve(response).then(onfulfilled, onrejected);
+  }
+}
 
 describe('SupabaseService - login flow', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: SupabaseClientHarness;
   let authSession$: AuthSessionTestHarness['authSession$'];
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = (service as unknown as SupabaseServiceHarness).supabase;
     authSession$ = (service as unknown as AuthSessionTestHarness).authSession$;
   });
   
@@ -56,30 +139,7 @@ describe('SupabaseService - login flow', () => {
       );
       
       spyOn(supabaseClient, 'from').and.callFake((_table: string) => {
-        let operation: 'select' | 'update' | 'upsert' = 'select';
-        const m: any = {};
-        ['filter', 'eq'].forEach(method => {
-          m[method] = () => m;
-        });
-        m.select = () => {
-          operation = 'select';
-          return m;
-        };
-        m.update = () => {
-          operation = 'update';
-          return m;
-        };
-        m.upsert = () => {
-          operation = 'upsert';
-          return m;
-        };
-        m.then = (res: Function, rej?: Function) => {
-          const response = operation === 'select'
-            ? queuedProfileResponses.shift() || defaultProfileResponse
-            : {data: {}, error: null};
-          return Promise.resolve(response).then(res as any, rej as any);
-        };
-        return m;
+        return new LoginQueryMock(queuedProfileResponses, defaultProfileResponse);
       });
     }
     
@@ -105,7 +165,7 @@ describe('SupabaseService - login flow', () => {
       setupLoginMocks('u-fetch', 'myusername');
 
       service.auth.login$('u@test.com', 'pass').subscribe({
-        next: (result: any) => {
+        next: (result: SupabaseLoginResponse) => {
           expect(result.user.username).toBe('myusername');
           done();
         },
@@ -123,7 +183,7 @@ describe('SupabaseService - login flow', () => {
       ]);
 
       service.auth.login$('u@test.com', 'pass').subscribe({
-        next: (result: any) => {
+        next: (result: SupabaseLoginResponse) => {
           expect(result.user.username).toBe('user_u-missin');
           done();
         },
@@ -161,7 +221,9 @@ describe('SupabaseService - login flow', () => {
       spyOn(supabaseClient.auth, 'signInWithPassword').and.returnValue(
         Promise.resolve(mockErrorResponse)
       );
-      spyOn(supabaseClient, 'from').and.returnValue({} as any);
+      spyOn(supabaseClient, 'from').and.returnValue(
+        new LoginQueryMock([], {data: [], error: null})
+      );
 
       service.auth.login$('bad@test.com', 'wrongpass').subscribe({
         next: () => {
@@ -197,13 +259,13 @@ describe('SupabaseService - login flow', () => {
     }, TEST_TIMEOUT);
     
     it('should include a redirectTo in the OAuth options', (done) => {
-      spyOn(supabaseClient.auth, 'signInWithOAuth').and.returnValue(
+      const signInWithOAuthSpy = spyOn(supabaseClient.auth, 'signInWithOAuth').and.returnValue(
         Promise.resolve({data: {provider: 'github', url: 'https://github.com/auth'}, error: null})
       );
       
       service.auth.loginWithOAuth$('github').subscribe({
         next: () => {
-          const callArgs = (supabaseClient.auth.signInWithOAuth as jasmine.Spy).calls.first().args[0];
+          const callArgs = signInWithOAuthSpy.calls.first().args[0];
           expect(callArgs.options?.redirectTo).toBeDefined();
           done();
         },

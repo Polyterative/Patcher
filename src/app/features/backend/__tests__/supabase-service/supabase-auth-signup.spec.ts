@@ -1,20 +1,116 @@
 import { SupabaseService } from '../../supabase.service';
 import {
+  type AuthError,
+  type Session,
+  type User
+} from '@supabase/supabase-js';
+import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest,
   TEST_TIMEOUT
 } from './test-setup';
 
 
-function chainable(resolveValue: any = {data: null, error: null}) {
-  const m: any = {};
-  ['select', 'filter', 'eq', 'neq', 'ilike', 'is', 'in', 'range', 'order', 'limit', 'single',
-    'insert', 'update', 'delete', 'upsert'].forEach(method => {
-    m[method] = () => m;
-  });
-  m.then = (res: Function, rej?: Function) =>
-    Promise.resolve(resolveValue).then(res as any, rej as any);
-  return m;
+type DatabaseResponse = {
+  data: Array<{id?: string; username?: string}> | null;
+  error: {code?: string; message: string} | null;
+};
+type SignupAuthResponse = {
+  data: {
+    user: Pick<User, 'id' | 'email' | 'created_at' | 'updated_at'> | null;
+    session: Session | null;
+  };
+  error: {message: string} | null;
+};
+type SupabaseClientHarness = {
+  auth: {
+    signUp: (credentials: {
+      email: string;
+      password: string;
+      options: {data: {username: string}};
+    }) => Promise<SignupAuthResponse>;
+    signOut: () => Promise<{error: AuthError | null}>;
+    getSession: () => Promise<unknown>;
+  };
+  from: (table: string) => ChainableQueryMock;
+};
+type SupabaseServiceHarness = {
+  supabase: SupabaseClientHarness;
+};
+
+class ChainableQueryMock implements PromiseLike<DatabaseResponse> {
+  constructor(private readonly resolveValue: DatabaseResponse = {data: null, error: null}) {}
+
+  select(_columns?: string): this {
+    return this;
+  }
+
+  filter(_column?: string, _operator?: string, _value?: unknown): this {
+    return this;
+  }
+
+  eq(_column?: string, _value?: unknown): this {
+    return this;
+  }
+
+  neq(_column?: string, _value?: unknown): this {
+    return this;
+  }
+
+  ilike(_column?: string, _pattern?: string): this {
+    return this;
+  }
+
+  is(_column?: string, _value?: unknown): this {
+    return this;
+  }
+
+  in(_column?: string, _values?: unknown[]): this {
+    return this;
+  }
+
+  range(_from?: number, _to?: number): this {
+    return this;
+  }
+
+  order(_column?: string, _options?: unknown): this {
+    return this;
+  }
+
+  limit(_count?: number): this {
+    return this;
+  }
+
+  single(): this {
+    return this;
+  }
+
+  insert(): this {
+    return this;
+  }
+
+  update(): this {
+    return this;
+  }
+
+  delete(): this {
+    return this;
+  }
+
+  upsert(): this {
+    return this;
+  }
+
+  then<TResult1 = DatabaseResponse, TResult2 = never>(
+    onfulfilled?: ((value: DatabaseResponse) => TResult1 | PromiseLike<TResult1>) | null,
+    onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+  ): Promise<TResult1 | TResult2> {
+    return Promise.resolve(this.resolveValue).then(onfulfilled, onrejected);
+  }
+}
+
+function chainable(resolveValue: DatabaseResponse = {data: null, error: null}) {
+  return new ChainableQueryMock(resolveValue);
 }
 
 type AuthSessionTestHarness = {
@@ -25,13 +121,13 @@ type AuthSessionTestHarness = {
 
 describe('SupabaseService - auth signup and profile helpers', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: SupabaseClientHarness;
   let authSession$: AuthSessionTestHarness['authSession$'];
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = (service as unknown as SupabaseServiceHarness).supabase;
     authSession$ = (service as unknown as AuthSessionTestHarness).authSession$;
   });
   
@@ -97,10 +193,10 @@ describe('SupabaseService - auth signup and profile helpers', () => {
   
   describe('_burstAllCaches', () => {
     it('should emit all major cache keys on cacheResetter$', (done) => {
-      const emittedKeys: any[] = [];
-      service.cacheResetter$.subscribe(keys => emittedKeys.push(...(keys as any[])));
+      const emittedKeys: Array<string | void> = [];
+      service.cacheResetter$.subscribe(keys => emittedKeys.push(...keys));
       
-      (service.auth as any)._burstAllCaches();
+      service.auth._burstAllCaches();
       
       setTimeout(() => {
         expect(emittedKeys).toContain('modules');
@@ -119,8 +215,8 @@ describe('SupabaseService - auth signup and profile helpers', () => {
   describe('logoff$ side-effects', () => {
     it('should burst all cache keys when logging off', (done) => {
       spyOn(supabaseClient.auth, 'signOut').and.returnValue(Promise.resolve({error: null}));
-      const bustedKeys: any[] = [];
-      service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
+      const bustedKeys: Array<string | void> = [];
+      service.cacheResetter$.subscribe(keys => bustedKeys.push(...keys));
       
       service.auth.logoff$().subscribe({
         next: () => {
