@@ -67,6 +67,11 @@ import { SharedAtomsModule } from 'src/app/components/shared-atoms/shared-atoms.
       },
       // Uranus shell must come before the :publicId catch-all so
       // /patches/browser doesn't get treated as a token.
+      {
+        path: '',
+        pathMatch: 'full',
+        redirectTo: 'browser'
+      },
       generateUranusRoutes('', [
         {
           path: 'browser',

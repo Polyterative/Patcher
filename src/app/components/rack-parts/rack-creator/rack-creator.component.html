@@ -1,33 +1,42 @@
-<div class="col gap1"
+<div
+  class="rack-creator col gap1"
 >
   <h1 mat-dialog-title>Create new rack</h1>
-  
+
   <mat-dialog-content>
-    <div class="col gap1">
-      <p style="font-size: 1rem">
-        A rack is a virtual case where you can organize your modules.
-      </p>
-      <p style="font-size: 1rem">
-        You can always edit the rack name and number of rows later.
-      </p>
-      <lib-mat-form-entity [dataPack]="fields.name"
-                           [hint]="(fields.name.control.value?.length || 0) + '/32'"
-      >
-      </lib-mat-form-entity>
-      
-      <lib-mat-form-entity [dataPack]="fields.hp"
-                           [presets]="[84, 104, 126, 168]"
-       >
-      </lib-mat-form-entity>
-      
-      <lib-mat-form-entity [dataPack]="fields.rows"
-                           [presets]="[3, 4, 6, 9]"
-                           (enterPressed)="save$.next()"
-       >
-      </lib-mat-form-entity>
-      
-      <ng-container *ngIf="rackAnalysis$ | async as analysis">
-        <ng-container *ngIf="analysis.primaryStandard">
+    <div
+      class="rack-creator-body col gap1"
+      [class.rack-creator-body--importing]="importEnabled$ | async"
+    >
+      <ng-container *ngIf="!(importEnabled$ | async)">
+        <p style="font-size: 1rem">
+          A rack is a virtual case where you can organize your modules.
+        </p>
+        <p style="font-size: 1rem">
+          You can always edit the rack name and number of rows later.
+        </p>
+      </ng-container>
+      <div class="rack-creator-fields">
+        <lib-mat-form-entity [dataPack]="fields.name"
+                             [hint]="(fields.name.control.value?.length || 0) + '/32'"
+        >
+        </lib-mat-form-entity>
+
+        <lib-mat-form-entity [dataPack]="fields.hp"
+                             [presets]="[84, 104, 126, 168]"
+         >
+        </lib-mat-form-entity>
+
+        <lib-mat-form-entity [dataPack]="fields.rows"
+                             [presets]="[3, 4, 6, 9]"
+                             (enterPressed)="save$.next()"
+         >
+        </lib-mat-form-entity>
+      </div>
+
+      <ng-container *ngIf="!(importEnabled$ | async)">
+        <ng-container *ngIf="rackAnalysis$ | async as analysis">
+          <ng-container *ngIf="analysis.primaryStandard">
           <app-lib-showcase-grid
             [data]="[
               {
@@ -49,21 +58,266 @@
                 size: 'auto'
               }
             ]"
-          ></app-lib-showcase-grid>
+            ></app-lib-showcase-grid>
+          </ng-container>
         </ng-container>
+      </ng-container>
+
+      <mat-divider></mat-divider>
+      <div class="modulargrid-import-toggle row gap1">
+        <mat-icon class="modulargrid-import-toggle__icon">data_object</mat-icon>
+        <span class="modulargrid-import-toggle__label">Import from ModularGrid</span>
+        <mat-slide-toggle
+          [formControl]="importEnabledControl"
+          aria-label="Import from ModularGrid"
+          color="primary"
+        ></mat-slide-toggle>
+      </div>
+
+      <ng-container *ngIf="importEnabled$ | async">
+        <div
+          class="modulargrid-import-section"
+          [class.modulargrid-import-section--file-accepted]="fileAccepted$ | async"
+        >
+          <ng-container *ngIf="selectedModularGridFile$ | async as selectedFile; else modularGridFileDropzone">
+            <div class="modulargrid-import-file-strip">
+              <mat-icon class="modulargrid-import-file-strip__icon">description</mat-icon>
+              <span class="modulargrid-import-file-strip__name">{{selectedFile.name}}</span>
+              <span class="modulargrid-import-file-strip__date">{{selectedFile.lastModified | date}}</span>
+              <button
+                type="button"
+                class="modulargrid-import-file-strip__clear"
+                [attr.aria-label]="'Remove ' + selectedFile.name"
+                (click)="clearModularGridFile()"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+          </ng-container>
+          <ng-template #modularGridFileDropzone>
+            <div class="modulargrid-import-file-card">
+              <div class="modulargrid-import-file-card__copy">
+                <mat-icon class="modulargrid-import-file-card__icon">upload_file</mat-icon>
+                <div>
+                  <h2 class="modulargrid-import-file-card__title">ModularGrid rack export</h2>
+                  <p class="modulargrid-import-file-card__description">
+                    Choose the JSON file exported from your ModularGrid rack. Requires JSON exported from a ModularGrid Unicorn account.
+                  </p>
+                </div>
+              </div>
+              <lib-file-drag-host
+                class="modulargrid-import-file"
+                acceptedFileType="application/json,text/json,.json"
+                [multipleFilesMode]="false"
+              ></lib-file-drag-host>
+            </div>
+          </ng-template>
+
+          <div
+            class="modulargrid-import-error"
+            role="alert"
+            *ngIf="modularGridFileError$ | async as fileError"
+          >
+            {{fileError}}
+          </div>
+
+          <ng-container *ngIf="modularGridParseResult$ | async as parseResult">
+            <div class="modulargrid-import-error" role="alert" *ngIf="parseResult.status === 'invalid-json'">
+              This file does not look like valid JSON.
+            </div>
+            <div class="modulargrid-import-error" role="alert" *ngIf="parseResult.status === 'wrong-shape'">
+              This file does not look like a ModularGrid rack export.
+            </div>
+          </ng-container>
+
+          <ng-container *ngIf="moduleCatalogueState$ | async as catalogueState">
+            <div class="modulargrid-import-loading" role="status" *ngIf="!catalogueState.ready && !catalogueState.error">
+              Loading Patcher module catalogue...
+            </div>
+            <div class="modulargrid-import-error" role="alert" *ngIf="catalogueState.error">
+              {{catalogueState.error}}
+            </div>
+          </ng-container>
+
+          <ng-container *ngIf="importPreview$ | async as preview">
+            <div class="modulargrid-import-preview">
+              <div class="modulargrid-import-status" aria-label="ModularGrid import status">
+                <div class="modulargrid-import-status__item modulargrid-import-status__item--dimensions">
+                  <span class="modulargrid-import-status__label">dimensions</span>
+                  <strong class="modulargrid-import-status__value">{{preview.rack.rows}} × {{preview.rack.hp}}HP</strong>
+                </div>
+                <div class="modulargrid-import-status__item modulargrid-import-status__item--confident">
+                  <span class="modulargrid-import-status__label">confident</span>
+                  <strong class="modulargrid-import-status__value">{{preview.counts.confident}}</strong>
+                </div>
+                <div class="modulargrid-import-status__item modulargrid-import-status__item--likely">
+                  <span class="modulargrid-import-status__label">likely</span>
+                  <strong class="modulargrid-import-status__value">{{preview.counts.likely}}</strong>
+                </div>
+                <div class="modulargrid-import-status__item modulargrid-import-status__item--attention">
+                  <span class="modulargrid-import-status__label">ambiguous</span>
+                  <strong class="modulargrid-import-status__value">{{preview.counts.ambiguous}}</strong>
+                </div>
+                <div class="modulargrid-import-status__item modulargrid-import-status__item--loss">
+                  <span class="modulargrid-import-status__label">unmatched</span>
+                  <strong class="modulargrid-import-status__value">{{preview.counts.unmatched}}</strong>
+                </div>
+                <div class="modulargrid-import-status__item modulargrid-import-status__item--blank">
+                  <span class="modulargrid-import-status__label">blank</span>
+                  <strong class="modulargrid-import-status__value">{{preview.counts.blank}}</strong>
+                </div>
+              </div>
+
+              <ng-container *ngIf="matchedPreviewModules(preview) as matchedModules">
+                <div class="modulargrid-import-identified" *ngIf="matchedModules.length > 0">
+                  <div class="modulargrid-import-identified__heading">
+                    <h3 class="modulargrid-import-identified__header">
+                      Identified modules ({{matchedModules.length}})
+                    </h3>
+                    <span class="modulargrid-import-identified__copy">
+                      Confident and likely matches that will be placed.
+                    </span>
+                  </div>
+                  <div class="modulargrid-import-identified__rail">
+                    <div
+                      class="modulargrid-import-identified__card"
+                      *ngFor="let match of matchedModules"
+                      [title]="match.source.name + ' → ' + match.candidates[0].module.name"
+                    >
+                      <div class="modulargrid-import-identified__panel">
+                        <app-module-part-image
+                          class="modulargrid-import-identified__image"
+                          [data]="match.candidates[0].module"
+                          [containImage]="true"
+                          [fixedHeight]="true"
+                          [disableNavigation]="true"
+                          [disableEnterAnimation]="true"
+                          [tooltip]="match.candidates[0].module.name"
+                        ></app-module-part-image>
+                      </div>
+                      <div class="modulargrid-import-identified__meta">
+                        <span class="modulargrid-import-identified__target">{{match.candidates[0].module.name}}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </ng-container>
+
+              <ng-container *ngIf="preview.ambiguous.length > 0">
+                <div class="modulargrid-import-ambiguous">
+                  <div class="modulargrid-import-ambiguous__heading">
+                    <h3 class="modulargrid-import-ambiguous__header">
+                      Ambiguous matches ({{preview.ambiguous.length}})
+                    </h3>
+                    <div class="modulargrid-import-inline-warning" role="status">
+                      Ambiguous modules are skipped by default. Select a candidate to include one.
+                    </div>
+                  </div>
+                  <div
+                    class="modulargrid-import-resolution-card"
+                    [ngClass]="'modulargrid-import-resolution-card--' + ambiguousResolutionState(match.source.key)"
+                    *ngFor="let match of preview.ambiguous"
+                  >
+                    <div class="modulargrid-import-resolution-card__header">
+                      <mat-icon
+                        class="modulargrid-import-resolution-card__icon"
+                        aria-hidden="true"
+                      >
+                        {{ambiguousResolutionIcon(match.source.key)}}
+                      </mat-icon>
+                      <div
+                        class="modulargrid-import-ambiguous__name"
+                        [attr.aria-label]="match.source.name"
+                        [title]="match.source.name"
+                      >
+                        {{match.source.name}}
+                      </div>
+                      <span class="modulargrid-import-resolution-card__status">
+                        {{ambiguousResolutionState(match.source.key)}}
+                      </span>
+                    </div>
+                    <div class="modulargrid-import-ambiguous__candidates">
+                      <button
+                        type="button"
+                        class="modulargrid-import-chip"
+                        *ngFor="let candidate of match.candidates"
+                        [class.modulargrid-import-chip--selected]="isAmbiguousCandidateSelected(match.source.key, candidate.module.id)"
+                        [attr.aria-pressed]="isAmbiguousCandidateSelected(match.source.key, candidate.module.id)"
+                        [title]="candidate.module.name + ' — ' + moduleManufacturerName(candidate.module) + ', ' + candidate.module.hp + ' HP'"
+                        (click)="selectAmbiguousCandidate(match.source.key, candidate.module.id)"
+                      >
+                        <span class="modulargrid-import-chip__image-frame" aria-hidden="true">
+                          <app-module-part-image
+                            class="modulargrid-import-chip__image"
+                            [data]="candidate.module"
+                            [containImage]="true"
+                            [fixedHeight]="true"
+                            [disableNavigation]="true"
+                            [disableEnterAnimation]="true"
+                            [tooltip]="candidate.module.name"
+                            [tooltipDisabled]="true"
+                          ></app-module-part-image>
+                        </span>
+                        <span class="modulargrid-import-chip__copy">
+                          <span class="modulargrid-import-chip__name">{{candidate.module.name}}</span>
+                          <span class="modulargrid-import-chip__meta">
+                            {{moduleManufacturerName(candidate.module)}} · {{candidate.module.hp}} HP
+                          </span>
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        class="modulargrid-import-chip modulargrid-import-chip--skip"
+                        [class.modulargrid-import-chip--selected]="isAmbiguousCandidateSelected(match.source.key, null)"
+                        [attr.aria-pressed]="isAmbiguousCandidateSelected(match.source.key, null)"
+                        (click)="selectAmbiguousCandidate(match.source.key, null)"
+                      >
+                        Skip
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </ng-container>
+
+              <div class="modulargrid-import-unmatched" *ngIf="preview.unmatched.length > 0">
+                <span class="modulargrid-import-unmatched__copy">
+                  {{preview.unmatched.length}} modules not found in Patcher catalogue — will be skipped.
+                </span>
+                <button
+                  type="button"
+                  class="modulargrid-import-unmatched__action"
+                  (click)="copyMissingModulesText(preview)"
+                >
+                  <mat-icon aria-hidden="true">content_copy</mat-icon>
+                  Copy missing list
+                </button>
+              </div>
+            </div>
+          </ng-container>
+        </div>
       </ng-container>
     </div>
   </mat-dialog-content>
   <mat-dialog-actions>
     <div class="col gap1" style="width:100%">
-      <div class="row gap1" style="align-items:center">
-        <mat-icon style="font-size:18px;width:18px;height:18px;line-height:18px;opacity:0.7">
+      <mat-progress-bar
+        *ngIf="createInProgress$ | async"
+        class="rack-creator-progress"
+        mode="indeterminate"
+        aria-label="Creating rack"
+      ></mat-progress-bar>
+      <div class="rack-creator-footer__visibility row gap1">
+        <mat-icon class="rack-creator-footer__visibility-icon">
           {{fields.public.control.value ? 'public' : 'lock'}}
         </mat-icon>
-        <span style="font-size:0.9rem;flex:1">
+        <span class="rack-creator-footer__visibility-label">
           {{fields.public.control.value ? 'Public — visible to everyone' : 'Private — only visible to you'}}
         </span>
-        <mat-slide-toggle [formControl]="fields.public.control" color="primary"></mat-slide-toggle>
+        <mat-slide-toggle
+          [formControl]="fields.public.control"
+          [attr.aria-label]="fields.public.control.value ? 'Make rack private' : 'Make rack public'"
+          color="primary"
+        ></mat-slide-toggle>
       </div>
       <mat-divider></mat-divider>
       <div class="layout-flex-grow layout-row layout-gap-2 layout-gap-xs-0">
@@ -72,7 +326,7 @@
             theme="positive"
             icon="add"
             (click$)="save$.next()"
-            [disabled]="!formGroup.valid"
+            [disabled]="!(canCreate$ | async)"
         >
           Create
         </app-brand-primary-button>

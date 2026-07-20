@@ -148,6 +148,7 @@
                                     [analysisClass]="analysisVisualClass(rackedModule, analysisMode)"
                                       [showPanelImages]="shouldShowPanelImages && rackedModule.module.panels.length>0"
                                       [selectedPanelId]="rackedModule.rackingData.selectedPanelId ?? null"
+                                      [orientation]="rackedModule.rackingData.orientation"
                                        [disablePanelImageEnterAnimation]="true"
                                        [class.module--dropRevealSuppressed]="isDropRevealSuppressed(rackedModule)"
                                        [class.module--dropRevealAnimating]="isDropRevealAnimating(rackedModule)"
@@ -187,6 +188,7 @@
                     [data]="rackedModule|mapToModule"
                     [analysisMode]="analysisModes.off"
                     [showPanelImages]="true"
+                    [orientation]="rackedModule.rackingData.orientation"
                     [disablePanelImageEnterAnimation]="true"
                     class="module"
                   ></app-module-realistic>

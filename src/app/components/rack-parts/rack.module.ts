@@ -4,7 +4,7 @@ import { NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.module';
-import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
+import { RACK_DETAIL_DATA_PROVIDERS } from 'src/app/components/rack-parts/rack-detail-data.service';
 import { RackDetailsComponent } from 'src/app/components/rack-parts/rack-details/rack-details.component';
 import { RackEditorComponent } from 'src/app/components/rack-parts/rack-editor/rack-editor.component';
 import { RackMinimalComponent } from 'src/app/components/rack-parts/rack-minimal/rack-minimal.component';
@@ -41,10 +41,13 @@ import { MatCardModule } from "@angular/material/card";
 import { MatDividerModule } from "@angular/material/divider";
 import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { AdviceTooltipComponent } from "src/app/shared-interproject/components/@visual/advice-tooltip/advice-tooltip/advice-tooltip.component";
 import { MatBadge } from "@angular/material/badge";
 import { CalculateRowInformationPipe } from "src/app/components/rack-parts/rack-editor/calculate-row-information.pipe";
@@ -59,6 +62,7 @@ import { EditFabComponent } from "src/app/shared-interproject/components/@visual
 import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-state-tips/empty-state-tips.component';
 import { InputDialogModule } from "src/app/shared-interproject/dialogs/input-dialog/input-dialog.module";
 import { CoolButtonComponent } from '../shared-atoms/cool-button/cool-button.component';
+import { FileDragHostComponent } from 'src/app/shared-interproject/components/@smart/file-drag-host/file-drag-host.component';
 
 
 @NgModule({
@@ -95,7 +99,7 @@ import { CoolButtonComponent } from '../shared-atoms/cool-button/cool-button.com
     TotalDepthOfRackPipe,
     TotalWeightOfRackPipe
   ],
-  providers: [RackDetailDataService],
+  providers: RACK_DETAIL_DATA_PROVIDERS,
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -104,6 +108,8 @@ import { CoolButtonComponent } from '../shared-atoms/cool-button/cool-button.com
     MatDividerModule,
     MatFormEntityComponent,
     MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
     RouterModule,
     MatButtonModule,
     MatTooltipModule,
@@ -125,6 +131,7 @@ import { CoolButtonComponent } from '../shared-atoms/cool-button/cool-button.com
     MatSlideToggleModule,
     MatButtonToggleModule,
     MatMenuModule,
+    MatProgressBarModule,
     StatisticsComponent,
     AdviceTooltipComponent,
     DialogInfoBoxComponent,
@@ -141,6 +148,7 @@ import { CoolButtonComponent } from '../shared-atoms/cool-button/cool-button.com
     EmptyStateTipsComponent,
     InputDialogModule,
     CoolButtonComponent,
+    FileDragHostComponent,
   ]
 })
 export class RackModule {

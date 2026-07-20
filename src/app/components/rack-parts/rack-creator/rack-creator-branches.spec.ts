@@ -1,4 +1,6 @@
 import { of } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { FileDragHostService } from 'src/app/shared-interproject/components/@smart/file-drag-host/file-drag-host.service';
 import { RackCreatorComponent } from './rack-creator.component';
 import { STANDARDS } from '../module-collection-analysis.service';
 
@@ -7,26 +9,36 @@ describe('RackCreatorComponent - uncovered branches', () => {
   let createdComponents: RackCreatorComponent[];
 
   function build(userModules?: any[]) {
-    const backend = {
-      auth: {getUserSession$: jasmine.createSpy().and.returnValue(of({id: 'u1'}))},
-      add: {rack: jasmine.createSpy().and.returnValue(of({id: 1}))}
+    const dataService = {
+      getUserSession$: jasmine.createSpy().and.returnValue(of({id: 'u1'})),
+      loadModuleCatalogue$: jasmine.createSpy().and.returnValue(of(userModules ?? [])),
+      createRack$: jasmine.createSpy().and.returnValue(of({
+        rackId: 1,
+        placementSummary: {placed: 0, failed: 0}
+      })),
+      createRackWithPlacements$: jasmine.createSpy().and.returnValue(of({
+        rackId: 1,
+        placementSummary: {placed: 0, failed: 0}
+      }))
     };
     const snackBar = {open: jasmine.createSpy().and.returnValue({onAction: () => of(undefined)})};
     const dialogRef = {close: jasmine.createSpy()};
     const mca = {
       analyzeRackConfiguration: jasmine.createSpy().and.returnValue({moduleCount: 0})
     };
+    const fileDragHostService = new FileDragHostService(snackBar as unknown as MatSnackBar);
     
     const component = new RackCreatorComponent(
       snackBar as any,
-      backend as any,
       dialogRef as any,
       {userModules} as any,
       mca as any,
-      {capture: () => {}, identify: () => {}, reset: () => {}} as any
+      {capture: () => {}, identify: () => {}, reset: () => {}} as any,
+      dataService as any,
+      fileDragHostService
     );
     createdComponents.push(component);
-    return {component, backend, snackBar, dialogRef, mca};
+    return {component, dataService, snackBar, dialogRef, mca};
   }
 
   beforeEach(() => {
