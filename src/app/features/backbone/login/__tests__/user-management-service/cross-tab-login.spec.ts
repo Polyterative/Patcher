@@ -5,6 +5,7 @@ import {
   setupUserManagementServiceTest
 } from './test-setup';
 import { UserManagementService } from '../../user-management.service';
+import { SimpleUserModel } from '../../../../backend/supabase.types';
 import { of } from 'rxjs';
 import {
   fakeAsync,
@@ -18,13 +19,23 @@ import {
  * Tests for cross-tab login functionality using Supabase auth state changes.
  */
 describe('UserManagementService - Cross-Tab Login', () => {
+  type UserManagementServiceTestSetup = ReturnType<typeof setupUserManagementServiceTest>;
+  type UserManagementServiceStateHarness = {
+    _loggedUser$: {
+      next: (user: SimpleUserModel | undefined) => void;
+    };
+    currentUserId: string | undefined;
+  };
+
   let service: UserManagementService;
-  let mockRouter: any;
-  let mockSupabaseService: any;
+  let serviceState: UserManagementServiceStateHarness;
+  let mockRouter: UserManagementServiceTestSetup['mockRouter'];
+  let mockSupabaseService: UserManagementServiceTestSetup['mockSupabaseService'];
   
   beforeEach(() => {
     const setup = setupUserManagementServiceTest();
     service = setup.service;
+    serviceState = service as unknown as UserManagementServiceStateHarness;
     mockRouter = setup.mockRouter;
     mockSupabaseService = setup.mockSupabaseService;
   });
@@ -37,7 +48,7 @@ describe('UserManagementService - Cross-Tab Login', () => {
     // Arrange: User is logged out
     mockSupabaseService.auth.getUserSession$.and.returnValue(of(MOCK_SIMPLE_USER));
     
-    let loggedUser: any;
+    let loggedUser: SimpleUserModel | undefined;
     service.loggedUser$.subscribe(user => loggedUser = user);
     
     tick();
@@ -60,7 +71,7 @@ describe('UserManagementService - Cross-Tab Login', () => {
     Object.defineProperty(mockRouter, 'url', {value: '/auth/login', writable: true});
     mockSupabaseService.auth.getUserSession$.and.returnValue(of(MOCK_SIMPLE_USER));
     
-    let loggedUser: any;
+    let loggedUser: SimpleUserModel | undefined;
     service.loggedUser$.subscribe(user => loggedUser = user);
     
     tick();
@@ -81,7 +92,7 @@ describe('UserManagementService - Cross-Tab Login', () => {
     Object.defineProperty(mockRouter, 'url', {value: '/modules', writable: true});
     mockSupabaseService.auth.getUserSession$.and.returnValue(of(MOCK_SIMPLE_USER));
     
-    let loggedUser: any;
+    let loggedUser: SimpleUserModel | undefined;
     service.loggedUser$.subscribe(user => loggedUser = user);
     
     mockRouter.navigate.calls.reset();
@@ -102,7 +113,7 @@ describe('UserManagementService - Cross-Tab Login', () => {
     // Arrange: No valid session available
     mockSupabaseService.auth.getUserSession$.and.returnValue(of(null));
     
-    let loggedUser: any = 'initial';
+    let loggedUser: SimpleUserModel | undefined = MOCK_SIMPLE_USER;
     service.loggedUser$.subscribe(user => loggedUser = user);
     
     tick();
@@ -118,12 +129,12 @@ describe('UserManagementService - Cross-Tab Login', () => {
   
   it('should update to new user when different user logs in', fakeAsync(() => {
     // Arrange: User 1 is logged in
-    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
-    (service as any).currentUserId = MOCK_SIMPLE_USER.id;
+    serviceState._loggedUser$.next(MOCK_SIMPLE_USER);
+    serviceState.currentUserId = MOCK_SIMPLE_USER.id;
     
     mockSupabaseService.auth.getUserSession$.and.returnValue(of(MOCK_SIMPLE_USER_2));
     
-    let loggedUser: any;
+    let loggedUser: SimpleUserModel | undefined;
     service.loggedUser$.subscribe(user => loggedUser = user);
     
     tick();
@@ -141,8 +152,8 @@ describe('UserManagementService - Cross-Tab Login', () => {
   
   it('should NOT update when same user logs in again', fakeAsync(() => {
     // Arrange: User is already logged in
-    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
-    (service as any).currentUserId = MOCK_SIMPLE_USER.id;
+    serviceState._loggedUser$.next(MOCK_SIMPLE_USER);
+    serviceState.currentUserId = MOCK_SIMPLE_USER.id;
     
     mockSupabaseService.auth.getUserSession$.and.returnValue(of(MOCK_SIMPLE_USER));
     
@@ -194,7 +205,7 @@ describe('UserManagementService - Cross-Tab Login', () => {
     tick();
     
     // Assert: Should handle gracefully (last state wins)
-    let loggedUser: any;
+    let loggedUser: SimpleUserModel | undefined;
     service.loggedUser$.subscribe(user => loggedUser = user);
     expect(loggedUser).toEqual(MOCK_SIMPLE_USER);
   }));

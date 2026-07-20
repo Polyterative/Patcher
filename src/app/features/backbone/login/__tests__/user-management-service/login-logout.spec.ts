@@ -20,10 +20,13 @@ import {
  * Tests for manual login/logout operations (not cross-tab).
  */
 describe('UserManagementService - Manual Login/Logout', () => {
+  type UserManagementServiceTestSetup = ReturnType<typeof setupUserManagementServiceTest>;
+
   let service: UserManagementService;
-  let mockRouter: any;
-  let mockSnackBar: any;
-  let mockSupabaseService: any;
+  let mockRouter: UserManagementServiceTestSetup['mockRouter'];
+  let mockSnackBar: UserManagementServiceTestSetup['mockSnackBar'];
+  let mockSupabaseService: UserManagementServiceTestSetup['mockSupabaseService'];
+  let mockUserDataHandlerService: UserManagementServiceTestSetup['mockUserDataHandlerService'];
   
   beforeEach(() => {
     const setup = setupUserManagementServiceTest();
@@ -31,6 +34,7 @@ describe('UserManagementService - Manual Login/Logout', () => {
     mockRouter = setup.mockRouter;
     mockSnackBar = setup.mockSnackBar;
     mockSupabaseService = setup.mockSupabaseService;
+    mockUserDataHandlerService = setup.mockUserDataHandlerService;
   });
   
   afterEach(() => {
@@ -60,7 +64,7 @@ describe('UserManagementService - Manual Login/Logout', () => {
       const loginResponse = {user: MOCK_SIMPLE_USER, returnUrl: '/'};
       mockSupabaseService.auth.login$.and.returnValue(of(loginResponse));
       
-      let loggedUser: any;
+      let loggedUser: typeof MOCK_SIMPLE_USER | undefined;
       service.loggedUser$.subscribe(user => loggedUser = user);
       
       tick();
@@ -182,8 +186,6 @@ describe('UserManagementService - Manual Login/Logout', () => {
     it('should trigger logout when logoffButtonClick$ is emitted', fakeAsync(() => {
       // Arrange
       mockSupabaseService.auth.logoff$.and.returnValue(of({error: null}));
-      
-      const mockUserDataHandlerService = (service as any).userBoxService;
       
       tick();
       
