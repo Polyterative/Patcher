@@ -11,10 +11,56 @@ import {
   getPanelAnalysisDimensions,
   releaseDecodedPanelImage
 } from './module-editor-data.utils';
+import { CV } from 'src/app/models/cv';
+import { DbModule } from 'src/app/models/module';
 
-const makeCV = (id: number, name: string, min: number | null = null, max: number | null = null, isApproved = false) => ({
-  id, name, min, max, isApproved
-} as any);
+function makeCV(
+  id: number,
+  name: string,
+  min: number | null = null,
+  max: number | null = null,
+  isApproved = false
+): CV {
+  return {
+    id,
+    name,
+    ...(min === null ? {} : {min}),
+    ...(max === null ? {} : {max}),
+    isApproved
+  };
+}
+
+function makeDbModule(partial: Partial<DbModule> = {}): DbModule {
+  return {
+    id: 1,
+    name: 'Test Module',
+    hp: 4,
+    ins: [],
+    outs: [],
+    switches: [],
+    manualURL: '',
+    store_url: null,
+    additional: null,
+    isComplete: false,
+    isApproved: false,
+    isDIY: false,
+    powerPos12: 0,
+    powerNeg12: 0,
+    powerPos5: 0,
+    depth: 0,
+    weight: 0,
+    public: true,
+    manufacturer: {id: 1, name: 'Test Manufacturer'},
+    manufacturerId: 1,
+    standard: {id: 1, name: '3U'},
+    tags: [],
+    panels: [],
+    description: '',
+    created: '',
+    updated: '',
+    ...partial
+  };
+}
 
 describe('module-editor-data.utils', () => {
   describe('toComparableCv', () => {
@@ -29,7 +75,7 @@ describe('module-editor-data.utils', () => {
     });
 
     it('uses defaults for null input fields', () => {
-      const result = toComparableCv(null as any);
+      const result = toComparableCv(null);
       expect(result.id).toBe(0);
       expect(result.name).toBe('');
     });
@@ -54,12 +100,12 @@ describe('module-editor-data.utils', () => {
   describe('hasInsOutsChanges', () => {
     it('returns false when ins/outs match module', () => {
       const cv = makeCV(1, 'A');
-      const module = { ins: [cv], outs: [] } as any;
+      const module = makeDbModule({ins: [cv], outs: []});
       expect(hasInsOutsChanges([cv], [], module)).toBeFalse();
     });
 
     it('returns true when ins differ', () => {
-      const module = { ins: [], outs: [] } as any;
+      const module = makeDbModule({ins: [], outs: []});
       expect(hasInsOutsChanges([makeCV(1, 'X')], [], module)).toBeTrue();
     });
   });
@@ -155,12 +201,12 @@ describe('module-editor-data.utils', () => {
 
   describe('releaseDecodedPanelImage', () => {
     it('calls close() if available', () => {
-      const mockImage = { close: jasmine.createSpy('close') } as any;
+      const mockImage = { close: jasmine.createSpy('close') } satisfies Pick<ImageBitmap, 'close'>;
       releaseDecodedPanelImage(mockImage);
       expect(mockImage.close).toHaveBeenCalled();
     });
     it('does not throw when close is not available', () => {
-      expect(() => releaseDecodedPanelImage({} as any)).not.toThrow();
+      expect(() => releaseDecodedPanelImage(document.createElement('img'))).not.toThrow();
     });
   });
 });
