@@ -56,9 +56,9 @@
 
 - [ ] Rack module orientation storage: authorize the reviewed `text` → `smallint`
   schema/typegen/backend migration after preflight; no RLS/policy changes are expected
-  ([plan](./plans/rack-module-orientation-smallint-storage-migration.md)).
-- [ ] Cloudflare/R2: authorize traffic switch, cleanup, and any Supabase object deletion after the approved copy/verification stage.
-- [ ] PostHog analytics review: provide credentials/export access.
+  ([plan](./plans/rack-module-orientation-smallint-storage-migration.md)) (added 2026-07-19).
+- [ ] Cloudflare/R2: authorize traffic switch, cleanup, and any Supabase object deletion after the approved copy/verification stage (added 2026-07-08).
+- [ ] PostHog analytics review: provide credentials/export access (added 2026-07-08).
 
 ### Denials / permanent constraints
 
