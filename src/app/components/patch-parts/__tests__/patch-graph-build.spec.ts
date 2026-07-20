@@ -4,7 +4,6 @@ import {
   CVwithModule
 } from 'src/app/models/cv';
 import { DbModule } from 'src/app/models/module';
-import { Patch } from 'src/app/models/patch';
 import {
   buildPatchGraphData,
   buildCvNodeId,
@@ -13,6 +12,11 @@ import {
   extractPatchGraphModuleInstances,
   moduleInstanceKey,
 } from '../patch-graph/patch-graph-build.utils';
+import {
+  cvWithModuleFixture,
+  dbModuleFixture,
+  patchFixture
+} from '../patch-graph/patch-graph-test-fixtures';
 
 
 const palette = {
@@ -31,23 +35,11 @@ function makeCv(id: number, name: string): CV {
 }
 
 function makeModule(id: number, name: string, ins: CV[], outs: CV[]): DbModule {
-  return {
-    id,
-    name,
-    ins,
-    outs
-  } as DbModule;
+  return dbModuleFixture(id, name, ins, outs);
 }
 
 function makeCVwithModule(cvId: number, moduleId: number, moduleName: string): CVwithModule {
-  return {
-    id: cvId,
-    name: `CV ${ cvId }`,
-    module: {
-      id: moduleId,
-      name: moduleName
-    } as any
-  };
+  return cvWithModuleFixture(cvId, moduleId, moduleName);
 }
 
 function makeConnection(
@@ -63,7 +55,7 @@ function makeConnection(
   return {
     a: makeCVwithModule(aCv, aModule, aModuleName),
     b: makeCVwithModule(bCv, bModule, bModuleName),
-    patch: {id: 1} as Patch,
+    patch: patchFixture(),
     instance_id_a: instanceA,
     instance_id_b: instanceB
   };

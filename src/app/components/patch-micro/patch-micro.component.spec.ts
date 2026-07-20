@@ -1,5 +1,6 @@
 import { PatchMicroComponent } from './patch-micro.component';
 import { defaultPatchMinimalViewConfig } from '../patch-parts/patch-minimal/patch-minimal.component';
+import { patchFixture } from '../patch-parts/patch-graph/patch-graph-test-fixtures';
 
 describe('PatchMicroComponent', () => {
   let comp: PatchMicroComponent;
@@ -25,7 +26,7 @@ describe('PatchMicroComponent', () => {
   });
 
   it('data input can be assigned', () => {
-    const patch = {id: 9, name: 'Bassline'} as any;
+    const patch = patchFixture(9, {name: 'Bassline'});
     comp.data = patch;
     expect(comp.data).toBe(patch);
   });

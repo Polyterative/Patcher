@@ -1,10 +1,14 @@
 import { PatchConnection } from 'src/app/models/connection';
 import { CVwithModule } from 'src/app/models/cv';
 import { PatchConnectionStatsPipe } from './patch-connection-stats.pipe';
+import {
+  cvWithModuleFixture,
+  patchFixture
+} from './patch-graph/patch-graph-test-fixtures';
 
 
 function makeCV(id: number, moduleId: number): CVwithModule {
-  return {id, name: `cv-${ id }`, module: {id: moduleId} as any};
+  return cvWithModuleFixture(id, moduleId, `Module ${ moduleId }`, `cv-${ id }`);
 }
 
 function makeConnection(
@@ -17,7 +21,7 @@ function makeConnection(
   } = {}
 ): PatchConnection {
   return {
-    patch: {} as any,
+    patch: patchFixture(),
     a: makeCV(aId, aModuleId),
     b: makeCV(bId, bModuleId),
     ...opts

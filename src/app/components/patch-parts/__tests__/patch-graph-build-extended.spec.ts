@@ -9,7 +9,11 @@ import {
 import { PatchConnection } from 'src/app/models/connection';
 import { CVwithModule } from 'src/app/models/cv';
 import { DbModule } from 'src/app/models/module';
-import { Patch } from 'src/app/models/patch';
+import {
+  cvWithModuleFixture,
+  dbModuleFixture,
+  patchFixture
+} from '../patch-graph/patch-graph-test-fixtures';
 
 
 const palette = {
@@ -21,7 +25,7 @@ const palette = {
 };
 
 function cv(id: number, moduleId: number, name = `cv${ id }`): CVwithModule {
-  return {id, name, module: {id: moduleId, name: `Mod${ moduleId }`} as any};
+  return cvWithModuleFixture(id, moduleId, `Mod${ moduleId }`, name);
 }
 
 function conn(
@@ -32,19 +36,19 @@ function conn(
   return {
     a: cv(aId, aMod),
     b: cv(bId, bMod),
-    patch: {id: 1} as Patch,
+    patch: patchFixture(),
     instance_id_a: iA,
     instance_id_b: iB
   };
 }
 
 function mod(id: number, ins: number[], outs: number[]): DbModule {
-  return {
+  return dbModuleFixture(
     id,
-    name: `Module${ id }`,
-    ins: ins.map(i => ({id: i, name: `in${ i }`})),
-    outs: outs.map(o => ({id: o, name: `out${ o }`}))
-  } as DbModule;
+    `Module${ id }`,
+    ins.map(i => ({id: i, name: `in${ i }`})),
+    outs.map(o => ({id: o, name: `out${ o }`}))
+  );
 }
 
 

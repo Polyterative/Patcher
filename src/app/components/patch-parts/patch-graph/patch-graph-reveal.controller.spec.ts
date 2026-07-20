@@ -1,22 +1,36 @@
 import { PatchGraphRevealController } from './patch-graph-reveal.controller';
+import {
+  GraphEdge,
+  GraphNode
+} from 'src/app/shared-interproject/components/@visual/graph-view/graph.component';
+import {
+  graphEdgeFixture,
+  graphNodeFixture
+} from './patch-graph-test-fixtures';
 
-const makeNode = (id: string, type: string): any => ({ id, label: id, data: { type } });
-const makeEdge = (id: string, from: string, to: string, stage: string): any => ({ id, from, to, data: { stage } });
+const makeNode = (id: string, type: string): GraphNode => graphNodeFixture(id, type);
+const makeEdge = (id: string, from: string, to: string, stage: string): GraphEdge =>
+  graphEdgeFixture(id, from, to, stage);
+
+interface StartFlowCall {
+  visible: GraphEdge[];
+  flow: GraphEdge[];
+}
 
 describe('PatchGraphRevealController', () => {
   let controller: PatchGraphRevealController;
-  let emittedNodes: any[][];
-  let emittedEdges: any[][];
-  let startFlowCalls: any[];
+  let emittedNodes: GraphNode[][];
+  let emittedEdges: GraphEdge[][];
+  let startFlowCalls: StartFlowCall[];
 
   beforeEach(() => {
     emittedNodes = [];
     emittedEdges = [];
     startFlowCalls = [];
     const callbacks = {
-      emitNodes: (nodes: any[]) => emittedNodes.push(nodes),
-      emitEdges: (edges: any[]) => emittedEdges.push(edges),
-      startFlow: (visible: any[], flow: any[]) => startFlowCalls.push({ visible, flow })
+      emitNodes: (nodes: GraphNode[]) => emittedNodes.push(nodes),
+      emitEdges: (edges: GraphEdge[]) => emittedEdges.push(edges),
+      startFlow: (visible: GraphEdge[], flow: GraphEdge[]) => startFlowCalls.push({ visible, flow })
     };
     controller = new PatchGraphRevealController(callbacks, { stageBridgeColor: '#ff0000' });
     jasmine.clock().install();
@@ -39,17 +53,16 @@ describe('PatchGraphRevealController', () => {
     const nodes = [makeNode('m1', 'module')];
     controller.reveal(nodes, []);
     expect(emittedNodes.length).toBeGreaterThan(0);
-    expect(emittedNodes[0].some((n: any) => n.id === 'm1')).toBe(true);
+    expect(emittedNodes[0].some(n => n.id === 'm1')).toBe(true);
   });
 
   it('cancel clears pending timers', () => {
     const nodes = [makeNode('m1', 'module'), makeNode('cv1', 'cv-out')];
-    const callCountBefore = emittedNodes.length;
     controller.reveal(nodes, []);
+    const emitCountAfterCancel = emittedNodes.length;
     controller.cancel();
     jasmine.clock().tick(2000);
-    // After cancel, no extra emits should happen from timers
-    expect(emittedNodes.length).toBe(callCountBefore + emittedNodes.length - callCountBefore);
+    expect(emittedNodes.length).toBe(emitCountAfterCancel);
   });
 
   it('handles reveal called multiple times without error', () => {
@@ -89,7 +102,9 @@ describe('PatchGraphRevealController', () => {
     controller.reveal(nodes, edges);
     jasmine.clock().tick(2000);
 
-    expect(startFlowCalls.length).toBeGreaterThanOrEqual(0);
+    expect(startFlowCalls.length).toBe(1);
+    expect(startFlowCalls[0].visible.map(edge => edge.id)).toContain('patch1');
+    expect(startFlowCalls[0].flow.map(edge => edge.id)).toEqual(['patch1']);
   });
 
   it('module-bridge edges are visible on the first emit', () => {
@@ -99,7 +114,7 @@ describe('PatchGraphRevealController', () => {
     controller.reveal(nodes, edges);
 
     const firstEdgeEmit = emittedEdges[0];
-    expect(firstEdgeEmit.some((e: any) => e.id === 'bridge1')).toBeTrue();
+    expect(firstEdgeEmit.some(e => e.id === 'bridge1')).toBeTrue();
   });
 
   it('cv-out nodes appear after tick', () => {
@@ -108,12 +123,12 @@ describe('PatchGraphRevealController', () => {
 
     controller.reveal(nodes, edges);
     const nodesBeforeTick = emittedNodes[emittedNodes.length - 1];
-    const hadCvOut = nodesBeforeTick.some((n: any) => n.id === 'cv-out-1');
+    const hadCvOut = nodesBeforeTick.some(n => n.id === 'cv-out-1');
 
     jasmine.clock().tick(1000);
 
     const nodesAfterTick = emittedNodes[emittedNodes.length - 1];
-    expect(nodesAfterTick.some((n: any) => n.id === 'cv-out-1')).toBeTrue();
+    expect(nodesAfterTick.some(n => n.id === 'cv-out-1')).toBeTrue();
     // cv-out should not have appeared before the tick
     expect(hadCvOut).toBeFalse();
   });

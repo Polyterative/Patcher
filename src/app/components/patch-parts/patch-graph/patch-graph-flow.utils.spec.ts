@@ -3,10 +3,22 @@ import {
   interpolateHexColor,
   baseColorForPatchGraphEdge
 } from './patch-graph-flow.utils';
+import { GraphEdge } from 'src/app/shared-interproject/components/@visual/graph-view/graph.component';
 
 const makePalette = () => ({
   flowBaseColor: '#ff0000',
   moduleJackEdgeColor: '#0000ff'
+});
+
+const makeEdge = (data: Record<string, unknown> = {}): GraphEdge => ({
+  id: 'e1',
+  from: 'a',
+  to: 'b',
+  label: '',
+  color: '#ffffff',
+  size: 1,
+  type: 'arrow',
+  data
 });
 
 describe('patch-graph-flow.utils', () => {
@@ -58,19 +70,19 @@ describe('patch-graph-flow.utils', () => {
     const palette = makePalette();
 
     it('returns base flow color for normal edge', () => {
-      const edge: any = { id: 'e1', from: 'a', to: 'b', data: {} };
+      const edge = makeEdge();
       expect(baseColorForPatchGraphEdge(edge, palette)).toBe(palette.flowBaseColor);
     });
 
     it('returns hidden color for hidden edge', () => {
-      const edge: any = { id: 'e1', from: 'a', to: 'b', data: { hidden: true } };
+      const edge = makeEdge({ hidden: true });
       const result = baseColorForPatchGraphEdge(edge, palette);
       expect(typeof result).toBe('string');
       expect(result).not.toBe(palette.flowBaseColor);
     });
 
     it('returns moduleJackEdgeColor for MODULE_TO_CV_OUT stage', () => {
-      const edge: any = { id: 'e1', from: 'a', to: 'b', data: { stage: 'module-to-cv-out' } };
+      const edge = makeEdge({ stage: 'module-to-cv-out' });
       expect(baseColorForPatchGraphEdge(edge, palette)).toBe(palette.moduleJackEdgeColor);
     });
   });
