@@ -87,7 +87,7 @@ describe('SSOButtonsComponent', () => {
   
   it('getAriaLabel falls back to "Continue with X" when no ariaLabel configured', () => {
     // Override config to simulate missing ariaLabel
-    (component as any).config['google'] = {name: 'Google', icon: '', color: '#DB4437'};
+    component.config.google = {name: 'Google', icon: '', color: '#DB4437'};
     expect(component.getAriaLabel('google')).toBe('Continue with Google');
   });
   

@@ -7,7 +7,7 @@ function mockService(): HeroInfoBoxService {
     infoText$: new BehaviorSubject(''),
     hoverStart$: new Subject<string>(),
     hoverEnd$: new Subject<string>()
-  } as unknown as HeroInfoBoxService;
+  };
 }
 
 describe('HeroInfoBoxComponent', () => {
@@ -29,6 +29,6 @@ describe('HeroInfoBoxComponent', () => {
 
 
   it('infoText$ is defined in the injected service', () => {
-    expect((service as any).infoText$).toBeDefined();
+    expect(service.infoText$).toBeDefined();
   });
 });
