@@ -1,9 +1,38 @@
 import { TotalPlacedModulesOfRackPipe } from './total-placed-modules-of-rack.pipe';
-import { RackedModule } from '../../models/module';
+import { DbModule, RackedModule } from '../../models/module';
+
+const makeDbModule = (id: number): DbModule => ({
+  id,
+  created: '',
+  updated: '',
+  name: `Module ${ id }`,
+  description: '',
+  hp: 4,
+  public: true,
+  manufacturer: { id: 1, name: 'Test Maker' },
+  manufacturerId: 1,
+  standard: { id: 0, name: 'Eurorack' },
+  tags: [],
+  panels: [],
+  ins: [],
+  outs: [],
+  switches: [],
+  manualURL: '',
+  store_url: null,
+  additional: null,
+  isComplete: true,
+  isApproved: true,
+  isDIY: false,
+  powerPos12: null,
+  powerNeg12: null,
+  powerPos5: null,
+  depth: 0,
+  weight: 0
+});
 
 const makeModule = (id: number, row: number | null | undefined, col: number | null | undefined): RackedModule => ({
-  module: { id, hp: 4 } as any,
-  rackingData: { id: 1, row, column: col, rackid: 1, moduleid: id } as any
+  module: makeDbModule(id),
+  rackingData: { id: 1, row, column: col, rackid: 1, moduleid: id }
 });
 
 const BLANK_ID = 4647;

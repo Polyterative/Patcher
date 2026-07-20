@@ -18,7 +18,7 @@ import { TotalDepthOfRackPipe } from './total-depth-of-rack.pipe';
 import { TotalMissingPowerDataInRackPipe } from './total-missing-power-data-in-rack.pipe';
 import { HasUnrackedModulesListPipe } from './rack-editor/rack-visual-model/has-unracked-modules-list.pipe';
 import { CalculateRowInformationPipe } from './rack-editor/calculate-row-information.pipe';
-import { RackedModule } from '../../models/module';
+import { DbModule, RackedModule } from '../../models/module';
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 
@@ -30,15 +30,35 @@ function makeModule(id: number, hp: number, overrides: Partial<{
   powerNeg12: number | null;
   powerPos5: number | null;
   depth: number | null;
-}> = {}): RackedModule['module'] {
+}> = {}): DbModule {
   return {
     id,
+    created: '',
+    updated: '',
+    name: `Module ${ id }`,
+    description: '',
     hp,
+    public: true,
+    manufacturer: { id: 1, name: 'Test Maker' },
+    manufacturerId: 1,
+    standard: { id: 0, name: 'Eurorack' },
+    tags: [],
+    panels: [],
+    ins: [],
+    outs: [],
+    switches: [],
+    manualURL: '',
+    store_url: null,
+    additional: null,
+    isComplete: true,
+    isApproved: true,
+    isDIY: false,
     powerPos12: overrides.powerPos12 !== undefined ? overrides.powerPos12 : 50,
     powerNeg12: overrides.powerNeg12 !== undefined ? overrides.powerNeg12 : 30,
     powerPos5:  overrides.powerPos5  !== undefined ? overrides.powerPos5  : 10,
     depth:      overrides.depth      !== undefined ? overrides.depth      : 40,
-  } as any;
+    weight: 0
+  };
 }
 
 function makeRacked(
@@ -50,7 +70,7 @@ function makeRacked(
 ): RackedModule {
   return {
     module: makeModule(id, hp, moduleOverrides),
-    rackingData: { id: id * 10, rackid: 1, moduleid: id, row, column: col } as any,
+    rackingData: { id: id * 10, rackid: 1, moduleid: id, row, column: col },
   };
 }
 
@@ -277,7 +297,7 @@ describe('HasUnrackedModulesListPipe', () => {
   it('returns true when a module has undefined row', () => {
     const rack: RackedModule[][] = [[{
       module: makeModule(1, 4),
-      rackingData: { id: 10, rackid: 1, moduleid: 1, row: undefined as any, column: 0 },
+      rackingData: { id: 10, rackid: 1, moduleid: 1, row: undefined, column: 0 },
     }]];
     expect(pipe.transform(rack)).toBe(true);
   });

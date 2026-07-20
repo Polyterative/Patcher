@@ -2,8 +2,45 @@ import {
   buildRackPowerHeatmapVisuals,
   rackPowerHeatmapKey
 } from './rack-power-heatmap.utils';
+import { DbModule, RackedModule } from '../../models/module';
 
 describe('rackPowerHeatmapUtils', () => {
+  function makeDbModule(
+    moduleId: number,
+    powerPos12: number | null,
+    powerNeg12: number | null,
+    powerPos5: number | null
+  ): DbModule {
+    return {
+      id: moduleId,
+      created: '',
+      updated: '',
+      name: `Module ${ moduleId }`,
+      description: '',
+      hp: 8,
+      public: true,
+      manufacturer: { id: 1, name: 'Test Maker' },
+      manufacturerId: 1,
+      standard: { id: 0, name: 'Eurorack' },
+      tags: [],
+      panels: [],
+      ins: [],
+      outs: [],
+      switches: [],
+      manualURL: '',
+      store_url: null,
+      additional: null,
+      isComplete: true,
+      isApproved: true,
+      isDIY: false,
+      powerPos12,
+      powerNeg12,
+      powerPos5,
+      depth: 0,
+      weight: 0
+    };
+  }
+
   function makeRackedModule(
     moduleId: number,
     row: number,
@@ -11,17 +48,13 @@ describe('rackPowerHeatmapUtils', () => {
     powerPos12: number | null,
     powerNeg12: number | null,
     powerPos5: number | null
-  ): any {
+  ): RackedModule {
     return {
-      module: {
-        id: moduleId,
-        hp: 8,
-        powerPos12,
-        powerNeg12,
-        powerPos5
-      },
+      module: makeDbModule(moduleId, powerPos12, powerNeg12, powerPos5),
       rackingData: {
         id: row * 10 + column + 1,
+        rackid: 1,
+        moduleid: moduleId,
         row,
         column
       }
@@ -102,18 +135,16 @@ describe('rackPowerHeatmapUtils', () => {
   });
 
   it('rackPowerHeatmapKey encodes id|moduleId|row|column', () => {
-    const rm: any = {
-      module: {id: 7},
-      rackingData: {id: 3, row: 1, column: 4}
-    };
+    const rm = makeRackedModule(7, 1, 4, 0, 0, 0);
+    rm.rackingData.id = 3;
+
     expect(rackPowerHeatmapKey(rm)).toBe('3|7|1|4');
   });
 
   it('rackPowerHeatmapKey uses na for missing rackingData id', () => {
-    const rm: any = {
-      module: {id: 5},
-      rackingData: {id: undefined, row: 0, column: 0}
-    };
+    const rm = makeRackedModule(5, 0, 0, 0, 0, 0);
+    rm.rackingData.id = undefined;
+
     expect(rackPowerHeatmapKey(rm)).toBe('na|5|0|0');
   });
 });

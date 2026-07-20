@@ -1,8 +1,37 @@
 import { TotalHpOfRackPipe } from './total-hp-of-rack.pipe';
-import { RackedModule } from '../../models/module';
+import { DbModule, RackedModule } from '../../models/module';
+
+const makeDbModule = (id: number, hp: number): DbModule => ({
+  id,
+  created: '',
+  updated: '',
+  name: `Module ${ id }`,
+  description: '',
+  hp,
+  public: true,
+  manufacturer: { id: 1, name: 'Test Maker' },
+  manufacturerId: 1,
+  standard: { id: 0, name: 'Eurorack' },
+  tags: [],
+  panels: [],
+  ins: [],
+  outs: [],
+  switches: [],
+  manualURL: '',
+  store_url: null,
+  additional: null,
+  isComplete: true,
+  isApproved: true,
+  isDIY: false,
+  powerPos12: null,
+  powerNeg12: null,
+  powerPos5: null,
+  depth: 0,
+  weight: 0
+});
 
 const makeModule = (id: number, hp: number): RackedModule => ({
-  module: { id, hp } as any,
+  module: makeDbModule(id, hp),
   rackingData: { id: 1, row: 0, column: 0, rackid: 1, moduleid: id }
 });
 
@@ -46,8 +75,8 @@ describe('TotalHpOfRackPipe', () => {
 
   it('includes unracked real modules in total HP', () => {
     const unracked = makeModule(1, 12);
-    unracked.rackingData.row = null as any;
-    unracked.rackingData.column = null as any;
+    unracked.rackingData.row = null;
+    unracked.rackingData.column = null;
     expect(pipe.transform([[unracked]])).toBe(12);
   });
 

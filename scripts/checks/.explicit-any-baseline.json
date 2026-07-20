@@ -1,6 +1,6 @@
 {
   "_comment": "Grandfathered explicit `any` counts. Do not add by hand — run `node scripts/checks/check-explicit-any.cjs --update-baseline` after intentional cleanup.",
-  "totalExplicitAny": 2522,
+  "totalExplicitAny": 2504,
   "files": {
     "api/sitemap.ts": 3,
     "e2e/auth-rack-context-menu.spec.ts": 6,
@@ -58,15 +58,8 @@
     "src/app/components/rack-parts/rack-editor/rack-visual-model/rack-visual-model.utils.spec.ts": 5,
     "src/app/components/rack-parts/rack-minimal/rack-minimal.component.spec.ts": 2,
     "src/app/components/rack-parts/rack-module-adder/rack-module-adder-dialog.component.spec.ts": 9,
-    "src/app/components/rack-parts/rack-pipes-extra.spec.ts": 2,
-    "src/app/components/rack-parts/rack-pipes.spec.ts": 3,
-    "src/app/components/rack-parts/rack-power-data.utils.spec.ts": 2,
-    "src/app/components/rack-parts/rack-power-heatmap.utils.spec.ts": 3,
     "src/app/components/rack-parts/rack-signal-analysis.helpers.spec.ts": 7,
     "src/app/components/rack-parts/rack-stats-blank-filter.spec.ts": 15,
-    "src/app/components/rack-parts/total-hp-of-rack.pipe.spec.ts": 3,
-    "src/app/components/rack-parts/total-modules-of-rack.pipe.spec.ts": 3,
-    "src/app/components/rack-parts/total-placed-modules-of-rack.pipe.spec.ts": 2,
     "src/app/features/backbone/home/application-statistics.utils.spec.ts": 8,
     "src/app/features/backbone/home/home.component.spec.ts": 6,
     "src/app/features/backbone/login/__tests__/user-management-service/account-actions.spec.ts": 8,

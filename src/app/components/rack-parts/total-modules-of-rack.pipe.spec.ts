@@ -1,11 +1,42 @@
-import { RackedModule } from '../../models/module';
+import { DbModule, RackedModule } from '../../models/module';
 import { TotalModulesOfRackPipe } from './total-modules-of-rack.pipe';
 
+
+function makeDbModule(id: number): DbModule {
+  return {
+    id,
+    created: '',
+    updated: '',
+    name: `Module ${ id }`,
+    description: '',
+    hp: 4,
+    public: true,
+    manufacturer: {id: 1, name: 'Test Maker'},
+    manufacturerId: 1,
+    standard: {id: 0, name: 'Eurorack'},
+    tags: [],
+    panels: [],
+    ins: [],
+    outs: [],
+    switches: [],
+    manualURL: '',
+    store_url: null,
+    additional: null,
+    isComplete: true,
+    isApproved: true,
+    isDIY: false,
+    powerPos12: null,
+    powerNeg12: null,
+    powerPos5: null,
+    depth: 0,
+    weight: 0
+  };
+}
 
 function makeRackedModule(id: number): RackedModule {
   return {
     rackingData: {id: 1, rackid: 1, moduleid: id, row: 0, column: 0},
-    module: {id, hp: 4} as any
+    module: makeDbModule(id)
   };
 }
 
@@ -40,8 +71,8 @@ describe('TotalModulesOfRackPipe', () => {
 
   it('counts unracked real modules because they are still rack modules', () => {
     const unracked = makeRackedModule(42);
-    unracked.rackingData.row = null as any;
-    unracked.rackingData.column = null as any;
+    unracked.rackingData.row = null;
+    unracked.rackingData.column = null;
     expect(pipe.transform([[unracked]])).toBe(1);
   });
 
