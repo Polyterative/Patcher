@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { buildImportRows, filterRowsWithConflictingProductUrls, filterRowsWithExistingModules, readCliOptions } from '../price-hub/import-local-snapshots.ts';
+import { applyDisappearanceDeactivation, buildActiveListingRefreshRows, buildImportRows, calculateStaggeredNextCheckAt, filterRowsWithConflictingProductUrls, filterRowsWithExistingModules, importRows, planDisappearanceDeactivation, readCliOptions } from '../price-hub/import-local-snapshots.ts';
+import { assertSupabaseWriteKeyCanWrite, readSupabaseJwtRole } from '../price-hub/local-env.ts';
 
 test('builds import rows only from strong matches with matching products', () => {
   const productUrl = 'https://signalsounds.eu/noise-engineering-melotus-versio-eurorack-stereo-grnaular-processor-module-black';
@@ -119,9 +120,22 @@ test('requires explicit import paths and allows dry run without a write key', ()
   assert.equal(options.supabaseUrl, 'https://sozmatmywjpstwidzlss.supabase.co');
   assert.equal(options.supabaseKey, '');
   assert.equal(options.dryRun, true);
+  assert.equal(options.fullCatalog, false);
 });
 
-test('reads Supabase write key aliases and explicit import credentials', () => {
+test('accepts explicit full-catalog mode for disappearance deactivation', () => {
+  const options = readCliOptions([
+    '--store=signal-sounds-uk',
+    '--products=products.json',
+    '--matches=matches.json',
+    '--dry-run',
+    '--full-catalog',
+  ], {});
+
+  assert.equal(options.fullCatalog, true);
+});
+
+test('reads only service-role aliases as default write credentials', () => {
   const anonOptions = readCliOptions([
     '--store=signal-sounds-uk',
     '--products=products.json',
@@ -130,7 +144,7 @@ test('reads Supabase write key aliases and explicit import credentials', () => {
     SUPABASE_ANON_KEY: 'anon-key',
   });
 
-  assert.equal(anonOptions.supabaseKey, 'anon-key');
+  assert.equal(anonOptions.supabaseKey, '');
 
   const aliasOptions = readCliOptions([
     '--store=signal-sounds-uk',
@@ -152,6 +166,24 @@ test('reads Supabase write key aliases and explicit import credentials', () => {
   });
 
   assert.equal(explicitOptions.supabaseKey, 'explicit-service-key');
+});
+
+test('rejects anon and authenticated JWT keys for live write imports', () => {
+  const anonKey = jwtForRole('anon');
+  const authenticatedKey = jwtForRole('authenticated');
+  const serviceRoleKey = jwtForRole('service_role');
+
+  assert.equal(readSupabaseJwtRole(anonKey), 'anon');
+  assert.equal(readSupabaseJwtRole(serviceRoleKey), 'service_role');
+  assert.throws(
+    () => assertSupabaseWriteKeyCanWrite(anonKey, 'help'),
+    /anon keys are read-only/,
+  );
+  assert.throws(
+    () => assertSupabaseWriteKeyCanWrite(authenticatedKey, 'help'),
+    /authenticated keys are read-only/,
+  );
+  assert.doesNotThrow(() => assertSupabaseWriteKeyCanWrite(serviceRoleKey, 'help'));
 });
 
 test('skips strong matches when the source has no usable price', () => {
@@ -201,6 +233,167 @@ test('skips strong matches when the source has no usable price', () => {
   assert.equal(rows.length, 1);
   assert.equal(rows[0].moduleId, 5349);
   assert.equal(rows[0].priceAmountMinor, 5500);
+});
+
+test('builds refresh rows for observed active listings without current strong matches', () => {
+  const productUrl = 'https://schneidersladen.de/en/doepfer-a-121d-multimode-dual-filter-silver';
+  const rows = buildActiveListingRefreshRows([
+    productSnapshot(productUrl, 'Doepfer A-121d Multimode Dual Filter Silver', 15900),
+  ], [
+    { module_id: 3438, product_url: `${productUrl}/` },
+  ]);
+
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].moduleId, 3438);
+  assert.equal(rows[0].productUrl, productUrl);
+  assert.equal(rows[0].rawMeta.priceHubRefreshSource, 'active_listing');
+});
+
+test('does not duplicate active listing refresh rows already covered by accepted matches', () => {
+  const productUrl = 'https://schneidersladen.de/en/doepfer-a-121d-multimode-dual-filter-silver';
+  const existingRow = {
+    moduleId: 3438,
+    productUrl,
+    productName: 'Doepfer A-121d Multimode Dual Filter Silver',
+    priceAmountMinor: 15900,
+    currency: 'EUR',
+    availability: 'in_stock',
+    externalProductId: null,
+    externalHandle: 'doepfer-a-121d-multimode-dual-filter-silver',
+    rawMeta: {},
+  };
+  const rows = buildActiveListingRefreshRows([
+    productSnapshot(productUrl, 'Doepfer A-121d Multimode Dual Filter Silver', 15900),
+  ], [
+    { module_id: 3438, product_url: `${productUrl}/` },
+  ], [
+    existingRow,
+  ]);
+
+  assert.deepEqual(rows, []);
+});
+
+test('does not duplicate active listing refresh rows when the crawl repeats a product URL', () => {
+  const productUrl = 'https://schneidersladen.de/en/ritual-electronics-pointeuse';
+  const rows = buildActiveListingRefreshRows([
+    productSnapshot(productUrl, 'Ritual Electronics Pointeuse', 10500),
+    productSnapshot(`${productUrl}/`, 'Ritual Electronics Pointeuse', 10500),
+  ], [
+    { module_id: 10623, product_url: productUrl },
+  ]);
+
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].moduleId, 10623);
+});
+
+test('does not add active listing refresh rows for modules already covered by accepted matches', () => {
+  const refreshUrl = 'https://schneidersladen.de/en/doepfer-a-121d-multimode-dual-filter-silver';
+  const matchedUrl = 'https://schneidersladen.de/en/doepfer-a-121d-multimode-dual-filter-black';
+  const existingRow = {
+    moduleId: 3438,
+    productUrl: matchedUrl,
+    productName: 'Doepfer A-121d Multimode Dual Filter Black',
+    priceAmountMinor: 15900,
+    currency: 'EUR',
+    availability: 'in_stock',
+    externalProductId: null,
+    externalHandle: 'doepfer-a-121d-multimode-dual-filter-black',
+    rawMeta: {},
+  };
+  const rows = buildActiveListingRefreshRows([
+    productSnapshot(refreshUrl, 'Doepfer A-121d Multimode Dual Filter Silver', 15900),
+  ], [
+    { module_id: 3438, product_url: refreshUrl },
+  ], [
+    existingRow,
+  ]);
+
+  assert.deepEqual(rows, []);
+});
+
+test('imports observed active listing refresh rows when strong matches are empty', async () => {
+  const productUrl = 'https://store.example/products/doepfer-a-121d-multimode-dual-filter-silver';
+  const snapshots = [];
+  const supabase = mockActiveRefreshSupabase({
+    activeListings: [
+      { id: 31, module_id: 3438, product_url: `${productUrl}/` },
+    ],
+    snapshots,
+  });
+
+  const summary = await importRows(
+    supabase,
+    'signal-sounds-uk',
+    [],
+    undefined,
+    [productSnapshot(productUrl, 'Doepfer A-121d Multimode Dual Filter Silver', 15900)],
+  );
+
+  assert.equal(summary.acceptedMatches, 0);
+  assert.equal(summary.upsertedListings, 1);
+  assert.equal(summary.insertedSnapshots, 1);
+  assert.equal(snapshots.length, 1);
+  assert.equal(snapshots[0].listing_id, 31);
+  assert.equal(snapshots[0].price_amount_minor, 15900);
+  assert.equal(snapshots[0].raw_meta.priceHubRefreshSource, 'active_listing');
+});
+
+test('imports observed active listing refresh rows past the first active-listing page', async () => {
+  const productUrl = 'https://store.example/products/doepfer-a-121d-multimode-dual-filter-silver';
+  const snapshots = [];
+  const supabase = mockActiveRefreshSupabase({
+    activeListings: [
+      ...Array.from({ length: 500 }, (_, index) => ({
+        id: index + 1,
+        module_id: index + 1,
+        product_url: `https://store.example/products/other-${index}`,
+      })),
+      { id: 700, module_id: 3438, product_url: `${productUrl}/` },
+    ],
+    snapshots,
+  });
+
+  const summary = await importRows(
+    supabase,
+    'signal-sounds-uk',
+    [],
+    undefined,
+    [productSnapshot(productUrl, 'Doepfer A-121d Multimode Dual Filter Silver', 15900)],
+  );
+
+  assert.equal(summary.upsertedListings, 1);
+  assert.equal(summary.insertedSnapshots, 1);
+  assert.equal(snapshots[0].listing_id, 700);
+});
+
+test('marks observed active listings stale when the current product is below the import price floor', async () => {
+  const productUrl = 'https://store.example/products/make-noise-blank-panel-4hp';
+  const snapshots = [];
+  const updates = [];
+  const supabase = mockActiveRefreshSupabase({
+    activeListings: [
+      { id: 41, module_id: 3146, product_url: productUrl },
+    ],
+    snapshots,
+    updates,
+  });
+
+  const summary = await importRows(
+    supabase,
+    'signal-sounds-uk',
+    [],
+    undefined,
+    [productSnapshot(productUrl, 'Make Noise Blank Panel 4HP', 600)],
+  );
+
+  assert.equal(summary.upsertedListings, 0);
+  assert.equal(summary.insertedSnapshots, 0);
+  assert.equal(summary.deactivatedListings, 1);
+  assert.deepEqual(snapshots, []);
+  assert.equal(updates.length, 1);
+  assert.equal(updates[0].active, false);
+  assert.equal(updates[0].verification_status, 'stale');
+  assert.match(updates[0].last_error, /^not_importable_since_crawl:\d{4}-\d{2}-\d{2}$/);
 });
 
 test('prefers an in-stock panel variant and records variant ambiguity', () => {
@@ -325,6 +518,295 @@ test('skips import rows whose module ID is not present in Patcher', () => {
   assert.deepEqual(filtered.skippedUnknownModuleRows, [unknownRow]);
 });
 
+test('calculates deterministic future next-check staggering for imported listings', () => {
+  const importTime = '2026-07-07T09:00:00.000Z';
+  const identity = {
+    moduleId: 4831,
+    storeId: 10,
+    productUrl: 'https://signalsounds.eu/schlappi-engineering-nibbler-eurorack-digital-shift-register-module-silver/?variant=1#buy',
+  };
+
+  const firstNextCheck = calculateStaggeredNextCheckAt(importTime, identity);
+  const secondNextCheck = calculateStaggeredNextCheckAt(importTime, {
+    ...identity,
+    productUrl: 'https://signalsounds.eu/schlappi-engineering-nibbler-eurorack-digital-shift-register-module-silver/',
+  });
+  const offsetMs = Date.parse(firstNextCheck) - Date.parse(importTime);
+
+  assert.equal(firstNextCheck, secondNextCheck);
+  assert.ok(offsetMs >= 1000);
+  assert.ok(offsetMs <= 7 * 24 * 60 * 60 * 1000);
+});
+
+test('distributes different imported listings across the next-check window', () => {
+  const importTime = '2026-07-07T09:00:00.000Z';
+  const nextChecks = Array.from({ length: 24 }, (_, index) => calculateStaggeredNextCheckAt(importTime, {
+    moduleId: 1000 + index,
+    storeId: 10 + (index % 3),
+    productUrl: `https://store.example/products/module-${index}`,
+  }));
+  const uniqueNextChecks = new Set(nextChecks);
+
+  assert.ok(uniqueNextChecks.size > 18);
+  for (const nextCheck of nextChecks) {
+    const offsetMs = Date.parse(nextCheck) - Date.parse(importTime);
+    assert.ok(offsetMs >= 1000);
+    assert.ok(offsetMs <= 7 * 24 * 60 * 60 * 1000);
+  }
+});
+
+test('plans missing active listing deactivation only for full-catalog evidence', () => {
+  const now = '2026-07-07T08:00:00.000Z';
+  const observedUrls = Array.from({ length: 25 }, (_, index) => `https://store.example/products/module-${index}`);
+  const missingListing = {
+    id: 10,
+    module_id: 999,
+    product_url: 'https://store.example/products/retired-module/',
+  };
+  const skippedListing = {
+    id: 12,
+    module_id: 1001,
+    product_url: 'https://store.example/products/skipped-module/',
+  };
+  const keptListing = {
+    id: 11,
+    module_id: 1000,
+    product_url: 'https://store.example/products/module-1/',
+  };
+
+  const plan = planDisappearanceDeactivation(
+    [missingListing, keptListing],
+    observedUrls,
+    {
+      productCount: 25,
+      importRowCount: 5,
+      hitMaxProducts: false,
+      hasExplicitBounds: false,
+    },
+    now,
+  );
+
+  assert.equal(plan.eligible, true);
+  assert.equal(plan.reason, 'not_seen_since_full_catalog:2026-07-07');
+  assert.deepEqual(plan.listings, [missingListing]);
+
+  const skippedMetadataPlan = planDisappearanceDeactivation(
+    [missingListing, skippedListing, keptListing],
+    observedUrls,
+    {
+      productCount: 25,
+      importRowCount: 5,
+      hitMaxProducts: false,
+      skippedProducts: 1,
+      skippedProductUrls: [skippedListing.product_url],
+      hasExplicitBounds: false,
+    },
+    now,
+  );
+
+  assert.equal(skippedMetadataPlan.eligible, true);
+  assert.deepEqual(skippedMetadataPlan.listings, [missingListing]);
+
+  const goneSkippedMetadataPlan = planDisappearanceDeactivation(
+    [missingListing, skippedListing, keptListing],
+    observedUrls,
+    {
+      productCount: 25,
+      importRowCount: 5,
+      hitMaxProducts: false,
+      skippedProducts: 1,
+      skippedGoneProductUrls: [skippedListing.product_url],
+      hasExplicitBounds: false,
+    },
+    now,
+  );
+
+  assert.equal(goneSkippedMetadataPlan.eligible, true);
+  assert.deepEqual(goneSkippedMetadataPlan.listings, [missingListing, skippedListing]);
+});
+
+test('skips missing listing deactivation for partial or low-coverage crawls', () => {
+  const observedUrls = Array.from({ length: 25 }, (_, index) => `https://store.example/products/module-${index}`);
+  const existingListings = [{
+    id: 10,
+    module_id: 999,
+    product_url: 'https://store.example/products/retired-module/',
+  }];
+
+  const hitCapPlan = planDisappearanceDeactivation(existingListings, observedUrls, {
+    productCount: 25,
+    importRowCount: 5,
+    hitMaxProducts: true,
+    hasExplicitBounds: false,
+  });
+  assert.equal(hitCapPlan.eligible, false);
+  assert.match(hitCapPlan.skipReason, /hit --max-products/);
+  assert.deepEqual(hitCapPlan.listings, []);
+
+  const boundedPlan = planDisappearanceDeactivation(existingListings, observedUrls, {
+    productCount: 25,
+    importRowCount: 5,
+    hitMaxProducts: false,
+    hasExplicitBounds: true,
+  });
+  assert.equal(boundedPlan.eligible, false);
+  assert.match(boundedPlan.skipReason, /explicit bounds/);
+
+  const hitPageCapPlan = planDisappearanceDeactivation(existingListings, observedUrls, {
+    productCount: 25,
+    importRowCount: 5,
+    hitMaxProducts: false,
+    hitMaxPages: true,
+    hasExplicitBounds: false,
+  });
+  assert.equal(hitPageCapPlan.eligible, false);
+  assert.match(hitPageCapPlan.skipReason, /hit max pages/);
+
+  const skippedProductsPlan = planDisappearanceDeactivation(existingListings, observedUrls, {
+    productCount: 25,
+    importRowCount: 5,
+    hitMaxProducts: false,
+    skippedProducts: 1,
+    hasExplicitBounds: false,
+  });
+  assert.equal(skippedProductsPlan.eligible, false);
+  assert.match(skippedProductsPlan.skipReason, /without preserving all skipped URLs/);
+
+  const hitSitemapFileCapPlan = planDisappearanceDeactivation(existingListings, observedUrls, {
+    productCount: 25,
+    importRowCount: 5,
+    hitMaxProducts: false,
+    hitMaxSitemapFiles: true,
+    hasExplicitBounds: false,
+  });
+  assert.equal(hitSitemapFileCapPlan.eligible, false);
+  assert.match(hitSitemapFileCapPlan.skipReason, /max sitemap files/);
+
+  const lowCoveragePlan = planDisappearanceDeactivation(existingListings, observedUrls.slice(0, 24), {
+    productCount: 24,
+    importRowCount: 5,
+    hitMaxProducts: false,
+    hasExplicitBounds: false,
+  });
+  assert.equal(lowCoveragePlan.eligible, false);
+  assert.match(lowCoveragePlan.skipReason, /below deactivation minimum/);
+});
+
+test('dry-run disappearance deactivation reports count without writing', async () => {
+  const updates = [];
+  const supabase = mockDisappearanceSupabase(updates);
+
+  const summary = await applyDisappearanceDeactivation(
+    supabase,
+    'signal-sounds-uk',
+    Array.from({ length: 25 }, (_, index) => `https://store.example/products/module-${index}`),
+    {
+      productCount: 25,
+      importRowCount: 5,
+      hitMaxProducts: false,
+      hasExplicitBounds: false,
+    },
+    { dryRun: true },
+  );
+
+  assert.deepEqual(summary, {
+    deactivatedListings: 1,
+    deactivationSkippedReason: null,
+  });
+  assert.deepEqual(updates, []);
+});
+
+test('full-catalog disappearance deactivation writes stale inactive state for missing listings', async () => {
+  const updates = [];
+  const supabase = mockDisappearanceSupabase(updates);
+
+  const summary = await applyDisappearanceDeactivation(
+    supabase,
+    'signal-sounds-uk',
+    Array.from({ length: 25 }, (_, index) => `https://store.example/products/module-${index}`),
+    {
+      productCount: 25,
+      importRowCount: 5,
+      hitMaxProducts: false,
+      hasExplicitBounds: false,
+    },
+  );
+
+  assert.equal(summary.deactivatedListings, 1);
+  assert.equal(summary.deactivationSkippedReason, null);
+  assert.equal(updates.length, 1);
+  assert.equal(updates[0].active, false);
+  assert.equal(updates[0].verification_status, 'stale');
+  assert.match(updates[0].last_error, /^not_seen_since_full_catalog:\d{4}-\d{2}-\d{2}$/);
+});
+
+test('max-page-truncated disappearance evidence does not write stale inactive state', async () => {
+  const updates = [];
+  const supabase = mockDisappearanceSupabase(updates);
+
+  const summary = await applyDisappearanceDeactivation(
+    supabase,
+    'signal-sounds-uk',
+    Array.from({ length: 25 }, (_, index) => `https://store.example/products/module-${index}`),
+    {
+      productCount: 25,
+      importRowCount: 5,
+      hitMaxProducts: false,
+      hitMaxPages: true,
+      hasExplicitBounds: false,
+    },
+  );
+
+  assert.equal(summary.deactivatedListings, 0);
+  assert.match(summary.deactivationSkippedReason, /hit max pages/);
+  assert.deepEqual(updates, []);
+});
+
+test('skipped metadata product pages protect skipped active listings from stale deactivation', async () => {
+  const updates = [];
+  const supabase = mockDisappearanceSupabase(updates);
+  const skippedUrl = 'https://store.example/products/missing-module/';
+
+  const summary = await applyDisappearanceDeactivation(
+    supabase,
+    'signal-sounds-uk',
+    Array.from({ length: 25 }, (_, index) => `https://store.example/products/module-${index}`),
+    {
+      productCount: 25,
+      importRowCount: 5,
+      hitMaxProducts: false,
+      skippedProducts: 1,
+      skippedProductUrls: [skippedUrl],
+      hasExplicitBounds: false,
+    },
+  );
+
+  assert.equal(summary.deactivatedListings, 0);
+  assert.equal(summary.deactivationSkippedReason, null);
+  assert.deepEqual(updates, []);
+});
+
+test('partial disappearance deactivation does not write stale inactive state', async () => {
+  const updates = [];
+  const supabase = mockDisappearanceSupabase(updates);
+
+  const summary = await applyDisappearanceDeactivation(
+    supabase,
+    'signal-sounds-uk',
+    Array.from({ length: 25 }, (_, index) => `https://store.example/products/module-${index}`),
+    {
+      productCount: 25,
+      importRowCount: 5,
+      hitMaxProducts: true,
+      hasExplicitBounds: false,
+    },
+  );
+
+  assert.equal(summary.deactivatedListings, 0);
+  assert.match(summary.deactivationSkippedReason, /hit --max-products/);
+  assert.deepEqual(updates, []);
+});
+
 function productSnapshot(productUrl, productName, priceAmountMinor, overrides = {}) {
   const adapter = overrides.adapter ?? 'bigcommerce_metadata';
   const availability = overrides.availability ?? 'in_stock';
@@ -373,4 +855,214 @@ function matchCandidate(moduleId, productUrl, score, overrides = {}) {
     status: 'strong_candidate',
     reasons: ['module phrase found in product name'],
   };
+}
+
+function mockDisappearanceSupabase(updates) {
+  return {
+    from(table) {
+      if (table === 'stores') {
+        return {
+          select(columns) {
+            assert.equal(columns, 'id,slug,name,country_code,base_url,search_url_template,adapter_kind,currency_hint,active,price_tracking_enabled,rate_limit_per_day,created_at,updated_at');
+            return this;
+          },
+          eq(column, value) {
+            assert.equal(column, 'slug');
+            assert.equal(value, 'signal-sounds-uk');
+            return this;
+          },
+          async single() {
+            return {
+              data: {
+                id: 7,
+                slug: 'signal-sounds-uk',
+                name: 'Signal Sounds UK',
+                country_code: 'GB',
+                base_url: 'https://signalsounds.com/',
+                search_url_template: null,
+                adapter_kind: 'bigcommerce_metadata',
+                currency_hint: 'GBP',
+                active: true,
+                price_tracking_enabled: true,
+                rate_limit_per_day: 100,
+                created_at: '2026-07-07T00:00:00.000Z',
+                updated_at: '2026-07-07T00:00:00.000Z',
+              },
+              error: null,
+            };
+          },
+        };
+      }
+      if (table === 'module_store_listings') {
+        const listingQuery = {
+          select(columns) {
+            assert.equal(columns, 'id,module_id,product_url');
+            return this;
+          },
+          eq(column, value) {
+            if (column === 'store_id') {
+              assert.equal(value, 7);
+              return this;
+            }
+            if (column === 'active') {
+              assert.equal(value, true);
+              return this;
+            }
+            throw new Error(`Unexpected eq ${column}`);
+          },
+          range(from, to) {
+            assert.equal(from, 0);
+            assert.equal(to, 499);
+            return Promise.resolve({
+              data: [
+                { id: 1, module_id: 1, product_url: 'https://store.example/products/module-1/' },
+                { id: 2, module_id: 2, product_url: 'https://store.example/products/missing-module/' },
+              ],
+              error: null,
+            });
+          },
+          update(value) {
+            updates.push(value);
+            return this;
+          },
+          async in() {
+            return { error: null };
+          },
+        };
+        return {
+          select(columns) {
+            return listingQuery.select(columns);
+          },
+          eq(column, value) {
+            return listingQuery.eq(column, value);
+          },
+          update(value) {
+            return listingQuery.update(value);
+          },
+          async in() {
+            return listingQuery.in();
+          },
+        };
+      }
+      throw new Error(`Unexpected table ${table}`);
+    },
+  };
+}
+
+function mockActiveRefreshSupabase({ activeListings, snapshots, updates = [] }) {
+  return {
+    from(table) {
+      if (table === 'stores') {
+        return {
+          select(columns) {
+            assert.equal(columns, 'id,slug,name,country_code,base_url,search_url_template,adapter_kind,currency_hint,active,price_tracking_enabled,rate_limit_per_day,created_at,updated_at');
+            return this;
+          },
+          eq(column, value) {
+            assert.equal(column, 'slug');
+            assert.equal(value, 'signal-sounds-uk');
+            return this;
+          },
+          async single() {
+            return {
+              data: {
+                id: 7,
+                slug: 'signal-sounds-uk',
+                name: 'Signal Sounds UK',
+                country_code: 'GB',
+                base_url: 'https://signalsounds.com/',
+                search_url_template: null,
+                adapter_kind: 'bigcommerce_metadata',
+                currency_hint: 'GBP',
+                active: true,
+                price_tracking_enabled: true,
+                rate_limit_per_day: 100,
+                created_at: '2026-07-07T00:00:00.000Z',
+                updated_at: '2026-07-07T00:00:00.000Z',
+              },
+              error: null,
+            };
+          },
+        };
+      }
+      if (table === 'module_store_listings') {
+        return {
+          select(columns) {
+            assert.ok([
+              'id,module_id,product_url',
+              'id,module_id,store_id,product_url,external_product_id,external_handle,active,verification_status,last_checked_at,last_success_at,next_check_at,failure_count,last_error,created_at,updated_at',
+            ].includes(columns));
+            return this;
+          },
+          eq(column, value) {
+            if (column === 'store_id') {
+              assert.equal(value, 7);
+              return this;
+            }
+            if (column === 'active') {
+              assert.equal(value, true);
+              return this;
+            }
+            throw new Error(`Unexpected eq ${column}`);
+          },
+          range(from, to) {
+            const page = activeListings.slice(from, to + 1);
+            return Promise.resolve({ data: page, error: null });
+          },
+          upsert(rows, options) {
+            assert.deepEqual(options, { onConflict: 'module_id,store_id' });
+            return {
+              async select(columns) {
+                assert.equal(columns, 'id,module_id,store_id,product_url,external_product_id,external_handle,active,verification_status,last_checked_at,last_success_at,next_check_at,failure_count,last_error,created_at,updated_at');
+                return {
+                  data: rows.map((row) => ({
+                    id: activeListings.find((listing) => listing.module_id === row.module_id)?.id ?? 99,
+                    module_id: row.module_id,
+                    store_id: row.store_id,
+                    product_url: row.product_url,
+                    external_product_id: row.external_product_id,
+                    external_handle: row.external_handle,
+                    active: row.active,
+                    verification_status: row.verification_status,
+                    last_checked_at: row.last_checked_at,
+                    last_success_at: row.last_success_at,
+                    next_check_at: row.next_check_at,
+                    failure_count: row.failure_count,
+                    last_error: row.last_error,
+                    created_at: '2026-07-07T00:00:00.000Z',
+                    updated_at: '2026-07-07T00:00:00.000Z',
+                  })),
+                  error: null,
+                };
+              },
+            };
+          },
+          update(value) {
+            updates.push(value);
+            return this;
+          },
+          async in() {
+            return { error: null };
+          },
+        };
+      }
+      if (table === 'module_price_snapshots') {
+        return {
+          insert(rows) {
+            snapshots.push(...rows);
+            return Promise.resolve({ error: null });
+          },
+        };
+      }
+      throw new Error(`Unexpected table ${table}`);
+    },
+  };
+}
+
+function jwtForRole(role) {
+  return [
+    Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url'),
+    Buffer.from(JSON.stringify({ role })).toString('base64url'),
+    'signature',
+  ].join('.');
 }

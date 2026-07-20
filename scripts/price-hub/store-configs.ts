@@ -1,3 +1,5 @@
+import type { ShopifyVariantTitlePreference } from '../../supabase/functions/_shared/price-hub/shopify-product-json.ts';
+
 export type ApprovedPriceHubStoreSlug =
   | 'after-later-audio'
   | 'animato-audio'
@@ -42,6 +44,21 @@ export type ApprovedPriceHubStoreSlug =
   | 'zlob-modular';
 export type PriceHubStoreAdapter = 'woocommerce_store_api' | 'shopify_product_json' | 'bigcommerce_metadata' | 'shopware_metadata' | 'custom';
 
+export interface PriceHubMatchScoreThresholds {
+  strongCandidate: number;
+  reviewCandidate: number;
+}
+
+export interface PriceHubStoreMatchConfig {
+  scoreThresholds?: Partial<PriceHubMatchScoreThresholds>;
+  noiseTerms?: readonly string[];
+}
+
+export interface ResolvedPriceHubStoreMatchConfig {
+  scoreThresholds: PriceHubMatchScoreThresholds;
+  noiseTerms: readonly string[];
+}
+
 export interface ApprovedPriceHubStoreConfig {
   slug: ApprovedPriceHubStoreSlug;
   name: string;
@@ -53,7 +70,83 @@ export interface ApprovedPriceHubStoreConfig {
   productUrlPathExcludes?: readonly string[];
   productUrlPathIncludes?: readonly string[];
   productBrandHint?: string;
+  shopifyVariantTitlePreference?: ShopifyVariantTitlePreference;
+  matchConfig?: PriceHubStoreMatchConfig;
 }
+
+export const DEFAULT_PRICE_HUB_MATCH_CONFIG: ResolvedPriceHubStoreMatchConfig = {
+  scoreThresholds: {
+    strongCandidate: 0.86,
+    reviewCandidate: 0.72,
+  },
+  noiseTerms: [
+    'accessory',
+    'accessories',
+    'b-stock',
+    'b stock',
+    'bourns',
+    'bundle',
+    'case',
+    'cable',
+    'cables',
+    'cap',
+    'consignment',
+    'cover',
+    'covers',
+    'deposit',
+    'embroidered',
+    'ex-demo',
+    'ex demo',
+    'faceplate',
+    'frontpanel',
+    'guide',
+    'hat',
+    'hoodie',
+    'kit',
+    'kitbag',
+    'kitbags',
+    'manual',
+    'memory card',
+    'no-longer-available',
+    'no longer available',
+    'occasione',
+    'open-box',
+    'open box',
+    'opening soon',
+    'panel',
+    'panel set',
+    'parts',
+    'pcb',
+    'pcb panel',
+    'pedal',
+    'potentiometer',
+    'potentiometers',
+    'pre-order',
+    'pre order',
+    'preorder',
+    'prenotazione',
+    'preordine',
+    'pre-owned',
+    'pre owned',
+    'power adapter',
+    'refurbished',
+    'replacement parts',
+    'special-order',
+    'special order',
+    'spares',
+    'stackcable',
+    'sticker',
+    'stickers',
+    'slide pot',
+    'slider',
+    'slipmat',
+    't-shirt',
+    't shirt',
+    'tee',
+    'used',
+    'usato',
+  ],
+};
 
 export const APPROVED_PRICE_HUB_STORES: readonly ApprovedPriceHubStoreConfig[] = [
   {
@@ -198,7 +291,7 @@ export const APPROVED_PRICE_HUB_STORES: readonly ApprovedPriceHubStoreConfig[] =
     name: 'Milk Audio Store',
     baseUrl: 'https://www.milkaudiostore.com/',
     adapter: 'custom',
-    catalogPath: '/product-sitemap_index.xml',
+    catalogPath: '/sitemaps/it/product-sitemap_it.xml',
     currencyHint: 'EUR',
     productUrlPathIncludes: ['/it/shop/'],
     productUrlPathExcludes: ['/usato/', '/occasioni/', '-used/'],
@@ -266,6 +359,10 @@ export const APPROVED_PRICE_HUB_STORES: readonly ApprovedPriceHubStoreConfig[] =
     baseUrl: 'https://pushermanproductions.com/',
     adapter: 'shopify_product_json',
     currencyHint: 'GBP',
+    shopifyVariantTitlePreference: {
+      prefer: ['built module', 'assembled', 'complete'],
+      avoid: ['kit', 'pcb', 'panel only', 'pcb/panel', 'panel set'],
+    },
   },
   {
     slug: 'robotspeak',
@@ -313,7 +410,6 @@ export const APPROVED_PRICE_HUB_STORES: readonly ApprovedPriceHubStoreConfig[] =
     name: 'Soundium',
     baseUrl: 'https://soundium.lt/',
     adapter: 'shopify_product_json',
-    catalogPath: '/collections/eurorack/products.json',
     currencyHint: 'EUR',
   },
   {
@@ -387,6 +483,22 @@ export function readApprovedPriceHubStores(storeSlug: string): ApprovedPriceHubS
   }
 
   return [readApprovedPriceHubStore(storeSlug)];
+}
+
+export function readPriceHubStoreMatchConfig(
+  storeOrConfig?: ApprovedPriceHubStoreConfig | PriceHubStoreMatchConfig | null,
+): ResolvedPriceHubStoreMatchConfig {
+  const matchConfig = storeOrConfig && 'matchConfig' in storeOrConfig
+    ? storeOrConfig.matchConfig
+    : storeOrConfig;
+
+  return {
+    scoreThresholds: {
+      ...DEFAULT_PRICE_HUB_MATCH_CONFIG.scoreThresholds,
+      ...(matchConfig?.scoreThresholds ?? {}),
+    },
+    noiseTerms: matchConfig?.noiseTerms ?? DEFAULT_PRICE_HUB_MATCH_CONFIG.noiseTerms,
+  };
 }
 
 function assertHttpsBaseUrl(baseUrl: string): void {

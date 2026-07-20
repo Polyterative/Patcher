@@ -41,13 +41,15 @@ function runGenerator() {
   return writes;
 }
 
-test('generate-env enables Cool only for development builds', () => {
+test('generate-env enables local-only feature flags only for development builds', () => {
   const writes = runGenerator();
   const devContent = writes.get('src/environments/environment.ts');
   const prodContent = writes.get('src/environments/environment.prod.ts');
 
   assert.match(devContent, /production:\s*false/);
   assert.match(devContent, /coolReactionsEnabled:\s*true/);
+  assert.match(devContent, /marketplaceEnabled:\s*true/);
   assert.match(prodContent, /production:\s*true/);
   assert.match(prodContent, /coolReactionsEnabled:\s*false/);
+  assert.match(prodContent, /marketplaceEnabled:\s*false/);
 });
