@@ -15,12 +15,61 @@ import {
   BrandPrimaryButtonComponent
 } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { PatchMinimal } from 'src/app/models/patch';
+import {
+  PatchConnection,
+  PatchModuleInstance
+} from 'src/app/models/connection';
+import { ISelectable } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import {
+  cvWithModuleFixture,
+  patchFixture
+} from '../patch-graph/patch-graph-test-fixtures';
+import { CVwithModule } from 'src/app/models/cv';
+
+interface PatchMinimalDataServiceMock {
+  patchEditingPanelOpenState$: BehaviorSubject<boolean>;
+  singlePatchData$: BehaviorSubject<PatchMinimal>;
+  linkedRackState$: BehaviorSubject<LinkedRackUiState>;
+  linkedRackSelectionBlocked$: BehaviorSubject<boolean>;
+  linkedRackSelectionHint$: BehaviorSubject<string | null>;
+  linkedRackPersistenceBlocked$: BehaviorSubject<boolean>;
+  linkedRackPersistenceHint$: BehaviorSubject<string | null>;
+  linkedRackOptions$: BehaviorSubject<ISelectable[]>;
+  patchConnections$: BehaviorSubject<PatchConnection[]>;
+  patchModuleInstances$: BehaviorSubject<PatchModuleInstance[]>;
+  instanceLabelMap$: BehaviorSubject<Map<number, string>>;
+  patchTags$: BehaviorSubject<string[]>;
+  isCurrentPatchPrivate$: BehaviorSubject<boolean>;
+  formData: {
+    name: { control: UntypedFormControl };
+    description: { control: UntypedFormControl };
+    linkedRack: { control: UntypedFormControl };
+  };
+  removePatchTag: jasmine.Spy;
+  addPatchTag: jasmine.Spy;
+  getRackPreviewUrl: jasmine.Spy;
+  requestPatchPrivacyStatusChange$: { next: jasmine.Spy };
+  deletePatch$: { next: jasmine.Spy };
+  requestPatchEditingToggle$: { next: jasmine.Spy };
+}
+
+function makeConnectionCV(id: number, name: string, moduleId: number, moduleName: string, manufacturerName: string): CVwithModule {
+  const cv = cvWithModuleFixture(id, moduleId, moduleName, name);
+  return {
+    ...cv,
+    module: {
+      ...cv.module,
+      manufacturer: {id: moduleId, name: manufacturerName},
+      manufacturerId: moduleId
+    }
+  };
+}
 
 
 describe('PatchMinimalComponent - linked rack UI', () => {
   let fixture: ComponentFixture<PatchMinimalComponent>;
   let component: PatchMinimalComponent;
-  let dataService: any;
+  let dataService: PatchMinimalDataServiceMock;
 
   const patchData = (partial: Partial<PatchMinimal> = {}): PatchMinimal => ({
     id: 10,
@@ -58,11 +107,11 @@ describe('PatchMinimalComponent - linked rack UI', () => {
       linkedRackSelectionHint$: new BehaviorSubject<string | null>(null),
       linkedRackPersistenceBlocked$: new BehaviorSubject<boolean>(false),
       linkedRackPersistenceHint$: new BehaviorSubject<string | null>(null),
-      linkedRackOptions$: new BehaviorSubject<any[]>([
+      linkedRackOptions$: new BehaviorSubject<ISelectable[]>([
         {id: '7', name: 'Studio Rack'}
       ]),
-      patchConnections$: new BehaviorSubject<any[]>([]),
-      patchModuleInstances$: new BehaviorSubject<any[]>([]),
+      patchConnections$: new BehaviorSubject<PatchConnection[]>([]),
+      patchModuleInstances$: new BehaviorSubject<PatchModuleInstance[]>([]),
       instanceLabelMap$: new BehaviorSubject<Map<number, string>>(new Map()),
       patchTags$: new BehaviorSubject<string[]>([]),
       isCurrentPatchPrivate$: new BehaviorSubject<boolean>(false),
@@ -207,22 +256,20 @@ describe('PatchMinimalComponent - linked rack UI', () => {
     }));
     dataService.patchTags$.next(['ambient', 'stereo']);
     dataService.instanceLabelMap$.next(new Map([[101, '(1)']]));
-    dataService.patchModuleInstances$.next([
-      {
-        id: 101,
-        module_id: 1,
-        instance_label: '(1)',
-        module: {name: 'Maths', manufacturer: {name: 'Make Noise'}}
-      }
-    ]);
-    dataService.patchConnections$.next([
-      {
-        a: {name: 'Ch. 1 Out', module: {name: 'Maths', manufacturer: {name: 'Make Noise'}}},
-        b: {name: 'Left In', module: {name: 'Mimeophon', manufacturer: {name: 'Make Noise'}}},
-        instance_id_a: 101,
-        notes: 'Slow modulation'
-      }
-    ]);
+    dataService.patchModuleInstances$.next([{
+      id: 101,
+      patch_id: 10,
+      module_id: 1,
+      instance_label: '(1)',
+      module: {name: 'Maths', manufacturer: {name: 'Make Noise'}}
+    }]);
+    dataService.patchConnections$.next([{
+      patch: patchFixture(10),
+      a: makeConnectionCV(1, 'Ch. 1 Out', 1, 'Maths', 'Make Noise'),
+      b: makeConnectionCV(2, 'Left In', 2, 'Mimeophon', 'Make Noise'),
+      instance_id_a: 101,
+      notes: 'Slow modulation'
+    }]);
 
     const text = component.buildPatchText();
 

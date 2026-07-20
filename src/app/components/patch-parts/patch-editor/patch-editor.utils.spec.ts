@@ -7,11 +7,23 @@ import {
   defaultSortModeId,
   defaultGroupModeId
 } from './patch-editor.utils';
+import {
+  EditorModuleCard,
+  PatchEditorGroupModeId,
+  PatchEditorSortModeId
+} from './patch-editor.types';
+import { dbModuleFixture } from '../patch-graph/patch-graph-test-fixtures';
 
-const makeCard = (name: string, mfr = 'MFR', connectionCount = 0, instanceCount = 0): any => ({
-  module: { name, manufacturer: { name: mfr } },
+const makeCard = (name: string, mfr = 'MFR', connectionCount = 0, instanceCount = 0): EditorModuleCard => ({
+  module: {
+    ...dbModuleFixture(0, name),
+    manufacturer: {id: 0, name: mfr}
+  },
+  instance: undefined,
+  label: undefined,
   connectionCount,
   instanceCount,
+  connectionNames: [],
   trackingId: 0
 });
 
@@ -36,8 +48,9 @@ describe('patch-editor.utils', () => {
       expect(asGroupModeId({ id: 'something' })).toBe(defaultGroupModeId);
     });
     it('accepts all valid ids', () => {
-      for (const id of ['none', 'manufacturer', 'connectionState', 'patchPresence']) {
-        expect(asGroupModeId({ id })).toBe(id as any);
+      const ids: PatchEditorGroupModeId[] = ['none', 'manufacturer', 'connectionState', 'patchPresence'];
+      for (const id of ids) {
+        expect(asGroupModeId({ id })).toBe(id);
       }
     });
   });
@@ -67,9 +80,9 @@ describe('patch-editor.utils', () => {
       expect(resolvePatchEditorSortStrategy('nameAsc')).toBeTruthy();
     });
     it('returns a strategy for all known modes', () => {
-      const modes = ['nameAsc', 'nameDesc', 'addedLatest', 'addedEarliest', 'manufacturerAsc', 'manufacturerDesc', 'connectionsMost'];
+      const modes: PatchEditorSortModeId[] = ['nameAsc', 'nameDesc', 'addedLatest', 'addedEarliest', 'manufacturerAsc', 'manufacturerDesc', 'connectionsMost'];
       for (const mode of modes) {
-        expect(resolvePatchEditorSortStrategy(mode as any)).toBeTruthy();
+        expect(resolvePatchEditorSortStrategy(mode)).toBeTruthy();
       }
     });
   });

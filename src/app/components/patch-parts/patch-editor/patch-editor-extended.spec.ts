@@ -7,6 +7,9 @@ import {
   resolvePatchEditorSortStrategy,
   sortAndGroupEditorCards
 } from './patch-editor.component';
+import { dbModuleFixture } from '../patch-graph/patch-graph-test-fixtures';
+import { DbModule } from 'src/app/models/module';
+import { DbModuleWithCollectionUpdated } from './patch-editor.types';
 
 
 function card(
@@ -17,13 +20,15 @@ function card(
   instanceCount = 1,
   collectionUpdated?: string
 ): EditorModuleCard {
+  const module: DbModuleWithCollectionUpdated = {
+    ...dbModuleFixture(id, moduleName),
+    collectionUpdated,
+    manufacturer: {id, name: manufacturerName},
+    manufacturerId: id
+  };
+
   return {
-    module: {
-      id,
-      name: moduleName,
-      collectionUpdated,
-      manufacturer: {name: manufacturerName}
-    } as any,
+    module,
     instance: undefined,
     label: undefined,
     instanceCount,
@@ -161,8 +166,13 @@ describe('sortAndGroupEditorCards - extended coverage', () => {
   });
   
   it('filterEditorCardsByQuery with null module properties does not throw', () => {
+    const moduleWithNulls = {
+      ...dbModuleFixture(1, 'Alpha'),
+      name: null,
+      manufacturer: null
+    } as unknown as DbModule;
     const cards = [
-      {...card(1, 'Alpha', 'Maker'), module: {id: 1, name: null, manufacturer: null} as any}
+      {...card(1, 'Alpha', 'Maker'), module: moduleWithNulls}
     ];
     expect(() => filterEditorCardsByQuery(cards, 'alpha')).not.toThrow();
   });
