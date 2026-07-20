@@ -1,11 +1,41 @@
-import { RackedModule } from '../../models/module';
+import { DbModule, RackedModule } from '../../models/module';
 import { TotalWeightOfRackPipe } from './total-weight-of-rack.pipe';
 
+function makeDbModule(id: number, weight: number | null): DbModule {
+  return {
+    id,
+    created: '',
+    updated: '',
+    name: `M${id}`,
+    description: '',
+    hp: 4,
+    public: true,
+    manufacturer: {id: 1, name: 'Test Maker'},
+    manufacturerId: 1,
+    standard: {id: 0, name: 'Eurorack'},
+    tags: [],
+    panels: [],
+    ins: [],
+    outs: [],
+    switches: [],
+    manualURL: '',
+    store_url: null,
+    additional: null,
+    isComplete: true,
+    isApproved: true,
+    isDIY: false,
+    powerPos12: null,
+    powerNeg12: null,
+    powerPos5: null,
+    depth: 0,
+    weight
+  };
+}
 
 function makeRackedModule(id: number, weight: number | null): RackedModule {
   return {
     rackingData: {id: 1, rackid: 1, moduleid: id, row: 0, column: 0},
-    module: {id, weight} as any
+    module: makeDbModule(id, weight)
   };
 }
 

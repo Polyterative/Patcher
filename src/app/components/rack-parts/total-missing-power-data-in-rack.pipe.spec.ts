@@ -1,8 +1,37 @@
 import { TotalMissingPowerDataInRackPipe } from './total-missing-power-data-in-rack.pipe';
-import { RackedModule } from '../../models/module';
+import { DbModule, RackedModule } from '../../models/module';
+
+const makeDbModule = (id: number, p12: number | null, n12: number | null, p5: number | null): DbModule => ({
+  id,
+  created: '',
+  updated: '',
+  name: `M${id}`,
+  description: '',
+  hp: 4,
+  public: true,
+  manufacturer: { id: 1, name: 'Test Maker' },
+  manufacturerId: 1,
+  standard: { id: 0, name: 'Eurorack' },
+  tags: [],
+  panels: [],
+  ins: [],
+  outs: [],
+  switches: [],
+  manualURL: '',
+  store_url: null,
+  additional: null,
+  isComplete: true,
+  isApproved: true,
+  isDIY: false,
+  powerPos12: p12,
+  powerNeg12: n12,
+  powerPos5: p5,
+  depth: 0,
+  weight: 0
+});
 
 const makeModule = (id: number, p12: number | null, n12: number | null, p5: number | null): RackedModule => ({
-  module: { id, hp: 4, powerPos12: p12, powerNeg12: n12, powerPos5: p5 } as any,
+  module: makeDbModule(id, p12, n12, p5),
   rackingData: { id: 1, row: 0, column: 0, rackid: 1, moduleid: id }
 });
 

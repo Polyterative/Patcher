@@ -1,8 +1,37 @@
 import { TotalDepthOfRackPipe } from './total-depth-of-rack.pipe';
-import { RackedModule } from '../../models/module';
+import { DbModule, RackedModule } from '../../models/module';
+
+const makeDbModule = (id: number, depth: number): DbModule => ({
+  id,
+  created: '',
+  updated: '',
+  name: `M${id}`,
+  description: '',
+  hp: 4,
+  public: true,
+  manufacturer: { id: 1, name: 'Test Maker' },
+  manufacturerId: 1,
+  standard: { id: 0, name: 'Eurorack' },
+  tags: [],
+  panels: [],
+  ins: [],
+  outs: [],
+  switches: [],
+  manualURL: '',
+  store_url: null,
+  additional: null,
+  isComplete: true,
+  isApproved: true,
+  isDIY: false,
+  powerPos12: null,
+  powerNeg12: null,
+  powerPos5: null,
+  depth,
+  weight: 0
+});
 
 const makeRow = (id: number, depth: number, row = 0, col = 0): RackedModule => ({
-  module: { id, hp: 4, depth } as any,
+  module: makeDbModule(id, depth),
   rackingData: { id: 1, row, column: col, rackid: 1, moduleid: id }
 });
 
