@@ -109,19 +109,24 @@ Use the `executor` tier (see [README.md](./README.md#model-tiers)) for normal co
 ## Fallback work queue (when all product tasks are gated)
 
 The loop must never end with "nothing safe to do" while any of these exist. When every
-backlog item is approval-gated, pick exactly one fallback chunk per cycle, smallest first:
+backlog item is approval-gated, pick exactly one fallback chunk per cycle. **Prefer the
+measurable ratchet chunks (1–3)** — they shrink a tracked number every cycle — before the
+softer maintenance chunks:
 
 1. **Layering-baseline burn-down** — refactor one file out of
    `scripts/checks/.layering-baseline.json` (see `AGENTS.md` §11), then regenerate the baseline.
-2. **R4 file splits** — split one `*.ts` file that warns/errors on the >500/>1000-line rule.
-3. **Spec gaps** — close one verification gap from
+2. **Explicit-any burn-down** — remove `any` from one small cluster of files, then re-baseline
+   downward with `node scripts/checks/check-explicit-any.cjs --update-baseline`
+   (`scripts/checks/.explicit-any-baseline.json` tracks the total).
+3. **R4 file splits** — split one `*.ts` file that warns/errors on the >500/>1000-line rule.
+4. **Spec gaps** — close one verification gap from
    `internaldocs/tracked-use-cases/PATCH_INSTANCE_OPEN_GAPS.md` or add a missing regression spec.
-4. **Docs hygiene** — fix orphaned/unindexed docs flagged by `node scripts/checks/check-docs.cjs`,
+5. **Docs hygiene** — fix orphaned/unindexed docs flagged by `node scripts/checks/check-docs.cjs`,
    stale plan decision logs, or drifted README routing.
-5. **Flaky/slow test triage** — deflake or speed up one existing spec without weakening assertions.
+6. **Flaky/slow test triage** — deflake or speed up one existing spec without weakening assertions.
 
-Fallback chunks follow the same rules as product work: plan note, implementation, review,
-validation, verified commit.
+`pnpm loop:health` prints the current ratchet numbers (H4). Fallback chunks follow the same
+rules as product work: plan note, implementation, review, validation, verified commit.
 
 ## Workflow
 

@@ -6,7 +6,7 @@
  *   H1  Dirty working tree (files that must be reconciled before selecting work)
  *   H2  Stale in-progress markers: TODO lines marked [~] (should be active or demoted to [!])
  *   H3  Approvals-ledger pending questions count (owner attention needed)
- *   H4  Layering-baseline size (fallback-queue burn-down target)
+ *   H4  Ratchet baselines (fallback burn-down targets: layering + explicit-any)
  *   H5  Docs check status (orphans / broken links via check-docs.cjs)
  *   H6  E2E credentials presence in root .env (existence only, never values)
  *
@@ -68,18 +68,26 @@ if (pending.length > 0) {
   console.log('→ Batch these for the product owner; do not re-ask answered ones.');
 }
 
-// H4: layering baseline
-section('H4 Layering baseline (fallback burn-down)');
+// H4: ratchet baselines
+section('H4 Ratchet baselines (fallback burn-down)');
 const baselinePath = path.join(repoRoot, 'scripts/checks/.layering-baseline.json');
 if (existsSync(baselinePath)) {
   const baseline = JSON.parse(readFileSync(baselinePath, 'utf8'));
   const count = Array.isArray(baseline)
     ? baseline.length
     : Object.values(baseline).reduce((n, v) => n + (Array.isArray(v) ? v.length : 0), 0);
-  console.log(`grandfathered entries: ${count}`);
+  console.log(`layering grandfathered entries: ${count}`);
   if (count > 0) console.log('→ Fallback queue item: refactor one entry out per idle cycle.');
 } else {
-  console.log('no baseline file');
+  console.log('no layering baseline file');
+}
+const anyBaselinePath = path.join(repoRoot, 'scripts/checks/.explicit-any-baseline.json');
+if (existsSync(anyBaselinePath)) {
+  const anyBaseline = JSON.parse(readFileSync(anyBaselinePath, 'utf8'));
+  console.log(`explicit-any baseline total: ${anyBaseline.totalExplicitAny ?? 'unknown'}`);
+  console.log('→ Fallback queue item: type one small cluster, then re-baseline downward.');
+} else {
+  console.log('no explicit-any baseline file');
 }
 
 // H5: docs check
