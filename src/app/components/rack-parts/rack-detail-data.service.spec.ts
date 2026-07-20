@@ -4,17 +4,79 @@ import {
 } from '@angular/core/testing';
 import {
   BehaviorSubject,
+  Observable,
   of,
   Subject,
   throwError
 } from 'rxjs';
 import { RackDetailDataService } from './rack-detail-data.service';
-import { RackedModule } from 'src/app/models/module';
+import {
+  DbModule,
+  RackedModule
+} from 'src/app/models/module';
+import {
+  Rack,
+  RackingData
+} from 'src/app/models/rack';
+import { PublicUser } from 'src/app/models/user';
 import { DETAIL_ANALYTICS_SURFACES } from '../detail-analytics-surface';
+import { FunctionAnalysisLegendSummaryItem } from './rack-function-visuals.models';
+
+type ServiceConstructorArgs = ConstructorParameters<typeof RackDetailDataService>;
+type BackendResponse<T> = {data: T};
+type TestDbModule = DbModule & {functions: unknown[]};
+type ModuleFixtureOverrides = Partial<Omit<TestDbModule, 'standard'>> & {
+  standard?: Partial<TestDbModule['standard']>;
+};
+type RackedModuleFixtureOverrides = {
+  rackingData?: Partial<RackingData>;
+  module?: ModuleFixtureOverrides;
+};
+type LoggedUser = PublicUser;
+type RackDetailBackendDouble = {
+  GET: {
+    rackWithId: jasmine.Spy<(id: number) => Observable<BackendResponse<Rack | null>>>;
+    publicRackWithId: jasmine.Spy<(id: number) => Observable<BackendResponse<Rack | null>>>;
+    rackByPublicId: jasmine.Spy<(publicId: string) => Observable<BackendResponse<Rack | null>>>;
+    moduleWithId: jasmine.Spy<(id: number) => Observable<BackendResponse<TestDbModule>>>;
+  };
+  get: {
+    rackedModules: jasmine.Spy<(rackId: number) => Observable<RackedModule[]>>;
+  };
+  update: {
+    rack: jasmine.Spy<(rack: Rack) => Observable<Rack>>;
+    rackedModules: jasmine.Spy<(modules: RackedModule[]) => Observable<unknown>>;
+    rackModulePanel: jasmine.Spy<(rackModuleId: number, panelId: number | null) => Observable<unknown>>;
+    rackModuleOrientation: jasmine.Spy<(rackModuleId: number, orientation: string) => Observable<unknown>>;
+  };
+  delete: {
+    rackedModule: jasmine.Spy<(rackModuleId: number) => Observable<unknown>>;
+    modulesOfRack: jasmine.Spy<(rackId: number) => Observable<unknown>>;
+    commentsForRack: jasmine.Spy<(rackId: number) => Observable<unknown>>;
+    userRack: jasmine.Spy<(rackId: number) => Observable<unknown>>;
+  };
+  add: {
+    rack: jasmine.Spy<() => Observable<BackendResponse<Array<{id: number}>>>>;
+    rackModule: jasmine.Spy<(
+      moduleId: number,
+      rackId: number,
+      row: number | null,
+      column: number | null
+    ) => Observable<unknown>>;
+    patch: jasmine.Spy<() => Observable<BackendResponse<Array<{id: number}>>>>;
+  };
+  storage: {
+    uploadRackImage: jasmine.Spy<() => Observable<string>>;
+    deleteRackImage: jasmine.Spy<() => Observable<unknown>>;
+  };
+  auth: {
+    hasAdminRole$: jasmine.Spy<() => Observable<boolean>>;
+  };
+};
 
 describe('RackDetailDataService', () => {
 
-  function makeRack(overrides: Partial<any> = {}): any {
+  function makeRack(overrides: Partial<Rack> = {}): Rack {
     return {
       id: 1,
       name: 'Test Rack',
@@ -22,24 +84,68 @@ describe('RackDetailDataService', () => {
       rows: 3,
       public: true,
       locked: false,
-      image: null,
+      image: undefined,
       author: {id: 'user-1', username: 'alice'},
+      created: '2026-01-01T00:00:00.000Z',
+      updated: '2026-01-01T00:00:00.000Z',
       ...overrides
     };
   }
 
-  function makeRackedModule(overrides: Partial<any> = {}): any {
+  function makeDbModule(overrides: ModuleFixtureOverrides = {}): TestDbModule {
+    const {standard, ...moduleOverrides} = overrides;
+
     return {
-      rackingData: {id: 10, rackid: 1, moduleid: 5, row: 0, column: 0, selectedPanelId: null},
-      module: {id: 5, name: 'VCO', hp: 8, standard: {id: 0}, functions: []},
-      ...overrides
+      id: 5,
+      name: 'VCO',
+      description: '',
+      hp: 8,
+      public: true,
+      manufacturer: {id: 1, name: 'Fixture Maker'},
+      manufacturerId: 1,
+      standard: {id: 0, name: 'Eurorack', ...standard},
+      tags: [],
+      panels: [],
+      ins: [],
+      outs: [],
+      switches: [],
+      manualURL: '',
+      store_url: null,
+      additional: null,
+      isComplete: true,
+      isApproved: true,
+      isDIY: false,
+      powerPos12: null,
+      powerNeg12: null,
+      powerPos5: null,
+      depth: 0,
+      weight: 0,
+      created: '2026-01-01T00:00:00.000Z',
+      updated: '2026-01-01T00:00:00.000Z',
+      functions: [],
+      ...moduleOverrides
+    };
+  }
+
+  function makeRackedModule(overrides: RackedModuleFixtureOverrides = {}): RackedModule {
+    return {
+      rackingData: {
+        id: 10,
+        rackid: 1,
+        moduleid: 5,
+        row: 0,
+        column: 0,
+        selectedPanelId: null,
+        ...overrides.rackingData
+      },
+      module: makeDbModule(overrides.module)
     };
   }
 
   function build(options: {usePublicReads?: boolean} = {}) {
-    const loggedUser$ = new BehaviorSubject<any>({id: 'user-1', username: 'alice'});
+    const loggedUser$ = new BehaviorSubject<LoggedUser>({id: 'user-1', username: 'alice'});
 
-    const backend = {
+    const backend: RackDetailBackendDouble = {
       GET: {
         rackWithId: jasmine.createSpy('rackWithId').and.callFake((id: number) =>
           of({data: makeRack({id})})
@@ -49,14 +155,14 @@ describe('RackDetailDataService', () => {
         ),
         rackByPublicId: jasmine.createSpy('rackByPublicId').and.returnValue(of({data: makeRack({id: 1})})),
         moduleWithId: jasmine.createSpy('moduleWithId').and.callFake((id: number) =>
-          of({data: {id, name: `Blank ${ id }`, hp: 2, standard: {id: id >= 4711 ? 1 : 0}, functions: [], panels: []}})
+          of({data: makeDbModule({id, name: `Blank ${ id }`, hp: 2, standard: {id: id >= 4711 ? 1 : 0}, panels: []})})
         )
       },
       get: {
         rackedModules: jasmine.createSpy('rackedModules').and.returnValue(of([]))
       },
       update: {
-        rack: jasmine.createSpy('rack').and.callFake((r: any) => of(r)),
+        rack: jasmine.createSpy('rack').and.callFake((rack: Rack) => of(rack)),
         rackedModules: jasmine.createSpy('rackedModules').and.returnValue(of({})),
         rackModulePanel: jasmine.createSpy('rackModulePanel').and.returnValue(of({})),
         rackModuleOrientation: jasmine.createSpy('rackModuleOrientation').and.returnValue(of({}))
@@ -88,12 +194,12 @@ describe('RackDetailDataService', () => {
 
     const analytics = {capture: jasmine.createSpy('capture'), identify: () => {}, reset: () => {}};
     const service = new RackDetailDataService(
-      snackBar as any,
-      userService as any,
-      backend as any,
-      dialog as any,
+      snackBar as unknown as ServiceConstructorArgs[0],
+      userService as unknown as ServiceConstructorArgs[1],
+      backend as unknown as ServiceConstructorArgs[2],
+      dialog as unknown as ServiceConstructorArgs[3],
       router,
-      analytics as any
+      analytics as unknown as ServiceConstructorArgs[5]
     );
 
     if (options.usePublicReads) {
@@ -621,7 +727,7 @@ describe('RackDetailDataService', () => {
 
     const rowZero = [rowZeroModule];
     const rowOne = [rowOneModule];
-    const rowTwo: any[] = [];
+    const rowTwo: RackedModule[] = [];
     service.singleRackData$.next(makeRack({rows: 3}));
     service.rowedRackedModules$.next([rowZero, rowOne, rowTwo]);
     backend.update.rackedModules.calls.reset();
@@ -1078,7 +1184,7 @@ describe('RackDetailDataService', () => {
 
   it('patches duplicated row module ids by object reference after the row moves before persistence returns', fakeAsync(() => {
     const {service, backend} = build();
-    const duplicatePersist$ = new Subject<any>();
+    const duplicatePersist$ = new Subject<unknown>();
     const rowZeroModule = makeRackedModule({
       rackingData: {id: 10, rackid: 1, moduleid: 5, row: 0, column: 0, selectedPanelId: null},
       module: {id: 5, name: 'VCO', hp: 8, standard: {id: 0}, functions: []}
@@ -1147,7 +1253,7 @@ describe('RackDetailDataService', () => {
     });
 
     const rowZero = [rowZeroModule];
-    const rowOne: any[] = [];
+    const rowOne: RackedModule[] = [];
     const rowTwo = [rowTwoModule];
     service.singleRackData$.next(makeRack({rows: 3}));
     service.rowedRackedModules$.next([rowZero, rowOne, rowTwo]);
@@ -1162,7 +1268,7 @@ describe('RackDetailDataService', () => {
     expect(service.rowedRackedModules$.value![0]).toBe(rowZero);
     expect(service.rowedRackedModules$.value![1]).toBe(rowTwo);
     const persistedModules = backend.update.rackedModules.calls.mostRecent().args[0];
-    expect(persistedModules.find((module: any) => module.module.id === 7).rackingData.row).toBe(1);
+    expect(persistedModules.find(module => module.module.id === 7)?.rackingData.row).toBe(1);
     expect(backend.update.rack).toHaveBeenCalledWith(jasmine.objectContaining({rows: 2}));
     expect(backend.get.rackedModules).not.toHaveBeenCalled();
   }));
@@ -1371,7 +1477,7 @@ describe('RackDetailDataService', () => {
 
   it('functionAnalysisLegendItems$ emits when rowedRackedModules$ updates', fakeAsync(() => {
     const {service} = build();
-    let emitted: any;
+    let emitted: FunctionAnalysisLegendSummaryItem[] | undefined;
     service.functionAnalysisLegendItems$.subscribe(v => emitted = v);
 
     service.rowedRackedModules$.next([[makeRackedModule()]]);

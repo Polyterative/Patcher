@@ -1,6 +1,10 @@
-import { BehaviorSubject } from 'rxjs';
+import {
+  BehaviorSubject,
+  ReplaySubject
+} from 'rxjs';
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
+import { Rack } from 'src/app/models/rack';
 import {
   defaultRackMinimalViewConfig,
   RackMinimalComponent
@@ -10,19 +14,22 @@ function mockUserMgmt(): UserManagementService {
   return {} as unknown as UserManagementService;
 }
 
-function mockDataService(): RackDetailDataService {
+function mockDataService(): Pick<RackDetailDataService, 'singleRackData$' | 'updateSingleRackData$' | 'updateSingleRackByPublicId$'> {
   return {
-    singleRackData$: new BehaviorSubject(undefined),
-    updateSingleRackData$: {next: jasmine.createSpy('next')} as any,
-    updateSingleRackByPublicId$: {next: jasmine.createSpy('next')} as any
-  } as unknown as RackDetailDataService;
+    singleRackData$: new BehaviorSubject<Rack | undefined>(undefined),
+    updateSingleRackData$: new ReplaySubject<number>(1),
+    updateSingleRackByPublicId$: new ReplaySubject<string>(1)
+  };
 }
 
 describe('RackMinimalComponent', () => {
   let comp: RackMinimalComponent;
 
   beforeEach(() => {
-    comp = new RackMinimalComponent(mockUserMgmt(), mockDataService());
+    comp = new RackMinimalComponent(
+      mockUserMgmt(),
+      mockDataService() as unknown as RackDetailDataService
+    );
   });
 
   describe('construction', () => {

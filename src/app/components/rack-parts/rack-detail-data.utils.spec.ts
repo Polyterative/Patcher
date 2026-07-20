@@ -8,12 +8,69 @@ import {
   calculateBlankIdForSizeAndStandard,
   resolveQuickBlankStandardForRow
 } from './rack-detail-data.utils';
-import { RackedModule } from '../../models/module';
-import { RackMinimal } from '../../models/rack';
+import {
+  DbModule,
+  RackedModule
+} from '../../models/module';
+import {
+  RackMinimal,
+  RackingData
+} from '../../models/rack';
 
-const makeRackedModule = (id: number, hp: number, standardId: number, rackingId: number, row: number | null, col: number | null): RackedModule => ({
-  module: { id, hp, standard: { id: standardId } } as any,
-  rackingData: { id: rackingId, row, column: col, rackid: 1, moduleid: id } as any
+type TestDbModule = DbModule & {functions: unknown[]};
+
+const makeDbModule = (id: number, hp: number, standardId: number): TestDbModule => ({
+  id,
+  name: `Module ${ id }`,
+  description: '',
+  hp,
+  public: true,
+  manufacturer: {id: 1, name: 'Fixture Maker'},
+  manufacturerId: 1,
+  standard: {id: standardId, name: `Standard ${ standardId }`},
+  tags: [],
+  panels: [],
+  ins: [],
+  outs: [],
+  switches: [],
+  manualURL: '',
+  store_url: null,
+  additional: null,
+  isComplete: true,
+  isApproved: true,
+  isDIY: false,
+  powerPos12: null,
+  powerNeg12: null,
+  powerPos5: null,
+  depth: 0,
+  weight: 0,
+  created: '2026-01-01T00:00:00.000Z',
+  updated: '2026-01-01T00:00:00.000Z',
+  functions: []
+});
+
+const makeRackMinimal = (rows: number): RackMinimal => ({
+  id: 1,
+  name: 'Fixture Rack',
+  hp: 84,
+  rows,
+  public: true,
+  locked: false,
+  author: {id: 'user-1', username: 'alice'},
+  created: '2026-01-01T00:00:00.000Z',
+  updated: '2026-01-01T00:00:00.000Z'
+});
+
+const makeRackedModule = (
+  id: number,
+  hp: number,
+  standardId: number,
+  rackingId: number | undefined,
+  row: number | null,
+  col: number | null
+): RackedModule => ({
+  module: makeDbModule(id, hp, standardId),
+  rackingData: {id: rackingId, row, column: col, rackid: 1, moduleid: id} satisfies RackingData
 });
 
 describe('rack-detail-data.utils', () => {
@@ -66,7 +123,7 @@ describe('rack-detail-data.utils', () => {
       expect(isAnyModuleWithoutRackingId(rows)).toBeFalse();
     });
     it('returns true when any module has undefined rackingData.id', () => {
-      const rows = [[makeRackedModule(1, 4, 0, undefined as any, 0, 0)]];
+      const rows = [[makeRackedModule(1, 4, 0, undefined, 0, 0)]];
       expect(isAnyModuleWithoutRackingId(rows)).toBeTrue();
     });
   });
@@ -78,7 +135,7 @@ describe('rack-detail-data.utils', () => {
         makeRackedModule(2, 4, 0, 2, 1, 0),
         makeRackedModule(3, 4, 0, 3, 0, 1)
       ];
-      const rack = { rows: 2 } as RackMinimal;
+      const rack = makeRackMinimal(2);
       const result = buildRowedModulesArray(modules, rack);
       expect(result[0].length).toBe(2);
       expect(result[1].length).toBe(1);
@@ -86,7 +143,7 @@ describe('rack-detail-data.utils', () => {
 
     it('appends unracked modules as extra row', () => {
       const modules = [makeRackedModule(1, 4, 0, 1, null, null)];
-      const result = buildRowedModulesArray(modules, { rows: 1 } as RackMinimal);
+      const result = buildRowedModulesArray(modules, makeRackMinimal(1));
       expect(result.length).toBe(2);
     });
   });
@@ -103,7 +160,7 @@ describe('rack-detail-data.utils', () => {
       const merged = mergeRefreshedModules(
         [[preservedA, preservedB], [removed]],
         [freshA, freshB, freshD],
-        {rows: 2} as RackMinimal
+        makeRackMinimal(2)
       );
 
       expect(merged[0][0]).toBe(preservedA);
@@ -114,13 +171,13 @@ describe('rack-detail-data.utils', () => {
     });
 
     it('backfills optimistic ids by row and column', () => {
-      const optimistic = makeRackedModule(1, 4, 0, undefined as any, 0, 0);
+      const optimistic = makeRackedModule(1, 4, 0, undefined, 0, 0);
       const refreshed = makeRackedModule(1, 4, 0, 55, 0, 0);
 
       const merged = mergeRefreshedModules(
         [[optimistic]],
         [refreshed],
-        {rows: 1} as RackMinimal
+        makeRackMinimal(1)
       );
 
       expect(merged[0][0]).toBe(optimistic);
@@ -129,7 +186,7 @@ describe('rack-detail-data.utils', () => {
 
     it('builds from scratch when there is no current state', () => {
       const refreshed = makeRackedModule(1, 4, 0, 101, 0, 0);
-      const rack = {rows: 1} as RackMinimal;
+      const rack = makeRackMinimal(1);
 
       expect(mergeRefreshedModules(null, [refreshed], rack)).toEqual(
         buildRowedModulesArray([refreshed], rack)
