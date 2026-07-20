@@ -18,13 +18,10 @@ import {
   throwIfSupabaseError
 } from './supabase.cache';
 import { SimpleUserModel } from './supabase.types';
-
-// Database comment entity ids: modules = 1, racks = 2, patches = 3.
-const COMMENT_ENTITY_TYPE = {
-  MODULE: 1,
-  RACK: 2,
-  PATCH: 3
-} as const;
+import {
+  CommentableEntityTypes,
+  deleteCommentRowsForEntities
+} from './supabase-comments';
 
 export function deleteAllUserData(
   supabase: SupabaseClient<Database>,
@@ -67,10 +64,10 @@ export function deleteAllUserData(
       }).pipe(
         switchMap(({patchIds, rackIds, moduleIds, moduleCollectionIds}) => deletePatchConnections(supabase, patchIds).pipe(
           switchMap(() => deletePatchModuleInstances(supabase, patchIds)),
-          switchMap(() => deleteEntityComments(supabase, COMMENT_ENTITY_TYPE.PATCH, patchIds)),
+          switchMap(() => deleteEntityComments(supabase, CommentableEntityTypes.PATCH, patchIds)),
           switchMap(() => deletePatches(supabase, patchIds)),
           switchMap(() => deleteRackModules(supabase, rackIds)),
-          switchMap(() => deleteEntityComments(supabase, COMMENT_ENTITY_TYPE.RACK, rackIds)),
+          switchMap(() => deleteEntityComments(supabase, CommentableEntityTypes.RACK, rackIds)),
           switchMap(() => deleteRacks(supabase, rackIds)),
           switchMap(() => verifyRacksDeleted(supabase, rackIds)),
           switchMap(() => deleteModuleCollectionEntriesByCollection(supabase, moduleCollectionIds)),
@@ -78,7 +75,7 @@ export function deleteAllUserData(
           switchMap(() => deleteModuleCollections(supabase, moduleCollectionIds)),
           switchMap(() => deleteModuleFlagsByModule(supabase, moduleIds)),
           switchMap(() => rxFrom(supabase.from(DbPaths.module_flags).delete().eq('user_id', uid)).pipe(throwIfSupabaseError())),
-          switchMap(() => deleteEntityComments(supabase, COMMENT_ENTITY_TYPE.MODULE, moduleIds)),
+          switchMap(() => deleteEntityComments(supabase, CommentableEntityTypes.MODULE, moduleIds)),
           switchMap(() => deleteModules(supabase, moduleIds)),
           switchMap(() => rxFrom(supabase.from(DbPaths.user_modules).delete().eq('profileid', uid)).pipe(throwIfSupabaseError())),
           switchMap(() => rxFrom(supabase.from(DbPaths.comments).delete().eq('authorId', uid)).pipe(throwIfSupabaseError())),
@@ -112,17 +109,12 @@ function mapIdsFromResponse() {
 
 function deleteEntityComments(
   supabase: SupabaseClient<Database>,
-  entityType: number,
+  entityType: CommentableEntityTypes,
   entityIds: number[]
 ) {
   return entityIds.length === 0
     ? of({data: null, error: null})
-    : rxFrom(
-      supabase.from(DbPaths.comments)
-        .delete()
-        .eq('entityType', entityType)
-        .in('entityId', entityIds)
-    ).pipe(throwIfSupabaseError());
+    : rxFrom(deleteCommentRowsForEntities(supabase, entityType, entityIds)).pipe(throwIfSupabaseError());
 }
 
 function deletePatchConnections(supabase: SupabaseClient<Database>, ids: number[]) {

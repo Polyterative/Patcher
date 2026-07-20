@@ -4,7 +4,38 @@ import {
   TEST_TIMEOUT
 } from './test-setup';
 import { SupabaseService } from '../../supabase.service';
-import { of } from 'rxjs';
+import {
+  firstValueFrom,
+  of
+} from 'rxjs';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { Database } from 'src/backend/database.types';
+
+type SupabaseFromResult = ReturnType<SupabaseClient<Database>['from']>;
+
+interface SupabaseListResponse<T> {
+  data: T[] | null;
+  error: {
+    code: string;
+    details: string | null;
+    hint: string | null;
+    message: string;
+  } | null;
+}
+
+function getSupabaseClient(service: SupabaseService): SupabaseClient<Database> {
+  return (service as unknown as {supabase: SupabaseClient<Database>}).supabase;
+}
+
+function currentUserListQuery<T>(response: SupabaseListResponse<T>): SupabaseFromResult {
+  return {
+    select: () => ({
+      filter: () => ({
+        order: () => Promise.resolve(response)
+      })
+    })
+  } as unknown as SupabaseFromResult;
+}
 
 
 /**
@@ -37,6 +68,43 @@ describe('SupabaseService - currentUserRacks Integration', () => {
   
   afterEach(() => {
     cleanupSupabaseServiceTest();
+  });
+
+  it('falls back by default and throws in strict mode when Supabase returns an error response for current user racks', async () => {
+    const testAuthorId = 'current-user-racks-error';
+    const transientError = {
+      code: 'PGRST003',
+      details: null,
+      hint: null,
+      message: 'Service temporarily unavailable'
+    };
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of({
+      id: testAuthorId,
+      email: 'test@example.com',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }));
+
+    const supabaseClient = getSupabaseClient(service);
+    spyOn(supabaseClient, 'from').and.returnValue(currentUserListQuery({data: null, error: transientError}));
+
+    await expectAsync(firstValueFrom(service.get.currentUserRacks())).toBeResolvedTo([]);
+    await expectAsync(firstValueFrom(service.get.currentUserRacks(true))).toBeRejectedWith(transientError);
+  });
+
+  it('returns an empty array for successful empty current user rack responses', async () => {
+    const testAuthorId = 'current-user-racks-empty';
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of({
+      id: testAuthorId,
+      email: 'test@example.com',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }));
+
+    const supabaseClient = getSupabaseClient(service);
+    spyOn(supabaseClient, 'from').and.returnValue(currentUserListQuery({data: [], error: null}));
+
+    await expectAsync(firstValueFrom(service.get.currentUserRacks())).toBeResolvedTo([]);
   });
   
   it('should return array of racks (not response object)', (done) => {

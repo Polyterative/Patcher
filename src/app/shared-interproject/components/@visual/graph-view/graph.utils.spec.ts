@@ -1,4 +1,4 @@
-import { parseColor, interpolateColor } from './graph.utils';
+import { computeGraphLayoutRuntimeMs, parseColor, interpolateColor } from './graph.utils';
 
 describe('graph.utils', () => {
   describe('parseColor', () => {
@@ -46,6 +46,20 @@ describe('graph.utils', () => {
 
     it('interpolates midpoint', () => {
       expect(interpolateColor('#000000', '#ffffff', 0.5)).toBe('rgb(128, 128, 128)');
+    });
+  });
+
+  describe('computeGraphLayoutRuntimeMs', () => {
+    it('returns the minimum runtime for simple graphs', () => {
+      expect(computeGraphLayoutRuntimeMs(1, 0)).toBe(1200);
+    });
+
+    it('scales with graph complexity', () => {
+      expect(computeGraphLayoutRuntimeMs(100, 50)).toBe(3150);
+    });
+
+    it('caps the runtime for complex graphs', () => {
+      expect(computeGraphLayoutRuntimeMs(200, 100)).toBe(3200);
     });
   });
 });

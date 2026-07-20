@@ -13,15 +13,57 @@ import {
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import {
   GlobalCacheConfig,
-  InMemoryStorageStrategy,
-  LocalStorageStrategy
+  InMemoryStorageStrategy
 } from 'ts-cacheable';
 
 
-GlobalCacheConfig.storageStrategy =
-  typeof window !== 'undefined' && typeof window.localStorage !== 'undefined'
-    ? LocalStorageStrategy
-    : InMemoryStorageStrategy;
+export const LEGACY_TS_CACHEABLE_STORAGE_KEY = 'CACHE_STORAGE';
+
+type RemovableStorage = Pick<Storage, 'removeItem'>;
+
+function isSecurityError(error: unknown): boolean {
+  return (
+    typeof DOMException !== 'undefined'
+    && error instanceof DOMException
+    && error.name === 'SecurityError'
+  ) || (error instanceof Error && error.name === 'SecurityError');
+}
+
+function getBrowserLocalStorage(): Storage | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    return window.localStorage;
+  } catch (error) {
+    if (isSecurityError(error)) {
+      return null;
+    }
+
+    throw error;
+  }
+}
+
+export function removeLegacyTsCacheableStorage(storage: RemovableStorage | null): void {
+  if (!storage) {
+    return;
+  }
+
+  try {
+    storage.removeItem(LEGACY_TS_CACHEABLE_STORAGE_KEY);
+  } catch (error) {
+    // Some browsers can deny localStorage access entirely; do not hide normal removeItem failures.
+    if (isSecurityError(error)) {
+      return;
+    }
+
+    throw error;
+  }
+}
+
+GlobalCacheConfig.storageStrategy = InMemoryStorageStrategy;
+removeLegacyTsCacheableStorage(getBrowserLocalStorage());
 
 export const defaultCacheTime = 5 * 60 * 1000;
 export const longCacheTime = defaultCacheTime * 10;
@@ -55,6 +97,10 @@ export type CachedEntity =
   | 'currentUserReactions'
   | 'reactionCounts'
   | 'reactionDiscovery'
+  | 'shippingAddresses'
+  | 'marketplaceListings'
+  | 'marketplaceListingWithId'
+  | 'currentUserMarketplaceListings'
   | void;
 
 export const cacheBuster$ = new Subject<CachedEntity[]>();
@@ -89,10 +135,17 @@ export function remapErrors<T>() {
 export function throwIfSupabaseError<T>() {
   return (source: Observable<any>) => source.pipe(
     map((response: any) => {
-      if (response?.error) {
-        throw response.error;
+      const responseError = (response as {error?: unknown} | null | undefined)?.error;
+      if (responseError) {
+        throw responseError;
       }
       return response as T;
     })
   );
+}
+
+export function throwIfSupabaseErrorWhen<T>(enabled: boolean): MonoTypeOperatorFunction<T> {
+  return enabled
+    ? (source: Observable<T>) => source.pipe(throwIfSupabaseError<T>())
+    : (source: Observable<T>) => source;
 }

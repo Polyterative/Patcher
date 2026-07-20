@@ -6,24 +6,16 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { Router } from '@angular/router';
 import {
   BehaviorSubject,
-  from,
-  NEVER,
   Observable,
   of,
   ReplaySubject,
-  Subject,
-  throwError
+  Subject
 } from 'rxjs';
 import {
   catchError,
-  exhaustMap,
-  filter,
-  map,
   startWith,
   switchMap,
-  take,
-  tap,
-  withLatestFrom
+  take
 } from 'rxjs/operators';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { UserDataHandlerService } from 'src/app/shared-interproject/components/@smart/user-data-handler/user-data-handler.service';
@@ -35,13 +27,15 @@ import {
   SupabaseSignupResponse,
 } from '../../backend/supabase.service';
 import { MatDialog } from '@angular/material/dialog';
-import {
-  ConfirmDialogComponent,
-  ConfirmDialogDataInModel,
-  ConfirmDialogDataOutModel
-} from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
 import { AnalyticsService } from '../analytics-integration/analytics.service';
 import { SentryContextService } from '../sentry-integration/sentry-context.service';
+import { UserManagementAccountActionsService } from './user-management-account-actions.service';
+import { UserManagementAuthFlowService } from './user-management-auth-flow.service';
+import {
+  OAuthProvider,
+  UserManagementContext
+} from './user-management-internals';
+import { UserManagementSessionSyncService } from './user-management-session-sync.service';
 
 
 @Injectable({ providedIn: 'root' })
@@ -77,7 +71,7 @@ export class UserManagementService extends SubManager {
   
   /** Emits when user initiates SSO login with a provider */
   public ssoLoginAction$ = new Subject<{
-    provider: 'google' | 'apple' | 'github' | 'facebook' | 'azure' | 'twitter';
+    provider: OAuthProvider;
     redirectUrl?: string;
   }>();
   
@@ -109,6 +103,8 @@ export class UserManagementService extends SubManager {
   
   // Track current user ID for cross-tab sync comparison
   private currentUserId: string | undefined = undefined;
+
+  private readonly context: UserManagementContext;
   
   constructor(
     private snackBar: MatSnackBar,
@@ -118,30 +114,54 @@ export class UserManagementService extends SubManager {
     private dialog: MatDialog,
     private sentryContext: SentryContextService,
     private analytics: AnalyticsService,
+    private sessionSync: UserManagementSessionSyncService,
+    private authFlow: UserManagementAuthFlowService,
+    private accountActions: UserManagementAccountActionsService,
     destroyRef: DestroyRef
   ) {
     super(destroyRef);
-    
+
+    this.context = this.createContext();
     this.checkUserInCookies();
-    
-    this.initializeUserBoxHandler();
-    this.initializeProfileFetchHandler();
-    this.initializeUserBoxLogoffHandler();
-    this.initializeCrossTabLogoutHandler();
-    this.initializeCrossTabLoginHandler();
-    this.initializeLoginHandler();
-    this.initializeLogoffHandler();
-    this.initializeResetPasswordHandler();
-    this.initializeSSOLoginHandler();
-    this.initializeOAuthCallbackHandler();
-    this.initializeUpdateUsernameHandler();
-    this.initializeResetUserDataHandler();
-    this.initializeDeleteAccountHandler();
-    this.initializeToggleUsernameFormHandler();
-    this.initializeChangePasswordHandler();
-    this.initializeTogglePasswordFormHandler();
-    this.initializeSentryIdentityHandler();
-    this.initializeAnalyticsIdentityHandler();
+    this.sessionSync.register(this.context);
+    this.authFlow.register(this.context);
+    this.accountActions.register(this.context);
+  }
+
+  private createContext(): UserManagementContext {
+    return {
+      snackBar: this.snackBar,
+      router: this.router,
+      backend: this.backend,
+      userBoxService: this.userBoxService,
+      sentryContext: this.sentryContext,
+      analytics: this.analytics,
+      destroy$: this.destroy$,
+      loggedUser$: this.loggedUser$,
+      loggedUserFullProfile$: this.loggedUserFullProfile$,
+      logoffAction$: this.logoffAction$,
+      loginAction$: this.loginAction$,
+      resetPasswordAction$: this.resetPasswordAction$,
+      ssoLoginAction$: this.ssoLoginAction$,
+      handleOAuthCallbackAction$: this.handleOAuthCallbackAction$,
+      updateUsernameAction$: this.updateUsernameAction$,
+      resetUserDataAction$: this.resetUserDataAction$,
+      deleteAccountAction$: this.deleteAccountAction$,
+      changePassword$: this.changePassword$,
+      toggleUsernameForm$: this.toggleUsernameForm$,
+      togglePasswordForm$: this.togglePasswordForm$,
+      showUsernameFormSubject$: this._showUsernameForm$,
+      showPasswordFormSubject$: this._showPasswordForm$,
+      getDialog: () => this.dialog,
+      getCurrentUserId: () => this.currentUserId,
+      setCurrentUserId: userId => this.currentUserId = userId,
+      setProfileRestored: restored => this._profileRestored$.next(restored),
+      publishLoggedUser: user => this.publishLoggedUser(user),
+      publishSignedInProfile: profile => this.publishSignedInProfile(profile),
+      publishSignedOut: () => this.publishSignedOut(),
+      publishRestoredProfile: profile => this.publishRestoredProfile(profile),
+      showOperationError: error => this.showOperationError(error)
+    };
   }
 
   private publishLoggedUser(user: SimpleUserModel | undefined): void {
@@ -168,242 +188,6 @@ export class UserManagementService extends SubManager {
     this._loggedUserFullProfile$.next(profile);
     this._profileRestored$.next(true);
   }
-
-  private hasCompleteRichProfile(profile: RichUserModel | null | undefined): profile is RichUserModel {
-    return !!profile && !!profile.username && !!profile.email;
-  }
-
-  private restoreCurrentUserProfile$(): Observable<RichUserModel | undefined> {
-    return this.backend.auth.getRichUserSession$().pipe(
-      take(1),
-      map(profile => this.hasCompleteRichProfile(profile) ? profile : undefined),
-      catchError((error) => {
-        console.error('Profile restoration failed:', error);
-        return of(undefined);
-      })
-    );
-  }
-  
-  private initializeUserBoxHandler(): void {
-    this.loggedUserFullProfile$
-      .pipe(
-        this.takeUntilDestroyed()
-      )
-      .subscribe(x => {
-        this.userBoxService.store.user$.next({username: x?.username});
-      });
-  }
-
-  private initializeSentryIdentityHandler(): void {
-    // Feed Sentry the current user (id/email/username) so issues group by
-    // "users affected" and triage isn't blind. Cleared on logout.
-    this.loggedUserFullProfile$
-      .pipe(this.takeUntilDestroyed())
-      .subscribe(profile => {
-        if (profile && profile.id) {
-          this.sentryContext.setUser({
-            id:       profile.id,
-            email:    profile.email,
-            username: profile.username
-          });
-        } else {
-          this.sentryContext.clearUser();
-        }
-      });
-  }
-  
-  private initializeAnalyticsIdentityHandler(): void {
-    // Tie PostHog distinct_id to the Supabase user so funnels and retention
-    // join across sessions/devices. Reset on logout to drop identity from
-    // the local SDK state.
-    this.loggedUserFullProfile$
-      .pipe(this.takeUntilDestroyed())
-      .subscribe(profile => {
-        if (profile && profile.id) {
-          this.analytics.identify({
-            id:       profile.id,
-            email:    profile.email,
-            username: profile.username
-          });
-        } else {
-          this.analytics.reset();
-        }
-      });
-  }
-
-  private initializeProfileFetchHandler(): void {
-    // Update loggedUserProfile$ when loggedUser$ changes
-    // This handles session restoration (page loads) where we have a user from session
-    // but need to fetch the full profile. During login, the full profile is set directly.
-    this.loggedUser$
-      .pipe(
-        tap((user) => {
-          this.currentUserId = user?.id;
-          if (!user) {
-            this.publishRestoredProfile(undefined);
-          }
-        }),
-        filter((user): user is SimpleUserModel => !!user),
-        // Check if we already have a profile for this user
-        withLatestFrom(this.loggedUserFullProfile$.pipe(startWith(undefined))),
-        tap(([user, profile]) => {
-          this._profileRestored$.next(!!profile && profile.id === user.id);
-        }),
-        // Only fetch if we don't have a profile or it's for a different user
-        filter(([user, profile]) => !profile || profile.id !== user.id),
-        tap(() => {
-          this._profileRestored$.next(false);
-        }),
-        switchMap(() => this.restoreCurrentUserProfile$()),
-        this.takeUntilDestroyed()
-      )
-      .subscribe(x => {
-        this.publishRestoredProfile(x);
-      });
-  }
-  
-  private initializeUserBoxLogoffHandler(): void {
-    this.userBoxService.logoffButtonClick$.pipe(
-      this.takeUntilDestroyed()
-    ).subscribe(() => {
-      this.logoffAction$.next();
-    });
-  }
-  
-  private initializeCrossTabLogoutHandler(): void {
-    // Listen to logout events from Supabase for cross-tab synchronization
-    // This enables cross-tab logout without showing the success message again
-    this.backend.user.logout$.pipe(
-      tap(() => {
-        this.publishSignedOut();
-      }),
-      filter(() => !this.router.url.includes('/auth/login')),
-      this.takeUntilDestroyed()
-    ).subscribe(() => {
-      this.router.navigate(['/auth/login']);
-    });
-  }
-  
-  private initializeCrossTabLoginHandler(): void {
-    // Listen to login events from Supabase for cross-tab synchronization
-    // This enables cross-tab login sync when user logs in from another tab
-    // Note: Navigation is NOT handled here - it's the responsibility of the component
-    // that initiated the login (e.g., login page navigates to /user/area)
-    this.backend.user.login$.pipe(
-      switchMap(() => this.backend.auth.getUserSession$()),
-      filter(user => !!user),
-      // Only update if we're currently logged out or it's a different user
-      // This prevents unnecessary updates when already logged in as the same user
-      filter(user => !this.currentUserId || this.currentUserId !== user!.id),
-      tap(user => {
-        this.publishLoggedUser(user ?? undefined);
-      }),
-      this.takeUntilDestroyed()
-    ).subscribe();
-  }
-  
-  private initializeLoginHandler(): void {
-    this.loginAction$.pipe(
-      switchMap(({email, password}) => this.backend.auth.login$(email, password).pipe(
-        catchError(() => {
-          SharedConstants.errorLogin(this.snackBar);
-          return NEVER;
-        })
-      )),
-      tap(x => {
-        // Emit the full user data directly to avoid duplicate database calls
-        // The login$ already fetches the username, so we have complete data
-        this.publishSignedInProfile(x.user);
-        this.analytics.capture('auth.signed_in', { method: 'password' });
-      }),
-      this.takeUntilDestroyed()
-    ).subscribe();
-  }
-  
-  private initializeLogoffHandler(): void {
-    this.logoffAction$.pipe(
-      switchMap(() => from(this.backend.auth.logoff$()).pipe(
-        catchError((error) => {
-          console.error('Logout failed:', error);
-          SharedConstants.errorCustom(this.snackBar, SharedConstants.messages.operationFailed);
-          return NEVER;
-        })
-      )),
-      tap(() => {
-        this.analytics.capture('auth.signed_out');
-        // State will be cleared by the auth state change listener
-        // which triggers the cross-tab logout handler
-        this.router.navigate(['/auth/login']);
-        SharedConstants.successLogout(this.snackBar);
-      }),
-      this.takeUntilDestroyed()
-    ).subscribe();
-  }
-  
-  private initializeResetPasswordHandler(): void {
-    this.resetPasswordAction$.pipe(
-      switchMap(email => this.backend.auth.resetPassword$(email).pipe(
-        catchError((error) => {
-          if (error?.error_code === 'over_email_send_rate_limit') {
-            SharedConstants.errorCustom(
-              this.snackBar,
-              SharedConstants.messages.overEmailSendRateLimit
-            );
-          } else {
-            SharedConstants.errorCustom(
-              this.snackBar,
-              SharedConstants.messages.operationFailed
-            );
-          }
-          return NEVER;
-        })
-      )),
-      tap(() => {
-        this.analytics.capture('auth.password_reset_requested', {});
-        SharedConstants.successCustom(this.snackBar, SharedConstants.messages.passwordResetEmailSent);
-      }),
-      this.takeUntilDestroyed()
-    ).subscribe();
-  }
-  
-  private initializeSSOLoginHandler(): void {
-    this.ssoLoginAction$.pipe(
-      switchMap(({provider, redirectUrl}) => this.backend.auth.loginWithOAuth$(provider, redirectUrl).pipe(
-        tap(() => this.analytics.capture('auth.sso_login_initiated', { provider })),
-        catchError((error) => {
-          console.error('SSO login failed:', error);
-          SharedConstants.errorCustom(
-            this.snackBar,
-            'Social login failed. Please try again.'
-          );
-          return NEVER;
-        })
-      )),
-      // OAuth redirect happens automatically, no further action needed
-      this.takeUntilDestroyed()
-    ).subscribe();
-  }
-  
-  private initializeOAuthCallbackHandler(): void {
-    this.handleOAuthCallbackAction$.pipe(
-      switchMap(() => this.backend.auth.handleOAuthCallback$().pipe(
-        catchError((error) => {
-          console.error('OAuth callback handling failed:', error);
-          SharedConstants.errorCustom(
-            this.snackBar,
-            'Authentication failed. Please try again.'
-          );
-          return NEVER;
-        })
-      )),
-      filter(user => !!user),
-      tap(user => {
-        this.publishSignedInProfile(user);
-        this.analytics.capture('auth.signed_in', { method: 'oauth' });
-      }),
-      this.takeUntilDestroyed()
-    ).subscribe();
-  }
   
   /**
    * @deprecated This should be refactored to use a signup$ action subject
@@ -417,17 +201,7 @@ export class UserManagementService extends SubManager {
    * @deprecated Components should eventually use the loginAction$ subject directly
    */
   login$(email: string, password: string) {
-    // For backward compatibility, return the backend observable directly
-    // This will be handled by the component's subscription
-    return this.backend.auth.login$(email, password).pipe(
-      catchError(() => {
-        SharedConstants.errorLogin(this.snackBar);
-        return NEVER;
-      }),
-      tap(x => {
-        this.publishSignedInProfile(x.user);
-      })
-    );
+    return this.authFlow.login$(email, password, this.context);
   }
   
   /**
@@ -443,23 +217,7 @@ export class UserManagementService extends SubManager {
    * @deprecated Components should eventually use the resetPasswordAction$ subject directly
    */
   resetPassword$(email: string) {
-    return this.backend.auth.resetPassword$(email).pipe(
-      catchError((error) => {
-        if (error?.error_code === 'over_email_send_rate_limit') {
-          SharedConstants.errorCustom(
-            this.snackBar,
-            SharedConstants.messages.overEmailSendRateLimit
-          );
-        } else {
-          SharedConstants.errorCustom(
-            this.snackBar,
-            SharedConstants.messages.operationFailed
-          );
-        }
-        return NEVER;
-      }),
-      tap(() => SharedConstants.successCustom(this.snackBar, SharedConstants.messages.passwordResetEmailSent))
-    );
+    return this.authFlow.resetPassword$(email, this.context);
   }
   
   /**
@@ -469,8 +227,8 @@ export class UserManagementService extends SubManager {
    * @param provider - The OAuth provider (google, apple, github, etc.)
    * @param redirectUrl - Optional custom redirect URL after successful authentication
    */
-  loginWithSSO(provider: 'google' | 'apple' | 'github' | 'facebook' | 'azure' | 'twitter', redirectUrl?: string): void {
-    this.ssoLoginAction$.next({provider, redirectUrl});
+  loginWithSSO(provider: OAuthProvider, redirectUrl?: string): void {
+    this.authFlow.loginWithSSO(provider, redirectUrl, this.context);
   }
   
   /**
@@ -478,7 +236,7 @@ export class UserManagementService extends SubManager {
    * Should be called on the callback page to complete authentication
    */
   handleOAuthCallback(): void {
-    this.handleOAuthCallbackAction$.next();
+    this.authFlow.handleOAuthCallback(this.context);
   }
   
   /**
@@ -494,38 +252,6 @@ export class UserManagementService extends SubManager {
     });
   }
   
-  private initializeUpdateUsernameHandler(): void {
-    this.updateUsernameAction$.pipe(
-      withLatestFrom(this.loggedUserFullProfile$),
-      filter(([_, profile]) => !!profile),
-      switchMap(([newUsername, profile]) =>
-        this.backend.auth.updateUsername$(profile!.id, newUsername).pipe(
-          map(() => newUsername),
-          catchError((error) => {
-            this.showOperationError(error);
-            return NEVER;
-          })
-        )
-      ),
-      // Refresh the user profile after successful update
-      switchMap((newUsername) => this.backend.auth.getRichUserSession$().pipe(
-        map(profile => ({profile, newUsername})),
-        catchError((error) => {
-          this.showOperationError(error);
-          return NEVER;
-        })
-      )),
-      filter(({profile}) => !!profile),
-      tap(({profile, newUsername}) => {
-        this.publishRestoredProfile(profile);
-        this._showUsernameForm$.next(false);
-        this.analytics.capture('account.username_changed', {});
-        SharedConstants.successCustom(this.snackBar, `Username changed to "${ newUsername }" — your profile has been synced.`);
-      }),
-      this.takeUntilDestroyed()
-    ).subscribe();
-  }
-  
   /**
    * Updates the username for the currently logged-in user
    * Works for both email/password and SSO users
@@ -534,41 +260,11 @@ export class UserManagementService extends SubManager {
    * @returns Observable that completes when username is updated
    */
   updateUsername$(newUsername: string): Observable<void> {
-    return this.loggedUserFullProfile$.pipe(
-      take(1),
-      switchMap(profile => {
-        if (!profile) {
-          SharedConstants.errorCustom(this.snackBar, 'Unable to save: user session not found. Please refresh and try again.');
-          return throwError(() => new Error('No user profile available'));
-        }
-        return this.backend.auth.updateUsername$(profile.id, newUsername).pipe(
-          catchError((error) => {
-            this.showOperationError(error);
-            return throwError(() => error);
-          })
-        );
-      }),
-      // Refresh the user profile after successful update
-      switchMap(() => this.backend.auth.getRichUserSession$()),
-      filter(x => !!x),
-      tap(updatedProfile => {
-        this.publishRestoredProfile(updatedProfile);
-        SharedConstants.successCustom(this.snackBar, `Username changed to "${ newUsername }" — your profile has been synced.`);
-      }),
-      map(() => void 0)
-    );
+    return this.accountActions.updateUsername$(newUsername, this.context);
   }
 
   isUsernameAvailable$(username: string): Observable<boolean> {
-    return this.loggedUserFullProfile$.pipe(
-      take(1),
-      switchMap(profile => {
-        if (!profile) {
-          return throwError(() => new Error('No user profile available'));
-        }
-        return this.backend.auth.isUsernameAvailable$(username, profile.id);
-      })
-    );
+    return this.accountActions.isUsernameAvailable$(username, this.context);
   }
 
   isUsernameAvailableForSignup$(username: string): Observable<boolean> {
@@ -576,163 +272,7 @@ export class UserManagementService extends SubManager {
   }
 
   updateProfileVisibility$(isPublic: boolean): Observable<void> {
-    return this.loggedUserFullProfile$.pipe(
-      take(1),
-      switchMap(profile => {
-        if (!profile) {
-          SharedConstants.errorCustom(this.snackBar, 'Unable to save: user session not found. Please refresh and try again.');
-          return throwError(() => new Error('No user profile available'));
-        }
-
-        return this.backend.auth.updateProfileVisibility$(profile.id, isPublic).pipe(
-          tap(() => {
-            this.publishRestoredProfile({...profile, public: isPublic});
-            SharedConstants.successCustom(
-              this.snackBar,
-              isPublic
-                ? 'Your public profile is now visible to other users.'
-                : 'Your public profile is now private.'
-            );
-          }),
-          catchError((error) => {
-            this.showOperationError(error);
-            return throwError(() => error);
-          })
-        );
-      }),
-      map(() => void 0)
-    );
-  }
-
-  private initializeResetUserDataHandler(): void {
-    this.resetUserDataAction$.pipe(
-      switchMap(() => {
-        const dialogData: ConfirmDialogDataInModel = {
-          title: 'Delete all your data?',
-          description: 'This will permanently delete all your patches, racks, collections, and comments. This cannot be undone. Your account will stay active so you can start fresh afterward.',
-          positive: {label: 'Delete my data', theme: 'warning'}
-        };
-        return this.dialog.open<ConfirmDialogComponent, ConfirmDialogDataInModel, ConfirmDialogDataOutModel>(
-          ConfirmDialogComponent,
-          {data: dialogData, disableClose: false, width: '36rem'}
-        ).afterClosed();
-      }),
-      tap((result) => {
-        if (!result?.answer) SharedConstants.infoCustom(this.snackBar, 'No changes made.');
-      }),
-      filter((result): result is ConfirmDialogDataOutModel => !!result?.answer),
-      exhaustMap(() => this.backend.delete.allUserData().pipe(
-        catchError((error) => {
-          console.error('Data deletion failed:', error);
-          SharedConstants.errorCustom(this.snackBar, 'Data deletion failed. Please try again or contact support.');
-          return NEVER;
-        })
-      )),
-      tap(() => {
-        this.publishSignedOut();
-        this.analytics.capture('account.data_deleted', {});
-      }),
-      switchMap(() => from(this.backend.auth.logoff$()).pipe(
-        catchError(() => NEVER)
-      )),
-      tap(() => {
-        SharedConstants.successCustom(this.snackBar, 'All your data has been deleted. Your account is still available if you want to sign back in.');
-        this.router.navigate(['/auth/login']);
-      }),
-      this.takeUntilDestroyed()
-    ).subscribe();
-  }
-
-  private initializeDeleteAccountHandler(): void {
-    this.deleteAccountAction$.pipe(
-      switchMap(() => {
-        const dialogData: ConfirmDialogDataInModel = {
-          title: 'Delete your account?',
-          description: 'This permanently deletes your account, profile, and all your data. This cannot be undone.',
-          positive: {label: 'Delete my account', theme: 'negative'}
-        };
-        return this.dialog.open<ConfirmDialogComponent, ConfirmDialogDataInModel, ConfirmDialogDataOutModel>(
-          ConfirmDialogComponent,
-          {data: dialogData, disableClose: false, width: '36rem'}
-        ).afterClosed();
-      }),
-      tap((result) => {
-        if (!result?.answer) SharedConstants.infoCustom(this.snackBar, 'No changes made.');
-      }),
-      filter((result): result is ConfirmDialogDataOutModel => !!result?.answer),
-      exhaustMap(() => this.backend.delete.allUserData().pipe(
-        catchError((error) => {
-          console.error('Data deletion failed:', error);
-          SharedConstants.errorCustom(this.snackBar, 'Account deletion failed while removing your data. Please try again or contact support.');
-          return NEVER;
-        })
-      )),
-      switchMap(() => this.backend.auth.deleteCurrentUserAccount$().pipe(
-        catchError((error) => {
-          console.error('Account deletion failed:', error);
-          SharedConstants.errorCustom(this.snackBar, 'Account deletion failed. Please try again or contact support.');
-          return NEVER;
-        })
-      )),
-      tap(() => {
-        this.publishSignedOut();
-        this.analytics.capture('account.deleted', {});
-      }),
-      switchMap(() => this.backend.auth.logoffLocal$().pipe(
-        catchError((error) => {
-          console.error('Local sign-out after account deletion failed:', error);
-          return of({error: null});
-        })
-      )),
-      tap(() => {
-        SharedConstants.successCustom(this.snackBar, 'Your account has been permanently deleted.');
-        this.router.navigate(['/auth/login']);
-      }),
-      this.takeUntilDestroyed()
-    ).subscribe();
-  }
-  
-  private initializeTogglePasswordFormHandler(): void {
-    this.togglePasswordForm$.pipe(
-      tap(show => {
-        this._showPasswordForm$.next(show);
-        if (show) {
-          this._showUsernameForm$.next(false);
-        }
-      }),
-      this.takeUntilDestroyed()
-    ).subscribe();
-  }
-
-  private initializeToggleUsernameFormHandler(): void {
-    this.toggleUsernameForm$.pipe(
-      tap(show => {
-        this._showUsernameForm$.next(show);
-        if (show) {
-          this._showPasswordForm$.next(false);
-        }
-      }),
-      this.takeUntilDestroyed()
-    ).subscribe();
-  }
-  
-  private initializeChangePasswordHandler(): void {
-    this.changePassword$.pipe(
-      switchMap(({newPassword}) =>
-        this.backend.auth.updatePassword$(newPassword).pipe(
-          catchError((error) => {
-            this.showOperationError(error);
-            return NEVER;
-          })
-        )
-      ),
-      tap(() => {
-        this._showPasswordForm$.next(false);
-        this.analytics.capture('auth.password_changed', {});
-        SharedConstants.successCustom(this.snackBar, 'Password updated successfully.');
-      }),
-      this.takeUntilDestroyed()
-    ).subscribe();
+    return this.accountActions.updateProfileVisibility$(isPublic, this.context);
   }
 
   private showOperationError(error: unknown): void {

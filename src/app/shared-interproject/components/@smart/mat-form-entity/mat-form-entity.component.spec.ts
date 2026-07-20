@@ -1,12 +1,23 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
+import {
+  AsyncValidatorFn,
+  UntypedFormControl,
+  ValidationErrors
+} from '@angular/forms';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { FormTypes } from './form-element-models';
 import { IMatFormEntityConfig, MatFormEntityComponent } from './mat-form-entity.component';
 import { MatFormEntityDateInputComponent } from './mat-form-entity-date-input.component';
+import {
+  buildFlatStrictAutocompleteValidator,
+  displayPresetOption,
+  filterFlatOptions,
+  filterGroupedOptions,
+  FORM_ENTITY_NOT_IN_OPTIONS_ERROR
+} from './mat-form-entity.helpers';
 
 
 @Component({
@@ -202,6 +213,61 @@ describe('MatFormEntityComponent ergonomics', () => {
 
   function getRenderedInputs(): HTMLInputElement[] {
     return Array.from(fixture.nativeElement.querySelectorAll('input')) as HTMLInputElement[];
+  }
+});
+
+describe('mat form entity helpers', () => {
+  it('formats preset display values without clearing primitive control values', () => {
+    expect(displayPresetOption(null)).toBe('');
+    expect(displayPresetOption('My Rack')).toBe('My Rack');
+    expect(displayPresetOption(42)).toBe('42');
+    expect(displayPresetOption({id: '7', name: 'Studio Rack'})).toBe('Studio Rack');
+  });
+
+  it('filters flat options case-insensitively by default', () => {
+    const options = [
+      {id: '1', name: 'Studio Rack'},
+      {id: '2', name: 'Live Case'}
+    ];
+
+    expect(filterFlatOptions('studio', options, false)).toEqual([{id: '1', name: 'Studio Rack'}]);
+    expect(filterFlatOptions('studio', options, true)).toEqual([]);
+  });
+
+  it('filters grouped options without mutating the source groups', () => {
+    const options = [
+      {
+        id: 'group-1',
+        name: 'Group',
+        options: [
+          {id: '1', name: 'Studio Rack'},
+          {id: '2', name: 'Live Case'}
+        ]
+      }
+    ];
+
+    expect(filterGroupedOptions('live', options, false)).toEqual([
+      {
+        id: 'group-1',
+        name: 'Group',
+        options: [{id: '2', name: 'Live Case'}]
+      }
+    ]);
+    expect(options[0].options?.length).toBe(2);
+  });
+
+  it('keeps strict autocomplete validation semantics', async () => {
+    const options$ = new BehaviorSubject([{id: '1', name: 'Studio Rack'}]);
+    const validator = buildFlatStrictAutocompleteValidator(options$, false);
+
+    expect(await runAsyncValidator(validator, {id: '1', name: 'Changed Label'})).toBeNull();
+    expect(await runAsyncValidator(validator, 'Studio Rack'))
+      .toEqual(FORM_ENTITY_NOT_IN_OPTIONS_ERROR);
+  });
+
+  function runAsyncValidator(validator: AsyncValidatorFn, value: unknown): Promise<ValidationErrors | null> {
+    const result = validator(new UntypedFormControl(value));
+    return result instanceof Promise ? result : firstValueFrom(result);
   }
 });
 

@@ -26,18 +26,22 @@ import {
   DiscoveryTipUserAreaSnapshot
 } from './discovery-tip.models';
 import {
-  DEFAULT_TIP_SPACING_MS,
   DEFAULT_GLOBAL_DISCOVERY_TIP_PAUSE_MS,
   DISCOVERY_TIP_GLOBAL_PAUSE_ID,
   DISCOVERY_TIP_STORAGE_KEY
 } from './discovery-tip.constants';
 import {
+  DiscoveryTipSelectionContext,
+  discoveryTipsMatchingAction,
+  findAutomaticDiscoveryTipCandidate,
+  shouldKeepAutomaticDiscoveryTip,
+  shouldKeepGuidedDiscoveryTip
+} from './discovery-tip-selection.utils';
+import {
   buildDiscoveryTipActive,
-  canShowTipOnCurrentRoute,
   ensureDiscoveryTipViewerState,
   guidedDiscoveryTips,
   initializeDiscoveryTipViewerState,
-  isSnoozed,
   normalizeTipState,
   readDiscoveryTipStorage,
   writeDiscoveryTipStorage
@@ -157,7 +161,7 @@ export class DiscoveryTipService extends SubManager {
       [actionKey]: Date.now()
     });
 
-    const matchingTips = discoveryTipRegistry.filter((tip) => tip.completionActions?.includes(actionKey));
+    const matchingTips = discoveryTipsMatchingAction(discoveryTipRegistry, actionKey);
     matchingTips.forEach((tip) => this.markTipLearned(tip.id));
   }
 
@@ -241,6 +245,16 @@ export class DiscoveryTipService extends SubManager {
     };
   }
 
+  private buildSelectionContext(snapshot = this.buildSnapshot()): DiscoveryTipSelectionContext {
+    return {
+      definitions: discoveryTipRegistry,
+      snapshot,
+      anchorIds: new Set(this.anchors.keys()),
+      viewerState: this._viewerState$.value,
+      nowMs: Date.now()
+    };
+  }
+
   private refreshActiveTip(): void {
     if (!this.isBrowser) {
       this.clearQueuedTip();
@@ -249,12 +263,13 @@ export class DiscoveryTipService extends SubManager {
     }
 
     const snapshot = this.buildSnapshot();
+    const selectionContext = this.buildSelectionContext(snapshot);
     if (this.guidedTourActive) {
       this.clearQueuedTip();
       const currentTip = this._activeTip$.value;
       if (
         currentTip?.guidedStepTotal
-        && this.shouldKeepGuidedTip(currentTip.definition, snapshot)
+        && shouldKeepGuidedDiscoveryTip(currentTip.definition, selectionContext)
       ) {
         return;
       }
@@ -264,7 +279,7 @@ export class DiscoveryTipService extends SubManager {
 
     const currentTip = this._activeTip$.value;
     if (currentTip) {
-      if (this.shouldKeepActiveTip(currentTip.definition, snapshot)) {
+      if (shouldKeepAutomaticDiscoveryTip(currentTip.definition, selectionContext)) {
         return;
       }
       this._activeTip$.next(null);
@@ -276,7 +291,7 @@ export class DiscoveryTipService extends SubManager {
       return;
     }
 
-    const candidate = this.findCandidate();
+    const candidate = this.findCandidate(snapshot);
 
     if (!candidate) {
       this.clearQueuedTip();
@@ -312,42 +327,8 @@ export class DiscoveryTipService extends SubManager {
     }, delay);
   }
 
-  private shouldKeepActiveTip(
-    definition: DiscoveryTipDefinition,
-    snapshot: DiscoveryTipContextSnapshot
-  ): boolean {
-    if (!canShowTipOnCurrentRoute(definition, snapshot)) {
-      return false;
-    }
-
-    const anchorElement = this.anchors.get(definition.anchorId);
-    if (!anchorElement) {
-      return false;
-    }
-
-    const currentState = this.getTipState(definition);
-    if (currentState.learnedAt) {
-      return false;
-    }
-
-    if (isSnoozed(currentState.snoozedUntil)) {
-      return false;
-    }
-
-    return definition.isEligible(snapshot);
-  }
-
-  private shouldKeepGuidedTip(
-    definition: DiscoveryTipDefinition,
-    snapshot: DiscoveryTipContextSnapshot
-  ): boolean {
-    return canShowTipOnCurrentRoute(definition, snapshot) && this.anchors.has(definition.anchorId);
-  }
-
-  private findCandidate(): DiscoveryTipDefinition | null {
-    const snapshot = this.buildSnapshot();
-    const sortedTips = [...discoveryTipRegistry].sort((left, right) => left.priority - right.priority);
-    return sortedTips.find((tip) => this.isTipEligible(tip, snapshot)) ?? null;
+  private findCandidate(snapshot = this.buildSnapshot()): DiscoveryTipDefinition | null {
+    return findAutomaticDiscoveryTipCandidate(this.buildSelectionContext(snapshot));
   }
 
   private advanceGuidedTour(): void {
@@ -377,10 +358,11 @@ export class DiscoveryTipService extends SubManager {
     startIndex: number,
     snapshot = this.buildSnapshot()
   ): void {
-    const guidedTips = this.guidedTips();
+    const selectionContext = this.buildSelectionContext(snapshot);
+    const guidedTips = guidedDiscoveryTips(discoveryTipRegistry);
     for (let index = startIndex; index < guidedTips.length; index += 1) {
       const definition = guidedTips[index];
-      if (!this.shouldKeepGuidedTip(definition, snapshot)) {
+      if (!shouldKeepGuidedDiscoveryTip(definition, selectionContext)) {
         continue;
       }
 
@@ -402,45 +384,6 @@ export class DiscoveryTipService extends SubManager {
     this.guidedTourActive = false;
     this.guidedTourIndex = 0;
     this._activeTip$.next(null);
-  }
-
-  private guidedTips(): DiscoveryTipDefinition[] {
-    return guidedDiscoveryTips(discoveryTipRegistry);
-  }
-
-  private isTipEligible(definition: DiscoveryTipDefinition, snapshot: DiscoveryTipContextSnapshot): boolean {
-    const globalPauseState = this._viewerState$.value.tips[DISCOVERY_TIP_GLOBAL_PAUSE_ID];
-    if (isSnoozed(globalPauseState?.snoozedUntil)) {
-      return false;
-    }
-
-    if (this.isWithinAutomaticSpacingWindow(definition)) {
-      return false;
-    }
-
-    if (!canShowTipOnCurrentRoute(definition, snapshot)) {
-      return false;
-    }
-
-    if (!this.anchors.has(definition.anchorId)) {
-      return false;
-    }
-
-    const currentState = this.getTipState(definition);
-    if (currentState.learnedAt) {
-      return false;
-    }
-
-    if (isSnoozed(currentState.snoozedUntil)) {
-      return false;
-    }
-
-    const maxShowCount = definition.maxShowCount ?? 1;
-    if (currentState.shownCount >= maxShowCount) {
-      return false;
-    }
-
-    return definition.isEligible(snapshot);
   }
 
   private markTipLearned(tipId: string): void {
@@ -500,21 +443,6 @@ export class DiscoveryTipService extends SubManager {
       lastShownTipId: definition.id,
       tips: nextStates
     });
-  }
-
-  private isWithinAutomaticSpacingWindow(definition: DiscoveryTipDefinition): boolean {
-    const lastTipShownAt = this._viewerState$.value.lastTipShownAt;
-    if (!lastTipShownAt) {
-      return false;
-    }
-
-    const lastTipShownTime = new Date(lastTipShownAt).getTime();
-    if (Number.isNaN(lastTipShownTime)) {
-      return false;
-    }
-
-    const minSpacingMs = definition.minSpacingMs ?? DEFAULT_TIP_SPACING_MS;
-    return Date.now() - lastTipShownTime < minSpacingMs;
   }
 
   private updateViewerState(viewerState: DiscoveryTipViewerState): void {

@@ -6,12 +6,18 @@ import { SupabaseService } from '../../supabase.service';
 import {
   cacheBust,
   cacheBuster$,
-  CachedEntity
+  CachedEntity,
+  LEGACY_TS_CACHEABLE_STORAGE_KEY,
+  removeLegacyTsCacheableStorage
 } from '../../supabase.cache';
 import {
   firstValueFrom,
   of
 } from 'rxjs';
+import {
+  GlobalCacheConfig,
+  InMemoryStorageStrategy
+} from 'ts-cacheable';
 
 
 function chainable(resolveValue: any = {data: null, error: null}) {
@@ -28,7 +34,7 @@ function chainable(resolveValue: any = {data: null, error: null}) {
 /**
  * Caching Behavior Tests
  *
- * Tests for cache resetter functionality and localStorage usage.
+ * Tests for cache resetter functionality and in-memory cache behavior.
  */
 describe('SupabaseService - Caching Behavior', () => {
   let service: SupabaseService;
@@ -58,10 +64,41 @@ describe('SupabaseService - Caching Behavior', () => {
     subscription.unsubscribe();
   });
   
-  it('should use localStorage for caching strategy', () => {
-    // Verify that ts-cacheable is configured for localStorage
-    // This validates the caching setup exists
-    expect(localStorage).toBeDefined();
+  it('uses page-lifetime in-memory cache storage', () => {
+    expect(GlobalCacheConfig.storageStrategy).toBe(InMemoryStorageStrategy);
+  });
+
+  it('removes only the legacy ts-cacheable localStorage blob', () => {
+    localStorage.setItem(LEGACY_TS_CACHEABLE_STORAGE_KEY, '{"old":true}');
+    localStorage.setItem('sb-auth-token', 'preserved');
+    localStorage.setItem('patcher-discovery-tip', 'preserved');
+
+    removeLegacyTsCacheableStorage(localStorage);
+
+    expect(localStorage.getItem(LEGACY_TS_CACHEABLE_STORAGE_KEY)).toBeNull();
+    expect(localStorage.getItem('sb-auth-token')).toBe('preserved');
+    expect(localStorage.getItem('patcher-discovery-tip')).toBe('preserved');
+  });
+
+  it('does not swallow unexpected legacy cache cleanup failures', () => {
+    const unexpected = new Error('unexpected removeItem failure');
+    const storage: Pick<Storage, 'removeItem'> = {
+      removeItem: () => {
+        throw unexpected;
+      }
+    };
+
+    expect(() => removeLegacyTsCacheableStorage(storage)).toThrow(unexpected);
+  });
+
+  it('ignores SecurityError during legacy cache cleanup', () => {
+    const storage: Pick<Storage, 'removeItem'> = {
+      removeItem: () => {
+        throw new DOMException('localStorage unavailable', 'SecurityError');
+      }
+    };
+
+    expect(() => removeLegacyTsCacheableStorage(storage)).not.toThrow();
   });
 
   it('cacheResetter$ emits the provided key array to subscribers', () => {
@@ -101,6 +138,7 @@ describe('SupabaseService - Caching Behavior', () => {
   });
 
   it('caches get_rack_by_public_id reads by public_id', async () => {
+    const setItemSpy = spyOn(Storage.prototype, 'setItem').and.callThrough();
     const rpcSpy = spyOn(supabaseClient, 'rpc').and.returnValue(
       chainable({data: [{id: 101, public_id: 'rack-token-cache'}], error: null})
     );
@@ -112,6 +150,7 @@ describe('SupabaseService - Caching Behavior', () => {
     expect(second.data.id).toBe(101);
     expect(rpcSpy).toHaveBeenCalledTimes(1);
     expect(rpcSpy).toHaveBeenCalledWith('get_rack_by_public_id', {p_public_id: 'rack-token-cache'});
+    expect(setItemSpy.calls.allArgs().filter(([key]) => key === LEGACY_TS_CACHEABLE_STORAGE_KEY)).toEqual([]);
   });
 
   it('busts get_rack_by_public_id cache after rack update and delete mutations', async () => {

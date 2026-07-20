@@ -126,7 +126,7 @@ describe('SupabaseService - add.rack', () => {
     
     service.add.rack({name: 'My Rack', hp: 84, rows: 2, locked: false, public: true} as any).subscribe({
       next: () => {
-        const payload = insertSpy.calls.first().args[0] as any;
+        const payload = insertSpy.calls.first().args[0] as Record<string, unknown>;
         expect(payload.authorid).toBe('rack-creator');
         expect(payload.name).toBe('My Rack');
         done();
@@ -200,9 +200,35 @@ describe('SupabaseService - add.rackModule', () => {
     service.add.rackModule(3, 7, 0, 2).subscribe({
       next: () => {
         expect(insertSpy).toHaveBeenCalledWith(jasmine.objectContaining({
-          moduleid: 3, rackid: 7, row: 0, column: 2
+          moduleid: 3,
+          rackid: 7,
+          row: 0,
+          column: 2,
+          orientation: 'normal'
         }));
-        expect(selectSpy).toHaveBeenCalledWith('id,moduleid,rackid,row,column,selected_panel_id');
+        expect(selectSpy).toHaveBeenCalledWith('id,moduleid,rackid,row,column,selected_panel_id,orientation');
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+
+  it('should insert an explicit rack module orientation', (done) => {
+    const mockUser = {id: 'u'};
+    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+
+    const mock = chainable({data: null, error: null});
+    const insertSpy = spyOn(mock, 'insert').and.returnValue(mock);
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+    service.add.rackModule(3, 7, 0, 2, 'rot180').subscribe({
+      next: () => {
+        expect(insertSpy).toHaveBeenCalledWith(jasmine.objectContaining({
+          orientation: 'rot180'
+        }));
         done();
       },
       error: (err) => {

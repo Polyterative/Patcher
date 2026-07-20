@@ -17,7 +17,6 @@ import {
   ViewChild
 } from '@angular/core';
 import {
-  AbstractControl,
   AsyncValidatorFn,
   FormsModule,
   ReactiveFormsModule,
@@ -29,33 +28,17 @@ import {
 import type { MatChipInputEvent } from '@angular/material/chips';
 import {
   BehaviorSubject,
-  merge,
-  NEVER,
   Observable,
   of
 } from 'rxjs';
-import {
-  debounceTime,
-  filter,
-  map,
-  tap,
-  withLatestFrom
-} from 'rxjs/operators';
 import { SubManager } from '../../../directives/subscription-manager';
-import { normalizeForSearch } from './string-utils';
+import { AppFormUtils } from './app-form-utils';
 import {
-  AppFormUtils,
-  ErrorCodes
-} from './app-form-utils';
-import {
-  findOptionForId,
-  flatOptionGroupToArray,
   AppEnterKeyHint,
   AppInputMode,
   FormTypes,
   ISelectable,
-  MatFormErgonomicsConfig,
-  isOption
+  MatFormErgonomicsConfig
 } from './form-element-models';
 import {
   FloatLabelType,
@@ -78,6 +61,21 @@ import { MatSelectModule } from "@angular/material/select";
 import { MatDialogModule } from "@angular/material/dialog";
 import { MatFormEntityChipInputComponent } from './mat-form-entity-chip-input.component';
 import { MatFormEntityDateInputComponent } from './mat-form-entity-date-input.component';
+import {
+  addMultiCompleteValue,
+  addMultiTextValue,
+  compareSelectableStrict,
+  connectFormEntityValidationStreams,
+  displayAutocompleteOption,
+  displayPresetOption,
+  focusNextField,
+  FORM_ENTITY_NOT_IN_OPTIONS_ERROR,
+  mapPresetOptions,
+  resolveEnterKeyHint,
+  resolveInputMode,
+  removeChipValue,
+  setupFormEntityType
+} from './mat-form-entity.helpers';
 
 
 export interface IMatFormEntityConfig {
@@ -222,48 +220,20 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
   //
   readonly autocompleteSeparatorKeysCodes: Array<number> = [ENTER, COMMA];
   
-  private errorObjectNotInOptions = {[ErrorCodes.form.errorCode.custom.notInOptions]: true};
+  private errorObjectNotInOptions = FORM_ENTITY_NOT_IN_OPTIONS_ERROR;
   
   hidePassword = true;
 
   get presetOptions(): ISelectable[] {
-    return this.presets.map(v => ({ id: String(v), name: String(v) }));
+    return mapPresetOptions(this.presets);
   }
 
   get resolvedInputMode(): AppInputMode | null {
-    if (this.inputmode) {
-      return this.inputmode;
-    }
-
-    if (this.isSearchField) {
-      return 'search';
-    }
-
-    switch (this.type) {
-      case FormTypes.EMAIL:
-        return 'email';
-      case FormTypes.NUMBER:
-        return 'numeric';
-      case FormTypes.AUTOCOMPLETE:
-      case FormTypes.AUTOCOMPLETE_GROUPED:
-        return 'search';
-      case FormTypes.TIME:
-        return 'numeric';
-      default:
-        return 'text';
-    }
+    return resolveInputMode(this.type, this.inputmode, this.isSearchField);
   }
 
   get resolvedEnterKeyHint(): AppEnterKeyHint | null {
-    if (this.enterkeyhint) {
-      return this.enterkeyhint;
-    }
-
-    if (this.isSearchField || this.type === FormTypes.AUTOCOMPLETE || this.type === FormTypes.AUTOCOMPLETE_GROUPED) {
-      return 'search';
-    }
-
-    return null;
+    return resolveEnterKeyHint(this.type, this.enterkeyhint, this.isSearchField);
   }
   
   ngOnDestroy(): void {
@@ -287,10 +257,7 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
    * @param entry
    */
   autocomplete_displayFunction(entry?: ISelectable): string {
-    // modify input to manipulate it before showing on the input
-    // order is:
-    // option click => displayfunction => output
-    return entry && entry.name || '';
+    return displayAutocompleteOption(entry);
   }
 
   /**
@@ -302,18 +269,7 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
    * the displayed value, so we pass primitives through unchanged and only
    * unwrap ISelectable objects coming from the preset chip panel.
    */
-  presetDisplayFunction = (entry?: ISelectable | string | number | null): string => {
-    if (entry == null) {
-      return '';
-    }
-    if (typeof entry === 'string') {
-      return entry;
-    }
-    if (typeof entry === 'number') {
-      return String(entry);
-    }
-    return entry.name ?? '';
-  };
+  presetDisplayFunction = displayPresetOption;
 
   ngOnInit(): void {
     if (this.dataPack) {
@@ -340,224 +296,64 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
       }
     }
     
-    const changes$ = merge(this.control.statusChanges, this.control.valueChanges);
-    this.manageSub(
-      changes$
-        .pipe(
-          map(() => this.control.invalid),
-          tap(() => this.changeDetectorRef.detectChanges())
-        )
-        .subscribe(data => this.invalid$.next(data))
-    );
-    
-    this.manageSub(
-      merge(changes$, this.options$ ? this.options$ : NEVER)
-        .pipe(
-          map(_ => this.errorProvider(this.control))
-        )
-        .subscribe(errors => this.errors$.next(errors))
-    );
-    
-    const hostControl = this.control; // alias
-    
-    switch (this.type) {
-      case FormTypes.EMAIL:
-        break;
-      case FormTypes.PASSWORD_CURRENT:
-        break;
-      case FormTypes.PASSWORD_NEW:
-        break;
-      case FormTypes.TEXT:
-        if (this.textTransformFunction) {
-          this.manageSub(
-            hostControl.valueChanges
-              .pipe(
-                filter(x => x.length > 0)
-              )
-              .subscribe(x => {
-                const result = this.textTransformFunction(x);
-                
-                if (x !== result) { // prevent loop
-                  this.control.patchValue(result);
-                }
-              })
-          );
-          
-        }
-        break;
-      case FormTypes.SELECT:
-        this.checkOptions();
-        
-        if (this.disableVoidSelection) {
-          this.safelyAddValidator((control) => control.value === '' ? this.errorObjectNotInOptions : null);
-        }
-        
-        break;
-      case FormTypes.MULTISELECT_GROUPED:
-        this.checkOptions();
-        
-        if (this.disableVoidSelection) {
-          this.safelyAddValidator(control => control.value === '' ? this.errorObjectNotInOptions : null);
-        }
-        
-        break;
-      case FormTypes.AUTOCOMPLETE_GROUPED:
-        this.checkOptions();
-        
-        this.manageSub(
-          merge(
-            hostControl.valueChanges,
-            this.options$
-          )
-            .pipe(
-              map(() => hostControl.value),
-              debounceTime(200),
-              withLatestFrom(this.options$)
-            )
-            .subscribe(([input, options]: [ISelectable | string, ISelectable[]]) => {
-              const allOptions = this.getOptionsGroupedCopy(options);
-              let remainingOptions: ISelectable[];
+    connectFormEntityValidationStreams({
+      control: this.control,
+      options$: this.options$,
+      invalid$: this.invalid$,
+      errors$: this.errors$,
+      errorProvider: this.errorProvider,
+      detectChanges: () => this.changeDetectorRef.detectChanges(),
+      manageSub: subscription => this.manageSub(subscription)
+    });
 
-              if (input) {
-                const searchStr = isOption(input) ? input.name : (input as string);
-                remainingOptions = allOptions.map(group => {
-                  group.options = (group.options ?? []).filter(opt =>
-                    this.autocompleteCaseSensitiveComparison
-                      ? opt.name.includes(searchStr)
-                      : normalizeForSearch(opt.name).includes(normalizeForSearch(searchStr))
-                  );
-                  return group;
-                }).filter(g => g.options && g.options.length > 0);
-              } else {
-                remainingOptions = allOptions;
-              }
-
-              this.optionsFiltered.next(remainingOptions);
-            })
-        );
-        
-        if (this.strictAutocomplete) {
-          this.safelyAddAsyncValidator(this.buildGroupedStrictValidator());
-        }
-        
-        break;
-      case FormTypes.AUTOCOMPLETE:
-        this.checkOptions();
-        this.manageSub(
-          merge(hostControl.valueChanges, this.options$)
-            .pipe(
-              map(() => hostControl.value),
-              debounceTime(200),
-              withLatestFrom(this.options$)
-            )
-            .subscribe(([input, options]: [ISelectable | string, ISelectable[]]) => {
-              this.optionsFiltered.next(this.filterFlatOptions(input, options));
-            })
-        );
-        
-        if (this.strictAutocomplete) {
-          this.safelyAddAsyncValidator(this.buildFlatStrictValidator());
-        }
-        
-        break;
-      case FormTypes.AUTOCOMPLETE_MULTIPLE:
-        
-        this.checkOptions();
-        this.ghostControl = new UntypedFormControl('');
-        
-        if (hostControl.value === '') {
-          console.error('Input for multicomplete must be an array ');
-        }
-        
-        this.manageSub(
-          hostControl.statusChanges
-            .subscribe(() => {
-              hostControl.disabled ? this.ghostControl.disable() : this.ghostControl.enable();
-            })
-        );
-        
-        this.manageSub(
-          merge(this.ghostControl.valueChanges, this.options$)
-            .pipe(
-              map(() => this.ghostControl.value),
-              debounceTime(200),
-              withLatestFrom(this.options$)
-            )
-            .subscribe(([input, options]: [ISelectable | string, ISelectable[]]) => {
-              
-              if (typeof input === 'string') {
-                const filtered: ISelectable[] = options.filter(opt =>
-                  this.autocompleteCaseSensitiveComparison ? opt.name.includes(input) : normalizeForSearch(opt.name)
-                    .includes(normalizeForSearch(input)));
-                
-                this.optionsFiltered.next(filtered);
-                
-              }
-              
-            })
-        );
-        
-        if (this.strictAutocomplete) {
-          this.safelyAddAsyncValidator(this.buildMultiStrictValidator());
-        }
-        //
-        break;
-    }
+    setupFormEntityType({
+      type: this.type,
+      hostControl: this.control,
+      options$: this.options$,
+      optionsFiltered: this.optionsFiltered,
+      textTransformFunction: this.textTransformFunction,
+      autocompleteCaseSensitiveComparison: this.autocompleteCaseSensitiveComparison,
+      strictAutocomplete: this.strictAutocomplete,
+      autocompleteCanBeVoid: this.autocompleteCanBeVoid,
+      disableVoidSelection: this.disableVoidSelection,
+      errorObjectNotInOptions: this.errorObjectNotInOptions,
+      manageSub: subscription => this.manageSub(subscription),
+      setGhostControl: control => this.ghostControl = control,
+      safelyAddValidator: validator => this.safelyAddValidator(validator),
+      safelyAddAsyncValidator: validator => this.safelyAddAsyncValidator(validator),
+      checkOptions: () => this.checkOptions()
+    });
     
   }
   
   compareFunctionStrictObject(o1: ISelectable, o2: ISelectable) {
-    return (o1.name === o2.name && o1.id === o2.id);
+    return compareSelectableStrict(o1, o2);
   }
   
   addToMultiText($event: MatChipInputEvent): void {
-    const dataCapsule = this.control;
-    const input = $event.input;
-    const value = $event.value;
-    
-    // Add our thing
-    if ((value || '').trim()) {
-      const toAdd: ISelectable = ({
-        name: value.trim(),
-        id: ''
-      });
-      dataCapsule.patchValue([
-        ...dataCapsule.value,
-        toAdd
-      ]);
+    const nextValue = addMultiTextValue(this.control.value, $event.value);
+    if (nextValue !== this.control.value) {
+      this.control.patchValue(nextValue);
     }
-    
-    // Reset the input value
-    if (input) {
-      input.value = '';
+    if ($event.input) {
+      $event.input.value = '';
     }
   }
   
   addToMultiComplete($event: MatAutocompleteSelectedEvent): void {
-    const input = $event.option.value;
-    // Add our thing
-    if ((input && input.id && input.name)) {
-      
-      const isAlreadyPresent = !!findOptionForId(input.id, this.control.value);
-      
-      if (!isAlreadyPresent || (isAlreadyPresent && this.multiChipCompleteAllowDuplicates)) {
-        
-        this.control.patchValue([
-          ...this.control.value,
-          input
-        ]);
-      }
-      
+    const nextValue = addMultiCompleteValue(
+      this.control.value,
+      $event.option.value,
+      this.multiChipCompleteAllowDuplicates
+    );
+    if (nextValue !== this.control.value) {
+      this.control.patchValue(nextValue);
     }
-    
-    // Reset the input value, useful for resetting the debounce + filtered options smootly, LEAVE THIS HERE
     this.ghostControl.patchValue('');
   }
   
   removeFromChips(element: ISelectable): void {
-    const data: Array<ISelectable> = this.control.value;
-    data.splice(data.indexOf(element), 1);
-    this.control.patchValue(data);
+    this.control.patchValue(removeChipValue(this.control.value, element));
   }
   
   cleanMultiComplete($event: MatChipInputEvent): void {
@@ -569,7 +365,7 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
       return;
     }
 
-    if (this.enterkeyhint === 'next' && this.focusNextField(event.target)) {
+    if (this.enterkeyhint === 'next' && focusNextField(event.target)) {
       event.preventDefault();
       return;
     }
@@ -595,71 +391,6 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
     ] : [newValidator]);
   }
   
-  // fixed this way because otherwise it caused immutability issues and object by reference passes
-  // This is a quick way to make a deep copy of the array and content
-  private getOptionsGroupedCopy(options: ISelectable[]): {
-    name: string;
-    options: ISelectable[];
-    disabled?: boolean;
-    id: string
-  }[] {
-    return [
-      ...options.map((option: ISelectable) => ({
-        ...option,
-        options: option.options?.slice()
-      }))
-    ];
-  }
-  
-  private filterFlatOptions(input: ISelectable | string, options: ISelectable[]): ISelectable[] {
-    if (!input && input !== '') { return options; }
-    const searchStr = isOption(input) ? (input as ISelectable).name : (input as string);
-    return options.filter(opt =>
-      this.autocompleteCaseSensitiveComparison
-        ? opt.name.includes(searchStr)
-        : normalizeForSearch(opt.name).includes(normalizeForSearch(searchStr))
-    );
-  }
-  
-  private buildFlatStrictValidator(): AsyncValidatorFn {
-    return (control: AbstractControl) => of(control.value).pipe(
-      withLatestFrom(of(control.value), this.options$),
-      map(([_, input, options]: [void, ISelectable | string, ISelectable[]]) => {
-        if (options.length === 0) { return null; }
-        if (typeof input === 'string') {
-          return this.autocompleteCanBeVoid && input === '' ? null : this.errorObjectNotInOptions;
-        }
-        return options.some(y => y?.id === (input as ISelectable)?.id) ? null : this.errorObjectNotInOptions;
-      })
-    );
-  }
-  
-  private buildGroupedStrictValidator(): AsyncValidatorFn {
-    return (control: AbstractControl) => of(control.value).pipe(
-      withLatestFrom(of(control.value), this.options$),
-      map(([_, input, options]: [void, ISelectable | string, ISelectable[]]) => {
-        if (options.length === 0) { return null; }
-        if (typeof input === 'string') {
-          return this.autocompleteCanBeVoid && input === '' ? null : this.errorObjectNotInOptions;
-        }
-        const found = flatOptionGroupToArray(options).some(y => y.id === (input as ISelectable).id);
-        return found ? null : this.errorObjectNotInOptions;
-      })
-    );
-  }
-  
-  private buildMultiStrictValidator(): AsyncValidatorFn {
-    return (control: AbstractControl) => of(control.value).pipe(
-      withLatestFrom(of(control.value), this.options$),
-      map(([_, input, options]: [void, ISelectable[], ISelectable[]]) => {
-        const isVoid = input.length === 0;
-        if (this.autocompleteCanBeVoid && isVoid) { return null; }
-        const foundAll = input.every(item => options.some(o => o.id === item.id && o.name === item.name));
-        return foundAll ? null : this.errorObjectNotInOptions;
-      })
-    );
-  }
-
   private checkOptions(): void {
     if (this.options$ === undefined) {
       console.error('Options is not observable! I\'m a selector, give me the options!');
@@ -667,25 +398,6 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
     }
   }
 
-  private focusNextField(target: EventTarget | null): boolean {
-    if (!(target instanceof HTMLElement)) {
-      return false;
-    }
-
-    const ownerDocument = target.ownerDocument;
-    const focusableFields = Array.from(
-      ownerDocument.querySelectorAll<HTMLElement>('input:not([type="hidden"]):not([disabled]), textarea:not([disabled])')
-    ).filter(element => !element.hasAttribute('readonly') && (element.offsetParent !== null || ownerDocument.activeElement === element));
-    const currentIndex = focusableFields.indexOf(target);
-    const nextField = currentIndex >= 0 ? focusableFields[currentIndex + 1] : null;
-
-    if (!nextField) {
-      return false;
-    }
-
-    nextField.focus();
-    return true;
-  }
 
   private get isSearchField(): boolean {
     return this.iconL1 === 'search';

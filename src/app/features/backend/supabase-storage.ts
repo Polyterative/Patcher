@@ -11,7 +11,16 @@ import {
 } from 'rxjs/operators';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from 'src/backend/database.types';
-import { DbStoragePaths } from './DatabaseStrings';
+import {
+  DbStoragePaths,
+  StorageUrls
+} from './DatabaseStrings';
+import { getPublicStorageUrl } from 'src/app/shared-interproject/utils/public-storage-url';
+import {
+  MARKETPLACE_LISTING_MEDIA_IMAGE_MIME_TYPES,
+  MARKETPLACE_LISTING_MEDIA_MAX_PREPROCESSING_SIZE_BYTES,
+  type MarketplaceListingMediaImageMimeType
+} from 'src/app/features/marketplace/marketplace-listing.utils';
 import {
   cacheBust,
   throwIfSupabaseError
@@ -20,10 +29,37 @@ import {
   SimpleUserModel,
   SupabaseStorageFile
 } from './supabase.types';
+import {
+  buildMarketplaceListingImagePath,
+  getMarketplaceListingImagePublicUrl
+} from './supabase-marketplace-listings';
 
+export { getMarketplaceListingImagePublicUrl };
 
 function cleanUpFileName(name: string): string {
   return name.toLowerCase().trim();
+}
+
+export function getModulePanelPublicUrl(filename: string, useDirectStorageFallback?: false): string;
+export function getModulePanelPublicUrl(filename: string, useDirectStorageFallback: true): string | undefined;
+export function getModulePanelPublicUrl(filename: string, useDirectStorageFallback: boolean): string | undefined;
+export function getModulePanelPublicUrl(filename: string, useDirectStorageFallback = false): string | undefined {
+  if (useDirectStorageFallback) {
+    return getPublicStorageUrl(DbStoragePaths.module_panels, filename) ?? undefined;
+  }
+
+  return `${ StorageUrls.modulePanels }${ filename }`;
+}
+
+export function getRackImagePublicUrl(filename: string, useDirectStorageFallback?: false): string;
+export function getRackImagePublicUrl(filename: string, useDirectStorageFallback: true): string | undefined;
+export function getRackImagePublicUrl(filename: string, useDirectStorageFallback: boolean): string | undefined;
+export function getRackImagePublicUrl(filename: string, useDirectStorageFallback = false): string | undefined {
+  if (useDirectStorageFallback) {
+    return getPublicStorageUrl(DbStoragePaths.racks, filename) ?? undefined;
+  }
+
+  return `${ StorageUrls.racks }${ filename }`;
 }
 
 export function createStorageNamespace(
@@ -32,6 +68,15 @@ export function createStorageNamespace(
   getUserSession$: () => Observable<SimpleUserModel | null>
 ) {
   const ns = {
+    publicUrlBases: {
+      manufacturerLogos: StorageUrls.manufacturerLogos,
+      moduleCollections: StorageUrls.moduleCollections,
+      modulePanels: StorageUrls.modulePanels,
+      marketplaceListings: StorageUrls.marketplaceListings,
+      patches: StorageUrls.patches,
+      racks: StorageUrls.racks,
+    },
+
     uploadModulePanel: (file: SupabaseStorageFile, filenameAndExtension: string, contentType: string = 'image/jpeg') => {
       filenameAndExtension = cleanUpFileName(filenameAndExtension);
       return getUserSession$().pipe(
@@ -121,6 +166,49 @@ export function createStorageNamespace(
       );
     },
 
+    uploadMarketplaceListingImage: (
+      listingId: string,
+      file: SupabaseStorageFile,
+      filenameAndExtension: string,
+      contentType: string
+    ) => {
+      const normalizedContentType = contentType.trim().toLocaleLowerCase();
+      if (!MARKETPLACE_LISTING_MEDIA_IMAGE_MIME_TYPES.includes(
+        normalizedContentType as MarketplaceListingMediaImageMimeType
+      )) {
+        return throwError(() => new Error('Listing media uploads must be JPEG, PNG, or WebP images'));
+      }
+
+      const byteSize = storageFileByteSize(file);
+      if (byteSize !== undefined && byteSize > MARKETPLACE_LISTING_MEDIA_MAX_PREPROCESSING_SIZE_BYTES) {
+        return throwError(() => new Error('Listing media uploads must be 10 MB or smaller'));
+      }
+
+      const storageFilename = filenameForMarketplaceListingMimeType(
+        filenameAndExtension,
+        normalizedContentType as MarketplaceListingMediaImageMimeType
+      );
+      return getUserSession$().pipe(
+        switchMap(user => {
+          if (!user) return throwError(() => new Error('Authentication required'));
+          const storagePath = buildMarketplaceListingImagePath(user.id, listingId, storageFilename);
+          return rxFrom(
+            supabase.storage
+              .from(DbStoragePaths.marketplace_listings)
+              .upload(storagePath, file, {
+                cacheControl: '31536000',
+                contentType: normalizedContentType,
+                upsert: false
+              })
+          ).pipe(
+            throwIfSupabaseError(),
+            cacheBust(['marketplaceListings', 'marketplaceListingWithId', 'currentUserMarketplaceListings']),
+            map(() => storagePath)
+          );
+        })
+      );
+    },
+
     deleteCollectionCover: (filenameAndExtension: string) => {
       filenameAndExtension = cleanUpFileName(filenameAndExtension);
       return getUserSession$().pipe(
@@ -166,6 +254,24 @@ export function createStorageNamespace(
       );
     },
 
+    deleteMarketplaceListingImage: (storagePath: string) => {
+      storagePath = storagePath.trim().toLocaleLowerCase();
+      return getUserSession$().pipe(
+        switchMap(user => {
+          if (!user) return throwError(() => new Error('Authentication required'));
+          if (!storagePath.startsWith(`${ user.id }/`)) {
+            return throwError(() => new Error('Listing image path is not owned by the current user'));
+          }
+          return rxFrom(
+            supabase.storage
+              .from(DbStoragePaths.marketplace_listings)
+              .remove([storagePath])
+          ).pipe(throwIfSupabaseError());
+        }),
+        cacheBust(['marketplaceListings', 'marketplaceListingWithId', 'currentUserMarketplaceListings'])
+      );
+    },
+
     deletePanelFile: (path: string) => getUserSession$().pipe(
       switchMap(user => {
         if (!user) return throwError(() => new Error('Authentication required'));
@@ -180,4 +286,28 @@ export function createStorageNamespace(
   };
   
   return ns;
+}
+
+function storageFileByteSize(file: SupabaseStorageFile): number | undefined {
+  if (file instanceof Blob) {
+    return file.size;
+  }
+  if (file instanceof ArrayBuffer) {
+    return file.byteLength;
+  }
+  if (ArrayBuffer.isView(file)) {
+    return file.byteLength;
+  }
+  return undefined;
+}
+
+function filenameForMarketplaceListingMimeType(
+  filename: string,
+  mimeType: MarketplaceListingMediaImageMimeType
+): string {
+  const basename = filename.replace(/\.[^.]+$/u, '');
+  const extension = mimeType === 'image/jpeg'
+    ? 'jpg'
+    : mimeType.slice('image/'.length);
+  return `${ basename }.${ extension }`;
 }

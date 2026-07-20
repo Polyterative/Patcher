@@ -56,19 +56,19 @@ describe('EmptyStateComponent', () => {
       expect(comp.backgroundImage).toBe('/my-input.jpg');
     });
 
-    it('does not change backgroundImage when neither @Input nor route data has it', () => {
+    it('supports no backgroundImage when neither @Input nor route data has it', () => {
       const comp = makeComp(makeRouteMock()); // no route data
       const warnSpy = spyOn(console, 'warn');
       comp.ngOnInit();
       expect(comp.backgroundImage).toBeUndefined();
-      expect(warnSpy).toHaveBeenCalledWith(jasmine.stringContaining('background'));
+      expect(warnSpy).not.toHaveBeenCalled();
     });
 
-    it('warns when both @Input and route data are absent', () => {
+    it('stays quiet when both @Input and route data are absent', () => {
       const comp = makeComp(makeRouteMock());
       const warnSpy = spyOn(console, 'warn');
       comp.ngOnInit();
-      expect(warnSpy).toHaveBeenCalled();
+      expect(warnSpy).not.toHaveBeenCalled();
     });
 
     it('does NOT warn when @Input is provided', () => {
