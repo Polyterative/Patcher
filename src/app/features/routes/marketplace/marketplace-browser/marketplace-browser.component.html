@@ -1,0 +1,210 @@
+@if (vm$ | async; as vm) {
+  <section class="marketplace-browser col gap1" aria-label="Marketplace" data-testid="marketplace-browser">
+    <lib-hero-content-card
+      titleBig="Marketplace"
+      description="Browse active public listings. Contact and offers require a Patcher account."
+      class="marketplaceBG"
+    >
+      <div class="sidebar-layout">
+        <aside
+          id="marketplace-filter-rail"
+          class="filter-sidebar col gap1 marketplace-filter-rail"
+          [class.marketplace-filter-rail--expanded]="mobileFiltersExpanded"
+          aria-label="Marketplace filters"
+        >
+          <span class="filter-sidebar__heading">Filters</span>
+
+          <lib-mat-form-entity
+            [control]="dataService.fields.query.control"
+            [type]="dataService.fields.query.type"
+            [label]="dataService.fields.query.label"
+            iconL1="search"
+            [disableBrowserAutocomplete]="true"
+          ></lib-mat-form-entity>
+
+          <div class="marketplace-filter-mobile-actions">
+            <button
+              mat-button
+              type="button"
+              class="marketplace-filter-toggle"
+              (click)="toggleMobileFilters()"
+              [attr.aria-expanded]="mobileFiltersExpanded"
+              aria-controls="marketplace-filter-advanced-controls"
+            >
+              <mat-icon>{{ mobileFiltersExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
+              {{ mobileFiltersExpanded ? 'Show fewer filters' : 'Show more filters' }}
+            </button>
+
+            <app-browser-reset-filters-button
+              class="marketplace-filter-reset marketplace-filter-reset--mobile"
+              [canReset$]="dataService.canReset$"
+              (reset$)="dataService.resetFilters$.next()"
+            ></app-browser-reset-filters-button>
+          </div>
+
+          <div
+            id="marketplace-filter-advanced-controls"
+            class="col gap1 marketplace-filter-control--optional"
+          >
+            <lib-mat-form-entity
+              [control]="dataService.fields.manufacturer.control"
+              [type]="dataService.fields.manufacturer.type"
+              [options$]="dataService.fields.manufacturer.options$"
+              [label]="dataService.fields.manufacturer.label"
+              [disableVoidSelection]="true"
+              iconL1="handyman"
+            ></lib-mat-form-entity>
+
+            <lib-mat-form-entity
+              [control]="dataService.fields.condition.control"
+              [type]="dataService.fields.condition.type"
+              [options$]="dataService.fields.condition.options$"
+              [label]="dataService.fields.condition.label"
+              [disableVoidSelection]="true"
+              iconL1="verified"
+            ></lib-mat-form-entity>
+
+            <lib-mat-form-entity
+              [control]="dataService.fields.currency.control"
+              [type]="dataService.fields.currency.type"
+              [options$]="dataService.fields.currency.options$"
+              [label]="dataService.fields.currency.label"
+              [disableVoidSelection]="true"
+              iconL1="payments"
+            ></lib-mat-form-entity>
+
+            <div class="marketplace-price-controls row gap1">
+              <lib-mat-form-entity
+                [control]="dataService.fields.minPrice.control"
+                [type]="dataService.fields.minPrice.type"
+                [label]="dataService.fields.minPrice.label"
+                iconL1="remove"
+              ></lib-mat-form-entity>
+              <lib-mat-form-entity
+                [control]="dataService.fields.maxPrice.control"
+                [type]="dataService.fields.maxPrice.type"
+                [label]="dataService.fields.maxPrice.label"
+                iconL1="add"
+              ></lib-mat-form-entity>
+            </div>
+            @if (vm.priceFilterHint) {
+              <small class="marketplace-filter-hint">{{ vm.priceFilterHint }}</small>
+            }
+
+            <lib-mat-form-entity
+              [control]="dataService.fields.shipsFromCountry.control"
+              [type]="dataService.fields.shipsFromCountry.type"
+              [options$]="dataService.fields.shipsFromCountry.options$"
+              [label]="dataService.fields.shipsFromCountry.label"
+              [disableVoidSelection]="true"
+              iconL1="public"
+            ></lib-mat-form-entity>
+
+            <lib-mat-form-entity
+              [control]="dataService.fields.shippingOption.control"
+              [type]="dataService.fields.shippingOption.type"
+              [options$]="dataService.fields.shippingOption.options$"
+              [label]="dataService.fields.shippingOption.label"
+              [disableVoidSelection]="true"
+              iconL1="local_shipping"
+            ></lib-mat-form-entity>
+
+            <lib-mat-form-entity
+              [control]="dataService.fields.sort.control"
+              [type]="dataService.fields.sort.type"
+              [options$]="dataService.fields.sort.options$"
+              [label]="dataService.fields.sort.label"
+              [disableVoidSelection]="true"
+              iconL1="sort"
+            ></lib-mat-form-entity>
+          </div>
+
+          <app-browser-reset-filters-button
+            class="marketplace-filter-reset marketplace-filter-reset--desktop"
+            [canReset$]="dataService.canReset$"
+            (reset$)="dataService.resetFilters$.next()"
+          ></app-browser-reset-filters-button>
+        </aside>
+
+        <div class="browser-content-area col gap1 marketplace-browser__content">
+          <div class="marketplace-browser__toolbar rowwrap gap1">
+            <span class="marketplace-browser__result-summary" aria-live="polite">
+              {{ vm.resultCount }} {{ vm.resultCount === 1 ? 'listing' : 'listings' }}
+            </span>
+          </div>
+
+          @if (vm.activeChips.length > 0) {
+            <mat-chip-set aria-label="Active marketplace filters" data-testid="marketplace-active-chips">
+              @for (chip of vm.activeChips; track chip.key) {
+                <mat-chip [removable]="true" highlighted (removed)="clearFilter(chip.key)">
+                  {{ chip.label }}
+                  <button matChipRemove [attr.aria-label]="'Remove ' + chip.label">
+                    <mat-icon>cancel</mat-icon>
+                  </button>
+                </mat-chip>
+              }
+            </mat-chip-set>
+          }
+
+        @if (vm.loading && vm.totalLoaded === 0) {
+          <div class="marketplace-browser__state" role="status" data-testid="marketplace-loading">
+            <mat-icon aria-hidden="true">sync</mat-icon>
+            Loading marketplace listings…
+          </div>
+        } @else if (vm.error && vm.totalLoaded === 0) {
+          <div class="marketplace-browser__state marketplace-browser__state--error" role="alert" data-testid="marketplace-error">
+            <mat-icon aria-hidden="true">error_outline</mat-icon>
+            <span>{{ vm.error }}</span>
+            <button mat-stroked-button type="button" (click)="dataService.load$.next()">Retry</button>
+          </div>
+        } @else if (vm.listings.length === 0) {
+          <app-empty-state
+            data-testid="marketplace-empty"
+            icon="storefront"
+            title="No public listings"
+            copy="Use All countries / global or clear filters to widen the browse set."
+          ></app-empty-state>
+        } @else {
+          <span class="marketplace-browser__loaded-summary">
+            {{ vm.resultCount }} visible from {{ vm.totalLoaded }} loaded public listings
+          </span>
+          <div class="marketplace-grid" data-testid="marketplace-grid">
+            @for (listing of vm.listings; track listing.publicId) {
+              <app-marketplace-listing-card [listing]="listing"></app-marketplace-listing-card>
+            }
+          </div>
+        }
+        @if (vm.error && vm.totalLoaded > 0) {
+          <p class="marketplace-browser__inline-error" role="alert">{{ vm.error }}</p>
+        }
+        @if (vm.hasMore && !vm.loading && !(vm.error && vm.totalLoaded === 0)) {
+          <button
+            mat-stroked-button
+            color="primary"
+            type="button"
+            [disabled]="vm.loadingMore"
+            (click)="dataService.loadMore$.next()"
+            data-testid="marketplace-load-more"
+          >
+            {{ vm.loadingMore ? 'Loading…' : 'Load more' }}
+          </button>
+        }
+        </div>
+      </div>
+    </lib-hero-content-card>
+    @if (!((userService.loggedUser$ | async)?.id)) {
+      <a
+        mat-fab
+        extended
+        class="marketplace-browser__login-fab"
+        routerLink="/auth/login"
+        [queryParams]="{returnUrl: '/marketplace'}"
+        matTooltip="Log in to contact sellers"
+        matTooltipPosition="above"
+      >
+        <mat-icon>login</mat-icon>
+        Log in to contact sellers
+      </a>
+    }
+  </section>
+}

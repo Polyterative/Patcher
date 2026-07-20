@@ -50,7 +50,6 @@ function fakeDataService() {
 describe('PatchEditorComponent.buildEditorCards (via private access)', () => {
   function buildComponent(): PatchEditorComponent {
     return new PatchEditorComponent(
-      {} as any,
       fakeDataService() as any,
       {} as any,
       {nativeElement: document.createElement('div')} as any,
@@ -142,7 +141,6 @@ describe('PatchEditorComponent.buildEditorCards (via private access)', () => {
 describe('PatchEditorComponent.buildConnectionNames (via private access)', () => {
   function buildComponent(): PatchEditorComponent {
     return new PatchEditorComponent(
-      {} as any,
       fakeDataService() as any,
       {} as any,
       {nativeElement: document.createElement('div')} as any,

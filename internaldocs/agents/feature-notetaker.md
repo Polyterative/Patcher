@@ -12,7 +12,7 @@ Turn rough feature indications into one researched, priority-ranked backlog plan
 
 ## Suggested model
 
-Use `claude-opus-4.7` for broad product strategy, roadmap fit, and ambiguity. Use `gpt-5.5` when the idea is mostly technical and codebase-heavy.
+Use the `deep-reasoning` tier for broad product strategy, roadmap fit, and ambiguity; use the `executor` tier when the idea is mostly technical and codebase-heavy (see [README.md](./README.md#model-tiers)).
 
 ## Does
 

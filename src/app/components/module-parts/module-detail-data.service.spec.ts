@@ -12,6 +12,7 @@ import { RackModuleAdderDialogComponent } from '../rack-parts/rack-module-adder/
 import { ModuleDetailDataService } from './module-detail-data.service';
 import { MergeModuleResult } from '../../features/backend/supabase-merge';
 import { ReactionEntityTypes } from '../../features/backend/supabase-reactions';
+import { ModuleSparsePriceHistorySummary } from '../../features/backend/supabase-queries';
 
 
 describe('ModuleDetailDataService', () => {
@@ -41,6 +42,7 @@ describe('ModuleDetailDataService', () => {
           data: {...baseModule, id}
         })),
         modulePriceListings: jasmine.createSpy('modulePriceListings').and.returnValue(of([])),
+        modulePriceHistorySnapshots: jasmine.createSpy('modulePriceHistorySnapshots').and.returnValue(of([])),
         moduleCollectionsForModule: jasmine.createSpy('moduleCollectionsForModule').and.returnValue(of([
           {id: 81, name: 'Ambient starters', public: true, public_id: 'ambient', author: {username: 'Curator'}, module_count: 3}
         ]))
@@ -134,6 +136,7 @@ describe('ModuleDetailDataService', () => {
     expect(backend.get.racksWithModule).toHaveBeenCalledWith(10);
     expect(backend.get.patchesWithModule).toHaveBeenCalledWith(10);
     expect(backend.GET.moduleCollectionsForModule).toHaveBeenCalledWith(10);
+    expect(backend.GET.modulePriceHistorySnapshots).toHaveBeenCalledWith(10);
     expect(backend.get.moduleUsageSummary).toHaveBeenCalledWith(10);
     expect(backend.get.reactionCount).toHaveBeenCalledWith(ReactionEntityTypes.MODULE, 10);
     expect(backend.get.userModuleAcquisitionsForModule).toHaveBeenCalledWith(10);
@@ -147,6 +150,54 @@ describe('ModuleDetailDataService', () => {
       public_patch_count: 1,
       hidden_patch_bucket: '5_plus'
     });
+  }));
+
+  it('builds module panel public URLs via the shared storage helper', () => {
+    const {service} = build();
+
+    expect(service.getPanelImageUrl('panel.jpg'))
+      .toBe('https://images.patcher.xyz/module-panels/panel.jpg');
+    expect(service.getPanelImageUrl('panel.webp'))
+      .toBe('https://images.patcher.xyz/module-panels/panel.webp');
+  });
+
+  it('derives sparse price history summary from loaded module snapshots', fakeAsync(() => {
+    const {service, backend} = build();
+    const olderObservedAt = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const latestObservedAt = new Date().toISOString();
+    backend.GET.modulePriceHistorySnapshots.and.returnValue(of([
+      {
+        id: 1,
+        listingId: 1,
+        storeId: 1,
+        observedAt: olderObservedAt,
+        priceAmountMinor: 40000,
+        currency: 'EUR',
+        availability: 'in_stock',
+        source: 'crawler'
+      },
+      {
+        id: 2,
+        listingId: 1,
+        storeId: 1,
+        observedAt: latestObservedAt,
+        priceAmountMinor: 38000,
+        currency: 'EUR',
+        availability: 'in_stock',
+        source: 'crawler'
+      }
+    ]));
+    let latestSummary: ModuleSparsePriceHistorySummary | null | undefined;
+    service.sparsePriceHistorySummary$.subscribe(summary => latestSummary = summary);
+
+    service.updateSingleModuleData$.next(10);
+    tick(260);
+
+    expect(service.modulePriceHistorySnapshots$.value?.length).toBe(2);
+    expect(latestSummary).toEqual(jasmine.objectContaining({
+      moduleId: 10,
+      trendDirection: 'down'
+    }));
   }));
 
   it('falls back to empty usage lists when side-panel usage queries fail', fakeAsync(() => {

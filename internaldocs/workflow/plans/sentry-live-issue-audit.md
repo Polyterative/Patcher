@@ -10,7 +10,7 @@ The repository-owned Sentry triage workflow is documented, but live Sentry issue
 
 - Audit current unresolved Sentry issues once safe live access is available.
 - Categorize issues by severity, frequency, affected users, surface area, and recency.
-- Resolve or backlog the highest-impact actionable issues using the workflow in [`../../operations/SENTRY_TRIAGE.md`](../../operations/SENTRY_TRIAGE.md).
+- Resolve or backlog the highest-impact actionable issues using the workflow in [`../../ops/SENTRY_TRIAGE.md`](../../ops/SENTRY_TRIAGE.md).
 
 ## Assumptions
 
@@ -52,7 +52,7 @@ The repository-owned Sentry triage workflow is documented, but live Sentry issue
 ## Validation strategy
 
 - Start with `node scripts/ops/sentry-triage-check.mjs` to verify local readiness without network calls.
-- Use the checklist in [`../../operations/SENTRY_TRIAGE.md`](../../operations/SENTRY_TRIAGE.md) for live access, triage, fixing, validation, and closing.
+- Use the checklist in [`../../ops/SENTRY_TRIAGE.md`](../../ops/SENTRY_TRIAGE.md) for live access, triage, fixing, validation, and closing.
 - Run targeted code tests for any fix, then broader `pnpm lint` / `pnpm test-headless` when the changed surface warrants it.
 
 ## Decision log

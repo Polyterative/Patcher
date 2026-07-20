@@ -59,7 +59,9 @@ describe('UserAreaRootComponent - Layout Shell', () => {
     expect(host.querySelector('.profile-layout')).not.toBeNull();
     expect(host.querySelector('.main-content')).not.toBeNull();
     expect(sidebar).not.toBeNull();
-    expect(host.querySelectorAll('.block').length).toBe(5);
+    expect(host.querySelectorAll('.block').length).toBe(7);
+    expect(host.querySelector('app-user-comments + app-user-listings')).not.toBeNull();
+    expect(host.querySelector('app-user-listings + app-user-address-book')).not.toBeNull();
   });
 
   it('offsets the sticky sidebar below the app toolbar', () => {

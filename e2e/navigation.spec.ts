@@ -41,9 +41,21 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL(/patches\/browser/);
     await expect(page.getByRole('heading', {name: /patches/i})).toBeVisible({timeout: 10_000});
   });
+
+  test('slash patches redirects to the patch browser', async ({page}) => {
+    await page.goto('/patches');
+    await expect(page).toHaveURL(/patches\/browser/);
+    await expect(page.getByRole('heading', {name: /patches/i})).toBeVisible({timeout: 10_000});
+  });
   
   test('navigating to racks/browser lands on the correct page', async ({page}) => {
     await page.goto('/racks/browser');
+    await expect(page).toHaveURL(/racks\/browser/);
+    await expect(page.getByRole('heading', {name: /racks/i})).toBeVisible({timeout: 10_000});
+  });
+
+  test('slash racks redirects to the rack browser', async ({page}) => {
+    await page.goto('/racks');
     await expect(page).toHaveURL(/racks\/browser/);
     await expect(page.getByRole('heading', {name: /racks/i})).toBeVisible({timeout: 10_000});
   });

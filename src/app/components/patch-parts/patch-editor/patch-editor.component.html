@@ -239,6 +239,7 @@
                           [data]="previewCard.module"
                           [showPanelImages]="(previewCard.module.panels?.length ?? 0) > 0"
                           [selectedPanelId]="previewCard.selectedPanelId"
+                          [orientation]="previewCard.orientation"
                           [disablePanelImageEnterAnimation]="true"
                         ></app-module-realistic>
                         @if (expandedRackTrackingId === previewCard.trackingId) {

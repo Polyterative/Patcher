@@ -7,6 +7,7 @@ import { RouterModule } from '@angular/router';
 import { PatchListModule } from 'src/app/components/patch-list/patch-list.module';
 import { RackListModule } from 'src/app/components/rack-list/rack-list.module';
 import { StatisticsComponent } from 'src/app/components/shared-atoms/statistics/statistics.component';
+import { MarketplaceListingCardComponent } from 'src/app/features/marketplace/marketplace-listing-card/marketplace-listing-card.component';
 import { AutoContentLoadingIndicatorComponent } from 'src/app/shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator/auto-content-loading-indicator.component';
 import { EmptyStateComponent } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.component';
 import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
@@ -28,6 +29,7 @@ import { PublicProfileComponent } from './public-profile.component';
     MatButtonModule,
     MatCardModule,
     MatIconModule,
+    MarketplaceListingCardComponent,
     PatchListModule,
     RackListModule,
     StatisticsComponent,

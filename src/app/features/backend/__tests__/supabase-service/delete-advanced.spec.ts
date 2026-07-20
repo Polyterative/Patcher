@@ -5,7 +5,7 @@ import {
   setupSupabaseServiceTest,
   TEST_TIMEOUT
 } from './test-setup';
-import { CommentableEntityTypes } from 'src/app/components/shared-atoms/comments/comments-data.service';
+import { CommentableEntityTypes } from '../../supabase-comments';
 
 
 function chainable(resolveValue: any = {data: null, error: null}) {

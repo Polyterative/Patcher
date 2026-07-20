@@ -15,8 +15,8 @@ second source of rules.
 
 | File | Purpose |
 |---|---|
-| [workflow/TODO.md](./workflow/TODO.md) | Thin index of active tasks and backlog (one line per task) |
-| [workflow/plans/](./workflow/plans/) | Per-task plan files — backlog detail, checklists, decision logs |
+| [workflow/TODO.md](./workflow/TODO.md) | Thin index of active tasks and backlog (one line per task) + the Approvals ledger |
+| [workflow/plans/](./workflow/plans/) | Per-task plan files — backlog detail, checklists, decision logs ([conventions](./workflow/plans/README.md)) |
 | [workflow/CURRENT_FEATURE.md](./workflow/CURRENT_FEATURE.md) | Working detail for the feature currently in progress |
 | [workflow/COMPLETED.md](./workflow/COMPLETED.md) | Archive of finished features |
 | [workflow/ABANDONED.md](./workflow/ABANDONED.md) | Intentionally dropped work and rationale |
@@ -37,6 +37,7 @@ second source of rules.
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | Service layers, project structure, and state boundaries |
 | [STYLE_GUIDE.md](./STYLE_GUIDE.md) | Naming conventions and HTML/SCSS conventions |
 | [DESIGN_LANGUAGE.md](./DESIGN_LANGUAGE.md) | Visual philosophy, character, inspirations, responsive rules, and anti-patterns |
+| [UI_CONSISTENCY_AUDIT.md](./UI_CONSISTENCY_AUDIT.md) | Read-only UI consistency audit findings across app surfaces |
 | [agents/README.md](./agents/README.md) | Specialised agent personas, including [`feature-notetaker`](./agents/feature-notetaker.md) for idea intake and [`coordinator-loop`](./agents/coordinator-loop.md) for the full TODO → implementation → review → archive cycle |
 
 ### Patterns and Testing
@@ -47,6 +48,8 @@ second source of rules.
 | [patterns/BACKEND_METHODS.md](./patterns/BACKEND_METHODS.md) | Backend namespace usage and Supabase method patterns |
 | [patterns/UI_PATTERNS.md](./patterns/UI_PATTERNS.md) | UI interaction and shared surface patterns |
 | [patterns/RXJS_GOTCHAS.md](./patterns/RXJS_GOTCHAS.md) | Small reactive edge cases and ordering gotchas |
+| [patterns/ANALYTICS.md](./patterns/ANALYTICS.md) | Analytics event conventions and PostHog usage patterns |
+| [patterns/CACHE_STRATEGY.md](./patterns/CACHE_STRATEGY.md) | Read-cache keys, invalidation rules, and cache-busting after writes |
 | [testing/UNIT_TESTING.md](./testing/UNIT_TESTING.md) | Shared unit test conventions and examples |
 | [testing/DOCS_SCREENSHOTS.md](./testing/DOCS_SCREENSHOTS.md) | Docs screenshot regeneration, review, and guarded sync workflow |
 
@@ -63,6 +66,7 @@ second source of rules.
 |---|---|
 | [ops/LOCAL_BACKUP_INSPECTION.md](./ops/LOCAL_BACKUP_INSPECTION.md) | Local-only backup inspection notes |
 | [ops/RELEASE_PROCESS.md](./ops/RELEASE_PROCESS.md) | Release branch runbook and history-safety notes |
+| [ops/SENTRY_TRIAGE.md](./ops/SENTRY_TRIAGE.md) | Sentry live-issue triage, fixing, and closing workflow |
 | [ops/VERCEL_CI_GATE.md](./ops/VERCEL_CI_GATE.md) | Vercel ignored-build CI gate behavior, token requirements, and troubleshooting |
 
 ## Legacy Compatibility Stubs

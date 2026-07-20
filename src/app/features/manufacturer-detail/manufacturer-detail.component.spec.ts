@@ -36,6 +36,7 @@ function build() {
   const updateManufacturerNext = jasmine.createSpy('updateManufacturer$.next');
 
   const dataService: any = {
+    logoStorageBase: 'https://cdn.example.test/manufacturer-logos/',
     manufacturerData$,
     modulesData$,
     updateManufacturer$: {next: updateManufacturerNext},
@@ -210,7 +211,7 @@ describe('ManufacturerDetailComponent', () => {
       const {component} = build();
       const result = component.logoUrl(makeManufacturer({logo: 'doepfer.png'}));
       expect(result).toBe(
-        'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/manufacturer-logos/doepfer.png'
+        'https://cdn.example.test/manufacturer-logos/doepfer.png'
       );
       component.ngOnDestroy();
     });
@@ -259,6 +260,16 @@ describe('ManufacturerDetailComponent', () => {
       const lastCall = seoUpdateSpy.calls.mostRecent();
       expect(lastCall.args[0].title).toBe('Mutable Instruments - Manufacturer');
       expect(lastCall.args[0].url).toContain('/manufacturers/details/7');
+      expect(lastCall.args[0].image).toBeUndefined();
+      component.ngOnDestroy();
+    });
+
+    it('uses the data service logo storage base for SEO images', () => {
+      const {component, manufacturerData$, modulesData$, seoUpdateSpy} = build();
+      manufacturerData$.next(makeManufacturer({logo: 'mutable.png'}));
+      modulesData$.next([]);
+      const lastCall = seoUpdateSpy.calls.mostRecent();
+      expect(lastCall.args[0].image).toBe('https://cdn.example.test/manufacturer-logos/mutable.png');
       component.ngOnDestroy();
     });
 

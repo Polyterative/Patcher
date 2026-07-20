@@ -4,7 +4,7 @@ Backlog entry: [manufacturer-accounts-verification.md](./manufacturer-accounts-v
 
 ## Status
 
-Blocked after local migration drafting. Local type generation requires Docker/local Supabase.
+Local validation/typegen checkpoint completed. Remote apply remains a separate explicit approval gate.
 
 ## Objective
 
@@ -35,18 +35,22 @@ Create the local database/storage foundation needed by all later chunks, then st
 - [x] Preserve existing `manufacturers.adminUser` as the single-owner field.
 - [x] Account for existing `adminUser` being `text` by comparing ownership with `auth.uid()::text`.
 - [x] Create the missing `manufacturer-logos` bucket locally as public.
-- [ ] Start local Supabase/Docker.
-- [ ] Run `pnpm updateBackendTypes`.
-- [ ] Review generated types for optional DB-default fields.
-- [ ] Run `pnpm lint`.
-- [ ] Run `pnpm test-headless --include="**/DatabaseStrings.spec.ts"`.
+- [x] Start local Supabase/Docker.
+- [x] Generate local candidate types from disposable local Supabase and merge the M1-safe additions into `src/backend/database.types.ts`.
+- [x] Review generated types for optional DB-default fields.
+- [x] Run `pnpm lint`.
+- [x] Run `pnpm test-headless --include="**/DatabaseStrings.spec.ts"`.
 - [ ] Stop and request explicit approval before any remote apply.
 
 ## Validation
 
+- Disposable local Supabase application/smoke test of the five M1 migrations against the required pre-existing tables.
+- Local Supabase schema lint: `supabase db lint --local --schema public --fail-on error`.
+- Local type generation candidate: `pnpm exec supabase gen types typescript --local --schema public`.
+- Generated-type compile check: `pnpm exec tsc --noEmit -p src/tsconfig.app.json`.
 - `pnpm lint`
 - `pnpm test-headless --include="**/DatabaseStrings.spec.ts"`
-- Manual SQL/RLS review before remote apply approval
+- Manual SQL/RLS review before remote apply approval.
 
 ## Stop condition
 
@@ -57,3 +61,7 @@ Do not start M2 until `pnpm updateBackendTypes` succeeds and the generated type 
 - 2026-06-18T11:32+02:00 — Read-only inspection found `manufacturers.adminUser` is existing `text`; local policies compare with `auth.uid()::text`.
 - 2026-06-18T11:32+02:00 — Read-only inspection found no existing `manufacturer-logos` bucket; local migration creates it as public.
 - 2026-06-18T11:32+02:00 — Type generation blocked because Supabase CLI cannot reach Docker/local Supabase; `src/backend/database.types.ts` remains unchanged.
+- 2026-07-07T14:33+02:00 — Retried `pnpm updateBackendTypes`; script runs `npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" --schema public`, which does not mutate remote schema, but failed because `SUPABASE_PROJECT_ID` is unset: `Must specify one of --local, --linked, --project-id, or --db-url`. `src/backend/database.types.ts` was restored unchanged.
+- 2026-07-07T14:39+02:00 — Hardened `pnpm updateBackendTypes` so it writes to a temp file, preserves `src/backend/database.types.ts` on failure, and falls back to `supabase gen types --local` when `SUPABASE_PROJECT_ID` is unset. Retest now fails at the real local prerequisite: Docker daemon is not running; existing generated types remain unchanged.
+- 2026-07-17 — Product owner approved starting Docker/local Supabase, validating the drafted M1 migrations locally, running local type generation, and reviewing the generated diff. Stop before any remote apply.
+- 2026-07-17T11:26+02:00 — Local-only M1 validation completed in a disposable Supabase stack. The repo still has no baseline schema migration, so full `supabase db reset --local` fails before M1 on missing historical tables; M1 was validated against a minimal local baseline containing the required existing `profiles`, `manufacturers`, and `modules` tables. Local candidate typegen confirmed DB-default Insert/Update fields are optional, and only the M1-safe type additions were merged into `src/backend/database.types.ts`.

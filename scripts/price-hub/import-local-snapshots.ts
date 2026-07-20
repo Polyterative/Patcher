@@ -3,16 +3,60 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { NormalizedStoreListingSnapshot, SnapshotAvailability } from '../../supabase/functions/_shared/price-hub/woocommerce-store-api.ts';
 import type { Database, Json } from '../../src/backend/database.types.ts';
 import { readApprovedPriceHubStore, type ApprovedPriceHubStoreSlug } from './store-configs.ts';
-import { readPriceHubScriptEnv, readSupabaseWriteKey } from './local-env.ts';
+import { assertSupabaseWriteKeyCanWrite, readPriceHubScriptEnv, readSupabaseWriteKey } from './local-env.ts';
 import type { PriceHubMatchCandidate, PriceHubMatchStatus } from './matcher.ts';
+import {
+  planDisappearanceDeactivation,
+  type DisappearanceDeactivationEvidence,
+  type DisappearedPriceHubListingReference,
+} from './import-local-deactivation.ts';
+
+import {
+  buildActiveListingRefreshRows,
+  buildImportRows,
+  calculateStaggeredNextCheckAt,
+  chooseBestRowPerProductUrl,
+  DEFAULT_ACCEPTED_STATUSES,
+  filterRowsWithConflictingProductUrls,
+  filterRowsWithExistingModules,
+  formatIdSample,
+  isImportableProductSnapshot,
+  listingKey,
+  normalizeComparableUrl,
+  parseModuleId,
+  readProductUrls,
+  uniqueMatchModuleIds,
+  uniqueModuleIds,
+  uniqueProductUrlLookupValues,
+  type ExistingPriceHubListingReference,
+  type FilteredPriceHubSnapshotImportRows,
+  type FilteredPriceHubSnapshotModuleRows,
+  type PriceHubSnapshotImportRow,
+} from './import-local/row-planning.ts';
+
+export { planDisappearanceDeactivation } from './import-local-deactivation.ts';
+export {
+  buildActiveListingRefreshRows,
+  buildImportRows,
+  calculateStaggeredNextCheckAt,
+  filterRowsWithConflictingProductUrls,
+  filterRowsWithExistingModules,
+} from './import-local/row-planning.ts';
+export type {
+  ExistingPriceHubListingReference,
+  FilteredPriceHubSnapshotImportRows,
+  FilteredPriceHubSnapshotModuleRows,
+  PriceHubNextCheckIdentity,
+  PriceHubSnapshotImportRow,
+} from './import-local/row-planning.ts';
 
 const DEFAULT_SUPABASE_URL = 'https://sozmatmywjpstwidzlss.supabase.co';
-const WRITE_KEY_HELP = 'Set SUPABASE_ANON_KEY or SUPABASE_SERVICE_ROLE_KEY in your shell, .env, or .env.local at the repository root, or pass --supabase-key=...';
-const ACCEPTED_STATUSES: readonly PriceHubMatchStatus[] = ['strong_candidate'];
+const WRITE_KEY_HELP = 'Set SUPABASE_SERVICE_ROLE_KEY or SUPABASE_SERVICE_KEY in your shell, .env, .env.local, or PRICE_HUB_ENV_FILE, or pass --supabase-key=...';
+const ACCEPTED_STATUSES = DEFAULT_ACCEPTED_STATUSES;
 const PRODUCT_URL_LOOKUP_BATCH_SIZE = 100;
 const MODULE_ID_LOOKUP_BATCH_SIZE = 1000;
-const MIN_REASONABLE_MODULE_PRICE_MINOR = 3000;
-const MAX_REASONABLE_MODULE_PRICE_MINOR = 2000000;
+const LISTING_DEACTIVATION_BATCH_SIZE = 100;
+const ACTIVE_LISTING_LOOKUP_PAGE_SIZE = 500;
 
 interface ImportLocalSnapshotsOptions {
   storeSlug: ApprovedPriceHubStoreSlug;
@@ -21,23 +65,8 @@ interface ImportLocalSnapshotsOptions {
   supabaseUrl: string;
   supabaseKey: string;
   dryRun: boolean;
+  fullCatalog: boolean;
   acceptedStatuses: readonly PriceHubMatchStatus[];
-}
-
-export interface ExistingPriceHubListingReference {
-  module_id: number;
-  store_id: number;
-  product_url: string;
-}
-
-export interface FilteredPriceHubSnapshotImportRows {
-  rows: PriceHubSnapshotImportRow[];
-  skippedConflictingListings: PriceHubSnapshotImportRow[];
-}
-
-export interface FilteredPriceHubSnapshotModuleRows {
-  rows: PriceHubSnapshotImportRow[];
-  skippedUnknownModuleRows: PriceHubSnapshotImportRow[];
 }
 
 interface PriceHubImportInputs {
@@ -45,23 +74,13 @@ interface PriceHubImportInputs {
   matches: PriceHubMatchCandidate[];
 }
 
-export interface PriceHubSnapshotImportRow {
-  moduleId: number;
-  productUrl: string;
-  productName: string | null;
-  priceAmountMinor: number | null;
-  currency: string | null;
-  availability: SnapshotAvailability;
-  externalProductId: string | null;
-  externalHandle: string | null;
-  rawMeta: Record<string, unknown>;
-}
-
 interface ImportSummary {
   storeSlug: ApprovedPriceHubStoreSlug;
   acceptedMatches: number;
   upsertedListings: number;
   insertedSnapshots: number;
+  deactivatedListings: number;
+  deactivationSkippedReason: string | null;
   skippedUnknownModules: number;
   skippedConflictingListings: number;
 }
@@ -73,15 +92,17 @@ type SnapshotInsert = Database['public']['Tables']['module_price_snapshots']['In
 
 async function main(): Promise<void> {
   const options = readCliOptions(process.argv.slice(2), readPriceHubScriptEnv());
-  if (!options.dryRun && !options.supabaseKey) {
-    throw new Error(`Missing Supabase write key. Live Price Hub imports require a key that can write the Price Hub tables. ${WRITE_KEY_HELP}`);
+  if (!options.dryRun) {
+    assertSupabaseWriteKeyCanWrite(options.supabaseKey, WRITE_KEY_HELP);
   }
   if (options.dryRun) {
-    const rows = await readImportRows(options);
+    const inputs = await readImportInputs(options);
+    const rows = buildImportRows(inputs.products, inputs.matches, options.acceptedStatuses);
     console.log(`Dry run: would import ${rows.length} snapshots for ${options.storeSlug}.`);
     for (const row of rows.slice(0, 10)) {
       console.log(`${row.moduleId}: ${row.productName ?? row.productUrl} (${row.currency ?? '---'} ${row.priceAmountMinor ?? 'unknown'}, ${row.availability})`);
     }
+    await printDryRunDisappearanceDeactivation(options, inputs.products, rows);
     return;
   }
 
@@ -94,8 +115,21 @@ async function main(): Promise<void> {
     console.warn(`Skipped ${preflightedMatches.skippedUnknownModuleIds.length} accepted Price Hub module IDs that do not exist: ${formatIdSample(preflightedMatches.skippedUnknownModuleIds)}.`);
   }
   const rows = buildImportRows(inputs.products, preflightedMatches.matches, options.acceptedStatuses);
-  const summary = await importRows(supabase, options.storeSlug, rows);
-  console.log(`Imported ${summary.insertedSnapshots} Price Hub snapshots for ${summary.storeSlug} (${summary.upsertedListings} listings).`);
+  const summary = await importRows(supabase, options.storeSlug, rows, options.fullCatalog
+    ? {
+        productUrls: readProductUrls(inputs.products),
+        evidence: {
+          productCount: inputs.products.length,
+          importRowCount: rows.length,
+          hitMaxProducts: false,
+          hasExplicitBounds: false,
+        },
+      }
+    : undefined, inputs.products);
+  console.log(`Imported ${summary.insertedSnapshots} Price Hub snapshots for ${summary.storeSlug} (${summary.upsertedListings} listings, ${summary.deactivatedListings} deactivated).`);
+  if (summary.deactivationSkippedReason) {
+    console.warn(`Skipped disappearance deactivation for ${summary.storeSlug}: ${summary.deactivationSkippedReason}`);
+  }
 }
 
 export function readCliOptions(args: readonly string[], env: NodeJS.ProcessEnv = process.env): ImportLocalSnapshotsOptions {
@@ -108,6 +142,10 @@ export function readCliOptions(args: readonly string[], env: NodeJS.ProcessEnv =
     }
     if (arg === '--dry-run') {
       dryRun = true;
+      continue;
+    }
+    if (arg === '--full-catalog') {
+      values.set('--full-catalog', 'true');
       continue;
     }
 
@@ -125,6 +163,7 @@ export function readCliOptions(args: readonly string[], env: NodeJS.ProcessEnv =
     supabaseUrl: stripTrailingSlash(values.get('--supabase-url') ?? env.SUPABASE_URL ?? DEFAULT_SUPABASE_URL),
     supabaseKey: values.get('--supabase-key') ?? readSupabaseWriteKey(env),
     dryRun,
+    fullCatalog: values.get('--full-catalog') === 'true',
     acceptedStatuses: ACCEPTED_STATUSES,
   };
 }
@@ -140,79 +179,49 @@ async function readImportInputs(options: Pick<ImportLocalSnapshotsOptions, 'prod
   return { products, matches };
 }
 
-export function buildImportRows(
-  products: readonly NormalizedStoreListingSnapshot[],
-  matches: readonly PriceHubMatchCandidate[],
-  acceptedStatuses: readonly PriceHubMatchStatus[] = ACCEPTED_STATUSES,
-): PriceHubSnapshotImportRow[] {
-  const productByUrl = new Map(products
-    .filter((product) => typeof product.productUrl === 'string' && product.productUrl.trim().length > 0)
-    .map((product) => [normalizeComparableUrl(product.productUrl!), product]));
-  const rows = matches
-    .filter((match) => acceptedStatuses.includes(match.status))
-    .map((match) => {
-      if (!match.productUrl) {
-        return null;
-      }
-      const product = productByUrl.get(normalizeComparableUrl(match.productUrl));
-      if (!product) {
-        return null;
-      }
-      if (
-        product.priceAmountMinor === null
-        || product.priceAmountMinor < MIN_REASONABLE_MODULE_PRICE_MINOR
-        || product.priceAmountMinor > MAX_REASONABLE_MODULE_PRICE_MINOR
-        || product.currency === null
-      ) {
-        return null;
-      }
-      const moduleId = Number.parseInt(match.moduleId, 10);
-      if (!Number.isSafeInteger(moduleId) || moduleId <= 0 || !product.productUrl) {
-        return null;
-      }
-      return {
-        moduleId,
-        productUrl: product.productUrl,
-        productName: product.productName,
-        priceAmountMinor: product.priceAmountMinor,
-        currency: product.currency,
-        availability: product.availability,
-        externalProductId: readExternalProductId(product.rawMeta),
-        externalHandle: readExternalHandle(product.rawMeta, product.productUrl),
-        rawMeta: {
-          ...product.rawMeta,
-          matchedProductName: match.productName,
-          matchedModuleName: match.moduleName,
-          matchedManufacturerName: match.manufacturerName,
-          matchScore: match.score,
-          matchReasons: match.reasons,
-        },
-      };
-    })
-    .filter((row): row is PriceHubSnapshotImportRow => row !== null);
-
-  return chooseBestRowPerProductUrl(chooseBestRowPerModule(rows));
-}
 
 export async function importRows(
   supabase: SupabaseClient<Database>,
   storeSlug: ApprovedPriceHubStoreSlug,
   rows: readonly PriceHubSnapshotImportRow[],
+  disappearanceDeactivation?: {
+    productUrls: readonly string[];
+    evidence: DisappearanceDeactivationEvidence;
+  },
+  observedProducts: readonly NormalizedStoreListingSnapshot[] = [],
 ): Promise<ImportSummary> {
-  if (rows.length === 0) {
-    return { storeSlug, acceptedMatches: 0, upsertedListings: 0, insertedSnapshots: 0, skippedUnknownModules: 0, skippedConflictingListings: 0 };
+  if (rows.length === 0 && observedProducts.length === 0) {
+    const emptyDeactivationSummary = disappearanceDeactivation
+      ? await applyDisappearanceDeactivation(supabase, storeSlug, disappearanceDeactivation.productUrls, disappearanceDeactivation.evidence)
+      : { deactivatedListings: 0, deactivationSkippedReason: null };
+    return {
+      storeSlug,
+      acceptedMatches: 0,
+      upsertedListings: 0,
+      insertedSnapshots: 0,
+      ...emptyDeactivationSummary,
+      skippedUnknownModules: 0,
+      skippedConflictingListings: 0,
+    };
   }
 
-  const moduleFilteredRows = await readRowsWithExistingModules(supabase, rows);
+  const moduleFilteredRows = rows.length > 0
+    ? await readRowsWithExistingModules(supabase, rows)
+    : {
+      rows: [],
+      skippedUnknownModuleRows: [],
+    };
   if (moduleFilteredRows.skippedUnknownModuleRows.length > 0) {
     console.warn(`Skipped ${moduleFilteredRows.skippedUnknownModuleRows.length} Price Hub import rows with unknown module IDs: ${formatIdSample(uniqueModuleIds(moduleFilteredRows.skippedUnknownModuleRows))}.`);
   }
-  if (moduleFilteredRows.rows.length === 0) {
+  if (moduleFilteredRows.rows.length === 0 && observedProducts.length === 0) {
+    const deactivationSummary = await applyOptionalDisappearanceDeactivation(supabase, storeSlug, disappearanceDeactivation);
     return {
       storeSlug,
       acceptedMatches: rows.length,
       upsertedListings: 0,
       insertedSnapshots: 0,
+      ...deactivationSummary,
       skippedUnknownModules: moduleFilteredRows.skippedUnknownModuleRows.length,
       skippedConflictingListings: 0,
     };
@@ -220,28 +229,44 @@ export async function importRows(
 
   const store = await readStore(supabase, storeSlug);
   const knownModuleRows = chooseBestRowPerProductUrl(moduleFilteredRows.rows);
-  const filteredRows = await readRowsWithoutConflictingProductUrls(supabase, store.id, knownModuleRows);
+  const filteredRows = knownModuleRows.length > 0
+    ? await readRowsWithoutConflictingProductUrls(supabase, store.id, knownModuleRows)
+    : {
+      rows: [],
+      skippedConflictingListings: [],
+    };
   if (filteredRows.skippedConflictingListings.length > 0) {
     console.warn(`Skipped ${filteredRows.skippedConflictingListings.length} Price Hub import rows whose product URLs are already linked to another module.`);
   }
-  if (filteredRows.rows.length === 0) {
+  const activeListingReferences = (observedProducts.length > 0 || disappearanceDeactivation)
+    ? await readActiveListingReferences(supabase, store.id)
+    : [];
+  const activeRefreshRows = observedProducts.length > 0
+    ? buildActiveListingRefreshRows(observedProducts, activeListingReferences, filteredRows.rows)
+    : [];
+  const rowsToImport = [...filteredRows.rows, ...activeRefreshRows];
+  if (rowsToImport.length === 0) {
+    const deactivationSummary = await deactivateMissingActiveListingsForStore(supabase, store, disappearanceDeactivation, activeListingReferences);
+    const unimportableSummary = await deactivateUnimportableObservedActiveListings(supabase, activeListingReferences, observedProducts, rowsToImport);
     return {
       storeSlug,
       acceptedMatches: rows.length,
       upsertedListings: 0,
       insertedSnapshots: 0,
+      deactivatedListings: deactivationSummary.deactivatedListings + unimportableSummary.deactivatedListings,
+      deactivationSkippedReason: deactivationSummary.deactivationSkippedReason,
       skippedUnknownModules: moduleFilteredRows.skippedUnknownModuleRows.length,
       skippedConflictingListings: filteredRows.skippedConflictingListings.length,
     };
   }
 
-  const listingRows = await upsertListings(supabase, store.id, filteredRows.rows);
+  const listingRows = await upsertListings(supabase, store.id, rowsToImport);
   const listingByModuleAndUrl = new Map(listingRows.map((listing) => [
     listingKey(listing.module_id, listing.product_url),
     listing,
   ]));
   const now = new Date().toISOString();
-  const snapshots: SnapshotInsert[] = filteredRows.rows.map((row) => {
+  const snapshots: SnapshotInsert[] = rowsToImport.map((row) => {
     const listing = listingByModuleAndUrl.get(listingKey(row.moduleId, row.productUrl));
     if (!listing) {
       throw new Error(`Listing upsert did not return module ${row.moduleId} ${row.productUrl}.`);
@@ -264,73 +289,163 @@ export async function importRows(
     throw new Error(`Snapshot insert failed: ${error.message}`);
   }
 
+  const deactivationSummary = await deactivateMissingActiveListingsForStore(supabase, store, disappearanceDeactivation, activeListingReferences);
+  const unimportableSummary = await deactivateUnimportableObservedActiveListings(supabase, activeListingReferences, observedProducts, rowsToImport);
+
   return {
     storeSlug,
     acceptedMatches: rows.length,
     upsertedListings: listingRows.length,
     insertedSnapshots: snapshots.length,
+    deactivatedListings: deactivationSummary.deactivatedListings + unimportableSummary.deactivatedListings,
+    deactivationSkippedReason: deactivationSummary.deactivationSkippedReason,
     skippedUnknownModules: moduleFilteredRows.skippedUnknownModuleRows.length,
     skippedConflictingListings: filteredRows.skippedConflictingListings.length,
   };
 }
 
-export function filterRowsWithExistingModules(
-  rows: readonly PriceHubSnapshotImportRow[],
-  existingModuleIds: ReadonlySet<number>,
-): FilteredPriceHubSnapshotModuleRows {
-  const skippedUnknownModuleRows: PriceHubSnapshotImportRow[] = [];
-  const filteredRows = rows.filter((row) => {
-    if (existingModuleIds.has(row.moduleId)) {
-      return true;
-    }
-
-    skippedUnknownModuleRows.push(row);
-    return false;
-  });
-
-  return { rows: filteredRows, skippedUnknownModuleRows };
+async function applyOptionalDisappearanceDeactivation(
+  supabase: SupabaseClient<Database>,
+  storeSlug: ApprovedPriceHubStoreSlug,
+  disappearanceDeactivation?: {
+    productUrls: readonly string[];
+    evidence: DisappearanceDeactivationEvidence;
+  },
+): Promise<{ deactivatedListings: number; deactivationSkippedReason: string | null }> {
+  return disappearanceDeactivation
+    ? applyDisappearanceDeactivation(supabase, storeSlug, disappearanceDeactivation.productUrls, disappearanceDeactivation.evidence)
+    : { deactivatedListings: 0, deactivationSkippedReason: null };
 }
 
-export function filterRowsWithConflictingProductUrls(
-  rows: readonly PriceHubSnapshotImportRow[],
-  existingListings: readonly ExistingPriceHubListingReference[],
-  storeId?: number,
-): FilteredPriceHubSnapshotImportRows {
-  const existingListingsByProductUrl = groupExistingListingsByProductUrl(existingListings);
-  const skippedConflictingListings: PriceHubSnapshotImportRow[] = [];
-  const filteredRows = rows.filter((row) => {
-    if (!hasConflictingExistingProductUrl(row, existingListingsByProductUrl, storeId)) {
-      return true;
-    }
-
-    skippedConflictingListings.push(row);
-    return false;
-  });
-
-  return { rows: filteredRows, skippedConflictingListings };
+async function deactivateMissingActiveListingsForStore(
+  supabase: SupabaseClient<Database>,
+  store: StoreRow,
+  disappearanceDeactivation?: {
+    productUrls: readonly string[];
+    evidence: DisappearanceDeactivationEvidence;
+  },
+  existingListings?: readonly DisappearedPriceHubListingReference[],
+): Promise<{ deactivatedListings: number; deactivationSkippedReason: string | null }> {
+  return disappearanceDeactivation
+    ? deactivateMissingActiveListings(supabase, store, disappearanceDeactivation.productUrls, disappearanceDeactivation.evidence, {}, existingListings)
+    : { deactivatedListings: 0, deactivationSkippedReason: null };
 }
 
-function groupExistingListingsByProductUrl(
-  existingListings: readonly ExistingPriceHubListingReference[],
-): Map<string, ExistingPriceHubListingReference[]> {
-  const existingListingsByProductUrl = new Map<string, ExistingPriceHubListingReference[]>();
-  for (const listing of existingListings) {
-    const key = normalizeComparableUrl(listing.product_url);
-    const existingListingsForUrl = existingListingsByProductUrl.get(key) ?? [];
-    existingListingsByProductUrl.set(key, [...existingListingsForUrl, listing]);
+export async function applyDisappearanceDeactivation(
+  supabase: SupabaseClient<Database>,
+  storeSlug: ApprovedPriceHubStoreSlug,
+  observedProductUrls: readonly string[],
+  evidence: DisappearanceDeactivationEvidence,
+  options: { dryRun?: boolean } = {},
+): Promise<{ deactivatedListings: number; deactivationSkippedReason: string | null }> {
+  const store = await readStore(supabase, storeSlug);
+  return deactivateMissingActiveListings(supabase, store, observedProductUrls, evidence, options);
+}
+
+async function deactivateMissingActiveListings(
+  supabase: SupabaseClient<Database>,
+  store: StoreRow,
+  observedProductUrls: readonly string[],
+  evidence: DisappearanceDeactivationEvidence,
+  options: { dryRun?: boolean } = {},
+  existingListingReferences?: readonly DisappearedPriceHubListingReference[],
+): Promise<{ deactivatedListings: number; deactivationSkippedReason: string | null }> {
+  const now = new Date().toISOString();
+  const existingListings = existingListingReferences ?? await readActiveListingReferences(supabase, store.id);
+  const plan = planDisappearanceDeactivation(existingListings, observedProductUrls, evidence, now);
+  if (!plan.eligible) {
+    return { deactivatedListings: 0, deactivationSkippedReason: plan.skipReason };
+  }
+  if (plan.listings.length === 0 || options.dryRun) {
+    return { deactivatedListings: plan.listings.length, deactivationSkippedReason: null };
   }
 
-  return existingListingsByProductUrl;
+  await markListingsStale(supabase, plan.listings.map((listing) => listing.id), now, plan.reason!);
+
+  return { deactivatedListings: plan.listings.length, deactivationSkippedReason: null };
 }
 
-function hasConflictingExistingProductUrl(
-  row: PriceHubSnapshotImportRow,
-  existingListingsByProductUrl: ReadonlyMap<string, readonly ExistingPriceHubListingReference[]>,
-  storeId?: number,
-): boolean {
-  const existingListings = existingListingsByProductUrl.get(normalizeComparableUrl(row.productUrl)) ?? [];
-  return existingListings.some((listing) => listing.module_id !== row.moduleId || (storeId !== undefined && listing.store_id !== storeId));
+async function deactivateUnimportableObservedActiveListings(
+  supabase: SupabaseClient<Database>,
+  activeListings: readonly DisappearedPriceHubListingReference[],
+  observedProducts: readonly NormalizedStoreListingSnapshot[],
+  importedRows: readonly PriceHubSnapshotImportRow[],
+): Promise<{ deactivatedListings: number }> {
+  if (activeListings.length === 0 || observedProducts.length === 0) {
+    return { deactivatedListings: 0 };
+  }
+
+  const observedProductByUrl = new Map(observedProducts
+    .filter((product) => typeof product.productUrl === 'string' && product.productUrl.trim().length > 0)
+    .map((product) => [normalizeComparableUrl(product.productUrl!), product]));
+  const importedKeys = new Set(importedRows.map((row) => listingKey(row.moduleId, row.productUrl)));
+  const staleListingIds = activeListings
+    .filter((listing) => {
+      const product = observedProductByUrl.get(normalizeComparableUrl(listing.product_url));
+      return product !== undefined
+        && !isImportableProductSnapshot(product)
+        && !importedKeys.has(listingKey(listing.module_id, listing.product_url));
+    })
+    .map((listing) => listing.id);
+
+  if (staleListingIds.length === 0) {
+    return { deactivatedListings: 0 };
+  }
+
+  const now = new Date().toISOString();
+  await markListingsStale(supabase, staleListingIds, now, `not_importable_since_crawl:${now.slice(0, 10)}`);
+  return { deactivatedListings: staleListingIds.length };
 }
+
+async function markListingsStale(
+  supabase: SupabaseClient<Database>,
+  listingIds: readonly number[],
+  checkedAt: string,
+  reason: string,
+): Promise<void> {
+  for (let start = 0; start < listingIds.length; start += LISTING_DEACTIVATION_BATCH_SIZE) {
+    const ids = listingIds.slice(start, start + LISTING_DEACTIVATION_BATCH_SIZE);
+    const { error } = await supabase
+      .from('module_store_listings')
+      .update({
+        active: false,
+        verification_status: 'stale',
+        last_checked_at: checkedAt,
+        last_error: reason,
+      })
+      .in('id', ids);
+    if (error) {
+      throw new Error(`Missing listing deactivation failed: ${error.message}`);
+    }
+  }
+}
+
+async function readActiveListingReferences(
+  supabase: SupabaseClient<Database>,
+  storeId: number,
+): Promise<DisappearedPriceHubListingReference[]> {
+  const listings: DisappearedPriceHubListingReference[] = [];
+  for (let from = 0; ; from += ACTIVE_LISTING_LOOKUP_PAGE_SIZE) {
+    const to = from + ACTIVE_LISTING_LOOKUP_PAGE_SIZE - 1;
+    const { data, error } = await supabase
+      .from('module_store_listings')
+      .select('id,module_id,product_url')
+      .eq('store_id', storeId)
+      .eq('active', true)
+      .range(from, to);
+    if (error) {
+      throw new Error(`Active listing lookup failed: ${error.message}`);
+    }
+
+    listings.push(...(data ?? []));
+    if ((data ?? []).length < ACTIVE_LISTING_LOOKUP_PAGE_SIZE) {
+      break;
+    }
+  }
+
+  return listings;
+}
+
 
 async function readRowsWithoutConflictingProductUrls(
   supabase: SupabaseClient<Database>,
@@ -355,15 +470,6 @@ async function readRowsWithoutConflictingProductUrls(
   return filterRowsWithConflictingProductUrls(rows, existingListings, storeId);
 }
 
-function uniqueProductUrlLookupValues(rows: readonly PriceHubSnapshotImportRow[]): string[] {
-  const values = new Set<string>();
-  for (const row of rows) {
-    values.add(row.productUrl);
-    values.add(row.productUrl.replace(/\/$/, ''));
-    values.add(row.productUrl.endsWith('/') ? row.productUrl : `${row.productUrl}/`);
-  }
-  return Array.from(values).filter((value) => value.length > 0);
-}
 
 async function readRowsWithExistingModules(
   supabase: SupabaseClient<Database>,
@@ -456,7 +562,11 @@ async function upsertListings(
     verification_status: 'verified',
     last_checked_at: now,
     last_success_at: now,
-    next_check_at: now,
+    next_check_at: calculateStaggeredNextCheckAt(now, {
+      moduleId: row.moduleId,
+      storeId,
+      productUrl: row.productUrl,
+    }),
     failure_count: 0,
     last_error: null,
   }));
@@ -511,185 +621,43 @@ function readMatchCandidate(value: unknown): PriceHubMatchCandidate {
   };
 }
 
-function readExternalProductId(rawMeta: Record<string, unknown>): string | null {
-  const value = rawMeta.externalProductId;
-  if (typeof value === 'string' && value.trim().length > 0) {
-    return value.trim();
-  }
-  if (typeof value === 'number' && Number.isSafeInteger(value)) {
-    return String(value);
-  }
-  return null;
-}
 
-function readExternalHandle(rawMeta: Record<string, unknown>, productUrl: string): string | null {
-  if (typeof rawMeta.slug === 'string' && rawMeta.slug.trim().length > 0) {
-    return rawMeta.slug.trim();
+async function printDryRunDisappearanceDeactivation(
+  options: ImportLocalSnapshotsOptions,
+  products: readonly NormalizedStoreListingSnapshot[],
+  rows: readonly PriceHubSnapshotImportRow[],
+): Promise<void> {
+  if (!options.fullCatalog) {
+    console.log('Dry run: disappearance deactivation skipped; pass --full-catalog only for known complete crawler outputs.');
+    return;
   }
-
-  try {
-    const url = new URL(productUrl);
-    return url.pathname.split('/').filter(Boolean).at(-1) ?? null;
-  } catch {
-    return null;
-  }
-}
-
-function chooseBestRowPerModule(rows: readonly PriceHubSnapshotImportRow[]): PriceHubSnapshotImportRow[] {
-  const rowsByModuleId = new Map<number, PriceHubSnapshotImportRow[]>();
-  for (const row of rows) {
-    const existingRows = rowsByModuleId.get(row.moduleId) ?? [];
-    rowsByModuleId.set(row.moduleId, [...existingRows, row]);
+  if (!options.supabaseKey) {
+    console.log('Dry run: disappearance deactivation not evaluated because no Supabase key was provided for reading active listings.');
+    return;
   }
 
-  return Array.from(rowsByModuleId.values()).map(chooseBestRowFromModuleGroup);
-}
-
-function chooseBestRowFromModuleGroup(rows: PriceHubSnapshotImportRow[]): PriceHubSnapshotImportRow {
-  const sortedRows = [...rows].sort(compareImportRows);
-  const selected = sortedRows[0];
-  const panelVariants = uniqueStrings(rows.map(readPanelVariant));
-  if (panelVariants.length <= 1) {
-    return selected;
-  }
-
-  return {
-    ...selected,
-    rawMeta: {
-      ...selected.rawMeta,
-      priceHubVariantAmbiguity: true,
-      priceHubPanelVariants: panelVariants,
-      priceHubAlternateMatchedProducts: sortedRows.slice(1).map((row) => ({
-        productUrl: row.productUrl,
-        productName: row.productName,
-        availability: row.availability,
-        priceAmountMinor: row.priceAmountMinor,
-        currency: row.currency,
-        panelVariant: readPanelVariant(row),
-        matchScore: readMatchScore(row),
-      })),
+  const supabase = createClient<Database>(options.supabaseUrl, options.supabaseKey, {
+    auth: { persistSession: false },
+  });
+  const summary = await applyDisappearanceDeactivation(
+    supabase,
+    options.storeSlug,
+    readProductUrls(products),
+    {
+      productCount: products.length,
+      importRowCount: rows.length,
+      hitMaxProducts: false,
+      hasExplicitBounds: false,
     },
-  };
-}
-
-function compareImportRows(left: PriceHubSnapshotImportRow, right: PriceHubSnapshotImportRow): number {
-  return readMatchScore(right) - readMatchScore(left)
-    || availabilityRank(right.availability) - availabilityRank(left.availability)
-    || left.productUrl.localeCompare(right.productUrl)
-    || left.moduleId - right.moduleId;
-}
-
-function chooseBestRowPerProductUrl(rows: readonly PriceHubSnapshotImportRow[]): PriceHubSnapshotImportRow[] {
-  const rowsByProductUrl = new Map<string, PriceHubSnapshotImportRow[]>();
-  for (const row of rows) {
-    const key = normalizeComparableUrl(row.productUrl);
-    const existingRows = rowsByProductUrl.get(key) ?? [];
-    rowsByProductUrl.set(key, [...existingRows, row]);
+    { dryRun: true },
+  );
+  if (summary.deactivationSkippedReason) {
+    console.log(`Dry run: disappearance deactivation skipped: ${summary.deactivationSkippedReason}.`);
+    return;
   }
-
-  return Array.from(rowsByProductUrl.values()).map(chooseBestRowFromProductGroup);
+  console.log(`Dry run: would deactivate ${summary.deactivatedListings} missing active listings for ${options.storeSlug}.`);
 }
 
-function chooseBestRowFromProductGroup(rows: PriceHubSnapshotImportRow[]): PriceHubSnapshotImportRow {
-  const sortedRows = [...rows].sort(compareImportRows);
-  const selected = sortedRows[0];
-  if (sortedRows.length <= 1) {
-    return selected;
-  }
-
-  return {
-    ...selected,
-    rawMeta: {
-      ...selected.rawMeta,
-      priceHubProductMatchAmbiguity: true,
-      priceHubAlternateMatchedModules: sortedRows.slice(1).map((row) => ({
-        moduleId: row.moduleId,
-        moduleName: readStringMeta(row, 'matchedModuleName'),
-        manufacturerName: readStringMeta(row, 'matchedManufacturerName'),
-        matchScore: readMatchScore(row),
-      })),
-    },
-  };
-}
-
-function readMatchScore(row: PriceHubSnapshotImportRow): number {
-  const score = row.rawMeta.matchScore;
-  return typeof score === 'number' && Number.isFinite(score) ? score : 0;
-}
-
-function availabilityRank(availability: SnapshotAvailability): number {
-  switch (availability) {
-    case 'in_stock':
-      return 5;
-    case 'preorder':
-      return 4;
-    case 'backorder':
-      return 3;
-    case 'out_of_stock':
-      return 2;
-    case 'discontinued':
-      return 1;
-    case 'unknown':
-      return 0;
-  }
-}
-
-function readPanelVariant(row: PriceHubSnapshotImportRow): string | null {
-  const value = row.rawMeta.panelVariant;
-  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
-}
-
-function readStringMeta(row: PriceHubSnapshotImportRow, key: string): string | null {
-  const value = row.rawMeta[key];
-  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
-}
-
-function uniqueStrings(values: readonly (string | null)[]): string[] {
-  return Array.from(new Set(values.filter((value): value is string => value !== null))).sort();
-}
-
-function uniqueModuleIds(rows: readonly PriceHubSnapshotImportRow[]): number[] {
-  return Array.from(new Set(rows.map((row) => row.moduleId)))
-    .sort((left, right) => left - right);
-}
-
-function uniqueMatchModuleIds(
-  matches: readonly PriceHubMatchCandidate[],
-  acceptedStatuses: readonly PriceHubMatchStatus[],
-): number[] {
-  return Array.from(new Set(
-    matches
-      .filter((match) => acceptedStatuses.includes(match.status))
-      .map((match) => parseModuleId(match.moduleId))
-      .filter((moduleId): moduleId is number => moduleId !== null)
-  )).sort((left, right) => left - right);
-}
-
-function parseModuleId(value: string): number | null {
-  const moduleId = Number.parseInt(value, 10);
-  return Number.isSafeInteger(moduleId) && moduleId > 0 ? moduleId : null;
-}
-
-function formatIdSample(ids: readonly number[]): string {
-  const sortedIds = [...ids].sort((left, right) => left - right);
-  const sample = sortedIds.slice(0, 12).join(', ');
-  return sortedIds.length > 12 ? `${sample}, …` : sample;
-}
-
-function listingKey(moduleId: number, productUrl: string): string {
-  return `${moduleId}:${normalizeComparableUrl(productUrl)}`;
-}
-
-function normalizeComparableUrl(value: string): string {
-  try {
-    const url = new URL(value);
-    url.hash = '';
-    url.search = '';
-    return url.toString().replace(/\/$/, '');
-  } catch {
-    return value.trim().replace(/\/$/, '');
-  }
-}
 
 function readKeyValueArg(arg: string): [string, string] {
   const equalsIndex = arg.indexOf('=');
@@ -767,7 +735,8 @@ function stripTrailingSlash(value: string): string {
 }
 
 function printHelpAndExit(): never {
-  console.log('Usage: pnpm price-hub:import-local --store=signal-sounds-uk --products=tmp/price-hub/signal-sounds-uk/products.json --matches=tmp/price-hub/signal-sounds-uk/matches.json [--dry-run]');
+  console.log('Usage: pnpm price-hub:import-local --store=signal-sounds-uk --products=tmp/price-hub/signal-sounds-uk/products.json --matches=tmp/price-hub/signal-sounds-uk/matches.json [--dry-run] [--full-catalog]');
+  console.log('--full-catalog enables safe missing-listing deactivation when the products file is known to be an uncapped complete catalog crawl.');
   console.log(`Requires a Supabase write key unless --dry-run is used. SUPABASE_URL defaults to the Patcher project. ${WRITE_KEY_HELP}`);
   process.exit(0);
 }

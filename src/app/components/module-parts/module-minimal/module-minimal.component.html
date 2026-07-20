@@ -36,7 +36,7 @@
                 class="module-title-row__price"
                 [matTooltip]="priceSummaryTooltip"
                 [attr.aria-label]="priceSummaryTooltip"
-              >{{ priceSummaryLabel }}</span>
+              >{{ priceBadgeLabel }}</span>
             }
           </div>
           @if (showCoolAction) {
@@ -47,6 +47,7 @@
               [eligible]="data.public === true"
               countDisplayMode="count"
               variant="title"
+              (coolToggled)="coolToggled.emit($event)"
             ></app-cool-button>
           }
         </div>

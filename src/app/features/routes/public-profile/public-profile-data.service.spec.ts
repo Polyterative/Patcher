@@ -1,9 +1,13 @@
-import { of } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
+import { type MarketplaceListing } from 'src/app/features/marketplace/marketplace-listing.utils';
+import { createMarketplaceListing } from 'src/app/features/marketplace/marketplace-test-helpers.spec';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import { environment } from 'src/environments/environment';
 import { PublicProfileDataService } from './public-profile-data.service';
 
 describe('PublicProfileDataService', () => {
   let createdServices: PublicProfileDataService[];
+  let originalMarketplaceEnabled: boolean;
 
   function build(profileData: any) {
     const backend = {
@@ -14,6 +18,7 @@ describe('PublicProfileDataService', () => {
         publicUserPatchesPaginated: jasmine.createSpy().and.returnValue(of({data: [], count: 0})),
         publicUserRacksPaginated: jasmine.createSpy().and.returnValue(of({data: [], count: 0})),
         publicUserContributorStats: jasmine.createSpy().and.returnValue(of({approvedPublicModules: 2})),
+        activeMarketplaceListingsBySellerProfileId: jasmine.createSpy().and.returnValue(of([])),
       },
     };
     const snackBar = jasmine.createSpyObj('MatSnackBar', ['open', 'openFromComponent', 'dismiss']);
@@ -28,10 +33,13 @@ describe('PublicProfileDataService', () => {
 
   beforeEach(() => {
     createdServices = [];
+    originalMarketplaceEnabled = environment.features.marketplaceEnabled;
+    environment.features.marketplaceEnabled = true;
   });
 
   afterEach(() => {
     createdServices.forEach((service) => service.ngOnDestroy());
+    environment.features.marketplaceEnabled = originalMarketplaceEnabled;
   });
 
   it('strips website and avatar data for private profiles before exposing profile state', () => {
@@ -56,6 +64,7 @@ describe('PublicProfileDataService', () => {
     expect(backend.GET.publicUserPatchesPaginated).not.toHaveBeenCalled();
     expect(backend.GET.publicUserRacksPaginated).not.toHaveBeenCalled();
     expect(backend.GET.publicUserContributorStats).not.toHaveBeenCalled();
+    expect(backend.GET.activeMarketplaceListingsBySellerProfileId).not.toHaveBeenCalled();
   });
 
   it('patchesCount$ and racksCount$ reflect loaded counts for a public profile', () => {
@@ -128,8 +137,178 @@ describe('PublicProfileDataService', () => {
     expect(service.routeState$.value).toBe('ready');
     expect(backend.GET.publicUserPatchesPaginated).toHaveBeenCalled();
     expect(backend.GET.publicUserRacksPaginated).toHaveBeenCalled();
+    expect(backend.GET.activeMarketplaceListingsBySellerProfileId).toHaveBeenCalledWith('pub-1');
     expect(service.patchesCount$.value).toBe(1);
     expect(service.racksCount$.value).toBe(1);
+  });
+
+  it('does not request seller marketplace listings when the feature flag is disabled', () => {
+    environment.features.marketplaceEnabled = false;
+    const {service, backend} = build({
+      id: 'pub-1',
+      username: 'gooduser',
+      public: true,
+    });
+
+    service.loadProfile$.next('gooduser');
+
+    expect(service.marketplaceEnabled).toBeFalse();
+    expect(backend.GET.activeMarketplaceListingsBySellerProfileId).not.toHaveBeenCalled();
+    expect(service.marketplaceListings$.value).toBeUndefined();
+  });
+
+  it('maps successful public seller marketplace listings for section rendering', () => {
+    const listing = createMarketplaceListing({sellerProfileId: 'pub-1'});
+    const {service, backend} = build({
+      id: 'pub-1',
+      username: 'gooduser',
+      public: true,
+    });
+    backend.GET.activeMarketplaceListingsBySellerProfileId.and.returnValue(of([listing]));
+
+    service.loadProfile$.next('gooduser');
+
+    expect(service.marketplaceListingsError$.value).toBeNull();
+    expect(service.marketplaceListingsLoading$.value).toBeFalse();
+    expect(service.marketplaceListings$.value?.[0]).toEqual(jasmine.objectContaining({
+      detailUrl: '/marketplace/maths-public',
+      publicId: 'maths-public',
+      title: 'Maths',
+    }));
+  });
+
+  it('keeps a successful empty marketplace response as an empty array', () => {
+    const {service} = build({
+      id: 'pub-1',
+      username: 'gooduser',
+      public: true,
+    });
+
+    service.loadProfile$.next('gooduser');
+
+    expect(service.marketplaceListingsError$.value).toBeNull();
+    expect(service.marketplaceListingsLoading$.value).toBeFalse();
+    expect(service.marketplaceListings$.value).toEqual([]);
+  });
+
+  it('surfaces marketplace listing errors without changing the profile route state', () => {
+    const consoleSpy = spyOn(console, 'error');
+    const {service, backend} = build({
+      id: 'pub-1',
+      username: 'gooduser',
+      public: true,
+    });
+    backend.GET.activeMarketplaceListingsBySellerProfileId.and.returnValue(throwError(() => new Error('marketplace down')));
+
+    service.loadProfile$.next('gooduser');
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'PublicProfileDataService marketplace listings load failed:',
+      jasmine.any(Error)
+    );
+    expect(service.routeState$.value).toBe('ready');
+    expect(service.marketplaceListingsError$.value).toBe('Marketplace listings could not be loaded.');
+    expect(service.marketplaceListings$.value).toBeUndefined();
+  });
+
+  it('resets marketplace listings when a later profile load is private', () => {
+    const {service, backend} = build({
+      id: 'pub-1',
+      username: 'gooduser',
+      public: true,
+    });
+    backend.GET.activeMarketplaceListingsBySellerProfileId.and.returnValue(of([createMarketplaceListing()]));
+
+    service.loadProfile$.next('gooduser');
+    expect(service.marketplaceListings$.value?.length).toBe(1);
+
+    backend.get.publicProfileByUsername.and.returnValue(of({
+      data: {
+        id: 'private-user',
+        username: 'private-user',
+        public: false,
+      }
+    }));
+    service.loadProfile$.next('private-user');
+
+    expect(service.routeState$.value).toBe('private');
+    expect(service.marketplaceListings$.value).toBeUndefined();
+    expect(service.marketplaceListingsError$.value).toBeNull();
+    expect(service.marketplaceListingsLoading$.value).toBeFalse();
+  });
+
+  it('retries marketplace listings while the public profile remains ready', () => {
+    const {service, backend} = build({
+      id: 'pub-1',
+      username: 'gooduser',
+      public: true,
+    });
+    backend.GET.activeMarketplaceListingsBySellerProfileId.and.returnValues(
+      throwError(() => new Error('marketplace down')),
+      of([createMarketplaceListing({publicId: 'retry-public'})])
+    );
+
+    service.loadProfile$.next('gooduser');
+    service.retryMarketplaceListings$.next();
+
+    expect(backend.GET.activeMarketplaceListingsBySellerProfileId).toHaveBeenCalledTimes(2);
+    expect(service.marketplaceListingsError$.value).toBeNull();
+    expect(service.marketplaceListings$.value?.[0].publicId).toBe('retry-public');
+  });
+
+  it('keeps loading true when a retry replaces an in-flight listing request', () => {
+    const firstRequest$ = new Subject<MarketplaceListing[]>();
+    const retryRequest$ = new Subject<MarketplaceListing[]>();
+    const {service, backend} = build({
+      id: 'pub-1',
+      username: 'gooduser',
+      public: true,
+    });
+    backend.GET.activeMarketplaceListingsBySellerProfileId.and.returnValues(
+      firstRequest$,
+      retryRequest$
+    );
+
+    service.loadProfile$.next('gooduser');
+    service.retryMarketplaceListings$.next();
+
+    expect(service.marketplaceListingsLoading$.value).toBeTrue();
+
+    retryRequest$.next([]);
+    retryRequest$.complete();
+
+    expect(service.marketplaceListingsLoading$.value).toBeFalse();
+  });
+
+  it('ignores an in-flight listing response after navigating to another profile', () => {
+    const firstRequest$ = new Subject<MarketplaceListing[]>();
+    const secondListing = createMarketplaceListing({
+      publicId: 'second-profile-listing',
+      sellerProfileId: 'pub-2',
+    });
+    const {service, backend} = build({
+      id: 'pub-1',
+      username: 'first-user',
+      public: true,
+    });
+    backend.GET.activeMarketplaceListingsBySellerProfileId.and.returnValues(
+      firstRequest$,
+      of([secondListing])
+    );
+
+    service.loadProfile$.next('first-user');
+    backend.get.publicProfileByUsername.and.returnValue(of({
+      data: {
+        id: 'pub-2',
+        username: 'second-user',
+        public: true,
+      }
+    }));
+    service.loadProfile$.next('second-user');
+    firstRequest$.next([createMarketplaceListing({publicId: 'stale-listing'})]);
+
+    expect(service.marketplaceListings$.value?.map(listing => listing.publicId))
+      .toEqual(['second-profile-listing']);
   });
 
   it('sets routeState$ to error when profile backend call fails', () => {
@@ -144,6 +323,7 @@ describe('PublicProfileDataService', () => {
         publicUserPatchesPaginated: jasmine.createSpy().and.returnValue(require('rxjs').of({data: [], count: 0})),
         publicUserRacksPaginated: jasmine.createSpy().and.returnValue(require('rxjs').of({data: [], count: 0})),
         publicUserContributorStats: jasmine.createSpy().and.returnValue(require('rxjs').of({})),
+        activeMarketplaceListingsBySellerProfileId: jasmine.createSpy().and.returnValue(require('rxjs').of([])),
       },
     };
     const snackBar = jasmine.createSpyObj('MatSnackBar', ['open', 'openFromComponent', 'dismiss']);

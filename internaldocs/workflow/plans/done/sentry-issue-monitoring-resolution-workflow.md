@@ -31,7 +31,7 @@ Sentry is already integrated and collecting production/runtime errors, but Patch
 
 ### Layer 2 — Structural
 
-- [x] Add a durable operations doc for future agents: [`../../../operations/SENTRY_TRIAGE.md`](../../../operations/SENTRY_TRIAGE.md).
+- [x] Add a durable operations doc for future agents: [`../../../ops/SENTRY_TRIAGE.md`](../../../ops/SENTRY_TRIAGE.md).
 - [x] Add a safe no-network helper script for local readiness checks: `scripts/ops/sentry-triage-check.mjs`.
 - [x] Split blocked live audit/resolution work into [`sentry-live-issue-audit.md`](../sentry-live-issue-audit.md).
 
@@ -44,7 +44,7 @@ Sentry is already integrated and collecting production/runtime errors, but Patch
 ## File-level checklist
 
 - [x] `internaldocs/workflow/plans/sentry-issue-monitoring-resolution-workflow.md` — expand into coordinator-loop-ready plan sections.
-- [x] `internaldocs/operations/SENTRY_TRIAGE.md` — add durable workflow instructions.
+- [x] `internaldocs/ops/SENTRY_TRIAGE.md` — add durable workflow instructions.
 - [x] `scripts/ops/sentry-triage-check.mjs` — add safe local readiness helper with no network calls and no secret output.
 - [x] `internaldocs/workflow/CURRENT_FEATURE.md` — update active checkboxes and Decision log.
 - [x] `internaldocs/workflow/plans/sentry-live-issue-audit.md` — capture blocked live Sentry audit/resolution tasks.
@@ -67,7 +67,7 @@ Sentry is already integrated and collecting production/runtime errors, but Patch
 ## Decision log
 
 - 2026-06-18T10:35+02:00 — Staged after dev-utils merge. Higher-priority remaining items need schema/RLS approval, credentials, or blocked dependencies; this Sentry plan has an autonomous repo-owned workflow slice even if live issue resolution requires external access.
-- 2026-06-18T10:21+02:00 — Chose `internaldocs/operations/SENTRY_TRIAGE.md` for the durable workflow because the work is operational triage rather than an Angular/backend implementation pattern.
+- 2026-06-18T10:21+02:00 — Chose `internaldocs/ops/SENTRY_TRIAGE.md` for the durable workflow because the work is operational triage rather than an Angular/backend implementation pattern.
 - 2026-06-18T10:21+02:00 — Added a no-network helper that checks only environment variable presence and prints commands with `$SENTRY_*` placeholders; it deliberately does not read or display `.sentryclirc` contents.
 - 2026-06-18T10:21+02:00 — Split live Sentry issue audit/resolution into an on-hold follow-up because no Sentry MCP tool is available in this session and live CLI/API access should not be attempted without safe configured credentials.
 

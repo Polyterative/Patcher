@@ -1,6 +1,3 @@
-import { StorageUrls } from 'src/app/features/backend/DatabaseStrings';
-
-export const MODULE_PANELS_BASE_URL = StorageUrls.modulePanels;
 export const JSONLD_SCRIPT_ID = 'module-jsonld';
 
 // Last audited: 2026-05-16. Re-check all URLs periodically (sites redesign).
@@ -9,7 +6,11 @@ export const JSONLD_SCRIPT_ID = 'module-jsonld';
 //           Exploding Shed, Elevator Sound, Perfect Circuit, Milk Audio, New Groove,
 //           Escape From Noise, Machineroom, Control, Patchwerks, Found Sound, Synthshop,
 //           Post Modular, Rubadub, Modular Square, MIDI Amsterdam, Modularsynthesizers.nl,
-//           Triangle Core Rocks, House of Sound.
+//           Triangle Core Rocks, House of Sound, Detroit Modular, Nightlife Electronics,
+//           Clockface Modular, Moog Audio, Noisebug, Pusherman Productions, Thonk,
+//           After Later Audio, Patch Point, ALM / Busy Circuits, Instruo, WMD,
+//           Michigan Synth Works, RobotSpeak, Cicada Sound, Intellijel,
+//           Schlappi Engineering, Zlob Modular, Soundium, Nano Modules, Dreadbox.
 // Schneidersladen: migrated to Shopware 6 — use `?search=` instead of `?sSearch=`.
 
 export interface SearchLink {
@@ -28,6 +29,44 @@ function buildSearchUrl(baseUrl: string, params: Record<string, string>): string
     url.searchParams.set(key, value);
   });
   return url.toString();
+}
+
+function shopifyRetailerSearchLink(
+  baseUrl: string,
+  label: string,
+  tooltipName: string,
+  storeSlugs: readonly string[]
+): SearchLink {
+  return {
+    url: (name) => buildSearchUrl(baseUrl, {
+      type: 'product',
+      q: name
+    }),
+    label,
+    icon: 'store',
+    tooltip: `Search on ${ tooltipName }`,
+    kind: 'retailer',
+    storeSlugs
+  };
+}
+
+function wooCommerceRetailerSearchLink(
+  baseUrl: string,
+  label: string,
+  tooltipName: string,
+  storeSlugs: readonly string[]
+): SearchLink {
+  return {
+    url: (name) => buildSearchUrl(baseUrl, {
+      s: name,
+      post_type: 'product'
+    }),
+    label,
+    icon: 'store',
+    tooltip: `Search on ${ tooltipName }`,
+    kind: 'retailer',
+    storeSlugs
+  };
 }
 
 export const MODULE_SEARCH_LINKS: SearchLink[] = [
@@ -333,4 +372,25 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     kind: 'retailer',
     storeSlugs: ['house-of-sound', 'houseofsound']
   },
+  shopifyRetailerSearchLink('https://www.detroitmodular.com/search', 'Detroit Modular 🇺🇸', 'Detroit Modular', ['detroit-modular', 'detroitmodular']),
+  shopifyRetailerSearchLink('https://nightlife-electronics.com/search', 'Nightlife Electronics 🇨🇦', 'Nightlife Electronics', ['nightlife-electronics', 'nightlifeelectronics']),
+  shopifyRetailerSearchLink('https://clockfacemodular.com/search', 'Clockface Modular 🇯🇵', 'Clockface Modular', ['clockface-modular', 'clockfacemodular']),
+  shopifyRetailerSearchLink('https://moogaudio.com/search', 'Moog Audio 🇨🇦', 'Moog Audio', ['moog-audio', 'moogaudio']),
+  shopifyRetailerSearchLink('https://www.noisebug.net/search', 'Noisebug 🇺🇸', 'Noisebug', ['noisebug']),
+  shopifyRetailerSearchLink('https://pushermanproductions.com/search', 'Pusherman Productions 🇬🇧', 'Pusherman Productions', ['pusherman-productions', 'pushermanproductions']),
+  wooCommerceRetailerSearchLink('https://www.thonk.co.uk/', 'Thonk 🇬🇧', 'Thonk', ['thonk']),
+  shopifyRetailerSearchLink('https://afterlateraudio.com/search', 'After Later Audio 🇺🇸', 'After Later Audio', ['after-later-audio', 'afterlateraudio']),
+  shopifyRetailerSearchLink('https://patch-point.com/search', 'Patch Point 🇩🇪', 'Patch Point', ['patch-point', 'patchpoint']),
+  shopifyRetailerSearchLink('https://busycircuits.com/search', 'ALM / Busy Circuits 🇬🇧', 'ALM / Busy Circuits', ['busy-circuits', 'alm-busy-circuits', 'busycircuits']),
+  wooCommerceRetailerSearchLink('https://www.instruomodular.com/', 'Instruo 🇬🇧', 'Instruo', ['instruo']),
+  shopifyRetailerSearchLink('https://wmdevices.com/search', 'WMD 🇺🇸', 'WMD', ['wmdevices', 'wmd']),
+  shopifyRetailerSearchLink('https://michigansynthworks.com/search', 'Michigan Synth Works 🇺🇸', 'Michigan Synth Works', ['michigan-synth-works', 'michigansynthworks']),
+  shopifyRetailerSearchLink('https://robotspeak.com/search', 'RobotSpeak 🇺🇸', 'RobotSpeak', ['robotspeak', 'robot-speak']),
+  shopifyRetailerSearchLink('https://cicadasound.ca/search', 'Cicada Sound 🇨🇦', 'Cicada Sound', ['cicada-sound', 'cicadasound']),
+  wooCommerceRetailerSearchLink('https://intellijel.com/', 'Intellijel 🇨🇦', 'Intellijel', ['intellijel']),
+  shopifyRetailerSearchLink('https://schlappiengineering.com/search', 'Schlappi Engineering 🇺🇸', 'Schlappi Engineering', ['schlappi-engineering', 'schlappiengineering']),
+  wooCommerceRetailerSearchLink('https://zlobmodular.com/', 'Zlob Modular 🇺🇸', 'Zlob Modular', ['zlob-modular', 'zlobmodular']),
+  shopifyRetailerSearchLink('https://soundium.lt/search', 'Soundium 🇱🇹', 'Soundium', ['soundium']),
+  wooCommerceRetailerSearchLink('https://nano-modules.com/', 'Nano Modules 🇪🇸', 'Nano Modules', ['nano-modules', 'nanomodules']),
+  wooCommerceRetailerSearchLink('https://www.dreadbox-fx.com/', 'Dreadbox 🇬🇷', 'Dreadbox', ['dreadbox']),
 ];

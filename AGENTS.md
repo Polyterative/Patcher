@@ -16,11 +16,12 @@ Load docs lazily — only what the task needs.
 - For small fixes, targeted refactors, or debugging, skip planning docs.
 - For more context, open `internaldocs/README.md` first, then the specific file(s) that match the task.
 - During feature work: keep agreed state in `CURRENT_FEATURE.md`; on completion, archive to `COMPLETED.md` and reset `CURRENT_FEATURE.md`.
+- Approval gates live in the **Approvals ledger** inside `internaldocs/workflow/TODO.md` (standing approvals / pending questions / denials). Check it before declaring work blocked or re-asking the user; register new gates there.
 
 ## 3) Command policy
 
 - Package manager: `pnpm` only; use existing `package.json` scripts.
-- Preferred: `pnpm lint`, `pnpm test-headless` (add `--include="**/foo.spec.ts"` to target), `pnpm test:e2e` / `pnpm test:e2e:auth`, `pnpm updateBackendTypes`. Use `pnpm start` / `start:ssr` only when needed.
+- Preferred: `pnpm lint`, `pnpm test-headless` (add `--include="**/foo.spec.ts"` to target), `pnpm test:e2e` / `pnpm test:e2e:auth`, `pnpm updateBackendTypes`. Use `pnpm start` / `start:ssr` only when needed. `pnpm loop:health` prints a loop-state snapshot (dirty tree, blocked markers, pending approvals, baseline size, docs check).
 - Never run `npm install`, `ng test`, `npx ng test`, or any watch/interactive variant unless the user explicitly asks.
 
 ## 4) Architecture guardrails
@@ -61,6 +62,11 @@ Key paths:
 
 - Keep reusable UI-block logic in dedicated middle-layer services, not unrelated feature services or containers.
 - Route backend access through `SupabaseService`.
+- **Backend plan review gate:** any plan that changes persistent data shape, column
+  types, migrations, RPCs, storage contracts, or compatibility with published clients
+  must be reviewed by the `backend-plan-reviewer` persona **before** product approval
+  and before implementation. The planner must incorporate the findings and record the
+  chosen physical representation plus rejected alternatives in the plan Decision log.
 - **Before any schema / migration / RPC change, read [`internaldocs/patterns/BACKEND_METHODS.md` §"Schema-change preflight"](internaldocs/patterns/BACKEND_METHODS.md#schema-change-preflight-read-before-writing-sql).** It lists past mistakes (e.g., backfill UPDATEs wiping `updated` timestamps) and the mitigations.
 - Never make Supabase RLS/policy changes without explicit manual user approval. Agents may inspect and propose RLS changes, but
   must not apply them autonomously.
@@ -138,6 +144,9 @@ really benefits from separate sessions/branches.
   use its session tools (`list_projects`, `create_session`, `fork_session`, `send_session_message`) as directed by the skill.
 - Before spawning sessions, tell the user the session plan: how many sessions, which repo/branch, and what each one owns.
 - Child-session prompts must be standalone and include the relevant Patcher rules from this file.
+- Treat orchestration cleanup as part of completion: once a child result is integrated, superseded, or intentionally rejected,
+  archive/delete the child session and verify its worktree and local branch are removed. Never clean a dirty worktree or a branch
+  whose unique work has not been reconciled; audit cleanliness plus ancestry or patch equivalence first.
 
 ## 9) Specialised agent personas
 

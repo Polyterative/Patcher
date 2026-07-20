@@ -38,6 +38,11 @@ export function parseColor(color: string): {r: number; g: number; b: number} {
   return {r: 128, g: 128, b: 128};
 }
 
+export function computeGraphLayoutRuntimeMs(nodeCount: number, edgeCount: number): number {
+  const complexity = nodeCount + edgeCount;
+  return Math.max(1200, Math.min(3200, 900 + complexity * 15));
+}
+
 export function renderNodeLabel(
   context: CanvasRenderingContext2D,
   data: {

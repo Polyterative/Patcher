@@ -10,9 +10,9 @@ import {
 } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
-import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { GraphViewService } from 'src/app/shared-interproject/components/@visual/graph-view/graph-view.service';
 import { PatchDetailDataService } from '../patch-detail-data.service';
+import { PatchGraphDataService } from './patch-graph-data.service';
 import { PatchGraphComponent } from './patch-graph.component';
 import {
   PatchGraphFullscreenDialogComponent,
@@ -78,7 +78,7 @@ describe('PatchGraphComponent fullscreen action', () => {
 
     const component = new PatchGraphComponent(
       {} as PatchDetailDataService,
-      {} as SupabaseService,
+      {} as PatchGraphDataService,
       {} as GraphViewService,
       dialog
     );

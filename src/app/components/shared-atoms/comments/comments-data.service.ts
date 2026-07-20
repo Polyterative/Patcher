@@ -22,7 +22,10 @@ import {
   tap,
   withLatestFrom
 } from "rxjs/operators";
-import { DbComment } from "src/app/models/comment";
+import {
+  CommentableEntityTypes,
+  DbComment
+} from "src/app/models/comment";
 import { SharedConstants } from "src/app/shared-interproject/SharedConstants";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { sanitizeItemInPipe } from "src/app/shared-interproject/components/@smart/mat-form-entity/app-form-utils";
@@ -171,13 +174,4 @@ export class CommentsDataService extends SubManager {
     this.fields.submit.control.setValue('');
     this.fields.submit.control.markAsUntouched();
   }
-}
-
-// profiles = 10, modules = 1, racks = 2, patches = 3, THESE ARE ON DATABASE
-export enum CommentableEntityTypes {
-  RESERVED = 0,
-  PROFILE  = 10,
-  MODULE   = 1,
-  RACK     = 2,
-  PATCH    = 3
 }

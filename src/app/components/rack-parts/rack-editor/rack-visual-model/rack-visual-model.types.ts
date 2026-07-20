@@ -9,6 +9,14 @@ export interface SignalOverlayLine {
 
 export type SignalHoverCardPlacement = 'left' | 'right';
 
+export type RackRowMoveDirection = 'up' | 'down';
+
+export interface RackRowMoveMotion {
+  sourceRowId: number;
+  targetRowId: number;
+  direction: RackRowMoveDirection;
+}
+
 export interface SignalOverlayFrame {
   left: number;
   top: number;

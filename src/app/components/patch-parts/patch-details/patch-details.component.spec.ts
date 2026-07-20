@@ -1,11 +1,6 @@
 import { PatchDetailsComponent } from './patch-details.component';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
-import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { Subject } from 'rxjs';
-
-function mockBackend(): SupabaseService {
-  return {} as unknown as SupabaseService;
-}
 
 function mockDataService(): PatchDetailDataService {
   return {
@@ -17,7 +12,7 @@ describe('PatchDetailsComponent', () => {
   let comp: PatchDetailsComponent;
 
   beforeEach(() => {
-    comp = new PatchDetailsComponent(mockBackend(), mockDataService());
+    comp = new PatchDetailsComponent(mockDataService());
   });
 
   it('creates without error', () => {
@@ -38,5 +33,13 @@ describe('PatchDetailsComponent', () => {
 
   it('ngOnInit does not throw', () => {
     expect(() => comp.ngOnInit()).not.toThrow();
+  });
+
+  it('exposes PatchDetailDataService for template bindings without a backend dependency', () => {
+    const dataService = mockDataService();
+
+    comp = new PatchDetailsComponent(dataService);
+
+    expect(comp.dataService).toBe(dataService);
   });
 });

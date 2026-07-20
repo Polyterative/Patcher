@@ -78,18 +78,24 @@
                     @for (listing of group.listings; track listing.listingId) {
                       <a
                         class="module-price-listing"
-                        [class.module-price-listing--best-now]="isBestAvailableNowListing(listing)"
-                        [style.--module-price-listing-store-color]="getStoreHeroColor(listing)"
                         [href]="listing.productUrl"
                         target="_blank"
                         rel="noopener noreferrer"
-                        [attr.aria-label]="'Open ' + listing.storeName + ' listing'"
+                        [class.module-price-listing--best-now]="isBestAvailableNowListing(listing)"
+                        [class.module-price-listing--stale]="isStaleListing(listing)"
+                        [style.--module-price-listing-store-color]="getStoreHeroColor(listing)"
                       >
                         <div
                           class="module-price-listing__price-block"
-                          [class.module-price-listing__price-block--muted]="!isAvailableNow(listing)"
+                          [class.module-price-listing__price-block--muted]="!isAvailableNow(listing) || isStaleListing(listing)"
                         >
-                          <strong class="module-price-listing__price">{{ formatPrice(listing) }}</strong>
+                          <strong class="module-price-listing__price">
+                            @for (part of formatPriceParts(listing); track $index) {
+                              <span
+                                [class.module-price-listing__price-currency]="part.kind === 'currency'"
+                              >{{ part.value }}</span>
+                            }
+                          </strong>
                         </div>
                         <div class="module-price-listing__details">
                           <div class="module-price-listing__store">
@@ -129,15 +135,21 @@
                           </div>
                         </div>
                         <div class="module-price-listing__meta">
-                          @if (listing.latestSnapshot?.observedAt) {
+                          @if (getFreshnessIso(listing); as freshnessIso) {
                             <span class="module-price-listing__checked">
-                              Checked {{ listing.latestSnapshot?.observedAt | supabaseUtcTimestamp | timeago }}
+                              {{ isStaleListing(listing) ? 'Last seen' : 'Checked' }}
+                              {{ freshnessIso | supabaseUtcTimestamp | timeago }}
                             </span>
                           }
-                          <mat-icon
-                            class="module-price-listing__open-icon"
-                            aria-hidden="true"
-                          >open_in_new</mat-icon>
+                          <span
+                            class="module-price-listing__open-link"
+                          >
+                            <span>Open listing</span>
+                            <mat-icon
+                              class="module-price-listing__open-icon"
+                              aria-hidden="true"
+                            >open_in_new</mat-icon>
+                          </span>
                         </div>
                         @if (getPriceComparisonPoint(listing); as priceComparisonPoint) {
                           <div

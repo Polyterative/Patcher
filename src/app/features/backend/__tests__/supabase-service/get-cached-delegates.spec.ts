@@ -1,4 +1,7 @@
-import { of } from 'rxjs';
+import {
+  firstValueFrom,
+  of
+} from 'rxjs';
 import { SupabaseService } from '../../supabase.service';
 import {
   cleanupSupabaseServiceTest,
@@ -328,6 +331,46 @@ describe('SupabaseService - GET cached delegates', () => {
   });
   
   describe('GET.currentUserModules', () => {
+    it('falls back by default and throws in strict mode when Supabase returns an error response for current user modules', async () => {
+      const mockUser = {
+        id: 'current-user-modules-error',
+        email: 'test@example.com',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      const transientError = {
+        code: 'PGRST003',
+        details: null,
+        hint: null,
+        message: 'Service temporarily unavailable'
+      };
+      spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: transientError}));
+
+      await expectAsync(firstValueFrom(
+        service.GET.currentUserModules(false, true, {key: 'collectionUpdated', direction: 'asc'})
+      )).toBeResolvedTo([]);
+
+      await expectAsync(firstValueFrom(
+        service.GET.currentUserModules(false, true, {key: 'collectionUpdated', direction: 'asc'}, true)
+      )).toBeRejectedWith(transientError);
+    });
+
+    it('returns an empty array for successful empty current user module responses', async () => {
+      const mockUser = {
+        id: 'current-user-modules-empty',
+        email: 'test@example.com',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: [], error: null}));
+
+      await expectAsync(firstValueFrom(
+        service.GET.currentUserModules(false, false, {key: 'collectionUpdated', direction: 'desc'})
+      )).toBeResolvedTo([]);
+    });
+
     it('should return current user modules with collectionUpdated metadata', (done) => {
       const mockUser = {id: 'u1'};
       spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));

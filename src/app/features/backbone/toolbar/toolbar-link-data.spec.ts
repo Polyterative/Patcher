@@ -53,7 +53,15 @@ describe('toolbar-link-data', () => {
     const dev = getToolbarMainLinks(true);
     expect(prod.length).toBeGreaterThan(0);
     expect(prod.some(l => l.route === '/collections/browser')).toBeTrue();
+    expect(prod.some(l => l.route === '/marketplace')).toBeTrue();
     expect(dev.length).toBeGreaterThanOrEqual(prod.length);
+  });
+
+  it('places Marketplace in the public browse group before Patches', () => {
+    const routes = getToolbarMainLinks(false).map(link => link.route);
+
+    expect(routes.indexOf('/marketplace')).toBeGreaterThan(routes.indexOf('/racks/browser'));
+    expect(routes.indexOf('/marketplace')).toBeLessThan(routes.indexOf('/patches/browser'));
   });
 
   it('buildToolbarUserLinks includes My profile and account routes', () => {

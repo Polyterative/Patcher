@@ -3,18 +3,10 @@ import {
   asGroupModeId,
   filterEditorCardsByQuery,
   resolvePatchEditorSortStrategy,
-  countOrphanedConnections,
-  buildDivergenceTooltip,
   resolveRackInlinePanelSide,
-  buildLinkedRackPreviewRows,
   defaultSortModeId,
   defaultGroupModeId
 } from './patch-editor.utils';
-
-const makeRackedModule = (id: number, row: number | null, column = 0): any => ({
-  rackingData: { id, rackid: 1, moduleid: id, row, column, selectedPanelId: null },
-  module: { id, name: `Module ${id}` }
-});
 
 const makeCard = (name: string, mfr = 'MFR', connectionCount = 0, instanceCount = 0): any => ({
   module: { name, manufacturer: { name: mfr } },
@@ -91,74 +83,6 @@ describe('patch-editor.utils', () => {
     it('returns left when tight space on right', () => {
       const rect = { left: 600, right: 780 };
       expect(resolveRackInlinePanelSide(rect, 800, 0, 200)).toBe('left');
-    });
-  });
-
-  describe('countOrphanedConnections', () => {
-    it('returns 0 for empty connections', () => {
-      expect(countOrphanedConnections(new Map(), [], [])).toBe(0);
-    });
-
-    it('counts connections involving orphaned instances', () => {
-      const instanceMap = new Map([[1, 10]]);
-      const instances = [{ id: 10 }, { id: 20 }] as any[];
-      const connections = [
-        { instance_id_a: 20, instance_id_b: 10 },
-        { instance_id_a: 10, instance_id_b: 10 }
-      ] as any[];
-      expect(countOrphanedConnections(instanceMap, instances, connections)).toBe(1);
-    });
-  });
-
-  describe('buildDivergenceTooltip', () => {
-    it('includes orphaned module info', () => {
-      const divergence = {
-        orphanedModules: [{ moduleName: 'VCO', patchInstances: 2 }],
-        excessInstances: []
-      } as any;
-      const result = buildDivergenceTooltip(divergence, 0);
-      expect(result).toContain('VCO');
-      expect(result).toContain('2 instances');
-    });
-
-    it('includes orphaned connection count when > 0', () => {
-      const divergence = { orphanedModules: [], excessInstances: [] } as any;
-      const result = buildDivergenceTooltip(divergence, 3);
-      expect(result).toContain('3 connections');
-    });
-
-    it('ends with collection-mode note', () => {
-      const divergence = { orphanedModules: [], excessInstances: [] } as any;
-      expect(buildDivergenceTooltip(divergence, 0)).toContain('collection mode');
-    });
-  });
-
-  describe('buildLinkedRackPreviewRows', () => {
-    it('excludes modules with null row from the preview', () => {
-      const modules = [
-        makeRackedModule(1, 0, 0),
-        makeRackedModule(2, 0, 1),
-        makeRackedModule(3, null, 0) // floating module — not placed in any row
-      ];
-      const rows = buildLinkedRackPreviewRows(modules);
-      expect(rows.length).toBe(1);
-      expect(rows[0].modules.length).toBe(2);
-      expect(rows[0].modules.find((m: any) => m.module.id === 3)).toBeUndefined();
-    });
-
-    it('excludes modules with undefined row from the preview', () => {
-      const modules = [
-        makeRackedModule(1, 0, 0),
-        { rackingData: { id: 9, rackid: 1, moduleid: 9, row: undefined, column: 0 }, module: { id: 9, name: 'Floating' } }
-      ];
-      const rows = buildLinkedRackPreviewRows(modules as any);
-      expect(rows.length).toBe(1);
-      expect(rows[0].modules.length).toBe(1);
-    });
-
-    it('returns empty array when all modules have null row', () => {
-      const modules = [makeRackedModule(1, null), makeRackedModule(2, null)];
-      expect(buildLinkedRackPreviewRows(modules)).toEqual([]);
     });
   });
 });

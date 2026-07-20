@@ -4,7 +4,9 @@
 
 ## Status
 
-Backlog intake. Priority: HIGH. Product area: marketplace / UX shell.
+Public browse/detail and public-profile For Sale surfaces are complete behind the Marketplace feature flag. The private
+seller cockpit is available as User Area `My listings`; the buyer cockpit remains dependency-blocked on inquiry/transaction
+persistence. Priority: HIGH. Product area: marketplace / UX shell.
 
 ## User intent
 
@@ -63,16 +65,16 @@ listing schema work if fake view models are used in tests.
 
 ## MVP layer
 
-- [ ] Add marketplace browse route and top-level navigation entry.
-- [ ] Add listing card atom with canonical module image, seller, price, condition, shipping scope, and age.
-- [ ] Add listing detail route with sticky mobile CTA.
+- [x] Add marketplace browse route and top-level navigation entry.
+- [x] Add listing card atom with canonical module image, seller, price, condition, shipping scope, and age.
+- [x] Add listing detail route with sticky mobile CTA.
 - [ ] Add seller cockpit route with active/draft/paused/closed filters.
 - [ ] Add buyer cockpit route with active/completed/cancelled filters.
 
 ## Structural layer
 
 - [ ] Wire filters: manufacturer, HP, price, condition, shipping destination, and seller trust threshold.
-- [ ] Add public profile "For Sale" section once profile tab structure supports it.
+- [x] Add public profile "For Sale" section once profile tab structure supports it; it may launch before feedback/reputation chips.
 - [ ] Add empty-state seeding prompts for users with `SELLS` modules but no listings.
 - [ ] Add shared marketplace route guards for logged-in-only cockpit surfaces.
 
@@ -116,9 +118,9 @@ listing schema work if fake view models are used in tests.
 
 ## Risks and open questions
 
-- Decide whether marketplace browse is public at launch or authenticated until moderation tools exist.
-- Decide launch geography/filter defaults.
-- Decide if profile "For Sale" tab is visible before feedback/reputation exists.
+- Marketplace browse/detail is public to anonymous visitors at launch; transaction/contact actions require login.
+- Marketplace browse defaults to the viewer's region/country where available, with global/all listings available as an explicit filter.
+- Public profile "For Sale" may be visible before feedback/reputation exists; omit trust chips until available.
 
 ## Coordinator-loop handoff
 
@@ -129,3 +131,9 @@ read UI. Use designer persona for final visual pass before code.
 
 <!-- Append timestamped one-liners as the plan progresses. -->
 - 2026-06-18T11:26+02:00 — UX shell split from listing schema so browse/detail/cockpits can progress in parallel with backend planning.
+- 2026-07-08T14:30+02:00 — User chose public Marketplace browse/detail for anonymous visitors at launch, with actions such as inquiries/offers/login-gated.
+- 2026-07-08T14:30+02:00 — User chose a viewer-region/country-first Marketplace browse default, similar to current listing behavior, with global/all listings available as an explicit filter.
+- 2026-07-08T14:30+02:00 — User approved showing public profile `For Sale` sections before feedback/reputation exists, with trust/reputation chips omitted until that system is ready.
+- 2026-07-17T17:34+02:00 — Implemented the public-profile `For sale` section after Patches in the main content column. It is marketplace-feature-flagged, uses a seller/status-filtered public listing query, suppresses successful empty sections, and reuses the shared full-card Marketplace listing link without trust/reputation or transaction actions.
+- 2026-07-17T17:40+02:00 — Validation: targeted public-profile, Marketplace query/card/view-model/browser/detail specs passed (`81 SUCCESS`), along with app TypeScript no-emit, lint, docs, and diff checks. Runtime screenshot remains deferred to coordinator integration.
+- 2026-07-17T18:08+02:00 — Integrated the feature-flagged anonymous `/marketplace` browse and `/marketplace/:publicId` detail surfaces plus top-level navigation. Coordinator validation passed 156 focused specs after regenerating the ignored local environment file. Desktop/mobile runtime capture is blocked because the user-owned dev server is not running (`ERR_CONNECTION_REFUSED`); no blank capture was treated as visual evidence.

@@ -1,9 +1,12 @@
+import { Router } from '@angular/router';
 import { of } from 'rxjs';
-import { CommentContextComponent } from './comment-context.component';
+import { CommentableEntityTypes } from 'src/app/models/comment';
 import { DbComment } from 'src/app/models/comment';
-import { CommentableEntityTypes } from 'src/app/components/shared-atoms/comments/comments-data.service';
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
+import {
+  CommentContext,
+  CommentContextDataService
+} from 'src/app/components/shared-atoms/comments/comment-context/comment-context-data.service';
+import { CommentContextComponent } from './comment-context.component';
 
 function makeComment(entityType: number, entityId = 42): DbComment {
   return {
@@ -11,52 +14,76 @@ function makeComment(entityType: number, entityId = 42): DbComment {
     content: 'hello',
     entityId,
     entityType,
-    profile: { id: 'u1', username: 'tester' } as any,
+    profile: { id: 'u1', username: 'tester' },
     created: '',
     updated: '',
   };
 }
 
-function makeBackend(options: {rackPublicId?: string; patchPublicId?: string} = {}) {
-  return {
-    GET: {
-      moduleWithId: jasmine.createSpy('moduleWithId').and.returnValue(
-        of({ data: { id: 1, name: 'Test Module', manufacturer: { name: 'Test MFR' } } })
-      ),
-      rackWithId: jasmine.createSpy('rackWithId').and.returnValue(
-        of({ data: { id: 2, name: 'Test Rack', ...(options.rackPublicId ? {public_id: options.rackPublicId} : {}) } })
-      ),
-    },
-    get: {
-      patchWithId: jasmine.createSpy('patchWithId').and.returnValue(
-        of({ data: { id: 3, name: 'Test Patch', ...(options.patchPublicId ? {public_id: options.patchPublicId} : {}) } })
-      ),
-    },
-  };
+function makeContext(
+  entityType: number,
+  options: { rackPublicId?: string; patchPublicId?: string } = {}
+): CommentContext {
+  switch (entityType) {
+    case CommentableEntityTypes.MODULE:
+      return {
+        description: 'Test Module by Test MFR',
+        URL: ['modules', 'details', 1],
+        entityLabel: 'Module',
+      };
+    case CommentableEntityTypes.PATCH:
+      return {
+        description: 'Test Patch',
+        URL: options.patchPublicId
+          ? ['patches', options.patchPublicId]
+          : ['patches', 'details', 3],
+        entityLabel: 'Patch',
+      };
+    case CommentableEntityTypes.RACK:
+      return {
+        description: 'Test Rack',
+        URL: options.rackPublicId
+          ? ['racks', options.rackPublicId]
+          : ['racks', 'details', 2],
+        entityLabel: 'Rack',
+      };
+    default:
+      return {
+        description: '',
+        URL: [],
+        entityLabel: 'Item',
+      };
+  }
 }
 
-function makeRouter() {
-  return { navigate: jasmine.createSpy('navigate') };
-}
+function makeComponent(
+  data: DbComment,
+  contextOptions: { rackPublicId?: string; patchPublicId?: string } = {}
+) {
+  const dataService = jasmine.createSpyObj<CommentContextDataService>('CommentContextDataService', ['contextForComment']);
+  const router = jasmine.createSpyObj<Router>('Router', ['navigate']);
+  const hasContext = [
+    CommentableEntityTypes.MODULE,
+    CommentableEntityTypes.PATCH,
+    CommentableEntityTypes.RACK
+  ].includes(data.entityType);
 
-function makeComponent(data: DbComment, backendOptions: {rackPublicId?: string; patchPublicId?: string} = {}) {
-  const backend = makeBackend(backendOptions);
-  const router = makeRouter();
-  const comp = new CommentContextComponent(backend as any, router as any);
+  dataService.contextForComment.and.returnValue(
+    hasContext ? of(makeContext(data.entityType, contextOptions)) : of()
+  );
+
+  const comp = new CommentContextComponent(dataService, router);
   comp.data = data;
-  return { comp, backend, router };
+  return { comp, dataService, router };
 }
 
-function snapshotContext(comp: CommentContextComponent) {
-  let result: any;
-  comp.contextInformation$.subscribe(v => (result = v)).unsubscribe();
+function snapshotContext(comp: CommentContextComponent): CommentContext | undefined {
+  let result: CommentContext | undefined;
+  comp.contextInformation$.subscribe(value => (result = value)).unsubscribe();
   return result;
 }
 
-// ── Tests ─────────────────────────────────────────────────────────────────────
-
 describe('CommentContextComponent', () => {
-
   describe('initial state', () => {
     it('contextInformation$ starts as undefined', () => {
       const { comp } = makeComponent(makeComment(CommentableEntityTypes.MODULE));
@@ -65,124 +92,111 @@ describe('CommentContextComponent', () => {
   });
 
   describe('ngOnInit() — MODULE entity', () => {
-    it('calls backend.GET.moduleWithId with the entityId', () => {
-      const { comp, backend } = makeComponent(makeComment(CommentableEntityTypes.MODULE, 55));
+    it('requests context for the module comment', () => {
+      const comment = makeComment(CommentableEntityTypes.MODULE, 55);
+      const { comp, dataService } = makeComponent(comment);
       comp.ngOnInit();
-      expect(backend.GET.moduleWithId).toHaveBeenCalledWith(55, jasmine.any(String));
+      expect(dataService.contextForComment).toHaveBeenCalledWith(comment);
     });
 
     it('populates contextInformation$ with module description', () => {
       const { comp } = makeComponent(makeComment(CommentableEntityTypes.MODULE));
       comp.ngOnInit();
-      const ctx = snapshotContext(comp);
-      expect(ctx.description).toBe('Test Module by Test MFR');
+      expect(snapshotContext(comp)?.description).toBe('Test Module by Test MFR');
     });
 
     it('sets the correct navigation URL for a module', () => {
       const { comp } = makeComponent(makeComment(CommentableEntityTypes.MODULE));
       comp.ngOnInit();
-      expect(snapshotContext(comp).URL).toEqual(['modules', 'details', 1]);
+      expect(snapshotContext(comp)?.URL).toEqual(['modules', 'details', 1]);
     });
 
     it('sets entityLabel to "Module"', () => {
       const { comp } = makeComponent(makeComment(CommentableEntityTypes.MODULE));
       comp.ngOnInit();
-      expect(snapshotContext(comp).entityLabel).toBe('Module');
-    });
-
-    it('does not call patch or rack backend methods', () => {
-      const { comp, backend } = makeComponent(makeComment(CommentableEntityTypes.MODULE));
-      comp.ngOnInit();
-      expect(backend.get.patchWithId).not.toHaveBeenCalled();
-      expect(backend.GET.rackWithId).not.toHaveBeenCalled();
+      expect(snapshotContext(comp)?.entityLabel).toBe('Module');
     });
   });
 
   describe('ngOnInit() — PATCH entity', () => {
-    it('calls backend.get.patchWithId with the entityId', () => {
-      const { comp, backend } = makeComponent(makeComment(CommentableEntityTypes.PATCH, 99));
+    it('requests context for the patch comment', () => {
+      const comment = makeComment(CommentableEntityTypes.PATCH, 99);
+      const { comp, dataService } = makeComponent(comment);
       comp.ngOnInit();
-      expect(backend.get.patchWithId).toHaveBeenCalledWith(99, jasmine.any(String));
+      expect(dataService.contextForComment).toHaveBeenCalledWith(comment);
     });
 
     it('populates contextInformation$ with patch name as description', () => {
       const { comp } = makeComponent(makeComment(CommentableEntityTypes.PATCH));
       comp.ngOnInit();
-      expect(snapshotContext(comp).description).toBe('Test Patch');
+      expect(snapshotContext(comp)?.description).toBe('Test Patch');
     });
 
     it('sets the correct navigation URL for a patch', () => {
       const { comp } = makeComponent(makeComment(CommentableEntityTypes.PATCH));
       comp.ngOnInit();
-      expect(snapshotContext(comp).URL).toEqual(['patches', 'details', 3]);
+      expect(snapshotContext(comp)?.URL).toEqual(['patches', 'details', 3]);
     });
 
     it('sets entityLabel to "Patch"', () => {
       const { comp } = makeComponent(makeComment(CommentableEntityTypes.PATCH));
       comp.ngOnInit();
-      expect(snapshotContext(comp).entityLabel).toBe('Patch');
+      expect(snapshotContext(comp)?.entityLabel).toBe('Patch');
     });
 
     it('uses the canonical public patch URL when public_id is available', () => {
-      const { comp } = makeComponent(makeComment(CommentableEntityTypes.PATCH), {patchPublicId: 'tokenAbcDef00'});
+      const { comp } = makeComponent(makeComment(CommentableEntityTypes.PATCH), { patchPublicId: 'tokenAbcDef00' });
       comp.ngOnInit();
-      expect(snapshotContext(comp).URL).toEqual(['patches', 'tokenAbcDef00']);
+      expect(snapshotContext(comp)?.URL).toEqual(['patches', 'tokenAbcDef00']);
     });
   });
 
   describe('ngOnInit() — RACK entity', () => {
-    it('calls backend.GET.rackWithId with the entityId', () => {
-      const { comp, backend } = makeComponent(makeComment(CommentableEntityTypes.RACK, 77));
+    it('requests context for the rack comment', () => {
+      const comment = makeComment(CommentableEntityTypes.RACK, 77);
+      const { comp, dataService } = makeComponent(comment);
       comp.ngOnInit();
-      expect(backend.GET.rackWithId).toHaveBeenCalledWith(77, jasmine.any(String));
+      expect(dataService.contextForComment).toHaveBeenCalledWith(comment);
     });
 
     it('populates contextInformation$ with rack name as description', () => {
       const { comp } = makeComponent(makeComment(CommentableEntityTypes.RACK));
       comp.ngOnInit();
-      expect(snapshotContext(comp).description).toBe('Test Rack');
+      expect(snapshotContext(comp)?.description).toBe('Test Rack');
     });
 
     it('sets the correct navigation URL for a rack', () => {
       const { comp } = makeComponent(makeComment(CommentableEntityTypes.RACK));
       comp.ngOnInit();
-      expect(snapshotContext(comp).URL).toEqual(['racks', 'details', 2]);
+      expect(snapshotContext(comp)?.URL).toEqual(['racks', 'details', 2]);
     });
 
     it('sets entityLabel to "Rack"', () => {
       const { comp } = makeComponent(makeComment(CommentableEntityTypes.RACK));
       comp.ngOnInit();
-      expect(snapshotContext(comp).entityLabel).toBe('Rack');
+      expect(snapshotContext(comp)?.entityLabel).toBe('Rack');
     });
 
     it('uses the canonical public rack URL when public_id is available', () => {
-      const { comp } = makeComponent(makeComment(CommentableEntityTypes.RACK), {rackPublicId: 'tokenAbcDef00'});
+      const { comp } = makeComponent(makeComment(CommentableEntityTypes.RACK), { rackPublicId: 'tokenAbcDef00' });
       comp.ngOnInit();
-      expect(snapshotContext(comp).URL).toEqual(['racks', 'tokenAbcDef00']);
+      expect(snapshotContext(comp)?.URL).toEqual(['racks', 'tokenAbcDef00']);
     });
   });
 
   describe('ngOnInit() — unhandled entity type (default branch)', () => {
-    it('does not call any backend method for an unknown entityType', () => {
-      const { comp, backend } = makeComponent(makeComment(999));
-      comp.ngOnInit();
-      expect(backend.GET.moduleWithId).not.toHaveBeenCalled();
-      expect(backend.get.patchWithId).not.toHaveBeenCalled();
-      expect(backend.GET.rackWithId).not.toHaveBeenCalled();
-    });
-
     it('leaves contextInformation$ undefined for an unknown entityType', () => {
-      const { comp } = makeComponent(makeComment(999));
+      const { comp, dataService } = makeComponent(makeComment(999));
       comp.ngOnInit();
+      expect(dataService.contextForComment).toHaveBeenCalledTimes(1);
       expect(snapshotContext(comp)).toBeUndefined();
     });
 
-    it('does not call any backend method for PROFILE entityType', () => {
-      const { comp, backend } = makeComponent(makeComment(CommentableEntityTypes.PROFILE));
+    it('leaves contextInformation$ undefined for PROFILE entityType', () => {
+      const { comp, dataService } = makeComponent(makeComment(CommentableEntityTypes.PROFILE));
       comp.ngOnInit();
-      expect(backend.GET.moduleWithId).not.toHaveBeenCalled();
-      expect(backend.get.patchWithId).not.toHaveBeenCalled();
-      expect(backend.GET.rackWithId).not.toHaveBeenCalled();
+      expect(dataService.contextForComment).toHaveBeenCalledTimes(1);
+      expect(snapshotContext(comp)).toBeUndefined();
     });
   });
 

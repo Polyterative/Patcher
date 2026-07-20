@@ -21,17 +21,14 @@ import {
 } from 'src/app/components/patch-parts/patch-minimal/patch-minimal.component';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
-import {
-  CommentableEntityTypes,
-  CommentsDataService
-} from 'src/app/components/shared-atoms/comments/comments-data.service';
+import { CommentsDataService } from 'src/app/components/shared-atoms/comments/comments-data.service';
+import { CommentableEntityTypes } from 'src/app/models/comment';
 import {
   clearJsonLdScript,
   upsertJsonLdScript
 } from 'src/app/shared-interproject/json-ld-dom';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { environment } from 'src/environments/environment';
-import { ReactionEntityTypes } from 'src/app/features/backend/supabase-reactions';
 
 
 const JSONLD_SCRIPT_ID = 'patch-jsonld';
@@ -54,7 +51,6 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
     hideButtons: false
   };
   readonly coolReactionsEnabled = environment.features.coolReactionsEnabled;
-  readonly ReactionEntityTypes = ReactionEntityTypes;
   readonly loggedUser$: UserManagementService['loggedUser$'];
   
   constructor(

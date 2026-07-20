@@ -13,13 +13,13 @@ import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@
 import { CleanCardComponent } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.component';
 import { FlexboxRowFastComponent } from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.component';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
-import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
+import { RACK_DETAIL_DATA_PROVIDERS } from 'src/app/components/rack-parts/rack-detail-data.service';
 import { CoolButtonComponent } from 'src/app/components/shared-atoms/cool-button/cool-button.component';
 import { ModuleListComponent } from './module-list.component';
 
 @NgModule({
   declarations: [ModuleListComponent],
-  providers: [PatchDetailDataService, RackDetailDataService],
+  providers: [PatchDetailDataService, ...RACK_DETAIL_DATA_PROVIDERS],
   imports: [
     CommonModule,
     FormsModule,

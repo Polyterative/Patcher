@@ -18,7 +18,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { Rack } from "src/app/models/rack";
-import { StorageUrls } from 'src/app/features/backend/DatabaseStrings';
+import { RackImageDataService } from './rack-image-data.service';
 
 
 export function previewGeneratedAt(filename: string | null | undefined): Date | null {
@@ -91,6 +91,7 @@ export function isPreviewStale(rack: Pick<Rack, 'image' | 'updated'> | null | un
   templateUrl: './rack-image.component.html',
   styleUrls: ['./rack-image.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [RackImageDataService],
   imports: [
     RouterLink,
     MatButtonModule,
@@ -106,18 +107,18 @@ export class RackImageComponent implements OnInit, OnChanges {
   @Input() containImage: boolean = true;
   @Input() canUpdatePreview = false;
   @Output() updatePreviewClick = new EventEmitter<void>();
-  
-  readonly rackStorageBase = StorageUrls.racks;
-  
+
   filename: string | undefined;
   imageLoadFailed = false;
   imageLoaded = false;
+  useDirectStorageFallback = false;
   
   // proportion between contained and full size
   sizeDivider: number = 1.5;
   
   constructor(
-    public changeDetection: ChangeDetectorRef
+    public changeDetection: ChangeDetectorRef,
+    private readonly dataService: RackImageDataService
   ) {
   }
   
@@ -140,8 +141,27 @@ export class RackImageComponent implements OnInit, OnChanges {
   }
 
   onPreviewLoadError(): void {
+    if (this.filename && !this.useDirectStorageFallback) {
+      this.useDirectStorageFallback = true;
+      this.imageLoaded = false;
+      this.changeDetection.detectChanges();
+      return;
+    }
+
     this.imageLoadFailed = true;
     this.imageLoaded = false;
+  }
+
+  get previewImageSrc(): string | undefined {
+    if (!this.filename) {
+      return undefined;
+    }
+
+    if (this.useDirectStorageFallback) {
+      return this.dataService.getRackImageUrl(this.filename, true);
+    }
+
+    return this.dataService.getRackImageUrl(this.filename);
   }
 
   get isStale(): boolean {
@@ -159,6 +179,7 @@ export class RackImageComponent implements OnInit, OnChanges {
     if (this.filename !== nextFilename) {
       this.imageLoadFailed = false;
       this.imageLoaded = false;
+      this.useDirectStorageFallback = false;
     }
     this.filename = nextFilename;
   }

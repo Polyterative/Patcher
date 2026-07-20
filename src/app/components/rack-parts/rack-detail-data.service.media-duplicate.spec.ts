@@ -2,17 +2,22 @@ import {
   fakeAsync,
   tick
 } from '@angular/core/testing';
+import type { ElementRef } from '@angular/core';
 import {
   BehaviorSubject,
+  Observable,
   of,
   throwError
 } from 'rxjs';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import { RACK_PREVIEW_MAX_BYTES } from 'src/app/shared-interproject/upload-guardrails/upload-guardrails';
 import { RackDetailDataService } from './rack-detail-data.service';
 import { RACK_ANALYSIS_MODES } from './rack-analysis-mode';
 
 
 describe('RackDetailDataService media, rename, and duplication', () => {
+  type RackJpegGenerator = {generateRackJpeg$: (el: HTMLElement) => Observable<string>};
+
   let createdServices: RackDetailDataService[];
 
   function rack(partial: any = {}) {
@@ -34,6 +39,15 @@ describe('RackDetailDataService media, rename, and duplication', () => {
       module: {id: id + 1000, name: `M${ id }`, hp, standard: {id: standard}},
       rackingData: {id, rackid: 1, row, column}
     } as any;
+  }
+
+  function dataUrlOfSize(byteSize: number): string {
+    const bytes = new Uint8Array(byteSize);
+    let binary = '';
+    for (let offset = 0; offset < bytes.length; offset += 32768) {
+      binary += String.fromCharCode(...bytes.subarray(offset, offset + 32768));
+    }
+    return `data:image/jpeg;base64,${ btoa(binary) }`;
   }
   
   function build(options: {userId?: string; isAdmin?: boolean} = {}) {
@@ -186,6 +200,25 @@ describe('RackDetailDataService media, rename, and duplication', () => {
     expect(backend.storage.uploadRackImage).toHaveBeenCalled();
     expect(backend.storage.deleteRackImage).not.toHaveBeenCalled();
     expect(backend.update.rack).toHaveBeenCalledWith(jasmine.objectContaining({id: 9, image: 'uploaded.jpeg'}));
+  }));
+
+  it('blocks generated rack preview uploads above one megabyte before storage or rack updates', fakeAsync(() => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    spyOn(SharedConstants, 'successCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    spyOn(service as unknown as RackJpegGenerator, 'generateRackJpeg$').and.returnValue(of(dataUrlOfSize(RACK_PREVIEW_MAX_BYTES + 1)));
+    service.singleRackData$.next(rack({id: 10, image: undefined}));
+    service.currentDownloadElementRef$.next({
+      screen: {nativeElement: {scrollWidth: 40, scrollHeight: 50} as HTMLElement} as ElementRef<HTMLElement>
+    });
+
+    service.updateRackImagePreview$.next();
+    tick(360);
+
+    expect(backend.storage.uploadRackImage).not.toHaveBeenCalled();
+    expect(backend.update.rack).not.toHaveBeenCalledWith(jasmine.objectContaining({id: 10, image: 'uploaded.jpeg'}));
+    expect(SharedConstants.errorCustom).toHaveBeenCalledWith(jasmine.anything(), jasmine.stringMatching(/limit is 1 MB/));
+    expect(SharedConstants.successCustom).not.toHaveBeenCalled();
   }));
 
   it('allows non-owner admins to update the generated rack preview through the existing rack update path', fakeAsync(() => {

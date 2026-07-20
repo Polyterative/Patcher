@@ -12,6 +12,9 @@
  *       guessing.
  *   D4  CURRENT_FEATURE.md must either show "_No active feature._" or have
  *       all three Layer headings populated.
+ *   D5  Orphaned docs: every .md under internaldocs/ (except archived plans in
+ *       workflow/plans/done/) must be linked from at least one other doc, so
+ *       agents can reach it from the internaldocs/README.md router.
  *
  * Run: node scripts/checks/check-docs.cjs
  */
@@ -46,6 +49,9 @@ const linkRe = /\[([^\]]+)\]\(([^)]+)\)/g;
 
 const docFiles = ['AGENTS.md', 'CLAUDE.md', ...listMd('internaldocs')];
 
+// All internaldocs .md files that are the target of at least one link (for D5).
+const linkedTargets = new Set();
+
 for (const rel of docFiles) {
   const src = read(rel);
   const dir = path.dirname(rel);
@@ -73,6 +79,9 @@ for (const rel of docFiles) {
       errors.push(
         `D1 ${rel}: broken link "${m[2]}" (resolved to ${path.relative(repoRoot, resolved)})`
       );
+    } else {
+      const relTarget = path.relative(repoRoot, resolved);
+      if (relTarget !== rel) linkedTargets.add(relTarget);
     }
   }
 }
@@ -119,6 +128,20 @@ if (activeIdx >= 0 && templateIdx > activeIdx) {
           '   or reset Active to "_No active feature._" if no feature is in flight.'
       );
     }
+  }
+}
+
+// ── D5: orphaned internaldocs files (unreachable from any other doc) ─────────
+for (const rel of listMd('internaldocs')) {
+  const norm = rel.split(path.sep).join('/');
+  if (norm === 'internaldocs/README.md') continue; // the router itself
+  if (norm.startsWith('internaldocs/workflow/plans/done/')) continue; // archive
+  if (!linkedTargets.has(rel)) {
+    errors.push(
+      `D5 ${norm}: orphaned doc — not linked from any other doc.\n` +
+        '   Fix: add it to the internaldocs/README.md index (or the doc that owns its topic),\n' +
+        '   or delete/merge it if it is obsolete.'
+    );
   }
 }
 

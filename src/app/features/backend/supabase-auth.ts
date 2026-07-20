@@ -10,15 +10,12 @@ import {
   from as rxFrom,
   Observable,
   of,
-  throwError,
-  timeout
+  throwError
 } from 'rxjs';
 import {
   catchError,
-  filter,
   map,
   switchMap,
-  take,
   withLatestFrom
 } from 'rxjs/operators';
 import { Database } from 'src/backend/database.types';
@@ -35,23 +32,17 @@ import {
   SupabaseLoginResponse,
   SupabaseSignupResponse
 } from './supabase.types';
-
-
-const AUTH_NULL_SESSION_SETTLE_TIMEOUT_MS = 1500;
-const OAUTH_CALLBACK_SESSION_TIMEOUT_MS = 10000;
-
-
-class PasswordResetError extends Error {
-  constructor(
-    public override message: string,
-    public errorCode?: string,
-    public statusCode?: number,
-    public details?: string
-  ) {
-    super(message);
-    this.name = 'PasswordResetError';
-  }
-}
+import {
+  AUTH_CACHE_KEYS,
+  createPasswordResetError,
+  getSettledAuthSession$,
+  isValidEmail,
+  mapLoginUser,
+  mapRichUserSession,
+  mapSimpleUserSession,
+  OAUTH_CALLBACK_SESSION_TIMEOUT_MS,
+  PasswordResetError
+} from './supabase-auth.helpers';
 
 
 export function createAuthNamespace(
@@ -60,21 +51,8 @@ export function createAuthNamespace(
   snackBar: MatSnackBar,
   authSession$: Observable<Session | null>
 ) {
-  const getSettledAuthSession$ = (nullSessionTimeoutMs = AUTH_NULL_SESSION_SETTLE_TIMEOUT_MS): Observable<Session | null> =>
-    authSession$.pipe(
-      take(1),
-      switchMap(session => {
-        if (session) return of(session);
-        return authSession$.pipe(
-          filter((nextSession): nextSession is Session => !!nextSession),
-          take(1),
-          timeout({
-            first: nullSessionTimeoutMs,
-            with: () => of(null)
-          })
-        );
-      })
-    );
+  const settledAuthSession$ = (nullSessionTimeoutMs?: number): Observable<Session | null> =>
+    getSettledAuthSession$(authSession$, nullSessionTimeoutMs);
 
   const ns = {
     login$(email: string, password: string): Observable<SupabaseLoginResponse> {
@@ -99,24 +77,34 @@ export function createAuthNamespace(
           if (authResponse.error || !authResponse.data?.user) {
             return throwError(() => authResponse.error || new Error('Authentication failed'));
           }
-          return rxFrom(
-            supabase
-              .from(DbPaths.profiles)
-              .select('username, public, website, avatar_url')
-              .filter('id', 'eq', authResponse.data.user.id)
-          ).pipe(
+          const authenticatedUser = authResponse.data.user;
+          const toLoginResponse$ = () => ns._getUserNameFromDatabase(authenticatedUser.id).pipe(
             map(usernameGetterResponse => {
-              const profile = usernameGetterResponse.data[0];
+              if (usernameGetterResponse.error) {
+                throw new Error(usernameGetterResponse.error.message || 'Failed to load user profile after login.');
+              }
+
+              const profile = usernameGetterResponse.data?.[0];
+              if (!profile) {
+                throw new Error('User profile not found after login.');
+              }
+
               return {
                 returnUrl: params['returnUrl'],
-                user: {
-                  ...authResponse.data.user,
-                  username: profile.username,
-                  public: profile.public,
-                  website: profile.website,
-                  avatar_url: profile.avatar_url,
-                }
+                user: mapLoginUser(authenticatedUser, profile)
               };
+            })
+          );
+
+          return toLoginResponse$().pipe(
+            catchError(error => {
+              if (error?.message !== 'User profile not found after login.') {
+                return throwError(() => error);
+              }
+
+              return ns._ensureOAuthUserProfile$(authenticatedUser).pipe(
+                switchMap(() => toLoginResponse$())
+              );
             })
           );
         })
@@ -143,7 +131,7 @@ export function createAuthNamespace(
     },
     
     handleOAuthCallback$(): Observable<RichUserModel | null> {
-      return getSettledAuthSession$(OAUTH_CALLBACK_SESSION_TIMEOUT_MS).pipe(
+      return settledAuthSession$(OAUTH_CALLBACK_SESSION_TIMEOUT_MS).pipe(
         switchMap(session => {
           if (!session) {
             return of(null);
@@ -233,27 +221,14 @@ export function createAuthNamespace(
     },
     
     getUserSession$(): Observable<SimpleUserModel | null> {
-      return getSettledAuthSession$().pipe(
-        map(session => {
-          if (session == null) return null;
-          const { user } = session;
-          return {
-            id: user.id,
-            email: user.email,
-            created_at: user.created_at,
-            updated_at: user.updated_at
-          };
-        })
-      );
+      return settledAuthSession$().pipe(map(mapSimpleUserSession));
     },
     
     getRichUserSession$(): Observable<RichUserModel | null> {
-      return getSettledAuthSession$().pipe(
+      return settledAuthSession$().pipe(
         switchMap(session => {
           if (!session) return of(null);
           const sessionUser = session.user;
-          const authProvider = (sessionUser.app_metadata?.['provider'] as string) || 'email';
-          const authProviders = (sessionUser.app_metadata?.['providers'] as string[]) || [authProvider];
           return ns._getUserNameFromDatabase(sessionUser.id).pipe(
             map(usernameGetterResponse => {
               if (usernameGetterResponse.error) {
@@ -265,18 +240,7 @@ export function createAuthNamespace(
                 return null;
               }
 
-              return {
-                id: sessionUser.id,
-                email: sessionUser.email,
-                created_at: sessionUser.created_at,
-                updated_at: sessionUser.updated_at,
-                username: profile.username,
-                public: profile.public,
-                website: profile.website,
-                avatar_url: profile.avatar_url,
-                auth_provider: authProvider,
-                auth_providers: authProviders
-              };
+              return mapRichUserSession(sessionUser, profile);
             })
           );
         })
@@ -329,7 +293,7 @@ export function createAuthNamespace(
           })
         );
       } else {
-        if (!ns._isValidEmail(emailOrToken)) {
+        if (!isValidEmail(emailOrToken)) {
           return throwError(() => new Error('Invalid email address.'));
         }
         const redirectTo = `${ window.location.origin }/auth/reset-password`;
@@ -461,18 +425,7 @@ export function createAuthNamespace(
     },
     
     _burstAllCaches() {
-      cacheBuster$.next([
-        'comments',
-        'modules',
-        'currentUserModules',
-        'moduleWithId',
-        'manufacturers',
-        'patchConnections',
-        'patchModuleInstances',
-        'rackWithId',
-        'patches',
-        'currentUserComments'
-      ]);
+      cacheBuster$.next([...AUTH_CACHE_KEYS]);
     },
     
     _updateUserProfile(email: string, password: string, username: string): Observable<SupabaseLoginResponse> {
@@ -495,33 +448,12 @@ export function createAuthNamespace(
       );
     },
     
-    _createPasswordResetError(error: any): PasswordResetError {
-      const errorCode = error?.error_code || error?.code || error?.name;
-      const message = error?.msg || error?.message || error?.error_description;
-      const statusCode = error?.code;
-      const errorMessages = SharedConstants.messages.resetPassword;
-      
-      if (errorCode === 'same_password' || message?.toLowerCase().includes('same password')) {
-        return new PasswordResetError(errorMessages.samePassword, errorCode, statusCode);
-      }
-      if (errorCode === 'weak_password' || message?.toLowerCase().includes('weak password')) {
-        return new PasswordResetError(errorMessages.weakPassword, errorCode, statusCode);
-      }
-      if (
-        errorCode === 'invalid_credentials' || errorCode === 'invalid_grant' ||
-        message?.toLowerCase().includes('invalid') || message?.toLowerCase().includes('expired')
-      ) {
-        return new PasswordResetError(errorMessages.invalidSession, errorCode, statusCode);
-      }
-      if (errorCode === 'network_error' || message?.toLowerCase().includes('network') || message?.toLowerCase().includes('fetch')) {
-        return new PasswordResetError(errorMessages.networkError, errorCode, statusCode);
-      }
-      
-      return new PasswordResetError(message || errorMessages.unknownError, errorCode, statusCode);
+    _createPasswordResetError(error: unknown): PasswordResetError {
+      return createPasswordResetError(error);
     },
     
     _isValidEmail(email: string): boolean {
-      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      return isValidEmail(email);
     },
 
     /**

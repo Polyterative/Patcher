@@ -16,10 +16,8 @@ import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail
 import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area-data.service';
-import {
-  CommentableEntityTypes,
-  CommentsDataService
-} from 'src/app/components/shared-atoms/comments/comments-data.service';
+import { CommentsDataService } from 'src/app/components/shared-atoms/comments/comments-data.service';
+import { CommentableEntityTypes } from 'src/app/models/comment';
 import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
@@ -39,7 +37,6 @@ import {
   formatPowerRailValue
 } from 'src/app/components/rack-parts/rack-power-breakdown.utils';
 import { environment } from 'src/environments/environment';
-import { ReactionEntityTypes } from 'src/app/features/backend/supabase-reactions';
 
 
 const JSONLD_SCRIPT_ID = 'rack-jsonld';
@@ -59,7 +56,6 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
   };
   @Input() ignoreSeo = false;
   readonly coolReactionsEnabled = environment.features.coolReactionsEnabled;
-  readonly ReactionEntityTypes = ReactionEntityTypes;
 
   constructor(
     public dataService: RackDetailDataService,

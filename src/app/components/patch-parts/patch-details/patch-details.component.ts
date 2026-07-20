@@ -6,7 +6,6 @@ import {
 } from '@angular/core';
 import { animate, animateChild, query, style, transition, trigger } from '@angular/animations';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
-import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { Patch } from 'src/app/models/patch';
 
 
@@ -34,7 +33,6 @@ export class PatchDetailsComponent implements OnInit {
   switches = [];
   
   constructor(
-    public backend: SupabaseService,
     public dataService: PatchDetailDataService
     // userManagerService: UserManagementService
   ) { }

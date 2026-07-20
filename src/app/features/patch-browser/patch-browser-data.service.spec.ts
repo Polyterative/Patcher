@@ -2,7 +2,11 @@ import {
   fakeAsync,
   tick
 } from '@angular/core/testing';
-import { of } from 'rxjs';
+import {
+  of,
+  throwError
+} from 'rxjs';
+import { PatchMinimal } from '../../models/patch';
 import { PatchBrowserDataService } from './patch-browser-data.service';
 
 
@@ -11,10 +15,22 @@ describe('PatchBrowserDataService', () => {
     const backend = {
       GET: {
         patches: jasmine.createSpy('GET.patches').and.returnValue(of({data: [], count: 0}))
-      }
+      },
+      cacheResetter$: {next: jasmine.createSpy('cacheResetter$.next')}
     };
     const service = new PatchBrowserDataService(backend as any);
     return {service, backend};
+  }
+
+  function patchFactory(id: number, name = `Patch ${ id }`): PatchMinimal {
+    return {
+      id,
+      name,
+      author: {id: 'user-1', username: 'patcher'},
+      public: true,
+      created: '2026-01-01T00:00:00.000Z',
+      updated: '2026-01-01T00:00:00.000Z'
+    };
   }
 
   it('initializes sort$ to updated/desc', () => {
@@ -104,7 +120,72 @@ describe('PatchBrowserDataService', () => {
     expect(args[2]).toBe('rack');
     service.ngOnDestroy();
   }));
-  
+
+  it('retries a thrown backend failure and renders recovered patches', () => {
+    const {service, backend} = build();
+    backend.GET.patches.and.returnValues(
+      throwError(() => new Error('network')),
+      of({data: [patchFactory(22, 'Recovered')], count: 1})
+    );
+
+    service.updatePatchesList$.next();
+
+    expect(backend.GET.patches.calls.count()).toBe(2);
+    expect(backend.cacheResetter$.next.calls.allArgs()).toEqual([[['patches']]]);
+    expect(service.patchesList$.value?.map(patch => patch.name)).toEqual(['Recovered']);
+    expect(service.serversideAdditionalData.itemsCount$.value).toBe(1);
+  });
+
+  it('retries an emitted backend response error and renders recovered patches', () => {
+    const {service, backend} = build();
+    backend.GET.patches.and.returnValues(
+      of({error: 'response error', data: null, count: 0}),
+      of({data: [patchFactory(23, 'Response Recovered')], count: 1})
+    );
+
+    service.updatePatchesList$.next();
+
+    expect(backend.GET.patches.calls.count()).toBe(2);
+    expect(backend.cacheResetter$.next.calls.allArgs()).toEqual([[['patches']]]);
+    expect(service.patchesList$.value?.map(patch => patch.name)).toEqual(['Response Recovered']);
+    expect(service.serversideAdditionalData.itemsCount$.value).toBe(1);
+  });
+
+  it('does not retry a successful empty patches response', () => {
+    const {service, backend} = build();
+
+    service.updatePatchesList$.next();
+
+    expect(backend.GET.patches.calls.count()).toBe(1);
+    expect(backend.cacheResetter$.next).not.toHaveBeenCalled();
+    expect(service.patchesList$.value).toEqual([]);
+    expect(service.serversideAdditionalData.itemsCount$.value).toBe(0);
+  });
+
+  it('keeps the update stream alive after retries are exhausted', () => {
+    const {service, backend} = build();
+    spyOn(console, 'error');
+    service.patchesList$.next([patchFactory(11, 'Existing')]);
+    service.serversideAdditionalData.itemsCount$.next(7);
+    backend.GET.patches.and.returnValues(
+      throwError(() => new Error('network')),
+      throwError(() => new Error('still offline')),
+      of({data: [patchFactory(24, 'Later Recovered')], count: 1})
+    );
+
+    service.updatePatchesList$.next();
+    expect(service.patchesList$.value?.map(patch => patch.name)).toEqual(['Existing']);
+    expect(service.serversideAdditionalData.itemsCount$.value).toBe(7);
+
+    service.updatePatchesList$.next();
+
+    expect(service.patchesList$.value?.map(patch => patch.name)).toEqual(['Later Recovered']);
+    expect(service.serversideAdditionalData.itemsCount$.value).toBe(1);
+    expect(console.error).toHaveBeenCalledWith('[patch-browser] Failed to load patches list', jasmine.any(Error));
+    expect(console.error).toHaveBeenCalledTimes(1);
+    expect(backend.cacheResetter$.next.calls.allArgs()).toEqual([[['patches']]]);
+  });
+
   it('loadMore$ appends results and advances skip', fakeAsync(() => {
     const {service, backend} = build();
     const firstBatch = Array.from({length: 10}, (_, i) => ({id: i + 1})) as any[];

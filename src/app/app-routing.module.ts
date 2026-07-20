@@ -24,6 +24,15 @@ const collectionRoutes: Routes = environment.features.collectionsEnabled
     ]
   : [];
 
+export const marketplaceRoutes: Routes = environment.features.marketplaceEnabled
+  ? [
+      {
+        path: 'marketplace',
+        loadChildren: () => import('./features/routes/marketplace/marketplace.module').then(m => m.MarketplaceModule)
+      }
+    ]
+  : [];
+
 export const appRoutes: Routes = [
   {
     path: '',
@@ -42,6 +51,31 @@ export const appRoutes: Routes = [
   {
     path: 'auth',
     loadChildren: () => import('./features/backbone/login/login.module').then(m => m.LoginModule)
+  },
+  {
+    path: 'login',
+    pathMatch: 'full',
+    redirectTo: 'auth/login'
+  },
+  {
+    path: 'signup',
+    pathMatch: 'full',
+    redirectTo: 'auth/signup'
+  },
+  {
+    path: 'reset-password',
+    pathMatch: 'full',
+    redirectTo: 'auth/reset-password'
+  },
+  {
+    path: 'complete-profile',
+    pathMatch: 'full',
+    redirectTo: 'auth/complete-profile'
+  },
+  {
+    path: 'callback',
+    pathMatch: 'full',
+    redirectTo: 'auth/callback'
   },
   {
     path: 'u',
@@ -67,6 +101,7 @@ export const appRoutes: Routes = [
     path: 'modules',
     loadChildren: () => import('./features/module-browser/module-browser.module').then(m => m.ModuleBrowserModule)
   },
+  ...marketplaceRoutes,
   ...collectionRoutes,
   {
     path: 'manufacturers',

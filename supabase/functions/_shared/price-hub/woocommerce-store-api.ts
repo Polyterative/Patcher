@@ -1,3 +1,5 @@
+import { parsePriceHubDecimalAmountToMinorUnits } from './currency-minor-units.ts';
+
 export type SnapshotAvailability = 'in_stock' | 'out_of_stock' | 'preorder' | 'backorder' | 'discontinued' | 'unknown';
 
 export interface NormalizedStoreListingSnapshot {
@@ -50,12 +52,21 @@ export interface WooCommerceStoreApiProduct {
 
 export function normalizeWooCommerceStoreApiProduct(product: WooCommerceStoreApiProduct): NormalizedStoreListingSnapshot {
   const prices = product.prices ?? {};
-  const rawPriceAmountMinor = parsePriceMinor(prices.price ?? prices.sale_price ?? prices.regular_price ?? null);
-  const priceAmountMinor = rawPriceAmountMinor !== null && rawPriceAmountMinor > 0 ? rawPriceAmountMinor : null;
+  const currentPriceAmountMinor = parsePriceMinor(prices.price ?? null);
+  const fallbackPriceAmountMinor = parseFirstPositivePriceMinor(prices.sale_price, prices.regular_price);
+  const rawPriceAmountMinor = currentPriceAmountMinor !== null && currentPriceAmountMinor > 0
+    ? currentPriceAmountMinor
+    : fallbackPriceAmountMinor ?? currentPriceAmountMinor;
   const currency = normalizeCurrency(prices.currency_code ?? null);
+  const priceHtmlAmountMinor = rawPriceAmountMinor === null || rawPriceAmountMinor <= 0
+    ? parsePriceHtmlMinor(product.price_html ?? null, currency)
+    : null;
+  const priceAmountMinor = rawPriceAmountMinor !== null && rawPriceAmountMinor > 0
+    ? rawPriceAmountMinor
+    : priceHtmlAmountMinor;
   const availability = normalizeAvailability(product);
   const imageUrl = Array.isArray(product.images) ? product.images.find((image) => isNonBlank(image.src))?.src?.trim() ?? null : null;
-  const priceWasZero = rawPriceAmountMinor === 0;
+  const priceWasZero = currentPriceAmountMinor === 0;
   const priceHtmlEmpty = typeof product.price_html === 'string' && product.price_html.trim().length === 0;
   const brands = readTermNames(product.brands);
   const categories = readTermNames(product.categories);
@@ -81,6 +92,7 @@ export function normalizeWooCommerceStoreApiProduct(product: WooCommerceStoreApi
       ...(categories.length > 0 || tags.length > 0 ? { tags: [...categories, ...tags] } : {}),
       ...(priceWasZero ? { priceWasZero: true } : {}),
       ...(priceHtmlEmpty ? { priceHtmlEmpty: true } : {}),
+      ...(priceHtmlAmountMinor !== null ? { priceSource: 'price_html' } : {}),
     },
   };
 }
@@ -119,6 +131,100 @@ function parsePriceMinor(value: string | number | null): number | null {
   }
 
   return Number.parseInt(trimmed, 10);
+}
+
+function parseFirstPositivePriceMinor(...values: Array<string | number | null | undefined>): number | null {
+  for (const value of values) {
+    const amountMinor = parsePriceMinor(value ?? null);
+    if (amountMinor !== null && amountMinor > 0) {
+      return amountMinor;
+    }
+  }
+
+  return null;
+}
+
+function parsePriceHtmlMinor(value: string | null, currency: string | null): number | null {
+  if (!isNonBlank(value)) {
+    return null;
+  }
+
+  const saleSnippets = readHtmlElementContents(value, 'ins');
+  const candidates = saleSnippets.length > 0
+    ? saleSnippets
+    : [value.replace(/<del\b[\s\S]*?<\/del>/gi, ' ')];
+
+  for (const candidate of candidates.flatMap(readDecimalPriceCandidates)) {
+    const amountMinor = parsePriceHubDecimalAmountToMinorUnits(candidate, currency);
+    if (amountMinor !== null && amountMinor > 0) {
+      return amountMinor;
+    }
+  }
+
+  return null;
+}
+
+function readHtmlElementContents(html: string, tagName: string): string[] {
+  const snippets: string[] = [];
+  const pattern = new RegExp(`<${tagName}\\b[^>]*>([\\s\\S]*?)<\\/${tagName}>`, 'gi');
+  let match: RegExpExecArray | null;
+
+  while ((match = pattern.exec(html))) {
+    snippets.push(match[1]);
+  }
+
+  return snippets;
+}
+
+function readDecimalPriceCandidates(html: string): string[] {
+  const text = decodeHtmlEntities(html)
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ');
+  const candidates: string[] = [];
+  const amountPattern = /\d+(?:(?:[.,\s]\d{3})+)?(?:[.,]\d{1,2})?/g;
+  let match: RegExpExecArray | null;
+
+  while ((match = amountPattern.exec(text))) {
+    const normalized = normalizeLocalizedDecimal(match[0]);
+    if (normalized) {
+      candidates.push(normalized);
+    }
+  }
+
+  return candidates;
+}
+
+function normalizeLocalizedDecimal(value: string): string | null {
+  const compact = value.replace(/\s/g, '');
+  if (/^\d+$/.test(compact)) {
+    return compact;
+  }
+
+  if (hasOnlyThousandsGroups(compact)) {
+    return compact.replace(/[.,]/g, '');
+  }
+
+  const commaIndex = compact.lastIndexOf(',');
+  const dotIndex = compact.lastIndexOf('.');
+  const decimalSeparator = commaIndex > dotIndex ? ',' : dotIndex >= 0 ? '.' : null;
+  if (!decimalSeparator) {
+    return null;
+  }
+  const decimalIndex = compact.lastIndexOf(decimalSeparator);
+  const whole = compact.slice(0, decimalIndex).replace(/[.,]/g, '');
+  const fraction = compact.slice(decimalIndex + 1);
+  if (!whole || !/^\d+$/.test(whole) || !/^\d{1,2}$/.test(fraction)) {
+    return null;
+  }
+
+  return `${whole}.${fraction}`;
+}
+
+function hasOnlyThousandsGroups(value: string): boolean {
+  const parts = value.split(/[.,]/);
+  return parts.length > 1
+    && /^\d{1,3}$/.test(parts[0])
+    && parts.slice(1).every((part) => /^\d{3}$/.test(part));
 }
 
 function normalizeCurrency(value: string | null): string | null {
@@ -193,11 +299,17 @@ function normalizeTermText(value: string | null): string | null {
     return null;
   }
 
-  return value
-    .replace(/&amp;/g, '&')
-    .replace(/&#(\d+);/g, (_, code: string) => String.fromCodePoint(Number.parseInt(code, 10)))
+  return decodeHtmlEntities(value)
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+function decodeHtmlEntities(value: string): string {
+  return value
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&#(\d+);/g, (_, code: string) => String.fromCodePoint(Number.parseInt(code, 10)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, code: string) => String.fromCodePoint(Number.parseInt(code, 16)));
 }
 
 function normalizeComparableUrl(value: string): string {

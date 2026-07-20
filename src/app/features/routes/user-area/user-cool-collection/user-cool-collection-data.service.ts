@@ -17,6 +17,7 @@ import {
   tap
 } from 'rxjs/operators';
 import { COOL_REACTIONS_ENABLED } from 'src/app/components/shared-atoms/cool-button/cool-button-feature.token';
+import { recoverListRequest } from 'src/app/features/browser-data-recovery';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import {
   REACTION_KIND_COOL,
@@ -139,30 +140,35 @@ export class UserCoolCollectionDataService extends SubManager {
 
     this.load$.pipe(
       map((entityType): UserCoolCollectionEntityType => entityType ?? 'module'),
-      tap(entityType => {
-        if (this.coolReactionsEnabled) {
-          this._vm$.next({
-            ...this._vm$.value,
-            groups: emptyGroups(entityType),
-            loading: true
-          });
-        }
-      }),
-      switchMap(entityType => this.coolReactionsEnabled
-        ? this.loadCollection(entityType)
-        : of({
-          enabled: false,
-          loading: false,
-          groups: emptyGroups(entityType),
-          total: 0
-        })
-      ),
-      catchError(() => {
-        SharedConstants.errorCustom(this.snackBar, 'Cool collection could not be loaded.');
-        return of({
+      switchMap(entityType => {
+        const previousVm = {
           ...this._vm$.value,
           loading: false
+        };
+
+        if (!this.coolReactionsEnabled) {
+          return of({
+            enabled: false,
+            loading: false,
+            groups: emptyGroups(entityType),
+            total: 0
+          });
+        }
+
+        this._vm$.next({
+          ...previousVm,
+          loading: true
         });
+
+        return recoverListRequest(
+          () => this.loadCollection(entityType),
+          previousVm,
+          '[user-cool-collection] Failed to load Cool collection',
+          {
+            beforeRetry: () => this.backend.cacheResetter$.next(this.publicEntityCacheKeys(entityType)),
+            onExhausted: () => SharedConstants.errorCustom(this.snackBar, 'Cool collection could not be loaded.')
+          }
+        );
       }),
       this.takeUntilDestroyed()
     ).subscribe(vm => this._vm$.next(vm));
@@ -193,7 +199,7 @@ export class UserCoolCollectionDataService extends SubManager {
   }
 
   private loadCollection(entityType: UserCoolCollectionEntityType) {
-    return this.backend.get.currentUserReactions(this.toBackendEntityType(entityType), REACTION_KIND_COOL).pipe(
+    return this.backend.get.currentUserReactions(this.toBackendEntityType(entityType), REACTION_KIND_COOL, true).pipe(
       switchMap(reactions => {
         const sortedReactions = this.sortReactionsNewestFirst(reactions);
         const entityIds = sortedReactions.map(reaction => reaction.entity_id);
@@ -214,14 +220,28 @@ export class UserCoolCollectionDataService extends SubManager {
     }
 
     if (entityType === 'module') {
-      return this.backend.GET.publicModulesByIds(entityIds);
+      return this.backend.GET.publicModulesByIds(entityIds, true);
     }
 
     if (entityType === 'rack') {
-      return this.backend.get.publicRacksByIds(entityIds);
+      return this.backend.get.publicRacksByIds(entityIds, true);
     }
 
-    return this.backend.GET.publicPatchesByIds(entityIds);
+    return this.backend.GET.publicPatchesByIds(entityIds, true);
+  }
+
+  private publicEntityCacheKeys(
+    entityType: UserCoolCollectionEntityType
+  ): Parameters<SupabaseService['cacheResetter$']['next']>[0] {
+    if (entityType === 'module') {
+      return ['modules'];
+    }
+
+    if (entityType === 'rack') {
+      return ['rackWithId'];
+    }
+
+    return ['patches'];
   }
 
   private sortReactionsNewestFirst(reactions: ReactionRow[]): ReactionRow[] {

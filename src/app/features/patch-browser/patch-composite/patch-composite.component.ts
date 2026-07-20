@@ -37,6 +37,7 @@ export class PatchCompositeComponent {
   @Input() data: Patch;
   @Input() isEditing = false;
   @Input() readonly viewConfig: PatchMinimalViewConfig = defaultPatchMinimalViewConfig;
+  @Input() showCoolAction = false;
 
   constructor(
     public dataService: PatchDetailDataService

@@ -1,4 +1,9 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { normalizeBigCommerceProductPage } from '../_shared/price-hub/bigcommerce-metadata.ts';
+import { normalizeProductMetadataPage } from '../_shared/price-hub/product-metadata-page.ts';
+import {
+  normalizeShopifyProductJsonProduct,
+} from '../_shared/price-hub/shopify-product-json.ts';
 import { normalizeShopwareProductPage } from '../_shared/price-hub/shopware-metadata.ts';
 import {
   chooseWooCommerceProduct,
@@ -9,11 +14,14 @@ import {
 import {
   assertSnapshotWorkerAuthorized,
   buildFailureUpdate,
+  buildShopifyProductJsonUrl,
   buildWooCommerceStoreApiUrl,
   normalizeErrorMessage,
   parseProbeListingInput,
   readSnapshotLimit,
   readSnapshotWorkerMode,
+  SnapshotWorkerAuthError,
+  readShopifyProductJsonSnapshotProduct,
   SnapshotWorkerInputError,
   SUPPORTED_SNAPSHOT_ADAPTER_KINDS,
   type StoreApiListingInput,
@@ -32,6 +40,7 @@ interface StoreRow {
   active: boolean;
   price_tracking_enabled: boolean;
   rate_limit_per_day: number;
+  currency_hint: string | null;
 }
 
 interface ListingRow {
@@ -93,7 +102,8 @@ Deno.serve(async (request) => {
           adapter_kind,
           active,
           price_tracking_enabled,
-          rate_limit_per_day
+          rate_limit_per_day,
+          currency_hint
         )
       `)
       .eq('active', true)
@@ -205,11 +215,44 @@ async function fetchListingSnapshot(
   switch (listing.stores.adapter_kind) {
     case 'woocommerce_store_api':
       return fetchWooCommerceSnapshot(listing);
+    case 'shopify_product_json':
+      return fetchShopifyProductJsonSnapshot(listing);
+    case 'bigcommerce_metadata':
+      return fetchProductMetadataSnapshot(listing, normalizeBigCommerceProductPage);
     case 'shopware_metadata':
-      return fetchProductMetadataSnapshot(listing);
+      return fetchProductMetadataSnapshot(listing, normalizeShopwareProductPage);
+    case 'custom':
+      return fetchProductMetadataSnapshot(
+        listing,
+        (html, productUrl) => normalizeProductMetadataPage(html, productUrl, 'custom', { storeSlug: listing.stores.slug }),
+      );
     default:
       throw new Error(`Unsupported snapshot adapter: ${listing.stores.adapter_kind}`);
   }
+}
+
+async function fetchShopifyProductJsonSnapshot(
+  listing: ListingRow,
+): Promise<{ apiUrl: string; snapshot: NormalizedStoreListingSnapshot }> {
+  const apiUrl = buildShopifyProductJsonUrl(listing);
+  const response = await fetchWithTimeout(apiUrl, {
+    accept: 'application/json',
+  }, 'Shopify product JSON');
+
+  if (!response.ok) {
+    throw new Error(`Shopify product JSON returned ${response.status}`);
+  }
+
+  return {
+    apiUrl,
+    snapshot: normalizeShopifyProductJsonProduct(readShopifyProductJsonSnapshotProduct(
+      await response.json(),
+      listing.stores.currency_hint ?? null,
+    ), {
+      baseUrl: listing.stores.base_url,
+      currencyHint: listing.stores.currency_hint ?? null,
+    }),
+  };
 }
 
 async function fetchWooCommerceSnapshot(
@@ -239,6 +282,7 @@ async function fetchWooCommerceSnapshot(
 
 async function fetchProductMetadataSnapshot(
   listing: ListingRow,
+  normalizeProductPage: (html: string, productUrl: string) => NormalizedStoreListingSnapshot,
 ): Promise<{ snapshot: NormalizedStoreListingSnapshot }> {
   const response = await fetchWithTimeout(listing.product_url, {
     accept: 'text/html,application/xhtml+xml',
@@ -248,7 +292,7 @@ async function fetchProductMetadataSnapshot(
     throw new Error(`Product metadata page returned ${response.status}`);
   }
   return {
-    snapshot: normalizeShopwareProductPage(await response.text(), listing.product_url),
+    snapshot: normalizeProductPage(await response.text(), listing.product_url),
   };
 }
 
@@ -319,5 +363,9 @@ function jsonResponse(body: Record<string, unknown>, status = 200): Response {
 }
 
 function statusForError(error: unknown): number {
+  if (error instanceof SnapshotWorkerAuthError) {
+    return 401;
+  }
+
   return error instanceof SnapshotWorkerInputError ? 400 : 500;
 }

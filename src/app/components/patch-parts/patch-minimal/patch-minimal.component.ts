@@ -24,8 +24,8 @@ import {
   PatchMinimalViewConfig,
   defaultPatchMinimalViewConfig
 } from './patch-minimal.types';
-import { StorageUrls } from 'src/app/features/backend/DatabaseStrings';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
+import { ReactionEntityTypes } from 'src/app/features/backend/supabase-reactions';
 
 export type { PatchMinimalViewConfig };
 export { defaultPatchMinimalViewConfig };
@@ -41,9 +41,11 @@ export { defaultPatchMinimalViewConfig };
 export class PatchMinimalComponent extends SubManager implements OnInit, OnDestroy {
   @Input() data: PatchMinimal;
   @Input() viewConfig: PatchMinimalViewConfig = defaultPatchMinimalViewConfig;
-  
+  @Input() showCoolAction = false;
+
   readonly tagSeparatorKeysCodes: number[] = [ENTER, COMMA];
   readonly formTypes = FormTypes;
+  readonly ReactionEntityTypes = ReactionEntityTypes;
   linkedRackHelpOpen = false;
   readonly linkedRackHelpSections = [
     {
@@ -164,7 +166,7 @@ export class PatchMinimalComponent extends SubManager implements OnInit, OnDestr
   }
 
   getRackPreviewUrl(filename: string): string {
-    return `${StorageUrls.racks}${filename}`;
+    return this.dataService.getRackPreviewUrl(filename);
   }
 
   private buildModuleLines(

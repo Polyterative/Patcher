@@ -1,13 +1,84 @@
 import {
   of,
-  Subject
+  Subject,
+  throwError
 } from 'rxjs';
 import { UserAreaDataService } from './user-area-data.service';
 import { PatchCreatorComponent } from 'src/app/components/patch-parts/patch-creator/patch-creator.component';
-import { RackCreatorComponent } from 'src/app/components/rack-parts/rack-creator/rack-creator.component';
+import {
+  RackCreatorComponent,
+  RACK_CREATOR_IMPORT_DIALOG_WIDTH,
+  RACK_CREATOR_MANUAL_DIALOG_WIDTH
+} from 'src/app/components/rack-parts/rack-creator/rack-creator.component';
+import { CachedEntity } from 'src/app/features/backend/supabase.cache';
+import { DbComment } from 'src/app/models/comment';
+import { MinimalModule } from 'src/app/models/module';
+import { Patch } from 'src/app/models/patch';
+import { Rack } from 'src/app/models/rack';
 
 
 describe('UserAreaDataService', () => {
+  const timestamp = '2026-07-18T00:00:00.000Z';
+  const testAuthor = {id: 'test-user', username: 'tester'};
+
+  function moduleFixture(overrides: Pick<MinimalModule, 'id' | 'name'> & Partial<MinimalModule>): MinimalModule {
+    return {
+      id: overrides.id,
+      name: overrides.name,
+      description: '',
+      hp: 0,
+      public: true,
+      manufacturer: {id: 1, name: 'Test Manufacturer'},
+      manufacturerId: 1,
+      standard: {id: 0, name: 'Eurorack'},
+      tags: [],
+      panels: [],
+      created: timestamp,
+      updated: timestamp,
+      ...overrides
+    };
+  }
+
+  function patchFixture(overrides: Pick<Patch, 'id' | 'name'> & Partial<Patch>): Patch {
+    return {
+      id: overrides.id,
+      name: overrides.name,
+      public: true,
+      author: testAuthor,
+      created: timestamp,
+      updated: timestamp,
+      ...overrides
+    };
+  }
+
+  function rackFixture(overrides: Pick<Rack, 'id' | 'name'> & Partial<Rack>): Rack {
+    return {
+      id: overrides.id,
+      name: overrides.name,
+      hp: 0,
+      rows: 1,
+      public: true,
+      author: testAuthor,
+      locked: false,
+      created: timestamp,
+      updated: timestamp,
+      ...overrides
+    };
+  }
+
+  function commentFixture(overrides: Pick<DbComment, 'id'> & Partial<DbComment>): DbComment {
+    return {
+      id: overrides.id,
+      content: '',
+      entityId: 0,
+      entityType: 1,
+      profile: testAuthor,
+      created: timestamp,
+      updated: timestamp,
+      ...overrides
+    };
+  }
+
   function build() {
     const backend = {
       GET: {
@@ -34,6 +105,7 @@ describe('UserAreaDataService', () => {
           {id: 20, name: 'Studio Performance Case', description: 'Main Xaoc and Intellijel rack'},
         ])),
       },
+      cacheResetter$: new Subject<CachedEntity[]>(),
     };
     
     const dialog = {
@@ -50,6 +122,12 @@ describe('UserAreaDataService', () => {
     const service = new UserAreaDataService(dialog as any, backend as any, discoveryTipService as any, {capture: () => {}, identify: () => {}, reset: () => {}} as any);
     return {service, backend, dialog, discoveryTipService};
   }
+
+  function collectCacheBusts(backend: ReturnType<typeof build>['backend']): CachedEntity[][] {
+    const bustedKeys: CachedEntity[][] = [];
+    backend.cacheResetter$.subscribe(keys => bustedKeys.push(keys));
+    return bustedKeys;
+  }
   
   it('loads comments/modules/patches/racks on update requests', () => {
     const {service, backend} = build();
@@ -60,9 +138,9 @@ describe('UserAreaDataService', () => {
     service.updateRackData$.next(undefined);
     
     expect(backend.GET.currentUserComments).toHaveBeenCalledWith(0, 9);
-    expect(backend.GET.currentUserModules).toHaveBeenCalledWith();
-    expect(backend.get.currentUserPatches).toHaveBeenCalledWith();
-    expect(backend.get.currentUserRacks).toHaveBeenCalledWith();
+    expect(backend.GET.currentUserModules).toHaveBeenCalledWith(true, false, undefined, true);
+    expect(backend.get.currentUserPatches).toHaveBeenCalledWith(true);
+    expect(backend.get.currentUserRacks).toHaveBeenCalledWith(true);
     
     expect(service.commentsData$.value as any).toEqual([{id: 1}]);
     expect(service.modulesData$.value?.length).toBe(3);
@@ -100,13 +178,158 @@ describe('UserAreaDataService', () => {
     expect(service.commentsData$.value as any).toEqual([{id: 1}, {id: 2}, {id: 3}]);
     expect(service.commentsCount$.value).toBe(3);
   });
+
+  it('retries current user reads once after busting the exact stale cache key', () => {
+    const {service, backend} = build();
+    const bustedKeys = collectCacheBusts(backend);
+    const moduleCalls: Record<string, number> = {modules: 0, manuals: 0};
+    const error = new Error('cached failure');
+    spyOn(console, 'error');
+
+    backend.GET.currentUserModules.and.callFake((_includeInsOuts?: boolean, includeManuals?: boolean) => {
+      const key = includeManuals ? 'manuals' : 'modules';
+      moduleCalls[key]++;
+      if (moduleCalls[key] === 1) {
+        return throwError(() => error);
+      }
+      return of(includeManuals
+        ? [{id: 30, name: 'Manual Module', manualURL: 'https://manual'}]
+        : [{id: 2, name: 'Recovered Module'}]
+      );
+    });
+    backend.get.currentUserRacks.and.returnValues(
+      throwError(() => error),
+      of([{id: 20, name: 'Recovered Rack'}])
+    );
+    backend.get.currentUserPatches.and.returnValues(
+      throwError(() => error),
+      of([{id: 10, name: 'Recovered Patch', tags: []}])
+    );
+    backend.GET.currentUserComments.and.returnValues(
+      throwError(() => error),
+      of({data: [{id: 1}], count: 1})
+    );
+
+    service.updateModulesData$.next();
+    service.updateRackData$.next(undefined);
+    service.updatePatchesData$.next();
+    service.updateManualsData$.next();
+    service.updateCommentsData$.next();
+
+    expect(service.modulesData$.value?.map(({id, name}) => ({id, name}))).toEqual([{id: 2, name: 'Recovered Module'}]);
+    expect(service.rackData$.value?.map(({id, name}) => ({id, name}))).toEqual([{id: 20, name: 'Recovered Rack'}]);
+    expect(service.patchesData$.value?.map(({id, name, tags}) => ({id, name, tags}))).toEqual([{id: 10, name: 'Recovered Patch', tags: []}]);
+    expect(service.manualsData$.value?.map(({id, name, manualURL}) => ({id, name, manualURL}))).toEqual([{id: 30, name: 'Manual Module', manualURL: 'https://manual'}]);
+    expect(service.commentsData$.value?.map(({id}) => ({id}))).toEqual([{id: 1}]);
+    expect(bustedKeys).toEqual([
+      ['currentUserModules'],
+      ['rackWithId'],
+      ['patches'],
+      ['currentUserModules'],
+      ['currentUserComments']
+    ]);
+    expect(moduleCalls).toEqual({modules: 2, manuals: 2});
+    expect(backend.get.currentUserRacks).toHaveBeenCalledTimes(2);
+    expect(backend.get.currentUserPatches).toHaveBeenCalledTimes(2);
+    expect(backend.GET.currentUserComments).toHaveBeenCalledTimes(2);
+  });
+
+  it('accepts successful empty current user reads without retrying or busting caches', () => {
+    const {service, backend} = build();
+    const bustedKeys = collectCacheBusts(backend);
+
+    backend.GET.currentUserModules.and.returnValue(of([]));
+    backend.get.currentUserRacks.and.returnValue(of([]));
+    backend.get.currentUserPatches.and.returnValue(of([]));
+    backend.GET.currentUserComments.and.returnValue(of({data: [], count: 0}));
+
+    service.updateModulesData$.next();
+    service.updateRackData$.next(undefined);
+    service.updatePatchesData$.next();
+    service.updateManualsData$.next();
+    service.updateCommentsData$.next();
+
+    expect(service.modulesData$.value).toEqual([]);
+    expect(service.rackData$.value).toEqual([]);
+    expect(service.patchesData$.value).toEqual([]);
+    expect(service.manualsData$.value).toEqual([]);
+    expect(service.commentsData$.value).toEqual([]);
+    expect(service.patchesCount$.value).toBe(0);
+    expect(service.racksCount$.value).toBe(0);
+    expect(service.commentsCount$.value).toBe(0);
+    expect(bustedKeys).toEqual([]);
+    expect(backend.GET.currentUserModules).toHaveBeenCalledTimes(2);
+    expect(backend.get.currentUserRacks).toHaveBeenCalledTimes(1);
+    expect(backend.get.currentUserPatches).toHaveBeenCalledTimes(1);
+    expect(backend.GET.currentUserComments).toHaveBeenCalledTimes(1);
+  });
+
+  it('preserves prior user-area data after exhausted errors and recovers on later triggers', () => {
+    const {service, backend} = build();
+    const error = new Error('still failing');
+    spyOn(console, 'error');
+    service.modulesData$.next([moduleFixture({id: 1, name: 'Prior Module'})]);
+    service.rackData$.next([rackFixture({id: 1, name: 'Prior Rack'})]);
+    service.racksCount$.next(1);
+    service.patchesData$.next([patchFixture({id: 1, name: 'Prior Patch', tags: []})]);
+    service.patchesCount$.next(1);
+    service.commentsData$.next([commentFixture({id: 1})]);
+    service.commentsCount$.next(5);
+
+    backend.GET.currentUserModules.and.returnValues(
+      throwError(() => error),
+      throwError(() => error),
+      of([{id: 2, name: 'Recovered Module'}])
+    );
+    backend.get.currentUserRacks.and.returnValues(
+      throwError(() => error),
+      throwError(() => error),
+      of([{id: 2, name: 'Recovered Rack'}, {id: 3, name: 'Second Rack'}])
+    );
+    backend.get.currentUserPatches.and.returnValues(
+      throwError(() => error),
+      throwError(() => error),
+      of([{id: 2, name: 'Recovered Patch', tags: []}, {id: 3, name: 'Second Patch', tags: []}])
+    );
+    backend.GET.currentUserComments.and.returnValues(
+      throwError(() => error),
+      throwError(() => error),
+      of({data: [{id: 2}], count: 6})
+    );
+
+    service.updateModulesData$.next();
+    service.updateRackData$.next(undefined);
+    service.updatePatchesData$.next();
+    service.updateCommentsData$.next();
+
+    expect(service.modulesData$.value?.map(module => module.id)).toEqual([1]);
+    expect(service.rackData$.value?.map(rack => rack.id)).toEqual([1]);
+    expect(service.racksCount$.value).toBe(1);
+    expect(service.patchesData$.value?.map(patch => patch.id)).toEqual([1]);
+    expect(service.patchesCount$.value).toBe(1);
+    expect(service.commentsData$.value?.map(comment => ({id: comment.id}))).toEqual([{id: 1}]);
+    expect(service.commentsCount$.value).toBe(5);
+
+    service.updateModulesData$.next();
+    service.updateRackData$.next(undefined);
+    service.updatePatchesData$.next();
+    service.updateCommentsData$.next();
+
+    expect(service.modulesData$.value?.map(module => module.id)).toEqual([2]);
+    expect(service.rackData$.value?.map(rack => rack.id)).toEqual([2, 3]);
+    expect(service.racksCount$.value).toBe(2);
+    expect(service.patchesData$.value?.map(patch => patch.id)).toEqual([2, 3]);
+    expect(service.patchesCount$.value).toBe(2);
+    expect(service.commentsData$.value?.map(comment => ({id: comment.id}))).toEqual([{id: 2}]);
+    expect(service.commentsCount$.value).toBe(6);
+  });
   
   it('loads and sorts only modules with manuals', () => {
     const {service, backend} = build();
     
     service.updateManualsData$.next();
     
-    expect(backend.GET.currentUserModules).toHaveBeenCalledWith(false, true);
+    expect(backend.GET.currentUserModules).toHaveBeenCalledWith(false, true, undefined, true);
     expect(service.manualsData$.value?.map(x => x.name)).toEqual(['Belgrad', 'Dixie II+']);
   });
 
@@ -209,7 +432,8 @@ describe('UserAreaDataService', () => {
     
     expect(dialog.open).toHaveBeenCalledWith(RackCreatorComponent, {
       data: {userModules: [{id: 99, name: 'Local', hp: 8}]},
-      width: '24rem',
+      width: RACK_CREATOR_MANUAL_DIALOG_WIDTH,
+      maxWidth: RACK_CREATOR_IMPORT_DIALOG_WIDTH,
       disableClose: false
     });
     expect(discoveryTipService.recordAction).toHaveBeenCalledWith('user-area.racks.create-clicked');

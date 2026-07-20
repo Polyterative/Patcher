@@ -2,12 +2,20 @@ import {
   BehaviorSubject,
   Subject
 } from 'rxjs';
-import { ModuleBrowserDetailComponent } from './module-browser-detail.component';
+import { MODULE_SEARCH_LINKS } from './module-browser-detail.constants';
+import {
+  ModuleBrowserDetailComponent
+} from './module-browser-detail.component';
+import { getAvailableRetailerSearchLinks } from './module-browser-detail.search-links';
 import { ModulePriceListing } from 'src/app/features/backend/supabase-queries.models';
 
 
 describe('ModuleBrowserDetailComponent search links', () => {
-  function buildListing(storeSlug: string, storeId = 1): ModulePriceListing {
+  function buildListing(
+    storeSlug: string,
+    storeId = 1,
+    verificationStatus: ModulePriceListing['verificationStatus'] = 'verified'
+  ): ModulePriceListing {
     return {
       listingId: storeId,
       moduleId: 99,
@@ -17,7 +25,7 @@ describe('ModuleBrowserDetailComponent search links', () => {
       countryCode: null,
       currencyHint: null,
       productUrl: 'https://example.com/product',
-      verificationStatus: 'verified',
+      verificationStatus,
       lastCheckedAt: null,
       latestSnapshot: null
     };
@@ -41,6 +49,10 @@ describe('ModuleBrowserDetailComponent search links', () => {
       {} as any
     );
     return {component};
+  }
+
+  function retailerSearchLinks() {
+    return MODULE_SEARCH_LINKS.filter(link => link.kind === 'retailer');
   }
   
   it('builds URLs for every configured search link', () => {
@@ -104,22 +116,32 @@ describe('ModuleBrowserDetailComponent search links', () => {
   });
 
   it('hides retailer search links with matching price listings and leaves unmatched retailers visible', () => {
-    const {component} = build();
-    const labels = component.getAvailableRetailerSearchLinks([buildListing('control')]).map(link => link.label);
+    const labels = getAvailableRetailerSearchLinks(retailerSearchLinks(), [buildListing('control')])
+      .map(link => link.label);
 
     expect(labels).not.toContain('Control 🇺🇸');
     expect(labels).toContain('Patchwerks 🇺🇸');
   });
 
+  it('keeps retailer search links visible for non-verified price listings', () => {
+    const labels = getAvailableRetailerSearchLinks(retailerSearchLinks(), [
+      buildListing('control', 1, 'candidate'),
+      buildListing('found-sound', 2, 'stale')
+    ]).map(link => link.label);
+
+    expect(labels).toContain('Control 🇺🇸');
+    expect(labels).toContain('Found Sound 🇦🇺');
+  });
+
   it('keeps Signal Sounds UK and EU retailer suppression independent', () => {
-    const {component} = build();
-    const labels = component.getAvailableRetailerSearchLinks([buildListing('signal-sounds-eu', 2)]).map(link => link.label);
+    const labels = getAvailableRetailerSearchLinks(retailerSearchLinks(), [buildListing('signal-sounds-eu', 2)])
+      .map(link => link.label);
 
     expect(labels).toContain('Signal Sounds UK 🇬🇧');
     expect(labels).not.toContain('Signal Sounds EU 🇪🇺');
   });
 
-  it('includes the pictured EU, UK, and Switzerland retailer links', () => {
+  it('includes the imported and fallback retailer search links', () => {
     const {component} = build();
     const labels = component.retailerSearchLinks.map(link => link.label);
 
@@ -138,13 +160,34 @@ describe('ModuleBrowserDetailComponent search links', () => {
       'Machineroom 🇺🇦',
       'Synthshop 🇳🇴',
       'House of Sound 🇨🇭',
+      'Detroit Modular 🇺🇸',
+      'Nightlife Electronics 🇨🇦',
+      'Clockface Modular 🇯🇵',
+      'Moog Audio 🇨🇦',
+      'Noisebug 🇺🇸',
+      'Pusherman Productions 🇬🇧',
+      'Thonk 🇬🇧',
+      'After Later Audio 🇺🇸',
+      'Patch Point 🇩🇪',
+      'ALM / Busy Circuits 🇬🇧',
+      'Instruo 🇬🇧',
+      'WMD 🇺🇸',
+      'Michigan Synth Works 🇺🇸',
+      'RobotSpeak 🇺🇸',
+      'Cicada Sound 🇨🇦',
+      'Intellijel 🇨🇦',
+      'Schlappi Engineering 🇺🇸',
+      'Zlob Modular 🇺🇸',
+      'Soundium 🇱🇹',
+      'Nano Modules 🇪🇸',
+      'Dreadbox 🇬🇷',
     ].forEach(label => expect(labels).toContain(label));
   });
 
   it('can suppress every retailer link so the Other Stores group can disappear', () => {
-    const {component} = build();
-    const listings = component.retailerSearchLinks.map((link, index) => buildListing(link.storeSlugs![0], index + 1));
+    const links = retailerSearchLinks();
+    const listings = links.map((link, index) => buildListing(link.storeSlugs![0], index + 1));
 
-    expect(component.getAvailableRetailerSearchLinks(listings)).toEqual([]);
+    expect(getAvailableRetailerSearchLinks(links, listings)).toEqual([]);
   });
 });
