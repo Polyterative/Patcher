@@ -1,7 +1,3 @@
-import {
-  BehaviorSubject,
-  Subject
-} from 'rxjs';
 import { MODULE_SEARCH_LINKS } from './module-browser-detail.constants';
 import {
   ModuleBrowserDetailComponent
@@ -11,6 +7,11 @@ import { ModulePriceListing } from 'src/app/features/backend/supabase-queries.mo
 
 
 describe('ModuleBrowserDetailComponent search links', () => {
+  type ModuleBrowserDetailSearchLinkContract = Pick<
+    ModuleBrowserDetailComponent,
+    'searchLinks' | 'communitySearchLinks' | 'retailerSearchLinks' | 'getAvailableRetailerSearchLinks'
+  >;
+
   function buildListing(
     storeSlug: string,
     storeId = 1,
@@ -32,22 +33,14 @@ describe('ModuleBrowserDetailComponent search links', () => {
   }
 
   function build() {
-    const routeParams$ = new Subject<any>();
-    const component = new ModuleBrowserDetailComponent(
-      {
-        singleModuleData$: new BehaviorSubject<any>(undefined),
-        modulePriceListings$: new BehaviorSubject<ModulePriceListing[] | undefined>(undefined),
-        updateSingleModuleData$: new Subject<number>(),
-        changeModule$: new Subject<any>(),
-        requestModuleEditingToggle$: new Subject<void>()
-      } as any,
-      {params: routeParams$.asObservable()} as any,
-      jasmine.createSpyObj('Router', ['navigate']),
-      {updateSeo: jasmine.createSpy('updateSeo')} as any,
-      {} as any,
-      {requestCommentsUpdate$: {next: jasmine.createSpy('comments.next')}, requestReset$: {next: jasmine.createSpy('reset.next')}} as any,
-      {} as any
-    );
+    const component: ModuleBrowserDetailSearchLinkContract = {
+      searchLinks: MODULE_SEARCH_LINKS,
+      communitySearchLinks: MODULE_SEARCH_LINKS.filter(link => link.kind === 'community'),
+      retailerSearchLinks: retailerSearchLinks(),
+      getAvailableRetailerSearchLinks(listings) {
+        return getAvailableRetailerSearchLinks(this.retailerSearchLinks, listings);
+      }
+    };
     return {component};
   }
 

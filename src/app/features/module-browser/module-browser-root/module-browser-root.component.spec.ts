@@ -8,6 +8,7 @@ import { ActivatedRoute } from '@angular/router';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import {
   BehaviorSubject,
+  Observable,
   of,
   Subject
 } from 'rxjs';
@@ -16,7 +17,13 @@ import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-det
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
-import { MinimalModule } from 'src/app/models/module';
+import {
+  DbModule,
+  MinimalModule,
+  RackedModule
+} from 'src/app/models/module';
+import { Tag } from 'src/app/models/tag';
+import { ISelectable } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SupabaseService } from '../../backend/supabase.service';
 import { AnalyticsService } from '../../backbone/analytics-integration/analytics.service';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
@@ -25,11 +32,37 @@ import { ModuleBrowserRootModule } from './module-browser-root.module';
 
 
 describe('ModuleBrowserRootComponent', () => {
+  interface ManufacturersResponse {
+    data: Array<{id: number; name: string}>;
+  }
+
+  interface ModulesResponse {
+    data: MinimalModule[];
+    count: number;
+  }
+
+  type ManufacturersSpy = jasmine.Spy<(...args: unknown[]) => Observable<ManufacturersResponse>>;
+  type ModulesSpy = jasmine.Spy<(...args: unknown[]) => Observable<ModulesResponse>>;
+
+  interface ModuleBrowserRootBackendDouble {
+    GET: {
+      manufacturers: ManufacturersSpy;
+      modules: ModulesSpy;
+    };
+    get: {
+      allTags: jasmine.Spy<() => Observable<Tag[]>>;
+    };
+    cacheResetter$: {
+      next: jasmine.Spy<(keys: string[]) => void>;
+    };
+  }
+
   let fixture: ComponentFixture<ModuleBrowserRootComponent>;
   let component: ModuleBrowserRootComponent;
   let analytics: jasmine.SpyObj<AnalyticsService>;
+  let backend: ModuleBrowserRootBackendDouble;
 
-  function buildOwnedModules(count: number): MinimalModule[] {
+  function buildOwnedModules(count: number): DbModule[] {
     return Array.from({length: count}, (_, index) => ({
       id: index + 1,
       name: `Module ${ index + 1 }`,
@@ -39,16 +72,60 @@ describe('ModuleBrowserRootComponent', () => {
       created: '2026-01-01T00:00:00.000Z',
       updated: '2026-01-01T00:00:00.000Z',
       manufacturerId: 1,
-      manufacturer: {id: 1, name: 'Maker'} as any,
-      standard: {id: 0, name: '3U Doepfer'} as any,
+      manufacturer: {id: 1, name: 'Maker'},
+      standard: {id: 0, name: '3U Doepfer'},
       tags: [],
       panels: [],
-      possessionKind: 'HAS'
+      possessionKind: 'HAS',
+      ins: [],
+      outs: [],
+      switches: [],
+      manualURL: '',
+      store_url: null,
+      additional: null,
+      isComplete: true,
+      isApproved: true,
+      isDIY: false,
+      powerPos12: null,
+      powerNeg12: null,
+      powerPos5: null,
+      depth: 0,
+      weight: 0
     }));
+  }
+
+  function rackModule(module: DbModule): RackedModule {
+    return {
+      module,
+      rackingData: {
+        rackid: 1,
+        moduleid: module.id,
+        row: 0,
+        column: 0
+      }
+    };
+  }
+
+  function filterTag(): ISelectable {
+    return {id: '7', name: 'Filter'};
   }
   
   beforeEach(async () => {
     analytics = jasmine.createSpyObj<AnalyticsService>('AnalyticsService', ['capture', 'identify', 'reset']);
+    backend = {
+      GET: {
+        manufacturers: jasmine.createSpy<(...args: unknown[]) => Observable<ManufacturersResponse>>('manufacturers')
+          .and.returnValue(of({data: []})),
+        modules: jasmine.createSpy<(...args: unknown[]) => Observable<ModulesResponse>>('modules')
+          .and.returnValue(of({data: [], count: 0}))
+      },
+      get: {
+        allTags: jasmine.createSpy<() => Observable<Tag[]>>('allTags').and.returnValue(of([]))
+      },
+      cacheResetter$: {
+        next: jasmine.createSpy<(keys: string[]) => void>('cacheResetter$.next')
+      }
+    };
 
     await TestBed.configureTestingModule({
       imports: [
@@ -58,16 +135,7 @@ describe('ModuleBrowserRootComponent', () => {
       providers: [
         {
           provide: SupabaseService,
-          useValue: {
-            GET: {
-              manufacturers: jasmine.createSpy('manufacturers').and.returnValue(of({data: []})),
-              modules: jasmine.createSpy('modules').and.returnValue(of({data: [], count: 0}))
-            },
-            get: {
-              allTags: jasmine.createSpy('allTags').and.returnValue(of([]))
-            },
-            cacheResetter$: {next: jasmine.createSpy('cacheResetter$.next')}
-          }
+          useValue: backend
         },
         {
           provide: SeoAndUtilsService,
@@ -213,9 +281,7 @@ describe('ModuleBrowserRootComponent', () => {
   it('defaults to available mode once the rack already contains modules', () => {
     component.enableCollectionBrowseModes = true;
     component.ownedModulesInput = buildOwnedModules(20);
-    component.currentRackModulesInput = [[{
-      module: buildOwnedModules(1)[0]
-    } as any]];
+    component.currentRackModulesInput = [[rackModule(buildOwnedModules(1)[0])]];
     fixture.detectChanges();
 
     expect(component.collectionBrowseMode).toBe('available');
@@ -224,9 +290,7 @@ describe('ModuleBrowserRootComponent', () => {
   it('renders the rack-aware mode labels in rack editing context', () => {
     component.enableCollectionBrowseModes = true;
     component.ownedModulesInput = buildOwnedModules(2);
-    component.currentRackModulesInput = [[{
-      module: buildOwnedModules(1)[0]
-    } as any]];
+    component.currentRackModulesInput = [[rackModule(buildOwnedModules(1)[0])]];
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
@@ -264,9 +328,7 @@ describe('ModuleBrowserRootComponent', () => {
   it('falls back to collection mode when available mode is no longer possible', () => {
     component.enableCollectionBrowseModes = true;
     component.ownedModulesInput = buildOwnedModules(20);
-    component.currentRackModulesInput = [[{
-      module: buildOwnedModules(1)[0]
-    } as any]];
+    component.currentRackModulesInput = [[rackModule(buildOwnedModules(1)[0])]];
     fixture.detectChanges();
 
     expect(component.collectionBrowseMode).toBe('available');
@@ -294,7 +356,7 @@ describe('ModuleBrowserRootComponent', () => {
     owned[2].possessionKind = 'SELLS';
     component.enableCollectionBrowseModes = true;
     component.ownedModulesInput = owned;
-    component.currentRackModulesInput = [[{module: owned[0]} as any]];
+    component.currentRackModulesInput = [[rackModule(owned[0])]];
     component.dataService.modulesList$.next(owned);
     fixture.detectChanges();
 
@@ -315,7 +377,6 @@ describe('ModuleBrowserRootComponent', () => {
   });
 
   it('uses the shared update loader and keeps current results visible until the next backend result arrives', fakeAsync(() => {
-    const backend = TestBed.inject(SupabaseService) as any;
     const modulesResponse$ = new Subject<{data: MinimalModule[]; count: number}>();
     const currentResults = buildOwnedModules(2);
 
@@ -325,7 +386,7 @@ describe('ModuleBrowserRootComponent', () => {
     component.visibleModules$.next(currentResults);
     fixture.detectChanges();
 
-    component.dataService.fields.tags.control.setValue([{id: '7', name: 'Filter'}] as any);
+    component.dataService.fields.tags.control.setValue([filterTag()]);
     fixture.detectChanges();
 
     expect(component.dataService.remoteTagFilterLoading$.value).toBeTrue();
@@ -346,7 +407,7 @@ describe('ModuleBrowserRootComponent', () => {
     component.ownedModulesInput = buildOwnedModules(20);
     fixture.detectChanges();
 
-    component.dataService.fields.tags.control.setValue([{id: '7', name: 'Filter'}] as any);
+    component.dataService.fields.tags.control.setValue([filterTag()]);
     fixture.detectChanges();
 
     expect(component.collectionBrowseMode).toBe('owned');
@@ -358,7 +419,7 @@ describe('ModuleBrowserRootComponent', () => {
     component.ownedModulesInput = buildOwnedModules(20);
     fixture.detectChanges();
 
-    component.dataService.fields.tags.control.setValue([{id: '7', name: 'Filter'}] as any);
+    component.dataService.fields.tags.control.setValue([filterTag()]);
     fixture.detectChanges();
 
     const resultsShell = (fixture.nativeElement as HTMLElement).querySelector('.module-results-shell');
@@ -398,7 +459,7 @@ describe('ModuleBrowserRootComponent', () => {
 
     const nextSpy = spyOn(component.visibleModules$, 'next').and.callThrough();
 
-    component.currentRackModulesInput = [[{module: modules[0]} as any]];
+    component.currentRackModulesInput = [[rackModule(modules[0])]];
 
     expect(nextSpy).not.toHaveBeenCalled();
   });
@@ -407,7 +468,7 @@ describe('ModuleBrowserRootComponent', () => {
     const ownedModules = buildOwnedModules(2);
     component.enableCollectionBrowseModes = true;
     component.ownedModulesInput = ownedModules;
-    component.currentRackModulesInput = [[{module: ownedModules[0]} as any]];
+    component.currentRackModulesInput = [[rackModule(ownedModules[0])]];
     component.setCollectionBrowseMode('available');
     component.dataService.fields.name.control.setValue('missing module');
     fixture.detectChanges();
