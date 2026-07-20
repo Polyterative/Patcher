@@ -36,3 +36,4 @@ import './pattern-compliance.spec';
 import './crud-operations.spec';
 import './storage-cache.spec';
 import './email-leakage.spec';
+import './shipping-addresses.spec';

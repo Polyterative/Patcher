@@ -36,12 +36,12 @@ import { SelectionPanelOutletComponent } from './components/patch-parts/selectio
 import { DiscoveryTipSurfaceComponent } from './shared-interproject/discovery-tips/discovery-tip-surface/discovery-tip-surface.component';
 import { ModuleDetailDataService } from './components/module-parts/module-detail-data.service';
 import { PatchDetailDataService } from './components/patch-parts/patch-detail-data.service';
-import { RackDetailDataService } from './components/rack-parts/rack-detail-data.service';
+import { RACK_DETAIL_DATA_PROVIDERS } from './components/rack-parts/rack-detail-data.service';
 import { WideShellToolbarComponent } from './shared-interproject/components/@visual/wide-shell-toolbar/wide-shell-toolbar.component';
 import { AnalyticsService } from './features/backbone/analytics-integration/analytics.service';
 import { normalizeUrlPath } from './shared-interproject/url-path.util';
 
-type AppShellArea = 'home' | 'modules' | 'racks' | 'patches' | 'manufacturers' | 'user' | 'manuals' | 'comments' | 'info';
+type AppShellArea = 'home' | 'modules' | 'racks' | 'patches' | 'marketplace' | 'manufacturers' | 'user' | 'manuals' | 'comments' | 'info';
 
 @Component({
   selector: 'app-root',
@@ -63,7 +63,7 @@ type AppShellArea = 'home' | 'modules' | 'racks' | 'patches' | 'manufacturers' |
   // touched by the always-present floating outlet.
   providers: [
     PatchDetailDataService,
-    RackDetailDataService,
+    ...RACK_DETAIL_DATA_PROVIDERS,
     ModuleDetailDataService,
   ],
   imports: [
@@ -202,6 +202,7 @@ export class AppComponent implements OnDestroy {
       || normalizedUrl.startsWith('/modules')
       || normalizedUrl.startsWith('/racks')
       || normalizedUrl.startsWith('/patches')
+      || normalizedUrl.startsWith('/marketplace')
       || normalizedUrl.startsWith('/collection/')
       || normalizedUrl.startsWith('/collections')
       || normalizedUrl.startsWith('/manufacturers')
@@ -237,6 +238,10 @@ export class AppComponent implements OnDestroy {
 
    if (section === 'patches') {
      return 'patches';
+   }
+
+   if (section === 'marketplace') {
+     return 'marketplace';
    }
 
    if (section === 'manuals') {

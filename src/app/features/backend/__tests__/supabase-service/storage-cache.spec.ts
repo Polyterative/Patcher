@@ -117,8 +117,10 @@ describe('SupabaseService - Storage & Cache', () => {
         'uploadModulePanel',
         'uploadRackImage',
         'uploadPatchPreview',
+        'uploadMarketplaceListingImage',
         'deleteRackImage',
         'deletePatchPreview',
+        'deleteMarketplaceListingImage',
         'deletePanelFile'
       ];
       

@@ -16,7 +16,11 @@ import { CV } from '../../models/cv';
 import { DBManufacturer } from '../../models/manufacturer';
 import { DbModule } from '../../models/module';
 import { PatchModuleInstance } from '../../models/connection';
-import { RackMinimal } from '../../models/rack';
+import {
+  DEFAULT_RACK_MODULE_ORIENTATION,
+  RackMinimal,
+  RackModuleOrientation
+} from '../../models/rack';
 import { DbPaths } from './DatabaseStrings';
 import {
   cacheBust,
@@ -36,11 +40,32 @@ import {
   type SupabaseSingleResponse
 } from './supabase-db.types';
 import { UserModuleAcquisitionDraft } from 'src/app/models/user-module-acquisition';
+import { MarketplaceShippingAddressDraft } from 'src/app/features/marketplace/marketplace-address-book.utils';
+import {
+  type MarketplaceListingDraft,
+  type MarketplaceListingMediaSaveDraft
+} from 'src/app/features/marketplace/marketplace-listing.utils';
 import {
   REACTION_KIND_COOL,
   REACTION_ROW_COLUMNS,
   type ReactionKind
 } from './supabase-reactions';
+import {
+  buildShippingAddressInsert,
+  mapShippingAddressResponse,
+  SHIPPING_ADDRESS_COLUMNS,
+  type ShippingAddressRow
+} from './supabase-shipping-addresses';
+import {
+  buildListingMediaInsert,
+  buildMarketplaceListingInsert,
+  LISTING_MEDIA_COLUMNS,
+  mapListingMediaResponse,
+  mapMarketplaceListingResponse,
+  MARKETPLACE_LISTING_COLUMNS,
+  type ListingMediaRow,
+  type MarketplaceListingRow
+} from './supabase-marketplace-listings';
 
 
 export function createAddNamespace(
@@ -164,6 +189,76 @@ export function createAddNamespace(
         cacheBust(['userModuleAcquisitions']),
         remapErrors()
       ),
+
+    shippingAddress: (data: MarketplaceShippingAddressDraft) => getUserSession$()
+      .pipe(
+        switchMap(user => {
+          if (!user) return throwError(() => new Error('Authentication required'));
+          const insertData = buildShippingAddressInsert(user.id, data);
+          return rxFrom(
+            supabase
+              .from(DbPaths.shipping_addresses)
+              .insert(insertData)
+              .select(SHIPPING_ADDRESS_COLUMNS)
+              .single()
+          );
+        }),
+        throwIfSupabaseError<SupabaseSingleResponse<ShippingAddressRow>>(),
+        map(response => mapShippingAddressResponse(response)),
+        cacheBust(['shippingAddresses']),
+        remapErrors()
+      ),
+
+    marketplaceListing: (data: MarketplaceListingDraft) => getUserSession$()
+      .pipe(
+        switchMap(user => {
+          if (!user) return throwError(() => new Error('Authentication required'));
+          return rxFrom(
+            supabase
+              .from(DbPaths.marketplace_listings)
+              .insert(buildMarketplaceListingInsert(user.id, data))
+              .select(MARKETPLACE_LISTING_COLUMNS)
+              .single()
+          );
+        }),
+        throwIfSupabaseError<SupabaseSingleResponse<MarketplaceListingRow>>(),
+        map(mapMarketplaceListingResponse),
+        cacheBust(['marketplaceListings', 'marketplaceListingWithId', 'currentUserMarketplaceListings']),
+        remapErrors()
+      ),
+
+    marketplaceListingMedia: (listingId: string, data: MarketplaceListingMediaSaveDraft) => getUserSession$()
+      .pipe(
+        switchMap(user => {
+          if (!user) return throwError(() => new Error('Authentication required'));
+          const insertData = buildListingMediaInsert(listingId, data);
+          return rxFrom(
+            supabase
+              .from(DbPaths.listing_media)
+              .select('id', {count: 'exact', head: true})
+              .eq('listing_id', listingId)
+          ).pipe(
+            throwIfSupabaseError<SupabaseSingleResponse<{id: string}[]>>(),
+            switchMap(response => {
+              if ((response.count ?? 0) >= 8) {
+                return throwError(() => new Error('Marketplace listings support at most 8 images'));
+              }
+
+              return rxFrom(
+                supabase
+                  .from(DbPaths.listing_media)
+                  .insert(insertData)
+                  .select(LISTING_MEDIA_COLUMNS)
+                  .single()
+              );
+            })
+          );
+        }),
+        throwIfSupabaseError<SupabaseSingleResponse<ListingMediaRow>>(),
+        map(mapListingMediaResponse),
+        cacheBust(['marketplaceListings', 'marketplaceListingWithId', 'currentUserMarketplaceListings']),
+        remapErrors()
+      ),
     
     userModuleTag: (moduleTagId: number) => getUserSession$().pipe(
       switchMap(user => rxFrom(
@@ -188,7 +283,13 @@ export function createAddNamespace(
       map(x => ({id: responseData(x as SupabaseSingleResponse<{id: number}>)?.id as number}))
     ),
     
-    rackModule: (moduleId: number, rackid: number, row?: number, column?: number) => getUserSession$().pipe(
+    rackModule: (
+      moduleId: number,
+      rackid: number,
+      row?: number,
+      column?: number,
+      orientation: RackModuleOrientation = DEFAULT_RACK_MODULE_ORIENTATION
+    ) => getUserSession$().pipe(
       switchMap(user => {
         if (!user) return throwError(() => new Error('Authentication required'));
         return rxFrom(
@@ -198,9 +299,10 @@ export function createAddNamespace(
               moduleid: moduleId,
               rackid,
               row,
-              column
+              column,
+              orientation
             })
-            .select('id,moduleid,rackid,row,column,selected_panel_id')
+            .select('id,moduleid,rackid,row,column,selected_panel_id,orientation')
         );
       }),
       cacheBust(['rackWithId']),

@@ -152,5 +152,9 @@ function getKnownApplicationRoutePatterns(): RegExp[] {
     );
   }
 
+  if (environment.features.marketplaceEnabled) {
+    routePatterns.push(/^\/marketplace(?:\/[^/]+)?\/?$/);
+  }
+
   return routePatterns;
 }

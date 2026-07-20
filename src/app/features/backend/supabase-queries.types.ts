@@ -57,6 +57,17 @@ export type ModuleRecentMarketPriceListingRow = {
   >[] | null;
 };
 
+export type ModulePriceHistoryListingRow = {
+  id: number;
+  module_id: number;
+  store_id: number;
+};
+
+export type ModulePriceHistorySnapshotRow = Pick<
+  ModulePriceSnapshotRow,
+  'id' | 'listing_id' | 'observed_at' | 'price_amount_minor' | 'currency' | 'availability' | 'source'
+>;
+
 export type ModulePriceSnapshotRow = {
   id: number;
   listing_id: number;

@@ -118,7 +118,8 @@ export class SupabaseService extends SubManager {
       (filename: string) => this.storage.deletePanelFile(filename),
       this.defaultPag,
       // In dev, always privileged. In prod, requires admin JWT claim.
-      () => !environment.production ? of(true) : this.auth.hasAdminRole$()
+      () => !environment.production ? of(true) : this.auth.hasAdminRole$(),
+      (storagePath: string) => this.storage.deleteMarketplaceListingImage(storagePath)
     );
 
     this.update = createUpdateNamespace(
@@ -145,13 +146,16 @@ export class SupabaseService extends SubManager {
       currentUserModules: this.queries.getCurrentUserModules.bind(this.queries),
       modules: this.queries.getModules.bind(this.queries),
       publicModulesByIds: this.queries.getPublicModulesByIds.bind(this.queries),
+      publicModuleImportCandidates: this.queries.getPublicModuleImportCandidates.bind(this.queries),
       searchPublicModulesForCollection: this.queries.searchPublicModulesForCollection.bind(this.queries),
       manufacturers: this.queries.getManufacturers.bind(this.queries),
       manufacturersPaginated: this.queries.getManufacturersPaginated.bind(this.queries),
       comments: this.queries.getComments.bind(this.queries),
       tags: this.queries.getTags.bind(this.queries),
       moduleWithId: this.queries.getModuleWithId.bind(this.queries),
+      moduleCommentContext: this.queries.getModuleCommentContext.bind(this.queries),
       modulePriceListings: this.queries.getModulePriceListings.bind(this.queries),
+      modulePriceHistorySnapshots: this.queries.getModulePriceHistorySnapshots.bind(this.queries),
       recentModuleMarketPrices: this.queries.getRecentModuleMarketPrices.bind(this.queries),
       patchConnections: this.queries.getPatchConnections.bind(this.queries),
       patchModuleInstances: this.queries.getPatchModuleInstances.bind(this.queries),
@@ -171,8 +175,10 @@ export class SupabaseService extends SubManager {
       patches: this.queries.getPatches.bind(this.queries),
       publicPatchesByIds: this.queries.getPublicPatchesByIds.bind(this.queries),
       publicPatchWithId: this.queries.getPublicPatchWithId.bind(this.queries),
+      patchCommentContext: this.queries.getPatchCommentContext.bind(this.queries),
       publicUserContributorStats: this.queries.getPublicUserContributorStats.bind(this.queries),
       rackWithId: this.queries.getRackWithId.bind(this.queries),
+      rackCommentContext: this.queries.getRackCommentContext.bind(this.queries),
       publicRackWithId: this.queries.getPublicRackWithId.bind(this.queries),
       rackByPublicId: this.queries.getRackByPublicId.bind(this.queries),
       resolvePublicRackLegacyId: this.queries.resolvePublicRackLegacyId.bind(this.queries),
@@ -183,6 +189,9 @@ export class SupabaseService extends SubManager {
       userRacksPaginated: this.queries.getUserRacksPaginated.bind(this.queries),
       publicUserPatchesPaginated: this.queries.getPublicUserPatchesPaginated.bind(this.queries),
       publicUserRacksPaginated: this.queries.getPublicUserRacksPaginated.bind(this.queries),
+      activeMarketplaceListings: this.queries.getActiveMarketplaceListings.bind(this.queries),
+      activeMarketplaceListingsBySellerProfileId: this.queries.getActiveMarketplaceListingsBySellerProfileId.bind(this.queries),
+      marketplaceListingByPublicId: this.queries.getMarketplaceListingByPublicId.bind(this.queries),
     };
     
     this.get = createGetNamespace(
@@ -214,13 +223,16 @@ export class SupabaseService extends SubManager {
     currentUserModules: typeof SupabaseQueriesService.prototype.getCurrentUserModules;
     modules: typeof SupabaseQueriesService.prototype.getModules;
     publicModulesByIds: typeof SupabaseQueriesService.prototype.getPublicModulesByIds;
+    publicModuleImportCandidates: typeof SupabaseQueriesService.prototype.getPublicModuleImportCandidates;
     searchPublicModulesForCollection: typeof SupabaseQueriesService.prototype.searchPublicModulesForCollection;
     manufacturers: typeof SupabaseQueriesService.prototype.getManufacturers;
     manufacturersPaginated: typeof SupabaseQueriesService.prototype.getManufacturersPaginated;
     comments: typeof SupabaseQueriesService.prototype.getComments;
     tags: typeof SupabaseQueriesService.prototype.getTags;
     moduleWithId: typeof SupabaseQueriesService.prototype.getModuleWithId;
+    moduleCommentContext: typeof SupabaseQueriesService.prototype.getModuleCommentContext;
     modulePriceListings: typeof SupabaseQueriesService.prototype.getModulePriceListings;
+    modulePriceHistorySnapshots: typeof SupabaseQueriesService.prototype.getModulePriceHistorySnapshots;
     recentModuleMarketPrices: typeof SupabaseQueriesService.prototype.getRecentModuleMarketPrices;
     patchConnections: typeof SupabaseQueriesService.prototype.getPatchConnections;
     patchModuleInstances: typeof SupabaseQueriesService.prototype.getPatchModuleInstances;
@@ -240,8 +252,10 @@ export class SupabaseService extends SubManager {
     patches: typeof SupabaseQueriesService.prototype.getPatches;
     publicPatchesByIds: typeof SupabaseQueriesService.prototype.getPublicPatchesByIds;
     publicPatchWithId: typeof SupabaseQueriesService.prototype.getPublicPatchWithId;
+    patchCommentContext: typeof SupabaseQueriesService.prototype.getPatchCommentContext;
     publicUserContributorStats: typeof SupabaseQueriesService.prototype.getPublicUserContributorStats;
     rackWithId: typeof SupabaseQueriesService.prototype.getRackWithId;
+    rackCommentContext: typeof SupabaseQueriesService.prototype.getRackCommentContext;
     publicRackWithId: typeof SupabaseQueriesService.prototype.getPublicRackWithId;
     rackByPublicId: typeof SupabaseQueriesService.prototype.getRackByPublicId;
     resolvePublicRackLegacyId: typeof SupabaseQueriesService.prototype.resolvePublicRackLegacyId;
@@ -252,13 +266,41 @@ export class SupabaseService extends SubManager {
     userRacksPaginated: typeof SupabaseQueriesService.prototype.getUserRacksPaginated;
     publicUserPatchesPaginated: typeof SupabaseQueriesService.prototype.getPublicUserPatchesPaginated;
     publicUserRacksPaginated: typeof SupabaseQueriesService.prototype.getPublicUserRacksPaginated;
+    activeMarketplaceListings: typeof SupabaseQueriesService.prototype.getActiveMarketplaceListings;
+    activeMarketplaceListingsBySellerProfileId: typeof SupabaseQueriesService.prototype.getActiveMarketplaceListingsBySellerProfileId;
+    marketplaceListingByPublicId: typeof SupabaseQueriesService.prototype.getMarketplaceListingByPublicId;
   };
   
   private readonly queries!: SupabaseQueriesService;
   readonly cacheResetter$ = cacheBuster$;
   
-  private customLock: LockFunc = (name, acquireTimeout, fn) =>
-    navigatorLock(name, acquireTimeout ?? -1, fn);
+  private customLock: LockFunc = (name, acquireTimeout, fn) => {
+    if (acquireTimeout !== 0) {
+      return navigatorLock(name, acquireTimeout ?? -1, fn);
+    }
+
+    return new Promise((resolve, reject) => {
+      globalThis.navigator.locks.request(
+        name,
+        {
+          mode: 'exclusive',
+          ifAvailable: true
+        },
+        async lock => {
+          if (!lock) {
+            resolve(undefined as Awaited<ReturnType<typeof fn>>);
+            return;
+          }
+
+          try {
+            resolve(await fn());
+          } catch (error) {
+            reject(error);
+          }
+        }
+      ).catch(reject);
+    });
+  };
 
   // Initialized in constructor to allow platform-aware auth config (SSR vs browser).
   private supabase!: SupabaseClient<Database, 'public'>;

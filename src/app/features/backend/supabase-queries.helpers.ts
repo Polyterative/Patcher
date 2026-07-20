@@ -17,7 +17,7 @@ export function applyClientSideSearchFilter<
 ): Omit<Response, 'data' | 'count'> & { data: ResponseRow<Response>[]; count: number } {
   const rows = Array.isArray(response?.data) ? response.data as ResponseRow<Response>[] : [];
   const filteredRows = rows.filter(predicate);
-  
+
   return {
     ...response,
     data: filteredRows.slice(from, to + 1),

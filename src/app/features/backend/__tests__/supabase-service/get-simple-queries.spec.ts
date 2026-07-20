@@ -1,6 +1,7 @@
 import { SupabaseService } from '../../supabase.service';
 import { TagType } from 'src/app/models/tag';
 import { MinimalModule } from 'src/app/models/module';
+import { firstValueFrom } from 'rxjs';
 import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest,
@@ -123,6 +124,25 @@ describe('SupabaseService - get simple queries', () => {
   });
 
   describe('GET.publicModulesByIds', () => {
+    it('falls back by default and throws in strict mode when Supabase returns an error response for public modules by ids', async () => {
+      const transientError = {
+        code: 'PGRST003',
+        details: null,
+        hint: null,
+        message: 'Service temporarily unavailable'
+      };
+      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: transientError}));
+
+      await expectAsync(firstValueFrom(service.GET.publicModulesByIds([7001]))).toBeResolvedTo([]);
+      await expectAsync(firstValueFrom(service.GET.publicModulesByIds([7001], true))).toBeRejectedWith(transientError);
+    });
+
+    it('returns an empty array for successful empty public module responses', async () => {
+      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: [], error: null}));
+
+      await expectAsync(firstValueFrom(service.GET.publicModulesByIds([7002]))).toBeResolvedTo([]);
+    });
+
     it('loads public minimal modules by id with existing module joins', (done) => {
       const mockData: MinimalModule[] = [
         {
@@ -177,6 +197,48 @@ describe('SupabaseService - get simple queries', () => {
         }
       });
     }, TEST_TIMEOUT);
+  });
+
+  describe('get.publicRacksByIds', () => {
+    it('falls back by default and throws in strict mode when Supabase returns an error response for public racks by ids', async () => {
+      const transientError = {
+        code: 'PGRST003',
+        details: null,
+        hint: null,
+        message: 'Service temporarily unavailable'
+      };
+      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: transientError}));
+
+      await expectAsync(firstValueFrom(service.get.publicRacksByIds([7101]))).toBeResolvedTo([]);
+      await expectAsync(firstValueFrom(service.get.publicRacksByIds([7101], true))).toBeRejectedWith(transientError);
+    });
+
+    it('returns an empty array for successful empty public rack responses', async () => {
+      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: [], error: null}));
+
+      await expectAsync(firstValueFrom(service.get.publicRacksByIds([7102]))).toBeResolvedTo([]);
+    });
+  });
+
+  describe('GET.publicPatchesByIds', () => {
+    it('falls back by default and throws in strict mode when Supabase returns an error response for public patches by ids', async () => {
+      const transientError = {
+        code: 'PGRST003',
+        details: null,
+        hint: null,
+        message: 'Service temporarily unavailable'
+      };
+      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: transientError}));
+
+      await expectAsync(firstValueFrom(service.GET.publicPatchesByIds([7201]))).toBeResolvedTo([]);
+      await expectAsync(firstValueFrom(service.GET.publicPatchesByIds([7201], true))).toBeRejectedWith(transientError);
+    });
+
+    it('returns an empty array for successful empty public patch responses', async () => {
+      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: [], error: null}));
+
+      await expectAsync(firstValueFrom(service.GET.publicPatchesByIds([7202]))).toBeResolvedTo([]);
+    });
   });
   
   describe('get.patchWithId', () => {
@@ -253,13 +315,44 @@ describe('SupabaseService - get simple queries', () => {
       spyOn(supabaseClient, 'from').and.returnValue(chainable({data: [rawRow], error: null}));
       
       service.get.rackedModules(7).subscribe({
-        next: (result: any[]) => {
+        next: (result) => {
           expect(result.length).toBe(1);
           expect(result[0].module.id).toBe(42);
           expect(result[0].module.tags?.[0]?.tag?.name).toBe('VCO');
           expect(result[0].rackingData.rackid).toBe(7);
           expect(result[0].rackingData.row).toBe(0);
           expect(result[0].rackingData.column).toBe(2);
+          expect(result[0].rackingData.orientation).toBe('normal');
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('requests and maps rack module orientation', (done) => {
+      const mock = chainable({
+        data: [{
+          id: 1,
+          row: 0,
+          column: 0,
+          moduleid: 10,
+          rackid: 3,
+          selected_panel_id: null,
+          orientation: 'rot180',
+          module: {id: 10}
+        }],
+        error: null
+      });
+      const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+      service.get.rackedModules(3).subscribe({
+        next: (result: any[]) => {
+          expect(selectSpy).toHaveBeenCalledWith(jasmine.stringContaining('orientation'));
+          expect(result[0].rackingData.orientation).toBe('rot180');
           done();
         },
         error: (err) => {

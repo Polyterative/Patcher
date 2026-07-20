@@ -1,17 +1,14 @@
 import {
-  ModulePriceListing,
+  ModulePriceHistorySnapshot,
   ModulePriceLatestSnapshot,
-  ModuleRecentMarketPrice
+  ModuleRecentMarketPrice,
+  ModuleSparsePriceHistorySummary
 } from './supabase-queries.models';
-
-const RECENT_MARKET_PRICE_CURRENCY_TO_EUR_RATE: Readonly<Record<string, number>> = {
-  CHF: 1.07,
-  EUR: 1,
-  GBP: 1.17,
-  USD: 0.92
-};
+import { normalizeEstimatedModulePriceToEurMinor } from './module-price-estimated-fx.utils';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+const SPARSE_HISTORY_WINDOW_DAYS = 60;
+const SPARSE_HISTORY_FLAT_THRESHOLD_PERCENT = 2;
 
 const AVAILABILITY_WEIGHTS: Readonly<Record<string, number>> = {
   in_stock: 1,
@@ -67,7 +64,9 @@ export function getModuleRecentMarketPrice(
     Math.max(...eligiblePoints.map(point => point.observedAtMs))
   ).toISOString();
   const displayPrice = formatEstimatedEurPrice(estimatedPriceEurMinor);
-  const tooltip = `Recent market price: ${ displayPrice } from ${ storeCount } ${ storeCount === 1 ? 'store' : 'stores' }, latest check ${ formatLatestCheckDate(latestObservedAt) }.`;
+  const tooltip = `Estimated recent market price: ${ displayPrice } from ${ storeCount } ${
+    storeCount === 1 ? 'store' : 'stores'
+  }, latest check ${ formatLatestCheckDate(latestObservedAt) }.`;
 
   return {
     moduleId,
@@ -75,6 +74,61 @@ export function getModuleRecentMarketPrice(
     displayPrice,
     storeCount,
     latestObservedAt,
+    tooltip
+  };
+}
+
+export function getModuleSparsePriceHistorySummary(
+  moduleId: number,
+  snapshots: ReadonlyArray<ModulePriceHistorySnapshot>,
+  referenceDate: Date = new Date()
+): ModuleSparsePriceHistorySummary | null {
+  const cutoffMs = referenceDate.getTime() - (SPARSE_HISTORY_WINDOW_DAYS * DAY_MS);
+  const eligiblePoints = snapshots
+    .map(snapshot => getEligibleHistoryPoint(snapshot))
+    .filter((point): point is EligibleHistoryPoint => point !== null)
+    .filter(point => point.observedAtMs >= cutoffMs && point.observedAtMs <= referenceDate.getTime())
+    .sort((first, second) => first.observedAtMs - second.observedAtMs || first.snapshot.id - second.snapshot.id);
+
+  if (eligiblePoints.length < 2) {
+    return null;
+  }
+
+  const earliest = eligiblePoints[0];
+  const latest = eligiblePoints[eligiblePoints.length - 1];
+  if (!earliest || !latest || earliest.priceEurMinor <= 0) {
+    return null;
+  }
+
+  const prices = eligiblePoints.map(point => point.priceEurMinor);
+  const minPriceEurMinor = Math.min(...prices);
+  const maxPriceEurMinor = Math.max(...prices);
+  const trendPercent = Math.round(((latest.priceEurMinor - earliest.priceEurMinor) / earliest.priceEurMinor) * 100);
+  const trendDirection = getSparseHistoryTrendDirection(trendPercent);
+  const rangeLabel = `${ formatEstimatedEurPrice(minPriceEurMinor) }–${ formatEstimatedEurPrice(maxPriceEurMinor).replace(/^~/, '') }`;
+  const label = formatSparseHistoryLabel(trendDirection, trendPercent);
+  const storeCount = new Set(eligiblePoints.map(point => point.snapshot.storeId)).size;
+  const tooltip = [
+    `${ SPARSE_HISTORY_WINDOW_DAYS }-day Price Hub history: ${ label.toLowerCase() }.`,
+    `Observed range ${ rangeLabel } from ${ storeCount } ${ storeCount === 1 ? 'store' : 'stores' }.`,
+    `Earliest ${ formatLatestCheckDate(earliest.snapshot.observedAt) }; latest ${ formatLatestCheckDate(latest.snapshot.observedAt) }.`,
+    'Estimated EUR values; sparse store snapshots may not cover every day.'
+  ].join(' ');
+
+  return {
+    moduleId,
+    eligiblePointCount: eligiblePoints.length,
+    storeCount,
+    earliestObservedAt: earliest.snapshot.observedAt,
+    latestObservedAt: latest.snapshot.observedAt,
+    earliestPriceEurMinor: earliest.priceEurMinor,
+    latestPriceEurMinor: latest.priceEurMinor,
+    minPriceEurMinor,
+    maxPriceEurMinor,
+    trendPercent,
+    trendDirection,
+    label,
+    rangeLabel,
     tooltip
   };
 }
@@ -92,8 +146,7 @@ export function normalizeModulePriceToEurMinor(
     return null;
   }
 
-  const eurRate = RECENT_MARKET_PRICE_CURRENCY_TO_EUR_RATE[normalizedCurrency];
-  return eurRate === undefined ? null : Math.round(priceAmountMinor * eurRate);
+  return normalizeEstimatedModulePriceToEurMinor(priceAmountMinor, normalizedCurrency);
 }
 
 export function formatEstimatedEurPrice(priceEurMinor: number): string {
@@ -139,6 +192,33 @@ function getEligiblePricePoint(
   };
 }
 
+interface EligibleHistoryPoint {
+  snapshot: ModulePriceHistorySnapshot;
+  observedAtMs: number;
+  priceEurMinor: number;
+}
+
+function getEligibleHistoryPoint(snapshot: ModulePriceHistorySnapshot): EligibleHistoryPoint | null {
+  const observedAtMs = Date.parse(snapshot.observedAt);
+  if (!Number.isFinite(observedAtMs)) {
+    return null;
+  }
+
+  const priceEurMinor = normalizeModulePriceToEurMinor(
+    snapshot.priceAmountMinor,
+    snapshot.currency
+  );
+  if (priceEurMinor === null) {
+    return null;
+  }
+
+  return {
+    snapshot,
+    observedAtMs,
+    priceEurMinor
+  };
+}
+
 function isWithinLastTwoMonths(observedAtMs: number, referenceDate: Date): boolean {
   const cutoff = new Date(referenceDate);
   cutoff.setMonth(cutoff.getMonth() - 2);
@@ -158,6 +238,25 @@ function getRecencyWeight(observedAtMs: number, referenceDate: Date): number {
 
 function getAvailabilityWeight(availability: string | null | undefined): number {
   return AVAILABILITY_WEIGHTS[availability ?? 'unknown'] ?? AVAILABILITY_WEIGHTS.unknown;
+}
+
+function getSparseHistoryTrendDirection(trendPercent: number): ModuleSparsePriceHistorySummary['trendDirection'] {
+  if (Math.abs(trendPercent) < SPARSE_HISTORY_FLAT_THRESHOLD_PERCENT) {
+    return 'flat';
+  }
+  return trendPercent > 0 ? 'up' : 'down';
+}
+
+function formatSparseHistoryLabel(
+  trendDirection: ModuleSparsePriceHistorySummary['trendDirection'],
+  trendPercent: number
+): string {
+  if (trendDirection === 'flat') {
+    return `Flat ${ SPARSE_HISTORY_WINDOW_DAYS }d`;
+  }
+
+  const arrow = trendDirection === 'up' ? '↑' : '↓';
+  return `${ arrow }${ Math.abs(trendPercent) }% ${ SPARSE_HISTORY_WINDOW_DAYS }d`;
 }
 
 function formatLatestCheckDate(latestObservedAt: string): string {

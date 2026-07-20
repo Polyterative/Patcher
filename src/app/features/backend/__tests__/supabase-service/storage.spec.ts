@@ -1,5 +1,12 @@
 import { of } from 'rxjs';
 import { SupabaseService } from '../../supabase.service';
+import { StorageUrls } from '../../DatabaseStrings';
+import {
+  getMarketplaceListingImagePublicUrl,
+  getModulePanelPublicUrl,
+  getRackImagePublicUrl
+} from '../../supabase-storage';
+import { environment } from 'src/environments/environment';
 import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest,
@@ -7,10 +14,13 @@ import {
 } from './test-setup';
 
 
+const TEST_SUPABASE_URL = 'https://sozmatmywjpstwidzlss.supabase.co';
+
 describe('SupabaseService - storage', () => {
   let service: SupabaseService;
   let supabaseClient: any;
   let mockBucket: any;
+  let previousSupabaseUrl: string;
   
   function setupStorageMock(
     uploadResult: any = {data: {path: 'file.jpg'}, error: null},
@@ -23,6 +33,15 @@ describe('SupabaseService - storage', () => {
     spyOn(supabaseClient.storage, 'from').and.returnValue(mockBucket);
   }
   
+  beforeAll(() => {
+    previousSupabaseUrl = environment.supabase.url;
+    environment.supabase.url = TEST_SUPABASE_URL;
+  });
+
+  afterAll(() => {
+    environment.supabase.url = previousSupabaseUrl;
+  });
+
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
@@ -31,6 +50,44 @@ describe('SupabaseService - storage', () => {
   
   afterEach(() => {
     cleanupSupabaseServiceTest();
+  });
+
+  describe('storage.publicUrlBases', () => {
+    it('exposes public storage base URLs without requiring DatabaseStrings imports in components', () => {
+      expect(service.storage.publicUrlBases.manufacturerLogos).toBe(StorageUrls.manufacturerLogos);
+      expect(service.storage.publicUrlBases.marketplaceListings).toBe(StorageUrls.marketplaceListings);
+    });
+
+    describe('getMarketplaceListingImagePublicUrl', () => {
+      it('builds the proxied marketplace listing storage URL', () => {
+        expect(getMarketplaceListingImagePublicUrl('seller/listing/front.webp'))
+          .toBe('https://images.patcher.xyz/marketplace-listings/seller/listing/front.webp');
+      });
+    });
+  });
+
+  describe('getModulePanelPublicUrl', () => {
+    it('builds the proxied module-panel storage URL by default', () => {
+      expect(getModulePanelPublicUrl('panel.webp'))
+        .toBe('https://images.patcher.xyz/module-panels/panel.webp');
+    });
+
+    it('builds the direct Supabase module-panel storage URL for fallback loads', () => {
+      expect(getModulePanelPublicUrl('panel.webp', true))
+        .toBe('https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/panel.webp');
+    });
+  });
+
+  describe('getRackImagePublicUrl', () => {
+    it('builds the proxied rack image storage URL by default', () => {
+      expect(getRackImagePublicUrl('rack.webp'))
+        .toBe('https://images.patcher.xyz/racks/rack.webp');
+    });
+
+    it('builds the direct Supabase rack image storage URL for fallback loads', () => {
+      expect(getRackImagePublicUrl('rack.webp', true))
+        .toBe('https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/racks/rack.webp');
+    });
   });
   
   describe('storage.deletePanelFile', () => {
@@ -49,6 +106,7 @@ describe('SupabaseService - storage', () => {
           done();
         }
       });
+
     }, TEST_TIMEOUT);
 
     it('should bust modules, moduleWithId and rackWithId caches', (done) => {
@@ -399,4 +457,79 @@ describe('SupabaseService - storage', () => {
       });
     }, TEST_TIMEOUT);
   });
+
+describe('storage.uploadMarketplaceListingImage', () => {
+  const sellerId = '11111111-1111-1111-1111-111111111111';
+  const listingId = '22222222-2222-2222-2222-222222222222';
+
+  it('uploads image media to an owner/listing scoped path with MIME-matched extension', (done) => {
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of({id: sellerId} as never));
+    setupStorageMock();
+
+    service.storage.uploadMarketplaceListingImage(
+      listingId,
+      new Blob([], {type: 'image/webp'}),
+      'Front Panel.JPG',
+      'image/webp'
+    ).subscribe({
+      next: (path) => {
+        expect(path).toMatch(new RegExp(`^${ sellerId }/${ listingId }/front-panel_[0-9-]+\\.webp$`));
+        expect(supabaseClient.storage.from).toHaveBeenCalledWith('marketplace-listings');
+        expect(mockBucket.upload).toHaveBeenCalledWith(
+          path,
+          jasmine.any(Blob),
+          jasmine.objectContaining({
+            cacheControl: '31536000',
+            contentType: 'image/webp',
+            upsert: false
+          })
+        );
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+
+  it('rejects oversized listing media before upload', (done) => {
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of({id: sellerId} as never));
+    setupStorageMock();
+
+    service.storage.uploadMarketplaceListingImage(
+      listingId,
+      new Blob([new Uint8Array(10 * 1024 * 1024 + 1)], {type: 'image/webp'}),
+      'demo.webp',
+      'image/webp'
+    ).subscribe({
+      next: () => fail('Expected media size error'),
+      error: (err) => {
+        expect(err.message).toContain('10 MB or smaller');
+        expect(mockBucket.upload).not.toHaveBeenCalled();
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+});
+
+describe('storage.deleteMarketplaceListingImage', () => {
+  it('rejects deleting another seller path before storage remove', (done) => {
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of({
+      id: '11111111-1111-1111-1111-111111111111'
+    } as never));
+    setupStorageMock();
+
+    service.storage.deleteMarketplaceListingImage(
+      '99999999-9999-9999-9999-999999999999/22222222-2222-2222-2222-222222222222/front.webp'
+    ).subscribe({
+      next: () => fail('Expected owner path error'),
+      error: (err) => {
+        expect(err.message).toContain('not owned');
+        expect(mockBucket.remove).not.toHaveBeenCalled();
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+});
 });
