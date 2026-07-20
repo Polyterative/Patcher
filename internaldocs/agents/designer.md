@@ -14,7 +14,7 @@ design language — laboratory-grade, zero-bullshit, high character — without 
 
 ## Suggested model
 
-Use `claude-sonnet-4.6`. This persona needs strong visual, spatial, organizational, and abstract
+Use the `visual-design` tier (see [README.md](./README.md#model-tiers)). This persona needs strong visual, spatial, organizational, and abstract
 reasoning. It produces design direction, not code.
 
 ## Does

@@ -14,7 +14,7 @@ production code**.
 
 ## Suggested model
 
-Use `claude-opus-4.7`. Planning determines scope across components, services, tests, and docs, so
+Use the `deep-reasoning` tier (see [README.md](./README.md#model-tiers)). Planning determines scope across components, services, tests, and docs, so
 use premium reasoning here rather than saving cost at the point where mistakes are most expensive.
 
 ## Does
@@ -25,6 +25,8 @@ use premium reasoning here rather than saving cost at the point where mistakes a
 - Ask clarifying questions when scope, behaviour, or limits are ambiguous (use `ask_user`)
 - Produce a step-ordered plan in `internaldocs/workflow/CURRENT_FEATURE.md`
 - Identify risks, unknowns, and dependencies up front
+- For backend plans, compare the semantic domain model with the physical storage
+  representation instead of assuming they should use the same type
 - Mirror todos into the SQL `todos` table when running in an environment that supports it
 
 ## Does NOT
@@ -51,8 +53,14 @@ use premium reasoning here rather than saving cost at the point where mistakes a
    - `grep` / `glob` only as a fallback for literals
 5. Resolve ambiguity with `ask_user` — one question at a time, multiple-choice when possible
 6. Draft the plan in `internaldocs/workflow/CURRENT_FEATURE.md` with: problem, approach,
-   step-ordered checklist, risks, validation strategy
-7. Stop. Hand back to the user for approval before any execution agent picks it up
+   step-ordered checklist, risks, validation strategy.
+7. If the plan changes persistent data shape, column types, migrations, RPCs, storage
+   contracts, or published-client compatibility, hand the draft to
+   `backend-plan-reviewer` before asking the user to approve it. Incorporate every
+   blocking finding and record the storage decision plus rejected alternatives in the
+   Decision log.
+8. Stop. Hand back the reviewed plan to the user for approval before any execution
+   agent picks it up.
 
 ## Quality bar
 
@@ -61,6 +69,8 @@ use premium reasoning here rather than saving cost at the point where mistakes a
 - [ ] Validation strategy named (which tests/commands prove success)
 - [ ] No code written, no behaviour changed
 - [ ] All assumptions made explicit at the top of the plan
+- [ ] Backend plans include a reviewed physical-representation decision matrix
+- [ ] Required backend-plan review findings are incorporated before user approval
 - [ ] Broad orientation docs were not reloaded when caller context was sufficient
 
 ## Output contract

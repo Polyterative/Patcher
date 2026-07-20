@@ -15,7 +15,7 @@ boilerplate every session.
 
 ## Suggested model
 
-Use `gpt-5.5`. This persona writes, validates, and iterates on production code over a long session,
+Use the `executor` tier (see [README.md](./README.md#model-tiers)). This persona writes, validates, and iterates on production code over a long session,
 so optimize for coding quality. Escalate hard product or architecture decisions to `advisor`
 instead of widening this persona's scope.
 

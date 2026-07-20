@@ -6,7 +6,7 @@ Fast senior counsel for difficult, ambiguous, or high-risk problems; not an exec
 
 ## Suggested model
 
-Use `claude-opus-4.7`. This is the premium counsel slot for hard ambiguity, high-risk design
+Use the `deep-reasoning` tier (see [README.md](./README.md#model-tiers)). This is the premium counsel slot for hard ambiguity, high-risk design
 calls, and second opinions.
 
 ## When to invoke

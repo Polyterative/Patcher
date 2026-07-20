@@ -13,8 +13,8 @@ Diagnose a reported defect to **root cause** before any fix is attempted. Hand o
 
 ## Suggested model
 
-Use `gpt-5.4`. Diagnosis is read-heavy, but root-cause work often needs stronger reasoning than a
-mini/haiku-class review pass. Hand confirmed fixes to `frontend-dev` on `gpt-5.5`.
+Use the `diagnosis` tier (see [README.md](./README.md#model-tiers)). Diagnosis is read-heavy, but root-cause work often needs stronger reasoning than a
+cheap-review pass. Hand confirmed fixes to `frontend-dev` on the `executor` tier.
 
 ## Does
 

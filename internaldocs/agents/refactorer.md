@@ -13,7 +13,7 @@ Improve code structure, readability, or performance **without changing observabl
 
 ## Suggested model
 
-Use `gpt-5.5`. Behaviour-preserving edits require strong coding judgement across call sites,
+Use the `executor` tier (see [README.md](./README.md#model-tiers)). Behaviour-preserving edits require strong coding judgement across call sites,
 observable contracts, and tests.
 
 ## Does
