@@ -1,6 +1,8 @@
 import { of } from 'rxjs';
+import { TestBed } from '@angular/core/testing';
 import { ApplicationStatisticsService } from './application-statistics.service';
 import { MinimalModule } from 'src/app/models/module';
+import { SupabaseService } from '../../backend/supabase.service';
 
 
 describe('ApplicationStatisticsService', () => {
@@ -150,9 +152,16 @@ describe('ApplicationStatisticsService', () => {
       }
     };
 
+    TestBed.configureTestingModule({
+      providers: [
+        ApplicationStatisticsService,
+        {provide: SupabaseService, useValue: backend}
+      ]
+    });
+
     return {
       backend,
-      service: new ApplicationStatisticsService(backend as any)
+      service: TestBed.inject(ApplicationStatisticsService)
     };
   }
 

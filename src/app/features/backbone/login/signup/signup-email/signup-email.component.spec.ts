@@ -1,11 +1,12 @@
 import { SignupEmailComponent } from './signup-email.component';
+import { UserSignupDataService } from '../user-signup-data.service';
 
 describe('SignupEmailComponent', () => {
   let comp: SignupEmailComponent;
-  let mockDataService: any;
+  let mockDataService: UserSignupDataService;
 
   beforeEach(() => {
-    mockDataService = {};
+    mockDataService = {} as UserSignupDataService;
     comp = new SignupEmailComponent(mockDataService);
   });
 

@@ -1,20 +1,21 @@
 import { LoginEmailComponent } from './login-email.component';
-import { Subject } from 'rxjs';
+import { FormControl } from '@angular/forms';
+import { UserLoginDataService } from '../user-login-data.service';
 
 describe('LoginEmailComponent', () => {
   let comp: LoginEmailComponent;
-  let mockDataService: any;
-  let valueChanges$: Subject<string>;
+  let mockDataService: UserLoginDataService;
+  let emailControl: FormControl<string>;
 
   beforeEach(() => {
-    valueChanges$ = new Subject<string>();
+    emailControl = new FormControl('', {nonNullable: true});
     mockDataService = {
       fields: {
         user: {
-          control: { valueChanges: valueChanges$.asObservable() }
+          control: emailControl
         }
       }
-    };
+    } as UserLoginDataService;
     comp = new LoginEmailComponent(mockDataService);
   });
 
@@ -34,7 +35,7 @@ describe('LoginEmailComponent', () => {
     comp.ngOnInit();
     let emitted: string | undefined;
     comp.emailChange.subscribe(v => (emitted = v));
-    valueChanges$.next('test@example.com');
+    emailControl.setValue('test@example.com');
     expect(emitted).toBe('test@example.com');
   });
 
@@ -42,8 +43,8 @@ describe('LoginEmailComponent', () => {
     comp.ngOnInit();
     const values: string[] = [];
     comp.emailChange.subscribe(v => values.push(v));
-    valueChanges$.next('a@example.com');
-    valueChanges$.next('b@example.com');
+    emailControl.setValue('a@example.com');
+    emailControl.setValue('b@example.com');
     expect(values).toEqual(['a@example.com', 'b@example.com']);
   });
 });

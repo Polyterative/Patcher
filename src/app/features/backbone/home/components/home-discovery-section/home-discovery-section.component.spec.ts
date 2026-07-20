@@ -7,7 +7,10 @@ import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { HomeDiscoverySectionComponent } from './home-discovery-section.component';
-import { TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  TestBed
+} from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MinimalModule } from 'src/app/models/module';
 
@@ -31,7 +34,7 @@ function buildModule(id: number, name: string, manufacturerName: string): Minima
 describe('HomeDiscoverySectionComponent', () => {
   let analytics: jasmine.SpyObj<AnalyticsService>;
   let component: HomeDiscoverySectionComponent;
-  let fixture: any;
+  let fixture: ComponentFixture<HomeDiscoverySectionComponent>;
 
   beforeEach(async () => {
     analytics = jasmine.createSpyObj<AnalyticsService>('AnalyticsService', ['capture']);
