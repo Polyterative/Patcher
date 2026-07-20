@@ -80,6 +80,32 @@
   }
 }
 
+.profile-marketplace__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13.5rem, 1fr));
+  gap: 0.75rem;
+}
+
+.profile-marketplace__state {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 0.0625rem solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.78);
+  background: rgba(255, 255, 255, 0.035);
+
+  mat-icon {
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  &--error {
+    border-color: rgba(229, 86, 86, 0.42);
+    color: rgba(255, 228, 228, 0.92);
+  }
+}
+
 @media (max-width: 900px) {
   .public-profile-layout {
     grid-template-columns: 1fr;

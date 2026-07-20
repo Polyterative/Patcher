@@ -77,6 +77,7 @@ function backendMock(overrides: {
 } = {}): SupabaseService {
   const reactions = overrides.reactions ?? [];
   return {
+    cacheResetter$: new Subject<string[]>(),
     get: {
       currentUserReactions: jasmine.createSpy('currentUserReactions').and.callFake((entityType?: number) =>
         of(entityType === undefined
@@ -141,8 +142,8 @@ describe('UserCoolCollectionDataService', () => {
     expect(vm.total).toBe(2);
     expect(vm.groups.map(group => group.entityType)).toEqual(['module']);
     expect(vm.groups[0].items.map(item => item.entityId)).toEqual([2, 1]);
-    expect(backend.get.currentUserReactions).toHaveBeenCalledWith(ReactionEntityTypes.MODULE, REACTION_KIND_COOL);
-    expect(backend.GET.publicModulesByIds).toHaveBeenCalledOnceWith([2, 1]);
+    expect(backend.get.currentUserReactions).toHaveBeenCalledWith(ReactionEntityTypes.MODULE, REACTION_KIND_COOL, true);
+    expect(backend.GET.publicModulesByIds).toHaveBeenCalledOnceWith([2, 1], true);
     expect(backend.get.publicRacksByIds).not.toHaveBeenCalled();
     expect(backend.GET.publicPatchesByIds).not.toHaveBeenCalled();
     service.ngOnDestroy();
@@ -165,8 +166,8 @@ describe('UserCoolCollectionDataService', () => {
     expect(vm.total).toBe(1);
     expect(vm.groups.map(group => group.entityType)).toEqual(['rack']);
     expect(vm.groups[0].items.map(item => item.entityId)).toEqual([10]);
-    expect(backend.get.currentUserReactions).toHaveBeenCalledWith(ReactionEntityTypes.RACK, REACTION_KIND_COOL);
-    expect(backend.get.publicRacksByIds).toHaveBeenCalledOnceWith([10]);
+    expect(backend.get.currentUserReactions).toHaveBeenCalledWith(ReactionEntityTypes.RACK, REACTION_KIND_COOL, true);
+    expect(backend.get.publicRacksByIds).toHaveBeenCalledOnceWith([10], true);
     expect(backend.GET.publicModulesByIds).not.toHaveBeenCalled();
     service.ngOnDestroy();
   });
@@ -186,10 +187,93 @@ describe('UserCoolCollectionDataService', () => {
     expect(vm.total).toBe(1);
     expect(vm.groups.map(group => group.entityType)).toEqual(['patch']);
     expect(vm.groups[0].items.map(item => item.entityId)).toEqual([20]);
-    expect(backend.get.currentUserReactions).toHaveBeenCalledWith(ReactionEntityTypes.PATCH, REACTION_KIND_COOL);
-    expect(backend.GET.publicPatchesByIds).toHaveBeenCalledOnceWith([20]);
+    expect(backend.get.currentUserReactions).toHaveBeenCalledWith(ReactionEntityTypes.PATCH, REACTION_KIND_COOL, true);
+    expect(backend.GET.publicPatchesByIds).toHaveBeenCalledOnceWith([20], true);
     expect(backend.GET.publicModulesByIds).not.toHaveBeenCalled();
     expect(backend.get.publicRacksByIds).not.toHaveBeenCalled();
+    service.ngOnDestroy();
+  });
+
+  it('retries a transient Cool collection load failure and recovers without a toast', async () => {
+    const backend = backendMock({
+      reactions: [reaction(ReactionEntityTypes.MODULE, 1, '2026-06-19T08:00:00.000Z')],
+      modules: [moduleOne]
+    });
+
+    const snackBar = snackBarMock();
+    (backend.get.currentUserReactions as jasmine.Spy).and.returnValues(
+      throwError(() => new Error('transient')),
+      of([reaction(ReactionEntityTypes.MODULE, 1, '2026-06-19T08:00:00.000Z')])
+    );
+    const service = new UserCoolCollectionDataService(backend, snackBar, true);
+
+    service.load$.next('module');
+    const vm = await firstValueFrom(service.vm$);
+
+    expect(vm.total).toBe(1);
+    expect(vm.groups[0].items.map(item => item.entityId)).toEqual([1]);
+    expect(backend.get.currentUserReactions).toHaveBeenCalledTimes(2);
+    expect(backend.GET.publicModulesByIds).toHaveBeenCalledOnceWith([1], true);
+    expect(snackBar.open).not.toHaveBeenCalled();
+    service.ngOnDestroy();
+  });
+
+  it('busts the matching public entity cache before retrying a failed entity load', async () => {
+    const backend = backendMock({
+      reactions: [reaction(ReactionEntityTypes.MODULE, 1, '2026-06-19T08:00:00.000Z')]
+    });
+    const bustedKeys: Array<Parameters<SupabaseService['cacheResetter$']['next']>[0]> = [];
+    backend.cacheResetter$.subscribe(keys => bustedKeys.push(keys));
+    (backend.GET.publicModulesByIds as jasmine.Spy).and.returnValues(
+      throwError(() => new Error('cached module failure')),
+      of([moduleOne])
+    );
+    const service = new UserCoolCollectionDataService(backend, snackBarMock(), true);
+
+    service.load$.next('module');
+    const vm = await firstValueFrom(service.vm$);
+
+    expect(vm.groups[0].items.map(item => item.entityId)).toEqual([1]);
+    expect(backend.GET.publicModulesByIds).toHaveBeenCalledTimes(2);
+    expect(bustedKeys).toEqual([['modules']]);
+    service.ngOnDestroy();
+  });
+
+  it('preserves the prior Cool VM after exhausted errors and recovers on a later load', async () => {
+    const backend = backendMock({
+      reactions: [reaction(ReactionEntityTypes.MODULE, 1, '2026-06-19T08:00:00.000Z')],
+      modules: [moduleOne]
+    });
+    const snackBar = snackBarMock();
+    spyOn(console, 'error');
+    const service = new UserCoolCollectionDataService(backend, snackBar, true);
+
+    service.load$.next('module');
+    let vm = await firstValueFrom(service.vm$);
+    expect(vm.total).toBe(1);
+    expect(vm.groups[0].items.map(item => item.entityId)).toEqual([1]);
+
+    (backend.get.currentUserReactions as jasmine.Spy).and.returnValues(
+      throwError(() => new Error('failed once')),
+      throwError(() => new Error('failed twice')),
+      of([reaction(ReactionEntityTypes.MODULE, 2, '2026-06-19T09:00:00.000Z')])
+    );
+    (backend.GET.publicModulesByIds as jasmine.Spy).and.returnValue(of([moduleTwo]));
+
+    service.load$.next('module');
+    vm = await firstValueFrom(service.vm$);
+
+    expect(vm.loading).toBeFalse();
+    expect(vm.total).toBe(1);
+    expect(vm.groups[0].items.map(item => item.entityId)).toEqual([1]);
+    expect(snackBar.open).toHaveBeenCalled();
+
+    service.load$.next('module');
+    vm = await firstValueFrom(service.vm$);
+
+    expect(vm.total).toBe(1);
+    expect(vm.groups[0].items.map(item => item.entityId)).toEqual([2]);
+    expect(backend.get.currentUserReactions).toHaveBeenCalledTimes(4);
     service.ngOnDestroy();
   });
 

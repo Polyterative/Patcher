@@ -1,5 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
+import {
+  Component,
+  Input,
+  NO_ERRORS_SCHEMA,
+} from '@angular/core';
 import {
   ComponentFixture,
   TestBed,
@@ -21,6 +25,16 @@ import { UserManagementService } from 'src/app/features/backbone/login/user-mana
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area-data.service';
 import { RackBrowserDetailViewComponent } from './rack-browser-detail-view.component';
+
+@Component({
+  selector: 'app-rack-composite',
+  template: '<app-cool-button *ngIf="showCoolAction" class="rack-action-row__cool"></app-cool-button>',
+  standalone: false,
+})
+class RackCompositeStubComponent {
+  @Input() data: unknown;
+  @Input() showCoolAction = false;
+}
 
 describe('RackBrowserDetailViewComponent', () => {
   let component: RackBrowserDetailViewComponent;
@@ -269,7 +283,7 @@ describe('RackBrowserDetailViewComponent', () => {
       reactionBackend = makeReactionBackendSpy();
 
       await TestBed.configureTestingModule({
-        declarations: [RackBrowserDetailViewComponent],
+        declarations: [RackBrowserDetailViewComponent, RackCompositeStubComponent],
         imports: [
           CommonModule,
           NoopAnimationsModule,
@@ -332,14 +346,14 @@ describe('RackBrowserDetailViewComponent', () => {
       expect(reactionBackend.delete.reaction).not.toHaveBeenCalled();
     });
 
-    it('renders Cool as a floating rack detail action instead of inside the primary rack card', () => {
+    it('renders Cool inside the primary rack card action row instead of as a floating action', () => {
       isCurrentRackPropertyOfCurrentUser$.next(false);
       fixture.detectChanges();
 
       const leftComposite = fixture.nativeElement.querySelector('.rackBrowserDetailView__summaryColumn--left app-rack-composite');
       expect(leftComposite).not.toBeNull();
-      expect(fixture.nativeElement.querySelector('.rackBrowserDetailView__summaryColumn--left app-rack-composite app-cool-button')).toBeNull();
-      expect(fixture.nativeElement.querySelector('.rack-detail-floating-actions .rack-detail-cool-floating-action')).not.toBeNull();
+      expect(fixture.nativeElement.querySelector('.rackBrowserDetailView__summaryColumn--left app-rack-composite app-cool-button.rack-action-row__cool')).not.toBeNull();
+      expect(fixture.nativeElement.querySelector('.rack-detail-floating-actions .rack-detail-cool-floating-action')).toBeNull();
     });
   });
 

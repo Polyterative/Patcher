@@ -151,6 +151,11 @@ $bgGradientBG: rgb(223, 223, 223);
   background: linear-gradient(135deg, color.adjust(rgb(220, 160, 86), $alpha: -$bgTransarency) 0%, rgba(255, 255, 255, 0) 100%);
 }
 
+.marketplaceBG {
+  background: $bgGradientBG;
+  background: linear-gradient(135deg, color.adjust(rgb(124, 184, 88), $alpha: -$bgTransarency) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
 .app-shell.app-shell--wide :where(
   lib-hero-content-card.modulesBG,
   lib-hero-content-card.racksBG,
@@ -160,7 +165,8 @@ $bgGradientBG: rgb(223, 223, 223);
   lib-hero-content-card.manualsBG,
   lib-hero-content-card.commentsBG,
   lib-hero-content-card.changelogBG,
-  lib-hero-content-card.manufacturersBG
+  lib-hero-content-card.manufacturersBG,
+  lib-hero-content-card.marketplaceBG
 ) {
   background: transparent;
   background-color: transparent;
@@ -175,7 +181,8 @@ $bgGradientBG: rgb(223, 223, 223);
   lib-hero-content-card.manualsBG,
   lib-hero-content-card.commentsBG,
   lib-hero-content-card.changelogBG,
-  lib-hero-content-card.manufacturersBG
+  lib-hero-content-card.manufacturersBG,
+  lib-hero-content-card.marketplaceBG
 ) .content {
   background:
     linear-gradient(180deg, rgba(0, 0, 0, 0.035) 0%, rgba(0, 0, 0, 0.055) 100%),
@@ -192,7 +199,8 @@ $bgGradientBG: rgb(223, 223, 223);
   lib-hero-content-card.hero-content-card--detail-heading.manualsBG,
   lib-hero-content-card.hero-content-card--detail-heading.commentsBG,
   lib-hero-content-card.hero-content-card--detail-heading.changelogBG,
-  lib-hero-content-card.hero-content-card--detail-heading.manufacturersBG
+  lib-hero-content-card.hero-content-card--detail-heading.manufacturersBG,
+  lib-hero-content-card.hero-content-card--detail-heading.marketplaceBG
 ) .content {
   background: transparent;
   background-color: transparent;

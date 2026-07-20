@@ -12,7 +12,6 @@ import {
   Subject
 } from 'rxjs';
 import {
-  catchError,
   debounceTime,
   distinctUntilChanged,
   map,
@@ -24,6 +23,7 @@ import { RackMinimal } from 'src/app/models/rack';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import { recoverBrowserListRequest } from '../../browser-data-recovery';
 
 
 export type RackList = RackMinimal[] | null;
@@ -177,43 +177,27 @@ export class RackBrowserDataService extends SubManager {
           const previousData = this.racksList$.value ?? [];
           const previousCount = this.serversideAdditionalData.itemsCount$.value ?? previousData.length;
 
-          return this.backend.GET.racksMinimal(
-            skip,
-            (skip + take) - 1,
-            filter,
-            sortCol || null,
-            sortDir,
-            skip === 0,
-            'stable-rack-pagination-v2'
-          )
-            .pipe(
-              map((response: any) => {
-                if (response?.error) {
-                  return {kind: 'error' as const, error: response.error, count: previousCount, data: previousData};
-                }
-                return {
-                  kind: 'success' as const,
-                  count: response?.count ?? previousCount,
-                  data: Array.isArray(response?.data) ? response.data : []
-                };
-              }),
-              catchError(error => of({
-                kind: 'error' as const,
-                error,
-                count: previousCount,
-                data: previousData
-              }))
-            );
-        }),
-        map(result => {
-          if (result.kind === 'error') {
-            console.error('[rack-browser] Failed to load racks list', (result as any).error);
-          }
-          return {count: result.count, data: result.data};
+          return recoverBrowserListRequest(
+            () => this.backend.GET.racksMinimal(
+              skip,
+              (skip + take) - 1,
+              filter,
+              sortCol || null,
+              sortDir,
+              skip === 0,
+              'stable-rack-pagination-v2'
+            ),
+            {
+              data: skip === 0 ? previousData : [],
+              count: previousCount
+            },
+            '[rack-browser] Failed to load racks list',
+            {beforeRetry: () => this.backend.cacheResetter$.next(['racksMinimal'])}
+          );
         }),
         this.takeUntilDestroyed()
       )
-      .subscribe((x: any) => {
+      .subscribe(x => {
         this.serversideAdditionalData.itemsCount$.next(x.count);
         const skip = this.serversideTableRequestData.skip$.value;
         if (skip === 0) {

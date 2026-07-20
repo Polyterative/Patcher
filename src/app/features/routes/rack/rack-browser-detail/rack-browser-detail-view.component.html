@@ -18,7 +18,10 @@
           <div class="col gap1">
              <div class="rackBrowserDetailView__summaryLayout">
                <div class="col gap1 rackBrowserDetailView__summaryColumn rackBrowserDetailView__summaryColumn--left">
-                 <app-rack-composite [data]="(bag.data)"></app-rack-composite>
+                 <app-rack-composite
+                   [data]="(bag.data)"
+                   [showCoolAction]="coolReactionsEnabled && !bag.isCurrentRackPropertyOfCurrentUser"
+                 ></app-rack-composite>
                </div>
               <div class="col gap1 rackBrowserDetailView__summaryColumn rackBrowserDetailView__summaryColumn--right">
                 <div class="rackBrowserDetailView__summaryInsights">
@@ -71,17 +74,6 @@
         </app-advice-tooltip>
       }
     </lib-hero-content-card>
-    @if (bag.data && coolReactionsEnabled && !bag.isCurrentRackPropertyOfCurrentUser) {
-      <div class="rack-detail-floating-actions">
-        <app-cool-button
-          class="rack-detail-cool-floating-action"
-          [entityType]="ReactionEntityTypes.RACK"
-          [entityId]="bag.data.id"
-          [eligible]="bag.data.public === true"
-          countDisplayMode="count"
-        ></app-cool-button>
-      </div>
-    }
     @if (dataService.isCurrentRackPropertyOfCurrentUser$|async) {
       @if ((dataService.isCurrentRackEditable$|async)) {
         <app-module-browser-root

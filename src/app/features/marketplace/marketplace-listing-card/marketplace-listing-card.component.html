@@ -1,0 +1,51 @@
+<a
+  class="marketplace-card"
+  [routerLink]="listing.detailUrl"
+  [attr.aria-label]="'Open listing for ' + listing.title + ' by ' + listing.manufacturerName"
+  data-testid="marketplace-card"
+>
+  <div class="marketplace-card__media">
+    @if (listing.media[0]; as media) {
+      <img [src]="media.url" [alt]="media.alt" loading="lazy">
+    } @else if (listing.module; as module) {
+      @if (module.panels.length) {
+        <app-module-part-image
+          class="marketplace-card__module-image"
+          data-testid="marketplace-card-module-image"
+          [data]="module"
+          [fixedHeight]="true"
+          [disableNavigation]="true"
+          [tooltipDisabled]="true"
+        ></app-module-part-image>
+      } @else {
+        <div class="marketplace-card__placeholder" aria-hidden="true">
+          <span>{{ listing.manufacturerName.slice(0, 2).toUpperCase() }}</span>
+        </div>
+      }
+    } @else {
+      <div class="marketplace-card__placeholder" aria-hidden="true">
+        <span>{{ listing.manufacturerName.slice(0, 2).toUpperCase() }}</span>
+      </div>
+    }
+  </div>
+
+  <div class="marketplace-card__body">
+    <div class="marketplace-card__maker">{{ listing.manufacturerName }}</div>
+    <h2>{{ listing.title }}</h2>
+    <div class="marketplace-card__facts">
+      <span class="marketplace-card__price">{{ listing.priceLabel }}</span>
+      <span>{{ listing.conditionLabel }}</span>
+      <span>{{ listing.originSummary }}</span>
+    </div>
+    <div class="marketplace-card__meta">
+      <span>{{ listing.sellerLabel }}</span>
+      <span>{{ listing.ageLabel }}</span>
+    </div>
+    <div class="marketplace-card__shipping">
+      <span>{{ listing.shippingSummary }}</span>
+      @if (listing.openToOffers) {
+        <span>Offers open</span>
+      }
+    </div>
+  </div>
+</a>

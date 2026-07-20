@@ -5,12 +5,16 @@ import {
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   BehaviorSubject,
+  of,
   ReplaySubject,
   Subject,
 } from 'rxjs';
 import {
+  catchError,
   filter,
+  map,
   switchMap,
+  takeUntil,
   tap,
   withLatestFrom,
 } from 'rxjs/operators';
@@ -19,8 +23,13 @@ import { Rack } from 'src/app/models/rack';
 import { PublicProfile } from 'src/app/models/user';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { PublicUserContributorStats } from 'src/app/features/backend/supabase-queries';
+import {
+  buildMarketplaceCardViewModel,
+  MarketplaceListingCardViewModel
+} from 'src/app/features/marketplace/marketplace-view-models';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import { environment } from 'src/environments/environment';
 import { PublicProfileRouteState } from './public-profile-data.models';
 import {
   mapProfile,
@@ -31,6 +40,8 @@ export type { PublicProfileRouteState } from './public-profile-data.models';
 
 @Injectable()
 export class PublicProfileDataService extends SubManager {
+  readonly marketplaceEnabled = environment.features.marketplaceEnabled;
+
   readonly loadProfile$ = new ReplaySubject<string>(1);
 
   readonly routeState$ = new BehaviorSubject<PublicProfileRouteState>('loading');
@@ -39,6 +50,9 @@ export class PublicProfileDataService extends SubManager {
   readonly patchesData$ = new BehaviorSubject<Patch[] | undefined>(undefined);
   readonly rackData$ = new BehaviorSubject<Rack[] | undefined>(undefined);
   readonly contributorStats$ = new BehaviorSubject<PublicUserContributorStats | undefined>(undefined);
+  readonly marketplaceListings$ = new BehaviorSubject<MarketplaceListingCardViewModel[] | undefined>(undefined);
+  readonly marketplaceListingsLoading$ = new BehaviorSubject<boolean>(false);
+  readonly marketplaceListingsError$ = new BehaviorSubject<string | null>(null);
 
   readonly patchesCount$ = new BehaviorSubject<number>(0);
   readonly racksCount$ = new BehaviorSubject<number>(0);
@@ -56,8 +70,12 @@ export class PublicProfileDataService extends SubManager {
   readonly updatePatchesData$ = new Subject<void>();
   readonly updateRacksData$ = new Subject<void>();
   readonly updateContributorStats$ = new Subject<void>();
+  readonly updateMarketplaceListings$ = new Subject<void>();
+  readonly retryMarketplaceListings$ = new Subject<void>();
   readonly loadMorePatches$ = new Subject<void>();
   readonly loadMoreRacks$ = new Subject<void>();
+
+  private readonly cancelMarketplaceListings$ = new Subject<void>();
 
   constructor(
     private readonly backend: SupabaseService,
@@ -70,17 +88,20 @@ export class PublicProfileDataService extends SubManager {
     this.initializePatchLoadHandler();
     this.initializeRackLoadHandler();
     this.initializeContributorLoadHandler();
+    this.initializeMarketplaceListingsLoadHandler();
   }
 
   private initializeProfileLoadHandler(): void {
     this.loadProfile$
       .pipe(
         tap(() => {
+          this.cancelMarketplaceListings$.next();
           this.routeState$.next('loading');
           this.profile$.next(null);
           this.patchesData$.next(undefined);
           this.rackData$.next(undefined);
           this.contributorStats$.next(undefined);
+          this.resetMarketplaceListings();
           this.patchesCount$.next(0);
           this.racksCount$.next(0);
           this.patchesPagination.skip$.next(0);
@@ -118,6 +139,9 @@ export class PublicProfileDataService extends SubManager {
           this.updatePatchesData$.next();
           this.updateRacksData$.next();
           this.updateContributorStats$.next();
+          if (this.marketplaceEnabled) {
+            this.updateMarketplaceListings$.next();
+          }
         },
         error: (error) => {
           console.error('PublicProfileDataService profile load failed:', error);
@@ -146,6 +170,43 @@ export class PublicProfileDataService extends SubManager {
           SharedConstants.errorCustom(this.snackBar, 'Public contributor stats could not be loaded.');
           this.contributorStats$.next({approvedPublicModules: 0});
         },
+      });
+  }
+
+  private initializeMarketplaceListingsLoadHandler(): void {
+    this.retryMarketplaceListings$
+      .pipe(this.takeUntilDestroyed())
+      .subscribe(() => this.updateMarketplaceListings$.next());
+
+    this.updateMarketplaceListings$
+      .pipe(
+        withLatestFrom(this.profile$, this.routeState$),
+        filter(([, profile, state]) => this.marketplaceEnabled && state === 'ready' && !!profile && profile.public),
+        tap(() => {
+          this.marketplaceListingsLoading$.next(true);
+          this.marketplaceListingsError$.next(null);
+          this.marketplaceListings$.next(undefined);
+        }),
+        switchMap(([, profile]) => this.backend.GET.activeMarketplaceListingsBySellerProfileId(profile!.id).pipe(
+          takeUntil(this.cancelMarketplaceListings$),
+          map(listings => ({
+            error: null,
+            listings: listings.map(listing => buildMarketplaceCardViewModel(listing)),
+          })),
+          catchError(error => {
+            console.error('PublicProfileDataService marketplace listings load failed:', error);
+            return of({
+              error: 'Marketplace listings could not be loaded.',
+              listings: undefined,
+            });
+          })
+        )),
+        this.takeUntilDestroyed(),
+      )
+      .subscribe((result) => {
+        this.marketplaceListingsError$.next(result.error);
+        this.marketplaceListings$.next(result.listings);
+        this.marketplaceListingsLoading$.next(false);
       });
   }
 
@@ -244,6 +305,13 @@ export class PublicProfileDataService extends SubManager {
   private resetPublicCollections(): void {
     this.patchesData$.next([]);
     this.rackData$.next([]);
+    this.resetMarketplaceListings();
+  }
+
+  private resetMarketplaceListings(): void {
+    this.marketplaceListings$.next(undefined);
+    this.marketplaceListingsLoading$.next(false);
+    this.marketplaceListingsError$.next(null);
   }
 
 }

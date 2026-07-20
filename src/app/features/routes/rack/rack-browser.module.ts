@@ -71,6 +71,11 @@ import { AdviceTooltipComponent } from "src/app/shared-interproject/components/@
       // Uranus shell (browser etc.) must come BEFORE the :publicId catch-all
       // so `/racks/browser` matches the listing instead of being treated as
       // a token.
+      {
+        path: '',
+        pathMatch: 'full',
+        redirectTo: 'browser'
+      },
       generateUranusRoutes('', [
         {
           path: 'browser',

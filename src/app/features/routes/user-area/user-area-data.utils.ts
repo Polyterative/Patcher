@@ -25,6 +25,42 @@ export function pagedSlice$<T>(
   );
 }
 
+export function hasMoreFromTake$(
+  count$: Observable<number>,
+  take$: Observable<number>
+): Observable<boolean> {
+  return combineLatest([count$, take$]).pipe(
+    map(([count, take]) => count > take)
+  );
+}
+
+export function remainingFromTake$(
+  count$: Observable<number>,
+  take$: Observable<number>
+): Observable<number> {
+  return combineLatest([count$, take$]).pipe(
+    map(([count, take]) => Math.max(0, count - take))
+  );
+}
+
+export function hasMoreLoaded$<T>(
+  count$: Observable<number>,
+  data$: Observable<T[] | undefined>
+): Observable<boolean> {
+  return combineLatest([count$, data$]).pipe(
+    map(([count, data]) => count > (data?.length ?? 0))
+  );
+}
+
+export function remainingLoaded$<T>(
+  count$: Observable<number>,
+  data$: Observable<T[] | undefined>
+): Observable<number> {
+  return combineLatest([count$, data$]).pipe(
+    map(([count, data]) => Math.max(0, count - (data?.length ?? 0)))
+  );
+}
+
 export function buildDiscoverySnapshot(
   modules: MinimalModule[] | undefined,
   racks: Rack[] | undefined,
@@ -107,6 +143,32 @@ export function filterRacks(
   }
 
   return racks.filter((rack) => matchesSearchQuery(query, rack.name, rack.description));
+}
+
+export function filterPatches(
+  patches: Patch[] | undefined,
+  tag: string | null,
+  query: string
+): Patch[] | undefined {
+  if (!patches) {
+    return undefined;
+  }
+
+  return patches.filter((patch) => {
+    const matchesTag = !tag || (patch.tags ?? []).includes(tag);
+    if (!matchesTag) {
+      return false;
+    }
+
+    const searchFields = [patch.name, patch.description, ...(patch.tags ?? [])];
+    return matchesSearchQuery(query, ...searchFields);
+  });
+}
+
+export function collectPatchTags(patches: Patch[] | undefined): string[] {
+  return patches
+    ? Array.from(new Set(patches.flatMap(patch => patch.tags ?? []))).sort()
+    : [];
 }
 
 export function filterManuals(

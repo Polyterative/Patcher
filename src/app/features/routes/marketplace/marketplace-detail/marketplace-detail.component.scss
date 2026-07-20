@@ -1,0 +1,222 @@
+@use "src/app/style/responsive-breakpoints" as breakpoints;
+
+:host {
+  display: block;
+}
+
+.marketplace-detail {
+  padding: 1rem;
+}
+
+.marketplace-detail__actions {
+  justify-content: space-between;
+}
+
+.marketplace-detail__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(20rem, 2fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.marketplace-detail__gallery,
+.marketplace-detail__facts {
+  border: 0.0625rem solid var(--mat-sys-outline-variant);
+  border-radius: 0.75rem;
+  background: var(--mat-sys-surface-container-low);
+}
+
+.marketplace-detail__gallery {
+  padding: 1rem;
+}
+
+.marketplace-detail__gallery:focus-visible {
+  outline: 0.125rem solid var(--mat-sys-primary);
+  outline-offset: 0.25rem;
+}
+
+.marketplace-detail__hero-media {
+  aspect-ratio: 4 / 3;
+  display: grid;
+  place-items: center;
+  border: 0.0625rem solid var(--mat-sys-outline-variant);
+  border-radius: 0.5rem;
+  background: var(--mat-sys-surface-container-high);
+  overflow: hidden;
+
+  > img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
+.marketplace-detail__placeholder {
+  color: var(--mat-sys-outline);
+  font-size: 4rem;
+  font-weight: 800;
+  letter-spacing: -0.08em;
+}
+
+.marketplace-detail__module-image {
+  display: block;
+  max-width: 100%;
+}
+
+.marketplace-detail__thumbs {
+  overflow-x: auto;
+}
+
+.marketplace-detail__thumb {
+  flex: 0 0 5rem;
+  aspect-ratio: 4 / 3;
+  border: 0.0625rem solid var(--mat-sys-outline-variant);
+  border-radius: 0.5rem;
+  background: var(--mat-sys-surface-container);
+  cursor: pointer;
+  padding: 0;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.marketplace-detail__thumb:hover,
+.marketplace-detail__thumb:focus-visible,
+.marketplace-detail__thumb--active {
+  border-color: var(--mat-sys-primary);
+  outline: none;
+}
+
+.marketplace-detail__facts {
+  padding: 1rem;
+}
+
+.marketplace-detail__price-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 0.0625rem solid var(--mat-sys-outline-variant);
+
+  strong {
+    color: var(--mat-sys-on-surface);
+    font-size: 1.5rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  span {
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+.marketplace-detail__fact-list {
+  display: grid;
+  margin: 0;
+  border-top: 0.0625rem solid var(--mat-sys-outline-variant);
+
+  div {
+    display: grid;
+    grid-template-columns: 8rem 1fr;
+    gap: 1rem;
+    padding: 0.5rem 0;
+    border-bottom: 0.0625rem solid var(--mat-sys-outline-variant);
+  }
+
+  dt {
+    color: var(--mat-sys-on-surface-variant);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  dd {
+    margin: 0;
+  }
+}
+
+.marketplace-detail__section {
+  padding-top: 1rem;
+  border-top: 0.0625rem solid var(--mat-sys-outline-variant);
+
+  h2,
+  p {
+    margin: 0;
+  }
+
+  p {
+    color: var(--mat-sys-on-surface-variant);
+    line-height: 1.45;
+  }
+}
+
+.marketplace-detail__label {
+  color: var(--mat-sys-on-surface);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.marketplace-detail__cta {
+  padding: 1rem;
+  border: 0.0625rem solid var(--mat-sys-outline-variant);
+  border-radius: 0.75rem;
+  background: var(--mat-sys-surface-container);
+
+  a,
+  button {
+    justify-self: start;
+  }
+
+  p {
+    margin: 0;
+    color: var(--mat-sys-on-surface-variant);
+    font-size: 0.85rem;
+  }
+}
+
+.marketplace-detail__state {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 12rem;
+  padding: 1rem;
+  border: 0.0625rem solid var(--mat-sys-outline-variant);
+  border-radius: 0.75rem;
+  background: var(--mat-sys-surface-container-low);
+}
+
+.marketplace-detail__state--error {
+  color: var(--mat-sys-error);
+}
+
+@media (max-width: 60rem) {
+  .marketplace-detail {
+    padding: 0.5rem 0.5rem calc(7rem + env(safe-area-inset-bottom));
+  }
+
+  .marketplace-detail__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .marketplace-detail__cta {
+    position: fixed;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    left: 0.5rem;
+    z-index: 20;
+    padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: breakpoints.$phone-only-max-width) {
+  .marketplace-detail__fact-list div {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+}

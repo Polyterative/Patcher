@@ -30,6 +30,7 @@ import { SubManager } from 'src/app/shared-interproject/directives/subscription-
 import { UrlCreatorService } from 'src/app/features/backend/url-creator.service';
 import { CurrentUserContributorStats } from 'src/app/features/backend/supabase-queries';
 import { COOL_REACTIONS_ENABLED } from 'src/app/components/shared-atoms/cool-button/cool-button-feature.token';
+import { environment } from 'src/environments/environment';
 
 
 @Component({
@@ -62,6 +63,8 @@ export class UserAreaRootComponent extends SubManager implements OnInit, OnDestr
   };
   
   @Input() ignoreSeo = false;
+  
+  readonly marketplaceEnabled = environment.features.marketplaceEnabled;
   
   miscStats$ = of([]);
   contributorStats$ = of<any[] | null>(null);

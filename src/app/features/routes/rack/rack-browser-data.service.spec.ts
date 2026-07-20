@@ -4,8 +4,10 @@ import {
 } from '@angular/core/testing';
 import {
   of,
-  Subject
+  Subject,
+  throwError
 } from 'rxjs';
+import { RackMinimal } from 'src/app/models/rack';
 import { RackBrowserDataService } from './rack-browser-data.service';
 
 
@@ -14,10 +16,25 @@ describe('RackBrowserDataService', () => {
     const backend = {
       GET: {
         racksMinimal: jasmine.createSpy('GET.racksMinimal').and.returnValue(of({data: [], count: 0}))
-      }
+      },
+      cacheResetter$: {next: jasmine.createSpy('cacheResetter$.next')}
     };
     const service = new RackBrowserDataService(backend as any);
     return {service, backend};
+  }
+
+  function rackFactory(id: number, name = `Rack ${ id }`): RackMinimal {
+    return {
+      id,
+      name,
+      hp: 104,
+      rows: 2,
+      author: {id: 'user-1', username: 'patcher'},
+      locked: false,
+      public: true,
+      created: '2026-01-01T00:00:00.000Z',
+      updated: '2026-01-01T00:00:00.000Z'
+    };
   }
 
   it('initializes sort$ to updated/desc', () => {
@@ -106,19 +123,61 @@ describe('RackBrowserDataService', () => {
   it('updates racksList$ and itemsCount$ on successful backend response', () => {
     const {service, backend} = build();
     backend.GET.racksMinimal.and.returnValue(
-      of({data: [{id: 1}, {id: 2}], count: 42})
+      of({data: [rackFactory(1), rackFactory(2)], count: 42})
     );
 
     service.updateRacksList$.next();
 
-    expect(service.racksList$.value).toEqual([{id: 1}, {id: 2}] as any);
+    expect(service.racksList$.value).toEqual([rackFactory(1), rackFactory(2)]);
     expect(service.serversideAdditionalData.itemsCount$.value).toBe(42);
+  });
+
+  it('retries a thrown backend failure and renders recovered racks', () => {
+    const {service, backend} = build();
+    backend.GET.racksMinimal.and.returnValues(
+      throwError(() => new Error('network')),
+      of({data: [rackFactory(22, 'Recovered')], count: 1})
+    );
+
+    service.updateRacksList$.next();
+
+    expect(backend.GET.racksMinimal.calls.count()).toBe(2);
+    expect(backend.cacheResetter$.next.calls.allArgs()).toEqual([[['racksMinimal']]]);
+    expect(service.racksList$.value?.map(rack => rack.name)).toEqual(['Recovered']);
+    expect(service.serversideAdditionalData.itemsCount$.value).toBe(1);
+  });
+
+  it('retries an emitted backend response error and renders recovered racks', () => {
+    const {service, backend} = build();
+    backend.GET.racksMinimal.and.returnValues(
+      of({error: 'response error', data: null, count: 0}),
+      of({data: [rackFactory(23, 'Response Recovered')], count: 1})
+    );
+
+    service.updateRacksList$.next();
+
+    expect(backend.GET.racksMinimal.calls.count()).toBe(2);
+    expect(backend.cacheResetter$.next.calls.allArgs()).toEqual([[['racksMinimal']]]);
+    expect(service.racksList$.value?.map(rack => rack.name)).toEqual(['Response Recovered']);
+    expect(service.serversideAdditionalData.itemsCount$.value).toBe(1);
+  });
+
+  it('does not retry a successful empty racks response', () => {
+    const {service, backend} = build();
+
+    service.updateRacksList$.next();
+
+    expect(backend.GET.racksMinimal.calls.count()).toBe(1);
+    expect(backend.cacheResetter$.next).not.toHaveBeenCalled();
+    expect(service.racksList$.value).toEqual([]);
+    expect(service.serversideAdditionalData.itemsCount$.value).toBe(0);
   });
 
   it('falls back to previous data on backend error response', () => {
     const {service, backend} = build();
+    spyOn(console, 'error');
     backend.GET.racksMinimal.and.returnValue(
-      of({data: [{id: 99}], count: 1})
+      of({data: [rackFactory(99)], count: 1})
     );
     service.updateRacksList$.next();
 
@@ -127,8 +186,32 @@ describe('RackBrowserDataService', () => {
     );
     service.updateRacksList$.next();
 
-    expect(service.racksList$.value).toEqual([{id: 99}] as any);
+    expect(service.racksList$.value).toEqual([rackFactory(99)]);
     expect(service.serversideAdditionalData.itemsCount$.value).toBe(1);
+  });
+
+  it('keeps the update stream alive after retries are exhausted', () => {
+    const {service, backend} = build();
+    spyOn(console, 'error');
+    service.racksList$.next([rackFactory(11, 'Existing')]);
+    service.serversideAdditionalData.itemsCount$.next(7);
+    backend.GET.racksMinimal.and.returnValues(
+      throwError(() => new Error('network')),
+      throwError(() => new Error('still offline')),
+      of({data: [rackFactory(24, 'Later Recovered')], count: 1})
+    );
+
+    service.updateRacksList$.next();
+    expect(service.racksList$.value?.map(rack => rack.name)).toEqual(['Existing']);
+    expect(service.serversideAdditionalData.itemsCount$.value).toBe(7);
+
+    service.updateRacksList$.next();
+
+    expect(service.racksList$.value?.map(rack => rack.name)).toEqual(['Later Recovered']);
+    expect(service.serversideAdditionalData.itemsCount$.value).toBe(1);
+    expect(console.error).toHaveBeenCalledWith('[rack-browser] Failed to load racks list', jasmine.any(Error));
+    expect(console.error).toHaveBeenCalledTimes(1);
+    expect(backend.cacheResetter$.next.calls.allArgs()).toEqual([[['racksMinimal']]]);
   });
 
   it('canReset$ emits true when search is non-empty', fakeAsync(() => {
