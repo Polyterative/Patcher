@@ -72,6 +72,8 @@ describe('RecentActivityItem model shapes', () => {
       route: ['/modules', 'details', 123]
     };
     expect(Array.isArray(item.route)).toBeTrue();
-    expect((item.route as any[])[2]).toBe(123);
+    if (Array.isArray(item.route)) {
+      expect(item.route[2]).toBe(123);
+    }
   });
 });

@@ -1,6 +1,6 @@
 {
   "_comment": "Grandfathered explicit `any` counts. Do not add by hand — run `node scripts/checks/check-explicit-any.cjs --update-baseline` after intentional cleanup.",
-  "totalExplicitAny": 2750,
+  "totalExplicitAny": 2745,
   "files": {
     "api/sitemap.ts": 3,
     "e2e/auth-rack-context-menu.spec.ts": 6,
@@ -105,14 +105,9 @@
     "src/app/components/shared-atoms/comments/comments-root/comments-item-block/comments-item-block.component.spec.ts": 2,
     "src/app/components/shared-atoms/comments/comments-root/comments-root.component.spec.ts": 4,
     "src/app/components/shared-atoms/entity-author/entity-author.component.spec.ts": 2,
-    "src/app/components/shared-atoms/local-data-filter/local-data-filter.service.spec.ts": 1,
-    "src/app/components/shared-atoms/local-data-filter/local-data-filter/local-data-filter.component.spec.ts": 1,
-    "src/app/components/shared-atoms/recent-activity/recent-activity-model.spec.ts": 1,
     "src/app/components/shared-atoms/timestamps-relative/timestamps-relative.component.spec.ts": 4,
-    "src/app/features/backbone/footer/footer.component.spec.ts": 1,
     "src/app/features/backbone/home/application-statistics.service.spec.ts": 1,
     "src/app/features/backbone/home/application-statistics.utils.spec.ts": 8,
-    "src/app/features/backbone/home/components/home-curiosity-bridge/home-curiosity-bridge.component.spec.ts": 1,
     "src/app/features/backbone/home/components/home-discovery-section/home-discovery-section.component.spec.ts": 1,
     "src/app/features/backbone/home/home.component.spec.ts": 6,
     "src/app/features/backbone/legacy-link-gone/legacy-link-gone-page.component.spec.ts": 1,

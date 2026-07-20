@@ -1,11 +1,12 @@
 import { FooterComponent } from './footer.component';
+import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 
 describe('FooterComponent', () => {
   let comp: FooterComponent;
-  let mockAppState: any;
+  let mockAppState: jasmine.SpyObj<AppStateService>;
 
   beforeEach(() => {
-    mockAppState = {};
+    mockAppState = jasmine.createSpyObj<AppStateService>('AppStateService', ['ngOnDestroy']);
     comp = new FooterComponent(mockAppState);
   });
 

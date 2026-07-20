@@ -7,6 +7,10 @@ import { LocalDataFilterService } from './local-data-filter.service';
 
 describe('LocalDataFilterService', () => {
   let service: LocalDataFilterService;
+
+  function hasId(value: unknown): value is {id: string} {
+    return typeof value === 'object' && value !== null && 'id' in value;
+  }
   
   beforeEach(() => {
     service = new LocalDataFilterService();
@@ -59,14 +63,17 @@ describe('LocalDataFilterService', () => {
   }));
   
   it('orderEvent$ emits immediately when order control value changes', fakeAsync(() => {
-    const emitted: any[] = [];
+    const emitted: unknown[] = [];
     service.orderEvent$.subscribe(v => emitted.push(v));
     
     service.order.control.setValue({id: 'name', name: 'Name ↑'});
     tick();
     
     expect(emitted.length).toBe(1);
-    expect(emitted[0].id).toBe('name');
+    expect(hasId(emitted[0])).toBeTrue();
+    if (hasId(emitted[0])) {
+      expect(emitted[0].id).toBe('name');
+    }
   }));
   
   it('search has label and code defined', () => {
