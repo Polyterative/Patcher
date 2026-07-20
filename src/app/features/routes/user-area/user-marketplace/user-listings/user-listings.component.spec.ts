@@ -205,6 +205,22 @@ describe('UserListingsComponent', () => {
     }
     expect(host.querySelector('mat-checkbox[data-testid="user-listing-open-offers"]')).not.toBeNull();
     expect(host.querySelector('fieldset mat-checkbox')).not.toBeNull();
+
+    const openToOffersInput = host.querySelector<HTMLInputElement>(
+      'mat-checkbox[data-testid="user-listing-open-offers"] input[type="checkbox"]'
+    );
+    expect(openToOffersInput).not.toBeNull();
+    openToOffersInput?.click();
+    fixture.detectChanges();
+    expect(component.form.controls.openToOffers.value).toBeFalse();
+
+    const euShippingInput = host.querySelector<HTMLInputElement>(
+      'mat-checkbox[data-testid="user-listing-shipping-euShipping"] input[type="checkbox"]'
+    );
+    expect(euShippingInput).not.toBeNull();
+    euShippingInput?.click();
+    fixture.detectChanges();
+    expect(component.form.controls.shippingOptions.controls.euShipping.value).toBeTrue();
   });
 
   it('creates and publishes an inline listing from a For Sale module', () => {

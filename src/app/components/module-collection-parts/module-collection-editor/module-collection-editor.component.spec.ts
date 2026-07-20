@@ -3,6 +3,8 @@ import {
   ComponentFixture,
   TestBed
 } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ActivatedRoute } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -202,6 +204,15 @@ describe('ModuleCollectionEditorComponent', () => {
 
     expect(fixture.nativeElement.textContent).toContain('Create collection');
     expect(fixture.nativeElement.querySelector('.module-collection-editor__page-actions')).not.toBeNull();
+  });
+
+  it('updates visibility from the public collection toggle', () => {
+    fixture.detectChanges();
+
+    const toggle = fixture.debugElement.query(By.directive(MatSlideToggle));
+    toggle.triggerEventHandler('change', {checked: true});
+
+    expect(fixture.componentInstance.publicControl.value).toBeTrue();
   });
 
   it('auto-saves selected module additions for existing collections', () => {
