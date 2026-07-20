@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.5.1](https://github.com/Polyterative/Patcher/compare/v6.5.0...v6.5.1) (2026-07-20)
+
+
+### Bug Fixes
+
+* **ci:** align pnpm lockfile configuration ([f176ff2](https://github.com/Polyterative/Patcher/commit/f176ff24b8057a134b5fbad76c5befdb31bb0c88))
+* **ci:** repair codesee workflow ([4f787c8](https://github.com/Polyterative/Patcher/commit/4f787c8ab8257650941ea90bd341251950a87ef0))
+* **forms:** restore production control bindings ([313c38f](https://github.com/Polyterative/Patcher/commit/313c38f85961c73025e81232e62edad5d9bcac12))
+
 ## [6.5.0](https://github.com/Polyterative/Patcher/compare/v6.4.3...v6.5.0) (2026-07-20)
 
 
