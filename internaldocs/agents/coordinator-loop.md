@@ -226,6 +226,8 @@ Default priority in this outer loop:
       the assistant did not stop while safe work or independent questions
       remained.
 - [ ] Every commit corresponds to a meaningful verified chunk, not a mechanical loop stage.
+- [ ] Each chunk was committed in isolation as soon as it was validated — files staged per chunk, no mixed-theme commits, no finished work left uncommitted.
+- [ ] At end of cycle the working tree is clean except for pre-existing changes the loop did not author.
 - [ ] No push was made without explicit user approval.
 
 ## Output contract

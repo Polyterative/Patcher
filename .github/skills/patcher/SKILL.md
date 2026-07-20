@@ -92,7 +92,7 @@ worktree and local branch were removed; preserve anything dirty or not yet recon
 - Subscriptions: extend `SubManager`, use `takeUntil(this.destroy$)`, or `async` pipe in template.
 - Naming: observables/subjects suffix `$`, private `BehaviorSubject` prefix `_`.
 - New Supabase queries: explicit column lists (no `select('*')`), register table in `DatabaseStrings.ts` first, bust caches on writes.
-- Git: branch `develop` is primary, never run `release:*` from `develop`. Ask before committing unless the user requested commits or invoked `coordinator-loop` / "begin loop", which commits verified checkpoints by design. Never push unless explicitly requested. Never force-push (`--force`, `--force-with-lease`, or equivalent history-rewriting ref updates) unless the user explicitly requests a force push in that turn.
+- Git: branch `develop` is primary, never run `release:*` from `develop`. **Commit every completed, validated chunk immediately as its own isolated commit** (standing approval — do not ask): one chunk = one commit, stage only that chunk's files (never `git add -A` with unrelated changes present), never leave finished work uncommitted, leave pre-existing foreign changes untouched. Never push unless explicitly requested. Never force-push (`--force`, `--force-with-lease`, or equivalent history-rewriting ref updates) unless the user explicitly requests a force push in that turn.
 - **No `Co-authored-by` trailers** on commits in this repo.
 - **No Supabase RLS / migration changes** without explicit human approval.
 - Work on `develop` by default. Do not switch to `production`, release, or push unless explicitly asked; the user owns production rollout.
