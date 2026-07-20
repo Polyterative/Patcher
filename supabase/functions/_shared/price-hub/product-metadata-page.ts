@@ -1,4 +1,10 @@
 import type { NormalizedStoreListingSnapshot, SnapshotAvailability } from './woocommerce-store-api.ts';
+import {
+  formatPriceHubMinorUnitsAsDecimalString,
+  getPriceHubCurrencyFractionDigits,
+  normalizePriceHubCurrency,
+  parsePriceHubDecimalAmountToMinorUnits,
+} from './currency-minor-units.ts';
 
 interface ProductPageMetadata {
   priceAmount: string | null;
@@ -10,6 +16,35 @@ interface ProductPageMetadata {
   productId: string | null;
   sku: string | null;
   brand: string | null;
+}
+
+function normalizeLocalizedComparablePath(value: string | null): string {
+  if (!value) {
+    return '';
+  }
+
+  try {
+    const url = new URL(value);
+    const segments = url.pathname.split('/').filter(Boolean);
+    const localizedSegments = (segments[0] === 'en' || segments[0] === 'sv') ? segments.slice(1) : segments;
+    return `/${localizedSegments.join('/')}`.replace(/\/$/, '');
+  } catch {
+    const segments = value.trim().split('/').filter(Boolean);
+    const localizedSegments = (segments[0] === 'en' || segments[0] === 'sv') ? segments.slice(1) : segments;
+    return `/${localizedSegments.join('/')}`.replace(/\/$/, '');
+  }
+}
+
+function readComparableUrlSlug(value: string | null): string {
+  if (!value) {
+    return '';
+  }
+
+  try {
+    return new URL(value).pathname.split('/').filter(Boolean).at(-1) ?? '';
+  } catch {
+    return value.trim().split('/').filter(Boolean).at(-1) ?? '';
+  }
 }
 
 export type ProductMetadataAdapter = 'bigcommerce_metadata' | 'shopware_metadata' | 'custom';
@@ -24,57 +59,75 @@ export function normalizeProductMetadataPage(
   adapter: ProductMetadataAdapter,
   context: ProductMetadataContext = {},
 ): NormalizedStoreListingSnapshot {
-  const metadata = readProductPageMetadata(html);
+  const metadata = readProductPageMetadata(html, productUrl);
   const availabilityText = readAvailabilityText(html, context);
   const slug = slugFromUrl(metadata.productUrl ?? productUrl);
   const productName = normalizeProductName(metadata.productName, adapter);
   const brand = metadata.brand ?? readSkuBrand(metadata.sku);
   const panelVariant = readPanelVariant(`${productName ?? ''} ${slug ?? ''}`);
+  const currency = normalizePriceHubCurrency(metadata.priceCurrency);
+  const normalizedProductName = normalizeOptionalText(productName);
+  const normalizedProductUrl = normalizeOptionalText(metadata.productUrl) ?? detachProductMetadataString(productUrl);
+  const normalizedImageUrl = normalizeOptionalText(metadata.imageUrl);
+  const normalizedProductId = normalizeOptionalText(metadata.productId);
+  const normalizedSku = normalizeOptionalText(metadata.sku);
+  const normalizedBrand = normalizeOptionalText(brand);
+  const normalizedSlug = normalizeOptionalText(slug);
+  const normalizedMetadataAvailability = normalizeOptionalText(metadata.availability);
+  const normalizedAvailabilityText = normalizeOptionalText(availabilityText);
+  const normalizedPriceAmount = normalizeOptionalText(metadata.priceAmount);
 
   return {
-    priceAmountMinor: parseDecimalPriceMinor(metadata.priceAmount),
-    currency: normalizeCurrency(metadata.priceCurrency),
+    priceAmountMinor: parsePriceHubDecimalAmountToMinorUnits(metadata.priceAmount, currency),
+    currency,
     availability: normalizeAvailability(chooseAvailabilityText(metadata.availability, availabilityText)),
-    productName: normalizeOptionalText(productName),
-    productUrl: normalizeOptionalText(metadata.productUrl) ?? productUrl,
-    imageUrl: normalizeOptionalText(metadata.imageUrl),
+    productName: normalizedProductName,
+    productUrl: normalizedProductUrl,
+    imageUrl: normalizedImageUrl,
     rawMeta: {
       adapter,
-      sourceUrl: productUrl,
-      ...(metadata.productId ? { externalProductId: metadata.productId } : {}),
-      ...(metadata.sku ? { sku: metadata.sku } : {}),
-      ...(brand ? { brand } : {}),
-      slug,
+      sourceUrl: detachProductMetadataString(productUrl),
+      ...(normalizedProductId ? { externalProductId: normalizedProductId } : {}),
+      ...(normalizedSku ? { sku: normalizedSku } : {}),
+      ...(normalizedBrand ? { brand: normalizedBrand } : {}),
+      slug: normalizedSlug,
       ...(panelVariant ? { panelVariant } : {}),
-      ogAvailability: metadata.availability,
-      ...(availabilityText ? { pageAvailabilityText: availabilityText } : {}),
-      priceAmount: metadata.priceAmount,
+      ogAvailability: normalizedMetadataAvailability,
+      ...(normalizedAvailabilityText ? { pageAvailabilityText: normalizedAvailabilityText } : {}),
+      priceAmount: normalizedPriceAmount,
     },
   };
 }
 
-function readProductPageMetadata(html: string): ProductPageMetadata {
+export function detachProductMetadataString(value: string): string {
+  return value.length === 0 ? '' : value.split('').join('');
+}
+
+function readProductPageMetadata(html: string, productUrl: string): ProductPageMetadata {
   const meta = readMetaTags(html);
   const jsonLd = readProductJsonLdMetadata(html);
+  const abiCart = readAbiCartTextalkMetadata(html, productUrl);
+  const priceCurrency = meta.get('product:price:currency') ?? meta.get('og:price:currency') ?? meta.get('pricecurrency') ?? jsonLd.priceCurrency ?? null;
+  const resolvedPriceCurrency = priceCurrency ?? abiCart.priceCurrency ?? null;
 
   return {
-    priceAmount: meta.get('product:price:amount') ?? meta.get('og:price:amount') ?? meta.get('price') ?? jsonLd.priceAmount ?? readEmbeddedMinorUnitPriceAmount(html),
-    priceCurrency: meta.get('product:price:currency') ?? meta.get('og:price:currency') ?? meta.get('pricecurrency') ?? jsonLd.priceCurrency ?? null,
-    productName: meta.get('og:title') ?? jsonLd.productName ?? readTitle(html),
-    productUrl: normalizeProductUrl(meta.get('og:url') ?? meta.get('product:product_link')),
-    imageUrl: meta.get('og:image') ?? jsonLd.imageUrl ?? null,
-    availability: meta.get('product:availability') ?? meta.get('og:availability') ?? jsonLd.availability ?? null,
-    productId: meta.get('productid') ?? jsonLd.productId ?? null,
-    sku: meta.get('sku') ?? jsonLd.sku ?? readSku(html),
-    brand: meta.get('product:brand') ?? meta.get('brand') ?? meta.get('manufacturer') ?? jsonLd.brand ?? null,
+    priceAmount: meta.get('product:price:amount') ?? meta.get('og:price:amount') ?? meta.get('price') ?? jsonLd.priceAmount ?? abiCart.priceAmount ?? readEmbeddedMinorUnitPriceAmount(html, resolvedPriceCurrency),
+    priceCurrency: resolvedPriceCurrency,
+    productName: meta.get('og:title') ?? jsonLd.productName ?? abiCart.productName ?? readTitle(html),
+    productUrl: normalizeProductUrl(meta.get('og:url') ?? meta.get('product:product_link') ?? abiCart.productUrl),
+    imageUrl: meta.get('og:image') ?? jsonLd.imageUrl ?? abiCart.imageUrl ?? null,
+    availability: meta.get('product:availability') ?? meta.get('og:availability') ?? jsonLd.availability ?? abiCart.availability ?? null,
+    productId: meta.get('productid') ?? jsonLd.productId ?? abiCart.productId ?? null,
+    sku: meta.get('sku') ?? jsonLd.sku ?? abiCart.sku ?? readSku(html),
+    brand: meta.get('product:brand') ?? meta.get('brand') ?? meta.get('manufacturer') ?? jsonLd.brand ?? abiCart.brand ?? null,
   };
 }
 
-function readEmbeddedMinorUnitPriceAmount(html: string): string | null {
+function readEmbeddedMinorUnitPriceAmount(html: string, currency: string | null): string | null {
   const reducedPrice = readEmbeddedMinorUnitPrice(html, 'reducedPrice');
   const price = readEmbeddedMinorUnitPrice(html, 'price');
   const amountMinor = reducedPrice ?? price;
-  return amountMinor === null ? null : (amountMinor / 100).toFixed(2);
+  return formatPriceHubMinorUnitsAsDecimalString(amountMinor, currency);
 }
 
 function readEmbeddedMinorUnitPrice(html: string, fieldName: string): number | null {
@@ -93,9 +146,10 @@ function readProductJsonLdMetadata(html: string): ProductPageMetadata {
     const product = findProductJsonLd(jsonLd);
     if (product) {
       const offers = readJsonLdOffer(product);
+      const priceCurrency = readJsonLdOfferPriceCurrency(offers);
       return {
-        priceAmount: readStringNumberOrNull(offers?.price) ?? null,
-        priceCurrency: readStringOrNull(offers?.priceCurrency) ?? null,
+        priceAmount: readJsonLdOfferPriceAmount(offers, priceCurrency),
+        priceCurrency,
         productName: readStringOrNull(product.name),
         productUrl: readStringOrNull(product.url),
         imageUrl: readJsonLdImage(product.image),
@@ -107,6 +161,261 @@ function readProductJsonLdMetadata(html: string): ProductPageMetadata {
     }
   }
 
+  return emptyProductPageMetadata();
+}
+
+function readJsonLdOfferPriceAmount(offer: Record<string, unknown> | null, currency: string | null): string | null {
+  if (!offer) {
+    return null;
+  }
+
+  const directPrice = readStringNumberOrNull(offer.price);
+  if (isPositiveDecimalPriceAmount(directPrice, currency)) {
+    return directPrice;
+  }
+
+  const positiveSpecificationPrice = readJsonLdPositivePriceSpecificationAmount(offer.priceSpecification, currency);
+  return positiveSpecificationPrice
+    ?? directPrice
+    ?? readJsonLdPriceSpecificationValue(offer.priceSpecification, ['price', 'priceAmount'])
+    ?? null;
+}
+
+function readJsonLdOfferPriceCurrency(offer: Record<string, unknown> | null): string | null {
+  if (!offer) {
+    return null;
+  }
+
+  return readStringOrNull(offer.priceCurrency)
+    ?? readJsonLdPriceSpecificationValue(offer.priceSpecification, ['priceCurrency'])
+    ?? null;
+}
+
+function readJsonLdPriceSpecificationValue(value: unknown, fieldNames: readonly string[]): string | null {
+  const specifications = Array.isArray(value)
+    ? value.filter(isRecord)
+    : isRecord(value)
+      ? [value]
+      : [];
+
+  for (const specification of specifications) {
+    for (const fieldName of fieldNames) {
+      const fieldValue = readStringNumberOrNull(specification[fieldName]);
+      if (fieldValue) {
+        return fieldValue;
+      }
+    }
+  }
+
+  return null;
+}
+
+function readJsonLdPositivePriceSpecificationAmount(value: unknown, currency: string | null): string | null {
+  const specifications = Array.isArray(value)
+    ? value.filter(isRecord)
+    : isRecord(value)
+      ? [value]
+      : [];
+
+  for (const specification of specifications) {
+    for (const fieldName of ['price', 'priceAmount']) {
+      const fieldValue = readStringNumberOrNull(specification[fieldName]);
+      if (isPositiveDecimalPriceAmount(fieldValue, currency)) {
+        return fieldValue;
+      }
+    }
+  }
+
+  return null;
+}
+
+function isPositiveDecimalPriceAmount(value: string | null, currency: string | null): boolean {
+  const amountMinor = parsePriceHubDecimalAmountToMinorUnits(value, currency);
+  return amountMinor !== null && amountMinor > 0;
+}
+
+function readAbiCartTextalkMetadata(html: string, productUrl: string): ProductPageMetadata {
+  const state = readAbiCartTextalkState(html);
+  const article = state ? findAbiCartTextalkArticle(state, productUrl) : null;
+  const currency = normalizePriceHubCurrency(readStringOrNull(state?.currency));
+
+  if (!article) {
+    return emptyProductPageMetadata();
+  }
+
+  const priceCurrency = currency ?? readAbiCartTextalkFirstPriceCurrency(article);
+  return {
+    priceAmount: readAbiCartTextalkPriceAmount(article, priceCurrency),
+    priceCurrency,
+    productName: readLocalizedText(article.name),
+    productUrl: readAbiCartTextalkArticleUrl(article, productUrl),
+    imageUrl: readAbiCartTextalkImageUrl(article),
+    availability: article.isBuyable === true ? 'InStock' : article.isBuyable === false ? 'OutOfStock' : null,
+    productId: readStringNumberOrNull(article.uid) ?? null,
+    sku: readStringNumberOrNull(article.articleNumber) ?? null,
+    brand: null,
+  };
+}
+
+function readAbiCartTextalkState(html: string): Record<string, unknown> | null {
+  const scriptMatch = /window\.twsReduxStartState\s*=\s*(\{[\s\S]*?\})\s*;?\s*<\/script>/i.exec(html);
+  if (!scriptMatch) {
+    return null;
+  }
+
+  try {
+    const state = JSON.parse(scriptMatch[1]) as unknown;
+    return isRecord(state) ? state : null;
+  } catch {
+    return null;
+  }
+}
+
+function findAbiCartTextalkArticle(state: Record<string, unknown>, productUrl: string): Record<string, unknown> | null {
+  const normalizedProductUrl = normalizeComparableUrl(productUrl);
+  const normalizedProductPath = normalizeLocalizedComparablePath(productUrl);
+  const normalizedProductSlug = readComparableUrlSlug(productUrl);
+  const candidates: Record<string, unknown>[] = [];
+  const stack: unknown[] = [state];
+
+  while (stack.length > 0) {
+    const value = stack.pop();
+    if (Array.isArray(value)) {
+      stack.push(...value);
+      continue;
+    }
+
+    if (!isRecord(value)) {
+      continue;
+    }
+
+    if (isAbiCartTextalkArticleRecord(value)) {
+      candidates.push(value);
+    }
+
+    stack.push(...Object.values(value));
+  }
+
+  return candidates.find((candidate) => readLocalizedTexts(candidate.url).some((url) => normalizeComparableUrl(url) === normalizedProductUrl))
+    ?? candidates.find((candidate) => normalizedProductPath.length > 0 && readLocalizedTexts(candidate.url).some((url) => normalizeLocalizedComparablePath(url) === normalizedProductPath))
+    ?? candidates.find((candidate) => normalizedProductSlug.length > 0 && readLocalizedTexts(candidate.url).some((url) => readComparableUrlSlug(url) === normalizedProductSlug))
+    ?? null;
+}
+
+function isAbiCartTextalkArticleRecord(value: Record<string, unknown>): boolean {
+  const hasIdentifier = value.articleNumber !== undefined
+    || (value.uid !== undefined && (isRecord(value.price) || Array.isArray(value.pricing)));
+  const hasProductFields = (typeof value.name === 'string' || isRecord(value.name))
+    && (typeof value.url === 'string' || isRecord(value.url))
+    && (
+      isRecord(value.price)
+      || Array.isArray(value.pricing)
+      || Array.isArray(value.images)
+      || typeof value.isBuyable === 'boolean'
+    );
+
+  return hasIdentifier && hasProductFields;
+}
+
+function readAbiCartTextalkArticleUrl(article: Record<string, unknown>, productUrl: string): string | null {
+  const urls = readLocalizedTexts(article.url);
+  const normalizedProductUrl = normalizeComparableUrl(productUrl);
+  const normalizedProductPath = normalizeLocalizedComparablePath(productUrl);
+  const normalizedProductSlug = readComparableUrlSlug(productUrl);
+
+  if (urls.some((url) => normalizeComparableUrl(url) === normalizedProductUrl)) {
+    return urls.find((url) => normalizeComparableUrl(url) === normalizedProductUrl) ?? productUrl;
+  }
+
+  if (
+    urls.some((url) => normalizeLocalizedComparablePath(url) === normalizedProductPath)
+    || urls.some((url) => readComparableUrlSlug(url) === normalizedProductSlug)
+  ) {
+    return detachProductMetadataString(productUrl);
+  }
+
+  return urls[0] ?? null;
+}
+
+function readAbiCartTextalkImageUrl(article: Record<string, unknown>): string | null {
+  if (!Array.isArray(article.images)) {
+    return null;
+  }
+
+  for (const image of article.images) {
+    const normalizedImage = readStringOrNull(image);
+    if (normalizedImage) {
+      return normalizedImage;
+    }
+  }
+
+  return null;
+}
+
+function readLocalizedText(value: unknown): string | null {
+  return readLocalizedTexts(value)[0] ?? null;
+}
+
+function readLocalizedTexts(value: unknown): string[] {
+  if (typeof value === 'string') {
+    const normalized = readStringOrNull(value);
+    return normalized ? [normalized] : [];
+  }
+
+  if (!isRecord(value)) {
+    return [];
+  }
+
+  const values = [
+    readStringOrNull(value.en),
+    ...Object.values(value).map(readStringOrNull),
+  ].filter((item): item is string => item !== null);
+  return [...new Set(values)];
+}
+
+function readAbiCartTextalkPriceAmount(article: Record<string, unknown>, currency: string | null): string | null {
+  if (!currency) {
+    return null;
+  }
+
+  const price = isRecord(article.price) ? article.price : null;
+  const current = price && isRecord(price.current) ? readAbiCartTextalkMoneyValue(price.current[currency], currency) : null;
+  if (current) {
+    return current;
+  }
+
+  const pricing = Array.isArray(article.pricing) ? article.pricing.filter(isRecord) : [];
+  for (const priceBreak of pricing) {
+    const regular = isRecord(priceBreak.regular) ? priceBreak.regular : null;
+    const incVat = regular && isRecord(regular.incVat) ? regular.incVat : null;
+    const amount = incVat ? readAbiCartTextalkMoneyValue(incVat[currency], currency) : null;
+    if (amount) {
+      return amount;
+    }
+  }
+
+  return null;
+}
+
+function readAbiCartTextalkMoneyValue(value: unknown, currency: string): string | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value.toFixed(getPriceHubCurrencyFractionDigits(currency));
+  }
+
+  return readStringNumberOrNull(value);
+}
+
+function readAbiCartTextalkFirstPriceCurrency(article: Record<string, unknown>): string | null {
+  const price = isRecord(article.price) ? article.price : null;
+  const current = price && isRecord(price.current) ? price.current : null;
+  if (!current) {
+    return null;
+  }
+
+  return Object.keys(current).find((key) => normalizePriceHubCurrency(key) !== null) ?? null;
+}
+
+function emptyProductPageMetadata(): ProductPageMetadata {
   return {
     priceAmount: null,
     priceCurrency: null,
@@ -174,11 +483,11 @@ function readJsonLdOffer(product: Record<string, unknown>): Record<string, unkno
 
 function readJsonLdImage(value: unknown): string | null {
   if (typeof value === 'string') {
-    return value;
+    return readStringOrNull(value);
   }
 
   if (Array.isArray(value)) {
-    return value.find((item): item is string => typeof item === 'string' && item.trim().length > 0) ?? null;
+    return value.map(readStringOrNull).find((item): item is string => item !== null) ?? null;
   }
 
   if (isRecord(value)) {
@@ -255,7 +564,7 @@ function readMetaTags(html: string): Map<string, string> {
     const key = attributes.get('property') ?? attributes.get('itemprop') ?? attributes.get('name');
     const value = attributes.get('content');
     if (key && value) {
-      metas.set(key.trim().toLowerCase(), decodeHtmlEntities(value.trim()));
+      metas.set(detachProductMetadataString(key.trim().toLowerCase()), decodeHtmlEntities(value.trim()));
     }
   }
 
@@ -272,28 +581,6 @@ function readHtmlAttributes(tagContent: string): Map<string, string> {
   }
 
   return attributes;
-}
-
-function parseDecimalPriceMinor(value: string | null): number | null {
-  if (!value) {
-    return null;
-  }
-
-  const normalized = value.trim().replace(/\s/g, '').replace(',', '.');
-  if (!/^\d+(?:\.\d{1,2})?$/.test(normalized)) {
-    return null;
-  }
-
-  return Math.round(Number.parseFloat(normalized) * 100);
-}
-
-function normalizeCurrency(value: string | null): string | null {
-  if (!value) {
-    return null;
-  }
-
-  const currency = value.trim().toUpperCase();
-  return /^[A-Z]{3}$/.test(currency) ? currency : null;
 }
 
 function normalizeAvailability(value: string | null): SnapshotAvailability {
@@ -416,7 +703,7 @@ function readFirstAvailabilityMatch(html: string, patterns: readonly RegExp[]): 
   for (const pattern of patterns) {
     const availabilityMatch = pattern.exec(html);
     if (availabilityMatch) {
-      return availabilityMatch[0];
+    return detachProductMetadataString(availabilityMatch[0]);
     }
   }
 
@@ -458,7 +745,7 @@ function readElementSnippetsByClass(html: string, className: string): string[] {
   let match: RegExpExecArray | null;
 
   while ((match = pattern.exec(html))) {
-    snippets.push(match[0]);
+    snippets.push(detachProductMetadataString(match[0]));
   }
 
   return snippets;
@@ -470,7 +757,7 @@ function readDisabledBuyButtonSnippets(html: string): string[] {
   let match: RegExpExecArray | null;
 
   while ((match = pattern.exec(html))) {
-    snippets.push(match[0]);
+    snippets.push(detachProductMetadataString(match[0]));
   }
 
   return snippets;
@@ -571,7 +858,12 @@ function readTitle(html: string): string | null {
 }
 
 function normalizeOptionalText(value: string | null): string | null {
-  return value && value.trim().length > 0 ? value.trim() : null;
+  if (!value) {
+    return null;
+  }
+
+  const normalized = value.trim();
+  return normalized.length > 0 ? detachProductMetadataString(normalized) : null;
 }
 
 function normalizeProductName(value: string | null, adapter: ProductMetadataAdapter): string | null {
@@ -583,10 +875,10 @@ function normalizeProductName(value: string | null, adapter: ProductMetadataAdap
     (name, suffix) => name.endsWith(suffix) ? name.slice(0, -suffix.length).trim() : name,
     value,
   );
-  return withoutStoreSuffix
+  return detachProductMetadataString(withoutStoreSuffix
     .replace(/\s+by\s+[^|]+\s+\|\s+Shop\b.*$/i, '')
     .replace(/\s+\|\s*\d+$/, '')
-    .trim();
+    .trim());
 }
 
 function readSkuBrand(value: string | null): string | null {
@@ -599,7 +891,8 @@ function readSkuBrand(value: string | null): string | null {
     return null;
   }
 
-  return value.slice(0, delimiterIndex).replace(/_/g, ' ').trim() || null;
+  const brand = value.slice(0, delimiterIndex).replace(/_/g, ' ').trim();
+  return brand ? detachProductMetadataString(brand) : null;
 }
 
 function normalizeProductUrl(value: string | null): string | null {
@@ -610,16 +903,32 @@ function normalizeProductUrl(value: string | null): string | null {
   try {
     const url = new URL(value);
     url.searchParams.delete('source');
-    return url.toString();
+    return detachProductMetadataString(url.toString());
   } catch {
     return value;
+  }
+}
+
+function normalizeComparableUrl(value: string | null): string {
+  if (!value) {
+    return '';
+  }
+
+  try {
+    const url = new URL(value);
+    url.hash = '';
+    url.search = '';
+    return url.toString().replace(/\/$/, '');
+  } catch {
+    return value.trim().replace(/\/$/, '');
   }
 }
 
 function slugFromUrl(value: string): string | null {
   try {
     const url = new URL(value);
-    return url.pathname.split('/').filter(Boolean).at(-1) ?? null;
+    const slug = url.pathname.split('/').filter(Boolean).at(-1) ?? null;
+    return slug ? detachProductMetadataString(slug) : null;
   } catch {
     return null;
   }
@@ -635,7 +944,8 @@ const CUSTOM_PRODUCT_TITLE_SUFFIXES = [
 ] as const;
 
 function decodeHtmlEntities(value: string): string {
-  return value
+  return detachProductMetadataString(value
+    .replace(/&nbsp;/gi, ' ')
     .replace(/&#(\d+);/g, (_, codePoint: string) => String.fromCodePoint(Number.parseInt(codePoint, 10)))
     .replace(/&#x([0-9a-f]+);/gi, (_, codePoint: string) => String.fromCodePoint(Number.parseInt(codePoint, 16)))
     .replace(/&amp;/g, '&')
@@ -643,5 +953,5 @@ function decodeHtmlEntities(value: string): string {
     .replace(/&#039;/g, "'")
     .replace(/&apos;/g, "'")
     .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>');
+    .replace(/&gt;/g, '>'));
 }
