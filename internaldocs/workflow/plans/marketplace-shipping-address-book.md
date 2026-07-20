@@ -4,7 +4,8 @@
 
 ## Status
 
-Backlog intake. Priority: HIGH. Product area: marketplace / account settings / transaction privacy.
+Private schema/RLS/backend and User Area CRUD UI are complete on `develop`; transaction-flow integration remains. Priority:
+HIGH. Product area: marketplace / account settings / transaction privacy.
 
 ## User intent
 
@@ -46,7 +47,8 @@ into the transaction record; never make transactions depend on live address rows
 ## Assumptions
 
 - MVP should support international address shapes enough for EU / US / UK without overbuilding carrier integrations.
-- Phone is optional and should be hidden unless explicitly included in accepted transaction info.
+- Address form should optimize for EU/UK/US-friendly international use: country is required, while region/postal fields remain flexible enough for cross-country variation.
+- Phone is out of scope for the MVP address book; add it later only if transaction/shipping needs prove it necessary.
 - Account deletion will require PII scrubbing rules for transaction snapshots.
 
 ## Dependencies and sequencing
@@ -56,24 +58,25 @@ the listing can initially expose only broad shipping regions, then wire saved ad
 
 ## MVP layer
 
-- [ ] Propose and approve `shipping_addresses` schema / RLS before migration work.
-- [ ] Add `/my/settings/addresses` or equivalent user-area address-book surface.
-- [ ] Add inline create/edit/delete form with default-address toggle.
-- [ ] Add address chip picker primitive for future offer/listing forms.
-- [ ] Ensure saved address data is never included in public profile or public listing payloads.
+- [x] Add pure local transaction snapshot helper for validated/saved drafts; no backend, schema, UI, route, or deploy work.
+- [x] Propose and approve `shipping_addresses` schema / RLS before migration work.
+- [x] Add a User Area marketplace section address-book surface.
+- [x] Add inline create/edit/delete form with default-address toggle.
+- [x] Add address chip picker primitive for future offer/listing forms.
+- [x] Ensure saved address data is never included in public profile or public listing payloads.
 
 ## Structural layer
 
 - [ ] Add transaction-time address snapshots during offer acceptance.
 - [ ] Add account deletion / profile deletion PII scrub plan for address snapshots.
 - [ ] Add country normalization via ISO-3166 alpha-2 list.
-- [ ] Add phone normalization only if phone is included in MVP.
+- [ ] Defer phone normalization until phone support is explicitly added after MVP.
 
 ## Polish layer
 
 - [ ] Show compact destination summary in private deal rows, e.g. `Milan, IT`.
 - [ ] Add "use default address" one-click affordance in buyer offer flow.
-- [ ] Add copy warning for sensitive fields when the user chooses to reveal phone/email.
+- [ ] Defer phone/email reveal warning copy until those sensitive fields are explicitly added to transaction sharing.
 
 ## Proposed data model
 
@@ -89,7 +92,7 @@ the listing can initially expose only broad shipping regions, then wire saved ad
 - `region`
 - `postal_code`
 - `country_code`
-- `phone`
+- `phone` (deferred; not included in the MVP address form/snapshots unless separately approved)
 - `is_default`
 - `created_at`
 - `updated_at`
@@ -104,6 +107,8 @@ Transaction snapshots should be JSON objects on marketplace transaction rows, no
 
 ## File / surface map
 
+- `src/app/features/marketplace/marketplace-address-book.utils.ts`
+- `src/app/features/marketplace/marketplace-address-book.utils.spec.ts`
 - `src/app/features/routes/user-area/`
 - `src/app/features/backbone/login/user-management.service.ts`
 - `src/app/features/backend/DatabaseStrings.ts`
@@ -122,16 +127,16 @@ Transaction snapshots should be JSON objects on marketplace transaction rows, no
 
 ## Validation strategy
 
-- Unit tests for address form validation and default-address toggling.
+- Unit tests for address form validation, default-address toggling, transaction snapshot whitelisting/immutability, and private-safe chip picker options.
 - Supabase service tests for CRUD methods and cache busting.
 - RLS review before migration apply.
 - `pnpm lint` and targeted tests once implementation exists.
 
 ## Risks and open questions
 
-- Launch geography determines how strict the address schema should be.
-- Phone may be unnecessary for MVP and increases PII exposure.
-- Need explicit PII retention window for closed transactions; 90 days is a reasonable starting proposal.
+- MVP address form is EU/UK/US-friendly international: required country, flexible region/postal validation.
+- Phone is excluded from MVP to reduce PII exposure.
+- Closed transaction address snapshots are retained indefinitely in transaction history unless a later legal/privacy review requires scrubbing.
 
 ## Coordinator-loop handoff
 
@@ -142,3 +147,13 @@ being bundled. Stop before migration/RLS apply until user approval is explicit.
 
 <!-- Append timestamped one-liners as the plan progresses. -->
 - 2026-06-18T11:26+02:00 — Address book planned as private account data with transaction snapshots, not public profile fields.
+- 2026-07-06T18:02+02:00 — Added safe local address draft validation and default-normalization helpers with specs; no schema/RLS/remote apply/UI/deploy was done.
+- 2026-07-07T12:50+02:00 — Added the next safe checkpoint: a pure transaction snapshot helper may copy only trimmed primitive shipping fields plus private summary from a valid draft. It must normalize country via the existing helper, omit blank optional phone/region/line2 values, and exclude live-row fields (`id`, `isDefault`, owner/profile ids, timestamps), saved-address labels, and unknown properties.
+- 2026-07-07T12:50+02:00 — Remaining gates stay explicit: no schema/RLS/policy/migration/data changes, backend methods, UI/route exposure, transaction persistence, deploy/release/push, or production branch work until separately approved.
+- 2026-07-07T14:07+02:00 — User approved the Marketplace address book + listings foundation first, including additive backend/schema/RLS/storage work for those slices. First address/listing UI entry should live in a User Area marketplace section, with listing CTAs also appearing from Marketplace pages.
+- 2026-07-07T21:32+02:00 — Completed the helper-only address chip picker checkpoint: chip options are pure TypeScript, default-first, selected/default aware, invalid rows are disabled, and chip labels expose only saved label plus broad `city, CC` destination (never recipient, street, phone, postal, live-row, or unknown fields). Validation passed with targeted address-book utils specs, docs check, and lint.
+- 2026-07-08T14:13+02:00 — User decided Marketplace address book MVP should not include a phone field. Future address forms and transaction snapshots should omit phone unless a later scope explicitly adds it.
+- 2026-07-08T14:13+02:00 — User chose indefinite retention for closed-transaction address snapshots in transaction history. Future account-deletion/privacy work should preserve transaction-history snapshots unless a later legal/privacy policy changes this.
+- 2026-07-08T14:13+02:00 — User chose an EU/UK/US-friendly international address form for Marketplace MVP: require country, keep region/postal validation flexible, and avoid overfitting to one national address format.
+- 2026-07-17 — Product owner green-lit the first applied Marketplace address-book slice: additive `shipping_addresses` schema, owner-only CRUD RLS, backend methods/cache invalidation, type generation, review, and advisors on the Patcher project. User Area UI, transaction persistence, production release, and push remain out of scope for this checkpoint.
+- 2026-07-17 — Applied the additive private `shipping_addresses` migration and owner-only RLS, then integrated typed CRUD/backend support in `97f03387`. Added the private User Area address-book CRUD/default UI in `30443234`; collapsed rows expose only label plus `city, CC`, phone remains excluded, and no public route/payload wiring was added. Focused UI/data/helper/layout specs pass. Authenticated screenshot validation is blocked because `E2E_TEST_EMAIL`/`E2E_TEST_PASSWORD` are not configured; the existing auth state falls back to the public FAQ.

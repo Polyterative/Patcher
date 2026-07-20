@@ -2,7 +2,7 @@
 
 ## Status
 
-- [~] Core module/rack alignment checkpoints are implemented; runtime screenshot approval remains pending because no local dev server was listening on `localhost:5556` during the latest loop pass. Patch Cool UI remains dormant until the parent Cool plan's schema/RLS and placement approval is granted.
+- [x] Completed 2026-07-08. User-approved `/user/area` Cool subsection structure and Cool button placement were screenshot-validated and polished; Rack Cool now delegates to the standard `app-rack-list` path. Patch Cool UI remains dormant until the parent Cool plan's schema/RLS and placement approval is granted.
 - Priority: **MEDIUM**
 - TODO section: **INFRA**
 - Owner persona on pickup: `coordinator-loop` -> `designer` -> `frontend-dev` -> `reviewer`.
@@ -17,7 +17,7 @@ There is a related visual issue in the module minimal card: the historical botto
 
 ## Product / roadmap fit
 
-This is a refinement of [Cross-entity Cool reactions](./module-cool-appreciation-button.md). It keeps Cool as a content-level curation feature, not a social feed, while making the user's personal Cool collection feel like part of the existing collection/rack browsing system.
+This is a refinement of [Cross-entity Cool reactions](../module-cool-appreciation-button.md). It keeps Cool as a content-level curation feature, not a social feed, while making the user's personal Cool collection feel like part of the existing collection/rack browsing system.
 
 It also supports the public-profile/community layer gate: user-area collection surfaces need to feel coherent before profile and marketplace work depends on them.
 
@@ -79,9 +79,9 @@ The Cool tab should become a per-entity preview surface, not a mixed custom card
 
 ## Dependencies and sequencing
 
-1. Build a proof of concept for Cool placement only. It should demonstrate the absolute/overlay position on at least module cards and, if cheap, rack/patch card analogues.
-2. Capture screenshots and ask the user whether the placement works before proceeding.
-3. After approval, refactor Cool collection data outputs by entity type so Modules, Racks, and Patches can render their own Cool subsections independently.
+1. Preserve the current approved Cool subsection structure and button placement; do not redesign the placement unless screenshot validation reveals a concrete issue.
+2. Capture screenshots and polish only clear alignment/spacing problems against the approved direction.
+3. Keep Cool collection data outputs by entity type so Modules, Racks, and Patches can render their own Cool subsections independently.
 4. Replace module custom rows first using `app-module-list`.
 5. Remove rack rows from the Modules Cool tab.
 6. Add Personal / Cool filtering to `app-user-racks`, add/select the rack remove-action pattern, then render cooled racks through the rack preview path.
@@ -98,7 +98,7 @@ The Cool tab should become a per-entity preview surface, not a mixed custom card
 - Wire `moduleAction$` to the existing `removeCool$` path.
 - Remove rack data from the Modules Cool tab.
 - Remove the top-level "N cooled items" summary; the active subsection and count are sufficient.
-- Do not continue from the POC into the full MVP without explicit user approval of the overlay placement.
+- Do not reopen the placement question unless screenshot validation shows a concrete conflict; user approval for the current sectioning/button placement is recorded.
 
 ## Structural layer
 
@@ -129,7 +129,7 @@ The Cool tab should become a per-entity preview surface, not a mixed custom card
 - Do not put `showCoolAction` or any Cool pill/button into the normal footer action rows.
 - Use an absolute card overlay for Cool/Uncool with tooltip/ARIA copy, not an inline text button.
 - Let `app-module-list` / `app-rack-list` inherit responsive tiling rather than adding new breakpoints.
-- First implementation must be a visual proof of concept only. The user must approve the position before frontend-dev continues with the full IA/data refactor.
+- Treat the current `/user/area` sectioning and Cool button placement as approved; future frontend-dev work should validate and polish this direction instead of redesigning placement.
 - The overlay should be evaluated against modules, racks, and patches before committing to it as a shared pattern.
 
 ## File / surface map
@@ -161,12 +161,12 @@ The Cool tab should become a per-entity preview surface, not a mixed custom card
 - No `.user-cool-card` or `.user-cool-list` custom card styles remain.
 - Repeated cards do not render Cool in the normal footer action row.
 - `app-module-minimal` action buttons remain visually consistent with the current `production` footer actions.
-- A screenshot-backed Cool placement POC is approved by the user before broad rollout.
+- The current Cool sectioning/button placement is approved by the user and validated with screenshots before completion.
 - The layout remains coherent at mobile portrait, tablet portrait, tablet landscape, desktop 1280px, and desktop 1920px.
 
 ## Validation strategy
 
-- First validation milestone: capture POC screenshots and get explicit user approval of Cool overlay placement.
+- First validation milestone: capture screenshots of the approved current sectioning/button placement and fix only concrete polish/alignment issues.
 - After approval, run focused user-area Cool collection unit tests.
 - Run affected module-list/rack-list tests if rack action support is added.
 - Run affected user-racks/user-patches tests when section filters are added.
@@ -175,16 +175,16 @@ The Cool tab should become a per-entity preview surface, not a mixed custom card
 
 ## Risks and open questions
 
-- Existing list action overlays may not be the final answer if their position conflicts with panel imagery or card affordances; the POC should decide this visually.
+- Existing list action overlays should remain unless screenshot validation shows a concrete conflict with panel imagery or card affordances.
 - `app-rack-list` currently uses `app-rack-micro`; if that preview is too small compared with module previews, designer/frontend-dev should decide whether a separate standard rack preview configuration is needed.
 - `app-module-list` action overlay currently uses a small shadow. If it feels too SaaS/noisy in the Cool tab, the Cool overlay should use its own shared treatment rather than regressing existing module actions.
-- Absolute overlays can collide with module panel art, rack images, patch previews, badges, and mobile tap targets; this is why the POC approval gate is mandatory.
+- Absolute overlays can collide with module panel art, rack images, patch previews, badges, and mobile tap targets; validate the approved current placement against these risks before completion.
 - Patch Cool remains blocked by the parent Cool plan's schema/RLS and placement approval. This plan may prepare UI structure but must not silently enable patch Cool backend behavior.
 - Splitting Cool by entity section may require replacing the single mixed `app-user-cool-collection` component with typed per-section components. Prefer clarity over preserving the mixed abstraction.
 
 ## Coordinator-loop handoff
 
-Pick this as a docs-backed UI refinement task. Start with a small visual POC of the Cool overlay placement. Do not proceed into the full module/rack/patch IA refactor until the user approves the placement. The normal module action row should match the current `production` behavior, with Cool removed from that footer. After approval, implement the module-only Cool replacement first, then move rack Cool into the Racks section with its own Personal / Cool switch. Prepare the patch section pattern only within the limits of the parent Cool plan. Do not touch backend schema/RLS. Keep production/release constraints from the parent Cool plan intact.
+Pick this as a docs-backed UI refinement task. Preserve the current approved `/user/area` Cool subsection structure and current Cool button placement, then perform screenshot-backed validation/polish. The normal module action row should match the current `production` behavior, with Cool kept out of that footer. Prepare the patch section pattern only within the limits of the parent Cool plan. Do not touch backend schema/RLS. Keep production/release constraints from the parent Cool plan intact.
 
 Run this work in the active/main checkout unless the user explicitly requests a separate worktree. The POC must be visible in the same dev server workflow the user is already using.
 
@@ -196,3 +196,8 @@ Run this work in the active/main checkout unless the user explicitly requests a 
 - 2026-06-20: User clarified the visual direction: Cool should not simply become smaller inside the footer. The existing mat-icon action rows should remain exactly as before, like `production`. Cool needs a separate absolute/overlay placement that can work across module, rack, and patch cards. Implementation must start with a proof of concept and ask for approval before continuing.
 - 2026-06-20: User clarified workflow preference: do not use separate worktrees / child project sessions unless explicitly requested. POCs must be made visible in the active checkout/dev-server context by default.
 - 2026-06-25T11:14+02:00 — Reconciled the plan against recent implementation commits: modules/racks now own separate Cool subsections and use existing preview paths, but the route-level Patch Cool tab was hidden again because patch reaction eligibility is still blocked by the parent Cool plan. The component/data scaffolding may remain dormant for future approved patch support, but the root user area must not call patch Cool backend paths before approval. Focused user-area Cool collection, modules, racks, and patches specs pass; visual screenshot approval is still pending on a running dev server.
+- 2026-07-07T14:07+02:00 — User approved future loops to perform visual review and implement low-risk User Area Cool / Cross-entity Cool alignment polish on `develop`. Production release/push remains forbidden until explicitly requested.
+- 2026-07-08T13:16+02:00 — Coordinator staged this as the next pipeline task after completing Rack Creator import preview polish. First executor must capture current `/user/area` screenshots and produce only a small placement POC until the Cool overlay/list alignment direction is approved.
+- 2026-07-08T14:13+02:00 — User approved the current `/user/area` Cool subsection structure and current Cool button placement. Future loop work should not redesign the placement by default; it should capture screenshots, validate the approved direction, and polish concrete alignment/spacing issues only.
+
+- 2026-07-08T15:20+02:00 — Completed screenshot-backed polish without changing approved placement: Modules/Racks/Patches section toggles remain as approved, Rack Cool now renders through `app-rack-list` instead of bespoke rack rows, focused specs/lint/docs passed, reviewer approved, and post-change authenticated screenshots showed no new console errors beyond existing dev warnings.
