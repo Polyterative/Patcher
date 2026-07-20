@@ -1,7 +1,13 @@
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { TestBed } from '@angular/core/testing';
+import { BehaviorSubject, Observable, ReplaySubject, Subject } from 'rxjs';
 import { ModuleTagsComponent } from './module-tags.component';
 import { Tag, TagType } from 'src/app/models/tag';
 import { MinimalModule } from 'src/app/models/module';
+import { MinimalManufacturer } from 'src/app/models/manufacturer';
+import { Standard } from 'src/app/models/standard';
+import { TagVoteDataService } from './tag-vote/tag-vote-data.service';
 import { ProposedTag, TagVoteCount } from './tag-vote/tag-vote-data.types';
 
 // ── Test data ─────────────────────────────────────────────────────────────────
@@ -16,6 +22,26 @@ const tagPan: Tag = { id: 7, name: 'Pan', type: TagType.Utility };
 const tagEq: Tag = { id: 8, name: 'EQ', type: TagType.Filter };
 
 type ModuleTag = MinimalModule['tags'][number];
+type TagVoteServiceDouble = Pick<
+  TagVoteDataService,
+  | 'proposedTags$'
+  | 'tagVotes$'
+  | 'allTags$'
+  | 'myVotes$'
+  | 'loadVotes$'
+  | 'proposeTag$'
+  | 'toggleVote$'
+>;
+
+interface MutableTagVoteServiceDouble extends TagVoteServiceDouble {
+  _proposedTags$: BehaviorSubject<ProposedTag[]>;
+  _tagVotes$: BehaviorSubject<Map<number, number>>;
+  _allTags$: BehaviorSubject<Tag[]>;
+  _myVotes$: BehaviorSubject<Set<number>>;
+}
+
+const minimalManufacturer: MinimalManufacturer = { id: 1, name: 'MFR' };
+const eurorackStandard: Standard = { id: 0, name: 'Eurorack' };
 
 function makeModuleTag(id: number, tag: Tag, votes: number): ModuleTag {
   return {
@@ -32,25 +58,25 @@ function makeModule(tags: ModuleTag[] = [], overrides: Partial<MinimalModule> = 
     description: '',
     hp: 4,
     public: true,
-    manufacturer: { id: 1, name: 'MFR', logo: null } as any,
+    manufacturer: minimalManufacturer,
     manufacturerId: 1,
-    standard: 0 as any,
+    standard: eurorackStandard,
     tags,
     panels: [],
-    createdAt: '',
-    updatedAt: '',
+    created: '',
+    updated: '',
     ...overrides
-  } as any;
+  };
 }
 
 // ── Mock service ──────────────────────────────────────────────────────────────
 
-function makeService() {
+function makeService(): MutableTagVoteServiceDouble {
   const _proposedTags$ = new BehaviorSubject<ProposedTag[]>([]);
   const _tagVotes$ = new BehaviorSubject<Map<number, number>>(new Map());
   const _allTags$ = new BehaviorSubject<Tag[]>([]);
   const _myVotes$ = new BehaviorSubject<Set<number>>(new Set());
-  const loadVotes$ = new Subject<TagVoteCount[]>();
+  const loadVotes$ = new ReplaySubject<TagVoteCount[]>(1);
   const proposeTag$ = new Subject<{ moduleId: number; tagId: number }>();
   const toggleVote$ = new Subject<number>();
 
@@ -86,7 +112,17 @@ function makeComponent(
   data: MinimalModule = makeModule(),
   svc: MockService = makeService()
 ): { comp: ModuleTagsComponent; svc: MockService } {
-  const comp = new ModuleTagsComponent(svc as any);
+  TestBed.configureTestingModule({
+    imports: [CommonModule],
+    declarations: [ModuleTagsComponent],
+    schemas: [NO_ERRORS_SCHEMA]
+  });
+  TestBed.overrideComponent(ModuleTagsComponent, {
+    set: {
+      providers: [{ provide: TagVoteDataService, useValue: svc }]
+    }
+  });
+  const comp = TestBed.createComponent(ModuleTagsComponent).componentInstance;
   comp.data = data;
   return { comp, svc };
 }
@@ -94,6 +130,7 @@ function makeComponent(
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe('ModuleTagsComponent', () => {
+  afterEach(() => TestBed.resetTestingModule());
 
   describe('visibleTags$', () => {
     it('emits server tags sorted by voteCount descending', () => {

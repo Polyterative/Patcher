@@ -1,16 +1,54 @@
 import { TestBed } from '@angular/core/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {
+  Observable,
   of,
-  ReplaySubject
+  ReplaySubject,
+  throwError
 } from 'rxjs';
 import {
+  ProposedTag,
   TagVoteCount,
   TagVoteDataService
 } from 'src/app/components/module-parts/module-minimal/module-tags/tag-vote/tag-vote-data.service';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import { SimpleUserModel } from 'src/app/features/backend/supabase.types';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
-import { TagType } from 'src/app/models/tag';
+import { Tag, TagType } from 'src/app/models/tag';
+
+interface ModuleTagLinkResult {
+  id: number;
+}
+
+interface TagVoteBackendDouble {
+  get: {
+    myVotes: jasmine.Spy<() => Observable<number[]>>;
+    allTags: jasmine.Spy<() => Observable<Tag[]>>;
+  };
+  add: {
+    userModuleTag: jasmine.Spy<(moduleTagId: number) => Observable<Record<string, never>>>;
+    moduleTagLink: jasmine.Spy<(moduleId: number, tagId: number) => Observable<ModuleTagLinkResult>>;
+  };
+  delete: {
+    userModuleTag: jasmine.Spy<(moduleTagId: number) => Observable<Record<string, never>>>;
+  };
+}
+
+interface TagVoteServiceSetup {
+  service: TagVoteDataService;
+  mockBackend: TagVoteBackendDouble;
+  mockSnackBar: jasmine.SpyObj<MatSnackBar>;
+  loggedUser$: ReplaySubject<SimpleUserModel | null>;
+}
+
+const DEFAULT_USER: SimpleUserModel = {
+  id: 'user-1',
+  email: 'test@test.com',
+  created_at: '',
+  updated_at: ''
+};
+
+const EMPTY_MUTATION_RESULT: Record<string, never> = {};
 
 
 const PRELOADED_COUNTS: TagVoteCount[] = [
@@ -18,31 +56,31 @@ const PRELOADED_COUNTS: TagVoteCount[] = [
   {moduleTagId: 11, count: 1}
 ];
 
-const MOCK_ALL_TAGS = [
+const MOCK_ALL_TAGS: Tag[] = [
   {id: 1, name: 'VCO', type: TagType.Source},
   {id: 2, name: 'Filter', type: TagType.Source},
 ];
 
-function setupTest(userOverride?: any) {
-  const loggedUser$ = new ReplaySubject<any>(1);
-  loggedUser$.next(userOverride !== undefined ? userOverride : {id: 'user-1', email: 'test@test.com', created_at: '', updated_at: ''});
+function setupTest(userOverride: SimpleUserModel | null = DEFAULT_USER): TagVoteServiceSetup {
+  const loggedUser$ = new ReplaySubject<SimpleUserModel | null>(1);
+  loggedUser$.next(userOverride);
 
-  const mockBackend = {
+  const mockBackend: TagVoteBackendDouble = {
     get: {
-      myVotes: jasmine.createSpy('myVotes').and.returnValue(of([10])),
-      allTags: jasmine.createSpy('allTags').and.returnValue(of(MOCK_ALL_TAGS))
+      myVotes: jasmine.createSpy<() => Observable<number[]>>('myVotes').and.returnValue(of([10])),
+      allTags: jasmine.createSpy<() => Observable<Tag[]>>('allTags').and.returnValue(of(MOCK_ALL_TAGS))
     },
     add: {
-      userModuleTag: jasmine.createSpy('add.userModuleTag').and.returnValue(of({})),
-      moduleTagLink: jasmine.createSpy('add.moduleTagLink').and.returnValue(of({id: 99}))
+      userModuleTag: jasmine.createSpy<(moduleTagId: number) => Observable<Record<string, never>>>('add.userModuleTag').and.returnValue(of(EMPTY_MUTATION_RESULT)),
+      moduleTagLink: jasmine.createSpy<(moduleId: number, tagId: number) => Observable<ModuleTagLinkResult>>('add.moduleTagLink').and.returnValue(of({id: 99}))
     },
     delete: {
-      userModuleTag: jasmine.createSpy('delete.userModuleTag').and.returnValue(of({}))
+      userModuleTag: jasmine.createSpy<(moduleTagId: number) => Observable<Record<string, never>>>('delete.userModuleTag').and.returnValue(of(EMPTY_MUTATION_RESULT))
     }
   };
 
   const mockUserService = {loggedUser$};
-  const mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
+  const mockSnackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
 
   TestBed.configureTestingModule({
     providers: [
@@ -333,7 +371,6 @@ describe('TagVoteDataService', () => {
     
     it('should remove the tag from proposedTags$ when userModuleTag call fails (rollback)', (done) => {
       const {service, mockBackend} = setupTest();
-      const {throwError} = require('rxjs');
       mockBackend.add.userModuleTag.and.returnValue(throwError(() => new Error('network error')));
       
       service.proposeTag$.next({moduleId: 42, tagId: 1});
@@ -349,7 +386,7 @@ describe('TagVoteDataService', () => {
     it('should apply optimistic update BEFORE userModuleTag backend call completes', (done) => {
       const {service, mockBackend} = setupTest();
       // Make userModuleTag never resolve to simulate slow network
-      const pending$ = new ReplaySubject(1); // never emits
+      const pending$ = new ReplaySubject<Record<string, never>>(1); // never emits
       mockBackend.add.userModuleTag.and.returnValue(pending$);
       
       service.proposeTag$.next({moduleId: 42, tagId: 1});
@@ -371,7 +408,6 @@ describe('TagVoteDataService', () => {
     
     it('should rollback optimistic update when userModuleTag call fails', (done) => {
       const {service, mockBackend} = setupTest();
-      const {throwError} = require('rxjs');
       mockBackend.add.userModuleTag.and.returnValue(throwError(() => new Error('network error')));
       
       service.proposeTag$.next({moduleId: 42, tagId: 1});
@@ -428,7 +464,7 @@ describe('TagVoteDataService', () => {
         
         setTimeout(() => {
           const calls = mockBackend.add.userModuleTag.calls.allArgs()
-            .filter((args: any[]) => args[0] === 11);
+            .filter(([moduleTagId]) => moduleTagId === 11);
           expect(calls.length).toBe(1);
           done();
         }, 300);
@@ -495,13 +531,12 @@ describe('TagVoteDataService', () => {
   describe('regression: proposeTag$ failure isolation', () => {
     it('should not add to proposedTags$ when moduleTagLink fails', (done) => {
       const {service, mockBackend} = setupTest();
-      const {throwError} = require('rxjs');
       mockBackend.add.moduleTagLink.and.returnValue(throwError(() => new Error('db error')));
       
       service.proposeTag$.next({moduleId: 42, tagId: 1});
       
       setTimeout(() => {
-        let proposed: any[] = [];
+        let proposed: ProposedTag[] = [];
         service.proposedTags$.subscribe(p => {
           proposed = p;
         });
@@ -512,7 +547,6 @@ describe('TagVoteDataService', () => {
     
     it('should not add to myVotes$ when moduleTagLink fails', (done) => {
       const {service, mockBackend} = setupTest();
-      const {throwError} = require('rxjs');
       mockBackend.add.moduleTagLink.and.returnValue(throwError(() => new Error('db error')));
       
       service.proposeTag$.next({moduleId: 42, tagId: 1});
@@ -537,7 +571,7 @@ describe('TagVoteDataService', () => {
         loggedUser$.next(null);
         
         setTimeout(() => {
-          let proposed: any[] = [];
+          let proposed: ProposedTag[] = [];
           service.proposedTags$.subscribe(p => {
             proposed = p;
           });
