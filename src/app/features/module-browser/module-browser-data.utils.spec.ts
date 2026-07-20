@@ -1,12 +1,31 @@
 import { toSortDirection, matchesSelectedTags, getModuleStandardId, compareModulesByCreated } from './module-browser-data.utils';
 import { MinimalModule } from '../../models/module';
+import { TagType } from '../../models/tag';
+
+type ModuleWithNumericStandard = Omit<MinimalModule, 'standard'> & { standard: number };
+type ModuleWithoutStandard = Omit<MinimalModule, 'standard'> & { standard: undefined };
+type RuntimeStandardFixture = ModuleWithNumericStandard | ModuleWithoutStandard;
+
+const asRuntimeModule = (module: RuntimeStandardFixture): MinimalModule => module as unknown as MinimalModule;
 
 const makeModule = (name: string, created: string, standardId?: number, tags: number[] = []): MinimalModule => ({
+  id: 1,
   name,
+  description: '',
+  hp: 8,
+  public: true,
+  manufacturer: { id: 1, name: 'Doepfer' },
+  manufacturerId: 1,
   created,
-  standard: standardId !== undefined ? { id: standardId } : undefined,
-  tags: tags.map(id => ({ tag: { id, name: `tag${id}` } }))
-} as any);
+  updated: created,
+  standard: { id: standardId ?? 0, name: standardId === undefined ? 'Unknown' : `standard${standardId}` },
+  tags: tags.map(id => ({
+    id,
+    tag: { id, name: `tag${id}`, type: TagType.Utility },
+    voteCount: []
+  })),
+  panels: []
+});
 
 describe('module-browser-data.utils', () => {
   describe('toSortDirection', () => {
@@ -48,12 +67,12 @@ describe('module-browser-data.utils', () => {
       expect(getModuleStandardId(makeModule('M', '2024', 1))).toBe(1);
     });
     it('returns number when standard is number', () => {
-      const mod = { ...makeModule('M', '2024'), standard: 2 } as any;
-      expect(getModuleStandardId(mod)).toBe(2);
+      const mod: ModuleWithNumericStandard = { ...makeModule('M', '2024'), standard: 2 };
+      expect(getModuleStandardId(asRuntimeModule(mod))).toBe(2);
     });
     it('returns undefined when no standard', () => {
-      const mod = makeModule('M', '2024');
-      expect(getModuleStandardId(mod)).toBeUndefined();
+      const mod: ModuleWithoutStandard = { ...makeModule('M', '2024'), standard: undefined };
+      expect(getModuleStandardId(asRuntimeModule(mod))).toBeUndefined();
     });
   });
 
