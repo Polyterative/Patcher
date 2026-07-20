@@ -1,6 +1,6 @@
 {
   "_comment": "Grandfathered explicit `any` counts. Do not add by hand — run `node scripts/checks/check-explicit-any.cjs --update-baseline` after intentional cleanup.",
-  "totalExplicitAny": 2572,
+  "totalExplicitAny": 2560,
   "files": {
     "api/sitemap.ts": 3,
     "e2e/auth-rack-context-menu.spec.ts": 6,
@@ -27,9 +27,6 @@
     "src/app/components/module-parts/module-flag/module-flag.component.spec.ts": 2,
     "src/app/components/module-parts/module-format-geometry.constants.spec.ts": 4,
     "src/app/components/module-parts/module-minimal/module-minimal.component.spec.ts": 18,
-    "src/app/components/module-parts/module-minimal/module-tags/module-tags.component.spec.ts": 4,
-    "src/app/components/module-parts/module-minimal/module-tags/tag-vote/tag-vote-data.service.remaining-branches.spec.ts": 3,
-    "src/app/components/module-parts/module-minimal/module-tags/tag-vote/tag-vote-data.service.spec.ts": 5,
     "src/app/components/module-parts/module-possession-dialog/module-possession-dialog.component.spec.ts": 2,
     "src/app/components/module-parts/module-realistic/module-realistic.component.spec.ts": 2,
     "src/app/components/patch-connection/patch-connection-minimal/patch-connection-minimal.component.spec.ts": 12,
