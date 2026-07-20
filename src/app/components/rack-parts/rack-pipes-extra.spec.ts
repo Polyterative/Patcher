@@ -1,13 +1,44 @@
-import { RackedModule } from '../../models/module';
+import { DbModule, RackedModule } from '../../models/module';
 import { RackedToModulesPipe } from './racked-to-modules.pipe';
 import { TotalHpOfModulesPipe } from './total-hp-of-modules.pipe';
 import { CalculateRowInformationPipe } from './rack-editor/calculate-row-information.pipe';
 
 
+function makeDbModule(id: number, hp: number): DbModule {
+  return {
+    id,
+    created: '',
+    updated: '',
+    name: `Module ${ id }`,
+    description: '',
+    hp,
+    public: true,
+    manufacturer: {id: 1, name: 'Test Maker'},
+    manufacturerId: 1,
+    standard: {id: 0, name: 'Eurorack'},
+    tags: [],
+    panels: [],
+    ins: [],
+    outs: [],
+    switches: [],
+    manualURL: '',
+    store_url: null,
+    additional: null,
+    isComplete: true,
+    isApproved: true,
+    isDIY: false,
+    powerPos12: null,
+    powerNeg12: null,
+    powerPos5: null,
+    depth: 0,
+    weight: 0
+  };
+}
+
 function makeRackedModule(id: number, hp: number): RackedModule {
   return {
-    module: {id, hp, name: `Module ${ id }`} as any,
-    rackingData: {id: 0, rackid: 1, moduleid: id, row: 0, column: 0} as any
+    module: makeDbModule(id, hp),
+    rackingData: {id: 0, rackid: 1, moduleid: id, row: 0, column: 0}
   };
 }
 
