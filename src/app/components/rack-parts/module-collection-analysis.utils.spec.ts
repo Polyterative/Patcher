@@ -10,10 +10,26 @@ import {
 } from './module-collection-analysis.utils';
 import { MinimalModule } from 'src/app/models/module';
 
-const makeModule = (id: number, hp: number, standardId = 0): MinimalModule => ({
-  id, hp, name: `M${id}`, description: '', manufacturer_id: 1,
-  standard: { id: standardId } as any
-} as any);
+const makeModule = (
+  id: number,
+  hp: number,
+  standardId = 0,
+  overrides: Partial<MinimalModule> = {}
+): MinimalModule => ({
+  id,
+  hp,
+  name: `M${ id }`,
+  description: '',
+  public: true,
+  manufacturer: {id: 1, name: 'Maker'},
+  manufacturerId: 1,
+  standard: {id: standardId, name: getStandardName(standardId)},
+  tags: [],
+  panels: [],
+  created: '',
+  updated: '',
+  ...overrides
+});
 
 describe('module-collection-analysis.utils', () => {
   describe('getStandardName', () => {
@@ -44,7 +60,7 @@ describe('module-collection-analysis.utils', () => {
     });
 
     it('defaults to EURORACK_3U when standard is missing', () => {
-      const noStd = [{ id: 10, hp: 4 } as any];
+      const noStd = [makeModule(10, 4, 0, {standard: undefined!})];
       expect(filterModulesByStandard(noStd, 0).length).toBe(1);
     });
   });

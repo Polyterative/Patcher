@@ -2,6 +2,27 @@ import { TestBed } from '@angular/core/testing';
 import { ModuleCollectionAnalysisService } from './module-collection-analysis.service';
 import { MinimalModule } from 'src/app/models/module';
 
+const NO_STANDARD = Symbol('NO_STANDARD');
+type StandardFixture = MinimalModule['standard'] | typeof NO_STANDARD;
+
+const makeMinimalModule = (
+  id: number,
+  hp: number,
+  standard: StandardFixture = {id: 0, name: '3U Eurorack'}
+): MinimalModule => ({
+  id,
+  name: `Module ${ id }`,
+  description: '',
+  hp,
+  public: true,
+  manufacturer: {id: 1, name: 'Maker'},
+  manufacturerId: 1,
+  standard: standard === NO_STANDARD ? undefined! : standard,
+  tags: [],
+  panels: [],
+  created: '',
+  updated: ''
+});
 
 describe('ModuleCollectionAnalysisService - Login/Logout Safety', () => {
   let service: ModuleCollectionAnalysisService;
@@ -54,12 +75,12 @@ describe('ModuleCollectionAnalysisService - Login/Logout Safety', () => {
     });
     
     it('should handle malformed module data', () => {
-      const badModules = [
-        null as any,
-        undefined as any,
-        {hp: null} as any,
-        {hp: -5} as any,
-        {hp: 8, standard: {id: 0, name: '3U'}} as MinimalModule
+      const badModules: MinimalModule[] = [
+        null!,
+        undefined!,
+        makeMinimalModule(1, null!),
+        makeMinimalModule(2, -5),
+        makeMinimalModule(3, 8, {id: 0, name: '3U'})
       ];
       
       const result = service.analyzeRackConfiguration(84, 2, badModules);
@@ -177,8 +198,8 @@ describe('ModuleCollectionAnalysisService - Login/Logout Safety', () => {
     });
     
     it('should handle modules without standard (defaults to 0)', () => {
-      const modules = [
-        {id: 1, hp: 8} as any, // No standard property
+      const modules: MinimalModule[] = [
+        makeMinimalModule(1, 8, NO_STANDARD)
       ];
       
       const result = service.filterModulesByStandard(modules, 0);
@@ -188,9 +209,9 @@ describe('ModuleCollectionAnalysisService - Login/Logout Safety', () => {
     });
     
     it('should handle malformed modules in filter', () => {
-      const modules = [
-        null as any,
-        undefined as any,
+      const modules: MinimalModule[] = [
+        null!,
+        undefined!,
         {id: 1, hp: 8, standard: {id: 0, name: '3U'}} as MinimalModule,
       ];
       
@@ -310,8 +331,8 @@ describe('ModuleCollectionAnalysisService - Login/Logout Safety', () => {
     });
     
     it('should handle modules without standard (defaults to standard 0)', () => {
-      const modules = [
-        {id: 1, hp: 8} as any, // No standard property
+      const modules: MinimalModule[] = [
+        makeMinimalModule(1, 8, NO_STANDARD)
       ];
       
       const result = service.analyzeRackConfiguration(84, 2, modules);
