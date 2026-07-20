@@ -1,12 +1,52 @@
+import { MatDialogRef } from '@angular/material/dialog';
 import { ModulePossessionDialogComponent } from './module-possession-dialog.component';
-import { UserModulePossessionKind } from 'src/app/models/module';
+import {
+  ModulePossessionDialogData,
+  ModulePossessionDialogResult
+} from './module-possession-dialog.component';
+import {
+  MinimalModule,
+  UserModulePossessionKind
+} from 'src/app/models/module';
+
+type PossessionDialogResult = ModulePossessionDialogResult | null | undefined;
+
+function minimalModuleFixture(): MinimalModule {
+  return {
+    id: 42,
+    name: 'Maths',
+    description: '',
+    hp: 20,
+    public: true,
+    manufacturer: {
+      id: 1,
+      name: 'Make Noise'
+    },
+    manufacturerId: 1,
+    standard: {
+      id: 0,
+      name: 'Eurorack'
+    },
+    tags: [],
+    panels: [],
+    created: '2026-01-01T00:00:00.000Z',
+    updated: '2026-01-01T00:00:00.000Z'
+  };
+}
 
 describe('ModulePossessionDialogComponent', () => {
   function build(initialKind: UserModulePossessionKind | null = null) {
-    const dialogRef = {close: jasmine.createSpy('close')};
+    const dialogRef = jasmine.createSpyObj<MatDialogRef<ModulePossessionDialogComponent, PossessionDialogResult>>(
+      'MatDialogRef',
+      ['close']
+    );
+    const data: ModulePossessionDialogData = {
+      module: minimalModuleFixture(),
+      initialKind
+    };
     const component = new ModulePossessionDialogComponent(
-      dialogRef as any,
-      {module: {id: 42, name: 'Maths', manufacturer: {name: 'Make Noise'}}, initialKind} as any
+      dialogRef,
+      data
     );
     return {component, dialogRef};
   }
