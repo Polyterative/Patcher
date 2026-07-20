@@ -11,7 +11,7 @@ describe('HomeCuriosityBridgeComponent', () => {
     expect(comp.title).toBe('Explore More');
   });
   it('links input can be assigned', () => {
-    comp.links = [{label: 'Modules', href: '/modules'} as any];
+    comp.links = [{icon: 'inventory_2', label: 'Modules', href: '/modules'}];
     expect(comp.links.length).toBe(1);
   });
 });
