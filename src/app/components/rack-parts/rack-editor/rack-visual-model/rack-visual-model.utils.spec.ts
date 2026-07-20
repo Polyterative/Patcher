@@ -9,16 +9,63 @@ import {
   resolveRowPowerPanelPlacement,
   resolveSignalHoverCardPlacement
 } from './rack-visual-model.utils';
-import { RackedModule } from 'src/app/models/module';
+import { DbModule, RackedModule } from 'src/app/models/module';
+import { ModuleRenderRect } from './rack-visual-model.types';
 
-const makeRect = (left: number, top: number, width: number, height: number) => ({
-  left, top, right: left + width, bottom: top + height, width, height,
+const makeRect = (left: number, top: number, width: number, height: number): ModuleRenderRect => ({
+  left, top, right: left + width, bottom: top + height,
   centerX: left + width / 2, centerY: top + height / 2
-} as any);
+});
 
-const makeDOMRect = (left: number, top: number, width: number, height: number) => ({
-  left, top, right: left + width, bottom: top + height, width, height, x: left, y: top
-} as DOMRect);
+const makeDOMRect = (left: number, top: number, width: number, height: number): DOMRect =>
+  new DOMRect(left, top, width, height);
+
+const makeDbModule = (id: number, hp = 8): DbModule => ({
+  id,
+  created: '',
+  updated: '',
+  name: `Module ${ id }`,
+  description: '',
+  hp,
+  public: true,
+  manufacturer: {id: 1, name: 'Test Maker'},
+  manufacturerId: 1,
+  standard: {id: 0, name: 'Eurorack'},
+  tags: [],
+  panels: [],
+  ins: [],
+  outs: [],
+  switches: [],
+  manualURL: '',
+  store_url: null,
+  additional: null,
+  isComplete: true,
+  isApproved: true,
+  isDIY: false,
+  powerPos12: null,
+  powerNeg12: null,
+  powerPos5: null,
+  depth: 0,
+  weight: 0
+});
+
+const makeRackedModule = (id: number, hp = 8): RackedModule => ({
+  module: makeDbModule(id, hp),
+  rackingData: {id, rackid: 1, moduleid: id, row: 0, column: 0}
+});
+
+const makeElementWithRect = (rect: DOMRect): HTMLElement => {
+  const element = document.createElement('div');
+  spyOn(element, 'getBoundingClientRect').and.returnValue(rect);
+  return element;
+};
+
+const makeAnimation = (): Animation => {
+  const animation = new Animation();
+  spyOn(animation, 'addEventListener').and.callThrough();
+  spyOn(animation, 'cancel').and.callThrough();
+  return animation;
+};
 
 describe('rack-visual-model.utils', () => {
   describe('buildCurvedSignalPath', () => {
@@ -51,15 +98,10 @@ describe('rack-visual-model.utils', () => {
   });
 
   describe('layout move helpers', () => {
-    const makeModule = (id: number): RackedModule => ({
-      module: {id, hp: 8},
-      rackingData: {id}
-    } as unknown as RackedModule);
-
     it('finds modules that move by rendered row or column position', () => {
-      const moduleA = makeModule(1);
-      const moduleB = makeModule(2);
-      const moduleC = makeModule(3);
+      const moduleA = makeRackedModule(1);
+      const moduleB = makeRackedModule(2);
+      const moduleC = makeRackedModule(3);
 
       const movedKeys = findMovedRackModuleKeys(
         [[moduleA, moduleB], [moduleC]],
@@ -71,9 +113,9 @@ describe('rack-visual-model.utils', () => {
     });
 
     it('ignores added and removed modules when building move keys', () => {
-      const moduleA = makeModule(1);
-      const moduleB = makeModule(2);
-      const moduleC = makeModule(3);
+      const moduleA = makeRackedModule(1);
+      const moduleB = makeRackedModule(2);
+      const moduleC = makeRackedModule(3);
 
       const movedKeys = findMovedRackModuleKeys(
         [[moduleA, moduleB]],
@@ -117,10 +159,7 @@ describe('rack-visual-model.utils', () => {
       const replacementElement = document.createElement('div');
       replacementElement.dataset['rackModuleTrackKey'] = '1';
       spyOn(replacementElement, 'getBoundingClientRect').and.returnValue(makeDOMRect(34, 58, 80, 120));
-      const fakeAnimation = {
-        addEventListener: jasmine.createSpy('addEventListener'),
-        cancel: jasmine.createSpy('cancel')
-      } as unknown as Animation;
+      const fakeAnimation = makeAnimation();
       spyOn(replacementElement, 'animate').and.returnValue(fakeAnimation);
 
       const cancel = playModuleLayoutMoveAnimations(
@@ -154,10 +193,7 @@ describe('rack-visual-model.utils', () => {
       const element = document.createElement('div');
       element.dataset['rackModuleTrackKey'] = '1';
       spyOn(element, 'getBoundingClientRect').and.returnValue(makeDOMRect(34, 58, 80, 120));
-      const fakeAnimation = {
-        addEventListener: jasmine.createSpy('addEventListener'),
-        cancel: jasmine.createSpy('cancel')
-      } as unknown as Animation;
+      const fakeAnimation = makeAnimation();
       spyOn(element, 'animate').and.returnValue(fakeAnimation);
       screen.append(element);
 
@@ -194,10 +230,7 @@ describe('rack-visual-model.utils', () => {
       const element = document.createElement('div');
       element.dataset['rackModuleTrackKey'] = '1';
       spyOn(element, 'getBoundingClientRect').and.returnValue(makeDOMRect(34, 58, 120, 80));
-      const fakeAnimation = {
-        addEventListener: jasmine.createSpy('addEventListener'),
-        cancel: jasmine.createSpy('cancel')
-      } as unknown as Animation;
+      const fakeAnimation = makeAnimation();
       spyOn(element, 'animate').and.returnValue(fakeAnimation);
       screen.append(element);
 
@@ -244,8 +277,8 @@ describe('rack-visual-model.utils', () => {
     });
 
     it('returns below when no space above', () => {
-      const viewport = { getBoundingClientRect: () => makeDOMRect(0, 0, 800, 600) } as any;
-      const row = { getBoundingClientRect: () => makeDOMRect(0, 10, 800, 30) } as any;
+      const viewport = makeElementWithRect(makeDOMRect(0, 0, 800, 600));
+      const row = makeElementWithRect(makeDOMRect(0, 10, 800, 30));
       expect(resolveRowPowerPanelPlacement(viewport, row, 200)).toBe('below');
     });
   });
@@ -256,9 +289,9 @@ describe('rack-visual-model.utils', () => {
     });
 
     it('returns right by default when space available', () => {
-      const viewport = { getBoundingClientRect: () => makeDOMRect(0, 0, 800, 600) } as any;
-      const module = { getBoundingClientRect: () => makeDOMRect(0, 0, 100, 50) } as any;
-      expect(resolveSignalHoverCardPlacement(module, viewport, 200, 8)).toBe('right');
+      const viewport = makeElementWithRect(makeDOMRect(0, 0, 800, 600));
+      const moduleElement = makeElementWithRect(makeDOMRect(0, 0, 100, 50));
+      expect(resolveSignalHoverCardPlacement(moduleElement, viewport, 200, 8)).toBe('right');
     });
   });
 });
