@@ -15,6 +15,10 @@ import { DbModule, MinimalModule } from '../../models/module';
 import { Patch } from '../../models/patch';
 import { Rack } from '../../models/rack';
 import { SelectionPanelBridgeService } from './selection-panel-bridge.service';
+import {
+  DETAIL_ANALYTICS_SURFACES,
+  DetailAnalyticsSurface
+} from '../detail-analytics-surface';
 import { PATCH_EDITOR_OPERATION_MODES, PatchEditorOperationMode, PatchEditorSortStrategy, LinkedRackPreviewState } from './patch-editor/patch-editor.types';
 import { CVConnectionState, EMPTY_CV_CONNECTION_STATE, LinkedRackUiState, MAX_INSTANCES_PER_MODULE, MultiInstanceModuleSummary } from './patch-detail-data.models';
 import { DEFAULT_LINKED_RACK_UI_STATE } from './patch-detail-data.utils';
@@ -84,6 +88,7 @@ export class PatchDetailDataService extends SubManager implements OnDestroy {
    */
   readonly updateSinglePatchByPublicId$ = new ReplaySubject<string>(1);
   readonly singlePatchData$ = new BehaviorSubject<Patch | undefined>(undefined);
+  readonly detailAnalyticsSurface$ = new BehaviorSubject<DetailAnalyticsSurface>(DETAIL_ANALYTICS_SURFACES.detailRoute);
   readonly patchEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
   readonly patchConnections$: BehaviorSubject<PatchConnection[] | null> = new BehaviorSubject<PatchConnection[]>(null);
   readonly editorConnections$: BehaviorSubject<PatchConnection[] | null> = new BehaviorSubject<PatchConnection[]>(null);
@@ -196,6 +201,10 @@ export class PatchDetailDataService extends SubManager implements OnDestroy {
 
   setPublicDetailMode(enabled: boolean) {
     this.usePublicDetailReads = enabled;
+  }
+
+  setDetailAnalyticsSurface(surface: DetailAnalyticsSurface): void {
+    this.detailAnalyticsSurface$.next(surface);
   }
 
   private buildUnavailableMessage(): string {

@@ -219,7 +219,7 @@ export class PatchEditorComponent extends SubManager implements OnInit, OnDestro
     editorState?: PatchEditorStateService
   ) {
     super();
-    this.editorState = editorState ?? new PatchEditorStateService(this.dataService, this.analytics);
+    this.editorState = editorState ?? new PatchEditorStateService(this.dataService);
     this.maxInstances = this.editorState.maxInstances;
     this.operationModeOptions = this.editorState.operationModeOptions;
     this.operationMode$ = this.editorState.operationMode$;

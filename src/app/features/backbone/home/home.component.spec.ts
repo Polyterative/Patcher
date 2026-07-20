@@ -1,4 +1,5 @@
 import { ReplaySubject } from 'rxjs';
+import { DETAIL_ANALYTICS_SURFACES } from 'src/app/components/detail-analytics-surface';
 import { HomeComponent } from './home.component';
 
 describe('HomeComponent', () => {
@@ -11,9 +12,18 @@ describe('HomeComponent', () => {
   const platformId: object = { __browser: false };
 
   function makeServiceMocks() {
-    mockPatchSvc = { updateSinglePatchData$: new ReplaySubject<number>(1) };
-    mockRackSvc = { updateSingleRackData$: new ReplaySubject<number>(1) };
-    mockModuleSvc = { updateSingleModuleData$: new ReplaySubject<number>(1) };
+    mockPatchSvc = {
+      updateSinglePatchData$: new ReplaySubject<number>(1),
+      setDetailAnalyticsSurface: jasmine.createSpy('setPatchDetailAnalyticsSurface')
+    };
+    mockRackSvc = {
+      updateSingleRackData$: new ReplaySubject<number>(1),
+      setDetailAnalyticsSurface: jasmine.createSpy('setRackDetailAnalyticsSurface')
+    };
+    mockModuleSvc = {
+      updateSingleModuleData$: new ReplaySubject<number>(1),
+      setDetailAnalyticsSurface: jasmine.createSpy('setModuleDetailAnalyticsSurface')
+    };
   }
 
   beforeEach(() => {
@@ -103,6 +113,20 @@ describe('HomeComponent', () => {
     expect(comp.patchViewConfig).toBeDefined();
     expect(comp.rackViewConfig).toBeDefined();
     expect(comp.moduleViewConfig).toBeDefined();
+  });
+
+  it('marks proof showcase services as home preview analytics surfaces', () => {
+    expect(mockPatchSvc.setDetailAnalyticsSurface).toHaveBeenCalledWith(DETAIL_ANALYTICS_SURFACES.homePreview);
+    expect(mockRackSvc.setDetailAnalyticsSurface).toHaveBeenCalledWith(DETAIL_ANALYTICS_SURFACES.homePreview);
+    expect(mockModuleSvc.setDetailAnalyticsSurface).toHaveBeenCalledWith(DETAIL_ANALYTICS_SURFACES.homePreview);
+  });
+
+  it('restores detail-route analytics surfaces when destroyed', () => {
+    comp.ngOnDestroy();
+
+    expect(mockPatchSvc.setDetailAnalyticsSurface).toHaveBeenCalledWith(DETAIL_ANALYTICS_SURFACES.detailRoute);
+    expect(mockRackSvc.setDetailAnalyticsSurface).toHaveBeenCalledWith(DETAIL_ANALYTICS_SURFACES.detailRoute);
+    expect(mockModuleSvc.setDetailAnalyticsSurface).toHaveBeenCalledWith(DETAIL_ANALYTICS_SURFACES.detailRoute);
   });
 
   it('does not seed proof preview data on the server', () => {

@@ -10,6 +10,7 @@ import {
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { PatchModule } from 'src/app/components/patch-parts/patch.module';
+import { DETAIL_ANALYTICS_SURFACES } from 'src/app/components/detail-analytics-surface';
 import {
   Subscription,
   timer
@@ -75,6 +76,7 @@ export class HomeExperienceHeroComponent implements OnInit, OnDestroy {
     public readonly patchDetailDataService: PatchDetailDataService,
     @Inject(PLATFORM_ID) private readonly platformId: object
   ) {
+    this.patchDetailDataService.setDetailAnalyticsSurface(DETAIL_ANALYTICS_SURFACES.homePreview);
     this.content = this._content;
   }
 
@@ -91,6 +93,7 @@ export class HomeExperienceHeroComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.patchDetailDataService.setDetailAnalyticsSurface(DETAIL_ANALYTICS_SURFACES.detailRoute);
     this.heroPatchLoadSub?.unsubscribe();
   }
 

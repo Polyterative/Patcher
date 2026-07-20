@@ -93,6 +93,7 @@ export class ModuleBrowserDataService extends SubManager {
   readonly groupedFilterTags$: Observable<TagSuggestionGroup[]>;
   readonly fields: ModuleBrowserFields;
   readonly canReset$: Observable<boolean>;
+  private searchPerformedPending = false;
 
   constructor(
     private backend: SupabaseService,
@@ -155,13 +156,17 @@ export class ModuleBrowserDataService extends SubManager {
       shareReplay(1)
     );
 
-    merge(
+    const filterControlChanges$ = merge(
       this.fields.name.control.valueChanges,
       this.fields.description.control.valueChanges,
       this.fields.manufacturers.control.valueChanges,
       this.fields.hp.control.valueChanges,
       this.fields.hpCondition.control.valueChanges,
-      this.fields.standard.control.valueChanges,
+      this.fields.standard.control.valueChanges
+    );
+
+    merge(
+      filterControlChanges$.pipe(tap(() => this.markSearchPerformedPending())),
       this.fields.order.control.valueChanges
     ).pipe(
       tap(() => this.moduleFilterInteraction$.next()),
@@ -202,6 +207,7 @@ export class ModuleBrowserDataService extends SubManager {
           order_changed: orderChanged,
         });
 
+        this.markSearchPerformedPending();
         if (selectedCount > 0 && currentOrder?.id === this.orderStartingValue.id) {
           this.fields.order.control.setValue(this.bestMatchOrderOption);
         } else if (selectedCount === 0 && currentOrder?.id === this.bestMatchOrderOption.id) {
@@ -228,6 +234,7 @@ export class ModuleBrowserDataService extends SubManager {
           mode: this.tagMatchMode$.value,
           active_tags_count: activeTags,
         });
+        this.markSearchPerformedPending();
         if (this.modulesList$.value !== null && activeTags > 0) {
           this.remoteTagFilterLoading$.next(true);
         }
@@ -307,19 +314,8 @@ export class ModuleBrowserDataService extends SubManager {
         this.modulesList$.next(skip === 0 ? response.data : [...current, ...response.data]);
         this.remoteTagFilterLoading$.next(false);
 
-        // Only capture for fresh searches (skip===0), not pagination loads.
         if (skip === 0) {
-          const nameVal = this.fields.name.control.value ?? '';
-          const hasManufacturer = !!this.fields.manufacturers.control.value;
-          const hasHp = !!(this.fields.hp.control.value);
-          const hasTags = this.getSelectedTagIds().length > 0;
-          const hasDescription = !!(this.fields.description.control.value);
-          const filtersActive = [hasManufacturer, hasHp, hasTags, hasDescription].filter(Boolean).length;
-          this.analytics.capture('search.performed', {
-            query_len:      nameVal.length,
-            filters_active: filtersActive,
-            result_count:   response.count ?? response.data.length
-          });
+          this.capturePendingSearchPerformed(response.count ?? response.data.length);
         }
       });
 
@@ -402,6 +398,27 @@ export class ModuleBrowserDataService extends SubManager {
 
   private getSelectedTagIds(): number[] {
     return getSelectedTagIdsFromFields(this.fields);
+  }
+
+  private markSearchPerformedPending(): void {
+    this.searchPerformedPending = true;
+  }
+
+  private capturePendingSearchPerformed(resultCount: number): void {
+    if (!this.searchPerformedPending) {
+      return;
+    }
+    this.searchPerformedPending = false;
+
+    const nameVal = this.fields.name.control.value.trim();
+    const filtersActive = getActiveFilterNames(this.fields)
+      .filter(filterName => filterName !== 'name')
+      .length;
+    this.analytics.capture('search.performed', {
+      query_len:      nameVal.length,
+      filters_active: filtersActive,
+      result_count:   resultCount
+    });
   }
 
 }

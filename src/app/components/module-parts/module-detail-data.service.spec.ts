@@ -13,6 +13,7 @@ import { ModuleDetailDataService } from './module-detail-data.service';
 import { MergeModuleResult } from '../../features/backend/supabase-merge';
 import { ReactionEntityTypes } from '../../features/backend/supabase-reactions';
 import { ModuleSparsePriceHistorySummary } from '../../features/backend/supabase-queries';
+import { DETAIL_ANALYTICS_SURFACES } from '../detail-analytics-surface';
 
 
 describe('ModuleDetailDataService', () => {
@@ -104,6 +105,7 @@ describe('ModuleDetailDataService', () => {
     const router = jasmine.createSpyObj('Router', ['navigate']);
     const userService = {loggedUser$};
     
+    const analytics = jasmine.createSpyObj('AnalyticsService', ['capture', 'identify', 'reset']);
     const service = new ModuleDetailDataService(
       dialog,
       snackBar as any,
@@ -111,7 +113,7 @@ describe('ModuleDetailDataService', () => {
       backend as any,
       appState as any,
       router,
-      {capture: () => {}, identify: () => {}, reset: () => {}} as any
+      analytics
     );
     
     return {
@@ -122,7 +124,8 @@ describe('ModuleDetailDataService', () => {
       router,
       loggedUser$,
       baseModule,
-      adminRole$
+      adminRole$,
+      analytics
     };
   }
   
@@ -150,6 +153,30 @@ describe('ModuleDetailDataService', () => {
       public_patch_count: 1,
       hidden_patch_bucket: '5_plus'
     });
+  }));
+
+  it('captures module.viewed once for a direct detail load', fakeAsync(() => {
+    const {service, analytics} = build();
+
+    service.updateSingleModuleData$.next(10);
+    tick(260);
+
+    const viewedCalls = analytics.capture.calls.allArgs()
+      .filter(([eventName]) => eventName === 'module.viewed');
+    expect(viewedCalls).toEqual([
+      ['module.viewed', jasmine.objectContaining({module_id: 10})]
+    ]);
+  }));
+
+  it('does not capture module.viewed for a home preview load', fakeAsync(() => {
+    const {service, analytics} = build();
+
+    service.setDetailAnalyticsSurface(DETAIL_ANALYTICS_SURFACES.homePreview);
+    service.updateSingleModuleData$.next(10);
+    tick(260);
+
+    expect(service.singleModuleData$.value?.id).toBe(10);
+    expect(analytics.capture.calls.allArgs().some(([eventName]) => eventName === 'module.viewed')).toBeFalse();
   }));
 
   it('builds module panel public URLs via the shared storage helper', () => {

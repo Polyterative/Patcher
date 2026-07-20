@@ -87,7 +87,7 @@ export class UserModulesComponent extends SubManager {
   selectFilter(filter: UserModulesSectionFilter): void {
     this.activeSectionFilter$.next(filter);
     if (filter !== 'COOL') {
-      this.dataService.moduleCollectionFilter$.next(filter);
+      this.dataService.selectModuleCollectionFilter$.next(filter);
     }
   }
   

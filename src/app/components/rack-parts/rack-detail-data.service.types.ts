@@ -12,6 +12,7 @@ import {
   Subject
 } from 'rxjs';
 import { AnalyticsService } from '../../features/backbone/analytics-integration/analytics.service';
+import { DetailAnalyticsSurface } from '../detail-analytics-surface';
 import { UserManagementService } from '../../features/backbone/login/user-management.service';
 import { SupabaseService } from '../../features/backend/supabase.service';
 import {
@@ -47,6 +48,8 @@ export interface RackDetailDataContext {
   updateSingleRackData$: ReplaySubject<number>;
   updateSingleRackByPublicId$: ReplaySubject<string>;
   singleRackData$: BehaviorSubject<Rack | undefined>;
+  detailAnalyticsSurface$: BehaviorSubject<DetailAnalyticsSurface>;
+  loadedRackAnalyticsSurface$: BehaviorSubject<DetailAnalyticsSurface>;
   rackDetailUnavailableMessage$: BehaviorSubject<string | null>;
   deleteRack$: Subject<RackMinimal>;
   duplicateRack$: Subject<RackMinimal>;

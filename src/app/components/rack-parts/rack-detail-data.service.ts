@@ -1,20 +1,10 @@
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
-import {
-  ElementRef,
-  Injectable,
-  Optional
-} from '@angular/core';
+import { ElementRef, Injectable, Optional } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import {
-  BehaviorSubject,
-  combineLatest,
-  Observable,
-  ReplaySubject,
-  Subject
-} from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, ReplaySubject, Subject } from 'rxjs';
 import {
   distinctUntilChanged,
   filter,
@@ -23,6 +13,7 @@ import {
   take
 } from 'rxjs/operators';
 import { AnalyticsService } from '../../features/backbone/analytics-integration/analytics.service';
+import { DETAIL_ANALYTICS_SURFACES, DetailAnalyticsSurface } from '../detail-analytics-surface';
 import { UserManagementService } from '../../features/backbone/login/user-management.service';
 import { SupabaseService } from '../../features/backend/supabase.service';
 import {
@@ -73,6 +64,8 @@ export class RackDetailDataService extends SubManager {
   readonly updateSingleRackData$ = new ReplaySubject<number>();
   readonly updateSingleRackByPublicId$ = new ReplaySubject<string>(1);
   readonly singleRackData$ = new BehaviorSubject<Rack | undefined>(undefined);
+  readonly detailAnalyticsSurface$ = new BehaviorSubject<DetailAnalyticsSurface>(DETAIL_ANALYTICS_SURFACES.detailRoute);
+  readonly loadedRackAnalyticsSurface$ = new BehaviorSubject<DetailAnalyticsSurface>(DETAIL_ANALYTICS_SURFACES.detailRoute);
   readonly rackDetailUnavailableMessage$ = new BehaviorSubject<string | null>(null);
   readonly deleteRack$ = new Subject<RackMinimal>();
   readonly duplicateRack$ = new Subject<RackMinimal>();
@@ -231,6 +224,8 @@ export class RackDetailDataService extends SubManager {
     this.loadingFlows.setPublicDetailMode(enabled);
   }
 
+  setDetailAnalyticsSurface(surface: DetailAnalyticsSurface): void { this.detailAnalyticsSurface$.next(surface); }
+
   private generateRackJpeg$(el: HTMLElement) {
     return this.imageOperations.generateRackJpeg$(el);
   }
@@ -300,6 +295,8 @@ export class RackDetailDataService extends SubManager {
       updateSingleRackData$: this.updateSingleRackData$,
       updateSingleRackByPublicId$: this.updateSingleRackByPublicId$,
       singleRackData$: this.singleRackData$,
+      detailAnalyticsSurface$: this.detailAnalyticsSurface$,
+      loadedRackAnalyticsSurface$: this.loadedRackAnalyticsSurface$,
       rackDetailUnavailableMessage$: this.rackDetailUnavailableMessage$,
       deleteRack$: this.deleteRack$,
       duplicateRack$: this.duplicateRack$,

@@ -6,6 +6,7 @@ import {
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { SelectionPanelBridgeService } from './selection-panel-bridge.service';
 import { PatchDetailDataService } from './patch-detail-data.service';
+import { DETAIL_ANALYTICS_SURFACES } from '../detail-analytics-surface';
 
 
 describe('PatchDetailDataService core flows', () => {
@@ -79,13 +80,14 @@ describe('PatchDetailDataService core flows', () => {
     };
     const bridge = new SelectionPanelBridgeService();
 
+    const analytics = jasmine.createSpyObj('AnalyticsService', ['capture', 'identify', 'reset']);
     const service = new PatchDetailDataService(
-      router, snackBar, dialog as any, {} as any, backend as any, bridge, {capture: () => {}, identify: () => {}, reset: () => {}} as any
+      router, snackBar, dialog as any, {} as any, backend as any, bridge, analytics
     );
     createdServices.push(service);
     createdBridges.push(bridge);
 
-    return {service, backend, router, snackBar, dialog, bridge, userSession$};
+    return {service, backend, router, snackBar, dialog, bridge, userSession$, analytics};
   }
 
   beforeEach(() => {
@@ -109,6 +111,27 @@ describe('PatchDetailDataService core flows', () => {
     expect(backend.get.patchWithId).toHaveBeenCalledWith(1);
     expect(service.singlePatchData$.value?.id).toBe(1);
     expect(backend.GET.patchConnections).toHaveBeenCalledWith(1);
+  });
+
+  it('captures patch.viewed once for a direct public detail load', () => {
+    const {service, backend, analytics} = build();
+    backend.GET.patchByPublicId.and.returnValue(of({data: patch({id: 44, name: 'Token Patch'})}));
+
+    service.updateSinglePatchByPublicId$.next('aBcD1234_-Xy');
+
+    expect(analytics.capture.calls.allArgs().filter(([eventName]) => eventName === 'patch.viewed')).toEqual([
+      ['patch.viewed', {patch_id: 44}]
+    ]);
+  });
+
+  it('does not capture patch.viewed for a home preview load', () => {
+    const {service, analytics} = build();
+
+    service.setDetailAnalyticsSurface(DETAIL_ANALYTICS_SURFACES.homePreview);
+    service.updateSinglePatchData$.next(1);
+
+    expect(service.singlePatchData$.value?.id).toBe(1);
+    expect(analytics.capture.calls.allArgs().some(([eventName]) => eventName === 'patch.viewed')).toBeFalse();
   });
 
   it('sets patchDetailUnavailableMessage$ when patch data returns null', () => {
@@ -177,6 +200,29 @@ describe('PatchDetailDataService core flows', () => {
 
     service.requestPatchEditingToggle$.next();
     expect(service.patchEditingPanelOpenState$.value).toBeFalse();
+  });
+
+  it('does not log a connection selection reset from the initial closed editor panel state', () => {
+    const {analytics} = build();
+
+    const resetCalls = analytics.capture.calls.allArgs()
+      .filter(([eventName]) => eventName === 'patch.connection_selection_reset');
+
+    expect(resetCalls).toEqual([]);
+  });
+
+  it('closing an opened editing panel logs one connection selection reset', () => {
+    const {service, analytics} = build();
+    service.singlePatchData$.next(patch({id: 5}));
+
+    service.patchEditingPanelOpenState$.next(true);
+    service.patchEditingPanelOpenState$.next(false);
+
+    const resetCalls = analytics.capture.calls.allArgs()
+      .filter(([eventName]) => eventName === 'patch.connection_selection_reset');
+    expect(resetCalls).toEqual([
+      ['patch.connection_selection_reset', {patch_id: 5}]
+    ]);
   });
 
   it('closing the editing panel (true→false) triggers patch data refresh', () => {

@@ -2,6 +2,7 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ReplaySubject } from 'rxjs';
+import { DETAIL_ANALYTICS_SURFACES } from 'src/app/components/detail-analytics-surface';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { PatchModule } from 'src/app/components/patch-parts/patch.module';
 import { HomeExperienceHeroComponent } from './home-experience-hero.component';
@@ -17,7 +18,8 @@ describe('HomeExperienceHeroComponent', () => {
         {
           provide: PatchDetailDataService,
           useValue: {
-            updateSinglePatchData$: new ReplaySubject<number>()
+            updateSinglePatchData$: new ReplaySubject<number>(),
+            setDetailAnalyticsSurface: jasmine.createSpy('setDetailAnalyticsSurface')
           }
         }
       ],
@@ -64,5 +66,15 @@ describe('HomeExperienceHeroComponent', () => {
     const host = fixture.nativeElement as HTMLElement;
     expect(host.querySelector('.patch-graph-shell')).not.toBeNull();
     expect(host.querySelector('.patch-graph-shell app-patch-graph')).not.toBeNull();
+  });
+
+  it('uses the home preview analytics surface while mounted', () => {
+    const service = TestBed.inject(PatchDetailDataService);
+
+    expect(service.setDetailAnalyticsSurface).toHaveBeenCalledWith(DETAIL_ANALYTICS_SURFACES.homePreview);
+
+    fixture.destroy();
+
+    expect(service.setDetailAnalyticsSurface).toHaveBeenCalledWith(DETAIL_ANALYTICS_SURFACES.detailRoute);
   });
 });

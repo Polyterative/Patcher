@@ -3,7 +3,10 @@ import {
   userModulesDefaultViewConfig
 } from './user-modules.component';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
-import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area-data.service';
+import {
+  UserAreaDataService,
+  UserModuleCollectionFilter
+} from 'src/app/features/routes/user-area/user-area-data.service';
 import { Subject, BehaviorSubject } from 'rxjs';
 
 function mockBackend(): SupabaseService {
@@ -11,10 +14,15 @@ function mockBackend(): SupabaseService {
 }
 
 function mockDataService(): UserAreaDataService {
+  const moduleCollectionFilter$ = new BehaviorSubject('MY_MODULES');
+  const selectModuleCollectionFilter$ = new Subject<UserModuleCollectionFilter>();
+  selectModuleCollectionFilter$.subscribe(filter => moduleCollectionFilter$.next(filter));
+
   return {
     updateModulesData$: new Subject<void>(),
     modulesData$: new BehaviorSubject(undefined),
-    moduleCollectionFilter$: new BehaviorSubject('MY_MODULES')
+    moduleCollectionFilter$,
+    selectModuleCollectionFilter$
   } as unknown as UserAreaDataService;
 }
 
