@@ -1,10 +1,9 @@
 import { orderPatchGraphNodesForReveal } from './patch-graph-layout.utils';
+import { GraphNode } from 'src/app/shared-interproject/components/@visual/graph-view/graph.component';
+import { graphNodeFixture } from './patch-graph-test-fixtures';
 
-const makeNode = (id: string, type: string, parentModuleNodeId?: string, label = id): any => ({
-  id,
-  label,
-  data: { type, parentModuleNodeId }
-});
+const makeNode = (id: string, type: string, parentModuleNodeId?: string, label = id): GraphNode =>
+  graphNodeFixture(id, type, parentModuleNodeId, label);
 
 describe('patch-graph-layout.utils', () => {
   describe('orderPatchGraphNodesForReveal', () => {

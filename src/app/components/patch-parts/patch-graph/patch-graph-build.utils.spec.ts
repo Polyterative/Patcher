@@ -5,10 +5,16 @@ import {
   buildModuleNodeId,
   buildCvNodeId
 } from './patch-graph-build.utils';
+import { PatchConnection } from 'src/app/models/connection';
+import {
+  cvWithModuleFixture,
+  patchFixture
+} from './patch-graph-test-fixtures';
 
-const makeConn = (aModId: number, aInstId: number | undefined, bModId: number, bInstId: number | undefined): any => ({
-  a: { module: { id: aModId } },
-  b: { module: { id: bModId } },
+const makeConn = (aModId: number, aInstId: number | undefined, bModId: number, bInstId: number | undefined): PatchConnection => ({
+  a: cvWithModuleFixture(aModId * 10, aModId),
+  b: cvWithModuleFixture(bModId * 10, bModId),
+  patch: patchFixture(),
   instance_id_a: aInstId,
   instance_id_b: bInstId
 });

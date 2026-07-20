@@ -28,21 +28,24 @@ import {
   withLatestFrom
 } from 'rxjs/operators';
 import { PatchConnection } from 'src/app/models/connection';
-import { Patch } from 'src/app/models/patch';
 import { CVwithModule } from 'src/app/models/cv';
+import {
+  cvWithModuleFixture,
+  patchFixture
+} from '../patch-graph/patch-graph-test-fixtures';
 
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function makeCV(id: number, moduleId: number): CVwithModule {
-  return {id, name: `CV ${ id }`, module: {id: moduleId, name: `M${ moduleId }`} as any};
+  return cvWithModuleFixture(id, moduleId, `M${ moduleId }`);
 }
 
 function makeConnections(count = 1): PatchConnection[] {
   return Array.from({length: count}, (_, i) => ({
     a: makeCV(i + 1, 10),
     b: makeCV(i + 100, 20),
-    patch: {id: 1} as Patch,
+    patch: patchFixture(),
     instance_id_a: undefined,
     instance_id_b: undefined
   }));
