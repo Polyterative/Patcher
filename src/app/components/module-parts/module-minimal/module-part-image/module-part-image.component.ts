@@ -13,7 +13,7 @@ import { animate, style, transition, trigger } from '@angular/animations';
 import { TooltipPosition } from '@angular/material/tooltip';
 import { MinimalModule } from 'src/app/models/module';
 import { AppViewportService } from 'src/app/shared-interproject/app-viewport.service';
-import { StorageUrls } from 'src/app/features/backend/DatabaseStrings';
+import { ModulePartImageDataService } from './module-part-image-data.service';
 
 
 export function resolveSurfaceTooltipPosition(
@@ -35,6 +35,7 @@ export function resolveSurfaceTooltipPosition(
   templateUrl: './module-part-image.component.html',
   styleUrls: ['./module-part-image.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [ModulePartImageDataService],
   animations: [
     trigger('enter', [
       transition(':enter', [
@@ -56,9 +57,8 @@ export class ModulePartImageComponent implements AfterViewInit, OnChanges {
   
   filename: string | undefined;
   tooltipPosition: TooltipPosition = 'after';
-  
-  readonly panelStorageBase = StorageUrls.modulePanels;
-  
+  useDirectStorageFallback = false;
+
   @Input() containImage: boolean = true;
   @Input() big: boolean = false;
   @Input() disableEnterAnimation = false;
@@ -84,9 +84,22 @@ export class ModulePartImageComponent implements AfterViewInit, OnChanges {
   get imageDecodingMode(): 'async' | 'sync' {
     return this.isSurfaceImage ? 'sync' : 'async';
   }
+
+  get imageSrc(): string | undefined {
+    if (!this.filename) {
+      return undefined;
+    }
+
+    if (this.useDirectStorageFallback) {
+      return this.dataService.getPanelImageUrl(this.filename, true);
+    }
+
+    return this.dataService.getPanelImageUrl(this.filename);
+  }
   
   constructor(
     public changeDetection: ChangeDetectorRef,
+    private readonly dataService: ModulePartImageDataService,
     private readonly hostElementRef?: ElementRef<HTMLElement>,
     private readonly appViewportService?: AppViewportService
   ) { }
@@ -96,6 +109,7 @@ export class ModulePartImageComponent implements AfterViewInit, OnChanges {
   }
   
   ngOnChanges(): void {
+    const previousFilename = this.filename;
     if (this.data.panels?.length > 0) {
       let panel = this.selectedPanelId != null
         ? this.data.panels.find(p => p.id === this.selectedPanelId)
@@ -107,7 +121,19 @@ export class ModulePartImageComponent implements AfterViewInit, OnChanges {
     } else {
       this.filename = undefined;
     }
+    if (this.filename !== previousFilename) {
+      this.useDirectStorageFallback = false;
+    }
     this.updateTooltipPosition();
+    this.changeDetection.detectChanges();
+  }
+
+  onImageLoadError(): void {
+    if (!this.filename || this.useDirectStorageFallback) {
+      return;
+    }
+
+    this.useDirectStorageFallback = true;
     this.changeDetection.detectChanges();
   }
 

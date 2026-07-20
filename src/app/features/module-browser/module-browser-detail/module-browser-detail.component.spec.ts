@@ -1,7 +1,9 @@
 import {
   Component,
+  EventEmitter,
   Input,
-  NO_ERRORS_SCHEMA
+  NO_ERRORS_SCHEMA,
+  Output
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -35,16 +37,33 @@ import {
 } from './module-browser-detail.component';
 import { ModuleUsageCardComponent } from './module-usage-card/module-usage-card.component';
 import { ModulePriceListing } from '../../backend/supabase-queries.models';
+import { getModulePanelPublicUrl } from '../../backend/supabase-storage';
+import { ReactionEntityTypes } from 'src/app/features/backend/supabase-reactions';
+import { CoolToggleResult } from 'src/app/components/shared-atoms/cool-button/cool-button-data.service';
 
 @Component({
   selector: 'app-module-composite',
-  template: '<ng-content></ng-content>',
+  template: `
+    <app-cool-button
+      *ngIf="showCoolAction"
+      class="module-title-row__cool"
+      [entityType]="ReactionEntityTypes.MODULE"
+      [entityId]="data?.id"
+      [eligible]="data?.public === true"
+      countDisplayMode="count"
+      variant="title"
+      (coolToggled)="coolToggled.emit($event)"
+    ></app-cool-button>
+    <ng-content></ng-content>
+  `,
   standalone: false
 })
 class ModuleCompositeStubComponent {
   @Input() data: DbModule | undefined;
   @Input() viewConfig: ModuleMinimalViewConfig | undefined;
   @Input() showCoolAction = false;
+  @Output() coolToggled = new EventEmitter<CoolToggleResult>();
+  readonly ReactionEntityTypes = ReactionEntityTypes;
 }
 
 @Component({
@@ -61,7 +80,7 @@ class ManufacturerRowStubComponent {
 
 describe('ModuleBrowserDetailComponent', () => {
   type RatioModuleFixture = Pick<DbModule, 'hp' | 'standard'>;
-  type SearchLinkPriceListing = Pick<ModulePriceListing, 'storeId' | 'storeSlug'>;
+  type SearchLinkPriceListing = Pick<ModulePriceListing, 'storeId' | 'storeSlug' | 'verificationStatus'>;
 
   function makeReactionBackendSpy() {
     return {
@@ -294,7 +313,10 @@ describe('ModuleBrowserDetailComponent', () => {
     const {component, dataService, commentsDataService, seoAndUtilsService} = build();
     component.ngOnInit();
     
-    dataService.singleModuleData$.next(moduleFixture());
+    dataService.singleModuleData$.next({
+      ...moduleFixture(),
+      panels: [{filename: 'mega-osc-panel.jpg'}]
+    });
     
     expect(commentsDataService.requestCommentsUpdate$.next).toHaveBeenCalledWith({
       entityId: 99,
@@ -302,7 +324,8 @@ describe('ModuleBrowserDetailComponent', () => {
     });
     expect(seoAndUtilsService.updateSeo).toHaveBeenCalledWith(
       jasmine.objectContaining({
-        title: 'Mega Osc - details.'
+        title: 'Mega Osc - details.',
+        image: getModulePanelPublicUrl('mega-osc-panel.jpg')
       }),
       'Mega Osc by Maker - Module Details'
     );
@@ -379,7 +402,7 @@ describe('ModuleBrowserDetailComponent', () => {
   it('renders community search links while suppressing retailers with current price listings', async () => {
     const {fixture, dataService} = await render();
 
-    dataService.modulePriceListings$.next([{storeId: 1, storeSlug: 'control'}]);
+    dataService.modulePriceListings$.next([{storeId: 1, storeSlug: 'control', verificationStatus: 'verified'}]);
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent;
@@ -395,7 +418,8 @@ describe('ModuleBrowserDetailComponent', () => {
     const {fixture, dataService} = await render();
     const listings = fixture.componentInstance.retailerSearchLinks.map((link, index) => ({
       storeId: index + 1,
-      storeSlug: link.storeSlugs![0]
+      storeSlug: link.storeSlugs![0],
+      verificationStatus: 'verified' as const
     }));
 
     dataService.modulePriceListings$.next(listings);
@@ -417,30 +441,32 @@ describe('ModuleBrowserDetailComponent', () => {
     expect(reactionBackend.delete.reaction).not.toHaveBeenCalled();
   });
 
-  it('renders Cool as a floating action instead of inside the primary module card', async () => {
+  it('renders Cool inside the primary module card title row, not the Community card or floating actions', async () => {
     const {fixture} = await render();
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('lib-hero-content-card[titleNormal="Community"] app-cool-button')).toBeNull();
     const composite = fixture.debugElement.query(By.directive(ModuleCompositeStubComponent));
-    expect(composite.componentInstance.showCoolAction).toBeFalse();
-    expect(fixture.nativeElement.querySelector('.module-detail-editor-floating-actions .module-detail-cool-floating-action')).not.toBeNull();
+    expect(composite.componentInstance.showCoolAction).toBeTrue();
+    expect(fixture.nativeElement.querySelector('app-module-composite .module-title-row__cool')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.module-detail-editor-floating-actions .module-detail-cool-floating-action')).toBeNull();
   });
 
-  it('keeps the floating Cool action visible for owned modules', async () => {
+  it('keeps the inline Cool action visible for owned modules', async () => {
     const {fixture, dataService} = await render();
     dataService.currentModulePossession$.next('HAS');
 
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('.module-detail-editor-floating-actions .module-detail-cool-floating-action')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('app-module-composite .module-title-row__cool')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.module-detail-editor-floating-actions .module-detail-cool-floating-action')).toBeNull();
   });
 
-  it('updates the page Cool count from the floating Cool action success event', async () => {
+  it('updates the page Cool count from the inline Cool action success event', async () => {
     const {fixture, dataService} = await render({coolToken: true});
     const countUpdateSpy = spyOn(dataService.coolCountUpdate$, 'next').and.callThrough();
 
-    fixture.debugElement.query(By.css('.module-detail-cool-floating-action button.coolButton')).triggerEventHandler('click');
+    fixture.debugElement.query(By.css('app-module-composite .module-title-row__cool button.coolButton')).triggerEventHandler('click');
     fixture.detectChanges();
 
     expect(countUpdateSpy).toHaveBeenCalledWith(1);

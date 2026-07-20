@@ -45,6 +45,8 @@
               selectedPanelPreviewUrl: selectedPanelSourcePreviewUrl$ | async,
               croppedPreviewUrl: croppedPanelPreviewUrl$ | async,
               croppedPanelFile: croppedPanelFile$ | async,
+              uploadGuardrail: panelUploadGuardrail$ | async,
+              uploadGuardrailConfirmed: panelUploadGuardrailConfirmed$ | async,
               cropLoading: panelCropLoading$ | async,
               cropLoadFailed: panelCropLoadFailed$ | async
             }; as cropBag) {
@@ -116,6 +118,31 @@
                         <mat-icon>keyboard_arrow_down</mat-icon>
                       </button>
                     </div>
+
+                    @if (cropBag.uploadGuardrail?.requiresConfirmation) {
+                      <div class="setup-panel-upload-guardrail"
+                           [class.setup-panel-upload-guardrail--confirmed]="cropBag.uploadGuardrailConfirmed"
+                           aria-live="polite"
+                      >
+                        <mat-icon aria-hidden="true">
+                          {{ cropBag.uploadGuardrailConfirmed ? 'check_circle' : 'warning' }}
+                        </mat-icon>
+                        <div class="setup-panel-upload-guardrail-copy">
+                          <span class="setup-panel-upload-guardrail-title">Compression target missed</span>
+                          <span>{{ cropBag.uploadGuardrail.summary }}</span>
+                        </div>
+                        @if (!cropBag.uploadGuardrailConfirmed) {
+                          <button type="button"
+                                  mat-stroked-button
+                                  (click)="confirmPanelUploadGuardrail()"
+                          >
+                            Compress anyway
+                          </button>
+                        } @else {
+                          <span class="setup-panel-upload-guardrail-confirmed">Confirmed</span>
+                        }
+                      </div>
+                    }
                   </div>
 
                   <div class="setup-panel-crop-grid">

@@ -17,10 +17,8 @@ import {
   map,
   switchMap
 } from 'rxjs/operators';
-import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { ModuleList } from 'src/app/features/module-browser/module-browser-data.service';
 import { ManufacturerDetail } from '../../manufacturer-detail-data.service';
-import { StorageUrls } from 'src/app/features/backend/DatabaseStrings';
 import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
@@ -31,12 +29,14 @@ import { CleanCardComponent } from 'src/app/shared-interproject/components/@visu
 import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.module';
 import { ManufacturerUpdatedBadgeComponent } from './manufacturer-updated-badge/manufacturer-updated-badge.component';
 import { ModuleRecentMarketPrice } from 'src/app/features/backend/supabase-queries';
+import { ManufacturerRowDataService } from './manufacturer-row-data.service';
 
 
 @Component({
   selector: 'app-manufacturer-row',
   templateUrl: './manufacturer-row.component.html',
   styleUrls: ['./manufacturer-row.component.scss'],
+  providers: [ManufacturerRowDataService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
@@ -53,7 +53,9 @@ export class ManufacturerRowComponent extends SubManager implements OnInit {
   @Input() hideRowLink = false;
   @Input() showPriceSummary = false;
 
-  readonly logoStorageBase = StorageUrls.manufacturerLogos;
+  get logoStorageBase(): string {
+    return this.dataService.logoStorageBase;
+  }
 
   private readonly _modules$ = new BehaviorSubject<ModuleList>(null);
   readonly modules$ = this._modules$.asObservable();
@@ -77,16 +79,16 @@ export class ManufacturerRowComponent extends SubManager implements OnInit {
     tagsMaxCount: 0,
   };
   
-  constructor(private readonly backend: SupabaseService) {
+  constructor(private readonly dataService: ManufacturerRowDataService) {
     super();
   }
 
   ngOnInit(): void {
-    this.backend.get.modulesBySameManufacturer(this.manufacturer.id, 0, 29)
+    this.dataService.modulesBySameManufacturer(this.manufacturer.id)
       .pipe(this.takeUntilDestroyed())
       .subscribe(modules => this._modules$.next(modules ?? []));
 
-    if (!this.showPriceSummary || !this.backend.GET?.recentModuleMarketPrices) {
+    if (!this.showPriceSummary || !this.dataService.canLoadRecentModuleMarketPrices) {
       return;
     }
 
@@ -99,7 +101,7 @@ export class ManufacturerRowComponent extends SubManager implements OnInit {
           return of([]);
         }
 
-        return this.backend.GET.recentModuleMarketPrices(moduleIds).pipe(
+        return this.dataService.recentModuleMarketPrices(moduleIds).pipe(
           catchError(error => {
             console.warn('Recent market prices could not be loaded for manufacturer row.', error);
             return of([]);

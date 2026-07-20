@@ -160,6 +160,18 @@ describe('ModuleRealisticComponent', () => {
     expect(component.functionAnalysisMode).toBeFalse();
   });
 
+  it('normalizes rack module orientation for the physical surface', () => {
+    const component = build();
+
+    expect(component.rotated180).toBeFalse();
+
+    component.orientation = 'rot180';
+    expect(component.rotated180).toBeTrue();
+
+    component.orientation = 'unexpected' as never;
+    expect(component.rotated180).toBeFalse();
+  });
+
   it('binds the host width to module hp', () => {
     const component = build();
     component.data = makeMinimalModule();

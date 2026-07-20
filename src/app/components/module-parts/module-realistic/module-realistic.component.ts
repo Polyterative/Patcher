@@ -11,6 +11,11 @@ import { ModuleDetailDataService } from '../module-detail-data.service';
 import { derivePanelLabel } from '../panel.constants';
 import { RackAnalysisMode, RACK_ANALYSIS_MODES } from '../../rack-parts/rack-analysis-mode';
 import { prefersTouchInteraction } from 'src/app/shared-interproject/touch-interaction.utils';
+import {
+  normalizeRackModuleOrientation,
+  RackModuleOrientation,
+  RACK_MODULE_ORIENTATIONS
+} from 'src/app/models/rack';
 
 
 @Component({
@@ -29,6 +34,7 @@ export class ModuleRealisticComponent {
   @Input() analysisMode: RackAnalysisMode = RACK_ANALYSIS_MODES.off;
   @Input() analysisClass = '';
   @Input() disablePanelImageEnterAnimation = false;
+  @Input() orientation: RackModuleOrientation = RACK_MODULE_ORIENTATIONS.normal;
 
   // Rack and patch rows can mix formats; host geometry is fixed module size,
   // not a flex-row suggestion.
@@ -68,6 +74,10 @@ export class ModuleRealisticComponent {
 
   get layoutAnalysisMode(): boolean {
     return this.analysisMode === this.analysisModes.layout;
+  }
+
+  get rotated180(): boolean {
+    return normalizeRackModuleOrientation(this.orientation) === RACK_MODULE_ORIENTATIONS.rot180;
   }
   
   constructor(

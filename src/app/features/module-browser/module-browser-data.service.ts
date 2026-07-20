@@ -3,23 +3,16 @@ import {
   Injectable
 } from '@angular/core';
 import {
-  FormControl,
-  Validators
-} from '@angular/forms';
-import {
   BehaviorSubject,
   combineLatest,
   merge,
   Observable,
-  of,
   Subject
 } from 'rxjs';
 import {
-  catchError,
   debounceTime,
   distinctUntilChanged,
   map,
-  share,
   shareReplay,
   skip,
   startWith,
@@ -28,30 +21,11 @@ import {
   withLatestFrom
 } from 'rxjs/operators';
 import { MinimalModule } from '../../models/module';
-import { TAG_TYPE_DISPLAY_ORDER, TAG_TYPE_LABELS, Tag, TagSuggestionGroup } from '../../models/tag';
-import {
-  FormTypes,
-  getCleanedValueId,
-  ISelectable,
-  isOption
-} from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { matchesSearchQuery } from '../../shared-interproject/components/@smart/mat-form-entity/string-utils';
+import { Tag, TagSuggestionGroup } from '../../models/tag';
+import { getCleanedValueId } from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SubManager } from '../../shared-interproject/directives/subscription-manager';
-import {
-  compareModulesByHpAsc,
-  compareModulesByHpDesc,
-  compareModulesByManufacturerAsc,
-  compareModulesByManufacturerDesc,
-  compareModulesByNameAsc,
-  compareModulesByNameDesc,
-  compareModulesByUpdatedAsc,
-  compareModulesByUpdatedDesc
-} from '../../shared-interproject/utils/module-sort-utils';
 import { SupabaseService } from '../backend/supabase.service';
 import {
-  HpConditionOption,
-  HpConditionOperator,
-  IdNumberOption,
   ModuleBrowserFields,
   ModuleList,
   ModuleOrderOption
@@ -59,16 +33,28 @@ import {
 import {
   DEFAULT_HP_CONDITION,
   DEFAULT_STANDARD,
-  MODULE_ORDER_OPTIONS,
   OWNED_MODE_DEFAULT_ORDER
 } from './module-browser-data.constants';
 import {
-  compareModulesByCreated,
-  getModuleStandardId,
   matchesSelectedTags,
   toSortDirection
 } from './module-browser-data.utils';
 import { AnalyticsService } from '../backbone/analytics-integration/analytics.service';
+import { recoverBrowserListRequest } from '../browser-data-recovery';
+import { createModuleBrowserFields } from './module-browser-fields.factory';
+import {
+  filterOwnedModulesForFields,
+  filterWantedModulesForFields,
+  getActiveFilterNames,
+  getSelectedTagIdsFromFields,
+  groupFilterTags,
+  hasActiveModuleFiltersForFields,
+  hasResettableModuleFilters,
+  isOwnedPossessionForModule,
+  isWantedPossessionForModule,
+  sortModulesByBestMatchForTags,
+  toggleTagSelection
+} from './module-browser-filter.helpers';
 
 export type { ModuleList, ModuleOrderOption } from './module-browser-data.models';
 
@@ -130,142 +116,18 @@ export class ModuleBrowserDataService extends SubManager {
         startWith(this.tagSearchQuery$.value)
       )
     ]).pipe(
-      map(([tags, query]) => {
-        const normalizedQuery = query.trim().toLowerCase();
-        const visibleTags = normalizedQuery
-          ? tags.filter((tag) => tag.name.toLowerCase().includes(normalizedQuery))
-          : tags;
-        const grouped = new Map<string, Tag[]>();
-
-        for (const tag of visibleTags) {
-          const label = TAG_TYPE_LABELS[tag.type] ?? 'Other';
-          grouped.set(label, [...(grouped.get(label) ?? []), tag]);
-        }
-
-        const orderedLabels = TAG_TYPE_DISPLAY_ORDER
-          .map(type => TAG_TYPE_LABELS[type])
-          .filter(label => grouped.has(label));
-
-        return orderedLabels.map(label => ({
-          label,
-          tags: grouped.get(label)!
-        }));
-      }),
+      map(([tags, query]) => groupFilterTags(tags, query)),
       shareReplay(1),
       this.takeUntilDestroyed()
     );
 
-    const orderControl = new FormControl<ModuleOrderOption>(this.orderStartingValue, {nonNullable: true});
-    const tagsControl = new FormControl<ISelectable[]>([], {nonNullable: true});
-    const orderOptions$ = tagsControl.valueChanges.pipe(
-      startWith(tagsControl.value),
-      map((selectedTags) => (selectedTags?.length ?? 0) > 0
-        ? [...MODULE_ORDER_OPTIONS, this.bestMatchOrderOption]
-        : MODULE_ORDER_OPTIONS
-      ),
-      shareReplay(1),
-      this.takeUntilDestroyed()
-    );
-
-    this.fields = {
-      name: {
-        label: 'Search module...',
-        code: 'search',
-        flex: '14rem',
-        control: new FormControl<string>('', {nonNullable: true}),
-        type: FormTypes.TEXT
-      },
-      description: {
-        label: 'Description',
-        code: 'description',
-        flex: '14rem',
-        control: new FormControl<string>('', {nonNullable: true}),
-        type: FormTypes.TEXT
-      },
-      order: {
-        label: 'Order by',
-        code: 'order',
-        flex: '10rem',
-        control: orderControl,
-        type: FormTypes.SELECT,
-        options$: orderOptions$
-      },
-      manufacturers: {
-        label: 'Made by...',
-        code: 'manufacturers',
-        flex: '12rem',
-        control: new FormControl<string>('', {nonNullable: true}),
-        type: FormTypes.AUTOCOMPLETE,
-        options$: this.backend.GET.manufacturers(0, 9999, 'id,name')
-          .pipe(
-            map(x => (x.data ?? []).map(z => ({id: z.id.toString(), name: z.name}))),
-            startWith([]),
-            this.takeUntilDestroyed(),
-            share()
-          )
-      },
-      hp: {
-        label: 'HP',
-        code: 'hp',
-        flex: '6rem',
-        control: new FormControl<string>('', {
-          nonNullable: true,
-          validators: Validators.compose([
-            Validators.min(1),
-            Validators.pattern(/^-?\d+$/),
-          ])
-        }),
-        type: FormTypes.NUMBER
-      },
-      hpCondition: {
-        label: 'HP must be...',
-        code: 'hpCondition',
-        flex: '8rem',
-        control: new FormControl<HpConditionOption>(DEFAULT_HP_CONDITION, {nonNullable: true}),
-        type: FormTypes.SELECT,
-        options$: of([
-          {id: '=' as HpConditionOperator, name: 'exactly'},
-          {id: '!=' as HpConditionOperator, name: 'different than'},
-          {id: '>' as HpConditionOperator, name: 'more than'},
-          {id: '<' as HpConditionOperator, name: 'less than'},
-          {id: '>=' as HpConditionOperator, name: 'more or exactly'},
-          {id: '<=' as HpConditionOperator, name: 'less or exactly'},
-        ])
-      },
-      standard: {
-        label: 'Standard',
-        code: 'standard',
-        flex: '8rem',
-        control: new FormControl<IdNumberOption>(DEFAULT_STANDARD, {nonNullable: true}),
-        type: FormTypes.SELECT,
-        options$: of([
-          {id: undefined, name: 'All'},
-          {id: 0, name: '3U Doepfer'},
-          {id: 1, name: '1U Intellijel'},
-          {id: 2, name: '1U Pulp Logic'},
-        ])
-      },
-      tags: {
-        label: 'Filter by tags...',
-        code: 'tags',
-        flex: '14rem',
-        control: tagsControl,
-        type: FormTypes.MULTISELECT,
-        options$: this.allTags$.pipe(
-          map(tags => (tags ?? []).map((tag) => ({id: tag.id.toString(), name: tag.name}))),
-          startWith([]),
-          this.takeUntilDestroyed(),
-          share()
-        )
-      },
-      tagSearch: {
-        label: 'Search tags…',
-        code: 'tagSearch',
-        flex: '14rem',
-        control: new FormControl<string>('', {nonNullable: true}),
-        type: FormTypes.TEXT
-      }
-    };
+    this.fields = createModuleBrowserFields({
+      allTags$: this.allTags$,
+      backend: this.backend,
+      bestMatchOrderOption: this.bestMatchOrderOption,
+      orderStartingValue: this.orderStartingValue,
+      takeUntilDestroyed: <T>() => this.takeUntilDestroyed<T>()
+    });
 
     // Sync tagSearch control ↔ tagSearchQuery$
     this.fields.tagSearch.control.valueChanges
@@ -284,24 +146,11 @@ export class ModuleBrowserDataService extends SubManager {
       this.tagMatchMode$
     ).pipe(
       startWith(null),
-      map(() => {
-        const hp = this.fields.hp.control.value;
-        const hpCondition = this.fields.hpCondition.control.value;
-        const standard = this.fields.standard.control.value;
-        const order = this.fields.order.control.value;
-        const tags = this.fields.tags.control.value;
-        return (
-          this.fields.name.control.value !== '' ||
-          this.fields.description.control.value !== '' ||
-          isOption(this.fields.manufacturers.control.value) ||
-          (hp !== '' && hp !== null) ||
-          (hpCondition && hpCondition.id !== DEFAULT_HP_CONDITION.id) ||
-          (standard && standard.id !== undefined) ||
-          (order && order.id !== this.orderStartingValue.id) ||
-          (tags && tags.length > 0) ||
-          this.tagMatchMode$.value !== 'OR'
-        );
-      }),
+      map(() => hasResettableModuleFilters(
+        this.fields,
+        this.orderStartingValue.id,
+        this.tagMatchMode$.value
+      )),
       distinctUntilChanged(),
       shareReplay(1)
     );
@@ -323,13 +172,7 @@ export class ModuleBrowserDataService extends SubManager {
       const nameVal = this.fields.name.control.value ?? '';
       const isBestMatchOrder = orderVal?.id === this.bestMatchOrderOption.id;
 
-      const activeFilters: string[] = [];
-      if (nameVal) activeFilters.push('name');
-      if (this.fields.description.control.value) activeFilters.push('description');
-      if (this.fields.manufacturers.control.value) activeFilters.push('manufacturer');
-      if (this.fields.hp.control.value) activeFilters.push('hp');
-      if (this.fields.standard.control.value?.id !== undefined) activeFilters.push('standard');
-      if ((this.fields.tags.control.value ?? []).length > 0) activeFilters.push('tags');
+      const activeFilters = getActiveFilterNames(this.fields);
       this.analytics.capture('search.filter_changed', {
         active_filters: activeFilters,
         active_filter_count: activeFilters.length,
@@ -403,8 +246,11 @@ export class ModuleBrowserDataService extends SubManager {
           const standard = this.fields.standard.control.value?.id;
           const tagIds = this.getSelectedTagIds();
           const includeCount = skip === 0;
+          const previousData = this.modulesList$.value ?? [];
+          const previousCount = this.serversideAdditionalData.itemsCount$.value ?? previousData.length;
 
-          return this.backend.GET.modules(
+          return recoverBrowserListRequest(
+            () => this.backend.GET.modules(
               skip,
               (skip + take) - 1,
               filter,
@@ -418,15 +264,17 @@ export class ModuleBrowserDataService extends SubManager {
               true,
               tagIds.length > 0 ? tagIds : undefined,
               includeCount
-            )
-            .pipe(map(response => ({
-             ...response,
-             requestedSkip: skip
-            })))
-            .pipe(catchError(error => {
-             console.error('Failed to load modules:', error);
-             return of({data: [], count: 0, requestedSkip: skip});
-            }));
+            ),
+            {
+              data: skip === 0 ? previousData : [],
+              count: previousCount
+            },
+            '[module-browser] Failed to load modules list',
+            {beforeRetry: () => this.backend.cacheResetter$.next(['modules'])}
+          ).pipe(map(response => ({
+            ...response,
+            requestedSkip: skip
+          })));
         }),
         map((response) => {
           const selectedTagIds = this.getSelectedTagIds();
@@ -522,164 +370,38 @@ export class ModuleBrowserDataService extends SubManager {
   }
 
   hasActiveModuleFilters(): boolean {
-    const hp = this.fields.hp.control.value;
-    const hpCondition = this.fields.hpCondition.control.value;
-    const standard = this.fields.standard.control.value;
-    const tags = this.fields.tags.control.value;
-
-    return (
-      this.fields.name.control.value.trim() !== ''
-      || this.fields.description.control.value.trim() !== ''
-      || isOption(this.fields.manufacturers.control.value)
-      || (hp !== '' && hp !== null)
-      || (hpCondition && hpCondition.id !== DEFAULT_HP_CONDITION.id)
-      || (standard && standard.id !== undefined)
-      || (tags && tags.length > 0)
-    );
+    return hasActiveModuleFiltersForFields(this.fields);
   }
 
   toggleTagFilter(tag: Tag): void {
-    const selectedTags = this.fields.tags.control.value ?? [];
-    const isSelected = selectedTags.some((selectedTag) => Number.parseInt(selectedTag.id, 10) === tag.id);
-    const nextTags = isSelected
-      ? selectedTags.filter((selectedTag) => Number.parseInt(selectedTag.id, 10) !== tag.id)
-      : [...selectedTags, {id: tag.id.toString(), name: tag.name}];
-
-    this.fields.tags.control.setValue(nextTags);
+    this.fields.tags.control.setValue(toggleTagSelection(this.fields.tags.control.value ?? [], tag));
   }
 
   filterOwnedModules(
     modules: MinimalModule[] | undefined,
     excludedModuleIds: number[] = []
   ): MinimalModule[] | undefined {
-    if (modules === undefined) {
-      return undefined;
-    }
-
-    const excludedIds = new Set(excludedModuleIds);
-    const filteredModules = modules.filter((module) =>
-      this.isOwnedPossession(module) && !excludedIds.has(module.id) && this.matchesOwnedModuleFilters(module)
-    );
-    return this.sortOwnedModules(filteredModules);
+    return filterOwnedModulesForFields(modules, this.fields, this.tagMatchMode$.value, excludedModuleIds);
   }
 
   filterWantedModules(modules: MinimalModule[] | undefined): MinimalModule[] | undefined {
-    if (modules === undefined) {
-      return undefined;
-    }
-
-    const filteredModules = modules.filter((module) =>
-      this.isWantedPossession(module) && this.matchesOwnedModuleFilters(module)
-    );
-    return this.sortOwnedModules(filteredModules);
+    return filterWantedModulesForFields(modules, this.fields, this.tagMatchMode$.value);
   }
 
   isOwnedPossession(module: MinimalModule): boolean {
-    return module.possessionKind === undefined || module.possessionKind === 'HAS';
+    return isOwnedPossessionForModule(module);
   }
 
   isWantedPossession(module: MinimalModule): boolean {
-    return module.possessionKind === 'WANTS';
+    return isWantedPossessionForModule(module);
   }
 
   sortModulesByBestMatch(modules: MinimalModule[]): MinimalModule[] {
-    const selectedTagIds = this.getSelectedTagIds();
-    return [...modules].sort((a, b) => {
-      const scoreDiff = this.getModuleTagMatchScore(b, selectedTagIds) - this.getModuleTagMatchScore(a, selectedTagIds);
-      if (scoreDiff !== 0) {
-        return scoreDiff;
-      }
-
-      return compareModulesByNameAsc(a, b);
-    });
-  }
-
-  private matchesOwnedModuleFilters(module: MinimalModule): boolean {
-    const selectedManufacturerId = Number.parseInt(getCleanedValueId(this.fields.manufacturers.control), 10);
-    const hpValue = Number.parseInt(this.fields.hp.control.value, 10);
-    const selectedStandardId = this.fields.standard.control.value?.id;
-    const selectedTagIds = this.getSelectedTagIds();
-
-    if (!matchesSearchQuery(this.fields.name.control.value, module.name)) {
-      return false;
-    }
-
-    if (!matchesSearchQuery(this.fields.description.control.value, module.description)) {
-      return false;
-    }
-
-    if (Number.isFinite(selectedManufacturerId) && module.manufacturerId !== selectedManufacturerId) {
-      return false;
-    }
-
-    if (
-      selectedStandardId !== undefined
-      && getModuleStandardId(module) !== selectedStandardId
-    ) {
-      return false;
-    }
-
-    if (Number.isFinite(hpValue) && !this.matchesHpCondition(module.hp, hpValue)) {
-      return false;
-    }
-
-    if (selectedTagIds.length > 0 && !matchesSelectedTags(module, selectedTagIds, this.tagMatchMode$.value)) {
-      return false;
-    }
-
-    return true;
-  }
-
-  private matchesHpCondition(moduleHp: number, hpValue: number): boolean {
-    switch (this.fields.hpCondition.control.value?.id) {
-      case '!=':
-        return moduleHp !== hpValue;
-      case '>':
-        return moduleHp > hpValue;
-      case '<':
-        return moduleHp < hpValue;
-      case '>=':
-        return moduleHp >= hpValue;
-      case '<=':
-        return moduleHp <= hpValue;
-      case '=':
-      default:
-        return moduleHp === hpValue;
-    }
-  }
-
-  private sortOwnedModules(modules: MinimalModule[]): MinimalModule[] {
-    const order = this.fields.order.control.value;
-    const direction = toSortDirection(order?.name);
-
-    const sortedModules = [...modules];
-    switch (order?.id) {
-      case 'best-match':
-        return this.sortModulesByBestMatch(sortedModules);
-      case 'name':
-        return sortedModules.sort(direction === 'asc' ? compareModulesByNameAsc : compareModulesByNameDesc);
-      case 'hp':
-        return sortedModules.sort(direction === 'asc' ? compareModulesByHpAsc : compareModulesByHpDesc);
-      case 'manufacturerId':
-        return sortedModules.sort(direction === 'asc' ? compareModulesByManufacturerAsc : compareModulesByManufacturerDesc);
-      case 'created':
-        return sortedModules.sort((a, b) => compareModulesByCreated(a, b, direction));
-      case 'updated':
-        return sortedModules.sort(direction === 'asc' ? compareModulesByUpdatedAsc : compareModulesByUpdatedDesc);
-      default:
-        return sortedModules;
-    }
+    return sortModulesByBestMatchForTags(modules, this.getSelectedTagIds());
   }
 
   private getSelectedTagIds(): number[] {
-    return (this.fields.tags.control.value ?? [])
-      .map((tag) => Number.parseInt(tag.id, 10))
-      .filter((id) => Number.isFinite(id));
+    return getSelectedTagIdsFromFields(this.fields);
   }
 
-  private getModuleTagMatchScore(module: MinimalModule, selectedTagIds: number[]): number {
-    return selectedTagIds.filter((selectedTagId) =>
-      module.tags?.some((tagVote) => tagVote.tag?.id === selectedTagId)
-    ).length;
-  }
 }

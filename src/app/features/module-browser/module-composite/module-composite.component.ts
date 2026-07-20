@@ -1,16 +1,22 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   Input,
-  OnInit
+  OnInit,
+  Output
 } from '@angular/core';
 import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
 } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
 import { getModulePanelAspectRatio } from 'src/app/components/module-parts/get-module-height-for-standard.pipe';
-import { ModuleRecentMarketPrice } from 'src/app/features/backend/supabase-queries';
+import {
+  ModuleRecentMarketPrice,
+  ModuleSparsePriceHistorySummary
+} from 'src/app/features/backend/supabase-queries';
 import { DbModule } from 'src/app/models/module';
+import { type CoolToggleResult } from 'src/app/components/shared-atoms/cool-button/cool-button-data.service';
 
 
 @Component({
@@ -32,6 +38,8 @@ export class ModuleCompositeComponent implements OnInit {
   @Input() preferPortraitDetailSplit = false;
   @Input() showCoolAction = false;
   @Input() priceSummary: ModuleRecentMarketPrice | null | undefined = undefined;
+  @Input() priceHistorySummary: ModuleSparsePriceHistorySummary | null | undefined = undefined;
+  @Output() coolToggled = new EventEmitter<CoolToggleResult>();
 
   get shouldUsePortraitDetailSplit(): boolean {
     return this.preferPortraitDetailSplit

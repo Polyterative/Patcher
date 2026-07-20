@@ -5,6 +5,8 @@
                     [portraitDetailSplit]="shouldUsePortraitDetailSplit"
                     [showCoolAction]="showCoolAction"
                     [priceSummary]="priceSummary"
+                    [priceHistorySummary]="priceHistorySummary"
+                    (coolToggled)="coolToggled.emit($event)"
 >
   <app-module-details [data]="data"
                       [viewConfig]="viewConfig"

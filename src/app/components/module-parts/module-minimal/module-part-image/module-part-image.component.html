@@ -19,11 +19,13 @@
           class="img image-transition"
           [class.img--fixed-height]="fixedHeight"
           [ngStyle]="fixedHeight ? {} : {maxHeight:32/sizeDivider+'rem'}"
-          [src]="panelStorageBase+filename"
+          [src]="imageSrc"
           [@enter]
           [attr.loading]="imageLoadingMode"
           [attr.decoding]="imageDecodingMode"
+          referrerpolicy="no-referrer"
           [alt]="'Panel image for '+data.name"
+          (error)="onImageLoadError()"
         >
       }
       @if (!filename) {
@@ -60,11 +62,13 @@
           class="image-transition modulePartImageHost__surfaceImage"
           [class.img--fixed-height]="fixedHeight"
           [ngStyle]="fixedHeight ? {} : {maxHeight:((bag.height)+'rem')}"
-          [src]="panelStorageBase+filename"
+          [src]="imageSrc"
           [@enter]
           [attr.loading]="imageLoadingMode"
           [attr.decoding]="imageDecodingMode"
+          referrerpolicy="no-referrer"
           [alt]="'Panel image for '+data.name"
+          (error)="onImageLoadError()"
         >
       }
     }

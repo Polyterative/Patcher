@@ -22,6 +22,11 @@ describe('ManufacturerDetailDataService', () => {
       get: {
         manufacturerWithId: jasmine.createSpy('manufacturerWithId').and.returnValue(of(mockManufacturer)),
         modulesBySameManufacturer: jasmine.createSpy('modulesBySameManufacturer').and.returnValue(of(mockModules))
+      },
+      storage: {
+        publicUrlBases: {
+          manufacturerLogos: 'https://cdn.example.test/manufacturer-logos/'
+        }
       }
     };
     
@@ -62,6 +67,12 @@ describe('ManufacturerDetailDataService', () => {
       const {service} = build();
       expect(service.isLoading$).toBeDefined();
       expect(typeof service.isLoading$.subscribe).toBe('function');
+      service.ngOnDestroy();
+    });
+
+    it('should expose the backend manufacturer logo storage base', () => {
+      const {service} = build();
+      expect(service.logoStorageBase).toBe('https://cdn.example.test/manufacturer-logos/');
       service.ngOnDestroy();
     });
   });

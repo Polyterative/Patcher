@@ -11,53 +11,57 @@
   <div class="overlayActions">
     <ng-content></ng-content>
   </div>
-  @if (renderTextSurface) {
-    <app-module-realistic-holeline [data]="data"
-                                   class="hole-padding"
-    >
-    </app-module-realistic-holeline>
-    <div class="col gap1 parent modBody"
-    >
-      @if (data.hp > 3) {
-        <app-module-part-hp [data]="data"
-                            class="self-center"
-        ></app-module-part-hp>
-      }
-      @if (data.hp > 3 && data.standard.id === 0) {
-        <app-module-part-manufacturer [data]="data"
-                                      [ngClass]="{'rotated':data.hp<6}"
-                                      class="self-center"
-        ></app-module-part-manufacturer>
-      }
-      @if (data.standard.id === 0) {
-        <div class="layout-flex-grow"
-        ></div>
-      }
-      @if (data.standard.id === 0) {
-        <div class="layout-flex-grow"
-        ></div>
-      }
-      <app-module-part-name [data]="data"
-                            [ngClass]="{'half-sizing':data.hp<3,'rotated':data.hp<6}"
-                            [textSize]="calculateTextSize(data)" [class.layout-align-start-center]="data.hp <= 6" [class.layout-align-center-center]="data.hp > 6"
-      ></app-module-part-name>
-    </div>
-    <app-module-realistic-holeline [data]="data"
-                                   class="hole-padding"
-    ></app-module-realistic-holeline>
-  }
-  
-  @if (renderPanelImageSurface) {
-    <app-module-part-image [data]="data"
-                           [selectedPanelId]="selectedPanelId"
-                           [containImage]="false"
-                           [disableEnterAnimation]="disablePanelImageEnterAnimation"
-                           [disableNavigation]="(rackDetailDataService.isCurrentRackEditable$|async) && (rackDetailDataService.isCurrentRackPropertyOfCurrentUser$|async)"
-                           [tooltip]="analysisModeActive ? '' : buildPanelTooltip(data, selectedPanelId)"
-                           [tooltipDisabled]="analysisModeActive || touchInteractionMode"
-                           [tooltipClass]="'module-panel-tooltip'"
-    ></app-module-part-image>
-  }
+  <div class="physicalSurface"
+       [class.physicalSurface--rot180]="rotated180"
+  >
+    @if (renderTextSurface) {
+      <app-module-realistic-holeline [data]="data"
+                                     class="hole-padding"
+      >
+      </app-module-realistic-holeline>
+      <div class="col gap1 parent modBody"
+      >
+        @if (data.hp > 3) {
+          <app-module-part-hp [data]="data"
+                              class="self-center"
+          ></app-module-part-hp>
+        }
+        @if (data.hp > 3 && data.standard.id === 0) {
+          <app-module-part-manufacturer [data]="data"
+                                        [ngClass]="{'rotated':data.hp<6}"
+                                        class="self-center"
+          ></app-module-part-manufacturer>
+        }
+        @if (data.standard.id === 0) {
+          <div class="layout-flex-grow"
+          ></div>
+        }
+        @if (data.standard.id === 0) {
+          <div class="layout-flex-grow"
+          ></div>
+        }
+        <app-module-part-name [data]="data"
+                              [ngClass]="{'half-sizing':data.hp<3,'rotated':data.hp<6}"
+                              [textSize]="calculateTextSize(data)" [class.layout-align-start-center]="data.hp <= 6" [class.layout-align-center-center]="data.hp > 6"
+        ></app-module-part-name>
+      </div>
+      <app-module-realistic-holeline [data]="data"
+                                     class="hole-padding"
+      ></app-module-realistic-holeline>
+    }
+
+    @if (renderPanelImageSurface) {
+      <app-module-part-image [data]="data"
+                             [selectedPanelId]="selectedPanelId"
+                             [containImage]="false"
+                             [disableEnterAnimation]="disablePanelImageEnterAnimation"
+                             [disableNavigation]="(rackDetailDataService.isCurrentRackEditable$|async) && (rackDetailDataService.isCurrentRackPropertyOfCurrentUser$|async)"
+                             [tooltip]="analysisModeActive ? '' : buildPanelTooltip(data, selectedPanelId)"
+                             [tooltipDisabled]="analysisModeActive || touchInteractionMode"
+                             [tooltipClass]="'module-panel-tooltip'"
+      ></app-module-part-image>
+    }
+  </div>
   <div class="analysisOverlay"
        [class.analysisOverlay--visible]="analysisModeActive"
        aria-hidden="true"

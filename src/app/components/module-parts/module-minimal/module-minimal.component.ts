@@ -2,8 +2,10 @@ import { SubManager } from 'src/app/shared-interproject/directives/subscription-
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   Input,
   OnInit, OnDestroy,
+  Output,
 } from '@angular/core';
 import {
   animate,
@@ -32,7 +34,11 @@ import {
   ModulePossessionDialogResult
 } from '../module-possession-dialog/module-possession-dialog.component';
 import { ReactionEntityTypes } from 'src/app/features/backend/supabase-reactions';
-import { ModuleRecentMarketPrice } from 'src/app/features/backend/supabase-queries';
+import {
+  ModuleRecentMarketPrice,
+  ModuleSparsePriceHistorySummary
+} from 'src/app/features/backend/supabase-queries';
+import { type CoolToggleResult } from 'src/app/components/shared-atoms/cool-button/cool-button-data.service';
 
 
 @Component({
@@ -101,6 +107,8 @@ export class ModuleMinimalComponent extends SubManager implements OnInit, OnDest
   @Input() portraitDetailSplit = false;
   @Input() showCoolAction = false;
   @Input() priceSummary: ModuleRecentMarketPrice | null | undefined = undefined;
+  @Input() priceHistorySummary: ModuleSparsePriceHistorySummary | null | undefined = undefined;
+  @Output() coolToggled = new EventEmitter<CoolToggleResult>();
   readonly ReactionEntityTypes = ReactionEntityTypes;
   isTagChooserOpen = false;
 
@@ -123,8 +131,21 @@ export class ModuleMinimalComponent extends SubManager implements OnInit, OnDest
     return this.priceSummary?.displayPrice ?? '';
   }
 
+  get priceBadgeLabel(): string {
+    const priceLabel = this.priceSummaryLabel;
+    if (!priceLabel) {
+      return '';
+    }
+    return this.priceHistorySummary?.label
+      ? `${ priceLabel } · ${ this.priceHistorySummary.label }`
+      : priceLabel;
+  }
+
   get priceSummaryTooltip(): string {
-    return this.priceSummary?.tooltip ?? '';
+    return [
+      this.priceSummary?.tooltip,
+      this.priceHistorySummary?.tooltip
+    ].filter(Boolean).join(' ');
   }
   
   constructor(

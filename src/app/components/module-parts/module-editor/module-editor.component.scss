@@ -191,6 +191,52 @@
   }
 }
 
+.setup-panel-upload-guardrail {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.55rem;
+  align-items: center;
+  width: 100%;
+  border: 1px solid #e5c978;
+  border-radius: 0.45rem;
+  background: #fff9e8;
+  color: #6f5518;
+  padding: 0.45rem 0.55rem;
+  font-size: 0.78rem;
+
+  mat-icon {
+    color: #a5790f;
+  }
+
+  button {
+    white-space: nowrap;
+  }
+}
+
+.setup-panel-upload-guardrail--confirmed {
+  border-color: #bad6c6;
+  background: #f1faf4;
+  color: #315d40;
+
+  mat-icon {
+    color: #3f7b52;
+  }
+}
+
+.setup-panel-upload-guardrail-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.setup-panel-upload-guardrail-title,
+.setup-panel-upload-guardrail-confirmed {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
 .setup-panel-crop-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(16rem, 0.9fr);
@@ -457,6 +503,16 @@
   .setup-panel-controls {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .setup-panel-upload-guardrail {
+    grid-template-columns: auto minmax(0, 1fr);
+
+    button,
+    .setup-panel-upload-guardrail-confirmed {
+      grid-column: 2;
+      justify-self: start;
+    }
   }
 
   .setup-panel-crop-actions {

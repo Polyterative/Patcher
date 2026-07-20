@@ -1,5 +1,8 @@
 import { ModulePriceListing } from 'src/app/features/backend/supabase-queries';
 import {
+  normalizeEstimatedModulePriceToEurMinor
+} from 'src/app/features/backend/module-price-estimated-fx.utils';
+import {
   compareModulePriceContinents,
   DEFAULT_MODULE_PRICE_CONTINENT,
   getListingContinentCode,
@@ -102,6 +105,8 @@ export const MODULE_PRICE_ORDER_RESULT_LABELS: Record<ModulePriceListingOrder, s
   store_name: 'A-Z by store'
 };
 
+export const MODULE_PRICE_STALE_THRESHOLD_DAYS = 14;
+
 const AVAILABILITY_GROUP_ORDER: Record<ModulePriceAvailabilityGroup, number> = {
   in_stock: 0,
   available_soon: 1,
@@ -122,12 +127,80 @@ export const STORE_HERO_COLORS: Readonly<Record<string, string>> = {
   schneidersladen: '#706765'
 };
 
-const CURRENCY_TO_EUR_RATE: Readonly<Record<string, number>> = {
-  CHF: 1.07,
-  EUR: 1,
-  GBP: 1.17,
-  USD: 0.92
-};
+const DEFAULT_STORE_HERO_COLOR = '#536170';
+
+export function getStoreHeroColor(storeSlug: string | null | undefined): string {
+  const normalizedSlug = storeSlug?.trim().toLowerCase();
+
+  if (!normalizedSlug) {
+    return DEFAULT_STORE_HERO_COLOR;
+  }
+
+  return STORE_HERO_COLORS[normalizedSlug] ?? buildStoreHeroColorFromSlug(normalizedSlug);
+}
+
+function buildStoreHeroColorFromSlug(storeSlug: string): string {
+  const hash = hashStoreSlug(storeSlug);
+  const hue = hash % 360;
+  const saturation = 9 + (hash >>> 8) % 5;
+  const lightness = 38 + (hash >>> 16) % 5;
+
+  return hslToHex(hue, saturation / 100, lightness / 100);
+}
+
+function hashStoreSlug(storeSlug: string): number {
+  let hash = 2166136261;
+
+  for (let index = 0; index < storeSlug.length; index++) {
+    hash ^= storeSlug.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+
+  return hash >>> 0;
+}
+
+function hslToHex(hue: number, saturation: number, lightness: number): string {
+  const chroma = (1 - Math.abs(2 * lightness - 1)) * saturation;
+  const hueSegment = hue / 60;
+  const secondary = chroma * (1 - Math.abs(hueSegment % 2 - 1));
+  const match = lightness - chroma / 2;
+  const [red, green, blue] = getRgbFromHueSegment(hueSegment, chroma, secondary)
+    .map(channel => Math.round((channel + match) * 255));
+
+  return `#${toHexChannel(red)}${toHexChannel(green)}${toHexChannel(blue)}`;
+}
+
+function getRgbFromHueSegment(
+  hueSegment: number,
+  chroma: number,
+  secondary: number
+): [number, number, number] {
+  if (hueSegment < 1) {
+    return [chroma, secondary, 0];
+  }
+
+  if (hueSegment < 2) {
+    return [secondary, chroma, 0];
+  }
+
+  if (hueSegment < 3) {
+    return [0, chroma, secondary];
+  }
+
+  if (hueSegment < 4) {
+    return [0, secondary, chroma];
+  }
+
+  if (hueSegment < 5) {
+    return [secondary, 0, chroma];
+  }
+
+  return [chroma, 0, secondary];
+}
+
+function toHexChannel(value: number): string {
+  return Math.max(0, Math.min(255, value)).toString(16).padStart(2, '0');
+}
 
 export const regionDisplayNames =
   typeof Intl !== 'undefined' && typeof Intl.DisplayNames === 'function'
@@ -137,6 +210,10 @@ export const regionDisplayNames =
 export function getModulePriceAvailabilityGroup(
   listing: ModulePriceListing
 ): ModulePriceAvailabilityGroup {
+  if (isModulePriceListingStale(listing)) {
+    return 'unknown';
+  }
+
   switch (listing.latestSnapshot?.availability) {
     case 'in_stock':
       return 'in_stock';
@@ -263,6 +340,10 @@ export function getAvailableNowPriority(listing: ModulePriceListing): number {
 }
 
 export function getListingPriceAmount(listing: ModulePriceListing): number | null {
+  if (isModulePriceListingStale(listing)) {
+    return null;
+  }
+
   const snapshot = listing.latestSnapshot;
   const priceAmountMinor = snapshot?.priceAmountMinor;
   const currency = snapshot?.currency?.trim().toUpperCase();
@@ -271,8 +352,29 @@ export function getListingPriceAmount(listing: ModulePriceListing): number | nul
     return null;
   }
 
-  const eurRate = CURRENCY_TO_EUR_RATE[currency];
-  return eurRate === undefined ? null : Math.round(priceAmountMinor * eurRate);
+  return normalizeEstimatedModulePriceToEurMinor(priceAmountMinor, currency);
+}
+
+export function getModulePriceFreshnessIso(listing: ModulePriceListing): string | null {
+  return listing.lastCheckedAt ?? listing.latestSnapshot?.observedAt ?? null;
+}
+
+export function isModulePriceListingStale(
+  listing: ModulePriceListing,
+  referenceDate: Date = new Date()
+): boolean {
+  const freshnessIso = getModulePriceFreshnessIso(listing);
+  if (!freshnessIso) {
+    return false;
+  }
+
+  const freshnessMs = Date.parse(freshnessIso);
+  const referenceMs = referenceDate.getTime();
+  if (!Number.isFinite(freshnessMs) || !Number.isFinite(referenceMs)) {
+    return false;
+  }
+
+  return referenceMs - freshnessMs > MODULE_PRICE_STALE_THRESHOLD_DAYS * 24 * 60 * 60 * 1000;
 }
 
 export function getKnownPriceListings(

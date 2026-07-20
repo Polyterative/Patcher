@@ -1,38 +1,38 @@
 import { Component, Input } from '@angular/core';
+import {
+  formatEstimatedModulePriceMinorUnits,
+  getEstimatedModulePriceCurrencyFractionDigits
+} from 'src/app/features/backend/module-price-estimated-fx.utils';
 import { ModulePriceListing } from 'src/app/features/backend/supabase-queries';
 import {
   buildModulePriceRegionFilterOptions,
-  compareListingsByKnownPriceOnly,
-  countryCodeToFlag,
   detectPreferredModulePriceContinent,
   filterAndOrderModulePriceListings,
-  formatPricePercentDelta,
   getAvailableNowPriority,
-  getKnownPriceListings,
-  getListingPriceAmount,
+  getModulePriceFreshnessIso,
   getRegionFilterResultLabel,
-  getShippingOriginCode,
-  groupModulePriceListingsByContinent,
+  getStoreHeroColor,
   isModulePriceAvailabilityFilter,
   isModulePriceListingOrder,
+  isModulePriceListingStale,
   isModulePriceRegionFilter,
   MODULE_PRICE_AVAILABILITY_FILTER_OPTIONS,
   MODULE_PRICE_AVAILABILITY_RESULT_LABELS,
   MODULE_PRICE_LISTING_ORDER_OPTIONS,
   MODULE_PRICE_ORDER_RESULT_LABELS,
-  REGION_LABELS,
-  regionDisplayNames,
-  STORE_HERO_COLORS
+  type ModulePriceAvailabilityFilter,
+  type ModulePriceContinentCode,
+  type ModulePriceComparisonPoint,
+  type ModulePriceListingGroup,
+  type ModulePriceListingsDerivedState,
+  type ModulePriceListingOrder,
+  type ModulePriceRegionFilter
 } from './module-price-listings-card.utils';
-import type {
-  ModulePriceAvailabilityFilter,
-  ModulePriceContinentCode,
-  ModulePriceComparisonPoint,
-  ModulePriceListingGroup,
-  ModulePriceListingsDerivedState,
-  ModulePriceListingOrder,
-  ModulePriceRegionFilter
-} from './module-price-listings-card.utils';
+import {
+  buildModulePriceListingsDerivedState,
+  getModulePriceShippingOriginFlag,
+  getModulePriceShippingOriginLabel
+} from './module-price-listings-card-display.utils';
 
 export {
   detectPreferredModulePriceContinent,
@@ -50,6 +50,13 @@ export type {
   ModulePriceRegionFilter
 } from './module-price-listings-card.utils';
 
+export type ModulePriceListingPricePartKind = 'amount' | 'currency' | 'text';
+
+export interface ModulePriceListingPricePart {
+  kind: ModulePriceListingPricePartKind;
+  value: string;
+}
+
 @Component({
   selector: 'app-module-price-listings-card',
   templateUrl: './module-price-listings-card.component.html',
@@ -59,6 +66,7 @@ export type {
 export class ModulePriceListingsCardComponent {
   private _listings: ModulePriceListing[] | null | undefined;
   private derivedState: ModulePriceListingsDerivedState | null = null;
+  private readonly pricePartFormatterByCurrency = new Map<string, Intl.NumberFormat>();
 
   @Input()
   set listings(value: ModulePriceListing[] | null | undefined) {
@@ -130,19 +138,58 @@ export class ModulePriceListingsCardComponent {
   }
 
   formatPrice(listing: ModulePriceListing): string {
+    if (this.isStaleListing(listing)) {
+      return 'Last seen';
+    }
+
     const snapshot = listing.latestSnapshot;
     if (!snapshot?.currency || snapshot.priceAmountMinor === null) {
       return 'Price unknown';
     }
 
-    return new Intl.NumberFormat(undefined, {
-      style: 'currency',
-      currency: snapshot.currency,
-      currencyDisplay: 'narrowSymbol'
-    }).format(snapshot.priceAmountMinor / 100);
+    return formatEstimatedModulePriceMinorUnits(
+      snapshot.priceAmountMinor,
+      snapshot.currency
+    ) ?? 'Price unknown';
+  }
+
+  formatPriceParts(listing: ModulePriceListing): ReadonlyArray<ModulePriceListingPricePart> {
+    const displayPrice = this.formatPrice(listing);
+    const snapshot = listing.latestSnapshot;
+
+    if (
+      displayPrice === 'Last seen' ||
+      displayPrice === 'Price unknown' ||
+      !snapshot?.currency ||
+      snapshot.priceAmountMinor === null
+    ) {
+      return [{kind: 'text', value: displayPrice}];
+    }
+
+    const normalizedCurrency = snapshot.currency.trim().toUpperCase();
+    const fractionDigits = getEstimatedModulePriceCurrencyFractionDigits(normalizedCurrency);
+    const sourceMajorAmount = snapshot.priceAmountMinor / 10 ** fractionDigits;
+
+    const formatter = this.getPricePartFormatter(normalizedCurrency);
+    if (!formatter) {
+      return [{kind: 'text', value: displayPrice}];
+    }
+
+    const parts = formatter
+      .formatToParts(sourceMajorAmount)
+      .map(part => ({
+        kind: part.type === 'currency' ? 'currency' : 'amount',
+        value: part.value
+      } satisfies ModulePriceListingPricePart));
+
+    return this.mergeAdjacentPriceParts(parts);
   }
 
   getAvailabilityLabel(listing: ModulePriceListing): string {
+    if (this.isStaleListing(listing)) {
+      return 'Stale data';
+    }
+
     switch (listing.latestSnapshot?.availability) {
       case 'in_stock':
         return 'Available now';
@@ -160,6 +207,10 @@ export class ModulePriceListingsCardComponent {
   }
 
   getAvailabilityClass(listing: ModulePriceListing): string {
+    if (this.isStaleListing(listing)) {
+      return 'module-price-listing__availability--stale';
+    }
+
     switch (listing.latestSnapshot?.availability) {
       case 'in_stock':
         return 'module-price-listing__availability--available';
@@ -176,11 +227,19 @@ export class ModulePriceListingsCardComponent {
   }
 
   isAvailableNow(listing: ModulePriceListing): boolean {
-    return getAvailableNowPriority(listing) === 0;
+    return !this.isStaleListing(listing) && getAvailableNowPriority(listing) === 0;
+  }
+
+  isStaleListing(listing: ModulePriceListing): boolean {
+    return isModulePriceListingStale(listing);
+  }
+
+  getFreshnessIso(listing: ModulePriceListing): string | null {
+    return getModulePriceFreshnessIso(listing);
   }
 
   getStoreHeroColor(listing: ModulePriceListing): string {
-    return STORE_HERO_COLORS[listing.storeSlug] ?? '#536170';
+    return getStoreHeroColor(listing.storeSlug);
   }
 
   getBestAvailableNowListing(): ModulePriceListing | null {
@@ -191,65 +250,9 @@ export class ModulePriceListingsCardComponent {
     return this.getDerivedState().priceInsightLabelByListingId.get(listing.listingId) ?? '';
   }
 
-  private buildPriceInsightLabel(
-    listing: ModulePriceListing,
-    bestAvailableNow: ModulePriceListing | null,
-    cheapestKnown: ModulePriceListing | null
-  ): string {
-    const price = getListingPriceAmount(listing);
-    if (price === null) {
-      return '';
-    }
-
-    const bestAvailablePrice =
-      bestAvailableNow ? getListingPriceAmount(bestAvailableNow) : null;
-
-    if (bestAvailableNow && bestAvailablePrice !== null) {
-      if (bestAvailableNow.listingId === listing.listingId) {
-        return '';
-      }
-
-      if (!this.isAvailableNow(listing) && price < bestAvailablePrice) {
-        return `Save ${formatPricePercentDelta(bestAvailablePrice, price)} if available`;
-      }
-
-      if (this.isAvailableNow(listing)) {
-        return `+${formatPricePercentDelta(bestAvailablePrice, price)} vs best`;
-      }
-
-      return `+${formatPricePercentDelta(bestAvailablePrice, price)} vs best`;
-    }
-
-    const cheapestKnownPrice = cheapestKnown ? getListingPriceAmount(cheapestKnown) : null;
-
-    if (!cheapestKnown || cheapestKnownPrice === null) {
-      return '';
-    }
-
-    return cheapestKnown.listingId === listing.listingId
-      ? 'Lowest listed'
-      : `+${formatPricePercentDelta(cheapestKnownPrice, price)} vs low`;
-  }
-
   getPriceInsightClass(listing: ModulePriceListing): string {
     return this.getDerivedState().priceInsightClassByListingId.get(listing.listingId)
       ?? 'module-price-listing__insight--muted';
-  }
-
-  private getPriceInsightClassForLabel(label: string): string {
-    if (label === 'Best now' || label === 'Lowest listed') {
-      return 'module-price-listing__insight--best';
-    }
-
-    if (label.startsWith('Save ')) {
-      return 'module-price-listing__insight--opportunity';
-    }
-
-    if (label.startsWith('+')) {
-      return 'module-price-listing__insight--premium';
-    }
-
-    return 'module-price-listing__insight--muted';
   }
 
   isBestAvailableNowListing(listing: ModulePriceListing): boolean {
@@ -257,51 +260,11 @@ export class ModulePriceListingsCardComponent {
   }
 
   getShippingOriginLabel(listing: ModulePriceListing): string {
-    const originCode = getShippingOriginCode(listing);
-    if (!originCode) {
-      return '';
-    }
-
-    const originName =
-      REGION_LABELS[originCode] ?? regionDisplayNames?.of(originCode) ?? originCode;
-
-    return originName;
+    return getModulePriceShippingOriginLabel(listing);
   }
 
   getShippingOriginFlag(listing: ModulePriceListing): string {
-    const originCode = getShippingOriginCode(listing);
-    return originCode ? countryCodeToFlag(originCode) : '';
-  }
-
-  private getComparisonRelation(
-    listing: ModulePriceListing,
-    benchmarkListing: ModulePriceListing,
-    benchmarkPrice: number
-  ): ModulePriceComparisonPoint['relation'] {
-    if (listing.listingId === benchmarkListing.listingId) {
-      return this.isAvailableNow(listing) ? 'best' : 'same';
-    }
-
-    const price = getListingPriceAmount(listing);
-
-    if (price === null || price === benchmarkPrice) {
-      return 'same';
-    }
-
-    return price > benchmarkPrice ? 'above' : 'below';
-  }
-
-  private getComparisonRailWidthPercent(
-    price: number,
-    axisMin: number,
-    axisMax: number
-  ): number {
-    const range = axisMax - axisMin;
-    if (range <= 0) {
-      return 100;
-    }
-
-    return Math.round((price - axisMin) / range * 100);
+    return getModulePriceShippingOriginFlag(listing);
   }
 
   getPriceComparisonPoint(listing: ModulePriceListing): ModulePriceComparisonPoint | null {
@@ -313,104 +276,15 @@ export class ModulePriceListingsCardComponent {
       return this.derivedState;
     }
 
-    const displayListings = filterAndOrderModulePriceListings(
-      this.listings ?? [],
-      this.availabilityFilter,
-      this.listingOrder,
-      this.regionFilter,
-      this.preferredContinent
-    );
-    const displayListingGroups = groupModulePriceListingsByContinent(displayListings);
-    const regionFilterOptions = buildModulePriceRegionFilterOptions(
-      this.listings ?? [],
-      this.availabilityFilter,
-      this.preferredContinent
-    );
-    const knownPriceListings = getKnownPriceListings(displayListings)
-      .sort(compareListingsByKnownPriceOnly);
-    const bestAvailableNowListing = knownPriceListings
-      .filter(listing => this.isAvailableNow(listing))[0] ?? null;
-    const cheapestKnownListing = knownPriceListings[0] ?? null;
-    const priceComparisonPoints = this.buildPriceComparisonPoints(
-      knownPriceListings,
-      bestAvailableNowListing
-    );
-    const priceComparisonPointByListingId = new Map(
-      priceComparisonPoints.map(point => [point.listing.listingId, point])
-    );
-    const priceInsightLabelByListingId = new Map(
-      displayListings.map(listing => [
-        listing.listingId,
-        this.buildPriceInsightLabel(
-          listing,
-          bestAvailableNowListing,
-          cheapestKnownListing
-        )
-      ])
-    );
-    const priceInsightClassByListingId = new Map(
-      displayListings.map(listing => [
-        listing.listingId,
-        this.getPriceInsightClassForLabel(
-          priceInsightLabelByListingId.get(listing.listingId) ?? ''
-        )
-      ])
-    );
-
-    this.derivedState = {
-      displayListings,
-      displayListingGroups,
-      regionFilterOptions,
-      priceComparisonPoints,
-      priceComparisonPointByListingId,
-      bestAvailableNowListing,
-      cheapestKnownListing,
-      priceInsightLabelByListingId,
-      priceInsightClassByListingId
-    };
+    this.derivedState = buildModulePriceListingsDerivedState({
+      listings: this.listings ?? [],
+      availabilityFilter: this.availabilityFilter,
+      listingOrder: this.listingOrder,
+      regionFilter: this.regionFilter,
+      preferredContinent: this.preferredContinent
+    });
 
     return this.derivedState;
-  }
-
-  private buildPriceComparisonPoints(
-    pricedListings: ModulePriceListing[],
-    bestAvailableNowListing: ModulePriceListing | null
-  ): ModulePriceComparisonPoint[] {
-    if (pricedListings.length < 2) {
-      return [];
-    }
-
-    const benchmarkListing = bestAvailableNowListing ?? pricedListings[0];
-    const benchmarkPrice = getListingPriceAmount(benchmarkListing);
-
-    if (benchmarkPrice === null || benchmarkPrice <= 0) {
-      return [];
-    }
-
-    const normalizedPrices = pricedListings.map(
-      listing => getListingPriceAmount(listing) ?? benchmarkPrice
-    );
-    const minPrice = Math.min(...normalizedPrices);
-    const maxPrice = Math.max(...normalizedPrices);
-    const spread = maxPrice - minPrice;
-    const rangePadding = Math.max(Math.round(spread * 0.14), Math.round(minPrice * 0.015), 100);
-    const axisMin = Math.max(0, minPrice - rangePadding);
-    const axisMax = maxPrice + rangePadding;
-
-    return pricedListings.map(listing => {
-      const normalizedPriceEurMinor = getListingPriceAmount(listing) ?? benchmarkPrice;
-
-      return {
-        listing,
-        relation: this.getComparisonRelation(listing, benchmarkListing, benchmarkPrice),
-        normalizedPriceEurMinor,
-        widthPercent: this.getComparisonRailWidthPercent(
-          normalizedPriceEurMinor,
-          axisMin,
-          axisMax
-        )
-      };
-    });
   }
 
   private invalidateDerivedState(): void {
@@ -435,6 +309,41 @@ export class ModulePriceListingsCardComponent {
 
     if (!hasSelectedRegion) {
       this.regionFilter = 'all';
+    }
+  }
+
+  private mergeAdjacentPriceParts(
+    parts: ReadonlyArray<ModulePriceListingPricePart>
+  ): ReadonlyArray<ModulePriceListingPricePart> {
+    return parts.reduce<ModulePriceListingPricePart[]>((mergedParts, part) => {
+      const previousPart = mergedParts[mergedParts.length - 1];
+
+      if (previousPart?.kind === part.kind) {
+        previousPart.value += part.value;
+      } else {
+        mergedParts.push({...part});
+      }
+
+      return mergedParts;
+    }, []);
+  }
+
+  private getPricePartFormatter(normalizedCurrency: string): Intl.NumberFormat | null {
+    const cachedFormatter = this.pricePartFormatterByCurrency.get(normalizedCurrency);
+    if (cachedFormatter) {
+      return cachedFormatter;
+    }
+
+    try {
+      const formatter = new Intl.NumberFormat(undefined, {
+        style: 'currency',
+        currency: normalizedCurrency,
+        currencyDisplay: 'narrowSymbol'
+      });
+      this.pricePartFormatterByCurrency.set(normalizedCurrency, formatter);
+      return formatter;
+    } catch {
+      return null;
     }
   }
 }
