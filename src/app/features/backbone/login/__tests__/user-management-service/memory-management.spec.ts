@@ -1,6 +1,7 @@
 import {
   cleanupUserManagementServiceTest,
-  setupUserManagementServiceTest
+  setupUserManagementServiceTest,
+  userManagementInternals
 } from './test-setup';
 import { UserManagementService } from '../../user-management.service';
 import {
@@ -15,11 +16,15 @@ import {
  * Tests for proper subscription cleanup and memory management.
  */
 describe('UserManagementService - Memory Management', () => {
+  type UserManagementServiceTestSetup = ReturnType<typeof setupUserManagementServiceTest>;
+
   let service: UserManagementService;
+  let mockSupabaseService: UserManagementServiceTestSetup['mockSupabaseService'];
   
   beforeEach(() => {
     const setup = setupUserManagementServiceTest();
     service = setup.service;
+    mockSupabaseService = setup.mockSupabaseService;
   });
   
   afterEach(() => {
@@ -27,13 +32,13 @@ describe('UserManagementService - Memory Management', () => {
   });
   
   it('should have destroy$ subject from SubManager', () => {
-    expect((service as any).destroy$).toBeDefined();
+    expect(service.destroy$).toBeDefined();
   });
   
   it('should complete destroy$ on ngOnDestroy', fakeAsync(() => {
     // Arrange
     let destroyed = false;
-    (service as any).destroy$.subscribe({
+    service.destroy$.subscribe({
       complete: () => destroyed = true
     });
     
@@ -48,8 +53,6 @@ describe('UserManagementService - Memory Management', () => {
   
   it('should not emit after ngOnDestroy is called', fakeAsync(() => {
     // Arrange
-    const mockSupabaseService = (service as any).backend;
-    
     let emitCount = 0;
     service.loggedUser$.subscribe(() => emitCount++);
     
@@ -70,16 +73,13 @@ describe('UserManagementService - Memory Management', () => {
   }));
   
   it('should clean up all subscriptions on destroy', fakeAsync(() => {
-    // Arrange
-    const subscriptionCount = (service as any)._subscriptions?.length || 0;
-    
     // Act
     service.ngOnDestroy();
     
     tick();
     
     // Assert: SubManager should clean up subscriptions
-    expect((service as any)._subscriptions.length).toBe(0);
+    expect(userManagementInternals(service)._subscriptions.length).toBe(0);
   }));
   
   it('should handle multiple ngOnDestroy calls safely', fakeAsync(() => {
