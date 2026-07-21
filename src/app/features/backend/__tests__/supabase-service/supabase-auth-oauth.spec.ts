@@ -1,44 +1,165 @@
 import {
-  Observable,
-  of
+  of,
+  type Observable
 } from 'rxjs';
 import {
   fakeAsync,
   tick
 } from '@angular/core/testing';
+import type {
+  AuthError,
+  User
+} from '@supabase/supabase-js';
 import {
-  RichUserModel,
-  SupabaseService
+  SupabaseService,
+  type OAuthProvider,
+  type RichUserModel
 } from '../../supabase.service';
 import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest,
   TEST_TIMEOUT
 } from './test-setup';
+import {
+  type AuthSessionSubjectDouble,
+  authSessionFixture,
+  getAuthSessionSubjectDouble,
+  getSupabaseClientDouble,
+  type PasswordResetProviderError,
+  type SupabaseClientDouble
+} from './supabase-query-test-doubles';
 
 
-type AuthSessionTestHarness = {
-  authSession$: {
-    next: (session: {user: unknown} | null) => void;
+type OAuthUserFixture = User & {
+  email: string;
+  updated_at: string;
+};
+
+type OAuthAuthErrorFixture = Pick<AuthError, 'message'> & Partial<AuthError>;
+type OAuthSignInOptions = {
+  redirectTo: string;
+  scopes: 'email';
+};
+type OAuthSignInCredentials = {
+  provider: OAuthProvider;
+  options: OAuthSignInOptions;
+};
+type OAuthAuthResponse = {
+  data: {
+    provider: OAuthProvider;
+    url: string;
+  } | null;
+  error: OAuthAuthErrorFixture | null;
+};
+type OAuthSignInWithOAuth = (credentials: OAuthSignInCredentials) => Promise<OAuthAuthResponse>;
+type OAuthSupabaseClientDouble = SupabaseClientDouble & {
+  auth: SupabaseClientDouble['auth'] & {
+    signInWithOAuth: OAuthSignInWithOAuth;
   };
 };
-
-type AuthNamespaceTestHarness = {
-  _ensureOAuthUserProfile$: (user: unknown) => Observable<void>;
+type RichUserWithoutUsername = Omit<RichUserModel, 'username'> & {
+  username: null;
 };
+type OAuthRichUserResult = RichUserModel | RichUserWithoutUsername | null;
+type AuthNamespaceTestHarness = Omit<SupabaseService['auth'], 'getRichUserSession$' | 'handleOAuthCallback$'> & {
+  getRichUserSession$: () => Observable<OAuthRichUserResult>;
+  handleOAuthCallback$: () => Observable<OAuthRichUserResult>;
+};
+type OAuthProfileUpsertPayload = {
+  id: string;
+  email: string;
+  username: string;
+  confirmed: true;
+  created_at: string;
+  updated_at: string;
+};
+type OAuthProfileUpsertOptions = {
+  onConflict: 'id';
+  ignoreDuplicates: true;
+};
+type OAuthProfileWriteResponse = {
+  data: null;
+  error: null;
+};
+
+class OAuthProfileMutationMock implements PromiseLike<OAuthProfileWriteResponse> {
+  readonly upsertSpy: jasmine.Spy<
+    (values: OAuthProfileUpsertPayload, options: OAuthProfileUpsertOptions) => OAuthProfileMutationMock
+  >;
+
+  constructor(private readonly response: OAuthProfileWriteResponse = {data: null, error: null}) {
+    this.upsertSpy = jasmine
+      .createSpy<(values: OAuthProfileUpsertPayload, options: OAuthProfileUpsertOptions) => OAuthProfileMutationMock>('upsert')
+      .and.callFake(() => this);
+  }
+
+  upsert(values: OAuthProfileUpsertPayload, options: OAuthProfileUpsertOptions): OAuthProfileMutationMock {
+    return this.upsertSpy(values, options);
+  }
+
+  then<TResult1 = OAuthProfileWriteResponse, TResult2 = never>(
+    onfulfilled?: ((value: OAuthProfileWriteResponse) => TResult1 | PromiseLike<TResult1>) | null,
+    onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+  ): PromiseLike<TResult1 | TResult2> {
+    return Promise.resolve(this.response).then(onfulfilled, onrejected);
+  }
+}
+
+function getOAuthSupabaseClientDouble(service: SupabaseService): OAuthSupabaseClientDouble {
+  const client = getSupabaseClientDouble(service);
+  if (!isOAuthSupabaseClientDouble(client)) {
+    throw new Error('Supabase test setup did not expose an OAuth auth client double.');
+  }
+
+  return client;
+}
+
+function isOAuthSupabaseClientDouble(client: SupabaseClientDouble): client is OAuthSupabaseClientDouble {
+  return typeof Reflect.get(client.auth, 'signInWithOAuth') === 'function';
+}
+
+function oauthUserFixture(id: string, email: string): OAuthUserFixture {
+  return {
+    id,
+    email,
+    created_at: '2026-07-21T00:00:00Z',
+    updated_at: '2026-07-21T00:00:00Z',
+    aud: 'authenticated',
+    app_metadata: {},
+    user_metadata: {}
+  };
+}
+
+function richUserFixture(id: string, email: string, username: string): RichUserModel {
+  return {
+    id,
+    email,
+    username,
+    created_at: '2026-07-21T00:00:00Z',
+    updated_at: '2026-07-21T00:00:00Z'
+  };
+}
+
+function oauthSuccess(provider: OAuthProvider, url: string): OAuthAuthResponse {
+  return {data: {provider, url}, error: null};
+}
+
+function oauthFailure(message: string): OAuthAuthResponse {
+  return {data: null, error: {message}};
+}
 
 describe('SupabaseService - auth OAuth and helpers', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
-  let authSession$: AuthSessionTestHarness['authSession$'];
+  let supabaseClient: OAuthSupabaseClientDouble;
+  let authSession$: AuthSessionSubjectDouble;
   let authNamespace: AuthNamespaceTestHarness;
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
-    authSession$ = (service as unknown as AuthSessionTestHarness).authSession$;
-    authNamespace = service.auth as unknown as AuthNamespaceTestHarness;
+    supabaseClient = getOAuthSupabaseClientDouble(service);
+    authSession$ = getAuthSessionSubjectDouble(service);
+    authNamespace = service.auth;
   });
   
   afterEach(() => {
@@ -49,7 +170,7 @@ describe('SupabaseService - auth OAuth and helpers', () => {
   
   describe('_isValidEmail', () => {
     const isValid = (email: string): boolean =>
-      (service.auth as any)._isValidEmail(email);
+      authNamespace._isValidEmail(email);
     
     it('should return true for a well-formed email', () => {
       expect(isValid('user@example.com')).toBeTrue();
@@ -72,8 +193,8 @@ describe('SupabaseService - auth OAuth and helpers', () => {
   // ── _createPasswordResetError ─────────────────────────────────────────────
   
   describe('_createPasswordResetError', () => {
-    const create = (err: any) =>
-      (service.auth as any)._createPasswordResetError(err);
+    const create = (err: PasswordResetProviderError) =>
+      authNamespace._createPasswordResetError(err);
     
     it('should map same_password error code', () => {
       const result = create({error_code: 'same_password', msg: 'same'});
@@ -111,7 +232,7 @@ describe('SupabaseService - auth OAuth and helpers', () => {
   describe('loginWithOAuth$', () => {
     it('should call supabase.auth.signInWithOAuth with the provider', (done) => {
       spyOn(supabaseClient.auth, 'signInWithOAuth').and.returnValue(
-        Promise.resolve({data: {url: 'https://provider.com/auth'}, error: null})
+        Promise.resolve(oauthSuccess('google', 'https://provider.com/auth'))
       );
       
       service.auth.loginWithOAuth$('google').subscribe({
@@ -130,7 +251,7 @@ describe('SupabaseService - auth OAuth and helpers', () => {
     
     it('should throw when signInWithOAuth returns an error', (done) => {
       spyOn(supabaseClient.auth, 'signInWithOAuth').and.returnValue(
-        Promise.resolve({data: null, error: {message: 'OAuth error'}})
+        Promise.resolve(oauthFailure('OAuth error'))
       );
       
       service.auth.loginWithOAuth$('github').subscribe({
@@ -146,13 +267,13 @@ describe('SupabaseService - auth OAuth and helpers', () => {
     }, TEST_TIMEOUT);
     
     it('should use a custom redirectTo when provided', (done) => {
-      spyOn(supabaseClient.auth, 'signInWithOAuth').and.returnValue(
-        Promise.resolve({data: {url: 'url'}, error: null})
+      const signInWithOAuthSpy = spyOn(supabaseClient.auth, 'signInWithOAuth').and.returnValue(
+        Promise.resolve(oauthSuccess('google', 'url'))
       );
       
       service.auth.loginWithOAuth$('google', 'https://myapp.com/callback').subscribe({
         next: () => {
-          const callArgs = (supabaseClient.auth.signInWithOAuth as jasmine.Spy).calls.first().args[0];
+          const callArgs = signInWithOAuthSpy.calls.first().args[0];
           expect(callArgs.options.redirectTo).toBe('https://myapp.com/callback');
           done();
         },
@@ -185,20 +306,14 @@ describe('SupabaseService - auth OAuth and helpers', () => {
     }));
 
     it('should wait through an initial null auth event for the OAuth session', fakeAsync(() => {
-      const mockUser = {id: 'delayed-user', email: 'delayed@example.com', created_at: new Date().toISOString()};
-      const existingRichUser: RichUserModel = {
-        id: 'delayed-user',
-        email: 'delayed@example.com',
-        username: 'delayeduser',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-      let result: unknown;
-      spyOn(service.auth, 'getRichUserSession$').and.returnValue(of(existingRichUser));
-      spyOn(authNamespace, '_ensureOAuthUserProfile$').and.returnValue(of(void 0));
+      const mockUser = oauthUserFixture('delayed-user', 'delayed@example.com');
+      const existingRichUser = richUserFixture('delayed-user', 'delayed@example.com', 'delayeduser');
+      let result: OAuthRichUserResult | undefined;
+      spyOn(authNamespace, 'getRichUserSession$').and.returnValue(of(existingRichUser));
+      const ensureOAuthUserProfileSpy = spyOn(authNamespace, '_ensureOAuthUserProfile$').and.returnValue(of(void 0));
 
       authSession$.next(null);
-      service.auth.handleOAuthCallback$().subscribe({
+      authNamespace.handleOAuthCallback$().subscribe({
         next: (user) => {
           result = user;
         },
@@ -209,31 +324,25 @@ describe('SupabaseService - auth OAuth and helpers', () => {
       tick();
       expect(result).toBeUndefined();
 
-      authSession$.next({user: mockUser});
+      authSession$.next(authSessionFixture(mockUser));
       tick();
 
       expect(result).toEqual(existingRichUser);
-      expect(authNamespace._ensureOAuthUserProfile$).not.toHaveBeenCalled();
+      expect(ensureOAuthUserProfileSpy).not.toHaveBeenCalled();
     }));
     
     it('should return richUser directly when existing user has a proper username', (done) => {
-      const mockUser = {id: 'existing-user', email: 'existing@example.com', created_at: new Date().toISOString()};
-      authSession$.next({user: mockUser});
+      const mockUser = oauthUserFixture('existing-user', 'existing@example.com');
+      authSession$.next(authSessionFixture(mockUser));
       
-      const existingRichUser = {
-        id: 'existing-user',
-        email: 'existing@example.com',
-        username: 'existinguser',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-      spyOn(service.auth, 'getRichUserSession$').and.returnValue(of(existingRichUser as any));
-      spyOn(service.auth as any, '_ensureOAuthUserProfile$').and.returnValue(of(void 0));
+      const existingRichUser = richUserFixture('existing-user', 'existing@example.com', 'existinguser');
+      spyOn(authNamespace, 'getRichUserSession$').and.returnValue(of(existingRichUser));
+      const ensureOAuthUserProfileSpy = spyOn(authNamespace, '_ensureOAuthUserProfile$').and.returnValue(of(void 0));
       
-      service.auth.handleOAuthCallback$().subscribe({
+      authNamespace.handleOAuthCallback$().subscribe({
         next: (result) => {
-          expect(result).toEqual(existingRichUser as any);
-          expect((service.auth as any)._ensureOAuthUserProfile$).not.toHaveBeenCalled();
+          expect(result).toEqual(existingRichUser);
+          expect(ensureOAuthUserProfileSpy).not.toHaveBeenCalled();
           done();
         },
         error: (err) => {
@@ -244,15 +353,15 @@ describe('SupabaseService - auth OAuth and helpers', () => {
     }, TEST_TIMEOUT);
     
     it('should call _ensureOAuthUserProfile$ and re-fetch when user has no username (new user)', (done) => {
-      const mockUser = {id: 'new-user', email: 'newuser@example.com', created_at: new Date().toISOString()};
-      authSession$.next({user: mockUser});
+      const mockUser = oauthUserFixture('new-user', 'newuser@example.com');
+      authSession$.next(authSessionFixture(mockUser));
       
-      const userWithNoUsername = {
+      const userWithNoUsername: RichUserWithoutUsername = {
         id: 'new-user',
         email: 'newuser@example.com',
-        username: null as any,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        username: null,
+        created_at: '2026-07-21T00:00:00Z',
+        updated_at: '2026-07-21T00:00:00Z'
       };
       const userWithTempUsername = {
         ...userWithNoUsername,
@@ -260,15 +369,15 @@ describe('SupabaseService - auth OAuth and helpers', () => {
       };
       
       let getRichCallCount = 0;
-      spyOn(service.auth, 'getRichUserSession$').and.callFake(() => {
+      spyOn(authNamespace, 'getRichUserSession$').and.callFake(() => {
         getRichCallCount++;
-        return getRichCallCount === 1 ? of(userWithNoUsername as any) : of(userWithTempUsername as any);
+        return getRichCallCount === 1 ? of(userWithNoUsername) : of(userWithTempUsername);
       });
-      spyOn(service.auth as any, '_ensureOAuthUserProfile$').and.returnValue(of(void 0));
+      const ensureOAuthUserProfileSpy = spyOn(authNamespace, '_ensureOAuthUserProfile$').and.returnValue(of(void 0));
       
-      service.auth.handleOAuthCallback$().subscribe({
+      authNamespace.handleOAuthCallback$().subscribe({
         next: (result) => {
-          expect((service.auth as any)._ensureOAuthUserProfile$).toHaveBeenCalledWith(mockUser as any);
+          expect(ensureOAuthUserProfileSpy).toHaveBeenCalledWith(mockUser);
           expect(result?.username).toBe('newuser');
           done();
         },
@@ -280,27 +389,21 @@ describe('SupabaseService - auth OAuth and helpers', () => {
     }, TEST_TIMEOUT);
     
     it('should call _ensureOAuthUserProfile$ and re-fetch when richUser is null (profile missing)', (done) => {
-      const mockUser = {id: 'ghost-user', email: 'ghost@example.com', created_at: new Date().toISOString()};
-      authSession$.next({user: mockUser});
+      const mockUser = oauthUserFixture('ghost-user', 'ghost@example.com');
+      authSession$.next(authSessionFixture(mockUser));
       
-      const createdProfile = {
-        id: 'ghost-user',
-        email: 'ghost@example.com',
-        username: 'ghost',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
+      const createdProfile = richUserFixture('ghost-user', 'ghost@example.com', 'ghost');
       
       let getRichCallCount = 0;
-      spyOn(service.auth, 'getRichUserSession$').and.callFake(() => {
+      spyOn(authNamespace, 'getRichUserSession$').and.callFake(() => {
         getRichCallCount++;
-        return getRichCallCount === 1 ? of(null) : of(createdProfile as any);
+        return getRichCallCount === 1 ? of(null) : of(createdProfile);
       });
-      spyOn(service.auth as any, '_ensureOAuthUserProfile$').and.returnValue(of(void 0));
+      const ensureOAuthUserProfileSpy = spyOn(authNamespace, '_ensureOAuthUserProfile$').and.returnValue(of(void 0));
       
-      service.auth.handleOAuthCallback$().subscribe({
+      authNamespace.handleOAuthCallback$().subscribe({
         next: (result) => {
-          expect((service.auth as any)._ensureOAuthUserProfile$).toHaveBeenCalled();
+          expect(ensureOAuthUserProfileSpy).toHaveBeenCalled();
           expect(result?.username).toBe('ghost');
           done();
         },
@@ -316,25 +419,17 @@ describe('SupabaseService - auth OAuth and helpers', () => {
   
   describe('_ensureOAuthUserProfile$', () => {
     it('should upsert a profile with user_ prefixed temp username (always)', (done) => {
-      const profileMock: any = {};
-      const upsertSpy = jasmine.createSpy('upsert').and.returnValue(profileMock);
-      profileMock.upsert = upsertSpy;
-      profileMock.then = (res: Function, rej?: Function) =>
-        Promise.resolve({data: null, error: null}).then(res as any, rej as any);
-      
+      const profileMock = new OAuthProfileMutationMock();
+
       spyOn(supabaseClient, 'from').and.returnValue(profileMock);
-      
-      const mockUser: any = {
-        id: 'oauth-user-1',
-        email: 'john@example.com',
-        created_at: new Date().toISOString()
-      };
-      
-      (service.auth as any)._ensureOAuthUserProfile$(mockUser).subscribe({
+
+      const mockUser = oauthUserFixture('oauth-user-1', 'john@example.com');
+
+      authNamespace._ensureOAuthUserProfile$(mockUser).subscribe({
         next: () => {
-          expect(upsertSpy).toHaveBeenCalledWith(
+          expect(profileMock.upsertSpy).toHaveBeenCalledWith(
             jasmine.objectContaining({id: 'oauth-user-1', username: 'user_oauth-us'}),
-            jasmine.any(Object)
+            jasmine.objectContaining({onConflict: 'id', ignoreDuplicates: true})
           );
           done();
         },
@@ -346,23 +441,15 @@ describe('SupabaseService - auth OAuth and helpers', () => {
     }, TEST_TIMEOUT);
     
     it('should use user_<id> when email is empty', (done) => {
-      const profileMock: any = {};
-      const upsertSpy = jasmine.createSpy('upsert').and.returnValue(profileMock);
-      profileMock.upsert = upsertSpy;
-      profileMock.then = (res: Function, rej?: Function) =>
-        Promise.resolve({data: null, error: null}).then(res as any, rej as any);
-      
+      const profileMock = new OAuthProfileMutationMock();
+
       spyOn(supabaseClient, 'from').and.returnValue(profileMock);
-      
-      const mockUser: any = {
-        id: 'abc12345-uuid',
-        email: '',
-        created_at: new Date().toISOString()
-      };
-      
-      (service.auth as any)._ensureOAuthUserProfile$(mockUser).subscribe({
+
+      const mockUser = oauthUserFixture('abc12345-uuid', '');
+
+      authNamespace._ensureOAuthUserProfile$(mockUser).subscribe({
         next: () => {
-          const upserted = upsertSpy.calls.first().args[0];
+          const upserted = profileMock.upsertSpy.calls.first().args[0];
           expect(upserted.username).toContain('user_');
           done();
         },
