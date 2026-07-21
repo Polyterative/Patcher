@@ -1,4 +1,5 @@
 import { SupabaseService } from '../../supabase.service';
+import { Patch } from 'src/app/models/patch';
 import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest,
@@ -6,25 +7,126 @@ import {
 } from './test-setup';
 
 
-function chainableWithIlike(resolveValue: any = {data: [], count: 0, error: null}) {
-  const m: any = {};
-  ['select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit', 'single',
-    'insert', 'update', 'delete', 'upsert', 'ilike'].forEach(method => {
-    m[method] = () => m;
-  });
-  m.then = (res: Function, rej?: Function) =>
-    Promise.resolve(resolveValue).then(res as any, rej as any);
-  return m;
+type PatchListingRow = Pick<Patch, 'id' | 'name' | 'public'>;
+
+interface PatchListingResult {
+  data: PatchListingRow[];
+  count: number;
+  error: null;
+}
+
+interface OrderOptions {
+  ascending: boolean;
+}
+
+interface SelectOptions {
+  count?: 'exact';
+}
+
+class PatchQueryDouble implements PromiseLike<PatchListingResult> {
+  constructor(private readonly resolveValue: PatchListingResult = {data: [], count: 0, error: null}) {}
+
+  select(_columns: string, _options?: SelectOptions): this {
+    return this;
+  }
+
+  filter(_column: string, _operator: string, _value: boolean | number | string | null): this {
+    return this;
+  }
+
+  eq(_column: string, _value: boolean | number | string | null): this {
+    return this;
+  }
+
+  neq(_column: string, _value: boolean | number | string | null): this {
+    return this;
+  }
+
+  is(_column: string, _value: boolean | number | string | null): this {
+    return this;
+  }
+
+  in(_column: string, _values: readonly (boolean | number | string | null)[]): this {
+    return this;
+  }
+
+  range(_from: number, _to: number): this {
+    return this;
+  }
+
+  order(_column: string, _options: OrderOptions): this {
+    return this;
+  }
+
+  limit(_count: number): this {
+    return this;
+  }
+
+  single(): this {
+    return this;
+  }
+
+  insert(_values: readonly Record<string, unknown>[]): this {
+    return this;
+  }
+
+  update(_values: Record<string, unknown>): this {
+    return this;
+  }
+
+  delete(): this {
+    return this;
+  }
+
+  upsert(_values: readonly Record<string, unknown>[]): this {
+    return this;
+  }
+
+  ilike(_column: string, _pattern: string): this {
+    return this;
+  }
+
+  then<TResult1 = PatchListingResult, TResult2 = never>(
+    onfulfilled?: ((value: PatchListingResult) => TResult1 | PromiseLike<TResult1>) | null,
+    onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+  ): PromiseLike<TResult1 | TResult2> {
+    return Promise.resolve(this.resolveValue).then(onfulfilled, onrejected);
+  }
+}
+
+interface SupabaseClientDouble {
+  from(table: string): PatchQueryDouble;
+}
+
+function chainableWithIlike(resolveValue: PatchListingResult = {data: [], count: 0, error: null}): PatchQueryDouble {
+  return new PatchQueryDouble(resolveValue);
+}
+
+function isSupabaseClientDouble(value: unknown): value is SupabaseClientDouble {
+  if (typeof value !== 'object' || value === null || !('from' in value)) {
+    return false;
+  }
+
+  return typeof value.from === 'function';
+}
+
+function getSupabaseClientDouble(service: SupabaseService): SupabaseClientDouble {
+  const client = Reflect.get(service, 'supabase');
+  if (!isSupabaseClientDouble(client)) {
+    throw new Error('Supabase test setup did not expose a chainable client double.');
+  }
+
+  return client;
 }
 
 describe('SupabaseService - GET.patches filtering and ordering', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: SupabaseClientDouble;
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = getSupabaseClientDouble(service);
   });
   
   afterEach(() => {
@@ -38,7 +140,7 @@ describe('SupabaseService - GET.patches filtering and ordering', () => {
     );
     
     service.GET.patches(0, 9).subscribe({
-      next: (result: any) => {
+      next: (result: PatchListingResult) => {
         expect(result.data).toEqual(mockPatches);
         expect(result.count).toBe(1);
         done();
@@ -80,7 +182,7 @@ describe('SupabaseService - GET.patches filtering and ordering', () => {
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
     service.GET.patches(0, 9, 'drum').subscribe({
-      next: (result: any) => {
+      next: (result: PatchListingResult) => {
         expect(ilikeSpy).not.toHaveBeenCalled();
         expect(result.count).toBe(1);
         expect(result.data).toEqual([
