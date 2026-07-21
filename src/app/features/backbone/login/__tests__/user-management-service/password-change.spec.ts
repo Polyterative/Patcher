@@ -19,9 +19,11 @@ import {
  * Tests for UserManagementService password and username inline form toggles.
  */
 describe('UserManagementService - Account Form Changes', () => {
+  type UserManagementServiceTestSetup = ReturnType<typeof setupUserManagementServiceTest>;
+
   let service: UserManagementService;
-  let mockSnackBar: any;
-  let mockSupabaseService: any;
+  let mockSnackBar: UserManagementServiceTestSetup['mockSnackBar'];
+  let mockSupabaseService: UserManagementServiceTestSetup['mockSupabaseService'];
   
   beforeEach(() => {
     const setup = setupUserManagementServiceTest();

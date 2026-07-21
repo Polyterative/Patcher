@@ -1,7 +1,8 @@
 import {
   cleanupUserManagementServiceTest,
   MOCK_SIMPLE_USER,
-  setupUserManagementServiceTest
+  setupUserManagementServiceTest,
+  userManagementInternals
 } from './test-setup';
 import { UserManagementService } from '../../user-management.service';
 import { ReplaySubject } from 'rxjs';
@@ -19,11 +20,13 @@ import { SimpleUserModel } from 'src/app/features/backend/supabase.service';
  * and initial configuration.
  */
 describe('UserManagementService - Initialization', () => {
+  type UserManagementServiceTestSetup = ReturnType<typeof setupUserManagementServiceTest>;
+
   let service: UserManagementService;
-  let mockSnackBar: any;
-  let mockRouter: any;
-  let mockSupabaseService: any;
-  let mockUserDataHandlerService: any;
+  let mockSnackBar: UserManagementServiceTestSetup['mockSnackBar'];
+  let mockRouter: UserManagementServiceTestSetup['mockRouter'];
+  let mockSupabaseService: UserManagementServiceTestSetup['mockSupabaseService'];
+  let mockUserDataHandlerService: UserManagementServiceTestSetup['mockUserDataHandlerService'];
   
   beforeEach(() => {
     const setup = setupUserManagementServiceTest();
@@ -63,11 +66,11 @@ describe('UserManagementService - Initialization', () => {
   });
   
   it('should have currentUserId initially undefined', () => {
-    expect((service as any).currentUserId).toBeUndefined();
+    expect(userManagementInternals(service).currentUserId).toBeUndefined();
   });
   
   it('should extend SubManager', () => {
-    expect((service as any).destroy$).toBeDefined();
+    expect(service.destroy$).toBeDefined();
     expect(typeof service.ngOnDestroy).toBe('function');
   });
   

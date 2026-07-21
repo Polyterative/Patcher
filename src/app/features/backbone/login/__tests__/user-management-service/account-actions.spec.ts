@@ -8,40 +8,35 @@ import {
 } from 'rxjs';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { UserManagementService } from '../../user-management.service';
+import { SimpleUserModel } from 'src/app/features/backend/supabase.service';
 import {
   cleanupUserManagementServiceTest,
+  createConfirmDialogRef,
   MOCK_RICH_USER,
+  publishRichProfile,
   setupUserManagementServiceTest
 } from './test-setup';
 
 
 describe('UserManagementService - Account Actions', () => {
-  let service: UserManagementService;
-  let mockSupabaseService: any;
-  let mockRouter: any;
+  type UserManagementServiceTestSetup = ReturnType<typeof setupUserManagementServiceTest>;
 
-  function publishRichProfile(profile: typeof MOCK_RICH_USER): void {
-    (service as unknown as {
-      _loggedUserFullProfile$: {
-        next(value: typeof MOCK_RICH_USER): void;
-      };
-    })._loggedUserFullProfile$.next(profile);
-  }
+  let service: UserManagementService;
+  let mockSupabaseService: UserManagementServiceTestSetup['mockSupabaseService'];
+  let mockRouter: UserManagementServiceTestSetup['mockRouter'];
+  let mockDialog: UserManagementServiceTestSetup['mockDialog'];
   
   beforeEach(() => {
     const setup = setupUserManagementServiceTest();
     service = setup.service;
     mockSupabaseService = setup.mockSupabaseService;
     mockRouter = setup.mockRouter;
+    mockDialog = setup.mockDialog;
     mockSupabaseService.auth.loginWithOAuth$.and.returnValue(of(void 0));
     mockSupabaseService.auth.handleOAuthCallback$.and.returnValue(of(MOCK_RICH_USER));
     mockSupabaseService.auth.updateUsername$.and.returnValue(of(void 0));
     mockSupabaseService.delete.allUserData.and.returnValue(of(void 0));
-    (service as any).dialog = {
-      open: jasmine.createSpy('dialog.open').and.returnValue({
-        afterClosed: () => of({answer: true})
-      })
-    };
+    mockDialog.open.and.returnValue(createConfirmDialogRef({answer: true}));
   });
   
   afterEach(() => {
@@ -68,8 +63,8 @@ describe('UserManagementService - Account Actions', () => {
   }));
   
   it('handles OAuth callback action and updates user streams', fakeAsync(() => {
-    let user: any;
-    let profile: any;
+    let user: SimpleUserModel | undefined;
+    let profile: typeof MOCK_RICH_USER | undefined;
     service.loggedUser$.subscribe(v => user = v);
     service.loggedUserFullProfile$.subscribe(v => profile = v);
     
@@ -77,8 +72,8 @@ describe('UserManagementService - Account Actions', () => {
     tick();
     
     expect(mockSupabaseService.auth.handleOAuthCallback$).toHaveBeenCalled();
-    expect(user).toEqual(MOCK_RICH_USER as any);
-    expect(profile).toEqual(MOCK_RICH_USER as any);
+    expect(user).toEqual(MOCK_RICH_USER);
+    expect(profile).toEqual(MOCK_RICH_USER);
   }));
   
   it('shows error when OAuth callback handling fails', fakeAsync(() => {
@@ -122,7 +117,7 @@ describe('UserManagementService - Account Actions', () => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {
     });
     mockSupabaseService.auth.getRichUserSession$.and.returnValue(of({...MOCK_RICH_USER, username: 'newname'}));
-    publishRichProfile(MOCK_RICH_USER);
+    publishRichProfile(service, MOCK_RICH_USER);
     
     service.updateUsernameAction$.next('newname');
     tick();
@@ -137,7 +132,7 @@ describe('UserManagementService - Account Actions', () => {
 
   it('hides the username form after updateUsernameAction$ succeeds', fakeAsync(() => {
     mockSupabaseService.auth.getRichUserSession$.and.returnValue(of({...MOCK_RICH_USER, username: 'newname'}));
-    publishRichProfile(MOCK_RICH_USER);
+    publishRichProfile(service, MOCK_RICH_USER);
 
     service.toggleUsernameForm$.next(true);
     tick();
@@ -155,7 +150,7 @@ describe('UserManagementService - Account Actions', () => {
   it('keeps the username form open when updateUsernameAction$ fails', fakeAsync(() => {
     spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
     });
-    publishRichProfile(MOCK_RICH_USER);
+    publishRichProfile(service, MOCK_RICH_USER);
     mockSupabaseService.auth.updateUsername$.and.returnValue(throwError(() => new Error('taken')));
 
     service.toggleUsernameForm$.next(true);
@@ -173,7 +168,7 @@ describe('UserManagementService - Account Actions', () => {
   it('public updateUsername$ refreshes profile and emits success', fakeAsync(() => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {
     });
-    publishRichProfile(MOCK_RICH_USER);
+    publishRichProfile(service, MOCK_RICH_USER);
     mockSupabaseService.auth.updateUsername$.and.returnValue(of(void 0));
     mockSupabaseService.auth.getRichUserSession$.and.returnValue(of({...MOCK_RICH_USER, username: 'after'}));
     
@@ -190,7 +185,7 @@ describe('UserManagementService - Account Actions', () => {
   it('public updateUsername$ rethrows backend errors', fakeAsync(() => {
     spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
     });
-    publishRichProfile(MOCK_RICH_USER);
+    publishRichProfile(service, MOCK_RICH_USER);
     mockSupabaseService.auth.updateUsername$.and.returnValue(throwError(() => new Error('update failed')));
     
     let failed = false;
@@ -206,7 +201,7 @@ describe('UserManagementService - Account Actions', () => {
   it('public updateProfileVisibility$ updates the local rich profile and emits success', fakeAsync(() => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {
     });
-    publishRichProfile(MOCK_RICH_USER);
+    publishRichProfile(service, MOCK_RICH_USER);
     mockSupabaseService.auth.updateProfileVisibility$.and.returnValue(of(void 0));
 
     let completed = false;
@@ -215,20 +210,20 @@ describe('UserManagementService - Account Actions', () => {
     });
     tick();
 
-    let latestProfile: any;
+    let latestProfile: typeof MOCK_RICH_USER | undefined;
     service.loggedUserFullProfile$.subscribe(profile => latestProfile = profile);
     tick();
 
     expect(completed).toBeTrue();
     expect(mockSupabaseService.auth.updateProfileVisibility$).toHaveBeenCalledWith(MOCK_RICH_USER.id, true);
-    expect(latestProfile.public).toBeTrue();
+    expect(latestProfile?.public).toBeTrue();
     expect(SharedConstants.successCustom).toHaveBeenCalled();
   }));
 
   it('resets account data, logs out, and navigates on confirmation', fakeAsync(() => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {
     });
-    mockSupabaseService.auth.logoff$.and.returnValue(Promise.resolve({error: null}));
+    mockSupabaseService.auth.logoff$.and.returnValue(of({error: null}));
     
     service.resetUserDataAction$.next();
     tick();
