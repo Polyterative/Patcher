@@ -1,6 +1,6 @@
 {
   "_comment": "Grandfathered explicit `any` counts. Do not add by hand — run `node scripts/checks/check-explicit-any.cjs --update-baseline` after intentional cleanup.",
-  "totalExplicitAny": 1176,
+  "totalExplicitAny": 1151,
   "files": {
     "api/sitemap.ts": 3,
     "e2e/helpers/linked-rack-scenario.ts": 2,
@@ -30,7 +30,6 @@
     "src/app/features/backend/__tests__/supabase-service/integration-user-patches.spec.ts": 30,
     "src/app/features/backend/__tests__/supabase-service/integration-user-racks.spec.ts": 6,
     "src/app/features/backend/__tests__/supabase-service/paginated-user-queries.spec.ts": 100,
-    "src/app/features/backend/__tests__/supabase-service/storage.spec.ts": 25,
     "src/app/features/backend/__tests__/supabase-service/supabase-auth-oauth.spec.ts": 28,
     "src/app/features/backend/__tests__/supabase-service/update-extended.spec.ts": 48,
     "src/app/features/backend/__tests__/supabase-service/update-module.spec.ts": 30,

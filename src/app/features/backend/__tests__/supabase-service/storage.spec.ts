@@ -1,4 +1,3 @@
-import { of } from 'rxjs';
 import { SupabaseService } from '../../supabase.service';
 import { StorageUrls } from '../../DatabaseStrings';
 import {
@@ -12,23 +11,105 @@ import {
   setupSupabaseServiceTest,
   TEST_TIMEOUT
 } from './test-setup';
+import {
+  authUserFixture,
+  getSupabaseClientDouble,
+  mockUserSession,
+  type SupabaseClientDouble
+} from './supabase-query-test-doubles';
+import type { SupabaseStorageFile } from '../../supabase.types';
 
 
 const TEST_SUPABASE_URL = 'https://sozmatmywjpstwidzlss.supabase.co';
+type StorageBucketName = 'marketplace-listings' | 'module-panels' | 'patches' | 'racks';
+type StorageProviderError = {
+  message: string;
+  name?: string;
+};
+type StorageUploadData = {
+  path: string;
+};
+type StorageRemoveData = {
+  name: string;
+};
+type StorageUploadResult = {
+  data: StorageUploadData | null;
+  error: StorageProviderError | null;
+};
+type StorageRemoveResult = {
+  data: StorageRemoveData[] | null;
+  error: StorageProviderError | null;
+};
+type StorageUploadOptions = {
+  cacheControl?: string;
+  contentType?: string;
+  upsert?: boolean;
+};
+type StorageUploadFn = (
+  path: string,
+  file: SupabaseStorageFile,
+  options?: StorageUploadOptions
+) => Promise<StorageUploadResult>;
+type StorageRemoveFn = (paths: string[]) => Promise<StorageRemoveResult>;
+type StorageFromFn = (bucket: StorageBucketName) => StorageBucketDouble;
+type StorageRootDouble = {
+  from: StorageFromFn;
+};
+type StorageBucketDouble = {
+  upload: jasmine.Spy<StorageUploadFn>;
+  remove: jasmine.Spy<StorageRemoveFn>;
+};
+type StorageSupabaseClientDouble = SupabaseClientDouble & {
+  storage: StorageRootDouble;
+};
+
+function getStorageSupabaseClientDouble(service: SupabaseService): StorageSupabaseClientDouble {
+  const client = getSupabaseClientDouble(service);
+  const storage = Reflect.get(client, 'storage');
+
+  if (!isStorageRootDouble(storage)) {
+    throw new Error('Supabase test setup did not expose a storage client double.');
+  }
+
+  return {
+    ...client,
+    storage
+  };
+}
+
+function isStorageRootDouble(value: unknown): value is StorageRootDouble {
+  return typeof value === 'object'
+    && value !== null
+    && typeof Reflect.get(value, 'from') === 'function';
+}
+
+function storageUploadSuccess(path = 'file.jpg'): StorageUploadResult {
+  return {
+    data: {path},
+    error: null
+  };
+}
+
+function storageRemoveSuccess(name = 'file.jpg'): StorageRemoveResult {
+  return {
+    data: [{name}],
+    error: null
+  };
+}
 
 describe('SupabaseService - storage', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
-  let mockBucket: any;
+  let supabaseClient: StorageSupabaseClientDouble;
+  let mockBucket: StorageBucketDouble;
   let previousSupabaseUrl: string;
   
   function setupStorageMock(
-    uploadResult: any = {data: {path: 'file.jpg'}, error: null},
-    removeResult: any = {data: [{name: 'file.jpg'}], error: null}
+    uploadResult: StorageUploadResult = storageUploadSuccess(),
+    removeResult: StorageRemoveResult = storageRemoveSuccess()
   ) {
     mockBucket = {
-      upload: jasmine.createSpy('upload').and.returnValue(Promise.resolve(uploadResult)),
-      remove: jasmine.createSpy('remove').and.returnValue(Promise.resolve(removeResult))
+      upload: jasmine.createSpy<StorageUploadFn>('upload').and.returnValue(Promise.resolve(uploadResult)),
+      remove: jasmine.createSpy<StorageRemoveFn>('remove').and.returnValue(Promise.resolve(removeResult))
     };
     spyOn(supabaseClient.storage, 'from').and.returnValue(mockBucket);
   }
@@ -45,7 +126,7 @@ describe('SupabaseService - storage', () => {
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = getStorageSupabaseClientDouble(service);
   });
   
   afterEach(() => {
@@ -92,7 +173,7 @@ describe('SupabaseService - storage', () => {
   
   describe('storage.deletePanelFile', () => {
     it('should call remove on the module_panels bucket', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
+      mockUserSession(service, authUserFixture('u1'));
       setupStorageMock();
 
       service.storage.deletePanelFile('panel.jpg').subscribe({
@@ -110,7 +191,7 @@ describe('SupabaseService - storage', () => {
     }, TEST_TIMEOUT);
 
     it('should bust modules, moduleWithId and rackWithId caches', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
+      mockUserSession(service, authUserFixture('u1'));
       setupStorageMock();
       const bustedKeys: string[] = [];
       service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as string[])));
@@ -130,7 +211,7 @@ describe('SupabaseService - storage', () => {
     }, TEST_TIMEOUT);
 
     it('should error when user is not authenticated', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+      mockUserSession(service, null);
 
       service.storage.deletePanelFile('panel.jpg').subscribe({
         next: () => {
@@ -147,7 +228,7 @@ describe('SupabaseService - storage', () => {
 
   describe('storage.deleteRackImage', () => {
     it('should normalise filename and call remove on the racks bucket', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
+      mockUserSession(service, authUserFixture('u1'));
       setupStorageMock();
 
       service.storage.deleteRackImage('RACK.JPG').subscribe({
@@ -164,7 +245,7 @@ describe('SupabaseService - storage', () => {
     }, TEST_TIMEOUT);
 
     it('should bust rackWithId cache', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
+      mockUserSession(service, authUserFixture('u1'));
       setupStorageMock();
       const bustedKeys: string[] = [];
       service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as string[])));
@@ -182,7 +263,7 @@ describe('SupabaseService - storage', () => {
     }, TEST_TIMEOUT);
 
     it('should error when user is not authenticated', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+      mockUserSession(service, null);
 
       service.storage.deleteRackImage('rack.jpg').subscribe({
         next: () => {
@@ -199,7 +280,7 @@ describe('SupabaseService - storage', () => {
 
   describe('storage.deletePatchPreview', () => {
     it('should normalise filename and call remove on the patches bucket', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
+      mockUserSession(service, authUserFixture('u1'));
       setupStorageMock();
 
       service.storage.deletePatchPreview('PATCH_1_V20260618T201530123Z.SVG').subscribe({
@@ -216,7 +297,7 @@ describe('SupabaseService - storage', () => {
     }, TEST_TIMEOUT);
 
     it('should bust patch list caches', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
+      mockUserSession(service, authUserFixture('u1'));
       setupStorageMock();
       const bustedKeys: string[] = [];
       service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as string[])));
@@ -235,7 +316,7 @@ describe('SupabaseService - storage', () => {
     }, TEST_TIMEOUT);
 
     it('should error when user is not authenticated', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+      mockUserSession(service, null);
 
       service.storage.deletePatchPreview('patch_1_v20260618t201530123z.svg').subscribe({
         next: () => {
@@ -252,7 +333,7 @@ describe('SupabaseService - storage', () => {
 
   describe('storage.uploadModulePanel', () => {
     it('should return the lowercased filename', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
+      mockUserSession(service, authUserFixture('u1'));
       setupStorageMock();
 
       service.storage.uploadModulePanel(new Blob(), 'Panel.JPG').subscribe({
@@ -268,7 +349,7 @@ describe('SupabaseService - storage', () => {
     }, TEST_TIMEOUT);
 
     it('should preserve a custom webp content type during upload', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
+      mockUserSession(service, authUserFixture('u1'));
       setupStorageMock();
 
       service.storage.uploadModulePanel(new Blob([], {type: 'image/webp'}), 'Panel.WebP', 'image/webp').subscribe({
@@ -287,7 +368,7 @@ describe('SupabaseService - storage', () => {
     }, TEST_TIMEOUT);
 
     it('should default the upload content type to image/jpeg when none is provided', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
+      mockUserSession(service, authUserFixture('u1'));
       setupStorageMock();
 
       service.storage.uploadModulePanel(new Blob(), 'Panel.JPG').subscribe({
@@ -306,7 +387,7 @@ describe('SupabaseService - storage', () => {
     }, TEST_TIMEOUT);
 
     it('should call both upload and remove on module_panels bucket', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
+      mockUserSession(service, authUserFixture('u1'));
       setupStorageMock();
 
       service.storage.uploadModulePanel(new Blob(), 'panel.jpg').subscribe({
@@ -324,7 +405,7 @@ describe('SupabaseService - storage', () => {
     }, TEST_TIMEOUT);
 
     it('should bust module caches after successful upload', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
+      mockUserSession(service, authUserFixture('u1'));
       setupStorageMock();
       const bustedKeys: string[] = [];
       service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as string[])));
@@ -343,7 +424,7 @@ describe('SupabaseService - storage', () => {
     }, TEST_TIMEOUT);
 
     it('should error when user is not authenticated', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+      mockUserSession(service, null);
 
       service.storage.uploadModulePanel(new Blob(), 'panel.jpg').subscribe({
         next: () => {
@@ -360,7 +441,7 @@ describe('SupabaseService - storage', () => {
   
   describe('storage.uploadRackImage', () => {
     it('should upload to racks bucket and return a timestamped filename', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
+      mockUserSession(service, authUserFixture('u1'));
       setupStorageMock();
       
       service.storage.uploadRackImage(new Blob(), 'rack.jpg').subscribe({
@@ -378,7 +459,7 @@ describe('SupabaseService - storage', () => {
     }, TEST_TIMEOUT);
     
     it('should bust rackWithId cache', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
+      mockUserSession(service, authUserFixture('u1'));
       setupStorageMock();
       const bustedKeys: string[] = [];
       service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as string[])));
@@ -398,7 +479,7 @@ describe('SupabaseService - storage', () => {
 
   describe('storage.uploadPatchPreview', () => {
     it('should upload SVG to patches bucket and return the normalised filename', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
+      mockUserSession(service, authUserFixture('u1'));
       setupStorageMock({data: {path: 'patch_1_v20260618t201530123z.svg'}, error: null});
 
       service.storage.uploadPatchPreview(new Blob([], {type: 'image/svg+xml'}), 'PATCH_1_V20260618T201530123Z.SVG').subscribe({
@@ -424,7 +505,7 @@ describe('SupabaseService - storage', () => {
     }, TEST_TIMEOUT);
 
     it('should bust patch list caches', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
+      mockUserSession(service, authUserFixture('u1'));
       setupStorageMock();
       const bustedKeys: string[] = [];
       service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as string[])));
@@ -443,7 +524,7 @@ describe('SupabaseService - storage', () => {
     }, TEST_TIMEOUT);
 
     it('should error when user is not authenticated', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+      mockUserSession(service, null);
 
       service.storage.uploadPatchPreview(new Blob([], {type: 'image/svg+xml'}), 'patch_1_v20260618t201530123z.svg').subscribe({
         next: () => {
@@ -463,7 +544,7 @@ describe('storage.uploadMarketplaceListingImage', () => {
   const listingId = '22222222-2222-2222-2222-222222222222';
 
   it('uploads image media to an owner/listing scoped path with MIME-matched extension', (done) => {
-    spyOn(service.auth, 'getUserSession$').and.returnValue(of({id: sellerId} as never));
+    mockUserSession(service, authUserFixture(sellerId));
     setupStorageMock();
 
     service.storage.uploadMarketplaceListingImage(
@@ -494,7 +575,7 @@ describe('storage.uploadMarketplaceListingImage', () => {
   }, TEST_TIMEOUT);
 
   it('rejects oversized listing media before upload', (done) => {
-    spyOn(service.auth, 'getUserSession$').and.returnValue(of({id: sellerId} as never));
+    mockUserSession(service, authUserFixture(sellerId));
     setupStorageMock();
 
     service.storage.uploadMarketplaceListingImage(
@@ -515,9 +596,7 @@ describe('storage.uploadMarketplaceListingImage', () => {
 
 describe('storage.deleteMarketplaceListingImage', () => {
   it('rejects deleting another seller path before storage remove', (done) => {
-    spyOn(service.auth, 'getUserSession$').and.returnValue(of({
-      id: '11111111-1111-1111-1111-111111111111'
-    } as never));
+    mockUserSession(service, authUserFixture('11111111-1111-1111-1111-111111111111'));
     setupStorageMock();
 
     service.storage.deleteMarketplaceListingImage(
