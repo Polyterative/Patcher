@@ -1,6 +1,6 @@
 {
   "_comment": "Grandfathered explicit `any` counts. Do not add by hand — run `node scripts/checks/check-explicit-any.cjs --update-baseline` after intentional cleanup.",
-  "totalExplicitAny": 1590,
+  "totalExplicitAny": 1574,
   "files": {
     "api/sitemap.ts": 3,
     "e2e/auth-rack-context-menu.spec.ts": 6,
@@ -35,10 +35,8 @@
     "src/app/features/backend/__tests__/supabase-service/add-comment-rack.spec.ts": 26,
     "src/app/features/backend/__tests__/supabase-service/add-extended.spec.ts": 18,
     "src/app/features/backend/__tests__/supabase-service/add-misc.spec.ts": 23,
-    "src/app/features/backend/__tests__/supabase-service/api-surface.spec.ts": 6,
     "src/app/features/backend/__tests__/supabase-service/auth-methods.spec.ts": 16,
     "src/app/features/backend/__tests__/supabase-service/caching.spec.ts": 12,
-    "src/app/features/backend/__tests__/supabase-service/connection-health.spec.ts": 3,
     "src/app/features/backend/__tests__/supabase-service/crud-operations.spec.ts": 52,
     "src/app/features/backend/__tests__/supabase-service/delete-advanced.spec.ts": 20,
     "src/app/features/backend/__tests__/supabase-service/delete-complex.spec.ts": 18,
@@ -48,8 +46,6 @@
     "src/app/features/backend/__tests__/supabase-service/get-cached-delegates.spec.ts": 26,
     "src/app/features/backend/__tests__/supabase-service/get-complex-queries.spec.ts": 27,
     "src/app/features/backend/__tests__/supabase-service/initialization.spec.ts": 4,
-    "src/app/features/backend/__tests__/supabase-service/integration-manufacturers.spec.ts": 4,
-    "src/app/features/backend/__tests__/supabase-service/integration-tags.spec.ts": 3,
     "src/app/features/backend/__tests__/supabase-service/integration-user-patches.spec.ts": 30,
     "src/app/features/backend/__tests__/supabase-service/integration-user-racks.spec.ts": 6,
     "src/app/features/backend/__tests__/supabase-service/paginated-user-queries.spec.ts": 100,
