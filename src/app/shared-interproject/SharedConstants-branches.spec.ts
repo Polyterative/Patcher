@@ -1,27 +1,52 @@
+import { throwError } from 'rxjs';
 import {
-  EMPTY,
-  throwError
-} from 'rxjs';
+  MatSnackBar,
+  MatSnackBarConfig
+} from '@angular/material/snack-bar';
 import { SharedConstants } from './SharedConstants';
+
+type SnackBarOpenCall = readonly [
+  message: string,
+  action?: string,
+  config?: MatSnackBarConfig
+];
+
+function createSnackBarSpy(): jasmine.SpyObj<MatSnackBar> {
+  return jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
+}
+
+function lastOpenCall(snackBar: jasmine.SpyObj<MatSnackBar>): SnackBarOpenCall {
+  return snackBar.open.calls.mostRecent().args;
+}
+
+function lastOpenMessage(snackBar: jasmine.SpyObj<MatSnackBar>): string {
+  return lastOpenCall(snackBar)[0];
+}
+
+function lastOpenConfig(snackBar: jasmine.SpyObj<MatSnackBar>): MatSnackBarConfig {
+  const config = lastOpenCall(snackBar)[2];
+  expect(config).toBeDefined();
+  if (!config) {
+    fail('Expected snack bar config to be provided.');
+  }
+  return config;
+}
 
 
 describe('SharedConstants - uncovered branches', () => {
-  let snackBar: {
-    open: jasmine.Spy
-  };
+  let snackBar: jasmine.SpyObj<MatSnackBar>;
   
   beforeEach(() => {
-    snackBar = {open: jasmine.createSpy('open').and.returnValue({onAction: () => EMPTY})};
+    snackBar = createSnackBarSpy();
   });
   
   it('errorHandlerLogin with optional msg appends it to the message', (done) => {
     throwError(() => new Error('fail'))
-      .pipe(SharedConstants.errorHandlerLogin(snackBar as any, 'extra-detail'))
+      .pipe(SharedConstants.errorHandlerLogin(snackBar, 'extra-detail'))
       .subscribe({
         error: () => fail('should not error'),
         complete: () => {
-          const msg: string = snackBar.open.calls.mostRecent().args[0];
-          expect(msg).toContain('extra-detail');
+          expect(lastOpenMessage(snackBar)).toContain('extra-detail');
           done();
         }
       });
@@ -29,32 +54,29 @@ describe('SharedConstants - uncovered branches', () => {
   
   it('errorHandlerLogin without msg does not append anything', (done) => {
     throwError(() => new Error('fail'))
-      .pipe(SharedConstants.errorHandlerLogin(snackBar as any))
+      .pipe(SharedConstants.errorHandlerLogin(snackBar))
       .subscribe({
         error: () => fail('should not error'),
         complete: () => {
-          const msg: string = snackBar.open.calls.mostRecent().args[0];
           // msg should equal exactly loginFailed with no trailing text
-          expect(msg).toBe(SharedConstants.messages.loginFailed);
+          expect(lastOpenMessage(snackBar)).toBe(SharedConstants.messages.loginFailed);
           done();
         }
       });
   });
   
   it('errorSignup without msg shows only the signupFailed message', () => {
-    SharedConstants.errorSignup(snackBar as any);
-    const msg: string = snackBar.open.calls.mostRecent().args[0];
-    expect(msg).toBe(SharedConstants.messages.signupFailed);
+    SharedConstants.errorSignup(snackBar);
+    expect(lastOpenMessage(snackBar)).toBe(SharedConstants.messages.signupFailed);
   });
   
   it('errorHandlerData catches errors and shows dataNotSaved message', (done) => {
     throwError(() => new Error('db error'))
-      .pipe(SharedConstants.errorHandlerData(snackBar as any))
+      .pipe(SharedConstants.errorHandlerData(snackBar))
       .subscribe({
         error: () => fail('should not error'),
         complete: () => {
-          const msg: string = snackBar.open.calls.mostRecent().args[0];
-          expect(msg).toBe(SharedConstants.messages.dataNotSaved);
+          expect(lastOpenMessage(snackBar)).toBe(SharedConstants.messages.dataNotSaved);
           done();
         }
       });
@@ -62,13 +84,12 @@ describe('SharedConstants - uncovered branches', () => {
   
   it('errorHandlerData uses 8 second duration and snack-error panelClass', (done) => {
     throwError(() => new Error('db error'))
-      .pipe(SharedConstants.errorHandlerData(snackBar as any))
+      .pipe(SharedConstants.errorHandlerData(snackBar))
       .subscribe({
         error: () => fail('should not error'),
         complete: () => {
-          const args = snackBar.open.calls.mostRecent().args;
-          expect(args[2].duration).toBe(8000);
-          expect(args[2].panelClass).toBe('snack-error');
+          expect(lastOpenConfig(snackBar).duration).toBe(8000);
+          expect(lastOpenConfig(snackBar).panelClass).toBe('snack-error');
           done();
         }
       });
@@ -76,12 +97,11 @@ describe('SharedConstants - uncovered branches', () => {
   
   it('errorHandlerOperation catches errors and shows operationFailed message', (done) => {
     throwError(() => new Error('op error'))
-      .pipe(SharedConstants.errorHandlerOperation(snackBar as any))
+      .pipe(SharedConstants.errorHandlerOperation(snackBar))
       .subscribe({
         error: () => fail('should not error'),
         complete: () => {
-          const msg: string = snackBar.open.calls.mostRecent().args[0];
-          expect(msg).toBe(SharedConstants.messages.operationFailed);
+          expect(lastOpenMessage(snackBar)).toBe(SharedConstants.messages.operationFailed);
           done();
         }
       });
