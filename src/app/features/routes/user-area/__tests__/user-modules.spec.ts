@@ -1,5 +1,7 @@
 import { UserModulesComponent } from '../user-modules/user-modules.component';
 import {
+  asSupabaseService,
+  asUserAreaDataService,
   createMockSupabaseService,
   createMockUserAreaDataService,
   MOCK_MODULES,
@@ -22,8 +24,8 @@ describe('UserModulesComponent', () => {
     mockBackend = createMockSupabaseService();
     
     component = new UserModulesComponent(
-      mockBackend as any,
-      mockDataService as any
+      asSupabaseService(mockBackend),
+      asUserAreaDataService(mockDataService)
     );
   }
   
@@ -51,8 +53,8 @@ describe('UserModulesComponent', () => {
     mockBackend = createMockSupabaseService();
     
     component = new UserModulesComponent(
-      mockBackend as any,
-      mockDataService as any
+      asSupabaseService(mockBackend),
+      asUserAreaDataService(mockDataService)
     );
     
     expect(spy).toHaveBeenCalledTimes(1);
@@ -71,7 +73,7 @@ describe('UserModulesComponent', () => {
   
   it('should accept encloseVertically input', () => {
     build();
-    (component as any).encloseVertically = false;
+    Object.defineProperty(component, 'encloseVertically', {value: false});
     expect(component.encloseVertically).toBe(false);
   });
   
@@ -83,8 +85,8 @@ describe('UserModulesComponent', () => {
   
   it('should reflect modules when dataService pushes data', () => {
     build();
-    mockDataService.modulesData$.next(MOCK_MODULES as any);
-    expect(mockDataService.modulesData$.value).toEqual(MOCK_MODULES as any);
+    mockDataService.modulesData$.next(MOCK_MODULES);
+    expect(mockDataService.modulesData$.value).toEqual(MOCK_MODULES);
   });
   
   it('should reflect empty array when dataService pushes []', () => {

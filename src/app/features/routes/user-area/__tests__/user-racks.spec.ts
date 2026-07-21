@@ -1,5 +1,8 @@
 import { UserRacksComponent } from '../user-racks/user-racks.component';
 import {
+  asMatDialog,
+  asSupabaseService,
+  asUserAreaDataService,
   createMockMatDialog,
   createMockSupabaseService,
   createMockUserAreaDataService,
@@ -26,9 +29,9 @@ describe('UserRacksComponent', () => {
     mockDialog = createMockMatDialog();
     
     component = new UserRacksComponent(
-      mockDialog as any,
-      mockBackend as any,
-      mockDataService as any,
+      asMatDialog(mockDialog),
+      asSupabaseService(mockBackend),
+      asUserAreaDataService(mockDataService),
     );
   }
   
@@ -56,9 +59,9 @@ describe('UserRacksComponent', () => {
     mockDialog = createMockMatDialog();
     
     component = new UserRacksComponent(
-      mockDialog as any,
-      mockBackend as any,
-      mockDataService as any,
+      asMatDialog(mockDialog),
+      asSupabaseService(mockBackend),
+      asUserAreaDataService(mockDataService),
     );
     
     expect(spy).toHaveBeenCalledWith(undefined);
@@ -78,8 +81,8 @@ describe('UserRacksComponent', () => {
   
   it('should reflect racks when dataService pushes data', () => {
     build();
-    mockDataService.rackData$.next(MOCK_RACKS as any);
-    expect(mockDataService.rackData$.value).toEqual(MOCK_RACKS as any);
+    mockDataService.rackData$.next(MOCK_RACKS);
+    expect(mockDataService.rackData$.value).toEqual(MOCK_RACKS);
   });
   
   it('should reflect empty list when dataService pushes []', () => {
