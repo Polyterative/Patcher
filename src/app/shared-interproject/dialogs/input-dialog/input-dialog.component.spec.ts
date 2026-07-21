@@ -1,24 +1,52 @@
 import {
+  BreakpointObserver,
+  BreakpointState
+} from '@angular/cdk/layout';
+import { MatDialogRef } from '@angular/material/dialog';
+import {
   FormControl,
   Validators
 } from '@angular/forms';
+import { of } from 'rxjs';
+import { AppStateService } from '../../app-state.service';
 import { FormTypes } from '../../components/@smart/mat-form-entity/form-element-models';
+import { ReadOnlyDialogComponent } from '../read-only-dialog/read-only-dialog.component';
 import { InputDialogComponent } from './input-dialog.component';
+import {
+  InputDialogDataInModel,
+  InputDialogDataOutModel
+} from './input-dialog.types';
 
 
 describe('InputDialogComponent', () => {
+  const breakpointState: BreakpointState = {
+    matches: false,
+    breakpoints: {}
+  };
+
+  const createAppState = (): AppStateService => {
+    const breakpointObserver = jasmine.createSpyObj<BreakpointObserver>('BreakpointObserver', ['observe']);
+    breakpointObserver.observe.and.returnValue(of(breakpointState));
+
+    return new AppStateService(breakpointObserver);
+  };
+
+  const createDialogRef = (): jasmine.SpyObj<MatDialogRef<ReadOnlyDialogComponent, InputDialogDataOutModel>> =>
+    jasmine.createSpyObj<MatDialogRef<ReadOnlyDialogComponent, InputDialogDataOutModel>>('MatDialogRef', ['close']);
+
+  const createComponent = (
+    data: InputDialogDataInModel,
+    dialogRef = createDialogRef()
+  ): InputDialogComponent => new InputDialogComponent(dialogRef, data, createAppState());
+
   it('updates validity stream when form control value changes', () => {
     const control = new FormControl('', [Validators.required]);
-    const component = new InputDialogComponent(
-      {} as any,
-      {
-        title: 'Rename',
-        control,
-        type: FormTypes.TEXT,
-        label: 'Name'
-      } as any,
-      {} as any
-    );
+    const component = createComponent({
+      title: 'Rename',
+      control,
+      type: FormTypes.TEXT,
+      label: 'Name'
+    });
     
     expect(component.isValid$.value).toBeFalse();
     
@@ -31,16 +59,12 @@ describe('InputDialogComponent', () => {
   
   it('stops reacting to changes after destroy', () => {
     const control = new FormControl('', [Validators.required]);
-    const component = new InputDialogComponent(
-      {} as any,
-      {
-        title: 'Rename',
-        control,
-        type: FormTypes.TEXT,
-        label: 'Name'
-      } as any,
-      {} as any
-    );
+    const component = createComponent({
+      title: 'Rename',
+      control,
+      type: FormTypes.TEXT,
+      label: 'Name'
+    });
     
     control.setValue('valid');
     expect(component.isValid$.value).toBeTrue();
@@ -53,40 +77,30 @@ describe('InputDialogComponent', () => {
 
   it('confirms only when the control is valid', () => {
     const control = new FormControl('', [Validators.required]);
-    const closeSpy = jasmine.createSpy('close');
-    const component = new InputDialogComponent(
-      {
-        close: closeSpy
-      } as any,
-      {
-        title: 'Rename',
-        control,
-        type: FormTypes.TEXT,
-        label: 'Name'
-      } as any,
-      {} as any
-    );
+    const dialogRef = createDialogRef();
+    const component = createComponent({
+      title: 'Rename',
+      control,
+      type: FormTypes.TEXT,
+      label: 'Name'
+    }, dialogRef);
 
     component.confirm();
-    expect(closeSpy).not.toHaveBeenCalled();
+    expect(dialogRef.close).not.toHaveBeenCalled();
 
     control.setValue('valid');
     component.confirm();
-    expect(closeSpy).toHaveBeenCalledWith({result: 'valid'});
+    expect(dialogRef.close).toHaveBeenCalledWith({result: 'valid'});
   });
 
   it('builds a shared field config with default done ergonomics', () => {
     const control = new FormControl('');
-    const component = new InputDialogComponent(
-      {} as any,
-      {
-        title: 'Rename',
-        control,
-        type: FormTypes.TEXT,
-        label: 'Name'
-      } as any,
-      {} as any
-    );
+    const component = createComponent({
+      title: 'Rename',
+      control,
+      type: FormTypes.TEXT,
+      label: 'Name'
+    });
 
     expect(component.fieldConfig.control).toBe(control);
     expect(component.fieldConfig.ergonomics).toEqual({
@@ -97,20 +111,16 @@ describe('InputDialogComponent', () => {
 
   it('lets callers override shared dialog ergonomics', () => {
     const control = new FormControl('');
-    const component = new InputDialogComponent(
-      {} as any,
-      {
-        title: 'Search',
-        control,
-        type: FormTypes.TEXT,
-        label: 'Query',
-        ergonomics: {
-          inputmode: 'search',
-          enterkeyhint: 'search'
-        }
-      } as any,
-      {} as any
-    );
+    const component = createComponent({
+      title: 'Search',
+      control,
+      type: FormTypes.TEXT,
+      label: 'Query',
+      ergonomics: {
+        inputmode: 'search',
+        enterkeyhint: 'search'
+      }
+    });
 
     expect(component.fieldConfig.ergonomics).toEqual({
       autofocus: true,
