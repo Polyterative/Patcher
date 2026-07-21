@@ -1,6 +1,6 @@
 {
   "_comment": "Grandfathered explicit `any` counts. Do not add by hand — run `node scripts/checks/check-explicit-any.cjs --update-baseline` after intentional cleanup.",
-  "totalExplicitAny": 1628,
+  "totalExplicitAny": 1605,
   "files": {
     "api/sitemap.ts": 3,
     "e2e/auth-rack-context-menu.spec.ts": 6,
@@ -47,9 +47,7 @@
     "src/app/features/backend/__tests__/supabase-service/delete-user-module.spec.ts": 25,
     "src/app/features/backend/__tests__/supabase-service/email-leakage.spec.ts": 17,
     "src/app/features/backend/__tests__/supabase-service/get-cached-delegates.spec.ts": 26,
-    "src/app/features/backend/__tests__/supabase-service/get-comments.spec.ts": 7,
     "src/app/features/backend/__tests__/supabase-service/get-complex-queries.spec.ts": 27,
-    "src/app/features/backend/__tests__/supabase-service/get-simple-queries.spec.ts": 16,
     "src/app/features/backend/__tests__/supabase-service/initialization.spec.ts": 4,
     "src/app/features/backend/__tests__/supabase-service/integration-manufacturers.spec.ts": 4,
     "src/app/features/backend/__tests__/supabase-service/integration-tags.spec.ts": 3,

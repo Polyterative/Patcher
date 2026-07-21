@@ -1,30 +1,34 @@
 import { SupabaseService } from '../../supabase.service';
+import type { DbComment } from 'src/app/models/comment';
 import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest,
   TEST_TIMEOUT
 } from './test-setup';
+import {
+  chainable,
+  getSupabaseClientDouble,
+  type QueryCountRowsResult,
+  type SupabaseClientDouble,
+  type SupabaseQueryChain
+} from './supabase-query-test-doubles';
 
 
-function chainable(resolveValue: any = { data: null, count: null, error: null }) {
-  const m: any = {};
-  ['select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit', 'single',
-    'insert', 'update', 'delete', 'upsert'].forEach(method => {
-    m[method] = () => m;
-  });
-  m.then = (res: Function, rej?: Function) =>
-    Promise.resolve(resolveValue).then(res as any, rej as any);
-  return m;
-}
+type CommentRow = Pick<DbComment, 'content' | 'entityId' | 'entityType' | 'id'>;
+type CommentsQueryResult = QueryCountRowsResult<CommentRow>;
+type CommentsObservableResult = {
+  data: CommentRow[] | null;
+  count: number | null;
+};
 
 describe('SupabaseService - GET.comments', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: SupabaseClientDouble;
 
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = getSupabaseClientDouble(service);
   });
 
   afterEach(() => {
@@ -35,23 +39,25 @@ describe('SupabaseService - GET.comments', () => {
     const mockComments = [
       { id: 1, content: 'First!', entityId: 5, entityType: 1 },
       { id: 2, content: 'Second!', entityId: 5, entityType: 1 }
-    ];
+    ] satisfies CommentRow[];
     spyOn(supabaseClient, 'from').and.returnValue(
-      chainable({ data: mockComments, count: 2, error: null })
+      chainable<CommentRow>({ data: mockComments, count: 2, error: null } satisfies CommentsQueryResult)
     );
 
     service.GET.comments(5, 1).subscribe({
-      next: (result: any) => {
+      next: (result: CommentsObservableResult) => {
         expect(result.data).toEqual(mockComments);
         expect(result.count).toBe(2);
         done();
       },
-      error: (err) => { fail(err); done(); }
+      error: (err: unknown) => { fail(err); done(); }
     });
   }, TEST_TIMEOUT);
 
   it('should filter by entityId and entityType', (done) => {
-    const mock = chainable({ data: [], count: 0, error: null });
+    const mock: SupabaseQueryChain<CommentRow> = chainable<CommentRow>(
+      { data: [], count: 0, error: null } satisfies CommentsQueryResult
+    );
     const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
 
@@ -61,12 +67,14 @@ describe('SupabaseService - GET.comments', () => {
         expect(filterSpy).toHaveBeenCalledWith('entityType', 'eq', 2);
         done();
       },
-      error: (err) => { fail(err); done(); }
+      error: (err: unknown) => { fail(err); done(); }
     });
   }, TEST_TIMEOUT);
 
   it('should order comments by created descending (newest first)', (done) => {
-    const mock = chainable({ data: [], count: 0, error: null });
+    const mock: SupabaseQueryChain<CommentRow> = chainable<CommentRow>(
+      { data: [], count: 0, error: null } satisfies CommentsQueryResult
+    );
     const orderSpy = spyOn(mock, 'order').and.returnValue(mock);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
 
@@ -75,12 +83,14 @@ describe('SupabaseService - GET.comments', () => {
         expect(orderSpy).toHaveBeenCalledWith('created', { ascending: false });
         done();
       },
-      error: (err) => { fail(err); done(); }
+      error: (err: unknown) => { fail(err); done(); }
     });
   }, TEST_TIMEOUT);
 
   it('should apply default range (0 to 24) when no range args given', (done) => {
-    const mock = chainable({ data: [], count: 0, error: null });
+    const mock: SupabaseQueryChain<CommentRow> = chainable<CommentRow>(
+      { data: [], count: 0, error: null } satisfies CommentsQueryResult
+    );
     const rangeSpy = spyOn(mock, 'range').and.returnValue(mock);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
 
@@ -89,12 +99,14 @@ describe('SupabaseService - GET.comments', () => {
         expect(rangeSpy).toHaveBeenCalledWith(0, 24);
         done();
       },
-      error: (err) => { fail(err); done(); }
+      error: (err: unknown) => { fail(err); done(); }
     });
   }, TEST_TIMEOUT);
 
   it('should apply custom range when from/to are provided', (done) => {
-    const mock = chainable({ data: [], count: 0, error: null });
+    const mock: SupabaseQueryChain<CommentRow> = chainable<CommentRow>(
+      { data: [], count: 0, error: null } satisfies CommentsQueryResult
+    );
     const rangeSpy = spyOn(mock, 'range').and.returnValue(mock);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
 
@@ -103,7 +115,7 @@ describe('SupabaseService - GET.comments', () => {
         expect(rangeSpy).toHaveBeenCalledWith(25, 49);
         done();
       },
-      error: (err) => { fail(err); done(); }
+      error: (err: unknown) => { fail(err); done(); }
     });
   }, TEST_TIMEOUT);
 
@@ -111,7 +123,7 @@ describe('SupabaseService - GET.comments', () => {
     let usedTable = '';
     spyOn(supabaseClient, 'from').and.callFake((t: string) => {
       usedTable = t;
-      return chainable({ data: [], count: 0, error: null });
+      return chainable<CommentRow>({ data: [], count: 0, error: null } satisfies CommentsQueryResult);
     });
 
     service.GET.comments(3, 1).subscribe({
@@ -119,15 +131,17 @@ describe('SupabaseService - GET.comments', () => {
         expect(usedTable).toBe('comments');
         done();
       },
-      error: (err) => { fail(err); done(); }
+      error: (err: unknown) => { fail(err); done(); }
     });
   }, TEST_TIMEOUT);
 
   it('should return an observable', (done) => {
-    spyOn(supabaseClient, 'from').and.returnValue(chainable({ data: [], count: 0, error: null }));
+    spyOn(supabaseClient, 'from').and.returnValue(
+      chainable<CommentRow>({ data: [], count: 0, error: null } satisfies CommentsQueryResult)
+    );
 
     const result$ = service.GET.comments(1, 1);
     expect(typeof result$.subscribe).toBe('function');
-    result$.subscribe({ next: () => done(), error: (e) => { fail(e); done(); } });
+    result$.subscribe({ next: () => done(), error: (e: unknown) => { fail(e); done(); } });
   }, TEST_TIMEOUT);
 });
