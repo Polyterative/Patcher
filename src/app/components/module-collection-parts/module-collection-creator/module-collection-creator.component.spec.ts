@@ -1,17 +1,28 @@
+import { MatDialogRef } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { of } from 'rxjs';
-import { ModuleCollectionCreatorComponent } from './module-collection-creator.component';
+import { ModuleCollectionsDataService } from 'src/app/features/module-collections/module-collections-data.service';
+import {
+  ModuleCollectionCreatorComponent,
+  ModuleCollectionCreatorResult
+} from './module-collection-creator.component';
 
 describe('ModuleCollectionCreatorComponent', () => {
   function build() {
-    const collectionsDataService = {
-      createCollectionShell: jasmine.createSpy('createCollectionShell').and.returnValue(of(42))
-    };
-    const snackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
-    const dialogRef = jasmine.createSpyObj('MatDialogRef', ['close']);
+    const collectionsDataService = jasmine.createSpyObj<ModuleCollectionsDataService>(
+      'ModuleCollectionsDataService',
+      ['createCollectionShell']
+    );
+    collectionsDataService.createCollectionShell.and.returnValue(of(42));
+    const snackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
+    const dialogRef = jasmine.createSpyObj<MatDialogRef<ModuleCollectionCreatorComponent, ModuleCollectionCreatorResult>>(
+      'MatDialogRef',
+      ['close']
+    );
     const component = new ModuleCollectionCreatorComponent(
-      collectionsDataService as any,
-      snackBar as any,
-      dialogRef as any
+      collectionsDataService,
+      snackBar,
+      dialogRef
     );
 
     return {component, collectionsDataService, dialogRef};
