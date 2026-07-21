@@ -1,17 +1,180 @@
-import { of } from 'rxjs';
+import {
+  Observable,
+  of
+} from 'rxjs';
+import {
+  DbModule,
+  RackedModule
+} from 'src/app/models/module';
+import {
+  Rack,
+  RackMinimal,
+  RackingData
+} from 'src/app/models/rack';
 import { RackDetailDataService } from './rack-detail-data.service';
 import {
   buildRowedModulesArray,
   calculateBlankIdForSizeAndStandard,
-  isAnyModuleWithoutRackingId,
+  isAnyModuleWithoutRackingId
 } from './rack-detail-data.utils';
 
+type ServiceConstructorArgs = ConstructorParameters<typeof RackDetailDataService>;
+type BackendResponse<T> = {data: T};
+type EmptyBackendResponse = Record<string, never>;
+type TestRack = Rack & {
+  image?: string | undefined;
+};
+type RackModulePersistenceRow = {
+  id: number;
+  moduleid: number;
+  rackid: number;
+  row: number | null;
+  column: number | null;
+  selected_panel_id: number | null;
+};
+type RackModuleMutationResponse = EmptyBackendResponse | BackendResponse<RackModulePersistenceRow[]>;
+type ModuleFixtureOverrides = Partial<Omit<DbModule, 'standard'>> & {
+  standard?: Partial<DbModule['standard']>;
+};
+type RackDetailBackendDouble = {
+  update: {
+    rack: jasmine.Spy<(rack: Rack) => Observable<EmptyBackendResponse>>;
+    rackedModules: jasmine.Spy<(modules: RackedModule[]) => Observable<RackModuleMutationResponse>>;
+  };
+  delete: {
+    rackedModule: jasmine.Spy<(rackModuleId: number) => Observable<EmptyBackendResponse>>;
+    modulesOfRack: jasmine.Spy<(rackId: number) => Observable<EmptyBackendResponse>>;
+    commentsForRack: jasmine.Spy<(rackId: number) => Observable<EmptyBackendResponse>>;
+    userRack: jasmine.Spy<(rackId: number) => Observable<EmptyBackendResponse>>;
+  };
+  add: {
+    rackModule: jasmine.Spy<(
+      moduleId: number,
+      rackId: number,
+      row: number | null,
+      column: number | null
+    ) => Observable<EmptyBackendResponse>>;
+    rack: jasmine.Spy<(rack: Pick<RackMinimal, 'name' | 'hp' | 'rows' | 'public' | 'locked'>) =>
+      Observable<BackendResponse<Array<{id: number}>>>>;
+  };
+  get: {
+    rackedModules: jasmine.Spy<(rackId: number) => Observable<RackedModule[]>>;
+  };
+  GET: {
+    rackWithId: jasmine.Spy<(rackId: number) => Observable<BackendResponse<Rack | null>>>;
+  };
+  storage: {
+    uploadRackImage: jasmine.Spy<(file: Blob | File, filenameAndExtension: string) => Observable<string>>;
+    deleteRackImage: jasmine.Spy<(filenameAndExtension: string) => Observable<EmptyBackendResponse>>;
+  };
+  auth: {
+    hasAdminRole$: jasmine.Spy<() => Observable<boolean>>;
+  };
+};
+type TestDialogResult = {answer: boolean};
+type TestDialog = {
+  open: jasmine.Spy<() => {
+    afterClosed: () => Observable<TestDialogResult>;
+  }>;
+};
+type RackDetailHelperAccess = {
+  bumpUpVersionInNameOfOfRack: () => string;
+  updateModulesColumnIds: (rackModules: RackedModule[][], row: number | undefined) => void;
+  transferInRow: (
+    rackedModules: RackedModule[][],
+    row: number,
+    event: {previousIndex: number; currentIndex: number}
+  ) => void;
+  transferBetweenRows: (
+    rackedModules: RackedModule[][],
+    rackedModule: RackedModule,
+    event: {currentIndex: number},
+    newRow: number
+  ) => void;
+  removeRackedModuleFromRack: (rackedModules: RackedModule[][], toRemove: RackedModule) => void;
+  duplicateModule: (rackedModules: RackedModule[][], rackedModule: RackedModule) => void;
+  removeInformationFromModulesOfCurrentRack: (newlyCreatedRackId: number) => RackedModule[][];
+  callBackendToUpdateModulesOfRack: (
+    rackModules: RackedModule[][],
+    rack: Rack
+  ) => Observable<RackModuleMutationResponse | undefined>;
+  createNewRackOnBackendForCurrentUser: (userId: string) => Observable<BackendResponse<Array<{id: number}>>>;
+  askForConfirmationWhenDuplicatingRack: () => Observable<TestDialogResult>;
+};
 
 describe('RackDetailDataService helpers', () => {
   let createdServices: RackDetailDataService[];
 
+  function moduleFixture(
+    id: number,
+    name: string,
+    hp = 8,
+    standardId = 0,
+    overrides: ModuleFixtureOverrides = {}
+  ): DbModule {
+    const {standard, ...moduleOverrides} = overrides;
+
+    return {
+      id,
+      name,
+      description: '',
+      hp,
+      public: true,
+      manufacturer: {id: 1, name: 'Maker'},
+      manufacturerId: 1,
+      standard: {id: standardId, name: standardId === 0 ? 'Eurorack' : 'Intellijel 1U', ...standard},
+      tags: [],
+      panels: [],
+      ins: [],
+      outs: [],
+      switches: [],
+      manualURL: '',
+      store_url: null,
+      additional: null,
+      isComplete: true,
+      isApproved: true,
+      isDIY: false,
+      powerPos12: null,
+      powerNeg12: null,
+      powerPos5: null,
+      depth: 0,
+      weight: 0,
+      created: '2026-01-01T00:00:00.000Z',
+      updated: '2026-01-01T00:00:00.000Z',
+      ...moduleOverrides
+    };
+  }
+
+  function rack(partial: Partial<TestRack> = {}): TestRack {
+    return {
+      id: 1,
+      name: 'Rack',
+      rows: 2,
+      hp: 84,
+      public: true,
+      locked: false,
+      image: undefined,
+      author: {id: 'u1', username: 'user'},
+      created: '2026-01-01T00:00:00.000Z',
+      updated: '2026-01-01T00:00:00.000Z',
+      ...partial
+    };
+  }
+
+  function helperAccess(service: RackDetailDataService): RackDetailHelperAccess {
+    return service as unknown as RackDetailHelperAccess;
+  }
+
+  function rackingIds(row: RackedModule[]): Array<number | undefined> {
+    return row.map(module => module.rackingData.id);
+  }
+
+  function columns(row: RackedModule[]): Array<number | null> {
+    return row.map(module => module.rackingData.column);
+  }
+
   function build() {
-    const backend = {
+    const backend: RackDetailBackendDouble = {
       update: {
         rack: jasmine.createSpy('update.rack').and.returnValue(of({})),
         rackedModules: jasmine.createSpy('update.rackedModules').and.returnValue(of({}))
@@ -48,12 +211,12 @@ describe('RackDetailDataService helpers', () => {
     };
     
     const service = new RackDetailDataService(
-      {open: jasmine.createSpy('snack.open')} as any,
-      {loggedUser$: of(undefined)} as any,
-      backend as any,
-      dialog as any,
+      {open: jasmine.createSpy('snack.open')} as unknown as ServiceConstructorArgs[0],
+      {loggedUser$: of(undefined)} as unknown as ServiceConstructorArgs[1],
+      backend as unknown as ServiceConstructorArgs[2],
+      dialog as unknown as ServiceConstructorArgs[3],
       jasmine.createSpyObj('Router', ['navigate']),
-      {capture: () => {}, identify: () => {}, reset: () => {}} as any
+      {capture: () => {}, identify: () => {}, reset: () => {}} as unknown as ServiceConstructorArgs[5]
     );
     createdServices.push(service);
     
@@ -68,21 +231,22 @@ describe('RackDetailDataService helpers', () => {
     createdServices.forEach((service) => service.ngOnDestroy());
   });
   
-  function mod(id: number, row: number | null, column: number | null, hp = 8, standardId = 0) {
+  function mod(id: number | undefined, row: number | null, column: number | null, hp = 8, standardId = 0): RackedModule {
+    const moduleId = id === undefined ? Number.NaN : 1000 + id;
+    const rackingData: RackingData = {
+      rackid: 1,
+      moduleid: moduleId,
+      row,
+      column
+    };
+    if (id !== undefined) {
+      rackingData.id = id;
+    }
+
     return {
-      module: {
-        id: 1000 + id,
-        name: `M${ id }`,
-        hp,
-        standard: {id: standardId}
-      },
-      rackingData: {
-        id,
-        rackid: 1,
-        row,
-        column
-      }
-    } as any;
+      module: moduleFixture(moduleId, `M${ id }`, hp, standardId),
+      rackingData
+    };
   }
   
   it('maps blank panel IDs for 3U and Intellijel standards', () => {
@@ -114,55 +278,56 @@ describe('RackDetailDataService helpers', () => {
   
   it('bumps rack version suffix or appends V2', () => {
     const {service} = build();
-    const bump = (service as any).bumpUpVersionInNameOfOfRack.bind(service);
+    const bump = helperAccess(service).bumpUpVersionInNameOfOfRack.bind(service);
     
-    service.singleRackData$.next({name: 'My Rack V2'} as any);
+    service.singleRackData$.next(rack({name: 'My Rack V2'}));
     expect(bump()).toBe('My Rack V3');
     
-    service.singleRackData$.next({name: 'My Rack'} as any);
+    service.singleRackData$.next(rack({name: 'My Rack'}));
     expect(bump()).toBe('My Rack V2');
   });
   
   it('builds rowed module arrays and appends unracked row', () => {
     const rowed = buildRowedModulesArray(
       [mod(1, 0, 0), mod(2, 1, 0), mod(3, null, null)],
-      {rows: 2} as any
+      rack({rows: 2})
     );
     
     expect(rowed.length).toBe(3);
-    expect(rowed[0].map((x: any) => x.rackingData.id)).toEqual([1]);
-    expect(rowed[1].map((x: any) => x.rackingData.id)).toEqual([2]);
-    expect(rowed[2].map((x: any) => x.rackingData.id)).toEqual([3]);
+    expect(rackingIds(rowed[0])).toEqual([1]);
+    expect(rackingIds(rowed[1])).toEqual([2]);
+    expect(rackingIds(rowed[2])).toEqual([3]);
   });
   
   it('updates module columns and supports in-row and cross-row transfer', () => {
     const {service} = build();
-    const updateCols = (service as any).updateModulesColumnIds.bind(service);
-    const transferInRow = (service as any).transferInRow.bind(service);
-    const transferBetweenRows = (service as any).transferBetweenRows.bind(service);
+    const helpers = helperAccess(service);
+    const updateCols = helpers.updateModulesColumnIds.bind(service);
+    const transferInRow = helpers.transferInRow.bind(service);
+    const transferBetweenRows = helpers.transferBetweenRows.bind(service);
     
-    const rows = [[mod(1, 0, 0), mod(2, 0, 1)], [mod(3, 1, 0)]];
+    const rows: RackedModule[][] = [[mod(1, 0, 0), mod(2, 0, 1)], [mod(3, 1, 0)]];
     updateCols(rows, undefined);
     transferInRow(rows, 0, {previousIndex: 0, currentIndex: 1});
-    expect(rows[0].map((x: any) => x.rackingData.id)).toEqual([2, 1]);
-    expect(rows[0].map((x: any) => x.rackingData.column)).toEqual([0, 1]);
+    expect(rackingIds(rows[0])).toEqual([2, 1]);
+    expect(columns(rows[0])).toEqual([0, 1]);
     
     transferBetweenRows(rows, rows[0][0], {currentIndex: 1}, 1);
-    expect(rows[1].map((x: any) => x.rackingData.id)).toEqual([3, 2]);
-    expect(rows[1].map((x: any) => x.rackingData.column)).toEqual([0, 1]);
+    expect(rackingIds(rows[1])).toEqual([3, 2]);
+    expect(columns(rows[1])).toEqual([0, 1]);
   });
   
   it('removes modules and handles unracked-row cleanup', () => {
     const {service} = build();
-    const remove = (service as any).removeRackedModuleFromRack.bind(service);
+    const remove = helperAccess(service).removeRackedModuleFromRack.bind(service);
     
     const a = mod(1, 0, 0);
     const b = mod(2, 0, 1);
     const unracked = mod(99, null, null);
-    const rows = [[a, b], [unracked]];
+    const rows: RackedModule[][] = [[a, b], [unracked]];
     
     remove(rows, a);
-    expect(rows[0].map((x: any) => x.rackingData.id)).toEqual([2]);
+    expect(rackingIds(rows[0])).toEqual([2]);
     expect(rows[0][0].rackingData.column).toBe(0);
     
     remove(rows, unracked);
@@ -171,15 +336,15 @@ describe('RackDetailDataService helpers', () => {
   
   it('duplicates modules for both racked and unracked cases', () => {
     const {service} = build();
-    const duplicate = (service as any).duplicateModule.bind(service);
+    const duplicate = helperAccess(service).duplicateModule.bind(service);
     
-    const rackedRows = [[mod(1, 0, 0)]];
+    const rackedRows: RackedModule[][] = [[mod(1, 0, 0)]];
     duplicate(rackedRows, rackedRows[0][0]);
     expect(rackedRows[0].length).toBe(2);
     expect(rackedRows[0][1].rackingData.id).toBeUndefined();
-    expect(rackedRows[0].map((x: any) => x.rackingData.column)).toEqual([0, 1]);
+    expect(columns(rackedRows[0])).toEqual([0, 1]);
     
-    const unrackedRows = [[], [mod(50, null, null)]];
+    const unrackedRows: RackedModule[][] = [[], [mod(50, null, null)]];
     duplicate(unrackedRows, unrackedRows[1][0]);
     expect(unrackedRows[1].length).toBe(2);
     expect(unrackedRows[1][1].rackingData.id).toBeUndefined();
@@ -187,25 +352,25 @@ describe('RackDetailDataService helpers', () => {
 
   it('duplicates beside the current source index even when stored columns are stale', () => {
     const {service} = build();
-    const duplicate = (service as any).duplicateModule.bind(service);
+    const duplicate = helperAccess(service).duplicateModule.bind(service);
 
     const source = mod(1, 0, 2);
     const neighbor = mod(2, 0, 0);
-    const rows = [[source, neighbor]];
+    const rows: RackedModule[][] = [[source, neighbor]];
 
     duplicate(rows, source);
 
-    expect(rows[0].map((x: any) => x.rackingData.id)).toEqual([1, undefined, 2]);
-    expect(rows[0].map((x: any) => x.rackingData.column)).toEqual([0, 1, 2]);
+    expect(rackingIds(rows[0])).toEqual([1, undefined, 2]);
+    expect(columns(rows[0])).toEqual([0, 1, 2]);
   });
   
   it('preserves selectedPanelId when duplicating a module', () => {
     const {service} = build();
-    const duplicate = (service as any).duplicateModule.bind(service);
+    const duplicate = helperAccess(service).duplicateModule.bind(service);
     
     const source = mod(1, 0, 0);
     source.rackingData.selectedPanelId = 3;
-    const rows = [[source]];
+    const rows: RackedModule[][] = [[source]];
     
     duplicate(rows, rows[0][0]);
     
@@ -216,7 +381,7 @@ describe('RackDetailDataService helpers', () => {
 
   it('strips module identifiers when copying to new rack and detects unsynced modules', () => {
     const {service} = build();
-    const strip = (service as any).removeInformationFromModulesOfCurrentRack.bind(service);
+    const strip = helperAccess(service).removeInformationFromModulesOfCurrentRack.bind(service);
     
     service.rowedRackedModules$.next([[mod(1, 0, 0), mod(2, 0, 1)]]);
     const copied = strip(77);
@@ -228,10 +393,10 @@ describe('RackDetailDataService helpers', () => {
   
   it('syncs rack modules through backend and assigns returned ids without refreshing rack', () => {
     const {service, backend} = build();
-    const sync = (service as any).callBackendToUpdateModulesOfRack.bind(service);
-    const rack = {id: 1, name: 'Rack', rows: 2, hp: 84} as any;
+    const sync = helperAccess(service).callBackendToUpdateModulesOfRack.bind(service);
+    const rackData = rack({id: 1, name: 'Rack', rows: 2, hp: 84});
     const nextSpy = spyOn(service.singleRackData$, 'next').and.callThrough();
-    const rows = [[mod(undefined as any, 0, 0), mod(2, 0, 1)]];
+    const rows: RackedModule[][] = [[mod(undefined, 0, 0), mod(2, 0, 1)]];
     backend.update.rackedModules.and.returnValue(of({
       data: [{
         id: 99,
@@ -243,7 +408,7 @@ describe('RackDetailDataService helpers', () => {
       }]
     }));
     
-    sync(rows, rack).subscribe();
+    sync(rows, rackData).subscribe();
     
     expect(backend.update.rackedModules).toHaveBeenCalledWith(rows.flatMap(x => x));
     expect(rows[0][0].rackingData.id).toBe(99);
@@ -252,9 +417,9 @@ describe('RackDetailDataService helpers', () => {
 
   it('does not call backend.update.rackedModules when there are no modules to sync', () => {
     const {service, backend} = build();
-    const sync = (service as any).callBackendToUpdateModulesOfRack.bind(service);
+    const sync = helperAccess(service).callBackendToUpdateModulesOfRack.bind(service);
 
-    sync([[], []], {id: 1, rows: 2} as any).subscribe((value: unknown) => {
+    sync([[], []], rack({id: 1, rows: 2})).subscribe(value => {
       expect(value).toBeUndefined();
     });
 
@@ -263,14 +428,15 @@ describe('RackDetailDataService helpers', () => {
   
   it('creates duplicated rack payload for current user without reusing preview media and confirms duplication dialog', () => {
     const {service, backend, dialog} = build();
-    const create = (service as any).createNewRackOnBackendForCurrentUser.bind(service);
-    const ask = (service as any).askForConfirmationWhenDuplicatingRack.bind(service);
-    service.singleRackData$.next({
+    const helpers = helperAccess(service);
+    const create = helpers.createNewRackOnBackendForCurrentUser.bind(service);
+    const ask = helpers.askForConfirmationWhenDuplicatingRack.bind(service);
+    service.singleRackData$.next(rack({
       name: 'Demo Rack',
       hp: 104,
       rows: 3,
       image: 'img.jpg'
-    } as any);
+    }));
     
     create('user-2').subscribe();
     

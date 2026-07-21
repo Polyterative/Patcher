@@ -1,6 +1,6 @@
 {
   "_comment": "Grandfathered explicit `any` counts. Do not add by hand — run `node scripts/checks/check-explicit-any.cjs --update-baseline` after intentional cleanup.",
-  "totalExplicitAny": 727,
+  "totalExplicitAny": 690,
   "files": {
     "api/sitemap.ts": 3,
     "e2e/helpers/linked-rack-scenario.ts": 2,
@@ -9,7 +9,6 @@
     "src/app/components/module-parts/module-detail-data.service.spec.ts": 36,
     "src/app/components/patch-parts/patch-editor/patch-editor.component.spec.ts": 119,
     "src/app/components/rack-micro/rack-micro.component.spec.ts": 3,
-    "src/app/components/rack-parts/rack-detail-data.service.helpers.spec.ts": 37,
     "src/app/components/rack-parts/rack-editor/rack-editor.component.spec.ts": 37,
     "src/app/components/rack-parts/rack-editor/rack-visual-model/rack-visual-model.component.spec.ts": 39,
     "src/app/features/backbone/login/error.interceptor.ts": 2,
