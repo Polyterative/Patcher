@@ -4,37 +4,59 @@ import {
   TEST_TIMEOUT
 } from './test-setup';
 import { SupabaseService } from '../../supabase.service';
+import { firstValueFrom } from 'rxjs';
+import type { PostgrestError } from '@supabase/supabase-js';
+import type { Rack } from 'src/app/models/rack';
+import type { Database } from 'src/backend/database.types';
 import {
-  firstValueFrom,
-  of
-} from 'rxjs';
-import { SupabaseClient } from '@supabase/supabase-js';
-import { Database } from 'src/backend/database.types';
+  authUserFixture,
+  chainable,
+  formatUnknownError,
+  getSupabaseClientDouble,
+  mockUserSession,
+  type QueryChainResult,
+  type QueryListRowsResult
+} from './supabase-query-test-doubles';
 
-type SupabaseFromResult = ReturnType<SupabaseClient<Database>['from']>;
+type RackRow = Database['public']['Tables']['racks']['Row'];
+type RackFixture = Rack & Pick<RackRow, 'authorid'>;
 
-interface SupabaseListResponse<T> {
-  data: T[] | null;
-  error: {
-    code: string;
-    details: string | null;
-    hint: string | null;
-    message: string;
-  } | null;
+interface CurrentUserRackSelectQuery<Row> {
+  select(columns: string): {
+    filter(column: string, operator: string, value: string): {
+      order(column: string, options: {ascending: boolean}): Promise<QueryChainResult<Row>>;
+    };
+  };
 }
 
-function getSupabaseClient(service: SupabaseService): SupabaseClient<Database> {
-  return (service as unknown as {supabase: SupabaseClient<Database>}).supabase;
-}
-
-function currentUserListQuery<T>(response: SupabaseListResponse<T>): SupabaseFromResult {
+function currentUserListQuery<T>(response: QueryChainResult<T>): CurrentUserRackSelectQuery<T> {
   return {
     select: () => ({
       filter: () => ({
         order: () => Promise.resolve(response)
       })
     })
-  } as unknown as SupabaseFromResult;
+  };
+}
+
+function rackFixture(overrides: Partial<RackFixture> = {}): RackFixture {
+  return {
+    id: 1,
+    name: 'Test Rack',
+    description: 'Test description',
+    hp: 104,
+    rows: 2,
+    locked: false,
+    public: true,
+    created: '2026-07-21T00:00:00Z',
+    updated: '2026-07-21T00:00:00Z',
+    authorid: 'test-user-id',
+    author: {
+      id: 'test-user-id',
+      username: 'testuser'
+    },
+    ...overrides
+  };
 }
 
 
@@ -72,20 +94,16 @@ describe('SupabaseService - currentUserRacks Integration', () => {
 
   it('falls back by default and throws in strict mode when Supabase returns an error response for current user racks', async () => {
     const testAuthorId = 'current-user-racks-error';
-    const transientError = {
+    const transientError: PostgrestError = {
       code: 'PGRST003',
       details: null,
       hint: null,
-      message: 'Service temporarily unavailable'
+      message: 'Service temporarily unavailable',
+      name: 'PostgrestError'
     };
-    spyOn(service.auth, 'getUserSession$').and.returnValue(of({
-      id: testAuthorId,
-      email: 'test@example.com',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }));
+    mockUserSession(service, authUserFixture(testAuthorId));
 
-    const supabaseClient = getSupabaseClient(service);
+    const supabaseClient = getSupabaseClientDouble(service);
     spyOn(supabaseClient, 'from').and.returnValue(currentUserListQuery({data: null, error: transientError}));
 
     await expectAsync(firstValueFrom(service.get.currentUserRacks())).toBeResolvedTo([]);
@@ -94,64 +112,37 @@ describe('SupabaseService - currentUserRacks Integration', () => {
 
   it('returns an empty array for successful empty current user rack responses', async () => {
     const testAuthorId = 'current-user-racks-empty';
-    spyOn(service.auth, 'getUserSession$').and.returnValue(of({
-      id: testAuthorId,
-      email: 'test@example.com',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }));
+    mockUserSession(service, authUserFixture(testAuthorId));
 
-    const supabaseClient = getSupabaseClient(service);
-    spyOn(supabaseClient, 'from').and.returnValue(currentUserListQuery({data: [], error: null}));
+    const supabaseClient = getSupabaseClientDouble(service);
+    spyOn(supabaseClient, 'from').and.returnValue(currentUserListQuery<RackFixture>({
+      data: [],
+      error: null
+    } satisfies QueryListRowsResult<RackFixture>));
 
     await expectAsync(firstValueFrom(service.get.currentUserRacks())).toBeResolvedTo([]);
   });
   
   it('should return array of racks (not response object)', (done) => {
-    // Mock user session to simulate authenticated user
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({
-      id: 'test-user-id',
-      email: 'test@example.com',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }));
+    mockUserSession(service, authUserFixture('test-user-id'));
     
     // Mock Supabase response
-    const mockRackData = [
-      {
-        id: 1,
-        name: 'Test Rack',
-        description: 'Test description',
-        hp: 104,
-        rows: 2,
-        locked: false,
-        public: true,
-        created: new Date().toISOString(),
-        updated: new Date().toISOString(),
-        authorid: 'test-user-id',
-        author: {
-          id: 'test-user-id',
-          username: 'testuser'
-        }
-      }
-    ];
+    const mockRackData: RackFixture[] = [rackFixture()];
     
-    const supabaseClient = (service as any).supabase;
-    spyOn(supabaseClient, 'from').and.returnValue({
-      select: () => ({
-        filter: () => ({
-          order: () => Promise.resolve({
-            data: mockRackData,
-            error: null
-          })
-        })
-      })
-    });
+    const supabaseClient = getSupabaseClientDouble(service);
+    const query = chainable<RackFixture>({
+      data: mockRackData,
+      error: null
+    } satisfies QueryListRowsResult<RackFixture>);
+    spyOn(query, 'select').and.callThrough();
+    spyOn(query, 'filter').and.callThrough();
+    spyOn(query, 'order').and.callThrough();
+    spyOn(supabaseClient, 'from').and.returnValue(query);
     
     const racks$ = service.get.currentUserRacks();
     
     racks$.subscribe({
-      next: (result: any) => {
+      next: result => {
         // CRITICAL: Result should be an ARRAY, not a response object
         expect(Array.isArray(result)).withContext(
           'currentUserRacks() MUST return an array, not a Supabase response object. ' +
@@ -159,14 +150,18 @@ describe('SupabaseService - currentUserRacks Integration', () => {
         ).toBe(true);
         
         // Verify it's not the response object
-        expect(result.data).withContext(
+        expect(Reflect.has(result, 'data')).withContext(
           'Result should not have a .data property (it should BE the data)'
-        ).toBeUndefined();
+        ).toBe(false);
         
-        expect(result.error).withContext(
+        expect(Reflect.has(result, 'error')).withContext(
           'Result should not have an .error property (it should be the data array)'
-        ).toBeUndefined();
+        ).toBe(false);
         
+        expect(query.select).toHaveBeenCalledWith('*, author:authorid(username,id)');
+        expect(query.filter).toHaveBeenCalledWith('authorid', 'eq', 'test-user-id');
+        expect(query.order).toHaveBeenCalledWith('updated', {ascending: false});
+
         // Verify array content
         if (result.length > 0) {
           const rack = result[0];
@@ -179,8 +174,8 @@ describe('SupabaseService - currentUserRacks Integration', () => {
         
         done();
       },
-      error: (error) => {
-        fail(`currentUserRacks() test failed: ${ error.message || JSON.stringify(error) }`);
+      error: (error: unknown) => {
+        fail(`currentUserRacks() test failed: ${ formatUnknownError(error) }`);
         done();
       }
     });
@@ -206,42 +201,35 @@ describe('SupabaseService - currentUserRacks Integration', () => {
   
   it('should use the current session authorid when querying racks', (done) => {
     const testAuthorId = 'different-user-id';
+    mockUserSession(service, authUserFixture(testAuthorId));
     
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({
-      id: testAuthorId,
-      email: 'current@example.com',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }));
-    
-    const supabaseClient = (service as any).supabase;
+    const supabaseClient = getSupabaseClientDouble(service);
     let capturedFilterValue: string | undefined;
+    const query = chainable<RackFixture>({
+      data: [],
+      error: null
+    } satisfies QueryListRowsResult<RackFixture>);
     
-    spyOn(supabaseClient, 'from').and.returnValue({
-      select: () => ({
-        filter: (_field: string, _op: string, value: string) => {
-          capturedFilterValue = value;
-          return {
-            order: () => Promise.resolve({
-              data: [],
-              error: null
-            })
-          };
-        }
-      })
+    spyOn(query, 'filter').and.callFake((_field: string, _op: string, value: string) => {
+      capturedFilterValue = value;
+      return query;
     });
+    spyOn(query, 'order').and.callThrough();
+    spyOn(supabaseClient, 'from').and.returnValue(query);
     
     const racks$ = service.get.currentUserRacks();
     
     racks$.subscribe({
-      next: (_result: any) => {
+      next: () => {
         expect(capturedFilterValue).withContext(
           'Should use the current session authorid'
         ).toBe(testAuthorId);
+        expect(query.filter).toHaveBeenCalledWith('authorid', 'eq', testAuthorId);
+        expect(query.order).toHaveBeenCalledWith('updated', {ascending: false});
         done();
       },
-      error: (error) => {
-        fail(`session authorid test failed: ${ error.message }`);
+      error: (error: unknown) => {
+        fail(`session authorid test failed: ${ formatUnknownError(error) }`);
         done();
       }
     });
