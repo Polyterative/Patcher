@@ -2,26 +2,38 @@ import {
   fakeAsync,
   tick
 } from '@angular/core/testing';
+import { ChangeDetectorRef } from '@angular/core';
 import { Subject } from 'rxjs';
 import { PatchConnectionMinimalComponent } from './patch-connection-minimal.component';
 import { PatchConnection } from 'src/app/models/connection';
+import {
+  cvWithModuleFixture,
+  patchFixture
+} from 'src/app/components/patch-parts/patch-graph/patch-graph-test-fixtures';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function makeConnection(notes?: string): PatchConnection {
   return {
-    patch: { id: 1, name: 'Test Patch' } as any,
-    a: { id: 1, name: 'In 1', module: { id: 10, name: 'ModA' } as any } as any,
-    b: { id: 2, name: 'Out 1', module: { id: 11, name: 'ModB' } as any } as any,
+    patch: patchFixture(1, {name: 'Test Patch'}),
+    a: cvWithModuleFixture(1, 10, 'ModA', 'In 1'),
+    b: cvWithModuleFixture(2, 11, 'ModB', 'Out 1'),
     notes,
   };
 }
 
-function makeComponent(data: PatchConnection = makeConnection()) {
-  const cdr = { markForCheck: jasmine.createSpy('markForCheck') };
-  const comp = new PatchConnectionMinimalComponent(cdr as any);
+function makeComponent(data: PatchConnection = makeConnection()): {
+  comp: PatchConnectionMinimalComponent;
+  cdr: jasmine.SpyObj<ChangeDetectorRef>;
+} {
+  const cdr = jasmine.createSpyObj<ChangeDetectorRef>('ChangeDetectorRef', ['markForCheck']);
+  const comp = new PatchConnectionMinimalComponent(cdr);
   comp.data = data;
   return { comp, cdr };
+}
+
+function provideNoteSync(comp: PatchConnectionMinimalComponent, noteSync$: Subject<PatchConnection>): void {
+  Object.assign(comp, {noteSync$} satisfies Pick<PatchConnectionMinimalComponent, 'noteSync$'>);
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -81,7 +93,7 @@ describe('PatchConnectionMinimalComponent', () => {
       const noteSync$ = new Subject<PatchConnection>();
       const received: PatchConnection[] = [];
       noteSync$.subscribe(c => received.push(c));
-      (comp as any).noteSync$ = noteSync$;
+      provideNoteSync(comp, noteSync$);
 
       comp.ngOnInit();
       comp.notes.control.patchValue('cable A-B');
@@ -97,7 +109,7 @@ describe('PatchConnectionMinimalComponent', () => {
       const { comp } = makeComponent(data);
       const noteSync$ = new Subject<PatchConnection>();
       noteSync$.subscribe(() => { /* drain */ });
-      (comp as any).noteSync$ = noteSync$;
+      provideNoteSync(comp, noteSync$);
 
       comp.ngOnInit();
       comp.notes.control.patchValue('new value');
@@ -112,7 +124,7 @@ describe('PatchConnectionMinimalComponent', () => {
       const { comp } = makeComponent(data);
       const noteSync$ = new Subject<PatchConnection>();
       noteSync$.subscribe(() => { /* drain */ });
-      (comp as any).noteSync$ = noteSync$;
+      provideNoteSync(comp, noteSync$);
 
       comp.ngOnInit();
       comp.notes.control.patchValue('');
@@ -127,7 +139,7 @@ describe('PatchConnectionMinimalComponent', () => {
       const noteSync$ = new Subject<PatchConnection>();
       const received: PatchConnection[] = [];
       noteSync$.subscribe(c => received.push(c));
-      (comp as any).noteSync$ = noteSync$;
+      provideNoteSync(comp, noteSync$);
 
       comp.ngOnInit();
       comp.notes.control.patchValue('typing...');
@@ -145,7 +157,7 @@ describe('PatchConnectionMinimalComponent', () => {
       const noteSync$ = new Subject<PatchConnection>();
       const received: PatchConnection[] = [];
       noteSync$.subscribe(c => received.push(c));
-      (comp as any).noteSync$ = noteSync$;
+      provideNoteSync(comp, noteSync$);
 
       comp.ngOnInit();
       comp.notes.control.patchValue('a');
@@ -208,7 +220,7 @@ describe('PatchConnectionMinimalComponent', () => {
       const noteSync$ = new Subject<PatchConnection>();
       const received: PatchConnection[] = [];
       noteSync$.subscribe(c => received.push(c));
-      (comp as any).noteSync$ = noteSync$;
+      provideNoteSync(comp, noteSync$);
 
       comp.ngOnInit();
       comp.ngOnDestroy();
