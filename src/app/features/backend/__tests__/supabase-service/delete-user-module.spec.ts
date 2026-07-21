@@ -1,31 +1,54 @@
 import { SupabaseService } from '../../supabase.service';
+import type { CachedEntity } from '../../supabase.cache';
+import { CommentableEntityTypes } from '../../supabase-comments';
+import type { SupabaseTableRow } from '../../supabase-db.types';
+import { DbPaths } from '../../DatabaseStrings';
 import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest,
   TEST_TIMEOUT
 } from './test-setup';
-import { of } from 'rxjs';
+import {
+  authUserFixture,
+  chainable,
+  getSupabaseClientDouble,
+  mockUserSession,
+  type QueryChainResult,
+  type SupabaseClientDouble,
+  type SupabaseQueryChain
+} from './supabase-query-test-doubles';
 
 
-function chainable(resolveValue: any = {data: null, error: null}) {
-  const m: any = {};
-  ['select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit', 'single',
-    'insert', 'update', 'delete', 'upsert'].forEach(method => {
-    m[method] = () => m;
+type CommentDeleteRow = Pick<SupabaseTableRow<'comments'>, 'entityId' | 'entityType'>;
+type ManufacturerDeleteRow = Pick<SupabaseTableRow<'manufacturers'>, 'id'>;
+type ModuleDeleteRow = Pick<SupabaseTableRow<'modules'>, 'id'>;
+type UserModuleDeleteRow = Pick<SupabaseTableRow<'user_modules'>, 'moduleid' | 'profileid'>;
+type DeleteFilterValue = Parameters<SupabaseQueryChain<unknown>['filter']>[2];
+type DeleteFilterCall = {
+  column: string;
+  operator: string;
+  value: DeleteFilterValue;
+};
+
+const successfulDelete = {data: null, error: null} satisfies QueryChainResult<never>;
+
+function trackFilters<Row>(mock: SupabaseQueryChain<Row>): DeleteFilterCall[] {
+  const filters: DeleteFilterCall[] = [];
+  spyOn(mock, 'filter').and.callFake((column: string, operator: string, value: DeleteFilterValue) => {
+    filters.push({column, operator, value});
+    return mock;
   });
-  m.then = (res: Function, rej?: Function) =>
-    Promise.resolve(resolveValue).then(res as any, rej as any);
-  return m;
+  return filters;
 }
 
 describe('SupabaseService - delete.userModule', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: SupabaseClientDouble;
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = getSupabaseClientDouble(service);
   });
   
   afterEach(() => {
@@ -33,11 +56,11 @@ describe('SupabaseService - delete.userModule', () => {
   });
   
   it('should delete the user_modules row by profileid and moduleid', (done) => {
-    const mockUser = {id: 'user-xyz'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    mockUserSession(service, authUserFixture('user-xyz'));
     
-    const mock = chainable({data: null, error: null});
-    const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
+    const mock = chainable<UserModuleDeleteRow>(successfulDelete);
+    const filterSpy: jasmine.Spy<SupabaseQueryChain<UserModuleDeleteRow>['filter']> =
+      spyOn(mock, 'filter').and.returnValue(mock);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
     service.delete.userModule(55).subscribe({
@@ -46,7 +69,7 @@ describe('SupabaseService - delete.userModule', () => {
         expect(filterSpy).toHaveBeenCalledWith('moduleid', 'eq', 55);
         done();
       },
-      error: (err) => {
+      error: (err: unknown) => {
         fail(err);
         done();
       }
@@ -54,12 +77,11 @@ describe('SupabaseService - delete.userModule', () => {
   }, TEST_TIMEOUT);
   
   it('should bust currentUserModules and currentUserComments caches', (done) => {
-    const mockUser = {id: 'u'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
-    spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: null}));
+    mockUserSession(service, authUserFixture('u'));
+    spyOn(supabaseClient, 'from').and.returnValue(chainable<UserModuleDeleteRow>(successfulDelete));
     
-    const bustedKeys: any[] = [];
-    service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
+    const bustedKeys: CachedEntity[] = [];
+    service.cacheResetter$.subscribe(keys => bustedKeys.push(...keys));
     
     service.delete.userModule(1).subscribe({
       next: () => {
@@ -67,29 +89,64 @@ describe('SupabaseService - delete.userModule', () => {
         expect(bustedKeys).toContain('currentUserComments');
         done();
       },
-      error: (err) => {
+      error: (err: unknown) => {
         fail(err);
         done();
       }
     });
   }, TEST_TIMEOUT);
   
-  it('should also delete associated comments for the module', (done) => {
-    const mockUser = {id: 'u'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+  it('should delete associated module comments after deleting the user module ownership row', (done) => {
+    mockUserSession(service, authUserFixture('u'));
     
     const tablesAccessed: string[] = [];
+    const userModulesDelete = chainable<UserModuleDeleteRow>(successfulDelete);
+    const commentsDelete = chainable<CommentDeleteRow>(successfulDelete);
     spyOn(supabaseClient, 'from').and.callFake((table: string) => {
       tablesAccessed.push(table);
-      return chainable({data: null, error: null});
+      if (table === DbPaths.comments) return commentsDelete;
+      return userModulesDelete;
     });
     
     service.delete.userModule(10).subscribe({
       next: () => {
-        expect(tablesAccessed).toContain('comments');
+        expect(tablesAccessed).toEqual([DbPaths.user_modules, DbPaths.comments]);
         done();
       },
-      error: (err) => {
+      error: (err: unknown) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+
+  it('should scope associated comment deletion to the module entity id and type', (done) => {
+    mockUserSession(service, authUserFixture('u'));
+
+    const userModulesDelete = chainable<UserModuleDeleteRow>(successfulDelete);
+    const commentsDelete = chainable<CommentDeleteRow>(successfulDelete);
+    const commentFilters = trackFilters(commentsDelete);
+
+    spyOn(supabaseClient, 'from').and.callFake((table: string) => {
+      if (table === DbPaths.comments) return commentsDelete;
+      return userModulesDelete;
+    });
+
+    service.delete.userModule(10).subscribe({
+      next: () => {
+        expect(commentFilters).toContain(jasmine.objectContaining({
+          column: 'entityId',
+          operator: 'eq',
+          value: 10
+        }));
+        expect(commentFilters).toContain(jasmine.objectContaining({
+          column: 'entityType',
+          operator: 'eq',
+          value: CommentableEntityTypes.MODULE
+        }));
+        done();
+      },
+      error: (err: unknown) => {
         fail(err);
         done();
       }
@@ -99,12 +156,12 @@ describe('SupabaseService - delete.userModule', () => {
 
 describe('SupabaseService - delete.modules (range)', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: SupabaseClientDouble;
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = getSupabaseClientDouble(service);
   });
   
   afterEach(() => {
@@ -112,11 +169,11 @@ describe('SupabaseService - delete.modules (range)', () => {
   });
   
   it('should delete modules in the specified range', (done) => {
-    const mockUser = {id: 'admin'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    mockUserSession(service, authUserFixture('admin'));
     
-    const mock = chainable({data: null, error: null});
-    const rangeSpy = spyOn(mock, 'range').and.returnValue(mock);
+    const mock = chainable<ModuleDeleteRow>(successfulDelete);
+    const rangeSpy: jasmine.Spy<SupabaseQueryChain<ModuleDeleteRow>['range']> =
+      spyOn(mock, 'range').and.returnValue(mock);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
     service.delete.modules(0, 9).subscribe({
@@ -124,7 +181,7 @@ describe('SupabaseService - delete.modules (range)', () => {
         expect(rangeSpy).toHaveBeenCalledWith(0, 9);
         done();
       },
-      error: (err) => {
+      error: (err: unknown) => {
         fail(err);
         done();
       }
@@ -132,12 +189,11 @@ describe('SupabaseService - delete.modules (range)', () => {
   }, TEST_TIMEOUT);
   
   it('should bust modules caches', (done) => {
-    const mockUser = {id: 'admin'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
-    spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: null}));
+    mockUserSession(service, authUserFixture('admin'));
+    spyOn(supabaseClient, 'from').and.returnValue(chainable<ModuleDeleteRow>(successfulDelete));
     
-    const bustedKeys: any[] = [];
-    service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
+    const bustedKeys: CachedEntity[] = [];
+    service.cacheResetter$.subscribe(keys => bustedKeys.push(...keys));
     
     service.delete.modules(0, 4).subscribe({
       next: () => {
@@ -145,7 +201,7 @@ describe('SupabaseService - delete.modules (range)', () => {
         expect(bustedKeys).toContain('currentUserModules');
         done();
       },
-      error: (err) => {
+      error: (err: unknown) => {
         fail(err);
         done();
       }
@@ -153,14 +209,14 @@ describe('SupabaseService - delete.modules (range)', () => {
   }, TEST_TIMEOUT);
   
   it('should throw when user is not authenticated', (done) => {
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+    mockUserSession(service, null);
     
     service.delete.modules(0, 5).subscribe({
       next: () => {
         fail('should have errored');
         done();
       },
-      error: (err) => {
+      error: (err: Error) => {
         expect(err.message).toContain('Authentication required');
         done();
       }
@@ -170,12 +226,12 @@ describe('SupabaseService - delete.modules (range)', () => {
 
 describe('SupabaseService - delete.manufacturers (range)', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: SupabaseClientDouble;
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = getSupabaseClientDouble(service);
   });
   
   afterEach(() => {
@@ -183,11 +239,11 @@ describe('SupabaseService - delete.manufacturers (range)', () => {
   });
   
   it('should delete manufacturers in the specified range', (done) => {
-    const mockUser = {id: 'admin'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    mockUserSession(service, authUserFixture('admin'));
     
-    const mock = chainable({data: null, error: null});
-    const rangeSpy = spyOn(mock, 'range').and.returnValue(mock);
+    const mock = chainable<ManufacturerDeleteRow>(successfulDelete);
+    const rangeSpy: jasmine.Spy<SupabaseQueryChain<ManufacturerDeleteRow>['range']> =
+      spyOn(mock, 'range').and.returnValue(mock);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
     service.delete.manufacturers(0, 4).subscribe({
@@ -195,7 +251,7 @@ describe('SupabaseService - delete.manufacturers (range)', () => {
         expect(rangeSpy).toHaveBeenCalledWith(0, 4);
         done();
       },
-      error: (err) => {
+      error: (err: unknown) => {
         fail(err);
         done();
       }
@@ -203,19 +259,18 @@ describe('SupabaseService - delete.manufacturers (range)', () => {
   }, TEST_TIMEOUT);
   
   it('should bust manufacturers cache', (done) => {
-    const mockUser = {id: 'admin'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
-    spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: null}));
+    mockUserSession(service, authUserFixture('admin'));
+    spyOn(supabaseClient, 'from').and.returnValue(chainable<ManufacturerDeleteRow>(successfulDelete));
     
-    const bustedKeys: any[] = [];
-    service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
+    const bustedKeys: CachedEntity[] = [];
+    service.cacheResetter$.subscribe(keys => bustedKeys.push(...keys));
     
     service.delete.manufacturers(0, 3).subscribe({
       next: () => {
         expect(bustedKeys).toContain('manufacturers');
         done();
       },
-      error: (err) => {
+      error: (err: unknown) => {
         fail(err);
         done();
       }
@@ -223,14 +278,14 @@ describe('SupabaseService - delete.manufacturers (range)', () => {
   }, TEST_TIMEOUT);
   
   it('should throw when user is not authenticated', (done) => {
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+    mockUserSession(service, null);
     
     service.delete.manufacturers(0, 5).subscribe({
       next: () => {
         fail('should have errored');
         done();
       },
-      error: (err) => {
+      error: (err: Error) => {
         expect(err.message).toContain('Authentication required');
         done();
       }
