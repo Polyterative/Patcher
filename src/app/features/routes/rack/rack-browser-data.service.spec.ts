@@ -1,27 +1,58 @@
 import {
   fakeAsync,
+  TestBed,
   tick
 } from '@angular/core/testing';
 import {
+  Observable,
   of,
   Subject,
   throwError
 } from 'rxjs';
+import { BrowserListResponse } from '../../browser-data-recovery';
+import { SupabaseService } from '../../backend/supabase.service';
 import { RackMinimal } from 'src/app/models/rack';
 import { RackBrowserDataService } from './rack-browser-data.service';
 
 
 describe('RackBrowserDataService', () => {
+  type RacksMinimalRequest = (
+    from?: number,
+    to?: number,
+    name?: string,
+    orderBy?: string | null,
+    orderDirection?: string,
+    includeCount?: boolean,
+    cacheKeyVersion?: string
+  ) => Observable<BrowserListResponse<RackMinimal>>;
+
+  interface RackBrowserBackendDouble {
+    GET: {
+      racksMinimal: jasmine.Spy<RacksMinimalRequest>;
+    };
+    cacheResetter$: {
+      next: jasmine.Spy<(keys: string[]) => void>;
+    };
+  }
+
   function build() {
-    const backend = {
+    const backend: RackBrowserBackendDouble = {
       GET: {
         racksMinimal: jasmine.createSpy('GET.racksMinimal').and.returnValue(of({data: [], count: 0}))
       },
       cacheResetter$: {next: jasmine.createSpy('cacheResetter$.next')}
     };
-    const service = new RackBrowserDataService(backend as any);
+    TestBed.configureTestingModule({
+      providers: [
+        RackBrowserDataService,
+        {provide: SupabaseService, useValue: backend}
+      ]
+    });
+    const service = TestBed.inject(RackBrowserDataService);
     return {service, backend};
   }
+
+  afterEach(() => TestBed.resetTestingModule());
 
   function rackFactory(id: number, name = `Rack ${ id }`): RackMinimal {
     return {
@@ -61,7 +92,7 @@ describe('RackBrowserDataService', () => {
 
     tick(750);
 
-    const args = backend.GET.racksMinimal.calls.mostRecent().args as any[];
+    const args = backend.GET.racksMinimal.calls.mostRecent().args;
     expect(args[2]).toBe('performance');
     service.ngOnDestroy();
   }));
@@ -231,10 +262,10 @@ describe('RackBrowserDataService', () => {
     backend.GET.racksMinimal.calls.reset();
 
     // Simulate initial 25 items loaded
-    const firstBatch = Array.from({length: 25}, (_, index) => ({id: index + 1}));
-    const secondBatch = Array.from({length: 10}, (_, index) => ({id: index + 26}));
+    const firstBatch = Array.from({length: 25}, (_, index) => rackFactory(index + 1));
+    const secondBatch = Array.from({length: 10}, (_, index) => rackFactory(index + 26));
     backend.GET.racksMinimal.and.returnValue(of({data: secondBatch, count: null}));
-    (service.racksList$ as any).next(firstBatch);
+    service.racksList$.next(firstBatch);
     service.serversideAdditionalData.itemsCount$.next(35);
 
     service.loadMore$.next();
@@ -249,42 +280,42 @@ describe('RackBrowserDataService', () => {
 
   it('deduplicates repeated racks returned by overlapping backend pages', () => {
     const {service, backend} = build();
-    const initialRacks = [{id: 1}, {id: 2}, {id: 3}];
+    const initialRacks = [rackFactory(1), rackFactory(2), rackFactory(3)];
     backend.GET.racksMinimal.and.returnValue(
-      of({data: [{id: 3}, {id: 4}, {id: 5}], count: null})
+      of({data: [rackFactory(3), rackFactory(4), rackFactory(5)], count: null})
     );
-    (service.racksList$ as any).next(initialRacks);
+    service.racksList$.next(initialRacks);
     service.serversideAdditionalData.itemsCount$.next(6);
 
     service.loadMore$.next();
 
     expect(service.racksList$.value).toEqual([
-      {id: 1},
-      {id: 2},
-      {id: 3},
-      {id: 4},
-      {id: 5}
-    ] as any);
+      rackFactory(1),
+      rackFactory(2),
+      rackFactory(3),
+      rackFactory(4),
+      rackFactory(5)
+    ]);
   });
 
   it('waits for slow load-more responses instead of restoring the previous rack list', fakeAsync(() => {
     const {service, backend} = build();
-    const slowResponse$ = new Subject<{data: {id: number}[]; count: null}>();
-    const initialRacks = Array.from({length: 25}, (_, index) => ({id: index + 1}));
+    const slowResponse$ = new Subject<BrowserListResponse<RackMinimal>>();
+    const initialRacks = Array.from({length: 25}, (_, index) => rackFactory(index + 1));
     backend.GET.racksMinimal.and.returnValue(slowResponse$.asObservable());
-    (service.racksList$ as any).next(initialRacks);
+    service.racksList$.next(initialRacks);
     service.serversideAdditionalData.itemsCount$.next(35);
 
     service.loadMore$.next();
     tick(2_500);
 
-    expect(service.racksList$.value).toEqual(initialRacks as any);
+    expect(service.racksList$.value).toEqual(initialRacks);
 
-    slowResponse$.next({data: [{id: 26}], count: null});
+    slowResponse$.next({data: [rackFactory(26)], count: null});
     slowResponse$.complete();
     tick();
 
-    expect(service.racksList$.value).toEqual([...initialRacks, {id: 26}] as any);
+    expect(service.racksList$.value).toEqual([...initialRacks, rackFactory(26)]);
     expect(service.serversideAdditionalData.itemsCount$.value).toBe(35);
   }));
 
@@ -312,7 +343,7 @@ describe('RackBrowserDataService', () => {
     service.hasMoreRacks$.subscribe(v => (hasMore = v));
 
     service.serversideAdditionalData.itemsCount$.next(35);
-    (service.racksList$ as any).next(Array(20).fill({id: 1}));
+    service.racksList$.next(Array.from({length: 20}, (_, index) => rackFactory(index + 1)));
 
     expect(hasMore).toBeTrue();
     expect(service.racksList$.value?.length).toBe(20);

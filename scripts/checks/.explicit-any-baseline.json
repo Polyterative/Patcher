@@ -1,6 +1,6 @@
 {
   "_comment": "Grandfathered explicit `any` counts. Do not add by hand — run `node scripts/checks/check-explicit-any.cjs --update-baseline` after intentional cleanup.",
-  "totalExplicitAny": 1818,
+  "totalExplicitAny": 1805,
   "files": {
     "api/sitemap.ts": 3,
     "e2e/auth-rack-context-menu.spec.ts": 6,
@@ -107,10 +107,7 @@
     "src/app/features/routes/public-profile/public-profile-data.utils.ts": 1,
     "src/app/features/routes/public-profile/public-profile.component.spec.ts": 16,
     "src/app/features/routes/rack/legacy-rack-redirect/legacy-rack-redirect.component.spec.ts": 2,
-    "src/app/features/routes/rack/rack-browser-data.service.spec.ts": 9,
     "src/app/features/routes/rack/rack-browser-detail/rack-browser-detail-view.component.spec.ts": 26,
-    "src/app/features/routes/rack/rack-browser-root/rack-browser-root.component.spec.ts": 2,
-    "src/app/features/routes/rack/rack-composite/rack-composite.component.spec.ts": 2,
     "src/app/features/routes/user-area/__tests__/user-area-root.spec.ts": 43,
     "src/app/features/routes/user-area/user-area-data.service.spec.ts": 44,
     "src/app/features/routes/user-area/user-area-data.utils.spec.ts": 7,
