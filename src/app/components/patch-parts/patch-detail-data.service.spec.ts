@@ -1,44 +1,125 @@
 import { PatchDetailDataService } from './patch-detail-data.service';
 import { SelectionPanelBridgeService } from './selection-panel-bridge.service';
-import { of } from 'rxjs';
+import {
+  Observable,
+  of
+} from 'rxjs';
 import { CVConnectionEntity } from '../../models/cv';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatDialog } from '@angular/material/dialog';
+import {
+  MatDialog,
+  MatDialogRef
+} from '@angular/material/dialog';
+import { Router } from '@angular/router';
+import { SupabaseService } from '../../features/backend/supabase.service';
+import { UserManagementService } from '../../features/backbone/login/user-management.service';
+import { AnalyticsService } from '../../features/backbone/analytics-integration/analytics.service';
+import {
+  PatchConnection,
+  PatchModuleInstance
+} from '../../models/connection';
+import { CVConnectionState } from './patch-detail-data.models';
+import { cvWithModuleFixture } from './patch-graph/patch-graph-test-fixtures';
 
 
-class DummyBackend {}
+type UserSession = { id: string } | null;
+type MutationResponse = Record<string, never>;
+type DialogAnswer = { answer: boolean };
 
-class DummyUserService {}
+interface PatchDetailBackendDouble {
+  auth: {
+    getUserSession$: jasmine.Spy<() => Observable<UserSession>>;
+  };
+  GET: {
+    patchConnections: jasmine.Spy<(patchId: number) => Observable<PatchConnection[]>>;
+  };
+  delete: {
+    patchModuleInstance: jasmine.Spy<(instanceId: number) => Observable<MutationResponse>>;
+  };
+  storage: {
+    publicUrlBases: {
+      racks: string;
+    };
+  };
+}
 
-const routerStub = {
-  navigate: (_: any) => {
-  }
-};
-const snackStub = {
-  open: (_: any) => {
-  },
-} as unknown as MatSnackBar;
-const dialogStub = {open: (_: any) => ({afterClosed: () => of({answer: true})})} as unknown as MatDialog;
+interface BuildFixture {
+  service: PatchDetailDataService;
+  bridge: SelectionPanelBridgeService;
+}
+
+function mutationResponse(): MutationResponse {
+  return {};
+}
+
+function supabaseServiceDouble(backend: PatchDetailBackendDouble): SupabaseService {
+  const serviceDouble: SupabaseService = Object.create(SupabaseService.prototype);
+  return Object.assign(serviceDouble, backend);
+}
+
+function selectedEntity(
+  id: number,
+  moduleId: number,
+  name: string,
+  moduleName: string,
+  instanceId: number,
+  kind: CVConnectionEntity['kind']
+): CVConnectionEntity {
+  return {
+    cv: {
+      ...cvWithModuleFixture(id, moduleId, moduleName, name),
+      instance_id: instanceId
+    },
+    kind
+  };
+}
+
+function patchModuleInstance(id: number, moduleId: number): PatchModuleInstance {
+  return {
+    id,
+    patch_id: 1,
+    module_id: moduleId,
+    instance_label: null
+  };
+}
+
+function build(): BuildFixture {
+  const bridge = new SelectionPanelBridgeService();
+  const backend: PatchDetailBackendDouble = {
+    auth: {
+      getUserSession$: jasmine.createSpy<() => Observable<UserSession>>('getUserSession$').and.returnValue(of(null))
+    },
+    GET: {
+      patchConnections: jasmine.createSpy<(patchId: number) => Observable<PatchConnection[]>>('patchConnections')
+        .and.returnValue(of([]))
+    },
+    delete: {
+      patchModuleInstance: jasmine.createSpy<(instanceId: number) => Observable<MutationResponse>>('patchModuleInstance')
+        .and.returnValue(of(mutationResponse()))
+    },
+    storage: {publicUrlBases: {racks: 'https://images.patcher.xyz/racks/'}}
+  };
+  const router = jasmine.createSpyObj<Router>('Router', ['navigate']);
+  const snackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
+  const dialog = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
+  dialog.open.and.returnValue({
+    afterClosed: () => of({answer: true})
+  } as MatDialogRef<unknown, DialogAnswer>);
+  const userService = jasmine.createSpyObj<UserManagementService>('UserManagementService', ['ngOnDestroy']);
+  const analytics = jasmine.createSpyObj<AnalyticsService>('AnalyticsService', ['capture', 'identify', 'reset']);
+  const service = new PatchDetailDataService(
+    router, snackBar, dialog, userService, supabaseServiceDouble(backend), bridge, analytics
+  );
+
+  return {service, bridge};
+}
 
 describe('PatchDetailDataService selection behavior', () => {
   let service: PatchDetailDataService;
   let bridge: SelectionPanelBridgeService;
   
   beforeEach(() => {
-    // Lightweight stubs for the constructor dependencies
-    bridge = new SelectionPanelBridgeService();
-    const backendStub: any = {
-      auth: {getUserSession$: () => of(null)},
-      GET: {patchConnections: (_: any) => of([])},
-      delete: {patchModuleInstance: (_: any) => of({})},
-      storage: {publicUrlBases: {racks: 'https://images.patcher.xyz/racks/'}}
-    };
-    const router = routerStub as any;
-    const snack = snackStub as any;
-    const dialog = dialogStub as any;
-    const userService = new DummyUserService() as any;
-
-    service = new PatchDetailDataService(router, snack, dialog, userService, backendStub, bridge, {capture: () => {}, identify: () => {}, reset: () => {}} as any);
+    ({service, bridge} = build());
   });
 
   afterEach(() => {
@@ -47,12 +128,11 @@ describe('PatchDetailDataService selection behavior', () => {
   });
   
   it('should not resurrect a cleared output when selecting an input after cancel', (done) => {
-    // Simulate clicking an output
-    const out: CVConnectionEntity = {cv: {id: 1, name: 'Out', module: {id: 11, name: 'M'}, instance_id: 100}, kind: 'out'} as any;
-    const inp: CVConnectionEntity = {cv: {id: 2, name: 'In', module: {id: 12, name: 'N'}, instance_id: 200}, kind: 'in'} as any;
+    const out = selectedEntity(1, 11, 'Out', 'M', 100, 'out');
+    const inp = selectedEntity(2, 12, 'In', 'N', 200, 'in');
     
     // Subscribe to selection changes
-    const states: any[] = [];
+    const states: CVConnectionState[] = [];
     const sub = service.selectedForConnection$.subscribe(s => states.push(s));
     
     // Click output
@@ -74,10 +154,10 @@ describe('PatchDetailDataService selection behavior', () => {
   });
   
   it('when both sides selected, per-side deselect clears only that side', (done) => {
-    const out: CVConnectionEntity = {cv: {id: 1, name: 'Out', module: {id: 11, name: 'M'}, instance_id: 100}, kind: 'out'} as any;
-    const inp: CVConnectionEntity = {cv: {id: 2, name: 'In', module: {id: 12, name: 'N'}, instance_id: 200}, kind: 'in'} as any;
+    const out = selectedEntity(1, 11, 'Out', 'M', 100, 'out');
+    const inp = selectedEntity(2, 12, 'In', 'N', 200, 'in');
     
-    const states: any[] = [];
+    const states: CVConnectionState[] = [];
     const sub = service.selectedForConnection$.subscribe(s => states.push(s));
     
     service.clickOnModuleCV$.next(out);
@@ -106,16 +186,16 @@ describe('PatchDetailDataService selection behavior', () => {
   });
   
   it('when the instance on side A is deleted, only side A is cleared', (done) => {
-    const instanceA: any = {id: 101, module_id: 11};
-    const instanceB: any = {id: 201, module_id: 12};
-    const out: CVConnectionEntity = {cv: {id: 1, name: 'Out', module: {id: 11, name: 'M'}, instance_id: 101}, kind: 'out'} as any;
-    const inp: CVConnectionEntity = {cv: {id: 2, name: 'In', module: {id: 12, name: 'N'}, instance_id: 201}, kind: 'in'} as any;
+    const instanceA = patchModuleInstance(101, 11);
+    const instanceB = patchModuleInstance(201, 12);
+    const out = selectedEntity(1, 11, 'Out', 'M', 101, 'out');
+    const inp = selectedEntity(2, 12, 'In', 'N', 201, 'in');
 
     service.patchModuleInstances$.next([instanceA, instanceB]);
     service.clickOnModuleCV$.next(out);
     service.clickOnModuleCV$.next(inp);
 
-    const states: any[] = [];
+    const states: CVConnectionState[] = [];
     const sub = service.selectedForConnection$.subscribe(s => states.push(s));
 
     service.removeModuleInstance$.next(instanceA);
@@ -130,16 +210,16 @@ describe('PatchDetailDataService selection behavior', () => {
   });
 
   it('when the instance on side B is deleted, only side B is cleared', (done) => {
-    const instanceA: any = {id: 101, module_id: 11};
-    const instanceB: any = {id: 201, module_id: 12};
-    const out: CVConnectionEntity = {cv: {id: 1, name: 'Out', module: {id: 11, name: 'M'}, instance_id: 101}, kind: 'out'} as any;
-    const inp: CVConnectionEntity = {cv: {id: 2, name: 'In', module: {id: 12, name: 'N'}, instance_id: 201}, kind: 'in'} as any;
+    const instanceA = patchModuleInstance(101, 11);
+    const instanceB = patchModuleInstance(201, 12);
+    const out = selectedEntity(1, 11, 'Out', 'M', 101, 'out');
+    const inp = selectedEntity(2, 12, 'In', 'N', 201, 'in');
 
     service.patchModuleInstances$.next([instanceA, instanceB]);
     service.clickOnModuleCV$.next(out);
     service.clickOnModuleCV$.next(inp);
 
-    const states: any[] = [];
+    const states: CVConnectionState[] = [];
     const sub = service.selectedForConnection$.subscribe(s => states.push(s));
 
     service.removeModuleInstance$.next(instanceB);
@@ -154,9 +234,9 @@ describe('PatchDetailDataService selection behavior', () => {
   });
 
   it('clears confirmed flag when selection changes after confirm', (done) => {
-    const out1: CVConnectionEntity = {cv: {id: 1, name: 'Out1', module: {id: 11, name: 'M'}, instance_id: 100}, kind: 'out'} as any;
-    const inp1: CVConnectionEntity = {cv: {id: 2, name: 'In1', module: {id: 12, name: 'N'}, instance_id: 200}, kind: 'in'} as any;
-    const out2: CVConnectionEntity = {cv: {id: 3, name: 'Out2', module: {id: 13, name: 'O'}, instance_id: 300}, kind: 'out'} as any;
+    const out1 = selectedEntity(1, 11, 'Out1', 'M', 100, 'out');
+    const inp1 = selectedEntity(2, 12, 'In1', 'N', 200, 'in');
+    const out2 = selectedEntity(3, 13, 'Out2', 'O', 300, 'out');
     
     // simulate selecting both and confirming
     service.clickOnModuleCV$.next(out1);
