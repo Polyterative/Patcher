@@ -1,9 +1,15 @@
+import { BreakpointObserver, BreakpointState } from '@angular/cdk/layout';
 import { GeneratedFormComponent } from './generated-form.component';
 import { AppStateService } from '../../../app-state.service';
 import { FormTypes } from '../mat-form-entity/form-element-models';
+import { GeneratedForm } from './generated-form-models';
+import { of } from 'rxjs';
 
 function mockAppState(): AppStateService {
-  return {} as unknown as AppStateService;
+  const breakpointObserver = jasmine.createSpyObj<BreakpointObserver>('BreakpointObserver', ['observe']);
+  const breakpointState: BreakpointState = { matches: false, breakpoints: {} };
+  breakpointObserver.observe.and.returnValue(of(breakpointState));
+  return new AppStateService(breakpointObserver);
 }
 
 describe('GeneratedFormComponent', () => {
@@ -33,13 +39,13 @@ describe('GeneratedFormComponent', () => {
 
   describe('inputs', () => {
     it('accepts controls assignment', () => {
-      const controls = [[]] as any;
+      const controls: GeneratedForm.AutoFormEntity[][] = [[]];
       comp.controls = controls;
       expect(comp.controls).toBe(controls);
     });
 
     it('accepts oldControls assignment', () => {
-      const old = [[]] as any;
+      const old: GeneratedForm.AutoFormEntity[][] = [[]];
       comp.oldControls = old;
       expect(comp.oldControls).toBe(old);
     });

@@ -1,3 +1,5 @@
+import { BreakpointObserver, BreakpointState } from '@angular/cdk/layout';
+import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import { of } from 'rxjs';
 import {
   getRouteClickableLinkKey,
@@ -14,8 +16,11 @@ function makeItem(overrides: Partial<RouteClickableLink> = {}): RouteClickableLi
   };
 }
 
-function makeAppStateMock() {
-  return {} as any;
+function makeAppStateMock(): AppStateService {
+  const breakpointObserver = jasmine.createSpyObj<BreakpointObserver>('BreakpointObserver', ['observe']);
+  const breakpointState: BreakpointState = { matches: false, breakpoints: {} };
+  breakpointObserver.observe.and.returnValue(of(breakpointState));
+  return new AppStateService(breakpointObserver);
 }
 
 function makeComp(): RouteClickableLinkComponent {
@@ -92,7 +97,7 @@ describe('RouteClickableLinkComponent', () => {
   describe('onLinkInteraction', () => {
     it('prevents default and stops propagation when item is disabled', () => {
       const comp = makeComp();
-      const event = { preventDefault: jasmine.createSpy(), stopPropagation: jasmine.createSpy() } as any;
+      const event = jasmine.createSpyObj<Event>('event', ['preventDefault', 'stopPropagation']);
       comp.onLinkInteraction(event, makeItem({ disabled: true }));
       expect(event.preventDefault).toHaveBeenCalled();
       expect(event.stopPropagation).toHaveBeenCalled();
@@ -100,7 +105,7 @@ describe('RouteClickableLinkComponent', () => {
 
     it('does NOT prevent default when item is enabled', () => {
       const comp = makeComp();
-      const event = { preventDefault: jasmine.createSpy(), stopPropagation: jasmine.createSpy() } as any;
+      const event = jasmine.createSpyObj<Event>('event', ['preventDefault', 'stopPropagation']);
       comp.onLinkInteraction(event, makeItem({ disabled: false }));
       expect(event.preventDefault).not.toHaveBeenCalled();
       expect(event.stopPropagation).not.toHaveBeenCalled();
