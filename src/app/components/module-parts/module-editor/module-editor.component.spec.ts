@@ -3,82 +3,72 @@ import {
   UntypedFormControl,
   Validators
 } from '@angular/forms';
+import {
+  MatSnackBar,
+  MatSnackBarConfig,
+  MatSnackBarRef,
+  TextOnlySnackBar
+} from '@angular/material/snack-bar';
 import type { ImageCroppedEvent } from 'ngx-image-cropper';
 import { BehaviorSubject, of, Subject } from 'rxjs';
+import { DbModule } from 'src/app/models/module';
+import { FileDragHostService } from 'src/app/shared-interproject/components/@smart/file-drag-host/file-drag-host.service';
 import { buildUploadGuardrailAdvisory } from 'src/app/shared-interproject/upload-guardrails/upload-guardrails';
 import { MODULE_FORMAT_GEOMETRY } from '../module-format-geometry.constants';
+import { ModuleDetailDataService } from '../module-detail-data.service';
 import {
   FormCV,
-  ModuleEditorDataService
+  ModuleEditorDataService,
+  PendingSaveState
 } from './module-editor-data.service';
 import { ModuleEditorComponent } from './module-editor.component';
 import { ModuleEditorCropperComponent } from './module-editor-cropper.component';
 import { ModuleEditorFormStateService } from './module-editor-form-state.service';
 import { ModuleEditorPanelStateService } from './module-editor-panel-state.service';
 
-function makeComponent(preferredPanelCropFormat: 'webp' | 'jpeg' = 'webp') {
-  const dataService = {
+type SnackBarOpen = (
+  message: string | undefined,
+  action?: string,
+  config?: MatSnackBarConfig
+) => MatSnackBarRef<TextOnlySnackBar>;
+type SnackBarDouble = MatSnackBar & {open: jasmine.Spy<SnackBarOpen>};
+type ModuleEditorDataServiceDouble = ModuleEditorDataService & {
+  buildCvSummary: jasmine.Spy<ModuleEditorDataService['buildCvSummary']>;
+  createFormCV: jasmine.Spy<ModuleEditorDataService['createFormCV']>;
+  updateFormGroupAndContainer: jasmine.Spy<ModuleEditorDataService['updateFormGroupAndContainer']>;
+  buildPersistPlan: jasmine.Spy<ModuleEditorDataService['buildPersistPlan']>;
+  buildCroppedPanelFile: jasmine.Spy<ModuleEditorDataService['buildCroppedPanelFile']>;
+  buildGuardedCroppedPanelFile: jasmine.Spy<ModuleEditorDataService['buildGuardedCroppedPanelFile']>;
+  getPreferredPanelCropFormat: jasmine.Spy<ModuleEditorDataService['getPreferredPanelCropFormat']>;
+  suggestPanelTypeFromBlob: jasmine.Spy<ModuleEditorDataService['suggestPanelTypeFromBlob']>;
+  touchModule$: jasmine.Spy<ModuleEditorDataService['touchModule$']>;
+  syncDataSnapshotAfterSave: jasmine.Spy<ModuleEditorDataService['syncDataSnapshotAfterSave']>;
+  getPendingSaveState: jasmine.Spy<ModuleEditorDataService['getPendingSaveState']>;
+};
+type PendingSaveStateParams = Parameters<ModuleEditorDataService['getPendingSaveState']>[0];
+type SyncDataSnapshotParams = Parameters<ModuleEditorDataService['syncDataSnapshotAfterSave']>[0];
+type GuardedCroppedPanelFile = Awaited<ReturnType<ModuleEditorDataService['buildGuardedCroppedPanelFile']>>;
+
+function makeSnackBar(): SnackBarDouble {
+  const open = jasmine.createSpy<SnackBarOpen>('open').and.returnValue(makeSnackBarRef());
+  return Object.assign(Object.create(MatSnackBar.prototype) as MatSnackBar, {open});
+}
+
+function makeSnackBarRef(): MatSnackBarRef<TextOnlySnackBar> {
+  const snackBarRef = Object.create(MatSnackBarRef.prototype) as MatSnackBarRef<TextOnlySnackBar>;
+  snackBarRef.onAction = () => of(undefined);
+  return snackBarRef;
+}
+
+function makeModuleDetailDataService(): ModuleDetailDataService {
+  return Object.assign(Object.create(ModuleDetailDataService.prototype) as ModuleDetailDataService, {
     moduleEditorHasPendingChanges$: new BehaviorSubject<boolean>(false),
     updateSingleModuleData$: new Subject<number>()
-  };
-  const fileDragHostService = {
-    files$: new BehaviorSubject<File[]>([]),
-    removeAllFiles$: {emit: jasmine.createSpy('removeAllFiles.emit')}
-  };
-  const moduleEditorDataService = {
-    buildCvSummary: jasmine.createSpy('buildCvSummary').and.returnValue({total: 0, editable: 0, locked: 0}),
-    createFormCV: jasmine.createSpy('createFormCV'),
-    updateFormGroupAndContainer: jasmine.createSpy('updateFormGroupAndContainer'),
-    buildPersistPlan: jasmine.createSpy('buildPersistPlan').and.returnValue({operations: [], savedSections: []}),
-    buildCroppedPanelFile: jasmine.createSpy('buildCroppedPanelFile'),
-    buildGuardedCroppedPanelFile: jasmine.createSpy('buildGuardedCroppedPanelFile'),
-    getPreferredPanelCropFormat: jasmine.createSpy('getPreferredPanelCropFormat').and.returnValue(preferredPanelCropFormat),
-    suggestPanelTypeFromBlob: jasmine.createSpy('suggestPanelTypeFromBlob').and.resolveTo(1),
-    touchModule$: jasmine.createSpy('touchModule$').and.returnValue(of(null)),
-    syncDataSnapshotAfterSave: jasmine.createSpy('syncDataSnapshotAfterSave').and.callFake(({module}: any) => module),
-    getPendingSaveState: jasmine.createSpy('getPendingSaveState').and.callFake(({powerDirty, panelFileCount}: any) => ({
-      ins: [],
-      outs: [],
-      shouldSaveInsOuts: false,
-      shouldSavePower: powerDirty,
-      shouldSavePhysical: false,
-      shouldSavePanel: panelFileCount > 0,
-      hasPendingChanges: powerDirty || panelFileCount > 0
-    }))
-  };
-  moduleEditorDataService.buildGuardedCroppedPanelFile.and.callFake((sourceFile: File, blob: Blob) => {
-    const file = moduleEditorDataService.buildCroppedPanelFile(sourceFile, blob)
-      ?? new File([blob], 'panel-cropped.webp', {type: blob.type || 'image/webp'});
-    return Promise.resolve({
-      file,
-      compression: {
-        blob,
-        widthPx: 320,
-        heightPx: 640,
-        attempt: null,
-        advisory: buildUploadGuardrailAdvisory('module-panel', {
-          byteSize: blob.size,
-          widthPx: 320,
-          heightPx: 640,
-          mimeType: blob.type
-        })
-      }
-    });
   });
+}
 
-  const formBuilder = new UntypedFormBuilder();
-  const formState = new ModuleEditorFormStateService(formBuilder);
-  const panelState = new ModuleEditorPanelStateService(moduleEditorDataService as unknown as ModuleEditorDataService);
-  const component = new ModuleEditorComponent(
-    dataService as any,
-    {open: jasmine.createSpy('open')} as any,
-    fileDragHostService as any,
-    moduleEditorDataService as any,
-    formState,
-    panelState
-  );
-
-  component.data = {
+function makeDbModule(partial: Partial<DbModule> = {}): DbModule {
+  return {
     id: 1,
     name: 'Test Module',
     hp: 4,
@@ -94,8 +84,8 @@ function makeComponent(preferredPanelCropFormat: 'webp' | 'jpeg' = 'webp') {
     powerPos12: null,
     powerNeg12: null,
     powerPos5: null,
-    depth: null,
-    weight: null,
+    depth: 0,
+    weight: 0,
     public: true,
     manufacturer: {id: 1, name: 'Test Manufacturer'},
     manufacturerId: 1,
@@ -104,10 +94,122 @@ function makeComponent(preferredPanelCropFormat: 'webp' | 'jpeg' = 'webp') {
     panels: [],
     description: '',
     created: '',
-    updated: ''
-  } as any;
+    updated: '',
+    ...partial
+  };
+}
 
-  return {component, moduleEditorDataService, fileDragHostService};
+function makeModuleEditorDataService(
+  preferredPanelCropFormat: 'webp' | 'jpeg' = 'webp'
+): ModuleEditorDataServiceDouble {
+  const methods = {
+    buildCvSummary: jasmine.createSpy<ModuleEditorDataService['buildCvSummary']>('buildCvSummary')
+      .and.returnValue({total: 0, editable: 0, locked: 0}),
+    createFormCV: jasmine.createSpy<ModuleEditorDataService['createFormCV']>('createFormCV')
+      .and.callFake((data, validatorsName, validatorsNum) => ({
+        id: data.id ?? 0,
+        isApproved: data.isApproved ?? false,
+        name: new UntypedFormControl(data.name ?? '', validatorsName),
+        a: new UntypedFormControl(data.min ?? '', validatorsNum),
+        b: new UntypedFormControl(data.max ?? '', validatorsNum)
+      })),
+    updateFormGroupAndContainer: jasmine
+      .createSpy<ModuleEditorDataService['updateFormGroupAndContainer']>('updateFormGroupAndContainer')
+      .and.callFake((cvs, group, subject) => {
+        Object.keys(group.controls).forEach(name => group.removeControl(name));
+        cvs
+          .filter(cv => !cv.isApproved)
+          .forEach((cv, index) => {
+            group.addControl(`name${ index }`, cv.name);
+            group.addControl(`a${ index }`, cv.a);
+            group.addControl(`b${ index }`, cv.b);
+          });
+        subject.next(cvs);
+      }),
+    buildPersistPlan: jasmine.createSpy<ModuleEditorDataService['buildPersistPlan']>('buildPersistPlan')
+      .and.returnValue({operations: [], savedSections: []}),
+    buildCroppedPanelFile: jasmine.createSpy<ModuleEditorDataService['buildCroppedPanelFile']>('buildCroppedPanelFile')
+      .and.callFake((sourceFile, blob) =>
+        new File([blob], `${ sourceFile.name.replace(/\.[^.]*$/, '') || 'panel' }-cropped.webp`, {
+          type: blob.type || 'image/webp'
+        })),
+    buildGuardedCroppedPanelFile: jasmine
+      .createSpy<ModuleEditorDataService['buildGuardedCroppedPanelFile']>('buildGuardedCroppedPanelFile'),
+    getPreferredPanelCropFormat: jasmine
+      .createSpy<ModuleEditorDataService['getPreferredPanelCropFormat']>('getPreferredPanelCropFormat')
+      .and.returnValue(preferredPanelCropFormat),
+    suggestPanelTypeFromBlob: jasmine.createSpy<ModuleEditorDataService['suggestPanelTypeFromBlob']>('suggestPanelTypeFromBlob')
+      .and.resolveTo(1),
+    touchModule$: jasmine.createSpy<ModuleEditorDataService['touchModule$']>('touchModule$').and.returnValue(of(null)),
+    syncDataSnapshotAfterSave: jasmine
+      .createSpy<ModuleEditorDataService['syncDataSnapshotAfterSave']>('syncDataSnapshotAfterSave')
+      .and.callFake(({module}: SyncDataSnapshotParams) => module),
+    getPendingSaveState: jasmine.createSpy<ModuleEditorDataService['getPendingSaveState']>('getPendingSaveState')
+      .and.callFake(({powerDirty, physicalDirty, panelFileCount}: PendingSaveStateParams): PendingSaveState => ({
+        ins: [],
+        outs: [],
+        shouldSaveInsOuts: false,
+        shouldSavePower: powerDirty,
+        shouldSavePhysical: physicalDirty,
+        shouldSavePanel: panelFileCount > 0,
+        hasPendingChanges: powerDirty || physicalDirty || panelFileCount > 0
+      }))
+  };
+  const service = Object.assign(
+    Object.create(ModuleEditorDataService.prototype) as ModuleEditorDataService,
+    methods
+  );
+  service.buildGuardedCroppedPanelFile.and.callFake((sourceFile, blob) => Promise.resolve({
+    file: service.buildCroppedPanelFile(sourceFile, blob),
+    compression: {
+      blob,
+      widthPx: 320,
+      heightPx: 640,
+      attempt: null,
+      advisory: buildUploadGuardrailAdvisory('module-panel', {
+        byteSize: blob.size,
+        widthPx: 320,
+        heightPx: 640,
+        mimeType: blob.type
+      })
+    }
+  }));
+  return service;
+}
+
+function makeComponent(preferredPanelCropFormat: 'webp' | 'jpeg' = 'webp') {
+  const dataService = makeModuleDetailDataService();
+  const snackBar = makeSnackBar();
+  const fileDragHostService = new FileDragHostService(snackBar);
+  const moduleEditorDataService = makeModuleEditorDataService(preferredPanelCropFormat);
+  const formBuilder = new UntypedFormBuilder();
+  const formState = new ModuleEditorFormStateService(formBuilder);
+  const panelState = new ModuleEditorPanelStateService(moduleEditorDataService);
+  const component = new ModuleEditorComponent(
+    dataService,
+    snackBar,
+    fileDragHostService,
+    moduleEditorDataService,
+    formState,
+    panelState
+  );
+
+  component.data = makeDbModule();
+
+  return {component, moduleEditorDataService, fileDragHostService, snackBar};
+}
+
+function makePendingSaveState(partial: Partial<PendingSaveState> = {}): PendingSaveState {
+  return {
+    ins: [],
+    outs: [],
+    shouldSaveInsOuts: false,
+    shouldSavePower: false,
+    shouldSavePhysical: false,
+    shouldSavePanel: false,
+    hasPendingChanges: false,
+    ...partial
+  };
 }
 
 function makeCropEvent(blob: Blob = new Blob(['cropped'], {type: 'image/jpeg'})): ImageCroppedEvent {
@@ -185,13 +287,9 @@ describe('ModuleEditorComponent validation messaging', () => {
 
   it('pinpoints the invalid physical field in the save reason', () => {
     const {component, moduleEditorDataService} = makeComponent();
-    moduleEditorDataService.getPendingSaveState.and.callFake(({powerDirty, physicalDirty}: any) => ({
-      ins: [],
-      outs: [],
-      shouldSaveInsOuts: false,
+    moduleEditorDataService.getPendingSaveState.and.callFake(({powerDirty, physicalDirty}: PendingSaveStateParams) => makePendingSaveState({
       shouldSavePower: powerDirty,
       shouldSavePhysical: physicalDirty,
-      shouldSavePanel: false,
       hasPendingChanges: powerDirty || physicalDirty
     }));
     component.ngOnInit();
@@ -204,18 +302,13 @@ describe('ModuleEditorComponent validation messaging', () => {
 
   it('reports duplicate panel type explicitly', () => {
     const {component, moduleEditorDataService, fileDragHostService} = makeComponent();
-    moduleEditorDataService.getPendingSaveState.and.returnValue({
-      ins: [],
-      outs: [],
-      shouldSaveInsOuts: false,
-      shouldSavePower: false,
-      shouldSavePhysical: false,
+    moduleEditorDataService.getPendingSaveState.and.returnValue(makePendingSaveState({
       shouldSavePanel: true,
       hasPendingChanges: true
-    });
+    }));
     component.ngOnInit();
 
-    fileDragHostService.files$.next([{} as File]);
+    fileDragHostService.files$.next([new File(['panel'], 'panel.jpg', {type: 'image/jpeg'})]);
     component.panelTypeAlreadyExists$.next(true);
     component.duplicatePanelTypeName$.next('Light');
 
@@ -223,7 +316,7 @@ describe('ModuleEditorComponent validation messaging', () => {
   });
 
   it('pinpoints the invalid port row and field', () => {
-    const {component} = makeComponent();
+    const {component, moduleEditorDataService, snackBar} = makeComponent();
     component.ngOnInit();
 
     component.INs$.next([
@@ -232,19 +325,19 @@ describe('ModuleEditorComponent validation messaging', () => {
       })
     ]);
     component.formGroupA.addControl('name0', component.INs$.value[0].name);
-
-    const feedback = (component as any).getValidationFeedback({
-      ins: [],
-      outs: [],
+    moduleEditorDataService.getPendingSaveState.and.returnValue(makePendingSaveState({
       shouldSaveInsOuts: true,
-      shouldSavePower: false,
-      shouldSavePhysical: false,
-      shouldSavePanel: false,
       hasPendingChanges: true
-    });
+    }));
 
-    expect(feedback.disabledReason).toBe('Fix Input 1 name');
-    expect(feedback.errorMessage).toBe('Port fields need attention: Input 1 name.');
+    expect(component.saveFabDisabledReason).toBe('Fix Input 1 name');
+
+    component.saveAll$.next();
+    expect(snackBar.open).toHaveBeenCalledWith(
+      'Port fields need attention: Input 1 name.',
+      undefined,
+      jasmine.objectContaining({duration: 5000, panelClass: 'snack-error'})
+    );
   });
 
   it('lists multiple invalid power rails together', () => {
@@ -292,11 +385,11 @@ describe('ModuleEditorComponent panel crop flow', () => {
     ];
 
     expectations.forEach(testCase => {
-      component.data = {
+      component.data = makeDbModule({
         ...component.data,
         hp: 12,
         standard: {id: testCase.id, name: testCase.name}
-      } as any;
+      });
 
       expect(component.panelCropAspectRatio).toBeCloseTo(12 / testCase.expectedHeightRem, 6);
     });
@@ -568,11 +661,11 @@ describe('ModuleEditorComponent panel crop flow', () => {
   it('fits the crop selection to the available image area', async () => {
     const {component} = makeComponent();
     component.onPanelCropperReady({width: 320, height: 640});
-    component.data = {
+    component.data = makeDbModule({
       ...component.data,
       hp: 12,
       standard: {id: 0, name: '3U'}
-    } as any;
+    });
     await component.onPanelImageCropped(makeCropEvent());
 
     component.fitPanelImage();
@@ -586,11 +679,11 @@ describe('ModuleEditorComponent panel crop flow', () => {
   it('fills by tightening the crop selection instead of scaling the image', async () => {
     const {component} = makeComponent();
     component.onPanelCropperReady({width: 320, height: 640});
-    component.data = {
+    component.data = makeDbModule({
       ...component.data,
       hp: 12,
       standard: {id: 0, name: '3U'}
-    } as any;
+    });
     await component.onPanelImageCropped(makeCropEvent());
 
     component.fillPanelImage();
@@ -604,11 +697,11 @@ describe('ModuleEditorComponent panel crop flow', () => {
   it('clears one-shot crop overrides after the cropper reports a new drag position', async () => {
     const {component} = makeComponent();
     component.onPanelCropperReady({width: 320, height: 640});
-    component.data = {
+    component.data = makeDbModule({
       ...component.data,
       hp: 12,
       standard: {id: 0, name: '3U'}
-    } as any;
+    });
     await component.onPanelImageCropped(makeCropEvent());
 
     component.fillPanelImage();
@@ -622,8 +715,8 @@ describe('ModuleEditorComponent panel crop flow', () => {
 
   it('nudges the crop selection in small precision steps', () => {
     const {component} = makeComponent();
-    const keyboardAccess = jasmine.createSpy('keyboardAccess');
-    (component as any).panelCropper = {keyboardAccess};
+    const keyboardAccess = jasmine.createSpy<ModuleEditorCropperComponent['keyboardAccess']>('keyboardAccess');
+    Object.defineProperty(component, 'panelCropper', {value: {keyboardAccess}});
     component.onPanelCropperChange({x1: 10, y1: 20, x2: 110, y2: 220});
 
     component.nudgePanelCrop('ArrowRight');
@@ -636,8 +729,9 @@ describe('ModuleEditorComponent panel crop flow', () => {
 
   it('resets the cropper position and scale together', () => {
     const {component} = makeComponent();
-    const resetCropperPosition = jasmine.createSpy('resetCropperPosition');
-    (component as any).panelCropper = {resetCropperPosition};
+    const resetCropperPosition =
+      jasmine.createSpy<ModuleEditorCropperComponent['resetCropperPosition']>('resetCropperPosition');
+    Object.defineProperty(component, 'panelCropper', {value: {resetCropperPosition}});
     component.onPanelCropperChange({x1: 10, y1: 20, x2: 110, y2: 220});
 
     component.resetPanelCropper();
