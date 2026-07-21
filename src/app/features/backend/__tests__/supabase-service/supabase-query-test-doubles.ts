@@ -50,6 +50,20 @@ export interface QueryChainResult<Row = unknown> {
   error: PostgrestError | null;
 }
 
+export type QuerySingleRowResult<Row> = QueryChainResult<Row> & {
+  data: Row;
+  error: null;
+};
+
+export type QueryListRowsResult<Row> = QueryChainResult<Row> & {
+  data: Row[] | null;
+  error: null;
+};
+
+export type QueryCountRowsResult<Row> = QueryListRowsResult<Row> & {
+  count: number | null;
+};
+
 export class SupabaseQueryChain<Row = unknown> implements PromiseLike<QueryChainResult<Row>> {
   constructor(private readonly resolveValue: QueryChainResult<Row> = {data: null, error: null}) {}
 
