@@ -1,30 +1,44 @@
-import { of } from 'rxjs';
+import { SupabaseService } from '../../supabase.service';
+import type { CachedEntity } from '../../supabase.cache';
+import type { SupabaseTableUpdate } from '../../supabase-db.types';
 import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest,
   TEST_TIMEOUT
 } from './test-setup';
+import {
+  authUserFixture,
+  chainable,
+  getSupabaseClientDouble,
+  mockUserSession,
+  type QueryChainResult,
+  type SupabaseClientDouble,
+  type SupabaseQueryChain
+} from './supabase-query-test-doubles';
 
 
-function chainable(resolveValue: any = {data: null, error: null}) {
-  const m: any = {};
-  ['select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit', 'single',
-    'insert', 'update', 'delete', 'upsert'].forEach(method => {
-    m[method] = () => m;
-  });
-  m.then = (res: Function, rej?: Function) =>
-    Promise.resolve(resolveValue).then(res as any, rej as any);
-  return m;
+type PatchUpdate = SupabaseTableUpdate<'patches'>;
+type PatchTags = Parameters<SupabaseService['update']['patchTags']>[1];
+type PatchTagsUpdatePayload = Pick<PatchUpdate, 'tags'> & {
+  tags: PatchTags;
+};
+type PatchTagsUpdateResult = QueryChainResult<PatchTagsUpdatePayload> & {
+  data: null;
+  error: null;
+};
+
+function successfulPatchTagsUpdate(): PatchTagsUpdateResult {
+  return {data: null, error: null};
 }
 
 describe('SupabaseService - update.patchTags', () => {
-  let service: any;
-  let supabaseClient: any;
+  let service: SupabaseService;
+  let supabaseClient: SupabaseClientDouble;
 
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = getSupabaseClientDouble(service);
   });
 
   afterEach(() => {
@@ -32,20 +46,22 @@ describe('SupabaseService - update.patchTags', () => {
   });
 
   it('should call update with the provided tags array', (done) => {
-    const mockUser = {id: 'user-abc'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    mockUserSession(service, authUserFixture('user-abc'));
 
-    const mock = chainable({data: null, error: null});
-    const updateSpy = spyOn(mock, 'update').and.returnValue(mock);
+    const mock: SupabaseQueryChain<PatchTagsUpdatePayload> =
+      chainable<PatchTagsUpdatePayload>(successfulPatchTagsUpdate());
+    const updateSpy: jasmine.Spy<SupabaseQueryChain<PatchTagsUpdatePayload>['update']> =
+      spyOn(mock, 'update').and.returnValue(mock);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
 
     service.update.patchTags(42, ['bass', 'ambient']).subscribe({
       next: () => {
-        const payload = updateSpy.calls.first().args[0] as any;
-        expect(payload.tags).toEqual(['bass', 'ambient']);
+        expect(updateSpy).toHaveBeenCalledWith({
+          tags: ['bass', 'ambient']
+        } satisfies PatchTagsUpdatePayload);
         done();
       },
-      error: (err: any) => {
+      error: (err: unknown) => {
         fail(err);
         done();
       }
@@ -53,11 +69,12 @@ describe('SupabaseService - update.patchTags', () => {
   }, TEST_TIMEOUT);
 
   it('should filter by patchId and authorid', (done) => {
-    const mockUser = {id: 'user-xyz'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    mockUserSession(service, authUserFixture('user-xyz'));
 
-    const mock = chainable({data: null, error: null});
-    const eqSpy = spyOn(mock, 'eq').and.returnValue(mock);
+    const mock: SupabaseQueryChain<PatchTagsUpdatePayload> =
+      chainable<PatchTagsUpdatePayload>(successfulPatchTagsUpdate());
+    const eqSpy: jasmine.Spy<SupabaseQueryChain<PatchTagsUpdatePayload>['eq']> =
+      spyOn(mock, 'eq').and.returnValue(mock);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
 
     service.update.patchTags(7, ['techno']).subscribe({
@@ -67,7 +84,7 @@ describe('SupabaseService - update.patchTags', () => {
         expect(calls).toContain(['authorid', 'user-xyz']);
         done();
       },
-      error: (err: any) => {
+      error: (err: unknown) => {
         fail(err);
         done();
       }
@@ -75,19 +92,20 @@ describe('SupabaseService - update.patchTags', () => {
   }, TEST_TIMEOUT);
 
   it('should bust the patches cache', (done) => {
-    const mockUser = {id: 'user-abc'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
-    spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: null}));
+    mockUserSession(service, authUserFixture('user-abc'));
+    spyOn(supabaseClient, 'from').and.returnValue(
+      chainable<PatchTagsUpdatePayload>(successfulPatchTagsUpdate())
+    );
 
-    const bustedKeys: any[] = [];
-    service.cacheResetter$.subscribe((keys: any[]) => bustedKeys.push(...keys));
+    const bustedKeys: CachedEntity[] = [];
+    service.cacheResetter$.subscribe(keys => bustedKeys.push(...keys));
 
     service.update.patchTags(1, []).subscribe({
       next: () => {
         expect(bustedKeys).toContain('patches');
         done();
       },
-      error: (err: any) => {
+      error: (err: unknown) => {
         fail(err);
         done();
       }
@@ -95,14 +113,14 @@ describe('SupabaseService - update.patchTags', () => {
   }, TEST_TIMEOUT);
 
   it('should throw when user is not authenticated', (done) => {
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+    mockUserSession(service, null);
 
     service.update.patchTags(1, ['test']).subscribe({
       next: () => {
         fail('Expected an error but got a value');
         done();
       },
-      error: (err: any) => {
+      error: (err: Error) => {
         expect(err.message).toContain('Authentication required');
         done();
       }
