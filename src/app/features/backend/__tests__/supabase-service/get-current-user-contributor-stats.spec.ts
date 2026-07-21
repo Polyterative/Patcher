@@ -1,31 +1,32 @@
-import { of } from 'rxjs';
 import { SupabaseService } from '../../supabase.service';
 import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest,
   TEST_TIMEOUT
 } from './test-setup';
+import {
+  authUserFixture,
+  chainable,
+  getSupabaseClientDouble,
+  mockUserSession,
+  type QueryChainResult,
+  type SupabaseClientDouble
+} from './supabase-query-test-doubles';
 
 
-function chainable(resolveValue: any = {data: null, error: null}) {
-  const m: any = {};
-  ['select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit', 'single',
-    'insert', 'update', 'delete', 'upsert'].forEach(method => {
-    m[method] = () => m;
-  });
-  m.then = (res: Function, rej?: Function) =>
-    Promise.resolve(resolveValue).then(res as any, rej as any);
-  return m;
-}
+type CountRowsResult = QueryChainResult<never> & {
+  count: number;
+  error: null;
+};
 
 describe('SupabaseService - GET.currentUserContributorStats', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: SupabaseClientDouble;
 
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = getSupabaseClientDouble(service);
   });
 
   afterEach(() => {
@@ -33,12 +34,12 @@ describe('SupabaseService - GET.currentUserContributorStats', () => {
   });
 
   it('returns aggregated contributor counts for the current user', (done) => {
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'contributor-1'}));
+    mockUserSession(service, authUserFixture('contributor-1'));
     spyOn(supabaseClient, 'from').and.returnValues(
-      chainable({count: 7, error: null}),
-      chainable({count: 4, error: null}),
-      chainable({count: 12, error: null}),
-      chainable({count: 3, error: null})
+      chainable<never>({count: 7, error: null} satisfies CountRowsResult),
+      chainable<never>({count: 4, error: null} satisfies CountRowsResult),
+      chainable<never>({count: 12, error: null} satisfies CountRowsResult),
+      chainable<never>({count: 3, error: null} satisfies CountRowsResult)
     );
 
     service.GET.currentUserContributorStats().subscribe({
@@ -60,12 +61,12 @@ describe('SupabaseService - GET.currentUserContributorStats', () => {
   }, TEST_TIMEOUT);
 
   it('filters each count query by the current user', (done) => {
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'contributor-2'}));
+    mockUserSession(service, authUserFixture('contributor-2'));
 
-    const submittedQuery = chainable({count: 0, error: null});
-    const approvedQuery = chainable({count: 0, error: null});
-    const commentsQuery = chainable({count: 0, error: null});
-    const flagsQuery = chainable({count: 0, error: null});
+    const submittedQuery = chainable<never>({count: 0, error: null} satisfies CountRowsResult);
+    const approvedQuery = chainable<never>({count: 0, error: null} satisfies CountRowsResult);
+    const commentsQuery = chainable<never>({count: 0, error: null} satisfies CountRowsResult);
+    const flagsQuery = chainable<never>({count: 0, error: null} satisfies CountRowsResult);
 
     const submittedFilterSpy = spyOn(submittedQuery, 'filter').and.returnValue(submittedQuery);
     const approvedFilterSpy = spyOn(approvedQuery, 'filter').and.returnValue(approvedQuery);
@@ -96,7 +97,7 @@ describe('SupabaseService - GET.currentUserContributorStats', () => {
   }, TEST_TIMEOUT);
 
   it('returns zeroed stats when there is no signed-in user', (done) => {
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+    mockUserSession(service, null);
     const fromSpy = spyOn(supabaseClient, 'from');
 
     service.GET.currentUserContributorStats().subscribe({

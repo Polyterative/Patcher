@@ -4,27 +4,27 @@ import {
   setupSupabaseServiceTest,
   TEST_TIMEOUT
 } from './test-setup';
+import {
+  chainable,
+  getSupabaseClientDouble,
+  type QueryChainResult,
+  type SupabaseClientDouble
+} from './supabase-query-test-doubles';
 
 
-function chainable(resolveValue: any = {data: null, error: null}) {
-  const m: any = {};
-  ['select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit', 'single',
-    'insert', 'update', 'delete', 'upsert'].forEach(method => {
-    m[method] = () => m;
-  });
-  m.then = (res: Function, rej?: Function) =>
-    Promise.resolve(resolveValue).then(res as any, rej as any);
-  return m;
-}
+type PublicContributorCountResult = QueryChainResult<never> & {
+  count: number | null;
+  error: null;
+};
 
 describe('SupabaseService - GET.publicUserContributorStats', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: SupabaseClientDouble;
 
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = getSupabaseClientDouble(service);
   });
 
   afterEach(() => {
@@ -32,7 +32,9 @@ describe('SupabaseService - GET.publicUserContributorStats', () => {
   });
 
   it('returns approved public module count for the requested profile', (done) => {
-    spyOn(supabaseClient, 'from').and.returnValue(chainable({count: 5, error: null}));
+    spyOn(supabaseClient, 'from').and.returnValue(
+      chainable<never>({count: 5, error: null} satisfies PublicContributorCountResult)
+    );
 
     service.GET.publicUserContributorStats('public-author').subscribe({
       next: (stats) => {
@@ -47,7 +49,9 @@ describe('SupabaseService - GET.publicUserContributorStats', () => {
   }, TEST_TIMEOUT);
 
   it('returns zero when count is null', (done) => {
-    spyOn(supabaseClient, 'from').and.returnValue(chainable({count: null, error: null}));
+    spyOn(supabaseClient, 'from').and.returnValue(
+      chainable<never>({count: null, error: null} satisfies PublicContributorCountResult)
+    );
 
     service.GET.publicUserContributorStats('nobody').subscribe({
       next: (stats) => {
@@ -62,7 +66,9 @@ describe('SupabaseService - GET.publicUserContributorStats', () => {
   }, TEST_TIMEOUT);
 
   it('calls from() with the correct table name', (done) => {
-    const fromSpy = spyOn(supabaseClient, 'from').and.returnValue(chainable({count: 0, error: null}));
+    const fromSpy = spyOn(supabaseClient, 'from').and.returnValue(
+      chainable<never>({count: 0, error: null} satisfies PublicContributorCountResult)
+    );
 
     service.GET.publicUserContributorStats('user-x').subscribe({
       next: () => {
