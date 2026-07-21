@@ -1,35 +1,190 @@
 import {
+  CdkDragDrop
+} from '@angular/cdk/drag-drop';
+import { ElementRef } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import {
+  MatSnackBar,
+  MatSnackBarRef,
+  TextOnlySnackBar
+} from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
+import {
   BehaviorSubject,
+  Observable,
   of,
   Subject,
   throwError
 } from 'rxjs';
+import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
+import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
+import {
+  SimpleUserModel,
+  SupabaseService
+} from 'src/app/features/backend/supabase.service';
+import {
+  DbModule,
+  RackedModule
+} from 'src/app/models/module';
+import {
+  Rack,
+  RackMinimal,
+  RackingData
+} from 'src/app/models/rack';
 import { TagType } from 'src/app/models/tag';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { RackDetailDataService } from './rack-detail-data.service';
 
+type BackendResponse<T> = {data: T};
+type EmptyBackendResponse = Record<string, never>;
+type BackendErrorResponse = {error: Error};
+type TestRack = Rack & {
+  image?: string | undefined;
+};
+type RackModulePersistenceRow = {
+  id: number;
+  moduleid: number;
+  rackid: number;
+  row: number | null;
+  column: number | null;
+  selected_panel_id: number | null;
+};
+type RackModuleMutationResponse = EmptyBackendResponse | BackendResponse<RackModulePersistenceRow[]> | BackendErrorResponse;
+type ModuleFixtureOverrides = Partial<Omit<DbModule, 'standard' | 'tags'>> & {
+  standard?: Partial<DbModule['standard']>;
+  tags?: DbModule['tags'];
+};
+type TestDialog = {
+  open: jasmine.Spy<() => {
+    afterClosed: () => Observable<{answer: boolean; result?: string}>;
+  }>;
+};
+type RackDetailBackendDouble = {
+  update: {
+    rack: jasmine.Spy<(rack: RackMinimal) => Observable<BackendResponse<Array<{id: number}>>>>;
+    rackedModules: jasmine.Spy<(modules: RackedModule[]) => Observable<RackModuleMutationResponse>>;
+    rackModulePanel: jasmine.Spy<(rackModuleId: number, panelId: number | null) => Observable<EmptyBackendResponse>>;
+  };
+  delete: {
+    rackedModule: jasmine.Spy<(rackModuleId: number) => Observable<EmptyBackendResponse | BackendErrorResponse>>;
+    modulesOfRack: jasmine.Spy<(rackId: number) => Observable<EmptyBackendResponse>>;
+    commentsForRack: jasmine.Spy<(rackId: number) => Observable<EmptyBackendResponse>>;
+    userRack: jasmine.Spy<(rackId: number) => Observable<EmptyBackendResponse>>;
+  };
+  add: {
+    rackModule: jasmine.Spy<(
+      moduleId: number,
+      rackId: number,
+      row?: number | null,
+      column?: number | null
+    ) => Observable<RackModuleMutationResponse>>;
+    rack: jasmine.Spy<(rack: RackMinimal) => Observable<BackendResponse<Array<{id: number}>>>>;
+    patch: jasmine.Spy<(patch: {name: string; public?: boolean; linked_rack_id?: number | null}) =>
+      Observable<BackendResponse<Array<{id: number}>>>>;
+  };
+  get: {
+    rackedModules: jasmine.Spy<(rackId: number) => Observable<RackedModule[]>>;
+  };
+  GET: {
+    rackWithId: jasmine.Spy<(rackId: number) => Observable<BackendResponse<Rack | null>>>;
+    publicRackWithId: jasmine.Spy<(rackId: number) => Observable<BackendResponse<Rack | null>>>;
+    rackByPublicId: jasmine.Spy<(publicId: string) => Observable<BackendResponse<Rack | null>>>;
+    moduleWithId: jasmine.Spy<(moduleId: number) => Observable<BackendResponse<DbModule | null>>>;
+  };
+  storage: {
+    uploadRackImage: jasmine.Spy<(file: Blob | File, filenameAndExtension: string) => Observable<string>>;
+    deleteRackImage: jasmine.Spy<(filenameAndExtension: string) => Observable<EmptyBackendResponse>>;
+  };
+  auth: {
+    hasAdminRole$: jasmine.Spy<() => Observable<boolean>>;
+  };
+};
 
 describe('RackDetailDataService reactive flows', () => {
   let createdServices: RackDetailDataService[];
 
-  function moduleInRack(id: number, row: number | null, column: number | null, hp = 8, standardId = 0) {
+  function simpleUser(id: string): SimpleUserModel {
     return {
-      module: {
-        id: 1000 + id,
-        name: `M${ id }`,
-        hp,
-        standard: {id: standardId}
-      },
-      rackingData: {
-        id,
-        rackid: 1,
-        row,
-        column
-      }
-    } as any;
+      id,
+      email: `${ id }@example.com`,
+      created_at: '2026-01-01T00:00:00.000Z',
+      updated_at: '2026-01-01T00:00:00.000Z'
+    };
   }
-  
-  function rack(partial: any = {}) {
+
+  function moduleFixture(
+    id: number,
+    name: string,
+    hp = 8,
+    standardId = 0,
+    overrides: ModuleFixtureOverrides = {}
+  ): DbModule {
+    const {standard, tags, ...moduleOverrides} = overrides;
+
+    return {
+      id,
+      name,
+      description: '',
+      hp,
+      public: true,
+      manufacturer: {id: 1, name: 'Maker'},
+      manufacturerId: 1,
+      standard: {id: standardId, name: standardId === 0 ? 'Eurorack' : 'Intellijel 1U', ...standard},
+      tags: tags ?? [],
+      panels: [],
+      ins: [],
+      outs: [],
+      switches: [],
+      manualURL: '',
+      store_url: null,
+      additional: null,
+      isComplete: true,
+      isApproved: true,
+      isDIY: false,
+      powerPos12: null,
+      powerNeg12: null,
+      powerPos5: null,
+      depth: 0,
+      weight: 0,
+      created: '2026-01-01T00:00:00.000Z',
+      updated: '2026-01-01T00:00:00.000Z',
+      ...moduleOverrides
+    };
+  }
+
+  function tagEntry(name: string, type: TagType, votes = 0): DbModule['tags'][number] {
+    return {
+      id: type * 100 + votes,
+      tag: {id: type, name, type},
+      voteCount: Array.from({length: votes}, (_, moduletagid) => ({moduletagid}))
+    };
+  }
+
+  function moduleInRack(
+    id: number | undefined,
+    row: number | null,
+    column: number | null,
+    hp = 8,
+    standardId = 0
+  ): RackedModule {
+    const moduleId = id === undefined ? Number.NaN : 1000 + id;
+    const rackingData: RackingData = {
+      rackid: 1,
+      moduleid: moduleId,
+      row,
+      column
+    };
+    if (id !== undefined) {
+      rackingData.id = id;
+    }
+
+    return {
+      module: moduleFixture(moduleId, `M${ id }`, hp, standardId),
+      rackingData
+    };
+  }
+
+  function rack(partial: Partial<TestRack> = {}): TestRack {
     return {
       id: 1,
       name: 'Rack',
@@ -39,13 +194,37 @@ describe('RackDetailDataService reactive flows', () => {
       locked: false,
       image: undefined,
       author: {id: 'u1', username: 'user'},
+      created: '2026-01-01T00:00:00.000Z',
+      updated: '2026-01-01T00:00:00.000Z',
       ...partial
-    } as any;
+    };
   }
-  
+
+  function rackingIds(row: RackedModule[]): Array<number | undefined> {
+    return row.map(module => module.rackingData.id);
+  }
+
+  function moduleIds(row: RackedModule[]): number[] {
+    return row.map(module => module.module.id);
+  }
+
+  function rowRackingIds(rows: RackedModule[][] | null): Array<Array<number | undefined>> {
+    return (rows ?? []).map(rackingIds);
+  }
+
+  function dragDropEvent(previousIndex: number, currentIndex: number): CdkDragDrop<ElementRef> {
+    return {previousIndex, currentIndex} as CdkDragDrop<ElementRef>;
+  }
+
+  function snackBarRefWithAction(action$: Subject<void>): MatSnackBarRef<TextOnlySnackBar> {
+    return {
+      onAction: () => action$.asObservable()
+    } as MatSnackBarRef<TextOnlySnackBar>;
+  }
+
   function build() {
-    const loggedUser$ = new BehaviorSubject<any>({id: 'u1'});
-    const backend = {
+    const loggedUser$ = new BehaviorSubject<SimpleUserModel | undefined>(simpleUser('u1'));
+    const backend: RackDetailBackendDouble = {
       update: {
         rack: jasmine.createSpy('update.rack').and.returnValue(of({data: [{id: 1}]})),
         rackedModules: jasmine.createSpy('update.rackedModules').and.returnValue(of({})),
@@ -72,16 +251,7 @@ describe('RackDetailDataService reactive flows', () => {
         publicRackWithId: jasmine.createSpy('GET.publicRackWithId').and.returnValue(of({data: rack()})),
         rackByPublicId: jasmine.createSpy('GET.rackByPublicId').and.returnValue(of({data: rack()})),
         moduleWithId: jasmine.createSpy('GET.moduleWithId').and.callFake((id: number) => of({
-          data: {
-            id,
-            name: `${ id } blank`,
-            hp: 8,
-            standard: {id: 0},
-            panels: [],
-            ins: [],
-            outs: [],
-            tags: [],
-          }
+          data: moduleFixture(id, `${ id } blank`, 8, 0)
         }))
       },
       storage: {
@@ -92,21 +262,22 @@ describe('RackDetailDataService reactive flows', () => {
         hasAdminRole$: jasmine.createSpy('auth.hasAdminRole$').and.returnValue(of(false))
       }
     };
-    const dialog = {
+    const dialog: TestDialog = {
       open: jasmine.createSpy('dialog.open').and.returnValue({
         afterClosed: () => of({answer: true, result: 'Renamed Rack'})
       })
     };
-    const snackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
-    const router = jasmine.createSpyObj('Router', ['navigate']);
+    const snackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
+    const router = jasmine.createSpyObj<Router>('Router', ['navigate']);
+    const analytics = jasmine.createSpyObj<AnalyticsService>('AnalyticsService', ['capture', 'identify', 'reset']);
     
     const service = new RackDetailDataService(
       snackBar,
-      {loggedUser$} as any,
-      backend as any,
-      dialog as any,
+      {loggedUser$: loggedUser$.asObservable()} as unknown as UserManagementService,
+      backend as unknown as SupabaseService,
+      dialog as unknown as MatDialog,
       router,
-      {capture: () => {}, identify: () => {}, reset: () => {}} as any
+      analytics
     );
     createdServices.push(service);
     
@@ -131,7 +302,7 @@ describe('RackDetailDataService reactive flows', () => {
         ...moduleInRack(1, 0, 0),
         module: {
           ...moduleInRack(1, 0, 0).module,
-          tags: [{tag: {name: 'VCO', type: TagType.Source}}]
+          tags: [tagEntry('VCO', TagType.Source)]
         }
       }
     ]]);
@@ -153,7 +324,7 @@ describe('RackDetailDataService reactive flows', () => {
     const {service, backend} = build();
     service.singleRackData$.next(rack({id: 7, rows: 2}));
     const placedRow = [moduleInRack(1, 0, 0)];
-    const emptyRow: any[] = [];
+    const emptyRow: RackedModule[] = [];
     const unrackedModule = moduleInRack(3, null, null);
     const unrackedRow = [unrackedModule];
     service.rowedRackedModules$.next([
@@ -228,7 +399,7 @@ describe('RackDetailDataService reactive flows', () => {
   it('summarizes function-analysis coverage and residual modules from rack rows', () => {
     const {service} = build();
     const voice = moduleInRack(1, 0, 0, 8, 0);
-    voice.module.tags = [{tag: {name: 'VCO', type: 4}, votes: 3}];
+    voice.module.tags = [tagEntry('VCO', TagType.Source, 3)];
     const unclassified = moduleInRack(2, 0, 1, 6, 0);
     let residual: string | null | undefined;
     let summary: string | undefined;
@@ -247,7 +418,7 @@ describe('RackDetailDataService reactive flows', () => {
 
   it('ignores row add/remove requests when rack data is missing', () => {
     const {service, backend} = build();
-    service.singleRackData$.next(undefined as any);
+    service.singleRackData$.next(undefined);
     service.rowedRackedModules$.next([]);
 
     service.requestAddNewRow$.next();
@@ -298,19 +469,10 @@ describe('RackDetailDataService reactive flows', () => {
 
   it('optimistically adds a picker module before backend racking id is returned', () => {
     const {service, backend} = build();
-    const addResult$ = new Subject<any>();
+    const addResult$ = new Subject<RackModuleMutationResponse>();
     backend.add.rackModule.and.returnValue(addResult$.asObservable());
     const refreshSpy = spyOn(service.updateSingleRackData$, 'next').and.callThrough();
-    const module = {
-      id: 77,
-      name: 'New module',
-      hp: 10,
-      standard: {id: 0},
-      panels: [],
-      ins: [],
-      outs: [],
-      tags: []
-    } as any;
+    const module = moduleFixture(77, 'New module', 10, 0);
     service.singleRackData$.next(rack({id: 1, rows: 1, name: 'Add Rack'}));
     service.rowedRackedModules$.next([[moduleInRack(1, 0, 0)]]);
 
@@ -341,16 +503,7 @@ describe('RackDetailDataService reactive flows', () => {
     service.singleRackData$.next(rack({id: 1, rows: 1}));
     service.rowedRackedModules$.next(originalRows);
 
-    service.addModuleToRack$.next({
-      id: 77,
-      name: 'New module',
-      hp: 10,
-      standard: {id: 0},
-      panels: [],
-      ins: [],
-      outs: [],
-      tags: []
-    } as any);
+    service.addModuleToRack$.next(moduleFixture(77, 'New module', 10, 0));
 
     expect(service.rowedRackedModules$.value).toEqual(originalRows);
     expect(SharedConstants.errorCustom).toHaveBeenCalled();
@@ -391,7 +544,7 @@ describe('RackDetailDataService reactive flows', () => {
     spyOn(SharedConstants, 'infoCustom').and.callFake(() => {});
     const {service, backend} = build();
     const rowZero = [moduleInRack(1, 0, 0)];
-    const rowOne: any[] = [];
+    const rowOne: RackedModule[] = [];
     const rowTwo = [moduleInRack(2, 2, 0)];
     service.singleRackData$.next(rack({rows: 3}));
     service.rowedRackedModules$.next([rowZero, rowOne, rowTwo]);
@@ -408,11 +561,11 @@ describe('RackDetailDataService reactive flows', () => {
     backend.update.rack.and.returnValue(throwError(() => new Error('rack update failed')));
     service.requestDuplicateRow$.next(0);
     expect(service.singleRackData$.value.rows).toBe(3);
-    expect(service.rowedRackedModules$.value.map((row: any[]) => row.map(module => module.rackingData.id))).toEqual([[1], [], [2]]);
+    expect(rowRackingIds(service.rowedRackedModules$.value)).toEqual([[1], [], [2]]);
 
     service.requestDeleteRow$.next(1);
     expect(service.singleRackData$.value.rows).toBe(3);
-    expect(service.rowedRackedModules$.value.map((row: any[]) => row.map(module => module.rackingData.id))).toEqual([[1], [], [2]]);
+    expect(rowRackingIds(service.rowedRackedModules$.value)).toEqual([[1], [], [2]]);
     expect(SharedConstants.errorCustom).toHaveBeenCalledTimes(3);
   });
   
@@ -438,7 +591,7 @@ describe('RackDetailDataService reactive flows', () => {
     const {service, backend} = build();
     service.singleRackData$.next(rack());
 
-    service.rowedRackedModules$.next([[moduleInRack(undefined as any, 0, 0, 8, 0)]]);
+    service.rowedRackedModules$.next([[moduleInRack(undefined, 0, 0, 8, 0)]]);
     service.requestRackedModuleReplaceWithBlank$.next(service.rowedRackedModules$.value[0][0]);
 
     service.rowedRackedModules$.next([[moduleInRack(2, 0, 0, 26, 1)]]);
@@ -526,7 +679,7 @@ describe('RackDetailDataService reactive flows', () => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {});
     const undoAction$ = new Subject<void>();
     const {service, backend, snackBar} = build();
-    snackBar.open.and.returnValue({onAction: () => undoAction$.asObservable()} as any);
+    snackBar.open.and.returnValue(snackBarRefWithAction(undoAction$));
     backend.update.rackedModules.and.returnValue(of({
       data: [{id: 77, moduleid: 1001, rackid: 1, row: 0, column: 0, selected_panel_id: null}]
     }));
@@ -536,12 +689,12 @@ describe('RackDetailDataService reactive flows', () => {
     service.rowedRackedModules$.next([[removedModule, remainingModule]]);
 
     service.requestRackedModuleRemoval$.next(removedModule);
-    expect(service.rowedRackedModules$.value[0].map((module: any) => module.rackingData.id)).toEqual([2]);
+    expect(rackingIds(service.rowedRackedModules$.value?.[0] ?? [])).toEqual([2]);
 
     undoAction$.next();
     undoAction$.complete();
 
-    expect(service.rowedRackedModules$.value[0].map((module: any) => module.module.id)).toEqual([1001, 1002]);
+    expect(moduleIds(service.rowedRackedModules$.value?.[0] ?? [])).toEqual([1001, 1002]);
     expect(service.rowedRackedModules$.value[0][0].rackingData.id).toBe(77);
     expect(backend.update.rackedModules).toHaveBeenCalled();
     expect(SharedConstants.successCustom).toHaveBeenCalledWith(snackBar, '"M1" restored.');
@@ -551,7 +704,7 @@ describe('RackDetailDataService reactive flows', () => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {});
     const undoAction$ = new Subject<void>();
     const {service, backend, snackBar} = build();
-    snackBar.open.and.returnValue({onAction: () => undoAction$.asObservable()} as any);
+    snackBar.open.and.returnValue(snackBarRefWithAction(undoAction$));
     backend.update.rackedModules.and.returnValue(of({
       data: [
         {id: 81, moduleid: 1001, rackid: 1, row: 0, column: 0, selected_panel_id: null},
@@ -567,8 +720,8 @@ describe('RackDetailDataService reactive flows', () => {
     undoAction$.next();
     undoAction$.complete();
 
-    expect(service.rowedRackedModules$.value[0].map((module: any) => module.module.id)).toEqual([1001, 1002]);
-    expect(service.rowedRackedModules$.value[0].map((module: any) => module.rackingData.id)).toEqual([81, 82]);
+    expect(moduleIds(service.rowedRackedModules$.value?.[0] ?? [])).toEqual([1001, 1002]);
+    expect(rackingIds(service.rowedRackedModules$.value?.[0] ?? [])).toEqual([81, 82]);
     expect(backend.update.rackedModules).toHaveBeenCalled();
     expect(SharedConstants.successCustom).toHaveBeenCalledWith(snackBar, '2 modules restored.');
   });
@@ -577,7 +730,7 @@ describe('RackDetailDataService reactive flows', () => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {});
     const undoAction$ = new Subject<void>();
     const {service, backend, snackBar} = build();
-    snackBar.open.and.returnValue({onAction: () => undoAction$.asObservable()} as any);
+    snackBar.open.and.returnValue(snackBarRefWithAction(undoAction$));
     backend.update.rackedModules.and.returnValue(of({
       data: [{id: 91, moduleid: 1001, rackid: 1, row: 0, column: 0, selected_panel_id: null}]
     }));
@@ -602,7 +755,7 @@ describe('RackDetailDataService reactive flows', () => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {});
     const undoAction$ = new Subject<void>();
     const {service, backend, snackBar} = build();
-    snackBar.open.and.returnValue({onAction: () => undoAction$.asObservable()} as any);
+    snackBar.open.and.returnValue(snackBarRefWithAction(undoAction$));
     service.singleRackData$.next(rack({rows: 3}));
     service.rowedRackedModules$.next([[moduleInRack(1, 0, 0)], [], [moduleInRack(2, 2, 0)]]);
 
@@ -623,7 +776,7 @@ describe('RackDetailDataService reactive flows', () => {
   it('ignores clear-row requests until row data is available', () => {
     const {service, backend} = build();
     service.singleRackData$.next(rack({rows: 1}));
-    service.rowedRackedModules$.next(null as any);
+    service.rowedRackedModules$.next(null);
 
     service.requestClearRow$.next(0);
 
@@ -632,7 +785,7 @@ describe('RackDetailDataService reactive flows', () => {
 
   it('clears locally duplicated modules before their backend racking ids finish syncing', () => {
     const {service, backend, snackBar} = build();
-    const optimisticModule = moduleInRack(undefined as any, 0, 0);
+    const optimisticModule = moduleInRack(undefined, 0, 0);
     service.singleRackData$.next(rack({rows: 1}));
     service.rowedRackedModules$.next([[optimisticModule]]);
 
@@ -648,7 +801,7 @@ describe('RackDetailDataService reactive flows', () => {
 
   it('removes locally duplicated modules before their backend racking ids finish syncing', () => {
     const {service, backend, snackBar} = build();
-    const optimisticModule = moduleInRack(undefined as any, 0, 0);
+    const optimisticModule = moduleInRack(undefined, 0, 0);
     optimisticModule.module.name = 'Duplicated';
     const stableModule = moduleInRack(2, 0, 1);
     service.singleRackData$.next(rack({rows: 1}));
@@ -657,7 +810,7 @@ describe('RackDetailDataService reactive flows', () => {
     service.requestRackedModuleRemoval$.next(optimisticModule);
 
     expect(backend.delete.rackedModule).not.toHaveBeenCalled();
-    expect(service.rowedRackedModules$.value[0].map((module: any) => module.rackingData.id)).toEqual([2]);
+    expect(rackingIds(service.rowedRackedModules$.value?.[0] ?? [])).toEqual([2]);
     expect(snackBar.open).toHaveBeenCalledWith('"Duplicated" removed from rack.', 'Undo', {
       duration: 5000,
       panelClass: 'snack-success'
@@ -666,7 +819,7 @@ describe('RackDetailDataService reactive flows', () => {
 
   it('deletes a late backend insert when a duplicated row is cleared before persistence returns', () => {
     const {service, backend} = build();
-    const duplicatePersist$ = new Subject<any>();
+    const duplicatePersist$ = new Subject<RackModuleMutationResponse>();
     const sourceModule = moduleInRack(1, 0, 0);
     sourceModule.rackingData.moduleid = sourceModule.module.id;
     backend.update.rackedModules.and.returnValue(duplicatePersist$.asObservable());
@@ -708,7 +861,7 @@ describe('RackDetailDataService reactive flows', () => {
     service.requestClearRow$.next(0);
 
     expect(service.rowedRackedModules$.value[0]).toBe(rowToClear);
-    expect(service.rowedRackedModules$.value[0].map((module: any) => module.rackingData.id)).toEqual([2]);
+    expect(rackingIds(service.rowedRackedModules$.value?.[0] ?? [])).toEqual([2]);
     expect(service.rowedRackedModules$.value[0][0].rackingData.column).toBe(0);
     expect(service.rowedRackedModules$.value[1]).toBe(unaffectedRow);
     expect(SharedConstants.errorCustom).toHaveBeenCalled();
@@ -734,7 +887,9 @@ describe('RackDetailDataService reactive flows', () => {
   
   it('loads rack data on updateSingleRackData$ and recalculates ownership/status', () => {
     const {service, backend} = build();
-    backend.GET.rackWithId.and.returnValue(of({data: rack({id: 22, public: false, locked: true, author: {id: 'u1'}})}));
+    backend.GET.rackWithId.and.returnValue(of({
+      data: rack({id: 22, public: false, locked: true, author: {id: 'u1', username: 'user'}})
+    }));
     
     service.updateSingleRackData$.next(22);
     
@@ -827,7 +982,7 @@ describe('RackDetailDataService reactive flows', () => {
     const unracked = moduleInRack(1, null, null);
     service.rowedRackedModules$.next([[], [unracked]]);
     service.rackOrderChange$.next({
-      event: {previousIndex: 0, currentIndex: 0} as any,
+      event: dragDropEvent(0, 0),
       newRow: 2,
       module: unracked
     });
@@ -837,7 +992,7 @@ describe('RackDetailDataService reactive flows', () => {
     const b = moduleInRack(3, 0, 1);
     service.rowedRackedModules$.next([[a, b], []]);
     service.rackOrderChange$.next({
-      event: {previousIndex: 0, currentIndex: 1} as any,
+      event: dragDropEvent(0, 1),
       newRow: 0,
       module: a
     });
@@ -853,13 +1008,13 @@ describe('RackDetailDataService reactive flows', () => {
     const syncSpy = spyOn(service.requestRackedModulesDbSync$, 'next').and.callThrough();
 
     service.rackOrderChange$.next({
-      event: {previousIndex: 0, currentIndex: 1} as any,
+      event: dragDropEvent(0, 1),
       newRow: 1,
       module: moving
     });
 
     expect(service.rowedRackedModules$.value[0]).toEqual([]);
-    expect(service.rowedRackedModules$.value[1].map((module: any) => module.rackingData.id)).toEqual([2, 1]);
+    expect(rackingIds(service.rowedRackedModules$.value?.[1] ?? [])).toEqual([2, 1]);
     expect(moving.rackingData.row).toBe(1);
     expect(moving.rackingData.column).toBe(1);
     expect(syncSpy).toHaveBeenCalled();
@@ -870,20 +1025,20 @@ describe('RackDetailDataService reactive flows', () => {
     const {service, backend} = build();
     service.singleRackData$.next(rack());
     const rows = [[moduleInRack(1, 0, 0), moduleInRack(2, 0, 1)]];
-    service.rowedRackedModules$.next(rows as any);
+    service.rowedRackedModules$.next(rows);
     const syncSpy = spyOn(service.requestRackedModulesDbSync$, 'next').and.callThrough();
     const rackRefreshSpy = spyOn(service.singleRackData$, 'next').and.callThrough();
     
     service.requestRackedModuleRemoval$.next(rows[0][0]);
     expect(backend.delete.rackedModule).toHaveBeenCalled();
     expect(rackRefreshSpy).not.toHaveBeenCalled();
-    expect(service.rowedRackedModules$.value![0].map((module: any) => module.rackingData.id)).toEqual([2]);
+    expect(rackingIds(service.rowedRackedModules$.value?.[0] ?? [])).toEqual([2]);
     
     service.requestRackedModuleDuplication$.next(rows[0][0]);
     expect(syncSpy).toHaveBeenCalled();
     
     backend.update.rackedModules.and.returnValue(throwError(() => new Error('sync fail')));
-    service.rowedRackedModules$.next([[moduleInRack(4, 0, 0)]] as any);
+    service.rowedRackedModules$.next([[moduleInRack(4, 0, 0)]]);
     service.requestRackedModulesDbSync$.next();
     expect(SharedConstants.errorCustom).toHaveBeenCalled();
   });
@@ -892,7 +1047,7 @@ describe('RackDetailDataService reactive flows', () => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {
     });
     const {service, backend, router} = build();
-    service.deleteRack$.next({id: 4, name: 'To Delete', image: 'img.jpg'} as any);
+    service.deleteRack$.next(rack({id: 4, name: 'To Delete', image: 'img.jpg'}));
     
     expect(backend.delete.modulesOfRack).toHaveBeenCalledWith(4);
     expect(backend.delete.commentsForRack).toHaveBeenCalledWith(4);
@@ -912,7 +1067,7 @@ describe('RackDetailDataService reactive flows', () => {
     }));
     const refreshSpy = spyOn(service.updateSingleRackData$, 'next').and.callThrough();
     
-    service.addModuleToRack$.next({id: 777, name: 'New Module', hp: 8, standard: {id: 0}} as any);
+    service.addModuleToRack$.next(moduleFixture(777, 'New Module', 8, 0));
     
     expect(backend.add.rackModule).toHaveBeenCalledWith(777, 50);
     expect(refreshSpy).not.toHaveBeenCalled();
@@ -925,7 +1080,7 @@ describe('RackDetailDataService reactive flows', () => {
     const {service, backend} = build();
     service.singleRackData$.next(rack({id: 50}));
     const rows = [[moduleInRack(1, 0, 0), moduleInRack(2, 0, 1)]];
-    service.rowedRackedModules$.next(rows as any);
+    service.rowedRackedModules$.next(rows);
     const refreshSpy = spyOn(service.updateSingleRackData$, 'next').and.callThrough();
 
     service.addBlankToRow$.next({rowId: 0, hp: 4});
@@ -1033,7 +1188,7 @@ describe('RackDetailDataService reactive flows', () => {
   it('shows error and blocks patch creation when rack data is not yet loaded', () => {
     spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
     const {service, backend} = build();
-    service.singleRackData$.next(undefined as any);
+    service.singleRackData$.next(undefined);
     service.isCurrentRackPropertyOfCurrentUser$.next(true);
 
     service.requestCreatePatchFromRack$.next();
@@ -1065,7 +1220,7 @@ describe('RackDetailDataService reactive flows', () => {
     const {service, backend, router} = build();
     service.singleRackData$.next(rack({id: 10, name: 'Image Rack', image: 'rack-preview.jpg'}));
 
-    service.deleteRack$.next(service.singleRackData$.value as any);
+    service.deleteRack$.next(service.singleRackData$.value as RackMinimal);
 
     expect(backend.storage.deleteRackImage).toHaveBeenCalledWith('rack-preview.jpg');
     expect(backend.delete.userRack).toHaveBeenCalledWith(10);
@@ -1076,7 +1231,7 @@ describe('RackDetailDataService reactive flows', () => {
     const {service} = build();
     service.rackStatistics$.next([{name: 'HP used', value: '42'}]);
 
-    service.singleRackData$.next(undefined as any);
+    service.singleRackData$.next(undefined);
 
     expect(service.rackStatistics$.value).toBeNull();
   });
@@ -1084,7 +1239,7 @@ describe('RackDetailDataService reactive flows', () => {
   it('detects ownership correctly when user matches rack author', () => {
     const {service, loggedUser$} = build();
     service.singleRackData$.next(rack({id: 1, author: {id: 'user-owner', username: 'owner'}}));
-    loggedUser$.next({id: 'user-owner'} as any);
+    loggedUser$.next(simpleUser('user-owner'));
 
     expect(service.isCurrentRackPropertyOfCurrentUser$.value).toBeTrue();
   });
@@ -1092,7 +1247,7 @@ describe('RackDetailDataService reactive flows', () => {
   it('detects non-ownership when user id does not match rack author', () => {
     const {service, loggedUser$} = build();
     service.singleRackData$.next(rack({id: 1, author: {id: 'user-owner', username: 'owner'}}));
-    loggedUser$.next({id: 'different-user'} as any);
+    loggedUser$.next(simpleUser('different-user'));
 
     expect(service.isCurrentRackPropertyOfCurrentUser$.value).toBeFalse();
   });
