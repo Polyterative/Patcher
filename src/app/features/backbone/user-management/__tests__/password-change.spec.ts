@@ -9,6 +9,8 @@ import {
 } from '../user-management.component';
 import {
   cleanupComponentTest,
+  MockUserManagementService,
+  PasswordChangeAction,
   setupComponentTest
 } from './test-setup';
 
@@ -21,7 +23,7 @@ import {
  */
 describe('UserManagementComponent - Password Change', () => {
   let component: UserManagementComponent;
-  let mockUserManagementService: any;
+  let mockUserManagementService: MockUserManagementService;
   
   beforeEach(() => {
     const setup = setupComponentTest();
@@ -143,8 +145,8 @@ describe('UserManagementComponent - Password Change', () => {
       component.passwordForm.get('newPassword')!.setValue('SecurePass1!');
       component.passwordForm.get('confirmPassword')!.setValue('SecurePass1!');
       
-      let emittedValue: any;
-      mockUserManagementService.changePassword$.subscribe((v: any) => emittedValue = v);
+      let emittedValue: PasswordChangeAction | undefined;
+      mockUserManagementService.changePassword$.subscribe(v => emittedValue = v);
       
       component.submitPasswordChange();
       tick();

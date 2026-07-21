@@ -1,14 +1,39 @@
+import { TestBed } from '@angular/core/testing';
 import { FormControl, FormGroup } from '@angular/forms';
 import {
   confirmMatchesNewValidator,
   UserManagementComponent
 } from './user-management.component';
+import { SeoSocialShareData } from '../../../models/seo.model';
+import { UserManagementService } from '../login/user-management.service';
+import { SeoAndUtilsService } from '../seo-and-utils.service';
 import {
   of,
+  Subject,
   throwError
 } from 'rxjs';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
+
+type UserManagementComponentServiceMock =
+  Pick<UserManagementService,
+    | 'changePassword$'
+    | 'updateUsernameAction$'
+    | 'toggleUsernameForm$'
+    | 'isUsernameAvailable$'
+  >
+  & {
+  changePassword$: { next: jasmine.Spy<(value: { newPassword: string }) => void> };
+  updateUsernameAction$: { next: jasmine.Spy<(username: string) => void> };
+  toggleUsernameForm$: { next: jasmine.Spy<(show: boolean) => void> };
+  isUsernameAvailable$: jasmine.Spy<(username: string) => ReturnType<UserManagementService['isUsernameAvailable$']>>;
+};
+
+type SeoAndUtilsServiceMock =
+  Pick<SeoAndUtilsService, 'updateSeo'>
+  & {
+  updateSeo: jasmine.Spy<(data: SeoSocialShareData, appArea: string) => void>;
+};
 
 function makeGroup(newPassword: string, confirmPassword: string) {
   return new FormGroup({
@@ -17,24 +42,39 @@ function makeGroup(newPassword: string, confirmPassword: string) {
   });
 }
 
-function makeUserManagementMock() {
-  return {
-    changePassword$: { next: jasmine.createSpy('next') },
-    updateUsernameAction$: { next: jasmine.createSpy('next') },
-    toggleUsernameForm$: { next: jasmine.createSpy('next') },
-    isUsernameAvailable$: jasmine.createSpy('isUsernameAvailable$').and.returnValue(of(true))
-  } as any;
+function subjectWithNextSpy<T>(subject: Subject<T>): Subject<T> & { next: jasmine.Spy<(value: T) => void> } {
+  const next = spyOn(subject, 'next');
+  return Object.assign(subject, { next });
 }
 
-function makeSeoMock() {
-  return { updateSeo: jasmine.createSpy('updateSeo') } as any;
+function makeUserManagementMock(): UserManagementComponentServiceMock {
+  return {
+    changePassword$: subjectWithNextSpy(new Subject<{ newPassword: string }>()),
+    updateUsernameAction$: subjectWithNextSpy(new Subject<string>()),
+    toggleUsernameForm$: subjectWithNextSpy(new Subject<boolean>()),
+    isUsernameAvailable$: jasmine.createSpy('isUsernameAvailable$').and.returnValue(of(true))
+  };
+}
+
+function makeSeoMock(): SeoAndUtilsServiceMock {
+  return {
+    updateSeo: jasmine.createSpy<(data: SeoSocialShareData, appArea: string) => void>('updateSeo')
+  };
 }
 
 function makeComp(
   userMgmt = makeUserManagementMock(),
   seo = makeSeoMock()
 ): UserManagementComponent {
-  return new UserManagementComponent(userMgmt, seo);
+  TestBed.resetTestingModule();
+  TestBed.configureTestingModule({
+    providers: [
+      UserManagementComponent,
+      {provide: UserManagementService, useValue: userMgmt},
+      {provide: SeoAndUtilsService, useValue: seo}
+    ]
+  });
+  return TestBed.inject(UserManagementComponent);
 }
 
 // ─── confirmMatchesNewValidator ───────────────────────────────────────────────

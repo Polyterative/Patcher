@@ -6,8 +6,13 @@ import {
   cleanupComponentTest,
   MOCK_RICH_USER,
   MOCK_SIMPLE_USER,
+  MockUserManagementService,
   setupComponentTest
 } from './test-setup';
+import {
+  RichUserModel,
+  SimpleUserModel
+} from '../../../backend/supabase.types';
 import { UserManagementComponent } from '../user-management.component';
 
 
@@ -20,7 +25,7 @@ import { UserManagementComponent } from '../user-management.component';
  */
 describe('UserManagementComponent - Observable State', () => {
   let component: UserManagementComponent;
-  let mockUserManagementService: any;
+  let mockUserManagementService: MockUserManagementService;
   
   beforeEach(() => {
     const setup = setupComponentTest();
@@ -34,14 +39,14 @@ describe('UserManagementComponent - Observable State', () => {
   
   describe('loggedUser$ stream', () => {
     it('should initially emit undefined', fakeAsync(() => {
-      let value: any = 'NOT_SET';
+      let value: SimpleUserModel | undefined | 'NOT_SET' = 'NOT_SET';
       component.userManagementService.loggedUser$.subscribe(v => (value = v));
       tick();
       expect(value).toBeUndefined();
     }));
     
     it('should reflect a logged-in user when service pushes one', fakeAsync(() => {
-      let value: any;
+      let value: SimpleUserModel | undefined;
       component.userManagementService.loggedUser$.subscribe(v => (value = v));
       
       mockUserManagementService._loggedUser$.next(MOCK_SIMPLE_USER);
@@ -51,7 +56,7 @@ describe('UserManagementComponent - Observable State', () => {
     }));
     
     it('should reflect undefined after user logs out', fakeAsync(() => {
-      let value: any;
+      let value: SimpleUserModel | undefined;
       component.userManagementService.loggedUser$.subscribe(v => (value = v));
       
       mockUserManagementService._loggedUser$.next(MOCK_SIMPLE_USER);
@@ -67,14 +72,14 @@ describe('UserManagementComponent - Observable State', () => {
   
   describe('loggedUserFullProfile$ stream', () => {
     it('should initially emit undefined', fakeAsync(() => {
-      let value: any = 'NOT_SET';
+      let value: RichUserModel | undefined | 'NOT_SET' = 'NOT_SET';
       component.userManagementService.loggedUserFullProfile$.subscribe(v => (value = v));
       tick();
       expect(value).toBeUndefined();
     }));
     
     it('should reflect the full user profile when service pushes one', fakeAsync(() => {
-      let value: any;
+      let value: RichUserModel | undefined;
       component.userManagementService.loggedUserFullProfile$.subscribe(v => (value = v));
       
       mockUserManagementService._loggedUserFullProfile$.next(MOCK_RICH_USER);
@@ -88,7 +93,7 @@ describe('UserManagementComponent - Observable State', () => {
     
     it('should emit the updated profile after a username change', fakeAsync(() => {
       const updatedProfile = {...MOCK_RICH_USER, username: 'renameduser'};
-      let value: any;
+      let value: RichUserModel | undefined;
       component.userManagementService.loggedUserFullProfile$.subscribe(v => (value = v));
       
       mockUserManagementService._loggedUserFullProfile$.next(MOCK_RICH_USER);
