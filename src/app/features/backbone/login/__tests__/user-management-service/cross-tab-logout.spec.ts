@@ -5,6 +5,10 @@ import {
   setupUserManagementServiceTest
 } from './test-setup';
 import { UserManagementService } from '../../user-management.service';
+import {
+  RichUserModel,
+  SimpleUserModel
+} from '../../../../backend/supabase.types';
 import { of } from 'rxjs';
 import {
   fakeAsync,
@@ -18,13 +22,29 @@ import {
  * Tests for cross-tab logout functionality using Supabase auth state changes.
  */
 describe('UserManagementService - Cross-Tab Logout', () => {
+  type UserManagementServiceTestSetup = ReturnType<typeof setupUserManagementServiceTest>;
+  type UserManagementServiceStateHarness = {
+    _loggedUser$: {
+      next: (user: SimpleUserModel | undefined) => void;
+    };
+    _loggedUserFullProfile$: {
+      next: (profile: RichUserModel | undefined) => void;
+    };
+  };
+
   let service: UserManagementService;
-  let mockRouter: any;
-  let mockSupabaseService: any;
+  let serviceState: UserManagementServiceStateHarness;
+  let mockRouter: UserManagementServiceTestSetup['mockRouter'];
+  let mockSupabaseService: UserManagementServiceTestSetup['mockSupabaseService'];
+
+  function setRouterUrl(url: string): void {
+    Object.defineProperty(mockRouter, 'url', {value: url, writable: true, configurable: true});
+  }
   
   beforeEach(() => {
     const setup = setupUserManagementServiceTest();
     service = setup.service;
+    serviceState = service as unknown as UserManagementServiceStateHarness;
     mockRouter = setup.mockRouter;
     mockSupabaseService = setup.mockSupabaseService;
     
@@ -39,11 +59,11 @@ describe('UserManagementService - Cross-Tab Logout', () => {
   
   it('should clear user state when logout$ event is emitted', fakeAsync(() => {
     // Arrange: Set up logged in user
-    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
-    (service as any)._loggedUserFullProfile$.next(MOCK_RICH_USER);
+    serviceState._loggedUser$.next(MOCK_SIMPLE_USER);
+    serviceState._loggedUserFullProfile$.next(MOCK_RICH_USER);
     
-    let loggedUser: any;
-    let loggedUserFullProfile: any;
+    let loggedUser: SimpleUserModel | undefined;
+    let loggedUserFullProfile: RichUserModel | undefined;
     
     service.loggedUser$.subscribe(user => loggedUser = user);
     service.loggedUserFullProfile$.subscribe(profile => loggedUserFullProfile = profile);
@@ -66,8 +86,8 @@ describe('UserManagementService - Cross-Tab Logout', () => {
   
   it('should navigate to login page when logout$ event is emitted', fakeAsync(() => {
     // Arrange: User is on home page
-    mockRouter.url = '/home';
-    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
+    setRouterUrl('/home');
+    serviceState._loggedUser$.next(MOCK_SIMPLE_USER);
     
     tick();
     
@@ -82,8 +102,8 @@ describe('UserManagementService - Cross-Tab Logout', () => {
   
   it('should NOT navigate when logout$ event is emitted if already on login page', fakeAsync(() => {
     // Arrange: User is already on login page
-    Object.defineProperty(mockRouter, 'url', {value: '/auth/login', writable: true});
-    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
+    setRouterUrl('/auth/login');
+    serviceState._loggedUser$.next(MOCK_SIMPLE_USER);
     
     mockRouter.navigate.calls.reset();
     
@@ -100,8 +120,8 @@ describe('UserManagementService - Cross-Tab Logout', () => {
   
   it('should NOT navigate when logout$ event is emitted if on login subpage', fakeAsync(() => {
     // Arrange: User is on a login-related page
-    Object.defineProperty(mockRouter, 'url', {value: '/auth/login/forgot-password', writable: true});
-    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
+    setRouterUrl('/auth/login/forgot-password');
+    serviceState._loggedUser$.next(MOCK_SIMPLE_USER);
     
     mockRouter.navigate.calls.reset();
     
@@ -118,11 +138,11 @@ describe('UserManagementService - Cross-Tab Logout', () => {
   
   it('should clear user state but not navigate when on login page', fakeAsync(() => {
     // Arrange
-    Object.defineProperty(mockRouter, 'url', {value: '/auth/login', writable: true});
-    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
-    (service as any)._loggedUserFullProfile$.next(MOCK_RICH_USER);
+    setRouterUrl('/auth/login');
+    serviceState._loggedUser$.next(MOCK_SIMPLE_USER);
+    serviceState._loggedUserFullProfile$.next(MOCK_RICH_USER);
     
-    let loggedUser: any;
+    let loggedUser: SimpleUserModel | undefined;
     service.loggedUser$.subscribe(user => loggedUser = user);
     
     mockRouter.navigate.calls.reset();
@@ -141,8 +161,8 @@ describe('UserManagementService - Cross-Tab Logout', () => {
   
   it('should handle multiple logout events gracefully', fakeAsync(() => {
     // Arrange
-    Object.defineProperty(mockRouter, 'url', {value: '/home', writable: true, configurable: true});
-    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
+    setRouterUrl('/home');
+    serviceState._loggedUser$.next(MOCK_SIMPLE_USER);
     
     tick();
     
@@ -152,7 +172,7 @@ describe('UserManagementService - Cross-Tab Logout', () => {
     
     // After first logout, router.url would be /auth/login in real scenario
     // Simulate that by changing the url
-    Object.defineProperty(mockRouter, 'url', {value: '/auth/login', writable: true, configurable: true});
+    setRouterUrl('/auth/login');
     
     // Second logout event
     mockSupabaseService.user.logout$.emit();
