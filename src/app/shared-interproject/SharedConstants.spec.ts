@@ -1,4 +1,9 @@
 import {
+  MatSnackBar,
+  MatSnackBarRef,
+  TextOnlySnackBar
+} from '@angular/material/snack-bar';
+import {
   EMPTY,
   throwError
 } from 'rxjs';
@@ -6,44 +11,41 @@ import { SharedConstants } from './SharedConstants';
 
 
 describe('SharedConstants', () => {
-  let snackBar: {
-    open: jasmine.Spy
-  };
+  let snackBar: jasmine.SpyObj<MatSnackBar>;
   
   beforeEach(() => {
-    snackBar = {
-      open: jasmine.createSpy('open').and.returnValue({
-        onAction: () => EMPTY
-      })
-    };
+    const snackBarRef = jasmine.createSpyObj<MatSnackBarRef<TextOnlySnackBar>>('MatSnackBarRef', ['onAction']);
+    snackBarRef.onAction.and.returnValue(EMPTY);
+    snackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
+    snackBar.open.and.returnValue(snackBarRef);
   });
   
   it('opens expected success/info snack messages', () => {
-    SharedConstants.confirmMail(snackBar as any);
-    SharedConstants.successSignup(snackBar as any);
-    SharedConstants.showSuccessUpdate(snackBar as any);
-    SharedConstants.successCustom(snackBar as any, 'ok');
-    SharedConstants.successDelete(snackBar as any);
-    SharedConstants.successSave(snackBar as any);
-    SharedConstants.successSaveShort(snackBar as any);
-    SharedConstants.successLogin(snackBar as any);
-    SharedConstants.successLogout(snackBar as any);
+    SharedConstants.confirmMail(snackBar);
+    SharedConstants.successSignup(snackBar);
+    SharedConstants.showSuccessUpdate(snackBar);
+    SharedConstants.successCustom(snackBar, 'ok');
+    SharedConstants.successDelete(snackBar);
+    SharedConstants.successSave(snackBar);
+    SharedConstants.successSaveShort(snackBar);
+    SharedConstants.successLogin(snackBar);
+    SharedConstants.successLogout(snackBar);
     
     expect(snackBar.open).toHaveBeenCalledTimes(9);
     expect(snackBar.open).toHaveBeenCalledWith('ok', undefined, {duration: 4000, panelClass: 'snack-success'});
   });
   
   it('uses fallback message for successCustom and errorCustom', () => {
-    SharedConstants.successCustom(snackBar as any);
-    SharedConstants.errorCustom(snackBar as any);
+    SharedConstants.successCustom(snackBar);
+    SharedConstants.errorCustom(snackBar);
     
     expect(snackBar.open).toHaveBeenCalledWith('Done.', undefined, {duration: 4000, panelClass: 'snack-success'});
     expect(snackBar.open).toHaveBeenCalledWith(SharedConstants.messages.operationFailed, undefined, {duration: 5000, panelClass: 'snack-error'});
   });
   
   it('opens expected auth error messages', () => {
-    SharedConstants.errorSignup(snackBar as any, 'reason');
-    SharedConstants.errorLogin(snackBar as any);
+    SharedConstants.errorSignup(snackBar, 'reason');
+    SharedConstants.errorLogin(snackBar);
     
     expect(snackBar.open).toHaveBeenCalledWith(
       jasmine.stringContaining('reason'),
@@ -59,7 +61,7 @@ describe('SharedConstants', () => {
   
   it('errorHandlerSignup catches and reports error', (done) => {
     throwError(() => new Error('x'))
-      .pipe(SharedConstants.errorHandlerSignup(snackBar as any, 'extra'))
+      .pipe(SharedConstants.errorHandlerSignup(snackBar, 'extra'))
       .subscribe({
         next: () => fail('should not emit values'),
         complete: () => {
@@ -75,7 +77,7 @@ describe('SharedConstants', () => {
   
   it('errorHandlerLogin catches and reports error', (done) => {
     throwError(() => new Error('x'))
-      .pipe(SharedConstants.errorHandlerLogin(snackBar as any))
+      .pipe(SharedConstants.errorHandlerLogin(snackBar))
       .subscribe({
         next: () => fail('should not emit values'),
         complete: () => {
@@ -91,7 +93,7 @@ describe('SharedConstants', () => {
   
   it('errorHandlerData catches and reports error', (done) => {
     throwError(() => new Error('x'))
-      .pipe(SharedConstants.errorHandlerData(snackBar as any))
+      .pipe(SharedConstants.errorHandlerData(snackBar))
       .subscribe({
         next: () => fail('should not emit values'),
         complete: () => {
@@ -107,7 +109,7 @@ describe('SharedConstants', () => {
   
   it('errorHandlerOperation catches and reports error', (done) => {
     throwError(() => new Error('x'))
-      .pipe(SharedConstants.errorHandlerOperation(snackBar as any))
+      .pipe(SharedConstants.errorHandlerOperation(snackBar))
       .subscribe({
         next: () => fail('should not emit values'),
         complete: () => {
@@ -123,6 +125,6 @@ describe('SharedConstants', () => {
   
   it('exports fade-in animation config', () => {
     expect(SharedConstants).toBeTruthy();
-    expect((SharedConstants as any).messages).toBeDefined();
+    expect(SharedConstants.messages).toBeDefined();
   });
 });
