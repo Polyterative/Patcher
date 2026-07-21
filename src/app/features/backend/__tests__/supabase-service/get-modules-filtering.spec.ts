@@ -6,26 +6,170 @@ import {
 } from './test-setup';
 
 
+interface ModuleListingRow {
+  id: number;
+  name: string;
+  description?: string;
+}
+
+interface ModuleListingResult {
+  data: ModuleListingRow[];
+  count: number;
+  error: null;
+}
+
+interface ModuleFetchAllRowsResult {
+  data: ModuleListingRow[];
+  error: null;
+}
+
+type QueryFilterValue = boolean | number | string | null;
+
+interface OrderOptions {
+  ascending: boolean;
+  foreignTable?: string;
+}
+
+interface SelectOptions {
+  count?: 'exact';
+}
+
+interface ForeignTableOptions {
+  foreignTable?: string;
+}
+
+type ModuleFetchAllRowsBuilder = (query: ModuleQueryDouble) => ModuleQueryDouble;
+
 // getModules can still use ilike in some branches, so we keep it in the mock
-function chainableWithIlike(resolveValue: any = {data: [], count: 0, error: null}) {
-  const m: any = {};
-  ['select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit', 'single', 'or',
-    'insert', 'update', 'delete', 'upsert', 'ilike'].forEach(method => {
-    m[method] = () => m;
-  });
-  m.then = (res: Function, rej?: Function) =>
-    Promise.resolve(resolveValue).then(res as any, rej as any);
-  return m;
+class ModuleQueryDouble implements PromiseLike<ModuleListingResult> {
+  constructor(private readonly resolveValue: ModuleListingResult = {data: [], count: 0, error: null}) {}
+
+  select(_columns: string, _options?: SelectOptions): this {
+    return this;
+  }
+
+  filter(_column: string, _operator: string, _value: QueryFilterValue): this {
+    return this;
+  }
+
+  eq(_column: string, _value: QueryFilterValue): this {
+    return this;
+  }
+
+  neq(_column: string, _value: QueryFilterValue): this {
+    return this;
+  }
+
+  is(_column: string, _value: QueryFilterValue): this {
+    return this;
+  }
+
+  in(_column: string, _values: readonly QueryFilterValue[]): this {
+    return this;
+  }
+
+  range(_from: number, _to: number): this {
+    return this;
+  }
+
+  order(_column: string, _options: OrderOptions): this {
+    return this;
+  }
+
+  limit(_count: number, _options?: ForeignTableOptions): this {
+    return this;
+  }
+
+  single(): this {
+    return this;
+  }
+
+  or(_filters: string): this {
+    return this;
+  }
+
+  insert(_values: readonly Record<string, unknown>[]): this {
+    return this;
+  }
+
+  update(_values: Record<string, unknown>): this {
+    return this;
+  }
+
+  delete(): this {
+    return this;
+  }
+
+  upsert(_values: readonly Record<string, unknown>[]): this {
+    return this;
+  }
+
+  ilike(_column: string, _pattern: string): this {
+    return this;
+  }
+
+  then<TResult1 = ModuleListingResult, TResult2 = never>(
+    onfulfilled?: ((value: ModuleListingResult) => TResult1 | PromiseLike<TResult1>) | null,
+    onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+  ): PromiseLike<TResult1 | TResult2> {
+    return Promise.resolve(this.resolveValue).then(onfulfilled, onrejected);
+  }
+}
+
+interface SupabaseClientDouble {
+  from(table: string): ModuleQueryDouble;
+}
+
+interface ModuleQueriesDouble {
+  fetchAllRows(table: string, buildQuery: ModuleFetchAllRowsBuilder): Promise<ModuleFetchAllRowsResult>;
+}
+
+function chainableWithIlike(resolveValue: ModuleListingResult = {data: [], count: 0, error: null}): ModuleQueryDouble {
+  return new ModuleQueryDouble(resolveValue);
+}
+
+function isSupabaseClientDouble(value: unknown): value is SupabaseClientDouble {
+  if (typeof value !== 'object' || value === null || !('from' in value)) {
+    return false;
+  }
+
+  return typeof value.from === 'function';
+}
+
+function getSupabaseClientDouble(service: SupabaseService): SupabaseClientDouble {
+  const client = Reflect.get(service, 'supabase');
+  if (!isSupabaseClientDouble(client)) {
+    throw new Error('Supabase test setup did not expose a chainable client double.');
+  }
+
+  return client;
+}
+
+function isModuleQueriesDouble(value: unknown): value is ModuleQueriesDouble {
+  if (typeof value !== 'object' || value === null || !('fetchAllRows' in value)) {
+    return false;
+  }
+
+  return typeof value.fetchAllRows === 'function';
+}
+
+function getModuleQueriesDouble(service: SupabaseService): ModuleQueriesDouble {
+  const queries = Reflect.get(service, 'queries');
+  if (!isModuleQueriesDouble(queries)) {
+    throw new Error('Supabase test setup did not expose module query helpers.');
+  }
+
+  return queries;
 }
 
 describe('SupabaseService - GET.modules filtering', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: SupabaseClientDouble;
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = getSupabaseClientDouble(service);
   });
   
   afterEach(() => {
@@ -37,7 +181,7 @@ describe('SupabaseService - GET.modules filtering', () => {
     spyOn(supabaseClient, 'from').and.returnValue(chainableWithIlike(mockData));
     
     service.GET.modules().subscribe({
-      next: (result: any) => {
+      next: (result: ModuleListingResult) => {
         expect(result).toBeDefined();
         done();
       },
@@ -58,7 +202,7 @@ describe('SupabaseService - GET.modules filtering', () => {
     const orSpy = spyOn(mock, 'or').and.returnValue(mock);
     const limitSpy = spyOn(mock, 'limit').and.returnValue(mock);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
-    const fetchAllRowsSpy = spyOn((service as any).queries as any, 'fetchAllRows').and.callThrough();
+    const fetchAllRowsSpy = spyOn(getModuleQueriesDouble(service), 'fetchAllRows').and.callThrough();
 
     service.GET.searchPublicModulesForCollection('modest').subscribe({
       next: (result) => {
@@ -222,7 +366,7 @@ describe('SupabaseService - GET.modules filtering', () => {
       next: () => {
         // Should not have called filter('public', 'eq', true)
         const publicFilterCall = filterSpy.calls.all()
-          .find((call: any) => call.args[0] === 'public' && call.args[1] === 'eq');
+          .find((call) => call.args[0] === 'public' && call.args[1] === 'eq');
         expect(publicFilterCall).toBeUndefined();
         done();
       },
@@ -245,7 +389,7 @@ describe('SupabaseService - GET.modules filtering', () => {
     spyOn(supabaseClient, 'from').and.returnValue(chainableWithIlike(mockData));
     
     service.GET.modules(0, 10, undefined, undefined, undefined, undefined, undefined, undefined, undefined, 'oscillator').subscribe({
-      next: (result: any) => {
+      next: (result: ModuleListingResult) => {
         expect(result.count).toBe(1);
         expect(result.data[0].name).toBe('VCO');
         done();
@@ -279,13 +423,13 @@ describe('SupabaseService - GET.modules filtering', () => {
   }, TEST_TIMEOUT);
 
   it('falls back to the broad client-side scan when narrowed ilike results are empty', (done) => {
-    const queries = (service as any).queries;
+    const queries = getModuleQueriesDouble(service);
     spyOn(supabaseClient, 'from').and.returnValue(chainableWithIlike({
       data: [{id: 1, name: 'Lùbadh', description: 'Dual looper'}],
       count: 1,
       error: null
     }));
-    const fetchAllRowsSpy = spyOn(queries as any, 'fetchAllRows').and.returnValues(
+    const fetchAllRowsSpy = spyOn(queries, 'fetchAllRows').and.returnValues(
       Promise.resolve({data: [], error: null}),
       Promise.resolve({
         data: [
@@ -297,7 +441,7 @@ describe('SupabaseService - GET.modules filtering', () => {
     );
 
     service.GET.modules(0, 10, 'Lubadh').subscribe({
-      next: (result: any) => {
+      next: (result: ModuleListingResult) => {
         expect(fetchAllRowsSpy.calls.count()).toBe(2);
         expect(result.count).toBe(1);
         expect(result.data[0].name).toBe('Lùbadh');
@@ -311,8 +455,8 @@ describe('SupabaseService - GET.modules filtering', () => {
   }, TEST_TIMEOUT);
 
   it('returns an empty result when neither narrowed nor fallback matching finds a module', (done) => {
-    const queries = (service as any).queries;
-    spyOn(queries as any, 'fetchAllRows').and.returnValues(
+    const queries = getModuleQueriesDouble(service);
+    spyOn(queries, 'fetchAllRows').and.returnValues(
       Promise.resolve({data: [], error: null}),
       Promise.resolve({
         data: [
@@ -324,7 +468,7 @@ describe('SupabaseService - GET.modules filtering', () => {
     );
 
     service.GET.modules(0, 10, 'zzqxv').subscribe({
-      next: (result: any) => {
+      next: (result: ModuleListingResult) => {
         expect(result.count).toBe(0);
         expect(result.data).toEqual([]);
         done();
@@ -362,7 +506,7 @@ describe('SupabaseService - GET.modules filtering', () => {
     service.GET.modules(0, 10, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true, undefined).subscribe({
       next: () => {
         const tagFilterCall = filterSpy.calls.all()
-          .find((call: any) => call.args[0] === 'module_tags.tagid');
+          .find((call) => call.args[0] === 'module_tags.tagid');
         expect(tagFilterCall).toBeUndefined();
         done();
       },
@@ -381,7 +525,7 @@ describe('SupabaseService - GET.modules filtering', () => {
     service.GET.modules(0, 10, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true, []).subscribe({
       next: () => {
         const tagFilterCall = filterSpy.calls.all()
-          .find((call: any) => call.args[0] === 'module_tags.tagid');
+          .find((call) => call.args[0] === 'module_tags.tagid');
         expect(tagFilterCall).toBeUndefined();
         done();
       },
@@ -404,9 +548,9 @@ describe('SupabaseService - GET.modules filtering', () => {
     spyOn(supabaseClient, 'from').and.returnValue(chainableWithIlike(mockData));
 
     service.GET.modules(0, 10, 'Lubadh').subscribe({
-      next: (result: any) => {
+      next: (result: ModuleListingResult) => {
         expect(result.count).toBe(1);
-        expect(result.data.map((module: any) => module.name)).toEqual(['Lùbadh']);
+        expect(result.data.map((module) => module.name)).toEqual(['Lùbadh']);
         done();
       },
       error: (err) => {
@@ -428,7 +572,7 @@ describe('SupabaseService - GET.modules filtering', () => {
     spyOn(supabaseClient, 'from').and.returnValue(chainableWithIlike(mockData));
 
     service.GET.modules(0, 10, undefined, undefined, undefined, undefined, undefined, undefined, undefined, 'looper').subscribe({
-      next: (result: any) => {
+      next: (result: ModuleListingResult) => {
         expect(result.count).toBe(1);
         expect(result.data[0].name).toBe('Lùbadh');
         done();
