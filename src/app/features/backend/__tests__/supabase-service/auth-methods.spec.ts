@@ -2,6 +2,7 @@ import {
   SimpleUserModel,
   SupabaseService
 } from '../../supabase.service';
+import { CachedEntity } from '../../supabase.cache';
 import {
   fakeAsync,
   tick
@@ -11,24 +12,41 @@ import {
   setupSupabaseServiceTest,
   TEST_TIMEOUT
 } from './test-setup';
+import {
+  AuthSessionSubjectDouble,
+  AuthSessionUserFixture,
+  authSessionFixture,
+  chainable,
+  getAuthSessionSubjectDouble,
+  getSupabaseClientDouble,
+  SupabaseClientDouble
+} from './supabase-query-test-doubles';
 
 
-type AuthSessionTestHarness = {
-  authSession$: {
-    next: (session: {user: unknown} | null) => void;
+function authSessionUserFixture(
+  id: string,
+  email: string,
+  appMetadata?: Record<string, unknown>
+): AuthSessionUserFixture {
+  return {
+    id,
+    email,
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-06-01T00:00:00Z',
+    ...(appMetadata ? {app_metadata: appMetadata} : {})
   };
-};
+}
 
 describe('SupabaseService - auth methods', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
-  let authSession$: AuthSessionTestHarness['authSession$'];
+  let supabaseClient: SupabaseClientDouble;
+  let authSession$: AuthSessionSubjectDouble;
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
-    authSession$ = (service as unknown as AuthSessionTestHarness).authSession$;
+    supabaseClient = getSupabaseClientDouble(service);
+    authSession$ = getAuthSessionSubjectDouble(service);
   });
   
   afterEach(() => {
@@ -54,14 +72,7 @@ describe('SupabaseService - auth methods', () => {
     }));
 
     it('should wait through an initial null auth event for a restored session', fakeAsync(() => {
-      const mockSession = {
-        user: {
-          id: 'restored-user-id',
-          email: 'restored@test.com',
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2024-06-01T00:00:00Z'
-        }
-      };
+      const mockSession = authSessionFixture(authSessionUserFixture('restored-user-id', 'restored@test.com'));
       let user: SimpleUserModel | null | undefined;
 
       authSession$.next(null);
@@ -84,18 +95,11 @@ describe('SupabaseService - auth methods', () => {
     }));
     
     it('should return a SimpleUserModel when session is active', (done) => {
-      const mockSession = {
-        user: {
-          id: 'session-user-id',
-          email: 'session@test.com',
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2024-06-01T00:00:00Z'
-        }
-      };
+      const mockSession = authSessionFixture(authSessionUserFixture('session-user-id', 'session@test.com'));
       authSession$.next(mockSession);
       
       service.auth.getUserSession$().subscribe({
-        next: (user: any) => {
+        next: (user) => {
           expect(user).not.toBeNull();
           expect(user.id).toBe('session-user-id');
           expect(user.email).toBe('session@test.com');
@@ -128,26 +132,15 @@ describe('SupabaseService - auth methods', () => {
     }));
     
     it('should enrich user with username and auth_provider from session', (done) => {
-      const sessionUser = {
-        id: 'rich-user-1',
-        email: 'rich@test.com',
-        created_at: '2024-01-01T00:00:00Z',
-        updated_at: '2024-01-01T00:00:00Z',
-        app_metadata: {provider: 'google'}
-      };
-      authSession$.next({user: sessionUser});
+      const sessionUser = authSessionUserFixture('rich-user-1', 'rich@test.com', {provider: 'google'});
+      authSession$.next(authSessionFixture(sessionUser));
       
-      const profileMock: any = {};
-      ['select', 'filter'].forEach(m => {
-        profileMock[m] = () => profileMock;
-      });
-      profileMock.then = (res: Function, rej?: Function) =>
-        Promise.resolve({data: [{username: 'richuser'}], error: null}).then(res as any, rej as any);
+      const profileMock = chainable<{username: string}>({data: [{username: 'richuser'}], error: null});
       
       spyOn(supabaseClient, 'from').and.returnValue(profileMock);
       
       service.auth.getRichUserSession$().subscribe({
-        next: (user: any) => {
+        next: (user) => {
           expect(user).not.toBeNull();
           expect(user.username).toBe('richuser');
           expect(user.email).toBe('rich@test.com');
@@ -162,14 +155,8 @@ describe('SupabaseService - auth methods', () => {
     }, TEST_TIMEOUT);
 
     it('should return null when profile lookup returns no data', (done) => {
-      const sessionUser = {
-        id: 'rich-user-without-profile',
-        email: 'missing-profile@test.com',
-        created_at: '2024-01-01T00:00:00Z',
-        updated_at: '2024-01-01T00:00:00Z',
-        app_metadata: {provider: 'email'}
-      };
-      authSession$.next({user: sessionUser});
+      const sessionUser = authSessionUserFixture('rich-user-without-profile', 'missing-profile@test.com', {provider: 'email'});
+      authSession$.next(authSessionFixture(sessionUser));
 
       type ProfileLookupResponse = {
         data: null;
@@ -204,20 +191,11 @@ describe('SupabaseService - auth methods', () => {
 
   describe('hasAdminRole$', () => {
     it('reacts to session role changes without recreating the auth stream', () => {
-      const authSession$ = (service as any).authSession$;
       const emitted: boolean[] = [];
       const subscription = service.auth.hasAdminRole$().subscribe(value => emitted.push(value));
 
-      authSession$.next({
-        user: {
-          app_metadata: {role: 'admin'}
-        }
-      } as any);
-      authSession$.next({
-        user: {
-          app_metadata: {role: 'user'}
-        }
-      } as any);
+      authSession$.next(authSessionFixture(authSessionUserFixture('admin-user-id', 'admin@test.com', {role: 'admin'})));
+      authSession$.next(authSessionFixture(authSessionUserFixture('regular-user-id', 'regular@test.com', {role: 'user'})));
 
       expect(emitted.slice(-2)).toEqual([true, false]);
       subscription.unsubscribe();
@@ -281,7 +259,7 @@ describe('SupabaseService - auth methods', () => {
       );
       
       service.auth.signup$('  validuser  ', 'user@test.com', 'password123').subscribe({
-        next: (result: any) => {
+        next: (result) => {
           expect(supabaseClient.auth.signUp).toHaveBeenCalledWith({
             email: 'user@test.com',
             password: 'password123',
@@ -320,8 +298,8 @@ describe('SupabaseService - auth methods', () => {
     
     it('should burst all caches before signing out', (done) => {
       spyOn(supabaseClient.auth, 'signOut').and.returnValue(Promise.resolve({error: null}));
-      const bustedKeys: any[] = [];
-      service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
+      const bustedKeys: CachedEntity[] = [];
+      service.cacheResetter$.subscribe(keys => bustedKeys.push(...keys));
       
       service.auth.logoff$().subscribe({
         next: () => {
@@ -448,13 +426,7 @@ describe('SupabaseService - auth methods', () => {
     }, TEST_TIMEOUT);
     
     it('should call DB update with trimmed username on success', (done) => {
-      const profileMock: any = {};
-      // Chain: .update().eq().select() all return the same mock; mock resolves with one updated row
-      ['update', 'eq', 'select'].forEach(m => {
-        profileMock[m] = () => profileMock;
-      });
-      profileMock.then = (res: Function, rej?: Function) =>
-        Promise.resolve({data: [{username: 'validname'}], error: null}).then(res as any, rej as any);
+      const profileMock = chainable<{username: string}>({data: [{username: 'validname'}], error: null});
       
       spyOn(supabaseClient, 'from').and.returnValue(profileMock);
       const updateSpy = spyOn(profileMock, 'update').and.returnValue(profileMock);

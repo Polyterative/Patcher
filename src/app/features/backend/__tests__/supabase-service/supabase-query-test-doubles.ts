@@ -10,8 +10,22 @@ import type {
 
 
 type QueryFilterValue = boolean | number | string | null;
+type AuthEmailCredentials = {
+  email: string;
+  password: string;
+};
+type AuthSignupCredentials = AuthEmailCredentials & {
+  options: {
+    data: {
+      username: string;
+    };
+  };
+};
 type PasswordUpdateAttributes = {
   password: string;
+};
+type PasswordResetEmailOptions = {
+  redirectTo: string;
 };
 
 export interface PasswordResetProviderError {
@@ -24,8 +38,39 @@ export interface PasswordResetProviderError {
 }
 
 export interface PasswordUpdateResult {
-  data: null;
+  data: {
+    user: Record<string, unknown>;
+  } | null;
   error: PasswordResetProviderError | null;
+}
+
+export interface AuthSignupResult {
+  data: {
+    session: unknown | null;
+    user: SimpleUserModel | null;
+  };
+  error: PasswordResetProviderError | null;
+}
+
+export interface AuthSignOutResult {
+  error: PasswordResetProviderError | null;
+}
+
+export interface PasswordResetEmailResult {
+  data: Record<string, never>;
+  error: PasswordResetProviderError | null;
+}
+
+export type AuthSessionUserFixture = SimpleUserModel & {
+  app_metadata?: Record<string, unknown>;
+};
+
+export interface AuthSessionFixture {
+  user: AuthSessionUserFixture;
+}
+
+export interface AuthSessionSubjectDouble {
+  next(session: AuthSessionFixture | null): void;
 }
 
 interface SelectOptions {
@@ -143,6 +188,9 @@ export interface SupabaseClientDouble {
   readonly supabaseKey: string;
   readonly supabaseUrl: string;
   auth: {
+    resetPasswordForEmail(email: string, options: PasswordResetEmailOptions): Promise<PasswordResetEmailResult>;
+    signOut(options?: {scope: 'local'}): Promise<AuthSignOutResult>;
+    signUp(credentials: AuthSignupCredentials): Promise<AuthSignupResult>;
     updateUser(attributes: PasswordUpdateAttributes): Promise<PasswordUpdateResult>;
   };
   from(table: string): unknown;
@@ -161,6 +209,15 @@ export function getSupabaseClientDouble(service: SupabaseService): SupabaseClien
   return client;
 }
 
+export function getAuthSessionSubjectDouble(service: SupabaseService): AuthSessionSubjectDouble {
+  const authSession = Reflect.get(service, 'authSession$');
+  if (!isAuthSessionSubjectDouble(authSession)) {
+    throw new Error('Supabase test setup did not expose an auth session subject double.');
+  }
+
+  return authSession;
+}
+
 export function authUserFixture(id: string): SimpleUserModel {
   return {
     created_at: '2026-07-21T00:00:00Z',
@@ -168,6 +225,10 @@ export function authUserFixture(id: string): SimpleUserModel {
     id,
     updated_at: '2026-07-21T00:00:00Z'
   };
+}
+
+export function authSessionFixture(user: AuthSessionUserFixture): AuthSessionFixture {
+  return {user};
 }
 
 export function mockUserSession(
@@ -191,7 +252,16 @@ function isSupabaseClientDouble(value: unknown): value is SupabaseClientDouble {
   return typeof Reflect.get(value, 'from') === 'function'
     && typeof auth === 'object'
     && auth !== null
+    && typeof Reflect.get(auth, 'resetPasswordForEmail') === 'function'
+    && typeof Reflect.get(auth, 'signOut') === 'function'
+    && typeof Reflect.get(auth, 'signUp') === 'function'
     && typeof Reflect.get(auth, 'updateUser') === 'function'
     && typeof Reflect.get(value, 'supabaseKey') === 'string'
     && typeof Reflect.get(value, 'supabaseUrl') === 'string';
+}
+
+function isAuthSessionSubjectDouble(value: unknown): value is AuthSessionSubjectDouble {
+  return typeof value === 'object'
+    && value !== null
+    && typeof Reflect.get(value, 'next') === 'function';
 }
