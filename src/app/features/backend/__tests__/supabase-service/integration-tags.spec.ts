@@ -3,8 +3,12 @@ import {
   setupSupabaseServiceTest,
   TEST_TIMEOUT
 } from './test-setup';
+import { formatUnknownError } from './supabase-query-test-doubles';
 import { SupabaseService } from '../../supabase.service';
-import { TagType } from '../../../../models/tag';
+import {
+  Tag,
+  TagType
+} from '../../../../models/tag';
 import { environment } from 'src/environments/environment';
 
 const hasRealCredentials = !!environment.supabase.url && !environment.supabase.url.includes('placeholder');
@@ -34,15 +38,15 @@ describe('SupabaseService - getTags Integration', () => {
     const tags$ = service.GET.tags();
     
     tags$.subscribe({
-      next: (data: any) => {
+      next: (data: Tag[] | null) => {
         // getTags returns just the data array, not a response object
         expect(data).withContext('Data should be defined').toBeDefined();
         expect(Array.isArray(data)).withContext('Should return an array').toBe(true);
         
         done();
       },
-      error: (error) => {
-        fail(`Database connection failed: ${ error.message || JSON.stringify(error) }`);
+      error: (error: unknown) => {
+        fail(`Database connection failed: ${ formatUnknownError(error) }`);
         done();
       }
     });
@@ -52,7 +56,7 @@ describe('SupabaseService - getTags Integration', () => {
     const tags$ = service.GET.tags();
     
     tags$.subscribe({
-      next: (data: any) => {
+      next: (data: Tag[] | null) => {
         // getTags returns the data array directly
         if (data && data.length > 0) {
           const tag = data[0];
@@ -71,8 +75,8 @@ describe('SupabaseService - getTags Integration', () => {
         
         done();
       },
-      error: (error) => {
-        fail(`Tag validation failed: ${ error.message }`);
+      error: (error: unknown) => {
+        fail(`Tag validation failed: ${ formatUnknownError(error) }`);
         done();
       }
     });
@@ -83,13 +87,13 @@ describe('SupabaseService - getTags Integration', () => {
     const tags$ = service.GET.tags();
     
     tags$.subscribe({
-      next: (_data: any) => {
+      next: (_data: Tag[] | null) => {
         const duration = Date.now() - startTime;
         expect(duration).withContext('Query should complete within 5 seconds').toBeLessThan(5000);
         done();
       },
-      error: (error) => {
-        fail(`Performance test failed: ${ error.message }`);
+      error: (error: unknown) => {
+        fail(`Performance test failed: ${ formatUnknownError(error) }`);
         done();
       }
     });

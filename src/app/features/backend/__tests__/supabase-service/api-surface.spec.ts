@@ -5,6 +5,18 @@ import {
 import { SupabaseService } from '../../supabase.service';
 
 
+type NamespaceMethod<TNamespace extends object> = Extract<keyof TNamespace, string>;
+
+function expectNamespaceMethods<TNamespace extends object>(
+  namespace: TNamespace,
+  label: string,
+  methods: readonly NamespaceMethod<TNamespace>[]
+): void {
+  methods.forEach(method => {
+    expect(typeof namespace[method]).toBe('function', `${ label }.${ method } should be a function`);
+  });
+}
+
 /**
  * API Surface Tests
  *
@@ -53,11 +65,9 @@ describe('SupabaseService - API Surface', () => {
         'publicUserRacksPaginated',
         'activeMarketplaceListings',
         'marketplaceListingByPublicId'
-      ];
+      ] satisfies readonly NamespaceMethod<SupabaseService['GET']>[];
       
-      expectedMethods.forEach(method => {
-        expect(typeof (service.GET as any)[method]).toBe('function', `GET.${ method } should be a function`);
-      });
+      expectNamespaceMethods(service.GET, 'GET', expectedMethods);
     });
     
     it('should return observables from GET methods', () => {
@@ -91,11 +101,9 @@ describe('SupabaseService - API Surface', () => {
         'myVotes',
         'allTags',
         'publicProfileByUsername'
-      ];
+      ] satisfies readonly NamespaceMethod<SupabaseService['get']>[];
       
-      expectedMethods.forEach(method => {
-        expect(typeof (service.get as any)[method]).toBe('function', `get.${ method } should be a function`);
-      });
+      expectNamespaceMethods(service.get, 'get', expectedMethods);
     });
   });
   
@@ -120,11 +128,9 @@ describe('SupabaseService - API Surface', () => {
         'moduleOUTs',
         'rackModule',
         'moduleTagLink'
-      ];
+      ] satisfies readonly NamespaceMethod<SupabaseService['add']>[];
       
-      expectedMethods.forEach(method => {
-        expect(typeof (service.add as any)[method]).toBe('function', `add.${ method } should be a function`);
-      });
+      expectNamespaceMethods(service.add, 'add', expectedMethods);
     });
   });
   
@@ -144,11 +150,9 @@ describe('SupabaseService - API Surface', () => {
         'shippingAddress',
         'marketplaceListing',
         'marketplaceListingMediaOrder'
-      ];
+      ] satisfies readonly NamespaceMethod<SupabaseService['update']>[];
       
-      expectedMethods.forEach(method => {
-        expect(typeof (service.update as any)[method]).toBe('function', `update.${ method } should be a function`);
-      });
+      expectNamespaceMethods(service.update, 'update', expectedMethods);
     });
   });
   
@@ -169,11 +173,9 @@ describe('SupabaseService - API Surface', () => {
         'shippingAddress',
         'marketplaceListing',
         'marketplaceListingMedia'
-      ];
+      ] satisfies readonly NamespaceMethod<SupabaseService['delete']>[];
       
-      expectedMethods.forEach(method => {
-        expect(typeof (service.delete as any)[method]).toBe('function', `delete.${ method } should be a function`);
-      });
+      expectNamespaceMethods(service.delete, 'delete', expectedMethods);
     });
   });
 
@@ -188,11 +190,15 @@ describe('SupabaseService - API Surface', () => {
   describe('Authentication Methods', () => {
     it('should expose auth namespace with all authentication methods', () => {
       expect(service.auth).toBeDefined();
-      const authMethods = ['login$', 'signup$', 'logoff$', 'resetPassword$', 'getUserSession$'];
+      const authMethods = [
+        'login$',
+        'signup$',
+        'logoff$',
+        'resetPassword$',
+        'getUserSession$'
+      ] satisfies readonly NamespaceMethod<SupabaseService['auth']>[];
 
-      authMethods.forEach(method => {
-        expect(typeof (service.auth as any)[method]).toBe('function', `auth.${ method } should be a function`);
-      });
+      expectNamespaceMethods(service.auth, 'auth', authMethods);
     });
     
     it('should have user observable structure', () => {

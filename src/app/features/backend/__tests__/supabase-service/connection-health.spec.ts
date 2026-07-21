@@ -2,8 +2,11 @@ import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest
 } from './test-setup';
+import { getSupabaseClientDouble } from './supabase-query-test-doubles';
 import { SupabaseService } from '../../supabase.service';
 
+
+type GetMethod = Extract<keyof SupabaseService['GET'], string>;
 
 /**
  * Database Connection Health Tests
@@ -24,7 +27,7 @@ describe('SupabaseService - Database Connection Health', () => {
   });
   
   it('should have properly initialized Supabase client', () => {
-    const supabaseClient = (service as any).supabase;
+    const supabaseClient = getSupabaseClientDouble(service);
     
     expect(supabaseClient).withContext('Supabase client should be initialized').toBeDefined();
     expect(supabaseClient.from).withContext('Client should have from method').toBeDefined();
@@ -32,7 +35,7 @@ describe('SupabaseService - Database Connection Health', () => {
   });
   
   it('should use environment configuration correctly', () => {
-    const supabaseClient = (service as any).supabase;
+    const supabaseClient = getSupabaseClientDouble(service);
     
     expect(supabaseClient.supabaseUrl).withContext('URL should be configured').toBeDefined();
     expect(supabaseClient.supabaseKey).withContext('Key should be configured').toBeDefined();
@@ -49,8 +52,15 @@ describe('SupabaseService - Database Connection Health', () => {
   });
 
   it('GET group exposes known query methods', () => {
-    ['tags', 'modules', 'patches', 'manufacturers'].forEach(method => {
-      expect(typeof (service.GET as any)[method])
+    const methods = [
+      'tags',
+      'modules',
+      'patches',
+      'manufacturers'
+    ] satisfies readonly GetMethod[];
+
+    methods.forEach(method => {
+      expect(typeof service.GET[method])
         .withContext(`GET.${method} should be a function`)
         .toBe('function');
     });

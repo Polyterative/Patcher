@@ -4,12 +4,19 @@ import {
   setupSupabaseServiceTest,
   TEST_TIMEOUT
 } from './test-setup';
+import { formatUnknownError } from './supabase-query-test-doubles';
 import { SupabaseService } from '../../supabase.service';
 import { DBManufacturer } from '../../../../models/manufacturer';
 import { environment } from 'src/environments/environment';
+import { type PostgrestError } from '@supabase/supabase-js';
 
 const hasRealCredentials = !!environment.supabase.url && !environment.supabase.url.includes('placeholder');
 
+interface ManufacturerListResponse {
+  count: number | null;
+  data: DBManufacturer[] | null;
+  error: PostgrestError | null;
+}
 
 /**
  * Database Integration Tests - Manufacturers
@@ -36,7 +43,7 @@ describe('SupabaseService - getManufacturers Integration', () => {
     const manufacturers$ = service.GET.manufacturers(0, 10);
 
     manufacturers$.subscribe({
-      next: (response: any) => {
+      next: (response: ManufacturerListResponse) => {
         expect(response).withContext('Response should be defined').toBeDefined();
         expect(response.data).withContext('Response should have data property').toBeDefined();
         expect(Array.isArray(response.data)).withContext('Data should be an array').toBe(true);
@@ -58,8 +65,8 @@ describe('SupabaseService - getManufacturers Integration', () => {
         }
         done();
       },
-      error: (error) => {
-        fail(`Manufacturer fetch failed: ${ error.message || JSON.stringify(error) }`);
+      error: (error: unknown) => {
+        fail(`Manufacturer fetch failed: ${ formatUnknownError(error) }`);
         done();
       }
     });
@@ -71,7 +78,7 @@ describe('SupabaseService - getManufacturers Integration', () => {
     const manufacturers$ = service.GET.manufacturers(from, to);
 
     manufacturers$.subscribe({
-      next: (response: any) => {
+      next: (response: ManufacturerListResponse) => {
         if (response.data) {
           const returnedCount = response.data.length;
           const maxExpected = to - from + 1;
@@ -79,8 +86,8 @@ describe('SupabaseService - getManufacturers Integration', () => {
         }
         done();
       },
-      error: (error) => {
-        fail(`Pagination test failed: ${ error.message }`);
+      error: (error: unknown) => {
+        fail(`Pagination test failed: ${ formatUnknownError(error) }`);
         done();
       }
     });
@@ -90,12 +97,12 @@ describe('SupabaseService - getManufacturers Integration', () => {
     const manufacturers$ = service.GET.manufacturers(5, 10);
 
     manufacturers$.subscribe({
-      next: (response: any) => {
+      next: (response: ManufacturerListResponse) => {
         expect(response.data).toBeDefined();
         done();
       },
-      error: (error) => {
-        fail(`Pagination range test failed: ${ error.message }`);
+      error: (error: unknown) => {
+        fail(`Pagination range test failed: ${ formatUnknownError(error) }`);
         done();
       }
     });
@@ -105,15 +112,15 @@ describe('SupabaseService - getManufacturers Integration', () => {
     const manufacturers$ = service.GET.manufacturers(0, 0);
 
     manufacturers$.subscribe({
-      next: (response: any) => {
+      next: (response: ManufacturerListResponse) => {
         expect(response.data).toBeDefined();
         if (response.data) {
           expect(response.data.length).toBeLessThanOrEqual(1);
         }
         done();
       },
-      error: (error) => {
-        fail(`Zero-based pagination failed: ${ error.message }`);
+      error: (error: unknown) => {
+        fail(`Zero-based pagination failed: ${ formatUnknownError(error) }`);
         done();
       }
     });

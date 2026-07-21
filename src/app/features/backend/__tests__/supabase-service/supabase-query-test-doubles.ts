@@ -140,6 +140,8 @@ export class SupabaseQueryChain<Row = unknown> implements PromiseLike<QueryChain
 }
 
 export interface SupabaseClientDouble {
+  readonly supabaseKey: string;
+  readonly supabaseUrl: string;
   auth: {
     updateUser(attributes: PasswordUpdateAttributes): Promise<PasswordUpdateResult>;
   };
@@ -175,10 +177,21 @@ export function mockUserSession(
   return spyOn(service.auth, 'getUserSession$').and.returnValue(of(user));
 }
 
+export function formatUnknownError(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 function isSupabaseClientDouble(value: unknown): value is SupabaseClientDouble {
   if (typeof value !== 'object' || value === null || !('from' in value)) {
     return false;
   }
 
-  return typeof Reflect.get(value, 'from') === 'function';
+  const auth = Reflect.get(value, 'auth');
+
+  return typeof Reflect.get(value, 'from') === 'function'
+    && typeof auth === 'object'
+    && auth !== null
+    && typeof Reflect.get(auth, 'updateUser') === 'function'
+    && typeof Reflect.get(value, 'supabaseKey') === 'string'
+    && typeof Reflect.get(value, 'supabaseUrl') === 'string';
 }
