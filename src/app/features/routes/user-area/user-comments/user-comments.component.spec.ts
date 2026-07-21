@@ -1,21 +1,45 @@
 import { BehaviorSubject } from 'rxjs';
 import { UserCommentsComponent } from './user-comments.component';
-import { CommentableEntityTypes } from 'src/app/models/comment';
+import {
+  CommentableEntityTypes,
+  DbComment
+} from 'src/app/models/comment';
+import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area-data.service';
 
 describe('UserCommentsComponent', () => {
   function build() {
-    const filteredCommentsData$ = new BehaviorSubject<any[] | undefined>([
-      {id: 1, content: 'Belgrad sounds huge', entityType: CommentableEntityTypes.MODULE},
-      {id: 2, content: 'Patch note', entityType: CommentableEntityTypes.PATCH},
+    const filteredCommentsData$ = new BehaviorSubject<DbComment[] | undefined>([
+      createComment(1, 'Belgrad sounds huge', CommentableEntityTypes.MODULE),
+      createComment(2, 'Patch note', CommentableEntityTypes.PATCH),
     ]);
     const updateCommentsData$ = new BehaviorSubject<void>(undefined);
+    const dataService = jasmine.createSpyObj<UserAreaDataService>(
+      'UserAreaDataService',
+      [],
+      {
+        filteredCommentsData$,
+        updateCommentsData$,
+      }
+    );
 
-    const component = new UserCommentsComponent({
-      filteredCommentsData$,
-      updateCommentsData$,
-    } as any);
+    const component = new UserCommentsComponent(dataService);
 
     return {component, filteredCommentsData$, updateCommentsData$};
+  }
+
+  function createComment(id: number, content: string, entityType: CommentableEntityTypes): DbComment {
+    return {
+      id,
+      content,
+      entityType,
+      entityId: id * 100,
+      profile: {
+        id: 'user-1',
+        username: 'demo-user'
+      },
+      created: '2024-01-01T00:00:00.000Z',
+      updated: '2024-01-01T00:00:00.000Z',
+    };
   }
 
   it('shows all searched comments by default', (done) => {

@@ -1,6 +1,6 @@
 {
   "_comment": "Grandfathered explicit `any` counts. Do not add by hand — run `node scripts/checks/check-explicit-any.cjs --update-baseline` after intentional cleanup.",
-  "totalExplicitAny": 2041,
+  "totalExplicitAny": 2028,
   "files": {
     "api/sitemap.ts": 3,
     "e2e/auth-rack-context-menu.spec.ts": 6,
@@ -141,10 +141,6 @@
     "src/app/features/routes/user-area/user-area-data.service.spec.ts": 44,
     "src/app/features/routes/user-area/user-area-data.utils.spec.ts": 7,
     "src/app/features/routes/user-area/user-area-root/user-area-root.component.ts": 1,
-    "src/app/features/routes/user-area/user-collections/user-collections.component.spec.ts": 3,
-    "src/app/features/routes/user-area/user-comments/user-comments.component.spec.ts": 2,
-    "src/app/features/routes/user-area/user-manuals/user-manuals.component.spec.ts": 5,
-    "src/app/features/routes/user-area/user-patches/user-patches.component.spec.ts": 3,
     "src/app/shared-interproject/components/@smart/days-in-week-picker/days-in-week-picker.component.ts": 5,
     "src/app/shared-interproject/components/@smart/list-link-router/clickable-list-card-base.ts": 2,
     "src/app/shared-interproject/components/@visual/graph-view/graph.component.ts": 1,

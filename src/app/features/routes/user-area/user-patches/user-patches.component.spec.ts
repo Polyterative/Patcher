@@ -1,16 +1,26 @@
 import { UserPatchesComponent } from './user-patches.component';
 import { Subject } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area-data.service';
+import { type CachedEntity } from 'src/app/features/backend/supabase.cache';
 
 describe('UserPatchesComponent', () => {
   let comp: UserPatchesComponent;
-  let mockDialog: any;
-  let mockBackend: any;
-  let mockDataService: any;
+  let mockDialog: jasmine.SpyObj<MatDialog>;
+  let mockBackend: SupabaseService;
+  let mockDataService: jasmine.SpyObj<UserAreaDataService>;
 
   beforeEach(() => {
-    mockDialog = {};
-    mockBackend = {};
-    mockDataService = { updatePatchesData$: new Subject<void>() };
+    mockDialog = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
+    mockBackend = jasmine.createSpyObj<SupabaseService>('SupabaseService', [], {
+      cacheResetter$: new Subject<CachedEntity[]>()
+    });
+    mockDataService = jasmine.createSpyObj<UserAreaDataService>(
+      'UserAreaDataService',
+      ['connectDiscovery'],
+      { updatePatchesData$: new Subject<void>() }
+    );
     spyOn(mockDataService.updatePatchesData$, 'next').and.callThrough();
     comp = new UserPatchesComponent(
       mockDialog,
