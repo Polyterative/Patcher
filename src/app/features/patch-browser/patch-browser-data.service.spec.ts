@@ -1,24 +1,60 @@
 import {
   fakeAsync,
+  TestBed,
   tick
 } from '@angular/core/testing';
 import {
+  Observable,
   of,
   throwError
 } from 'rxjs';
 import { PatchMinimal } from '../../models/patch';
+import {
+  CachedEntity
+} from '../backend/supabase.cache';
+import { SupabaseService } from '../backend/supabase.service';
 import { PatchBrowserDataService } from './patch-browser-data.service';
 
 
 describe('PatchBrowserDataService', () => {
+  type PatchesQuery = (
+    from?: number,
+    to?: number,
+    name?: string,
+    orderBy?: string | null,
+    orderDirection?: string,
+    columns?: string,
+    includeCount?: boolean
+  ) => Observable<PatchesBackendResult>;
+  type PatchesQueryArgs = Parameters<PatchesQuery>;
+  type CacheResetterNext = (keys: CachedEntity[]) => void;
+  interface PatchesBackendResult {
+    data: PatchMinimal[] | null;
+    count: number | null;
+    error?: unknown;
+  }
+  interface BackendDouble {
+    GET: {
+      patches: jasmine.Spy<PatchesQuery>;
+    };
+    cacheResetter$: {
+      next: jasmine.Spy<CacheResetterNext>;
+    };
+  }
+
   function build() {
     const backend = {
       GET: {
-        patches: jasmine.createSpy('GET.patches').and.returnValue(of({data: [], count: 0}))
+        patches: jasmine.createSpy<PatchesQuery>('GET.patches').and.returnValue(of({data: [], count: 0}))
       },
-      cacheResetter$: {next: jasmine.createSpy('cacheResetter$.next')}
-    };
-    const service = new PatchBrowserDataService(backend as any);
+      cacheResetter$: {next: jasmine.createSpy<CacheResetterNext>('cacheResetter$.next')}
+    } satisfies BackendDouble;
+    TestBed.configureTestingModule({
+      providers: [
+        {provide: SupabaseService, useValue: backend}
+      ]
+    });
+    const service = new PatchBrowserDataService(TestBed.inject(SupabaseService));
     return {service, backend};
   }
 
@@ -116,7 +152,7 @@ describe('PatchBrowserDataService', () => {
 
     tick(750);
 
-    const args = backend.GET.patches.calls.mostRecent().args as any[];
+    const args: PatchesQueryArgs = backend.GET.patches.calls.mostRecent().args;
     expect(args[2]).toBe('rack');
     service.ngOnDestroy();
   }));
@@ -188,17 +224,18 @@ describe('PatchBrowserDataService', () => {
 
   it('loadMore$ appends results and advances skip', fakeAsync(() => {
     const {service, backend} = build();
-    const firstBatch = Array.from({length: 10}, (_, i) => ({id: i + 1})) as any[];
-    const secondBatch = Array.from({length: 10}, (_, i) => ({id: i + 11})) as any[];
+    const firstBatch = Array.from({length: 10}, (_, i) => patchFactory(i + 1));
+    const secondBatch = Array.from({length: 10}, (_, i) => patchFactory(i + 11));
     backend.GET.patches.and.returnValue(of({data: secondBatch, count: null}));
-    service.patchesList$.next(firstBatch as any);
+    service.patchesList$.next(firstBatch);
     service.serversideAdditionalData.itemsCount$.next(50);
     const before = backend.GET.patches.calls.count();
     service.loadMore$.next();
     tick();
     expect(service.serversideTableRequestData.skip$.value).toBe(10);
     expect(backend.GET.patches.calls.count()).toBeGreaterThan(before);
-    expect((backend.GET.patches.calls.mostRecent().args as any[])[6]).toBeFalse();
+    const args: PatchesQueryArgs = backend.GET.patches.calls.mostRecent().args;
+    expect(args[6]).toBeFalse();
     expect(service.patchesList$.value?.length).toBe(20);
     expect(service.patchesList$.value?.at(-1)?.id).toBe(20);
   }));
