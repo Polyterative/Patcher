@@ -1,5 +1,6 @@
 import {
   expect,
+  Locator,
   Page,
   TestInfo,
   test
@@ -24,6 +25,44 @@ import {
  */
 
 const TEST_MODULE = {id: 2674, name: 'Afterneath'} as const;
+
+type AngularDebugApi<Component> = {
+  getComponent(element: Element): Component;
+};
+
+type AngularDebugWindow<Component> = Window & typeof globalThis & {
+  ng?: AngularDebugApi<Component>;
+};
+
+type RackedModuleEntry = {
+  module?: {name?: string | null} | null;
+};
+
+type RackVisualModelDataService = {
+  rowedRackedModules$: {value: RackedModuleEntry[][]};
+  singleRackData$: {value: {rows: number}};
+};
+
+type RackAddDataService = {
+  rowedRackedModules$: {value: RackedModuleEntry[][] | null | undefined};
+  singleRackData$: {value: {id: number}};
+  backend: {
+    add: {
+      rackModule(moduleId: number, rackId: number, row: number, column: number): {
+        subscribe(callback: () => void): unknown;
+      };
+    };
+  };
+  updateSingleRackData$: {next(rackId: number): void};
+};
+
+type RackVisualModelComponent = {
+  rackDetailDataService: RackVisualModelDataService;
+};
+
+type RackBrowserRackDetailComponent = {
+  dataService: RackAddDataService;
+};
 
 test.describe('Authenticated Rack Context Menu Actions', () => {
   test.describe.configure({mode: 'serial'});
@@ -145,7 +184,7 @@ test.describe('Authenticated Rack Context Menu Actions', () => {
     await deleteRequest;
 
     await page.waitForFunction((moduleName) => {
-      const ng = (window as any).ng;
+      const ng = (window as AngularDebugWindow<RackVisualModelComponent>).ng;
       const rackVisualModel = document.querySelector('app-rack-visual-model');
       if (!rackVisualModel || !ng?.getComponent) {
         return false;
@@ -154,7 +193,7 @@ test.describe('Authenticated Rack Context Menu Actions', () => {
       const component = ng.getComponent(rackVisualModel);
       const service = component.rackDetailDataService;
       const rackRows = service.rowedRackedModules$.value.slice(0, service.singleRackData$.value.rows);
-      return !rackRows.flat().some((entry: any) => entry.module?.name === moduleName);
+      return !rackRows.flat().some((entry: RackedModuleEntry) => entry.module?.name === moduleName);
     }, TEST_MODULE.name, {timeout: 15_000});
 
     const modulesAfter = await page.locator('app-rack-visual-model .module').count();
@@ -195,7 +234,7 @@ test.describe('Authenticated Rack Context Menu Actions', () => {
     await deleteRequest;
 
     await page.waitForFunction((moduleName) => {
-      const ng = (window as any).ng;
+      const ng = (window as AngularDebugWindow<RackVisualModelComponent>).ng;
       const rackVisualModel = document.querySelector('app-rack-visual-model');
       if (!rackVisualModel || !ng?.getComponent) {
         return false;
@@ -204,7 +243,7 @@ test.describe('Authenticated Rack Context Menu Actions', () => {
       const component = ng.getComponent(rackVisualModel);
       const service = component.rackDetailDataService;
       const rackRows = service.rowedRackedModules$.value.slice(0, service.singleRackData$.value.rows);
-      return !rackRows.flat().some((entry: any) => entry.module?.name === moduleName);
+      return !rackRows.flat().some((entry: RackedModuleEntry) => entry.module?.name === moduleName);
     }, TEST_MODULE.name, {timeout: 15_000});
   });
 });
@@ -213,13 +252,13 @@ test.describe('Authenticated Rack Context Menu Actions', () => {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function getModuleLocator(page: Page, moduleName: string) {
+function getModuleLocator(page: Page, moduleName: string): Locator {
   return page.locator('app-rack-visual-model app-module-realistic')
     .filter({has: page.locator(`img[alt*="${ moduleName }"]`)})
     .first();
 }
 
-async function rightClickModule(page: Page, moduleLocator: ReturnType<Page['locator']>): Promise<void> {
+async function rightClickModule(page: Page, moduleLocator: Locator): Promise<void> {
   await expect(moduleLocator).toBeVisible({timeout: 10_000});
   await moduleLocator.click({button: 'right'});
   // Wait for any menu item to appear
@@ -257,11 +296,11 @@ async function addModuleToRack(page: Page, module: {id: number; name: string}): 
 
   // Determine next available column in row 0 so modules land in a real row
   const existingColumnCount = await page.evaluate(() => {
-    const ng = (window as any).ng;
+    const ng = (window as AngularDebugWindow<RackVisualModelComponent>).ng;
     const rackVisualModel = document.querySelector('app-rack-visual-model');
     if (!rackVisualModel || !ng?.getComponent) return 0;
     const component = ng.getComponent(rackVisualModel);
-    const rows: unknown[][] = component.rackDetailDataService?.rowedRackedModules$?.value ?? [];
+    const rows = component.rackDetailDataService?.rowedRackedModules$?.value ?? [];
     return (rows[0] ?? []).length;
   });
 
@@ -272,7 +311,7 @@ async function addModuleToRack(page: Page, module: {id: number; name: string}): 
   {timeout: 15_000});
 
   await page.evaluate(({moduleId, column}) => {
-    const ng = (window as any).ng;
+    const ng = (window as AngularDebugWindow<RackBrowserRackDetailComponent>).ng;
     if (!ng?.getComponent) throw new Error('Angular debug API unavailable');
     const rackDetail = document.querySelector('app-rack-browser-rack-detail');
     if (!rackDetail) throw new Error('Rack detail view not found');
