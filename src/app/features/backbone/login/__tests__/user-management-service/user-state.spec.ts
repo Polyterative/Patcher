@@ -6,12 +6,35 @@ import {
   MOCK_SIMPLE_USER_2,
   setupUserManagementServiceTest
 } from './test-setup';
+import type {
+  MockSupabaseService,
+  MockUserDataHandlerService
+} from './test-setup';
 import { UserManagementService } from '../../user-management.service';
 import { of } from 'rxjs';
+import type { ReplaySubject } from 'rxjs';
 import {
   fakeAsync,
   tick
 } from '@angular/core/testing';
+import type {
+  RichUserModel,
+  SimpleUserModel
+} from '../../../../backend/supabase.types';
+
+type UserBoxUser = {
+  username?: string;
+};
+
+type UserStateServiceInternals = {
+  currentUserId: string | undefined;
+  _loggedUser$: ReplaySubject<SimpleUserModel | undefined>;
+  _loggedUserFullProfile$: ReplaySubject<RichUserModel | undefined>;
+};
+
+function userStateInternals(service: UserManagementService): UserStateServiceInternals {
+  return service as unknown as UserStateServiceInternals;
+}
 
 
 /**
@@ -21,8 +44,8 @@ import {
  */
 describe('UserManagementService - User State Management', () => {
   let service: UserManagementService;
-  let mockSupabaseService: any;
-  let mockUserDataHandlerService: any;
+  let mockSupabaseService: MockSupabaseService;
+  let mockUserDataHandlerService: MockUserDataHandlerService;
   
   beforeEach(() => {
     const setup = setupUserManagementServiceTest();
@@ -37,42 +60,44 @@ describe('UserManagementService - User State Management', () => {
   
   it('should update currentUserId when loggedUser$ changes', fakeAsync(() => {
     // Arrange
-    expect((service as any).currentUserId).toBeUndefined();
+    const internals = userStateInternals(service);
+    expect(internals.currentUserId).toBeUndefined();
     
     // Act
-    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
+    internals._loggedUser$.next(MOCK_SIMPLE_USER);
     
     tick();
     
     // Assert
-    expect((service as any).currentUserId).toBe(MOCK_SIMPLE_USER.id);
+    expect(internals.currentUserId).toBe(MOCK_SIMPLE_USER.id);
   }));
   
   it('should clear currentUserId when user logs out', fakeAsync(() => {
     // Arrange
-    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
+    const internals = userStateInternals(service);
+    internals._loggedUser$.next(MOCK_SIMPLE_USER);
     tick();
-    expect((service as any).currentUserId).toBe(MOCK_SIMPLE_USER.id);
+    expect(internals.currentUserId).toBe(MOCK_SIMPLE_USER.id);
     
     // Act
-    (service as any)._loggedUser$.next(undefined);
+    internals._loggedUser$.next(undefined);
     tick();
     
     // Assert
-    expect((service as any).currentUserId).toBeUndefined();
+    expect(internals.currentUserId).toBeUndefined();
   }));
   
   it('should fetch rich user profile when loggedUser$ is set', fakeAsync(() => {
     // Arrange
     mockSupabaseService.auth.getRichUserSession$.and.returnValue(of(MOCK_RICH_USER));
     
-    let richProfile: any;
+    let richProfile: RichUserModel | undefined;
     service.loggedUserFullProfile$.subscribe(profile => richProfile = profile);
     
     tick();
     
     // Act
-    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
+    userStateInternals(service)._loggedUser$.next(MOCK_SIMPLE_USER);
     
     tick();
     
@@ -85,13 +110,13 @@ describe('UserManagementService - User State Management', () => {
     // Arrange
     mockSupabaseService.auth.getRichUserSession$.and.returnValue(of(MOCK_RICH_USER));
     
-    let userBoxUser: any;
-    mockUserDataHandlerService.store.user$.subscribe((user: any) => userBoxUser = user);
+    let userBoxUser: UserBoxUser | undefined;
+    mockUserDataHandlerService.store.user$.subscribe(user => userBoxUser = user);
     
     tick();
     
     // Act
-    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
+    userStateInternals(service)._loggedUser$.next(MOCK_SIMPLE_USER);
     
     tick();
     
@@ -102,15 +127,16 @@ describe('UserManagementService - User State Management', () => {
   it('should clear userBoxService username when profile is undefined', fakeAsync(() => {
     // Arrange
     mockSupabaseService.auth.getRichUserSession$.and.returnValue(of(MOCK_RICH_USER));
-    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
+    const internals = userStateInternals(service);
+    internals._loggedUser$.next(MOCK_SIMPLE_USER);
     
     tick();
     
-    let userBoxUser: any;
-    mockUserDataHandlerService.store.user$.subscribe((user: any) => userBoxUser = user);
+    let userBoxUser: UserBoxUser | undefined;
+    mockUserDataHandlerService.store.user$.subscribe(user => userBoxUser = user);
     
     // Act
-    (service as any)._loggedUserFullProfile$.next(undefined);
+    internals._loggedUserFullProfile$.next(undefined);
     
     tick();
     
@@ -120,9 +146,10 @@ describe('UserManagementService - User State Management', () => {
   
   it('should NOT refetch profile when loggedUser$ changes to same user', fakeAsync(() => {
     // Arrange - Set up a profile for the user
-    (service as any)._loggedUserFullProfile$.next(MOCK_RICH_USER);
+    const internals = userStateInternals(service);
+    internals._loggedUserFullProfile$.next(MOCK_RICH_USER);
     
-    let richProfile: any = MOCK_RICH_USER;
+    let richProfile: RichUserModel | undefined = MOCK_RICH_USER;
     service.loggedUserFullProfile$.subscribe(profile => richProfile = profile);
     
     tick();
@@ -130,7 +157,7 @@ describe('UserManagementService - User State Management', () => {
     mockSupabaseService.auth.getRichUserSession$.calls.reset();
     
     // Act - Set loggedUser$ to the same user (MOCK_SIMPLE_USER has same ID as MOCK_RICH_USER)
-    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
+    internals._loggedUser$.next(MOCK_SIMPLE_USER);
     
     tick();
     
@@ -142,9 +169,10 @@ describe('UserManagementService - User State Management', () => {
   
   it('should fetch new profile when loggedUser$ changes to different user', fakeAsync(() => {
     // Arrange - Set up a profile for first user
-    (service as any)._loggedUserFullProfile$.next(MOCK_RICH_USER);
+    const internals = userStateInternals(service);
+    internals._loggedUserFullProfile$.next(MOCK_RICH_USER);
     
-    let richProfile: any = MOCK_RICH_USER;
+    let richProfile: RichUserModel | undefined = MOCK_RICH_USER;
     service.loggedUserFullProfile$.subscribe(profile => richProfile = profile);
     
     tick();
@@ -153,7 +181,7 @@ describe('UserManagementService - User State Management', () => {
     mockSupabaseService.auth.getRichUserSession$.and.returnValue(of(MOCK_RICH_USER_2));
     
     // Act - Switch to a different user (different ID)
-    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER_2);
+    internals._loggedUser$.next(MOCK_SIMPLE_USER_2);
     
     tick();
     
@@ -167,7 +195,7 @@ describe('UserManagementService - User State Management', () => {
     mockSupabaseService.auth.getRichUserSession$.calls.reset();
     
     // Act
-    (service as any)._loggedUser$.next(undefined);
+    userStateInternals(service)._loggedUser$.next(undefined);
     
     tick();
     
@@ -180,13 +208,13 @@ describe('UserManagementService - User State Management', () => {
     const invalidProfile = {...MOCK_RICH_USER, username: ''};
     mockSupabaseService.auth.getRichUserSession$.and.returnValue(of(invalidProfile));
     
-    let richProfile: any;
+    let richProfile: RichUserModel | undefined;
     service.loggedUserFullProfile$.subscribe(profile => richProfile = profile);
     
     tick();
     
     // Act
-    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
+    userStateInternals(service)._loggedUser$.next(MOCK_SIMPLE_USER);
     
     tick();
     
@@ -199,13 +227,13 @@ describe('UserManagementService - User State Management', () => {
     const invalidProfile = {...MOCK_RICH_USER, email: ''};
     mockSupabaseService.auth.getRichUserSession$.and.returnValue(of(invalidProfile));
     
-    let richProfile: any;
+    let richProfile: RichUserModel | undefined;
     service.loggedUserFullProfile$.subscribe(profile => richProfile = profile);
     
     tick();
     
     // Act
-    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
+    userStateInternals(service)._loggedUser$.next(MOCK_SIMPLE_USER);
     
     tick();
     
