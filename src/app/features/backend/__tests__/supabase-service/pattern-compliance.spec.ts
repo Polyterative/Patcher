@@ -30,11 +30,17 @@ describe('SupabaseService - Service Pattern Compliance', () => {
   });
   
   it('should follow naming conventions for all API groups', () => {
-    const apiGroups = ['GET', 'get', 'add', 'update', 'delete'];
+    const apiGroups = {
+      GET: service.GET,
+      add: service.add,
+      delete: service.delete,
+      get: service.get,
+      update: service.update
+    } satisfies Record<string, object>;
     
-    apiGroups.forEach(group => {
-      expect((service as any)[group]).withContext(`${ group } should exist`).toBeDefined();
-      expect(typeof (service as any)[group]).withContext(`${ group } should be an object`).toBe('object');
+    Object.entries(apiGroups).forEach(([group, apiGroup]) => {
+      expect(apiGroup).withContext(`${ group } should exist`).toBeDefined();
+      expect(typeof apiGroup).withContext(`${ group } should be an object`).toBe('object');
     });
   });
 
@@ -45,6 +51,6 @@ describe('SupabaseService - Service Pattern Compliance', () => {
 
   it('auth namespace is defined and exposes getUserSession$', () => {
     expect(service.auth).toBeDefined();
-    expect(typeof (service.auth as any).getUserSession$).toBe('function');
+    expect(typeof service.auth.getUserSession$).toBe('function');
   });
 });

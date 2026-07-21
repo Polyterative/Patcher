@@ -27,9 +27,15 @@ export const PAGINATION_TEST_SIZE = 5;
 /**
  * Creates and configures the test environment for SupabaseService
  */
-export function setupSupabaseServiceTest() {
-  const mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open', 'openFromComponent', 'dismiss']);
-  const mockActivatedRoute = jasmine.createSpyObj('ActivatedRoute', [], {
+export interface SupabaseServiceTestSetup {
+  service: SupabaseService;
+  mockSnackBar: jasmine.SpyObj<MatSnackBar>;
+  mockActivatedRoute: jasmine.SpyObj<ActivatedRoute>;
+}
+
+export function setupSupabaseServiceTest(): SupabaseServiceTestSetup {
+  const mockSnackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open', 'openFromComponent', 'dismiss']);
+  const mockActivatedRoute = jasmine.createSpyObj<ActivatedRoute>('ActivatedRoute', [], {
     queryParams: of({}),
     params: of({})
   });

@@ -11,6 +11,7 @@ import {
   throwError
 } from 'rxjs';
 import {
+  type CachedEntity,
   cacheBust,
   cacheBuster$,
   catchErrors,
@@ -20,12 +21,17 @@ import {
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 
 
+interface SupabaseResultFixture<T> {
+  data: T;
+  error: null;
+}
+
 describe('supabase.cache - cacheBust operator', () => {
   it('should pass values through unchanged', (done) => {
     of({data: [1, 2, 3]})
       .pipe(cacheBust(['modules']))
       .subscribe({
-        next: (val: any) => {
+        next: (val: SupabaseResultFixture<number[]>) => {
           expect(val.data).toEqual([1, 2, 3]);
           done();
         },
@@ -34,8 +40,8 @@ describe('supabase.cache - cacheBust operator', () => {
   });
   
   it('should emit specified cache keys to cacheBuster$', (done) => {
-    const emitted: any[][] = [];
-    const sub = cacheBuster$.subscribe(keys => emitted.push(keys as any[]));
+    const emitted: CachedEntity[][] = [];
+    const sub = cacheBuster$.subscribe(keys => emitted.push(keys));
     
     of('value')
       .pipe(cacheBust(['patches', 'patchConnections']))
@@ -71,7 +77,7 @@ describe('supabase.cache - remapErrors operator', () => {
     of({data: 'ok', error: null})
       .pipe(remapErrors())
       .subscribe({
-        next: (val: any) => {
+        next: (val: SupabaseResultFixture<string>) => {
           expect(val.data).toBe('ok');
           done();
         },
@@ -83,7 +89,7 @@ describe('supabase.cache - remapErrors operator', () => {
     of({data: null, error: null})
       .pipe(remapErrors())
       .subscribe({
-        next: (val: any) => {
+        next: (val: SupabaseResultFixture<null>) => {
           expect(val).toBeDefined();
           done();
         },
@@ -130,7 +136,7 @@ describe('supabase.cache - showSuccessMessage operator', () => {
     of(42)
       .pipe(showSuccessMessage(mockSnackBar))
       .subscribe({
-        next: (val: any) => {
+        next: (val: number) => {
           expect(val).toBe(42);
           done();
         },
@@ -142,7 +148,8 @@ describe('supabase.cache - showSuccessMessage operator', () => {
 describe('supabase.cache - catchErrors operator', () => {
   it('should swallow the error and return NEVER (no further emissions)', (done) => {
     const mockSnackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open', 'openFromComponent', 'dismiss']);
-    spyOn(SharedConstants, 'errorHandlerOperation').and.callFake(() => (src: any) => src);
+    spyOn(SharedConstants, 'errorHandlerOperation').and.callThrough();
+    spyOn(console, 'error');
     
     let errorPropagated = false;
     
@@ -169,7 +176,8 @@ describe('supabase.cache - catchErrors operator', () => {
   
   it('should call SharedConstants.errorHandlerOperation on error', () => {
     const mockSnackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open', 'openFromComponent', 'dismiss']);
-    const handlerSpy = spyOn(SharedConstants, 'errorHandlerOperation').and.callFake(() => (src: any) => src);
+    const handlerSpy = spyOn(SharedConstants, 'errorHandlerOperation').and.callThrough();
+    spyOn(console, 'error');
     
     throwError(() => new Error('boom'))
       .pipe(catchErrors(mockSnackBar))

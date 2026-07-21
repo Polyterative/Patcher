@@ -2,8 +2,11 @@ import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest
 } from './test-setup';
+import type { CachedEntity } from '../../supabase.cache';
 import { SupabaseService } from '../../supabase.service';
 
+
+type StorageMethod = Extract<keyof SupabaseService['storage'], string>;
 
 /**
  * Storage & Cache Management Tests
@@ -19,12 +22,10 @@ import { SupabaseService } from '../../supabase.service';
  */
 describe('SupabaseService - Storage & Cache', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
   });
   
   afterEach(() => {
@@ -75,14 +76,14 @@ describe('SupabaseService - Storage & Cache', () => {
     });
     
     it('should emit cache bust events when data changes', (done) => {
-      const cacheEvents: any[] = [];
+      const cacheEvents: CachedEntity[][] = [];
       
       service.cacheResetter$.subscribe((keys) => {
         cacheEvents.push(keys);
       });
       
       // Trigger a cache bust manually (simulating a mutation)
-      (service.cacheResetter$ as any).next(['modules']);
+      service.cacheResetter$.next(['modules']);
       
       setTimeout(() => {
         expect(cacheEvents.length).toBeGreaterThan(0);
@@ -91,13 +92,13 @@ describe('SupabaseService - Storage & Cache', () => {
     });
     
     it('should support multiple cache keys in single bust', (done) => {
-      let capturedKeys: any;
+      let capturedKeys: CachedEntity[] = [];
       
       service.cacheResetter$.subscribe((keys) => {
         capturedKeys = keys;
       });
       
-      (service.cacheResetter$ as any).next(['modules', 'manufacturers']);
+      service.cacheResetter$.next(['modules', 'manufacturers']);
       
       setTimeout(() => {
         expect(capturedKeys).toContain('modules');
@@ -121,11 +122,11 @@ describe('SupabaseService - Storage & Cache', () => {
         'deleteRackImage',
         'deletePatchPreview',
         'deleteMarketplaceListingImage',
-        'deletePanelFile'
-      ];
+        'deletePanelFile',
+      ] satisfies readonly StorageMethod[];
       
       expectedMethods.forEach(method => {
-        expect(typeof (service.storage as any)[method]).toBe('function',
+        expect(typeof service.storage[method]).toBe('function',
           `storage.${ method } should exist`);
       });
     });
