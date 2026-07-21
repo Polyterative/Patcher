@@ -1,51 +1,92 @@
 import { of } from 'rxjs';
-import { createDeleteNamespace } from '../../supabase-delete';
+import { environment } from 'src/environments/environment';
 import { SupabaseService } from '../../supabase.service';
+import type { CachedEntity } from '../../supabase.cache';
+import { CommentableEntityTypes } from '../../supabase-comments';
+import type { SupabaseTableRow } from '../../supabase-db.types';
+import { DbPaths } from '../../DatabaseStrings';
 import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest,
   TEST_TIMEOUT
 } from './test-setup';
+import {
+  authUserFixture,
+  chainable,
+  getSupabaseClientDouble,
+  mockUserSession,
+  type QueryChainResult,
+  type SupabaseClientDouble,
+  type SupabaseQueryChain
+} from './supabase-query-test-doubles';
 
 
-function chainable(resolveValue: any = {data: null, error: null}) {
-  const m: any = {};
-  ['select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit', 'single',
-    'insert', 'update', 'delete', 'upsert'].forEach(method => {
-    m[method] = () => m;
+type CommentDeleteRow = Pick<SupabaseTableRow<'comments'>, 'entityId' | 'entityType'>;
+type ManufacturerDeleteRow = Pick<SupabaseTableRow<'manufacturers'>, 'id'>;
+type ModuleDeleteRow = Pick<SupabaseTableRow<'modules'>, 'id'>;
+type PatchConnectionDeleteRow = Pick<SupabaseTableRow<'patch_connections'>, 'patchid'>;
+type PatchModuleInstanceDeleteRow = Pick<SupabaseTableRow<'patch_module_instances'>, 'id' | 'patch_id'>;
+type RackModuleDeleteRow = Pick<SupabaseTableRow<'rack_modules'>, 'rackid'>;
+type UserModuleTagDeleteRow = Pick<SupabaseTableRow<'user_module_tags'>, 'authorid' | 'moduletagid'>;
+type DeleteFilterValue = Parameters<SupabaseQueryChain<unknown>['filter']>[2];
+type DeleteFilterCall = {
+  column: string;
+  operator: string;
+  value: DeleteFilterValue;
+};
+
+const successfulDelete = {data: null, error: null} satisfies QueryChainResult<never>;
+
+function trackFilters<Row>(mock: SupabaseQueryChain<Row>): DeleteFilterCall[] {
+  const filters: DeleteFilterCall[] = [];
+  spyOn(mock, 'filter').and.callFake((column: string, operator: string, value: DeleteFilterValue) => {
+    filters.push({column, operator, value});
+    return mock;
   });
-  m.then = (res: Function, rej?: Function) =>
-    Promise.resolve(resolveValue).then(res as any, rej as any);
-  return m;
+  return filters;
 }
 
 describe('SupabaseService - delete simple operations', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: SupabaseClientDouble;
+  let originalProduction: boolean;
   
   beforeEach(() => {
+    originalProduction = environment.production;
+    environment.production = true;
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = getSupabaseClientDouble(service);
   });
   
   afterEach(() => {
+    environment.production = originalProduction;
     cleanupSupabaseServiceTest();
   });
   
   describe('delete.commentsForRack', () => {
     it('should delete all comments for a rack entity', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
-      const mock = chainable({data: null, error: null});
-      const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
+      mockUserSession(service, authUserFixture('u1'));
+      const mock = chainable<CommentDeleteRow>(successfulDelete);
+      const filters = trackFilters(mock);
       spyOn(supabaseClient, 'from').and.returnValue(mock);
 
       service.delete.commentsForRack(7).subscribe({
         next: () => {
-          expect(filterSpy).toHaveBeenCalledWith('entityId', 'eq', 7);
+          expect(supabaseClient.from).toHaveBeenCalledWith(DbPaths.comments);
+          expect(filters).toContain(jasmine.objectContaining({
+            column: 'entityId',
+            operator: 'eq',
+            value: 7
+          }));
+          expect(filters).toContain(jasmine.objectContaining({
+            column: 'entityType',
+            operator: 'eq',
+            value: CommentableEntityTypes.RACK
+          }));
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -53,19 +94,17 @@ describe('SupabaseService - delete simple operations', () => {
     }, TEST_TIMEOUT);
 
     it('should bust the comments cache', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
-      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: null}));
-      let busted = false;
-      service.cacheResetter$.subscribe(keys => {
-        if ((keys as any[]).includes('comments')) busted = true;
-      });
+      mockUserSession(service, authUserFixture('u1'));
+      spyOn(supabaseClient, 'from').and.returnValue(chainable<CommentDeleteRow>(successfulDelete));
+      const bustedKeys: CachedEntity[] = [];
+      service.cacheResetter$.subscribe(keys => bustedKeys.push(...keys));
 
       service.delete.commentsForRack(7).subscribe({
         next: () => {
-          expect(busted).toBeTrue();
+          expect(bustedKeys).toContain('comments');
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -73,14 +112,14 @@ describe('SupabaseService - delete simple operations', () => {
     }, TEST_TIMEOUT);
 
     it('should error when user is not authenticated', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+      mockUserSession(service, null);
 
       service.delete.commentsForRack(7).subscribe({
         next: () => {
           fail('Expected error for unauthenticated call');
           done();
         },
-        error: (err) => {
+        error: (err: Error) => {
           expect(err.message).toContain('Authentication required');
           done();
         }
@@ -90,20 +129,21 @@ describe('SupabaseService - delete simple operations', () => {
   
   describe('delete.userModuleTag', () => {
     it('should delete tag vote for the current user', (done) => {
-      const mockUser = {id: 'voter-1'};
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+      mockUserSession(service, authUserFixture('voter-1'));
       
-      const mock = chainable({data: null, error: null});
-      const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
+      const mock = chainable<UserModuleTagDeleteRow>(successfulDelete);
+      const filterSpy: jasmine.Spy<SupabaseQueryChain<UserModuleTagDeleteRow>['filter']> =
+        spyOn(mock, 'filter').and.returnValue(mock);
       spyOn(supabaseClient, 'from').and.returnValue(mock);
       
       service.delete.userModuleTag(33).subscribe({
         next: () => {
+          expect(supabaseClient.from).toHaveBeenCalledWith(DbPaths.user_module_tags);
           expect(filterSpy).toHaveBeenCalledWith('authorid', 'eq', 'voter-1');
           expect(filterSpy).toHaveBeenCalledWith('moduletagid', 'eq', 33);
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -113,17 +153,19 @@ describe('SupabaseService - delete simple operations', () => {
   
   describe('delete.modulesOfRack', () => {
     it('should delete all rack modules for a given rack', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
-      const mock = chainable({data: null, error: null});
-      const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
+      mockUserSession(service, authUserFixture('u1'));
+      const mock = chainable<RackModuleDeleteRow>(successfulDelete);
+      const filterSpy: jasmine.Spy<SupabaseQueryChain<RackModuleDeleteRow>['filter']> =
+        spyOn(mock, 'filter').and.returnValue(mock);
       spyOn(supabaseClient, 'from').and.returnValue(mock);
 
       service.delete.modulesOfRack(5).subscribe({
         next: () => {
+          expect(supabaseClient.from).toHaveBeenCalledWith(DbPaths.rack_modules);
           expect(filterSpy).toHaveBeenCalledWith('rackid', 'eq', 5);
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -131,14 +173,14 @@ describe('SupabaseService - delete simple operations', () => {
     }, TEST_TIMEOUT);
 
     it('should error when user is not authenticated', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+      mockUserSession(service, null);
 
       service.delete.modulesOfRack(5).subscribe({
         next: () => {
           fail('Expected error for unauthenticated call');
           done();
         },
-        error: (err) => {
+        error: (err: Error) => {
           expect(err.message).toContain('Authentication required');
           done();
         }
@@ -148,17 +190,19 @@ describe('SupabaseService - delete simple operations', () => {
   
   describe('delete.patchConnectionsForPatch', () => {
     it('should delete all connections for a patch', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
-      const mock = chainable({data: null, error: null});
-      const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
+      mockUserSession(service, authUserFixture('u1'));
+      const mock = chainable<PatchConnectionDeleteRow>(successfulDelete);
+      const filterSpy: jasmine.Spy<SupabaseQueryChain<PatchConnectionDeleteRow>['filter']> =
+        spyOn(mock, 'filter').and.returnValue(mock);
       spyOn(supabaseClient, 'from').and.returnValue(mock);
 
       service.delete.patchConnectionsForPatch(12).subscribe({
         next: () => {
+          expect(supabaseClient.from).toHaveBeenCalledWith(DbPaths.patch_connections);
           expect(filterSpy).toHaveBeenCalledWith('patchid', 'eq', 12);
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -166,10 +210,10 @@ describe('SupabaseService - delete simple operations', () => {
     }, TEST_TIMEOUT);
 
     it('should bust patchConnections and patches caches', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
-      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: null}));
-      const bustedKeys: any[] = [];
-      service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
+      mockUserSession(service, authUserFixture('u1'));
+      spyOn(supabaseClient, 'from').and.returnValue(chainable<PatchConnectionDeleteRow>(successfulDelete));
+      const bustedKeys: CachedEntity[] = [];
+      service.cacheResetter$.subscribe(keys => bustedKeys.push(...keys));
 
       service.delete.patchConnectionsForPatch(12).subscribe({
         next: () => {
@@ -177,7 +221,7 @@ describe('SupabaseService - delete simple operations', () => {
           expect(bustedKeys).toContain('patches');
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -185,14 +229,14 @@ describe('SupabaseService - delete simple operations', () => {
     }, TEST_TIMEOUT);
 
     it('should error when user is not authenticated', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+      mockUserSession(service, null);
 
       service.delete.patchConnectionsForPatch(12).subscribe({
         next: () => {
           fail('Expected error for unauthenticated call');
           done();
         },
-        error: (err) => {
+        error: (err: Error) => {
           expect(err.message).toContain('Authentication required');
           done();
         }
@@ -202,17 +246,19 @@ describe('SupabaseService - delete simple operations', () => {
   
   describe('delete.patchModuleInstance', () => {
     it('should delete a single patch module instance by id', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
-      const mock = chainable({data: null, error: null});
-      const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
+      mockUserSession(service, authUserFixture('u1'));
+      const mock = chainable<PatchModuleInstanceDeleteRow>(successfulDelete);
+      const filterSpy: jasmine.Spy<SupabaseQueryChain<PatchModuleInstanceDeleteRow>['filter']> =
+        spyOn(mock, 'filter').and.returnValue(mock);
       spyOn(supabaseClient, 'from').and.returnValue(mock);
 
       service.delete.patchModuleInstance(8).subscribe({
         next: () => {
+          expect(supabaseClient.from).toHaveBeenCalledWith(DbPaths.patch_module_instances);
           expect(filterSpy).toHaveBeenCalledWith('id', 'eq', 8);
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -220,14 +266,14 @@ describe('SupabaseService - delete simple operations', () => {
     }, TEST_TIMEOUT);
 
     it('should error when user is not authenticated', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+      mockUserSession(service, null);
 
       service.delete.patchModuleInstance(8).subscribe({
         next: () => {
           fail('Expected error for unauthenticated call');
           done();
         },
-        error: (err) => {
+        error: (err: Error) => {
           expect(err.message).toContain('Authentication required');
           done();
         }
@@ -237,17 +283,19 @@ describe('SupabaseService - delete simple operations', () => {
 
   describe('delete.patchModuleInstancesForPatch', () => {
     it('should delete all instances for a patch', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
-      const mock = chainable({data: null, error: null});
-      const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
+      mockUserSession(service, authUserFixture('u1'));
+      const mock = chainable<PatchModuleInstanceDeleteRow>(successfulDelete);
+      const filterSpy: jasmine.Spy<SupabaseQueryChain<PatchModuleInstanceDeleteRow>['filter']> =
+        spyOn(mock, 'filter').and.returnValue(mock);
       spyOn(supabaseClient, 'from').and.returnValue(mock);
 
       service.delete.patchModuleInstancesForPatch(20).subscribe({
         next: () => {
+          expect(supabaseClient.from).toHaveBeenCalledWith(DbPaths.patch_module_instances);
           expect(filterSpy).toHaveBeenCalledWith('patch_id', 'eq', 20);
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -255,14 +303,14 @@ describe('SupabaseService - delete simple operations', () => {
     }, TEST_TIMEOUT);
 
     it('should error when user is not authenticated', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+      mockUserSession(service, null);
 
       service.delete.patchModuleInstancesForPatch(20).subscribe({
         next: () => {
           fail('Expected error for unauthenticated call');
           done();
         },
-        error: (err) => {
+        error: (err: Error) => {
           expect(err.message).toContain('Authentication required');
           done();
         }
@@ -272,17 +320,19 @@ describe('SupabaseService - delete simple operations', () => {
   
   describe('delete.modules (bulk)', () => {
     it('should delete a range of modules when authenticated', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
-      const mock = chainable({data: null, error: null});
-      const rangeSpy = spyOn(mock, 'range').and.returnValue(mock);
+      mockUserSession(service, authUserFixture('u1'));
+      const mock = chainable<ModuleDeleteRow>(successfulDelete);
+      const rangeSpy: jasmine.Spy<SupabaseQueryChain<ModuleDeleteRow>['range']> =
+        spyOn(mock, 'range').and.returnValue(mock);
       spyOn(supabaseClient, 'from').and.returnValue(mock);
 
       service.delete.modules(0, 10).subscribe({
         next: () => {
+          expect(supabaseClient.from).toHaveBeenCalledWith(DbPaths.modules);
           expect(rangeSpy).toHaveBeenCalledWith(0, 10);
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -290,10 +340,10 @@ describe('SupabaseService - delete simple operations', () => {
     }, TEST_TIMEOUT);
 
     it('should bust modules caches', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
-      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: null}));
-      const bustedKeys: any[] = [];
-      service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
+      mockUserSession(service, authUserFixture('u1'));
+      spyOn(supabaseClient, 'from').and.returnValue(chainable<ModuleDeleteRow>(successfulDelete));
+      const bustedKeys: CachedEntity[] = [];
+      service.cacheResetter$.subscribe(keys => bustedKeys.push(...keys));
 
       service.delete.modules().subscribe({
         next: () => {
@@ -301,7 +351,7 @@ describe('SupabaseService - delete simple operations', () => {
           expect(bustedKeys).toContain('moduleWithId');
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -309,14 +359,14 @@ describe('SupabaseService - delete simple operations', () => {
     }, TEST_TIMEOUT);
 
     it('should error when user is not authenticated', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+      mockUserSession(service, null);
 
       service.delete.modules().subscribe({
         next: () => {
           fail('Expected error for unauthenticated call');
           done();
         },
-        error: (err) => {
+        error: (err: Error) => {
           expect(err.message).toContain('Authentication required');
           done();
         }
@@ -326,18 +376,20 @@ describe('SupabaseService - delete simple operations', () => {
 
   describe('delete.manufacturer', () => {
     it('should delete a single manufacturer by id for admins', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
-      spyOn(service.auth as any, 'hasAdminRole$').and.returnValue(of(true));
-      const mock = chainable({data: null, error: null});
-      const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
+      mockUserSession(service, authUserFixture('u1'));
+      spyOn(service.auth, 'hasAdminRole$').and.returnValue(of(true));
+      const mock = chainable<ManufacturerDeleteRow>(successfulDelete);
+      const filterSpy: jasmine.Spy<SupabaseQueryChain<ManufacturerDeleteRow>['filter']> =
+        spyOn(mock, 'filter').and.returnValue(mock);
       spyOn(supabaseClient, 'from').and.returnValue(mock);
 
       service.delete.manufacturer(1626).subscribe({
         next: () => {
+          expect(supabaseClient.from).toHaveBeenCalledWith(DbPaths.manufacturers);
           expect(filterSpy).toHaveBeenCalledWith('id', 'eq', 1626);
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -345,21 +397,15 @@ describe('SupabaseService - delete simple operations', () => {
     }, TEST_TIMEOUT);
 
     it('should error for non-admin users', (done) => {
-      const namespace = createDeleteNamespace(
-        supabaseClient,
-        {open: () => undefined} as any,
-        () => of({id: 'u1'} as any),
-        () => of(null),
-        20,
-        () => of(false)
-      );
+      mockUserSession(service, authUserFixture('u1'));
+      spyOn(service.auth, 'hasAdminRole$').and.returnValue(of(false));
 
-      namespace.manufacturer(1626).subscribe({
+      service.delete.manufacturer(1626).subscribe({
         next: () => {
           fail('Expected admin error');
           done();
         },
-        error: (err) => {
+        error: (err: Error) => {
           expect(err.message).toContain('Admin access required');
           done();
         }
@@ -369,17 +415,19 @@ describe('SupabaseService - delete simple operations', () => {
 
   describe('delete.manufacturers (bulk)', () => {
     it('should delete manufacturers in a range when authenticated', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
-      const mock = chainable({data: null, error: null});
-      const rangeSpy = spyOn(mock, 'range').and.returnValue(mock);
+      mockUserSession(service, authUserFixture('u1'));
+      const mock = chainable<ManufacturerDeleteRow>(successfulDelete);
+      const rangeSpy: jasmine.Spy<SupabaseQueryChain<ManufacturerDeleteRow>['range']> =
+        spyOn(mock, 'range').and.returnValue(mock);
       spyOn(supabaseClient, 'from').and.returnValue(mock);
 
       service.delete.manufacturers(0, 5).subscribe({
         next: () => {
+          expect(supabaseClient.from).toHaveBeenCalledWith(DbPaths.manufacturers);
           expect(rangeSpy).toHaveBeenCalledWith(0, 5);
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -387,14 +435,14 @@ describe('SupabaseService - delete simple operations', () => {
     }, TEST_TIMEOUT);
 
     it('should error when user is not authenticated', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+      mockUserSession(service, null);
 
       service.delete.manufacturers(0, 5).subscribe({
         next: () => {
           fail('Expected error for unauthenticated call');
           done();
         },
-        error: (err) => {
+        error: (err: Error) => {
           expect(err.message).toContain('Authentication required');
           done();
         }
