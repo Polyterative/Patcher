@@ -2,13 +2,24 @@ import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest
 } from './test-setup';
+import {
+  authUserFixture,
+  chainable,
+  getSupabaseClientDouble,
+  mockUserSession
+} from './supabase-query-test-doubles';
+import type {
+  QueryListRowsResult,
+  SupabaseClientDouble,
+  SupabaseQueryChain
+} from './supabase-query-test-doubles';
 import { SupabaseService } from '../../supabase.service';
 import {
   cacheBust,
   cacheBuster$,
-  CachedEntity,
   LEGACY_TS_CACHEABLE_STORAGE_KEY,
-  removeLegacyTsCacheableStorage
+  removeLegacyTsCacheableStorage,
+  type CachedEntity
 } from '../../supabase.cache';
 import {
   firstValueFrom,
@@ -18,17 +29,30 @@ import {
   GlobalCacheConfig,
   InMemoryStorageStrategy
 } from 'ts-cacheable';
+import type { SupabaseFunctionReturns } from '../../supabase-db.types';
+import type { RackMinimal } from 'src/app/models/rack';
+import type { Patch } from 'src/app/models/patch';
 
 
-function chainable(resolveValue: any = {data: null, error: null}) {
-  const m: any = {};
-  ['select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit', 'single', 'maybeSingle',
-    'insert', 'update', 'delete', 'upsert'].forEach(method => {
-    m[method] = () => m;
-  });
-  m.then = (res: Function, rej?: Function) =>
-    Promise.resolve(resolveValue).then(res as any, rej as any);
-  return m;
+type RackPublicIdRow = Pick<SupabaseFunctionReturns<'get_rack_by_public_id'>[number], 'id' | 'name' | 'public_id'>;
+type PatchPublicIdRow = Pick<SupabaseFunctionReturns<'get_patch_by_public_id'>[number], 'id' | 'name' | 'public_id'>;
+type PublicIdRow = RackPublicIdRow | PatchPublicIdRow;
+
+interface CachingSupabaseClientDouble extends SupabaseClientDouble {
+  rpc(functionName: string, args: {p_public_id: string}): SupabaseQueryChain<PublicIdRow>;
+}
+
+function getCachingSupabaseClientDouble(service: SupabaseService): CachingSupabaseClientDouble {
+  const client = getSupabaseClientDouble(service);
+  if (!hasRpc(client)) {
+    throw new Error('Supabase caching test setup did not expose rpc().');
+  }
+
+  return client;
+}
+
+function hasRpc(client: SupabaseClientDouble): client is CachingSupabaseClientDouble {
+  return 'rpc' in client && typeof client.rpc === 'function';
 }
 
 /**
@@ -38,12 +62,12 @@ function chainable(resolveValue: any = {data: null, error: null}) {
  */
 describe('SupabaseService - Caching Behavior', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: CachingSupabaseClientDouble;
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = getCachingSupabaseClientDouble(service);
   });
   
   afterEach(() => {
@@ -59,9 +83,10 @@ describe('SupabaseService - Caching Behavior', () => {
     });
     
     // Trigger a cache bust operation if available
-    (service.cacheResetter$ as any).next(['manufacturers']);
+    service.cacheResetter$.next(['manufacturers']);
     
     subscription.unsubscribe();
+    expect(emissionReceived).toBeTrue();
   });
   
   it('uses page-lifetime in-memory cache storage', () => {
@@ -102,10 +127,10 @@ describe('SupabaseService - Caching Behavior', () => {
   });
 
   it('cacheResetter$ emits the provided key array to subscribers', () => {
-    const emissions: string[][] = [];
-    const sub = service.cacheResetter$.subscribe(keys => emissions.push(keys as string[]));
+    const emissions: CachedEntity[][] = [];
+    const sub = service.cacheResetter$.subscribe(keys => emissions.push(keys));
 
-    (service.cacheResetter$ as any).next(['modules', 'patches']);
+    service.cacheResetter$.next(['modules', 'patches']);
     sub.unsubscribe();
 
     expect(emissions.length).toBe(1);
@@ -139,8 +164,9 @@ describe('SupabaseService - Caching Behavior', () => {
 
   it('caches get_rack_by_public_id reads by public_id', async () => {
     const setItemSpy = spyOn(Storage.prototype, 'setItem').and.callThrough();
+    const rackRows: RackPublicIdRow[] = [{id: 101, name: 'Cached rack', public_id: 'rack-token-cache'}];
     const rpcSpy = spyOn(supabaseClient, 'rpc').and.returnValue(
-      chainable({data: [{id: 101, public_id: 'rack-token-cache'}], error: null})
+      chainable<RackPublicIdRow>({data: rackRows, error: null} satisfies QueryListRowsResult<RackPublicIdRow>)
     );
 
     const first = await firstValueFrom(service.GET.rackByPublicId('rack-token-cache'));
@@ -154,28 +180,39 @@ describe('SupabaseService - Caching Behavior', () => {
   });
 
   it('busts get_rack_by_public_id cache after rack update and delete mutations', async () => {
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'user-1'}));
-    spyOn(supabaseClient, 'from').and.returnValue(chainable({data: [{id: 102}], error: null}));
-    const rpcSpy = spyOn(supabaseClient, 'rpc').and.returnValues(
-      chainable({data: [{id: 102, name: 'Before', public_id: 'rack-token-bust'}], error: null}),
-      chainable({data: [{id: 102, name: 'After update', public_id: 'rack-token-bust'}], error: null}),
-      chainable({data: null, error: null})
+    mockUserSession(service, authUserFixture('user-1'));
+    spyOn(supabaseClient, 'from').and.returnValue(
+      chainable<{id: number}>({data: [{id: 102}], error: null} satisfies QueryListRowsResult<{id: number}>)
     );
+    const rpcSpy = spyOn(supabaseClient, 'rpc').and.returnValues(
+      chainable<RackPublicIdRow>({
+        data: [{id: 102, name: 'Before', public_id: 'rack-token-bust'}],
+        error: null
+      } satisfies QueryListRowsResult<RackPublicIdRow>),
+      chainable<RackPublicIdRow>({
+        data: [{id: 102, name: 'After update', public_id: 'rack-token-bust'}],
+        error: null
+      } satisfies QueryListRowsResult<RackPublicIdRow>),
+      chainable<RackPublicIdRow>({data: null, error: null} satisfies QueryListRowsResult<RackPublicIdRow>)
+    );
+    const rackUpdate: RackMinimal = {
+      author: {id: 'user-1', username: 'user-1'},
+      created: '2026-07-21T00:00:00Z',
+      description: '',
+      hp: 84,
+      id: 102,
+      locked: false,
+      name: 'Updated Rack',
+      public: false,
+      rows: 2,
+      updated: '2026-07-21T00:00:00Z'
+    };
 
     await firstValueFrom(service.GET.rackByPublicId('rack-token-bust'));
     await firstValueFrom(service.GET.rackByPublicId('rack-token-bust'));
     expect(rpcSpy).toHaveBeenCalledTimes(1);
 
-    await firstValueFrom(service.update.rack({
-      id: 102,
-      name: 'Updated Rack',
-      description: '',
-      rows: 2,
-      hp: 84,
-      locked: false,
-      public: false,
-      image: null
-    } as any));
+    await firstValueFrom(service.update.rack(rackUpdate));
     const afterUpdate = await firstValueFrom(service.GET.rackByPublicId('rack-token-bust'));
     expect(afterUpdate.data.name).toBe('After update');
     expect(rpcSpy).toHaveBeenCalledTimes(2);
@@ -187,8 +224,9 @@ describe('SupabaseService - Caching Behavior', () => {
   });
 
   it('caches get_patch_by_public_id reads by public_id', async () => {
+    const patchRows: PatchPublicIdRow[] = [{id: 201, name: 'Cached patch', public_id: 'patch-token-cache'}];
     const rpcSpy = spyOn(supabaseClient, 'rpc').and.returnValue(
-      chainable({data: [{id: 201, public_id: 'patch-token-cache'}], error: null})
+      chainable<PatchPublicIdRow>({data: patchRows, error: null} satisfies QueryListRowsResult<PatchPublicIdRow>)
     );
 
     const first = await firstValueFrom(service.GET.patchByPublicId('patch-token-cache'));
@@ -201,24 +239,35 @@ describe('SupabaseService - Caching Behavior', () => {
   });
 
   it('busts get_patch_by_public_id cache after patch update and delete mutations', async () => {
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'user-1'}));
-    spyOn(supabaseClient, 'from').and.returnValue(chainable({data: [{id: 202}], error: null}));
-    const rpcSpy = spyOn(supabaseClient, 'rpc').and.returnValues(
-      chainable({data: [{id: 202, name: 'Before', public_id: 'patch-token-bust'}], error: null}),
-      chainable({data: [{id: 202, name: 'After update', public_id: 'patch-token-bust'}], error: null}),
-      chainable({data: null, error: null})
+    mockUserSession(service, authUserFixture('user-1'));
+    spyOn(supabaseClient, 'from').and.returnValue(
+      chainable<{id: number}>({data: [{id: 202}], error: null} satisfies QueryListRowsResult<{id: number}>)
     );
+    const rpcSpy = spyOn(supabaseClient, 'rpc').and.returnValues(
+      chainable<PatchPublicIdRow>({
+        data: [{id: 202, name: 'Before', public_id: 'patch-token-bust'}],
+        error: null
+      } satisfies QueryListRowsResult<PatchPublicIdRow>),
+      chainable<PatchPublicIdRow>({
+        data: [{id: 202, name: 'After update', public_id: 'patch-token-bust'}],
+        error: null
+      } satisfies QueryListRowsResult<PatchPublicIdRow>),
+      chainable<PatchPublicIdRow>({data: null, error: null} satisfies QueryListRowsResult<PatchPublicIdRow>)
+    );
+    const patchUpdate: Patch = {
+      id: 202,
+      name: 'Updated Patch',
+      author: {id: 'user-1', username: 'user-1'},
+      created: '2026-07-21T00:00:00Z',
+      updated: '2026-07-21T00:00:00Z',
+      public: false
+    };
 
     await firstValueFrom(service.GET.patchByPublicId('patch-token-bust'));
     await firstValueFrom(service.GET.patchByPublicId('patch-token-bust'));
     expect(rpcSpy).toHaveBeenCalledTimes(1);
 
-    await firstValueFrom(service.update.patch({
-      id: 202,
-      name: 'Updated Patch',
-      authorid: 'user-1',
-      public: false
-    } as any));
+    await firstValueFrom(service.update.patch(patchUpdate));
     const afterUpdate = await firstValueFrom(service.GET.patchByPublicId('patch-token-bust'));
     expect(afterUpdate.data.name).toBe('After update');
     expect(rpcSpy).toHaveBeenCalledTimes(2);
