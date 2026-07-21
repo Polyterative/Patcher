@@ -1,11 +1,59 @@
 import { UntypedFormControl } from '@angular/forms';
-import { of } from 'rxjs';
+import { TestBed } from '@angular/core/testing';
+import {
+  Observable,
+  of
+} from 'rxjs';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import { SupabaseStorageFile } from 'src/app/features/backend/supabase.types';
 import { CV } from 'src/app/models/cv';
 import { DbModule } from 'src/app/models/module';
+import { Database } from 'src/backend/database.types';
 import {
   FormCV,
-  ModuleEditorDataService
+  ModuleEditorDataService,
+  PendingSaveState
 } from './module-editor-data.service';
+import { BuildPersistPlanArgs } from './module-editor-data.types';
+
+type BackendResponse<T> = {
+  data: T;
+  error: null;
+};
+
+type ModulePanelInsert = Database['public']['Tables']['module_panels']['Insert'];
+type ModuleUpdate = (data: Partial<DbModule>) => Observable<BackendResponse<null>>;
+type ModuleInsOutsUpdate = (moduleId: number, ins: CV[], outs: CV[]) => Observable<BackendResponse<CV[]>>;
+type UploadModulePanel = (
+  file: SupabaseStorageFile,
+  filenameAndExtension: string,
+  contentType?: string
+) => Observable<string>;
+type AddPanel = (data: ModulePanelInsert[]) => Observable<BackendResponse<ModulePanelInsert[]>>;
+type CreateImageBitmapForBlob = (blob: Blob) => Promise<ImageBitmap>;
+type GetImageDataForAnalysis = CanvasRenderingContext2D['getImageData'];
+type DrawImageForAnalysis = (image: CanvasImageSource, dx: number, dy: number, dWidth: number, dHeight: number) => void;
+type SyncDataSnapshotParams = Parameters<ModuleEditorDataService['syncDataSnapshotAfterSave']>[0];
+
+interface ModuleEditorBackendDouble {
+  update: {
+    module: jasmine.Spy<ModuleUpdate>;
+    moduleINsOUTs: jasmine.Spy<ModuleInsOutsUpdate>;
+  };
+  storage: {
+    uploadModulePanel: jasmine.Spy<UploadModulePanel>;
+  };
+  add: {
+    panel: jasmine.Spy<AddPanel>;
+  };
+}
+
+function backendResponse<T>(data: T): BackendResponse<T> {
+  return {
+    data,
+    error: null
+  };
+}
 
 
 function makeFormCV(partial: Partial<FormCV> = {}): FormCV {
@@ -27,6 +75,7 @@ function makeDbModule(partial: Partial<DbModule> = {}): DbModule {
     outs: [],
     switches: [],
     manualURL: '',
+    store_url: null,
     additional: null,
     isComplete: false,
     isApproved: false,
@@ -46,23 +95,57 @@ function makeDbModule(partial: Partial<DbModule> = {}): DbModule {
     created: '',
     updated: '',
     ...partial
-  } as DbModule;
+  };
+}
+
+function makeBackendDouble(): ModuleEditorBackendDouble {
+  return {
+    update: {
+      module: jasmine
+        .createSpy<ModuleUpdate>('update.module')
+        .and.returnValue(of(backendResponse(null))),
+      moduleINsOUTs: jasmine
+        .createSpy<ModuleInsOutsUpdate>('update.moduleINsOUTs')
+        .and.returnValue(of(backendResponse([])))
+    },
+    storage: {
+      uploadModulePanel: jasmine
+        .createSpy<UploadModulePanel>('storage.uploadModulePanel')
+        .and.returnValue(of('file.jpg'))
+    },
+    add: {
+      panel: jasmine
+        .createSpy<AddPanel>('add.panel')
+        .and.returnValue(of(backendResponse([])))
+    }
+  };
+}
+
+function makeImageBitmap(width: number, height: number, close: () => void): ImageBitmap {
+  return {
+    width,
+    height,
+    close
+  };
+}
+
+function makeImageData(data: Uint8ClampedArray<ArrayBuffer>): ImageData {
+  return new ImageData(data, Math.max(1, data.length / 4), 1);
 }
 
 describe('ModuleEditorDataService', () => {
   let service: ModuleEditorDataService;
-  let mockBackend: any;
+  let mockBackend: ModuleEditorBackendDouble;
   
   beforeEach(() => {
-    mockBackend = {
-      update: {
-        module: jasmine.createSpy().and.returnValue(of(null)),
-        moduleINsOUTs: jasmine.createSpy().and.returnValue(of(null))
-      },
-      storage: {uploadModulePanel: jasmine.createSpy().and.returnValue(of('file.jpg'))},
-      add: {panel: jasmine.createSpy().and.returnValue(of(null))}
-    };
-    service = new ModuleEditorDataService(mockBackend as any);
+    mockBackend = makeBackendDouble();
+    TestBed.configureTestingModule({
+      providers: [
+        ModuleEditorDataService,
+        {provide: SupabaseService, useValue: mockBackend}
+      ]
+    });
+    service = TestBed.inject(ModuleEditorDataService);
   });
   
   describe('buildCvSummary', () => {
@@ -122,18 +205,16 @@ describe('ModuleEditorDataService', () => {
   });
 
   describe('buildGuardedCroppedPanelFile', () => {
-    const imageBitmapTarget = window as Window & {createImageBitmap?: (blob: Blob) => Promise<unknown>};
+    const imageBitmapTarget = window as Window & {createImageBitmap?: CreateImageBitmapForBlob};
     let previousCreateImageBitmap: typeof imageBitmapTarget.createImageBitmap;
     let closeSpy: jasmine.Spy;
 
     beforeEach(() => {
       closeSpy = jasmine.createSpy('close');
       previousCreateImageBitmap = imageBitmapTarget.createImageBitmap;
-      imageBitmapTarget.createImageBitmap = jasmine.createSpy('createImageBitmap').and.resolveTo({
-        width: 320,
-        height: 640,
-        close: closeSpy
-      } as ImageBitmap);
+      imageBitmapTarget.createImageBitmap = jasmine
+        .createSpy<CreateImageBitmapForBlob>('createImageBitmap')
+        .and.resolveTo(makeImageBitmap(320, 640, closeSpy));
     });
 
     afterEach(() => {
@@ -160,9 +241,10 @@ describe('ModuleEditorDataService', () => {
       const nativeCreateElement = document.createElement.bind(document);
       spyOn(document, 'createElement').and.callFake((tagName: string) => {
         if (tagName === 'canvas') {
-          return {
-            toDataURL: (type?: string) => type === 'image/webp' ? 'data:image/webp;base64,AAAA' : 'data:image/png;base64,AAAA'
-          } as any;
+          const canvas = nativeCreateElement('canvas');
+          spyOn(canvas, 'toDataURL')
+            .and.callFake((type?: string) => type === 'image/webp' ? 'data:image/webp;base64,AAAA' : 'data:image/png;base64,AAAA');
+          return canvas;
         }
         return nativeCreateElement(tagName);
       });
@@ -174,9 +256,9 @@ describe('ModuleEditorDataService', () => {
       const nativeCreateElement = document.createElement.bind(document);
       spyOn(document, 'createElement').and.callFake((tagName: string) => {
         if (tagName === 'canvas') {
-          return {
-            toDataURL: () => 'data:image/png;base64,AAAA'
-          } as any;
+          const canvas = nativeCreateElement('canvas');
+          spyOn(canvas, 'toDataURL').and.returnValue('data:image/png;base64,AAAA');
+          return canvas;
         }
         return nativeCreateElement(tagName);
       });
@@ -188,7 +270,7 @@ describe('ModuleEditorDataService', () => {
       const nativeCreateElement = document.createElement.bind(document);
       spyOn(document, 'createElement').and.callFake((tagName: string) => {
         if (tagName === 'canvas') {
-          return {} as any;
+          return nativeCreateElement('div');
         }
         return nativeCreateElement(tagName);
       });
@@ -198,31 +280,32 @@ describe('ModuleEditorDataService', () => {
   });
 
   describe('suggestPanelTypeFromBlob', () => {
-    const imageBitmapTarget = window as Window & {createImageBitmap?: (blob: Blob) => Promise<unknown>};
+    const imageBitmapTarget = window as Window & {createImageBitmap?: CreateImageBitmapForBlob};
     let previousCreateImageBitmap: typeof imageBitmapTarget.createImageBitmap;
-    let createImageBitmapSpy: jasmine.Spy;
-    let drawImageSpy: jasmine.Spy;
-    let getImageDataSpy: jasmine.Spy;
+    let createImageBitmapSpy: jasmine.Spy<CreateImageBitmapForBlob>;
+    let drawImageSpy: jasmine.Spy<DrawImageForAnalysis>;
+    let getImageDataSpy: jasmine.Spy<GetImageDataForAnalysis>;
     let closeSpy: jasmine.Spy;
 
     beforeEach(() => {
-      drawImageSpy = jasmine.createSpy('drawImage');
-      getImageDataSpy = jasmine.createSpy('getImageData');
       closeSpy = jasmine.createSpy('close');
       previousCreateImageBitmap = imageBitmapTarget.createImageBitmap;
-      createImageBitmapSpy = jasmine.createSpy('createImageBitmap');
-      imageBitmapTarget.createImageBitmap = createImageBitmapSpy as any;
       const nativeCreateElement = document.createElement.bind(document);
+      const canvas = nativeCreateElement('canvas');
+      const context = canvas.getContext('2d');
+      if (!context) {
+        fail('Expected a 2D canvas context for panel analysis tests');
+        return;
+      }
+
+      drawImageSpy = spyOn(context, 'drawImage');
+      getImageDataSpy = spyOn(context, 'getImageData');
+      spyOn(canvas, 'getContext').and.returnValue(context);
+      createImageBitmapSpy = jasmine.createSpy<CreateImageBitmapForBlob>('createImageBitmap');
+      imageBitmapTarget.createImageBitmap = createImageBitmapSpy;
       spyOn(document, 'createElement').and.callFake((tagName: string) => {
         if (tagName === 'canvas') {
-          return {
-            width: 0,
-            height: 0,
-            getContext: () => ({
-              drawImage: drawImageSpy,
-              getImageData: getImageDataSpy
-            })
-          } as any;
+          return canvas;
         }
         return nativeCreateElement(tagName);
       });
@@ -233,43 +316,41 @@ describe('ModuleEditorDataService', () => {
     });
 
     it('suggests Light for bright desaturated panels', async () => {
-      createImageBitmapSpy.and.resolveTo({width: 4, height: 4, close: closeSpy} as any);
-      getImageDataSpy.and.returnValue({
-        data: new Uint8ClampedArray([
+      createImageBitmapSpy.and.resolveTo(makeImageBitmap(4, 4, closeSpy));
+      getImageDataSpy.and.returnValue(
+        makeImageData(new Uint8ClampedArray([
           240, 240, 240, 255, 245, 245, 245, 255, 235, 235, 235, 255, 238, 238, 238, 255
-        ])
-      });
+        ]))
+      );
 
       await expectAsync(service.suggestPanelTypeFromBlob(new Blob(['x'], {type: 'image/jpeg'}))).toBeResolvedTo(1);
     });
 
     it('suggests Dark for dark desaturated panels', async () => {
-      createImageBitmapSpy.and.resolveTo({width: 4, height: 4, close: closeSpy} as any);
-      getImageDataSpy.and.returnValue({
-        data: new Uint8ClampedArray([
+      createImageBitmapSpy.and.resolveTo(makeImageBitmap(4, 4, closeSpy));
+      getImageDataSpy.and.returnValue(
+        makeImageData(new Uint8ClampedArray([
           20, 20, 20, 255, 32, 32, 32, 255, 40, 40, 40, 255, 28, 28, 28, 255
-        ])
-      });
+        ]))
+      );
 
       await expectAsync(service.suggestPanelTypeFromBlob(new Blob(['x'], {type: 'image/jpeg'}))).toBeResolvedTo(2);
     });
 
     it('suggests Special edition for colorful panels', async () => {
-      createImageBitmapSpy.and.resolveTo({width: 4, height: 4, close: closeSpy} as any);
-      getImageDataSpy.and.returnValue({
-        data: new Uint8ClampedArray([
+      createImageBitmapSpy.and.resolveTo(makeImageBitmap(4, 4, closeSpy));
+      getImageDataSpy.and.returnValue(
+        makeImageData(new Uint8ClampedArray([
           255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255, 180, 0, 255
-        ])
-      });
+        ]))
+      );
 
       await expectAsync(service.suggestPanelTypeFromBlob(new Blob(['x'], {type: 'image/jpeg'}))).toBeResolvedTo(3);
     });
 
     it('downsamples oversized images before reading pixels', async () => {
-      createImageBitmapSpy.and.resolveTo({width: 1200, height: 600, close: closeSpy} as any);
-      getImageDataSpy.and.returnValue({
-        data: new Uint8ClampedArray([240, 240, 240, 255])
-      });
+      createImageBitmapSpy.and.resolveTo(makeImageBitmap(1200, 600, closeSpy));
+      getImageDataSpy.and.returnValue(makeImageData(new Uint8ClampedArray([240, 240, 240, 255])));
 
       await service.suggestPanelTypeFromBlob(new Blob(['x'], {type: 'image/jpeg'}));
 
@@ -278,10 +359,8 @@ describe('ModuleEditorDataService', () => {
     });
 
     it('releases decoded image resources after analysis', async () => {
-      createImageBitmapSpy.and.resolveTo({width: 4, height: 4, close: closeSpy} as any);
-      getImageDataSpy.and.returnValue({
-        data: new Uint8ClampedArray([240, 240, 240, 255])
-      });
+      createImageBitmapSpy.and.resolveTo(makeImageBitmap(4, 4, closeSpy));
+      getImageDataSpy.and.returnValue(makeImageData(new Uint8ClampedArray([240, 240, 240, 255])));
 
       await service.suggestPanelTypeFromBlob(new Blob(['x'], {type: 'image/jpeg'}));
 
@@ -438,7 +517,7 @@ describe('ModuleEditorDataService', () => {
   });
   
   describe('buildPersistPlan', () => {
-    function makePendingState(overrides: any = {}): any {
+    function makePendingState(overrides: Partial<PendingSaveState> = {}): PendingSaveState {
       return {
         ins: [],
         outs: [],
@@ -451,7 +530,7 @@ describe('ModuleEditorDataService', () => {
       };
     }
     
-    function makeArgs(pendingState: any): any {
+    function makeArgs(pendingState: PendingSaveState): BuildPersistPlanArgs {
       return {
         module: makeDbModule(),
         pendingState,
@@ -499,7 +578,10 @@ describe('ModuleEditorDataService', () => {
   });
   
   describe('syncDataSnapshotAfterSave', () => {
-    function makeParams(pendingOverrides: any = {}, paramOverrides: any = {}): any {
+    function makeParams(
+      pendingOverrides: Partial<PendingSaveState> = {},
+      paramOverrides: Partial<SyncDataSnapshotParams> = {}
+    ): SyncDataSnapshotParams {
       return {
         module: makeDbModule(),
         pendingState: {
