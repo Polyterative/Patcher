@@ -1,32 +1,140 @@
-import { of } from 'rxjs';
+import type { PostgrestError } from '@supabase/supabase-js';
+import type { ModulePanel } from 'src/app/models/module';
 import { SupabaseService } from '../../supabase.service';
+import type { CachedEntity } from '../../supabase.cache';
+import type { SupabaseTableRow } from '../../supabase-db.types';
 import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest,
   TEST_TIMEOUT
 } from './test-setup';
 import { CommentableEntityTypes } from '../../supabase-comments';
+import {
+  authUserFixture,
+  chainable,
+  getSupabaseClientDouble,
+  mockUserSession,
+  type QueryChainResult,
+  type QueryListRowsResult,
+  type SupabaseClientDouble,
+  type SupabaseQueryChain
+} from './supabase-query-test-doubles';
 
 
-function chainable(resolveValue: any = {data: null, error: null}) {
-  const m: any = {};
-  ['select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit', 'single',
-    'insert', 'update', 'delete', 'upsert'].forEach(method => {
-    m[method] = () => m;
+type CommentDeleteRow = Pick<SupabaseTableRow<'comments'>, 'id'>;
+type ModuleCollectionDeleteRow = Pick<SupabaseTableRow<'module_collections'>, 'id'>;
+type ModuleDeleteRow = Pick<SupabaseTableRow<'modules'>, 'id'>;
+type ModuleFlagDeleteRow = Pick<SupabaseTableRow<'module_flags'>, 'id'>;
+type ModulePanelDeleteRow = Pick<SupabaseTableRow<'module_panels'>, 'id'>;
+type PatchConnectionDeleteRow = SupabaseTableRow<'patch_connections'>;
+type PatchDeleteRow = Pick<SupabaseTableRow<'patches'>, 'id'>;
+type PatchModuleInstanceDeleteRow = Pick<SupabaseTableRow<'patch_module_instances'>, 'id'>;
+type RackDeleteRow = Pick<SupabaseTableRow<'racks'>, 'id'>;
+type RackModuleDeleteRow = Pick<SupabaseTableRow<'rack_modules'>, 'id'>;
+type UserModuleDeleteRow = SupabaseTableRow<'user_modules'>;
+type DeleteInValue = Parameters<SupabaseQueryChain<unknown>['in']>[1][number];
+type DeleteEqValue = Parameters<SupabaseQueryChain<unknown>['eq']>[1];
+type DeleteInCall = {
+  table: string;
+  column: string;
+  ids: DeleteInValue[];
+};
+type DeleteEqCall = {
+  table: string;
+  column: string;
+  value: DeleteEqValue;
+};
+type StorageRemoveResult = {
+  data: Array<{name?: string}> | null;
+  error: null;
+};
+interface StorageBucketDouble {
+  remove(paths: string[]): Promise<StorageRemoveResult>;
+}
+interface SupabaseStorageDouble {
+  from(bucket: string): StorageBucketDouble;
+}
+type SupabaseClientWithStorageDouble = SupabaseClientDouble & {
+  storage: SupabaseStorageDouble;
+};
+
+const successfulDelete = {data: null, error: null} satisfies QueryChainResult<never>;
+const successfulStorageRemove = {data: [], error: null} satisfies StorageRemoveResult;
+
+function selectedRows<Row>(rows: Row[]) {
+  return {data: rows, error: null} satisfies QueryListRowsResult<Row>;
+}
+
+function supabaseError(message: string): PostgrestError {
+  return {
+    code: 'PGRST_TEST',
+    details: '',
+    hint: '',
+    message,
+    name: 'PostgrestError'
+  };
+}
+
+function modulePanelFixture(overrides: Partial<ModulePanel> = {}): ModulePanel {
+  return {
+    color: 0,
+    description: '',
+    filename: 'panel.jpg',
+    id: 5,
+    moduleid: 1,
+    ...overrides
+  };
+}
+
+function getAdvancedSupabaseClientDouble(service: SupabaseService): SupabaseClientWithStorageDouble {
+  const client = getSupabaseClientDouble(service);
+  if (!hasStorageClientDouble(client)) {
+    throw new Error('Supabase test setup did not expose a storage client double.');
+  }
+
+  return client;
+}
+
+function hasStorageClientDouble(client: SupabaseClientDouble): client is SupabaseClientWithStorageDouble {
+  const storage = Reflect.get(client, 'storage');
+
+  return typeof storage === 'object'
+    && storage !== null
+    && typeof Reflect.get(storage, 'from') === 'function';
+}
+
+function createStorageBucketDouble(): StorageBucketDouble {
+  const remove = jasmine.createSpy<StorageBucketDouble['remove']>('remove')
+    .and.returnValue(Promise.resolve(successfulStorageRemove));
+
+  return {remove};
+}
+
+function buildDeleteMock<Row>(
+  table: string,
+  inCalls: DeleteInCall[],
+  eqCalls: DeleteEqCall[]
+): SupabaseQueryChain<Row> {
+  const mock = chainable<Row>(successfulDelete);
+  spyOn(mock, 'in').and.callFake((column: string, ids: readonly DeleteInValue[]) => {
+    inCalls.push({table, column, ids: [...ids]});
+    return mock;
   });
-  m.then = (res: Function, rej?: Function) =>
-    Promise.resolve(resolveValue).then(res as any, rej as any);
-  return m;
+  spyOn(mock, 'eq').and.callFake((column: string, value: DeleteEqValue) => {
+    eqCalls.push({table, column, value});
+    return mock;
+  });
+  return mock;
 }
 
 describe('SupabaseService - delete advanced', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: SupabaseClientWithStorageDouble;
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = getAdvancedSupabaseClientDouble(service);
   });
   
   afterEach(() => {
@@ -35,17 +143,16 @@ describe('SupabaseService - delete advanced', () => {
   
   describe('delete.modulePanel', () => {
     it('should call storage.deletePanelFile then delete the DB row', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
-      const mockBucket = {
-        remove: jasmine.createSpy('remove').and.returnValue(Promise.resolve({data: [], error: null}))
-      };
+      mockUserSession(service, authUserFixture('u1'));
+      const mockBucket = createStorageBucketDouble();
       spyOn(supabaseClient.storage, 'from').and.returnValue(mockBucket);
 
-      const mock = chainable({data: null, error: null});
-      const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
+      const mock = chainable<ModulePanelDeleteRow>(successfulDelete);
+      const filterSpy: jasmine.Spy<SupabaseQueryChain<ModulePanelDeleteRow>['filter']> =
+        spyOn(mock, 'filter').and.returnValue(mock);
       spyOn(supabaseClient, 'from').and.returnValue(mock);
 
-      const panelData = {id: 10, filename: 'mypanel.jpg', moduleid: 1, color: 0, description: ''} as any;
+      const panelData = modulePanelFixture({id: 10, filename: 'mypanel.jpg'});
       service.delete.modulePanel(panelData).subscribe({
         next: () => {
           expect(mockBucket.remove).toHaveBeenCalledWith(['mypanel.jpg']);
@@ -60,19 +167,17 @@ describe('SupabaseService - delete advanced', () => {
     }, TEST_TIMEOUT);
 
     it('should access module_panels table in the DB step', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
-      const mockBucket = {
-        remove: jasmine.createSpy('remove').and.returnValue(Promise.resolve({data: [], error: null}))
-      };
+      mockUserSession(service, authUserFixture('u1'));
+      const mockBucket = createStorageBucketDouble();
       spyOn(supabaseClient.storage, 'from').and.returnValue(mockBucket);
 
       const tablesAccessed: string[] = [];
       spyOn(supabaseClient, 'from').and.callFake((table: string) => {
         tablesAccessed.push(table);
-        return chainable({data: null, error: null});
+        return chainable<ModulePanelDeleteRow>(successfulDelete);
       });
 
-      service.delete.modulePanel({id: 5, filename: 'panel.jpg'} as any).subscribe({
+      service.delete.modulePanel(modulePanelFixture()).subscribe({
         next: () => {
           expect(tablesAccessed).toContain('module_panels');
           done();
@@ -85,9 +190,9 @@ describe('SupabaseService - delete advanced', () => {
     }, TEST_TIMEOUT);
 
     it('should error when user is not authenticated', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+      mockUserSession(service, null);
 
-      service.delete.modulePanel({id: 5, filename: 'panel.jpg'} as any).subscribe({
+      service.delete.modulePanel(modulePanelFixture()).subscribe({
         next: () => {
           fail('Expected error for unauthenticated call');
           done();
@@ -102,10 +207,10 @@ describe('SupabaseService - delete advanced', () => {
   
   describe('delete.allUserData', () => {
     it('should complete the full sequential delete chain', (done) => {
-      const mockUser = {id: 'delete-me-user'};
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+      const mockUser = authUserFixture('delete-me-user');
+      mockUserSession(service, mockUser);
       
-      const fromSpy = spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: null}));
+      const fromSpy = spyOn(supabaseClient, 'from').and.returnValue(chainable(successfulDelete));
       
       service.delete.allUserData().subscribe({
         next: () => {
@@ -120,8 +225,8 @@ describe('SupabaseService - delete advanced', () => {
     }, TEST_TIMEOUT);
     
     it('should access all required tables', (done) => {
-      const mockUser = {id: 'delete-user-42'};
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+      const mockUser = authUserFixture('delete-user-42');
+      mockUserSession(service, mockUser);
       
       const tablesAccessed: string[] = [];
       let patchCalls = 0;
@@ -133,25 +238,25 @@ describe('SupabaseService - delete advanced', () => {
         tablesAccessed.push(table);
         if (table === 'patches') {
           patchCalls++;
-          return chainable({data: patchCalls === 1 ? [{id: 1}] : null, error: null});
+          return chainable<PatchDeleteRow>(selectedRows(patchCalls === 1 ? [{id: 1}] : []));
         }
         if (table === 'modules') {
           moduleCalls++;
-          return chainable({data: moduleCalls === 1 ? [{id: 3}] : null, error: null});
+          return chainable<ModuleDeleteRow>(selectedRows(moduleCalls === 1 ? [{id: 3}] : []));
         }
         if (table === 'module_collections') {
           collectionCalls++;
-          return chainable({data: collectionCalls === 1 ? [{id: 4}] : null, error: null});
+          return chainable<ModuleCollectionDeleteRow>(selectedRows(collectionCalls === 1 ? [{id: 4}] : []));
         }
         if (table === 'racks') {
           rackCalls++;
-          return chainable({data: rackCalls === 1 ? [{id: 2}] : null, error: null});
+          return chainable<RackDeleteRow>(selectedRows(rackCalls === 1 ? [{id: 2}] : []));
         }
         if (table === 'comments') {
           commentCalls++;
-          return chainable({data: null, error: null});
+          return chainable<CommentDeleteRow>(successfulDelete);
         }
-        return chainable({data: null, error: null});
+        return chainable(successfulDelete);
       });
       
       service.delete.allUserData().subscribe({
@@ -177,12 +282,12 @@ describe('SupabaseService - delete advanced', () => {
     }, TEST_TIMEOUT);
     
     it('should bust all major caches', (done) => {
-      const mockUser = {id: 'cache-bust-user'};
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
-      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: null}));
+      const mockUser = authUserFixture('cache-bust-user');
+      mockUserSession(service, mockUser);
+      spyOn(supabaseClient, 'from').and.returnValue(chainable(successfulDelete));
       
-      const bustedKeys: any[] = [];
-      service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
+      const bustedKeys: CachedEntity[] = [];
+      service.cacheResetter$.subscribe(keys => bustedKeys.push(...keys));
       
       service.delete.allUserData().subscribe({
         next: () => {
@@ -204,52 +309,34 @@ describe('SupabaseService - delete advanced', () => {
     }, TEST_TIMEOUT);
 
     it('should resolve owned ids before using .in filters', (done) => {
-      const mockUser = {id: 'delete-user-ids'};
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+      const mockUser = authUserFixture('delete-user-ids');
+      mockUserSession(service, mockUser);
 
-      const inCalls: Array<{
-        table: string;
-        column: string;
-        ids: number[];
-      }> = [];
-      const eqCalls: Array<{
-        table: string;
-        column: string;
-        value: unknown;
-      }> = [];
-      const buildDeleteMock = (table: string) => {
-        const mock = chainable({data: null, error: null});
-        spyOn(mock, 'in').and.callFake((column: string, ids: number[]) => {
-          inCalls.push({table, column, ids: [...ids]});
-          return mock;
-        });
-        spyOn(mock, 'eq').and.callFake((column: string, value: unknown) => {
-          eqCalls.push({table, column, value});
-          return mock;
-        });
-        return mock;
-      };
+      const inCalls: DeleteInCall[] = [];
+      const eqCalls: DeleteEqCall[] = [];
 
-      const patchSelect = chainable({data: [{id: 11}, {id: 12}], error: null});
-      const patchConnectionsDelete = buildDeleteMock('patch_connections');
-      const patchModuleInstancesDelete = buildDeleteMock('patch_module_instances');
-      const patchDelete = buildDeleteMock('patches');
-      const rackSelect = chainable({data: [{id: 21}], error: null});
-      const rackModulesDelete = buildDeleteMock('rack_modules');
-      const rackDelete = buildDeleteMock('racks');
-      const moduleSelect = chainable({data: [{id: 31}, {id: 32}], error: null});
-      const moduleDelete = buildDeleteMock('modules');
-      const collectionSelect = chainable({data: [{id: 41}], error: null});
-      const collectionEntriesByCollectionDelete = buildDeleteMock('module_collection_entries');
-      const collectionEntriesByModuleDelete = buildDeleteMock('module_collection_entries');
-      const collectionDelete = buildDeleteMock('module_collections');
-      const moduleFlagsByModuleDelete = buildDeleteMock('module_flags');
-      const moduleFlagsByUserDelete = buildDeleteMock('module_flags');
-      const userModulesDelete = chainable({data: null, error: null});
-      const patchCommentsDelete = buildDeleteMock('comments');
-      const rackCommentsDelete = buildDeleteMock('comments');
-      const moduleCommentsDelete = buildDeleteMock('comments');
-      const authorCommentsDelete = chainable({data: null, error: null});
+      const patchSelect = chainable<PatchDeleteRow>(selectedRows([{id: 11}, {id: 12}]));
+      const patchConnectionsDelete = buildDeleteMock<PatchConnectionDeleteRow>('patch_connections', inCalls, eqCalls);
+      const patchModuleInstancesDelete = buildDeleteMock<PatchModuleInstanceDeleteRow>('patch_module_instances', inCalls, eqCalls);
+      const patchDelete = buildDeleteMock<PatchDeleteRow>('patches', inCalls, eqCalls);
+      const rackSelect = chainable<RackDeleteRow>(selectedRows([{id: 21}]));
+      const rackModulesDelete = buildDeleteMock<RackModuleDeleteRow>('rack_modules', inCalls, eqCalls);
+      const rackDelete = buildDeleteMock<RackDeleteRow>('racks', inCalls, eqCalls);
+      const moduleSelect = chainable<ModuleDeleteRow>(selectedRows([{id: 31}, {id: 32}]));
+      const moduleDelete = buildDeleteMock<ModuleDeleteRow>('modules', inCalls, eqCalls);
+      const collectionSelect = chainable<ModuleCollectionDeleteRow>(selectedRows([{id: 41}]));
+      const collectionEntriesByCollectionDelete =
+        buildDeleteMock<ModuleCollectionDeleteRow>('module_collection_entries', inCalls, eqCalls);
+      const collectionEntriesByModuleDelete =
+        buildDeleteMock<ModuleCollectionDeleteRow>('module_collection_entries', inCalls, eqCalls);
+      const collectionDelete = buildDeleteMock<ModuleCollectionDeleteRow>('module_collections', inCalls, eqCalls);
+      const moduleFlagsByModuleDelete = buildDeleteMock<ModuleFlagDeleteRow>('module_flags', inCalls, eqCalls);
+      const moduleFlagsByUserDelete = buildDeleteMock<ModuleFlagDeleteRow>('module_flags', inCalls, eqCalls);
+      const userModulesDelete = chainable<UserModuleDeleteRow>(successfulDelete);
+      const patchCommentsDelete = buildDeleteMock<CommentDeleteRow>('comments', inCalls, eqCalls);
+      const rackCommentsDelete = buildDeleteMock<CommentDeleteRow>('comments', inCalls, eqCalls);
+      const moduleCommentsDelete = buildDeleteMock<CommentDeleteRow>('comments', inCalls, eqCalls);
+      const authorCommentsDelete = chainable<CommentDeleteRow>(successfulDelete);
 
       let patchCalls = 0;
       let rackCalls = 0;
@@ -298,7 +385,7 @@ describe('SupabaseService - delete advanced', () => {
           return authorCommentsDelete;
         }
         fail(`Unexpected table access: ${ table }`);
-        return chainable({data: null, error: null});
+        return chainable(successfulDelete);
       });
 
       service.delete.allUserData().subscribe({
@@ -393,13 +480,13 @@ describe('SupabaseService - delete advanced', () => {
     }, TEST_TIMEOUT);
 
     it('should error when rack deletion leaves owned rack rows behind', (done) => {
-      const mockUser = {id: 'delete-user-rack-remains'};
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+      const mockUser = authUserFixture('delete-user-rack-remains');
+      mockUserSession(service, mockUser);
 
-      const patchSelect = chainable({data: [], error: null});
-      const rackSelect = chainable({data: [{id: 21}], error: null});
-      const rackDelete = chainable({data: null, error: null});
-      const rackVerify = chainable({data: [{id: 21}], error: null});
+      const patchSelect = chainable<PatchDeleteRow>(selectedRows([]));
+      const rackSelect = chainable<RackDeleteRow>(selectedRows([{id: 21}]));
+      const rackDelete = chainable<RackDeleteRow>(successfulDelete);
+      const rackVerify = chainable<RackDeleteRow>(selectedRows([{id: 21}]));
 
       let rackCalls = 0;
       spyOn(supabaseClient, 'from').and.callFake((table: string) => {
@@ -410,7 +497,7 @@ describe('SupabaseService - delete advanced', () => {
           if (rackCalls === 2) return rackDelete;
           return rackVerify;
         }
-        return chainable({data: null, error: null});
+        return chainable(successfulDelete);
       });
 
       service.delete.allUserData().subscribe({
@@ -426,18 +513,21 @@ describe('SupabaseService - delete advanced', () => {
     }, TEST_TIMEOUT);
 
     it('should propagate Supabase errors during rack cleanup', (done) => {
-      const mockUser = {id: 'delete-user-rack-error'};
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+      const mockUser = authUserFixture('delete-user-rack-error');
+      mockUserSession(service, mockUser);
 
-      const patchSelect = chainable({data: [], error: null});
-      const rackSelect = chainable({data: [{id: 21}], error: null});
-      const rackModulesDelete = chainable({data: null, error: {message: 'rack modules blocked'}});
+      const patchSelect = chainable<PatchDeleteRow>(selectedRows([]));
+      const rackSelect = chainable<RackDeleteRow>(selectedRows([{id: 21}]));
+      const rackModulesDelete = chainable<RackModuleDeleteRow>({
+        data: null,
+        error: supabaseError('rack modules blocked')
+      });
 
       spyOn(supabaseClient, 'from').and.callFake((table: string) => {
         if (table === 'patches') return patchSelect;
         if (table === 'racks') return rackSelect;
         if (table === 'rack_modules') return rackModulesDelete;
-        return chainable({data: null, error: null});
+        return chainable(successfulDelete);
       });
 
       service.delete.allUserData().subscribe({
