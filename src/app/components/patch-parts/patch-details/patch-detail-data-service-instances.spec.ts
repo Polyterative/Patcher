@@ -6,18 +6,27 @@ import {
 } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import {
+  Observable,
   of,
   Subject
 } from 'rxjs';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { SelectionPanelBridgeService } from 'src/app/components/patch-parts/selection-panel-bridge.service';
-import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import {
+  SimpleUserModel,
+  SupabaseService
+} from 'src/app/features/backend/supabase.service';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import {
   PatchConnection,
   PatchModuleInstance
 } from 'src/app/models/connection';
 import { Patch } from 'src/app/models/patch';
+import {
+  cvWithModuleFixture,
+  minimalModuleFixture,
+  patchFixture
+} from '../patch-graph/patch-graph-test-fixtures';
 
 
 /**
@@ -31,20 +40,90 @@ import { Patch } from 'src/app/models/patch';
  */
 describe('PatchDetailDataService - Instance Management', () => {
   let service: PatchDetailDataService;
-  let mockSupabaseService: any;
-  let mockUserService: any;
-  let mockRouter: any;
-  let mockDialog: any;
+  let mockSupabaseService: PatchDetailSupabaseServiceMock;
+  let mockUserService: UserManagementServiceMock;
+  let mockRouter: jasmine.SpyObj<Router>;
+  let mockDialog: PatchDetailDialogMock;
+
+  type PatchDetailResponse = { data: Patch | null; error: null };
+  type MutationResponse = { data: null; error: null };
+  type UserSession = SimpleUserModel | null;
+  type UserProfile = SimpleUserModel & { username: string };
+  type PatchModuleInstanceInsert = Pick<PatchModuleInstance, 'patch_id' | 'module_id' | 'instance_label'>;
+  type NullableInstancePatchConnection =
+    Omit<PatchConnection, 'instance_id_a' | 'instance_id_b'>
+    & {
+      instance_id_a: number | null | undefined;
+      instance_id_b: number | null | undefined;
+    };
+
+  interface PatchDetailSupabaseServiceMock {
+    cacheResetter$: Subject<string[]>;
+    get: {
+      patchWithId: jasmine.Spy<(id: number) => Observable<PatchDetailResponse>>;
+      currentUserRacks: jasmine.Spy<() => Observable<unknown[]>>;
+    };
+    GET: {
+      patchConnections: jasmine.Spy<(patchId: number) => Observable<PatchConnection[]>>;
+      patchModuleInstances: jasmine.Spy<(patchId: number) => Observable<PatchModuleInstance[]>>;
+    };
+    update: {
+      patch: jasmine.Spy<(patch: Patch) => Observable<MutationResponse>>;
+      patchSilent: jasmine.Spy<(patch: Patch) => Observable<MutationResponse>>;
+      patchConnections: jasmine.Spy<(connections: PatchConnection[]) => Observable<MutationResponse>>;
+      patchConnectionsSilent: jasmine.Spy<(connections: PatchConnection[]) => Observable<MutationResponse>>;
+      patchModuleInstanceLabel: jasmine.Spy<(id: number, label: string | null) => Observable<PatchModuleInstance>>;
+    };
+    delete: {
+      userPatch: jasmine.Spy<(patchId: number) => Observable<MutationResponse>>;
+      patchConnectionsForPatch: jasmine.Spy<(patchId: number) => Observable<MutationResponse>>;
+      patch: jasmine.Spy<(patchId: number) => Observable<MutationResponse>>;
+      patchModuleInstance: jasmine.Spy<(instanceId: number) => Observable<MutationResponse>>;
+      patchModuleInstancesForPatch: jasmine.Spy<(patchId: number) => Observable<MutationResponse>>;
+    };
+    add: {
+      patchConnection: jasmine.Spy<(connection: PatchConnection) => Observable<MutationResponse>>;
+      patchModuleInstance: jasmine.Spy<(
+        patchId: number,
+        moduleId: number,
+        label: string | null
+      ) => Observable<PatchModuleInstance>>;
+      patchModuleInstances: jasmine.Spy<(rows: PatchModuleInstanceInsert[]) => Observable<PatchModuleInstance[]>>;
+    };
+    auth: {
+      getUserSession$: jasmine.Spy<() => Observable<UserSession>>;
+    };
+  }
+
+  interface UserManagementServiceMock {
+    loggedUser$: Observable<UserProfile>;
+  }
+
+  interface PatchDetailDialogMock {
+    open: jasmine.Spy<() => { afterClosed: () => Observable<{ answer: boolean }> }>;
+  }
+
+  function mutationResponse(): MutationResponse {
+    return {data: null, error: null};
+  }
+
+  function patchModuleInstance(
+    id: number,
+    patch_id: number,
+    module_id: number,
+    instance_label: string | null
+  ): PatchModuleInstance {
+    return {id, patch_id, module_id, instance_label};
+  }
   
-  const fakePatch: Patch = {
-    id: 100,
+  const fakePatch = patchFixture(100, {
     name: 'Test Patch',
     description: '',
     public: true,
     author: {id: 'user-1', username: 'testuser'},
     created: new Date().toISOString(),
     updated: new Date().toISOString()
-  } as Patch;
+  });
   
   /** Helper to build a minimal PatchConnection */
   function makeConnection(
@@ -53,8 +132,8 @@ describe('PatchDetailDataService - Instance Management', () => {
   ): PatchConnection {
     return {
       patch: fakePatch,
-      a: {id: aId, name: 'out1', module: {id: 10, name: 'ModA'}} as any,
-      b: {id: bId, name: 'in1', module: {id: 20, name: 'ModB'}} as any,
+      a: cvWithModuleFixture(aId, 10, 'ModA', 'out1'),
+      b: cvWithModuleFixture(bId, 20, 'ModB', 'in1'),
       instance_id_a: instanceIdA,
       instance_id_b: instanceIdB
     };
@@ -68,8 +147,8 @@ describe('PatchDetailDataService - Instance Management', () => {
   ): PatchConnection {
     return {
       patch: fakePatch,
-      a: {id: aId, name: 'out1', module: {id: moduleId, name: 'ModSelf'}} as any,
-      b: {id: bId, name: 'in1', module: {id: moduleId, name: 'ModSelf'}} as any,
+      a: cvWithModuleFixture(aId, moduleId, 'ModSelf', 'out1'),
+      b: cvWithModuleFixture(bId, moduleId, 'ModSelf', 'in1'),
       instance_id_a: instanceIdA,
       instance_id_b: instanceIdB
     };
@@ -77,7 +156,7 @@ describe('PatchDetailDataService - Instance Management', () => {
   
   beforeEach(() => {
     mockSupabaseService = {
-      cacheResetter$: new Subject<any>(),
+      cacheResetter$: new Subject<string[]>(),
       get: {
         patchWithId: jasmine.createSpy('patchWithId').and.returnValue(of({data: null, error: null})),
         currentUserRacks: jasmine.createSpy('currentUserRacks').and.returnValue(of([]))
@@ -87,39 +166,40 @@ describe('PatchDetailDataService - Instance Management', () => {
         patchModuleInstances: jasmine.createSpy('patchModuleInstances').and.returnValue(of([]))
       },
       update: {
-        patch: jasmine.createSpy('patch').and.returnValue(of({data: null, error: null})),
-        patchSilent: jasmine.createSpy('patchSilent').and.returnValue(of({data: null, error: null})),
-        patchConnections: jasmine.createSpy('patchConnections').and.returnValue(of({data: null, error: null})),
-        patchConnectionsSilent: jasmine.createSpy('patchConnectionsSilent').and.returnValue(of({data: null, error: null})),
+        patch: jasmine.createSpy('patch').and.returnValue(of(mutationResponse())),
+        patchSilent: jasmine.createSpy('patchSilent').and.returnValue(of(mutationResponse())),
+        patchConnections: jasmine.createSpy('patchConnections').and.returnValue(of(mutationResponse())),
+        patchConnectionsSilent: jasmine.createSpy('patchConnectionsSilent').and.returnValue(of(mutationResponse())),
         patchModuleInstanceLabel: jasmine.createSpy('patchModuleInstanceLabel').and.callFake(
           (id: number, label: string | null) => {
             // Look up the module_id from the service's current state
             const inst = service?.patchModuleInstances$?.value?.find(i => i.id === id);
             const module_id = inst?.module_id ?? 20;
-            return of({id, patch_id: 100, module_id, instance_label: label} as PatchModuleInstance);
+            return of(patchModuleInstance(id, 100, module_id, label));
           }
         )
       },
       delete: {
-        userPatch: jasmine.createSpy('userPatch').and.returnValue(of({data: null, error: null})),
-        patchConnectionsForPatch: jasmine.createSpy('patchConnectionsForPatch').and.returnValue(of({data: null, error: null})),
-        patch: jasmine.createSpy('patch').and.returnValue(of({data: null, error: null})),
-        patchModuleInstance: jasmine.createSpy('patchModuleInstance').and.returnValue(of({data: null, error: null})),
-        patchModuleInstancesForPatch: jasmine.createSpy('patchModuleInstancesForPatch').and.returnValue(of({data: null, error: null}))
+        userPatch: jasmine.createSpy('userPatch').and.returnValue(of(mutationResponse())),
+        patchConnectionsForPatch: jasmine.createSpy('patchConnectionsForPatch').and.returnValue(of(mutationResponse())),
+        patch: jasmine.createSpy('patch').and.returnValue(of(mutationResponse())),
+        patchModuleInstance: jasmine.createSpy('patchModuleInstance').and.returnValue(of(mutationResponse())),
+        patchModuleInstancesForPatch: jasmine.createSpy('patchModuleInstancesForPatch').and.returnValue(of(mutationResponse()))
       },
       add: {
-        patchConnection: jasmine.createSpy('patchConnection').and.returnValue(of({data: null, error: null})),
+        patchConnection: jasmine.createSpy('patchConnection').and.returnValue(of(mutationResponse())),
         patchModuleInstance: jasmine.createSpy('patchModuleInstance').and.callFake(
           (patchId: number, moduleId: number, label: string | null) =>
-            of({id: Math.floor(Math.random() * 10000), patch_id: patchId, module_id: moduleId, instance_label: label} as PatchModuleInstance)
+            of(patchModuleInstance(Math.floor(Math.random() * 10000), patchId, moduleId, label))
         ),
         patchModuleInstances: jasmine.createSpy('patchModuleInstances').and.callFake(
-          (rows: {
-            patch_id: number;
-            module_id: number;
-            instance_label: string | null
-          }[]) =>
-            of(rows.map(r => ({id: Math.floor(Math.random() * 10000), ...r} as PatchModuleInstance)))
+          (rows: PatchModuleInstanceInsert[]) =>
+            of(rows.map(r => patchModuleInstance(
+              Math.floor(Math.random() * 10000),
+              r.patch_id,
+              r.module_id,
+              r.instance_label
+            )))
         )
       },
       auth: {
@@ -130,14 +210,20 @@ describe('PatchDetailDataService - Instance Management', () => {
     };
     
     mockUserService = {
-      loggedUser$: of({id: 'user-1', username: 'testuser', email: 'test@example.com'})
+      loggedUser$: of({
+        id: 'user-1',
+        username: 'testuser',
+        email: 'test@example.com',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
     };
     
-    mockRouter = jasmine.createSpyObj('Router', ['navigate']);
+    mockRouter = jasmine.createSpyObj<Router>('Router', ['navigate']);
     
     // Mock MatDialog to auto-confirm (answer: true) for delete-with-connections tests
     mockDialog = {
-      open: jasmine.createSpy('open').and.returnValue({
+      open: jasmine.createSpy<() => { afterClosed: () => Observable<{ answer: boolean }> }>('open').and.returnValue({
         afterClosed: () => of({answer: true})
       })
     };
@@ -305,7 +391,7 @@ describe('PatchDetailDataService - Instance Management', () => {
       service.editorConnections$.next([conn]);
       
       // Act: trigger "Add Copy" for module 20
-      service.addModuleInstance$.next({id: 20, name: 'ModB'} as any);
+      service.addModuleInstance$.next(minimalModuleFixture(20, 'ModB'));
       
       setTimeout(() => {
         // The connection's instance_id_b should still be 800
@@ -373,12 +459,12 @@ describe('PatchDetailDataService - Instance Management', () => {
     
     it('should treat null instance_id from DB the same as undefined after normalization', () => {
       // Simulate a connection as it would come from the DB (with null)
-      const dbConnection: PatchConnection = {
+      const dbConnection: NullableInstancePatchConnection = {
         patch: fakePatch,
-        a: {id: 1, name: 'out1', module: {id: 10, name: 'ModA'}} as any,
-        b: {id: 2, name: 'in1', module: {id: 20, name: 'ModB'}} as any,
-        instance_id_a: null as any,
-        instance_id_b: null as any
+        a: cvWithModuleFixture(1, 10, 'ModA', 'out1'),
+        b: cvWithModuleFixture(2, 20, 'ModB', 'in1'),
+        instance_id_a: null,
+        instance_id_b: null
       };
       
       // Apply the normalization that the service does on load: ?? undefined
@@ -403,12 +489,12 @@ describe('PatchDetailDataService - Instance Management', () => {
     it('should NOT detect duplicate without normalization when null vs undefined are compared', () => {
       // This test documents the bug that normalization fixes:
       // DB returns null, in-memory uses undefined → strict === fails
-      const dbConnection: PatchConnection = {
+      const dbConnection: NullableInstancePatchConnection = {
         patch: fakePatch,
-        a: {id: 1, name: 'out1', module: {id: 10, name: 'ModA'}} as any,
-        b: {id: 2, name: 'in1', module: {id: 20, name: 'ModB'}} as any,
-        instance_id_a: null as any,
-        instance_id_b: null as any
+        a: cvWithModuleFixture(1, 10, 'ModA', 'out1'),
+        b: cvWithModuleFixture(2, 20, 'ModB', 'in1'),
+        instance_id_a: null,
+        instance_id_b: null
       };
       
       const inMemoryConn = makeConnection(1, 2, undefined, undefined);
@@ -477,7 +563,7 @@ describe('PatchDetailDataService - Instance Management', () => {
       service.editorConnections$.next([]);
       
       // Add another copy
-      service.addModuleInstance$.next({id: 20, name: 'ModB'} as any);
+      service.addModuleInstance$.next(minimalModuleFixture(20, 'ModB'));
       
       setTimeout(() => {
         const mod20 = service.patchModuleInstances$.value
@@ -730,8 +816,8 @@ describe('PatchDetailDataService - Instance Management', () => {
       // A(2) out[3] → A(1) in[4] — different output/input CVs, different direction
       const reversed: PatchConnection = {
         patch: fakePatch,
-        a: {id: 3, name: 'out2', module: {id: 10, name: 'ModSelf'}} as any,
-        b: {id: 4, name: 'in2', module: {id: 10, name: 'ModSelf'}} as any,
+        a: cvWithModuleFixture(3, 10, 'ModSelf', 'out2'),
+        b: cvWithModuleFixture(4, 10, 'ModSelf', 'in2'),
         instance_id_a: 502,
         instance_id_b: 501
       };
