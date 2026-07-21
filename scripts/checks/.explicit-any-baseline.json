@@ -1,6 +1,6 @@
 {
   "_comment": "Grandfathered explicit `any` counts. Do not add by hand — run `node scripts/checks/check-explicit-any.cjs --update-baseline` after intentional cleanup.",
-  "totalExplicitAny": 1123,
+  "totalExplicitAny": 1115,
   "files": {
     "api/sitemap.ts": 3,
     "e2e/helpers/linked-rack-scenario.ts": 2,
@@ -18,12 +18,9 @@
     "src/app/components/rack-parts/rack-detail-data.service.reactive.spec.ts": 46,
     "src/app/components/rack-parts/rack-editor/rack-editor.component.spec.ts": 37,
     "src/app/components/rack-parts/rack-editor/rack-visual-model/rack-visual-model.component.spec.ts": 39,
-    "src/app/features/backbone/login/auth-callback.component.spec.ts": 3,
-    "src/app/features/backbone/login/complete-profile/complete-profile.component.spec.ts": 3,
     "src/app/features/backbone/login/error.interceptor.ts": 2,
     "src/app/features/backbone/login/jwt.interceptor.ts": 2,
     "src/app/features/backbone/login/reset-password/reset-password-page.component.ts": 3,
-    "src/app/features/backbone/login/reset-password/user-reset-password-data.service.spec.ts": 2,
     "src/app/features/backend/__tests__/supabase-service/crud-operations.spec.ts": 52,
     "src/app/features/backend/__tests__/supabase-service/delete-simple.spec.ts": 33,
     "src/app/features/backend/__tests__/supabase-service/get-complex-queries.spec.ts": 27,

@@ -1,7 +1,11 @@
 import {
   fakeAsync,
+  TestBed,
   tick
 } from '@angular/core/testing';
+import { Router } from '@angular/router';
+import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import {
   of,
   throwError
@@ -11,17 +15,46 @@ import { UserResetPasswordDataService } from './user-reset-password-data.service
 
 
 describe('UserResetPasswordDataService', () => {
-  function build() {
-    const supabaseService = {
-      auth: {
-        resetPassword$: jasmine.createSpy('resetPassword$').and.returnValue(of(undefined))
-      }
-    };
-    const router = jasmine.createSpyObj('Router', ['navigate']);
+  type ResetPasswordAuthMock = Pick<SupabaseService['auth'], 'resetPassword$'>;
+  type ResetPasswordSupabaseServiceMock = {
+    readonly auth: jasmine.SpyObj<ResetPasswordAuthMock>;
+  };
+  type ResetPasswordAnalyticsMock = jasmine.SpyObj<Pick<AnalyticsService, 'capture' | 'identify' | 'reset'>>;
 
-    const service = new UserResetPasswordDataService(router, supabaseService as any, {capture: () => {}, identify: () => {}, reset: () => {}} as any);
-    return {service, supabaseService, router};
+  function build(): {
+    service: UserResetPasswordDataService;
+    supabaseService: ResetPasswordSupabaseServiceMock;
+    router: jasmine.SpyObj<Router>;
+    analytics: ResetPasswordAnalyticsMock;
+  } {
+    const auth = jasmine.createSpyObj<ResetPasswordAuthMock>('auth', ['resetPassword$']);
+    auth.resetPassword$.and.returnValue(of(undefined));
+
+    const supabaseService = {
+      auth
+    };
+    const router = jasmine.createSpyObj<Router>('Router', ['navigate']);
+    const analytics = jasmine.createSpyObj<Pick<AnalyticsService, 'capture' | 'identify' | 'reset'>>(
+      'AnalyticsService',
+      ['capture', 'identify', 'reset']
+    );
+
+    TestBed.configureTestingModule({
+      providers: [
+        UserResetPasswordDataService,
+        {provide: Router, useValue: router},
+        {provide: SupabaseService, useValue: supabaseService},
+        {provide: AnalyticsService, useValue: analytics}
+      ]
+    });
+
+    const service = TestBed.inject(UserResetPasswordDataService);
+    return {service, supabaseService, router, analytics};
   }
+
+  afterEach(() => {
+    TestBed.resetTestingModule();
+  });
 
   it('setRecoverySession sets isRecoverySession$ and marks session as checked', () => {
     const {service} = build();

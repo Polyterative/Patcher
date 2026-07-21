@@ -11,6 +11,7 @@ import {
   Router
 } from '@angular/router';
 import {
+  Observable,
   of,
   ReplaySubject,
   Subject,
@@ -19,7 +20,9 @@ import {
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
+import { RichUserModel } from 'src/app/features/backend/supabase.types';
 import { CompleteProfileComponent } from './complete-profile.component';
+import { MOCK_RICH_USER } from '../__tests__/user-management-service/test-setup';
 import { UserManagementService } from '../user-management.service';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
@@ -28,23 +31,39 @@ import { ScreenWrapperComponent } from 'src/app/shared-interproject/components/@
 
 
 describe('CompleteProfileComponent', () => {
+  type CompleteProfileUser = RichUserModel | null | undefined;
+  type CompleteProfileUserManagementMock = {
+    loggedUserFullProfile$: Observable<CompleteProfileUser>;
+    updateUsername$: jasmine.Spy<(username: string) => Observable<void>>;
+    isUsernameAvailable$: jasmine.Spy<(username: string) => Observable<boolean>>;
+  };
+
   let component: CompleteProfileComponent;
   let fixture: ComponentFixture<CompleteProfileComponent>;
   let mockRouter: jasmine.SpyObj<Router>;
   let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
-  let mockUserManagementService: any;
-  let loggedUserFullProfile$: ReplaySubject<any>;
+  let mockUserManagementService: CompleteProfileUserManagementMock;
+  let loggedUserFullProfile$: ReplaySubject<CompleteProfileUser>;
+
+  function profileWithUsername(username: string): RichUserModel {
+    return {
+      ...MOCK_RICH_USER,
+      id: '1',
+      email: 'a@b.com',
+      username
+    };
+  }
   
   beforeEach(async () => {
-    loggedUserFullProfile$ = new ReplaySubject<any>(1);
+    loggedUserFullProfile$ = new ReplaySubject<CompleteProfileUser>(1);
     
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
     mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
     
     mockUserManagementService = {
       loggedUserFullProfile$: loggedUserFullProfile$.asObservable(),
-      updateUsername$: jasmine.createSpy('updateUsername$').and.returnValue(of(void 0)),
-      isUsernameAvailable$: jasmine.createSpy('isUsernameAvailable$').and.returnValue(of(true))
+      updateUsername$: jasmine.createSpy<(username: string) => Observable<void>>('updateUsername$').and.returnValue(of(void 0)),
+      isUsernameAvailable$: jasmine.createSpy<(username: string) => Observable<boolean>>('isUsernameAvailable$').and.returnValue(of(true))
     };
     
     await TestBed.configureTestingModule({
@@ -95,14 +114,14 @@ describe('CompleteProfileComponent', () => {
   
   it('redirects to /user/area when user already has a proper username', fakeAsync(() => {
     fixture.detectChanges();
-    loggedUserFullProfile$.next({id: '1', username: 'properusername', email: 'a@b.com'});
+    loggedUserFullProfile$.next(profileWithUsername('properusername'));
     tick();
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/user/area']);
   }));
   
   it('does NOT redirect when user has a temp username starting with user_', fakeAsync(() => {
     fixture.detectChanges();
-    loggedUserFullProfile$.next({id: '1', username: 'user_abc123', email: 'a@b.com'});
+    loggedUserFullProfile$.next(profileWithUsername('user_abc123'));
     tick();
     expect(mockRouter.navigate).not.toHaveBeenCalled();
   }));
@@ -134,7 +153,7 @@ describe('CompleteProfileComponent', () => {
 
   it('uses the shared auth shell and branded submit control', fakeAsync(() => {
     fixture.detectChanges();
-    loggedUserFullProfile$.next({id: '1', username: 'user_abc123', email: 'a@b.com'});
+    loggedUserFullProfile$.next(profileWithUsername('user_abc123'));
     tick();
     fixture.detectChanges();
 
@@ -169,7 +188,7 @@ describe('CompleteProfileComponent', () => {
 
     expect(component.usernameControl.hasError('usernameTaken')).toBeTrue();
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('That username is already taken');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('That username is already taken');
     component.saveUsername();
     tick();
 
@@ -184,7 +203,7 @@ describe('CompleteProfileComponent', () => {
 
     expect(component.usernameControl.hasError(component.usernameAvailabilityCheckFailedErrorCode)).toBeTrue();
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('Username availability could not be checked');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Username availability could not be checked');
     component.saveUsername();
     tick();
 
