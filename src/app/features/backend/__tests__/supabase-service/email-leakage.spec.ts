@@ -1,12 +1,22 @@
-import { of } from 'rxjs';
 import { QueryJoins } from '../../DatabaseStrings';
 import { PublicUser } from 'src/app/models/user';
 import { SupabaseService } from '../../supabase.service';
+import type { SupabaseTableRow } from '../../supabase-db.types';
 import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest,
   TEST_TIMEOUT
 } from './test-setup';
+import {
+  authUserFixture,
+  getSupabaseClientDouble,
+  mockUserSession,
+  type QueryChainResult,
+  type QueryCountRowsResult,
+  type QuerySingleRowResult,
+  type SupabaseClientDouble,
+  SupabaseQueryChain
+} from './supabase-query-test-doubles';
 
 
 /**
@@ -21,22 +31,39 @@ import {
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
-/** Builds a chainable Supabase query mock that records every .select() call. */
-function chainableWithSelectSpy(resolveValue: any = {data: [], error: null}) {
-  const calls: string[] = [];
-  const m: any = {};
-  ['filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit',
-    'single', 'maybeSingle', 'insert', 'update', 'delete', 'upsert', 'ilike', 'inner'].forEach(method => {
-    m[method] = () => m;
-  });
-  m.select = (...args: any[]) => {
-    calls.push(args[0] ?? '');
-    return m;
-  };
-  m.then = (res: Function, rej?: Function) =>
-    Promise.resolve(resolveValue).then(res as any, rej as any);
-  m._selectCalls = calls;
-  return m;
+type QueryJoinStringKey = {
+  [Key in keyof typeof QueryJoins]: typeof QueryJoins[Key] extends string ? Key : never
+}[keyof typeof QueryJoins];
+type CommentRow = Pick<SupabaseTableRow<'comments'>, 'authorId' | 'content' | 'entityId' | 'entityType' | 'id'>;
+type PatchRow = Pick<SupabaseTableRow<'patches'>, 'id' | 'name'>;
+type RackRow = Pick<SupabaseTableRow<'racks'>, 'id' | 'name'>;
+
+class SelectRecordingQueryChain<Row = unknown> extends SupabaseQueryChain<Row> {
+  readonly selectCalls: string[] = [];
+
+  override select(...args: Parameters<SupabaseQueryChain<Row>['select']>): this {
+    const [columns] = args;
+    this.selectCalls.push(columns);
+
+    return super.select(...args);
+  }
+}
+
+function selectRecordingQueryChain<Row>(
+  resolveValue: QueryChainResult<Row>
+): SelectRecordingQueryChain<Row> {
+  return new SelectRecordingQueryChain(resolveValue);
+}
+
+function isQueryJoinStringKey(key: string): key is QueryJoinStringKey {
+  return !['prototype', 'length', 'name'].includes(key)
+    && typeof Reflect.get(QueryJoins, key) === 'string';
+}
+
+function queryJoinStringEntries(): Array<[QueryJoinStringKey, string]> {
+  return Object.getOwnPropertyNames(QueryJoins)
+    .filter(isQueryJoinStringKey)
+    .map(key => [key, QueryJoins[key]]);
 }
 
 // ─── 1. Static query-string contracts ────────────────────────────────────────
@@ -52,11 +79,9 @@ describe('Email leakage – QueryJoins static strings', () => {
   });
   
   it('every QueryJoins value must not contain "email"', () => {
-    const keys = Object.getOwnPropertyNames(QueryJoins)
-      .filter(k => !['prototype', 'length', 'name'].includes(k));
+    const entries = queryJoinStringEntries();
     
-    for (const key of keys) {
-      const value: string = (QueryJoins as any)[key];
+    for (const [key, value] of entries) {
       expect(value)
         .withContext(`QueryJoins.${ key } must not expose email`)
         .not.toContain('email');
@@ -79,10 +104,8 @@ describe('Email leakage – QueryJoins static strings', () => {
 describe('Email leakage – PublicUser interface', () => {
   
   it('PublicUser does not have an email field', () => {
-    // Compile-time: if email existed, the cast below would carry it.
-    // Runtime: construct a minimal valid PublicUser and assert no email key.
     const user: PublicUser = {id: 'u1', username: 'alice'};
-    expect((user as any).email).toBeUndefined();
+    expect('email' in user).toBeFalse();
   });
   
   it('PublicUser only exposes id and username', () => {
@@ -96,23 +119,26 @@ describe('Email leakage – PublicUser interface', () => {
 
 describe('Email leakage – GET.comments (public endpoint)', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: SupabaseClientDouble;
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = getSupabaseClientDouble(service);
   });
   
   afterEach(() => cleanupSupabaseServiceTest());
   
   it('must not request email in the profiles join', (done) => {
-    const mock = chainableWithSelectSpy({data: [], error: null});
+    const mock = selectRecordingQueryChain<CommentRow>({
+      data: [],
+      error: null
+    });
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
     service.GET.comments(1, 1).subscribe({
       next: () => {
-        for (const call of mock._selectCalls) {
+        for (const call of mock.selectCalls) {
           expect(call)
             .withContext('getComments select string must not contain email')
             .not.toContain('email');
@@ -127,12 +153,15 @@ describe('Email leakage – GET.comments (public endpoint)', () => {
   }, TEST_TIMEOUT);
   
   it('still requests profile id and username', (done) => {
-    const mock = chainableWithSelectSpy({data: [], error: null});
+    const mock = selectRecordingQueryChain<CommentRow>({
+      data: [],
+      error: null
+    });
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
     service.GET.comments(1, 1).subscribe({
       next: () => {
-        const joined = mock._selectCalls.join(' ');
+        const joined = mock.selectCalls.join(' ');
         expect(joined).toContain('username');
         expect(joined).toContain('id');
         done();
@@ -149,24 +178,28 @@ describe('Email leakage – GET.comments (public endpoint)', () => {
 
 describe('Email leakage – GET.currentUserComments (own comments)', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: SupabaseClientDouble;
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = getSupabaseClientDouble(service);
   });
   
   afterEach(() => cleanupSupabaseServiceTest());
   
   it('must not request email in the profiles join', (done) => {
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
-    const mock = chainableWithSelectSpy({data: [], count: 0, error: null});
+    mockUserSession(service, authUserFixture('u1'));
+    const mock = selectRecordingQueryChain<CommentRow>({
+      data: [],
+      count: 0,
+      error: null
+    } satisfies QueryCountRowsResult<CommentRow>);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
     service.GET.currentUserComments(0, 9).subscribe({
       next: () => {
-        for (const call of mock._selectCalls) {
+        for (const call of mock.selectCalls) {
           expect(call)
             .withContext('getCurrentUserComments select string must not contain email')
             .not.toContain('email');
@@ -185,23 +218,26 @@ describe('Email leakage – GET.currentUserComments (own comments)', () => {
 
 describe('Email leakage – patch and rack author queries', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: SupabaseClientDouble;
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = getSupabaseClientDouble(service);
   });
   
   afterEach(() => cleanupSupabaseServiceTest());
   
   it('get.patchWithId must not request email', (done) => {
-    const mock = chainableWithSelectSpy({data: {id: 1, name: 'P'}, error: null});
+    const mock = selectRecordingQueryChain<PatchRow>({
+      data: {id: 1, name: 'P'},
+      error: null
+    } satisfies QuerySingleRowResult<PatchRow>);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
     service.get.patchWithId(1).subscribe({
       next: () => {
-        for (const call of mock._selectCalls) {
+        for (const call of mock.selectCalls) {
           expect(call)
             .withContext('patchWithId select must not contain email')
             .not.toContain('email');
@@ -216,12 +252,15 @@ describe('Email leakage – patch and rack author queries', () => {
   }, TEST_TIMEOUT);
   
   it('GET.rackWithId must not request email', (done) => {
-    const mock = chainableWithSelectSpy({data: {id: 5, name: 'R'}, error: null});
+    const mock = selectRecordingQueryChain<RackRow>({
+      data: {id: 5, name: 'R'},
+      error: null
+    } satisfies QuerySingleRowResult<RackRow>);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
     service.GET.rackWithId(5).subscribe({
       next: () => {
-        for (const call of mock._selectCalls) {
+        for (const call of mock.selectCalls) {
           expect(call)
             .withContext('rackWithId select must not contain email')
             .not.toContain('email');
@@ -236,12 +275,16 @@ describe('Email leakage – patch and rack author queries', () => {
   }, TEST_TIMEOUT);
   
   it('GET.patches (public listing) must not request email', (done) => {
-    const mock = chainableWithSelectSpy({data: [], count: 0, error: null});
+    const mock = selectRecordingQueryChain<PatchRow>({
+      data: [],
+      count: 0,
+      error: null
+    } satisfies QueryCountRowsResult<PatchRow>);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
     service.GET.patches(0, 9).subscribe({
       next: () => {
-        for (const call of mock._selectCalls) {
+        for (const call of mock.selectCalls) {
           expect(call)
             .withContext('getPatches select must not contain email')
             .not.toContain('email');
@@ -256,12 +299,16 @@ describe('Email leakage – patch and rack author queries', () => {
   }, TEST_TIMEOUT);
   
   it('GET.racksMinimal (public listing) must not request email', (done) => {
-    const mock = chainableWithSelectSpy({data: [], count: 0, error: null});
+    const mock = selectRecordingQueryChain<RackRow>({
+      data: [],
+      count: 0,
+      error: null
+    } satisfies QueryCountRowsResult<RackRow>);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
     service.GET.racksMinimal(0, 9).subscribe({
       next: () => {
-        for (const call of mock._selectCalls) {
+        for (const call of mock.selectCalls) {
           expect(call)
             .withContext('racksMinimal select must not contain email')
             .not.toContain('email');
@@ -276,13 +323,17 @@ describe('Email leakage – patch and rack author queries', () => {
   }, TEST_TIMEOUT);
   
   it('GET.userPatchesPaginated must not request email', (done) => {
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
-    const mock = chainableWithSelectSpy({data: [], count: 0, error: null});
+    mockUserSession(service, authUserFixture('u1'));
+    const mock = selectRecordingQueryChain<PatchRow>({
+      data: [],
+      count: 0,
+      error: null
+    } satisfies QueryCountRowsResult<PatchRow>);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
     service.GET.userPatchesPaginated(0, 9).subscribe({
       next: () => {
-        for (const call of mock._selectCalls) {
+        for (const call of mock.selectCalls) {
           expect(call)
             .withContext('userPatchesPaginated select must not contain email')
             .not.toContain('email');
@@ -297,13 +348,17 @@ describe('Email leakage – patch and rack author queries', () => {
   }, TEST_TIMEOUT);
   
   it('GET.userRacksPaginated must not request email', (done) => {
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
-    const mock = chainableWithSelectSpy({data: [], count: 0, error: null});
+    mockUserSession(service, authUserFixture('u1'));
+    const mock = selectRecordingQueryChain<RackRow>({
+      data: [],
+      count: 0,
+      error: null
+    } satisfies QueryCountRowsResult<RackRow>);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
     service.GET.userRacksPaginated(0, 9).subscribe({
       next: () => {
-        for (const call of mock._selectCalls) {
+        for (const call of mock.selectCalls) {
           expect(call)
             .withContext('userRacksPaginated select must not contain email')
             .not.toContain('email');
@@ -325,12 +380,7 @@ describe('Email leakage – regression guard on all QueryJoins values', () => {
   it('no QueryJoins value contains the literal string "email"', () => {
     // This acts as a canary: if someone adds email back to any join string,
     // this test will fail immediately and explain why.
-    const allJoins: Record<string, string> = {};
-    Object.getOwnPropertyNames(QueryJoins)
-      .filter(k => !['prototype', 'length', 'name'].includes(k))
-      .forEach(k => {
-        allJoins[k] = (QueryJoins as any)[k];
-      });
+    const allJoins: Record<string, string> = Object.fromEntries(queryJoinStringEntries());
     
     Object.entries(allJoins).forEach(([key, value]) => {
       expect(value)
