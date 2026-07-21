@@ -1,3 +1,4 @@
+import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { SimpleChange } from '@angular/core';
 import {
   ComponentFixture,
@@ -38,8 +39,8 @@ describe('ModuleCollectionEditorComponent', () => {
       created: '2026-01-01T00:00:00.000Z',
       updated: '2026-01-01T00:00:00.000Z',
       manufacturerId: 1,
-      manufacturer: {id: 1, name: 'Maker'} as any,
-      standard: {id: 0, name: '3U Doepfer'} as any,
+      manufacturer: {id: 1, name: 'Maker'},
+      standard: {id: 0, name: '3U Doepfer'},
       tags: [],
       panels: []
     };
@@ -49,7 +50,7 @@ describe('ModuleCollectionEditorComponent', () => {
     return {
       id: 44,
       authorid: 'user-1',
-      author: {id: 'user-1', username: 'creator'} as any,
+      author: {id: 'user-1', username: 'creator'},
       name: 'Distortion playlist',
       description: 'Rationale',
       image: null,
@@ -281,7 +282,7 @@ describe('ModuleCollectionEditorComponent', () => {
     fixture.componentInstance.onSelectedModulesDrop({
       previousIndex: 2,
       currentIndex: 0
-    } as any);
+    } as CdkDragDrop<MinimalModule[]>);
 
     expect(fixture.componentInstance.selectedModules$.value.map(module => module.id)).toEqual([3, 1, 2]);
     expect(collectionsDataService.saveCollection).toHaveBeenCalledOnceWith(jasmine.objectContaining({
