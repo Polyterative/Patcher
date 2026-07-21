@@ -49,7 +49,7 @@ describe('ManufacturerUpdatedBadgeComponent', () => {
   });
   
   it('updatedAt setter handles undefined input', () => {
-    component.updatedAt = undefined as any;
+    component.updatedAt = undefined;
     expect(component.updatedColor).toBe('rgba(36, 49, 63, 0.84)');
   });
   
