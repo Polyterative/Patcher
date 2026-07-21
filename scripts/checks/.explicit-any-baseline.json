@@ -1,6 +1,6 @@
 {
   "_comment": "Grandfathered explicit `any` counts. Do not add by hand — run `node scripts/checks/check-explicit-any.cjs --update-baseline` after intentional cleanup.",
-  "totalExplicitAny": 728,
+  "totalExplicitAny": 727,
   "files": {
     "api/sitemap.ts": 3,
     "e2e/helpers/linked-rack-scenario.ts": 2,
@@ -34,7 +34,6 @@
     "src/app/features/backend/supabase.cache.ts": 3,
     "src/app/features/info-pages/application-insights/application-insights-page.component.spec.ts": 3,
     "src/app/features/manufacturer-detail/manufacturer-browser-root/manufacturer-browser-root-data.service.ts": 2,
-    "src/app/features/manufacturer-detail/manufacturer-browser-root/manufacturer-row/manufacturer-updated-badge/manufacturer-updated-badge.component.spec.ts": 1,
     "src/app/features/module-browser/module-browser-adder/module-adder-data.service.ts": 1,
     "src/app/features/module-browser/module-browser-detail/module-browser-detail.component.spec.ts": 37,
     "src/app/features/routes/public-profile/public-profile-data.utils.ts": 1,
