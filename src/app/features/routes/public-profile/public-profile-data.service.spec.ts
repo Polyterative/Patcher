@@ -1,28 +1,121 @@
-import { of, Subject, throwError } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Observable, of, Subject, throwError } from 'rxjs';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import { type PublicUserContributorStats } from 'src/app/features/backend/supabase-queries';
 import { type MarketplaceListing } from 'src/app/features/marketplace/marketplace-listing.utils';
 import { createMarketplaceListing } from 'src/app/features/marketplace/marketplace-test-helpers.spec';
+import { Patch } from 'src/app/models/patch';
+import { Rack } from 'src/app/models/rack';
+import { PublicUser } from 'src/app/models/user';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { environment } from 'src/environments/environment';
 import { PublicProfileDataService } from './public-profile-data.service';
+
+type PublicProfileBackendRow = {
+  id: string;
+  username: string;
+  public: boolean;
+  website?: string | null;
+  avatar_url?: string | null;
+} | null;
+
+interface BackendResult<T> {
+  data: T;
+}
+
+interface PaginatedBackendResult<T> {
+  data: T[];
+  count: number;
+}
+
+type PublicProfileByUsername = (username: string) => Observable<BackendResult<PublicProfileBackendRow>>;
+type PublicUserPatchesPaginated = (
+  authorId: string,
+  from?: number,
+  to?: number
+) => Observable<PaginatedBackendResult<Patch>>;
+type PublicUserRacksPaginated = (
+  authorId: string,
+  from?: number,
+  to?: number
+) => Observable<PaginatedBackendResult<Rack>>;
+type PublicUserContributorStatsQuery = (authorId: string) => Observable<PublicUserContributorStats>;
+type ActiveMarketplaceListingsBySellerProfileId = (sellerProfileId: string) => Observable<MarketplaceListing[]>;
+
+interface PublicProfileBackendDouble {
+  get: {
+    publicProfileByUsername: jasmine.Spy<PublicProfileByUsername>;
+  };
+  GET: {
+    publicUserPatchesPaginated: jasmine.Spy<PublicUserPatchesPaginated>;
+    publicUserRacksPaginated: jasmine.Spy<PublicUserRacksPaginated>;
+    publicUserContributorStats: jasmine.Spy<PublicUserContributorStatsQuery>;
+    activeMarketplaceListingsBySellerProfileId: jasmine.Spy<ActiveMarketplaceListingsBySellerProfileId>;
+  };
+}
 
 describe('PublicProfileDataService', () => {
   let createdServices: PublicProfileDataService[];
   let originalMarketplaceEnabled: boolean;
 
-  function build(profileData: any) {
-    const backend = {
+  const publicAuthor: PublicUser = {
+    id: 'pub-1',
+    username: 'gooduser',
+  };
+
+  function paginatedResult<T>(data: T[], count: number): PaginatedBackendResult<T> {
+    return {data, count};
+  }
+
+  function patchFixture(id: number): Patch {
+    return {
+      id,
+      author: publicAuthor,
+      name: `Patch ${ id }`,
+      public: true,
+      created: '2026-01-01T00:00:00Z',
+      updated: '2026-01-02T00:00:00Z',
+    };
+  }
+
+  function rackFixture(id: number): Rack {
+    return {
+      id,
+      author: publicAuthor,
+      name: `Rack ${ id }`,
+      public: true,
+      hp: 84,
+      rows: 2,
+      locked: false,
+      created: '2026-01-01T00:00:00Z',
+      updated: '2026-01-02T00:00:00Z',
+    };
+  }
+
+  function asSupabaseService(backend: PublicProfileBackendDouble): SupabaseService {
+    return Object.assign(Object.create(SupabaseService.prototype) as SupabaseService, backend);
+  }
+
+  function build(profileData: PublicProfileBackendRow) {
+    const backend: PublicProfileBackendDouble = {
       get: {
-        publicProfileByUsername: jasmine.createSpy().and.returnValue(of({data: profileData})),
+        publicProfileByUsername: jasmine.createSpy<PublicProfileByUsername>('publicProfileByUsername')
+          .and.returnValue(of({data: profileData})),
       },
       GET: {
-        publicUserPatchesPaginated: jasmine.createSpy().and.returnValue(of({data: [], count: 0})),
-        publicUserRacksPaginated: jasmine.createSpy().and.returnValue(of({data: [], count: 0})),
-        publicUserContributorStats: jasmine.createSpy().and.returnValue(of({approvedPublicModules: 2})),
-        activeMarketplaceListingsBySellerProfileId: jasmine.createSpy().and.returnValue(of([])),
+        publicUserPatchesPaginated: jasmine.createSpy<PublicUserPatchesPaginated>('publicUserPatchesPaginated')
+          .and.returnValue(of(paginatedResult([], 0))),
+        publicUserRacksPaginated: jasmine.createSpy<PublicUserRacksPaginated>('publicUserRacksPaginated')
+          .and.returnValue(of(paginatedResult([], 0))),
+        publicUserContributorStats: jasmine.createSpy<PublicUserContributorStatsQuery>('publicUserContributorStats')
+          .and.returnValue(of({approvedPublicModules: 2})),
+        activeMarketplaceListingsBySellerProfileId:
+          jasmine.createSpy<ActiveMarketplaceListingsBySellerProfileId>('activeMarketplaceListingsBySellerProfileId')
+            .and.returnValue(of([])),
       },
     };
-    const snackBar = jasmine.createSpyObj('MatSnackBar', ['open', 'openFromComponent', 'dismiss']);
-    const service = new PublicProfileDataService(backend as any, snackBar);
+    const snackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open', 'openFromComponent', 'dismiss']);
+    const service = new PublicProfileDataService(asSupabaseService(backend), snackBar);
     createdServices.push(service);
 
     return {
@@ -73,8 +166,8 @@ describe('PublicProfileDataService', () => {
       username: 'public-user',
       public: true,
     });
-    backend.GET.publicUserPatchesPaginated.and.returnValue(require('rxjs').of({data: [], count: 5}));
-    backend.GET.publicUserRacksPaginated.and.returnValue(require('rxjs').of({data: [], count: 3}));
+    backend.GET.publicUserPatchesPaginated.and.returnValue(of(paginatedResult([], 5)));
+    backend.GET.publicUserRacksPaginated.and.returnValue(of(paginatedResult([], 3)));
 
     service.loadProfile$.next('public-user');
 
@@ -126,10 +219,10 @@ describe('PublicProfileDataService', () => {
       public: true,
     });
     backend.GET.publicUserPatchesPaginated.and.returnValue(
-      require('rxjs').of({data: [{id: 10}], count: 1})
+      of(paginatedResult([patchFixture(10)], 1))
     );
     backend.GET.publicUserRacksPaginated.and.returnValue(
-      require('rxjs').of({data: [{id: 20}], count: 1})
+      of(paginatedResult([rackFixture(20)], 1))
     );
 
     service.loadProfile$.next('gooduser');
@@ -313,22 +406,8 @@ describe('PublicProfileDataService', () => {
 
   it('sets routeState$ to error when profile backend call fails', () => {
     spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
-    const backend = {
-      get: {
-        publicProfileByUsername: jasmine.createSpy().and.returnValue(
-          require('rxjs').throwError(() => new Error('network'))
-        ),
-      },
-      GET: {
-        publicUserPatchesPaginated: jasmine.createSpy().and.returnValue(require('rxjs').of({data: [], count: 0})),
-        publicUserRacksPaginated: jasmine.createSpy().and.returnValue(require('rxjs').of({data: [], count: 0})),
-        publicUserContributorStats: jasmine.createSpy().and.returnValue(require('rxjs').of({})),
-        activeMarketplaceListingsBySellerProfileId: jasmine.createSpy().and.returnValue(require('rxjs').of([])),
-      },
-    };
-    const snackBar = jasmine.createSpyObj('MatSnackBar', ['open', 'openFromComponent', 'dismiss']);
-    const service = new PublicProfileDataService(backend as any, snackBar);
-    createdServices.push(service);
+    const {service, backend} = build(null);
+    backend.get.publicProfileByUsername.and.returnValue(throwError(() => new Error('network')));
 
     service.loadProfile$.next('erroruser');
 
@@ -337,8 +416,8 @@ describe('PublicProfileDataService', () => {
   });
 
   it('loadMorePatches$ appends results and advances skip', () => {
-    const firstPage = [{id: 1}, {id: 2}];
-    const secondPage = [{id: 3}, {id: 4}];
+    const firstPage = [patchFixture(1), patchFixture(2)];
+    const secondPage = [patchFixture(3), patchFixture(4)];
     const {service, backend} = build({
       id: 'pub-1',
       username: 'gooduser',
@@ -346,39 +425,39 @@ describe('PublicProfileDataService', () => {
     });
     backend.GET.publicUserPatchesPaginated
       .and.returnValues(
-        require('rxjs').of({data: firstPage, count: 4}),
-        require('rxjs').of({data: secondPage, count: 4}),
+        of(paginatedResult(firstPage, 4)),
+        of(paginatedResult(secondPage, 4)),
       );
-    backend.GET.publicUserRacksPaginated.and.returnValue(require('rxjs').of({data: [], count: 0}));
+    backend.GET.publicUserRacksPaginated.and.returnValue(of(paginatedResult([], 0)));
 
     service.loadProfile$.next('gooduser');
-    expect(service.patchesData$.value).toEqual(firstPage as any);
+    expect(service.patchesData$.value).toEqual(firstPage);
 
     service.loadMorePatches$.next();
-    expect(service.patchesData$.value).toEqual([...firstPage, ...secondPage] as any);
+    expect(service.patchesData$.value).toEqual([...firstPage, ...secondPage]);
     expect(service.patchesCount$.value).toBe(4);
   });
 
   it('loadMoreRacks$ appends results and advances skip', () => {
-    const firstPage = [{id: 10}, {id: 11}];
-    const secondPage = [{id: 12}];
+    const firstPage = [rackFixture(10), rackFixture(11)];
+    const secondPage = [rackFixture(12)];
     const {service, backend} = build({
       id: 'pub-1',
       username: 'gooduser',
       public: true,
     });
-    backend.GET.publicUserPatchesPaginated.and.returnValue(require('rxjs').of({data: [], count: 0}));
+    backend.GET.publicUserPatchesPaginated.and.returnValue(of(paginatedResult([], 0)));
     backend.GET.publicUserRacksPaginated
       .and.returnValues(
-        require('rxjs').of({data: firstPage, count: 3}),
-        require('rxjs').of({data: secondPage, count: 3}),
+        of(paginatedResult(firstPage, 3)),
+        of(paginatedResult(secondPage, 3)),
       );
 
     service.loadProfile$.next('gooduser');
-    expect(service.rackData$.value).toEqual(firstPage as any);
+    expect(service.rackData$.value).toEqual(firstPage);
 
     service.loadMoreRacks$.next();
-    expect(service.rackData$.value).toEqual([...firstPage, ...secondPage] as any);
+    expect(service.rackData$.value).toEqual([...firstPage, ...secondPage]);
     expect(service.racksCount$.value).toBe(3);
   });
 });
