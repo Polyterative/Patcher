@@ -1,31 +1,79 @@
-import { of } from 'rxjs';
 import { SupabaseService } from '../../supabase.service';
+import type { CachedEntity } from '../../supabase.cache';
+import type {
+  SupabaseTableInsert,
+  SupabaseTableRow
+} from '../../supabase-db.types';
 import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest,
   TEST_TIMEOUT
 } from './test-setup';
+import {
+  authUserFixture,
+  chainable,
+  getSupabaseClientDouble,
+  mockUserSession,
+  type QueryChainResult,
+  type QueryListRowsResult,
+  type QuerySingleRowResult,
+  type SupabaseClientDouble,
+  type SupabaseQueryChain
+} from './supabase-query-test-doubles';
 
 
-function chainable(resolveValue: any = {data: null, error: null}) {
-  const m: any = {};
-  ['select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit', 'single',
-    'insert', 'update', 'delete', 'upsert'].forEach(method => {
-    m[method] = () => m;
-  });
-  m.then = (res: Function, rej?: Function) =>
-    Promise.resolve(resolveValue).then(res as any, rej as any);
-  return m;
+type AddManufacturerDraft = Parameters<SupabaseService['add']['manufacturers']>[0][number];
+type AddModuleDraft = Parameters<SupabaseService['add']['modules']>[0][number];
+type ManufacturerResultRow = Pick<SupabaseTableRow<'manufacturers'>, 'id' | 'name'>;
+type ModuleMutationRow = Pick<SupabaseTableRow<'modules'>, 'id'>;
+type ModulePanelInsert = SupabaseTableInsert<'module_panels'>;
+type ModuleTagInsert = SupabaseTableInsert<'module_tags'>;
+type ModuleTagLinkResultRow = Pick<SupabaseTableRow<'module_tags'>, 'id'>;
+type PatchModuleInstanceResultRow = Pick<
+  SupabaseTableRow<'patch_module_instances'>,
+  'id' | 'instance_label' | 'module_id' | 'patch_id'
+>;
+type UserModuleTagInsert = SupabaseTableInsert<'user_module_tags'>;
+
+function moduleFixture(data: Pick<AddModuleDraft, 'hp' | 'id' | 'name'>): AddModuleDraft {
+  return {
+    additional: null,
+    created: '2026-07-21T00:00:00Z',
+    depth: 0,
+    description: '',
+    hp: data.hp,
+    id: data.id,
+    ins: [],
+    isApproved: false,
+    isComplete: false,
+    isDIY: false,
+    manufacturer: {id: 1, name: 'Maker'},
+    manufacturerId: 1,
+    manualURL: '',
+    name: data.name,
+    outs: [],
+    panels: [],
+    powerNeg12: null,
+    powerPos12: null,
+    powerPos5: null,
+    public: true,
+    standard: {id: 0, name: '3U'},
+    store_url: null,
+    switches: [],
+    tags: [],
+    updated: '2026-07-21T00:00:00Z',
+    weight: 0
+  };
 }
 
 describe('SupabaseService - add extended', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: SupabaseClientDouble;
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = getSupabaseClientDouble(service);
   });
   
   afterEach(() => {
@@ -34,16 +82,20 @@ describe('SupabaseService - add extended', () => {
   
   describe('add.module_tags', () => {
     it('should upsert module tags and complete', (done) => {
-      const mock = chainable({data: null, error: null});
-      const upsertSpy = spyOn(mock, 'upsert').and.returnValue(mock);
+      const moduleTags = [{moduleid: 1, tagid: 2}] satisfies ModuleTagInsert[];
+      const mock: SupabaseQueryChain<ModuleTagInsert> = chainable<ModuleTagInsert>(
+        {data: null, error: null} satisfies QueryChainResult<ModuleTagInsert>
+      );
+      const upsertSpy: jasmine.Spy<SupabaseQueryChain<ModuleTagInsert>['upsert']> =
+        spyOn(mock, 'upsert').and.returnValue(mock);
       spyOn(supabaseClient, 'from').and.returnValue(mock);
       
-      service.add.module_tags([{moduleid: 1, tagid: 2} as any]).subscribe({
+      service.add.module_tags(moduleTags).subscribe({
         next: () => {
-          expect(upsertSpy).toHaveBeenCalledWith([{moduleid: 1, tagid: 2}]);
+          expect(upsertSpy).toHaveBeenCalledWith(moduleTags);
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -53,19 +105,24 @@ describe('SupabaseService - add extended', () => {
   
   describe('add.userModuleTag', () => {
     it('should insert tag vote with user id and module tag id', (done) => {
-      const mockUser = {id: 'voter-1', email: 'voter@test.com'};
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+      mockUserSession(service, authUserFixture('voter-1'));
       
-      const mock = chainable({data: null, error: null});
-      const insertSpy = spyOn(mock, 'insert').and.returnValue(mock);
+      const mock: SupabaseQueryChain<UserModuleTagInsert> = chainable<UserModuleTagInsert>(
+        {data: null, error: null} satisfies QueryChainResult<UserModuleTagInsert>
+      );
+      const insertSpy: jasmine.Spy<SupabaseQueryChain<UserModuleTagInsert>['insert']> =
+        spyOn(mock, 'insert').and.returnValue(mock);
       spyOn(supabaseClient, 'from').and.returnValue(mock);
       
       service.add.userModuleTag(55).subscribe({
         next: () => {
-          expect(insertSpy).toHaveBeenCalledWith({moduletagid: 55, authorid: 'voter-1'});
+          expect(insertSpy).toHaveBeenCalledWith({
+            moduletagid: 55,
+            authorid: 'voter-1'
+          } satisfies UserModuleTagInsert);
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -75,20 +132,26 @@ describe('SupabaseService - add extended', () => {
   
   describe('add.moduleTagLink', () => {
     it('should insert a module-tag link and return the new id', (done) => {
-      const mockUser = {id: 'user-x'};
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+      mockUserSession(service, authUserFixture('user-x'));
       
-      const mock = chainable({data: {id: 77}, error: null});
-      const insertSpy = spyOn(mock, 'insert').and.returnValue(mock);
+      const mock: SupabaseQueryChain<ModuleTagLinkResultRow> = chainable<ModuleTagLinkResultRow>({
+        data: {id: 77},
+        error: null
+      } satisfies QuerySingleRowResult<ModuleTagLinkResultRow>);
+      const insertSpy: jasmine.Spy<SupabaseQueryChain<ModuleTagLinkResultRow>['insert']> =
+        spyOn(mock, 'insert').and.returnValue(mock);
       spyOn(supabaseClient, 'from').and.returnValue(mock);
       
       service.add.moduleTagLink(10, 3).subscribe({
-        next: (result: any) => {
-          expect(insertSpy).toHaveBeenCalledWith({moduleid: 10, tagid: 3});
+        next: (result) => {
+          expect(insertSpy).toHaveBeenCalledWith({
+            moduleid: 10,
+            tagid: 3
+          } satisfies ModuleTagInsert);
           expect(result.id).toBe(77);
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -98,18 +161,23 @@ describe('SupabaseService - add extended', () => {
   
   describe('add.manufacturers', () => {
     it('should insert manufacturers and return id+name', (done) => {
-      const mockData = [{id: 1, name: 'New Maker'}];
-      const mock = chainable({data: mockData, error: null});
-      const insertSpy = spyOn(mock, 'insert').and.returnValue(mock);
+      const mockData = [{id: 1, name: 'New Maker'}] satisfies ManufacturerResultRow[];
+      const manufacturers = [{name: 'New Maker'}] satisfies AddManufacturerDraft[];
+      const mock: SupabaseQueryChain<ManufacturerResultRow> = chainable<ManufacturerResultRow>({
+        data: mockData,
+        error: null
+      } satisfies QueryListRowsResult<ManufacturerResultRow>);
+      const insertSpy: jasmine.Spy<SupabaseQueryChain<ManufacturerResultRow>['insert']> =
+        spyOn(mock, 'insert').and.returnValue(mock);
       spyOn(supabaseClient, 'from').and.returnValue(mock);
       
-      service.add.manufacturers([{name: 'New Maker'}]).subscribe({
-        next: (result: any) => {
-          expect(insertSpy).toHaveBeenCalledWith([{name: 'New Maker'}]);
+      service.add.manufacturers(manufacturers).subscribe({
+        next: (result) => {
+          expect(insertSpy).toHaveBeenCalledWith(manufacturers);
           expect(result.data).toEqual(mockData);
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -117,10 +185,15 @@ describe('SupabaseService - add extended', () => {
     }, TEST_TIMEOUT);
     
     it('should bust manufacturers cache', (done) => {
-      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: [], error: null}));
+      spyOn(supabaseClient, 'from').and.returnValue(
+        chainable<ManufacturerResultRow>({
+          data: [],
+          error: null
+        } satisfies QueryListRowsResult<ManufacturerResultRow>)
+      );
       let busted = false;
       service.cacheResetter$.subscribe(keys => {
-        if ((keys as any[]).includes('manufacturers')) busted = true;
+        if (keys.includes('manufacturers' satisfies CachedEntity)) busted = true;
       });
       
       service.add.manufacturers([{name: 'X'}]).subscribe({
@@ -128,7 +201,7 @@ describe('SupabaseService - add extended', () => {
           expect(busted).toBeTrue();
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -138,9 +211,17 @@ describe('SupabaseService - add extended', () => {
   
   describe('add.panel', () => {
     it('should insert a module panel record', (done) => {
-      const panelData = [{moduleid: 1, color: 0, filename: 'panel.jpg', description: 'Light'} as any];
-      const mock = chainable({data: null, error: null});
-      const insertSpy = spyOn(mock, 'insert').and.returnValue(mock);
+      const panelData = [{
+        moduleid: 1,
+        color: 0,
+        filename: 'panel.jpg',
+        description: 'Light'
+      }] satisfies ModulePanelInsert[];
+      const mock: SupabaseQueryChain<ModulePanelInsert> = chainable<ModulePanelInsert>(
+        {data: null, error: null} satisfies QueryChainResult<ModulePanelInsert>
+      );
+      const insertSpy: jasmine.Spy<SupabaseQueryChain<ModulePanelInsert>['insert']> =
+        spyOn(mock, 'insert').and.returnValue(mock);
       spyOn(supabaseClient, 'from').and.returnValue(mock);
       
       service.add.panel(panelData).subscribe({
@@ -148,7 +229,7 @@ describe('SupabaseService - add extended', () => {
           expect(insertSpy).toHaveBeenCalledWith(panelData);
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -158,20 +239,30 @@ describe('SupabaseService - add extended', () => {
   
   describe('add.patchModuleInstance', () => {
     beforeEach(() => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'test-user'}));
+      mockUserSession(service, authUserFixture('test-user'));
     });
 
     it('should insert an instance and return PatchModuleInstance', (done) => {
-      const mockInstance = {id: 10, patch_id: 1, module_id: 2, instance_label: 'VCO #1'};
-      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: mockInstance, error: null}));
+      const mockInstance = {
+        id: 10,
+        patch_id: 1,
+        module_id: 2,
+        instance_label: 'VCO #1'
+      } satisfies PatchModuleInstanceResultRow;
+      spyOn(supabaseClient, 'from').and.returnValue(
+        chainable<PatchModuleInstanceResultRow>({
+          data: mockInstance,
+          error: null
+        } satisfies QuerySingleRowResult<PatchModuleInstanceResultRow>)
+      );
       
       service.add.patchModuleInstance(1, 2, 'VCO #1').subscribe({
-        next: (result: any) => {
+        next: (result) => {
           expect(result.id).toBe(10);
           expect(result.instance_label).toBe('VCO #1');
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -179,8 +270,12 @@ describe('SupabaseService - add extended', () => {
     }, TEST_TIMEOUT);
     
     it('should default instance_label to null when not provided', (done) => {
-      const mock = chainable({data: {id: 5, patch_id: 1, module_id: 2, instance_label: null}, error: null});
-      const insertSpy = spyOn(mock, 'insert').and.returnValue(mock);
+      const mock: SupabaseQueryChain<PatchModuleInstanceResultRow> = chainable<PatchModuleInstanceResultRow>({
+        data: {id: 5, patch_id: 1, module_id: 2, instance_label: null},
+        error: null
+      } satisfies QuerySingleRowResult<PatchModuleInstanceResultRow>);
+      const insertSpy: jasmine.Spy<SupabaseQueryChain<PatchModuleInstanceResultRow>['insert']> =
+        spyOn(mock, 'insert').and.returnValue(mock);
       spyOn(supabaseClient, 'from').and.returnValue(mock);
       
       service.add.patchModuleInstance(1, 2).subscribe({
@@ -190,7 +285,7 @@ describe('SupabaseService - add extended', () => {
           );
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -200,25 +295,19 @@ describe('SupabaseService - add extended', () => {
   
   describe('add.modules', () => {
     it('should insert new modules (id=0) and update existing ones (id>0)', (done) => {
-      const mockUser = {id: 'submitter-1'};
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+      mockUserSession(service, authUserFixture('submitter-1'));
       
-      const mock = chainable({data: null, error: null});
-      const insertSpy = spyOn(mock, 'insert').and.returnValue(mock);
-      const updateSpy = spyOn(mock, 'update').and.returnValue(mock);
+      const mock: SupabaseQueryChain<ModuleMutationRow> = chainable<ModuleMutationRow>(
+        {data: null, error: null} satisfies QueryChainResult<ModuleMutationRow>
+      );
+      const insertSpy: jasmine.Spy<SupabaseQueryChain<ModuleMutationRow>['insert']> =
+        spyOn(mock, 'insert').and.returnValue(mock);
+      const updateSpy: jasmine.Spy<SupabaseQueryChain<ModuleMutationRow>['update']> =
+        spyOn(mock, 'update').and.returnValue(mock);
       spyOn(supabaseClient, 'from').and.returnValue(mock);
       
-      const newModule = {
-        id: 0, name: 'New VCO', hp: 8,
-        standard: {id: 0}, manufacturer: {id: 1},
-        ins: [], outs: [], switches: [], panels: [], tags: []
-      } as any;
-      
-      const existingModule = {
-        id: 99, name: 'Old VCF', hp: 12,
-        standard: {id: 0}, manufacturer: {id: 1},
-        ins: [], outs: [], switches: [], panels: [], tags: []
-      } as any;
+      const newModule = moduleFixture({id: 0, name: 'New VCO', hp: 8});
+      const existingModule = moduleFixture({id: 99, name: 'Old VCF', hp: 12});
       
       service.add.modules([newModule, existingModule]).subscribe({
         next: () => {
@@ -226,7 +315,7 @@ describe('SupabaseService - add extended', () => {
           expect(updateSpy).toHaveBeenCalled();
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
