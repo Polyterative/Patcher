@@ -1,21 +1,108 @@
 import { SupabaseService } from '../../supabase.service';
+import type { Tables } from 'src/backend/database.types';
 import type { MinimalModule } from 'src/app/models/module';
+import type { Rack } from 'src/app/models/rack';
+import type {
+  PublicApplicationActivityPoint,
+  PublicApplicationInsightsSnapshot,
+  PublicApplicationModuleInsights,
+  PublicApplicationStatistics,
+  PublicModuleDiscoverySnapshot
+} from '../../supabase-queries.models';
+import type { PublicModuleInsightRow } from '../../supabase-queries.types';
 import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest,
   TEST_TIMEOUT
 } from './test-setup';
+import {
+  chainable,
+  getSupabaseClientDouble,
+  type QueryListRowsResult,
+  type SupabaseClientDouble
+} from './supabase-query-test-doubles';
 
 
-function chainable(resolveValue: any = {data: null, error: null}) {
-  const m: any = {};
-  ['select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit', 'single',
-    'insert', 'update', 'delete', 'upsert'].forEach(method => {
-    m[method] = () => m;
-  });
-  m.then = (res: Function, rej?: Function) =>
-    Promise.resolve(resolveValue).then(res as any, rej as any);
-  return m;
+type TagVoteRow = Pick<Tables<'user_module_tags'>, 'moduletagid'>;
+type PublicCountTuple = [number, number, number];
+type SupabaseQueriesClockDouble = {
+  getNow(): Date;
+};
+type ModuleInsightQueryRow = Omit<PublicModuleInsightRow, 'created' | 'manufacturerName' | 'standardName'> & {
+  created?: string;
+  id: number;
+  manufacturer: {
+    id: number;
+    name: string;
+  };
+  standardMeta: {
+    id: number;
+    name: string;
+  };
+};
+type ManufacturerListRow = Pick<
+  Tables<'manufacturers'>,
+  'adminUser' | 'id' | 'logo' | 'name' | 'websiteURL'
+>;
+type ManufacturerActivityRow = Pick<Tables<'modules'>, 'id' | 'manufacturerId' | 'updated'>;
+type ManufacturerPageRow = ManufacturerListRow & {
+  latestModuleUpdatedAt?: string | null;
+  moduleCount?: number;
+};
+type ManufacturerPageResult = {
+  data: ManufacturerPageRow[] | null;
+  count?: number | null;
+  error?: unknown;
+};
+type ApplicationInsightsSnapshotRpcRow = {
+  statistics: PublicApplicationStatistics;
+  activity_series: PublicApplicationActivityPoint[];
+  module_insights: PublicApplicationModuleInsights;
+};
+type ModuleDiscoverySnapshotRpcRow = {
+  most_owned: PublicModuleDiscoverySnapshot['mostOwned'];
+  mostWanted: PublicModuleDiscoverySnapshot['mostWanted'];
+  most_sold: PublicModuleDiscoverySnapshot['mostSold'];
+};
+type SupabaseRpcClientDouble = SupabaseClientDouble & {
+  rpc(
+    functionName: string,
+    args: {p_days: number} | {p_limit: number; p_min_count: number}
+  ): Promise<QueryListRowsResult<ApplicationInsightsSnapshotRpcRow | ModuleDiscoverySnapshotRpcRow>>;
+};
+type RackWithModuleRow = {
+  rack: Pick<Rack, 'id' | 'name'>;
+};
+type RackWithModuleResult = {
+  data: RackWithModuleRow[];
+  count: number | null;
+  error: null;
+};
+interface ModuleInsightPagedQuery {
+  select(columns: string): ModuleInsightPagedQuery;
+  filter(column: string, operator: string, value: boolean | number | string): ModuleInsightPagedQuery;
+  order(column: string, options: {ascending: boolean}): ModuleInsightPagedQuery;
+  range(from: number, to: number): Promise<QueryListRowsResult<ModuleInsightQueryRow>>;
+}
+
+function getSupabaseQueriesClockDouble(service: SupabaseService): SupabaseQueriesClockDouble {
+  const queries = Reflect.get(service, 'queries');
+  if (typeof queries !== 'object'
+    || queries === null
+    || typeof Reflect.get(queries, 'getNow') !== 'function') {
+    throw new Error('Supabase test setup did not expose the queries clock double.');
+  }
+
+  return queries as SupabaseQueriesClockDouble;
+}
+
+function getSupabaseRpcClientDouble(service: SupabaseService): SupabaseRpcClientDouble {
+  const client = getSupabaseClientDouble(service);
+  if (typeof Reflect.get(client, 'rpc') !== 'function') {
+    throw new Error('Supabase test setup did not expose the RPC client double.');
+  }
+
+  return client as SupabaseRpcClientDouble;
 }
 
 function makeMinimalModule(id: number, name: string): MinimalModule {
@@ -43,12 +130,12 @@ function makeMinimalModule(id: number, name: string): MinimalModule {
 
 describe('SupabaseService - get complex queries', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: SupabaseRpcClientDouble;
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = getSupabaseRpcClientDouble(service);
   });
   
   afterEach(() => {
@@ -57,7 +144,7 @@ describe('SupabaseService - get complex queries', () => {
   
   describe('get.tagVotesForModule', () => {
     it('should aggregate vote counts per moduleTagId', (done) => {
-      const mockRows = [
+      const mockRows: TagVoteRow[] = [
         {moduletagid: 1},
         {moduletagid: 1},
         {moduletagid: 2}
@@ -65,7 +152,7 @@ describe('SupabaseService - get complex queries', () => {
       spyOn(supabaseClient, 'from').and.returnValue(chainable({data: mockRows, error: null}));
       
       service.get.tagVotesForModule([1, 2]).subscribe({
-        next: (result: any[]) => {
+        next: (result) => {
           const tag1 = result.find(r => r.moduleTagId === 1);
           const tag2 = result.find(r => r.moduleTagId === 2);
           expect(tag1.count).toBe(2);
@@ -83,7 +170,7 @@ describe('SupabaseService - get complex queries', () => {
       spyOn(supabaseClient, 'from').and.returnValue(chainable({data: [], error: null}));
       
       service.get.tagVotesForModule([1, 2]).subscribe({
-        next: (result: any[]) => {
+        next: (result) => {
           expect(result.length).toBe(0);
           done();
         },
@@ -98,7 +185,7 @@ describe('SupabaseService - get complex queries', () => {
       spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: null}));
       
       service.get.tagVotesForModule([1]).subscribe({
-        next: (result: any[]) => {
+        next: (result) => {
           expect(result.length).toBe(0);
           done();
         },
@@ -119,7 +206,7 @@ describe('SupabaseService - get complex queries', () => {
       });
       
       service.get.statistics().subscribe({
-        next: ([modules, racks, patches]: any) => {
+        next: ([modules, racks, patches]: PublicCountTuple) => {
           expect(modules).toBe(150);
           expect(racks).toBe(75);
           expect(patches).toBe(40);
@@ -184,7 +271,7 @@ describe('SupabaseService - get complex queries', () => {
       });
 
       service.GET.applicationStatistics().subscribe({
-        next: (result: any) => {
+        next: (result: PublicApplicationStatistics) => {
           expect(result).toEqual({
             publicModules: 150,
             publicModulesUpdatedLast30Days: 63,
@@ -285,7 +372,7 @@ describe('SupabaseService - get complex queries', () => {
       }));
 
       service.GET.applicationInsightsSnapshot(30).subscribe({
-        next: (result: any) => {
+        next: (result: PublicApplicationInsightsSnapshot) => {
           expect(rpcSpy).toHaveBeenCalledWith('get_application_insights_snapshot', {p_days: 30});
           expect(result.statistics.publicModules).toBe(150);
           expect(result.activitySeries).toEqual([
@@ -324,7 +411,7 @@ describe('SupabaseService - get complex queries', () => {
       }));
 
       service.GET.applicationModuleDiscovery(6, 3).subscribe({
-        next: (snapshot) => {
+        next: (snapshot: PublicModuleDiscoverySnapshot) => {
           expect(rpcSpy).toHaveBeenCalledWith('get_module_discovery_snapshot', {
             p_limit: 6,
             p_min_count: 3
@@ -393,7 +480,7 @@ describe('SupabaseService - get complex queries', () => {
       });
 
       service.GET.applicationActivitySeries(3).subscribe({
-        next: (result: any[]) => {
+        next: (result: PublicApplicationActivityPoint[]) => {
           expect(result).toEqual([
             {
               date: twoDaysAgo.toISOString().slice(0, 10),
@@ -431,9 +518,9 @@ describe('SupabaseService - get complex queries', () => {
 
   describe('GET.applicationModuleInsights', () => {
     it('should derive public module insight buckets from public module rows', (done) => {
-      spyOn<any>((service as any).queries, 'getNow')
+      spyOn(getSupabaseQueriesClockDouble(service), 'getNow')
         .and.callFake(() => new Date('2026-05-02T12:00:00.000Z'));
-      const modulesQuery = chainable({
+      const modulesQuery = chainable<ModuleInsightQueryRow>({
         data: [
           {
             id: 1,
@@ -480,7 +567,7 @@ describe('SupabaseService - get complex queries', () => {
       spyOn(supabaseClient, 'from').and.returnValue(modulesQuery);
 
       service.GET.applicationModuleInsights().subscribe({
-        next: (result: any) => {
+        next: (result: PublicApplicationModuleInsights) => {
           expect(result.topManufacturers).toEqual([
             {label: 'Make Noise', count: 2, detail: '2 public modules'},
             {label: 'Intellijel', count: 1, detail: '1 public modules'},
@@ -559,9 +646,9 @@ describe('SupabaseService - get complex queries', () => {
     }, TEST_TIMEOUT);
 
     it('should continue paginating when Supabase returns a full 500-row page', (done) => {
-      spyOn<any>((service as any).queries, 'getNow')
+      spyOn(getSupabaseQueriesClockDouble(service), 'getNow')
         .and.callFake(() => new Date('2026-05-02T12:00:00.000Z'));
-      const firstPage = Array.from({length: 500}, (_, index) => ({
+      const firstPage: ModuleInsightQueryRow[] = Array.from({length: 500}, (_, index) => ({
         id: index + 1,
         manufacturerId: 1,
         hp: 10,
@@ -569,7 +656,7 @@ describe('SupabaseService - get complex queries', () => {
         manufacturer: {id: 1, name: 'Make Noise'},
         standardMeta: {id: 1, name: '3U'}
       }));
-      const secondPage = [
+      const secondPage: ModuleInsightQueryRow[] = [
         {
           id: 501,
           manufacturerId: 2,
@@ -580,24 +667,24 @@ describe('SupabaseService - get complex queries', () => {
         }
       ];
 
-      const pagedQuery: any = {};
       let lastRangeStart = 0;
-
-      pagedQuery.select = () => pagedQuery;
-      pagedQuery.filter = () => pagedQuery;
-      pagedQuery.order = () => pagedQuery;
-      pagedQuery.range = (start: number) => {
-        lastRangeStart = start;
-        return Promise.resolve({
-          data: start === 0 ? firstPage : secondPage,
-          error: null
-        });
+      const pagedQuery: ModuleInsightPagedQuery = {
+        select: () => pagedQuery,
+        filter: () => pagedQuery,
+        order: () => pagedQuery,
+        range: (start: number) => {
+          lastRangeStart = start;
+          return Promise.resolve({
+            data: start === 0 ? firstPage : secondPage,
+            error: null
+          });
+        }
       };
 
       spyOn(supabaseClient, 'from').and.returnValue(pagedQuery);
 
       service.GET.applicationModuleInsights().subscribe({
-        next: (result: any) => {
+        next: (result: PublicApplicationModuleInsights) => {
           expect(result.topManufacturers[0]).toEqual({
             label: 'Make Noise',
             count: 500,
@@ -625,7 +712,7 @@ describe('SupabaseService - get complex queries', () => {
     }, TEST_TIMEOUT);
 
     it('should only count formats containing 1U in the oneU maker ranking', (done) => {
-      const modulesQuery = chainable({
+      const modulesQuery = chainable<ModuleInsightQueryRow>({
         data: [
           {id: 1, manufacturerId: 1, hp: 8, updated: '2026-05-01T10:00:00.000Z', manufacturer: {id: 1, name: 'Intellijel'}, standardMeta: {id: 1, name: 'Intellijel 1U'}},
           {id: 2, manufacturerId: 1, hp: 8, updated: '2026-05-01T10:00:00.000Z', manufacturer: {id: 1, name: 'Intellijel'}, standardMeta: {id: 1, name: 'Intellijel 1U'}},
@@ -644,7 +731,7 @@ describe('SupabaseService - get complex queries', () => {
       spyOn(supabaseClient, 'from').and.returnValue(modulesQuery);
 
       service.GET.applicationModuleInsights().subscribe({
-        next: (result: any) => {
+        next: (result: PublicApplicationModuleInsights) => {
           expect(result.oneUManufacturers).toEqual([
             {label: 'Intellijel', count: 40, detail: '40% 1U share across 5 public modules'}
           ]);
@@ -730,10 +817,10 @@ describe('SupabaseService - get complex queries', () => {
   
   describe('GET.manufacturersPaginated', () => {
     it('should build manufacturer list activity from public modules only', (done) => {
-      const manufacturers = [
+      const manufacturers: ManufacturerListRow[] = [
         {id: 1, name: 'Endorphin.es', logo: null, websiteURL: null, adminUser: null}
       ];
-      const moduleActivityRows = [
+      const moduleActivityRows: ManufacturerActivityRow[] = [
         {id: 10, manufacturerId: 1, updated: '2026-02-01T10:00:00.123456+00'}
       ];
       const modulesMock = chainable({data: moduleActivityRows, error: null});
@@ -750,7 +837,7 @@ describe('SupabaseService - get complex queries', () => {
       });
 
       service.GET.manufacturersPaginated(0, 19, '', 'module_updated', 'desc').subscribe({
-        next: (result: any) => {
+        next: (result: ManufacturerPageResult) => {
           expect(modulesFilterSpy).toHaveBeenCalledWith('public', 'eq', true);
           expect(result?.data?.[0]?.moduleCount).toBe(1);
           done();
@@ -763,11 +850,11 @@ describe('SupabaseService - get complex queries', () => {
     }, TEST_TIMEOUT);
 
     it('should sort by latest module updated timestamp (desc) with +00 offsets', (done) => {
-      const manufacturers = [
+      const manufacturers: ManufacturerListRow[] = [
         {id: 1, name: 'Endorphin.es', logo: null, websiteURL: null, adminUser: null},
         {id: 2, name: 'SD Modular', logo: null, websiteURL: null, adminUser: null}
       ];
-      const moduleActivityRows = [
+      const moduleActivityRows: ManufacturerActivityRow[] = [
         {id: 11, manufacturerId: 2, updated: '2026-03-01T10:00:00.123456+00'},
         {id: 10, manufacturerId: 1, updated: '2026-02-01T10:00:00.123456+00'}
       ];
@@ -783,8 +870,8 @@ describe('SupabaseService - get complex queries', () => {
       });
       
       service.GET.manufacturersPaginated(0, 19, '', 'module_updated', 'desc').subscribe({
-        next: (result: any) => {
-          const orderedNames = (result?.data ?? []).map((x: any) => x.name);
+        next: (result: ManufacturerPageResult) => {
+          const orderedNames = (result.data ?? []).map((x) => x.name);
           expect(orderedNames).toEqual(['SD Modular', 'Endorphin.es']);
           expect(result?.data?.[0]?.latestModuleUpdatedAt).toBe('2026-03-01T10:00:00.123456+00');
           done();
@@ -797,12 +884,12 @@ describe('SupabaseService - get complex queries', () => {
     }, TEST_TIMEOUT);
     
     it('should sort by latest module updated timestamp (desc) with mixed timestamp formats', (done) => {
-      const manufacturers = [
+      const manufacturers: ManufacturerListRow[] = [
         {id: 1, name: 'Older Maker', logo: null, websiteURL: null, adminUser: null},
         {id: 2, name: 'Newer Maker', logo: null, websiteURL: null, adminUser: null},
         {id: 3, name: 'Middle Maker', logo: null, websiteURL: null, adminUser: null}
       ];
-      const moduleActivityRows = [
+      const moduleActivityRows: ManufacturerActivityRow[] = [
         {id: 22, manufacturerId: 2, updated: '2026-03-01 10:00:00.123456+0000'},
         {id: 23, manufacturerId: 3, updated: '2026-02-20T09:15:00.4Z'},
         {id: 21, manufacturerId: 1, updated: '2026-02-01T10:00:00.123456+00'}
@@ -819,8 +906,8 @@ describe('SupabaseService - get complex queries', () => {
       });
       
       service.GET.manufacturersPaginated(0, 19, '', 'module_updated', 'desc').subscribe({
-        next: (result: any) => {
-          const orderedNames = (result?.data ?? []).map((x: any) => x.name);
+        next: (result: ManufacturerPageResult) => {
+          const orderedNames = (result.data ?? []).map((x) => x.name);
           expect(orderedNames).toEqual(['Newer Maker', 'Middle Maker', 'Older Maker']);
           done();
         },
@@ -834,11 +921,11 @@ describe('SupabaseService - get complex queries', () => {
   
   describe('get.racksWithModule', () => {
     it('should complete successfully and pass through result', (done) => {
-      const mockData = {data: [{id: 1, rack: {name: 'My Rack'}}], count: 1, error: null};
+      const mockData: RackWithModuleResult = {data: [{rack: {id: 1, name: 'My Rack'}}], count: 1, error: null};
       spyOn(supabaseClient, 'from').and.returnValue(chainable(mockData));
       
       service.get.racksWithModule(42).subscribe({
-        next: (result: any) => {
+        next: (result) => {
           expect(result.data).toBeDefined();
           done();
         },
