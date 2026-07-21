@@ -3,6 +3,8 @@ import {
   setupSupabaseServiceTest
 } from './test-setup';
 import { SupabaseService } from '../../supabase.service';
+import type { SupabaseServiceTestSetup } from './test-setup';
+import { getSupabaseClientDouble } from './supabase-query-test-doubles';
 
 
 /**
@@ -13,8 +15,8 @@ import { SupabaseService } from '../../supabase.service';
  */
 describe('SupabaseService - Initialization', () => {
   let service: SupabaseService;
-  let mockSnackBar: any;
-  let mockActivatedRoute: any;
+  let mockSnackBar: SupabaseServiceTestSetup['mockSnackBar'];
+  let mockActivatedRoute: SupabaseServiceTestSetup['mockActivatedRoute'];
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
@@ -38,14 +40,14 @@ describe('SupabaseService - Initialization', () => {
   });
   
   it('should initialize Supabase client', () => {
-    const supabaseClient = (service as any).supabase;
+    const supabaseClient = getSupabaseClientDouble(service);
     expect(supabaseClient).toBeDefined();
     expect(supabaseClient.from).toBeDefined();
     expect(typeof supabaseClient.from).toBe('function');
   });
   
   it('should have valid Supabase configuration', () => {
-    const supabaseClient = (service as any).supabase;
+    const supabaseClient = getSupabaseClientDouble(service);
     expect(supabaseClient.supabaseUrl).toBeDefined();
     expect(supabaseClient.supabaseKey).toBeDefined();
     expect(supabaseClient.supabaseUrl).toContain('supabase.co');
