@@ -3,36 +3,109 @@ import {
   tick
 } from '@angular/core/testing';
 import {
+  Observable,
   of,
   throwError
 } from 'rxjs';
-import { ManufacturerDetailDataService } from 'src/app/features/manufacturer-detail/manufacturer-detail-data.service';
+import {
+  ManufacturerDetail,
+  ManufacturerDetailDataService
+} from 'src/app/features/manufacturer-detail/manufacturer-detail-data.service';
+import { ModuleList } from 'src/app/features/module-browser/module-browser-data.service';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 
 
 describe('ManufacturerDetailDataService', () => {
+  interface ManufacturerResponse {
+    data: ManufacturerDetail | null;
+  }
+
+  type ManufacturerWithId = (id: number) => Observable<ManufacturerResponse>;
+  type ModulesBySameManufacturer = (manufacturerId: number, from: number, to: number) => Observable<ModuleList>;
+
+  interface DetailBackendDouble {
+    get: {
+      manufacturerWithId: jasmine.Spy<ManufacturerWithId>;
+      modulesBySameManufacturer: jasmine.Spy<ModulesBySameManufacturer>;
+    };
+    storage: {
+      publicUrlBases: {
+        manufacturerLogos: string;
+      };
+    };
+  }
+
+  interface SnackBarDouble {
+    open: jasmine.Spy;
+  }
+
+  interface AnalyticsDouble {
+    capture: jasmine.Spy<(event: string, props?: Record<string, unknown>) => void>;
+    identify: jasmine.Spy<AnalyticsService['identify']>;
+    reset: jasmine.Spy<AnalyticsService['reset']>;
+  }
+
   function build() {
-    const mockManufacturer = {data: {id: 1, name: 'Doepfer', logo: null, websiteURL: 'https://doepfer.de', adminUser: null}};
-    const mockModules = [{id: 10, name: 'A-110-1', manufacturer: {id: 1, name: 'Doepfer'}}, {
-      id: 11,
-      name: 'A-118',
-      manufacturer: {id: 1, name: 'Doepfer'}
-    }];
+    const mockManufacturer: ManufacturerResponse = {
+      data: {id: 1, name: 'Doepfer', logo: null, websiteURL: 'https://doepfer.de', adminUser: null}
+    };
+    const mockModules: ModuleList = [
+      {
+        id: 10,
+        name: 'A-110-1',
+        description: '',
+        hp: 8,
+        public: true,
+        manufacturer: {id: 1, name: 'Doepfer'},
+        manufacturerId: 1,
+        standard: {id: 0, name: '3U'},
+        tags: [],
+        panels: [],
+        created: '2026-01-01T00:00:00.000Z',
+        updated: '2026-01-01T00:00:00.000Z',
+      },
+      {
+        id: 11,
+        name: 'A-118',
+        description: '',
+        hp: 8,
+        public: true,
+        manufacturer: {id: 1, name: 'Doepfer'},
+        manufacturerId: 1,
+        standard: {id: 0, name: '3U'},
+        tags: [],
+        panels: [],
+        created: '2026-01-01T00:00:00.000Z',
+        updated: '2026-01-01T00:00:00.000Z',
+      },
+    ];
     
     const backend = {
       get: {
-        manufacturerWithId: jasmine.createSpy('manufacturerWithId').and.returnValue(of(mockManufacturer)),
-        modulesBySameManufacturer: jasmine.createSpy('modulesBySameManufacturer').and.returnValue(of(mockModules))
+        manufacturerWithId: jasmine.createSpy<ManufacturerWithId>('manufacturerWithId').and.returnValue(of(mockManufacturer)),
+        modulesBySameManufacturer: jasmine.createSpy<ModulesBySameManufacturer>('modulesBySameManufacturer').and.returnValue(of(mockModules))
       },
       storage: {
         publicUrlBases: {
           manufacturerLogos: 'https://cdn.example.test/manufacturer-logos/'
         }
       }
+    } satisfies DetailBackendDouble;
+    
+    const snackBar: SnackBarDouble = {open: jasmine.createSpy('open')};
+    const analytics: AnalyticsDouble = {
+      capture: jasmine.createSpy<(event: string, props?: Record<string, unknown>) => void>('capture'),
+      identify: jasmine.createSpy<AnalyticsService['identify']>('identify'),
+      reset: jasmine.createSpy<AnalyticsService['reset']>('reset'),
     };
     
-    const snackBar = {open: jasmine.createSpy('open')};
-    
-    const service = new ManufacturerDetailDataService(backend as any, snackBar as any, {capture: () => {}, identify: () => {}, reset: () => {}} as any);
+    const service = new ManufacturerDetailDataService(
+      backend as unknown as SupabaseService,
+      snackBar as unknown as MatSnackBar,
+      analytics as unknown as AnalyticsService
+    );
     
     return {service, backend, snackBar, mockManufacturer, mockModules};
   }
@@ -96,7 +169,7 @@ describe('ManufacturerDetailDataService', () => {
     
     it('should set manufacturerData$ to the returned manufacturer', fakeAsync(() => {
       const {service, mockManufacturer} = build();
-      let result: any;
+      let result: ManufacturerDetail | null | undefined;
       service.manufacturerData$.subscribe(m => result = m);
       service.updateManufacturer$.next(1);
       tick();
@@ -106,7 +179,7 @@ describe('ManufacturerDetailDataService', () => {
     
     it('should set modulesData$ to the returned modules list', fakeAsync(() => {
       const {service, mockModules} = build();
-      let result: any;
+      let result: ModuleList | undefined;
       service.modulesData$.subscribe(m => result = m);
       service.updateManufacturer$.next(1);
       tick();
@@ -116,8 +189,8 @@ describe('ManufacturerDetailDataService', () => {
     
     it('should reset to null when a new id is triggered before data loads', fakeAsync(() => {
       const {service} = build();
-      const manufacturerValues: any[] = [];
-      const modulesValues: any[] = [];
+      const manufacturerValues: (ManufacturerDetail | null)[] = [];
+      const modulesValues: ModuleList[] = [];
       service.manufacturerData$.subscribe(v => manufacturerValues.push(v));
       service.modulesData$.subscribe(v => modulesValues.push(v));
       service.updateManufacturer$.next(1);
@@ -127,6 +200,7 @@ describe('ManufacturerDetailDataService', () => {
       tick();
       // Should have had null emitted between the two loads
       expect(manufacturerValues).toContain(null);
+      expect(modulesValues).toContain(null);
       service.ngOnDestroy();
     }));
     

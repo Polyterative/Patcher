@@ -4,11 +4,60 @@ import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.serv
 import { CommonModule } from '@angular/common';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { Subject, BehaviorSubject, of } from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  Subject,
+  of
+} from 'rxjs';
 import { TestBed } from '@angular/core/testing';
 import { AutoContentLoadingIndicatorComponent } from 'src/app/shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator/auto-content-loading-indicator.component';
+import { ManufacturerDetail } from '../manufacturer-detail-data.service';
+import { SeoSocialShareData } from 'src/app/models/seo.model';
 
-function mockDataService(): ManufacturerBrowserRootDataService {
+interface ManufacturerOrderOption {
+  id: string;
+  name: string;
+  sortColumn: 'name' | 'module_updated';
+  sortDirection: 'asc' | 'desc';
+}
+
+interface ManufacturerBrowserRootDataServiceDouble {
+  fields: {
+    search: {
+      label: string;
+      control: FormControl<string>;
+    };
+    order: {
+      label: string;
+      control: FormControl<ManufacturerOrderOption | null>;
+      options$: Observable<ManufacturerOrderOption[]>;
+    };
+  };
+  serversideAdditionalData: {
+    itemsCount$: BehaviorSubject<number>;
+  };
+  paginatorToFistPage$: Subject<void>;
+  loadMore$: Subject<void>;
+  manufacturers$: BehaviorSubject<ManufacturerDetail[] | null>;
+  canReset$: Observable<boolean>;
+  loadedCount: number;
+  updateList$: Subject<void>;
+}
+
+interface SeoAndUtilsServiceDouble {
+  updateSeo: jasmine.Spy<(data: SeoSocialShareData, appArea: string) => void>;
+}
+
+function asDataService(double: ManufacturerBrowserRootDataServiceDouble): ManufacturerBrowserRootDataService {
+  return double as unknown as ManufacturerBrowserRootDataService;
+}
+
+function asSeoService(double: SeoAndUtilsServiceDouble): SeoAndUtilsService {
+  return double as unknown as SeoAndUtilsService;
+}
+
+function mockDataService(): ManufacturerBrowserRootDataServiceDouble {
   return {
     fields: {
       search: {
@@ -17,7 +66,7 @@ function mockDataService(): ManufacturerBrowserRootDataService {
       },
       order: {
         label: 'Order by',
-        control: new FormControl<any>(null),
+        control: new FormControl<ManufacturerOrderOption | null>(null),
         options$: of([]),
       },
     },
@@ -26,17 +75,17 @@ function mockDataService(): ManufacturerBrowserRootDataService {
     },
     paginatorToFistPage$: new Subject<void>(),
     loadMore$: new Subject<void>(),
-    manufacturers$: new BehaviorSubject<any[] | null>([]),
+    manufacturers$: new BehaviorSubject<ManufacturerDetail[] | null>([]),
     canReset$: of(false),
     loadedCount: 0,
     updateList$: new Subject<void>()
-  } as unknown as ManufacturerBrowserRootDataService;
+  };
 }
 
-function mockSeo(): SeoAndUtilsService {
+function mockSeo(): SeoAndUtilsServiceDouble {
   return {
-    updateSeo: jasmine.createSpy('updateSeo')
-  } as unknown as SeoAndUtilsService;
+    updateSeo: jasmine.createSpy<(data: SeoSocialShareData, appArea: string) => void>('updateSeo')
+  };
 }
 
 describe('ManufacturerBrowserRootComponent', () => {
@@ -49,8 +98,8 @@ describe('ManufacturerBrowserRootComponent', () => {
 
   function makeComp(): ManufacturerBrowserRootComponent {
     return TestBed.runInInjectionContext(() => {
-      dataService = mockDataService();
-      seo = mockSeo();
+      dataService = asDataService(mockDataService());
+      seo = asSeoService(mockSeo());
       return new ManufacturerBrowserRootComponent(dataService, seo);
     });
   }
@@ -72,7 +121,7 @@ describe('ManufacturerBrowserRootComponent', () => {
     const ds = mockDataService();
     const s = mockSeo();
     ds.updateList$.subscribe(() => emitted = true);
-    TestBed.runInInjectionContext(() => new ManufacturerBrowserRootComponent(ds, s));
+    TestBed.runInInjectionContext(() => new ManufacturerBrowserRootComponent(asDataService(ds), asSeoService(s)));
     expect(emitted).toBeTrue();
   });
 
@@ -96,7 +145,7 @@ describe('ManufacturerBrowserRootComponent', () => {
     const scrollSpy = spyOn(window, 'scrollTo');
     const ds = mockDataService();
     const s = mockSeo();
-    const comp = TestBed.runInInjectionContext(() => new ManufacturerBrowserRootComponent(ds, s));
+    const comp = TestBed.runInInjectionContext(() => new ManufacturerBrowserRootComponent(asDataService(ds), asSeoService(s)));
 
     ds.paginatorToFistPage$.next();
 
@@ -107,14 +156,14 @@ describe('ManufacturerBrowserRootComponent', () => {
   it('renders the initial loader while manufacturers are unresolved', () => {
     TestBed.resetTestingModule();
     const ds = mockDataService();
-    (ds.manufacturers$ as BehaviorSubject<any[] | null>).next(null);
+    ds.manufacturers$.next(null);
 
     TestBed.configureTestingModule({
       declarations: [ManufacturerBrowserRootComponent],
       imports: [CommonModule, AutoContentLoadingIndicatorComponent],
       providers: [
-        {provide: ManufacturerBrowserRootDataService, useValue: ds},
-        {provide: SeoAndUtilsService, useValue: mockSeo()},
+        {provide: ManufacturerBrowserRootDataService, useValue: asDataService(ds)},
+        {provide: SeoAndUtilsService, useValue: asSeoService(mockSeo())},
       ],
       schemas: [NO_ERRORS_SCHEMA],
     });
