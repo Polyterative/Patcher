@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.5.2](https://github.com/Polyterative/Patcher/compare/v6.5.1...v6.5.2) (2026-07-21)
+
+
+### Bug Fixes
+
+* **analytics:** correct PostHog event semantics ([296783c](https://github.com/Polyterative/Patcher/commit/296783cf8240e05f9d9c897fd894268753804262))
+* **deps:** dedupe duplicate @angular/forms instances breaking form control bindings ([a3f82fa](https://github.com/Polyterative/Patcher/commit/a3f82faeca4326b252aafe2a31de01b57689f1a0))
+
 ### [6.5.1](https://github.com/Polyterative/Patcher/compare/v6.5.0...v6.5.1) (2026-07-20)
 
 
