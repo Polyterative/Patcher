@@ -1,6 +1,6 @@
 {
   "_comment": "Grandfathered explicit `any` counts. Do not add by hand — run `node scripts/checks/check-explicit-any.cjs --update-baseline` after intentional cleanup.",
-  "totalExplicitAny": 1470,
+  "totalExplicitAny": 1452,
   "files": {
     "api/sitemap.ts": 3,
     "e2e/auth-rack-context-menu.spec.ts": 6,
@@ -55,10 +55,6 @@
     "src/app/features/backend/admin-guard.service.spec.ts": 10,
     "src/app/features/backend/admin-panel-root/admin-flags/admin-flags-data.service.ts": 1,
     "src/app/features/backend/admin-panel-root/admin-flags/admin-flags.component.spec.ts": 3,
-    "src/app/features/backend/DatabaseStrings.spec.ts": 1,
-    "src/app/features/backend/local-storage.service.spec.ts": 3,
-    "src/app/features/backend/supabase-cache.operators.spec.ts": 8,
-    "src/app/features/backend/supabase-module-collections.spec.ts": 3,
     "src/app/features/backend/supabase-module-collections.ts": 1,
     "src/app/features/backend/supabase-queries.application-insights-data.ts": 2,
     "src/app/features/backend/supabase-queries.application-insights-snapshot.ts": 3,
@@ -71,7 +67,6 @@
     "src/app/features/backend/supabase-queries.possessions.ts": 6,
     "src/app/features/backend/supabase-queries.racks.ts": 4,
     "src/app/features/backend/supabase.cache.ts": 3,
-    "src/app/features/backend/url-creator.service.spec.ts": 3,
     "src/app/features/info-pages/application-insights/application-insights-page.component.spec.ts": 3,
     "src/app/features/manufacturer-detail/manufacturer-browser-root/manufacturer-browser-root-data.service.ts": 2,
     "src/app/features/manufacturer-detail/manufacturer-browser-root/manufacturer-row/manufacturer-updated-badge/manufacturer-updated-badge.component.spec.ts": 1,

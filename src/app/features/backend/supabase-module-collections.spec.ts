@@ -1,17 +1,36 @@
+import { SupabaseClient } from '@supabase/supabase-js';
 import { firstValueFrom } from 'rxjs';
+import { Database } from 'src/backend/database.types';
 import {
   buildModuleCollectionEntries,
   validatePublicModuleCollectionModuleIds
 } from './supabase-module-collections';
 import { DbPaths } from './DatabaseStrings';
 
-function buildSupabaseWithModuleRows(rows: {id: number; public: boolean | null}[]) {
-  const inSpy = jasmine.createSpy('in').and.returnValue(Promise.resolve({data: rows, error: null}));
-  const selectSpy = jasmine.createSpy('select').and.returnValue({in: inSpy});
-  const fromSpy = jasmine.createSpy('from').and.returnValue({select: selectSpy});
+type ModuleRow = Pick<Database['public']['Tables']['modules']['Row'], 'id' | 'public'>;
+type ModuleRowsResponse = {data: ModuleRow[]; error: null};
+type ModuleIdFilter = {
+  in: jasmine.Spy<(column: 'id', values: number[]) => Promise<ModuleRowsResponse>>;
+};
+type ModuleSelectQuery = {
+  select: jasmine.Spy<(columns: 'id,public') => ModuleIdFilter>;
+};
+type ModuleCollectionValidationClient = SupabaseClient<Database> & {
+  from: jasmine.Spy<(table: typeof DbPaths.modules) => ModuleSelectQuery>;
+};
+
+function buildSupabaseWithModuleRows(rows: ModuleRow[]) {
+  const response: ModuleRowsResponse = {data: rows, error: null};
+  const inSpy = jasmine.createSpy<(column: 'id', values: number[]) => Promise<ModuleRowsResponse>>('in')
+    .and.resolveTo(response);
+  const selectSpy = jasmine.createSpy<(columns: 'id,public') => ModuleIdFilter>('select')
+    .and.returnValue({in: inSpy});
+  const fromSpy = jasmine.createSpy<(table: typeof DbPaths.modules) => ModuleSelectQuery>('from')
+    .and.returnValue({select: selectSpy});
+  const supabase = {from: fromSpy} as ModuleCollectionValidationClient;
 
   return {
-    supabase: {from: fromSpy},
+    supabase,
     fromSpy,
     selectSpy,
     inSpy
@@ -29,7 +48,7 @@ describe('module collection backend helpers', () => {
   it('skips validation queries when no modules are selected', async () => {
     const {supabase, fromSpy} = buildSupabaseWithModuleRows([]);
 
-    await expectAsync(firstValueFrom(validatePublicModuleCollectionModuleIds(supabase as any, [])))
+    await expectAsync(firstValueFrom(validatePublicModuleCollectionModuleIds(supabase, [])))
       .toBeResolvedTo([]);
     expect(fromSpy).not.toHaveBeenCalled();
   });
@@ -40,7 +59,7 @@ describe('module collection backend helpers', () => {
       {id: 3, public: true}
     ]);
 
-    await expectAsync(firstValueFrom(validatePublicModuleCollectionModuleIds(supabase as any, [2, 3, 2])))
+    await expectAsync(firstValueFrom(validatePublicModuleCollectionModuleIds(supabase, [2, 3, 2])))
       .toBeResolvedTo([2, 3, 2]);
     expect(fromSpy).toHaveBeenCalledWith(DbPaths.modules);
     expect(selectSpy).toHaveBeenCalledWith('id,public');
@@ -53,7 +72,7 @@ describe('module collection backend helpers', () => {
       {id: 3, public: false}
     ]);
 
-    await expectAsync(firstValueFrom(validatePublicModuleCollectionModuleIds(supabase as any, [2, 3, 4])))
+    await expectAsync(firstValueFrom(validatePublicModuleCollectionModuleIds(supabase, [2, 3, 4])))
       .toBeRejectedWithError('Collections can only contain public modules.');
   });
 });

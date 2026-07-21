@@ -1,9 +1,14 @@
+import { PlatformLocation } from '@angular/common';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import { UrlCreatorService } from './url-creator.service';
 
 
 describe('UrlCreatorService', () => {
   let service: UrlCreatorService;
-  let mockSnackBar: jasmine.SpyObj<any>;
+  let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
+  let mockRouter: jasmine.SpyObj<Router>;
+  let mockPlatformLocation: jasmine.SpyObj<PlatformLocation>;
   
   function clipboardSpy(): jasmine.Spy {
     return jasmine.isSpy(navigator.clipboard.writeText)
@@ -12,8 +17,10 @@ describe('UrlCreatorService', () => {
   }
   
   beforeEach(() => {
-    mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
-    service = new UrlCreatorService({} as any, mockSnackBar, {} as any);
+    mockRouter = jasmine.createSpyObj<Router>('Router', ['navigate']);
+    mockSnackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
+    mockPlatformLocation = jasmine.createSpyObj<PlatformLocation>('PlatformLocation', ['getBaseHrefFromDOM']);
+    service = new UrlCreatorService(mockRouter, mockSnackBar, mockPlatformLocation);
   });
   
   it('calls navigator.clipboard.writeText with window.location.origin + path', async () => {
