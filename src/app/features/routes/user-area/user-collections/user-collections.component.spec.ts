@@ -1,21 +1,35 @@
 import { of } from 'rxjs';
 import { ModuleCollectionCreatorComponent } from 'src/app/components/module-collection-parts/module-collection-creator/module-collection-creator.component';
 import { UserCollectionsComponent } from './user-collections.component';
+import { ModuleCollectionsDataService } from 'src/app/features/module-collections/module-collections-data.service';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { Router } from '@angular/router';
+import { ModuleCollectionCreatorResult } from 'src/app/components/module-collection-parts/module-collection-creator/module-collection-creator.component';
+
+type CreatorCloseResult = ModuleCollectionCreatorResult | null | Partial<ModuleCollectionCreatorResult>;
 
 describe('UserCollectionsComponent', () => {
-  function build(afterClosedValue: unknown = {id: 7}) {
-    const dataService = {
-      updateCurrentUserCollections$: jasmine.createSpyObj('Subject', ['next']),
-      deleteCollection: jasmine.createSpy('deleteCollection').and.returnValue(of({}))
-    };
-    const dialog = {
-      open: jasmine.createSpy('open').and.returnValue({
-        afterClosed: () => of(afterClosedValue)
-      })
-    };
-    const router = jasmine.createSpyObj('Router', ['navigate']);
+  function build(afterClosedValue: CreatorCloseResult = {id: 7}) {
+    const updateCurrentUserCollections$ = jasmine.createSpyObj<ModuleCollectionsDataService['updateCurrentUserCollections$']>(
+      'updateCurrentUserCollections$',
+      ['next']
+    );
+    const dataService = jasmine.createSpyObj<ModuleCollectionsDataService>(
+      'ModuleCollectionsDataService',
+      ['deleteCollection'],
+      {updateCurrentUserCollections$}
+    );
+    dataService.deleteCollection.and.returnValue(of(undefined));
+    const dialogRef = jasmine.createSpyObj<MatDialogRef<ModuleCollectionCreatorComponent, ModuleCollectionCreatorResult>>(
+      'MatDialogRef',
+      ['afterClosed']
+    );
+    dialogRef.afterClosed.and.returnValue(of(afterClosedValue as ModuleCollectionCreatorResult | undefined));
+    const dialog = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
+    dialog.open.and.returnValue(dialogRef);
+    const router = jasmine.createSpyObj<Router>('Router', ['navigate']);
 
-    const component = new UserCollectionsComponent(dataService as any, dialog as any, router as any);
+    const component = new UserCollectionsComponent(dataService, dialog, router);
     return {component, dataService, dialog, router};
   }
 

@@ -10,17 +10,47 @@ import {
 } from '../__tests__/test-setup';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { AppShellLayoutService } from 'src/app/shared-interproject/app-shell-layout.service';
+import { DbModule } from 'src/app/models/module';
+import {
+  RichUserModel,
+  SimpleUserModel
+} from 'src/app/features/backend/supabase.types';
+
+type ManualFixture = Pick<DbModule, 'id' | 'name' | 'manualURL'>;
+
+interface UserManualsDataServiceDouble {
+  manualsData$: BehaviorSubject<ManualFixture[] | undefined>;
+  filteredManualsData$: BehaviorSubject<ManualFixture[] | undefined>;
+  hasSearchQuery$: BehaviorSubject<boolean>;
+  updateManualsData$: Subject<void>;
+}
+
+type UserManagementServiceDouble = Pick<
+  UserManagementService,
+  'loggedUser$' | 'loggedUserFullProfile$' | 'isAdmin$'
+>;
 
 describe('UserManualsComponent', () => {
   function build() {
-    const manualsData$ = new BehaviorSubject<any[] | undefined>([
+    const manualsData$ = new BehaviorSubject<ManualFixture[] | undefined>([
       {id: 1, name: 'Belgrad', manualURL: 'https://manuals/belgrad'},
       {id: 2, name: 'Dixie II+', manualURL: 'https://manuals/dixie'}
     ]);
-    const filteredManualsData$ = new BehaviorSubject<any[] | undefined>(manualsData$.value);
+    const filteredManualsData$ = new BehaviorSubject<ManualFixture[] | undefined>(manualsData$.value);
     const hasSearchQuery$ = new BehaviorSubject(false);
     const updateManualsData$ = new Subject<void>();
     spyOn(updateManualsData$, 'next').and.callThrough();
+    const dataService: UserManualsDataServiceDouble = {
+      manualsData$,
+      filteredManualsData$,
+      hasSearchQuery$,
+      updateManualsData$,
+    };
+    const userManagementService: UserManagementServiceDouble = {
+      loggedUser$: new BehaviorSubject<SimpleUserModel | undefined>(undefined),
+      loggedUserFullProfile$: new BehaviorSubject<RichUserModel | undefined>(undefined),
+      isAdmin$: new BehaviorSubject<boolean>(false)
+    };
 
     TestBed.configureTestingModule({
       imports: [UserManualsComponent],
@@ -28,12 +58,7 @@ describe('UserManualsComponent', () => {
         provideNoopAnimations(),
         {
           provide: UserAreaDataService,
-          useValue: {
-            manualsData$,
-            filteredManualsData$,
-            hasSearchQuery$,
-            updateManualsData$,
-          }
+          useValue: dataService
         },
         {
           provide: AppStateService,
@@ -41,11 +66,7 @@ describe('UserManualsComponent', () => {
         },
         {
           provide: UserManagementService,
-          useValue: {
-            loggedUser$: new BehaviorSubject<any>(null),
-            loggedUserFullProfile$: new BehaviorSubject<any>(null),
-            isAdmin$: new BehaviorSubject<boolean>(false)
-          }
+          useValue: userManagementService
         },
         {
           provide: AppShellLayoutService,
@@ -159,7 +180,6 @@ describe('UserManualsComponent', () => {
 
     return {
       fixture,
-      dataService: TestBed.inject(UserAreaDataService) as any,
       manualsData$,
       filteredManualsData$,
       hasSearchQuery$,
