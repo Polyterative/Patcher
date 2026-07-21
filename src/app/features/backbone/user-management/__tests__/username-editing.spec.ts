@@ -4,6 +4,7 @@ import {
 } from '@angular/core/testing';
 import {
   cleanupComponentTest,
+  MockUserManagementService,
   setupComponentTest
 } from './test-setup';
 import { UserManagementComponent } from '../user-management.component';
@@ -17,7 +18,7 @@ import { UserManagementComponent } from '../user-management.component';
  */
 describe('UserManagementComponent - Username Editing', () => {
   let component: UserManagementComponent;
-  let mockUserManagementService: any;
+  let mockUserManagementService: MockUserManagementService;
   
   beforeEach(() => {
     const setup = setupComponentTest();

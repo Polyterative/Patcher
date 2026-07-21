@@ -1,6 +1,8 @@
 import { UserManagementComponent } from '../user-management.component';
 import {
   cleanupComponentTest,
+  MockSeoAndUtilsService,
+  MockUserManagementService,
   setupComponentTest
 } from './test-setup';
 
@@ -13,8 +15,8 @@ import {
  */
 describe('UserManagementComponent - Initialization', () => {
   let component: UserManagementComponent;
-  let mockUserManagementService: any;
-  let mockSeoAndUtilsService: any;
+  let mockUserManagementService: MockUserManagementService;
+  let mockSeoAndUtilsService: MockSeoAndUtilsService;
   
   beforeEach(() => {
     const setup = setupComponentTest();

@@ -1,6 +1,6 @@
 {
   "_comment": "Grandfathered explicit `any` counts. Do not add by hand — run `node scripts/checks/check-explicit-any.cjs --update-baseline` after intentional cleanup.",
-  "totalExplicitAny": 1939,
+  "totalExplicitAny": 1921,
   "files": {
     "api/sitemap.ts": 3,
     "e2e/auth-rack-context-menu.spec.ts": 6,
@@ -40,13 +40,6 @@
     "src/app/features/backbone/login/jwt.interceptor.ts": 2,
     "src/app/features/backbone/login/reset-password/reset-password-page.component.ts": 3,
     "src/app/features/backbone/login/reset-password/user-reset-password-data.service.spec.ts": 2,
-    "src/app/features/backbone/user-management/__tests__/account-actions.spec.ts": 1,
-    "src/app/features/backbone/user-management/__tests__/initialization.spec.ts": 2,
-    "src/app/features/backbone/user-management/__tests__/observable-state.spec.ts": 7,
-    "src/app/features/backbone/user-management/__tests__/password-change.spec.ts": 3,
-    "src/app/features/backbone/user-management/__tests__/test-setup.ts": 2,
-    "src/app/features/backbone/user-management/__tests__/username-editing.spec.ts": 1,
-    "src/app/features/backbone/user-management/user-management.component.spec.ts": 2,
     "src/app/features/backend/__tests__/supabase-service/accent-insensitive-search.spec.ts": 15,
     "src/app/features/backend/__tests__/supabase-service/add-comment-rack.spec.ts": 26,
     "src/app/features/backend/__tests__/supabase-service/add-extended.spec.ts": 18,
