@@ -2,7 +2,11 @@ import {
   fakeAsync,
   tick
 } from '@angular/core/testing';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import {
+  Observable,
   of,
   Subject,
   throwError
@@ -12,86 +16,216 @@ import { PatchDetailDataService } from '../patch-detail-data.service';
 import { SelectionPanelBridgeService } from '../selection-panel-bridge.service';
 import { PatchEditorSortStrategy, LinkedRackPreviewState } from '../patch-editor/patch-editor.types';
 import { DbModule, RackedModule } from 'src/app/models/module';
+import { Patch } from 'src/app/models/patch';
+import { Rack } from 'src/app/models/rack';
+import {
+  PatchConnection,
+  PatchModuleInstance
+} from 'src/app/models/connection';
+import { CVConnectionEntity } from 'src/app/models/cv';
+import { SupabaseService, CurrentUserModulesOrderConfig } from 'src/app/features/backend/supabase.service';
+import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
+import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
+import {
+  cvWithModuleFixture,
+  dbModuleFixture,
+  patchFixture
+} from '../patch-graph/patch-graph-test-fixtures';
 
 
 describe('PatchDetailDataService - Sync and Error Paths', () => {
   let createdServices: PatchDetailDataService[];
   let createdBridges: SelectionPanelBridgeService[];
 
-  function patch(partial: any = {}) {
-    return {
-      id: 10,
+  type UserSession = { id: string } | null;
+  type PatchDetailResponse = { data: Patch | null };
+  type RackDetailResponse = { data: Rack | null };
+  type MutationResponse = Record<string, never>;
+
+  interface PatchDetailBackendDouble {
+    cacheResetter$: Subject<string[]>;
+    auth: {
+      getUserSession$: jasmine.Spy<() => Observable<UserSession>>;
+    };
+    get: {
+      patchWithId: jasmine.Spy<(id: number) => Observable<PatchDetailResponse>>;
+      currentUserRacks: jasmine.Spy<() => Observable<Rack[]>>;
+      rackedModules: jasmine.Spy<(rackId: number) => Observable<RackedModule[]>>;
+    };
+    GET: {
+      currentUserModules: jasmine.Spy<(
+        includePrivate: boolean,
+        includeWishlist: boolean,
+        order?: CurrentUserModulesOrderConfig
+      ) => Observable<DbModule[]>>;
+      patchConnections: jasmine.Spy<(patchId: number) => Observable<PatchConnection[]>>;
+      patchModuleInstances: jasmine.Spy<(patchId: number) => Observable<PatchModuleInstance[]>>;
+      rackWithId: jasmine.Spy<(rackId: number) => Observable<RackDetailResponse>>;
+      publicRackWithId: jasmine.Spy<(rackId: number) => Observable<RackDetailResponse>>;
+    };
+    update: {
+      patch: jasmine.Spy<(patch: Patch) => Observable<MutationResponse>>;
+      patchSilent: jasmine.Spy<(patch: Patch) => Observable<MutationResponse>>;
+      patchConnectionsSilent: jasmine.Spy<(connections: PatchConnection[]) => Observable<MutationResponse>>;
+      patchConnectionNoteSilent: jasmine.Spy<(connection: PatchConnection) => Observable<MutationResponse>>;
+      patchTags: jasmine.Spy<(patchId: number, tags: string[]) => Observable<string[]>>;
+    };
+    delete: {
+      userPatch: jasmine.Spy<(patchId: number) => Observable<MutationResponse>>;
+      patchConnectionsForPatch: jasmine.Spy<(patchId: number) => Observable<MutationResponse>>;
+      patchModuleInstancesForPatch: jasmine.Spy<(patchId: number) => Observable<MutationResponse>>;
+      patch: jasmine.Spy<(patchId: number) => Observable<MutationResponse>>;
+    };
+    add: {
+      patchModuleInstance: jasmine.Spy<() => Observable<PatchModuleInstance>>;
+      patchModuleInstances: jasmine.Spy<() => Observable<PatchModuleInstance[]>>;
+    };
+  }
+
+  function mutationResponse(): MutationResponse {
+    return {};
+  }
+
+  function patch(partial: Partial<Patch> = {}): Patch {
+    return patchFixture(10, {
       name: 'Patch A',
       description: '',
       public: true,
       author: {id: 'u1', username: 'user'},
       ...partial
-    } as any;
+    });
   }
-  
-  function cv(id: number, kind: 'in' | 'out', moduleId: number, instanceId?: number) {
+
+  function rack(partial: Partial<Rack> = {}): Rack {
+    return {
+      id: 42,
+      name: 'Public Rack',
+      description: '',
+      hp: 104,
+      rows: 3,
+      public: true,
+      author: {id: 'u1', username: 'user'},
+      locked: false,
+      created: '2026-01-01T00:00:00.000Z',
+      updated: '2026-01-01T00:00:00.000Z',
+      ...partial
+    };
+  }
+
+  function cv(id: number, kind: 'in' | 'out', moduleId: number, instanceId?: number): CVConnectionEntity {
     return {
       kind,
       cv: {
-        id,
-        name: `${ kind }-${ id }`,
-        module: {id: moduleId, name: `M${ moduleId }`},
+        ...cvWithModuleFixture(id, moduleId, `M${ moduleId }`, `${ kind }-${ id }`),
         instance_id: instanceId
       }
-    } as any;
+    };
   }
-  
-  function build() {
-    const bridge = new SelectionPanelBridgeService();
-    const backend = {
-      cacheResetter$: new Subject<any>(),
-      auth: {
-        getUserSession$: jasmine.createSpy('getUserSession$').and.returnValue(of({id: 'u1'}))
-      },
-      get: {
-        patchWithId: jasmine.createSpy('get.patchWithId').and.returnValue(of({data: patch({id: 44, name: 'Loaded'})})),
-        currentUserRacks: jasmine.createSpy('get.currentUserRacks').and.returnValue(of([])),
-        rackedModules: jasmine.createSpy('get.rackedModules').and.returnValue(of([]))
-      },
-      GET: {
-        currentUserModules: jasmine.createSpy('GET.currentUserModules').and.returnValue(of([])),
-        patchConnections: jasmine.createSpy('GET.patchConnections').and.returnValue(of([])),
-        patchModuleInstances: jasmine.createSpy('GET.patchModuleInstances').and.returnValue(of([])),
-        rackWithId: jasmine.createSpy('GET.rackWithId').and.returnValue(of({data: {id: 42, name: 'Public Rack'}})),
-        publicRackWithId: jasmine.createSpy('GET.publicRackWithId').and.returnValue(of({data: {id: 42, name: 'Public Rack'}}))
-      },
-      update: {
-        patch: jasmine.createSpy('update.patch').and.returnValue(of({data: [patch()]})),
-        patchSilent: jasmine.createSpy('update.patchSilent').and.returnValue(of({})),
-        patchConnectionsSilent: jasmine.createSpy('update.patchConnectionsSilent').and.returnValue(of({})),
-        patchConnectionNoteSilent: jasmine.createSpy('update.patchConnectionNoteSilent').and.returnValue(of({}))
-      },
-      delete: {
-        userPatch: jasmine.createSpy('delete.userPatch').and.returnValue(of({})),
-        patchConnectionsForPatch: jasmine.createSpy('delete.patchConnectionsForPatch').and.returnValue(of({})),
-        patchModuleInstancesForPatch: jasmine.createSpy('delete.patchModuleInstancesForPatch').and.returnValue(of({})),
-        patch: jasmine.createSpy('delete.patch').and.returnValue(of({}))
-      },
-      add: {
-        patchModuleInstance: jasmine.createSpy('add.patchModuleInstance').and.returnValue(of({id: 1, module_id: 9})),
-        patchModuleInstances: jasmine.createSpy('add.patchModuleInstances').and.returnValue(of([]))
+
+  function connection(partial: Partial<PatchConnection> = {}): PatchConnection {
+    return {
+      patch: patch({id: 44}),
+      a: cvWithModuleFixture(1, 11, 'A', 'A'),
+      b: cvWithModuleFixture(2, 22, 'B', 'B'),
+      ...partial
+    };
+  }
+
+  function rackedModuleFixture(): RackedModule {
+    return {
+      module: dbModuleFixture(7, 'Maths'),
+      rackingData: {
+        id: 7001,
+        rackid: 42,
+        moduleid: 7,
+        row: 1,
+        column: 4
       }
     };
-    const dialog = {
-      open: jasmine.createSpy('dialog.open').and.returnValue({
-        afterClosed: () => of({answer: true})
-      })
+  }
+
+  function supabaseServiceDouble(backend: PatchDetailBackendDouble): SupabaseService {
+    const serviceDouble: SupabaseService = Object.create(SupabaseService.prototype);
+    return Object.assign(serviceDouble, backend);
+  }
+
+  function build() {
+    const bridge = new SelectionPanelBridgeService();
+    const backend: PatchDetailBackendDouble = {
+      cacheResetter$: new Subject<string[]>(),
+      auth: {
+        getUserSession$: jasmine.createSpy<() => Observable<UserSession>>('getUserSession$')
+          .and.returnValue(of({id: 'u1'}))
+      },
+      get: {
+        patchWithId: jasmine.createSpy<(id: number) => Observable<PatchDetailResponse>>('get.patchWithId')
+          .and.returnValue(of({data: patch({id: 44, name: 'Loaded'})})),
+        currentUserRacks: jasmine.createSpy<() => Observable<Rack[]>>('get.currentUserRacks')
+          .and.returnValue(of([])),
+        rackedModules: jasmine.createSpy<(rackId: number) => Observable<RackedModule[]>>('get.rackedModules')
+          .and.returnValue(of([]))
+      },
+      GET: {
+        currentUserModules: jasmine.createSpy<(
+          includePrivate: boolean,
+          includeWishlist: boolean,
+          order?: CurrentUserModulesOrderConfig
+        ) => Observable<DbModule[]>>('GET.currentUserModules')
+          .and.returnValue(of([])),
+        patchConnections: jasmine.createSpy<(patchId: number) => Observable<PatchConnection[]>>('GET.patchConnections')
+          .and.returnValue(of([])),
+        patchModuleInstances: jasmine.createSpy<(patchId: number) => Observable<PatchModuleInstance[]>>('GET.patchModuleInstances')
+          .and.returnValue(of([])),
+        rackWithId: jasmine.createSpy<(rackId: number) => Observable<RackDetailResponse>>('GET.rackWithId')
+          .and.returnValue(of({data: rack()})),
+        publicRackWithId: jasmine.createSpy<(rackId: number) => Observable<RackDetailResponse>>('GET.publicRackWithId')
+          .and.returnValue(of({data: rack()}))
+      },
+      update: {
+        patch: jasmine.createSpy<(patch: Patch) => Observable<MutationResponse>>('update.patch')
+          .and.returnValue(of(mutationResponse())),
+        patchSilent: jasmine.createSpy<(patch: Patch) => Observable<MutationResponse>>('update.patchSilent')
+          .and.returnValue(of(mutationResponse())),
+        patchConnectionsSilent: jasmine.createSpy<(connections: PatchConnection[]) => Observable<MutationResponse>>('update.patchConnectionsSilent')
+          .and.returnValue(of(mutationResponse())),
+        patchConnectionNoteSilent: jasmine.createSpy<(connection: PatchConnection) => Observable<MutationResponse>>('update.patchConnectionNoteSilent')
+          .and.returnValue(of(mutationResponse())),
+        patchTags: jasmine.createSpy<(patchId: number, tags: string[]) => Observable<string[]>>('update.patchTags')
+          .and.returnValue(of([]))
+      },
+      delete: {
+        userPatch: jasmine.createSpy<(patchId: number) => Observable<MutationResponse>>('delete.userPatch')
+          .and.returnValue(of(mutationResponse())),
+        patchConnectionsForPatch: jasmine.createSpy<(patchId: number) => Observable<MutationResponse>>('delete.patchConnectionsForPatch')
+          .and.returnValue(of(mutationResponse())),
+        patchModuleInstancesForPatch: jasmine.createSpy<(patchId: number) => Observable<MutationResponse>>('delete.patchModuleInstancesForPatch')
+          .and.returnValue(of(mutationResponse())),
+        patch: jasmine.createSpy<(patchId: number) => Observable<MutationResponse>>('delete.patch')
+          .and.returnValue(of(mutationResponse()))
+      },
+      add: {
+        patchModuleInstance: jasmine.createSpy<() => Observable<PatchModuleInstance>>('add.patchModuleInstance')
+          .and.returnValue(of({id: 1, patch_id: 10, module_id: 9, instance_label: null})),
+        patchModuleInstances: jasmine.createSpy<() => Observable<PatchModuleInstance[]>>('add.patchModuleInstances')
+          .and.returnValue(of([]))
+      }
     };
-    const router = jasmine.createSpyObj('Router', ['navigate']);
-    const snackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
+    const dialog = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
+    dialog.open.and.returnValue({
+      afterClosed: () => of({answer: true})
+    } as MatDialogRef<unknown, { answer: boolean }>);
+    const router = jasmine.createSpyObj<Router>('Router', ['navigate']);
+    const snackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
+    const userService = jasmine.createSpyObj<UserManagementService>('UserManagementService', ['ngOnDestroy']);
+    const analytics = jasmine.createSpyObj<AnalyticsService>('AnalyticsService', ['capture', 'identify', 'reset']);
     const service = new PatchDetailDataService(
       router,
       snackBar,
-      dialog as any,
-      {loggedUser$: of({id: 'u1'})} as any,
-      backend as any,
+      dialog,
+      userService,
+      supabaseServiceDouble(backend),
       bridge,
-      {capture: () => {}, identify: () => {}, reset: () => {}} as any
+      analytics
     );
     createdBridges.push(bridge);
     createdServices.push(service);
@@ -175,7 +309,7 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
   it('loads owned racks for owner-visible patches and derives linked-rack state', () => {
     const {service, backend} = build();
     backend.get.currentUserRacks.and.returnValue(of([
-      {id: 42, name: 'Studio Rack'} as any
+      rack({id: 42, name: 'Studio Rack'})
     ]));
 
     service.singlePatchData$.next(patch({id: 44, linked_rack_id: 42}));
@@ -189,14 +323,20 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
   it('loads editor collection modules through the data service and excludes wishlist modules', () => {
     const {service, backend} = build();
     const order = {key: 'collectionUpdated', direction: 'desc'} as const;
+    const strategy: PatchEditorSortStrategy = {
+      id: 'addedLatest',
+      label: 'Recently added',
+      backendOrder: order,
+      localComparator: () => 0
+    };
     backend.GET.currentUserModules.and.returnValue(of([
-      {id: 1, name: 'Owned', possessionKind: 'HAS'} as unknown as DbModule,
-      {id: 2, name: 'Wishlist', possessionKind: 'WANTS'} as unknown as DbModule,
-      {id: 3, name: 'Selling', possessionKind: 'SELLS'} as unknown as DbModule
+      {...dbModuleFixture(1, 'Owned'), possessionKind: 'HAS'},
+      {...dbModuleFixture(2, 'Wishlist'), possessionKind: 'WANTS'},
+      {...dbModuleFixture(3, 'Selling'), possessionKind: 'SELLS'}
     ]));
     let result: DbModule[] = [];
 
-    service.loadEditorCollectionModules$({backendOrder: order} as PatchEditorSortStrategy).subscribe(modules => result = modules);
+    service.loadEditorCollectionModules$(strategy).subscribe(modules => result = modules);
 
     expect(backend.GET.currentUserModules).toHaveBeenCalledWith(true, false, order);
     expect(result.map(module => module.id)).toEqual([1, 3]);
@@ -204,9 +344,9 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
 
   it('loads linked-rack previews through authenticated rack reads and racked modules', () => {
     const {service, backend} = build();
-    backend.GET.rackWithId.and.returnValue(of({data: {id: 42, name: 'Studio Rack'}}));
+    backend.GET.rackWithId.and.returnValue(of({data: rack({id: 42, name: 'Studio Rack'})}));
     backend.get.rackedModules.and.returnValue(of([
-      {module: {id: 7, name: 'Maths'}, rackingData: {id: 7001, row: 1, column: 4}} as unknown as RackedModule
+      rackedModuleFixture()
     ]));
     let result: LinkedRackPreviewState | undefined;
 
@@ -237,8 +377,8 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
   it('derives linked-rack select options from owned racks and syncs the selected rack', () => {
     const {service, backend} = build();
     backend.get.currentUserRacks.and.returnValue(of([
-      {id: 42, name: 'Studio Rack'} as any,
-      {id: 77, name: ''} as any
+      rack({id: 42, name: 'Studio Rack'}),
+      rack({id: 77, name: ''})
     ]));
 
     service.singlePatchData$.next(patch({id: 44, linked_rack_id: 77}));
@@ -300,7 +440,7 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {});
     const {service, backend} = build();
     service.singlePatchData$.next(patch({id: 44, linked_rack_id: 10}));
-    service.editorConnections$.next([{a: {id: 1}, b: {id: 2}, patch: patch({id: 44})} as any]);
+    service.editorConnections$.next([connection({patch: patch({id: 44})})]);
 
     service.requestLinkedRackChange$.next(42);
 
@@ -376,7 +516,7 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {});
     const {service, backend} = build();
     backend.get.currentUserRacks.and.returnValue(of([
-      {id: 42, name: 'Studio Rack'} as any
+      rack({id: 42, name: 'Studio Rack'})
     ]));
     service.singlePatchData$.next(patch({id: 44, linked_rack_id: 10}));
 
@@ -405,7 +545,7 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
     spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
     const {service, backend} = build();
     backend.get.currentUserRacks.and.returnValue(of([
-      {id: 42, name: 'Studio Rack'} as any
+      rack({id: 42, name: 'Studio Rack'})
     ]));
     backend.update.patchSilent.and.returnValue(throwError(() => ({
       code: 'PGRST204',
@@ -446,11 +586,11 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
 
   it('keeps linked-rack switching disabled while connection changes are still saving', () => {
     const {service, backend} = build();
-    const saveSubject = new Subject<void>();
+    const saveSubject = new Subject<MutationResponse>();
     backend.update.patchConnectionsSilent.and.returnValue(saveSubject.asObservable());
     service.patchEditingPanelOpenState$.next(true);
     service.singlePatchData$.next(patch({id: 44}));
-    service.editorConnections$.next([{a: {id: 1}, b: {id: 2}, patch: patch({id: 44})} as any]);
+    service.editorConnections$.next([connection({patch: patch({id: 44})})]);
 
     service.requestConnectionDbSync$.next();
 
@@ -458,7 +598,7 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
     expect(service.linkedRackSelectionHint$.value).toBe('Wait for pending connection changes to finish saving before switching the linked rack.');
     expect(service.formData.linkedRack.control.disabled).toBeTrue();
 
-    saveSubject.next();
+    saveSubject.next(mutationResponse());
     saveSubject.complete();
 
     expect(service.linkedRackSelectionBlocked$.value).toBeFalse();
@@ -491,17 +631,17 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
   
   it('removes editor connection and syncs empty list by deleting patch connections', () => {
     const {service, backend} = build();
-    const connection = {
+    const removableConnection = connection({
       patch: patch({id: 88}),
-      a: {id: 1, module: {name: 'A'}},
-      b: {id: 2, module: {name: 'B'}},
+      a: cvWithModuleFixture(1, 11, 'A', 'A'),
+      b: cvWithModuleFixture(2, 22, 'B', 'B'),
       instance_id_a: 1,
       instance_id_b: 2
-    } as any;
+    });
     service.singlePatchData$.next(patch({id: 88}));
-    service.editorConnections$.next([connection]);
+    service.editorConnections$.next([removableConnection]);
     
-    service.removeConnectionFromEditor$.next(connection);
+    service.removeConnectionFromEditor$.next(removableConnection);
     
     expect(service.editorConnections$.value).toEqual([]);
     expect(backend.delete.patchConnectionsForPatch).toHaveBeenCalledWith(88);
@@ -511,11 +651,11 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
     spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
     });
     const {service, backend} = build();
-    const connection = {
+    const savedConnection = connection({
       patch: patch({id: 90}),
-      a: {id: 1, module: {name: 'A'}},
-      b: {id: 2, module: {name: 'B'}}
-    } as any;
+      a: cvWithModuleFixture(1, 11, 'A', 'A'),
+      b: cvWithModuleFixture(2, 22, 'B', 'B')
+    });
     
     service.singlePatchData$.next(undefined);
     service.editorConnections$.next(null);
@@ -528,7 +668,7 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
     backend.delete.patchConnectionsForPatch.and.returnValue(throwError(() => new Error('delete failed')));
     service.requestConnectionDbSync$.next();
     
-    service.editorConnections$.next([connection]);
+    service.editorConnections$.next([savedConnection]);
     backend.update.patchConnectionsSilent.and.returnValue(throwError(() => new Error('update failed')));
     service.requestConnectionDbSync$.next();
     
@@ -539,7 +679,11 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
     spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
     });
     const {service, backend, router} = build();
-    const conn = {patch: patch({id: 30}), a: {id: 1}, b: {id: 2}} as any;
+    const conn = connection({
+      patch: patch({id: 30}),
+      a: cvWithModuleFixture(1, 11, 'A', 'A'),
+      b: cvWithModuleFixture(2, 22, 'B', 'B')
+    });
     backend.update.patchConnectionNoteSilent.and.returnValue(throwError(() => new Error('note failed')));
     
     service.requestNoteSync$.next(conn);
