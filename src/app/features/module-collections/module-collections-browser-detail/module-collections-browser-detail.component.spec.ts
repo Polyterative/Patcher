@@ -1,33 +1,105 @@
+import { ActivatedRoute, Params } from '@angular/router';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { ModuleCollectionsBrowserDetailComponent } from './module-collections-browser-detail.component';
-import { ModuleCollectionDetail } from 'src/app/models/module-collection';
+import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
+import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
+import { SimpleUserModel } from 'src/app/features/backend/supabase.service';
+import {
+  ModuleCollectionDetail,
+  ModuleCollectionEntry
+} from 'src/app/models/module-collection';
+import { MinimalModule } from 'src/app/models/module';
+import { MinimalManufacturer } from 'src/app/models/manufacturer';
+import { Standard } from 'src/app/models/standard';
+import { ModuleCollectionsDetailDataService } from '../module-collections-detail-data.service';
+
+type DetailDataServiceDouble = ModuleCollectionsDetailDataService & {
+  collection$: BehaviorSubject<ModuleCollectionDetail | undefined>;
+  clearCollection: jasmine.Spy<ModuleCollectionsDetailDataService['clearCollection']>;
+};
+type SeoAndUtilsServiceDouble = SeoAndUtilsService & {
+  updateSeo: jasmine.Spy<SeoAndUtilsService['updateSeo']>;
+};
 
 describe('ModuleCollectionsBrowserDetailComponent', () => {
   function build() {
-    const routeParams$ = new Subject();
-    const seoAndUtilsService = { updateSeo: jasmine.createSpy('updateSeo') };
-    const dataService = {
+    const routeParams$ = new Subject<Params>();
+    const seoAndUtilsService: SeoAndUtilsServiceDouble = Object.assign(
+      Object.create(SeoAndUtilsService.prototype) as SeoAndUtilsService,
+      { updateSeo: jasmine.createSpy<SeoAndUtilsService['updateSeo']>('updateSeo') }
+    );
+    const dataService: DetailDataServiceDouble = Object.assign(
+      Object.create(ModuleCollectionsDetailDataService.prototype) as ModuleCollectionsDetailDataService,
+      {
       collection$: new BehaviorSubject<ModuleCollectionDetail | undefined>(undefined),
       load$: new Subject<string>(),
       loadOwnedById$: new Subject<number>(),
       localCollectionUpdated$: new Subject<ModuleCollectionDetail>(),
-      clearCollection: jasmine.createSpy('clearCollection')
-    };
+      clearCollection: jasmine.createSpy<ModuleCollectionsDetailDataService['clearCollection']>('clearCollection')
+      }
+    );
+    const userManagementService = Object.assign(
+      Object.create(UserManagementService.prototype) as UserManagementService,
+      { loggedUser$: new BehaviorSubject<SimpleUserModel | undefined>(undefined) }
+    );
+    const route = Object.assign(
+      Object.create(ActivatedRoute.prototype) as ActivatedRoute,
+      { params: routeParams$ }
+    );
     const component = new ModuleCollectionsBrowserDetailComponent(
-      dataService as any,
-      { loggedUser$: new BehaviorSubject(null) } as any,
-      { params: routeParams$ } as any,
-      seoAndUtilsService as any
+      dataService,
+      userManagementService,
+      route,
+      seoAndUtilsService
     );
 
     return { component, dataService, routeParams$, seoAndUtilsService };
+  }
+
+  function buildMinimalModule(
+    overrides: Partial<MinimalModule> & Pick<MinimalModule, 'id'>
+  ): MinimalModule {
+    const manufacturer = overrides.manufacturer ?? { id: 1, name: 'Make Noise' };
+    const standard = overrides.standard ?? { id: 1, name: '3U Doepfer' };
+
+    return {
+      id: overrides.id,
+      name: `Module ${ overrides.id }`,
+      description: '',
+      hp: 0,
+      public: true,
+      manufacturer,
+      manufacturerId: manufacturer.id,
+      standard,
+      tags: [],
+      panels: [],
+      created: '2026-01-01T00:00:00.000Z',
+      updated: '2026-01-01T00:00:00.000Z',
+      ...overrides
+    };
+  }
+
+  function buildEntry(
+    id: number,
+    ordinal: number,
+    module: MinimalModule
+  ): ModuleCollectionEntry {
+    return { id, ordinal, module };
+  }
+
+  function buildManufacturer(id: number, name: string): MinimalManufacturer {
+    return { id, name };
+  }
+
+  function buildStandard(id: number, name: string): Standard {
+    return { id, name };
   }
 
   function buildCollection(): ModuleCollectionDetail {
     return {
       id: 12,
       authorid: 'user-1',
-      author: { id: 'user-1', username: 'collector' } as any,
+      author: { id: 'user-1', username: 'collector' },
       name: 'Utility stack',
       description: 'Useful utilities',
       image: null,
@@ -78,10 +150,25 @@ describe('ModuleCollectionsBrowserDetailComponent', () => {
       created: '2026-06-10T10:00:00.000Z',
       updated: '2026-06-12T12:30:00.000Z',
       entries: [
-        {id: 1, ordinal: 0, module: {id: 1, hp: 10, manufacturer: {id: 1}, standard: {name: '3U Doepfer'}}},
-        {id: 2, ordinal: 1, module: {id: 2, hp: 20, manufacturer: {id: 2}, standard: {name: 'Intellijel 1U'}}},
-        {id: 3, ordinal: 2, module: {id: 3, hp: 6, manufacturer: {id: 1}, standard: {name: '3U Doepfer'}}}
-      ] as any
+        buildEntry(1, 0, buildMinimalModule({
+          id: 1,
+          hp: 10,
+          manufacturer: buildManufacturer(1, 'Make Noise'),
+          standard: buildStandard(1, '3U Doepfer')
+        })),
+        buildEntry(2, 1, buildMinimalModule({
+          id: 2,
+          hp: 20,
+          manufacturer: buildManufacturer(2, 'Intellijel'),
+          standard: buildStandard(2, 'Intellijel 1U')
+        })),
+        buildEntry(3, 2, buildMinimalModule({
+          id: 3,
+          hp: 6,
+          manufacturer: buildManufacturer(1, 'Make Noise'),
+          standard: buildStandard(1, '3U Doepfer')
+        }))
+      ]
     };
 
     const stats = component.collectionStats(collection);
@@ -103,9 +190,17 @@ describe('ModuleCollectionsBrowserDetailComponent', () => {
       image: 'covers/utility-stack.jpg',
       module_count: 2,
       entries: [
-        {id: 1, ordinal: 0, module: {id: 1, name: 'Maths', manufacturer: {name: 'Make Noise'}}},
-        {id: 2, ordinal: 1, module: {id: 2, name: 'Plaits', manufacturer: {name: 'Mutable Instruments'}}}
-      ] as any
+        buildEntry(1, 0, buildMinimalModule({
+          id: 1,
+          name: 'Maths',
+          manufacturer: buildManufacturer(1, 'Make Noise')
+        })),
+        buildEntry(2, 1, buildMinimalModule({
+          id: 2,
+          name: 'Plaits',
+          manufacturer: buildManufacturer(2, 'Mutable Instruments')
+        }))
+      ]
     };
 
     component.ngOnInit();

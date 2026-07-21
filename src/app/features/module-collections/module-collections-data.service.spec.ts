@@ -1,54 +1,142 @@
-import { of } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { ModuleCollectionsDataService } from './module-collections-data.service';
 import {
   ModuleCollectionDetail,
+  ModuleCollectionEntry,
   ModuleCollectionSummary
 } from 'src/app/models/module-collection';
+import { MinimalModule } from 'src/app/models/module';
+
+interface ModuleCollectionMutationPayload {
+  id?: number;
+  name: string;
+  description: string | null;
+  public: boolean;
+  image: string | null;
+  moduleIds: number[];
+}
+
+type ModuleCollectionMutationResult = number | Record<string, never>;
+type AddModuleCollection = (
+  data: Omit<ModuleCollectionMutationPayload, 'id'>
+) => Observable<ModuleCollectionMutationResult>;
+type UpdateModuleCollection = (
+  data: ModuleCollectionMutationPayload & { id: number }
+) => Observable<number>;
+type DeleteModuleCollection = (id: number) => Observable<Record<string, never>>;
+type AnalyticsDouble = AnalyticsService & {
+  capture: jasmine.Spy<AnalyticsService['capture']>;
+};
 
 describe('ModuleCollectionsDataService', () => {
-  function build(addCollectionResult: unknown = 11) {
-    const backend = {
-      GET: {
-        publicModuleCollections: jasmine.createSpy('publicModuleCollections').and.returnValue(of([
-          {id: 1, name: 'Ambient starters', public: true, public_id: 'ambient', author: {username: 'Curator'}, module_count: 2}
+  function buildSummary(overrides: Partial<ModuleCollectionSummary> = {}): ModuleCollectionSummary {
+    return {
+      id: 1,
+      authorid: 'user-1',
+      author: { id: 'user-1', username: 'Curator' },
+      name: 'Ambient starters',
+      description: null,
+      image: null,
+      public: true,
+      public_id: 'ambient',
+      created: '2026-01-01T00:00:00.000Z',
+      updated: '2026-01-02T00:00:00.000Z',
+      module_count: 2,
+      ...overrides
+    };
+  }
+
+  function buildDetail(overrides: Partial<ModuleCollectionDetail> = {}): ModuleCollectionDetail {
+    return {
+      ...buildSummary(overrides),
+      entries: [],
+      module_count: 0,
+      ...overrides
+    };
+  }
+
+  function buildMinimalModule(overrides: Partial<MinimalModule> & Pick<MinimalModule, 'id'>): MinimalModule {
+    const manufacturer = overrides.manufacturer ?? { id: 1, name: 'Make Noise' };
+    return {
+      id: overrides.id,
+      name: `Module ${ overrides.id }`,
+      description: '',
+      hp: 0,
+      public: true,
+      manufacturer,
+      manufacturerId: manufacturer.id,
+      standard: { id: 1, name: '3U Doepfer' },
+      tags: [],
+      panels: [],
+      created: '2026-01-01T00:00:00.000Z',
+      updated: '2026-01-01T00:00:00.000Z',
+      ...overrides
+    };
+  }
+
+  function buildEntry(id: number, module: MinimalModule): ModuleCollectionEntry {
+    return { id, ordinal: id - 1, module };
+  }
+
+  function build(addCollectionResult: ModuleCollectionMutationResult = 11) {
+    const getNamespace = Object.assign(Object.create(null) as SupabaseService['GET'], {
+      publicModuleCollections: jasmine.createSpy<SupabaseService['GET']['publicModuleCollections']>('publicModuleCollections')
+        .and.returnValue(of([
+          buildSummary()
         ])),
-        currentUserModuleCollections: jasmine.createSpy('currentUserModuleCollections').and.returnValue(of([
-          {id: 2, name: 'Private notes', public: false, public_id: 'private', author: {username: 'Me'}, module_count: 1}
+      currentUserModuleCollections: jasmine.createSpy<SupabaseService['GET']['currentUserModuleCollections']>('currentUserModuleCollections')
+        .and.returnValue(of([
+          buildSummary({
+            id: 2,
+            authorid: 'user-2',
+            author: { id: 'user-2', username: 'Me' },
+            name: 'Private notes',
+            public: false,
+            public_id: 'private',
+            module_count: 1
+          })
         ])),
-        publicModuleCollectionByPublicId: jasmine.createSpy('publicModuleCollectionByPublicId').and.returnValue(of({
-          id: 1,
-          name: 'Ambient starters',
-          public: true,
-          public_id: 'ambient',
-          author: {username: 'Curator'},
-          entries: [],
-          module_count: 0
-        })),
-        currentUserModuleCollectionById: jasmine.createSpy('currentUserModuleCollectionById').and.returnValue(of({
+      publicModuleCollectionByPublicId: jasmine.createSpy<SupabaseService['GET']['publicModuleCollectionByPublicId']>('publicModuleCollectionByPublicId')
+        .and.returnValue(of(buildDetail())),
+      currentUserModuleCollectionById: jasmine.createSpy<SupabaseService['GET']['currentUserModuleCollectionById']>('currentUserModuleCollectionById')
+        .and.returnValue(of(buildDetail({
           id: 2,
+          authorid: 'user-2',
+          author: { id: 'user-2', username: 'Me' },
           name: 'Private notes',
           public: false,
-          public_id: 'private',
-          author: {username: 'Me'},
-          entries: [],
-          module_count: 0
-        })),
-        moduleCollectionsForModule: jasmine.createSpy('moduleCollectionsForModule').and.returnValue(of([]))
-      },
-      add: {
-        moduleCollection: jasmine.createSpy('add.moduleCollection').and.returnValue(of(addCollectionResult))
-      },
-      update: {
-        moduleCollection: jasmine.createSpy('update.moduleCollection').and.returnValue(of(12))
-      },
-      delete: {
-        moduleCollection: jasmine.createSpy('delete.moduleCollection').and.returnValue(of({}))
-      }
-    };
+          public_id: 'private'
+        }))),
+      moduleCollectionsForModule: jasmine.createSpy<SupabaseService['GET']['moduleCollectionsForModule']>('moduleCollectionsForModule')
+        .and.returnValue(of([]))
+    });
+    const addNamespace = Object.assign(Object.create(null) as SupabaseService['add'], {
+      moduleCollection: jasmine.createSpy<AddModuleCollection>('add.moduleCollection')
+        .and.returnValue(of(addCollectionResult))
+    });
+    const updateNamespace = Object.assign(Object.create(null) as SupabaseService['update'], {
+      moduleCollection: jasmine.createSpy<UpdateModuleCollection>('update.moduleCollection')
+        .and.returnValue(of(12))
+    });
+    const deleteNamespace = Object.assign(Object.create(null) as SupabaseService['delete'], {
+      moduleCollection: jasmine.createSpy<DeleteModuleCollection>('delete.moduleCollection')
+        .and.returnValue(of({}))
+    });
+    const backend = Object.assign(Object.create(SupabaseService.prototype) as SupabaseService, {
+      GET: getNamespace,
+      add: addNamespace,
+      update: updateNamespace,
+      delete: deleteNamespace
+    });
 
-    const analytics = {capture: jasmine.createSpy('capture')};
+    const analytics: AnalyticsDouble = Object.assign(
+      Object.create(AnalyticsService.prototype) as AnalyticsService,
+      { capture: jasmine.createSpy<AnalyticsService['capture']>('capture') }
+    );
 
-    const service = new ModuleCollectionsDataService(backend as any, analytics as any);
+    const service = new ModuleCollectionsDataService(backend, analytics);
     return {service, backend, analytics};
   }
 
@@ -146,15 +234,20 @@ describe('ModuleCollectionsDataService', () => {
     const {service} = build();
     let currentUserCollection: ModuleCollectionDetail | undefined;
     service.currentUserCollection$.subscribe(collection => currentUserCollection = collection);
-    const collection = {
+    const collection: ModuleCollectionDetail = {
       id: 2,
+      authorid: 'user-2',
       name: 'Private notes',
       public: false,
       public_id: 'private',
-      author: {username: 'Me'},
-      entries: [{id: 1, ordinal: 0, module: {id: 99, name: 'Saved module'}}],
+      author: { id: 'user-2', username: 'Me' },
+      description: null,
+      image: null,
+      created: '2026-01-01T00:00:00.000Z',
+      updated: '2026-01-02T00:00:00.000Z',
+      entries: [buildEntry(1, buildMinimalModule({ id: 99, name: 'Saved module' }))],
       module_count: 1
-    } as any;
+    };
 
     service.localCurrentUserCollectionUpdated$.next(collection);
 
