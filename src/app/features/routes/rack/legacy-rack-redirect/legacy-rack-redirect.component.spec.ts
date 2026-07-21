@@ -1,17 +1,44 @@
+import { TestBed } from '@angular/core/testing';
+import {
+  ActivatedRoute,
+  Router
+} from '@angular/router';
 import { of } from 'rxjs';
+import { SupabaseService } from '../../../backend/supabase.service';
 import { LegacyRackRedirectComponent } from './legacy-rack-redirect.component';
 
 
 describe('LegacyRackRedirectComponent', () => {
-  function build(id: string, data: string | null = 'tokenAbc') {
-    const route = {params: of({id})};
-    const router = jasmine.createSpyObj('Router', ['navigate', 'navigateByUrl']);
-    const backend = {
-      GET: jasmine.createSpyObj('GET', {
-        resolvePublicRackLegacyId: of({data, error: null})
-      })
+  type LegacyRouteDouble = Pick<ActivatedRoute, 'params'>;
+  type RouterDouble = Pick<Router, 'navigate' | 'navigateByUrl'>;
+  type ResolvePublicRackLegacyId = (id: number) => ReturnType<SupabaseService['GET']['resolvePublicRackLegacyId']>;
+  interface BackendDouble {
+    GET: {
+      resolvePublicRackLegacyId: jasmine.Spy<ResolvePublicRackLegacyId>;
     };
-    const component = new LegacyRackRedirectComponent(route as any, router, backend as any);
+  }
+
+  function build(id: string, data: string | null = 'tokenAbc') {
+    const route = {params: of({id})} satisfies LegacyRouteDouble;
+    const router = jasmine.createSpyObj<RouterDouble>('Router', ['navigate', 'navigateByUrl']);
+    const backend = {
+      GET: {
+        resolvePublicRackLegacyId: jasmine.createSpy<ResolvePublicRackLegacyId>('GET.resolvePublicRackLegacyId')
+          .and.returnValue(of({data, error: null}))
+      }
+    } satisfies BackendDouble;
+    TestBed.configureTestingModule({
+      providers: [
+        {provide: ActivatedRoute, useValue: route},
+        {provide: Router, useValue: router},
+        {provide: SupabaseService, useValue: backend}
+      ]
+    });
+    const component = new LegacyRackRedirectComponent(
+      TestBed.inject(ActivatedRoute),
+      TestBed.inject(Router),
+      TestBed.inject(SupabaseService)
+    );
     return {component, router, backend};
   }
 
