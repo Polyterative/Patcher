@@ -4,27 +4,21 @@ import {
   setupSupabaseServiceTest,
   TEST_TIMEOUT
 } from './test-setup';
+import {
+  chainable,
+  getSupabaseClientDouble,
+  SupabaseClientDouble
+} from './supabase-query-test-doubles';
 
-
-function chainable(resolveValue: any = {data: [], count: 0, error: null}) {
-  const m: any = {};
-  ['select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit', 'single',
-    'insert', 'update', 'delete', 'upsert', 'ilike'].forEach(method => {
-    m[method] = () => m;
-  });
-  m.then = (res: Function, rej?: Function) =>
-    Promise.resolve(resolveValue).then(res as any, rej as any);
-  return m;
-}
 
 describe('SupabaseService - public patch visibility', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: SupabaseClientDouble;
 
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = getSupabaseClientDouble(service);
   });
 
   afterEach(() => {
@@ -58,7 +52,7 @@ describe('SupabaseService - public patch visibility', () => {
     spyOn(supabaseClient, 'from').and.returnValue(mock);
 
     service.GET.publicPatchWithId(238).subscribe({
-      next: (result: any) => {
+      next: (result) => {
         expect(result.data?.id).toBe(238);
         expect(selectSpy.calls.mostRecent().args[0]).not.toContain('author_profile_gate:authorid!inner(public)');
         expect(filterSpy).toHaveBeenCalledWith('public', 'eq', true);
@@ -79,7 +73,7 @@ describe('SupabaseService - public patch visibility', () => {
     spyOn(supabaseClient, 'from').and.returnValue(mock);
 
     service.GET.publicRackWithId(77).subscribe({
-      next: (result: any) => {
+      next: (result) => {
         expect(result.data?.id).toBe(77);
         expect(selectSpy.calls.mostRecent().args[0]).not.toContain('author_profile_gate:authorid!inner(public)');
         expect(filterSpy).toHaveBeenCalledWith('public', 'eq', true);
@@ -150,7 +144,7 @@ describe('SupabaseService - public patch visibility', () => {
     });
 
     service.GET.applicationStatistics().subscribe({
-      next: (result: any) => {
+      next: (result) => {
         expect(result.publicPatches).toBe(11);
         expect(result.publicPatchesUpdatedLast30Days).toBe(5);
         expect(result.publicPatchConnections).toBe(48);

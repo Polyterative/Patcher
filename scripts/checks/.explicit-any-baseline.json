@@ -1,6 +1,6 @@
 {
   "_comment": "Grandfathered explicit `any` counts. Do not add by hand — run `node scripts/checks/check-explicit-any.cjs --update-baseline` after intentional cleanup.",
-  "totalExplicitAny": 1442,
+  "totalExplicitAny": 1417,
   "files": {
     "api/sitemap.ts": 3,
     "e2e/auth-rack-context-menu.spec.ts": 6,
@@ -33,7 +33,6 @@
     "src/app/features/backbone/login/reset-password/reset-password-page.component.ts": 3,
     "src/app/features/backbone/login/reset-password/user-reset-password-data.service.spec.ts": 2,
     "src/app/features/backend/__tests__/supabase-service/add-misc.spec.ts": 23,
-    "src/app/features/backend/__tests__/supabase-service/auth-methods.spec.ts": 16,
     "src/app/features/backend/__tests__/supabase-service/crud-operations.spec.ts": 52,
     "src/app/features/backend/__tests__/supabase-service/delete-advanced.spec.ts": 20,
     "src/app/features/backend/__tests__/supabase-service/delete-complex.spec.ts": 18,
@@ -44,7 +43,6 @@
     "src/app/features/backend/__tests__/supabase-service/integration-user-patches.spec.ts": 30,
     "src/app/features/backend/__tests__/supabase-service/integration-user-racks.spec.ts": 6,
     "src/app/features/backend/__tests__/supabase-service/paginated-user-queries.spec.ts": 100,
-    "src/app/features/backend/__tests__/supabase-service/public-patch-visibility.spec.ts": 9,
     "src/app/features/backend/__tests__/supabase-service/remaining-branches.spec.ts": 23,
     "src/app/features/backend/__tests__/supabase-service/storage.spec.ts": 25,
     "src/app/features/backend/__tests__/supabase-service/supabase-auth-oauth.spec.ts": 28,
