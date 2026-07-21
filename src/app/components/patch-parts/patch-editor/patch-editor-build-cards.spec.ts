@@ -1,4 +1,14 @@
 import {
+  ChangeDetectorRef,
+  ElementRef
+} from '@angular/core';
+import { AppStateService } from 'src/app/shared-interproject/app-state.service';
+import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
+import {
+  PATCH_EDITOR_OPERATION_MODES,
+  PatchEditorOperationMode
+} from './patch-editor.types';
+import {
   EditorModuleCard,
   PatchEditorComponent
 } from './patch-editor.component';
@@ -9,13 +19,38 @@ import {
 import { DbModule } from 'src/app/models/module';
 import {
   BehaviorSubject,
-  of
 } from 'rxjs';
-import { LinkedRackUiState } from '../patch-detail-data.service';
+import {
+  LinkedRackUiState,
+  PatchDetailDataService
+} from '../patch-detail-data.service';
+import { Patch } from 'src/app/models/patch';
+import {
+  cvWithModuleFixture,
+  dbModuleFixture,
+  patchFixture
+} from '../patch-graph/patch-graph-test-fixtures';
+
+type PatchEditorPrivateApi = Pick<PatchEditorComponent, 'clearSearch'> & {
+  buildEditorCards(
+    modules: DbModule[],
+    instances: PatchModuleInstance[],
+    connections: PatchConnection[]
+  ): EditorModuleCard[];
+  buildConnectionNames(conns: PatchConnection[], instanceId: number | undefined): string[];
+};
+
+function privateApi(component: PatchEditorComponent): PatchEditorPrivateApi {
+  return component as unknown as PatchEditorPrivateApi;
+}
 
 
 function fakeModule(id: number, name = `Mod${ id }`): DbModule {
-  return {id, name, manufacturer: {name: 'Maker'}} as any;
+  return {
+    ...dbModuleFixture(id, name),
+    manufacturer: {id, name: 'Maker'},
+    manufacturerId: id
+  };
 }
 
 function fakeInstance(id: number, moduleId: number, label: string | null = null): PatchModuleInstance {
@@ -24,15 +59,15 @@ function fakeInstance(id: number, moduleId: number, label: string | null = null)
 
 function fakeConnection(instanceIdA: number, instanceIdB: number): PatchConnection {
   return {
-    a: {id: 100, name: 'Out', module: {id: 10, name: 'ModA'}} as any,
-    b: {id: 200, name: 'In', module: {id: 20, name: 'ModB'}} as any,
-    patch: {id: 1} as any,
+    a: cvWithModuleFixture(100, 10, 'ModA', 'Out'),
+    b: cvWithModuleFixture(200, 20, 'ModB', 'In'),
+    patch: patchFixture(1),
     instance_id_a: instanceIdA,
     instance_id_b: instanceIdB
   };
 }
 
-function fakeDataService() {
+function fakeDataService(): jasmine.SpyObj<PatchDetailDataService> {
   const linkedRackState$ = new BehaviorSubject<LinkedRackUiState>({
     kind: 'unlinked',
     statusTone: 'neutral',
@@ -40,28 +75,43 @@ function fakeDataService() {
     description: 'No rack is linked yet.',
     rackId: null
   });
-  return {
-    singlePatchData$: of(undefined),
-    linkedRackState$
-  };
+  return jasmine.createSpyObj<PatchDetailDataService>('PatchDetailDataService', [], {
+    singlePatchData$: new BehaviorSubject<Patch | undefined>(undefined),
+    linkedRackState$,
+    editorOperationMode$: new BehaviorSubject<PatchEditorOperationMode>(PATCH_EDITOR_OPERATION_MODES.collection)
+  });
+}
+
+function fakeAppState(): jasmine.SpyObj<AppStateService> {
+  return jasmine.createSpyObj<AppStateService>('AppStateService', [], {
+    isDev: true
+  });
+}
+
+function fakeChangeDetectorRef(): jasmine.SpyObj<ChangeDetectorRef> {
+  return jasmine.createSpyObj<ChangeDetectorRef>('ChangeDetectorRef', ['markForCheck']);
+}
+
+function fakeAnalytics(): jasmine.SpyObj<AnalyticsService> {
+  return jasmine.createSpyObj<AnalyticsService>('AnalyticsService', ['capture']);
 }
 
 
 describe('PatchEditorComponent.buildEditorCards (via private access)', () => {
   function buildComponent(): PatchEditorComponent {
     return new PatchEditorComponent(
-      fakeDataService() as any,
-      {} as any,
-      {nativeElement: document.createElement('div')} as any,
-      {markForCheck: () => {}} as any,
-      {capture: () => {}} as any
+      fakeDataService(),
+      fakeAppState(),
+      new ElementRef<HTMLElement>(document.createElement('div')),
+      fakeChangeDetectorRef(),
+      fakeAnalytics()
     );
   }
   
   it('module with 0 instances produces one card with no instanceId and negative trackingId', () => {
     const comp = buildComponent();
     const module = fakeModule(5);
-    const cards = (comp as any).buildEditorCards([module], [], []);
+    const cards = privateApi(comp).buildEditorCards([module], [], []);
     
     expect(cards.length).toBe(1);
     expect(cards[0].instance).toBeUndefined();
@@ -74,7 +124,7 @@ describe('PatchEditorComponent.buildEditorCards (via private access)', () => {
     const comp = buildComponent();
     const module = fakeModule(5);
     const instance = fakeInstance(100, 5);
-    const cards = (comp as any).buildEditorCards([module], [instance], []);
+    const cards = privateApi(comp).buildEditorCards([module], [instance], []);
     
     expect(cards.length).toBe(1);
     expect(cards[0].instance).toBe(instance);
@@ -91,7 +141,7 @@ describe('PatchEditorComponent.buildEditorCards (via private access)', () => {
     const module = fakeModule(5);
     const inst1 = fakeInstance(100, 5);
     const inst2 = fakeInstance(101, 5);
-    const cards = (comp as any).buildEditorCards([module], [inst1, inst2], []);
+    const cards = privateApi(comp).buildEditorCards([module], [inst1, inst2], []);
     
     expect(cards.length).toBe(2);
     expect(cards[0].trackingId).toBe(100);
@@ -107,7 +157,7 @@ describe('PatchEditorComponent.buildEditorCards (via private access)', () => {
     const module = fakeModule(5);
     const inst1 = fakeInstance(100, 5, 'LFO');
     const inst2 = fakeInstance(101, 5, 'VCO');
-    const cards = (comp as any).buildEditorCards([module], [inst1, inst2], []);
+    const cards = privateApi(comp).buildEditorCards([module], [inst1, inst2], []);
     
     expect(cards[0].label).toBe('LFO');
     expect(cards[1].label).toBe('VCO');
@@ -118,7 +168,7 @@ describe('PatchEditorComponent.buildEditorCards (via private access)', () => {
     const module = fakeModule(10);
     const instance = fakeInstance(99, 10);
     const connections = [fakeConnection(99, 200), fakeConnection(99, 300)];
-    const cards = (comp as any).buildEditorCards([module], [instance], connections);
+    const cards = privateApi(comp).buildEditorCards([module], [instance], connections);
     
     expect(cards[0].connectionCount).toBe(2);
   });
@@ -128,7 +178,7 @@ describe('PatchEditorComponent.buildEditorCards (via private access)', () => {
     const mod1 = fakeModule(1);
     const mod2 = fakeModule(2);
     const inst = fakeInstance(10, 1); // only mod1 has instance
-    const cards = (comp as any).buildEditorCards([mod1, mod2], [inst], []);
+    const cards = privateApi(comp).buildEditorCards([mod1, mod2], [inst], []);
     
     expect(cards.length).toBe(2);
     const mod2card = cards.find((c: EditorModuleCard) => c.module.id === 2)!;
@@ -141,30 +191,30 @@ describe('PatchEditorComponent.buildEditorCards (via private access)', () => {
 describe('PatchEditorComponent.buildConnectionNames (via private access)', () => {
   function buildComponent(): PatchEditorComponent {
     return new PatchEditorComponent(
-      fakeDataService() as any,
-      {} as any,
-      {nativeElement: document.createElement('div')} as any,
-      {markForCheck: () => {}} as any,
-      {capture: () => {}} as any
+      fakeDataService(),
+      fakeAppState(),
+      new ElementRef<HTMLElement>(document.createElement('div')),
+      fakeChangeDetectorRef(),
+      fakeAnalytics()
     );
   }
   
   it('returns empty array when instanceId is undefined', () => {
     const comp = buildComponent();
-    const result = (comp as any).buildConnectionNames([fakeConnection(1, 2)], undefined);
+    const result = privateApi(comp).buildConnectionNames([fakeConnection(1, 2)], undefined);
     expect(result).toEqual([]);
   });
   
   it('returns empty array when there are no connections', () => {
     const comp = buildComponent();
-    const result = (comp as any).buildConnectionNames([], 10);
+    const result = privateApi(comp).buildConnectionNames([], 10);
     expect(result).toEqual([]);
   });
   
   it('builds "thisCv → otherModule: otherCv" format for connections', () => {
     const comp = buildComponent();
     const conn = fakeConnection(10, 20);
-    const result = (comp as any).buildConnectionNames([conn], 10);
+    const result = privateApi(comp).buildConnectionNames([conn], 10);
     expect(result.length).toBe(1);
     expect(result[0]).toContain('→');
   });
@@ -172,7 +222,7 @@ describe('PatchEditorComponent.buildConnectionNames (via private access)', () =>
   it('adds "… and N more" suffix when connections exceed 10', () => {
     const comp = buildComponent();
     const conns = Array.from({length: 12}, (_, i) => fakeConnection(100, i + 200));
-    const result = (comp as any).buildConnectionNames(conns, 100);
+    const result = privateApi(comp).buildConnectionNames(conns, 100);
     expect(result.length).toBe(11);
     expect(result[10]).toContain('2 more');
   });
