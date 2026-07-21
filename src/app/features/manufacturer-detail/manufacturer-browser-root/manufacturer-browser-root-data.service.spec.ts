@@ -2,20 +2,65 @@ import {
   fakeAsync,
   tick
 } from '@angular/core/testing';
-import { of } from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  of
+} from 'rxjs';
 import { ManufacturerBrowserRootDataService } from './manufacturer-browser-root-data.service';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ManufacturerDetail } from '../manufacturer-detail-data.service';
 
 
-function buildService(paginatedReturn?: any) {
-  const defaultReturn = {data: [{id: 1, name: 'Mutable'}, {id: 2, name: 'Make Noise'}], count: 2, error: null};
+interface ManufacturerPageResponse {
+  data: ManufacturerDetail[] | null;
+  count: number;
+  error: {message: string} | null;
+}
+
+type ManufacturersPaginated = (
+  from: number,
+  to?: number,
+  name?: string,
+  orderBy?: string,
+  orderDirection?: string
+) => Observable<ManufacturerPageResponse>;
+
+interface BrowserBackendDouble {
+  GET: {
+    manufacturersPaginated: jasmine.Spy<ManufacturersPaginated>;
+  };
+}
+
+interface ManufacturerBrowserRootDataServiceInternals {
+  _manufacturers$: BehaviorSubject<ManufacturerDetail[] | null>;
+}
+
+function serviceInternals(service: ManufacturerBrowserRootDataService): ManufacturerBrowserRootDataServiceInternals {
+  return service as unknown as ManufacturerBrowserRootDataServiceInternals;
+}
+
+function buildService(paginatedReturn?: ManufacturerPageResponse) {
+  const defaultReturn: ManufacturerPageResponse = {
+    data: [
+      {id: 1, name: 'Mutable', logo: null},
+      {id: 2, name: 'Make Noise', logo: null},
+    ],
+    count: 2,
+    error: null
+  };
   const backend = {
     GET: {
-      manufacturersPaginated: jasmine.createSpy('manufacturersPaginated')
+      manufacturersPaginated: jasmine.createSpy<ManufacturersPaginated>('manufacturersPaginated')
         .and.returnValue(of(paginatedReturn ?? defaultReturn))
     }
-  };
+  } satisfies BrowserBackendDouble;
   const snackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
-  const service = new ManufacturerBrowserRootDataService(backend as any, snackBar);
+  const service = new ManufacturerBrowserRootDataService(
+    backend as unknown as SupabaseService,
+    snackBar as MatSnackBar
+  );
   return {service, backend, snackBar};
 }
 
@@ -30,7 +75,7 @@ describe('ManufacturerBrowserRootDataService', () => {
   
   it('emits manufacturer data after updateList$ fires', fakeAsync(() => {
     const {service} = buildService();
-    const emitted: any[] = [];
+    const emitted: (ManufacturerDetail[] | null)[] = [];
     service.manufacturers$.subscribe(v => emitted.push(v));
     service.updateList$.next();
     tick();
@@ -68,15 +113,19 @@ describe('ManufacturerBrowserRootDataService', () => {
 
     tick(400);
 
-    const args = backend.GET.manufacturersPaginated.calls.mostRecent().args as any[];
+    const args = backend.GET.manufacturersPaginated.calls.mostRecent().args;
     expect(args[2]).toBe('make noise');
     service.ngOnDestroy();
   }));
   
   it('loadMore$ appends results and advances skip', fakeAsync(() => {
     const {service, backend} = buildService();
-    const firstBatch = Array.from({length: 10}, (_, i) => ({id: i + 1})) as any[];
-    service['_manufacturers$'].next(firstBatch);
+    const firstBatch: ManufacturerDetail[] = Array.from({length: 10}, (_, i) => ({
+      id: i + 1,
+      name: `Manufacturer ${i + 1}`,
+      logo: null,
+    }));
+    serviceInternals(service)._manufacturers$.next(firstBatch);
     service.serversideAdditionalData.itemsCount$.next(30);
     const before = backend.GET.manufacturersPaginated.calls.count();
     service.loadMore$.next();
@@ -104,7 +153,7 @@ describe('ManufacturerBrowserRootDataService', () => {
   
   it('handles backend error response gracefully', fakeAsync(() => {
     const {service} = buildService({error: {message: 'DB error'}, data: null, count: 0});
-    const emitted: any[] = [];
+    const emitted: (ManufacturerDetail[] | null)[] = [];
     service.manufacturers$.subscribe(v => emitted.push(v));
     service.updateList$.next();
     tick();

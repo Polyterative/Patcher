@@ -7,6 +7,13 @@ import {
   ManufacturerDetail
 } from './manufacturer-detail-data.service';
 import { LabelValueData } from 'src/app/components/rack-parts/rack-editor/lib-showcase-grid/lib-showcase-grid.component';
+import { MinimalModule } from 'src/app/models/module';
+import { ModuleList } from 'src/app/features/module-browser/module-browser-data.service';
+import { ManufacturerDetailDataService } from './manufacturer-detail-data.service';
+import { ActivatedRoute, Params } from '@angular/router';
+import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
+import { SeoSocialShareData } from 'src/app/models/seo.model';
+import { TimeagoPipe } from 'ngx-timeago';
 
 
 function makeManufacturer(overrides: Partial<ManufacturerDetail> = {}): ManufacturerDetail {
@@ -21,35 +28,48 @@ function makeManufacturer(overrides: Partial<ManufacturerDetail> = {}): Manufact
   };
 }
 
-function makeModule(overrides: Partial<{id: number; hp: number; standard: {id: number}}> = {}): any {
+function makeModule(overrides: Partial<MinimalModule> = {}): MinimalModule {
   return {
     id: 10,
+    name: 'A-110-1',
+    description: '',
     hp: 8,
-    standard: {id: 0},
+    public: true,
+    manufacturer: {id: 1, name: 'Doepfer'},
+    manufacturerId: 1,
+    standard: {id: 0, name: '3U'},
+    tags: [],
+    panels: [],
+    created: '2026-01-01T00:00:00.000Z',
+    updated: '2026-01-01T00:00:00.000Z',
     ...overrides,
   };
 }
 
+function makeStandard(id: number): MinimalModule['standard'] {
+  return {id, name: id === 0 ? '3U' : '1U'};
+}
+
 function build() {
   const manufacturerData$ = new BehaviorSubject<ManufacturerDetail | null>(null);
-  const modulesData$       = new BehaviorSubject<any[] | null>(null);
-  const updateManufacturerNext = jasmine.createSpy('updateManufacturer$.next');
+  const modulesData$       = new BehaviorSubject<ModuleList>(null);
+  const updateManufacturerNext = jasmine.createSpy<(id: number) => void>('updateManufacturer$.next');
 
-  const dataService: any = {
+  const dataService = {
     logoStorageBase: 'https://cdn.example.test/manufacturer-logos/',
     manufacturerData$,
     modulesData$,
     updateManufacturer$: {next: updateManufacturerNext},
-  };
+  } as unknown as ManufacturerDetailDataService;
 
-  const routeParams$ = new Subject<any>();
-  const route: any   = {params: routeParams$.asObservable()};
+  const routeParams$ = new Subject<Params>();
+  const route   = {params: routeParams$.asObservable()} as ActivatedRoute;
 
-  const seoUpdateSpy = jasmine.createSpy('updateSeo');
-  const seoService: any = {updateSeo: seoUpdateSpy};
+  const seoUpdateSpy = jasmine.createSpy<(data: SeoSocialShareData, appArea: string) => void>('updateSeo');
+  const seoService = {updateSeo: seoUpdateSpy} as unknown as SeoAndUtilsService;
 
   const timeagoSpy   = jasmine.createSpy('transform').and.returnValue('3 days ago');
-  const timeago: any = {transform: timeagoSpy};
+  const timeago = {transform: timeagoSpy} as unknown as TimeagoPipe;
 
   const component = new ManufacturerDetailComponent(
     dataService,
@@ -134,9 +154,9 @@ describe('ManufacturerDetailComponent', () => {
       const {component, manufacturerData$, modulesData$} = build();
       manufacturerData$.next(makeManufacturer());
       modulesData$.next([
-        makeModule({standard: {id: 0}}),
-        makeModule({standard: {id: 0}}),
-        makeModule({standard: {id: 1}}),
+        makeModule({standard: makeStandard(0)}),
+        makeModule({standard: makeStandard(0)}),
+        makeModule({standard: makeStandard(1)}),
       ]);
       const stats = statsSnapshot(component);
       const threeU = stats.find(s => s.label === '3U');
@@ -151,7 +171,7 @@ describe('ManufacturerDetailComponent', () => {
     it('hides 3U entry when there are no 3U modules', () => {
       const {component, manufacturerData$, modulesData$} = build();
       manufacturerData$.next(makeManufacturer());
-      modulesData$.next([makeModule({standard: {id: 1}})]);
+      modulesData$.next([makeModule({standard: makeStandard(1)})]);
       const stats = statsSnapshot(component);
       const threeU = stats.find(s => s.label === '3U');
       expect(threeU!.hidden).toBeTrue();
