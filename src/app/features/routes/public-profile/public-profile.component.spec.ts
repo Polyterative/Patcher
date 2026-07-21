@@ -2,11 +2,13 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatIconModule } from '@angular/material/icon';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Params } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { BehaviorSubject, of, ReplaySubject } from 'rxjs';
+import { BehaviorSubject, Observable, of, ReplaySubject } from 'rxjs';
 import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
+import { type PublicUserContributorStats } from 'src/app/features/backend/supabase-queries';
+import { RichUserModel, SimpleUserModel } from 'src/app/features/backend/supabase.types';
 import { UrlCreatorService } from 'src/app/features/backend/url-creator.service';
 import { MarketplaceListingCardComponent } from 'src/app/features/marketplace/marketplace-listing-card/marketplace-listing-card.component';
 import {
@@ -16,22 +18,123 @@ import {
 import { createMarketplaceListing } from 'src/app/features/marketplace/marketplace-test-helpers.spec';
 import { Patch } from 'src/app/models/patch';
 import { Rack } from 'src/app/models/rack';
+import { PublicProfile } from 'src/app/models/user';
 import { PublicProfileComponent } from './public-profile.component';
-import { PublicProfileDataService } from './public-profile-data.service';
+import {
+  PublicProfileDataService,
+  type PublicProfileRouteState
+} from './public-profile-data.service';
+
+interface PublicProfileDataServiceDouble
+  extends Pick<
+    PublicProfileDataService,
+    | 'loadProfile$'
+    | 'racksCount$'
+    | 'patchesCount$'
+    | 'contributorStats$'
+    | 'profile$'
+    | 'routeState$'
+    | 'rackData$'
+    | 'patchesData$'
+    | 'marketplaceEnabled'
+    | 'marketplaceListings$'
+    | 'marketplaceListingsLoading$'
+    | 'marketplaceListingsError$'
+    | 'retryMarketplaceListings$'
+    | 'loadMoreRacks$'
+    | 'loadMorePatches$'
+  > {
+  loadProfile$: ReplaySubject<string>;
+  racksCount$: BehaviorSubject<number>;
+  patchesCount$: BehaviorSubject<number>;
+  contributorStats$: BehaviorSubject<PublicUserContributorStats | undefined>;
+  profile$: BehaviorSubject<PublicProfile | null>;
+  routeState$: BehaviorSubject<PublicProfileRouteState>;
+  rackData$: BehaviorSubject<Rack[] | undefined>;
+  patchesData$: BehaviorSubject<Patch[] | undefined>;
+  marketplaceEnabled: boolean;
+  marketplaceListings$: BehaviorSubject<MarketplaceListingCardViewModel[] | undefined>;
+  marketplaceListingsLoading$: BehaviorSubject<boolean>;
+  marketplaceListingsError$: BehaviorSubject<string | null>;
+  retryMarketplaceListings$: ReplaySubject<void>;
+  loadMoreRacks$: ReplaySubject<void>;
+  loadMorePatches$: ReplaySubject<void>;
+}
+
+interface UserManagementServiceDouble
+  extends Pick<UserManagementService, 'loggedUser$' | 'loggedUserFullProfile$' | 'updateProfileVisibility$'> {
+  loggedUser$: BehaviorSubject<SimpleUserModel | undefined>;
+  loggedUserFullProfile$: BehaviorSubject<RichUserModel | undefined>;
+  updateProfileVisibility$: jasmine.Spy<UserManagementService['updateProfileVisibility$']>;
+}
+
+interface SeoAndUtilsServiceDouble extends Pick<SeoAndUtilsService, 'updateSeo'> {
+  updateSeo: jasmine.Spy<SeoAndUtilsService['updateSeo']>;
+}
+
+interface UrlCreatorServiceDouble extends Pick<UrlCreatorService, 'copyLinkToClipboard'> {
+  copyLinkToClipboard: jasmine.Spy<UrlCreatorService['copyLinkToClipboard']>;
+}
+
+interface ActivatedRouteDouble extends Pick<ActivatedRoute, 'params'> {
+  params: Observable<Params>;
+}
 
 describe('PublicProfileComponent', () => {
   let createdComponents: PublicProfileComponent[];
 
+  function profileFixture(overrides: Partial<PublicProfile> = {}): PublicProfile {
+    return {
+      id: 'u1',
+      username: 'viewer',
+      public: true,
+      website: null,
+      avatarUrl: null,
+      ...overrides,
+    };
+  }
+
+  function richUserFixture(overrides: Partial<RichUserModel> = {}): RichUserModel {
+    return {
+      id: 'u1',
+      email: 'user@example.com',
+      created_at: '2026-01-01T00:00:00Z',
+      updated_at: '2026-01-02T00:00:00Z',
+      username: 'viewer',
+      ...overrides,
+    };
+  }
+
+  function asPublicProfileDataService(dataService: PublicProfileDataServiceDouble): PublicProfileDataService {
+    return Object.assign(Object.create(PublicProfileDataService.prototype) as PublicProfileDataService, dataService);
+  }
+
+  function asUserManagementService(userService: UserManagementServiceDouble): UserManagementService {
+    return Object.assign(Object.create(UserManagementService.prototype) as UserManagementService, userService);
+  }
+
+  function asActivatedRoute(route: ActivatedRouteDouble): ActivatedRoute {
+    return Object.assign(Object.create(ActivatedRoute.prototype) as ActivatedRoute, route);
+  }
+
+  function asSeoAndUtilsService(seoAndUtilsService: SeoAndUtilsServiceDouble): SeoAndUtilsService {
+    return Object.assign(Object.create(SeoAndUtilsService.prototype) as SeoAndUtilsService, seoAndUtilsService);
+  }
+
+  function asUrlCreatorService(urlCreatorService: UrlCreatorServiceDouble): UrlCreatorService {
+    return Object.assign(Object.create(UrlCreatorService.prototype) as UrlCreatorService, urlCreatorService);
+  }
+
   function build() {
-    const dataService = {
+    const dataService: PublicProfileDataServiceDouble = {
       loadProfile$: new ReplaySubject<string>(1),
       racksCount$: new BehaviorSubject<number>(0),
       patchesCount$: new BehaviorSubject<number>(0),
-      contributorStats$: new BehaviorSubject<any>(undefined),
-      profile$: new BehaviorSubject<any>(null),
-      routeState$: new BehaviorSubject<any>('loading'),
-      rackData$: new BehaviorSubject<Rack[]>([]),
-      patchesData$: new BehaviorSubject<Patch[]>([]),
+      contributorStats$: new BehaviorSubject<PublicUserContributorStats | undefined>(undefined),
+      profile$: new BehaviorSubject<PublicProfile | null>(null),
+      routeState$: new BehaviorSubject<PublicProfileRouteState>('loading'),
+      rackData$: new BehaviorSubject<Rack[] | undefined>([]),
+      patchesData$: new BehaviorSubject<Patch[] | undefined>([]),
       marketplaceEnabled: true,
       marketplaceListings$: new BehaviorSubject<MarketplaceListingCardViewModel[] | undefined>(undefined),
       marketplaceListingsLoading$: new BehaviorSubject<boolean>(false),
@@ -40,26 +143,27 @@ describe('PublicProfileComponent', () => {
       loadMoreRacks$: new ReplaySubject<void>(1),
       loadMorePatches$: new ReplaySubject<void>(1),
     };
-    const userService = {
-      loggedUser$: new BehaviorSubject<any>(null),
-      loggedUserFullProfile$: new BehaviorSubject<any>(null),
-      updateProfileVisibility$: jasmine.createSpy().and.returnValue(of(void 0)),
+    const userService: UserManagementServiceDouble = {
+      loggedUser$: new BehaviorSubject<SimpleUserModel | undefined>(undefined),
+      loggedUserFullProfile$: new BehaviorSubject<RichUserModel | undefined>(undefined),
+      updateProfileVisibility$: jasmine.createSpy<UserManagementService['updateProfileVisibility$']>('updateProfileVisibility$')
+        .and.returnValue(of(void 0)),
     };
-    const seoAndUtilsService = {
-      updateSeo: jasmine.createSpy(),
+    const seoAndUtilsService: SeoAndUtilsServiceDouble = {
+      updateSeo: jasmine.createSpy<SeoAndUtilsService['updateSeo']>('updateSeo'),
     };
-    const urlCreatorService = {
-      copyLinkToClipboard: jasmine.createSpy(),
+    const urlCreatorService: UrlCreatorServiceDouble = {
+      copyLinkToClipboard: jasmine.createSpy<UrlCreatorService['copyLinkToClipboard']>('copyLinkToClipboard'),
     };
-    const route = {
+    const route: ActivatedRouteDouble = {
       params: of({username: 'viewer'}),
     };
     const component = new PublicProfileComponent(
-      dataService as any,
-      userService as any,
-      route as any,
-      seoAndUtilsService as any,
-      urlCreatorService as any,
+      asPublicProfileDataService(dataService),
+      asUserManagementService(userService),
+      asActivatedRoute(route),
+      asSeoAndUtilsService(seoAndUtilsService),
+      asUrlCreatorService(urlCreatorService),
     );
     createdComponents.push(component);
 
@@ -121,8 +225,8 @@ describe('PublicProfileComponent', () => {
   it('detects own profile when logged user id matches profile id', (done) => {
     const { component, dataService, userService } = build();
 
-    dataService.profile$.next({id: 'u1', username: 'viewer'} as any);
-    userService.loggedUserFullProfile$.next({id: 'u1'} as any);
+    dataService.profile$.next(profileFixture({id: 'u1', username: 'viewer'}));
+    userService.loggedUserFullProfile$.next(richUserFixture({id: 'u1'}));
 
     component.isOwnProfile$.subscribe((isOwn) => {
       expect(isOwn).toBeTrue();
@@ -133,8 +237,8 @@ describe('PublicProfileComponent', () => {
   it('returns false for isOwnProfile when ids differ', (done) => {
     const { component, dataService, userService } = build();
 
-    dataService.profile$.next({id: 'u1', username: 'viewer'} as any);
-    userService.loggedUserFullProfile$.next({id: 'u2'} as any);
+    dataService.profile$.next(profileFixture({id: 'u1', username: 'viewer'}));
+    userService.loggedUserFullProfile$.next(richUserFixture({id: 'u2'}));
 
     component.isOwnProfile$.subscribe((isOwn) => {
       expect(isOwn).toBeFalse();
@@ -177,9 +281,9 @@ describe('PublicProfileComponent', () => {
   describe('SEO states', () => {
     it('emits full SEO metadata when routeState$ is ready', () => {
       const { dataService, seoAndUtilsService } = build();
-      dataService.profile$.next({
+      dataService.profile$.next(profileFixture({
         id: 'u1', username: 'testuser', avatarUrl: 'https://cdn.example.com/avatar.jpg'
-      } as any);
+      }));
       dataService.routeState$.next('ready');
       dataService.racksCount$.next(3);
       dataService.patchesCount$.next(2);
@@ -196,12 +300,12 @@ describe('PublicProfileComponent', () => {
 
     it('SEO description includes rack and patch counts when both are positive', () => {
       const { dataService, seoAndUtilsService } = build();
-      dataService.profile$.next({id: 'u1', username: 'alice', avatarUrl: undefined} as any);
+      dataService.profile$.next(profileFixture({id: 'u1', username: 'alice', avatarUrl: null}));
       dataService.routeState$.next('ready');
       dataService.racksCount$.next(5);
       dataService.patchesCount$.next(1);
 
-      const callArgs = (seoAndUtilsService.updateSeo as jasmine.Spy).calls.mostRecent().args[0];
+      const callArgs = seoAndUtilsService.updateSeo.calls.mostRecent().args[0];
       expect(callArgs.description).toContain('5 public racks');
       expect(callArgs.description).toContain('1 public patch.');
     });
@@ -257,9 +361,9 @@ describe('PublicProfileComponent', () => {
   });
 
   describe('For sale rendering', () => {
-    function render(overrides: Partial<ReturnType<typeof build>['dataService']> = {}) {
+    function render(overrides: Partial<PublicProfileDataServiceDouble> = {}) {
       const setup = build();
-      const dataService = {
+      const dataService: PublicProfileDataServiceDouble = {
         ...setup.dataService,
         ...overrides,
       };
@@ -301,7 +405,7 @@ describe('PublicProfileComponent', () => {
 
     it('shows an honest loading section while seller listings are in flight', () => {
       const {dataService, fixture} = render();
-      dataService.profile$.next({id: 'u1', username: 'seller', public: true});
+      dataService.profile$.next(profileFixture({id: 'u1', username: 'seller', public: true}));
       dataService.routeState$.next('ready');
       dataService.marketplaceListingsLoading$.next(true);
       fixture.detectChanges();
@@ -313,7 +417,7 @@ describe('PublicProfileComponent', () => {
 
     it('suppresses the For sale section after a successful empty listing response', () => {
       const {dataService, fixture} = render();
-      dataService.profile$.next({id: 'u1', username: 'seller', public: true});
+      dataService.profile$.next(profileFixture({id: 'u1', username: 'seller', public: true}));
       dataService.routeState$.next('ready');
       dataService.marketplaceListings$.next([]);
       dataService.marketplaceListingsLoading$.next(false);
@@ -326,7 +430,7 @@ describe('PublicProfileComponent', () => {
     it('renders inline error and retry without relying on a snackbar-only failure path', () => {
       const {dataService, fixture} = render();
       const retrySpy = spyOn(dataService.retryMarketplaceListings$, 'next').and.callThrough();
-      dataService.profile$.next({id: 'u1', username: 'seller', public: true});
+      dataService.profile$.next(profileFixture({id: 'u1', username: 'seller', public: true}));
       dataService.routeState$.next('ready');
       dataService.marketplaceListingsError$.next('Marketplace listings could not be loaded.');
       fixture.detectChanges();
@@ -341,7 +445,7 @@ describe('PublicProfileComponent', () => {
 
     it('renders shared full-card links to marketplace listing detail pages', () => {
       const {dataService, fixture} = render();
-      dataService.profile$.next({id: 'u1', username: 'seller', public: true});
+      dataService.profile$.next(profileFixture({id: 'u1', username: 'seller', public: true}));
       dataService.routeState$.next('ready');
       dataService.marketplaceListings$.next([
         buildMarketplaceCardViewModel(createMarketplaceListing()),
@@ -356,7 +460,7 @@ describe('PublicProfileComponent', () => {
 
     it('hides listing section state completely when the marketplace flag is disabled', () => {
       const {dataService, fixture} = render({marketplaceEnabled: false});
-      dataService.profile$.next({id: 'u1', username: 'seller', public: true});
+      dataService.profile$.next(profileFixture({id: 'u1', username: 'seller', public: true}));
       dataService.routeState$.next('ready');
       dataService.marketplaceListingsLoading$.next(true);
       dataService.marketplaceListingsError$.next('Marketplace listings could not be loaded.');
