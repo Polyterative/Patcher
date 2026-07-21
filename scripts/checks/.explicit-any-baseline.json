@@ -1,6 +1,6 @@
 {
   "_comment": "Grandfathered explicit `any` counts. Do not add by hand — run `node scripts/checks/check-explicit-any.cjs --update-baseline` after intentional cleanup.",
-  "totalExplicitAny": 1921,
+  "totalExplicitAny": 1893,
   "files": {
     "api/sitemap.ts": 3,
     "e2e/auth-rack-context-menu.spec.ts": 6,
@@ -34,9 +34,7 @@
     "src/app/features/backbone/login/__tests__/user-management-service/user-state.spec.ts": 29,
     "src/app/features/backbone/login/auth-callback.component.spec.ts": 3,
     "src/app/features/backbone/login/complete-profile/complete-profile.component.spec.ts": 3,
-    "src/app/features/backbone/login/error.interceptor.spec.ts": 16,
     "src/app/features/backbone/login/error.interceptor.ts": 2,
-    "src/app/features/backbone/login/jwt.interceptor.spec.ts": 12,
     "src/app/features/backbone/login/jwt.interceptor.ts": 2,
     "src/app/features/backbone/login/reset-password/reset-password-page.component.ts": 3,
     "src/app/features/backbone/login/reset-password/user-reset-password-data.service.spec.ts": 2,
