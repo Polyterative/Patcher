@@ -1,37 +1,46 @@
 import { ReplaySubject } from 'rxjs';
 import { DETAIL_ANALYTICS_SURFACES } from 'src/app/components/detail-analytics-surface';
+import type { ModuleDetailDataService } from 'src/app/components/module-parts/module-detail-data.service';
+import type { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
+import type { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
+import type { SeoSocialShareData } from 'src/app/models/seo.model';
+import type { AppStateService } from 'src/app/shared-interproject/app-state.service';
+import type { SeoAndUtilsService } from '../seo-and-utils.service';
 import { HomeComponent } from './home.component';
 
 describe('HomeComponent', () => {
   let comp: HomeComponent;
-  let mockAppState: any;
-  let mockSeoSvc: any;
-  let mockPatchSvc: any;
-  let mockRackSvc: any;
-  let mockModuleSvc: any;
+  let mockAppState: jasmine.SpyObj<AppStateService>;
+  let mockSeoSvc: jasmine.SpyObj<SeoAndUtilsService>;
+  let mockPatchSvc: jasmine.SpyObj<PatchDetailDataService>;
+  let mockRackSvc: jasmine.SpyObj<RackDetailDataService>;
+  let mockModuleSvc: jasmine.SpyObj<ModuleDetailDataService>;
   const platformId: object = { __browser: false };
 
-  function makeServiceMocks() {
-    mockPatchSvc = {
-      updateSinglePatchData$: new ReplaySubject<number>(1),
-      setDetailAnalyticsSurface: jasmine.createSpy('setPatchDetailAnalyticsSurface')
-    };
-    mockRackSvc = {
-      updateSingleRackData$: new ReplaySubject<number>(1),
-      setDetailAnalyticsSurface: jasmine.createSpy('setRackDetailAnalyticsSurface')
-    };
-    mockModuleSvc = {
-      updateSingleModuleData$: new ReplaySubject<number>(1),
-      setDetailAnalyticsSurface: jasmine.createSpy('setModuleDetailAnalyticsSurface')
-    };
+  function makeAppStateMock(isDev: boolean): jasmine.SpyObj<AppStateService> {
+    return jasmine.createSpyObj<AppStateService>('AppStateService', ['ngOnDestroy'], { isDev });
   }
 
-  beforeEach(() => {
-    mockAppState = { isDev: false };
-    mockSeoSvc = { updateSeo: jasmine.createSpy('updateSeo') };
-    makeServiceMocks();
+  function makeServiceMocks() {
+    mockPatchSvc = jasmine.createSpyObj<PatchDetailDataService>(
+      'PatchDetailDataService',
+      ['setDetailAnalyticsSurface'],
+      { updateSinglePatchData$: new ReplaySubject<number>(1) }
+    );
+    mockRackSvc = jasmine.createSpyObj<RackDetailDataService>(
+      'RackDetailDataService',
+      ['setDetailAnalyticsSurface'],
+      { updateSingleRackData$: new ReplaySubject<number>(1) }
+    );
+    mockModuleSvc = jasmine.createSpyObj<ModuleDetailDataService>(
+      'ModuleDetailDataService',
+      ['setDetailAnalyticsSurface'],
+      { updateSingleModuleData$: new ReplaySubject<number>(1) }
+    );
+  }
 
-    comp = new HomeComponent(
+  function makeComponent() {
+    return new HomeComponent(
       mockAppState,
       mockSeoSvc,
       mockPatchSvc,
@@ -39,6 +48,14 @@ describe('HomeComponent', () => {
       mockModuleSvc,
       platformId,
     );
+  }
+
+  beforeEach(() => {
+    mockAppState = makeAppStateMock(false);
+    mockSeoSvc = jasmine.createSpyObj<SeoAndUtilsService>('SeoAndUtilsService', ['updateSeo']);
+    makeServiceMocks();
+
+    comp = makeComponent();
   });
 
   it('creates without error', () => {
@@ -81,21 +98,14 @@ describe('HomeComponent', () => {
   });
 
   it('communityLinks includes insights when isDev=true', () => {
-    mockAppState.isDev = true;
+    mockAppState = makeAppStateMock(true);
     makeServiceMocks();
-    const comp2 = new HomeComponent(
-      mockAppState,
-      mockSeoSvc,
-      mockPatchSvc,
-      mockRackSvc,
-      mockModuleSvc,
-      platformId,
-    );
+    const comp2 = makeComponent();
     expect(comp2.communityLinks.some(l => l.href === '/info/insights')).toBeTrue();
   });
 
   it('proofSections has at least one item', () => {
-    expect((comp as any).proofSections.length).toBeGreaterThan(0);
+    expect(comp.proofSections.length).toBeGreaterThan(0);
   });
 
   it('heroContent title is non-empty', () => {
@@ -103,7 +113,7 @@ describe('HomeComponent', () => {
   });
 
   it('SEO data includes correct url, type and keywords', () => {
-    const call = (mockSeoSvc.updateSeo as jasmine.Spy).calls.mostRecent().args[0];
+    const call: SeoSocialShareData = mockSeoSvc.updateSeo.calls.mostRecent().args[0];
     expect(call.url).toBe('https://patcher.xyz/');
     expect(call.type).toBe('website');
     expect(call.keywords).toContain('eurorack');

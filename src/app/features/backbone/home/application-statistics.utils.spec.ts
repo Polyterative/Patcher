@@ -10,8 +10,16 @@ import {
   mapBarWidths,
   createRateDatum
 } from './application-statistics.utils';
+import type { PublicApplicationActivityPoint } from '../../backend/supabase-queries';
+import type { MetricTone } from './application-statistics.models';
 
-const makePoint = (modules: number, racks: number, patches: number) => ({ modules, racks, patches } as any);
+const metricTone: MetricTone = 'brand';
+const makePoint = (modules: number, racks: number, patches: number): PublicApplicationActivityPoint => ({
+  date: '2026-01-01',
+  modules,
+  racks,
+  patches
+});
 
 describe('application-statistics.utils', () => {
   describe('sumActivityWindow', () => {
@@ -90,7 +98,7 @@ describe('application-statistics.utils', () => {
 
   describe('sortHpBuckets', () => {
     it('sorts by HP band order', () => {
-      const buckets = [{ label: '29+ HP' }, { label: '0-2 HP' }] as any;
+      const buckets: { label: string }[] = [{ label: '29+ HP' }, { label: '0-2 HP' }];
       const sorted = sortHpBuckets(buckets);
       expect(sorted[0].label).toBe('0-2 HP');
     });
@@ -108,9 +116,9 @@ describe('application-statistics.utils', () => {
 
   describe('mapBarWidths', () => {
     it('maps widthPercent proportionally', () => {
-      const metrics = [
-        { label: 'A', rawValue: 100, valueLabel: '100', detail: '', tone: 'neutral' as any },
-        { label: 'B', rawValue: 50, valueLabel: '50', detail: '', tone: 'neutral' as any }
+      const metrics: Parameters<typeof mapBarWidths>[0] = [
+        { label: 'A', rawValue: 100, valueLabel: '100', detail: '', tone: metricTone },
+        { label: 'B', rawValue: 50, valueLabel: '50', detail: '', tone: metricTone }
       ];
       const result = mapBarWidths(metrics);
       expect(result[0].widthPercent).toBe(100);
@@ -118,8 +126,8 @@ describe('application-statistics.utils', () => {
     });
 
     it('returns 0 widthPercent for rawValue 0', () => {
-      const metrics = [
-        { label: 'A', rawValue: 0, valueLabel: '0', detail: '', tone: 'neutral' as any }
+      const metrics: Parameters<typeof mapBarWidths>[0] = [
+        { label: 'A', rawValue: 0, valueLabel: '0', detail: '', tone: metricTone }
       ];
       expect(mapBarWidths(metrics)[0].widthPercent).toBe(0);
     });
@@ -127,15 +135,15 @@ describe('application-statistics.utils', () => {
 
   describe('createRateDatum', () => {
     it('returns null when numerator below minimum', () => {
-      expect(createRateDatum('L', 1, 10, 'neutral' as any, { detail: '' })).toBeNull();
+      expect(createRateDatum('L', 1, 10, metricTone, { detail: '' })).toBeNull();
     });
 
     it('returns null when denominator below minimum', () => {
-      expect(createRateDatum('L', 10, 1, 'neutral' as any, { detail: '' })).toBeNull();
+      expect(createRateDatum('L', 10, 1, metricTone, { detail: '' })).toBeNull();
     });
 
     it('returns datum when both above minimum', () => {
-      const result = createRateDatum('Label', 100, 10, 'neutral' as any, { scale: 1, detail: 'desc' });
+      const result = createRateDatum('Label', 100, 10, metricTone, { scale: 1, detail: 'desc' });
       expect(result).not.toBeNull();
       expect(result?.rawValue).toBe(10);
     });
