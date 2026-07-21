@@ -16,9 +16,12 @@ import {
   sortAndGroupMinimalModules
 } from './module-sort-utils';
 
+type ModuleFixtureOverrides = Partial<MinimalModule>;
+type RuntimeNullableModuleField = 'manufacturer';
+type RuntimeOptionalModuleField = 'name' | 'hp';
 
-function mkModule(overrides: Partial<MinimalModule> = {}): MinimalModule {
-  return {
+function mkModule(overrides: ModuleFixtureOverrides = {}): MinimalModule {
+  const baseModule: MinimalModule = {
     id: 1,
     name: 'Default',
     description: '',
@@ -30,9 +33,24 @@ function mkModule(overrides: Partial<MinimalModule> = {}): MinimalModule {
     tags: [],
     panels: [],
     created: '2024-01-01T00:00:00.000Z',
-    updated: '2024-01-01T00:00:00.000Z',
+    updated: '2024-01-01T00:00:00.000Z'
+  };
+  return {
+    ...baseModule,
     ...overrides
-  } as MinimalModule;
+  };
+}
+
+function withRuntimeMissingField(module: MinimalModule, field: RuntimeOptionalModuleField): MinimalModule {
+  const runtimeModule = {...module};
+  Reflect.set(runtimeModule, field, undefined);
+  return runtimeModule;
+}
+
+function withRuntimeNullField(module: MinimalModule, field: RuntimeNullableModuleField): MinimalModule {
+  const runtimeModule = {...module};
+  Reflect.set(runtimeModule, field, null);
+  return runtimeModule;
 }
 
 
@@ -42,8 +60,7 @@ describe('getModuleNormalizedName', () => {
   });
   
   it('handles missing name gracefully', () => {
-    const m = mkModule() as any;
-    m.name = undefined;
+    const m = withRuntimeMissingField(mkModule(), 'name');
     expect(getModuleNormalizedName(m)).toBe('');
   });
 });
@@ -55,8 +72,7 @@ describe('getModuleNormalizedManufacturer', () => {
   });
   
   it('handles null manufacturer', () => {
-    const m = mkModule() as any;
-    m.manufacturer = null;
+    const m = withRuntimeNullField(mkModule(), 'manufacturer');
     expect(getModuleNormalizedManufacturer(m)).toBe('');
   });
 });
@@ -109,8 +125,7 @@ describe('compareModulesByHpAsc', () => {
   });
   
   it('treats missing hp as 0', () => {
-    const a = mkModule() as any;
-    a.hp = undefined;
+    const a = withRuntimeMissingField(mkModule(), 'hp');
     const b = mkModule({hp: 4});
     expect(compareModulesByHpAsc(a, b)).toBeLessThanOrEqual(0);
   });
@@ -128,14 +143,14 @@ describe('compareModulesByHpDesc', () => {
 
 describe('compareModulesByInsMost', () => {
   it('places module with more inputs first', () => {
-    const many = mkModule({ins: [{id: 1, name: 'in1'}, {id: 2, name: 'in2'}]} as any);
-    const few = mkModule({ins: [{id: 3, name: 'in3'}]} as any);
+    const many = mkModule({ins: [{id: 1, name: 'in1'}, {id: 2, name: 'in2'}]});
+    const few = mkModule({ins: [{id: 3, name: 'in3'}]});
     expect(compareModulesByInsMost(many, few)).toBeLessThan(0);
   });
   
   it('treats missing ins as 0', () => {
     const a = mkModule();
-    const b = mkModule({ins: [{id: 1, name: 'in1'}]} as any);
+    const b = mkModule({ins: [{id: 1, name: 'in1'}]});
     expect(compareModulesByInsMost(a, b)).toBeGreaterThan(0);
   });
 });
@@ -143,8 +158,8 @@ describe('compareModulesByInsMost', () => {
 
 describe('compareModulesByOutsMost', () => {
   it('places module with more outputs first', () => {
-    const many = mkModule({outs: [{id: 1, name: 'o1'}, {id: 2, name: 'o2'}, {id: 3, name: 'o3'}]} as any);
-    const few = mkModule({outs: [{id: 4, name: 'o4'}]} as any);
+    const many = mkModule({outs: [{id: 1, name: 'o1'}, {id: 2, name: 'o2'}, {id: 3, name: 'o3'}]});
+    const few = mkModule({outs: [{id: 4, name: 'o4'}]});
     expect(compareModulesByOutsMost(many, few)).toBeLessThan(0);
   });
 });
@@ -229,8 +244,7 @@ describe('getModuleGroupKey', () => {
   });
   
   it('treats missing hp as 0 for hpRange', () => {
-    const m = mkModule() as any;
-    m.hp = undefined;
+    const m = withRuntimeMissingField(mkModule(), 'hp');
     expect(getModuleGroupKey(m, 'hpRange')).toBe('1–4 HP');
   });
 });

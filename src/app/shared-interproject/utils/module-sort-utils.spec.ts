@@ -10,9 +10,12 @@ import {
   sortAndGroupMinimalModules
 } from './module-sort-utils';
 
+type ModuleFixtureOverrides = Partial<MinimalModule> & Pick<MinimalModule, 'id' | 'name'>;
 
-function createModule(overrides: Partial<MinimalModule> & {id: number; name: string}): MinimalModule {
-  return {
+function createModule(overrides: ModuleFixtureOverrides): MinimalModule {
+  const baseModule: MinimalModule = {
+    id: overrides.id,
+    name: overrides.name,
     description: '',
     hp: 8,
     public: true,
@@ -22,9 +25,12 @@ function createModule(overrides: Partial<MinimalModule> & {id: number; name: str
     tags: [],
     panels: [],
     created: '2024-01-01T00:00:00.000Z',
-    updated: '2024-01-01T00:00:00.000Z',
+    updated: '2024-01-01T00:00:00.000Z'
+  };
+  return {
+    ...baseModule,
     ...overrides
-  } as MinimalModule;
+  };
 }
 
 describe('module-sort-utils', () => {
@@ -70,7 +76,7 @@ describe('module-sort-utils', () => {
   });
 
   it('getModuleNormalizedManufacturer lowercases manufacturer name', () => {
-    const m = createModule({id: 1, name: 'Rings', manufacturer: {id: 1, name: 'Mutable Instruments'}} as any);
+    const m = createModule({id: 1, name: 'Rings', manufacturer: {id: 1, name: 'Mutable Instruments'}});
     expect(getModuleNormalizedManufacturer(m)).toBe('mutable instruments');
   });
 
@@ -101,8 +107,8 @@ describe('module-sort-utils', () => {
   });
 
   it('sortAndGroupMinimalModules groups by standard using standard name buckets', () => {
-    const u1 = createModule({id: 1, name: 'Tile', standard: {id: 1, name: '1U'}} as any);
-    const u3 = createModule({id: 2, name: 'VCO', standard: {id: 0, name: '3U'}} as any);
+    const u1 = createModule({id: 1, name: 'Tile', standard: {id: 1, name: '1U'}});
+    const u3 = createModule({id: 2, name: 'VCO', standard: {id: 0, name: '3U'}});
     const result = sortAndGroupMinimalModules([u1, u3], 'nameAsc', 'standard');
     const ids = result.map(m => m.id);
     const idx1U = ids.indexOf(1);
