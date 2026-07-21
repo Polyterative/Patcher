@@ -1,31 +1,53 @@
 import { SupabaseService } from '../../supabase.service';
+import type { CachedEntity } from '../../supabase.cache';
+import type {
+  SupabaseTableInsert,
+  SupabaseTableRow
+} from '../../supabase-db.types';
 import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest,
   TEST_TIMEOUT
 } from './test-setup';
-import { of } from 'rxjs';
+import {
+  authUserFixture,
+  chainable,
+  getSupabaseClientDouble,
+  mockUserSession,
+  type QueryChainResult,
+  type QueryListRowsResult,
+  type SupabaseClientDouble,
+  type SupabaseQueryChain
+} from './supabase-query-test-doubles';
 
 
-function chainable(resolveValue: any = {data: null, error: null}) {
-  const m: any = {};
-  ['select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit', 'single',
-    'insert', 'update', 'delete', 'upsert'].forEach(method => {
-    m[method] = () => m;
-  });
-  m.then = (res: Function, rej?: Function) =>
-    Promise.resolve(resolveValue).then(res as any, rej as any);
-  return m;
+type AddCommentDraft = Parameters<SupabaseService['add']['comment']>[0];
+type AddRackDraft = Parameters<SupabaseService['add']['rack']>[0];
+type CommentInsert = SupabaseTableInsert<'comments'>;
+type RackInsert = SupabaseTableInsert<'racks'>;
+type RackInsertResultRow = Pick<SupabaseTableRow<'racks'>, 'id'> &
+  Partial<Pick<SupabaseTableRow<'racks'>, 'public_id'>>;
+type RackModuleInsert = SupabaseTableInsert<'rack_modules'>;
+type RackModuleInsertExpectation = Partial<RackModuleInsert>;
+type RackModuleInsertResultRow = Pick<
+  SupabaseTableRow<'rack_modules'>,
+  'column' | 'id' | 'moduleid' | 'orientation' | 'rackid' | 'row' | 'selected_panel_id'
+>;
+type RackDraftFixture = Pick<AddRackDraft, 'hp' | 'name' | 'rows'> &
+  Partial<Pick<AddRackDraft, 'description' | 'image' | 'locked' | 'public' | 'public_id'>>;
+
+function rackDraftFixture(data: RackDraftFixture): AddRackDraft {
+  return data as AddRackDraft;
 }
 
 describe('SupabaseService - add.comment', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: SupabaseClientDouble;
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = getSupabaseClientDouble(service);
   });
   
   afterEach(() => {
@@ -33,25 +55,29 @@ describe('SupabaseService - add.comment', () => {
   });
   
   it('should insert a comment with the correct fields', (done) => {
-    const mockUser = {id: 'commenter-1'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('commenter-1');
+    mockUserSession(service, mockUser);
     
-    const mock = chainable({data: null, error: null});
-    const insertSpy = spyOn(mock, 'insert').and.returnValue(mock);
-    const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
+    const mock: SupabaseQueryChain<CommentInsert> = chainable<CommentInsert>(
+      {data: null, error: null} satisfies QueryChainResult<CommentInsert>
+    );
+    const insertSpy: jasmine.Spy<SupabaseQueryChain<CommentInsert>['insert']> =
+      spyOn(mock, 'insert').and.returnValue(mock);
+    spyOn(mock, 'select').and.returnValue(mock);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
-    service.add.comment({entityId: 5, entityType: 2, content: 'Nice rack!'}).subscribe({
+    const commentDraft = {entityId: 5, entityType: 2, content: 'Nice rack!'} satisfies AddCommentDraft;
+    service.add.comment(commentDraft).subscribe({
       next: () => {
         expect(insertSpy).toHaveBeenCalledWith(jasmine.objectContaining({
           entityId: 5,
           entityType: 2,
           content: 'Nice rack!',
           authorId: 'commenter-1'
-        }));
+        } satisfies CommentInsert));
         done();
       },
-      error: (err) => {
+      error: (err: unknown) => {
         fail(err);
         done();
       }
@@ -59,12 +85,14 @@ describe('SupabaseService - add.comment', () => {
   }, TEST_TIMEOUT);
   
   it('should bust comments and currentUserComments caches', (done) => {
-    const mockUser = {id: 'u'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
-    spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: null}));
+    const mockUser = authUserFixture('u');
+    mockUserSession(service, mockUser);
+    spyOn(supabaseClient, 'from').and.returnValue(
+      chainable<CommentInsert>({data: null, error: null} satisfies QueryChainResult<CommentInsert>)
+    );
     
-    const bustedKeys: any[] = [];
-    service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
+    const bustedKeys: CachedEntity[] = [];
+    service.cacheResetter$.subscribe(keys => bustedKeys.push(...keys));
     
     service.add.comment({entityId: 1, entityType: 1, content: 'test'}).subscribe({
       next: () => {
@@ -72,7 +100,7 @@ describe('SupabaseService - add.comment', () => {
         expect(bustedKeys).toContain('currentUserComments');
         done();
       },
-      error: (err) => {
+      error: (err: unknown) => {
         fail(err);
         done();
       }
@@ -80,13 +108,13 @@ describe('SupabaseService - add.comment', () => {
   }, TEST_TIMEOUT);
   
   it('should insert to the comments table', (done) => {
-    const mockUser = {id: 'u'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('u');
+    mockUserSession(service, mockUser);
     
     let usedTable = '';
     spyOn(supabaseClient, 'from').and.callFake((t: string) => {
       usedTable = t;
-      return chainable();
+      return chainable<CommentInsert>();
     });
     
     service.add.comment({entityId: 10, entityType: 3, content: 'yo'}).subscribe({
@@ -94,7 +122,7 @@ describe('SupabaseService - add.comment', () => {
         expect(usedTable).toContain('comment');
         done();
       },
-      error: (err) => {
+      error: (err: unknown) => {
         fail(err);
         done();
       }
@@ -104,12 +132,12 @@ describe('SupabaseService - add.comment', () => {
 
 describe('SupabaseService - add.rack', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: SupabaseClientDouble;
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = getSupabaseClientDouble(service);
   });
   
   afterEach(() => {
@@ -117,21 +145,32 @@ describe('SupabaseService - add.rack', () => {
   });
   
   it('should insert a rack with authorid from session', (done) => {
-    const mockUser = {id: 'rack-creator'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('rack-creator');
+    mockUserSession(service, mockUser);
     
-    const mock = chainable({data: [{id: 12}], error: null});
-    const insertSpy = spyOn(mock, 'insert').and.returnValue(mock);
+    const mock: SupabaseQueryChain<RackInsertResultRow> = chainable<RackInsertResultRow>({
+      data: [{id: 12}],
+      error: null
+    } satisfies QueryListRowsResult<RackInsertResultRow>);
+    const insertSpy: jasmine.Spy<SupabaseQueryChain<RackInsertResultRow>['insert']> =
+      spyOn(mock, 'insert').and.returnValue(mock);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
-    service.add.rack({name: 'My Rack', hp: 84, rows: 2, locked: false, public: true} as any).subscribe({
+    const rackDraft = {
+      name: 'My Rack',
+      hp: 84,
+      rows: 2,
+      locked: false,
+      public: true
+    } satisfies AddRackDraft;
+    service.add.rack(rackDraft).subscribe({
       next: () => {
-        const payload = insertSpy.calls.first().args[0] as Record<string, unknown>;
+        const payload = insertSpy.calls.first().args[0] as RackInsert;
         expect(payload.authorid).toBe('rack-creator');
         expect(payload.name).toBe('My Rack');
         done();
       },
-      error: (err) => {
+      error: (err: unknown) => {
         fail(err);
         done();
       }
@@ -139,14 +178,14 @@ describe('SupabaseService - add.rack', () => {
   }, TEST_TIMEOUT);
   
   it('should throw when user is not authenticated', (done) => {
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+    mockUserSession(service, null);
     
-    service.add.rack({name: 'My Rack', hp: 84, rows: 2} as any).subscribe({
+    service.add.rack(rackDraftFixture({name: 'My Rack', hp: 84, rows: 2})).subscribe({
       next: () => {
         fail('should have errored');
         done();
       },
-      error: (err) => {
+      error: (err: Error) => {
         expect(err.message).toContain('Authentication required');
         done();
       }
@@ -154,19 +193,24 @@ describe('SupabaseService - add.rack', () => {
   }, TEST_TIMEOUT);
   
   it('should bust rackWithId cache', (done) => {
-    const mockUser = {id: 'u'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
-    spyOn(supabaseClient, 'from').and.returnValue(chainable({data: [{id: 1}], error: null}));
+    const mockUser = authUserFixture('u');
+    mockUserSession(service, mockUser);
+    spyOn(supabaseClient, 'from').and.returnValue(
+      chainable<RackInsertResultRow>({
+        data: [{id: 1}],
+        error: null
+      } satisfies QueryListRowsResult<RackInsertResultRow>)
+    );
     
-    const bustedKeys: any[] = [];
-    service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
+    const bustedKeys: CachedEntity[] = [];
+    service.cacheResetter$.subscribe(keys => bustedKeys.push(...keys));
     
-    service.add.rack({name: 'R', hp: 84, rows: 2} as any).subscribe({
+    service.add.rack(rackDraftFixture({name: 'R', hp: 84, rows: 2})).subscribe({
       next: () => {
         expect(bustedKeys).toContain('rackWithId');
         done();
       },
-      error: (err) => {
+      error: (err: unknown) => {
         fail(err);
         done();
       }
@@ -176,12 +220,12 @@ describe('SupabaseService - add.rack', () => {
 
 describe('SupabaseService - add.rackModule', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: SupabaseClientDouble;
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = getSupabaseClientDouble(service);
   });
   
   afterEach(() => {
@@ -189,12 +233,16 @@ describe('SupabaseService - add.rackModule', () => {
   });
   
   it('should insert with moduleid and rackid', (done) => {
-    const mockUser = {id: 'u'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('u');
+    mockUserSession(service, mockUser);
     
-    const mock = chainable({data: null, error: null});
-    const insertSpy = spyOn(mock, 'insert').and.returnValue(mock);
-    const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
+    const mock: SupabaseQueryChain<RackModuleInsertResultRow> = chainable<RackModuleInsertResultRow>(
+      {data: null, error: null} satisfies QueryChainResult<RackModuleInsertResultRow>
+    );
+    const insertSpy: jasmine.Spy<SupabaseQueryChain<RackModuleInsertResultRow>['insert']> =
+      spyOn(mock, 'insert').and.returnValue(mock);
+    const selectSpy: jasmine.Spy<SupabaseQueryChain<RackModuleInsertResultRow>['select']> =
+      spyOn(mock, 'select').and.returnValue(mock);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
     service.add.rackModule(3, 7, 0, 2).subscribe({
@@ -205,11 +253,11 @@ describe('SupabaseService - add.rackModule', () => {
           row: 0,
           column: 2,
           orientation: 'normal'
-        }));
+        } satisfies RackModuleInsert));
         expect(selectSpy).toHaveBeenCalledWith('id,moduleid,rackid,row,column,selected_panel_id,orientation');
         done();
       },
-      error: (err) => {
+      error: (err: unknown) => {
         fail(err);
         done();
       }
@@ -217,21 +265,24 @@ describe('SupabaseService - add.rackModule', () => {
   }, TEST_TIMEOUT);
 
   it('should insert an explicit rack module orientation', (done) => {
-    const mockUser = {id: 'u'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('u');
+    mockUserSession(service, mockUser);
 
-    const mock = chainable({data: null, error: null});
-    const insertSpy = spyOn(mock, 'insert').and.returnValue(mock);
+    const mock: SupabaseQueryChain<RackModuleInsertResultRow> = chainable<RackModuleInsertResultRow>(
+      {data: null, error: null} satisfies QueryChainResult<RackModuleInsertResultRow>
+    );
+    const insertSpy: jasmine.Spy<SupabaseQueryChain<RackModuleInsertResultRow>['insert']> =
+      spyOn(mock, 'insert').and.returnValue(mock);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
 
     service.add.rackModule(3, 7, 0, 2, 'rot180').subscribe({
       next: () => {
         expect(insertSpy).toHaveBeenCalledWith(jasmine.objectContaining({
           orientation: 'rot180'
-        }));
+        } satisfies RackModuleInsertExpectation));
         done();
       },
-      error: (err) => {
+      error: (err: unknown) => {
         fail(err);
         done();
       }
@@ -239,14 +290,14 @@ describe('SupabaseService - add.rackModule', () => {
   }, TEST_TIMEOUT);
   
   it('should throw when user is not authenticated', (done) => {
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+    mockUserSession(service, null);
     
     service.add.rackModule(1, 1).subscribe({
       next: () => {
         fail('should have errored');
         done();
       },
-      error: (err) => {
+      error: (err: Error) => {
         expect(err.message).toContain('Authentication required');
         done();
       }
