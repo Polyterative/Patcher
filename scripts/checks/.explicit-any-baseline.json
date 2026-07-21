@@ -1,6 +1,6 @@
 {
   "_comment": "Grandfathered explicit `any` counts. Do not add by hand — run `node scripts/checks/check-explicit-any.cjs --update-baseline` after intentional cleanup.",
-  "totalExplicitAny": 1357,
+  "totalExplicitAny": 1342,
   "files": {
     "api/sitemap.ts": 3,
     "e2e/auth-rack-context-menu.spec.ts": 6,
@@ -12,7 +12,6 @@
     "e2e/screenshots/auth-major-area-screenshots.spec.ts": 2,
     "e2e/screenshots/auth-predictable-rack.spec.ts": 2,
     "src/app/components/module-parts/module-detail-data.service.spec.ts": 36,
-    "src/app/components/module-parts/module-editor/module-editor.component.spec.ts": 15,
     "src/app/components/patch-parts/patch-detail-data.service.spec.ts": 30,
     "src/app/components/patch-parts/patch-details/patch-detail-data-service-instance-branches.spec.ts": 30,
     "src/app/components/patch-parts/patch-details/patch-detail-data-service-instances.spec.ts": 21,
