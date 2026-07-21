@@ -1,76 +1,94 @@
+import { TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot } from '@angular/router';
-import { of } from 'rxjs';
+import {
+  firstValueFrom,
+  Observable,
+  of
+} from 'rxjs';
 import { AdminGuardService } from './admin-guard.service';
+import { SupabaseService } from './supabase.service';
+import { SimpleUserModel } from './supabase.types';
 
 
 describe('AdminGuardService', () => {
-  let service: AdminGuardService;
+  type AdminGuardAuth = Pick<SupabaseService['auth'], 'getUserSession$' | 'hasAdminRole$'>;
+  type AdminGuardSupabase = {
+    readonly auth: jasmine.SpyObj<AdminGuardAuth>;
+  };
+  type GuardResult = Observable<boolean>;
 
-  function buildService(sessionUser: any, isAdmin = false) {
-    const mockSupabase = {
-      auth: {
-        getUserSession$: jasmine.createSpy('getUserSession$').and.returnValue(of(sessionUser)),
-        hasAdminRole$: jasmine.createSpy('hasAdminRole$').and.returnValue(of(isAdmin))
-      }
+  const routeSnapshot = {} as ActivatedRouteSnapshot;
+  const userTimestamps = {
+    created_at: '2026-01-01T00:00:00.000Z',
+    updated_at: '2026-01-02T00:00:00.000Z'
+  };
+
+  function createUser(id: string): SimpleUserModel {
+    return {
+      id,
+      email: `${ id }@example.test`,
+      ...userTimestamps
     };
-    return new AdminGuardService(mockSupabase as any);
   }
 
-  it('returns false when user is not authenticated', (done) => {
-    service = buildService(null, false);
-
-    (service.canActivate({} as ActivatedRouteSnapshot) as any).subscribe({
-      next: (result: boolean) => {
-        expect(result).toBeFalse();
-        done();
-      },
-      error: (err: any) => {
-        fail(err);
-        done();
-      }
-    });
-  });
-
-  it('returns false when user is authenticated but not an admin', (done) => {
-    service = buildService({id: 'regular-user'}, false);
-
-    (service.canActivate({} as ActivatedRouteSnapshot) as any).subscribe({
-      next: (result: boolean) => {
-        expect(result).toBeFalse();
-        done();
-      },
-      error: (err: any) => {
-        fail(err);
-        done();
-      }
-    });
-  });
-
-  it('returns true when user is authenticated and has admin role', (done) => {
-    service = buildService({id: 'admin-user'}, true);
-
-    (service.canActivate({} as ActivatedRouteSnapshot) as any).subscribe({
-      next: (result: boolean) => {
-        expect(result).toBeTrue();
-        done();
-      },
-      error: (err: any) => {
-        fail(err);
-        done();
-      }
-    });
-  });
-
-  it('calls getUserSession$ once per canActivate invocation', () => {
-    const mockSupabase = {
-      auth: {
-        getUserSession$: jasmine.createSpy('getUserSession$').and.returnValue(of({id: 'u1'})),
-        hasAdminRole$: jasmine.createSpy('hasAdminRole$').and.returnValue(of(false))
-      }
+  function buildService(sessionUser: SimpleUserModel | null, isAdmin = false): {
+    service: AdminGuardService;
+    supabase: AdminGuardSupabase;
+  } {
+    const auth = jasmine.createSpyObj<AdminGuardAuth>('auth', [
+      'getUserSession$',
+      'hasAdminRole$'
+    ]);
+    auth.getUserSession$.and.returnValue(of(sessionUser));
+    auth.hasAdminRole$.and.returnValue(of(isAdmin));
+    const supabase: AdminGuardSupabase = {
+      auth
     };
-    service = new AdminGuardService(mockSupabase as any);
 
-    (service.canActivate({} as ActivatedRouteSnapshot) as any).subscribe();
-    expect(mockSupabase.auth.getUserSession$).toHaveBeenCalledTimes(1);
+    TestBed.configureTestingModule({
+      providers: [
+        AdminGuardService,
+        {provide: SupabaseService, useValue: supabase}
+      ]
+    });
+
+    return {
+      service: TestBed.inject(AdminGuardService),
+      supabase
+    };
+  }
+
+  function resolveGuardResult(service: AdminGuardService): Promise<boolean> {
+    const result$: GuardResult = service.canActivate(routeSnapshot);
+    return firstValueFrom(result$);
+  }
+
+  afterEach(() => {
+    TestBed.resetTestingModule();
+  });
+
+  it('returns false when user is not authenticated', async () => {
+    const {service} = buildService(null, false);
+
+    await expectAsync(resolveGuardResult(service)).toBeResolvedTo(false);
+  });
+
+  it('returns false when user is authenticated but not an admin', async () => {
+    const {service} = buildService(createUser('regular-user'), false);
+
+    await expectAsync(resolveGuardResult(service)).toBeResolvedTo(false);
+  });
+
+  it('returns true when user is authenticated and has admin role', async () => {
+    const {service} = buildService(createUser('admin-user'), true);
+
+    await expectAsync(resolveGuardResult(service)).toBeResolvedTo(true);
+  });
+
+  it('calls getUserSession$ once per canActivate invocation', async () => {
+    const {service, supabase} = buildService(createUser('u1'), false);
+
+    await resolveGuardResult(service);
+    expect(supabase.auth.getUserSession$).toHaveBeenCalledTimes(1);
   });
 });
