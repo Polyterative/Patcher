@@ -1,16 +1,30 @@
 import { TestBed } from '@angular/core/testing';
-import { Meta } from '@angular/platform-browser';
+import {
+  Meta,
+  Title
+} from '@angular/platform-browser';
 import { SeoAndUtilsService } from './seo-and-utils.service';
 
+
+type SeoDocumentLocation = Pick<Location, 'origin' | 'pathname' | 'href'>;
+
+function createSeoDocument(location: SeoDocumentLocation): Document {
+  const seoDocument = Object.create(Document.prototype) as Document;
+  Object.defineProperty(seoDocument, 'location', {
+    configurable: true,
+    value: location
+  });
+  return seoDocument;
+}
 
 describe('SeoAndUtilsService - additional branches', () => {
   it('setTitle with no argument (default empty string) removes all title-related meta tags', () => {
     const metaSpy = jasmine.createSpyObj<Meta>('Meta', ['updateTag', 'removeTag']);
-    const titleSpy = jasmine.createSpyObj('Title', ['setTitle']);
+    const titleSpy = jasmine.createSpyObj<Title>('Title', ['setTitle']);
     const service = new SeoAndUtilsService(titleSpy, metaSpy, document);
     
     // Call with no arg → triggers the default '' parameter
-    (service as any).setTitle();
+    service['setTitle']();
     
     expect(metaSpy.removeTag).toHaveBeenCalledWith(`name='twitter:title'`);
     expect(metaSpy.removeTag).toHaveBeenCalledWith(`name='twitter:image:alt'`);
@@ -53,13 +67,19 @@ describe('SeoAndUtilsService - additional branches', () => {
   });
   
   it('getCurrentUrl returns origin+pathname without query string or hash', () => {
+    const titleSpy = jasmine.createSpyObj<Title>('Title', ['setTitle']);
+    const metaSpy = jasmine.createSpyObj<Meta>('Meta', ['updateTag', 'removeTag']);
     const service = new SeoAndUtilsService(
-      jasmine.createSpyObj('Title', ['setTitle']) as any,
-      jasmine.createSpyObj('Meta', ['updateTag', 'removeTag']) as any,
-      {location: {origin: 'https://patcher.xyz', pathname: '/modules', href: 'https://patcher.xyz/modules?foo=bar#section'}} as any
+      titleSpy,
+      metaSpy,
+      createSeoDocument({
+        origin: 'https://patcher.xyz',
+        pathname: '/modules',
+        href: 'https://patcher.xyz/modules?foo=bar#section'
+      })
     );
     
-    expect((service as any).getCurrentUrl()).toBe('https://patcher.xyz/modules');
+    expect(service['getCurrentUrl']()).toBe('https://patcher.xyz/modules');
   });
   
   it('updateCanonicalLink reuses existing canonical link element', () => {
@@ -73,7 +93,7 @@ describe('SeoAndUtilsService - additional branches', () => {
     TestBed.configureTestingModule({providers: [SeoAndUtilsService]});
     const service = TestBed.inject(SeoAndUtilsService);
     
-    (service as any).updateCanonicalLink('https://patcher.xyz/new');
+    service['updateCanonicalLink']('https://patcher.xyz/new');
     
     const canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
     expect(canonical?.getAttribute('href')).toBe('https://patcher.xyz/new');
@@ -86,8 +106,9 @@ describe('SeoAndUtilsService - additional branches', () => {
 
   it('sets robots noindex tag when noindex is true', () => {
     const metaSpy = jasmine.createSpyObj<Meta>('Meta', ['updateTag', 'removeTag']);
+    const titleSpy = jasmine.createSpyObj<Title>('Title', ['setTitle']);
     const service = new SeoAndUtilsService(
-      jasmine.createSpyObj('Title', ['setTitle']) as any, metaSpy, document
+      titleSpy, metaSpy, document
     );
     service.updateSeo({description: 'd', image: 'img', noindex: true}, 'Area');
     expect(metaSpy.updateTag).toHaveBeenCalledWith({name: 'robots', content: 'noindex, nofollow'});
@@ -95,8 +116,9 @@ describe('SeoAndUtilsService - additional branches', () => {
 
   it('removes robots tag when noindex is false', () => {
     const metaSpy = jasmine.createSpyObj<Meta>('Meta', ['updateTag', 'removeTag']);
+    const titleSpy = jasmine.createSpyObj<Title>('Title', ['setTitle']);
     const service = new SeoAndUtilsService(
-      jasmine.createSpyObj('Title', ['setTitle']) as any, metaSpy, document
+      titleSpy, metaSpy, document
     );
     service.updateSeo({description: 'd', image: 'img', noindex: false}, 'Area');
     expect(metaSpy.removeTag).toHaveBeenCalledWith(`name='robots'`);
@@ -104,8 +126,9 @@ describe('SeoAndUtilsService - additional branches', () => {
 
   it('sets og:image and twitter:image from data.image', () => {
     const metaSpy = jasmine.createSpyObj<Meta>('Meta', ['updateTag', 'removeTag']);
+    const titleSpy = jasmine.createSpyObj<Title>('Title', ['setTitle']);
     const service = new SeoAndUtilsService(
-      jasmine.createSpyObj('Title', ['setTitle']) as any, metaSpy, document
+      titleSpy, metaSpy, document
     );
     const imageUrl = 'https://cdn.example.com/rack.jpg';
     service.updateSeo({description: 'd', image: imageUrl}, 'Area');
