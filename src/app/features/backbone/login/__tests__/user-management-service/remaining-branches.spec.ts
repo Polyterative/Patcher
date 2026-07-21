@@ -9,7 +9,14 @@ import {
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { UserManagementService } from '../../user-management.service';
 import {
+  RichUserModel,
+  SimpleUserModel
+} from 'src/app/features/backend/supabase.service';
+import { SupabaseSignupResult } from 'src/app/features/backend/supabase.types';
+import {
   cleanupUserManagementServiceTest,
+  createConfirmDialogRef,
+  invokeCheckUserInCookies,
   MOCK_RICH_USER,
   MOCK_SIMPLE_USER,
   setupUserManagementServiceTest
@@ -17,22 +24,19 @@ import {
 
 
 describe('UserManagementService - Remaining Branches', () => {
+  type UserManagementServiceTestSetup = ReturnType<typeof setupUserManagementServiceTest>;
+
   let service: UserManagementService;
-  let mockSupabaseService: any;
+  let mockSupabaseService: UserManagementServiceTestSetup['mockSupabaseService'];
+  let mockDialog: UserManagementServiceTestSetup['mockDialog'];
   
   beforeEach(() => {
     const setup = setupUserManagementServiceTest();
     service = setup.service;
     mockSupabaseService = setup.mockSupabaseService;
-    (service as any).dialog = {
-      open: jasmine.createSpy('dialog.open').and.returnValue({
-        afterClosed: () => of({answer: true})
-      })
-    };
-    mockSupabaseService.delete = {
-      allUserData: jasmine.createSpy('delete.allUserData').and.returnValue(of(void 0)
-      )
-    };
+    mockDialog = setup.mockDialog;
+    mockDialog.open.and.returnValue(createConfirmDialogRef({answer: true}));
+    mockSupabaseService.delete.allUserData.and.returnValue(of(void 0));
   });
   
   afterEach(() => {
@@ -48,24 +52,27 @@ describe('UserManagementService - Remaining Branches', () => {
     tick();
     expect(SharedConstants.errorLogin).toHaveBeenCalled();
     
-    mockSupabaseService.auth.login$.and.returnValue(of({user: MOCK_RICH_USER}));
-    let user: any;
-    let profile: any;
+    mockSupabaseService.auth.login$.and.returnValue(of({user: MOCK_RICH_USER, returnUrl: undefined}));
+    let user: SimpleUserModel | undefined;
+    let profile: RichUserModel | undefined;
     service.loggedUser$.subscribe(v => user = v);
     service.loggedUserFullProfile$.subscribe(v => profile = v);
     service.loginAction$.next({email: 'a@b.com', password: 'x'});
     tick();
     
-    expect(user).toEqual(MOCK_RICH_USER as any);
-    expect(profile).toEqual(MOCK_RICH_USER as any);
+    expect(user).toEqual(MOCK_RICH_USER);
+    expect(profile).toEqual(MOCK_RICH_USER);
   }));
   
   it('signup delegates to backend signup$', () => {
-    const response = {user: {id: 'x'}} as any;
+    const response: SupabaseSignupResult = {
+      user: MOCK_SIMPLE_USER,
+      requiresEmailConfirmation: false
+    };
     mockSupabaseService.auth.signup$.and.returnValue(of(response));
     
     const out = service.signup('name', 'mail@example.com', 'pass');
-    out.subscribe((res: any) => expect(res).toEqual(response));
+    out.subscribe(res => expect(res).toEqual(response));
     expect(mockSupabaseService.auth.signup$).toHaveBeenCalledWith('name', 'mail@example.com', 'pass');
   });
   
@@ -93,13 +100,13 @@ describe('UserManagementService - Remaining Branches', () => {
   
   it('checkUserInCookies sets logged user when session exists', fakeAsync(() => {
     mockSupabaseService.auth.getUserSession$.and.returnValue(of(MOCK_SIMPLE_USER));
-    let value: any;
+    let value: SimpleUserModel | undefined;
     service.loggedUser$.subscribe(v => value = v);
     
-    (service as any).checkUserInCookies();
+    invokeCheckUserInCookies(service);
     tick();
     
-    expect(value).toEqual(MOCK_SIMPLE_USER as any);
+    expect(value).toEqual(MOCK_SIMPLE_USER);
   }));
   
   it('reset data flow catches logoff failure branch', fakeAsync(() => {

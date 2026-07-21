@@ -81,7 +81,7 @@ type MockDialogOpen = (component: unknown, config?: unknown) => MockDialogRef;
 
 type MockAuthNamespace = {
   login$: (email: string, password: string) => Observable<TestLoginResponse>;
-  logoff$: () => Observable<TestLogoffResponse>;
+  logoff$: () => Observable<TestLogoffResponse> | Promise<TestLogoffResponse>;
   getUserSession$: () => Observable<SimpleUserModel | null>;
   getRichUserSession$: () => Observable<RichUserModel | null>;
   signup$: (username: string, email: string, password: string) => Observable<TestSignupResponse>;
@@ -128,6 +128,7 @@ export type UserManagementServiceInternals = {
   currentUserId: string | undefined;
   _loggedUserFullProfile$: ReplaySubject<RichUserModel | undefined>;
   _subscriptions: Subscription[];
+  checkUserInCookies: () => void;
 };
 
 export function userManagementInternals(service: UserManagementService): UserManagementServiceInternals {
@@ -136,6 +137,10 @@ export function userManagementInternals(service: UserManagementService): UserMan
 
 export function publishRichProfile(service: UserManagementService, profile: RichUserModel): void {
   userManagementInternals(service)._loggedUserFullProfile$.next(profile);
+}
+
+export function invokeCheckUserInCookies(service: UserManagementService): void {
+  userManagementInternals(service).checkUserInCookies();
 }
 
 export function createConfirmDialogRef(result: ConfirmDialogDataOutModel): MockDialogRef {
