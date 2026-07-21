@@ -22,11 +22,21 @@ class FakeDestroyRef implements DestroyRef {
   }
 }
 
+class TestSubManager extends SubManager {
+  constructor(destroyRef?: DestroyRef) {
+    super(destroyRef);
+  }
+
+  get subscriptionCount(): number {
+    return this._subscriptions.length;
+  }
+}
+
 describe('SubManager', () => {
-  let manager: SubManager;
+  let manager: TestSubManager;
 
   beforeEach(() => {
-    manager = new SubManager();
+    manager = new TestSubManager();
   });
 
   afterEach(() => {
@@ -36,12 +46,12 @@ describe('SubManager', () => {
   it('adds subscriptions via manageSub', () => {
     const sub = new Subscription();
     manager.manageSub(sub);
-    expect((manager as any)._subscriptions.length).toBe(1);
+    expect(manager.subscriptionCount).toBe(1);
   });
 
   it('manageSub ignores undefined argument', () => {
     manager.manageSub(undefined);
-    expect((manager as any)._subscriptions.length).toBe(0);
+    expect(manager.subscriptionCount).toBe(0);
   });
 
   it('unsubscribeAll closes all tracked subscriptions and clears array', () => {
@@ -54,7 +64,7 @@ describe('SubManager', () => {
 
     expect(sub1.closed).toBeTrue();
     expect(sub2.closed).toBeTrue();
-    expect((manager as any)._subscriptions.length).toBe(0);
+    expect(manager.subscriptionCount).toBe(0);
   });
 
   it('ngOnDestroy completes the destroy$ subject', () => {
@@ -113,7 +123,7 @@ describe('SubManager', () => {
 
   it('registers cleanup with DestroyRef when provided', () => {
     const destroyRef = new FakeDestroyRef();
-    const managed = new SubManager(destroyRef);
+    const managed = new TestSubManager(destroyRef);
     const sub = new Subscription();
     let emitted = false;
     let completed = false;
