@@ -1,36 +1,45 @@
-import { of } from 'rxjs';
 import { SupabaseService } from '../../supabase.service';
+import type { CachedEntity } from '../../supabase.cache';
+import type { SupabaseTableRow } from '../../supabase-db.types';
 import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest,
   TEST_TIMEOUT
 } from './test-setup';
 import { CommentableEntityTypes } from '../../supabase-comments';
-import { SimpleUserModel } from '../../supabase.types';
+import {
+  authUserFixture,
+  chainable,
+  getSupabaseClientDouble,
+  mockUserSession,
+  type QueryChainResult,
+  type QueryListRowsResult,
+  type SupabaseClientDouble,
+  type SupabaseQueryChain
+} from './supabase-query-test-doubles';
 
 
-function chainable(resolveValue: any = {data: null, error: null}) {
-  const m: any = {};
-  ['select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit', 'single',
-    'insert', 'update', 'delete', 'upsert'].forEach(method => {
-    m[method] = () => m;
-  });
-  m.then = (res: Function, rej?: Function) =>
-    Promise.resolve(resolveValue).then(res as any, rej as any);
-  return m;
+type CommentDeleteRow = Pick<SupabaseTableRow<'comments'>, 'id'>;
+type ModuleDeleteRow = Pick<SupabaseTableRow<'modules'>, 'id'>;
+type PatchDeleteRow = Pick<SupabaseTableRow<'patches'>, 'id'>;
+type PatchModuleInstanceDeleteRow = Pick<SupabaseTableRow<'patch_module_instances'>, 'id'>;
+type RackDeleteRow = Pick<SupabaseTableRow<'racks'>, 'id'>;
+type DeleteFilterValue = Parameters<SupabaseQueryChain<unknown>['filter']>[2];
+type DeleteFilterCall = {
+  column: string;
+  operator: string;
+  value: DeleteFilterValue;
+};
+
+const successfulDelete = {data: null, error: null} satisfies QueryChainResult<never>;
+
+function deletedRows<Row>(rows: Row[]) {
+  return {data: rows, error: null} satisfies QueryListRowsResult<Row>;
 }
 
-interface ChainableQueryMock {
-  filter: (column: string, operator: string, value: unknown) => ChainableQueryMock;
-}
-
-function trackFilters(mock: ChainableQueryMock) {
-  const filters: Array<{
-    column: string;
-    operator: string;
-    value: unknown;
-  }> = [];
-  spyOn(mock, 'filter').and.callFake((column: string, operator: string, value: unknown) => {
+function trackFilters<Row>(mock: SupabaseQueryChain<Row>): DeleteFilterCall[] {
+  const filters: DeleteFilterCall[] = [];
+  spyOn(mock, 'filter').and.callFake((column: string, operator: string, value: DeleteFilterValue) => {
     filters.push({column, operator, value});
     return mock;
   });
@@ -39,12 +48,12 @@ function trackFilters(mock: ChainableQueryMock) {
 
 describe('SupabaseService - delete complex operations', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: SupabaseClientDouble;
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = getSupabaseClientDouble(service);
   });
   
   afterEach(() => {
@@ -53,7 +62,7 @@ describe('SupabaseService - delete complex operations', () => {
   
   describe('delete.module', () => {
     beforeEach(() => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'test-user'}));
+      mockUserSession(service, authUserFixture('test-user'));
     });
 
     it('should delete comments then the module itself', (done) => {
@@ -61,7 +70,7 @@ describe('SupabaseService - delete complex operations', () => {
       
       spyOn(supabaseClient, 'from').and.callFake((table: string) => {
         tablesAccessed.push(table);
-        return chainable({data: [{id: 42}], error: null});
+        return chainable<ModuleDeleteRow>(deletedRows([{id: 42}]));
       });
       
       service.delete.module(42).subscribe({
@@ -78,12 +87,12 @@ describe('SupabaseService - delete complex operations', () => {
     }, TEST_TIMEOUT);
 
     it('should scope deleted comments to the module entity id and type', (done) => {
-      const commentMock = chainable({data: null, error: null});
+      const commentMock = chainable<CommentDeleteRow>(successfulDelete);
       const commentFilters = trackFilters(commentMock);
 
       spyOn(supabaseClient, 'from').and.callFake((table: string) => {
         if (table === 'comments') return commentMock;
-        return chainable({data: [{id: 42}], error: null});
+        return chainable<ModuleDeleteRow>(deletedRows([{id: 42}]));
       });
 
       service.delete.module(42).subscribe({
@@ -108,9 +117,9 @@ describe('SupabaseService - delete complex operations', () => {
     }, TEST_TIMEOUT);
     
     it('should bust module caches', (done) => {
-      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: [{id: 1}], error: null}));
-      const bustedKeys: any[] = [];
-      service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
+      spyOn(supabaseClient, 'from').and.returnValue(chainable<ModuleDeleteRow>(deletedRows([{id: 1}])));
+      const bustedKeys: CachedEntity[] = [];
+      service.cacheResetter$.subscribe(keys => bustedKeys.push(...keys));
       
       service.delete.module(1).subscribe({
         next: () => {
@@ -128,7 +137,7 @@ describe('SupabaseService - delete complex operations', () => {
   
   describe('delete.patch', () => {
     beforeEach(() => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'test-user'}));
+      mockUserSession(service, authUserFixture('test-user'));
     });
 
     it('should delete module instances, patch, and comments in sequence', (done) => {
@@ -136,7 +145,7 @@ describe('SupabaseService - delete complex operations', () => {
       
       spyOn(supabaseClient, 'from').and.callFake((table: string) => {
         tablesAccessed.push(table);
-        return chainable({data: null, error: null});
+        return chainable<PatchDeleteRow>(successfulDelete);
       });
       
       service.delete.patch(5).subscribe({
@@ -154,12 +163,12 @@ describe('SupabaseService - delete complex operations', () => {
     }, TEST_TIMEOUT);
 
     it('should scope deleted comments to the patch entity id and type', (done) => {
-      const commentMock = chainable({data: null, error: null});
+      const commentMock = chainable<CommentDeleteRow>(successfulDelete);
       const commentFilters = trackFilters(commentMock);
 
       spyOn(supabaseClient, 'from').and.callFake((table: string) => {
         if (table === 'comments') return commentMock;
-        return chainable({data: null, error: null});
+        return chainable<PatchDeleteRow>(successfulDelete);
       });
 
       service.delete.patch(5).subscribe({
@@ -184,9 +193,9 @@ describe('SupabaseService - delete complex operations', () => {
     }, TEST_TIMEOUT);
     
     it('should bust patches cache', (done) => {
-      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: null}));
-      const bustedKeys: any[] = [];
-      service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
+      spyOn(supabaseClient, 'from').and.returnValue(chainable<PatchDeleteRow>(successfulDelete));
+      const bustedKeys: CachedEntity[] = [];
+      service.cacheResetter$.subscribe(keys => bustedKeys.push(...keys));
       
       service.delete.patch(5).subscribe({
         next: () => {
@@ -203,13 +212,13 @@ describe('SupabaseService - delete complex operations', () => {
   
   describe('delete.userPatch', () => {
     it('should delete instances, patch (scoped to user), and comments', (done) => {
-      const mockUser = {id: 'owner-1'};
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+      const mockUser = authUserFixture('owner-1');
+      mockUserSession(service, mockUser);
       
       const tablesAccessed: string[] = [];
       spyOn(supabaseClient, 'from').and.callFake((table: string) => {
         tablesAccessed.push(table);
-        return chainable({data: null, error: null});
+        return chainable<PatchDeleteRow>(successfulDelete);
       });
       
       service.delete.userPatch(3).subscribe({
@@ -227,15 +236,16 @@ describe('SupabaseService - delete complex operations', () => {
     }, TEST_TIMEOUT);
     
     it('should scope the patch delete to the current user', (done) => {
-      const mockUser = {id: 'owner-2'};
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+      const mockUser = authUserFixture('owner-2');
+      mockUserSession(service, mockUser);
       
-      const patchMock = chainable({data: null, error: null});
-      const filterSpy = spyOn(patchMock, 'filter').and.returnValue(patchMock);
+      const patchMock = chainable<PatchDeleteRow>(successfulDelete);
+      const filterSpy: jasmine.Spy<SupabaseQueryChain<PatchDeleteRow>['filter']> =
+        spyOn(patchMock, 'filter').and.returnValue(patchMock);
       
       spyOn(supabaseClient, 'from').and.callFake((table: string) => {
         if (table === 'patches') return patchMock;
-        return chainable({data: null, error: null});
+        return chainable<PatchModuleInstanceDeleteRow>(successfulDelete);
       });
       
       service.delete.userPatch(3).subscribe({
@@ -253,11 +263,12 @@ describe('SupabaseService - delete complex operations', () => {
   
   describe('delete.userRack', () => {
     it('should delete the rack scoped to the current user', (done) => {
-      const mockUser = {id: 'rack-owner'};
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+      const mockUser = authUserFixture('rack-owner');
+      mockUserSession(service, mockUser);
       
-      const mock = chainable({data: null, error: null});
-      const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
+      const mock = chainable<RackDeleteRow>(successfulDelete);
+      const filterSpy: jasmine.Spy<SupabaseQueryChain<RackDeleteRow>['filter']> =
+        spyOn(mock, 'filter').and.returnValue(mock);
       spyOn(supabaseClient, 'from').and.returnValue(mock);
       
       service.delete.userRack(9).subscribe({
@@ -274,12 +285,12 @@ describe('SupabaseService - delete complex operations', () => {
     }, TEST_TIMEOUT);
     
     it('should bust rackWithId cache', (done) => {
-      const mockUser = {id: 'rack-owner'};
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
-      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: null}));
+      const mockUser = authUserFixture('rack-owner');
+      mockUserSession(service, mockUser);
+      spyOn(supabaseClient, 'from').and.returnValue(chainable<RackDeleteRow>(successfulDelete));
       
-      const bustedKeys: any[] = [];
-      service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
+      const bustedKeys: CachedEntity[] = [];
+      service.cacheResetter$.subscribe(keys => bustedKeys.push(...keys));
       
       service.delete.userRack(9).subscribe({
         next: () => {
@@ -296,16 +307,9 @@ describe('SupabaseService - delete complex operations', () => {
 
   describe('delete.commentsForRack', () => {
     it('should scope deleted comments to the rack entity id and type', (done) => {
-      const rackCommentOwner: SimpleUserModel = {
-        id: 'rack-comment-owner',
-        email: undefined,
-        created_at: '2026-01-01T00:00:00.000Z',
-        updated_at: undefined
-      };
-      spyOn(service.auth, 'getUserSession$')
-        .and.returnValue(of(rackCommentOwner));
+      mockUserSession(service, authUserFixture('rack-comment-owner'));
 
-      const commentMock = chainable({data: null, error: null});
+      const commentMock = chainable<CommentDeleteRow>(successfulDelete);
       const commentFilters = trackFilters(commentMock);
       spyOn(supabaseClient, 'from').and.returnValue(commentMock);
 
