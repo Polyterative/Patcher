@@ -1,38 +1,135 @@
 import {
   fakeAsync,
+  TestBed,
   tick
 } from '@angular/core/testing';
 import {
+  Observable,
   of,
   Subject,
   throwError
 } from 'rxjs';
+import { MinimalManufacturer } from 'src/app/models/manufacturer';
 import { MinimalModule } from 'src/app/models/module';
+import { Standard } from 'src/app/models/standard';
 import {
   Tag,
+  TagSuggestionGroup,
   TagType
 } from 'src/app/models/tag';
+import { AnalyticsService } from '../backbone/analytics-integration/analytics.service';
+import { CachedEntity } from '../backend/supabase.cache';
+import { SupabaseService } from '../backend/supabase.service';
+import { IdNameOption } from './module-browser-data.models';
 import { ModuleBrowserDataService } from './module-browser-data.service';
 
 
 describe('ModuleBrowserDataService', () => {
+  type ModulesQuery = (
+    from?: number,
+    to?: number,
+    name?: string,
+    orderBy?: string | null,
+    orderDirection?: string,
+    manufacturerId?: number,
+    withHP?: number,
+    withHpCondition?: '=' | '>' | '<' | '>=' | '<=' | '!=' | undefined,
+    standard?: number | undefined,
+    description?: string,
+    onlyPublic?: boolean,
+    tagIds?: number[],
+    includeCount?: boolean
+  ) => Observable<ModulesBackendResult>;
+  type ModulesQueryArgs = Parameters<ModulesQuery>;
+  type ManufacturersQuery = (
+    from?: number,
+    to?: number,
+    columns?: string,
+    orderBy?: string
+  ) => Observable<ManufacturersBackendResult>;
+  type AllTagsQuery = () => Observable<Tag[]>;
+  type CacheResetterNext = (keys: CachedEntity[]) => void;
+  type ModuleTag = MinimalModule['tags'][number];
+  type RuntimeManufacturerControl = {
+    setValue(value: string | IdNameOption): void;
+  };
+
+  interface ModulesBackendResult {
+    data: MinimalModule[] | null;
+    count: number | null;
+    error?: unknown;
+  }
+
+  interface ManufacturersBackendResult {
+    data: MinimalManufacturer[] | null;
+    count?: number | null;
+    error?: unknown;
+  }
+
+  interface BackendDouble {
+    GET: {
+      manufacturers: jasmine.Spy<ManufacturersQuery>;
+      modules: jasmine.Spy<ModulesQuery>;
+    };
+    get: {
+      allTags: jasmine.Spy<AllTagsQuery>;
+    };
+    cacheResetter$: {
+      next: jasmine.Spy<CacheResetterNext>;
+    };
+  }
+
+  interface AnalyticsDouble {
+    capture: jasmine.Spy<AnalyticsService['capture']>;
+    identify: jasmine.Spy<AnalyticsService['identify']>;
+    reset: jasmine.Spy<AnalyticsService['reset']>;
+  }
+
   function build(options: {allTags?: Tag[]} = {}) {
-    const analytics = jasmine.createSpyObj('AnalyticsService', ['capture', 'identify', 'reset']);
+    const analytics = {
+      capture: jasmine.createSpy<AnalyticsService['capture']>('capture'),
+      identify: jasmine.createSpy<AnalyticsService['identify']>('identify'),
+      reset: jasmine.createSpy<AnalyticsService['reset']>('reset')
+    } satisfies AnalyticsDouble;
     const backend = {
       GET: {
-        manufacturers: jasmine.createSpy('GET.manufacturers').and.returnValue(of({data: []})),
-        modules: jasmine.createSpy('GET.modules').and.returnValue(of({data: [], count: 0}))
+        manufacturers: jasmine.createSpy<ManufacturersQuery>('GET.manufacturers').and.returnValue(of({data: []})),
+        modules: jasmine.createSpy<ModulesQuery>('GET.modules').and.returnValue(of({data: [], count: 0}))
       },
       get: {
-        allTags: jasmine.createSpy('get.allTags').and.returnValue(of(options.allTags ?? []))
+        allTags: jasmine.createSpy<AllTagsQuery>('get.allTags').and.returnValue(of(options.allTags ?? []))
       },
-      cacheResetter$: {next: jasmine.createSpy('cacheResetter$.next')}
-    };
-    const service = new ModuleBrowserDataService(backend as any, analytics as any);
+      cacheResetter$: {next: jasmine.createSpy<CacheResetterNext>('cacheResetter$.next')}
+    } satisfies BackendDouble;
+    TestBed.configureTestingModule({
+      providers: [
+        {provide: SupabaseService, useValue: backend},
+        {provide: AnalyticsService, useValue: analytics}
+      ]
+    });
+    const service = new ModuleBrowserDataService(
+      TestBed.inject(SupabaseService),
+      TestBed.inject(AnalyticsService)
+    );
     return {service, backend, analytics};
   }
 
+  function tagFixture(id: number, name: string, type = TagType.Utility): Tag {
+    return {id, name, type};
+  }
+
+  function moduleTag(tag: Tag): ModuleTag {
+    return {
+      id: tag.id,
+      tag,
+      voteCount: []
+    };
+  }
+
   function moduleFactory(overrides: Partial<MinimalModule> = {}): MinimalModule {
+    const defaultManufacturer: MinimalManufacturer = {id: 1, name: 'Maker'};
+    const defaultStandard: Standard = {id: 0, name: '3U Doepfer'};
+
     return {
       id: overrides.id ?? 1,
       name: overrides.name ?? 'Module',
@@ -42,14 +139,18 @@ describe('ModuleBrowserDataService', () => {
       created: overrides.created ?? '2026-01-01T00:00:00.000Z',
       updated: overrides.updated ?? '2026-01-01T00:00:00.000Z',
       manufacturerId: overrides.manufacturerId ?? 1,
-      manufacturer: overrides.manufacturer ?? ({id: 1, name: 'Maker'} as any),
-      standard: overrides.standard ?? ({id: 0, name: '3U Doepfer'} as any),
+      manufacturer: overrides.manufacturer ?? defaultManufacturer,
+      standard: overrides.standard ?? defaultStandard,
       tags: overrides.tags ?? [],
       panels: overrides.panels ?? [],
       ins: overrides.ins,
       outs: overrides.outs,
       possessionKind: overrides.possessionKind,
     };
+  }
+
+  function moduleCallArgs(backend: BackendDouble): ModulesQueryArgs {
+    return backend.GET.modules.calls.mostRecent().args;
   }
 
   it('initializes sort$ to updated/desc', () => {
@@ -67,16 +168,16 @@ describe('ModuleBrowserDataService', () => {
     expect(backend.cacheResetter$.next).toHaveBeenCalledWith(['manufacturers']);
   });
 
-  function sortArgs(backend: any): [string, string] {
-    const args = backend.GET.modules.calls.mostRecent().args as any[];
+  function sortArgs(backend: BackendDouble): [ModulesQueryArgs[3], ModulesQueryArgs[4]] {
+    const args = moduleCallArgs(backend);
     return [args[3], args[4]];
   }
 
   function searchPerformedCalls(
-    analytics: { capture: jasmine.Spy }
-  ): unknown[][] {
+    analytics: AnalyticsDouble
+  ): Parameters<AnalyticsService['capture']>[] {
     return analytics.capture.calls.allArgs()
-      .filter(([eventName]: [string]) => eventName === 'search.performed');
+      .filter(([eventName]) => eventName === 'search.performed');
   }
 
   it('calls backend with updated/desc when updateModulesList$ fires', () => {
@@ -172,7 +273,7 @@ describe('ModuleBrowserDataService', () => {
 
     tick(750);
 
-    const args = backend.GET.modules.calls.mostRecent().args as any[];
+    const args = moduleCallArgs(backend);
     expect(args[2]).toBe('rings');
     service.ngOnDestroy();
   }));
@@ -204,7 +305,7 @@ describe('ModuleBrowserDataService', () => {
 
     tick(750);
 
-    const args = backend.GET.modules.calls.mostRecent().args as any[];
+    const args = moduleCallArgs(backend);
     expect(args[9]).toBe('analog filter');
     service.ngOnDestroy();
   }));
@@ -295,7 +396,10 @@ describe('ModuleBrowserDataService', () => {
 
     expect(service.modulesList$.value?.map(module => module.name)).toEqual(['Recovered']);
     expect(service.serversideAdditionalData.itemsCount$.value).toBe(1);
-    expect(console.error).toHaveBeenCalledWith('[module-browser] Failed to load modules list', jasmine.any(Error));
+    const consoleErrorArgs = (console.error as jasmine.Spy<typeof console.error>).calls.mostRecent().args;
+    expect(consoleErrorArgs[0]).toBe('[module-browser] Failed to load modules list');
+    expect(consoleErrorArgs[1]).toBeInstanceOf(Error);
+    expect((consoleErrorArgs[1] as Error).message).toBe('still offline');
     expect(console.error).toHaveBeenCalledTimes(1);
     expect(backend.cacheResetter$.next.calls.allArgs()).toEqual([[['modules']]]);
     service.ngOnDestroy();
@@ -313,7 +417,7 @@ describe('ModuleBrowserDataService', () => {
   it('loadMore$ appends results and advances skip', fakeAsync(() => {
     const {service, backend} = build();
     // simulate first page already loaded (25 modules)
-    const firstBatch = Array.from({length: 25}, (_, i) => ({id: i + 1})) as any[];
+    const firstBatch = Array.from({length: 25}, (_, i) => moduleFactory({id: i + 1}));
     const secondBatch = Array.from({length: 25}, (_, i) => moduleFactory({id: i + 26, name: `Module ${ i + 26 }`}));
     backend.GET.modules.and.returnValue(of({data: secondBatch, count: null}));
     service.modulesList$.next(firstBatch);
@@ -329,14 +433,14 @@ describe('ModuleBrowserDataService', () => {
 
   it('skips exact count on load more because the first page already knows the total', fakeAsync(() => {
     const {service, backend} = build();
-    const firstBatch = Array.from({length: 25}, (_, i) => ({id: i + 1})) as any[];
+    const firstBatch = Array.from({length: 25}, (_, i) => moduleFactory({id: i + 1}));
     service.modulesList$.next(firstBatch);
     service.serversideAdditionalData.itemsCount$.next(45);
 
     service.loadMore$.next();
     tick();
 
-    const args = backend.GET.modules.calls.mostRecent().args as any[];
+    const args = moduleCallArgs(backend);
     expect(args[0]).toBe(25);
     expect(args[1]).toBe(49);
     expect(args[12]).toBeFalse();
@@ -366,7 +470,7 @@ describe('ModuleBrowserDataService', () => {
     const {service, backend} = build();
     service.fields.tags.control.setValue([{id: '3', name: 'Filter'}, {id: '7', name: 'Drum'}]);
     tick(750);
-    const args = backend.GET.modules.calls.mostRecent().args as any[];
+    const args = moduleCallArgs(backend);
     // tagIds is the 12th argument (index 11)
     expect(args[11]).toEqual([3, 7]);
     service.ngOnDestroy();
@@ -417,7 +521,7 @@ describe('ModuleBrowserDataService', () => {
     const {service, backend} = build();
     service.fields.tags.control.setValue([]);
     tick(750);
-    const args = backend.GET.modules.calls.mostRecent().args as any[];
+    const args = moduleCallArgs(backend);
     expect(args[11]).toBeUndefined();
     service.ngOnDestroy();
   }));
@@ -547,7 +651,7 @@ describe('ModuleBrowserDataService', () => {
 
   it('applies owned-mode hp sorting when only the default sort id still matches', () => {
     const {service} = build();
-    service.fields.order.control.setValue({id: 'updated', name: 'Recently changed'} as any);
+    service.fields.order.control.setValue({id: 'updated', name: 'Recently changed'});
 
     service.applyOwnedModeDefaultOrder();
 
@@ -556,7 +660,8 @@ describe('ModuleBrowserDataService', () => {
 
   it('filters owned modules by the active manufacturer, tags, and hp rules and sorts by hp ascending', fakeAsync(() => {
     const {service} = build();
-    service.fields.manufacturers.control.setValue({id: '2', name: 'Maker 2'} as any);
+    (service.fields.manufacturers.control as unknown as RuntimeManufacturerControl)
+      .setValue({id: '2', name: 'Maker 2'});
     service.fields.tags.control.setValue([{id: '7', name: 'Filter'}]);
     service.fields.hp.control.setValue('10');
     service.fields.hpCondition.control.setValue({id: '>=', name: 'more or exactly'});
@@ -569,28 +674,28 @@ describe('ModuleBrowserDataService', () => {
         name: 'Too Small',
         hp: 8,
         manufacturerId: 2,
-        tags: [{id: 7, tag: {id: 7, name: 'Filter'} as any, voteCount: []}]
+        tags: [moduleTag(tagFixture(7, 'Filter'))]
       }),
       moduleFactory({
         id: 2,
         name: 'Keep Me First',
         hp: 10,
         manufacturerId: 2,
-        tags: [{id: 7, tag: {id: 7, name: 'Filter'} as any, voteCount: []}]
+        tags: [moduleTag(tagFixture(7, 'Filter'))]
       }),
       moduleFactory({
         id: 3,
         name: 'Wrong Maker',
         hp: 12,
         manufacturerId: 1,
-        tags: [{id: 7, tag: {id: 7, name: 'Filter'} as any, voteCount: []}]
+        tags: [moduleTag(tagFixture(7, 'Filter'))]
       }),
       moduleFactory({
         id: 4,
         name: 'Keep Me Second',
         hp: 14,
         manufacturerId: 2,
-        tags: [{id: 7, tag: {id: 7, name: 'Filter'} as any, voteCount: []}]
+        tags: [moduleTag(tagFixture(7, 'Filter'))]
       }),
     ]);
 
@@ -672,7 +777,7 @@ describe('ModuleBrowserDataService', () => {
         {id: 3, name: 'Warm', type: TagType.Character}
       ]
     });
-    let groupedTags: any[] | undefined;
+    let groupedTags: TagSuggestionGroup[] | undefined;
     service.groupedFilterTags$.subscribe((value) => (groupedTags = value));
 
     tick(300);
@@ -732,15 +837,15 @@ describe('ModuleBrowserDataService', () => {
           id: 1,
           name: 'Both Tags',
           tags: [
-            {id: 1, tag: {id: 1, name: 'Oscillator'} as any, voteCount: []},
-            {id: 2, tag: {id: 2, name: 'Analog'} as any, voteCount: []}
+            moduleTag(tagFixture(1, 'Oscillator')),
+            moduleTag(tagFixture(2, 'Analog'))
           ]
         }),
         moduleFactory({
           id: 2,
           name: 'One Tag',
           tags: [
-            {id: 1, tag: {id: 1, name: 'Oscillator'} as any, voteCount: []}
+            moduleTag(tagFixture(1, 'Oscillator'))
           ]
         })
       ],
@@ -764,14 +869,14 @@ describe('ModuleBrowserDataService', () => {
           id: 1,
           name: 'Passive Only',
           tags: [
-            {id: 1, tag: {id: 1, name: 'Passive'} as any, voteCount: []}
+            moduleTag(tagFixture(1, 'Passive'))
           ]
         }),
         moduleFactory({
           id: 2,
           name: 'Power Only',
           tags: [
-            {id: 2, tag: {id: 2, name: 'Power'} as any, voteCount: []}
+            moduleTag(tagFixture(2, 'Power'))
           ]
         })
       ],
@@ -815,15 +920,15 @@ describe('ModuleBrowserDataService', () => {
           id: 1,
           name: 'Both Tags',
           tags: [
-            {id: 1, tag: {id: 1, name: 'Passive'} as any, voteCount: []},
-            {id: 2, tag: {id: 2, name: 'Power'} as any, voteCount: []}
+            moduleTag(tagFixture(1, 'Passive')),
+            moduleTag(tagFixture(2, 'Power'))
           ]
         }),
         moduleFactory({
           id: 2,
           name: 'Power Only',
           tags: [
-            {id: 2, tag: {id: 2, name: 'Power'} as any, voteCount: []}
+            moduleTag(tagFixture(2, 'Power'))
           ]
         })
       ],
@@ -851,20 +956,20 @@ describe('ModuleBrowserDataService', () => {
       moduleFactory({
         id: 3,
         name: 'Zulu',
-        tags: [{id: 1, tag: {id: 1, name: 'Oscillator'} as any, voteCount: []}]
+        tags: [moduleTag(tagFixture(1, 'Oscillator'))]
       }),
       moduleFactory({
         id: 1,
         name: 'Alpha',
         tags: [
-          {id: 1, tag: {id: 1, name: 'Oscillator'} as any, voteCount: []},
-          {id: 2, tag: {id: 2, name: 'Analog'} as any, voteCount: []}
+          moduleTag(tagFixture(1, 'Oscillator')),
+          moduleTag(tagFixture(2, 'Analog'))
         ]
       }),
       moduleFactory({
         id: 2,
         name: 'Beta',
-        tags: [{id: 1, tag: {id: 1, name: 'Oscillator'} as any, voteCount: []}]
+        tags: [moduleTag(tagFixture(1, 'Oscillator'))]
       })
     ]);
 
