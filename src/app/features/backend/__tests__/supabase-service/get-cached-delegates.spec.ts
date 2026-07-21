@@ -1,34 +1,86 @@
+import type { PostgrestError } from '@supabase/supabase-js';
+import type { DbComment } from 'src/app/models/comment';
+import type {
+  PatchModuleInstance
+} from 'src/app/models/connection';
+import type { UserModulePossessionKind } from 'src/app/models/module';
 import {
-  firstValueFrom,
-  of
+  firstValueFrom
 } from 'rxjs';
 import { SupabaseService } from '../../supabase.service';
+import type { SupabaseTableRow } from '../../supabase-db.types';
 import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest,
   TEST_TIMEOUT
 } from './test-setup';
+import {
+  SupabaseQueryChain,
+  authUserFixture,
+  chainable,
+  getSupabaseClientDouble,
+  mockUserSession,
+  type QueryChainResult,
+  type QueryCountRowsResult,
+  type QueryListRowsResult,
+  type QuerySingleRowResult,
+  type SupabaseClientDouble
+} from './supabase-query-test-doubles';
 
 
-function chainable(resolveValue: any = {data: null, error: null}) {
-  const m: any = {};
-  ['select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit', 'single',
-    'insert', 'update', 'delete', 'upsert', 'ilike'].forEach(method => {
-    m[method] = () => m;
-  });
-  m.then = (res: Function, rej?: Function) =>
-    Promise.resolve(resolveValue).then(res as any, rej as any);
-  return m;
+type RackIdRow = Pick<SupabaseTableRow<'racks'>, 'id' | 'name'>;
+type CommentRow = Pick<DbComment, 'content' | 'id'>;
+type CommentsObservableResult = Pick<QueryCountRowsResult<CommentRow>, 'count' | 'data'>;
+type ManufacturerRow = Pick<SupabaseTableRow<'manufacturers'>, 'id' | 'name'>;
+type PatchConnectionRow = Pick<SupabaseTableRow<'patch_connections'>, 'a' | 'b' | 'patchid'>;
+type ModuleIdRow = Pick<SupabaseTableRow<'modules'>, 'id' | 'name'>;
+type PatchIdRow = Pick<SupabaseTableRow<'patches'>, 'id' | 'name'>;
+type PublicAuthorGateFixture = {
+  author_profile_gate: {
+    public: boolean;
+  };
+};
+type RackListQueryRow = RackIdRow & PublicAuthorGateFixture;
+type CurrentUserModuleSummaryRow = {
+  id: number;
+  name: string;
+};
+type CurrentUserModulePossessionRow = {
+  collectionUpdated: string | null;
+  kind: UserModulePossessionKind;
+  module: CurrentUserModuleSummaryRow;
+};
+type CurrentUserModuleResultRow = CurrentUserModuleSummaryRow & {
+  collectionUpdated: string | null;
+  possessionKind: UserModulePossessionKind;
+};
+type CurrentUserCommentRow = Pick<SupabaseTableRow<'comments'>, 'content' | 'id'>;
+
+class MutableResultQueryChain<Row> extends SupabaseQueryChain<Row> {
+  constructor(private currentResponse: QueryChainResult<Row>) {
+    super(currentResponse);
+  }
+
+  setResponse(response: QueryChainResult<Row>): void {
+    this.currentResponse = response;
+  }
+
+  override then<TResult1 = QueryChainResult<Row>, TResult2 = never>(
+    onfulfilled?: ((value: QueryChainResult<Row>) => TResult1 | PromiseLike<TResult1>) | null,
+    onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+  ): PromiseLike<TResult1 | TResult2> {
+    return Promise.resolve(this.currentResponse).then(onfulfilled, onrejected);
+  }
 }
 
 describe('SupabaseService - GET cached delegates', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: SupabaseClientDouble;
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = getSupabaseClientDouble(service);
   });
   
   afterEach(() => {
@@ -37,15 +89,15 @@ describe('SupabaseService - GET cached delegates', () => {
   
   describe('GET.rackWithId', () => {
     it('should return rack data for the given id', (done) => {
-      const mockRack = {data: {id: 7, name: 'Studio Rack'}, error: null};
-      spyOn(supabaseClient, 'from').and.returnValue(chainable(mockRack));
+      const mockRack = {data: {id: 7, name: 'Studio Rack'}, error: null} satisfies QuerySingleRowResult<RackIdRow>;
+      spyOn(supabaseClient, 'from').and.returnValue(chainable<RackIdRow>(mockRack));
       
       service.GET.rackWithId(7).subscribe({
-        next: (result: any) => {
+        next: (result: QuerySingleRowResult<RackIdRow>) => {
           expect(result.data.id).toBe(7);
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -55,15 +107,15 @@ describe('SupabaseService - GET cached delegates', () => {
 
   describe('GET.publicRackWithId', () => {
     it('should return rack data for the given id', (done) => {
-      const mockRack = {data: {id: 8, name: 'Public Rack'}, error: null};
-      spyOn(supabaseClient, 'from').and.returnValue(chainable(mockRack));
+      const mockRack = {data: {id: 8, name: 'Public Rack'}, error: null} satisfies QuerySingleRowResult<RackIdRow>;
+      spyOn(supabaseClient, 'from').and.returnValue(chainable<RackIdRow>(mockRack));
 
       service.GET.publicRackWithId(8).subscribe({
-        next: (result: any) => {
+        next: (result: QuerySingleRowResult<RackIdRow>) => {
           expect(result.data.id).toBe(8);
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -73,15 +125,15 @@ describe('SupabaseService - GET cached delegates', () => {
   
   describe('GET.comments', () => {
     it('should return comments for the given entity', (done) => {
-      const mockComments = {data: [{id: 1, content: 'Nice patch!'}], error: null};
-      spyOn(supabaseClient, 'from').and.returnValue(chainable(mockComments));
+      const mockComments = {data: [{id: 1, content: 'Nice patch!'}], count: null, error: null} satisfies QueryCountRowsResult<CommentRow>;
+      spyOn(supabaseClient, 'from').and.returnValue(chainable<CommentRow>(mockComments));
       
       service.GET.comments(42, 1).subscribe({
-        next: (result: any) => {
+        next: (result: CommentsObservableResult) => {
           expect(result).toBeDefined();
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -91,15 +143,19 @@ describe('SupabaseService - GET cached delegates', () => {
   
   describe('GET.manufacturers', () => {
     it('should return manufacturers list', (done) => {
-      const mockMfrs = {data: [{id: 1, name: 'Moog'}, {id: 2, name: 'Doepfer'}], error: null};
-      spyOn(supabaseClient, 'from').and.returnValue(chainable(mockMfrs));
+      const mockMfrs = {
+        data: [{id: 1, name: 'Moog'}, {id: 2, name: 'Doepfer'}],
+        count: null,
+        error: null
+      } satisfies QueryCountRowsResult<ManufacturerRow>;
+      spyOn(supabaseClient, 'from').and.returnValue(chainable<ManufacturerRow>(mockMfrs));
       
       service.GET.manufacturers().subscribe({
-        next: (result: any) => {
+        next: (result: QueryCountRowsResult<ManufacturerRow>) => {
           expect(result).toBeDefined();
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -107,7 +163,7 @@ describe('SupabaseService - GET cached delegates', () => {
     }, TEST_TIMEOUT);
 
     it('should fetch additional manufacturer pages when the first page is full', (done) => {
-      const responses = [
+      const responses: QueryCountRowsResult<ManufacturerRow>[] = [
         {
           data: Array.from({length: 500}, (_, index) => ({id: index + 1, name: `Maker ${ index + 1 }`})),
           count: 710,
@@ -125,27 +181,24 @@ describe('SupabaseService - GET cached delegates', () => {
       const seenRanges: Array<[number, number]> = [];
 
       spyOn(supabaseClient, 'from').and.callFake(() => {
-        const mock = chainable();
-        let currentResponse = {data: [], count: 0, error: null};
+        const mock = new MutableResultQueryChain<ManufacturerRow>({data: [], count: 0, error: null});
         spyOn(mock, 'range').and.callFake((from: number, to: number) => {
           seenRanges.push([from, to]);
-          currentResponse = responses.shift() ?? {data: [], count: 710, error: null};
+          mock.setResponse(responses.shift() ?? {data: [], count: 710, error: null});
           return mock;
         });
-        mock.then = (res: Function, rej?: Function) =>
-          Promise.resolve(currentResponse).then(res as any, rej as any);
         return mock;
       });
 
       service.GET.manufacturers(0, 9999, 'id,name').subscribe({
-        next: (result: any) => {
+        next: (result: QueryCountRowsResult<ManufacturerRow>) => {
           expect(seenRanges).toEqual([[0, 499], [500, 999]]);
-          expect(result.data.length).toBe(502);
-          expect(result.data[500].name).toBe('TLM Audio');
+          expect(result.data?.length).toBe(502);
+          expect(result.data?.[500].name).toBe('TLM Audio');
           expect(result.count).toBe(710);
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -155,15 +208,15 @@ describe('SupabaseService - GET cached delegates', () => {
   
   describe('GET.patchConnections', () => {
     it('should return patch connections for the given patchid', (done) => {
-      const mockConns = {data: [{id: 1, patchid: 3, a: 10, b: 20}], error: null};
-      spyOn(supabaseClient, 'from').and.returnValue(chainable(mockConns));
+      const mockConns = {data: [{patchid: 3, a: 10, b: 20}], error: null} satisfies QueryListRowsResult<PatchConnectionRow>;
+      spyOn(supabaseClient, 'from').and.returnValue(chainable<PatchConnectionRow>(mockConns));
       
       service.GET.patchConnections(3).subscribe({
-        next: (result: any) => {
+        next: (result: PatchConnectionRow[] | null) => {
           expect(result).toBeDefined();
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -173,15 +226,18 @@ describe('SupabaseService - GET cached delegates', () => {
   
   describe('GET.patchModuleInstances', () => {
     it('should return patch module instances for the given patch_id', (done) => {
-      const mockInstances = {data: [{id: 1, patch_id: 5, module_id: 10, instance_label: 'VCO'}], error: null};
-      spyOn(supabaseClient, 'from').and.returnValue(chainable(mockInstances));
+      const mockInstances = {
+        data: [{id: 1, patch_id: 5, module_id: 10, instance_label: 'VCO'}],
+        error: null
+      } satisfies QueryListRowsResult<PatchModuleInstance>;
+      spyOn(supabaseClient, 'from').and.returnValue(chainable<PatchModuleInstance>(mockInstances));
       
       service.GET.patchModuleInstances(5).subscribe({
-        next: (result: any) => {
+        next: (result: PatchModuleInstance[]) => {
           expect(result).toBeDefined();
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -191,15 +247,15 @@ describe('SupabaseService - GET cached delegates', () => {
   
   describe('GET.moduleWithId', () => {
     it('should return module data for the given id', (done) => {
-      const mockModule = {data: {id: 11, name: 'Ripples'}, error: null};
-      spyOn(supabaseClient, 'from').and.returnValue(chainable(mockModule));
+      const mockModule = {data: {id: 11, name: 'Ripples'}, error: null} satisfies QuerySingleRowResult<ModuleIdRow>;
+      spyOn(supabaseClient, 'from').and.returnValue(chainable<ModuleIdRow>(mockModule));
       
       service.GET.moduleWithId(11).subscribe({
-        next: (result: any) => {
+        next: (result: QuerySingleRowResult<ModuleIdRow>) => {
           expect(result).toBeDefined();
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -209,15 +265,15 @@ describe('SupabaseService - GET cached delegates', () => {
   
   describe('GET.patches', () => {
     it('should return patches list on default call', (done) => {
-      const mockPatches = {data: [{id: 1, name: 'Ambient 1'}], count: 1, error: null};
-      spyOn(supabaseClient, 'from').and.returnValue(chainable(mockPatches));
+      const mockPatches = {data: [{id: 1, name: 'Ambient 1'}], count: 1, error: null} satisfies QueryCountRowsResult<PatchIdRow>;
+      spyOn(supabaseClient, 'from').and.returnValue(chainable<PatchIdRow>(mockPatches));
       
       service.GET.patches().subscribe({
-        next: (result: any) => {
+        next: (result: QueryCountRowsResult<PatchIdRow>) => {
           expect(result).toBeDefined();
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -225,25 +281,25 @@ describe('SupabaseService - GET cached delegates', () => {
     }, TEST_TIMEOUT);
     
     it('should apply the name filter client-side when name is provided', (done) => {
-      const mock = chainable({
+      const mock = chainable<PatchIdRow>({
         data: [
           {id: 1, name: 'Ambient Wash'},
           {id: 2, name: 'Perc Loop'}
         ],
         count: 2,
         error: null
-      });
+      } satisfies QueryCountRowsResult<PatchIdRow>);
       const ilikeSpy = spyOn(mock, 'ilike').and.callThrough();
       spyOn(supabaseClient, 'from').and.returnValue(mock);
       
       service.GET.patches(0, 10, 'Ambient').subscribe({
-        next: (result: any) => {
+        next: (result: QueryCountRowsResult<PatchIdRow>) => {
           expect(ilikeSpy).not.toHaveBeenCalled();
           expect(result.count).toBe(1);
           expect(result.data).toEqual([{id: 1, name: 'Ambient Wash'}]);
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -253,15 +309,15 @@ describe('SupabaseService - GET cached delegates', () => {
 
   describe('GET.publicPatchWithId', () => {
     it('should return patch data for the given id', (done) => {
-      const mockPatch = {data: {id: 3, name: 'Public Patch'}, error: null};
-      spyOn(supabaseClient, 'from').and.returnValue(chainable(mockPatch));
+      const mockPatch = {data: {id: 3, name: 'Public Patch'}, error: null} satisfies QuerySingleRowResult<PatchIdRow>;
+      spyOn(supabaseClient, 'from').and.returnValue(chainable<PatchIdRow>(mockPatch));
 
       service.GET.publicPatchWithId(3).subscribe({
-        next: (result: any) => {
+        next: (result: QuerySingleRowResult<PatchIdRow>) => {
           expect(result.data.id).toBe(3);
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -269,7 +325,7 @@ describe('SupabaseService - GET cached delegates', () => {
     }, TEST_TIMEOUT);
 
     it('should not join the author visibility gate for public patch details', (done) => {
-      const mock = chainable({data: {id: 3, name: 'Public Patch'}, error: null});
+      const mock = chainable<PatchIdRow>({data: {id: 3, name: 'Public Patch'}, error: null} satisfies QuerySingleRowResult<PatchIdRow>);
       const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
       spyOn(supabaseClient, 'from').and.returnValue(mock);
 
@@ -278,7 +334,7 @@ describe('SupabaseService - GET cached delegates', () => {
           expect(selectSpy.calls.mostRecent().args[0]).not.toContain('author_profile_gate:authorid!inner(public)');
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -288,15 +344,19 @@ describe('SupabaseService - GET cached delegates', () => {
   
   describe('GET.racksMinimal', () => {
     it('should return racks list on default call', (done) => {
-      const mockRacks = {data: [{id: 1, name: 'My Rack'}], count: 1, error: null};
-      spyOn(supabaseClient, 'from').and.returnValue(chainable(mockRacks));
+      const mockRacks = {
+        data: [{id: 1, name: 'My Rack', author_profile_gate: {public: true}}],
+        count: 1,
+        error: null
+      } satisfies QueryCountRowsResult<RackListQueryRow>;
+      spyOn(supabaseClient, 'from').and.returnValue(chainable<RackListQueryRow>(mockRacks));
       
       service.GET.racksMinimal().subscribe({
-        next: (result: any) => {
+        next: (result: QueryCountRowsResult<RackIdRow>) => {
           expect(result).toBeDefined();
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -304,25 +364,25 @@ describe('SupabaseService - GET cached delegates', () => {
     }, TEST_TIMEOUT);
     
     it('should apply the name filter client-side when name is provided', (done) => {
-      const mock = chainable({
+      const mock = chainable<RackListQueryRow>({
         data: [
           {id: 1, name: 'Studio Rack', author_profile_gate: {public: true}},
           {id: 2, name: 'Performance Rack', author_profile_gate: {public: true}}
         ],
         count: 2,
         error: null
-      });
+      } satisfies QueryCountRowsResult<RackListQueryRow>);
       const ilikeSpy = spyOn(mock, 'ilike').and.callThrough();
       spyOn(supabaseClient, 'from').and.returnValue(mock);
       
       service.GET.racksMinimal(0, undefined, 'studio').subscribe({
-        next: (result: any) => {
+        next: (result: QueryCountRowsResult<RackIdRow>) => {
           expect(ilikeSpy).not.toHaveBeenCalled();
           expect(result.count).toBe(1);
           expect(result.data).toEqual([{id: 1, name: 'Studio Rack'}]);
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -332,20 +392,15 @@ describe('SupabaseService - GET cached delegates', () => {
   
   describe('GET.currentUserModules', () => {
     it('falls back by default and throws in strict mode when Supabase returns an error response for current user modules', async () => {
-      const mockUser = {
-        id: 'current-user-modules-error',
-        email: 'test@example.com',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
       const transientError = {
         code: 'PGRST003',
         details: null,
         hint: null,
-        message: 'Service temporarily unavailable'
-      };
-      spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
-      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: transientError}));
+        message: 'Service temporarily unavailable',
+        name: 'PostgrestError'
+      } satisfies PostgrestError;
+      mockUserSession(service, authUserFixture('current-user-modules-error'));
+      spyOn(supabaseClient, 'from').and.returnValue(chainable<CurrentUserModulePossessionRow>({data: null, error: transientError}));
 
       await expectAsync(firstValueFrom(
         service.GET.currentUserModules(false, true, {key: 'collectionUpdated', direction: 'asc'})
@@ -357,14 +412,10 @@ describe('SupabaseService - GET cached delegates', () => {
     });
 
     it('returns an empty array for successful empty current user module responses', async () => {
-      const mockUser = {
-        id: 'current-user-modules-empty',
-        email: 'test@example.com',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-      spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
-      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: [], error: null}));
+      mockUserSession(service, authUserFixture('current-user-modules-empty'));
+      spyOn(supabaseClient, 'from').and.returnValue(
+        chainable<CurrentUserModulePossessionRow>({data: [], error: null} satisfies QueryListRowsResult<CurrentUserModulePossessionRow>)
+      );
 
       await expectAsync(firstValueFrom(
         service.GET.currentUserModules(false, false, {key: 'collectionUpdated', direction: 'desc'})
@@ -372,28 +423,28 @@ describe('SupabaseService - GET cached delegates', () => {
     });
 
     it('should return current user modules with collectionUpdated metadata', (done) => {
-      const mockUser = {id: 'u1'};
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+      mockUserSession(service, authUserFixture('u1'));
       
       spyOn(supabaseClient, 'from').and.returnValue(
-        chainable({
+        chainable<CurrentUserModulePossessionRow>({
           data: [
             {
               collectionUpdated: '2026-02-25T12:00:00.000Z',
+              kind: 'HAS',
               module: {id: 1, name: 'VCO'}
             }
           ],
           error: null
-        })
+        } satisfies QueryListRowsResult<CurrentUserModulePossessionRow>)
       );
       
       service.GET.currentUserModules().subscribe({
-        next: (result: any) => {
+        next: (result: CurrentUserModuleResultRow[]) => {
           expect(result).toBeDefined();
           expect(result[0].collectionUpdated).toBe('2026-02-25T12:00:00.000Z');
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -401,10 +452,12 @@ describe('SupabaseService - GET cached delegates', () => {
     }, TEST_TIMEOUT);
     
     it('should apply whitelisted backend module name ordering when requested', (done) => {
-      const mockUser = {id: 'u1'};
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+      mockUserSession(service, authUserFixture('u1'));
       
-      const query = chainable({data: [{collectionUpdated: null, module: {id: 1, name: 'VCO'}}], error: null});
+      const query = chainable<CurrentUserModulePossessionRow>({
+        data: [{collectionUpdated: null, kind: 'HAS', module: {id: 1, name: 'VCO'}}],
+        error: null
+      } satisfies QueryListRowsResult<CurrentUserModulePossessionRow>);
       const orderSpy = spyOn(query, 'order').and.returnValue(query);
       spyOn(supabaseClient, 'from').and.returnValue(query);
       
@@ -418,7 +471,7 @@ describe('SupabaseService - GET cached delegates', () => {
           expect(hasUserModulesUpdatedOrdering).toBeFalse();
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
@@ -428,17 +481,18 @@ describe('SupabaseService - GET cached delegates', () => {
   
   describe('GET.currentUserComments', () => {
     it('should return current user comments', (done) => {
-      const mockUser = {id: 'u2'};
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+      mockUserSession(service, authUserFixture('u2'));
       
-      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: [{id: 1, content: 'Hello'}], error: null}));
+      spyOn(supabaseClient, 'from').and.returnValue(
+        chainable<CurrentUserCommentRow>({data: [{id: 1, content: 'Hello'}], error: null} satisfies QueryListRowsResult<CurrentUserCommentRow>)
+      );
       
       service.GET.currentUserComments().subscribe({
-        next: (result: any) => {
+        next: (result: QueryListRowsResult<CurrentUserCommentRow>) => {
           expect(result).toBeDefined();
           done();
         },
-        error: (err) => {
+        error: (err: unknown) => {
           fail(err);
           done();
         }
