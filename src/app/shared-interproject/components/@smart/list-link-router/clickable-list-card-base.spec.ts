@@ -3,6 +3,7 @@ import {
   buildCardAbsoluteRoute,
   cleanCardlinkModelObject
 } from './clickable-list-card-base';
+import { of } from 'rxjs';
 
 describe('clickable-list-card-base', () => {
   describe('buildCardLinkRoute', () => {
@@ -14,8 +15,8 @@ describe('clickable-list-card-base', () => {
     });
 
     it('sets disabled and hidden observables', () => {
-      const disabled$ = {} as any;
-      const hidden$ = {} as any;
+      const disabled$ = of(true);
+      const hidden$ = of(false);
       const link = buildCardLinkRoute('x', ['/x'], undefined, disabled$, hidden$);
       expect(link.disabled).toBe(disabled$);
       expect(link.hidden).toBe(hidden$);

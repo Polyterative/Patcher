@@ -1,19 +1,22 @@
+import { Router } from '@angular/router';
 import { UserDataHandlerService } from './user-data-handler.service';
 
+function build() {
+  const router = jasmine.createSpyObj<Router>('Router', ['navigate']);
+  return { service: new UserDataHandlerService(router), router };
+}
 
 describe('UserDataHandlerService', () => {
   it('routes to login when login click is emitted', () => {
-    const router = jasmine.createSpyObj('Router', ['navigate']);
-    const service = new UserDataHandlerService(router as any);
+    const { service, router } = build();
     
     service.loginButtonClick$.next();
     
     expect(router.navigate).toHaveBeenCalledWith(['/auth', 'login']);
   });
-  
+
   it('routes to signup when signup click is emitted', () => {
-    const router = jasmine.createSpyObj('Router', ['navigate']);
-    const service = new UserDataHandlerService(router as any);
+    const { service, router } = build();
     
     service.signupButtonClick$.next();
     
@@ -21,14 +24,12 @@ describe('UserDataHandlerService', () => {
   });
 
   it('logoffButtonClick$ can be emitted without error', () => {
-    const router = jasmine.createSpyObj('Router', ['navigate']);
-    const service = new UserDataHandlerService(router as any);
+    const { service } = build();
     expect(() => service.logoffButtonClick$.next()).not.toThrow();
   });
 
   it('store.user$ is a ReplaySubject — no initial value before first emission', () => {
-    const router = jasmine.createSpyObj('Router', ['navigate']);
-    const service = new UserDataHandlerService(router as any);
+    const { service } = build();
     let received = false;
     service.store.user$.subscribe(() => { received = true; });
     expect(received).toBeFalse();

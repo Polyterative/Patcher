@@ -1,22 +1,38 @@
-import { BehaviorSubject, Subject } from 'rxjs';
+import { ChangeDetectorRef } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { FileDragHostComponent } from './file-drag-host.component';
+import { FileDragHostService, FileDragHostAddEvent } from './file-drag-host.service';
 
-function makeServiceMock() {
-  return {
-    singleFileMode$: { next: jasmine.createSpy('singleFileMode$.next') },
-    files$: new Subject<any>(),
-    fileAdd$: new Subject<any>(),
-    removeFile$: new Subject<any>(),
-    removeAllFiles$: new Subject<any>()
-  } as any;
+function makeServiceMock(): FileDragHostService {
+  const snackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
+  return new FileDragHostService(snackBar);
 }
 
-function makeCdrMock() {
-  return { detectChanges: jasmine.createSpy('detectChanges') } as any;
+function makeCdrMock(): jasmine.SpyObj<ChangeDetectorRef> {
+  return jasmine.createSpyObj<ChangeDetectorRef>('ChangeDetectorRef', [
+    'detectChanges',
+    'markForCheck',
+    'detach',
+    'reattach'
+  ]);
 }
 
 function makeComp(service = makeServiceMock(), cdr = makeCdrMock()): FileDragHostComponent {
   return new FileDragHostComponent(service, cdr);
+}
+
+function setMultipleFilesMode(comp: FileDragHostComponent, multipleFilesMode: boolean): void {
+  Object.defineProperty(comp, 'multipleFilesMode', {
+    configurable: true,
+    value: multipleFilesMode
+  });
+}
+
+function makeFileAddEvent(): FileDragHostAddEvent {
+  return {
+    addedFiles: [],
+    rejectedFiles: []
+  };
 }
 
 describe('FileDragHostComponent', () => {
@@ -33,7 +49,8 @@ describe('FileDragHostComponent', () => {
   describe('openFilePicker', () => {
     it('opens the native file picker from keyboard activation', () => {
       const comp = makeComp();
-      const input = { click: jasmine.createSpy('click') } as Pick<HTMLInputElement, 'click'> as HTMLInputElement;
+      const input = document.createElement('input');
+      spyOn(input, 'click');
       const event = jasmine.createSpyObj<Event>('event', ['preventDefault', 'stopPropagation']);
 
       comp.openFilePicker(input, event);
@@ -48,17 +65,19 @@ describe('FileDragHostComponent', () => {
     it('sets singleFileMode$ to true when multipleFilesMode is falsy', () => {
       const service = makeServiceMock();
       const comp = makeComp(service);
-      (comp as any).multipleFilesMode = false;
+      const singleFileModeSpy = spyOn(service.singleFileMode$, 'next');
+      setMultipleFilesMode(comp, false);
       comp.ngOnInit();
-      expect(service.singleFileMode$.next).toHaveBeenCalledWith(true);
+      expect(singleFileModeSpy).toHaveBeenCalledWith(true);
     });
 
     it('sets singleFileMode$ to false when multipleFilesMode is true', () => {
       const service = makeServiceMock();
       const comp = makeComp(service);
-      (comp as any).multipleFilesMode = true;
+      const singleFileModeSpy = spyOn(service.singleFileMode$, 'next');
+      setMultipleFilesMode(comp, true);
       comp.ngOnInit();
-      expect(service.singleFileMode$.next).toHaveBeenCalledWith(false);
+      expect(singleFileModeSpy).toHaveBeenCalledWith(false);
     });
   });
 
@@ -87,7 +106,7 @@ describe('FileDragHostComponent', () => {
       const comp = makeComp(service, cdr);
       comp.ngOnInit();
 
-      service.fileAdd$.next({});
+      service.fileAdd$.next(makeFileAddEvent());
       setTimeout(() => {
         expect(cdr.detectChanges).toHaveBeenCalled();
         done();

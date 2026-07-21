@@ -1,15 +1,16 @@
 import { EmptyStateComponent } from './empty-state.component';
+import { ActivatedRoute, Router } from '@angular/router';
 
-function makeRouteMock(backgroundImage?: string) {
+function makeRouteMock(backgroundImage?: string): ActivatedRoute {
   return {
     snapshot: {
       data: backgroundImage !== undefined ? { backgroundImage } : {}
     }
-  } as any;
+  } as ActivatedRoute;
 }
 
-function makeRouterMock() {
-  return {} as any;
+function makeRouterMock(): jasmine.SpyObj<Router> {
+  return jasmine.createSpyObj<Router>('Router', ['navigate']);
 }
 
 function makeComp(route = makeRouteMock(), router = makeRouterMock()): EmptyStateComponent {
