@@ -4,6 +4,7 @@ import {
 } from '@angular/core/testing';
 import {
   BehaviorSubject,
+  Observable,
   of,
   ReplaySubject,
   throwError
@@ -11,81 +12,295 @@ import {
 import { RackModuleAdderDialogComponent } from '../rack-parts/rack-module-adder/rack-module-adder-dialog.component';
 import { ModuleDetailDataService } from './module-detail-data.service';
 import { MergeModuleResult } from '../../features/backend/supabase-merge';
-import { ReactionEntityTypes } from '../../features/backend/supabase-reactions';
+import {
+  ReactionEntityTypes,
+  type ReactionEntityType
+} from '../../features/backend/supabase-reactions';
 import { ModuleSparsePriceHistorySummary } from '../../features/backend/supabase-queries';
 import { DETAIL_ANALYTICS_SURFACES } from '../detail-analytics-surface';
+import {
+  DbModule,
+  ModulePanel,
+  UserModulePossessionKind
+} from '../../models/module';
+import {
+  RackMinimal
+} from '../../models/rack';
+import {
+  PatchMinimal
+} from '../../models/patch';
+import { ModuleCollectionSummary } from '../../models/module-collection';
+import {
+  ModulePossessionCounts,
+  ModuleUsageSummary
+} from './module-detail-data.models';
+import {
+  UserModuleAcquisition,
+  UserModuleAcquisitionDraft
+} from '../../models/user-module-acquisition';
+import { SimpleUserModel } from '../../features/backend/supabase.service';
+import { CV } from '../../models/cv';
+import { Tag, TagType } from '../../models/tag';
+import { MinimalManufacturer } from '../../models/manufacturer';
 
 
 describe('ModuleDetailDataService', () => {
-  function build(options: {modulesBySameManufacturer?: any[]} = {}) {
-    const loggedUser$ = new BehaviorSubject<any>({id: 'user-1'});
+  type ServiceConstructorArgs = ConstructorParameters<typeof ModuleDetailDataService>;
+  type EmptyBackendResponse = Record<string, never>;
+  type ModuleBackendResult = {data: DbModule};
+  type RacksWithModuleResult = {data: Array<{rack: RackMinimal}>};
+  type ModuleTagFixture = DbModule['tags'][number];
+  type BuildOptions = {modulesBySameManufacturer?: DbModule[]};
+  type BackendDouble = {
+    auth: {
+      hasAdminRole$: jasmine.Spy<() => Observable<boolean>>;
+    };
+    GET: {
+      currentUserModules: jasmine.Spy<(includePrivate?: boolean) => Observable<DbModule[]>>;
+      moduleWithId: jasmine.Spy<(id: number) => Observable<ModuleBackendResult>>;
+      modulePriceListings: jasmine.Spy<ServiceConstructorArgs[3]['GET']['modulePriceListings']>;
+      modulePriceHistorySnapshots: jasmine.Spy<ServiceConstructorArgs[3]['GET']['modulePriceHistorySnapshots']>;
+      moduleCollectionsForModule: jasmine.Spy<(moduleId: number) => Observable<ModuleCollectionSummary[]>>;
+    };
+    get: {
+      racksWithModule: jasmine.Spy<(moduleId: number) => Observable<RacksWithModuleResult>>;
+      patchesWithModule: jasmine.Spy<(moduleId: number) => Observable<PatchMinimal[]>>;
+      moduleUsageSummary: jasmine.Spy<(moduleId: number) => Observable<ModuleUsageSummary>>;
+      modulePossessionCounts: jasmine.Spy<(moduleId: number) => Observable<ModulePossessionCounts>>;
+      reactionCount: jasmine.Spy<(entityType: ReactionEntityType, entityId: number) => Observable<number>>;
+      userModuleAcquisitionsForModule: jasmine.Spy<(moduleId: number) => Observable<UserModuleAcquisition[]>>;
+      modulesBySameManufacturer: jasmine.Spy<(manufacturerId: number, from?: number, to?: number, columns?: string) => Observable<DbModule[]>>;
+    };
+    add: {
+      userModule: jasmine.Spy<(moduleId: number) => Observable<EmptyBackendResponse>>;
+      userModuleAcquisition: jasmine.Spy<(moduleId: number, data: UserModuleAcquisitionDraft) => Observable<EmptyBackendResponse>>;
+    };
+    delete: {
+      userModule: jasmine.Spy<(moduleId: number) => Observable<EmptyBackendResponse>>;
+      modulePanel: jasmine.Spy<(panel: ModulePanel) => Observable<EmptyBackendResponse>>;
+      module: jasmine.Spy<(moduleId: number) => Observable<EmptyBackendResponse>>;
+      manufacturer: jasmine.Spy<(manufacturerId: number) => Observable<EmptyBackendResponse>>;
+    };
+    update: {
+      module: jasmine.Spy<(module: Partial<DbModule>) => Observable<Partial<DbModule>>>;
+      moduleStoreUrl: jasmine.Spy<(moduleId: number, storeUrl: string | null) => Observable<null>>;
+      userModulePossession: jasmine.Spy<(moduleId: number, kind: UserModulePossessionKind) => Observable<null>>;
+    };
+    merge: {
+      moduleInto: jasmine.Spy<(sourceId: number, targetId: number) => Observable<MergeModuleResult>>;
+    };
+  };
+  type SnackBarDouble = {
+    open: jasmine.Spy<ServiceConstructorArgs[1]['open']>;
+  };
+  type AppStateDouble = {
+    isDev: boolean;
+  };
+  type RouterDouble = {
+    navigate: jasmine.Spy<ServiceConstructorArgs[5]['navigate']>;
+  };
+  type AnalyticsDouble = {
+    capture: jasmine.Spy<ServiceConstructorArgs[6]['capture']>;
+    identify: jasmine.Spy<ServiceConstructorArgs[6]['identify']>;
+    reset: jasmine.Spy<ServiceConstructorArgs[6]['reset']>;
+  };
+
+  function userFixture(id: string): SimpleUserModel {
+    return {
+      id,
+      email: `${ id }@example.com`,
+      created_at: '2026-01-01T00:00:00.000Z',
+      updated_at: '2026-01-01T00:00:00.000Z'
+    };
+  }
+
+  function manufacturerFixture(id = 7, name = 'Maker'): MinimalManufacturer {
+    return {id, name};
+  }
+
+  function cvFixture(id: number, name: string): CV {
+    return {id, name};
+  }
+
+  function tagFixture(id: number, name: string, type = TagType.Utility): Tag {
+    return {id, name, type};
+  }
+
+  function moduleTagFixture(tag: Tag): ModuleTagFixture {
+    return {
+      id: tag.id,
+      tag,
+      voteCount: []
+    };
+  }
+
+  function modulePanelFixture(overrides: Partial<ModulePanel> = {}): ModulePanel {
+    return {
+      id: overrides.id ?? 1,
+      moduleid: overrides.moduleid ?? 10,
+      filename: overrides.filename ?? 'panel.jpg',
+      description: overrides.description ?? 'Panel',
+      color: overrides.color ?? 1
+    };
+  }
+
+  function moduleFixture(overrides: Partial<DbModule> = {}): DbModule {
+    const manufacturer = overrides.manufacturer ?? manufacturerFixture(overrides.manufacturerId ?? 7);
+
+    return {
+      id: overrides.id ?? 10,
+      name: overrides.name ?? 'Main Module',
+      description: overrides.description ?? 'Description',
+      hp: overrides.hp ?? 8,
+      public: overrides.public ?? true,
+      created: overrides.created ?? '2026-01-01T00:00:00.000Z',
+      updated: overrides.updated ?? '2026-01-01T00:00:00.000Z',
+      manufacturerId: overrides.manufacturerId ?? manufacturer.id,
+      manufacturer,
+      standard: overrides.standard ?? {id: 0, name: 'Eurorack'},
+      tags: overrides.tags ?? [moduleTagFixture(tagFixture(1, 'utility'))],
+      panels: overrides.panels ?? [],
+      ins: overrides.ins ?? [cvFixture(1, 'Pitch')],
+      outs: overrides.outs ?? [cvFixture(2, 'Audio')],
+      switches: overrides.switches ?? [],
+      manualURL: overrides.manualURL ?? '',
+      store_url: overrides.store_url ?? null,
+      additional: overrides.additional ?? null,
+      isComplete: overrides.isComplete ?? true,
+      isApproved: overrides.isApproved ?? true,
+      isDIY: overrides.isDIY ?? false,
+      powerPos12: overrides.powerPos12 ?? null,
+      powerNeg12: overrides.powerNeg12 ?? null,
+      powerPos5: overrides.powerPos5 ?? null,
+      depth: overrides.depth ?? 0,
+      weight: overrides.weight ?? 0,
+      possessionKind: overrides.possessionKind
+    };
+  }
+
+  function rackFixture(overrides: Partial<RackMinimal> = {}): RackMinimal {
+    return {
+      id: overrides.id ?? 1,
+      name: overrides.name ?? 'Rack',
+      hp: overrides.hp ?? 84,
+      rows: overrides.rows ?? 1,
+      public: overrides.public ?? true,
+      locked: overrides.locked ?? false,
+      author: overrides.author ?? {id: 'rack-author', username: 'Rack Author'},
+      created: overrides.created ?? '2026-01-01T00:00:00.000Z',
+      updated: overrides.updated ?? '2026-01-01T00:00:00.000Z',
+      description: overrides.description,
+      image: overrides.image,
+      public_id: overrides.public_id
+    };
+  }
+
+  function patchFixture(overrides: Partial<PatchMinimal> = {}): PatchMinimal {
+    return {
+      id: overrides.id ?? 21,
+      name: overrides.name ?? 'Patch',
+      public: overrides.public ?? true,
+      author: overrides.author ?? {id: 'patch-author', username: 'Patch Author'},
+      created: overrides.created ?? '2026-01-01T00:00:00.000Z',
+      updated: overrides.updated ?? '2026-01-01T00:00:00.000Z',
+      description: overrides.description,
+      image: overrides.image,
+      linked_rack_id: overrides.linked_rack_id,
+      tags: overrides.tags,
+      public_id: overrides.public_id
+    };
+  }
+
+  function collectionFixture(overrides: Partial<ModuleCollectionSummary> = {}): ModuleCollectionSummary {
+    return {
+      id: overrides.id ?? 81,
+      authorid: overrides.authorid ?? 'curator-1',
+      author: overrides.author ?? {id: 'curator-1', username: 'Curator'},
+      name: overrides.name ?? 'Ambient starters',
+      public: overrides.public ?? true,
+      public_id: overrides.public_id ?? 'ambient',
+      module_count: overrides.module_count ?? 3,
+      created: overrides.created ?? '2026-01-01T00:00:00.000Z',
+      updated: overrides.updated ?? '2026-01-01T00:00:00.000Z',
+      description: overrides.description,
+      image: overrides.image
+    };
+  }
+
+  function dialogRefWithClose(result: unknown): ReturnType<typeof RackModuleAdderDialogComponent.open> {
+    return {
+      afterClosed: () => of(result)
+    } as unknown as ReturnType<typeof RackModuleAdderDialogComponent.open>;
+  }
+
+  function build(options: BuildOptions = {}) {
+    const loggedUser$ = new BehaviorSubject<SimpleUserModel | undefined>(userFixture('user-1'));
     const adminRole$ = new ReplaySubject<boolean>(1);
     adminRole$.next(false);
-    const baseModule = {
-      id: 10,
-      name: 'Main Module',
-      manufacturerId: 7,
-      manufacturer: {name: 'Maker'},
+    const baseModule = moduleFixture({
       panels: [
-        {id: 1, moduleid: 10, filename: 'light.jpg', description: 'Light', color: 1},
-        {id: 3, moduleid: 10, filename: 'dark.jpg', description: 'Dark', color: 2},
-        {id: 2, moduleid: 10, filename: 'silver.jpg', description: 'Silver', color: 1}
+        modulePanelFixture({id: 1, filename: 'light.jpg', description: 'Light', color: 1}),
+        modulePanelFixture({id: 3, filename: 'dark.jpg', description: 'Dark', color: 2}),
+        modulePanelFixture({id: 2, filename: 'silver.jpg', description: 'Silver', color: 1})
       ]
-    };
+    });
+    const ownedModule = moduleFixture({id: 50, name: 'Owned Module', possessionKind: 'HAS'});
+    const rackUsage = rackFixture({id: 1});
+    const patchUsage = patchFixture({id: 21});
     
     const backend = {
       auth: {
-        hasAdminRole$: jasmine.createSpy('hasAdminRole$').and.returnValue(adminRole$.asObservable())
+        hasAdminRole$: jasmine.createSpy<() => Observable<boolean>>('hasAdminRole$').and.returnValue(adminRole$.asObservable())
       },
       GET: {
-        currentUserModules: jasmine.createSpy('currentUserModules').and.returnValue(of([{id: 50, possessionKind: 'HAS'}])),
-        moduleWithId: jasmine.createSpy('moduleWithId').and.callFake((id: number) => of({
+        currentUserModules: jasmine.createSpy<(includePrivate?: boolean) => Observable<DbModule[]>>('currentUserModules').and.returnValue(of([ownedModule])),
+        moduleWithId: jasmine.createSpy<(id: number) => Observable<ModuleBackendResult>>('moduleWithId').and.callFake((id: number) => of({
           data: {...baseModule, id}
         })),
-        modulePriceListings: jasmine.createSpy('modulePriceListings').and.returnValue(of([])),
-        modulePriceHistorySnapshots: jasmine.createSpy('modulePriceHistorySnapshots').and.returnValue(of([])),
-        moduleCollectionsForModule: jasmine.createSpy('moduleCollectionsForModule').and.returnValue(of([
-          {id: 81, name: 'Ambient starters', public: true, public_id: 'ambient', author: {username: 'Curator'}, module_count: 3}
+        modulePriceListings: jasmine.createSpy<ServiceConstructorArgs[3]['GET']['modulePriceListings']>('modulePriceListings').and.returnValue(of([])),
+        modulePriceHistorySnapshots: jasmine.createSpy<ServiceConstructorArgs[3]['GET']['modulePriceHistorySnapshots']>('modulePriceHistorySnapshots').and.returnValue(of([])),
+        moduleCollectionsForModule: jasmine.createSpy<(moduleId: number) => Observable<ModuleCollectionSummary[]>>('moduleCollectionsForModule').and.returnValue(of([
+          collectionFixture()
         ]))
       },
       get: {
-        racksWithModule: jasmine.createSpy('racksWithModule').and.returnValue(of({data: [{rack: {id: 1}}]})),
-        patchesWithModule: jasmine.createSpy('patchesWithModule').and.returnValue(of([{id: 21}])),
-        moduleUsageSummary: jasmine.createSpy('moduleUsageSummary').and.returnValue(of({
+        racksWithModule: jasmine.createSpy<(moduleId: number) => Observable<RacksWithModuleResult>>('racksWithModule').and.returnValue(of({data: [{rack: rackUsage}]})),
+        patchesWithModule: jasmine.createSpy<(moduleId: number) => Observable<PatchMinimal[]>>('patchesWithModule').and.returnValue(of([patchUsage])),
+        moduleUsageSummary: jasmine.createSpy<(moduleId: number) => Observable<ModuleUsageSummary>>('moduleUsageSummary').and.returnValue(of({
           public_rack_count: 1,
           hidden_rack_bucket: 'some',
           public_patch_count: 1,
           hidden_patch_bucket: '5_plus'
         })),
-        modulePossessionCounts: jasmine.createSpy('modulePossessionCounts').and.returnValue(of({
+        modulePossessionCounts: jasmine.createSpy<(moduleId: number) => Observable<ModulePossessionCounts>>('modulePossessionCounts').and.returnValue(of({
           hasCount: 5,
           wantsCount: 2,
           sellsCount: 1
         })),
-        reactionCount: jasmine.createSpy('reactionCount').and.returnValue(of(7)),
-        userModuleAcquisitionsForModule: jasmine.createSpy('userModuleAcquisitionsForModule').and.returnValue(of([])),
-        modulesBySameManufacturer: jasmine.createSpy('modulesBySameManufacturer').and.returnValue(of(options.modulesBySameManufacturer ?? [
-          {id: 10, manufacturerId: 7, manufacturer: {name: 'Maker'}},
-          {id: 11, manufacturerId: 7, manufacturer: {name: 'Maker'}}
+        reactionCount: jasmine.createSpy<(entityType: ReactionEntityType, entityId: number) => Observable<number>>('reactionCount').and.returnValue(of(7)),
+        userModuleAcquisitionsForModule: jasmine.createSpy<(moduleId: number) => Observable<UserModuleAcquisition[]>>('userModuleAcquisitionsForModule').and.returnValue(of([])),
+        modulesBySameManufacturer: jasmine.createSpy<(manufacturerId: number, from?: number, to?: number, columns?: string) => Observable<DbModule[]>>('modulesBySameManufacturer').and.returnValue(of(options.modulesBySameManufacturer ?? [
+          moduleFixture({id: 10}),
+          moduleFixture({id: 11, name: 'Second Module'})
         ]))
       },
       add: {
-        userModule: jasmine.createSpy('userModule').and.returnValue(of({})),
-        userModuleAcquisition: jasmine.createSpy('userModuleAcquisition').and.returnValue(of({}))
+        userModule: jasmine.createSpy<(moduleId: number) => Observable<EmptyBackendResponse>>('userModule').and.returnValue(of({})),
+        userModuleAcquisition: jasmine.createSpy<(moduleId: number, data: UserModuleAcquisitionDraft) => Observable<EmptyBackendResponse>>('userModuleAcquisition').and.returnValue(of({}))
       },
       delete: {
-        userModule: jasmine.createSpy('userModule').and.returnValue(of({})),
-        modulePanel: jasmine.createSpy('modulePanel').and.returnValue(of({})),
-        module: jasmine.createSpy('module').and.returnValue(of({})),
-        manufacturer: jasmine.createSpy('manufacturer').and.returnValue(of({}))
+        userModule: jasmine.createSpy<(moduleId: number) => Observable<EmptyBackendResponse>>('userModule').and.returnValue(of({})),
+        modulePanel: jasmine.createSpy<(panel: ModulePanel) => Observable<EmptyBackendResponse>>('modulePanel').and.returnValue(of({})),
+        module: jasmine.createSpy<(moduleId: number) => Observable<EmptyBackendResponse>>('module').and.returnValue(of({})),
+        manufacturer: jasmine.createSpy<(manufacturerId: number) => Observable<EmptyBackendResponse>>('manufacturer').and.returnValue(of({}))
       },
       update: {
-        module: jasmine.createSpy('module').and.callFake((module: any) => of(module)),
-        moduleStoreUrl: jasmine.createSpy('moduleStoreUrl').and.returnValue(of(null)),
-        userModulePossession: jasmine.createSpy('userModulePossession').and.returnValue(of(null))
+        module: jasmine.createSpy<(module: Partial<DbModule>) => Observable<Partial<DbModule>>>('module').and.callFake((module: Partial<DbModule>) => of(module)),
+        moduleStoreUrl: jasmine.createSpy<(moduleId: number, storeUrl: string | null) => Observable<null>>('moduleStoreUrl').and.returnValue(of(null)),
+        userModulePossession: jasmine.createSpy<(moduleId: number, kind: UserModulePossessionKind) => Observable<null>>('userModulePossession').and.returnValue(of(null))
       },
       merge: {
-        moduleInto: jasmine.createSpy('moduleInto').and.returnValue(of({
+        moduleInto: jasmine.createSpy<(sourceId: number, targetId: number) => Observable<MergeModuleResult>>('moduleInto').and.returnValue(of({
           sourceId: 10,
           targetId: 20,
           duplicateOwnershipRowsRemoved: 1,
@@ -95,25 +310,31 @@ describe('ModuleDetailDataService', () => {
           rackModuleRowsMoved: 5
         }))
       }
-    };
+    } satisfies BackendDouble;
     
     const snackBar = {
-      open: jasmine.createSpy('open')
-    };
-    const dialog = {} as any;
-    const appState = {isDev: true};
-    const router = jasmine.createSpyObj('Router', ['navigate']);
+      open: jasmine.createSpy<ServiceConstructorArgs[1]['open']>('open')
+    } satisfies SnackBarDouble;
+    const dialog = {};
+    const appState: AppStateDouble = {isDev: true};
+    const router = {
+      navigate: jasmine.createSpy<ServiceConstructorArgs[5]['navigate']>('navigate')
+    } satisfies RouterDouble;
     const userService = {loggedUser$};
     
-    const analytics = jasmine.createSpyObj('AnalyticsService', ['capture', 'identify', 'reset']);
+    const analytics = {
+      capture: jasmine.createSpy<ServiceConstructorArgs[6]['capture']>('capture'),
+      identify: jasmine.createSpy<ServiceConstructorArgs[6]['identify']>('identify'),
+      reset: jasmine.createSpy<ServiceConstructorArgs[6]['reset']>('reset')
+    } satisfies AnalyticsDouble;
     const service = new ModuleDetailDataService(
-      dialog,
-      snackBar as any,
-      userService as any,
-      backend as any,
-      appState as any,
-      router,
-      analytics
+      dialog as unknown as ServiceConstructorArgs[0],
+      snackBar as unknown as ServiceConstructorArgs[1],
+      userService as unknown as ServiceConstructorArgs[2],
+      backend as unknown as ServiceConstructorArgs[3],
+      appState as unknown as ServiceConstructorArgs[4],
+      router as unknown as ServiceConstructorArgs[5],
+      analytics as unknown as ServiceConstructorArgs[6]
     );
     
     return {
@@ -124,13 +345,16 @@ describe('ModuleDetailDataService', () => {
       router,
       loggedUser$,
       baseModule,
+      ownedModule,
+      rackUsage,
+      patchUsage,
       adminRole$,
       analytics
     };
   }
   
   it('loads module details and related data streams on update', fakeAsync(() => {
-    const {service, backend} = build();
+    const {service, backend, rackUsage, patchUsage} = build();
     
     service.updateSingleModuleData$.next(10);
     tick(260);
@@ -144,8 +368,8 @@ describe('ModuleDetailDataService', () => {
     expect(backend.get.reactionCount).toHaveBeenCalledWith(ReactionEntityTypes.MODULE, 10);
     expect(backend.get.userModuleAcquisitionsForModule).toHaveBeenCalledWith(10);
     expect(service.singleModuleData$.value?.id).toBe(10);
-    expect(service.racksWithThisModule$.value).toEqual([{id: 1} as any]);
-    expect(service.patchesWithThisModule$.value).toEqual([{id: 21} as any]);
+    expect(service.racksWithThisModule$.value).toEqual([rackUsage]);
+    expect(service.patchesWithThisModule$.value).toEqual([patchUsage]);
     expect(service.collectionsWithThisModule$.value?.[0].name).toBe('Ambient starters');
     expect(service.moduleUsageSummary$.value).toEqual({
       public_rack_count: 1,
@@ -239,8 +463,8 @@ describe('ModuleDetailDataService', () => {
     expect(service.racksWithThisModule$.value).toEqual([]);
     expect(service.patchesWithThisModule$.value).toEqual([]);
 
-    backend.get.racksWithModule.and.returnValue(of({data: [{rack: {id: 2}}]}));
-    backend.get.patchesWithModule.and.returnValue(of([{id: 22}]));
+    backend.get.racksWithModule.and.returnValue(of({data: [{rack: rackFixture({id: 2})}]}));
+    backend.get.patchesWithModule.and.returnValue(of([patchFixture({id: 22})]));
 
     service.updateSingleModuleData$.next(10);
     tick(260);
@@ -312,26 +536,24 @@ describe('ModuleDetailDataService', () => {
     let latest: string | null | undefined;
 
     service.currentModulePossession$.subscribe(value => latest = value);
-    service.singleModuleData$.next({id: 50} as any);
+    service.singleModuleData$.next(moduleFixture({id: 50}));
 
     expect(latest).toBe('HAS');
 
-    service.userModulesList$.next([{id: 50, possessionKind: 'SELLS'} as any]);
+    service.userModulesList$.next([moduleFixture({id: 50, possessionKind: 'SELLS'})]);
     expect(latest).toBe('SELLS');
 
-    service.userModulesList$.next([{id: 1, possessionKind: 'HAS'} as any]);
+    service.userModulesList$.next([moduleFixture({id: 1, possessionKind: 'HAS'})]);
     expect(latest).toBeNull();
   });
   
   it('opens module-to-rack dialog and refreshes module data', () => {
     const {service, baseModule} = build();
     const nextSpy = spyOn(service.updateSingleModuleData$, 'next').and.callThrough();
-    spyOn(RackModuleAdderDialogComponent, 'open').and.returnValue({
-      afterClosed: () => of(true)
-    } as any);
+    spyOn(RackModuleAdderDialogComponent, 'open').and.returnValue(dialogRefWithClose(true));
     
     service.updateSingleModuleData$.next(10);
-    service.requestAddModuleToRack$.next(baseModule as any);
+    service.requestAddModuleToRack$.next(baseModule);
     
     expect(RackModuleAdderDialogComponent.open).toHaveBeenCalled();
     expect(nextSpy).toHaveBeenCalledWith(10);
@@ -347,7 +569,7 @@ describe('ModuleDetailDataService', () => {
     expect(backend.update.module).not.toHaveBeenCalled();
 
     appState.isDev = true;
-    service.singleModuleData$.next(baseModule as any);
+    service.singleModuleData$.next(baseModule);
     service.deleteModule$.next(10);
     service.changeModule$.next({name: 'Renamed'});
 
@@ -365,7 +587,7 @@ describe('ModuleDetailDataService', () => {
     appState.isDev = false;
     backend.auth.hasAdminRole$.and.returnValue(of(true));
 
-    service.singleModuleData$.next(baseModule as any);
+    service.singleModuleData$.next(baseModule);
     service.deleteModule$.next(10);
     service.changeModule$.next({name: 'Admin rename'});
 
@@ -380,11 +602,11 @@ describe('ModuleDetailDataService', () => {
   it('deletes module and orphan manufacturer together for admin/dev flow', () => {
     const {service, backend, baseModule, router} = build({
       modulesBySameManufacturer: [
-        {id: 10, manufacturerId: 7, manufacturer: {name: 'Maker'}}
+        moduleFixture({id: 10})
       ]
     });
 
-    service.deleteModuleAndOrphanManufacturer$.next(baseModule as any);
+    service.deleteModuleAndOrphanManufacturer$.next(baseModule);
 
     expect(backend.get.modulesBySameManufacturer).toHaveBeenCalledWith(7, 0, 20, 'id,manufacturerId');
     expect(backend.delete.module).toHaveBeenCalledWith(10);
@@ -395,12 +617,12 @@ describe('ModuleDetailDataService', () => {
   it('keeps manufacturer when other modules still use it', () => {
     const {service, backend, baseModule, router} = build({
       modulesBySameManufacturer: [
-        {id: 10, manufacturerId: 7, manufacturer: {name: 'Maker'}},
-        {id: 11, manufacturerId: 7, manufacturer: {name: 'Maker'}}
+        moduleFixture({id: 10}),
+        moduleFixture({id: 11, name: 'Second Module'})
       ]
     });
 
-    service.deleteModuleAndOrphanManufacturer$.next(baseModule as any);
+    service.deleteModuleAndOrphanManufacturer$.next(baseModule);
 
     expect(backend.delete.module).toHaveBeenCalledWith(10);
     expect(backend.delete.manufacturer).not.toHaveBeenCalled();
@@ -425,10 +647,10 @@ describe('ModuleDetailDataService', () => {
 
     appState.isDev = false;
     backend.auth.hasAdminRole$.and.returnValue(of(false));
-    service.singleModuleData$.next(baseModule as any);
+    service.singleModuleData$.next(baseModule);
 
-    service.deletePanel$.next(baseModule.panels[0] as any);
-    service.deleteModuleAndOrphanManufacturer$.next(baseModule as any);
+    service.deletePanel$.next(baseModule.panels[0]);
+    service.deleteModuleAndOrphanManufacturer$.next(baseModule);
 
     expect(backend.delete.modulePanel).not.toHaveBeenCalled();
     expect(backend.get.modulesBySameManufacturer).not.toHaveBeenCalled();
@@ -500,7 +722,7 @@ describe('ModuleDetailDataService', () => {
       value: {writeText},
       configurable: true
     });
-    service.singleModuleData$.next(baseModule as any);
+    service.singleModuleData$.next(baseModule);
     
     service.copyModuleNameAndManufacturer$.next();
     
@@ -510,9 +732,9 @@ describe('ModuleDetailDataService', () => {
   it('deletes the requested panel in dev mode', () => {
     const {service, backend, baseModule} = build();
     const nextSpy = spyOn(service.updateSingleModuleData$, 'next').and.callThrough();
-    service.singleModuleData$.next(baseModule as any);
+    service.singleModuleData$.next(baseModule);
     
-    service.deletePanel$.next(baseModule.panels[1] as any);
+    service.deletePanel$.next(baseModule.panels[1]);
     
     expect(backend.delete.modulePanel).toHaveBeenCalledWith(baseModule.panels[1]);
     expect(nextSpy).toHaveBeenCalledWith(10);
@@ -521,7 +743,7 @@ describe('ModuleDetailDataService', () => {
   describe('setStoreUrl$', () => {
     it('should call update.moduleStoreUrl with the given id and url', fakeAsync(() => {
       const {service, backend} = build();
-      service.singleModuleData$.next({id: 10} as any);
+      service.singleModuleData$.next(moduleFixture({id: 10}));
 
       service.setStoreUrl$.next({id: 10, url: 'https://store.example.com/module'});
       tick();
@@ -531,7 +753,7 @@ describe('ModuleDetailDataService', () => {
 
     it('should call update.moduleStoreUrl with null when clearing', fakeAsync(() => {
       const {service, backend} = build();
-      service.singleModuleData$.next({id: 10} as any);
+      service.singleModuleData$.next(moduleFixture({id: 10}));
 
       service.setStoreUrl$.next({id: 10, url: null});
       tick();
@@ -541,7 +763,7 @@ describe('ModuleDetailDataService', () => {
 
     it('should trigger a data refresh after store url is set', fakeAsync(() => {
       const {service} = build();
-      service.singleModuleData$.next({id: 10} as any);
+      service.singleModuleData$.next(moduleFixture({id: 10}));
       const nextSpy = spyOn(service.updateSingleModuleData$, 'next').and.callThrough();
 
       service.setStoreUrl$.next({id: 10, url: 'https://example.com'});
@@ -553,9 +775,8 @@ describe('ModuleDetailDataService', () => {
 
   it('setStoreUrl$ silently swallows backend errors without affecting other streams', fakeAsync(() => {
     const {service, backend} = build();
-    const {throwError} = require('rxjs');
     backend.update.moduleStoreUrl.and.returnValue(throwError(() => new Error('network error')));
-    service.singleModuleData$.next({id: 10} as any);
+    service.singleModuleData$.next(moduleFixture({id: 10}));
 
     expect(() => {
       service.setStoreUrl$.next({id: 10, url: 'https://store.example.com'});
@@ -566,15 +787,15 @@ describe('ModuleDetailDataService', () => {
   it('closes editor panel when a new user session is emitted while module data is set', () => {
     const {service, loggedUser$, baseModule} = build();
     service.moduleEditingPanelOpenState$.next(true);
-    service.singleModuleData$.next(baseModule as any);
+    service.singleModuleData$.next(baseModule);
 
-    loggedUser$.next({id: 'user-2'} as any);
+    loggedUser$.next(userFixture('user-2'));
 
     expect(service.moduleEditingPanelOpenState$.value).toBeFalse();
   });
 
   it('starts with expected default state for all subjects', () => {
-    const {service} = build();
+    const {service, ownedModule} = build();
 
     expect(service.singleModuleData$.value).toBeNull();
     expect(service.racksWithThisModule$.value).toBeUndefined();
@@ -585,15 +806,15 @@ describe('ModuleDetailDataService', () => {
     expect(service.moduleEditorHasPendingChanges$.value).toBeFalse();
     expect(service.isAdmin$.value).toBeFalse();
     // userModulesList$ fires immediately via loggedUser$ BehaviorSubject in constructor
-    expect(service.userModulesList$.value).toEqual([{id: 50, possessionKind: 'HAS'} as any]);
+    expect(service.userModulesList$.value).toEqual([ownedModule]);
   });
 
   it('clears singleModuleData$ and related streams to undefined when updateSingleModuleData$ fires', fakeAsync(() => {
     const {service, backend} = build();
 
-    const rackEmissions: any[] = [];
-    const patchEmissions: any[] = [];
-    const summaryEmissions: any[] = [];
+    const rackEmissions: Array<RackMinimal[] | undefined> = [];
+    const patchEmissions: Array<PatchMinimal[] | undefined> = [];
+    const summaryEmissions: Array<ModuleUsageSummary | undefined> = [];
     const coolCountEmissions: Array<number | undefined> = [];
     service.racksWithThisModule$.subscribe(v => rackEmissions.push(v));
     service.patchesWithThisModule$.subscribe(v => patchEmissions.push(v));
@@ -638,24 +859,24 @@ describe('ModuleDetailDataService', () => {
   }));
 
   it('loads userModulesList$ when updateSingleModuleData$ fires and user is logged in', fakeAsync(() => {
-    const {service, backend} = build();
+    const {service, backend, ownedModule} = build();
 
     service.updateSingleModuleData$.next(10);
     tick(260);
 
     expect(backend.GET.currentUserModules).toHaveBeenCalledWith(false);
-    expect(service.userModulesList$.value).toEqual([{id: 50, possessionKind: 'HAS'} as any]);
+    expect(service.userModulesList$.value).toEqual([ownedModule]);
   }));
 
   it('sets userModulesList$ to empty array when user is not logged in', fakeAsync(() => {
     const {service, backend, loggedUser$} = build();
-    loggedUser$.next(null);
+    loggedUser$.next(undefined);
 
     const callsBefore = backend.GET.currentUserModules.calls.count();
     service.updateSingleModuleData$.next(10);
     tick(260);
 
-    // With null user, the subscription uses of([]) — no extra call to currentUserModules
+    // With no user, the subscription uses of([]) — no extra call to currentUserModules
     expect(backend.GET.currentUserModules.calls.count()).toBe(callsBefore);
     expect(service.userModulesList$.value).toEqual([]);
   }));
