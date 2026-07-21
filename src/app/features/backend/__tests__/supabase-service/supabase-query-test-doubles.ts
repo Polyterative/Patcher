@@ -10,6 +10,23 @@ import type {
 
 
 type QueryFilterValue = boolean | number | string | null;
+type PasswordUpdateAttributes = {
+  password: string;
+};
+
+export interface PasswordResetProviderError {
+  code?: string | number;
+  error_code?: string;
+  error_description?: string;
+  message?: string;
+  msg?: string;
+  name?: string;
+}
+
+export interface PasswordUpdateResult {
+  data: null;
+  error: PasswordResetProviderError | null;
+}
 
 interface SelectOptions {
   count?: 'exact';
@@ -76,6 +93,14 @@ export class SupabaseQueryChain<Row = unknown> implements PromiseLike<QueryChain
     return this;
   }
 
+  maybeSingle(): this {
+    return this;
+  }
+
+  ilike(_column: string, _pattern: string): this {
+    return this;
+  }
+
   insert(_values: Record<string, unknown> | readonly Record<string, unknown>[]): this {
     return this;
   }
@@ -101,6 +126,9 @@ export class SupabaseQueryChain<Row = unknown> implements PromiseLike<QueryChain
 }
 
 export interface SupabaseClientDouble {
+  auth: {
+    updateUser(attributes: PasswordUpdateAttributes): Promise<PasswordUpdateResult>;
+  };
   from(table: string): unknown;
 }
 
