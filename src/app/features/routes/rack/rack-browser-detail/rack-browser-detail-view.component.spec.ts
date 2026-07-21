@@ -14,6 +14,7 @@ import { ActivatedRoute } from '@angular/router';
 import {
   BehaviorSubject,
   of,
+  ReplaySubject,
   Subject,
 } from 'rxjs';
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
@@ -22,8 +23,19 @@ import { COOL_REACTIONS_ENABLED } from 'src/app/components/shared-atoms/cool-but
 import { CoolButtonComponent } from 'src/app/components/shared-atoms/cool-button/cool-button.component';
 import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
-import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import {
+  SimpleUserModel,
+  SupabaseService,
+} from 'src/app/features/backend/supabase.service';
 import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area-data.service';
+import {
+  MinimalModule,
+  RackedModule,
+} from 'src/app/models/module';
+import {
+  Rack,
+  RackMinimal,
+} from 'src/app/models/rack';
 import { RackBrowserDetailViewComponent } from './rack-browser-detail-view.component';
 
 @Component({
@@ -36,15 +48,43 @@ class RackCompositeStubComponent {
   @Input() showCoolAction = false;
 }
 
+type RackDetailDataServiceDouble =
+  Omit<Pick<RackDetailDataService,
+    | 'setPublicDetailMode'
+    | 'updateSingleRackByPublicId$'
+    | 'singleRackData$'
+    | 'rowedRackedModules$'
+    | 'isCurrentRackEditable$'
+    | 'isCurrentRackPropertyOfCurrentUser$'
+    | 'rackDetailUnavailableMessage$'
+    | 'weakestBalanceAxis$'
+    | 'moduleAddedFromPicker$'
+  >, 'setPublicDetailMode'>
+  & {
+    setPublicDetailMode: jasmine.Spy<(enabled: boolean) => void>;
+  };
+
+type UserAreaDataServiceDouble = Pick<UserAreaDataService, 'updateModulesData$' | 'modulesData$'>;
+type CommentsDataServiceDouble = Pick<CommentsDataService, 'requestCommentsUpdate$'>;
+type UserManagementServiceDouble = Pick<UserManagementService, 'loggedUser$'>;
+
 describe('RackBrowserDetailViewComponent', () => {
   let component: RackBrowserDetailViewComponent;
-  let dataService: any;
-  let userAreaDataService: any;
-  let seoService: any;
-  let commentsDataService: any;
-  let userManagementService: any;
-  let singleRackData$: BehaviorSubject<any>;
-  let rowedRackedModules$: BehaviorSubject<any>;
+  let dataService: RackDetailDataService;
+  let userAreaDataService: UserAreaDataService;
+  let seoService: SeoAndUtilsService;
+  let commentsDataService: CommentsDataService;
+  let userManagementService: UserManagementService;
+  let singleRackData$: BehaviorSubject<Rack | undefined>;
+  let rowedRackedModules$: BehaviorSubject<RackedModule[][] | null>;
+  let setPublicDetailModeSpy: jasmine.Spy<(enabled: boolean) => void>;
+  let updateSingleRackByPublicIdNextSpy: jasmine.Spy<(publicId: string) => void>;
+  let updateModulesDataNextSpy: jasmine.Spy<() => void>;
+  let updateSeoSpy: jasmine.Spy<SeoAndUtilsService['updateSeo']>;
+
+  function withServicePrototype<T extends object, D extends object>(ctor: {prototype: T}, double: D): T & D {
+    return Object.assign(Object.create(ctor.prototype), double);
+  }
 
   function makeReactionBackendSpy() {
     return {
@@ -61,26 +101,77 @@ describe('RackBrowserDetailViewComponent', () => {
     };
   }
 
+  function makeActivatedRoute(publicId: string): ActivatedRoute {
+    return withServicePrototype(ActivatedRoute, {
+      params: of({publicId}),
+    });
+  }
+
+  function makeUser(id: string): SimpleUserModel {
+    return {
+      id,
+      email: `${ id }@example.com`,
+      created_at: '2024-01-01T00:00:00.000Z',
+      updated_at: '2024-01-01T00:00:00.000Z',
+    };
+  }
+
+  function makeRack(overrides: Partial<Rack> = {}): Rack {
+    return {
+      id: 1,
+      name: 'Test Rack',
+      hp: 84,
+      rows: 2,
+      public: true,
+      locked: false,
+      author: {id: 'author-1', username: 'modular_jane'},
+      created: '2024-01-01',
+      updated: '2024-06-01',
+      ...overrides,
+    };
+  }
+
+  function makeRackMinimal(overrides: Partial<RackMinimal> = {}): RackMinimal {
+    return makeRack(overrides);
+  }
+
   beforeEach(() => {
-    singleRackData$ = new BehaviorSubject<any>(undefined);
-    rowedRackedModules$ = new BehaviorSubject<any>(undefined);
-    dataService = {
-      setPublicDetailMode: jasmine.createSpy('setPublicDetailMode'),
-      updateSingleRackByPublicId$: {next: jasmine.createSpy('updateSingleRackByPublicId$.next')},
+    singleRackData$ = new BehaviorSubject<Rack | undefined>(undefined);
+    rowedRackedModules$ = new BehaviorSubject<RackedModule[][] | null>(null);
+    setPublicDetailModeSpy = jasmine.createSpy('setPublicDetailMode');
+    dataService = withServicePrototype(RackDetailDataService, {
+      setPublicDetailMode: setPublicDetailModeSpy,
+      updateSingleRackByPublicId$: new ReplaySubject<string>(1),
       singleRackData$,
-      rowedRackedModules$
-    };
-    userAreaDataService = {
-      updateModulesData$: {next: jasmine.createSpy('updateModulesData$.next')}
-    };
-    seoService = {updateSeo: jasmine.createSpy('updateSeo')};
-    commentsDataService = {requestCommentsUpdate$: {next: jasmine.createSpy('requestCommentsUpdate$.next')}};
-    userManagementService = {loggedUser$: of(undefined)};
+      rowedRackedModules$,
+      isCurrentRackEditable$: new BehaviorSubject<boolean>(false),
+      isCurrentRackPropertyOfCurrentUser$: new BehaviorSubject<boolean>(false),
+      rackDetailUnavailableMessage$: new BehaviorSubject<string | null>(null),
+      weakestBalanceAxis$: new BehaviorSubject<null>(null),
+      moduleAddedFromPicker$: new Subject<MinimalModule>(),
+    } satisfies RackDetailDataServiceDouble);
+    updateSingleRackByPublicIdNextSpy = spyOn(dataService.updateSingleRackByPublicId$, 'next').and.callThrough();
+    userAreaDataService = withServicePrototype(UserAreaDataService, {
+      updateModulesData$: new Subject<void>(),
+      modulesData$: new BehaviorSubject<MinimalModule[] | undefined>(undefined),
+    } satisfies UserAreaDataServiceDouble);
+    updateModulesDataNextSpy = spyOn(userAreaDataService.updateModulesData$, 'next').and.callThrough();
+    updateSeoSpy = jasmine.createSpy<SeoAndUtilsService['updateSeo']>('updateSeo');
+    seoService = withServicePrototype(SeoAndUtilsService, {
+      updateSeo: updateSeoSpy,
+    } satisfies Pick<SeoAndUtilsService, 'updateSeo'>);
+    commentsDataService = withServicePrototype(CommentsDataService, {
+      requestCommentsUpdate$: new ReplaySubject(1),
+    } satisfies CommentsDataServiceDouble);
+    spyOn(commentsDataService.requestCommentsUpdate$, 'next').and.callThrough();
+    userManagementService = withServicePrototype(UserManagementService, {
+      loggedUser$: of(undefined),
+    } satisfies UserManagementServiceDouble);
 
     component = new RackBrowserDetailViewComponent(
       dataService,
       userAreaDataService,
-      {params: of({publicId: 'abc123XYZ_-0'})} as any,
+      makeActivatedRoute('abc123XYZ_-0'),
       seoService,
       commentsDataService,
       userManagementService
@@ -97,11 +188,37 @@ describe('RackBrowserDetailViewComponent', () => {
     powerPos12: number | null,
     powerNeg12: number | null,
     powerPos5: number | null
-  ): any {
+  ): RackedModule {
     return {
+      rackingData: {
+        id: moduleId,
+        rackid: 1,
+        moduleid: moduleId,
+        row: 0,
+        column: 0,
+      },
       module: {
         id: moduleId,
+        name: `Module ${ moduleId }`,
+        description: '',
         hp,
+        public: true,
+        manufacturer: {id: 1, name: 'Maker'},
+        manufacturerId: 1,
+        standard: {id: 0, name: 'Eurorack'},
+        tags: [],
+        panels: [],
+        created: '2024-01-01',
+        updated: '2024-01-01',
+        ins: [],
+        outs: [],
+        switches: [],
+        manualURL: '',
+        store_url: null,
+        additional: null,
+        isComplete: true,
+        isApproved: true,
+        isDIY: false,
         powerPos12,
         powerNeg12,
         powerPos5,
@@ -112,7 +229,7 @@ describe('RackBrowserDetailViewComponent', () => {
   }
 
   it('shows rack rail totals plus derived power header count', () => {
-    const rows = component.rackSummaryStatRows({hp: 84, rows: 2} as any, [
+    const rows = component.rackSummaryStatRows(makeRackMinimal({hp: 84, rows: 2}), [
       [makeRackedModule(101, 8, 50, -20, 0)],
       [makeRackedModule(202, 10, 75, -35, 5), makeRackedModule(303, 6, 0, 0, 0)]
     ]);
@@ -128,19 +245,21 @@ describe('RackBrowserDetailViewComponent', () => {
   it('uses public detail reads for signed-out visitors', () => {
     component.ngOnInit();
 
-    expect(dataService.setPublicDetailMode).toHaveBeenCalledWith(true);
-    expect(dataService.updateSingleRackByPublicId$.next).toHaveBeenCalledWith('abc123XYZ_-0');
+    expect(setPublicDetailModeSpy).toHaveBeenCalledWith(true);
+    expect(updateSingleRackByPublicIdNextSpy).toHaveBeenCalledWith('abc123XYZ_-0');
   });
 
   it('shows the wide-shell nav by default for rack detail pages', () => {
   });
 
   it('uses authenticated detail reads for signed-in users', () => {
-    userManagementService.loggedUser$ = of({id: 'u1'});
+    userManagementService = withServicePrototype(UserManagementService, {
+      loggedUser$: of(makeUser('u1')),
+    } satisfies UserManagementServiceDouble);
     component = new RackBrowserDetailViewComponent(
       dataService,
       userAreaDataService,
-      {params: of({publicId: 'tokenXYZ77_X'})} as any,
+      makeActivatedRoute('tokenXYZ77_X'),
       seoService,
       commentsDataService,
       userManagementService
@@ -148,9 +267,9 @@ describe('RackBrowserDetailViewComponent', () => {
 
     component.ngOnInit();
 
-    expect(dataService.setPublicDetailMode).toHaveBeenCalledWith(false);
-    expect(userAreaDataService.updateModulesData$.next).toHaveBeenCalled();
-    expect(dataService.updateSingleRackByPublicId$.next).toHaveBeenCalledWith('tokenXYZ77_X');
+    expect(setPublicDetailModeSpy).toHaveBeenCalledWith(false);
+    expect(updateModulesDataNextSpy).toHaveBeenCalled();
+    expect(updateSingleRackByPublicIdNextSpy).toHaveBeenCalledWith('tokenXYZ77_X');
   });
 
   it('calculates rack utilization as a percentage string', () => {
@@ -160,7 +279,7 @@ describe('RackBrowserDetailViewComponent', () => {
   });
 
   it('exposes space stat group with HP used, available and utilization', () => {
-    const rows = component.rackSummaryStatRows({hp: 84, rows: 1} as any, [
+    const rows = component.rackSummaryStatRows(makeRackMinimal({hp: 84, rows: 1}), [
       [makeRackedModule(301, 10, 50, -20, 0), makeRackedModule(302, 8, 0, 0, 0)]
     ]);
     const spaceGroup = rows[0][1];
@@ -173,16 +292,16 @@ describe('RackBrowserDetailViewComponent', () => {
 
   describe('SEO metadata', () => {
     it('calls updateSeo with rack title and description when data arrives', () => {
-      singleRackData$.next({
+      singleRackData$.next(makeRack({
         id: 1, name: 'Test Rack', hp: 84, rows: 2,
-        author: {username: 'modular_jane'},
+        author: {id: 'author-1', username: 'modular_jane'},
         created: '2024-01-01', updated: '2024-06-01'
-      });
+      }));
       rowedRackedModules$.next([]);
 
       component.ngOnInit();
 
-      expect(seoService.updateSeo).toHaveBeenCalledWith(
+      expect(updateSeoSpy).toHaveBeenCalledWith(
         jasmine.objectContaining({
           title: 'Test Rack - details. ',
           description: jasmine.stringContaining('modular_jane'),
@@ -193,93 +312,93 @@ describe('RackBrowserDetailViewComponent', () => {
     });
 
     it('includes og:image in SEO data when rack has an image', () => {
-      singleRackData$.next({
+      singleRackData$.next(makeRack({
         id: 2, name: 'Imaged Rack', hp: 42, rows: 1,
-        author: {username: 'synth_bob'},
+        author: {id: 'author-2', username: 'synth_bob'},
         image: 'https://example.com/rack-preview.jpg',
         created: '2024-01-01', updated: '2024-06-01'
-      });
+      }));
       rowedRackedModules$.next([]);
 
       component.ngOnInit();
 
-      expect(seoService.updateSeo).toHaveBeenCalledWith(
+      expect(updateSeoSpy).toHaveBeenCalledWith(
         jasmine.objectContaining({image: 'https://example.com/rack-preview.jpg'}),
         jasmine.any(String)
       );
     });
 
     it('omits og:image from SEO data when rack has no image', () => {
-      singleRackData$.next({
+      singleRackData$.next(makeRack({
         id: 3, name: 'No Image Rack', hp: 42, rows: 1,
-        author: {username: 'synth_bob'},
+        author: {id: 'author-3', username: 'synth_bob'},
         created: '2024-01-01', updated: '2024-06-01'
-      });
+      }));
       rowedRackedModules$.next([]);
 
       component.ngOnInit();
 
-      const call = seoService.updateSeo.calls.mostRecent();
+      const call = updateSeoSpy.calls.mostRecent();
       expect(call.args[0].image).toBeUndefined();
     });
 
     it('skips SEO when ignoreSeo is true', () => {
       component.ignoreSeo = true;
-      singleRackData$.next({
+      singleRackData$.next(makeRack({
         id: 4, name: 'Rack', hp: 84, rows: 1,
-        author: {username: 'user'}, created: '2024-01-01', updated: '2024-01-01'
-      });
+        author: {id: 'author-4', username: 'user'}, created: '2024-01-01', updated: '2024-01-01'
+      }));
       rowedRackedModules$.next([]);
 
       component.ngOnInit();
 
-      expect(seoService.updateSeo).not.toHaveBeenCalled();
+      expect(updateSeoSpy).not.toHaveBeenCalled();
     });
   });
 
   describe('template comment visibility', () => {
     let fixture: ComponentFixture<RackBrowserDetailViewComponent>;
-    let templateDataService: any;
-    let templateUserAreaDataService: any;
-    let templateCommentsDataService: any;
-    let templateUserManagementService: any;
-    let singleRackData$: BehaviorSubject<any>;
-    let rowedRackedModules$: BehaviorSubject<any>;
+    let templateDataService: RackDetailDataServiceDouble;
+    let templateUserAreaDataService: UserAreaDataServiceDouble;
+    let templateCommentsDataService: CommentsDataServiceDouble;
+    let templateUserManagementService: UserManagementServiceDouble;
+    let singleRackData$: BehaviorSubject<Rack | undefined>;
+    let rowedRackedModules$: BehaviorSubject<RackedModule[][] | null>;
     let isCurrentRackEditable$: BehaviorSubject<boolean>;
     let isCurrentRackPropertyOfCurrentUser$: BehaviorSubject<boolean>;
     let reactionBackend: ReturnType<typeof makeReactionBackendSpy>;
 
     beforeEach(async () => {
-      singleRackData$ = new BehaviorSubject<any>({
+      singleRackData$ = new BehaviorSubject<Rack | undefined>(makeRack({
         id: 42,
         name: 'Rack',
         hp: 84,
         rows: 2,
         public: true,
-      });
-      rowedRackedModules$ = new BehaviorSubject<any>([[makeRackedModule(101, 8, 50, -20, 0)]]);
+      }));
+      rowedRackedModules$ = new BehaviorSubject<RackedModule[][] | null>([[makeRackedModule(101, 8, 50, -20, 0)]]);
       isCurrentRackEditable$ = new BehaviorSubject<boolean>(false);
       isCurrentRackPropertyOfCurrentUser$ = new BehaviorSubject<boolean>(true);
 
       templateDataService = {
         setPublicDetailMode: jasmine.createSpy('setPublicDetailMode'),
-        updateSingleRackByPublicId$: {next: jasmine.createSpy('updateSingleRackByPublicId$.next')},
+        updateSingleRackByPublicId$: new ReplaySubject<string>(1),
         singleRackData$,
         rowedRackedModules$,
         isCurrentRackEditable$,
         isCurrentRackPropertyOfCurrentUser$,
         rackDetailUnavailableMessage$: new BehaviorSubject<string | null>(null),
-        weakestBalanceAxis$: new BehaviorSubject<string | null>(null),
-        moduleAddedFromPicker$: new Subject<void>(),
+        weakestBalanceAxis$: new BehaviorSubject<null>(null),
+        moduleAddedFromPicker$: new Subject<MinimalModule>(),
       };
       templateUserAreaDataService = {
-        updateModulesData$: {next: jasmine.createSpy('updateModulesData$.next')},
-        modulesData$: of([]),
+        updateModulesData$: new Subject<void>(),
+        modulesData$: new BehaviorSubject<MinimalModule[] | undefined>([]),
       };
       templateCommentsDataService = {
-        requestCommentsUpdate$: {next: jasmine.createSpy('requestCommentsUpdate$.next')},
+        requestCommentsUpdate$: new ReplaySubject(1),
       };
-      templateUserManagementService = {loggedUser$: of({id: 'u1'})};
+      templateUserManagementService = {loggedUser$: of(makeUser('u1'))};
       reactionBackend = makeReactionBackendSpy();
 
       await TestBed.configureTestingModule({
@@ -295,7 +414,7 @@ describe('RackBrowserDetailViewComponent', () => {
           {provide: SeoAndUtilsService, useValue: {updateSeo: jasmine.createSpy('updateSeo')}},
           {provide: CommentsDataService, useValue: templateCommentsDataService},
           {provide: UserManagementService, useValue: templateUserManagementService},
-          {provide: ActivatedRoute, useValue: {params: of({publicId: 'route1XYZ_-0'})}},
+          {provide: ActivatedRoute, useValue: makeActivatedRoute('route1XYZ_-0')},
           {provide: COOL_REACTIONS_ENABLED, useValue: false},
           {provide: SupabaseService, useValue: reactionBackend},
           {provide: MatSnackBar, useValue: jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open'])},
@@ -370,22 +489,33 @@ describe('RackBrowserDetailViewComponent', () => {
    */
   describe('unavailable / blank-page regression', () => {
     let fixture: ComponentFixture<RackBrowserDetailViewComponent>;
-    let templateSingleRackData$: BehaviorSubject<any>;
+    let templateSingleRackData$: BehaviorSubject<Rack | undefined>;
     let templateUnavailable$: BehaviorSubject<string | null>;
 
     beforeEach(async () => {
-      templateSingleRackData$ = new BehaviorSubject<any>(undefined);
+      templateSingleRackData$ = new BehaviorSubject<Rack | undefined>(undefined);
       templateUnavailable$ = new BehaviorSubject<string | null>(null);
 
-      const templateDataService: any = {
+      const templateDataService: RackDetailDataServiceDouble = {
         setPublicDetailMode: jasmine.createSpy('setPublicDetailMode'),
-        updateSingleRackByPublicId$: {next: jasmine.createSpy('updateSingleRackByPublicId$.next')},
+        updateSingleRackByPublicId$: new ReplaySubject<string>(1),
         singleRackData$: templateSingleRackData$,
-        rowedRackedModules$: new BehaviorSubject<any>(null),
+        rowedRackedModules$: new BehaviorSubject<RackedModule[][] | null>(null),
         isCurrentRackEditable$: new BehaviorSubject<boolean>(false),
         isCurrentRackPropertyOfCurrentUser$: new BehaviorSubject<boolean>(false),
-        moduleAddedFromPicker$: new Subject<void>(),
+        moduleAddedFromPicker$: new Subject<MinimalModule>(),
         rackDetailUnavailableMessage$: templateUnavailable$,
+        weakestBalanceAxis$: new BehaviorSubject<null>(null),
+      };
+      const templateUserAreaDataService: UserAreaDataServiceDouble = {
+        updateModulesData$: new Subject<void>(),
+        modulesData$: new BehaviorSubject<MinimalModule[] | undefined>([]),
+      };
+      const templateCommentsDataService: CommentsDataServiceDouble = {
+        requestCommentsUpdate$: new ReplaySubject(1),
+      };
+      const templateUserManagementService: UserManagementServiceDouble = {
+        loggedUser$: of(undefined),
       };
 
       await TestBed.configureTestingModule({
@@ -396,11 +526,11 @@ describe('RackBrowserDetailViewComponent', () => {
         ],
         providers: [
           {provide: RackDetailDataService, useValue: templateDataService},
-          {provide: UserAreaDataService, useValue: {updateModulesData$: {next: () => {}}, modulesData$: of([])}},
+          {provide: UserAreaDataService, useValue: templateUserAreaDataService},
           {provide: SeoAndUtilsService, useValue: {updateSeo: () => {}}},
-          {provide: CommentsDataService, useValue: {requestCommentsUpdate$: {next: () => {}}}},
-          {provide: UserManagementService, useValue: {loggedUser$: of(undefined)}},
-          {provide: ActivatedRoute, useValue: {params: of({publicId: 'route1018_XX'})}},
+          {provide: CommentsDataService, useValue: templateCommentsDataService},
+          {provide: UserManagementService, useValue: templateUserManagementService},
+          {provide: ActivatedRoute, useValue: makeActivatedRoute('route1018_XX')},
         ],
         schemas: [NO_ERRORS_SCHEMA],
       })
