@@ -3,11 +3,28 @@ import {
   tick
 } from '@angular/core/testing';
 import { of, Subject, throwError } from 'rxjs';
-import { ModuleCollectionSummary } from 'src/app/models/module-collection';
+import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import {
+  ModuleCollectionPage,
+  ModuleCollectionSummary
+} from 'src/app/models/module-collection';
 import {
   COLLECTION_ORDER_OPTIONS,
+  CollectionOrderKey,
   ModuleCollectionsBrowserDataService
 } from './module-collections-browser-data.service';
+
+type PublicModuleCollectionsPage = (
+  from: number,
+  to: number,
+  search: string,
+  order: CollectionOrderKey
+) => ReturnType<SupabaseService['GET']['publicModuleCollectionsPage']>;
+type PublicModuleCollectionsPageSpy = jasmine.Spy<PublicModuleCollectionsPage>;
+type AnalyticsDouble = AnalyticsService & {
+  capture: jasmine.Spy<AnalyticsService['capture']>;
+};
 
 const collection: ModuleCollectionSummary = {
   id: 1,
@@ -24,17 +41,34 @@ const collection: ModuleCollectionSummary = {
 };
 
 describe('ModuleCollectionsBrowserDataService', () => {
+  function buildBackend(
+    publicModuleCollectionsPage: PublicModuleCollectionsPageSpy
+  ): SupabaseService {
+    const getNamespace = Object.assign(Object.create(null) as SupabaseService['GET'], {
+      publicModuleCollectionsPage
+    });
+    return Object.assign(Object.create(SupabaseService.prototype) as SupabaseService, {
+      GET: getNamespace
+    });
+  }
+
+  function buildAnalytics(): AnalyticsDouble {
+    return Object.assign(Object.create(AnalyticsService.prototype) as AnalyticsService, {
+      capture: jasmine.createSpy<AnalyticsService['capture']>('capture')
+    });
+  }
+
   function setup() {
-    const publicModuleCollectionsPage = jasmine.createSpy('publicModuleCollectionsPage')
+    const publicModuleCollectionsPage = jasmine.createSpy<PublicModuleCollectionsPage>('publicModuleCollectionsPage')
       .and.callFake((from: number, to: number, search: string) => of({
         items: search ? [] : [collection],
         total: search ? 0 : 30,
         remaining: search ? 0 : Math.max(30 - (to + 1), 0)
       }));
-    const analytics = { capture: jasmine.createSpy('capture') };
+    const analytics = buildAnalytics();
     const service = new ModuleCollectionsBrowserDataService(
-      { GET: { publicModuleCollectionsPage } } as any,
-      analytics as any
+      buildBackend(publicModuleCollectionsPage),
+      analytics
     );
 
     return {
@@ -218,14 +252,14 @@ describe('ModuleCollectionsBrowserDataService', () => {
   }));
 
   it('ignores stale load-more responses after filters change', fakeAsync(() => {
-    const loadMorePage$ = new Subject<{items: ModuleCollectionSummary[]; total: number; remaining: number}>();
+    const loadMorePage$ = new Subject<ModuleCollectionPage>();
     const secondCollection = {
       ...collection,
       id: 2,
       name: 'Stale page',
       public_id: 'stale-page'
     };
-    const publicModuleCollectionsPage = jasmine.createSpy('publicModuleCollectionsPage')
+    const publicModuleCollectionsPage = jasmine.createSpy<PublicModuleCollectionsPage>('publicModuleCollectionsPage')
       .and.callFake((from: number, _to: number, search: string) => {
         if (from > 0) {
           return loadMorePage$;
@@ -237,8 +271,8 @@ describe('ModuleCollectionsBrowserDataService', () => {
         });
       });
     const service = new ModuleCollectionsBrowserDataService(
-      { GET: { publicModuleCollectionsPage } } as any,
-      { capture: jasmine.createSpy('capture') } as any
+      buildBackend(publicModuleCollectionsPage),
+      buildAnalytics()
     );
     const state = trackState(service);
     tick(300);
