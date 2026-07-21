@@ -1,3 +1,4 @@
+import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   of,
   throwError
@@ -6,11 +7,16 @@ import {
   cacheBust,
   cacheBuster$,
   catchErrors,
+  CachedEntity,
   defaultCacheTime,
   longCacheTime,
   showSuccessMessage,
   smallCacheTime
 } from './supabase.cache';
+
+function buildSnackBar(): jasmine.SpyObj<MatSnackBar> {
+  return jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
+}
 
 
 describe('supabase.cache constants', () => {
@@ -39,7 +45,7 @@ describe('cacheBust operator', () => {
   });
   
   it('emits on cacheBuster$ with the provided keys when source emits', (done) => {
-    const keys: any[] = [];
+    const keys: CachedEntity[][] = [];
     const sub = cacheBuster$.subscribe(k => keys.push(k));
     
     of('data')
@@ -67,7 +73,7 @@ describe('cacheBust operator', () => {
 
 describe('showSuccessMessage operator', () => {
   it('passes through source values unchanged', (done) => {
-    const snackBar: any = {open: jasmine.createSpy('open').and.returnValue({onAction: () => of()})};
+    const snackBar = buildSnackBar();
     
     of('response')
       .pipe(showSuccessMessage(snackBar))
@@ -78,7 +84,7 @@ describe('showSuccessMessage operator', () => {
   });
   
   it('calls snackBar.open when source emits', (done) => {
-    const snackBar: any = {open: jasmine.createSpy('open').and.returnValue({onAction: () => of()})};
+    const snackBar = buildSnackBar();
     
     of(true)
       .pipe(showSuccessMessage(snackBar))
@@ -91,7 +97,7 @@ describe('showSuccessMessage operator', () => {
   });
   
   it('does not call snackBar.open when source errors', (done) => {
-    const snackBar: any = {open: jasmine.createSpy('open')};
+    const snackBar = buildSnackBar();
     
     throwError(() => new Error('boom'))
       .pipe(showSuccessMessage(snackBar))
@@ -107,7 +113,7 @@ describe('showSuccessMessage operator', () => {
 
 describe('catchErrors operator', () => {
   it('passes through source values when no error occurs', (done) => {
-    const snackBar: any = {open: jasmine.createSpy('open').and.returnValue({onAction: () => of()})};
+    const snackBar = buildSnackBar();
     of(42)
       .pipe(catchErrors(snackBar))
       .subscribe(value => {
@@ -117,7 +123,7 @@ describe('catchErrors operator', () => {
   });
   
   it('returns NEVER (does not error) when source errors', () => {
-    const snackBar: any = {open: jasmine.createSpy('open').and.returnValue({onAction: () => of()})};
+    const snackBar = buildSnackBar();
     let errored = false;
     const sub = throwError(() => new Error('test error'))
       .pipe(catchErrors(snackBar))
@@ -135,8 +141,8 @@ describe('catchErrors operator', () => {
   });
   
   it('emits no values after an error (NEVER produces nothing)', () => {
-    const snackBar: any = {open: jasmine.createSpy('open').and.returnValue({onAction: () => of()})};
-    const values: any[] = [];
+    const snackBar = buildSnackBar();
+    const values: unknown[] = [];
     const sub = throwError(() => new Error('oops'))
       .pipe(catchErrors(snackBar))
       .subscribe({next: v => values.push(v), error: () => fail('should not error')});

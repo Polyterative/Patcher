@@ -25,10 +25,13 @@ describe('DbPaths', () => {
   });
   
   it('all path values are non-empty strings', () => {
-    const keys = Object.getOwnPropertyNames(DbPaths).filter(k => k !== 'prototype' && k !== 'length' && k !== 'name');
-    for (const key of keys) {
-      const value = (DbPaths as any)[key];
+    const values = Object.values(DbPaths);
+    for (const value of values) {
       expect(typeof value).toBe('string');
+      if (typeof value !== 'string') {
+        fail('DbPaths exposes only string path constants.');
+        continue;
+      }
       expect(value.length).toBeGreaterThan(0);
     }
   });
