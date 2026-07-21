@@ -1,10 +1,11 @@
+import { HttpClient } from '@angular/common/http';
 import { PhotosService } from './photos.service';
 
 describe('PhotosService', () => {
   let service: PhotosService;
 
   beforeEach(() => {
-    const httpMock: any = {};
+    const httpMock = jasmine.createSpyObj<HttpClient>('HttpClient', ['get']);
     service = new PhotosService(httpMock);
   });
 
@@ -23,7 +24,7 @@ describe('PhotosService', () => {
 
   it('ngOnDestroy completes inherited destroy$', () => {
     let completed = false;
-    (service as any).destroy$.subscribe({ complete: () => (completed = true) });
+    service.destroy$.subscribe({ complete: () => (completed = true) });
     service.ngOnDestroy();
     expect(completed).toBe(true);
   });
