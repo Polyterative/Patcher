@@ -25,6 +25,35 @@ type Rect = {
   height: number;
 };
 
+type AngularDebugApi<Component> = {
+  getComponent(element: Element): Component;
+};
+
+type AngularDebugWindow<Component> = Window & typeof globalThis & {
+  ng?: AngularDebugApi<Component>;
+};
+
+type RackedModuleEntry = {
+  module?: {name?: string | null} | null;
+};
+
+type RackAddDataService = {
+  rowedRackedModules$: {value: RackedModuleEntry[][] | null | undefined};
+  singleRackData$: {value: {id: number}};
+  backend: {
+    add: {
+      rackModule(moduleId: number, rackId: number, row: number, column: number): {
+        subscribe(callback: () => void): unknown;
+      };
+    };
+  };
+  updateSingleRackData$: {next(rackId: number): void};
+};
+
+type RackBrowserRackDetailComponent = {
+  dataService: RackAddDataService;
+};
+
 test.describe('Authenticated Rack Module Picker', () => {
   test.describe.configure({mode: 'serial'});
 
@@ -198,8 +227,8 @@ async function addRackModuleToRack(page: Page, module: OwnedModule): Promise<voi
     && response.request().method() === 'POST'
     && response.ok(), {timeout: 15_000});
 
-  await page.evaluate(({moduleId, moduleName}) => {
-    const ng = (window as any).ng;
+  await page.evaluate(({moduleId}) => {
+    const ng = (window as AngularDebugWindow<RackBrowserRackDetailComponent>).ng;
     if (!ng?.getComponent) {
       throw new Error('Angular debug API unavailable');
     }
@@ -215,10 +244,7 @@ async function addRackModuleToRack(page: Page, module: OwnedModule): Promise<voi
     const column = rows[0]?.length ?? 0;
     service.backend.add.rackModule(moduleId, service.singleRackData$.value.id, 0, column)
       .subscribe(() => service.updateSingleRackData$.next(service.singleRackData$.value.id));
-  }, {
-    moduleId: module.id,
-    moduleName: module.name
-  });
+  }, {moduleId: module.id});
 
   await addRequest;
   await expect(page.getByRole('button', {name: /^Available$/i}).first()).toBeVisible({timeout: 15_000});

@@ -1,5 +1,7 @@
 import {
   expect,
+  Locator,
+  Page,
   test
 } from '@playwright/test';
 
@@ -19,7 +21,51 @@ test.describe('Authenticated Rack Panel Switching', () => {
   const TEST_RACK_NAME = '[E2E] Panel Switch Test';
   const TEST_MODULE = {id: 2674, name: 'Afterneath'} as const;
 
-  async function enterEditMode(page: any): Promise<void> {
+  type AngularDebugApi<Component> = {
+    getComponent(element: Element): Component;
+  };
+
+  type AngularDebugWindow<Component> = Window & typeof globalThis & {
+    ng?: AngularDebugApi<Component>;
+  };
+
+  type RackedModuleEntry = {
+    module?: {name?: string | null} | null;
+  };
+
+  type RackAddDataService = {
+    rowedRackedModules$: {value: RackedModuleEntry[][] | null | undefined};
+    singleRackData$: {value: {id: number}};
+    backend: {
+      add: {
+        rackModule(moduleId: number, rackId: number, row: number, column: number): {
+          subscribe(callback: () => void): unknown;
+        };
+      };
+    };
+    updateSingleRackData$: {next(rackId: number): void};
+  };
+
+  type RackMoveDataService = {
+    rowedRackedModules$: {value: RackedModuleEntry[][]};
+    rackOrderChange$: {
+      next(value: {
+        event: {previousIndex: number; currentIndex: number};
+        newRow: number;
+        module: RackedModuleEntry;
+      }): void;
+    };
+  };
+
+  type RackBrowserRackDetailComponent = {
+    dataService: RackAddDataService;
+  };
+
+  type RackVisualModelComponent = {
+    rackDetailDataService: RackMoveDataService;
+  };
+
+  async function enterEditMode(page: Page): Promise<void> {
     const editBtn = page.getByRole('button', {name: /^Edit rack$/i}).first();
     if (await editBtn.isVisible().catch(() => false)) {
       await editBtn.click();
@@ -27,7 +73,7 @@ test.describe('Authenticated Rack Panel Switching', () => {
     await expect(page.locator('app-module-browser-root')).toBeVisible({timeout: 10_000});
   }
 
-  async function getModuleRowIndex(page: any, moduleAltText: string): Promise<number> {
+  async function getModuleRowIndex(page: Page, moduleAltText: string): Promise<number> {
     const rows = page.locator('app-rack-visual-model #screen .rackRow');
     const rowCount = await rows.count();
     for (let i = 0; i < rowCount; i++) {
@@ -38,7 +84,10 @@ test.describe('Authenticated Rack Panel Switching', () => {
     return -1;
   }
 
-  async function openPanelSwitchMenu(page: any, moduleLocator: any) {
+  async function openPanelSwitchMenu(page: Page, moduleLocator: Locator): Promise<{
+    panel1Item: Locator;
+    panel2Item: Locator;
+  }> {
     await expect(moduleLocator).toBeVisible({timeout: 10_000});
     await moduleLocator.click({button: 'right'});
 
@@ -60,7 +109,7 @@ test.describe('Authenticated Rack Panel Switching', () => {
   }
 
   /** Creates a fresh private test rack, returns its URL. Already in edit mode on return. */
-  async function createPrivateTestRack(page: any): Promise<string> {
+  async function createPrivateTestRack(page: Page): Promise<string> {
     await page.goto('/user/area');
     await expect(page).toHaveURL(/\/user\/area/, {timeout: 20_000});
 
@@ -95,7 +144,7 @@ test.describe('Authenticated Rack Panel Switching', () => {
     return rackUrl;
   }
 
-  async function setCreateRackDialogPrivacy(page: any, dialog: any, shouldBePublic: boolean): Promise<void> {
+  async function setCreateRackDialogPrivacy(page: Page, dialog: Locator, shouldBePublic: boolean): Promise<void> {
     const actions = page.locator('mat-dialog-actions').last();
     await expect(actions).toBeVisible({timeout: 5_000});
 
@@ -118,7 +167,7 @@ test.describe('Authenticated Rack Panel Switching', () => {
   }
 
   /** Deletes the test rack via the UI delete button. Call from afterEach. */
-  async function deleteTestRack(page: any, rackUrl: string) {
+  async function deleteTestRack(page: Page, rackUrl: string): Promise<void> {
     try {
       await page.goto(rackUrl, {timeout: 15_000});
       await expect(page.locator('app-rack-visual-model')).toBeVisible({timeout: 10_000});
@@ -182,7 +231,7 @@ test.describe('Authenticated Rack Panel Switching', () => {
     }, {timeout: 10_000});
 
     await page.evaluate(({moduleName, targetRowIndex}) => {
-      const ng = (window as any).ng;
+      const ng = (window as AngularDebugWindow<RackVisualModelComponent>).ng;
       if (!ng?.getComponent) {
         throw new Error('Angular debug API unavailable');
       }
@@ -197,10 +246,10 @@ test.describe('Authenticated Rack Panel Switching', () => {
       const rows = service.rowedRackedModules$.value;
       let sourceRowIndex = -1;
       let sourceColumnIndex = -1;
-      let moduleToMove = null;
+      let moduleToMove: RackedModuleEntry | null = null;
 
       for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
-        const columnIndex = rows[rowIndex].findIndex((entry: any) => entry.module?.name === moduleName);
+        const columnIndex = rows[rowIndex].findIndex((entry: RackedModuleEntry) => entry.module?.name === moduleName);
         if (columnIndex >= 0) {
           sourceRowIndex = rowIndex;
           sourceColumnIndex = columnIndex;
@@ -284,7 +333,7 @@ test.describe('Authenticated Rack Panel Switching', () => {
     await expect(inactivePanelItem).not.toContainText('✓');
   });
 
-  async function addRackModuleToRack(page: any, module: {id: number; name: string}): Promise<void> {
+  async function addRackModuleToRack(page: Page, module: {id: number; name: string}): Promise<void> {
     await expect(page.locator('app-module-browser-root')).toBeVisible({timeout: 10_000});
     const addRequest = page.waitForResponse(response =>
       response.url().includes('/rest/v1/rack_modules')
@@ -292,8 +341,8 @@ test.describe('Authenticated Rack Panel Switching', () => {
       && response.ok(),
     {timeout: 15_000});
 
-    await page.evaluate(({moduleId, moduleName}) => {
-      const ng = (window as any).ng;
+    await page.evaluate(({moduleId}) => {
+      const ng = (window as AngularDebugWindow<RackBrowserRackDetailComponent>).ng;
       if (!ng?.getComponent) {
         throw new Error('Angular debug API unavailable');
       }
@@ -307,10 +356,7 @@ test.describe('Authenticated Rack Panel Switching', () => {
       const column = rows[0]?.length ?? 0;
       service.backend.add.rackModule(moduleId, service.singleRackData$.value.id, 0, column)
         .subscribe(() => service.updateSingleRackData$.next(service.singleRackData$.value.id));
-    }, {
-      moduleId: module.id,
-      moduleName: module.name
-    });
+    }, {moduleId: module.id});
 
     await addRequest;
     await expect(page.locator(`app-rack-visual-model img[alt*="${ module.name }"]`).first()).toBeVisible({timeout: 15_000});
