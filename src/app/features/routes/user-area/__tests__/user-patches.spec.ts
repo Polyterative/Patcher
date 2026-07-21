@@ -1,5 +1,8 @@
 import { UserPatchesComponent } from '../user-patches/user-patches.component';
 import {
+  asMatDialog,
+  asSupabaseService,
+  asUserAreaDataService,
   createMockMatDialog,
   createMockSupabaseService,
   createMockUserAreaDataService,
@@ -25,9 +28,9 @@ describe('UserPatchesComponent', () => {
     mockDialog = createMockMatDialog();
     
     component = new UserPatchesComponent(
-      mockDialog as any,
-      mockBackend as any,
-      mockDataService as any,
+      asMatDialog(mockDialog),
+      asSupabaseService(mockBackend),
+      asUserAreaDataService(mockDataService),
     );
   }
   
@@ -50,9 +53,9 @@ describe('UserPatchesComponent', () => {
     mockDialog = createMockMatDialog();
     
     component = new UserPatchesComponent(
-      mockDialog as any,
-      mockBackend as any,
-      mockDataService as any,
+      asMatDialog(mockDialog),
+      asSupabaseService(mockBackend),
+      asUserAreaDataService(mockDataService),
     );
     
     expect(spy).toHaveBeenCalledTimes(1);
@@ -71,8 +74,8 @@ describe('UserPatchesComponent', () => {
   
   it('should reflect patches when dataService pushes data', () => {
     build();
-    mockDataService.patchesData$.next(MOCK_PATCHES as any);
-    expect(mockDataService.patchesData$.value).toEqual(MOCK_PATCHES as any);
+    mockDataService.patchesData$.next(MOCK_PATCHES);
+    expect(mockDataService.patchesData$.value).toEqual(MOCK_PATCHES);
   });
   
   it('should reflect empty list when dataService pushes []', () => {
