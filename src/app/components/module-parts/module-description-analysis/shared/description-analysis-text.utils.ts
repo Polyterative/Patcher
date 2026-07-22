@@ -83,7 +83,7 @@ function pushWindow(description: string, start: number, end: number, windows: Te
   });
 }
 
-function isDecimalPoint(text: string, index: number): boolean {
+export function isDecimalPoint(text: string, index: number): boolean {
   if (text[index] !== '.') {
     return false;
   }
