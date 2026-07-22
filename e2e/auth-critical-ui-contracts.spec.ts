@@ -62,7 +62,6 @@ test.describe('Authenticated critical UI contracts', () => {
   const touchedModules = new Map<number, string | null>();
   const createdRacks: CreatedRack[] = [];
   const createdPatches: CreatedPatch[] = [];
-  const submittedModuleNames: string[] = [];
 
   test.beforeAll(async () => {
     client = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
@@ -95,10 +94,6 @@ test.describe('Authenticated critical UI contracts', () => {
 
     for (const [moduleId, originalKind] of touchedModules) {
       await restoreUserModule(client, profile.id, moduleId, originalKind);
-    }
-
-    for (const moduleName of submittedModuleNames) {
-      await cleanupSubmittedModule(client, profile.id, moduleName);
     }
 
     await client.from('profiles')
@@ -303,15 +298,37 @@ test.describe('Authenticated critical UI contracts', () => {
     });
   });
 
-  test('successful module submission uses two-step arm, disarms on edits, creates one row, and celebrates', async ({page}) => {
+  test('successful module submission uses two-step arm, disarms on edits, sends one mocked create, and celebrates', async ({page}) => {
     test.setTimeout(120_000);
     const moduleName = `[E2E] submitted ${Date.now()}`;
-    submittedModuleNames.push(moduleName);
     let modulePostCount = 0;
-    page.on('request', request => {
-      if (request.url().includes('/rest/v1/modules') && request.method() === 'POST') {
-        modulePostCount++;
+    let moduleCreatePayload: Record<string, unknown> | undefined;
+    await page.route('**/rest/v1/modules*', async route => {
+      const request = route.request();
+      if (request.method() !== 'POST') {
+        await route.continue();
+        return;
       }
+
+      moduleCreatePayload = request.postDataJSON() as Record<string, unknown>;
+      expect(moduleCreatePayload['name'], 'module submission payload name').toBe(moduleName);
+      expect(moduleCreatePayload['public'], 'module submission payload visibility contract').toBe(true);
+      expect(moduleCreatePayload['isApproved'], 'module submission payload approval contract').toBe(false);
+      expect(moduleCreatePayload['hp'], 'module submission payload HP').toBe(8);
+      expect(moduleCreatePayload['manufacturerId'], 'module submission payload manufacturer').toBe(moduleFixture.manufacturerId);
+      expect(moduleCreatePayload['standard'], 'module submission payload standard').toBe(moduleFixture.standardId);
+      expect(moduleCreatePayload['description'], 'module submission payload description').toBe('Edited after arming, so submit should disarm.');
+      expect(typeof moduleCreatePayload['submitter'], 'module submission payload submitter').toBe('string');
+      modulePostCount++;
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: '[]',
+        headers: {
+          'content-range': '0-0/1',
+          'preference-applied': 'return=minimal',
+        },
+      });
     });
 
     await page.goto(`/modules/add?manufacturer=${moduleFixture.manufacturerId}&standard=${moduleFixture.standardId}&HP=8`);
@@ -337,17 +354,10 @@ test.describe('Authenticated critical UI contracts', () => {
     await page.getByRole('button', {name: /confirm submission/i}).click();
     await createModule;
     expect(modulePostCount).toBe(1);
+    expect(moduleCreatePayload, 'module submission POST payload was captured by the route mock').toBeDefined();
 
     await expect(page.locator('.celebration-overlay')).toContainText(moduleName, {timeout: 20_000});
     await expect(page).toHaveURL(/\/modules\/browser/, {timeout: 10_000});
-
-    const {data, error} = await client
-      .from('modules')
-      .select('id,name')
-      .eq('submitter', profile.id)
-      .eq('name', moduleName);
-    expect(error, `submitted module lookup failed: ${error?.message}`).toBeNull();
-    expect(data ?? [], 'module submission created exactly one row').toHaveLength(1);
   });
 
   test('delete rack cancels safely, then removes rack, modules, comments, and direct access', async ({page}) => {
@@ -770,18 +780,6 @@ async function cleanupPatch(client: DbClient, profileId: string, patchId: number
   await client.from('patch_module_instances').delete().eq('patch_id', patchId);
   await client.from('comments').delete().eq('entityId', patchId).eq('entityType', 3);
   await client.from('patches').delete().eq('authorid', profileId).eq('id', patchId);
-}
-
-async function cleanupSubmittedModule(client: DbClient, profileId: string, moduleName: string): Promise<void> {
-  const {data} = await client
-    .from('modules')
-    .select('id')
-    .eq('submitter', profileId)
-    .eq('name', moduleName);
-  for (const row of data ?? []) {
-    await client.from('comments').delete().eq('entityId', row.id).eq('entityType', 1);
-    await client.from('modules').delete().eq('submitter', profileId).eq('id', row.id);
-  }
 }
 
 async function seedPatchInstanceAndConnection(client: DbClient, patchId: number, module: ModuleFixture): Promise<void> {

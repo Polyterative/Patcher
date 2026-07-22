@@ -36,6 +36,16 @@ cp .env.example .env
 pnpm test:e2e:auth
 ```
 
+## Module CREATE safety
+
+Authenticated E2E currently targets the configured Supabase instance unless a
+test explicitly mocks network traffic. Do not create publicly visible modules in
+E2E. Browser submissions to `POST /rest/v1/modules` must be intercepted with
+`page.route(...).fulfill(...)`, and direct Supabase `modules` fixtures must stay
+private and unapproved (`public:false`, `isApproved:false`). `pnpm test:e2e`,
+`pnpm test:e2e:auth`, CI E2E, and screenshot E2E run
+`pnpm check:e2e-module-create-safety` before Playwright to enforce this.
+
 ## About `playwright/.auth/`
 
 - `e2e/global-setup.ts` logs in and writes Playwright storage state to `playwright/.auth/user.json`.
