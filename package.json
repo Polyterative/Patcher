@@ -20,6 +20,7 @@
     "px-to-rem": "node scripts/dev/px-to-rem.mjs",
     "px-to-rem:write": "node scripts/dev/px-to-rem.mjs --write",
     "ci": "pnpm test-headless",
+    "check:bundle": "node scripts/checks/check-bundle-singletons.cjs",
     "test": "pnpm test:unit",
     "test:unit": "ng test --browsers=ChromeHeadlessCI",
     "test-headless": "pnpm test:unit:headless",
