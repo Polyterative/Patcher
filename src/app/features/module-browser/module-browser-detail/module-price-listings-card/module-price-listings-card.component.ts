@@ -8,7 +8,6 @@ import {
   buildModulePriceRegionFilterOptions,
   detectPreferredModulePriceContinent,
   filterAndOrderModulePriceListings,
-  getAvailableNowPriority,
   getModulePriceFreshnessIso,
   getRegionFilterResultLabel,
   getStoreHeroColor,
@@ -30,8 +29,11 @@ import {
 } from './module-price-listings-card.utils';
 import {
   buildModulePriceListingsDerivedState,
+  getModulePriceAvailabilityClass,
+  getModulePriceAvailabilityLabel,
   getModulePriceShippingOriginFlag,
-  getModulePriceShippingOriginLabel
+  getModulePriceShippingOriginLabel,
+  isModulePriceListingAvailableNow
 } from './module-price-listings-card-display.utils';
 
 export {
@@ -190,20 +192,7 @@ export class ModulePriceListingsCardComponent {
       return 'Stale data';
     }
 
-    switch (listing.latestSnapshot?.availability) {
-      case 'in_stock':
-        return 'Available now';
-      case 'out_of_stock':
-        return 'Out of stock';
-      case 'preorder':
-        return 'Preorder';
-      case 'backorder':
-        return 'Backorder';
-      case 'discontinued':
-        return 'Discontinued';
-      default:
-        return 'Availability unknown';
-    }
+    return getModulePriceAvailabilityLabel(listing);
   }
 
   getAvailabilityClass(listing: ModulePriceListing): string {
@@ -211,23 +200,11 @@ export class ModulePriceListingsCardComponent {
       return 'module-price-listing__availability--stale';
     }
 
-    switch (listing.latestSnapshot?.availability) {
-      case 'in_stock':
-        return 'module-price-listing__availability--available';
-      case 'out_of_stock':
-        return 'module-price-listing__availability--unavailable';
-      case 'discontinued':
-        return 'module-price-listing__availability--discontinued';
-      case 'preorder':
-      case 'backorder':
-        return 'module-price-listing__availability--pending';
-      default:
-        return 'module-price-listing__availability--unknown';
-    }
+    return getModulePriceAvailabilityClass(listing);
   }
 
   isAvailableNow(listing: ModulePriceListing): boolean {
-    return !this.isStaleListing(listing) && getAvailableNowPriority(listing) === 0;
+    return isModulePriceListingAvailableNow(listing);
   }
 
   isStaleListing(listing: ModulePriceListing): boolean {
