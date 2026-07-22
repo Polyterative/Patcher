@@ -1,3 +1,5 @@
+import { isDecimalPoint } from '../shared/description-analysis-text.utils';
+
 export interface FrequencyBand {
   label: string;
   lowHz: number;
@@ -155,17 +157,6 @@ function pushFrequencySentence(
       index
     });
   }
-}
-
-function isDecimalPoint(text: string, index: number): boolean {
-  if (text[index] !== '.') {
-    return false;
-  }
-
-  const previous = text[index - 1];
-  const next = text[index + 1];
-
-  return /\d/.test(previous ?? '') && /\d/.test(next ?? '');
 }
 
 function inferBandLabel(sentence: string, matchIndex: number, index: number): string {
