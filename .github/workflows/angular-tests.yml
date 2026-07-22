@@ -79,7 +79,7 @@ jobs:
           - name: Production build + smoke
             cache_scope: production-build-smoke
             cache_angular: true
-            command: pnpm run build && pnpm run test:e2e:prod:run
+            command: pnpm run build && pnpm run check:bundle && pnpm run test:e2e:prod:run
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
