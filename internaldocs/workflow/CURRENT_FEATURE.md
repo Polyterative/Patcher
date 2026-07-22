@@ -19,10 +19,9 @@
 
 _No active feature._
 
-Status: Product work is approval-gated (see the **Approvals ledger** in [TODO.md](./TODO.md)).
-Until gates clear, coordinators must pick from the **fallback work queue** in
-[`../agents/coordinator-loop.md`](../agents/coordinator-loop.md) instead of idling.
-Updated: 2026-07-20
+Status: No active feature. Pick the next safe task from [TODO.md](./TODO.md) or the
+fallback work queue in [`../agents/coordinator-loop.md`](../agents/coordinator-loop.md).
+Updated: 2026-07-22
 
 Recent completed checkpoints are archived in [COMPLETED.md](./COMPLETED.md); their validation
 notes and decisions live in the matching plan files (e.g.
