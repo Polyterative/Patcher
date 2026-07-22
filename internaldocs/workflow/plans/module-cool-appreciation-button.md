@@ -5,7 +5,7 @@
 
 ## Status
 
-- [ ] Backend checkpoint, shared UI/data-service checkpoint, modules/public-racks surface wiring checkpoint, user-area Cool collection checkpoint, design-refinement placement checkpoint, reviewer-requested inline uncool rollback hardening, public patch detail support, and screenshot-backed detail placement polish are implemented locally. Approved Cool backend objects are applied on the linked Supabase project, and the 2026-07-17 reconciliation verified/applied only narrow Cool RLS/function hardening plus manual type reconciliation; broader production rollout remains gated. User clarified that Cool should be visible on generated development builds for review, while generated production builds must keep `coolReactionsEnabled` off; no production branch/release/push. Remaining follow-ups are gated on explicit production approval.
+- [ ] Backend checkpoint, shared UI/data-service wiring, placement polish, and user-area Cool collection work are implemented locally. Approved Cool backend objects are applied on the linked Supabase project, and the narrow 2026-07-17 reconciliation is complete; only explicit production rollout follow-ups remain gated. User clarified that Cool should be visible on generated development builds for review, while generated production builds must keep `coolReactionsEnabled` off; no production branch/release/push.
 - Priority: **LOW**
 - TODO section: **INFRA**
 - Owner persona on pickup: `coordinator-loop` → `planner` → `frontend-dev` after explicit schema/RLS approval.
