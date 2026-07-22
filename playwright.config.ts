@@ -51,6 +51,8 @@ export default defineConfig({
     '**/module-details.spec.ts',
     '**/module-editor-ux-review.spec.ts',
     '**/patch-browser.spec.ts',
+    '**/public-browser-filter-contracts.spec.ts',
+    '**/public-navigation-affordances.spec.ts',
     '**/patch-graph-stability.spec.ts',
     '**/rack-browser.spec.ts',
     '**/rack-details-layout.spec.ts',
