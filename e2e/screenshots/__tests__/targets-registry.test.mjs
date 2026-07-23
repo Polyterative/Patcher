@@ -25,6 +25,7 @@ test('screenshot target registry uses unique stable ids, filenames, and titles',
 });
 
 test('registered target titles map one-to-one to generated Playwright titles and output files', () => {
+  assert.match(screenshotSpecSource, /test\.describe\('Major area screenshot automation'/);
   assert.match(screenshotSpecSource, /test\(`captures \$\{ target\.title \}`/);
 
   for (const target of SCREENSHOT_TARGETS_REGISTRY) {

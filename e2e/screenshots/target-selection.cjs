@@ -15,7 +15,7 @@ function resolveScreenshotTarget(targetId) {
 }
 
 function buildTargetGrep(target) {
-  return `^${ escapeRegExp(captureTitleForTarget(target)) }$`;
+  return `.*${ escapeRegExp(captureTitleForTarget(target)) }$`;
 }
 
 function knownTargetIds() {
