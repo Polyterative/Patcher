@@ -16,7 +16,7 @@ import {
 const rootDir = fileURLToPath(new URL('../..', import.meta.url));
 const outputDir = resolve(rootDir, 'src/assets/screenshots/major-area-screenshots');
 const blockedDir = resolve(outputDir, '.blocked');
-const screenshotSpec = 'e2e/screenshots/auth-major-area-screenshots.spec.ts';
+const screenshotSpec = 'screenshots/auth-major-area-screenshots.spec.ts';
 const screenshotConfig = 'playwright.screenshots.config.ts';
 const blockedForwardedOptions = new Set([
   '--project',
@@ -68,6 +68,7 @@ function normalizeForwardedArgs(args) {
   const forwarded = [];
   let requestedTargetId;
   let hasConfigOverride = false;
+  let hasGrepOverride = false;
   let hasWorkersOverride = false;
 
   for (let index = 0; index < args.length; index++) {
@@ -106,6 +107,12 @@ function normalizeForwardedArgs(args) {
 
     if (arg === '--config' || arg === '-c') {
       hasConfigOverride = true;
+    }
+    if (arg === '--grep') {
+      hasGrepOverride = true;
+    }
+    if (arg.startsWith('--grep=')) {
+      hasGrepOverride = true;
     }
     if (arg.startsWith('--config=')) {
       hasConfigOverride = true;
@@ -152,6 +159,8 @@ function normalizeForwardedArgs(args) {
 
   if (requestedTarget) {
     forwarded.push('--grep', buildTargetGrep(requestedTarget));
+  } else if (!hasGrepOverride) {
+    forwarded.push('--grep', '.*captures .*$');
   }
 
   if (!hasConfigOverride) {
@@ -226,7 +235,6 @@ const args = [
   'test',
   '--reporter=list',
   '--project=chromium-screenshots',
-  screenshotSpec,
   ...forwarded
 ];
 const result = spawnSync('pnpm', args, {stdio: 'inherit', cwd: rootDir});
