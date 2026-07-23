@@ -10,6 +10,12 @@ const {
   PUBLICATION_GATE_IDS,
   SCREENSHOT_TARGETS_REGISTRY
 } = registry;
+import targetSelection from '../target-selection.cjs';
+const {
+  buildTargetGrep,
+  captureTitleForTarget,
+  resolveScreenshotTarget
+} = targetSelection;
 const testTitles = SCREENSHOT_TARGETS_REGISTRY.map(target => `captures ${ target.title }`);
 
 test('screenshot target registry uses unique stable ids, filenames, and titles', () => {
@@ -18,12 +24,23 @@ test('screenshot target registry uses unique stable ids, filenames, and titles',
   assert.equal(new Set(SCREENSHOT_TARGETS_REGISTRY.map(target => target.title)).size, SCREENSHOT_TARGETS_REGISTRY.length);
 });
 
-test('registered target titles map one-to-one to generated Playwright titles', () => {
+test('registered target titles map one-to-one to generated Playwright titles and output files', () => {
   assert.match(screenshotSpecSource, /test\(`captures \$\{ target\.title \}`/);
 
-  for (const title of testTitles) {
-    const matches = testTitles.filter(candidate => candidate === title);
-    assert.equal(matches.length, 1, `${ title } must identify exactly one screenshot test`);
+  for (const target of SCREENSHOT_TARGETS_REGISTRY) {
+    const resolved = resolveScreenshotTarget(target.id);
+    assert.deepEqual(resolved, target, `${ target.id } must resolve back to the same registry row`);
+    assert.equal(captureTitleForTarget(target), `captures ${ target.title }`);
+    assert.equal(
+      SCREENSHOT_TARGETS_REGISTRY.filter(candidate => buildTargetGrep(target) === buildTargetGrep(candidate)).length,
+      1,
+      `${ target.id } grep must match exactly one registry title`
+    );
+    assert.equal(
+      SCREENSHOT_TARGETS_REGISTRY.filter(candidate => candidate.fileName === target.fileName).length,
+      1,
+      `${ target.id } output file must be unique`
+    );
   }
 });
 

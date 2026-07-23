@@ -7,14 +7,17 @@ import {spawnSync} from 'node:child_process';
 import {existsSync, mkdirSync, readFileSync, rmSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import registry from '../../e2e/screenshots/targets.registry.cjs';
+import {
+  buildTargetGrep,
+  knownTargetIds,
+  resolveScreenshotTarget
+} from '../../e2e/screenshots/target-selection.cjs';
 
 const rootDir = fileURLToPath(new URL('../..', import.meta.url));
 const outputDir = resolve(rootDir, 'src/assets/screenshots/major-area-screenshots');
 const blockedDir = resolve(outputDir, '.blocked');
 const screenshotSpec = 'e2e/screenshots/auth-major-area-screenshots.spec.ts';
 const screenshotConfig = 'playwright.screenshots.config.ts';
-const screenshotTargets = registry.SCREENSHOT_TARGETS_REGISTRY;
 const blockedForwardedOptions = new Set([
   '--project',
   '--project=',
@@ -139,18 +142,16 @@ function normalizeForwardedArgs(args) {
     }
   }
 
-  const requestedTarget = requestedTargetId
-    ? screenshotTargets.find(target => target.id === requestedTargetId)
-    : undefined;
+  const requestedTarget = requestedTargetId ? resolveScreenshotTarget(requestedTargetId) : undefined;
 
   if (requestedTargetId && !requestedTarget) {
     throw new Error(
-      `Unknown screenshot target "${ requestedTargetId }". Known targets: ${ screenshotTargets.map(target => target.id).join(', ')}.`
+      `Unknown screenshot target "${ requestedTargetId }". Known targets: ${ knownTargetIds().join(', ')}.`
     );
   }
 
   if (requestedTarget) {
-    forwarded.push('--grep', `^captures ${ escapeRegExp(requestedTarget.title) }$`);
+    forwarded.push('--grep', buildTargetGrep(requestedTarget));
   }
 
   if (!hasConfigOverride) {
@@ -165,10 +166,6 @@ function normalizeForwardedArgs(args) {
     forwarded,
     requestedTarget
   };
-}
-
-function escapeRegExp(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function runGenerateEnv() {
