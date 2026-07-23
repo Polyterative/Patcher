@@ -26,6 +26,13 @@ const SCREENSHOT_HIDE_STYLE = `[${ DOCS_SCREENSHOT_HIDE_ATTRIBUTE }="true"] { di
 
 export async function applyDocsScreenshotSanitisation(page: Page): Promise<void> {
   const accountId = await readCurrentAccountId(page);
+  const accountIdReplacement = accountId
+    ? {
+      source: escapeRegExp(accountId),
+      flags: 'g',
+      replacement: 'Docs screenshot account'
+    }
+    : null;
   await page.evaluate((config) => {
     const ensureHideStyle = () => {
       if (document.getElementById(config.hideStyleId)) {
@@ -96,13 +103,7 @@ export async function applyDocsScreenshotSanitisation(page: Page): Promise<void>
 
     const replacements = [
       ...config.textReplacements,
-      ...(config.accountId
-        ? [{
-          source: escapeRegExp(config.accountId),
-          flags: 'g',
-          replacement: 'Docs screenshot account'
-        }]
-        : [])
+      ...(config.accountIdReplacement ? [config.accountIdReplacement] : [])
     ].map(replacement => ({
       pattern: new RegExp(replacement.source, replacement.flags),
       replacement: replacement.replacement
@@ -120,7 +121,7 @@ export async function applyDocsScreenshotSanitisation(page: Page): Promise<void>
     }
   }, {
     fixturePrefixSource: FIXTURE_PREFIX_SOURCE,
-    accountId,
+    accountIdReplacement,
     hideAttribute: DOCS_SCREENSHOT_HIDE_ATTRIBUTE,
     hideStyleId: DOCS_SCREENSHOT_HIDE_STYLE_ID,
     hideStyleText: SCREENSHOT_HIDE_STYLE,
