@@ -26,10 +26,18 @@ const SCREENSHOT_HIDE_STYLE = `[${ DOCS_SCREENSHOT_HIDE_ATTRIBUTE }="true"] { di
 
 export async function applyDocsScreenshotSanitisation(page: Page): Promise<void> {
   const accountId = await readCurrentAccountId(page);
+  const accountLabel = await readCurrentAccountLabel(page);
   const accountIdReplacement = accountId
     ? {
       source: escapeRegExp(accountId),
       flags: 'g',
+      replacement: 'Docs screenshot account'
+    }
+    : null;
+  const accountLabelReplacement = accountLabel
+    ? {
+      source: escapeRegExp(accountLabel),
+      flags: 'gi',
       replacement: 'Docs screenshot account'
     }
     : null;
@@ -64,7 +72,21 @@ export async function applyDocsScreenshotSanitisation(page: Page): Promise<void>
       'app-module-minimal',
       'app-rack-micro',
       'app-patch-micro',
+      'app-hero-clickable-title',
+      'app-hero-item-card',
+      '.hero-item-card',
       '.module-list-card'
+    ].join(',');
+    const fixtureHideSelector = [
+      'lib-clean-card',
+      'app-module-minimal',
+      'app-rack-micro',
+      'app-patch-micro',
+      'app-hero-item-card',
+      '.hero-item-card',
+      'li',
+      'article',
+      'mat-card'
     ].join(',');
     const listSelectors = [
       'app-user-racks',
@@ -95,15 +117,31 @@ export async function applyDocsScreenshotSanitisation(page: Page): Promise<void>
             continue;
           }
 
-          const hideTarget = candidate.closest('lib-clean-card') ?? candidate;
+          const hideTarget = candidate.closest(fixtureHideSelector) ?? candidate;
           hideTarget.setAttribute(config.hideAttribute, 'true');
         }
       }
     }
 
+    for (const element of document.body.querySelectorAll('*')) {
+      if (!isVisible(element)) {
+        continue;
+      }
+
+      const hasDirectFixtureText = Array.from(element.childNodes)
+        .some(node => node.nodeType === Node.TEXT_NODE && fixturePrefix.test(node.textContent ?? ''));
+      if (!hasDirectFixtureText) {
+        continue;
+      }
+
+      const hideTarget = element.closest(fixtureHideSelector) ?? element;
+      hideTarget.setAttribute(config.hideAttribute, 'true');
+    }
+
     const replacements = [
       ...config.textReplacements,
-      ...(config.accountIdReplacement ? [config.accountIdReplacement] : [])
+      ...(config.accountIdReplacement ? [config.accountIdReplacement] : []),
+      ...(config.accountLabelReplacement ? [config.accountLabelReplacement] : [])
     ].map(replacement => ({
       pattern: new RegExp(replacement.source, replacement.flags),
       replacement: replacement.replacement
@@ -122,11 +160,26 @@ export async function applyDocsScreenshotSanitisation(page: Page): Promise<void>
   }, {
     fixturePrefixSource: FIXTURE_PREFIX_SOURCE,
     accountIdReplacement,
+    accountLabelReplacement,
     hideAttribute: DOCS_SCREENSHOT_HIDE_ATTRIBUTE,
     hideStyleId: DOCS_SCREENSHOT_HIDE_STYLE_ID,
     hideStyleText: SCREENSHOT_HIDE_STYLE,
     textReplacements: TEXT_REPLACEMENTS
   });
+}
+
+async function readCurrentAccountLabel(page: Page): Promise<string | null> {
+  return page.evaluate(() => {
+    const navLabel = document.querySelector('app-toolbar a[href$="/user/area"]')?.textContent?.trim();
+    if (navLabel) {
+      return navLabel;
+    }
+
+    const heading = Array.from(document.querySelectorAll('h1'))
+      .map(element => element.textContent?.trim() ?? '')
+      .find(text => /^USER AREA\s*-/i.test(text));
+    return heading?.replace(/^USER AREA\s*-\s*/i, '').trim() || null;
+  }).catch(() => null);
 }
 
 async function readCurrentAccountId(page: Page): Promise<string | null> {

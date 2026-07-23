@@ -39,6 +39,11 @@ const SCREENSHOT_MOTION_STYLE = `
     caret-color: transparent !important;
     scroll-behavior: auto !important;
   }
+
+  .discovery-tip,
+  .discovery-tip-highlight {
+    display: none !important;
+  }
 `;
 let publicConnectedPatchIdPromise: Promise<number> | undefined;
 
@@ -199,8 +204,14 @@ async function assertProductionShell(page: Page): Promise<void> {
 }
 
 async function assertDocsSanitisation(page: Page): Promise<void> {
-  await expect(page.locator('text=/patcher-e2e-/i')).toHaveCount(0);
-  await expect(page.locator('text=/\\[E2E\\]/i')).toHaveCount(0);
+  await expect.poll(
+    () => countVisibleTextMatches(page, /patcher-e2e-/i),
+    {timeout: 10_000}
+  ).toBe(0);
+  await expect.poll(
+    () => countVisibleTextMatches(page, /\[E2E\]/i),
+    {timeout: 10_000}
+  ).toBe(0);
 }
 
 async function centerElementOnViewport(page: Page, selector: string): Promise<void> {
@@ -431,6 +442,43 @@ async function countVisibleElements(page: Page, selector: string): Promise<numbe
 
     return Array.from(document.querySelectorAll(selectorText)).filter(isVisible).length;
   }, selector);
+}
+
+async function countVisibleTextMatches(page: Page, pattern: RegExp): Promise<number> {
+  return page.evaluate(({patternSource, flags}) => {
+    const matcher = new RegExp(patternSource, flags);
+    const isVisible = (element: Element): boolean => {
+      if (!(element instanceof HTMLElement)) {
+        return false;
+      }
+
+      const style = window.getComputedStyle(element);
+      const rect = element.getBoundingClientRect();
+
+      return style.display !== 'none'
+        && style.visibility !== 'hidden'
+        && Number(style.opacity) !== 0
+        && rect.width > 0
+        && rect.height > 0;
+    };
+
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    let count = 0;
+    let textNode = walker.nextNode();
+
+    while (textNode) {
+      const parent = textNode.parentElement;
+      if (parent && isVisible(parent) && matcher.test(textNode.textContent ?? '')) {
+        count++;
+      }
+      textNode = walker.nextNode();
+    }
+
+    return count;
+  }, {
+    patternSource: pattern.source,
+    flags: pattern.flags
+  });
 }
 
 async function validateMinimumVisibleCards(

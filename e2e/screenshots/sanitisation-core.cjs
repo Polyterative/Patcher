@@ -10,7 +10,7 @@ const TEXT_REPLACEMENTS = [
     replacement: 'Docs screenshot account'
   }
 ];
-const FIXTURE_PREFIX_SOURCE = '^\\s*\\[E2E\\]';
+const FIXTURE_PREFIX_SOURCE = '\\[E2E\\]';
 const DOCS_SCREENSHOT_HIDE_ATTRIBUTE = 'data-docs-screenshot-hide';
 const DOCS_SCREENSHOT_HIDE_STYLE_ID = 'docs-screenshot-hide-style';
 const DOCS_SCREENSHOT_HIDE_SELECTOR = `[${ DOCS_SCREENSHOT_HIDE_ATTRIBUTE }="true"]`;
