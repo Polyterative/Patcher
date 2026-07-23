@@ -133,45 +133,35 @@ async function getPublicConnectedPatchId(): Promise<number> {
   return publicConnectedPatchIdPromise;
 }
 
-async function setHomeHeroPatch(page: Page, patchId: number): Promise<void> {
-  await page.waitForTimeout(1_200);
-  await page.waitForFunction((resolvedPatchId: number) => {
-    const ng = (window as {ng?: {getComponent?: (element: Element) => any}}).ng;
-    if (!ng?.getComponent) {
-      return false;
-    }
-
-    const heroRoot = document.querySelector('app-home-experience-hero');
-    if (!heroRoot) {
-      return false;
-    }
-
-    const component = ng.getComponent(heroRoot);
-    component?.patchDetailDataService?.updateSinglePatchData$?.next(resolvedPatchId);
-    return true;
-  }, patchId, {timeout: 20_000});
-}
-
-async function revealHomeHeroGraph(page: Page): Promise<boolean> {
-  return page.waitForFunction(
+async function waitForHomeHeroGraph(page: Page): Promise<void> {
+  const rendered = await page.waitForFunction(
     () => {
-      const ng = (window as {ng?: {getComponent?: (element: Element) => any}}).ng;
       const patchGraphHost = document.querySelector('app-home-experience-hero .patch-graph-shell app-patch-graph');
-      if (!ng?.getComponent || !patchGraphHost) {
+      if (!(patchGraphHost instanceof HTMLElement)) {
         return false;
       }
 
-      const patchGraphComponent = ng.getComponent(patchGraphHost);
-      const hasGraphData = (patchGraphComponent?.nodes$?.value?.length ?? 0) > 0;
-      if (!hasGraphData) {
+      const graph = patchGraphHost.querySelector('lib-graph');
+      if (!(graph instanceof HTMLElement)) {
         return false;
       }
 
-      return !patchGraphHost.textContent?.includes('Building graph...');
+      const graphBox = graph.getBoundingClientRect();
+      return graphBox.width > 0
+        && graphBox.height > 0
+        && !patchGraphHost.textContent?.includes('Building graph...')
+        && !patchGraphHost.textContent?.includes('No connections in this patch');
     },
     undefined,
     {timeout: 20_000}
   ).then(() => true).catch(() => false);
+
+  if (!rendered) {
+    throw new BlockedScreenshotError('The production home hero did not render a connected patch graph.', {
+      selectionQuery: 'DOM: app-home-experience-hero .patch-graph-shell app-patch-graph lib-graph',
+      observed: 'No visible lib-graph before timeout'
+    });
+  }
 }
 
 async function captureViewport(
@@ -347,18 +337,16 @@ async function waitForScreenshotReady(page: Page, focusSelector: string, readySc
 }
 
 async function prepareHome(page: Page): Promise<void> {
-  const patchId = await getPublicConnectedPatchId();
   await page.goto('/home');
   await expect(page).toHaveURL(/\/home/, {timeout: 20_000});
   await expect(page.locator('div.home-page h1').first()).toBeVisible({timeout: 20_000});
   await expect(page.getByRole('link', {name: /sign up/i}).first()).toBeVisible({timeout: 20_000});
   await expect(page.getByRole('link', {name: /log in/i}).first()).toBeVisible({timeout: 20_000});
   await expect(page.getByRole('link', {name: /my profile/i})).toHaveCount(0);
-  await setHomeHeroPatch(page, patchId);
   await expect(page.locator('app-home-experience-hero .patch-graph-shell app-patch-graph').first()).toBeVisible({
     timeout: 20_000
   });
-  await revealHomeHeroGraph(page);
+  await waitForHomeHeroGraph(page);
 }
 
 async function prepareModuleBrowser(page: Page): Promise<void> {
