@@ -15,7 +15,8 @@ export default async function globalSetup(config: FullConfig): Promise<void> {
     return;
   }
 
-  const authProject = config.projects.find(project => project.name === 'chromium-auth');
+  const authProject = config.projects.find(project => project.name === 'chromium-auth')
+    ?? config.projects.find(project => project.name === 'chromium-screenshots');
   const baseURL = String(authProject?.use?.baseURL ?? DEFAULT_BASE_URL);
 
   await loginAndSaveStorageState(baseURL);

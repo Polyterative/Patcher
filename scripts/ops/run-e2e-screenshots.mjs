@@ -11,18 +11,15 @@ import {fileURLToPath} from 'node:url';
 const rootDir = fileURLToPath(new URL('../..', import.meta.url));
 const outputDir = resolve(rootDir, 'src/assets/screenshots/major-area-screenshots');
 const screenshotSpec = 'e2e/screenshots/auth-major-area-screenshots.spec.ts';
+const screenshotConfig = 'playwright.screenshots.config.ts';
 const blockedForwardedOptions = new Set([
   '--project',
   '--project=',
   '--reporter',
-  '--reporter=',
-  '--workers',
-  '--workers=',
-  '--config',
-  '--config=',
-  '-c'
+  '--reporter='
 ]);
 const forwardedOptionsWithValue = new Set([
+  '--config',
   '--grep',
   '--grep-invert',
   '--timeout',
@@ -33,7 +30,9 @@ const forwardedOptionsWithValue = new Set([
   '--shard',
   '--trace',
   '--screenshot',
-  '--video'
+  '--video',
+  '--workers',
+  '-c'
 ]);
 
 function loadDotEnv() {
@@ -59,12 +58,34 @@ function hasCredentials() {
   return Boolean(process.env['E2E_TEST_EMAIL']?.trim()) && Boolean(process.env['E2E_TEST_PASSWORD']?.trim());
 }
 
-function normalizeForwardedArgs(args) {
+function readScreenshotTargetFileNames() {
+  const specSource = readFileSync(resolve(rootDir, screenshotSpec), 'utf8');
+  return [...specSource.matchAll(/fileName:\s*'([^']+\.jpg)'/g)].map(match => match[1]);
+}
+
+function normalizeForwardedArgs(args, knownTargets) {
   const forwarded = [];
+  let requestedFile;
+  let hasConfigOverride = false;
+  let hasWorkersOverride = false;
 
   for (let index = 0; index < args.length; index++) {
     const arg = args[index];
     if (arg === '--') {
+      continue;
+    }
+
+    if (arg === '--file') {
+      requestedFile = args[index + 1];
+      if (!requestedFile || requestedFile.startsWith('-')) {
+        throw new Error('--file requires a screenshot basename, for example --file=01-home.jpg.');
+      }
+      index++;
+      continue;
+    }
+
+    if (arg.startsWith('--file=')) {
+      requestedFile = arg.slice('--file='.length);
       continue;
     }
 
@@ -76,6 +97,19 @@ function normalizeForwardedArgs(args) {
       }
       console.warn(`[e2e-screenshots] Ignoring ${ arg }; project, reporter, workers, and config are fixed by this runner.`);
       continue;
+    }
+
+    if (arg === '--config' || arg === '-c') {
+      hasConfigOverride = true;
+    }
+    if (arg.startsWith('--config=')) {
+      hasConfigOverride = true;
+    }
+    if (arg === '--workers') {
+      hasWorkersOverride = true;
+    }
+    if (arg.startsWith('--workers=')) {
+      hasWorkersOverride = true;
     }
 
     if (arg === '--include') {
@@ -103,7 +137,61 @@ function normalizeForwardedArgs(args) {
     }
   }
 
-  return forwarded;
+  if (requestedFile && !knownTargets.includes(requestedFile)) {
+    throw new Error(
+      `Unknown screenshot target "${ requestedFile }". Known targets: ${ knownTargets.join(', ')}.`
+    );
+  }
+
+  if (requestedFile) {
+    forwarded.push('--grep', `^captures ${ escapeRegExp(requestedFile) }$`);
+  }
+
+  if (!hasConfigOverride) {
+    forwarded.unshift('--config', screenshotConfig);
+  }
+
+  if (!hasWorkersOverride) {
+    forwarded.unshift(`--workers=${ requestedFile ? 1 : 8 }`);
+  }
+
+  return {
+    forwarded,
+    requestedFile
+  };
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function runGenerateEnv() {
+  const result = spawnSync(process.execPath, ['generate-env.js'], {stdio: 'inherit', cwd: rootDir});
+
+  if (result.error) {
+    throw result.error;
+  }
+  if (result.status !== 0) {
+    process.exit(result.status ?? 1);
+  }
+}
+
+function assertProductionScreenshotEnvironment() {
+  const prodEnvPath = resolve(rootDir, 'src/environments/environment.prod.ts');
+  const prodEnv = readFileSync(prodEnvPath, 'utf8');
+  const requiredFragments = [
+    'production: true',
+    'collectionsEnabled: false',
+    'coolReactionsEnabled: false',
+    'marketplaceEnabled: false'
+  ];
+  const missing = requiredFragments.filter(fragment => !prodEnv.includes(fragment));
+
+  if (missing.length) {
+    throw new Error(
+      `Generated production environment is not safe for docs screenshots; missing ${ missing.join(', ') } in src/environments/environment.prod.ts.`
+    );
+  }
 }
 
 loadDotEnv();
@@ -113,7 +201,20 @@ if (!hasCredentials()) {
   process.exit(0);
 }
 
-rmSync(outputDir, {recursive: true, force: true});
+const knownTargets = readScreenshotTargetFileNames();
+const {
+  forwarded,
+  requestedFile
+} = normalizeForwardedArgs(process.argv.slice(2), knownTargets);
+
+runGenerateEnv();
+assertProductionScreenshotEnvironment();
+
+if (requestedFile) {
+  rmSync(resolve(outputDir, requestedFile), {force: true});
+} else {
+  rmSync(outputDir, {recursive: true, force: true});
+}
 mkdirSync(outputDir, {recursive: true});
 
 const args = [
@@ -121,10 +222,9 @@ const args = [
   'playwright',
   'test',
   '--reporter=list',
-  '--workers=8',
   '--project=chromium-screenshots',
   screenshotSpec,
-  ...normalizeForwardedArgs(process.argv.slice(2))
+  ...forwarded
 ];
 const result = spawnSync('pnpm', args, {stdio: 'inherit', cwd: rootDir});
 
