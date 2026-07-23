@@ -41,6 +41,39 @@ function runGenerator() {
   return writes;
 }
 
+function runGeneratorWithoutSupabaseUrl() {
+  const writes = new Map();
+  const sandboxProcess = {
+    env: {
+      SUPABASE_ANON_KEY: 'anon-key'
+    }
+  };
+
+  vm.runInNewContext(source, {
+    __dirname: repoRoot,
+    console: {log() {}, warn() {}},
+    process: sandboxProcess,
+    require(moduleName) {
+      if (moduleName === 'fs') {
+        return {
+          existsSync: () => false,
+          writeFileSync(filePath, content) {
+            writes.set(filePath, content);
+          }
+        };
+      }
+
+      if (moduleName === 'path') {
+        return path;
+      }
+
+      throw new Error(`Unexpected module: ${moduleName}`);
+    }
+  });
+
+  return writes;
+}
+
 test('generate-env enables local-only feature flags only for development builds', () => {
   const writes = runGenerator();
   const devContent = writes.get('src/environments/environment.ts');
@@ -52,4 +85,12 @@ test('generate-env enables local-only feature flags only for development builds'
   assert.match(prodContent, /production:\s*true/);
   assert.match(prodContent, /coolReactionsEnabled:\s*false/);
   assert.match(prodContent, /marketplaceEnabled:\s*false/);
+});
+
+test('generate-env defaults to the Patcher Supabase URL when only the anon key is local', () => {
+  const writes = runGeneratorWithoutSupabaseUrl();
+  const prodContent = writes.get('src/environments/environment.prod.ts');
+
+  assert.match(prodContent, /url:\s*'https:\/\/sozmatmywjpstwidzlss\.supabase\.co'/);
+  assert.match(prodContent, /key:\s*'anon-key'/);
 });

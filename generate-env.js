@@ -19,6 +19,8 @@ function loadEnvFile(filePath) {
 loadEnvFile(path.join(__dirname, '.env'));
 loadEnvFile(path.join(__dirname, '.env.local'));
 
+const DEFAULT_SUPABASE_URL = 'https://sozmatmywjpstwidzlss.supabase.co';
+
 function readExistingEnvironmentValue(filePath, propertyName) {
   if (!fs.existsSync(filePath)) return '';
   const content = fs.readFileSync(filePath, 'utf8');
@@ -26,11 +28,11 @@ function readExistingEnvironmentValue(filePath, propertyName) {
 }
 
 const existingDevEnvPath = path.join(__dirname, 'src/environments/environment.ts');
-const supabaseUrl = process.env.SUPABASE_URL || readExistingEnvironmentValue(existingDevEnvPath, 'url');
+const supabaseUrl = process.env.SUPABASE_URL || readExistingEnvironmentValue(existingDevEnvPath, 'url') || DEFAULT_SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || readExistingEnvironmentValue(existingDevEnvPath, 'key');
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('[generate-env] WARNING: SUPABASE_URL or SUPABASE_ANON_KEY is not set. Environment files will have empty values.');
+if (!supabaseAnonKey) {
+  console.warn('[generate-env] WARNING: SUPABASE_ANON_KEY is not set. Environment files will have an empty anon key.');
 }
 
 const prodEnvContent = `
