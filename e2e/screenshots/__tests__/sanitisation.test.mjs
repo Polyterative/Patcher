@@ -20,3 +20,11 @@ test('detects fixture-owned cards that should be hidden', () => {
   assert.equal(isFixtureOwnedText('Docs-friendly public patch'), false);
   assert.equal(DOCS_SCREENSHOT_HIDE_ATTRIBUTE, 'data-docs-screenshot-hide');
 });
+
+test('redacts residual UUIDs from visible text', () => {
+  const rewritten = replaceDocsScreenshotText(
+    'Owner id 123e4567-e89b-12d3-a456-426614174000 on this card'
+  );
+
+  assert.equal(rewritten, 'Owner id [hidden-id] on this card');
+});

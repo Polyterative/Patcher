@@ -8,6 +8,11 @@ const TEXT_REPLACEMENTS = [
     source: '\\bpatcher-e2e-\\d+\\b',
     flags: 'gi',
     replacement: 'Docs screenshot account'
+  },
+  {
+    source: '\\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\b',
+    flags: 'gi',
+    replacement: '[hidden-id]'
   }
 ];
 const FIXTURE_PREFIX_SOURCE = '\\[E2E\\]';
