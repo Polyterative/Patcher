@@ -25,6 +25,7 @@ const {
 const SCREENSHOT_HIDE_STYLE = `[${ DOCS_SCREENSHOT_HIDE_ATTRIBUTE }="true"] { display: none !important; }`;
 
 export async function applyDocsScreenshotSanitisation(page: Page): Promise<void> {
+  const accountId = await readCurrentAccountId(page);
   await page.evaluate((config) => {
     const ensureHideStyle = () => {
       if (document.getElementById(config.hideStyleId)) {
@@ -93,7 +94,16 @@ export async function applyDocsScreenshotSanitisation(page: Page): Promise<void>
       }
     }
 
-    const replacements = config.textReplacements.map(replacement => ({
+    const replacements = [
+      ...config.textReplacements,
+      ...(config.accountId
+        ? [{
+          source: escapeRegExp(config.accountId),
+          flags: 'g',
+          replacement: 'Docs screenshot account'
+        }]
+        : [])
+    ].map(replacement => ({
       pattern: new RegExp(replacement.source, replacement.flags),
       replacement: replacement.replacement
     }));
@@ -110,9 +120,41 @@ export async function applyDocsScreenshotSanitisation(page: Page): Promise<void>
     }
   }, {
     fixturePrefixSource: FIXTURE_PREFIX_SOURCE,
+    accountId,
     hideAttribute: DOCS_SCREENSHOT_HIDE_ATTRIBUTE,
     hideStyleId: DOCS_SCREENSHOT_HIDE_STYLE_ID,
     hideStyleText: SCREENSHOT_HIDE_STYLE,
     textReplacements: TEXT_REPLACEMENTS
   });
+}
+
+async function readCurrentAccountId(page: Page): Promise<string | null> {
+  return page.evaluate(() => {
+    for (let index = 0; index < window.localStorage.length; index++) {
+      const key = window.localStorage.key(index);
+      if (!key?.includes('auth-token')) {
+        continue;
+      }
+
+      try {
+        const parsed = JSON.parse(window.localStorage.getItem(key) ?? '{}') as {
+          user?: {id?: unknown};
+          currentSession?: {user?: {id?: unknown}};
+        };
+        const directUserId = typeof parsed.user?.id === 'string' ? parsed.user.id : null;
+        const sessionUserId = typeof parsed.currentSession?.user?.id === 'string'
+          ? parsed.currentSession.user.id
+          : null;
+        return directUserId ?? sessionUserId;
+      } catch {
+        return null;
+      }
+    }
+
+    return null;
+  }).catch(() => null);
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

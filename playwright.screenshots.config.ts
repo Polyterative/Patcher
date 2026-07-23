@@ -10,7 +10,7 @@ import {
 
 
 const PORT = 5557;
-const BASE_URL = `http://localhost:${ PORT }`;
+const BASE_URL = `http://127.0.0.1:${ PORT }`;
 const SCREENSHOT_SPEC_GLOB = [
   '**/screenshots/prod-nav-guard.spec.ts',
   '**/screenshots/auth-major-area-screenshots.spec.ts'
@@ -36,7 +36,7 @@ export default defineConfig({
   retries: process.env['CI'] ? 1 : 0,
   reporter: 'list',
   webServer: {
-    command: 'node generate-env.js && pnpm exec ng serve --configuration production --port 5557 --no-hmr',
+    command: 'node generate-env.js && pnpm exec ng serve --configuration production --port 5557 --host 127.0.0.1 --no-hmr',
     url: BASE_URL,
     reuseExistingServer: false,
     timeout: 180_000
