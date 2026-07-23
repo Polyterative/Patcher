@@ -7,11 +7,14 @@ import {spawnSync} from 'node:child_process';
 import {existsSync, mkdirSync, readFileSync, rmSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import registry from '../../e2e/screenshots/targets.registry.cjs';
 
 const rootDir = fileURLToPath(new URL('../..', import.meta.url));
 const outputDir = resolve(rootDir, 'src/assets/screenshots/major-area-screenshots');
+const blockedDir = resolve(outputDir, '.blocked');
 const screenshotSpec = 'e2e/screenshots/auth-major-area-screenshots.spec.ts';
 const screenshotConfig = 'playwright.screenshots.config.ts';
+const screenshotTargets = registry.SCREENSHOT_TARGETS_REGISTRY;
 const blockedForwardedOptions = new Set([
   '--project',
   '--project=',
@@ -58,14 +61,9 @@ function hasCredentials() {
   return Boolean(process.env['E2E_TEST_EMAIL']?.trim()) && Boolean(process.env['E2E_TEST_PASSWORD']?.trim());
 }
 
-function readScreenshotTargetFileNames() {
-  const specSource = readFileSync(resolve(rootDir, screenshotSpec), 'utf8');
-  return [...specSource.matchAll(/fileName:\s*'([^']+\.jpg)'/g)].map(match => match[1]);
-}
-
-function normalizeForwardedArgs(args, knownTargets) {
+function normalizeForwardedArgs(args) {
   const forwarded = [];
-  let requestedFile;
+  let requestedTargetId;
   let hasConfigOverride = false;
   let hasWorkersOverride = false;
 
@@ -75,17 +73,21 @@ function normalizeForwardedArgs(args, knownTargets) {
       continue;
     }
 
-    if (arg === '--file') {
-      requestedFile = args[index + 1];
-      if (!requestedFile || requestedFile.startsWith('-')) {
-        throw new Error('--file requires a screenshot basename, for example --file=01-home.jpg.');
+    if (arg === '--file' || arg.startsWith('--file=')) {
+      throw new Error('--file is not supported for docs screenshots. Use --target=<id>, for example --target=home.');
+    }
+
+    if (arg === '--target') {
+      requestedTargetId = args[index + 1];
+      if (!requestedTargetId || requestedTargetId.startsWith('-')) {
+        throw new Error('--target requires a screenshot target id, for example --target=home.');
       }
       index++;
       continue;
     }
 
-    if (arg.startsWith('--file=')) {
-      requestedFile = arg.slice('--file='.length);
+    if (arg.startsWith('--target=')) {
+      requestedTargetId = arg.slice('--target='.length);
       continue;
     }
 
@@ -95,7 +97,7 @@ function normalizeForwardedArgs(args, knownTargets) {
       if (!arg.includes('=') && args[index + 1] && !args[index + 1].startsWith('-')) {
         index++;
       }
-      console.warn(`[e2e-screenshots] Ignoring ${ arg }; project, reporter, workers, and config are fixed by this runner.`);
+      console.warn(`[e2e-screenshots] Ignoring ${ arg }; project and reporter are fixed by this runner.`);
       continue;
     }
 
@@ -137,14 +139,18 @@ function normalizeForwardedArgs(args, knownTargets) {
     }
   }
 
-  if (requestedFile && !knownTargets.includes(requestedFile)) {
+  const requestedTarget = requestedTargetId
+    ? screenshotTargets.find(target => target.id === requestedTargetId)
+    : undefined;
+
+  if (requestedTargetId && !requestedTarget) {
     throw new Error(
-      `Unknown screenshot target "${ requestedFile }". Known targets: ${ knownTargets.join(', ')}.`
+      `Unknown screenshot target "${ requestedTargetId }". Known targets: ${ screenshotTargets.map(target => target.id).join(', ')}.`
     );
   }
 
-  if (requestedFile) {
-    forwarded.push('--grep', `^captures ${ escapeRegExp(requestedFile) }$`);
+  if (requestedTarget) {
+    forwarded.push('--grep', `^captures ${ escapeRegExp(requestedTarget.title) }$`);
   }
 
   if (!hasConfigOverride) {
@@ -152,12 +158,12 @@ function normalizeForwardedArgs(args, knownTargets) {
   }
 
   if (!hasWorkersOverride) {
-    forwarded.unshift(`--workers=${ requestedFile ? 1 : 8 }`);
+    forwarded.unshift(`--workers=${ requestedTarget ? 1 : 8 }`);
   }
 
   return {
     forwarded,
-    requestedFile
+    requestedTarget
   };
 }
 
@@ -194,6 +200,11 @@ function assertProductionScreenshotEnvironment() {
   }
 }
 
+const {
+  forwarded,
+  requestedTarget
+} = normalizeForwardedArgs(process.argv.slice(2));
+
 loadDotEnv();
 
 if (!hasCredentials()) {
@@ -201,17 +212,12 @@ if (!hasCredentials()) {
   process.exit(0);
 }
 
-const knownTargets = readScreenshotTargetFileNames();
-const {
-  forwarded,
-  requestedFile
-} = normalizeForwardedArgs(process.argv.slice(2), knownTargets);
-
 runGenerateEnv();
 assertProductionScreenshotEnvironment();
 
-if (requestedFile) {
-  rmSync(resolve(outputDir, requestedFile), {force: true});
+if (requestedTarget) {
+  rmSync(resolve(outputDir, requestedTarget.fileName), {force: true});
+  rmSync(resolve(blockedDir, `${ requestedTarget.id }.txt`), {force: true});
 } else {
   rmSync(outputDir, {recursive: true, force: true});
 }

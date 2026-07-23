@@ -5,7 +5,8 @@ import {
 
 
 const DEFAULT_SUPABASE_URL = 'https://sozmatmywjpstwidzlss.supabase.co';
-const MINIMUM_RICH_PATCH_CONNECTIONS = 2;
+const MINIMUM_RICH_PATCH_CONNECTIONS = 1;
+const MINIMUM_RICH_PATCH_MODULES = 2;
 
 interface AuthSession {
   accessToken: string;
@@ -20,6 +21,11 @@ export interface PatchSummary {
   created: string;
   connectionCount: number;
   moduleCount: number;
+}
+
+export interface BlockedScreenshotEvidence {
+  selectionQuery?: string;
+  observed?: string;
 }
 
 interface PatchSummaryBase {
@@ -44,7 +50,7 @@ interface StorageAuthValue {
 }
 
 export class BlockedScreenshotError extends Error {
-  constructor(message: string) {
+  constructor(message: string, readonly evidence: BlockedScreenshotEvidence = {}) {
     super(message);
     this.name = 'BlockedScreenshotError';
   }
@@ -121,18 +127,24 @@ export async function pickBestOwnedPatch(
   const supabaseAnonKey = process.env['SUPABASE_ANON_KEY']?.trim();
 
   if (!supabaseAnonKey) {
-    throw new BlockedScreenshotError('Cannot select a docs screenshot patch because SUPABASE_ANON_KEY is unavailable.');
+    throw new BlockedScreenshotError('Cannot select a docs screenshot patch because SUPABASE_ANON_KEY is unavailable.', {
+      selectionQuery: 'SUPABASE_ANON_KEY required for read-only REST selection'
+    });
   }
+  const patchesQuery = `patches?select=id,public_id,name,updated,created&authorid=eq.${ encodeURIComponent(session.userId) }&order=id.asc&limit=100`;
 
   const patches = await fetchRestRows<PatchSummaryBase>(
     supabaseUrl,
     supabaseAnonKey,
     session.accessToken,
-    `patches?select=id,public_id,name,updated,created&authorid=eq.${ encodeURIComponent(session.userId) }&order=updated.desc&limit=100`
+    patchesQuery
   );
 
   if (!patches.length) {
-    throw new BlockedScreenshotError('No existing owned patches were found for the docs patch-detail screenshot.');
+    throw new BlockedScreenshotError('No existing owned patches were found for the docs patch-detail screenshot.', {
+      selectionQuery: patchesQuery,
+      observed: '0 owned patches'
+    });
   }
 
   const patchIds = patches.map(patch => patch.id);
@@ -149,14 +161,24 @@ export async function pickBestOwnedPatch(
       created: patch.created,
       connectionCount: connectionCounts.get(patch.id) ?? 0,
       moduleCount: moduleCounts.get(patch.id) ?? 0
-    }))
-    .sort(comparePatchCandidates);
-  const best = candidates[0];
+    }));
+  const best = candidates.find(candidate =>
+    candidate.connectionCount >= minimumConnections && candidate.moduleCount >= MINIMUM_RICH_PATCH_MODULES
+  );
 
-  if (!best || best.connectionCount < minimumConnections) {
-    const highest = best?.connectionCount ?? 0;
+  if (!best) {
+    const highestConnectionCount = Math.max(...candidates.map(candidate => candidate.connectionCount), 0);
+    const highestModuleCount = Math.max(...candidates.map(candidate => candidate.moduleCount), 0);
     throw new BlockedScreenshotError(
-      `No owned patch meets the ${ minimumConnections }-connection docs screenshot threshold. Highest observed connection count: ${ highest }.`
+      `No owned patch meets the ${ minimumConnections }-connection and ${ MINIMUM_RICH_PATCH_MODULES }-module docs screenshot threshold.`,
+      {
+        selectionQuery: [
+          patchesQuery,
+          `patch_connections?select=patchid&patchid=in.(${ patchIds.join(',') })`,
+          `patch_module_instances?select=patch_id&patch_id=in.(${ patchIds.join(',') })`
+        ].join('\n'),
+        observed: `owned patches=${ candidates.length }, highest connections=${ highestConnectionCount }, highest modules=${ highestModuleCount }`
+      }
     );
   }
 
@@ -374,18 +396,4 @@ async function countRowsByPatchId(
   }
 
   return counts;
-}
-
-function comparePatchCandidates(a: PatchSummary, b: PatchSummary): number {
-  const byConnectionCount = b.connectionCount - a.connectionCount;
-  if (byConnectionCount !== 0) {
-    return byConnectionCount;
-  }
-
-  const byModuleCount = b.moduleCount - a.moduleCount;
-  if (byModuleCount !== 0) {
-    return byModuleCount;
-  }
-
-  return new Date(b.updated).getTime() - new Date(a.updated).getTime();
 }

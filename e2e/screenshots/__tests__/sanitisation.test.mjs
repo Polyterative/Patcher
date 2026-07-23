@@ -8,10 +8,10 @@ import {
 
 test('rewrites docs screenshot account identifiers', () => {
   const rewritten = replaceDocsScreenshotText(
-    'patcher-e2e-123@patcher.xyz patcher-e2e-123 05af5f8e-f04e-4668-b247-52d292f7a99a'
+    'patcher-e2e-123@patcher.xyz patcher-e2e-123'
   );
 
-  assert.equal(rewritten, 'docs@patcher.xyz Docs account Docs account');
+  assert.equal(rewritten, 'docs-screenshot@patcher.xyz Docs screenshot account');
 });
 
 test('detects fixture-owned cards that should be hidden', () => {

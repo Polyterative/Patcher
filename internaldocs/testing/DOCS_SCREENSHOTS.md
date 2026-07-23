@@ -12,17 +12,17 @@ pnpm test:e2e:screenshots
 
 The script installs Chromium through the package pretest hook, then runs `scripts/ops/run-e2e-screenshots.mjs`. The runner loads `.env` the same way the E2E auth helper does. Product owner has approved the already-created, locally verified dedicated E2E account for these screenshot credentials; keep values only in local/secret storage and never print, document, or commit them. If `E2E_TEST_EMAIL` or `E2E_TEST_PASSWORD` is missing, it prints a `[e2e-screenshots]` skip message, exits 0, and leaves `src/assets/screenshots/major-area-screenshots/` untouched.
 
-Only when credentials are present does the runner regenerate `src/environments/environment*.ts`, assert that production feature flags are safe for docs screenshots, and invoke Playwright with `playwright.screenshots.config.ts`. That config starts a production-mode Angular server on port 5557 and does not reuse an existing server, so dev-only navigation from port 5556 cannot leak into the captures.
+Only when credentials are present does the runner regenerate `src/environments/environment*.ts`, assert that production feature flags are safe for docs screenshots, and invoke Playwright with `playwright.screenshots.config.ts`. That config starts a production-mode Angular server on `127.0.0.1:5557` and does not reuse an existing server, so dev-only navigation from port 5556 cannot leak into the captures. The screenshot spec also runs `assertProductionShell(page)` before every docs-facing gate and fails before capture if Collections, Insights, Marketplace, or Cool UI appears.
 
-For a full refresh, the runner removes/recreates `src/assets/screenshots/major-area-screenshots/` and captures the canonical desktop JPEG set for the 10 major surfaces. For a focused repair, use the stable file selector:
+For a full refresh, the runner removes/recreates `src/assets/screenshots/major-area-screenshots/` and captures the canonical desktop JPEG set for the 10 major surfaces. For a focused repair, use the stable target selector:
 
 ```bash
-pnpm test:e2e:screenshots -- --file=01-home.jpg
+pnpm test:e2e:screenshots -- --target=home
 ```
 
-`--file=<basename>.jpg` must match a known `SCREENSHOT_TARGETS` entry. Per-file mode deletes only that output and defaults to one worker; full mode defaults to eight workers. The capture test title format is `captures <fileName>`, and the runner translates `--file` to an anchored title selector.
+`--target=<id>` must match `e2e/screenshots/targets.registry.*`. Per-target mode deletes only that output plus `src/assets/screenshots/major-area-screenshots/.blocked/<id>.txt` and defaults to one worker; full mode defaults to eight workers. The capture test title format is `captures <target.title>`, and the runner translates the target id to an anchored title selector from the registry.
 
-Before every JPG write, the capture helper applies docs screenshot sanitisation in the browser: E2E account identifiers are rewritten to neutral docs-account text, UUID account IDs are redacted, and `[E2E]` fixture cards are hidden from the approved docs-facing containers. This is visual-only and must not create, rename, delete, or otherwise mutate backend data. If the remaining non-fixture content is insufficient, the screenshot is blocked and recorded in the active workflow plan Decision log.
+Before every JPG write, the capture helper applies docs screenshot sanitisation in the browser: E2E account identifiers are rewritten to `docs-screenshot@patcher.xyz` / `Docs screenshot account`, the signed-in account UUID is redacted when available, and `[E2E]` fixture cards are hidden from the approved docs-facing containers. This is visual-only and must not create, rename, delete, or otherwise mutate backend data. If the remaining non-fixture content is insufficient, the screenshot writes `.blocked/<id>.txt` evidence and fails.
 
 The external docs sync publishes the seven docs-facing surfaces: home, modules, patch details, racks, user area, account, and public profile. The docs-facing patch asset maps from `05-patch-details.jpg`, not `04-patches.jpg`.
 

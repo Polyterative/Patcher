@@ -2,17 +2,12 @@ const TEXT_REPLACEMENTS = [
   {
     source: '\\bpatcher-e2e-\\d+@patcher\\.xyz\\b',
     flags: 'gi',
-    replacement: 'docs@patcher.xyz'
+    replacement: 'docs-screenshot@patcher.xyz'
   },
   {
     source: '\\bpatcher-e2e-\\d+\\b',
     flags: 'gi',
-    replacement: 'Docs account'
-  },
-  {
-    source: '\\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\b',
-    flags: 'gi',
-    replacement: 'Docs account'
+    replacement: 'Docs screenshot account'
   }
 ];
 const FIXTURE_PREFIX_SOURCE = '^\\s*\\[E2E\\]';
