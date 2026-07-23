@@ -7,6 +7,7 @@ import {execFileSync} from 'node:child_process';
 import {copyFileSync, existsSync, readdirSync, statSync} from 'node:fs';
 import {relative, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {screenshotMap} from './docs-screenshot-map.mjs';
 
 const rootDir = fileURLToPath(new URL('../..', import.meta.url));
 const docsDir = resolve(rootDir, '../Patcher-docs');
@@ -17,18 +18,8 @@ const args = new Set(process.argv.slice(2));
 const dryRun = args.has('--dry-run');
 const help = args.has('--help') || args.has('-h');
 
-const screenshotMap = [
-  ['01-home.jpg', 'patcher-home.jpg'],
-  ['02-modules.jpg', 'patcher-modules.jpg'],
-  ['04-patches.jpg', 'patcher-patches.jpg'],
-  ['06-racks.jpg', 'patcher-racks.jpg'],
-  ['08-user-area.jpg', 'patcher-user-area.jpg'],
-  ['09-account.jpg', 'patcher-account.jpg'],
-  ['10-public-profile.jpg', 'patcher-public-profile.jpg']
-];
-
 function usage() {
-  console.log(`Usage: pnpm sync:docs-screenshots [--dry-run]\n\nCopies reviewed screenshots from ${ relative(rootDir, sourceDir) } to ../Patcher-docs/.gitbook/assets. The docs worktree must be clean and on ${ expectedDocsBranch }. Override with PATCHER_DOCS_SCREENSHOTS_BRANCH. The script never commits or pushes.`);
+  console.log(`Usage: pnpm sync:docs-screenshots [--dry-run]\n\nCopies the seven reviewed docs-facing screenshots from ${ relative(rootDir, sourceDir) } to ../Patcher-docs/.gitbook/assets. The docs worktree must be clean and on ${ expectedDocsBranch }. Override with PATCHER_DOCS_SCREENSHOTS_BRANCH. The script maps 05-patch-details.jpg to patcher-patches.jpg and never commits or pushes.`);
 }
 
 function git(argsForGit, cwd) {

@@ -4,6 +4,52 @@ import {
 } from '@playwright/test';
 
 
+const DEFAULT_SUPABASE_URL = 'https://sozmatmywjpstwidzlss.supabase.co';
+const MINIMUM_RICH_PATCH_CONNECTIONS = 2;
+
+interface AuthSession {
+  accessToken: string;
+  userId: string;
+}
+
+export interface PatchSummary {
+  id: number;
+  publicId: string | null;
+  name: string | null;
+  updated: string;
+  created: string;
+  connectionCount: number;
+  moduleCount: number;
+}
+
+interface PatchSummaryBase {
+  id: number;
+  public_id: string | null;
+  name: string | null;
+  updated: string;
+  created: string;
+}
+
+interface StorageAuthValue {
+  access_token?: unknown;
+  user?: {
+    id?: unknown;
+  };
+  currentSession?: {
+    access_token?: unknown;
+    user?: {
+      id?: unknown;
+    };
+  };
+}
+
+export class BlockedScreenshotError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'BlockedScreenshotError';
+  }
+}
+
 export async function openOwnedPatchDetails(page: Page): Promise<void> {
   await page.goto('/user/area');
   await expect(page).toHaveURL(/\/user\/area/, {timeout: 20_000});
@@ -64,6 +110,85 @@ export async function openOwnedPatchDetailsInEditMode(page: Page): Promise<void>
 
   await expect(editingHeading).toBeVisible({timeout: 20_000});
   await expect(page.getByRole('button', {name: /Close editor/i}).first()).toBeVisible({timeout: 20_000});
+}
+
+export async function pickBestOwnedPatch(
+  page: Page,
+  minimumConnections = MINIMUM_RICH_PATCH_CONNECTIONS
+): Promise<PatchSummary> {
+  const session = await readAuthSession(page);
+  const supabaseUrl = (process.env['SUPABASE_URL'] || DEFAULT_SUPABASE_URL).replace(/\/+$/, '');
+  const supabaseAnonKey = process.env['SUPABASE_ANON_KEY']?.trim();
+
+  if (!supabaseAnonKey) {
+    throw new BlockedScreenshotError('Cannot select a docs screenshot patch because SUPABASE_ANON_KEY is unavailable.');
+  }
+
+  const patches = await fetchRestRows<PatchSummaryBase>(
+    supabaseUrl,
+    supabaseAnonKey,
+    session.accessToken,
+    `patches?select=id,public_id,name,updated,created&authorid=eq.${ encodeURIComponent(session.userId) }&order=updated.desc&limit=100`
+  );
+
+  if (!patches.length) {
+    throw new BlockedScreenshotError('No existing owned patches were found for the docs patch-detail screenshot.');
+  }
+
+  const patchIds = patches.map(patch => patch.id);
+  const [connectionCounts, moduleCounts] = await Promise.all([
+    countRowsByPatchId(supabaseUrl, supabaseAnonKey, session.accessToken, 'patch_connections', 'patchid', patchIds),
+    countRowsByPatchId(supabaseUrl, supabaseAnonKey, session.accessToken, 'patch_module_instances', 'patch_id', patchIds)
+  ]);
+  const candidates = patches
+    .map(patch => ({
+      id: patch.id,
+      publicId: patch.public_id,
+      name: patch.name,
+      updated: patch.updated,
+      created: patch.created,
+      connectionCount: connectionCounts.get(patch.id) ?? 0,
+      moduleCount: moduleCounts.get(patch.id) ?? 0
+    }))
+    .sort(comparePatchCandidates);
+  const best = candidates[0];
+
+  if (!best || best.connectionCount < minimumConnections) {
+    const highest = best?.connectionCount ?? 0;
+    throw new BlockedScreenshotError(
+      `No owned patch meets the ${ minimumConnections }-connection docs screenshot threshold. Highest observed connection count: ${ highest }.`
+    );
+  }
+
+  return best;
+}
+
+export async function openBestOwnedPatchDetailsInEditMode(page: Page): Promise<PatchSummary> {
+  const patch = await pickBestOwnedPatch(page);
+  const patchPath = patch.publicId ? `/patches/${ patch.publicId }` : `/patches/details/${ patch.id }`;
+
+  await page.goto(patchPath);
+  await expect(page).toHaveURL(/\/patches\/(details\/\d+|[A-Za-z0-9_-]+)/, {timeout: 20_000});
+  await expect(page.getByRole('heading', {name: /Patch (details|editing)/i}).first()).toBeVisible({timeout: 20_000});
+  await expect(page.locator('app-patch-composite').first()).toBeVisible({timeout: 20_000});
+
+  const editingHeading = page.getByRole('heading', {name: /Patch editing/i}).first();
+  const editPatchButton = page.locator('app-edit-fab button', {hasText: /^Edit$/i}).first();
+
+  await Promise.any([
+    editingHeading.waitFor({state: 'visible', timeout: 10_000}),
+    editPatchButton.waitFor({state: 'visible', timeout: 10_000})
+  ]).catch(() => undefined);
+
+  if (!(await editingHeading.isVisible().catch(() => false))) {
+    await expect(editPatchButton).toBeVisible({timeout: 10_000});
+    await editPatchButton.click();
+  }
+
+  await expect(editingHeading).toBeVisible({timeout: 20_000});
+  await expect(page.getByRole('button', {name: /Close editor/i}).first()).toBeVisible({timeout: 20_000});
+
+  return patch;
 }
 
 export async function openOwnedRackDetailsInEditMode(page: Page): Promise<void> {
@@ -154,4 +279,113 @@ async function setCreateRackDialogPrivacy(page: Page, shouldBePublic: boolean): 
   await expect(actions.locator('mat-icon', {hasText: shouldBePublic ? 'public' : 'lock'}).first()).toBeVisible({
     timeout: 5_000
   });
+}
+
+async function readAuthSession(page: Page): Promise<AuthSession> {
+  const storageState = await page.context().storageState();
+
+  for (const origin of storageState.origins) {
+    for (const item of origin.localStorage) {
+      if (!item.name.includes('auth-token')) {
+        continue;
+      }
+
+      const parsed = safeParseAuthValue(item.value);
+      const directToken = typeof parsed?.access_token === 'string' ? parsed.access_token : undefined;
+      const directUserId = typeof parsed?.user?.id === 'string' ? parsed.user.id : undefined;
+      const sessionToken = typeof parsed?.currentSession?.access_token === 'string'
+        ? parsed.currentSession.access_token
+        : undefined;
+      const sessionUserId = typeof parsed?.currentSession?.user?.id === 'string'
+        ? parsed.currentSession.user.id
+        : undefined;
+      const accessToken = directToken ?? sessionToken;
+      const userId = directUserId ?? sessionUserId;
+
+      if (accessToken && userId) {
+        return {accessToken, userId};
+      }
+    }
+  }
+
+  throw new BlockedScreenshotError('Could not read the authenticated Supabase session for docs screenshot patch selection.');
+}
+
+function safeParseAuthValue(value: string): StorageAuthValue | null {
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    if (typeof parsed === 'object' && parsed !== null) {
+      return parsed as StorageAuthValue;
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}
+
+async function fetchRestRows<T>(
+  supabaseUrl: string,
+  supabaseAnonKey: string,
+  accessToken: string,
+  path: string
+): Promise<T[]> {
+  const response = await fetch(`${ supabaseUrl }/rest/v1/${ path }`, {
+    headers: {
+      apikey: supabaseAnonKey,
+      Authorization: `Bearer ${ accessToken }`
+    }
+  });
+
+  if (!response.ok) {
+    throw new BlockedScreenshotError(`Supabase read failed for docs screenshot patch selection (${ response.status }).`);
+  }
+
+  return await response.json() as T[];
+}
+
+async function countRowsByPatchId(
+  supabaseUrl: string,
+  supabaseAnonKey: string,
+  accessToken: string,
+  table: string,
+  patchIdColumn: string,
+  patchIds: number[]
+): Promise<Map<number, number>> {
+  if (!patchIds.length) {
+    return new Map<number, number>();
+  }
+
+  const rows = await fetchRestRows<Record<string, unknown>>(
+    supabaseUrl,
+    supabaseAnonKey,
+    accessToken,
+    `${ table }?select=${ patchIdColumn }&${ patchIdColumn }=in.(${ patchIds.join(',') })`
+  );
+  const counts = new Map<number, number>();
+
+  for (const row of rows) {
+    const patchId = row[patchIdColumn];
+    if (typeof patchId !== 'number') {
+      continue;
+    }
+
+    counts.set(patchId, (counts.get(patchId) ?? 0) + 1);
+  }
+
+  return counts;
+}
+
+function comparePatchCandidates(a: PatchSummary, b: PatchSummary): number {
+  const byConnectionCount = b.connectionCount - a.connectionCount;
+  if (byConnectionCount !== 0) {
+    return byConnectionCount;
+  }
+
+  const byModuleCount = b.moduleCount - a.moduleCount;
+  if (byModuleCount !== 0) {
+    return byModuleCount;
+  }
+
+  return new Date(b.updated).getTime() - new Date(a.updated).getTime();
 }

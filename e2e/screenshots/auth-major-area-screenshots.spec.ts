@@ -7,8 +7,10 @@ import {
   test
 } from '@playwright/test';
 import {
-  openOwnedPatchDetailsInEditMode
+  BlockedScreenshotError,
+  openBestOwnedPatchDetailsInEditMode
 } from '../helpers/user-owned-entities';
+import { applyDocsScreenshotSanitisation } from './sanitisation.util';
 
 
 const OUTPUT_DIR = path.resolve(process.cwd(), 'src/assets/screenshots/major-area-screenshots');
@@ -42,6 +44,7 @@ interface ScreenshotTarget {
   readyScopeSelector?: string;
   settleDelayMs?: number;
   authenticated?: boolean;
+  validateAfterSanitisation?: (page: Page) => Promise<void>;
 }
 
 function ensureOutputDir(): void {
@@ -148,42 +151,17 @@ async function revealHomeHeroGraph(page: Page): Promise<boolean> {
 
 async function captureViewport(
   page: Page,
-  fileName: string,
-  focusSelector: string,
-  readyScopeSelector = focusSelector,
-  settleDelayMs = SCREENSHOT_DELAY_MS
+  target: ScreenshotTarget
 ): Promise<void> {
-  await waitForScreenshotReady(page, focusSelector, readyScopeSelector);
-  await page.waitForTimeout(settleDelayMs);
-  if (fileName === '09-account.jpg') {
-    await redactAccountScreenshotData(page);
-  }
+  await waitForScreenshotReady(page, target.focusSelector, target.readyScopeSelector ?? target.focusSelector);
+  await page.waitForTimeout(target.settleDelayMs ?? SCREENSHOT_DELAY_MS);
+  await applyDocsScreenshotSanitisation(page);
+  await target.validateAfterSanitisation?.(page);
   await page.screenshot({
-    path: path.join(OUTPUT_DIR, fileName),
+    path: path.join(OUTPUT_DIR, target.fileName),
     fullPage: false,
     type: 'jpeg',
     quality: 82
-  });
-}
-
-async function redactAccountScreenshotData(page: Page): Promise<void> {
-  await page.evaluate(() => {
-    const replacements: Array<[RegExp, string]> = [
-      [/\bpatcher-e2e-\d+@patcher\.xyz\b/gi, 'docs-screenshot@patcher.xyz'],
-      [/\bpatcher-e2e-\d+\b/gi, 'Docs screenshot account'],
-      [/\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi, 'Dedicated docs screenshot account']
-    ];
-    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-    let textNode = walker.nextNode();
-
-    while (textNode) {
-      let text = textNode.textContent ?? '';
-      for (const [pattern, replacement] of replacements) {
-        text = text.replace(pattern, replacement);
-      }
-      textNode.textContent = text;
-      textNode = walker.nextNode();
-    }
   });
 }
 
@@ -338,9 +316,7 @@ async function prepareHome(page: Page): Promise<void> {
 async function prepareModuleBrowser(page: Page): Promise<void> {
   await page.goto('/modules/browser');
   await expect(page).toHaveURL(/\/modules\/browser/, {timeout: 20_000});
-  await expect(page.locator('app-module-minimal, app-empty-state, lib-auto-content-loading-indicator').first()).toBeVisible({
-    timeout: 20_000
-  });
+  await waitForVisibleCardCount(page, 'app-module-minimal', 6, 'module cards');
 }
 
 async function prepareModuleDetails(page: Page): Promise<void> {
@@ -355,19 +331,24 @@ async function prepareModuleDetails(page: Page): Promise<void> {
 async function preparePatchBrowser(page: Page): Promise<void> {
   await page.goto('/patches/browser');
   await expect(page).toHaveURL(/\/patches\/browser/, {timeout: 20_000});
-  await expect(page.locator('app-patch-micro, app-empty-state, lib-auto-content-loading-indicator').first()).toBeVisible({
-    timeout: 20_000
-  });
+  await waitForVisibleCardCount(page, 'app-patch-micro', 6, 'patch cards');
 }
 
 async function preparePatchDetailsEditing(page: Page): Promise<void> {
-  await openOwnedPatchDetailsInEditMode(page);
+  try {
+    await openBestOwnedPatchDetailsInEditMode(page);
+  } catch (error) {
+    if (error instanceof BlockedScreenshotError) {
+      throw error;
+    }
+    throw error;
+  }
 }
 
 async function prepareRackBrowser(page: Page): Promise<void> {
   await page.goto('/racks/browser');
   await expect(page).toHaveURL(/\/racks\/browser/, {timeout: 20_000});
-  await expect(page.locator('app-rack-micro, app-empty-state').first()).toBeVisible({timeout: 20_000});
+  await waitForVisibleCardCount(page, 'app-rack-list app-rack-micro', 6, 'rack cards');
 }
 
 async function prepareUserArea(page: Page): Promise<void> {
@@ -378,6 +359,81 @@ async function prepareUserArea(page: Page): Promise<void> {
     timeout: 20_000
   });
   await expect(page.locator('app-user-modules, app-user-racks, app-user-patches').first()).toBeVisible({timeout: 20_000});
+}
+
+async function waitForVisibleCardCount(page: Page, selector: string, minimumCount: number, label: string): Promise<void> {
+  await expect.poll(
+    () => countVisibleElements(page, selector),
+    {
+      message: `Expected at least ${ minimumCount } visible ${ label }`,
+      timeout: 20_000
+    }
+  ).toBeGreaterThanOrEqual(minimumCount);
+}
+
+async function countVisibleElements(page: Page, selector: string): Promise<number> {
+  return page.evaluate((selectorText: string) => {
+    const isVisible = (element: Element): boolean => {
+      if (!(element instanceof HTMLElement)) {
+        return false;
+      }
+
+      if (element.closest('[data-docs-screenshot-hide="true"]')) {
+        return false;
+      }
+
+      const style = window.getComputedStyle(element);
+      const rect = element.getBoundingClientRect();
+
+      return style.display !== 'none'
+        && style.visibility !== 'hidden'
+        && Number(style.opacity) !== 0
+        && rect.width > 0
+        && rect.height > 0;
+    };
+
+    return Array.from(document.querySelectorAll(selectorText)).filter(isVisible).length;
+  }, selector);
+}
+
+async function validateMinimumVisibleCards(
+  page: Page,
+  selector: string,
+  minimumCount: number,
+  label: string
+): Promise<void> {
+  const count = await countVisibleElements(page, selector);
+  if (count < minimumCount) {
+    throw new BlockedScreenshotError(
+      `Only ${ count } non-fixture ${ label } remain visible after docs screenshot sanitisation; minimum required is ${ minimumCount }.`
+    );
+  }
+}
+
+async function validatePatchDetails(page: Page): Promise<void> {
+  await expect(page.locator('app-patch-composite').first()).toBeVisible({timeout: 20_000});
+  await expect(page.getByRole('heading', {name: /Patch editing/i}).first()).toBeVisible({timeout: 20_000});
+  await expect(page.locator('text=/\\[E2E\\]/i')).toHaveCount(0);
+}
+
+async function validateUserArea(page: Page): Promise<void> {
+  const counts = {
+    modules: await countVisibleElements(page, 'app-user-modules app-module-minimal'),
+    racks: await countVisibleElements(page, 'app-user-racks app-rack-micro'),
+    patches: await countVisibleElements(page, 'app-user-patches app-patch-micro')
+  };
+  const emptySections = Object.entries(counts)
+    .filter(([, count]) => count < 1)
+    .map(([section]) => section);
+
+  if (emptySections.length) {
+    throw new BlockedScreenshotError(
+      `User area docs screenshot blocked after sanitisation; empty non-fixture sections: ${ emptySections.join(', ') }.`
+    );
+  }
+
+  await expect(page.getByRole('heading', {name: /USER AREA — Docs account/i}).first()).toBeVisible({timeout: 10_000});
+  await expect(page.locator('text=/\\[E2E\\]/i')).toHaveCount(0);
 }
 
 async function prepareAccount(page: Page): Promise<void> {
@@ -402,7 +458,7 @@ async function prepareRackDetailsCentered(page: Page): Promise<void> {
   await centerElementOnViewport(page, 'app-rack-composite');
 }
 
-const SCREENSHOT_TARGETS: ScreenshotTarget[] = [
+export const SCREENSHOT_TARGETS: ScreenshotTarget[] = [
   {
     fileName: '01-home.jpg',
     prepare: prepareHome,
@@ -411,7 +467,14 @@ const SCREENSHOT_TARGETS: ScreenshotTarget[] = [
     settleDelayMs: 1_500,
     authenticated: false
   },
-  {fileName: '02-modules.jpg', prepare: prepareModuleBrowser, focusSelector: 'app-module-minimal, app-empty-state'},
+  {
+    fileName: '02-modules.jpg',
+    prepare: prepareModuleBrowser,
+    focusSelector: 'app-module-minimal',
+    readyScopeSelector: 'app-module-list',
+    settleDelayMs: 800,
+    validateAfterSanitisation: page => validateMinimumVisibleCards(page, 'app-module-minimal', 6, 'module cards')
+  },
   {
     fileName: '03-module-details.jpg',
     prepare: prepareModuleDetails,
@@ -419,28 +482,47 @@ const SCREENSHOT_TARGETS: ScreenshotTarget[] = [
     readyScopeSelector: 'app-module-browser-detail .module-detail-layout',
     settleDelayMs: 1_500
   },
-  {fileName: '04-patches.jpg', prepare: preparePatchBrowser, focusSelector: 'app-patch-micro, app-empty-state'},
-  {fileName: '05-patch-details.jpg', prepare: preparePatchDetailsEditing, focusSelector: 'app-patch-composite'},
+  {
+    fileName: '04-patches.jpg',
+    prepare: preparePatchBrowser,
+    focusSelector: 'app-patch-micro',
+    settleDelayMs: 800,
+    validateAfterSanitisation: page => validateMinimumVisibleCards(page, 'app-patch-micro', 6, 'patch cards')
+  },
+  {
+    fileName: '05-patch-details.jpg',
+    prepare: preparePatchDetailsEditing,
+    focusSelector: 'app-patch-composite',
+    validateAfterSanitisation: validatePatchDetails
+  },
   {
     fileName: '06-racks.jpg',
     prepare: prepareRackBrowser,
-    focusSelector: 'app-rack-micro, app-empty-state',
-    readyScopeSelector: 'app-rack-list'
+    focusSelector: 'app-rack-micro',
+    readyScopeSelector: 'app-rack-list',
+    settleDelayMs: 800,
+    validateAfterSanitisation: page => validateMinimumVisibleCards(page, 'app-rack-list app-rack-micro', 6, 'rack cards')
   },
   {fileName: '07-rack-details.jpg', prepare: prepareRackDetailsCentered, focusSelector: 'app-rack-composite'},
-  {fileName: '08-user-area.jpg', prepare: prepareUserArea, focusSelector: 'app-user-area-root', settleDelayMs: 1_500},
+  {
+    fileName: '08-user-area.jpg',
+    prepare: prepareUserArea,
+    focusSelector: 'app-user-area-root',
+    settleDelayMs: 1_500,
+    validateAfterSanitisation: validateUserArea
+  },
   {fileName: '09-account.jpg', prepare: prepareAccount, focusSelector: 'app-user-management .account-shell', settleDelayMs: 1_500},
   {
     fileName: '10-public-profile.jpg',
     prepare: preparePublicProfile,
     focusSelector: 'app-public-profile .public-profile-page',
-    settleDelayMs: 1_500
+    settleDelayMs: 1_500,
+    authenticated: false
   }
 ];
 
 test.describe('Major area screenshot automation', () => {
   test.use({viewport: DESKTOP_VIEWPORT});
-  test.describe.configure({mode: 'parallel'});
   
   for (const target of SCREENSHOT_TARGETS) {
     test(`captures ${ target.fileName }`, async ({page, browser, baseURL}) => {
@@ -465,13 +547,7 @@ test.describe('Major area screenshot automation', () => {
       try {
         await installScreenshotMode(capturePage);
         await target.prepare(capturePage);
-        await captureViewport(
-          capturePage,
-          target.fileName,
-          target.focusSelector,
-          target.readyScopeSelector,
-          target.settleDelayMs
-        );
+        await captureViewport(capturePage, target);
       } finally {
         await detachedContext?.close();
       }
