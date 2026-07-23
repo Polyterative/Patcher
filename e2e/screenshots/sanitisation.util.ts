@@ -15,6 +15,28 @@ interface SanitisationCore {
   TEXT_REPLACEMENTS: TextReplacement[];
 }
 
+/**
+ * Capture-time fallback for docs-facing containers that would otherwise render
+ * completely empty once `[E2E]` fixture cards are hidden. When a section has
+ * zero non-fixture cards, up to `maxCards` (default 2) existing fixture cards
+ * are kept visible and their title text is rewritten to a deterministic,
+ * non-identifying label (e.g. "Example rack 1"). No backend data is read,
+ * created, or mutated by this fallback; it only mutates the rendered DOM of
+ * the current page for the screenshot.
+ */
+export interface FixtureRetentionSection {
+  /** Selector for the section root (e.g. `app-user-racks`). */
+  containerSelector: string;
+  /** Selector (relative to the container) identifying one card/row. */
+  cardSelector: string;
+  /** Selector (relative to a card) for the element holding the visible title text. */
+  titleSelector: string;
+  /** Deterministic label prefix, e.g. "Example rack". */
+  label: string;
+  /** Maximum number of fixture cards to retain per section. Defaults to 2. */
+  maxCards?: number;
+}
+
 const {
   DOCS_SCREENSHOT_HIDE_ATTRIBUTE,
   DOCS_SCREENSHOT_HIDE_STYLE_ID,
@@ -24,7 +46,10 @@ const {
 
 const SCREENSHOT_HIDE_STYLE = `[${ DOCS_SCREENSHOT_HIDE_ATTRIBUTE }="true"] { display: none !important; }`;
 
-export async function applyDocsScreenshotSanitisation(page: Page): Promise<void> {
+export async function applyDocsScreenshotSanitisation(
+  page: Page,
+  options?: {fixtureRetention?: FixtureRetentionSection[]}
+): Promise<void> {
   const accountId = await readCurrentAccountId(page);
   const accountLabel = await readCurrentAccountLabel(page);
   const accountIdReplacement = accountId
@@ -138,6 +163,42 @@ export async function applyDocsScreenshotSanitisation(page: Page): Promise<void>
       hideTarget.setAttribute(config.hideAttribute, 'true');
     }
 
+    const unhideChain = (start: Element, container: Element) => {
+      let node: Element | null = start;
+      while (node) {
+        if (node.hasAttribute(config.hideAttribute)) {
+          node.removeAttribute(config.hideAttribute);
+        }
+        if (node === container) {
+          break;
+        }
+        node = node.parentElement;
+      }
+    };
+
+    for (const section of config.fixtureRetention) {
+      const maxCards = section.maxCards ?? 2;
+      for (const container of document.querySelectorAll(section.containerSelector)) {
+        const cards = Array.from(container.querySelectorAll(section.cardSelector));
+        const hasNonFixtureVisibleCard = cards.some(
+          card => isVisible(card) && !card.hasAttribute(config.hideAttribute)
+        );
+        if (hasNonFixtureVisibleCard) {
+          continue;
+        }
+
+        const retainedCards = cards
+          .filter(card => card.hasAttribute(config.hideAttribute))
+          .slice(0, maxCards);
+
+        retainedCards.forEach((card, index) => {
+          unhideChain(card, container);
+          const titleElement = card.querySelector(section.titleSelector) ?? card;
+          titleElement.textContent = `${ section.label } ${ index + 1 }`;
+        });
+      }
+    }
+
     const replacements = [
       ...config.textReplacements,
       ...(config.accountIdReplacement ? [config.accountIdReplacement] : []),
@@ -164,7 +225,8 @@ export async function applyDocsScreenshotSanitisation(page: Page): Promise<void>
     hideAttribute: DOCS_SCREENSHOT_HIDE_ATTRIBUTE,
     hideStyleId: DOCS_SCREENSHOT_HIDE_STYLE_ID,
     hideStyleText: SCREENSHOT_HIDE_STYLE,
-    textReplacements: TEXT_REPLACEMENTS
+    textReplacements: TEXT_REPLACEMENTS,
+    fixtureRetention: options?.fixtureRetention ?? []
   });
 }
 

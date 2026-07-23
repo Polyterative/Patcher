@@ -10,7 +10,10 @@ import {
   BlockedScreenshotError,
   openBestPatchDetailsForDocs
 } from '../helpers/user-owned-entities';
-import { applyDocsScreenshotSanitisation } from './sanitisation.util';
+import {
+  applyDocsScreenshotSanitisation,
+  type FixtureRetentionSection
+} from './sanitisation.util';
 import {
   SCREENSHOT_TARGETS_REGISTRY,
   type ScreenshotTargetMetadata
@@ -58,6 +61,7 @@ interface ScreenshotTarget {
   authenticated: boolean;
   publicationGate: boolean;
   validateAfterSanitisation?: (page: Page) => Promise<void>;
+  fixtureRetention?: FixtureRetentionSection[];
 }
 
 function ensureOutputDir(): void {
@@ -175,7 +179,7 @@ async function captureViewport(
 ): Promise<void> {
   await waitForScreenshotReady(page, target.focusSelector, target.readyScopeSelector ?? target.focusSelector);
   await page.waitForTimeout(target.settleDelayMs ?? SCREENSHOT_DELAY_MS);
-  await applyDocsScreenshotSanitisation(page);
+  await applyDocsScreenshotSanitisation(page, {fixtureRetention: target.fixtureRetention});
   if (target.publicationGate) {
     await assertDocsSanitisation(page);
   }
@@ -506,6 +510,38 @@ async function validatePatchDetails(page: Page): Promise<void> {
   await expect(page.locator('text=/\\[E2E\\]/i')).toHaveCount(0);
 }
 
+/**
+ * Capture-time-only fallback for the user-area publication gate: when a
+ * required rack/patch/module column has zero non-fixture cards after
+ * standard sanitisation, retain up to 2 existing `[E2E]` fixture cards and
+ * rewrite their visible titles to deterministic, non-identifying labels
+ * instead of publishing an empty column. No backend/account data is read,
+ * created, or mutated.
+ */
+const USER_AREA_FIXTURE_RETENTION: FixtureRetentionSection[] = [
+  {
+    containerSelector: 'app-user-modules',
+    cardSelector: 'app-module-minimal',
+    titleSelector: 'a.title',
+    label: 'Example module',
+    maxCards: 2
+  },
+  {
+    containerSelector: 'app-user-racks',
+    cardSelector: 'app-rack-micro',
+    titleSelector: 'a.title',
+    label: 'Example rack',
+    maxCards: 2
+  },
+  {
+    containerSelector: 'app-user-patches',
+    cardSelector: 'app-patch-micro',
+    titleSelector: 'a.title',
+    label: 'Example patch',
+    maxCards: 2
+  }
+];
+
 async function validateUserArea(page: Page): Promise<void> {
   const counts = {
     modules: await countVisibleElements(page, 'app-user-modules app-module-minimal'),
@@ -617,7 +653,8 @@ export const SCREENSHOT_TARGETS: ScreenshotTarget[] = [
     prepare: prepareUserArea,
     focusSelector: 'app-user-area-root',
     settleDelayMs: 1_500,
-    validateAfterSanitisation: validateUserArea
+    validateAfterSanitisation: validateUserArea,
+    fixtureRetention: USER_AREA_FIXTURE_RETENTION
   }),
   buildTarget('account',
     {prepare: prepareAccount, focusSelector: 'app-user-management .account-shell', settleDelayMs: 1_500}),
