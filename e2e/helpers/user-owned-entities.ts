@@ -21,6 +21,7 @@ export interface PatchSummary {
   created: string;
   connectionCount: number;
   moduleCount: number;
+  visibility: 'owned' | 'public';
 }
 
 export interface BlockedScreenshotEvidence {
@@ -160,11 +161,10 @@ export async function pickBestOwnedPatch(
       updated: patch.updated,
       created: patch.created,
       connectionCount: connectionCounts.get(patch.id) ?? 0,
-      moduleCount: moduleCounts.get(patch.id) ?? 0
+      moduleCount: moduleCounts.get(patch.id) ?? 0,
+      visibility: 'owned' as const
     }));
-  const best = candidates.find(candidate =>
-    candidate.connectionCount >= minimumConnections && candidate.moduleCount >= MINIMUM_RICH_PATCH_MODULES
-  );
+  const best = rankRichPatchCandidates(candidates, minimumConnections)[0];
 
   if (!best) {
     const highestConnectionCount = Math.max(...candidates.map(candidate => candidate.connectionCount), 0);
@@ -185,8 +185,96 @@ export async function pickBestOwnedPatch(
   return best;
 }
 
-export async function openBestOwnedPatchDetailsInEditMode(page: Page): Promise<PatchSummary> {
-  const patch = await pickBestOwnedPatch(page);
+export async function pickBestPublicPatch(
+  _page: Page,
+  minimumConnections = MINIMUM_RICH_PATCH_CONNECTIONS,
+  ownedEvidence?: BlockedScreenshotEvidence
+): Promise<PatchSummary> {
+  const supabaseUrl = (process.env['SUPABASE_URL'] || DEFAULT_SUPABASE_URL).replace(/\/+$/, '');
+  const supabaseAnonKey = process.env['SUPABASE_ANON_KEY']?.trim();
+
+  if (!supabaseAnonKey) {
+    throw new BlockedScreenshotError('Cannot select a public docs screenshot patch because SUPABASE_ANON_KEY is unavailable.', {
+      selectionQuery: 'SUPABASE_ANON_KEY required for read-only REST selection'
+    });
+  }
+
+  const publicPatchesQuery = 'patches?select=id,public_id,name,updated,created&public=eq.true&public_id=not.is.null&order=id.asc&limit=200';
+  const patches = await fetchRestRows<PatchSummaryBase>(
+    supabaseUrl,
+    supabaseAnonKey,
+    supabaseAnonKey,
+    publicPatchesQuery
+  );
+  const patchIds = patches.map(patch => patch.id);
+  const [connectionCounts, moduleCounts] = await Promise.all([
+    countRowsByPatchId(supabaseUrl, supabaseAnonKey, supabaseAnonKey, 'patch_connections', 'patchid', patchIds),
+    countRowsByPatchId(supabaseUrl, supabaseAnonKey, supabaseAnonKey, 'patch_module_instances', 'patch_id', patchIds)
+  ]);
+  const candidates = patches
+    .map(patch => ({
+      id: patch.id,
+      publicId: patch.public_id,
+      name: patch.name,
+      updated: patch.updated,
+      created: patch.created,
+      connectionCount: connectionCounts.get(patch.id) ?? 0,
+      moduleCount: moduleCounts.get(patch.id) ?? 0,
+      visibility: 'public' as const
+    }));
+  const best = rankRichPatchCandidates(candidates, minimumConnections)[0];
+
+  if (!best) {
+    const highestConnectionCount = Math.max(...candidates.map(candidate => candidate.connectionCount), 0);
+    const highestModuleCount = Math.max(...candidates.map(candidate => candidate.moduleCount), 0);
+    throw new BlockedScreenshotError(
+      `No public patch meets the public ${ minimumConnections }-connection and ${ MINIMUM_RICH_PATCH_MODULES }-module docs screenshot fallback threshold.`,
+      {
+        selectionQuery: [
+          ownedEvidence?.selectionQuery ? `owned-first:\n${ ownedEvidence.selectionQuery }` : undefined,
+          publicPatchesQuery,
+          patchIds.length ? `patch_connections?select=patchid&patchid=in.(${ patchIds.join(',') })` : 'patch_connections?select=patchid&patchid=in.()',
+          patchIds.length ? `patch_module_instances?select=patch_id&patch_id=in.(${ patchIds.join(',') })` : 'patch_module_instances?select=patch_id&patch_id=in.()'
+        ].filter(Boolean).join('\n'),
+        observed: [
+          ownedEvidence?.observed ? `owned-first: ${ ownedEvidence.observed }` : undefined,
+          `public patches=${ candidates.length }, highest connections=${ highestConnectionCount }, highest modules=${ highestModuleCount }`
+        ].filter(Boolean).join('; ')
+      }
+    );
+  }
+
+  return best;
+}
+
+export async function pickBestDocsPatch(page: Page): Promise<PatchSummary> {
+  try {
+    return await pickBestOwnedPatch(page);
+  } catch (error) {
+    if (error instanceof BlockedScreenshotError) {
+      return await pickBestPublicPatch(page, MINIMUM_RICH_PATCH_CONNECTIONS, error.evidence);
+    }
+    throw error;
+  }
+}
+
+export async function openBestPatchDetailsForDocs(page: Page): Promise<PatchSummary> {
+  const patch = await pickBestDocsPatch(page);
+  const patchPath = patch.publicId ? `/patches/${ patch.publicId }` : `/patches/details/${ patch.id }`;
+
+  if (patch.visibility === 'public') {
+    await page.goto(patchPath);
+    await expect(page).toHaveURL(/\/patches\/[A-Za-z0-9_-]+/, {timeout: 20_000});
+    await expect(page.getByRole('heading', {name: /Patch details/i}).first()).toBeVisible({timeout: 20_000});
+    await expect(page.locator('app-patch-composite').first()).toBeVisible({timeout: 20_000});
+    return patch;
+  }
+
+  return await openOwnedPatchDetailsInEditMode(page, patch);
+}
+
+export async function openBestOwnedPatchDetailsInEditMode(page: Page, selectedPatch?: PatchSummary): Promise<PatchSummary> {
+  const patch = selectedPatch ?? await pickBestOwnedPatch(page);
   const patchPath = patch.publicId ? `/patches/${ patch.publicId }` : `/patches/details/${ patch.id }`;
 
   await page.goto(patchPath);
@@ -211,6 +299,20 @@ export async function openBestOwnedPatchDetailsInEditMode(page: Page): Promise<P
   await expect(page.getByRole('button', {name: /Close editor/i}).first()).toBeVisible({timeout: 20_000});
 
   return patch;
+}
+
+function rankRichPatchCandidates(
+  candidates: PatchSummary[],
+  minimumConnections: number
+): PatchSummary[] {
+  return candidates
+    .filter(candidate => candidate.connectionCount >= minimumConnections && candidate.moduleCount >= MINIMUM_RICH_PATCH_MODULES)
+    .sort((a, b) =>
+      b.connectionCount - a.connectionCount
+      || b.moduleCount - a.moduleCount
+      || Date.parse(b.updated) - Date.parse(a.updated)
+      || a.id - b.id
+    );
 }
 
 export async function openOwnedRackDetailsInEditMode(page: Page): Promise<void> {

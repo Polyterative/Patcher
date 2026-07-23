@@ -8,7 +8,7 @@ import {
 } from '@playwright/test';
 import {
   BlockedScreenshotError,
-  openBestOwnedPatchDetailsInEditMode
+  openBestPatchDetailsForDocs
 } from '../helpers/user-owned-entities';
 import { applyDocsScreenshotSanitisation } from './sanitisation.util';
 import {
@@ -372,7 +372,8 @@ async function preparePatchBrowser(page: Page): Promise<void> {
 
 async function preparePatchDetailsEditing(page: Page): Promise<void> {
   try {
-    await openBestOwnedPatchDetailsInEditMode(page);
+    const patch = await openBestPatchDetailsForDocs(page);
+    console.log(`[docs-screenshot] selected ${ patch.visibility } patch ${ patch.id } for patch-details (${ patch.connectionCount } connections, ${ patch.moduleCount } modules).`);
   } catch (error) {
     if (error instanceof BlockedScreenshotError) {
       throw error;
@@ -452,7 +453,8 @@ async function validateMinimumVisibleCards(
 
 async function validatePatchDetails(page: Page): Promise<void> {
   await expect(page.locator('app-patch-composite').first()).toBeVisible({timeout: 20_000});
-  await expect(page.getByRole('heading', {name: /Patch editing/i}).first()).toBeVisible({timeout: 20_000});
+  await expect(page.getByRole('heading', {name: /Patch (details|editing)/i}).first()).toBeVisible({timeout: 20_000});
+  await expect(page.locator('app-patch-composite lib-graph').first()).toBeVisible({timeout: 20_000});
   await expect(page.locator('text=/\\[E2E\\]/i')).toHaveCount(0);
 }
 
