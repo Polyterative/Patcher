@@ -1,0 +1,85 @@
+openapi: 3.1.0
+info:
+  title: Patcher Public API
+  version: 1.0.0-preview
+  license:
+    name: CC BY 4.0
+    identifier: CC-BY-4.0
+servers:
+  - url: https://api.patcher.xyz/v1
+security:
+  - apiKey: []
+paths:
+  /modules:
+    get:
+      operationId: listModules
+      responses:
+        "200":
+          description: Paginated public modules
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /modules/{id}:
+    get:
+      operationId: getModule
+      parameters:
+        - $ref: "#/components/parameters/IntegerId"
+      responses:
+        "200":
+          description: Public module
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Module not found
+  /manufacturers:
+    get:
+      operationId: listManufacturers
+      responses:
+        "200":
+          description: Paginated public manufacturers
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /manufacturers/{id}:
+    get:
+      operationId: getManufacturer
+      parameters:
+        - $ref: "#/components/parameters/IntegerId"
+      responses:
+        "200":
+          description: Public manufacturer
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Manufacturer not found
+  /standards:
+    get:
+      operationId: listStandards
+      responses:
+        "200":
+          description: Public standards
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /tags:
+    get:
+      operationId: listTags
+      responses:
+        "200":
+          description: Public tags
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+components:
+  parameters:
+    IntegerId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+  responses:
+    Unauthorized:
+      description: Missing, malformed, unknown, or revoked API key
+  securitySchemes:
+    apiKey:
+      type: http
+      scheme: bearer
+      bearerFormat: pk_live_<22 base64url characters>

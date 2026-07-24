@@ -353,11 +353,17 @@ keep working via a temporary Worker alias (Polish). No parallel route.
 
 ## MVP layer (key-required, origin-protected read API)
 
-- [ ] Create `cloudflare/public-api/` (mirrors `cloudflare/image-proxy/`):
+- [~] Create `cloudflare/public-api/` (mirrors `cloudflare/image-proxy/`):
   `wrangler.jsonc`, `src/index.ts` (router + pipeline in the order above),
   `src/keys.ts` (HMAC + isolate LRU), `src/quota.ts` (DO client),
   `src/queries/` (named parameterized catalog), `src/api-key-counter.ts` (DO
   class), `openapi.yaml`, `RUNBOOK.md`.
+  - [x] Foundation: Bearer parsing/HMAC byte contract, URL normalization and
+    cursor validation, shared-cache response contract, pure quota boundary
+    logic, fail-closed route skeleton, OpenAPI route/security skeleton, and
+    focused Node tests.
+  - [ ] Gated integration: key metadata LRU + `verify_api_key`, Durable Object
+    persistence/alarm, Hyperdrive query catalog, Cache API serving.
 - [ ] Migrations (contingent on Approvals-ledger gate 1 — backend re-review):
   - `…_api_reader_role.sql` — idempotently create `api_view_owner NOLOGIN` and
     `api_reader NOLOGIN`, then grant schema usage. No base-table grants to
@@ -571,6 +577,14 @@ keep working via a temporary Worker alias (Polish). No parallel route.
   as the implementation baseline. This approves safe MVP code/scaffolding work,
   not the separately listed schema/RLS, credential, DNS, Hyperdrive, Durable
   Object, Vault, WAF, or remote-apply gates.
+- 2026-07-24T13:20+02:00 — Safe MVP foundation implemented under
+  `cloudflare/public-api/` without provisioning remote resources or touching
+  Supabase. Added fail-closed routing, HTTP Bearer parsing, 16-byte key decode +
+  HMAC-SHA256 interoperability fixture, canonical query/cache keys, opaque
+  cursor validation, cache-body/per-key-header separation, pure exact quota
+  rollover/boundary logic, OpenAPI skeleton, and six focused tests. Validation:
+  `pnpm test:functions:public-api-worker` (6/6), `pnpm lint` (exit 0), reviewer
+  verdict APPROVE.
 
 ## Resolved refinement decisions (locked)
 
