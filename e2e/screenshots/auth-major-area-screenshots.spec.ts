@@ -566,8 +566,15 @@ async function validateUserArea(page: Page): Promise<void> {
     );
   }
 
-  await expect(page.getByRole('heading', {name: /USER AREA — Docs screenshot account/i}).first()).toBeVisible({timeout: 10_000});
-  await expect(page.locator('text=/\\[E2E\\]/i')).toHaveCount(0);
+  await expect(page.locator('h1', {hasText: /USER AREA\s*-\s*Docs screenshot account/i}).first()).toBeVisible({timeout: 10_000});
+  await expect.poll(
+    () => countVisibleTextMatches(page, /patcher-e2e-/i),
+    {timeout: 10_000}
+  ).toBe(0);
+  await expect.poll(
+    () => countVisibleTextMatches(page, /\[E2E\]/i),
+    {timeout: 10_000}
+  ).toBe(0);
 }
 
 async function prepareAccount(page: Page): Promise<void> {

@@ -176,19 +176,40 @@ export async function applyDocsScreenshotSanitisation(
       }
     };
 
+    // The fixture-hide loops above may set config.hideAttribute on an
+    // ancestor wrapper (e.g. lib-clean-card) rather than on the card element
+    // itself, since `.closest(fixtureHideSelector)` can match a wrapper that
+    // appears earlier in the same querySelectorAll pass. Detecting "is this
+    // card hidden" must therefore walk the same self-to-container chain that
+    // unhideChain uses to remove the attribute, not just check the card
+    // element directly.
+    const isHiddenInChain = (start: Element, container: Element): boolean => {
+      let node: Element | null = start;
+      while (node) {
+        if (node.hasAttribute(config.hideAttribute)) {
+          return true;
+        }
+        if (node === container) {
+          break;
+        }
+        node = node.parentElement;
+      }
+      return false;
+    };
+
     for (const section of config.fixtureRetention) {
       const maxCards = section.maxCards ?? 2;
       for (const container of document.querySelectorAll(section.containerSelector)) {
         const cards = Array.from(container.querySelectorAll(section.cardSelector));
         const hasNonFixtureVisibleCard = cards.some(
-          card => isVisible(card) && !card.hasAttribute(config.hideAttribute)
+          card => isVisible(card) && !isHiddenInChain(card, container)
         );
         if (hasNonFixtureVisibleCard) {
           continue;
         }
 
         const retainedCards = cards
-          .filter(card => card.hasAttribute(config.hideAttribute))
+          .filter(card => isHiddenInChain(card, container))
           .slice(0, maxCards);
 
         retainedCards.forEach((card, index) => {
@@ -232,9 +253,20 @@ export async function applyDocsScreenshotSanitisation(
 
 async function readCurrentAccountLabel(page: Page): Promise<string | null> {
   return page.evaluate(() => {
-    const navLabel = document.querySelector('app-toolbar a[href$="/user/area"]')?.textContent?.trim();
+    const navLabel = document.querySelector('app-wide-shell-toolbar a[href$="/user/area"]')?.textContent?.trim();
     if (navLabel) {
       return navLabel;
+    }
+
+    // The "User area" heading renders its username in a dedicated
+    // `.title-sub` span, but the enclosing <h1> also contains the page
+    // icon ligature text and (when public) an inline description, so
+    // reading textContent off the whole h1 pulls in unrelated text.
+    // Prefer the scoped span; only fall back to whole-heading parsing
+    // (best-effort, may include trailing unrelated text) if it's absent.
+    const titleSub = document.querySelector('h1 .title-sub')?.textContent?.trim();
+    if (titleSub) {
+      return titleSub;
     }
 
     const heading = Array.from(document.querySelectorAll('h1'))
