@@ -424,7 +424,8 @@ components:
       in: query
       schema:
         type: integer
-        minimum: 1
+        minimum: 0
+      description: Standard ID. Standard 0 is the 3U format.
     TagFilter:
       name: tag
       in: query
@@ -779,6 +780,7 @@ components:
       properties:
         id:
           type: integer
+          minimum: 0
         name:
           type: string
     Tag:
@@ -791,6 +793,7 @@ components:
           type: string
         type:
           type: [string, "null"]
+          enum: [nature, character, voice, source, filter, modulation, effect, sequencing, utility, blank, null]
     Port:
       type: object
       required: [id, name]

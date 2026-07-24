@@ -49,6 +49,20 @@ export const MANUFACTURER_FIELD_ALLOWLIST = new Set([
 export const STANDARD_FIELD_ALLOWLIST = new Set(['id', 'name']);
 export const TAG_FIELD_ALLOWLIST = new Set(['id', 'name', 'type']);
 
+const TAG_TYPE_NAMES: Readonly<Record<number, string>> = {
+  1: 'nature',
+  2: 'character',
+  3: 'voice',
+  4: 'source',
+  5: 'filter',
+  6: 'modulation',
+  7: 'effect',
+  8: 'sequencing',
+  9: 'utility',
+  10: 'blank',
+};
+const TAG_TYPE_NAME_SET = new Set(Object.values(TAG_TYPE_NAMES));
+
 export function normalizeModuleRow(row: unknown): PublicModuleSummary {
   const value = record(row, 'module');
   return {
@@ -86,7 +100,7 @@ export function normalizeManufacturerRow(row: unknown): PublicManufacturer {
 export function normalizeStandardRow(row: unknown): PublicStandard {
   const value = record(row, 'standard');
   return {
-    id: positiveInteger(value.id, 'standard.id'),
+    id: nonnegativeInteger(value.id, 'standard.id'),
     name: stringValue(value.name, 'standard.name'),
   };
 }
@@ -96,7 +110,7 @@ export function normalizeTagRow(row: unknown): PublicTag {
   return {
     id: positiveInteger(value.id, 'tag.id'),
     name: stringValue(value.name, 'tag.name'),
-    type: nullableString(value.type, 'tag.type'),
+    type: tagType(value.type, 'tag.type'),
   };
 }
 
@@ -135,7 +149,7 @@ export function normalizeModuleTagRow(row: unknown): { moduleId: number; tag: Pu
     tag: {
       id: positiveInteger(value.id, 'module_tag.id'),
       name: stringValue(value.name, 'module_tag.name'),
-      type: nullableString(value.type, 'module_tag.type'),
+      type: tagType(value.type, 'module_tag.type'),
     },
   };
 }
@@ -250,6 +264,26 @@ function positiveInteger(value: unknown, label: string): number {
     throw new MalformedCatalogueRowError(`${label} must be a positive integer`);
   }
   return Number(value);
+}
+
+function nonnegativeInteger(value: unknown, label: string): number {
+  if (!Number.isInteger(value) || Number(value) < 0) {
+    throw new MalformedCatalogueRowError(`${label} must be a nonnegative integer`);
+  }
+  return Number(value);
+}
+
+function tagType(value: unknown, label: string): string | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  if (typeof value === 'string' && TAG_TYPE_NAME_SET.has(value)) {
+    return value;
+  }
+  if (Number.isInteger(value) && TAG_TYPE_NAMES[Number(value)]) {
+    return TAG_TYPE_NAMES[Number(value)];
+  }
+  throw new MalformedCatalogueRowError(`${label} must be a recognized tag type`);
 }
 
 function nullableInteger(value: unknown, label: string): number | null {

@@ -40,11 +40,10 @@ export function createHyperdriveApiKeyMetadataProvider(
   return {
     async verifyApiKeyHash(digestHex: string): Promise<ApiKeyMetadata | null> {
       assertDigestHex(digestHex);
-      const digestBytea = `\\x${digestHex}`;
       return withHyperdriveClient(hyperdrive, async sql => {
         const rows = await sql<ApiKeyVerificationRow[]>`
           select id, profile_id, tier_code, monthly_quota, per_minute_quota
-          from public.verify_api_key(${digestBytea}::bytea)
+          from public.verify_api_key(decode(${digestHex}, 'hex'))
         `;
         return normalizeVerifyApiKeyRows(rows);
       });

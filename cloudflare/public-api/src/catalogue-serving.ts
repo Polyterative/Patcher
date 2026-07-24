@@ -20,6 +20,7 @@ import {
   parseCsv,
   parseLimit,
   parseModuleIncludes,
+  parseOptionalNonnegativeInteger,
   parseOptionalPositiveInteger,
   parseSort,
 } from './request.ts';
@@ -204,7 +205,7 @@ async function resolveBody(
         filters: {
           hp: parseOptionalPositiveInteger(params.get('hp')),
           manufacturerId: parseOptionalPositiveInteger(params.get('manufacturer_id')),
-          standard: parseOptionalPositiveInteger(params.get('standard')),
+          standard: parseOptionalNonnegativeInteger(params.get('standard')),
           tag: parseOptionalPositiveInteger(params.get('tag')),
         },
       });
