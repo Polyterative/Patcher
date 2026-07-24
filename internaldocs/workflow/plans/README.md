@@ -23,6 +23,10 @@ Each plan file has:
 4. **Checklist** — `[ ]` / `[~]` / `[x]` items.
 5. **Decision log** — append-only, timestamped one-liners for non-obvious
    choices made while implementing. Future agents read this to avoid relitigating.
+6. **Documentation impact** — classification, production visibility, expected public-doc paths,
+   screenshot targets, and changelog summary per
+   [`../DOCUMENTATION_LIFECYCLE.md`](../DOCUMENTATION_LIFECYCLE.md). Existing plans add this block
+   when next edited and always before completion.
 
 ## Lifecycle
 
@@ -32,7 +36,8 @@ Each plan file has:
   file**, never in `CURRENT_FEATURE.md`.
 - **Done:** move the file to `plans/done/<slug>.md`, add a one-line entry to
   [`../COMPLETED.md`](../COMPLETED.md) with the date, and remove the index entry
-  from `../TODO.md`.
+  from `../TODO.md`. Public-impact work also adds a Public docs queue entry; completing on
+  `develop` never implies production publication.
 - **Automated loop:** use [`../../agents/coordinator-loop.md`](../../agents/coordinator-loop.md)
   when an agent should select one TODO item, delegate implementation, run independent
   review, validate, and perform the cleanup above.

@@ -68,6 +68,8 @@ Use the `executor` tier (see [README.md](./README.md#model-tiers)) for normal co
   does not replace the post-implementation diff review.
 - Delegate independent verification to `reviewer` before finalizing.
 - Run validation, resolve failures, archive completed docs, and stage the next task before handing back.
+- Record Documentation impact at planning time, queue public-impact work at completion, and invoke
+  `docs-publisher` only after production publication/visibility are confirmed.
 - Commit major verified chunks when they are coherent, tested, and independently reviewed.
 
 ## Does NOT
@@ -87,6 +89,8 @@ Use the `executor` tier (see [README.md](./README.md#model-tiers)) for normal co
   there is other safe backlog work available.
 - Turn "via loop" into a single executor prompt and then go idle; the foreground
   assistant owns ongoing orchestration until no safe work remains.
+- Treat completion on `develop` as public availability or edit `Patcher-docs` outside the
+  release-time `docs-publisher` handoff.
 
 ## Inputs expected
 
@@ -135,7 +139,9 @@ rules as product work: plan note, implementation, review, validation, verified c
    launching duplicate work.
 1. Read `AGENTS.md` and `internaldocs/workflow/TODO.md`. Read `internaldocs/README.md` only when the TODO/plan lacks enough routing context.
 2. Pick one suitable open task and open its linked plan. If no suitable plan exists, create one before coding.
-3. Ensure the plan has: problem, goals, assumptions, MVP / Structural / Polish layers, file-level checklist, acceptance criteria, validation strategy, and Decision log.
+3. Ensure the plan has: problem, goals, assumptions, MVP / Structural / Polish layers, file-level
+   checklist, acceptance criteria, validation strategy, Decision log, and the Documentation impact
+   block from `internaldocs/workflow/DOCUMENTATION_LIFECYCLE.md`.
 4. For a backend plan, launch `backend-plan-reviewer` on the draft. Require an
    explicit verdict, incorporate findings, and record the physical storage decision,
    alternatives, migration/locking cost, compatibility, rollback, RLS, cache, and
@@ -164,24 +170,33 @@ rules as product work: plan note, implementation, review, validation, verified c
     - append important choices to the plan Decision log
     - move the TODO line to `COMPLETED.md` with today's date
     - move the plan to `internaldocs/workflow/plans/done/`
-14. If a task hits an approval gate:
+    - for `public-*` impact, add a thin entry under Public docs queue →
+      `Completed on develop; awaiting production publication`
+    - do not edit public docs or describe the feature as live
+14. If the user confirms production publication and visibility, move matching queue entries to
+    `Published; docs pending` and delegate the bounded cross-repo work to `docs-publisher` via
+    `orchestrate`. If a flag/operator gate is still off, move the entry to
+    `Published but documentation-blocked` instead.
+15. If a task hits an approval gate:
     - add one line to the **Approvals ledger → Pending questions** in `TODO.md` with the exact
       question, options, and a default recommendation; link the plan section with full context
     - leave enough context in the plan Decision log that another coordinator can ask the owner
       later without rediscovering the issue
     - mark the TODO line `[!]` (blocked) for that task only
     - immediately pick another safe, actionable task — or a fallback-queue chunk — when one exists
-15. Stage the next pipeline task before returning:
+16. Stage the next pipeline task before returning:
     - re-read `TODO.md` and pick the next highest-priority actionable open item
     - skip held items, tasks blocked on credentials/secrets, and work requiring explicit Supabase RLS / migration approval
     - mark the selected TODO line `[~]`
     - populate `CURRENT_FEATURE.md` with the selected task, plan link, status, timestamp, and layer checklist; record the pick rationale in the plan file's Decision log
     - if no actionable product task exists, stage a **fallback work queue** chunk instead;
       reset `CURRENT_FEATURE.md` to `No active feature.` only when the fallback queue is also empty
-16. Complete workflow validation:
+17. Complete workflow validation:
     - run `node scripts/checks/check-docs.cjs`
-17. Commit the final docs cleanup only after `node scripts/checks/check-docs.cjs` passes.
-18. Final response: summarize what changed, touched areas, validation results, commits created, the staged next pipeline task (or why none was staged), accumulated approval questions, and any unrelated dirty worktree entries.
+18. Commit the final docs cleanup only after `node scripts/checks/check-docs.cjs` passes.
+19. Final response: summarize what changed, touched areas, validation results, commits created, the
+    staged next pipeline task (or why none was staged), public-doc queue changes, accumulated
+    approval questions, and any unrelated dirty worktree entries.
 
 ## Foreground decision-coordinator loop
 
@@ -219,6 +234,7 @@ Default priority in this outer loop:
 - [ ] A different review subagent checked the diff.
 - [ ] Required tests/lint/docs checks were run.
 - [ ] TODO, completed archive, active feature, and plan archive are coherent.
+- [ ] Documentation impact is classified and public-impact work is queued or documented after release.
 - [ ] The next actionable task is staged in `CURRENT_FEATURE.md`, or the coordinator explicitly documented why none can be staged.
 - [ ] Approval-gated work is queued with precise questions instead of silently
       blocking unrelated safe work.
@@ -246,3 +262,5 @@ response must say why.
 - `internaldocs/workflow/CURRENT_FEATURE.md`
 - `internaldocs/workflow/COMPLETED.md`
 - `internaldocs/workflow/plans/README.md`
+- `internaldocs/workflow/DOCUMENTATION_LIFECYCLE.md`
+- `internaldocs/agents/docs-publisher.md`

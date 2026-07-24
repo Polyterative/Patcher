@@ -26,6 +26,8 @@ for security-sensitive, data-loss-prone, or broad architectural diffs.
 - Verify cache invalidation when writes touch cached reads
 - Verify Supabase queries don't `select('*')` and don't add N+1s
 - Verify subscriptions are managed (`SubManager` + `takeUntil(this.destroy$)`)
+- Verify the plan's Documentation impact classification matches the actual user-visible change and
+  no unreleased/disabled behavior is documented as live
 
 ## Does NOT
 
@@ -81,3 +83,4 @@ Verdict: BLOCK / APPROVE WITH CHANGES / APPROVE
 - `internaldocs/patterns/BACKEND_METHODS.md`
 - `internaldocs/patterns/REACTIVE_SERVICES.md`
 - `internaldocs/STYLE_GUIDE.md`
+- `internaldocs/workflow/DOCUMENTATION_LIFECYCLE.md`

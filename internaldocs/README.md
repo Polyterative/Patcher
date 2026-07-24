@@ -20,6 +20,7 @@ second source of rules.
 | [workflow/CURRENT_FEATURE.md](./workflow/CURRENT_FEATURE.md) | Working detail for the feature currently in progress |
 | [workflow/COMPLETED.md](./workflow/COMPLETED.md) | Archive of finished features |
 | [workflow/ABANDONED.md](./workflow/ABANDONED.md) | Intentionally dropped work and rationale |
+| [workflow/DOCUMENTATION_LIFECYCLE.md](./workflow/DOCUMENTATION_LIFECYCLE.md) | Completed → production-published → publicly documented lifecycle and cross-repo handoff |
 
 ### Product
 
@@ -38,7 +39,7 @@ second source of rules.
 | [STYLE_GUIDE.md](./STYLE_GUIDE.md) | Naming conventions and HTML/SCSS conventions |
 | [DESIGN_LANGUAGE.md](./DESIGN_LANGUAGE.md) | Visual philosophy, character, inspirations, responsive rules, and anti-patterns |
 | [UI_CONSISTENCY_AUDIT.md](./UI_CONSISTENCY_AUDIT.md) | Read-only UI consistency audit findings across app surfaces |
-| [agents/README.md](./agents/README.md) | Specialised agent personas, including [`feature-notetaker`](./agents/feature-notetaker.md) for idea intake and [`coordinator-loop`](./agents/coordinator-loop.md) for the full TODO → implementation → review → archive cycle |
+| [agents/README.md](./agents/README.md) | Specialised agent personas, including [`feature-notetaker`](./agents/feature-notetaker.md) for idea intake, [`coordinator-loop`](./agents/coordinator-loop.md) for the full TODO → implementation → review → archive cycle, and [`docs-publisher`](./agents/docs-publisher.md) for confirmed releases |
 | [workflow/plans/public-open-api.md](./workflow/plans/public-open-api.md) | Active Public Open API plan, rollout gates, and local validation notes |
 
 ### Patterns and Testing
