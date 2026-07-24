@@ -16,6 +16,7 @@ import {
   DeveloperApiKeyUsage
 } from 'src/app/features/backend/supabase-api-keys';
 import {
+  DEFAULT_API_KEY_LABEL,
   DeveloperApiKeysDataService,
   DeveloperApiKeysViewModel
 } from './developer-api-keys-data.service';
@@ -204,7 +205,7 @@ describe('DeveloperApiKeysDataService', () => {
   it('does not create or rotate before the slot state has loaded successfully', fakeAsync(() => {
     const setup = setupService();
 
-    setup.service.createOrRotate$.next({ label: 'Server key' });
+    setup.service.createOrRotate$.next();
     tick();
 
     expect(setup.backend.apiKeys.createOrRotateOwnKey).not.toHaveBeenCalled();
@@ -214,10 +215,10 @@ describe('DeveloperApiKeysDataService', () => {
     setup.service.load$.next();
     tick();
     setup.service.requestRotateConfirmation$.next();
-    setup.service.createOrRotate$.next({ label: 'Server key' });
+    setup.service.createOrRotate$.next();
     tick();
 
-    expect(setup.backend.apiKeys.createOrRotateOwnKey).toHaveBeenCalledOnceWith('Server key');
+    expect(setup.backend.apiKeys.createOrRotateOwnKey).toHaveBeenCalledOnceWith(DEFAULT_API_KEY_LABEL);
     setup.sub.unsubscribe();
   }));
 
@@ -228,10 +229,10 @@ describe('DeveloperApiKeysDataService', () => {
     setup.service.load$.next();
     tick();
     setup.service.requestRotateConfirmation$.next();
-    setup.service.createOrRotate$.next({ label: 'Server key' });
+    setup.service.createOrRotate$.next();
     tick();
 
-    expect(setup.backend.apiKeys.createOrRotateOwnKey).toHaveBeenCalledOnceWith('Server key');
+    expect(setup.backend.apiKeys.createOrRotateOwnKey).toHaveBeenCalledOnceWith(DEFAULT_API_KEY_LABEL);
     expect(setup.vm.reveal?.rawKey).toBe('patcher_raw_secret');
     expect(setup.vm.slot?.id).toBe('key-1');
 
@@ -247,16 +248,16 @@ describe('DeveloperApiKeysDataService', () => {
 
     setup.service.load$.next();
     tick();
-    setup.service.createOrRotate$.next({ label: 'Server key' });
+    setup.service.createOrRotate$.next();
     tick();
 
     expect(setup.vm.rotateConfirmationVisible).toBeTrue();
     expect(setup.backend.apiKeys.createOrRotateOwnKey).not.toHaveBeenCalled();
 
-    setup.service.createOrRotate$.next({ label: 'Server key' });
+    setup.service.createOrRotate$.next();
     tick();
 
-    expect(setup.backend.apiKeys.createOrRotateOwnKey).toHaveBeenCalledOnceWith('Server key');
+    expect(setup.backend.apiKeys.createOrRotateOwnKey).toHaveBeenCalledOnceWith(DEFAULT_API_KEY_LABEL);
     setup.sub.unsubscribe();
   }));
 
@@ -271,10 +272,10 @@ describe('DeveloperApiKeysDataService', () => {
     expect(setup.vm.hasLoaded).toBeTrue();
 
     setup.backend.apiKeys.getOwnKeySlot.and.returnValue(throwError(() => new Error('refresh failed')));
-    setup.service.createOrRotate$.next({ label: 'Server key' });
+    setup.service.createOrRotate$.next();
     tick();
 
-    expect(setup.backend.apiKeys.createOrRotateOwnKey).toHaveBeenCalledOnceWith('Server key');
+    expect(setup.backend.apiKeys.createOrRotateOwnKey).toHaveBeenCalledOnceWith(DEFAULT_API_KEY_LABEL);
     expect(setup.vm.reveal?.rawKey).toBe('patcher_raw_secret');
     expect(setup.vm.errorMessage).toBe(partialMessage);
     expect(setup.snackBar.open).toHaveBeenCalledWith(partialMessage, undefined, jasmine.objectContaining({
@@ -356,7 +357,7 @@ describe('DeveloperApiKeysDataService', () => {
     setup.service.load$.next();
     tick();
     setup.service.requestRotateConfirmation$.next();
-    setup.service.createOrRotate$.next({ label: 'Server key' });
+    setup.service.createOrRotate$.next();
     tick();
     setup.service.copyRevealedKey$.next();
     tick();

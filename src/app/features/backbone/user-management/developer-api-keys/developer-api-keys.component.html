@@ -6,7 +6,6 @@
       <div class="developer-api__heading row gap1 layout-align-start-center">
         <div class="developer-api__heading-copy">
           <h2 id="developer-api-title">Public API</h2>
-          <p>Manage the API credential for scripts, widgets, and partner integrations.</p>
         </div>
         <a class="developer-api__docs"
            [href]="vm.docsUrl"
@@ -42,19 +41,16 @@
             <strong>Copy this key now. It will not be shown again.</strong>
           </div>
           <code class="developer-api__raw-key">{{ reveal.rawKey }}</code>
-          <p>
-            Store it in your server or CI secret manager. Rotated or revoked credentials may continue
-            to work at the edge for up to 60 seconds.
-          </p>
+          <p>Store it in your server or CI secret manager.</p>
           <div class="developer-api__actions row gap1">
-            <button mat-raised-button
-                    color="primary"
+           <button mat-raised-button
+                   color="primary"
                     type="button"
                     (click)="copyReveal()"
                     aria-label="Copy your key — this is the only time it will be shown"
             >
               <mat-icon aria-hidden="true">content_copy</mat-icon>
-              Copy key
+              Copy API key
             </button>
             <button mat-stroked-button
                     type="button"
@@ -71,93 +67,74 @@
           <div class="developer-api__slot-top row gap1">
             <div class="developer-api__identity">
               <span class="developer-api__eyebrow">{{ slot.active ? 'Active credential' : 'Revoked credential' }}</span>
-              <strong>{{ slot.label }}</strong>
-              <code>{{ slot.keyPrefix }}</code>
-            </div>
-            <div class="developer-api__tier">
-              {{ slot.tierCode | titlecase }} tier · {{ slot.perMinuteQuota | number }} requests/minute ·
-              {{ slot.monthlyQuota | number }}/month
+              <div class="developer-api__slot-row row gap1">
+                <code>{{ slot.keyPrefix }}</code>
+                <span class="developer-api__quota">
+                  {{ slot.tierCode | titlecase }} · {{ slot.usedThisMonth | number }} /
+                  {{ slot.monthlyQuota | number }} this month · {{ slot.perMinuteQuota | number }}/min
+                </span>
+              </div>
             </div>
           </div>
 
-          <dl class="developer-api__meta">
-            <div>
-              <dt>Created</dt>
-              <dd>{{ slot.createdAt | date:'medium' }}</dd>
-            </div>
-            <div>
-              <dt>Rotated</dt>
-              <dd>{{ slot.rotatedAt ? (slot.rotatedAt | date:'medium') : 'Never' }}</dd>
-            </div>
-            <div>
-              <dt>Last used</dt>
-              <dd>{{ slot.lastUsedAt ? (slot.lastUsedAt | date:'medium') : 'Never' }}</dd>
-            </div>
-            <div>
-              <dt>Monthly usage</dt>
-              <dd>{{ slot.usedThisMonth | number }} used · {{ slot.remainingThisMonth | number }} remaining</dd>
-            </div>
-          </dl>
-
-          <p class="developer-api__usage-note">Usage updates within a few minutes.</p>
+          @if (slot.active && !vm.reveal) {
+            <p class="developer-api__no-reveal">Full key not shown. Rotate to get a new copyable key.</p>
+          }
 
           @if (!slot.active) {
             <div class="developer-api__notice developer-api__notice--warn">
               <mat-icon aria-hidden="true">warning</mat-icon>
-              <span>This credential is revoked. Create again to reactivate the stable slot with a new secret.</span>
+              <span>This credential is revoked. Create again to get a new secret.</span>
             </div>
           }
         </div>
       } @else if (vm.hasLoaded && !vm.isLoading) {
         <div class="developer-api__empty">
           <strong>No API credential yet.</strong>
-          <span>Create one when you are ready to call the Public API.</span>
         </div>
       }
 
-      <form class="developer-api__form col gap1"
-            (ngSubmit)="submitCreateOrRotate(vm)"
-      >
-        <mat-form-field appearance="outline">
-          <mat-label>Credential label</mat-label>
-          <input matInput
-                 [formControl]="labelControl"
-                 autocomplete="off"
-                 maxlength="64"
-                 placeholder="Server integration"
-          >
-          <mat-hint>Letters, numbers, spaces, underscores, hyphens, and periods.</mat-hint>
-          <mat-error *ngIf="labelControl.hasError('required')">Label is required</mat-error>
-          <mat-error *ngIf="labelControl.hasError('maxlength')">Use 64 characters or fewer</mat-error>
-          <mat-error *ngIf="labelControl.hasError('pattern')">Use letters, numbers, spaces, underscores, hyphens, or periods</mat-error>
-        </mat-form-field>
-
+      <div class="developer-api__lifecycle col gap1">
         @if (vm.rotateConfirmationVisible) {
           <div class="developer-api__notice developer-api__notice--warn"
                role="alert"
           >
             <mat-icon aria-hidden="true">warning</mat-icon>
-            <span>Rotating replaces the current secret. Clients using it may continue for up to 60 seconds, then stop.</span>
+            <span>Rotating replaces the current secret. Clients may keep working for up to 60 seconds.</span>
           </div>
         }
 
         <div class="developer-api__actions row gap1">
-          <button mat-raised-button
-                  color="primary"
-                  type="submit"
-                  [disabled]="labelControl.invalid || !vm.hasLoaded || vm.isLoading || vm.isSaving"
-          >
-            <mat-icon aria-hidden="true">{{ vm.slot?.active ? 'sync' : 'add' }}</mat-icon>
-            @if (vm.isSaving) {
-              Saving…
-            } @else if (vm.slot?.active && vm.rotateConfirmationVisible) {
-              Confirm rotation
-            } @else if (vm.slot?.active) {
-              Rotate API key
-            } @else {
-              Create API key
-            }
-          </button>
+          @if (vm.slot?.active) {
+            <button mat-stroked-button
+                    type="button"
+                    [disabled]="!vm.hasLoaded || vm.isLoading || vm.isSaving"
+                    (click)="createOrRotate(vm)"
+            >
+              <mat-icon aria-hidden="true">sync</mat-icon>
+              @if (vm.isSaving) {
+                Saving…
+              } @else if (vm.rotateConfirmationVisible) {
+                Confirm rotation
+              } @else {
+                Rotate API key
+              }
+            </button>
+          } @else if (!vm.reveal) {
+            <button mat-raised-button
+                    color="primary"
+                    type="button"
+                    [disabled]="!vm.hasLoaded || vm.isLoading || vm.isSaving"
+                    (click)="createOrRotate(vm)"
+            >
+              <mat-icon aria-hidden="true">add</mat-icon>
+              @if (vm.isSaving) {
+                Saving…
+              } @else {
+                Create API key
+              }
+            </button>
+          }
           @if (vm.rotateConfirmationVisible) {
             <button mat-stroked-button
                     type="button"
@@ -177,7 +154,7 @@
             </button>
           }
         </div>
-      </form>
+      </div>
 
       @if (vm.slot?.active && vm.revokeConfirmId === vm.slot.id) {
         <div class="developer-api__notice developer-api__notice--danger"
@@ -199,7 +176,7 @@
       }
 
       <p class="developer-api__compromise">
-        If a key is exposed, revoke it, wait at least 60 seconds, then create it again.
+        Key exposed? Revoke, wait 60 seconds, then create again.
         <a [href]="vm.docsUrl"
            target="_blank"
            rel="noreferrer"

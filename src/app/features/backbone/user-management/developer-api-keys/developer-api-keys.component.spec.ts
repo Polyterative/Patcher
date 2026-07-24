@@ -73,7 +73,7 @@ class MockDeveloperApiKeysDataService {
   readonly vmSubject$ = new BehaviorSubject<DeveloperApiKeysViewModel>(BASE_VM);
   readonly vm$ = this.vmSubject$.asObservable();
   readonly load$ = this.voidSubject('load$');
-  readonly createOrRotate$ = this.subject<{ label: string }>('createOrRotate$');
+  readonly createOrRotate$ = this.voidSubject('createOrRotate$');
   readonly requestRotateConfirmation$ = this.voidSubject('requestRotateConfirmation$');
   readonly cancelRotateConfirmation$ = this.voidSubject('cancelRotateConfirmation$');
   readonly requestRevokeConfirmation$ = this.subject<string>('requestRevokeConfirmation$');
@@ -103,21 +103,11 @@ function textContent(fixture: ComponentFixture<DeveloperApiKeysComponent>): stri
   return fixture.nativeElement.textContent.replace(/\s+/g, ' ').trim();
 }
 
-function setInputValue(fixture: ComponentFixture<DeveloperApiKeysComponent>, value: string): void {
-  const input: HTMLInputElement | null = fixture.nativeElement.querySelector('input');
-  if (!input) {
-    throw new Error('Credential label input was not rendered.');
-  }
-  input.value = value;
-  input.dispatchEvent(new Event('input', { bubbles: true }));
-  fixture.detectChanges();
-}
-
 function submitComponent(
   fixture: ComponentFixture<DeveloperApiKeysComponent>,
   vm: DeveloperApiKeysViewModel
 ): void {
-  fixture.componentInstance.submitCreateOrRotate(vm);
+  fixture.componentInstance.createOrRotate(vm);
   fixture.detectChanges();
 }
 
@@ -179,19 +169,30 @@ describe('DeveloperApiKeysComponent', () => {
     expect(textContent(fixture)).toContain('No API credential yet.');
   });
 
-  it('emits create with a valid label', () => {
+  it('renders no credential label form or audit dates', () => {
+    const { fixture } = setupComponent(ACTIVE_VM);
+    const text = textContent(fixture);
+
+    expect(fixture.nativeElement.querySelector('input')).toBeNull();
+    expect(fixture.nativeElement.querySelector('mat-form-field')).toBeNull();
+    expect(text).not.toContain('Credential label');
+    expect(text).not.toContain('Created');
+    expect(text).not.toContain('Rotated');
+    expect(text).not.toContain('Last used');
+    expect(text).not.toContain('Usage updates within a few minutes.');
+  });
+
+  it('emits create without asking for a label', () => {
     const { dataService, fixture } = setupComponent();
 
-    setInputValue(fixture, 'Server key');
     submitComponent(fixture, LOADED_EMPTY_VM);
 
-    expect(dataService.createOrRotate$.next).toHaveBeenCalledOnceWith({ label: 'Server key' });
+    expect(dataService.createOrRotate$.next).toHaveBeenCalledOnceWith();
   });
 
   it('disables and ignores create while the initial slot state is unknown', () => {
     const { dataService, fixture } = setupComponent(BASE_VM);
 
-    setInputValue(fixture, 'Server key');
     expect(buttonByText(fixture, 'Create API key').disabled).toBeTrue();
 
     submitComponent(fixture, BASE_VM);
@@ -203,7 +204,6 @@ describe('DeveloperApiKeysComponent', () => {
   it('requires inline confirmation before rotating an active key', () => {
     const { dataService, fixture } = setupComponent(ACTIVE_VM);
 
-    setInputValue(fixture, 'Server key');
     submitComponent(fixture, ACTIVE_VM);
 
     expect(dataService.requestRotateConfirmation$.next).toHaveBeenCalled();
@@ -215,13 +215,13 @@ describe('DeveloperApiKeysComponent', () => {
     });
     fixture.detectChanges();
 
-    expect(textContent(fixture)).toContain('Rotating replaces the current secret. Clients using it may continue for up to 60 seconds, then stop.');
+    expect(textContent(fixture)).toContain('Rotating replaces the current secret. Clients may keep working for up to 60 seconds.');
     submitComponent(fixture, {
       ...ACTIVE_VM,
       rotateConfirmationVisible: true
     });
 
-    expect(dataService.createOrRotate$.next).toHaveBeenCalledOnceWith({ label: 'Server key' });
+    expect(dataService.createOrRotate$.next).toHaveBeenCalledOnceWith();
   });
 
   it('renders one-time reveal with alert semantics and copy/dismiss actions', () => {
@@ -240,11 +240,24 @@ describe('DeveloperApiKeysComponent', () => {
     expect(reveal?.getAttribute('role')).toBe('alert');
     expect(textContent(fixture)).toContain('patcher_raw_secret');
 
-    buttonByText(fixture, 'Copy key').click();
+    buttonByText(fixture, 'Copy API key').click();
     expect(dataService.copyRevealedKey$.next).toHaveBeenCalled();
 
     buttonByText(fixture, 'I copied it').click();
     expect(dataService.dismissReveal$.next).toHaveBeenCalled();
+  });
+
+  it('does not offer copying when only the stored prefix is available', () => {
+    const { fixture } = setupComponent(ACTIVE_VM);
+    const buttons: string[] = Array.from(fixture.nativeElement.querySelectorAll('button'))
+      .map((button: HTMLButtonElement) => button.textContent?.replace(/\s+/g, ' ').trim() ?? '');
+    const text = textContent(fixture);
+
+    expect(text).toContain('Active credential');
+    expect(text).toContain('pk_live_1234');
+    expect(text).toContain('Free · 500 / 5,000 this month · 60/min');
+    expect(text).toContain('Full key not shown. Rotate to get a new copyable key.');
+    expect(buttons.some(label => label.includes('Copy API key'))).toBeFalse();
   });
 
   it('emits revoke request, confirm, and cancel actions', () => {
@@ -274,5 +287,6 @@ describe('DeveloperApiKeysComponent', () => {
     expect(textContent(fixture)).toContain('This credential is revoked.');
     expect(buttons.some(label => label.includes('Revoke'))).toBeFalse();
     expect(buttons.some(label => label.includes('Rotate API key'))).toBeFalse();
+    expect(buttons.some(label => label.includes('Create API key'))).toBeTrue();
   });
 });
