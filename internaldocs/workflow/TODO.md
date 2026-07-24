@@ -71,7 +71,7 @@
 
 ### PRODUCT — Tier 1 (requires Manufacturer Page Phase 2 to be live)
 
-- [ ] **HIGH: Public Open API — modules & manufacturers v1, public patches/racks v2 (Cloudflare Worker gateway, API keys + monthly quotas, edge-cached; DNS/schema/role gates pending)** → [`plans/public-open-api.md`](./plans/public-open-api.md)
+- [~] **HIGH: Public Open API — modules & manufacturers v1, bulk JSONL next, public patches/racks later (Cloudflare Worker, mandatory API keys, edge-cached; backend review and DNS/schema/role gates pending)** → [`plans/public-open-api.md`](./plans/public-open-api.md)
 - [ ] **HIGH: Manufacturer Accounts & Verification (claims, admin review, verified-owner edits; local M1 validation/typegen approved; remote apply gated)** → [`plans/manufacturer-accounts-verification.md`](./plans/manufacturer-accounts-verification.md)
 - [ ] **LOW: Manufacturer Updates / Featured Surface (persistence/RLS/backend/moderation approved after verification foundation)** → [`plans/manufacturer-updates-featured-surface.md`](./plans/manufacturer-updates-featured-surface.md)
 - [ ] **LOW: Manufacturer Analytics (privacy aggregate helper complete; manufacturer validation/dashboard/backend gated)** → [`plans/manufacturer-analytics.md`](./plans/manufacturer-analytics.md)
