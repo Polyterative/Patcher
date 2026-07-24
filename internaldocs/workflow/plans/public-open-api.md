@@ -451,9 +451,9 @@ keep working via a temporary Worker alias (Polish). No parallel route.
 - Cursor pagination: opaque base64url of
   `{"v":1,"s":<last_sort_value>,"id":<last_id_int>}`. Every list orders by
   `sort_column ASC, id ASC`. Invalid cursor → `400`.
-- Filters: `manufacturer_id` (int), `hp` (int), `tag` (int id), `standard` (int id),
-  `?q=` (pg_trgm, gated on approval — if denied, MVP returns
-  `400 unsupported_parameter` for `q`).
+- Filters: `manufacturer_id` (int), `hp` (int), `tag` (int id), `standard` (int id).
+  `?q=` is deferred with `pg_trgm` to Polish; MVP returns
+  `400 unsupported_parameter`.
 - Include: `?include=ins,outs,tags,panels`; tokens whitelisted before use.
 - v2: `GET /v1/patches/{public_id}`, `GET /v1/racks/{public_id}` reuse the existing
   opaque `public_id` pattern.
@@ -510,8 +510,8 @@ keep working via a temporary Worker alias (Polish). No parallel route.
     existing RLS-enabled `modules` and `manufacturers`, leaves ancillary table
     RLS untouched, grants view SELECT to `api_reader`, adds partial/FK indexes,
     and comments the accepted `security_definer_view` pattern.
-  - Optional `…_pg_trgm_search.sql` — gated separately; if denied, MVP
-    returns `400 unsupported_parameter` for `?q=`.
+  - Optional `…_pg_trgm_search.sql` deferred to Polish; MVP returns
+    `400 unsupported_parameter` for `?q=`.
 - [ ] Cloudflare (contingent gates): DNS `api.patcher.xyz`; Worker route +
   custom domain; Hyperdrive binding `HYPERDRIVE`; DO namespace
   `API_KEY_COUNTER`; Worker secret `API_KEY_PEPPER` (mirrors Vault
@@ -692,21 +692,20 @@ per-key naming beyond a single label attached to the slot.
 
 ### Structural — remaining backlog
 
-- [ ] User Area Developer panel + data service + `SupabaseService.apiKeys`
+- [ ] Account Management Public API subsection + data service + `SupabaseService.apiKeys`
   namespace as specified above. Local implementation is autonomous but
   gated behind the feature flag and does **not** land on production until
   the API preview is proven.
 - [ ] `DatabaseStrings.ts` registration for `api_keys`, `api_tiers`,
   `api_key_usage_monthly` (before any backend method that references
   them).
-- [ ] **Stable-slot follow-up migration** authoring: adds `rotated_at`
-  column, replaces the partial `UNIQUE (profile_id) WHERE revoked_at IS
-  NULL` with a full `UNIQUE (profile_id)` after preflight for existing
-  duplicates, and rewrites `create_api_key` and `create_partner_api_key`
-  as atomic UPSERTs that preserve `id` and — in the self-service branch
-  — `tier_code` / `monthly_quota_override` / `per_minute_quota_override`.
-  Local-only authoring + static contract test extension is autonomous;
-  remote apply is bundled into the batched operator window.
+- [x] The consolidated local identity migration includes `rotated_at`, a
+  full `UNIQUE (profile_id)`, and atomic UPSERT rewrites of
+  `create_api_key` and `create_partner_api_key` that preserve `id` and —
+  in the self-service branch — `tier_code` /
+  `monthly_quota_override` / `per_minute_quota_override`. Static contract
+  tests cover the slot invariant; remote apply remains bundled into the
+  batched operator window.
 - [ ] `pnpm updateBackendTypes` — **runs only after** the migrations are
   applied to an approved remote/isolated target; commit generated types
   in a separate chunk.
@@ -929,12 +928,10 @@ add an alias in the same commit.
 Preview rollout order (compressed from `cloudflare/public-api/RUNBOOK.md`
 sections 2–13, with the new self-service UI gates inserted):
 
-1. Apply the three reviewed migrations to the target Supabase project
-   (`sozmatmywjpstwidzlss`, `eu-central-1`) after backup/PITR check.
-   Includes the stable-slot follow-up (`rotated_at` column, full
-   `UNIQUE (profile_id)` index, atomic UPSERT rewrites of
-   `create_api_key` and `create_partner_api_key`) once separately
-   authored and reviewed.
+1. Apply the three reviewed consolidated migrations to the target
+   Supabase project (`sozmatmywjpstwidzlss`, `eu-central-1`) after
+   backup/PITR check. The identity migration includes `rotated_at`, the
+   full `UNIQUE (profile_id)` index, and the reviewed atomic UPSERT RPCs.
 2. `pnpm updateBackendTypes` from the same worktree; commit the diff.
 3. Create `api_key_pepper` in Supabase Vault; mirror to Worker secret
    `API_KEY_PEPPER`.
@@ -990,11 +987,11 @@ with the flag off in prod" — this window is the next continuous block.
 Approvals to grant in one pass (all listed in the TODO Approvals ledger
 today; the batched window converts each into an action):
 
-1. Remote apply of the three reviewed migrations against Supabase project
-   `sozmatmywjpstwidzlss` (`eu-central-1`), followed by
-   `pnpm updateBackendTypes`. Bundle the stable-slot follow-up
-   (`rotated_at`, full `UNIQUE (profile_id)`, UPSERT-rewrite RPCs) into
-   the same apply once its migration is authored and reviewed.
+1. Remote apply of the three reviewed consolidated migrations against
+   Supabase project `sozmatmywjpstwidzlss` (`eu-central-1`), followed by
+   `pnpm updateBackendTypes`. The identity migration already contains the
+   reviewed stable-slot contract (`rotated_at`, full
+   `UNIQUE (profile_id)`, UPSERT-rewrite RPCs).
 2. Vault: enable if not already; create `api_key_pepper` (32 random
    bytes, base64); note the value only in Vault + Worker secret.
 3. Cloudflare Hyperdrive: provision LOGIN credential for `api_reader`
@@ -1003,9 +1000,8 @@ today; the batched window converts each into an action):
 4. Cloudflare: create Durable Object namespace `API_KEY_COUNTER`;
    deploy the Worker; set secret `API_KEY_PEPPER`; leave the custom
    domain **off**.
-5. Optional: `pg_trgm` extension enable + trigram GIN indexes. If
-   declined, MVP returns `400 unsupported_parameter` for `?q=`
-   (already implemented that way).
+5. `pg_trgm` and trigram GIN indexes are deferred to Polish. MVP returns
+   `400 unsupported_parameter` for `?q=` (already implemented that way).
 6. Run the preview slot sequence in step 7 of the preview rollout
    (free create → partner promote of the same slot → rotate → revoke
    → re-activate) against the controlled owner profile. Do **not**
@@ -1023,7 +1019,6 @@ Inputs the owner must have ready before the window opens:
   `sozmatmywjpstwidzlss`.
 - Cloudflare zone access for `patcher.xyz` with Workers, DO,
   Hyperdrive, secrets, DNS, WAF.
-- Decision on `pg_trgm` (step 5 above).
 - 90-minute uninterrupted block. Expected wall-clock is ≤60 min if no
   gate fails; the buffer covers advisor re-review time.
 

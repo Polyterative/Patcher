@@ -119,16 +119,15 @@
     `revoke_api_key`, `verify_api_key`, `record_api_key_usage`). RLS on
     `api_keys` gives owner + JWT admin SELECT only; mutations only via
     SECURITY DEFINER RPCs.
-  - [ ] Optional `pg_trgm_search.sql` — enable
-    `pg_trgm` + trigram GIN indexes for `?q=`. If declined, MVP returns
-    `400 unsupported_parameter` for `q` and `?q=` moves to Polish.
+  - [x] Defer `pg_trgm_search.sql` and trigram GIN indexes to Polish.
+    MVP returns `400 unsupported_parameter` for `q`.
   - [ ] (Structural, not MVP-blocking) Private R2 bucket
     `patcher-public-datasets` + Worker R2 binding; streamed through the
     Worker after key check (no presigned URLs). Logpush → durable sink
     likewise Structural.
 - [ ] **Public Open API — batched manual-operator window**: single
   owner-present window to run the full preview-to-public rollout (three
-  reviewed migrations + the stable-slot follow-up migration +
+  reviewed consolidated migrations, including the stable-slot identity contract,
   `pnpm updateBackendTypes`, Vault pepper, `api_reader` LOGIN,
   Hyperdrive, Durable Object namespace, Worker deploy to preview route,
   mint a preview key on a controlled owner profile then promote the
@@ -137,8 +136,7 @@
   WAF review, then flip `environment.prod.ts` `developerApiEnabled` to
   `true` and release). Prerequisites: Supabase project access
   (`sozmatmywjpstwidzlss`, `eu-central-1`), Cloudflare zone access for
-  `patcher.xyz`, `pg_trgm` decision, and a 90-minute uninterrupted
-  block
+  `patcher.xyz` and a 90-minute uninterrupted block
   ([plan](./plans/public-open-api.md#batched-manual-operator-window-single-owner-session))
   (added 2026-07-24).
 
