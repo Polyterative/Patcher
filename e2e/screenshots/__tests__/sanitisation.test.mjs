@@ -28,3 +28,9 @@ test('redacts residual UUIDs from visible text', () => {
 
   assert.equal(rewritten, 'Owner id [hidden-id] on this card');
 });
+
+test('redacts a real personal email address that is not the fixture pattern', () => {
+  const rewritten = replaceDocsScreenshotText('Email Address vlady.y@live.it');
+
+  assert.equal(rewritten, 'Email Address docs-screenshot@patcher.xyz');
+});
