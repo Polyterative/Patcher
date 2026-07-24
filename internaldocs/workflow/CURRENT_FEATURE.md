@@ -31,7 +31,8 @@
 
 - [ ] Designer brief for User Area Developer panel placement/hierarchy (only local UX gate before implementation).
 - [ ] Land the flag-gated `DeveloperApiKeysComponent` + `DeveloperApiKeysDataService` at `src/app/features/routes/user-area/user-developer/developer-api-keys/`.
-- [ ] Add `SupabaseService.apiKeys` namespace, `DatabaseStrings` entries for `api_keys` / `api_tiers` / `api_key_usage_monthly`, and `developerApiEnabled` feature flag (off in `environment.prod.ts`).
+- [x] Add the `developerApiEnabled` feature flag (off in generated production environments, on in development).
+- [ ] Add `SupabaseService.apiKeys` namespace and `DatabaseStrings` entries for `api_keys` / `api_tiers` / `api_key_usage_monthly` after approved migration/type generation.
 - [ ] After the batched window: run `pnpm updateBackendTypes`, commit generated types, flip the flag on, and add key-required bulk JSONL export via private R2.
 
 #### Layer 3 — Polish
