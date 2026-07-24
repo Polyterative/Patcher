@@ -13,6 +13,15 @@ const TEXT_REPLACEMENTS = [
     source: '\\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\b',
     flags: 'gi',
     replacement: '[hidden-id]'
+  },
+  // Generic catch-all for any remaining email address (e.g. a real personal
+  // address on the authenticated docs-screenshot test account) that doesn't
+  // match the patcher-e2e fixture pattern above. Runs last so it is a no-op
+  // against the already-sanitised docs-screenshot@patcher.xyz replacement.
+  {
+    source: '\\b[\\w.+-]+@[\\w-]+\\.[a-z]{2,}\\b',
+    flags: 'gi',
+    replacement: 'docs-screenshot@patcher.xyz'
   }
 ];
 const FIXTURE_PREFIX_SOURCE = '\\[E2E\\]';
