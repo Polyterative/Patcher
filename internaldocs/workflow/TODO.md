@@ -70,6 +70,18 @@
   **false** in `environment.prod.ts`, **true** in dev). No remote apply,
   no `pnpm updateBackendTypes`, no flag flip in production — those stay
   in the batched operator window.
+- Public Open API stable credential slot semantics: exactly one
+  `api_keys` row per profile enforced by a full `UNIQUE (profile_id)`
+  index; `create_api_key(label)` and `create_partner_api_key(profile_id,
+  label)` are atomic UPSERTs that preserve `id`, `api_key_usage_monthly`,
+  and (self-service branch) `tier_code` / quota overrides; admin partner
+  promotes the same slot; `revoke_api_key` flips `revoked_at`;
+  re-activation reuses the same slot; a `rotated_at` column is added; the
+  Worker's ≤60 s isolate metadata cache is the rotation acceptance
+  window; compromise flow is revoke → wait ≥60 s → create with WAF
+  prefix/IP mitigation. This is a documentation-only standing approval;
+  remote SQL apply of the follow-up migration stays gated below
+  ([plan §"API keys — physical model"](./plans/public-open-api.md#api-keys--physical-model-stable-per-profile-credential-slot)).
 
 ### Pending questions (owner: answer inline, agents move resolved lines)
 
@@ -114,23 +126,19 @@
     `patcher-public-datasets` + Worker R2 binding; streamed through the
     Worker after key check (no presigned URLs). Logpush → durable sink
     likewise Structural.
-- [ ] **Public Open API — per-profile active-key cap**: confirm the max
-  number of non-revoked `api_keys` rows a single `profile_id` may hold.
-  Working recommendation is `≤ 5` per profile (client-side UX enforcement
-  now, DB `CHECK` in a Polish migration later). Not silently adopted
-  until answered
-  ([plan](./plans/public-open-api.md#self-service-behavior--exact-contract))
-  (added 2026-07-24).
 - [ ] **Public Open API — batched manual-operator window**: single
   owner-present window to run the full preview-to-public rollout (three
-  migrations + `pnpm updateBackendTypes`, Vault pepper, `api_reader`
-  LOGIN, Hyperdrive, Durable Object namespace, Worker deploy to preview
-  route, mint two preview keys, run smoke/quota/revocation/cache tests,
-  DNS switch to `api.patcher.xyz`, WAF review, then flip
-  `environment.prod.ts` `developerApiEnabled` to `true` and release).
-  Prerequisites: Supabase project access (`sozmatmywjpstwidzlss`,
-  `eu-central-1`), Cloudflare zone access for `patcher.xyz`, active-key
-  cap decision, `pg_trgm` decision, and a 90-minute uninterrupted block
+  reviewed migrations + the stable-slot follow-up migration +
+  `pnpm updateBackendTypes`, Vault pepper, `api_reader` LOGIN,
+  Hyperdrive, Durable Object namespace, Worker deploy to preview route,
+  mint a preview key on a controlled owner profile then promote the
+  same slot to partner and rotate/revoke/reactivate it, run
+  smoke/quota/revocation/cache tests, DNS switch to `api.patcher.xyz`,
+  WAF review, then flip `environment.prod.ts` `developerApiEnabled` to
+  `true` and release). Prerequisites: Supabase project access
+  (`sozmatmywjpstwidzlss`, `eu-central-1`), Cloudflare zone access for
+  `patcher.xyz`, `pg_trgm` decision, and a 90-minute uninterrupted
+  block
   ([plan](./plans/public-open-api.md#batched-manual-operator-window-single-owner-session))
   (added 2026-07-24).
 

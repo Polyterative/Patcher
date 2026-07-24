@@ -38,10 +38,10 @@
 #### Layer 3 — Polish
 
 - [ ] Add contract lifecycle/DX polish, retire widget-pilot alias, then public patch and rack endpoints via `public_id`.
-- [ ] Enforce the confirmed per-profile active-key cap in a `CHECK` migration.
+- [ ] Author the stable-slot follow-up migration (`rotated_at` column, full `UNIQUE (profile_id)` after preflight, atomic UPSERT rewrites of `create_api_key` / `create_partner_api_key` preserving `id` + tier/overrides in the self-service branch) and extend the static contract tests; remote apply stays inside the batched operator window.
 - [ ] Remove the `developerApiEnabled` feature flag once the API is public and stable.
 
-Status: Local MVP + docs + migrations reviewed and complete. Structural UI work (backend namespace, flag-gated User Area panel, data service, tests) is autonomous once designer confirms placement; all remote applies, credentials, and the preview-to-public promotion are batched into a single owner-present window described in the plan's "Batched manual-operator window" section.
+Status: Local MVP + docs + migrations reviewed and complete. Structural UI work (backend namespace, flag-gated User Area panel, data service, tests) is autonomous once designer confirms placement; the credential shape is now a stable per-profile slot (one row per profile, atomic UPSERT create-or-rotate, admin partner promotes the same slot, revoke flips `revoked_at`, re-activation reuses the same slot and preserves usage). All remote applies, credentials, and the preview-to-public promotion are batched into a single owner-present window described in the plan's "Batched manual-operator window" section.
 Updated: 2026-07-24
 
 Recent completed checkpoints are archived in [COMPLETED.md](./COMPLETED.md); their validation
