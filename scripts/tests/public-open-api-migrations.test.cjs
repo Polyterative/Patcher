@@ -6,10 +6,12 @@ const migrationDir = 'supabase/migrations';
 const rolePath = `${migrationDir}/20260724133100_api_reader_roles.sql`;
 const identityPath = `${migrationDir}/20260724133200_api_identity.sql`;
 const viewsPath = `${migrationDir}/20260724133300_api_v1_views.sql`;
+const vaultPermissionsPath = `${migrationDir}/20260724133400_api_vault_permissions.sql`;
 const roleSql = readFileSync(rolePath, 'utf8');
 const identitySql = readFileSync(identityPath, 'utf8');
 const viewsSql = readFileSync(viewsPath, 'utf8');
-const combinedSql = `${roleSql}\n${identitySql}\n${viewsSql}`;
+const vaultPermissionsSql = readFileSync(vaultPermissionsPath, 'utf8');
+const combinedSql = `${roleSql}\n${identitySql}\n${viewsSql}\n${vaultPermissionsSql}`;
 const normalize = (sql) => sql.replace(/\s+/g, ' ').toLowerCase();
 const viewDefinition = (view) => {
   const pattern = new RegExp(`create or replace view public\\.${view}[\\s\\S]+?;`, 'i');
@@ -35,14 +37,21 @@ const allNorm = normalize(combinedSql);
 
 test('public open api migrations exist in the approved role, identity, view order', () => {
   const publicApiMigrations = readdirSync(migrationDir)
-    .filter((name) => /api_(reader_roles|identity|v1_views)\.sql$/.test(name))
+    .filter((name) => /api_(reader_roles|identity|v1_views|vault_permissions)\.sql$/.test(name))
     .sort();
 
   assert.deepEqual(publicApiMigrations, [
     '20260724133100_api_reader_roles.sql',
     '20260724133200_api_identity.sql',
     '20260724133300_api_v1_views.sql',
+    '20260724133400_api_vault_permissions.sql',
   ]);
+});
+
+test('vault permission migration grants only pgSodium key-id access to postgres', () => {
+  assert.match(vaultPermissionsSql, /grant\s+pgsodium_keyiduser\s+to\s+postgres;/i);
+  assert.doesNotMatch(vaultPermissionsSql, /grant\s+pgsodium_key(?:holder|maker)\s+to\s+postgres/i);
+  assert.doesNotMatch(vaultPermissionsSql, /grant\s+execute\s+on\s+all\s+functions/i);
 });
 
 test('role migration creates only credential-free NOLOGIN roles with schema usage', () => {
