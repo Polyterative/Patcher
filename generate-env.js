@@ -45,6 +45,7 @@ export const environment = {
   features: {
     collectionsEnabled: false,
     coolReactionsEnabled: false,
+    developerApiEnabled: false,
     marketplaceEnabled: false
   }
 };
@@ -62,6 +63,7 @@ export const environment = {
   features: {
     collectionsEnabled: true,
     coolReactionsEnabled: true,
+    developerApiEnabled: true,
     marketplaceEnabled: true
   }
 };

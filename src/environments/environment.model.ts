@@ -7,6 +7,7 @@ export interface EnvironmentModel {
   features: {
     collectionsEnabled: boolean;
     coolReactionsEnabled: boolean;
+    developerApiEnabled: boolean;
     marketplaceEnabled: boolean;
   };
 }
