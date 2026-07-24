@@ -51,6 +51,10 @@
   Traffic switching, cleanup, and Supabase object deletion remain separately gated.
 - Marketplace address/listing schema/RLS/storage/backend foundation **applied and verified** — listing UI/discovery remains in the linked plans; release/push remains gated.
 - Price Hub retention/diagnostics and zero-decimal backfill **approved in principle** — same preflight/typegen/advisor validation required before any mutation.
+- Public Open API: reviewed technical plan adopted for MVP implementation
+  (`backend-plan-reviewer`: APPROVE WITH CHANGES). Schema/RLS, role credentials,
+  DNS, Hyperdrive, Durable Objects, Vault, WAF, and remote applies remain
+  separately gated below.
 
 ### Pending questions (owner: answer inline, agents move resolved lines)
 
@@ -59,38 +63,35 @@
   ([plan](./plans/rack-module-orientation-smallint-storage-migration.md)) (added 2026-07-19).
 - [ ] Cloudflare/R2: authorize traffic switch, cleanup, and any Supabase object deletion after the approved copy/verification stage (added 2026-07-08).
 - [ ] PostHog analytics review: provide credentials/export access (added 2026-07-08).
-- [ ] **Public Open API — approval sequencing** (recommended default: approve
-  gate 1 now that backend review returned APPROVE WITH CHANGES; all other gates
-  remain contingent and are not answered before it clears)
+- [ ] **Public Open API — infrastructure/schema gates** (reviewed plan adopted;
+  each remaining gate requires an explicit answer)
   ([plan](./plans/public-open-api.md)) (added 2026-07-24):
-  - [ ] **Gate 1 (blocks everything below): adopt the reviewed plan
-    (`backend-plan-reviewer`: APPROVE WITH CHANGES).**
-  - [ ] (contingent on gate 1) DNS + Worker route for `api.patcher.xyz` on
+  - [ ] DNS + Worker route for `api.patcher.xyz` on
     Cloudflare.
-  - [ ] (contingent on gate 1) Hyperdrive binding `HYPERDRIVE_READER` pointed
+  - [ ] Hyperdrive binding `HYPERDRIVE_READER` pointed
     at the Supavisor transaction-mode pooler; Hyperdrive owns the reader
     credential. The checked-in migration creates `api_reader NOLOGIN`; an
     owner-run SQL-editor step generates/sets the random LOGIN password and
     enters it directly into Hyperdrive without committing it.
-  - [ ] (contingent on gate 1) Durable Object namespace `API_KEY_COUNTER`
+  - [ ] Durable Object namespace `API_KEY_COUNTER`
     (authoritative per-minute + monthly quota; no static Dashboard Rate
     Limiting rule, no Workers Rate Limiting API binding).
-  - [ ] (contingent on gate 1) Verify Supabase Vault is enabled and the
+  - [ ] Verify Supabase Vault is enabled and the
     SECURITY DEFINER function owner can read `vault.decrypted_secrets`, then
     provision Vault secret
     `api_key_pepper` (32 random bytes, base64) and mirror to Cloudflare
     Worker secret `API_KEY_PEPPER`. Pepper rotation invalidates all keys —
     incident procedure.
-  - [ ] (contingent on gate 1) Coarse WAF/IP abuse rules as an outer,
+  - [ ] Coarse WAF/IP abuse rules as an outer,
     non-tier-specific shield.
-  - [ ] (contingent on gate 1) Apply the **three** consolidated migrations
+  - [ ] Apply the **three** consolidated migrations
     after re-review passes: `api_reader_role.sql`, `api_v1_views.sql`,
     `api_identity.sql` (includes `api_tiers` seed, `api_keys` + RLS,
     `api_key_usage_monthly`, RPCs `create_api_key`, `create_partner_api_key`,
     `revoke_api_key`, `verify_api_key`, `record_api_key_usage`). RLS on
     `api_keys` gives owner + JWT admin SELECT only; mutations only via
     SECURITY DEFINER RPCs.
-  - [ ] (contingent on gate 1) Optional `pg_trgm_search.sql` — enable
+  - [ ] Optional `pg_trgm_search.sql` — enable
     `pg_trgm` + trigram GIN indexes for `?q=`. If declined, MVP returns
     `400 unsupported_parameter` for `q` and `?q=` moves to Polish.
   - [ ] (Structural, not MVP-blocking) Private R2 bucket

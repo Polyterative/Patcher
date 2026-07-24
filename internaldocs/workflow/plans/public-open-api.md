@@ -4,9 +4,9 @@
 
 ## Status
 
-- [~] Backend plan review passed with **APPROVE WITH CHANGES**; non-blocking
-  refinements are folded in below. Awaiting product approval (TODO Approvals
-  ledger gate 1) before any implementation or infrastructure/schema change.
+- [~] Reviewed plan adopted by the product owner. MVP implementation may begin;
+  schema/RLS, role credentials, DNS, Hyperdrive, Durable Objects, Vault, WAF,
+  and remote applies remain separately gated in the TODO Approvals ledger.
 - Priority: **HIGH**
 - Depends on: existing User Area auth for self-service key management; manual `partner`
   provisioning uses a separate admin RPC executable only from `service_role`/postgres.
@@ -567,6 +567,10 @@ keep working via a temporary Worker alias (Polish). No parallel route.
   `invalid_key` taxonomy; exact key length; and view ownership/reloption
   assertions. Bulk download cost remains one request for Structural MVP, with
   size-based weighting reserved for later abuse review.
+- 2026-07-24T13:00+02:00 — Product owner adopted the reviewed technical plan
+  as the implementation baseline. This approves safe MVP code/scaffolding work,
+  not the separately listed schema/RLS, credential, DNS, Hyperdrive, Durable
+  Object, Vault, WAF, or remote-apply gates.
 
 ## Resolved refinement decisions (locked)
 
