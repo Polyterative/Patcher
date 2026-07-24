@@ -8,6 +8,9 @@
   migrations, and operator/developer docs are complete; schema/RLS remote apply,
   role credentials, DNS, Hyperdrive, Durable Objects, Vault, WAF, R2, and
   deployment remain separately gated in the TODO Approvals ledger.
+- Public consumer docs route:
+  [`docs.patcher.xyz/learn/public-open-api`](https://docs.patcher.xyz/learn/public-open-api)
+  (source file `learn/public-open-api.md` in Patcher-docs).
 - Priority: **HIGH**
 - Depends on: existing User Area auth for self-service key management; manual `partner`
   provisioning uses a separate admin RPC executable only from `service_role`/postgres.
@@ -405,9 +408,10 @@ keep working via a temporary Worker alias (Polish). No parallel route.
 - [x] Local developer/operator docs committed:
   [`cloudflare/public-api/README.md`](../../../cloudflare/public-api/README.md)
   and [`cloudflare/public-api/RUNBOOK.md`](../../../cloudflare/public-api/RUNBOOK.md).
-- [ ] Public consumer docs page in `Patcher-docs` linked from
-  `the-project/ai-and-open-data.md` and `llms.txt` (owned by separate coordinated
-  docs session).
+- [x] Public consumer docs page route fixed in `Patcher-docs`:
+  [`docs.patcher.xyz/learn/public-open-api`](https://docs.patcher.xyz/learn/public-open-api)
+  (source file `learn/public-open-api.md`; owned by the separate coordinated docs
+  session).
 - [ ] Baseline observability from built-in Workers logs/metrics (5xx, 429,
   cache-hit ratio, DB error rate). Logpush is Structural.
 
@@ -688,9 +692,14 @@ keep working via a temporary Worker alias (Polish). No parallel route.
 - 2026-07-24T14:08+02:00 — Local technical/operator documentation completed in
   this repository. The docs explicitly preserve all remaining remote gates
   (Supabase apply/RLS, Vault pepper, `api_reader` LOGIN credential, Hyperdrive,
-  Durable Object namespace, Worker secrets/deploy, DNS, WAF/cache, R2, monitoring,
-  and public docs handoff) and intentionally add no app UI surface because the
-  natural placement is repository/operator documentation rather than product UX.
+  Durable Object namespace, Worker secrets/deploy, DNS, WAF/cache, R2, and
+  monitoring) and intentionally add no app UI surface because the natural
+  placement is repository/operator documentation rather than product UX.
+- 2026-07-24T14:14+02:00 — Cross-repo public docs route fixed as
+  `https://docs.patcher.xyz/learn/public-open-api` from Patcher-docs source file
+  `learn/public-open-api.md`. Added Patcher-side discoverability links in the
+  root README and `cloudflare/public-api/README.md`; no in-app UI surface was
+  added.
 
 ## Resolved refinement decisions (locked)
 
