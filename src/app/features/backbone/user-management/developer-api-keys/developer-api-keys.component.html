@@ -108,7 +108,7 @@
             </div>
           }
         </div>
-      } @else if (!vm.isLoading) {
+      } @else if (vm.hasLoaded && !vm.isLoading) {
         <div class="developer-api__empty">
           <strong>No API credential yet.</strong>
           <span>Create one when you are ready to call the Public API.</span>
@@ -145,7 +145,7 @@
           <button mat-raised-button
                   color="primary"
                   type="submit"
-                  [disabled]="labelControl.invalid || vm.isSaving"
+                  [disabled]="labelControl.invalid || !vm.hasLoaded || vm.isLoading || vm.isSaving"
           >
             <mat-icon aria-hidden="true">{{ vm.slot?.active ? 'sync' : 'add' }}</mat-icon>
             @if (vm.isSaving) {
