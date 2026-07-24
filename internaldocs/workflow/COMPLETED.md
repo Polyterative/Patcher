@@ -3,6 +3,7 @@
 > Archive of finished work. One-line summaries only. For strategy context see `../product/PRINCIPLES.md` and
 > `../product/ROADMAP.md`.
 
+- **2026-07-24** — MEDIUM: Docs screenshot pipeline repair fixes the production-config capture runner, adds a stable target registry/selector, universal capture-time sanitisation (fixture retention, email/UUID redaction, scoped title reads), and re-captures all 10 reviewed docs-facing JPGs; council-reviewed SHIP, no schema/RLS/backend/release changes (`442526bb`).
 - **2026-07-19** — MEDIUM: Rack module orientation — 3U flip adds placement-level `normal` / `rot180` orientation for eligible 3U rack modules, additive schema/types/backend preservation, editor and touch toggle affordances, public/patch rendering, drag-preview rotation, analytics, and focused concurrency coverage without RLS/policy/grant/release changes.
 - **2026-07-08** — Cross-entity Cool detail placement polish uses screenshot-backed review to move module, rack, and patch Cool actions out of fixed floating controls and into the approved in-context detail card/action rows, preserving repeated-list exclusions and production/backend/typegen gates.
 - **2026-07-08** — Price Hub frontend cleanup removes the declined Store prices report-mismatch prototype/local acknowledgement state and restores each listing row as one explicit external store link; Supabase Cron, retention/backfill, schema/data mutations, release, and push remain gated.

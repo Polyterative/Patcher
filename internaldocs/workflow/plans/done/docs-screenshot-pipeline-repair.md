@@ -1,6 +1,6 @@
 # Docs Screenshot Pipeline Repair
 
-Status: Active
+Status: Done
 Started: 2026-07-23
 
 ## Goal
@@ -27,9 +27,9 @@ Repair the in-repo Patcher docs screenshot pipeline so the seven docs-facing cap
 
 - [x] Add targeted invariant/sanitisation tests.
 - [x] Update `internaldocs/testing/DOCS_SCREENSHOTS.md`.
-- [ ] Capture and inspect the seven docs-facing outputs.
-- [ ] Run full all-10 screenshot regression, final image review, and sync dry-run.
-- [ ] Archive completion docs.
+- [x] Capture and inspect the seven docs-facing outputs.
+- [x] Run full all-10 screenshot regression, final image review, and sync dry-run.
+- [x] Archive completion docs.
 
 ## Decision log
 
@@ -68,3 +68,4 @@ Repair the in-repo Patcher docs screenshot pipeline so the seven docs-facing cap
 - `09-account.jpg` (`account`) — nav: production header shows only Home/Modules/Racks/Patches/Manufacturers plus authenticated "Docs screenshot account"/"Account" links. Identity: Display Name shows "Docs screenshot account"; Account ID shows "[hidden-id]" (existing UUID redaction). **New blocker found and fixed**: the Email Address field initially rendered the real personal email address of the authenticated test account unredacted (`vlady.y@live.it`) — this account's real email doesn't match the `patcher-e2e-*@patcher.xyz` fixture pattern the existing `TEXT_REPLACEMENTS` handled, so it slipped through untouched. Added a generic catch-all email regex (applied after the fixture-specific patterns, so it is a no-op against already-sanitised `docs-screenshot@patcher.xyz` text) and re-captured; the field now shows `docs-screenshot@patcher.xyz`. Content/framing: Account Created On, Change/Delete/Logout controls, and FAQ section render normally with no loading overlays. Verdict: pass after the email-redaction fix.
 - `10-public-profile.jpg` (`public-profile`) — **corrected 2026-07-25** (see decision log): nav shows unauthenticated shell (Log in/Sign up only), no E2E account identity. Identity: heading reads "PUBLIC PROFILE - POLYTERATIVE" — this target deliberately navigates to the hardcoded, real, pre-existing public profile route `/u/Polyterative` (not the E2E/docs-screenshot test account), so the real username and rack-owner bylines ("Polyterative") are genuine, already-public production content, not test-account data; this is the same intentional-fixed-content pattern as `01-home.jpg`'s demo patch and is out of scope for redaction. No `patcher-e2e-`/`[E2E]`/email/UUID text present. Content/framing: Racks section shows 10 real, non-fixture rack cards with real product thumbnails/titles/HP/row counts and a "Load more (13 remaining)" control; Stats panel shows Racks 23/Patches 10/Approved public modules 0 with no identifiers. Verdict: pass.
 - 2026-07-23 rerun — Re-ran the exact gate order from the top after credential confirmation. `home` and `modules` recaptured and passed the same nav/identity/content/framing criteria under in-session image review; `patch-details` produced the same real `.blocked/patch-details.txt` evidence and stopped the sequence again.
+- 2026-07-24 — Completion: council review returned SHIP. All 10 docs-facing captures are reviewed and pass (see observations above); the runbook (`internaldocs/testing/DOCS_SCREENSHOTS.md`), sanitisation/registry code, and focused tests (`e2e/screenshots/__tests__/*.test.mjs`, `scripts/dev/sync-docs-screenshots.test.mjs`, `scripts/tests/generate-env.test.cjs`) are merged. Archived to `plans/done/` per AGENTS.md §2; see `COMPLETED.md` for the checkpoint commit. No schema/RLS/backend/release changes were made.
