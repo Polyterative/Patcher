@@ -585,6 +585,10 @@ keep working via a temporary Worker alias (Polish). No parallel route.
   rollover/boundary logic, OpenAPI skeleton, and six focused tests. Validation:
   `pnpm test:functions:public-api-worker` (6/6), `pnpm lint` (exit 0), reviewer
   verdict APPROVE.
+- 2026-07-24T13:30+02:00 — Product owner approved authoring and Docker/local
+  validation of the three reviewed migrations only. Remote apply, reader LOGIN
+  credential, Vault secret creation, remote type generation, and Cloudflare
+  provisioning remain explicitly unapproved.
 
 ## Resolved refinement decisions (locked)
 
