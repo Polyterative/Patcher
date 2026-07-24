@@ -362,8 +362,10 @@ keep working via a temporary Worker alias (Polish). No parallel route.
     cursor validation, shared-cache response contract, pure quota boundary
     logic, fail-closed route skeleton, OpenAPI route/security skeleton, and
     focused Node tests.
-  - [ ] Gated integration: key metadata LRU + `verify_api_key`, Durable Object
-    persistence/alarm, Hyperdrive query catalog, Cache API serving.
+  - [~] Gated integration:
+    - [x] Local `ApiKeyCounter` Durable Object persistence/alarm implementation.
+    - [ ] Key metadata LRU + `verify_api_key`, Worker-to-DO request-path wiring,
+      Hyperdrive query catalog, and Cache API serving.
 - [x] Local-only migrations authored and statically validated; remote apply,
   reader LOGIN credential, Vault pepper creation, and Cloudflare provisioning remain
   separately gated:
@@ -630,6 +632,15 @@ keep working via a temporary Worker alias (Polish). No parallel route.
   `verify_api_key` remains an intentional digest oracle available only to the
   private `api_reader` credential; the public Worker never exposes arbitrary
   digest lookup and still applies authentication/quotas at its boundary.
+- 2026-07-24T14:20+02:00 — Local-only `ApiKeyCounter` Durable Object component
+  implemented without creating a Cloudflare namespace or deploying resources.
+  Quota consumption persists exact minute/month counters transactionally before
+  success, refreshes effective limits, preserves monotonic pending reports across
+  month rollover, and retries failed reporting at 30 s / 5 min / 30 min without
+  traffic shortening the backoff. Wrangler declares only the class binding and
+  SQLite migration, with no fabricated remote ID. Validation:
+  `pnpm test:functions:public-api-worker` (14/14), `pnpm lint` (exit 0), scoped
+  reviewer verdict APPROVE. Worker-to-DO wiring remains the next isolated chunk.
 
 ## Resolved refinement decisions (locked)
 

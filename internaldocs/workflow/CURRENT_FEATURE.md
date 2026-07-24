@@ -23,7 +23,7 @@
 
 - [x] Revise plan and pass backend review (`APPROVE WITH CHANGES`).
 - [x] Obtain product approval for the reviewed implementation baseline.
-- [~] Build safe MVP code/scaffolding; local migration foundation is written/validated, while remote apply and infrastructure remain gated.
+- [~] Build safe MVP code/scaffolding; local migration and Durable Object foundations are written/validated, while request-path integration, remote apply, and infrastructure remain gated.
 - [ ] Build the key-required, origin-protected modules/manufacturers API (Cloudflare Worker + Supavisor `api_reader` role + `api_v1_*` views + HMAC-pepper keys + Durable Object quota).
 
 #### Layer 2 — Structural
@@ -34,7 +34,7 @@
 
 - [ ] Add contract lifecycle/DX polish, retire widget-pilot alias, then public patch and rack endpoints via `public_id`.
 
-Status: Reviewed plan adopted; local-only migration foundation is written, with remote apply, credentials, Vault, and Cloudflare infrastructure still gated.
+Status: Reviewed plan adopted; local-only migration and Durable Object foundations are written, with Worker request-path integration, remote apply, credentials, Vault, and Cloudflare infrastructure still gated.
 Updated: 2026-07-24
 
 Recent completed checkpoints are archived in [COMPLETED.md](./COMPLETED.md); their validation

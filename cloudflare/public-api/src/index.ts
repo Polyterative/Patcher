@@ -1,6 +1,8 @@
 import { parseApiKeyAuthorization } from './auth.ts';
 import { normalizeApiRequest } from './request.ts';
 
+export { ApiKeyCounter } from './api-key-counter.ts';
+
 export interface PublicApiEnv {
   API_KEY_PEPPER?: string;
 }
