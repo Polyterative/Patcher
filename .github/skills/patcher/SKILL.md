@@ -31,6 +31,7 @@ When the user's request matches one of these, **delegate to a sub-agent** using 
 | Diagnose a defect to root cause | **bug-hunter** | `gpt-5.4` | `internaldocs/agents/bug-hunter.md` |
 | "Begin loop", "run the loop", "via loop", or run one/full/multiple TODO → implementation → review → documentation cleanup cycles | **coordinator-loop** | `gpt-5.5` | `internaldocs/agents/coordinator-loop.md` |
 | Boot a long-running autonomous loop driven by `agent/` and `internaldocs/workflow/` (replaces pasting a 10 KB mission prompt by hand) | **autonomous-engineer** | `gpt-5.5` | `internaldocs/agents/autonomous-engineer.md` |
+| Update public documentation for a confirmed production release | **docs-publisher** | `gpt-5.5` | `internaldocs/agents/docs-publisher.md` |
 
 **Model policy:** use `gpt-5.5` for coding-heavy executors (`frontend-dev`, `refactorer`, `test-writer`, `autonomous-engineer`), `claude-sonnet-4.6` for non-coding visual/structural design work, and `claude-opus-4.7` for planning and premium counsel. Use cheaper OpenAI models for read-heavy tasks: `gpt-5.4` for root-cause diagnosis and `gpt-5.4-mini` for diff review. Escalate review/diagnosis only for hard architecture, security, or data-loss risk.
 
@@ -44,6 +45,7 @@ When the user's request matches one of these, **delegate to a sub-agent** using 
 - Cleanup: `refactorer` → `reviewer`
 - Visual: `designer` → `frontend-dev` → `reviewer`
 - Backlog automation: foreground decision coordinator ("via loop") → `coordinator-loop` / executor persona → `reviewer` → docs cleanup → next safe task or next queued product question
+- Release documentation: confirmed production publication → `docs-publisher` → independent review → local docs commit → explicit user push
 
 ### "Via loop" operating mode
 

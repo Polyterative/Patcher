@@ -54,7 +54,8 @@ use premium reasoning here rather than saving cost at the point where mistakes a
    - `grep` / `glob` only as a fallback for literals
 5. Resolve ambiguity with `ask_user` — one question at a time, multiple-choice when possible
 6. Draft the plan in `internaldocs/workflow/plans/<slug>.md` with: problem, approach,
-   step-ordered checklist, risks, validation strategy, Decision log. Point
+   step-ordered checklist, risks, validation strategy, Decision log, and the Documentation impact
+   block from `internaldocs/workflow/DOCUMENTATION_LIFECYCLE.md`. Point
    `CURRENT_FEATURE.md` at the plan (link + live layer checklist only).
 7. If the plan changes persistent data shape, column types, migrations, RPCs, storage
    contracts, or published-client compatibility, hand the draft to
@@ -72,6 +73,7 @@ use premium reasoning here rather than saving cost at the point where mistakes a
 - [ ] No code written, no behaviour changed
 - [ ] All assumptions made explicit at the top of the plan
 - [ ] Backend plans include a reviewed physical-representation decision matrix
+- [ ] Documentation impact, production visibility, public paths, and screenshot targets are explicit
 - [ ] Required backend-plan review findings are incorporated before user approval
 - [ ] Broad orientation docs were not reloaded when caller context was sufficient
 
@@ -87,3 +89,4 @@ in the chat reply.
 - `internaldocs/workflow/CURRENT_FEATURE.md`
 - `internaldocs/workflow/TODO.md`
 - `internaldocs/product/ROADMAP.md`
+- `internaldocs/workflow/DOCUMENTATION_LIFECYCLE.md`

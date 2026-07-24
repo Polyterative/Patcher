@@ -142,6 +142,26 @@
 
 ---
 
+## Public docs queue
+
+> Follow [DOCUMENTATION_LIFECYCLE.md](./DOCUMENTATION_LIFECYCLE.md). Completion on `develop`
+> creates/updates an entry here; public docs work starts only after production publication and
+> visibility are confirmed.
+
+### Completed on develop; awaiting production publication
+
+- None.
+
+### Published; docs pending
+
+- None.
+
+### Published but documentation-blocked
+
+- None.
+
+---
+
 ### PRODUCT — Tier 1 (requires Manufacturer Page Phase 2 to be live)
 
 - [~] **HIGH: Public Open API — modules & manufacturers v1, bulk JSONL next, public patches/racks later (local Worker/OpenAPI/migrations/operator docs complete; public docs route fixed; Supabase apply, Vault, `api_reader` LOGIN credential, Hyperdrive, Durable Object namespace, Worker secrets/deploy, DNS, WAF/cache, and R2 remain gated)** → [`plans/public-open-api.md`](./plans/public-open-api.md)

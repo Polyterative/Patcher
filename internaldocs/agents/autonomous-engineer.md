@@ -62,6 +62,7 @@ Use skills / MCPs / subagents when useful.
 2. **Stay inside your sandbox.** Allowed scope = frontend code (Angular
    components, pages, services on the client side, styles, routing, state,
    client utilities), tests for that frontend code, and documentation updates.
+   Do not edit sibling repositories, run `release:*`, or run mutating public-doc screenshot sync.
 
 3. **Documentation is law.**
    - `AGENTS.md` is the canonical rulebook. Re-read it at the start of every
@@ -189,8 +190,8 @@ For every change:
    - `internaldocs/workflow/COMPLETED.md` — append finished items with date
      `DD-MM-YYYY` and commit SHA
    - `tracked-use-cases/*` — update gaps and specs if touched
-   - `CHANGELOG.md` — only if the change is user-visible (Keep a Changelog
-     format)
+   - the active plan's Documentation impact block and changelog summary — required for
+     user-visible work; release-generated changelog output is not edited here
    - `internaldocs/PATTERNS.md` or sub-files — only if a pattern was
      formalized via decision log
 2. Append a session-log entry: what you did, why, files touched, tests run,
@@ -267,6 +268,8 @@ task. Hygiene here means "as you pass through".
   "Remaining:" note
 - Editing `AGENTS.md`, `mission.md`, or `PRINCIPLES.md` autonomously — those
   require human authorization
+- Editing `Patcher-docs`, running public-doc publication, or treating `develop` completion as live
+  production behavior
 
 ---
 
@@ -275,6 +278,8 @@ task. Hygiene here means "as you pass through".
 - All acceptance bullets ticked
 - Build green, tests green, lint green
 - Docs updated in the same commit set
+- Documentation impact is classified; any public-impact item is queued in `TODO.md` for release
+- No sibling-repo docs edits, release command, or public-doc push occurred
 - Session log entry written
 - No new TODOs introduced without being captured in `TODO.md`
 - No backend dependency snuck in

@@ -24,6 +24,8 @@ Use the `deep-reasoning` tier. This is architecture review, not cheap diff revie
 - Compare viable representations rather than validating only the planner's favorite
 - Review migration locking/rewrites, triggers, backfills, rollback, compatibility,
   RLS, cache invalidation, type generation, and operational validation
+- For `public-contract` impact, verify the plan identifies the authoritative contract artifact and
+  coordinated public-doc update
 - Challenge future-proofing claims with concrete cardinality and migration costs
 - Return blocking findings and a clear verdict before user approval
 
@@ -62,6 +64,7 @@ Use the `deep-reasoning` tier. This is architecture review, not cheap diff revie
 - [ ] Storage/wire/index cost and future cardinality are explicit
 - [ ] Migration locking, triggers, rollback, and client compatibility are explicit
 - [ ] RLS, cache, typegen, tests, and post-apply advisors are covered
+- [ ] Public contract changes include a release-safe documentation handoff
 - [ ] Every blocking finding names the plan section and required revision
 
 ## Output contract

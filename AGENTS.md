@@ -112,6 +112,19 @@ Key paths:
 - Feature flags are not mandatory for every new feature. Use them when the user requests a hidden/incomplete feature, when production
   must stay shielded while `develop` remains reviewable, or when a backend rollout needs a safe off switch.
 
+### Documentation delivery
+
+- Every feature plan must classify documentation impact using
+  [`internaldocs/workflow/DOCUMENTATION_LIFECYCLE.md`](internaldocs/workflow/DOCUMENTATION_LIFECYCLE.md).
+- Completion on `develop` updates internal docs and queues public-doc work; it does **not** make a
+  feature publicly documentable or authorize edits that claim it is live.
+- After the user confirms production publication and production visibility, delegate public-doc
+  work to `docs-publisher`; multi-repo execution uses `orchestrate`.
+- Feature-flagged/operator-gated capabilities remain out of public docs while disabled.
+- Public visual changes follow `internaldocs/testing/DOCS_SCREENSHOTS.md` and require manual image
+  review plus independent docs review.
+- Local reviewed commits are allowed under normal commit rules; pushes remain explicitly user-only.
+
 ## 7) Output and context preferences
 
 - Keep test output trimmed to the summary and failing file(s), not full verbose logs.
@@ -157,6 +170,8 @@ really benefits from separate sessions/branches.
 ## 9) Specialised agent personas
 
 For known roles (planning, UI polish, review, refactor, test-writing, bug diagnosis), delegate to a sub-agent using the matching persona spec from `internaldocs/agents/` as the system prompt. `internaldocs/agents/README.md` has the full index plus composition patterns (Idea intake → Backlog, Plan → Build → Review, Bug fix, Refactor sweep, UI polish). For rough feature intake that should become a future backlog plan, use `internaldocs/agents/feature-notetaker.md`. For a full automated backlog cycle that selects one TODO item, delegates implementation, delegates review, validates, creates verified checkpoint commits, and archives workflow docs, use `internaldocs/agents/coordinator-loop.md`.
+For confirmed production releases with public documentation work queued, use
+`internaldocs/agents/docs-publisher.md`.
 
 Project-scoped Copilot CLI skills in `.github/skills/`:
 
@@ -169,6 +184,7 @@ Project-scoped Copilot CLI skills in `.github/skills/`:
 
 Start at `internaldocs/README.md` (full index). Most-used:
 `workflow/CURRENT_FEATURE.md`, `workflow/TODO.md` (thin index), `workflow/plans/<slug>.md` (per-task detail + decision log), `workflow/COMPLETED.md`,
+`workflow/DOCUMENTATION_LIFECYCLE.md`,
 `ARCHITECTURE.md`, `STYLE_GUIDE.md`, `patterns/REACTIVE_SERVICES.md`,
 `patterns/BACKEND_METHODS.md`, `patterns/UI_PATTERNS.md`, `testing/UNIT_TESTING.md`,
 `product/PRINCIPLES.md`, `product/ROADMAP.md`.

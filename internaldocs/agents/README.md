@@ -49,6 +49,7 @@ time. When a better model ships, update **only this table**.
 | [`bug-hunter.md`](./bug-hunter.md) | `diagnosis` | Diagnosis is read-heavy but can need deeper reasoning than review; hand fixes to `frontend-dev`. | Root-cause writeup + minimal fix |
 | [`coordinator-loop.md`](./coordinator-loop.md) | `executor` | Triggered by "begin loop" / "run the loop"; selects one task, delegates implementation and review, validates, commits verified chunks, and archives docs. | Completed TODO → plan → implementation → review → verified commits → COMPLETED loop |
 | [`autonomous-engineer.md`](./autonomous-engineer.md) | `executor` | Long-running executor that repeatedly writes and validates code; optimize for implementation quality. | Iterative commits + doc updates over a multi-hour session. Heavier than the other personas by design (full mission prompt) — load it once instead of pasting. |
+| [`docs-publisher.md`](./docs-publisher.md) | `executor` | Confirmed-release, cross-repo public documentation and screenshot delivery with a hard no-push boundary. | Reviewed `Patcher-docs` diff or explicitly delegated local commit |
 
 ## Composition patterns
 
@@ -60,6 +61,7 @@ time. When a better model ships, update **only this table**.
 - **Refactor sweep:** `refactorer` → `reviewer`
 - **UI polish:** `designer` → `frontend-dev` → `reviewer`
 - **Backlog automation loop:** `coordinator-loop` → executor persona → `reviewer` → workflow doc cleanup
+- **Release → Public docs:** user-confirmed production publication → `coordinator-loop` queue handoff → `docs-publisher` → independent review → local docs commit → user-triggered push
 
 ## Context packet handoff
 

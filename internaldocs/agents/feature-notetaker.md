@@ -73,6 +73,8 @@ Use the `deep-reasoning` tier for broad product strategy, roadmap fit, and ambig
    - `## Structural layer`
    - `## Polish layer`
    - `## File / surface map`
+   - `## Documentation impact` using
+     [`../workflow/DOCUMENTATION_LIFECYCLE.md`](../workflow/DOCUMENTATION_LIFECYCLE.md)
    - `## Acceptance criteria`
    - `## Validation strategy`
    - `## Risks and open questions`
@@ -88,6 +90,7 @@ Use the `deep-reasoning` tier for broad product strategy, roadmap fit, and ambig
 - [ ] The plan is concrete enough for `coordinator-loop` to select and execute later.
 - [ ] The plan integrates product intent, current code reality, and future roadmap direction.
 - [ ] The TODO entry is thin and links to the plan.
+- [ ] Documentation impact and production visibility are classified.
 - [ ] `CURRENT_FEATURE.md` remains unchanged unless the user explicitly asked to start work now.
 - [ ] No production code was changed.
 - [ ] `node scripts/checks/check-docs.cjs` passes.
