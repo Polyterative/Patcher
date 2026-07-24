@@ -81,9 +81,11 @@ test('generate-env enables local-only feature flags only for development builds'
 
   assert.match(devContent, /production:\s*false/);
   assert.match(devContent, /coolReactionsEnabled:\s*true/);
+  assert.match(devContent, /developerApiEnabled:\s*true/);
   assert.match(devContent, /marketplaceEnabled:\s*true/);
   assert.match(prodContent, /production:\s*true/);
   assert.match(prodContent, /coolReactionsEnabled:\s*false/);
+  assert.match(prodContent, /developerApiEnabled:\s*false/);
   assert.match(prodContent, /marketplaceEnabled:\s*false/);
 });
 
