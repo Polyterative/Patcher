@@ -73,7 +73,7 @@
   ([plan](./plans/public-open-api.md)) (added 2026-07-24):
   - [ ] DNS + Worker route for `api.patcher.xyz` on
     Cloudflare.
-  - [ ] Hyperdrive binding `HYPERDRIVE_READER` pointed
+  - [ ] Hyperdrive binding `HYPERDRIVE` pointed
     at the Supavisor transaction-mode pooler; Hyperdrive owns the reader
     credential. The checked-in migration creates `api_reader NOLOGIN`; an
     owner-run SQL-editor step generates/sets the random LOGIN password and
