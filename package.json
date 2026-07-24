@@ -138,6 +138,7 @@
     "ngx-lottie": "^21.2.0",
     "ngx-pipes": "^3.2.2",
     "ngx-timeago": "^4.1.0",
+    "postgres": "^3.4.5",
     "posthog-js": "^1.390.2",
     "rxjs": "^7.8.2",
     "sigma": "^2.2.0",
