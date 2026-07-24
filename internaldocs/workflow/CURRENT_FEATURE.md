@@ -25,17 +25,22 @@
 - [x] Obtain product approval for the reviewed implementation baseline.
 - [x] Build and validate the complete local MVP Worker, Durable Object, OpenAPI contract, and migration foundation.
 - [x] Document the local MVP Worker and operator rollout/rollback gates.
-- [ ] Execute approved remote rollout for the key-required, origin-protected modules/manufacturers API (Supabase apply, Vault, `api_reader` LOGIN credential, Hyperdrive, Durable Object namespace, Worker secrets/deploy, DNS, WAF/cache).
+- [ ] Execute the batched owner-present rollout window (Supabase apply + `pnpm updateBackendTypes`, Vault pepper, `api_reader` LOGIN, Hyperdrive, Durable Object namespace, Worker secret + deploy, preview route, preview keys, smoke/quota/revocation/cache tests, DNS custom domain, WAF, then flag flip).
 
 #### Layer 2 — Structural
 
-- [ ] Add User Area key self-service, usage reporting (from `api_key_usage_monthly`), and key-required bulk JSONL export via private R2.
+- [ ] Designer brief for User Area Developer panel placement/hierarchy (only local UX gate before implementation).
+- [ ] Land the flag-gated `DeveloperApiKeysComponent` + `DeveloperApiKeysDataService` at `src/app/features/routes/user-area/user-developer/developer-api-keys/`.
+- [ ] Add `SupabaseService.apiKeys` namespace, `DatabaseStrings` entries for `api_keys` / `api_tiers` / `api_key_usage_monthly`, and `developerApiEnabled` feature flag (off in `environment.prod.ts`).
+- [ ] After the batched window: run `pnpm updateBackendTypes`, commit generated types, flip the flag on, and add key-required bulk JSONL export via private R2.
 
 #### Layer 3 — Polish
 
 - [ ] Add contract lifecycle/DX polish, retire widget-pilot alias, then public patch and rack endpoints via `public_id`.
+- [ ] Enforce the confirmed per-profile active-key cap in a `CHECK` migration.
+- [ ] Remove the `developerApiEnabled` feature flag once the API is public and stable.
 
-Status: Local MVP implementation and technical/operator docs are complete and reviewed locally; remote apply, credentials, Vault, Hyperdrive/Durable Object provisioning, DNS, WAF/cache, and deployment remain gated.
+Status: Local MVP + docs + migrations reviewed and complete. Structural UI work (backend namespace, flag-gated User Area panel, data service, tests) is autonomous once designer confirms placement; all remote applies, credentials, and the preview-to-public promotion are batched into a single owner-present window described in the plan's "Batched manual-operator window" section.
 Updated: 2026-07-24
 
 Recent completed checkpoints are archived in [COMPLETED.md](./COMPLETED.md); their validation

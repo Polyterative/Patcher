@@ -419,15 +419,144 @@ keep working via a temporary Worker alias (Polish). No parallel route.
 
 ## Structural layer (self-service keys, usage, bulk export)
 
-- [ ] User Area "Developer" panel under
-  `src/app/components/user-parts/developer-api-keys/` +
-  `developer-api-keys-data.service.ts` (layering R1–R4). Calls
-  `create_api_key(label)` / `revoke_api_key(id)`; shows prefix, copy-once raw
-  key, monthly usage. Coordinated with the widgets-pilot session so its page
-  consumes `GET /v1/manufacturers/{id}?include=modules`.
-- [ ] Backend wiring: `SupabaseService.apiKeys` namespace, `DatabaseStrings.ts`
-  registration for `api_keys`, `api_tiers`, `api_key_usage_monthly`;
-  `pnpm updateBackendTypes` after migrations.
+### Decision — validate API first, ship self-service UI in a controlled preview
+
+Product-owner decision (2026-07-24T14:50+02:00): the eventual public state is
+User Area self-service, but the first proof point is that the API actually
+works against a **preview** rollout. Local, autonomous, no-approval work runs
+now (Angular UI behind a feature flag, backend wiring, tests, docs). Every
+remote apply, secret, credential, DNS, and preview-to-public promotion is
+batched into a single manual-operator window (see below) so the owner is only
+consulted once. `sozmatmywjpstwidzlss` is the intended remote project;
+`develop` may still ship the UI safely because it is flagged off in
+production.
+
+### Layering (fixed by AGENTS.md §4)
+
+```text
+DeveloperApiKeysComponent
+  -> DeveloperApiKeysDataService          (component-scoped @Injectable())
+  -> SupabaseService.apiKeys              (root API namespace)
+  -> Supabase RPC / api_v1_* views
+```
+
+- Component and data service extend `SubManager`, call `super()`, and use
+  `takeUntil(this.destroy$)` / template `async` pipes only.
+- Data service uses `ReplaySubject<void>(1)` for identity (current
+  `auth.uid()` refresh trigger), `Subject<{ label: string }>` for
+  `create$`, `Subject<{ id: string }>` for `revoke$`, `Subject<void>` for
+  `load$` and `copySucceeded$`.
+- `SupabaseService.apiKeys` is a new root-provided namespace on the
+  existing `SupabaseService`; it mirrors the `marketplace` / `get` /
+  `add` namespaces already there and returns typed observables. No direct
+  Supabase client access from the component (layering rule R1).
+
+### Physical files touched — Structural
+
+| Path | Change |
+|---|---|
+| `src/app/features/routes/user-area/user-developer/user-developer.module.ts` | New standalone-module wrapper mirroring `user-marketplace` (declares nothing new here — just re-exports the standalone component so `user-area.module.ts` can import it once). |
+| `src/app/features/routes/user-area/user-developer/developer-api-keys/developer-api-keys.component.{ts,html,scss,spec.ts}` | New standalone component under the actual User Area path (there is no `src/app/components/user-parts/` in this repo; the User Area lives under `src/app/features/routes/user-area/`, mirroring `user-marketplace/user-address-book/`). Uses `ChangeDetectionStrategy.OnPush`, `providers: [DeveloperApiKeysDataService]`, imports the standard User Area material bag (`MatButtonModule`, `MatIconModule`, `HeroContentCardComponent`, `EmptyStateTipsComponent`, `CleanCardComponent`, `LabelValueShowcaseComponent`). |
+| `src/app/features/routes/user-area/user-developer/developer-api-keys/developer-api-keys-data.service.{ts,spec.ts}` | New component-scoped data service (`@Injectable()`, no `providedIn`) reactive over `_vm$`, `load$`, `create$`, `revoke$`, and copy state; delegates to `SupabaseService.apiKeys`. Two-step inline revoke confirmation via `BehaviorSubject<string \| null>`, matching `user-address-book` (see `confirmDelete`), not a `MatDialog`. |
+| `src/app/features/routes/user-area/user-area.module.ts` | Import the new standalone component and add it to `imports:` (same pattern as `UserAddressBookComponent`). No new sub-module `RouterModule` usage — this panel lives inside the existing `area` route. |
+| `src/app/features/routes/user-area/user-area-root/user-area-root.component.{html,ts}` | Add `@if (developerApiEnabled) { <app-developer-api-keys …/> }` at the marketplace-adjacent section, wired to `environment.features.developerApiEnabled`. |
+| `src/app/features/backend/supabase.service.ts` | Add `readonly apiKeys!: ReturnType<typeof createApiKeysNamespace>` and initialize in `constructor` (same shape as `add = createAddNamespace(...)`). Provides `listOwnKeys()`, `listOwnUsage(month?)`, `createOwnKey(label)`, `revokeOwnKey(id)`. Cache-buster keys registered against `api_keys` + `api_key_usage_monthly` (see `patterns/BACKEND_METHODS.md`). |
+| `src/app/features/backend/supabase-api-keys.ts` (new) | Implements `createApiKeysNamespace(client, session$)`. Reads through `api_keys` / `api_tiers` / `api_key_usage_monthly` (RLS enforces owner-only). Writes only via RPCs `create_api_key(p_label)` and `revoke_api_key(p_id)` — never direct DML. |
+| `src/app/features/backend/DatabaseStrings.ts` | Register three new consts: `api_keys`, `api_tiers`, `api_key_usage_monthly`. Layering rule R2 keeps this the only file that owns table-name constants. |
+| `src/backend/database.types.ts` | Regenerated by `pnpm updateBackendTypes` **only after** the migrations are applied to an approved remote/isolated Supabase target. Commit the diff in an isolated chunk. |
+| `src/environments/environment.model.ts` + `generate-env.js` | Add `developerApiEnabled: boolean` to the `features` block. Default: `false` in `environment.prod.ts`, `true` in dev-generated `environment.ts`. Update `scripts/tests/generate-env.test.cjs` regex assertions. |
+| `src/app/features/routes/user-area/user-developer/user-developer.module.ts` + `user-area.module.ts` spec | New spec cases assert the component is gated by `developerApiEnabled` and that toggling the flag hides/shows the panel. |
+
+### Self-service behavior — exact contract
+
+1. **List** — `load$` triggers a parallel fetch of the profile's active keys
+   (`revoked_at IS NULL`, ordered `created_at DESC`) and the current calendar
+   month's usage row per key. Empty state uses `EmptyStateTipsComponent`
+   with copy pointing at the public docs (`docs.patcher.xyz/reference/public-open-api`).
+2. **Row display** — for each key: label, `key_prefix` (never the hash),
+   tier code (`free`), `created_at`, `last_used_at` (relative), effective
+   monthly limit (`monthly_quota_override ?? tier.monthly_quota`), current
+   month used, remaining, and a `Revoke` button. Raw key is **never**
+   re-displayed after mint.
+3. **Create** — inline form with a single required `label` (`1…64` chars,
+   `^[A-Za-z0-9 _\-\.]+$`). On submit: call `SupabaseService.apiKeys.createOwnKey(label)`
+   → RPC returns `{ id, raw_key, prefix, tier }` exactly once. UI enters a
+   one-time-reveal state with a copy button (`navigator.clipboard.writeText`
+   fallback → snackbar success/failure via existing
+   `SharedConstants.errorCustom`/`successCustom`). Reveal panel offers
+   `I copied it` → transitions to normal list state and discards the raw
+   key from memory (`_revealedRawKey$.next(null)`). Refresh, route change,
+   and component destroy all discard the raw key.
+4. **Revoke** — two-step inline confirm mirroring
+   `user-address-book.component.ts::confirmDelete`. First click sets
+   `_revokeConfirmId$.next(id)` and shows an inline warning row; second
+   click dispatches `revoke$` → RPC → optimistic list refresh. Cancel is
+   always visible.
+5. **Quota semantics** — "60 requests/minute · 5,000/month (free tier)"
+   is a fixed label sourced from a client-side constant, **not** from
+   `api_tiers` (which is not readable by `authenticated` in the reviewed
+   grants and would need a new view or RLS opening; deferred as out of
+   scope for MVP). Monthly usage figures come from `api_key_usage_monthly`
+   filtered by `key_id IN (own keys)` and `month = date_trunc('month', now())`.
+   Usage may lag by up to one flush interval — surface a small "usage
+   updates within a few minutes" hint next to the number.
+6. **Per-profile active-key cap** — **not defined** in the reviewed
+   migrations. Do not silently pick a number. The plan flags it as a
+   pending owner decision (see Approvals ledger). Working recommendation
+   the panel will assume once approved: `≤ 5` active (non-revoked) keys
+   per profile, enforced client-side pre-submit for UX only, and later
+   backed by a `CHECK` migration in Polish. Until confirmed, the UI shows
+   no cap and only surfaces "already have keys? consider revoking unused
+   ones" copy.
+7. **Error taxonomy** — mint failures map by SQLSTATE:
+   `28000` → sign-in-required copy + redirect prompt; `42501` → generic
+   "not allowed"; anything else → snackbar + inline retry. Load failures
+   never destroy previously-loaded rows; they surface a banner with retry.
+8. **Accessibility & voice** — copy follows `product/PRINCIPLES.md`:
+   plain, warm, exact. Labels: "Create an API key" / "Copy your key —
+   this is the only time it will be shown" / "Revoke". Confirmation:
+   "Revoking will break any app or script still using this key. Continue?"
+9. **Placement/hierarchy is not decided in this plan.** The Developer
+   panel is a new User Area surface and needs a designer brief before
+   final visual integration (accordion vs standalone card, headline copy,
+   proximity to Marketplace section). See "Designer handoff" below — this
+   is the **only local UX gate** blocking implementation. Remote approvals
+   remain batched separately.
+
+### Feature-flag / visibility model
+
+- New `environment.features.developerApiEnabled` boolean.
+- Dev: `true`. Production build: `false`. Written into
+  `environment.prod.ts` by `generate-env.js` so the shipped bundle never
+  renders the panel until the operator flips it on.
+- `UserAreaRootComponent` reads the flag and conditionally renders the
+  panel; the standalone component itself is a no-op when instantiated with
+  the flag off (defensive `@if` guard in template).
+- Rollout order: land UI on `develop` with the flag off in production,
+  ship the remote API rollout, verify against a preview key, **then** flip
+  `environment.prod.ts` to `true` in a single-line edit commit and
+  release.
+- Feature flag stays as long as the API is preview-only; removal is a
+  Polish-layer cleanup, not part of this rollout.
+
+### Coordination
+
+- Widgets-pilot session consumes `GET /v1/manufacturers/{id}?include=modules`;
+  its preview key is one of the two keys minted during the batched
+  operator window.
+
+### Structural — remaining backlog
+
+- [ ] User Area Developer panel + data service + `SupabaseService.apiKeys`
+  namespace as specified above. Local implementation is autonomous but
+  gated behind the feature flag and does **not** land on production until
+  the API preview is proven.
+- [ ] `DatabaseStrings.ts` registration for `api_keys`, `api_tiers`,
+  `api_key_usage_monthly` (before any backend method that references
+  them).
+- [ ] `pnpm updateBackendTypes` — **runs only after** the migrations are
+  applied to an approved remote/isolated target; commit generated types
+  in a separate chunk.
 - [ ] Nightly R2 export job (03:00 UTC); private bucket
   `patcher-public-datasets`; `GET /v1/datasets` + streamed
   `GET /v1/datasets/{name}` after auth + consume.
@@ -435,6 +564,24 @@ keep working via a temporary Worker alias (Polish). No parallel route.
 - [x] `cloudflare/public-api/RUNBOOK.md` — pepper rotation (incident
   procedure), reader password rotation via Hyperdrive re-issue, DO
   management, dataset recovery.
+
+### Designer handoff
+
+- Trigger: `designer` persona is engaged **before** the Structural UI
+  component is coded. Not before backend wiring, which is layout-agnostic.
+- Ask: "Where does the Developer panel live inside User Area, and at
+  what visual weight?" Options to weigh: (a) standalone `HeroContentCardComponent`
+  block adjacent to Address Book & Listings; (b) collapsed
+  `mat-expansion-panel` under a new "Developer" section; (c) new tab in a
+  future User Area shell rework. Include screenshots of the current User
+  Area root and Address Book for context.
+- Constraints: Design language per
+  [`internaldocs/DESIGN_LANGUAGE.md`](../../DESIGN_LANGUAGE.md); the
+  one-time raw-key reveal must feel like a warning surface, not a normal
+  input; copy button must be visible on first render.
+- Deliverable: 2–3 line placement decision + short annotated screenshot,
+  logged in the Decision log. Implementation proceeds autonomously after
+  approval.
 
 ## Polish layer (v2 + DX)
 
@@ -541,6 +688,163 @@ keep working via a temporary Worker alias (Polish). No parallel route.
   503 service-unavailable modes, and emitted error codes. Validation passed:
   `pnpm test:functions:public-api-worker` (33/33) and
   `node scripts/checks/check-docs.cjs`.
+
+### Preview validation strategy (what proves the API works before public rollout)
+
+Two orthogonal questions must be answered before UI polish or public
+announcement: **"does the local build behave correctly?"** and **"does the
+same code behave correctly against the real Supabase + Hyperdrive + DO
+stack?"**. This plan separates them so autonomous work can finish
+everything in the first question without touching remote resources.
+
+Provable locally, autonomously, right now (no owner presence required):
+
+- Worker unit + contract tests: `pnpm test:functions:public-api-worker`
+  (currently 33/33). Extend with a small set of **preview-mode**
+  scenarios: (a) valid preview key consuming quota; (b) revoked key
+  refused within 60 s of a metadata cache expiry; (c) shared cache hit
+  serving distinct per-key rate headers.
+- Migration static-contract tests: `pnpm test:functions:public-open-api-migrations`
+  (currently 11/11). Extend with a whitelist assertion for the
+  Structural-layer `api_keys` / `api_tiers` / `api_key_usage_monthly`
+  grants used by the new UI namespace.
+- OpenAPI smoke check as documented in `cloudflare/public-api/README.md`.
+- Angular unit specs for `DeveloperApiKeysComponent`,
+  `DeveloperApiKeysDataService`, and the new `SupabaseService.apiKeys`
+  namespace under `pnpm test-headless`. `MatSnackBar` and clipboard are
+  mocked; RPC responses are stubbed.
+- `pnpm lint` covering the new layering (R1–R4).
+- `node scripts/checks/check-docs.cjs`.
+- `generate-env.js` regeneration + `scripts/tests/generate-env.test.cjs`
+  extension for the new `developerApiEnabled` flag.
+
+Not provable without remote infrastructure — batched into the operator
+window below:
+
+- `verify_api_key` byte compatibility between Supabase `extensions.hmac`
+  and Worker `crypto.subtle.sign` (an interop **fixture** already lives
+  in the Worker tests; the live end-to-end path still requires a mint
+  through the RPC against the real Vault pepper).
+- `api_reader` role's actual raw-table denial: `SELECT * FROM public.modules`
+  as `api_reader` failing with `42501`. Local static tests assert grant
+  hygiene but cannot execute against a running Postgres.
+- Durable Object monthly rollover under real cross-isolate load.
+- Cloudflare cache hit ratio ≥ 95% under synthetic load.
+- Revocation ≤ 60 s in production Worker isolates (multiple colos).
+- Public docs page reachability at `docs.patcher.xyz/reference/public-open-api`
+  is already live (owned by Patcher-docs); operator only re-checks it after
+  API go-live.
+
+### Controlled preview rollout (owner-present)
+
+Preview means: real Supabase + Cloudflare stack, but the Worker route is
+either on the Cloudflare-generated preview URL for the deployed version
+or on a temporary hostname (e.g. `api-preview.patcher.xyz`) that is
+**not** referenced from the docs page. `wrangler.jsonc` currently
+disables both `workers_dev` and `preview_urls`; the preview step must
+either flip these on for a bounded window or use a versioned deployment
+route. Choose one before the operator window; do not both flip flags and
+add an alias in the same commit.
+
+Preview rollout order (compressed from `cloudflare/public-api/RUNBOOK.md`
+sections 2–13, with the new self-service UI gates inserted):
+
+1. Apply the three reviewed migrations to the target Supabase project
+   (`sozmatmywjpstwidzlss`, `eu-central-1`) after backup/PITR check.
+2. `pnpm updateBackendTypes` from the same worktree; commit the diff.
+3. Create `api_key_pepper` in Supabase Vault; mirror to Worker secret
+   `API_KEY_PEPPER`.
+4. Provision `api_reader` LOGIN password via SQL editor as `postgres`;
+   paste directly into Cloudflare Hyperdrive; never commit.
+5. Create Durable Object namespace `API_KEY_COUNTER`.
+6. Deploy Worker to the preview route (not the public `api.patcher.xyz`
+   custom domain yet).
+7. Mint two keys via `create_api_key('preview-smoke')` from the owner's
+   User Area session (using the newly landed panel behind the flag),
+   plus one partner preview key via `create_partner_api_key(<owner_profile_id>, 'partner-preview')`
+   in SQL editor.
+8. Run the runbook §11 smoke tests plus these UI-driven additions: create
+   a key from the panel; confirm one-time reveal; revoke and re-verify
+   `401 invalid_key` within ≤60 s.
+9. Run runbook §12 quota + revocation + cache tests.
+10. Watch runbook §13 monitoring for at least one flush cycle (5 min)
+    with zero `configuration_error` / `quota_unavailable` / `origin_unavailable`.
+11. Only after the preview passes: swap DNS to the custom domain
+    `api.patcher.xyz`, flip `environment.prod.ts` `developerApiEnabled`
+    to `true`, and cut a release.
+
+Rollback at any preview step is: disable the Worker route, keep migrations
+in place, revoke preview keys. The UI stays flag-off; no user sees a broken
+panel.
+
+### Batched manual-operator window (single owner session)
+
+Everything below requires the owner to be present. Grouped so nothing
+half-lands. Autonomous work stops at "everything on `develop` is green
+with the flag off in prod" — this window is the next continuous block.
+
+Approvals to grant in one pass (all listed in the TODO Approvals ledger
+today; the batched window converts each into an action):
+
+1. Remote apply of the three reviewed migrations against Supabase project
+   `sozmatmywjpstwidzlss` (`eu-central-1`), followed by
+   `pnpm updateBackendTypes`.
+2. Vault: enable if not already; create `api_key_pepper` (32 random
+   bytes, base64); note the value only in Vault + Worker secret.
+3. Cloudflare Hyperdrive: provision LOGIN credential for `api_reader`
+   (owner runs SQL as `postgres`, pastes password into Hyperdrive UI,
+   commits nothing).
+4. Cloudflare: create Durable Object namespace `API_KEY_COUNTER`;
+   deploy the Worker; set secret `API_KEY_PEPPER`; leave the custom
+   domain **off**.
+5. Owner confirms per-profile active-key cap (see Approvals ledger
+   question). Working default recommendation: `≤ 5` per profile,
+   enforced client-side; enforced by DB `CHECK` in a Polish migration
+   later. This answer determines whether the client cap is enabled or
+   left disabled.
+6. Optional: `pg_trgm` extension enable + trigram GIN indexes. If
+   declined, MVP returns `400 unsupported_parameter` for `?q=`
+   (already implemented that way).
+7. Mint the two preview keys per the rollout order above.
+8. Run smoke + quota + revocation + cache tests together.
+9. Coarse WAF/IP abuse rules review.
+10. Structural gates (deferred, listed for completeness only, not
+    required in this window): private R2 bucket
+    `patcher-public-datasets`; Cloudflare Logpush; nightly export job.
+
+Inputs the owner must have ready before the window opens:
+
+- Supabase project login with SQL editor + Vault + advisors access on
+  `sozmatmywjpstwidzlss`.
+- Cloudflare zone access for `patcher.xyz` with Workers, DO,
+  Hyperdrive, secrets, DNS, WAF.
+- Decision on the active-key cap (question 5 above).
+- Decision on `pg_trgm` (question 6 above).
+- 90-minute uninterrupted block. Expected wall-clock is ≤60 min if no
+  gate fails; the buffer covers advisor re-review time.
+
+### Docs updates after the API is truly live
+
+Only after DNS custom domain `api.patcher.xyz` serves traffic and the
+Worker has passed §11–§13 checks:
+
+- [ ] Root `README.md`: mark the Public Open API as live and link the
+  public docs page.
+- [ ] `cloudflare/public-api/README.md`: switch its "current state"
+  paragraph from "no production Supabase migration…has been performed"
+  to a live-state summary; do not embed real IDs.
+- [ ] `cloudflare/public-api/RUNBOOK.md`: keep the rollback/incident
+  procedures; mark the initial rollout section as complete with the
+  date.
+- [ ] Patcher-docs `learn/public-open-api.md`: unpublish any "preview"
+  banner; publish key-management instructions that mirror the User Area
+  panel behavior.
+- [ ] This plan: append a "Rollout complete" Decision log line with the
+  effective date, then move `plans/public-open-api.md` to `plans/done/`
+  and archive one line to `internaldocs/workflow/COMPLETED.md` with the
+  commit hash.
+- [ ] `CURRENT_FEATURE.md`: reset to `_No active feature._` and bump the
+  `Updated:` date.
 
 ## Decision log
 
@@ -719,6 +1023,48 @@ keep working via a temporary Worker alias (Polish). No parallel route.
   The Worker implementation and operator runbook naming are canonical; stale
   planning references to the previous binding name were corrected without changing
   any remote rollout gate.
+- 2026-07-24T14:50+02:00 — Product-owner refinement on Structural rollout:
+  self-service User Area keys are still the eventual state, but the first
+  proof point is that the API works end-to-end. Every autonomous local
+  chunk (backend namespace, `SupabaseService.apiKeys`, `DatabaseStrings`
+  registrations, feature-flagged `DeveloperApiKeysComponent` +
+  `DeveloperApiKeysDataService`, spec coverage, docs updates) proceeds
+  without owner presence and ships to `develop` with
+  `environment.features.developerApiEnabled = false` in
+  `environment.prod.ts`. Every remote/manual action (Supabase migration
+  apply, `pnpm updateBackendTypes`, Vault pepper, `api_reader` LOGIN
+  credential, Hyperdrive, Durable Object namespace, Worker secret + deploy,
+  preview route, DNS custom domain, WAF, preview key mint, smoke/quota/
+  revocation/cache tests, flag flip to production) is batched into a single
+  owner-present window as described in the new "Batched manual-operator
+  window" section. Rejected: shipping the UI unflagged to `develop`
+  (would render a broken panel until the remote stack lands); rejected:
+  waiting for the remote rollout before starting UI work (would idle
+  autonomous capacity and keep the widgets-pilot session blocked on a
+  preview key that only exists once the panel is coded).
+- 2026-07-24T14:50+02:00 — Sketched Structural path corrected from the
+  intake's `src/app/components/user-parts/developer-api-keys/` to the
+  actual User Area location
+  `src/app/features/routes/user-area/user-developer/developer-api-keys/`,
+  matching the existing pattern established by `user-address-book` and
+  `user-listings`. There is no `src/app/components/user-parts/` directory
+  in this repo. The new panel is a standalone component gated by
+  `environment.features.developerApiEnabled` and imported into
+  `UserAreaModule` alongside `UserAddressBookComponent`. Component uses
+  the existing inline two-step revoke pattern
+  (`BehaviorSubject<string | null>`), not a `MatDialog`. Per-profile
+  active-key cap is intentionally not silently invented — a working
+  recommendation of `≤ 5` per profile is registered in the Approvals
+  ledger as a pending question. Placement/hierarchy inside User Area is
+  the only local UX gate before implementation and is queued for a
+  `designer` brief; remote gates remain batched separately.
+
+## Decision log — deferred remote rollout log
+
+Once the batched manual-operator window runs, append the outcome as a
+single dated line here with the resulting commit hash (migration apply
+date, preview key mint, DNS switch, and flag flip). Do not embed real
+IDs, credentials, or key material.
 
 ## Resolved refinement decisions (locked)
 
