@@ -79,6 +79,7 @@ export interface DeveloperApiKeySlotView {
 export interface DeveloperApiKeysViewModel {
   docsUrl: string;
   errorMessage: string | null;
+  hasLoaded: boolean;
   isLoading: boolean;
   isSaving: boolean;
   reveal: DeveloperApiKeyReveal | null;
@@ -97,10 +98,13 @@ interface ApiKeyFetchResult {
   usage: DeveloperApiKeyUsage | null;
 }
 
+type ApiKeyMutationAction = 'create' | 'rotate' | 'revoke';
+
 @Injectable()
 export class DeveloperApiKeysDataService extends SubManager implements OnDestroy {
   private readonly _slot$ = new BehaviorSubject<DeveloperApiKeySlot | null>(null);
   private readonly _usage$ = new BehaviorSubject<DeveloperApiKeyUsage | null>(null);
+  private readonly _hasLoaded$ = new BehaviorSubject<boolean>(false);
   private readonly _isLoading$ = new BehaviorSubject<boolean>(false);
   private readonly _isSaving$ = new BehaviorSubject<boolean>(false);
   private readonly _errorMessage$ = new BehaviorSubject<string | null>(null);
@@ -120,6 +124,7 @@ export class DeveloperApiKeysDataService extends SubManager implements OnDestroy
 
   readonly vm$: Observable<DeveloperApiKeysViewModel> = combineLatest({
     errorMessage: this._errorMessage$,
+    hasLoaded: this._hasLoaded$,
     isLoading: this._isLoading$,
     isSaving: this._isSaving$,
     reveal: this._revealedRawKey$,
@@ -131,6 +136,7 @@ export class DeveloperApiKeysDataService extends SubManager implements OnDestroy
     map(state => ({
       docsUrl: PUBLIC_API_DOCS_URL,
       errorMessage: state.errorMessage,
+      hasLoaded: state.hasLoaded,
       isLoading: state.isLoading,
       isSaving: state.isSaving,
       reveal: state.reveal,
@@ -161,7 +167,6 @@ export class DeveloperApiKeysDataService extends SubManager implements OnDestroy
   private initializeLoadHandler(): void {
     this.load$.pipe(
       switchMap(() => {
-        this.discardRevealedRawKey();
         this._isLoading$.next(true);
         this._errorMessage$.next(null);
 
@@ -177,8 +182,19 @@ export class DeveloperApiKeysDataService extends SubManager implements OnDestroy
 
   private initializeCreateOrRotateHandler(): void {
     this.createOrRotate$.pipe(
-      withLatestFrom(this._slot$),
-      exhaustMap(([request, currentSlot]) => {
+      withLatestFrom(
+        this._slot$,
+        this._hasLoaded$,
+        this._isLoading$,
+        this._isSaving$,
+        this._rotateConfirmationVisible$
+      ),
+      exhaustMap(([request, currentSlot, hasLoaded, isLoading, isSaving, rotateConfirmationVisible]) => {
+        if (!hasLoaded || isLoading || isSaving) {
+          this.reportInlineError('Public API credential status must load before creating or rotating a key. Use Retry if loading failed.');
+          return EMPTY;
+        }
+
         const label = request.label.trim();
         const validationMessage = validateApiKeyLabel(label);
         if (validationMessage) {
@@ -187,6 +203,13 @@ export class DeveloperApiKeysDataService extends SubManager implements OnDestroy
         }
 
         const wasActiveRotation = currentSlot?.revokedAt === null;
+        if (wasActiveRotation && !rotateConfirmationVisible) {
+          this._rotateConfirmationVisible$.next(true);
+          this._revokeConfirmId$.next(null);
+          return EMPTY;
+        }
+
+        const mutationAction: ApiKeyMutationAction = wasActiveRotation ? 'rotate' : 'create';
         this.discardRevealedRawKey();
         this._isSaving$.next(true);
         this._errorMessage$.next(null);
@@ -194,20 +217,20 @@ export class DeveloperApiKeysDataService extends SubManager implements OnDestroy
         this._revokeConfirmId$.next(null);
 
         return this.backend.apiKeys.createOrRotateOwnKey(label).pipe(
-          switchMap(reveal => this.fetchSlotWithUsage$().pipe(
-            map(result => ({ result, reveal, wasActiveRotation }))
+          tap(reveal => this.publishReveal(reveal)),
+          switchMap(() => this.fetchSlotWithUsage$().pipe(
+            tap(result => {
+              this.publishFetchResult(result);
+              SharedConstants.successCustom(
+                this.snackBar,
+                wasActiveRotation
+                  ? 'API key rotated. Copy the new key now.'
+                  : 'API key created. Copy it now.'
+              );
+            }),
+            catchError((error: ApiKeyErrorLike) => this.handlePostSuccessRefreshError$(error, mutationAction))
           )),
-          tap(({ result, reveal, wasActiveRotation }) => {
-            this.publishFetchResult(result);
-            this.publishReveal(reveal);
-            SharedConstants.successCustom(
-              this.snackBar,
-              wasActiveRotation
-                ? 'API key rotated. Copy the new key now.'
-                : 'API key created. Copy it now.'
-            );
-          }),
-          catchError((error: ApiKeyErrorLike) => this.handleMutationError$(error, 'create')),
+          catchError((error: ApiKeyErrorLike) => this.handleMutationError$(error, mutationAction)),
           finalize(() => this._isSaving$.next(false))
         );
       }),
@@ -223,12 +246,18 @@ export class DeveloperApiKeysDataService extends SubManager implements OnDestroy
         this._errorMessage$.next(null);
 
         return this.backend.apiKeys.revokeOwnKey(id).pipe(
-          switchMap(() => this.fetchSlotWithUsage$()),
-          tap(result => {
-            this.publishFetchResult(result);
+          tap(() => {
+            this.markSlotRevoked(id);
             this._revokeConfirmId$.next(null);
-            SharedConstants.successCustom(this.snackBar, 'API key revoked.');
+            this._rotateConfirmationVisible$.next(false);
           }),
+          switchMap(() => this.fetchSlotWithUsage$().pipe(
+            tap(result => {
+              this.publishFetchResult(result);
+              SharedConstants.successCustom(this.snackBar, 'API key revoked.');
+            }),
+            catchError((error: ApiKeyErrorLike) => this.handlePostSuccessRefreshError$(error, 'revoke'))
+          )),
           catchError((error: ApiKeyErrorLike) => this.handleMutationError$(error, 'revoke')),
           finalize(() => this._isSaving$.next(false))
         );
@@ -300,9 +329,22 @@ export class DeveloperApiKeysDataService extends SubManager implements OnDestroy
   }
 
   private publishFetchResult(result: ApiKeyFetchResult): void {
+    this._hasLoaded$.next(true);
     this._slot$.next(result.slot);
     this._usage$.next(result.usage);
     this._errorMessage$.next(null);
+  }
+
+  private markSlotRevoked(id: string): void {
+    const currentSlot = this._slot$.value;
+    if (currentSlot?.id !== id) {
+      return;
+    }
+
+    this._slot$.next({
+      ...currentSlot,
+      revokedAt: currentSlot.revokedAt ?? new Date().toISOString()
+    });
   }
 
   private publishReveal(result: DeveloperApiKeyCreateResult): void {
@@ -362,12 +404,20 @@ export class DeveloperApiKeysDataService extends SubManager implements OnDestroy
     return EMPTY;
   }
 
-  private handleMutationError$(error: ApiKeyErrorLike, action: 'create' | 'revoke'): Observable<never> {
+  private handleMutationError$(error: ApiKeyErrorLike, action: ApiKeyMutationAction): Observable<never> {
     const fallback = action === 'revoke'
       ? 'API key could not be revoked. Try again.'
-      : 'API key could not be created. Try again.';
+      : `API key could not be ${ action === 'rotate' ? 'rotated' : 'created' }. Try again.`;
     const message = this.messageForError(error, fallback);
     console.error(`Public API key ${ action } failed:`, error);
+    this._errorMessage$.next(message);
+    SharedConstants.errorCustom(this.snackBar, message);
+    return EMPTY;
+  }
+
+  private handlePostSuccessRefreshError$(error: ApiKeyErrorLike, action: ApiKeyMutationAction): Observable<never> {
+    const message = this.partialRefreshMessage(action);
+    console.error(`Public API key ${ action } refresh failed after success:`, error);
     this._errorMessage$.next(message);
     SharedConstants.errorCustom(this.snackBar, message);
     return EMPTY;
@@ -394,6 +444,15 @@ export class DeveloperApiKeysDataService extends SubManager implements OnDestroy
       return 'This account is not allowed to manage Public API credentials.';
     }
     return error.message || fallback;
+  }
+
+  private partialRefreshMessage(action: ApiKeyMutationAction): string {
+    if (action === 'revoke') {
+      return 'API key was revoked, but account details could not refresh. Retry to verify the latest state.';
+    }
+
+    const verb = action === 'rotate' ? 'rotated' : 'created';
+    return `API key was ${ verb } and must be copied now, but account details could not refresh. Retry will keep this key visible.`;
   }
 }
 

@@ -88,6 +88,10 @@ export class DeveloperApiKeysComponent extends SubManager implements OnInit {
   }
 
   submitCreateOrRotate(vm: DeveloperApiKeysViewModel): void {
+    if (!vm.hasLoaded || vm.isLoading || vm.isSaving) {
+      return;
+    }
+
     this.labelControl.markAsTouched();
     this.labelControl.updateValueAndValidity();
     if (this.labelControl.invalid) {

@@ -16,6 +16,7 @@ import {
 const BASE_VM: DeveloperApiKeysViewModel = {
   docsUrl: 'https://docs.patcher.xyz/reference/public-open-api',
   errorMessage: null,
+  hasLoaded: false,
   isLoading: false,
   isSaving: false,
   reveal: null,
@@ -24,8 +25,14 @@ const BASE_VM: DeveloperApiKeysViewModel = {
   slot: null
 };
 
+const LOADED_EMPTY_VM: DeveloperApiKeysViewModel = {
+  ...BASE_VM,
+  hasLoaded: true
+};
+
 const ACTIVE_VM: DeveloperApiKeysViewModel = {
   ...BASE_VM,
+  hasLoaded: true,
   slot: {
     active: true,
     createdAt: '2026-07-01T00:00:00.000Z',
@@ -42,6 +49,15 @@ const ACTIVE_VM: DeveloperApiKeysViewModel = {
     usageMonth: '2026-07-01',
     usageUpdatedAt: '2026-07-24T12:00:00.000Z',
     usedThisMonth: 500
+  }
+};
+
+const REVOKED_VM: DeveloperApiKeysViewModel = {
+  ...ACTIVE_VM,
+  slot: {
+    ...ACTIVE_VM.slot!,
+    active: false,
+    revokedAt: '2026-07-24T10:00:00.000Z'
   }
 };
 
@@ -114,7 +130,7 @@ function buttonByText(fixture: ComponentFixture<DeveloperApiKeysComponent>, text
   return button;
 }
 
-function setupComponent(initialVm = BASE_VM, enabled = true) {
+function setupComponent(initialVm = LOADED_EMPTY_VM, enabled = true) {
   const dataService = new MockDeveloperApiKeysDataService();
   dataService.setVm(initialVm);
 
@@ -167,9 +183,21 @@ describe('DeveloperApiKeysComponent', () => {
     const { dataService, fixture } = setupComponent();
 
     setInputValue(fixture, 'Server key');
-    submitComponent(fixture, BASE_VM);
+    submitComponent(fixture, LOADED_EMPTY_VM);
 
     expect(dataService.createOrRotate$.next).toHaveBeenCalledOnceWith({ label: 'Server key' });
+  });
+
+  it('disables and ignores create while the initial slot state is unknown', () => {
+    const { dataService, fixture } = setupComponent(BASE_VM);
+
+    setInputValue(fixture, 'Server key');
+    expect(buttonByText(fixture, 'Create API key').disabled).toBeTrue();
+
+    submitComponent(fixture, BASE_VM);
+
+    expect(dataService.createOrRotate$.next).not.toHaveBeenCalled();
+    expect(textContent(fixture)).not.toContain('No API credential yet.');
   });
 
   it('requires inline confirmation before rotating an active key', () => {
@@ -235,5 +263,16 @@ describe('DeveloperApiKeysComponent', () => {
 
     buttonByText(fixture, 'Cancel').click();
     expect(dataService.cancelRevokeConfirmation$.next).toHaveBeenCalled();
+  });
+
+  it('renders revoked state without active-key actions', () => {
+    const { fixture } = setupComponent(REVOKED_VM);
+    const buttons: string[] = Array.from(fixture.nativeElement.querySelectorAll('button'))
+      .map((button: HTMLButtonElement) => button.textContent?.replace(/\s+/g, ' ').trim() ?? '');
+
+    expect(textContent(fixture)).toContain('Revoked credential');
+    expect(textContent(fixture)).toContain('This credential is revoked.');
+    expect(buttons.some(label => label.includes('Revoke'))).toBeFalse();
+    expect(buttons.some(label => label.includes('Rotate API key'))).toBeFalse();
   });
 });

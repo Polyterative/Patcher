@@ -140,6 +140,7 @@ describe('DeveloperApiKeysDataService', () => {
 
     expect(setup.backend.apiKeys.getOwnKeySlot).toHaveBeenCalled();
     expect(setup.backend.apiKeys.getOwnUsage).toHaveBeenCalledOnceWith('key-1');
+    expect(setup.vm.hasLoaded).toBeTrue();
     expect(setup.vm.slot?.keyPrefix).toBe('pk_live_1234');
     expect(setup.vm.slot?.usedThisMonth).toBe(1250);
     expect(setup.vm.slot?.remainingThisMonth).toBe(3750);
@@ -173,6 +174,7 @@ describe('DeveloperApiKeysDataService', () => {
     tick();
 
     expect(setup.backend.apiKeys.getOwnUsage).not.toHaveBeenCalled();
+    expect(setup.vm.hasLoaded).toBeTrue();
     expect(setup.vm.slot).toBeNull();
     expect(setup.vm.errorMessage).toBeNull();
     setup.sub.unsubscribe();
@@ -194,7 +196,28 @@ describe('DeveloperApiKeysDataService', () => {
     tick();
 
     expect(setup.vm.slot?.id).toBe('key-1');
+    expect(setup.vm.hasLoaded).toBeTrue();
     expect(setup.vm.errorMessage).toBe('This account is not allowed to manage Public API credentials.');
+    setup.sub.unsubscribe();
+  }));
+
+  it('does not create or rotate before the slot state has loaded successfully', fakeAsync(() => {
+    const setup = setupService();
+
+    setup.service.createOrRotate$.next({ label: 'Server key' });
+    tick();
+
+    expect(setup.backend.apiKeys.createOrRotateOwnKey).not.toHaveBeenCalled();
+    expect(setup.vm.hasLoaded).toBeFalse();
+    expect(setup.vm.errorMessage).toBe('Public API credential status must load before creating or rotating a key. Use Retry if loading failed.');
+
+    setup.service.load$.next();
+    tick();
+    setup.service.requestRotateConfirmation$.next();
+    setup.service.createOrRotate$.next({ label: 'Server key' });
+    tick();
+
+    expect(setup.backend.apiKeys.createOrRotateOwnKey).toHaveBeenCalledOnceWith('Server key');
     setup.sub.unsubscribe();
   }));
 
@@ -202,6 +225,9 @@ describe('DeveloperApiKeysDataService', () => {
     const setup = setupService();
     setup.backend.apiKeys.getOwnKeySlot.and.returnValue(of(ACTIVE_SLOT));
 
+    setup.service.load$.next();
+    tick();
+    setup.service.requestRotateConfirmation$.next();
     setup.service.createOrRotate$.next({ label: 'Server key' });
     tick();
 
@@ -213,6 +239,52 @@ describe('DeveloperApiKeysDataService', () => {
     tick();
 
     expect(setup.vm.reveal).toBeNull();
+    setup.sub.unsubscribe();
+  }));
+
+  it('does not bypass rotate confirmation when an active slot is loaded', fakeAsync(() => {
+    const setup = setupService();
+
+    setup.service.load$.next();
+    tick();
+    setup.service.createOrRotate$.next({ label: 'Server key' });
+    tick();
+
+    expect(setup.vm.rotateConfirmationVisible).toBeTrue();
+    expect(setup.backend.apiKeys.createOrRotateOwnKey).not.toHaveBeenCalled();
+
+    setup.service.createOrRotate$.next({ label: 'Server key' });
+    tick();
+
+    expect(setup.backend.apiKeys.createOrRotateOwnKey).toHaveBeenCalledOnceWith('Server key');
+    setup.sub.unsubscribe();
+  }));
+
+  it('keeps the raw reveal when create succeeds but the account refresh fails', fakeAsync(() => {
+    const setup = setupService();
+    spyOn(console, 'error');
+    const partialMessage = 'API key was created and must be copied now, but account details could not refresh. Retry will keep this key visible.';
+    setup.backend.apiKeys.getOwnKeySlot.and.returnValue(of(null));
+
+    setup.service.load$.next();
+    tick();
+    expect(setup.vm.hasLoaded).toBeTrue();
+
+    setup.backend.apiKeys.getOwnKeySlot.and.returnValue(throwError(() => new Error('refresh failed')));
+    setup.service.createOrRotate$.next({ label: 'Server key' });
+    tick();
+
+    expect(setup.backend.apiKeys.createOrRotateOwnKey).toHaveBeenCalledOnceWith('Server key');
+    expect(setup.vm.reveal?.rawKey).toBe('patcher_raw_secret');
+    expect(setup.vm.errorMessage).toBe(partialMessage);
+    expect(setup.snackBar.open).toHaveBeenCalledWith(partialMessage, undefined, jasmine.objectContaining({
+      panelClass: 'snack-error'
+    }));
+
+    setup.service.load$.next();
+    tick();
+
+    expect(setup.vm.reveal?.rawKey).toBe('patcher_raw_secret');
     setup.sub.unsubscribe();
   }));
 
@@ -229,6 +301,27 @@ describe('DeveloperApiKeysDataService', () => {
     tick();
 
     expect(setup.vm.rotateConfirmationVisible).toBeFalse();
+    setup.sub.unsubscribe();
+  }));
+
+  it('shows a revoked local state when revoke succeeds but the account refresh fails', fakeAsync(() => {
+    const setup = setupService();
+    spyOn(console, 'error');
+    const partialMessage = 'API key was revoked, but account details could not refresh. Retry to verify the latest state.';
+
+    setup.service.load$.next();
+    tick();
+    expect(setup.vm.slot?.active).toBeTrue();
+
+    setup.backend.apiKeys.getOwnKeySlot.and.returnValue(throwError(() => new Error('refresh failed')));
+    setup.service.requestRevokeConfirmation$.next('key-1');
+    setup.service.revoke$.next({ id: 'key-1' });
+    tick();
+
+    expect(setup.backend.apiKeys.revokeOwnKey).toHaveBeenCalledOnceWith('key-1');
+    expect(setup.vm.slot?.active).toBeFalse();
+    expect(setup.vm.revokeConfirmId).toBeNull();
+    expect(setup.vm.errorMessage).toBe(partialMessage);
     setup.sub.unsubscribe();
   }));
 
@@ -260,6 +353,9 @@ describe('DeveloperApiKeysDataService', () => {
     spyOn(console, 'error');
     const writeText = spyOn(navigator.clipboard, 'writeText').and.returnValue(Promise.resolve());
 
+    setup.service.load$.next();
+    tick();
+    setup.service.requestRotateConfirmation$.next();
     setup.service.createOrRotate$.next({ label: 'Server key' });
     tick();
     setup.service.copyRevealedKey$.next();
