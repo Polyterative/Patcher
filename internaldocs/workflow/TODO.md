@@ -52,13 +52,15 @@
 - Marketplace address/listing schema/RLS/storage/backend foundation **applied and verified** — listing UI/discovery remains in the linked plans; release/push remains gated.
 - Price Hub retention/diagnostics and zero-decimal backfill **approved in principle** — same preflight/typegen/advisor validation required before any mutation.
 - Public Open API: reviewed technical plan adopted for MVP implementation
-  (`backend-plan-reviewer`: APPROVE WITH CHANGES). Schema/RLS, role credentials,
-  DNS, Hyperdrive, Durable Objects, Vault, WAF, and remote applies remain
-  separately gated below.
+  (`backend-plan-reviewer`: APPROVE WITH CHANGES). The owner-present database,
+  Vault, reader credential, direct-endpoint Hyperdrive, Durable Object, Worker
+  upload, and authenticated smoke/lifecycle window completed on 2026-07-24.
+  DNS/custom domain, WAF, production flag activation, and cleanup remain gated below.
 - Public Open API backend: authoring and Docker/local validation of the three
   reviewed migrations (roles, views/RLS, identity/RPCs) is approved. No remote
   apply, LOGIN credential, Vault secret, type generation against remote, or
-  Cloudflare provisioning is authorized.
+  Cloudflare provisioning is authorized. This historical scope was later superseded
+  by the completed owner-present rollout recorded in the plan Decision log.
 - Public Open API Structural UI (local, autonomous): owner-approved dedicated
   Public API section inside `/user/account`, after account identity rows and
   before the Danger Zone, implemented by a flag-gated
@@ -91,20 +93,18 @@
 - [ ] Cloudflare/R2: authorize traffic switch, cleanup, and any Supabase object deletion after the approved copy/verification stage (added 2026-07-08).
 - [ ] PostHog analytics review: provide credentials/export access (added 2026-07-08).
 - [ ] **Public Open API — infrastructure/schema gates** (reviewed plan adopted;
-  local Worker/docs are complete; each remaining remote gate requires an explicit
+  remote foundation and smoke tests are complete; each remaining gate requires an explicit
   answer)
   ([plan](./plans/public-open-api.md)) (added 2026-07-24):
   - [ ] DNS + Worker route for `api.patcher.xyz` on
     Cloudflare.
-  - [ ] Hyperdrive binding `HYPERDRIVE` pointed
-    at the Supavisor transaction-mode pooler; Hyperdrive owns the reader
-    credential. The checked-in migration creates `api_reader NOLOGIN`; an
-    owner-run SQL-editor step generates/sets the random LOGIN password and
-    enters it directly into Hyperdrive without committing it.
-  - [ ] Durable Object namespace `API_KEY_COUNTER`
+  - [x] Hyperdrive binding `HYPERDRIVE` points at the direct Supabase Postgres
+    endpoint with TLS and SQL result caching disabled; Hyperdrive owns the
+    reader credential. Supavisor is intentionally not chained in front of Hyperdrive.
+  - [x] Durable Object namespace `API_KEY_COUNTER`
     (authoritative per-minute + monthly quota; no static Dashboard Rate
     Limiting rule, no Workers Rate Limiting API binding).
-  - [ ] Verify Supabase Vault is enabled and the
+  - [x] Verify Supabase Vault is enabled and the
     SECURITY DEFINER function owner can read `vault.decrypted_secrets`, then
     provision Vault secret
     `api_key_pepper` (32 random bytes, base64) and mirror to Cloudflare
@@ -112,7 +112,7 @@
     incident procedure.
   - [ ] Coarse WAF/IP abuse rules as an outer,
     non-tier-specific shield.
-  - [ ] Apply the **three** consolidated migrations remotely after local
+  - [x] Apply the consolidated migrations remotely after local
     authoring/validation: `api_reader_role.sql`, `api_v1_views.sql`,
     `api_identity.sql` (includes `api_tiers` seed, `api_keys` + RLS,
     `api_key_usage_monthly`, RPCs `create_api_key`, `create_partner_api_key`,
@@ -125,18 +125,13 @@
     `patcher-public-datasets` + Worker R2 binding; streamed through the
     Worker after key check (no presigned URLs). Logpush → durable sink
     likewise Structural.
-- [ ] **Public Open API — batched manual-operator window**: single
-  owner-present window to run the full preview-to-public rollout (three
-  reviewed consolidated migrations, including the stable-slot identity contract,
-  `pnpm updateBackendTypes`, Vault pepper, `api_reader` LOGIN,
-  Hyperdrive, Durable Object namespace, Worker deploy to preview route,
-  mint a preview key on a controlled owner profile then promote the
-  same slot to partner and rotate/revoke/reactivate it, run
-  smoke/quota/revocation/cache tests, DNS switch to `api.patcher.xyz`,
-  WAF review, then flip `environment.prod.ts` `developerApiEnabled` to
-  `true` and release). Prerequisites: Supabase project access
-  (`sozmatmywjpstwidzlss`, `eu-central-1`), Cloudflare zone access for
-  `patcher.xyz` and a 90-minute uninterrupted block
+- [~] **Public Open API — owner-present rollout**: database migrations/types,
+  Vault, `api_reader`, direct-endpoint Hyperdrive, Durable Object, Worker
+  secret/upload, controlled partner slot rotation/revocation/reactivation,
+  usage reporting, and authenticated catalogue/quota/cache smoke tests are
+  complete. Remaining: WAF review, DNS/custom-domain switch to
+  `api.patcher.xyz`, public monitoring, production `developerApiEnabled`,
+  live-doc status update, release, and temporary smoke Worker deletion
   ([plan](./plans/public-open-api.md#batched-manual-operator-window-single-owner-session))
   (added 2026-07-24).
 
@@ -171,7 +166,7 @@
 
 ### PRODUCT — Tier 1 (requires Manufacturer Page Phase 2 to be live)
 
-- [~] **HIGH: Public Open API — modules & manufacturers v1, bulk JSONL next, public patches/racks later (local Worker/OpenAPI/migrations/operator docs complete; public docs route fixed; Supabase apply, Vault, `api_reader` LOGIN credential, Hyperdrive, Durable Object namespace, Worker secrets/deploy, DNS, WAF/cache, and R2 remain gated)** → [`plans/public-open-api.md`](./plans/public-open-api.md)
+- [~] **HIGH: Public Open API — modules & manufacturers v1, bulk JSONL next, public patches/racks later (remote foundation and authenticated smoke/lifecycle checks complete; DNS, WAF, production flag/release, cleanup, and later R2 remain)** → [`plans/public-open-api.md`](./plans/public-open-api.md)
 - [ ] **HIGH: Manufacturer Accounts & Verification (claims, admin review, verified-owner edits; local M1 validation/typegen approved; remote apply gated)** → [`plans/manufacturer-accounts-verification.md`](./plans/manufacturer-accounts-verification.md)
 - [ ] **LOW: Manufacturer Updates / Featured Surface (persistence/RLS/backend/moderation approved after verification foundation)** → [`plans/manufacturer-updates-featured-surface.md`](./plans/manufacturer-updates-featured-surface.md)
 - [ ] **LOW: Manufacturer Analytics (privacy aggregate helper complete; manufacturer validation/dashboard/backend gated)** → [`plans/manufacturer-analytics.md`](./plans/manufacturer-analytics.md)

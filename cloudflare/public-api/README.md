@@ -2,7 +2,7 @@
 
 Local Cloudflare Worker implementation for the key-required Patcher Public Open API at `https://api.patcher.xyz/v1`.
 
-The committed code and OpenAPI contract are complete for the local MVP, but no production Supabase migrations, Vault secret, Hyperdrive binding, Durable Object namespace, DNS route, WAF rule, R2 bucket, or Worker deployment has been performed from this repository. Operators must follow [`RUNBOOK.md`](./RUNBOOK.md) and the approval gates in [`internaldocs/workflow/TODO.md`](../../internaldocs/workflow/TODO.md) before any remote change.
+The MVP database foundation, Vault pepper, least-privilege reader login, direct-endpoint Hyperdrive binding, Durable Object, Worker secret, and production Worker upload are complete. The production Worker intentionally has no target yet, so `api.patcher.xyz` is not live. An authenticated temporary smoke Worker has passed catalogue, key lifecycle, quota-reporting, ETag, HEAD, and cache tests. DNS/custom-domain activation, outer WAF review, production UI flag activation, and temporary smoke Worker deletion remain pending in [`RUNBOOK.md`](./RUNBOOK.md) and [`internaldocs/workflow/TODO.md`](../../internaldocs/workflow/TODO.md).
 
 ## Contract
 
@@ -24,10 +24,10 @@ Consumer
   -> Cloudflare Worker route api.patcher.xyz/v1/*
   -> URL normalization + route/query allowlist
   -> API key HMAC verification with API_KEY_PEPPER
-  -> Hyperdrive/Supavisor transaction pooler -> public.verify_api_key(...)
+  -> Hyperdrive -> direct Supabase Postgres endpoint -> public.verify_api_key(...)
   -> per-key Durable Object API_KEY_COUNTER quota consume
   -> Cloudflare Cache API lookup by normalized public URL only
-  -> on cache miss: Hyperdrive/Supavisor -> api_v1_* views
+  -> on cache miss: Hyperdrive -> direct Supabase Postgres endpoint -> api_v1_* views
 ```
 
 The Worker never contains a Supabase `service_role` key, project JWT signing secret, user credential, or raw API key storage. Runtime reads use a least-privilege `api_reader` database role through Hyperdrive.
@@ -51,7 +51,9 @@ The Worker never contains a Supabase `service_role` key, project JWT signing sec
 | `GET /v1/manufacturers` | Manufacturers that have at least one publishable module | Supports pagination and `fields`. |
 | `GET /v1/manufacturers/{id}` | One public manufacturer | `include=modules` adds safe module summaries. |
 | `GET /v1/standards` | Reference standards | Supports pagination and `fields`. |
-| `GET /v1/tags` | Reference tags | Supports pagination and `fields`. |
+| `GET /v1/tags` | Reference tags | `type` is a semantic lowercase enum or `null`; supports pagination and `fields`. |
+
+Module, manufacturer, and tag IDs are positive integers. Standard IDs are nonnegative because production standard `0` is the valid `3U` row; the module `standard` filter therefore accepts `0`.
 
 List endpoints support:
 
@@ -134,6 +136,7 @@ Bulk JSONL export is a Structural follow-up. Public racks and patches are deferr
 | [`../../supabase/migrations/20260724133100_api_reader_roles.sql`](../../supabase/migrations/20260724133100_api_reader_roles.sql) | Local role foundation, credential-free. |
 | [`../../supabase/migrations/20260724133200_api_identity.sql`](../../supabase/migrations/20260724133200_api_identity.sql) | API tiers, keys, usage, Vault-backed mint/verify/revoke/report RPCs. |
 | [`../../supabase/migrations/20260724133300_api_v1_views.sql`](../../supabase/migrations/20260724133300_api_v1_views.sql) | Security-barrier public catalogue views and least-privilege grants. |
+| [`../../supabase/migrations/20260724133400_api_vault_permissions.sql`](../../supabase/migrations/20260724133400_api_vault_permissions.sql) | Restricted Vault key-ID access required by the managed migration owner. |
 | [`../../scripts/tests/public-api-worker.test.mjs`](../../scripts/tests/public-api-worker.test.mjs) | Local Worker contract tests. |
 | [`../../scripts/tests/public-open-api-migrations.test.cjs`](../../scripts/tests/public-open-api-migrations.test.cjs) | Static migration contract tests. |
 
@@ -153,7 +156,7 @@ No-dependency OpenAPI smoke check:
 node -e "const fs=require('node:fs'); const s=fs.readFileSync('cloudflare/public-api/openapi.yaml','utf8'); for (const t of ['openapi: 3.1.0','/modules:','/manufacturers:','apiKey:','ErrorResponse:']) if (!s.includes(t)) throw new Error('OpenAPI smoke check missing '+t);"
 ```
 
-The Worker is not deployed locally by default because production bindings are intentionally absent. Use dependency-injected tests for local contract validation until an operator creates approved Cloudflare and Supabase resources.
+The checked-in `wrangler.jsonc` intentionally contains no production resource IDs or credentials. Use dependency-injected tests for local validation; operators deploy only through approved environment-specific configuration that remains outside git.
 
 ## Non-goals
 
