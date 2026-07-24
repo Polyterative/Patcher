@@ -312,13 +312,13 @@ paths:
         "304":
           $ref: "#/components/responses/NotModified"
         "400":
-          $ref: "#/components/responses/HeadBadRequest"
+          $ref: "#/components/responses/BadRequest"
         "401":
-          $ref: "#/components/responses/HeadUnauthorized"
+          $ref: "#/components/responses/Unauthorized"
         "429":
-          $ref: "#/components/responses/HeadRateLimited"
+          $ref: "#/components/responses/RateLimited"
         "503":
-          $ref: "#/components/responses/HeadServiceUnavailable"
+          $ref: "#/components/responses/ServiceUnavailable"
     head:
       operationId: headTags
       summary: Fetch headers for public tags
