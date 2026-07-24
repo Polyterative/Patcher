@@ -21,18 +21,19 @@
 
 #### Layer 1 — MVP
 
-- [~] Complete product refinement and backend plan review.
-- [ ] Build the key-required, origin-protected modules/manufacturers API.
+- [x] Revise plan and pass backend review (`APPROVE WITH CHANGES`).
+- [~] Await product approval before implementation or gated infrastructure/schema work.
+- [ ] Build the key-required, origin-protected modules/manufacturers API (Cloudflare Worker + Supavisor `api_reader` role + `api_v1_*` views + HMAC-pepper keys + Durable Object quota).
 
 #### Layer 2 — Structural
 
-- [ ] Add User Area key self-service, usage reporting, and key-required bulk JSONL export.
+- [ ] Add User Area key self-service, usage reporting (from `api_key_usage_monthly`), and key-required bulk JSONL export via private R2.
 
 #### Layer 3 — Polish
 
-- [ ] Add contract lifecycle/DX polish, then public patch and rack endpoints.
+- [ ] Add contract lifecycle/DX polish, retire widget-pilot alias, then public patch and rack endpoints via `public_id`.
 
-Status: Active — refinement complete; backend plan review is the next gate.
+Status: Backend plan review passed; awaiting product approval (TODO Approvals ledger gate 1).
 Updated: 2026-07-24
 
 Recent completed checkpoints are archived in [COMPLETED.md](./COMPLETED.md); their validation

@@ -59,6 +59,44 @@
   ([plan](./plans/rack-module-orientation-smallint-storage-migration.md)) (added 2026-07-19).
 - [ ] Cloudflare/R2: authorize traffic switch, cleanup, and any Supabase object deletion after the approved copy/verification stage (added 2026-07-08).
 - [ ] PostHog analytics review: provide credentials/export access (added 2026-07-08).
+- [ ] **Public Open API — approval sequencing** (recommended default: approve
+  gate 1 now that backend review returned APPROVE WITH CHANGES; all other gates
+  remain contingent and are not answered before it clears)
+  ([plan](./plans/public-open-api.md)) (added 2026-07-24):
+  - [ ] **Gate 1 (blocks everything below): adopt the reviewed plan
+    (`backend-plan-reviewer`: APPROVE WITH CHANGES).**
+  - [ ] (contingent on gate 1) DNS + Worker route for `api.patcher.xyz` on
+    Cloudflare.
+  - [ ] (contingent on gate 1) Hyperdrive binding `HYPERDRIVE_READER` pointed
+    at the Supavisor transaction-mode pooler; Hyperdrive owns the reader
+    credential. The checked-in migration creates `api_reader NOLOGIN`; an
+    owner-run SQL-editor step generates/sets the random LOGIN password and
+    enters it directly into Hyperdrive without committing it.
+  - [ ] (contingent on gate 1) Durable Object namespace `API_KEY_COUNTER`
+    (authoritative per-minute + monthly quota; no static Dashboard Rate
+    Limiting rule, no Workers Rate Limiting API binding).
+  - [ ] (contingent on gate 1) Verify Supabase Vault is enabled and the
+    SECURITY DEFINER function owner can read `vault.decrypted_secrets`, then
+    provision Vault secret
+    `api_key_pepper` (32 random bytes, base64) and mirror to Cloudflare
+    Worker secret `API_KEY_PEPPER`. Pepper rotation invalidates all keys —
+    incident procedure.
+  - [ ] (contingent on gate 1) Coarse WAF/IP abuse rules as an outer,
+    non-tier-specific shield.
+  - [ ] (contingent on gate 1) Apply the **three** consolidated migrations
+    after re-review passes: `api_reader_role.sql`, `api_v1_views.sql`,
+    `api_identity.sql` (includes `api_tiers` seed, `api_keys` + RLS,
+    `api_key_usage_monthly`, RPCs `create_api_key`, `create_partner_api_key`,
+    `revoke_api_key`, `verify_api_key`, `record_api_key_usage`). RLS on
+    `api_keys` gives owner + JWT admin SELECT only; mutations only via
+    SECURITY DEFINER RPCs.
+  - [ ] (contingent on gate 1) Optional `pg_trgm_search.sql` — enable
+    `pg_trgm` + trigram GIN indexes for `?q=`. If declined, MVP returns
+    `400 unsupported_parameter` for `q` and `?q=` moves to Polish.
+  - [ ] (Structural, not MVP-blocking) Private R2 bucket
+    `patcher-public-datasets` + Worker R2 binding; streamed through the
+    Worker after key check (no presigned URLs). Logpush → durable sink
+    likewise Structural.
 
 ### Denials / permanent constraints
 
@@ -71,7 +109,7 @@
 
 ### PRODUCT — Tier 1 (requires Manufacturer Page Phase 2 to be live)
 
-- [~] **HIGH: Public Open API — modules & manufacturers v1, bulk JSONL next, public patches/racks later (Cloudflare Worker, mandatory API keys, edge-cached; backend review and DNS/schema/role gates pending)** → [`plans/public-open-api.md`](./plans/public-open-api.md)
+- [~] **HIGH: Public Open API — modules & manufacturers v1, bulk JSONL next, public patches/racks later (Cloudflare Worker + Hyperdrive + `api_view_owner`/`api_reader` role split + `api_v1_*` views + HMAC-pepper keys + Durable Object quotas; backend review passed, awaiting product approval)** → [`plans/public-open-api.md`](./plans/public-open-api.md)
 - [ ] **HIGH: Manufacturer Accounts & Verification (claims, admin review, verified-owner edits; local M1 validation/typegen approved; remote apply gated)** → [`plans/manufacturer-accounts-verification.md`](./plans/manufacturer-accounts-verification.md)
 - [ ] **LOW: Manufacturer Updates / Featured Surface (persistence/RLS/backend/moderation approved after verification foundation)** → [`plans/manufacturer-updates-featured-surface.md`](./plans/manufacturer-updates-featured-surface.md)
 - [ ] **LOW: Manufacturer Analytics (privacy aggregate helper complete; manufacturer validation/dashboard/backend gated)** → [`plans/manufacturer-analytics.md`](./plans/manufacturer-analytics.md)
