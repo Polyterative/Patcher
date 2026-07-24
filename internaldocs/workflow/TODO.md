@@ -55,7 +55,8 @@
   (`backend-plan-reviewer`: APPROVE WITH CHANGES). The owner-present database,
   Vault, reader credential, direct-endpoint Hyperdrive, Durable Object, Worker
   upload, and authenticated smoke/lifecycle window completed on 2026-07-24.
-  DNS/custom domain, WAF, production flag activation, and cleanup remain gated below.
+  The custom domain is live and smoke cleanup is complete. The owner deferred WAF;
+  the production app release and later R2 work remain.
 - Public Open API backend: authoring and Docker/local validation of the three
   reviewed migrations (roles, views/RLS, identity/RPCs) is approved. No remote
   apply, LOGIN credential, Vault secret, type generation against remote, or
@@ -96,7 +97,7 @@
   remote foundation and smoke tests are complete; each remaining gate requires an explicit
   answer)
   ([plan](./plans/public-open-api.md)) (added 2026-07-24):
-  - [ ] DNS + Worker route for `api.patcher.xyz` on
+  - [x] DNS + Worker route for `api.patcher.xyz` on
     Cloudflare.
   - [x] Hyperdrive binding `HYPERDRIVE` points at the direct Supabase Postgres
     endpoint with TLS and SQL result caching disabled; Hyperdrive owns the
@@ -110,8 +111,9 @@
     `api_key_pepper` (32 random bytes, base64) and mirror to Cloudflare
     Worker secret `API_KEY_PEPPER`. Pepper rotation invalidates all keys —
     incident procedure.
-  - [ ] Coarse WAF/IP abuse rules as an outer,
-    non-tier-specific shield.
+  - [~] Coarse WAF/IP abuse rules as an outer, non-tier-specific shield:
+    deferred by the owner for initial launch; mandatory keys and per-key Durable
+    Object quotas remain active.
   - [x] Apply the consolidated migrations remotely after local
     authoring/validation: `api_reader_role.sql`, `api_v1_views.sql`,
     `api_identity.sql` (includes `api_tiers` seed, `api_keys` + RLS,
@@ -129,9 +131,9 @@
   Vault, `api_reader`, direct-endpoint Hyperdrive, Durable Object, Worker
   secret/upload, controlled partner slot rotation/revocation/reactivation,
   usage reporting, and authenticated catalogue/quota/cache smoke tests are
-  complete. Remaining: WAF review, DNS/custom-domain switch to
-  `api.patcher.xyz`, public monitoring, production `developerApiEnabled`,
-  live-doc status update, release, and temporary smoke Worker deletion
+  complete. `api.patcher.xyz` is live, public smoke checks pass, the temporary
+  Worker is deleted, and WAF was deferred by the owner. Remaining: app release
+  with production `developerApiEnabled`, final live-doc/archive update, and R2 later
   ([plan](./plans/public-open-api.md#batched-manual-operator-window-single-owner-session))
   (added 2026-07-24).
 
@@ -166,7 +168,7 @@
 
 ### PRODUCT — Tier 1 (requires Manufacturer Page Phase 2 to be live)
 
-- [~] **HIGH: Public Open API — modules & manufacturers v1, bulk JSONL next, public patches/racks later (remote foundation and authenticated smoke/lifecycle checks complete; DNS, WAF, production flag/release, cleanup, and later R2 remain)** → [`plans/public-open-api.md`](./plans/public-open-api.md)
+- [~] **HIGH: Public Open API — modules & manufacturers v1 is live; production User Area release/final archive next, then bulk JSONL and public patches/racks later** → [`plans/public-open-api.md`](./plans/public-open-api.md)
 - [ ] **HIGH: Manufacturer Accounts & Verification (claims, admin review, verified-owner edits; local M1 validation/typegen approved; remote apply gated)** → [`plans/manufacturer-accounts-verification.md`](./plans/manufacturer-accounts-verification.md)
 - [ ] **LOW: Manufacturer Updates / Featured Surface (persistence/RLS/backend/moderation approved after verification foundation)** → [`plans/manufacturer-updates-featured-surface.md`](./plans/manufacturer-updates-featured-surface.md)
 - [ ] **LOW: Manufacturer Analytics (privacy aggregate helper complete; manufacturer validation/dashboard/backend gated)** → [`plans/manufacturer-analytics.md`](./plans/manufacturer-analytics.md)

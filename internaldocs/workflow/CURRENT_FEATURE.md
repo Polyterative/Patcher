@@ -26,7 +26,7 @@
 - [x] Build and validate the complete local MVP Worker, Durable Object, OpenAPI contract, and migration foundation.
 - [x] Document the local MVP Worker and operator rollout/rollback gates.
 - [x] Execute the owner-present remote foundation and authenticated smoke window (Supabase apply + generated types, Vault pepper, `api_reader` LOGIN, direct-endpoint Hyperdrive, Durable Object, Worker secret/upload, temporary smoke route, partner-key rotation/revocation/reactivation, usage, catalogue, ETag/HEAD, and cache tests).
-- [ ] Complete public promotion: review coarse WAF protection, attach `api.patcher.xyz`, verify public monitoring, enable the production UI flag, update live docs, and delete the temporary smoke Worker.
+- [~] Complete public promotion: `api.patcher.xyz` is live, production smoke/monitoring checks pass, the temporary smoke Worker is deleted, and the owner deferred outer WAF protection; the production UI flag is committed on `develop` and still needs the app release plus final live-doc/archive cleanup.
 
 #### Layer 2 — Structural
 
@@ -42,7 +42,7 @@
 - [x] Add the stable-slot contract to the consolidated local identity migration (`rotated_at`, full `UNIQUE (profile_id)`, atomic UPSERT rewrites preserving `id` + tier/overrides) and extend the static contract tests; remote apply stays inside the batched operator window.
 - [ ] Remove the `developerApiEnabled` feature flag once the API is public and stable.
 
-Status: The remote database/credential/Cloudflare foundation is applied, generated types are reconciled, the production Worker is uploaded without a target, and the temporary authenticated smoke Worker has passed the complete catalogue and stable-slot lifecycle checks. The account UI remains behind `developerApiEnabled`; public promotion still requires WAF review, `api.patcher.xyz`, monitoring, flag activation, live-doc updates, and smoke Worker deletion.
+Status: The API is live at `api.patcher.xyz`; production catalogue/auth/quota/cache checks pass and the temporary smoke Worker is deleted. The owner approved launch without outer WAF for now. `developerApiEnabled` is enabled in the production environment generator on `develop`; the remaining user-visible gate is the app release, followed by final docs/archive cleanup.
 Updated: 2026-07-24
 
 Recent completed checkpoints are archived in [COMPLETED.md](./COMPLETED.md); their validation

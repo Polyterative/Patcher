@@ -2,7 +2,7 @@
 
 This runbook covers the authorized production rollout and ongoing operation of the Patcher Public Open API. It is intentionally descriptive and gate-oriented: it does not contain real resource IDs, credentials, secrets, or copy-paste remote mutation commands.
 
-Current state: the production database foundation, Vault pepper, `api_reader` LOGIN credential, direct-endpoint Hyperdrive binding, Durable Object, Worker secret, and production Worker upload are complete. The production Worker has no route or custom domain. A temporary authenticated smoke Worker has passed catalogue, key lifecycle, usage-reporting, ETag, HEAD, and MISS→HIT cache tests. DNS/custom-domain activation, outer WAF review, production UI flag activation, public monitoring, and deletion of the smoke Worker remain pending. R2 remains a non-blocking Structural follow-up.
+Current state: the MVP is live at `api.patcher.xyz`. The production database foundation, Vault pepper, `api_reader` LOGIN credential, direct-endpoint Hyperdrive binding, Durable Object, Worker secret, custom domain, and production Worker are active. Catalogue, key lifecycle, usage-reporting, ETag, HEAD, and MISS→HIT cache tests passed on the live domain; the temporary smoke Worker was deleted. The owner deferred outer WAF configuration for the initial launch, while mandatory API keys and per-key Durable Object quotas remain active. The production User Area flag is committed on `develop` and awaits the next app release. R2 remains a non-blocking Structural follow-up.
 
 ## Safety rules
 
@@ -289,6 +289,10 @@ Recommended outer WAF:
 - Coarse IP or ASN abuse rules only.
 - Emergency block by API key prefix is acceptable when a leaked prefix is known.
 - Do not use Cloudflare static rate limiting as the authoritative quota mechanism; per-key quota is the Durable Object's job.
+
+Initial-launch decision:
+
+- The owner explicitly approved launch without an outer WAF rule. Revisit coarse IP/ASN protection after observing real traffic; mandatory API keys and Durable Object quotas remain the authoritative controls.
 
 Rollback:
 
