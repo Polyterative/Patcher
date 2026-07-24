@@ -45,7 +45,7 @@ export const environment = {
   features: {
     collectionsEnabled: false,
     coolReactionsEnabled: false,
-    developerApiEnabled: false,
+    developerApiEnabled: true,
     marketplaceEnabled: false
   }
 };
