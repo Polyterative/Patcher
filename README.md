@@ -173,7 +173,7 @@ Patcher's live schema evolves with the app, so the most reliable references are 
 
 The local Worker implementation for the key-required Public Open API lives in [`cloudflare/public-api/`](cloudflare/public-api/).
 
-- Public consumer docs: [docs.patcher.xyz/learn/public-open-api](https://docs.patcher.xyz/learn/public-open-api)
+- Public consumer docs: [docs.patcher.xyz/reference/public-open-api](https://docs.patcher.xyz/reference/public-open-api)
 - Developer/operator overview: [`cloudflare/public-api/README.md`](cloudflare/public-api/README.md)
 - Operator rollout and rollback runbook: [`cloudflare/public-api/RUNBOOK.md`](cloudflare/public-api/RUNBOOK.md)
 - OpenAPI 3.1 contract: [`cloudflare/public-api/openapi.yaml`](cloudflare/public-api/openapi.yaml)

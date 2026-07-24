@@ -6,7 +6,7 @@ The committed code and OpenAPI contract are complete for the local MVP, but no p
 
 ## Contract
 
-- Public consumer docs: [docs.patcher.xyz/learn/public-open-api](https://docs.patcher.xyz/learn/public-open-api)
+- Public consumer docs: [docs.patcher.xyz/reference/public-open-api](https://docs.patcher.xyz/reference/public-open-api)
 - Canonical API contract: [`openapi.yaml`](./openapi.yaml)
 - Canonical API contract on GitHub: [`Polyterative/Patcher/cloudflare/public-api/openapi.yaml`](https://github.com/Polyterative/Patcher/blob/develop/cloudflare/public-api/openapi.yaml)
 - Base URL: `https://api.patcher.xyz/v1`
@@ -163,4 +163,4 @@ The Worker is not deployed locally by default because production bindings are in
 - No billing or paid self-service tier in v1.
 - No direct PostgREST/`anon` exposure.
 - No `service_role`, JWT signing secret, or raw database credential in the Worker.
-- No Patcher-docs repository edits from this package; public marketing/consumer docs live at <https://docs.patcher.xyz/learn/public-open-api>.
+- No Patcher-docs repository edits from this package; public marketing/consumer docs live at <https://docs.patcher.xyz/reference/public-open-api>.

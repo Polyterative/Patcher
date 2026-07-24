@@ -405,6 +405,6 @@ The public docs repository is coordinated separately. That session should link t
 - `cloudflare/public-api/README.md`
 - `cloudflare/public-api/RUNBOOK.md` for operator-only details, not public secret steps
 
-Public docs route: <https://docs.patcher.xyz/learn/public-open-api>.
+Public docs route: <https://docs.patcher.xyz/reference/public-open-api>.
 
 Public docs source file in Patcher-docs: `learn/public-open-api.md`.
