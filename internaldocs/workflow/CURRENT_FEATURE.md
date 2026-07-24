@@ -30,9 +30,9 @@
 #### Layer 2 — Structural
 
 - [x] Approve the designer brief: a dedicated Public API section inside `/user/account`, after account identity rows and before the Danger Zone.
-- [ ] Land the flag-gated `DeveloperApiKeysComponent` + `DeveloperApiKeysDataService` under `src/app/features/backbone/user-management/developer-api-keys/`.
+- [x] Land the flag-gated `DeveloperApiKeysComponent` + `DeveloperApiKeysDataService` under `src/app/features/backbone/user-management/developer-api-keys/`.
 - [x] Add the `developerApiEnabled` feature flag (off in generated production environments, on in development).
-- [ ] Add `SupabaseService.apiKeys` namespace and `DatabaseStrings` entries for `api_keys` / `api_tiers` / `api_key_usage_monthly` after approved migration/type generation.
+- [x] Add `SupabaseService.apiKeys` namespace and `DatabaseStrings` entries for `api_keys` / `api_tiers` / `api_key_usage_monthly` after approved migration/type generation.
 - [ ] After the batched window: run `pnpm updateBackendTypes`, commit generated types, flip the flag on, and add key-required bulk JSONL export via private R2.
 
 #### Layer 3 — Polish
@@ -41,7 +41,7 @@
 - [x] Add the stable-slot contract to the consolidated local identity migration (`rotated_at`, full `UNIQUE (profile_id)`, atomic UPSERT rewrites preserving `id` + tier/overrides) and extend the static contract tests; remote apply stays inside the batched operator window.
 - [ ] Remove the `developerApiEnabled` feature flag once the API is public and stable.
 
-Status: Local MVP + docs + migrations reviewed and complete. Structural UI work (backend namespace, flag-gated User Area panel, data service, tests) is autonomous once designer confirms placement; the credential shape is now a stable per-profile slot (one row per profile, atomic UPSERT create-or-rotate, admin partner promotes the same slot, revoke flips `revoked_at`, re-activation reuses the same slot and preserves usage). All remote applies, credentials, and the preview-to-public promotion are batched into a single owner-present window described in the plan's "Batched manual-operator window" section.
+Status: Local MVP + docs + migrations reviewed and complete. Structural account UI work (backend namespace, flag-gated Public API account subsection, data service, tests) is implemented locally behind `developerApiEnabled`; the credential shape is a stable per-profile slot (one row per profile, atomic UPSERT create-or-rotate, admin partner promotes the same slot, revoke flips `revoked_at`, re-activation reuses the same slot and preserves usage). All remote applies, credentials, generated-type refreshes, and the preview-to-public promotion remain batched into a single owner-present window described in the plan's "Batched manual-operator window" section.
 Updated: 2026-07-24
 
 Recent completed checkpoints are archived in [COMPLETED.md](./COMPLETED.md); their validation

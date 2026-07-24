@@ -1,0 +1,223 @@
+:host {
+  display: block;
+}
+
+.developer-api {
+  padding: 0.95rem 1rem;
+  border: 1px solid rgba(95, 114, 135, 0.24);
+  border-radius: 0.8rem;
+  background: rgba(252, 253, 255, 0.96);
+}
+
+.developer-api__heading {
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.developer-api__heading-copy {
+  min-width: 0;
+
+  h2 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0.015em;
+  }
+
+  p {
+    margin: 0.2rem 0 0;
+    color: rgba(42, 53, 67, 0.72);
+    font-size: 0.9rem;
+  }
+}
+
+.developer-api__docs,
+.developer-api__compromise a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #305f8f;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.developer-api__docs {
+  min-height: 2.75rem;
+  white-space: nowrap;
+}
+
+.developer-api__docs mat-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+}
+
+.developer-api__slot,
+.developer-api__empty,
+.developer-api__reveal {
+  padding: 0.85rem;
+  border: 1px solid rgba(95, 114, 135, 0.18);
+  border-radius: 0.7rem;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.developer-api__slot--revoked {
+  border-color: rgba(158, 101, 35, 0.34);
+  background: rgba(255, 248, 235, 0.64);
+}
+
+.developer-api__slot-top {
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.developer-api__identity {
+  display: grid;
+  min-width: 0;
+  gap: 0.2rem;
+
+  strong,
+  code {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  code {
+    color: rgba(26, 36, 48, 0.74);
+    font-size: 0.86rem;
+  }
+}
+
+.developer-api__eyebrow {
+  color: rgba(48, 64, 83, 0.68);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.developer-api__tier {
+  color: rgba(42, 53, 67, 0.76);
+  font-size: 0.86rem;
+  font-weight: 650;
+  text-align: right;
+}
+
+.developer-api__meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem 1rem;
+  margin: 0;
+
+  div {
+    min-width: 0;
+  }
+
+  dt {
+    color: rgba(48, 64, 83, 0.68);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  dd {
+    margin: 0.18rem 0 0;
+    color: rgba(20, 29, 40, 0.9);
+    font-size: 0.88rem;
+  }
+}
+
+.developer-api__usage-note,
+.developer-api__compromise,
+.developer-api__empty span,
+.developer-api__reveal p {
+  margin: 0;
+  color: rgba(42, 53, 67, 0.72);
+  font-size: 0.86rem;
+}
+
+.developer-api__notice {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: 0.65rem;
+  font-size: 0.88rem;
+
+  mat-icon {
+    flex: 0 0 auto;
+  }
+}
+
+.developer-api__notice--error,
+.developer-api__notice--danger {
+  border: 1px solid rgba(163, 58, 58, 0.36);
+  background: rgba(255, 241, 241, 0.72);
+  color: #7c2727;
+}
+
+.developer-api__notice--warn,
+.developer-api__reveal {
+  border-color: rgba(184, 121, 24, 0.38);
+  background: rgba(255, 248, 235, 0.78);
+  color: #735018;
+}
+
+.developer-api__reveal-title {
+  align-items: center;
+}
+
+.developer-api__raw-key {
+  display: block;
+  overflow-x: auto;
+  padding: 0.75rem;
+  border: 1px solid rgba(115, 80, 24, 0.28);
+  border-radius: 0.55rem;
+  background: rgba(255, 255, 255, 0.78);
+  color: #2a2112;
+  font-size: 0.88rem;
+  user-select: all;
+}
+
+.developer-api__form {
+  --mat-form-field-container-height: 52px;
+  --mat-form-field-container-vertical-padding: 14px;
+}
+
+.developer-api__actions {
+  flex-wrap: wrap;
+}
+
+.developer-api__actions button,
+.developer-api__notice button {
+  min-height: 2.75rem;
+}
+
+@media (max-width: 37.4375rem) {
+  .developer-api {
+    padding: 0.75rem;
+  }
+
+  .developer-api__heading,
+  .developer-api__slot-top,
+  .developer-api__actions,
+  .developer-api__notice {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .developer-api__tier {
+    text-align: left;
+  }
+
+  .developer-api__meta {
+    grid-template-columns: 1fr;
+  }
+
+  .developer-api__actions button,
+  .developer-api__notice button {
+    width: 100%;
+  }
+}

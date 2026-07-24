@@ -38,6 +38,7 @@ import { SupabaseQueriesService } from './supabase-queries';
 import { createGetNamespace } from './supabase-get';
 import { createAuthNamespace } from './supabase-auth';
 import { createMergeNamespace } from './supabase-merge';
+import { createApiKeysNamespaceForSupabaseClient } from './supabase-api-keys';
 
 
 export type {
@@ -134,6 +135,11 @@ export class SupabaseService extends SubManager {
       this.supabase,
       () => this.auth.getUserSession$(),
       (id: number) => this.delete.module(id)
+    );
+
+    this.apiKeys = createApiKeysNamespaceForSupabaseClient(
+      this.supabase,
+      () => this.auth.getUserSession$()
     );
 
     this.queries = new SupabaseQueriesService(
@@ -311,4 +317,5 @@ export class SupabaseService extends SubManager {
   readonly update!: ReturnType<typeof createUpdateNamespace>;
   readonly merge!: ReturnType<typeof createMergeNamespace>;
   readonly storage!: ReturnType<typeof createStorageNamespace>;
+  readonly apiKeys!: ReturnType<typeof createApiKeysNamespaceForSupabaseClient>;
 }

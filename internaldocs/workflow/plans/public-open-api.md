@@ -692,11 +692,11 @@ per-key naming beyond a single label attached to the slot.
 
 ### Structural — remaining backlog
 
-- [ ] Account Management Public API subsection + data service + `SupabaseService.apiKeys`
+- [x] Account Management Public API subsection + data service + `SupabaseService.apiKeys`
   namespace as specified above. Local implementation is autonomous but
   gated behind the feature flag and does **not** land on production until
   the API preview is proven.
-- [ ] `DatabaseStrings.ts` registration for `api_keys`, `api_tiers`,
+- [x] `DatabaseStrings.ts` registration for `api_keys`, `api_tiers`,
   `api_key_usage_monthly` (before any backend method that references
   them).
 - [x] The consolidated local identity migration includes `rotated_at`, a
