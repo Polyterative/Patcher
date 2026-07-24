@@ -32,8 +32,7 @@ import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 
 export const PUBLIC_API_DOCS_URL = 'https://docs.patcher.xyz/reference/public-open-api';
-export const API_KEY_LABEL_PATTERN = /^[A-Za-z0-9 _\-.]+$/;
-export const API_KEY_LABEL_MAX_LENGTH = 64;
+export const DEFAULT_API_KEY_LABEL = 'Public API key';
 
 export interface DeveloperApiTierLimit {
   monthlyQuota: number;
@@ -113,7 +112,7 @@ export class DeveloperApiKeysDataService extends SubManager implements OnDestroy
   private readonly _revokeConfirmId$ = new BehaviorSubject<string | null>(null);
 
   readonly load$ = new ReplaySubject<void>(1);
-  readonly createOrRotate$ = new Subject<{ label: string }>();
+  readonly createOrRotate$ = new Subject<void>();
   readonly requestRotateConfirmation$ = new Subject<void>();
   readonly cancelRotateConfirmation$ = new Subject<void>();
   readonly requestRevokeConfirmation$ = new Subject<string>();
@@ -189,16 +188,9 @@ export class DeveloperApiKeysDataService extends SubManager implements OnDestroy
         this._isSaving$,
         this._rotateConfirmationVisible$
       ),
-      exhaustMap(([request, currentSlot, hasLoaded, isLoading, isSaving, rotateConfirmationVisible]) => {
+      exhaustMap(([, currentSlot, hasLoaded, isLoading, isSaving, rotateConfirmationVisible]) => {
         if (!hasLoaded || isLoading || isSaving) {
           this.reportInlineError('Public API credential status must load before creating or rotating a key. Use Retry if loading failed.');
-          return EMPTY;
-        }
-
-        const label = request.label.trim();
-        const validationMessage = validateApiKeyLabel(label);
-        if (validationMessage) {
-          this.reportInlineError(validationMessage);
           return EMPTY;
         }
 
@@ -216,7 +208,7 @@ export class DeveloperApiKeysDataService extends SubManager implements OnDestroy
         this._rotateConfirmationVisible$.next(false);
         this._revokeConfirmId$.next(null);
 
-        return this.backend.apiKeys.createOrRotateOwnKey(label).pipe(
+        return this.backend.apiKeys.createOrRotateOwnKey(DEFAULT_API_KEY_LABEL).pipe(
           tap(reveal => this.publishReveal(reveal)),
           switchMap(() => this.fetchSlotWithUsage$().pipe(
             tap(result => {
@@ -454,18 +446,4 @@ export class DeveloperApiKeysDataService extends SubManager implements OnDestroy
     const verb = action === 'rotate' ? 'rotated' : 'created';
     return `API key was ${ verb } and must be copied now, but account details could not refresh. Retry will keep this key visible.`;
   }
-}
-
-export function validateApiKeyLabel(label: string): string | null {
-  const trimmed = label.trim();
-  if (!trimmed) {
-    return 'Label is required.';
-  }
-  if (trimmed.length > API_KEY_LABEL_MAX_LENGTH) {
-    return 'Use 64 characters or fewer.';
-  }
-  if (!API_KEY_LABEL_PATTERN.test(trimmed)) {
-    return 'Use letters, numbers, spaces, underscores, hyphens, or periods.';
-  }
-  return null;
 }
