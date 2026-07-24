@@ -3,6 +3,7 @@
   "name": "patcher-public-api",
   "main": "src/index.ts",
   "compatibility_date": "2026-07-24",
+  "compatibility_flags": ["nodejs_compat"],
   "workers_dev": false,
   "preview_urls": false,
   "durable_objects": {

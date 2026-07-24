@@ -364,8 +364,9 @@ keep working via a temporary Worker alias (Polish). No parallel route.
     focused Node tests.
   - [~] Gated integration:
     - [x] Local `ApiKeyCounter` Durable Object persistence/alarm implementation.
-    - [ ] Key metadata LRU + `verify_api_key`, Worker-to-DO request-path wiring,
-      Hyperdrive query catalog, and Cache API serving.
+    - [x] Key metadata LRU + `verify_api_key`, Worker-to-DO request-path wiring,
+      and Hyperdrive RPC query catalog.
+    - [ ] Catalogue named queries and Cache API serving.
 - [x] Local-only migrations authored and statically validated; remote apply,
   reader LOGIN credential, Vault pepper creation, and Cloudflare provisioning remain
   separately gated:
@@ -641,6 +642,17 @@ keep working via a temporary Worker alias (Polish). No parallel route.
   SQLite migration, with no fabricated remote ID. Validation:
   `pnpm test:functions:public-api-worker` (14/14), `pnpm lint` (exit 0), scoped
   reviewer verdict APPROVE. Worker-to-DO wiring remains the next isolated chunk.
+- 2026-07-24T14:40+02:00 — Local authentication/quota pipeline wired without
+  provisioning Hyperdrive or configuring credentials. Postgres.js 3.4.9 uses
+  parameterized named RPC queries for `verify_api_key` and
+  `record_api_key_usage`; metadata is stored only by digest in a bounded
+  isolate-local LRU with a fixed hard expiry of 60 seconds. Valid keys consume
+  quota through the per-key Durable Object before the still fail-closed origin;
+  missing bindings, malformed external responses, and query failures return
+  stable 503 envelopes. DO 429 responses retain only the current request's quota
+  headers. Wrangler enables `nodejs_compat` but contains no fabricated
+  Hyperdrive ID. Validation: `pnpm test:functions:public-api-worker` (23/23),
+  `pnpm lint` (exit 0), reviewer verdict APPROVE.
 
 ## Resolved refinement decisions (locked)
 
