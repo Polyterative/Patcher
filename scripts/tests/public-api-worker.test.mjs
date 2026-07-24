@@ -794,6 +794,16 @@ test('OpenAPI documents the implemented public catalogue routes and schemas', ()
   assert.match(spec, /XRateLimitReset:[\s\S]+not the next reset time/);
   assert.doesNotMatch(spec, /OriginUnavailable:/);
 
+  const responseRefsByStatus = (operationBlock) => {
+    const refs = {};
+    for (const match of operationBlock.matchAll(
+      /\n        "(\d{3})":\n          \$ref: "#\/components\/responses\/([^"]+)"/g
+    )) {
+      refs[match[1]] = match[2];
+    }
+    return refs;
+  };
+
   for (const [getOperationId, headOperationId, includesNotFound] of [
     ['listModules', 'headModules', false],
     ['getModule', 'headModule', true],
@@ -810,24 +820,23 @@ test('OpenAPI documents the implemented public catalogue routes and schemas', ()
     const getOperation = spec.slice(getStart, headStart);
     const headOperation = spec.slice(headStart, headEnd);
 
-    assert.doesNotMatch(getOperation, /#\/components\/responses\/Head/);
-    assert.match(getOperation, /#\/components\/responses\/BadRequest/);
-    assert.match(getOperation, /#\/components\/responses\/Unauthorized/);
-    assert.match(getOperation, /#\/components\/responses\/RateLimited/);
-    assert.match(getOperation, /#\/components\/responses\/ServiceUnavailable/);
-    assert.match(headOperation, /#\/components\/responses\/HeadBadRequest/);
-    assert.match(headOperation, /#\/components\/responses\/HeadUnauthorized/);
-    assert.match(headOperation, /#\/components\/responses\/HeadRateLimited/);
-    assert.match(headOperation, /#\/components\/responses\/HeadServiceUnavailable/);
-    assert.doesNotMatch(
-      headOperation,
-      /#\/components\/responses\/(?:BadRequest|Unauthorized|NotFound|RateLimited|ServiceUnavailable)/
-    );
-
-    if (includesNotFound) {
-      assert.match(getOperation, /#\/components\/responses\/NotFound/);
-      assert.match(headOperation, /#\/components\/responses\/HeadNotFound/);
-    }
+    assert.deepStrictEqual(responseRefsByStatus(getOperation), {
+      '304': 'NotModified',
+      '400': 'BadRequest',
+      '401': 'Unauthorized',
+      ...(includesNotFound ? { '404': 'NotFound' } : {}),
+      '429': 'RateLimited',
+      '503': 'ServiceUnavailable',
+    });
+    assert.deepStrictEqual(responseRefsByStatus(headOperation), {
+      '200': 'HeadOk',
+      '304': 'NotModified',
+      '400': 'HeadBadRequest',
+      '401': 'HeadUnauthorized',
+      ...(includesNotFound ? { '404': 'HeadNotFound' } : {}),
+      '429': 'HeadRateLimited',
+      '503': 'HeadServiceUnavailable',
+    });
   }
 });
 
