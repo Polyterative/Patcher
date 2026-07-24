@@ -43,12 +43,12 @@ export async function hmacApiKey(rawKeyBytes: Uint8Array, base64Pepper: string):
 
   const key = await crypto.subtle.importKey(
     'raw',
-    pepperBytes,
+    toArrayBuffer(pepperBytes),
     { name: 'HMAC', hash: 'SHA-256' },
     false,
     ['sign']
   );
-  const signature = await crypto.subtle.sign('HMAC', key, rawKeyBytes);
+  const signature = await crypto.subtle.sign('HMAC', key, toArrayBuffer(rawKeyBytes));
   return new Uint8Array(signature);
 }
 
@@ -64,4 +64,8 @@ function decodeBase64Url(value: string): Uint8Array {
 function decodeBase64(value: string): Uint8Array {
   const decoded = atob(value);
   return Uint8Array.from(decoded, character => character.charCodeAt(0));
+}
+
+function toArrayBuffer(value: Uint8Array): ArrayBuffer {
+  return value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength) as ArrayBuffer;
 }

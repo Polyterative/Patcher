@@ -1,5 +1,7 @@
 import postgres from 'postgres';
 
+export type PostgresClient = postgres.Sql;
+
 export interface HyperdriveBinding {
   connectionString: string;
 }
@@ -118,9 +120,9 @@ export function normalizeRecordUsageInput(
   return { keyId, monthStartDate, usedMonth };
 }
 
-async function withHyperdriveClient<T>(
+export async function withHyperdriveClient<T>(
   hyperdrive: HyperdriveBinding,
-  operation: (sql: postgres.Sql) => Promise<T>
+  operation: (sql: PostgresClient) => Promise<T>
 ): Promise<T> {
   const sql = postgres(hyperdrive.connectionString, {
     max: 5,

@@ -13,60 +13,183 @@ paths:
   /modules:
     get:
       operationId: listModules
+      summary: List public modules
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/FieldsModule"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Sort"
+        - $ref: "#/components/parameters/QUnsupported"
+        - $ref: "#/components/parameters/ManufacturerIdFilter"
+        - $ref: "#/components/parameters/HpFilter"
+        - $ref: "#/components/parameters/StandardFilter"
+        - $ref: "#/components/parameters/TagFilter"
+        - $ref: "#/components/parameters/ModuleInclude"
       responses:
         "200":
           description: Paginated public modules
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+            X-Cache:
+              $ref: "#/components/headers/XCache"
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModuleListResponse"
+        "304":
+          $ref: "#/components/responses/NotModified"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/OriginUnavailable"
   /modules/{id}:
     get:
       operationId: getModule
+      summary: Get a public module
       parameters:
         - $ref: "#/components/parameters/IntegerId"
+        - $ref: "#/components/parameters/FieldsModule"
+        - $ref: "#/components/parameters/ModuleInclude"
       responses:
         "200":
           description: Public module
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModuleDetailResponse"
+        "304":
+          $ref: "#/components/responses/NotModified"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":
-          description: Module not found
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/OriginUnavailable"
   /manufacturers:
     get:
       operationId: listManufacturers
+      summary: List manufacturers with public modules
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/FieldsManufacturer"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Sort"
+        - $ref: "#/components/parameters/QUnsupported"
       responses:
         "200":
           description: Paginated public manufacturers
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManufacturerListResponse"
+        "304":
+          $ref: "#/components/responses/NotModified"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/OriginUnavailable"
   /manufacturers/{id}:
     get:
       operationId: getManufacturer
+      summary: Get a public manufacturer
       parameters:
         - $ref: "#/components/parameters/IntegerId"
+        - $ref: "#/components/parameters/FieldsManufacturer"
+        - $ref: "#/components/parameters/ManufacturerInclude"
       responses:
         "200":
           description: Public manufacturer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManufacturerDetailResponse"
+        "304":
+          $ref: "#/components/responses/NotModified"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":
-          description: Manufacturer not found
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/OriginUnavailable"
   /standards:
     get:
       operationId: listStandards
+      summary: List public standards
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/FieldsStandard"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Sort"
+        - $ref: "#/components/parameters/QUnsupported"
       responses:
         "200":
-          description: Public standards
+          description: Paginated public standards
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardListResponse"
+        "304":
+          $ref: "#/components/responses/NotModified"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/OriginUnavailable"
   /tags:
     get:
       operationId: listTags
+      summary: List public tags
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/FieldsTag"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Sort"
+        - $ref: "#/components/parameters/QUnsupported"
       responses:
         "200":
-          description: Public tags
+          description: Paginated public tags
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TagListResponse"
+        "304":
+          $ref: "#/components/responses/NotModified"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/OriginUnavailable"
 components:
+  securitySchemes:
+    apiKey:
+      type: http
+      scheme: bearer
+      bearerFormat: pk_live_<22 base64url characters>
   parameters:
     IntegerId:
       name: id
@@ -75,11 +198,347 @@ components:
       schema:
         type: integer
         minimum: 1
+    Cursor:
+      name: cursor
+      in: query
+      schema:
+        type: string
+      description: Base64url cursor of {"v":1,"s":last_sort_value,"id":last_id}.
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 50
+    Sort:
+      name: sort
+      in: query
+      schema:
+        type: string
+        enum: [name, id]
+        default: name
+      description: Ascending sort; id is always the tie-break for name sort.
+    QUnsupported:
+      name: q
+      in: query
+      schema:
+        type: string
+      description: Reserved for future trigram search. Supplying q returns 400 unsupported_parameter in v1 MVP.
+    FieldsModule:
+      name: fields
+      in: query
+      schema:
+        type: string
+      description: Comma-separated module top-level fields; id is always retained.
+    FieldsManufacturer:
+      name: fields
+      in: query
+      schema:
+        type: string
+      description: Comma-separated manufacturer top-level fields; id is always retained.
+    FieldsStandard:
+      name: fields
+      in: query
+      schema:
+        type: string
+      description: Comma-separated standard fields (id,name); id is always retained.
+    FieldsTag:
+      name: fields
+      in: query
+      schema:
+        type: string
+      description: Comma-separated tag fields (id,name,type); id is always retained.
+    ManufacturerIdFilter:
+      name: manufacturer_id
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+    HpFilter:
+      name: hp
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+    StandardFilter:
+      name: standard
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+    TagFilter:
+      name: tag
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+    ModuleInclude:
+      name: include
+      in: query
+      schema:
+        type: string
+        enum: [ins, outs, tags, panels, "ins,outs,tags,panels"]
+      description: Comma-separated module includes: ins, outs, tags, panels.
+    ManufacturerInclude:
+      name: include
+      in: query
+      schema:
+        type: string
+        enum: [modules]
+      description: Manufacturer detail only; includes safe module summaries.
+  headers:
+    ETag:
+      schema:
+        type: string
+      description: Quoted SHA-256 of the exact JSON response bytes.
+    XCache:
+      schema:
+        type: string
+        enum: [HIT, MISS, STALE]
+    XRequestId:
+      schema:
+        type: string
   responses:
+    NotModified:
+      description: ETag matched; no body. Quota and cache headers still reflect this request.
+    BadRequest:
+      description: Invalid, unknown, or unsupported query parameter.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
     Unauthorized:
-      description: Missing, malformed, unknown, or revoked API key
-  securitySchemes:
-    apiKey:
-      type: http
-      scheme: bearer
-      bearerFormat: pk_live_<22 base64url characters>
+      description: Missing, malformed, unknown, or revoked API key.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: Resource not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    RateLimited:
+      description: API key quota exceeded.
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    OriginUnavailable:
+      description: Public catalogue origin temporarily unavailable.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+  schemas:
+    Page:
+      type: object
+      required: [next_cursor]
+      properties:
+        next_cursor:
+          type: [string, "null"]
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, request_id]
+          properties:
+            code:
+              type: string
+              enum: [unknown_parameter, invalid_parameter, unsupported_parameter, missing_authorization, malformed_authorization, invalid_key, not_found, rate_limit_exceeded, origin_unavailable, authentication_unavailable, quota_unavailable, configuration_error, method_not_allowed]
+            message:
+              type: string
+            request_id:
+              type: string
+    ModuleListResponse:
+      type: object
+      required: [data, page]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Module"
+        page:
+          $ref: "#/components/schemas/Page"
+    ModuleDetailResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/Module"
+    ManufacturerListResponse:
+      type: object
+      required: [data, page]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Manufacturer"
+        page:
+          $ref: "#/components/schemas/Page"
+    ManufacturerDetailResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/Manufacturer"
+    StandardListResponse:
+      type: object
+      required: [data, page]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Standard"
+        page:
+          $ref: "#/components/schemas/Page"
+    TagListResponse:
+      type: object
+      required: [data, page]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Tag"
+        page:
+          $ref: "#/components/schemas/Page"
+    Module:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: [string, "null"]
+        hp:
+          type: [integer, "null"]
+        standard:
+          type: [integer, "null"]
+        manufacturer_id:
+          type: [integer, "null"]
+        depth:
+          type: [number, "null"]
+        depth_max:
+          type: [number, "null"]
+        is_diy:
+          type: [boolean, "null"]
+        manual_url:
+          type: [string, "null"]
+        power_neg_12:
+          type: [number, "null"]
+        power_pos_12:
+          type: [number, "null"]
+        power_pos_5:
+          type: [number, "null"]
+        switches:
+          oneOf:
+            - type: array
+              items:
+                $ref: "#/components/schemas/ModuleSwitch"
+            - type: "null"
+        weight:
+          type: [number, "null"]
+        ins:
+          type: array
+          items:
+            $ref: "#/components/schemas/Port"
+        outs:
+          type: array
+          items:
+            $ref: "#/components/schemas/Port"
+        tags:
+          type: array
+          items:
+            $ref: "#/components/schemas/Tag"
+        panels:
+          type: array
+          items:
+            $ref: "#/components/schemas/Panel"
+    ModuleSwitch:
+      type: object
+      required: [name, positions]
+      properties:
+        name:
+          type: string
+        positions:
+          type: array
+          items:
+            type: string
+    Manufacturer:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: [string, "null"]
+        tagline:
+          type: [string, "null"]
+        website_url:
+          type: [string, "null"]
+        social_links: {}
+        logo:
+          type: [string, "null"]
+        modules:
+          type: array
+          items:
+            $ref: "#/components/schemas/Module"
+    Standard:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    Tag:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        type:
+          type: [string, "null"]
+    Port:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        is_audio:
+          type: [boolean, "null"]
+        is_dcc:
+          type: [boolean, "null"]
+        is_voct:
+          type: [boolean, "null"]
+        min:
+          type: [number, "null"]
+        max:
+          type: [number, "null"]
+    Panel:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: integer
+        color:
+          type: [string, "null"]
+        description:
+          type: [string, "null"]
