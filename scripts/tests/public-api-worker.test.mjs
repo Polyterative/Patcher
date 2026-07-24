@@ -748,6 +748,12 @@ test('OpenAPI documents the implemented public catalogue routes and schemas', ()
     'getManufacturer',
     'listStandards',
     'listTags',
+    'headModules',
+    'headModule',
+    'headManufacturers',
+    'headManufacturer',
+    'headStandards',
+    'headTags',
   ]) {
     assert.ok(spec.includes(`operationId: ${operationId}`), `${operationId} missing`);
   }
@@ -761,10 +767,68 @@ test('OpenAPI documents the implemented public catalogue routes and schemas', ()
     'unsupported_parameter',
     '304',
     '503',
+    'HeadOk',
+    'ServiceUnavailable',
+    'configuration_error',
+    'authentication_unavailable',
+    'quota_unavailable',
+    'origin_unavailable',
   ]) {
     assert.ok(spec.includes(schema), `${schema} missing`);
   }
+  for (const header of [
+    'X-Request-ID',
+    'X-Cache',
+    'ETag',
+    'X-RateLimit-Limit-Month',
+    'X-RateLimit-Remaining-Month',
+    'X-RateLimit-Limit-Minute',
+    'X-RateLimit-Remaining-Minute',
+    'X-RateLimit-Reset',
+    'Retry-After',
+  ]) {
+    assert.ok(spec.includes(header), `${header} header missing`);
+  }
   assert.match(spec, /Reserved for future trigram search[\s\S]+unsupported_parameter/);
+  assert.match(spec, /GET and HEAD[\s\S]+HEAD[\s\S]+returns no body/);
+  assert.match(spec, /XRateLimitReset:[\s\S]+not the next reset time/);
+  assert.doesNotMatch(spec, /OriginUnavailable:/);
+
+  for (const [getOperationId, headOperationId, includesNotFound] of [
+    ['listModules', 'headModules', false],
+    ['getModule', 'headModule', true],
+    ['listManufacturers', 'headManufacturers', false],
+    ['getManufacturer', 'headManufacturer', true],
+    ['listStandards', 'headStandards', false],
+    ['listTags', 'headTags', false],
+  ]) {
+    const getStart = spec.indexOf(`operationId: ${getOperationId}\n`);
+    const headStart = spec.indexOf(`operationId: ${headOperationId}\n`);
+    const nextPath = spec.indexOf('\n  /', headStart);
+    const components = spec.indexOf('\ncomponents:', headStart);
+    const headEnd = nextPath === -1 ? components : nextPath;
+    const getOperation = spec.slice(getStart, headStart);
+    const headOperation = spec.slice(headStart, headEnd);
+
+    assert.doesNotMatch(getOperation, /#\/components\/responses\/Head/);
+    assert.match(getOperation, /#\/components\/responses\/BadRequest/);
+    assert.match(getOperation, /#\/components\/responses\/Unauthorized/);
+    assert.match(getOperation, /#\/components\/responses\/RateLimited/);
+    assert.match(getOperation, /#\/components\/responses\/ServiceUnavailable/);
+    assert.match(headOperation, /#\/components\/responses\/HeadBadRequest/);
+    assert.match(headOperation, /#\/components\/responses\/HeadUnauthorized/);
+    assert.match(headOperation, /#\/components\/responses\/HeadRateLimited/);
+    assert.match(headOperation, /#\/components\/responses\/HeadServiceUnavailable/);
+    assert.doesNotMatch(
+      headOperation,
+      /#\/components\/responses\/(?:BadRequest|Unauthorized|NotFound|RateLimited|ServiceUnavailable)/
+    );
+
+    if (includesNotFound) {
+      assert.match(getOperation, /#\/components\/responses\/NotFound/);
+      assert.match(headOperation, /#\/components\/responses\/HeadNotFound/);
+    }
+  }
 });
 
 test('Durable Object persists exact counts across class instances sharing storage', async () => {

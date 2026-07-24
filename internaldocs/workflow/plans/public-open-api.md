@@ -405,6 +405,8 @@ keep working via a temporary Worker alias (Polish). No parallel route.
 - [x] Manual partner runbook — SQL editor as `postgres`:
   `select public.create_partner_api_key('<profile_uuid>', 'Vendor X preview')`.
 - [x] OpenAPI 3.1 spec committed and covered by local Worker contract tests.
+- [x] OpenAPI documentation accuracy audit completed for emitted headers,
+  HEAD support, 503 error modes, and error-code enum drift.
 - [x] Local developer/operator docs committed:
   [`cloudflare/public-api/README.md`](../../../cloudflare/public-api/README.md)
   and [`cloudflare/public-api/RUNBOOK.md`](../../../cloudflare/public-api/RUNBOOK.md).
@@ -534,6 +536,11 @@ keep working via a temporary Worker alias (Polish). No parallel route.
   no-dependency OpenAPI smoke check documented in the Worker README.
   `pnpm install --frozen-lockfile` was run first because this worktree had no
   `node_modules`; it did not change tracked manifests.
+- 2026-07-24T14:30+02:00 — OpenAPI documentation accuracy audit passed after
+  documenting reusable response headers, explicit HEAD operations, generalized
+  503 service-unavailable modes, and emitted error codes. Validation passed:
+  `pnpm test:functions:public-api-worker` (33/33) and
+  `node scripts/checks/check-docs.cjs`.
 
 ## Decision log
 
@@ -700,7 +707,14 @@ keep working via a temporary Worker alias (Polish). No parallel route.
   `learn/public-open-api.md`. Added Patcher-side discoverability links in the
   root README and `cloudflare/public-api/README.md`; no in-app UI surface was
   added.
-
+- 2026-07-24T14:30+02:00 — OpenAPI contract documentation decision: every
+  documented GET route also documents HEAD because the Worker accepts HEAD and
+  runs it through the same auth/quota/cache/ETag/error path without a body. The
+  spec now lists the per-request rate-limit headers, `X-Request-ID`, `X-Cache`,
+  `ETag`, and `Retry-After` where applicable. `X-RateLimit-Reset` is documented
+  as the current minute-window start emitted by the MVP Worker, not a true next
+  reset timestamp; changing that behavior remains a future implementation
+  decision, not part of this documentation-only chunk.
 ## Resolved refinement decisions (locked)
 
 1. `patcher.xyz` uses Cloudflare nameservers; bind Worker at `api.patcher.xyz`.
