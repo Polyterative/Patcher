@@ -46,7 +46,7 @@ Worker directory: **`cloudflare/public-api/`** (sibling of `cloudflare/image-pro
 
 ### Worker → Postgres transport
 
-- Worker reads Supabase via a **Cloudflare Hyperdrive binding** (`HYPERDRIVE_READER`)
+- Worker reads Supabase via a **Cloudflare Hyperdrive binding** (`HYPERDRIVE`)
   pointed at the Supavisor **transaction-mode** pooler. Hyperdrive owns the credential;
   password rotation is a binding re-issue, no redeploy.
 - Driver: `postgres` (postgres.js v3) over the Hyperdrive URL. Rejected: raw TCP
@@ -395,7 +395,7 @@ keep working via a temporary Worker alias (Polish). No parallel route.
   - Optional `…_pg_trgm_search.sql` — gated separately; if denied, MVP
     returns `400 unsupported_parameter` for `?q=`.
 - [ ] Cloudflare (contingent gates): DNS `api.patcher.xyz`; Worker route +
-  custom domain; Hyperdrive binding `HYPERDRIVE_READER`; DO namespace
+  custom domain; Hyperdrive binding `HYPERDRIVE`; DO namespace
   `API_KEY_COUNTER`; Worker secret `API_KEY_PEPPER` (mirrors Vault
   `api_key_pepper`); coarse WAF. R2 is Structural.
 - [x] Implement six MVP endpoints + the exact request pipeline; error
@@ -715,6 +715,11 @@ keep working via a temporary Worker alias (Polish). No parallel route.
   as the current minute-window start emitted by the MVP Worker, not a true next
   reset timestamp; changing that behavior remains a future implementation
   decision, not part of this documentation-only chunk.
+- 2026-07-24T14:21+02:00 — Hyperdrive binding name normalized to `HYPERDRIVE`.
+  The Worker implementation and operator runbook naming are canonical; stale
+  planning references to the previous binding name were corrected without changing
+  any remote rollout gate.
+
 ## Resolved refinement decisions (locked)
 
 1. `patcher.xyz` uses Cloudflare nameservers; bind Worker at `api.patcher.xyz`.
