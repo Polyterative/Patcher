@@ -1,8 +1,8 @@
 # Public Open API operator runbook
 
-This runbook is for a future authorized production rollout of the Patcher Public Open API. It is intentionally descriptive and gate-oriented: it does not contain real resource IDs, credentials, secrets, or copy-paste remote mutation commands.
+This runbook covers the authorized production rollout and ongoing operation of the Patcher Public Open API. It is intentionally descriptive and gate-oriented: it does not contain real resource IDs, credentials, secrets, or copy-paste remote mutation commands.
 
-Current state: the local Worker, OpenAPI file, migration files, and tests are committed. No production Supabase migration, Vault secret, `api_reader` LOGIN credential, Hyperdrive binding, Durable Object namespace, DNS route, WAF rule, R2 bucket, cache purge, or Worker deployment has been performed.
+Current state: the production database foundation, Vault pepper, `api_reader` LOGIN credential, direct-endpoint Hyperdrive binding, Durable Object, Worker secret, and production Worker upload are complete. The production Worker has no route or custom domain. A temporary authenticated smoke Worker has passed catalogue, key lifecycle, usage-reporting, ETag, HEAD, and MISS→HIT cache tests. DNS/custom-domain activation, outer WAF review, production UI flag activation, public monitoring, and deletion of the smoke Worker remain pending. R2 remains a non-blocking Structural follow-up.
 
 ## Safety rules
 
@@ -18,7 +18,7 @@ Current state: the local Worker, OpenAPI file, migration files, and tests are co
 2. Supabase migration validation and explicit remote-apply approval.
 3. Vault pepper creation and mirror to Worker secret.
 4. `api_reader` runtime LOGIN credential provisioned outside migrations.
-5. Supavisor transaction-mode connection and Hyperdrive binding.
+5. Direct Supabase Postgres connection and Hyperdrive binding.
 6. Durable Object namespace/migration and Worker environment bindings.
 7. Worker secrets and non-secret config.
 8. Worker deployment to a non-public preview or controlled route.
@@ -56,11 +56,12 @@ node scripts/checks/check-docs.cjs
 
 **Manual approval gate:** applying these migrations remotely changes database roles, RLS policies, tables, functions, grants, and indexes. Do not apply without explicit approval while the user/operator is present.
 
-Validated local migration order:
+Validated and applied migration order:
 
 1. `20260724133100_api_reader_roles.sql`
 2. `20260724133200_api_identity.sql`
 3. `20260724133300_api_v1_views.sql`
+4. `20260724133400_api_vault_permissions.sql`
 
 Before remote apply:
 
@@ -171,7 +172,7 @@ Routine rotation (self-service):
 Revocation:
 
 - `public.revoke_api_key` (self-service) or an administrative equivalent flips `revoked_at` on the slot. The slot row remains, so usage history and tier metadata are preserved.
-- Revocation propagates to the Worker on the same ≤60 s isolate cache boundary as rotation. After that window, the Worker returns `401 revoked_api_key`.
+- Revocation propagates to the Worker on the same ≤60 s isolate cache boundary as rotation. After that window, the Worker returns `401 invalid_key`; revoked and unknown credentials are intentionally indistinguishable.
 - A revoked slot can be re-activated by calling `create_api_key(label)` on the same profile; the same `id`, tier, and overrides return, with fresh secret material.
 
 Compromise flow (leaked secret, hostile use, or unknown exposure):
@@ -185,15 +186,16 @@ Auditability:
 
 - Every rotation stamps `rotated_at`; every revocation stamps `revoked_at`. Old hash material is not retained for MVP, so historical secret material cannot be recovered by design — the slot's identity persists, but its cryptographic contents do not.
 
-## 5. Supavisor transaction mode and Hyperdrive
+## 5. Direct Supabase endpoint and Hyperdrive
 
 **Manual approval gate:** creating a Hyperdrive binding and pointing it at Supabase production is remote infrastructure work.
 
 Required shape:
 
-- Use Supavisor transaction-mode pooler, not session mode.
+- Point Hyperdrive at the direct Supabase Postgres endpoint on port 5432 with TLS required. Do not put Supavisor in front of Hyperdrive: Hyperdrive already provides connection pooling, and the direct endpoint is Cloudflare's documented Supabase integration shape.
 - The Worker uses postgres.js with no session state: no `LISTEN`/`NOTIFY`, no `SET ROLE`, no session-level `SET`, and no reliance on session-scoped prepared statements.
 - Bind the Worker environment to Hyperdrive as `HYPERDRIVE`.
+- Disable Hyperdrive's SQL result cache. API key verification and usage writes require read-after-write consistency; public payload caching belongs to the Worker's Cache API.
 - Do not commit placeholder Hyperdrive IDs to `wrangler.jsonc`.
 
 Validation:
@@ -326,6 +328,7 @@ Minimum checks after deployment:
 - `GET /v1/manufacturers?limit=1`
 - `GET /v1/manufacturers/{id}?include=modules`
 - `GET /v1/standards?limit=1`
+- `GET /v1/modules?standard=0&fields=standard` and confirm every row has standard `0`.
 - `GET /v1/tags?limit=1`
 - Unknown query parameter returns `400 unknown_parameter`.
 - `q=test` returns `400 unsupported_parameter`.
@@ -341,6 +344,8 @@ For successful responses, verify:
 - `X-Cache`
 - current `X-RateLimit-*` headers
 - no private columns, panel filenames, panel image URLs, pricing, user emails, or private rack/patch data.
+- standard ID `0` is accepted and represents the valid `3U` standard.
+- tag `type` is `null` or one of `nature`, `character`, `voice`, `source`, `filter`, `modulation`, `effect`, `sequencing`, `utility`, `blank`.
 
 ## 12. Revocation, quota, and cache tests
 
@@ -415,7 +420,7 @@ Quota malfunction:
 Origin outage:
 
 1. Confirm whether Cache API stale responses are serving.
-2. Check Hyperdrive and Supavisor status.
+2. Check Hyperdrive and the direct Supabase Postgres endpoint.
 3. Disable route only if stale/error behavior is worse than outage.
 4. Restore only after `origin_unavailable` clears and smoke tests pass.
 

@@ -25,7 +25,8 @@
 - [x] Obtain product approval for the reviewed implementation baseline.
 - [x] Build and validate the complete local MVP Worker, Durable Object, OpenAPI contract, and migration foundation.
 - [x] Document the local MVP Worker and operator rollout/rollback gates.
-- [ ] Execute the batched owner-present rollout window (Supabase apply + `pnpm updateBackendTypes`, Vault pepper, `api_reader` LOGIN, Hyperdrive, Durable Object namespace, Worker secret + deploy, preview route, preview keys, smoke/quota/revocation/cache tests, DNS custom domain, WAF, then flag flip).
+- [x] Execute the owner-present remote foundation and authenticated smoke window (Supabase apply + generated types, Vault pepper, `api_reader` LOGIN, direct-endpoint Hyperdrive, Durable Object, Worker secret/upload, temporary smoke route, partner-key rotation/revocation/reactivation, usage, catalogue, ETag/HEAD, and cache tests).
+- [ ] Complete public promotion: review coarse WAF protection, attach `api.patcher.xyz`, verify public monitoring, enable the production UI flag, update live docs, and delete the temporary smoke Worker.
 
 #### Layer 2 — Structural
 
@@ -33,7 +34,7 @@
 - [x] Land the flag-gated `DeveloperApiKeysComponent` + `DeveloperApiKeysDataService` under `src/app/features/backbone/user-management/developer-api-keys/`.
 - [x] Add the `developerApiEnabled` feature flag (off in generated production environments, on in development).
 - [x] Add `SupabaseService.apiKeys` namespace and `DatabaseStrings` entries for `api_keys` / `api_tiers` / `api_key_usage_monthly` after approved migration/type generation.
-- [ ] After the batched window: run `pnpm updateBackendTypes`, commit generated types, flip the flag on, and add key-required bulk JSONL export via private R2.
+- [ ] After public promotion: flip the production flag on and add key-required bulk JSONL export via private R2.
 
 #### Layer 3 — Polish
 
@@ -41,7 +42,7 @@
 - [x] Add the stable-slot contract to the consolidated local identity migration (`rotated_at`, full `UNIQUE (profile_id)`, atomic UPSERT rewrites preserving `id` + tier/overrides) and extend the static contract tests; remote apply stays inside the batched operator window.
 - [ ] Remove the `developerApiEnabled` feature flag once the API is public and stable.
 
-Status: Local MVP + docs + migrations reviewed and complete. Structural account UI work (backend namespace, flag-gated Public API account subsection, data service, tests) is implemented locally behind `developerApiEnabled`; the credential shape is a stable per-profile slot (one row per profile, atomic UPSERT create-or-rotate, admin partner promotes the same slot, revoke flips `revoked_at`, re-activation reuses the same slot and preserves usage). All remote applies, credentials, generated-type refreshes, and the preview-to-public promotion remain batched into a single owner-present window described in the plan's "Batched manual-operator window" section.
+Status: The remote database/credential/Cloudflare foundation is applied, generated types are reconciled, the production Worker is uploaded without a target, and the temporary authenticated smoke Worker has passed the complete catalogue and stable-slot lifecycle checks. The account UI remains behind `developerApiEnabled`; public promotion still requires WAF review, `api.patcher.xyz`, monitoring, flag activation, live-doc updates, and smoke Worker deletion.
 Updated: 2026-07-24
 
 Recent completed checkpoints are archived in [COMPLETED.md](./COMPLETED.md); their validation

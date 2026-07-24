@@ -4,10 +4,11 @@
 
 ## Status
 
-- [~] Reviewed plan adopted by the product owner. Local MVP Worker, OpenAPI,
-  migrations, and operator/developer docs are complete; schema/RLS remote apply,
-  role credentials, DNS, Hyperdrive, Durable Objects, Vault, WAF, R2, and
-  deployment remain separately gated in the TODO Approvals ledger.
+- [~] Reviewed plan adopted by the product owner. The database/Vault/reader/
+  direct-endpoint Hyperdrive/Durable Object foundation is deployed, generated
+  types are reconciled, the production Worker is uploaded without a target, and
+  authenticated smoke/lifecycle tests pass. DNS, WAF, production flag/release,
+  temporary smoke Worker cleanup, and later R2 remain.
 - Public consumer docs route:
   [`docs.patcher.xyz/reference/public-open-api`](https://docs.patcher.xyz/reference/public-open-api)
   (source file `learn/public-open-api.md` in Patcher-docs).
@@ -47,12 +48,14 @@ Worker directory: **`cloudflare/public-api/`** (sibling of `cloudflare/image-pro
 ### Worker → Postgres transport
 
 - Worker reads Supabase via a **Cloudflare Hyperdrive binding** (`HYPERDRIVE`)
-  pointed at the Supavisor **transaction-mode** pooler. Hyperdrive owns the credential;
-  password rotation is a binding re-issue, no redeploy.
+  pointed directly at the Supabase Postgres endpoint with TLS required. Hyperdrive
+  already provides pooling, so chaining Supavisor in front was tested, rejected, and
+  replaced with Cloudflare's documented direct-endpoint shape. Hyperdrive owns the
+  credential; password rotation is a binding re-issue, no Worker source change.
 - Driver: `postgres` (postgres.js v3) over the Hyperdrive URL. Rejected: raw TCP
   (unsupported in Workers), postgres.js over plain WebSockets (not a sanctioned Worker
   transport — Hyperdrive is).
-- **Transaction-pooler constraints — enforced by design:** no `LISTEN`/`NOTIFY`; no
+- **Pooled-connection constraints — enforced by design:** no `LISTEN`/`NOTIFY`; no
   `SET ROLE`; no session-level `SET`; no session-scoped prepared statements. All
   Worker queries come from a **named parameterized catalog** in `src/queries/`;
   dynamic identifiers are checked against the whitelist before use.
@@ -879,7 +882,7 @@ everything in the first question without touching remote resources.
 Provable locally, autonomously, right now (no owner presence required):
 
 - Worker unit + contract tests: `pnpm test:functions:public-api-worker`
-  (currently 33/33). Extend with a small set of **preview-mode**
+  (currently 34/34). Extend with a small set of **preview-mode**
   scenarios: (a) valid preview key consuming quota; (b) revoked key
   refused within 60 s of a metadata cache expiry; (c) shared cache hit
   serving distinct per-key rate headers.
@@ -928,10 +931,12 @@ add an alias in the same commit.
 Preview rollout order (compressed from `cloudflare/public-api/RUNBOOK.md`
 sections 2–13, with the new self-service UI gates inserted):
 
-1. Apply the three reviewed consolidated migrations to the target
+1. Apply the reviewed migration foundation to the target
    Supabase project (`sozmatmywjpstwidzlss`, `eu-central-1`) after
    backup/PITR check. The identity migration includes `rotated_at`, the
-   full `UNIQUE (profile_id)` index, and the reviewed atomic UPSERT RPCs.
+   full `UNIQUE (profile_id)` index, and the reviewed atomic UPSERT RPCs;
+   the restricted Vault-permission follow-up grants the managed migration
+   owner only the pgsodium key-ID role needed by `vault.create_secret`.
 2. `pnpm updateBackendTypes` from the same worktree; commit the diff.
 3. Create `api_key_pepper` in Supabase Vault; mirror to Worker secret
    `API_KEY_PEPPER`.
@@ -980,38 +985,31 @@ broken panel.
 
 ### Batched manual-operator window (single owner session)
 
-Everything below requires the owner to be present. Grouped so nothing
-half-lands. Autonomous work stops at "everything on `develop` is green
-with the flag off in prod" — this window is the next continuous block.
+Owner-present rollout status:
 
-Approvals to grant in one pass (all listed in the TODO Approvals ledger
-today; the batched window converts each into an action):
-
-1. Remote apply of the three reviewed consolidated migrations against
-   Supabase project `sozmatmywjpstwidzlss` (`eu-central-1`), followed by
-   `pnpm updateBackendTypes`. The identity migration already contains the
-   reviewed stable-slot contract (`rotated_at`, full
-   `UNIQUE (profile_id)`, UPSERT-rewrite RPCs).
-2. Vault: enable if not already; create `api_key_pepper` (32 random
-   bytes, base64); note the value only in Vault + Worker secret.
-3. Cloudflare Hyperdrive: provision LOGIN credential for `api_reader`
-   (owner runs SQL as `postgres`, pastes password into Hyperdrive UI,
-   commits nothing).
-4. Cloudflare: create Durable Object namespace `API_KEY_COUNTER`;
-   deploy the Worker; set secret `API_KEY_PEPPER`; leave the custom
-   domain **off**.
-5. `pg_trgm` and trigram GIN indexes are deferred to Polish. MVP returns
-   `400 unsupported_parameter` for `?q=` (already implemented that way).
-6. Run the preview slot sequence in step 7 of the preview rollout
-   (free create → partner promote of the same slot → rotate → revoke
-   → re-activate) against the controlled owner profile. Do **not**
-   expect a simultaneous free + partner key setup; the design
-   forbids it.
-7. Run smoke + quota + revocation + cache tests together.
-8. Coarse WAF/IP abuse rules review.
-9. Structural gates (deferred, listed for completeness only, not
-   required in this window): private R2 bucket
-   `patcher-public-datasets`; Cloudflare Logpush; nightly export job.
+1. [x] Apply the reviewed migration foundation and Vault permission
+   follow-up; reconcile generated types.
+2. [x] Create the 32-byte base64 Vault pepper and mirror it only to the
+   Worker secret.
+3. [x] Provision the `api_reader` LOGIN credential and configure
+   Hyperdrive against the direct Supabase Postgres endpoint with TLS and
+   SQL result caching disabled.
+4. [x] Create `API_KEY_COUNTER`; upload the production Worker with
+   `workers_dev: false`, preview URLs off, and no target/custom domain.
+5. [x] Deploy a temporary authenticated smoke Worker and run catalogue,
+   ETag/304, HEAD, quota-header, usage-reporting, and MISS→HIT cache tests.
+6. [x] Create the controlled owner partner slot; rotate, revoke, wait for
+   invalidation, and re-activate it while preserving slot ID, partner
+   tier, quotas, and current-month usage. The final raw key exists only
+   in the owner's approved secret store.
+7. [x] Keep `pg_trgm` and trigram GIN indexes deferred to Polish; `?q=`
+   remains `400 unsupported_parameter`.
+8. [ ] Review coarse WAF/IP abuse rules.
+9. [ ] Attach the approved production Worker to `api.patcher.xyz`, verify
+   public monitoring, enable `developerApiEnabled`, publish live-status
+   docs, release, and delete the temporary smoke Worker.
+10. [ ] Structural follow-ups: private R2 bucket
+    `patcher-public-datasets`, Cloudflare Logpush, and nightly export job.
 
 Inputs the owner must have ready before the window opens:
 
@@ -1034,9 +1032,8 @@ Worker has passed §11–§13 checks:
 
 - [ ] Root `README.md`: mark the Public Open API as live and link the
   public docs page.
-- [ ] `cloudflare/public-api/README.md`: switch its "current state"
-  paragraph from "no production Supabase migration…has been performed"
-  to a live-state summary; do not embed real IDs.
+- [x] `cloudflare/public-api/README.md`: record the deployed-but-unrouted
+  intermediate state without embedding real IDs.
 - [ ] `cloudflare/public-api/RUNBOOK.md`: keep the rollback/incident
   procedures; mark the initial rollout section as complete with the
   date.
@@ -1064,9 +1061,11 @@ Worker has passed §11–§13 checks:
   every physical decision reconfirmed against `src/backend/database.types.ts`
   and existing migration conventions, revised where wrong. Chosen
   representations (rejected alternatives inline; body carries full contracts):
-  - **Gateway**: Cloudflare Worker + Hyperdrive to Supavisor transaction
-    pooler kept. Rejected Supabase Edge Function — every unique cache miss
-    would burn the exact invocation quota this API exists to protect.
+  - **Gateway**: Cloudflare Worker + Hyperdrive was kept. Supavisor
+    transaction mode was the initial transport assumption and was later
+    superseded by the rollout-tested direct Supabase endpoint (recorded
+    below). Rejected Supabase Edge Function — every unique cache miss would
+    burn the exact invocation quota this API exists to protect.
   - **Worker driver**: postgres.js v3 over Hyperdrive with a named
     parameterized-query catalog and no session state. Rejected postgres.js
     over plain WebSockets (not a sanctioned Workers transport) and raw TCP.
@@ -1309,12 +1308,32 @@ Worker has passed §11–§13 checks:
     partner tier, same `(id, raw_key, prefix, tier)` return shape.
     Static contract tests to be extended alongside.
 
-## Decision log — deferred remote rollout log
+## Decision log — remote rollout
 
-Once the batched manual-operator window runs, append the outcome as a
-single dated line here with the resulting commit hash (migration apply
-date, preview key mint, DNS switch, and flag flip). Do not embed real
-IDs, credentials, or key material.
+- 2026-07-24 — The reviewed schema/RLS/role/view/RPC foundation was applied
+  to production and generated backend types were reconciled. Vault initially
+  failed because the managed migration owner lacked pgsodium key-ID access;
+  the restricted grant in `0af983f3` fixed the root cause without broadening
+  application-role access.
+- 2026-07-24 — Hyperdrive must connect directly to the Supabase Postgres
+  endpoint with TLS; Supavisor was removed from the chain because Hyperdrive
+  already pools connections. Hyperdrive SQL result caching is disabled for
+  authentication and read-after-write consistency; public response caching
+  remains in the Worker Cache API.
+- 2026-07-24 — Production data established two contract corrections:
+  standard ID `0` is valid (`3U`), while stored numeric tag types `1..10`
+  map to semantic lowercase public values. postgres.js over Hyperdrive also
+  requires `decode(hex, 'hex')` for the HMAC digest rather than a textual
+  `\\x...::bytea` cast. Runtime, OpenAPI, and regression tests landed in
+  `c3081e40`; authenticated smoke tests passed against production data.
+- 2026-07-24 — The production Worker is uploaded with no public target.
+  The temporary authenticated smoke Worker passed catalogue, ETag/304,
+  HEAD, quota-header, usage-reporting, stable-slot rotation/revocation/
+  re-activation, and MISS→HIT cache checks. The controlled slot preserved
+  identity, partner tier, quotas, and usage; its final raw key exists only
+  in the owner's approved secret store. Remaining rollout gates are WAF,
+  `api.patcher.xyz`, public monitoring, production flag/release, live-doc
+  status, and smoke Worker deletion.
 
 ## Resolved refinement decisions (locked)
 
