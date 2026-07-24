@@ -52,6 +52,7 @@ test('role migration creates only credential-free NOLOGIN roles with schema usag
   assert.match(roleSql, /alter role api_reader nologin/i);
   assert.match(roleSql, /grant usage on schema public to api_view_owner/i);
   assert.match(roleSql, /grant usage on schema public to api_reader/i);
+  assert.match(roleSql, /grant api_view_owner to postgres with admin option/i);
   assert.doesNotMatch(roleNorm, /\bpassword\b/);
   assert.doesNotMatch(roleNorm, /\blogin\b/);
   assert.doesNotMatch(roleNorm, /\bcreate user\b/);
