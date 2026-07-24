@@ -270,7 +270,7 @@ export async function openBestPatchDetailsForDocs(page: Page): Promise<PatchSumm
     return patch;
   }
 
-  return await openOwnedPatchDetailsInEditMode(page, patch);
+  return await openBestOwnedPatchDetailsInEditMode(page, patch);
 }
 
 export async function openBestOwnedPatchDetailsInEditMode(page: Page, selectedPatch?: PatchSummary): Promise<PatchSummary> {
