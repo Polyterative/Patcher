@@ -22,6 +22,12 @@ const selectList = (definition) => {
   assert.ok(match, 'missing select list');
   return match[1];
 };
+const functionDefinition = (sql, escapedQualifiedName) => {
+  const pattern = new RegExp(`create or replace function ${escapedQualifiedName}[\\s\\S]+?\\$\\$;`, 'i');
+  const match = sql.match(pattern);
+  assert.ok(match, `missing ${escapedQualifiedName} function definition`);
+  return match[0];
+};
 const roleNorm = normalize(roleSql);
 const identityNorm = normalize(identitySql);
 const viewsNorm = normalize(viewsSql);
@@ -62,8 +68,12 @@ test('identity migration creates tiers, keys, usage tables and seeds approved qu
   assert.match(identitySql, /create table if not exists public\.api_keys/i);
   assert.match(identitySql, /profile_id uuid not null references public\.profiles\(id\) on delete cascade/i);
   assert.match(identitySql, /key_hash bytea not null/i);
+  assert.match(identitySql, /updated_at timestamptz not null default now\(\)/i);
+  assert.match(identitySql, /rotated_at timestamptz null/i);
   assert.match(identitySql, /create unique index if not exists api_keys_key_hash_uniq/i);
-  assert.match(identitySql, /api_keys_active_profile_idx[\s\S]+where revoked_at is null/i);
+  assert.match(identitySql, /create unique index if not exists api_keys_profile_id_uniq[\s\S]+on public\.api_keys \(profile_id\);/i);
+  assert.doesNotMatch(identitySql, /api_keys_active_profile_idx/i);
+  assert.doesNotMatch(identitySql, /on public\.api_keys \(profile_id\)[\s\S]{0,120}where revoked_at is null/i);
   assert.match(identitySql, /create table if not exists public\.api_key_usage_monthly/i);
   assert.match(identitySql, /primary key \(key_id, month\)/i);
   assert.match(identitySql, /api_key_usage_monthly_month_first_check check \(month = date_trunc\('month', month\)::date\)/i);
@@ -82,6 +92,37 @@ test('identity RLS exposes owner and JWT-admin SELECT only, with no direct authe
   assert.match(identitySql, /create policy "api_key_usage_monthly_select_own"[\s\S]+exists \([\s\S]+from public\.api_keys k[\s\S]+k\.profile_id = auth\.uid\(\)/i);
   assert.doesNotMatch(identityNorm, /grant (insert|update|delete|all).*api_keys to authenticated/);
   assert.doesNotMatch(identityNorm, /grant (insert|update|delete|all).*api_key_usage_monthly to authenticated/);
+});
+
+test('api key create RPCs upsert the stable profile slot without resetting tier, overrides, usage, or id', () => {
+  const mintSql = functionDefinition(identitySql, 'private\\.mint_api_key');
+  const upsertMatch = mintSql.match(/on conflict \(profile_id\) do update[\s\S]+?returning api_keys\.id, api_keys\.tier_code/i);
+  assert.ok(upsertMatch, 'missing profile_id UPSERT returning persisted id and tier');
+  const upsertSql = upsertMatch[0];
+
+  assert.match(mintSql, /insert into public\.api_keys \(profile_id, key_prefix, key_hash, tier_code, label\)[\s\S]+on conflict \(profile_id\) do update/i);
+  assert.match(upsertSql, /key_prefix = excluded\.key_prefix/i);
+  assert.match(upsertSql, /key_hash = excluded\.key_hash/i);
+  assert.match(upsertSql, /label = excluded\.label/i);
+  assert.match(upsertSql, /revoked_at = null/i);
+  assert.match(upsertSql, /rotated_at = now\(\)/i);
+  assert.match(upsertSql, /updated_at = now\(\)/i);
+  assert.match(upsertSql, /tier_code = case[\s\S]+when excluded\.tier_code = 'partner' then excluded\.tier_code[\s\S]+else api_keys\.tier_code[\s\S]+end/i);
+  assert.match(mintSql, /returning api_keys\.id, api_keys\.tier_code[\s\S]+into v_key_id, v_tier_code/i);
+  assert.match(mintSql, /return query select v_key_id, v_wire_key, v_prefix, v_tier_code/i);
+  assert.match(mintSql, /when unique_violation[\s\S]+duplicate api key digest; retry key creation[\s\S]+errcode = '23505'/i);
+
+  assert.doesNotMatch(upsertSql, /\bid\s*=/i);
+  assert.doesNotMatch(upsertSql, /created_at\s*=/i);
+  assert.doesNotMatch(upsertSql, /last_used_at\s*=/i);
+  assert.doesNotMatch(upsertSql, /monthly_quota_override\s*=/i);
+  assert.doesNotMatch(upsertSql, /per_minute_quota_override\s*=/i);
+  assert.doesNotMatch(upsertSql, /api_key_usage_monthly/i);
+  assert.doesNotMatch(upsertSql, /tier_code\s*=\s*'free'/i);
+  assert.doesNotMatch(upsertSql, /tier_code\s*=\s*excluded\.tier_code\s*(?:,|\n)/i);
+
+  assert.match(functionDefinition(identitySql, 'public\\.create_api_key'), /private\.mint_api_key\(v_profile_id, 'free', p_label\)/i);
+  assert.match(functionDefinition(identitySql, 'public\\.create_partner_api_key'), /private\.mint_api_key\(p_profile_id, 'partner', p_label\)/i);
 });
 
 test('api key RPCs use security definer, fixed search paths, Vault read-only pepper, and strict grants', () => {

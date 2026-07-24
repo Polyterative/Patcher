@@ -32,6 +32,7 @@ create table if not exists public.api_keys (
   label text null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
+  rotated_at timestamptz null,
   revoked_at timestamptz null,
   last_used_at timestamptz null,
   constraint api_keys_monthly_quota_override_positive check (monthly_quota_override is null or monthly_quota_override > 0),
@@ -41,9 +42,8 @@ create table if not exists public.api_keys (
 create unique index if not exists api_keys_key_hash_uniq
   on public.api_keys (key_hash);
 
-create index if not exists api_keys_active_profile_idx
-  on public.api_keys (profile_id)
-  where revoked_at is null;
+create unique index if not exists api_keys_profile_id_uniq
+  on public.api_keys (profile_id);
 
 create table if not exists public.api_key_usage_monthly (
   key_id uuid not null references public.api_keys(id) on delete cascade,
@@ -127,6 +127,7 @@ declare
   v_prefix text;
   v_key_hash bytea;
   v_key_id uuid;
+  v_tier_code text;
 begin
   if p_profile_id is null then
     raise exception 'profile id is required' using errcode = '23502';
@@ -174,9 +175,22 @@ begin
 
   insert into public.api_keys (profile_id, key_prefix, key_hash, tier_code, label)
   values (p_profile_id, v_prefix, v_key_hash, p_tier_code, nullif(btrim(p_label), ''))
-  returning api_keys.id into v_key_id;
+  on conflict (profile_id) do update
+  set
+    key_prefix = excluded.key_prefix,
+    key_hash = excluded.key_hash,
+    tier_code = case
+      when excluded.tier_code = 'partner' then excluded.tier_code
+      else api_keys.tier_code
+    end,
+    label = excluded.label,
+    revoked_at = null,
+    rotated_at = now(),
+    updated_at = now()
+  returning api_keys.id, api_keys.tier_code
+    into v_key_id, v_tier_code;
 
-  return query select v_key_id, v_wire_key, v_prefix, p_tier_code;
+  return query select v_key_id, v_wire_key, v_prefix, v_tier_code;
 exception
   when unique_violation then
     raise exception 'duplicate api key digest; retry key creation' using errcode = '23505';
@@ -341,11 +355,11 @@ grant execute on function public.verify_api_key(bytea) to api_reader;
 grant execute on function public.record_api_key_usage(uuid, date, integer) to api_reader;
 
 comment on function private.mint_api_key(uuid, text, text) is
-  'Private Public Open API key minting helper. Reads api_key_pepper from Vault, returns raw key once, and has no caller grants.';
+  'Private Public Open API key slot minting/rotation helper. Reads api_key_pepper from Vault, returns raw key once, and has no caller grants.';
 comment on function public.create_api_key(text) is
-  'Authenticated self-service Public Open API key creation. Always mints the free tier for auth.uid().';
+  'Authenticated self-service Public Open API key slot creation/rotation. Seeds new slots at free and preserves the persisted tier on rotation.';
 comment on function public.create_partner_api_key(uuid, text) is
-  'Administrative Public Open API partner-key creation. EXECUTE is granted only to service_role; postgres can run directly.';
+  'Administrative Public Open API partner-key slot creation/promotion/rotation. EXECUTE is granted only to service_role; postgres can run directly.';
 comment on function public.verify_api_key(bytea) is
   'api_reader-only active-key verification returning effective quota limits.';
 comment on function public.record_api_key_usage(uuid, date, integer) is
