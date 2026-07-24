@@ -14,6 +14,122 @@ export type Database = {
   }
   public: {
     Tables: {
+      api_key_usage_monthly: {
+        Row: {
+          key_id: string
+          month: string
+          updated_at: string
+          used: number
+        }
+        Insert: {
+          key_id: string
+          month: string
+          updated_at?: string
+          used?: number
+        }
+        Update: {
+          key_id?: string
+          month?: string
+          updated_at?: string
+          used?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_key_usage_monthly_key_id_fkey"
+            columns: ["key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      api_keys: {
+        Row: {
+          created_at: string
+          id: string
+          key_hash: string
+          key_prefix: string
+          label: string | null
+          last_used_at: string | null
+          monthly_quota_override: number | null
+          per_minute_quota_override: number | null
+          profile_id: string
+          revoked_at: string | null
+          rotated_at: string | null
+          tier_code: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key_hash: string
+          key_prefix: string
+          label?: string | null
+          last_used_at?: string | null
+          monthly_quota_override?: number | null
+          per_minute_quota_override?: number | null
+          profile_id: string
+          revoked_at?: string | null
+          rotated_at?: string | null
+          tier_code: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key_hash?: string
+          key_prefix?: string
+          label?: string | null
+          last_used_at?: string | null
+          monthly_quota_override?: number | null
+          per_minute_quota_override?: number | null
+          profile_id?: string
+          revoked_at?: string | null
+          rotated_at?: string | null
+          tier_code?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_keys_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "api_keys_tier_code_fkey"
+            columns: ["tier_code"]
+            isOneToOne: false
+            referencedRelation: "api_tiers"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      api_tiers: {
+        Row: {
+          code: string
+          created_at: string
+          description: string
+          monthly_quota: number
+          per_minute_quota: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description: string
+          monthly_quota: number
+          per_minute_quota: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string
+          monthly_quota?: number
+          per_minute_quota?: number
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           authorId: string
@@ -89,6 +205,13 @@ export type Database = {
             columns: ["authorId"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_duplicate_moduleId_fkey"
+            columns: ["moduleId"]
+            isOneToOne: false
+            referencedRelation: "api_v1_modules"
             referencedColumns: ["id"]
           },
           {
@@ -379,6 +502,13 @@ export type Database = {
             foreignKeyName: "marketplace_listings_moduleid_fkey"
             columns: ["moduleid"]
             isOneToOne: false
+            referencedRelation: "api_v1_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_listings_moduleid_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
             referencedRelation: "module_discovery_snapshot"
             referencedColumns: ["id"]
           },
@@ -439,6 +569,13 @@ export type Database = {
             columns: ["collection_id"]
             isOneToOne: false
             referencedRelation: "module_collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_collection_entries_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "api_v1_modules"
             referencedColumns: ["id"]
           },
           {
@@ -537,6 +674,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "module_flags_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "api_v1_modules"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "module_flags_module_id_fkey"
             columns: ["module_id"]
@@ -670,6 +814,13 @@ export type Database = {
             foreignKeyName: "moduleINs_moduleId_fkey"
             columns: ["moduleid"]
             isOneToOne: false
+            referencedRelation: "api_v1_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moduleINs_moduleId_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
             referencedRelation: "module_discovery_snapshot"
             referencedColumns: ["id"]
           },
@@ -738,6 +889,13 @@ export type Database = {
             foreignKeyName: "moduleOUTs_moduleId_fkey"
             columns: ["moduleid"]
             isOneToOne: false
+            referencedRelation: "api_v1_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moduleOUTs_moduleId_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
             referencedRelation: "module_discovery_snapshot"
             referencedColumns: ["id"]
           },
@@ -789,6 +947,13 @@ export type Database = {
           updated?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "module_panels_moduleid_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
+            referencedRelation: "api_v1_modules"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "module_panels_moduleid_fkey"
             columns: ["moduleid"]
@@ -913,6 +1078,13 @@ export type Database = {
             foreignKeyName: "module_store_listings_module_id_fkey"
             columns: ["module_id"]
             isOneToOne: false
+            referencedRelation: "api_v1_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_store_listings_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
             referencedRelation: "module_discovery_snapshot"
             referencedColumns: ["id"]
           },
@@ -960,6 +1132,13 @@ export type Database = {
             foreignKeyName: "module_tags_moduleid_fkey"
             columns: ["moduleid"]
             isOneToOne: false
+            referencedRelation: "api_v1_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_tags_moduleid_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
             referencedRelation: "module_discovery_snapshot"
             referencedColumns: ["id"]
           },
@@ -976,6 +1155,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "patches_for_modules"
             referencedColumns: ["moduleid"]
+          },
+          {
+            foreignKeyName: "module_tags_tagid_fkey"
+            columns: ["tagid"]
+            isOneToOne: false
+            referencedRelation: "api_v1_tags"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "module_tags_tagid_fkey"
@@ -1073,6 +1259,13 @@ export type Database = {
             foreignKeyName: "modules_manufacturerId_fkey"
             columns: ["manufacturerId"]
             isOneToOne: false
+            referencedRelation: "api_v1_manufacturers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "modules_manufacturerId_fkey"
+            columns: ["manufacturerId"]
+            isOneToOne: false
             referencedRelation: "manufacturers"
             referencedColumns: ["id"]
           },
@@ -1082,6 +1275,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "module_discovery_snapshot"
             referencedColumns: ["manufacturer_id"]
+          },
+          {
+            foreignKeyName: "modules_standard_fkey"
+            columns: ["standard"]
+            isOneToOne: false
+            referencedRelation: "api_v1_standards"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "modules_standard_fkey"
@@ -1125,7 +1325,21 @@ export type Database = {
             foreignKeyName: "patch_connections_a_fkey"
             columns: ["a"]
             isOneToOne: false
+            referencedRelation: "api_v1_module_outs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patch_connections_a_fkey"
+            columns: ["a"]
+            isOneToOne: false
             referencedRelation: "module_outs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patch_connections_b_fkey"
+            columns: ["b"]
+            isOneToOne: false
+            referencedRelation: "api_v1_module_ins"
             referencedColumns: ["id"]
           },
           {
@@ -1185,6 +1399,13 @@ export type Database = {
           patch_id?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "patch_module_instances_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "api_v1_modules"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "patch_module_instances_module_id_fkey"
             columns: ["module_id"]
@@ -1410,6 +1631,13 @@ export type Database = {
             foreignKeyName: "rack_modules_moduleid_fkey"
             columns: ["moduleid"]
             isOneToOne: false
+            referencedRelation: "api_v1_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rack_modules_moduleid_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
             referencedRelation: "module_discovery_snapshot"
             referencedColumns: ["id"]
           },
@@ -1432,6 +1660,13 @@ export type Database = {
             columns: ["rackid"]
             isOneToOne: false
             referencedRelation: "racks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rack_modules_selected_panel_id_fkey"
+            columns: ["selected_panel_id"]
+            isOneToOne: false
+            referencedRelation: "api_v1_module_panels"
             referencedColumns: ["id"]
           },
           {
@@ -1658,6 +1893,13 @@ export type Database = {
             foreignKeyName: "user_module_tags_moduletagid_fkey"
             columns: ["moduletagid"]
             isOneToOne: false
+            referencedRelation: "api_v1_module_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_module_tags_moduletagid_fkey"
+            columns: ["moduletagid"]
+            isOneToOne: false
             referencedRelation: "module_tags"
             referencedColumns: ["id"]
           },
@@ -1683,6 +1925,13 @@ export type Database = {
           updated?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "user_modules_moduleid_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
+            referencedRelation: "api_v1_modules"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "user_modules_moduleid_fkey"
             columns: ["moduleid"]
@@ -1715,6 +1964,332 @@ export type Database = {
       }
     }
     Views: {
+      api_v1_manufacturers: {
+        Row: {
+          description: string | null
+          id: number | null
+          logo: string | null
+          name: string | null
+          social_links: Json | null
+          tagline: string | null
+          websiteURL: string | null
+        }
+        Insert: {
+          description?: string | null
+          id?: number | null
+          logo?: string | null
+          name?: string | null
+          social_links?: Json | null
+          tagline?: string | null
+          websiteURL?: string | null
+        }
+        Update: {
+          description?: string | null
+          id?: number | null
+          logo?: string | null
+          name?: string | null
+          social_links?: Json | null
+          tagline?: string | null
+          websiteURL?: string | null
+        }
+        Relationships: []
+      }
+      api_v1_module_ins: {
+        Row: {
+          id: number | null
+          isAudio: boolean | null
+          isDCC: boolean | null
+          isVOCT: boolean | null
+          max: number | null
+          min: number | null
+          moduleid: number | null
+          name: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moduleINs_moduleId_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
+            referencedRelation: "api_v1_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moduleINs_moduleId_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
+            referencedRelation: "module_discovery_snapshot"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moduleINs_moduleId_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moduleINs_moduleId_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
+            referencedRelation: "patches_for_modules"
+            referencedColumns: ["moduleid"]
+          },
+        ]
+      }
+      api_v1_module_outs: {
+        Row: {
+          id: number | null
+          isAudio: boolean | null
+          isDCC: boolean | null
+          isVOCT: boolean | null
+          max: number | null
+          min: number | null
+          moduleid: number | null
+          name: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moduleOUTs_moduleId_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
+            referencedRelation: "api_v1_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moduleOUTs_moduleId_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
+            referencedRelation: "module_discovery_snapshot"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moduleOUTs_moduleId_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moduleOUTs_moduleId_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
+            referencedRelation: "patches_for_modules"
+            referencedColumns: ["moduleid"]
+          },
+        ]
+      }
+      api_v1_module_panels: {
+        Row: {
+          color: number | null
+          description: string | null
+          id: number | null
+          moduleid: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_panels_moduleid_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
+            referencedRelation: "api_v1_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_panels_moduleid_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
+            referencedRelation: "module_discovery_snapshot"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_panels_moduleid_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_panels_moduleid_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
+            referencedRelation: "patches_for_modules"
+            referencedColumns: ["moduleid"]
+          },
+        ]
+      }
+      api_v1_module_tags: {
+        Row: {
+          id: number | null
+          moduleid: number | null
+          tagid: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_tags_moduleid_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
+            referencedRelation: "api_v1_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_tags_moduleid_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
+            referencedRelation: "module_discovery_snapshot"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_tags_moduleid_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_tags_moduleid_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
+            referencedRelation: "patches_for_modules"
+            referencedColumns: ["moduleid"]
+          },
+          {
+            foreignKeyName: "module_tags_tagid_fkey"
+            columns: ["tagid"]
+            isOneToOne: false
+            referencedRelation: "api_v1_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_tags_tagid_fkey"
+            columns: ["tagid"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      api_v1_modules: {
+        Row: {
+          depth: number | null
+          depthMax: number | null
+          description: string | null
+          hp: number | null
+          id: number | null
+          isDIY: boolean | null
+          manualURL: string | null
+          manufacturerId: number | null
+          name: string | null
+          powerNeg12: number | null
+          powerPos12: number | null
+          powerPos5: number | null
+          standard: number | null
+          switches: Json | null
+          weight: number | null
+        }
+        Insert: {
+          depth?: number | null
+          depthMax?: number | null
+          description?: string | null
+          hp?: number | null
+          id?: number | null
+          isDIY?: boolean | null
+          manualURL?: string | null
+          manufacturerId?: number | null
+          name?: string | null
+          powerNeg12?: number | null
+          powerPos12?: number | null
+          powerPos5?: number | null
+          standard?: number | null
+          switches?: Json | null
+          weight?: number | null
+        }
+        Update: {
+          depth?: number | null
+          depthMax?: number | null
+          description?: string | null
+          hp?: number | null
+          id?: number | null
+          isDIY?: boolean | null
+          manualURL?: string | null
+          manufacturerId?: number | null
+          name?: string | null
+          powerNeg12?: number | null
+          powerPos12?: number | null
+          powerPos5?: number | null
+          standard?: number | null
+          switches?: Json | null
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "modules_manufacturerId_fkey"
+            columns: ["manufacturerId"]
+            isOneToOne: false
+            referencedRelation: "api_v1_manufacturers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "modules_manufacturerId_fkey"
+            columns: ["manufacturerId"]
+            isOneToOne: false
+            referencedRelation: "manufacturers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "modules_manufacturerId_fkey"
+            columns: ["manufacturerId"]
+            isOneToOne: false
+            referencedRelation: "module_discovery_snapshot"
+            referencedColumns: ["manufacturer_id"]
+          },
+          {
+            foreignKeyName: "modules_standard_fkey"
+            columns: ["standard"]
+            isOneToOne: false
+            referencedRelation: "api_v1_standards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "modules_standard_fkey"
+            columns: ["standard"]
+            isOneToOne: false
+            referencedRelation: "standards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      api_v1_standards: {
+        Row: {
+          id: number | null
+          name: string | null
+        }
+        Insert: {
+          id?: number | null
+          name?: string | null
+        }
+        Update: {
+          id?: number | null
+          name?: string | null
+        }
+        Relationships: []
+      }
+      api_v1_tags: {
+        Row: {
+          id: number | null
+          name: string | null
+          type: number | null
+        }
+        Insert: {
+          id?: number | null
+          name?: string | null
+          type?: number | null
+        }
+        Update: {
+          id?: number | null
+          name?: string | null
+          type?: number | null
+        }
+        Relationships: []
+      }
       module_discovery_snapshot: {
         Row: {
           bucket: string | null
@@ -1732,6 +2307,13 @@ export type Database = {
           open_count: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "module_flags_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "api_v1_modules"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "module_flags_module_id_fkey"
             columns: ["module_id"]
@@ -1777,6 +2359,13 @@ export type Database = {
             foreignKeyName: "rack_modules_moduleid_fkey"
             columns: ["moduleid"]
             isOneToOne: false
+            referencedRelation: "api_v1_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rack_modules_moduleid_fkey"
+            columns: ["moduleid"]
+            isOneToOne: false
             referencedRelation: "module_discovery_snapshot"
             referencedColumns: ["id"]
           },
@@ -1805,6 +2394,24 @@ export type Database = {
       }
     }
     Functions: {
+      create_api_key: {
+        Args: { p_label: string }
+        Returns: {
+          id: string
+          prefix: string
+          raw_key: string
+          tier: string
+        }[]
+      }
+      create_partner_api_key: {
+        Args: { p_label: string; p_profile_id: string }
+        Returns: {
+          id: string
+          prefix: string
+          raw_key: string
+          tier: string
+        }[]
+      }
       delete_current_user_account: { Args: never; Returns: undefined }
       delete_module_collection: {
         Args: { p_collection_id: number }
@@ -1988,6 +2595,10 @@ export type Database = {
         Args: { p_entity_id: number; p_entity_type: number }
         Returns: boolean
       }
+      record_api_key_usage: {
+        Args: { p_key_id: string; p_month: string; p_used: number }
+        Returns: undefined
+      }
       refresh_module_discovery_snapshot: { Args: never; Returns: undefined }
       reorder_listing_media: {
         Args: { p_listing_id: string; p_media_ids: string[] }
@@ -2013,6 +2624,7 @@ export type Database = {
         Returns: string
       }
       resolve_public_rack_legacy_id: { Args: { p_id: number }; Returns: string }
+      revoke_api_key: { Args: { p_id: string }; Returns: undefined }
       save_module_collection: {
         Args: {
           p_collection_id?: number
@@ -2023,6 +2635,16 @@ export type Database = {
           p_public?: boolean
         }
         Returns: number
+      }
+      verify_api_key: {
+        Args: { p_hash: string }
+        Returns: {
+          id: string
+          monthly_quota: number
+          per_minute_quota: number
+          profile_id: string
+          tier_code: string
+        }[]
       }
     }
     Enums: {
