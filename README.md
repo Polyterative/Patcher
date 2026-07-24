@@ -48,9 +48,10 @@ Technical bug reports can also be opened as [GitHub issues](https://github.com/P
 5. [**Running E2E Tests**](#running-e2e-tests)
 6. [**Project Dependencies**](#project-dependencies)
 7. [**Schema Reference**](#schema-reference)
-8. [**Pull Requests**](#pull-requests)
-9. [**License**](#license)
-10. [**AI & Open Data Stance**](#ai--open-data-stance)
+8. [**Public Open API**](#public-open-api)
+9. [**Pull Requests**](#pull-requests)
+10. [**License**](#license)
+11. [**AI & Open Data Stance**](#ai--open-data-stance)
 
 ---
 
@@ -165,6 +166,19 @@ Patcher's live schema evolves with the app, so the most reliable references are 
 - Generated Supabase types: [`src/backend/database.types.ts`](src/backend/database.types.ts)
 - Backend table/join registration: [`src/app/features/backend/DatabaseStrings.ts`](src/app/features/backend/DatabaseStrings.ts)
 - Regenerate types after schema changes with: `pnpm updateBackendTypes`
+
+---
+
+## **Public Open API**
+
+The local Worker implementation for the key-required Public Open API lives in [`cloudflare/public-api/`](cloudflare/public-api/).
+
+- Developer/operator overview: [`cloudflare/public-api/README.md`](cloudflare/public-api/README.md)
+- Operator rollout and rollback runbook: [`cloudflare/public-api/RUNBOOK.md`](cloudflare/public-api/RUNBOOK.md)
+- OpenAPI 3.1 contract: [`cloudflare/public-api/openapi.yaml`](cloudflare/public-api/openapi.yaml)
+
+The implementation is local-only until explicitly approved rollout gates are completed; no Supabase production migration,
+Cloudflare binding, DNS route, WAF rule, R2 bucket, or Worker deployment is implied by these files.
 
 ---
 

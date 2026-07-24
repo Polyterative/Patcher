@@ -24,7 +24,8 @@
 - [x] Revise plan and pass backend review (`APPROVE WITH CHANGES`).
 - [x] Obtain product approval for the reviewed implementation baseline.
 - [x] Build and validate the complete local MVP Worker, Durable Object, OpenAPI contract, and migration foundation.
-- [ ] Build the key-required, origin-protected modules/manufacturers API (Cloudflare Worker + Supavisor `api_reader` role + `api_v1_*` views + HMAC-pepper keys + Durable Object quota).
+- [x] Document the local MVP Worker and operator rollout/rollback gates.
+- [ ] Execute approved remote rollout for the key-required, origin-protected modules/manufacturers API (Supabase apply, Vault, `api_reader` LOGIN credential, Hyperdrive, Durable Object namespace, Worker secrets/deploy, DNS, WAF/cache).
 
 #### Layer 2 — Structural
 
@@ -34,7 +35,7 @@
 
 - [ ] Add contract lifecycle/DX polish, retire widget-pilot alias, then public patch and rack endpoints via `public_id`.
 
-Status: Local MVP implementation is complete and reviewed; remote apply, credentials, Vault, Hyperdrive/Durable Object provisioning, DNS, and deployment remain gated.
+Status: Local MVP implementation and technical/operator docs are complete and reviewed locally; remote apply, credentials, Vault, Hyperdrive/Durable Object provisioning, DNS, WAF/cache, and deployment remain gated.
 Updated: 2026-07-24
 
 Recent completed checkpoints are archived in [COMPLETED.md](./COMPLETED.md); their validation

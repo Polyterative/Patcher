@@ -68,7 +68,8 @@
 - [ ] Cloudflare/R2: authorize traffic switch, cleanup, and any Supabase object deletion after the approved copy/verification stage (added 2026-07-08).
 - [ ] PostHog analytics review: provide credentials/export access (added 2026-07-08).
 - [ ] **Public Open API — infrastructure/schema gates** (reviewed plan adopted;
-  each remaining gate requires an explicit answer)
+  local Worker/docs are complete; each remaining remote gate requires an explicit
+  answer)
   ([plan](./plans/public-open-api.md)) (added 2026-07-24):
   - [ ] DNS + Worker route for `api.patcher.xyz` on
     Cloudflare.
@@ -114,7 +115,7 @@
 
 ### PRODUCT — Tier 1 (requires Manufacturer Page Phase 2 to be live)
 
-- [~] **HIGH: Public Open API — modules & manufacturers v1, bulk JSONL next, public patches/racks later (Cloudflare Worker + Hyperdrive + `api_view_owner`/`api_reader` role split + `api_v1_*` views + HMAC-pepper keys + Durable Object quotas; backend review passed, awaiting product approval)** → [`plans/public-open-api.md`](./plans/public-open-api.md)
+- [~] **HIGH: Public Open API — modules & manufacturers v1, bulk JSONL next, public patches/racks later (local Worker/OpenAPI/migrations/operator docs complete; Supabase apply, Vault, `api_reader` LOGIN credential, Hyperdrive, Durable Object namespace, Worker secrets/deploy, DNS, WAF/cache, R2, and public docs repo handoff remain gated)** → [`plans/public-open-api.md`](./plans/public-open-api.md)
 - [ ] **HIGH: Manufacturer Accounts & Verification (claims, admin review, verified-owner edits; local M1 validation/typegen approved; remote apply gated)** → [`plans/manufacturer-accounts-verification.md`](./plans/manufacturer-accounts-verification.md)
 - [ ] **LOW: Manufacturer Updates / Featured Surface (persistence/RLS/backend/moderation approved after verification foundation)** → [`plans/manufacturer-updates-featured-surface.md`](./plans/manufacturer-updates-featured-surface.md)
 - [ ] **LOW: Manufacturer Analytics (privacy aggregate helper complete; manufacturer validation/dashboard/backend gated)** → [`plans/manufacturer-analytics.md`](./plans/manufacturer-analytics.md)
