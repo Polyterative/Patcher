@@ -59,16 +59,17 @@
   reviewed migrations (roles, views/RLS, identity/RPCs) is approved. No remote
   apply, LOGIN credential, Vault secret, type generation against remote, or
   Cloudflare provisioning is authorized.
-- Public Open API Structural UI (local, autonomous): flag-gated
+- Public Open API Structural UI (local, autonomous): owner-approved dedicated
+  Public API section inside `/user/account`, after account identity rows and
+  before the Danger Zone, implemented by a flag-gated
   `DeveloperApiKeysComponent` + `DeveloperApiKeysDataService` under
-  `src/app/features/routes/user-area/user-developer/`, plus
+  `src/app/features/backbone/user-management/developer-api-keys/`, plus
   `SupabaseService.apiKeys` namespace, `DatabaseStrings` entries for
   `api_keys` / `api_tiers` / `api_key_usage_monthly`, and the
   `developerApiEnabled` feature flag added to `generate-env.js` (default
   **false** in `environment.prod.ts`, **true** in dev). No remote apply,
   no `pnpm updateBackendTypes`, no flag flip in production — those stay
-  in the batched operator window. Designer must confirm placement/hierarchy
-  before the component is coded (only local UX gate).
+  in the batched operator window.
 
 ### Pending questions (owner: answer inline, agents move resolved lines)
 

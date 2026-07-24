@@ -29,8 +29,8 @@
 
 #### Layer 2 — Structural
 
-- [ ] Designer brief for User Area Developer panel placement/hierarchy (only local UX gate before implementation).
-- [ ] Land the flag-gated `DeveloperApiKeysComponent` + `DeveloperApiKeysDataService` at `src/app/features/routes/user-area/user-developer/developer-api-keys/`.
+- [x] Approve the designer brief: a dedicated Public API section inside `/user/account`, after account identity rows and before the Danger Zone.
+- [ ] Land the flag-gated `DeveloperApiKeysComponent` + `DeveloperApiKeysDataService` under `src/app/features/backbone/user-management/developer-api-keys/`.
 - [x] Add the `developerApiEnabled` feature flag (off in generated production environments, on in development).
 - [ ] Add `SupabaseService.apiKeys` namespace and `DatabaseStrings` entries for `api_keys` / `api_tiers` / `api_key_usage_monthly` after approved migration/type generation.
 - [ ] After the batched window: run `pnpm updateBackendTypes`, commit generated types, flip the flag on, and add key-required bulk JSONL export via private R2.
