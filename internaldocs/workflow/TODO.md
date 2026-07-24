@@ -59,6 +59,16 @@
   reviewed migrations (roles, views/RLS, identity/RPCs) is approved. No remote
   apply, LOGIN credential, Vault secret, type generation against remote, or
   Cloudflare provisioning is authorized.
+- Public Open API Structural UI (local, autonomous): flag-gated
+  `DeveloperApiKeysComponent` + `DeveloperApiKeysDataService` under
+  `src/app/features/routes/user-area/user-developer/`, plus
+  `SupabaseService.apiKeys` namespace, `DatabaseStrings` entries for
+  `api_keys` / `api_tiers` / `api_key_usage_monthly`, and the
+  `developerApiEnabled` feature flag added to `generate-env.js` (default
+  **false** in `environment.prod.ts`, **true** in dev). No remote apply,
+  no `pnpm updateBackendTypes`, no flag flip in production — those stay
+  in the batched operator window. Designer must confirm placement/hierarchy
+  before the component is coded (only local UX gate).
 
 ### Pending questions (owner: answer inline, agents move resolved lines)
 
@@ -103,6 +113,25 @@
     `patcher-public-datasets` + Worker R2 binding; streamed through the
     Worker after key check (no presigned URLs). Logpush → durable sink
     likewise Structural.
+- [ ] **Public Open API — per-profile active-key cap**: confirm the max
+  number of non-revoked `api_keys` rows a single `profile_id` may hold.
+  Working recommendation is `≤ 5` per profile (client-side UX enforcement
+  now, DB `CHECK` in a Polish migration later). Not silently adopted
+  until answered
+  ([plan](./plans/public-open-api.md#self-service-behavior--exact-contract))
+  (added 2026-07-24).
+- [ ] **Public Open API — batched manual-operator window**: single
+  owner-present window to run the full preview-to-public rollout (three
+  migrations + `pnpm updateBackendTypes`, Vault pepper, `api_reader`
+  LOGIN, Hyperdrive, Durable Object namespace, Worker deploy to preview
+  route, mint two preview keys, run smoke/quota/revocation/cache tests,
+  DNS switch to `api.patcher.xyz`, WAF review, then flip
+  `environment.prod.ts` `developerApiEnabled` to `true` and release).
+  Prerequisites: Supabase project access (`sozmatmywjpstwidzlss`,
+  `eu-central-1`), Cloudflare zone access for `patcher.xyz`, active-key
+  cap decision, `pg_trgm` decision, and a 90-minute uninterrupted block
+  ([plan](./plans/public-open-api.md#batched-manual-operator-window-single-owner-session))
+  (added 2026-07-24).
 
 ### Denials / permanent constraints
 
