@@ -2,7 +2,7 @@
 
 Local Cloudflare Worker implementation for the key-required Patcher Public Open API at `https://api.patcher.xyz/v1`.
 
-The MVP database foundation, Vault pepper, least-privilege reader login, direct-endpoint Hyperdrive binding, Durable Object, Worker secret, and production Worker upload are complete. The production Worker intentionally has no target yet, so `api.patcher.xyz` is not live. An authenticated temporary smoke Worker has passed catalogue, key lifecycle, quota-reporting, ETag, HEAD, and cache tests. DNS/custom-domain activation, outer WAF review, production UI flag activation, and temporary smoke Worker deletion remain pending in [`RUNBOOK.md`](./RUNBOOK.md) and [`internaldocs/workflow/TODO.md`](../../internaldocs/workflow/TODO.md).
+The MVP is live at `api.patcher.xyz`. The database foundation, Vault pepper, least-privilege reader login, direct-endpoint Hyperdrive binding, Durable Object, Worker secret, custom domain, and production Worker are active. Catalogue, key lifecycle, quota-reporting, ETag, HEAD, and cache behavior passed production smoke tests, and the temporary smoke Worker has been deleted. The owner deferred an outer WAF rule for the initial launch; mandatory API keys and per-key Durable Object quotas remain active. The production User Area flag is committed on `develop` and awaits the next app release.
 
 ## Contract
 

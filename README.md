@@ -171,15 +171,14 @@ Patcher's live schema evolves with the app, so the most reliable references are 
 
 ## **Public Open API**
 
-The local Worker implementation for the key-required Public Open API lives in [`cloudflare/public-api/`](cloudflare/public-api/).
+The key-required Public Open API is live at [`https://api.patcher.xyz/v1`](https://api.patcher.xyz/v1). Its Worker implementation lives in [`cloudflare/public-api/`](cloudflare/public-api/).
 
 - Public consumer docs: [docs.patcher.xyz/reference/public-open-api](https://docs.patcher.xyz/reference/public-open-api)
 - Developer/operator overview: [`cloudflare/public-api/README.md`](cloudflare/public-api/README.md)
 - Operator rollout and rollback runbook: [`cloudflare/public-api/RUNBOOK.md`](cloudflare/public-api/RUNBOOK.md)
 - OpenAPI 3.1 contract: [`cloudflare/public-api/openapi.yaml`](cloudflare/public-api/openapi.yaml)
 
-The implementation is local-only until explicitly approved rollout gates are completed; no Supabase production migration,
-Cloudflare binding, DNS route, WAF rule, R2 bucket, or Worker deployment is implied by these files.
+The MVP catalogue API is deployed. Bulk JSONL export through private R2 and public rack/patch endpoints remain later roadmap work.
 
 ---
 

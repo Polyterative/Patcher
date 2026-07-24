@@ -7,8 +7,9 @@
 - [~] Reviewed plan adopted by the product owner. The database/Vault/reader/
   direct-endpoint Hyperdrive/Durable Object foundation is deployed, generated
   types are reconciled, the production Worker is uploaded without a target, and
-  authenticated smoke/lifecycle tests pass. DNS, WAF, production flag/release,
-  temporary smoke Worker cleanup, and later R2 remain.
+  authenticated smoke/lifecycle tests pass, `api.patcher.xyz` is live, and the
+  temporary smoke Worker is deleted. The owner deferred outer WAF protection;
+  the production app release/final archive and later R2 remain.
 - Public consumer docs route:
   [`docs.patcher.xyz/reference/public-open-api`](https://docs.patcher.xyz/reference/public-open-api)
   (source file `learn/public-open-api.md` in Patcher-docs).
@@ -1004,10 +1005,12 @@ Owner-present rollout status:
    in the owner's approved secret store.
 7. [x] Keep `pg_trgm` and trigram GIN indexes deferred to Polish; `?q=`
    remains `400 unsupported_parameter`.
-8. [ ] Review coarse WAF/IP abuse rules.
-9. [ ] Attach the approved production Worker to `api.patcher.xyz`, verify
-   public monitoring, enable `developerApiEnabled`, publish live-status
-   docs, release, and delete the temporary smoke Worker.
+8. [~] Coarse WAF/IP abuse rules were explicitly deferred by the owner for
+   initial launch; mandatory keys and per-key Durable Object quotas remain.
+9. [~] The production Worker is attached to `api.patcher.xyz`, live smoke
+   monitoring passes, live-status docs are in progress, and the temporary
+   smoke Worker is deleted. `developerApiEnabled` is committed on `develop`;
+   the app release and final archive remain.
 10. [ ] Structural follow-ups: private R2 bucket
     `patcher-public-datasets`, Cloudflare Logpush, and nightly export job.
 
@@ -1334,6 +1337,12 @@ Worker has passed §11–§13 checks:
   in the owner's approved secret store. Remaining rollout gates are WAF,
   `api.patcher.xyz`, public monitoring, production flag/release, live-doc
   status, and smoke Worker deletion.
+- 2026-07-24 — The owner approved initial launch without an outer WAF rule.
+  `api.patcher.xyz` was attached to the production Worker and passed live
+  auth, catalogue, standard-0, semantic-tag, HEAD, ETag/304, quota-header,
+  and MISS→HIT cache checks. The temporary smoke Worker and diagnostic
+  secret were deleted. `developerApiEnabled` is committed on `develop`;
+  the app release and final workflow archive remain.
 
 ## Resolved refinement decisions (locked)
 
