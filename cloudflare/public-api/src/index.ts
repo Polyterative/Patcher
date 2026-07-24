@@ -6,8 +6,13 @@ import {
   type ApiKeyMetadataProvider,
   type HyperdriveBinding,
 } from './database.ts';
+import {
+  serveCatalogueRequest,
+  type CatalogueServingOptions,
+} from './catalogue-serving.ts';
 import { QUOTA_HEADER_NAMES } from './quota-response.ts';
 import { normalizeApiRequest } from './request.ts';
+import { corsHeaders, errorResponse } from './response.ts';
 
 export { ApiKeyCounter } from './api-key-counter.ts';
 
@@ -28,7 +33,7 @@ export interface PublicApiDurableObjectStub {
   fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
 }
 
-export interface PublicApiRuntimeOptions {
+export interface PublicApiRuntimeOptions extends CatalogueServingOptions {
   metadataCache?: ApiKeyMetadataCache;
   metadataProvider?: ApiKeyMetadataProvider;
   quotaNamespace?: PublicApiDurableObjectNamespace;
@@ -63,7 +68,7 @@ export async function handlePublicApiRequest(
     );
   }
 
-  if (!isKnownRoute(normalized.url.pathname)) {
+  if (!normalized.route) {
     return errorResponse(request, 404, 'not_found', 'Route not found');
   }
 
@@ -144,57 +149,23 @@ export async function handlePublicApiRequest(
     );
   }
 
-  return errorResponse(
+  return serveCatalogueRequest(
     request,
-    503,
-    'origin_not_configured',
-    'The public API origin is not configured in this environment',
-    quota.headers
+    normalized,
+    env,
+    quota.headers,
+    runtimeOptions
   );
-}
-
-function isKnownRoute(pathname: string): boolean {
-  return /^\/v1\/(modules|manufacturers)(\/\d+)?$/.test(pathname)
-    || /^\/v1\/(standards|tags)$/.test(pathname);
-}
-
-function errorResponse(
-  request: Request,
-  status: number,
-  code: string,
-  message: string,
-  extraHeaders: HeadersInit = {},
-  requestId = crypto.randomUUID()
-): Response {
-  const headers = new Headers(corsHeaders());
-  const extra = new Headers(extraHeaders);
-  extra.forEach((value, key) => headers.set(key, value));
-  headers.set('Cache-Control', 'no-store');
-  headers.set('Content-Type', 'application/json; charset=utf-8');
-  headers.set('X-Request-ID', requestId);
-  headers.set('X-Content-Type-Options', 'nosniff');
-  return new Response(
-    request.method === 'HEAD'
-      ? null
-      : JSON.stringify({ error: { code, message, request_id: requestId } }),
-    {
-      status,
-      headers,
-    }
-  );
-}
-
-function corsHeaders(): Record<string, string> {
-  return {
-    'Access-Control-Allow-Headers': 'Authorization, Content-Type',
-    'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Max-Age': '86400',
-  };
 }
 
 export default {
-  fetch: handlePublicApiRequest,
+  fetch(
+    request: Request,
+    env: PublicApiEnv,
+    ctx?: NonNullable<PublicApiRuntimeOptions['executionContext']>
+  ): Promise<Response> {
+    return handlePublicApiRequest(request, env, { executionContext: ctx });
+  },
 };
 
 type QuotaConsumeResult =
@@ -262,7 +233,7 @@ function extractQuotaHeaders(headers: Headers, requireRetryAfter: boolean): Head
       result.set(name, value);
     }
   }
-  const required = QUOTA_HEADER_NAMES.filter(name => name !== 'retry-after');
+  const required: string[] = QUOTA_HEADER_NAMES.filter(name => name !== 'retry-after');
   if (requireRetryAfter) {
     required.push('retry-after');
   }

@@ -366,7 +366,7 @@ keep working via a temporary Worker alias (Polish). No parallel route.
     - [x] Local `ApiKeyCounter` Durable Object persistence/alarm implementation.
     - [x] Key metadata LRU + `verify_api_key`, Worker-to-DO request-path wiring,
       and Hyperdrive RPC query catalog.
-    - [ ] Catalogue named queries and Cache API serving.
+    - [x] Catalogue named queries and Cache API serving.
 - [x] Local-only migrations authored and statically validated; remote apply,
   reader LOGIN credential, Vault pepper creation, and Cloudflare provisioning remain
   separately gated:
@@ -653,6 +653,20 @@ keep working via a temporary Worker alias (Polish). No parallel route.
   headers. Wrangler enables `nodejs_compat` but contains no fabricated
   Hyperdrive ID. Validation: `pnpm test:functions:public-api-worker` (23/23),
   `pnpm lint` (exit 0), reviewer verdict APPROVE.
+- 2026-07-24T15:10+02:00 — Local Worker catalogue serving completed for all
+  six v1 routes. Explicit parameterized queries read only `api_v1_*` views;
+  module relation includes are batch-loaded, cursor pagination supports fixed
+  `name`/`id` sort modes, sparse fields are allowlisted, and `q` remains a
+  deliberate 400 until pg_trgm is separately approved. Shared cache entries are
+  authorization-independent and exclude request/quota headers; every hit,
+  stale response, and 304 still authenticates and consumes the current key's
+  quota first. Cache freshness/SWR, SHA-256 ETags, HEAD, and per-request IDs are
+  implemented, and OpenAPI now documents the complete local contract. Module
+  `switches` uses its real structured JSON array shape rather than a string.
+  Validation: `pnpm test:functions:public-api-worker` (33/33), `pnpm lint`
+  (exit 0), targeted Worker TypeScript check (exit 0), reviewer verdict APPROVE.
+  No database, Hyperdrive binding, cache namespace, DNS, secret, or Worker
+  deployment was touched.
 
 ## Resolved refinement decisions (locked)
 

@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
+import { HyperdriveCatalogueProvider } from '../../cloudflare/public-api/src/catalogue-provider.ts';
 import {
   ApiKeyMetadataCache,
 } from '../../cloudflare/public-api/src/api-key-metadata-cache.ts';
@@ -14,6 +16,9 @@ import {
   toOutgoingResponse,
 } from '../../cloudflare/public-api/src/cache.ts';
 import {
+  normalizeModuleRow,
+} from '../../cloudflare/public-api/src/catalogue-mapping.ts';
+import {
   normalizeRecordUsageInput,
   normalizeVerifyApiKeyRow,
 } from '../../cloudflare/public-api/src/database.ts';
@@ -23,6 +28,8 @@ import { normalizeApiRequest } from '../../cloudflare/public-api/src/request.ts'
 
 const rawKeyBytes = Uint8Array.from({ length: 16 }, (_, index) => index);
 const rawKey = `pk_live_${Buffer.from(rawKeyBytes).toString('base64url')}`;
+const rawKeyBytes2 = Uint8Array.from({ length: 16 }, (_, index) => 16 + index);
+const rawKey2 = `pk_live_${Buffer.from(rawKeyBytes2).toString('base64url')}`;
 const pepperBytes = Uint8Array.from({ length: 32 }, (_, index) => 255 - index);
 const pepper = Buffer.from(pepperBytes).toString('base64');
 const keyMetadata = {
@@ -32,6 +39,46 @@ const keyMetadata = {
   monthlyQuota: 1000,
   perMinuteQuota: 60,
 };
+const keyMetadata2 = {
+  ...keyMetadata,
+  id: '12345678-1234-4234-8234-123456789abc',
+  profileId: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+};
+const moduleOne = {
+  id: 1,
+  name: 'Alpha VCO',
+  description: 'Oscillator',
+  hp: 8,
+  standard: 1,
+  manufacturer_id: 10,
+  depth: 35,
+  depth_max: null,
+  is_diy: false,
+  manual_url: 'https://example.test/manual.pdf',
+  power_neg_12: 20,
+  power_pos_12: 40,
+  power_pos_5: 0,
+  switches: [{ name: 'Range', positions: ['Low', 'High'] }],
+  weight: 120,
+};
+const moduleTwo = {
+  ...moduleOne,
+  id: 2,
+  name: 'Beta Filter',
+  description: 'Filter',
+  hp: 12,
+};
+const manufacturerOne = {
+  id: 10,
+  name: 'ACME Synth',
+  description: 'Maker',
+  tagline: 'Patch better',
+  website_url: 'https://example.test',
+  social_links: { instagram: 'acme' },
+  logo: 'logo.svg',
+};
+const standardOne = { id: 1, name: 'Eurorack' };
+const tagOne = { id: 5, name: 'Oscillator', type: 'function' };
 
 test('parses only well-formed Bearer API keys', () => {
   assert.deepEqual(parseApiKeyAuthorization(null), {
@@ -65,7 +112,7 @@ test('normalizes query parameters into an authorization-independent cache key', 
   assert.equal(normalized.ok, true);
   assert.equal(
     normalized.ok ? normalized.cacheKey : null,
-    'GET /v1/modules?hp=8&include=ins%2Ctags&limit=50'
+    'GET /v1/modules?hp=8&include=ins%2Ctags&limit=50&sort=name'
   );
 
   const unknown = normalizeApiRequest(
@@ -93,6 +140,45 @@ test('normalizes query parameters into an authorization-independent cache key', 
     `https://api.patcher.xyz/v1/modules?cursor=${cursor}`
   );
   assert.equal(validCursor.ok, true);
+
+  const unsupportedSort = normalizeApiRequest(
+    'https://api.patcher.xyz/v1/modules?sort=updated'
+  );
+  assert.deepEqual(unsupportedSort, {
+    ok: false,
+    code: 'unsupported_parameter',
+    parameter: 'sort',
+  });
+
+  const unsupportedSearch = normalizeApiRequest(
+    'https://api.patcher.xyz/v1/modules?q=osc'
+  );
+  assert.deepEqual(unsupportedSearch, {
+    ok: false,
+    code: 'unsupported_parameter',
+    parameter: 'q',
+  });
+
+  const manufacturerFilter = normalizeApiRequest(
+    'https://api.patcher.xyz/v1/manufacturers?hp=8'
+  );
+  assert.deepEqual(manufacturerFilter, {
+    ok: false,
+    code: 'unknown_parameter',
+    parameter: 'hp',
+  });
+
+  const idCursor = Buffer.from(
+    JSON.stringify({ v: 1, s: 42, id: 42 })
+  ).toString('base64url');
+  const cursorMismatch = normalizeApiRequest(
+    `https://api.patcher.xyz/v1/modules?cursor=${idCursor}&sort=name`
+  );
+  assert.deepEqual(cursorMismatch, {
+    ok: false,
+    code: 'invalid_parameter',
+    parameter: 'cursor',
+  });
 });
 
 test('keeps per-key quota headers out of shared cache entries', async () => {
@@ -101,19 +187,26 @@ test('keeps per-key quota headers out of shared cache entries', async () => {
       'Content-Type': 'application/json',
       ETag: '"body-hash"',
       'X-RateLimit-Remaining-Month': '4999',
+      'X-Request-ID': 'cached-request',
     },
   });
-  const cached = toCacheEntry(origin);
+  const cached = toCacheEntry(origin, { freshSeconds: 60, swrSeconds: 120 }, 1000);
   assert.equal(cached.headers.get('x-ratelimit-remaining-month'), null);
+  assert.equal(cached.headers.get('x-request-id'), null);
   assert.equal(await origin.text(), '{"data":[]}');
 
   const outgoing = toOutgoingResponse(
     cached,
     { 'X-RateLimit-Remaining-Month': '12' },
-    'HIT'
+    'HIT',
+    new Request('https://api.patcher.xyz/v1/modules'),
+    'request-1'
   );
   assert.equal(outgoing.headers.get('x-ratelimit-remaining-month'), '12');
   assert.equal(outgoing.headers.get('x-cache'), 'HIT');
+  assert.equal(outgoing.headers.get('cache-control'), 'private, no-store');
+  assert.equal(outgoing.headers.get('x-patcher-cache-fresh-until'), null);
+  assert.equal(outgoing.headers.get('x-request-id'), 'request-1');
 });
 
 test('enforces exact minute and month quota boundaries with UTC rollover', () => {
@@ -167,7 +260,7 @@ test('worker rejects missing auth before reaching the unconfigured origin', asyn
     createWorkerRuntime()
   );
   assert.equal(configuredLater.status, 503);
-  assert.equal((await configuredLater.json()).error.code, 'origin_not_configured');
+  assert.equal((await configuredLater.json()).error.code, 'origin_unavailable');
 });
 
 test('worker verifies metadata once inside fixed TTL but consumes quota every request', async () => {
@@ -175,7 +268,13 @@ test('worker verifies metadata once inside fixed TTL but consumes quota every re
   const metadataProvider = new FakeMetadataProvider([keyMetadata]);
   const quotaNamespace = new FakeQuotaNamespace();
   const metadataCache = new ApiKeyMetadataCache(1000, 60_000);
-  const runtime = { metadataProvider, quotaNamespace, metadataCache, clock: () => nowMs };
+  const runtime = {
+    metadataProvider,
+    quotaNamespace,
+    metadataCache,
+    clock: () => nowMs,
+    logger: { error: () => undefined },
+  };
   const env = { API_KEY_PEPPER: pepper };
 
   const first = await handlePublicApiRequest(authenticatedRequest(), env, runtime);
@@ -195,7 +294,13 @@ test('worker re-verifies at exact metadata cache expiry without sliding extensio
   const metadataProvider = new FakeMetadataProvider([keyMetadata, updatedMetadata]);
   const quotaNamespace = new FakeQuotaNamespace();
   const metadataCache = new ApiKeyMetadataCache(1000, 60_000);
-  const runtime = { metadataProvider, quotaNamespace, metadataCache, clock: () => nowMs };
+  const runtime = {
+    metadataProvider,
+    quotaNamespace,
+    metadataCache,
+    clock: () => nowMs,
+    logger: { error: () => undefined },
+  };
   const env = { API_KEY_PEPPER: pepper };
 
   await handlePublicApiRequest(authenticatedRequest(), env, runtime);
@@ -360,6 +465,306 @@ test('database named-query row and usage input validation is strict', () => {
     () => normalizeRecordUsageInput(keyMetadata.id, '2026-07-02T00:00:00.000Z', 1),
     /first day/
   );
+});
+
+test('catalogue row mapping fails closed on malformed database output', () => {
+  assert.deepEqual(normalizeModuleRow(moduleOne), moduleOne);
+  assert.throws(
+    () => normalizeModuleRow({ ...moduleOne, id: 0 }),
+    /positive integer/
+  );
+  assert.throws(
+    () => normalizeModuleRow({ ...moduleOne, is_diy: 'false' }),
+    /boolean/
+  );
+});
+
+test('Hyperdrive catalogue provider uses named parameterized batch queries', async () => {
+  const sql = createCatalogueSql();
+  const provider = new HyperdriveCatalogueProvider(sql);
+  const page = await provider.listModules({
+    cursor: null,
+    fields: null,
+    filters: { hp: 8, manufacturerId: 10, standard: 1, tag: 5 },
+    include: ['ins', 'tags'],
+    limit: 1,
+    sort: 'name',
+  });
+
+  assert.equal(page.data.length, 1);
+  assert.equal(page.data[0].ins.length, 1);
+  assert.equal(page.data[0].tags[0].id, tagOne.id);
+  assert.equal(sql.calls.length, 3);
+  assert.equal(sql.calls.some(call => /select\s+\*/i.test(call.text)), false);
+  assert.equal(sql.calls.filter(call => call.text.includes('api_v1_module_ins')).length, 1);
+  assert.equal(sql.calls.filter(call => call.text.includes('join public.api_v1_tags')).length, 1);
+  assert.ok(sql.calls[0].values.includes(8));
+  assert.equal(sql.calls[0].text.includes('Alpha VCO'), false);
+});
+
+test('worker serves module list, detail, references, filters, fields, and includes', async () => {
+  const catalogueProvider = new FakeCatalogueProvider();
+  const runtime = createWorkerRuntime({ catalogueProvider, cacheStore: null });
+  const env = { API_KEY_PEPPER: pepper };
+  const list = await handlePublicApiRequest(
+    authenticatedRequest(
+      'GET',
+      'https://api.patcher.xyz/v1/modules?manufacturer_id=10&hp=8&standard=1&tag=5&include=tags&fields=name'
+    ),
+    env,
+    runtime
+  );
+  assert.equal(list.status, 200);
+  assert.equal(list.headers.get('x-cache'), 'MISS');
+  assert.match(list.headers.get('etag'), /^"[0-9a-f]{64}"$/);
+  assert.equal(list.headers.get('cache-control'), 'private, no-store');
+  assert.equal(list.headers.get('vary'), null);
+  const listBody = await list.json();
+  assert.deepEqual(Object.keys(listBody.data[0]), ['id', 'name', 'tags']);
+  assert.deepEqual(listBody.data[0].tags, [tagOne]);
+  assert.deepEqual(catalogueProvider.calls[0].options.filters, {
+    hp: 8,
+    manufacturerId: 10,
+    standard: 1,
+    tag: 5,
+  });
+
+  const detail = await handlePublicApiRequest(
+    authenticatedRequest('GET', 'https://api.patcher.xyz/v1/modules/1?include=ins,outs,panels,tags'),
+    env,
+    createWorkerRuntime({ catalogueProvider: new FakeCatalogueProvider(), cacheStore: null })
+  );
+  assert.equal(detail.status, 200);
+  const detailBody = await detail.json();
+  assert.equal(detailBody.data.ins[0].name, 'Pitch');
+  assert.equal(detailBody.data.outs[0].name, 'Audio');
+  assert.equal(detailBody.data.panels[0].color, 'silver');
+
+  const standards = await handlePublicApiRequest(
+    authenticatedRequest('GET', 'https://api.patcher.xyz/v1/standards?sort=id'),
+    env,
+    createWorkerRuntime({ catalogueProvider: new FakeCatalogueProvider(), cacheStore: null })
+  );
+  assert.deepEqual(await standards.json(), {
+    data: [standardOne],
+    page: { next_cursor: null },
+  });
+
+  const tags = await handlePublicApiRequest(
+    authenticatedRequest('GET', 'https://api.patcher.xyz/v1/tags?fields=name'),
+    env,
+    createWorkerRuntime({ catalogueProvider: new FakeCatalogueProvider(), cacheStore: null })
+  );
+  assert.deepEqual((await tags.json()).data[0], { id: tagOne.id, name: tagOne.name });
+});
+
+test('manufacturer detail supports include=modules without enabling list-only filters', async () => {
+  const provider = new FakeCatalogueProvider();
+  const response = await handlePublicApiRequest(
+    authenticatedRequest('GET', 'https://api.patcher.xyz/v1/manufacturers/10?include=modules'),
+    { API_KEY_PEPPER: pepper },
+    createWorkerRuntime({ catalogueProvider: provider, cacheStore: null })
+  );
+
+  assert.equal(response.status, 200);
+  const body = await response.json();
+  assert.equal(body.data.modules[0].manufacturer_id, 10);
+  assert.equal(provider.calls[0].method, 'getManufacturer');
+
+  const rejectedListInclude = await handlePublicApiRequest(
+    authenticatedRequest('GET', 'https://api.patcher.xyz/v1/manufacturers?include=modules'),
+    { API_KEY_PEPPER: pepper },
+    createWorkerRuntime({ catalogueProvider: new FakeCatalogueProvider(), cacheStore: null })
+  );
+  assert.equal(rejectedListInclude.status, 400);
+  assert.equal((await rejectedListInclude.json()).error.code, 'unknown_parameter');
+});
+
+test('detail zero and missing rows return 404 only after auth and quota', async () => {
+  const quotaNamespace = new FakeQuotaNamespace();
+  const zero = await handlePublicApiRequest(
+    authenticatedRequest('GET', 'https://api.patcher.xyz/v1/modules/0'),
+    { API_KEY_PEPPER: pepper },
+    createWorkerRuntime({ quotaNamespace, catalogueProvider: new FakeCatalogueProvider() })
+  );
+  assert.equal(zero.status, 404);
+  assert.equal(quotaNamespace.stub.requests.length, 1);
+
+  const missing = await handlePublicApiRequest(
+    authenticatedRequest('GET', 'https://api.patcher.xyz/v1/manufacturers/999'),
+    { API_KEY_PEPPER: pepper },
+    createWorkerRuntime({ catalogueProvider: new FakeCatalogueProvider(), cacheStore: null })
+  );
+  assert.equal(missing.status, 404);
+  assert.equal((await missing.json()).error.code, 'not_found');
+});
+
+test('shared cache is auth-independent while auth and quota run per request', async () => {
+  const metadataProvider = new FakeMetadataProvider([keyMetadata, keyMetadata2]);
+  const quotaNamespace = new FakeQuotaNamespace();
+  const cacheStore = new MemoryCacheStore();
+  const catalogueProvider = new FakeCatalogueProvider();
+  const runtime = createWorkerRuntime({
+    metadataProvider,
+    quotaNamespace,
+    catalogueProvider,
+    cacheStore,
+  });
+
+  const first = await handlePublicApiRequest(
+    authenticatedRequest('GET', 'https://api.patcher.xyz/v1/modules', rawKey),
+    { API_KEY_PEPPER: pepper },
+    runtime
+  );
+  const second = await handlePublicApiRequest(
+    authenticatedRequest('GET', 'https://api.patcher.xyz/v1/modules', rawKey2),
+    { API_KEY_PEPPER: pepper },
+    runtime
+  );
+
+  assert.equal(first.headers.get('x-cache'), 'MISS');
+  assert.equal(second.headers.get('x-cache'), 'HIT');
+  assert.equal(metadataProvider.calls.length, 2);
+  assert.deepEqual(quotaNamespace.names, [keyMetadata.id, keyMetadata2.id]);
+  assert.equal(catalogueProvider.calls.length, 1);
+  const stored = [...cacheStore.entries.values()][0];
+  assert.equal(stored.headers.get('x-request-id'), null);
+  assert.equal(stored.headers.get('x-ratelimit-remaining-month'), null);
+  assert.equal(stored.headers.get('authorization'), null);
+});
+
+test('ETag, 304, HEAD, and canonical cache keys are deterministic', async () => {
+  const cacheStore = new MemoryCacheStore();
+  const provider = new FakeCatalogueProvider();
+  const runtime = createWorkerRuntime({ catalogueProvider: provider, cacheStore });
+  const env = { API_KEY_PEPPER: pepper };
+  const first = await handlePublicApiRequest(authenticatedRequest(), env, runtime);
+  const etag = first.headers.get('etag');
+  const second = await handlePublicApiRequest(
+    authenticatedRequest('GET', 'https://api.patcher.xyz/v1/modules', rawKey, { 'If-None-Match': etag }),
+    env,
+    runtime
+  );
+  const head = await handlePublicApiRequest(
+    authenticatedRequest('HEAD', 'https://api.patcher.xyz/v1/modules'),
+    env,
+    runtime
+  );
+
+  assert.equal(second.status, 304);
+  assert.equal(await second.text(), '');
+  assert.equal(second.headers.get('etag'), etag);
+  assert.equal(second.headers.get('x-ratelimit-remaining-minute'), '59');
+  assert.equal(head.status, 200);
+  assert.equal(await head.text(), '');
+  assert.equal(head.headers.get('etag'), etag);
+
+  const limitOne = await handlePublicApiRequest(
+    authenticatedRequest('GET', 'https://api.patcher.xyz/v1/modules?limit=1'),
+    env,
+    createWorkerRuntime({ catalogueProvider: new FakeCatalogueProvider(), cacheStore: new MemoryCacheStore() })
+  );
+  const limitTwo = await handlePublicApiRequest(
+    authenticatedRequest('GET', 'https://api.patcher.xyz/v1/modules?limit=2'),
+    env,
+    createWorkerRuntime({ catalogueProvider: new FakeCatalogueProvider(), cacheStore: new MemoryCacheStore() })
+  );
+  assert.notEqual(limitOne.headers.get('etag'), limitTwo.headers.get('etag'));
+});
+
+test('stale cache entries serve immediately and schedule one refresh', async () => {
+  let nowMs = 0;
+  const cacheStore = new MemoryCacheStore();
+  const provider = new FakeCatalogueProvider();
+  const scheduled = [];
+  const runtime = createWorkerRuntime({
+    catalogueProvider: provider,
+    cacheStore,
+    clock: () => nowMs,
+    scheduler: promise => scheduled.push(promise),
+  });
+  const env = { API_KEY_PEPPER: pepper };
+
+  assert.equal((await handlePublicApiRequest(authenticatedRequest(), env, runtime)).headers.get('x-cache'), 'MISS');
+  provider.modules = [{ ...moduleOne, name: 'Gamma VCO' }];
+  nowMs = 3_600_001;
+  const stale = await handlePublicApiRequest(authenticatedRequest(), env, runtime);
+  assert.equal(stale.headers.get('x-cache'), 'STALE');
+  assert.equal(scheduled.length, 1);
+  await scheduled[0];
+
+  const refreshed = await handlePublicApiRequest(authenticatedRequest(), env, runtime);
+  assert.equal(refreshed.headers.get('x-cache'), 'HIT');
+  assert.equal((await refreshed.json()).data[0].name, 'Gamma VCO');
+});
+
+test('cache failures fall through and origin failures return stable 503', async () => {
+  const logs = [];
+  const cacheFailure = await handlePublicApiRequest(
+    authenticatedRequest(),
+    { API_KEY_PEPPER: pepper },
+    createWorkerRuntime({
+      catalogueProvider: new FakeCatalogueProvider(),
+      cacheStore: new ThrowingCacheStore(),
+      logger: { error: line => logs.push(JSON.parse(line)) },
+    })
+  );
+  assert.equal(cacheFailure.status, 200);
+  assert.equal(cacheFailure.headers.get('x-cache'), 'MISS');
+  assert.deepEqual(logs.map(log => log.event), [
+    'public_api_cache_match_failed',
+    'public_api_cache_put_failed',
+  ]);
+
+  const originFailure = await handlePublicApiRequest(
+    authenticatedRequest(),
+    { API_KEY_PEPPER: pepper },
+    createWorkerRuntime({
+      catalogueProvider: new FakeCatalogueProvider({ fail: true }),
+      cacheStore: null,
+      logger: { error: line => logs.push(JSON.parse(line)) },
+    })
+  );
+  assert.equal(originFailure.status, 503);
+  assert.equal((await originFailure.json()).error.code, 'origin_unavailable');
+});
+
+test('OpenAPI documents the implemented public catalogue routes and schemas', () => {
+  const spec = readFileSync('cloudflare/public-api/openapi.yaml', 'utf8');
+  for (const path of [
+    '/modules:',
+    '/modules/{id}:',
+    '/manufacturers:',
+    '/manufacturers/{id}:',
+    '/standards:',
+    '/tags:',
+  ]) {
+    assert.ok(spec.includes(`  ${path}`), `${path} missing`);
+  }
+  for (const operationId of [
+    'listModules',
+    'getModule',
+    'listManufacturers',
+    'getManufacturer',
+    'listStandards',
+    'listTags',
+  ]) {
+    assert.ok(spec.includes(`operationId: ${operationId}`), `${operationId} missing`);
+  }
+  for (const schema of [
+    'ModuleListResponse',
+    'ModuleDetailResponse',
+    'ManufacturerListResponse',
+    'ManufacturerDetailResponse',
+    'StandardListResponse',
+    'TagListResponse',
+    'unsupported_parameter',
+    '304',
+    '503',
+  ]) {
+    assert.ok(spec.includes(schema), `${schema} missing`);
+  }
+  assert.match(spec, /Reserved for future trigram search[\s\S]+unsupported_parameter/);
 });
 
 test('Durable Object persists exact counts across class instances sharing storage', async () => {
@@ -573,10 +978,15 @@ function fixedClock(isoTimestamp) {
   return () => new Date(isoTimestamp);
 }
 
-function authenticatedRequest(method = 'GET') {
-  return new Request('https://api.patcher.xyz/v1/modules', {
+function authenticatedRequest(
+  method = 'GET',
+  url = 'https://api.patcher.xyz/v1/modules',
+  key = rawKey,
+  headers = {}
+) {
+  return new Request(url, {
     method,
-    headers: { Authorization: `Bearer ${rawKey}` },
+    headers: { Authorization: `Bearer ${key}`, ...headers },
   });
 }
 
@@ -585,8 +995,209 @@ function createWorkerRuntime({
   quotaNamespace = new FakeQuotaNamespace(),
   metadataCache = new ApiKeyMetadataCache(1000, 60_000),
   clock = () => 0,
+  catalogueProvider,
+  cacheStore,
+  scheduler,
+  logger = { error: () => undefined },
 } = {}) {
-  return { metadataProvider, quotaNamespace, metadataCache, clock };
+  return {
+    metadataProvider,
+    quotaNamespace,
+    metadataCache,
+    clock,
+    catalogueProvider,
+    cacheStore,
+    scheduler,
+    logger,
+  };
+}
+
+class FakeCatalogueProvider {
+  constructor({ fail = false } = {}) {
+    this.fail = fail;
+    this.modules = [moduleOne, moduleTwo];
+    this.manufacturers = [manufacturerOne];
+    this.standards = [standardOne];
+    this.tags = [tagOne];
+    this.calls = [];
+  }
+
+  async listModules(options) {
+    this.record('listModules', options);
+    const filtered = this.modules
+      .filter(module => options.filters.manufacturerId === null
+        || module.manufacturer_id === options.filters.manufacturerId)
+      .filter(module => options.filters.hp === null || module.hp === options.filters.hp)
+      .filter(module => options.filters.standard === null
+        || module.standard === options.filters.standard)
+      .filter(() => options.filters.tag === null || options.filters.tag === tagOne.id);
+    return pageWithIncludes(filtered, options);
+  }
+
+  async getModule(id, options) {
+    this.record('getModule', options);
+    const module = this.modules.find(item => item.id === id);
+    return module ? moduleWithIncludes(applyFields(module, options.fields), options.include) : null;
+  }
+
+  async listManufacturers(options) {
+    this.record('listManufacturers', options);
+    return pageItems(this.manufacturers, options);
+  }
+
+  async getManufacturer(id, options) {
+    this.record('getManufacturer', options);
+    const manufacturer = this.manufacturers.find(item => item.id === id);
+    if (!manufacturer) {
+      return null;
+    }
+    const result = applyFields(manufacturer, options.fields);
+    if (options.includeModules) {
+      result.modules = this.modules.filter(module => module.manufacturer_id === id);
+    }
+    return result;
+  }
+
+  async listStandards(options) {
+    this.record('listStandards', options);
+    return pageItems(this.standards, options);
+  }
+
+  async listTags(options) {
+    this.record('listTags', options);
+    return pageItems(this.tags, options);
+  }
+
+  record(method, options) {
+    if (this.fail) {
+      throw new Error('simulated catalogue outage');
+    }
+    this.calls.push({ method, options: structuredClone(options) });
+  }
+}
+
+class MemoryCacheStore {
+  constructor() {
+    this.entries = new Map();
+  }
+
+  async match(request) {
+    const response = this.entries.get(request.url);
+    return response ? response.clone() : undefined;
+  }
+
+  async put(request, response) {
+    this.entries.set(request.url, response.clone());
+  }
+}
+
+class ThrowingCacheStore {
+  async match() {
+    throw new Error('simulated cache match failure');
+  }
+
+  async put() {
+    throw new Error('simulated cache put failure');
+  }
+}
+
+function pageWithIncludes(modules, options) {
+  const page = pageItems(modules, options);
+  return {
+    ...page,
+    data: page.data.map(module => moduleWithIncludes(module, options.include)),
+  };
+}
+
+function moduleWithIncludes(module, include) {
+  const result = { ...module };
+  if (include.includes('ins')) {
+    result.ins = [{ id: 100, name: 'Pitch', is_audio: false, is_dcc: false, is_voct: true, min: -5, max: 5 }];
+  }
+  if (include.includes('outs')) {
+    result.outs = [{ id: 200, name: 'Audio', is_audio: true, is_dcc: false, is_voct: false, min: -10, max: 10 }];
+  }
+  if (include.includes('panels')) {
+    result.panels = [{ id: 300, color: 'silver', description: 'Aluminum' }];
+  }
+  if (include.includes('tags')) {
+    result.tags = [tagOne];
+  }
+  return result;
+}
+
+function pageItems(items, options) {
+  const sorted = [...items].sort((left, right) => {
+    if (options.sort === 'id') {
+      return left.id - right.id;
+    }
+    return left.name.localeCompare(right.name) || left.id - right.id;
+  });
+  const afterCursor = options.cursor
+    ? sorted.filter(item => afterItemCursor(item, options.cursor, options.sort))
+    : sorted;
+  const data = afterCursor.slice(0, options.limit).map(item => applyFields(item, options.fields));
+  return {
+    data,
+    page: {
+      next_cursor: afterCursor.length > options.limit && data.length > 0
+        ? encodeCursor(data[data.length - 1], options.sort)
+        : null,
+    },
+  };
+}
+
+function afterItemCursor(item, cursor, sort) {
+  if (sort === 'id') {
+    return item.id > cursor.id;
+  }
+  return item.name > cursor.s || (item.name === cursor.s && item.id > cursor.id);
+}
+
+function applyFields(item, fields) {
+  if (!fields) {
+    return { ...item };
+  }
+  const keep = new Set(['id', ...fields]);
+  return Object.fromEntries(Object.entries(item).filter(([key]) => keep.has(key)));
+}
+
+function encodeCursor(item, sort) {
+  return Buffer.from(JSON.stringify({
+    v: 1,
+    s: sort === 'id' ? item.id : item.name,
+    id: item.id,
+  })).toString('base64url');
+}
+
+function createCatalogueSql() {
+  const calls = [];
+  const sql = (strings, ...values) => {
+    const text = strings.join('?');
+    calls.push({ text, values });
+    if (text.includes('from public.api_v1_modules m')) {
+      return Promise.resolve([moduleOne, moduleTwo]);
+    }
+    if (text.includes('from public.api_v1_module_ins')) {
+      return Promise.resolve([{
+        id: 100,
+        moduleid: 1,
+        name: 'Pitch',
+        is_audio: false,
+        is_dcc: false,
+        is_voct: true,
+        min: -5,
+        max: 5,
+      }]);
+    }
+    if (text.includes('from public.api_v1_module_tags')) {
+      return Promise.resolve([{ moduleid: 1, ...tagOne }]);
+    }
+    return Promise.resolve([]);
+  };
+  sql.array = (values, type) => ({ values, type });
+  sql.calls = calls;
+  return sql;
 }
 
 class FakeMetadataProvider {
