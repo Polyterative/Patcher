@@ -364,23 +364,27 @@ keep working via a temporary Worker alias (Polish). No parallel route.
     focused Node tests.
   - [ ] Gated integration: key metadata LRU + `verify_api_key`, Durable Object
     persistence/alarm, Hyperdrive query catalog, Cache API serving.
-- [ ] Migrations (contingent on Approvals-ledger gate 1 — backend re-review):
-  - `…_api_reader_role.sql` — idempotently create `api_view_owner NOLOGIN` and
-    `api_reader NOLOGIN`, then grant schema usage. No base-table grants to
-    `api_reader`; no password appears in git. After migration, an approved
-    runbook step executed as `postgres` generates a random credential, changes
-    `api_reader` to LOGIN, and enters the same credential directly into the
-    Hyperdrive upstream configuration.
-  - `…_api_v1_views.sql` — every `api_v1_*` view owned by `api_view_owner`,
-    `WITH (security_barrier = on)`, exposure predicates + column whitelist,
-    exact column-level base grants above to `api_view_owner`, additive
-    `api_view_owner` SELECT policies on the two RLS tables, no RLS changes on
-    ancillary tables, `GRANT SELECT … TO api_reader`, partial/FK indexes; each
-    view carries a `COMMENT ON VIEW` documenting the accepted
-    `security_definer_view` advisor.
-  - `…_api_identity.sql` — `api_tiers` + seed, `api_keys` + RLS,
-    `api_key_usage_monthly`, RPCs `create_api_key`, `create_partner_api_key`,
-    `revoke_api_key`, `verify_api_key`, `record_api_key_usage` with grants.
+- [x] Local-only migrations authored and statically validated; remote apply,
+  reader LOGIN credential, Vault pepper creation, and Cloudflare provisioning remain
+  separately gated:
+  - `20260724133100_api_reader_roles.sql` — idempotently creates
+    `api_view_owner NOLOGIN` and `api_reader NOLOGIN`, then grants only
+    `public` schema usage. No base-table grants to `api_reader`; no password or
+    LOGIN appears in git. A separately approved runbook step would have to
+    provision any runtime credential outside migrations.
+  - `20260724133200_api_identity.sql` — creates `api_tiers` + idempotent
+    `free`/`partner` seed, `api_keys` + owner/JWT-admin SELECT-only RLS,
+    `api_key_usage_monthly`, private Vault-pepper mint helper, and RPCs
+    `create_api_key`, `create_partner_api_key`, `revoke_api_key`,
+    `verify_api_key`, `record_api_key_usage` with explicit revoke-then-grant
+    EXECUTE hygiene.
+  - `20260724133300_api_v1_views.sql` — every `api_v1_*` view is owned by
+    `api_view_owner`, `WITH (security_barrier = on)`, uses the reviewed
+    exposure predicates + output allowlists, grants only exact base columns to
+    `api_view_owner`, adds permissive `api_view_owner` SELECT policies on the
+    existing RLS-enabled `modules` and `manufacturers`, leaves ancillary table
+    RLS untouched, grants view SELECT to `api_reader`, adds partial/FK indexes,
+    and comments the accepted `security_definer_view` pattern.
   - Optional `…_pg_trgm_search.sql` — gated separately; if denied, MVP
     returns `400 unsupported_parameter` for `?q=`.
 - [ ] Cloudflare (contingent gates): DNS `api.patcher.xyz`; Worker route +
@@ -486,6 +490,26 @@ keep working via a temporary Worker alias (Polish). No parallel route.
   `pnpm lint`, targeted specs for the Developer panel,
   `node scripts/checks/check-docs.cjs`.
 
+### Local migration chunk validation notes
+
+- 2026-07-24T13:45+02:00 — Added focused static contract coverage in
+  `scripts/tests/public-open-api-migrations.test.cjs` plus package script
+  `test:functions:public-open-api-migrations`, included in the
+  `test:functions` aggregate. The test asserts the three migration filenames
+  and order; absence of LOGIN/password/remote secret creation; RLS/RPC grant
+  hygiene; actual identifier use (`"public"`, `"isApproved"`,
+  `"manufacturerId"`, `submitter`, `moduleid`); output exclusions including
+  panel file fields; no ancillary-table RLS enabling; `api_reader` raw-table
+  denial represented by base-table revokes + view-only grants; and local-only
+  infrastructure scope.
+- 2026-07-24T13:45+02:00 — Docker/local migration application was not run:
+  this checkout has migrations but no `supabase/config.toml` and no established
+  safe isolated migration-apply script. To avoid resetting or interfering with
+  a user's linked/running Supabase instance, validation stayed on static
+  contract tests and repo checks. Remote apply, `pnpm updateBackendTypes`, and
+  Supabase advisors remain gated until an approved isolated/remote target
+  exists.
+
 ## Decision log
 
 - 2026-07-24T10:45+02:00 — Intake created. Cloudflare Worker gateway recommended
@@ -589,6 +613,23 @@ keep working via a temporary Worker alias (Polish). No parallel route.
   validation of the three reviewed migrations only. Remote apply, reader LOGIN
   credential, Vault secret creation, remote type generation, and Cloudflare
   provisioning remain explicitly unapproved.
+- 2026-07-24T13:45+02:00 — Local-only backend migration chunk authored as the
+  three reviewed migrations, in role → identity → views order. Identity uses a
+  private mint helper to avoid duplicating Vault/HMAC logic; the helper has no
+  caller grants, while public RPCs revoke `PUBLIC`/`anon`/`authenticated` first
+  and then grant only `authenticated`, `service_role`, or `api_reader` per the
+  reviewed contract. View ownership uses `api_view_owner` +
+  `security_barrier=on` with accepted `security_definer_view` comments, and
+  `api_reader` receives view/RPC access only. No remote Supabase, Vault,
+  credential, DNS, Hyperdrive, Durable Object, WAF, pg_trgm, or Cloudflare work
+  was performed.
+- 2026-07-24T14:00+02:00 — Post-implementation reviewer verdict APPROVE WITH
+  CHANGES. Added an explicit unauthenticated guard to `revoke_api_key` (avoids
+  SQL NULL comparison bypass) and changed tier seed replay to
+  `ON CONFLICT DO NOTHING` so operator-tuned quotas are never overwritten.
+  `verify_api_key` remains an intentional digest oracle available only to the
+  private `api_reader` credential; the public Worker never exposes arbitrary
+  digest lookup and still applies authentication/quotas at its boundary.
 
 ## Resolved refinement decisions (locked)
 
