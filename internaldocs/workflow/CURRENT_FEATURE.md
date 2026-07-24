@@ -17,11 +17,23 @@
 
 ## Active
 
-_No active feature._
+### Public Open API — plan: [plans/public-open-api.md](./plans/public-open-api.md)
 
-Status: No active feature. Pick the next safe task from [TODO.md](./TODO.md) or the
-fallback work queue in [`../agents/coordinator-loop.md`](../agents/coordinator-loop.md).
-Updated: 2026-07-22
+#### Layer 1 — MVP
+
+- [~] Complete product refinement and backend plan review.
+- [ ] Build the key-required, origin-protected modules/manufacturers API.
+
+#### Layer 2 — Structural
+
+- [ ] Add User Area key self-service, usage reporting, and key-required bulk JSONL export.
+
+#### Layer 3 — Polish
+
+- [ ] Add contract lifecycle/DX polish, then public patch and rack endpoints.
+
+Status: Active — refinement complete; backend plan review is the next gate.
+Updated: 2026-07-24
 
 Recent completed checkpoints are archived in [COMPLETED.md](./COMPLETED.md); their validation
 notes and decisions live in the matching plan files (e.g.

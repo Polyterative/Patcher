@@ -4,10 +4,10 @@
 
 ## Status
 
-- [ ] Backlog — researched intake plan; no implementation started.
+- [~] Active — refinement complete; backend plan review required before implementation.
 - Priority: **HIGH**
-- Depends on: nothing hard for the MVP layer (anonymous read-only). API-key self-service depends on the
-  existing User Area auth. Coordinates with
+- Depends on: the existing User Area auth for self-service key management; manual key provisioning can
+  support MVP preview validation before that UI ships. Coordinates with
   [`manufacturer-api-widgets-pilot.md`](./manufacturer-api-widgets-pilot.md) (its cacheable widget
   endpoint should become a consumer of this API, not a parallel stack).
 
@@ -23,9 +23,9 @@ keep such consumption from burning Supabase/Vercel quotas if it happened anyway.
 ## Goal
 
 One sentence: ship a public, versioned, **read-only** REST API at `api.patcher.xyz` exposing the
-modules and manufacturers catalogue (public patches/racks as a second objective), with self-service
-API keys, monthly quotas, and edge caching aggressive enough that origin (Supabase) load stays near
-zero regardless of traffic.
+modules and manufacturers catalogue (public patches/racks as a second objective), with mandatory
+self-service API keys, monthly quotas, and edge caching aggressive enough that origin (Supabase)
+load stays near zero regardless of traffic.
 
 ## Proposed architecture (decision matrix inside)
 
@@ -55,9 +55,8 @@ zero regardless of traffic.
 - **API keys**: `api_keys` table in Supabase (`id`, `profile_id`, `key_prefix` visible, `key_hash`
   SHA-256, `tier`, `monthly_quota`, `created_at`, `revoked_at`). Raw key shown once at creation
   (`pk_live_<nanoid>` style). Self-service create/revoke in the User Area.
-- **Tiers** (numbers to confirm — see Open questions):
-  - `anonymous` (no key): very low IP-based rate limit (e.g. 60 req/h) so `curl` try-outs work;
-  - `free` (registered key): e.g. 10k req/month, 60 req/min burst;
+- **Tiers**:
+  - `free` (registered key): 5k req/month, 60 req/min burst;
   - `partner` (manual grant): higher, for manufacturers/tools — dovetails with
     Manufacturer Accounts & Verification.
 - **Enforcement**: per-minute rate limit via Cloudflare rate-limiting rules / Worker counters; monthly
@@ -70,8 +69,8 @@ zero regardless of traffic.
 
 ### API shape (v1)
 
-- Base: `https://api.patcher.xyz/v1/`; JSON only; CORS `*` for reads; OpenAPI 3.1 document published and
-  used to generate docs.
+- Base: `https://api.patcher.xyz/v1/`; JSON only; CORS `*` for reads; API key required on every data
+  endpoint; OpenAPI 3.1 document published and used to generate docs.
 - Endpoints (MVP): `GET /v1/modules`, `GET /v1/modules/{id}`, `GET /v1/manufacturers`,
   `GET /v1/manufacturers/{id}`, `GET /v1/standards`, `GET /v1/tags`.
 - Conventions: cursor pagination (`?cursor=&limit=`, max 100); filters (`?manufacturer_id=`, `?hp=`,
@@ -81,6 +80,8 @@ zero regardless of traffic.
   `src/app/features/manufacturer-detail/manufacturer-widget-contract.utils.ts` (fail-closed: private or
   non-explicitly-public data is impossible to serialize). Canonical Patcher URLs included per entity
   for the attribution ask in `ai-and-open-data.md`.
+- Panel image URLs are excluded from v1. Pricing and `module_store_listings` are deferred until after
+  the core catalogue and bulk export are stable.
 - v2 (second objective): `GET /v1/patches/{public_id}`, `GET /v1/racks/{public_id}` and public-only list
   endpoints, reusing the opaque `public_id` + SECURITY DEFINER RPC pattern (`ARCHITECTURE.md`); private
   items are never listed and never resolvable without their token.
@@ -96,37 +97,39 @@ zero regardless of traffic.
 
 ## Assumptions (explicit)
 
-- Cloudflare manages (or can manage) DNS for `patcher.xyz` so `api.` can bind to a Worker — to confirm.
+- Cloudflare manages DNS for `patcher.xyz`, so `api.` can bind directly to a Worker.
 - Module and manufacturer catalogue data is public-by-design in its entirety once whitelisted per field.
-- Quota numbers are product decisions, not engineering ones; placeholders above ship only after owner
-  confirmation.
+- Catalogue data is published under CC BY 4.0 with a clear Patcher attribution requirement.
 - The widgets-pilot endpoint (structural layer of that plan) should be re-based onto this API once live.
 
-## MVP layer (anonymous read-only API, origin-protected)
+## MVP layer (key-required read-only API, origin-protected)
 
 - [ ] Create `api/` Worker workspace (mirroring `cloudflare/image-proxy` conventions): router, error
   envelope, `X-RateLimit-*`/`Retry-After` handling, JSON logging.
 - [ ] Define `api_v1_modules` / `api_v1_manufacturers` (+ `standards`, `tags`) SQL views with explicit
   field whitelists (schema change — backend-plan-reviewer + owner approval gate).
 - [ ] Create restricted Postgres role/key for the Worker (approval gate; never service-role).
+- [ ] Add the minimal `api_keys` persistence/RLS contract needed for `free` and `partner` keys, with
+  manual provisioning for preview validation (backend-plan-reviewer + owner approval gates).
 - [ ] Implement the six MVP endpoints with cursor pagination, filters, includes; edge cache + SWR + ETag.
-- [ ] Anonymous IP rate limiting via Cloudflare rules.
+- [ ] Require a valid API key on every data endpoint; enforce 5k requests/month and 60 requests/minute
+  for `free`, with configurable higher limits for manually granted `partner` keys.
 - [ ] OpenAPI 3.1 spec committed in-repo; CI check that spec and router stay in sync.
 - [ ] Publish minimal developer docs page (endpoints, limits, attribution policy) linked from
   `Patcher-docs` `the-project/ai-and-open-data.md` and `llms.txt`.
 
-## Structural layer (keys, quotas, usage)
+## Structural layer (self-service keys, usage, bulk export)
 
-- [ ] `api_keys` migration + RLS (owner-only) + typegen (backend-plan-reviewer + approval gates).
 - [ ] User Area "Developer" panel: create/revoke key, show prefix, copy-once raw key, usage this month.
-- [ ] Worker key validation (hash lookup, KV-cached), tier resolution, monthly quota counters in KV,
-  periodic usage flush to Supabase.
-- [ ] Tier limits config + `429` behavior + docs.
-- [ ] Bulk dataset export job (modules+manufacturers JSONL to R2) + `GET /v1/datasets` index.
+- [ ] Replace manual preview provisioning with self-service key creation/revocation and complete
+  owner-only RLS/typegen/backend wiring.
+- [ ] Periodically flush KV usage counters to Supabase for the User Area usage display.
+- [ ] Bulk dataset export job (modules+manufacturers JSONL to R2) + key-required
+  `GET /v1/datasets` index and downloads.
 
 ## Polish layer (second objective + DX)
 
-- [ ] Public patches/racks endpoints via `public_id` pattern (v2 contract review first).
+- [ ] Public patches/racks endpoints via `public_id` pattern after bulk export (v2 contract review first).
 - [ ] Field stability & deprecation policy published (extend the one in
   `manufacturer-api-widgets-pilot.md` to the whole API); API changelog page.
 - [ ] TypeScript client / typed SDK generated from OpenAPI (optional, on demand).
@@ -147,7 +150,8 @@ zero regardless of traffic.
 - [ ] All v1 endpoints answer from edge cache with ≥95% hit ratio under synthetic load; origin query
   rate stays bounded regardless of request volume.
 - [ ] No non-whitelisted field can be serialized (view-level guarantee + contract tests).
-- [ ] Anonymous, free, and partner tiers enforce their limits; exceeding returns `429` + `Retry-After`.
+- [ ] Every data endpoint and bulk download rejects missing/invalid keys; free and partner tiers enforce
+  their limits; exceeding returns `429` + `Retry-After`.
 - [ ] A revoked key stops working within one cache-TTL window (≤5 min).
 - [ ] OpenAPI spec validates and matches deployed routes in CI.
 - [ ] Private/user-level data unreachable by construction (restricted role + views only).
@@ -165,31 +169,22 @@ zero regardless of traffic.
 - **Approval needed:** DNS/route binding for `api.patcher.xyz` on Cloudflare.
 - **Approval needed:** `api_v1_*` views + restricted role migration (backend-plan-reviewer first).
 - **Approval needed:** `api_keys` schema + RLS + typegen (backend-plan-reviewer first).
-- **Approval needed:** quota/tier numbers and licensing/attribution wording before public launch.
+- **Approval needed:** final licensing/attribution wording before public launch (licence selected:
+  CC BY 4.0).
 - Standing constraint: RLS/policy changes never applied autonomously (`AGENTS.md` §5).
 
-## Open questions for the product owner (refinement round)
+## Resolved refinement decisions
 
-1. **DNS/Worker binding** — is `patcher.xyz` DNS on Cloudflare today, and is `api.patcher.xyz` the
-   desired hostname (vs `patcher.xyz/api/v1`)?
-2. **Anonymous tier** — allow limited keyless access (recommended for DX, e.g. 60 req/h/IP) or require
-   a key for everything?
-3. **Quota numbers** — confirm free-tier monthly quota and burst rate (proposal: 10k req/month,
-   60 req/min).
-4. **Panel images** — should the API return direct image URLs (Cloudflare image-proxy/R2), and do we
-   allow hotlinking or require clients to copy assets?
-5. **Pricing data** — are `module_store_listings` / price snapshots in scope for v1, later, or never
-   (affiliate/ToS considerations)?
-6. **Data licence** — what licence do we declare on the catalogue (e.g. CC BY 4.0 with attribution,
-   ODbL, custom terms)? This gates the bulk export.
-7. **Bulk export access** — free anonymous download, or key-required (still free) so we can measure and
-   contact consumers?
-8. **Key registration surface** — User Area panel only (Patcher account required — recommended), or a
-   separate lightweight developer-portal signup?
-9. **Future monetization** — should tier design reserve a paid tier now (naming, quotas, key prefixes),
-   even though billing is out of scope?
-10. **v2 priority** — after modules/manufacturers ship, do public patches/racks outrank the bulk
-    dataset export, or vice versa?
+1. `patcher.xyz` uses Cloudflare nameservers; bind the Worker at `api.patcher.xyz`.
+2. API keys are mandatory for every data endpoint; there is no anonymous tier.
+3. The free tier allows 5k requests/month and 60 requests/minute.
+4. Panel image URLs are excluded from v1.
+5. Pricing and store listings are deferred until after v1.
+6. Catalogue data uses CC BY 4.0 with attribution.
+7. Bulk exports remain free but require an API key.
+8. API keys are created in the existing User Area; no separate developer portal.
+9. Only `free` and `partner` tiers are modelled; no reserved paid tier.
+10. Bulk JSONL export precedes public patch/rack endpoints.
 
 ## Decision log
 
@@ -201,3 +196,10 @@ zero regardless of traffic.
 - 2026-07-24T10:45+02:00 — Coordination decision: `manufacturer-api-widgets-pilot` structural endpoint
   should be served by this API once live instead of a parallel one-off route; its field whitelist and
   stability policy are reused as the v1 contract baseline.
+- 2026-07-24T11:15+02:00 — Product refinement completed. Public DNS is confirmed on Cloudflare and the
+  hostname is `api.patcher.xyz`. All data endpoints require keys; tiers are `free` (5k/month,
+  60/minute) and manually granted `partner`, with no anonymous or reserved paid tier. Panel images are
+  excluded from v1; prices/store listings follow later. Data licence is CC BY 4.0. User Area owns key
+  registration. Key-required JSONL bulk export is prioritized before public patch/rack endpoints.
+  Because keyless access was rejected, minimal key persistence, validation, and quota enforcement move
+  into MVP; self-service management and usage display remain Structural.
