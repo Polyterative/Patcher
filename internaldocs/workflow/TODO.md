@@ -55,6 +55,10 @@
   (`backend-plan-reviewer`: APPROVE WITH CHANGES). Schema/RLS, role credentials,
   DNS, Hyperdrive, Durable Objects, Vault, WAF, and remote applies remain
   separately gated below.
+- Public Open API backend: authoring and Docker/local validation of the three
+  reviewed migrations (roles, views/RLS, identity/RPCs) is approved. No remote
+  apply, LOGIN credential, Vault secret, type generation against remote, or
+  Cloudflare provisioning is authorized.
 
 ### Pending questions (owner: answer inline, agents move resolved lines)
 
@@ -84,8 +88,8 @@
     incident procedure.
   - [ ] Coarse WAF/IP abuse rules as an outer,
     non-tier-specific shield.
-  - [ ] Apply the **three** consolidated migrations
-    after re-review passes: `api_reader_role.sql`, `api_v1_views.sql`,
+  - [ ] Apply the **three** consolidated migrations remotely after local
+    authoring/validation: `api_reader_role.sql`, `api_v1_views.sql`,
     `api_identity.sql` (includes `api_tiers` seed, `api_keys` + RLS,
     `api_key_usage_monthly`, RPCs `create_api_key`, `create_partner_api_key`,
     `revoke_api_key`, `verify_api_key`, `record_api_key_usage`). RLS on
