@@ -1,4 +1,10 @@
+import {
+  createHyperdriveApiUsageReporter,
+  type ApiUsageReporter,
+  type HyperdriveBinding,
+} from './database.ts';
 import { consumeQuota, type QuotaLimits, type QuotaState } from './quota.ts';
+import { allowedResponse, blockedResponse } from './quota-response.ts';
 
 interface DurableObjectStateLike {
   storage: DurableObjectStorageLike;
@@ -19,12 +25,8 @@ interface DurableObjectTransactionLike {
   delete(key: string): Promise<boolean>;
 }
 
-export interface ApiUsageReporter {
-  recordApiKeyUsage(keyId: string, monthStart: string, usedMonth: number): Promise<void>;
-}
-
 export interface PublicApiQuotaEnv {
-  API_USAGE_REPORTER?: ApiUsageReporter;
+  HYPERDRIVE?: HyperdriveBinding;
 }
 
 export interface ApiKeyCounterTestOptions {
@@ -195,7 +197,8 @@ export class ApiKeyCounter {
       return true;
     }
 
-    const reporter = this.reporter ?? this.env.API_USAGE_REPORTER;
+    const reporter = this.reporter
+      ?? (this.env.HYPERDRIVE ? createHyperdriveApiUsageReporter(this.env.HYPERDRIVE) : undefined);
     if (!reporter) {
       await this.recordFlushFailure(trigger, dueReports, new Error('usage reporter binding is not configured'));
       return false;
@@ -342,42 +345,6 @@ async function parseConsumePayload(request: Request): Promise<ParsedConsumePaylo
   };
 }
 
-function allowedResponse(
-  result: Extract<ReturnType<typeof consumeQuota>, { allowed: true }>,
-  limits: QuotaLimits
-): Response {
-  return jsonResponse(200, {
-    allowed: true,
-    limits: { monthly: limits.monthly, per_minute: limits.perMinute },
-    remaining: {
-      month: result.remainingMonth,
-      minute: result.remainingMinute,
-    },
-    windows: windowMetadata(result.state, limits),
-  }, quotaHeaders(result.state, limits, result.remainingMonth, result.remainingMinute));
-}
-
-function blockedResponse(
-  result: Extract<ReturnType<typeof consumeQuota>, { allowed: false }>,
-  limits: QuotaLimits
-): Response {
-  const remainingMonth = Math.max(0, limits.monthly - result.state.usedMonth);
-  const remainingMinute = Math.max(0, limits.perMinute - result.state.usedMinute);
-  return jsonResponse(429, {
-    allowed: false,
-    reason: result.window === 'minute'
-      ? 'per_minute_quota_exceeded'
-      : 'monthly_quota_exceeded',
-    window: result.window,
-    retry_after_seconds: result.retryAfterSeconds,
-    limits: { monthly: limits.monthly, per_minute: limits.perMinute },
-    windows: windowMetadata(result.state, limits),
-  }, {
-    ...quotaHeaders(result.state, limits, remainingMonth, remainingMinute),
-    'Retry-After': String(result.retryAfterSeconds),
-  });
-}
-
 function jsonResponse(status: number, body: unknown, headers: HeadersInit = {}): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -388,38 +355,6 @@ function jsonResponse(status: number, body: unknown, headers: HeadersInit = {}):
       'X-Content-Type-Options': 'nosniff',
     },
   });
-}
-
-function quotaHeaders(
-  state: QuotaState,
-  limits: QuotaLimits,
-  remainingMonth: number,
-  remainingMinute: number
-): Record<string, string> {
-  return {
-    'X-RateLimit-Limit-Month': String(limits.monthly),
-    'X-RateLimit-Limit-Minute': String(limits.perMinute),
-    'X-RateLimit-Remaining-Month': String(Math.max(0, remainingMonth)),
-    'X-RateLimit-Remaining-Minute': String(Math.max(0, remainingMinute)),
-    'X-RateLimit-Reset': state.minuteStart,
-  };
-}
-
-function windowMetadata(state: QuotaState, limits: QuotaLimits): Record<string, unknown> {
-  return {
-    month: {
-      start: state.monthStart,
-      used: state.usedMonth,
-      limit: limits.monthly,
-      remaining: Math.max(0, limits.monthly - state.usedMonth),
-    },
-    minute: {
-      start: state.minuteStart,
-      used: state.usedMinute,
-      limit: limits.perMinute,
-      remaining: Math.max(0, limits.perMinute - state.usedMinute),
-    },
-  };
 }
 
 function counterToQuotaState(counter: StoredCounter | undefined): QuotaState | null {
