@@ -137,20 +137,79 @@ No `public.admins` table is invented. Manual partner provisioning runs as
 `service_role`/postgres — connection role, not JWT — so it is not subject to this
 predicate.
 
-### API keys — physical model
+### API keys — physical model (stable per-profile credential slot)
+
+**Chosen physical representation — one row per profile.** Every profile owns at
+most one `api_keys` row for its whole lifetime. Create, rotate, and re-activate
+all UPSERT into the same row, preserving `id`, tier, quota overrides, and the
+Durable Object identity keyed off `id`. "Revoke" flips `revoked_at` on the same
+row; re-activation flips it back with a fresh secret. Old hash/key history is
+not retained for the MVP.
+
+Rejected alternatives (see Decision log for the full 2026-07-24T15:35 backend
+plan-review entry):
+
+- Append-only rows with each mint/revoke creating a new `api_keys` id.
+  Rejected: usage does not carry over, Durable Object identity resets, and
+  self-service becomes a "list of many keys" surface. Owner-approved goal is a
+  single, stable slot.
+- A separate `profile_api_quota` table holding tier/override per profile with a
+  child `api_keys` table. Rejected as over-engineered for a 0..1-key MVP; the
+  same continuity is achieved by keeping tier/override columns on the single
+  row and rotating secret material in place.
 
 Tables (contract; owner: `postgres`, in migration `…_api_identity.sql`):
 
 - `public.api_tiers (code text PRIMARY KEY CHECK (code ~ '^[a-z_]+$'), monthly_quota int NOT NULL CHECK (>0), per_minute_quota int NOT NULL CHECK (>0), description text NOT NULL, created_at timestamptz NOT NULL DEFAULT now())`
-  seeded `('free', 5000, 60, …)` and `('partner', 500000, 600, …)`.
-- `public.api_keys (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), profile_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE, key_prefix text NOT NULL, key_hash bytea NOT NULL, tier_code text NOT NULL REFERENCES public.api_tiers(code), monthly_quota_override int CHECK (>0), per_minute_quota_override int CHECK (>0), label text, created_at timestamptz NOT NULL DEFAULT now(), revoked_at timestamptz, last_used_at timestamptz)`
-  with `UNIQUE INDEX (key_hash)` and partial index on `profile_id WHERE revoked_at IS NULL`.
+  seeded `('free', 5000, 60, …)` and `('partner', 500000, 600, …)`. `partner`
+  supersedes and includes `free` — a profile has one total tier and one total
+  quota, never additive free + partner quotas.
+- `public.api_keys (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), profile_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE, key_prefix text NOT NULL, key_hash bytea NOT NULL, tier_code text NOT NULL REFERENCES public.api_tiers(code), monthly_quota_override int CHECK (>0), per_minute_quota_override int CHECK (>0), label text, created_at timestamptz NOT NULL DEFAULT now(), rotated_at timestamptz, revoked_at timestamptz, last_used_at timestamptz)`
+  with `UNIQUE INDEX (key_hash)` and a **full** `UNIQUE INDEX (profile_id)`
+  (not partial). The full unique index is the database-level enforcement of
+  the one-row-per-profile invariant — including when the row is currently
+  revoked. `rotated_at` is `NULL` on first mint and updated on every rotation.
+  `revoked_at IS NULL` is the canonical active predicate; a revoked slot can
+  be reactivated by a subsequent create-or-rotate, which sets `revoked_at`
+  back to `NULL` and updates `rotated_at`.
 - `public.api_key_usage_monthly (key_id uuid NOT NULL REFERENCES public.api_keys(id) ON DELETE CASCADE, month date NOT NULL, used int NOT NULL DEFAULT 0, updated_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (key_id, month))`.
-  Lives in the identity migration to keep MVP migration count low.
+  Lives in the identity migration to keep MVP migration count low. Because the
+  slot's `id` is stable across rotation/revoke/re-activate, current-month
+  usage is preserved by construction.
 
 Rejected: Postgres `enum` for tier (each tier is a migration; renames painful);
 Worker-side tier constants (origin cannot enforce overrides); < 128 bits of
 entropy; plain SHA-256 without pepper (offline brute force on hash dump).
+
+**Required SQL migration follow-up (not part of the current local chunk).** The
+already-committed `20260724133200_api_identity.sql` shipped with a partial
+`UNIQUE (profile_id) WHERE revoked_at IS NULL` index and no `rotated_at`
+column, matching the earlier append-and-revoke shape. A separately reviewed
+follow-up migration must:
+
+1. Add the `rotated_at timestamptz` column (nullable) to `api_keys`.
+2. Replace the partial unique index with a **full** `UNIQUE (profile_id)`
+   index, after a preflight that confirms every existing profile owns at most
+   one row (delete/consolidate any pre-existing duplicates in a reviewed
+   step).
+3. Rewrite `create_api_key(p_label)` and `create_partner_api_key(p_profile_id,
+   p_label)` as atomic `INSERT … ON CONFLICT (profile_id) DO UPDATE` UPSERTs
+   that preserve `id`, and — for the self-service branch — `tier_code`,
+   `monthly_quota_override`, `per_minute_quota_override`, so admin-set partner
+   promotions and quota bumps survive a routine consumer rotation. The
+   partner branch overwrites `tier_code` to `'partner'` and clears any
+   temporary overrides only when explicitly requested; a plain partner UPSERT
+   without override arguments preserves prior overrides. Both branches return
+   the same `(id, raw_key, prefix, tier)` row shape.
+4. Preserve `revoked_at`, `last_used_at`, and `api_key_usage_monthly` rows
+   across every UPSERT branch. Downgrade (partner → free) remains admin-only
+   and stays a Postgres-side SQL edit in the future; it is not exposed via a
+   self-service RPC.
+
+This follow-up is registered in the Structural backlog and is separately
+gated; the current local chunk continues to describe both the current
+partial-index shape and the target stable-slot shape so reviewers see the
+delta.
 
 Key material:
 
@@ -175,23 +234,45 @@ Key material:
 RPCs (exact signatures; all `SECURITY DEFINER`, `set search_path = public[, extensions, vault]`):
 
 - `public.create_api_key(p_label text) RETURNS TABLE (id uuid, raw_key text, prefix text, tier text)`
-  — mints a `free` key for `auth.uid()`. Raises `28000` if unauthenticated. Cannot
-  target another profile; cannot pick tier. `revoke all … from public, anon, authenticated;
-  grant execute … to authenticated`.
+  — **Create-or-rotate self-service call for the caller's slot.** Atomic
+  `INSERT … ON CONFLICT (profile_id) DO UPDATE` on `api_keys` for
+  `auth.uid()`. On first call, inserts a row seeded with `tier_code = 'free'`
+  and no overrides. On subsequent calls, updates `key_prefix`, `key_hash`,
+  `rotated_at = now()`, sets `revoked_at = NULL` (re-activating a previously
+  revoked slot with a new secret), and **preserves** `id`, `tier_code`,
+  `monthly_quota_override`, `per_minute_quota_override`, and every
+  `api_key_usage_monthly` row keyed by that `id`. Cannot target another
+  profile; cannot pick tier; cannot downgrade a partner slot. Raises `28000`
+  if unauthenticated. `revoke all … from public, anon, authenticated; grant
+  execute … to authenticated`. The returned `raw_key` is the caller's only
+  chance to record the new secret; the old secret's HMAC no longer verifies
+  once Worker metadata caches expire (see rotation vs revocation below).
 - `public.create_partner_api_key(p_profile_id uuid, p_label text) RETURNS TABLE (id uuid, raw_key text, prefix text, tier text)`
-  — mints a `partner` key for `p_profile_id`. `revoke all … from public, anon, authenticated`;
-  the migration explicitly revokes the default `PUBLIC` pseudo-role grant and
-  grants no execute privilege to `authenticated`. Callable only from
-  `service_role`/`postgres`.
-  Explicit test asserts `42501` when invoked as `authenticated` or `anon`.
+  — **Admin-only partner promotion / rotation of the same slot.** Atomic
+  `INSERT … ON CONFLICT (profile_id) DO UPDATE` on `api_keys` for
+  `p_profile_id`. Sets `tier_code = 'partner'` (partner supersedes and
+  includes free; there is one total tier per profile, never additive
+  free + partner keys). Updates `key_prefix`, `key_hash`, `rotated_at = now()`,
+  sets `revoked_at = NULL`, and preserves `id`, existing quota overrides, and
+  `api_key_usage_monthly`. Same return shape as `create_api_key`. `revoke all
+  … from public, anon, authenticated`; the migration explicitly revokes the
+  default `PUBLIC` pseudo-role grant and grants no execute privilege to
+  `authenticated`. Callable only from `service_role`/`postgres`. Explicit test
+  asserts `42501` when invoked as `authenticated` or `anon`. **Downgrade
+  (partner → free) is admin-only Postgres SQL, not exposed via an RPC.**
 - `public.revoke_api_key(p_id uuid) RETURNS void` — owner
-  (`profile_id = auth.uid()`) or JWT admin. Raises `42501` on mismatch. Grant
-  `execute … to authenticated`.
+  (`profile_id = auth.uid()`) or JWT admin. Sets `revoked_at = now()` on the
+  slot; does not delete the row, so `id` and `api_key_usage_monthly` remain
+  intact. Raises `42501` on mismatch and `28000` for unauthenticated callers.
+  Grant `execute … to authenticated`. Re-activation goes back through
+  `create_api_key` (self-service) or `create_partner_api_key` (admin), which
+  UPSERTs the same slot with a new secret and clears `revoked_at`.
 - `public.verify_api_key(p_hash bytea) RETURNS TABLE (id uuid, profile_id uuid, tier_code text, monthly_quota int, per_minute_quota int)`
-  — `stable`. Returns rows **only** for active keys
-  (`WHERE key_hash = p_hash AND revoked_at IS NULL`). Zero rows for revoked or unknown
-  keys — Worker returns `401 invalid_key`. Effective limits are
-  `coalesce(k.monthly_quota_override, t.monthly_quota)` and
+  — `stable`. Returns rows **only** for active slots
+  (`WHERE key_hash = p_hash AND revoked_at IS NULL`). Zero rows for revoked
+  slots, slots whose secret has been rotated (old hash no longer matches),
+  and unknown hashes — Worker returns `401 invalid_key`. Effective limits
+  are `coalesce(k.monthly_quota_override, t.monthly_quota)` and
   `coalesce(k.per_minute_quota_override, t.per_minute_quota)`. Grant
   `execute … to api_reader` only.
 - `public.record_api_key_usage(p_key_id uuid, p_month date, p_used int) RETURNS void`
@@ -201,6 +282,43 @@ RPCs (exact signatures; all `SECURITY DEFINER`, `set search_path = public[, exte
 
 Every RPC migration first revokes default execute from the `PUBLIC` pseudo-role
 and from `anon`/`authenticated`, then grants only the role named above.
+
+### Rotation vs revocation — cache window and compromise flow
+
+Routine rotation and compromise response are distinct procedures. Do not
+conflate them.
+
+- **Rotation (self-service, non-compromise).** Consumer calls
+  `create_api_key(label)` from the Public API panel. Database UPDATE is
+  atomic and immediate: the new HMAC is the only value that
+  `verify_api_key` will match from that point on. Worker isolate-local
+  metadata caches, however, may still hold the previous secret's `(digest
+  -> {id, profile_id, tier, quotas})` entry for up to their fixed 60-second
+  TTL. During this ≤60 s window a Worker isolate that already validated the
+  old key can continue to serve the old key from cache without a
+  `verify_api_key` round-trip. This is safe because rotation is **not** a
+  compromise response — the old secret is being replaced for hygiene, and
+  ≤60 s of dual acceptance is a deliberate trade-off to keep the DB
+  round-trip cost bounded.
+- **Revocation (self-service).** Owner calls `revoke_api_key(id)` from the
+  panel. Same ≤60 s bound as above: existing isolate caches expire naturally
+  and refuse the key on the next verify. Acceptance criterion:
+  post-revocation request refusal within ≤60 s (already in Acceptance
+  criteria).
+- **Compromise flow (owner-directed emergency).** Because the ≤60 s cache
+  window is unsafe when the secret is known to be leaked, compromise is
+  handled as: **(1) revoke the slot, (2) wait ≥60 s so every isolate cache
+  expires and no old secret is still accepted, (3) create a new secret via
+  `create_api_key` or admin `create_partner_api_key`.** For emergency
+  mitigation while the ≥60 s bound has not elapsed, add a coarse WAF block
+  on the leaked key's public prefix or on the abuser IP; this takes effect
+  in seconds.
+- **Slot identity persistence.** Rotation, revocation, and re-activation all
+  preserve `id`, Durable Object identity (namespace `API_KEY_COUNTER`
+  keyed by `id`), and the current month's `api_key_usage_monthly` row. A
+  freshly rotated key does **not** reset per-minute or monthly quota. A
+  re-activated slot resumes the same DO state; the DO's persisted counters
+  are unchanged by the DB write.
 
 RLS on `api_keys`:
 
@@ -458,68 +576,96 @@ DeveloperApiKeysComponent
 | `src/app/features/backbone/user-management/developer-api-keys/developer-api-keys.component.{ts,html,scss,spec.ts}` | New standalone component co-located with Account Management. Uses `ChangeDetectionStrategy.OnPush`, `providers: [DeveloperApiKeysDataService]`, and renders as a dedicated Public API subsection inside the existing account surface. |
 | `src/app/features/backbone/user-management/developer-api-keys/developer-api-keys-data.service.{ts,spec.ts}` | New component-scoped data service (`@Injectable()`, no `providedIn`) reactive over `_vm$`, `load$`, `create$`, `revoke$`, and copy state; delegates to `SupabaseService.apiKeys`. Two-step inline revoke confirmation via `BehaviorSubject<string \| null>`, not a `MatDialog`. |
 | `src/app/features/backbone/user-management/user-management.component.{html,ts,scss,spec.ts}` | Import the standalone API-key component and add `@if (developerApiEnabled) { <app-developer-api-keys/> }` after the Account ID row and before the Danger Zone, wired to `environment.features.developerApiEnabled`. The flag wraps the separator and full subsection so off means no DOM or spacing residue. |
-| `src/app/features/backend/supabase.service.ts` | Add `readonly apiKeys!: ReturnType<typeof createApiKeysNamespace>` and initialize in `constructor` (same shape as `add = createAddNamespace(...)`). Provides `listOwnKeys()`, `listOwnUsage(month?)`, `createOwnKey(label)`, `revokeOwnKey(id)`. Cache-buster keys registered against `api_keys` + `api_key_usage_monthly` (see `patterns/BACKEND_METHODS.md`). |
-| `src/app/features/backend/supabase-api-keys.ts` (new) | Implements `createApiKeysNamespace(client, session$)`. Reads through `api_keys` / `api_tiers` / `api_key_usage_monthly` (RLS enforces owner-only). Writes only via RPCs `create_api_key(p_label)` and `revoke_api_key(p_id)` — never direct DML. |
+| `src/app/features/backend/supabase.service.ts` | Add `readonly apiKeys!: ReturnType<typeof createApiKeysNamespace>` and initialize in `constructor` (same shape as `add = createAddNamespace(...)`). Provides `getOwnKeySlot()` (returns the caller's single slot or `null`), `getOwnUsage(keyId, month?)`, `createOrRotateOwnKey(label)` (single method for both first-mint and rotate-in-place, RPC-side is idempotent by design), and `revokeOwnKey(id)`. Cache-buster keys registered against `api_keys` + `api_key_usage_monthly` (see `patterns/BACKEND_METHODS.md`). |
+| `src/app/features/backend/supabase-api-keys.ts` (new) | Implements `createApiKeysNamespace(client, session$)`. Reads through `api_keys` / `api_tiers` / `api_key_usage_monthly` (RLS enforces owner-only). Writes only via RPCs `create_api_key(p_label)` (create-or-rotate the single slot) and `revoke_api_key(p_id)` — never direct DML. |
 | `src/app/features/backend/DatabaseStrings.ts` | Register three new consts: `api_keys`, `api_tiers`, `api_key_usage_monthly`. Layering rule R2 keeps this the only file that owns table-name constants. |
 | `src/backend/database.types.ts` | Regenerated by `pnpm updateBackendTypes` **only after** the migrations are applied to an approved remote/isolated Supabase target. Commit the diff in an isolated chunk. |
 | `src/environments/environment.model.ts` + `generate-env.js` | Add `developerApiEnabled: boolean` to the `features` block. Default: `false` in `environment.prod.ts`, `true` in dev-generated `environment.ts`. Update `scripts/tests/generate-env.test.cjs` regex assertions. |
 | `user-management.component.spec.ts` + API-key component/data-service specs | Assert the subsection is gated by `developerApiEnabled`, the approved account placement, one-time reveal, copy, and inline revoke behavior. |
 
-### Self-service behavior — exact contract
+### Self-service behavior — exact contract (0..1 slot)
 
-1. **List** — `load$` triggers a parallel fetch of the profile's active keys
-   (`revoked_at IS NULL`, ordered `created_at DESC`) and the current calendar
-   month's usage row per key. Empty state uses `EmptyStateTipsComponent`
-   with copy pointing at the public docs (`docs.patcher.xyz/reference/public-open-api`).
-2. **Row display** — for each key: label, `key_prefix` (never the hash),
-   tier code (`free`), `created_at`, `last_used_at` (relative), effective
-   monthly limit (`monthly_quota_override ?? tier.monthly_quota`), current
-   month used, remaining, and a `Revoke` button. Raw key is **never**
-   re-displayed after mint.
-3. **Create** — inline form with a single required `label` (`1…64` chars,
-   `^[A-Za-z0-9 _\-\.]+$`). On submit: call `SupabaseService.apiKeys.createOwnKey(label)`
-   → RPC returns `{ id, raw_key, prefix, tier }` exactly once. UI enters a
-   one-time-reveal state with a copy button (`navigator.clipboard.writeText`
-   fallback → snackbar success/failure via existing
-   `SharedConstants.errorCustom`/`successCustom`). Reveal panel offers
-   `I copied it` → transitions to normal list state and discards the raw
-   key from memory (`_revealedRawKey$.next(null)`). Refresh, route change,
-   and component destroy all discard the raw key.
+The consumer surface owns **exactly one credential slot per profile**, not a
+list of many keys. The panel is a three-state machine over that slot:
+**none / active / revoked**. No "list" affordance, no bulk operations, no
+per-key naming beyond a single label attached to the slot.
+
+1. **Load** — `load$` triggers a fetch for the caller's single `api_keys`
+   row (RLS filters to `profile_id = auth.uid()`) and, if it exists, the
+   current calendar month's usage row keyed by that slot's stable `id`.
+   `revoked_at IS NULL` means the slot is currently active; `revoked_at IS
+   NOT NULL` means the slot exists but is revoked and can be re-activated.
+   Missing row means the profile has never minted a key.
+2. **Slot display** — for the slot: label, `key_prefix` (never the hash),
+   tier code (`free` or `partner`), `created_at`, `rotated_at` (when
+   present), `last_used_at` (relative), effective monthly limit
+   (`monthly_quota_override ?? tier.monthly_quota`), current-month used,
+   remaining. The raw secret is **never** re-displayed after mint or
+   rotation. Copy speaks in singular ("your API key", not "your API keys").
+3. **Create or Rotate** — one primary action. When the slot is empty:
+   `Create API key`. When the slot is active: `Rotate API key`. Both call
+   `SupabaseService.apiKeys.createOwnKey(label)` which invokes the same
+   `create_api_key(label)` RPC. Rotation requires an inline confirmation
+   step warning that the previous secret stops verifying within ≤60 s.
+   The RPC returns `{ id, raw_key, prefix, tier }` exactly once. UI enters
+   a one-time-reveal state with a copy button
+   (`navigator.clipboard.writeText` fallback → snackbar success/failure
+   via existing `SharedConstants.errorCustom`/`successCustom`). Reveal
+   panel offers `I copied it` → transitions back to the active-slot view
+   and discards the raw key from memory (`_revealedRawKey$.next(null)`).
+   Refresh, route change, and component destroy all discard the raw key.
+   Because the slot preserves `id`, `tier_code`, and overrides, a `free`
+   consumer stays `free` after rotation and a partner-promoted profile
+   stays `partner` after rotation.
 4. **Revoke** — two-step inline confirm mirroring
    `user-address-book.component.ts::confirmDelete`. First click sets
-   `_revokeConfirmId$.next(id)` and shows an inline warning row; second
-   click dispatches `revoke$` → RPC → optimistic list refresh. Cancel is
-   always visible.
+   `_revokeConfirmId$.next(id)` and shows an inline warning row noting
+   "revoke breaks any app or script using this key; you can re-create a
+   new key on the same slot afterwards". Second click dispatches
+   `revoke$` → `revoke_api_key(id)` RPC → optimistic slot refresh into
+   the "revoked" state. The slot row remains visible with a `Create API
+   key` action that re-activates the same slot (calling `create_api_key`
+   again clears `revoked_at` and mints a new secret while preserving the
+   slot's `id` and current-month usage). Cancel is always visible during
+   the confirmation step.
 5. **Quota semantics** — "60 requests/minute · 5,000/month (free tier)"
-   is a fixed label sourced from a client-side constant, **not** from
+   for free slots and the equivalent partner line ("600 requests/minute ·
+   500,000/month (partner tier)") is a fixed label sourced from a
+   client-side constant keyed by the slot's `tier_code`, **not** from
    `api_tiers` (which is not readable by `authenticated` in the reviewed
    grants and would need a new view or RLS opening; deferred as out of
    scope for MVP). Monthly usage figures come from `api_key_usage_monthly`
-   filtered by `key_id IN (own keys)` and `month = date_trunc('month', now())`.
+   filtered by `key_id = <slot.id>` and `month = date_trunc('month', now())`.
    Usage may lag by up to one flush interval — surface a small "usage
    updates within a few minutes" hint next to the number.
-6. **Per-profile active-key cap** — **not defined** in the reviewed
-   migrations. Do not silently pick a number. The plan flags it as a
-   pending owner decision (see Approvals ledger). Working recommendation
-   the panel will assume once approved: `≤ 5` active (non-revoked) keys
-   per profile, enforced client-side pre-submit for UX only, and later
-   backed by a `CHECK` migration in Polish. Until confirmed, the UI shows
-   no cap and only surfaces "already have keys? consider revoking unused
-   ones" copy.
-7. **Error taxonomy** — mint failures map by SQLSTATE:
+6. **One slot, no cap needed.** The database enforces one row per
+   profile via `UNIQUE (profile_id)` and every mutation is an UPSERT on
+   the same row, so no per-profile active-key cap is required and the UI
+   never renders a "you have N keys" counter. The historical
+   "per-profile active-key cap" question is answered by the stable-slot
+   design and is resolved as a standing approval in the Approvals
+   ledger; the previously-planned `CHECK` cap migration is superseded
+   and dropped from the Polish backlog.
+7. **Error taxonomy** — mint/rotate failures map by SQLSTATE:
    `28000` → sign-in-required copy + redirect prompt; `42501` → generic
    "not allowed"; anything else → snackbar + inline retry. Load failures
-   never destroy previously-loaded rows; they surface a banner with retry.
+   never destroy previously-loaded rows; they surface a banner with
+   retry.
 8. **Accessibility & voice** — copy follows `product/PRINCIPLES.md`:
-   plain, warm, exact. Labels: "Create an API key" / "Copy your key —
-   this is the only time it will be shown" / "Revoke". Confirmation:
-   "Revoking will break any app or script still using this key. Continue?"
+   plain, warm, exact. Labels: "Create your API key" / "Rotate your API
+   key" / "Copy your key — this is the only time it will be shown" /
+   "Revoke". Rotation confirmation: "Rotating replaces your current key.
+   Any app or script using the current key will stop working within a
+   minute of rotation." Revoke confirmation: "Revoking will break any
+   app or script still using this key. You can create a new key
+   afterwards on the same slot."
 9. **Placement/hierarchy is approved.** Render a dedicated "Public API"
    subsection inside `/user/account`, after the identity rows and before
-   the Danger Zone. It is a peer account-control block, not an accordion,
-   new route, User Area card, Marketplace surface, or public-profile
-   surface. A tab/child route is deferred until the developer area has at
-   least three distinct capabilities such as keys, OAuth, and webhooks.
+   the Danger Zone. It is a peer account-control block, not an
+   accordion, new route, User Area card, Marketplace surface, or
+   public-profile surface. A tab/child route is deferred until the
+   developer area has at least three distinct capabilities such as
+   keys, OAuth, and webhooks.
 
 ### Feature-flag / visibility model
 
@@ -540,8 +686,9 @@ DeveloperApiKeysComponent
 ### Coordination
 
 - Widgets-pilot session consumes `GET /v1/manufacturers/{id}?include=modules`;
-  its preview key is one of the two keys minted during the batched
-  operator window.
+  its preview key is the promoted-partner secret from the controlled owner
+  profile's slot minted during the batched operator window. There is no
+  separate parallel widget key — every profile owns exactly one slot.
 
 ### Structural — remaining backlog
 
@@ -552,6 +699,14 @@ DeveloperApiKeysComponent
 - [ ] `DatabaseStrings.ts` registration for `api_keys`, `api_tiers`,
   `api_key_usage_monthly` (before any backend method that references
   them).
+- [ ] **Stable-slot follow-up migration** authoring: adds `rotated_at`
+  column, replaces the partial `UNIQUE (profile_id) WHERE revoked_at IS
+  NULL` with a full `UNIQUE (profile_id)` after preflight for existing
+  duplicates, and rewrites `create_api_key` and `create_partner_api_key`
+  as atomic UPSERTs that preserve `id` and — in the self-service branch
+  — `tier_code` / `monthly_quota_override` / `per_minute_quota_override`.
+  Local-only authoring + static contract test extension is autonomous;
+  remote apply is bundled into the batched operator window.
 - [ ] `pnpm updateBackendTypes` — **runs only after** the migrations are
   applied to an approved remote/isolated target; commit generated types
   in a separate chunk.
@@ -561,7 +716,8 @@ DeveloperApiKeysComponent
 - [ ] Cloudflare Logpush → durable sink (recommended R2).
 - [x] `cloudflare/public-api/RUNBOOK.md` — pepper rotation (incident
   procedure), reader password rotation via Hyperdrive re-issue, DO
-  management, dataset recovery.
+  management, dataset recovery, plus stable-slot rotation vs revocation
+  and the compromise flow.
 
 ### Approved designer handoff
 
@@ -627,6 +783,30 @@ DeveloperApiKeysComponent
 - [ ] Supabase advisors: no new critical findings; `security_definer_view` on
   `api_v1_*` views carries the accepted-justification `COMMENT ON VIEW`.
 - [ ] Public catalogue changes visible via the API within ≤6 h.
+- [ ] **Stable slot: single active row per profile.** After any sequence of
+  `create_api_key` / `create_partner_api_key` / `revoke_api_key` calls for a
+  given profile, `SELECT count(*) FROM public.api_keys WHERE profile_id = $1`
+  returns exactly `1`, and the full `UNIQUE (profile_id)` index rejects any
+  attempted second insert with `23505`.
+- [ ] **Stable id across rotation.** Calling `create_api_key(label)` on an
+  existing active slot returns the same `id` as the pre-rotation slot;
+  `key_prefix`, `key_hash`, and `rotated_at` change; `tier_code`,
+  `monthly_quota_override`, and `per_minute_quota_override` are preserved.
+- [ ] **Usage continuity across rotation and revoke/reactivate.** The current
+  `api_key_usage_monthly` row for the slot is unchanged by any of
+  `create_api_key`, `create_partner_api_key`, `revoke_api_key`, and a
+  subsequent re-activation, so a profile cannot reset its monthly consumption
+  by rotating.
+- [ ] **Partner promotion preserves slot, downgrade is admin-only.**
+  `create_partner_api_key(profile_id, label)` UPSERTs the same slot, sets
+  `tier_code = 'partner'`, preserves `id` and usage, and does not create a
+  second row. A subsequent self-service `create_api_key(label)` does **not**
+  downgrade `tier_code` back to `'free'`; only a Postgres-level SQL edit by
+  an admin can change `tier_code` back to `'free'`.
+- [ ] **Old secret stops verifying within ≤60 s of rotation.**
+  Post-`create_api_key` rotation, the previous secret returns `401` within
+  ≤60 s (isolate metadata cache expiry), and revoke → wait ≥60 s → new create
+  is a valid compromise-response sequence.
 
 ## Validation strategy
 
@@ -751,6 +931,10 @@ sections 2–13, with the new self-service UI gates inserted):
 
 1. Apply the three reviewed migrations to the target Supabase project
    (`sozmatmywjpstwidzlss`, `eu-central-1`) after backup/PITR check.
+   Includes the stable-slot follow-up (`rotated_at` column, full
+   `UNIQUE (profile_id)` index, atomic UPSERT rewrites of
+   `create_api_key` and `create_partner_api_key`) once separately
+   authored and reviewed.
 2. `pnpm updateBackendTypes` from the same worktree; commit the diff.
 3. Create `api_key_pepper` in Supabase Vault; mirror to Worker secret
    `API_KEY_PEPPER`.
@@ -759,23 +943,43 @@ sections 2–13, with the new self-service UI gates inserted):
 5. Create Durable Object namespace `API_KEY_COUNTER`.
 6. Deploy Worker to the preview route (not the public `api.patcher.xyz`
    custom domain yet).
-7. Mint two keys via `create_api_key('preview-smoke')` from the owner's
-   User Area session (using the newly landed panel behind the flag),
-   plus one partner preview key via `create_partner_api_key(<owner_profile_id>, 'partner-preview')`
-   in SQL editor.
-8. Run the runbook §11 smoke tests plus these UI-driven additions: create
-   a key from the panel; confirm one-time reveal; revoke and re-verify
-   `401 invalid_key` within ≤60 s.
-9. Run runbook §12 quota + revocation + cache tests.
-10. Watch runbook §13 monitoring for at least one flush cycle (5 min)
-    with zero `configuration_error` / `quota_unavailable` / `origin_unavailable`.
-11. Only after the preview passes: swap DNS to the custom domain
+7. Preview key sequence for a **controlled owner profile** (the same
+   profile is used for every step below; there is no simultaneous
+   free + partner key because a profile owns exactly one slot):
+   1. From the owner's User Area session (with the newly landed
+      flag-gated panel), call `create_api_key('preview-smoke')`. The
+      slot is created at tier `free`.
+   2. Exercise runbook §11 smoke and §12 quota tests with that free
+      key.
+   3. In the SQL editor as `postgres`, call
+      `create_partner_api_key(<owner_profile_id>, 'partner-preview')`.
+      This UPSERTs the **same** slot in place, promoting `tier_code`
+      to `partner`, updating `rotated_at`, and preserving `id`,
+      current-month `api_key_usage_monthly`, and any operator-set
+      quota overrides. The response returns the new partner secret;
+      the previous free secret stops verifying within ≤60 s.
+   4. Rotate the partner slot once via the panel's Rotate action
+      (`create_api_key('preview-smoke')` — self-service must preserve
+      the promoted `partner` tier). Confirm the returned tier is
+      `partner`, that `id` is unchanged, and that current-month usage
+      is preserved.
+   5. Revoke via the panel; confirm the runbook §12 revocation window
+      (≤60 s to `401 invalid_key`).
+   6. Re-activate via the panel by pressing `Create API key` on the
+      revoked slot; confirm the same `id`, the preserved `partner`
+      tier, and current-month usage continuity.
+8. Run runbook §12 quota + revocation + cache tests using the preview
+   secrets minted above.
+9. Watch runbook §13 monitoring for at least one flush cycle (5 min)
+   with zero `configuration_error` / `quota_unavailable` /
+   `origin_unavailable`.
+10. Only after the preview passes: swap DNS to the custom domain
     `api.patcher.xyz`, flip `environment.prod.ts` `developerApiEnabled`
     to `true`, and cut a release.
 
 Rollback at any preview step is: disable the Worker route, keep migrations
-in place, revoke preview keys. The UI stays flag-off; no user sees a broken
-panel.
+in place, revoke the preview slot. The UI stays flag-off; no user sees a
+broken panel.
 
 ### Batched manual-operator window (single owner session)
 
@@ -788,7 +992,9 @@ today; the batched window converts each into an action):
 
 1. Remote apply of the three reviewed migrations against Supabase project
    `sozmatmywjpstwidzlss` (`eu-central-1`), followed by
-   `pnpm updateBackendTypes`.
+   `pnpm updateBackendTypes`. Bundle the stable-slot follow-up
+   (`rotated_at`, full `UNIQUE (profile_id)`, UPSERT-rewrite RPCs) into
+   the same apply once its migration is authored and reviewed.
 2. Vault: enable if not already; create `api_key_pepper` (32 random
    bytes, base64); note the value only in Vault + Worker secret.
 3. Cloudflare Hyperdrive: provision LOGIN credential for `api_reader`
@@ -797,20 +1003,19 @@ today; the batched window converts each into an action):
 4. Cloudflare: create Durable Object namespace `API_KEY_COUNTER`;
    deploy the Worker; set secret `API_KEY_PEPPER`; leave the custom
    domain **off**.
-5. Owner confirms per-profile active-key cap (see Approvals ledger
-   question). Working default recommendation: `≤ 5` per profile,
-   enforced client-side; enforced by DB `CHECK` in a Polish migration
-   later. This answer determines whether the client cap is enabled or
-   left disabled.
-6. Optional: `pg_trgm` extension enable + trigram GIN indexes. If
+5. Optional: `pg_trgm` extension enable + trigram GIN indexes. If
    declined, MVP returns `400 unsupported_parameter` for `?q=`
    (already implemented that way).
-7. Mint the two preview keys per the rollout order above.
-8. Run smoke + quota + revocation + cache tests together.
-9. Coarse WAF/IP abuse rules review.
-10. Structural gates (deferred, listed for completeness only, not
-    required in this window): private R2 bucket
-    `patcher-public-datasets`; Cloudflare Logpush; nightly export job.
+6. Run the preview slot sequence in step 7 of the preview rollout
+   (free create → partner promote of the same slot → rotate → revoke
+   → re-activate) against the controlled owner profile. Do **not**
+   expect a simultaneous free + partner key setup; the design
+   forbids it.
+7. Run smoke + quota + revocation + cache tests together.
+8. Coarse WAF/IP abuse rules review.
+9. Structural gates (deferred, listed for completeness only, not
+   required in this window): private R2 bucket
+   `patcher-public-datasets`; Cloudflare Logpush; nightly export job.
 
 Inputs the owner must have ready before the window opens:
 
@@ -818,10 +1023,14 @@ Inputs the owner must have ready before the window opens:
   `sozmatmywjpstwidzlss`.
 - Cloudflare zone access for `patcher.xyz` with Workers, DO,
   Hyperdrive, secrets, DNS, WAF.
-- Decision on the active-key cap (question 5 above).
-- Decision on `pg_trgm` (question 6 above).
+- Decision on `pg_trgm` (step 5 above).
 - 90-minute uninterrupted block. Expected wall-clock is ≤60 min if no
   gate fails; the buffer covers advisor re-review time.
+
+The historical per-profile active-key cap question is **not** an input
+to this window: it is answered by the stable-slot design (one row per
+profile enforced by a full unique index) and moved to Standing
+approvals.
 
 ### Docs updates after the API is truly live
 
@@ -881,12 +1090,16 @@ Worker has passed §11–§13 checks:
   - **Key mint kept DB-side**: HMAC with pepper in Vault + mirrored Worker
     secret. Doubled secret surface honestly disclosed — the only alternative
     is a per-request DB round-trip that defeats caching. Self-service
-    `create_api_key(label)` always mints free for `auth.uid()`; manual
-    partner grants use separate `create_partner_api_key(profile_id, label)`
-    executable only by `service_role`/`postgres`, with explicit lockout test.
-    Rejected Worker-mint (still needs `service_role` or a SECURITY DEFINER
-    RPC callable by `authenticated`; no secret removed). `service_role` never
-    placed in the Worker.
+    `create_api_key(label)` seeds new slots at `free` for `auth.uid()`;
+    manual partner grants use separate
+    `create_partner_api_key(profile_id, label)` executable only by
+    `service_role`/`postgres`, with explicit lockout test. Rejected
+    Worker-mint (still needs `service_role` or a SECURITY DEFINER RPC
+    callable by `authenticated`; no secret removed). `service_role` never
+    placed in the Worker. *(Superseded 2026-07-24T15:35 — see the
+    stable-slot entry: both RPCs are now atomic UPSERTs on a single
+    per-profile slot; self-service preserves the slot's tier/overrides
+    across rotation instead of always minting a fresh free-tier row.)*
   - **`verify_api_key`**: returns only rows where `revoked_at IS NULL`; zero
     rows → 401. Metadata caches hard-capped ≤60 s. Revocation ≤60 s.
     Emergency WAF block by prefix/IP.
@@ -1053,6 +1266,53 @@ Worker has passed §11–§13 checks:
   accordions, and a new route are explicitly rejected for MVP. Inline
   one-time reveal and two-step revoke remain canonical. A tab/child route
   is deferred until at least three developer capabilities exist.
+- 2026-07-24T15:35+02:00 — Backend-plan-review verdict **APPROVE WITH
+  CHANGES** on the credential-slot shape. Owner-approved chosen
+  representation and rejected alternatives:
+  - **Chosen: stable per-profile credential slot (one row, UPSERT-in-place).**
+    `api_keys` holds at most one row per `profile_id`, enforced by a full
+    `UNIQUE (profile_id)` index. `create_api_key(label)` and
+    `create_partner_api_key(profile_id, label)` are atomic `INSERT … ON
+    CONFLICT (profile_id) DO UPDATE` UPSERTs that preserve `id`,
+    `api_key_usage_monthly`, and — for the self-service branch —
+    `tier_code` / `monthly_quota_override` / `per_minute_quota_override`.
+    Admin partner promotion sets `tier_code = 'partner'` on the same
+    slot. `revoke_api_key` flips `revoked_at`; re-activation flips it
+    back with a fresh secret while keeping the same `id`. A new
+    `rotated_at` column is added; `revoked_at IS NULL` remains the
+    canonical active predicate. Downgrade partner → free is admin-only
+    Postgres SQL, not exposed via any RPC. Old hash/key history is not
+    retained for MVP.
+  - **Rejected: append-only rows for every mint/revoke.** Would reset
+    `api_key_usage_monthly` and the per-key Durable Object identity on
+    every rotation, force the panel into a "list of many keys" surface,
+    and break the owner-approved singular-slot UX.
+  - **Rejected: separate `profile_api_quota` table** holding
+    tier/override per profile, with `api_keys` as a child table. The
+    same continuity is achieved by keeping tier and override columns
+    on the single slot; a second table is over-engineered for the
+    owner-approved 0..1-key MVP and adds cross-table transaction
+    surface for no functional gain.
+  - **Rotation vs revocation cache window formalized.** DB UPDATE is
+    immediate, but Worker isolate metadata caches may accept the
+    previous secret for up to their fixed 60-second TTL. Routine
+    rotation is **not** a compromise response; compromise flow is
+    revoke → wait ≥60 s → create, with WAF prefix/IP blocking as
+    emergency mitigation.
+  - **Historical per-profile active-key cap question is resolved.** The
+    full `UNIQUE (profile_id)` index makes the cap `= 1` by
+    construction, so the previously queued `≤ 5` client-side cap and
+    the Polish-layer `CHECK` cap migration are dropped. The pending
+    Approvals-ledger question moves to Standing approvals as
+    "stable-slot semantics".
+  - **Required SQL migration follow-up** (authoring is autonomous;
+    remote apply bundled into the batched operator window): add
+    `rotated_at`, swap partial `UNIQUE (profile_id) WHERE revoked_at
+    IS NULL` for full `UNIQUE (profile_id)` after preflight, rewrite
+    both create RPCs as atomic UPSERTs with the self-service branch
+    preserving tier/overrides and the admin branch setting the
+    partner tier, same `(id, raw_key, prefix, tier)` return shape.
+    Static contract tests to be extended alongside.
 
 ## Decision log — deferred remote rollout log
 

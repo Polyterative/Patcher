@@ -129,7 +129,7 @@ Rollback:
 - Revoke LOGIN or rotate the password and detach Hyperdrive if the credential is exposed.
 - Revoke affected API keys if runtime traffic may have been compromised.
 
-## 4a. Manual partner keys
+## 4a. Manual partner keys and stable-slot promotion
 
 **Manual approval gate:** partner keys bypass self-service tier assignment and must be intentionally provisioned for a known profile.
 
@@ -138,13 +138,52 @@ Contract:
 - Partner keys use the same wire shape and Worker pipeline as free keys.
 - The manually provisioned tier is `partner`, currently seeded at `500,000` requests/month and `600` requests/minute.
 - Provisioning is done by an approved operator through `public.create_partner_api_key(profile_uuid, label)` in an administrative SQL context (`postgres` or `service_role` only).
+- `create_partner_api_key` is an atomic UPSERT on the profile's single credential slot. It **promotes** the same `api_keys` row to `tier_code = 'partner'`, rotates the secret material, and preserves `id`, current-month usage (`api_key_usage_monthly`), and the Durable Object identity. If the profile has no slot yet, a new one is created directly at the partner tier.
 - The raw key is returned once. Store it in the approved secret delivery channel and never commit it.
 - `anon` and `authenticated` callers must receive `42501`.
 
+Downgrade (partner → free):
+
+- There is no self-service or RPC path to downgrade. The self-service `create_api_key` explicitly preserves the current `tier_code` and any operator-set quota overrides, so it will never demote a partner slot.
+- Downgrade is a direct Postgres statement executed by an approved operator against the profile's `api_keys` row (setting `tier_code = 'free'` and clearing `monthly_quota_override` / `per_minute_quota_override`). Do not paste example SQL into runbooks, tickets, or chat; operators compose it in-session against the target `profile_id` after confirming the correct row.
+
 Rollback:
 
-- Revoke the partner key through `public.revoke_api_key` or an approved administrative revocation path.
+- Revoke the partner key through `public.revoke_api_key` or an approved administrative revocation path. Revocation flips `revoked_at`; it does not delete the slot.
 - If the partner key leaked, also add a short-lived WAF block by key prefix while revocation propagates.
+- If the wrong profile was promoted, downgrade the slot as described above; do not attempt to "delete and recreate" — that would reset usage and Durable Object state.
+
+## 4b. Slot rotation vs revocation, and the ≤60 s compromise window
+
+**Manual approval gate:** compromise response (as opposed to routine rotation) is a production security operation and must be logged.
+
+Model recap:
+
+- Every profile owns at most one `api_keys` row for its lifetime, keyed by a full `UNIQUE (profile_id)` index. Create, rotate, revoke, and re-activate all operate on the same row and preserve its `id`, current-month usage, tier, and Durable Object identity.
+- `revoked_at IS NULL` is the canonical "currently active" predicate.
+
+Routine rotation (self-service):
+
+- The self-service `public.create_api_key(label)` UPSERT rewrites `key_hash` / `key_prefix` and stamps `rotated_at = now()` on the caller's slot. `tier_code`, `monthly_quota_override`, and `per_minute_quota_override` are preserved. `revoked_at` is cleared, so a previously revoked slot can be re-activated by rotating a fresh secret into it.
+- Database state changes are effective immediately, but the Worker's isolate metadata cache may continue to accept the previous secret for up to its fixed 60-second TTL. This dual-accept window is intentional: it lets legitimate callers finish in-flight requests without a hard cutover.
+- Routine rotation is **not** a compromise response. Do not rely on rotation alone to invalidate a leaked secret.
+
+Revocation:
+
+- `public.revoke_api_key` (self-service) or an administrative equivalent flips `revoked_at` on the slot. The slot row remains, so usage history and tier metadata are preserved.
+- Revocation propagates to the Worker on the same ≤60 s isolate cache boundary as rotation. After that window, the Worker returns `401 revoked_api_key`.
+- A revoked slot can be re-activated by calling `create_api_key(label)` on the same profile; the same `id`, tier, and overrides return, with fresh secret material.
+
+Compromise flow (leaked secret, hostile use, or unknown exposure):
+
+1. Revoke the slot immediately via `public.revoke_api_key`. Note the wall-clock time.
+2. Wait at least 60 seconds — long enough for every Worker isolate to have expired its metadata cache. Do **not** re-mint before this bound elapses; the leaked secret would remain accepted alongside the new one until the cache turns over.
+3. Once the window has elapsed, call `create_api_key(label)` (or `create_partner_api_key` for a partner slot) to mint fresh secret material into the same slot.
+4. If the compromise is active and cannot wait 60 seconds, add an emergency Cloudflare WAF rule blocking the leaked key by prefix (and, if known, source IP) for the duration of the window. Remove the WAF rule after the fresh secret is issued and verified.
+
+Auditability:
+
+- Every rotation stamps `rotated_at`; every revocation stamps `revoked_at`. Old hash material is not retained for MVP, so historical secret material cannot be recovered by design — the slot's identity persists, but its cryptographic contents do not.
 
 ## 5. Supavisor transaction mode and Hyperdrive
 
