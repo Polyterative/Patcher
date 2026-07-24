@@ -39,6 +39,7 @@ second source of rules.
 | [DESIGN_LANGUAGE.md](./DESIGN_LANGUAGE.md) | Visual philosophy, character, inspirations, responsive rules, and anti-patterns |
 | [UI_CONSISTENCY_AUDIT.md](./UI_CONSISTENCY_AUDIT.md) | Read-only UI consistency audit findings across app surfaces |
 | [agents/README.md](./agents/README.md) | Specialised agent personas, including [`feature-notetaker`](./agents/feature-notetaker.md) for idea intake and [`coordinator-loop`](./agents/coordinator-loop.md) for the full TODO → implementation → review → archive cycle |
+| [workflow/plans/public-open-api.md](./workflow/plans/public-open-api.md) | Active Public Open API plan, rollout gates, and local validation notes |
 
 ### Patterns and Testing
 
@@ -68,6 +69,8 @@ second source of rules.
 | [ops/RELEASE_PROCESS.md](./ops/RELEASE_PROCESS.md) | Release branch runbook and history-safety notes |
 | [ops/SENTRY_TRIAGE.md](./ops/SENTRY_TRIAGE.md) | Sentry live-issue triage, fixing, and closing workflow |
 | [ops/VERCEL_CI_GATE.md](./ops/VERCEL_CI_GATE.md) | Vercel ignored-build CI gate behavior, token requirements, and troubleshooting |
+| [../cloudflare/public-api/README.md](../cloudflare/public-api/README.md) | Public Open API Worker developer/operator overview |
+| [../cloudflare/public-api/RUNBOOK.md](../cloudflare/public-api/RUNBOOK.md) | Public Open API gated rollout, rollback, incident, and rotation runbook |
 
 ## Legacy Compatibility Stubs
 

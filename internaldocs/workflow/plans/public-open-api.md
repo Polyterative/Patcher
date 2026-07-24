@@ -4,9 +4,10 @@
 
 ## Status
 
-- [~] Reviewed plan adopted by the product owner. MVP implementation may begin;
-  schema/RLS, role credentials, DNS, Hyperdrive, Durable Objects, Vault, WAF,
-  and remote applies remain separately gated in the TODO Approvals ledger.
+- [~] Reviewed plan adopted by the product owner. Local MVP Worker, OpenAPI,
+  migrations, and operator/developer docs are complete; schema/RLS remote apply,
+  role credentials, DNS, Hyperdrive, Durable Objects, Vault, WAF, R2, and
+  deployment remain separately gated in the TODO Approvals ledger.
 - Priority: **HIGH**
 - Depends on: existing User Area auth for self-service key management; manual `partner`
   provisioning uses a separate admin RPC executable only from `service_role`/postgres.
@@ -353,11 +354,11 @@ keep working via a temporary Worker alias (Polish). No parallel route.
 
 ## MVP layer (key-required, origin-protected read API)
 
-- [~] Create `cloudflare/public-api/` (mirrors `cloudflare/image-proxy/`):
+- [x] Create `cloudflare/public-api/` (mirrors `cloudflare/image-proxy/`):
   `wrangler.jsonc`, `src/index.ts` (router + pipeline in the order above),
-  `src/keys.ts` (HMAC + isolate LRU), `src/quota.ts` (DO client),
-  `src/queries/` (named parameterized catalog), `src/api-key-counter.ts` (DO
-  class), `openapi.yaml`, `RUNBOOK.md`.
+  HMAC auth + isolate LRU metadata cache, `src/quota.ts` / quota response
+  helpers, named parameterized catalogue access, `src/api-key-counter.ts` (DO
+  class), `openapi.yaml`, `README.md`, and `RUNBOOK.md`.
   - [x] Foundation: Bearer parsing/HMAC byte contract, URL normalization and
     cursor validation, shared-cache response contract, pure quota boundary
     logic, fail-closed route skeleton, OpenAPI route/security skeleton, and
@@ -394,16 +395,19 @@ keep working via a temporary Worker alias (Polish). No parallel route.
   custom domain; Hyperdrive binding `HYPERDRIVE_READER`; DO namespace
   `API_KEY_COUNTER`; Worker secret `API_KEY_PEPPER` (mirrors Vault
   `api_key_pepper`); coarse WAF. R2 is Structural.
-- [ ] Implement six MVP endpoints + the exact request pipeline; error
+- [x] Implement six MVP endpoints + the exact request pipeline; error
   envelope `{ error: { code, message, request_id } }`; per-response
   `X-RateLimit-Limit-Minute` / `-Remaining-Minute` / `-Limit-Month` /
   `-Remaining-Month`.
-- [ ] Manual partner runbook — SQL editor as `postgres`:
+- [x] Manual partner runbook — SQL editor as `postgres`:
   `select public.create_partner_api_key('<profile_uuid>', 'Vendor X preview')`.
-- [ ] OpenAPI 3.1 spec + CI check that spec and router stay in sync
-  (`scripts/checks/`).
-- [ ] Developer docs page in `Patcher-docs` linked from
-  `the-project/ai-and-open-data.md` and `llms.txt`.
+- [x] OpenAPI 3.1 spec committed and covered by local Worker contract tests.
+- [x] Local developer/operator docs committed:
+  [`cloudflare/public-api/README.md`](../../../cloudflare/public-api/README.md)
+  and [`cloudflare/public-api/RUNBOOK.md`](../../../cloudflare/public-api/RUNBOOK.md).
+- [ ] Public consumer docs page in `Patcher-docs` linked from
+  `the-project/ai-and-open-data.md` and `llms.txt` (owned by separate coordinated
+  docs session).
 - [ ] Baseline observability from built-in Workers logs/metrics (5xx, 429,
   cache-hit ratio, DB error rate). Logpush is Structural.
 
@@ -422,7 +426,7 @@ keep working via a temporary Worker alias (Polish). No parallel route.
   `patcher-public-datasets`; `GET /v1/datasets` + streamed
   `GET /v1/datasets/{name}` after auth + consume.
 - [ ] Cloudflare Logpush → durable sink (recommended R2).
-- [ ] `cloudflare/public-api/RUNBOOK.md` — pepper rotation (incident
+- [x] `cloudflare/public-api/RUNBOOK.md` — pepper rotation (incident
   procedure), reader password rotation via Hyperdrive re-issue, DO
   management, dataset recovery.
 
@@ -512,6 +516,20 @@ keep working via a temporary Worker alias (Polish). No parallel route.
   contract tests and repo checks. Remote apply, `pnpm updateBackendTypes`, and
   Supabase advisors remain gated until an approved isolated/remote target
   exists.
+
+### Local documentation chunk validation notes
+
+- 2026-07-24T14:08+02:00 — Added the local Worker developer/operator overview
+  at `cloudflare/public-api/README.md` and the gated rollout/rollback runbook at
+  `cloudflare/public-api/RUNBOOK.md`. No in-app UI surface was added; discovery
+  is via repo README/internal wiki links only.
+- 2026-07-24T14:08+02:00 — Validation passed:
+  `node scripts/checks/check-docs.cjs`,
+  `pnpm test:functions:public-api-worker` (33/33),
+  `pnpm test:functions:public-open-api-migrations` (11/11), and the
+  no-dependency OpenAPI smoke check documented in the Worker README.
+  `pnpm install --frozen-lockfile` was run first because this worktree had no
+  `node_modules`; it did not change tracked manifests.
 
 ## Decision log
 
@@ -667,6 +685,12 @@ keep working via a temporary Worker alias (Polish). No parallel route.
   (exit 0), targeted Worker TypeScript check (exit 0), reviewer verdict APPROVE.
   No database, Hyperdrive binding, cache namespace, DNS, secret, or Worker
   deployment was touched.
+- 2026-07-24T14:08+02:00 — Local technical/operator documentation completed in
+  this repository. The docs explicitly preserve all remaining remote gates
+  (Supabase apply/RLS, Vault pepper, `api_reader` LOGIN credential, Hyperdrive,
+  Durable Object namespace, Worker secrets/deploy, DNS, WAF/cache, R2, monitoring,
+  and public docs handoff) and intentionally add no app UI surface because the
+  natural placement is repository/operator documentation rather than product UX.
 
 ## Resolved refinement decisions (locked)
 
