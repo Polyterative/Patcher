@@ -30,6 +30,8 @@ import {
 } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { ErrorCodes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/app-form-utils';
+import { environment } from 'src/environments/environment';
+import { DeveloperApiKeysComponent } from './developer-api-keys/developer-api-keys.component';
 
 
 /** Cross-field validator: confirm password must match new password */
@@ -50,10 +52,11 @@ export function confirmMatchesNewValidator(): ValidatorFn {
     templateUrl: './user-management.component.html',
     styleUrls: ['./user-management.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [ScreenWrapperComponent, HeroContentCardComponent, LabelValueShowcaseComponent, FormsModule, ReactiveFormsModule, MatFormField, MatLabel, MatInput, NgIf, MatError, MatButton, MatIcon, BrandPrimaryButtonComponent, MatTooltip, AsyncPipe, TitleCasePipe, TimeagoModule, SupabaseUtcTimestampPipe]
+    imports: [ScreenWrapperComponent, HeroContentCardComponent, LabelValueShowcaseComponent, FormsModule, ReactiveFormsModule, MatFormField, MatLabel, MatInput, NgIf, MatError, MatButton, MatIcon, BrandPrimaryButtonComponent, MatTooltip, AsyncPipe, TitleCasePipe, TimeagoModule, SupabaseUtcTimestampPipe, DeveloperApiKeysComponent]
 })
 export class UserManagementComponent implements OnInit {
   @Input() ignoreSeo: boolean = false;
+  developerApiEnabled = environment.features.developerApiEnabled;
   
   editingUsername = false;
   checkingUsernameAvailability = false;

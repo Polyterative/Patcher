@@ -34,6 +34,9 @@ export class DbPaths {
   static shipping_addresses = 'shipping_addresses' as const;
   static marketplace_listings = 'marketplace_listings' as const;
   static listing_media = 'listing_media' as const;
+  static api_keys = 'api_keys' as const;
+  static api_tiers = 'api_tiers' as const;
+  static api_key_usage_monthly = 'api_key_usage_monthly' as const;
 
 }
 

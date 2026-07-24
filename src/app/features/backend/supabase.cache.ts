@@ -101,6 +101,7 @@ export type CachedEntity =
   | 'marketplaceListings'
   | 'marketplaceListingWithId'
   | 'currentUserMarketplaceListings'
+  | 'apiKeys'
   | void;
 
 export const cacheBuster$ = new Subject<CachedEntity[]>();

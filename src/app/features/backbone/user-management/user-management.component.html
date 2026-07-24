@@ -158,6 +158,10 @@
                     <app-label-value-showcase label="Account ID (for support inquiries)">{{ bag.user.id }}
                     </app-label-value-showcase>
                   </div>
+                  @if (developerApiEnabled) {
+                    <div class="account-section-separator" aria-hidden="true"></div>
+                    <app-developer-api-keys></app-developer-api-keys>
+                  }
                 </div>
 
                 <div class="row gap1 danger-zone">
