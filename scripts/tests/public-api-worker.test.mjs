@@ -17,6 +17,8 @@ import {
 } from '../../cloudflare/public-api/src/cache.ts';
 import {
   normalizeModuleRow,
+  normalizeStandardRow,
+  normalizeTagRow,
 } from '../../cloudflare/public-api/src/catalogue-mapping.ts';
 import {
   normalizeRecordUsageInput,
@@ -78,7 +80,7 @@ const manufacturerOne = {
   logo: 'logo.svg',
 };
 const standardOne = { id: 1, name: 'Eurorack' };
-const tagOne = { id: 5, name: 'Oscillator', type: 'function' };
+const tagOne = { id: 5, name: 'Oscillator', type: 'source' };
 
 test('parses only well-formed Bearer API keys', () => {
   assert.deepEqual(parseApiKeyAuthorization(null), {
@@ -140,6 +142,18 @@ test('normalizes query parameters into an authorization-independent cache key', 
     `https://api.patcher.xyz/v1/modules?cursor=${cursor}`
   );
   assert.equal(validCursor.ok, true);
+
+  const zeroIdCursor = Buffer.from(
+    JSON.stringify({ v: 1, s: '3U', id: 0 })
+  ).toString('base64url');
+  assert.equal(
+    normalizeApiRequest(`https://api.patcher.xyz/v1/standards?cursor=${zeroIdCursor}`).ok,
+    true
+  );
+  assert.equal(
+    normalizeApiRequest('https://api.patcher.xyz/v1/modules?standard=0').ok,
+    true
+  );
 
   const unsupportedSort = normalizeApiRequest(
     'https://api.patcher.xyz/v1/modules?sort=updated'
@@ -467,8 +481,30 @@ test('database named-query row and usage input validation is strict', () => {
   );
 });
 
+test('api key verification decodes the hex digest inside Postgres', () => {
+  const databaseSource = readFileSync('cloudflare/public-api/src/database.ts', 'utf8');
+  assert.match(
+    databaseSource,
+    /public\.verify_api_key\(decode\(\$\{digestHex\}, 'hex'\)\)/
+  );
+  assert.doesNotMatch(databaseSource, /digestBytea|\\\\x\$\{digestHex\}/);
+});
+
 test('catalogue row mapping fails closed on malformed database output', () => {
   assert.deepEqual(normalizeModuleRow(moduleOne), moduleOne);
+  assert.deepEqual(normalizeStandardRow({ id: 0, name: '3U' }), { id: 0, name: '3U' });
+  assert.deepEqual(
+    normalizeTagRow({ id: 1, name: 'Oscillator', type: 4 }),
+    { id: 1, name: 'Oscillator', type: 'source' }
+  );
+  assert.deepEqual(
+    normalizeTagRow({ id: 1, name: 'Oscillator', type: 'source' }),
+    { id: 1, name: 'Oscillator', type: 'source' }
+  );
+  assert.throws(
+    () => normalizeTagRow({ id: 1, name: 'Oscillator', type: 'function' }),
+    /recognized tag type/
+  );
   assert.throws(
     () => normalizeModuleRow({ ...moduleOne, id: 0 }),
     /positive integer/
@@ -528,6 +564,15 @@ test('worker serves module list, detail, references, filters, fields, and includ
     standard: 1,
     tag: 5,
   });
+
+  const zeroStandardProvider = new FakeCatalogueProvider();
+  const zeroStandard = await handlePublicApiRequest(
+    authenticatedRequest('GET', 'https://api.patcher.xyz/v1/modules?standard=0'),
+    env,
+    createWorkerRuntime({ catalogueProvider: zeroStandardProvider, cacheStore: null })
+  );
+  assert.equal(zeroStandard.status, 200);
+  assert.equal(zeroStandardProvider.calls[0].options.filters.standard, 0);
 
   const detail = await handlePublicApiRequest(
     authenticatedRequest('GET', 'https://api.patcher.xyz/v1/modules/1?include=ins,outs,panels,tags'),

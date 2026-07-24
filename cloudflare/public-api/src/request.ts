@@ -137,6 +137,14 @@ export function parseOptionalPositiveInteger(value: string | null): number | nul
   return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
 }
 
+export function parseOptionalNonnegativeInteger(value: string | null): number | null {
+  if (value === null) {
+    return null;
+  }
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed >= 0 ? parsed : null;
+}
+
 export function parseLimit(value: string | null): number {
   const parsed = Number(value ?? DEFAULT_LIMIT);
   return Number.isInteger(parsed) && parsed > 0 ? Math.min(parsed, MAX_LIMIT) : DEFAULT_LIMIT;
@@ -170,7 +178,13 @@ function normalizeValue(
       ? { ok: true, value: String(Math.min(parsed, MAX_LIMIT)) }
       : { ok: false, code: 'invalid_parameter', parameter: key };
   }
-  if (key === 'hp' || key === 'manufacturer_id' || key === 'standard' || key === 'tag') {
+  if (key === 'standard') {
+    const parsed = Number(value);
+    return Number.isInteger(parsed) && parsed >= 0
+      ? { ok: true, value: String(parsed) }
+      : { ok: false, code: 'invalid_parameter', parameter: key };
+  }
+  if (key === 'hp' || key === 'manufacturer_id' || key === 'tag') {
     const parsed = Number(value);
     return Number.isInteger(parsed) && parsed > 0
       ? { ok: true, value: String(parsed) }
@@ -310,5 +324,5 @@ function isCursor(value: unknown): value is CursorToken {
   return cursor.v === 1
     && (typeof cursor.s === 'string' || typeof cursor.s === 'number')
     && Number.isInteger(cursor.id)
-    && Number(cursor.id) > 0;
+    && Number(cursor.id) >= 0;
 }
