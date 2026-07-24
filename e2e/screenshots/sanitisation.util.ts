@@ -262,9 +262,16 @@ async function readCurrentAccountLabel(page: Page): Promise<string | null> {
     // `.title-sub` span, but the enclosing <h1> also contains the page
     // icon ligature text and (when public) an inline description, so
     // reading textContent off the whole h1 pulls in unrelated text.
-    // Prefer the scoped span; only fall back to whole-heading parsing
-    // (best-effort, may include trailing unrelated text) if it's absent.
-    const titleSub = document.querySelector('h1 .title-sub')?.textContent?.trim();
+    // `hero-content-card` is reused across many unrelated pages (patch
+    // details, rack details, embedded home-page previews, etc.), so we
+    // must only read `.title-sub` from the <h1> that is actually the
+    // "User area" heading -- a global `h1 .title-sub` selector would pick
+    // up unrelated content (e.g. a patch name) from any other
+    // hero-content-card on the page and corrupt it via the global text
+    // replacement below.
+    const userAreaHeading = Array.from(document.querySelectorAll('h1'))
+      .find(element => /^USER AREA\b/i.test(element.querySelector('.title-main')?.textContent?.trim() ?? ''));
+    const titleSub = userAreaHeading?.querySelector('.title-sub')?.textContent?.trim();
     if (titleSub) {
       return titleSub;
     }
