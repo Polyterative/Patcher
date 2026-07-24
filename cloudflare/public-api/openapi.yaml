@@ -2,6 +2,11 @@ openapi: 3.1.0
 info:
   title: Patcher Public API
   version: 1.0.0-preview
+  description: >
+    Preview contract for the key-required, read-only Public Open API. The local
+    Worker implementation accepts GET and HEAD for every documented route; HEAD
+    follows the same authentication, quota, cache, ETag, and error pipeline as
+    GET but returns no body.
   license:
     name: CC BY 4.0
     identifier: CC-BY-4.0
@@ -28,13 +33,23 @@ paths:
       responses:
         "200":
           description: Paginated public modules
-          headers:
+          headers: &SuccessHeaders
             ETag:
               $ref: "#/components/headers/ETag"
             X-Cache:
               $ref: "#/components/headers/XCache"
             X-Request-ID:
               $ref: "#/components/headers/XRequestId"
+            X-RateLimit-Limit-Month:
+              $ref: "#/components/headers/XRateLimitLimitMonth"
+            X-RateLimit-Remaining-Month:
+              $ref: "#/components/headers/XRateLimitRemainingMonth"
+            X-RateLimit-Limit-Minute:
+              $ref: "#/components/headers/XRateLimitLimitMinute"
+            X-RateLimit-Remaining-Minute:
+              $ref: "#/components/headers/XRateLimitRemainingMinute"
+            X-RateLimit-Reset:
+              $ref: "#/components/headers/XRateLimitReset"
           content:
             application/json:
               schema:
@@ -48,7 +63,34 @@ paths:
         "429":
           $ref: "#/components/responses/RateLimited"
         "503":
-          $ref: "#/components/responses/OriginUnavailable"
+          $ref: "#/components/responses/ServiceUnavailable"
+    head:
+      operationId: headModules
+      summary: Fetch headers for the public modules list
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/FieldsModule"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Sort"
+        - $ref: "#/components/parameters/QUnsupported"
+        - $ref: "#/components/parameters/ManufacturerIdFilter"
+        - $ref: "#/components/parameters/HpFilter"
+        - $ref: "#/components/parameters/StandardFilter"
+        - $ref: "#/components/parameters/TagFilter"
+        - $ref: "#/components/parameters/ModuleInclude"
+      responses:
+        "200":
+          $ref: "#/components/responses/HeadOk"
+        "304":
+          $ref: "#/components/responses/NotModified"
+        "400":
+          $ref: "#/components/responses/HeadBadRequest"
+        "401":
+          $ref: "#/components/responses/HeadUnauthorized"
+        "429":
+          $ref: "#/components/responses/HeadRateLimited"
+        "503":
+          $ref: "#/components/responses/HeadServiceUnavailable"
   /modules/{id}:
     get:
       operationId: getModule
@@ -60,6 +102,7 @@ paths:
       responses:
         "200":
           description: Public module
+          headers: *SuccessHeaders
           content:
             application/json:
               schema:
@@ -75,7 +118,29 @@ paths:
         "429":
           $ref: "#/components/responses/RateLimited"
         "503":
-          $ref: "#/components/responses/OriginUnavailable"
+          $ref: "#/components/responses/ServiceUnavailable"
+    head:
+      operationId: headModule
+      summary: Fetch headers for a public module
+      parameters:
+        - $ref: "#/components/parameters/IntegerId"
+        - $ref: "#/components/parameters/FieldsModule"
+        - $ref: "#/components/parameters/ModuleInclude"
+      responses:
+        "200":
+          $ref: "#/components/responses/HeadOk"
+        "304":
+          $ref: "#/components/responses/NotModified"
+        "400":
+          $ref: "#/components/responses/HeadBadRequest"
+        "401":
+          $ref: "#/components/responses/HeadUnauthorized"
+        "404":
+          $ref: "#/components/responses/HeadNotFound"
+        "429":
+          $ref: "#/components/responses/HeadRateLimited"
+        "503":
+          $ref: "#/components/responses/HeadServiceUnavailable"
   /manufacturers:
     get:
       operationId: listManufacturers
@@ -89,6 +154,7 @@ paths:
       responses:
         "200":
           description: Paginated public manufacturers
+          headers: *SuccessHeaders
           content:
             application/json:
               schema:
@@ -102,7 +168,29 @@ paths:
         "429":
           $ref: "#/components/responses/RateLimited"
         "503":
-          $ref: "#/components/responses/OriginUnavailable"
+          $ref: "#/components/responses/ServiceUnavailable"
+    head:
+      operationId: headManufacturers
+      summary: Fetch headers for the public manufacturers list
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/FieldsManufacturer"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Sort"
+        - $ref: "#/components/parameters/QUnsupported"
+      responses:
+        "200":
+          $ref: "#/components/responses/HeadOk"
+        "304":
+          $ref: "#/components/responses/NotModified"
+        "400":
+          $ref: "#/components/responses/HeadBadRequest"
+        "401":
+          $ref: "#/components/responses/HeadUnauthorized"
+        "429":
+          $ref: "#/components/responses/HeadRateLimited"
+        "503":
+          $ref: "#/components/responses/HeadServiceUnavailable"
   /manufacturers/{id}:
     get:
       operationId: getManufacturer
@@ -114,6 +202,7 @@ paths:
       responses:
         "200":
           description: Public manufacturer
+          headers: *SuccessHeaders
           content:
             application/json:
               schema:
@@ -129,7 +218,29 @@ paths:
         "429":
           $ref: "#/components/responses/RateLimited"
         "503":
-          $ref: "#/components/responses/OriginUnavailable"
+          $ref: "#/components/responses/ServiceUnavailable"
+    head:
+      operationId: headManufacturer
+      summary: Fetch headers for a public manufacturer
+      parameters:
+        - $ref: "#/components/parameters/IntegerId"
+        - $ref: "#/components/parameters/FieldsManufacturer"
+        - $ref: "#/components/parameters/ManufacturerInclude"
+      responses:
+        "200":
+          $ref: "#/components/responses/HeadOk"
+        "304":
+          $ref: "#/components/responses/NotModified"
+        "400":
+          $ref: "#/components/responses/HeadBadRequest"
+        "401":
+          $ref: "#/components/responses/HeadUnauthorized"
+        "404":
+          $ref: "#/components/responses/HeadNotFound"
+        "429":
+          $ref: "#/components/responses/HeadRateLimited"
+        "503":
+          $ref: "#/components/responses/HeadServiceUnavailable"
   /standards:
     get:
       operationId: listStandards
@@ -143,6 +254,7 @@ paths:
       responses:
         "200":
           description: Paginated public standards
+          headers: *SuccessHeaders
           content:
             application/json:
               schema:
@@ -156,7 +268,29 @@ paths:
         "429":
           $ref: "#/components/responses/RateLimited"
         "503":
-          $ref: "#/components/responses/OriginUnavailable"
+          $ref: "#/components/responses/ServiceUnavailable"
+    head:
+      operationId: headStandards
+      summary: Fetch headers for public standards
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/FieldsStandard"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Sort"
+        - $ref: "#/components/parameters/QUnsupported"
+      responses:
+        "200":
+          $ref: "#/components/responses/HeadOk"
+        "304":
+          $ref: "#/components/responses/NotModified"
+        "400":
+          $ref: "#/components/responses/HeadBadRequest"
+        "401":
+          $ref: "#/components/responses/HeadUnauthorized"
+        "429":
+          $ref: "#/components/responses/HeadRateLimited"
+        "503":
+          $ref: "#/components/responses/HeadServiceUnavailable"
   /tags:
     get:
       operationId: listTags
@@ -170,6 +304,7 @@ paths:
       responses:
         "200":
           description: Paginated public tags
+          headers: *SuccessHeaders
           content:
             application/json:
               schema:
@@ -177,13 +312,35 @@ paths:
         "304":
           $ref: "#/components/responses/NotModified"
         "400":
-          $ref: "#/components/responses/BadRequest"
+          $ref: "#/components/responses/HeadBadRequest"
         "401":
-          $ref: "#/components/responses/Unauthorized"
+          $ref: "#/components/responses/HeadUnauthorized"
         "429":
-          $ref: "#/components/responses/RateLimited"
+          $ref: "#/components/responses/HeadRateLimited"
         "503":
-          $ref: "#/components/responses/OriginUnavailable"
+          $ref: "#/components/responses/HeadServiceUnavailable"
+    head:
+      operationId: headTags
+      summary: Fetch headers for public tags
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/FieldsTag"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Sort"
+        - $ref: "#/components/parameters/QUnsupported"
+      responses:
+        "200":
+          $ref: "#/components/responses/HeadOk"
+        "304":
+          $ref: "#/components/responses/NotModified"
+        "400":
+          $ref: "#/components/responses/HeadBadRequest"
+        "401":
+          $ref: "#/components/responses/HeadUnauthorized"
+        "429":
+          $ref: "#/components/responses/HeadRateLimited"
+        "503":
+          $ref: "#/components/responses/HeadServiceUnavailable"
 components:
   securitySchemes:
     apiKey:
@@ -280,7 +437,7 @@ components:
       schema:
         type: string
         enum: [ins, outs, tags, panels, "ins,outs,tags,panels"]
-      description: Comma-separated module includes: ins, outs, tags, panels.
+      description: "Comma-separated module includes: ins, outs, tags, panels."
     ManufacturerInclude:
       name: include
       in: query
@@ -300,23 +457,127 @@ components:
     XRequestId:
       schema:
         type: string
+      description: Per-request UUID emitted on success and error responses.
+    XRateLimitLimitMonth:
+      schema:
+        type: integer
+      description: Effective monthly request quota for the authenticated API key. Present only after quota has been consumed.
+    XRateLimitRemainingMonth:
+      schema:
+        type: integer
+      description: Requests remaining in the current monthly window for the authenticated API key. Present only after quota has been consumed.
+    XRateLimitLimitMinute:
+      schema:
+        type: integer
+      description: Effective per-minute request quota for the authenticated API key. Present only after quota has been consumed.
+    XRateLimitRemainingMinute:
+      schema:
+        type: integer
+      description: Requests remaining in the current minute window for the authenticated API key. Present only after quota has been consumed.
+    XRateLimitReset:
+      schema:
+        type: string
+        format: date-time
+      description: Current minute-window start timestamp emitted by the MVP Worker. Despite the header name, this is not the next reset time.
+    RetryAfter:
+      schema:
+        type: integer
+      description: Seconds until the blocked minute or month quota window can accept another request.
   responses:
+    HeadOk:
+      description: Headers for the matching GET response; no response body.
+      headers: *SuccessHeaders
+    HeadBadRequest:
+      description: Invalid, unknown, or unsupported query parameter; no response body for HEAD.
+      headers:
+        X-Request-ID:
+          $ref: "#/components/headers/XRequestId"
+    HeadUnauthorized:
+      description: Missing, malformed, unknown, or revoked API key; no response body for HEAD.
+      headers:
+        X-Request-ID:
+          $ref: "#/components/headers/XRequestId"
+    HeadNotFound:
+      description: Resource not found; no response body for HEAD.
+      headers:
+        X-Request-ID:
+          $ref: "#/components/headers/XRequestId"
+        X-RateLimit-Limit-Month:
+          $ref: "#/components/headers/XRateLimitLimitMonth"
+        X-RateLimit-Remaining-Month:
+          $ref: "#/components/headers/XRateLimitRemainingMonth"
+        X-RateLimit-Limit-Minute:
+          $ref: "#/components/headers/XRateLimitLimitMinute"
+        X-RateLimit-Remaining-Minute:
+          $ref: "#/components/headers/XRateLimitRemainingMinute"
+        X-RateLimit-Reset:
+          $ref: "#/components/headers/XRateLimitReset"
+    HeadRateLimited:
+      description: API key quota exceeded; no response body for HEAD.
+      headers:
+        Retry-After:
+          $ref: "#/components/headers/RetryAfter"
+        X-Request-ID:
+          $ref: "#/components/headers/XRequestId"
+        X-RateLimit-Limit-Month:
+          $ref: "#/components/headers/XRateLimitLimitMonth"
+        X-RateLimit-Remaining-Month:
+          $ref: "#/components/headers/XRateLimitRemainingMonth"
+        X-RateLimit-Limit-Minute:
+          $ref: "#/components/headers/XRateLimitLimitMinute"
+        X-RateLimit-Remaining-Minute:
+          $ref: "#/components/headers/XRateLimitRemainingMinute"
+        X-RateLimit-Reset:
+          $ref: "#/components/headers/XRateLimitReset"
+    HeadServiceUnavailable:
+      description: Service unavailable; no response body for HEAD.
+      headers:
+        X-Request-ID:
+          $ref: "#/components/headers/XRequestId"
+        X-RateLimit-Limit-Month:
+          $ref: "#/components/headers/XRateLimitLimitMonth"
+        X-RateLimit-Remaining-Month:
+          $ref: "#/components/headers/XRateLimitRemainingMonth"
+        X-RateLimit-Limit-Minute:
+          $ref: "#/components/headers/XRateLimitLimitMinute"
+        X-RateLimit-Remaining-Minute:
+          $ref: "#/components/headers/XRateLimitRemainingMinute"
+        X-RateLimit-Reset:
+          $ref: "#/components/headers/XRateLimitReset"
     NotModified:
       description: ETag matched; no body. Quota and cache headers still reflect this request.
+      headers: *SuccessHeaders
     BadRequest:
       description: Invalid, unknown, or unsupported query parameter.
+      headers: &PreQuotaErrorHeaders
+        X-Request-ID:
+          $ref: "#/components/headers/XRequestId"
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
     Unauthorized:
       description: Missing, malformed, unknown, or revoked API key.
+      headers: *PreQuotaErrorHeaders
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
     NotFound:
       description: Resource not found.
+      headers: &PostQuotaErrorHeaders
+        X-Request-ID:
+          $ref: "#/components/headers/XRequestId"
+        X-RateLimit-Limit-Month:
+          $ref: "#/components/headers/XRateLimitLimitMonth"
+        X-RateLimit-Remaining-Month:
+          $ref: "#/components/headers/XRateLimitRemainingMonth"
+        X-RateLimit-Limit-Minute:
+          $ref: "#/components/headers/XRateLimitLimitMinute"
+        X-RateLimit-Remaining-Minute:
+          $ref: "#/components/headers/XRateLimitRemainingMinute"
+        X-RateLimit-Reset:
+          $ref: "#/components/headers/XRateLimitReset"
       content:
         application/json:
           schema:
@@ -325,14 +586,30 @@ components:
       description: API key quota exceeded.
       headers:
         Retry-After:
-          schema:
-            type: integer
+          $ref: "#/components/headers/RetryAfter"
+        X-Request-ID:
+          $ref: "#/components/headers/XRequestId"
+        X-RateLimit-Limit-Month:
+          $ref: "#/components/headers/XRateLimitLimitMonth"
+        X-RateLimit-Remaining-Month:
+          $ref: "#/components/headers/XRateLimitRemainingMonth"
+        X-RateLimit-Limit-Minute:
+          $ref: "#/components/headers/XRateLimitLimitMinute"
+        X-RateLimit-Remaining-Minute:
+          $ref: "#/components/headers/XRateLimitRemainingMinute"
+        X-RateLimit-Reset:
+          $ref: "#/components/headers/XRateLimitReset"
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
-    OriginUnavailable:
-      description: Public catalogue origin temporarily unavailable.
+    ServiceUnavailable:
+      description: >
+        Service unavailable. The Worker may emit configuration_error,
+        authentication_unavailable, quota_unavailable, or origin_unavailable.
+        Quota headers are present only when quota was consumed before the 503
+        (for example, origin_unavailable).
+      headers: *PostQuotaErrorHeaders
       content:
         application/json:
           schema:
