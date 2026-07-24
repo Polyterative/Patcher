@@ -22,7 +22,8 @@
 #### Layer 1 — MVP
 
 - [x] Revise plan and pass backend review (`APPROVE WITH CHANGES`).
-- [~] Await product approval before implementation or gated infrastructure/schema work.
+- [x] Obtain product approval for the reviewed implementation baseline.
+- [~] Build safe MVP code/scaffolding; infrastructure/schema work remains gated.
 - [ ] Build the key-required, origin-protected modules/manufacturers API (Cloudflare Worker + Supavisor `api_reader` role + `api_v1_*` views + HMAC-pepper keys + Durable Object quota).
 
 #### Layer 2 — Structural
@@ -33,7 +34,7 @@
 
 - [ ] Add contract lifecycle/DX polish, retire widget-pilot alias, then public patch and rack endpoints via `public_id`.
 
-Status: Backend plan review passed; awaiting product approval (TODO Approvals ledger gate 1).
+Status: Reviewed plan adopted; safe MVP implementation may begin while infrastructure/schema gates remain pending.
 Updated: 2026-07-24
 
 Recent completed checkpoints are archived in [COMPLETED.md](./COMPLETED.md); their validation
