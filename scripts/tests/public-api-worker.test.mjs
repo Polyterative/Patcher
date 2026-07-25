@@ -17,6 +17,7 @@ import {
 } from '../../cloudflare/public-api/src/cache.ts';
 import {
   normalizeModuleRow,
+  normalizePanelRow,
   normalizeStandardRow,
   normalizeTagRow,
 } from '../../cloudflare/public-api/src/catalogue-mapping.ts';
@@ -501,9 +502,20 @@ test('catalogue row mapping fails closed on malformed database output', () => {
     normalizeTagRow({ id: 1, name: 'Oscillator', type: 'source' }),
     { id: 1, name: 'Oscillator', type: 'source' }
   );
+  assert.deepEqual(
+    normalizePanelRow({ id: 1, moduleid: 2, color: 1, description: 'Aluminum' }),
+    {
+      moduleId: 2,
+      panel: { id: 1, color: 'Light', description: 'Aluminum' },
+    }
+  );
   assert.throws(
     () => normalizeTagRow({ id: 1, name: 'Oscillator', type: 'function' }),
     /recognized tag type/
+  );
+  assert.throws(
+    () => normalizePanelRow({ id: 1, moduleid: 2, color: 5, description: null }),
+    /recognized panel color/
   );
   assert.throws(
     () => normalizeModuleRow({ ...moduleOne, id: 0 }),
@@ -515,27 +527,60 @@ test('catalogue row mapping fails closed on malformed database output', () => {
   );
 });
 
-test('Hyperdrive catalogue provider uses named parameterized batch queries', async () => {
-  const sql = createCatalogueSql();
-  const provider = new HyperdriveCatalogueProvider(sql);
-  const page = await provider.listModules({
+test('Hyperdrive catalogue provider expands every module include with value-list batches', async () => {
+  const cases = [
+    { include: ['ins'], expected: ['ins'] },
+    { include: ['outs'], expected: ['outs'] },
+    { include: ['panels'], expected: ['panels'] },
+    { include: ['tags'], expected: ['tags'] },
+    {
+      include: ['ins', 'outs', 'panels', 'tags'],
+      expected: ['ins', 'outs', 'panels', 'tags'],
+    },
+  ];
+
+  for (const scenario of cases) {
+    const sql = createCatalogueSql();
+    const provider = new HyperdriveCatalogueProvider(sql);
+    const page = await provider.listModules({
+      cursor: null,
+      fields: null,
+      filters: { hp: 8, manufacturerId: 10, standard: 1, tag: 5 },
+      include: scenario.include,
+      limit: 1,
+      sort: 'name',
+    });
+
+    assert.equal(page.data.length, 1);
+    assert.deepEqual(
+      Object.keys(page.data[0]).filter(key => ['ins', 'outs', 'panels', 'tags'].includes(key)),
+      scenario.expected
+    );
+    assert.equal(sql.valueLists.length, scenario.include.length);
+    assert.equal(
+      sql.calls.filter(call => call.values.some(value => value?.kind === 'value-list')).length,
+      scenario.include.length
+    );
+    assert.equal(sql.calls.some(call => /select\s+\*/i.test(call.text)), false);
+    assert.ok(sql.calls[0].values.includes(8));
+    assert.equal(sql.calls[0].text.includes('Alpha VCO'), false);
+  }
+
+  const combinedSql = createCatalogueSql();
+  const combinedProvider = new HyperdriveCatalogueProvider(combinedSql);
+  const combined = await combinedProvider.listModules({
     cursor: null,
     fields: null,
-    filters: { hp: 8, manufacturerId: 10, standard: 1, tag: 5 },
-    include: ['ins', 'tags'],
+    filters: { hp: null, manufacturerId: null, standard: 0, tag: null },
+    include: ['ins', 'outs', 'panels', 'tags'],
     limit: 1,
     sort: 'name',
   });
-
-  assert.equal(page.data.length, 1);
-  assert.equal(page.data[0].ins.length, 1);
-  assert.equal(page.data[0].tags[0].id, tagOne.id);
-  assert.equal(sql.calls.length, 3);
-  assert.equal(sql.calls.some(call => /select\s+\*/i.test(call.text)), false);
-  assert.equal(sql.calls.filter(call => call.text.includes('api_v1_module_ins')).length, 1);
-  assert.equal(sql.calls.filter(call => call.text.includes('join public.api_v1_tags')).length, 1);
-  assert.ok(sql.calls[0].values.includes(8));
-  assert.equal(sql.calls[0].text.includes('Alpha VCO'), false);
+  assert.equal(combined.data[0].ins[0].name, 'Pitch');
+  assert.equal(combined.data[0].outs[0].name, 'Audio');
+  assert.equal(combined.data[0].panels[0].color, 'Light');
+  assert.deepEqual(combined.data[0].tags, [tagOne]);
+  assert.deepEqual(combinedSql.valueLists, [[1], [1], [1], [1]]);
 });
 
 test('worker serves module list, detail, references, filters, fields, and includes', async () => {
@@ -1291,6 +1336,11 @@ function encodeCursor(item, sort) {
 function createCatalogueSql() {
   const calls = [];
   const sql = (strings, ...values) => {
+    if (!Array.isArray(strings) || !Object.hasOwn(strings, 'raw')) {
+      assert.ok(Array.isArray(strings), 'batch query values must be an array');
+      sql.valueLists.push([...strings]);
+      return { kind: 'value-list', values: [...strings] };
+    }
     const text = strings.join('?');
     calls.push({ text, values });
     if (text.includes('from public.api_v1_modules m')) {
@@ -1308,13 +1358,41 @@ function createCatalogueSql() {
         max: 5,
       }]);
     }
+    if (text.includes('from public.api_v1_module_outs')) {
+      return Promise.resolve([{
+        id: 200,
+        moduleid: 1,
+        name: 'Audio',
+        is_audio: true,
+        is_dcc: false,
+        is_voct: false,
+        min: -10,
+        max: 10,
+      }]);
+    }
+    if (text.includes('from public.api_v1_module_panels')) {
+      return Promise.resolve([{
+        id: 300,
+        moduleid: 1,
+        color: 1,
+        description: 'Aluminum',
+      }]);
+    }
     if (text.includes('from public.api_v1_module_tags')) {
-      return Promise.resolve([{ moduleid: 1, ...tagOne }]);
+      return Promise.resolve([{
+        moduleid: 1,
+        id: tagOne.id,
+        name: tagOne.name,
+        type: 4,
+      }]);
     }
     return Promise.resolve([]);
   };
-  sql.array = (values, type) => ({ values, type });
+  sql.array = () => {
+    throw new Error('array parameters require fetched PostgreSQL array OIDs');
+  };
   sql.calls = calls;
+  sql.valueLists = [];
   return sql;
 }
 

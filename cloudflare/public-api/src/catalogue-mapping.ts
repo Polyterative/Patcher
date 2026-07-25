@@ -62,6 +62,13 @@ const TAG_TYPE_NAMES: Readonly<Record<number, string>> = {
   10: 'blank',
 };
 const TAG_TYPE_NAME_SET = new Set(Object.values(TAG_TYPE_NAMES));
+const PANEL_COLOR_NAMES: Readonly<Record<number, string>> = {
+  1: 'Light',
+  2: 'Dark',
+  3: 'Special edition',
+  4: 'Limited edition',
+};
+const PANEL_COLOR_NAME_SET = new Set(Object.values(PANEL_COLOR_NAMES));
 
 export function normalizeModuleRow(row: unknown): PublicModuleSummary {
   const value = record(row, 'module');
@@ -136,7 +143,7 @@ export function normalizePanelRow(row: unknown): { moduleId: number; panel: Publ
     moduleId: positiveInteger(value.moduleid, 'panel.moduleid'),
     panel: {
       id: positiveInteger(value.id, 'panel.id'),
-      color: nullableString(value.color, 'panel.color'),
+      color: panelColor(value.color, 'panel.color'),
       description: nullableString(value.description, 'panel.description'),
     },
   };
@@ -284,6 +291,19 @@ function tagType(value: unknown, label: string): string | null {
     return TAG_TYPE_NAMES[Number(value)];
   }
   throw new MalformedCatalogueRowError(`${label} must be a recognized tag type`);
+}
+
+function panelColor(value: unknown, label: string): string | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  if (typeof value === 'string' && PANEL_COLOR_NAME_SET.has(value)) {
+    return value;
+  }
+  if (Number.isInteger(value) && PANEL_COLOR_NAMES[Number(value)]) {
+    return PANEL_COLOR_NAMES[Number(value)];
+  }
+  throw new MalformedCatalogueRowError(`${label} must be a recognized panel color`);
 }
 
 function nullableInteger(value: unknown, label: string): number | null {
