@@ -54,7 +54,7 @@ const DEFAULT_SUPABASE_URL = 'https://sozmatmywjpstwidzlss.supabase.co';
 const WRITE_KEY_HELP = 'Set SUPABASE_SERVICE_ROLE_KEY or SUPABASE_SERVICE_KEY in your shell, .env, .env.local, or PRICE_HUB_ENV_FILE, or pass --supabase-key=...';
 const ACCEPTED_STATUSES = DEFAULT_ACCEPTED_STATUSES;
 const PRODUCT_URL_LOOKUP_BATCH_SIZE = 100;
-const MODULE_ID_LOOKUP_BATCH_SIZE = 1000;
+const MODULE_ID_LOOKUP_BATCH_SIZE = 500;
 const LISTING_DEACTIVATION_BATCH_SIZE = 100;
 const ACTIVE_LISTING_LOOKUP_PAGE_SIZE = 500;
 
@@ -510,7 +510,7 @@ async function readMatchesWithExistingModules(
   };
 }
 
-async function readExistingModuleIds(
+export async function readExistingModuleIds(
   supabase: SupabaseClient<Database>,
   moduleIds: readonly number[],
 ): Promise<ReadonlySet<number>> {
