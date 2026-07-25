@@ -18,6 +18,7 @@ import {
 import {
   normalizeModuleRow,
   normalizePanelRow,
+  normalizePortRow,
   normalizeStandardRow,
   normalizeTagRow,
 } from '../../cloudflare/public-api/src/catalogue-mapping.ts';
@@ -503,10 +504,34 @@ test('catalogue row mapping fails closed on malformed database output', () => {
     { id: 1, name: 'Oscillator', type: 'source' }
   );
   assert.deepEqual(
-    normalizePanelRow({ id: 1, moduleid: 2, color: 1, description: 'Aluminum' }),
+    normalizePortRow({
+      id: 286,
+      moduleid: 1796,
+      name: 'ID 1',
+      is_audio: null,
+      is_dcc: null,
+      is_voct: null,
+      min: -10,
+      max: 10,
+    }),
     {
-      moduleId: 2,
-      panel: { id: 1, color: 'Light', description: 'Aluminum' },
+      moduleId: 1796,
+      port: {
+        id: 286,
+        name: 'ID 1',
+        is_audio: null,
+        is_dcc: null,
+        is_voct: null,
+        min: -10,
+        max: 10,
+      },
+    }
+  );
+  assert.deepEqual(
+    normalizePanelRow({ id: '65', moduleid: 1796, color: 1, description: '' }),
+    {
+      moduleId: 1796,
+      panel: { id: 65, color: 'Light', description: '' },
     }
   );
   assert.throws(
@@ -516,6 +541,28 @@ test('catalogue row mapping fails closed on malformed database output', () => {
   assert.throws(
     () => normalizePanelRow({ id: 1, moduleid: 2, color: 5, description: null }),
     /recognized panel color/
+  );
+  assert.throws(
+    () => normalizePanelRow({ id: '65.5', moduleid: 2, color: 1, description: null }),
+    /positive integer/
+  );
+  assert.throws(
+    () => normalizePanelRow({
+      id: '9007199254740992',
+      moduleid: 2,
+      color: 1,
+      description: null,
+    }),
+    /positive integer/
+  );
+  assert.throws(
+    () => normalizePanelRow({
+      id: 9007199254740992,
+      moduleid: 2,
+      color: 1,
+      description: null,
+    }),
+    /positive integer/
   );
   assert.throws(
     () => normalizeModuleRow({ ...moduleOne, id: 0 }),
@@ -577,7 +624,7 @@ test('Hyperdrive catalogue provider expands every module include with value-list
     sort: 'name',
   });
   assert.equal(combined.data[0].ins[0].name, 'Pitch');
-  assert.equal(combined.data[0].outs[0].name, 'Audio');
+  assert.equal(combined.data[0].outs[0].name, 'ID 1');
   assert.equal(combined.data[0].panels[0].color, 'Light');
   assert.deepEqual(combined.data[0].tags, [tagOne]);
   assert.deepEqual(combinedSql.valueLists, [[1], [1], [1], [1]]);
@@ -1360,22 +1407,22 @@ function createCatalogueSql() {
     }
     if (text.includes('from public.api_v1_module_outs')) {
       return Promise.resolve([{
-        id: 200,
+        id: 286,
         moduleid: 1,
-        name: 'Audio',
-        is_audio: true,
-        is_dcc: false,
-        is_voct: false,
+        name: 'ID 1',
+        is_audio: null,
+        is_dcc: null,
+        is_voct: null,
         min: -10,
         max: 10,
       }]);
     }
     if (text.includes('from public.api_v1_module_panels')) {
       return Promise.resolve([{
-        id: 300,
+        id: '65',
         moduleid: 1,
         color: 1,
-        description: 'Aluminum',
+        description: '',
       }]);
     }
     if (text.includes('from public.api_v1_module_tags')) {

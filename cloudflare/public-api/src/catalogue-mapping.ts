@@ -142,7 +142,7 @@ export function normalizePanelRow(row: unknown): { moduleId: number; panel: Publ
   return {
     moduleId: positiveInteger(value.moduleid, 'panel.moduleid'),
     panel: {
-      id: positiveInteger(value.id, 'panel.id'),
+      id: positiveDatabaseInteger(value.id, 'panel.id'),
       color: panelColor(value.color, 'panel.color'),
       description: nullableString(value.description, 'panel.description'),
     },
@@ -271,6 +271,19 @@ function positiveInteger(value: unknown, label: string): number {
     throw new MalformedCatalogueRowError(`${label} must be a positive integer`);
   }
   return Number(value);
+}
+
+function positiveDatabaseInteger(value: unknown, label: string): number {
+  if (typeof value === 'number' && Number.isSafeInteger(value) && value > 0) {
+    return value;
+  }
+  if (typeof value === 'string' && /^[1-9]\d*$/.test(value)) {
+    const parsed = Number(value);
+    if (Number.isSafeInteger(parsed)) {
+      return parsed;
+    }
+  }
+  throw new MalformedCatalogueRowError(`${label} must be a positive integer`);
 }
 
 function nonnegativeInteger(value: unknown, label: string): number {
