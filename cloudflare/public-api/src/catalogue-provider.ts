@@ -354,7 +354,7 @@ export class HyperdriveCatalogueProvider implements CatalogueProvider {
         select id, moduleid, name, "isAudio" as is_audio, "isDCC" as is_dcc,
           "isVOCT" as is_voct, min, max
         from public.api_v1_module_ins
-        where moduleid = any(${this.sql.array(ids, 23)})
+        where moduleid in ${this.sql(ids)}
         order by moduleid asc, id asc
       `;
       result.ins = rows.map(normalizePortRow);
@@ -364,7 +364,7 @@ export class HyperdriveCatalogueProvider implements CatalogueProvider {
         select id, moduleid, name, "isAudio" as is_audio, "isDCC" as is_dcc,
           "isVOCT" as is_voct, min, max
         from public.api_v1_module_outs
-        where moduleid = any(${this.sql.array(ids, 23)})
+        where moduleid in ${this.sql(ids)}
         order by moduleid asc, id asc
       `;
       result.outs = rows.map(normalizePortRow);
@@ -373,7 +373,7 @@ export class HyperdriveCatalogueProvider implements CatalogueProvider {
       const rows = await this.sql<QueryRow[]>`
         select id, moduleid, color, description
         from public.api_v1_module_panels
-        where moduleid = any(${this.sql.array(ids, 23)})
+        where moduleid in ${this.sql(ids)}
         order by moduleid asc, id asc
       `;
       result.panels = rows.map(normalizePanelRow);
@@ -383,7 +383,7 @@ export class HyperdriveCatalogueProvider implements CatalogueProvider {
         select mt.moduleid, t.id, t.name, t.type
         from public.api_v1_module_tags mt
         join public.api_v1_tags t on t.id = mt.tagid
-        where mt.moduleid = any(${this.sql.array(ids, 23)})
+        where mt.moduleid in ${this.sql(ids)}
         order by mt.moduleid asc, t.name asc, t.id asc
       `;
       result.tags = rows.map(normalizeModuleTagRow);
