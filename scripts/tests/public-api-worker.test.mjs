@@ -782,6 +782,27 @@ test('ETag, 304, HEAD, and canonical cache keys are deterministic', async () => 
     env,
     runtime
   );
+  const weak = await handlePublicApiRequest(
+    authenticatedRequest('GET', 'https://api.patcher.xyz/v1/modules', rawKey, {
+      'If-None-Match': `W/${etag}`,
+    }),
+    env,
+    runtime
+  );
+  const listed = await handlePublicApiRequest(
+    authenticatedRequest('GET', 'https://api.patcher.xyz/v1/modules', rawKey, {
+      'If-None-Match': `"unrelated", W/${etag}`,
+    }),
+    env,
+    runtime
+  );
+  const wildcard = await handlePublicApiRequest(
+    authenticatedRequest('GET', 'https://api.patcher.xyz/v1/modules', rawKey, {
+      'If-None-Match': '*',
+    }),
+    env,
+    runtime
+  );
   const head = await handlePublicApiRequest(
     authenticatedRequest('HEAD', 'https://api.patcher.xyz/v1/modules'),
     env,
@@ -792,6 +813,9 @@ test('ETag, 304, HEAD, and canonical cache keys are deterministic', async () => 
   assert.equal(await second.text(), '');
   assert.equal(second.headers.get('etag'), etag);
   assert.equal(second.headers.get('x-ratelimit-remaining-minute'), '59');
+  assert.equal(weak.status, 304);
+  assert.equal(listed.status, 304);
+  assert.equal(wildcard.status, 304);
   assert.equal(head.status, 200);
   assert.equal(await head.text(), '');
   assert.equal(head.headers.get('etag'), etag);

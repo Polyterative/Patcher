@@ -133,5 +133,25 @@ export function publicHeaders(
 export function ifNoneMatchMatches(request: Request, response: Response): boolean {
   const requestValue = request.headers.get('if-none-match');
   const etag = response.headers.get('etag');
-  return requestValue !== null && etag !== null && requestValue === etag;
+  if (requestValue === null || etag === null) {
+    return false;
+  }
+
+  const responseTag = weakEntityTag(etag);
+  if (responseTag === null) {
+    return false;
+  }
+
+  return requestValue.split(',').some(candidate => {
+    const trimmed = candidate.trim();
+    return trimmed === '*' || weakEntityTag(trimmed) === responseTag;
+  });
+}
+
+function weakEntityTag(value: string): string | null {
+  const trimmed = value.trim();
+  const opaqueTag = /^W\//i.test(trimmed) ? trimmed.slice(2).trimStart() : trimmed;
+  return opaqueTag.length >= 2 && opaqueTag.startsWith('"') && opaqueTag.endsWith('"')
+    ? opaqueTag
+    : null;
 }
