@@ -6,9 +6,10 @@ import {
   validatePublicModuleCollectionModuleIds
 } from './supabase-module-collections';
 import { DbPaths } from './DatabaseStrings';
+import { SupabaseListResponse } from './supabase-db.types';
 
 type ModuleRow = Pick<Database['public']['Tables']['modules']['Row'], 'id' | 'public'>;
-type ModuleRowsResponse = {data: ModuleRow[]; error: null};
+type ModuleRowsResponse = Pick<SupabaseListResponse<ModuleRow>, 'data' | 'error'>;
 type ModuleIdFilter = {
   in: jasmine.Spy<(column: 'id', values: number[]) => Promise<ModuleRowsResponse>>;
 };
@@ -69,10 +70,11 @@ describe('module collection backend helpers', () => {
   it('rejects missing or non-public selected modules before collection mutation', async () => {
     const {supabase} = buildSupabaseWithModuleRows([
       {id: 2, public: true},
-      {id: 3, public: false}
+      {id: 3, public: false},
+      {id: 5, public: null}
     ]);
 
-    await expectAsync(firstValueFrom(validatePublicModuleCollectionModuleIds(supabase, [2, 3, 4])))
+    await expectAsync(firstValueFrom(validatePublicModuleCollectionModuleIds(supabase, [2, 3, 4, 5])))
       .toBeRejectedWithError('Collections can only contain public modules.');
   });
 });

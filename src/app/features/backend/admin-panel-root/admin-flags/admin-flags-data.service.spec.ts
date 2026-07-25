@@ -1,6 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { of } from 'rxjs';
+import {
+  Observable,
+  of,
+  throwError
+} from 'rxjs';
 import { take } from 'rxjs/operators';
 import {
   AdminFlagRow,
@@ -8,6 +12,8 @@ import {
 } from './admin-flags-data.service';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
+import { Database } from 'src/backend/database.types';
+import { SupabaseSingleResponse } from 'src/app/features/backend/supabase-db.types';
 
 
 const makeFlag = (partial: Partial<AdminFlagRow>): AdminFlagRow => ({
@@ -27,11 +33,21 @@ const OPEN_DUP    = makeFlag({id: 2, category: 'duplicate', resolved: false, cre
 const RESOLVED    = makeFlag({id: 3, category: 'wrong-power', resolved: true, created_at: '2026-02-01T00:00:00Z'});
 const ALL_FLAGS   = [OPEN_WRONG, OPEN_DUP, RESOLVED];
 
-function setupTest() {
-  const mockGetAllFlags = jasmine.createSpy('get.allModuleFlags').and.returnValue(of(ALL_FLAGS));
-  const mockGetUserWithId = jasmine.createSpy('get.userWithId').and.callFake((id: string) => of({
+type ReporterProfileRow = Pick<Database['public']['Tables']['profiles']['Row'], 'id' | 'username'>;
+type ReporterProfileResponse = Pick<SupabaseSingleResponse<ReporterProfileRow>, 'data'>;
+
+interface SetupOptions {
+  flags?: AdminFlagRow[];
+  userLookup?: (id: string) => Observable<ReporterProfileResponse>;
+}
+
+function setupTest(options: SetupOptions = {}) {
+  const flags = options.flags ?? ALL_FLAGS;
+  const userLookup = options.userLookup ?? ((id: string) => of({
     data: {id, username: `user-${ id }`}
   }));
+  const mockGetAllFlags = jasmine.createSpy('get.allModuleFlags').and.returnValue(of(flags));
+  const mockGetUserWithId = jasmine.createSpy('get.userWithId').and.callFake(userLookup);
   const mockBackend = {
     get:    {allModuleFlags: mockGetAllFlags, userWithId: mockGetUserWithId},
     update: {moduleFlagResolved: jasmine.createSpy().and.returnValue(of(null))},
@@ -102,9 +118,31 @@ describe('AdminFlagsDataService', () => {
 
   describe('reporter enrichment', () => {
     it('should resolve reporter names for loaded flags', done => {
-      const {service} = setupTest();
+      const {service, mockBackend} = setupTest();
       service.filteredFlags$.pipe(take(1)).subscribe(flags => {
         expect(flags[0].reporterName).toBe('user-user-1');
+        expect(mockBackend.get.userWithId).toHaveBeenCalledOnceWith('user-1', 'id,username');
+        expect(flags.every(flag => flag.reporterName === 'user-user-1')).toBeTrue();
+        done();
+      });
+    });
+
+    it('should fall back to null reporter name when the profile response has no data', done => {
+      const {service} = setupTest({
+        userLookup: () => of({data: null})
+      });
+      service.filteredFlags$.pipe(take(1)).subscribe(flags => {
+        expect(flags.every(flag => flag.reporterName === null)).toBeTrue();
+        done();
+      });
+    });
+
+    it('should fall back to null reporter name when a profile lookup fails', done => {
+      const {service} = setupTest({
+        userLookup: () => throwError(() => new Error('profile lookup failed'))
+      });
+      service.filteredFlags$.pipe(take(1)).subscribe(flags => {
+        expect(flags.every(flag => flag.reporterName === null)).toBeTrue();
         done();
       });
     });

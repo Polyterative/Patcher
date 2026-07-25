@@ -11,12 +11,18 @@ import {
 import { Database } from 'src/backend/database.types';
 import { DbPaths } from './DatabaseStrings';
 import { throwIfSupabaseError } from './supabase.cache';
+import {
+  responseList,
+  SupabaseListResponse
+} from './supabase-db.types';
 
 export interface ModuleCollectionEntryInsert {
   collection_id: number;
   module_id: number;
   ordinal: number;
 }
+
+type PublicModuleCollectionRow = Pick<Database['public']['Tables']['modules']['Row'], 'id' | 'public'>;
 
 export function buildModuleCollectionEntries(
   collectionId: number,
@@ -44,10 +50,10 @@ export function validatePublicModuleCollectionModuleIds(
       .select('id,public')
       .in('id', uniqueModuleIds)
   ).pipe(
-    throwIfSupabaseError(),
-    switchMap((response: any) => {
+    throwIfSupabaseError<SupabaseListResponse<PublicModuleCollectionRow>>(),
+    switchMap(response => {
       const publicModuleIds = new Set(
-        ((response.data ?? []) as {id: number; public: boolean | null}[])
+        responseList(response)
           .filter(row => row.public === true)
           .map(row => Number(row.id))
       );
