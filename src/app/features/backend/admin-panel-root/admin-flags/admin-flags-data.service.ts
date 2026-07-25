@@ -9,6 +9,7 @@ import {
   EMPTY,
   forkJoin,
   merge,
+  Observable,
   of,
   Subject
 } from 'rxjs';
@@ -23,6 +24,10 @@ import { SubManager } from 'src/app/shared-interproject/directives/subscription-
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 import { AdminFlagRow } from 'src/app/features/backend/supabase-get';
+import {
+  SupabaseSingleResponse,
+  SupabaseTableRow
+} from 'src/app/features/backend/supabase-db.types';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import {
   AdminFlagCategoryGroup,
@@ -33,6 +38,8 @@ import {
 } from './admin-flags-data.types';
 
 export type { AdminFlagRow, AdminFlagViewRow, FlagStatusFilter };
+
+type ReporterProfileRow = Pick<SupabaseTableRow<'profiles'>, 'id' | 'username'>;
 
 
 @Injectable()
@@ -150,7 +157,7 @@ export class AdminFlagsDataService extends SubManager {
       .join(' ');
   }
 
-  private enrichFlagsWithReporter$(flags: AdminFlagRow[]) {
+  private enrichFlagsWithReporter$(flags: AdminFlagRow[]): Observable<AdminFlagViewRow[]> {
     const userIds = Array.from(new Set(flags.map(flag => flag.user_id).filter(Boolean)));
     if (userIds.length === 0) {
       return of(flags.map(flag => ({...flag, reporterName: null})));
@@ -158,9 +165,9 @@ export class AdminFlagsDataService extends SubManager {
 
     return forkJoin(
       userIds.map(userId => this.backend.get.userWithId(userId, 'id,username').pipe(
-        map(response => ({
+        map((response: SupabaseSingleResponse<ReporterProfileRow>) => ({
           id: userId,
-          username: (response as any).data?.username ?? null
+          username: response.data?.username ?? null
         })),
         catchError(() => of({id: userId, username: null}))
       ))
