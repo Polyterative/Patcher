@@ -32,12 +32,19 @@ type StorageUploadData = {
 type StorageRemoveData = {
   name: string;
 };
+type StorageSignedUrlData = {
+  signedUrl: string;
+};
 type StorageUploadResult = {
   data: StorageUploadData | null;
   error: StorageProviderError | null;
 };
 type StorageRemoveResult = {
   data: StorageRemoveData[] | null;
+  error: StorageProviderError | null;
+};
+type StorageSignedUrlResult = {
+  data: StorageSignedUrlData | null;
   error: StorageProviderError | null;
 };
 type StorageUploadOptions = {
@@ -51,11 +58,13 @@ type StorageUploadFn = (
   options?: StorageUploadOptions
 ) => Promise<StorageUploadResult>;
 type StorageRemoveFn = (paths: string[]) => Promise<StorageRemoveResult>;
+type StorageCreateSignedUrlFn = (path: string, expiresIn: number) => Promise<StorageSignedUrlResult>;
 type StorageFromFn = (bucket: StorageBucketName) => StorageBucketDouble;
 type StorageRootDouble = {
   from: StorageFromFn;
 };
 type StorageBucketDouble = {
+  createSignedUrl: jasmine.Spy<StorageCreateSignedUrlFn>;
   upload: jasmine.Spy<StorageUploadFn>;
   remove: jasmine.Spy<StorageRemoveFn>;
 };
@@ -97,6 +106,13 @@ function storageRemoveSuccess(name = 'file.jpg'): StorageRemoveResult {
   };
 }
 
+function storageSignedUrlSuccess(signedUrl = 'https://signed.example.test/front.webp?token=abc'): StorageSignedUrlResult {
+  return {
+    data: {signedUrl},
+    error: null
+  };
+}
+
 describe('SupabaseService - storage', () => {
   let service: SupabaseService;
   let supabaseClient: StorageSupabaseClientDouble;
@@ -105,9 +121,12 @@ describe('SupabaseService - storage', () => {
   
   function setupStorageMock(
     uploadResult: StorageUploadResult = storageUploadSuccess(),
-    removeResult: StorageRemoveResult = storageRemoveSuccess()
+    removeResult: StorageRemoveResult = storageRemoveSuccess(),
+    signedUrlResult: StorageSignedUrlResult = storageSignedUrlSuccess()
   ) {
     mockBucket = {
+      createSignedUrl: jasmine.createSpy<StorageCreateSignedUrlFn>('createSignedUrl')
+        .and.returnValue(Promise.resolve(signedUrlResult)),
       upload: jasmine.createSpy<StorageUploadFn>('upload').and.returnValue(Promise.resolve(uploadResult)),
       remove: jasmine.createSpy<StorageRemoveFn>('remove').and.returnValue(Promise.resolve(removeResult))
     };
@@ -588,6 +607,48 @@ describe('storage.uploadMarketplaceListingImage', () => {
       error: (err) => {
         expect(err.message).toContain('10 MB or smaller');
         expect(mockBucket.upload).not.toHaveBeenCalled();
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+});
+
+describe('storage.createMarketplaceListingImageSignedUrl', () => {
+  it('creates a short-lived signed URL from the private marketplace listing bucket', (done) => {
+    setupStorageMock();
+
+    service.storage.createMarketplaceListingImageSignedUrl(
+      '11111111-1111-4111-8111-111111111111/22222222-2222-4222-8222-222222222222/front.webp'
+    ).subscribe({
+      next: (url) => {
+        expect(url).toBe('https://signed.example.test/front.webp?token=abc');
+        expect(supabaseClient.storage.from).toHaveBeenCalledWith('marketplace-listings');
+        expect(mockBucket.createSignedUrl).toHaveBeenCalledWith(
+          '11111111-1111-4111-8111-111111111111/22222222-2222-4222-8222-222222222222/front.webp',
+          600
+        );
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+
+  it('surfaces signing failures without falling back to a public private-bucket URL', (done) => {
+    setupStorageMock(
+      storageUploadSuccess(),
+      storageRemoveSuccess(),
+      {data: null, error: {message: 'signing denied'}}
+    );
+
+    service.storage.createMarketplaceListingImageSignedUrl(
+      '11111111-1111-4111-8111-111111111111/22222222-2222-4222-8222-222222222222/front.webp'
+    ).subscribe({
+      next: () => fail('Expected signing error'),
+      error: (err) => {
+        expect(err.message).toBe('signing denied');
         done();
       }
     });

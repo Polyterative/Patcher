@@ -9,6 +9,7 @@ import { take } from 'rxjs/operators';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import {
   createMarketplaceListing,
+  createMarketplaceMedia,
   createMarketplaceModule
 } from 'src/app/features/marketplace/marketplace-test-helpers.spec';
 import { MarketplaceDetailDataService } from './marketplace-detail-data.service';
@@ -17,12 +18,18 @@ describe('MarketplaceDetailDataService', () => {
   let service: MarketplaceDetailDataService;
   let backend: jasmine.SpyObj<SupabaseService>;
   let marketplaceListingByPublicId: jasmine.Spy;
+  let createMarketplaceListingImageSignedUrl: jasmine.Spy;
 
   beforeEach(() => {
     marketplaceListingByPublicId = jasmine.createSpy('marketplaceListingByPublicId');
+    createMarketplaceListingImageSignedUrl = jasmine.createSpy('createMarketplaceListingImageSignedUrl')
+      .and.callFake((path: string) => of(`https://signed.example.test/${ path }?token=abc`));
     backend = {
       GET: {
         marketplaceListingByPublicId
+      },
+      storage: {
+        createMarketplaceListingImageSignedUrl
       }
     } as unknown as jasmine.SpyObj<SupabaseService>;
 
@@ -44,7 +51,35 @@ describe('MarketplaceDetailDataService', () => {
 
     expect(marketplaceListingByPublicId).toHaveBeenCalledWith('maths-public');
     expect(vm.listing?.publicId).toBe('maths-public');
+    expect(vm.listing?.media[0]?.url).toBe('https://signed.example.test/seller-1/listing-1/front.webp?token=abc');
     expect(vm.notFound).toBeFalse();
+  });
+
+  it('signs private marketplace listing storage paths before exposing detail media', async () => {
+    const storagePath = '11111111-1111-4111-8111-111111111111/22222222-2222-4222-8222-222222222222/front.webp';
+    marketplaceListingByPublicId.and.returnValue(of(createMarketplaceListing({
+      media: [createMarketplaceMedia({
+        storagePath,
+        url: `https://images.patcher.xyz/marketplace-listings/${ storagePath }`
+      })]
+    })));
+
+    service.loadListing$.next('maths-public');
+    const vm = await firstValueFrom(service.vm$.pipe(take(1)));
+
+    expect(createMarketplaceListingImageSignedUrl).toHaveBeenCalledOnceWith(storagePath);
+    expect(vm.listing?.media[0]?.url).toBe(`https://signed.example.test/${ storagePath }?token=abc`);
+  });
+
+  it('omits private marketplace media instead of surfacing broken URLs when signing fails', async () => {
+    createMarketplaceListingImageSignedUrl.and.returnValue(throwError(() => new Error('signing denied')));
+    marketplaceListingByPublicId.and.returnValue(of(createMarketplaceListing()));
+
+    service.loadListing$.next('maths-public');
+    const vm = await firstValueFrom(service.vm$.pipe(take(1)));
+
+    expect(vm.error).toBeNull();
+    expect(vm.listing?.media).toEqual([]);
   });
 
   it('keeps reserved public rows visible because the public browse query includes reserved listings', async () => {

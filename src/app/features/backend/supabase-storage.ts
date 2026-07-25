@@ -209,6 +209,29 @@ export function createStorageNamespace(
       );
     },
 
+    createMarketplaceListingImageSignedUrl: (storagePath: string, expiresInSeconds = 600) => {
+      const normalizedPath = storagePath.trim().toLocaleLowerCase();
+      if (!normalizedPath) {
+        return throwError(() => new Error('Listing image path is required'));
+      }
+
+      return rxFrom(
+        supabase.storage
+          .from(DbStoragePaths.marketplace_listings)
+          .createSignedUrl(normalizedPath, expiresInSeconds)
+      ).pipe(
+        throwIfSupabaseError<{data: {signedUrl?: string} | null}>(),
+        map(response => {
+          const signedUrl = response.data?.signedUrl;
+          if (!signedUrl) {
+            throw new Error('Listing image signed URL missing');
+          }
+
+          return signedUrl;
+        })
+      );
+    },
+
     deleteCollectionCover: (filenameAndExtension: string) => {
       filenameAndExtension = cleanUpFileName(filenameAndExtension);
       return getUserSession$().pipe(
