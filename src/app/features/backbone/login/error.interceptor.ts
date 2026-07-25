@@ -21,7 +21,7 @@ import { UserManagementService } from './user-management.service';
 export class ErrorInterceptor implements HttpInterceptor {
   constructor(private authenticationService: UserManagementService) { }
   
-  intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+  intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     return next.handle(request)
                .pipe(
                  catchError(err => {
