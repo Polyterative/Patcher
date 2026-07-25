@@ -59,7 +59,11 @@
           >
             <div class="marketplace-detail__hero-media">
               @if (selectedMedia$ | async; as selectedMedia) {
-                <img [src]="selectedMedia.url" [alt]="selectedMedia.alt">
+                <img
+                  [src]="selectedMedia.url"
+                  [alt]="selectedMedia.alt"
+                  referrerpolicy="no-referrer"
+                >
               } @else if (listing.module; as module) {
                 @if (module.panels.length) {
                   <app-module-part-image

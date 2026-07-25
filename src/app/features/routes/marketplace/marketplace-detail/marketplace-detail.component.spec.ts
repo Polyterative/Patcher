@@ -25,6 +25,10 @@ import {
 } from './marketplace-detail-data.service';
 import { MarketplaceDetailComponent } from './marketplace-detail.component';
 
+const MARKETPLACE_SIGNED_BASE = 'https://signed.example.test/marketplace-listings/';
+const LISTING_IMAGE_ONE_PATH = '11111111-1111-4111-8111-111111111111/22222222-2222-4222-8222-222222222222/one.webp';
+const LISTING_IMAGE_TWO_PATH = '11111111-1111-4111-8111-111111111111/22222222-2222-4222-8222-222222222222/two.webp';
+
 describe('MarketplaceDetailComponent', () => {
   let fixture: ComponentFixture<MarketplaceDetailComponent>;
   let detailState$: BehaviorSubject<MarketplaceDetailViewState>;
@@ -33,8 +37,16 @@ describe('MarketplaceDetailComponent', () => {
   beforeEach(() => {
     const listing = createMarketplaceListing({
       media: [
-        createMarketplaceMedia({id: 'media-1', url: 'https://images.patcher.xyz/one.webp'}),
-        createMarketplaceMedia({id: 'media-2', url: 'https://images.patcher.xyz/two.webp'})
+        createMarketplaceMedia({
+          id: 'media-1',
+          storagePath: LISTING_IMAGE_ONE_PATH,
+          url: `${ MARKETPLACE_SIGNED_BASE }${ LISTING_IMAGE_ONE_PATH }?token=abc`
+        }),
+        createMarketplaceMedia({
+          id: 'media-2',
+          storagePath: LISTING_IMAGE_TWO_PATH,
+          url: `${ MARKETPLACE_SIGNED_BASE }${ LISTING_IMAGE_TWO_PATH }?token=def`
+        })
       ]
     });
     detailState$ = new BehaviorSubject<MarketplaceDetailViewState>({
@@ -98,6 +110,13 @@ describe('MarketplaceDetailComponent', () => {
         .toBe('/modules/details/101');
       done();
     });
+  });
+
+  it('renders the selected hero image from the signed private-bucket URL supplied by the data service', () => {
+    const host = fixture.nativeElement as HTMLElement;
+    const image = host.querySelector<HTMLImageElement>('.marketplace-detail__hero-media > img');
+
+    expect(image?.getAttribute('src')).toBe(`${ MARKETPLACE_SIGNED_BASE }${ LISTING_IMAGE_ONE_PATH }?token=abc`);
   });
 
   it('changes selected media from keyboard and exposes login CTA with returnUrl', () => {
