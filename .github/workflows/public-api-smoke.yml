@@ -1,0 +1,46 @@
+name: Public API Smoke
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 9 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: public-api-smoke
+  cancel-in-progress: false
+
+env:
+  CI: true
+  COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
+  HUSKY: '0'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.0.0
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.node-version'
+
+      - name: Run live public API smoke
+        run: pnpm run test:public-api-smoke
+        env:
+          PATCHER_PUBLIC_API_KEY: ${{ secrets.PATCHER_PUBLIC_API_KEY }}
