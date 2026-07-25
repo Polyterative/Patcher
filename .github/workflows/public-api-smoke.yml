@@ -23,8 +23,10 @@ defaults:
 
 jobs:
   smoke:
+    if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    environment: public-api-production-smoke
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
