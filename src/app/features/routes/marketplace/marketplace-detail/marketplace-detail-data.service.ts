@@ -2,10 +2,8 @@ import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   BehaviorSubject,
-  forkJoin,
   of,
-  ReplaySubject,
-  type Observable
+  ReplaySubject
 } from 'rxjs';
 import {
   catchError,
@@ -16,11 +14,7 @@ import {
 } from 'rxjs/operators';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import {
-  storagePathFromMarketplaceListingImageUrl
-} from 'src/app/features/backend/supabase-marketplace-listings';
-import {
   type MarketplaceListing,
-  type MarketplaceListingMedia,
   type MarketplaceListingStatus
 } from 'src/app/features/marketplace/marketplace-listing.utils';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
@@ -29,6 +23,9 @@ import {
   buildMarketplaceDetailViewModel,
   MarketplaceListingDetailViewModel
 } from 'src/app/features/marketplace/marketplace-view-models';
+import {
+  resolveMarketplaceListingMediaUrls$
+} from '../marketplace-listing-media-url-signing.utils';
 
 export interface MarketplaceDetailViewState {
   error: string | null;
@@ -66,7 +63,12 @@ export class MarketplaceDetailDataService extends SubManager {
       switchMap(publicId => this.backend.GET.marketplaceListingByPublicId(publicId).pipe(
         switchMap(listing => {
           const publicListing = publicActiveListingOrNull(listing);
-          return publicListing ? this.resolveListingMediaUrls$(publicListing) : of(null);
+          return publicListing
+            ? resolveMarketplaceListingMediaUrls$(
+              publicListing,
+              storagePath => this.backend.storage.createMarketplaceListingImageSignedUrl(storagePath)
+            )
+            : of(null);
         }),
         map(publicListing => {
           return {
@@ -89,31 +91,6 @@ export class MarketplaceDetailDataService extends SubManager {
       )),
       takeUntil(this.destroy$)
     ).subscribe(vm => this._vm$.next(vm));
-  }
-
-  private resolveListingMediaUrls$(listing: MarketplaceListing): Observable<MarketplaceListing> {
-    if (!listing.media.length) {
-      return of(listing);
-    }
-
-    return forkJoin(listing.media.map(media => this.resolveListingMediaUrl$(media))).pipe(
-      map(media => ({
-        ...listing,
-        media: media.filter((item): item is MarketplaceListingMedia => item !== null)
-      }))
-    );
-  }
-
-  private resolveListingMediaUrl$(media: MarketplaceListingMedia): Observable<MarketplaceListingMedia | null> {
-    const storagePath = media.storagePath || storagePathFromMarketplaceListingImageUrl(media.url);
-    if (!storagePath) {
-      return of(media);
-    }
-
-    return this.backend.storage.createMarketplaceListingImageSignedUrl(storagePath).pipe(
-      map(url => ({...media, url})),
-      catchError(() => of(null))
-    );
   }
 
   private errorMessage(error: unknown): string {

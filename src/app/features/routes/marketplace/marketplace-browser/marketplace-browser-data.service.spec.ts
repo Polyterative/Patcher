@@ -9,6 +9,7 @@ import { take } from 'rxjs/operators';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import {
   createMarketplaceListing,
+  createMarketplaceMedia,
   createMarketplaceModule
 } from 'src/app/features/marketplace/marketplace-test-helpers.spec';
 import { MarketplaceBrowserDataService } from './marketplace-browser-data.service';
@@ -17,12 +18,18 @@ describe('MarketplaceBrowserDataService', () => {
   let service: MarketplaceBrowserDataService;
   let backend: jasmine.SpyObj<SupabaseService>;
   let activeMarketplaceListings: jasmine.Spy;
+  let createMarketplaceListingImageSignedUrl: jasmine.Spy;
 
   beforeEach(() => {
     activeMarketplaceListings = jasmine.createSpy('activeMarketplaceListings');
+    createMarketplaceListingImageSignedUrl = jasmine.createSpy('createMarketplaceListingImageSignedUrl')
+      .and.callFake((path: string) => of(`https://signed.example.test/${ path }?token=abc`));
     backend = {
       GET: {
         activeMarketplaceListings
+      },
+      storage: {
+        createMarketplaceListingImageSignedUrl
       }
     } as unknown as jasmine.SpyObj<SupabaseService>;
 
@@ -45,6 +52,57 @@ describe('MarketplaceBrowserDataService', () => {
     expect(activeMarketplaceListings).toHaveBeenCalledWith(0, 23);
     expect(vm.listings[0].publicId).toBe('maths-public');
     expect(vm.hasMore).toBeFalse();
+  });
+
+  it('signs private marketplace listing storage paths before exposing browser card media', async () => {
+    const storagePath = 'seller-1/listing-1/front.webp';
+    activeMarketplaceListings.and.returnValue(of([createMarketplaceListing({
+      media: [createMarketplaceMedia({
+        storagePath,
+        url: `https://images.patcher.xyz/marketplace-listings/${ storagePath }`
+      })]
+    })]));
+
+    service.load$.next();
+    const vm = await firstValueFrom(service.vm$.pipe(take(1)));
+
+    expect(createMarketplaceListingImageSignedUrl).toHaveBeenCalledOnceWith(storagePath);
+    expect(vm.listings[0].media[0]?.url).toBe(`https://signed.example.test/${ storagePath }?token=abc`);
+  });
+
+  it('omits browser card media whose private URL signing fails', async () => {
+    const signedPath = 'seller-1/listing-1/front.webp';
+    const failingPath = 'seller-1/listing-1/side.webp';
+    createMarketplaceListingImageSignedUrl.and.callFake((path: string) => {
+      return path === failingPath
+        ? throwError(() => new Error('signing denied'))
+        : of(`https://signed.example.test/${ path }?token=abc`);
+    });
+    activeMarketplaceListings.and.returnValue(of([createMarketplaceListing({
+      media: [
+        createMarketplaceMedia({
+          id: 'media-signed',
+          position: 0,
+          storagePath: signedPath,
+          url: `https://images.patcher.xyz/marketplace-listings/${ signedPath }`
+        }),
+        createMarketplaceMedia({
+          id: 'media-failing',
+          position: 1,
+          storagePath: failingPath,
+          url: `https://images.patcher.xyz/marketplace-listings/${ failingPath }`
+        })
+      ]
+    })]));
+
+    service.load$.next();
+    const vm = await firstValueFrom(service.vm$.pipe(take(1)));
+
+    expect(createMarketplaceListingImageSignedUrl).toHaveBeenCalledTimes(2);
+    expect(vm.error).toBeNull();
+    expect(vm.listings[0].media.map(media => media.url)).toEqual([
+      `https://signed.example.test/${ signedPath }?token=abc`
+    ]);
   });
 
   it('loads subsequent pages when the existing API returns a full page', async () => {
