@@ -3,6 +3,7 @@
 > Archive of finished work. One-line summaries only. For strategy context see `../product/PRINCIPLES.md` and
 > `../product/ROADMAP.md`.
 
+- **2026-07-25** — LOW: Backend response explicit-any cleanup replaces narrow Supabase response casts in admin reporter enrichment and public module-collection validation with generated row/response types, adds null/error coverage, and reduces the tracked explicit-any baseline from 642 to 640 (`34d75688`).
 - **2026-07-25** — LOW: Login interceptor explicit-any cleanup replaces the two interceptor request/event `any` contracts with `unknown`, preserves focused pass-through and authorization-error coverage, and mechanically reduces the tracked explicit-any baseline from 648 to 642 (`0e1c1983`).
 - **2026-07-24** — MEDIUM: Docs screenshot pipeline repair fixes the production-config capture runner, adds a stable target registry/selector, universal capture-time sanitisation (fixture retention, email/UUID redaction, scoped title reads), and re-captures all 10 reviewed docs-facing JPGs; council-reviewed SHIP, no schema/RLS/backend/release changes (`442526bb`).
 - **2026-07-19** — MEDIUM: Rack module orientation — 3U flip adds placement-level `normal` / `rot180` orientation for eligible 3U rack modules, additive schema/types/backend preservation, editor and touch toggle affordances, public/patch rendering, drag-preview rotation, analytics, and focused concurrency coverage without RLS/policy/grant/release changes.

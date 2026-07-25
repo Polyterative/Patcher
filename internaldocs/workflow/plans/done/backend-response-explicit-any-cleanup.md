@@ -19,7 +19,7 @@ Replace two local Supabase response `any` casts with concrete row and response t
 
 ### Polish
 
-- [ ] Archive this internal-only maintenance slice without a schema, API, or user-interface change.
+- [x] Archive this internal-only maintenance slice without a schema, API, or user-interface change.
 
 ## Acceptance criteria
 
@@ -40,3 +40,4 @@ Replace two local Supabase response `any` casts with concrete row and response t
 
 - 2026-07-25: Selected the next two one-occurrence files from the explicit-any baseline because both have focused tests and can reuse existing generated database rows and `SupabaseSingleResponse` aliases without changing external behavior.
 - 2026-07-25: Replaced the admin reporter cast with `SupabaseSingleResponse<Pick<profiles, 'id' | 'username'>>` and the collection result cast with `SupabaseListResponse<Pick<modules, 'id' | 'public'>>`; focused specs passed 26 assertions, the independent reviewer approved with no findings, lint passed with pre-existing warnings only, and the generated baseline fell from 642 to 640.
+- 2026-07-25: Archived after the verified implementation checkpoint; no public documentation, schema, RLS, API, or user-interface change was made.
