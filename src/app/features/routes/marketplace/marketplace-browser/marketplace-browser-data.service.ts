@@ -14,6 +14,7 @@ import {
   exhaustMap,
   map,
   shareReplay,
+  switchMap,
   takeUntil,
   tap
 } from 'rxjs/operators';
@@ -41,6 +42,9 @@ import {
   marketplaceOption
 } from './marketplace-browser-fields.factory';
 import { ISelectable } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import {
+  resolveMarketplaceListingsMediaUrls$
+} from '../marketplace-listing-media-url-signing.utils';
 
 export interface MarketplaceBrowserViewModel {
   activeChips: ReturnType<typeof marketplaceFilterChips>;
@@ -218,6 +222,10 @@ export class MarketplaceBrowserDataService extends SubManager {
         this._loadingMore$.next(!reset);
 
         return this.backend.GET.activeMarketplaceListings(from, to).pipe(
+          switchMap(listings => resolveMarketplaceListingsMediaUrls$(
+            listings,
+            storagePath => this.backend.storage.createMarketplaceListingImageSignedUrl(storagePath)
+          )),
           map(listings => ({error: null, listings, reset}) as LoadResult),
           catchError(error => {
             const message = this.errorMessage(error);
