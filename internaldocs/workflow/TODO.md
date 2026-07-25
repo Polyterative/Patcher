@@ -111,7 +111,7 @@
     `api_key_pepper` (32 random bytes, base64) and mirror to Cloudflare
     Worker secret `API_KEY_PEPPER`. Pepper rotation invalidates all keys —
     incident procedure.
-  - [~] Coarse WAF/IP abuse rules as an outer, non-tier-specific shield:
+  - [!] Coarse WAF/IP abuse rules as an outer, non-tier-specific shield:
     deferred by the owner for initial launch; mandatory keys and per-key Durable
     Object quotas remain active.
   - [x] Apply the consolidated migrations remotely after local
@@ -127,7 +127,7 @@
     `patcher-public-datasets` + Worker R2 binding; streamed through the
     Worker after key check (no presigned URLs). Logpush → durable sink
     likewise Structural.
-- [~] **Public Open API — owner-present rollout**: database migrations/types,
+- [!] **Public Open API — owner-present rollout**: database migrations/types,
   Vault, `api_reader`, direct-endpoint Hyperdrive, Durable Object, Worker
   secret/upload, controlled partner slot rotation/revocation/reactivation,
   usage reporting, and authenticated catalogue/quota/cache smoke tests are
@@ -168,7 +168,7 @@
 
 ### PRODUCT — Tier 1 (requires Manufacturer Page Phase 2 to be live)
 
-- [~] **HIGH: Public Open API — modules & manufacturers v1 is live; production User Area release/final archive next, then bulk JSONL and public patches/racks later** → [`plans/public-open-api.md`](./plans/public-open-api.md)
+- [!] **HIGH: Public Open API — modules & manufacturers v1 is live; production User Area release/final archive next, then bulk JSONL and public patches/racks later** → [`plans/public-open-api.md`](./plans/public-open-api.md)
 - [ ] **HIGH: Manufacturer Accounts & Verification (claims, admin review, verified-owner edits; local M1 validation/typegen approved; remote apply gated)** → [`plans/manufacturer-accounts-verification.md`](./plans/manufacturer-accounts-verification.md)
 - [ ] **LOW: Manufacturer Updates / Featured Surface (persistence/RLS/backend/moderation approved after verification foundation)** → [`plans/manufacturer-updates-featured-surface.md`](./plans/manufacturer-updates-featured-surface.md)
 - [ ] **LOW: Manufacturer Analytics (privacy aggregate helper complete; manufacturer validation/dashboard/backend gated)** → [`plans/manufacturer-analytics.md`](./plans/manufacturer-analytics.md)
