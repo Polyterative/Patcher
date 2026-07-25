@@ -192,7 +192,6 @@
 
 ### INFRA (independent; pick any time a product task is blocked)
 
-- [~] **LOW: Login interceptor explicit-any cleanup (safe fallback baseline reduction)** → [`plans/login-interceptor-explicit-any-cleanup.md`](./plans/login-interceptor-explicit-any-cleanup.md)
 - [ ] **HIGH: Cloudflare Image Proxy and R2 Media Migration (upload/compression guardrails approved; R2 migration remains operator-gated)** → [`plans/cloudflare-image-proxy-and-r2-media-migration.md`](./plans/cloudflare-image-proxy-and-r2-media-migration.md)
 - [ ] **ON HOLD: HIGH: Security — Manual Approval Follow-ups** → [`plans/security-manual-approval-followups.md`](./plans/security-manual-approval-followups.md)
 - [ ] **ON HOLD: LOW: FUI-inspired instrument components** → [`plans/fui-inspired-instrument-components.md`](./plans/fui-inspired-instrument-components.md)
