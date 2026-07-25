@@ -323,6 +323,15 @@ Rollback:
 
 Use approved test keys only. Do not paste real keys into shell history on shared machines.
 
+Autonomous production smoke:
+
+- GitHub Actions workflow: `.github/workflows/public-api-smoke.yml`.
+- Schedule: daily at `09:00 UTC` (`0 9 * * *`) and manual `workflow_dispatch`.
+- Secret: repository secret `PATCHER_PUBLIC_API_KEY`, containing an active `pk_live_...` key. Rotate this key through the approved API key rotation process and update the GitHub secret whenever the smoke credential changes.
+- Optional non-secret local override: `PATCHER_PUBLIC_API_BASE_URL` may point the same runner at a staging/local base URL.
+- Command: `pnpm test:public-api-smoke`.
+- Coverage: missing-auth envelope, authenticated modules list, individual and combined `ins`/`outs`/`panels`/`tags` expansions with non-empty join coverage, standards including `0` / `3U`, tag semantic types, HEAD bodylessness, ETag emission, and `If-None-Match` `304`.
+
 Minimum checks after deployment:
 
 - `GET /v1/modules?limit=1`
