@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { applyDisappearanceDeactivation, buildActiveListingRefreshRows, buildImportRows, calculateStaggeredNextCheckAt, filterRowsWithConflictingProductUrls, filterRowsWithExistingModules, importRows, planDisappearanceDeactivation, readCliOptions } from '../price-hub/import-local-snapshots.ts';
+import { applyDisappearanceDeactivation, buildActiveListingRefreshRows, buildImportRows, calculateStaggeredNextCheckAt, filterRowsWithConflictingProductUrls, filterRowsWithExistingModules, importRows, planDisappearanceDeactivation, readCliOptions, readExistingModuleIds } from '../price-hub/import-local-snapshots.ts';
 import { assertSupabaseWriteKeyCanWrite, readSupabaseJwtRole } from '../price-hub/local-env.ts';
 
 test('builds import rows only from strong matches with matching products', () => {
@@ -166,6 +166,35 @@ test('reads only service-role aliases as default write credentials', () => {
   });
 
   assert.equal(explicitOptions.supabaseKey, 'explicit-service-key');
+});
+
+test('preflights existing modules in backend-safe 500-ID batches', async () => {
+  const requestedBatches = [];
+  const moduleIds = Array.from({ length: 1_001 }, (_, index) => index + 1);
+  const supabase = {
+    from(table) {
+      assert.equal(table, 'modules');
+      return {
+        select(columns) {
+          assert.equal(columns, 'id');
+          return this;
+        },
+        async in(column, ids) {
+          assert.equal(column, 'id');
+          requestedBatches.push(ids);
+          return {
+            data: ids.map((id) => ({ id })),
+            error: null,
+          };
+        },
+      };
+    },
+  };
+
+  const existingIds = await readExistingModuleIds(supabase, moduleIds);
+
+  assert.deepEqual(requestedBatches.map((batch) => batch.length), [500, 500, 1]);
+  assert.equal(existingIds.size, 1_001);
 });
 
 test('rejects anon and authenticated JWT keys for live write imports', () => {
