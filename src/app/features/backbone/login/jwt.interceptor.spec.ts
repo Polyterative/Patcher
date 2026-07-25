@@ -63,8 +63,10 @@ describe('JwtInterceptor', () => {
   it('calls next.handle with the original request when user is logged in', (done) => {
     const {interceptor} = buildInterceptor(simpleUserFixture());
     const request = makeRequest();
-    const handler = makeHandler();
-    interceptor.intercept(request, handler).subscribe(() => {
+    const response = new HttpResponse<unknown>({body: {ok: true}});
+    const handler = makeHandler(of(response));
+    interceptor.intercept(request, handler).subscribe((event) => {
+      expect(event).toBe(response);
       expect(handler.handle).toHaveBeenCalledWith(request);
       done();
     });

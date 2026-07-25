@@ -78,8 +78,10 @@ function makeErrorResponse(
 describe('ErrorInterceptor', () => {
   it('passes through successful responses unchanged', (done) => {
     const {interceptor} = buildInterceptor();
-    const handler = makeHandler(of(new HttpResponse<unknown>({body: {}})));
-    interceptor.intercept(makeRequest(), handler).subscribe(() => {
+    const response = new HttpResponse<unknown>({body: {ok: true}});
+    const handler = makeHandler(of(response));
+    interceptor.intercept(makeRequest(), handler).subscribe((event) => {
+      expect(event).toBe(response);
       expect(handler.handle).toHaveBeenCalled();
       done();
     });
