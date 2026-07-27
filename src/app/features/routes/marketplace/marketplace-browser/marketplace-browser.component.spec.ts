@@ -23,6 +23,10 @@ describe('MarketplaceBrowserComponent', () => {
             publicId: `maths-public-${index}`
           }))
         ))
+      },
+      storage: {
+        createMarketplaceListingImageSignedUrl: jasmine.createSpy('createMarketplaceListingImageSignedUrl')
+          .and.callFake((path: string) => of(`https://signed.example.test/${ path }?token=abc`))
       }
     } as unknown as jasmine.SpyObj<SupabaseService>;
 

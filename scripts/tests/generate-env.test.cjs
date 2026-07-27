@@ -74,7 +74,7 @@ function runGeneratorWithoutSupabaseUrl() {
   return writes;
 }
 
-test('generate-env enables local-only feature flags only for development builds', () => {
+test('generate-env disables local-only production flags while preserving production-enabled developer API access', () => {
   const writes = runGenerator();
   const devContent = writes.get('src/environments/environment.ts');
   const prodContent = writes.get('src/environments/environment.prod.ts');
@@ -85,7 +85,7 @@ test('generate-env enables local-only feature flags only for development builds'
   assert.match(devContent, /marketplaceEnabled:\s*true/);
   assert.match(prodContent, /production:\s*true/);
   assert.match(prodContent, /coolReactionsEnabled:\s*false/);
-  assert.match(prodContent, /developerApiEnabled:\s*false/);
+  assert.match(prodContent, /developerApiEnabled:\s*true/);
   assert.match(prodContent, /marketplaceEnabled:\s*false/);
 });
 

@@ -98,6 +98,16 @@ function createSnackBarMock(): SnackBarMock {
   };
 }
 
+function clipboardSpy(): jasmine.Spy {
+  const writeText = navigator.clipboard.writeText;
+  const spy = jasmine.isSpy(writeText)
+    ? writeText as jasmine.Spy
+    : spyOn(navigator.clipboard, 'writeText');
+
+  spy.calls.reset();
+  return spy;
+}
+
 function setupService() {
   const backend = createBackendMock();
   const snackBar = createSnackBarMock();
@@ -352,7 +362,7 @@ describe('DeveloperApiKeysDataService', () => {
   it('surfaces clipboard success and failure', fakeAsync(() => {
     const setup = setupService();
     spyOn(console, 'error');
-    const writeText = spyOn(navigator.clipboard, 'writeText').and.returnValue(Promise.resolve());
+    const writeText = clipboardSpy().and.returnValue(Promise.resolve());
 
     setup.service.load$.next();
     tick();
