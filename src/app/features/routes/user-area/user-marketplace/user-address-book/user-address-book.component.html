@@ -125,72 +125,111 @@
 <ng-template #addressEditor let-validation="validation" let-canSave="canSave" let-vm="vm">
   <form class="address-editor" [formGroup]="form" (ngSubmit)="save()" aria-label="Shipping address editor">
     <div class="address-editor__grid">
-      <label class="address-editor__field">
-        <span>Label</span>
-        <input type="text" formControlName="label" autocomplete="section-shipping address-level4">
-        @if (fieldError(validation, 'label'); as error) {
+      <div class="address-editor__field">
+        <lib-mat-form-entity
+          [control]="addressFields.label.control"
+          [type]="addressFields.label.type"
+          [label]="addressFields.label.label"
+          [iconL1]="addressFields.label.iconL1"
+          data-testid="user-address-label"
+        ></lib-mat-form-entity>
+        @if (showFieldError(validation, 'label', addressFields.label.control); as error) {
           <small role="alert">{{ error }}</small>
         }
-      </label>
+      </div>
 
-      <label class="address-editor__field">
-        <span>Recipient name</span>
-        <input type="text" formControlName="recipientName" autocomplete="section-shipping name">
-        @if (fieldError(validation, 'recipientName'); as error) {
+      <div class="address-editor__field">
+        <lib-mat-form-entity
+          [control]="addressFields.recipientName.control"
+          [type]="addressFields.recipientName.type"
+          [label]="addressFields.recipientName.label"
+          [iconL1]="addressFields.recipientName.iconL1"
+          data-testid="user-address-recipient"
+        ></lib-mat-form-entity>
+        @if (showFieldError(validation, 'recipientName', addressFields.recipientName.control); as error) {
           <small role="alert">{{ error }}</small>
         }
-      </label>
+      </div>
 
-      <label class="address-editor__field address-editor__field--wide">
-        <span>Street / line 1</span>
-        <input type="text" formControlName="line1" autocomplete="section-shipping address-line1">
-        @if (fieldError(validation, 'line1'); as error) {
+      <div class="address-editor__field address-editor__field--wide">
+        <lib-mat-form-entity
+          [control]="addressFields.line1.control"
+          [type]="addressFields.line1.type"
+          [label]="addressFields.line1.label"
+          [iconL1]="addressFields.line1.iconL1"
+          data-testid="user-address-line1"
+        ></lib-mat-form-entity>
+        @if (showFieldError(validation, 'line1', addressFields.line1.control); as error) {
           <small role="alert">{{ error }}</small>
         }
-      </label>
+      </div>
 
-      <label class="address-editor__field address-editor__field--wide">
-        <span>Line 2 <em>optional</em></span>
-        <input type="text" formControlName="line2" autocomplete="section-shipping address-line2">
-      </label>
+      <div class="address-editor__field address-editor__field--wide">
+        <lib-mat-form-entity
+          [control]="addressFields.line2.control"
+          [type]="addressFields.line2.type"
+          [label]="addressFields.line2.label"
+          [iconL1]="addressFields.line2.iconL1"
+          [hint]="addressFields.line2.hint"
+          data-testid="user-address-line2"
+        ></lib-mat-form-entity>
+      </div>
 
-      <label class="address-editor__field">
-        <span>City</span>
-        <input type="text" formControlName="city" autocomplete="section-shipping address-level2">
-        @if (fieldError(validation, 'city'); as error) {
+      <div class="address-editor__field">
+        <lib-mat-form-entity
+          [control]="addressFields.city.control"
+          [type]="addressFields.city.type"
+          [label]="addressFields.city.label"
+          [iconL1]="addressFields.city.iconL1"
+          data-testid="user-address-city"
+        ></lib-mat-form-entity>
+        @if (showFieldError(validation, 'city', addressFields.city.control); as error) {
           <small role="alert">{{ error }}</small>
         }
-      </label>
+      </div>
 
-      <label class="address-editor__field">
-        <span>Region <em>optional</em></span>
-        <input type="text" formControlName="region" autocomplete="section-shipping address-level1">
-      </label>
+      <div class="address-editor__field">
+        <lib-mat-form-entity
+          [control]="addressFields.region.control"
+          [type]="addressFields.region.type"
+          [label]="addressFields.region.label"
+          [iconL1]="addressFields.region.iconL1"
+          [hint]="addressFields.region.hint"
+          data-testid="user-address-region"
+        ></lib-mat-form-entity>
+      </div>
 
-      <label class="address-editor__field">
-        <span>Postal code <em>optional</em></span>
-        <input type="text" formControlName="postalCode" autocomplete="section-shipping postal-code">
-      </label>
+      <div class="address-editor__field">
+        <lib-mat-form-entity
+          [control]="addressFields.postalCode.control"
+          [type]="addressFields.postalCode.type"
+          [label]="addressFields.postalCode.label"
+          [iconL1]="addressFields.postalCode.iconL1"
+          [hint]="addressFields.postalCode.hint"
+          data-testid="user-address-postal"
+        ></lib-mat-form-entity>
+      </div>
 
-      <label class="address-editor__field">
-        <span>Country code</span>
-        <input
-          type="text"
-          maxlength="2"
-          formControlName="countryCode"
-          autocomplete="section-shipping country"
-          (blur)="normalizeCountryInput()"
-        >
-        @if (fieldError(validation, 'countryCode'); as error) {
+      <div class="address-editor__field">
+        <lib-mat-form-entity
+          [control]="addressFields.countryCode.control"
+          [type]="addressFields.countryCode.type"
+          [label]="addressFields.countryCode.label"
+          [iconL1]="addressFields.countryCode.iconL1"
+          [hint]="addressFields.countryCode.hint"
+          data-testid="user-address-country"
+        ></lib-mat-form-entity>
+        @if (showFieldError(validation, 'countryCode', addressFields.countryCode.control); as error) {
           <small role="alert">{{ error }}</small>
         }
-      </label>
+      </div>
     </div>
 
-    <label class="address-editor__toggle">
-      <input type="checkbox" formControlName="isDefault">
-      <span>Use as default address</span>
-    </label>
+    <mat-checkbox
+      [checked]="form.controls.isDefault.value"
+      (change)="setDefaultChecked($event.checked)"
+      data-testid="user-address-default"
+    >Use as default address</mat-checkbox>
 
     <div class="address-editor__actions">
       <button mat-stroked-button color="primary" type="submit" [disabled]="!canSave">
