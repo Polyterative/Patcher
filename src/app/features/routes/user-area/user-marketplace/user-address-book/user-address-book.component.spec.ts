@@ -214,6 +214,22 @@ describe('UserAddressBookComponent', () => {
     expect(rowMutationButtons.every(button => button.disabled)).toBeTrue();
   });
 
+  it('renders editor fields with shared form components and gates errors on interaction', () => {
+    const component = build([]);
+    component.openCreate();
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelectorAll('lib-mat-form-entity').length).toBe(8);
+    expect(host.querySelector('mat-checkbox[data-testid="user-address-default"]')).not.toBeNull();
+    expect(host.querySelector('.address-editor__field small')).toBeNull();
+
+    component.form.controls.label.markAsTouched();
+    fixture.detectChanges();
+
+    expect(host.querySelector('.address-editor__field small')?.textContent).toContain('Required');
+  });
+
   it('is wired only into the private user-area module, not public profile routes', () => {
     expect(moduleDef(UserAreaModule).imports).toContain(UserAddressBookComponent);
     expect(moduleDef(PublicProfileModule).imports).not.toContain(UserAddressBookComponent);

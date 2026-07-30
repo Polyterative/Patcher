@@ -5,11 +5,13 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
+  AbstractControl,
   FormControl,
   FormGroup,
   ReactiveFormsModule
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCheckbox } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
 import {
   BehaviorSubject,
@@ -30,11 +32,13 @@ import {
 } from 'src/app/features/marketplace/marketplace-address-book.utils';
 import { HeroContentCardComponent } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component';
 import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-state-tips/empty-state-tips.component';
+import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import {
   UserAddressBookDataService,
   UserAddressBookViewModel
 } from './user-address-book-data.service';
+import { createUserAddressFields } from './user-address-book-fields.factory';
 
 interface UserAddressBookEditorState {
   id: string | null;
@@ -53,6 +57,8 @@ interface UserAddressBookEditorState {
     EmptyStateTipsComponent,
     HeroContentCardComponent,
     MatButtonModule,
+    MatCheckbox,
+    MatFormEntityComponent,
     MatIconModule,
     ReactiveFormsModule
   ]
@@ -74,6 +80,17 @@ export class UserAddressBookComponent extends SubManager implements OnInit {
     postalCode: new FormControl('', {nonNullable: true}),
     recipientName: new FormControl('', {nonNullable: true}),
     region: new FormControl('', {nonNullable: true})
+  });
+
+  readonly addressFields = createUserAddressFields({
+    city: this.form.controls.city,
+    countryCode: this.form.controls.countryCode,
+    label: this.form.controls.label,
+    line1: this.form.controls.line1,
+    line2: this.form.controls.line2,
+    postalCode: this.form.controls.postalCode,
+    recipientName: this.form.controls.recipientName,
+    region: this.form.controls.region
   });
 
   readonly validation$ = this.form.valueChanges.pipe(
@@ -164,6 +181,7 @@ export class UserAddressBookComponent extends SubManager implements OnInit {
   }
 
   save(): void {
+    this.normalizeCountryInput();
     const editor = this._editor$.value;
     const validation = validateMarketplaceShippingAddressDraft(this.formDraft());
 
@@ -211,6 +229,19 @@ export class UserAddressBookComponent extends SubManager implements OnInit {
     field: MarketplaceShippingAddressField
   ): string | null {
     return validation?.errors[field] ?? null;
+  }
+
+  showFieldError(
+    validation: MarketplaceShippingAddressValidationResult | null,
+    field: MarketplaceShippingAddressField,
+    control: AbstractControl
+  ): string | null {
+    return control.touched || control.dirty ? this.fieldError(validation, field) : null;
+  }
+
+  setDefaultChecked(checked: boolean): void {
+    this.form.controls.isDefault.setValue(checked);
+    this.form.controls.isDefault.markAsDirty();
   }
 
   private formDraft(): MarketplaceShippingAddressDraft {
