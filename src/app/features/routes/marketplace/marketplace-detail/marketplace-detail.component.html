@@ -161,8 +161,8 @@
 
             <div class="marketplace-detail__cta col gap05" data-testid="marketplace-detail-cta">
               @if (isLoggedIn$ | async) {
-                <button mat-stroked-button type="button" disabled>Contact unavailable</button>
-                <p>Offers, contact persistence, and messaging are coming in a later Marketplace slice.</p>
+                <button mat-stroked-button type="button" disabled>Contact seller</button>
+                <p>Messaging isn’t available yet.</p>
               } @else {
                 <a
                   mat-flat-button
@@ -171,7 +171,7 @@
                   [queryParams]="{returnUrl: currentUrl}"
                   data-testid="marketplace-login-cta"
                 >Log in to contact seller</a>
-                <p>Anonymous browse is public. Contact requires a Patcher account.</p>
+                <p>Browsing is public. Contacting sellers requires an account.</p>
               }
             </div>
           </aside>

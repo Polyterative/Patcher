@@ -295,7 +295,7 @@ describe('UserListingsComponent', () => {
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
-    expect(host.textContent).toContain('One active/open listing per seller/module.');
+    expect(host.textContent).toContain('One open listing per module.');
     expect(host.querySelector('[data-testid="user-listing-create"]')).toBeNull();
   });
 
