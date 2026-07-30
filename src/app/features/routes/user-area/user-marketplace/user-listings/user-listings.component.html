@@ -120,7 +120,7 @@
                 }
                 @if (listing.status === 'active' || listing.status === 'reserved' || listing.status === 'paused' || listing.status === 'draft') {
                   <p class="listing-row__close-note" data-testid="user-listing-open-warning">
-                    One active/open listing per seller/module. Edit this listing instead of creating another.
+                    One open listing per module. Edit this one instead of creating another.
                   </p>
                 }
 
@@ -138,7 +138,7 @@
                   <div class="listing-row__copy">
                     <span class="listing-row__manufacturer">{{ manufacturerForModule(module) }}</span>
                     <strong>{{ module.name }}</strong>
-                    <span>Marked For Sale. No listing draft yet.</span>
+                    <span>For sale in your collection — not listed yet.</span>
                   </div>
                   <span class="listing-row__badge">eligible</span>
                 </div>
