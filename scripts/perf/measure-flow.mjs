@@ -109,6 +109,10 @@ export function calculateDurationMetrics(initialMetrics, finalMetrics) {
   };
 }
 
+export function remainingMeasurementWaitMs(windowMs, startedAtMs, currentTimeMs) {
+  return Math.max(0, windowMs - (currentTimeMs - startedAtMs));
+}
+
 async function measureFlow(options) {
   const outputDirectory = path.resolve('tmp', 'perf', options.flow);
   await mkdir(outputDirectory, { recursive: true });
@@ -210,17 +214,19 @@ async function captureNavigation({
   runNumber,
 }) {
   const initialCdpMetrics = toMetricMap(await cdp.send('Performance.getMetrics'));
+  const navigationStartedAt = Date.now();
   const response = cacheState === 'cold'
-    ? await page.goto(url, { waitUntil: 'networkidle', timeout: 45_000 })
-    : await page.reload({ waitUntil: 'networkidle', timeout: 45_000 });
+    ? await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45_000 })
+    : await page.reload({ waitUntil: 'domcontentloaded', timeout: 45_000 });
   if (!response) {
     throw new Error(`${cacheState} navigation did not receive a document response`);
   }
   if (response.status() >= 400) {
     throw new Error(`${cacheState} navigation returned HTTP ${response.status()}`);
   }
-  if (settleMs) {
-    await page.waitForTimeout(settleMs);
+  const remainingWaitMs = remainingMeasurementWaitMs(settleMs, navigationStartedAt, Date.now());
+  if (remainingWaitMs) {
+    await page.waitForTimeout(remainingWaitMs);
   }
 
   const [navigation, resources, pageMetrics, metrics, heap] = await Promise.all([

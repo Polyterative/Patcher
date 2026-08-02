@@ -462,3 +462,9 @@ in Layer 3). No `Patcher-docs` publication needed.
   4.87 MB transfer, 3.55 MB script transfer, 156 requests, 1,854 DOM nodes, 52.1 MB heap, 2.84 s task
   duration, and 0.638 CLS. Raw local transfer sizes are intentionally not compared to CDN-compressed
   production bytes; the before/after delta on this same harness is the optimization contract.
+- 2026-08-03T00:46+02:00 — Corrected the harness so its critical measurement window begins at navigation
+  start rather than after `networkidle`; added an executable boundary test. Rejected a `main.ts`-only
+  Sentry delay after profiling showed `SentryContextService` independently imports Sentry during anonymous
+  session synchronization and route tagging. The rejected change was reverted rather than committed.
+  Any Sentry improvement must address that eager context path while preserving logout user clearing and
+  route tags.
