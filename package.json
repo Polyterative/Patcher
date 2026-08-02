@@ -11,6 +11,7 @@
     "build": "pnpm prebuild && angular-build-info && node scripts/build/generate-prerender-routes.mjs && ng build --configuration production",
     "build:release": "pnpm build && pnpm sentry:sourcemaps",
     "bundle-report": "ng build --configuration=production --stats-json && webpack-bundle-analyzer dist/Patcher/stats.json",
+    "perf:measure": "node scripts/perf/measure-flow.mjs",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org patcher --project patcher-xyz ./dist/Patcher && sentry-cli sourcemaps upload --org patcher --project patcher-xyz ./dist/Patcher",
     "copyChangelog": "cp CHANGELOG.md src/assets/md/changelog.md",
     "lint": "ng lint && node scripts/checks/check-route-module-imports.cjs && node scripts/checks/check-layering.cjs && node scripts/checks/check-explicit-any.cjs && node scripts/checks/check-docs.cjs && node scripts/checks/check-scss-global-imports.cjs && node scripts/checks/check-dep-duplicates.cjs && bash scripts/checks/check-posthog-imports.sh",
@@ -26,7 +27,7 @@
     "test-headless": "pnpm test:unit:headless",
     "test:unit:headless": "ng test --browsers=ChromeHeadlessCI --watch=false",
     "test:unit:ci": "ng test --browsers=ChromeHeadlessCI --watch=false --code-coverage",
-    "test:functions": "pnpm test:functions:middleware && pnpm test:functions:sitemap && pnpm test:functions:prerender-routes && pnpm test:functions:image-metadata && pnpm test:functions:public-id-migrations && pnpm test:functions:patch-preview-migrations && pnpm test:functions:public-open-api-migrations && pnpm test:functions:reactions-migration && pnpm test:functions:module-port-directions && pnpm test:functions:shipping-addresses-migration && pnpm test:functions:marketplace-listings-migration && pnpm test:functions:generate-env && pnpm test:functions:e2e-module-create-safety && pnpm test:functions:panel-ratio-audit && pnpm test:functions:public-storage-media-audit && pnpm test:functions:r2-public-media-staging && pnpm test:functions:cloudflare-image-proxy && pnpm test:functions:public-api-worker && pnpm test:functions:public-api-live-smoke && pnpm test:functions:public-storage-referrer-policy && pnpm test:functions:price-hub-parser && pnpm test:functions:price-hub-worker && pnpm test:functions:price-hub-local-crawler && pnpm test:functions:price-hub-import-local",
+    "test:functions": "pnpm test:functions:middleware && pnpm test:functions:sitemap && pnpm test:functions:prerender-routes && pnpm test:functions:image-metadata && pnpm test:functions:public-id-migrations && pnpm test:functions:patch-preview-migrations && pnpm test:functions:public-open-api-migrations && pnpm test:functions:reactions-migration && pnpm test:functions:module-port-directions && pnpm test:functions:shipping-addresses-migration && pnpm test:functions:marketplace-listings-migration && pnpm test:functions:generate-env && pnpm test:functions:e2e-module-create-safety && pnpm test:functions:panel-ratio-audit && pnpm test:functions:public-storage-media-audit && pnpm test:functions:r2-public-media-staging && pnpm test:functions:cloudflare-image-proxy && pnpm test:functions:public-api-worker && pnpm test:functions:public-api-live-smoke && pnpm test:functions:public-storage-referrer-policy && pnpm test:functions:price-hub-parser && pnpm test:functions:price-hub-worker && pnpm test:functions:price-hub-local-crawler && pnpm test:functions:price-hub-import-local && pnpm test:functions:perf-measure",
     "test:functions:middleware": "node scripts/tests/run-function-test.cjs middleware.ts tmp/middleware-test scripts/tests/middleware.test.cjs",
     "test:functions:sitemap": "node scripts/tests/run-function-test.cjs api/sitemap.ts tmp/sitemap-test scripts/tests/sitemap.test.cjs",
     "test:functions:prerender-routes": "node --test scripts/tests/prerender-routes.test.mjs",
@@ -90,7 +91,8 @@
     "cloudflare:image-proxy:deploy": "pnpm dlx wrangler@latest deploy --config cloudflare/image-proxy/wrangler.jsonc",
     "test:functions:price-hub-local-crawler": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test scripts/tests/price-hub-local-crawler.test.mjs",
     "test:functions:price-hub-import-local": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test scripts/tests/price-hub-import-local.test.mjs",
-    "test:functions:public-open-api-migrations": "node --test scripts/tests/public-open-api-migrations.test.cjs"
+    "test:functions:public-open-api-migrations": "node --test scripts/tests/public-open-api-migrations.test.cjs",
+    "test:functions:perf-measure": "node --test scripts/tests/perf-measure-flow.test.mjs"
   },
   "lint-staged": {
     "src/**/*.scss": [
