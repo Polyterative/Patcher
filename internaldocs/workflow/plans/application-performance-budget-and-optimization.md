@@ -455,3 +455,10 @@ in Layer 3). No `Patcher-docs` publication needed.
   duration remained within run variance (2.79 s → 2.88 s), so bundle/runtime CPU remain the next
   measurement targets. An independent Chromium assertion verified the asset is absent before scrolling
   and loads after the footer enters the viewport; the targeted footer unit suite passes.
+- 2026-08-03T00:34+02:00 — Added `scripts/perf/measure-flow.mjs` with tested CLI parsing, safe flow-name
+  validation, cold/warm median aggregation, CDP navigation-delta timing, redacted resource reports, and
+  ignored trace/screenshot artifacts. The production-build Home baseline now runs as
+  `pnpm perf:measure -- --flow home --url http://127.0.0.1:5557/ --runs 5`. Its current cold median is
+  4.87 MB transfer, 3.55 MB script transfer, 156 requests, 1,854 DOM nodes, 52.1 MB heap, 2.84 s task
+  duration, and 0.638 CLS. Raw local transfer sizes are intentionally not compared to CDN-compressed
+  production bytes; the before/after delta on this same harness is the optimization contract.
