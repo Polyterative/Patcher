@@ -192,6 +192,7 @@
 
 ### INFRA (independent; pick any time a product task is blocked)
 
+- [ ] **HIGH: Application performance — Chrome-measured budget, per-flow baselines, and hypothesis-per-commit optimization loop (frontend-only; supersedes the bundle-only plan as sub-scope)** → [`plans/application-performance-budget-and-optimization.md`](./plans/application-performance-budget-and-optimization.md)
 - [ ] **HIGH: Cloudflare Image Proxy and R2 Media Migration (upload/compression guardrails approved; R2 migration remains operator-gated)** → [`plans/cloudflare-image-proxy-and-r2-media-migration.md`](./plans/cloudflare-image-proxy-and-r2-media-migration.md)
 - [ ] **ON HOLD: HIGH: Security — Manual Approval Follow-ups** → [`plans/security-manual-approval-followups.md`](./plans/security-manual-approval-followups.md)
 - [ ] **ON HOLD: LOW: FUI-inspired instrument components** → [`plans/fui-inspired-instrument-components.md`](./plans/fui-inspired-instrument-components.md)
