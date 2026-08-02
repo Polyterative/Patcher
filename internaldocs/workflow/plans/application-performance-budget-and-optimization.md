@@ -445,3 +445,13 @@ in Layer 3). No `Patcher-docs` publication needed.
   hit the easy wins there. Rejected alternative: "adopt zoneless in Layer 1." Rejected because zoneless
   is a framework-wide behavioural change; introducing it before the harness exists would ship an
   unverifiable claim. It stays as a Layer 3 measured prototype.
+- 2026-08-03T00:24+02:00 — Chrome/Playwright median of five fresh 1440×900 production-build Home
+  navigations identified the below-fold footer QR Lottie as the largest avoidable request
+  (719,076 B). Hypothesis: deferring only its decorative `app-lottie-container` until the footer enters
+  the viewport preserves the animation when reached while removing its load-time JSON parse/render work.
+  Result after the isolated template change: total transfer 5,588,067 B → 4,869,200 B (-718,867 B,
+  -12.9%); requests 157 → 156; DOM nodes 3,596 → 1,854 (-48.4%); post-idle JS heap 77.7 MB → 51.6 MB
+  (-33.6%); LCP 188 ms → 156 ms. Script transfer was unchanged (3.55 MB) and first-five-second task
+  duration remained within run variance (2.79 s → 2.88 s), so bundle/runtime CPU remain the next
+  measurement targets. An independent Chromium assertion verified the asset is absent before scrolling
+  and loads after the footer enters the viewport; the targeted footer unit suite passes.

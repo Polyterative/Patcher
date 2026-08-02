@@ -151,9 +151,13 @@
       </div>
       <mat-divider inset="true"></mat-divider>
       <div class="footer-bottom gap1">
-        <app-lottie-container class="footer-lottie transparentize-half lottie-icon"
-                              [options]="{path: '/assets/json/lottie/QR Border Icon.json', loop: true, autoplay: true}"
-        ></app-lottie-container>
+        @defer (on viewport) {
+          <app-lottie-container class="footer-lottie transparentize-half lottie-icon"
+                                [options]="{path: '/assets/json/lottie/QR Border Icon.json', loop: true, autoplay: true}"
+          ></app-lottie-container>
+        } @placeholder {
+          <div class="footer-lottie transparentize-half lottie-icon" aria-hidden="true"></div>
+        }
         <h3 class="tagline"
         >
           THE MODERN WAY TO MANAGE EVERYTHING MODULAR</h3>
