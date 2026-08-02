@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   calculateDurationMetrics,
   parseArguments,
+  remainingMeasurementWaitMs,
   summarizeRuns,
 } from '../perf/measure-flow.mjs';
 
@@ -120,4 +121,9 @@ test('calculates navigation durations from cumulative CDP counters', () => {
       layoutDurationMs: 100,
     }
   );
+});
+
+test('bounds the measurement window from navigation start', () => {
+  assert.equal(remainingMeasurementWaitMs(5_000, 1_000, 2_250), 3_750);
+  assert.equal(remainingMeasurementWaitMs(5_000, 1_000, 7_000), 0);
 });
