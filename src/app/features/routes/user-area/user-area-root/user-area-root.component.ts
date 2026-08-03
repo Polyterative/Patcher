@@ -8,11 +8,13 @@ import {
 } from '@angular/core';
 import {
   combineLatest,
+  Observable,
   of
 } from 'rxjs';
 import {
   debounceTime,
   distinctUntilChanged,
+  filter,
   map,
   startWith
 } from 'rxjs/operators';
@@ -31,6 +33,27 @@ import { UrlCreatorService } from 'src/app/features/backend/url-creator.service'
 import { CurrentUserContributorStats } from 'src/app/features/backend/supabase-queries';
 import { COOL_REACTIONS_ENABLED } from 'src/app/components/shared-atoms/cool-button/cool-button-feature.token';
 import { environment } from 'src/environments/environment';
+import { MinimalModule } from 'src/app/models/module';
+import { Rack } from 'src/app/models/rack';
+import { Patch } from 'src/app/models/patch';
+
+type CoreWorkspaceData = [
+  MinimalModule[] | undefined,
+  Rack[] | undefined,
+  Patch[] | undefined
+];
+
+type LoadedCoreWorkspaceData = [
+  MinimalModule[],
+  Rack[],
+  Patch[]
+];
+
+function isCoreWorkspaceDataLoaded(data: CoreWorkspaceData): data is LoadedCoreWorkspaceData {
+  return data[0] !== undefined
+    && data[1] !== undefined
+    && data[2] !== undefined;
+}
 
 
 @Component({
@@ -65,8 +88,11 @@ export class UserAreaRootComponent extends SubManager implements OnInit, OnDestr
   @Input() ignoreSeo = false;
 
   readonly marketplaceEnabled = environment.features.marketplaceEnabled;
+  readonly emptyWorkspaceDescription =
+    'Your private workspace. Nothing here is public until you choose to share it.';
   
   miscStats$ = of([]);
+  readonly isEmptyWorkspace$: Observable<boolean>;
   contributorStats$ = of<any[] | null>(null);
   readonly contributorStatsEmptyMessage =
     'Submit a module, leave a useful comment, or flag an issue to start building your contribution profile.';
@@ -80,6 +106,20 @@ export class UserAreaRootComponent extends SubManager implements OnInit, OnDestr
     @Inject(COOL_REACTIONS_ENABLED) public readonly coolReactionsEnabled: boolean
   ) {
     super();
+    this.isEmptyWorkspace$ = combineLatest([
+      this.dataService.modulesData$,
+      this.dataService.rackData$,
+      this.dataService.patchesData$
+    ]).pipe(
+      filter(isCoreWorkspaceDataLoaded),
+      map(([modules, racks, patches]) =>
+        modules.length === 0
+        && racks.length === 0
+        && patches.length === 0
+      ),
+      distinctUntilChanged()
+    );
+
     this.miscStats$ = combineLatest([
       this.dataService.modulesData$,
       this.dataService.rackData$,
