@@ -1,35 +1,55 @@
 @if ({
   userProfile: (userService.loggedUserFullProfile$|async),
-  globalSearchQuery: (globalSearchQuery$|async)
+  globalSearchQuery: (globalSearchQuery$|async),
+  isEmptyWorkspace: (isEmptyWorkspace$|async)
 }; as bag) {
   <lib-screen-wrapper sizePreset="full-bleed">
-    @if (bag.userProfile) {
+    @if (bag.userProfile && bag.isEmptyWorkspace !== null) {
       <lib-hero-content-card appDiscoveryTipAnchor="user-area-profile-card"
                              class="userBG user-area-header"
                              titleBig="User area"
                              [titleSub]="bag.userProfile.username"
                              [autoCompactTitleSub]="true"
-                             [description]="profileVisibilityDescription(bag.userProfile.public)"
+                             [description]="bag.isEmptyWorkspace
+                               ? emptyWorkspaceDescription
+                               : profileVisibilityDescription(bag.userProfile.public)"
                              [descriptionAlign]="'alignTextStart'"
                              icon="dashboard">
         <div class="user-profile-card__actions">
-          <app-brand-primary-button
-            [theme]="bag.userProfile.public ? 'warning' : 'primary'"
-            [icon]="bag.userProfile.public ? 'visibility_off' : 'public'"
-            (click$)="toggleProfileVisibility(!bag.userProfile.public)"
-          >{{ bag.userProfile.public ? 'Make profile private' : 'Make profile public' }}
-          </app-brand-primary-button>
-          @if (bag.userProfile.public) {
+          @if (bag.isEmptyWorkspace) {
             <app-brand-primary-button
-              [routerLink]="publicProfilePath(bag.userProfile.username)"
-              icon="person_search"
-            >View public profile
+              data-testid="user-area-empty-create-rack"
+              icon="add"
+              (click$)="dataService.addRack$.next()"
+            >Create rack
             </app-brand-primary-button>
             <app-brand-primary-button
-              icon="link"
-              (click$)="copyPublicProfileLink(bag.userProfile.username)"
-            >Copy public link
+              data-testid="user-area-empty-add-modules"
+              theme="light"
+              routerLink="/modules/browser"
+              icon="add"
+              (click$)="dataService.addModulesToCollection$.next()"
+            >Add modules
             </app-brand-primary-button>
+          } @else {
+            <app-brand-primary-button
+              [theme]="bag.userProfile.public ? 'warning' : 'primary'"
+              [icon]="bag.userProfile.public ? 'visibility_off' : 'public'"
+              (click$)="toggleProfileVisibility(!bag.userProfile.public)"
+            >{{ bag.userProfile.public ? 'Make profile private' : 'Make profile public' }}
+            </app-brand-primary-button>
+            @if (bag.userProfile.public) {
+              <app-brand-primary-button
+                [routerLink]="publicProfilePath(bag.userProfile.username)"
+                icon="person_search"
+              >View public profile
+              </app-brand-primary-button>
+              <app-brand-primary-button
+                icon="link"
+                (click$)="copyPublicProfileLink(bag.userProfile.username)"
+              >Copy public link
+              </app-brand-primary-button>
+            }
           }
         </div>
         <!-- TODO: Panel preference (light/dark/none) is a planned feature but not yet fully implemented.

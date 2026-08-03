@@ -5,6 +5,26 @@ import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area
 import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
 import { UrlCreatorService } from 'src/app/features/backend/url-creator.service';
 import { BehaviorSubject, Subject, of } from 'rxjs';
+import { Rack } from 'src/app/models/rack';
+
+const timestamp = '2026-08-03T12:00:00.000Z';
+
+function rackFixture(): Rack {
+  return {
+    id: 1,
+    name: 'Starter rack',
+    hp: 84,
+    rows: 2,
+    public: false,
+    author: {
+      id: 'user-1',
+      username: 'newuser'
+    },
+    locked: false,
+    created: timestamp,
+    updated: timestamp
+  };
+}
 
 function mockUserService(): UserManagementService {
   return {
@@ -84,6 +104,48 @@ describe('UserAreaRootComponent', () => {
 
     it('contributorStatsEmptyMessage is a non-empty string', () => {
       expect(makeComp().comp.contributorStatsEmptyMessage.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('isEmptyWorkspace$', () => {
+    it('waits until modules, racks, and patches have all loaded', () => {
+      const { comp, ds } = makeComp();
+      const values: boolean[] = [];
+      comp.isEmptyWorkspace$.subscribe(value => values.push(value));
+
+      ds.modulesData$.next([]);
+      ds.rackData$.next([]);
+
+      expect(values).toEqual([]);
+
+      ds.patchesData$.next([]);
+
+      expect(values).toEqual([true]);
+    });
+
+    it('is false when any core workspace content exists', () => {
+      const { comp, ds } = makeComp();
+      const values: boolean[] = [];
+      comp.isEmptyWorkspace$.subscribe(value => values.push(value));
+
+      ds.modulesData$.next([]);
+      ds.rackData$.next([rackFixture()]);
+      ds.patchesData$.next([]);
+
+      expect(values).toEqual([false]);
+    });
+
+    it('keeps the last resolved state while a list refreshes', () => {
+      const { comp, ds } = makeComp();
+      const values: boolean[] = [];
+      comp.isEmptyWorkspace$.subscribe(value => values.push(value));
+
+      ds.modulesData$.next([]);
+      ds.rackData$.next([]);
+      ds.patchesData$.next([]);
+      ds.rackData$.next(undefined);
+
+      expect(values).toEqual([true]);
     });
   });
 
