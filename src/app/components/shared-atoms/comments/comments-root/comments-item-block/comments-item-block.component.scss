@@ -6,13 +6,13 @@
   margin-inline: auto;
   padding: 2.5rem 1rem;
   gap: 0.5rem;
-  color: rgba(24, 42, 65, 0.72);
+  color: var(--mat-sys-on-surface);
 
   .empty-icon {
     font-size: 2.5rem;
     width: 2.5rem;
     height: 2.5rem;
-    color: rgba(24, 42, 65, 0.58);
+    color: var(--mat-sys-on-surface-variant);
   }
 
   .empty-title {
@@ -23,6 +23,6 @@
   .empty-subtitle {
     font-size: 0.85rem;
     text-align: center;
-    color: rgba(24, 42, 65, 0.62);
+    color: var(--mat-sys-on-surface-variant);
   }
 }
