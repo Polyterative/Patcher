@@ -1,19 +1,12 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import {
-  formatEstimatedModulePriceMinorUnits,
-  getEstimatedModulePriceCurrencyFractionDigits
-} from 'src/app/features/backend/module-price-estimated-fx.utils';
 import { ModulePriceListing } from 'src/app/features/backend/supabase-queries';
 import {
   buildModulePriceRegionFilterOptions,
   detectPreferredModulePriceContinent,
   filterAndOrderModulePriceListings,
-  getModulePriceFreshnessIso,
   getRegionFilterResultLabel,
-  getStoreHeroColor,
   isModulePriceAvailabilityFilter,
   isModulePriceListingOrder,
-  isModulePriceListingStale,
   isModulePriceRegionFilter,
   MODULE_PRICE_AVAILABILITY_FILTER_OPTIONS,
   MODULE_PRICE_AVAILABILITY_RESULT_LABELS,
@@ -23,17 +16,15 @@ import {
   type ModulePriceContinentCode,
   type ModulePriceComparisonPoint,
   type ModulePriceListingGroup,
+  type ModulePriceListingPricePart,
+  type ModulePriceListingRowView,
   type ModulePriceListingsDerivedState,
   type ModulePriceListingOrder,
   type ModulePriceRegionFilter
 } from './module-price-listings-card.utils';
 import {
-  buildModulePriceListingsDerivedState,
-  getModulePriceAvailabilityClass,
-  getModulePriceAvailabilityLabel,
-  getModulePriceShippingOriginFlag,
-  getModulePriceShippingOriginLabel,
-  isModulePriceListingAvailableNow
+  buildModulePriceListingRowView,
+  buildModulePriceListingsDerivedState
 } from './module-price-listings-card-display.utils';
 
 export {
@@ -49,15 +40,10 @@ export type {
   ModulePriceComparisonPoint,
   ModulePriceListingGroup,
   ModulePriceListingOrder,
+  ModulePriceListingPricePart,
+  ModulePriceListingPricePartKind,
   ModulePriceRegionFilter
 } from './module-price-listings-card.utils';
-
-export type ModulePriceListingPricePartKind = 'amount' | 'currency' | 'text';
-
-export interface ModulePriceListingPricePart {
-  kind: ModulePriceListingPricePartKind;
-  value: string;
-}
 
 @Component({
   selector: 'app-module-price-listings-card',
@@ -69,7 +55,6 @@ export interface ModulePriceListingPricePart {
 export class ModulePriceListingsCardComponent {
   private _listings: ModulePriceListing[] | null | undefined;
   private derivedState: ModulePriceListingsDerivedState | null = null;
-  private readonly pricePartFormatterByCurrency = new Map<string, Intl.NumberFormat>();
 
   @Input()
   set listings(value: ModulePriceListing[] | null | undefined) {
@@ -141,83 +126,36 @@ export class ModulePriceListingsCardComponent {
   }
 
   formatPrice(listing: ModulePriceListing): string {
-    if (this.isStaleListing(listing)) {
-      return 'Last seen';
-    }
-
-    const snapshot = listing.latestSnapshot;
-    if (!snapshot?.currency || snapshot.priceAmountMinor === null) {
-      return 'Price unknown';
-    }
-
-    return formatEstimatedModulePriceMinorUnits(
-      snapshot.priceAmountMinor,
-      snapshot.currency
-    ) ?? 'Price unknown';
+    const priceParts = this.getRowView(listing).priceParts;
+    return priceParts.map(part => part.value).join('');
   }
 
   formatPriceParts(listing: ModulePriceListing): ReadonlyArray<ModulePriceListingPricePart> {
-    const displayPrice = this.formatPrice(listing);
-    const snapshot = listing.latestSnapshot;
-
-    if (
-      displayPrice === 'Last seen' ||
-      displayPrice === 'Price unknown' ||
-      !snapshot?.currency ||
-      snapshot.priceAmountMinor === null
-    ) {
-      return [{kind: 'text', value: displayPrice}];
-    }
-
-    const normalizedCurrency = snapshot.currency.trim().toUpperCase();
-    const fractionDigits = getEstimatedModulePriceCurrencyFractionDigits(normalizedCurrency);
-    const sourceMajorAmount = snapshot.priceAmountMinor / 10 ** fractionDigits;
-
-    const formatter = this.getPricePartFormatter(normalizedCurrency);
-    if (!formatter) {
-      return [{kind: 'text', value: displayPrice}];
-    }
-
-    const parts = formatter
-      .formatToParts(sourceMajorAmount)
-      .map(part => ({
-        kind: part.type === 'currency' ? 'currency' : 'amount',
-        value: part.value
-      } satisfies ModulePriceListingPricePart));
-
-    return this.mergeAdjacentPriceParts(parts);
+    return this.getRowView(listing).priceParts;
   }
 
   getAvailabilityLabel(listing: ModulePriceListing): string {
-    if (this.isStaleListing(listing)) {
-      return 'Stale data';
-    }
-
-    return getModulePriceAvailabilityLabel(listing);
+    return this.getRowView(listing).availabilityLabel;
   }
 
   getAvailabilityClass(listing: ModulePriceListing): string {
-    if (this.isStaleListing(listing)) {
-      return 'module-price-listing__availability--stale';
-    }
-
-    return getModulePriceAvailabilityClass(listing);
+    return this.getRowView(listing).availabilityClass;
   }
 
   isAvailableNow(listing: ModulePriceListing): boolean {
-    return isModulePriceListingAvailableNow(listing);
+    return this.getRowView(listing).isAvailableNow;
   }
 
   isStaleListing(listing: ModulePriceListing): boolean {
-    return isModulePriceListingStale(listing);
+    return this.getRowView(listing).isStale;
   }
 
   getFreshnessIso(listing: ModulePriceListing): string | null {
-    return getModulePriceFreshnessIso(listing);
+    return this.getRowView(listing).freshnessIso;
   }
 
   getStoreHeroColor(listing: ModulePriceListing): string {
-    return getStoreHeroColor(listing.storeSlug);
+    return this.getRowView(listing).storeHeroColor;
   }
 
   getBestAvailableNowListing(): ModulePriceListing | null {
@@ -234,19 +172,30 @@ export class ModulePriceListingsCardComponent {
   }
 
   isBestAvailableNowListing(listing: ModulePriceListing): boolean {
-    return this.getDerivedState().bestAvailableNowListing?.listingId === listing.listingId;
+    return this.getRowView(listing).isBestAvailableNow;
   }
 
   getShippingOriginLabel(listing: ModulePriceListing): string {
-    return getModulePriceShippingOriginLabel(listing);
+    return this.getRowView(listing).shippingOriginLabel;
   }
 
   getShippingOriginFlag(listing: ModulePriceListing): string {
-    return getModulePriceShippingOriginFlag(listing);
+    return this.getRowView(listing).shippingOriginFlag;
   }
 
   getPriceComparisonPoint(listing: ModulePriceListing): ModulePriceComparisonPoint | null {
     return this.getDerivedState().priceComparisonPointByListingId.get(listing.listingId) ?? null;
+  }
+
+  private getRowView(listing: ModulePriceListing): ModulePriceListingRowView {
+    const derivedState = this.getDerivedState();
+    // Prefer the memoized per-listing view built for the current
+    // `listings` input (avoids recomputation on every CD cycle for
+    // template-driven reads). Fall back to computing it directly for
+    // listings outside the current input (e.g. direct/unit-test calls) so
+    // these methods remain correct pure functions of any listing.
+    return derivedState.rowViewByListingId.get(listing.listingId)
+      ?? buildModulePriceListingRowView(listing, derivedState.bestAvailableNowListing);
   }
 
   private getDerivedState(): ModulePriceListingsDerivedState {
@@ -287,41 +236,6 @@ export class ModulePriceListingsCardComponent {
 
     if (!hasSelectedRegion) {
       this.regionFilter = 'all';
-    }
-  }
-
-  private mergeAdjacentPriceParts(
-    parts: ReadonlyArray<ModulePriceListingPricePart>
-  ): ReadonlyArray<ModulePriceListingPricePart> {
-    return parts.reduce<ModulePriceListingPricePart[]>((mergedParts, part) => {
-      const previousPart = mergedParts[mergedParts.length - 1];
-
-      if (previousPart?.kind === part.kind) {
-        previousPart.value += part.value;
-      } else {
-        mergedParts.push({...part});
-      }
-
-      return mergedParts;
-    }, []);
-  }
-
-  private getPricePartFormatter(normalizedCurrency: string): Intl.NumberFormat | null {
-    const cachedFormatter = this.pricePartFormatterByCurrency.get(normalizedCurrency);
-    if (cachedFormatter) {
-      return cachedFormatter;
-    }
-
-    try {
-      const formatter = new Intl.NumberFormat(undefined, {
-        style: 'currency',
-        currency: normalizedCurrency,
-        currencyDisplay: 'narrowSymbol'
-      });
-      this.pricePartFormatterByCurrency.set(normalizedCurrency, formatter);
-      return formatter;
-    } catch {
-      return null;
     }
   }
 }
