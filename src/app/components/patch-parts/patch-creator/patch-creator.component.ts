@@ -17,8 +17,9 @@ import {
 } from 'rxjs';
 import {
   catchError,
+  exhaustMap,
   filter,
-  switchMap
+  finalize
 } from 'rxjs/operators';
 import { Rack } from 'src/app/models/rack';
 import {
@@ -59,6 +60,8 @@ export type { PatchCreatorInModel, PatchCreatorOutModel };
 })
 export class PatchCreatorComponent extends SubManager implements OnInit, OnDestroy {
   public readonly save$ = new Subject<void>();
+  private readonly _createInProgress$ = new BehaviorSubject<boolean>(false);
+  readonly createInProgress$ = this._createInProgress$.asObservable();
   private readonly _currentUserRacks$ = new BehaviorSubject<Rack[]>([]);
   private readonly _linkedRackOptions$ = new BehaviorSubject<ISelectable[]>([]);
   private readonly _linkedRackPersistenceBlocked$ = new BehaviorSubject<boolean>(false);
@@ -158,7 +161,9 @@ export class PatchCreatorComponent extends SubManager implements OnInit, OnDestr
             SharedConstants.infoCustom(this.snackBar, 'Please fix validation errors before creating the patch.');
             return false;
           }),
-          switchMap(_ => {
+          filter(() => !this._createInProgress$.value),
+          exhaustMap(_ => {
+            this._createInProgress$.next(true);
             const selectedLinkedRackId = this.getSelectedLinkedRackId();
             return this.dataService.createPatch$(
               {
@@ -167,8 +172,6 @@ export class PatchCreatorComponent extends SubManager implements OnInit, OnDestr
                 ...(selectedLinkedRackId == null
                   ? {}
                   : {linked_rack_id: selectedLinkedRackId})
-                // hp:       this.fields.hp.control.value,
-                // rows:     this.fields.rows.control.value
               }
             ).pipe(
               catchError(err => {
@@ -180,7 +183,8 @@ export class PatchCreatorComponent extends SubManager implements OnInit, OnDestr
                   SharedConstants.errorCustom(this.snackBar, 'Failed to create patch — check your connection and try again.');
                 }
                 return EMPTY;
-              })
+              }),
+              finalize(() => this._createInProgress$.next(false))
             );
           }),
           this.takeUntilDestroyed()
