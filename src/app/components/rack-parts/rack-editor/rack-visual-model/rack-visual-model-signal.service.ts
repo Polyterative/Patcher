@@ -32,7 +32,7 @@ interface SignalStateParams {
   focusArea: ReturnType<typeof suggestSignalFocusArea> | null | undefined;
   isSignalModeActive: boolean;
   moduleDomKey: (module: RackedModule) => string;
-  scale: number;
+  scale?: number;
   markForCheck: () => void;
 }
 
@@ -205,7 +205,7 @@ export class RackVisualModelSignalService {
     const screenRect = screenElement.getBoundingClientRect();
     const moduleElements = buildRenderedModuleElementMap(screenElement);
     const sourceElement = params.hoveredModuleElement ?? moduleElements.get(params.moduleDomKey(hoveredModule)) ?? null;
-    this.signalOverlayFrame = buildSignalOverlayFrame(screenRect, hostRect, params.scale);
+    this.signalOverlayFrame = buildSignalOverlayFrame(screenRect, hostRect, params.scale ?? 1);
     const sourceRect = this.resolveRenderedModuleRect(sourceElement, screenRect);
 
     if (!sourceRect) {
