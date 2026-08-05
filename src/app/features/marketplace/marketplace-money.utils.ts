@@ -20,6 +20,23 @@ interface ParsedDecimalParts {
   fraction: string;
 }
 
+const currencyFormatterCache = new Map<string, Intl.NumberFormat>();
+
+function getCurrencyFormatter(locale: string | undefined, currency: string): Intl.NumberFormat {
+  const cacheKey = `${ locale ?? '' }|${ currency }`;
+  let formatter = currencyFormatterCache.get(cacheKey);
+
+  if (!formatter) {
+    formatter = new Intl.NumberFormat(locale, {
+      currency,
+      style: 'currency'
+    });
+    currencyFormatterCache.set(cacheKey, formatter);
+  }
+
+  return formatter;
+}
+
 export function normalizeMarketplaceCurrency(value: string | null | undefined): string | undefined {
   const normalized = value?.trim().toUpperCase();
 
@@ -38,10 +55,7 @@ export function getMarketplaceCurrencyFractionDigits(currency: string): number {
   }
 
   try {
-    return new Intl.NumberFormat('en', {
-      currency: normalizedCurrency,
-      style: 'currency'
-    }).resolvedOptions().maximumFractionDigits;
+    return getCurrencyFormatter('en', normalizedCurrency).resolvedOptions().maximumFractionDigits;
   } catch {
     return DEFAULT_FRACTION_DIGITS;
   }
@@ -96,10 +110,7 @@ export function formatMarketplaceMinorUnits(
   const majorAmount = amountMinor / 10 ** fractionDigits;
 
   try {
-    return new Intl.NumberFormat(locale, {
-      currency: currencyCode,
-      style: 'currency'
-    }).format(majorAmount);
+    return getCurrencyFormatter(locale, currencyCode).format(majorAmount);
   } catch {
     return INVALID_AMOUNT_DISPLAY;
   }
