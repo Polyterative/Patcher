@@ -174,9 +174,8 @@ describe('supabase.cache - catchErrors operator', () => {
     }, 50);
   });
   
-  it('should call SharedConstants.errorHandlerOperation on error', () => {
+  it('should show an operationFailed error snackbar on error', () => {
     const mockSnackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open', 'openFromComponent', 'dismiss']);
-    const handlerSpy = spyOn(SharedConstants, 'errorHandlerOperation').and.callThrough();
     spyOn(console, 'error');
     
     throwError(() => new Error('boom'))
@@ -188,7 +187,11 @@ describe('supabase.cache - catchErrors operator', () => {
         }
       });
     
-    expect(handlerSpy).toHaveBeenCalled();
+    expect(mockSnackBar.open).toHaveBeenCalledWith(
+      SharedConstants.messages.operationFailed,
+      undefined,
+      {duration: 8000, panelClass: 'snack-error'}
+    );
   });
 });
 
