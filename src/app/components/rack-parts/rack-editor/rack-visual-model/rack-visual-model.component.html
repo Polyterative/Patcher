@@ -37,7 +37,8 @@
       </div>
     }
     @let rowMoveMotion = (rowMoveMotion$ | async);
-    @for (row of rowedRackedModules; track $index; let rowId = $index) {
+    @for (rowView of rowViews; track rowView.rowId; let rowId = $index) {
+      @let row = rowView.row;
       <div class="rackRowShell"
            #rowSurface
            [class.rackRowShell--movingUp]="isRowMovingUp(rowId, rowMoveMotion)"
@@ -137,41 +138,42 @@
               cdkDropListOrientation="horizontal"
               (cdkDropListDropped)="onDropListDropped($event, rowId, $event.item.data)"
              >
-           @for (rackedModule of row; track rackModuleTrackKey(rackedModule); let i = $index) {
-             @let showHoverStats = shouldShowModuleHoverStats(rackedModule, analysisMode);
-             @let moduleHp = effectiveHp(rackedModule);
-              <app-module-realistic [@enter]="{ value: '', params: { delay: enterAnimationDelay(rackedModule, i)}}"
+           @for (moduleView of rowView.modules; track moduleView.rackModuleTrackKey; let i = $index) {
+             @let rackedModule = moduleView.rackedModule;
+             @let showHoverStats = moduleView.showHoverStats;
+             @let moduleHp = moduleView.effectiveHp;
+              <app-module-realistic [@enter]="{ value: '', params: { delay: moduleView.enterAnimationDelay}}"
                                      [@leave]
-                                     [@.disabled]="isModuleAnimationSuppressed(rackedModule)"
+                                     [@.disabled]="moduleView.isModuleAnimationSuppressed"
                                      [data]="rackedModule|mapToModule"
                                      [analysisMode]="analysisMode"
-                                    [analysisClass]="analysisVisualClass(rackedModule, analysisMode)"
+                                    [analysisClass]="moduleView.analysisVisualClass"
                                       [showPanelImages]="shouldShowPanelImages && rackedModule.module.panels.length>0"
                                       [selectedPanelId]="rackedModule.rackingData.selectedPanelId ?? null"
                                       [orientation]="rackedModule.rackingData.orientation"
                                        [disablePanelImageEnterAnimation]="true"
-                                       [class.module--dropRevealSuppressed]="isDropRevealSuppressed(rackedModule)"
-                                       [class.module--dropRevealAnimating]="isDropRevealAnimating(rackedModule)"
-                                       [class.module--layoutRemixMoving]="isModuleLayoutMoveAnimating(rackedModule)"
-                                       [class.module--sameHpHighlight]="isSameHpHighlightedModule(rackedModule, analysisMode)"
-                                       [class.module--sameHpDim]="isSameHpDimmedModule(rackedModule, analysisMode)"
-                                       [class.module--signalSource]="isSignalSourceModule(rackedModule, analysisMode)"
-                                       [class.module--signalDestination]="signalDestinationMatchFor(rackedModule, analysisMode)"
-                                       [class.module--signalMuted]="isSignalMutedModule(rackedModule, analysisMode)"
-                                        [attr.data-signal-family]="signalDestinationFamily(rackedModule, analysisMode)"
-                                        [style.--signal-destination-ring-color]="signalDestinationRingColor(rackedModule, analysisMode)"
-                                        [style.--signal-destination-glow-color]="signalDestinationGlowColor(rackedModule, analysisMode)"
-                                      [style.--signal-destination-panel-top-color]="signalDestinationPanelTopColor(rackedModule, analysisMode)"
-                                      [style.--signal-destination-panel-bottom-color]="signalDestinationPanelBottomColor(rackedModule, analysisMode)"
-                                      [style.--signal-destination-panel-border-color]="signalDestinationPanelBorderColor(rackedModule, analysisMode)"
-                                      [class.module--tabletSelected]="isTouchSelectedModule(rackedModule)"
-                                      [attr.data-rack-module-key]="moduleDomKey(rackedModule)"
-                                      [attr.data-rack-module-track-key]="rackModuleStableDomKey(rackedModule)"
+                                       [class.module--dropRevealSuppressed]="moduleView.isDropRevealSuppressed"
+                                       [class.module--dropRevealAnimating]="moduleView.isDropRevealAnimating"
+                                       [class.module--layoutRemixMoving]="moduleView.isModuleLayoutMoveAnimating"
+                                       [class.module--sameHpHighlight]="moduleView.isSameHpHighlighted"
+                                       [class.module--sameHpDim]="moduleView.isSameHpDimmed"
+                                       [class.module--signalSource]="moduleView.isSignalSource"
+                                       [class.module--signalDestination]="moduleView.signalDestinationMatch"
+                                       [class.module--signalMuted]="moduleView.isSignalMuted"
+                                        [attr.data-signal-family]="moduleView.signalDestinationFamily"
+                                        [style.--signal-destination-ring-color]="moduleView.signalDestinationRingColor"
+                                        [style.--signal-destination-glow-color]="moduleView.signalDestinationGlowColor"
+                                      [style.--signal-destination-panel-top-color]="moduleView.signalDestinationPanelTopColor"
+                                      [style.--signal-destination-panel-bottom-color]="moduleView.signalDestinationPanelBottomColor"
+                                      [style.--signal-destination-panel-border-color]="moduleView.signalDestinationPanelBorderColor"
+                                      [class.module--tabletSelected]="moduleView.isTouchSelected"
+                                      [attr.data-rack-module-key]="moduleView.moduleDomKey"
+                                      [attr.data-rack-module-track-key]="moduleView.rackModuleStableDomKey"
                                            class="module"
                                         cdkDrag
                                       [cdkDragData]="rackedModule"
                                       [cdkDragScale]="dragScale"
-                                      [cdkDragDisabled]="isModuleDragDisabled(rackedModule)"
+                                      [cdkDragDisabled]="moduleView.isModuleDragDisabled"
                                       (cdkDragStarted)="onDragStarted($event, rackedModule)"
                                       (cdkDragReleased)="onDragReleased($event, rackedModule)"
                                       (cdkDragEnded)="onDragEnded($event, rackedModule)"
@@ -193,7 +195,7 @@
                     class="module"
                   ></app-module-realistic>
                 </ng-template>
-                @if (isModuleOverflowing(rowId, i)) {
+                @if (moduleView.isModuleOverflowing) {
                   <div moduleOverlay [@overflowBorder] class="overflowBorderOverlay"></div>
                 }
                 @if (shouldShowLayoutHpIndicator(analysisMode)) {
@@ -204,7 +206,7 @@
                   </div>
                 }
                 @if (analysisMode === analysisModes.power) {
-                  @let moduleHasCompletePowerData = hasCompletePowerData(rackedModule);
+                  @let moduleHasCompletePowerData = moduleView.hasCompletePowerData;
                   <div class="moduleHoverStats"
                        [class.moduleHoverStats--visible]="showHoverStats"
                        (mousedown)="$event.stopPropagation()"
@@ -220,7 +222,7 @@
                    </div>
                  }
                 @if (analysisMode === analysisModes.function) {
-                  @if (functionAnalysisVisual(rackedModule); as functionVisual) {
+                  @if (moduleView.functionAnalysisVisual; as functionVisual) {
                     <div class="moduleHoverStats moduleHoverStats--function"
                          [class.moduleHoverStats--visible]="showHoverStats"
                          (mousedown)="$event.stopPropagation()"

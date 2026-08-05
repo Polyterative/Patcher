@@ -16,6 +16,7 @@ import {
   Subject,
 } from 'rxjs';
 import { RackDetailDataService } from '../../rack-detail-data.service';
+import { buildRackFunctionVisual } from '../../rack-function-visuals.utils';
 import { RackPowerHeatmapVisual } from '../../rack-power-heatmap.utils';
 import { MapToModulePipe } from '../../map-to-module.pipe';
 import {
@@ -512,6 +513,23 @@ describe('RackVisualModelComponent', () => {
     const hoverStats = host.querySelector('.moduleHoverStats');
     expect(hoverStats?.textContent?.replace(/\s+/g, '').trim()).toContain('RoleVoices');
     expect(hoverStats?.textContent?.replace(/\s+/g, '').trim()).toContain('TagPrimarytag:VCO');
+  });
+
+  it('computes function-mode module visuals on demand for modules outside the memoized rows', () => {
+    const externalModule = makeRackedModule(99, 4, 6);
+    externalModule.module.tags = [{
+      tag: {
+        name: 'VCO',
+        type: TagType.Source
+      }
+    }];
+    fixture.detectChanges();
+
+    const expectedVisual = buildRackFunctionVisual(externalModule);
+
+    expect(component.functionAnalysisVisual(externalModule)).toEqual(expectedVisual);
+    expect(component.analysisVisualClass(externalModule, RACK_ANALYSIS_MODES.function))
+      .toBe(expectedVisual.className);
   });
 
   it('shows signal hover details, destination highlighting, and minimal lines in signal mode', () => {
