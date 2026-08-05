@@ -12,6 +12,23 @@ export const ESTIMATED_MODULE_PRICE_CURRENCY_TO_EUR_RATE: Readonly<Record<string
 
 const DEFAULT_FRACTION_DIGITS = 2;
 const CURRENCY_CODE_PATTERN = /^[A-Z]{3}$/;
+const currencyFormatterCache = new Map<string, Intl.NumberFormat>();
+
+function getCurrencyFormatter(locale: string | undefined, currency: string): Intl.NumberFormat {
+  const cacheKey = `${ locale ?? '' }|${ currency }`;
+  let formatter = currencyFormatterCache.get(cacheKey);
+
+  if (!formatter) {
+    formatter = new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency,
+      currencyDisplay: 'narrowSymbol'
+    });
+    currencyFormatterCache.set(cacheKey, formatter);
+  }
+
+  return formatter;
+}
 
 export function normalizeEstimatedModulePriceToEurMinor(
   priceAmountMinor: number | null | undefined,
@@ -58,11 +75,7 @@ export function formatEstimatedModulePriceMinorUnits(
   const sourceMajorAmount = priceAmountMinor / 10 ** fractionDigits;
 
   try {
-    return new Intl.NumberFormat(locale, {
-      style: 'currency',
-      currency: normalizedCurrency,
-      currencyDisplay: 'narrowSymbol'
-    }).format(sourceMajorAmount);
+    return getCurrencyFormatter(locale, normalizedCurrency).format(sourceMajorAmount);
   } catch {
     return null;
   }
@@ -75,10 +88,7 @@ export function getEstimatedModulePriceCurrencyFractionDigits(currency: string):
   }
 
   try {
-    return new Intl.NumberFormat('en', {
-      style: 'currency',
-      currency: normalizedCurrency
-    }).resolvedOptions().maximumFractionDigits;
+    return getCurrencyFormatter('en', normalizedCurrency).resolvedOptions().maximumFractionDigits;
   } catch {
     return DEFAULT_FRACTION_DIGITS;
   }
