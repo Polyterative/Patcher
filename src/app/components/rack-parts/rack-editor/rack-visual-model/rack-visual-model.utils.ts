@@ -209,13 +209,17 @@ export function resolveSignalHoverCardPlacement(
 
 export function buildSignalOverlayFrame(
   screenRect: DOMRect,
-  hostRect: DOMRect
+  hostRect: DOMRect,
+  scale = 1
 ): SignalOverlayFrame {
+  const safeScale = scale > 0 ? scale : 1;
   return {
-    left: screenRect.left - hostRect.left,
-    top: screenRect.top - hostRect.top,
-    width: screenRect.width,
-    height: screenRect.height,
+    left: (screenRect.left - hostRect.left) / safeScale,
+    top: (screenRect.top - hostRect.top) / safeScale,
+    width: screenRect.width / safeScale,
+    height: screenRect.height / safeScale,
+    viewBoxWidth: screenRect.width,
+    viewBoxHeight: screenRect.height,
   };
 }
 

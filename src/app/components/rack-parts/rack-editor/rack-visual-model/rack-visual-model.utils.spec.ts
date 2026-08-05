@@ -86,7 +86,7 @@ describe('rack-visual-model.utils', () => {
   });
 
   describe('buildSignalOverlayFrame', () => {
-    it('calculates relative position correctly', () => {
+    it('calculates relative position correctly at scale 1', () => {
       const screenRect = makeDOMRect(50, 30, 200, 150);
       const hostRect = makeDOMRect(20, 10, 400, 400);
       const frame = buildSignalOverlayFrame(screenRect, hostRect);
@@ -94,6 +94,30 @@ describe('rack-visual-model.utils', () => {
       expect(frame.top).toBe(20);
       expect(frame.width).toBe(200);
       expect(frame.height).toBe(150);
+      expect(frame.viewBoxWidth).toBe(200);
+      expect(frame.viewBoxHeight).toBe(150);
+    });
+
+    it('converts post-transform viewport coords to local CSS pixels when scale < 1', () => {
+      const screenRect = makeDOMRect(50, 30, 200, 150);
+      const hostRect = makeDOMRect(20, 10, 400, 400);
+      const frame = buildSignalOverlayFrame(screenRect, hostRect, 0.5);
+      // local CSS dimensions are divided by scale so the element renders at the right visual size
+      expect(frame.left).toBeCloseTo(60);   // (50 - 20) / 0.5
+      expect(frame.top).toBeCloseTo(40);    // (30 - 10) / 0.5
+      expect(frame.width).toBeCloseTo(400); // 200 / 0.5
+      expect(frame.height).toBeCloseTo(300);// 150 / 0.5
+      // viewBox stays in viewport pixel space so SVG path coordinates remain correct
+      expect(frame.viewBoxWidth).toBe(200);
+      expect(frame.viewBoxHeight).toBe(150);
+    });
+
+    it('falls back to scale 1 when scale is 0 or negative', () => {
+      const screenRect = makeDOMRect(50, 30, 200, 150);
+      const hostRect = makeDOMRect(20, 10, 400, 400);
+      const frame = buildSignalOverlayFrame(screenRect, hostRect, 0);
+      expect(frame.width).toBe(200);
+      expect(frame.viewBoxWidth).toBe(200);
     });
   });
 
