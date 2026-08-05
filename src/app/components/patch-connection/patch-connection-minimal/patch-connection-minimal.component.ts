@@ -62,10 +62,7 @@ export class PatchConnectionMinimalComponent extends SubManager implements OnIni
   };
   
   notes = {
-    control: new UntypedFormControl('', Validators.compose([
-      Validators.min(0),
-      Validators.max(144)
-    ]))
+    control: new UntypedFormControl('', Validators.maxLength(999))
   };
   showNotes = false;
   
