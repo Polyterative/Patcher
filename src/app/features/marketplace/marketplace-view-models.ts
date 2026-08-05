@@ -344,11 +344,16 @@ function parsePriceBoundary(value: string): number | null {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
 }
 
+const fractionDigitsFormatterCache = new Map<string, Intl.NumberFormat>();
+
 function fractionDigitsFor(currency: string): number {
   try {
-    return new Intl.NumberFormat('en', {currency, style: 'currency'})
-      .resolvedOptions()
-      .maximumFractionDigits;
+    let formatter = fractionDigitsFormatterCache.get(currency);
+    if (!formatter) {
+      formatter = new Intl.NumberFormat('en', {currency, style: 'currency'});
+      fractionDigitsFormatterCache.set(currency, formatter);
+    }
+    return formatter.resolvedOptions().maximumFractionDigits;
   } catch {
     return 2;
   }
