@@ -2,26 +2,19 @@
   min-width: 0;
 }
 
-:host ::ng-deep .comments-root-card .content {
-  background: #f8fafc;
-  background-color: #f8fafc;
-}
-
 .commentsRoot__rail {
   width: 100%;
   max-inline-size: var(--app-readable-section-max-width);
   margin-inline: auto;
   display: grid;
   gap: 0;
-  background: #ffffff;
-  background-color: #ffffff;
+  background: var(--mat-sys-surface);
 }
 
 .commentsRoot__list {
   min-width: 0;
   padding: 1rem;
-  background: #ffffff;
-  background-color: #ffffff;
+  background: var(--mat-sys-surface);
 }
 
 .commentsRoot__loadMore {
@@ -33,8 +26,7 @@
   display: grid;
   gap: 0.75rem;
   padding-block: 1rem;
-  background: #f8fafc;
-  background-color: #f8fafc;
+  background: var(--mat-sys-surface-container-low);
 }
 
 .commentsRoot__composerField {
@@ -72,7 +64,7 @@
 }
 
 :host ::ng-deep .commentsRoot__composer .mat-mdc-icon-button.mat-mdc-button-base {
-  color: rgba(19, 54, 89, 0.56);
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .submit-row {
@@ -84,7 +76,7 @@
 
   .submit-hint {
     font-size: 0.75rem;
-    color: rgba(19, 54, 89, 0.56);
+    color: var(--mat-sys-on-surface-variant);
   }
 }
 
