@@ -13,7 +13,7 @@
           @for (item of visibleTags; track item.id; let i = $index) {
             <mat-chip-option
               [@enter]="{ value: '', params: { delay: (i * 25)+100}}"
-              [@leave]="{ value: '', params: { delay: 5 }}"
+              [@leave]
               [class.zero-votes]="showCounts && !myVotes?.has(item.id) && (tagVotes?.get(item.id) ?? 0) === 0"
               [ngClass]="axisClassForTag(item.tag)"
               [matTooltip]="showCounts ? (readOnly ? '' : (isLoggedIn ? (myVotes?.has(item.id) ? 'Remove your vote' : 'Vote for this tag') : 'Log in to vote on tags')) : ''"
@@ -55,7 +55,7 @@
                   @for (pt of group.tags; track pt.tag.id) {
                     <mat-chip-option
                       [@enter]="{ value: '', params: { delay: 0 }}"
-                      [@leave]="{ value: '', params: { delay: 0 }}"
+                      [@leave]
                       [selected]="pt.isVotedByMe"
                       [ngClass]="axisClassForTag(pt.tag)"
                       [class.tag-chip--text-match]="pt.isTextMatch"
