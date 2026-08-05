@@ -122,7 +122,7 @@ export function catchErrors<T>(snackBar: MatSnackBar): (source: Observable<T>) =
   return (source: Observable<T>) => source.pipe(
     catchError((e) => {
       console.error(e);
-      SharedConstants.errorHandlerOperation(snackBar);
+      snackBar.open(SharedConstants.messages.operationFailed, undefined, {duration: 8000, panelClass: 'snack-error'});
       return NEVER;
     })
   );
