@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import {
   formatEstimatedModulePriceMinorUnits,
   getEstimatedModulePriceCurrencyFractionDigits
@@ -63,7 +63,8 @@ export interface ModulePriceListingPricePart {
   selector: 'app-module-price-listings-card',
   templateUrl: './module-price-listings-card.component.html',
   styleUrls: ['./module-price-listings-card.component.scss'],
-  standalone: false
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ModulePriceListingsCardComponent {
   private _listings: ModulePriceListing[] | null | undefined;
