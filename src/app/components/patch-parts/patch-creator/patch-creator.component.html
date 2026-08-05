@@ -94,6 +94,7 @@
           theme="positive"
           icon="add"
           (click$)="save$.next()"
+          [disabled]="createInProgress$ | async"
         >
           Create
         </app-brand-primary-button>
