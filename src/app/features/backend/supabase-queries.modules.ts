@@ -340,8 +340,9 @@ export class SupabaseModuleQueries extends SupabaseQueriesBase {
       }
 
       const detailRows = Array.isArray(detailResponse.data) ? detailResponse.data : [];
+      const detailRowsById = new Map(detailRows.map((row: any) => [row?.id, row]));
       const orderedPageRows = pageIds
-        .map((id) => detailRows.find((row: any) => row?.id === id))
+        .map((id) => detailRowsById.get(id))
         .filter(Boolean);
 
       return {
