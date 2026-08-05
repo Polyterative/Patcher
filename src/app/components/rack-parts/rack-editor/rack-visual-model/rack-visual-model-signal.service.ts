@@ -32,6 +32,7 @@ interface SignalStateParams {
   focusArea: ReturnType<typeof suggestSignalFocusArea> | null | undefined;
   isSignalModeActive: boolean;
   moduleDomKey: (module: RackedModule) => string;
+  scale: number;
   markForCheck: () => void;
 }
 
@@ -188,7 +189,7 @@ export class RackVisualModelSignalService {
       return null;
     }
 
-    return `0 0 ${ this.signalOverlayFrame.width } ${ this.signalOverlayFrame.height }`;
+    return `0 0 ${ this.signalOverlayFrame.viewBoxWidth } ${ this.signalOverlayFrame.viewBoxHeight }`;
   }
 
   private buildSignalOverlayLines(params: Omit<SignalStateParams, 'isSignalModeActive' | 'focusArea' | 'markForCheck'>): SignalOverlayLine[] {
@@ -204,7 +205,7 @@ export class RackVisualModelSignalService {
     const screenRect = screenElement.getBoundingClientRect();
     const moduleElements = buildRenderedModuleElementMap(screenElement);
     const sourceElement = params.hoveredModuleElement ?? moduleElements.get(params.moduleDomKey(hoveredModule)) ?? null;
-    this.signalOverlayFrame = buildSignalOverlayFrame(screenRect, hostRect);
+    this.signalOverlayFrame = buildSignalOverlayFrame(screenRect, hostRect, params.scale);
     const sourceRect = this.resolveRenderedModuleRect(sourceElement, screenRect);
 
     if (!sourceRect) {

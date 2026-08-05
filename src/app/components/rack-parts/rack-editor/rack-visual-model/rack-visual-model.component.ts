@@ -468,6 +468,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
       hostElement: this.hostElementRef.nativeElement,
       rackViewportElement: this.rackViewportElement,
       moduleDomKey: (module: RackedModule) => this.render.moduleDomKey(module),
+      scale: this.dragScale,
     };
   }
 
