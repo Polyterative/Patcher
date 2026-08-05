@@ -18,10 +18,14 @@ export interface RackRowMoveMotion {
 }
 
 export interface SignalOverlayFrame {
+  /** Local CSS pixels (pre-transform) for the overlay element positioning/sizing. */
   left: number;
   top: number;
   width: number;
   height: number;
+  /** SVG viewBox dimensions in viewport pixels (post-transform), matching the path coordinate space. */
+  viewBoxWidth: number;
+  viewBoxHeight: number;
 }
 
 export interface ModuleRenderRect {
