@@ -223,6 +223,14 @@
   touch-action: none;
 }
 
+.module:not(.cdk-drag-disabled) {
+  cursor: grab;
+}
+
+.module.cdk-drag-dragging {
+  cursor: grabbing;
+}
+
 .module--sameHpHighlight {
   z-index: 3;
   filter: brightness(1.08) saturate(1.05);
