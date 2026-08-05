@@ -60,6 +60,31 @@ export interface ModulePriceComparisonPoint {
   normalizedPriceEurMinor: number;
 }
 
+export type ModulePriceListingPricePartKind = 'amount' | 'currency' | 'text';
+
+export interface ModulePriceListingPricePart {
+  kind: ModulePriceListingPricePartKind;
+  value: string;
+}
+
+/**
+ * Precomputed, per-listing template view data. Built once per derived-state
+ * rebuild (see buildModulePriceListingsDerivedState) instead of being
+ * recomputed by template method calls on every change-detection cycle.
+ */
+export interface ModulePriceListingRowView {
+  isStale: boolean;
+  isAvailableNow: boolean;
+  isBestAvailableNow: boolean;
+  storeHeroColor: string;
+  availabilityLabel: string;
+  availabilityClass: string;
+  shippingOriginLabel: string;
+  shippingOriginFlag: string;
+  freshnessIso: string | null;
+  priceParts: ReadonlyArray<ModulePriceListingPricePart>;
+}
+
 export interface ModulePriceListingsDerivedState {
   displayListings: ModulePriceListing[];
   displayListingGroups: ModulePriceListingGroup[];
@@ -70,6 +95,7 @@ export interface ModulePriceListingsDerivedState {
   cheapestKnownListing: ModulePriceListing | null;
   priceInsightLabelByListingId: ReadonlyMap<number, string>;
   priceInsightClassByListingId: ReadonlyMap<number, string>;
+  rowViewByListingId: ReadonlyMap<number, ModulePriceListingRowView>;
 }
 
 export const MODULE_PRICE_AVAILABILITY_FILTER_OPTIONS: ReadonlyArray<

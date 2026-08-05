@@ -1,5 +1,9 @@
 import { ModulePriceListing } from 'src/app/features/backend/supabase-queries';
 import {
+  formatEstimatedModulePriceMinorUnits,
+  getEstimatedModulePriceCurrencyFractionDigits
+} from 'src/app/features/backend/module-price-estimated-fx.utils';
+import {
   buildModulePriceRegionFilterOptions,
   compareListingsByKnownPriceOnly,
   countryCodeToFlag,
@@ -8,18 +12,21 @@ import {
   getAvailableNowPriority,
   getKnownPriceListings,
   getListingPriceAmount,
+  getModulePriceFreshnessIso,
   isModulePriceListingStale,
   getShippingOriginCode,
+  getStoreHeroColor,
   groupModulePriceListingsByContinent,
   REGION_LABELS,
-  regionDisplayNames,
-  STORE_HERO_COLORS
+  regionDisplayNames
 } from './module-price-listings-card.utils';
 import type {
   ModulePriceAvailabilityFilter,
   ModulePriceComparisonPoint,
   ModulePriceListingsDerivedState,
   ModulePriceListingOrder,
+  ModulePriceListingPricePart,
+  ModulePriceListingRowView,
   ModulePriceRegionFilter,
   ModulePriceContinentCode
 } from './module-price-listings-card.utils';
@@ -74,6 +81,12 @@ export function buildModulePriceListingsDerivedState(
       )
     ])
   );
+  const rowViewByListingId = new Map(
+    displayListings.map(listing => [
+      listing.listingId,
+      buildModulePriceListingRowView(listing, bestAvailableNowListing)
+    ])
+  );
 
   return {
     displayListings,
@@ -84,7 +97,119 @@ export function buildModulePriceListingsDerivedState(
     bestAvailableNowListing,
     cheapestKnownListing,
     priceInsightLabelByListingId,
-    priceInsightClassByListingId
+    priceInsightClassByListingId,
+    rowViewByListingId
+  };
+}
+
+const pricePartFormatterByCurrency = new Map<string, Intl.NumberFormat>();
+
+function getPricePartFormatter(normalizedCurrency: string): Intl.NumberFormat | null {
+  const cachedFormatter = pricePartFormatterByCurrency.get(normalizedCurrency);
+  if (cachedFormatter) {
+    return cachedFormatter;
+  }
+
+  try {
+    const formatter = new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency: normalizedCurrency,
+      currencyDisplay: 'narrowSymbol'
+    });
+    pricePartFormatterByCurrency.set(normalizedCurrency, formatter);
+    return formatter;
+  } catch {
+    return null;
+  }
+}
+
+function mergeAdjacentPriceParts(
+  parts: ReadonlyArray<ModulePriceListingPricePart>
+): ReadonlyArray<ModulePriceListingPricePart> {
+  return parts.reduce<ModulePriceListingPricePart[]>((mergedParts, part) => {
+    const previousPart = mergedParts[mergedParts.length - 1];
+
+    if (previousPart?.kind === part.kind) {
+      previousPart.value += part.value;
+    } else {
+      mergedParts.push({...part});
+    }
+
+    return mergedParts;
+  }, []);
+}
+
+function buildModulePriceListingPriceParts(
+  listing: ModulePriceListing,
+  isStale: boolean
+): ReadonlyArray<ModulePriceListingPricePart> {
+  const displayPrice = buildModulePriceListingPriceLabel(listing, isStale);
+  const snapshot = listing.latestSnapshot;
+
+  if (
+    displayPrice === 'Last seen' ||
+    displayPrice === 'Price unknown' ||
+    !snapshot?.currency ||
+    snapshot.priceAmountMinor === null
+  ) {
+    return [{kind: 'text', value: displayPrice}];
+  }
+
+  const normalizedCurrency = snapshot.currency.trim().toUpperCase();
+  const fractionDigits = getEstimatedModulePriceCurrencyFractionDigits(normalizedCurrency);
+  const sourceMajorAmount = snapshot.priceAmountMinor / 10 ** fractionDigits;
+
+  const formatter = getPricePartFormatter(normalizedCurrency);
+  if (!formatter) {
+    return [{kind: 'text', value: displayPrice}];
+  }
+
+  const parts = formatter
+    .formatToParts(sourceMajorAmount)
+    .map(part => ({
+      kind: part.type === 'currency' ? 'currency' : 'amount',
+      value: part.value
+    } satisfies ModulePriceListingPricePart));
+
+  return mergeAdjacentPriceParts(parts);
+}
+
+function buildModulePriceListingPriceLabel(listing: ModulePriceListing, isStale: boolean): string {
+  if (isStale) {
+    return 'Last seen';
+  }
+
+  const snapshot = listing.latestSnapshot;
+  if (!snapshot?.currency || snapshot.priceAmountMinor === null) {
+    return 'Price unknown';
+  }
+
+  return formatEstimatedModulePriceMinorUnits(
+    snapshot.priceAmountMinor,
+    snapshot.currency
+  ) ?? 'Price unknown';
+}
+
+export function buildModulePriceListingRowView(
+  listing: ModulePriceListing,
+  bestAvailableNowListing: ModulePriceListing | null
+): ModulePriceListingRowView {
+  const isStale = isModulePriceListingStale(listing);
+  const isAvailableNow = isModulePriceListingAvailableNow(listing);
+
+  return {
+    isStale,
+    isAvailableNow,
+    isBestAvailableNow: bestAvailableNowListing?.listingId === listing.listingId,
+    storeHeroColor: getStoreHeroColor(listing.storeSlug),
+    availabilityLabel: isStale ? 'Stale data' : getModulePriceAvailabilityLabel(listing),
+    availabilityClass: isStale
+      ? 'module-price-listing__availability--stale'
+      : getModulePriceAvailabilityClass(listing),
+    shippingOriginLabel: getModulePriceShippingOriginLabel(listing),
+    shippingOriginFlag: getModulePriceShippingOriginFlag(listing),
+    freshnessIso: getModulePriceFreshnessIso(listing),
+    priceParts: buildModulePriceListingPriceParts(listing, isStale)
   };
 }
 
@@ -136,10 +261,6 @@ export function getModulePriceAvailabilityClass(listing: ModulePriceListing): st
 
 export function isModulePriceListingAvailableNow(listing: ModulePriceListing): boolean {
   return !isModulePriceListingStale(listing) && getAvailableNowPriority(listing) === 0;
-}
-
-export function getModulePriceStoreHeroColor(listing: ModulePriceListing): string {
-  return STORE_HERO_COLORS[listing.storeSlug] ?? '#536170';
 }
 
 export function getModulePriceShippingOriginLabel(listing: ModulePriceListing): string {
