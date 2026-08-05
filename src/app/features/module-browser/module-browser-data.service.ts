@@ -346,12 +346,12 @@ export class ModuleBrowserDataService extends SubManager {
         this.fields.standard.control.setValue(DEFAULT_STANDARD, silent);
         this.fields.tags.control.setValue([], silent);
         this.fields.tagSearch.control.setValue('', silent);
-        this.tagMatchMode$.next('OR');
         this.tagSearchQuery$.next('');
         this.serversideTableRequestData.filter$.next('');
         this.serversideTableRequestData.sort$.next([this.orderStartingValue.id, 'desc']);
         this.serversideTableRequestData.skip$.next(0);
         this.paginatorToFistPage$.next();
+        this.tagMatchMode$.next('OR');
         if (shouldTriggerManualReload) {
           this.updateModulesList$.next();
         }
