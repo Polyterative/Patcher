@@ -127,13 +127,13 @@ describe('ModuleCollectionsBrowserDetailComponent', () => {
   it('closes edit mode only after explicit save', () => {
     const { component, dataService } = build();
     const collection = buildCollection();
-    spyOn(dataService.loadOwnedById$, 'next').and.callThrough();
+    spyOn(dataService.load$, 'next').and.callThrough();
     component.collectionEditingPanelOpenState$.next(true);
 
     component.onCollectionSaved(collection);
 
     expect(component.collectionEditingPanelOpenState$.getValue()).toBeFalse();
-    expect(dataService.loadOwnedById$.next).toHaveBeenCalledOnceWith(collection.id);
+    expect(dataService.load$.next).toHaveBeenCalledOnceWith(collection.public_id);
   });
 
   it('renders read-only module tags in public collection details', () => {
