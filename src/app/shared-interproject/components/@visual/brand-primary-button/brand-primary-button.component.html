@@ -1,6 +1,6 @@
 <a mat-raised-button
    [style.flex]="innerFlex"
-   [routerLink]="routerLink"
+   [routerLink]="(disabled||error)?null:routerLink"
    [fragment]="fragment"
    [class]="'brand-button'+' '+theme"
    [disabled]="disabled||error"
@@ -9,7 +9,7 @@
    [matTooltipDisabled]="!tooltip"
    [matTooltipPosition]="tooltipPosition"
    [cdkTrapFocus]="autoFocus"
-   (click)="disabled?doNothing():click$.emit()"
+   (click)="(disabled||error)?doNothing():click$.emit()"
 >
   @if (icon) {
     <mat-icon>{{ icon }}</mat-icon>
