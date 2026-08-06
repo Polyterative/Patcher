@@ -27,7 +27,7 @@ export class RoutingService {
 
     openInNewTab(fullPath: string) {
         const win = window.open(fullPath, '_blank');
-        win.focus();
+        win?.focus();
     }
 
     /**
