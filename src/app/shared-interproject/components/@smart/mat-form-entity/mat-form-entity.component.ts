@@ -241,6 +241,7 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
   
   ngOnDestroy(): void {
     this.control?.setAsyncValidators([]);
+    super.ngOnDestroy();
   }
 
   ngAfterViewInit(): void {
@@ -384,6 +385,7 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
       hostValidator,
       newValidator
     ] : [newValidator]);
+    this.control.updateValueAndValidity({emitEvent: false});
   }
   
   private safelyAddAsyncValidator(newValidator: AsyncValidatorFn): void {
@@ -393,6 +395,7 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
       hostAsyncValidator,
       newValidator
     ] : [newValidator]);
+    this.control.updateValueAndValidity({emitEvent: false});
   }
   
   private checkOptions(): void {
