@@ -18,7 +18,10 @@ import { map } from 'rxjs/operators';
 export class DaysInWeekPickerComponent implements OnInit, OnDestroy, ControlValueAccessor {
 
   writeValue(obj: number[]): void {
-    this.checkboxGroupForm.setValue(this.getDay(a => Array.isArray(obj) && obj.some(c => `A${  c}` === a)));
+    this.checkboxGroupForm.setValue(
+      this.getDay(a => Array.isArray(obj) && obj.some(c => `A${  c}` === a)),
+      {emitEvent: false}
+    );
   }
 
   @Input()
@@ -52,6 +55,7 @@ export class DaysInWeekPickerComponent implements OnInit, OnDestroy, ControlValu
   private subscription: Subscription;
 
   constructor(private readonly formBuilder: FormBuilder) {
+    this.checkboxGroupForm = this.formBuilder.group(this.getDay(_ => new FormControl(false)), {});
   }
 
   private getDay(fn: (a: string) => any) {
@@ -62,10 +66,9 @@ export class DaysInWeekPickerComponent implements OnInit, OnDestroy, ControlValu
   }
 
   ngOnInit(): void {
-    this.checkboxGroupForm = this.formBuilder.group(this.getDay(_ => new FormControl({
-      value:    false,
-      disabled: this.disabled
-    })), {});
+    if (this.disabled) {
+      this.checkboxGroupForm.disable();
+    }
     this.subscription = this.checkboxGroupForm.valueChanges.pipe(
       map(a => Object.entries(a)
                      .filter(b => b[1])
