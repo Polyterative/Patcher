@@ -76,6 +76,7 @@ export class PublicProfileDataService extends SubManager {
   readonly loadMoreRacks$ = new Subject<void>();
 
   private readonly cancelMarketplaceListings$ = new Subject<void>();
+  private readonly cancelProfileSubData$ = new Subject<void>();
 
   constructor(
     private readonly backend: SupabaseService,
@@ -96,6 +97,7 @@ export class PublicProfileDataService extends SubManager {
       .pipe(
         tap(() => {
           this.cancelMarketplaceListings$.next();
+          this.cancelProfileSubData$.next();
           this.routeState$.next('loading');
           this.profile$.next(null);
           this.patchesData$.next(undefined);
@@ -158,7 +160,9 @@ export class PublicProfileDataService extends SubManager {
         withLatestFrom(this.profile$),
         filter(([, profile]) => !!profile && profile.public),
         tap(() => this.contributorStats$.next(undefined)),
-        switchMap(([, profile]) => this.backend.GET.publicUserContributorStats(profile!.id)),
+        switchMap(([, profile]) => this.backend.GET.publicUserContributorStats(profile!.id).pipe(
+          takeUntil(this.cancelProfileSubData$)
+        )),
         this.takeUntilDestroyed(),
       )
       .subscribe({
@@ -235,7 +239,7 @@ export class PublicProfileDataService extends SubManager {
             profile!.id,
             skip,
             skip + take - 1,
-          );
+          ).pipe(takeUntil(this.cancelProfileSubData$));
         }),
         this.takeUntilDestroyed(),
       )
@@ -281,7 +285,7 @@ export class PublicProfileDataService extends SubManager {
             profile!.id,
             skip,
             skip + take - 1,
-          );
+          ).pipe(takeUntil(this.cancelProfileSubData$));
         }),
         this.takeUntilDestroyed(),
       )
