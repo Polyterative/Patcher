@@ -148,18 +148,8 @@ export class UserResetPasswordDataService extends SubManager implements OnDestro
               // Handle errors
               console.error('Password reset failed:', error);
               
-              // Extract user-friendly error message
-              let errorMessage = ERROR_MESSAGES.resetFailed;
-              
-              if (error?.message) {
-                errorMessage = error.message;
-              } else if (error?.msg) {
-                errorMessage = error.msg;
-              } else if (error?.error_description) {
-                errorMessage = error.error_description;
-              }
-              
-              // Log detailed error info for debugging
+              // Log detailed error info for debugging, but never surface raw backend
+              // error text to the user
               if (error?.errorCode) {
                 console.error('Error code:', error.errorCode);
               }
@@ -168,7 +158,7 @@ export class UserResetPasswordDataService extends SubManager implements OnDestro
               }
               
               // Update UI state
-              this.errorMessage$.next(errorMessage);
+              this.errorMessage$.next(ERROR_MESSAGES.resetFailed);
               this.isSubmitting$.next(false);
               
               // Return empty array to complete the stream without propagating error

@@ -156,7 +156,7 @@ describe('UserResetPasswordDataService', () => {
 
     service.submitPasswordReset$.next();
 
-    expect(service.errorMessage$.value).toBe('Token expired');
+    expect(service.errorMessage$.value).toBe(SharedConstants.messages.resetPassword.resetFailed);
     expect(service.isSubmitting$.value).toBeFalse();
   });
 
