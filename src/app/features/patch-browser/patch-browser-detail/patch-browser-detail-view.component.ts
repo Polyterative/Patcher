@@ -112,7 +112,7 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
             title: `${ patchData.name } - details. `,
             description: descParts.join(' '),
             keywords: `${ patchConnections.map(x => x.a.name)
-              .join(', ') },${ patchConnections.map(x => x.a.name)
+              .join(', ') },${ patchConnections.map(x => x.b.name)
               .join(', ') },${ joined }, patch, eurorack`,
             
             published: patchData.created,
