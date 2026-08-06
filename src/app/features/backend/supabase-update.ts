@@ -290,6 +290,7 @@ export function createUpdateNamespace(
       
       return rxFrom(supabase.from(DbPaths.modules).upsert(transformedData))
         .pipe(
+          throwIfSupabaseError(),
           cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
           showSuccessMessage(snackBar)
         );

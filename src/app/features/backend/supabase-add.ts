@@ -80,16 +80,20 @@ export function createAddNamespace(
       note?: string | null;
     }) => getUserSession$()
       .pipe(
-        switchMap(user => rxFrom(
-          supabase
-            .from(DbPaths.module_flags)
-            .insert({
-              module_id: data.module_id,
-              category: data.category,
-              note: data.note ?? null,
-              user_id: user.id
-            })
-        )),
+        switchMap(user => {
+          if (!user) return throwError(() => new Error('Authentication required'));
+          return rxFrom(
+            supabase
+              .from(DbPaths.module_flags)
+              .insert({
+                module_id: data.module_id,
+                category: data.category,
+                note: data.note ?? null,
+                user_id: user.id
+              })
+          );
+        }),
+        throwIfSupabaseError(),
         remapErrors()
       ),
 
@@ -476,7 +480,10 @@ export function createAddNamespace(
         .from(DbPaths.module_panels)
         .insert(data)
     )
-      .pipe(remapErrors()),
+      .pipe(
+        cacheBust(['modules', 'moduleWithId']),
+        remapErrors()
+      ),
     
     patchModuleInstance: (patch_id: number, module_id: number, instance_label?: string) => getUserSession$().pipe(
       switchMap(user => {
