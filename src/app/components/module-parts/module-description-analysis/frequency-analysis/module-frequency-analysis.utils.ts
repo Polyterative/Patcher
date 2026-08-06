@@ -45,7 +45,7 @@ export function extractFrequencyBands(description: string): FrequencyBand[] {
       label: inferBandLabel(band.sentence, band.sentenceMatchIndex, index),
       lowHz: clampFrequency(Math.min(band.lowHz, band.highHz)),
       highHz: clampFrequency(Math.max(band.lowHz, band.highHz)),
-      centerHz: band.centerHz
+      centerHz: band.centerHz !== undefined ? clampFrequency(band.centerHz) : band.centerHz
     }))
     .filter(band => band.lowHz < band.highHz)
     .slice(0, MAX_VISIBLE_BANDS);
