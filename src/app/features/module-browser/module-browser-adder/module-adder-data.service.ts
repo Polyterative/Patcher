@@ -16,7 +16,8 @@ import {
   merge,
   Observable,
   of,
-  Subject
+  Subject,
+  timer
 } from 'rxjs';
 import {
   catchError,
@@ -345,15 +346,17 @@ export class ModuleAdderDataService extends SubManager {
         this.submitSuccess$.next(recap);
         
         // let the celebration play before navigating away
-        setTimeout(() => {
-          this.router.navigate(
-            ['/modules', 'browser'],
-            {
-              queryParams: {refresh: true},
-              queryParamsHandling: 'merge'
-            }
-          );
-        }, 4000);
+        timer(4000)
+          .pipe(this.takeUntilDestroyed())
+          .subscribe(() => {
+            this.router.navigate(
+              ['/modules', 'browser'],
+              {
+                queryParams: {refresh: true},
+                queryParamsHandling: 'merge'
+              }
+            );
+          });
       });
 
     // when user requests to create a new manufacturer inline
