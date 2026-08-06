@@ -37,7 +37,7 @@
                   @if (!bag.hidden) {
                     <a mat-list-item
                        class="depadding option"
-                       [href]="cardLink.route"
+                       [href]="(!bag.disabled)?cardLink.route:null"
                        [ngClass]='{"disabled":bag.disabled}'
                        [disableRipple]="bag.disabled"
                     >
