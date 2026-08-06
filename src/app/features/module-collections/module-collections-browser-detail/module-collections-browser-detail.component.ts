@@ -123,7 +123,7 @@ export class ModuleCollectionsBrowserDetailComponent extends SubManager implemen
 
   onCollectionSaved(collection: ModuleCollectionDetail): void {
     this.collectionEditingPanelOpenState$.next(false);
-    this.dataService.loadOwnedById$.next(collection.id);
+    this.dataService.load$.next(collection.public_id);
   }
 
   onCollectionUpdated(collection: ModuleCollectionDetail): void {
