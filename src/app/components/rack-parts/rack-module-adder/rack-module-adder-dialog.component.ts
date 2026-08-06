@@ -119,6 +119,7 @@ export class RackModuleAdderDialogComponent extends SubManager implements OnInit
           })
             .onAction()
             .pipe(
+              takeUntil(this.destroy$),
               takeUntil(timer(duration))
             )
             .subscribe(() => {
@@ -159,7 +160,7 @@ export class RackModuleAdderDialogComponent extends SubManager implements OnInit
           
           // add lastly updated rack if not already empty
           if (options.length > 0) {
-            const lastUpdatedRack = x.sort((a, b) =>
+            const lastUpdatedRack = [...x].sort((a, b) =>
               new Date(normalizeSupabaseUtcTimestamp(b.updated)).getTime() - new Date(normalizeSupabaseUtcTimestamp(a.updated)).getTime())[0];
             
             const firstRackAsOption: {
