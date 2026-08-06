@@ -8,7 +8,10 @@ import {
   UntypedFormControl,
   UntypedFormGroup
 } from '@angular/forms';
-import { Subject } from 'rxjs';
+import {
+  merge,
+  Subject
+} from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 
@@ -37,7 +40,7 @@ export class FormValidPipe extends SubManager implements PipeTransform, OnDestro
   }
 
   private subscribe(control: LocalType): void {
-    control.valueChanges
+    merge(control.valueChanges, control.statusChanges)
            .pipe(
              this.takeUntilDestroyed()
            )
