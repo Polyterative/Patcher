@@ -10,7 +10,10 @@ import {
 import {
   debounceTime
 } from 'rxjs/operators';
-import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import {
+  FormTypes,
+  ISelectable
+} from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { IMatFormEntityConfig } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 
@@ -19,7 +22,7 @@ import { SubManager } from 'src/app/shared-interproject/directives/subscription-
 export class LocalDataFilterService extends SubManager {
   
   filterEvent$ = new Subject<string>();
-  orderEvent$ = new Subject<string>();
+  orderEvent$ = new Subject<ISelectable>();
   
   readonly search: IMatFormEntityConfig = {
     label: 'Search ...',
