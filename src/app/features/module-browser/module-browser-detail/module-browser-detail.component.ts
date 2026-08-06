@@ -162,7 +162,8 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
     this.route.params
       .pipe(
         map(x => x && x.id && parseInt(x.id) ? parseInt(x.id) : 0),
-        filter(x => x > 0)
+        filter(x => x > 0),
+        this.takeUntilDestroyed()
       )
       .subscribe(data => {
         this.dataService.updateSingleModuleData$.next(data);
