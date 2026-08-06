@@ -4,7 +4,8 @@
 //                (requires --localstorage-file flag to be functional)
 // In both cases we install an in-memory adapter before Angular bootstraps so that
 // Supabase and other libs that call localStorage at module-init time don't throw.
-if (typeof globalThis.localStorage !== 'object' ||
+if (globalThis.localStorage == null ||
+    typeof globalThis.localStorage !== 'object' ||
     typeof (globalThis.localStorage as unknown as Storage).getItem !== 'function') {
   const mem: Record<string, string> = {};
   (globalThis as unknown as Record<string, unknown>)['localStorage'] = {
