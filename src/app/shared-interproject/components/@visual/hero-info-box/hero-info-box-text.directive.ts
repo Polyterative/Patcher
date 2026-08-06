@@ -22,7 +22,7 @@ export class HeroInfoBoxTextDirective {
   }
   
   @HostListener('mouseleave') onMouseLeave() {
-    this.el.nativeElement.setAttribute('title', undefined);
+    this.el.nativeElement.removeAttribute('title');
   }
   
 }
