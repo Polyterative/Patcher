@@ -3,7 +3,6 @@ import {
   Component,
   Inject,
   Input,
-  OnDestroy,
   OnInit,
   PLATFORM_ID,
 } from '@angular/core';
@@ -12,12 +11,12 @@ import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-det
 import { PatchModule } from 'src/app/components/patch-parts/patch.module';
 import { DETAIL_ANALYTICS_SURFACES } from 'src/app/components/detail-analytics-surface';
 import {
-  Subscription,
   timer
 } from 'rxjs';
 import {
   take,
 } from 'rxjs/operators';
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { HomeHeroContent, HomeHeroVisual } from '../../home-content.models';
 import { buildHomeTextSegments } from '../../home-text-segments.util';
 
@@ -33,7 +32,7 @@ const HERO_PATCH_LOAD_DELAY_MS = 1000;
   standalone: true,
   imports: [CommonModule, PatchModule]
 })
-export class HomeExperienceHeroComponent implements OnInit, OnDestroy {
+export class HomeExperienceHeroComponent extends SubManager implements OnInit {
   private _content: HomeHeroContent = {
     eyebrow: '',
     title: '',
@@ -70,12 +69,12 @@ export class HomeExperienceHeroComponent implements OnInit, OnDestroy {
   }
 
   public subtitleLines: string[] = [];
-  private heroPatchLoadSub?: Subscription;
 
   constructor(
     public readonly patchDetailDataService: PatchDetailDataService,
     @Inject(PLATFORM_ID) private readonly platformId: object
   ) {
+    super();
     this.patchDetailDataService.setDetailAnalyticsSurface(DETAIL_ANALYTICS_SURFACES.homePreview);
     this.content = this._content;
   }
@@ -85,16 +84,16 @@ export class HomeExperienceHeroComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.heroPatchLoadSub = timer(HERO_PATCH_LOAD_DELAY_MS)
-      .pipe(take(1))
+    timer(HERO_PATCH_LOAD_DELAY_MS)
+      .pipe(take(1), this.takeUntilDestroyed())
       .subscribe(() => {
         this.patchDetailDataService.updateSinglePatchData$.next(HERO_DEFAULT_PATCH_ID);
       });
   }
 
-  ngOnDestroy(): void {
+  override ngOnDestroy(): void {
     this.patchDetailDataService.setDetailAnalyticsSurface(DETAIL_ANALYTICS_SURFACES.detailRoute);
-    this.heroPatchLoadSub?.unsubscribe();
+    super.ngOnDestroy();
   }
 
   getSubtitleSegments(line: string) {
