@@ -94,6 +94,8 @@ export class ModuleBrowserDataService extends SubManager {
   readonly fields: ModuleBrowserFields;
   readonly canReset$: Observable<boolean>;
   private searchPerformedPending = false;
+  /** Number of raw (server) rows fetched so far, independent of any local AND-tag filtering. */
+  private fetchedRawCount = 0;
 
   constructor(
     private backend: SupabaseService,
@@ -280,7 +282,8 @@ export class ModuleBrowserDataService extends SubManager {
             {beforeRetry: () => this.backend.cacheResetter$.next(['modules'])}
           ).pipe(map(response => ({
             ...response,
-            requestedSkip: skip
+            requestedSkip: skip,
+            rawFetchedCount: response.data?.length ?? 0
           })));
         }),
         map((response) => {
@@ -312,6 +315,7 @@ export class ModuleBrowserDataService extends SubManager {
         const skip = response.requestedSkip;
         const current = this.modulesList$.value ?? [];
         this.modulesList$.next(skip === 0 ? response.data : [...current, ...response.data]);
+        this.fetchedRawCount = skip === 0 ? response.rawFetchedCount : this.fetchedRawCount + response.rawFetchedCount;
         this.remoteTagFilterLoading$.next(false);
 
         if (skip === 0) {
@@ -326,7 +330,10 @@ export class ModuleBrowserDataService extends SubManager {
       )
       .subscribe(([_, current]) => {
         this.analytics.capture('search.load_more', { loaded_count: current?.length ?? 0 });
-        this.serversideTableRequestData.skip$.next(current?.length ?? 0);
+        // Prefer the raw (unfiltered) fetched count so AND-tag filtering that shrinks the
+        // displayed list doesn't cause requests to re-fetch already-seen rows; fall back to
+        // the displayed list length if no request has gone through the service's own flow yet.
+        this.serversideTableRequestData.skip$.next(this.fetchedRawCount || current?.length || 0);
         this.updateModulesList$.next();
       });
 
