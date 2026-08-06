@@ -117,7 +117,6 @@ export class PatchEditorStateService extends SubManager {
       this.connectCollectionLoader();
       this.connectEditorCards();
       this.connectFilteredEditorCards();
-      this.connectEditableConnectionDismissal(callbacks.clearExpandedRackSelection);
       this.connectLinkedRackInstanceMap();
       this.connectLinkedRackDivergence();
       this.connectOrphanedConnectionCount();
@@ -169,12 +168,6 @@ export class PatchEditorStateService extends SubManager {
         this.takeUntilDestroyed()
       )
       .subscribe(cards => this.editorCards$.next(cards));
-  }
-
-  private connectEditableConnectionDismissal(clearExpandedRackSelection: () => void): void {
-    this.dataService.confirmSelectedConnection$
-      .pipe(this.takeUntilDestroyed())
-      .subscribe(() => clearExpandedRackSelection());
   }
 
   private connectLinkedRackInstanceMap(): void {
