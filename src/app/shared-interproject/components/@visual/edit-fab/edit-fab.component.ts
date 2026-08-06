@@ -57,6 +57,6 @@ export class EditFabComponent {
       of(true),
       of(false).pipe(delay(BOUNCE_DURATION_MS))
     )),
-    shareReplay(1)
+    shareReplay({ bufferSize: 1, refCount: true })
   );
 }
