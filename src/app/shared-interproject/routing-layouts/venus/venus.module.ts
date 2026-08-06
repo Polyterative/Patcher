@@ -43,10 +43,10 @@ export function generateVenusRoutesWithData(parentPrefix: string, routes: Routes
     path:      parentPrefix,
     component: VenusComponent,
     children:  routes,
-    data:      [
-      data,
-      {title: title}
-    ]
+    data:      {
+      ...data,
+      ...(title ? {title} : {})
+    }
     // canActivate: [AuthGuard],
     // Reuse Component instance when navigating between child views
     // data:      {reuse: true}

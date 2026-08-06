@@ -8,7 +8,8 @@ import { fadeAnimation } from './fade.animation';
   templateUrl: './venus.component.html',
   styleUrls:   ['./venus.component.scss'],
   // do not put OnPush here
-  animations: [fadeAnimation]
+  animations: [fadeAnimation],
+  standalone: false
 })
 export class VenusComponent implements OnInit {
   public title?: string;

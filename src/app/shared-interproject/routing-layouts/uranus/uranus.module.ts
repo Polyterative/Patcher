@@ -57,10 +57,10 @@ export function generateUranusRoutesWithData(parentPrefix: string, routes: Route
     path:      parentPrefix,
     component: UranusComponent,
     children:  routes,
-    data:      [
-      data,
-      {title: title}
-    ]
+    data:      {
+      ...data,
+      ...(title ? {title} : {})
+    }
     // canActivate: [AuthGuard],
     // Reuse Component instance when navigating between child views
     // data:      {reuse: true}
