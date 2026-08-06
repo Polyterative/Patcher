@@ -74,7 +74,7 @@ export class EventBannerComponent extends SubManager {
       return false;
     }
     const now   = Date.now();
-    const start = new Date(this.config.startDate).getTime();
+    const start = new Date(`${this.config.startDate}T00:00:00`).getTime();
     const end   = new Date(`${this.config.endDate}T23:59:59`).getTime();
     return now >= start && now <= end;
   }
@@ -87,7 +87,7 @@ export class EventBannerComponent extends SubManager {
       return false;
     }
     const now   = Date.now();
-    const start = new Date(this.config.marquee.startDate ?? this.config.startDate).getTime();
+    const start = new Date(`${this.config.marquee.startDate ?? this.config.startDate}T00:00:00`).getTime();
     const end   = new Date(`${this.config.marquee.endDate ?? this.config.endDate}T23:59:59`).getTime();
     return now >= start && now <= end;
   }
@@ -97,7 +97,11 @@ export class EventBannerComponent extends SubManager {
     if (!storageKey || !isPlatformBrowser(this.platformId)) {
       return false;
     }
-    return window.localStorage.getItem(storageKey) === 'true';
+    try {
+      return window.localStorage.getItem(storageKey) === 'true';
+    } catch {
+      return false;
+    }
   }
 
   private persistDismissedState(dismissed: boolean): void {
@@ -105,7 +109,11 @@ export class EventBannerComponent extends SubManager {
     if (!storageKey || !isPlatformBrowser(this.platformId)) {
       return;
     }
-    window.localStorage.setItem(storageKey, String(dismissed));
+    try {
+      window.localStorage.setItem(storageKey, String(dismissed));
+    } catch {
+      // Continue with in-memory dismissal when storage is unavailable.
+    }
   }
 
   private getDismissedStorageKey(): string | null {
