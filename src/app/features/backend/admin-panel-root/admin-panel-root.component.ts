@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component
 } from '@angular/core';
-import { SupabaseService } from '../supabase.service';
 
 
 @Component({
@@ -12,6 +11,4 @@ import { SupabaseService } from '../supabase.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class AdminPanelRootComponent {
-  constructor(public backend: SupabaseService) {}
-}
+export class AdminPanelRootComponent {}

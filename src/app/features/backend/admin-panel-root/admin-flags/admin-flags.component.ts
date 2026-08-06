@@ -2,8 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component
 } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { AdminFlagsDataService } from './admin-flags-data.service';
 
 
@@ -17,9 +15,7 @@ import { AdminFlagsDataService } from './admin-flags-data.service';
 })
 export class AdminFlagsComponent {
   constructor(
-    public dataService: AdminFlagsDataService,
-    public backend: SupabaseService,
-    public snackBar: MatSnackBar
+    public dataService: AdminFlagsDataService
   ) {}
 
   confirmDelete(id: number): void {
