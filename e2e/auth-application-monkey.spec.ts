@@ -44,7 +44,7 @@ test.describe('Authenticated application monkey flows', () => {
 
     const search = page.getByLabel('Search module...').first();
     await search.fill(WEIRD_QUERY);
-    await page.keyboard.press('Meta+A');
+    await page.keyboard.press('ControlOrMeta+A');
     await page.keyboard.press('Backspace');
     await search.fill('rings');
     await expect(page.locator('.browser-content-area .update-loading-shell')).toBeHidden({timeout: 20_000});
@@ -285,7 +285,7 @@ test.describe('Authenticated application monkey flows', () => {
     await expect(page.locator('app-module-browser-root')).toBeVisible({timeout: 20_000});
 
     await page.getByLabel('Search module...').focus();
-    for (const key of ['Tab', 'Shift+Tab', 'Escape', 'ArrowDown', 'ArrowUp', 'Enter', 'Meta+A', 'Backspace']) {
+    for (const key of ['Tab', 'Shift+Tab', 'Escape', 'ArrowDown', 'ArrowUp', 'Enter', 'ControlOrMeta+A', 'Backspace']) {
       await page.keyboard.press(key);
     }
     await page.getByLabel('Description').fill(WEIRD_QUERY);
