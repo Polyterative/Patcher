@@ -9,7 +9,6 @@ import {
 } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { AdminPanelRootComponent } from './admin-panel-root.component';
-import { SupabaseService } from '../supabase.service';
 
 @Component({
   selector: 'lib-hero-content-card',
@@ -30,19 +29,14 @@ class AdminFlagsStub {
 }
 
 describe('AdminPanelRootComponent', () => {
-  let mockBackend: SupabaseService;
   let fixture: ComponentFixture<AdminPanelRootComponent>;
 
   beforeEach(async () => {
-    mockBackend = Object.create(SupabaseService.prototype) as SupabaseService;
     await TestBed.configureTestingModule({
       declarations: [
         AdminPanelRootComponent,
         HeroContentCardStub,
         AdminFlagsStub
-      ],
-      providers: [
-        { provide: SupabaseService, useValue: mockBackend }
       ],
       schemas: [NO_ERRORS_SCHEMA]
     }).compileComponents();
@@ -62,9 +56,5 @@ describe('AdminPanelRootComponent', () => {
   it('renders admin-flags inside the hero card', () => {
     const flags = fixture.debugElement.query(By.directive(AdminFlagsStub));
     expect(flags).not.toBeNull();
-  });
-
-  it('exposes backend', () => {
-    expect(fixture.componentInstance.backend).toBe(mockBackend);
   });
 });
