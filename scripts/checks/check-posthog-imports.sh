@@ -7,7 +7,7 @@
 
 set -euo pipefail
 
-VIOLATIONS=$(grep -r "from 'posthog-js'\|require('posthog-js')\|import.*posthog-js" \
+VIOLATIONS=$(grep -rE "from ['\"]posthog-js['\"]|require\(['\"]posthog-js['\"]\)|import.*posthog-js" \
   --include="*.ts" \
   src/ \
   | grep -v "^src/app/features/backbone/analytics-integration/posthog-loader\.ts:" \
