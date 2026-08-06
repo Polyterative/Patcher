@@ -243,7 +243,12 @@ function issueFor(sourceFile, node, message) {
   };
 }
 
-function analyzeE2eTree(rootDir = process.cwd()) {
+// Default to the repo root (two levels up from scripts/checks/), not process.cwd(),
+// so this still finds the e2e/ directory when invoked from a different working
+// directory than the package root.
+const REPO_ROOT = path.join(__dirname, '..', '..');
+
+function analyzeE2eTree(rootDir = REPO_ROOT) {
   const e2eRoot = path.join(rootDir, E2E_DIR);
   const files = listTypeScriptFiles(e2eRoot);
   return files.flatMap(filePath => analyzeSource(
@@ -268,7 +273,7 @@ function listTypeScriptFiles(directory) {
 }
 
 function main() {
-  const issues = analyzeE2eTree(process.cwd());
+  const issues = analyzeE2eTree();
   if (issues.length === 0) {
     console.log('[e2e-module-create-safety] E2E module CREATE safety guard passed.');
     return;
