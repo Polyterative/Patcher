@@ -123,7 +123,7 @@ export class RackBrowserDataService extends SubManager {
         const order = this.fields.order.control.value;
         return (
           this.fields.search.control.value !== '' ||
-          (order && order.id !== RACK_DEFAULT_ORDER.id)
+          (order && (order.id !== RACK_DEFAULT_ORDER.id || order.name !== RACK_DEFAULT_ORDER.name))
         );
       }),
       distinctUntilChanged(),
