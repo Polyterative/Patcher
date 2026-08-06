@@ -307,11 +307,10 @@ describe('Integration — ModuleCVsComponent first CV click on 0-instance module
       .queryAll(de => de.nativeElement?.classList?.contains?.('item-cvitem')
         && de.nativeElement?.classList?.contains?.('out'))
       .pop();
-    if (outEl) {
-      expect(outEl.nativeElement.classList.contains('b')).withContext(
-        'BUG: OUT chip DOM element must have CSS class "b" when highlighted'
-      ).toBeTrue();
-    }
+    expect(outEl).withContext('OUT cvitem DOM element must be present').toBeTruthy();
+    expect(outEl!.nativeElement.classList.contains('b')).withContext(
+      'BUG: OUT chip DOM element must have CSS class "b" when highlighted'
+    ).toBeTrue();
   }));
   
   
