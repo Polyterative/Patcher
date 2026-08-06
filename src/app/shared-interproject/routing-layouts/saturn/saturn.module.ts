@@ -43,10 +43,10 @@ export function generateSaturnRoutesWithData(parentPrefix: string, routes: Route
     path:      parentPrefix,
     component: SaturnComponent,
     children: routes,
-    data:     [
-      data,
-      {title: title}
-    ]
+    data:     {
+      ...data,
+      ...(title ? {title} : {})
+    }
     // canActivate: [AuthGuard],
     // Reuse Component instance when navigating between child views
     // data:      {reuse: true}

@@ -8,7 +8,8 @@ import { fadeAnimation } from './fade.animation';
   templateUrl: './saturn.component.html',
   styleUrls:   ['./saturn.component.scss'],
   // do not put OnPush here
-  animations: [fadeAnimation]
+  animations: [fadeAnimation],
+  standalone: false
 })
 export class SaturnComponent implements OnInit {
   title?: string;
