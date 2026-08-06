@@ -145,10 +145,16 @@ export class ResetPasswordPageComponent extends SubManager implements OnInit {
     
     // Fallback: check after delay if no auth event is received
     timer(AUTH_CHECK_DELAY_MS)
-      .pipe(take(1))
+      .pipe(
+        take(1),
+        this.takeUntilDestroyed()
+      )
       .subscribe(() => {
         this.dataService.isSessionChecked$
-          .pipe(take(1))
+          .pipe(
+            take(1),
+            this.takeUntilDestroyed()
+          )
           .subscribe(isChecked => {
             if (!isChecked) {
               this.dataService.checkForRecoveryInUrl();
