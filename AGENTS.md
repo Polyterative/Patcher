@@ -90,6 +90,12 @@ Key paths:
   where the element lives, its visual weight, affected surfaces, and excluded surfaces. After approval, proceed autonomously.
 - Use `designer` before implementation when UI placement, information architecture, hierarchy, or density is ambiguous. For low-risk
   visual questions, ask the user directly with 2-3 concise options and a recommended default.
+- **Screenshot every visual iteration, not just before concluding.** When a live CSS/layout tweak loop is underway (the user is
+  reacting round-by-round to a change, e.g. "still not right", "too big", "wrong side"), capture and inspect a fresh screenshot after
+  each change before proposing the next one — don't rely on the user's text description alone across multiple rounds.
+- **For open-ended/experimental visual requests** ("make it feel more 3D", "more realistic", "more premium"), propose 2-3 concrete
+  directions (or a quick low-fidelity mock) before iterating live in CSS. Repeatedly reworking one live implementation from vague
+  direction burns many rounds that a short options-first step would avoid.
 
 ## 6) Git and delivery
 
@@ -106,9 +112,16 @@ Key paths:
 - Never push unless the user explicitly requested it.
 - Never force-push (`--force`, `--force-with-lease`, or equivalent history-rewriting ref updates) unless the user explicitly requests a force push in that turn.
 - Do not create or use separate worktrees / child project sessions for Patcher work unless the user explicitly asks for a separate worktree/session. The user's running dev server is expected to serve the main checkout, so visual POCs and runtime validation must happen in the active checkout by default.
+  - This rule exists because of real prior confusion: a child worktree made changes the user could not see in their local branch
+    until they were explicitly ported over. Before spawning any worktree/child session, re-confirm the user actually asked for one
+    in this turn; if unsure, do the work in the active checkout instead of asking whether a worktree is fine.
 - Never run `release:*` from `develop`.
 - Work normally happens on `develop`; the user decides when to release/merge to `production`. Do not switch to `production`, run release
   commands, or treat `develop` visibility as production exposure unless the user explicitly asks.
+- **After any release/merge to `production`, verify `origin/production` actually landed the expected commit/tag** before declaring
+  the release done — `git fetch` and compare `origin/production` HEAD against the release commit/tag rather than assuming a push
+  succeeded cleanly. Local and remote `production` have diverged in the past (a partially-applied release left the pushed tag ahead
+  of `origin/production`), requiring a non-destructive `ours`-merge reconciliation instead of a force-push.
 - Feature flags are not mandatory for every new feature. Use them when the user requests a hidden/incomplete feature, when production
   must stay shielded while `develop` remains reviewable, or when a backend rollout needs a safe off switch.
 
@@ -203,9 +216,20 @@ Mechanical rules are catalogued in [`internaldocs/GOLDEN_PRINCIPLES.md`](./inter
   - Existing violations are grandfathered in `scripts/checks/.layering-baseline.json`.
     Refactor to remove entries; update the baseline only with explicit justification
     (`node scripts/checks/check-layering.cjs --update-baseline`).
+  - **`.layering-baseline.json` merge conflicts are common** across parallel/stacked refactor branches that each remove an entry
+    (e.g. explicit-any burn-down, rack-editor splits). Resolve by taking the union of removed entries from both sides (keep an
+    entry only if *neither* branch removed it), then re-run `node scripts/checks/check-layering.cjs --update-baseline` and diff
+    the result against your manual merge to confirm it matches before committing.
 - `scripts/checks/check-route-module-imports.cjs` — `RouterModule.forRoot()` only in `app-routing.module.ts`; lazy-loaded route modules cannot be imported as shared UI.
 - `scripts/checks/check-px-ts.sh` — hardcoded `px` in `*.ts` (use `rem`; annotate intentional `px` with `// px-ok`).
 - `scripts/checks/check-docs.cjs` — broken markdown links inside `internaldocs/`, missing personas, plan files without a Decision log, `CURRENT_FEATURE.md` partial active feature or stale `Updated:` stamp, undated pending Approvals-ledger questions, and new `COMPLETED.md` entries without a commit hash.
+
+### Known-fragile tests
+
+- `e2e/rack-details-layout.spec.ts` asserts hardcoded `desktopAnalysisHeight` upper bounds on the desktop balance-analysis panel.
+  Adding a row to that panel (e.g. a new stat/header row) legitimately grows its height and trips these caps — this has happened
+  more than once and is a stale-assertion issue, not a regression. If this spec fails after adding panel content, bump the height
+  caps to match the new real height rather than re-diagnosing from scratch.
 
 ## 12) Runtime legibility for agents
 
