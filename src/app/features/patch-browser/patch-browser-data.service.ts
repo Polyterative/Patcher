@@ -121,7 +121,7 @@ export class PatchBrowserDataService extends SubManager {
         const order = this.fields.order.control.value;
         return (
           this.fields.search.control.value !== '' ||
-          (order && order.id !== PATCH_DEFAULT_ORDER.id)
+          (order && (order.id !== PATCH_DEFAULT_ORDER.id || order.name !== PATCH_DEFAULT_ORDER.name))
         );
       }),
       distinctUntilChanged(),
