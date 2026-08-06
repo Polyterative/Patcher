@@ -1,7 +1,7 @@
 <div class="col gap1 parent"
 >
   <app-module-cvs [data]="data" [instanceId]="instanceId"></app-module-cvs>
-  @if (switches.length > 0) {
+  @if (data.switches.length > 0) {
     <mat-card-subtitle>{{data.switches.length}} Switches:</mat-card-subtitle>
     <div class="rowwrap gap1"></div>
   }
