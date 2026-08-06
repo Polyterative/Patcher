@@ -11,5 +11,10 @@ export function getPublicStorageUrl(bucket: string, path: string | null | undefi
     return path;
   }
 
-  return `${ environment.supabase.url.replace(/\/$/, '') }${ PUBLIC_STORAGE_PREFIX }${ bucket }/${ path }`;
+  const encodedPath = path
+    .split('/')
+    .map(segment => encodeURIComponent(segment))
+    .join('/');
+
+  return `${ environment.supabase.url.replace(/\/$/, '') }${ PUBLIC_STORAGE_PREFIX }${ encodeURIComponent(bucket) }/${ encodedPath }`;
 }
