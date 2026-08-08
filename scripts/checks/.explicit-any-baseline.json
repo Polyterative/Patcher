@@ -1,6 +1,6 @@
 {
   "_comment": "Grandfathered explicit `any` counts. Do not add by hand — run `node scripts/checks/check-explicit-any.cjs --update-baseline` after intentional cleanup.",
-  "totalExplicitAny": 640,
+  "totalExplicitAny": 633,
   "files": {
     "api/sitemap.ts": 3,
     "e2e/helpers/linked-rack-scenario.ts": 2,
@@ -12,9 +12,7 @@
     "src/app/features/backend/__tests__/supabase-service/crud-operations.spec.ts": 52,
     "src/app/features/backend/__tests__/supabase-service/paginated-user-queries.spec.ts": 100,
     "src/app/features/backend/__tests__/supabase-service/update-patch-add-patch.spec.ts": 54,
-    "src/app/features/backend/supabase-queries.application-insights-data.ts": 2,
-    "src/app/features/backend/supabase-queries.application-insights-snapshot.ts": 3,
-    "src/app/features/backend/supabase-queries.application-statistics.ts": 4,
+    "src/app/features/backend/supabase-queries.application-statistics.ts": 2,
     "src/app/features/backend/supabase-queries.base.ts": 8,
     "src/app/features/backend/supabase-queries.collections.ts": 18,
     "src/app/features/backend/supabase-queries.manufacturers.ts": 12,

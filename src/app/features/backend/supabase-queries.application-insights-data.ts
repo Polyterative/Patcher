@@ -10,7 +10,7 @@ import {
   map,
   switchMap
 } from 'rxjs/operators';
-import { SupabaseClient } from '@supabase/supabase-js';
+import { PostgrestError, SupabaseClient } from '@supabase/supabase-js';
 import { Database } from 'src/backend/database.types';
 import { DbComment } from '../../models/comment';
 import { Patch } from '../../models/patch';
@@ -96,6 +96,15 @@ export interface RackCommentContextRow {
   public_id: string | null;
 }
 
+interface ModuleInsightQueryRow {
+  manufacturerId?: number;
+  hp: number | null;
+  created: string | null;
+  updated: string | null;
+  manufacturer: {id: number; name: string} | null;
+  standardMeta: {id: number; name: string} | null;
+}
+
 import {
   ManufacturerModuleStats,
   ModuleActivityRow,
@@ -156,7 +165,7 @@ export class SupabaseApplicationInsightsQueries extends SupabaseQueriesBase {
 
   private async fetchAllPublicModuleInsightRows(): Promise<{
     data: PublicModuleInsightRow[];
-    error: any;
+    error: PostgrestError | null;
   }> {
     const pageSize = MAX_QUERY_ROWS;
     const rows: PublicModuleInsightRow[] = [];
@@ -174,7 +183,7 @@ export class SupabaseApplicationInsightsQueries extends SupabaseQueriesBase {
         return {data: [], error: response.error};
       }
 
-      const pageRows = (response.data ?? []).map((row: any) => ({
+      const pageRows = (response.data ?? []).map((row: ModuleInsightQueryRow) => ({
         manufacturerId: row.manufacturerId,
         manufacturerName: row.manufacturer?.name ?? 'Unknown maker',
         hp: typeof row.hp === 'number' ? row.hp : 0,
