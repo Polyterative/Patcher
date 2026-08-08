@@ -1,16 +1,16 @@
 import { PublicProfile } from 'src/app/models/user';
 
-export function mapProfile(rawProfile: any): PublicProfile | null {
+export function mapProfile(rawProfile: Record<string, unknown> | null | undefined): PublicProfile | null {
   if (!rawProfile?.id || !rawProfile?.username) {
     return null;
   }
 
   return {
-    id: rawProfile.id,
-    username: rawProfile.username,
+    id: rawProfile.id as string,
+    username: rawProfile.username as string,
     public: !!rawProfile.public,
-    website: rawProfile.website ?? null,
-    avatarUrl: rawProfile.avatar_url ?? null,
+    website: (rawProfile.website as string | null) ?? null,
+    avatarUrl: (rawProfile.avatar_url as string | null) ?? null,
   };
 }
 
