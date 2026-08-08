@@ -10,7 +10,7 @@ import {
   map,
   switchMap
 } from 'rxjs/operators';
-import { SupabaseClient } from '@supabase/supabase-js';
+import { PostgrestError, SupabaseClient } from '@supabase/supabase-js';
 import { Database } from 'src/backend/database.types';
 import { DbComment } from '../../models/comment';
 import { Patch } from '../../models/patch';
@@ -171,8 +171,13 @@ export class SupabaseApplicationInsightsSnapshotQueries extends SupabaseQueriesB
       })
     ).pipe(
       remapErrors(),
-      map((response: any) => {
-        const snapshot = response?.data?.[0] ?? {};
+      map((response: {
+        data: Database['public']['Functions']['get_application_insights_snapshot']['Returns'] | null;
+        error: PostgrestError | null;
+      }) => {
+        const snapshot: Partial<
+          Database['public']['Functions']['get_application_insights_snapshot']['Returns'][number]
+        > = response?.data?.[0] ?? {};
 
         return {
           statistics: (snapshot.statistics ?? {
@@ -187,8 +192,8 @@ export class SupabaseApplicationInsightsSnapshotQueries extends SupabaseQueriesB
             publicPatchConnections: 0,
             publicPatchAuthors: 0,
             publicPatchesUpdatedLast30Days: 0
-          }) as PublicApplicationStatistics,
-          activitySeries: (snapshot.activity_series ?? []) as PublicApplicationActivityPoint[],
+          }) as unknown as PublicApplicationStatistics,
+          activitySeries: (snapshot.activity_series ?? []) as unknown as PublicApplicationActivityPoint[],
           moduleInsights: (snapshot.module_insights ?? {
             topManufacturers: [],
             activeManufacturers: [],
@@ -210,7 +215,7 @@ export class SupabaseApplicationInsightsSnapshotQueries extends SupabaseQueriesB
             staleModules: 0,
             averageHp: 0,
             medianHp: 0
-          }) as PublicApplicationModuleInsights
+          }) as unknown as PublicApplicationModuleInsights
         };
       })
     );
@@ -225,14 +230,23 @@ export class SupabaseApplicationInsightsSnapshotQueries extends SupabaseQueriesB
   })
   getApplicationModuleDiscovery(limit = 5, minCount = 3): Observable<PublicModuleDiscoverySnapshot> {
     return rxFrom(
-      (this.supabase as any).rpc('get_module_discovery_snapshot', {
+      this.supabase.rpc('get_module_discovery_snapshot', {
         p_limit: limit,
         p_min_count: minCount
       })
     ).pipe(
       remapErrors(),
-      map((response: any) => {
-        const snapshot = response?.data?.[0] ?? {};
+      map((response: {
+        data: Database['public']['Functions']['get_module_discovery_snapshot']['Returns'] | null;
+        error: PostgrestError | null;
+      }) => {
+        const snapshot: Partial<
+          Database['public']['Functions']['get_module_discovery_snapshot']['Returns'][number]
+        > & {
+          mostOwned?: PublicModuleDiscoveryEntry[];
+          mostWanted?: PublicModuleDiscoveryEntry[];
+          mostSold?: PublicModuleDiscoveryEntry[];
+        } = response?.data?.[0] ?? {};
         return {
           mostOwned: (snapshot.most_owned ?? snapshot.mostOwned ?? []) as PublicModuleDiscoveryEntry[],
           mostWanted: (snapshot.most_wanted ?? snapshot.mostWanted ?? []) as PublicModuleDiscoveryEntry[],

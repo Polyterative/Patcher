@@ -10,7 +10,7 @@ import {
   map,
   switchMap
 } from 'rxjs/operators';
-import { SupabaseClient } from '@supabase/supabase-js';
+import { PostgrestError, SupabaseClient } from '@supabase/supabase-js';
 import { Database } from 'src/backend/database.types';
 import { DbComment } from '../../models/comment';
 import { Patch } from '../../models/patch';
@@ -159,8 +159,11 @@ export class SupabaseApplicationStatisticsQueries extends SupabaseQueriesBase {
       | typeof DbPaths.modules
       | typeof DbPaths.racks
       | typeof DbPaths.patches,
+    // Select strings mix raw joins across three differently-shaped tables, so the
+    // Postgrest query builder generics can't be narrowed here without hitting
+    // excessively-deep type instantiation; the concrete row shape is asserted below.
     buildQuery: (query: any) => any
-  ): Promise<{data: {updated: string}[]; error: any}> {
+  ): Promise<{data: {updated: string}[]; error: PostgrestError | null}> {
     const pageSize = MAX_QUERY_ROWS;
     const rows: {updated: string}[] = [];
     let offset = 0;
@@ -169,14 +172,17 @@ export class SupabaseApplicationStatisticsQueries extends SupabaseQueriesBase {
       const response = await buildQuery(this.supabase.from(table))
         .order('updated', {ascending: true})
         .order('id', {ascending: true})
-        .range(offset, offset + pageSize - 1);
+        .range(offset, offset + pageSize - 1) as {
+          data: {updated: string}[] | null;
+          error: PostgrestError | null;
+        };
 
       if (response.error) {
         return {data: [], error: response.error};
       }
 
       const pageRows = (response.data ?? [])
-        .map((row: any) => ({updated: row.updated}))
+        .map((row: {updated: string}) => ({updated: row.updated}))
         .filter((row: {updated: string}) => !!row.updated);
 
       rows.push(...pageRows);
