@@ -93,7 +93,7 @@ export class UserAreaRootComponent extends SubManager implements OnInit, OnDestr
   
   miscStats$ = of([]);
   readonly isEmptyWorkspace$: Observable<boolean>;
-  contributorStats$ = of<any[] | null>(null);
+  contributorStats$: Observable<{name: string; value: number; icon: string}[] | null> = of(null);
   readonly contributorStatsEmptyMessage =
     'Submit a module, leave a useful comment, or flag an issue to start building your contribution profile.';
   

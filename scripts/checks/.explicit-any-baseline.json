@@ -1,6 +1,6 @@
 {
   "_comment": "Grandfathered explicit `any` counts. Do not add by hand — run `node scripts/checks/check-explicit-any.cjs --update-baseline` after intentional cleanup.",
-  "totalExplicitAny": 633,
+  "totalExplicitAny": 631,
   "files": {
     "api/sitemap.ts": 3,
     "e2e/helpers/linked-rack-scenario.ts": 2,
@@ -25,11 +25,9 @@
     "src/app/features/manufacturer-detail/manufacturer-browser-root/manufacturer-browser-root-data.service.ts": 2,
     "src/app/features/module-browser/module-browser-adder/module-adder-data.service.ts": 1,
     "src/app/features/module-browser/module-browser-detail/module-browser-detail.component.spec.ts": 37,
-    "src/app/features/routes/public-profile/public-profile-data.utils.ts": 1,
     "src/app/features/routes/user-area/__tests__/user-area-root.spec.ts": 43,
     "src/app/features/routes/user-area/user-area-data.service.spec.ts": 44,
     "src/app/features/routes/user-area/user-area-data.utils.spec.ts": 7,
-    "src/app/features/routes/user-area/user-area-root/user-area-root.component.ts": 1,
     "src/app/shared-interproject/components/@smart/days-in-week-picker/days-in-week-picker.component.ts": 5,
     "src/app/shared-interproject/components/@smart/list-link-router/clickable-list-card-base.ts": 2,
     "src/app/shared-interproject/components/@visual/graph-view/graph.component.ts": 1,
