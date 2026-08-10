@@ -88,3 +88,6 @@ supabase/.temp/
 /backups/
 # CocoIndex Code (ccc)
 /.cocoindex_code/
+# Private security docs — NEVER commit: public repo, sole contributor works on
+# vulnerabilities/remediation locally in internaldocs/security/
+/internaldocs/security/

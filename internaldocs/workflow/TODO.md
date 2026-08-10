@@ -88,6 +88,9 @@
 
 ### Pending questions (owner: answer inline, agents move resolved lines)
 
+- [ ] **Security hardening — phase approvals** (details in the private, gitignored
+  security docs: `internaldocs/security/rls-hardening.md`, Approval queue section;
+  answer there or here) (added 2026-08-10).
 - [ ] Rack module orientation storage: authorize the reviewed `text` → `smallint`
   schema/typegen/backend migration after preflight; no RLS/policy changes are expected
   ([plan](./plans/rack-module-orientation-smallint-storage-migration.md)) (added 2026-07-19).
@@ -192,9 +195,10 @@
 
 ### INFRA (independent; pick any time a product task is blocked)
 
+- [!] **HIGH: Security — hardening backlog (private)** → local, gitignored `internaldocs/security/` (sole-contributor setup; not published because the repo is public)
 - [ ] **HIGH: Application performance — Chrome-measured budget, per-flow baselines, and hypothesis-per-commit optimization loop (frontend-only; supersedes the bundle-only plan as sub-scope)** → [`plans/application-performance-budget-and-optimization.md`](./plans/application-performance-budget-and-optimization.md)
 - [ ] **HIGH: Cloudflare Image Proxy and R2 Media Migration (upload/compression guardrails approved; R2 migration remains operator-gated)** → [`plans/cloudflare-image-proxy-and-r2-media-migration.md`](./plans/cloudflare-image-proxy-and-r2-media-migration.md)
-- [ ] **ON HOLD: HIGH: Security — Manual Approval Follow-ups** → [`plans/security-manual-approval-followups.md`](./plans/security-manual-approval-followups.md)
+- [ ] **ON HOLD: HIGH: Security — Manual Approval Follow-ups (private)** → local, gitignored `internaldocs/security/security-manual-approval-followups.md`
 - [ ] **ON HOLD: LOW: FUI-inspired instrument components** → [`plans/fui-inspired-instrument-components.md`](./plans/fui-inspired-instrument-components.md)
 - [ ] **ON HOLD: VERY LONG TERM: Bundle weight, lazy boundaries, and SSR prerender coverage** → [`plans/bundle-weight-lazy-boundaries-and-ssr-prerender-coverage.md`](./plans/bundle-weight-lazy-boundaries-and-ssr-prerender-coverage.md)
 - [ ] **ON HOLD: MEDIUM: Module possession trend charts (schema approval follow-up)** → [`plans/module-possession-trend-charts-schema-followup.md`](./plans/module-possession-trend-charts-schema-followup.md)

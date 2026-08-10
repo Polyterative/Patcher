@@ -45,6 +45,10 @@ function listMd(dir) {
   function walk(d) {
     for (const entry of fs.readdirSync(d, { withFileTypes: true })) {
       const full = path.join(d, entry.name);
+      // internaldocs/security is private and gitignored (public repo) —
+      // absent in fresh clones, so exclude it from doc lints entirely.
+      if (entry.isDirectory() && entry.name === 'security'
+        && path.relative(repoRoot, full) === path.join('internaldocs', 'security')) continue;
       if (entry.isDirectory()) walk(full);
       else if (entry.isFile() && entry.name.endsWith('.md')) {
         out.push(path.relative(repoRoot, full));
