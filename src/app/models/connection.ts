@@ -28,7 +28,7 @@ export interface PatchModuleInstance {
 }
 
 export interface PatchConnection {
-  patch: Patch;
+  patch: Pick<Patch, 'id'>;
   a: CVwithModule;
   b: CVwithModule;
   notes?: string;

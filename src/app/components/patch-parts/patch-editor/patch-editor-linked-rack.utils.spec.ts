@@ -57,12 +57,7 @@ const makeRackedModule = (id: number, row: number | null, column = 0, orientatio
 
 const makePatchConnection = (instance_id_a: number, instance_id_b: number): PatchConnection => ({
   patch: {
-    id: 1,
-    name: 'Patch',
-    public: true,
-    author: { id: 'user-id', username: 'patcher' },
-    created: '',
-    updated: ''
+    id: 1
   },
   a: {
     id: 1,

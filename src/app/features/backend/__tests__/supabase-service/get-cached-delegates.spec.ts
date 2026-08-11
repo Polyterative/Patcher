@@ -222,6 +222,46 @@ describe('SupabaseService - GET cached delegates', () => {
         }
       });
     }, TEST_TIMEOUT);
+
+    it('should select only the id column of the joined patch row', (done) => {
+      const mockConns = {data: [{patchid: 3, a: 10, b: 20}], error: null} satisfies QueryListRowsResult<PatchConnectionRow>;
+      const mock: SupabaseQueryChain<PatchConnectionRow> = chainable<PatchConnectionRow>(mockConns);
+      const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+      service.GET.patchConnections(3).subscribe({
+        next: () => {
+          expect(selectSpy).toHaveBeenCalledWith(
+            jasmine.stringContaining('patch:patches!patch_connections_patchid_fkey(id)')
+          );
+          done();
+        },
+        error: (err: unknown) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should not select the full joined patch row', (done) => {
+      const mockConns = {data: [{patchid: 3, a: 10, b: 20}], error: null} satisfies QueryListRowsResult<PatchConnectionRow>;
+      const mock: SupabaseQueryChain<PatchConnectionRow> = chainable<PatchConnectionRow>(mockConns);
+      const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+      service.GET.patchConnections(3).subscribe({
+        next: () => {
+          expect(selectSpy).not.toHaveBeenCalledWith(
+            jasmine.stringContaining('patch:patches!patch_connections_patchid_fkey(*)')
+          );
+          done();
+        },
+        error: (err: unknown) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
   });
   
   describe('GET.patchModuleInstances', () => {

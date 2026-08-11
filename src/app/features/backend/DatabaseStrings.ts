@@ -69,7 +69,7 @@ export class QueryJoins {
   static standard: string = 'standard:standards!modules_standard_fkey(name,id)';
 
   // Patch
-  static patch: string = 'patch:patches!patch_connections_patchid_fkey(*)';
+  static patch: string = 'patch:patches!patch_connections_patchid_fkey(id)';
 
   // Patch Connections
   static patch_connections: string = 'patch_connections:patch_connections!patch_connections_patchid_fkey(*)';
