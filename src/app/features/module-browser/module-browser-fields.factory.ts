@@ -74,7 +74,7 @@ export function createModuleBrowserFields({
       flex: '12rem',
       control: new FormControl<string>('', {nonNullable: true}),
       type: FormTypes.AUTOCOMPLETE,
-      options$: backend.GET.manufacturers(0, 9999, 'id,name')
+      options$: backend.GET.manufacturers(0, 99999, 'id,name')
         .pipe(
           map(x => (x.data ?? []).map(z => ({id: z.id.toString(), name: z.name}))),
           startWith([]),
