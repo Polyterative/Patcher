@@ -295,4 +295,24 @@ describe('SupabaseService - Caching Behavior', () => {
     expect(fromSpy).toHaveBeenCalledTimes(1);
     expect(fromSpy).toHaveBeenCalledWith('standards');
   });
+
+  it('caches get.statistics reads across repeated calls', async () => {
+    let callCount = 0;
+    const fromSpy = spyOn(supabaseClient, 'from').and.callFake((table: string) => {
+      callCount++;
+      if (table === 'modules') { return chainable({data: [], count: 150, error: null}); }
+      if (table === 'racks') { return chainable({data: [], count: 75, error: null}); }
+      return chainable({data: [], count: 40, error: null}); // patches
+    });
+
+    const first = await firstValueFrom(service.get.statistics());
+    const second = await firstValueFrom(service.get.statistics());
+
+    expect(first).toEqual([150, 75, 40]);
+    expect(second).toEqual([150, 75, 40]);
+    expect(callCount).toBe(3); // one `from` call per table, not re-issued on the second subscribe
+    expect(fromSpy).toHaveBeenCalledWith('modules');
+    expect(fromSpy).toHaveBeenCalledWith('racks');
+    expect(fromSpy).toHaveBeenCalledWith('patches');
+  });
 });
