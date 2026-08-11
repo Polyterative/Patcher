@@ -77,8 +77,19 @@ export class QueryJoins {
     return `${ alias }:authorid!inner(public)`;
   }
 
-  // Module Foreign Key in Rack Modules
-  static module_fk_rackmodules: string = `module:modules!rack_modules_moduleid_fkey(
+  // Module Tags
+  static module_tags: string = `tags:${ DbPaths.module_tags }(id,tag:${ DbPaths.tags }(*),voteCount:${ DbPaths.user_module_tags }(moduletagid))`;
+
+  // Module Panels
+  static module_panels: string = `panels:${ DbPaths.module_panels }!module_panels_moduleid_fkey(*)`;
+
+  // Ins/Outs with signal-flow flags (id, name, port-kind flags) — used for rack/patch
+  // signal-flow rendering, which never needs CV min/max/isApproved/authorid.
+  static insOutsSignalFlow: string = `ins:${ DbPaths.moduleINs }(id,name,isVOCT,isDCC,isAudio), outs:${ DbPaths.moduleOUTs }(id,name,isVOCT,isDCC,isAudio)`;
+
+  // Flat column list for a standalone module select used to render a module inside a rack
+  // (e.g. blank-panel lookups) — mirrors the fields already exposed via module_fk_rackmodules.
+  static rackDisplayModuleColumns: string = `
     id,
     name,
     hp,
@@ -89,17 +100,15 @@ export class QueryJoins {
     powerPos5,
     manufacturer:manufacturerId(name,id),
     standard:standards!modules_standard_fkey(name,id),
-    tags:${ DbPaths.module_tags }(id,tag:${ DbPaths.tags }(*),voteCount:${ DbPaths.user_module_tags }(moduletagid)),
-    panels:module_panels!module_panels_moduleid_fkey(*),
-    ins:${ DbPaths.moduleINs }(*),
-    outs:${ DbPaths.moduleOUTs }(*)
+    ${ QueryJoins.module_tags },
+    ${ QueryJoins.module_panels },
+    ${ QueryJoins.insOutsSignalFlow }
+  `;
+
+  // Module Foreign Key in Rack Modules
+  static module_fk_rackmodules: string = `module:modules!rack_modules_moduleid_fkey(
+    ${ QueryJoins.rackDisplayModuleColumns }
   )`;
-
-  // Module Tags
-  static module_tags: string = `tags:${ DbPaths.module_tags }(id,tag:${ DbPaths.tags }(*),voteCount:${ DbPaths.user_module_tags }(moduletagid))`;
-
-  // Module Panels
-  static module_panels: string = `panels:${ DbPaths.module_panels }!module_panels_moduleid_fkey(*)`;
 
   // Module Collections
   static moduleCollection: string = 'collection:module_collections!module_collection_entries_collection_id_fkey(*)';
