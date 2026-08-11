@@ -145,7 +145,6 @@ export interface MarketplaceListingSellerSummary {
   username: string | null;
   public: boolean;
   avatarUrl: string | null;
-  website: string | null;
 }
 
 export interface MarketplaceListingModuleSummary {

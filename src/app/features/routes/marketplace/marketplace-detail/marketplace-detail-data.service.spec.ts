@@ -134,8 +134,7 @@ describe('MarketplaceDetailDataService', () => {
         avatarUrl: null,
         id: 'seller-1',
         public: false,
-        username: 'seller',
-        website: null
+        username: 'seller'
       }
     });
     marketplaceListingByPublicId.and.returnValue(of(privateSellerListing));
