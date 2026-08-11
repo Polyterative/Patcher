@@ -52,9 +52,10 @@ const PUBLIC_ROUTE_SOURCES = [
   },
   {
     tableName: 'manufacturers',
-    select: 'id,updated,created',
+    select: 'id',
     makePath: row => positiveInteger(row.id) ? `/manufacturers/details/${ row.id }` : undefined,
-    publicOnly: false
+    publicOnly: false,
+    orderByUpdated: false
   },
   {
     tableName: 'module_collections',
@@ -123,7 +124,7 @@ async function fetchPublicRows({
   for (const [name, value] of source.filters ?? []) {
     params.set(name, value);
   }
-  params.set('order', 'updated.desc.nullslast,id.asc');
+  params.set('order', source.orderByUpdated === false ? 'id.asc' : 'updated.desc.nullslast,id.asc');
   params.set('limit', String(publicRouteLimit));
 
   const abortController = new AbortController();

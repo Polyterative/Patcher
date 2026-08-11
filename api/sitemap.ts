@@ -97,7 +97,7 @@ async function buildSitemapEntries(): Promise<SitemapEntry[]> {
     fetchPublicEntityRows<ModuleRow>('modules', 'id,created,updated,name,description,hp,manufacturer:manufacturerId(name),panels:module_panels!module_panels_moduleid_fkey(filename)'),
     fetchPublicEntityRows<PatchRow>('patches', 'id,created,updated,name,description'),
     fetchPublicEntityRows<RackRow>('racks', 'id,created,updated,name,description,hp,rows,image'),
-    fetchPublicEntityRows<ManufacturerRow>('manufacturers', 'id,name,logo')
+    fetchPublicEntityRows<ManufacturerRow>('manufacturers', 'id,name,logo', {publicOnly: false, orderByUpdated: false})
   ]);
   
   const moduleEntries = moduleRows.map(row => makeModuleEntry(row));
@@ -222,15 +222,22 @@ function normalizeIsoDate(value?: string): string | undefined {
   return parsed.toISOString();
 }
 
-async function fetchPublicEntityRows<T extends PublicEntityRow>(tableName: string, select: string): Promise<T[]> {
+async function fetchPublicEntityRows<T extends PublicEntityRow>(
+  tableName: string,
+  select: string,
+  options: {publicOnly?: boolean; orderByUpdated?: boolean} = {}
+): Promise<T[]> {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     return [];
   }
 
+  const {publicOnly = true, orderByUpdated = true} = options;
   const params = new URLSearchParams();
   params.set('select', select);
-  params.set('public', 'eq.true');
-  params.set('order', 'updated.desc.nullslast,id.asc');
+  if (publicOnly) {
+    params.set('public', 'eq.true');
+  }
+  params.set('order', orderByUpdated ? 'updated.desc.nullslast,id.asc' : 'id.asc');
   params.set('limit', '5000');
 
   const abortController = new AbortController();
