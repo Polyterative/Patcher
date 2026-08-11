@@ -113,7 +113,7 @@ describe('SupabaseService - marketplace listings backend', () => {
 
     expect(supabaseClient.from).toHaveBeenCalledWith(DbPaths.marketplace_listings);
     expect(mock.select).toHaveBeenCalledWith(jasmine.stringContaining('seller:profiles'));
-    expect(mock.select).toHaveBeenCalledWith(jasmine.stringContaining('panels:module_panels!module_panels_moduleid_fkey(*)'));
+    expect(mock.select).toHaveBeenCalledWith(jasmine.stringContaining('panels:module_panels!module_panels_moduleid_fkey(id,moduleid,color,description,filename)'));
     expect(mock.select).toHaveBeenCalledWith(jasmine.stringContaining('standard:standards!modules_standard_fkey(id,name)'));
     expect(mock.select).not.toHaveBeenCalledWith(jasmine.stringContaining('email'));
     expect(mock.in).toHaveBeenCalledWith('status', ['active', 'reserved']);
