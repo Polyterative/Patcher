@@ -223,14 +223,14 @@ export class SupabaseCommentReactionQueries extends SupabaseQueriesBase {
     return rxFrom(
       this.supabase
         .from(DbPaths.reaction_counts)
-        .select(REACTION_COUNT_COLUMNS)
+        .select('total')
         .filter('entity_type', 'eq', entityType)
         .filter('entity_id', 'eq', entityId)
         .filter('kind', 'eq', kind)
         .maybeSingle()
     ).pipe(
       remapErrors(),
-      map(result => ((result.data as ReactionCountRow | null)?.total ?? 0))
+      map(result => ((result.data as Pick<ReactionCountRow, 'total'> | null)?.total ?? 0))
     );
   }
 

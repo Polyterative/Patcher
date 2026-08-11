@@ -254,9 +254,10 @@ describe('cool reaction backend API', () => {
     await firstValueFrom(queries.getReactionCountsForEntities(ReactionEntityTypes.MODULE, [42, 42, 43]));
 
     expect(fromSpy).toHaveBeenCalledWith(DbPaths.reaction_counts);
-    expect(countBuilder.calls).toContain(jasmine.objectContaining({method: 'select', args: [REACTION_COUNT_COLUMNS]}));
+    expect(countBuilder.calls).toContain(jasmine.objectContaining({method: 'select', args: ['total']}));
     expect(countBuilder.calls).toContain(jasmine.objectContaining({method: 'filter', args: ['entity_type', 'eq', ReactionEntityTypes.MODULE]}));
     expect(countBuilder.calls).toContain(jasmine.objectContaining({method: 'filter', args: ['entity_id', 'eq', 42]}));
+    expect(batchBuilder.calls).toContain(jasmine.objectContaining({method: 'select', args: [REACTION_COUNT_COLUMNS]}));
     expect(batchBuilder.calls).toContain(jasmine.objectContaining({method: 'in', args: ['entity_id', [42, 43]]}));
   });
 });
