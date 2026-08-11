@@ -19,7 +19,6 @@ import {
   RackingData
 } from 'src/app/models/rack';
 import { PublicUser } from 'src/app/models/user';
-import { QueryJoins } from 'src/app/features/backend/DatabaseStrings';
 import { DETAIL_ANALYTICS_SURFACES } from '../detail-analytics-surface';
 import { FunctionAnalysisLegendSummaryItem } from './rack-function-visuals.models';
 
@@ -39,7 +38,7 @@ type RackDetailBackendDouble = {
     rackWithId: jasmine.Spy<(id: number) => Observable<BackendResponse<Rack | null>>>;
     publicRackWithId: jasmine.Spy<(id: number) => Observable<BackendResponse<Rack | null>>>;
     rackByPublicId: jasmine.Spy<(publicId: string) => Observable<BackendResponse<Rack | null>>>;
-    moduleWithId: jasmine.Spy<(id: number, columns?: string) => Observable<BackendResponse<TestDbModule>>>;
+    moduleWithIdForRackDisplay: jasmine.Spy<(id: number) => Observable<BackendResponse<TestDbModule>>>;
   };
   get: {
     rackedModules: jasmine.Spy<(rackId: number) => Observable<RackedModule[]>>;
@@ -156,7 +155,7 @@ describe('RackDetailDataService', () => {
           of({data: makeRack({id})})
         ),
         rackByPublicId: jasmine.createSpy('rackByPublicId').and.returnValue(of({data: makeRack({id: 1})})),
-        moduleWithId: jasmine.createSpy('moduleWithId').and.callFake((id: number) =>
+        moduleWithIdForRackDisplay: jasmine.createSpy('moduleWithIdForRackDisplay').and.callFake((id: number) =>
           of({data: makeDbModule({id, name: `Blank ${ id }`, hp: 2, standard: {id: id >= 4711 ? 1 : 0}, panels: []})})
         )
       },
@@ -713,7 +712,7 @@ describe('RackDetailDataService', () => {
     service.addBlankToRow$.next({rowId: 0, hp: 2});
     tick();
 
-    expect(backend.GET.moduleWithId).toHaveBeenCalledWith(4712, QueryJoins.rackDisplayModuleColumns);
+    expect(backend.GET.moduleWithIdForRackDisplay).toHaveBeenCalledWith(4712);
     expect(backend.add.rackModule).toHaveBeenCalledWith(4712, 1, 0, 3);
   }));
 
