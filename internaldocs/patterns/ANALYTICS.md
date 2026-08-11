@@ -13,8 +13,8 @@ adding new instrumentation. **Any drift between this doc and the code is a bug.*
 | **Sentry** | Errors, performance, replays on error |
 
 **Never** enable PostHog exception capture, Web Vitals capture, or session
-recording on top of Sentry replays — see the boundary rules in
-`internaldocs/workflow/plans/analytics-posthog-product-instrumentation.md`.
+recording on top of Sentry replays — see the boundary rules in the archived plan
+`internaldocs/workflow/plans/done/analytics-posthog-product-instrumentation.md`.
 
 ---
 
