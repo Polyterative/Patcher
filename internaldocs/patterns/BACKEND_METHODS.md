@@ -101,6 +101,58 @@ addNewThing: (data: NewThingInsert) =>
 
 ---
 
+## Selecting Columns in Embedded Joins
+
+When defining a `QueryJoins` entry in `DatabaseStrings.ts`, select only the
+columns callers actually consume. Do not default to `(*)` for convenience,
+especially for joined/embedded tables: the primary table of a query may
+reasonably need a broader selection, but every embedded row is additional
+response data that is fetched and shipped on each request.
+
+Before trimming an existing over-broad join, verify safety exhaustively:
+
+1. Grep all of `src/` for every field access on the joined type, including
+   production code, spec files, and `.html` templates. Angular bindings such
+   as `{{ x.field }}` and `[prop]="x.field"` are consumers too and will not
+   necessarily appear in a plain multi-line source grep.
+2. Confirm that no fields outside the proposed selection are read before
+   changing the join.
+3. Narrow the TypeScript type to match the returned shape. This makes a missed
+   consumer a compile error, but manual grep remains the primary safety net:
+   TypeScript excess-property checking catches literal-position construction,
+   not arbitrary variable assignment.
+
+Add a regression test for the exact select shape. Follow the established
+`spyOn(mockChain, 'select')` convention:
+
+```typescript
+const selectSpy = spyOn(mockChain, 'select').and.returnValue(mockChain);
+expect(selectSpy).toHaveBeenCalledWith(
+  jasmine.stringContaining('<expected substring>')
+);
+expect(selectSpy).not.toHaveBeenCalledWith(
+  jasmine.stringContaining('<old, wider substring>')
+);
+```
+
+The positive assertion verifies the intended projection; the negative
+assertion prevents a later change from silently restoring over-fetching. See
+the `GET.patchConnections` tests in
+`src/app/features/backend/__tests__/supabase-service/get-cached-delegates.spec.ts`
+for the worked example.
+
+For example, `QueryJoins.patch` was trimmed from
+`patch:patches!patch_connections_patchid_fkey(*)` to
+`patch:patches!patch_connections_patchid_fkey(id)`. The companion change in
+`src/app/models/connection.ts` narrows `PatchConnection.patch` from `Patch` to
+`Pick<Patch, 'id'>`, keeping the type honest.
+
+This applies only to live, referenced joins with over-broad column lists. A
+genuinely unreferenced or dead `QueryJoins` entry is a separate dead-code
+concern, not an egress concern: a join that is never queried costs nothing.
+
+---
+
 ## Schema-change preflight (READ BEFORE WRITING SQL)
 
 Before touching `supabase/migrations/`, RPCs, columns, indexes, or policies — even via the Supabase MCP — walk through this list. Past mistakes live here so we don't repeat them.
