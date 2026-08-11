@@ -47,6 +47,7 @@ describe('RackDetailDataService media, rename, and duplication', () => {
     };
     delete: {
       rackedModule: jasmine.Spy<(id: number) => Observable<object>>;
+      rackedModules: jasmine.Spy<(ids: number[]) => Observable<object>>;
       modulesOfRack: jasmine.Spy<(rackId: number) => Observable<object>>;
       commentsForRack: jasmine.Spy<(rackId: number) => Observable<object>>;
       userRack: jasmine.Spy<(rackId: number) => Observable<object>>;
@@ -170,6 +171,7 @@ describe('RackDetailDataService media, rename, and duplication', () => {
       },
       delete: {
         rackedModule: jasmine.createSpy('delete.rackedModule').and.returnValue(of({})),
+        rackedModules: jasmine.createSpy('delete.rackedModules').and.returnValue(of({})),
         modulesOfRack: jasmine.createSpy('delete.modulesOfRack').and.returnValue(of({})),
         commentsForRack: jasmine.createSpy('delete.commentsForRack').and.returnValue(of({})),
         userRack: jasmine.createSpy('delete.userRack').and.returnValue(of({}))
@@ -506,7 +508,7 @@ describe('RackDetailDataService media, rename, and duplication', () => {
       [mod(1, 0, 0, 8, 0), mod(2, 0, 1, 4, 0), mod(3, 0, 2, 8, 0), mod(4, 0, 3, 14, 1)],
       []
     ]);
-    backend.delete.rackedModule.and.returnValue(throwError(() => new Error('db error')));
+    backend.delete.rackedModules.and.returnValue(throwError(() => new Error('db error')));
     
     service.requestRackedModuleRowClearing$.next(mod(1, 0, 0, 8, 0));
     

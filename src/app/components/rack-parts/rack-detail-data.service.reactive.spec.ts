@@ -67,6 +67,7 @@ type RackDetailBackendDouble = {
   };
   delete: {
     rackedModule: jasmine.Spy<(rackModuleId: number) => Observable<EmptyBackendResponse | BackendErrorResponse>>;
+    rackedModules: jasmine.Spy<(rackModuleIds: number[]) => Observable<EmptyBackendResponse | BackendErrorResponse>>;
     modulesOfRack: jasmine.Spy<(rackId: number) => Observable<EmptyBackendResponse>>;
     commentsForRack: jasmine.Spy<(rackId: number) => Observable<EmptyBackendResponse>>;
     userRack: jasmine.Spy<(rackId: number) => Observable<EmptyBackendResponse>>;
@@ -232,6 +233,7 @@ describe('RackDetailDataService reactive flows', () => {
       },
       delete: {
         rackedModule: jasmine.createSpy('delete.rackedModule').and.returnValue(of({})),
+        rackedModules: jasmine.createSpy('delete.rackedModules').and.returnValue(of({})),
         modulesOfRack: jasmine.createSpy('delete.modulesOfRack').and.returnValue(of({})),
         commentsForRack: jasmine.createSpy('delete.commentsForRack').and.returnValue(of({})),
         userRack: jasmine.createSpy('delete.userRack').and.returnValue(of({}))
@@ -667,7 +669,7 @@ describe('RackDetailDataService reactive flows', () => {
     service.requestRackedModuleRowClearing$.next(moduleInRack(1, 0, 0));
     service.requestRackedModuleRowClearing$.next(moduleInRack(3, 1, 0));
     
-    expect(backend.delete.rackedModule).toHaveBeenCalledTimes(2);
+    expect(backend.delete.rackedModules).toHaveBeenCalledOnceWith([1, 2]);
     expect(snackBar.open).toHaveBeenCalledWith('2 modules unracked from this row.', 'Undo', {
       duration: 5000,
       panelClass: 'snack-success'
@@ -781,6 +783,7 @@ describe('RackDetailDataService reactive flows', () => {
     service.requestClearRow$.next(0);
 
     expect(backend.delete.rackedModule).not.toHaveBeenCalled();
+    expect(backend.delete.rackedModules).not.toHaveBeenCalled();
   });
 
   it('clears locally duplicated modules before their backend racking ids finish syncing', () => {
@@ -792,6 +795,7 @@ describe('RackDetailDataService reactive flows', () => {
     service.requestClearRow$.next(0);
 
     expect(backend.delete.rackedModule).not.toHaveBeenCalled();
+    expect(backend.delete.rackedModules).not.toHaveBeenCalled();
     expect(service.rowedRackedModules$.value[0]).toEqual([]);
     expect(snackBar.open).toHaveBeenCalledWith('1 module unracked from this row.', 'Undo', {
       duration: 5000,
@@ -832,17 +836,18 @@ describe('RackDetailDataService reactive flows', () => {
     service.requestClearRow$.next(1);
     expect(service.rowedRackedModules$.value[1]).toEqual([]);
     expect(backend.delete.rackedModule).not.toHaveBeenCalled();
+    expect(backend.delete.rackedModules).not.toHaveBeenCalled();
 
     duplicatePersist$.next({
       data: [{id: 123, moduleid: sourceModule.module.id, rackid: 1, row: 1, column: 0, selected_panel_id: null}]
     });
     duplicatePersist$.complete();
 
-    expect(backend.delete.rackedModule).toHaveBeenCalledWith(123);
+    expect(backend.delete.rackedModules).toHaveBeenCalledOnceWith([123]);
     expect(service.rowedRackedModules$.value[1]).toEqual([]);
   });
 
-  it('keeps successfully cleared modules removed when one row clear delete fails', () => {
+  it('reverts the whole row clear when the batch delete fails', () => {
     spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
     });
     const {service, backend} = build();
@@ -851,19 +856,16 @@ describe('RackDetailDataService reactive flows', () => {
     const unaffectedModule = moduleInRack(3, 1, 0);
     const rowToClear = [firstModule, failingModule];
     const unaffectedRow = [unaffectedModule];
-    backend.delete.rackedModule.and.callFake((id: number) => id === 2
-      ? of({error: new Error('delete failed')})
-      : of({})
-    );
+    backend.delete.rackedModules.and.returnValue(of({error: new Error('delete failed')}));
     service.singleRackData$.next(rack({rows: 2}));
     service.rowedRackedModules$.next([rowToClear, unaffectedRow]);
 
     service.requestClearRow$.next(0);
 
     expect(service.rowedRackedModules$.value[0]).toBe(rowToClear);
-    expect(rackingIds(service.rowedRackedModules$.value?.[0] ?? [])).toEqual([2]);
-    expect(service.rowedRackedModules$.value[0][0].rackingData.column).toBe(0);
+    expect(rackingIds(service.rowedRackedModules$.value?.[0] ?? [])).toEqual([1, 2]);
     expect(service.rowedRackedModules$.value[1]).toBe(unaffectedRow);
+    expect(backend.delete.rackedModules).toHaveBeenCalledOnceWith([1, 2]);
     expect(SharedConstants.errorCustom).toHaveBeenCalled();
   });
 
@@ -872,7 +874,7 @@ describe('RackDetailDataService reactive flows', () => {
     const deleteResult$ = new Subject<{}>();
     const module = moduleInRack(1, 0, 0);
     const rowToClear = [module];
-    backend.delete.rackedModule.and.returnValue(deleteResult$.asObservable());
+    backend.delete.rackedModules.and.returnValue(deleteResult$.asObservable());
     service.singleRackData$.next(rack({rows: 1}));
     service.rowedRackedModules$.next([rowToClear]);
 

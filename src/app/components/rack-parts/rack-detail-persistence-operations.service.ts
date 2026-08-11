@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import {
   EMPTY,
-  forkJoin,
   Observable,
   of
 } from 'rxjs';
@@ -50,11 +49,9 @@ export class RackDetailPersistenceOperationsService {
             return of(response);
           }
 
-          return forkJoin(orphanedPersistedModules.map(module =>
-            context.backend.delete.rackedModule(module.rackingData.id).pipe(
-              map(deleteResponse => this.assertBackendSuccess(deleteResponse))
-            )
-          )).pipe(
+          const orphanedPersistedIds = orphanedPersistedModules.map(module => module.rackingData.id as number);
+          return context.backend.delete.rackedModules(orphanedPersistedIds).pipe(
+            map(deleteResponse => this.assertBackendSuccess(deleteResponse)),
             map(() => response)
           );
         })
