@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import {
   EMPTY,
-  forkJoin,
   of
 } from 'rxjs';
 import {
@@ -191,39 +190,20 @@ export class RackDetailModuleReplacementDataService {
           const modulesInRow: RackedModule[] = [...(allRackModule?.[rowId] ?? [])];
 
           if (modulesInRow && modulesInRow.length > 0) {
-            return forkJoin(modulesInRow.map(module => {
-              if (module.rackingData.id == null) {
-                return of({
-                  id: module.rackingData.id,
-                  module,
-                  ok: true
-                });
-              }
+            const persistedModules = modulesInRow.filter(module => module.rackingData.id != null);
+            const persistedIds = persistedModules.map(module => module.rackingData.id as number);
+            const clearPersistedModules$ = persistedIds.length > 0
+              ? context.backend.delete.rackedModules(persistedIds).pipe(
+                map(response => context.assertBackendSuccess(response))
+              )
+              : of(null);
 
-              return context.backend.delete.rackedModule(module.rackingData.id).pipe(
-                map(response => context.assertBackendSuccess(response)),
-                map(() => ({
-                  id: module.rackingData.id,
-                  module,
-                  ok: true
-                })),
-                catchError((err) => {
-                  console.error(`Error clearing row module: ${ err }`);
-                  return of({
-                    id: module.rackingData.id,
-                    module,
-                    ok: false
-                  });
-                })
-              );
-            })).pipe(
-              tap(results => {
-                const deletedIds = new Set(results
-                  .filter(result => result.ok && result.id != null)
-                  .map(result => result.id));
-                const deletedModules = new Set(results.filter(result => result.ok).map(result => result.module));
-                const clearedCount = results.filter(result => result.ok).length;
-                const failedCount = results.length - clearedCount;
+            return clearPersistedModules$.pipe(
+              tap(() => {
+                const deletedIds = new Set(persistedIds);
+                const deletedModules = new Set(modulesInRow);
+                const clearedCount = modulesInRow.length;
+                const failedCount = 0;
                 const rackModules: RackedModule[][] = [...(context.rowedRackedModules$.value ?? [])];
                 for (const row of rackModules) {
                   for (let index = row.length - 1; index >= 0; index--) {
@@ -242,18 +222,23 @@ export class RackDetailModuleReplacementDataService {
                   failed_count: failedCount
                 });
 
-                if (failedCount > 0) {
-                  if (clearedCount > 0) {
-                    context.requestRackedModulesDbSync$.next();
-                  }
-                  SharedConstants.errorCustom(context.snackBar, `${ failedCount } module${ failedCount === 1 ? '' : 's' } could not be unracked. Try again in a moment.`);
-                } else {
-                  context.showUndoSnackBar(
-                    `${ modulesInRow.length } module${ modulesInRow.length === 1 ? '' : 's' } unracked from this row.`,
-                    () => context.restoreRemovedModules$(modulesInRow),
-                    `${ modulesInRow.length } module${ modulesInRow.length === 1 ? '' : 's' } restored.`
-                  );
-                }
+                context.showUndoSnackBar(
+                  `${ modulesInRow.length } module${ modulesInRow.length === 1 ? '' : 's' } unracked from this row.`,
+                  () => context.restoreRemovedModules$(modulesInRow),
+                  `${ modulesInRow.length } module${ modulesInRow.length === 1 ? '' : 's' } restored.`
+                );
+              }),
+              catchError((err) => {
+                console.error(`Error clearing row modules: ${ err }`);
+                const failedCount = persistedModules.length;
+                context.analytics.capture('rack.row_cleared', {
+                  rack_id: rack?.id,
+                  row: rowId,
+                  cleared_count: 0,
+                  failed_count: failedCount
+                });
+                SharedConstants.errorCustom(context.snackBar, `${ failedCount } module${ failedCount === 1 ? '' : 's' } could not be unracked. Try again in a moment.`);
+                return EMPTY;
               })
             );
           } else {

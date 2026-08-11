@@ -51,6 +51,7 @@ type RackDetailBackendDouble = {
   };
   delete: {
     rackedModule: jasmine.Spy<(rackModuleId: number) => Observable<unknown>>;
+    rackedModules: jasmine.Spy<(rackModuleIds: number[]) => Observable<unknown>>;
     modulesOfRack: jasmine.Spy<(rackId: number) => Observable<unknown>>;
     commentsForRack: jasmine.Spy<(rackId: number) => Observable<unknown>>;
     userRack: jasmine.Spy<(rackId: number) => Observable<unknown>>;
@@ -169,6 +170,7 @@ describe('RackDetailDataService', () => {
       },
       delete: {
         rackedModule: jasmine.createSpy('rackedModule').and.returnValue(of({})),
+        rackedModules: jasmine.createSpy('rackedModules').and.returnValue(of({})),
         modulesOfRack: jasmine.createSpy('modulesOfRack').and.returnValue(of({})),
         commentsForRack: jasmine.createSpy('commentsForRack').and.returnValue(of({})),
         userRack: jasmine.createSpy('userRack').and.returnValue(of({}))

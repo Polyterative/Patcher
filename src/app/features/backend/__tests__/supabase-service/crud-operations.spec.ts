@@ -722,6 +722,61 @@ describe('SupabaseService - CRUD Operations', () => {
       });
     }, TEST_TIMEOUT);
   });
+
+  describe('delete.rackedModules', () => {
+    it('should delete racked modules by ids', (done) => {
+      spyOn(service.auth, 'getUserSession$').and.returnValue(of({
+        id: 'u1',
+        email: 'u1@example.com',
+        created_at: '2026-01-01T00:00:00.000Z',
+        updated_at: '2026-01-01T00:00:00.000Z'
+      }));
+      const ids = [7, 8, 9];
+      const inSpy = jasmine.createSpy('in').and.returnValue(
+        Promise.resolve({data: null, error: null})
+      );
+      const deleteSpy = jasmine.createSpy('delete').and.returnValue({
+        in: inSpy
+      });
+
+      spyOn(supabaseClient, 'from').and.returnValue({
+        delete: deleteSpy
+      });
+
+      service.delete.rackedModules(ids).subscribe({
+        next: () => {
+          expect(inSpy).toHaveBeenCalledWith('id', ids);
+          done();
+        },
+        error: (err) => {
+          fail(`Error: ${ err }`);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should skip backend delete for empty id arrays', (done) => {
+      spyOn(service.auth, 'getUserSession$').and.returnValue(of({
+        id: 'u1',
+        email: 'u1@example.com',
+        created_at: '2026-01-01T00:00:00.000Z',
+        updated_at: '2026-01-01T00:00:00.000Z'
+      }));
+      const fromSpy = spyOn(supabaseClient, 'from');
+
+      service.delete.rackedModules([]).subscribe({
+        next: response => {
+          expect(response).toEqual({data: null, error: null});
+          expect(fromSpy).not.toHaveBeenCalled();
+          done();
+        },
+        error: (err) => {
+          fail(`Error: ${ err }`);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+  });
   
   // ============================================================================
   // Complex Operations
@@ -813,7 +868,7 @@ describe('SupabaseService - CRUD Operations', () => {
     it('should have all expected delete methods', () => {
       const expectedDeleteMethods = [
         'comment', 'commentsForRack', 'module', 'userModule',
-        'rackedModule', 'modulesOfRack', 'patch', 'patchConnectionsForPatch',
+        'rackedModule', 'rackedModules', 'modulesOfRack', 'patch', 'patchConnectionsForPatch',
         'userPatch', 'userRack', 'modules', 'manufacturers', 'modulePanel'
       ];
       

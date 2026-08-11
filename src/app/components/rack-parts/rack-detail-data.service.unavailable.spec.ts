@@ -29,6 +29,7 @@ interface BackendDouble {
   };
   delete: {
     rackedModule: jasmine.Spy<() => Observable<EmptyResponse>>;
+    rackedModules: jasmine.Spy<() => Observable<EmptyResponse>>;
     modulesOfRack: jasmine.Spy<() => Observable<EmptyResponse>>;
     commentsForRack: jasmine.Spy<() => Observable<EmptyResponse>>;
     userRack: jasmine.Spy<() => Observable<EmptyResponse>>;
@@ -109,6 +110,7 @@ describe('RackDetailDataService — unavailable / blank-page regression', () => 
       },
       delete: {
         rackedModule: jasmine.createSpy<() => Observable<EmptyResponse>>('delete.rackedModule').and.returnValue(of({})),
+        rackedModules: jasmine.createSpy<() => Observable<EmptyResponse>>('delete.rackedModules').and.returnValue(of({})),
         modulesOfRack: jasmine.createSpy<() => Observable<EmptyResponse>>('delete.modulesOfRack').and.returnValue(of({})),
         commentsForRack: jasmine.createSpy<() => Observable<EmptyResponse>>('delete.commentsForRack').and.returnValue(of({})),
         userRack: jasmine.createSpy<() => Observable<EmptyResponse>>('delete.userRack').and.returnValue(of({}))

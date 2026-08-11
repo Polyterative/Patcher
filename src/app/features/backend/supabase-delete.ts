@@ -275,6 +275,23 @@ export function createDeleteNamespace(
       remapErrors()
     ),
 
+    rackedModules: (ids: number[]) => {
+      if (ids.length === 0) return of({data: null, error: null});
+
+      return getUserSession$().pipe(
+        switchMap(user => {
+          if (!user) return throwError(() => new Error('Authentication required'));
+          return rxFrom(
+            supabase.from(DbPaths.rack_modules)
+              .delete()
+              .in('id', ids)
+          );
+        }),
+        cacheBust(['rackWithId']),
+        remapErrors()
+      );
+    },
+
     modulesOfRack: (rackId: number) => getUserSession$().pipe(
       switchMap(user => {
         if (!user) return throwError(() => new Error('Authentication required'));
