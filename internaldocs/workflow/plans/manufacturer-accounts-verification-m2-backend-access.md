@@ -4,7 +4,11 @@ Backlog entry: [manufacturer-accounts-verification.md](./manufacturer-accounts-v
 
 ## Status
 
-Waiting on M1 type generation.
+M1 type generation is complete (2026-07-17): the M1-safe types are merged into
+`src/backend/database.types.ts`. M2 itself has not started — no claim/availability-tag read,
+create, update, delete, or storage methods exist yet. `DatabaseStrings.ts` already has the
+`manufacturer_claims` and `module_availability_tags` table names registered, but that came from an
+unrelated 2026-07-20 refactor commit (`bb776507`), not from M2 work.
 
 ## Objective
 
@@ -62,3 +66,9 @@ Expose typed Supabase access for claims, ownership checks, owner profile edits, 
 ## Decision log
 
 - 2026-06-18T11:45+02:00 — M2 must not begin until M1 generates local backend types; downstream Angular code should not guess database shapes.
+- 2026-08-11 — Doc hygiene re-verification: confirmed M1 type generation completed 2026-07-17 (M1 decision log), so the
+  M1 dependency is satisfied. Confirmed via `grep` that no M2 read/create/update/delete/storage methods, cache keys,
+  or `integration-manufacturers.spec.ts` claim/availability-tag coverage exist yet, so M2 has not actually started.
+  `DatabaseStrings.ts` table registrations for `manufacturer_claims` / `module_availability_tags` come from unrelated
+  commit `bb776507` (2026-07-20 core refactor), not M2 execution. Status line corrected to stop describing M2 as
+  blocked on M1.
