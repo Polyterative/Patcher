@@ -138,9 +138,7 @@ export class QueryJoins {
     public,
     manufacturer:manufacturerId(name,id),
     standard:standards!modules_standard_fkey(name,id),
-    panels:${ DbPaths.module_panels }!module_panels_moduleid_fkey(*),
-    created,
-    updated
+    panels:${ DbPaths.module_panels }!module_panels_moduleid_fkey(id,color,filename)
   )`;
 
   // Module Inputs
