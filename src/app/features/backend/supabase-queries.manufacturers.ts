@@ -174,6 +174,22 @@ export class SupabaseManufacturerQueries extends SupabaseQueriesBase {
 
 
 
+  @Cacheable({
+    maxAge: longCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('standards'))),
+  })
+  getStandards() {
+    return rxFrom(
+      this.supabase.from(DbPaths.standards)
+        .select('*')
+    )
+      .pipe(
+        remapErrors()
+      );
+  }
+
+
+
   private async fetchManufacturersRange(
     from: number,
     to: number,

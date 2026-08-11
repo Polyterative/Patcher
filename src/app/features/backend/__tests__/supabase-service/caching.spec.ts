@@ -277,4 +277,22 @@ describe('SupabaseService - Caching Behavior', () => {
     expect(afterDelete.data).toBeNull();
     expect(rpcSpy).toHaveBeenCalledTimes(3);
   });
+
+  it('caches get.standards reads across repeated calls', async () => {
+    type StandardRow = {id: number; name: string};
+    const standardRows: StandardRow[] = [{id: 0, name: '3U'}, {id: 1, name: '1U'}];
+    const fromSpy = spyOn(supabaseClient, 'from').and.returnValue(
+      chainable<StandardRow>(
+        {data: standardRows, error: null} satisfies QueryListRowsResult<StandardRow>
+      )
+    );
+
+    const first = await firstValueFrom(service.get.standards()) as QueryListRowsResult<StandardRow>;
+    const second = await firstValueFrom(service.get.standards()) as QueryListRowsResult<StandardRow>;
+
+    expect(first.data).toEqual(standardRows);
+    expect(second.data).toEqual(standardRows);
+    expect(fromSpy).toHaveBeenCalledTimes(1);
+    expect(fromSpy).toHaveBeenCalledWith('standards');
+  });
 });

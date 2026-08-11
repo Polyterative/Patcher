@@ -44,6 +44,7 @@ Every `CachedEntity` key, its producer(s), and which write operations bust it:
 | `comments`              | `getComments`                                                   | `add.comment`, `delete.comment`, `delete.commentsForRack`, `delete.allUserData`           |
 | `currentUserComments`   | `getCurrentUserComments`                                        | `add.comment`, `delete.comment`, `delete.commentsForRack`, `delete.userModule`, `delete.module`, `delete.allUserData` |
 | `userModuleTags`        | `getMyVotes`                                                    | `add.userModuleTag`, `delete.userModuleTag`                                               |
+| `standards`             | `getStandards` (`SupabaseManufacturerQueries`)                  | No write path touches the `standards` table today; `cacheBusterObserver` wired for forward-compatibility only |
 | `module_flags`          | *(declared in CachedEntity but no @Cacheable exists yet)*       | n/a — admin-only surface, acceptable to load fresh each time                              |
 | `profiles`              | *(declared in CachedEntity; used only as a bust signal)*        | No direct @Cacheable method for profiles; busts `getRacksMinimal`, `getPublicUserRacksPaginated`, `getPublicUserPatchesPaginated`, `getPublicUserContributorStats` when profile changes |
 | `void`                  | *(wildcard — any/all keys)*                                     | Not currently emitted by any operation                                                    |
@@ -64,7 +65,6 @@ This is appropriate for the use cases listed:
 | `get.moduleUsageSummary(id)`    | RPC aggregate; low-frequency read, negligible cost                             |
 | `get.modulesBySameManufacturer` | Paginated; varies by manufacturer + range                                      |
 | `get.manufacturerWithId(id)`    | Low-frequency; called once per detail page load                                |
-| `get.standards()`               | **Candidate to cache** — rarely changes; called on every module-editor open    |
 | `get.userWithId(id)`            | Auth-scoped; must be fresh after profile edits                                 |
 | `get.publicProfileByUsername`   | Low-frequency public profile load                                              |
 | `get.tagVotesForModule`         | Vote counts change frequently; stale data misleads users                       |
@@ -78,10 +78,11 @@ This is appropriate for the use cases listed:
 
 | Method              | Proposed key      | Proposed TTL    | Busted by                    | Priority |
 |---------------------|-------------------|-----------------|------------------------------|----------|
-| `get.standards()`   | `standards`       | `longCacheTime` | Only when admin adds standard | LOW      |
 | `get.statistics()`  | `appStatistics`   | `defaultCacheTime` | n/a (read-only aggregates)  | LOW      |
 
-Neither is on a hot path. Both are acceptable as future improvements.
+`get.standards()` was implemented (see Cache Key Inventory above) as it is called on every
+module-editor open. `get.statistics()` remains a future improvement — it's home-page-only,
+called once per visit, and not on a hot path.
 
 ---
 
@@ -104,6 +105,7 @@ The following cache invalidation gaps were found and fixed in this session:
 | Operation               | Before              | After                             | Impact                                      |
 |-------------------------|---------------------|-----------------------------------|---------------------------------------------|
 | `delete.modulePanel`    | No cache bust       | `cacheBust(['modules', 'moduleWithId'])` | Asymmetric with `add.panel` (already busted these keys); deleted panel remained visible in cached `getModuleWithId` for up to `defaultCacheTime` |
+| `get.standards()`       | Uncached (network on every module-editor open) | `@Cacheable({maxAge: longCacheTime})` via `getStandards()` | Standards list is effectively static (no write path); every module-editor open previously re-fetched it |
 
 ---
 
