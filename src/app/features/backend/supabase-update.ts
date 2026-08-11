@@ -126,9 +126,23 @@ export function createUpdateNamespace(
         // insert's own `.select()` supplies the ids callers need. For pure reorder/move
         // batches (the common case — drag, remix, shuffle, row move), nothing reads this
         // response, so skipping `.select()` avoids re-downloading every module in the rack.
-        return rxFrom(
-          supabase.from(DbPaths.rack_modules).upsert(toSimplyUpdate)
-        ).pipe(
+        // Only issue the upsert when there are actually existing racked modules to update —
+        // building `supabase.from(...).upsert([])` unconditionally would fire an extra,
+        // pointless network round trip when every module in the batch is newly racked.
+        const upsertExisting = () => supabase.from(DbPaths.rack_modules).upsert(toSimplyUpdate);
+        type UpsertExistingResponse = Awaited<ReturnType<typeof upsertExisting>>;
+        const skippedUpsertResponse = {
+          count: null,
+          data: null,
+          error: null,
+          status: 200,
+          statusText: 'OK'
+        } as UpsertExistingResponse;
+        const updateExisting$ = toSimplyUpdate.length === 0
+          ? of(skippedUpsertResponse)
+          : rxFrom(upsertExisting());
+
+        return updateExisting$.pipe(
           switchMap(x => {
             const newRackedModules = data
               .filter(x => x.rackingData.id === undefined)
