@@ -42,8 +42,8 @@
 - [x] Add the stable-slot contract to the consolidated local identity migration (`rotated_at`, full `UNIQUE (profile_id)`, atomic UPSERT rewrites preserving `id` + tier/overrides) and extend the static contract tests; remote apply stays inside the batched operator window.
 - [ ] Remove the `developerApiEnabled` feature flag once the API is public and stable.
 
-Status: The API is live at `api.patcher.xyz`; production catalogue/auth/quota/cache checks pass and the temporary smoke Worker is deleted. The owner approved launch without outer WAF for now. `developerApiEnabled` is enabled in the production environment generator on `develop`; the remaining user-visible gate is the app release, followed by final docs/archive cleanup.
-Updated: 2026-07-24
+Status: The API is live at `api.patcher.xyz`; production catalogue/auth/quota/cache checks pass and the temporary smoke Worker is deleted. The owner approved launch without outer WAF for now. `developerApiEnabled` is enabled in the production environment generator on `develop`; the remaining user-visible gate is the app release, followed by final docs/archive cleanup. Re-verified 2026-08-11: `production` is still 179 commits behind `develop` (last release `6.5.2`), so no app release has shipped yet and this status still holds.
+Updated: 2026-08-11
 
 Recent completed checkpoints are archived in [COMPLETED.md](./COMPLETED.md); their validation
 notes and decisions live in the matching plan files (e.g.
