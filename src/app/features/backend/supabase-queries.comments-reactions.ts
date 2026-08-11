@@ -188,23 +188,39 @@ export class SupabaseCommentReactionQueries extends SupabaseQueriesBase {
       switchMap(user => {
         if (!user?.id) return of([]);
 
-        let query = this.supabase
-          .from(DbPaths.reactions)
-          .select(REACTION_ROW_COLUMNS)
-          .filter('user_id', 'eq', user.id)
-          .filter('kind', 'eq', kind)
-          .order('created_at', {ascending: false});
-
-        if (entityType !== undefined) {
-          query = query.filter('entity_type', 'eq', entityType);
-        }
-
-        return rxFrom(query).pipe(
-          remapErrors(),
-          throwIfSupabaseErrorWhen<{data: ReactionRow[] | null}>(strictErrors),
-          map(result => (result.data ?? []) as ReactionRow[])
-        );
+        return this.getCachedCurrentUserReactions(user.id, entityType, kind, strictErrors);
       })
+    );
+  }
+
+
+
+  @Cacheable({
+    maxAge: smallCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('currentUserReactions'))),
+    maxCacheCount: 200
+  })
+  private getCachedCurrentUserReactions(
+    userId: string,
+    entityType?: number,
+    kind: ReactionKind = REACTION_KIND_COOL,
+    strictErrors = false
+  ): Observable<ReactionRow[]> {
+    let query = this.supabase
+      .from(DbPaths.reactions)
+      .select(REACTION_ROW_COLUMNS)
+      .filter('user_id', 'eq', userId)
+      .filter('kind', 'eq', kind)
+      .order('created_at', {ascending: false});
+
+    if (entityType !== undefined) {
+      query = query.filter('entity_type', 'eq', entityType);
+    }
+
+    return rxFrom(query).pipe(
+      remapErrors(),
+      throwIfSupabaseErrorWhen<{data: ReactionRow[] | null}>(strictErrors),
+      map(result => (result.data ?? []) as ReactionRow[])
     );
   }
 

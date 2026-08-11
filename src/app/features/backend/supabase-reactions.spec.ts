@@ -54,6 +54,10 @@ function chainable(resolveValue: unknown = {data: null, error: null}): Chainable
 const currentUser = {id: 'user-1'} as SimpleUserModel;
 
 describe('cool reaction backend API', () => {
+  beforeEach(() => {
+    cacheBuster$.next(['currentUserReactions', 'reactionCounts', 'reactionDiscovery']);
+  });
+
   it('adds a reaction with explicit columns and busts reaction caches', async () => {
     const builder = chainable({data: null, error: null});
     const fromSpy = jasmine.createSpy('from').and.returnValue(builder);
@@ -238,6 +242,46 @@ describe('cool reaction backend API', () => {
     expect(fromSpy).toHaveBeenCalledTimes(2);
     expect(firstBuilder.calls).toContain(jasmine.objectContaining({method: 'filter', args: ['user_id', 'eq', 'user-1']}));
     expect(secondBuilder.calls).toContain(jasmine.objectContaining({method: 'filter', args: ['user_id', 'eq', 'user-2']}));
+  });
+
+  it('caches current user reactions for the same user and identical arguments', async () => {
+    const reactionRows = [{user_id: 'user-1', entity_type: 1, entity_id: 42, kind: 'COOL', created_at: 'now'}];
+    const builder = chainable({data: reactionRows, error: null});
+    const fromSpy = jasmine.createSpy('from').and.returnValue(builder);
+    const queries = new SupabaseQueriesService(
+      {from: fromSpy} as never,
+      () => of(currentUser),
+      20
+    );
+
+    await expectAsync(firstValueFrom(
+      queries.getCurrentUserReactions(ReactionEntityTypes.MODULE)
+    )).toBeResolvedTo(reactionRows);
+    await expectAsync(firstValueFrom(
+      queries.getCurrentUserReactions(ReactionEntityTypes.MODULE)
+    )).toBeResolvedTo(reactionRows);
+
+    expect(fromSpy).toHaveBeenCalledOnceWith(DbPaths.reactions);
+    expect(builder.calls).toContain(jasmine.objectContaining({method: 'filter', args: ['user_id', 'eq', 'user-1']}));
+    expect(builder.calls).toContain(jasmine.objectContaining({method: 'filter', args: ['entity_type', 'eq', ReactionEntityTypes.MODULE]}));
+  });
+
+  it('does not reuse current user reactions cache across entity types for the same user', async () => {
+    const moduleBuilder = chainable({data: [{user_id: 'user-1', entity_type: 1, entity_id: 42, kind: 'COOL', created_at: 'now'}], error: null});
+    const rackBuilder = chainable({data: [{user_id: 'user-1', entity_type: 2, entity_id: 7, kind: 'COOL', created_at: 'now'}], error: null});
+    const fromSpy = jasmine.createSpy('from').and.returnValues(moduleBuilder, rackBuilder);
+    const queries = new SupabaseQueriesService(
+      {from: fromSpy} as never,
+      () => of(currentUser),
+      20
+    );
+
+    await firstValueFrom(queries.getCurrentUserReactions(ReactionEntityTypes.MODULE));
+    await firstValueFrom(queries.getCurrentUserReactions(ReactionEntityTypes.RACK));
+
+    expect(fromSpy).toHaveBeenCalledTimes(2);
+    expect(moduleBuilder.calls).toContain(jasmine.objectContaining({method: 'filter', args: ['entity_type', 'eq', ReactionEntityTypes.MODULE]}));
+    expect(rackBuilder.calls).toContain(jasmine.objectContaining({method: 'filter', args: ['entity_type', 'eq', ReactionEntityTypes.RACK]}));
   });
 
   it('reads reaction counts individually and in batches with explicit columns', async () => {
