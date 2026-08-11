@@ -71,20 +71,11 @@ export class QueryJoins {
   // Patch
   static patch: string = 'patch:patches!patch_connections_patchid_fkey(id)';
 
-  // Patch Connections
-  static patch_connections: string = 'patch_connections:patch_connections!patch_connections_patchid_fkey(*)';
-
   // Author
   static author: string = 'author:authorid(username,id)';
   static publicAuthorGate(alias = 'author_profile_gate'): string {
     return `${ alias }:authorid!inner(public)`;
   }
-
-  // Rack
-  static rack: string = 'rack:rackid(*,author:authorid(username,id))';
-
-  // Rack Modules
-  static rackModules: string = 'rackModules:rackid(*)';
 
   // Module Foreign Key in Rack Modules
   static module_fk_rackmodules: string = `module:modules!rack_modules_moduleid_fkey(

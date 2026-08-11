@@ -74,10 +74,6 @@ describe('Email leakage – QueryJoins static strings', () => {
     expect(QueryJoins.author).not.toContain('email');
   });
   
-  it('QueryJoins.rack must not contain "email"', () => {
-    expect(QueryJoins.rack).not.toContain('email');
-  });
-  
   it('every QueryJoins value must not contain "email"', () => {
     const entries = queryJoinStringEntries();
     
@@ -93,10 +89,6 @@ describe('Email leakage – QueryJoins static strings', () => {
     expect(QueryJoins.author).toContain('id');
   });
   
-  it('QueryJoins.rack still selects author username and id via nested join', () => {
-    expect(QueryJoins.rack).toContain('username');
-    expect(QueryJoins.rack).toContain('id');
-  });
 });
 
 // ─── 2. PublicUser model contract ────────────────────────────────────────────
