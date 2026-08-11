@@ -13,7 +13,6 @@ import {
   tap,
   withLatestFrom
 } from 'rxjs/operators';
-import { QueryJoins } from '../../features/backend/DatabaseStrings';
 import { RackedModule } from '../../models/module';
 import {
   nextRackModuleOrientation,
@@ -341,7 +340,7 @@ export class RackDetailModulePlacementDataService {
             return EMPTY;
           }
 
-          return context.backend.GET.moduleWithId(blankId, QueryJoins.rackDisplayModuleColumns).pipe(
+          return context.backend.GET.moduleWithIdForRackDisplay(blankId).pipe(
             map(response => context.assertBackendSuccess(response)),
             switchMap(response => {
               const blankModule = (response as {data?: RackedModule['module']}).data;

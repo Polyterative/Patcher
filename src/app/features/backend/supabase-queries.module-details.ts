@@ -193,6 +193,13 @@ export class SupabaseModuleDetailQueries extends SupabaseQueriesBase {
       );
   }
 
+  // Trimmed module projection for rendering a module inside a rack display slot
+  // (e.g. blank-panel placement/replacement) — shares the same column set as the
+  // rack_modules FK join, since both feed the identical rack rendering path.
+  getModuleWithIdForRackDisplay(id: number) {
+    return this.getModuleWithId(id, QueryJoins.rackDisplayModuleColumns);
+  }
+
 
 
   @Cacheable({

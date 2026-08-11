@@ -98,6 +98,7 @@ export interface SupabaseQueriesService
   Pick<
     SupabaseModuleDetailQueries,
     'getModuleWithId'
+      | 'getModuleWithIdForRackDisplay'
       | 'getModuleCommentContext'
       | 'getTags'
       | 'getModulesBySameManufacturer'

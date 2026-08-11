@@ -11,7 +11,6 @@ import {
   tap,
   withLatestFrom
 } from 'rxjs/operators';
-import { QueryJoins } from '../../features/backend/DatabaseStrings';
 import { RackedModule } from '../../models/module';
 import { DEFAULT_RACK_MODULE_ORIENTATION } from '../../models/rack';
 import { SharedConstants } from '../../shared-interproject/SharedConstants';
@@ -96,7 +95,7 @@ export class RackDetailModuleReplacementDataService {
             return EMPTY;
           }
 
-          return context.backend.GET.moduleWithId(blankModuleId, QueryJoins.rackDisplayModuleColumns).pipe(
+          return context.backend.GET.moduleWithIdForRackDisplay(blankModuleId).pipe(
             map(response => context.assertBackendSuccess(response)),
             switchMap(response => {
               const blankModule = (response as {data?: RackedModule['module']}).data;
