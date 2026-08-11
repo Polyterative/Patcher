@@ -53,7 +53,6 @@ function createListing(overrides: Partial<MarketplaceListing> = {}): Marketplace
     condition: 'good',
     createdAt: '2026-07-17T08:00:00.000Z',
     description: null,
-    expiresAt: null,
     externalLink: null,
     id: 'listing-1',
     media: [],
