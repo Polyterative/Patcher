@@ -88,6 +88,7 @@ export type CachedEntity =
   | 'racksWithModule'
   | 'patchesWithModule'
   | 'modulesBySameManufacturer'
+  | 'standards'
   | 'userModuleTags'
   | 'modulePossessionCounts'
   | 'priceHub'

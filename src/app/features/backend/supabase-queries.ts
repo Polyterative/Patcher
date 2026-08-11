@@ -163,6 +163,7 @@ export interface SupabaseQueriesService
     SupabaseManufacturerQueries,
     'getManufacturers'
       | 'getManufacturersPaginated'
+      | 'getStandards'
   >,
   Pick<
     SupabaseModulePriceQueries,

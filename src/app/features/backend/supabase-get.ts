@@ -150,13 +150,7 @@ export function createGetNamespace(
         .single()
     )
       .pipe(remapErrors()),
-    standards: () => rxFrom(
-      supabase.from(DbPaths.standards)
-        .select('*')
-    )
-      .pipe(
-        remapErrors(),
-      ),
+    standards: () => queries.getStandards(),
     userWithId: (id: string, columns = '*') => rxFrom(
       supabase.from(DbPaths.profiles)
         .select(columns)
