@@ -593,6 +593,7 @@ describe('SupabaseService - update extended', () => {
 
     it('should insert new modules when rackingData.id is undefined', (done) => {
       const mock = queryChain<RackModuleRow>();
+      const upsertSpy = upsertSpyFor<RackModuleRow, RackModuleUpsertWrite[]>(mock);
       const insertSpy = insertSpyFor<RackModuleRow, RackModuleInsertWrite[]>(mock);
       const selectSpy = selectSpyFor(mock);
       spyOn(supabaseClient, 'from').and.returnValue(mock);
@@ -611,6 +612,7 @@ describe('SupabaseService - update extended', () => {
             row: 1,
             selected_panel_id: null
           }]);
+          expect(upsertSpy).not.toHaveBeenCalled();
           expect(selectSpy).toHaveBeenCalledWith(SELECT_RACK_MODULE_COLUMNS);
           done();
         },
