@@ -1,3 +1,4 @@
+import { firstValueFrom } from 'rxjs';
 import { SupabaseService } from '../../supabase.service';
 import { StorageUrls } from '../../DatabaseStrings';
 import {
@@ -652,6 +653,75 @@ describe('storage.createMarketplaceListingImageSignedUrl', () => {
         done();
       }
     });
+  }, TEST_TIMEOUT);
+
+  it('memoizes repeat calls for the same path within the TTL, skipping a second network call', async () => {
+    setupStorageMock();
+    const path = '11111111-1111-4111-8111-111111111111/22222222-2222-4222-8222-222222222222/front.webp';
+
+    const first = await firstValueFrom(service.storage.createMarketplaceListingImageSignedUrl(path));
+    const second = await firstValueFrom(service.storage.createMarketplaceListingImageSignedUrl(path));
+
+    expect(first).toBe('https://signed.example.test/front.webp?token=abc');
+    expect(second).toBe('https://signed.example.test/front.webp?token=abc');
+    expect(mockBucket.createSignedUrl).toHaveBeenCalledTimes(1);
+  }, TEST_TIMEOUT);
+
+  it('signs distinct storage paths independently rather than sharing one cache entry', async () => {
+    setupStorageMock();
+    const pathA = '11111111-1111-4111-8111-111111111111/22222222-2222-4222-8222-222222222222/front.webp';
+    const pathB = '11111111-1111-4111-8111-111111111111/22222222-2222-4222-8222-222222222222/back.webp';
+
+    await firstValueFrom(service.storage.createMarketplaceListingImageSignedUrl(pathA));
+    await firstValueFrom(service.storage.createMarketplaceListingImageSignedUrl(pathB));
+
+    expect(mockBucket.createSignedUrl).toHaveBeenCalledTimes(2);
+    expect(mockBucket.createSignedUrl).toHaveBeenCalledWith(pathA, 600);
+    expect(mockBucket.createSignedUrl).toHaveBeenCalledWith(pathB, 600);
+  }, TEST_TIMEOUT);
+
+  it('never caches a signing failure, so the next call retries against Supabase', async () => {
+    setupStorageMock(
+      storageUploadSuccess(),
+      storageRemoveSuccess(),
+      {data: null, error: {message: 'signing denied'}}
+    );
+    const path = '11111111-1111-4111-8111-111111111111/22222222-2222-4222-8222-222222222222/front.webp';
+
+    await expectAsync(
+      firstValueFrom(service.storage.createMarketplaceListingImageSignedUrl(path))
+    ).toBeRejectedWith(jasmine.objectContaining({message: 'signing denied'}));
+
+    mockBucket.createSignedUrl.and.returnValue(Promise.resolve(storageSignedUrlSuccess()));
+    const retried = await firstValueFrom(service.storage.createMarketplaceListingImageSignedUrl(path));
+
+    expect(retried).toBe('https://signed.example.test/front.webp?token=abc');
+    expect(mockBucket.createSignedUrl).toHaveBeenCalledTimes(2);
+  }, TEST_TIMEOUT);
+
+  it('re-signs after the memoized TTL lapses instead of returning a stale cache entry', async () => {
+    setupStorageMock();
+    const path = '11111111-1111-4111-8111-111111111111/22222222-2222-4222-8222-222222222222/front.webp';
+    jasmine.clock().install();
+
+    try {
+      const baseTime = new Date();
+      jasmine.clock().mockDate(baseTime);
+
+      const first = await firstValueFrom(service.storage.createMarketplaceListingImageSignedUrl(path));
+      expect(first).toBe('https://signed.example.test/front.webp?token=abc');
+      expect(mockBucket.createSignedUrl).toHaveBeenCalledTimes(1);
+
+      // Advance past the memoized TTL (expiresInSeconds=600 minus a <=60s margin), so the
+      // cache entry is stale; this also exercises opportunistic eviction on lookup.
+      jasmine.clock().mockDate(new Date(baseTime.getTime() + 601 * 1000));
+
+      const second = await firstValueFrom(service.storage.createMarketplaceListingImageSignedUrl(path));
+      expect(second).toBe('https://signed.example.test/front.webp?token=abc');
+      expect(mockBucket.createSignedUrl).toHaveBeenCalledTimes(2);
+    } finally {
+      jasmine.clock().uninstall();
+    }
   }, TEST_TIMEOUT);
 });
 
