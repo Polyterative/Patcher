@@ -99,6 +99,12 @@ The following cache invalidation gaps were found and fixed in this session:
 | `delete.modulesOfRack`  | No cache bust       | `cacheBust(['rackWithId'])`       | Cleared rack still showed cached modules    |
 | `delete.userRack`       | `['rackWithId']`    | `['rackWithId', 'racksMinimal']`  | Deleted rack remained in minimal rack list  |
 
+## Audit Findings & Fixes Applied (11-08-2026)
+
+| Operation               | Before              | After                             | Impact                                      |
+|-------------------------|---------------------|-----------------------------------|---------------------------------------------|
+| `delete.modulePanel`    | No cache bust       | `cacheBust(['modules', 'moduleWithId'])` | Asymmetric with `add.panel` (already busted these keys); deleted panel remained visible in cached `getModuleWithId` for up to `defaultCacheTime` |
+
 ---
 
 ## Rules for Future Agents
