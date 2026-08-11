@@ -168,7 +168,7 @@ export class SupabaseCommentReactionQueries extends SupabaseQueriesBase {
       .pipe(
         switchMap(user => rxFrom(
           this.supabase.from(DbPaths.comments)
-            .select(`*,profile:profiles(id,username)`, {count: 'exact'})
+            .select(QueryJoins.commentListColumns, {count: 'exact'})
             .filter('authorId', 'eq', user.id)
             .order('created', {ascending: false})
             .range(from, to)
@@ -294,7 +294,7 @@ export class SupabaseCommentReactionQueries extends SupabaseQueriesBase {
   ): Observable<{ data: DbComment[] | null; count: number | null }> {
     return rxFrom(
       this.supabase.from(DbPaths.comments)
-        .select(`*,profile:profiles(id,username)`, { count: 'exact' })
+        .select(QueryJoins.commentListColumns, { count: 'exact' })
         .filter('entityId', 'eq', entityId)
         .filter('entityType', 'eq', entityType)
         .order('created', { ascending: false })

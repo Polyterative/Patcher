@@ -163,7 +163,7 @@ export class SupabasePatchQueries extends SupabaseQueriesBase {
   getCurrentUserPatchesForAuthor(authorid: string, strictErrors = false): Observable<Patch[]> {
     return rxFrom(
       this.supabase.from(DbPaths.patches)
-        .select(`*, ${ QueryJoins.author }`)
+        .select(`id,name,description,public_id,tags,created,updated, ${ QueryJoins.author }`)
         .filter('authorid', 'eq', authorid)
         .order('updated', {ascending: false})
     ).pipe(
@@ -347,7 +347,7 @@ export class SupabasePatchQueries extends SupabaseQueriesBase {
     columns: string = `id,name,description,${ QueryJoins.author },updated,created`,
     includeCount = true
   ) {
-    const connections = `,patch_connections!inner(patchid,a,b)`; // Ensures only patches with connections are included
+    const connections = `,patch_connections!inner(patchid)`; // Ensures only patches with connections are included
     const nameQuery = (name ?? '').trim();
 
     let queryBuilder = this.supabase

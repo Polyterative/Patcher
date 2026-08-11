@@ -77,6 +77,10 @@ export class QueryJoins {
     return `${ alias }:authorid!inner(public)`;
   }
 
+  // Comment list columns — rendered fields only (authorId/created are filtered/ordered
+  // on at the DB level and never read from the fetched row by any consumer).
+  static commentListColumns: string = 'id,content,entityId,entityType,updated,profile:profiles(id,username)';
+
   // Module Tags
   static module_tags: string = `tags:${ DbPaths.module_tags }(id,tag:${ DbPaths.tags }(*),voteCount:${ DbPaths.user_module_tags }(moduletagid))`;
 
