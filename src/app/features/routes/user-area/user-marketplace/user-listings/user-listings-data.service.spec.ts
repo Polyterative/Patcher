@@ -89,8 +89,7 @@ function createListing(overrides: Partial<MarketplaceListing> = {}): Marketplace
       avatarUrl: null,
       id: 'seller-1',
       public: true,
-      username: 'seller',
-      website: null
+      username: 'seller'
     },
     sellerProfileId: 'seller-1',
     shippingNotes: 'No batteries.',

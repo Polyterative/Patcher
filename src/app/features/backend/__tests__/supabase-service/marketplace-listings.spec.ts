@@ -77,8 +77,7 @@ const listingRow = {
     avatar_url: null,
     id: currentUserId,
     public: true,
-    username: 'seller',
-    website: null
+    username: 'seller'
   },
   seller_profileid: currentUserId,
   shipping_notes: 'Ships within the EU.',

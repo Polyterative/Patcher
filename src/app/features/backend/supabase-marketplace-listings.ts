@@ -28,7 +28,7 @@ export const LISTING_MEDIA_COLUMNS =
 export const MARKETPLACE_LISTING_WITH_RELATIONS_COLUMNS = `${ MARKETPLACE_LISTING_COLUMNS },
   media:listing_media!listing_media_listing_id_fkey(${ LISTING_MEDIA_COLUMNS }),
   module:modules!marketplace_listings_moduleid_fkey(id,name,hp,public,manufacturer:manufacturerId(id,name,logo),standard:standards!modules_standard_fkey(id,name),panels:module_panels!module_panels_moduleid_fkey(id,moduleid,color,description,filename)),
-  seller:profiles!marketplace_listings_seller_profileid_fkey(id,username,public,avatar_url,website)`;
+  seller:profiles!marketplace_listings_seller_profileid_fkey(id,username,public,avatar_url)`;
 
 export type MarketplaceListingRow = SupabaseTableRow<'marketplace_listings'> & {
   media?: ListingMediaRow[] | null;
@@ -61,7 +61,6 @@ interface MarketplaceListingSellerRow {
   username: string | null;
   public: boolean;
   avatar_url: string | null;
-  website: string | null;
 }
 
 export function buildMarketplaceListingInsert(
@@ -279,7 +278,6 @@ function mapMarketplaceListingSellerRow(row: MarketplaceListingSellerRow): Marke
     avatarUrl: row.avatar_url,
     id: row.id,
     public: row.public,
-    username: row.username,
-    website: row.website
+    username: row.username
   };
 }

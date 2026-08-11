@@ -24,8 +24,7 @@ export function createMarketplaceListing(overrides: Partial<MarketplaceListing> 
       avatarUrl: null,
       id: 'seller-1',
       public: true,
-      username: 'seller',
-      website: null
+      username: 'seller'
     },
     sellerProfileId: 'seller-1',
     shippingNotes: 'Ships insured.',
