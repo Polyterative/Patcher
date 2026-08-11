@@ -458,6 +458,7 @@ export function createDeleteNamespace(
         );
         return deletePanelFile$.pipe(switchMap(() => deleteDatabaseEntry$));
       }),
+      cacheBust(['modules', 'moduleWithId']),
       remapErrors()
     ),
     

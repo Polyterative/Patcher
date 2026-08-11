@@ -203,6 +203,28 @@ describe('SupabaseService - delete advanced', () => {
         }
       });
     }, TEST_TIMEOUT);
+
+    it('should bust the modules and moduleWithId caches, matching add.panel', (done) => {
+      mockUserSession(service, authUserFixture('u1'));
+      const mockBucket = createStorageBucketDouble();
+      spyOn(supabaseClient.storage, 'from').and.returnValue(mockBucket);
+      spyOn(supabaseClient, 'from').and.returnValue(chainable<ModulePanelDeleteRow>(successfulDelete));
+
+      const bustedKeys: CachedEntity[] = [];
+      service.cacheResetter$.subscribe(keys => bustedKeys.push(...keys));
+
+      service.delete.modulePanel(modulePanelFixture()).subscribe({
+        next: () => {
+          expect(bustedKeys).toContain('modules');
+          expect(bustedKeys).toContain('moduleWithId');
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
   });
   
   describe('delete.allUserData', () => {
