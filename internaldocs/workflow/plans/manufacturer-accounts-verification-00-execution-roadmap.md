@@ -42,10 +42,21 @@ flowchart TD
 
 ## Current status
 
-M1 local migrations have been drafted. Type generation is blocked until Docker/local Supabase is available, so M2 must not start yet.
+M1 is complete: local migrations validated in a disposable Supabase stack, local candidate types
+generated, and the M1-safe additions merged into `src/backend/database.types.ts` (2026-07-17; see
+[M1 decision log](./manufacturer-accounts-verification-m1-schema-foundation.md#decision-log)).
+Remote apply of the M1 migrations remains a separate explicit approval gate.
+
+M2 has not started. An unrelated 2026-07-20 refactor (`bb776507`) incidentally pre-registered the
+`manufacturer_claims` and `module_availability_tags` table names in `DatabaseStrings.ts`, but none of
+M2's read/create/update/delete/storage methods, cache keys, or integration specs exist yet — M2 is
+unblocked and ready to start next.
 
 ## Decision log
 
 - 2026-06-18T11:07+02:00 — User approved local-only schema/RLS/storage implementation planning for Manufacturer Accounts & Verification.
 - 2026-06-18T11:32+02:00 — M1 drafted local migrations and stopped because local Supabase/Docker was unavailable for type generation.
 - 2026-06-18T11:45+02:00 — Execution plan split into dedicated markdown files before any further chunk proceeds.
+- 2026-08-11 — Doc hygiene re-verification: this file's "Current status" said type generation was still blocked, but
+  M1's own decision log recorded local typegen complete on 2026-07-17. Updated to reflect M1 done / M2 not started
+  (see M2 decision log for the supporting `grep` evidence).
