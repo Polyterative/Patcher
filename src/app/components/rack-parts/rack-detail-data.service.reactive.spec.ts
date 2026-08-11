@@ -18,6 +18,7 @@ import {
 } from 'rxjs';
 import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
+import { QueryJoins } from 'src/app/features/backend/DatabaseStrings';
 import {
   SimpleUserModel,
   SupabaseService
@@ -90,7 +91,7 @@ type RackDetailBackendDouble = {
     rackWithId: jasmine.Spy<(rackId: number) => Observable<BackendResponse<Rack | null>>>;
     publicRackWithId: jasmine.Spy<(rackId: number) => Observable<BackendResponse<Rack | null>>>;
     rackByPublicId: jasmine.Spy<(publicId: string) => Observable<BackendResponse<Rack | null>>>;
-    moduleWithId: jasmine.Spy<(moduleId: number) => Observable<BackendResponse<DbModule | null>>>;
+    moduleWithId: jasmine.Spy<(moduleId: number, columns?: string) => Observable<BackendResponse<DbModule | null>>>;
   };
   storage: {
     uploadRackImage: jasmine.Spy<(file: Blob | File, filenameAndExtension: string) => Observable<string>>;
@@ -519,7 +520,7 @@ describe('RackDetailDataService reactive flows', () => {
 
     service.addBlankToRow$.next({rowId: 0, hp: 8});
 
-    expect(backend.GET.moduleWithId).toHaveBeenCalledWith(4651);
+    expect(backend.GET.moduleWithId).toHaveBeenCalledWith(4651, QueryJoins.rackDisplayModuleColumns);
     expect(backend.add.rackModule).toHaveBeenCalledWith(4651, 1, 0, 1);
     expect(service.rowedRackedModules$.value[0].length).toBe(2);
     expect(service.rowedRackedModules$.value[0][1].module.id).toBe(4651);
@@ -580,7 +581,7 @@ describe('RackDetailDataService reactive flows', () => {
     
     service.requestRackedModuleReplaceWithBlank$.next(moduleInRack(1, 0, 0, 8, 0));
     
-    expect(backend.GET.moduleWithId).toHaveBeenCalledWith(4651);
+    expect(backend.GET.moduleWithId).toHaveBeenCalledWith(4651, QueryJoins.rackDisplayModuleColumns);
     expect(backend.delete.rackedModule).toHaveBeenCalled();
     expect(backend.add.rackModule).toHaveBeenCalled();
     expect(refreshSpy).not.toHaveBeenCalled();
@@ -1088,7 +1089,7 @@ describe('RackDetailDataService reactive flows', () => {
     service.addBlankToRow$.next({rowId: 0, hp: 4});
 
     // blank ID for hp=4 standard=0 is 4648 (from BLANK_IDS_STANDARD_0)
-    expect(backend.GET.moduleWithId).toHaveBeenCalledWith(4648);
+    expect(backend.GET.moduleWithId).toHaveBeenCalledWith(4648, QueryJoins.rackDisplayModuleColumns);
     expect(backend.add.rackModule).toHaveBeenCalledWith(4648, 50, 0, 2);
     expect(service.rowedRackedModules$.value[0].length).toBe(3);
     expect(service.rowedRackedModules$.value[0][2].module.id).toBe(4648);
