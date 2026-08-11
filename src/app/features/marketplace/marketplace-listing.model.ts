@@ -191,7 +191,6 @@ export interface MarketplaceListing {
   status: MarketplaceListingStatus;
   createdAt: string;
   updatedAt: string;
-  expiresAt: string | null;
   media: MarketplaceListingMedia[];
   module: MarketplaceListingModuleSummary | null;
   seller: MarketplaceListingSellerSummary | null;

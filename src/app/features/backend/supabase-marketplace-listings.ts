@@ -22,7 +22,7 @@ import {
 } from './supabase-db.types';
 
 export const MARKETPLACE_LISTING_COLUMNS =
-  'id,public_id,seller_profileid,moduleid,title_override,description,condition,asking_price_amount_minor,asking_price_currency,open_to_offers,ships_from_country,shipping_options,shipping_notes,external_link,status,created_at,updated_at,expires_at';
+  'id,public_id,seller_profileid,moduleid,title_override,description,condition,asking_price_amount_minor,asking_price_currency,open_to_offers,ships_from_country,shipping_options,shipping_notes,external_link,status,created_at,updated_at';
 export const LISTING_MEDIA_COLUMNS =
   'id,listing_id,kind,url,storage_path,position,mime_type,created_at';
 export const MARKETPLACE_LISTING_WITH_RELATIONS_COLUMNS = `${ MARKETPLACE_LISTING_COLUMNS },
@@ -128,7 +128,6 @@ export function mapMarketplaceListingRow(row: MarketplaceListingRow): Marketplac
     condition: row.condition as MarketplaceListingCondition,
     createdAt: row.created_at,
     description: row.description,
-    expiresAt: row.expires_at,
     externalLink: row.external_link,
     id: row.id,
     media: (row.media ?? []).map(mapListingMediaRow).sort((first, second) => first.position - second.position),

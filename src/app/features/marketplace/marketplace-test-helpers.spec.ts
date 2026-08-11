@@ -11,7 +11,6 @@ export function createMarketplaceListing(overrides: Partial<MarketplaceListing> 
     condition: 'excellent',
     createdAt: '2026-07-16T10:00:00.000Z',
     description: 'Clean public listing.',
-    expiresAt: null,
     externalLink: null,
     id: 'listing-1',
     media: [
