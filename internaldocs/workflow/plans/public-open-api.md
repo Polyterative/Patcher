@@ -1343,6 +1343,14 @@ Worker has passed §11–§13 checks:
   and MISS→HIT cache checks. The temporary smoke Worker and diagnostic
   secret were deleted. `developerApiEnabled` is committed on `develop`;
   the app release and final workflow archive remain.
+- 2026-07-25 to 2026-07-27 — Post-launch stabilization fixes landed on
+  `develop` (no plan-scope change): restored dropped module includes in
+  catalogue responses (`342dd5a6`), decoded bigint panel IDs correctly
+  (`2b40bce8`), added a live-production smoke test (`8ba25161`), accepted
+  weak ETag validators (`8dab702d`), protected the live smoke secret in CI
+  (`11c906a5`), and fixed an unrelated develop-suite CI regression
+  (`189eebb8`). No rollout-gate status changed; recorded here so the
+  Decision log stays a complete history of the live API.
 
 ## Resolved refinement decisions (locked)
 
