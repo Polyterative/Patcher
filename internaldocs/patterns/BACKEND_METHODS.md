@@ -187,6 +187,46 @@ response order cannot change graph behavior.
 
 ---
 
+## Adding a Narrower Sibling Method for a Single Over-Fetching Consumer
+
+When a shared, heavily-parameterized backend method serves consumers with
+different column or join needs, and one consumer reads only a small subset of
+the joined shape, add a narrower sibling method instead of changing the shared
+method. For example, `getCurrentUserModulesPossessionOnly()` serves a
+possession-only consumer while `getCurrentUserModules()` remains unchanged.
+
+Before narrowing, exhaustively grep every consumer of the reactive property or
+observable populated by the narrow consumer. Confirm that the reduced shape is
+safe repo-wide, not only for the call site being optimized.
+
+The sibling method should:
+
+1. Select only the required columns.
+2. Reuse the same `@Cacheable` cache-buster tag as the shared method, because
+   both read the same underlying rows and must share write/auth invalidation.
+3. Be registered through the same `Pick<...>` mixin union and `GET` namespace
+   binding pattern as other backend methods.
+4. Rewire only the narrow consumer; leave the shared method and its other
+   call sites untouched.
+
+If the consumer exposes a public reactive property such as
+`BehaviorSubject<T[]>`, narrow its generic type too. `BehaviorSubject<T>` is
+invariant, so explicitly typed test fixtures such as
+`new BehaviorSubject<Wide[]>(...)` must be narrowed as well. Fixture objects
+returned by helper calls inside array literals remain compile-safe because
+excess-property checking does not apply to those call results. Also update
+bespoke backend mocks (for example, `BackendDouble`-style test doubles) that
+reference the old method name: services often subscribe eagerly in their
+constructors, so stale mock construction can fail at runtime.
+
+Add unit tests mirroring the sibling method's tests and assert the exact select
+string, filters, and cache-buster behavior. `getModulesByIdsForPatchGraph()` in
+`supabase-queries.module-details.ts` and
+`getCurrentUserModulesPossessionOnly()` in `supabase-queries.possessions.ts`
+are the worked examples of this additive-sibling-method pattern.
+
+---
+
 ## Schema-change preflight (READ BEFORE WRITING SQL)
 
 Before touching `supabase/migrations/`, RPCs, columns, indexes, or policies — even via the Supabase MCP — walk through this list. Past mistakes live here so we don't repeat them.

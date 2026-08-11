@@ -99,7 +99,7 @@ function rackMinimalFixture(overrides: Partial<RackMinimal> = {}): RackMinimal {
 }
 
 function createModuleDataServiceDouble(
-  userModulesList$: BehaviorSubject<DbModule[]>,
+  userModulesList$: BehaviorSubject<Pick<DbModule, 'id' | 'possessionKind'>[]>,
   setModulePossession$: Subject<UserModulePossessionKind | ModulePossessionDialogResult | null>
 ): ModuleDataServiceDouble {
   return jasmine.createSpyObj<ModuleDetailDataService>(
@@ -114,7 +114,7 @@ function createModuleDataServiceDouble(
 
 describe('ModuleMinimalComponent', () => {
   function build() {
-    const userModulesList$ = new BehaviorSubject<DbModule[]>([]);
+    const userModulesList$ = new BehaviorSubject<Pick<DbModule, 'id' | 'possessionKind'>[]>([]);
     const setModulePossession$ = new Subject<UserModulePossessionKind | ModulePossessionDialogResult | null>();
     const afterClosed$ = new Subject<PossessionDialogResult>();
     const dialogRef = jasmine.createSpyObj<MatDialogRef<ModulePossessionDialogComponent, PossessionDialogResult>>(

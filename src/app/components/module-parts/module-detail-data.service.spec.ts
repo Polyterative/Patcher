@@ -56,7 +56,7 @@ describe('ModuleDetailDataService', () => {
       hasAdminRole$: jasmine.Spy<() => Observable<boolean>>;
     };
     GET: {
-      currentUserModules: jasmine.Spy<(includePrivate?: boolean) => Observable<DbModule[]>>;
+      currentUserModulesPossessionOnly: jasmine.Spy<() => Observable<Pick<DbModule, 'id' | 'possessionKind'>[]>>;
       moduleWithId: jasmine.Spy<(id: number) => Observable<ModuleBackendResult>>;
       modulePriceListings: jasmine.Spy<ServiceConstructorArgs[3]['GET']['modulePriceListings']>;
       modulePriceHistorySnapshots: jasmine.Spy<ServiceConstructorArgs[3]['GET']['modulePriceHistorySnapshots']>;
@@ -253,7 +253,7 @@ describe('ModuleDetailDataService', () => {
         hasAdminRole$: jasmine.createSpy<() => Observable<boolean>>('hasAdminRole$').and.returnValue(adminRole$.asObservable())
       },
       GET: {
-        currentUserModules: jasmine.createSpy<(includePrivate?: boolean) => Observable<DbModule[]>>('currentUserModules').and.returnValue(of([ownedModule])),
+        currentUserModulesPossessionOnly: jasmine.createSpy<() => Observable<Pick<DbModule, 'id' | 'possessionKind'>[]>>('currentUserModulesPossessionOnly').and.returnValue(of([ownedModule])),
         moduleWithId: jasmine.createSpy<(id: number) => Observable<ModuleBackendResult>>('moduleWithId').and.callFake((id: number) => of({
           data: {...baseModule, id}
         })),
@@ -864,7 +864,7 @@ describe('ModuleDetailDataService', () => {
     service.updateSingleModuleData$.next(10);
     tick(260);
 
-    expect(backend.GET.currentUserModules).toHaveBeenCalledWith(false);
+    expect(backend.GET.currentUserModulesPossessionOnly).toHaveBeenCalledWith();
     expect(service.userModulesList$.value).toEqual([ownedModule]);
   }));
 
@@ -872,12 +872,12 @@ describe('ModuleDetailDataService', () => {
     const {service, backend, loggedUser$} = build();
     loggedUser$.next(undefined);
 
-    const callsBefore = backend.GET.currentUserModules.calls.count();
+    const callsBefore = backend.GET.currentUserModulesPossessionOnly.calls.count();
     service.updateSingleModuleData$.next(10);
     tick(260);
 
-    // With no user, the subscription uses of([]) — no extra call to currentUserModules
-    expect(backend.GET.currentUserModules.calls.count()).toBe(callsBefore);
+    // With no user, the subscription uses of([]) — no extra call to currentUserModulesPossessionOnly
+    expect(backend.GET.currentUserModulesPossessionOnly.calls.count()).toBe(callsBefore);
     expect(service.userModulesList$.value).toEqual([]);
   }));
 });
