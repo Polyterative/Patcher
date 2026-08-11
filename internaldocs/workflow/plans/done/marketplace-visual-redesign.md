@@ -86,6 +86,18 @@ Reference implementations to mirror: `module-browser-root` (hero + filter rail +
 | User area "My listings" + "Address book" | **was ungated** — fixed by wrapping in `@if (marketplaceEnabled)` in `user-area-root` | FIXED |
 | Module detail / possession dialog | only imports pure money-format utils, no UI | OK (no leak) |
 
+## Documentation impact
+
+- Classification: `public-visual`
+- Production visibility: feature-flagged `marketplaceEnabled` (`false` in `environment.prod.ts`, `true` in dev) —
+  the whole Marketplace vertical stays behind this flag pending other still-open Marketplace plans (transactions,
+  structured inquiry, messaging).
+- Public docs paths: `none` (Marketplace is not publicly documented while the production flag is off)
+- Screenshot targets: `none` (verification snapshots were captured ad hoc via `scripts/dev/agent-snapshot.mjs`
+  during review passes, not part of the tracked public docs screenshot pipeline)
+- Changelog summary: N/A until `marketplaceEnabled` ships in production; then the summary is "Marketplace browse,
+  detail, and My Listings/Address Book now match the app's standard shell, forms, and light card grammar."
+
 ## Decision log
 
 - 2026-07-19 — Plan created from screenshot-verified audit; root causes: missing shell allowlist entry + fully custom
