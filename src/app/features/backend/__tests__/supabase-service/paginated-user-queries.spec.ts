@@ -336,6 +336,26 @@ describe('SupabaseService - GET.publicUserRacksPaginated', () => {
       }
     });
   }, TEST_TIMEOUT);
+
+  it('should select only the explicit rack columns needed by RackMicro/RackList', (done) => {
+    const mock = chainable({data: [], count: 0, error: null});
+    const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+    service.GET.publicUserRacksPaginated('public-author', 0, 9).subscribe({
+      next: () => {
+        expect(selectSpy).toHaveBeenCalledWith(
+          `id,name,hp,rows,description,created,updated,authorid,public_id,image,author:authorid(username,id),${ publicAuthorGateAlias }:authorid!inner(public)`,
+          {count: 'exact'}
+        );
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
 });
 
 describe('SupabaseService - GET.racksMinimal', () => {

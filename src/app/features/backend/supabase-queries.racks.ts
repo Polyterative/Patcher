@@ -205,7 +205,10 @@ export class SupabaseRackQueries extends SupabaseQueriesBase {
 
     return rxFrom(
       this.supabase.from(DbPaths.racks)
-        .select(`*, ${ QueryJoins.author }, ${ publicAuthorGateJoin }`, {count: 'exact'})
+        .select(
+          `id,name,hp,rows,description,created,updated,authorid,public_id,image,${ QueryJoins.author },${ publicAuthorGateJoin }`,
+          {count: 'exact'}
+        )
         .filter('authorid', 'eq', authorId)
         .filter('public', 'eq', true)
         .filter(`${ PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
@@ -440,7 +443,10 @@ export class SupabaseRackQueries extends SupabaseQueriesBase {
     const publicAuthorGateJoin = QueryJoins.publicAuthorGate(PUBLIC_AUTHOR_GATE_ALIAS);
     return rxFrom(
       this.supabase.from(DbPaths.racks)
-        .select(`*, ${ QueryJoins.author }, ${ publicAuthorGateJoin }, rack_modules!inner(rackid,moduleid)`, { count: 'exact' })
+        .select(
+          `id,name,hp,rows,description,created,updated,authorid,public_id,image,${ QueryJoins.author },${ publicAuthorGateJoin },rack_modules!inner(rackid,moduleid)`,
+          { count: 'exact' }
+        )
         .filter('public', 'eq', true)
         .filter(`${ PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
         .filter('rack_modules.moduleid', 'eq', moduleid)

@@ -954,5 +954,25 @@ describe('SupabaseService - get complex queries', () => {
         }
       });
     }, TEST_TIMEOUT);
+
+    it('should select only the explicit rack columns needed by RackMicro/RackList', (done) => {
+      const mock = chainable({data: [], count: 0, error: null});
+      const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+      service.get.racksWithModule(99).subscribe({
+        next: () => {
+          expect(selectSpy).toHaveBeenCalledWith(
+            'id,name,hp,rows,description,created,updated,authorid,public_id,image,author:authorid(username,id),author_profile_gate:authorid!inner(public),rack_modules!inner(rackid,moduleid)',
+            { count: 'exact' }
+          );
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
   });
 });
