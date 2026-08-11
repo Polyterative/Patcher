@@ -3,7 +3,8 @@ import {
   from as rxFrom,
   Observable,
   of,
-  throwError
+  throwError,
+  zip
 } from 'rxjs';
 import {
   filter,
@@ -329,6 +330,19 @@ export class SupabaseApplicationStatisticsQueries extends SupabaseQueriesBase {
           .filter('public_patches.public', 'eq', true)
       )
     });
+  }
+
+
+
+  @Cacheable({
+    maxAge: defaultCacheTime,
+  })
+  getStatistics(): Observable<[number, number, number]> {
+    return zip(
+      this.countRows(DbPaths.modules, query => query.select('id', {count: 'exact'})),
+      this.countRows(DbPaths.racks, query => query.select('id', {count: 'exact'})),
+      this.countRows(DbPaths.patches, query => query.select('id', {count: 'exact'}))
+    );
   }
 
 

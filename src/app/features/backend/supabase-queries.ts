@@ -141,6 +141,7 @@ export interface SupabaseQueriesService
     SupabaseApplicationStatisticsQueries,
     'getApplicationStatistics'
       | 'getApplicationActivitySeries'
+      | 'getStatistics'
   >,
   Pick<
     SupabaseApplicationInsightsQueries,

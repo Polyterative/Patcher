@@ -1,8 +1,7 @@
 import {
   from as rxFrom,
   Observable,
-  of,
-  zip
+  of
 } from 'rxjs';
 import {
   map,
@@ -21,7 +20,6 @@ import { remapErrors } from './supabase.cache';
 import { SimpleUserModel } from './supabase.types';
 import { SupabaseQueriesService } from './supabase-queries';
 import {
-  responseCount,
   responseData,
   responseList,
   type SupabaseFunctionReturns,
@@ -204,25 +202,6 @@ export function createGetNamespace(
       remapErrors(),
       map(x => responseList(x as SupabaseSingleResponse<AdminFlagRow[]>))
     ),
-    statistics: () => zip(
-      rxFrom(
-        supabase.from(DbPaths.modules)
-          .select('id', {count: 'exact'})
-      )
-        .pipe(remapErrors())
-        .pipe(map(x => responseCount(x as SupabaseSingleResponse<{id: number}[]>))),
-      rxFrom(
-        supabase.from(DbPaths.racks)
-          .select('id', {count: 'exact'})
-      )
-        .pipe(remapErrors())
-        .pipe(map(x => responseCount(x as SupabaseSingleResponse<{id: number}[]>))),
-      rxFrom(
-        supabase.from(DbPaths.patches)
-          .select('id', {count: 'exact'})
-      )
-        .pipe(remapErrors())
-        .pipe(map(x => responseCount(x as SupabaseSingleResponse<{id: number}[]>)))
-    )
+    statistics: () => queries.getStatistics()
   };
 }
