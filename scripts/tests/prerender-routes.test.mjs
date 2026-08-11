@@ -82,6 +82,10 @@ test('adds capped public entity routes using canonical paths where available', a
   assert.equal(calls.length, 6);
   assert.ok(calls.every(url => url.includes('limit=2')));
   assert.ok(calls.filter(url => url.includes('public=eq.true')).length >= 5);
+  const manufacturersCall = calls.find(url => url.includes('/rest/v1/manufacturers?'));
+  assert.ok(manufacturersCall);
+  assert.ok(!manufacturersCall.includes('public=eq.true'));
+  assert.ok(!manufacturersCall.includes('updated'));
   assert.ok(calls.some(url => (
     url.includes('/rest/v1/racks?')
     && url.includes('author_profile_gate%3Aauthorid%21inner%28public%29')

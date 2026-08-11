@@ -145,6 +145,10 @@ test('returns dynamic sitemap XML with static and entity routes in production', 
   assert.match(state.body, /<lastmod>2026-02-20T10:00:00\.000Z<\/lastmod>/);
   assert.equal(calls.length, 4);
   assert.ok(calls.every((url) => url.includes('public=eq.true') || url.includes('/rest/v1/manufacturers')));
+  const manufacturersCall = calls.find((url) => url.includes('/rest/v1/manufacturers?'));
+  assert.ok(manufacturersCall);
+  assert.ok(!manufacturersCall.includes('public=eq.true'));
+  assert.ok(!manufacturersCall.includes('updated'));
 });
 
 test('returns noindex + production-origin URLs for preview deployments', async () => {
