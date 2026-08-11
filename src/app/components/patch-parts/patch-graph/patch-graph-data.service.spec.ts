@@ -2,8 +2,8 @@ import { of } from 'rxjs';
 import { PatchGraphApiService } from 'src/app/features/backend/patch-graph-api.service';
 import { PatchConnection } from 'src/app/models/connection';
 import { CVwithModule } from 'src/app/models/cv';
-import { DbModule } from 'src/app/models/module';
 import { Patch } from 'src/app/models/patch';
+import { PatchGraphModule } from './patch-graph-build.models';
 import { PatchGraphDataService } from './patch-graph-data.service';
 
 function makeCV(id: number, moduleId: number): CVwithModule {
@@ -42,8 +42,8 @@ function makeConnection(
   };
 }
 
-function makeModule(id: number): DbModule {
-  return {id, name: `Module ${ id }`} as DbModule;
+function makeModule(id: number): PatchGraphModule {
+  return {id, name: `Module ${ id }`, ins: [], outs: []};
 }
 
 describe('PatchGraphDataService', () => {
@@ -51,12 +51,12 @@ describe('PatchGraphDataService', () => {
   let service: PatchGraphDataService;
 
   beforeEach(() => {
-    api = jasmine.createSpyObj<PatchGraphApiService>('PatchGraphApiService', ['moduleWithId']);
-    api.moduleWithId.and.callFake((id: number) => of(makeModule(id)));
+    api = jasmine.createSpyObj<PatchGraphApiService>('PatchGraphApiService', ['modulesByIds']);
+    api.modulesByIds.and.callFake((ids: number[]) => of(ids.map(id => makeModule(id))));
     service = new PatchGraphDataService(api);
   });
 
-  it('hydrates each unique module id used by the patch graph once', (done) => {
+  it('dedupes unique module ids and calls the batch method once', (done) => {
     const connections = [
       makeConnection(10, 20),
       makeConnection(10, 30),
@@ -64,14 +64,26 @@ describe('PatchGraphDataService', () => {
     ];
 
     service.modulesForConnections(connections).subscribe(modules => {
-      expect(api.moduleWithId.calls.allArgs()).toEqual([[10], [20], [30]]);
+      expect(api.modulesByIds).toHaveBeenCalledOnceWith([10, 20, 30]);
       expect(modules.map(module => module.id)).toEqual([10, 20, 30]);
       done();
     });
   });
 
-  it('filters missing module rows before graph construction', (done) => {
-    api.moduleWithId.and.callFake((id: number) => of(id === 20 ? null : makeModule(id)));
+  it('returns whatever the batch call resolves to', (done) => {
+    const batchResult = [makeModule(10), makeModule(20)];
+    api.modulesByIds.and.returnValue(of(batchResult));
+
+    service.modulesForConnections([makeConnection(10, 20)]).subscribe(modules => {
+      expect(modules).toBe(batchResult);
+      done();
+    });
+  });
+
+  it('passes through a batch result that omits a missing/deleted module id', (done) => {
+    api.modulesByIds.and.callFake((ids: number[]) => of(
+      ids.filter(id => id !== 20).map(id => makeModule(id))
+    ));
 
     service.modulesForConnections([makeConnection(10, 20)]).subscribe(modules => {
       expect(modules.map(module => module.id)).toEqual([10]);

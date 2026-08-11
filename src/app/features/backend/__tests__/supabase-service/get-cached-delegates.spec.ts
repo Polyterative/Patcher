@@ -9,6 +9,9 @@ import {
 } from 'rxjs';
 import { SupabaseService } from '../../supabase.service';
 import type { SupabaseTableRow } from '../../supabase-db.types';
+import type {
+  PatchGraphModule
+} from 'src/app/components/patch-parts/patch-graph/patch-graph-build.models';
 import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest,
@@ -303,6 +306,65 @@ describe('SupabaseService - GET cached delegates', () => {
     }, TEST_TIMEOUT);
   });
   
+  describe('GET.modulesByIdsForPatchGraph', () => {
+    it('should batch-select minimal id/name columns via .in instead of per-id .eq', (done) => {
+      const mockData: PatchGraphModule[] = [
+        {id: 5, name: 'Maths', ins: [{id: 1, name: 'CV In'}], outs: [{id: 2, name: 'CV Out'}]},
+        {id: 8, name: 'Ripples', ins: [], outs: []}
+      ];
+      const mock: SupabaseQueryChain<PatchGraphModule> = chainable<PatchGraphModule>(
+        {data: mockData, error: null} satisfies QueryListRowsResult<PatchGraphModule>
+      );
+      const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
+      const inSpy = spyOn(mock, 'in').and.returnValue(mock);
+      const eqSpy = spyOn(mock, 'eq').and.returnValue(mock);
+      const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+      service.GET.modulesByIdsForPatchGraph([5, 5, 8]).subscribe({
+        next: (result: QueryListRowsResult<PatchGraphModule>) => {
+          expect(selectSpy).toHaveBeenCalledWith(
+            jasmine.stringContaining('id,name')
+          );
+          expect(selectSpy).toHaveBeenCalledWith(
+            jasmine.stringContaining('ins:module_ins(id,name)')
+          );
+          expect(selectSpy).toHaveBeenCalledWith(
+            jasmine.stringContaining('outs:module_outs(id,name)')
+          );
+          expect(selectSpy).not.toHaveBeenCalledWith(
+            jasmine.stringContaining('ins:module_ins(*)')
+          );
+          expect(inSpy).toHaveBeenCalledWith('id', [5, 8]);
+          expect(eqSpy).not.toHaveBeenCalled();
+          expect(filterSpy).not.toHaveBeenCalledWith('id', 'eq', jasmine.anything());
+          expect(result.data).toEqual(mockData);
+          done();
+        },
+        error: (err: unknown) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('does not query Supabase for an empty id list', (done) => {
+      const fromSpy = spyOn(supabaseClient, 'from');
+
+      service.GET.modulesByIdsForPatchGraph([]).subscribe({
+        next: (result: {data: PatchGraphModule[] | null; error: unknown}) => {
+          expect(fromSpy).not.toHaveBeenCalled();
+          expect(result.data).toEqual([]);
+          done();
+        },
+        error: (err: unknown) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+  });
+
   describe('GET.patches', () => {
     it('should return patches list on default call', (done) => {
       const mockPatches = {data: [{id: 1, name: 'Ambient 1'}], count: 1, error: null} satisfies QueryCountRowsResult<PatchIdRow>;

@@ -153,6 +153,40 @@ concern, not an egress concern: a join that is never queried costs nothing.
 
 ---
 
+## Batching Per-Item Backend Fetches
+
+When a component or service needs to hydrate `N` related entities by id, prefer
+one batch query (`.in('id', ids)`) over `N` sequential or parallel per-id calls
+such as `forkJoin(ids.map(id => fetchOne(id)))`. This matters especially when
+`N` can be non-trivial, such as patches with many referenced modules, and each
+per-id call already goes through a cached method that may select more columns
+than this consumer needs.
+
+If an existing per-id method has other consumers with different column needs,
+add an additively scoped batch method instead of changing the existing method.
+For example, `getModuleWithId()` continues serving module-detail and rack-detail
+consumers unchanged, while `getModulesByIdsForPatchGraph()` exists only for the
+patch graph's narrower needs.
+
+Before batching, verify that the consumer does not depend on the response array
+being in request order. Postgres/PostgREST does not guarantee that an `IN (...)`
+query returns rows in the order of the id list. If the consumer first builds a
+lookup keyed by id, such as a `Map<number, Module>`, order is irrelevant and no
+client-side sorting is needed. Otherwise, either re-sort by the original id list
+after the query or keep the per-id fan-out.
+
+Reuse an existing cache-buster tag when the batch method reads the same
+underlying table or rows already covered by the per-id method's tag. Do not
+introduce a redundant `CachedEntity` tag for the same data.
+
+The patch-graph hydration change is the worked example: `patch-graph-data.service.ts`
+and `patch-graph-api.service.ts` now use `getModulesByIdsForPatchGraph()` for one
+batch fetch, with a narrowed result shape matching what the graph renders. The
+consumer converts the hydrated modules to an id-keyed map before use, so batch
+response order cannot change graph behavior.
+
+---
+
 ## Schema-change preflight (READ BEFORE WRITING SQL)
 
 Before touching `supabase/migrations/`, RPCs, columns, indexes, or policies — even via the Supabase MCP — walk through this list. Past mistakes live here so we don't repeat them.

@@ -1,6 +1,5 @@
 import { PatchConnection } from 'src/app/models/connection';
 import { CVwithModule } from 'src/app/models/cv';
-import { DbModule } from 'src/app/models/module';
 import {
   GraphEdge,
   GraphNode
@@ -15,7 +14,8 @@ import {
   ModuleInstance,
   PatchGraphBuildPalette,
   PatchGraphBuildParams,
-  PatchGraphBuildResult
+  PatchGraphBuildResult,
+  PatchGraphModule
 } from './patch-graph-build.models';
 
 export type {
@@ -95,7 +95,7 @@ export function buildPatchGraphData(params: PatchGraphBuildParams): PatchGraphBu
   } = {};
   
   // Fast module lookup lets connection passes avoid repeated linear scans.
-  const moduleLookup = new Map<number, DbModule>(modules.map(module => [module.id, module]));
+  const moduleLookup = new Map<number, PatchGraphModule>(modules.map(module => [module.id, module]));
   
   // Instance grouping guarantees duplicate modules get stable "(n)" labels and distinct IDs.
   const instances = extractPatchGraphModuleInstances(connections);

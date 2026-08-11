@@ -1,5 +1,4 @@
 import { PatchConnection } from 'src/app/models/connection';
-import { DbModule } from 'src/app/models/module';
 import {
   GraphEdge,
   GraphNode
@@ -8,6 +7,18 @@ import {
 export interface ModuleInstance {
   moduleId: number;
   instanceId: number | undefined;
+}
+
+export interface PatchGraphJack {
+  id: number;
+  name: string;
+}
+
+export interface PatchGraphModule {
+  id: number;
+  name: string;
+  ins: PatchGraphJack[];
+  outs: PatchGraphJack[];
 }
 
 export interface PatchGraphBuildPalette {
@@ -20,7 +31,7 @@ export interface PatchGraphBuildPalette {
 
 export interface PatchGraphBuildParams {
   connections: PatchConnection[];
-  modules: DbModule[];
+  modules: PatchGraphModule[];
   sizeConstant: number;
   palette: PatchGraphBuildPalette;
 }

@@ -138,5 +138,8 @@ export class QueryJoins {
 
   // Module Inputs and Outputs
   static insOuts: string = `ins:${ DbPaths.moduleINs }(*), outs:${ DbPaths.moduleOUTs }(*)`;
-  
+
+  // Ins/Outs (id + name only — patch graph rendering doesn't need CV metadata)
+  static insOutsMinimal: string = `ins:${ DbPaths.moduleINs }(id,name), outs:${ DbPaths.moduleOUTs }(id,name)`;
+
 }

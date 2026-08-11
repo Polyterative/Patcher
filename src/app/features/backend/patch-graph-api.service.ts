@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { DbModule } from 'src/app/models/module';
+import { PatchGraphModule } from 'src/app/components/patch-parts/patch-graph/patch-graph-build.models';
 import { SupabaseService } from './supabase.service';
 
-interface ModuleWithIdResponse {
-  data: DbModule | null;
+interface ModulesByIdsForPatchGraphResponse {
+  data: PatchGraphModule[] | null;
   error?: unknown;
 }
 
@@ -15,15 +15,16 @@ export class PatchGraphApiService {
     private readonly backend: SupabaseService
   ) {}
 
-  moduleWithId(moduleId: number): Observable<DbModule | null> {
-    return this.backend.GET.moduleWithId(moduleId).pipe(
-      map((response: ModuleWithIdResponse) => {
+  modulesByIds(moduleIds: number[]): Observable<PatchGraphModule[]> {
+    return this.backend.GET.modulesByIdsForPatchGraph(moduleIds).pipe(
+      map((response: ModulesByIdsForPatchGraphResponse) => {
         if (response.error) {
           throw response.error;
         }
 
-        return response.data;
+        return response.data ?? [];
       })
     );
   }
 }
+
