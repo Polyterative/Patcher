@@ -27,7 +27,7 @@ export const LISTING_MEDIA_COLUMNS =
   'id,listing_id,kind,url,storage_path,position,mime_type,created_at';
 export const MARKETPLACE_LISTING_WITH_RELATIONS_COLUMNS = `${ MARKETPLACE_LISTING_COLUMNS },
   media:listing_media!listing_media_listing_id_fkey(${ LISTING_MEDIA_COLUMNS }),
-  module:modules!marketplace_listings_moduleid_fkey(id,name,hp,public,manufacturer:manufacturerId(id,name,logo),standard:standards!modules_standard_fkey(id,name),panels:module_panels!module_panels_moduleid_fkey(*)),
+  module:modules!marketplace_listings_moduleid_fkey(id,name,hp,public,manufacturer:manufacturerId(id,name,logo),standard:standards!modules_standard_fkey(id,name),panels:module_panels!module_panels_moduleid_fkey(id,moduleid,color,description,filename)),
   seller:profiles!marketplace_listings_seller_profileid_fkey(id,username,public,avatar_url,website)`;
 
 export type MarketplaceListingRow = SupabaseTableRow<'marketplace_listings'> & {
