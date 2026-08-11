@@ -3,6 +3,7 @@ import {
   forkJoin,
   from as rxFrom,
   Observable,
+  of,
   throwError
 } from 'rxjs';
 import {
@@ -67,6 +68,10 @@ export function createStorageNamespace(
   snackBar: MatSnackBar,
   getUserSession$: () => Observable<SimpleUserModel | null>
 ) {
+  // Scoped per-instance (not module-level) so it is naturally torn down and re-created
+  // alongside each SupabaseService instance, keeping per-test isolation in storage.spec.ts.
+  const signedUrlCache = new Map<string, {url: string; expiresAt: number}>();
+
   const ns = {
     publicUrlBases: {
       manufacturerLogos: StorageUrls.manufacturerLogos,
@@ -215,6 +220,21 @@ export function createStorageNamespace(
         return throwError(() => new Error('Listing image path is required'));
       }
 
+      const cacheKey = `${ normalizedPath }:${ expiresInSeconds }`;
+      const cached = signedUrlCache.get(cacheKey);
+      if (cached) {
+        if (cached.expiresAt > Date.now()) {
+          return of(cached.url);
+        }
+        // Opportunistic eviction: drop the stale entry now that we know it's expired,
+        // so long browser sessions don't accumulate dead entries indefinitely.
+        signedUrlCache.delete(cacheKey);
+      }
+
+      // Captured before the request fires so the memoized TTL is measured from when
+      // Supabase actually starts the signed URL's validity, not from response-receipt time.
+      const requestedAt = Date.now();
+
       return rxFrom(
         supabase.storage
           .from(DbStoragePaths.marketplace_listings)
@@ -226,6 +246,13 @@ export function createStorageNamespace(
           if (!signedUrl) {
             throw new Error('Listing image signed URL missing');
           }
+
+          // Margin keeps the memoized URL safely inside its real signed-URL validity
+          // window; clamped to at most half the requested duration so short-lived
+          // signed URLs never get a negative/zero effective TTL.
+          const marginSeconds = Math.min(60, expiresInSeconds / 2);
+          const ttlMs = (expiresInSeconds - marginSeconds) * 1000;
+          signedUrlCache.set(cacheKey, {url: signedUrl, expiresAt: requestedAt + ttlMs});
 
           return signedUrl;
         })

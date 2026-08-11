@@ -52,6 +52,22 @@ Every `CachedEntity` key, its producer(s), and which write operations bust it:
 
 ---
 
+## Scoped Signed-URL Memoization
+
+`createMarketplaceListingImageSignedUrl` in `supabase-storage.ts` memoizes signed URL strings by
+`storagePath:expiresInSeconds`. This uses a factory-closure `Map`, rather than `@Cacheable`, because
+the function is not a class method and therefore cannot use the decorator.
+
+Entries use a TTL slightly shorter than the requested signed-URL expiry: the margin is
+`min(60 seconds, expiresInSeconds / 2)`, measured from request time rather than response time.
+This ensures a cached URL is not returned after its real validity window, including time spent
+waiting for the signing request. Expired entries are evicted on lookup, and errors are never cached.
+
+The cache is scoped to each `SupabaseService` instance, not globally or at module level. This bounds
+its browser-session lifetime and keeps test isolation clean.
+
+---
+
 ## Uncached Reads (intentional)
 
 These methods in `supabase-get.ts` do NOT use `@Cacheable`. They load fresh data on every call.
