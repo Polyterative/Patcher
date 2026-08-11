@@ -42,7 +42,7 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
   //
   readonly moduleEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
   readonly moduleEditorHasPendingChanges$ = new BehaviorSubject<boolean>(false);
-  readonly userModulesList$: BehaviorSubject<DbModule[]> = new BehaviorSubject<DbModule[]>([]);
+  readonly userModulesList$: BehaviorSubject<Pick<DbModule, 'id' | 'possessionKind'>[]> = new BehaviorSubject<Pick<DbModule, 'id' | 'possessionKind'>[]>([]);
   readonly addModuleToCollection$ = new Subject<number>();
   readonly requestAddModuleToRack$ = new Subject<DbModule>();
   readonly removeModuleFromCollection$ = new Subject<number>();
@@ -132,7 +132,7 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
     merge(this.userService.loggedUser$, this.updateSingleModuleData$)
       .pipe(
         switchMap(x => this.userService.loggedUser$),
-        switchMap(x => !!x ? this.backend.GET.currentUserModules(false) : of([])),
+        switchMap(x => !!x ? this.backend.GET.currentUserModulesPossessionOnly() : of([])),
         this.takeUntilDestroyed()
       )
       .subscribe(x => {

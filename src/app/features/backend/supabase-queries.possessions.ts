@@ -103,6 +103,11 @@ interface CurrentUserModulePossessionRow {
   kind: unknown;
 }
 
+interface CurrentUserModulePossessionOnlyRow {
+  module: Pick<MinimalModule, 'id'>;
+  kind: unknown;
+}
+
 import {
   ManufacturerModuleStats,
   ModuleActivityRow,
@@ -119,7 +124,7 @@ import {
   ModuleCollectionPage,
   ModuleCollectionSummary
 } from 'src/app/models/module-collection';
-import { MinimalModule } from 'src/app/models/module';
+import { DbModule, MinimalModule, UserModulePossessionKind } from 'src/app/models/module';
 import { UserModuleAcquisition } from 'src/app/models/user-module-acquisition';
 import { Tag } from 'src/app/models/tag';
 import {
@@ -244,6 +249,31 @@ export class SupabasePossessionQueries extends SupabaseQueriesBase {
           })))
         );
       }),
+    );
+  }
+
+
+
+  @Cacheable({
+    maxAge: defaultCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('currentUserModules'))),
+    maxCacheCount: 50
+  })
+  getCurrentUserModulesPossessionOnly(): Observable<Pick<DbModule, 'id' | 'possessionKind'>[]> {
+    return this.getUserSession$().pipe(
+      switchMap(user =>
+        rxFrom(
+          this.supabase.from(DbPaths.user_modules)
+            .select(`kind,module:modules!user_modules_moduleid_fkey(id)`)
+            .filter('profileid', 'eq', user.id)
+        ).pipe(
+          remapErrors(),
+          map((x: { data: CurrentUserModulePossessionOnlyRow[] | null }) => (x.data ?? []).map(y => ({
+            id: y.module.id,
+            possessionKind: y.kind as UserModulePossessionKind
+          })))
+        )
+      )
     );
   }
 

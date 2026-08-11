@@ -176,6 +176,7 @@ export interface SupabaseQueriesService
   Pick<
     SupabasePossessionQueries,
     'getCurrentUserModules'
+      | 'getCurrentUserModulesPossessionOnly'
       | 'getMyVotes'
       | 'getModulePossessionCounts'
       | 'getUserModuleAcquisitionsForModule'

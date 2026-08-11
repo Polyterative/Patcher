@@ -8,6 +8,7 @@ import {
   firstValueFrom
 } from 'rxjs';
 import { SupabaseService } from '../../supabase.service';
+import { cacheBuster$ } from '../../supabase.cache';
 import type { SupabaseTableRow } from '../../supabase-db.types';
 import type {
   PatchGraphModule
@@ -55,6 +56,16 @@ type CurrentUserModulePossessionRow = {
 };
 type CurrentUserModuleResultRow = CurrentUserModuleSummaryRow & {
   collectionUpdated: string | null;
+  possessionKind: UserModulePossessionKind;
+};
+type CurrentUserModulePossessionOnlyRow = {
+  kind: UserModulePossessionKind;
+  module: {
+    id: number;
+  };
+};
+type CurrentUserModulePossessionOnlyResultRow = {
+  id: number;
   possessionKind: UserModulePossessionKind;
 };
 type CurrentUserCommentRow = Pick<SupabaseTableRow<'comments'>, 'content' | 'id'>;
@@ -579,6 +590,72 @@ describe('SupabaseService - GET cached delegates', () => {
         }
       });
     }, TEST_TIMEOUT);
+  });
+  
+  describe('GET.currentUserModulesPossessionOnly', () => {
+    it('should select only kind and module id, filtered by profileid', (done) => {
+      const user = authUserFixture('u1');
+      mockUserSession(service, user);
+
+      const mock: SupabaseQueryChain<CurrentUserModulePossessionOnlyRow> = chainable<CurrentUserModulePossessionOnlyRow>({
+        data: [
+          {kind: 'HAS', module: {id: 1}},
+          {kind: 'WANTS', module: {id: 2}}
+        ],
+        error: null
+      } satisfies QueryListRowsResult<CurrentUserModulePossessionOnlyRow>);
+      const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
+      const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+      service.GET.currentUserModulesPossessionOnly().subscribe({
+        next: (result: CurrentUserModulePossessionOnlyResultRow[]) => {
+          expect(selectSpy).toHaveBeenCalledWith('kind,module:modules!user_modules_moduleid_fkey(id)');
+          expect(filterSpy).toHaveBeenCalledWith('profileid', 'eq', user.id);
+          expect(result).toEqual([
+            {id: 1, possessionKind: 'HAS'},
+            {id: 2, possessionKind: 'WANTS'}
+          ]);
+          done();
+        },
+        error: (err: unknown) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('caches repeated calls and busts via the shared currentUserModules cache-buster tag', async () => {
+      const user = authUserFixture('u2');
+      mockUserSession(service, user);
+
+      const fromSpy = spyOn(supabaseClient, 'from').and.returnValue(
+        chainable<CurrentUserModulePossessionOnlyRow>({
+          data: [{kind: 'HAS', module: {id: 1}}],
+          error: null
+        } satisfies QueryListRowsResult<CurrentUserModulePossessionOnlyRow>)
+      );
+
+      await firstValueFrom(service.GET.currentUserModulesPossessionOnly());
+      await firstValueFrom(service.GET.currentUserModulesPossessionOnly());
+      expect(fromSpy).toHaveBeenCalledTimes(1);
+
+      cacheBuster$.next(['currentUserModules']);
+
+      await firstValueFrom(service.GET.currentUserModulesPossessionOnly());
+      expect(fromSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it('returns an empty array for successful empty responses', async () => {
+      mockUserSession(service, authUserFixture('current-user-modules-possession-only-empty'));
+      spyOn(supabaseClient, 'from').and.returnValue(
+        chainable<CurrentUserModulePossessionOnlyRow>({data: [], error: null} satisfies QueryListRowsResult<CurrentUserModulePossessionOnlyRow>)
+      );
+
+      await expectAsync(firstValueFrom(
+        service.GET.currentUserModulesPossessionOnly()
+      )).toBeResolvedTo([]);
+    });
   });
   
   describe('GET.currentUserComments', () => {

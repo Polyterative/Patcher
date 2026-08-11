@@ -24,7 +24,7 @@ import { getModuleSparsePriceHistorySummary } from '../../features/backend/modul
 import { ModulePossessionDialogResult } from './module-possession-dialog/module-possession-dialog.component';
 
 export function getCurrentModulePossession(
-  list: DbModule[],
+  list: Pick<DbModule, 'id' | 'possessionKind'>[],
   module: DbModule | null | undefined
 ): UserModulePossessionKind | null {
   if (!module) return null;
@@ -33,7 +33,7 @@ export function getCurrentModulePossession(
 }
 
 export function createCurrentModulePossession$(
-  list$: Observable<DbModule[]>,
+  list$: Observable<Pick<DbModule, 'id' | 'possessionKind'>[]>,
   module$: Observable<DbModule | null | undefined>
 ): Observable<UserModulePossessionKind | null> {
   return combineLatest([list$, module$]).pipe(
