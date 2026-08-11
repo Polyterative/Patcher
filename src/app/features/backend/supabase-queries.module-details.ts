@@ -116,6 +116,9 @@ import { MinimalModule } from 'src/app/models/module';
 import { UserModuleAcquisition } from 'src/app/models/user-module-acquisition';
 import { Tag } from 'src/app/models/tag';
 import {
+  PatchGraphModule
+} from 'src/app/components/patch-parts/patch-graph/patch-graph-build.models';
+import {
   applyClientSideSearchFilter,
   escapeIlikePattern,
   getHpBandLabel,
@@ -188,6 +191,29 @@ export class SupabaseModuleDetailQueries extends SupabaseQueriesBase {
       .pipe(
         remapErrors()
       );
+  }
+
+
+
+  @Cacheable({
+    maxAge: defaultCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('moduleWithId'))),
+    maxCacheCount: 50
+  })
+  getModulesByIdsForPatchGraph(moduleIds: number[]): Observable<{ data: PatchGraphModule[] | null; error: unknown }> {
+    const uniqueModuleIds = [...new Set(moduleIds)].filter(id => Number.isFinite(id));
+
+    if (uniqueModuleIds.length === 0) {
+      return of({data: [], error: null});
+    }
+
+    return rxFrom(
+      this.supabase.from(DbPaths.modules)
+        .select(`id,name,${ QueryJoins.insOutsMinimal }`)
+        .in('id', uniqueModuleIds)
+    ).pipe(
+      remapErrors()
+    );
   }
 
 

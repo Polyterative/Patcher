@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
-import { forkJoin, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 import { PatchGraphApiService } from 'src/app/features/backend/patch-graph-api.service';
 import { PatchConnection } from 'src/app/models/connection';
-import { DbModule } from 'src/app/models/module';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
+import { PatchGraphModule } from './patch-graph-build.models';
 import { extractPatchGraphModuleInstances } from './patch-graph-build.utils';
 
 @Injectable()
@@ -15,15 +14,11 @@ export class PatchGraphDataService extends SubManager {
     super();
   }
 
-  modulesForConnections(connections: PatchConnection[]): Observable<DbModule[]> {
+  modulesForConnections(connections: PatchConnection[]): Observable<PatchGraphModule[]> {
     const uniqueModuleIds = [...new Set(
       extractPatchGraphModuleInstances(connections).map(instance => instance.moduleId)
     )];
 
-    return forkJoin(
-      uniqueModuleIds.map(moduleId => this.patchGraphApi.moduleWithId(moduleId))
-    ).pipe(
-      map(modules => modules.filter((module): module is DbModule => Boolean(module)))
-    );
+    return this.patchGraphApi.modulesByIds(uniqueModuleIds);
   }
 }

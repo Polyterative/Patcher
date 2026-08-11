@@ -102,6 +102,7 @@ export interface SupabaseQueriesService
       | 'getTags'
       | 'getModulesBySameManufacturer'
       | 'getAllTagsCached'
+      | 'getModulesByIdsForPatchGraph'
   >,
   Pick<
     SupabaseRackQueries,
