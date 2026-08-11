@@ -466,7 +466,7 @@ describe('SupabaseService - update extended', () => {
       mockUserSession(service, AUTH_USER);
     });
 
-    it('should upsert existing modules (with defined id)', (done) => {
+    it('upserts existing modules without re-selecting them (avoids re-downloading the whole rack)', (done) => {
       const mock = queryChain<RackModuleRow>();
       const upsertSpy = upsertSpyFor<RackModuleRow, RackModuleUpsertWrite[]>(mock);
       const selectSpy = selectSpyFor(mock);
@@ -486,6 +486,35 @@ describe('SupabaseService - update extended', () => {
             row: 0,
             selected_panel_id: null
           }]);
+          // A pure reorder/move batch (no new modules) never reads the upserted rows back —
+          // asserting no `.select()` locks in that this egress-saving optimization stays in place.
+          expect(selectSpy).not.toHaveBeenCalled();
+          done();
+        },
+        error: (err: unknown) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('selects new modules but not the upserted existing ones in a mixed batch', (done) => {
+      const mock = queryChain<RackModuleRow>();
+      const upsertSpy = upsertSpyFor<RackModuleRow, RackModuleUpsertWrite[]>(mock);
+      const insertSpy = insertSpyFor<RackModuleRow, RackModuleInsertWrite[]>(mock);
+      const selectSpy = selectSpyFor(mock);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+      const data: RackedModule[] = [
+        rackedModuleFixture({column: 0, id: 1, moduleid: 10, rackid: 5, row: 0}),
+        rackedModuleFixture({column: 1, moduleid: 11, rackid: 5, row: 0})
+      ];
+
+      service.update.rackedModules(data).subscribe({
+        next: () => {
+          expect(upsertSpy).toHaveBeenCalledTimes(1);
+          expect(insertSpy).toHaveBeenCalledTimes(1);
+          expect(selectSpy).toHaveBeenCalledTimes(1);
           expect(selectSpy).toHaveBeenCalledWith(SELECT_RACK_MODULE_COLUMNS);
           done();
         },

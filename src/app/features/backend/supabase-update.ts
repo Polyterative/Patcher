@@ -121,9 +121,13 @@ export function createUpdateNamespace(
             row: rackedModule.rackingData.row, column: rackedModule.rackingData.column,
             selected_panel_id: rackedModule.rackingData.selectedPanelId ?? null
           }));
+        // No `.select()` here: the upserted rows are only consumed when this batch also
+        // inserts brand-new racked modules (see `insertNew$` below), in which case the
+        // insert's own `.select()` supplies the ids callers need. For pure reorder/move
+        // batches (the common case — drag, remix, shuffle, row move), nothing reads this
+        // response, so skipping `.select()` avoids re-downloading every module in the rack.
         return rxFrom(
           supabase.from(DbPaths.rack_modules).upsert(toSimplyUpdate)
-            .select('id,moduleid,rackid,row,column,selected_panel_id,orientation')
         ).pipe(
           switchMap(x => {
             const newRackedModules = data
@@ -134,13 +138,19 @@ export function createUpdateNamespace(
                 selected_panel_id: rackedModule.rackingData.selectedPanelId ?? null,
                 orientation: normalizeRackModuleOrientation(rackedModule.rackingData.orientation)
               }));
-            
-            const insertNew$ = rxFrom(
+
+            // Only issue the insert (and its select) when there is actually something new to
+            // insert — building `supabase.from(...).insert([]).select(...)` unconditionally
+            // would fire an extra, pointless network round trip on every pure reorder batch.
+            if (newRackedModules.length === 0) {
+              return of(x);
+            }
+
+            return rxFrom(
               supabase.from(DbPaths.rack_modules)
                 .insert(newRackedModules)
                 .select('id,moduleid,rackid,row,column,selected_panel_id,orientation')
             );
-            return newRackedModules.length > 0 ? insertNew$ : of(x);
           }),
           remapErrors()
         );

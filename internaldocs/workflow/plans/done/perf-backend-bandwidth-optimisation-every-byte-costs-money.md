@@ -56,3 +56,15 @@ changing any user-visible behaviour.
 
 - 2026-06-14T20:18+02:00 — Closed the remaining production compression check with live
   Vercel/Supabase headers. No code changes were needed; archived the plan as complete.
+- 11-08-2026 — Follow-up egress audit found one write-path over-fetch this plan's read-only
+  scan didn't cover: `update.rackedModules()` (`supabase-update.ts`) always re-`.select()`ed
+  every upserted racked-module row, even though the response is only consumed when the same
+  batch also inserts brand-new modules. Every pure reorder (drag, remix, shuffle, row move —
+  the common case, no new modules) re-downloaded the entire rack's module rows for nothing.
+  Fixed to skip `.select()` on the upsert when there's nothing to read it; the insert leg
+  (which callers do need, for id assignment) is unchanged. Also fixed a related bug found
+  while touching this code: the insert query was built (and its network call fired)
+  unconditionally even with an empty `newRackedModules` array, wasting a round trip on every
+  pure-reorder batch — now only constructed when there's something to insert. Verified via
+  `supabase-service`/`rack-detail-data.service`/`rack-parts` suites (1500+ specs) with no
+  regressions; two new regression tests lock in the no-new-modules and mixed-batch cases.
