@@ -71,6 +71,16 @@ export class QueryJoins {
   // Patch
   static patch: string = 'patch:patches!patch_connections_patchid_fkey(id)';
 
+  // Patch connection CV columns (rendered fields only — patch-graph/patch-minimal/
+  // patch-browser-detail only read the CV id and jack name; min/max/isVOCT/isDCC/
+  // isAudio/authorid belong to the module-detail CV editing view, not connections).
+  static patchConnectionCv: string = 'id,name';
+
+  // Patch connection module columns (rendered fields only — patch-graph re-fetches
+  // full module data separately via modulesByIds; patch-minimal/patch-browser-detail
+  // only read module id/name/manufacturer name from the connection join itself).
+  static patchConnectionModule: string = 'id,name,manufacturer:manufacturerId(name)';
+
   // Author
   static author: string = 'author:authorid(username,id)';
   static publicAuthorGate(alias = 'author_profile_gate'): string {
