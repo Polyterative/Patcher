@@ -28,6 +28,7 @@ import {
   priceHubCacheTime,
   remapErrors,
   smallCacheTime,
+  throwIfSupabaseError,
   throwIfSupabaseErrorWhen
 } from './supabase.cache';
 import {
@@ -291,6 +292,30 @@ export class SupabasePatchQueries extends SupabaseQueriesBase {
         .single<PatchCommentContextRow>()
     ).pipe(
       remapErrors()
+    );
+  }
+
+
+
+  @Cacheable({
+    maxAge: defaultCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('patches'))),
+    maxCacheCount: 50,
+  })
+  getPatchCommentContexts(ids: number[]): Observable<PatchCommentContextRow[]> {
+    const uniqueIds = Array.from(new Set(ids)).filter(id => Number.isFinite(id));
+    if (uniqueIds.length === 0) {
+      return of([]);
+    }
+
+    return rxFrom(
+      this.supabase.from(DbPaths.patches)
+        .select('id,name,public_id')
+        .in('id', uniqueIds)
+    ).pipe(
+      remapErrors(),
+      throwIfSupabaseError<{data: PatchCommentContextRow[] | null}>(),
+      map(x => x.data ?? [])
     );
   }
 

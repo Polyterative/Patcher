@@ -163,6 +163,7 @@ export class SupabaseService extends SubManager {
       moduleWithIdForRackDisplay: this.queries.getModuleWithIdForRackDisplay.bind(this.queries),
       modulesByIdsForPatchGraph: this.queries.getModulesByIdsForPatchGraph.bind(this.queries),
       moduleCommentContext: this.queries.getModuleCommentContext.bind(this.queries),
+      moduleCommentContexts: this.queries.getModuleCommentContexts.bind(this.queries),
       modulePriceListings: this.queries.getModulePriceListings.bind(this.queries),
       modulePriceHistorySnapshots: this.queries.getModulePriceHistorySnapshots.bind(this.queries),
       recentModuleMarketPrices: this.queries.getRecentModuleMarketPrices.bind(this.queries),
@@ -185,9 +186,11 @@ export class SupabaseService extends SubManager {
       publicPatchesByIds: this.queries.getPublicPatchesByIds.bind(this.queries),
       publicPatchWithId: this.queries.getPublicPatchWithId.bind(this.queries),
       patchCommentContext: this.queries.getPatchCommentContext.bind(this.queries),
+      patchCommentContexts: this.queries.getPatchCommentContexts.bind(this.queries),
       publicUserContributorStats: this.queries.getPublicUserContributorStats.bind(this.queries),
       rackWithId: this.queries.getRackWithId.bind(this.queries),
       rackCommentContext: this.queries.getRackCommentContext.bind(this.queries),
+      rackCommentContexts: this.queries.getRackCommentContexts.bind(this.queries),
       publicRackWithId: this.queries.getPublicRackWithId.bind(this.queries),
       rackByPublicId: this.queries.getRackByPublicId.bind(this.queries),
       resolvePublicRackLegacyId: this.queries.resolvePublicRackLegacyId.bind(this.queries),
@@ -243,6 +246,7 @@ export class SupabaseService extends SubManager {
     moduleWithIdForRackDisplay: typeof SupabaseQueriesService.prototype.getModuleWithIdForRackDisplay;
     modulesByIdsForPatchGraph: typeof SupabaseQueriesService.prototype.getModulesByIdsForPatchGraph;
     moduleCommentContext: typeof SupabaseQueriesService.prototype.getModuleCommentContext;
+    moduleCommentContexts: typeof SupabaseQueriesService.prototype.getModuleCommentContexts;
     modulePriceListings: typeof SupabaseQueriesService.prototype.getModulePriceListings;
     modulePriceHistorySnapshots: typeof SupabaseQueriesService.prototype.getModulePriceHistorySnapshots;
     recentModuleMarketPrices: typeof SupabaseQueriesService.prototype.getRecentModuleMarketPrices;
@@ -265,9 +269,11 @@ export class SupabaseService extends SubManager {
     publicPatchesByIds: typeof SupabaseQueriesService.prototype.getPublicPatchesByIds;
     publicPatchWithId: typeof SupabaseQueriesService.prototype.getPublicPatchWithId;
     patchCommentContext: typeof SupabaseQueriesService.prototype.getPatchCommentContext;
+    patchCommentContexts: typeof SupabaseQueriesService.prototype.getPatchCommentContexts;
     publicUserContributorStats: typeof SupabaseQueriesService.prototype.getPublicUserContributorStats;
     rackWithId: typeof SupabaseQueriesService.prototype.getRackWithId;
     rackCommentContext: typeof SupabaseQueriesService.prototype.getRackCommentContext;
+    rackCommentContexts: typeof SupabaseQueriesService.prototype.getRackCommentContexts;
     publicRackWithId: typeof SupabaseQueriesService.prototype.getPublicRackWithId;
     rackByPublicId: typeof SupabaseQueriesService.prototype.getRackByPublicId;
     resolvePublicRackLegacyId: typeof SupabaseQueriesService.prototype.resolvePublicRackLegacyId;

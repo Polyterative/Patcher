@@ -27,7 +27,6 @@ import {
   templateUrl: './comment-context.component.html',
   styleUrl: './comment-context.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [CommentContextDataService]
 })
 export class CommentContextComponent extends SubManager implements OnInit {
   @Input() data: DbComment;
