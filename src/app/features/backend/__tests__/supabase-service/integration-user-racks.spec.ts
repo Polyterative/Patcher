@@ -158,7 +158,7 @@ describe('SupabaseService - currentUserRacks Integration', () => {
           'Result should not have an .error property (it should be the data array)'
         ).toBe(false);
         
-        expect(query.select).toHaveBeenCalledWith('*, author:authorid(username,id)');
+        expect(query.select).toHaveBeenCalledWith('id,name,hp,rows,image,public,public_id,created,updated, author:authorid(username,id)');
         expect(query.filter).toHaveBeenCalledWith('authorid', 'eq', 'test-user-id');
         expect(query.order).toHaveBeenCalledWith('updated', {ascending: false});
 
@@ -180,7 +180,37 @@ describe('SupabaseService - currentUserRacks Integration', () => {
       }
     });
   }, TEST_TIMEOUT);
-  
+
+  it('should select an explicit column list, not the full wildcard row', (done) => {
+    mockUserSession(service, authUserFixture('test-user-id'));
+
+    const supabaseClient = getSupabaseClientDouble(service);
+    const query = chainable<RackFixture>({
+      data: [],
+      error: null
+    } satisfies QueryListRowsResult<RackFixture>);
+    const selectSpy = spyOn(query, 'select').and.callThrough();
+    spyOn(supabaseClient, 'from').and.returnValue(query);
+
+    const racks$ = service.get.currentUserRacks();
+
+    racks$.subscribe({
+      next: () => {
+        const selectArg = selectSpy.calls.mostRecent().args[0] as string;
+        expect(selectArg).not.toContain('*');
+        expect(selectArg).not.toContain('description');
+        expect(selectArg).not.toContain('locked');
+        expect(selectArg).toContain('id,name,hp,rows,image,public,public_id,created,updated');
+        expect(selectArg).toContain('author:authorid(username,id)');
+        done();
+      },
+      error: (error: unknown) => {
+        fail(`currentUserRacks() column-trim test failed: ${ formatUnknownError(error) }`);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+
   it('should match the same return pattern as currentUserPatches()', () => {
     // Both methods should have identical response handling patterns
     // This test validates structural consistency by checking return types
