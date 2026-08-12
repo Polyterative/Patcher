@@ -27,7 +27,8 @@ import {
   longCacheTime,
   priceHubCacheTime,
   remapErrors,
-  smallCacheTime
+  smallCacheTime,
+  throwIfSupabaseError
 } from './supabase.cache';
 import {
   CurrentUserModulesOrderConfig,
@@ -238,6 +239,30 @@ export class SupabaseModuleDetailQueries extends SupabaseQueriesBase {
         .single<ModuleCommentContextRow>()
     ).pipe(
       remapErrors()
+    );
+  }
+
+
+
+  @Cacheable({
+    maxAge: defaultCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('moduleWithId'))),
+    maxCacheCount: 50
+  })
+  getModuleCommentContexts(ids: number[]): Observable<ModuleCommentContextRow[]> {
+    const uniqueIds = Array.from(new Set(ids)).filter(id => Number.isFinite(id));
+    if (uniqueIds.length === 0) {
+      return of([]);
+    }
+
+    return rxFrom(
+      this.supabase.from(DbPaths.modules)
+        .select(`id,name,${ QueryJoins.manufacturer }`)
+        .in('id', uniqueIds)
+    ).pipe(
+      remapErrors(),
+      throwIfSupabaseError<{data: ModuleCommentContextRow[] | null}>(),
+      map(x => x.data ?? [])
     );
   }
 
