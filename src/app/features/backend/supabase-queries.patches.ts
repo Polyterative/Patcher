@@ -387,10 +387,12 @@ export class SupabasePatchQueries extends SupabaseQueriesBase {
     return rxFrom(
       this.supabase.from(DbPaths.patch_connections)
         .select(`
-          *,
+          notes,
+          instance_id_a,
+          instance_id_b,
           ${ QueryJoins.patch },
-          a(*,module:modules!moduleOUTs_moduleId_fkey(*, ${ QueryJoins.manufacturer },${ QueryJoins.module_panels })),
-          b(*,module:modules!moduleINs_moduleId_fkey(*,${ QueryJoins.manufacturer },${ QueryJoins.module_panels }))
+          a(${ QueryJoins.patchConnectionCv },module:modules!moduleOUTs_moduleId_fkey(${ QueryJoins.patchConnectionModule })),
+          b(${ QueryJoins.patchConnectionCv },module:modules!moduleINs_moduleId_fkey(${ QueryJoins.patchConnectionModule }))
           `)
         .filter('patchid', 'eq', patchid)
         .order('ordinal')
