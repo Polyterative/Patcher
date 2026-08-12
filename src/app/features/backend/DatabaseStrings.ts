@@ -163,4 +163,9 @@ export class QueryJoins {
   // Ins/Outs (id + name only — patch graph rendering doesn't need CV metadata)
   static insOutsMinimal: string = `ins:${ DbPaths.moduleINs }(id,name), outs:${ DbPaths.moduleOUTs }(id,name)`;
 
+  // Current-user rack list columns (rack-micro card + linked-rack selector only read
+  // these; description/locked are rack-detail/editor-only fields, and the scalar
+  // authorid column is redundant with the joined author.id below).
+  static currentUserRackListColumns: string = 'id,name,hp,rows,image,public,public_id,created,updated';
+
 }

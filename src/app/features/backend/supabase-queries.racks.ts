@@ -163,7 +163,7 @@ export class SupabaseRackQueries extends SupabaseQueriesBase {
   getCurrentUserRacksForAuthor(authorid: string, strictErrors = false): Observable<Rack[]> {
     return rxFrom(
       this.supabase.from(DbPaths.racks)
-        .select(`*, ${ QueryJoins.author }`)
+        .select(`${ QueryJoins.currentUserRackListColumns }, ${ QueryJoins.author }`)
         .filter('authorid', 'eq', authorid)
         .order('updated', {ascending: false})
     ).pipe(
