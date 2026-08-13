@@ -111,6 +111,7 @@ export class RackDetailDataService extends SubManager {
   readonly userRequestedSmallerScale$ = new BehaviorSubject<boolean>(false);
   readonly requestRackEditableStatusChange$ = new Subject<void>();
   readonly requestCreatePatchFromRack$ = new Subject<void>();
+  readonly createPatchFromRackInProgress$ = new BehaviorSubject<boolean>(false);
   readonly requestRackPrivacyStatusChange$ = new Subject<void>();
   readonly requestRackedModuleRemoval$ = new Subject<RackedModule>();
   readonly requestRackedModuleDuplication$ = new Subject<RackedModule>();
@@ -323,6 +324,7 @@ export class RackDetailDataService extends SubManager {
       userRequestedSmallerScale$: this.userRequestedSmallerScale$,
       requestRackEditableStatusChange$: this.requestRackEditableStatusChange$,
       requestCreatePatchFromRack$: this.requestCreatePatchFromRack$,
+      createPatchFromRackInProgress$: this.createPatchFromRackInProgress$,
       requestRackPrivacyStatusChange$: this.requestRackPrivacyStatusChange$,
       requestRackedModuleRemoval$: this.requestRackedModuleRemoval$,
       requestRackedModuleDuplication$: this.requestRackedModuleDuplication$,

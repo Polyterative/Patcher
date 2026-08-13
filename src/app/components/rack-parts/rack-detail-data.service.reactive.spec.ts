@@ -1193,6 +1193,27 @@ describe('RackDetailDataService reactive flows', () => {
     );
   });
 
+  it('ignores a second create-patch-from-rack click while the first is in flight', () => {
+    spyOn(SharedConstants, 'successCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    service.singleRackData$.next(rack({id: 50, name: 'Performance Rack'}));
+    service.isCurrentRackPropertyOfCurrentUser$.next(true);
+    const addPatch$ = new Subject<BackendResponse<Array<{id: number}>>>();
+    backend.add.patch.and.returnValue(addPatch$);
+
+    service.requestCreatePatchFromRack$.next();
+    expect(service.createPatchFromRackInProgress$.value).toBe(true);
+
+    service.requestCreatePatchFromRack$.next();
+
+    expect(backend.add.patch).toHaveBeenCalledTimes(1);
+
+    addPatch$.next({data: [{id: 321}]});
+    addPatch$.complete();
+
+    expect(service.createPatchFromRackInProgress$.value).toBe(false);
+  });
+
   it('does not create a patch from rack when confirmation is cancelled', () => {
     spyOn(SharedConstants, 'infoCustom').and.callFake(() => {});
     const {service, backend, dialog} = build();
