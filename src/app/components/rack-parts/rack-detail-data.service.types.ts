@@ -80,6 +80,7 @@ export interface RackDetailDataContext {
   userRequestedSmallerScale$: BehaviorSubject<boolean>;
   requestRackEditableStatusChange$: Subject<void>;
   requestCreatePatchFromRack$: Subject<void>;
+  createPatchFromRackInProgress$: BehaviorSubject<boolean>;
   requestRackPrivacyStatusChange$: Subject<void>;
   requestRackedModuleRemoval$: Subject<RackedModule>;
   requestRackedModuleDuplication$: Subject<RackedModule>;

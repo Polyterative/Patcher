@@ -6,6 +6,7 @@ import {
   distinctUntilChanged,
   exhaustMap,
   filter,
+  finalize,
   map,
   switchMap,
   tap,
@@ -90,8 +91,9 @@ export class RackDetailEditingDataService {
 
     context.requestCreatePatchFromRack$
       .pipe(
+        filter(() => !context.createPatchFromRackInProgress$.value),
         withLatestFrom(context.singleRackData$, context.isCurrentRackPropertyOfCurrentUser$),
-        switchMap(([_, rack, isOwner]) => {
+        exhaustMap(([_, rack, isOwner]) => {
           if (!rack) {
             SharedConstants.errorCustom(context.snackBar, 'Rack data is still loading. Try again in a moment.');
             return EMPTY;
@@ -102,33 +104,37 @@ export class RackDetailEditingDataService {
             return EMPTY;
           }
 
-          return context.askForConfirmationWhenCreatingPatchFromRack(rack);
-        }),
-        switchMap((rack) => {
-          const generatedPatchName = generatePatchName();
-          context.snackBar.open(`Creating "${ generatedPatchName }"…`, undefined);
+          context.createPatchFromRackInProgress$.next(true);
 
-          return context.backend.add.patch({
-            name: generatedPatchName,
-            public: true,
-            linked_rack_id: rack.id
-          }).pipe(
-            map((response) => ({
-              rack,
-              generatedPatchName,
-              createdPatchId: extractCreatedPatchId(response),
-              createdPatchPublicId: extractCreatedPublicId(response)
-            })),
-            catchError((error) => {
-              if (isLinkedRackSchemaMissingError(error)) {
-                SharedConstants.errorCustom(context.snackBar, LINKED_RACK_PENDING_CREATE_MESSAGE);
-              } else {
-                console.error('Failed to create linked patch from rack:', error);
-                SharedConstants.errorCustom(context.snackBar, 'Patch creation failed — check your connection and try again.');
-              }
+          return context.askForConfirmationWhenCreatingPatchFromRack(rack).pipe(
+            switchMap((confirmedRack) => {
+              const generatedPatchName = generatePatchName();
+              context.snackBar.open(`Creating "${ generatedPatchName }"…`, undefined);
 
-              return EMPTY;
-            })
+              return context.backend.add.patch({
+                name: generatedPatchName,
+                public: true,
+                linked_rack_id: confirmedRack.id
+              }).pipe(
+                map((response) => ({
+                  rack: confirmedRack,
+                  generatedPatchName,
+                  createdPatchId: extractCreatedPatchId(response),
+                  createdPatchPublicId: extractCreatedPublicId(response)
+                })),
+                catchError((error) => {
+                  if (isLinkedRackSchemaMissingError(error)) {
+                    SharedConstants.errorCustom(context.snackBar, LINKED_RACK_PENDING_CREATE_MESSAGE);
+                  } else {
+                    console.error('Failed to create linked patch from rack:', error);
+                    SharedConstants.errorCustom(context.snackBar, 'Patch creation failed — check your connection and try again.');
+                  }
+
+                  return EMPTY;
+                })
+              );
+            }),
+            finalize(() => context.createPatchFromRackInProgress$.next(false))
           );
         }),
         context.takeUntilDestroyed()

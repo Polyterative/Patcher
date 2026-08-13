@@ -67,6 +67,7 @@
             <button mat-icon-button
                     matTooltip="Create patch from this rack"
                     aria-label="Create patch from this rack"
+                    [disabled]="dataService.createPatchFromRackInProgress$ | async"
                     (click)="dataService.requestCreatePatchFromRack$.next()"
             >
               <mat-icon>settings_input_composite</mat-icon>
