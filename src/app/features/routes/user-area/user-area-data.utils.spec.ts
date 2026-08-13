@@ -83,6 +83,16 @@ describe('user-area-data.utils', () => {
       const racks = [makeRack('Live Rack'), makeRack('Studio Setup')];
       expect(filterRacks(racks, 'live')?.length).toBe(1);
     });
+
+    it('filters by rack description', () => {
+      const racks = [
+        makeRack('Rack One', 'a compact eurorack build'),
+        makeRack('Rack Two', 'a sprawling modular monster')
+      ];
+      const result = filterRacks(racks, 'eurorack');
+      expect(result?.length).toBe(1);
+      expect(result?.[0].name).toBe('Rack One');
+    });
   });
 
   describe('filterManuals', () => {
