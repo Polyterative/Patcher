@@ -440,4 +440,36 @@ describe('PatchDetailDataService core flows', () => {
     expect(backend.GET.patchConnections).toHaveBeenCalledWith(1);
     expect(service.patchConnections$.value?.[0].a.id).toBe(5);
   });
+
+  // --- Instance renumbering subscription lifecycle ---
+
+  it('does not update patchModuleInstances$ from a renumber cycle still in flight after destroy', () => {
+    const {service, backend} = build();
+    service.singlePatchData$.next(patch({id: 1}));
+    service.patchModuleInstances$.next([
+      {id: 1, patch_id: 1, module_id: 5, instance_label: '(1)'},
+      {id: 2, patch_id: 1, module_id: 5, instance_label: '(2)'},
+      {id: 3, patch_id: 1, module_id: 5, instance_label: '(3)'}
+    ]);
+
+    const relabelSubject = new Subject<PatchModuleInstance>();
+    backend.update.patchModuleInstanceLabel.and.returnValue(relabelSubject.asObservable());
+
+    const nextSpy = spyOn(service.patchModuleInstances$, 'next').and.callThrough();
+
+    service.removeModuleInstance$.next({id: 1, patch_id: 1, module_id: 5, instance_label: '(1)'});
+
+    // Removal itself updates patchModuleInstances$ synchronously (delete resolves immediately);
+    // the renumber forkJoin over the two remaining instances is still pending on relabelSubject.
+    const callsBeforeDestroy = nextSpy.calls.count();
+    expect(callsBeforeDestroy).toBeGreaterThan(0);
+
+    service.ngOnDestroy();
+
+    // Resolve the in-flight renumber network calls after teardown.
+    relabelSubject.next({id: 2, patch_id: 1, module_id: 5, instance_label: '(1)'});
+    relabelSubject.complete();
+
+    expect(nextSpy.calls.count()).toBe(callsBeforeDestroy);
+  });
 });
