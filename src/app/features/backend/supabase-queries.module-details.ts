@@ -174,7 +174,7 @@ export class SupabaseModuleDetailQueries extends SupabaseQueriesBase {
       .select(columns)
       .filter('id', 'eq', id);
 
-    if (columns.includes(QueryJoins.module_panels)) {
+    if (columns.includes(DbPaths.module_panels)) {
       queryBuilder$ = queryBuilder$.order(`color`, {
         referencedTable: DbPaths.module_panels,
         ascending: true

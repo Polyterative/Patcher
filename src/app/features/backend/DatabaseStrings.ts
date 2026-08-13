@@ -97,6 +97,12 @@ export class QueryJoins {
   // Module Panels
   static module_panels: string = `panels:${ DbPaths.module_panels }!module_panels_moduleid_fkey(*)`;
 
+  // Rack-display panel columns (rendered fields only — module-part-image reads
+  // id/color/filename, module-realistic/module-details tooltips read description;
+  // created/updated/isApproved are moderation/audit-only fields never read by any
+  // rack rendering or editor-interaction path).
+  static rackDisplayModulePanels: string = `panels:${ DbPaths.module_panels }!module_panels_moduleid_fkey(id,color,filename,description)`;
+
   // Ins/Outs with signal-flow flags (id, name, port-kind flags) — used for rack/patch
   // signal-flow rendering, which never needs CV min/max/isApproved/authorid.
   static insOutsSignalFlow: string = `ins:${ DbPaths.moduleINs }(id,name,isVOCT,isDCC,isAudio), outs:${ DbPaths.moduleOUTs }(id,name,isVOCT,isDCC,isAudio)`;
@@ -115,7 +121,7 @@ export class QueryJoins {
     manufacturer:manufacturerId(name,id),
     standard:standards!modules_standard_fkey(name,id),
     ${ QueryJoins.module_tags },
-    ${ QueryJoins.module_panels },
+    ${ QueryJoins.rackDisplayModulePanels },
     ${ QueryJoins.insOutsSignalFlow }
   `;
 
