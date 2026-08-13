@@ -1,7 +1,7 @@
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { Injectable, OnDestroy } from '@angular/core';
 import { MatSnackBar } from "@angular/material/snack-bar";
-import { BehaviorSubject, combineLatest, EMPTY, merge, Observable, of, ReplaySubject, Subject } from 'rxjs';
+import { BehaviorSubject, EMPTY, merge, Observable, of, ReplaySubject, Subject } from 'rxjs';
 import { catchError, exhaustMap, filter, map, switchMap, take, tap, withLatestFrom } from 'rxjs/operators';
 import { RackModuleAdderDialogComponent } from 'src/app/components/rack-parts/rack-module-adder/rack-module-adder-dialog.component';
 import { UserManagementService } from '../../features/backbone/login/user-management.service';
@@ -20,22 +20,22 @@ import { AnalyticsService } from '../../features/backbone/analytics-integration/
 import { environment } from 'src/environments/environment';
 import { UserModuleAcquisition } from 'src/app/models/user-module-acquisition';
 import { ModulePossessionDialogResult } from './module-possession-dialog/module-possession-dialog.component';
-import { ReactionEntityTypes } from 'src/app/features/backend/supabase-reactions';
 import { ModulePriceHistorySnapshot, ModulePriceListing, ModuleRecentMarketPrice, ModuleSparsePriceHistorySummary } from 'src/app/features/backend/supabase-queries';
 import { getModulePanelPublicUrl } from 'src/app/features/backend/supabase-storage';
-import { DETAIL_ANALYTICS_SURFACES, DetailAnalyticsSurface, shouldCaptureCanonicalDetailView } from '../detail-analytics-surface';
+import { DETAIL_ANALYTICS_SURFACES, DetailAnalyticsSurface } from '../detail-analytics-surface';
 import {
   createCurrentModulePossession$, createRecentMarketPrice$, createSparsePriceHistorySummary$,
   formatDeleteModuleSuccessMessage, formatLatestAcquisitionValue, formatMergeResultMessage,
-  getMeaningfulAcquisitionDraft, getPossessionRequestKind, loadModulePriceHistorySnapshots$,
-  loadModulePriceListings$, possessionKindLabel, shouldDeleteManufacturerWithModule
+  getMeaningfulAcquisitionDraft, getPossessionRequestKind,
+  possessionKindLabel, shouldDeleteManufacturerWithModule
 } from './module-detail-data.helpers';
+import { bindModuleDetailDataLoading } from './module-detail-data-loading.bindings';
 
 export type { HiddenUsageBucket, ModulePossessionCounts, ModuleUsageSummary } from './module-detail-data.models';
 @Injectable()
 export class ModuleDetailDataService extends SubManager implements OnDestroy {
-  private readonly collectionsEnabled = environment.features.collectionsEnabled;
-  private readonly coolReactionsEnabled = environment.features.coolReactionsEnabled;
+  readonly collectionsEnabled = environment.features.collectionsEnabled;
+  readonly coolReactionsEnabled = environment.features.coolReactionsEnabled;
   readonly updateSingleModuleData$ = new ReplaySubject<number>();
   readonly singleModuleData$ = new BehaviorSubject<DbModule | null>(null);
   readonly detailAnalyticsSurface$ = new BehaviorSubject<DetailAnalyticsSurface>(DETAIL_ANALYTICS_SURFACES.detailRoute);
@@ -74,12 +74,12 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
   
   constructor(
     public dialog: MatDialog,
-    private snackBar: MatSnackBar,
+    public snackBar: MatSnackBar,
     public userService: UserManagementService,
     public backend: SupabaseService,
     public appState: AppStateService,
     public router: Router,
-    private analytics: AnalyticsService,
+    public analytics: AnalyticsService,
   ) {
     super();
     
@@ -195,133 +195,8 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
         this.updateSingleModuleData$.next(moduleId);
       });
     
-    // get module data
-    this.updateSingleModuleData$
-      .pipe(
-        tap(x => {
-          this.singleModuleData$.next(undefined);
-          this.moduleEditorHasPendingChanges$.next(false);
-        }),
-        withLatestFrom(this.detailAnalyticsSurface$),
-        switchMap(([moduleId, surface]) => this.backend.GET.moduleWithId(moduleId).pipe(
-          map(result => ({result, surface})),
-          catchError(err => {
-            console.error('Failed to load module:', err);
-            SharedConstants.errorCustom(this.snackBar, 'Failed to load module details — check your connection and try again.');
-            return of({result: {data: undefined}, surface});
-          })
-        )),
-        this.takeUntilDestroyed()
-      )
-      .subscribe(({result, surface}) => {
-        this.singleModuleData$.next(result.data);
-        if (result.data && shouldCaptureCanonicalDetailView(surface)) {
-          this.analytics.capture('module.viewed', {
-            module_id:       result.data.id,
-            manufacturer_id: result.data.manufacturer?.id
-          });
-        }
-      });
-    
-    // get racks with this module
-    this.updateSingleModuleData$
-      .pipe(
-        tap(x => this.racksWithThisModule$.next(undefined)),
-        switchMap(x => this.backend.get.racksWithModule(x).pipe(
-          catchError(error => {
-            console.error('Racked-in module usage could not be loaded.', error);
-            return of({data: []});
-          })
-        )),
-        this.takeUntilDestroyed()
-      )
-      .subscribe(x => this.racksWithThisModule$.next((x.data ?? []).map(y => y.rack)));
-    
-    // get patches with this module
-    this.updateSingleModuleData$
-      .pipe(
-        tap(x => this.patchesWithThisModule$.next(undefined)),
-        switchMap(x => this.backend.get.patchesWithModule(x).pipe(
-          catchError(error => {
-            console.error('Patched-in module usage could not be loaded.', error);
-            return of([]);
-          })
-        )),
-        this.takeUntilDestroyed()
-      )
-      .subscribe(x => this.patchesWithThisModule$.next(x));
+    bindModuleDetailDataLoading(this);
 
-    this.updateSingleModuleData$
-      .pipe(
-        tap(() => this.collectionsWithThisModule$.next(undefined)),
-        switchMap(x => this.collectionsEnabled ? this.backend.GET.moduleCollectionsForModule(x) : of([])),
-        this.takeUntilDestroyed()
-      )
-      .subscribe(collections => this.collectionsWithThisModule$.next(collections));
-
-    loadModulePriceListings$(this.updateSingleModuleData$, moduleId => this.backend.GET.modulePriceListings(moduleId))
-      .pipe(
-        this.takeUntilDestroyed()
-      )
-      .subscribe(listings => this.modulePriceListings$.next(listings));
-
-    loadModulePriceHistorySnapshots$(
-      this.updateSingleModuleData$,
-      moduleId => this.backend.GET.modulePriceHistorySnapshots(moduleId)
-    )
-      .pipe(
-        this.takeUntilDestroyed()
-      )
-      .subscribe(snapshots => this.modulePriceHistorySnapshots$.next(snapshots));
-
-    this.updateSingleModuleData$
-      .pipe(
-        tap(() => this.moduleUsageSummary$.next(undefined)),
-        switchMap(x => this.backend.get.moduleUsageSummary(x)),
-        this.takeUntilDestroyed()
-      )
-      .subscribe(summary => this.moduleUsageSummary$.next(summary));
-
-    this.updateSingleModuleData$
-      .pipe(
-        tap(() => this.possessionCounts$.next(undefined)),
-        switchMap(x => this.backend.get.modulePossessionCounts(x)),
-        this.takeUntilDestroyed()
-      )
-      .subscribe(counts => this.possessionCounts$.next(counts));
-
-    this.updateSingleModuleData$
-      .pipe(
-        tap(() => this.coolCount$.next(undefined)),
-        switchMap(x => this.coolReactionsEnabled
-          ? this.backend.get.reactionCount(ReactionEntityTypes.MODULE, x)
-          : of(0)
-        ),
-        this.takeUntilDestroyed()
-      )
-      .subscribe(count => this.coolCount$.next(count));
-
-    this.coolCountUpdate$
-      .pipe(
-        filter((count): count is number => count !== null),
-        this.takeUntilDestroyed()
-      )
-      .subscribe(count => this.coolCount$.next(count));
-
-    combineLatest([
-      this.updateSingleModuleData$,
-      this.userService.loggedUser$
-    ])
-      .pipe(
-        tap(() => this.userModuleAcquisitions$.next(undefined)),
-        switchMap(([moduleId, user]) => user
-          ? this.backend.get.userModuleAcquisitionsForModule(moduleId)
-          : of([])
-        ),
-        this.takeUntilDestroyed()
-      )
-      .subscribe(rows => this.userModuleAcquisitions$.next(rows));
-    
     // hidden cause circular dependency
     // this.updateSingleModuleData$
     //     .pipe(
