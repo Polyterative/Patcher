@@ -94,6 +94,7 @@ export function createAddNamespace(
           );
         }),
         throwIfSupabaseError(),
+        cacheBust(['module_flags']),
         remapErrors()
       ),
 

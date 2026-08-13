@@ -46,7 +46,7 @@ Every `CachedEntity` key, its producer(s), and which write operations bust it:
 | `userModuleTags`        | `getMyVotes`                                                    | `add.userModuleTag`, `delete.userModuleTag`                                               |
 | `standards`             | `getStandards` (`SupabaseManufacturerQueries`)                  | No write path touches the `standards` table today; `cacheBusterObserver` wired for forward-compatibility only |
 | `appStatistics`         | `getStatistics` (`SupabaseApplicationStatisticsQueries`)        | n/a (TTL-only decay, read-only aggregate counts, matches documented design) |
-| `module_flags`          | *(declared in CachedEntity but no @Cacheable exists yet)*       | n/a — admin-only surface, acceptable to load fresh each time                              |
+| `module_flags`          | `getCurrentUserContributorStats` (`SupabaseQueriesService`, keyed via `contributor-stats` query group) | `add.moduleFlag`, `update.moduleFlagResolved`, `delete.moduleFlag`                          |
 | `profiles`              | *(declared in CachedEntity; used only as a bust signal)*        | No direct @Cacheable method for profiles; busts `getRacksMinimal`, `getPublicUserRacksPaginated`, `getPublicUserPatchesPaginated`, `getPublicUserContributorStats` when profile changes |
 | `void`                  | *(wildcard — any/all keys)*                                     | Not currently emitted by any operation                                                    |
 
@@ -119,6 +119,16 @@ The following cache invalidation gaps were found and fixed in this session:
 | `delete.modulePanel`    | No cache bust       | `cacheBust(['modules', 'moduleWithId'])` | Asymmetric with `add.panel` (already busted these keys); deleted panel remained visible in cached `getModuleWithId` for up to `defaultCacheTime` |
 | `get.standards()`       | Uncached (network on every module-editor open) | `@Cacheable({maxAge: longCacheTime})` via `getStandards()` | Standards list is effectively static (no write path); every module-editor open previously re-fetched it |
 | `get.statistics()`      | Uncached (3 network round trips per home page load) | `@Cacheable({maxAge: defaultCacheTime})` via `getStatistics()` (TTL-only, no busting) | Repeat home page visits within 5 minutes previously re-issued 3 count queries |
+
+---
+
+## Audit Findings & Fixes Applied (13-08-2026)
+
+| Operation                     | Before              | After                              | Impact                                      |
+|--------------------------------|---------------------|-------------------------------------|---------------------------------------------|
+| `add.moduleFlag`               | No cache bust       | `cacheBust(['module_flags'])`      | `getCurrentUserContributorStats()`'s "flags submitted" count stayed stale for up to `defaultCacheTime` after a new flag was submitted |
+| `update.moduleFlagResolved`     | No cache bust       | `cacheBust(['module_flags'])`      | Same stale-stats issue after resolving a flag |
+| `delete.moduleFlag`             | No cache bust       | `cacheBust(['module_flags'])`      | Same stale-stats issue after deleting a flag |
 
 ---
 

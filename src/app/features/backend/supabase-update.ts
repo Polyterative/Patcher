@@ -468,6 +468,7 @@ export function createUpdateNamespace(
       supabase.from(DbPaths.module_flags).update({resolved}).eq('id', id)
     ).pipe(
       map(({error}) => { if (error) throw error; }),
+      cacheBust(['module_flags']),
       remapErrors()
     ),
 
