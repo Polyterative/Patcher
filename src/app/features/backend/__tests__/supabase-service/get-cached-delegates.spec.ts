@@ -286,8 +286,27 @@ describe('SupabaseService - GET cached delegates', () => {
       service.GET.patchConnections(3).subscribe({
         next: () => {
           const selectArg = selectSpy.calls.mostRecent().args[0] as string;
-          expect(selectArg).toContain('a(id,name,module:modules!moduleOUTs_moduleId_fkey(id,name,manufacturer:manufacturerId(name)))');
-          expect(selectArg).toContain('b(id,name,module:modules!moduleINs_moduleId_fkey(id,name,manufacturer:manufacturerId(name)))');
+          expect(selectArg).toContain('a(id,name,module:modules!moduleOUTs_moduleId_fkey(id,name,manufacturer:manufacturerId(name),panels:module_panels!module_panels_moduleid_fkey(id,color,filename)))');
+          expect(selectArg).toContain('b(id,name,module:modules!moduleINs_moduleId_fkey(id,name,manufacturer:manufacturerId(name),panels:module_panels!module_panels_moduleid_fkey(id,color,filename)))');
+          done();
+        },
+        error: (err: unknown) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should select the module panel columns (id,color,filename) needed to render the connection card thumbnail', (done) => {
+      const mockConns = {data: [{patchid: 3, a: 10, b: 20}], error: null} satisfies QueryListRowsResult<PatchConnectionRow>;
+      const mock: SupabaseQueryChain<PatchConnectionRow> = chainable<PatchConnectionRow>(mockConns);
+      const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+      service.GET.patchConnections(3).subscribe({
+        next: () => {
+          const selectArg = selectSpy.calls.mostRecent().args[0] as string;
+          expect(selectArg).toContain('panels:module_panels!module_panels_moduleid_fkey(id,color,filename)');
           done();
         },
         error: (err: unknown) => {
@@ -310,6 +329,7 @@ describe('SupabaseService - GET cached delegates', () => {
           expect(selectArg).not.toContain('b(*');
           expect(selectArg).not.toContain('modules!moduleOUTs_moduleId_fkey(*');
           expect(selectArg).not.toContain('modules!moduleINs_moduleId_fkey(*');
+          expect(selectArg).not.toContain('module_panels_moduleid_fkey(*');
           done();
         },
         error: (err: unknown) => {
