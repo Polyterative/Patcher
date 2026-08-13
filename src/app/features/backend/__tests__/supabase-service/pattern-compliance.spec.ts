@@ -25,7 +25,7 @@ describe('SupabaseService - Service Pattern Compliance', () => {
   
   it('should have consistent method signatures across CRUD operations', () => {
     // Validate all methods return observables
-    const testObservable$ = service.GET.tags();
+    const testObservable$ = service.GET.manufacturers();
     expect(testObservable$.subscribe).toBeDefined();
   });
   

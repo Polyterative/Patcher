@@ -158,7 +158,6 @@ export class SupabaseService extends SubManager {
       manufacturers: this.queries.getManufacturers.bind(this.queries),
       manufacturersPaginated: this.queries.getManufacturersPaginated.bind(this.queries),
       comments: this.queries.getComments.bind(this.queries),
-      tags: this.queries.getTags.bind(this.queries),
       moduleWithId: this.queries.getModuleWithId.bind(this.queries),
       moduleWithIdForRackDisplay: this.queries.getModuleWithIdForRackDisplay.bind(this.queries),
       modulesByIdsForPatchGraph: this.queries.getModulesByIdsForPatchGraph.bind(this.queries),
@@ -241,7 +240,6 @@ export class SupabaseService extends SubManager {
     manufacturers: typeof SupabaseQueriesService.prototype.getManufacturers;
     manufacturersPaginated: typeof SupabaseQueriesService.prototype.getManufacturersPaginated;
     comments: typeof SupabaseQueriesService.prototype.getComments;
-    tags: typeof SupabaseQueriesService.prototype.getTags;
     moduleWithId: typeof SupabaseQueriesService.prototype.getModuleWithId;
     moduleWithIdForRackDisplay: typeof SupabaseQueriesService.prototype.getModuleWithIdForRackDisplay;
     modulesByIdsForPatchGraph: typeof SupabaseQueriesService.prototype.getModulesByIdsForPatchGraph;

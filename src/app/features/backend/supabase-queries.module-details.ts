@@ -268,19 +268,6 @@ export class SupabaseModuleDetailQueries extends SupabaseQueriesBase {
 
 
 
-  getTags() {
-    return rxFrom(
-      this.supabase.from(DbPaths.tags)
-        .select('*')
-    )
-      .pipe(
-        // remapErrors(),
-        map((x => x.data))
-      );
-  }
-
-
-
   @Cacheable({
     maxAge: defaultCacheTime,
     maxCacheCount: 20,
