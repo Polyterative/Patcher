@@ -157,6 +157,7 @@ export class QueryJoins {
     public,
     manufacturer:manufacturerId(name,id),
     standard:standards!modules_standard_fkey(name,id),
+    ${ QueryJoins.module_tags },
     panels:${ DbPaths.module_panels }!module_panels_moduleid_fkey(id,color,filename)
   )`;
 
@@ -173,8 +174,8 @@ export class QueryJoins {
   static insOutsMinimal: string = `ins:${ DbPaths.moduleINs }(id,name), outs:${ DbPaths.moduleOUTs }(id,name)`;
 
   // Current-user rack list columns (rack-micro card + linked-rack selector only read
-  // these; description/locked are rack-detail/editor-only fields, and the scalar
+  // these; locked is a rack-detail/editor-only field, and the scalar
   // authorid column is redundant with the joined author.id below).
-  static currentUserRackListColumns: string = 'id,name,hp,rows,image,public,public_id,created,updated';
+  static currentUserRackListColumns: string = 'id,name,description,hp,rows,image,public,public_id,created,updated';
 
 }

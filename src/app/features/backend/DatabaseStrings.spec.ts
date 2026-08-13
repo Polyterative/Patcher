@@ -100,4 +100,13 @@ describe('QueryJoins', () => {
     expect(QueryJoins.collectionModule).toContain('panels:module_panels');
     expect(QueryJoins.collectionEntryModule).toContain('panels:module_panels');
   });
+
+  it('collection entry module join includes module tags', () => {
+    expect(QueryJoins.collectionEntryModule).toContain('tags:module_tags');
+    expect(QueryJoins.collectionEntryModule).toContain('voteCount:user_module_tags');
+  });
+
+  it('current-user rack list columns include description for search', () => {
+    expect(QueryJoins.currentUserRackListColumns).toContain('description');
+  });
 });

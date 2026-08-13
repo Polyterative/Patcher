@@ -158,7 +158,7 @@ describe('SupabaseService - currentUserRacks Integration', () => {
           'Result should not have an .error property (it should be the data array)'
         ).toBe(false);
         
-        expect(query.select).toHaveBeenCalledWith('id,name,hp,rows,image,public,public_id,created,updated, author:authorid(username,id)');
+        expect(query.select).toHaveBeenCalledWith('id,name,description,hp,rows,image,public,public_id,created,updated, author:authorid(username,id)');
         expect(query.filter).toHaveBeenCalledWith('authorid', 'eq', 'test-user-id');
         expect(query.order).toHaveBeenCalledWith('updated', {ascending: false});
 
@@ -198,9 +198,8 @@ describe('SupabaseService - currentUserRacks Integration', () => {
       next: () => {
         const selectArg = selectSpy.calls.mostRecent().args[0] as string;
         expect(selectArg).not.toContain('*');
-        expect(selectArg).not.toContain('description');
         expect(selectArg).not.toContain('locked');
-        expect(selectArg).toContain('id,name,hp,rows,image,public,public_id,created,updated');
+        expect(selectArg).toContain('id,name,description,hp,rows,image,public,public_id,created,updated');
         expect(selectArg).toContain('author:authorid(username,id)');
         done();
       },
