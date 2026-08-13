@@ -78,8 +78,11 @@ export class QueryJoins {
 
   // Patch connection module columns (rendered fields only — patch-graph re-fetches
   // full module data separately via modulesByIds; patch-minimal/patch-browser-detail
-  // only read module id/name/manufacturer name from the connection join itself).
-  static patchConnectionModule: string = 'id,name,manufacturer:manufacturerId(name)';
+  // only read module id/name/manufacturer name from the connection join itself, but
+  // patch-connection-minimal renders the full module-minimal card via app-module-part-image,
+  // which needs panels(id,color,filename) to resolve the panel thumbnail — omitting this
+  // silently blanks the module image in the patch-detail connections list).
+  static patchConnectionModule: string = `id,name,manufacturer:manufacturerId(name),panels:${ DbPaths.module_panels }!module_panels_moduleid_fkey(id,color,filename)`;
 
   // Author
   static author: string = 'author:authorid(username,id)';
