@@ -148,6 +148,77 @@ describe('SupabaseService - GET single-entity fetchers', () => {
         }
       });
     }, TEST_TIMEOUT);
+
+    it('orders the joined module_panels rows by color (default full-column select)', (done) => {
+      const mockModule = {
+        data: {id: 42, name: 'Maths', hp: 20},
+        error: null
+      } satisfies SingleRowResult<ModuleRow>;
+      const query: SupabaseQueryChain<ModuleRow> = chainable(mockModule);
+      const orderSpy = spyOn(query, 'order').and.callThrough();
+      spyOn(supabaseClient, 'from').and.returnValue(query);
+
+      service.GET.moduleWithId(42).subscribe({
+        next: () => {
+          expect(orderSpy).toHaveBeenCalledWith('color', {
+            referencedTable: 'module_panels',
+            ascending: true
+          });
+          done();
+        },
+        error: (err: unknown) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('still orders the joined module_panels rows by color for the trimmed rack-display column set', (done) => {
+      const mockModule = {
+        data: {id: 42, name: 'Maths', hp: 20},
+        error: null
+      } satisfies SingleRowResult<ModuleRow>;
+      const query: SupabaseQueryChain<ModuleRow> = chainable(mockModule);
+      const orderSpy = spyOn(query, 'order').and.callThrough();
+      spyOn(supabaseClient, 'from').and.returnValue(query);
+
+      service.GET.moduleWithIdForRackDisplay(42).subscribe({
+        next: () => {
+          expect(orderSpy).toHaveBeenCalledWith('color', {
+            referencedTable: 'module_panels',
+            ascending: true
+          });
+          done();
+        },
+        error: (err: unknown) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('selects only rendered panel columns (id,color,filename,description) for the rack-display column set', (done) => {
+      const mockModule = {
+        data: {id: 42, name: 'Maths', hp: 20},
+        error: null
+      } satisfies SingleRowResult<ModuleRow>;
+      const query: SupabaseQueryChain<ModuleRow> = chainable(mockModule);
+      const selectSpy = spyOn(query, 'select').and.callThrough();
+      spyOn(supabaseClient, 'from').and.returnValue(query);
+
+      service.GET.moduleWithIdForRackDisplay(42).subscribe({
+        next: () => {
+          const selectArg = selectSpy.calls.mostRecent().args[0] as string;
+          expect(selectArg).toContain('panels:module_panels!module_panels_moduleid_fkey(id,color,filename,description)');
+          expect(selectArg).not.toContain('module_panels_moduleid_fkey(*)');
+          done();
+        },
+        error: (err: unknown) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
   });
   
   // ── GET.patchWithId ───────────────────────────────────────────────────────
