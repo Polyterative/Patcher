@@ -1,6 +1,6 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TestBed } from '@angular/core/testing';
-import { Observable, of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { CommentsDataService } from './comments-data.service';
 import { CommentableEntityTypes, DbComment } from 'src/app/models/comment';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
@@ -126,6 +126,23 @@ describe('CommentsDataService', () => {
     expect(backend.delete.comment).toHaveBeenCalledWith(123);
     expect(backend.GET.comments).toHaveBeenCalledTimes(2);
     expect(backend.GET.comments).toHaveBeenCalledWith(99, CommentableEntityTypes.RACK, 0, service.pageSize - 1);
+  });
+
+  it('shows an error and stays subscribable when comment delete fails', () => {
+    const { service, backend, snackBar } = build();
+    service.requestCommentsUpdate$.next({ entityId: 99, entityType: CommentableEntityTypes.RACK });
+    backend.delete.comment.and.returnValue(throwError(() => new Error('network down')));
+
+    service.deleteComment$.next(123);
+
+    expect(snackBar.open).toHaveBeenCalled();
+    expect(backend.GET.comments).toHaveBeenCalledTimes(1);
+
+    backend.delete.comment.and.returnValue(of({}));
+    service.deleteComment$.next(456);
+
+    expect(backend.delete.comment).toHaveBeenCalledWith(456);
+    expect(backend.GET.comments).toHaveBeenCalledTimes(2);
   });
   
   it('rejects comment below minLength via form validator', () => {

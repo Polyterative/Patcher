@@ -2,7 +2,8 @@ import {
   BehaviorSubject,
   Observable,
   of,
-  Subject
+  Subject,
+  throwError
 } from 'rxjs';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -277,6 +278,28 @@ describe('PatchDetailDataService core flows', () => {
     service.updateSinglePatchData$.next(404);
 
     expect(service.patchDetailUnavailableMessage$.value).not.toBeNull();
+  });
+
+  it('surfaces an error and remains subscribable when patch-module-instance load fails', () => {
+    const {service, backend, snackBar} = build();
+    spyOn(console, 'error');
+    backend.GET.patchModuleInstances.and.returnValue(throwError(() => new Error('instances load failed')));
+
+    service.updateSinglePatchData$.next(1);
+
+    expect(snackBar.open).toHaveBeenCalledWith(
+      jasmine.stringContaining('Failed to load module instances'),
+      undefined,
+      {duration: 5000, panelClass: 'snack-error'}
+    );
+    expect(service.patchModuleInstances$.value).toEqual([]);
+
+    backend.GET.patchModuleInstances.and.returnValue(of([
+      {id: 1} as PatchModuleInstance
+    ]));
+    service.updateSinglePatchData$.next(1);
+
+    expect(service.patchModuleInstances$.value?.length).toBe(1);
   });
 
 

@@ -472,7 +472,29 @@ describe('ModuleDetailDataService', () => {
     expect(service.racksWithThisModule$.value?.[0]?.id).toBe(2);
     expect(service.patchesWithThisModule$.value?.[0]?.id).toBe(22);
   }));
-  
+
+  it('surfaces an error when module load fails', fakeAsync(() => {
+    const {service, backend, snackBar, baseModule} = build();
+    spyOn(console, 'error');
+    backend.GET.moduleWithId.and.returnValue(throwError(() => new Error('module load failed')));
+
+    service.updateSingleModuleData$.next(10);
+    tick(260);
+
+    expect(snackBar.open).toHaveBeenCalledWith(
+      jasmine.stringContaining('Failed to load module details'),
+      undefined,
+      {duration: 5000, panelClass: 'snack-error'}
+    );
+    expect(service.singleModuleData$.value).toBeUndefined();
+
+    backend.GET.moduleWithId.and.callFake((id: number) => of({data: {...baseModule, id}}));
+    service.updateSingleModuleData$.next(10);
+    tick(260);
+
+    expect(service.singleModuleData$.value?.id).toBe(10);
+  }));
+
   it('adds and removes module from collection then refreshes current module', () => {
     const {service, backend} = build();
     const nextSpy = spyOn(service.updateSingleModuleData$, 'next').and.callThrough();
@@ -484,6 +506,37 @@ describe('ModuleDetailDataService', () => {
     expect(backend.add.userModule).toHaveBeenCalledWith(10);
     expect(backend.delete.userModule).toHaveBeenCalledWith(10);
     expect(nextSpy).toHaveBeenCalledWith(10);
+  });
+
+  it('surfaces errors for collection add/remove failures', () => {
+    const {service, backend, snackBar} = build();
+    spyOn(console, 'error');
+    backend.add.userModule.and.returnValue(throwError(() => new Error('add failed')));
+    backend.delete.userModule.and.returnValue(throwError(() => new Error('remove failed')));
+
+    service.addModuleToCollection$.next(10);
+    service.removeModuleFromCollection$.next(10);
+
+    expect(snackBar.open).toHaveBeenCalledWith(
+      jasmine.stringContaining('Failed to add to your collection'),
+      undefined,
+      {duration: 5000, panelClass: 'snack-error'}
+    );
+    expect(snackBar.open).toHaveBeenCalledWith(
+      jasmine.stringContaining('Failed to remove from your collection'),
+      undefined,
+      {duration: 5000, panelClass: 'snack-error'}
+    );
+    expect(snackBar.open).not.toHaveBeenCalledWith(
+      jasmine.stringContaining('added to your collection'),
+      undefined,
+      jasmine.anything()
+    );
+    expect(snackBar.open).not.toHaveBeenCalledWith(
+      jasmine.stringContaining('removed from your collection'),
+      undefined,
+      jasmine.anything()
+    );
   });
 
   it('sets and clears module possession then refreshes current module', () => {
@@ -738,6 +791,23 @@ describe('ModuleDetailDataService', () => {
     
     expect(backend.delete.modulePanel).toHaveBeenCalledWith(baseModule.panels[1]);
     expect(nextSpy).toHaveBeenCalledWith(10);
+  });
+
+  it('surfaces an error when panel delete fails', () => {
+    const {service, backend, snackBar, baseModule} = build();
+    spyOn(console, 'error');
+    const nextSpy = spyOn(service.updateSingleModuleData$, 'next').and.callThrough();
+    service.singleModuleData$.next(baseModule);
+    backend.delete.modulePanel.and.returnValue(throwError(() => new Error('panel delete failed')));
+
+    service.deletePanel$.next(baseModule.panels[1]);
+
+    expect(snackBar.open).toHaveBeenCalledWith(
+      jasmine.stringContaining('Failed to remove panel image'),
+      undefined,
+      {duration: 5000, panelClass: 'snack-error'}
+    );
+    expect(nextSpy).not.toHaveBeenCalled();
   });
 
   describe('setStoreUrl$', () => {

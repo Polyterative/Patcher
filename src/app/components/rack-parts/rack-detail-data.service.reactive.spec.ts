@@ -283,7 +283,7 @@ describe('RackDetailDataService reactive flows', () => {
     );
     createdServices.push(service);
     
-    return {service, backend, dialog, snackBar, router, loggedUser$};
+    return {service, backend, dialog, snackBar, router, loggedUser$, analytics};
   }
 
   beforeEach(() => {
@@ -1056,6 +1056,47 @@ describe('RackDetailDataService reactive flows', () => {
     expect(backend.storage.deleteRackImage).toHaveBeenCalledWith('img.jpg');
     expect(backend.delete.userRack).toHaveBeenCalledWith(4);
     expect(router.navigate).toHaveBeenCalledWith(['/user/area']);
+  });
+
+  it('retries a rack delete after a prior delete attempt failed partway through', () => {
+    spyOn(SharedConstants, 'successCustom').and.callFake(() => {
+    });
+    spyOn(SharedConstants, 'errorCustom');
+    spyOn(console, 'error');
+    const {service, backend, router, analytics} = build();
+    backend.delete.commentsForRack.and.returnValue(throwError(() => new Error('comments delete failed')));
+
+    service.deleteRack$.next(rack({id: 4, name: 'To Delete', image: 'img.jpg'}));
+
+    expect(SharedConstants.errorCustom).toHaveBeenCalledWith(
+      jasmine.anything(),
+      jasmine.stringContaining('Failed to delete rack')
+    );
+    expect(router.navigate).not.toHaveBeenCalled();
+
+    backend.delete.commentsForRack.and.returnValue(of({}));
+    service.deleteRack$.next(rack({id: 5, name: 'Retry Delete', image: 'img2.jpg'}));
+
+    expect(backend.delete.modulesOfRack).toHaveBeenCalledWith(5);
+    expect(backend.delete.userRack).toHaveBeenCalledWith(5);
+    expect(router.navigate).toHaveBeenCalledWith(['/user/area']);
+    expect(analytics.capture).toHaveBeenCalledWith('rack.deleted', { rack_id: 5 });
+  });
+
+  it('surfaces one error snackbar and does not navigate when any delete step fails', () => {
+    spyOn(SharedConstants, 'errorCustom');
+    spyOn(console, 'error');
+    const {service, backend, router} = build();
+    backend.storage.deleteRackImage.and.returnValue(throwError(() => new Error('image delete failed')));
+
+    service.deleteRack$.next(rack({id: 4, name: 'To Delete', image: 'img.jpg'}));
+
+    expect(backend.delete.modulesOfRack).toHaveBeenCalledWith(4);
+    expect(backend.delete.commentsForRack).toHaveBeenCalledWith(4);
+    expect(backend.storage.deleteRackImage).toHaveBeenCalledWith('img.jpg');
+    expect(backend.delete.userRack).not.toHaveBeenCalled();
+    expect(SharedConstants.errorCustom).toHaveBeenCalledTimes(1);
+    expect(router.navigate).not.toHaveBeenCalled();
   });
   
   it('adds module to rack as an unracked local row without refreshing', () => {

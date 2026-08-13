@@ -1,11 +1,11 @@
-import { of } from 'rxjs';
+import { EMPTY, of } from 'rxjs';
 import { catchError, filter, map, pairwise, switchMap, take, takeUntil, tap, withLatestFrom } from 'rxjs/operators';
 import { PatchConnection } from '../../models/connection';
 import { shouldCaptureCanonicalDetailView } from '../detail-analytics-surface';
+import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { MultiInstanceModuleSummary } from './patch-detail-data.models';
 import { PatchDetailDataContext, PatchDetailDataDependencies } from './patch-detail-data.context.types';
 import { groupInstancesByModuleId } from './patch-detail-data.utils';
-
 type PublicReadAccess = {
   isPublicDetailMode: () => boolean;
   buildUnavailableMessage: () => string;
@@ -165,7 +165,13 @@ export function bindPatchModuleInstancesLoad(ctx: PatchDetailDataContext, deps: 
   ctx.singlePatchData$
     .pipe(
       filter(x => !!x),
-      switchMap(patch => deps.backend.GET.patchModuleInstances(patch.id)),
+      switchMap(patch => deps.backend.GET.patchModuleInstances(patch.id).pipe(
+        catchError(err => {
+          console.error('Failed to load patch module instances:', err);
+          SharedConstants.errorCustom(deps.snackBar, 'Failed to load module instances — check your connection and try again.');
+          return EMPTY;
+        })
+      )),
       takeUntil(ctx.destroy$)
     )
     .subscribe(instances => ctx.patchModuleInstances$.next(instances));
