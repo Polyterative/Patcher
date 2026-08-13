@@ -64,7 +64,7 @@ export function bindAddModuleInstance(ctx: PatchDetailDataContext, deps: PatchDe
       ctx.patchModuleInstances$.next([...ctx.patchModuleInstances$.value, ...newInstances]);
       const moduleId = newInstances[0]?.module_id;
       if (moduleId != null) {
-        renumberModuleInstances$(ctx, deps, moduleId).subscribe();
+        renumberModuleInstances$(ctx, deps, moduleId).pipe(takeUntil(ctx.destroy$)).subscribe();
       }
       deps.analytics.capture('patch.module_instance_added', { patch_id: ctx.singlePatchData$.value?.id, module_id: moduleId, count: newInstances.length });
       const msg = newInstances.length > 1 ? 'Module split into 2 copies.' : 'Copy added.';
@@ -113,7 +113,7 @@ export function bindRemoveModuleInstance(ctx: PatchDetailDataContext, deps: Patc
         ctx.requestConnectionDbSync$.next();
       }
 
-      renumberModuleInstances$(ctx, deps, removed.module_id).subscribe();
+      renumberModuleInstances$(ctx, deps, removed.module_id).pipe(takeUntil(ctx.destroy$)).subscribe();
 
       const sel = ctx.selectedForConnection$.value;
       const aAffected = sel?.a?.cv?.instance_id === removed.id;
@@ -171,7 +171,7 @@ export function ensureModuleInstance$(
     }).pipe(
       tap(({newInstance}) => {
         ctx.patchModuleInstances$.next([...ctx.patchModuleInstances$.value, newInstance]);
-        renumberModuleInstances$(ctx, deps, module.id).subscribe();
+        renumberModuleInstances$(ctx, deps, module.id).pipe(takeUntil(ctx.destroy$)).subscribe();
       }),
       map(({newInstance}) => newInstance.id as number),
       catchError(err => {
@@ -185,7 +185,7 @@ export function ensureModuleInstance$(
   return (deps.backend.add.patchModuleInstance(patch.id, module.id, nextLabel) as Observable<PatchModuleInstance>).pipe(
     tap(instance => {
       ctx.patchModuleInstances$.next([...ctx.patchModuleInstances$.value, instance]);
-      renumberModuleInstances$(ctx, deps, module.id).subscribe();
+      renumberModuleInstances$(ctx, deps, module.id).pipe(takeUntil(ctx.destroy$)).subscribe();
     }),
     map(instance => instance.id as number),
     catchError(err => {
