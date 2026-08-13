@@ -39,7 +39,7 @@ export interface PatchDetailDataContext {
   confirmSelectedConnection$: Subject<void>;
   removeConnectionFromEditor$: Subject<PatchConnection>;
   deletePatch$: Subject<number>;
-  requestConnectionDbSync$: Subject<void>;
+  requestConnectionDbSync$: Subject<PatchConnection[] | null>;
   requestNoteSync$: Subject<PatchConnection>;
   patchModuleInstances$: BehaviorSubject<PatchModuleInstance[]>;
   addModuleInstance$: Subject<MinimalModule>;

@@ -387,6 +387,40 @@ describe('RackDetailDataService reactive flows', () => {
     expect(backend.update.rack).toHaveBeenCalled();
   });
   
+  it('reverts rack.public and isCurrentRackPrivate$ when privacy toggle persist fails', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
+    });
+    const {service, backend} = build();
+    service.singleRackData$.next(rack({public: true}));
+    const preToggle = service.isCurrentRackPrivate$.value;
+    
+    backend.update.rack.and.returnValue(throwError(() => new Error('privacy update failed')));
+    service.requestRackPrivacyStatusChange$.next();
+    
+    expect(service.isCurrentRackPrivate$.value).toBe(preToggle);
+    expect(service.singleRackData$.value?.public).toBeTrue();
+    expect(SharedConstants.errorCustom).toHaveBeenCalled();
+  });
+  
+  it('reverts rack.locked, isCurrentRackEditable$, and the name control when edit-lock toggle persist fails', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
+    });
+    const {service, backend} = build();
+    service.singleRackData$.next(rack({locked: true, name: 'Original Name'}));
+    service.formData.name.control.setValue('Original Name', {emitEvent: false});
+    const preToggleEditable = service.isCurrentRackEditable$.value;
+    const preToggleLocked = service.singleRackData$.value?.locked;
+    const preToggleName = service.formData.name.control.value;
+    
+    backend.update.rack.and.returnValue(throwError(() => new Error('edit lock update failed')));
+    service.requestRackEditableStatusChange$.next();
+    
+    expect(service.isCurrentRackEditable$.value).toBe(preToggleEditable);
+    expect(service.singleRackData$.value?.locked).toBe(preToggleLocked);
+    expect(service.formData.name.control.value).toBe(preToggleName);
+    expect(SharedConstants.errorCustom).toHaveBeenCalled();
+  });
+  
   it('rejects replace-with-blank when module HP exceeds standard limits', () => {
     const {service, snackBar} = build();
     service.rowedRackedModules$.next([[moduleInRack(1, 0, 0, 21, 0)]]);

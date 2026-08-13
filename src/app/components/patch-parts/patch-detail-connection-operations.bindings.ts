@@ -73,7 +73,7 @@ export function bindConfirmSelectedConnection(ctx: PatchDetailDataContext, deps:
         ];
         ctx.editorConnections$.next(nextList);
         deps.bridge.editorConnections$.next(nextList);
-        ctx.requestConnectionDbSync$.next();
+        ctx.requestConnectionDbSync$.next(patchConnections);
         deps.analytics.capture('patch.connection_added', { patch_id: patch.id });
         SharedConstants.successCustom(deps.snackBar, `${ newConnection.a.module.name } "${ newConnection.a.name }" → ${ newConnection.b.module.name } "${ newConnection.b.name }" recorded.`);
         deps.bridge.record$.next();
@@ -108,7 +108,7 @@ export function bindRemoveConnectionFromEditor(ctx: PatchDetailDataContext, deps
       ctx.editorConnections$.next(next);
       deps.bridge.editorConnections$.next(next);
       deps.analytics.capture('patch.connection_removed', { patch_id: ctx.singlePatchData$.value?.id });
-      ctx.requestConnectionDbSync$.next();
+      ctx.requestConnectionDbSync$.next(data);
     });
 }
 
@@ -117,11 +117,19 @@ export function bindConnectionDbSync(
   deps: PatchDetailDataDependencies,
   connectionSyncPendingCount$: BehaviorSubject<number>
 ): void {
+  // CAS guard: only roll back if nothing newer has landed in editorConnections$ since this
+  // sync's snapshot was taken — otherwise a slow/failed sync would clobber a newer optimistic edit.
+  const rollbackIfStillCurrent = (previousConnections: PatchConnection[] | null, connections: PatchConnection[] | null): void => {
+    if (ctx.editorConnections$.value !== connections) { return; }
+    ctx.editorConnections$.next(previousConnections);
+    deps.bridge.editorConnections$.next(previousConnections);
+  };
+
   ctx.requestConnectionDbSync$
     .pipe(
       tap(() => connectionSyncPendingCount$.next(connectionSyncPendingCount$.value + 1)),
       withLatestFrom(ctx.editorConnections$, ctx.singlePatchData$),
-      concatMap(([_, connections, patch]) => {
+      concatMap(([previousConnections, connections, patch]) => {
         let request$: Observable<unknown>;
         if (!patch || connections === null) {
           request$ = of(null);
@@ -130,6 +138,7 @@ export function bindConnectionDbSync(
             catchError(err => {
               console.error('Failed to save connections:', err);
               SharedConstants.errorCustom(deps.snackBar, 'Failed to save — check your connection and try again.');
+              rollbackIfStillCurrent(previousConnections, connections);
               return EMPTY;
             })
           );
@@ -138,6 +147,7 @@ export function bindConnectionDbSync(
             catchError(err => {
               console.error('Failed to save connections:', err);
               SharedConstants.errorCustom(deps.snackBar, 'Failed to save — check your connection and try again.');
+              rollbackIfStillCurrent(previousConnections, connections);
               return EMPTY;
             })
           );

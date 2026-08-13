@@ -349,6 +349,20 @@ describe('PatchDetailDataService core flows', () => {
     expect(service.isCurrentPatchPrivate$.value).toBeTrue();
   });
 
+  it('reverts patch.public and isCurrentPatchPrivate$ when privacy toggle persist fails', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    service.singlePatchData$.next(patch({public: true}));
+    const preToggle = service.isCurrentPatchPrivate$.value;
+
+    backend.update.patch.and.returnValue(throwError(() => new Error('privacy update failed')));
+    service.requestPatchPrivacyStatusChange$.next();
+
+    expect(service.isCurrentPatchPrivate$.value).toBe(preToggle);
+    expect(service.singlePatchData$.value?.public).toBeTrue();
+    expect(SharedConstants.errorCustom).toHaveBeenCalled();
+  });
+
   // --- Editor panel toggle ---
 
   it('requestPatchEditingToggle$ flips patchEditingPanelOpenState$', () => {

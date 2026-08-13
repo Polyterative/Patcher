@@ -31,11 +31,22 @@ export class RackDetailEditingDataService {
       .pipe(
         withLatestFrom(context.singleRackData$),
         map(([_, x]) => {
+          const previousPublic = x.public;
           x.public = !x.public;
           context.isCurrentRackPrivate$.next(!x.public);
-          return x;
+          return {rack: x, previousPublic};
         }),
-        exhaustMap(x => context.backend.update.rack(x)),
+        exhaustMap(({rack, previousPublic}) => context.backend.update.rack(rack).pipe(
+          catchError(err => {
+            console.error('Failed to toggle rack privacy:', err);
+            if (context.singleRackData$.value) {
+              context.singleRackData$.value.public = previousPublic;
+            }
+            context.isCurrentRackPrivate$.next(!previousPublic);
+            SharedConstants.errorCustom(context.snackBar, 'Failed to update privacy — check your connection and try again.');
+            return EMPTY;
+          })
+        )),
         context.takeUntilDestroyed()
       )
       .subscribe(() => {
@@ -46,15 +57,31 @@ export class RackDetailEditingDataService {
       .pipe(
         withLatestFrom(context.singleRackData$, context.isCurrentRackEditable$),
         map(([_, x, y]) => {
+          const previousEditable = y;
+          const previousName = x.name;
           const editable: boolean = !y;
           if (editable) {
             context.formData.name.control.reset(x.name, {emitEvent: false});
           }
           context.isCurrentRackEditable$.next(editable);
           x.locked = !editable;
-          return x;
+          return {rack: x, previousEditable, previousName};
         }),
-        switchMap(x => context.backend.update.rack(x)),
+        switchMap(({rack, previousEditable, previousName}) => context.backend.update.rack(rack).pipe(
+          catchError(err => {
+            console.error('Failed to toggle rack edit lock:', err);
+            if (context.singleRackData$.value) {
+              context.singleRackData$.value.locked = !previousEditable;
+            }
+            context.isCurrentRackEditable$.next(previousEditable);
+            if (!previousEditable) {
+              // toggle was entering edit mode and reset the name control — revert that too
+              context.formData.name.control.reset(previousName, {emitEvent: false});
+            }
+            SharedConstants.errorCustom(context.snackBar, 'Failed to update edit lock — check your connection and try again.');
+            return EMPTY;
+          })
+        )),
         context.takeUntilDestroyed()
       )
       .subscribe(() => {
