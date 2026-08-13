@@ -118,7 +118,7 @@ export class PatchDetailDataService extends SubManager implements OnDestroy {
   readonly removeConnectionFromEditor$ = new Subject<PatchConnection>();
   readonly deletePatch$ = new Subject<number>();
   /** Serializes connection writes to the backend (mirrors rack's requestRackedModulesDbSync$). */
-  readonly requestConnectionDbSync$ = new Subject<void>();
+  readonly requestConnectionDbSync$ = new Subject<PatchConnection[] | null>();
   /** Targeted single-row note sync — emits the full PatchConnection whose notes changed. */
   readonly requestNoteSync$ = new Subject<PatchConnection>();
   readonly patchModuleInstances$ = new BehaviorSubject<PatchModuleInstance[]>([]);

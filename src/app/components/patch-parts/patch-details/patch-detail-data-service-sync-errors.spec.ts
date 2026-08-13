@@ -229,7 +229,7 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
     );
     createdBridges.push(bridge);
     createdServices.push(service);
-    return {service, backend, bridge, router, snackBar};
+    return {service, backend, bridge, router, snackBar, analytics};
   }
 
   beforeEach(() => {
@@ -592,7 +592,7 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
     service.singlePatchData$.next(patch({id: 44}));
     service.editorConnections$.next([connection({patch: patch({id: 44})})]);
 
-    service.requestConnectionDbSync$.next();
+    service.requestConnectionDbSync$.next(null);
 
     expect(service.linkedRackSelectionBlocked$.value).toBeTrue();
     expect(service.linkedRackSelectionHint$.value).toBe('Wait for pending connection changes to finish saving before switching the linked rack.');
@@ -659,20 +659,115 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
     
     service.singlePatchData$.next(undefined);
     service.editorConnections$.next(null);
-    service.requestConnectionDbSync$.next();
+    service.requestConnectionDbSync$.next(null);
     expect(backend.update.patchConnectionsSilent).not.toHaveBeenCalled();
     expect(backend.delete.patchConnectionsForPatch).not.toHaveBeenCalled();
     
     service.singlePatchData$.next(patch({id: 90}));
     service.editorConnections$.next([]);
     backend.delete.patchConnectionsForPatch.and.returnValue(throwError(() => new Error('delete failed')));
-    service.requestConnectionDbSync$.next();
+    service.requestConnectionDbSync$.next(null);
+    expect(service.editorConnections$.value).toBeNull();
     
     service.editorConnections$.next([savedConnection]);
     backend.update.patchConnectionsSilent.and.returnValue(throwError(() => new Error('update failed')));
-    service.requestConnectionDbSync$.next();
+    service.requestConnectionDbSync$.next([]);
+    expect(service.editorConnections$.value).toEqual([]);
     
     expect(SharedConstants.errorCustom).toHaveBeenCalledTimes(2);
+  });
+  
+  it('rolls back editorConnections$ to the pre-edit snapshot when update sync fails, nothing newer pending', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
+    });
+    const {service, backend, bridge} = build();
+    service.singlePatchData$.next(patch({id: 44}));
+    const existingConnection = connection({
+      patch: patch({id: 44}),
+      a: cvWithModuleFixture(9, 99, 'X', 'X'),
+      b: cvWithModuleFixture(8, 88, 'Y', 'Y'),
+      instance_id_a: 9,
+      instance_id_b: 8
+    });
+    service.editorConnections$.next([existingConnection]);
+    const preAdd = service.editorConnections$.value;
+    
+    backend.update.patchConnectionsSilent.and.returnValue(throwError(() => new Error('update failed')));
+    
+    service.selectedForConnection$.next({
+      a: cv(1, 'out', 11, 1),
+      b: cv(2, 'in', 22, 2)
+    });
+    service.confirmSelectedConnection$.next();
+    
+    expect(service.editorConnections$.value).toEqual(preAdd);
+    expect(bridge.editorConnections$.value).toEqual(preAdd);
+    expect(SharedConstants.errorCustom).toHaveBeenCalled();
+  });
+  
+  it('rolls back editorConnections$ to the empty pre-edit snapshot when delete sync fails, nothing newer pending', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
+    });
+    const {service, backend, bridge} = build();
+    service.singlePatchData$.next(patch({id: 44}));
+    const removableConnection = connection({
+      patch: patch({id: 44}),
+      a: cvWithModuleFixture(1, 11, 'A', 'A'),
+      b: cvWithModuleFixture(2, 22, 'B', 'B'),
+      instance_id_a: 1,
+      instance_id_b: 2
+    });
+    service.editorConnections$.next([removableConnection]);
+    const preRemove = service.editorConnections$.value;
+    
+    backend.delete.patchConnectionsForPatch.and.returnValue(throwError(() => new Error('delete failed')));
+    
+    service.removeConnectionFromEditor$.next(removableConnection);
+    
+    expect(service.editorConnections$.value).toEqual(preRemove);
+    expect(bridge.editorConnections$.value).toEqual(preRemove);
+    expect(SharedConstants.errorCustom).toHaveBeenCalled();
+  });
+  
+  it('does not clobber a newer optimistic edit when an earlier queued sync fails (CAS-gated rollback)', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
+    });
+    spyOn(SharedConstants, 'successCustom').and.callFake(() => {
+    });
+    const {service, backend} = build();
+    service.singlePatchData$.next(patch({id: 44}));
+    service.editorConnections$.next([]);
+    
+    const sync1 = new Subject<MutationResponse>();
+    backend.update.patchConnectionsSilent.and.returnValues(sync1.asObservable(), of(mutationResponse()));
+    
+    // Add connection A — kicks off sync 1 (pending, controlled by `sync1`).
+    service.selectedForConnection$.next({
+      a: cv(1, 'out', 11, 1),
+      b: cv(2, 'in', 22, 2)
+    });
+    service.confirmSelectedConnection$.next();
+    expect(service.editorConnections$.value?.length).toBe(1);
+    
+    // Add connection B while sync 1 is still pending — queues sync 2 with the newer snapshot.
+    service.selectedForConnection$.next({
+      a: cv(3, 'out', 33, 3),
+      b: cv(4, 'in', 44, 4)
+    });
+    service.confirmSelectedConnection$.next();
+    const afterB = service.editorConnections$.value;
+    expect(afterB?.length).toBe(2);
+    
+    // Sync 1 fails — CAS check must detect that a newer edit (afterB) landed and skip rollback.
+    sync1.error(new Error('sync 1 failed'));
+    
+    expect(service.editorConnections$.value).toBe(afterB);
+    expect(SharedConstants.errorCustom).toHaveBeenCalled();
+    
+    // Sync 2 (queued behind sync 1) now runs with the up-to-date payload and succeeds.
+    expect(backend.update.patchConnectionsSilent).toHaveBeenCalledTimes(2);
+    expect(backend.update.patchConnectionsSilent.calls.argsFor(1)[0]).toEqual(afterB);
+    expect(service.editorConnections$.value).toEqual(afterB);
   });
   
   it('handles note auto-save error and delete patch flow', () => {
@@ -694,6 +789,44 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
     expect(backend.delete.patchModuleInstancesForPatch).toHaveBeenCalledWith(30);
     expect(backend.delete.patch).toHaveBeenCalledWith(30);
     expect(router.navigate).toHaveBeenCalledWith(['/user/area']);
+  });
+  
+  it('surfaces an error and does not navigate when a patch-delete step fails', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
+    });
+    const {service, backend, router, analytics} = build();
+    backend.delete.patchModuleInstancesForPatch.and.returnValue(throwError(() => new Error('module instances delete failed')));
+    
+    service.deletePatch$.next(30);
+    
+    expect(backend.delete.patchConnectionsForPatch).toHaveBeenCalledWith(30);
+    expect(backend.delete.patchModuleInstancesForPatch).toHaveBeenCalledWith(30);
+    expect(backend.delete.patch).not.toHaveBeenCalled();
+    expect(SharedConstants.errorCustom).toHaveBeenCalledTimes(1);
+    expect(router.navigate).not.toHaveBeenCalled();
+    expect(analytics.capture).not.toHaveBeenCalledWith('patch.deleted', jasmine.any(Object));
+  });
+  
+  it('retries a patch delete after a prior attempt failed', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
+    });
+    const {service, backend, router, analytics} = build();
+    backend.delete.patchConnectionsForPatch.and.returnValue(throwError(() => new Error('connections delete failed')));
+    
+    service.deletePatch$.next(30);
+    
+    expect(SharedConstants.errorCustom).toHaveBeenCalledTimes(1);
+    expect(router.navigate).not.toHaveBeenCalled();
+    
+    backend.delete.patchConnectionsForPatch.and.returnValue(of(mutationResponse()));
+    
+    service.deletePatch$.next(31);
+    
+    expect(backend.delete.patchConnectionsForPatch).toHaveBeenCalledWith(31);
+    expect(backend.delete.patchModuleInstancesForPatch).toHaveBeenCalledWith(31);
+    expect(backend.delete.patch).toHaveBeenCalledWith(31);
+    expect(router.navigate).toHaveBeenCalledWith(['/user/area']);
+    expect(analytics.capture).toHaveBeenCalledWith('patch.deleted', jasmine.any(Object));
   });
   
   it('forwards bridge confirm$ events into confirmSelectedConnection$', () => {

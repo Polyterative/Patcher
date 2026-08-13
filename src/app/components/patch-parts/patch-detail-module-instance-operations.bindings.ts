@@ -110,7 +110,7 @@ export function bindRemoveModuleInstance(ctx: PatchDetailDataContext, deps: Patc
         });
         ctx.editorConnections$.next(scrubbed);
         deps.bridge.editorConnections$.next(scrubbed);
-        ctx.requestConnectionDbSync$.next();
+        ctx.requestConnectionDbSync$.next(currentConnections);
       }
 
       renumberModuleInstances$(ctx, deps, removed.module_id).pipe(takeUntil(ctx.destroy$)).subscribe();

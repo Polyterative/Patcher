@@ -24,17 +24,27 @@ export function bindPatchPrivacyToggle(ctx: PatchDetailDataContext, deps: PatchD
     .pipe(
       withLatestFrom(ctx.singlePatchData$),
       map(([_, patch]) => {
+        const previousPublic = patch.public;
         patch.public = !patch.public;
         ctx.isCurrentPatchPrivate$.next(!patch.public);
-        return {...patch};
+        return {patch: {...patch}, previousPublic};
       }),
-      exhaustMap(patch => deps.backend.update.patch(patch).pipe(
+      exhaustMap(({patch, previousPublic}) => deps.backend.update.patch(patch).pipe(
         tap(() => {
           const msg = patch.public
             ? `"${ patch.name }" is now public — visible to everyone.`
             : `"${ patch.name }" is now private — only you can see it.`;
           SharedConstants.successCustom(deps.snackBar, msg);
           deps.analytics.capture('patch.privacy_toggled', { patch_id: patch?.id, public: patch.public });
+        }),
+        catchError(err => {
+          console.error('Failed to toggle patch privacy:', err);
+          if (ctx.singlePatchData$.value) {
+            ctx.singlePatchData$.value.public = previousPublic;
+          }
+          ctx.isCurrentPatchPrivate$.next(!previousPublic);
+          SharedConstants.errorCustom(deps.snackBar, 'Failed to update privacy — check your connection and try again.');
+          return EMPTY;
         })
       )),
       takeUntil(ctx.destroy$)
@@ -124,11 +134,18 @@ export function bindPatchDelete(ctx: PatchDetailDataContext, deps: PatchDetailDa
             filter((x: ConfirmDialogDataOutModel) => !!x?.answer));
       }),
       withLatestFrom(ctx.deletePatch$),
-      switchMap(([_z, x]) => deps.backend.delete.patchConnectionsForPatch(x)
-        .pipe(map(() => x))),
-      switchMap((x) => deps.backend.delete.patchModuleInstancesForPatch(x)
-        .pipe(map(() => x))),
-      switchMap((x) => deps.backend.delete.patch(x)),
+      switchMap(([_z, x]) =>
+        deps.backend.delete.patchConnectionsForPatch(x).pipe(
+          switchMap(() => deps.backend.delete.patchModuleInstancesForPatch(x)),
+          switchMap(() => deps.backend.delete.patch(x)),
+          map(() => x),
+          catchError(err => {
+            console.error('Failed to delete patch:', err);
+            SharedConstants.errorCustom(deps.snackBar, 'Failed to delete patch — check your connection and try again.');
+            return EMPTY;
+          })
+        )
+      ),
       takeUntil(ctx.destroy$)
     )
     .subscribe(_ => {

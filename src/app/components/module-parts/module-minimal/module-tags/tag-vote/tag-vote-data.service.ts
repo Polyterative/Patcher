@@ -127,11 +127,14 @@ export class TagVoteDataService extends SubManager {
       debounceTime(150),
       withLatestFrom(this.userService.loggedUser$, this._myVotes$, this._tagVotes$),
       filter(([, user]) => !!user),
-      tap(([moduleTagId, , myVotes, tagVotes]) => {
+      map(([moduleTagId, , myVotes, tagVotes]) => {
+        const previousMyVotes = myVotes;
+        const previousTagVotes = tagVotes;
         const newMyVotes = new Set(myVotes);
         const currentCount = tagVotes.get(moduleTagId) ?? 0;
         const newTagVotes = new Map(tagVotes);
-        if (newMyVotes.has(moduleTagId)) {
+        const wasVoted = newMyVotes.has(moduleTagId);
+        if (wasVoted) {
           newMyVotes.delete(moduleTagId);
           newTagVotes.set(moduleTagId, Math.max(0, currentCount - 1));
         } else {
@@ -140,14 +143,16 @@ export class TagVoteDataService extends SubManager {
         }
         this._myVotes$.next(newMyVotes);
         this._tagVotes$.next(newTagVotes);
+        return {moduleTagId, wasVoted, previousMyVotes, previousTagVotes};
       }),
-      switchMap(([moduleTagId, , myVotes]) =>
-        // myVotes is the BEFORE state — captured by withLatestFrom before tap updated it
-        (myVotes.has(moduleTagId)
+      switchMap(({moduleTagId, wasVoted, previousMyVotes, previousTagVotes}) =>
+        (wasVoted
             ? this.backend.delete.userModuleTag(moduleTagId)
             : this.backend.add.userModuleTag(moduleTagId)
         ).pipe(
           catchError(() => {
+            this._myVotes$.next(previousMyVotes);
+            this._tagVotes$.next(previousTagVotes);
             SharedConstants.errorCustom(this.snackBar, 'Vote failed');
             return EMPTY;
           })

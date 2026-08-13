@@ -619,4 +619,62 @@ describe('TagVoteDataService', () => {
       setTimeout(() => loggedUser$.next(null), 20);
     });
   });
+  
+  describe('regression: toggleVote$ rollback on failure', () => {
+    it('should roll back both myVotes$ and tagVotes$ to the pre-toggle snapshot when adding a vote fails', (done) => {
+      const {service, mockBackend, mockSnackBar} = setupTest();
+      mockBackend.add.userModuleTag.and.returnValue(throwError(() => new Error('vote failed')));
+      service.loadVotes$.next(PRELOADED_COUNTS); // tag 10 count=3 (voted), tag 11 count=1 (not voted)
+      
+      setTimeout(() => {
+        const countsBefore = new Map(service['_tagVotes$'].getValue());
+        const votesBefore = new Set(service['_myVotes$'].getValue());
+        
+        service.toggleVote$.next(11); // optimistic add — not voted yet
+        
+        setTimeout(() => {
+          let tagVotes: Map<number, number> | undefined;
+          let myVotes: Set<number> | undefined;
+          service.tagVotes$.subscribe(m => {
+            tagVotes = m;
+          });
+          service.myVotes$.subscribe(s => {
+            myVotes = s;
+          });
+          expect(tagVotes).toEqual(countsBefore);
+          expect(myVotes).toEqual(votesBefore);
+          expect(mockSnackBar.open).toHaveBeenCalled();
+          done();
+        }, 300);
+      }, 50);
+    });
+    
+    it('should roll back both myVotes$ and tagVotes$ to the pre-toggle snapshot when retracting a vote fails', (done) => {
+      const {service, mockBackend, mockSnackBar} = setupTest();
+      mockBackend.delete.userModuleTag.and.returnValue(throwError(() => new Error('unvote failed')));
+      service.loadVotes$.next(PRELOADED_COUNTS); // tag 10 count=3 (voted)
+      
+      setTimeout(() => {
+        const countsBefore = new Map(service['_tagVotes$'].getValue());
+        const votesBefore = new Set(service['_myVotes$'].getValue());
+        
+        service.toggleVote$.next(10); // optimistic remove — already voted
+        
+        setTimeout(() => {
+          let tagVotes: Map<number, number> | undefined;
+          let myVotes: Set<number> | undefined;
+          service.tagVotes$.subscribe(m => {
+            tagVotes = m;
+          });
+          service.myVotes$.subscribe(s => {
+            myVotes = s;
+          });
+          expect(tagVotes).toEqual(countsBefore);
+          expect(myVotes).toEqual(votesBefore);
+          expect(mockSnackBar.open).toHaveBeenCalled();
+          done();
+        }, 300);
+      }, 50);
+    });
+  });
 });
