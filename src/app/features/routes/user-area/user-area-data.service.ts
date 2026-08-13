@@ -8,6 +8,7 @@ import {
   throwError
 } from 'rxjs';
 import {
+  catchError,
   filter,
   map,
   switchMap,
@@ -37,6 +38,7 @@ import { DiscoveryTipService } from 'src/app/shared-interproject/discovery-tips/
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { MatDialog } from "@angular/material/dialog";
+import { MatSnackBar } from "@angular/material/snack-bar";
 import { DbComment } from "src/app/models/comment";
 import { CurrentUserContributorStats } from 'src/app/features/backend/supabase-queries';
 import { recoverListRequest } from 'src/app/features/browser-data-recovery';
@@ -56,6 +58,7 @@ import {
   remainingLoaded$
 } from './user-area-data.utils';
 import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
+import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 
 export type UserModuleCollectionFilter = 'MY_MODULES' | 'WISHLIST' | 'FOR_SALE';
 
@@ -146,7 +149,8 @@ export class UserAreaDataService extends SubManager {
     public dialog: MatDialog,
     public backend: SupabaseService,
     private readonly discoveryTipService: DiscoveryTipService,
-    private readonly analytics: AnalyticsService
+    private readonly analytics: AnalyticsService,
+    private readonly snackBar: MatSnackBar
   ) {
     super();
 
@@ -332,7 +336,13 @@ export class UserAreaDataService extends SubManager {
     this.updateContributorStats$
       .pipe(
         tap(() => this.contributorStats$.next(undefined)),
-        switchMap(() => this.backend.GET.currentUserContributorStats()),
+        switchMap(() => this.backend.GET.currentUserContributorStats().pipe(
+          catchError(err => {
+            console.error('Failed to load contributor stats:', err);
+            SharedConstants.errorCustom(this.snackBar, 'Failed to load contributor stats — check your connection and try again.');
+            return of(undefined);
+          })
+        )),
         this.takeUntilDestroyed()
       )
       .subscribe((stats) => this.contributorStats$.next(stats));

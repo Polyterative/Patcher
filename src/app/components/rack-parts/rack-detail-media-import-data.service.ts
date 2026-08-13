@@ -150,10 +150,19 @@ export class RackDetailMediaImportDataService {
               map(() => rack)
             );
         }),
-        switchMap(rack => context.backend.delete.modulesOfRack(rack.id).pipe(map(() => rack))),
-        switchMap(rack => context.backend.delete.commentsForRack(rack.id).pipe(map(() => rack))),
-        switchMap(rack => rack.image ? context.backend.storage.deleteRackImage(rack.image).pipe(map(() => rack)) : of(rack)),
-        switchMap(rack => context.backend.delete.userRack(rack.id).pipe(map(() => rack))),
+        switchMap(rack =>
+          context.backend.delete.modulesOfRack(rack.id).pipe(
+            switchMap(() => context.backend.delete.commentsForRack(rack.id)),
+            switchMap(() => rack.image ? context.backend.storage.deleteRackImage(rack.image) : of(null)),
+            switchMap(() => context.backend.delete.userRack(rack.id)),
+            map(() => rack),
+            catchError(err => {
+              console.error('Failed to delete rack:', err);
+              SharedConstants.errorCustom(context.snackBar, 'Failed to delete rack — check your connection and try again.');
+              return EMPTY;
+            })
+          )
+        ),
         context.takeUntilDestroyed()
       )
       .subscribe((rack) => {

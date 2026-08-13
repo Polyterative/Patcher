@@ -96,7 +96,12 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
           map(() => ({
             panel,
             moduleId: panel.moduleid ?? module?.id
-          }))
+          })),
+          catchError(err => {
+            console.error('Failed to delete module panel:', err);
+            SharedConstants.errorCustom(this.snackBar, 'Failed to remove panel image — check your connection and try again.');
+            return EMPTY;
+          })
         )),
         this.takeUntilDestroyed()
       )
@@ -199,7 +204,12 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
         }),
         withLatestFrom(this.detailAnalyticsSurface$),
         switchMap(([moduleId, surface]) => this.backend.GET.moduleWithId(moduleId).pipe(
-          map(result => ({result, surface}))
+          map(result => ({result, surface})),
+          catchError(err => {
+            console.error('Failed to load module:', err);
+            SharedConstants.errorCustom(this.snackBar, 'Failed to load module details — check your connection and try again.');
+            return of({result: {data: undefined}, surface});
+          })
         )),
         this.takeUntilDestroyed()
       )
@@ -323,7 +333,13 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
     
     this.addModuleToCollection$
       .pipe(
-        exhaustMap(x => this.backend.add.userModule(x)),
+        exhaustMap(x => this.backend.add.userModule(x).pipe(
+          catchError(err => {
+            console.error('Failed to add module to collection:', err);
+            SharedConstants.errorCustom(this.snackBar, 'Failed to add to your collection — check your connection and try again.');
+            return EMPTY;
+          })
+        )),
         withLatestFrom(this.updateSingleModuleData$, this.singleModuleData$),
         this.takeUntilDestroyed()
       )
@@ -335,7 +351,13 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
     
     this.removeModuleFromCollection$
       .pipe(
-        exhaustMap(x => this.backend.delete.userModule(x)),
+        exhaustMap(x => this.backend.delete.userModule(x).pipe(
+          catchError(err => {
+            console.error('Failed to remove module from collection:', err);
+            SharedConstants.errorCustom(this.snackBar, 'Failed to remove from your collection — check your connection and try again.');
+            return EMPTY;
+          })
+        )),
         withLatestFrom(this.updateSingleModuleData$, this.singleModuleData$),
         this.takeUntilDestroyed()
       )

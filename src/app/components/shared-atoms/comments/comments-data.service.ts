@@ -10,12 +10,14 @@ import {
 } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import {
   BehaviorSubject,
+  EMPTY,
   ReplaySubject,
   Subject
 } from "rxjs";
 import { SupabaseService } from "src/app/features/backend/supabase.service";
 import { SubManager } from "src/app/shared-interproject/directives/subscription-manager";
 import {
+  catchError,
   exhaustMap,
   map,
   switchMap,
@@ -90,7 +92,13 @@ export class CommentsDataService extends SubManager {
     
     // when requested comment deletion, perform the backend call
     this.deleteComment$.pipe(
-      exhaustMap(x => this.backend.delete.comment(x)),
+      exhaustMap(x => this.backend.delete.comment(x).pipe(
+        catchError(err => {
+          console.error('Failed to delete comment:', err);
+          SharedConstants.errorCustom(this.snackBar, 'Failed to delete comment — check your connection and try again.');
+          return EMPTY;
+        })
+      )),
       withLatestFrom(this.requestCommentsUpdate$),
       this.takeUntilDestroyed()
     ).subscribe(([_, entity]) => {

@@ -4,6 +4,7 @@ import {
   throwError
 } from 'rxjs';
 import { UserAreaDataService } from './user-area-data.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { PatchCreatorComponent } from 'src/app/components/patch-parts/patch-creator/patch-creator.component';
 import {
   RackCreatorComponent,
@@ -123,9 +124,10 @@ describe('UserAreaDataService', () => {
       identify: jasmine.createSpy('identify'),
       reset: jasmine.createSpy('reset')
     };
+    const snackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
     
-    const service = new UserAreaDataService(dialog as any, backend as any, discoveryTipService as any, analytics as any);
-    return {service, backend, dialog, discoveryTipService, analytics};
+    const service = new UserAreaDataService(dialog as any, backend as any, discoveryTipService as any, analytics as any, snackBar);
+    return {service, backend, dialog, discoveryTipService, analytics, snackBar};
   }
 
   function collectCacheBusts(backend: ReturnType<typeof build>['backend']): CachedEntity[][] {
@@ -163,6 +165,33 @@ describe('UserAreaDataService', () => {
     service.updateContributorStats$.next();
 
     expect(backend.GET.currentUserContributorStats).toHaveBeenCalledWith();
+    expect(service.contributorStats$.value).toEqual({
+      modulesSubmitted: 4,
+      approvedModules: 3,
+      pendingModules: 1,
+      commentsPosted: 6,
+      moduleFlagsSubmitted: 2
+    });
+  });
+
+  it('surfaces an error and remains subscribable when contributor-stats load fails', () => {
+    const {service, backend, snackBar} = build();
+    backend.GET.currentUserContributorStats.and.returnValue(throwError(() => new Error('network down')));
+
+    service.updateContributorStats$.next();
+
+    expect(snackBar.open).toHaveBeenCalled();
+    expect(service.contributorStats$.value).toBeUndefined();
+
+    backend.GET.currentUserContributorStats.and.returnValue(of({
+      modulesSubmitted: 4,
+      approvedModules: 3,
+      pendingModules: 1,
+      commentsPosted: 6,
+      moduleFlagsSubmitted: 2
+    }));
+    service.updateContributorStats$.next();
+
     expect(service.contributorStats$.value).toEqual({
       modulesSubmitted: 4,
       approvedModules: 3,
