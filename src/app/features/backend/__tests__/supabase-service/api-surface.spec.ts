@@ -48,7 +48,6 @@ describe('SupabaseService - API Surface', () => {
         'manufacturers',
         'currentUserModules',
         'comments',
-        'tags',
         'moduleWithId',
         'applicationStatistics',
         'applicationInsightsSnapshot',

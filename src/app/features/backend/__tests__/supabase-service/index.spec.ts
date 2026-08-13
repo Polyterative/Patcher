@@ -8,7 +8,6 @@
  * - test-setup.ts: Shared test configuration and utilities
  * - initialization.spec.ts: Service creation and dependency injection
  * - api-surface.spec.ts: API method availability and structure
- * - integration-tags.spec.ts: Tag retrieval integration tests
  * - integration-manufacturers.spec.ts: Manufacturer retrieval and pagination tests
  * - integration-user-racks.spec.ts: User racks regression and data extraction tests
  * - connection-health.spec.ts: Database connection validation
@@ -26,7 +25,6 @@
 // Import all test suites - they will auto-register with Jasmine
 import './initialization.spec';
 import './api-surface.spec';
-import './integration-tags.spec';
 import './integration-manufacturers.spec';
 import './integration-user-racks.spec';
 import './connection-health.spec';

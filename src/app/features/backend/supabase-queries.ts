@@ -101,7 +101,6 @@ export interface SupabaseQueriesService
       | 'getModuleWithIdForRackDisplay'
       | 'getModuleCommentContext'
       | 'getModuleCommentContexts'
-      | 'getTags'
       | 'getModulesBySameManufacturer'
       | 'getAllTagsCached'
       | 'getModulesByIdsForPatchGraph'

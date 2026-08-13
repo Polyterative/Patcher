@@ -46,17 +46,17 @@ describe('SupabaseService - Database Connection Health', () => {
   
   it('should handle connection without throwing synchronous errors', () => {
     expect(() => {
-      const testQuery$ = service.GET.tags();
+      const testQuery$ = service.GET.manufacturers();
       expect(testQuery$).toBeDefined();
     }).not.toThrow();
   });
 
   it('GET group exposes known query methods', () => {
     const methods = [
-      'tags',
       'modules',
       'patches',
-      'manufacturers'
+      'manufacturers',
+      'comments'
     ] satisfies readonly GetMethod[];
 
     methods.forEach(method => {
