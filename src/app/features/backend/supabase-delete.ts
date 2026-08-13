@@ -461,6 +461,7 @@ export function createDeleteNamespace(
       supabase.from(DbPaths.module_flags).delete().eq('id', id)
     ).pipe(
       map(({error}) => { if (error) throw error; }),
+      cacheBust(['module_flags']),
       remapErrors()
     ),
 
