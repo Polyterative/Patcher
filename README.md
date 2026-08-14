@@ -15,6 +15,7 @@
 
 ## New since v5.0
 
+- **Public Open API** at [`api.patcher.xyz`](https://api.patcher.xyz/v1) — read modules, manufacturers, standards, and tags with an API key. See [Public Open API](#public-open-api).
 - **Instance-aware patching** for repeated modules.
 - **Auto-save** for patch state and edits.
 - **Power analysis** and **balance analysis** in rack detail.
