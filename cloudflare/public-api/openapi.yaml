@@ -19,6 +19,7 @@ paths:
     get:
       operationId: listModules
       summary: List public modules
+      description: Any method other than GET, HEAD, or OPTIONS returns 405 method_not_allowed.
       parameters:
         - $ref: "#/components/parameters/Cursor"
         - $ref: "#/components/parameters/FieldsModule"
@@ -64,6 +65,8 @@ paths:
           $ref: "#/components/responses/RateLimited"
         "503":
           $ref: "#/components/responses/ServiceUnavailable"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowed"
     head:
       operationId: headModules
       summary: Fetch headers for the public modules list
@@ -95,6 +98,7 @@ paths:
     get:
       operationId: getModule
       summary: Get a public module
+      description: Any method other than GET, HEAD, or OPTIONS returns 405 method_not_allowed.
       parameters:
         - $ref: "#/components/parameters/IntegerId"
         - $ref: "#/components/parameters/FieldsModule"
@@ -119,6 +123,8 @@ paths:
           $ref: "#/components/responses/RateLimited"
         "503":
           $ref: "#/components/responses/ServiceUnavailable"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowed"
     head:
       operationId: headModule
       summary: Fetch headers for a public module
@@ -145,6 +151,7 @@ paths:
     get:
       operationId: listManufacturers
       summary: List manufacturers with public modules
+      description: Any method other than GET, HEAD, or OPTIONS returns 405 method_not_allowed.
       parameters:
         - $ref: "#/components/parameters/Cursor"
         - $ref: "#/components/parameters/FieldsManufacturer"
@@ -169,6 +176,8 @@ paths:
           $ref: "#/components/responses/RateLimited"
         "503":
           $ref: "#/components/responses/ServiceUnavailable"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowed"
     head:
       operationId: headManufacturers
       summary: Fetch headers for the public manufacturers list
@@ -195,6 +204,7 @@ paths:
     get:
       operationId: getManufacturer
       summary: Get a public manufacturer
+      description: Any method other than GET, HEAD, or OPTIONS returns 405 method_not_allowed.
       parameters:
         - $ref: "#/components/parameters/IntegerId"
         - $ref: "#/components/parameters/FieldsManufacturer"
@@ -219,6 +229,8 @@ paths:
           $ref: "#/components/responses/RateLimited"
         "503":
           $ref: "#/components/responses/ServiceUnavailable"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowed"
     head:
       operationId: headManufacturer
       summary: Fetch headers for a public manufacturer
@@ -245,6 +257,7 @@ paths:
     get:
       operationId: listStandards
       summary: List public standards
+      description: Any method other than GET, HEAD, or OPTIONS returns 405 method_not_allowed.
       parameters:
         - $ref: "#/components/parameters/Cursor"
         - $ref: "#/components/parameters/FieldsStandard"
@@ -269,6 +282,8 @@ paths:
           $ref: "#/components/responses/RateLimited"
         "503":
           $ref: "#/components/responses/ServiceUnavailable"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowed"
     head:
       operationId: headStandards
       summary: Fetch headers for public standards
@@ -295,6 +310,7 @@ paths:
     get:
       operationId: listTags
       summary: List public tags
+      description: Any method other than GET, HEAD, or OPTIONS returns 405 method_not_allowed.
       parameters:
         - $ref: "#/components/parameters/Cursor"
         - $ref: "#/components/parameters/FieldsTag"
@@ -319,6 +335,8 @@ paths:
           $ref: "#/components/responses/RateLimited"
         "503":
           $ref: "#/components/responses/ServiceUnavailable"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowed"
     head:
       operationId: headTags
       summary: Fetch headers for public tags
@@ -484,6 +502,10 @@ components:
       schema:
         type: integer
       description: Seconds until the blocked minute or month quota window can accept another request.
+    Allow:
+      schema:
+        type: string
+      description: Comma-separated list of methods accepted by this route, returned with 405 responses.
   responses:
     HeadOk:
       description: Headers for the matching GET response; no response body.
@@ -611,6 +633,20 @@ components:
         Quota headers are present only when quota was consumed before the 503
         (for example, origin_unavailable).
       headers: *PostQuotaErrorHeaders
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    MethodNotAllowed:
+      description: >
+        Only GET, HEAD, and OPTIONS are supported on this route. Returned
+        before authentication and quota consumption, so no rate-limit headers
+        are attached.
+      headers:
+        Allow:
+          $ref: "#/components/headers/Allow"
+        X-Request-ID:
+          $ref: "#/components/headers/XRequestId"
       content:
         application/json:
           schema:

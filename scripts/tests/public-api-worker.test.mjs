@@ -934,6 +934,8 @@ test('OpenAPI documents the implemented public catalogue routes and schemas', ()
     'authentication_unavailable',
     'quota_unavailable',
     'origin_unavailable',
+    'method_not_allowed',
+    'MethodNotAllowed',
   ]) {
     assert.ok(spec.includes(schema), `${schema} missing`);
   }
@@ -947,6 +949,7 @@ test('OpenAPI documents the implemented public catalogue routes and schemas', ()
     'X-RateLimit-Remaining-Minute',
     'X-RateLimit-Reset',
     'Retry-After',
+    'Allow',
   ]) {
     assert.ok(spec.includes(header), `${header} header missing`);
   }
@@ -986,6 +989,7 @@ test('OpenAPI documents the implemented public catalogue routes and schemas', ()
       '400': 'BadRequest',
       '401': 'Unauthorized',
       ...(includesNotFound ? { '404': 'NotFound' } : {}),
+      '405': 'MethodNotAllowed',
       '429': 'RateLimited',
       '503': 'ServiceUnavailable',
     });

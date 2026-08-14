@@ -34,13 +34,14 @@ The Worker never contains a Supabase `service_role` key, project JWT signing sec
 
 ## Request flow
 
-1. Normalize path and query parameters. Unknown query parameters return `400 unknown_parameter`; unsupported `q` returns `400 unsupported_parameter`.
-2. Parse the `Authorization` header. Missing returns `401 missing_authorization`; a non-`Bearer` scheme, missing `pk_live_` prefix, wrong suffix length, or non-base64url suffix returns `401 malformed_authorization`.
-3. HMAC the decoded 16-byte key suffix with `API_KEY_PEPPER`; verify active metadata through `public.verify_api_key(bytea)`.
-4. Consume quota in the per-key Durable Object before cache lookup. Quota responses attach `X-RateLimit-Limit-Minute`, `X-RateLimit-Remaining-Minute`, `X-RateLimit-Limit-Month`, `X-RateLimit-Remaining-Month`, and `X-RateLimit-Reset`; in the MVP, `X-RateLimit-Reset` is the current minute-window start timestamp, not the next reset time. `429` also includes `Retry-After`.
-5. Serve from Cache API when possible. Cache keys use only method, normalized path, and normalized query; `Authorization` is never part of the cache key or `Vary`.
-6. On miss, query only `api_v1_*` views through parameterized postgres.js calls over Hyperdrive.
-7. Return SHA-256 `ETag` values. Matching `If-None-Match` returns `304` after authentication and quota consumption, with current per-key quota headers.
+1. Reject any method other than `GET`, `HEAD`, or `OPTIONS` with `405 method_not_allowed` and an `Allow` header, before path/query normalization or authentication.
+2. Normalize path and query parameters. Unknown query parameters return `400 unknown_parameter`; unsupported `q` returns `400 unsupported_parameter`.
+3. Parse the `Authorization` header. Missing returns `401 missing_authorization`; a non-`Bearer` scheme, missing `pk_live_` prefix, wrong suffix length, or non-base64url suffix returns `401 malformed_authorization`.
+4. HMAC the decoded 16-byte key suffix with `API_KEY_PEPPER`; verify active metadata through `public.verify_api_key(bytea)`.
+5. Consume quota in the per-key Durable Object before cache lookup. Quota responses attach `X-RateLimit-Limit-Minute`, `X-RateLimit-Remaining-Minute`, `X-RateLimit-Limit-Month`, `X-RateLimit-Remaining-Month`, and `X-RateLimit-Reset`; in the MVP, `X-RateLimit-Reset` is the current minute-window start timestamp, not the next reset time. `429` also includes `Retry-After`.
+6. Serve from Cache API when possible. Cache keys use only method, normalized path, and normalized query; `Authorization` is never part of the cache key or `Vary`.
+7. On miss, query only `api_v1_*` views through parameterized postgres.js calls over Hyperdrive.
+8. Return SHA-256 `ETag` values. Matching `If-None-Match` returns `304` after authentication and quota consumption, with current per-key quota headers.
 
 ## Endpoints
 
