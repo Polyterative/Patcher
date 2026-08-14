@@ -1,7 +1,7 @@
 <div class="col gap1 parent"
 >
   <app-module-cvs [data]="data" [instanceId]="instanceId"></app-module-cvs>
-  @if (data.switches.length > 0) {
+  @if (data.switches?.length > 0) {
     <mat-card-subtitle>{{data.switches.length}} Switches:</mat-card-subtitle>
     <div class="rowwrap gap1"></div>
   }
@@ -9,10 +9,10 @@
     <div class="col gap1">
       <div class="row gap1" style="align-items: center;">
         <mat-icon>contrast</mat-icon>
-        <span>Panel variants ({{data.panels.length}})</span>
+        <span>Panel variants ({{data.panels?.length ?? 0}})</span>
       </div>
       <div class="rowwrap gap1 panel-preview-list">
-        @for (item of data.panels; track item; let idx = $index) {
+        @for (item of data.panels ?? []; track item; let idx = $index) {
           <div class="col gap1 panel-preview-item"
                (click)="openPanelZoom(item.id, item.filename, item.description, idx)"
                [class.panel-preview-active]="item.id === previewPanelId"
@@ -42,7 +42,7 @@
   }
   
   
-  @if (data.manufacturer.id === 10000) {
+  @if (data.manufacturer?.id === 10000) {
   <p class="layout-align-end"
      style="font-size: 1rem"
   >
