@@ -189,6 +189,7 @@
 
 ### DATA MODEL (schema / domain gaps to address)
 
+- [~] **HIGH: Price Hub — snapshot compaction and change-only crawl writes (DB at 394/500 MB Free cap; snapshots table = 335 MB; plan v3 approved-with-changes by backend review, ready to implement)** → [`plans/price-hub-snapshot-compaction.md`](./plans/price-hub-snapshot-compaction.md)
 - [ ] **MEDIUM: Rack module orientation — migrate storage from text to smallint (`0` normal, `1` rot180; schema apply gated)** → [`plans/rack-module-orientation-smallint-storage-migration.md`](./plans/rack-module-orientation-smallint-storage-migration.md)
 - [ ] **ON HOLD: LOW: Module I/O — bidirectional and passive port support (blocked before backend/model changes pending proposal review + explicit approval)** → [`plans/module-io-bidirectional-passive-port-support.md`](./plans/module-io-bidirectional-passive-port-support.md)
 
