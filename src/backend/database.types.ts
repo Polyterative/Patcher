@@ -1031,6 +1031,7 @@ export type Database = {
           id: number
           last_checked_at: string | null
           last_error: string | null
+          last_raw_meta: Json | null
           last_success_at: string | null
           module_id: number
           next_check_at: string
@@ -1048,6 +1049,7 @@ export type Database = {
           id?: number
           last_checked_at?: string | null
           last_error?: string | null
+          last_raw_meta?: Json | null
           last_success_at?: string | null
           module_id: number
           next_check_at?: string
@@ -1065,6 +1067,7 @@ export type Database = {
           id?: number
           last_checked_at?: string | null
           last_error?: string | null
+          last_raw_meta?: Json | null
           last_success_at?: string | null
           module_id?: number
           next_check_at?: string
@@ -2594,6 +2597,26 @@ export type Database = {
       is_reaction_entity_eligible: {
         Args: { p_entity_id: number; p_entity_type: number }
         Returns: boolean
+      }
+      price_hub_latest_snapshots: {
+        Args: { p_listing_ids: number[] }
+        Returns: {
+          availability: string
+          created_at: string
+          currency: string | null
+          id: number
+          listing_id: number
+          observed_at: string
+          price_amount_minor: number | null
+          raw_meta: Json
+          source: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "module_price_snapshots"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       record_api_key_usage: {
         Args: { p_key_id: string; p_month: string; p_used: number }
