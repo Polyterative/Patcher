@@ -214,4 +214,99 @@ describe('module price summary utils', () => {
       buildHistorySnapshot({observedAt: '2026-07-01T00:00:00.000Z', priceAmountMinor: null}),
     ], referenceDate)).toBeNull();
   });
+
+  it('treats an in-window collapsed segment pair as a flat axis extension without skewing the trend', () => {
+    // Post-compaction a stable run is stored as exactly two rows (start +
+    // floating endpoint) with identical values; the pair must widen the time
+    // axis but never fabricate movement.
+    const summary = getModuleSparsePriceHistorySummary(42, [
+      buildHistorySnapshot({
+        id: 1,
+        observedAt: '2026-06-01T00:00:00.000Z',
+        priceAmountMinor: 40000
+      }),
+      buildHistorySnapshot({
+        id: 2,
+        observedAt: '2026-07-01T00:00:00.000Z',
+        priceAmountMinor: 40000
+      }),
+    ], referenceDate);
+
+    expect(summary).toEqual(jasmine.objectContaining({
+      eligiblePointCount: 2,
+      earliestObservedAt: '2026-06-01T00:00:00.000Z',
+      latestObservedAt: '2026-07-01T00:00:00.000Z',
+      minPriceEurMinor: 40000,
+      maxPriceEurMinor: 40000,
+      trendPercent: 0,
+      trendDirection: 'flat',
+      label: 'Flat 60d'
+    }));
+  });
+
+  it('returns null for a single-listing module whose segment start aged past the window', () => {
+    // Accepted compaction consequence: long-stable single-listing module keeps
+    // only the fresh endpoint in-window (start row > 60 d old) -> no summary
+    // until the price next changes.
+    expect(getModuleSparsePriceHistorySummary(42, [
+      buildHistorySnapshot({
+        id: 1,
+        observedAt: '2026-04-20T00:00:00.000Z',
+        priceAmountMinor: 40000
+      }),
+      buildHistorySnapshot({
+        id: 2,
+        observedAt: '2026-07-01T00:00:00.000Z',
+        priceAmountMinor: 40000
+      }),
+    ], referenceDate)).toBeNull();
+  });
+
+  it('builds the summary from endpoints only when multi-listing segment starts aged out', () => {
+    const summary = getModuleSparsePriceHistorySummary(42, [
+      buildHistorySnapshot({
+        id: 1,
+        listingId: 1,
+        storeId: 1,
+        observedAt: '2026-04-20T00:00:00.000Z',
+        priceAmountMinor: 40000,
+        currency: 'EUR'
+      }),
+      buildHistorySnapshot({
+        id: 2,
+        listingId: 1,
+        storeId: 1,
+        observedAt: '2026-07-01T00:00:00.000Z',
+        priceAmountMinor: 40000,
+        currency: 'EUR'
+      }),
+      buildHistorySnapshot({
+        id: 3,
+        listingId: 2,
+        storeId: 2,
+        observedAt: '2026-04-25T00:00:00.000Z',
+        priceAmountMinor: 50000,
+        currency: 'USD'
+      }),
+      buildHistorySnapshot({
+        id: 4,
+        listingId: 2,
+        storeId: 2,
+        observedAt: '2026-06-28T00:00:00.000Z',
+        priceAmountMinor: 50000,
+        currency: 'USD'
+      }),
+    ], referenceDate);
+
+    expect(summary).toEqual(jasmine.objectContaining({
+      eligiblePointCount: 2,
+      storeCount: 2,
+      earliestObservedAt: '2026-06-28T00:00:00.000Z',
+      latestObservedAt: '2026-07-01T00:00:00.000Z',
+      earliestPriceEurMinor: 46000,
+      latestPriceEurMinor: 40000,
+      trendPercent: -13,
+      trendDirection: 'down'
+    }));
+  });
 });
