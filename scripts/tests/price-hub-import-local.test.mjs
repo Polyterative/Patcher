@@ -343,11 +343,15 @@ test('does not add active listing refresh rows for modules already covered by ac
 test('imports observed active listing refresh rows when strong matches are empty', async () => {
   const productUrl = 'https://store.example/products/doepfer-a-121d-multimode-dual-filter-silver';
   const snapshots = [];
+  const upsertedListings = [];
+  const rpcCalls = [];
   const supabase = mockActiveRefreshSupabase({
     activeListings: [
       { id: 31, module_id: 3438, product_url: `${productUrl}/` },
     ],
     snapshots,
+    upsertedListings,
+    rpcCalls,
   });
 
   const summary = await importRows(
@@ -361,10 +365,76 @@ test('imports observed active listing refresh rows when strong matches are empty
   assert.equal(summary.acceptedMatches, 0);
   assert.equal(summary.upsertedListings, 1);
   assert.equal(summary.insertedSnapshots, 1);
+  assert.equal(summary.updatedSnapshotEndpoints, 0);
   assert.equal(snapshots.length, 1);
   assert.equal(snapshots[0].listing_id, 31);
   assert.equal(snapshots[0].price_amount_minor, 15900);
-  assert.equal(snapshots[0].raw_meta.priceHubRefreshSource, 'active_listing');
+  assert.deepEqual(snapshots[0].raw_meta, {});
+  assert.equal(upsertedListings.length, 1);
+  assert.equal(upsertedListings[0].last_raw_meta.priceHubRefreshSource, 'active_listing');
+  assert.deepEqual(rpcCalls, [[31]]);
+});
+
+test('bumps the segment endpoint in place when the observation is unchanged', async () => {
+  const productUrl = 'https://store.example/products/doepfer-a-121d-multimode-dual-filter-silver';
+  const snapshots = [];
+  const snapshotUpdates = [];
+  const supabase = mockActiveRefreshSupabase({
+    activeListings: [
+      { id: 31, module_id: 3438, product_url: `${productUrl}/` },
+    ],
+    snapshots,
+    snapshotUpdates,
+    latestSnapshots: [
+      { id: 100, listing_id: 31, observed_at: '2026-08-01T00:00:00+00:00', price_amount_minor: 15900, currency: 'EUR', availability: 'in_stock' },
+      { id: 101, listing_id: 31, observed_at: '2026-08-05T00:00:00+00:00', price_amount_minor: 15900, currency: 'EUR', availability: 'in_stock' },
+    ],
+  });
+
+  const summary = await importRows(
+    supabase,
+    'signal-sounds-uk',
+    [],
+    undefined,
+    [productSnapshot(productUrl, 'Doepfer A-121d Multimode Dual Filter Silver', 15900)],
+  );
+
+  assert.equal(summary.insertedSnapshots, 0);
+  assert.equal(summary.updatedSnapshotEndpoints, 1);
+  assert.deepEqual(snapshots, []);
+  assert.equal(snapshotUpdates.length, 1);
+  assert.deepEqual(snapshotUpdates[0].ids, [101]);
+  assert.ok(typeof snapshotUpdates[0].observed_at === 'string');
+});
+
+test('inserts the endpoint row when the latest snapshot is a lone segment start', async () => {
+  const productUrl = 'https://store.example/products/doepfer-a-121d-multimode-dual-filter-silver';
+  const snapshots = [];
+  const snapshotUpdates = [];
+  const supabase = mockActiveRefreshSupabase({
+    activeListings: [
+      { id: 31, module_id: 3438, product_url: `${productUrl}/` },
+    ],
+    snapshots,
+    snapshotUpdates,
+    latestSnapshots: [
+      { id: 100, listing_id: 31, observed_at: '2026-08-01T00:00:00+00:00', price_amount_minor: 15900, currency: 'EUR', availability: 'in_stock' },
+    ],
+  });
+
+  const summary = await importRows(
+    supabase,
+    'signal-sounds-uk',
+    [],
+    undefined,
+    [productSnapshot(productUrl, 'Doepfer A-121d Multimode Dual Filter Silver', 15900)],
+  );
+
+  assert.equal(summary.insertedSnapshots, 1);
+  assert.equal(summary.updatedSnapshotEndpoints, 0);
+  assert.equal(snapshots.length, 1);
+  assert.deepEqual(snapshots[0].raw_meta, {});
+  assert.deepEqual(snapshotUpdates, []);
 });
 
 test('imports observed active listing refresh rows past the first active-listing page', async () => {
@@ -978,8 +1048,24 @@ function mockDisappearanceSupabase(updates) {
   };
 }
 
-function mockActiveRefreshSupabase({ activeListings, snapshots, updates = [] }) {
+function mockActiveRefreshSupabase({
+  activeListings,
+  snapshots,
+  updates = [],
+  upsertedListings = [],
+  latestSnapshots = [],
+  snapshotUpdates = [],
+  rpcCalls = [],
+}) {
   return {
+    async rpc(name, args) {
+      assert.equal(name, 'price_hub_latest_snapshots');
+      rpcCalls.push(args.p_listing_ids);
+      return {
+        data: latestSnapshots.filter((row) => args.p_listing_ids.includes(row.listing_id)),
+        error: null,
+      };
+    },
     from(table) {
       if (table === 'stores') {
         return {
@@ -1040,6 +1126,7 @@ function mockActiveRefreshSupabase({ activeListings, snapshots, updates = [] }) 
           },
           upsert(rows, options) {
             assert.deepEqual(options, { onConflict: 'module_id,store_id' });
+            upsertedListings.push(...rows);
             return {
               async select(columns) {
                 assert.equal(columns, 'id,module_id,store_id,product_url,external_product_id,external_handle,active,verification_status,last_checked_at,last_success_at,next_check_at,failure_count,last_error,created_at,updated_at');
@@ -1080,6 +1167,15 @@ function mockActiveRefreshSupabase({ activeListings, snapshots, updates = [] }) 
           insert(rows) {
             snapshots.push(...rows);
             return Promise.resolve({ error: null });
+          },
+          update(value) {
+            return {
+              in(column, ids) {
+                assert.equal(column, 'id');
+                snapshotUpdates.push({ ...value, ids });
+                return Promise.resolve({ error: null });
+              },
+            };
           },
         };
       }
