@@ -237,7 +237,11 @@ async function runShopifyJsonCurl(url: string, extraArgs: readonly string[], opt
   const { stdout } = await execFileAsync('curl', [
     '-sS',
     '-L',
-    '--compressed',
+    // No `--compressed`: requesting gzip/deflate here reliably trips Cloudflare's bot
+    // challenge on several Shopify storefronts (curl's non-browser Accept-Encoding
+    // value + TLS fingerprint reads as bot traffic), while an uncompressed request to
+    // the same endpoint returns real product JSON. See the price-hub crawler fix that
+    // added this comment for the reproduction.
     '-D',
     '-',
     ...extraArgs,
