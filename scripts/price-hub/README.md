@@ -87,6 +87,17 @@ After a live write, check summary counts and spot-check the UI/read path. If act
 
 The database `stores` row needs `adapter_kind`, `base_url`, `currency_hint`, and a real shipping-origin `country_code`. Shipping origin means physical dispatch point, not sales region; do not use generic `EU` as a country. Verify official store/contact/shipping copy before adding the row. Keep currencies as ISO 4217 codes, and remember zero-decimal currencies still need currency-aware minor-unit handling before broader rollout.
 
-## 7. Approval boundaries
+## 7. Snapshot storage semantics (change-only writes)
+
+`module_price_snapshots` stores **floating-endpoint segments**, not one row per crawl:
+
+- A new row is inserted only when the observed `(price_amount_minor, currency, availability)` differs from the listing's latest snapshot, or when the listing has no snapshot yet.
+- When the observation is unchanged, the importer instead bumps the latest row's `observed_at` in place (the "floating endpoint") and touches `module_store_listings.last_checked_at`. A stable price run is therefore exactly two rows: the segment start and its fresh endpoint.
+- `raw_meta` is kept only on `module_store_listings.last_raw_meta` (latest evidence per listing); snapshot rows carry `raw_meta = '{}'` and new inserts must keep it empty.
+- Readers must not assume regular sampling: history is sparse by design. `getModuleSparsePriceHistorySummary` handles collapsed segments; an aged-out segment start (> 60 d) with a fresh endpoint is the accepted trend-chip-loss case for long-stable single-listing modules.
+
+The one-off 2026-08 backfill that converted historical data to this shape (archive → relocate `raw_meta` → collapse runs → strip → `VACUUM FULL`, 372,795 → 47,504 rows, DB 394 → 84 MB) is documented in `internaldocs/workflow/plans/price-hub-snapshot-compaction.md` (runbook + decision log). The pre-backfill `raw_meta` archive lives locally at `tmp/price-hub-raw-meta-archive-2026-08-19.jsonl` (gitignored); `archive-snapshot-raw-meta.ts` is the reusable exporter.
+
+## 8. Approval boundaries
 
 This guide covers local scripts and reviewed imports only. Do not deploy Edge Functions, enable Supabase Cron, change RLS/policies/grants, release, push, or switch production branches without explicit approval recorded in the active plan.

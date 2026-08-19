@@ -91,7 +91,7 @@ Known, accepted exposure (per review MEDIUM): `last_raw_meta` is anon-readable v
 
 - [ ] Optional adaptive cadence: `next_check_at` +3–7 d for out_of_stock/discontinued listings (−30–40 % crawl volume). Separate decision; not required for the storage goal.
 - [ ] Optional `last_raw_meta` column-level privilege hardening (requires explicit RLS/GRANT approval gate; never autonomous).
-- [ ] Docs: update `scripts/price-hub/README.md` (endpoint semantics, backfill runbook); `COMPLETED.md` entry; TODO line reset.
+- [x] Docs: update `scripts/price-hub/README.md` (endpoint semantics, backfill runbook); `COMPLETED.md` entry; TODO line reset.
 
 ## Rollback
 
