@@ -26,6 +26,10 @@ import {
   SUPPORTED_SNAPSHOT_ADAPTER_KINDS,
   type StoreApiListingInput,
 } from '../_shared/price-hub/snapshot-worker.ts';
+import {
+  planSnapshotWrites,
+  type LatestSnapshotRow,
+} from '../_shared/price-hub/snapshot-change-planner.ts';
 
 const RUNTIME_BUDGET_MS = 110_000;
 const FETCH_TIMEOUT_MS = 12_000;
@@ -158,20 +162,49 @@ async function processListing(supabase: ReturnType<typeof createClient>, listing
   try {
     const { snapshot } = await fetchListingSnapshot(listing);
 
-    const { error: insertError } = await supabase
-      .from('module_price_snapshots')
-      .insert({
-        listing_id: listing.id,
-        observed_at: observedAt,
-        price_amount_minor: snapshot.priceAmountMinor,
+    const { data: latestSnapshots, error: latestError } = await supabase
+      .rpc('price_hub_latest_snapshots', { p_listing_ids: [listing.id] });
+
+    if (latestError) {
+      throw latestError;
+    }
+
+    const { decisions } = planSnapshotWrites(
+      [{
+        listingId: listing.id,
+        priceAmountMinor: snapshot.priceAmountMinor,
         currency: snapshot.currency,
         availability: snapshot.availability,
-        source: 'api',
-        raw_meta: snapshot.rawMeta,
-      });
+      }],
+      (latestSnapshots ?? []) as LatestSnapshotRow[],
+    );
+    const decision = decisions[0];
 
-    if (insertError) {
-      throw insertError;
+    if (decision.kind === 'update_endpoint') {
+      const { error: endpointError } = await supabase
+        .from('module_price_snapshots')
+        .update({ observed_at: observedAt })
+        .eq('id', decision.snapshotId);
+
+      if (endpointError) {
+        throw endpointError;
+      }
+    } else {
+      const { error: insertError } = await supabase
+        .from('module_price_snapshots')
+        .insert({
+          listing_id: listing.id,
+          observed_at: observedAt,
+          price_amount_minor: snapshot.priceAmountMinor,
+          currency: snapshot.currency,
+          availability: snapshot.availability,
+          source: 'api',
+          raw_meta: {},
+        });
+
+      if (insertError) {
+        throw insertError;
+      }
     }
 
     const { error: updateError } = await supabase
@@ -184,6 +217,7 @@ async function processListing(supabase: ReturnType<typeof createClient>, listing
         last_error: null,
         verification_status: 'verified',
         updated_at: observedAt,
+        last_raw_meta: snapshot.rawMeta,
       })
       .eq('id', listing.id);
 

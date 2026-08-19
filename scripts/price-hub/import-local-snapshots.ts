@@ -6,6 +6,12 @@ import { readApprovedPriceHubStore, type ApprovedPriceHubStoreSlug } from './sto
 import { assertSupabaseWriteKeyCanWrite, readPriceHubScriptEnv, readSupabaseWriteKey } from './local-env.ts';
 import type { PriceHubMatchCandidate, PriceHubMatchStatus } from './matcher.ts';
 import {
+  planSnapshotWrites,
+  readEndpointUpdateSnapshotIds,
+  type LatestSnapshotRow,
+  type SnapshotWriteDecision,
+} from '../../supabase/functions/_shared/price-hub/snapshot-change-planner.ts';
+import {
   planDisappearanceDeactivation,
   type DisappearanceDeactivationEvidence,
   type DisappearedPriceHubListingReference,
@@ -57,6 +63,7 @@ const PRODUCT_URL_LOOKUP_BATCH_SIZE = 100;
 const MODULE_ID_LOOKUP_BATCH_SIZE = 500;
 const LISTING_DEACTIVATION_BATCH_SIZE = 100;
 const ACTIVE_LISTING_LOOKUP_PAGE_SIZE = 500;
+const LATEST_SNAPSHOT_RPC_BATCH_SIZE = 500;
 
 interface ImportLocalSnapshotsOptions {
   storeSlug: ApprovedPriceHubStoreSlug;
@@ -79,6 +86,7 @@ interface ImportSummary {
   acceptedMatches: number;
   upsertedListings: number;
   insertedSnapshots: number;
+  updatedSnapshotEndpoints: number;
   deactivatedListings: number;
   deactivationSkippedReason: string | null;
   skippedUnknownModules: number;
@@ -87,6 +95,8 @@ interface ImportSummary {
 
 type StoreRow = Database['public']['Tables']['stores']['Row'];
 type ListingRow = Database['public']['Tables']['module_store_listings']['Row'];
+/** Upsert echo without the jsonb diagnostics column, which the importer never reads back. */
+type UpsertedListingRow = Omit<ListingRow, 'last_raw_meta'>;
 type ListingInsert = Database['public']['Tables']['module_store_listings']['Insert'];
 type SnapshotInsert = Database['public']['Tables']['module_price_snapshots']['Insert'];
 
@@ -126,7 +136,7 @@ async function main(): Promise<void> {
         },
       }
     : undefined, inputs.products);
-  console.log(`Imported ${summary.insertedSnapshots} Price Hub snapshots for ${summary.storeSlug} (${summary.upsertedListings} listings, ${summary.deactivatedListings} deactivated).`);
+  console.log(`Imported ${summary.insertedSnapshots} Price Hub snapshots for ${summary.storeSlug} (${summary.updatedSnapshotEndpoints} unchanged endpoints bumped, ${summary.upsertedListings} listings, ${summary.deactivatedListings} deactivated).`);
   if (summary.deactivationSkippedReason) {
     console.warn(`Skipped disappearance deactivation for ${summary.storeSlug}: ${summary.deactivationSkippedReason}`);
   }
@@ -199,6 +209,7 @@ export async function importRows(
       acceptedMatches: 0,
       upsertedListings: 0,
       insertedSnapshots: 0,
+      updatedSnapshotEndpoints: 0,
       ...emptyDeactivationSummary,
       skippedUnknownModules: 0,
       skippedConflictingListings: 0,
@@ -221,6 +232,7 @@ export async function importRows(
       acceptedMatches: rows.length,
       upsertedListings: 0,
       insertedSnapshots: 0,
+      updatedSnapshotEndpoints: 0,
       ...deactivationSummary,
       skippedUnknownModules: moduleFilteredRows.skippedUnknownModuleRows.length,
       skippedConflictingListings: 0,
@@ -253,6 +265,7 @@ export async function importRows(
       acceptedMatches: rows.length,
       upsertedListings: 0,
       insertedSnapshots: 0,
+      updatedSnapshotEndpoints: 0,
       deactivatedListings: deactivationSummary.deactivatedListings + unimportableSummary.deactivatedListings,
       deactivationSkippedReason: deactivationSummary.deactivationSkippedReason,
       skippedUnknownModules: moduleFilteredRows.skippedUnknownModuleRows.length,
@@ -266,27 +279,59 @@ export async function importRows(
     listing,
   ]));
   const now = new Date().toISOString();
-  const snapshots: SnapshotInsert[] = rowsToImport.map((row) => {
+  const rowByListingId = new Map<number, PriceHubSnapshotImportRow>();
+  const observations = rowsToImport.map((row) => {
     const listing = listingByModuleAndUrl.get(listingKey(row.moduleId, row.productUrl));
     if (!listing) {
       throw new Error(`Listing upsert did not return module ${row.moduleId} ${row.productUrl}.`);
     }
+    rowByListingId.set(listing.id, row);
     return {
-      listing_id: listing.id,
-      observed_at: now,
-      price_amount_minor: row.priceAmountMinor,
+      listingId: listing.id,
+      priceAmountMinor: row.priceAmountMinor,
       currency: row.currency,
       availability: row.availability,
-      source: 'scraper',
-      raw_meta: row.rawMeta as Json,
     };
   });
 
-  const { error } = await supabase
-    .from('module_price_snapshots')
-    .insert(snapshots);
-  if (error) {
-    throw new Error(`Snapshot insert failed: ${error.message}`);
+  const latestSnapshots = await readLatestSnapshotsForListings(supabase, [...new Set(observations.map((observation) => observation.listingId))]);
+  const plan = planSnapshotWrites(observations, latestSnapshots);
+  const snapshots: SnapshotInsert[] = plan.decisions
+    .filter((decision): decision is Exclude<SnapshotWriteDecision, { kind: 'update_endpoint' }> => decision.kind !== 'update_endpoint')
+    .map((decision) => {
+      const row = rowByListingId.get(decision.listingId);
+      if (!row) {
+        throw new Error(`Snapshot plan referenced unknown listing ${decision.listingId}.`);
+      }
+      return {
+        listing_id: decision.listingId,
+        observed_at: now,
+        price_amount_minor: row.priceAmountMinor,
+        currency: row.currency,
+        availability: row.availability,
+        source: 'scraper',
+        raw_meta: {} as Json,
+      };
+    });
+
+  if (snapshots.length > 0) {
+    const { error } = await supabase
+      .from('module_price_snapshots')
+      .insert(snapshots);
+    if (error) {
+      throw new Error(`Snapshot insert failed: ${error.message}`);
+    }
+  }
+
+  const endpointSnapshotIds = readEndpointUpdateSnapshotIds(plan);
+  if (endpointSnapshotIds.length > 0) {
+    const { error } = await supabase
+      .from('module_price_snapshots')
+      .update({ observed_at: now })
+      .in('id', endpointSnapshotIds);
+    if (error) {
+      throw new Error(`Snapshot endpoint update failed: ${error.message}`);
+    }
   }
 
   const deactivationSummary = await deactivateMissingActiveListingsForStore(supabase, store, disappearanceDeactivation, activeListingReferences);
@@ -297,6 +342,7 @@ export async function importRows(
     acceptedMatches: rows.length,
     upsertedListings: listingRows.length,
     insertedSnapshots: snapshots.length,
+    updatedSnapshotEndpoints: endpointSnapshotIds.length,
     deactivatedListings: deactivationSummary.deactivatedListings + unimportableSummary.deactivatedListings,
     deactivationSkippedReason: deactivationSummary.deactivationSkippedReason,
     skippedUnknownModules: moduleFilteredRows.skippedUnknownModuleRows.length,
@@ -546,11 +592,27 @@ async function readStore(supabase: SupabaseClient<Database>, storeSlug: Approved
   return data;
 }
 
+async function readLatestSnapshotsForListings(
+  supabase: SupabaseClient<Database>,
+  listingIds: readonly number[],
+): Promise<LatestSnapshotRow[]> {
+  const rows: LatestSnapshotRow[] = [];
+  for (let offset = 0; offset < listingIds.length; offset += LATEST_SNAPSHOT_RPC_BATCH_SIZE) {
+    const chunk = listingIds.slice(offset, offset + LATEST_SNAPSHOT_RPC_BATCH_SIZE);
+    const { data, error } = await supabase.rpc('price_hub_latest_snapshots', { p_listing_ids: [...chunk] });
+    if (error) {
+      throw new Error(`Latest snapshot lookup failed: ${error.message}`);
+    }
+    rows.push(...(data ?? []));
+  }
+  return rows;
+}
+
 async function upsertListings(
   supabase: SupabaseClient<Database>,
   storeId: number,
   rows: readonly PriceHubSnapshotImportRow[],
-): Promise<ListingRow[]> {
+): Promise<UpsertedListingRow[]> {
   const now = new Date().toISOString();
   const listings: ListingInsert[] = rows.map((row) => ({
     module_id: row.moduleId,
@@ -569,6 +631,7 @@ async function upsertListings(
     }),
     failure_count: 0,
     last_error: null,
+    last_raw_meta: row.rawMeta as Json,
   }));
 
   const { data, error } = await supabase
