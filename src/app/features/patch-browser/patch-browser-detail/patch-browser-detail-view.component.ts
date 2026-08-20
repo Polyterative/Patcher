@@ -66,22 +66,33 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
   
   ngOnInit(): void {
     if (!this.ignoreSeo) { this.seoAndUtilsService.updateSeo({}, 'Patch Details'); }
-    
+
+    const publicId$ = this.route.params.pipe(
+      map(x => (x && typeof x.publicId === 'string' && x.publicId.length > 0) ? x.publicId : ''),
+      filter(x => !!x),
+      distinctUntilChanged()
+    );
+
+    // Load the patch's own data as soon as the route resolves — independent of auth
+    // state. During SSR, `loggedUser$` can take longer to settle than the render
+    // window lasts (or, for a truly anonymous visitor, never resolve to a truthy
+    // value at all), so gating this on it — as `combineLatest` did before — left
+    // every anonymous/crawler request with no patch data at all.
+    publicId$
+      .pipe(this.takeUntilDestroyed())
+      .subscribe(publicId => this.dataService.updateSinglePatchByPublicId$.next(publicId));
+
+    // Auth-dependent read-mode toggle only — must not block the data load above.
     combineLatest([
-      this.route.params.pipe(
-        map(x => (x && typeof x.publicId === 'string' && x.publicId.length > 0) ? x.publicId : ''),
-        filter(x => !!x),
-        distinctUntilChanged()
-      ),
+      publicId$,
       this.userManagementService.loggedUser$.pipe(
         map(user => !user),
         distinctUntilChanged()
       )
     ])
       .pipe(this.takeUntilDestroyed())
-      .subscribe(([publicId, usePublicDetailMode]) => {
+      .subscribe(([, usePublicDetailMode]) => {
         this.dataService.setPublicDetailMode(usePublicDetailMode);
-        this.dataService.updateSinglePatchByPublicId$.next(publicId);
       });
     
     if (!this.ignoreSeo) {

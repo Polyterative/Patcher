@@ -3,7 +3,7 @@ import {
   ActivatedRoute,
   Params
 } from '@angular/router';
-import { BehaviorSubject, ReplaySubject } from 'rxjs';
+import { BehaviorSubject, ReplaySubject, Subject } from 'rxjs';
 import { CommentsDataService } from 'src/app/components/shared-atoms/comments/comments-data.service';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { PatchConnection } from 'src/app/models/connection';
@@ -121,7 +121,7 @@ describe('PatchBrowserDetailViewComponent', () => {
     expect(dataService.updateSinglePatchByPublicId$.next).toHaveBeenCalledWith('zYxW9876_-Ab');
   });
 
-  it('switches back to public detail reads when the viewer logs out on the page', () => {
+  it('switches back to public detail reads when the viewer logs out on the page, without re-fetching the patch', () => {
     loggedUser$.next(userFactory('u1'));
     component = buildComponent('zYxW9876_-Ab');
 
@@ -131,8 +131,31 @@ describe('PatchBrowserDetailViewComponent', () => {
     expect(dataService.setPublicDetailMode).toHaveBeenCalledTimes(2);
     expect(dataService.setPublicDetailMode).toHaveBeenCalledWith(false);
     expect(dataService.setPublicDetailMode).toHaveBeenCalledWith(true);
-    expect(dataService.updateSinglePatchByPublicId$.next).toHaveBeenCalledTimes(2);
+    // The primary data load is keyed only on the route's publicId, not on auth
+    // state, so an auth change alone must not re-trigger an identical fetch.
+    expect(dataService.updateSinglePatchByPublicId$.next).toHaveBeenCalledTimes(1);
     expect(dataService.updateSinglePatchByPublicId$.next).toHaveBeenCalledWith('zYxW9876_-Ab');
+  });
+
+  it('loads the patch even when loggedUser$ never emits (e.g. during SSR before auth settles)', () => {
+    const neverSettlingUserManagementService: UserManagementServiceDouble = {
+      loggedUser$: new Subject<SimpleUserModel | undefined>()
+    };
+    routeParams$.next({publicId: 'neverEmitsXYZ'});
+    const neverEmittingComponent = new PatchBrowserDetailViewComponent(
+      TestBed.inject(PatchDetailDataService),
+      TestBed.inject(ActivatedRoute),
+      TestBed.inject(SeoAndUtilsService),
+      TestBed.inject(CommentsDataService),
+      neverSettlingUserManagementService as unknown as UserManagementService
+    );
+
+    neverEmittingComponent.ngOnInit();
+
+    expect(dataService.updateSinglePatchByPublicId$.next).toHaveBeenCalledWith('neverEmitsXYZ');
+    expect(dataService.setPublicDetailMode).not.toHaveBeenCalled();
+
+    neverEmittingComponent.ngOnDestroy();
   });
 
   it('shows wide-shell nav by default', () => {
