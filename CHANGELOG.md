@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.7.0](https://github.com/Polyterative/Patcher/compare/v6.6.0...v6.7.0) (2026-08-20)
+
+
+### Features
+
+* **manufacturers:** add panel wall view mode for module discovery ([bdc2699](https://github.com/Polyterative/Patcher/commit/bdc269970d88394e725f964e67df0c278ba9c65d))
+* **price-hub:** add change-only snapshot write planner with floating endpoints ([4f549fd](https://github.com/Polyterative/Patcher/commit/4f549fd8396cf77665622bc6b0e28cacd98aac34))
+* **price-hub:** add listing last_raw_meta column and latest-snapshots rpc ([2f51e3d](https://github.com/Polyterative/Patcher/commit/2f51e3d0a84272ccb14fc5f00e27b368be340915))
+* **price-hub:** add raw_meta jsonl archive script for backfill ([6cad431](https://github.com/Polyterative/Patcher/commit/6cad431feff13e54514a0b222c8b0237d7dbaeb7))
+* **price-hub:** write change-only snapshot segments from importer and edge worker ([7b921f8](https://github.com/Polyterative/Patcher/commit/7b921f8531bc6ddaf35df3deaf223455fc675765))
+
+
+### Bug Fixes
+
+* **price-hub:** drop curl compression flag tripping Shopify Cloudflare challenges ([208e440](https://github.com/Polyterative/Patcher/commit/208e440e040fd7d769b3ee08e01dd9dc79c78601))
+* **ssr:** close the chained-fetch gap causing intermittent wrong rack/patch titles ([a15ced3](https://github.com/Polyterative/Patcher/commit/a15ced313e5a88c7c7f3f038f71c544a16aa6e61))
+* **ssr:** make supabase data reliably visible to crawlers before render ([0fed72a](https://github.com/Polyterative/Patcher/commit/0fed72aaa07bdb44641179b2e6961968ee848382))
+* **ssr:** reconcile rack/patch unavailable-message wording with settled auth state ([ad1cb3b](https://github.com/Polyterative/Patcher/commit/ad1cb3b3f0fb65d05db2b1934981cdaa4216b3ad))
+* **ssr:** stop gating rack/patch detail data load on loggedUser$ ([ac50986](https://github.com/Polyterative/Patcher/commit/ac50986132688ab0878f088bc49943d98e1fa5b3))
+* **ssr:** turn legacy patch/rack id redirects into real HTTP redirects ([8f234aa](https://github.com/Polyterative/Patcher/commit/8f234aa75deed6c3738e47afe8ed453a40d8620d))
+
 ## [6.6.0](https://github.com/Polyterative/Patcher/compare/v6.5.2...v6.6.0) (2026-08-17)
 
 
