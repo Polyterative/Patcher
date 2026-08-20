@@ -272,6 +272,26 @@ describe('RackBrowserDetailViewComponent', () => {
     expect(updateSingleRackByPublicIdNextSpy).toHaveBeenCalledWith('tokenXYZ77_X');
   });
 
+  it('loads the rack even when loggedUser$ never emits (e.g. during SSR before auth settles)', () => {
+    userManagementService = withServicePrototype(UserManagementService, {
+      loggedUser$: new Subject<SimpleUserModel | undefined>(),
+    } satisfies UserManagementServiceDouble);
+    component = new RackBrowserDetailViewComponent(
+      dataService,
+      userAreaDataService,
+      makeActivatedRoute('neverEmitsXYZ'),
+      seoService,
+      commentsDataService,
+      userManagementService
+    );
+
+    component.ngOnInit();
+
+    expect(updateSingleRackByPublicIdNextSpy).toHaveBeenCalledWith('neverEmitsXYZ');
+    expect(setPublicDetailModeSpy).not.toHaveBeenCalled();
+    expect(updateModulesDataNextSpy).not.toHaveBeenCalled();
+  });
+
   it('calculates rack utilization as a percentage string', () => {
     expect(component.calculateRackUtilization(84, 1, 42)).toBe('50.0%');
     expect(component.calculateRackUtilization(84, 2, 168)).toBe('100.0%');

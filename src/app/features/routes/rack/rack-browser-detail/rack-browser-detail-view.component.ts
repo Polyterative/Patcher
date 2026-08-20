@@ -70,19 +70,26 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
 
   ngOnInit(): void {
     if (!this.ignoreSeo) { this.seoAndUtilsService.updateSeo({}, 'Rack Details'); }
-    combineLatest([
-      this.route.params.pipe(
-        map(x => (x && typeof x.publicId === 'string' && x.publicId.length > 0) ? x.publicId : ''),
-        filter(x => !!x),
-        take(1)
-      ),
-      this.userManagementService.loggedUser$.pipe(take(1))
-    ]).subscribe(([publicId, user]) => {
+
+    const publicId$ = this.route.params.pipe(
+      map(x => (x && typeof x.publicId === 'string' && x.publicId.length > 0) ? x.publicId : ''),
+      filter(x => !!x),
+      take(1)
+    );
+
+    // Load the rack's own data as soon as the route resolves — independent of auth
+    // state. During SSR, `loggedUser$` can take longer to settle than the render
+    // window lasts (or, for a truly anonymous visitor, never resolve to a truthy
+    // value at all), so gating this on it — as `combineLatest` did before — left
+    // every anonymous/crawler request with no rack data at all.
+    publicId$.subscribe(publicId => this.dataService.updateSingleRackByPublicId$.next(publicId));
+
+    // Auth-dependent UI/API side effects only — must not block the data load above.
+    this.userManagementService.loggedUser$.pipe(take(1)).subscribe(user => {
       this.dataService.setPublicDetailMode(!user);
       if (user) {
         this.userAreaDataService.updateModulesData$.next();
       }
-      this.dataService.updateSingleRackByPublicId$.next(publicId);
     });
 
     if (!this.ignoreSeo) {
