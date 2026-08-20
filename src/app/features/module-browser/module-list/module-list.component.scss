@@ -1,9 +1,57 @@
 .module-list-filters {
   padding-bottom: 0.25rem;
+
+  lib-mat-form-entity {
+    flex: 0 1 14rem;
+    min-width: 8rem;
+  }
+}
+
+.module-list-controls {
+  align-items: center;
+  flex-wrap: wrap;
+
+  // Search takes the remaining space; selects stay compact so the whole
+  // control strip fits on one desktop row.
+  app-local-data-filter {
+    flex: 1 1 16rem;
+    min-width: 12rem;
+  }
+
+  lib-mat-form-entity {
+    flex: 0 1 14rem;
+    min-width: 10rem;
+  }
 }
 
 .module-list-reset-btn {
   align-self: center;
+}
+
+.module-list-view-toggle {
+  flex: 0 0 auto;
+  align-self: center;
+  margin-left: auto;
+
+  mat-button-toggle-group {
+    height: 2.5rem;
+    align-items: center;
+    border-radius: 1.25rem;
+  }
+
+  ::ng-deep .mat-button-toggle-label-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0 0.35rem;
+    line-height: 2.4rem;
+
+    mat-icon {
+      font-size: 1.15rem;
+      width: 1.15rem;
+      height: 1.15rem;
+    }
+  }
 }
 
 .module-list-tag-chips {
@@ -22,4 +70,8 @@
   z-index: 4;
   background: rgba(248, 251, 255, 0.92);
   box-shadow: 0 0.25rem 0.7rem rgba(16, 40, 70, 0.12);
+}
+
+.module-list-panel-empty {
+  width: 100%;
 }

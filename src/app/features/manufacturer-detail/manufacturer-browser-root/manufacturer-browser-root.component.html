@@ -24,6 +24,27 @@
           [label]="dataService.fields.order.label"
           iconL1="sort"
         ></lib-mat-form-entity>
+
+        @if (appState.moduleListDisplayMode$ | async; as moduleListDisplayMode) {
+          <div class="manufacturer-view-toggle col">
+            <span class="manufacturer-view-toggle__label">View</span>
+            <mat-button-toggle-group
+              [value]="moduleListDisplayMode"
+              (change)="setDisplayMode($event.value)"
+              hideSingleSelectionIndicator
+              aria-label="Manufacturer module display mode"
+            >
+              <mat-button-toggle value="list" matTooltip="Compact list with details">
+                <mat-icon>view_list</mat-icon>
+                <span>List</span>
+              </mat-button-toggle>
+              <mat-button-toggle value="panels" matTooltip="Big panels, side by side">
+                <mat-icon>dashboard</mat-icon>
+                <span>Panels</span>
+              </mat-button-toggle>
+            </mat-button-toggle-group>
+          </div>
+        }
         
         <div class="col gap1">
           <button mat-stroked-button

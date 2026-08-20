@@ -4,7 +4,9 @@
   priceSummaryByModuleId:(priceSummaryByModuleId$|async),
   availableTags:(availableTags$|async),
   canReset:(canReset$|async),
-  selectedTagIds:(tagsControl.valueChanges|async)
+  selectedTagIds:(tagsControl.valueChanges|async),
+  preferredPanelColor:(appState.preferredPanelColor$|async),
+  moduleListDisplayMode:(appState.moduleListDisplayMode$|async)
 }; as bag) {
   @if (bag.data == null) {
     <lib-auto-content-loading-indicator
@@ -14,8 +16,8 @@
     </lib-auto-content-loading-indicator>
   } @else {
     <div class="col gap1">
-      @if (showSearch || showOrder) {
-        <div class="row gap1">
+      @if (showSearch || showOrder || showViewToggle) {
+        <div class="row gap1 module-list-controls">
           @if (showSearch) {
             <app-local-data-filter></app-local-data-filter>
           }
@@ -38,6 +40,25 @@
               iconL1="view_stream"
               label="Group"
             ></lib-mat-form-entity>
+          }
+          @if (showViewToggle) {
+            <div class="module-list-view-toggle">
+              <mat-button-toggle-group
+                [value]="bag.moduleListDisplayMode ?? 'list'"
+                (change)="setDisplayMode($event.value)"
+                hideSingleSelectionIndicator
+                aria-label="Module list display mode"
+              >
+                <mat-button-toggle value="list" matTooltip="Compact list with details">
+                  <mat-icon>view_list</mat-icon>
+                  <span>List</span>
+                </mat-button-toggle>
+                <mat-button-toggle value="panels" matTooltip="Big panels, side by side">
+                  <mat-icon>dashboard</mat-icon>
+                  <span>Panels</span>
+                </mat-button-toggle>
+              </mat-button-toggle-group>
+            </div>
           }
         </div>
       }
@@ -92,45 +113,62 @@
           }
         </div>
       }
-      <flexbox-row-fast
-        [ngClass]="{'limit-height':encloseVertically}"
-      >
-        @for (item of bag.filteredData; track item.id) {
-          <lib-clean-card class="module-list-card"
-                          [@enter]="{ value: '', params: { delay: getEnterDelay(item.id)}}"
-                          [@leave]="{ value: '', params: { delay:  0 }}"
-          >
-            @if (moduleAction) {
-              <button
-                mat-icon-button
-                type="button"
-                class="module-list-card-action"
-                [disabled]="isModuleActionDisabled(item)"
-                [attr.aria-label]="getModuleActionLabel(item)"
-                [matTooltip]="getModuleActionLabel(item)"
-                (click)="moduleAction$.emit(item)"
-              >
-                <mat-icon>{{ getModuleActionIcon(item) }}</mat-icon>
-              </button>
-            }
-            <app-module-minimal
-              [data]="item"
-              [viewConfig]="viewConfig"
-              [preferredPanelColor]="appState.preferredPanelColor$ | async"
-              [showCoolAction]="showCoolAction"
-              [priceSummary]="showPriceSummary ? (bag.priceSummaryByModuleId?.get(item.id) ?? null) : null"
-            ></app-module-minimal>
-          </lib-clean-card>
-        } @empty {
+      @if (showViewToggle && bag.moduleListDisplayMode === 'panels') {
+        @if (bag.filteredData && bag.filteredData.length > 0) {
+          <app-module-panel-wall
+            [modules]="bag.filteredData"
+            [preferredPanelColor]="bag.preferredPanelColor"
+          ></app-module-panel-wall>
+        } @else {
           @if (!suppressEmpty) {
-            <div class="browser-list-empty-state flexbox-row-fast__full-row">
+            <div class="browser-list-empty-state module-list-panel-empty">
               <app-empty-state
                 [copy]="emptyStateCopy || 'Try adjusting the filters or clearing the current search.'"
               ></app-empty-state>
             </div>
           }
         }
-      </flexbox-row-fast>
+      } @else {
+        <flexbox-row-fast
+          [ngClass]="{'limit-height':encloseVertically}"
+        >
+          @for (item of bag.filteredData; track item.id) {
+            <lib-clean-card class="module-list-card"
+                            [@enter]="{ value: '', params: { delay: getEnterDelay(item.id)}}"
+                            [@leave]="{ value: '', params: { delay:  0 }}"
+            >
+              @if (moduleAction) {
+                <button
+                  mat-icon-button
+                  type="button"
+                  class="module-list-card-action"
+                  [disabled]="isModuleActionDisabled(item)"
+                  [attr.aria-label]="getModuleActionLabel(item)"
+                  [matTooltip]="getModuleActionLabel(item)"
+                  (click)="moduleAction$.emit(item)"
+                >
+                  <mat-icon>{{ getModuleActionIcon(item) }}</mat-icon>
+                </button>
+              }
+              <app-module-minimal
+                [data]="item"
+                [viewConfig]="viewConfig"
+                [preferredPanelColor]="bag.preferredPanelColor"
+                [showCoolAction]="showCoolAction"
+                [priceSummary]="showPriceSummary ? (bag.priceSummaryByModuleId?.get(item.id) ?? null) : null"
+              ></app-module-minimal>
+            </lib-clean-card>
+          } @empty {
+            @if (!suppressEmpty) {
+              <div class="browser-list-empty-state flexbox-row-fast__full-row">
+                <app-empty-state
+                  [copy]="emptyStateCopy || 'Try adjusting the filters or clearing the current search.'"
+                ></app-empty-state>
+              </div>
+            }
+          }
+        </flexbox-row-fast>
+      }
     </div>
   }
 }

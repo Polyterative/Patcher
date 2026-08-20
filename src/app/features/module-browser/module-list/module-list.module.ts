@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -24,6 +25,7 @@ import { ModuleListComponent } from './module-list.component';
     CommonModule,
     FormsModule,
     MatButtonModule,
+    MatButtonToggleModule,
     MatChipsModule,
     MatIconModule,
     MatTooltipModule,

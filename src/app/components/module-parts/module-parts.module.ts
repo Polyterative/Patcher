@@ -35,6 +35,7 @@ import { ModulePartHpComponent } from './module-minimal/module-part-hp/module-pa
 import { ModulePartImageComponent } from './module-minimal/module-part-image/module-part-image.component';
 import { ModulePartManufacturerComponent } from './module-minimal/module-part-manufacturer/module-part-manufacturer.component';
 import { ModulePartNameComponent } from './module-minimal/module-part-name/module-part-name.component';
+import { ModulePanelWallComponent } from './module-panel-wall/module-panel-wall.component';
 import { ModuleTagsComponent } from './module-minimal/module-tags/module-tags.component';
 import { OnlyTagOfTypePipe } from './module-minimal/module-tags/only-tag-of-type.pipe';
 import { OrderTagsByTypePipe } from './module-minimal/module-tags/order-tags-by-type.pipe';
@@ -83,6 +84,7 @@ import { RackModuleAdderDialogComponent } from '../rack-parts/rack-module-adder/
     GetModuleHeightForStandardPipe,
     ModulePartImageComponent,
     ModulePanelZoomDialogComponent,
+    ModulePanelWallComponent,
     ModulePossessionDialogComponent,
     RackModuleAdderDialogComponent,
     DescriptionKeywordHighlightPipe
@@ -142,6 +144,7 @@ import { RackModuleAdderDialogComponent } from '../rack-parts/rack-module-adder/
     ModuleRealisticHolelineComponent,
     ModuleTagsComponent,
     ModulePartImageComponent,
+    ModulePanelWallComponent,
     RackModuleAdderDialogComponent
   ]
 })

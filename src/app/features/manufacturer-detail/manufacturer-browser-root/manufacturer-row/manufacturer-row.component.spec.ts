@@ -8,6 +8,10 @@ import { defaultModuleMinimalViewConfig } from 'src/app/components/module-parts/
 import { ManufacturerDetail } from '../../manufacturer-detail-data.service';
 import { ModuleRecentMarketPrice } from 'src/app/features/backend/supabase-queries';
 import { ManufacturerRowDataService } from './manufacturer-row-data.service';
+import {
+  AppStateService,
+  ModuleListDisplayMode
+} from 'src/app/shared-interproject/app-state.service';
 
 type ManufacturerRowModule = { id: number };
 
@@ -16,6 +20,11 @@ type ManufacturerRowDataServiceMock = {
   logoStorageBase: string;
   modulesBySameManufacturer: jasmine.Spy;
   recentModuleMarketPrices: jasmine.Spy;
+};
+
+type AppStateServiceMock = {
+  preferredPanelColor$: Observable<number | null>;
+  moduleListDisplayMode$: Observable<ModuleListDisplayMode>;
 };
 
 function makeManufacturer(id = 1): ManufacturerDetail {
@@ -34,8 +43,21 @@ function makeDataServiceMock(
   } as ManufacturerRowDataServiceMock;
 }
 
-function makeComponent(dataService: ManufacturerRowDataServiceMock): ManufacturerRowComponent {
-  return new ManufacturerRowComponent(dataService as unknown as ManufacturerRowDataService);
+function makeAppStateMock(mode: ModuleListDisplayMode = 'list'): AppStateServiceMock {
+  return {
+    preferredPanelColor$: of(null),
+    moduleListDisplayMode$: of(mode)
+  };
+}
+
+function makeComponent(
+  dataService: ManufacturerRowDataServiceMock,
+  appState: AppStateServiceMock = makeAppStateMock()
+): ManufacturerRowComponent {
+  return new ManufacturerRowComponent(
+    dataService as unknown as ManufacturerRowDataService,
+    appState as unknown as AppStateService
+  );
 }
 
 describe('ManufacturerRowComponent', () => {
@@ -70,6 +92,13 @@ describe('ManufacturerRowComponent', () => {
       const comp = makeComponent(dataService);
 
       expect(comp.logoStorageBase).toBe('https://cdn.example.test/manufacturer-logos/');
+    });
+
+    it('exposes the shared display mode preference to the template', () => {
+      const appState = makeAppStateMock('panels');
+      const comp = makeComponent(makeDataServiceMock(), appState);
+
+      expect(comp.appState.moduleListDisplayMode$).toBe(appState.moduleListDisplayMode$);
     });
   });
 

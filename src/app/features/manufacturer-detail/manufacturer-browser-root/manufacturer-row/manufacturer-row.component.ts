@@ -30,6 +30,7 @@ import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.
 import { ManufacturerUpdatedBadgeComponent } from './manufacturer-updated-badge/manufacturer-updated-badge.component';
 import { ModuleRecentMarketPrice } from 'src/app/features/backend/supabase-queries';
 import { ManufacturerRowDataService } from './manufacturer-row-data.service';
+import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 
 
 @Component({
@@ -79,7 +80,10 @@ export class ManufacturerRowComponent extends SubManager implements OnInit {
     tagsMaxCount: 0,
   };
   
-  constructor(private readonly dataService: ManufacturerRowDataService) {
+  constructor(
+    private readonly dataService: ManufacturerRowDataService,
+    public readonly appState: AppStateService
+  ) {
     super();
   }
 

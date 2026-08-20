@@ -33,6 +33,8 @@ export interface LayoutFlexWidthState {
   gtlg: boolean;
 }
 
+export type ModuleListDisplayMode = 'list' | 'panels';
+
 const DEFAULT_LAYOUT_FLEX_WIDTH_STATE: LayoutFlexWidthState = {
   xs: false,
   sm: false,
@@ -118,6 +120,8 @@ export class AppStateService extends SubManager implements OnDestroy {
 
   private readonly _preferredPanelColor$ = new BehaviorSubject<number | null>(this.loadPreferredPanelColor());
   readonly preferredPanelColor$ = this._preferredPanelColor$.asObservable();
+  private readonly _moduleListDisplayMode$ = new BehaviorSubject<ModuleListDisplayMode>(this.loadModuleListDisplayMode());
+  readonly moduleListDisplayMode$ = this._moduleListDisplayMode$.asObservable();
 
   setPreferredPanelColor(color: number | null): void {
     this._preferredPanelColor$.next(color);
@@ -133,6 +137,16 @@ export class AppStateService extends SubManager implements OnDestroy {
     if (raw === null) return null;
     const parsed = Number(raw);
     return (parsed === 1 || parsed === 2) ? parsed : null;
+  }
+
+  setModuleListDisplayMode(mode: ModuleListDisplayMode): void {
+    this._moduleListDisplayMode$.next(mode);
+    localStorage.setItem('moduleListDisplayMode', mode);
+  }
+
+  private loadModuleListDisplayMode(): ModuleListDisplayMode {
+    const raw = localStorage.getItem('moduleListDisplayMode');
+    return raw === 'panels' ? 'panels' : 'list';
   }
   
   readonly layoutFlexWidth$: Observable<LayoutFlexWidthState>;

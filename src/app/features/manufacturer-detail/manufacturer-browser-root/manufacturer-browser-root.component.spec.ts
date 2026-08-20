@@ -14,6 +14,10 @@ import { TestBed } from '@angular/core/testing';
 import { AutoContentLoadingIndicatorComponent } from 'src/app/shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator/auto-content-loading-indicator.component';
 import { ManufacturerDetail } from '../manufacturer-detail-data.service';
 import { SeoSocialShareData } from 'src/app/models/seo.model';
+import {
+  AppStateService,
+  ModuleListDisplayMode
+} from 'src/app/shared-interproject/app-state.service';
 
 interface ManufacturerOrderOption {
   id: string;
@@ -49,12 +53,21 @@ interface SeoAndUtilsServiceDouble {
   updateSeo: jasmine.Spy<(data: SeoSocialShareData, appArea: string) => void>;
 }
 
+interface AppStateServiceDouble {
+  moduleListDisplayMode$: Observable<ModuleListDisplayMode>;
+  setModuleListDisplayMode: jasmine.Spy<(mode: ModuleListDisplayMode) => void>;
+}
+
 function asDataService(double: ManufacturerBrowserRootDataServiceDouble): ManufacturerBrowserRootDataService {
   return double as unknown as ManufacturerBrowserRootDataService;
 }
 
 function asSeoService(double: SeoAndUtilsServiceDouble): SeoAndUtilsService {
   return double as unknown as SeoAndUtilsService;
+}
+
+function asAppStateService(double: AppStateServiceDouble): AppStateService {
+  return double as unknown as AppStateService;
 }
 
 function mockDataService(): ManufacturerBrowserRootDataServiceDouble {
@@ -88,6 +101,13 @@ function mockSeo(): SeoAndUtilsServiceDouble {
   };
 }
 
+function mockAppState(mode: ModuleListDisplayMode = 'list'): AppStateServiceDouble {
+  return {
+    moduleListDisplayMode$: of(mode),
+    setModuleListDisplayMode: jasmine.createSpy<(nextMode: ModuleListDisplayMode) => void>('setModuleListDisplayMode')
+  };
+}
+
 describe('ManufacturerBrowserRootComponent', () => {
   let dataService: ManufacturerBrowserRootDataService;
   let seo: SeoAndUtilsService;
@@ -100,7 +120,7 @@ describe('ManufacturerBrowserRootComponent', () => {
     return TestBed.runInInjectionContext(() => {
       dataService = asDataService(mockDataService());
       seo = asSeoService(mockSeo());
-      return new ManufacturerBrowserRootComponent(dataService, seo);
+      return new ManufacturerBrowserRootComponent(dataService, asAppStateService(mockAppState()), seo);
     });
   }
 
@@ -121,13 +141,31 @@ describe('ManufacturerBrowserRootComponent', () => {
     const ds = mockDataService();
     const s = mockSeo();
     ds.updateList$.subscribe(() => emitted = true);
-    TestBed.runInInjectionContext(() => new ManufacturerBrowserRootComponent(asDataService(ds), asSeoService(s)));
+    TestBed.runInInjectionContext(() => new ManufacturerBrowserRootComponent(
+      asDataService(ds),
+      asAppStateService(mockAppState()),
+      asSeoService(s)
+    ));
     expect(emitted).toBeTrue();
   });
 
   it('has formTypes reference', () => {
     const comp = makeComp();
     expect(comp.formTypes).toBeDefined();
+  });
+
+  it('sets the shared module-list display mode preference', () => {
+    const appStateDouble = mockAppState();
+    const comp = TestBed.runInInjectionContext(() => new ManufacturerBrowserRootComponent(
+      asDataService(mockDataService()),
+      asAppStateService(appStateDouble),
+      asSeoService(mockSeo())
+    ));
+
+    comp.setDisplayMode('panels');
+
+    expect(appStateDouble.setModuleListDisplayMode).toHaveBeenCalledOnceWith('panels');
+    comp.ngOnDestroy();
   });
 
   it('SEO has correct url and description', () => {
@@ -145,7 +183,11 @@ describe('ManufacturerBrowserRootComponent', () => {
     const scrollSpy = spyOn(window, 'scrollTo');
     const ds = mockDataService();
     const s = mockSeo();
-    const comp = TestBed.runInInjectionContext(() => new ManufacturerBrowserRootComponent(asDataService(ds), asSeoService(s)));
+    const comp = TestBed.runInInjectionContext(() => new ManufacturerBrowserRootComponent(
+      asDataService(ds),
+      asAppStateService(mockAppState()),
+      asSeoService(s)
+    ));
 
     ds.paginatorToFistPage$.next();
 
@@ -163,6 +205,7 @@ describe('ManufacturerBrowserRootComponent', () => {
       imports: [CommonModule, AutoContentLoadingIndicatorComponent],
       providers: [
         {provide: ManufacturerBrowserRootDataService, useValue: asDataService(ds)},
+        {provide: AppStateService, useValue: asAppStateService(mockAppState())},
         {provide: SeoAndUtilsService, useValue: asSeoService(mockSeo())},
       ],
       schemas: [NO_ERRORS_SCHEMA],

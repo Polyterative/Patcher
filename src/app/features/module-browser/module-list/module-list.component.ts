@@ -47,7 +47,10 @@ import {
   sortAndGroupMinimalModules
 } from 'src/app/shared-interproject/utils/module-sort-utils';
 import { ModuleList } from '../module-browser-data.service';
-import { AppStateService } from 'src/app/shared-interproject/app-state.service';
+import {
+  AppStateService,
+  ModuleListDisplayMode
+} from 'src/app/shared-interproject/app-state.service';
 import { HpConditionOption } from '../module-browser-data.models';
 import {
   DEFAULT_HP_CONDITION,
@@ -109,6 +112,7 @@ export class ModuleListComponent extends SubManager implements OnInit {
   @Input() showSearch = false;
   @Input() showOrder = false;
   @Input() showFilters = false;
+  @Input() showViewToggle = false;
   @Input() encloseVertically = true;
   @Input() emptyStateCopy = '';
   @Input() showCoolAction = false;
@@ -272,6 +276,10 @@ export class ModuleListComponent extends SubManager implements OnInit {
       )
       : of('none' as ModuleGroupId);
 
+    const displayMode$: Observable<ModuleListDisplayMode> = this.showViewToggle
+      ? this.appState.moduleListDisplayMode$
+      : of('list' as ModuleListDisplayMode);
+
     const standardId$: Observable<number | undefined> = this.showFilters
       ? this.standardControl.valueChanges.pipe(
           startWith(this.standardControl.value),
@@ -301,11 +309,12 @@ export class ModuleListComponent extends SubManager implements OnInit {
         this.externalSearchQuery$,
         sortId$,
         groupId$,
+        displayMode$,
         standardId$,
         hpValue$,
         hpConditionId$,
         selectedTagIds$,
-      ]).subscribe(([data, localQuery, externalQuery, sortId, groupId, standardId, hpRaw, hpConditionId, tagIds]) => {
+      ]).subscribe(([data, localQuery, externalQuery, sortId, groupId, displayMode, standardId, hpRaw, hpConditionId, tagIds]) => {
         const hpValue = Number.parseInt(hpRaw, 10);
         const filtered = data.filter(item => {
           const searchFields = [
@@ -322,10 +331,15 @@ export class ModuleListComponent extends SubManager implements OnInit {
           if (tagIds.length > 0 && !matchesSelectedTags(item, tagIds, 'OR')) return false;
           return true;
         });
-        
-        this.updateFilteredData(sortAndGroupMinimalModules(filtered, sortId, groupId));
+
+        const effectiveGroupId = displayMode === 'panels' ? 'none' : groupId;
+        this.updateFilteredData(sortAndGroupMinimalModules(filtered, sortId, effectiveGroupId));
       })
     );
+  }
+
+  setDisplayMode(mode: ModuleListDisplayMode): void {
+    this.appState.setModuleListDisplayMode(mode);
   }
 
   getEnterDelay(moduleId: number): number {
