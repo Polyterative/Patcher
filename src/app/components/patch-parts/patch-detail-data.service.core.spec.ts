@@ -326,6 +326,51 @@ describe('PatchDetailDataService core flows', () => {
     expect(service.patchDetailUnavailableMessage$.value).toBeTruthy();
   });
 
+  it('reconciles a stale "unavailable" message once setPublicDetailMode settles after the fact', () => {
+    // Regression coverage: PatchBrowserDetailViewComponent triggers the by-publicId
+    // fetch independently of loggedUser$ (see its ngOnInit) so SSR/crawlers get real
+    // data even before auth settles. That means a not-found lookup can now resolve
+    // and publish patchDetailUnavailableMessage$ using the constructor's default
+    // (private-visitor) wording *before* setPublicDetailMode(true) has ever been
+    // called for a genuinely anonymous visitor. The message must self-correct once
+    // the real auth state is known, without needing a fresh fetch.
+    const {service, backend} = build();
+    backend.GET.patchByPublicId.and.returnValue(of({data: null}));
+
+    service.updateSinglePatchByPublicId$.next('missing-token');
+
+    expect(service.patchDetailUnavailableMessage$.value).toBe('This patch could not be loaded.');
+
+    service.setPublicDetailMode(true);
+
+    expect(service.patchDetailUnavailableMessage$.value)
+      .withContext('Once the real (anonymous) auth state is known, the message must switch to the public-visitor wording')
+      .toBe(`This patch isn't publicly available. If it's private, only the owner can open it while signed in.`);
+  });
+
+  it('does not touch the unavailable message once real patch data has loaded', () => {
+    const {service, backend} = build();
+    backend.GET.patchByPublicId.and.returnValue(of({data: patch({id: 7, name: 'Found'})}));
+
+    service.updateSinglePatchByPublicId$.next('found-token');
+
+    expect(service.patchDetailUnavailableMessage$.value).toBeNull();
+
+    service.setPublicDetailMode(true);
+
+    expect(service.patchDetailUnavailableMessage$.value)
+      .withContext('A later setPublicDetailMode() call must not spuriously set an unavailable message once real data is loaded')
+      .toBeNull();
+  });
+
+  it('does not spuriously set an unavailable message before any fetch has ever resolved', () => {
+    const {service} = build();
+
+    service.setPublicDetailMode(true);
+
+    expect(service.patchDetailUnavailableMessage$.value).toBeNull();
+  });
+
   // --- Privacy ---
 
   it('isCurrentPatchPrivate$ reflects the public flag of loaded patch', () => {

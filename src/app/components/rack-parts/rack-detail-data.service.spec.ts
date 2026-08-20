@@ -1516,4 +1516,52 @@ describe('RackDetailDataService', () => {
     expect(backend.GET.publicRackWithId).toHaveBeenCalled();
   }));
 
+  it('reconciles a stale "unavailable" message once setPublicDetailMode settles after the fact', fakeAsync(() => {
+    // Regression coverage: RackBrowserDetailViewComponent triggers the by-publicId
+    // fetch independently of loggedUser$ (see its ngOnInit) so SSR/crawlers get
+    // real data even before auth settles. That means a not-found lookup can now
+    // resolve and publish rackDetailUnavailableMessage$ using the constructor's
+    // default (private-visitor) wording *before* setPublicDetailMode(true) has ever
+    // been called for a genuinely anonymous visitor. The message must self-correct
+    // once the real auth state is known, without needing a fresh fetch.
+    const {service, backend} = build();
+    backend.GET.rackByPublicId.and.returnValue(of({data: null}));
+
+    service.updateSingleRackByPublicId$.next('missing-token');
+    tick();
+
+    expect(service.rackDetailUnavailableMessage$.value).toBe('This rack could not be loaded.');
+
+    service.setPublicDetailMode(true);
+
+    expect(service.rackDetailUnavailableMessage$.value)
+      .withContext('Once the real (anonymous) auth state is known, the message must switch to the public-visitor wording')
+      .toBe(`This rack isn't publicly available. If you have a share link from the owner, use that to view it.`);
+  }));
+
+  it('does not touch the unavailable message once real rack data has loaded', fakeAsync(() => {
+    const {service, backend} = build();
+    backend.GET.rackByPublicId.and.returnValue(of({data: makeRack({id: 7})}));
+
+    service.updateSingleRackByPublicId$.next('found-token');
+    tick();
+
+    expect(service.rackDetailUnavailableMessage$.value).toBeNull();
+
+    service.setPublicDetailMode(true);
+
+    expect(service.rackDetailUnavailableMessage$.value)
+      .withContext('A later setPublicDetailMode() call must not spuriously set an unavailable message once real data is loaded')
+      .toBeNull();
+  }));
+
+  it('does not spuriously set an unavailable message before any fetch has ever resolved', fakeAsync(() => {
+    const {service} = build();
+
+    service.setPublicDetailMode(true);
+    tick();
+
+    expect(service.rackDetailUnavailableMessage$.value).toBeNull();
+  }));
+
 });

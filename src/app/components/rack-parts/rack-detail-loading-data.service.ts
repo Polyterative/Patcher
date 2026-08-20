@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import {
+  BehaviorSubject,
   combineLatest,
   EMPTY
 } from 'rxjs';
@@ -24,11 +25,15 @@ import { RackDetailDataContext } from './rack-detail-data.service.types';
 
 @Injectable()
 export class RackDetailLoadingDataService {
-  private usePublicDetailReads = false;
+  // Exposed as a BehaviorSubject (not a plain field) so the "unavailable" message
+  // reconciliation below can react whenever this settles — see its comment for why
+  // that matters. `.value` reads stay perfectly synchronous for the two switchMap
+  // branches, so this changes no existing timing/behavior for them.
+  private readonly usePublicDetailReads$ = new BehaviorSubject<boolean>(false);
   private rackViewedFired = false;
 
   setPublicDetailMode(enabled: boolean): void {
-    this.usePublicDetailReads = enabled;
+    this.usePublicDetailReads$.next(enabled);
   }
 
   bindDetailLoading(context: RackDetailDataContext): void {
@@ -40,7 +45,7 @@ export class RackDetailLoadingDataService {
           context.rackDetailUnavailableMessage$.next(null);
         }),
         withLatestFrom(context.detailAnalyticsSurface$),
-        switchMap(([x, surface]) => (this.usePublicDetailReads
+        switchMap(([x, surface]) => (this.usePublicDetailReads$.value
           ? context.backend.GET.publicRackWithId(x)
           : context.backend.GET.rackWithId(x)
         ).pipe(
@@ -103,6 +108,24 @@ export class RackDetailLoadingDataService {
         context.loadedRackAnalyticsSurface$.next(surface);
         context.singleRackData$.next(result.data);
         context.loadModulesForRack$.next(result.data.id);
+      });
+
+    // The by-publicId fetch above (and the by-numeric-id one before it) can now
+    // resolve before setPublicDetailMode() has settled to its auth-derived value —
+    // by design, since RackBrowserDetailViewComponent intentionally no longer
+    // blocks the fetch on loggedUser$ (that used to make SSR render every
+    // anonymous/crawler rack page with zero data). If a "not found" message got
+    // published using the not-yet-settled default, once usePublicDetailReads$
+    // actually changes, recompute and republish it so the wording always ends up
+    // matching the real, final auth state — without ever reintroducing the
+    // fetch-blocking that caused the original bug.
+    this.usePublicDetailReads$
+      .pipe(
+        filter(() => !context.singleRackData$.value && context.rackDetailUnavailableMessage$.value !== null),
+        context.takeUntilDestroyed()
+      )
+      .subscribe(() => {
+        context.rackDetailUnavailableMessage$.next(this.buildUnavailableMessage());
       });
 
     context.singleRackData$
@@ -189,7 +212,7 @@ export class RackDetailLoadingDataService {
   }
 
   private buildUnavailableMessage(): string {
-    return this.usePublicDetailReads
+    return this.usePublicDetailReads$.value
       ? `This rack isn't publicly available. If you have a share link from the owner, use that to view it.`
       : 'This rack could not be loaded.';
   }

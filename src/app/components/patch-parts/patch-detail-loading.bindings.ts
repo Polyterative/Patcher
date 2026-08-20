@@ -1,4 +1,4 @@
-import { EMPTY, of } from 'rxjs';
+import { EMPTY, Observable, of } from 'rxjs';
 import { catchError, filter, map, pairwise, switchMap, take, takeUntil, tap, withLatestFrom } from 'rxjs/operators';
 import { PatchConnection } from '../../models/connection';
 import { shouldCaptureCanonicalDetailView } from '../detail-analytics-surface';
@@ -9,6 +9,8 @@ import { groupInstancesByModuleId } from './patch-detail-data.utils';
 type PublicReadAccess = {
   isPublicDetailMode: () => boolean;
   buildUnavailableMessage: () => string;
+  /** Reactive form of `isPublicDetailMode()` — see `bindUnavailableMessageReconciliation`. */
+  usePublicDetailReads$: Observable<boolean>;
 };
 
 export function bindPatchLoadByNumericId(
@@ -80,6 +82,34 @@ export function bindPatchLoadByPublicId(
       if (!patch) {
         ctx.patchDetailUnavailableMessage$.next(access.buildUnavailableMessage());
       }
+    });
+}
+
+/**
+ * Keeps the "unavailable" message's wording in sync with the latest known
+ * auth-derived read mode, even if that mode settles after a not-found lookup
+ * already published a message.
+ *
+ * Why this exists: the by-publicId (and by-numeric-id) fetches above can now
+ * resolve before `setPublicDetailMode()` has settled to its real, auth-derived
+ * value — by design, since `PatchBrowserDetailViewComponent` intentionally no
+ * longer blocks the fetch on `loggedUser$` (that used to make SSR render every
+ * anonymous/crawler patch page with zero data). Without this, a "not found"
+ * message published during that race would freeze at the wrong wording variant
+ * for the rest of the page's lifetime. This reacts to every later settling of
+ * `usePublicDetailReads$` and republishes the message — but only while we're
+ * still actually in the unavailable state — so the wording always ends up
+ * matching the real, final auth state without ever reintroducing the
+ * fetch-blocking that caused the original bug.
+ */
+export function bindUnavailableMessageReconciliation(ctx: PatchDetailDataContext, access: PublicReadAccess): void {
+  access.usePublicDetailReads$
+    .pipe(
+      filter(() => !ctx.singlePatchData$.value && ctx.patchDetailUnavailableMessage$.value !== null),
+      takeUntil(ctx.destroy$)
+    )
+    .subscribe(() => {
+      ctx.patchDetailUnavailableMessage$.next(access.buildUnavailableMessage());
     });
 }
 
