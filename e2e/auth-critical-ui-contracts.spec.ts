@@ -462,17 +462,27 @@ async function captureUserModuleForCleanup(
 async function setProfileVisibilityViaUserArea(page: Page, shouldBePublic: boolean): Promise<void> {
   await page.goto('/user/area');
   await expect(page.locator('app-user-area-root')).toBeVisible({timeout: 20_000});
-  const targetButton = page.locator('app-user-area-root app-brand-primary-button', {
-    hasText: shouldBePublic ? /make profile public/i : /make profile private/i,
-  }).first();
-  if (await targetButton.isVisible({timeout: 5_000}).catch(() => false)) {
+
+  const privateButton = page.locator('app-user-area-root app-brand-primary-button', {hasText: /make profile private/i}).first();
+  const publicButton = page.locator('app-user-area-root app-brand-primary-button', {hasText: /make profile public/i}).first();
+
+  // Exactly one of these two mutually exclusive toggle buttons is present once the
+  // user-area page's profile data has loaded. Wait for either via a proper
+  // *retrying* assertion — unlike Locator.isVisible(), which never polls and can
+  // report a false negative if this specific button hasn't rendered yet right after
+  // a full-page navigation, silently skipping the click below and leaving the test
+  // asserting on a state that will never arrive.
+  await expect(privateButton.or(publicButton)).toBeVisible({timeout: 20_000});
+
+  const isCurrentlyPublic = await privateButton.isVisible();
+  if (isCurrentlyPublic !== shouldBePublic) {
+    const targetButton = isCurrentlyPublic ? privateButton : publicButton;
     const update = waitForResponseOk(page, '/rest/v1/profiles', 'PATCH');
     await targetButton.click();
     await update;
   }
-  await expect(page.locator('app-user-area-root app-brand-primary-button', {
-    hasText: shouldBePublic ? /make profile private/i : /make profile public/i,
-  }).first()).toBeVisible({timeout: 20_000});
+
+  await expect(shouldBePublic ? privateButton : publicButton).toBeVisible({timeout: 20_000});
 }
 
 async function expectAnonymousProfileState(
