@@ -1,3 +1,8 @@
+// Vercel's Function build type-checks this file in isolation and doesn't
+// reliably resolve `@types/node`, so declare the tiny slice of the global
+// `process` API we actually use instead of depending on ambient Node types.
+declare const process: { env: Record<string, string | undefined> };
+
 const DEFAULT_SITE_URL = 'https://patcher.xyz';
 const SITE_URL = resolveSiteUrl();
 const SITE_HOST = extractHost(SITE_URL);
