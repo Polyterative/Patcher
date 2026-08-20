@@ -27,6 +27,14 @@ export interface PatchDetailDataContext {
   updateSinglePatchData$: ReplaySubject<number>;
   updateSinglePatchByPublicId$: ReplaySubject<string>;
   singlePatchData$: BehaviorSubject<Patch | undefined>;
+  /**
+   * True from the moment a lookup (by numeric id or public token) starts until its
+   * full data — the patch row plus its connections — has settled (found-and-loaded,
+   * or definitively not-found). Mirrors `RackDetailDataContext.isRackDataLoading$`;
+   * also doubles as the SSR detail-load guard's completion signal — see
+   * `bindSsrPatchDetailLoadGuard`.
+   */
+  isPatchDataLoading$: BehaviorSubject<boolean>;
   detailAnalyticsSurface$: BehaviorSubject<DetailAnalyticsSurface>;
   patchEditingPanelOpenState$: BehaviorSubject<boolean>;
   patchConnections$: BehaviorSubject<PatchConnection[] | null>;

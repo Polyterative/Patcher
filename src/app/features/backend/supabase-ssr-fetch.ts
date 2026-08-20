@@ -6,7 +6,7 @@ import {
   NavigationSkipped,
   Router
 } from '@angular/router';
-import { merge, timer } from 'rxjs';
+import { merge, Observable, Subscription, timer } from 'rxjs';
 import { filter, switchMap, take } from 'rxjs/operators';
 
 /**
@@ -36,6 +36,27 @@ export function createSsrBootstrapGuard(pendingTasks: PendingTasks): { release: 
   };
 
   return {release};
+}
+
+/**
+ * Releases an SSR guard (see `createSsrBootstrapGuard`) as soon as `signal$` next
+ * emits, or after `safetyTimeoutMs` elapses — whichever happens first.
+ *
+ * Shared plumbing behind both `releaseSsrBootstrapGuardOnNavigationSettled` (release
+ * on navigation settling) and `bindSsrDetailLoadGuard` (release on a route's detail
+ * data actually finishing loading) — see their doc comments for what each is guarding
+ * against. Bounding every guard with a safety timeout, regardless of which signal
+ * releases it, means a broken/hanging case can never block SSR forever — it degrades
+ * to "render after `safetyTimeoutMs`", not "hang".
+ */
+export function releaseSsrGuardOnSignal(
+  guard: { release: () => void },
+  signal$: Observable<unknown>,
+  safetyTimeoutMs = 2000
+): Subscription {
+  return merge(signal$.pipe(take(1)), timer(safetyTimeoutMs))
+    .pipe(take(1))
+    .subscribe(() => guard.release());
 }
 
 /**
@@ -88,9 +109,45 @@ export function releaseSsrBootstrapGuardOnNavigationSettled(
     switchMap(() => timer(0))
   );
 
-  merge(navigationSettled$, timer(safetyTimeoutMs))
-    .pipe(take(1))
-    .subscribe(() => guard.release());
+  releaseSsrGuardOnSignal(guard, navigationSettled$, safetyTimeoutMs);
+}
+
+/**
+ * Opens a fresh SSR guard (see `createSsrBootstrapGuard`) every time `startSignal$`
+ * emits, and releases that specific guard once `completionSignal$` next emits after
+ * that (or a safety timeout elapses) — see `releaseSsrGuardOnSignal`.
+ *
+ * Why this exists: `createSsrPendingTasksFetch` keeps SSR "unstable" while a single
+ * Supabase `fetch` is literally in flight, but it cannot cover the gap *between* two
+ * chained fetches (e.g. a rack/patch loading its own row, then — from inside that
+ * first fetch's own `.subscribe()` callback — triggering a second fetch for its
+ * modules/connections). Confirmed by tracing real requests: Supabase-js's internal
+ * promise chain (building the request, awaiting the response body, resolving the
+ * thenable) takes several real microtask/macrotask hops between "first fetch's
+ * `PendingTasks` entry removed" and "second fetch's `PendingTasks` entry added" —
+ * long enough, some fraction of the time, for `ApplicationRef.whenStable()` to catch
+ * a transient "zero pending tasks" reading in between and resolve early. Because
+ * `whenStable()` is first-value-wins (the same mechanism behind the original
+ * bootstrap-guard bug), that later, real second fetch never un-resolves it — SSR
+ * serializes the page with only the first fetch's data, which is why this manifested
+ * as an intermittent (not "always broken") wrong page title.
+ *
+ * Holding one placeholder task open across the *entire* known chain — from the
+ * moment a lookup starts to the moment its data is fully settled (found-and-loaded,
+ * or definitively not-found) — closes every gap in between regardless of how many
+ * microtask hops any individual step takes, without needing to know or reason about
+ * that timing precisely.
+ */
+export function bindSsrDetailLoadGuard(
+  pendingTasks: PendingTasks,
+  startSignal$: Observable<unknown>,
+  completionSignal$: Observable<unknown>,
+  safetyTimeoutMs = 2000
+): Subscription {
+  return startSignal$.subscribe(() => {
+    const guard = createSsrBootstrapGuard(pendingTasks);
+    releaseSsrGuardOnSignal(guard, completionSignal$, safetyTimeoutMs);
+  });
 }
 
 /**
