@@ -109,12 +109,24 @@ test.describe('Public navigation and anonymous affordance contracts', () => {
     await expect(page.locator('app-manufacturer-row').first()).toBeVisible({timeout: 20_000});
     const href = await page.locator('app-manufacturer-row .manufacturer-row-link').first().getAttribute('href');
     expect(href).toMatch(/\/manufacturers\/details\/\d+/);
+    const manufacturerId = href!.match(/\/manufacturers\/details\/(\d+)/)![1];
 
     await page.goto(href!);
     await expect(page.locator('lib-hero-content-card.manufacturersBG')).toBeVisible({timeout: 15_000});
-    await page.getByRole('link', {name: /submit a module/i}).click();
+    // Scoped to the manufacturer-detail submit FAB specifically — the app footer
+    // also has a "Submit a module" link with the same accessible name, and the FAB
+    // only renders once the manufacturer's own data has actually loaded (unlike the
+    // hero card above, which renders immediately from a truthy object literal).
+    // An unscoped getByRole('link', {name: /submit a module/i}) intermittently
+    // strict-mode-violates once both are in the DOM.
+    const submitModuleFab = page.locator('a.manufacturer-detail-submit-fab');
+    await expect(submitModuleFab).toBeVisible({timeout: 15_000});
+    await submitModuleFab.click();
 
-    await expect(page).toHaveURL(/\/modules\/add$/, {timeout: 15_000});
+    // The FAB deliberately carries the manufacturer forward as a query param (see
+    // its matTooltip: "Submit a new module for this manufacturer") so the
+    // submission form can pre-fill it — assert on that value, not a bare URL.
+    await expect(page).toHaveURL(new RegExp(`/modules/add\\?manufacturer=${ manufacturerId }$`), {timeout: 15_000});
     await expect(page.getByRole('heading', {name: /submit a module/i})).toBeVisible({timeout: 20_000});
 
     await page.goBack();

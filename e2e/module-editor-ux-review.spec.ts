@@ -205,8 +205,10 @@ test.describe('Module editor UX review snapshots', () => {
 
     await addUnsavedDraftRows(page);
 
-    // Guardrail: verify we did not save.
-    const saveAllChangesButton = page.locator('app-module-editor button.save-fab', {hasText: 'Save'});
+    // Guardrail: verify we did not save. This is the floating "Save all pending
+    // changes" action rendered as a sibling of app-module-editor (in
+    // module-browser-detail.component.html), not a descendant of it.
+    const saveAllChangesButton = page.locator('button.module-detail-save-floating-action', {hasText: 'Save'});
     await expect(saveAllChangesButton).toBeVisible({timeout: 10_000});
 
     const removableButtons = page.locator('app-module-editor-cv-form-line button.cv-row-action.cv-row-action--removable');
