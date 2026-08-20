@@ -2,11 +2,13 @@ import {
   EventEmitter,
   Inject,
   Injectable,
+  PendingTasks,
+  ɵPendingTasksInternal,
   PLATFORM_ID
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   createClient,
   LockFunc,
@@ -39,6 +41,12 @@ import { createGetNamespace } from './supabase-get';
 import { createAuthNamespace } from './supabase-auth';
 import { createMergeNamespace } from './supabase-merge';
 import { createApiKeysNamespaceForSupabaseClient } from './supabase-api-keys';
+import {
+  createSsrBootstrapGuard,
+  createSsrPendingTasksFetch,
+  releaseSsrBootstrapGuardOnNavigationSettled,
+  suppressPrematureServerPendingTasksDestroy
+} from './supabase-ssr-fetch';
 
 
 export type {
@@ -63,10 +71,22 @@ export class SupabaseService extends SubManager {
   constructor(
     public activated: ActivatedRoute,
     public snackBar: MatSnackBar,
-    @Inject(PLATFORM_ID) platformId: object
+    @Inject(PLATFORM_ID) platformId: object,
+    pendingTasks: PendingTasks,
+    pendingTasksInternal: ɵPendingTasksInternal,
+    router: Router
   ) {
     super();
     const isBrowser = isPlatformBrowser(platformId);
+
+    if (!isBrowser) {
+      suppressPrematureServerPendingTasksDestroy(pendingTasksInternal);
+      // Kept open from construction until the current navigation settles — see
+      // releaseSsrBootstrapGuardOnNavigationSettled's doc comment for why.
+      const bootstrapGuard = createSsrBootstrapGuard(pendingTasks);
+      releaseSsrBootstrapGuardOnNavigationSettled(bootstrapGuard, router);
+    }
+
     this.supabase = createClient<Database>(
       environment.supabase.url || 'https://placeholder.supabase.co',
       environment.supabase.key || 'placeholder-anon-key-for-tests',
@@ -81,6 +101,12 @@ export class SupabaseService extends SubManager {
             removeItem: () => {},
           },
           persistSession: isBrowser,
+        },
+        // On the server, Supabase's raw `fetch` calls are invisible to Angular's SSR
+        // stability tracking — without this, SSR can serialize the page before data
+        // has loaded. See supabase-ssr-fetch.ts for details.
+        global: isBrowser ? undefined : {
+          fetch: createSsrPendingTasksFetch(pendingTasks)
         }
       }
     );
