@@ -7,6 +7,7 @@
  */
 
 import { APP_BASE_HREF } from '@angular/common';
+import { ResponseInit, RESPONSE_INIT } from '@angular/core';
 import {
   CommonEngine,
   createNodeRequestHandler,
@@ -63,6 +64,11 @@ export function app(): express.Express {
       forwardedHost: headers['x-forwarded-host'],
       forwardedProto: headers['x-forwarded-proto'],
     });
+    // Mutated by app code (e.g. LegacyPatchRedirectComponent) during rendering when a
+    // route resolves to a real HTTP redirect instead of a rendered page — see
+    // src/app/services/ssr-redirect.ts for why a plain Router.navigateByUrl() call
+    // isn't enough for that during SSR.
+    const responseInit: ResponseInit = {};
 
     engine
       .render({
@@ -70,9 +76,19 @@ export function app(): express.Express {
         documentFilePath: csrHtml,
         url: `${ requestOrigin }${ originalUrl }`,
         publicPath: browserDistFolder,
-        providers: [{ provide: APP_BASE_HREF, useValue: baseUrl }],
+        providers: [
+          { provide: APP_BASE_HREF, useValue: baseUrl },
+          { provide: RESPONSE_INIT, useValue: responseInit }
+        ],
       })
-      .then((html) => res.status(statusCode).send(html))
+      .then((html) => {
+        const redirect = resolveSsrRedirect(responseInit);
+        if (redirect) {
+          res.redirect(redirect.status, redirect.location);
+          return;
+        }
+        res.status(statusCode).send(html);
+      })
       .catch(next);
   });
   
@@ -113,6 +129,17 @@ if (isMainModule(import.meta.url)) {
 export const reqHandler = isProd
   ? createNodeRequestHandler(app())
   : ((_req: any, _res: any, next: any) => next?.());
+
+function resolveSsrRedirect(responseInit: ResponseInit): { status: number; location: string } | null {
+  const status = responseInit.status;
+  if (status === undefined || status < 300 || status >= 400) return null;
+
+  const location = responseInit.headers instanceof Headers
+    ? responseInit.headers.get('Location')
+    : null;
+
+  return location ? { status, location } : null;
+}
 
 function resolveSsrStatusCode(originalUrl: string): number {
   try {
