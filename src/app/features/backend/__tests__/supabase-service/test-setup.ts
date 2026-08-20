@@ -4,9 +4,9 @@ import {
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { SupabaseService } from '../../supabase.service';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import {
   globalCacheBusterNotifier,
   promiseGlobalCacheBusterNotifier
@@ -39,10 +39,14 @@ export function setupSupabaseServiceTest(): SupabaseServiceTestSetup {
     queryParams: of({}),
     params: of({})
   });
+  // PLATFORM_ID is 'server' below, so SupabaseService's server-only branch (SSR
+  // bootstrap guard) runs during these tests and needs a Router to subscribe to.
+  const mockRouter = {events: new Subject()};
   const providers: Provider[] = [
     SupabaseService,
     {provide: MatSnackBar, useValue: mockSnackBar},
     {provide: ActivatedRoute, useValue: mockActivatedRoute},
+    {provide: Router, useValue: mockRouter},
     {provide: PLATFORM_ID, useValue: 'server'}
   ];
   
