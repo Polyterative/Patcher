@@ -1,0 +1,38 @@
+@if (modules.length > 0) {
+  <div
+    class="module-panel-wall"
+    [class.module-panel-wall--nowrap]="!wrap"
+  >
+    @for (module of modules; track module.id) {
+      <a
+        class="module-panel-wall__tile"
+        [routerLink]="['/modules/details', module.id]"
+        [attr.aria-label]="'View ' + panelTooltip(module)"
+        [style.width.rem]="panelWidthRem(module)"
+      >
+        <div
+          class="module-panel-wall__panel"
+          [style.width.rem]="panelWidthRem(module)"
+          [style.height.rem]="panelHeightRem(module)"
+        >
+          @if (hasPanelImage(module)) {
+            <app-module-part-image
+              [data]="module"
+              [containImage]="false"
+              [disableEnterAnimation]="true"
+              [disableNavigation]="true"
+              [preferredPanelColor]="preferredPanelColor"
+              [tooltip]="panelTooltip(module)"
+            ></app-module-part-image>
+          } @else {
+            <div class="module-panel-wall__placeholder">
+              <span class="module-panel-wall__placeholder-name">{{ module.name }}</span>
+              <span class="module-panel-wall__placeholder-hp">{{ hpLabel(module) }}</span>
+            </div>
+          }
+        </div>
+        <span class="module-panel-wall__caption">{{ module.name }}</span>
+      </a>
+    }
+  </div>
+}

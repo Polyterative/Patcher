@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { MinimalModule } from 'src/app/models/module';
@@ -17,7 +18,10 @@ import { COOL_REACTIONS_ENABLED } from 'src/app/components/shared-atoms/cool-but
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { ModuleRecentMarketPrice } from 'src/app/features/backend/supabase-queries';
-import { AppStateService } from 'src/app/shared-interproject/app-state.service';
+import {
+  AppStateService,
+  ModuleListDisplayMode
+} from 'src/app/shared-interproject/app-state.service';
 import { ISelectable } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { ModuleListComponent } from './module-list.component';
 
@@ -75,9 +79,15 @@ function createPatchDetailDataServiceDouble(): jasmine.SpyObj<PatchDetailDataSer
   return jasmine.createSpyObj<PatchDetailDataService>('PatchDetailDataService', ['ngOnDestroy']);
 }
 
-function createAppStateServiceDouble(): jasmine.SpyObj<AppStateService> {
-  return jasmine.createSpyObj<AppStateService>('AppStateService', ['ngOnDestroy'], {
-    preferredPanelColor$: of(null)
+function createAppStateServiceDouble(
+  moduleListDisplayMode$: Observable<ModuleListDisplayMode> = of('list')
+): jasmine.SpyObj<AppStateService> {
+  return jasmine.createSpyObj<AppStateService>('AppStateService', [
+    'ngOnDestroy',
+    'setModuleListDisplayMode'
+  ], {
+    preferredPanelColor$: of(null),
+    moduleListDisplayMode$
   });
 }
 
@@ -94,17 +104,20 @@ function createPriceBackendDouble(summaries: ModuleRecentMarketPrice[] = []) {
 
 function createComponent(
   filterService: LocalDataFilterService,
-  backend?: SupabaseService
+  backend?: SupabaseService,
+  appState: AppStateService = createAppStateServiceDouble()
 ): ModuleListComponent {
   return new ModuleListComponent(
     createPatchDetailDataServiceDouble(),
     filterService,
-    createAppStateServiceDouble(),
+    appState,
     backend
   );
 }
 
 describe('ModuleListComponent', () => {
+  afterEach(() => TestBed.resetTestingModule());
+
   function build() {
     const filterService = new LocalDataFilterService();
     const data$ = new BehaviorSubject<MinimalModule[] | null>([
@@ -297,6 +310,69 @@ describe('ModuleListComponent', () => {
     expect(reactionBackend.get.reactionCount).not.toHaveBeenCalled();
     expect(reactionBackend.add.reaction).not.toHaveBeenCalled();
     expect(reactionBackend.delete.reaction).not.toHaveBeenCalled();
+  });
+
+  it('sets the shared module-list display mode preference', () => {
+    const filterService = new LocalDataFilterService();
+    const appState = createAppStateServiceDouble();
+    const component = createComponent(filterService, undefined, appState);
+
+    component.setDisplayMode('panels');
+
+    expect(appState.setModuleListDisplayMode).toHaveBeenCalledOnceWith('panels');
+    component.ngOnDestroy();
+  });
+
+  it('renders the panel wall instead of cards when panel mode is enabled', async () => {
+    await TestBed.configureTestingModule({
+      declarations: [ModuleListComponent],
+      imports: [CommonModule, FormsModule, NoopAnimationsModule],
+      providers: [
+        {provide: PatchDetailDataService, useValue: createPatchDetailDataServiceDouble()},
+        {provide: LocalDataFilterService, useClass: LocalDataFilterService},
+        {provide: AppStateService, useValue: createAppStateServiceDouble(of('panels'))},
+        {provide: COOL_REACTIONS_ENABLED, useValue: true},
+        {provide: SupabaseService, useValue: makeReactionBackendSpy()},
+        {provide: MatSnackBar, useValue: jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open'])},
+      ],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(ModuleListComponent);
+    fixture.componentInstance.data$ = of([buildModule({id: 42, public: true})]);
+    fixture.componentInstance.showViewToggle = true;
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-module-panel-wall')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('flexbox-row-fast')).toBeNull();
+  });
+
+  it('wires the view toggle to the shared display mode preference', async () => {
+    const appState = createAppStateServiceDouble();
+    await TestBed.configureTestingModule({
+      declarations: [ModuleListComponent],
+      imports: [CommonModule, FormsModule, NoopAnimationsModule],
+      providers: [
+        {provide: PatchDetailDataService, useValue: createPatchDetailDataServiceDouble()},
+        {provide: LocalDataFilterService, useClass: LocalDataFilterService},
+        {provide: AppStateService, useValue: appState},
+        {provide: COOL_REACTIONS_ENABLED, useValue: true},
+        {provide: SupabaseService, useValue: makeReactionBackendSpy()},
+        {provide: MatSnackBar, useValue: jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open'])},
+      ],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(ModuleListComponent);
+    fixture.componentInstance.data$ = of([buildModule({id: 42, public: true})]);
+    fixture.componentInstance.showViewToggle = true;
+    fixture.detectChanges();
+
+    fixture.debugElement
+      .query(By.css('mat-button-toggle-group'))
+      .triggerEventHandler('change', {value: 'panels'});
+
+    expect(appState.setModuleListDisplayMode).toHaveBeenCalledOnceWith('panels');
   });
 
   it('fetches price summaries from source data without refetching for local filters', fakeAsync(() => {

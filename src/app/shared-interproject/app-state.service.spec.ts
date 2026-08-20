@@ -7,7 +7,11 @@ import { BreakpointObserver } from '@angular/cdk/layout';
 import { of } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-import { AppStateService, LayoutFlexWidthState } from './app-state.service';
+import {
+  AppStateService,
+  LayoutFlexWidthState,
+  ModuleListDisplayMode
+} from './app-state.service';
 
 
 const BREAKPOINT_KEYS = ['xs', 'sm', 'md', 'lg', 'xl', 'ltsm', 'ltmd', 'ltlg', 'ltxl', 'gtxs', 'gtsm', 'gtmd', 'gtlg'] as const;
@@ -33,7 +37,14 @@ describe('AppStateService', () => {
     return TestBed.inject(AppStateService);
   }
   
+  beforeEach(() => {
+    localStorage.removeItem('preferredPanelColor');
+    localStorage.removeItem('moduleListDisplayMode');
+  });
+
   afterEach(() => {
+    localStorage.removeItem('preferredPanelColor');
+    localStorage.removeItem('moduleListDisplayMode');
     TestBed.resetTestingModule();
   });
   
@@ -95,5 +106,30 @@ describe('AppStateService', () => {
     let loaded: number | null | undefined;
     service.preferredPanelColor$.pipe(take(1)).subscribe(v => (loaded = v));
     expect(loaded).toBeNull();
+  });
+
+  it('moduleListDisplayMode$ defaults to list', () => {
+    const service = buildService();
+    let loaded: ModuleListDisplayMode | undefined;
+    service.moduleListDisplayMode$.pipe(take(1)).subscribe(v => (loaded = v));
+    expect(loaded).toBe('list');
+  });
+
+  it('setModuleListDisplayMode stores and emits the mode', (done) => {
+    const service = buildService();
+    service.setModuleListDisplayMode('panels');
+    expect(localStorage.getItem('moduleListDisplayMode')).toBe('panels');
+    service.moduleListDisplayMode$.pipe(take(1)).subscribe(val => {
+      expect(val).toBe('panels');
+      done();
+    });
+  });
+
+  it('loadModuleListDisplayMode ignores invalid stored values', () => {
+    localStorage.setItem('moduleListDisplayMode', 'grid');
+    const service = buildService();
+    let loaded: ModuleListDisplayMode | undefined;
+    service.moduleListDisplayMode$.pipe(take(1)).subscribe(v => (loaded = v));
+    expect(loaded).toBe('list');
   });
 });

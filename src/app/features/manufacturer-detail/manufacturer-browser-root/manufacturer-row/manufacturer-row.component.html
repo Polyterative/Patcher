@@ -50,31 +50,41 @@
 
   @if ({
     modules: (modules$ | async),
-    priceSummaryByModuleId: (priceSummaryByModuleId$ | async)
+    priceSummaryByModuleId: (priceSummaryByModuleId$ | async),
+    displayMode: (appState.moduleListDisplayMode$ | async),
+    preferredPanelColor: (appState.preferredPanelColor$ | async)
   }; as bag) {
     @if (bag.modules) {
       @if (bag.modules.length === 0) {
         <span class="manufacturer-row-empty">No modules yet</span>
       } @else {
         <div class="manufacturer-row-modules">
-          <div class="module-strip">
-            @for (module of bag.modules; track module.id; let i = $index) {
-              <lib-clean-card
-                class="module-strip-card module-card-appear"
-                [style.--module-index]="i"
-                [routerLink]="['/modules/details', module.id]"
-                role="link"
-                tabindex="0"
-                style="cursor: pointer; position: relative; z-index: 3;"
-              >
-                <app-module-minimal
-                  [data]="module"
-                  [viewConfig]="moduleViewConfig"
-                  [priceSummary]="showPriceSummary ? (bag.priceSummaryByModuleId?.get(module.id) ?? null) : null"
-                ></app-module-minimal>
-              </lib-clean-card>
-            }
-          </div>
+          @if (bag.displayMode === 'panels') {
+            <app-module-panel-wall
+              [modules]="bag.modules"
+              [preferredPanelColor]="bag.preferredPanelColor"
+              [wrap]="false"
+            ></app-module-panel-wall>
+          } @else {
+            <div class="module-strip">
+              @for (module of bag.modules; track module.id; let i = $index) {
+                <lib-clean-card
+                  class="module-strip-card module-card-appear"
+                  [style.--module-index]="i"
+                  [routerLink]="['/modules/details', module.id]"
+                  role="link"
+                  tabindex="0"
+                  style="cursor: pointer; position: relative; z-index: 3;"
+                >
+                  <app-module-minimal
+                    [data]="module"
+                    [viewConfig]="moduleViewConfig"
+                    [priceSummary]="showPriceSummary ? (bag.priceSummaryByModuleId?.get(module.id) ?? null) : null"
+                  ></app-module-minimal>
+                </lib-clean-card>
+              }
+            </div>
+          }
         </div>
       }
     } @else {

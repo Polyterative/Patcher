@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -73,6 +74,7 @@ import { LibShowcaseGridComponent } from 'src/app/components/rack-parts/rack-edi
     EmptyStateComponent,
     MatFormEntityComponent,
     MatButtonModule,
+    MatButtonToggleModule,
     MatIconModule,
     MatSnackBarModule,
     MatTooltipModule,
