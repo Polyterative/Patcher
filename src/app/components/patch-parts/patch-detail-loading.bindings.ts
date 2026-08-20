@@ -1,8 +1,10 @@
-import { EMPTY, Observable, of } from 'rxjs';
+import { PendingTasks } from '@angular/core';
+import { EMPTY, merge, Observable, of } from 'rxjs';
 import { catchError, filter, map, pairwise, switchMap, take, takeUntil, tap, withLatestFrom } from 'rxjs/operators';
 import { PatchConnection } from '../../models/connection';
 import { shouldCaptureCanonicalDetailView } from '../detail-analytics-surface';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import { bindSsrDetailLoadGuard } from 'src/app/features/backend/supabase-ssr-fetch';
 import { MultiInstanceModuleSummary } from './patch-detail-data.models';
 import { PatchDetailDataContext, PatchDetailDataDependencies } from './patch-detail-data.context.types';
 import { groupInstancesByModuleId } from './patch-detail-data.utils';
@@ -21,6 +23,7 @@ export function bindPatchLoadByNumericId(
   ctx.updateSinglePatchData$
     .pipe(
       tap(() => {
+        ctx.isPatchDataLoading$.next(true);
         ctx.patchConnections$.next(null);
         ctx.editorConnections$.next(null);
         ctx.patchModuleInstances$.next([]);
@@ -47,6 +50,9 @@ export function bindPatchLoadByNumericId(
       }
       if (!patch) {
         ctx.patchDetailUnavailableMessage$.next(access.buildUnavailableMessage());
+        // Nothing further will load for this cycle (connections load is gated on a
+        // truthy patch) — settle immediately instead of waiting on bindPatchConnectionsLoad.
+        ctx.isPatchDataLoading$.next(false);
       }
     });
 }
@@ -59,6 +65,7 @@ export function bindPatchLoadByPublicId(
   ctx.updateSinglePatchByPublicId$
     .pipe(
       tap(() => {
+        ctx.isPatchDataLoading$.next(true);
         ctx.patchConnections$.next(null);
         ctx.editorConnections$.next(null);
         ctx.patchModuleInstances$.next([]);
@@ -81,6 +88,9 @@ export function bindPatchLoadByPublicId(
       }
       if (!patch) {
         ctx.patchDetailUnavailableMessage$.next(access.buildUnavailableMessage());
+        // Nothing further will load for this cycle (connections load is gated on a
+        // truthy patch) — settle immediately instead of waiting on bindPatchConnectionsLoad.
+        ctx.isPatchDataLoading$.next(false);
       }
     });
 }
@@ -147,7 +157,35 @@ export function bindPatchConnectionsLoad(ctx: PatchDetailDataContext, deps: Patc
       }))),
       takeUntil(ctx.destroy$)
     )
-    .subscribe(data => ctx.patchConnections$.next(data));
+    .subscribe(data => {
+      ctx.patchConnections$.next(data);
+      ctx.isPatchDataLoading$.next(false);
+    });
+}
+
+/**
+ * Opens an SSR-only guard for each patch lookup cycle, released once
+ * `isPatchDataLoading$` settles back to `false` (or a safety timeout elapses).
+ *
+ * Why this exists: `createSsrPendingTasksFetch` keeps SSR "unstable" while a single
+ * Supabase fetch is literally in flight, but not across the gap *between* the patch
+ * row's own fetch completing and the *chained* connections fetch (triggered from
+ * inside that first fetch's subscribe callback, see `bindPatchConnectionsLoad`)
+ * actually registering as a pending task. Confirmed by tracing real requests (on the
+ * equivalent rack flow — same mechanism applies here) that gap can be wide enough for
+ * `ApplicationRef.whenStable()` to catch a transient "zero pending tasks" reading in
+ * between and resolve early, serializing the page before the patch's connections
+ * (which its SEO title/description depend on) have loaded. See
+ * `bindSsrDetailLoadGuard`'s doc comment for the full mechanism.
+ */
+export function bindSsrPatchDetailLoadGuard(ctx: PatchDetailDataContext, pendingTasks?: PendingTasks): void {
+  if (!pendingTasks) return;
+
+  bindSsrDetailLoadGuard(
+    pendingTasks,
+    merge(ctx.updateSinglePatchData$, ctx.updateSinglePatchByPublicId$),
+    ctx.isPatchDataLoading$.pipe(pairwise(), filter(([was, is]) => was && !is))
+  );
 }
 
 export function bindOwnedPatchEditorOpen(ctx: PatchDetailDataContext, deps: PatchDetailDataDependencies): void {

@@ -1,4 +1,5 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Inject, Injectable, OnDestroy, Optional, PendingTasks, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -35,6 +36,7 @@ import {
   bindPatchLoadByNumericId,
   bindPatchLoadByPublicId,
   bindPatchModuleInstancesLoad,
+  bindSsrPatchDetailLoadGuard,
   bindUnavailableMessageReconciliation
 } from './patch-detail-loading.bindings';
 import {
@@ -94,6 +96,13 @@ export class PatchDetailDataService extends SubManager implements OnDestroy {
    */
   readonly updateSinglePatchByPublicId$ = new ReplaySubject<string>(1);
   readonly singlePatchData$ = new BehaviorSubject<Patch | undefined>(undefined);
+  /**
+   * True from the moment a lookup starts until the patch (plus its connections, once
+   * found) has fully settled. Mirrors RackDetailDataService's isRackDataLoading$;
+   * also the SSR detail-load guard's completion signal — see
+   * bindSsrPatchDetailLoadGuard.
+   */
+  readonly isPatchDataLoading$ = new BehaviorSubject<boolean>(false);
   readonly detailAnalyticsSurface$ = new BehaviorSubject<DetailAnalyticsSurface>(DETAIL_ANALYTICS_SURFACES.detailRoute);
   readonly patchEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
   readonly patchConnections$: BehaviorSubject<PatchConnection[] | null> = new BehaviorSubject<PatchConnection[]>(null);
@@ -163,7 +172,9 @@ export class PatchDetailDataService extends SubManager implements OnDestroy {
     public userService: UserManagementService,
     public backend: SupabaseService,
     private bridge: SelectionPanelBridgeService,
-    private analytics: AnalyticsService
+    private analytics: AnalyticsService,
+    @Optional() pendingTasks?: PendingTasks,
+    @Optional() @Inject(PLATFORM_ID) platformId?: object
   ) {
     super();
     this.dependencies = {router, snackBar, dialog, userService, backend, bridge, analytics};
@@ -172,9 +183,14 @@ export class PatchDetailDataService extends SubManager implements OnDestroy {
       buildUnavailableMessage: () => this.buildUnavailableMessage(),
       usePublicDetailReads$: this.usePublicDetailReads$.asObservable()
     };
+    // Undefined platformId (e.g. tests constructing this service directly, bypassing
+    // DI) is treated as "browser" so the SSR-only guard below never activates
+    // outside real SSR requests.
+    const isBrowserPlatform = platformId === undefined ? true : isPlatformBrowser(platformId);
 
     bindPatchLoadByNumericId(this, this.dependencies, publicReadAccess);
     bindPatchLoadByPublicId(this, this.dependencies, publicReadAccess);
+    bindSsrPatchDetailLoadGuard(this, !isBrowserPlatform ? pendingTasks : undefined);
     bindUnavailableMessageReconciliation(this, publicReadAccess);
     bindCurrentPatchPrivacyProjection(this);
     bindRemovePatchFromCollection(this, this.dependencies);

@@ -1,13 +1,15 @@
-import { Injectable } from '@angular/core';
+import { Injectable, PendingTasks } from '@angular/core';
 import {
   BehaviorSubject,
   combineLatest,
-  EMPTY
+  EMPTY,
+  merge
 } from 'rxjs';
 import {
   catchError,
   filter,
   map,
+  pairwise,
   switchMap,
   take,
   tap,
@@ -17,6 +19,7 @@ import { RackedModule } from '../../models/module';
 import { Rack } from '../../models/rack';
 import { SharedConstants } from '../../shared-interproject/SharedConstants';
 import { shouldCaptureCanonicalDetailView } from '../detail-analytics-surface';
+import { bindSsrDetailLoadGuard } from '../../features/backend/supabase-ssr-fetch';
 import {
   buildRackStatistics,
   mergeRefreshedModules
@@ -36,7 +39,21 @@ export class RackDetailLoadingDataService {
     this.usePublicDetailReads$.next(enabled);
   }
 
-  bindDetailLoading(context: RackDetailDataContext): void {
+  bindDetailLoading(context: RackDetailDataContext, pendingTasks?: PendingTasks): void {
+    if (pendingTasks) {
+      // See bindSsrDetailLoadGuard's doc comment: createSsrPendingTasksFetch alone
+      // only covers a single fetch while it's literally in flight, not the gap
+      // between this lookup starting and its *chained* modules fetch (triggered
+      // from inside this lookup's own subscribe callback below) actually
+      // registering as a pending task — confirmed by tracing real requests to be
+      // the cause of an intermittent wrong SSR page title for rack detail pages.
+      bindSsrDetailLoadGuard(
+        pendingTasks,
+        merge(context.updateSingleRackData$, context.updateSingleRackByPublicId$),
+        context.isRackDataLoading$.pipe(pairwise(), filter(([was, is]) => was && !is))
+      );
+    }
+
     context.updateSingleRackData$
       .pipe(
         tap(() => {

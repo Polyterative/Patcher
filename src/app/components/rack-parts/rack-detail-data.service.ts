@@ -1,5 +1,6 @@
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
-import { ElementRef, Injectable, Optional } from '@angular/core';
+import { ElementRef, Inject, Injectable, Optional, PendingTasks, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { FormControl, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -161,6 +162,8 @@ export class RackDetailDataService extends SubManager {
     @Optional() persistenceOperations?: RackDetailPersistenceOperationsService,
     @Optional() layoutOperations?: RackDetailLayoutOperationsService,
     @Optional() imageOperations?: RackDetailImageOperationsService,
+    @Optional() pendingTasks?: PendingTasks,
+    @Optional() @Inject(PLATFORM_ID) platformId?: object,
   ) {
     super();
     this.rowLayoutFlows = rowLayoutFlows ?? new RackDetailRowLayoutDataService();
@@ -173,6 +176,10 @@ export class RackDetailDataService extends SubManager {
     this.persistenceOperations = persistenceOperations ?? new RackDetailPersistenceOperationsService();
     this.layoutOperations = layoutOperations ?? new RackDetailLayoutOperationsService();
     this.imageOperations = imageOperations ?? new RackDetailImageOperationsService();
+    // Undefined platformId (e.g. tests constructing this service directly, bypassing
+    // DI) is treated as "browser" so the SSR-only guard below never activates outside
+    // real SSR requests.
+    const isBrowserPlatform = platformId === undefined ? true : isPlatformBrowser(platformId);
 
     this.isCurrentUserAdmin$ = this.backend.auth.hasAdminRole$().pipe(shareReplay(1));
     this.canUpdateRackImagePreview$ = combineLatest([
@@ -210,7 +217,7 @@ export class RackDetailDataService extends SubManager {
     const context = this.buildContext();
     this.rowLayoutFlows.bind(context);
     this.editingFlows.bind(context);
-    this.loadingFlows.bindDetailLoading(context);
+    this.loadingFlows.bindDetailLoading(context, !isBrowserPlatform ? pendingTasks : undefined);
     this.replacementFlows.bind(context);
     this.mediaImportFlows.bindMedia(context);
     this.modulePlacementFlows.bindRackOrdering(context);

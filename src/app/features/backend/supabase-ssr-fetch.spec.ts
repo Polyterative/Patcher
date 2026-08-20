@@ -15,6 +15,7 @@ import {
 } from '@angular/router';
 import { Subject } from 'rxjs';
 import {
+  bindSsrDetailLoadGuard,
   createSsrBootstrapGuard,
   createSsrPendingTasksFetch,
   releaseSsrBootstrapGuardOnNavigationSettled,
@@ -179,6 +180,83 @@ describe('releaseSsrBootstrapGuardOnNavigationSettled', () => {
     tick();
     flush();
 
+    expect(internalPendingTasks.hasPendingTasks).toBeFalse();
+  }));
+});
+
+describe('bindSsrDetailLoadGuard', () => {
+  let startSignal$: Subject<void>;
+  let completionSignal$: Subject<void>;
+  let pendingTasks: PendingTasks;
+  let internalPendingTasks: ɵPendingTasksInternal;
+
+  beforeEach(() => {
+    startSignal$ = new Subject<void>();
+    completionSignal$ = new Subject<void>();
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({});
+    pendingTasks = TestBed.inject(PendingTasks);
+    internalPendingTasks = TestBed.inject(ɵPendingTasksInternal);
+  });
+
+  it('does not open a guard until startSignal$ actually emits', () => {
+    bindSsrDetailLoadGuard(pendingTasks, startSignal$, completionSignal$, 2000);
+
+    expect(internalPendingTasks.hasPendingTasks).toBeFalse();
+  });
+
+  it('opens a guard as soon as startSignal$ emits, and releases it once completionSignal$ next emits', fakeAsync(() => {
+    bindSsrDetailLoadGuard(pendingTasks, startSignal$, completionSignal$, 2000);
+
+    startSignal$.next();
+    expect(internalPendingTasks.hasPendingTasks).toBeTrue();
+
+    completionSignal$.next();
+    flush();
+    expect(internalPendingTasks.hasPendingTasks).toBeFalse();
+  }));
+
+  it('falls back to the safety timeout if completionSignal$ never emits', fakeAsync(() => {
+    bindSsrDetailLoadGuard(pendingTasks, startSignal$, completionSignal$, 2000);
+    startSignal$.next();
+
+    tick(1999);
+    expect(internalPendingTasks.hasPendingTasks).toBeTrue();
+
+    tick(1);
+    flush();
+    expect(internalPendingTasks.hasPendingTasks).toBeFalse();
+  }));
+
+  it('opens a fresh guard for a second cycle after the first one has already settled', fakeAsync(() => {
+    bindSsrDetailLoadGuard(pendingTasks, startSignal$, completionSignal$, 2000);
+
+    startSignal$.next();
+    completionSignal$.next();
+    flush();
+    expect(internalPendingTasks.hasPendingTasks).toBeFalse();
+
+    startSignal$.next();
+    expect(internalPendingTasks.hasPendingTasks)
+      .withContext('a later, independent lookup cycle must open its own guard')
+      .toBeTrue();
+
+    completionSignal$.next();
+    flush();
+    expect(internalPendingTasks.hasPendingTasks).toBeFalse();
+  }));
+
+  it('does not throw or leak if a second cycle starts before the first one has settled', fakeAsync(() => {
+    bindSsrDetailLoadGuard(pendingTasks, startSignal$, completionSignal$, 2000);
+
+    startSignal$.next();
+    expect(() => startSignal$.next()).not.toThrow();
+    expect(internalPendingTasks.hasPendingTasks).toBeTrue();
+
+    // One completion event resolves both cycles' independent take(1) subscriptions —
+    // guard.release() is idempotent, so this settles cleanly rather than double-firing.
+    completionSignal$.next();
+    flush();
     expect(internalPendingTasks.hasPendingTasks).toBeFalse();
   }));
 });
