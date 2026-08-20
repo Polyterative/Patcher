@@ -34,7 +34,8 @@ import {
   bindPatchFormHydration,
   bindPatchLoadByNumericId,
   bindPatchLoadByPublicId,
-  bindPatchModuleInstancesLoad
+  bindPatchModuleInstancesLoad,
+  bindUnavailableMessageReconciliation
 } from './patch-detail-loading.bindings';
 import {
   bindPatchDelete,
@@ -79,7 +80,12 @@ export { MAX_INSTANCES_PER_MODULE } from './patch-detail-data.models';
 
 @Injectable()
 export class PatchDetailDataService extends SubManager implements OnDestroy {
-  private usePublicDetailReads = false;
+  // Exposed as a BehaviorSubject (not a plain field) so the "unavailable" message
+  // reconciliation binding can react whenever this settles — see
+  // bindUnavailableMessageReconciliation's comment for why that matters. `.value`
+  // reads stay perfectly synchronous for every existing sync consumer, so this
+  // changes no existing timing/behavior for them.
+  private readonly usePublicDetailReads$ = new BehaviorSubject<boolean>(false);
   readonly updateSinglePatchData$ = new ReplaySubject<number>();
   /**
    * Token-based detail fetch entry-point. Routed through the SECURITY DEFINER
@@ -162,12 +168,14 @@ export class PatchDetailDataService extends SubManager implements OnDestroy {
     super();
     this.dependencies = {router, snackBar, dialog, userService, backend, bridge, analytics};
     const publicReadAccess = {
-      isPublicDetailMode: () => this.usePublicDetailReads,
-      buildUnavailableMessage: () => this.buildUnavailableMessage()
+      isPublicDetailMode: () => this.usePublicDetailReads$.value,
+      buildUnavailableMessage: () => this.buildUnavailableMessage(),
+      usePublicDetailReads$: this.usePublicDetailReads$.asObservable()
     };
 
     bindPatchLoadByNumericId(this, this.dependencies, publicReadAccess);
     bindPatchLoadByPublicId(this, this.dependencies, publicReadAccess);
+    bindUnavailableMessageReconciliation(this, publicReadAccess);
     bindCurrentPatchPrivacyProjection(this);
     bindRemovePatchFromCollection(this, this.dependencies);
     bindPatchPrivacyToggle(this, this.dependencies);
@@ -200,7 +208,7 @@ export class PatchDetailDataService extends SubManager implements OnDestroy {
   }
 
   setPublicDetailMode(enabled: boolean) {
-    this.usePublicDetailReads = enabled;
+    this.usePublicDetailReads$.next(enabled);
   }
 
   setDetailAnalyticsSurface(surface: DetailAnalyticsSurface): void {
@@ -208,7 +216,7 @@ export class PatchDetailDataService extends SubManager implements OnDestroy {
   }
 
   private buildUnavailableMessage(): string {
-    return this.usePublicDetailReads
+    return this.usePublicDetailReads$.value
       ? `This patch isn't publicly available. If it's private, only the owner can open it while signed in.`
       : 'This patch could not be loaded.';
   }
