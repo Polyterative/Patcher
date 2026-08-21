@@ -162,7 +162,7 @@ export function buildWideShellAccountLinks(isLoggedIn: boolean, username: string
     if (link.route === '/user/area') {
       return {
         ...link,
-        label: normalizedUsername
+        label: 'My library'
       };
     }
 
