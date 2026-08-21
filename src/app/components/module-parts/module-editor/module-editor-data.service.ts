@@ -8,7 +8,8 @@ import {
   BehaviorSubject,
   EMPTY,
   from,
-  Observable
+  Observable,
+  of
 } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
@@ -288,7 +289,17 @@ export class ModuleEditorDataService {
     }
 
     const file = params.file;
-    return from(file.arrayBuffer()).pipe(
+    const color = +params.panelTypeValue.value;
+    // An admin overwriting an existing panel type reaches this point with a panel of the
+    // same color already present (non-admins are blocked earlier by validation). Remove
+    // the stale panel first so Save performs a true one-action replace.
+    const existingPanel = params.module.panels.find(panel => panel.color === color);
+    const removeExistingPanel$ = existingPanel
+      ? this.backend.delete.modulePanel(existingPanel)
+      : of(undefined);
+
+    return removeExistingPanel$.pipe(
+      switchMap(() => from(file.arrayBuffer())),
       switchMap((fileBuffer) => {
         const extension = fileExtensionFromType(file.type)
           || fileExtensionFromName(file.name)
