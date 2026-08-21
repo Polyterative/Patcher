@@ -16,7 +16,8 @@ import {
   displayPresetOption,
   filterFlatOptions,
   filterGroupedOptions,
-  FORM_ENTITY_NOT_IN_OPTIONS_ERROR
+  FORM_ENTITY_NOT_IN_OPTIONS_ERROR,
+  resolveAutocompleteTypedValueOnBlur
 } from './mat-form-entity.helpers';
 
 
@@ -263,6 +264,81 @@ describe('mat form entity helpers', () => {
     expect(await runAsyncValidator(validator, {id: '1', name: 'Changed Label'})).toBeNull();
     expect(await runAsyncValidator(validator, 'Studio Rack'))
       .toEqual(FORM_ENTITY_NOT_IN_OPTIONS_ERROR);
+  });
+
+  it('resolves a typed-but-unselected exact name match to the option object on blur', () => {
+    const control = new UntypedFormControl('Studio Rack');
+    const options = [
+      {id: '1', name: 'Studio Rack'},
+      {id: '2', name: 'Live Case'}
+    ];
+
+    resolveAutocompleteTypedValueOnBlur({control, options, grouped: false, caseSensitive: false});
+
+    expect(control.value).toEqual({id: '1', name: 'Studio Rack'});
+  });
+
+  it('matches case-insensitively by default when resolving on blur', () => {
+    const control = new UntypedFormControl('studio rack');
+    const options = [{id: '1', name: 'Studio Rack'}];
+
+    resolveAutocompleteTypedValueOnBlur({control, options, grouped: false, caseSensitive: false});
+
+    expect(control.value).toEqual({id: '1', name: 'Studio Rack'});
+  });
+
+  it('respects caseSensitive=true and refuses a differently-cased match on blur', () => {
+    const control = new UntypedFormControl('studio rack');
+    const options = [{id: '1', name: 'Studio Rack'}];
+
+    resolveAutocompleteTypedValueOnBlur({control, options, grouped: false, caseSensitive: true});
+
+    expect(control.value).toBe('');
+  });
+
+  it('clears a typed value with no exact match on blur instead of leaving a stray string', () => {
+    const control = new UntypedFormControl('Shakmat Modul');
+    const options = [{id: '1', name: 'Shakmat Modular'}];
+
+    resolveAutocompleteTypedValueOnBlur({control, options, grouped: false, caseSensitive: false});
+
+    expect(control.value).toBe('');
+  });
+
+  it('resolves an exact match nested in grouped options on blur', () => {
+    const control = new UntypedFormControl('Live Case');
+    const options = [
+      {
+        id: 'group-1',
+        name: 'Group',
+        options: [
+          {id: '1', name: 'Studio Rack'},
+          {id: '2', name: 'Live Case'}
+        ]
+      }
+    ];
+
+    resolveAutocompleteTypedValueOnBlur({control, options, grouped: true, caseSensitive: false});
+
+    expect(control.value).toEqual({id: '2', name: 'Live Case'});
+  });
+
+  it('does not touch a control that already holds a valid option object', () => {
+    const control = new UntypedFormControl({id: '1', name: 'Studio Rack'});
+    const options = [{id: '1', name: 'Studio Rack'}];
+
+    resolveAutocompleteTypedValueOnBlur({control, options, grouped: false, caseSensitive: false});
+
+    expect(control.value).toEqual({id: '1', name: 'Studio Rack'});
+  });
+
+  it('leaves an already-empty control untouched on blur', () => {
+    const control = new UntypedFormControl('');
+    const options = [{id: '1', name: 'Studio Rack'}];
+
+    resolveAutocompleteTypedValueOnBlur({control, options, grouped: false, caseSensitive: false});
+
+    expect(control.value).toBe('');
   });
 
   function runAsyncValidator(validator: AsyncValidatorFn, value: unknown): Promise<ValidationErrors | null> {
