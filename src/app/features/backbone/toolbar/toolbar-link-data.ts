@@ -126,15 +126,15 @@ export function buildToolbarUserLinks(username: string): RouteClickableLink[] {
 
   const nextLinks = [
     {
-      label: 'My profile',
-      route: '/user/area',
-      icon: 'dashboard',
-      disabled: false
-    },
-    {
       label: normalizedUsername,
       route: '/user/account',
       icon: 'manage_accounts',
+      disabled: false
+    },
+    {
+      label: 'My profile',
+      route: '/user/area',
+      icon: 'dashboard',
       disabled: false
     }
   ];
