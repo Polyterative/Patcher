@@ -454,10 +454,13 @@ export class ModuleEditorComponent extends SubManager implements OnInit, OnDestr
   private isPanelSaveBlocked(): boolean {
     const shouldSavePanel = (this.fileDragHostService.files$.value?.length ?? 0) > 0;
     const guardrailRequiresConfirmation = this.panelUploadGuardrail$.value?.requiresConfirmation ?? false;
+    // Admins may overwrite an existing panel of the same type in one Save action, so a
+    // duplicate panel type only blocks Save for non-admin users.
+    const duplicateBlocksSave = this.panelTypeAlreadyExists$.value && !this.dataService.isAdmin$.value;
     return shouldSavePanel
       && (
         this.formGroupPanel.invalid
-        || this.panelTypeAlreadyExists$.value
+        || duplicateBlocksSave
         || this.panelCropLoadFailed$.value
         || !this.croppedPanelFile$.value
         || (guardrailRequiresConfirmation && !this.panelUploadGuardrailConfirmed$.value)
