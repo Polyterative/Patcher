@@ -1,4 +1,12 @@
 import {
+  Component,
+  Input
+} from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
+import {
   Observable,
   of,
   Subject
@@ -8,6 +16,7 @@ import { defaultModuleMinimalViewConfig } from 'src/app/components/module-parts/
 import { ManufacturerDetail } from '../../manufacturer-detail-data.service';
 import { ModuleRecentMarketPrice } from 'src/app/features/backend/supabase-queries';
 import { ManufacturerRowDataService } from './manufacturer-row-data.service';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import {
   AppStateService,
   ModuleListDisplayMode
@@ -60,6 +69,87 @@ function makeComponent(
   );
 }
 
+// Lightweight stand-ins for the heavy module-parts components so the
+// rendering tests below only exercise ManufacturerRowComponent's own
+// displayMode/forceListMode branching, not the full module rendering stack.
+@Component({selector: 'app-module-panel-wall', template: '', standalone: true})
+class StubModulePanelWallComponent {
+  @Input() modules: unknown;
+  @Input() preferredPanelColor: unknown;
+  @Input() wrap: unknown;
+}
+
+@Component({selector: 'lib-clean-card', template: '<ng-content></ng-content>', standalone: true})
+class StubCleanCardComponent {}
+
+@Component({selector: 'app-module-minimal', template: '', standalone: true})
+class StubModuleMinimalComponent {
+  @Input() data: unknown;
+  @Input() viewConfig: unknown;
+  @Input() priceSummary: unknown;
+}
+
+@Component({selector: 'app-manufacturer-updated-badge', template: '', standalone: true})
+class StubManufacturerUpdatedBadgeComponent {
+  @Input() updatedAt: unknown;
+}
+
+@Component({selector: 'lib-auto-content-loading-indicator', template: '', standalone: true})
+class StubAutoContentLoadingIndicatorComponent {
+  @Input() loadingLines: unknown;
+  @Input() skipFirstData: unknown;
+}
+
+function makeSupabaseServiceDouble(): SupabaseService {
+  return {
+    get: {
+      modulesBySameManufacturer: jasmine.createSpy('modulesBySameManufacturer').and.returnValue(of([{ id: 101 }]))
+    },
+    GET: {
+      recentModuleMarketPrices: jasmine.createSpy('recentModuleMarketPrices').and.returnValue(of([]))
+    },
+    storage: {
+      publicUrlBases: {
+        manufacturerLogos: 'https://cdn.example.test/manufacturer-logos/'
+      }
+    }
+  } as unknown as SupabaseService;
+}
+
+function renderManufacturerRow(
+  moduleListDisplayMode$: Observable<ModuleListDisplayMode>,
+  forceListMode: boolean
+) {
+  TestBed.configureTestingModule({
+    imports: [ManufacturerRowComponent, RouterTestingModule],
+    providers: [
+      { provide: SupabaseService, useValue: makeSupabaseServiceDouble() },
+      {
+        provide: AppStateService,
+        useValue: { preferredPanelColor$: of(null), moduleListDisplayMode$ }
+      }
+    ]
+  }).overrideComponent(ManufacturerRowComponent, {
+    set: {
+      imports: [
+        CommonModule,
+        RouterModule,
+        StubModulePanelWallComponent,
+        StubCleanCardComponent,
+        StubModuleMinimalComponent,
+        StubManufacturerUpdatedBadgeComponent,
+        StubAutoContentLoadingIndicatorComponent
+      ]
+    }
+  });
+
+  const fixture = TestBed.createComponent(ManufacturerRowComponent);
+  fixture.componentInstance.manufacturer = makeManufacturer(1);
+  fixture.componentInstance.forceListMode = forceListMode;
+  fixture.detectChanges();
+  return fixture;
+}
+
 describe('ManufacturerRowComponent', () => {
   describe('construction', () => {
     it('creates without error', () => {
@@ -85,6 +175,12 @@ describe('ManufacturerRowComponent', () => {
       const dataService = makeDataServiceMock();
       const comp = makeComponent(dataService);
       expect(comp.showPriceSummary).toBeFalse();
+    });
+
+    it('forceListMode defaults to false', () => {
+      const dataService = makeDataServiceMock();
+      const comp = makeComponent(dataService);
+      expect(comp.forceListMode).toBeFalse();
     });
 
     it('exposes the manufacturer logo storage base from the data service', () => {
@@ -223,6 +319,22 @@ describe('ManufacturerRowComponent', () => {
 
       expect(dataService.recentModuleMarketPrices).not.toHaveBeenCalled();
       comp.ngOnDestroy();
+    });
+  });
+
+  describe('displayMode rendering', () => {
+    it('renders the panel wall when the global preference is panels and forceListMode is false (default, e.g. the manufacturers browsing page)', () => {
+      const fixture = renderManufacturerRow(of('panels'), false);
+
+      expect(fixture.nativeElement.querySelector('app-module-panel-wall')).not.toBeNull();
+      expect(fixture.nativeElement.querySelector('.module-strip')).toBeNull();
+    });
+
+    it('renders the compact list instead of the panel wall when forceListMode is true, even if the global preference is panels (e.g. the module detail page)', () => {
+      const fixture = renderManufacturerRow(of('panels'), true);
+
+      expect(fixture.nativeElement.querySelector('app-module-panel-wall')).toBeNull();
+      expect(fixture.nativeElement.querySelector('.module-strip')).not.toBeNull();
     });
   });
 });
