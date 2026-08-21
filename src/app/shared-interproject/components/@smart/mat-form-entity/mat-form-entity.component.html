@@ -253,6 +253,7 @@
                [matAutocomplete]="autocomplete"
                [placeholder]="placeholder"
                (keydown.enter)="onInputEnterPressed($event)"
+               (blur)="onAutocompleteBlur()"
                matInput
                type="text"
         />
@@ -280,6 +281,7 @@
                [matAutocomplete]="autocomplete"
                [placeholder]="placeholder"
                (keydown.enter)="onInputEnterPressed($event)"
+               (blur)="onAutocompleteBlur()"
                matInput
                type="text"
         />

@@ -299,6 +299,18 @@ describe('ModuleBrowserDataService', () => {
     service.ngOnDestroy();
   }));
 
+  it('passes selected manufacturer id to GET.modules', fakeAsync(() => {
+    const {service, backend} = build();
+    (service.fields.manufacturers.control as unknown as RuntimeManufacturerControl)
+      .setValue({id: '7', name: 'Shakmat Modular'});
+
+    tick(750);
+
+    const args = moduleCallArgs(backend);
+    expect(args[5]).toBe(7);
+    service.ngOnDestroy();
+  }));
+
   it('passes the debounced description search term to GET.modules', fakeAsync(() => {
     const {service, backend} = build();
     service.fields.description.control.setValue('analog filter');
