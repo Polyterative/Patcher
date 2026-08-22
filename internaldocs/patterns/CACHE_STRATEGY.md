@@ -1,6 +1,6 @@
 # Cache Strategy
 
-> Audited: 14-05-2026. Re-audit whenever a new GET or write method is added to any supabase-* namespace file.
+> Last audited: 13-08-2026 (see Audit Findings history below). Re-audit whenever a new GET or write method is added to any supabase-* namespace file.
 
 ---
 
