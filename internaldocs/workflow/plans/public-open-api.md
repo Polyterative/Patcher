@@ -9,7 +9,8 @@
   types are reconciled, the production Worker is uploaded without a target, and
   authenticated smoke/lifecycle tests pass, `api.patcher.xyz` is live, and the
   temporary smoke Worker is deleted. The owner deferred outer WAF protection;
-  the production app release/final archive and later R2 remain.
+  the production app release shipped in `6.6.0` (2026-08-17) and `6.7.0`
+  (2026-08-20). Final live-doc/archive cleanup and later R2/Layer 3 work remain.
 - Public consumer docs route:
   [`docs.patcher.xyz/reference/public-open-api`](https://docs.patcher.xyz/reference/public-open-api)
   (source file `learn/public-open-api.md` in Patcher-docs).
@@ -1033,13 +1034,14 @@ approvals.
 Only after DNS custom domain `api.patcher.xyz` serves traffic and the
 Worker has passed §11–§13 checks:
 
-- [ ] Root `README.md`: mark the Public Open API as live and link the
-  public docs page.
+- [x] Root `README.md`: mark the Public Open API as live and link the
+  public docs page. (Already done — see "Public Open API" section, live
+  link + `docs.patcher.xyz/reference/public-open-api`.)
 - [x] `cloudflare/public-api/README.md`: record the deployed-but-unrouted
   intermediate state without embedding real IDs.
-- [ ] `cloudflare/public-api/RUNBOOK.md`: keep the rollback/incident
+- [x] `cloudflare/public-api/RUNBOOK.md`: keep the rollback/incident
   procedures; mark the initial rollout section as complete with the
-  date.
+  date. (Updated 2026-08-22: flag shipped in `6.6.0`/`6.7.0`.)
 - [ ] Patcher-docs `learn/public-open-api.md`: unpublish any "preview"
   banner; publish key-management instructions that mirror the User Area
   panel behavior.
@@ -1351,6 +1353,15 @@ Worker has passed §11–§13 checks:
   (`11c906a5`), and fixed an unrelated develop-suite CI regression
   (`189eebb8`). No rollout-gate status changed; recorded here so the
   Decision log stays a complete history of the live API.
+- 2026-08-22 — Documentation hygiene pass: confirmed via `git log`/`generate-env.js`
+  history that `developerApiEnabled` shipped to production with releases `6.6.0`
+  (2026-08-17, `9eaee758`) and `6.7.0` (2026-08-20, `dac1d845`); `origin/production`
+  and `origin/develop` are now even. Corrected the stale "app release pending" claim
+  in this plan's `## Status`, `CURRENT_FEATURE.md`, `RUNBOOK.md`, and `TODO.md`.
+  Root `README.md` already documented the API as live and links the public docs
+  page, so that checklist item was checked off without further edits. Remaining
+  open work is unchanged: Patcher-docs external publish, final plan archival, and
+  Layer 2 (bulk JSONL export) / Layer 3 (contract polish, flag removal).
 
 ## Resolved refinement decisions (locked)
 
