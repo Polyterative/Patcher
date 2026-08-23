@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.7.1](https://github.com/Polyterative/Patcher/compare/v6.7.0...v6.7.1) (2026-08-23)
+
+
+### Features
+
+* **module-editor:** let admins overwrite existing panel types on save ([5a8c8dc](https://github.com/Polyterative/Patcher/commit/5a8c8dc498946d44b175040fb720c521ea53b97d))
+
+
+### Bug Fixes
+
+* **manufacturer-row:** force list mode in embedded module detail context ([7aefb8d](https://github.com/Polyterative/Patcher/commit/7aefb8d5591620d72276b39054e5837980272dff))
+* **mat-form-entity:** correct vertical alignment of label icons ([7e6e000](https://github.com/Polyterative/Patcher/commit/7e6e0006b0d018d4d75f8d347cdab4ee63231b7f))
+* **mat-form-entity:** resolve stray typed autocomplete strings on blur ([65e8859](https://github.com/Polyterative/Patcher/commit/65e88595d8a6b2baa660752eff72c4482b786225))
+* **toolbar:** replace account name with My library label ([1084534](https://github.com/Polyterative/Patcher/commit/1084534398420ffabfe9c169681291e540aeb79d))
+* **toolbar:** swap account name and account button order in top nav ([935324e](https://github.com/Polyterative/Patcher/commit/935324eb371ccd43137dfdb2e52bb03d89007847))
+* **vercel:** declare local process type in sitemap function to avoid types/node resolution failure ([87cd4c2](https://github.com/Polyterative/Patcher/commit/87cd4c2a3369e30d7c44093abe04b4d8f4fb09ad))
+* **vercel:** declare local process type in sitemap function to avoid types/node resolution failure ([80925d4](https://github.com/Polyterative/Patcher/commit/80925d4192e45d83e460db8421ac1c40d8020a03))
+
 ## [6.7.0](https://github.com/Polyterative/Patcher/compare/v6.6.0...v6.7.0) (2026-08-20)
 
 
