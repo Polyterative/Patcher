@@ -26,7 +26,20 @@ if [ -z "${SHA}" ]; then
   exit 0
 fi
 
-changed_files="$(git diff HEAD^ HEAD --name-only 2>/dev/null || git show --pretty='' --name-only HEAD 2>/dev/null || true)"
+diff_base="HEAD^"
+commit_subject="$(git log -1 --pretty=%s HEAD 2>/dev/null || true)"
+parent_line="$(git rev-list --parents -n 1 HEAD^ 2>/dev/null || true)"
+
+# standard-version creates a metadata-only release commit on top of the merge
+# that brought develop into production. Vercel evaluates only the pushed tip,
+# so checking HEAD^..HEAD would incorrectly classify every release as docs-only
+# and skip the application changes contained in that merge.
+if printf '%s' "${commit_subject}" | grep -qE '^chore\(release\): ' \
+    && [ "$(printf '%s\n' "${parent_line}" | awk '{print NF}')" -ge 3 ]; then
+  diff_base="HEAD^^"
+fi
+
+changed_files="$(git diff "${diff_base}" HEAD --name-only 2>/dev/null || git show --pretty='' --name-only HEAD 2>/dev/null || true)"
 
 if [ -n "${changed_files}" ] && ! printf '%s\n' "${changed_files}" \
     | grep -qvE '^(internaldocs/|[^/]+\.md$|[^/]+\.txt$|\.github/)'; then
