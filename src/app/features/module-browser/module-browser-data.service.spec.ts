@@ -311,6 +311,47 @@ describe('ModuleBrowserDataService', () => {
     service.ngOnDestroy();
   }));
 
+  it('does not fetch while the manufacturer autocomplete holds a typed-but-unreconciled value', fakeAsync(() => {
+    // Regression test for the "manufacturer filter silently ignored" bug: a raw typed
+    // string (before blur/selection resolves it to a real option) must not trigger a
+    // fetch, since getCleanedValueId() would resolve it to '' -> NaN -> the manufacturer
+    // filter clause being silently dropped, returning unfiltered results.
+    const {service, backend} = build();
+    backend.GET.modules.calls.reset();
+
+    (service.fields.manufacturers.control as unknown as RuntimeManufacturerControl)
+      .setValue('Shakmat');
+    tick(750);
+
+    expect(backend.GET.modules).not.toHaveBeenCalled();
+
+    // Reconciling the typed text into a real option (as blur does) re-enters the
+    // pipeline and fetches with the correct filter applied.
+    (service.fields.manufacturers.control as unknown as RuntimeManufacturerControl)
+      .setValue({id: '7', name: 'Shakmat Modular'});
+    tick(750);
+
+    const args = moduleCallArgs(backend);
+    expect(args[5]).toBe(7);
+    service.ngOnDestroy();
+  }));
+
+  it('does not fetch from tag selection while the manufacturer autocomplete is pending reconciliation', fakeAsync(() => {
+    // Funnel-level safety net regression test: even trigger paths that bypass the
+    // debounce (tags, pagination, etc.) must not fetch while manufacturer is pending.
+    const {service, backend} = build();
+    (service.fields.manufacturers.control as unknown as RuntimeManufacturerControl)
+      .setValue('Shakmat');
+    tick(750);
+    backend.GET.modules.calls.reset();
+
+    service.fields.tags.control.setValue([{id: '3', name: 'Filter'}]);
+    tick(750);
+
+    expect(backend.GET.modules).not.toHaveBeenCalled();
+    service.ngOnDestroy();
+  }));
+
   it('passes the debounced description search term to GET.modules', fakeAsync(() => {
     const {service, backend} = build();
     service.fields.description.control.setValue('analog filter');
