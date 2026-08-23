@@ -464,9 +464,24 @@
 }
 
 .filter-sidebar {
+  --filter-sidebar-sticky-gap: 1rem;
   width: 16.25rem;
   min-width: 16.25rem;
   flex-shrink: 0;
+  // Without this, the sidebar scrolls with the page and its lower fields
+  // (e.g. the manufacturer filter) end up scrolled underneath the sticky
+  // app toolbar, which then silently intercepts clicks meant for the field
+  // below it (including its clear "×" button). Pinning the sidebar under
+  // the toolbar and giving it its own scroll keeps all filter controls
+  // reachable regardless of scroll position.
+  position: sticky;
+  top: calc(var(--app-sticky-toolbar-offset, 2.35rem) + var(--filter-sidebar-sticky-gap));
+  max-block-size: calc(
+    var(--app-viewport-height, 100vh)
+    - var(--app-sticky-toolbar-offset, 2.35rem)
+    - (var(--filter-sidebar-sticky-gap) * 2)
+  );
+  overflow-y: auto;
 
   &__heading {
     font-size: 0.75rem;
@@ -492,6 +507,11 @@
   .filter-sidebar {
     width: 100%;
     min-width: unset;
+    // Mobile uses a stacked, collapsible filters panel instead of a
+    // side-by-side sticky sidebar, so undo the sticky/scroll behavior.
+    position: static;
+    max-block-size: none;
+    overflow: visible;
   }
 
   .browser-content-area {
