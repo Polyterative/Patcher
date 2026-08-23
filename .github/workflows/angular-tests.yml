@@ -79,6 +79,8 @@ jobs:
           - name: Production build + smoke
             cache_scope: production-build-smoke
             cache_angular: true
+            supabase_url: https://ci.supabase.invalid
+            supabase_anon_key: ci-test-anon-key
             command: pnpm run build && pnpm run check:bundle && pnpm run test:e2e:prod:run
     steps:
       - name: Checkout code
@@ -134,3 +136,6 @@ jobs:
 
       - name: Run checks
         run: ${{ matrix.command }}
+        env:
+          SUPABASE_URL: ${{ matrix.supabase_url }}
+          SUPABASE_ANON_KEY: ${{ matrix.supabase_anon_key }}
