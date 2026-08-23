@@ -30,7 +30,11 @@ import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { BehaviorSubject } from 'rxjs';
-import { FormTypes } from './form-element-models';
+import {
+  FormTypes,
+  ISelectable,
+  isOption
+} from './form-element-models';
 import { IMatFormEntityConfig, MatFormEntityComponent } from './mat-form-entity.component';
 
 
@@ -41,6 +45,10 @@ import { IMatFormEntityConfig, MatFormEntityComponent } from './mat-form-entity.
   template: `
     <lib-mat-form-entity
       [dataPack]="autocompleteField"
+    ></lib-mat-form-entity>
+
+    <lib-mat-form-entity
+      [dataPack]="groupedAutocompleteField"
     ></lib-mat-form-entity>
 
     <lib-mat-form-entity
@@ -57,6 +65,16 @@ class CvaHostComponent {
     {id: '1', name: 'Studio Rack'},
     {id: '2', name: 'Live Case'}
   ];
+  readonly groupedOptions = [
+    {
+      id: 'group-1',
+      name: 'Cases',
+      options: [
+        {id: '3', name: 'Portable Pod'},
+        {id: '4', name: 'Studio Console'}
+      ]
+    }
+  ];
   readonly selectControl = new UntypedFormControl('');
   readonly selectOptions$ = new BehaviorSubject(this.options);
 
@@ -67,6 +85,15 @@ class CvaHostComponent {
     code: 'module',
     flex: '100%',
     options$: new BehaviorSubject(this.options)
+  };
+
+  readonly groupedAutocompleteField: IMatFormEntityConfig = {
+    type: FormTypes.AUTOCOMPLETE_GROUPED,
+    control: new UntypedFormControl(''),
+    label: 'Case',
+    code: 'case',
+    flex: '100%',
+    options$: new BehaviorSubject(this.groupedOptions)
   };
 }
 
@@ -92,6 +119,16 @@ describe('MatFormEntityComponent CVA integration (v6.5.2 duplicate-forms regress
 
   function getAutocompleteInput(): HTMLInputElement {
     return fixture.nativeElement.querySelector('input[type="text"]') as HTMLInputElement;
+  }
+
+  function getAutocompleteInputAt(index: number): HTMLInputElement {
+    return fixture.nativeElement.querySelectorAll('input[type="text"]')[index] as HTMLInputElement;
+  }
+
+  function getAutocompleteTriggerAt(index: number): MatAutocompleteTrigger {
+    return fixture.debugElement
+      .queryAll(By.directive(MatAutocompleteTrigger))[index]
+      .injector.get(MatAutocompleteTrigger);
   }
 
   function getOverlayOptions(): HTMLElement[] {
@@ -132,6 +169,139 @@ describe('MatFormEntityComponent CVA integration (v6.5.2 duplicate-forms regress
     expect(control.valid)
       .withContext('strict autocomplete validator must accept a real option (no notInOptions)')
       .toBe(true);
+  });
+
+  it('A2: optionSelected explicitly commits the option object when the Material CVA callback is disconnected', async () => {
+    const input = getAutocompleteInputAt(0);
+    const trigger = getAutocompleteTriggerAt(0);
+    const control = host.autocompleteField.control;
+
+    input.focus();
+    input.dispatchEvent(new Event('focusin', {bubbles: true}));
+    input.value = 'Stu';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await settle(300);
+
+    const studio = getOverlayOptions().find(option => option.textContent?.includes('Studio Rack'));
+    expect(studio).withContext('Studio Rack should be among the filtered options').toBeDefined();
+
+    trigger.registerOnChange(() => undefined);
+    studio.dispatchEvent(new Event('pointerdown', {bubbles: true}));
+    studio.click();
+    await settle(300);
+
+    expect(control.value)
+      .withContext('the component-level optionSelected handler must not rely exclusively on MatAutocompleteTrigger CVA wiring')
+      .toEqual({id: '1', name: 'Studio Rack'});
+    expect(control.valid).toBe(true);
+  });
+
+  it('A3: blur from pointer selection does not clear a partial typed value before optionSelected commits it', async () => {
+    const input = getAutocompleteInputAt(0);
+    const trigger = getAutocompleteTriggerAt(0);
+    const control = host.autocompleteField.control;
+
+    input.focus();
+    input.dispatchEvent(new Event('focusin', {bubbles: true}));
+    input.value = 'Stu';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await settle(300);
+
+    const studio = getOverlayOptions().find(option => option.textContent?.includes('Studio Rack'));
+    expect(studio).withContext('Studio Rack should be among the filtered options').toBeDefined();
+
+    trigger.registerOnChange(() => undefined);
+    studio.dispatchEvent(new Event('pointerdown', {bubbles: true}));
+    input.dispatchEvent(new FocusEvent('blur', {bubbles: true}));
+    await settle(150);
+
+    expect(control.value)
+      .withContext('pointer blur must stay pending beyond the old fixed 100ms grace window')
+      .toBe('Stu');
+
+    studio.click();
+    await settle(300);
+
+    expect(control.value)
+      .withContext('pointer blur must be deferred/cancelled so a partial option click can still commit')
+      .toEqual({id: '1', name: 'Studio Rack'});
+  });
+
+  it('A3b: panel close resolves a pending pointer blur when no optionSelected event commits a value', async () => {
+    const input = getAutocompleteInputAt(0);
+    const trigger = getAutocompleteTriggerAt(0);
+    const control = host.autocompleteField.control;
+
+    input.focus();
+    input.dispatchEvent(new Event('focusin', {bubbles: true}));
+    input.value = 'Stu';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await settle(300);
+
+    const studio = getOverlayOptions().find(option => option.textContent?.includes('Studio Rack'));
+    expect(studio).withContext('Studio Rack should be among the filtered options').toBeDefined();
+
+    studio.dispatchEvent(new Event('pointerdown', {bubbles: true}));
+    input.dispatchEvent(new FocusEvent('blur', {bubbles: true}));
+    await settle(150);
+
+    expect(control.value).toBe('Stu');
+
+    trigger.closePanel();
+    await settle();
+
+    expect(control.value)
+      .withContext('closing the panel without selection should resolve the pending partial blur')
+      .toBe('');
+  });
+
+  it('A4: grouped autocomplete optionSelected also commits when the Material CVA callback is disconnected', async () => {
+    const input = getAutocompleteInputAt(1);
+    const trigger = getAutocompleteTriggerAt(1);
+    const control = host.groupedAutocompleteField.control;
+
+    input.focus();
+    input.dispatchEvent(new Event('focusin', {bubbles: true}));
+    input.value = 'Con';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await settle(300);
+
+    const consoleOption = getOverlayOptions().find(option => option.textContent?.includes('Studio Console'));
+    expect(consoleOption).withContext('Studio Console should be among the grouped filtered options').toBeDefined();
+
+    trigger.registerOnChange(() => undefined);
+    consoleOption.dispatchEvent(new Event('pointerdown', {bubbles: true}));
+    consoleOption.click();
+    await settle(300);
+
+    expect(control.value).toEqual({id: '4', name: 'Studio Console'});
+    expect(control.valid).toBe(true);
+  });
+
+  it('A5: the explicit optionSelected fallback does not duplicate object emissions when the normal CVA path works', async () => {
+    const input = getAutocompleteInputAt(0);
+    const control = host.autocompleteField.control;
+    const objectEmissions: ISelectable[] = [];
+    const subscription = control.valueChanges.subscribe(value => {
+      if (isOption(value)) {
+        objectEmissions.push(value);
+      }
+    });
+
+    input.focus();
+    input.dispatchEvent(new Event('focusin', {bubbles: true}));
+    input.value = 'Stu';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await settle(300);
+
+    const studio = getOverlayOptions().find(option => option.textContent?.includes('Studio Rack'));
+    expect(studio).withContext('Studio Rack should be among the filtered options').toBeDefined();
+
+    studio.click();
+    await settle(300);
+    subscription.unsubscribe();
+
+    expect(objectEmissions).toEqual([{id: '1', name: 'Studio Rack'}]);
   });
 
   it('B: opening the mat-select and clicking an option updates the FormControl value and dirty state', async () => {
@@ -187,6 +357,35 @@ describe('MatFormEntityComponent CVA integration (v6.5.2 duplicate-forms regress
     expect(control.valid)
       .withContext('once resolved to a real option, the strict autocomplete validator must pass')
       .toBe(true);
+  });
+
+  it('D2: exact-name blur keeps the native input display as the option name when CVA selection wiring is disconnected', async () => {
+    const input = getAutocompleteInputAt(0);
+    const trigger = getAutocompleteTriggerAt(0);
+    const control = host.autocompleteField.control;
+
+    input.focus();
+    input.dispatchEvent(new Event('focusin', {bubbles: true}));
+    input.value = 'Studio Rack';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await settle(300);
+
+    expect(control.value).toBe('Studio Rack');
+
+    trigger.registerOnChange(() => undefined);
+    spyOn(trigger, 'writeValue').and.callFake((value: unknown) => {
+      input.value = String(value);
+    });
+
+    input.dispatchEvent(new FocusEvent('blur', {bubbles: true}));
+    await settle();
+
+    expect(control.value)
+      .withContext('exact typed names must still resolve to option objects when selection CVA callbacks are disconnected')
+      .toEqual({id: '1', name: 'Studio Rack'});
+    expect(input.value)
+      .withContext('blur reconciliation must not leave a DefaultValueAccessor-style [object Object] in the input')
+      .toBe('Studio Rack');
   });
 
   it('E: typing an unmatched string then blurring away clears the control instead of leaving a stray string', async () => {
