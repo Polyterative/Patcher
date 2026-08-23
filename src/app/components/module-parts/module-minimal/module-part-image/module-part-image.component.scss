@@ -11,7 +11,7 @@
 }
 
 .preview {
-  background-color: rgba(0, 0, 0, 0.1)
+  background-color: rgba(20, 32, 38, 0.04);
 }
 
 .preview--empty {
@@ -22,7 +22,7 @@
   justify-content: center;
   gap: 0.25rem;
   overflow: hidden;
-  color: rgba(0, 0, 0, 0.35);
+  color: rgba(20, 32, 38, 0.28);
 
   // Loading states are honest: this box will never resolve into an image, so it
   // must read as an empty/unavailable state rather than a stuck loading skeleton.
@@ -33,6 +33,7 @@
   font-size: 1.25rem;
   width: 1.25rem;
   height: 1.25rem;
+  opacity: 0.72;
 }
 
 .preview__label {
