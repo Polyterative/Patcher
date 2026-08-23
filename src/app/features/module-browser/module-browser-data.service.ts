@@ -12,6 +12,7 @@ import {
 import {
   debounceTime,
   distinctUntilChanged,
+  filter,
   map,
   shareReplay,
   skip,
@@ -22,7 +23,7 @@ import {
 } from 'rxjs/operators';
 import { MinimalModule } from '../../models/module';
 import { Tag, TagSuggestionGroup } from '../../models/tag';
-import { getCleanedValueId } from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { getCleanedValueId, isPendingAutocompleteValue } from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SubManager } from '../../shared-interproject/directives/subscription-manager';
 import { SupabaseService } from '../backend/supabase.service';
 import {
@@ -175,6 +176,17 @@ export class ModuleBrowserDataService extends SubManager {
       debounceTime(750),
       this.takeUntilDestroyed()
     ).subscribe(() => {
+      if (isPendingAutocompleteValue(this.fields.manufacturers.control)) {
+        // The manufacturer field still holds a typed string that hasn't been
+        // reconciled into a real option (see `resolveAutocompleteTypedValueOnBlur`).
+        // Fetching now would silently drop the manufacturer filter (parseInt(NaN)
+        // via `getCleanedValueId`) and show unfiltered results while the field
+        // still visibly displays the typed text. Wait for blur/selection to
+        // reconcile it - that patch emits its own valueChanges, which re-enters
+        // this debounce with a resolved value.
+        return;
+      }
+
       const orderVal = this.fields.order.control.value;
       const nameVal = this.fields.name.control.value ?? '';
       const isBestMatchOrder = orderVal?.id === this.bestMatchOrderOption.id;
@@ -247,6 +259,11 @@ export class ModuleBrowserDataService extends SubManager {
 
     this.updateModulesList$
       .pipe(
+        // Funnel-level safety net: never fetch while the manufacturer field
+        // still holds an unreconciled typed string (see the debounce-subscribe
+        // guard above for the primary path; this also covers tag/pagination
+        // triggers that call `updateModulesList$.next()` directly).
+        filter(() => !isPendingAutocompleteValue(this.fields.manufacturers.control)),
         switchMap(() => {
           const skip = this.serversideTableRequestData.skip$.value;
           const take = this.serversideTableRequestData.take$.value;
