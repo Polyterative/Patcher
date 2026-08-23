@@ -14,6 +14,52 @@
   background-color: rgba(0, 0, 0, 0.1)
 }
 
+.preview--empty {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  overflow: hidden;
+  color: rgba(0, 0, 0, 0.35);
+
+  // Loading states are honest: this box will never resolve into an image, so it
+  // must read as an empty/unavailable state rather than a stuck loading skeleton.
+}
+
+.preview__icon {
+  flex: none;
+  font-size: 1.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.preview__label {
+  flex: none;
+  font-size: 0.65rem;
+  line-height: 1.1;
+  white-space: nowrap;
+  text-align: center;
+}
+
+// Panels for narrow/short-HP modules render this box far too small for a label
+// (or even a full-size icon) to fit - fall back to just a small dot in that case.
+@container (max-width: 2.5rem), (max-height: 2.5rem) {
+  .preview__label {
+    display: none;
+  }
+}
+
+@container (max-width: 1.25rem), (max-height: 1.25rem) {
+  .preview__icon {
+    font-size: 0.65rem;
+    width: 0.65rem;
+    height: 0.65rem;
+  }
+}
+
+
 .modulePartImageHost--surface {
   width: 100%;
   height: 100%;
