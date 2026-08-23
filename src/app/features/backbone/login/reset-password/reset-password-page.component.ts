@@ -1,7 +1,9 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  OnInit
+  Inject,
+  OnInit,
+  PLATFORM_ID
 } from '@angular/core';
 import {
   ActivatedRoute,
@@ -9,7 +11,7 @@ import {
   RouterModule
 } from '@angular/router';
 import { SupabaseService } from '../../../backend/supabase.service';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
@@ -54,16 +56,22 @@ export class ResetPasswordPageComponent extends SubManager implements OnInit {
     protected router: Router,
     private route: ActivatedRoute,
     private seoAndUtilsService: SeoAndUtilsService,
-    public dataService: UserResetPasswordDataService
+    public dataService: UserResetPasswordDataService,
+    @Inject(PLATFORM_ID) private readonly platformId: object
   ) {
     super();
   }
   
   ngOnInit(): void {
-    // Check for token in query params first
-    this.checkAndVerifyToken();
-    
-    this.setupAuthStateListener();
+    // Recovery tokens are single-use: only the browser may verify them.
+    // Running verifyOtp during SSR consumed the token server-side, so the
+    // browser's own verification always failed with otp_expired.
+    if (isPlatformBrowser(this.platformId)) {
+      // Check for token in query params first
+      this.checkAndVerifyToken();
+      
+      this.setupAuthStateListener();
+    }
     
     this.seoAndUtilsService.updateSeo({
       title: 'Reset Password',
