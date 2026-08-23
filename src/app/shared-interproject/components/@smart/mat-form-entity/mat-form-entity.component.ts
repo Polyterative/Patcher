@@ -38,6 +38,7 @@ import {
   AppInputMode,
   FormTypes,
   ISelectable,
+  isOption,
   MatFormErgonomicsConfig
 } from './form-element-models';
 import {
@@ -226,6 +227,9 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
   readonly autocompleteSeparatorKeysCodes: Array<number> = [ENTER, COMMA];
   
   private errorObjectNotInOptions = FORM_ENTITY_NOT_IN_OPTIONS_ERROR;
+  private autocompleteBlurHandle: ReturnType<typeof setTimeout> | undefined;
+  private autocompleteBlurReconciliationPending = false;
+  private autocompleteOptionSelectionInProgress = false;
   
   hidePassword = true;
 
@@ -246,6 +250,7 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
   }
   
   ngOnDestroy(): void {
+    this.resetAutocompleteBlurState();
     this.control?.setAsyncValidators([]);
     super.ngOnDestroy();
   }
@@ -343,19 +348,52 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
     
   }
   
-  /**
-   * Reconciles a typed-but-never-selected autocomplete value on blur.
-   * See {@link resolveAutocompleteTypedValueOnBlur} for the full rationale.
-   */
   onAutocompleteBlur(): void {
-    resolveAutocompleteTypedValueOnBlur({
-      control: this.control,
-      options: this.latestOptions,
-      grouped: this.type === FormTypes.AUTOCOMPLETE_GROUPED,
-      caseSensitive: this.autocompleteCaseSensitiveComparison
-    });
+    this.cancelPendingAutocompleteBlur();
+    this.autocompleteBlurReconciliationPending = true;
+
+    if (this.autocompleteOptionSelectionInProgress) {
+      return;
+    }
+
+    this.autocompleteBlurHandle = setTimeout(() => {
+      this.autocompleteBlurHandle = undefined;
+      this.resolvePendingAutocompleteBlur();
+    }, 0);
   }
-  
+
+  onAutocompleteOptionInteractionStart(): void {
+    this.cancelPendingAutocompleteBlur();
+    this.autocompleteOptionSelectionInProgress = !this.control?.disabled;
+  }
+
+  onAutocompleteOptionSelected(event: MatAutocompleteSelectedEvent): void {
+    this.cancelPendingAutocompleteBlurReconciliation();
+    this.autocompleteOptionSelectionInProgress = false;
+    const selectedValue: unknown = event.option.value;
+    if (!isOption(selectedValue)) {
+      return;
+    }
+    const currentValue: unknown = this.control.value;
+    if (currentValue !== selectedValue
+      && (!isOption(currentValue) || !compareSelectableStrict(currentValue, selectedValue))) {
+      this.control.patchValue(selectedValue);
+    }
+    this.syncNativeAutocompleteInputDisplay();
+    this.control.markAsDirty();
+    this.changeDetectorRef.markForCheck();
+  }
+
+  onAutocompletePanelClosed(): void {
+    if (!this.autocompleteBlurReconciliationPending) {
+      this.autocompleteOptionSelectionInProgress = false;
+      return;
+    }
+
+    this.cancelPendingAutocompleteBlur();
+    this.resolvePendingAutocompleteBlur();
+  }
+
   compareFunctionStrictObject(o1: ISelectable, o2: ISelectable) {
     return compareSelectableStrict(o1, o2);
   }
@@ -463,5 +501,53 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
     }
     element.disabled = this.resolvedDisabled;
     element.toggleAttribute('disabled', this.resolvedDisabled);
+  }
+
+  private resolvePendingAutocompleteBlur(): void {
+    if (!this.autocompleteBlurReconciliationPending) {
+      return;
+    }
+
+    this.autocompleteBlurReconciliationPending = false;
+    this.autocompleteOptionSelectionInProgress = false;
+    resolveAutocompleteTypedValueOnBlur({
+      control: this.control,
+      options: this.latestOptions,
+      grouped: this.type === FormTypes.AUTOCOMPLETE_GROUPED,
+      caseSensitive: this.autocompleteCaseSensitiveComparison
+    });
+    this.syncNativeAutocompleteInputDisplay();
+    this.changeDetectorRef.markForCheck();
+  }
+
+  private syncNativeAutocompleteInputDisplay(): void {
+    if (this.type !== FormTypes.AUTOCOMPLETE && this.type !== FormTypes.AUTOCOMPLETE_GROUPED) {
+      return;
+    }
+
+    const element = this.primaryInput?.nativeElement as HTMLInputElement | undefined;
+    if (!element) {
+      return;
+    }
+
+    const value: unknown = this.control.value;
+    element.value = isOption(value) ? this.autocomplete_displayFunction(value) : typeof value === 'string' ? value : '';
+  }
+
+  private cancelPendingAutocompleteBlurReconciliation(): void {
+    this.cancelPendingAutocompleteBlur();
+    this.autocompleteBlurReconciliationPending = false;
+  }
+
+  private resetAutocompleteBlurState(): void {
+    this.cancelPendingAutocompleteBlurReconciliation();
+    this.autocompleteOptionSelectionInProgress = false;
+  }
+
+  private cancelPendingAutocompleteBlur(): void {
+    if (this.autocompleteBlurHandle !== undefined) {
+      clearTimeout(this.autocompleteBlurHandle);
+      this.autocompleteBlurHandle = undefined;
+    }
   }
 }
