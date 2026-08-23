@@ -288,11 +288,11 @@
                            [emptyStateCopy]="showCollectionBrowseToggle ? rackContextEmptyStateCopy : ''"
                            [suppressEmpty]="hasMoreModules"
                            [encloseVertically]="false"
-                           [moduleAction]="moduleAction"
-                           [moduleActionDisabledIds]="moduleActionDisabledIds"
+                           [moduleAction]="effectiveModuleAction"
+                           [moduleActionDisabledIds]="effectiveModuleActionDisabledIds"
                            [showPriceSummary]="true"
                            [priceSummarySourceData$]="dataService.modulesList$"
-                           (moduleAction$)="moduleAction$.emit($event)"
+                           (moduleAction$)="onModuleAction($event)"
           ></app-module-list>
         </div>
         @if (!usesOwnedDataset && hasMoreModules) {
