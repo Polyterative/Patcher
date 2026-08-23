@@ -72,6 +72,25 @@
   box-shadow: 0 0.25rem 0.7rem rgba(16, 40, 70, 0.12);
 }
 
+// Keep a dense results grid calm: on devices with real hover (mouse/trackpad),
+// only reveal the quick-add action for the card the user is actually looking
+// at, instead of a "+" on every single card at once. Touch devices have no
+// equivalent reveal gesture, so they keep the button always visible (the
+// default state above, outside this query).
+@media (hover: hover) and (pointer: fine) {
+  .module-list-card-action {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 125ms ease-in-out;
+  }
+
+  .module-list-card:hover .module-list-card-action,
+  .module-list-card:focus-within .module-list-card-action {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
 .module-list-panel-empty {
   width: 100%;
 }

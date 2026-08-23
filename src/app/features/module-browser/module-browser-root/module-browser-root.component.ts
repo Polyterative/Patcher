@@ -1,5 +1,6 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
@@ -13,6 +14,7 @@ import {
   Observable
 } from 'rxjs';
 import {
+  filter,
   mapTo,
   shareReplay,
   startWith,
@@ -28,13 +30,20 @@ import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 import { ActivatedRoute } from '@angular/router';
 import {
   MinimalModule,
-  RackedModule
+  RackedModule,
+  UserModulePossessionKind
 } from 'src/app/models/module';
 import { RackBalanceAxisResult } from 'src/app/components/rack-parts/rack-balance-analysis.types';
 import { Tag, TagSuggestionGroup } from 'src/app/models/tag';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { ModuleList } from '../module-browser-data.service';
 import { ModuleListActionConfig } from '../module-list/module-list.component';
+import { MatDialog } from '@angular/material/dialog';
+import { ModuleDetailDataService } from 'src/app/components/module-parts/module-detail-data.service';
+import {
+  ModulePossessionDialogComponent,
+  ModulePossessionDialogResult
+} from 'src/app/components/module-parts/module-possession-dialog/module-possession-dialog.component';
 
 
 type RackModuleBrowseMode = 'available' | 'owned' | 'wanted' | 'all';
@@ -83,6 +92,35 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
   @Input() rackWeakestAxis: RackBalanceAxisResult | null = null;
   @Output() readonly moduleAction$ = new EventEmitter<MinimalModule>();
   mobileFiltersExpanded = false;
+
+  /**
+   * Default per-card quick action used whenever a parent doesn't supply its own `moduleAction`
+   * (i.e. on the plain module browser/search page). Lets users add a module to their collection
+   * straight from the results grid instead of opening the module detail page.
+   *
+   * Only applied when `viewConfig.hideButtons` is true - contexts that render their own per-card
+   * footer action (e.g. "Add to rack" inside a rack) set `hideButtons: false` and must not also
+   * get this overlay button, or a card would show two competing add actions.
+   */
+  private static readonly QUICK_ADD_TO_COLLECTION_ACTION: ModuleListActionConfig = {
+    icon: 'add',
+    label: 'Add to your collection',
+    disabledIcon: 'check',
+    disabledLabel: 'Already in your collection'
+  };
+  private quickAddDisabledIds = new Set<number>();
+
+  private get canUseQuickAddDefault(): boolean {
+    return !this.moduleAction && this.viewConfig.hideButtons;
+  }
+
+  get effectiveModuleAction(): ModuleListActionConfig | null {
+    return this.canUseQuickAddDefault ? ModuleBrowserRootComponent.QUICK_ADD_TO_COLLECTION_ACTION : this.moduleAction;
+  }
+
+  get effectiveModuleActionDisabledIds(): ReadonlySet<number> | null {
+    return this.canUseQuickAddDefault ? this.quickAddDisabledIds : this.moduleActionDisabledIds;
+  }
   readonly recentActivityItems$: Observable<RecentActivityItem[]>;
   readonly modulesUpdating$: Observable<boolean>;
   readonly visibleModules$ = new BehaviorSubject<ModuleList>(null);
@@ -165,9 +203,19 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
     public dataService: ModuleBrowserDataService,
     private recentActivityService: ModuleBrowserRecentActivityService,
     readonly seoAndUtilsService: SeoAndUtilsService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private moduleDetailDataService: ModuleDetailDataService,
+    private dialog: MatDialog,
+    private cdr: ChangeDetectorRef
   ) {
     super();
+
+    this.moduleDetailDataService.userModulesList$
+      .pipe(this.takeUntilDestroyed())
+      .subscribe(userModules => {
+        this.quickAddDisabledIds = new Set(userModules.map(module => module.id));
+        this.cdr.markForCheck();
+      });
 
     this.recentActivityItems$ = this.recentActivityService.getRecentActivityItems$(this.dataService.modulesList$);
     this.modulesUpdating$ = merge(
@@ -224,6 +272,35 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
   
   toggleMobileFilters(): void {
     this.mobileFiltersExpanded = !this.mobileFiltersExpanded;
+  }
+
+  onModuleAction(module: MinimalModule): void {
+    if (this.moduleAction) {
+      // A parent supplied its own action (e.g. "add to rack", "add to playlist") - forward untouched.
+      this.moduleAction$.emit(module);
+      return;
+    }
+
+    this.openQuickAddToCollectionDialog(module);
+  }
+
+  private openQuickAddToCollectionDialog(module: MinimalModule): void {
+    this.dialog.open<
+      ModulePossessionDialogComponent,
+      { module: MinimalModule; initialKind: UserModulePossessionKind | null },
+      ModulePossessionDialogResult | null | undefined
+    >(ModulePossessionDialogComponent, {
+      width: '34rem',
+      maxWidth: '95vw',
+      data: { module, initialKind: null },
+      ariaLabel: 'Add module to your collection'
+    })
+      .afterClosed()
+      .pipe(
+        filter((result): result is ModulePossessionDialogResult | null => result !== undefined),
+        this.takeUntilDestroyed()
+      )
+      .subscribe(result => this.moduleDetailDataService.setModulePossession$.next(result));
   }
 
   setCollectionBrowseMode(mode: RackModuleBrowseMode): void {
