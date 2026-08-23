@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.7.5](https://github.com/Polyterative/Patcher/compare/v6.7.4...v6.7.5) (2026-08-23)
+
+
+### Bug Fixes
+
+* **vercel:** deploy merged changes from release commits ([09811a2](https://github.com/Polyterative/Patcher/commit/09811a23507d7ab4f2b3ce2f178325093d076218))
+
 ### [6.7.4](https://github.com/Polyterative/Patcher/compare/v6.7.3...v6.7.4) (2026-08-23)
 
 
