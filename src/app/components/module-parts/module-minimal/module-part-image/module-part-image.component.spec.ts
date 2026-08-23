@@ -5,6 +5,7 @@ import {
   ChangeDetectionStrategy
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -309,6 +310,7 @@ describe('ModulePartImageComponent — placeholder proportions', () => {
         GetModuleHeightForStandardPipe
       ],
       imports: [
+        MatIconModule,
         MatTooltipModule,
         NoopAnimationsModule,
         RouterTestingModule

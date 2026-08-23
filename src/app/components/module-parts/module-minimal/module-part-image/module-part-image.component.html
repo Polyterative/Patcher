@@ -32,10 +32,13 @@
         <div [ngStyle]="fixedHeight
                           ? { width: (data.hp * 8 / bag.height) + 'rem' }
                           : { width: (data.hp/sizeDivider/2)+'rem', height: (bag.height/sizeDivider/2)+'rem' }"
-             class="preview img"
+             class="preview img preview--empty"
              [class.preview--fixed-height]="fixedHeight"
              [@enter]
+             [attr.title]="'No panel image uploaded yet for ' + data.name"
         >
+          <mat-icon class="preview__icon" aria-hidden="true">image_not_supported</mat-icon>
+          <span class="preview__label">No panel yet</span>
         </div>
       }
     }
