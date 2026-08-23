@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.7.3](https://github.com/Polyterative/Patcher/compare/v6.7.2...v6.7.3) (2026-08-23)
+
+
+### Bug Fixes
+
+* **module-browser:** block fetch while manufacturer autocomplete is unreconciled ([8845b83](https://github.com/Polyterative/Patcher/commit/8845b835a42b64e2dccc8720eb429cd740dfb6cf))
+
 ### [6.7.2](https://github.com/Polyterative/Patcher/compare/v6.7.1...v6.7.2) (2026-08-23)
 
 
