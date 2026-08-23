@@ -170,6 +170,19 @@ export function getCleanedValueId(control: UntypedFormControl, defaultVal = ''):
   return isOption(control.value) ? control.value.id : defaultVal;
 }
 
+/**
+ * True while an autocomplete control holds a typed string that has not yet
+ * been reconciled into a real option (see `resolveAutocompleteTypedValueOnBlur`
+ * in `mat-form-entity.helpers.ts`). Any filter/fetch driven off a control in
+ * this state must wait: reading its id via `getCleanedValueId` silently
+ * resolves to nothing, so acting now would fetch as if no filter was set at
+ * all while the field still visibly shows the typed text.
+ */
+export function isPendingAutocompleteValue(control: UntypedFormControl): boolean {
+  const value: unknown = control.value;
+  return typeof value === 'string' && value.trim() !== '';
+}
+
 export function getCleanedValueName(control: UntypedFormControl, defaultVal = ''): string {
   return isOption(control.value) ? control.value.name : defaultVal;
 }
