@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.7.6](https://github.com/Polyterative/Patcher/compare/v6.7.5...v6.7.6) (2026-08-23)
+
+
+### Bug Fixes
+
+* **auth:** verify password recovery token only in browser so ssr stops consuming it ([8fffb74](https://github.com/Polyterative/Patcher/commit/8fffb74163a522641ca4614691cb0f645045e773))
+
 ### [6.7.5](https://github.com/Polyterative/Patcher/compare/v6.7.4...v6.7.5) (2026-08-23)
 
 
