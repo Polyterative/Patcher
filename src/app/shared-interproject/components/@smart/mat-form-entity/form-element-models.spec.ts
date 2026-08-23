@@ -12,7 +12,8 @@ import {
   getCleanedValueId,
   getCleanedValueName,
   ISelectable,
-  isOption
+  isOption,
+  isPendingAutocompleteValue
 } from './form-element-models';
 
 
@@ -122,6 +123,20 @@ describe('form-element-models', () => {
       expect(getCleanedValue(optionControl)).toEqual({id: 'z', name: 'Zeta'});
       expect(getCleanedValueId(optionControl, 'fallback')).toBe('z');
       expect(getCleanedValueName(optionControl, 'fallback')).toBe('Zeta');
+    });
+    
+    it('detects a pending (typed-but-unreconciled) autocomplete value', () => {
+      // Raw typed text that has not yet been resolved to a real option
+      // (e.g. mid-typing, before blur/selection) must be flagged as pending,
+      // since getCleanedValueId() would otherwise silently return '' for it.
+      expect(isPendingAutocompleteValue(new UntypedFormControl('Verbos'))).toBeTrue();
+      
+      // Reconciled option objects, empty values, and non-string values are not pending.
+      expect(isPendingAutocompleteValue(new UntypedFormControl({id: 'z', name: 'Zeta'}))).toBeFalse();
+      expect(isPendingAutocompleteValue(new UntypedFormControl(''))).toBeFalse();
+      expect(isPendingAutocompleteValue(new UntypedFormControl('   '))).toBeFalse();
+      expect(isPendingAutocompleteValue(new UntypedFormControl(null))).toBeFalse();
+      expect(isPendingAutocompleteValue(new UntypedFormControl(undefined))).toBeFalse();
     });
   });
 });
