@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.7.2](https://github.com/Polyterative/Patcher/compare/v6.7.1...v6.7.2) (2026-08-23)
+
+
+### Bug Fixes
+
+* **filters:** keep filter sidebar clear of sticky toolbar on scroll ([5b73bfc](https://github.com/Polyterative/Patcher/commit/5b73bfc019cf4b7244ef4f8375b3787e6cf3a70c))
+
 ### [6.7.1](https://github.com/Polyterative/Patcher/compare/v6.7.0...v6.7.1) (2026-08-23)
 
 
