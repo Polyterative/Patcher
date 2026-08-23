@@ -259,6 +259,8 @@
         />
         <mat-autocomplete #autocomplete="matAutocomplete"
                           [displayWith]="autocomplete_displayFunction"
+                          (optionSelected)="onAutocompleteOptionSelected($event)"
+                          (closed)="onAutocompletePanelClosed()"
                           autoActiveFirstOption
         >
           @for (option of optionsFiltered|async; track option) {
@@ -266,6 +268,7 @@
               [matTooltip]="option.name.length>optionsTooltipMinLength?option.name:undefined"
               matTooltipPosition="left"
               [value]="option"
+              (pointerdown)="onAutocompleteOptionInteractionStart()"
         >
               {{ option.name }}
             </mat-option>
@@ -287,6 +290,8 @@
         />
         <mat-autocomplete #autocomplete="matAutocomplete"
                           [displayWith]="autocomplete_displayFunction"
+                          (optionSelected)="onAutocompleteOptionSelected($event)"
+                          (closed)="onAutocompletePanelClosed()"
                           [autoActiveFirstOption]="!disableVoidSelection"
         >
           @for (group of optionsFiltered|async; track group) {
@@ -299,6 +304,7 @@
                     [value]="option"
                     [matTooltip]="option.name.length>optionsTooltipMinLength?option.name:undefined"
                     matTooltipPosition="left"
+                    (pointerdown)="onAutocompleteOptionInteractionStart()"
                   >
               {{ option.name }}
             </mat-option>
