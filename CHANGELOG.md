@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.7.4](https://github.com/Polyterative/Patcher/compare/v6.7.3...v6.7.4) (2026-08-23)
+
+
+### Features
+
+* **module-browser:** add one-tap add-to-collection button on browse results ([fe631fd](https://github.com/Polyterative/Patcher/commit/fe631fd637b6cdf54b01f521cbafc184e8f2bda2))
+
+
+### Bug Fixes
+
+* **mat-form-entity:** commit autocomplete selections reliably ([d8a8c04](https://github.com/Polyterative/Patcher/commit/d8a8c047014fd10ffccee63498904b2e6467d8ef))
+* **module-part-image:** show honest empty state when no panel image is uploaded yet ([5e49f68](https://github.com/Polyterative/Patcher/commit/5e49f689165dc563f6b26368489f50aac531d9f9))
+
 ### [6.7.3](https://github.com/Polyterative/Patcher/compare/v6.7.2...v6.7.3) (2026-08-23)
 
 
