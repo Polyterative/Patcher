@@ -71,6 +71,7 @@ import {
   focusNextField,
   FORM_ENTITY_NOT_IN_OPTIONS_ERROR,
   mapPresetOptions,
+  resolveAutocompleteTypedValueOnBlur,
   resolveEnterKeyHint,
   resolveInputMode,
   removeChipValue,
@@ -202,6 +203,11 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
    */
   @Input() options$: Observable<ISelectable[]> = of([]);
   optionsFiltered: BehaviorSubject<Array<ISelectable>> = new BehaviorSubject<Array<ISelectable>>([]);
+  /**
+   * Latest full (unfiltered) options list, kept in sync for the AUTOCOMPLETE
+   * blur-reconciliation handler - see {@link onAutocompleteBlur}.
+   */
+  private latestOptions: ISelectable[] = [];
   @Input() placeholder = '';
   @Input() label = 'Description';
   @Input() type: FormTypes = FormTypes.TEXT;
@@ -328,7 +334,26 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
       safelyAddAsyncValidator: validator => this.safelyAddAsyncValidator(validator),
       checkOptions: () => this.checkOptions()
     });
+
+    if (this.type === FormTypes.AUTOCOMPLETE || this.type === FormTypes.AUTOCOMPLETE_GROUPED) {
+      this.manageSub(
+        this.options$.subscribe(options => { this.latestOptions = options; })
+      );
+    }
     
+  }
+  
+  /**
+   * Reconciles a typed-but-never-selected autocomplete value on blur.
+   * See {@link resolveAutocompleteTypedValueOnBlur} for the full rationale.
+   */
+  onAutocompleteBlur(): void {
+    resolveAutocompleteTypedValueOnBlur({
+      control: this.control,
+      options: this.latestOptions,
+      grouped: this.type === FormTypes.AUTOCOMPLETE_GROUPED,
+      caseSensitive: this.autocompleteCaseSensitiveComparison
+    });
   }
   
   compareFunctionStrictObject(o1: ISelectable, o2: ISelectable) {

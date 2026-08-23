@@ -2,7 +2,7 @@
 
 This runbook covers the authorized production rollout and ongoing operation of the Patcher Public Open API. It is intentionally descriptive and gate-oriented: it does not contain real resource IDs, credentials, secrets, or copy-paste remote mutation commands.
 
-Current state: the MVP is live at `api.patcher.xyz`. The production database foundation, Vault pepper, `api_reader` LOGIN credential, direct-endpoint Hyperdrive binding, Durable Object, Worker secret, custom domain, and production Worker are active. Catalogue, key lifecycle, usage-reporting, ETag, HEAD, and MISS→HIT cache tests passed on the live domain; the temporary smoke Worker was deleted. The owner deferred outer WAF configuration for the initial launch, while mandatory API keys and per-key Durable Object quotas remain active. The production User Area flag is committed on `develop` and awaits the next app release. R2 remains a non-blocking Structural follow-up.
+Current state: the MVP is live at `api.patcher.xyz`. The production database foundation, Vault pepper, `api_reader` LOGIN credential, direct-endpoint Hyperdrive binding, Durable Object, Worker secret, custom domain, and production Worker are active. Catalogue, key lifecycle, usage-reporting, ETag, HEAD, and MISS→HIT cache tests passed on the live domain; the temporary smoke Worker was deleted. The owner deferred outer WAF configuration for the initial launch, while mandatory API keys and per-key Durable Object quotas remain active. The production User Area flag shipped in the `6.6.0` (2026-08-17) and `6.7.0` (2026-08-20) app releases. R2 remains a non-blocking Structural follow-up.
 
 ## Safety rules
 

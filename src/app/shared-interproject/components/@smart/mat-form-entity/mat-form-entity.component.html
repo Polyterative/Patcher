@@ -13,7 +13,7 @@
       <mat-label>
         @if (iconL1) {
           <mat-icon
-            style="font-size: 18px; height: 18px; width: 18px; vertical-align: middle; margin-right: 0.25rem;">{{ iconL1 }}
+            style="font-size: 18px; height: 18px; width: 18px; line-height: 18px; vertical-align: middle; margin-right: 0.25rem;">{{ iconL1 }}
           </mat-icon>
         }
         {{ label }}
@@ -253,6 +253,7 @@
                [matAutocomplete]="autocomplete"
                [placeholder]="placeholder"
                (keydown.enter)="onInputEnterPressed($event)"
+               (blur)="onAutocompleteBlur()"
                matInput
                type="text"
         />
@@ -280,6 +281,7 @@
                [matAutocomplete]="autocomplete"
                [placeholder]="placeholder"
                (keydown.enter)="onInputEnterPressed($event)"
+               (blur)="onAutocompleteBlur()"
                matInput
                type="text"
         />
