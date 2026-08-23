@@ -7,7 +7,7 @@ import {
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { SupabaseStorageFile } from 'src/app/features/backend/supabase.types';
 import { CV } from 'src/app/models/cv';
-import { DbModule } from 'src/app/models/module';
+import { DbModule, ModulePanel } from 'src/app/models/module';
 import { Database } from 'src/backend/database.types';
 import {
   FormCV,
@@ -30,6 +30,7 @@ type UploadModulePanel = (
   contentType?: string
 ) => Observable<string>;
 type AddPanel = (data: ModulePanelInsert[]) => Observable<BackendResponse<ModulePanelInsert[]>>;
+type DeleteModulePanel = (data: ModulePanel) => Observable<void>;
 type CreateImageBitmapForBlob = (blob: Blob) => Promise<ImageBitmap>;
 type GetImageDataForAnalysis = CanvasRenderingContext2D['getImageData'];
 type DrawImageForAnalysis = (image: CanvasImageSource, dx: number, dy: number, dWidth: number, dHeight: number) => void;
@@ -45,6 +46,9 @@ interface ModuleEditorBackendDouble {
   };
   add: {
     panel: jasmine.Spy<AddPanel>;
+  };
+  delete: {
+    modulePanel: jasmine.Spy<DeleteModulePanel>;
   };
 }
 
@@ -117,6 +121,11 @@ function makeBackendDouble(): ModuleEditorBackendDouble {
       panel: jasmine
         .createSpy<AddPanel>('add.panel')
         .and.returnValue(of(backendResponse([])))
+    },
+    delete: {
+      modulePanel: jasmine
+        .createSpy<DeleteModulePanel>('delete.modulePanel')
+        .and.returnValue(of(undefined))
     }
   };
 }
@@ -574,6 +583,43 @@ describe('ModuleEditorDataService', () => {
       );
       expect(result.savedSections).toContain('module specs');
       expect(result.savedSections).toContain('IN/OUT ports');
+    });
+
+    it('deletes the existing panel of the same color before inserting when overwriting', (done) => {
+      const existingPanel: ModulePanel = {id: 5, moduleid: 1, color: 1, filename: 'old.jpg', description: 'old'};
+      const module = makeDbModule({panels: [existingPanel]});
+      const file = new File(['panel-bytes'], 'panel.jpg', {type: 'image/jpeg'});
+
+      const result = service.buildPersistPlan({
+        ...makeArgs(makePendingState({shouldSavePanel: true, hasPendingChanges: true})),
+        module,
+        panelFile: file,
+        panelTypeValue: {name: 'Light', value: 1}
+      });
+
+      result.operations[0].subscribe(() => {
+        expect(mockBackend.delete.modulePanel).toHaveBeenCalledWith(existingPanel);
+        expect(mockBackend.add.panel).toHaveBeenCalled();
+        done();
+      });
+    });
+
+    it('does not delete any panel when no existing panel matches the selected color', (done) => {
+      const module = makeDbModule({panels: []});
+      const file = new File(['panel-bytes'], 'panel.jpg', {type: 'image/jpeg'});
+
+      const result = service.buildPersistPlan({
+        ...makeArgs(makePendingState({shouldSavePanel: true, hasPendingChanges: true})),
+        module,
+        panelFile: file,
+        panelTypeValue: {name: 'Light', value: 1}
+      });
+
+      result.operations[0].subscribe(() => {
+        expect(mockBackend.delete.modulePanel).not.toHaveBeenCalled();
+        expect(mockBackend.add.panel).toHaveBeenCalled();
+        done();
+      });
     });
   });
   

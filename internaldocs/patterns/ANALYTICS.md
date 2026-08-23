@@ -52,6 +52,15 @@ constructor(private analytics: AnalyticsService) {}
 
 ## Event taxonomy
 
+> **Known gap (found 2026-08-22 doc audit):** this table is significantly behind
+> the codebase — a repo-wide scan of `analytics.capture(...)` call sites found
+> roughly 90 distinct event names in use (across `account.*`, `auth.*`, `module.*`,
+> `patch.*`, `rack.*`, `search.*`, `user_area.*`, and others) versus ~30 rows
+> documented below. Treat this table as a representative sample, not an
+> exhaustive reference, until a dedicated audit backfills the missing rows. Do
+> not remove an event from the app because it is "undocumented" here — verify
+> against `analytics.capture(` call sites in `src/` first.
+
 | Event | Where fires | Required props |
 |---|---|---|
 | `auth.signed_in` | `UserManagementService.initializeLoginHandler` | `method: 'password'` |

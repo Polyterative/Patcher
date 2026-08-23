@@ -63,7 +63,8 @@ function makeSnackBarRef(): MatSnackBarRef<TextOnlySnackBar> {
 function makeModuleDetailDataService(): ModuleDetailDataService {
   return Object.assign(Object.create(ModuleDetailDataService.prototype) as ModuleDetailDataService, {
     moduleEditorHasPendingChanges$: new BehaviorSubject<boolean>(false),
-    updateSingleModuleData$: new Subject<number>()
+    updateSingleModuleData$: new Subject<number>(),
+    isAdmin$: new BehaviorSubject<boolean>(false)
   });
 }
 
@@ -196,7 +197,7 @@ function makeComponent(preferredPanelCropFormat: 'webp' | 'jpeg' = 'webp') {
 
   component.data = makeDbModule();
 
-  return {component, moduleEditorDataService, fileDragHostService, snackBar};
+  return {component, moduleEditorDataService, fileDragHostService, snackBar, dataService};
 }
 
 function makePendingSaveState(partial: Partial<PendingSaveState> = {}): PendingSaveState {
@@ -313,6 +314,23 @@ describe('ModuleEditorComponent validation messaging', () => {
     component.duplicatePanelTypeName$.next('Light');
 
     expect(component.saveFabDisabledReason).toBe('Duplicate panel type: Light');
+  });
+
+  it('does not block save on duplicate panel type for admins', () => {
+    const {component, moduleEditorDataService, fileDragHostService, dataService} = makeComponent();
+    moduleEditorDataService.getPendingSaveState.and.returnValue(makePendingSaveState({
+      shouldSavePanel: true,
+      hasPendingChanges: true
+    }));
+    component.ngOnInit();
+
+    dataService.isAdmin$.next(true);
+    fileDragHostService.files$.next([new File(['panel'], 'panel.jpg', {type: 'image/jpeg'})]);
+    component.panelTypeAlreadyExists$.next(true);
+    component.duplicatePanelTypeName$.next('Light');
+    component.croppedPanelFile$.next(new File(['cropped'], 'panel.jpg', {type: 'image/jpeg'}));
+
+    expect(component.saveFabDisabledReason).toBe('');
   });
 
   it('pinpoints the invalid port row and field', () => {

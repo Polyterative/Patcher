@@ -9,17 +9,17 @@ import {
 } from './toolbar-link-data';
 
 describe('toolbar-link-data', () => {
-  it('shows the logged-in username in the wide-shell profile slot', () => {
+  it('shows the "My library" label in the wide-shell profile slot, after the Account button', () => {
     const links = buildWideShellAccountLinks(true, 'andrew');
 
     expect(links).toEqual([
       jasmine.objectContaining({
-        label: 'andrew',
-        route: '/user/area'
-      }),
-      jasmine.objectContaining({
         label: 'Account',
         route: '/user/account'
+      }),
+      jasmine.objectContaining({
+        label: 'My library',
+        route: '/user/area'
       })
     ]);
   });

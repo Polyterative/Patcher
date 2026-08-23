@@ -130,13 +130,14 @@
     `patcher-public-datasets` + Worker R2 binding; streamed through the
     Worker after key check (no presigned URLs). Logpush → durable sink
     likewise Structural.
-- [!] **Public Open API — owner-present rollout**: database migrations/types,
+- [~] **Public Open API — owner-present rollout**: database migrations/types,
   Vault, `api_reader`, direct-endpoint Hyperdrive, Durable Object, Worker
   secret/upload, controlled partner slot rotation/revocation/reactivation,
   usage reporting, and authenticated catalogue/quota/cache smoke tests are
   complete. `api.patcher.xyz` is live, public smoke checks pass, the temporary
-  Worker is deleted, and WAF was deferred by the owner. Remaining: app release
-  with production `developerApiEnabled`, final live-doc/archive update, and R2 later
+  Worker is deleted, and WAF was deferred by the owner. The production
+  `developerApiEnabled` flag shipped with the `6.6.0` (2026-08-17) and `6.7.0`
+  (2026-08-20) releases. Remaining: final live-doc/archive update and R2 later
   ([plan](./plans/public-open-api.md#batched-manual-operator-window-single-owner-session))
   (added 2026-07-24).
 
@@ -171,7 +172,7 @@
 
 ### PRODUCT — Tier 1 (requires Manufacturer Page Phase 2 to be live)
 
-- [!] **HIGH: Public Open API — modules & manufacturers v1 is live; production User Area release/final archive next, then bulk JSONL and public patches/racks later** → [`plans/public-open-api.md`](./plans/public-open-api.md)
+- [~] **HIGH: Public Open API — modules & manufacturers v1 is live in production (`6.6.0`/`6.7.0` shipped); final live-doc/archive cleanup next, then bulk JSONL and public patches/racks later** → [`plans/public-open-api.md`](./plans/public-open-api.md)
 - [ ] **HIGH: Manufacturer Accounts & Verification (claims, admin review, verified-owner edits; local M1 schema/typegen complete, M2-M7 not started; remote apply gated)** → [`plans/manufacturer-accounts-verification.md`](./plans/manufacturer-accounts-verification.md)
 - [ ] **LOW: Manufacturer Updates / Featured Surface (persistence/RLS/backend/moderation approved after verification foundation)** → [`plans/manufacturer-updates-featured-surface.md`](./plans/manufacturer-updates-featured-surface.md)
 - [ ] **LOW: Manufacturer Analytics (privacy aggregate helper complete; manufacturer validation/dashboard/backend gated)** → [`plans/manufacturer-analytics.md`](./plans/manufacturer-analytics.md)

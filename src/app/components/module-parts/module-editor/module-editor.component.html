@@ -222,9 +222,15 @@
           </div>
 
           @if (panelTypeAlreadyExists$ | async) {
-            <app-advice-tooltip title="Duplicate panel type" tone="warning">
-              A "{{ duplicatePanelTypeName$ | async }}" panel already exists for this module. Choose another type.
-            </app-advice-tooltip>
+            @if (dataService.isAdmin$ | async) {
+              <app-advice-tooltip title="Existing panel will be replaced" tone="info">
+                A "{{ duplicatePanelTypeName$ | async }}" panel already exists for this module. Saving will overwrite it with the new image.
+              </app-advice-tooltip>
+            } @else {
+              <app-advice-tooltip title="Duplicate panel type" tone="warning">
+                A "{{ duplicatePanelTypeName$ | async }}" panel already exists for this module. Choose another type.
+              </app-advice-tooltip>
+            }
           }
         </section>
       </div>

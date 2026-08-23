@@ -53,6 +53,11 @@ export class ManufacturerRowComponent extends SubManager implements OnInit {
   @Input() manufacturer!: ManufacturerDetail;
   @Input() hideRowLink = false;
   @Input() showPriceSummary = false;
+  /** When true, always render the compact list layout and ignore the global
+   * List/Panels preference from AppStateService. Used when this row is embedded
+   * in a small context (e.g. the module detail page's "same manufacturer" panel)
+   * where the full-size panel layout doesn't fit and there's no toggle to switch it. */
+  @Input() forceListMode = false;
 
   get logoStorageBase(): string {
     return this.dataService.logoStorageBase;

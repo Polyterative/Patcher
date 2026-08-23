@@ -51,7 +51,7 @@
   @if ({
     modules: (modules$ | async),
     priceSummaryByModuleId: (priceSummaryByModuleId$ | async),
-    displayMode: (appState.moduleListDisplayMode$ | async),
+    displayMode: forceListMode ? 'list' : (appState.moduleListDisplayMode$ | async),
     preferredPanelColor: (appState.preferredPanelColor$ | async)
   }; as bag) {
     @if (bag.modules) {

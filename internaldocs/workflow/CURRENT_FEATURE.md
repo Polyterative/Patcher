@@ -26,7 +26,7 @@
 - [x] Build and validate the complete local MVP Worker, Durable Object, OpenAPI contract, and migration foundation.
 - [x] Document the local MVP Worker and operator rollout/rollback gates.
 - [x] Execute the owner-present remote foundation and authenticated smoke window (Supabase apply + generated types, Vault pepper, `api_reader` LOGIN, direct-endpoint Hyperdrive, Durable Object, Worker secret/upload, temporary smoke route, partner-key rotation/revocation/reactivation, usage, catalogue, ETag/HEAD, and cache tests).
-- [~] Complete public promotion: `api.patcher.xyz` is live, production smoke/monitoring checks pass, the temporary smoke Worker is deleted, and the owner deferred outer WAF protection; the production UI flag is committed on `develop` and still needs the app release plus final live-doc/archive cleanup.
+- [~] Complete public promotion: `api.patcher.xyz` is live, production smoke/monitoring checks pass, the temporary smoke Worker is deleted, and the owner deferred outer WAF protection; the production UI flag shipped with the `6.6.0`/`6.7.0` app releases (2026-08-17/2026-08-20) — only final live-doc/archive cleanup remains.
 
 #### Layer 2 — Structural
 
@@ -34,7 +34,7 @@
 - [x] Land the flag-gated `DeveloperApiKeysComponent` + `DeveloperApiKeysDataService` under `src/app/features/backbone/user-management/developer-api-keys/`.
 - [x] Add the `developerApiEnabled` feature flag (off in generated production environments, on in development).
 - [x] Add `SupabaseService.apiKeys` namespace and `DatabaseStrings` entries for `api_keys` / `api_tiers` / `api_key_usage_monthly` after approved migration/type generation.
-- [ ] After public promotion: flip the production flag on and add key-required bulk JSONL export via private R2.
+- [ ] The production flag shipped in `6.6.0`/`6.7.0`; still needed: key-required bulk JSONL export via private R2.
 
 #### Layer 3 — Polish
 
@@ -42,8 +42,8 @@
 - [x] Add the stable-slot contract to the consolidated local identity migration (`rotated_at`, full `UNIQUE (profile_id)`, atomic UPSERT rewrites preserving `id` + tier/overrides) and extend the static contract tests; remote apply stays inside the batched operator window.
 - [ ] Remove the `developerApiEnabled` feature flag once the API is public and stable.
 
-Status: The API is live at `api.patcher.xyz`; production catalogue/auth/quota/cache checks pass and the temporary smoke Worker is deleted. The owner approved launch without outer WAF for now. `developerApiEnabled` is enabled in the production environment generator on `develop`; the remaining user-visible gate is the app release, followed by final docs/archive cleanup. Re-verified 2026-08-11: `production` is still 179 commits behind `develop` (last release `6.5.2`), so no app release has shipped yet and this status still holds.
-Updated: 2026-08-11
+Status: The API is live at `api.patcher.xyz`; production catalogue/auth/quota/cache checks pass and the temporary smoke Worker is deleted. The owner approved launch without outer WAF for now. `developerApiEnabled` shipped to production with the `6.6.0` (2026-08-17) and `6.7.0` (2026-08-20) releases; `production` and `develop` are now even. Remaining: final live-doc/archive cleanup (see the plan's "Docs updates after the API is truly live" checklist), then Layer 2 bulk JSONL export and Layer 3 contract polish/flag removal.
+Updated: 2026-08-22
 
 Recent completed checkpoints are archived in [COMPLETED.md](./COMPLETED.md); their validation
 notes and decisions live in the matching plan files (e.g.

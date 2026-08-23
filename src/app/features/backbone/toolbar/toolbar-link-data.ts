@@ -126,15 +126,15 @@ export function buildToolbarUserLinks(username: string): RouteClickableLink[] {
 
   const nextLinks = [
     {
-      label: 'My profile',
-      route: '/user/area',
-      icon: 'dashboard',
-      disabled: false
-    },
-    {
       label: normalizedUsername,
       route: '/user/account',
       icon: 'manage_accounts',
+      disabled: false
+    },
+    {
+      label: 'My profile',
+      route: '/user/area',
+      icon: 'dashboard',
       disabled: false
     }
   ];
@@ -162,7 +162,7 @@ export function buildWideShellAccountLinks(isLoggedIn: boolean, username: string
     if (link.route === '/user/area') {
       return {
         ...link,
-        label: normalizedUsername
+        label: 'My library'
       };
     }
 

@@ -165,4 +165,45 @@ describe('MatFormEntityComponent CVA integration (v6.5.2 duplicate-forms regress
       .withContext('valueAccessor must be MatAutocompleteTrigger, not DefaultValueAccessor')
       .toBe(true);
   });
+
+  it('D: typing a full option name then blurring away WITHOUT clicking auto-resolves to the option OBJECT (regression: manufacturer filter silently skipped)', async () => {
+    const input = getAutocompleteInput();
+    const control = host.autocompleteField.control;
+
+    input.focus();
+    input.dispatchEvent(new Event('focusin', {bubbles: true}));
+    input.value = 'Studio Rack';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await settle(300);
+
+    // Blur away WITHOUT clicking a mat-option - this is exactly what happened
+    // in the reported bug: the control is left holding the raw typed string.
+    input.dispatchEvent(new Event('blur', {bubbles: true}));
+    await settle(300);
+
+    expect(control.value)
+      .withContext('an exact typed match must auto-resolve to the option OBJECT on blur, not stay a raw string')
+      .toEqual({id: '1', name: 'Studio Rack'});
+    expect(control.valid)
+      .withContext('once resolved to a real option, the strict autocomplete validator must pass')
+      .toBe(true);
+  });
+
+  it('E: typing an unmatched string then blurring away clears the control instead of leaving a stray string', async () => {
+    const input = getAutocompleteInput();
+    const control = host.autocompleteField.control;
+
+    input.focus();
+    input.dispatchEvent(new Event('focusin', {bubbles: true}));
+    input.value = 'Not A Real Option';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await settle(300);
+
+    input.dispatchEvent(new Event('blur', {bubbles: true}));
+    await settle(300);
+
+    expect(control.value)
+      .withContext('an unmatched typed value must be cleared on blur, never silently skipped downstream as NaN/empty-filter')
+      .toBe('');
+  });
 });

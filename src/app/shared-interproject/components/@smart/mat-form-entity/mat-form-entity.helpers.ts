@@ -223,6 +223,50 @@ function setupMultiAutocomplete(config: FormEntityTypeSetupConfig): void {
   }
 }
 
+export interface AutocompleteBlurResolutionConfig {
+  control: UntypedFormControl;
+  options: ISelectable[];
+  grouped: boolean;
+  caseSensitive: boolean;
+}
+
+/**
+ * Angular Material's autocomplete trigger writes the raw typed string to the
+ * bound FormControl on every keystroke (`_handleInput` -> `_onChange(value)`),
+ * and only commits the full option object when the user explicitly clicks a
+ * `mat-option` or presses Enter while one is highlighted. If the user blurs
+ * away without doing either, the control is left holding a plain string that
+ * looks "filled in" in the UI but silently fails downstream `isOption`
+ * checks - e.g. the module browser's manufacturer filter resolves this down
+ * to `NaN` via `getCleanedValueId`/`parseInt` and simply skips the filter,
+ * returning unfiltered results with no error surfaced to the user.
+ *
+ * On blur we reconcile this: an exact (optionally case-insensitive) name
+ * match is auto-committed as the real option object, so typing the full name
+ * and clicking away behaves the same as explicitly selecting it. Anything
+ * else (partial/no match) is cleared back to an empty string so a stray
+ * typed value can never be mistaken downstream for "no filter requested".
+ * Values that are already a valid option, or already empty, are left as-is.
+ */
+export function resolveAutocompleteTypedValueOnBlur(config: AutocompleteBlurResolutionConfig): void {
+  const value: unknown = config.control.value;
+  if (isOption(value) || typeof value !== 'string' || value.trim() === '') {
+    return;
+  }
+
+  const flatOptions = config.grouped
+    ? config.options.flatMap(group => group.options ?? [])
+    : config.options;
+
+  const match = findExactOptionByName(value, flatOptions, config.caseSensitive);
+  config.control.patchValue(match ?? '');
+}
+
+function findExactOptionByName(name: string, options: ISelectable[], caseSensitive: boolean): ISelectable | undefined {
+  const target = caseSensitive ? name.trim() : normalizeForSearch(name.trim());
+  return options.find(opt => (caseSensitive ? opt.name : normalizeForSearch(opt.name)) === target);
+}
+
 export function mapPresetOptions(presets: (string | number)[]): ISelectable[] {
   return presets.map(v => ({ id: String(v), name: String(v) }));
 }
