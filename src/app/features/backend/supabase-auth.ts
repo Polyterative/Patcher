@@ -299,11 +299,9 @@ export function createAuthNamespace(
         const redirectTo = `${ window.location.origin }/auth/reset-password`;
         return rxFrom(supabase.auth.resetPasswordForEmail(emailOrToken, {redirectTo})).pipe(
           map(response => {
-            if (response.error) {
-              throw new PasswordResetError('Failed to send password reset email.', response.error.message);
-            }
+            if (response.error) throw response.error;
           }),
-          catchError(error => throwError(() => error))
+          catchError(error => throwError(() => ns._createPasswordResetError(error)))
         );
       }
     },

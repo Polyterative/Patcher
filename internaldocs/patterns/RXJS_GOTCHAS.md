@@ -78,3 +78,14 @@ error visible unless a page reload re-subscribes it from scratch. This was indep
 one sweep (rack-delete, patch-delete, and the patch-connection sync chains) before being fixed at the source by
 moving `catchError` inside a single composed `switchMap` projection, so an error is absorbed before it can reach the
 Subject-sourced top of the pipe.
+
+## Terminal Recovery Inside Flattening Operators
+
+When `catchError` runs inside a flattening operator, return `EMPTY` or a terminal value after handling the error.
+Do not return `NEVER`. `NEVER` permanently occupies the active inner slot and blocks later work.
+
+Keep `exhaustMap` when the requirement is genuine in-flight duplicate suppression. The operator must release its
+slot after the inner observable terminates, so the next request can retry after a failure.
+
+For reset requests, the auth wrapper propagates the normalized error. The login data service owns inline error
+state, loading settlement, and retry.

@@ -1,4 +1,5 @@
 import {
+  isAuthApiError,
   Session,
   User
 } from '@supabase/supabase-js';
@@ -117,7 +118,12 @@ export function mapRichUserSession(user: User, profile: AuthProfileFields): Rich
 }
 
 export function createPasswordResetError(error: unknown): PasswordResetError {
+  if (isAuthApiError(error)) {
+    return classifyPasswordResetError(error.message, error.code, error.status);
+  }
+
   const resetError = error as {
+    status?: string | number;
     code?: string | number;
     error_code?: string;
     error_description?: string;
@@ -126,8 +132,17 @@ export function createPasswordResetError(error: unknown): PasswordResetError {
     name?: string;
   } | null | undefined;
   const errorCode = resetError?.error_code || resetError?.code || resetError?.name;
+  const statusCode = resetError?.status;
   const message = resetError?.msg || resetError?.message || resetError?.error_description;
-  const statusCode = resetError?.code;
+
+  return classifyPasswordResetError(message, errorCode, statusCode);
+}
+
+function classifyPasswordResetError(
+  message: string | undefined,
+  errorCode: string | number | undefined,
+  statusCode: string | number | undefined
+): PasswordResetError {
   const errorMessages = SharedConstants.messages.resetPassword;
 
   if (errorCode === 'same_password' || message?.toLowerCase().includes('same password')) {
@@ -147,6 +162,11 @@ export function createPasswordResetError(error: unknown): PasswordResetError {
   }
 
   return new PasswordResetError(message || errorMessages.unknownError, errorCode, statusCode);
+}
+
+export function isPasswordResetRateLimited(error: unknown): boolean {
+  return error instanceof PasswordResetError
+    && (error.statusCode === 429 || error.errorCode === 'over_email_send_rate_limit');
 }
 
 export function isValidEmail(email: string): boolean {
