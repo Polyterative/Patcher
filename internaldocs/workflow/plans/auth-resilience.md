@@ -10,7 +10,7 @@ Restore reliable authentication retries and session-bound recovery flows without
 
 - [x] S1 auth-request retry implemented and committed as `dc6afca6`.
 - [x] S2 recovery-session integrity implemented and independently QA-PASS.
-- [ ] S3 OAuth callback settlement.
+- [x] S3 OAuth callback settlement committed as `83227c2c`.
 - [ ] S4 destructive-action retry.
 
 ### Structural
@@ -52,8 +52,8 @@ S2 — Recovery session integrity is implemented, independently reviewed, QA-PAS
 
 ## S3 status
 
-S3 — OAuth callback settlement is implemented, independently reviewed, and
-QA-PASS after repair. It remains uncommitted pending the coordinator commit.
+S3 — OAuth callback settlement is implemented, independently reviewed,
+QA-PASS, and committed as `83227c2c`.
 S4 — destructive-action retry is next. No production publication or public
 availability is claimed.
 
@@ -80,9 +80,8 @@ availability is claimed.
   `exhaustMap` so duplicate in-flight actions are suppressed instead of
   cancelling/restarting the backend call. Added 10 regression tests across
   the component and service specs, all written failing-first.
-- 2026-08-24 — Record S3 as implemented and QA-PASS after independent review;
-  retain the uncommitted state pending the coordinator commit, with S4 as the
-  next MVP slice. The durable contract includes total callback timeout,
+- 2026-08-24 — Commit S3 as `83227c2c` after independent review and QA PASS.
+  The durable contract includes total callback timeout,
   explicit Failed terminal state, late-session navigation latch,
   exhaustMap duplicate suppression, slot reopening after every terminal
   outcome, and typed failure publication.
