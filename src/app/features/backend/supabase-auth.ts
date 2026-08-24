@@ -16,6 +16,7 @@ import {
   catchError,
   map,
   switchMap,
+  timeout,
   withLatestFrom
 } from 'rxjs/operators';
 import { Database } from 'src/backend/database.types';
@@ -43,6 +44,7 @@ import {
   mapRichUserSession,
   mapSimpleUserSession,
   OAUTH_CALLBACK_SESSION_TIMEOUT_MS,
+  OAUTH_CALLBACK_TOTAL_TIMEOUT_MS,
   PasswordResetError,
   RecoveryEventSession
 } from './supabase-auth.helpers';
@@ -152,6 +154,14 @@ export function createAuthNamespace(
               return of(richUser);
             })
           );
+        }),
+        // Outer settlement guarantee: closes the "authSession$ never emits at
+        // all" gap that the inner OAUTH_CALLBACK_SESSION_TIMEOUT_MS cannot
+        // cover, since that inner timeout only arms once settledAuthSession$'s
+        // own switchMap projection has been entered.
+        timeout({
+          first: OAUTH_CALLBACK_TOTAL_TIMEOUT_MS,
+          with: () => of(null)
         })
       );
     },

@@ -28,6 +28,16 @@ export const AUTH_NULL_SESSION_SETTLE_TIMEOUT_MS = 1500;
 export const OAUTH_CALLBACK_SESSION_TIMEOUT_MS = 10000;
 
 /**
+ * Outer settlement bound for `handleOAuthCallback$()`, independent of the
+ * inner `OAUTH_CALLBACK_SESSION_TIMEOUT_MS`. The inner timeout only arms once
+ * `authSession$` has emitted at least once; if the upstream auth observable
+ * never emits at all, the inner timeout is never entered and the callback
+ * would otherwise hang indefinitely. This outer bound guarantees settlement
+ * (to `null`) regardless of whether `authSession$` ever emits.
+ */
+export const OAUTH_CALLBACK_TOTAL_TIMEOUT_MS = 12000;
+
+/**
  * A password-recovery event observed by `SupabaseService`'s root
  * `onAuthStateChange` listener (`PASSWORD_RECOVERY`) or produced by a direct
  * `verifyRecoveryOtp$` call. `sessionId` is a stable, non-secret session

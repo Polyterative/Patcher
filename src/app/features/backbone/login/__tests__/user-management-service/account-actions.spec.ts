@@ -4,6 +4,7 @@ import {
 } from '@angular/core/testing';
 import {
   of,
+  Subject,
   throwError
 } from 'rxjs';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
@@ -79,14 +80,120 @@ describe('UserManagementService - Account Actions', () => {
   it('shows error when OAuth callback handling fails', fakeAsync(() => {
     spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
     });
-    spyOn(console, 'error');
+    let failed = false;
+    service.oauthCallbackFailed$.subscribe(() => failed = true);
     mockSupabaseService.auth.handleOAuthCallback$.and.returnValue(throwError(() => new Error('oauth fail')));
     
     service.handleOAuthCallback();
     tick();
     
-    expect(console.error).toHaveBeenCalled();
-    expect(SharedConstants.errorCustom).toHaveBeenCalled();
+    expect(failed).toBeTrue();
+    expect(SharedConstants.errorCustom).not.toHaveBeenCalled();
+  }));
+
+  it('publishes oauthCallbackFailed$ with a null-session reason when the callback settles with no session', fakeAsync(() => {
+    let failed = false;
+    service.oauthCallbackFailed$.subscribe(() => failed = true);
+    mockSupabaseService.auth.handleOAuthCallback$.and.returnValue(of(null));
+
+    service.handleOAuthCallback();
+    tick();
+
+    expect(failed).toBeTrue();
+  }));
+
+  // ── Duplicate-action suppression (review repair regression) ────────────────
+  //
+  // Duplicate handleOAuthCallback() actions arriving while a callback attempt
+  // is still in flight must be suppressed (ignored) rather than cancelling
+  // and restarting the in-flight attempt. A `switchMap`-based flattening
+  // strategy re-invokes the backend call and cancels the previous attempt on
+  // every duplicate action, so this test fails under `switchMap` and only
+  // passes once the handler suppresses duplicates while in-flight.
+
+  it('suppresses a duplicate handleOAuthCallback action received while one is still in-flight', fakeAsync(() => {
+    const inFlight = new Subject<typeof MOCK_RICH_USER | null>();
+    mockSupabaseService.auth.handleOAuthCallback$.and.returnValue(inFlight.asObservable());
+    let profile: typeof MOCK_RICH_USER | undefined;
+    service.loggedUserFullProfile$.subscribe(v => profile = v);
+
+    service.handleOAuthCallback();
+    service.handleOAuthCallback(); // duplicate while the first attempt is still in-flight
+    tick();
+
+    expect(mockSupabaseService.auth.handleOAuthCallback$).toHaveBeenCalledTimes(1);
+
+    inFlight.next(MOCK_RICH_USER);
+    inFlight.complete();
+    tick();
+
+    expect(profile).toEqual(MOCK_RICH_USER);
+  }));
+
+  it('frees the flattening slot after a successful settlement so the next action is processed', fakeAsync(() => {
+    service.handleOAuthCallback();
+    tick();
+    service.handleOAuthCallback();
+    tick();
+
+    expect(mockSupabaseService.auth.handleOAuthCallback$).toHaveBeenCalledTimes(2);
+  }));
+
+  it('frees the flattening slot after an API error so the next action is processed', fakeAsync(() => {
+    mockSupabaseService.auth.handleOAuthCallback$.and.returnValue(throwError(() => new Error('oauth fail')));
+    service.handleOAuthCallback();
+    tick();
+
+    mockSupabaseService.auth.handleOAuthCallback$.and.returnValue(of(MOCK_RICH_USER));
+    let profile: typeof MOCK_RICH_USER | undefined;
+    service.loggedUserFullProfile$.subscribe(v => profile = v);
+    service.handleOAuthCallback();
+    tick();
+
+    expect(mockSupabaseService.auth.handleOAuthCallback$).toHaveBeenCalledTimes(2);
+    expect(profile).toEqual(MOCK_RICH_USER);
+  }));
+
+  it('frees the flattening slot after a null-session (missing session) settlement so the next action is processed', fakeAsync(() => {
+    mockSupabaseService.auth.handleOAuthCallback$.and.returnValue(of(null));
+    service.handleOAuthCallback();
+    tick();
+
+    mockSupabaseService.auth.handleOAuthCallback$.and.returnValue(of(MOCK_RICH_USER));
+    let profile: typeof MOCK_RICH_USER | undefined;
+    service.loggedUserFullProfile$.subscribe(v => profile = v);
+    service.handleOAuthCallback();
+    tick();
+
+    expect(mockSupabaseService.auth.handleOAuthCallback$).toHaveBeenCalledTimes(2);
+    expect(profile).toEqual(MOCK_RICH_USER);
+  }));
+
+  it('publishes the signed-in profile exactly once per successful handleOAuthCallback action (completion/exactly-once)', fakeAsync(() => {
+    let emitCount = 0;
+    service.loggedUserFullProfile$.subscribe(v => {
+      if (v) emitCount++;
+    });
+
+    service.handleOAuthCallback();
+    tick();
+
+    expect(emitCount).toBe(1);
+  }));
+
+  it('does not process an in-flight handleOAuthCallback settlement after the service is destroyed (cancellation)', fakeAsync(() => {
+    const inFlight = new Subject<typeof MOCK_RICH_USER | null>();
+    mockSupabaseService.auth.handleOAuthCallback$.and.returnValue(inFlight.asObservable());
+    let profile: typeof MOCK_RICH_USER | undefined;
+    service.loggedUserFullProfile$.subscribe(v => profile = v);
+
+    service.handleOAuthCallback();
+    service.ngOnDestroy();
+    inFlight.next(MOCK_RICH_USER);
+    inFlight.complete();
+    tick();
+
+    expect(profile).toBeUndefined();
   }));
   
   it('handles resetPasswordAction$ error variants and success', fakeAsync(() => {

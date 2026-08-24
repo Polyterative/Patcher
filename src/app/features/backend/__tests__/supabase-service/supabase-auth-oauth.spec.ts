@@ -28,6 +28,7 @@ import {
   type PasswordResetProviderError,
   type SupabaseClientDouble
 } from './supabase-query-test-doubles';
+import { OAUTH_CALLBACK_TOTAL_TIMEOUT_MS } from '../../supabase-auth.helpers';
 
 
 type OAuthUserFixture = User & {
@@ -302,6 +303,27 @@ describe('SupabaseService - auth OAuth and helpers', () => {
       });
       tick(10000);
 
+      expect(result).toBeNull();
+    }));
+
+    it('should settle to null when the auth session stream never emits at all (not even an initial null)', fakeAsync(() => {
+      let result: unknown = 'not-yet';
+      let settled = false;
+
+      // Deliberately never call authSession$.next(...) — the outer timeout
+      // must settle even though the inner switchMap projection is never entered.
+      service.auth.handleOAuthCallback$().subscribe({
+        next: (user) => {
+          result = user;
+          settled = true;
+        },
+        error: () => {
+          settled = true;
+        }
+      });
+      tick(OAUTH_CALLBACK_TOTAL_TIMEOUT_MS);
+
+      expect(settled).toBeTrue();
       expect(result).toBeNull();
     }));
 

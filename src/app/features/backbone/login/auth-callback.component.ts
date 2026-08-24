@@ -1,9 +1,18 @@
 import {
+  AfterViewChecked,
   ChangeDetectionStrategy,
   Component,
-  OnInit
+  ElementRef,
+  OnInit,
+  ViewChild
 } from '@angular/core';
 import { Router } from '@angular/router';
+import {
+  merge,
+  Observable,
+  of
+} from 'rxjs';
+import { map } from 'rxjs/operators';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 
@@ -19,58 +28,55 @@ import { UserManagementService } from 'src/app/features/backbone/login/user-mana
  * 2. Component extracts the session from the URL hash/query params
  * 3. Checks if user has a complete profile (username)
  * 4. Redirects to profile completion if needed, otherwise to main app
+ *
+ * If the callback settles to failure (provider denial, timeout, or a missing
+ * session — see `UserManagementService.oauthCallbackFailed$`), the component
+ * stays on this route and renders an in-place Failed state instead of
+ * spinning indefinitely; the user must explicitly choose "Back to login".
  */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-auth-callback',
-  template: `
-    <div class="auth-callback-container">
-      <div class="spinner-container">
-        <mat-spinner diameter="50"></mat-spinner>
-        <p>Completing sign in...</p>
-      </div>
-    </div>
-  `,
-  styles: [`
-       .auth-callback-container {
-           display: flex;
-           justify-content: center;
-           align-items: center;
-           min-height: var(--app-viewport-height, 100vh);
-           width: 100vw;
-           padding: calc(env(safe-area-inset-top) + 1.25rem) 1.25rem calc(env(safe-area-inset-bottom) + var(--app-keyboard-inset-bottom, 0px) + 1.25rem);
-           box-sizing: border-box;
-       }
-
-      .spinner-container {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 1.25rem;
-      }
-
-      .spinner-container p {
-          font-size: 1rem;
-          color: #666;
-      }
-  `],
+  templateUrl: './auth-callback.component.html',
+  styleUrls: ['./auth-callback.component.scss'],
   standalone: false
 })
-export class AuthCallbackComponent extends SubManager implements OnInit {
-  
+export class AuthCallbackComponent extends SubManager implements OnInit, AfterViewChecked {
+  @ViewChild('failedHeading') private failedHeadingEl?: ElementRef<HTMLElement>;
+  private hasFocusedFailedHeading = false;
+  // Latched once the callback settles to Failed; a late global SIGNED_IN or
+  // profile event racing in afterward must never navigate away from the
+  // terminal Failed state (review repair: Finding 1).
+  private hasSettledToFailed = false;
+
+  readonly failed$: Observable<boolean>;
+
   constructor(
     private userManagementService: UserManagementService,
     private router: Router
   ) {
     super();
+    this.failed$ = merge(
+      of(false),
+      this.userManagementService.oauthCallbackFailed$.pipe(map(() => true))
+    );
   }
   
   ngOnInit(): void {
+    // Latch the terminal Failed state before wiring the profile-driven
+    // navigation, so any late/duplicate profile emission observed after
+    // failure is guaranteed to see the latch already set.
+    this.userManagementService.oauthCallbackFailed$
+      .pipe(this.takeUntilDestroyed())
+      .subscribe(() => {
+        this.hasSettledToFailed = true;
+      });
+
     // Listen for successful authentication
     this.userManagementService.loggedUserFullProfile$
       .pipe(this.takeUntilDestroyed())
       .subscribe(user => {
-        if (user) {
+        if (user && !this.hasSettledToFailed) {
           // Check if username needs to be set (new OAuth user)
           if (!user.username || user.username.startsWith('user_')) {
             // Redirect to profile completion
@@ -84,5 +90,23 @@ export class AuthCallbackComponent extends SubManager implements OnInit {
     
     // Trigger the OAuth callback handling
     this.userManagementService.handleOAuthCallback();
+  }
+
+  ngAfterViewChecked(): void {
+    // Move focus to the Failed heading exactly once per failed settlement,
+    // so assistive technology announces it (mirrors login-page's
+    // resetErrorMessage focus wiring).
+    if (this.failedHeadingEl) {
+      if (!this.hasFocusedFailedHeading) {
+        this.hasFocusedFailedHeading = true;
+        this.failedHeadingEl.nativeElement.focus();
+      }
+    } else {
+      this.hasFocusedFailedHeading = false;
+    }
+  }
+
+  onBackToLogin(): void {
+    this.router.navigate(['/auth/login']);
   }
 }
