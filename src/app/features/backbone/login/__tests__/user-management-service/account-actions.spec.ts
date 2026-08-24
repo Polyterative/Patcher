@@ -66,8 +66,10 @@ describe('UserManagementService - Account Actions', () => {
   it('handles OAuth callback action and updates user streams', fakeAsync(() => {
     let user: SimpleUserModel | undefined;
     let profile: typeof MOCK_RICH_USER | undefined;
+    let callbackUser: typeof MOCK_RICH_USER | undefined;
     service.loggedUser$.subscribe(v => user = v);
     service.loggedUserFullProfile$.subscribe(v => profile = v);
+    service.oauthCallbackSucceeded$.subscribe(v => callbackUser = v);
     
     service.handleOAuthCallback();
     tick();
@@ -75,31 +77,38 @@ describe('UserManagementService - Account Actions', () => {
     expect(mockSupabaseService.auth.handleOAuthCallback$).toHaveBeenCalled();
     expect(user).toEqual(MOCK_RICH_USER);
     expect(profile).toEqual(MOCK_RICH_USER);
+    expect(callbackUser).toEqual(MOCK_RICH_USER);
   }));
   
   it('shows error when OAuth callback handling fails', fakeAsync(() => {
     spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
     });
     let failed = false;
+    let successCount = 0;
     service.oauthCallbackFailed$.subscribe(() => failed = true);
+    service.oauthCallbackSucceeded$.subscribe(() => successCount++);
     mockSupabaseService.auth.handleOAuthCallback$.and.returnValue(throwError(() => new Error('oauth fail')));
     
     service.handleOAuthCallback();
     tick();
     
     expect(failed).toBeTrue();
+    expect(successCount).toBe(0);
     expect(SharedConstants.errorCustom).not.toHaveBeenCalled();
   }));
 
   it('publishes oauthCallbackFailed$ with a null-session reason when the callback settles with no session', fakeAsync(() => {
     let failed = false;
+    let successCount = 0;
     service.oauthCallbackFailed$.subscribe(() => failed = true);
+    service.oauthCallbackSucceeded$.subscribe(() => successCount++);
     mockSupabaseService.auth.handleOAuthCallback$.and.returnValue(of(null));
 
     service.handleOAuthCallback();
     tick();
 
     expect(failed).toBeTrue();
+    expect(successCount).toBe(0);
   }));
 
   // ── Duplicate-action suppression (review repair regression) ────────────────
@@ -181,11 +190,39 @@ describe('UserManagementService - Account Actions', () => {
     expect(emitCount).toBe(1);
   }));
 
+  it('publishes oauthCallbackSucceeded$ exactly once per successful handleOAuthCallback action', fakeAsync(() => {
+    let emitCount = 0;
+    let callbackUser: typeof MOCK_RICH_USER | undefined;
+    service.oauthCallbackSucceeded$.subscribe(v => {
+      emitCount++;
+      callbackUser = v;
+    });
+
+    service.handleOAuthCallback();
+    tick();
+
+    expect(emitCount).toBe(1);
+    expect(callbackUser).toEqual(MOCK_RICH_USER);
+  }));
+
+  it('does not replay oauthCallbackSucceeded$ to late subscribers', fakeAsync(() => {
+    service.handleOAuthCallback();
+    tick();
+
+    let callbackUser: typeof MOCK_RICH_USER | undefined;
+    service.oauthCallbackSucceeded$.subscribe(v => callbackUser = v);
+    tick();
+
+    expect(callbackUser).toBeUndefined();
+  }));
+
   it('does not process an in-flight handleOAuthCallback settlement after the service is destroyed (cancellation)', fakeAsync(() => {
     const inFlight = new Subject<typeof MOCK_RICH_USER | null>();
     mockSupabaseService.auth.handleOAuthCallback$.and.returnValue(inFlight.asObservable());
     let profile: typeof MOCK_RICH_USER | undefined;
+    let callbackUser: typeof MOCK_RICH_USER | undefined;
     service.loggedUserFullProfile$.subscribe(v => profile = v);
+    service.oauthCallbackSucceeded$.subscribe(v => callbackUser = v);
 
     service.handleOAuthCallback();
     service.ngOnDestroy();
@@ -194,6 +231,7 @@ describe('UserManagementService - Account Actions', () => {
     tick();
 
     expect(profile).toBeUndefined();
+    expect(callbackUser).toBeUndefined();
   }));
   
   it('handles resetPasswordAction$ error variants and success', fakeAsync(() => {
