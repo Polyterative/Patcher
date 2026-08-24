@@ -1,23 +1,30 @@
 import type { ShopifyVariantTitlePreference } from '../../supabase/functions/_shared/price-hub/shopify-product-json.ts';
 
 export type ApprovedPriceHubStoreSlug =
+  | '1010-music'
   | 'after-later-audio'
   | 'animato-audio'
+  | 'audio-damage'
   | 'big-city-music'
+  | 'bugbrand'
   | 'busy-circuits'
   | 'cicada-sound'
   | 'clockface-modular'
   | 'control'
+  | 'control-voltage'
   | 'detroit-modular'
   | 'dreadbox'
   | 'elevator-sound'
   | 'escape-from-noise'
   | 'exploding-shed'
   | 'found-sound'
+  | 'frap-tools'
   | 'instruo'
   | 'intellijel'
   | 'machineroom'
+  | 'manhattan-analog'
   | 'martin-pas'
+  | 'midwest-modular'
   | 'milk-audio-store'
   | 'michigan-synth-works'
   | 'moog-audio'
@@ -34,10 +41,15 @@ export type ApprovedPriceHubStoreSlug =
   | 'signal-sounds-uk'
   | 'signal-sounds-eu'
   | 'schneidersladen'
+  | 'soma-laboratory'
   | 'soundium'
+  | 'steady-state-fate'
+  | 'synthesis-technology'
   | 'synthshop'
   | 'technosynth'
+  | 'tesseract-modular'
   | 'thonk'
+  | 'toppobrillo'
   | 'turnlab'
   | 'whimsical-raps'
   | 'wmdevices'
@@ -150,6 +162,13 @@ export const DEFAULT_PRICE_HUB_MATCH_CONFIG: ResolvedPriceHubStoreMatchConfig = 
 
 export const APPROVED_PRICE_HUB_STORES: readonly ApprovedPriceHubStoreConfig[] = [
   {
+    slug: '1010-music',
+    name: '1010 Music',
+    baseUrl: 'https://1010music.com/',
+    adapter: 'woocommerce_store_api',
+    productBrandHint: '1010 Music',
+  },
+  {
     slug: 'after-later-audio',
     name: 'After Later Audio',
     baseUrl: 'https://afterlateraudio.com/',
@@ -164,11 +183,26 @@ export const APPROVED_PRICE_HUB_STORES: readonly ApprovedPriceHubStoreConfig[] =
     currencyHint: 'HKD',
   },
   {
+    slug: 'audio-damage',
+    name: 'Audio Damage',
+    baseUrl: 'https://www.audiodamage.com/',
+    adapter: 'shopify_product_json',
+    currencyHint: 'USD',
+    productBrandHint: 'Audio Damage',
+  },
+  {
     slug: 'big-city-music',
     name: 'Big City Music',
     baseUrl: 'https://bigcitymusic.com/',
     adapter: 'shopify_product_json',
     currencyHint: 'USD',
+  },
+  {
+    slug: 'bugbrand',
+    name: 'BugBrand',
+    baseUrl: 'https://www.bugbrand.co.uk/',
+    adapter: 'woocommerce_store_api',
+    productBrandHint: 'BugBrand',
   },
   {
     slug: 'busy-circuits',
@@ -198,6 +232,16 @@ export const APPROVED_PRICE_HUB_STORES: readonly ApprovedPriceHubStoreConfig[] =
     baseUrl: 'https://www.ctrl-mod.com/',
     adapter: 'shopify_product_json',
     currencyHint: 'USD',
+  },
+  {
+    slug: 'control-voltage',
+    name: 'Control Voltage',
+    baseUrl: 'https://www.controlvoltage.net/',
+    adapter: 'custom',
+    catalogPath: '/modular/',
+    currencyHint: 'USD',
+    productUrlPathIncludes: ['.html'],
+    productUrlPathExcludes: ['-used.html'],
   },
   {
     slug: 'detroit-modular',
@@ -255,6 +299,13 @@ export const APPROVED_PRICE_HUB_STORES: readonly ApprovedPriceHubStoreConfig[] =
     ignoredMatchNoiseTags: ['preorder'],
   },
   {
+    slug: 'frap-tools',
+    name: 'Frap Tools',
+    baseUrl: 'https://www.fraptools.com/',
+    adapter: 'woocommerce_store_api',
+    productBrandHint: 'Frap Tools',
+  },
+  {
     slug: 'instruo',
     name: 'Instruo',
     baseUrl: 'https://www.instruomodular.com/',
@@ -278,6 +329,14 @@ export const APPROVED_PRICE_HUB_STORES: readonly ApprovedPriceHubStoreConfig[] =
     productUrlPathIncludes: ['/product/'],
   },
   {
+    slug: 'manhattan-analog',
+    name: 'Manhattan Analog',
+    baseUrl: 'https://manhattananalog.com/',
+    adapter: 'shopify_product_json',
+    currencyHint: 'USD',
+    productBrandHint: 'Manhattan Analog',
+  },
+  {
     slug: 'martin-pas',
     name: 'Martin Pas',
     baseUrl: 'https://www.martinpas.com/',
@@ -285,6 +344,12 @@ export const APPROVED_PRICE_HUB_STORES: readonly ApprovedPriceHubStoreConfig[] =
     catalogPath: '/categories/modular-systems',
     currencyHint: 'EUR',
     productUrlPathIncludes: ['/products/'],
+  },
+  {
+    slug: 'midwest-modular',
+    name: 'Midwest Modular',
+    baseUrl: 'https://midwestmodular.com/',
+    adapter: 'bigcommerce_metadata',
   },
   {
     slug: 'milk-audio-store',
@@ -406,11 +471,34 @@ export const APPROVED_PRICE_HUB_STORES: readonly ApprovedPriceHubStoreConfig[] =
     adapter: 'shopware_metadata',
   },
   {
+    slug: 'soma-laboratory',
+    name: 'SOMA Laboratory',
+    baseUrl: 'https://somasynths.com/',
+    adapter: 'woocommerce_store_api',
+    productBrandHint: 'SOMA Laboratory',
+  },
+  {
     slug: 'soundium',
     name: 'Soundium',
     baseUrl: 'https://soundium.lt/',
     adapter: 'shopify_product_json',
     currencyHint: 'EUR',
+  },
+  {
+    slug: 'steady-state-fate',
+    name: 'Steady State Fate',
+    baseUrl: 'https://www.steadystatefate.com/',
+    adapter: 'shopify_product_json',
+    currencyHint: 'USD',
+    productBrandHint: 'Steady State Fate',
+  },
+  {
+    slug: 'synthesis-technology',
+    name: 'Synthesis Technology',
+    baseUrl: 'https://www.synthesizers.com/',
+    adapter: 'shopify_product_json',
+    currencyHint: 'USD',
+    productBrandHint: 'Synthesis Technology',
   },
   {
     slug: 'synthshop',
@@ -426,10 +514,25 @@ export const APPROVED_PRICE_HUB_STORES: readonly ApprovedPriceHubStoreConfig[] =
     adapter: 'woocommerce_store_api',
   },
   {
+    slug: 'tesseract-modular',
+    name: 'Tesseract Modular',
+    baseUrl: 'https://www.tesseractmodular.com/',
+    adapter: 'woocommerce_store_api',
+    productBrandHint: 'Tesseract Modular',
+  },
+  {
     slug: 'thonk',
     name: 'Thonk',
     baseUrl: 'https://www.thonk.co.uk/',
     adapter: 'woocommerce_store_api',
+  },
+  {
+    slug: 'toppobrillo',
+    name: 'Toppobrillo',
+    baseUrl: 'https://toppobrillo.com/',
+    adapter: 'shopify_product_json',
+    currencyHint: 'USD',
+    productBrandHint: 'Toppobrillo',
   },
   {
     slug: 'turnlab',
