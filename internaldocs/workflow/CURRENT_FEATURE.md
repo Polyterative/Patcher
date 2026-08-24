@@ -22,7 +22,7 @@
 #### Layer 1 — MVP
 
 - [x] S1 auth-request retry committed as `dc6afca6`.
-- [x] S2 recovery-session integrity implemented and QA-PASS; coordinator commit pending.
+- [x] S2 recovery-session integrity committed as `083b549a`.
 - [ ] S3 OAuth callback settlement.
 - [ ] S4 destructive-action retry.
 
@@ -34,7 +34,7 @@
 
 - [ ] Complete and validate S3/S4, then archive the plan.
 
-Status: S2 is implemented and independently QA-PASS but intentionally uncommitted pending the coordinator's commit hash. Production publication is not confirmed.
+Status: S2 is committed on `develop`; S3 OAuth callback settlement is next. Production publication is not confirmed.
 Updated: 2026-08-24
 
 <!-- The prior Public Open API active checklist remains below for continuity; its durable plan is unchanged. -->
