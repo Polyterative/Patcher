@@ -244,6 +244,25 @@
                       </section>
                     }
                   }
+                  @if (getManufacturerLinks(bag.data.manufacturerId); as manufacturerLinks) {
+                    @if (manufacturerLinks.length > 0) {
+                      <section class="module-search-group">
+                        <div class="module-search-group__label">Manufacturer store</div>
+                        <mat-chip-set class="rowwrap gap1">
+                          @for (link of manufacturerLinks; track link) {
+                            <mat-chip
+                              class="module-search-chip"
+                              [matTooltip]="link.tooltip"
+                              (click)="openExternalLink(link.url(bag.data.name, bag.data.manufacturer.name))"
+                            >
+                              <mat-icon matChipAvatar>{{ link.icon }}</mat-icon>
+                              {{ link.label }}
+                            </mat-chip>
+                          }
+                        </mat-chip-set>
+                      </section>
+                    }
+                  }
                 </div>
               </lib-hero-content-card>
               @if (collectionsEnabled && bag.collectionsWithThisModule && bag.collectionsWithThisModule.length > 0) {

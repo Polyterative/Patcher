@@ -2,7 +2,10 @@ import { MODULE_SEARCH_LINKS } from './module-browser-detail.constants';
 import {
   ModuleBrowserDetailComponent
 } from './module-browser-detail.component';
-import { getAvailableRetailerSearchLinks } from './module-browser-detail.search-links';
+import {
+  getAvailableRetailerSearchLinks,
+  getManufacturerSearchLinks
+} from './module-browser-detail.search-links';
 import { ModulePriceListing } from 'src/app/features/backend/supabase-queries.models';
 
 
@@ -160,21 +163,29 @@ describe('ModuleBrowserDetailComponent search links', () => {
       'Noisebug 🇺🇸',
       'Pusherman Productions 🇬🇧',
       'Thonk 🇬🇧',
-      'After Later Audio 🇺🇸',
       'Patch Point 🇩🇪',
+      'RobotSpeak 🇺🇸',
+      'Cicada Sound 🇨🇦',
+      'Soundium 🇱🇹',
+    ].forEach(label => expect(labels).toContain(label));
+  });
+
+  it('excludes manufacturer-owned store links from the retailer group', () => {
+    const {component} = build();
+    const labels = component.retailerSearchLinks.map(link => link.label);
+
+    [
+      'After Later Audio 🇺🇸',
       'ALM / Busy Circuits 🇬🇧',
       'Instruo 🇬🇧',
       'WMD 🇺🇸',
       'Michigan Synth Works 🇺🇸',
-      'RobotSpeak 🇺🇸',
-      'Cicada Sound 🇨🇦',
       'Intellijel 🇨🇦',
       'Schlappi Engineering 🇺🇸',
       'Zlob Modular 🇺🇸',
-      'Soundium 🇱🇹',
       'Nano Modules 🇪🇸',
       'Dreadbox 🇬🇷',
-    ].forEach(label => expect(labels).toContain(label));
+    ].forEach(label => expect(labels).not.toContain(label));
   });
 
   it('can suppress every retailer link so the Other Stores group can disappear', () => {
@@ -182,5 +193,55 @@ describe('ModuleBrowserDetailComponent search links', () => {
     const listings = links.map((link, index) => buildListing(link.storeSlugs![0], index + 1));
 
     expect(getAvailableRetailerSearchLinks(links, listings)).toEqual([]);
+  });
+
+  describe('getManufacturerSearchLinks', () => {
+    function manufacturerSearchLinks() {
+      return MODULE_SEARCH_LINKS.filter(link => link.kind === 'manufacturer');
+    }
+
+    it('returns only the link(s) whose manufacturerIds includes the given manufacturerId', () => {
+      const links = manufacturerSearchLinks();
+
+      const result = getManufacturerSearchLinks(links, 1048);
+
+      expect(result.length).toBe(1);
+      expect(result[0].label).toBe('Nano Modules 🇪🇸');
+    });
+
+    it('does not return the Nano Modules link when passed a different manufacturer\'s id (Intellijel)', () => {
+      const links = manufacturerSearchLinks();
+
+      const result = getManufacturerSearchLinks(links, 999);
+      const labels = result.map(link => link.label);
+
+      expect(labels).not.toContain('Nano Modules 🇪🇸');
+      expect(labels).toContain('Intellijel 🇨🇦');
+    });
+
+    it('returns [] when manufacturerId matches no manufacturerIds entry, and [] for null/undefined', () => {
+      const links = manufacturerSearchLinks();
+
+      expect(getManufacturerSearchLinks(links, 424242)).toEqual([]);
+      expect(getManufacturerSearchLinks(links, null)).toEqual([]);
+      expect(getManufacturerSearchLinks(links, undefined)).toEqual([]);
+    });
+
+    it('reclassifies exactly the expected 10 stores as manufacturer-owned', () => {
+      const links = manufacturerSearchLinks();
+      const byLabel = new Map(links.map(link => [link.label, link]));
+
+      expect(byLabel.get('Nano Modules 🇪🇸')?.manufacturerIds).toEqual([1048]);
+      expect(byLabel.get('Intellijel 🇨🇦')?.manufacturerIds).toEqual([999]);
+      expect(byLabel.get('Dreadbox 🇬🇷')?.manufacturerIds).toEqual([951]);
+      expect(byLabel.get('WMD 🇺🇸')?.manufacturerIds).toEqual([1169]);
+      expect(byLabel.get('Instruo 🇬🇧')?.manufacturerIds).toEqual([997]);
+      expect(byLabel.get('ALM / Busy Circuits 🇬🇧')?.manufacturerIds).toEqual([898]);
+      expect(byLabel.get('Schlappi Engineering 🇺🇸')?.manufacturerIds).toEqual([1104]);
+      expect(byLabel.get('Zlob Modular 🇺🇸')?.manufacturerIds).toEqual([1177]);
+      expect(byLabel.get('Michigan Synth Works 🇺🇸')?.manufacturerIds).toEqual([1037]);
+      expect(byLabel.get('After Later Audio 🇺🇸')?.manufacturerIds).toEqual([894]);
+      expect(links.length).toBe(10);
+    });
   });
 });
