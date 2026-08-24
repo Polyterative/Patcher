@@ -24,7 +24,7 @@
 - [x] S1 auth-request retry committed as `dc6afca6`.
 - [x] S2 recovery-session integrity committed as `083b549a`.
 - [x] S3 OAuth callback settlement committed as `83227c2c`.
-- [ ] S4 destructive-action retry (next).
+- [x] S4 destructive-action retry QA-PASS; implementation increment uncommitted pending coordinator commit.
 
 #### Layer 2 — Structural
 
@@ -34,7 +34,7 @@
 
 - [ ] Complete and validate S4, then archive the plan.
 
-Status: S1-S3 are committed on `develop`; S4 destructive-action retry is next. Production publication is not confirmed.
+Status: S1-S3 are committed on `develop`; S4 is QA-PASS and uncommitted pending the coordinator commit. Production publication is not confirmed.
 Updated: 2026-08-24
 
 <!-- The prior Public Open API active checklist remains below for continuity; its durable plan is unchanged. -->

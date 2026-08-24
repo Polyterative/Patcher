@@ -11,7 +11,7 @@ Restore reliable authentication retries and session-bound recovery flows without
 - [x] S1 auth-request retry implemented and committed as `dc6afca6`.
 - [x] S2 recovery-session integrity implemented and independently QA-PASS.
 - [x] S3 OAuth callback settlement committed as `83227c2c`.
-- [ ] S4 destructive-action retry.
+- [x] S4 destructive-action retry implemented and QA-PASS; implementation increment is uncommitted pending the coordinator commit.
 
 ### Structural
 
@@ -54,8 +54,33 @@ S2 — Recovery session integrity is implemented, independently reviewed, QA-PAS
 
 S3 — OAuth callback settlement is implemented, independently reviewed,
 QA-PASS, and committed as `83227c2c`.
-S4 — destructive-action retry is next. No production publication or public
-availability is claimed.
+S4 — destructive-action retry is implemented, independently quality-gated
+PASS, and remains uncommitted pending the coordinator commit. No production
+publication or public availability is claimed.
+
+### Durable S4 behavior
+
+- Each destructive flow uses one composite outer `exhaustMap` spanning
+  confirmation through final sign-out, suppressing duplicate in-flight actions.
+- Terminating failure branches complete with `EMPTY`, reopening the retry slot
+  for a later action; destroy-time cancellation prevents later stages,
+  notifications, and navigation.
+- Retry always re-runs stage 1 (`allUserData`) before stage 2, including after a
+  stage-2 failure. This preserves accepted Technical Decision 6: there is no
+  resume/skip state.
+- Both thrown logout errors and emitted `{ error }` logout results are surfaced
+  as truthful failures; success notifications and navigation are not emitted.
+
+### S4 validation evidence
+
+- Focused S4 account-actions specs: 32 passed.
+- Broader authentication specs: 298 passed.
+- Full unit suite: 5,350 passed, 1 skipped.
+- `pnpm lint`, `pnpm lint:styles`, production build, login page smoke E2E
+  (17), authenticated login smoke E2E (1), and `git diff --check` all pass.
+- Existing non-blocking follow-ups remain: the `supabase-auth.ts` file-size
+  warning and the already-committed S1 `login-page.component.scss`
+  reduced-motion gap.
 
 ### Durable S3 behavior
 
@@ -85,6 +110,12 @@ availability is claimed.
   explicit Failed terminal state, late-session navigation latch,
   exhaustMap duplicate suppression, slot reopening after every terminal
   outcome, and typed failure publication.
+- 2026-08-24 — Accept S4 Technical Decision 6: every destructive retry
+  restarts stage 1 (`allUserData`) and never resumes or skips stages. The final
+  quality gate accepted composite `exhaustMap` coverage, terminal
+  `EMPTY`/retry-slot reopening, stage ordering, destroy cancellation, and
+  truthful thrown/emitted logout failures. S4 is QA-PASS but uncommitted
+  pending the coordinator commit.
 
 ## S3 validation evidence
 

@@ -74,7 +74,7 @@ type TestSignupResponse = {
   requiresEmailConfirmation: boolean;
 };
 type TestLogoffResponse = {
-  error: null;
+  error: Error | null;
 };
 type MockDialogRef = Pick<MatDialogRef<ConfirmDialogComponent, ConfirmDialogDataOutModel>, 'afterClosed'>;
 type MockDialogOpen = (component: unknown, config?: unknown) => MockDialogRef;
