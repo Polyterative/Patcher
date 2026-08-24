@@ -62,6 +62,7 @@ export default defineConfig({
     '**/patch-details.spec.ts',
     '**/public-id-links.spec.ts',
     '**/login-pages-smoke.spec.ts',
+    '**/reset-password-reduced-motion.spec.ts',
     '**/public-profile.spec.ts',
     AUTH_SPEC_GLOB
   ],
