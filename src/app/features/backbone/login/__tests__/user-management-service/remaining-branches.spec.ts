@@ -6,6 +6,7 @@ import {
   of,
   throwError
 } from 'rxjs';
+import { AuthApiError } from '@supabase/supabase-js';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { UserManagementService } from '../../user-management.service';
 import {
@@ -13,6 +14,7 @@ import {
   SimpleUserModel
 } from 'src/app/features/backend/supabase.service';
 import { SupabaseSignupResult } from 'src/app/features/backend/supabase.types';
+import { PasswordResetError } from 'src/app/features/backend/supabase-auth.helpers';
 import {
   cleanupUserManagementServiceTest,
   createConfirmDialogRef,
@@ -64,6 +66,39 @@ describe('UserManagementService - Remaining Branches', () => {
     expect(profile).toEqual(MOCK_RICH_USER);
   }));
   
+  it('public login$ shows loginFailed for a credential-mismatch AuthApiError and completes (frees the caller for retry)', fakeAsync(() => {
+    spyOn(SharedConstants, 'errorLogin').and.callFake(() => {
+    });
+    mockSupabaseService.auth.login$.and.returnValue(
+      throwError(() => new AuthApiError('Invalid login credentials', 400, 'invalid_credentials'))
+    );
+
+    let completed = false;
+    service.login$('a@b.com', 'wrong').subscribe({complete: () => completed = true});
+    tick();
+
+    expect(SharedConstants.errorLogin).toHaveBeenCalled();
+    expect(completed).toBeTrue();
+  }));
+
+  it('public login$ shows operationFailed (not loginFailed) for a non-credential AuthApiError and completes', fakeAsync(() => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
+    });
+    spyOn(SharedConstants, 'errorLogin').and.callFake(() => {
+    });
+    mockSupabaseService.auth.login$.and.returnValue(
+      throwError(() => new AuthApiError('Internal Server Error', 500, 'unexpected_failure'))
+    );
+
+    let completed = false;
+    service.login$('a@b.com', 'x').subscribe({complete: () => completed = true});
+    tick();
+
+    expect(SharedConstants.errorCustom).toHaveBeenCalledWith(jasmine.anything(), SharedConstants.messages.operationFailed);
+    expect(SharedConstants.errorLogin).not.toHaveBeenCalled();
+    expect(completed).toBeTrue();
+  }));
+
   it('signup delegates to backend signup$', () => {
     const response: SupabaseSignupResult = {
       user: MOCK_SIMPLE_USER,
@@ -82,19 +117,23 @@ describe('UserManagementService - Remaining Branches', () => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {
     });
     
-    mockSupabaseService.auth.resetPassword$.and.returnValue(throwError(() => ({error_code: 'over_email_send_rate_limit'})));
-    service.resetPassword$('user@example.com').subscribe();
+    mockSupabaseService.auth.resetPassword$.and.returnValue(
+      throwError(() => new PasswordResetError('Email rate limit exceeded', 'over_email_send_rate_limit', 429))
+    );
+    service.resetPassword$('user@example.com').subscribe({error: () => {}});
     tick();
     
-    mockSupabaseService.auth.resetPassword$.and.returnValue(throwError(() => new Error('generic')));
-    service.resetPassword$('user@example.com').subscribe();
+    mockSupabaseService.auth.resetPassword$.and.returnValue(
+      throwError(() => new PasswordResetError('Some other failure'))
+    );
+    service.resetPassword$('user@example.com').subscribe({error: () => {}});
     tick();
     
     mockSupabaseService.auth.resetPassword$.and.returnValue(of(void 0));
-    service.resetPassword$('user@example.com').subscribe();
+    service.resetPassword$('user@example.com').subscribe({error: () => {}});
     tick();
     
-    expect(SharedConstants.errorCustom).toHaveBeenCalledTimes(2);
+    expect(SharedConstants.errorCustom).not.toHaveBeenCalled();
     expect(SharedConstants.successCustom).toHaveBeenCalledTimes(1);
   }));
   

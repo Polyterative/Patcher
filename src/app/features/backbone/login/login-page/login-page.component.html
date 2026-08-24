@@ -96,9 +96,10 @@
                   </lib-mat-form-entity>
                   @if (dataService.resetErrorMessage$ | async; as errorMessage) {
                     <div
-                      class="error-message error-notification">
+                      class="error-message error-notification"
+                      role="alert">
                       <mat-icon>warning</mat-icon>
-                      <p>{{ errorMessage }}</p>
+                      <p #resetErrorMessage tabindex="-1">{{ errorMessage }}</p>
                     </div>
                   }
                   <app-brand-primary-button
