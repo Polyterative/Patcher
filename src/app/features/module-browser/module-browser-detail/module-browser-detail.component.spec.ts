@@ -431,6 +431,39 @@ describe('ModuleBrowserDetailComponent', () => {
     expect(text).not.toContain('Other stores');
   });
 
+  it('renders the Manufacturer store group with the Nano Modules chip when the module\'s manufacturerId matches its owned store', async () => {
+    const {fixture, dataService} = await render();
+
+    dataService.singleModuleData$.next({...moduleFixture(), manufacturerId: 1048});
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent;
+    expect(text).toContain('Manufacturer store');
+    expect(text).toContain('Nano Modules 🇪🇸');
+  });
+
+  it('does not render the Nano Modules chip for an Intellijel module, and renders only its own Manufacturer store group', async () => {
+    const {fixture, dataService} = await render();
+
+    dataService.singleModuleData$.next({...moduleFixture(), manufacturerId: 999});
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent;
+    expect(text).not.toContain('Nano Modules 🇪🇸');
+    expect(text).toContain('Manufacturer store');
+    expect(text).toContain('Intellijel 🇨🇦');
+  });
+
+  it('omits the Manufacturer store section entirely for a module whose manufacturer owns no store', async () => {
+    const {fixture, dataService} = await render();
+
+    dataService.singleModuleData$.next({...moduleFixture(), manufacturerId: 5});
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent;
+    expect(text).not.toContain('Manufacturer store');
+  });
+
   it('does not render or query Cool reactions when the feature flag is off', async () => {
     const {fixture, reactionBackend} = await render();
 

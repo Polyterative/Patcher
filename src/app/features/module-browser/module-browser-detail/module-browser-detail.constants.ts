@@ -18,9 +18,10 @@ export interface SearchLink {
   label: string;
   icon: string;
   tooltip: string;
-  kind: 'community' | 'retailer';
+  kind: 'community' | 'retailer' | 'manufacturer';
   storeSlugs?: readonly string[];
   storeIds?: readonly number[];
+  manufacturerIds?: readonly number[];
 }
 
 function buildSearchUrl(baseUrl: string, params: Record<string, string>): string {
@@ -379,18 +380,58 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
   shopifyRetailerSearchLink('https://www.noisebug.net/search', 'Noisebug 🇺🇸', 'Noisebug', ['noisebug']),
   shopifyRetailerSearchLink('https://pushermanproductions.com/search', 'Pusherman Productions 🇬🇧', 'Pusherman Productions', ['pusherman-productions', 'pushermanproductions']),
   wooCommerceRetailerSearchLink('https://www.thonk.co.uk/', 'Thonk 🇬🇧', 'Thonk', ['thonk']),
-  shopifyRetailerSearchLink('https://afterlateraudio.com/search', 'After Later Audio 🇺🇸', 'After Later Audio', ['after-later-audio', 'afterlateraudio']),
+  {
+    ...shopifyRetailerSearchLink('https://afterlateraudio.com/search', 'After Later Audio 🇺🇸', 'After Later Audio', ['after-later-audio', 'afterlateraudio']),
+    kind: 'manufacturer',
+    manufacturerIds: [894]
+  },
   shopifyRetailerSearchLink('https://patch-point.com/search', 'Patch Point 🇩🇪', 'Patch Point', ['patch-point', 'patchpoint']),
-  shopifyRetailerSearchLink('https://busycircuits.com/search', 'ALM / Busy Circuits 🇬🇧', 'ALM / Busy Circuits', ['busy-circuits', 'alm-busy-circuits', 'busycircuits']),
-  wooCommerceRetailerSearchLink('https://www.instruomodular.com/', 'Instruo 🇬🇧', 'Instruo', ['instruo']),
-  shopifyRetailerSearchLink('https://wmdevices.com/search', 'WMD 🇺🇸', 'WMD', ['wmdevices', 'wmd']),
-  shopifyRetailerSearchLink('https://michigansynthworks.com/search', 'Michigan Synth Works 🇺🇸', 'Michigan Synth Works', ['michigan-synth-works', 'michigansynthworks']),
+  {
+    ...shopifyRetailerSearchLink('https://busycircuits.com/search', 'ALM / Busy Circuits 🇬🇧', 'ALM / Busy Circuits', ['busy-circuits', 'alm-busy-circuits', 'busycircuits']),
+    kind: 'manufacturer',
+    manufacturerIds: [898]
+  },
+  {
+    ...wooCommerceRetailerSearchLink('https://www.instruomodular.com/', 'Instruo 🇬🇧', 'Instruo', ['instruo']),
+    kind: 'manufacturer',
+    manufacturerIds: [997]
+  },
+  {
+    ...shopifyRetailerSearchLink('https://wmdevices.com/search', 'WMD 🇺🇸', 'WMD', ['wmdevices', 'wmd']),
+    kind: 'manufacturer',
+    manufacturerIds: [1169]
+  },
+  {
+    ...shopifyRetailerSearchLink('https://michigansynthworks.com/search', 'Michigan Synth Works 🇺🇸', 'Michigan Synth Works', ['michigan-synth-works', 'michigansynthworks']),
+    kind: 'manufacturer',
+    manufacturerIds: [1037]
+  },
   shopifyRetailerSearchLink('https://robotspeak.com/search', 'RobotSpeak 🇺🇸', 'RobotSpeak', ['robotspeak', 'robot-speak']),
   shopifyRetailerSearchLink('https://cicadasound.ca/search', 'Cicada Sound 🇨🇦', 'Cicada Sound', ['cicada-sound', 'cicadasound']),
-  wooCommerceRetailerSearchLink('https://intellijel.com/', 'Intellijel 🇨🇦', 'Intellijel', ['intellijel']),
-  shopifyRetailerSearchLink('https://schlappiengineering.com/search', 'Schlappi Engineering 🇺🇸', 'Schlappi Engineering', ['schlappi-engineering', 'schlappiengineering']),
-  wooCommerceRetailerSearchLink('https://zlobmodular.com/', 'Zlob Modular 🇺🇸', 'Zlob Modular', ['zlob-modular', 'zlobmodular']),
+  {
+    ...wooCommerceRetailerSearchLink('https://intellijel.com/', 'Intellijel 🇨🇦', 'Intellijel', ['intellijel']),
+    kind: 'manufacturer',
+    manufacturerIds: [999]
+  },
+  {
+    ...shopifyRetailerSearchLink('https://schlappiengineering.com/search', 'Schlappi Engineering 🇺🇸', 'Schlappi Engineering', ['schlappi-engineering', 'schlappiengineering']),
+    kind: 'manufacturer',
+    manufacturerIds: [1104]
+  },
+  {
+    ...wooCommerceRetailerSearchLink('https://zlobmodular.com/', 'Zlob Modular 🇺🇸', 'Zlob Modular', ['zlob-modular', 'zlobmodular']),
+    kind: 'manufacturer',
+    manufacturerIds: [1177]
+  },
   shopifyRetailerSearchLink('https://soundium.lt/search', 'Soundium 🇱🇹', 'Soundium', ['soundium']),
-  wooCommerceRetailerSearchLink('https://nano-modules.com/', 'Nano Modules 🇪🇸', 'Nano Modules', ['nano-modules', 'nanomodules']),
-  wooCommerceRetailerSearchLink('https://www.dreadbox-fx.com/', 'Dreadbox 🇬🇷', 'Dreadbox', ['dreadbox']),
+  {
+    ...wooCommerceRetailerSearchLink('https://nano-modules.com/', 'Nano Modules 🇪🇸', 'Nano Modules', ['nano-modules', 'nanomodules']),
+    kind: 'manufacturer',
+    manufacturerIds: [1048]
+  },
+  {
+    ...wooCommerceRetailerSearchLink('https://www.dreadbox-fx.com/', 'Dreadbox 🇬🇷', 'Dreadbox', ['dreadbox']),
+    kind: 'manufacturer',
+    manufacturerIds: [951]
+  },
 ];

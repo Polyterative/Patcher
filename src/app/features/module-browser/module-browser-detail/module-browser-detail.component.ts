@@ -57,7 +57,10 @@ import { moduleBrowserDetailAnimations } from './module-browser-detail.animation
 import { buildModuleDetailSeoData, injectModuleJsonLd } from './module-browser-detail.seo';
 import * as detailPresentation from './module-browser-detail.presentation';
 import { ModuleCommunityStat } from './module-browser-detail.presentation';
-import { getAvailableRetailerSearchLinks as getAvailableRetailerSearchLinksForListings } from './module-browser-detail.search-links';
+import {
+  getAvailableRetailerSearchLinks as getAvailableRetailerSearchLinksForListings,
+  getManufacturerSearchLinks as getManufacturerSearchLinksForModule
+} from './module-browser-detail.search-links';
 import {
   createInitialPanelRatioDiagnostics,
   createMeasuredPanelRatioDiagnostic,
@@ -113,6 +116,7 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
   readonly searchLinks: SearchLink[] = MODULE_SEARCH_LINKS;
   readonly communitySearchLinks: SearchLink[] = MODULE_SEARCH_LINKS.filter(link => link.kind === 'community');
   readonly retailerSearchLinks: SearchLink[] = MODULE_SEARCH_LINKS.filter(link => link.kind === 'retailer');
+  readonly manufacturerSearchLinks: SearchLink[] = MODULE_SEARCH_LINKS.filter(link => link.kind === 'manufacturer');
   readonly availableRetailerSearchLinks$: Observable<SearchLink[]>;
   readonly collectionsEnabled = environment.features.collectionsEnabled;
   readonly coolReactionsEnabled = environment.features.coolReactionsEnabled;
@@ -230,6 +234,10 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
 
   getAvailableRetailerSearchLinks(listings: readonly ModulePriceListing[] | null | undefined): SearchLink[] {
     return getAvailableRetailerSearchLinksForListings(this.retailerSearchLinks, listings);
+  }
+
+  getManufacturerLinks(manufacturerId: number | null | undefined): SearchLink[] {
+    return getManufacturerSearchLinksForModule(this.manufacturerSearchLinks, manufacturerId);
   }
 
   getDevDeletePanelLabel(panel: ModulePanel, index: number): string {
