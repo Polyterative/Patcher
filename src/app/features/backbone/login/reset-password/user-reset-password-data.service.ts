@@ -1,8 +1,11 @@
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import {
+  Inject,
   Injectable,
-  OnDestroy
+  OnDestroy,
+  PLATFORM_ID
 } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import {
   UntypedFormControl,
   Validators
@@ -10,23 +13,31 @@ import {
 import { Router } from '@angular/router';
 import {
   BehaviorSubject,
+  Observable,
   Subject
 } from 'rxjs';
 import {
   catchError,
   exhaustMap,
   map,
-  switchMap,
-  takeUntil
+  take,
+  tap
 } from 'rxjs/operators';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { IMatFormEntityConfig } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { SupabaseService } from '../../../backend/supabase.service';
 import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
+import { RECOVERY_EVENT_FRESHNESS_MS } from 'src/app/features/backend/supabase-auth.helpers';
+import {
+  clearRecoveryMarker,
+  readValidRecoveryMarker,
+  writeRecoveryMarker
+} from './recovery-session-marker';
 
 
 const ERROR_MESSAGES = SharedConstants.messages.resetPassword;
+const INVALID_OR_EXPIRED_LINK_MESSAGE = 'Invalid or expired password reset link.';
 
 @Injectable()
 export class UserResetPasswordDataService extends SubManager implements OnDestroy {
@@ -39,6 +50,17 @@ export class UserResetPasswordDataService extends SubManager implements OnDestro
   public readonly successMessage$ = new BehaviorSubject<string>('');
   public readonly redirectCountdown$ = new BehaviorSubject<number | null>(null);
   public readonly redirectProgress$ = new BehaviorSubject<number>(0);
+
+  /**
+   * Lifecycle-aware settlement signal (passthrough of
+   * `SupabaseService.auth.authInitializationSettled$`) — the component uses
+   * this instead of a fixed timer to know when it is safe to conclude "no
+   * recovery event is coming" for a bare/malformed link, without racing a
+   * slow-but-legitimate implicit/hash recovery (R12). Assigned in the
+   * constructor body (not a field initializer) since it reads a
+   * constructor-injected parameter property.
+   */
+  public readonly authInitializationSettled$: Observable<void>;
   
   // Form fields configuration
   public readonly fields: {
@@ -80,10 +102,19 @@ export class UserResetPasswordDataService extends SubManager implements OnDestro
   constructor(
     private router: Router,
     private supabaseService: SupabaseService,
-    private readonly analytics: AnalyticsService
+    private readonly analytics: AnalyticsService,
+    @Inject(PLATFORM_ID) private readonly platformId: object
   ) {
     super();
+    this.authInitializationSettled$ = this.supabaseService.auth.authInitializationSettled$;
     this.initializeSubmitHandler();
+
+    // Recovery tokens/events are single-use and session-bound: only the
+    // browser may verify or restore them (SSR must never touch this — I-H).
+    if (isPlatformBrowser(this.platformId)) {
+      this.restoreRecoverySessionFromMarker();
+      this.initializeRecoveryEventListener();
+    }
   }
   
   /**
@@ -135,6 +166,10 @@ export class UserResetPasswordDataService extends SubManager implements OnDestro
               this.isSubmitting$.next(false);
               this.analytics.capture('auth.password_reset_completed', {});
               
+              // Recovery eligibility is single-use: clear it once the
+              // password has actually been updated.
+              clearRecoveryMarker();
+
               // Clear form
               this.fields.password.control.setValue('');
               this.fields.confirmPassword.control.setValue('');
@@ -178,15 +213,112 @@ export class UserResetPasswordDataService extends SubManager implements OnDestro
     this.isRecoverySession$.next(isRecovery);
     this.isSessionChecked$.next(true);
   }
-  
+
   /**
-   * Check if URL contains recovery parameters
+   * Verifies a query-param `token_hash` recovery link (explicit shape,
+   * delegated here from `ResetPasswordPageComponent` per the layering
+   * contract: component -> data service -> `SupabaseService.auth` -> SDK).
+   * On success, persists a session-bound marker so a same-tab reload/back-
+   * forward can restore the recovery state without re-verifying the
+   * (single-use) token. On failure, preserves the existing invalid-link
+   * copy and writes no marker.
+   *
+   * Returns an `Observable<boolean>` (this token's own success/failure) so
+   * the caller can react to *this specific verification attempt* — never to
+   * the aggregate `isRecoverySession$`/`isSessionChecked$` state, which a
+   * concurrent, unrelated marker-restore could otherwise flip independently
+   * and cause a pre-existing marker to scrub a fresh token's URL before that
+   * token's own verification later fails (R8/R9).
    */
-  checkForRecoveryInUrl(): boolean {
-    const hash = this.getBrowserLocationHash();
-    const isRecovery = hash.includes('type=recovery') || hash.includes('type%3Drecovery');
-    this.setRecoverySession(isRecovery);
-    return isRecovery;
+  verifyRecoveryToken$(tokenHash: string): Observable<boolean> {
+    return this.supabaseService.auth.verifyRecoveryOtp$(tokenHash)
+      .pipe(
+        tap(recoveryEvent => {
+          if (recoveryEvent && recoveryEvent.sessionId) {
+            writeRecoveryMarker(recoveryEvent.userId, recoveryEvent.sessionId);
+          }
+          this.setRecoverySession(!!recoveryEvent);
+        }),
+        map(recoveryEvent => !!recoveryEvent && !!recoveryEvent.sessionId),
+        catchError(() => {
+          this.errorMessage$.next(INVALID_OR_EXPIRED_LINK_MESSAGE);
+          this.setRecoverySession(false);
+          return [false];
+        })
+      );
+  }
+
+  /**
+   * Attempts a marker-based restore against the *live*, SDK-verified session
+   * on every (re)construction — the only path that satisfies "reload/back-
+   * forward restores recovery state without re-verifying" (I-C). URL text
+   * alone is never sufficient: with no live session, or an unrelated live
+   * session (no matching marker), this simply leaves `isRecoverySession$`
+   * at its default `false`.
+   */
+  private restoreRecoverySessionFromMarker(): void {
+    this.supabaseService.auth.getCurrentSessionFingerprint$()
+      .pipe(take(1), this.takeUntilDestroyed())
+      .subscribe(fingerprint => {
+        if (!fingerprint) return;
+
+        const marker = readValidRecoveryMarker(fingerprint.userId, fingerprint.sessionId);
+        if (marker) {
+          this.setRecoverySession(true);
+        }
+      });
+  }
+
+  /**
+   * Reacts to `SupabaseService.auth.passwordRecoverySession$` — the
+   * implicit hash-fragment recovery shape, auto-processed by the SDK and
+   * observed centrally. A stale replay (older than
+   * `RECOVERY_EVENT_FRESHNESS_MS`) never writes a marker (Decision 3(b)). A
+   * *later* `null` emission (a genuine `SIGNED_OUT`) durably clears any
+   * marker, not merely an in-memory flag, so a later, unrelated visit can
+   * never restore it.
+   *
+   * `passwordRecoverySession$` is a `BehaviorSubject` seeded at `null`
+   * (Decision 3(a)'s race-free replay for a late-subscribing lazy route).
+   * That seed is indistinguishable, from this subscriber's point of view,
+   * from a genuine `SIGNED_OUT`'s `.next(null)` — but treating it as one
+   * would clear a still-valid tab marker before
+   * `restoreRecoverySessionFromMarker()`'s own async live-session check ever
+   * gets to read it, breaking reload/back-forward (R2/R3). Only a value
+   * observed *after* this subscriber's first emission is unambiguously a
+   * real `.next(...)` call, so only that is ever treated as a genuine clear.
+   */
+  private hasObservedFirstRecoveryEvent = false;
+
+  private initializeRecoveryEventListener(): void {
+    this.supabaseService.auth.passwordRecoverySession$
+      .pipe(this.takeUntilDestroyed())
+      .subscribe(event => {
+        const isAmbiguousInitialReplay = !this.hasObservedFirstRecoveryEvent && !event;
+        this.hasObservedFirstRecoveryEvent = true;
+
+        if (isAmbiguousInitialReplay) {
+          return;
+        }
+
+        if (!event) {
+          clearRecoveryMarker();
+          return;
+        }
+
+        if (!event.sessionId) {
+          // Fails closed: an event with a missing/empty sessionId can never
+          // be safely bound to a marker (R5).
+          return;
+        }
+
+        if (Date.now() - event.emittedAt >= RECOVERY_EVENT_FRESHNESS_MS) {
+          return;
+        }
+
+        writeRecoveryMarker(event.userId, event.sessionId);
+        this.setRecoverySession(true);
+      });
   }
   
   /**
@@ -233,9 +365,5 @@ export class UserResetPasswordDataService extends SubManager implements OnDestro
       clearInterval(this.countdownInterval);
     }
     super.ngOnDestroy();
-  }
-
-  private getBrowserLocationHash(): string {
-    return typeof window === 'undefined' ? '' : window.location.hash;
   }
 }

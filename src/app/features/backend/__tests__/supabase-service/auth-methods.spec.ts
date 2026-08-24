@@ -3,6 +3,8 @@ import {
   SupabaseService
 } from '../../supabase.service';
 import { CachedEntity } from '../../supabase.cache';
+import { PasswordResetError } from '../../supabase-auth.helpers';
+import type { AuthError } from '@supabase/supabase-js';
 import {
   fakeAsync,
   tick
@@ -379,6 +381,33 @@ describe('SupabaseService - auth methods', () => {
         },
         error: (err) => {
           expect(err).toBeDefined();
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should wrap a send-email response.error as a PasswordResetError with real status/code, not message text', (done) => {
+      spyOn(supabaseClient.auth, 'resetPasswordForEmail').and.returnValue(
+        Promise.resolve({
+          data: {},
+          error: {
+            message: 'Email rate limit exceeded',
+            status: 429,
+            code: 'over_email_send_rate_limit',
+            name: 'AuthApiError'
+          } as AuthError
+        })
+      );
+
+      service.auth.resetPassword$('user@example.com').subscribe({
+        next: () => {
+          fail('Should have errored');
+          done();
+        },
+        error: (err) => {
+          expect(err).toBeInstanceOf(PasswordResetError);
+          expect(err.statusCode).toBe(429);
+          expect(err.errorCode).toBe('over_email_send_rate_limit');
           done();
         }
       });

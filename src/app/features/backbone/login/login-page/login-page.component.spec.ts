@@ -1,4 +1,15 @@
-import { of } from 'rxjs';
+import {
+  fakeAsync,
+  TestBed,
+  tick
+} from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { UntypedFormControl } from '@angular/forms';
+import {
+  BehaviorSubject,
+  of,
+  Subject
+} from 'rxjs';
 import { LoginPageComponent } from './login-page.component';
 import { SSOProvider } from '../sso-buttons/sso-buttons.component';
 import {
@@ -9,6 +20,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { SeoAndUtilsService } from '../../seo-and-utils.service';
 import { UserManagementService } from '../user-management.service';
 import { UserLoginDataService } from './user-login-data.service';
+import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SimpleUserModel } from '../../../backend/supabase.service';
 
 function makeDataServiceMock(): UserLoginDataService {
@@ -152,5 +164,65 @@ describe('LoginPageComponent', () => {
       comp.handleSSOLogin('github' as SSOProvider);
       expect(loginInteraction.loginWithSSO).toHaveBeenCalledWith('github');
     });
+  });
+
+  describe('reset-request error accessibility (fixture-rendered)', () => {
+    function makeFakeDataService(): UserLoginDataService {
+      return {
+        showPasswordReset$: new BehaviorSubject<boolean>(true),
+        resetSuccessMessage$: new BehaviorSubject<string>(''),
+        resetErrorMessage$: new BehaviorSubject<string>(''),
+        isSubmittingReset$: new BehaviorSubject<boolean>(false),
+        requestPasswordReset$: new Subject<void>(),
+        togglePasswordReset$: new Subject<boolean>(),
+        mailLoginClick$: new Subject<void>(),
+        fields: {
+          user: {
+            label: 'Email',
+            code: 'email',
+            flex: '6rem',
+            control: new UntypedFormControl(''),
+            type: FormTypes.EMAIL,
+            iconL1: 'email',
+            ergonomics: { autofocus: true, enterkeyhint: 'next' }
+          },
+          password: {
+            label: 'Password',
+            code: 'pass',
+            flex: '6rem',
+            control: new UntypedFormControl(''),
+            type: FormTypes.PASSWORD_CURRENT,
+            iconL1: 'lock',
+            ergonomics: { enterkeyhint: 'send' }
+          }
+        }
+      } as unknown as UserLoginDataService;
+    }
+
+    it('gives the reset-request error block role="alert" and moves focus to its message when resetErrorMessage$ emits', fakeAsync(() => {
+      const fakeDataService = makeFakeDataService();
+      TestBed.configureTestingModule({
+        declarations: [LoginPageComponent],
+        providers: [
+          { provide: UserLoginDataService, useValue: fakeDataService },
+          { provide: SeoAndUtilsService, useValue: makeSeoMock() },
+          { provide: UserManagementService, useValue: makeLoginInteractionMock(null) },
+          { provide: Router, useValue: makeRouterMock() },
+          { provide: ActivatedRoute, useValue: makeRouteMock() },
+          { provide: MatSnackBar, useValue: makeSnackBarMock() }
+        ],
+        schemas: [NO_ERRORS_SCHEMA]
+      });
+
+      const fixture = TestBed.createComponent(LoginPageComponent);
+      fixture.detectChanges();
+      fakeDataService.resetErrorMessage$.next('You\'ve requested too many resets...');
+      fixture.detectChanges();
+      tick();
+
+      const block: HTMLElement = fixture.nativeElement.querySelector('.error-notification');
+      expect(block.getAttribute('role')).toBe('alert');
+      expect(document.activeElement).toBe(block.querySelector('p'));
+    }));
   });
 });

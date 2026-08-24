@@ -30,7 +30,48 @@ import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.
 import { ManufacturerUpdatedBadgeComponent } from './manufacturer-updated-badge/manufacturer-updated-badge.component';
 import { ModuleRecentMarketPrice } from 'src/app/features/backend/supabase-queries';
 import { ManufacturerRowDataService } from './manufacturer-row-data.service';
-import { AppStateService } from 'src/app/shared-interproject/app-state.service';
+import {
+  AppStateService,
+  ModuleListDisplayMode
+} from 'src/app/shared-interproject/app-state.service';
+import { MinimalModule } from 'src/app/models/module';
+
+export type ManufacturerPanelModuleGroupKind = '3u' | '1u' | 'other';
+
+export interface ManufacturerPanelModuleGroup {
+  kind: ManufacturerPanelModuleGroupKind;
+  label: string;
+  modules: MinimalModule[];
+}
+
+function physicalStandardKind(module: MinimalModule): ManufacturerPanelModuleGroupKind {
+  switch (module.standard?.id) {
+    case 0:
+      return '3u';
+    case 1:
+    case 2:
+      return '1u';
+    default:
+      return 'other';
+  }
+}
+
+export function groupModulesByPhysicalStandard(
+  modules: ReadonlyArray<MinimalModule>
+): ManufacturerPanelModuleGroup[] {
+  const groups: Record<ManufacturerPanelModuleGroupKind, ManufacturerPanelModuleGroup> = {
+    '3u': { kind: '3u', label: '3U', modules: [] },
+    '1u': { kind: '1u', label: '1U', modules: [] },
+    other: { kind: 'other', label: 'Other', modules: [] },
+  };
+
+  for (const module of modules) {
+    groups[physicalStandardKind(module)].modules.push(module);
+  }
+
+  return [groups['3u'], groups['1u'], groups.other]
+    .filter(group => group.modules.length > 0);
+}
 
 
 @Component({
@@ -53,6 +94,7 @@ export class ManufacturerRowComponent extends SubManager implements OnInit {
   @Input() manufacturer!: ManufacturerDetail;
   @Input() hideRowLink = false;
   @Input() showPriceSummary = false;
+  @Input() displayMode: ModuleListDisplayMode | null = null;
   /** When true, always render the compact list layout and ignore the global
    * List/Panels preference from AppStateService. Used when this row is embedded
    * in a small context (e.g. the module detail page's "same manufacturer" panel)
@@ -65,6 +107,9 @@ export class ManufacturerRowComponent extends SubManager implements OnInit {
 
   private readonly _modules$ = new BehaviorSubject<ModuleList>(null);
   readonly modules$ = this._modules$.asObservable();
+  readonly panelModuleGroups$ = this.modules$.pipe(
+    map(modules => modules === null ? null : groupModulesByPhysicalStandard(modules))
+  );
   private readonly _priceSummaryByModuleId$ = new BehaviorSubject<ReadonlyMap<number, ModuleRecentMarketPrice>>(new Map());
   readonly priceSummaryByModuleId$ = this._priceSummaryByModuleId$.asObservable();
 

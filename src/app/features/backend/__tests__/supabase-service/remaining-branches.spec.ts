@@ -442,7 +442,7 @@ describe('SupabaseService - Remaining Branches', () => {
     service.auth.resetPassword$('user@example.com').subscribe({
       next: () => done.fail('expected error'),
       error: (resetErr) => {
-        expect(resetErr.message).toContain('Failed to send password reset email');
+        expect(resetErr.message).toContain('smtp down');
 
         const uniqueQuery = chainable({data: null, error: postgrestError('23505', 'unique violation')});
         spyOn(supabaseClient, 'from').and.returnValue(uniqueQuery);

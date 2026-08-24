@@ -2,14 +2,12 @@ import {
   ChangeDetectionStrategy,
   Component
 } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 import { ManufacturerBrowserRootDataService } from './manufacturer-browser-root-data.service';
 import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
-import {
-  AppStateService,
-  ModuleListDisplayMode
-} from 'src/app/shared-interproject/app-state.service';
+import { ModuleListDisplayMode } from 'src/app/shared-interproject/app-state.service';
 
 
 @Component({
@@ -21,6 +19,8 @@ import {
 })
 export class ManufacturerBrowserRootComponent extends SubManager {
   readonly formTypes = FormTypes;
+  private readonly _displayMode$ = new BehaviorSubject<ModuleListDisplayMode>('list');
+  readonly displayMode$ = this._displayMode$.asObservable();
 
   get hasMoreManufacturers(): boolean {
     const total = this.dataService.serversideAdditionalData.itemsCount$.value;
@@ -37,12 +37,11 @@ export class ManufacturerBrowserRootComponent extends SubManager {
   }
 
   setDisplayMode(mode: ModuleListDisplayMode): void {
-    this.appState.setModuleListDisplayMode(mode);
+    this._displayMode$.next(mode);
   }
 
   constructor(
     public readonly dataService: ManufacturerBrowserRootDataService,
-    public readonly appState: AppStateService,
     private readonly seoAndUtilsService: SeoAndUtilsService
   ) {
     super();

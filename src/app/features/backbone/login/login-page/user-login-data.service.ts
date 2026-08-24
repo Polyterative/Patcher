@@ -7,6 +7,7 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { Router } from '@angular/router';
 import {
   BehaviorSubject,
+  EMPTY,
   Observable,
   of,
   Subject
@@ -25,6 +26,7 @@ import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { UserManagementService } from '../user-management.service';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { normalizeInternalReturnUrl } from '../safe-return-url';
+import { isPasswordResetRateLimited } from '../../../backend/supabase-auth.helpers';
 
 
 interface PasswordResetResult {
@@ -104,6 +106,8 @@ export class UserLoginDataService extends SubManager {
         exhaustMap(() => this.loginInteraction.login$(
           this.fields.user.control.value,
           this.fields.password.control.value
+        ).pipe(
+          catchError(() => EMPTY)
         )),
         tap(() => SharedConstants.successLogin(this.snackBar)),
         this.takeUntilDestroyed()
@@ -185,9 +189,11 @@ export class UserLoginDataService extends SubManager {
         success: true,
         message: 'Check your email! We\'ve sent you a link to reset your password.'
       } as PasswordResetResult)),
-      catchError(() => of({
+      catchError((error) => of({
         success: false,
-        message: 'Something went wrong. Please try again.'
+        message: isPasswordResetRateLimited(error)
+          ? SharedConstants.messages.overEmailSendRateLimit
+          : SharedConstants.messages.passwordResetEmailFailed
       } as PasswordResetResult))
     );
   }

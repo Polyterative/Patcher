@@ -10,7 +10,10 @@
        [class.showcase-content--row]="!valueBelow"
        [class.showcase-content--push-end]="pushToEnd">
     <div class="label">
-      {{ label }}
+      <span class="label__primary">{{ label }}</span>
+      @if (labelSuffix) {
+        <span class="label__suffix">{{ labelSuffix }}</span>
+      }
     </div>
     <div class="value-content"
          [class.value-content--push-end]="pushToEnd">
