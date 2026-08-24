@@ -24,7 +24,7 @@ Restore reliable authentication retries and session-bound recovery flows without
 
 ## S2 status
 
-S2 — Recovery session integrity is implemented, independently reviewed, and **QA-PASS**, but remains uncommitted pending the coordinator-owned commit. No production publication or public availability is claimed.
+S2 — Recovery session integrity is implemented, independently reviewed, QA-PASS, and committed as `083b549a`. No production publication or public availability is claimed.
 
 ### Durable decisions
 
@@ -53,7 +53,7 @@ S2 — Recovery session integrity is implemented, independently reviewed, and **
 ## Decision log
 
 - 2026-08-24 — Adopt the tab-scoped non-secret marker, stable JWT `session_id` binding, freshness/TTL bounds, lifecycle-aware settlement, own-result URL scrub, browser-only SSR boundary, and durable clear behavior described above.
-- 2026-08-24 — Record S2 as QA-PASS and uncommitted until the coordinator supplies the isolated commit hash.
+- 2026-08-24 — Commit S2 as `083b549a` after independent review and QA PASS.
 
 ## Documentation impact
 
