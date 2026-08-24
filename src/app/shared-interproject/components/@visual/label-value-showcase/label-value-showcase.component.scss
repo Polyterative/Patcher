@@ -42,6 +42,11 @@
   overflow-wrap: anywhere;
 }
 
+.label__suffix {
+  margin-left: 0.35em;
+  color: rgba(0, 0, 0, 0.42);
+}
+
 .value-content {
   display: flex;
   align-items: center;
