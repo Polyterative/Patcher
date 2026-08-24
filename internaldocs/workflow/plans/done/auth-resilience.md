@@ -9,9 +9,9 @@ Restore reliable authentication retries and session-bound recovery flows without
 ### MVP
 
 - [x] S1 auth-request retry implemented and committed as `dc6afca6`.
-- [x] S2 recovery-session integrity implemented and independently QA-PASS.
+- [x] S2 recovery-session integrity committed as `083b549a`.
 - [x] S3 OAuth callback settlement committed as `83227c2c`.
-- [x] S4 destructive-action retry implemented and QA-PASS; implementation increment is uncommitted pending the coordinator commit.
+- [x] S4 destructive-action retry committed as `0d49cfa8`.
 
 ### Structural
 
@@ -20,7 +20,7 @@ Restore reliable authentication retries and session-bound recovery flows without
 
 ### Polish
 
-- [ ] Complete remaining slices and archive the plan after coordinator commits each validated slice.
+- [x] Complete all slices and archive the plan.
 
 ## S2 status
 
@@ -55,8 +55,8 @@ S2 — Recovery session integrity is implemented, independently reviewed, QA-PAS
 S3 — OAuth callback settlement is implemented, independently reviewed,
 QA-PASS, and committed as `83227c2c`.
 S4 — destructive-action retry is implemented, independently quality-gated
-PASS, and remains uncommitted pending the coordinator commit. No production
-publication or public availability is claimed.
+PASS, and committed as `0d49cfa8`. No production publication or public
+availability is claimed.
 
 ### Durable S4 behavior
 
@@ -110,12 +110,12 @@ publication or public availability is claimed.
   explicit Failed terminal state, late-session navigation latch,
   exhaustMap duplicate suppression, slot reopening after every terminal
   outcome, and typed failure publication.
-- 2026-08-24 — Accept S4 Technical Decision 6: every destructive retry
+- 2026-08-24 — Commit S4 as `0d49cfa8` after independent review and QA PASS.
+  Accept Technical Decision 6: every destructive retry
   restarts stage 1 (`allUserData`) and never resumes or skips stages. The final
   quality gate accepted composite `exhaustMap` coverage, terminal
   `EMPTY`/retry-slot reopening, stage ordering, destroy cancellation, and
-  truthful thrown/emitted logout failures. S4 is QA-PASS but uncommitted
-  pending the coordinator commit.
+  truthful thrown/emitted logout failures.
 
 ## S3 validation evidence
 

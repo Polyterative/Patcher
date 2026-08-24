@@ -195,7 +195,6 @@
 
 ### INFRA (independent; pick any time a product task is blocked)
 
-- [~] **HIGH: Authentication resilience — S1-S4 QA-PASS; S4 implementation increment is uncommitted pending coordinator commit** → [`plans/auth-resilience.md`](./plans/auth-resilience.md)
 - [!] **HIGH: Security — hardening backlog (private)** → local, gitignored `internaldocs/security/` (sole-contributor setup; not published because the repo is public)
 - [ ] **HIGH: Application performance — Chrome-measured budget, per-flow baselines, and hypothesis-per-commit optimization loop (frontend-only; supersedes the bundle-only plan as sub-scope)** → [`plans/application-performance-budget-and-optimization.md`](./plans/application-performance-budget-and-optimization.md)
 - [ ] **HIGH: Cloudflare Image Proxy and R2 Media Migration (upload/compression guardrails approved; R2 migration remains operator-gated)** → [`plans/cloudflare-image-proxy-and-r2-media-migration.md`](./plans/cloudflare-image-proxy-and-r2-media-migration.md)
