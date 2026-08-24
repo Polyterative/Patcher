@@ -1,0 +1,17 @@
+<div class="auth-callback-container">
+  @if (!(failed$ | async)) {
+    <div class="spinner-container">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>Completing sign in...</p>
+    </div>
+  } @else {
+    <div class="error-message" role="alert">
+      <mat-icon class="state-icon">error</mat-icon>
+      <h2 tabindex="-1" #failedHeading>Sign-in didn't complete</h2>
+      <p>We couldn't finish signing you in. Please try again.</p>
+      <button type="button" class="back-to-login-button" (click)="onBackToLogin()">
+        Back to login
+      </button>
+    </div>
+  }
+</div>

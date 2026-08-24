@@ -23,8 +23,8 @@
 
 - [x] S1 auth-request retry committed as `dc6afca6`.
 - [x] S2 recovery-session integrity committed as `083b549a`.
-- [ ] S3 OAuth callback settlement.
-- [ ] S4 destructive-action retry.
+- [x] S3 OAuth callback settlement implemented and QA-PASS; coordinator commit pending.
+- [ ] S4 destructive-action retry (next).
 
 #### Layer 2 — Structural
 
@@ -32,9 +32,9 @@
 
 #### Layer 3 — Polish
 
-- [ ] Complete and validate S3/S4, then archive the plan.
+- [ ] Complete and validate S4, then archive the plan.
 
-Status: S2 is committed on `develop`; S3 OAuth callback settlement is next. Production publication is not confirmed.
+Status: S2 is committed on `develop`; S3 is implemented and QA-PASS with its coordinator commit pending; S4 is next. Production publication is not confirmed.
 Updated: 2026-08-24
 
 <!-- The prior Public Open API active checklist remains below for continuity; its durable plan is unchanged. -->

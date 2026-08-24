@@ -8,7 +8,7 @@ import {
 } from 'rxjs';
 import {
   catchError,
-  filter,
+  exhaustMap,
   switchMap,
   takeUntil,
   tap
@@ -134,19 +134,27 @@ export class UserManagementAuthFlowService {
   }
 
   private initializeOAuthCallbackHandler(ctx: UserManagementContext): void {
+    // exhaustMap (not switchMap): a duplicate handleOAuthCallback() action
+    // received while a previous attempt is still in-flight must be
+    // suppressed, not cancel/restart the in-flight attempt. The inner
+    // observable always completes (success, error → EMPTY, missing session,
+    // or the backend's own timeout settling to null), so the flattening slot
+    // is freed again after every settlement and the next action is processed.
     ctx.handleOAuthCallbackAction$.pipe(
-      switchMap(() => ctx.backend.auth.handleOAuthCallback$().pipe(
+      exhaustMap(() => ctx.backend.auth.handleOAuthCallback$().pipe(
         catchError((error) => {
           console.error('OAuth callback handling failed:', error);
-          SharedConstants.errorCustom(
-            ctx.snackBar,
-            'Authentication failed. Please try again.'
-          );
-          return NEVER;
+          ctx.analytics.capture('auth.oauth_callback_failed', { reason: 'error' });
+          ctx.publishOAuthCallbackFailed();
+          return EMPTY;
         })
       )),
-      filter(user => !!user),
       tap(user => {
+        if (!user) {
+          ctx.analytics.capture('auth.oauth_callback_failed', { reason: 'null_session' });
+          ctx.publishOAuthCallbackFailed();
+          return;
+        }
         ctx.publishSignedInProfile(user);
         ctx.analytics.capture('auth.signed_in', { method: 'oauth' });
       }),

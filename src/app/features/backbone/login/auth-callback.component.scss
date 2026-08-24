@@ -1,0 +1,78 @@
+@use "src/app/style/brand-resources" as *;
+@use "src/app/style/commons-resources" as commons;
+
+.auth-callback-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: var(--app-viewport-height, 100vh);
+  width: 100vw;
+  padding: calc(env(safe-area-inset-top) + 1.25rem) 1.25rem calc(env(safe-area-inset-bottom) + var(--app-keyboard-inset-bottom, 0px) + 1.25rem);
+  box-sizing: border-box;
+}
+
+.spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.spinner-container p {
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+}
+
+// Failed state — mirrors reset-password-page's .error-message structural pattern.
+.error-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 24rem;
+
+  .state-icon {
+    font-size: 4rem;
+    width: 4rem;
+    height: 4rem;
+    color: $brand-negative;
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--color-text-primary);
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  p {
+    margin-bottom: 2rem;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+  }
+}
+
+.back-to-login-button {
+  @include commons.slight-rounding;
+
+  cursor: pointer;
+  line-height: 2.25rem;
+  padding: 0 1.25rem;
+  font-family: Roboto, Helvetica Neue, sans-serif;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  background-color: white;
+  color: $brand-primary;
+  border: 0.2rem solid $brand-primary;
+  transition: 160ms ease;
+
+  &:hover,
+  &:focus-visible {
+    background-color: $brand-secondary;
+    color: white;
+  }
+}

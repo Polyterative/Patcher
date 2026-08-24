@@ -50,10 +50,50 @@ S2 — Recovery session integrity is implemented, independently reviewed, QA-PAS
 - `supabase-auth.ts` has a soft file-size warning; do not fix in S2.
 - The already-committed S1 `login-page.component.scss` reduced-motion gap remains; do not fix in S2.
 
+## S3 status
+
+S3 — OAuth callback settlement is implemented, independently reviewed, and
+QA-PASS after repair. It remains uncommitted pending the coordinator commit.
+S4 — destructive-action retry is next. No production publication or public
+availability is claimed.
+
+### Durable S3 behavior
+
+- OAuth callback settlement has a total callback timeout, so a callback that
+  never produces an auth session reaches a deterministic terminal outcome.
+- Failure is published through the typed failure stream and rendered as an
+  explicit `Failed` terminal state.
+- Once `AuthCallbackComponent` observes `Failed`, a late session/profile event
+  cannot navigate away from the terminal failure UI.
+- Duplicate callback actions emitted while one attempt is active are suppressed
+  with `exhaustMap`; the slot reopens after success, failure, null-session, or
+  timeout terminal outcomes so the next distinct action can run.
+
 ## Decision log
 
 - 2026-08-24 — Adopt the tab-scoped non-secret marker, stable JWT `session_id` binding, freshness/TTL bounds, lifecycle-aware settlement, own-result URL scrub, browser-only SSR boundary, and durable clear behavior described above.
 - 2026-08-24 — Commit S2 as `083b549a` after independent review and QA PASS.
+- 2026-08-24 — Repair S3 review findings: latch terminal Failed in
+  `AuthCallbackComponent` (component-side, guards `loggedUserFullProfile$`
+  navigation on `!hasSettledToFailed`) and switch
+  `UserManagementAuthFlowService`'s OAuth callback handler from `switchMap` to
+  `exhaustMap` so duplicate in-flight actions are suppressed instead of
+  cancelling/restarting the backend call. Added 10 regression tests across
+  the component and service specs, all written failing-first.
+- 2026-08-24 — Record S3 as implemented and QA-PASS after independent review;
+  retain the uncommitted state pending the coordinator commit, with S4 as the
+  next MVP slice. The durable contract includes total callback timeout,
+  explicit Failed terminal state, late-session navigation latch,
+  exhaustMap duplicate suppression, slot reopening after every terminal
+  outcome, and typed failure publication.
+
+## S3 validation evidence
+
+- Focused S3: 56 passing.
+- Broader auth validation: 505 passing.
+- Full `pnpm test-headless`: 5,339 passing, 5,340 total, one pre-existing skip.
+- `pnpm lint`, `pnpm lint:styles`, production SSR `pnpm build`, auth smoke E2E,
+  and `git diff --check` are green.
 
 ## Documentation impact
 
