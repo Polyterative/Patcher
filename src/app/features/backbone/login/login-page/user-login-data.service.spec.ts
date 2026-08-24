@@ -2,9 +2,13 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import {
   of,
+  Subject,
   throwError
 } from 'rxjs';
+import { AuthApiError } from '@supabase/supabase-js';
 import { SupabaseLoginResponse } from 'src/app/features/backend/supabase.types';
+import { PasswordResetError } from 'src/app/features/backend/supabase-auth.helpers';
+import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { UserManagementService } from '../user-management.service';
 import { UserLoginDataService } from './user-login-data.service';
 
@@ -72,6 +76,39 @@ describe('UserLoginDataService', () => {
     expect(router.navigateByUrl).toHaveBeenCalledWith('/user/area');
   });
 
+  it('retries login and produces a new authentication request after a rejected password, then succeeds', () => {
+    const {service, loginInteraction, router} = build();
+    loginInteraction.login$.and.returnValue(
+      throwError(() => new AuthApiError('Invalid login credentials', 400, 'invalid_credentials'))
+    );
+    service.fields.user.control.setValue('user@example.com');
+    service.fields.password.control.setValue('wrongpass');
+
+    service.mailLoginClick$.next();
+
+    loginInteraction.login$.and.returnValue(of(loginResponse(null)));
+    service.fields.password.control.setValue('correctpass');
+    service.mailLoginClick$.next();
+
+    expect(loginInteraction.login$).toHaveBeenCalledTimes(2);
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/user/area');
+  });
+
+  it('suppresses a second concurrent login request while the first is still pending', () => {
+    const {service, loginInteraction} = build();
+    const pending = new Subject<SupabaseLoginResponse>();
+    loginInteraction.login$.and.returnValue(pending.asObservable());
+    service.fields.user.control.setValue('user@example.com');
+    service.fields.password.control.setValue('password123');
+
+    service.mailLoginClick$.next();
+    service.mailLoginClick$.next();
+    pending.next(loginResponse(null));
+    pending.complete();
+
+    expect(loginInteraction.login$).toHaveBeenCalledTimes(1);
+  });
+
   it('shows password reset form and clears messages when toggle is true', () => {
     const {service} = build();
     service.resetSuccessMessage$.next('old success');
@@ -126,12 +163,58 @@ describe('UserLoginDataService', () => {
 
   it('sets error message when resetPassword$ backend call fails', () => {
     const {service, loginInteraction} = build();
-    loginInteraction.resetPassword$.and.returnValue(throwError(() => new Error('network error')));
+    loginInteraction.resetPassword$.and.returnValue(throwError(() => new PasswordResetError('network error')));
     service.fields.user.control.setValue('valid@example.com');
 
     service.requestPasswordReset$.next();
 
-    expect(service.resetErrorMessage$.value).toContain('wrong');
+    expect(service.resetErrorMessage$.value).toBe(SharedConstants.messages.passwordResetEmailFailed);
     expect(service.isSubmittingReset$.value).toBeFalse();
+  });
+
+  it('shows the rate-limit inline message and re-enables submit when resetPassword$ rejects with a 429 PasswordResetError', () => {
+    const {service, loginInteraction} = build();
+    loginInteraction.resetPassword$.and.returnValue(
+      throwError(() => new PasswordResetError('Email rate limit exceeded', 'over_email_send_rate_limit', 429))
+    );
+    service.fields.user.control.setValue('user@example.com');
+
+    service.requestPasswordReset$.next();
+
+    expect(service.resetErrorMessage$.value).toBe(SharedConstants.messages.overEmailSendRateLimit);
+    expect(service.isSubmittingReset$.value).toBeFalse();
+  });
+
+  it('shows the passwordResetEmailFailed inline message when resetPassword$ rejects with a non-rate-limit PasswordResetError', () => {
+    const {service, loginInteraction} = build();
+    loginInteraction.resetPassword$.and.returnValue(
+      throwError(() => new PasswordResetError('Some other failure', 'weak_password', 422))
+    );
+    service.fields.user.control.setValue('user@example.com');
+
+    service.requestPasswordReset$.next();
+
+    expect(service.resetErrorMessage$.value).toBe(SharedConstants.messages.passwordResetEmailFailed);
+    expect(service.isSubmittingReset$.value).toBeFalse();
+  });
+
+  it('allows a second reset-request after a 429 failure, and again after a generic failure', () => {
+    const {service, loginInteraction} = build();
+    loginInteraction.resetPassword$.and.returnValue(
+      throwError(() => new PasswordResetError('Email rate limit exceeded', 'over_email_send_rate_limit', 429))
+    );
+    service.fields.user.control.setValue('user@example.com');
+    service.requestPasswordReset$.next();
+
+    loginInteraction.resetPassword$.and.returnValue(
+      throwError(() => new PasswordResetError('Some other failure', 'weak_password', 422))
+    );
+    service.requestPasswordReset$.next();
+
+    loginInteraction.resetPassword$.and.returnValue(of(undefined));
+    service.requestPasswordReset$.next();
+
+    expect(loginInteraction.resetPassword$).toHaveBeenCalledTimes(3);
+    expect(service.resetSuccessMessage$.value).toContain('email');
   });
 });

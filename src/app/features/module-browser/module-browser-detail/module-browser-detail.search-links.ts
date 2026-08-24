@@ -39,3 +39,14 @@ function normalizeStoreSlug(slug: string | null | undefined): string | null {
   const normalizedSlug = slug?.trim().toLowerCase();
   return normalizedSlug || null;
 }
+
+export function getManufacturerSearchLinks(
+  links: readonly SearchLink[],
+  manufacturerId: number | null | undefined
+): SearchLink[] {
+  if (!manufacturerId) {
+    return [];
+  }
+
+  return links.filter(link => (link.manufacturerIds ?? []).includes(manufacturerId));
+}

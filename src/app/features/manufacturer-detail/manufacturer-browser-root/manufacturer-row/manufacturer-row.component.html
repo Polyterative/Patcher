@@ -50,8 +50,9 @@
 
   @if ({
     modules: (modules$ | async),
+    panelModuleGroups: (panelModuleGroups$ | async),
     priceSummaryByModuleId: (priceSummaryByModuleId$ | async),
-    displayMode: forceListMode ? 'list' : (appState.moduleListDisplayMode$ | async),
+    displayMode: forceListMode ? 'list' : (displayMode ?? (appState.moduleListDisplayMode$ | async)),
     preferredPanelColor: (appState.preferredPanelColor$ | async)
   }; as bag) {
     @if (bag.modules) {
@@ -60,11 +61,26 @@
       } @else {
         <div class="manufacturer-row-modules">
           @if (bag.displayMode === 'panels') {
-            <app-module-panel-wall
-              [modules]="bag.modules"
-              [preferredPanelColor]="bag.preferredPanelColor"
-              [wrap]="false"
-            ></app-module-panel-wall>
+            <div class="manufacturer-row-panel-groups" aria-label="Modules grouped by physical standard">
+              @for (group of (bag.panelModuleGroups ?? []); track group.kind) {
+                <section
+                  class="manufacturer-row-panel-group"
+                  [attr.aria-labelledby]="'manufacturer-' + manufacturer.id + '-panel-group-' + group.kind"
+                >
+                  <h3
+                    class="manufacturer-row-panel-group-label"
+                    [id]="'manufacturer-' + manufacturer.id + '-panel-group-' + group.kind"
+                  >
+                    {{ group.label }}
+                  </h3>
+                  <app-module-panel-wall
+                    [modules]="group.modules"
+                    [preferredPanelColor]="bag.preferredPanelColor"
+                    [wrap]="false"
+                  ></app-module-panel-wall>
+                </section>
+              }
+            </div>
           } @else {
             <div class="module-strip">
               @for (module of bag.modules; track module.id; let i = $index) {

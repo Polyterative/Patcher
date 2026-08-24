@@ -25,7 +25,7 @@
           iconL1="sort"
         ></lib-mat-form-entity>
 
-        @if (appState.moduleListDisplayMode$ | async; as moduleListDisplayMode) {
+        @if (displayMode$ | async; as moduleListDisplayMode) {
           <div class="manufacturer-view-toggle col">
             <span class="manufacturer-view-toggle__label">View</span>
             <mat-button-toggle-group
@@ -61,7 +61,8 @@
       <!-- ── Right column: results ── -->
       <div class="browser-content-area col gap1">
         @if ({
-          manufacturers: (dataService.manufacturers$ | async)
+          manufacturers: (dataService.manufacturers$ | async),
+          displayMode: (displayMode$ | async)
         }; as bag) {
           @if (bag.manufacturers == null) {
             <lib-auto-content-loading-indicator
@@ -73,7 +74,10 @@
             @if (bag.manufacturers.length > 0) {
               <div class="manufacturer-list">
                 @for (manufacturer of bag.manufacturers; track manufacturer.id) {
-                  <app-manufacturer-row [manufacturer]="manufacturer"></app-manufacturer-row>
+                  <app-manufacturer-row
+                    [manufacturer]="manufacturer"
+                    [displayMode]="bag.displayMode"
+                  ></app-manufacturer-row>
                 } @empty {
                   <app-empty-state></app-empty-state>
                 }

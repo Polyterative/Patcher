@@ -21,7 +21,10 @@ import { MatIconModule } from '@angular/material/icon';
 export class LabelValueShowcaseComponent {
   @Input()
   label: string;
-  
+
+  @Input()
+  labelSuffix?: string;
+
   @Input()
   icon?: string;
 

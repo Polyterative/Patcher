@@ -73,4 +73,21 @@ describe('EntityStatGridComponent', () => {
     fixture.componentRef.setInput('items', [{ label: 'A', value: '1' }, { label: 'B', value: '2' }]);
     expect(component.visibleItems().length).toBe(2);
   });
+
+  it('renders optional label suffixes separately from the primary label', () => {
+    fixture.componentRef.setInput('items', [{
+      label: '+12V',
+      labelSuffix: '(14 missing)',
+      value: '496 mA',
+      icon: 'bolt'
+    }]);
+
+    fixture.detectChanges();
+
+    const label = fixture.nativeElement.querySelector('.label') as HTMLElement;
+    const suffix = fixture.nativeElement.querySelector('.label__suffix') as HTMLElement;
+
+    expect(label.childNodes[0].textContent?.trim()).toBe('+12V');
+    expect(suffix.textContent?.trim()).toBe('(14 missing)');
+  });
 });

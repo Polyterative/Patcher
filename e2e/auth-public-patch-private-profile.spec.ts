@@ -97,14 +97,11 @@ async function readUsername(page: Page): Promise<string> {
 }
 
 async function isProfilePublic(page: Page): Promise<boolean> {
-  const makePrivateButton = page.locator('app-brand-primary-button', {hasText: /make profile private/i}).first();
-  if (await makePrivateButton.isVisible().catch(() => false)) {
-    return true;
-  }
+  const makePrivateButton = page.locator('app-user-area-root app-brand-primary-button', {hasText: /make profile private/i}).first();
+  const makePublicButton = page.locator('app-user-area-root app-brand-primary-button', {hasText: /make profile public/i}).first();
 
-  const makePublicButton = page.locator('app-brand-primary-button', {hasText: /make profile public/i}).first();
-  await expect(makePublicButton).toBeVisible({timeout: 10_000});
-  return false;
+  await expect(makePrivateButton.or(makePublicButton)).toBeVisible({timeout: 20_000});
+  return makePrivateButton.isVisible();
 }
 
 async function setProfileVisibility(page: Page, shouldBePublic: boolean): Promise<void> {

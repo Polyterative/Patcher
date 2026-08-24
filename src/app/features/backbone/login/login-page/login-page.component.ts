@@ -1,7 +1,10 @@
 import {
+  AfterViewChecked,
   ChangeDetectionStrategy,
   Component,
-  OnInit
+  ElementRef,
+  OnInit,
+  ViewChild
 } from '@angular/core';
 import { UserLoginDataService } from './user-login-data.service';
 import { SeoAndUtilsService } from "src/app/features/backbone/seo-and-utils.service";
@@ -26,7 +29,10 @@ import { SSOProvider } from '../sso-buttons/sso-buttons.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class LoginPageComponent extends SubManager implements OnInit {
+export class LoginPageComponent extends SubManager implements OnInit, AfterViewChecked {
+
+  @ViewChild('resetErrorMessage') private resetErrorMessageEl?: ElementRef<HTMLElement>;
+  private lastFocusedResetErrorMessage = '';
 
   constructor(
     public dataService: UserLoginDataService,
@@ -43,6 +49,22 @@ export class LoginPageComponent extends SubManager implements OnInit {
   ngOnInit(): void {
     this.checkResetSuccessParam();
     this.checkLoggedInUser();
+  }
+
+  /**
+   * Move focus to the reset-request error message whenever it transitions
+   * from empty to non-empty, so assistive technology announces it.
+   */
+  ngAfterViewChecked(): void {
+    const message = this.dataService.resetErrorMessage$.value;
+    if (!message) {
+      this.lastFocusedResetErrorMessage = '';
+      return;
+    }
+    if (message !== this.lastFocusedResetErrorMessage && this.resetErrorMessageEl) {
+      this.lastFocusedResetErrorMessage = message;
+      this.resetErrorMessageEl.nativeElement.focus();
+    }
   }
   
   /**

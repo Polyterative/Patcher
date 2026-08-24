@@ -189,9 +189,9 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
         {
           title: 'Power',
           items: [
-            { label: `+12V${ missingPowerSuffix }`, value: formatPowerRailValue(powerBreakdown.powerPos12), icon: 'bolt' },
-            { label: `-12V${ missingPowerSuffix }`, value: formatPowerRailValue(powerBreakdown.powerNeg12), icon: 'bolt' },
-            { label: `+5V${ missingPowerSuffix }`, value: formatPowerRailValue(powerBreakdown.powerPos5), icon: 'bolt' },
+            { label: '+12V', labelSuffix: missingPowerSuffix, value: formatPowerRailValue(powerBreakdown.powerPos12), icon: 'bolt' },
+            { label: '-12V', labelSuffix: missingPowerSuffix, value: formatPowerRailValue(powerBreakdown.powerNeg12), icon: 'bolt' },
+            { label: '+5V', labelSuffix: missingPowerSuffix, value: formatPowerRailValue(powerBreakdown.powerPos5), icon: 'bolt' },
             {
               label: 'Power headers',
               value: powerBreakdown.powerHeaderCount.toString(),
@@ -213,8 +213,8 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
     ];
   }
 
-  private missingPowerSuffix(count: number): string {
-    return count > 0 ? ` (${ count } missing)` : '';
+  private missingPowerSuffix(count: number): string | undefined {
+    return count > 0 ? `(${ count } missing)` : undefined;
   }
 
   private powerHeaderDetail(passiveCount: number, unknownCount: number): string | undefined {

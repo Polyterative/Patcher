@@ -236,10 +236,28 @@ describe('RackBrowserDetailViewComponent', () => {
     const powerGroup = rows[1][0];
 
     expect(powerGroup.items.map(item => item.label)).toEqual(['+12V', '-12V', '+5V', 'Power headers']);
+    expect(powerGroup.items.slice(0, 3).map(item => item.labelSuffix)).toEqual([undefined, undefined, undefined]);
     expect(powerGroup.items[3]).toEqual(jasmine.objectContaining({
       value: '2',
       detail: '1 passive'
     }));
+  });
+
+  it('separates missing power counts from rail labels for subdued rendering', () => {
+    const rows = component.rackSummaryStatRows(makeRackMinimal(), [
+      [
+        makeRackedModule(101, 8, 50, null, 0),
+        makeRackedModule(202, 10, 75, -35, 5)
+      ]
+    ]);
+    const powerItems = rows[1][0].items.slice(0, 3);
+
+    expect(powerItems.map(item => item.label)).toEqual(['+12V', '-12V', '+5V']);
+    expect(powerItems.map(item => item.labelSuffix)).toEqual([
+      '(1 missing)',
+      '(1 missing)',
+      '(1 missing)'
+    ]);
   });
 
   it('uses public detail reads for signed-out visitors', () => {

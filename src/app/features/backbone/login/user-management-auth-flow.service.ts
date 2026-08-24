@@ -1,17 +1,21 @@
 import { Injectable } from '@angular/core';
 import {
   from,
+  EMPTY,
   NEVER,
-  Observable
+  Observable,
+  throwError
 } from 'rxjs';
 import {
   catchError,
-  filter,
+  exhaustMap,
   switchMap,
   takeUntil,
   tap
 } from 'rxjs/operators';
+import { isAuthApiError } from '@supabase/supabase-js';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import { isPasswordResetRateLimited } from '../../backend/supabase-auth.helpers';
 import { SupabaseLoginResponse } from '../../backend/supabase.service';
 import {
   OAuthProvider,
@@ -30,9 +34,13 @@ export class UserManagementAuthFlowService {
 
   login$(email: string, password: string, ctx: UserManagementContext): Observable<SupabaseLoginResponse> {
     return ctx.backend.auth.login$(email, password).pipe(
-      catchError(() => {
-        SharedConstants.errorLogin(ctx.snackBar);
-        return NEVER;
+      catchError((error) => {
+        if (isAuthApiError(error) && error.code === 'invalid_credentials') {
+          SharedConstants.errorLogin(ctx.snackBar);
+        } else {
+          SharedConstants.errorCustom(ctx.snackBar, SharedConstants.messages.operationFailed);
+        }
+        return EMPTY;
       }),
       tap(x => {
         ctx.publishSignedInProfile(x.user);
@@ -43,8 +51,8 @@ export class UserManagementAuthFlowService {
   resetPassword$(email: string, ctx: UserManagementContext): Observable<void> {
     return ctx.backend.auth.resetPassword$(email).pipe(
       catchError((error) => {
-        this.showResetPasswordError(error, ctx);
-        return NEVER;
+        ctx.analytics.capture('auth.password_reset_request_failed', {});
+        return throwError(() => error);
       }),
       tap(() => SharedConstants.successCustom(ctx.snackBar, SharedConstants.messages.passwordResetEmailSent))
     );
@@ -63,7 +71,7 @@ export class UserManagementAuthFlowService {
       switchMap(({email, password}) => ctx.backend.auth.login$(email, password).pipe(
         catchError(() => {
           SharedConstants.errorLogin(ctx.snackBar);
-          return NEVER;
+          return EMPTY;
         })
       )),
       tap(x => {
@@ -97,7 +105,7 @@ export class UserManagementAuthFlowService {
       switchMap(email => ctx.backend.auth.resetPassword$(email).pipe(
         catchError((error) => {
           this.showResetPasswordError(error, ctx);
-          return NEVER;
+          return EMPTY;
         })
       )),
       tap(() => {
@@ -126,20 +134,29 @@ export class UserManagementAuthFlowService {
   }
 
   private initializeOAuthCallbackHandler(ctx: UserManagementContext): void {
+    // exhaustMap (not switchMap): a duplicate handleOAuthCallback() action
+    // received while a previous attempt is still in-flight must be
+    // suppressed, not cancel/restart the in-flight attempt. The inner
+    // observable always completes (success, error → EMPTY, missing session,
+    // or the backend's own timeout settling to null), so the flattening slot
+    // is freed again after every settlement and the next action is processed.
     ctx.handleOAuthCallbackAction$.pipe(
-      switchMap(() => ctx.backend.auth.handleOAuthCallback$().pipe(
+      exhaustMap(() => ctx.backend.auth.handleOAuthCallback$().pipe(
         catchError((error) => {
           console.error('OAuth callback handling failed:', error);
-          SharedConstants.errorCustom(
-            ctx.snackBar,
-            'Authentication failed. Please try again.'
-          );
-          return NEVER;
+          ctx.analytics.capture('auth.oauth_callback_failed', { reason: 'error' });
+          ctx.publishOAuthCallbackFailed();
+          return EMPTY;
         })
       )),
-      filter(user => !!user),
       tap(user => {
+        if (!user) {
+          ctx.analytics.capture('auth.oauth_callback_failed', { reason: 'null_session' });
+          ctx.publishOAuthCallbackFailed();
+          return;
+        }
         ctx.publishSignedInProfile(user);
+        ctx.publishOAuthCallbackSucceeded(user);
         ctx.analytics.capture('auth.signed_in', { method: 'oauth' });
       }),
       takeUntil(ctx.destroy$)
@@ -147,19 +164,11 @@ export class UserManagementAuthFlowService {
   }
 
   private showResetPasswordError(error: unknown, ctx: UserManagementContext): void {
-    if (typeof error === 'object'
-      && error !== null
-      && 'error_code' in error
-      && error.error_code === 'over_email_send_rate_limit') {
-      SharedConstants.errorCustom(
-        ctx.snackBar,
-        SharedConstants.messages.overEmailSendRateLimit
-      );
-    } else {
-      SharedConstants.errorCustom(
-        ctx.snackBar,
-        SharedConstants.messages.operationFailed
-      );
-    }
+    SharedConstants.errorCustom(
+      ctx.snackBar,
+      isPasswordResetRateLimited(error)
+        ? SharedConstants.messages.overEmailSendRateLimit
+        : SharedConstants.messages.passwordResetEmailFailed
+    );
   }
 }
