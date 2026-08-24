@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.7.7](https://github.com/Polyterative/Patcher/compare/v6.7.6...v6.7.7) (2026-08-24)
+
+
+### Features
+
+* **module-detail:** separate manufacturer-owned store links from retailers ([7f80af6](https://github.com/Polyterative/Patcher/commit/7f80af654533ecab4090d1395b17f12e82845f03))
+
+
+### Bug Fixes
+
+* **account:** allow retry after destructive action failures ([0d49cfa](https://github.com/Polyterative/Patcher/commit/0d49cfa87e3bb392de33c29d8b7658f2471b2757))
+* **auth:** gate oauth navigation on callback success ([b5795d3](https://github.com/Polyterative/Patcher/commit/b5795d3a03ef5ee55446feab7931a29e434d0c04))
+* **auth:** preserve verified recovery sessions across reloads ([083b549](https://github.com/Polyterative/Patcher/commit/083b549a4e5d11cc79c261e401a13325e012230a))
+* **auth:** restore login and reset request retries ([dc6afca](https://github.com/Polyterative/Patcher/commit/dc6afca6bb50d3fdfc9e5828776b49da13bca312))
+* **auth:** settle failed oauth callbacks ([83227c2](https://github.com/Polyterative/Patcher/commit/83227c2c56ba98dedf8699a6379338fdab038c42))
+* **database:** reconcile acquisitions and module io sequences ([797f0c3](https://github.com/Polyterative/Patcher/commit/797f0c37873384ad8f7846185f79fbe4a42fc984))
+* **e2e:** wait for profile visibility controls ([dbc396a](https://github.com/Polyterative/Patcher/commit/dbc396af7919450fe57a14c18e9aecd96402b09c))
+* **manufacturers:** default to list and group panels ([1b03b54](https://github.com/Polyterative/Patcher/commit/1b03b541419f19c5cda651d6a8d53b57143ed977))
+* **module-list:** align view toggle with controls ([6a0dc8c](https://github.com/Polyterative/Patcher/commit/6a0dc8c5d7a24f7bfc21740a0920f88814c0faae))
+
 ### [6.7.6](https://github.com/Polyterative/Patcher/compare/v6.7.5...v6.7.6) (2026-08-23)
 
 
