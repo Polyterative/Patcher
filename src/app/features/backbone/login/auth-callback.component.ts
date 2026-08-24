@@ -44,9 +44,8 @@ import { UserManagementService } from 'src/app/features/backbone/login/user-mana
 export class AuthCallbackComponent extends SubManager implements OnInit, AfterViewChecked {
   @ViewChild('failedHeading') private failedHeadingEl?: ElementRef<HTMLElement>;
   private hasFocusedFailedHeading = false;
-  // Latched once the callback settles to Failed; a late global SIGNED_IN or
-  // profile event racing in afterward must never navigate away from the
-  // terminal Failed state (review repair: Finding 1).
+  // Latched once the callback settles to Failed; a late callback success event
+  // racing in afterward must never navigate away from the terminal Failed state.
   private hasSettledToFailed = false;
 
   readonly failed$: Observable<boolean>;
@@ -63,20 +62,19 @@ export class AuthCallbackComponent extends SubManager implements OnInit, AfterVi
   }
   
   ngOnInit(): void {
-    // Latch the terminal Failed state before wiring the profile-driven
-    // navigation, so any late/duplicate profile emission observed after
-    // failure is guaranteed to see the latch already set.
+    // Latch failure before wiring callback-success navigation so a late
+    // settlement cannot leave the terminal Failed state.
     this.userManagementService.oauthCallbackFailed$
       .pipe(this.takeUntilDestroyed())
       .subscribe(() => {
         this.hasSettledToFailed = true;
       });
 
-    // Listen for successful authentication
-    this.userManagementService.loggedUserFullProfile$
+    // Listen only for the current OAuth callback attempt's own success event.
+    this.userManagementService.oauthCallbackSucceeded$
       .pipe(this.takeUntilDestroyed())
       .subscribe(user => {
-        if (user && !this.hasSettledToFailed) {
+        if (!this.hasSettledToFailed) {
           // Check if username needs to be set (new OAuth user)
           if (!user.username || user.username.startsWith('user_')) {
             // Redirect to profile completion

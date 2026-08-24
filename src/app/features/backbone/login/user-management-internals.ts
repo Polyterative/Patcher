@@ -49,5 +49,6 @@ export interface UserManagementContext {
   publishSignedOut(): void;
   publishRestoredProfile(profile: RichUserModel | undefined): void;
   publishOAuthCallbackFailed(): void;
+  publishOAuthCallbackSucceeded(user: RichUserModel): void;
   showOperationError(error: unknown): void;
 }

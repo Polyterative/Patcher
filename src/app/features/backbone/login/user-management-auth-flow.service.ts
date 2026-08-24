@@ -156,6 +156,7 @@ export class UserManagementAuthFlowService {
           return;
         }
         ctx.publishSignedInProfile(user);
+        ctx.publishOAuthCallbackSucceeded(user);
         ctx.analytics.capture('auth.signed_in', { method: 'oauth' });
       }),
       takeUntil(ctx.destroy$)

@@ -24,6 +24,7 @@ describe('AuthCallbackComponent', () => {
     loggedUserFullProfile$: Observable<AuthCallbackProfile>;
     handleOAuthCallback: jasmine.Spy<() => void>;
     oauthCallbackFailed$: Observable<void>;
+    oauthCallbackSucceeded$: Observable<AuthCallbackProfile>;
   };
 
   let component: AuthCallbackComponent;
@@ -32,6 +33,7 @@ describe('AuthCallbackComponent', () => {
   let mockUserManagementService: AuthCallbackUserManagementMock;
   let loggedUserFullProfile$: ReplaySubject<AuthCallbackProfile>;
   let oauthCallbackFailed$: Subject<void>;
+  let oauthCallbackSucceeded$: Subject<AuthCallbackProfile>;
 
   function profileWithUsername(username: string | null): Exclude<AuthCallbackProfile, null | undefined> {
     return {
@@ -45,13 +47,15 @@ describe('AuthCallbackComponent', () => {
   beforeEach(async () => {
     loggedUserFullProfile$ = new ReplaySubject<AuthCallbackProfile>(1);
     oauthCallbackFailed$ = new Subject<void>();
+    oauthCallbackSucceeded$ = new Subject<AuthCallbackProfile>();
     
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
     
     mockUserManagementService = {
       loggedUserFullProfile$: loggedUserFullProfile$.asObservable(),
       handleOAuthCallback: jasmine.createSpy<() => void>('handleOAuthCallback'),
-      oauthCallbackFailed$: oauthCallbackFailed$.asObservable()
+      oauthCallbackFailed$: oauthCallbackFailed$.asObservable(),
+      oauthCallbackSucceeded$: oauthCallbackSucceeded$.asObservable()
     };
     
     await TestBed.configureTestingModule({
@@ -86,7 +90,7 @@ describe('AuthCallbackComponent', () => {
   it('navigates to /user/area when user has a proper username', fakeAsync(() => {
     fixture.detectChanges();
     
-    loggedUserFullProfile$.next(profileWithUsername('myuser'));
+    oauthCallbackSucceeded$.next(profileWithUsername('myuser'));
     tick();
     
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/user/area']);
@@ -95,7 +99,7 @@ describe('AuthCallbackComponent', () => {
   it('navigates to /auth/complete-profile when username starts with user_', fakeAsync(() => {
     fixture.detectChanges();
     
-    loggedUserFullProfile$.next(profileWithUsername('user_abc123'));
+    oauthCallbackSucceeded$.next(profileWithUsername('user_abc123'));
     tick();
     
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/auth/complete-profile']);
@@ -104,7 +108,7 @@ describe('AuthCallbackComponent', () => {
   it('navigates to /auth/complete-profile when username is empty', fakeAsync(() => {
     fixture.detectChanges();
     
-    loggedUserFullProfile$.next(profileWithUsername(''));
+    oauthCallbackSucceeded$.next(profileWithUsername(''));
     tick();
     
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/auth/complete-profile']);
@@ -113,7 +117,7 @@ describe('AuthCallbackComponent', () => {
   it('navigates to /auth/complete-profile when username is null', fakeAsync(() => {
     fixture.detectChanges();
     
-    loggedUserFullProfile$.next(profileWithUsername(null));
+    oauthCallbackSucceeded$.next(profileWithUsername(null));
     tick();
     
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/auth/complete-profile']);
@@ -134,6 +138,22 @@ describe('AuthCallbackComponent', () => {
     loggedUserFullProfile$.next(null);
     tick();
     
+    expect(mockRouter.navigate).not.toHaveBeenCalled();
+  }));
+
+  it('ignores a replayed global profile from before init and remains Failed without navigation when the callback fails', fakeAsync(() => {
+    loggedUserFullProfile$.next(profileWithUsername('myuser'));
+
+    fixture.detectChanges();
+    tick();
+    expect(mockRouter.navigate).not.toHaveBeenCalled();
+
+    oauthCallbackFailed$.next();
+    fixture.detectChanges();
+    tick();
+
+    const failedBlock: HTMLElement | null = fixture.nativeElement.querySelector('.auth-callback-container [role="alert"]');
+    expect(failedBlock).toBeTruthy();
     expect(mockRouter.navigate).not.toHaveBeenCalled();
   }));
 
@@ -191,6 +211,18 @@ describe('AuthCallbackComponent', () => {
     // Simulate a late global SIGNED_IN/profile event racing in after the
     // component has already rendered the terminal Failed state.
     loggedUserFullProfile$.next(profileWithUsername('myuser'));
+    tick();
+
+    expect(mockRouter.navigate).not.toHaveBeenCalled();
+  }));
+
+  it('does not navigate when a late callback success event arrives after the callback already settled to Failed', fakeAsync(() => {
+    fixture.detectChanges();
+
+    oauthCallbackFailed$.next();
+    tick();
+
+    oauthCallbackSucceeded$.next(profileWithUsername('myuser'));
     tick();
 
     expect(mockRouter.navigate).not.toHaveBeenCalled();

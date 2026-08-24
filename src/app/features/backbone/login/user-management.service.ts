@@ -46,6 +46,7 @@ export class UserManagementService extends SubManager {
   private readonly _authRestored$ = new BehaviorSubject<boolean>(false);
   private readonly _profileRestored$ = new BehaviorSubject<boolean>(false);
   private readonly _oauthCallbackFailed$ = new Subject<void>();
+  private readonly _oauthCallbackSucceeded$ = new Subject<RichUserModel>();
   
   // PUBLIC - Read-only observables
   public readonly loggedUser$ = this._loggedUser$.asObservable();
@@ -54,6 +55,8 @@ export class UserManagementService extends SubManager {
   public readonly profileRestored$ = this._profileRestored$.asObservable();
   /** Emits once per OAuth callback attempt that settles to failure (provider denial, timeout, missing session, or a thrown error). */
   public readonly oauthCallbackFailed$ = this._oauthCallbackFailed$.asObservable();
+  /** Emits once per OAuth callback attempt that settles to a successful current callback user. */
+  public readonly oauthCallbackSucceeded$ = this._oauthCallbackSucceeded$.asObservable();
   public readonly isAdmin$ = this.loggedUser$.pipe(
     startWith(undefined),
     switchMap(user => user ? this._getAdminRole() : of(false))
@@ -164,6 +167,7 @@ export class UserManagementService extends SubManager {
       publishSignedOut: () => this.publishSignedOut(),
       publishRestoredProfile: profile => this.publishRestoredProfile(profile),
       publishOAuthCallbackFailed: () => this.publishOAuthCallbackFailed(),
+      publishOAuthCallbackSucceeded: user => this.publishOAuthCallbackSucceeded(user),
       showOperationError: error => this.showOperationError(error)
     };
   }
@@ -195,6 +199,10 @@ export class UserManagementService extends SubManager {
   
   private publishOAuthCallbackFailed(): void {
     this._oauthCallbackFailed$.next();
+  }
+
+  private publishOAuthCallbackSucceeded(user: RichUserModel): void {
+    this._oauthCallbackSucceeded$.next(user);
   }
 
   /**
