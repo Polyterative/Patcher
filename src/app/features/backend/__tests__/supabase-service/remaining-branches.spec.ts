@@ -7,6 +7,7 @@ import type {
   UserModulePossessionKind
 } from 'src/app/models/module';
 import type { Patch } from 'src/app/models/patch';
+import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import {
   SupabaseService,
   type RichUserModel
@@ -442,7 +443,8 @@ describe('SupabaseService - Remaining Branches', () => {
     service.auth.resetPassword$('user@example.com').subscribe({
       next: () => done.fail('expected error'),
       error: (resetErr) => {
-        expect(resetErr.message).toContain('smtp down');
+        expect(resetErr.message).toBe(SharedConstants.messages.resetPassword.resetFailed);
+        expect(resetErr.message).not.toContain('smtp down');
 
         const uniqueQuery = chainable({data: null, error: postgrestError('23505', 'unique violation')});
         spyOn(supabaseClient, 'from').and.returnValue(uniqueQuery);

@@ -7,7 +7,10 @@ import { PLATFORM_ID } from '@angular/core';
 import { Router } from '@angular/router';
 import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
-import type { RecoveryEventSession } from 'src/app/features/backend/supabase-auth.helpers';
+import {
+  PasswordResetError,
+  type RecoveryEventSession
+} from 'src/app/features/backend/supabase-auth.helpers';
 import {
   BehaviorSubject,
   Observable,
@@ -81,6 +84,11 @@ describe('UserResetPasswordDataService', () => {
     TestBed.resetTestingModule();
     sessionStorage.clear();
   });
+
+  function fillValidPasswords(service: UserResetPasswordDataService): void {
+    service.fields.password.control.setValue('ValidPass1!');
+    service.fields.confirmPassword.control.setValue('ValidPass1!');
+  }
 
   it('exposes SupabaseService.auth.authInitializationSettled$ verbatim as its own authInitializationSettled$ (S2 delta, R12)', () => {
     const settled$ = new Subject<void>();
@@ -184,18 +192,100 @@ describe('UserResetPasswordDataService', () => {
     service.ngOnDestroy();
   }));
 
-  it('sets error message when API call fails', () => {
+  it('sets generic safe error message when API call fails with an unknown provider error', () => {
     const {service, supabaseService} = build();
     supabaseService.auth.resetPassword$.and.returnValue(
-      throwError(() => ({message: 'Token expired'}))
+      throwError(() => ({error_code: 'provider_internal', status: 500, message: 'raw provider failure'}))
     );
-    service.fields.password.control.setValue('ValidPass1!');
-    service.fields.confirmPassword.control.setValue('ValidPass1!');
+    fillValidPasswords(service);
 
     service.submitPasswordReset$.next();
 
     expect(service.errorMessage$.value).toBe(SharedConstants.messages.resetPassword.resetFailed);
+    expect(service.errorMessage$.value).not.toContain('raw provider');
     expect(service.isSubmitting$.value).toBeFalse();
+  });
+
+  it('shows sanitized network copy inline when the backend maps a retryable temporary service failure', () => {
+    const {service, supabaseService} = build();
+    supabaseService.auth.resetPassword$.and.returnValue(
+      throwError(() => ({
+        name: 'AuthRetryableFetchError',
+        status: 503,
+        message: 'raw upstream outage'
+      }))
+    );
+    fillValidPasswords(service);
+
+    service.submitPasswordReset$.next();
+
+    expect(service.errorMessage$.value).toBe(SharedConstants.messages.resetPassword.networkError);
+    expect(service.errorMessage$.value).not.toContain('raw upstream');
+    expect(service.isSubmitting$.value).toBeFalse();
+  });
+
+  it('shows the normalized same-password message inline and keeps the form retryable', () => {
+    const {service, supabaseService} = build();
+    supabaseService.auth.resetPassword$.and.returnValues(
+      throwError(() => new PasswordResetError(
+        SharedConstants.messages.resetPassword.samePassword,
+        'same_password',
+        422
+      )),
+      of(undefined)
+    );
+    fillValidPasswords(service);
+
+    service.submitPasswordReset$.next();
+
+    expect(service.errorMessage$.value).toBe(SharedConstants.messages.resetPassword.samePassword);
+    expect(service.isSubmitting$.value).toBeFalse();
+    expect(service.successMessage$.value).toBe('');
+
+    service.submitPasswordReset$.next();
+
+    expect(supabaseService.auth.resetPassword$).toHaveBeenCalledTimes(2);
+    expect(service.successMessage$.value).toBe(SharedConstants.messages.resetPassword.successTitle);
+    service.ngOnDestroy();
+  });
+
+  it('shows normalized weak-password, invalid-session, rate-limit, network, and generic messages inline', () => {
+    const {service, supabaseService} = build();
+    const cases: Array<{error: unknown; expectedMessage: string}> = [
+      {
+        error: new PasswordResetError(SharedConstants.messages.resetPassword.weakPassword, 'weak_password', 422),
+        expectedMessage: SharedConstants.messages.resetPassword.weakPassword
+      },
+      {
+        error: new PasswordResetError(SharedConstants.messages.resetPassword.invalidSession, 'session_not_found', 401),
+        expectedMessage: SharedConstants.messages.resetPassword.invalidSession
+      },
+      {
+        error: new PasswordResetError(SharedConstants.messages.resetPassword.rateLimited, 'over_email_send_rate_limit', 429),
+        expectedMessage: SharedConstants.messages.resetPassword.rateLimited
+      },
+      {
+        error: new PasswordResetError(SharedConstants.messages.resetPassword.networkError, 'TypeError'),
+        expectedMessage: SharedConstants.messages.resetPassword.networkError
+      },
+      {
+        error: {error_code: 'provider_internal', status: 500, message: 'raw provider failure'},
+        expectedMessage: SharedConstants.messages.resetPassword.resetFailed
+      }
+    ];
+    supabaseService.auth.resetPassword$.and.returnValues(
+      ...cases.map(testCase => throwError(() => testCase.error))
+    );
+
+    for (const testCase of cases) {
+      fillValidPasswords(service);
+
+      service.submitPasswordReset$.next();
+
+      expect(service.errorMessage$.value).toBe(testCase.expectedMessage);
+      expect(service.errorMessage$.value).not.toContain('raw provider');
+      expect(service.isSubmitting$.value).toBeFalse();
+    }
   });
 
   it('performRedirect navigates to login with resetSuccess param', () => {
