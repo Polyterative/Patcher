@@ -6,14 +6,19 @@ import { TestBed } from '@angular/core/testing';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
+import { By } from '@angular/platform-browser';
 import {
   Observable,
   of,
   Subject
 } from 'rxjs';
-import { ManufacturerRowComponent } from './manufacturer-row.component';
+import {
+  groupModulesByPhysicalStandard,
+  ManufacturerRowComponent
+} from './manufacturer-row.component';
 import { defaultModuleMinimalViewConfig } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
 import { ManufacturerDetail } from '../../manufacturer-detail-data.service';
+import { MinimalModule } from 'src/app/models/module';
 import { ModuleRecentMarketPrice } from 'src/app/features/backend/supabase-queries';
 import { ManufacturerRowDataService } from './manufacturer-row-data.service';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
@@ -22,7 +27,7 @@ import {
   ModuleListDisplayMode
 } from 'src/app/shared-interproject/app-state.service';
 
-type ManufacturerRowModule = { id: number };
+type ManufacturerRowModule = Pick<MinimalModule, 'id' | 'standard'> & Partial<MinimalModule>;
 
 type ManufacturerRowDataServiceMock = {
   canLoadRecentModuleMarketPrices: boolean;
@@ -40,8 +45,15 @@ function makeManufacturer(id = 1): ManufacturerDetail {
   return { id, name: 'Acme', logo: null } as unknown as ManufacturerDetail;
 }
 
+function makeModule(id: number, standardId: number | undefined): ManufacturerRowModule {
+  return {
+    id,
+    standard: standardId === undefined ? undefined : { id: standardId, name: `Standard ${standardId}` }
+  } as ManufacturerRowModule;
+}
+
 function makeDataServiceMock(
-  modules$: Observable<ManufacturerRowModule[] | null> = of([{ id: 101 }]),
+  modules$: Observable<ManufacturerRowModule[] | null> = of([makeModule(101, 0)]),
   summaries$: Observable<ModuleRecentMarketPrice[]> = of([])
 ): ManufacturerRowDataServiceMock {
   return {
@@ -100,10 +112,12 @@ class StubAutoContentLoadingIndicatorComponent {
   @Input() skipFirstData: unknown;
 }
 
-function makeSupabaseServiceDouble(): SupabaseService {
+function makeSupabaseServiceDouble(
+  modules$: Observable<ManufacturerRowModule[] | null> = of([makeModule(101, 0)])
+): SupabaseService {
   return {
     get: {
-      modulesBySameManufacturer: jasmine.createSpy('modulesBySameManufacturer').and.returnValue(of([{ id: 101 }]))
+      modulesBySameManufacturer: jasmine.createSpy('modulesBySameManufacturer').and.returnValue(modules$)
     },
     GET: {
       recentModuleMarketPrices: jasmine.createSpy('recentModuleMarketPrices').and.returnValue(of([]))
@@ -118,12 +132,14 @@ function makeSupabaseServiceDouble(): SupabaseService {
 
 function renderManufacturerRow(
   moduleListDisplayMode$: Observable<ModuleListDisplayMode>,
-  forceListMode: boolean
+  forceListMode: boolean,
+  displayMode: ModuleListDisplayMode | null = null,
+  modules$: Observable<ManufacturerRowModule[] | null> = of([makeModule(101, 0)])
 ) {
   TestBed.configureTestingModule({
     imports: [ManufacturerRowComponent, RouterTestingModule],
     providers: [
-      { provide: SupabaseService, useValue: makeSupabaseServiceDouble() },
+      { provide: SupabaseService, useValue: makeSupabaseServiceDouble(modules$) },
       {
         provide: AppStateService,
         useValue: { preferredPanelColor$: of(null), moduleListDisplayMode$ }
@@ -146,6 +162,7 @@ function renderManufacturerRow(
   const fixture = TestBed.createComponent(ManufacturerRowComponent);
   fixture.componentInstance.manufacturer = makeManufacturer(1);
   fixture.componentInstance.forceListMode = forceListMode;
+  fixture.componentInstance.displayMode = displayMode;
   fixture.detectChanges();
   return fixture;
 }
@@ -190,11 +207,54 @@ describe('ManufacturerRowComponent', () => {
       expect(comp.logoStorageBase).toBe('https://cdn.example.test/manufacturer-logos/');
     });
 
-    it('exposes the shared display mode preference to the template', () => {
+    it('exposes the shared display mode preference to the template fallback', () => {
       const appState = makeAppStateMock('panels');
       const comp = makeComponent(makeDataServiceMock(), appState);
 
       expect(comp.appState.moduleListDisplayMode$).toBe(appState.moduleListDisplayMode$);
+    });
+
+    it('accepts an optional local display mode override', () => {
+      const comp = makeComponent(makeDataServiceMock());
+
+      comp.displayMode = 'panels';
+
+      expect(comp.displayMode).toBe('panels');
+    });
+  });
+
+  describe('groupModulesByPhysicalStandard', () => {
+    it('orders panel groups as 3U, 1U, then Other while preserving module order inside each group', () => {
+      const modules = [
+        makeModule(1, 1),
+        makeModule(2, 0),
+        makeModule(3, 2),
+        makeModule(4, 99),
+        makeModule(5, 0),
+      ] as MinimalModule[];
+
+      const groups = groupModulesByPhysicalStandard(modules);
+
+      expect(groups.map(group => group.label)).toEqual(['3U', '1U', 'Other']);
+      expect(groups.map(group => group.modules.map(module => module.id))).toEqual([[2, 5], [1, 3], [4]]);
+    });
+
+    it('omits empty physical standard groups', () => {
+      const groups = groupModulesByPhysicalStandard([
+        makeModule(1, 0),
+      ] as MinimalModule[]);
+
+      expect(groups.map(group => group.label)).toEqual(['3U']);
+    });
+
+    it('keeps unknown and missing standards in the final Other group', () => {
+      const groups = groupModulesByPhysicalStandard([
+        makeModule(1, 9),
+        makeModule(2, undefined),
+      ] as MinimalModule[]);
+
+      expect(groups.map(group => group.label)).toEqual(['Other']);
+      expect(groups[0].modules.map(module => module.id)).toEqual([1, 2]);
     });
   });
 
@@ -236,7 +296,7 @@ describe('ManufacturerRowComponent', () => {
     });
 
     it('emits modules from backend into modules$', () => {
-      const modules = [{ id: 1 }, { id: 2 }];
+      const modules = [makeModule(1, 0), makeModule(2, 1)];
       const dataService = makeDataServiceMock(of(modules));
       const comp = makeComponent(dataService);
       comp.manufacturer = makeManufacturer(1);
@@ -266,7 +326,7 @@ describe('ManufacturerRowComponent', () => {
       comp.ngOnInit();
       comp.ngOnDestroy();
 
-      subject.next([{ id: 99 }]);
+      subject.next([makeModule(99, 0)]);
 
       // modules$ should still be null (never emitted before destroy)
       let result: ManufacturerRowModule[] | null | undefined;
@@ -275,7 +335,7 @@ describe('ManufacturerRowComponent', () => {
     });
 
     it('does not fetch price summaries by default', () => {
-      const dataService = makeDataServiceMock(of([{ id: 2 }, { id: 1 }]));
+      const dataService = makeDataServiceMock(of([makeModule(2, 0), makeModule(1, 1)]));
       const comp = makeComponent(dataService);
       comp.manufacturer = makeManufacturer(1);
       comp.ngOnInit();
@@ -294,7 +354,7 @@ describe('ManufacturerRowComponent', () => {
         tooltip: 'Recent market price: ~€399 from 4 stores.'
       };
       const dataService = makeDataServiceMock(
-        of([{ id: 2 }, { id: 1 }, { id: 2 }]),
+        of([makeModule(2, 0), makeModule(1, 1), makeModule(2, 0)]),
         of([summary])
       );
       const comp = makeComponent(dataService);
@@ -323,18 +383,56 @@ describe('ManufacturerRowComponent', () => {
   });
 
   describe('displayMode rendering', () => {
-    it('renders the panel wall when the global preference is panels and forceListMode is false (default, e.g. the manufacturers browsing page)', () => {
+    it('falls back to the global preference when no local display mode is supplied', () => {
       const fixture = renderManufacturerRow(of('panels'), false);
 
       expect(fixture.nativeElement.querySelector('app-module-panel-wall')).not.toBeNull();
       expect(fixture.nativeElement.querySelector('.module-strip')).toBeNull();
     });
 
-    it('renders the compact list instead of the panel wall when forceListMode is true, even if the global preference is panels (e.g. the module detail page)', () => {
-      const fixture = renderManufacturerRow(of('panels'), true);
+    it('renders the compact list when the local display mode input overrides a global panels preference', () => {
+      const fixture = renderManufacturerRow(of('panels'), false, 'list');
 
       expect(fixture.nativeElement.querySelector('app-module-panel-wall')).toBeNull();
       expect(fixture.nativeElement.querySelector('.module-strip')).not.toBeNull();
+    });
+
+    it('renders panel groups when the local display mode input overrides a global list preference', () => {
+      const fixture = renderManufacturerRow(of('list'), false, 'panels');
+
+      expect(fixture.nativeElement.querySelector('app-module-panel-wall')).not.toBeNull();
+      expect(fixture.nativeElement.querySelector('.module-strip')).toBeNull();
+    });
+
+    it('renders the compact list instead of the panel wall when forceListMode is true, even if the global preference is panels (e.g. the module detail page)', () => {
+      const fixture = renderManufacturerRow(of('panels'), true, 'panels');
+
+      expect(fixture.nativeElement.querySelector('app-module-panel-wall')).toBeNull();
+      expect(fixture.nativeElement.querySelector('.module-strip')).not.toBeNull();
+    });
+
+    it('renders one labeled nowrap panel wall per physical standard group', () => {
+      const fixture = renderManufacturerRow(
+        of('list'),
+        false,
+        'panels',
+        of([
+          makeModule(1, 1),
+          makeModule(2, 0),
+          makeModule(3, 2),
+          makeModule(4, 9),
+        ])
+      );
+
+      const labels = Array.from(
+        fixture.nativeElement.querySelectorAll('.manufacturer-row-panel-group-label')
+      ).map(label => (label as HTMLElement).textContent?.trim());
+      const panelWalls = fixture.debugElement.queryAll(By.directive(StubModulePanelWallComponent));
+
+      expect(labels).toEqual(['3U', '1U', 'Other']);
+      expect(panelWalls.map(wall => wall.componentInstance.wrap)).toEqual([false, false, false]);
+      expect(panelWalls.map(wall => wall.componentInstance.modules.map((module: ManufacturerRowModule) => module.id)))
+        .toEqual([[2], [1, 3], [4]]);
     });
   });
 });

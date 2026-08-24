@@ -59,6 +59,36 @@
     z-index: 3;
   }
 }
+
+.manufacturer-row-panel-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.manufacturer-row-panel-group {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.manufacturer-row-panel-group-label {
+  @include heading-font;
+  align-self: flex-start;
+  margin: 0;
+  border: 1px solid rgba(45, 67, 89, 0.22);
+  border-radius: 62.4375rem;
+  padding: 0.12rem 0.55rem;
+  background: rgba(255, 255, 255, 0.34);
+  color: rgba(0, 0, 0, 0.74);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
 .manufacturer-row-header {
   display: flex;
   align-items: center;
