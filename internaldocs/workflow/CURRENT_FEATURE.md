@@ -17,28 +17,6 @@
 
 ## Active
 
-### Auth resilience — plan: [plans/auth-resilience.md](./plans/auth-resilience.md)
-
-#### Layer 1 — MVP
-
-- [x] S1 auth-request retry committed as `dc6afca6`.
-- [x] S2 recovery-session integrity committed as `083b549a`.
-- [x] S3 OAuth callback settlement committed as `83227c2c`.
-- [x] S4 destructive-action retry QA-PASS; implementation increment uncommitted pending coordinator commit.
-
-#### Layer 2 — Structural
-
-- [x] Preserve layered auth access and browser-only recovery boundaries.
-
-#### Layer 3 — Polish
-
-- [ ] Complete and validate S4, then archive the plan.
-
-Status: S1-S3 are committed on `develop`; S4 is QA-PASS and uncommitted pending the coordinator commit. Production publication is not confirmed.
-Updated: 2026-08-24
-
-<!-- The prior Public Open API active checklist remains below for continuity; its durable plan is unchanged. -->
-
 ### Public Open API — plan: [plans/public-open-api.md](./plans/public-open-api.md)
 
 #### Layer 1 — MVP
