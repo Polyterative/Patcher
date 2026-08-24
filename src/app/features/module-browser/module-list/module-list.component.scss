@@ -29,14 +29,16 @@
 }
 
 .module-list-view-toggle {
+  --module-list-control-height: var(--mat-form-field-container-height, 2.5rem);
+
   flex: 0 0 auto;
-  align-self: center;
+  align-self: flex-start;
   margin-left: auto;
 
   mat-button-toggle-group {
-    height: 2.5rem;
-    align-items: center;
-    border-radius: 1.25rem;
+    height: var(--module-list-control-height);
+    align-items: stretch;
+    border-radius: calc(var(--module-list-control-height) / 2);
   }
 
   ::ng-deep .mat-button-toggle-label-content {
@@ -51,6 +53,12 @@
       width: 1.15rem;
       height: 1.15rem;
     }
+  }
+
+  ::ng-deep .mat-button-toggle-button {
+    display: flex;
+    align-items: center;
+    height: 100%;
   }
 }
 
