@@ -184,6 +184,16 @@ export class SupabaseQueryChain<Row = unknown> implements PromiseLike<QueryChain
   }
 }
 
+export interface VerifyOtpResult {
+  data: {
+    session: {
+      user: {id: string};
+      access_token: string;
+    } | null;
+  };
+  error: {message: string} | null;
+}
+
 export interface SupabaseClientDouble {
   readonly supabaseKey: string;
   readonly supabaseUrl: string;
@@ -192,6 +202,7 @@ export interface SupabaseClientDouble {
     signOut(options?: {scope: 'local'}): Promise<AuthSignOutResult>;
     signUp(credentials: AuthSignupCredentials): Promise<AuthSignupResult>;
     updateUser(attributes: PasswordUpdateAttributes): Promise<PasswordUpdateResult>;
+    verifyOtp(params: {token_hash: string; type: string}): Promise<VerifyOtpResult>;
   };
   from(table: string): unknown;
 }

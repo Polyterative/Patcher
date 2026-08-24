@@ -7,10 +7,10 @@ import {
 } from '@angular/core';
 import {
   ActivatedRoute,
+  Params,
   Router,
   RouterModule
 } from '@angular/router';
-import { SupabaseService } from '../../../backend/supabase.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
@@ -19,18 +19,11 @@ import { HeroContentCardComponent } from "src/app/shared-interproject/components
 import { ScreenWrapperComponent } from "src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.component";
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { SeoAndUtilsService } from '../../seo-and-utils.service';
-import { AuthChangeEvent } from '@supabase/supabase-js';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { UserResetPasswordDataService } from './user-reset-password-data.service';
-import { timer } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { CountdownProgressModule } from "src/app/shared-interproject/components/@visual/countdown-progress/countdown-progress.module";
 
-
-/**
- * Delay before checking recovery session if no auth event is received
- */
-const AUTH_CHECK_DELAY_MS = 1000;
 
 @Component({
   selector: 'app-reset-password-page',
@@ -52,7 +45,6 @@ const AUTH_CHECK_DELAY_MS = 1000;
 export class ResetPasswordPageComponent extends SubManager implements OnInit {
 
   constructor(
-    private supabaseService: SupabaseService,
     protected router: Router,
     private route: ActivatedRoute,
     private seoAndUtilsService: SeoAndUtilsService,
@@ -64,13 +56,13 @@ export class ResetPasswordPageComponent extends SubManager implements OnInit {
   
   ngOnInit(): void {
     // Recovery tokens are single-use: only the browser may verify them.
-    // Running verifyOtp during SSR consumed the token server-side, so the
-    // browser's own verification always failed with otp_expired.
+    // Running verification during SSR consumed the token server-side, so the
+    // browser's own verification always failed with otp_expired. All
+    // verification/event access is delegated to `UserResetPasswordDataService`
+    // (which itself re-applies this same gate for its own restore/listener
+    // logic) — this component never touches Supabase directly.
     if (isPlatformBrowser(this.platformId)) {
-      // Check for token in query params first
       this.checkAndVerifyToken();
-      
-      this.setupAuthStateListener();
     }
     
     this.seoAndUtilsService.updateSeo({
@@ -81,94 +73,83 @@ export class ResetPasswordPageComponent extends SubManager implements OnInit {
   }
   
   /**
-   * Check for token_hash in query params and verify with Supabase
+   * Check for token_hash in query params and delegate verification to the
+   * data service. The hash-fragment shape (Supabase's implicit-grant flow)
+   * needs no explicit trigger here — it is auto-processed by the SDK and
+   * observed centrally via `SupabaseService.auth.passwordRecoverySession$`,
+   * which the data service already subscribes to on construction.
    */
   private checkAndVerifyToken(): void {
-    this.route.queryParams.pipe(take(1)).subscribe(async (params) => {
+    this.route.queryParams.pipe(take(1)).subscribe((params) => {
       const tokenHash = params['token_hash'];
       const type = params['type'];
-      
-      // Also check hash fragment for access_token (Supabase's standard flow)
-      const hash = this.getBrowserLocationHash();
-      const hashHasToken = hash.includes('access_token=') || hash.includes('access_token%3D');
-      const hashHasRecovery = hash.includes('type=recovery') || hash.includes('type%3Drecovery');
-      
+
       if (tokenHash && type === 'recovery') {
-        // Token found in query params - verify it
-        try {
-          const supabaseClient = (this.supabaseService as any).supabase;
-          const {error} = await supabaseClient.auth.verifyOtp({
-            token_hash: tokenHash,
-            type: 'recovery'
-          });
-          
-          if (error) {
-            console.error('Token verification failed:', error);
-            this.dataService.errorMessage$.next('Invalid or expired password reset link.');
-            this.dataService.setRecoverySession(false);
-          } else {
-            this.dataService.setRecoverySession(true);
-          }
-        } catch (error) {
-          console.error('Error verifying token:', error);
-          this.dataService.errorMessage$.next('Failed to verify password reset link.');
-          this.dataService.setRecoverySession(false);
-        }
-      } else if (hashHasToken && hashHasRecovery) {
-        // Token in hash fragment - let Supabase handle it automatically
-        // Don't set session state yet, wait for PASSWORD_RECOVERY event
+        // This specific verification attempt always independently settles
+        // `isSessionChecked$` (success or failure) — the bounded Invalid
+        // fallback must never also be armed here, or it could race a
+        // genuinely slow-but-valid verification and flash Invalid first
+        // (R6/R7).
+        this.verifyAndScrubOnSuccess(tokenHash, params);
+      } else {
+        this.concludeInvalidIfNeverChecked();
       }
     });
   }
-  
+
   /**
-   * Set up listener for Supabase auth state changes
+   * If nothing else ever settles `isSessionChecked$` (no marker matched at
+   * construction, no `token_hash` in the URL, no hash-based SDK event
+   * observed), fail closed to the Invalid state once the SDK's own auth
+   * initialization for this page load has genuinely settled — never a fixed
+   * wall-clock guess (R12). `authInitializationSettled$` only resolves once
+   * `getSettledAuthSession$` has concluded *and* one further deterministic
+   * tick has passed, guaranteeing any already-scheduled implicit/hash
+   * `PASSWORD_RECOVERY` notification has already run — so a slow-but-
+   * legitimate hash recovery can never be preempted by a false Invalid
+   * conclusion, however long its own network round trip took. Only ever
+   * armed when there is no token to verify — see `checkAndVerifyToken` (R6).
    */
-  private setupAuthStateListener(): void {
-    const supabaseClient = (this.supabaseService as any).supabase;
-    
-    const {data: authListener} = supabaseClient.auth.onAuthStateChange(
-      (event: AuthChangeEvent, session: any) => {
-        if (event === 'PASSWORD_RECOVERY') {
-          this.dataService.setRecoverySession(true);
-        } else if (event === 'SIGNED_IN') {
-          this.dataService.checkForRecoveryInUrl();
-        } else {
-          // Check if session has not been checked yet
-          this.dataService.isSessionChecked$
-            .pipe(take(1))
-            .subscribe(isChecked => {
-              if (!isChecked) {
-                this.dataService.checkForRecoveryInUrl();
-              }
-            });
-        }
-      }
-    );
-    
-    // Store the subscription and clean it up in ngOnDestroy via SubManager
-    if (authListener?.subscription) {
-      this.manageSub(authListener.subscription);
-    }
-    
-    // Fallback: check after delay if no auth event is received
-    timer(AUTH_CHECK_DELAY_MS)
-      .pipe(
-        take(1),
-        this.takeUntilDestroyed()
-      )
+  private concludeInvalidIfNeverChecked(): void {
+    this.dataService.authInitializationSettled$
+      .pipe(take(1), this.takeUntilDestroyed())
       .subscribe(() => {
-        this.dataService.isSessionChecked$
-          .pipe(
-            take(1),
-            this.takeUntilDestroyed()
-          )
-          .subscribe(isChecked => {
-            if (!isChecked) {
-              this.dataService.checkForRecoveryInUrl();
-            }
-          });
+        if (!this.dataService.isSessionChecked$.value) {
+          this.dataService.setRecoverySession(false);
+        }
       });
+  }
+
+  /**
+   * Triggers verification for this specific token and scrubs the now-
+   * consumed `token_hash`/`type` query params from the visible URL only if
+   * *this* verification attempt succeeds (ST-13) — never based on the
+   * aggregate `isRecoverySession$`/`isSessionChecked$` state, which a
+   * concurrent, unrelated marker-restore could flip independently and would
+   * otherwise let a pre-existing marker scrub a fresh token's URL before
+   * that token's own verification later fails (R8/R9). No scrub, no
+   * navigation, on failure: the existing invalid-link state is unaffected.
+   */
+  private verifyAndScrubOnSuccess(tokenHash: string, params: Params): void {
+    this.dataService.verifyRecoveryToken$(tokenHash)
+      .pipe(this.takeUntilDestroyed())
+      .subscribe(succeeded => {
+        if (succeeded) {
+          this.scrubRecoveryUrl(params);
+        }
+      });
+  }
+
+  private scrubRecoveryUrl(params: Params): void {
+    if (typeof window === 'undefined' || typeof history === 'undefined') return;
+
+    const remainingParams: Record<string, string> = {...params};
+    delete remainingParams['token_hash'];
+    delete remainingParams['type'];
+
+    const query = new URLSearchParams(remainingParams).toString();
+    const nextUrl = `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`;
+    history.replaceState(history.state, '', nextUrl);
   }
   
   /**
@@ -193,8 +174,4 @@ export class ResetPasswordPageComponent extends SubManager implements OnInit {
   }
   
   protected readonly SharedConstants = SharedConstants;
-
-  private getBrowserLocationHash(): string {
-    return typeof window === 'undefined' ? '' : window.location.hash;
-  }
 }

@@ -35,13 +35,16 @@ import {
 import {
   AUTH_CACHE_KEYS,
   createPasswordResetError,
+  extractSessionId,
+  getAuthInitializationSettled$,
   getSettledAuthSession$,
   isValidEmail,
   mapLoginUser,
   mapRichUserSession,
   mapSimpleUserSession,
   OAUTH_CALLBACK_SESSION_TIMEOUT_MS,
-  PasswordResetError
+  PasswordResetError,
+  RecoveryEventSession
 } from './supabase-auth.helpers';
 
 
@@ -49,7 +52,8 @@ export function createAuthNamespace(
   supabase: SupabaseClient<Database>,
   activated: ActivatedRoute,
   snackBar: MatSnackBar,
-  authSession$: Observable<Session | null>
+  authSession$: Observable<Session | null>,
+  passwordRecoverySession$: Observable<RecoveryEventSession | null>
 ) {
   const settledAuthSession$ = (nullSessionTimeoutMs?: number): Observable<Session | null> =>
     getSettledAuthSession$(authSession$, nullSessionTimeoutMs);
@@ -305,7 +309,71 @@ export function createAuthNamespace(
         );
       }
     },
-    
+
+    /**
+     * Replays `SupabaseService`'s own `PASSWORD_RECOVERY`/`SIGNED_OUT`-derived
+     * recovery event stream — race-free (`BehaviorSubject`) for a late-
+     * subscribing lazy route, cleared to `null` centrally on `SIGNED_OUT`.
+     */
+    passwordRecoverySession$,
+
+    /**
+     * Emits once (`undefined`) when the SDK's own auth initialization for
+     * this page load has genuinely settled — see
+     * `getAuthInitializationSettled$` for the full lifecycle rationale.
+     * Consumers use this instead of a fixed wall-clock timer to decide when
+     * it is safe to conclude "no recovery event is coming" for a bare/
+     * malformed recovery link (no `token_hash`, no hash-based recovery).
+     */
+    authInitializationSettled$: getAuthInitializationSettled$(authSession$),
+
+    /**
+     * Verifies a query-param `token_hash` recovery link (explicit shape).
+     * Rethrows the raw SDK error on failure so the caller decides messaging;
+     * resolves to a `RecoveryEventSession` (or `null` if the SDK returned no
+     * session, or the session's `session_id` claim cannot be safely
+     * extracted — fails closed rather than binding a marker to an empty
+     * sessionId) on success.
+     */
+    verifyRecoveryOtp$(tokenHash: string): Observable<RecoveryEventSession | null> {
+      return rxFrom(supabase.auth.verifyOtp({token_hash: tokenHash, type: 'recovery'})).pipe(
+        map(response => {
+          if (response.error) {
+            throw response.error;
+          }
+
+          const session = response.data?.session;
+          if (!session) return null;
+
+          const sessionId = extractSessionId(session.access_token);
+          if (!sessionId) return null;
+
+          return {
+            userId: session.user.id,
+            sessionId,
+            emittedAt: Date.now()
+          };
+        })
+      );
+    },
+
+    /**
+     * Live-session identity used to validate a recovery marker on every
+     * mount (reload/back-forward) — never a URL-text-based check.
+     */
+    getCurrentSessionFingerprint$(): Observable<{userId: string; sessionId: string} | null> {
+      return settledAuthSession$().pipe(
+        map(session => {
+          if (!session) return null;
+
+          const sessionId = extractSessionId(session.access_token);
+          if (!sessionId) return null;
+
+          return {userId: session.user.id, sessionId};
+        })
+      );
+    },
+
     updateUsername$(userId: string, newUsername: string): Observable<void> {
       const trimmedUsername = newUsername.trim();
       

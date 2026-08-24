@@ -16,7 +16,7 @@ import {
   Session,
   SupabaseClient
 } from '@supabase/supabase-js';
-import { of, ReplaySubject } from 'rxjs';
+import { of, ReplaySubject, BehaviorSubject } from 'rxjs';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { Database } from 'src/backend/database.types';
 import { environment } from 'src/environments/environment';
@@ -39,6 +39,7 @@ import { createStorageNamespace } from './supabase-storage';
 import { SupabaseQueriesService } from './supabase-queries';
 import { createGetNamespace } from './supabase-get';
 import { createAuthNamespace } from './supabase-auth';
+import { extractSessionId, RecoveryEventSession } from './supabase-auth.helpers';
 import { createMergeNamespace } from './supabase-merge';
 import { createApiKeysNamespaceForSupabaseClient } from './supabase-api-keys';
 import {
@@ -67,6 +68,7 @@ export class SupabaseService extends SubManager {
     unsubscribe: () => void
   } | null = null;
   private readonly authSession$ = new ReplaySubject<Session | null>(1);
+  private readonly passwordRecoverySession$ = new BehaviorSubject<RecoveryEventSession | null>(null);
 
   constructor(
     public activated: ActivatedRoute,
@@ -115,8 +117,18 @@ export class SupabaseService extends SubManager {
       this.authSession$.next(session ?? null);
       if (event === 'SIGNED_OUT') {
         this.user.logout$.emit();
+        this.passwordRecoverySession$.next(null);
       } else if (event === 'SIGNED_IN' && session) {
         this.user.login$.emit();
+      } else if (event === 'PASSWORD_RECOVERY' && session) {
+        // Fails closed: an event whose session_id claim can't be safely
+        // extracted is dropped entirely — never emitted with an empty/
+        // unbound sessionId, and never as `.next(null)` either, since that
+        // would be misread by any subscriber as a genuine SIGNED_OUT.
+        const sessionId = extractSessionId(session.access_token);
+        if (sessionId) {
+          this.passwordRecoverySession$.next({userId: session.user.id, sessionId, emittedAt: Date.now()});
+        }
       }
     });
 
@@ -124,7 +136,13 @@ export class SupabaseService extends SubManager {
       this.authStateSubscription = authListener.subscription;
     }
     
-    this.auth = createAuthNamespace(this.supabase, this.activated, this.snackBar, this.authSession$.asObservable());
+    this.auth = createAuthNamespace(
+      this.supabase,
+      this.activated,
+      this.snackBar,
+      this.authSession$.asObservable(),
+      this.passwordRecoverySession$.asObservable()
+    );
 
     this.add = createAddNamespace(
       this.supabase,
