@@ -10,7 +10,7 @@ Restore reliable authentication retries and session-bound recovery flows without
 
 - [x] S1 auth-request retry implemented and committed as `dc6afca6`.
 - [x] S2 recovery-session integrity committed as `083b549a`.
-- [x] S3 OAuth callback settlement committed as `83227c2c`.
+- [x] S3 OAuth callback settlement committed as `83227c2c`, with increment-review navigation gating in `b5795d3a`.
 - [x] S4 destructive-action retry committed as `0d49cfa8`.
 
 ### Structural
@@ -53,7 +53,8 @@ S2 — Recovery session integrity is implemented, independently reviewed, QA-PAS
 ## S3 status
 
 S3 — OAuth callback settlement is implemented, independently reviewed,
-QA-PASS, and committed as `83227c2c`.
+QA-PASS, and committed as `83227c2c`; final increment review found and repaired
+one replayed-profile navigation race in `b5795d3a`.
 S4 — destructive-action retry is implemented, independently quality-gated
 PASS, and committed as `0d49cfa8`. No production publication or public
 availability is claimed.
@@ -86,6 +87,8 @@ availability is claimed.
 
 - OAuth callback settlement has a total callback timeout, so a callback that
   never produces an auth session reaches a deterministic terminal outcome.
+- Callback-page navigation is driven only by the current attempt's non-replaying
+  success event, never by the replayed global profile stream.
 - Failure is published through the typed failure stream and rendered as an
   explicit `Failed` terminal state.
 - Once `AuthCallbackComponent` observes `Failed`, a late session/profile event
@@ -110,6 +113,10 @@ availability is claimed.
   explicit Failed terminal state, late-session navigation latch,
   exhaustMap duplicate suppression, slot reopening after every terminal
   outcome, and typed failure publication.
+- 2026-08-24 — Commit the final increment-review repair as `b5795d3a`.
+  `AuthCallbackComponent` now navigates only from a non-replaying callback-success
+  event, so an existing replayed global profile cannot bypass a later callback
+  denial, timeout, or missing-session failure.
 - 2026-08-24 — Commit S4 as `0d49cfa8` after independent review and QA PASS.
   Accept Technical Decision 6: every destructive retry
   restarts stage 1 (`allUserData`) and never resumes or skips stages. The final
@@ -124,6 +131,9 @@ availability is claimed.
 - Full `pnpm test-headless`: 5,339 passing, 5,340 total, one pre-existing skip.
 - `pnpm lint`, `pnpm lint:styles`, production SSR `pnpm build`, auth smoke E2E,
   and `git diff --check` are green.
+- Final increment-review repair: 57 focused tests and 5,354 full-suite tests
+  passed with one pre-existing skip; `pnpm lint`, production `pnpm build`, and
+  `git diff --check` remained green.
 
 ## Documentation impact
 
