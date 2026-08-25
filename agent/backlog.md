@@ -1,5 +1,9 @@
 # Agent Backlog
 
+> This file has not been updated since 2026-05-14 and predates the current
+> `internaldocs/workflow/TODO.md` backlog format. Treat `TODO.md` as the authoritative,
+> actively-maintained backlog.
+
 ## Completed this iteration
 
 - [x] Define the linked-rack state contract, degraded-state rules, and acceptance scenarios for the active patch-builder feature.
@@ -16,5 +20,5 @@
 
 ## Deferred / external
 
+- [x] E2E dedicated-account rotation — done; see `internaldocs/workflow/plans/done/e2e-dedicated-test-account-cleanup.md`.
 - [ ] Propose modules from the linked rack below the patch editor as a later enhancement without changing collection-first editing.
-- [ ] E2E dedicated-account rotation remains an external credentials task and is not part of the current linked-rack slice.
