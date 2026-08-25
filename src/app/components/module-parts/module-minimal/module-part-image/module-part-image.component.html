@@ -14,7 +14,21 @@
     @if ({
       height: data.standard|getModuleHeightForStandard
     }; as bag) {
-      @if (filename) {
+      @if (loadFailed) {
+        <div [ngStyle]="fixedHeight
+                          ? { width: (data.hp * 8 / bag.height) + 'rem' }
+                          : { width: (data.hp/sizeDivider/2)+'rem', height: (bag.height/sizeDivider/2)+'rem' }"
+             class="preview img preview--empty preview--load-failed"
+             [class.preview--fixed-height]="fixedHeight"
+             [@enter]
+             [attr.title]="'Panel image failed to load for ' + data.name"
+             data-testid="module-image-load-failed"
+        >
+          <mat-icon class="preview__icon" aria-hidden="true">broken_image</mat-icon>
+          <span class="preview__label">Image failed to load</span>
+        </div>
+      }
+      @if (filename && !loadFailed) {
         <img
           class="img image-transition"
           [class.img--fixed-height]="fixedHeight"
@@ -60,7 +74,18 @@
     @if ({
       height: data.standard|getModuleHeightForStandard
     }; as bag) {
-      @if (filename) {
+      @if (loadFailed) {
+        <div
+             class="preview modulePartImageHost__surfaceImage preview--empty preview--load-failed"
+             [@enter]
+             [attr.title]="'Panel image failed to load for ' + data.name"
+             data-testid="module-image-load-failed"
+        >
+          <mat-icon class="preview__icon" aria-hidden="true">broken_image</mat-icon>
+          <span class="preview__label">Image failed to load</span>
+        </div>
+      }
+      @if (filename && !loadFailed) {
         <img
           class="image-transition modulePartImageHost__surfaceImage"
           [class.img--fixed-height]="fixedHeight"

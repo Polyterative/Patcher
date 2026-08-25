@@ -208,6 +208,45 @@ describe('ModulePartImageComponent — panel resolution', () => {
     expect(c.imageSrc).toBe('https://images.patcher.xyz/module-panels/new-panel.png');
   });
 
+  it('marks the panel image as failed after a second load error once direct fallback is already active (AT-I2)', () => {
+    const c = buildComponent();
+    c.data = makeModule([{...PANEL_DARK, filename: 'panel.png'}]);
+    c.ngOnChanges();
+    c.onImageLoadError();
+    (c.changeDetection.detectChanges as jasmine.Spy).calls.reset();
+
+    c.onImageLoadError();
+
+    expect(c.loadFailed).toBeTrue();
+    expect(c.changeDetection.detectChanges).toHaveBeenCalled();
+  });
+
+  it('does not mark the panel as failed on a lone first load error (AT-I1 preservation)', () => {
+    const c = buildComponent();
+    c.data = makeModule([{...PANEL_DARK, filename: 'panel.png'}]);
+    c.ngOnChanges();
+
+    c.onImageLoadError();
+
+    expect(c.loadFailed).toBeFalse();
+  });
+
+  it('resets the failed state when the resolved panel filename changes (AT-I3)', () => {
+    const c = buildComponent();
+    c.data = makeModule([{...PANEL_DARK, filename: 'old-panel.png'}]);
+    c.ngOnChanges();
+    c.onImageLoadError();
+    c.onImageLoadError();
+    expect(c.loadFailed).toBeTrue();
+
+    c.data = makeModule([{...PANEL_DARK, filename: 'new-panel.png'}]);
+    c.ngOnChanges();
+
+    expect(c.loadFailed).toBeFalse();
+    expect(c.useDirectStorageFallback).toBeFalse();
+    expect(c.imageSrc).toBe('https://images.patcher.xyz/module-panels/new-panel.png');
+  });
+
   it('prefers an explicit selectedPanelId over preferredPanelColor', () => {
     const c = buildComponent();
     c.data = makeModule();
@@ -361,6 +400,29 @@ describe('ModulePartImageComponent — placeholder proportions', () => {
     expectRemValue(placeholder.style.width, 10 * 8 / MODULE_FORMAT_GEOMETRY.INTELLIJEL_1U.heightRem);
     expect(placeholder.style.height).toBe('');
     expect(placeholder.classList).toContain('preview--fixed-height');
+  });
+
+  it('renders an accessible failed state after a double load error, hiding the broken image (AT-I2, AT-I4)', () => {
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.componentInstance.data = makeModule([{...PANEL_DARK, filename: 'panel.png'}], {id: 1, name: 'Intellijel 1U'}, 10);
+    fixture.detectChanges();
+
+    const image = fixture.nativeElement.querySelector('img') as HTMLImageElement;
+    image.dispatchEvent(new Event('error'));
+    fixture.detectChanges();
+    image.dispatchEvent(new Event('error'));
+    fixture.detectChanges();
+
+    const failed = fixture.nativeElement.querySelector('[data-testid="module-image-load-failed"]') as HTMLElement;
+    expect(failed).withContext('the load-failed fallback should render').toBeTruthy();
+    expect(failed.getAttribute('title')).toBe('Panel image failed to load for VCO');
+    expect(failed.textContent).toContain('Image failed to load');
+    expect(fixture.nativeElement.querySelector('img')).withContext('the broken <img> must not remain in the DOM').toBeNull();
+
+    // Layout stability: the failed-state box must reserve the exact same footprint as the
+    // existing empty-state box (same sizing rule as the Intellijel 1U case above).
+    expectRemValue(failed.style.width, 10 / 2.7 / 2);
+    expectRemValue(failed.style.height, MODULE_FORMAT_GEOMETRY.INTELLIJEL_1U.heightRem / 2.7 / 2);
   });
 
   function expectRemValue(actual: string, expected: number): void {

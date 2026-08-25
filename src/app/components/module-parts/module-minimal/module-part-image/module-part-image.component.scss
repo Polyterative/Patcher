@@ -78,6 +78,12 @@
   object-fit: fill;
 }
 
+// The surface (full-bleed) variant's load-failed state reuses .preview--empty's
+// centered icon/label layout instead of the plain block box the <img> element uses.
+.modulePartImageHost__surfaceImage.preview--empty {
+  display: flex;
+}
+
 img {
   max-width: 100% !important;
 }
