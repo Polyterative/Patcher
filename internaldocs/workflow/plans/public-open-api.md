@@ -1362,6 +1362,14 @@ Worker has passed §11–§13 checks:
   page, so that checklist item was checked off without further edits. Remaining
   open work is unchanged: Patcher-docs external publish, final plan archival, and
   Layer 2 (bulk JSONL export) / Layer 3 (contract polish, flag removal).
+- 2026-08-25 — Documentation hygiene pass: removed the two "Pending questions"
+  entries for this feature from `TODO.md` (infra/schema gates checklist and
+  owner-present rollout narrative). Every sub-item was already `[x]` done and
+  recorded in `TODO.md`'s Standing approvals (including the WAF deferral), the
+  remaining `[ ]` R2 item was already tracked as Structural/non-MVP in
+  `CURRENT_FEATURE.md` Layer 2, and every technical detail cited (Durable Object
+  name, Vault secret names, migration filenames) already lives in this plan.
+  No open owner question remained under either entry, so nothing was lost.
 
 ## Resolved refinement decisions (locked)
 
