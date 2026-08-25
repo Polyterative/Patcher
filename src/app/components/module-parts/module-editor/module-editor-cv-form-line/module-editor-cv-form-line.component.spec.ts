@@ -7,6 +7,9 @@ function makeFormCV(partial: Partial<FormCV> = {}): FormCV {
   return {
     id: partial.id ?? 1,
     isApproved: partial.isApproved ?? false,
+    isAudio: partial.isAudio ?? null,
+    isDCC: partial.isDCC ?? null,
+    isVOCT: partial.isVOCT ?? null,
     name: partial.name ?? new UntypedFormControl('CV Name'),
     a: partial.a ?? new UntypedFormControl(0),
     b: partial.b ?? new UntypedFormControl(5)

@@ -64,6 +64,9 @@ function makeFormCV(partial: Partial<FormCV> = {}): FormCV {
   return {
     id: partial.id ?? 1,
     isApproved: partial.isApproved ?? false,
+    isAudio: partial.isAudio ?? null,
+    isDCC: partial.isDCC ?? null,
+    isVOCT: partial.isVOCT ?? null,
     name: partial.name ?? new UntypedFormControl('CV Name'),
     a: partial.a ?? new UntypedFormControl(0),
     b: partial.b ?? new UntypedFormControl(5)
@@ -409,6 +412,24 @@ describe('ModuleEditorDataService', () => {
       expect(result.a.enabled).toBeTrue();
       expect(result.b.enabled).toBeTrue();
     });
+
+    it('preserves true, false, and null signal metadata values from source rows', () => {
+      const values: Array<true | false | null> = [true, false, null];
+
+      values.forEach(value => {
+        const result = service.createFormCV({
+          id: 5,
+          name: `Signal ${ value }`,
+          isAudio: value,
+          isDCC: value,
+          isVOCT: value
+        }, null, null);
+
+        expect(result.isAudio).toBe(value);
+        expect(result.isDCC).toBe(value);
+        expect(result.isVOCT).toBe(value);
+      });
+    });
   });
   
   describe('formCVToCV', () => {
@@ -423,7 +444,16 @@ describe('ModuleEditorDataService', () => {
         })
       ];
       const result = service.formCVToCV(formCVs);
-      expect(result).toEqual([{name: 'Gate', id: 7, min: -5, max: 5, isApproved: true}]);
+      expect(result).toEqual([{
+        name: 'Gate',
+        id: 7,
+        min: -5,
+        max: 5,
+        isAudio: null,
+        isDCC: null,
+        isVOCT: null,
+        isApproved: true
+      }]);
     });
 
     it('maps empty voltage fields to undefined', () => {
@@ -438,7 +468,44 @@ describe('ModuleEditorDataService', () => {
       ];
 
       const result = service.formCVToCV(formCVs);
-      expect(result).toEqual([{name: 'Unknown range', id: 0, min: undefined, max: undefined, isApproved: false}]);
+      expect(result).toEqual([{
+        name: 'Unknown range',
+        id: 0,
+        min: undefined,
+        max: undefined,
+        isAudio: null,
+        isDCC: null,
+        isVOCT: null,
+        isApproved: false
+      }]);
+    });
+
+    it('preserves signal metadata after unrelated name and range edits', () => {
+      const formCV = service.createFormCV({
+        id: 9,
+        name: 'Original',
+        min: 0,
+        max: 5,
+        isAudio: true,
+        isDCC: false,
+        isVOCT: null,
+        isApproved: false
+      }, null, null);
+
+      formCV.name.setValue('Renamed');
+      formCV.a.setValue(-1);
+      formCV.b.setValue(8);
+
+      expect(service.formCVToCV([formCV])).toEqual([{
+        name: 'Renamed',
+        id: 9,
+        min: -1,
+        max: 8,
+        isAudio: true,
+        isDCC: false,
+        isVOCT: null,
+        isApproved: false
+      }]);
     });
   });
   
@@ -522,6 +589,44 @@ describe('ModuleEditorDataService', () => {
       });
       
       expect(result.hasPendingChanges).toBeFalse();
+    });
+
+    it('keeps nullable signal metadata in pending state after unrelated input and output edits', () => {
+      const ins: CV[] = [
+        {id: 1, name: 'Audio In', min: 0, max: 5, isApproved: false, isAudio: true, isDCC: false, isVOCT: null},
+        {id: 2, name: 'Pitch In', min: 0, max: 5, isApproved: false, isAudio: false, isDCC: null, isVOCT: true}
+      ];
+      const outs: CV[] = [
+        {id: 3, name: 'Clock Out', min: -5, max: 5, isApproved: false, isAudio: null, isDCC: true, isVOCT: false}
+      ];
+      const module = makeDbModule({ins, outs});
+      const formIns = ins.map(cv => service.createFormCV(cv, null, null));
+      const formOuts = outs.map(cv => service.createFormCV(cv, null, null));
+
+      formIns[0].name.setValue('Audio Input');
+      formIns[0].a.setValue(-1);
+      formIns[0].b.setValue(6);
+      formOuts[0].name.setValue('Clock Output');
+      formOuts[0].a.setValue(-4);
+      formOuts[0].b.setValue(4);
+
+      const result = service.getPendingSaveState({
+        module,
+        formIns,
+        formOuts,
+        powerDirty: false,
+        physicalDirty: false,
+        panelFileCount: 0
+      });
+
+      expect(result.shouldSaveInsOuts).toBeTrue();
+      expect(result.ins).toEqual([
+        {id: 1, name: 'Audio Input', min: -1, max: 6, isApproved: false, isAudio: true, isDCC: false, isVOCT: null},
+        {id: 2, name: 'Pitch In', min: 0, max: 5, isApproved: false, isAudio: false, isDCC: null, isVOCT: true}
+      ]);
+      expect(result.outs).toEqual([
+        {id: 3, name: 'Clock Output', min: -4, max: 4, isApproved: false, isAudio: null, isDCC: true, isVOCT: false}
+      ]);
     });
   });
   
@@ -669,6 +774,21 @@ describe('ModuleEditorDataService', () => {
       const outs: CV[] = [{id: 2, name: 'Gate', min: 0, max: 5, isApproved: false}];
       const params = makeParams({shouldSaveInsOuts: true, ins, outs});
       const result = service.syncDataSnapshotAfterSave(params);
+      expect(result.ins).toEqual(ins);
+      expect(result.outs).toEqual(outs);
+    });
+
+    it('keeps nullable signal metadata in the local snapshot after an input/output save', () => {
+      const ins: CV[] = [
+        {id: 1, name: 'Audio Input', min: -1, max: 6, isApproved: false, isAudio: true, isDCC: false, isVOCT: null}
+      ];
+      const outs: CV[] = [
+        {id: 2, name: 'Clock Output', min: -4, max: 4, isApproved: false, isAudio: null, isDCC: true, isVOCT: false}
+      ];
+      const params = makeParams({shouldSaveInsOuts: true, ins, outs});
+
+      const result = service.syncDataSnapshotAfterSave(params);
+
       expect(result.ins).toEqual(ins);
       expect(result.outs).toEqual(outs);
     });

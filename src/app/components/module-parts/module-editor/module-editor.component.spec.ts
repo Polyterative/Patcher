@@ -110,6 +110,9 @@ function makeModuleEditorDataService(
       .and.callFake((data, validatorsName, validatorsNum) => ({
         id: data.id ?? 0,
         isApproved: data.isApproved ?? false,
+        isAudio: data.isAudio ?? null,
+        isDCC: data.isDCC ?? null,
+        isVOCT: data.isVOCT ?? null,
         name: new UntypedFormControl(data.name ?? '', validatorsName),
         a: new UntypedFormControl(data.min ?? '', validatorsNum),
         b: new UntypedFormControl(data.max ?? '', validatorsNum)
@@ -228,6 +231,9 @@ function makeDraftCv(partial: Partial<FormCV> = {}): FormCV {
   return {
     id: partial.id ?? 0,
     isApproved: partial.isApproved ?? false,
+    isAudio: partial.isAudio ?? null,
+    isDCC: partial.isDCC ?? null,
+    isVOCT: partial.isVOCT ?? null,
     name: partial.name ?? new UntypedFormControl('', Validators.required),
     a: partial.a ?? new UntypedFormControl(0, [Validators.min(-12), Validators.max(12)]),
     b: partial.b ?? new UntypedFormControl(5, [Validators.min(-12), Validators.max(12)])

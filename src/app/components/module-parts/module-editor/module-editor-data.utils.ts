@@ -27,6 +27,9 @@ export function toComparableCv(cv: CV | null | undefined): {
   name: string;
   min: number | null;
   max: number | null;
+  isAudio: boolean | null;
+  isDCC: boolean | null;
+  isVOCT: boolean | null;
   isApproved: boolean;
 } {
   return {
@@ -34,6 +37,9 @@ export function toComparableCv(cv: CV | null | undefined): {
     name: (cv?.name ?? '').trim(),
     min: cv?.min ?? null,
     max: cv?.max ?? null,
+    isAudio: cv?.isAudio ?? null,
+    isDCC: cv?.isDCC ?? null,
+    isVOCT: cv?.isVOCT ?? null,
     isApproved: cv?.isApproved ?? false
   };
 }
@@ -49,6 +55,9 @@ export function areCvListsEqual(a: CV[], b: CV[]): boolean {
       && left.name === right.name
       && left.min === right.min
       && left.max === right.max
+      && left.isAudio === right.isAudio
+      && left.isDCC === right.isDCC
+      && left.isVOCT === right.isVOCT
       && left.isApproved === right.isApproved;
   });
 }

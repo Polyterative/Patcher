@@ -138,6 +138,9 @@ describe('ModuleEditorDataService I/O branches', () => {
       {
         id: 0,
         isApproved: false,
+        isAudio: null,
+        isDCC: null,
+        isVOCT: null,
         name: new UntypedFormControl('A'),
         a: new UntypedFormControl(0),
         b: new UntypedFormControl(5)
@@ -145,6 +148,9 @@ describe('ModuleEditorDataService I/O branches', () => {
       {
         id: 1,
         isApproved: true,
+        isAudio: null,
+        isDCC: null,
+        isVOCT: null,
         name: new UntypedFormControl('Locked'),
         a: new UntypedFormControl(1),
         b: new UntypedFormControl(2)

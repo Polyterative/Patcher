@@ -19,13 +19,15 @@ function makeCV(
   name: string,
   min: number | null = null,
   max: number | null = null,
-  isApproved = false
+  isApproved = false,
+  signalMetadata: Pick<CV, 'isAudio' | 'isDCC' | 'isVOCT'> = {}
 ): CV {
   return {
     id,
     name,
     ...(min === null ? {} : {min}),
     ...(max === null ? {} : {max}),
+    ...signalMetadata,
     isApproved
   };
 }
@@ -74,10 +76,27 @@ describe('module-editor-data.utils', () => {
       expect(result.isApproved).toBeTrue();
     });
 
+    it('preserves nullable signal metadata for comparison', () => {
+      const cv = makeCV(1, 'Audio', null, null, false, {
+        isAudio: true,
+        isDCC: false,
+        isVOCT: null
+      });
+
+      const result = toComparableCv(cv);
+
+      expect(result.isAudio).toBeTrue();
+      expect(result.isDCC).toBeFalse();
+      expect(result.isVOCT).toBeNull();
+    });
+
     it('uses defaults for null input fields', () => {
       const result = toComparableCv(null);
       expect(result.id).toBe(0);
       expect(result.name).toBe('');
+      expect(result.isAudio).toBeNull();
+      expect(result.isDCC).toBeNull();
+      expect(result.isVOCT).toBeNull();
     });
   });
 
@@ -94,6 +113,13 @@ describe('module-editor-data.utils', () => {
 
     it('returns false when cv differs', () => {
       expect(areCvListsEqual([makeCV(1, 'A')], [makeCV(1, 'B')])).toBeFalse();
+    });
+
+    it('returns false when signal metadata differs', () => {
+      expect(areCvListsEqual(
+        [makeCV(1, 'A', null, null, false, {isAudio: true})],
+        [makeCV(1, 'A', null, null, false, {isAudio: false})]
+      )).toBeFalse();
     });
   });
 

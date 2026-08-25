@@ -114,6 +114,9 @@ export class ModuleEditorDataService {
         validatorsNum
       ),
       id: data.id || 0,
+      isAudio: data.isAudio ?? null,
+      isDCC: data.isDCC ?? null,
+      isVOCT: data.isVOCT ?? null,
       isApproved: data.isApproved || false
     };
 
@@ -150,6 +153,9 @@ export class ModuleEditorDataService {
       id: formCV.id,
       min: formCV.a.value === '' ? undefined : formCV.a.value,
       max: formCV.b.value === '' ? undefined : formCV.b.value,
+      isAudio: formCV.isAudio,
+      isDCC: formCV.isDCC,
+      isVOCT: formCV.isVOCT,
       isApproved: formCV.isApproved || false
     }));
   }
