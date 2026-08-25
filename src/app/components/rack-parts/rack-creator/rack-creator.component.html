@@ -128,6 +128,21 @@
             <div class="modulargrid-import-error" role="alert" *ngIf="parseResult.status === 'wrong-shape'">
               This file does not look like a ModularGrid rack export.
             </div>
+            <div
+              class="modulargrid-import-inline-warning"
+              data-testid="modulargrid-import-warnings"
+              role="status"
+              aria-live="polite"
+              aria-label="ModularGrid import warnings"
+              *ngIf="parseResult.status === 'valid' && parseResult.warnings.length > 0"
+            >
+              <div
+                data-testid="modulargrid-import-warning"
+                *ngFor="let warning of parseResult.warnings"
+              >
+                {{warning}}
+              </div>
+            </div>
           </ng-container>
 
           <ng-container *ngIf="moduleCatalogueState$ | async as catalogueState">

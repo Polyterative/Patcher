@@ -55,12 +55,36 @@ describe('ModularGrid import parser', () => {
       rows1u: [1]
     }));
     expect(result.modules.map(module => module.inferredHp)).toEqual([8, 76, 4]);
+    expect(result.warnings).toEqual([]);
   });
 
   it('parses rows1u defensively without unserializing PHP payloads', () => {
     expect(parseRows1u('a:2:{i:0;i:1;i:1;s:1:"3";}', 4)).toEqual([1, 3]);
     expect(parseRows1u('a:2:{i:0;s:2:"11";i:1;s:2:"12";}', 16)).toEqual([11, 12]);
     expect(parseRows1u('', 4)).toEqual([]);
+  });
+
+  it('warns but accepts a malformed non-empty rows1u export', () => {
+    const result = parseModularGridExport(JSON.stringify({
+      Rack: {
+        name: 'Malformed 1U Rack',
+        rows: '2',
+        te: '84',
+        rows1u: 'not serialized row data'
+      },
+      User: {name: 'user'},
+      Module: [{
+        id: 'mg-10',
+        name: "Pamela's NEW Workout",
+        ModulesRack: {row: '1', col: '1'}
+      }]
+    }));
+
+    expect(result.status).toBe('valid');
+    expect(result.rack?.rows1u).toEqual([]);
+    expect(result.warnings).toEqual([
+      'Could not detect 1U rows from rows1u; treating all rows as standard height.'
+    ]);
   });
 });
 
