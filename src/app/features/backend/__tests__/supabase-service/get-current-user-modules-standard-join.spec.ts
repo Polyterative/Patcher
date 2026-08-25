@@ -57,4 +57,32 @@ describe('SupabaseService - GET.currentUserModules standard join', () => {
       }
     });
   }, TEST_TIMEOUT);
+
+  it('requests the stats/power fields a racked module needs (weight, depth, power rails)', (done) => {
+    mockUserSession(service, authUserFixture('collection-user'));
+
+    const mock = chainable({data: [], count: 0, error: null});
+    const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+    service.GET.currentUserModules().subscribe({
+      next: () => {
+        expect(selectSpy).toHaveBeenCalled();
+        const selectString = selectSpy.calls.mostRecent().args[0] as string;
+
+        // An optimistically-placed added module must carry the same fields as a
+        // canonically racked module, or rack stats render "NaN mm" / "NaN kg".
+        expect(selectString).toContain('weight');
+        expect(selectString).toContain('depth');
+        expect(selectString).toContain('powerPos12');
+        expect(selectString).toContain('powerNeg12');
+        expect(selectString).toContain('powerPos5');
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
 });

@@ -182,7 +182,7 @@ export class SupabasePossessionQueries extends SupabaseQueriesBase {
     const panelsTable: string = `${ prefix }.${ DbPaths.module_panels }`;
 
 
-    const moduleColumns = `id,name,hp,description,public,created,updated,manufacturerId,isApproved`;
+    const moduleColumns = `id,name,hp,weight,depth,powerPos12,powerNeg12,powerPos5,description,public,created,updated,manufacturerId,isApproved`;
 
     const columns = [
       moduleColumns,
