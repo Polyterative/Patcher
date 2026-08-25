@@ -315,6 +315,157 @@ describe('ModuleBrowserDataService', () => {
     service.ngOnDestroy();
   });
 
+  it('completes same-module quick-add writes in queued, ordered fashion (AT-Q1)', () => {
+    const {service, backend, loggedUser$, analytics, snackBar} = build();
+    const persistedPossessions = new Map<number, UserModulePossessionKind>();
+    const pendingWrites: Array<{
+      moduleId: number;
+      kind: UserModulePossessionKind;
+      completion$: Subject<null>;
+    }> = [];
+
+    backend.GET.currentUserModulesPossessionOnly.and.callFake(() => of(
+      Array.from(persistedPossessions.entries()).map(([id, possessionKind]) => ({id, possessionKind}))
+    ));
+    backend.update.userModulePossession.and.callFake((moduleId, kind) => {
+      const completion$ = new Subject<null>();
+      pendingWrites.push({moduleId, kind, completion$});
+      return completion$.asObservable();
+    });
+
+    loggedUser$.next(userFixture());
+    backend.GET.currentUserModulesPossessionOnly.calls.reset();
+    analytics.capture.calls.reset();
+    snackBar.open.calls.reset();
+
+    const module = moduleFactory({id: 303, name: 'Same Card Module'});
+    service.modulesList$.next([module]);
+
+    service.setModulePossession$.next({module, request: 'HAS'});
+    service.setModulePossession$.next({module, request: 'WANTS'});
+
+    // Write 2 must not even start its own backend call while write 1 is still pending.
+    expect(pendingWrites.map(({moduleId, kind}) => ({moduleId, kind}))).toEqual([
+      {moduleId: module.id, kind: 'HAS'}
+    ]);
+
+    persistedPossessions.set(module.id, 'HAS');
+    pendingWrites[0].completion$.next(null);
+
+    // Write 1's own result settles first, before write 2's backend call has even started.
+    expect(service.userModulesList$.value).toEqual([{id: module.id, possessionKind: 'HAS'}]);
+    expect(service.modulesList$.value?.map(m => ({id: m.id, possessionKind: m.possessionKind})))
+      .toEqual([{id: module.id, possessionKind: 'HAS'}]);
+    expect(pendingWrites.length).toBe(1);
+
+    pendingWrites[0].completion$.complete();
+
+    // Only now does write 2's own call start, carrying its own moduleId/kind (not coalesced).
+    expect(pendingWrites.map(({moduleId, kind}) => ({moduleId, kind}))).toEqual([
+      {moduleId: module.id, kind: 'HAS'},
+      {moduleId: module.id, kind: 'WANTS'}
+    ]);
+
+    persistedPossessions.set(module.id, 'WANTS');
+    pendingWrites[1].completion$.next(null);
+    pendingWrites[1].completion$.complete();
+
+    expect(service.userModulesList$.value).toEqual([{id: module.id, possessionKind: 'WANTS'}]);
+    expect(service.modulesList$.value?.map(m => ({id: m.id, possessionKind: m.possessionKind})))
+      .toEqual([{id: module.id, possessionKind: 'WANTS'}]);
+    expect(backend.GET.currentUserModulesPossessionOnly.calls.count()).toBe(2);
+    expect(analytics.capture.calls.allArgs()).toEqual([
+      ['module.collection_toggled', {module_id: module.id, state: 'added'}],
+      ['module.collection_toggled', {module_id: module.id, state: 'added'}]
+    ]);
+    expect(snackBar.open.calls.allArgs().map(([message]) => message)).toEqual([
+      '"Same Card Module" marked as owned.',
+      '"Same Card Module" marked as wanted.'
+    ]);
+    service.ngOnDestroy();
+  });
+
+  it('lets a queued write execute after the first write fails, updating only the queued module (AT-Q2)', () => {
+    const {service, backend, loggedUser$, analytics, snackBar} = build();
+    const persistedPossessions = new Map<number, UserModulePossessionKind>();
+    const pendingWrites: Array<{
+      moduleId: number;
+      kind: UserModulePossessionKind;
+      completion$: Subject<null>;
+    }> = [];
+
+    backend.GET.currentUserModulesPossessionOnly.and.callFake(() => of(
+      Array.from(persistedPossessions.entries()).map(([id, possessionKind]) => ({id, possessionKind}))
+    ));
+    backend.update.userModulePossession.and.callFake((moduleId, kind) => {
+      const completion$ = new Subject<null>();
+      pendingWrites.push({moduleId, kind, completion$});
+      return completion$.asObservable();
+    });
+
+    loggedUser$.next(userFixture());
+    backend.GET.currentUserModulesPossessionOnly.calls.reset();
+    analytics.capture.calls.reset();
+    snackBar.open.calls.reset();
+
+    const failingModule = moduleFactory({id: 404, name: 'Failing Card', possessionKind: 'SELLS'});
+    const queuedModule = moduleFactory({id: 505, name: 'Queued After Failure'});
+    service.modulesList$.next([failingModule, queuedModule]);
+    service.userModulesList$.next([{id: failingModule.id, possessionKind: 'SELLS'}]);
+
+    service.setModulePossession$.next({module: failingModule, request: 'HAS'});
+    service.setModulePossession$.next({module: queuedModule, request: 'WANTS'});
+
+    expect(pendingWrites.map(({moduleId, kind}) => ({moduleId, kind}))).toEqual([
+      {moduleId: failingModule.id, kind: 'HAS'}
+    ]);
+
+    pendingWrites[0].completion$.error(new Error('possession write failed'));
+
+    // A's failure surfaces one error and leaves A's pre-toggle state completely untouched —
+    // this pipeline has no optimistic mutation, so "unchanged" is the only correct outcome.
+    expect(snackBar.open.calls.count()).toBe(1);
+    expect(snackBar.open.calls.mostRecent().args[0]).toBe(
+      'Failed to update collection status — check your connection and try again.'
+    );
+    expect(service.userModulesList$.value).toEqual([{id: failingModule.id, possessionKind: 'SELLS'}]);
+    expect(service.modulesList$.value?.map(m => ({id: m.id, possessionKind: m.possessionKind})))
+      .toEqual([
+        {id: failingModule.id, possessionKind: 'SELLS'},
+        {id: queuedModule.id, possessionKind: undefined}
+      ]);
+
+    // The queue is not stalled or dropped by A's failure: B's own write starts right away.
+    expect(pendingWrites.map(({moduleId, kind}) => ({moduleId, kind}))).toEqual([
+      {moduleId: failingModule.id, kind: 'HAS'},
+      {moduleId: queuedModule.id, kind: 'WANTS'}
+    ]);
+
+    persistedPossessions.set(failingModule.id, 'SELLS');
+    persistedPossessions.set(queuedModule.id, 'WANTS');
+    pendingWrites[1].completion$.next(null);
+    pendingWrites[1].completion$.complete();
+
+    // Only the queued (surviving) write updates state, analytics, and success feedback.
+    expect(service.userModulesList$.value).toEqual([
+      {id: failingModule.id, possessionKind: 'SELLS'},
+      {id: queuedModule.id, possessionKind: 'WANTS'}
+    ]);
+    expect(service.modulesList$.value?.map(m => ({id: m.id, possessionKind: m.possessionKind})))
+      .toEqual([
+        {id: failingModule.id, possessionKind: 'SELLS'},
+        {id: queuedModule.id, possessionKind: 'WANTS'}
+      ]);
+    expect(analytics.capture.calls.allArgs()).toEqual([
+      ['module.collection_toggled', {module_id: queuedModule.id, state: 'added'}]
+    ]);
+    expect(snackBar.open.calls.allArgs().map(([message]) => message)).toEqual([
+      'Failed to update collection status — check your connection and try again.',
+      '"Queued After Failure" marked as wanted.'
+    ]);
+    service.ngOnDestroy();
+  });
+
   it('does not track search.performed for default first-page loads', () => {
     const {service, analytics} = build();
     analytics.capture.calls.reset();
