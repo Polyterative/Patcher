@@ -215,7 +215,7 @@ The style guide points teams toward layout utilities and gap classes, but many s
 
 Relevant files:
 
-- `src/app/style/tools.scss`
+- `src/app/style/tools-utilities.scss`
 - `src/app/features/backbone/home/home.component.scss`
 - `src/app/features/backbone/home/components/home-open-principles/home-open-principles.component.scss`
 - `src/app/features/backbone/home/components/home-workflow-rail/home-workflow-rail.component.scss`

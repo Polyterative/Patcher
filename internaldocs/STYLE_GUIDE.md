@@ -36,7 +36,7 @@ Common: `edit`, `delete_forever`, `close`, `add`, `save`, `check_circle`, `error
 
 ## SCSS
 
-### Layout Classes (from `tools.scss`)
+### Layout Classes (from `tools-utilities.scss`)
 
 ```scss
 .row // Flex row
