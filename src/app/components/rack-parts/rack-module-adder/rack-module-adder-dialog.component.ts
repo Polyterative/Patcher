@@ -18,7 +18,7 @@ import {
 import {
   filter,
   map,
-  share,
+  shareReplay,
   startWith,
   exhaustMap,
   takeUntil,
@@ -175,7 +175,7 @@ export class RackModuleAdderDialogComponent extends SubManager implements OnInit
         }
       ),
       startWith([]),
-      share()
+      shareReplay({bufferSize: 1, refCount: true})
     );
   }
 }
