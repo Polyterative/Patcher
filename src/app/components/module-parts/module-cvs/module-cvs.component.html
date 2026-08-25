@@ -1,5 +1,10 @@
 <div class="col gap0"
 >
+  @if (outs.length === 0 && ins.length === 0) {
+    <mat-card-subtitle class="cvs-section-label">
+      No inputs or outputs are listed for this module yet.
+    </mat-card-subtitle>
+  }
   @if (outs.length > 0) {
     <div class="col gap0 outs"
     >
