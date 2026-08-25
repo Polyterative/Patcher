@@ -12,6 +12,7 @@ import {
   knownTargetIds,
   resolveScreenshotTarget
 } from '../../e2e/screenshots/target-selection.cjs';
+import {runWithHardTimeout} from './lib/hard-timeout-runner.mjs';
 
 const rootDir = fileURLToPath(new URL('../..', import.meta.url));
 const outputDir = resolve(rootDir, 'src/assets/screenshots/major-area-screenshots');
@@ -237,9 +238,8 @@ const args = [
   '--project=chromium-screenshots',
   ...forwarded
 ];
-const result = spawnSync('pnpm', args, {stdio: 'inherit', cwd: rootDir});
-
-if (result.error) {
-  throw result.error;
-}
-process.exit(result.status ?? 1);
+const exitCode = await runWithHardTimeout('pnpm', args, {
+  cwd: rootDir,
+  label: 'pnpm test:e2e:screenshots (playwright)'
+});
+process.exit(exitCode);
