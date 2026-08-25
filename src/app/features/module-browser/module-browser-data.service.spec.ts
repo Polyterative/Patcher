@@ -4,13 +4,18 @@ import {
   tick
 } from '@angular/core/testing';
 import {
+  BehaviorSubject,
   Observable,
   of,
   Subject,
   throwError
 } from 'rxjs';
 import { MinimalManufacturer } from 'src/app/models/manufacturer';
-import { MinimalModule } from 'src/app/models/module';
+import {
+  DbModule,
+  MinimalModule,
+  UserModulePossessionKind
+} from 'src/app/models/module';
 import { Standard } from 'src/app/models/standard';
 import {
   Tag,
@@ -19,9 +24,15 @@ import {
 } from 'src/app/models/tag';
 import { AnalyticsService } from '../backbone/analytics-integration/analytics.service';
 import { CachedEntity } from '../backend/supabase.cache';
-import { SupabaseService } from '../backend/supabase.service';
+import {
+  SimpleUserModel,
+  SupabaseService
+} from '../backend/supabase.service';
 import { IdNameOption } from './module-browser-data.models';
 import { ModuleBrowserDataService } from './module-browser-data.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { UserManagementService } from '../backbone/login/user-management.service';
+import { UserModuleAcquisitionDraft } from 'src/app/models/user-module-acquisition';
 
 
 describe('ModuleBrowserDataService', () => {
@@ -70,9 +81,19 @@ describe('ModuleBrowserDataService', () => {
     GET: {
       manufacturers: jasmine.Spy<ManufacturersQuery>;
       modules: jasmine.Spy<ModulesQuery>;
+      currentUserModulesPossessionOnly: jasmine.Spy<() => Observable<Pick<DbModule, 'id' | 'possessionKind'>[]>>;
     };
     get: {
       allTags: jasmine.Spy<AllTagsQuery>;
+    };
+    add: {
+      userModuleAcquisition: jasmine.Spy<(moduleId: number, data: UserModuleAcquisitionDraft) => Observable<Record<string, never>>>;
+    };
+    delete: {
+      userModule: jasmine.Spy<(moduleId: number) => Observable<Record<string, never>>>;
+    };
+    update: {
+      userModulePossession: jasmine.Spy<(moduleId: number, kind: UserModulePossessionKind) => Observable<null>>;
     };
     cacheResetter$: {
       next: jasmine.Spy<CacheResetterNext>;
@@ -85,7 +106,17 @@ describe('ModuleBrowserDataService', () => {
     reset: jasmine.Spy<AnalyticsService['reset']>;
   }
 
+  function userFixture(id = 'user-1'): SimpleUserModel {
+    return {
+      id,
+      email: `${ id }@example.com`,
+      created_at: '2026-01-01T00:00:00.000Z',
+      updated_at: '2026-01-01T00:00:00.000Z'
+    };
+  }
+
   function build(options: {allTags?: Tag[]} = {}) {
+    const loggedUser$ = new BehaviorSubject<SimpleUserModel | undefined>(undefined);
     const analytics = {
       capture: jasmine.createSpy<AnalyticsService['capture']>('capture'),
       identify: jasmine.createSpy<AnalyticsService['identify']>('identify'),
@@ -94,24 +125,46 @@ describe('ModuleBrowserDataService', () => {
     const backend = {
       GET: {
         manufacturers: jasmine.createSpy<ManufacturersQuery>('GET.manufacturers').and.returnValue(of({data: []})),
-        modules: jasmine.createSpy<ModulesQuery>('GET.modules').and.returnValue(of({data: [], count: 0}))
+        modules: jasmine.createSpy<ModulesQuery>('GET.modules').and.returnValue(of({data: [], count: 0})),
+        currentUserModulesPossessionOnly: jasmine.createSpy<() => Observable<Pick<DbModule, 'id' | 'possessionKind'>[]>>('GET.currentUserModulesPossessionOnly')
+          .and.returnValue(of([]))
       },
       get: {
         allTags: jasmine.createSpy<AllTagsQuery>('get.allTags').and.returnValue(of(options.allTags ?? []))
       },
+      add: {
+        userModuleAcquisition: jasmine.createSpy<(moduleId: number, data: UserModuleAcquisitionDraft) => Observable<Record<string, never>>>('add.userModuleAcquisition')
+          .and.returnValue(of({}))
+      },
+      delete: {
+        userModule: jasmine.createSpy<(moduleId: number) => Observable<Record<string, never>>>('delete.userModule')
+          .and.returnValue(of({}))
+      },
+      update: {
+        userModulePossession: jasmine.createSpy<(moduleId: number, kind: UserModulePossessionKind) => Observable<null>>('update.userModulePossession')
+          .and.returnValue(of(null))
+      },
       cacheResetter$: {next: jasmine.createSpy<CacheResetterNext>('cacheResetter$.next')}
     } satisfies BackendDouble;
+    const snackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
     TestBed.configureTestingModule({
       providers: [
         {provide: SupabaseService, useValue: backend},
-        {provide: AnalyticsService, useValue: analytics}
+        {provide: AnalyticsService, useValue: analytics},
+        {provide: MatSnackBar, useValue: snackBar},
+        {
+          provide: UserManagementService,
+          useValue: {loggedUser$}
+        }
       ]
     });
     const service = new ModuleBrowserDataService(
       TestBed.inject(SupabaseService),
-      TestBed.inject(AnalyticsService)
+      TestBed.inject(AnalyticsService),
+      TestBed.inject(MatSnackBar),
+      TestBed.inject(UserManagementService)
     );
-    return {service, backend, analytics};
+    return {service, backend, analytics, loggedUser$, snackBar};
   }
 
   function tagFixture(id: number, name: string, type = TagType.Utility): Tag {

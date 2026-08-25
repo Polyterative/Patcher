@@ -5,27 +5,37 @@ import {
 import {
   BehaviorSubject,
   combineLatest,
+  EMPTY,
   merge,
   Observable,
+  of,
   Subject
 } from 'rxjs';
 import {
+  catchError,
   debounceTime,
   distinctUntilChanged,
+  exhaustMap,
   filter,
   map,
   shareReplay,
   skip,
   startWith,
   switchMap,
+  take,
   tap,
   withLatestFrom
 } from 'rxjs/operators';
-import { MinimalModule } from '../../models/module';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import {
+  MinimalModule,
+  UserModulePossessionKind
+} from '../../models/module';
 import { Tag, TagSuggestionGroup } from '../../models/tag';
 import { getCleanedValueId, isPendingAutocompleteValue } from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SubManager } from '../../shared-interproject/directives/subscription-manager';
 import { SupabaseService } from '../backend/supabase.service';
+import { UserManagementService } from '../backbone/login/user-management.service';
 import {
   ModuleBrowserFields,
   ModuleList,
@@ -43,6 +53,13 @@ import {
 import { AnalyticsService } from '../backbone/analytics-integration/analytics.service';
 import { recoverBrowserListRequest } from '../browser-data-recovery';
 import { createModuleBrowserFields } from './module-browser-fields.factory';
+import type { ModulePossessionDialogResult } from 'src/app/components/module-parts/module-possession-dialog/module-possession-dialog.component';
+import {
+  getMeaningfulAcquisitionDraft,
+  getPossessionRequestKind,
+  possessionKindLabel
+} from 'src/app/components/module-parts/module-detail-data.helpers';
+import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import {
   filterOwnedModulesForFields,
   filterWantedModulesForFields,
@@ -59,14 +76,29 @@ import {
 
 export type { ModuleList, ModuleOrderOption } from './module-browser-data.models';
 
+type BrowserUserModule = Pick<MinimalModule, 'id' | 'possessionKind'>;
+type BrowserModulePossessionRequest = UserModulePossessionKind | ModulePossessionDialogResult | null;
+type BrowserModulePossessionWrite = {
+  module: MinimalModule;
+  request: BrowserModulePossessionRequest;
+};
+type BrowserModulePossessionWriteResult = {
+  module: MinimalModule;
+  kind: UserModulePossessionKind | null;
+};
+type BrowserUserModulesRefreshSource = 'auth' | 'refresh';
+
 
 @Injectable()
 export class ModuleBrowserDataService extends SubManager {
   readonly modulesList$ = new BehaviorSubject<ModuleList>(null);
+  readonly userModulesList$ = new BehaviorSubject<BrowserUserModule[]>([]);
+  readonly isLoggedIn$: Observable<boolean>;
   readonly remoteTagFilterLoading$ = new BehaviorSubject<boolean>(false);
   readonly tagMatchMode$ = new BehaviorSubject<'OR' | 'AND'>('OR');
   readonly tagSearchQuery$ = new BehaviorSubject<string>('');
   readonly updateModulesList$ = new Subject<void>();
+  readonly setModulePossession$ = new Subject<BrowserModulePossessionWrite>();
   readonly loadMore$ = new Subject<void>();
   readonly moduleFilterInteraction$ = new Subject<void>();
   readonly modulesLoadingTrigger$ = merge(
@@ -94,17 +126,28 @@ export class ModuleBrowserDataService extends SubManager {
   readonly groupedFilterTags$: Observable<TagSuggestionGroup[]>;
   readonly fields: ModuleBrowserFields;
   readonly canReset$: Observable<boolean>;
+  private readonly refreshUserModulesList$ = new Subject<void>();
   private searchPerformedPending = false;
+  private hasKnownUserModulesList = false;
+  private userModulesOwnerId: string | null = null;
   /** Number of raw (server) rows fetched so far, independent of any local AND-tag filtering. */
   private fetchedRawCount = 0;
 
   constructor(
     private backend: SupabaseService,
     private analytics: AnalyticsService,
+    private snackBar: MatSnackBar,
+    private userService: UserManagementService,
     destroyRef?: DestroyRef
   ) {
     super(destroyRef);
     this.backend.cacheResetter$?.next(['manufacturers']);
+    this.isLoggedIn$ = this.userService.loggedUser$.pipe(
+      map(user => !!user),
+      distinctUntilChanged(),
+      shareReplay(1),
+      this.takeUntilDestroyed()
+    );
 
     this.allTags$ = this.backend.get.allTags().pipe(
       startWith([]),
@@ -158,6 +201,78 @@ export class ModuleBrowserDataService extends SubManager {
       distinctUntilChanged(),
       shareReplay(1)
     );
+
+    merge(
+      this.userService.loggedUser$.pipe(map((): BrowserUserModulesRefreshSource => 'auth')),
+      this.refreshUserModulesList$.pipe(map((): BrowserUserModulesRefreshSource => 'refresh'))
+    )
+      .pipe(
+        switchMap(refreshSource => this.userService.loggedUser$.pipe(
+          take(1),
+          map(user => ({refreshSource, user}))
+        )),
+        switchMap(({refreshSource, user}) => {
+          if (!user) {
+            this.userModulesOwnerId = null;
+            this.hasKnownUserModulesList = false;
+            return of([]);
+          }
+
+          if (this.userModulesOwnerId !== user.id) {
+            this.userModulesOwnerId = user.id;
+            this.hasKnownUserModulesList = false;
+          }
+
+          const preserveCurrentOnError = refreshSource === 'refresh' || this.hasKnownUserModulesList;
+          return this.backend.GET.currentUserModulesPossessionOnly().pipe(
+            tap(() => this.hasKnownUserModulesList = true),
+            catchError(error => {
+              console.error('Failed to load module collection status:', error);
+              SharedConstants.errorCustom(this.snackBar, 'Failed to load your collection status.');
+              return of(preserveCurrentOnError ? this.userModulesList$.value : []);
+            })
+          );
+        }),
+        this.takeUntilDestroyed()
+      )
+      .subscribe(userModules => this.userModulesList$.next(userModules));
+
+    this.setModulePossession$
+      .pipe(
+        exhaustMap(write => this.userService.loggedUser$.pipe(
+          take(1),
+          switchMap(user => {
+            if (!user) {
+              SharedConstants.errorCustom(this.snackBar, 'Log in to add modules to your collection.');
+              return EMPTY;
+            }
+            if (!write.module?.id) {
+              SharedConstants.errorCustom(this.snackBar, 'Module could not be added to your collection.');
+              return EMPTY;
+            }
+            return this.persistModulePossession$(write).pipe(
+              catchError(error => {
+                console.error('Failed to update module collection status:', error);
+                SharedConstants.errorCustom(this.snackBar, 'Failed to update collection status — check your connection and try again.');
+                return EMPTY;
+              })
+            );
+          })
+        )),
+        this.takeUntilDestroyed()
+      )
+      .subscribe(({module, kind}) => {
+        this.updateLocalUserModulePossession(module.id, kind);
+        this.analytics.capture('module.collection_toggled', {
+          module_id: module.id,
+          state: kind === null ? 'removed' : 'added',
+        });
+        const message = kind === null
+          ? `"${module.name}" removed from your collection.`
+          : `"${module.name}" marked as ${possessionKindLabel(kind)}.`;
+        SharedConstants.successCustom(this.snackBar, message);
+        this.refreshUserModulesList$.next();
+      });
 
     const filterControlChanges$ = merge(
       this.fields.name.control.valueChanges,
@@ -418,6 +533,53 @@ export class ModuleBrowserDataService extends SubManager {
 
   sortModulesByBestMatch(modules: MinimalModule[]): MinimalModule[] {
     return sortModulesByBestMatchForTags(modules, this.getSelectedTagIds());
+  }
+
+  private persistModulePossession$(
+    write: BrowserModulePossessionWrite
+  ): Observable<BrowserModulePossessionWriteResult> {
+    const kind = getPossessionRequestKind(write.request);
+    if (kind === null) {
+      return this.backend.delete.userModule(write.module.id).pipe(
+        map(() => ({module: write.module, kind}))
+      );
+    }
+
+    return this.backend.update.userModulePossession(write.module.id, kind).pipe(
+      switchMap(() => {
+        const acquisition = getMeaningfulAcquisitionDraft(write.request);
+        return acquisition
+          ? this.backend.add.userModuleAcquisition(write.module.id, acquisition).pipe(
+            map(() => ({module: write.module, kind})),
+            catchError(() => {
+              this.snackBar.open('Ownership saved, but purchase history could not be recorded.', undefined, {
+                duration: 5000,
+                panelClass: 'snack-error'
+              });
+              return of({module: write.module, kind});
+            })
+          )
+          : of({module: write.module, kind});
+      })
+    );
+  }
+
+  private updateLocalUserModulePossession(moduleId: number, kind: UserModulePossessionKind | null): void {
+    const currentUserModules = this.userModulesList$.value.filter(module => module.id !== moduleId);
+    this.hasKnownUserModulesList = true;
+    this.userModulesList$.next(kind
+      ? [...currentUserModules, {id: moduleId, possessionKind: kind}]
+      : currentUserModules
+    );
+
+    const currentModules = this.modulesList$.value;
+    if (!currentModules) {
+      return;
+    }
+    this.modulesList$.next(currentModules.map(module => module.id === moduleId
+      ? {...module, possessionKind: kind ?? undefined}
+      : module
+    ));
   }
 
   private getSelectedTagIds(): number[] {
