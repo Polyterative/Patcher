@@ -4,7 +4,16 @@ import { FormCV } from './module-editor-data.service';
 
 
 function makeFormCV(id: number): FormCV {
-  return {id, name: new UntypedFormControl('CV'), a: new UntypedFormControl(false), b: new UntypedFormControl(false), isApproved: id !== 0};
+  return {
+    id,
+    name: new UntypedFormControl('CV'),
+    a: new UntypedFormControl(false),
+    b: new UntypedFormControl(false),
+    isAudio: null,
+    isDCC: null,
+    isVOCT: null,
+    isApproved: id !== 0
+  };
 }
 
 

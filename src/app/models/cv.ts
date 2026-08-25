@@ -16,9 +16,9 @@ export interface CV {
   id: number;
   min?: number;
   max?: number;
-  isVOCT?: boolean;
-  isDCC?: boolean;
-  isAudio?: boolean;
+  isVOCT?: boolean | null;
+  isDCC?: boolean | null;
+  isAudio?: boolean | null;
   isApproved?: boolean;
   authorid?: string;
 }

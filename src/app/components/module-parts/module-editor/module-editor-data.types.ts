@@ -9,6 +9,9 @@ export interface FormCV {
   name: UntypedFormControl;
   a: UntypedFormControl;
   b: UntypedFormControl;
+  isAudio: boolean | null;
+  isDCC: boolean | null;
+  isVOCT: boolean | null;
   isApproved: boolean;
 }
 
