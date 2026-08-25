@@ -228,6 +228,21 @@ describe('RackBrowserDetailViewComponent', () => {
     };
   }
 
+  function makeRackedModuleNoDimensions(
+    moduleId: number,
+    hp: number,
+    powerPos12: number | null,
+    powerNeg12: number | null,
+    powerPos5: number | null
+  ): RackedModule {
+    const racked = makeRackedModule(moduleId, hp, powerPos12, powerNeg12, powerPos5);
+    // A freshly added "out of any row" module can arrive without depth/weight
+    // (undefined, not null) before its full shape hydrates.
+    racked.module.depth = undefined as unknown as number;
+    racked.module.weight = undefined as unknown as number;
+    return racked;
+  }
+
   it('shows rack rail totals plus derived power header count', () => {
     const rows = component.rackSummaryStatRows(makeRackMinimal({hp: 84, rows: 2}), [
       [makeRackedModule(101, 8, 50, -20, 0)],
@@ -258,6 +273,20 @@ describe('RackBrowserDetailViewComponent', () => {
       '(1 missing)',
       '(1 missing)'
     ]);
+  });
+
+  it('renders finite physical stats when an added module is missing depth/weight', () => {
+    const rows = component.rackSummaryStatRows(makeRackMinimal(), [
+      [makeRackedModuleNoDimensions(404, 8, 50, -20, 0)]
+    ]);
+    const physicalGroup = rows[1][1];
+
+    expect(physicalGroup.title).toBe('Physical');
+    physicalGroup.items.forEach(item => expect(item.value).not.toContain('NaN'));
+
+    const depthItems = physicalGroup.items.slice(0, 3);
+    depthItems.forEach(item => expect(item.value).toContain('mm'));
+    expect(physicalGroup.items[3].value).toContain('kg');
   });
 
   it('uses public detail reads for signed-out visitors', () => {
