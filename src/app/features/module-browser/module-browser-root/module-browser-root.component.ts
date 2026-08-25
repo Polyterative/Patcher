@@ -39,7 +39,6 @@ import { SubManager } from 'src/app/shared-interproject/directives/subscription-
 import { ModuleList } from '../module-browser-data.service';
 import { ModuleListActionConfig } from '../module-list/module-list.component';
 import { MatDialog } from '@angular/material/dialog';
-import { ModuleDetailDataService } from 'src/app/components/module-parts/module-detail-data.service';
 import {
   ModulePossessionDialogComponent,
   ModulePossessionDialogResult
@@ -109,9 +108,10 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
     disabledLabel: 'Already in your collection'
   };
   private quickAddDisabledIds = new Set<number>();
+  private isUserLoggedIn = false;
 
   private get canUseQuickAddDefault(): boolean {
-    return !this.moduleAction && this.viewConfig.hideButtons;
+    return this.isUserLoggedIn && !this.moduleAction && this.viewConfig.hideButtons;
   }
 
   get effectiveModuleAction(): ModuleListActionConfig | null {
@@ -204,13 +204,19 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
     private recentActivityService: ModuleBrowserRecentActivityService,
     readonly seoAndUtilsService: SeoAndUtilsService,
     private route: ActivatedRoute,
-    private moduleDetailDataService: ModuleDetailDataService,
     private dialog: MatDialog,
     private cdr: ChangeDetectorRef
   ) {
     super();
 
-    this.moduleDetailDataService.userModulesList$
+    this.dataService.isLoggedIn$
+      .pipe(this.takeUntilDestroyed())
+      .subscribe(isLoggedIn => {
+        this.isUserLoggedIn = isLoggedIn;
+        this.cdr.markForCheck();
+      });
+
+    this.dataService.userModulesList$
       .pipe(this.takeUntilDestroyed())
       .subscribe(userModules => {
         this.quickAddDisabledIds = new Set(userModules.map(module => module.id));
@@ -281,6 +287,10 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
       return;
     }
 
+    if (!this.canUseQuickAddDefault) {
+      return;
+    }
+
     this.openQuickAddToCollectionDialog(module);
   }
 
@@ -300,7 +310,7 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
         filter((result): result is ModulePossessionDialogResult | null => result !== undefined),
         this.takeUntilDestroyed()
       )
-      .subscribe(result => this.moduleDetailDataService.setModulePossession$.next(result));
+      .subscribe(result => this.dataService.setModulePossession$.next({module, request: result}));
   }
 
   setCollectionBrowseMode(mode: RackModuleBrowseMode): void {
