@@ -2,6 +2,10 @@
 
 > Archive of finished work. One-line summaries only. For strategy context see `../product/PRINCIPLES.md` and
 > `../product/ROADMAP.md`.
+>
+> New entries go at the top as one-line bullets, newest first. Older entries below preserve the table and
+> prose session-log formats used before that convention (roughly pre-2026-06), left as-is rather than
+> reformatted — dates are not strictly descending once you cross into those sections.
 
 - **2026-08-24** — HIGH: Authentication resilience fixes login/reset-request retry deadlocks, preserves verified password-recovery sessions across reloads without persisting credentials, settles OAuth failures/timeouts without trusting replayed global profiles, restores safe retry for destructive account actions, and surfaces actionable safe password-update errors; all slices passed independent review and full regression gates (`dc6afca6`, `083b549a`, `83227c2c`, `0d49cfa8`, `b5795d3a`, `f11cc29f`; [plan](./plans/done/auth-resilience.md)).
 - **2026-08-24** — HIGH: Marketplace Purchase Price History production reconciliation applies the missing private `user_module_acquisitions` table with authenticated owner-only RLS, repairs module input/output identity sequences after explicit-ID imports, and removes a private-profile E2E visibility race; production schema/advisors/type shape verified and authenticated E2E passed 146/146 (`797f0c37`, `dbc396af`; [plan](./plans/done/marketplace-purchase-price-history.md)).
