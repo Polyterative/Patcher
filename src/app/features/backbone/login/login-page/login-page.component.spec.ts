@@ -14,6 +14,7 @@ import { LoginPageComponent } from './login-page.component';
 import { SSOProvider } from '../sso-buttons/sso-buttons.component';
 import {
   ActivatedRoute,
+  convertToParamMap,
   Router
 } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -40,11 +41,14 @@ function makeLoginInteractionMock(
 }
 
 function makeRouterMock(): jasmine.SpyObj<Router> {
-  return jasmine.createSpyObj<Router>('Router', ['navigate']);
+  return jasmine.createSpyObj<Router>('Router', ['navigate', 'navigateByUrl']);
 }
 
 function makeRouteMock(params: Record<string, string> = {}): ActivatedRoute {
-  return { queryParams: of(params) } as ActivatedRoute;
+  return {
+    queryParams: of(params),
+    snapshot: { queryParamMap: convertToParamMap(params) }
+  } as ActivatedRoute;
 }
 
 function makeSnackBarMock(): jasmine.SpyObj<MatSnackBar> {
@@ -116,34 +120,59 @@ describe('LoginPageComponent', () => {
   });
 
   describe('ngOnInit — checkLoggedInUser', () => {
-    it('navigates to /user/area when user is already logged in', () => {
+    const loggedUser: SimpleUserModel = {
+      id: 'u1',
+      email: 'u1@example.com',
+      created_at: '2026-01-01T00:00:00.000Z',
+      updated_at: '2026-01-01T00:00:00.000Z'
+    };
+
+    it('navigates to /user/area when user is already logged in and no returnUrl is present', () => {
+      const { comp, router } = makeComp({ loggedUser });
+      comp.ngOnInit();
+      expect(router.navigateByUrl).toHaveBeenCalledOnceWith('/user/area');
+      expect(router.navigate).not.toHaveBeenCalled();
+    });
+
+    it('navigates to the sanitized returnUrl when it is present and safe', () => {
       const { comp, router } = makeComp({
-        loggedUser: {
-          id: 'u1',
-          email: 'u1@example.com',
-          created_at: '2026-01-01T00:00:00.000Z',
-          updated_at: '2026-01-01T00:00:00.000Z'
-        }
+        loggedUser,
+        routeParams: { returnUrl: '/modules/browser?query=1#rack' }
       });
       comp.ngOnInit();
-      expect(router.navigate).toHaveBeenCalledWith(['/user/area']);
+      expect(router.navigateByUrl).toHaveBeenCalledOnceWith('/modules/browser?query=1#rack');
+      expect(router.navigate).not.toHaveBeenCalled();
+    });
+
+    it('falls back to /user/area when returnUrl is an external open-redirect attempt', () => {
+      const { comp, router } = makeComp({
+        loggedUser,
+        routeParams: { returnUrl: 'https://evil.example/path' }
+      });
+      comp.ngOnInit();
+      expect(router.navigateByUrl).toHaveBeenCalledOnceWith('/user/area');
+      expect(router.navigate).not.toHaveBeenCalled();
+    });
+
+    it('falls back to /user/area when returnUrl is malformed', () => {
+      const { comp, router } = makeComp({
+        loggedUser,
+        routeParams: { returnUrl: '/\\evil' }
+      });
+      comp.ngOnInit();
+      expect(router.navigateByUrl).toHaveBeenCalledOnceWith('/user/area');
+      expect(router.navigate).not.toHaveBeenCalled();
     });
 
     it('does NOT navigate when user is null (not logged in)', () => {
       const { comp, router } = makeComp({ loggedUser: null });
       comp.ngOnInit();
       expect(router.navigate).not.toHaveBeenCalled();
+      expect(router.navigateByUrl).not.toHaveBeenCalled();
     });
 
     it('calls SharedConstants.successLogin when user is logged in', () => {
-      const { comp, snackBar } = makeComp({
-        loggedUser: {
-          id: 'u1',
-          email: 'u1@example.com',
-          created_at: '2026-01-01T00:00:00.000Z',
-          updated_at: '2026-01-01T00:00:00.000Z'
-        }
-      });
+      const { comp, snackBar } = makeComp({ loggedUser });
       comp.ngOnInit();
       // successLogin opens the snackBar
       expect(snackBar.open).toHaveBeenCalled();
