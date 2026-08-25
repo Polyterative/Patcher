@@ -15,7 +15,6 @@ const HIGH_THRESHOLD = 1.45;
 const AMBIGUOUS_SCORE_BAND = 0.12;
 const CLEAR_LEADER_GAP = 0.15;
 const COMPACT_CONTAINS_SCORE = 0.88;
-const MAX_CANDIDATE_SEARCH_TERMS = 80;
 
 const QUALIFIER_TOKENS = new Set([
   'aluminium',
@@ -72,43 +71,68 @@ export function normalizeModularGridModuleName(name: string): string {
     .join(' ');
 }
 
-function addCandidateSearchTerm(terms: Set<string>, term: string): void {
+function addCandidateSearchTerm(terms: string[], term: string): void {
   const normalizedTerm = normalizeModularGridModuleName(term);
   if (normalizedTerm.length >= 4 || /\d/.test(normalizedTerm)) {
-    terms.add(normalizedTerm);
+    terms.push(normalizedTerm);
   }
 }
 
+function mergeCandidateSearchTermGroups(termGroups: string[][]): string[] {
+  const seenTerms = new Set<string>();
+  const mergedTerms: string[] = [];
+
+  termGroups.flat().forEach(term => {
+    if (seenTerms.has(term)) {
+      return;
+    }
+
+    seenTerms.add(term);
+    mergedTerms.push(term);
+  });
+
+  return mergedTerms;
+}
+
+function addCandidateSearchWindowTerms(terms: string[], tokens: string[]): void {
+  tokens.forEach((_token, index) => {
+    for (let windowSize = 2; windowSize <= 3; windowSize += 1) {
+      const tokenWindow = tokens.slice(index, index + windowSize);
+      if (tokenWindow.length === windowSize) {
+        addCandidateSearchTerm(terms, tokenWindow.join(' '));
+        addCandidateSearchTerm(terms, tokenWindow.join(''));
+      }
+    }
+  });
+}
+
 export function buildModularGridCandidateSearchTerms(sourceModules: ModularGridSourceModule[]): string[] {
-  const terms = new Set<string>();
+  const fullNameTerms: string[] = [];
+  const windowTerms: string[] = [];
+  const singleTokenTerms: string[] = [];
 
   sourceModules
     .filter(source => !isModularGridBlankOrSpacer(source.name))
     .forEach(source => {
-      const normalizedVariants = [
+      const normalizedVariants = [...new Set([
         normalizeModularGridModuleName(source.name),
         normalizeModularGridModuleName(splitCompactCaseBoundaries(source.name))
-      ].filter(Boolean);
+      ].filter(Boolean))];
 
       normalizedVariants.forEach(normalizedName => {
         const tokens = normalizedName.split(/\s+/).filter(Boolean);
-        addCandidateSearchTerm(terms, normalizedName);
-        addCandidateSearchTerm(terms, tokens.join(''));
+        addCandidateSearchTerm(fullNameTerms, normalizedName);
 
-        tokens.forEach(token => addCandidateSearchTerm(terms, token));
+        if (tokens.length > 1) {
+          addCandidateSearchTerm(fullNameTerms, tokens.join(''));
+          addCandidateSearchWindowTerms(windowTerms, tokens);
+        }
 
-        tokens.forEach((_token, index) => {
-          for (let windowSize = 2; windowSize <= 3; windowSize += 1) {
-            const tokenWindow = tokens.slice(index, index + windowSize);
-            if (tokenWindow.length === windowSize) {
-              addCandidateSearchTerm(terms, tokenWindow.join(' '));
-            }
-          }
-        });
+        tokens.forEach(token => addCandidateSearchTerm(singleTokenTerms, token));
       });
     });
 
-  return [...terms].slice(0, MAX_CANDIDATE_SEARCH_TERMS);
+  return mergeCandidateSearchTermGroups([fullNameTerms, windowTerms, singleTokenTerms]);
 }
 
 function compactNormalizedName(name: string): string {

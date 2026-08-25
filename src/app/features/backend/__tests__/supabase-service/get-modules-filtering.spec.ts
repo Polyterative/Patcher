@@ -1,3 +1,6 @@
+import {
+  firstValueFrom
+} from 'rxjs';
 import { SupabaseService } from '../../supabase.service';
 import {
   cleanupSupabaseServiceTest,
@@ -13,9 +16,9 @@ interface ModuleListingRow {
 }
 
 interface ModuleListingResult {
-  data: ModuleListingRow[];
+  data: ModuleListingRow[] | null;
   count: number;
-  error: null;
+  error: unknown;
 }
 
 interface ModuleFetchAllRowsResult {
@@ -39,16 +42,26 @@ interface ForeignTableOptions {
 }
 
 type ModuleFetchAllRowsBuilder = (query: ModuleQueryDouble) => ModuleQueryDouble;
+type ModuleListingResultResolver =
+  | ModuleListingResult
+  | ((query: ModuleQueryDouble) => ModuleListingResult | Promise<ModuleListingResult>);
 
 // getModules can still use ilike in some branches, so we keep it in the mock
 class ModuleQueryDouble implements PromiseLike<ModuleListingResult> {
-  constructor(private readonly resolveValue: ModuleListingResult = {data: [], count: 0, error: null}) {}
+  readonly filterCalls: Array<[string, string, QueryFilterValue]> = [];
+  readonly limitCalls: Array<[number, ForeignTableOptions?]> = [];
+  readonly orFilters: string[] = [];
+  readonly selectCalls: Array<[string, SelectOptions?]> = [];
 
-  select(_columns: string, _options?: SelectOptions): this {
+  constructor(private readonly resolveValue: ModuleListingResultResolver = {data: [], count: 0, error: null}) {}
+
+  select(columns: string, options?: SelectOptions): this {
+    this.selectCalls.push([columns, options]);
     return this;
   }
 
-  filter(_column: string, _operator: string, _value: QueryFilterValue): this {
+  filter(column: string, operator: string, value: QueryFilterValue): this {
+    this.filterCalls.push([column, operator, value]);
     return this;
   }
 
@@ -76,7 +89,8 @@ class ModuleQueryDouble implements PromiseLike<ModuleListingResult> {
     return this;
   }
 
-  limit(_count: number, _options?: ForeignTableOptions): this {
+  limit(count: number, options?: ForeignTableOptions): this {
+    this.limitCalls.push([count, options]);
     return this;
   }
 
@@ -84,7 +98,8 @@ class ModuleQueryDouble implements PromiseLike<ModuleListingResult> {
     return this;
   }
 
-  or(_filters: string): this {
+  or(filters: string): this {
+    this.orFilters.push(filters);
     return this;
   }
 
@@ -112,7 +127,10 @@ class ModuleQueryDouble implements PromiseLike<ModuleListingResult> {
     onfulfilled?: ((value: ModuleListingResult) => TResult1 | PromiseLike<TResult1>) | null,
     onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
   ): PromiseLike<TResult1 | TResult2> {
-    return Promise.resolve(this.resolveValue).then(onfulfilled, onrejected);
+    const result = typeof this.resolveValue === 'function'
+      ? this.resolveValue(this)
+      : this.resolveValue;
+    return Promise.resolve(result).then(onfulfilled, onrejected);
   }
 }
 
@@ -124,8 +142,14 @@ interface ModuleQueriesDouble {
   fetchAllRows(table: string, buildQuery: ModuleFetchAllRowsBuilder): Promise<ModuleFetchAllRowsResult>;
 }
 
-function chainableWithIlike(resolveValue: ModuleListingResult = {data: [], count: 0, error: null}): ModuleQueryDouble {
+function chainableWithIlike(resolveValue: ModuleListingResultResolver = {data: [], count: 0, error: null}): ModuleQueryDouble {
   return new ModuleQueryDouble(resolveValue);
+}
+
+function moduleNameFilterTerms(filters: string): string[] {
+  return filters
+    .split(',')
+    .map(filter => filter.replace(/^name\.ilike\.%/, '').replace(/%$/, ''));
 }
 
 function isSupabaseClientDouble(value: unknown): value is SupabaseClientDouble {
@@ -218,6 +242,252 @@ describe('SupabaseService - GET.modules filtering', () => {
         done();
       }
     });
+  }, TEST_TIMEOUT);
+
+  it('queries import candidates in signal-separated batches so broad matches cannot hide later exact high-id targets', async () => {
+    const highIdTarget = {id: 9869, name: 'Optomix rev2', description: 'Low-pass gate'} satisfies ModuleListingRow;
+    const broadRows = Array.from({length: 300}, (_value, index) => ({
+      id: index + 1,
+      name: `Mixer utility ${ index + 1 }`,
+      description: 'Broad low-signal match'
+    })) satisfies ModuleListingRow[];
+    const queries: ModuleQueryDouble[] = [];
+
+    spyOn(supabaseClient, 'from').and.callFake(() => {
+      const query = chainableWithIlike((builtQuery) => {
+        const filters = builtQuery.orFilters.join(',');
+        return filters.includes('mixer')
+          ? {data: broadRows, count: broadRows.length, error: null}
+          : {data: [highIdTarget], count: 1, error: null};
+      });
+      queries.push(query);
+      return query;
+    });
+
+    const modules = await firstValueFrom(service.GET.publicModuleImportCandidates([
+      'mixer',
+      'optomix rev2'
+    ]));
+
+    expect(modules.some(module => module.id === highIdTarget.id)).toBeTrue();
+    expect(queries.length).toBe(2);
+    expect(queries[0].orFilters[0]).toContain('optomix rev2');
+    expect(queries[0].orFilters[0]).not.toContain('mixer');
+    expect(queries[1].orFilters[0]).toContain('mixer');
+    expect(queries[1].orFilters[0]).not.toContain('optomix rev2');
+    expect(queries[0].selectCalls[0][0]).toContain('manufacturerId');
+    expect(queries[0].filterCalls).toContain(['public', 'eq', true]);
+    queries.forEach(query => {
+      expect(query.limitCalls).toContain([300, undefined]);
+    });
+  }, TEST_TIMEOUT);
+
+  it('applies the import candidate limit globally across multiple result batches', async () => {
+    const highIdTarget = {id: 9869, name: 'Optomix rev2', description: 'Low-pass gate'} satisfies ModuleListingRow;
+    const broadRows = Array.from({length: 3}, (_value, index) => ({
+      id: index + 1,
+      name: `Mixer utility ${ index + 1 }`,
+      description: 'Broad low-signal match'
+    })) satisfies ModuleListingRow[];
+    const queries: ModuleQueryDouble[] = [];
+
+    spyOn(supabaseClient, 'from').and.callFake(() => {
+      const query = chainableWithIlike((builtQuery) => {
+        const filters = builtQuery.orFilters.join(',');
+        return filters.includes('optomix rev2')
+          ? {data: [highIdTarget], count: 1, error: null}
+          : {data: broadRows, count: broadRows.length, error: null};
+      });
+      queries.push(query);
+      return query;
+    });
+
+    const modules = await firstValueFrom(service.GET.publicModuleImportCandidates([
+      'optomix rev2',
+      'mixer'
+    ], 3));
+
+    expect(queries.length).toBe(2);
+    expect(modules.map(module => module.id)).toEqual([highIdTarget.id, 1, 2]);
+    expect(new Set(modules.map(module => module.id)).size).toBe(3);
+    expect(modules.length).toBe(3);
+  }, TEST_TIMEOUT);
+
+  it('stops querying later import candidate batches once earlier priority results fill the global limit', async () => {
+    const priorityRows = [
+      {id: 101, name: 'Alpha oscillator 1', description: 'Priority match'},
+      {id: 102, name: 'Alpha oscillator 2', description: 'Priority match'},
+      {id: 103, name: 'Alpha oscillator 3', description: 'Priority match'}
+    ] satisfies ModuleListingRow[];
+    const laterRows = [
+      {id: 999, name: 'Late target 9', description: 'Should not be requested'}
+    ] satisfies ModuleListingRow[];
+    const queries: ModuleQueryDouble[] = [];
+
+    spyOn(supabaseClient, 'from').and.callFake(() => {
+      const query = chainableWithIlike((builtQuery) => {
+        const filters = builtQuery.orFilters.join(',');
+        return filters.includes('late target 9')
+          ? {data: laterRows, count: laterRows.length, error: null}
+          : {data: priorityRows, count: priorityRows.length, error: null};
+      });
+      queries.push(query);
+      return query;
+    });
+
+    const modules = await firstValueFrom(service.GET.publicModuleImportCandidates([
+      'alpha oscillator 1',
+      'alpha oscillator 2',
+      'alpha oscillator 3',
+      'alpha oscillator 4',
+      'alpha oscillator 5',
+      'alpha oscillator 6',
+      'alpha oscillator 7',
+      'alpha oscillator 8',
+      'late target 9'
+    ], 3));
+
+    expect(queries.length).toBe(1);
+    expect(queries[0].orFilters[0]).toContain('alpha oscillator 1');
+    expect(queries[0].orFilters[0]).not.toContain('late target 9');
+    expect(modules.map(module => module.id)).toEqual([101, 102, 103]);
+  }, TEST_TIMEOUT);
+
+  it('ranks all import candidate terms before capping so a later exact high-signal target is queried', async () => {
+    const highIdTarget = {id: 9869, name: 'Optomix rev2', description: 'Low-pass gate'} satisfies ModuleListingRow;
+    const letters = 'abcdefghijklmnopqrstuvwxyz';
+    const lowSignalTerms = Array.from({length: 81}, (_value, index) =>
+      `lo${ letters[Math.floor(index / letters.length)] }${ letters[index % letters.length] }`
+    );
+    const queries: ModuleQueryDouble[] = [];
+
+    spyOn(supabaseClient, 'from').and.callFake(() => {
+      const query = chainableWithIlike((builtQuery) => {
+        const filters = builtQuery.orFilters.join(',');
+        return filters.includes('optomix rev2')
+          ? {data: [highIdTarget], count: 1, error: null}
+          : {data: [], count: 0, error: null};
+      });
+      queries.push(query);
+      return query;
+    });
+
+    const modules = await firstValueFrom(service.GET.publicModuleImportCandidates([
+      ...lowSignalTerms,
+      'optomix rev2'
+    ]));
+
+    expect(queries.some(query => query.orFilters.some(filters => filters.includes('optomix rev2')))).toBeTrue();
+    expect(modules.map(module => module.id)).toContain(highIdTarget.id);
+  }, TEST_TIMEOUT);
+
+  it('reserves capped backend search batches for late single-token aliases after more than 80 generated terms', async () => {
+    const exactTerms = Array.from({length: 64}, (_value, index) => `exact module ${ index + 1 }`);
+    const letters = 'abcdefghijklmnopqrstuvwxyz';
+    const aliasTerms = Array.from({length: 40}, (_value, index) =>
+      `alias${ letters[Math.floor(index / letters.length)] }${ letters[index % letters.length] }`
+    );
+    const queries: ModuleQueryDouble[] = [];
+
+    spyOn(supabaseClient, 'from').and.callFake(() => {
+      const query = chainableWithIlike({data: [], count: 0, error: null});
+      queries.push(query);
+      return query;
+    });
+
+    await firstValueFrom(service.GET.publicModuleImportCandidates([
+      ...exactTerms,
+      ...aliasTerms
+    ]));
+
+    const queriedTerms = queries.flatMap(query => moduleNameFilterTerms(query.orFilters[0]));
+
+    expect(queries.length).toBeLessThanOrEqual(10);
+    expect(moduleNameFilterTerms(queries[0].orFilters[0])).toEqual(exactTerms.slice(0, 8));
+    expect(queriedTerms).toContain(aliasTerms[23]);
+    expect(queriedTerms).not.toContain(aliasTerms[24]);
+  }, TEST_TIMEOUT);
+
+  it('keeps long individual-token import terms out of high-signal exact-name batches', async () => {
+    const queries: ModuleQueryDouble[] = [];
+
+    spyOn(supabaseClient, 'from').and.callFake(() => {
+      const query = chainableWithIlike({data: [], count: 0, error: null});
+      queries.push(query);
+      return query;
+    });
+
+    await firstValueFrom(service.GET.publicModuleImportCandidates([
+      'mutable instruments plaits',
+      'mutableinstrumentsplaits',
+      'mutable instruments',
+      'mutableinstruments',
+      'instruments plaits',
+      'instrumentsplaits',
+      'mutable',
+      'instruments',
+      'plaits'
+    ]));
+
+    const firstBatchTerms = moduleNameFilterTerms(queries[0].orFilters[0]);
+    const laterBatchTerms = queries
+      .slice(1)
+      .flatMap(query => moduleNameFilterTerms(query.orFilters[0]));
+
+    expect(firstBatchTerms).toEqual([
+      'mutable instruments plaits',
+      'mutable instruments',
+      'instruments plaits'
+    ]);
+    expect(firstBatchTerms).not.toContain('mutable');
+    expect(firstBatchTerms).not.toContain('instruments');
+    expect(firstBatchTerms).not.toContain('plaits');
+    expect(laterBatchTerms).toEqual([
+      'mutableinstrumentsplaits',
+      'mutableinstruments',
+      'instrumentsplaits',
+      'mutable',
+      'instruments',
+      'plaits'
+    ]);
+  }, TEST_TIMEOUT);
+
+  it('does not query import candidates when every search term is empty', async () => {
+    const fromSpy = spyOn(supabaseClient, 'from').and.callThrough();
+
+    const modules = await firstValueFrom(service.GET.publicModuleImportCandidates(['', '   ']));
+
+    expect(modules).toEqual([]);
+    expect(fromSpy).not.toHaveBeenCalled();
+  }, TEST_TIMEOUT);
+
+  it('does not query import candidates when the requested limit is zero', async () => {
+    const fromSpy = spyOn(supabaseClient, 'from').and.callThrough();
+
+    const modules = await firstValueFrom(service.GET.publicModuleImportCandidates(['optomix rev2'], 0));
+
+    expect(modules).toEqual([]);
+    expect(fromSpy).not.toHaveBeenCalled();
+  }, TEST_TIMEOUT);
+
+  it('propagates rejected import candidate queries', async () => {
+    const expectedError = new Error('candidate lookup failed');
+    spyOn(supabaseClient, 'from').and.returnValue(chainableWithIlike(() => Promise.reject(expectedError)));
+
+    await expectAsync(firstValueFrom(service.GET.publicModuleImportCandidates(['optomix rev2'])))
+      .toBeRejectedWithError('candidate lookup failed');
+  }, TEST_TIMEOUT);
+
+  it('propagates resolved import candidate Supabase errors', async () => {
+    const expectedError = new Error('candidate lookup failed');
+    spyOn(supabaseClient, 'from').and.returnValue(chainableWithIlike({
+      data: null,
+      count: 0,
+      error: expectedError
+    }));
+
+    await expectAsync(firstValueFrom(service.GET.publicModuleImportCandidates(['optomix rev2'])))
+      .toBeRejectedWith(expectedError);
   }, TEST_TIMEOUT);
   
   it('should apply "eq" filter for hp when condition is "="', (done) => {
