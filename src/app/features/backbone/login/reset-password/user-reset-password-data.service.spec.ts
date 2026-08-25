@@ -288,6 +288,36 @@ describe('UserResetPasswordDataService', () => {
     }
   });
 
+  it('clears a valid recovery marker only after a successful password update', () => {
+    writeRecoveryMarker('user-1', 'sess-1', Date.now());
+    const {service} = build({fingerprint$: of({userId: 'user-1', sessionId: 'sess-1'})});
+    fillValidPasswords(service);
+
+    service.submitPasswordReset$.next();
+
+    expect(readValidRecoveryMarker('user-1', 'sess-1', Date.now())).toBeNull();
+    expect(service.successMessage$.value).toBe(SharedConstants.messages.resetPassword.successTitle);
+    service.ngOnDestroy();
+  });
+
+  it('preserves a valid recovery marker when password update fails so the user can retry', () => {
+    writeRecoveryMarker('user-1', 'sess-1', Date.now());
+    const {service, supabaseService} = build({fingerprint$: of({userId: 'user-1', sessionId: 'sess-1'})});
+    supabaseService.auth.resetPassword$.and.returnValue(
+      throwError(() => new PasswordResetError(
+        SharedConstants.messages.resetPassword.networkError,
+        'AuthRetryableFetchError',
+        503
+      ))
+    );
+    fillValidPasswords(service);
+
+    service.submitPasswordReset$.next();
+
+    expect(readValidRecoveryMarker('user-1', 'sess-1', Date.now())).not.toBeNull();
+    expect(service.errorMessage$.value).toBe(SharedConstants.messages.resetPassword.networkError);
+  });
+
   it('performRedirect navigates to login with resetSuccess param', () => {
     const {service, router} = build();
 
@@ -415,6 +445,21 @@ describe('UserResetPasswordDataService', () => {
 
       expect(readValidRecoveryMarker('u1', 's1', Date.now())).toBeNull();
       expect(service.isRecoverySession$.value).toBeFalse();
+    }));
+
+    it('writes a marker and marks the session eligible from a fresh passwordRecoverySession$ event', fakeAsync(() => {
+      const fresh$ = new BehaviorSubject<RecoveryEventSession | null>({
+        userId: 'u1',
+        sessionId: 's1',
+        emittedAt: Date.now()
+      });
+
+      const {service} = build({passwordRecoverySession$: fresh$.asObservable()});
+      tick();
+
+      expect(readValidRecoveryMarker('u1', 's1', Date.now())).not.toBeNull();
+      expect(service.isRecoverySession$.value).toBeTrue();
+      expect(service.isSessionChecked$.value).toBeTrue();
     }));
 
     it('does not leave a stale marker restorable after passwordRecoverySession$ emits null (SIGNED_OUT)', () => {

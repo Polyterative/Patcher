@@ -185,6 +185,19 @@ describe('UserLoginDataService', () => {
     expect(service.isSubmittingReset$.value).toBeFalse();
   });
 
+  it('shows the rate-limit inline message for over_request_rate_limit without requiring status 429', () => {
+    const {service, loginInteraction} = build();
+    loginInteraction.resetPassword$.and.returnValue(
+      throwError(() => new PasswordResetError('Request rate limit exceeded', 'over_request_rate_limit', 400))
+    );
+    service.fields.user.control.setValue('user@example.com');
+
+    service.requestPasswordReset$.next();
+
+    expect(service.resetErrorMessage$.value).toBe(SharedConstants.messages.overEmailSendRateLimit);
+    expect(service.isSubmittingReset$.value).toBeFalse();
+  });
+
   it('shows the passwordResetEmailFailed inline message when resetPassword$ rejects with a non-rate-limit PasswordResetError', () => {
     const {service, loginInteraction} = build();
     loginInteraction.resetPassword$.and.returnValue(
@@ -196,6 +209,24 @@ describe('UserLoginDataService', () => {
 
     expect(service.resetErrorMessage$.value).toBe(SharedConstants.messages.passwordResetEmailFailed);
     expect(service.isSubmittingReset$.value).toBeFalse();
+  });
+
+  it('clears stale reset success text immediately when a new reset request starts', () => {
+    const {service, loginInteraction} = build();
+    const pending = new Subject<void>();
+    loginInteraction.resetPassword$.and.returnValue(pending.asObservable());
+    service.resetSuccessMessage$.next('old success');
+    service.resetErrorMessage$.next('old error');
+    service.fields.user.control.setValue('user@example.com');
+
+    service.requestPasswordReset$.next();
+
+    expect(service.resetSuccessMessage$.value).toBe('');
+    expect(service.resetErrorMessage$.value).toBe('');
+    expect(service.isSubmittingReset$.value).toBeTrue();
+
+    pending.next();
+    pending.complete();
   });
 
   it('allows a second reset-request after a 429 failure, and again after a generic failure', () => {
