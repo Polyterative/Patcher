@@ -20,6 +20,7 @@ import {
 import { SharedConstants } from "src/app/shared-interproject/SharedConstants";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { SSOProvider } from '../sso-buttons/sso-buttons.component';
+import { normalizeInternalReturnUrl } from '../safe-return-url';
 
 
 @Component({
@@ -83,7 +84,15 @@ export class LoginPageComponent extends SubManager implements OnInit, AfterViewC
   }
   
   /**
-   * Check if user is already logged in and redirect
+   * Check if user is already logged in and redirect.
+   * Honors a safe `returnUrl` query param (e.g. set by UserAuthGuard when
+   * bouncing an unauthenticated visit) so revisiting /auth/login while
+   * already signed in returns to the originally requested page instead of
+   * always landing on /user/area. `returnUrl` is read from the route
+   * snapshot (synchronous, already resolved before this component exists)
+   * so the destination is resolved before the single navigation call —
+   * no navigate-then-correct flash — and the success snackbar keeps firing
+   * exactly on the same `user` truthy check as before.
    */
   private checkLoggedInUser(): void {
     this.loginInteraction.loggedUser$
@@ -94,7 +103,8 @@ export class LoginPageComponent extends SubManager implements OnInit, AfterViewC
       .subscribe(user => {
         if (user) {
           SharedConstants.successLogin(this.snackBar);
-          this.router.navigate(['/user/area']);
+          const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+          this.router.navigateByUrl(normalizeInternalReturnUrl(returnUrl));
         }
       });
   }
