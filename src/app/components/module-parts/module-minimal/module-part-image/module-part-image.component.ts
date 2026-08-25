@@ -58,6 +58,7 @@ export class ModulePartImageComponent implements AfterViewInit, OnChanges {
   filename: string | undefined;
   tooltipPosition: TooltipPosition = 'after';
   useDirectStorageFallback = false;
+  loadFailed = false;
 
   @Input() containImage: boolean = true;
   @Input() big: boolean = false;
@@ -123,13 +124,20 @@ export class ModulePartImageComponent implements AfterViewInit, OnChanges {
     }
     if (this.filename !== previousFilename) {
       this.useDirectStorageFallback = false;
+      this.loadFailed = false;
     }
     this.updateTooltipPosition();
     this.changeDetection.detectChanges();
   }
 
   onImageLoadError(): void {
-    if (!this.filename || this.useDirectStorageFallback) {
+    if (!this.filename) {
+      return;
+    }
+
+    if (this.useDirectStorageFallback) {
+      this.loadFailed = true;
+      this.changeDetection.detectChanges();
       return;
     }
 
