@@ -29,6 +29,7 @@ import {
   type SupabaseClientDouble
 } from './supabase-query-test-doubles';
 import { OAUTH_CALLBACK_TOTAL_TIMEOUT_MS } from '../../supabase-auth.helpers';
+import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 
 
 type OAuthUserFixture = User & {
@@ -217,14 +218,15 @@ describe('SupabaseService - auth OAuth and helpers', () => {
       expect(result.message).toBeTruthy();
     });
     
-    it('should fall back to message for unknown error codes', () => {
+    it('should fall back to safe generic copy for unknown error codes', () => {
       const result = create({error_code: 'unknown_xyz', msg: 'something went wrong'});
-      expect(result.message).toBe('something went wrong');
+      expect(result.message).toBe(SharedConstants.messages.resetPassword.resetFailed);
+      expect(result.message).not.toContain('something went wrong');
     });
     
-    it('should fall back to unknownError when no message', () => {
+    it('should fall back to safe generic copy when no message', () => {
       const result = create({});
-      expect(result.message).toBeTruthy(); // uses errorMessages.unknownError
+      expect(result.message).toBe(SharedConstants.messages.resetPassword.resetFailed);
     });
   });
   

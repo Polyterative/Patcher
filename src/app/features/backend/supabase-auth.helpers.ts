@@ -1,5 +1,6 @@
 import {
   isAuthApiError,
+  isAuthRetryableFetchError,
   Session,
   User
 } from '@supabase/supabase-js';
@@ -113,6 +114,42 @@ export class PasswordResetError extends Error {
   }
 }
 
+const PASSWORD_RESET_RATE_LIMIT_CODES = new Set([
+  'over_email_send_rate_limit',
+  'over_request_rate_limit',
+  'over_sms_send_rate_limit',
+  'rate_limit',
+  'rate_limited',
+  'too_many_requests'
+]);
+
+const PASSWORD_RESET_RETRYABLE_STATUS_CODES = new Set([502, 503, 504]);
+
+type PasswordUpdateProviderError = {
+  status?: string | number;
+  statusCode?: string | number;
+  code?: string | number;
+  error_code?: string;
+  error_description?: string;
+  message?: string;
+  msg?: string;
+  name?: string;
+} | null | undefined;
+
+function normalizeErrorToken(value: string | number | undefined): string | number | undefined {
+  return typeof value === 'string' ? value.toLowerCase() : value;
+}
+
+function toNumericStatus(statusCode: string | number | undefined): number | undefined {
+  if (typeof statusCode === 'number') {
+    return Number.isFinite(statusCode) ? statusCode : undefined;
+  }
+  if (typeof statusCode === 'string' && statusCode.trim()) {
+    const parsed = Number(statusCode);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+  return undefined;
+}
 
 export function getSettledAuthSession$(
   authSession$: Observable<Session | null>,
@@ -202,25 +239,29 @@ export function mapRichUserSession(user: User, profile: AuthProfileFields): Rich
   };
 }
 
-export function createPasswordResetError(error: unknown): PasswordResetError {
+export function createPasswordUpdateError(error: unknown): PasswordResetError {
+  if (error instanceof PasswordResetError) {
+    return error;
+  }
+
+  if (isAuthRetryableFetchError(error)) {
+    return classifyPasswordResetError(undefined, error.name, error.status);
+  }
+
   if (isAuthApiError(error)) {
     return classifyPasswordResetError(error.message, error.code, error.status);
   }
 
-  const resetError = error as {
-    status?: string | number;
-    code?: string | number;
-    error_code?: string;
-    error_description?: string;
-    message?: string;
-    msg?: string;
-    name?: string;
-  } | null | undefined;
+  const resetError = error as PasswordUpdateProviderError;
   const errorCode = resetError?.error_code || resetError?.code || resetError?.name;
-  const statusCode = resetError?.status;
+  const statusCode = resetError?.status ?? resetError?.statusCode;
   const message = resetError?.msg || resetError?.message || resetError?.error_description;
 
   return classifyPasswordResetError(message, errorCode, statusCode);
+}
+
+export function createPasswordResetError(error: unknown): PasswordResetError {
+  return createPasswordUpdateError(error);
 }
 
 function classifyPasswordResetError(
@@ -229,29 +270,75 @@ function classifyPasswordResetError(
   statusCode: string | number | undefined
 ): PasswordResetError {
   const errorMessages = SharedConstants.messages.resetPassword;
+  const normalizedCode = normalizeErrorToken(errorCode);
+  const normalizedMessage = message?.toLowerCase() ?? '';
+  const numericStatus = toNumericStatus(statusCode);
 
-  if (errorCode === 'same_password' || message?.toLowerCase().includes('same password')) {
+  if (
+    normalizedCode === 'same_password'
+    || normalizedMessage.includes('same password')
+    || normalizedMessage.includes('different from')
+  ) {
     return new PasswordResetError(errorMessages.samePassword, errorCode, statusCode);
   }
-  if (errorCode === 'weak_password' || message?.toLowerCase().includes('weak password')) {
+  if (
+    normalizedCode === 'weak_password'
+    || normalizedMessage.includes('weak password')
+    || normalizedMessage.includes('password is too weak')
+  ) {
     return new PasswordResetError(errorMessages.weakPassword, errorCode, statusCode);
   }
   if (
-    errorCode === 'invalid_credentials' || errorCode === 'invalid_grant' ||
-    message?.toLowerCase().includes('invalid') || message?.toLowerCase().includes('expired')
+    normalizedCode === 'authretryablefetcherror'
+    || (numericStatus !== undefined && PASSWORD_RESET_RETRYABLE_STATUS_CODES.has(numericStatus))
+  ) {
+    return new PasswordResetError(errorMessages.networkError, errorCode, statusCode);
+  }
+  if (
+    numericStatus === 429
+    || (typeof normalizedCode === 'string' && PASSWORD_RESET_RATE_LIMIT_CODES.has(normalizedCode))
+    || normalizedMessage.includes('rate limit')
+    || normalizedMessage.includes('too many requests')
+  ) {
+    return new PasswordResetError(errorMessages.rateLimited, errorCode, statusCode);
+  }
+  if (
+    normalizedCode === 'network_error'
+    || normalizedMessage.includes('network')
+    || normalizedMessage.includes('fetch')
+    || normalizedMessage.includes('offline')
+    || normalizedMessage.includes('internet')
+  ) {
+    return new PasswordResetError(errorMessages.networkError, errorCode, statusCode);
+  }
+  if (
+    normalizedCode === 'invalid_credentials'
+    || normalizedCode === 'invalid_grant'
+    || normalizedCode === 'session_not_found'
+    || normalizedCode === 'missing_session'
+    || normalizedCode === 'no_session'
+    || normalizedCode === 'not_authenticated'
+    || normalizedCode === 'auth_session_missing'
+    || normalizedMessage.includes('invalid')
+    || normalizedMessage.includes('expired')
+    || normalizedMessage.includes('auth session')
+    || normalizedMessage.includes('no session')
+    || normalizedMessage.includes('missing session')
   ) {
     return new PasswordResetError(errorMessages.invalidSession, errorCode, statusCode);
   }
-  if (errorCode === 'network_error' || message?.toLowerCase().includes('network') || message?.toLowerCase().includes('fetch')) {
-    return new PasswordResetError(errorMessages.networkError, errorCode, statusCode);
-  }
 
-  return new PasswordResetError(message || errorMessages.unknownError, errorCode, statusCode);
+  return new PasswordResetError(errorMessages.resetFailed, errorCode, statusCode);
 }
 
 export function isPasswordResetRateLimited(error: unknown): boolean {
-  return error instanceof PasswordResetError
-    && (error.statusCode === 429 || error.errorCode === 'over_email_send_rate_limit');
+  if (!(error instanceof PasswordResetError)) return false;
+
+  const normalizedCode = normalizeErrorToken(error.errorCode);
+  const numericStatus = toNumericStatus(error.statusCode);
+
+  return numericStatus === 429
+    || (typeof normalizedCode === 'string' && PASSWORD_RESET_RATE_LIMIT_CODES.has(normalizedCode));
 }
 
 export function isValidEmail(email: string): boolean {

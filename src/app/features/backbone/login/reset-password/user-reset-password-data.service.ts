@@ -28,7 +28,10 @@ import { IMatFormEntityConfig } from 'src/app/shared-interproject/components/@sm
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { SupabaseService } from '../../../backend/supabase.service';
 import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
-import { RECOVERY_EVENT_FRESHNESS_MS } from 'src/app/features/backend/supabase-auth.helpers';
+import {
+  createPasswordUpdateError,
+  RECOVERY_EVENT_FRESHNESS_MS
+} from 'src/app/features/backend/supabase-auth.helpers';
 import {
   clearRecoveryMarker,
   readValidRecoveryMarker,
@@ -180,22 +183,26 @@ export class UserResetPasswordDataService extends SubManager implements OnDestro
               return true;
             }),
             catchError((error) => {
+              const passwordError = createPasswordUpdateError(error);
               // Handle errors
-              console.error('Password reset failed:', error);
-              
+              console.error('Password reset failed:', {
+                errorCode: passwordError.errorCode,
+                statusCode: passwordError.statusCode
+              });
+
               // Log detailed error info for debugging, but never surface raw backend
               // error text to the user
-              if (error?.errorCode) {
-                console.error('Error code:', error.errorCode);
+              if (passwordError.errorCode) {
+                console.error('Error code:', passwordError.errorCode);
               }
-              if (error?.statusCode) {
-                console.error('Status code:', error.statusCode);
+              if (passwordError.statusCode) {
+                console.error('Status code:', passwordError.statusCode);
               }
-              
+
               // Update UI state
-              this.errorMessage$.next(ERROR_MESSAGES.resetFailed);
+              this.errorMessage$.next(passwordError.message);
               this.isSubmitting$.next(false);
-              
+
               // Return empty array to complete the stream without propagating error
               return [];
             })
