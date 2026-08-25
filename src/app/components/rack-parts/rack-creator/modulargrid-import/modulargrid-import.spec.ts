@@ -71,22 +71,34 @@ describe('ModularGrid import matcher', () => {
     expect(normalizeModularGridModuleName('dual xfade_black')).toBe('dual xfade');
   });
 
-  it('matches compact ModularGrid names against split catalogue names and manufacturer prefixes', () => {
+  it('matches compact and manufacturer-prefixed ModularGrid names against short catalogue names', () => {
     const parseResult = parseModularGridExport(JSON.stringify({
       Rack: {name: 'Import', rows: 1, te: 84},
       User: {},
-      Module: [{
-        id: 1001,
-        name: 'Bef Aco STMix',
-        ModulesRack: {row: 1, col: 1}
-      }]
+      Module: [
+        {
+          id: 1001,
+          name: 'Bef Aco STMix',
+          ModulesRack: {row: 1, col: 1}
+        },
+        {
+          id: 1002,
+          name: 'Mutable Instruments Plaits',
+          ModulesRack: {row: 1, col: 5}
+        }
+      ]
     }));
     const preview = buildModularGridMatchPreview(parseResult, [
-      moduleFixture(9001, 'ST MIX', 4, 'Befaco')
+      moduleFixture(9001, 'ST MIX', 4, 'Befaco'),
+      moduleFixture(9002, 'Plaits', 12, 'Mutable Instruments')
     ]);
+    const matchedCandidateNames = [
+      ...(preview?.confident ?? []),
+      ...(preview?.likely ?? [])
+    ].map(match => match.candidates[0].module.name);
 
-    expect(preview?.counts.likely).toBe(1);
-    expect(preview?.likely[0].candidates[0].module.name).toBe('ST MIX');
+    expect(matchedCandidateNames).toContain('ST MIX');
+    expect(matchedCandidateNames).toContain('Plaits');
   });
 
   it('builds focused search terms for compact and split source names', () => {
@@ -109,6 +121,66 @@ describe('ModularGrid import matcher', () => {
     expect(terms).toContain('stmix');
     expect(terms).toContain('st mix');
     expect(terms).not.toContain('4hp blank');
+  });
+
+  it('orders exact, compact, and window terms before individual multi-word name tokens', () => {
+    const terms = buildModularGridCandidateSearchTerms([{
+      key: '1:1:0',
+      mgId: 9869,
+      name: 'Mutable Instruments Plaits',
+      row: 1,
+      col: 1,
+      inferredHp: 12
+    }, {
+      key: '1:13:1',
+      mgId: 10662,
+      name: 'Matrix Mixer',
+      row: 1,
+      col: 13,
+      inferredHp: 10
+    }]);
+    const higherSignalTerms = [
+      'mutable instruments plaits',
+      'mutableinstrumentsplaits',
+      'matrix mixer',
+      'matrixmixer',
+      'mutable instruments',
+      'mutableinstruments',
+      'instruments plaits',
+      'instrumentsplaits'
+    ];
+    const tokenTerms = ['mutable', 'instruments', 'plaits', 'matrix', 'mixer'];
+    const lastHigherSignalIndex = Math.max(...higherSignalTerms.map(term => terms.indexOf(term)));
+
+    expect(terms.slice(0, 4)).toEqual([
+      'mutable instruments plaits',
+      'mutableinstrumentsplaits',
+      'matrix mixer',
+      'matrixmixer'
+    ]);
+    higherSignalTerms.forEach(term => expect(terms).toContain(term));
+    tokenTerms.forEach(term => {
+      expect(terms).toContain(term);
+      expect(terms.indexOf(term)).toBeGreaterThan(lastHigherSignalIndex);
+    });
+  });
+
+  it('keeps generated terms beyond the backend cap so late single-token aliases can be reserved later', () => {
+    const letters = 'abcdefghijklmnopqrstuvwxyz';
+    const terms = buildModularGridCandidateSearchTerms(
+      Array.from({length: 90}, (_value, index) => ({
+        key: `1:${ index + 1 }:${ index }`,
+        mgId: index + 1,
+        name: `alias${ letters[Math.floor(index / letters.length)] }${ letters[index % letters.length] }`,
+        row: 1,
+        col: index + 1,
+        inferredHp: 4
+      }))
+    );
+
+    expect(terms.length).toBeGreaterThan(80);
+    expect(terms[0]).toBe('aliasaa');
+    expect(terms).toContain('aliasdl');
   });
 
   it('keeps four-character module names as candidate search terms', () => {
