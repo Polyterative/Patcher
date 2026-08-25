@@ -7,6 +7,7 @@ import {
   hasE2EAuthCredentials,
   loadE2EEnvFromDotEnv
 } from './e2e/helpers/auth';
+import { usesLocalDevServer } from './e2e/helpers/local-dev-server';
 
 
 /**
@@ -27,14 +28,7 @@ const AUTH_SPEC_GLOB = '**/auth-*.spec.ts';
 loadE2EEnvFromDotEnv();
 
 const hasAuthCredentials = hasE2EAuthCredentials();
-const usesLocalDevServer = (() => {
-  try {
-    const parsedBaseURL = new URL(BASE_URL);
-    return ['localhost', '127.0.0.1'].includes(parsedBaseURL.hostname) && parsedBaseURL.port === '5556';
-  } catch {
-    return false;
-  }
-})();
+const usesLocalDevServerForBaseURL = usesLocalDevServer(BASE_URL);
 
 if (!hasAuthCredentials) {
   console.warn('[e2e-auth] Authenticated tests are disabled until E2E_TEST_EMAIL and E2E_TEST_PASSWORD are set.');
@@ -69,6 +63,7 @@ export default defineConfig({
   /* Use Node-compatible tsconfig — root tsconfig uses "bundler" which breaks Playwright */
   tsconfig: './e2e/tsconfig.json',
   globalSetup: './e2e/global-setup.ts',
+  globalTeardown: './e2e/global-teardown.ts',
   /* Each test gets its own timeout */
   timeout: 30_000,
   expect: {timeout: 5_000},
@@ -78,7 +73,7 @@ export default defineConfig({
   retries: process.env['CI'] ? 2 : 0,
   workers: process.env['CI'] ? 1 : undefined,
   reporter: 'list',
-  webServer: usesLocalDevServer
+  webServer: usesLocalDevServerForBaseURL
     ? {
       command: 'pnpm start',
       url: LOCAL_DEV_SERVER_URL,
