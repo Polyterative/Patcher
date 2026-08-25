@@ -188,7 +188,7 @@ For every change:
    - `internaldocs/workflow/CURRENT_FEATURE.md` — current state
    - `internaldocs/workflow/TODO.md` — strike completed items
    - `internaldocs/workflow/COMPLETED.md` — append finished items with date
-     `DD-MM-YYYY` and commit SHA
+     `YYYY-MM-DD` and commit SHA
    - `internaldocs/tracked-use-cases/*` — update gaps and specs if touched
    - the active plan's Documentation impact block and changelog summary — required for
      user-visible work; release-generated changelog output is not edited here
@@ -230,7 +230,7 @@ While working, opportunistically fix:
 - Stale references to renamed files / components
 - Broken internal links
 - Items in `TODO.md` that are demonstrably already done in code (move to
-  `COMPLETED.md` with evidence — commit SHA + date `DD-MM-YYYY`)
+  `COMPLETED.md` with evidence — commit SHA + date `YYYY-MM-DD`)
 - Items in `CURRENT_FEATURE.md` that are stale (the file is noted as empty
   post-v6.0.0 — keep it that way unless a new feature is officially started)
 - Contradictions between two docs — flag in `decision-log.md`, propose a
