@@ -26,6 +26,7 @@ describe('UserManagementService - Account Actions', () => {
   let mockSupabaseService: UserManagementServiceTestSetup['mockSupabaseService'];
   let mockRouter: UserManagementServiceTestSetup['mockRouter'];
   let mockDialog: UserManagementServiceTestSetup['mockDialog'];
+  let mockAnalytics: UserManagementServiceTestSetup['mockAnalytics'];
   
   beforeEach(() => {
     const setup = setupUserManagementServiceTest();
@@ -33,6 +34,7 @@ describe('UserManagementService - Account Actions', () => {
     mockSupabaseService = setup.mockSupabaseService;
     mockRouter = setup.mockRouter;
     mockDialog = setup.mockDialog;
+    mockAnalytics = setup.mockAnalytics;
     mockSupabaseService.auth.loginWithOAuth$.and.returnValue(of(void 0));
     mockSupabaseService.auth.handleOAuthCallback$.and.returnValue(of(MOCK_RICH_USER));
     mockSupabaseService.auth.updateUsername$.and.returnValue(of(void 0));
@@ -109,6 +111,27 @@ describe('UserManagementService - Account Actions', () => {
 
     expect(failed).toBeTrue();
     expect(successCount).toBe(0);
+  }));
+
+  it('records an OAuth callback error settlement without emitting signed-in analytics', fakeAsync(() => {
+    spyOn(console, 'error');
+    mockSupabaseService.auth.handleOAuthCallback$.and.returnValue(throwError(() => new Error('oauth fail')));
+
+    service.handleOAuthCallback();
+    tick();
+
+    expect(mockAnalytics.capture).toHaveBeenCalledWith('auth.oauth_callback_failed', { reason: 'error' });
+    expect(mockAnalytics.capture).not.toHaveBeenCalledWith('auth.signed_in', { method: 'oauth' });
+  }));
+
+  it('records an OAuth callback null-session settlement without emitting signed-in analytics', fakeAsync(() => {
+    mockSupabaseService.auth.handleOAuthCallback$.and.returnValue(of(null));
+
+    service.handleOAuthCallback();
+    tick();
+
+    expect(mockAnalytics.capture).toHaveBeenCalledWith('auth.oauth_callback_failed', { reason: 'null_session' });
+    expect(mockAnalytics.capture).not.toHaveBeenCalledWith('auth.signed_in', { method: 'oauth' });
   }));
 
   // ── Duplicate-action suppression (review repair regression) ────────────────
