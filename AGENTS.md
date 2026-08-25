@@ -27,7 +27,7 @@ Load docs lazily — only what the task needs.
 
 ## 4) Architecture guardrails
 
-Stack: Angular 21 + TypeScript + RxJS + Angular Material + Supabase + SCSS.
+Stack: Angular 22 + TypeScript + RxJS + Angular Material + Supabase + SCSS.
 
 Layering:
 

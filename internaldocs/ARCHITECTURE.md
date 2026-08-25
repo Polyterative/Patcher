@@ -9,7 +9,7 @@
 
 ## Stack
 
-- Angular 21 + TypeScript + RxJS
+- Angular 22 + TypeScript + RxJS
 - Angular Material
 - Supabase (PostgreSQL + Auth)
 - SCSS
