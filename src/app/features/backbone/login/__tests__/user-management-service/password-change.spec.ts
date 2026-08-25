@@ -11,6 +11,8 @@ import {
   fakeAsync,
   tick
 } from '@angular/core/testing';
+import { PasswordResetError } from 'src/app/features/backend/supabase-auth.helpers';
+import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 
 
 /**
@@ -170,15 +172,39 @@ describe('UserManagementService - Account Form Changes', () => {
       expect(visible).toBe(false);
     }));
     
-    it('should show error snackbar when backend returns an error', fakeAsync(() => {
-      const err = new Error('Auth session expired');
+    it('should show safe same-password snackbar when backend returns a normalized password error', fakeAsync(() => {
+      const err = new PasswordResetError(
+        SharedConstants.messages.resetPassword.samePassword,
+        'same_password',
+        422
+      );
       mockSupabaseService.auth.updatePassword$.and.returnValue(throwError(() => err));
       
       service.changePassword$.next({newPassword: 'NewPass123!'});
       tick();
       
       expect(mockSnackBar.open).toHaveBeenCalledWith(
-        jasmine.stringContaining('Auth session expired'),
+        SharedConstants.messages.resetPassword.samePassword,
+        undefined,
+        jasmine.anything()
+      );
+    }));
+
+    it('should sanitize generic password-change failures before showing the snackbar', fakeAsync(() => {
+      mockSupabaseService.auth.updatePassword$.and.returnValue(
+        throwError(() => ({error_code: 'provider_internal', status: 500, message: 'raw provider failure'}))
+      );
+
+      service.changePassword$.next({newPassword: 'NewPass123!'});
+      tick();
+
+      expect(mockSnackBar.open).toHaveBeenCalledWith(
+        SharedConstants.messages.resetPassword.resetFailed,
+        undefined,
+        jasmine.anything()
+      );
+      expect(mockSnackBar.open).not.toHaveBeenCalledWith(
+        jasmine.stringContaining('raw provider'),
         undefined,
         jasmine.anything()
       );
@@ -198,6 +224,33 @@ describe('UserManagementService - Account Form Changes', () => {
       
       // Form should NOT have been closed on error
       expect(visible).toBe(true);
+    }));
+
+    it('should keep the form open after failure and clear it only after a retry succeeds', fakeAsync(() => {
+      mockSupabaseService.auth.updatePassword$.and.returnValues(
+        throwError(() => new PasswordResetError(
+          SharedConstants.messages.resetPassword.samePassword,
+          'same_password',
+          422
+        )),
+        of(void 0)
+      );
+
+      service.togglePasswordForm$.next(true);
+      tick();
+
+      let visible: boolean | undefined;
+      service.showPasswordForm$.subscribe(v => visible = v);
+
+      service.changePassword$.next({newPassword: 'NewPass123!'});
+      tick();
+      expect(visible).toBe(true);
+
+      service.changePassword$.next({newPassword: 'DifferentPass123!'});
+      tick();
+
+      expect(mockSupabaseService.auth.updatePassword$).toHaveBeenCalledTimes(2);
+      expect(visible).toBe(false);
     }));
     
     it('should handle multiple sequential change requests', fakeAsync(() => {

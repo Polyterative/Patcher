@@ -135,6 +135,18 @@ availability is claimed.
   passed with one pre-existing skip; `pnpm lint`, production `pnpm build`, and
   `git diff --check` remained green.
 
+## Password-update error follow-up
+
+- Commit `f11cc29f` preserves Supabase password error codes and statuses through
+  one shared normalizer for recovery and signed-in password changes.
+- Same-password, weak-password, expired-session, rate-limit, retryable-service,
+  network, and generic failures now use actionable safe copy instead of raw
+  provider messages.
+- Recovery failures remain inline and retryable; signed-in failures keep the
+  password form open and use the existing snackbar surface.
+- Validation: 5,371 full-suite tests passed with one pre-existing skip;
+  `pnpm lint`, production `pnpm build`, and `git diff --check` remained green.
+
 ## Documentation impact
 
 - Classification: internal-only

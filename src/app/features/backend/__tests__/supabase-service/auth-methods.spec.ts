@@ -4,6 +4,7 @@ import {
 } from '../../supabase.service';
 import { CachedEntity } from '../../supabase.cache';
 import { PasswordResetError } from '../../supabase-auth.helpers';
+import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import type { AuthError } from '@supabase/supabase-js';
 import {
   fakeAsync,
@@ -493,9 +494,12 @@ describe('SupabaseService - auth methods', () => {
       });
     }, TEST_TIMEOUT);
     
-    it('should rethrow error when updateUser fails', (done) => {
+    it('should normalize response.error when updateUser fails', (done) => {
       spyOn(supabaseClient.auth, 'updateUser').and.returnValue(
-        Promise.resolve({data: null, error: {message: 'Weak password'}})
+        Promise.resolve({
+          data: null,
+          error: {error_code: 'same_password', status: 422, message: 'Password unchanged'}
+        })
       );
       
       service.auth.updatePassword$('weak').subscribe({
@@ -504,7 +508,78 @@ describe('SupabaseService - auth methods', () => {
           done();
         },
         error: (err) => {
-          expect(err).toBeDefined();
+          expect(err instanceof PasswordResetError).toBeTrue();
+          expect(err.message).toBe(SharedConstants.messages.resetPassword.samePassword);
+          expect(err.errorCode).toBe('same_password');
+          expect(err.statusCode).toBe(422);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should sanitize generic response.error text when updateUser fails', (done) => {
+      spyOn(supabaseClient.auth, 'updateUser').and.returnValue(
+        Promise.resolve({
+          data: null,
+          error: {error_code: 'provider_internal', status: 500, message: 'raw provider failure'}
+        })
+      );
+
+      service.auth.updatePassword$('weak').subscribe({
+        next: () => {
+          fail('Should have errored');
+          done();
+        },
+        error: (err) => {
+          expect(err instanceof PasswordResetError).toBeTrue();
+          expect(err.message).toBe(SharedConstants.messages.resetPassword.resetFailed);
+          expect(err.message).not.toContain('raw provider');
+          expect(err.errorCode).toBe('provider_internal');
+          expect(err.statusCode).toBe(500);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should normalize retryable temporary updateUser failures without exposing raw provider text', (done) => {
+      spyOn(supabaseClient.auth, 'updateUser').and.returnValue(
+        Promise.resolve({
+          data: null,
+          error: {name: 'AuthRetryableFetchError', status: 503, message: 'raw provider outage'}
+        })
+      );
+
+      service.auth.updatePassword$('weak').subscribe({
+        next: () => {
+          fail('Should have errored');
+          done();
+        },
+        error: (err) => {
+          expect(err instanceof PasswordResetError).toBeTrue();
+          expect(err.message).toBe(SharedConstants.messages.resetPassword.networkError);
+          expect(err.message).not.toContain('raw provider');
+          expect(err.errorCode).toBe('AuthRetryableFetchError');
+          expect(err.statusCode).toBe(503);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should normalize thrown updateUser failures without double-wrapping normalized errors', (done) => {
+      const normalizedError = new PasswordResetError(
+        SharedConstants.messages.resetPassword.weakPassword,
+        'weak_password',
+        422
+      );
+      spyOn(supabaseClient.auth, 'updateUser').and.returnValue(Promise.reject(normalizedError));
+
+      service.auth.updatePassword$('weak').subscribe({
+        next: () => {
+          fail('Should have errored');
+          done();
+        },
+        error: (err) => {
+          expect(err).toBe(normalizedError);
           done();
         }
       });

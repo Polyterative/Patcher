@@ -47,7 +47,8 @@ export class SharedConstants {
       weakPassword: "Password is too weak — add uppercase letters, numbers, or special characters.",
       passwordTooShort: "Password must be at least 8 characters long.",
       passwordTooLong: "Password must not exceed 30 characters.",
-      invalidSession: "Your reset session has expired. Request a new link to continue.",
+      invalidSession: "Your password update session has expired. Sign in again or request a new reset link to continue.",
+      rateLimited: "Too many password update attempts. Wait a moment before trying again.",
       networkError: "Network error — check your connection and try again.",
       unknownError: "An unexpected error occurred. Try again, or contact support if it persists."
     }

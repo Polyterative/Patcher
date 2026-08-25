@@ -24,6 +24,7 @@ import {
   ConfirmDialogDataOutModel
 } from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import { createPasswordUpdateError } from '../../backend/supabase-auth.helpers';
 import { UserManagementContext } from './user-management-internals';
 
 @Injectable({ providedIn: 'root' })
@@ -286,8 +287,8 @@ export class UserManagementAccountActionsService {
       switchMap(({newPassword}) =>
         ctx.backend.auth.updatePassword$(newPassword).pipe(
           catchError((error) => {
-            ctx.showOperationError(error);
-            return NEVER;
+            ctx.showOperationError(createPasswordUpdateError(error));
+            return EMPTY;
           })
         )
       ),

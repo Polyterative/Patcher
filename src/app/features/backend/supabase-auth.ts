@@ -486,12 +486,16 @@ export function createAuthNamespace(
     updatePassword$(newPassword: string): Observable<void> {
       return rxFrom(supabase.auth.updateUser({password: newPassword})).pipe(
         map(response => {
-          if (response.error) throw new Error(response.error.message || 'Password update failed.');
+          if (response.error) throw ns._createPasswordResetError(response.error);
           return void 0;
         }),
         catchError(error => {
-          console.error('Password change failed:', error);
-          return throwError(() => error);
+          const passwordError = ns._createPasswordResetError(error);
+          console.error('Password change failed:', {
+            errorCode: passwordError.errorCode,
+            statusCode: passwordError.statusCode
+          });
+          return throwError(() => passwordError);
         })
       );
     },
