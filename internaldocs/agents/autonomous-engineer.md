@@ -125,9 +125,9 @@ Selection priority:
 2. Otherwise, the highest-priority unblocked item from
    `internaldocs/workflow/TODO.md` aligned with the active tier in `ROADMAP.md`.
 3. Otherwise, derive a frontend task from `CURRENT_FEATURE.md` or
-   `tracked-use-cases/PATCH_INSTANCE_OPEN_GAPS.md`.
+   `internaldocs/tracked-use-cases/PATCH_INSTANCE_OPEN_GAPS.md`.
 4. Otherwise, pick a high-value cleanup: UI consistency gap from
-   `UI_CONSISTENCY_AUDIT.md`, a missing test, or a documentation drift fix.
+   `internaldocs/UI_CONSISTENCY_AUDIT.md`, a missing test, or a documentation drift fix.
 
 **Reject** any candidate that requires backend changes — log the requirement
 in `blockers.md` and continue down the list.
@@ -189,7 +189,7 @@ For every change:
    - `internaldocs/workflow/TODO.md` — strike completed items
    - `internaldocs/workflow/COMPLETED.md` — append finished items with date
      `DD-MM-YYYY` and commit SHA
-   - `tracked-use-cases/*` — update gaps and specs if touched
+   - `internaldocs/tracked-use-cases/*` — update gaps and specs if touched
    - the active plan's Documentation impact block and changelog summary — required for
      user-visible work; release-generated changelog output is not edited here
    - `internaldocs/PATTERNS.md` or sub-files — only if a pattern was
@@ -243,7 +243,7 @@ task. Hygiene here means "as you pass through".
 
 ## What "Like a Team" Looks Like
 
-- **PM hat** when reading `ROADMAP.md` and `PRODUCT_NEEDS.md` — pick what
+- **PM hat** when reading `ROADMAP.md` and `PRINCIPLES.md` — pick what
   matters next.
 - **Tech lead hat** when consulting `ARCHITECTURE.md` and `PATTERNS.md` —
   enforce coherence.
