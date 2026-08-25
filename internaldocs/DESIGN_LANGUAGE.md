@@ -74,7 +74,7 @@ Clarity survives fatigue. Precision builds trust. Personality is structural, not
 ### Spacing and Density
 
 - Patcher is dense by design. Empty space is not the default luxury — it is a deliberate choice
-- Spacing scale follows `tools.scss` (gap0 → gap3). Do not introduce ad-hoc values
+- Spacing scale follows `tools-utilities.scss` (gap0 → gap3). Do not introduce ad-hoc values
 - Padding within interactive elements: generous enough to hit, tight enough to pack
 - Vertical rhythm is consistent within a surface; deviations signal hierarchy, not accident
 
@@ -99,7 +99,7 @@ Patcher has many breakpoints because every context deserves an **optimal** layou
 
 Rules:
 1. **At every breakpoint, the UI is in its most efficient state.** Efficiency = maximum usable information with minimum cognitive load for that screen size and input method
-2. Use `tools.scss` layout classes (`.col-lt-MD`, `.col-lt-LG`, etc.) before writing custom breakpoint CSS
+2. Use `tools-utilities.scss` layout classes (`.col-lt-MD`, `.col-lt-LG`, etc.) before writing custom breakpoint CSS
 3. Touch surfaces follow `UI_PATTERNS.md` § Tablet Guardrails — visible primary actions, generous tap targets
 4. Test at minimum: mobile portrait, tablet portrait, tablet landscape, desktop 1280px, desktop 1920px
 5. **Never collapse content silently.** If something doesn't fit, decide: reflow, truncate with affordance, or hide with explicit disclosure
@@ -141,7 +141,7 @@ The standard is not first-try perfection but disciplined iteration until every a
 | Hover-only affordances on touch surfaces | Invisible on tablet/mobile |
 | Long-running idle animation | Distracts on a work surface |
 | Prose labels where a word would do | Violates zero-bullshit principle |
-| New layout values outside `tools.scss` scale | Breaks spacing consistency |
+| New layout values outside `tools-utilities.scss` scale | Breaks spacing consistency |
 | `!important` without inline comment explaining why | Future maintainers deserve the reason |
 
 ---
@@ -149,6 +149,6 @@ The standard is not first-try perfection but disciplined iteration until every a
 ## Relationship to Other Docs
 
 - Implementation patterns → `internaldocs/patterns/UI_PATTERNS.md`
-- SCSS naming and layout helpers → `internaldocs/STYLE_GUIDE.md` + `src/app/style/tools.scss`
+- SCSS naming and layout helpers → `internaldocs/STYLE_GUIDE.md` + `src/app/style/tools-utilities.scss`
 - Agent workflow for visual changes → `internaldocs/agents/designer.md`
 - Known inconsistencies to fix → `internaldocs/UI_CONSISTENCY_AUDIT.md`

@@ -26,7 +26,7 @@ initial graph.
     `posthog-js` 279.2 KiB, `@angular/common` 258.7 KiB, `luxon` 255.4 KiB,
     `@supabase/auth-js` 252.0 KiB.
 - Replace `lodash` with `lodash-es` (already tree-shakeable) or native methods; remove
-  `@angular/flex-layout` in favour of CSS grid/flex utilities already in `tools.scss`.
+  `@angular/flex-layout` in favour of CSS grid/flex utilities already in `tools-utilities.scss`.
 - Move admin-panel, `application-insights`, sigma/graph view, `ngx-image-cropper`,
   `ngx-dropzone`, and Lottie behind `@defer` blocks or route-level `loadComponent`.
 - Generalise `scripts/build/generate-prerender-routes.mjs` to enumerate top public racks / modules /

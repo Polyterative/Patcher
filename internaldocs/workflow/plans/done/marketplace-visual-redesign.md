@@ -62,7 +62,7 @@ Reference implementations to mirror: `module-browser-root` (hero + filter rail +
 
 ### Polish
 
-- [x] Density/spacing pass with `tools.scss` scale only (gap0–gap3); no ad-hoc values.
+- [x] Density/spacing pass with `tools-utilities.scss` scale only (gap0–gap3); no ad-hoc values.
 - [x] Breakpoint verification: desktop 1440 + mobile 420 snapshots verified (mobile filter disclosure + floating CTA behave like module browser).
 - [x] Before/after snapshots via `scripts/dev/agent-snapshot.mjs` for `/marketplace` (anonymous + authenticated); grammar matches `/modules`.
 

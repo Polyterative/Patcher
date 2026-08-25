@@ -99,7 +99,7 @@ listing schema work if fake view models are used in tests.
 - `src/app/features/routes/public-profile/`
 - `src/app/features/routes/user-area/`
 - `src/app/components/module-parts/`
-- `src/app/style/tools.scss`
+- `src/app/style/tools-utilities.scss`
 - Future marketplace route folder under `src/app/features/routes/marketplace/`
 
 ## Acceptance criteria

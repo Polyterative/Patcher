@@ -42,7 +42,7 @@ Key paths:
 - `src/app/features/backend/DatabaseStrings.ts` - register tables and joins before adding backend methods
 - `src/backend/database.types.ts` - generated Supabase types
 - `src/app/shared-interproject/` - shared infra such as `SubManager`
-- `src/app/style/tools.scss` - shared layout utilities
+- `src/app/style/tools-utilities.scss` - shared layout utilities
 
 ## 5) Engineering rules
 
@@ -81,7 +81,7 @@ Key paths:
 ### UI and naming
 
 - Prefer inline UI state toggles (`BehaviorSubject<boolean>`) over dialog-heavy flows.
-- Use layout helpers from `tools.scss` and shared notification helpers.
+- Use layout helpers from `tools-utilities.scss` and shared notification helpers.
 - Observables/Subjects use a `$` suffix; private `BehaviorSubject`s use an `_` prefix.
 - For visual UI fixes or responsive-layout tweaks, capture and inspect real screenshots with Playwright before concluding the work.
 - All visual decisions must be grounded in [`internaldocs/DESIGN_LANGUAGE.md`](internaldocs/DESIGN_LANGUAGE.md) — the canonical design philosophy, character, inspirations, and anti-patterns for Patcher.
