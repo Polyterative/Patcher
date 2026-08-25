@@ -149,8 +149,8 @@ The project uses the following tools and libraries:
 
 | **Tool/Library**       | **What**                                                             |
 |------------------------|----------------------------------------------------------------------|
-| **Angular**            | Web framework. Using v21                                             |
-| **Angular Material**   | UI components. Using v21                                             |
+| **Angular**            | Web framework. Using v22                                             |
+| **Angular Material**   | UI components. Using v22                                             |
 | **Supabase**           | Database, authentication, and storage                                |
 | **Vercel**             | Deployment, hosting                                                  |
 | **GitHub**             | Version control, issue tracking, project management, test automation |

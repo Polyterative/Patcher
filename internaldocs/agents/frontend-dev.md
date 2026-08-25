@@ -2,7 +2,7 @@
 
 ## Role
 
-Implement and modify Angular 21 + TypeScript + RxJS code in Patcher, respecting the existing
+Implement and modify Angular 22 + TypeScript + RxJS code in Patcher, respecting the existing
 layering and reactive patterns.
 
 ## When to invoke

@@ -1,6 +1,6 @@
 ---
 name: patcher
-description: Routing and tooling guide for development work in the Patcher repository (Angular 21 + RxJS + Supabase synth-rack app). Use this skill when the user asks for non-trivial dev work — planning, implementing components/services, reviewing changes, refactoring, writing tests, polishing UI, diagnosing bugs, or says "begin loop" / "run the loop" to start the coordinator-loop backlog automation. Points to specialised agent personas in internaldocs/agents/ and surfaces the LSP / cocoindex / Sentry / Supabase MCP tools configured in this repo. Skip for trivial questions or pure doc reads.
+description: Routing and tooling guide for development work in the Patcher repository (Angular 22 + RxJS + Supabase synth-rack app). Use this skill when the user asks for non-trivial dev work — planning, implementing components/services, reviewing changes, refactoring, writing tests, polishing UI, diagnosing bugs, or says "begin loop" / "run the loop" to start the coordinator-loop backlog automation. Points to specialised agent personas in internaldocs/agents/ and surfaces the LSP / cocoindex / Sentry / Supabase MCP tools configured in this repo. Skip for trivial questions or pure doc reads.
 ---
 
 # Patcher — Agent Routing & Tooling
