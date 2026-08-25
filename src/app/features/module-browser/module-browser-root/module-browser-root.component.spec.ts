@@ -5,14 +5,21 @@ import {
   TestBed
 } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import {
   BehaviorSubject,
   Observable,
   of,
-  Subject
+  Subject,
+  throwError
 } from 'rxjs';
 import { ModuleDetailDataService } from 'src/app/components/module-parts/module-detail-data.service';
+import {
+  ModulePossessionDialogComponent,
+  ModulePossessionDialogResult
+} from 'src/app/components/module-parts/module-possession-dialog/module-possession-dialog.component';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
@@ -20,11 +27,16 @@ import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import {
   DbModule,
   MinimalModule,
-  RackedModule
+  RackedModule,
+  UserModulePossessionKind
 } from 'src/app/models/module';
 import { Tag } from 'src/app/models/tag';
 import { ISelectable } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { SupabaseService } from '../../backend/supabase.service';
+import {
+  SimpleUserModel,
+  SupabaseService
+} from '../../backend/supabase.service';
+import { UserModuleAcquisitionDraft } from 'src/app/models/user-module-acquisition';
 import { AnalyticsService } from '../../backbone/analytics-integration/analytics.service';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 import { ModuleBrowserRootComponent } from './module-browser-root.component';
@@ -48,9 +60,20 @@ describe('ModuleBrowserRootComponent', () => {
     GET: {
       manufacturers: ManufacturersSpy;
       modules: ModulesSpy;
+      currentUserModulesPossessionOnly: jasmine.Spy<() => Observable<Pick<DbModule, 'id' | 'possessionKind'>[]>>;
     };
     get: {
       allTags: jasmine.Spy<() => Observable<Tag[]>>;
+      myVotes: jasmine.Spy<() => Observable<number[]>>;
+    };
+    add: {
+      userModuleAcquisition: jasmine.Spy<(moduleId: number, data: UserModuleAcquisitionDraft) => Observable<Record<string, never>>>;
+    };
+    delete: {
+      userModule: jasmine.Spy<(moduleId: number) => Observable<Record<string, never>>>;
+    };
+    update: {
+      userModulePossession: jasmine.Spy<(moduleId: number, kind: UserModulePossessionKind) => Observable<null>>;
     };
     cacheResetter$: {
       next: jasmine.Spy<(keys: string[]) => void>;
@@ -61,6 +84,18 @@ describe('ModuleBrowserRootComponent', () => {
   let component: ModuleBrowserRootComponent;
   let analytics: jasmine.SpyObj<AnalyticsService>;
   let backend: ModuleBrowserRootBackendDouble;
+  let loggedUser$: BehaviorSubject<SimpleUserModel | undefined>;
+  let dialog: jasmine.SpyObj<MatDialog>;
+  let snackBar: jasmine.SpyObj<MatSnackBar>;
+
+  function userFixture(id = 'user-1'): SimpleUserModel {
+    return {
+      id,
+      email: `${ id }@example.com`,
+      created_at: '2026-01-01T00:00:00.000Z',
+      updated_at: '2026-01-01T00:00:00.000Z'
+    };
+  }
 
   function buildOwnedModules(count: number): DbModule[] {
     return Array.from({length: count}, (_, index) => ({
@@ -117,15 +152,33 @@ describe('ModuleBrowserRootComponent', () => {
         manufacturers: jasmine.createSpy<(...args: unknown[]) => Observable<ManufacturersResponse>>('manufacturers')
           .and.returnValue(of({data: []})),
         modules: jasmine.createSpy<(...args: unknown[]) => Observable<ModulesResponse>>('modules')
-          .and.returnValue(of({data: [], count: 0}))
+          .and.returnValue(of({data: [], count: 0})),
+        currentUserModulesPossessionOnly: jasmine.createSpy<() => Observable<Pick<DbModule, 'id' | 'possessionKind'>[]>>('currentUserModulesPossessionOnly')
+          .and.returnValue(of([]))
       },
       get: {
-        allTags: jasmine.createSpy<() => Observable<Tag[]>>('allTags').and.returnValue(of([]))
+        allTags: jasmine.createSpy<() => Observable<Tag[]>>('allTags').and.returnValue(of([])),
+        myVotes: jasmine.createSpy<() => Observable<number[]>>('myVotes').and.returnValue(of([]))
+      },
+      add: {
+        userModuleAcquisition: jasmine.createSpy<(moduleId: number, data: UserModuleAcquisitionDraft) => Observable<Record<string, never>>>('userModuleAcquisition')
+          .and.returnValue(of({}))
+      },
+      delete: {
+        userModule: jasmine.createSpy<(moduleId: number) => Observable<Record<string, never>>>('userModule')
+          .and.returnValue(of({}))
+      },
+      update: {
+        userModulePossession: jasmine.createSpy<(moduleId: number, kind: UserModulePossessionKind) => Observable<null>>('userModulePossession')
+          .and.returnValue(of(null))
       },
       cacheResetter$: {
         next: jasmine.createSpy<(keys: string[]) => void>('cacheResetter$.next')
       }
     };
+    loggedUser$ = new BehaviorSubject<SimpleUserModel | undefined>(undefined);
+    dialog = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
+    snackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
 
     await TestBed.configureTestingModule({
       imports: [
@@ -155,7 +208,7 @@ describe('ModuleBrowserRootComponent', () => {
         {
           provide: UserManagementService,
           useValue: {
-            loggedUser$: new BehaviorSubject(undefined),
+            loggedUser$,
             loggedUserFullProfile$: new BehaviorSubject(undefined),
             isAdmin$: new BehaviorSubject(false),
             hasAdminRole$: new BehaviorSubject(false)
@@ -189,6 +242,14 @@ describe('ModuleBrowserRootComponent', () => {
             isDev: false,
             preferredPanelColor$: new BehaviorSubject(null)
           }
+        },
+        {
+          provide: MatDialog,
+          useValue: dialog
+        },
+        {
+          provide: MatSnackBar,
+          useValue: snackBar
         }
       ]
     }).compileComponents();
@@ -197,6 +258,12 @@ describe('ModuleBrowserRootComponent', () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
+
+  function dialogRefWithResult(result: ModulePossessionDialogResult | null | undefined) {
+    return {
+      afterClosed: () => of(result)
+    };
+  }
   
   it('renders recent activity component in filter sidebar', () => {
     const host = fixture.nativeElement as HTMLElement;
@@ -462,6 +529,106 @@ describe('ModuleBrowserRootComponent', () => {
     component.currentRackModulesInput = [[rackModule(modules[0])]];
 
     expect(nextSpy).not.toHaveBeenCalled();
+  });
+
+  it('persists browser quick-add for the explicit card module without detail-route module state', () => {
+    const module = {...buildOwnedModules(1)[0], possessionKind: undefined};
+    backend.GET.currentUserModulesPossessionOnly.and.returnValues(
+      of([]),
+      of([{id: module.id, possessionKind: 'WANTS'}])
+    );
+    loggedUser$.next(userFixture());
+    dialog.open.and.returnValue(dialogRefWithResult({kind: 'WANTS'}) as ReturnType<MatDialog['open']>);
+    component.dataService.modulesList$.next([module]);
+    fixture.detectChanges();
+    const actionBeforeSave = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('.module-list-card-action');
+
+    expect(actionBeforeSave?.disabled).toBeFalse();
+
+    component.onModuleAction(module);
+    fixture.detectChanges();
+
+    expect(dialog.open).toHaveBeenCalledWith(ModulePossessionDialogComponent, jasmine.objectContaining({
+      data: jasmine.objectContaining({module, initialKind: null})
+    }));
+    expect(backend.update.userModulePossession).toHaveBeenCalledWith(module.id, 'WANTS');
+    expect(backend.GET.currentUserModulesPossessionOnly).toHaveBeenCalled();
+    expect(component.dataService.modulesList$.value?.[0].possessionKind).toBe('WANTS');
+    expect((fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('.module-list-card-action')?.disabled).toBeTrue();
+  });
+
+  it('keeps quick-added ownership state when the follow-up ownership refresh fails', () => {
+    const module = {...buildOwnedModules(1)[0], possessionKind: undefined};
+    const consoleErrorSpy = spyOn(console, 'error');
+    backend.GET.currentUserModulesPossessionOnly.and.returnValues(
+      of([]),
+      throwError(() => new Error('refresh failed'))
+    );
+    loggedUser$.next(userFixture());
+    dialog.open.and.returnValue(dialogRefWithResult({kind: 'HAS'}) as ReturnType<MatDialog['open']>);
+    component.dataService.modulesList$.next([module]);
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('.module-list-card-action')?.disabled).toBeFalse();
+
+    component.onModuleAction(module);
+    fixture.detectChanges();
+
+    expect(backend.update.userModulePossession).toHaveBeenCalledWith(module.id, 'HAS');
+    expect(backend.GET.currentUserModulesPossessionOnly).toHaveBeenCalledTimes(2);
+    expect(component.dataService.userModulesList$.value).toEqual([{id: module.id, possessionKind: 'HAS'}]);
+    expect(component.dataService.modulesList$.value?.[0].possessionKind).toBe('HAS');
+    expect((fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('.module-list-card-action')?.disabled).toBeTrue();
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Failed to load module collection status:',
+      jasmine.any(Error)
+    );
+    expect(snackBar.open).toHaveBeenCalledWith(
+      'Failed to load your collection status.',
+      undefined,
+      {duration: 5000, panelClass: 'snack-error'}
+    );
+    expect(snackBar.open).toHaveBeenCalledWith(
+      `"${module.name}" marked as owned.`,
+      undefined,
+      {duration: 4000, panelClass: 'snack-success'}
+    );
+  });
+
+  it('surfaces backend errors from browser quick-add and keeps the action retryable', () => {
+    const module = {...buildOwnedModules(1)[0], possessionKind: undefined};
+    const consoleErrorSpy = spyOn(console, 'error');
+    loggedUser$.next(userFixture());
+    backend.update.userModulePossession.and.returnValue(throwError(() => new Error('write failed')));
+    dialog.open.and.returnValue(dialogRefWithResult({kind: 'HAS'}) as ReturnType<MatDialog['open']>);
+
+    component.onModuleAction(module);
+    component.onModuleAction(module);
+
+    expect(backend.update.userModulePossession).toHaveBeenCalledTimes(2);
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Failed to update module collection status:',
+      jasmine.any(Error)
+    );
+    expect(snackBar.open).toHaveBeenCalledWith(
+      jasmine.stringContaining('Failed to update collection status'),
+      undefined,
+      {duration: 5000, panelClass: 'snack-error'}
+    );
+  });
+
+  it('hides and guards the browser quick-add action while logged out', () => {
+    const module = buildOwnedModules(1)[0];
+    component.dataService.modulesList$.next([module]);
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('.module-list-card-action')).toBeNull();
+
+    component.onModuleAction(module);
+
+    expect(dialog.open).not.toHaveBeenCalled();
+    expect(backend.update.userModulePossession).not.toHaveBeenCalled();
+    expect(backend.delete.userModule).not.toHaveBeenCalled();
   });
 
   it('uses available-mode search empty copy when rack collection filters return nothing', () => {
