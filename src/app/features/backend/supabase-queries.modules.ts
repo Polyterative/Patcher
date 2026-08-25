@@ -27,6 +27,7 @@ import {
   longCacheTime,
   priceHubCacheTime,
   remapErrors,
+  throwIfSupabaseError,
   smallCacheTime,
   throwIfSupabaseErrorWhen
 } from './supabase.cache';
@@ -95,6 +96,113 @@ export interface RackCommentContextRow {
   id: number;
   name: string;
   public_id: string | null;
+}
+
+const MODULE_IMPORT_SEARCH_TERM_LIMIT = 80;
+const MODULE_IMPORT_SEARCH_BATCH_SIZE = 8;
+const MODULE_IMPORT_ALIAS_TERM_RESERVE = 24;
+
+function normalizeModuleImportSearchTerm(term: string): string {
+  return term.trim().replace(/\s+/g, ' ');
+}
+
+function isHighSignalModuleImportSearchTerm(term: string): boolean {
+  const tokens = term.split(/\s+/).filter(Boolean);
+
+  return tokens.length > 1 || /\d/.test(term);
+}
+
+function countModuleImportSearchBatches(termCount: number): number {
+  return Math.ceil(termCount / MODULE_IMPORT_SEARCH_BATCH_SIZE);
+}
+
+function orderedUniqueModuleImportSearchTerms(searchTerms: string[]): string[] {
+  const seenTerms = new Set<string>();
+  const highSignalTerms: string[] = [];
+  const aliasTerms: string[] = [];
+
+  searchTerms
+    .map(term => normalizeModuleImportSearchTerm(term))
+    .filter(term => {
+      if (!term || seenTerms.has(term)) {
+        return false;
+      }
+
+      seenTerms.add(term);
+      return true;
+    })
+    .forEach(term => {
+      if (isHighSignalModuleImportSearchTerm(term)) {
+        highSignalTerms.push(term);
+      } else {
+        aliasTerms.push(term);
+      }
+    });
+
+  const maxQueryBatches = countModuleImportSearchBatches(MODULE_IMPORT_SEARCH_TERM_LIMIT);
+  const aliasReserveBatches = Math.min(
+    countModuleImportSearchBatches(aliasTerms.length),
+    countModuleImportSearchBatches(MODULE_IMPORT_ALIAS_TERM_RESERVE)
+  );
+  const highSignalBatchBudget = aliasTerms.length > 0
+    ? maxQueryBatches - aliasReserveBatches
+    : maxQueryBatches;
+  const selectedHighSignalTerms = highSignalTerms.slice(
+    0,
+    highSignalBatchBudget * MODULE_IMPORT_SEARCH_BATCH_SIZE
+  );
+  const remainingTermSlots = MODULE_IMPORT_SEARCH_TERM_LIMIT - selectedHighSignalTerms.length;
+  const remainingBatchSlots = maxQueryBatches - countModuleImportSearchBatches(selectedHighSignalTerms.length);
+  const selectedAliasTerms = aliasTerms.slice(
+    0,
+    Math.min(remainingTermSlots, remainingBatchSlots * MODULE_IMPORT_SEARCH_BATCH_SIZE)
+  );
+
+  return [...selectedHighSignalTerms, ...selectedAliasTerms];
+}
+
+function chunkModuleImportSearchTerms(searchTerms: string[]): string[][] {
+  const batches: string[][] = [];
+  let activeBatch: string[] = [];
+  let activeBatchHighSignal: boolean | null = null;
+
+  searchTerms.forEach(term => {
+    const termHighSignal = isHighSignalModuleImportSearchTerm(term);
+    const shouldStartBatch = activeBatch.length >= MODULE_IMPORT_SEARCH_BATCH_SIZE
+      || (activeBatchHighSignal !== null && activeBatchHighSignal !== termHighSignal);
+
+    if (shouldStartBatch) {
+      batches.push(activeBatch);
+      activeBatch = [];
+      activeBatchHighSignal = null;
+    }
+
+    activeBatch.push(term);
+    activeBatchHighSignal = termHighSignal;
+  });
+
+  if (activeBatch.length > 0) {
+    batches.push(activeBatch);
+  }
+
+  return batches;
+}
+
+function moduleImportNameFilter(searchTerms: string[]): string {
+  return searchTerms
+    .map(term => `name.ilike.%${ escapeIlikePattern(term) }%`)
+    .join(',');
+}
+
+function boundedModuleImportCandidateLimit(limit: number): number {
+  return Number.isFinite(limit)
+    ? Math.min(Math.max(Math.floor(limit), 0), 300)
+    : 300;
+}
+
+interface ModuleImportCandidateResponse {
+  data: MinimalModule[] | null;
+  error: unknown;
 }
 
 import {
@@ -395,35 +503,59 @@ export class SupabaseModuleQueries extends SupabaseQueriesBase {
     maxCacheCount: 50,
   })
   getPublicModuleImportCandidates(searchTerms: string[], limit = 300): Observable<MinimalModule[]> {
-    const uniqueSearchTerms = [...new Set(searchTerms.map(term => term.trim()).filter(Boolean))]
-      .slice(0, 80);
+    const orderedSearchTerms = orderedUniqueModuleImportSearchTerms(searchTerms);
+    const candidateLimit = boundedModuleImportCandidateLimit(limit);
 
-    if (uniqueSearchTerms.length === 0) {
+    if (orderedSearchTerms.length === 0 || candidateLimit === 0) {
       return of([]);
     }
 
-    const nameFilter = uniqueSearchTerms
-      .map(term => `name.ilike.%${ escapeIlikePattern(term) }%`)
-      .join(',');
+    return rxFrom((async () => {
+      const modulesById = new Map<number, MinimalModule>();
 
-    return rxFrom(
-      this.supabase.from(DbPaths.modules)
-        .select(`
-          id,name,hp,description,public,created,updated,manufacturerId,
-          ${ QueryJoins.manufacturer },
-          ${ QueryJoins.standard },
-          ${ QueryJoins.module_panels },
-          ${ QueryJoins.module_tags }
-        `)
-        .filter('public', 'eq', true)
-        .or(nameFilter)
-        .order(`color`, {foreignTable: DbPaths.module_panels, ascending: true})
-        .limit(1, {foreignTable: DbPaths.module_panels})
-        .order('id', {ascending: true})
-        .limit(limit)
-    ).pipe(
+      for (const termBatch of chunkModuleImportSearchTerms(orderedSearchTerms)) {
+        const response = await (this.supabase.from(DbPaths.modules)
+          .select(`
+            id,name,hp,description,public,created,updated,manufacturerId,
+            ${ QueryJoins.manufacturer },
+            ${ QueryJoins.standard },
+            ${ QueryJoins.module_panels },
+            ${ QueryJoins.module_tags }
+          `)
+          .filter('public', 'eq', true)
+          .or(moduleImportNameFilter(termBatch))
+          .order(`color`, {foreignTable: DbPaths.module_panels, ascending: true})
+          .limit(1, {foreignTable: DbPaths.module_panels})
+          .order('id', {ascending: true})
+          .limit(candidateLimit) as unknown as PromiseLike<ModuleImportCandidateResponse>);
+
+        if (response.error) {
+          return response;
+        }
+
+        for (const module of response.data ?? []) {
+          if (!modulesById.has(module.id)) {
+            modulesById.set(module.id, module);
+          }
+
+          if (modulesById.size >= candidateLimit) {
+            break;
+          }
+        }
+
+        if (modulesById.size >= candidateLimit) {
+          break;
+        }
+      }
+
+      return {
+        data: [...modulesById.values()].slice(0, candidateLimit),
+        error: null
+      };
+    })()).pipe(
       remapErrors(),
-      map((response: {data: MinimalModule[] | null}) => response.data ?? [])
+      throwIfSupabaseError<ModuleImportCandidateResponse>(),
+      map((response: ModuleImportCandidateResponse) => response.data ?? [])
     );
   }
 
