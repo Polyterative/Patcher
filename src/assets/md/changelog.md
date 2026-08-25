@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.7.8](https://github.com/Polyterative/Patcher/compare/v6.7.7...v6.7.8) (2026-08-25)
+
+
+### Bug Fixes
+
+* **auth:** surface password update errors ([f11cc29](https://github.com/Polyterative/Patcher/commit/f11cc29f35f74be78fd39d29a7786304ba4c13c9))
+
 ### [6.7.7](https://github.com/Polyterative/Patcher/compare/v6.7.6...v6.7.7) (2026-08-24)
 
 
