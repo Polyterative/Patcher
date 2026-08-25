@@ -239,6 +239,82 @@ describe('ModuleBrowserDataService', () => {
     expect(sortArgs(backend)).toEqual(['updated', 'desc']);
   });
 
+  it('serializes quick-add possession writes without dropping an in-flight second write', () => {
+    const {service, backend, loggedUser$, analytics, snackBar} = build();
+    const persistedPossessions = new Map<number, UserModulePossessionKind>();
+    const pendingWrites: Array<{
+      moduleId: number;
+      kind: UserModulePossessionKind;
+      completion$: Subject<null>;
+    }> = [];
+
+    backend.GET.currentUserModulesPossessionOnly.and.callFake(() => of(
+      Array.from(persistedPossessions.entries()).map(([id, possessionKind]) => ({id, possessionKind}))
+    ));
+    backend.update.userModulePossession.and.callFake((moduleId, kind) => {
+      const completion$ = new Subject<null>();
+      pendingWrites.push({moduleId, kind, completion$});
+      return completion$.asObservable();
+    });
+
+    loggedUser$.next(userFixture());
+    backend.GET.currentUserModulesPossessionOnly.calls.reset();
+    analytics.capture.calls.reset();
+    snackBar.open.calls.reset();
+
+    const slowModule = moduleFactory({id: 101, name: 'Slow write'});
+    const queuedModule = moduleFactory({id: 202, name: 'Queued write'});
+    service.modulesList$.next([slowModule, queuedModule]);
+
+    service.setModulePossession$.next({module: slowModule, request: 'HAS'});
+    service.setModulePossession$.next({module: queuedModule, request: 'WANTS'});
+
+    expect(pendingWrites.map(({moduleId, kind}) => ({moduleId, kind}))).toEqual([
+      {moduleId: slowModule.id, kind: 'HAS'}
+    ]);
+
+    persistedPossessions.set(slowModule.id, 'HAS');
+    pendingWrites[0].completion$.next(null);
+
+    expect(service.userModulesList$.value).toEqual([{id: slowModule.id, possessionKind: 'HAS'}]);
+    expect(service.modulesList$.value?.map(module => ({id: module.id, possessionKind: module.possessionKind})))
+      .toEqual([
+        {id: slowModule.id, possessionKind: 'HAS'},
+        {id: queuedModule.id, possessionKind: undefined}
+      ]);
+
+    pendingWrites[0].completion$.complete();
+
+    expect(pendingWrites.map(({moduleId, kind}) => ({moduleId, kind}))).toEqual([
+      {moduleId: slowModule.id, kind: 'HAS'},
+      {moduleId: queuedModule.id, kind: 'WANTS'}
+    ]);
+
+    persistedPossessions.set(queuedModule.id, 'WANTS');
+    pendingWrites[1].completion$.next(null);
+    pendingWrites[1].completion$.complete();
+
+    expect(service.userModulesList$.value).toEqual([
+      {id: slowModule.id, possessionKind: 'HAS'},
+      {id: queuedModule.id, possessionKind: 'WANTS'}
+    ]);
+    expect(service.modulesList$.value?.map(module => ({id: module.id, possessionKind: module.possessionKind})))
+      .toEqual([
+        {id: slowModule.id, possessionKind: 'HAS'},
+        {id: queuedModule.id, possessionKind: 'WANTS'}
+      ]);
+    expect(backend.GET.currentUserModulesPossessionOnly.calls.count()).toBe(2);
+    expect(analytics.capture.calls.allArgs()).toEqual([
+      ['module.collection_toggled', {module_id: slowModule.id, state: 'added'}],
+      ['module.collection_toggled', {module_id: queuedModule.id, state: 'added'}]
+    ]);
+    expect(snackBar.open.calls.allArgs().map(([message]) => message)).toEqual([
+      '"Slow write" marked as owned.',
+      '"Queued write" marked as wanted.'
+    ]);
+    service.ngOnDestroy();
+  });
+
   it('does not track search.performed for default first-page loads', () => {
     const {service, analytics} = build();
     analytics.capture.calls.reset();
