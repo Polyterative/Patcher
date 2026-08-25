@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.7.9](https://github.com/Polyterative/Patcher/compare/v6.7.8...v6.7.9) (2026-08-25)
+
+
+### Features
+
+* **price-hub:** add 12 new approved store crawler configs ([a218cd9](https://github.com/Polyterative/Patcher/commit/a218cd92a8720bccaf88ee8a5d36684e7d27ae28))
+
+
+### Bug Fixes
+
+* **module-browser:** persist quick-add collection changes ([5c4cd2e](https://github.com/Polyterative/Patcher/commit/5c4cd2e561d128a0772b74068037a65dac363170))
+* prevent e2e test runs from hanging on teardown ([056b7c8](https://github.com/Polyterative/Patcher/commit/056b7c80ef1574ecba98ad584224e127794bc41e))
+* **rack:** guard depth/weight totals against undefined to stop NaN stats ([a020b9c](https://github.com/Polyterative/Patcher/commit/a020b9c4ba860cb741501f3ce0b495e30e282ab9))
+* **rack:** join standard in currentUserModules so 1U modules keep proportions in racks ([ff9e71b](https://github.com/Polyterative/Patcher/commit/ff9e71b8786e48255d1453e9a55cbcd2f857df31))
+* **rack:** select weight/depth/power in currentUserModules so added modules keep full stats ([3def553](https://github.com/Polyterative/Patcher/commit/3def553e055c883a75bad883d0449a7ca1c0b113))
+* **racks:** restore ModularGrid catalogue matching ([f70572e](https://github.com/Polyterative/Patcher/commit/f70572e87ed400adbbe92bc6ccf8f74cb8eaa09a))
+* **racks:** retain contextual add selection ([4c108f1](https://github.com/Polyterative/Patcher/commit/4c108f1fbf92091c1b99844f79fd30bf00a0cf08))
+
 ### [6.7.8](https://github.com/Polyterative/Patcher/compare/v6.7.7...v6.7.8) (2026-08-25)
 
 

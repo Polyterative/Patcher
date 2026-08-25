@@ -1,6 +1,6 @@
 {
   "name": "patcher",
-  "version": "6.7.8",
+  "version": "6.7.9",
   "packageManager": "pnpm@10.0.0",
   "scripts": {
     "prestart": "node generate-env.js",
