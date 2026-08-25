@@ -13,9 +13,9 @@ import {
 } from 'rxjs';
 import {
   catchError,
+  concatMap,
   debounceTime,
   distinctUntilChanged,
-  exhaustMap,
   filter,
   map,
   shareReplay,
@@ -239,7 +239,7 @@ export class ModuleBrowserDataService extends SubManager {
 
     this.setModulePossession$
       .pipe(
-        exhaustMap(write => this.userService.loggedUser$.pipe(
+        concatMap(write => this.userService.loggedUser$.pipe(
           take(1),
           switchMap(user => {
             if (!user) {
