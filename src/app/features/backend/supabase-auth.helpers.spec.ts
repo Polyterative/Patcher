@@ -286,6 +286,54 @@ describe('supabase auth helpers', () => {
     expect(result.statusCode).toBe(500);
   });
 
+  it('classifies password-update categories from provider message text when no code is present', () => {
+    const cases = [
+      {
+        input: {status: 422, message: 'New password should be different from the old password.'},
+        expected: SharedConstants.messages.resetPassword.samePassword
+      },
+      {
+        input: {status: 422, message: 'Password is too weak.'},
+        expected: SharedConstants.messages.resetPassword.weakPassword
+      },
+      {
+        input: {status: 401, message: 'Auth session missing or expired.'},
+        expected: SharedConstants.messages.resetPassword.invalidSession
+      }
+    ];
+
+    for (const testCase of cases) {
+      expect(createPasswordUpdateError(testCase.input).message).toBe(testCase.expected);
+    }
+  });
+
+  it('maps retryable HTTP status strings to safe network copy without exposing provider text', () => {
+    const result = createPasswordUpdateError({
+      statusCode: '504',
+      message: 'upstream gateway timed out with provider internals'
+    });
+
+    expect(result.message).toBe(SharedConstants.messages.resetPassword.networkError);
+    expect(result.message).not.toContain('provider internals');
+    expect(result.statusCode).toBe('504');
+  });
+
+  it('sanitizes generic provider msg and error_description text while preserving metadata', () => {
+    const msgResult = createPasswordUpdateError({
+      code: 'provider_msg_only',
+      msg: 'raw msg with internal auth provider detail'
+    });
+    const descriptionResult = createPasswordUpdateError({
+      error_code: 'provider_description_only',
+      error_description: 'raw description with internal auth provider detail'
+    });
+
+    expect(msgResult.message).toBe(SharedConstants.messages.resetPassword.resetFailed);
+    expect(descriptionResult.message).toBe(SharedConstants.messages.resetPassword.resetFailed);
+    expect(msgResult.errorCode).toBe('provider_msg_only');
+    expect(descriptionResult.errorCode).toBe('provider_description_only');
+  });
+
   it('validates basic email syntax', () => {
     expect(isValidEmail('user@example.com')).toBeTrue();
     expect(isValidEmail('not-an-email')).toBeFalse();

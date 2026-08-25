@@ -187,6 +187,22 @@ describe('ResetPasswordPageComponent', () => {
       expect(ds.verifyRecoveryToken$).not.toHaveBeenCalled();
     });
 
+    it('does not mark a recovery token invalid during server-side rendering', async () => {
+      const settled$ = new Subject<void>();
+      const { comp, ds } = makeComp({
+        platformId: 'server',
+        queryParams: recoveryParams,
+        authInitializationSettled$: settled$.asObservable()
+      });
+
+      comp.ngOnInit();
+      settled$.next();
+      await flushMicrotasks();
+
+      expect(ds.verifyRecoveryToken$).not.toHaveBeenCalled();
+      expect(ds.setRecoverySession).not.toHaveBeenCalledWith(false);
+    });
+
     it('still updates SEO during server-side rendering', () => {
       const { comp, seo } = makeComp({ platformId: 'server' });
       comp.ngOnInit();
@@ -222,6 +238,28 @@ describe('ResetPasswordPageComponent', () => {
       await flushMicrotasks();
 
       expect(history.replaceState).not.toHaveBeenCalled();
+    });
+
+    it('preserves unrelated query params when removing recovery credentials after success', async () => {
+      const { comp, ds } = makeComp({
+        queryParams: {
+          token_hash: 'abc123',
+          type: 'recovery',
+          next: '/modules/browser',
+          campaign: 'reset-help'
+        }
+      });
+      (ds.verifyRecoveryToken$ as jasmine.Spy).and.returnValue(of(true));
+      spyOn(history, 'replaceState');
+
+      comp.ngOnInit();
+      await flushMicrotasks();
+
+      const scrubbedUrl = (history.replaceState as jasmine.Spy).calls.mostRecent().args[2] as string;
+      expect(scrubbedUrl).toContain('next=%2Fmodules%2Fbrowser');
+      expect(scrubbedUrl).toContain('campaign=reset-help');
+      expect(scrubbedUrl).not.toContain('token_hash');
+      expect(scrubbedUrl).not.toContain('type=recovery');
     });
 
     it('does not scrub until the asynchronous verification result actually arrives (R11 — reproduces the scrub race)', fakeAsync(() => {
