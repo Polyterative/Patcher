@@ -127,3 +127,13 @@ describe('MyService', () => {
 pnpm test-headless --include="**/my-service.spec.ts"
 pnpm test-headless --include="**/__tests__/supabase-service/*.spec.ts"
 ```
+
+## Transition regression contracts
+
+Test asynchronous UI transitions at the state boundaries that users can observe.
+
+- Control pending backend work with a `Subject`, then assert optimistic state before persistence resolves.
+- Resolve the backend response, then assert persisted identity and any refetched state.
+- Seed existing state before testing rollback, so a failed mutation cannot pass by wiping the state.
+- For queued writes, assert call order, per-call arguments, state reconciliation, and recovery after a failed earlier write.
+- Record characterization tests when the implementation already satisfies the contract and the slice changes no production code.
