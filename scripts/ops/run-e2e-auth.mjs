@@ -3,10 +3,10 @@
  * Guard script for authenticated e2e tests.
  * Exits 0 with a warning when credentials are not set so CI doesn't break.
  */
-import {spawnSync} from 'child_process';
 import {existsSync, readFileSync} from 'fs';
 import {fileURLToPath} from 'url';
 import {resolve} from 'path';
+import {runWithHardTimeout} from './lib/hard-timeout-runner.mjs';
 
 const rootDir = fileURLToPath(new URL('../..', import.meta.url));
 
@@ -54,9 +54,8 @@ const args = ['test', '--reporter=list', '--project=chromium-auth', ...normalize
 if (!args.some(arg => arg === '--workers' || arg.startsWith('--workers='))) {
     args.splice(1, 0, '--workers=1');
 }
-const result = spawnSync('playwright', args, {stdio: 'inherit', cwd: rootDir});
-
-if (result.error) {
-    throw result.error;
-}
-process.exit(result.status ?? 1);
+const exitCode = await runWithHardTimeout('playwright', args, {
+    cwd: rootDir,
+    label: 'pnpm test:e2e:auth (playwright)'
+});
+process.exit(exitCode);
