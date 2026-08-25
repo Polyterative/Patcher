@@ -1,4 +1,7 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import {
   BehaviorSubject,
   of,
@@ -17,6 +20,7 @@ import { ModuleCVsComponent } from './module-cvs.component';
 
 
 describe('ModuleCVsComponent', () => {
+  const emptyStateMessage = 'No inputs or outputs are listed for this module yet.';
   type EnsureModuleInstance = PatchDetailDataService['ensureModuleInstance$'];
 
   type ModuleCvsPatchServiceDouble = PatchDetailDataService & {
@@ -74,6 +78,60 @@ describe('ModuleCVsComponent', () => {
     );
     return {component, patchService, clickOnModuleCV$, snackBar};
   }
+
+  describe('template CV availability state', () => {
+    let fixture: ComponentFixture<ModuleCVsComponent>;
+
+    beforeEach(async () => {
+      const clickOnModuleCV$ = new Subject<CVConnectionEntity>();
+      const snackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
+      const patchService = createPatchServiceDouble(clickOnModuleCV$);
+
+      await TestBed.configureTestingModule({
+        declarations: [ModuleCVsComponent],
+        imports: [NoopAnimationsModule],
+        providers: [
+          {provide: PatchDetailDataService, useValue: patchService},
+          {provide: MatSnackBar, useValue: snackBar}
+        ],
+        schemas: [NO_ERRORS_SCHEMA]
+      }).compileComponents();
+    });
+
+    function render(ins: CV[], outs: CV[]): HTMLElement {
+      fixture = TestBed.createComponent(ModuleCVsComponent);
+      fixture.componentInstance.data = moduleFixture(10, 'Module', ins, outs);
+      fixture.detectChanges();
+
+      return fixture.nativeElement as HTMLElement;
+    }
+
+    it('shows the empty state when no inputs or outputs are listed', () => {
+      const host = render([], []);
+
+      expect(host.textContent).toContain(emptyStateMessage);
+      expect(host.querySelector('.ins')).toBeNull();
+      expect(host.querySelector('.outs')).toBeNull();
+    });
+
+    it('shows inputs without the empty state for inputs-only modules', () => {
+      const host = render([cvFixture(1, 'In1')], []);
+
+      expect(host.textContent).toContain('1 INs ↘');
+      expect(host.textContent).not.toContain(emptyStateMessage);
+      expect(host.querySelector('.ins')).not.toBeNull();
+      expect(host.querySelector('.outs')).toBeNull();
+    });
+
+    it('shows outputs without the empty state for outputs-only modules', () => {
+      const host = render([], [cvFixture(1, 'Out1')]);
+
+      expect(host.textContent).toContain('1 OUTs ↗');
+      expect(host.textContent).not.toContain(emptyStateMessage);
+      expect(host.querySelector('.outs')).not.toBeNull();
+      expect(host.querySelector('.ins')).toBeNull();
+    });
+  });
   
   it('sorts ins/outs using numeric-aware comparator', () => {
     const {component} = build();
