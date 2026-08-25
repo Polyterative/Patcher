@@ -250,7 +250,7 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
       .flat()
       .filter(module => !isBlankModule(module.module.id))
       .map(module => module.module.depth)
-      .filter((depth): depth is number => depth !== null);
+      .filter((depth): depth is number => depth != null);
 
     if (depths.length === 0) {
       return [0, 0, 0];
@@ -267,7 +267,7 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
       .flat()
       .filter(module => !isBlankModule(module.module.id))
       .map(module => module.module.weight)
-      .filter((weight): weight is number => weight !== null)
+      .filter((weight): weight is number => weight != null)
       .reduce((sum, weight) => sum + weight, 0);
   }
 }
