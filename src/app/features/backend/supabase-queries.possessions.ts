@@ -182,14 +182,15 @@ export class SupabasePossessionQueries extends SupabaseQueriesBase {
     const panelsTable: string = `${ prefix }.${ DbPaths.module_panels }`;
 
 
-    const moduleColumns = `id,name,hp,description,public,created,updated,manufacturerId,standard,isApproved`;
+    const moduleColumns = `id,name,hp,description,public,created,updated,manufacturerId,isApproved`;
 
-     const columns = [
-       moduleColumns,
-       QueryJoins.manufacturer,
-       QueryJoins.module_tags,
-       QueryJoins.module_panels,
-     ];
+    const columns = [
+      moduleColumns,
+      QueryJoins.manufacturer,
+      QueryJoins.standard,
+      QueryJoins.module_tags,
+      QueryJoins.module_panels,
+    ];
     // can be optimized to avoid calling it all the time but for now it is ok
     if (includeInsOuts) {
       columns.push(QueryJoins.insOuts);
