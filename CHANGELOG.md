@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.7.11](https://github.com/Polyterative/Patcher/compare/v6.7.9...v6.7.11) (2026-08-26)
+
+
+### Bug Fixes
+
+* **auth:** honor returnUrl for authenticated login arrivals ([860917f](https://github.com/Polyterative/Patcher/commit/860917f33cb09e800b9258172a2083ff18d0ca17))
+* **e2e:** protect runner during port cleanup ([112fb47](https://github.com/Polyterative/Patcher/commit/112fb47f33cc4fc7e01ec9417efec129e24fe5a6))
+* **module-image:** render failed panel image state ([908332a](https://github.com/Polyterative/Patcher/commit/908332a7b881c2a0d5d94f7651b16b9202b32d49))
+* **modules:** preserve port signal metadata ([e6e1f45](https://github.com/Polyterative/Patcher/commit/e6e1f45660c061857132d3b1a0bda1d9462a4431))
+* **modules:** serialize collection writes ([2715c66](https://github.com/Polyterative/Patcher/commit/2715c66a308c2dfde82ead65f476397c5765a8fb))
+* **patches:** explain missing module ports ([076ae48](https://github.com/Polyterative/Patcher/commit/076ae487289bfeb9639ea081217610d36eab3298))
+* **racks:** surface modulargrid import warnings ([1233992](https://github.com/Polyterative/Patcher/commit/1233992be4211dcffeb6f9b1e9220a724cc8daea))
+
 ### [6.7.10](https://github.com/Polyterative/Patcher/compare/v6.7.9...v6.7.10) (2026-08-26)
 
 ### [6.7.9](https://github.com/Polyterative/Patcher/compare/v6.7.8...v6.7.9) (2026-08-25)
