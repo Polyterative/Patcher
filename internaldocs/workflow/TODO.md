@@ -165,7 +165,6 @@
 - [ ] **ON HOLD: SEO — OG Image Generation** → [`plans/on-seo-og-image-generation.md`](./plans/on-seo-og-image-generation.md)
 - [ ] **LOWEST: PostHog UI interaction analytics review (needs credentials/export later)** → [`plans/posthog-ui-interaction-analytics-review.md`](./plans/posthog-ui-interaction-analytics-review.md)
 - [ ] **LOW: Module-collection browsing 25-row hard cap (public + current-user) has no load-more path — may be intentional MVP scope; needs a product decision before treating as a bug** (found in 2026-08-13 discovery swarm, deferred).
-- [ ] **MEDIUM: `racksMinimal` cache-bust gap — rack-module add/update/delete mutations only bust `rackWithId`, not `racksMinimal`; not independently re-verified this pass** (found in 2026-08-13 discovery swarm, deferred).
 - [ ] **LOW: `rackDisplayModuleColumns` missing `description` field read by `rack-signal-analysis.helpers.ts` for module classification text; unclear user-visibility, needs verification** (found in 2026-08-13 discovery swarm, deferred).
 - [ ] **LOW: Rack "add row" has no maximum row count** (found in 2026-08-13 discovery swarm, deferred).
 - [ ] **LOW: Rack "Duplicate row" and Remix/Shuffle buttons lack double-submit guards, same class as the now-fixed create-patch-from-rack (`ad08fba5`) but lower value/higher UI-visible-behavior-change risk** (found in 2026-08-13 discovery swarm, deferred).
