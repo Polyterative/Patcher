@@ -84,7 +84,7 @@
   window; compromise flow is revoke → wait ≥60 s → create with WAF
   prefix/IP mitigation. This is a documentation-only standing approval;
   remote SQL apply of the follow-up migration stays gated below
-  ([plan §"API keys — physical model"](./plans/public-open-api.md#api-keys--physical-model-stable-per-profile-credential-slot)).
+  ([GitHub issue #135](https://github.com/Polyterative/Patcher/issues/135)).
 
 ### Pending questions (owner: answer inline, agents move resolved lines)
 
@@ -128,7 +128,6 @@
 
 ### PRODUCT — Tier 1 (requires Manufacturer Page Phase 2 to be live)
 
-- [~] **HIGH: Public Open API — modules & manufacturers v1 is live in production (`6.6.0`/`6.7.0` shipped); final live-doc/archive cleanup next, then bulk JSONL and public patches/racks later** → [`plans/public-open-api.md`](./plans/public-open-api.md)
 - [ ] **HIGH: Manufacturer Accounts & Verification (claims, admin review, verified-owner edits; local M1 schema/typegen complete, M2-M7 not started; remote apply gated)** → [`plans/manufacturer-accounts-verification.md`](./plans/manufacturer-accounts-verification.md)
 - [ ] **LOW: Manufacturer Updates / Featured Surface (persistence/RLS/backend/moderation approved after verification foundation)** → [`plans/manufacturer-updates-featured-surface.md`](./plans/manufacturer-updates-featured-surface.md)
 - [ ] **LOW: Manufacturer Analytics (privacy aggregate helper complete; manufacturer validation/dashboard/backend gated)** → [`plans/manufacturer-analytics.md`](./plans/manufacturer-analytics.md)
