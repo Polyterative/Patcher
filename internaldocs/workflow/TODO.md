@@ -132,7 +132,6 @@
 
 ### PRODUCT — Tier 2 (requires stable public profiles / community trust layer)
 
-- [ ] **HIGH: Marketplace — Shipping Address Book (private schema/backend and User Area CRUD UI complete; transaction integration remains)** → [`plans/marketplace-shipping-address-book.md`](./plans/marketplace-shipping-address-book.md)
 - [ ] **HIGH: Marketplace — Browse, Detail, and Cockpits (public browse/detail and public-profile For Sale complete; buyer cockpit waits on transactions)** → [`plans/marketplace-browse-detail-and-cockpits.md`](./plans/marketplace-browse-detail-and-cockpits.md)
 - [ ] **HIGH: Marketplace — Listings Core and Media (backend/schema/private media storage, seller editor, and public rendering complete; expiry/transaction hooks remain)** → [`plans/marketplace-listings-core-and-media.md`](./plans/marketplace-listings-core-and-media.md)
 - [ ] **HIGH: Marketplace — Structured Inquiry and Offers (latest-offer helper complete; schema/RLS/backend/UI/notifications gated)** → [`plans/marketplace-structured-inquiry-and-offers.md`](./plans/marketplace-structured-inquiry-and-offers.md)
