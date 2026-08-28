@@ -132,7 +132,6 @@
 
 ### PRODUCT — Tier 2 (requires stable public profiles / community trust layer)
 
-- [ ] **HIGH: Marketplace — Structured Inquiry and Offers (latest-offer helper complete; schema/RLS/backend/UI/notifications gated)** → [`plans/marketplace-structured-inquiry-and-offers.md`](./plans/marketplace-structured-inquiry-and-offers.md)
 - [ ] **HIGH: Marketplace — Transaction Lifecycle (timeline event helper complete; schema/RLS/backend/UI/notifications/Price Hub gated)** → [`plans/marketplace-transaction-lifecycle.md`](./plans/marketplace-transaction-lifecycle.md)
 - [ ] **MEDIUM: Marketplace — Realtime Messaging (thread preview helper complete; schema/RLS/realtime/UI/moderation gated)** → [`plans/marketplace-realtime-messaging.md`](./plans/marketplace-realtime-messaging.md)
 - [ ] **MEDIUM: Marketplace — Feedback and Reputation (next marketplace slice approved after address/listings)** → [`plans/marketplace-feedback-and-reputation.md`](./plans/marketplace-feedback-and-reputation.md)
