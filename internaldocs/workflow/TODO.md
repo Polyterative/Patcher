@@ -128,7 +128,7 @@
 
 ### PRODUCT — Tier 1 (requires Manufacturer Page Phase 2 to be live)
 
-- [ ] **LOW: Manufacturer API / Widgets Pilot (safe contract + field stability docs complete; endpoint/embed gated)** → [`plans/manufacturer-api-widgets-pilot.md`](./plans/manufacturer-api-widgets-pilot.md)
+- None.
 
 ### PRODUCT — Tier 2 (requires stable public profiles / community trust layer)
 
