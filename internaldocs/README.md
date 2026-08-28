@@ -40,7 +40,7 @@ second source of rules.
 | [DESIGN_LANGUAGE.md](./DESIGN_LANGUAGE.md) | Visual philosophy, character, inspirations, responsive rules, and anti-patterns |
 | [UI_CONSISTENCY_AUDIT.md](./UI_CONSISTENCY_AUDIT.md) | Read-only UI consistency audit findings across app surfaces |
 | [agents/README.md](./agents/README.md) | Specialised agent personas, including [`feature-notetaker`](./agents/feature-notetaker.md) for idea intake, [`coordinator-loop`](./agents/coordinator-loop.md) for the full TODO → implementation → review → archive cycle, and [`docs-publisher`](./agents/docs-publisher.md) for confirmed releases |
-| [workflow/plans/public-open-api.md](./workflow/plans/public-open-api.md) | Active Public Open API plan, rollout gates, and local validation notes |
+| [GitHub issue #135](https://github.com/Polyterative/Patcher/issues/135) | Public Open API remaining work: bulk JSONL export, v2 patches/racks, contract/deprecation polish |
 
 ### Patterns and Testing
 
