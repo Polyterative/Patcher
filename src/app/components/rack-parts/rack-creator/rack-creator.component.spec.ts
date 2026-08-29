@@ -47,6 +47,7 @@ import {
   RackCreatorInModel,
   RackCreatorOutModel
 } from './rack-creator.types';
+import { environment } from 'src/environments/environment';
 
 
 describe('RackCreatorComponent', () => {
@@ -549,6 +550,20 @@ describe('RackCreatorComponent', () => {
     expect(component.fields.name.control.value).toBe('Imported Rack');
     expect(Number(component.fields.hp.control.value)).toBe(84);
     expect(Number(component.fields.rows.control.value)).toBe(1);
+  });
+
+  it('keeps ModularGrid import disabled when its feature flag is off', async () => {
+    const previousFlag = environment.features.modularGridImportEnabled;
+    environment.features.modularGridImportEnabled = false;
+
+    try {
+      const {component} = build(simpleUserFixture('u1'), [moduleFixture(1, '6x MIX', 6)]);
+      component.importEnabledControl.setValue(true);
+
+      await expectAsync(firstValueFrom(component.importEnabled$.pipe(take(1)))).toBeResolvedTo(false);
+    } finally {
+      environment.features.modularGridImportEnabled = previousFlag;
+    }
   });
 
   it('shows parser warnings for valid ModularGrid JSON without blocking create', async () => {

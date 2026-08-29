@@ -63,22 +63,22 @@
         </ng-container>
       </ng-container>
 
-      <mat-divider></mat-divider>
-      <div class="modulargrid-import-toggle row gap1">
-        <mat-icon class="modulargrid-import-toggle__icon">data_object</mat-icon>
-        <span class="modulargrid-import-toggle__label">Import from ModularGrid</span>
-        <mat-slide-toggle
-          [formControl]="importEnabledControl"
-          aria-label="Import from ModularGrid"
-          color="primary"
-        ></mat-slide-toggle>
-      </div>
+      <mat-divider *ngIf="modularGridImportEnabled"></mat-divider>
+      <div class="modulargrid-import-toggle row gap1" *ngIf="modularGridImportEnabled">
+          <mat-icon class="modulargrid-import-toggle__icon">data_object</mat-icon>
+          <span class="modulargrid-import-toggle__label">Import from ModularGrid</span>
+          <mat-slide-toggle
+            [formControl]="importEnabledControl"
+            aria-label="Import from ModularGrid"
+            color="primary"
+          ></mat-slide-toggle>
+        </div>
 
-      <ng-container *ngIf="importEnabled$ | async">
-        <div
-          class="modulargrid-import-section"
-          [class.modulargrid-import-section--file-accepted]="fileAccepted$ | async"
-        >
+        <ng-container *ngIf="modularGridImportEnabled && (importEnabled$ | async)">
+          <div
+            class="modulargrid-import-section"
+            [class.modulargrid-import-section--file-accepted]="fileAccepted$ | async"
+          >
           <ng-container *ngIf="selectedModularGridFile$ | async as selectedFile; else modularGridFileDropzone">
             <div class="modulargrid-import-file-strip">
               <mat-icon class="modulargrid-import-file-strip__icon">description</mat-icon>
@@ -92,8 +92,8 @@
               >
                 <mat-icon>close</mat-icon>
               </button>
-            </div>
-          </ng-container>
+              </div>
+            </ng-container>
           <ng-template #modularGridFileDropzone>
             <div class="modulargrid-import-file-card">
               <div class="modulargrid-import-file-card__copy">

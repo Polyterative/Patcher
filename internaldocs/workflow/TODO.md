@@ -84,7 +84,7 @@
   window; compromise flow is revoke → wait ≥60 s → create with WAF
   prefix/IP mitigation. This is a documentation-only standing approval;
   remote SQL apply of the follow-up migration stays gated below
-  ([plan §"API keys — physical model"](./plans/public-open-api.md#api-keys--physical-model-stable-per-profile-credential-slot)).
+  ([GitHub issue #135](https://github.com/Polyterative/Patcher/issues/135)).
 
 ### Pending questions (owner: answer inline, agents move resolved lines)
 
@@ -128,19 +128,10 @@
 
 ### PRODUCT — Tier 1 (requires Manufacturer Page Phase 2 to be live)
 
-- [~] **HIGH: Public Open API — modules & manufacturers v1 is live in production (`6.6.0`/`6.7.0` shipped); final live-doc/archive cleanup next, then bulk JSONL and public patches/racks later** → [`plans/public-open-api.md`](./plans/public-open-api.md)
-- [ ] **HIGH: Manufacturer Accounts & Verification (claims, admin review, verified-owner edits; local M1 schema/typegen complete, M2-M7 not started; remote apply gated)** → [`plans/manufacturer-accounts-verification.md`](./plans/manufacturer-accounts-verification.md)
-- [ ] **LOW: Manufacturer Updates / Featured Surface (persistence/RLS/backend/moderation approved after verification foundation)** → [`plans/manufacturer-updates-featured-surface.md`](./plans/manufacturer-updates-featured-surface.md)
-- [ ] **LOW: Manufacturer Analytics (privacy aggregate helper complete; manufacturer validation/dashboard/backend gated)** → [`plans/manufacturer-analytics.md`](./plans/manufacturer-analytics.md)
-- [ ] **LOW: Manufacturer API / Widgets Pilot (safe contract + field stability docs complete; endpoint/embed gated)** → [`plans/manufacturer-api-widgets-pilot.md`](./plans/manufacturer-api-widgets-pilot.md)
+- None.
 
 ### PRODUCT — Tier 2 (requires stable public profiles / community trust layer)
 
-- [ ] **HIGH: Marketplace — Shipping Address Book (private schema/backend and User Area CRUD UI complete; transaction integration remains)** → [`plans/marketplace-shipping-address-book.md`](./plans/marketplace-shipping-address-book.md)
-- [ ] **HIGH: Marketplace — Browse, Detail, and Cockpits (public browse/detail and public-profile For Sale complete; buyer cockpit waits on transactions)** → [`plans/marketplace-browse-detail-and-cockpits.md`](./plans/marketplace-browse-detail-and-cockpits.md)
-- [ ] **HIGH: Marketplace — Listings Core and Media (backend/schema/private media storage, seller editor, and public rendering complete; expiry/transaction hooks remain)** → [`plans/marketplace-listings-core-and-media.md`](./plans/marketplace-listings-core-and-media.md)
-- [ ] **HIGH: Marketplace — Structured Inquiry and Offers (latest-offer helper complete; schema/RLS/backend/UI/notifications gated)** → [`plans/marketplace-structured-inquiry-and-offers.md`](./plans/marketplace-structured-inquiry-and-offers.md)
-- [ ] **HIGH: Marketplace — Transaction Lifecycle (timeline event helper complete; schema/RLS/backend/UI/notifications/Price Hub gated)** → [`plans/marketplace-transaction-lifecycle.md`](./plans/marketplace-transaction-lifecycle.md)
 - [ ] **MEDIUM: Marketplace — Realtime Messaging (thread preview helper complete; schema/RLS/realtime/UI/moderation gated)** → [`plans/marketplace-realtime-messaging.md`](./plans/marketplace-realtime-messaging.md)
 - [ ] **MEDIUM: Marketplace — Feedback and Reputation (next marketplace slice approved after address/listings)** → [`plans/marketplace-feedback-and-reputation.md`](./plans/marketplace-feedback-and-reputation.md)
 
@@ -157,18 +148,14 @@
 - [ ] **ON HOLD: HIGH: Security — Manual Approval Follow-ups (private)** → local, gitignored `internaldocs/security/security-manual-approval-followups.md`
 - [ ] **ON HOLD: LOW: FUI-inspired instrument components** → [`plans/fui-inspired-instrument-components.md`](./plans/fui-inspired-instrument-components.md)
 - [ ] **ON HOLD: VERY LONG TERM: Bundle weight, lazy boundaries, and SSR prerender coverage** → [`plans/bundle-weight-lazy-boundaries-and-ssr-prerender-coverage.md`](./plans/bundle-weight-lazy-boundaries-and-ssr-prerender-coverage.md)
-- [ ] **ON HOLD: MEDIUM: Module possession trend charts (schema approval follow-up)** → [`plans/module-possession-trend-charts-schema-followup.md`](./plans/module-possession-trend-charts-schema-followup.md)
-- [ ] **LOW: Cross-entity Cool reactions (detail placement complete; narrow typegen/backend reconciliation approved; production flag stays off)** → [`plans/module-cool-appreciation-button.md`](./plans/module-cool-appreciation-button.md)
+
+
 - [ ] **ON HOLD INDEFINITELY: Rack Comparison — balance diff between two racks** → [`plans/rack-comparison-balance-diff-between-two-racks.md`](./plans/rack-comparison-balance-diff-between-two-racks.md)
 - [ ] **ON HOLD: MEDIUM: Sentry — Live Issue Audit** → [`plans/sentry-live-issue-audit.md`](./plans/sentry-live-issue-audit.md)
 - [ ] **ON HOLD: MEDIUM: Patch SVG previews (blocked: linked migration/typegen drift; do not apply storage/RLS autonomously)** → [`plans/patch-svg-previews.md`](./plans/patch-svg-previews.md)
 - [ ] **ON HOLD: SEO — OG Image Generation** → [`plans/on-seo-og-image-generation.md`](./plans/on-seo-og-image-generation.md)
 - [ ] **LOWEST: PostHog UI interaction analytics review (needs credentials/export later)** → [`plans/posthog-ui-interaction-analytics-review.md`](./plans/posthog-ui-interaction-analytics-review.md)
-- [ ] **MEDIUM: Pagination tie-breaker ordering — `getModules`, `getPatches`, `getManufacturersPaginated`, public-profile patches/racks, `getCurrentUserComments`, and `getComments` order by a non-unique column (name/updated/created) with no `id` tie-breaker, so equal-value rows at a page boundary can duplicate/skip across "load more"; broad blast radius (7+ call sites), needs its own dedicated slice** (found in 2026-08-13 discovery swarm, deferred).
 - [ ] **LOW: Module-collection browsing 25-row hard cap (public + current-user) has no load-more path — may be intentional MVP scope; needs a product decision before treating as a bug** (found in 2026-08-13 discovery swarm, deferred).
-- [ ] **MEDIUM: `racksMinimal` cache-bust gap — rack-module add/update/delete mutations only bust `rackWithId`, not `racksMinimal`; not independently re-verified this pass** (found in 2026-08-13 discovery swarm, deferred).
-- [ ] **LOW: `rackDisplayModuleColumns` missing `description` field read by `rack-signal-analysis.helpers.ts` for module classification text; unclear user-visibility, needs verification** (found in 2026-08-13 discovery swarm, deferred).
 - [ ] **LOW: Rack "add row" has no maximum row count** (found in 2026-08-13 discovery swarm, deferred).
-- [ ] **LOW: Rack "Duplicate row" and Remix/Shuffle buttons lack double-submit guards, same class as the now-fixed create-patch-from-rack (`ad08fba5`) but lower value/higher UI-visible-behavior-change risk** (found in 2026-08-13 discovery swarm, deferred).
 - [ ] **LOW: Test-coverage gaps in 10 complex files with zero/thin direct spec coverage — `RackDetailPersistenceOperationsService`, `RackDetailModulePlacementDataService`, `RackDetailModuleReplacementDataService`, `patch-detail-linked-rack.bindings.ts`, `ModuleEditorPanelStateService`, `ModuleEditorFormStateService`, `UserManagementAccountActionsService`, `UserManagementAuthFlowService`, `module-collection-editor-data.service.ts`, `user-listings-data.service.ts` — recommend a dedicated follow-up loop pass, not a single backlog line** (found in 2026-08-13 discovery swarm, deferred). Slice 1a adds focused transition coverage for rack module additions and module-browser quick-add, but most listed files remain uncovered. Slice 3a adds a versioned regression-contract registry + pre-commit guard (`scripts/checks/check-regression-contract.cjs`, `scripts/checks/regression-contract-registry.cjs`) requiring these exact 10 files to pair with an accepted spec change whenever touched, but does not itself add spec coverage — the files remain thin/zero-coverage until a dedicated follow-up pass.
 - [x] **Accepted limitation (not a bug): patch-connection optimistic rollback (`26c9c88e`) does not guarantee restoring the absolute last-confirmed-backend state after a chain of 3+ consecutive failed syncs — each failure restores only its own nearest pre-mutation snapshot; every failure still surfaces an error, so no data loss is silent. Disclosed intentionally so it isn't rediscovered as a regression.**

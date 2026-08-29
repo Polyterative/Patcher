@@ -46,6 +46,7 @@ export const environment = {
     collectionsEnabled: false,
     coolReactionsEnabled: false,
     developerApiEnabled: true,
+    modularGridImportEnabled: true,
     marketplaceEnabled: false
   }
 };
@@ -64,6 +65,7 @@ export const environment = {
     collectionsEnabled: true,
     coolReactionsEnabled: true,
     developerApiEnabled: true,
+    modularGridImportEnabled: true,
     marketplaceEnabled: true
   }
 };
