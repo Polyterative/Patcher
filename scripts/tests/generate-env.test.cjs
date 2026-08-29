@@ -82,10 +82,12 @@ test('generate-env disables local-only production flags while preserving product
   assert.match(devContent, /production:\s*false/);
   assert.match(devContent, /coolReactionsEnabled:\s*true/);
   assert.match(devContent, /developerApiEnabled:\s*true/);
+  assert.match(devContent, /modularGridImportEnabled:\s*true/);
   assert.match(devContent, /marketplaceEnabled:\s*true/);
   assert.match(prodContent, /production:\s*true/);
   assert.match(prodContent, /coolReactionsEnabled:\s*false/);
   assert.match(prodContent, /developerApiEnabled:\s*true/);
+  assert.match(prodContent, /modularGridImportEnabled:\s*true/);
   assert.match(prodContent, /marketplaceEnabled:\s*false/);
 });
 

@@ -59,6 +59,7 @@ import {
   ModularGridResolvedPlacementSummary
 } from './modulargrid-import/modulargrid-import.types';
 import { FileDragHostService } from 'src/app/shared-interproject/components/@smart/file-drag-host/file-drag-host.service';
+import { environment } from 'src/environments/environment';
 import {
   AmbiguousResolutionState,
   ModuleCatalogueState,
@@ -101,6 +102,7 @@ export class RackCreatorComponent extends SubManager implements OnInit {
   private readonly _createInProgress$ = new BehaviorSubject<boolean>(false);
   readonly createInProgress$ = this._createInProgress$.asObservable();
   readonly importEnabledControl = new FormControl<boolean>(false, {nonNullable: true});
+  readonly modularGridImportEnabled = environment.features.modularGridImportEnabled;
   readonly modularGridFileText$ = new BehaviorSubject<string>('');
   readonly modularGridFileError$ = new BehaviorSubject<string | null>(null);
   private readonly _ambiguousSelections$ = new BehaviorSubject<Record<string, number | null>>({});
@@ -156,6 +158,7 @@ export class RackCreatorComponent extends SubManager implements OnInit {
 
     this.importEnabled$ = this.importEnabledControl.valueChanges.pipe(
       startWith(this.importEnabledControl.value),
+      map(importEnabled => this.modularGridImportEnabled && importEnabled),
       shareReplay({bufferSize: 1, refCount: true})
     );
 
