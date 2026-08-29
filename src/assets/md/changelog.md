@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.7.16](https://github.com/Polyterative/Patcher/compare/v6.7.15...v6.7.16) (2026-08-29)
+
+
+### Bug Fixes
+
+* **rack-creator:** drop stale-value guard so toggle change handlers always sync FormControl ([e6576e7](https://github.com/Polyterative/Patcher/commit/e6576e7c4a64278358f764fe4541c6af32ca6680))
+
 ### [6.7.15](https://github.com/Polyterative/Patcher/compare/v6.7.14...v6.7.15) (2026-08-29)
 
 
