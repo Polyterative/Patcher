@@ -144,7 +144,7 @@
 
 - [!] **HIGH: Security — hardening backlog (private)** → local, gitignored `internaldocs/security/` (sole-contributor setup; not published because the repo is public)
 
-- [ ] **HIGH: Cloudflare Image Proxy and R2 Media Migration (upload/compression guardrails approved; R2 migration remains operator-gated)** → [`plans/cloudflare-image-proxy-and-r2-media-migration.md`](./plans/cloudflare-image-proxy-and-r2-media-migration.md)
+
 - [ ] **ON HOLD: HIGH: Security — Manual Approval Follow-ups (private)** → local, gitignored `internaldocs/security/security-manual-approval-followups.md`
 - [ ] **ON HOLD: LOW: FUI-inspired instrument components** → [`plans/fui-inspired-instrument-components.md`](./plans/fui-inspired-instrument-components.md)
 - [ ] **ON HOLD: VERY LONG TERM: Bundle weight, lazy boundaries, and SSR prerender coverage** → [`plans/bundle-weight-lazy-boundaries-and-ssr-prerender-coverage.md`](./plans/bundle-weight-lazy-boundaries-and-ssr-prerender-coverage.md)
