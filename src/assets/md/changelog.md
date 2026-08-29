@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.7.14](https://github.com/Polyterative/Patcher/compare/v6.7.13...v6.7.14) (2026-08-29)
+
+
+### Bug Fixes
+
+* **docs:** repair workflow links for ci lint ([a21776e](https://github.com/Polyterative/Patcher/commit/a21776ead51c2f896a76c634b719d5f988399aa4))
+
 ### [6.7.13](https://github.com/Polyterative/Patcher/compare/v6.7.12...v6.7.13) (2026-08-29)
 
 
