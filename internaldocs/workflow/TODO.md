@@ -93,7 +93,7 @@
   answer there or here) (added 2026-08-10).
 - [ ] Rack module orientation storage: authorize the reviewed `text` → `smallint`
   schema/typegen/backend migration after preflight; no RLS/policy changes are expected
-  ([plan](./plans/rack-module-orientation-smallint-storage-migration.md)) (added 2026-07-19).
+  ([GitHub issue #145](https://github.com/Polyterative/Patcher/issues/145)) (added 2026-07-19).
 - [ ] Cloudflare/R2: authorize traffic switch, cleanup, and any Supabase object deletion after the approved copy/verification stage (added 2026-07-08).
 - [ ] PostHog analytics review: provide credentials/export access (added 2026-07-08).
 
@@ -137,7 +137,7 @@
 
 ### DATA MODEL (schema / domain gaps to address)
 
-- [ ] **MEDIUM: Rack module orientation — migrate storage from text to smallint (`0` normal, `1` rot180; schema apply gated)** → [`plans/rack-module-orientation-smallint-storage-migration.md`](./plans/rack-module-orientation-smallint-storage-migration.md)
+- [ ] **MEDIUM: Rack module orientation — migrate storage from text to smallint (`0` normal, `1` rot180; schema apply gated)** → [GitHub issue #145](https://github.com/Polyterative/Patcher/issues/145)
 - [ ] **ON HOLD: LOW: Module I/O — bidirectional and passive port support (blocked before backend/model changes pending proposal review + explicit approval)** → [`plans/module-io-bidirectional-passive-port-support.md`](./plans/module-io-bidirectional-passive-port-support.md)
 
 ### INFRA (independent; pick any time a product task is blocked)

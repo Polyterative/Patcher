@@ -17,7 +17,7 @@ There is a related visual issue in the module minimal card: the historical botto
 
 ## Product / roadmap fit
 
-This is a refinement of [Cross-entity Cool reactions](../module-cool-appreciation-button.md). It keeps Cool as a content-level curation feature, not a social feed, while making the user's personal Cool collection feel like part of the existing collection/rack browsing system.
+This is a refinement of [Cross-entity Cool reactions](https://github.com/Polyterative/Patcher/issues/152). It keeps Cool as a content-level curation feature, not a social feed, while making the user's personal Cool collection feel like part of the existing collection/rack browsing system.
 
 It also supports the public-profile/community layer gate: user-area collection surfaces need to feel coherent before profile and marketplace work depends on them.
 
