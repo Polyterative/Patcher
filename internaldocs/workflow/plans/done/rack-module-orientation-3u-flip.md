@@ -69,6 +69,6 @@ catalogue module or any other placement.
 - 2026-07-19 — Storage review found that the extensibility goal was correct but the
   physical representation was not: a checked text column is unnecessarily verbose for
   a compact finite state. Follow-up
-  [`rack-module-orientation-smallint-storage-migration.md`](../rack-module-orientation-smallint-storage-migration.md)
+  [GitHub issue #145](https://github.com/Polyterative/Patcher/issues/145)
   will migrate persistence to `smallint` (`0` normal, `1` rot180) while preserving
   semantic names at the TypeScript boundary.

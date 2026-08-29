@@ -24,7 +24,7 @@ Updated: 2026-08-29
 Recent completed checkpoints are archived in [COMPLETED.md](./COMPLETED.md); their validation
 notes and decisions live in the matching plan files (e.g.
 [GitHub issue #140](https://github.com/Polyterative/Patcher/issues/140),
-[`plans/module-cool-appreciation-button.md`](./plans/module-cool-appreciation-button.md)).
+[GitHub issue #152](https://github.com/Polyterative/Patcher/issues/152)).
 
 ## Empty template
 
