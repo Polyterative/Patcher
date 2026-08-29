@@ -31,6 +31,7 @@ import {
   withLatestFrom
 } from 'rxjs/operators';
 import { MatSnackBar } from "@angular/material/snack-bar";
+import { MatSlideToggleChange } from "@angular/material/slide-toggle";
 import {
   MAT_DIALOG_DATA,
   MatDialogRef
@@ -438,6 +439,24 @@ export class RackCreatorComponent extends SubManager implements OnInit {
 
   clearModularGridFile(): void {
     this.modularGridFileDragHostService.removeAllFiles$.emit();
+  }
+
+  // Some deployments intermittently fail to link mat-slide-toggle's
+  // ControlValueAccessor to its [formControl] (the toggle's own visual/aria
+  // state still flips, but FormControl.setValue is never called). Driving
+  // the control explicitly from the toggle's own (change) output makes the
+  // control update reliable regardless of whether that automatic link
+  // succeeded.
+  handleImportEnabledToggleChange(event: MatSlideToggleChange): void {
+    if (this.importEnabledControl.value !== event.checked) {
+      this.importEnabledControl.setValue(event.checked);
+    }
+  }
+
+  handlePublicToggleChange(event: MatSlideToggleChange): void {
+    if (this.fields.public.control.value !== event.checked) {
+      this.fields.public.control.setValue(event.checked);
+    }
   }
 
   private formStatusChanges(): Observable<string> {
