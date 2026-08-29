@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.7.17](https://github.com/Polyterative/Patcher/compare/v6.7.16...v6.7.17) (2026-08-29)
+
+
+### Bug Fixes
+
+* **rack-creator:** bind [checked] directly so toggles render correctly when CVA writeValue fails ([4050309](https://github.com/Polyterative/Patcher/commit/40503096ed777d5043325b4a2ab95ed2ee890aba))
+
 ### [6.7.16](https://github.com/Polyterative/Patcher/compare/v6.7.15...v6.7.16) (2026-08-29)
 
 
