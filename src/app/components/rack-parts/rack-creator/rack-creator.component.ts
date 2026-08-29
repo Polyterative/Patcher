@@ -442,13 +442,16 @@ export class RackCreatorComponent extends SubManager implements OnInit {
   }
 
   // Some deployments intermittently fail to link mat-slide-toggle's
-  // ControlValueAccessor to its [formControl] (the toggle's own visual/aria
-  // state still flips, but FormControl.setValue is never called, and the
-  // control's stale .value can no longer be trusted to detect "no-op"
-  // clicks). Driving the control unconditionally from the toggle's own
-  // (change) output — which always reflects the user's actual intent —
-  // makes the control update reliable regardless of whether that automatic
-  // link succeeded.
+  // ControlValueAccessor to its [formControl]: writeValue() is never called
+  // on init (so a control whose initial value is `true` renders visually
+  // unchecked), and registerOnChange() is never wired (so clicking the
+  // toggle updates its own visual state but never calls FormControl.setValue).
+  // The template pairs each toggle with an explicit [checked] binding
+  // (an independent @Input the CVA link plays no part in, fixing the
+  // initial-render read direction) and this (change) handler, which drives
+  // the control unconditionally from the toggle's own output — always the
+  // user's actual intent — fixing the write direction regardless of whether
+  // the automatic CVA link succeeded.
   handleImportEnabledToggleChange(event: MatSlideToggleChange): void {
     this.importEnabledControl.setValue(event.checked);
   }
