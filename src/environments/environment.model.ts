@@ -8,6 +8,7 @@ export interface EnvironmentModel {
     collectionsEnabled: boolean;
     coolReactionsEnabled: boolean;
     developerApiEnabled: boolean;
+    modularGridImportEnabled: boolean;
     marketplaceEnabled: boolean;
   };
 }
