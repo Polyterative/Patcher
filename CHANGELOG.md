@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.7.15](https://github.com/Polyterative/Patcher/compare/v6.7.14...v6.7.15) (2026-08-29)
+
+
+### Bug Fixes
+
+* **rack-creator:** drive toggle controls from (change) event to bypass unreliable CVA link ([017b7c7](https://github.com/Polyterative/Patcher/commit/017b7c779b23f0528450d1cdfa03e78310541b7a))
+
 ### [6.7.14](https://github.com/Polyterative/Patcher/compare/v6.7.13...v6.7.14) (2026-08-29)
 
 
