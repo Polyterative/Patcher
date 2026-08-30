@@ -115,4 +115,4 @@ light by default):
 
 - 2026-06-18T10:30+02:00 — Round 1 is scoped to finishing the no-schema Phase 1 static count rendering/coverage; Phase 2 trend snapshots remain blocked on explicit schema approval.
 - 2026-06-18T10:34+02:00 — Render Phase 1 counts as an incidental stat row inside module details with a shared minimum-3 display helper; removed the separate Community card to avoid duplicate/dashboard-weight presentation and ensure hidden cohorts stay hidden.
-- 2026-06-18T10:40+02:00 — Phase 1 is complete and reviewed. Split trend charts into `module-possession-trend-charts-schema-followup.md` because snapshots require explicit schema/migration approval.
+- 2026-06-18T10:40+02:00 — Phase 1 is complete and reviewed. Split trend charts into [GitHub issue #153](https://github.com/Polyterative/Patcher/issues/153) because snapshots require explicit schema/migration approval.
