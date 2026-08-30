@@ -143,11 +143,12 @@
 ### INFRA (independent; pick any time a product task is blocked)
 
 - [!] **HIGH: Security — hardening backlog (private)** → local, gitignored `internaldocs/security/` (sole-contributor setup; not published because the repo is public)
-- [ ] **HIGH: Application performance — Chrome-measured budget, per-flow baselines, and hypothesis-per-commit optimization loop (frontend-only; supersedes the bundle-only plan as sub-scope)** → [`plans/application-performance-budget-and-optimization.md`](./plans/application-performance-budget-and-optimization.md)
-- [ ] **HIGH: Cloudflare Image Proxy and R2 Media Migration (upload/compression guardrails approved; R2 migration remains operator-gated)** → [`plans/cloudflare-image-proxy-and-r2-media-migration.md`](./plans/cloudflare-image-proxy-and-r2-media-migration.md)
+- [ ] **HIGH: Application performance — Chrome-measured budget, per-flow baselines, and hypothesis-per-commit optimization loop (frontend-only; supersedes the bundle-only plan as sub-scope)** → [GitHub issue #150](https://github.com/Polyterative/Patcher/issues/150)
+- [ ] **HIGH: Cloudflare Image Proxy and R2 Media Migration (upload/compression guardrails approved; R2 migration remains operator-gated)** → [GitHub issue #151](https://github.com/Polyterative/Patcher/issues/151)
 - [ ] **ON HOLD: HIGH: Security — Manual Approval Follow-ups (private)** → local, gitignored `internaldocs/security/security-manual-approval-followups.md`
 - [ ] **ON HOLD: LOW: FUI-inspired instrument components** → [`plans/fui-inspired-instrument-components.md`](./plans/fui-inspired-instrument-components.md)
 - [ ] **ON HOLD: VERY LONG TERM: Bundle weight, lazy boundaries, and SSR prerender coverage** → [`plans/bundle-weight-lazy-boundaries-and-ssr-prerender-coverage.md`](./plans/bundle-weight-lazy-boundaries-and-ssr-prerender-coverage.md)
+- [ ] **ON HOLD: MEDIUM: Module possession trend charts (schema approval follow-up)** → [GitHub issue #153](https://github.com/Polyterative/Patcher/issues/153)
 
 
 - [ ] **ON HOLD INDEFINITELY: Rack Comparison — balance diff between two racks** → [`plans/rack-comparison-balance-diff-between-two-racks.md`](./plans/rack-comparison-balance-diff-between-two-racks.md)
