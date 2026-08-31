@@ -136,7 +136,54 @@
                                iconL1="handyman"
           ></lib-mat-form-entity>
         </div>
-        
+
+        <div class="module-filter-control module-filter-control--optional">
+          <lib-mat-form-entity [control]="dataService.fields.hpCondition.control"
+                               [type]="dataService.fields.hpCondition.type"
+                               [label]="dataService.fields.hpCondition.label"
+                               [options$]="dataService.fields.hpCondition.options$"
+                               [disableVoidSelection]="false"
+                               iconL1="compare_arrows"
+          ></lib-mat-form-entity>
+        </div>
+
+        <div class="module-filter-control module-filter-control--optional">
+          <lib-mat-form-entity [control]="dataService.fields.hp.control"
+                               [type]="dataService.fields.hp.type"
+                               [label]="dataService.fields.hp.label"
+                               [presets]="[2, 4, 8, 12, 16]"
+                               iconL1="straighten"
+          ></lib-mat-form-entity>
+        </div>
+
+        <div class="module-filter-control module-filter-control--optional">
+          <lib-mat-form-entity [control]="dataService.fields.depth.control"
+                               [type]="dataService.fields.depth.type"
+                               [label]="dataService.fields.depth.label"
+                               iconL1="vertical_align_bottom"
+          ></lib-mat-form-entity>
+        </div>
+
+        <div class="module-filter-control module-filter-control--optional">
+          <lib-mat-form-entity [control]="dataService.fields.standard.control"
+                               [type]="dataService.fields.standard.type"
+                               [options$]="dataService.fields.standard.options$"
+                               [disableVoidSelection]="true"
+                               [label]="dataService.fields.standard.label"
+                               iconL1="settings"
+          ></lib-mat-form-entity>
+        </div>
+
+        <div class="module-filter-control module-filter-control--optional">
+          <lib-mat-form-entity [control]="dataService.fields.order.control"
+                               [options$]="dataService.fields.order.options$"
+                               [type]="dataService.fields.order.type"
+                               [disableVoidSelection]="true"
+                               [label]="dataService.fields.order.label"
+                               iconL1="sort"
+          ></lib-mat-form-entity>
+        </div>
+
         <div class="module-filter-control module-filter-control--optional module-tag-filter-section">
           <lib-mat-form-entity
             [control]="dataService.fields.tagSearch.control"
@@ -220,53 +267,6 @@
               }
             </mat-accordion>
           }
-        </div>
-
-        <div class="module-filter-control module-filter-control--optional">
-          <lib-mat-form-entity [control]="dataService.fields.hpCondition.control"
-                               [type]="dataService.fields.hpCondition.type"
-                               [label]="dataService.fields.hpCondition.label"
-                               [options$]="dataService.fields.hpCondition.options$"
-                               [disableVoidSelection]="false"
-                               iconL1="compare_arrows"
-          ></lib-mat-form-entity>
-        </div>
-        
-        <div class="module-filter-control module-filter-control--optional">
-          <lib-mat-form-entity [control]="dataService.fields.hp.control"
-                               [type]="dataService.fields.hp.type"
-                               [label]="dataService.fields.hp.label"
-                               [presets]="[2, 4, 8, 12, 16]"
-                               iconL1="straighten"
-          ></lib-mat-form-entity>
-        </div>
-
-        <div class="module-filter-control module-filter-control--optional">
-          <lib-mat-form-entity [control]="dataService.fields.depth.control"
-                               [type]="dataService.fields.depth.type"
-                               [label]="dataService.fields.depth.label"
-                               iconL1="vertical_align_bottom"
-          ></lib-mat-form-entity>
-        </div>
-        
-        <div class="module-filter-control module-filter-control--optional">
-          <lib-mat-form-entity [control]="dataService.fields.standard.control"
-                               [type]="dataService.fields.standard.type"
-                               [options$]="dataService.fields.standard.options$"
-                               [disableVoidSelection]="true"
-                               [label]="dataService.fields.standard.label"
-                               iconL1="settings"
-          ></lib-mat-form-entity>
-        </div>
-        
-        <div class="module-filter-control module-filter-control--optional">
-          <lib-mat-form-entity [control]="dataService.fields.order.control"
-                               [options$]="dataService.fields.order.options$"
-                               [type]="dataService.fields.order.type"
-                               [disableVoidSelection]="true"
-                               [label]="dataService.fields.order.label"
-                               iconL1="sort"
-          ></lib-mat-form-entity>
         </div>
         
         <div class="col gap1 module-filter-reset module-filter-reset--desktop">
