@@ -153,7 +153,7 @@
 
 - [ ] **ON HOLD INDEFINITELY: Rack Comparison — balance diff between two racks** → [`plans/rack-comparison-balance-diff-between-two-racks.md`](./plans/rack-comparison-balance-diff-between-two-racks.md)
 - [ ] **ON HOLD: MEDIUM: Sentry — Live Issue Audit** → [`plans/sentry-live-issue-audit.md`](./plans/sentry-live-issue-audit.md)
-- [ ] **ON HOLD: MEDIUM: Patch SVG previews (blocked: linked migration/typegen drift; do not apply storage/RLS autonomously)** → [`plans/patch-svg-previews.md`](./plans/patch-svg-previews.md)
+- [ ] **ON HOLD: MEDIUM: Patch SVG previews (blocked: linked migration/typegen drift; do not apply storage/RLS autonomously)** → [GitHub issue #158](https://github.com/Polyterative/Patcher/issues/158)
 - [ ] **ON HOLD: SEO — OG Image Generation** → [`plans/on-seo-og-image-generation.md`](./plans/on-seo-og-image-generation.md)
 - [ ] **LOWEST: PostHog UI interaction analytics review (needs credentials/export later)** → [`plans/posthog-ui-interaction-analytics-review.md`](./plans/posthog-ui-interaction-analytics-review.md)
 - [ ] **LOW: Module-collection browsing 25-row hard cap (public + current-user) has no load-more path — may be intentional MVP scope; needs a product decision before treating as a bug** (found in 2026-08-13 discovery swarm, deferred).
