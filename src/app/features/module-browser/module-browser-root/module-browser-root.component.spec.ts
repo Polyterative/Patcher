@@ -282,8 +282,8 @@ describe('ModuleBrowserRootComponent', () => {
     expect(host.textContent).toContain('Order by');
   });
 
-  it('keeps depth metadata hidden on browser cards', () => {
-    expect(component.viewConfig.showDepth).toBeFalse();
+  it('shows depth beside the format on browser cards', () => {
+    expect(component.viewConfig.showDepth).toBeTrue();
 
     const module = buildOwnedModules(1)[0];
     module.depth = 42;
@@ -292,7 +292,11 @@ describe('ModuleBrowserRootComponent', () => {
 
     const host = fixture.nativeElement as HTMLElement;
     const depth = host.querySelector('[data-testid="module-depth"]');
-    expect(depth).toBeNull();
+    const format = host.querySelector('app-module-part-hp');
+
+    expect(depth?.textContent?.trim()).toBe('Depth 42 mm');
+    expect(depth?.classList.contains('technical-item')).toBeTrue();
+    expect(depth?.nextElementSibling).toBe(format);
   });
 
   it('does not track search.performed while embedded default browse mode settles', fakeAsync(() => {
