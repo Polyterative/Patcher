@@ -294,7 +294,7 @@ describe('ModuleBrowserRootComponent', () => {
     const depth = host.querySelector('[data-testid="module-depth"]');
     const format = host.querySelector('app-module-part-hp');
 
-    expect(depth?.textContent?.trim()).toBe('Depth 42 mm');
+    expect(depth?.textContent?.trim()).toBe('↕ 42 mm');
     expect(depth?.classList.contains('technical-item')).toBeTrue();
     expect(depth?.nextElementSibling).toBe(format);
   });
