@@ -5,7 +5,7 @@
     <mat-card-subtitle>{{data.switches.length}} Switches:</mat-card-subtitle>
     <div class="rowwrap gap1"></div>
   }
-  @if (!viewConfig.hidePanelsOptions) {
+  @if (!viewConfig.hidePanelsOptions && (data.panels?.length ?? 0) > 0) {
     <div class="col gap1">
       <div class="row gap1" style="align-items: center;">
         <mat-icon>contrast</mat-icon>
