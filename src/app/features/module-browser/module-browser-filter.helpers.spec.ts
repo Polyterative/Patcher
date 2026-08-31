@@ -12,7 +12,8 @@ import {
 } from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import {
   DEFAULT_HP_CONDITION,
-  DEFAULT_STANDARD
+  DEFAULT_STANDARD,
+  MODULE_ORDER_OPTIONS
 } from './module-browser-data.constants';
 import { ModuleBrowserFields } from './module-browser-data.models';
 import {
@@ -68,6 +69,13 @@ describe('module-browser-filter.helpers', () => {
         control: new FormControl<string>('', {nonNullable: true}),
         type: FormTypes.NUMBER
       },
+      depth: {
+        label: 'Max Depth',
+        code: 'depth',
+        flex: '6rem',
+        control: new FormControl<string>('', {nonNullable: true}),
+        type: FormTypes.NUMBER
+      },
       hpCondition: {
         label: 'HP must be...',
         code: 'hpCondition',
@@ -108,6 +116,7 @@ describe('module-browser-filter.helpers', () => {
       name: overrides.name ?? 'Module',
       description: overrides.description ?? 'Description',
       hp: overrides.hp ?? 8,
+      depth: overrides.depth,
       public: overrides.public ?? true,
       created: overrides.created ?? '2026-01-01T00:00:00.000Z',
       updated: overrides.updated ?? '2026-01-01T00:00:00.000Z',
@@ -221,6 +230,52 @@ describe('module-browser-filter.helpers', () => {
     const owned = moduleFactory({id: 2, name: 'Owned', possessionKind: 'HAS'});
 
     expect(filterWantedModulesForFields([owned, wanted], fields, 'OR')).toEqual([wanted]);
+  });
+
+  it('filters local modules by inclusive max depth and ignores invalid or negative values', () => {
+    const fields = buildFields();
+    fields.depth.control.setValue('30');
+
+    expect(filterOwnedModulesForFields([
+      moduleFactory({id: 1, depth: 30}),
+      moduleFactory({id: 2, depth: 31}),
+      moduleFactory({id: 3, depth: null}),
+    ], fields, 'OR')?.map(module => module.id)).toEqual([1]);
+
+    fields.depth.control.setValue('-1');
+    expect(filterOwnedModulesForFields([
+      moduleFactory({id: 4, depth: 10}),
+    ], fields, 'OR')?.map(module => module.id)).toEqual([4]);
+
+    fields.depth.control.setValue('not-a-number');
+    expect(filterOwnedModulesForFields([
+      moduleFactory({id: 5, depth: 40}),
+    ], fields, 'OR')?.map(module => module.id)).toEqual([5]);
+  });
+
+  it('includes ascending and descending depth order options', () => {
+    expect(MODULE_ORDER_OPTIONS.filter(option => option.id === 'depth')).toEqual([
+      {id: 'depth', name: 'Depth ↑'},
+      {id: 'depth', name: 'Depth ↓'}
+    ]);
+  });
+
+  it('sorts local modules by depth with null and missing values last in both directions', () => {
+    const fields = buildFields();
+    const modules = [
+      moduleFactory({id: 1, name: 'Depth 20', depth: 20}),
+      moduleFactory({id: 2, name: 'Depth 10', depth: 10}),
+      moduleFactory({id: 3, name: 'Null', depth: null}),
+      moduleFactory({id: 4, name: 'Missing'})
+    ];
+
+    fields.order.control.setValue({id: 'depth', name: 'Depth ↑'});
+    expect(filterOwnedModulesForFields(modules, fields, 'OR')?.map(module => module.id))
+      .toEqual([2, 1, 4, 3]);
+
+    fields.order.control.setValue({id: 'depth', name: 'Depth ↓'});
+    expect(filterOwnedModulesForFields(modules, fields, 'OR')?.map(module => module.id))
+      .toEqual([1, 2, 4, 3]);
   });
 
   it('sorts best matches by matching tag count and then name', () => {

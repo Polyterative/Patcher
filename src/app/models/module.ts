@@ -27,6 +27,7 @@ export interface MinimalModule extends Timestamped {
   name: string;
   description: string;
   hp: number;
+  depth?: number | null;
   public: boolean;
   manufacturer: MinimalManufacturer;
   manufacturerId: number;

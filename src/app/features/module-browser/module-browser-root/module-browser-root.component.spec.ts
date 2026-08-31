@@ -278,7 +278,21 @@ describe('ModuleBrowserRootComponent', () => {
 
     expect(formEntities.length).toBeGreaterThan(0);
     expect(host.textContent).toContain('Search module...');
+    expect(host.textContent).toContain('Max Depth (mm)');
     expect(host.textContent).toContain('Order by');
+  });
+
+  it('keeps depth metadata hidden on browser cards', () => {
+    expect(component.viewConfig.showDepth).toBeFalse();
+
+    const module = buildOwnedModules(1)[0];
+    module.depth = 42;
+    component.dataService.modulesList$.next([module]);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const depth = host.querySelector('[data-testid="module-depth"]');
+    expect(depth).toBeNull();
   });
 
   it('does not track search.performed while embedded default browse mode settles', fakeAsync(() => {
@@ -441,6 +455,20 @@ describe('ModuleBrowserRootComponent', () => {
     component.setCollectionBrowseMode('all');
     component.dataService.modulesList$.next(owned);
     expect(component.visibleModules$.value?.map((module) => module.id)).toEqual([1, 2, 3, 4]);
+  });
+
+  it('reapplies local collection results when max depth changes', () => {
+    const owned = buildOwnedModules(20);
+    owned[0].depth = 40;
+    component.enableCollectionBrowseModes = true;
+    component.ownedModulesInput = owned;
+    component.setCollectionBrowseMode('owned');
+
+    component.dataService.fields.depth.control.setValue('30');
+
+    expect(component.visibleModules$.value?.map((module) => module.id)).toEqual(
+      Array.from({length: 19}, (_, index) => index + 2)
+    );
   });
 
   it('uses the shared update loader and keeps current results visible until the next backend result arrives', fakeAsync(() => {

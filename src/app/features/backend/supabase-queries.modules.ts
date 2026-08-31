@@ -282,11 +282,17 @@ export class SupabaseModuleQueries extends SupabaseQueriesBase {
     description?: string,
     onlyPublic = true,
     tagIds?: number[],
-    includeCount = true) {
+    includeCount = true,
+    maxDepth?: number) {
     const nameQuery = (name ?? '').trim();
     const descriptionQuery = (description ?? '').trim();
     const requiresClientTextFiltering = nameQuery.length > 0 || descriptionQuery.length > 0;
     const hasTagFilter = tagIds && tagIds.length > 0;
+    const moduleOrderColumn = orderBy || 'name';
+    const moduleOrderOptions = {
+      ascending: orderDirection === 'asc',
+      ...(moduleOrderColumn === 'depth' ? {nullsFirst: false} : {})
+    };
     const moduleTagsJoin = hasTagFilter
       ? `tags:${ DbPaths.module_tags }!inner(id,tag:${ DbPaths.tags }(*),voteCount:${ DbPaths.user_module_tags }(moduletagid))`
       : QueryJoins.module_tags;
@@ -324,6 +330,10 @@ export class SupabaseModuleQueries extends SupabaseQueriesBase {
         nextQuery = nextQuery.filter('standard', 'eq', standard);
       }
 
+      if (Number.isFinite(maxDepth) && maxDepth >= 0) {
+        nextQuery = nextQuery.filter('depth', 'lte', maxDepth);
+      }
+
       if (applyTextFilters) {
         if (nameQuery.length > 0) {
           nextQuery = nextQuery.ilike('name', `%${ escapeIlikePattern(nameQuery) }%`);
@@ -343,14 +353,14 @@ export class SupabaseModuleQueries extends SupabaseQueriesBase {
 
     const selectDetailedModules = (query: any) => includeCount
       ? query.select(`
-                    id,name,hp,description,public,created,updated,
+                    id,name,hp,depth,description,public,created,updated,
                     ${ QueryJoins.manufacturer },
                     ${ QueryJoins.standard },
                     ${ QueryJoins.module_panels },
                     ${ moduleTagsJoin }
                   `, {count: 'exact'})
       : query.select(`
-                    id,name,hp,description,public,created,updated,
+                    id,name,hp,depth,description,public,created,updated,
                     ${ QueryJoins.manufacturer },
                     ${ QueryJoins.standard },
                     ${ QueryJoins.module_panels },
@@ -362,19 +372,19 @@ export class SupabaseModuleQueries extends SupabaseQueriesBase {
     )
       .order(`color`, {foreignTable: DbPaths.module_panels, ascending: true})
       .limit(1, {foreignTable: DbPaths.module_panels})
-      .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'});
+      .order(moduleOrderColumn, moduleOrderOptions);
 
     const buildSearchRowsQuery = (query: any, applyTextFilters = false) => {
       const lightweightSelect = hasTagFilter
-        ? `id,name,description,${ DbPaths.module_tags }!inner(id)`
-        : 'id,name,description';
+        ? `id,name,depth,description,${ DbPaths.module_tags }!inner(id)`
+        : 'id,name,depth,description';
 
       const selectedQuery = includeCount
         ? query.select(lightweightSelect, {count: 'exact'})
         : query.select(lightweightSelect);
 
       return applyBaseFilters(selectedQuery, applyTextFilters)
-        .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'});
+        .order(moduleOrderColumn, moduleOrderOptions);
     };
 
     if (!requiresClientTextFiltering) {
