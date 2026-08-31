@@ -85,7 +85,7 @@
                   <div class="technical-item module-meta-row__depth"
                        data-testid="module-depth"
                        [attr.aria-label]="'Depth ' + data.depth + ' millimetres'"
-                  ><span aria-hidden="true">↕</span> {{ data.depth }} mm</div>
+                  >{{ data.depth }} mm</div>
                 }
                 @if (!viewConfig.hideHP) {
                   <app-module-part-hp
