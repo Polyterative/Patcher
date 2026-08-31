@@ -196,7 +196,8 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
     tagsShowCounts: false,
     tagsMaxCount: 5,
     colorTagsByAxis: true,
-    highlightDescriptionKeywords: true
+    highlightDescriptionKeywords: true,
+    showDepth: true
   };
 
   constructor(
