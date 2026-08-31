@@ -243,6 +243,7 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
       this.dataService.fields.manufacturers.control.valueChanges,
       this.dataService.fields.hp.control.valueChanges,
       this.dataService.fields.hpCondition.control.valueChanges,
+      this.dataService.fields.depth.control.valueChanges,
       this.dataService.fields.standard.control.valueChanges,
       this.dataService.fields.tags.control.valueChanges,
       this.dataService.tagMatchMode$,

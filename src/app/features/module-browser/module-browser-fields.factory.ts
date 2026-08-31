@@ -95,6 +95,19 @@ export function createModuleBrowserFields({
       }),
       type: FormTypes.NUMBER
     },
+    depth: {
+      label: 'Max Depth (mm)',
+      code: 'depth',
+      flex: '6rem',
+      control: new FormControl<string>('', {
+        nonNullable: true,
+        validators: Validators.compose([
+          Validators.min(0),
+          Validators.pattern(/^-?\d+$/),
+        ])
+      }),
+      type: FormTypes.NUMBER
+    },
     hpCondition: {
       label: 'HP must be...',
       code: 'hpCondition',

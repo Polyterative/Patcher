@@ -240,6 +240,14 @@
                                iconL1="straighten"
           ></lib-mat-form-entity>
         </div>
+
+        <div class="module-filter-control module-filter-control--optional">
+          <lib-mat-form-entity [control]="dataService.fields.depth.control"
+                               [type]="dataService.fields.depth.type"
+                               [label]="dataService.fields.depth.label"
+                               iconL1="vertical_align_bottom"
+          ></lib-mat-form-entity>
+        </div>
         
         <div class="module-filter-control module-filter-control--optional">
           <lib-mat-form-entity [control]="dataService.fields.standard.control"

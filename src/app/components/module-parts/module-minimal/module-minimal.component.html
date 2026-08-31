@@ -51,7 +51,7 @@
             ></app-cool-button>
           }
         </div>
-        @if (!viewConfig.hideManufacturer || !viewConfig.hideHP || (hasIO && !viewConfig.hideIoCounts)) {
+        @if (!viewConfig.hideManufacturer || !viewConfig.hideHP || (hasIO && !viewConfig.hideIoCounts) || shouldShowDepth()) {
           <div class="module-meta-row"
                [@moduleDetailInlineEnter]="{ value: '', params: { delay: 96, duration: 160 } }">
             @if (!viewConfig.hideManufacturer) {
@@ -60,7 +60,7 @@
                 [data]="data"
               ></app-module-part-manufacturer>
             }
-            @if (!viewConfig.hideHP || (hasIO && !viewConfig.hideIoCounts)) {
+            @if (!viewConfig.hideHP || (hasIO && !viewConfig.hideIoCounts) || shouldShowDepth()) {
               <div class="module-meta-row__stats module-minimal__focus-hide module-minimal__focus-hide--compact">
                 @if (hasIO && !viewConfig.hideIoCounts) {
                   <div class="module-io-counts"
@@ -86,6 +86,12 @@
                     class="module-meta-row__hp"
                     [data]="data"
                   ></app-module-part-hp>
+                }
+                @if (shouldShowDepth()) {
+                  <span class="module-meta-row__depth"
+                        data-testid="module-depth"
+                        [attr.aria-label]="'Depth ' + data.depth + ' millimetres'"
+                  >Depth {{ data.depth }} mm</span>
                 }
               </div>
             }

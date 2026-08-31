@@ -76,6 +76,7 @@ export interface ModuleBrowserFields {
   name: ModuleTextField;
   description: ModuleTextField;
   hp: ModuleTextField;
+  depth: ModuleTextField;
   manufacturers: ModuleAutocompleteField;
   hpCondition: ModuleSelectField<HpConditionOption>;
   order: ModuleSelectField<ModuleOrderOption>;

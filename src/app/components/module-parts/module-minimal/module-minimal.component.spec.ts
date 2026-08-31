@@ -280,6 +280,30 @@ describe('ModuleMinimalComponent', () => {
     expect(component.hasIO).toBeFalse();
   });
 
+  it('shows depth only for finite values when the view opts in', () => {
+    const {component} = build();
+    component.data = minimalModuleFixture({depth: 42});
+    component.viewConfig = {
+      ...defaultModuleMinimalViewConfig,
+      showDepth: true
+    };
+
+    expect(component.shouldShowDepth()).toBeTrue();
+
+    component.data.depth = NaN;
+    expect(component.shouldShowDepth()).toBeFalse();
+
+    delete component.data.depth;
+    expect(component.shouldShowDepth()).toBeFalse();
+  });
+
+  it('keeps depth hidden for existing card consumers by default', () => {
+    const {component} = build();
+    component.data = minimalModuleFixture({depth: 42});
+
+    expect(component.shouldShowDepth()).toBeFalse();
+  });
+
   it('insCount and outsCount return 0 when data is undefined', () => {
     const {component} = build();
     component.data = undefined;

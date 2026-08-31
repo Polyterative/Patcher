@@ -49,7 +49,8 @@ describe('ModuleBrowserDataService', () => {
     description?: string,
     onlyPublic?: boolean,
     tagIds?: number[],
-    includeCount?: boolean
+    includeCount?: boolean,
+    maxDepth?: number
   ) => Observable<ModulesBackendResult>;
   type ModulesQueryArgs = Parameters<ModulesQuery>;
   type ManufacturersQuery = (
@@ -188,6 +189,7 @@ describe('ModuleBrowserDataService', () => {
       name: overrides.name ?? 'Module',
       description: overrides.description ?? 'Description',
       hp: overrides.hp ?? 8,
+      depth: overrides.depth,
       public: overrides.public ?? true,
       created: overrides.created ?? '2026-01-01T00:00:00.000Z',
       updated: overrides.updated ?? '2026-01-01T00:00:00.000Z',
@@ -485,6 +487,16 @@ describe('ModuleBrowserDataService', () => {
     service.ngOnDestroy();
   }));
 
+  it('passes depth order and direction to GET.modules', fakeAsync(() => {
+    const {service, backend} = build();
+    service.fields.order.control.setValue({id: 'depth', name: 'Depth ↓'});
+    tick(750);
+
+    expect(service.serversideTableRequestData.sort$.value).toEqual(['depth', 'desc']);
+    expect(sortArgs(backend)).toEqual(['depth', 'desc']);
+    service.ngOnDestroy();
+  }));
+
   it('resets sort$ to updated/desc and re-fetches on resetForm$', fakeAsync(() => {
     const {service, backend} = build();
     service.fields.order.control.setValue({id: 'hp', name: 'HP ↓'});
@@ -588,6 +600,18 @@ describe('ModuleBrowserDataService', () => {
 
     const args = moduleCallArgs(backend);
     expect(args[5]).toBe(7);
+    service.ngOnDestroy();
+  }));
+
+  it('passes a valid max depth to GET.modules and leaves blank depth unlimited', fakeAsync(() => {
+    const {service, backend} = build();
+    service.fields.depth.control.setValue('42');
+    tick(750);
+
+    expect(moduleCallArgs(backend)[13]).toBe(42);
+
+    service.resetForm$.next();
+    expect(moduleCallArgs(backend)[13]).toBeNaN();
     service.ngOnDestroy();
   }));
 

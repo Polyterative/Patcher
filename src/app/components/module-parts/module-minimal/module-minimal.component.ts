@@ -127,6 +127,10 @@ export class ModuleMinimalComponent extends SubManager implements OnInit, OnDest
     return this.insCount > 0 || this.outsCount > 0;
   }
 
+  shouldShowDepth(): boolean {
+    return this.viewConfig?.showDepth === true && Number.isFinite(this.data?.depth);
+  }
+
   get priceSummaryLabel(): string {
     return this.priceSummary?.displayPrice ?? '';
   }
@@ -266,6 +270,7 @@ export interface ModuleMinimalViewConfig {
   showFrequencyAnalysis?: boolean;
   hideIoCounts: boolean;
   hideReportIssue: boolean;
+  showDepth?: boolean;
 }
 
 export const defaultModuleMinimalViewConfig: ModuleMinimalViewConfig = {
@@ -291,4 +296,5 @@ export const defaultModuleMinimalViewConfig: ModuleMinimalViewConfig = {
   showFrequencyAnalysis: false,
   hideIoCounts: false,
   hideReportIssue: false,
+  showDepth: false,
 };

@@ -30,6 +30,7 @@ type QueryFilterValue = boolean | number | string | null;
 
 interface OrderOptions {
   ascending: boolean;
+  nullsFirst?: boolean;
   foreignTable?: string;
 }
 
@@ -51,6 +52,7 @@ class ModuleQueryDouble implements PromiseLike<ModuleListingResult> {
   readonly filterCalls: Array<[string, string, QueryFilterValue]> = [];
   readonly limitCalls: Array<[number, ForeignTableOptions?]> = [];
   readonly orFilters: string[] = [];
+  readonly orderCalls: Array<[string, OrderOptions]> = [];
   readonly selectCalls: Array<[string, SelectOptions?]> = [];
 
   constructor(private readonly resolveValue: ModuleListingResultResolver = {data: [], count: 0, error: null}) {}
@@ -86,6 +88,7 @@ class ModuleQueryDouble implements PromiseLike<ModuleListingResult> {
   }
 
   order(_column: string, _options: OrderOptions): this {
+    this.orderCalls.push([_column, _options]);
     return this;
   }
 
@@ -591,7 +594,74 @@ describe('SupabaseService - GET.modules filtering', () => {
       }
     });
   }, TEST_TIMEOUT);
-  
+
+  it('should select module depth and apply an inclusive max-depth filter', (done) => {
+    const mock = chainableWithIlike({data: [], count: 0, error: null});
+    const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
+    const selectSpy = spyOn(mock, 'select').and.callThrough();
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+    service.GET.modules(
+      0, 10, undefined, undefined, undefined, undefined, undefined, undefined,
+      undefined, undefined, true, undefined, true, 42
+    ).subscribe({
+      next: () => {
+        expect(filterSpy).toHaveBeenCalledWith('depth', 'lte', 42);
+        expect(selectSpy.calls.mostRecent().args[0]).toContain('depth');
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+
+  it('does not apply max-depth filtering for blank, invalid, or negative values', (done) => {
+    const mock = chainableWithIlike({data: [], count: 0, error: null});
+    const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+    const calls = [
+      service.GET.modules(0, 10, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true, undefined, true, undefined),
+      service.GET.modules(0, 10, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true, undefined, true, -1),
+      service.GET.modules(0, 10, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true, undefined, true, NaN)
+    ];
+
+    let completed = 0;
+    calls.forEach(request$ => request$.subscribe({
+      next: () => {
+        completed++;
+        if (completed === calls.length) {
+          const depthFilterCalls = filterSpy.calls.allArgs()
+            .filter(([column]) => column === 'depth');
+          expect(depthFilterCalls).toEqual([]);
+          done();
+        }
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    }));
+  }, TEST_TIMEOUT);
+
+  it('orders depth ascending and descending with nulls last', async () => {
+    const mock = chainableWithIlike({data: [], count: 0, error: null});
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+    await firstValueFrom(service.GET.modules(
+      0, 10, undefined, 'depth', 'asc'
+    ));
+    await firstValueFrom(service.GET.modules(
+      0, 10, undefined, 'depth', 'desc'
+    ));
+
+    expect(mock.orderCalls.filter(([column]) => column === 'depth')).toEqual([
+      ['depth', {ascending: true, nullsFirst: false}],
+      ['depth', {ascending: false, nullsFirst: false}]
+    ]);
+  }, TEST_TIMEOUT);
+
   it('should apply manufacturer filter when manufacturerId is provided', (done) => {
     const mock = chainableWithIlike({data: [], count: 0, error: null});
     const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);

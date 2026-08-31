@@ -63,6 +63,7 @@ export function hasResettableModuleFilters(
     fields.description.control.value !== '' ||
     isOption(fields.manufacturers.control.value) ||
     (hp !== '' && hp !== null) ||
+    (fields.depth.control.value !== '' && fields.depth.control.value !== null) ||
     (hpCondition && hpCondition.id !== DEFAULT_HP_CONDITION.id) ||
     (standard && standard.id !== undefined) ||
     (order && order.id !== orderStartingValueId) ||
@@ -82,6 +83,7 @@ export function hasActiveModuleFiltersForFields(fields: ModuleBrowserFields): bo
     || fields.description.control.value.trim() !== ''
     || isOption(fields.manufacturers.control.value)
     || (hp !== '' && hp !== null)
+    || (fields.depth.control.value !== '' && fields.depth.control.value !== null)
     || (hpCondition && hpCondition.id !== DEFAULT_HP_CONDITION.id)
     || (standard && standard.id !== undefined)
     || (tags && tags.length > 0)
@@ -94,6 +96,7 @@ export function getActiveFilterNames(fields: ModuleBrowserFields): string[] {
   if (fields.description.control.value) activeFilters.push('description');
   if (fields.manufacturers.control.value) activeFilters.push('manufacturer');
   if (fields.hp.control.value) activeFilters.push('hp');
+  if (fields.depth.control.value) activeFilters.push('depth');
   if (fields.standard.control.value?.id !== undefined) activeFilters.push('standard');
   if ((fields.tags.control.value ?? []).length > 0) activeFilters.push('tags');
   return activeFilters;
@@ -117,10 +120,11 @@ export function filterOwnedModulesForFields(
   }
 
   const excludedIds = new Set(excludedModuleIds);
+  const criteria = createModuleFilterCriteria(fields, tagMatchMode);
   const filteredModules = modules.filter((module) =>
     isOwnedPossessionForModule(module)
     && !excludedIds.has(module.id)
-    && matchesOwnedModuleFilters(module, fields, tagMatchMode)
+    && matchesOwnedModuleFilters(module, criteria)
   );
   return sortOwnedModulesForFields(filteredModules, fields);
 }
@@ -134,8 +138,9 @@ export function filterWantedModulesForFields(
     return undefined;
   }
 
+  const criteria = createModuleFilterCriteria(fields, tagMatchMode);
   const filteredModules = modules.filter((module) =>
-    isWantedPossessionForModule(module) && matchesOwnedModuleFilters(module, fields, tagMatchMode)
+    isWantedPossessionForModule(module) && matchesOwnedModuleFilters(module, criteria)
   );
   return sortOwnedModulesForFields(filteredModules, fields);
 }
@@ -165,37 +170,64 @@ export function getSelectedTagIdsFromFields(fields: ModuleBrowserFields): number
     .filter((id) => Number.isFinite(id));
 }
 
-function matchesOwnedModuleFilters(
-  module: MinimalModule,
+interface ModuleFilterCriteria {
+  name: string;
+  description: string;
+  selectedManufacturerId: number;
+  hpValue: number;
+  hpConditionId: string;
+  maxDepth: number;
+  selectedStandardId: number | undefined;
+  selectedTagIds: number[];
+  tagMatchMode: 'OR' | 'AND';
+}
+
+function createModuleFilterCriteria(
   fields: ModuleBrowserFields,
   tagMatchMode: 'OR' | 'AND'
-): boolean {
-  const selectedManufacturerId = Number.parseInt(getCleanedValueId(fields.manufacturers.control), 10);
-  const hpValue = Number.parseInt(fields.hp.control.value, 10);
-  const selectedStandardId = fields.standard.control.value?.id;
-  const selectedTagIds = getSelectedTagIdsFromFields(fields);
+): ModuleFilterCriteria {
+  return {
+    name: fields.name.control.value,
+    description: fields.description.control.value,
+    selectedManufacturerId: Number.parseInt(getCleanedValueId(fields.manufacturers.control), 10),
+    hpValue: Number.parseInt(fields.hp.control.value, 10),
+    hpConditionId: fields.hpCondition.control.value?.id ?? DEFAULT_HP_CONDITION.id,
+    maxDepth: Number.parseInt(fields.depth.control.value, 10),
+    selectedStandardId: fields.standard.control.value?.id,
+    selectedTagIds: getSelectedTagIdsFromFields(fields),
+    tagMatchMode
+  };
+}
 
-  if (!matchesSearchQuery(fields.name.control.value, module.name)) {
+function matchesOwnedModuleFilters(module: MinimalModule, criteria: ModuleFilterCriteria): boolean {
+  if (!matchesSearchQuery(criteria.name, module.name)) {
     return false;
   }
 
-  if (!matchesSearchQuery(fields.description.control.value, module.description)) {
+  if (!matchesSearchQuery(criteria.description, module.description)) {
     return false;
   }
 
-  if (Number.isFinite(selectedManufacturerId) && module.manufacturerId !== selectedManufacturerId) {
+  if (Number.isFinite(criteria.selectedManufacturerId) && module.manufacturerId !== criteria.selectedManufacturerId) {
     return false;
   }
 
-  if (selectedStandardId !== undefined && getModuleStandardId(module) !== selectedStandardId) {
+  if (criteria.selectedStandardId !== undefined && getModuleStandardId(module) !== criteria.selectedStandardId) {
     return false;
   }
 
-  if (Number.isFinite(hpValue) && !applyHpCondition(module.hp, hpValue, fields.hpCondition.control.value?.id)) {
+  if (Number.isFinite(criteria.hpValue)
+    && !applyHpCondition(module.hp, criteria.hpValue, criteria.hpConditionId)) {
     return false;
   }
 
-  if (selectedTagIds.length > 0 && !matchesSelectedTags(module, selectedTagIds, tagMatchMode)) {
+  if (Number.isFinite(criteria.maxDepth) && criteria.maxDepth >= 0
+    && (module.depth === null || module.depth === undefined || module.depth > criteria.maxDepth)) {
+    return false;
+  }
+
+  if (criteria.selectedTagIds.length > 0
+    && !matchesSelectedTags(module, criteria.selectedTagIds, criteria.tagMatchMode)) {
     return false;
   }
 
@@ -220,9 +252,37 @@ function sortOwnedModulesForFields(modules: MinimalModule[], fields: ModuleBrows
       return sortedModules.sort((a, b) => compareModulesByCreated(a, b, direction));
     case 'updated':
       return sortedModules.sort(direction === 'asc' ? compareModulesByUpdatedAsc : compareModulesByUpdatedDesc);
+    case 'depth':
+      return sortedModules.sort((a, b) => compareModulesByDepth(a, b, direction));
     default:
       return sortedModules;
   }
+}
+
+function compareModulesByDepth(
+  a: MinimalModule,
+  b: MinimalModule,
+  direction: 'asc' | 'desc'
+): number {
+  const aDepth = a.depth;
+  const bDepth = b.depth;
+
+  if (aDepth === null || aDepth === undefined) {
+    return bDepth === null || bDepth === undefined
+      ? compareModulesByNameAsc(a, b)
+      : 1;
+  }
+
+  if (bDepth === null || bDepth === undefined) {
+    return -1;
+  }
+
+  const comparison = aDepth - bDepth;
+  if (comparison !== 0) {
+    return direction === 'asc' ? comparison : -comparison;
+  }
+
+  return compareModulesByNameAsc(a, b);
 }
 
 function getModuleTagMatchScore(module: MinimalModule, selectedTagIds: number[]): number {

@@ -186,6 +186,7 @@ export class ModuleBrowserDataService extends SubManager {
       this.fields.description.control.valueChanges,
       this.fields.manufacturers.control.valueChanges,
       this.fields.hp.control.valueChanges,
+      this.fields.depth.control.valueChanges,
       this.fields.hpCondition.control.valueChanges,
       this.fields.standard.control.valueChanges,
       this.fields.order.control.valueChanges,
@@ -279,6 +280,7 @@ export class ModuleBrowserDataService extends SubManager {
       this.fields.description.control.valueChanges,
       this.fields.manufacturers.control.valueChanges,
       this.fields.hp.control.valueChanges,
+      this.fields.depth.control.valueChanges,
       this.fields.hpCondition.control.valueChanges,
       this.fields.standard.control.valueChanges
     );
@@ -404,7 +406,8 @@ export class ModuleBrowserDataService extends SubManager {
               this.fields.description.control.value,
               true,
               tagIds.length > 0 ? tagIds : undefined,
-              includeCount
+              includeCount,
+              parseInt(this.fields.depth.control.value)
             ),
             {
               data: skip === 0 ? previousData : [],
@@ -481,6 +484,7 @@ export class ModuleBrowserDataService extends SubManager {
         this.fields.order.control.setValue(this.orderStartingValue, silent);
         this.fields.manufacturers.control.setValue('', silent);
         this.fields.hp.control.setValue('', silent);
+        this.fields.depth.control.setValue('', silent);
         this.fields.hpCondition.control.setValue(DEFAULT_HP_CONDITION, silent);
         this.fields.standard.control.setValue(DEFAULT_STANDARD, silent);
         this.fields.tags.control.setValue([], silent);
