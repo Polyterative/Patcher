@@ -149,6 +149,18 @@ test('still passes through non-bot SPA bypass URLs without hitting Supabase', as
   assert.equal(getCalls(), 0);
 });
 
+test('passes canonical rack and patch share URLs through to Angular SSR for bots', async () => {
+  const middleware = loadMiddleware('test-key');
+  const getCalls = stubFetchWithPayload(modulePayload);
+
+  for (const pathname of ['/racks/KiDOU-28HcXC', '/patches/AbCdEf12_Xy']) {
+    const response = await middleware(makeRequest(pathname, 'GPTBot/1.0'));
+
+    assert.equal(response, undefined, `${ pathname } should be rendered by Angular SSR`);
+  }
+  assert.equal(getCalls(), 0);
+});
+
 test('returns entity-specific metadata for bot detail requests', async () => {
   const middleware = loadMiddleware('test-key');
   const getCalls = stubFetchWithPayload(modulePayload);

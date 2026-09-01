@@ -13,7 +13,9 @@ Preferred public routes:
 - /racks/browser
 - /modules/details/{id}
 - /patches/details/{id}
-- /racks/details/{id}
+- /patches/{public_id}
+- /racks/{public_id}
+- /racks/details/{id} (legacy; redirects to the canonical public URL)
 
 Content expectations:
 - Entity detail pages represent user-submitted and community-curated data.
