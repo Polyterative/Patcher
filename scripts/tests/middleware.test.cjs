@@ -161,6 +161,19 @@ test('passes canonical rack and patch share URLs through to Angular SSR for bots
   assert.equal(getCalls(), 0);
 });
 
+test('keeps canonical share URLs noindex on preview deployments', async () => {
+  process.env.VERCEL_ENV = 'preview';
+  const middleware = loadMiddleware('test-key');
+  const getCalls = stubFetchWithPayload(modulePayload);
+
+  const response = await middleware(makeRequest('/racks/KiDOU-28HcXC', 'GPTBot/1.0'));
+
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow, noarchive');
+  assert.equal(getCalls(), 0);
+  delete process.env.VERCEL_ENV;
+});
+
 test('returns entity-specific metadata for bot detail requests', async () => {
   const middleware = loadMiddleware('test-key');
   const getCalls = stubFetchWithPayload(modulePayload);

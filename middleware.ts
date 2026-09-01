@@ -127,7 +127,7 @@ export default async function middleware(request: Request): Promise<Response | v
 
   // Canonical share URLs need the full Angular SSR document so content readers
   // can access the rack or patch details, not only the link-preview metadata shell.
-  if (isCanonicalShareRoute(pathname)) {
+  if (isCanonicalShareRoute(pathname) && !isPreviewDeployment) {
     return;
   }
 
