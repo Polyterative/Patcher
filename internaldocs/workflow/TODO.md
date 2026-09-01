@@ -131,8 +131,8 @@
 
 ### PRODUCT — Tier 2 (requires stable public profiles / community trust layer)
 
-- [ ] **MEDIUM: Marketplace — Realtime Messaging (thread preview helper complete; schema/RLS/realtime/UI/moderation gated)** → [`plans/marketplace-realtime-messaging.md`](./plans/marketplace-realtime-messaging.md)
-- [ ] **MEDIUM: Marketplace — Feedback and Reputation (next marketplace slice approved after address/listings)** → [`plans/marketplace-feedback-and-reputation.md`](./plans/marketplace-feedback-and-reputation.md)
+- [ ] **MEDIUM: Marketplace — Realtime Messaging (thread preview helper complete; schema/RLS/realtime/UI/moderation gated)** → [GitHub issue #154](https://github.com/Polyterative/Patcher/issues/154)
+- [ ] **MEDIUM: Marketplace — Feedback and Reputation (next marketplace slice approved after address/listings)** → [GitHub issue #155](https://github.com/Polyterative/Patcher/issues/155)
 
 ### DATA MODEL (schema / domain gaps to address)
 
