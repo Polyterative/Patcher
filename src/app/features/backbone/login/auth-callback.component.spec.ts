@@ -189,14 +189,18 @@ describe('AuthCallbackComponent', () => {
     fixture.detectChanges();
     const container: HTMLElement = fixture.nativeElement.querySelector('.auth-callback-container');
     const loadingRect = container.getBoundingClientRect();
+    // Failed-state focus can scroll the Karma document in Chromium; compare
+    // document-relative position rather than the viewport-relative top.
+    const loadingDocumentTop = loadingRect.top + window.scrollY;
 
     oauthCallbackFailed$.next();
     fixture.detectChanges();
     tick();
     const failedRect = container.getBoundingClientRect();
+    const failedDocumentTop = failedRect.top + window.scrollY;
 
     expect(failedRect.width).toBeCloseTo(loadingRect.width, 0);
-    expect(failedRect.top).toBeCloseTo(loadingRect.top, 0);
+    expect(failedDocumentTop).toBeCloseTo(loadingDocumentTop, 0);
     expect(fixture.nativeElement.querySelectorAll('.auth-callback-container').length).toBe(1);
   }));
 
