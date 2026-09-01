@@ -51,7 +51,7 @@ the analysis surface as a whole.
   there read as "this app is broken", which is far more damaging on a
   public surface than in the solo editor.
 - **Backlog precedent.** Sits alongside the existing
-  [`bug-new-modules-stretched-vertically-in-mixed-format-row.md`](./bug-new-modules-stretched-vertically-in-mixed-format-row.md)
+  [rack sizing and analysis-overlay regression issue](https://github.com/Polyterative/Patcher/issues/160)
   rack regression bundle — both are INFRA / HIGH and both demand
   regression tests as part of the fix because the surface has now
   regressed visibly more than once.
@@ -242,7 +242,7 @@ Out of scope for this fix (left to follow-up plans):
 - **Hard dependency:** none. Pure frontend, no schema, no backend, no
   RLS. Can be picked up at any time.
 - **Soft dependency:** the existing rack regression bundle
-  [`bug-new-modules-stretched-vertically-in-mixed-format-row.md`](./bug-new-modules-stretched-vertically-in-mixed-format-row.md)
+  [tracked in GitHub issue #160](https://github.com/Polyterative/Patcher/issues/160)
   also expands the rack analysis regression-test suite — if it is
   scheduled at the same time, both fixes should land their regression
   tests next to each other so the test file does not get split twice.
