@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.7.18](https://github.com/Polyterative/Patcher/compare/v6.7.17...v6.7.18) (2026-09-01)
+
+
+### Features
+
+* **modules:** add module depth sorting and filtering ([5ff90ba](https://github.com/Polyterative/Patcher/commit/5ff90ba957a1f5fb98cd1b5d76d21480c69f292f))
+* **modules:** show depth beside module format ([274b2d6](https://github.com/Polyterative/Patcher/commit/274b2d68c63f42cf18747b6f3ab1abf420131361))
+* **price-hub:** schedule snapshot worker ([afbf4a0](https://github.com/Polyterative/Patcher/commit/afbf4a0dd1ab94c78c0801327b681c1c905efd7b))
+
+
+### Bug Fixes
+
+* **module-ui:** refine empty-state presentation ([28c775b](https://github.com/Polyterative/Patcher/commit/28c775b9912835e3662f177130b2e3e406f97bea))
+* **seo:** allow crawler SSR for share routes ([6ef6588](https://github.com/Polyterative/Patcher/commit/6ef658863b77e0c80caf2ec2e3d4ccc147b78558))
+* **seo:** preserve preview noindex for share routes ([26ba098](https://github.com/Polyterative/Patcher/commit/26ba098f94f18000d169ddc2a855e70a20a17246))
+
 ### [6.7.17](https://github.com/Polyterative/Patcher/compare/v6.7.16...v6.7.17) (2026-08-29)
 
 
