@@ -50,7 +50,7 @@
 - Cloudflare/R2 staging: creating `patcher-module-panels` and `patcher-rack-previews` and copying/verifying objects is approved.
   Traffic switching, cleanup, and Supabase object deletion remain separately gated.
 - Marketplace address/listing schema/RLS/storage/backend foundation **applied and verified** — listing UI/discovery remains in the linked plans; release/push remains gated.
-- Price Hub retention/diagnostics and zero-decimal backfill **approved in principle** — same preflight/typegen/advisor validation required before any mutation.
+- Price Hub retention/diagnostics and zero-decimal backfill **approved in principle** — same preflight/typegen/advisor validation required before any mutation. Snapshot worker scheduling was explicitly approved on 2026-08-31: every three days at 00:00 UTC via pg_cron/pg_net, with its token held in Vault.
 - Public Open API: reviewed technical plan adopted for MVP implementation
   (`backend-plan-reviewer`: APPROVE WITH CHANGES). The owner-present database,
   Vault, reader credential, direct-endpoint Hyperdrive, Durable Object, Worker
@@ -100,7 +100,6 @@
 ### Denials / permanent constraints
 
 - Production branch, release commands, and pushes: **never autonomous** — user-triggered only.
-- Supabase Cron for Price Hub: declined; manual-only.
 - Supabase RLS/policy changes: never applied autonomously (see `AGENTS.md` §5).
 - Backend-breaking changes to live production clients: require the user present.
 
