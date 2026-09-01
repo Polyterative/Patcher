@@ -125,6 +125,12 @@ export default async function middleware(request: Request): Promise<Response | v
     return;
   }
 
+  // Canonical share URLs need the full Angular SSR document so content readers
+  // can access the rack or patch details, not only the link-preview metadata shell.
+  if (isCanonicalShareRoute(pathname)) {
+    return;
+  }
+
   const canonicalUrl = `${ canonicalOrigin }${ resolveCanonicalPath(pathname) }`;
   const cachedMetadata = readMetadataCache(canonicalUrl);
   const metadata = cachedMetadata || await buildMetadata(detailRoute, canonicalUrl, canonicalOrigin);
@@ -176,6 +182,12 @@ function isPrivatePath(pathname: string): boolean {
     || pathname.startsWith('/user/')
     || pathname === '/404'
     || pathname.startsWith('/modules/add');
+}
+
+function isCanonicalShareRoute(pathname: string): boolean {
+  const match = pathname.match(/^\/(?:racks|patches)\/([^/]+)$/);
+  const segment = match?.[1]?.toLowerCase();
+  return !!segment && segment !== 'browser' && segment !== 'details';
 }
 
 function normalizePathname(pathname: string): string {
