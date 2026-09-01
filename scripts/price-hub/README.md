@@ -100,4 +100,4 @@ The one-off 2026-08 backfill that converted historical data to this shape (archi
 
 ## 8. Approval boundaries
 
-This guide covers local scripts and reviewed imports only. Do not deploy Edge Functions, enable Supabase Cron, change RLS/policies/grants, release, push, or switch production branches without explicit approval recorded in the active plan.
+This guide covers local scripts and reviewed imports only. Do not deploy Edge Functions, enable Supabase Cron, change RLS/policies/grants, release, push, or switch production branches without explicit approval recorded in the workflow approvals ledger. The Price Hub snapshot worker's three-day schedule is the current approved exception; its token is stored in Supabase Vault.
