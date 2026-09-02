@@ -31,6 +31,10 @@ export const CHUNK_LOAD_RECOVERY_WINDOW = new InjectionToken<ChunkLoadRecoveryWi
   }
 );
 
+type ChunkLoadErrorHandler = (error: unknown) => void;
+
+let activeChunkLoadErrorHandler: ChunkLoadErrorHandler | undefined;
+
 export function isChunkLoadError(error: unknown): boolean {
   if (typeof error !== 'object' || error === null) {
     return false;
@@ -41,6 +45,15 @@ export function isChunkLoadError(error: unknown): boolean {
   const name = typeof errorRecord.name === 'string' ? errorRecord.name : '';
   return /ChunkLoadError|Loading (?:CSS )?chunk(?: \d+)? failed|Failed to fetch dynamically imported module|Importing a module script failed/i
     .test(`${ name } ${ message }`);
+}
+
+export function reportChunkLoadError(error: unknown): boolean {
+  if (!isChunkLoadError(error)) {
+    return false;
+  }
+
+  activeChunkLoadErrorHandler?.(error);
+  return true;
 }
 
 export function addChunkLoadCacheBuster(href: string, now: number): string {
@@ -62,27 +75,37 @@ export class ChunkLoadRecoveryService {
   private readonly browserWindow = inject(CHUNK_LOAD_RECOVERY_WINDOW);
   private readonly storage = this.getSessionStorage();
   private readonly routerSubscription: Subscription;
+  private readonly chunkLoadErrorHandler: ChunkLoadErrorHandler;
   private reloadAttempted = false;
 
   constructor() {
-    this.routerSubscription = this.router.events.pipe(
+    this.chunkLoadErrorHandler = error => this.recoverFromChunkLoadError(error);
+    activeChunkLoadErrorHandler = this.chunkLoadErrorHandler;
+    this.routerSubscription = new Subscription();
+    this.routerSubscription.add(this.router.events.pipe(
       filter((event): event is NavigationEnd | NavigationError =>
         event instanceof NavigationEnd || event instanceof NavigationError)
     ).subscribe(event => {
       if (event instanceof NavigationError) {
-        this.recoverFromNavigationError(event.error);
+        this.recoverFromChunkLoadError(event.error, event.url);
         return;
       }
 
       this.cleanRecoveryQueryParam();
-    });
+    }));
+    if (this.router.navigated) {
+      this.cleanRecoveryQueryParam();
+    }
   }
 
   ngOnDestroy(): void {
+    if (activeChunkLoadErrorHandler === this.chunkLoadErrorHandler) {
+      activeChunkLoadErrorHandler = undefined;
+    }
     this.routerSubscription.unsubscribe();
   }
 
-  private recoverFromNavigationError(error: unknown): void {
+  private recoverFromChunkLoadError(error: unknown, targetUrl?: string): void {
     if (!isPlatformBrowser(this.platformId)
       || !this.browserWindow
       || !isChunkLoadError(error)
@@ -95,13 +118,17 @@ export class ChunkLoadRecoveryService {
     this.reloadAttempted = true;
     this.recordReloadAttempt(now);
     this.browserWindow.location.replace(
-      addChunkLoadCacheBuster(this.browserWindow.location.href, now)
+      addChunkLoadCacheBuster(this.resolveReloadUrl(targetUrl), now)
     );
   }
 
   private hasRecentReloadAttempt(now = Date.now()): boolean {
-    if (this.hasRecoveryQueryParam()) {
+    const queryTimestamp = this.getRecoveryQueryTimestamp();
+    if (queryTimestamp === null) {
       return true;
+    }
+    if (queryTimestamp !== undefined) {
+      return now - queryTimestamp < CHUNK_LOAD_RELOAD_COOLDOWN_MS;
     }
 
     if (!this.storage) {
@@ -129,13 +156,31 @@ export class ChunkLoadRecoveryService {
   }
 
   private cleanRecoveryQueryParam(): void {
-    if (!this.browserWindow
-      || !this.storage
-      || !this.hasRecoveryQueryParam()
-      || !this.hasRecentReloadAttempt()) {
+    const queryTimestamp = this.getRecoveryQueryTimestamp();
+    if (!this.browserWindow || queryTimestamp === undefined) {
       return;
     }
 
+    if (this.storage) {
+      try {
+        if (this.storage.getItem(CHUNK_LOAD_RELOAD_STORAGE_KEY)) {
+          this.replaceUrlWithoutRecoveryQuery();
+        }
+        return;
+      } catch {
+        // Fall through to the timestamp guard when sessionStorage is unavailable.
+      }
+    }
+
+    if (queryTimestamp !== null
+      && Date.now() - queryTimestamp < CHUNK_LOAD_RELOAD_COOLDOWN_MS) {
+      return;
+    }
+
+    this.replaceUrlWithoutRecoveryQuery();
+  }
+
+  private replaceUrlWithoutRecoveryQuery(): void {
     this.browserWindow.history.replaceState(
       this.browserWindow.history.state,
       '',
@@ -143,16 +188,34 @@ export class ChunkLoadRecoveryService {
     );
   }
 
-  private hasRecoveryQueryParam(): boolean {
+  private getRecoveryQueryTimestamp(): number | null | undefined {
     if (!this.browserWindow) {
-      return false;
+      return undefined;
     }
 
     try {
-      return new URL(this.browserWindow.location.href)
-        .searchParams.has(CHUNK_LOAD_RELOAD_QUERY_PARAM);
+      const value = new URL(this.browserWindow.location.href)
+        .searchParams.get(CHUNK_LOAD_RELOAD_QUERY_PARAM);
+      if (value === null) {
+        return undefined;
+      }
+
+      const timestamp = Number(value);
+      return Number.isFinite(timestamp) ? timestamp : null;
     } catch {
-      return false;
+      return null;
+    }
+  }
+
+  private resolveReloadUrl(targetUrl?: string): string {
+    if (!this.browserWindow || !targetUrl) {
+      return this.browserWindow?.location.href ?? '';
+    }
+
+    try {
+      return new URL(targetUrl, this.browserWindow.location.href).toString();
+    } catch {
+      return this.browserWindow.location.href;
     }
   }
 

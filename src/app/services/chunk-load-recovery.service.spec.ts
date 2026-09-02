@@ -10,7 +10,8 @@ import {
   CHUNK_LOAD_RELOAD_QUERY_PARAM,
   CHUNK_LOAD_RELOAD_STORAGE_KEY,
   ChunkLoadRecoveryService,
-  ChunkLoadRecoveryWindow
+  ChunkLoadRecoveryWindow,
+  reportChunkLoadError
 } from './chunk-load-recovery.service';
 
 describe('ChunkLoadRecoveryService', () => {
@@ -55,9 +56,10 @@ describe('ChunkLoadRecoveryService', () => {
   });
 
   it('reloads once with a cache-busted URL for a dynamic-import navigation error', () => {
+    browserWindow.location.href = 'https://patcher.xyz/home';
     routerEvents$.next(new NavigationError(
       1,
-      '/modules',
+      '/modules/browser',
       new TypeError('Failed to fetch dynamically imported module: https://patcher.xyz/chunk-old.js'),
       null
     ));
@@ -65,8 +67,7 @@ describe('ChunkLoadRecoveryService', () => {
     const replace = browserWindow.location.replace as jasmine.Spy;
     expect(replace).toHaveBeenCalledTimes(1);
     const reloadedUrl = new URL(replace.calls.first().args[0] as string);
-    expect(reloadedUrl.pathname).toBe('/modules');
-    expect(reloadedUrl.searchParams.get('sort')).toBe('name');
+    expect(reloadedUrl.pathname).toBe('/modules/browser');
     expect(reloadedUrl.searchParams.get(CHUNK_LOAD_RELOAD_QUERY_PARAM)).toMatch(/^\d+$/);
     expect(sessionStorage.getItem(CHUNK_LOAD_RELOAD_STORAGE_KEY)).toMatch(/^\d+$/);
 
@@ -77,6 +78,14 @@ describe('ChunkLoadRecoveryService', () => {
       null
     ));
     expect(replace).toHaveBeenCalledTimes(1);
+  });
+
+  it('recovers direct dynamic-import reports outside router navigation', () => {
+    expect(reportChunkLoadError(new TypeError(
+      'Failed to fetch dynamically imported module: https://patcher.xyz/chunk-old.js'
+    ))).toBeTrue();
+
+    expect(browserWindow.location.replace as jasmine.Spy).toHaveBeenCalledTimes(1);
   });
 
   it('does not reload for ordinary navigation failures', () => {
@@ -92,7 +101,7 @@ describe('ChunkLoadRecoveryService', () => {
 
   it('does not loop when the cache-busted URL is loaded again', () => {
     browserWindow.location.href =
-      'https://patcher.xyz/modules?sort=name&__patcher_chunk_reload=1234#results';
+      `https://patcher.xyz/modules?sort=name&__patcher_chunk_reload=${Date.now()}#results`;
 
     routerEvents$.next(new NavigationError(
       1,
@@ -107,7 +116,7 @@ describe('ChunkLoadRecoveryService', () => {
   it('removes the recovery query after a successful navigation when the attempt is persisted', () => {
     routerEvents$.next(new NavigationError(
       1,
-      '/modules',
+      '/modules?sort=name#results',
       new Error('Loading chunk 42 failed'),
       null
     ));
@@ -121,5 +130,48 @@ describe('ChunkLoadRecoveryService', () => {
       '',
       'https://patcher.xyz/modules?sort=name#results'
     );
+  });
+
+  it('cleans a persisted recovery query when initialized after navigation', () => {
+    sessionStorage.setItem(CHUNK_LOAD_RELOAD_STORAGE_KEY, String(Date.now()));
+    browserWindow.location.href =
+      'https://patcher.xyz/modules?__patcher_chunk_reload=1234#results';
+
+    service.ngOnDestroy();
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        ChunkLoadRecoveryService,
+        {
+          provide: Router,
+          useValue: {events: routerEvents$, navigated: true}
+        },
+        {
+          provide: CHUNK_LOAD_RECOVERY_WINDOW,
+          useValue: browserWindow
+        }
+      ]
+    });
+    service = TestBed.inject(ChunkLoadRecoveryService);
+
+    expect(browserWindow.history.replaceState as jasmine.Spy).toHaveBeenCalledWith(
+      {navigationId: 1},
+      '',
+      'https://patcher.xyz/modules#results'
+    );
+  });
+
+  it('allows a stale recovery query to expire instead of blocking future retries', () => {
+    browserWindow.location.href =
+      'https://patcher.xyz/modules?__patcher_chunk_reload=0#results';
+
+    routerEvents$.next(new NavigationError(
+      1,
+      '/modules',
+      new Error('Loading chunk 42 failed'),
+      null
+    ));
+
+    expect(browserWindow.location.replace as jasmine.Spy).toHaveBeenCalledTimes(1);
   });
 });

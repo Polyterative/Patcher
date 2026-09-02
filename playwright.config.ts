@@ -51,6 +51,7 @@ export default defineConfig({
     '**/rack-browser.spec.ts',
     '**/rack-details-layout.spec.ts',
     '**/home.spec.ts',
+    '**/asset-recovery.spec.ts',
     '**/navigation.spec.ts',
     '**/info-pages.spec.ts',
     '**/patch-details.spec.ts',
