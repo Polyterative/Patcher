@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.7.21](https://github.com/Polyterative/Patcher/compare/v6.7.20...v6.7.21) (2026-09-02)
+
+
+### Bug Fixes
+
+* **routing:** harden stale chunk recovery ([0c5eb26](https://github.com/Polyterative/Patcher/commit/0c5eb26fcdde1221c2a9f7c5a821ecdb86073cb6))
+* **routing:** recover from stale lazy chunks ([26695fc](https://github.com/Polyterative/Patcher/commit/26695fcb4715dfa4ddffa62083adf596611de711))
+
 ### [6.7.20](https://github.com/Polyterative/Patcher/compare/v6.7.19...v6.7.20) (2026-09-01)
 
 ### [6.7.19](https://github.com/Polyterative/Patcher/compare/v6.7.18...v6.7.19) (2026-09-01)
