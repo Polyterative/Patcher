@@ -34,20 +34,11 @@
       ]
     },
     {
-      "source": "/:file.js",
+      "source": "/index.csr.html",
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/:file.css",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
+          "value": "no-store, max-age=0"
         }
       ]
     },

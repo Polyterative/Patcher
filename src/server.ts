@@ -29,6 +29,10 @@ import {
   resolveSsrAllowedHosts
 } from './ssr-host-config';
 import { environment } from './environments/environment';
+import {
+  NO_STORE_CACHE_CONTROL,
+  getStaticAssetCacheControl
+} from './server-cache-policy';
 
 
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
@@ -51,6 +55,12 @@ export function app(): express.Express {
       maxAge: '1y',
       index: false,
       redirect: false,
+      setHeaders: (res, filePath) => {
+        const cacheControl = getStaticAssetCacheControl(filePath);
+        if (cacheControl) {
+          res.setHeader('Cache-Control', cacheControl);
+        }
+      }
     }),
   );
 
@@ -87,6 +97,7 @@ export function app(): express.Express {
           res.redirect(redirect.status, redirect.location);
           return;
         }
+        res.setHeader('Cache-Control', NO_STORE_CACHE_CONTROL);
         res.status(statusCode).send(html);
       })
       .catch(next);

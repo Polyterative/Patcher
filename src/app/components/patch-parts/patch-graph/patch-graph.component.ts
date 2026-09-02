@@ -43,6 +43,7 @@ import { PatchGraphDataService } from './patch-graph-data.service';
 import { PatchGraphRevealController } from './patch-graph-reveal.controller';
 import { PatchDetailDataService } from '../patch-detail-data.service';
 import type { PatchGraphFullscreenDialogData } from './patch-graph-fullscreen-dialog.component';
+import { reportChunkLoadError } from 'src/app/services/chunk-load-recovery.service';
 
 
 @Component({
@@ -219,21 +220,29 @@ export class PatchGraphComponent extends SubManager implements OnInit {
   }
 
   async openFullscreenGraph(): Promise<void> {
-    const {PatchGraphFullscreenDialogComponent} = await import('./patch-graph-fullscreen-dialog.component');
+    try {
+      const {PatchGraphFullscreenDialogComponent} = await import('./patch-graph-fullscreen-dialog.component');
 
-    this.dialog.open(PatchGraphFullscreenDialogComponent, {
-      width: '100vw',
-      maxWidth: '100vw',
-      height: '100vh',
-      maxHeight: '100vh',
-      autoFocus: false,
-      restoreFocus: true,
-      hasBackdrop: false,
-      enterAnimationDuration: 0,
-      exitAnimationDuration: 0,
-      panelClass: 'patch-graph-fullscreen-dialog-panel',
-      data: this.buildFullscreenDialogData()
-    });
+      this.dialog.open(PatchGraphFullscreenDialogComponent, {
+        width: '100vw',
+        maxWidth: '100vw',
+        height: '100vh',
+        maxHeight: '100vh',
+        autoFocus: false,
+        restoreFocus: true,
+        hasBackdrop: false,
+        enterAnimationDuration: 0,
+        exitAnimationDuration: 0,
+        panelClass: 'patch-graph-fullscreen-dialog-panel',
+        data: this.buildFullscreenDialogData()
+      });
+    } catch (error) {
+      if (reportChunkLoadError(error)) {
+        return;
+      }
+
+      throw error;
+    }
   }
   
   // Progressive reveal sequencing lives in the dedicated controller; component delegates.
