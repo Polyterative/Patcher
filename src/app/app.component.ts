@@ -40,6 +40,7 @@ import { RACK_DETAIL_DATA_PROVIDERS } from './components/rack-parts/rack-detail-
 import { WideShellToolbarComponent } from './shared-interproject/components/@visual/wide-shell-toolbar/wide-shell-toolbar.component';
 import { AnalyticsService } from './features/backbone/analytics-integration/analytics.service';
 import { normalizeUrlPath } from './shared-interproject/url-path.util';
+import { ChunkLoadRecoveryService } from './services/chunk-load-recovery.service';
 
 type AppShellArea = 'home' | 'modules' | 'racks' | 'patches' | 'marketplace' | 'manufacturers' | 'user' | 'manuals' | 'comments' | 'info';
 
@@ -105,6 +106,9 @@ export class AppComponent implements OnDestroy {
     // Eagerly instantiate global analytics so router pageviews are wired at
     // app boot, before feature-specific lazy chunks load.
     _analyticsEagerBoot: AnalyticsService,
+    // Recover stale cached entry documents whose lazy chunk URLs no longer
+    // exist after a deployment.
+    _chunkLoadRecovery: ChunkLoadRecoveryService,
   ) {
     this.animationsDisabled = isPlatformBrowser(this.platformId)
       && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
