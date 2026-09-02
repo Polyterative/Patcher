@@ -86,6 +86,7 @@
     "switch:production": "git update-index --no-skip-worktree src/build.ts && git checkout -- src/build.ts && git checkout production && git update-index --skip-worktree src/build.ts",
     "merge:prod-to-dev": "pnpm switch:develop && git merge production",
     "merge:dev-to-prod": "pnpm switch:production && git merge develop",
+    "optimistic:full-flow": "pnpm merge:dev-to-prod && pnpm release:patch && pnpm merge:prod-to-dev && git push origin develop",
     "prepare": "husky",
     "sync:docs-screenshots": "node scripts/dev/sync-docs-screenshots.mjs",
     "price-hub:crawl-local": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/price-hub/crawl-local.ts",
