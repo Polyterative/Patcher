@@ -316,6 +316,87 @@
   color: var(--insights-blue-700);
 }
 
+.footprint-body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.footprint-donut {
+  width: 7rem;
+  height: 7rem;
+  flex: none;
+}
+
+.footprint-donut__track {
+  fill: none;
+  stroke: var(--insights-blue-200);
+  stroke-width: 6;
+}
+
+.footprint-donut__slice {
+  fill: none;
+  stroke: var(--insights-blue-500);
+  stroke-width: 6;
+}
+
+.footprint-donut__value {
+  font-size: 0.55rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  fill: var(--insights-blue-700);
+}
+
+.footprint-donut__caption {
+  font-size: 0.22rem;
+  fill: rgba(24, 37, 53, 0.62);
+}
+
+.footprint-legend {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.footprint-legend__row {
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+  color: rgba(24, 37, 53, 0.85);
+}
+
+.footprint-legend__row strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.footprint-legend__dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  flex: none;
+}
+
+.footprint-legend__dot--public {
+  background: var(--insights-blue-500);
+}
+
+.footprint-legend__dot--private {
+  background: var(--insights-blue-200);
+}
+
+.footprint-suppressed-sub {
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: rgba(24, 37, 53, 0.62);
+}
+
 .trend-chart {
   display: grid;
   grid-template-columns: repeat(30, minmax(0, 1fr));

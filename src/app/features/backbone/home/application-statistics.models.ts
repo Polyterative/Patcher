@@ -44,6 +44,25 @@ export interface ApplicationInsightsMixSegment {
   tone: 'brand' | 'emerald';
 }
 
+export type ApplicationPrivateFootprintSliceKey = 'racks' | 'modules' | 'patches';
+
+export interface ApplicationPrivateFootprintSlice {
+  key: ApplicationPrivateFootprintSliceKey;
+  label: string;
+  publicCount: number;
+  privateCount: number;
+  totalCount: number;
+  publicSharePercent: number;
+  privateSharePercent: number;
+  publicRowLabel: string;
+  privateRowLabel: string;
+}
+
+export interface ApplicationPrivateFootprint {
+  suppressed: boolean;
+  slices: ApplicationPrivateFootprintSlice[];
+}
+
 export interface ApplicationInsightsTrendDay {
   date: string;
   label: string;
@@ -102,6 +121,7 @@ export interface ApplicationInsightsPage {
   sharingHighlights: ApplicationInsightsHighlight[];
   patchDepthBars: ApplicationInsightsBar[];
   patchHighlights: ApplicationInsightsHighlight[];
+  privateFootprint: ApplicationPrivateFootprint;
 }
 
 export type ApplicationDiscoveryBucket = 'mostOwned' | 'mostWanted' | 'mostSold';
