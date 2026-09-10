@@ -170,6 +170,14 @@
               }
             </p>
 
+            @if (page.moduleFreshnessBars[0]; as freshWeek) {
+              <p class="fresh-drops">
+                <span>New this week: {{ freshWeek.valueLabel }}</span>@if (page.moduleFreshnessBars[1]; as freshRest) {
+                  <span aria-hidden="true"> · </span><span>Earlier this month: {{ freshRest.valueLabel }}</span>
+                }
+              </p>
+            }
+
             <div class="hero-actions">
               <app-brand-primary-button
                 routerLink="/racks/browser"
@@ -182,6 +190,84 @@
                 (click$)="onSupportLinkClick('fresh_browse_patches')"
               >Browse patches</app-brand-primary-button>
             </div>
+          </lib-hero-content-card>
+
+          <lib-hero-content-card
+            titleNormal="Makers to explore"
+            icon="precision_manufacturing"
+            description="Makers with the largest public catalogues and the most updates in the last 30 days."
+          >
+            <p class="takeaway">{{ page.makersTakeaway }}</p>
+
+            @if (page.topManufacturerBars.length === 0 && page.activeManufacturerBars.length === 0) {
+              <p class="empty-note">No maker updates in the last 30 days yet.</p>
+            } @else {
+              @if (page.topManufacturerBars.length > 0) {
+                <h3 class="rail-subhead">Most-collected</h3>
+                <div class="metric-bars">
+                  @for (bar of page.topManufacturerBars.slice(0, 5); track bar.label) {
+                    <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
+                  }
+                </div>
+              }
+              @if (page.activeManufacturerBars.length > 0) {
+                <h3 class="rail-subhead">Heating up this month</h3>
+                <div class="metric-bars">
+                  @for (bar of page.activeManufacturerBars.slice(0, 5); track bar.label) {
+                    <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
+                  }
+                </div>
+              }
+            }
+
+            <div class="hero-actions">
+              <app-brand-primary-button
+                routerLink="/modules/browser"
+                icon="view_module"
+                (click$)="onSupportLinkClick('makers_browse_modules')"
+              >Browse modules</app-brand-primary-button>
+            </div>
+          </lib-hero-content-card>
+
+          <lib-hero-content-card
+            titleNormal="What fits your case?"
+            icon="category"
+            description="Public modules by format standard."
+          >
+            <p class="takeaway">Formats in the public catalogue, ranked by module count.</p>
+
+            @if (page.standardMixBars.length > 0) {
+              <div class="metric-bars">
+                @for (bar of page.standardMixBars.slice(0, 4); track bar.label) {
+                  <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
+                }
+              </div>
+            } @else {
+              <p class="empty-note">Not enough data yet.</p>
+            }
+          </lib-hero-content-card>
+
+          <lib-hero-content-card
+            titleNormal="What size?"
+            icon="straighten"
+            description="Public modules grouped into three width buckets."
+          >
+            @if (sizeGuideBuckets(page.hpBandBars); as sizeBuckets) {
+              @if (sizeBuckets.length > 0) {
+                <div class="metric-bars">
+                  @for (bar of sizeBuckets; track bar.label) {
+                    <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
+                  }
+                </div>
+                @if (medianWidth(page.hpBandHighlights); as median) {
+                  @if (median !== '') {
+                    <p class="size-median">Median width {{ median }}</p>
+                  }
+                }
+              } @else {
+                <p class="empty-note">Not enough data yet.</p>
+              }
+            }
           </lib-hero-content-card>
 
           <lib-hero-content-card
@@ -206,13 +292,9 @@
               }
             </div>
 
-            <div class="hero-actions">
-              <app-brand-primary-button
-                routerLink="/modules/browser"
-                icon="view_module"
-                (click$)="onSupportLinkClick('library_browse_modules')"
-              >Browse modules</app-brand-primary-button>
-            </div>
+            @if (sharingTeaser(page.sharingMix)) {
+              <p class="starter-teaser">{{ sharingTeaser(page.sharingMix) }}</p>
+            }
           </lib-hero-content-card>
 
           <lib-hero-content-card
@@ -290,33 +372,18 @@
             }
           </lib-hero-content-card>
 
-          <lib-hero-content-card
-            titleNormal="Makers in motion"
-            icon="precision_manufacturing"
-            description="Makers ranked by modules updated in the last 30 days."
-          >
-            <p class="takeaway">{{ page.makersTakeaway }}</p>
-
-            @if (page.activeManufacturerBars.length > 0) {
-              <div class="metric-bars">
-                @for (bar of page.activeManufacturerBars; track bar.label) {
-                  <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
-                }
-              </div>
-            } @else {
-              <p class="empty-note">No maker updates in the last 30 days yet.</p>
-            }
-          </lib-hero-content-card>
         }
 
         <details class="method-details">
           <summary>How we count</summary>
           <p class="method-details__item"><strong>Top modules —</strong> public modules ranked from community ownership signals. Top 6 per bucket, minimum count 1. Buckets below that threshold show “Not enough data yet.” instead of a ranking.</p>
-          <p class="method-details__item"><strong>Fresh this month —</strong> daily counts of public-profile updates — public modules, shared racks, and connected public patches. Window: last 30 days only; no long-range trend is implied.</p>
-          <p class="method-details__item"><strong>Library now —</strong> point-in-time totals from the cached public snapshot. Absolute counts of the all-time footprint — not rates, not a 30-day window.</p>
+          <p class="method-details__item"><strong>Fresh this month —</strong> daily counts of public-profile updates — public modules, shared racks, and connected public patches. Window: last 30 days only; no long-range trend is implied. The New-this-week strip reads the first two module-freshness cohorts (0–7 days, 8–30 days).</p>
+          <p class="method-details__item"><strong>Makers to explore —</strong> Most-collected ranks makers by public modules all-time; Heating up ranks makers by public modules updated in the last 30 days. Only makers with at least one module are shown; empty results are suppressed.</p>
+          <p class="method-details__item"><strong>What fits your case? —</strong> public modules grouped by format standard, all-time counts.</p>
+          <p class="method-details__item"><strong>What size? —</strong> public modules grouped from the HP-band distribution into Tiny (0–5 HP), Classic (6–16 HP), and Big (17+ HP). Median width is the catalogue median.</p>
+          <p class="method-details__item"><strong>Library now —</strong> point-in-time totals from the cached public snapshot. Absolute counts of the all-time footprint — not rates, not a 30-day window. The starter line reads shared-rack and connected-patch totals from the sharing mix.</p>
           <p class="method-details__item"><strong>Private footprint —</strong> point-in-time global totals from the cached public snapshot. Public racks are shared racks on public profiles; private is everything else (unshared racks plus shared racks on private profiles). Counts only — no private contents, names, or owners are exposed. Shares hide until totals reach 10 with at least 3 per slice. Patches count connected works only (≥1 saved cable connection); unconnected drafts are in neither slice. Modules have no profile gate.</p>
           <p class="method-details__item"><strong>30-day activity —</strong> 30-day totals from the same public activity series as the Fresh chart above. Population: public modules, shared racks on public profiles, connected public patches.</p>
-          <p class="method-details__item"><strong>Makers in motion —</strong> makers ranked by public modules updated in the last 30 days. Only makers with at least one update are shown; empty results are suppressed.</p>
         </details>
       </div>
     }

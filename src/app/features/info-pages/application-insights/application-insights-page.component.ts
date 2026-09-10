@@ -14,6 +14,9 @@ import {
   ApplicationDiscoveryBucket,
   ApplicationDiscoveryEntry,
   ApplicationDiscoverySnapshot,
+  ApplicationInsightsBar,
+  ApplicationInsightsHighlight,
+  ApplicationInsightsMixSegment,
   ApplicationInsightsPage,
   ApplicationStatisticsService
 } from '../../backbone/home/application-statistics.service';
@@ -169,6 +172,80 @@ export class ApplicationInsightsPageComponent {
 
   retry(): void {
     this.applicationStatisticsService.refresh();
+  }
+
+  medianWidth(highlights: ApplicationInsightsHighlight[] | null | undefined): string {
+    return (highlights ?? []).find((highlight) => highlight.label === 'Median width')?.value ?? '';
+  }
+
+  sharingTeaser(mix: ApplicationInsightsMixSegment[] | null | undefined): string {
+    const segments = mix ?? [];
+    if (segments.length === 0) {
+      return '';
+    }
+    const countOf = (label: string): string => {
+      const segment = segments.find((entry) => entry.label === label);
+      return segment ? segment.valueLabel.split(' ')[0] : '';
+    };
+    const racks = countOf('Racks');
+    const patches = countOf('Patches');
+    if (racks && patches) {
+      return `${ racks } shared racks · ${ patches } connected patches to start from`;
+    }
+    if (racks) {
+      return `${ racks } shared racks to start from`;
+    }
+    if (patches) {
+      return `${ patches } connected patches to start from`;
+    }
+    return '';
+  }
+
+  sizeGuideBuckets(bars: ApplicationInsightsBar[] | null | undefined): ApplicationInsightsBar[] {
+    if (!bars || bars.length === 0) {
+      return [];
+    }
+    const tinySource = bars.filter((bar) => bar.label.startsWith('0-2 HP') || bar.label.startsWith('3-5 HP'));
+    const bigSource = bars.filter((bar) => bar.label.startsWith('17-28 HP') || bar.label.startsWith('29+ HP'));
+    let tinyBars: ApplicationInsightsBar[];
+    let classicBars: ApplicationInsightsBar[];
+    let bigBars: ApplicationInsightsBar[];
+    if (tinySource.length > 0 && bigSource.length > 0) {
+      const grouped = new Set([...tinySource, ...bigSource]);
+      tinyBars = tinySource;
+      bigBars = bigSource;
+      classicBars = bars.filter((bar) => !grouped.has(bar));
+    } else if (bars.length >= 5) {
+      tinyBars = bars.slice(0, 2);
+      bigBars = bars.slice(-2);
+      classicBars = bars.slice(2, -2);
+    } else {
+      const third = Math.max(1, Math.floor(bars.length / 3));
+      tinyBars = bars.slice(0, third);
+      bigBars = bars.slice(-third);
+      classicBars = bars.slice(third, -third);
+    }
+    const groups: {label: string; detail: string; tone: ApplicationInsightsBar['tone']; source: ApplicationInsightsBar[]}[] = [
+      {label: 'Tiny (0–5 HP)', detail: 'Modules 5 HP and under', tone: 'brand', source: tinyBars},
+      {label: 'Classic (6–16 HP)', detail: 'Modules 6–16 HP', tone: 'emerald', source: classicBars},
+      {label: 'Big (17+ HP)', detail: 'Modules 17 HP and over', tone: 'violet', source: bigBars}
+    ];
+    const counts = groups.map((group) => group.source.reduce((sum, bar) => sum + this.parseBarCount(bar.valueLabel), 0));
+    const max = Math.max(...counts, 0);
+    return groups
+      .map((group, index) => ({
+        label: group.label,
+        valueLabel: counts[index].toLocaleString('en-US'),
+        detail: group.detail,
+        widthPercent: max > 0 ? Math.round((counts[index] / max) * 100) : 0,
+        tone: group.tone
+      }))
+      .filter((_, index) => groups[index].source.length > 0);
+  }
+
+  private parseBarCount(valueLabel: string): number {
+    const digits = (valueLabel ?? '').replace(/[^0-9]/g, '');
+    return digits ? Number(digits) : 0;
   }
 
   private mapVm(
