@@ -140,33 +140,31 @@
   height: 1.1rem;
 }
 
-.hero-rows {
+.hero-cards {
   display: grid;
-  gap: 0.6rem;
+  gap: 0.75rem;
   margin: 0 0 1rem;
   padding: 0;
   list-style: none;
+  grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
 }
 
-.hero-row__link {
-  display: flex;
-  align-items: center;
-  gap: 0.9rem;
-  padding: 0.75rem 1rem;
-  border: 1px solid rgba(86, 108, 132, 0.14);
-  border-radius: 1rem;
-  background: rgba(248, 251, 255, 0.86);
-  text-decoration: none;
+.hero-card__card {
+  display: block;
+  height: 100%;
   color: inherit;
-  transition: border-color 150ms ease, background 150ms ease;
+  text-decoration: none;
+  cursor: pointer;
 }
 
-.hero-row__link:hover {
-  border-color: var(--insights-blue-300);
-  background: rgba(238, 244, 255, 0.95);
+.hero-card__row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.9rem;
+  align-items: start;
 }
 
-.hero-row__rank {
+.hero-card__rank {
   display: inline-grid;
   place-items: center;
   min-width: 2rem;
@@ -179,14 +177,18 @@
   border-radius: 0.75rem;
 }
 
-.hero-row__main {
-  display: grid;
-  gap: 0.1rem;
-  flex: 1;
+.hero-card__module {
+  display: block;
   min-width: 0;
 }
 
-.hero-row__name {
+.hero-card__fallback {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.hero-card__name {
   font-size: 0.95rem;
   font-weight: 600;
   color: rgba(24, 37, 53, 0.9);
@@ -195,7 +197,7 @@
   white-space: nowrap;
 }
 
-.hero-row__maker {
+.hero-card__maker {
   font-size: 0.8rem;
   color: rgba(24, 37, 53, 0.62);
   overflow: hidden;
@@ -203,11 +205,12 @@
   white-space: nowrap;
 }
 
-.hero-row__count {
+.hero-card__count {
   font-size: 0.88rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: rgba(24, 37, 53, 0.78);
+  text-align: right;
   white-space: nowrap;
 }
 
@@ -218,7 +221,7 @@
   margin-top: 1rem;
 }
 
-.hero-row__link:focus-visible,
+.hero-card__card:focus-visible,
 .bucket-toggle__button:focus-visible,
 .retry-button:focus-visible {
   outline: 2px solid var(--insights-blue-500);
@@ -437,7 +440,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-row__link,
+  .hero-card__card,
   .bucket-toggle__button,
   .retry-button {
     transition: none;
@@ -472,6 +475,19 @@
   .snapshot-grid,
   .trend-legend {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hero-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-card__row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .hero-card__count {
+    grid-column: 2;
+    text-align: start;
   }
 
   .hero-actions {

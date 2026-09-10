@@ -56,22 +56,34 @@
               >Browse modules</app-brand-primary-button>
             </div>
           } @else {
-            <ol class="hero-rows" [attr.aria-label]="heroBucketLabel(vm.bucket)">
+            <ol class="hero-cards" [attr.aria-label]="heroBucketLabel(vm.bucket)">
               @for (entry of vm.heroEntries; track entry.id; let i = $index) {
-                <li class="hero-row">
-                  <a
-                    class="hero-row__link"
+                <li class="hero-card">
+                  <lib-clean-card
+                    class="hero-card__card"
                     [routerLink]="['/modules/details', entry.id]"
                     (click)="onHeroModuleClick(vm.bucket, entry, i + 1)"
+                    role="link"
+                    tabindex="0"
                     [attr.aria-label]="entry.name + ' by ' + entry.manufacturer.name + ', ' + entry.count + ' ' + heroCountNoun(vm.bucket) + ', rank ' + (i + 1) + ' in ' + heroBucketLabel(vm.bucket)"
                   >
-                    <span class="hero-row__rank" aria-hidden="true">{{ i + 1 }}</span>
-                    <span class="hero-row__main">
-                      <span class="hero-row__name">{{ entry.module?.name ?? entry.name }}</span>
-                      <span class="hero-row__maker">{{ entry.module?.manufacturer?.name ?? entry.manufacturer.name }}</span>
-                    </span>
-                    <span class="hero-row__count">{{ entry.count }} {{ heroCountNoun(vm.bucket) }}</span>
-                  </a>
+                    <div class="hero-card__row">
+                      <span class="hero-card__rank" aria-hidden="true">{{ i + 1 }}</span>
+                      @if (entry.module; as module) {
+                        <app-module-minimal
+                          class="hero-card__module"
+                          [data]="module"
+                          [viewConfig]="heroModuleViewConfig"
+                        ></app-module-minimal>
+                      } @else {
+                        <span class="hero-card__fallback">
+                          <span class="hero-card__name">{{ entry.name }}</span>
+                          <span class="hero-card__maker">{{ entry.manufacturer.name }}</span>
+                        </span>
+                      }
+                      <span class="hero-card__count">{{ entry.count }} {{ heroCountNoun(vm.bucket) }}</span>
+                    </div>
+                  </lib-clean-card>
                 </li>
               }
             </ol>
