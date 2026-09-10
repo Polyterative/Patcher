@@ -204,22 +204,28 @@
             @if (page.topManufacturerBars.length === 0 && page.activeManufacturerBars.length === 0) {
               <p class="empty-note">No makers on the move yet — new shares will put makers here.</p>
             } @else {
-              @if (page.topManufacturerBars.length > 0) {
-                <h3 class="rail-subhead">Most-collected</h3>
-                <div class="metric-bars">
-                  @for (bar of page.topManufacturerBars.slice(0, 5); track bar.label) {
-                    <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
-                  }
-                </div>
-              }
-              @if (page.activeManufacturerBars.length > 0) {
-                <h3 class="rail-subhead">Heating up this month</h3>
-                <div class="metric-bars">
-                  @for (bar of page.activeManufacturerBars.slice(0, 5); track bar.label) {
-                    <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
-                  }
-                </div>
-              }
+              <div class="makers-columns">
+                @if (page.topManufacturerBars.length > 0) {
+                  <div class="makers-column">
+                    <h3 class="rail-subhead">Most-collected</h3>
+                    <div class="metric-bars">
+                      @for (bar of page.topManufacturerBars.slice(0, 5); track bar.label) {
+                        <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
+                      }
+                    </div>
+                  </div>
+                }
+                @if (page.activeManufacturerBars.length > 0) {
+                  <div class="makers-column">
+                    <h3 class="rail-subhead">Heating up this month</h3>
+                    <div class="metric-bars">
+                      @for (bar of page.activeManufacturerBars.slice(0, 5); track bar.label) {
+                        <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
             }
 
             <div class="hero-actions">
@@ -231,52 +237,55 @@
             </div>
           </lib-hero-content-card>
 
-          <lib-hero-content-card
-            titleNormal="What fits your case?"
-            icon="category"
-            description="Public modules by format standard."
-          >
-            <p class="takeaway">Formats in the public catalogue, ranked by module count.</p>
+          <div class="insights-duo">
+            <lib-hero-content-card
+              titleNormal="What fits your case?"
+              icon="category"
+              description="Public modules by format standard."
+            >
+              <p class="takeaway">Formats in the public catalogue, ranked by module count.</p>
 
-            @if (page.standardMixBars.length > 0) {
-              <div class="metric-bars">
-                @for (bar of page.standardMixBars.slice(0, 4); track bar.label) {
-                  <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
-                }
-              </div>
-            } @else {
-              <p class="empty-note">No formats to compare yet — shared modules will fill this in.</p>
-            }
-          </lib-hero-content-card>
-
-          <lib-hero-content-card
-            titleNormal="What size?"
-            icon="straighten"
-            description="Public modules grouped into three width buckets."
-          >
-            @if (sizeGuideBuckets(page.hpBandBars); as sizeBuckets) {
-              @if (sizeBuckets.length > 0) {
+              @if (page.standardMixBars.length > 0) {
                 <div class="metric-bars">
-                  @for (bar of sizeBuckets; track bar.label) {
+                  @for (bar of page.standardMixBars.slice(0, 4); track bar.label) {
                     <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
                   }
                 </div>
-                @if (medianWidth(page.hpBandHighlights); as median) {
-                  @if (median !== '') {
-                    <p class="size-median">Median width {{ median }}</p>
-                  }
-                }
               } @else {
-                <p class="empty-note">Nothing to measure yet — shared modules will fill this in.</p>
+                <p class="empty-note">No formats to compare yet — shared modules will fill this in.</p>
               }
-            }
-          </lib-hero-content-card>
+            </lib-hero-content-card>
 
-          <lib-hero-content-card
-            titleNormal="Library now"
-            icon="analytics"
-            description="Point-in-time footprint across catalogue, makers, profiles, and shared works — absolute counts, not rates."
-          >
+            <lib-hero-content-card
+              titleNormal="What size?"
+              icon="straighten"
+              description="Public modules grouped into three width buckets."
+            >
+              @if (sizeGuideBuckets(page.hpBandBars); as sizeBuckets) {
+                @if (sizeBuckets.length > 0) {
+                  <div class="metric-bars">
+                    @for (bar of sizeBuckets; track bar.label) {
+                      <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
+                    }
+                  </div>
+                  @if (medianWidth(page.hpBandHighlights); as median) {
+                    @if (median !== '') {
+                      <p class="size-median">Median width {{ median }}</p>
+                    }
+                  }
+                } @else {
+                  <p class="empty-note">Nothing to measure yet — shared modules will fill this in.</p>
+                }
+              }
+            </lib-hero-content-card>
+          </div>
+
+          <div class="insights-duo">
+            <lib-hero-content-card
+              titleNormal="Library now"
+              icon="analytics"
+              description="Point-in-time footprint across catalogue, makers, profiles, and shared works — absolute counts, not rates."
+            >
             <p class="takeaway">{{ page.libraryTakeaway }}</p>
 
             <div class="snapshot-grid">
@@ -442,6 +451,7 @@
               }
             }
           </lib-hero-content-card>
+          </div>
 
         }
 
