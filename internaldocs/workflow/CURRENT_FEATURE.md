@@ -17,9 +17,27 @@
 
 ## Active
 
-_No active feature._
+### Insights → Discovery rework — plan: [plans/insights-discovery.md](./plans/insights-discovery.md)
 
-Updated: 2026-08-29
+#### Layer 1 — MVP
+
+- [x] De-labeled takeaway headlines
+- [x] Single collapsed "How we count" block
+- [x] Fresh + 30-day activity merged
+- [x] Bucket rename (keys unchanged)
+- [x] CTA trim
+
+#### Layer 2 — Structural
+
+- [ ] Podium treatment for hero ranking
+- [ ] Discovery-oriented card ordering
+
+#### Layer 3 — Polish
+
+- [ ] Responsive/motion polish for merged Fresh card
+- [ ] Final copy and a11y review
+
+Updated: 2026-09-10
 
 Recent completed checkpoints are archived in [COMPLETED.md](./COMPLETED.md); their validation
 notes and decisions live in the matching plan files (e.g.

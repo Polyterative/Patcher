@@ -20,7 +20,7 @@
           icon="insights"
           description="What the community owns, wants, and trades — the top 6 modules in each ownership bucket."
         >
-          <p class="takeaway"><strong>Takeaway:</strong> {{ vm.heroTakeaway }}</p>
+          <p class="takeaway">{{ vm.heroTakeaway }}</p>
 
           <div
             class="bucket-toggle"
@@ -95,8 +95,6 @@
               >Browse modules</app-brand-primary-button>
             </div>
           }
-
-          <p class="method-note">Method: public modules ranked from community ownership signals. Top 6 per bucket, minimum count 1. Buckets below that threshold show “Not enough data yet.” instead of a ranking.</p>
         </lib-hero-content-card>
 
         @if (vm.pageError) {
@@ -106,11 +104,11 @@
           </div>
         } @else if (vm.page; as page) {
           <lib-hero-content-card
-            titleNormal="Fresh — last 30 days"
+            titleNormal="Fresh this month"
             icon="show_chart"
-            description="Daily public updates across modules, racks, and patches for the last 30 days. Stacked bars split each day by type, with 7-day momentum below."
+            description="Daily public updates across modules, racks, and patches for the last 30 days."
           >
-            <p class="takeaway"><strong>Takeaway:</strong> {{ page.freshTakeaway }}</p>
+            <p class="takeaway">{{ page.freshTakeaway }}</p>
             @if (vm.updatedLabel) {
               <p class="updated-badge">Updated {{ vm.updatedLabel }} · last 30 days</p>
             }
@@ -163,25 +161,16 @@
               }
             </div>
 
-            <div class="trend-momentum-grid">
-              @for (momentum of page.activityChart.momentum; track momentum.label) {
-                <div class="trend-momentum-card">
-                  <div class="trend-momentum-card__header">
-                    <span class="trend-legend__dot" [ngClass]="'trend-legend__dot--' + momentum.toneClass" aria-hidden="true"></span>
-                    <strong>{{ momentum.label }}</strong>
-                  </div>
-                  <span>{{ momentum.valueLabel }}</span>
-                  <small>{{ momentum.deltaLabel }}</small>
-                </div>
+            <p class="momentum-summary">
+              30-day totals:
+              @for (legendItem of page.activityChart.legend; track legendItem.label; let last = $last) {
+                <span>{{ legendItem.label }} {{ legendItem.valueLabel }}</span>@if (!last) {
+                  <span aria-hidden="true"> · </span>
+                }
               }
-            </div>
+            </p>
 
             <div class="hero-actions">
-              <app-brand-primary-button
-                routerLink="/modules/browser"
-                icon="view_module"
-                (click$)="onSupportLinkClick('fresh_browse_modules')"
-              >Browse modules</app-brand-primary-button>
               <app-brand-primary-button
                 routerLink="/racks/browser"
                 icon="dashboard_customize"
@@ -193,8 +182,6 @@
                 (click$)="onSupportLinkClick('fresh_browse_patches')"
               >Browse patches</app-brand-primary-button>
             </div>
-
-            <p class="method-note">Method: daily counts of public-profile updates — public modules, shared racks, and connected public patches. Window: last 30 days only; no long-range trend is implied.</p>
           </lib-hero-content-card>
 
           <lib-hero-content-card
@@ -202,7 +189,7 @@
             icon="analytics"
             description="Point-in-time footprint across catalogue, makers, profiles, and shared works — absolute counts, not rates."
           >
-            <p class="takeaway"><strong>Takeaway:</strong> {{ page.libraryTakeaway }}</p>
+            <p class="takeaway">{{ page.libraryTakeaway }}</p>
 
             <div class="snapshot-grid">
               @for (metric of page.footprintSnapshot; track metric.label) {
@@ -226,8 +213,6 @@
                 (click$)="onSupportLinkClick('library_browse_modules')"
               >Browse modules</app-brand-primary-button>
             </div>
-
-            <p class="method-note">Method: point-in-time totals from the cached public snapshot. Absolute counts of the all-time footprint — not rates, not a 30-day window.</p>
           </lib-hero-content-card>
 
           <lib-hero-content-card
@@ -235,7 +220,7 @@
             icon="lock"
             description="How much of the library stays private — unshared works and works on private profiles."
           >
-            <p class="takeaway"><strong>Takeaway:</strong> {{ page.privateFootprint.racksTakeaway }}</p>
+            <p class="takeaway">{{ page.privateFootprint.racksTakeaway }}</p>
 
             @if (page.privateFootprint.suppressed) {
               <p class="empty-note">Not enough data yet.</p>
@@ -303,44 +288,6 @@
                 </ul>
               </div>
             }
-
-            <div class="hero-actions">
-              <app-brand-primary-button
-                routerLink="/racks/browser"
-                icon="dashboard_customize"
-                (click$)="onSupportLinkClick('footprint_browse_racks')"
-              >Browse racks</app-brand-primary-button>
-            </div>
-
-            <p class="method-note">Method: point-in-time global totals from the cached public snapshot. Public racks are shared racks on public profiles; private is everything else (unshared racks plus shared racks on private profiles). Counts only — no private contents, names, or owners are exposed. Shares hide until totals reach 10 with at least 3 per slice. Patches count connected works only (≥1 saved cable connection); unconnected drafts are in neither slice. Modules have no profile gate.</p>
-          </lib-hero-content-card>
-
-          <lib-hero-content-card
-            titleNormal="30-day activity"
-            icon="timeline"
-            description="Compact totals for the last 30 days across modules, racks, and patches."
-          >
-            <p class="takeaway"><strong>Takeaway:</strong> {{ page.activityTakeaway }}</p>
-
-            @if (vm.activityChips.length > 0) {
-              <div class="activity-chips">
-                @for (chip of vm.activityChips; track chip.label) {
-                  <app-insight-chip [icon]="chip.icon" [label]="chip.label" [value]="chip.value"></app-insight-chip>
-                }
-              </div>
-            } @else {
-              <p class="empty-note">No public updates in the last 30 days yet.</p>
-            }
-
-            <div class="hero-actions">
-              <app-brand-primary-button
-                routerLink="/racks/browser"
-                icon="dashboard_customize"
-                (click$)="onSupportLinkClick('activity_browse_racks')"
-              >Browse racks</app-brand-primary-button>
-            </div>
-
-            <p class="method-note">Method: 30-day totals from the same public activity series as the Fresh chart above. Population: public modules, shared racks on public profiles, connected public patches.</p>
           </lib-hero-content-card>
 
           <lib-hero-content-card
@@ -348,7 +295,7 @@
             icon="precision_manufacturing"
             description="Makers ranked by modules updated in the last 30 days."
           >
-            <p class="takeaway"><strong>Takeaway:</strong> {{ page.makersTakeaway }}</p>
+            <p class="takeaway">{{ page.makersTakeaway }}</p>
 
             @if (page.activeManufacturerBars.length > 0) {
               <div class="metric-bars">
@@ -359,18 +306,18 @@
             } @else {
               <p class="empty-note">No maker updates in the last 30 days yet.</p>
             }
-
-            <div class="hero-actions">
-              <app-brand-primary-button
-                routerLink="/modules/browser"
-                icon="view_module"
-                (click$)="onSupportLinkClick('makers_browse_modules')"
-              >Browse modules</app-brand-primary-button>
-            </div>
-
-            <p class="method-note">Method: makers ranked by public modules updated in the last 30 days. Only makers with at least one update are shown; empty results are suppressed.</p>
           </lib-hero-content-card>
         }
+
+        <details class="method-details">
+          <summary>How we count</summary>
+          <p class="method-details__item"><strong>Top modules —</strong> public modules ranked from community ownership signals. Top 6 per bucket, minimum count 1. Buckets below that threshold show “Not enough data yet.” instead of a ranking.</p>
+          <p class="method-details__item"><strong>Fresh this month —</strong> daily counts of public-profile updates — public modules, shared racks, and connected public patches. Window: last 30 days only; no long-range trend is implied.</p>
+          <p class="method-details__item"><strong>Library now —</strong> point-in-time totals from the cached public snapshot. Absolute counts of the all-time footprint — not rates, not a 30-day window.</p>
+          <p class="method-details__item"><strong>Private footprint —</strong> point-in-time global totals from the cached public snapshot. Public racks are shared racks on public profiles; private is everything else (unshared racks plus shared racks on private profiles). Counts only — no private contents, names, or owners are exposed. Shares hide until totals reach 10 with at least 3 per slice. Patches count connected works only (≥1 saved cable connection); unconnected drafts are in neither slice. Modules have no profile gate.</p>
+          <p class="method-details__item"><strong>30-day activity —</strong> 30-day totals from the same public activity series as the Fresh chart above. Population: public modules, shared racks on public profiles, connected public patches.</p>
+          <p class="method-details__item"><strong>Makers in motion —</strong> makers ranked by public modules updated in the last 30 days. Only makers with at least one update are shown; empty results are suppressed.</p>
+        </details>
       </div>
     }
   </lib-screen-wrapper>
