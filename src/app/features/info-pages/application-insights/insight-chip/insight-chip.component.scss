@@ -25,6 +25,10 @@
   color: #4063d8;
 }
 
+.insight-chip strong {
+  font-variant-numeric: tabular-nums;
+}
+
 .insight-chip__label {
   display: block;
   margin-bottom: 0.15rem;
