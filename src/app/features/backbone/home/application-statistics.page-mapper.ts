@@ -5,7 +5,7 @@ import {
 } from '../../backend/supabase-queries';
 import { ApplicationInsightsPage } from './application-statistics.models';
 import { ApplicationStatisticsMapperContext } from './application-statistics.mapper-context';
-import { mapActivityChart } from './application-statistics.activity-mappers';
+import { mapActivityChart, mapActivityTakeaway, mapFreshTakeaway } from './application-statistics.activity-mappers';
 import {
   mapFreshnessSections,
   mapHpSections,
@@ -15,6 +15,37 @@ import {
 import { mapSharingSections } from './application-statistics.sharing-mappers';
 import { mapPrivateFootprint } from './application-statistics.footprint-mappers';
 import { formatPercentValue } from './application-statistics.utils';
+
+// Library-takeaway thresholds: shared works (shared racks plus connected
+// public patches) per public profile. Boundaries are inclusive to the upper
+// side: exactly one work per profile reads as about one, exactly two reads
+// as multiple.
+export const LIBRARY_TAKEAWAY_SUPPRESSED =
+  'The public library footprint is not reported yet.';
+export const LIBRARY_TAKEAWAY_BELOW_ONE =
+  'Shared works average less than one per public profile.';
+export const LIBRARY_TAKEAWAY_ABOUT_ONE =
+  'Shared works average about one per public profile.';
+export const LIBRARY_TAKEAWAY_MULTIPLE =
+  'Shared works average at least two per public profile.';
+
+export function mapLibraryTakeaway(
+  statistics: PublicApplicationStatistics
+): string {
+  if (statistics.publicProfiles <= 0) {
+    return LIBRARY_TAKEAWAY_SUPPRESSED;
+  }
+
+  const worksPerProfile = (statistics.publicRacks + statistics.publicPatches)
+    / Math.max(statistics.publicProfiles, 1);
+  if (worksPerProfile < 1) {
+    return LIBRARY_TAKEAWAY_BELOW_ONE;
+  }
+  if (worksPerProfile < 2) {
+    return LIBRARY_TAKEAWAY_ABOUT_ONE;
+  }
+  return LIBRARY_TAKEAWAY_MULTIPLE;
+}
 
 export function mapApplicationInsightsPage(
   statistics: PublicApplicationStatistics,
@@ -92,6 +123,9 @@ export function mapApplicationInsightsPage(
         icon: 'schedule'
       }
     ],
+    freshTakeaway: mapFreshTakeaway(activitySeries),
+    activityTakeaway: mapActivityTakeaway(statistics),
+    libraryTakeaway: mapLibraryTakeaway(statistics),
     ...mapStandardSections(statistics, moduleInsights, context),
     ...mapHpSections(statistics, moduleInsights, context),
     ...mapFreshnessSections(statistics, moduleInsights, context),

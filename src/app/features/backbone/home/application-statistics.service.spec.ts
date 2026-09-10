@@ -12,6 +12,43 @@ import {
   PRIVATE_FOOTPRINT_RACKS_TAKEAWAY_PUBLIC_MAJORITY,
   PRIVATE_FOOTPRINT_RACKS_TAKEAWAY_SUPPRESSED
 } from './application-statistics.footprint-mappers';
+import {
+  ACTIVITY_TAKEAWAY_HIGH,
+  ACTIVITY_TAKEAWAY_IDLE,
+  ACTIVITY_TAKEAWAY_QUIET,
+  ACTIVITY_TAKEAWAY_STEADY,
+  ACTIVITY_TAKEAWAY_SUPPRESSED,
+  FRESH_TAKEAWAY_EMPTY,
+  FRESH_TAKEAWAY_MIXED,
+  FRESH_TAKEAWAY_MODULES_MAJORITY,
+  FRESH_TAKEAWAY_PATCHES_MAJORITY,
+  FRESH_TAKEAWAY_RACKS_MAJORITY,
+  mapActivityTakeaway,
+  mapFreshTakeaway
+} from './application-statistics.activity-mappers';
+import {
+  LIBRARY_TAKEAWAY_ABOUT_ONE,
+  LIBRARY_TAKEAWAY_BELOW_ONE,
+  LIBRARY_TAKEAWAY_MULTIPLE,
+  LIBRARY_TAKEAWAY_SUPPRESSED,
+  mapLibraryTakeaway
+} from './application-statistics.page-mapper';
+import {
+  MAKERS_TAKEAWAY_CLEAR_LEAD,
+  MAKERS_TAKEAWAY_CLOSE_PACK,
+  MAKERS_TAKEAWAY_EMPTY,
+  MAKERS_TAKEAWAY_SHARED_LEAD,
+  MAKERS_TAKEAWAY_SINGLE,
+  mapMakersTakeaway
+} from './application-statistics.module-mappers';
+import {
+  HERO_TAKEAWAY_CLEAR_MARGIN,
+  HERO_TAKEAWAY_CLOSE_PACK,
+  HERO_TAKEAWAY_EMPTY,
+  HERO_TAKEAWAY_SHARED_LEAD,
+  HERO_TAKEAWAY_SINGLE,
+  mapHeroTakeaway
+} from './application-statistics.mappers';
 
 
 describe('ApplicationStatisticsService', () => {
@@ -603,6 +640,243 @@ describe('ApplicationStatisticsService', () => {
     it('falls back to the generic sentence when the racks slice is missing', () => {
       expect(mapRacksTakeaway(false, undefined)).toBe(PRIVATE_FOOTPRINT_RACKS_TAKEAWAY_SUPPRESSED);
       expect(mapRacksTakeaway(true, undefined)).toBe(PRIVATE_FOOTPRINT_RACKS_TAKEAWAY_SUPPRESSED);
+    });
+  });
+
+  describe('card takeaways derived from live payloads', () => {
+    function seriesPoint(modules: number, racks: number, patches: number) {
+      return {date: '2026-09-10', modules, racks, patches};
+    }
+
+    function statsWith(overrides: Partial<PublicApplicationStatistics>): PublicApplicationStatistics {
+      return {
+        publicModules: 1280,
+        publicManufacturers: 96,
+        publicProfiles: 240,
+        publicModulesUpdatedLast30Days: 64,
+        publicRacks: 84,
+        publicRackAuthors: 31,
+        publicRacksUpdatedLast30Days: 21,
+        publicPatches: 42,
+        publicPatchConnections: 168,
+        publicPatchAuthors: 18,
+        publicPatchesUpdatedLast30Days: 9,
+        totalRacks: 320,
+        privateRacks: 236,
+        totalModules: 1500,
+        privateModules: 220,
+        totalPatches: 120,
+        privatePatches: 78,
+        ...overrides
+      };
+    }
+
+    it('wires fresh, activity, library, and makers takeaways through the page payload', (done) => {
+      const {service} = build();
+
+      service.page$.subscribe((page) => {
+        // Default fixture: 9/3/3 activity (modules at exactly 60%), 64/1280
+        // updated modules (5%), 126 shared works over 240 profiles, makers
+        // 14 vs 9 (1.56x lead).
+        expect(page.freshTakeaway).toBe(FRESH_TAKEAWAY_MODULES_MAJORITY);
+        expect(page.activityTakeaway).toBe(ACTIVITY_TAKEAWAY_STEADY);
+        expect(page.libraryTakeaway).toBe(LIBRARY_TAKEAWAY_BELOW_ONE);
+        expect(page.makersTakeaway).toBe(MAKERS_TAKEAWAY_CLEAR_LEAD);
+        done();
+      });
+    });
+
+    it('matches the live snapshot shape probed at implementation time', (done) => {
+      const {service} = build(
+        statsWith({
+          publicModules: 10080,
+          publicManufacturers: 743,
+          publicProfiles: 613,
+          publicModulesUpdatedLast30Days: 480,
+          publicRacks: 429,
+          publicRackAuthors: 362,
+          publicRacksUpdatedLast30Days: 21,
+          publicPatches: 36,
+          publicPatchConnections: 308,
+          publicPatchAuthors: 23,
+          publicPatchesUpdatedLast30Days: 3,
+          totalRacks: 625,
+          privateRacks: 196,
+          totalModules: 10172,
+          privateModules: 92,
+          totalPatches: 38,
+          privatePatches: 2
+        }),
+        undefined,
+        [seriesPoint(480, 21, 3)]
+      );
+
+      service.page$.subscribe((page) => {
+        expect(page.freshTakeaway).toBe(FRESH_TAKEAWAY_MODULES_MAJORITY);
+        expect(page.activityTakeaway).toBe(ACTIVITY_TAKEAWAY_STEADY);
+        expect(page.libraryTakeaway).toBe(LIBRARY_TAKEAWAY_BELOW_ONE);
+        done();
+      });
+    });
+
+    describe('fresh takeaway', () => {
+      it('falls back to the generic sentence for an empty series', () => {
+        expect(mapFreshTakeaway([])).toBe(FRESH_TAKEAWAY_EMPTY);
+        expect(mapFreshTakeaway([seriesPoint(0, 0, 0)])).toBe(FRESH_TAKEAWAY_EMPTY);
+      });
+
+      it('reads exactly 60 percent modules as a module majority (inclusive boundary)', () => {
+        expect(mapFreshTakeaway([seriesPoint(6, 2, 2)])).toBe(FRESH_TAKEAWAY_MODULES_MAJORITY);
+      });
+
+      it('reads just below the band as mixed', () => {
+        expect(mapFreshTakeaway([seriesPoint(59, 41, 0)])).toBe(FRESH_TAKEAWAY_MIXED);
+      });
+
+      it('derives rack and patch majorities from live-like shares', () => {
+        expect(mapFreshTakeaway([seriesPoint(2, 7, 1)])).toBe(FRESH_TAKEAWAY_RACKS_MAJORITY);
+        expect(mapFreshTakeaway([seriesPoint(1, 2, 7)])).toBe(FRESH_TAKEAWAY_PATCHES_MAJORITY);
+      });
+
+      it('reads an even split as mixed', () => {
+        expect(mapFreshTakeaway([seriesPoint(4, 3, 3)])).toBe(FRESH_TAKEAWAY_MIXED);
+      });
+    });
+
+    describe('activity takeaway', () => {
+      it('falls back to the generic sentence when the catalogue is missing', () => {
+        expect(mapActivityTakeaway(statsWith({publicModules: 0}))).toBe(ACTIVITY_TAKEAWAY_SUPPRESSED);
+      });
+
+      it('reports an idle month with no share claims', () => {
+        expect(mapActivityTakeaway(statsWith({publicModulesUpdatedLast30Days: 0}))).toBe(ACTIVITY_TAKEAWAY_IDLE);
+      });
+
+      it('reads exactly 20 percent as high (inclusive boundary)', () => {
+        expect(mapActivityTakeaway(statsWith({
+          publicModules: 1280,
+          publicModulesUpdatedLast30Days: 256
+        }))).toBe(ACTIVITY_TAKEAWAY_HIGH);
+      });
+
+      it('reads exactly 2 percent as steady (inclusive boundary)', () => {
+        expect(mapActivityTakeaway(statsWith({
+          publicModules: 1280,
+          publicModulesUpdatedLast30Days: 26
+        }))).toBe(ACTIVITY_TAKEAWAY_STEADY);
+      });
+
+      it('reads just below 2 percent as quiet', () => {
+        expect(mapActivityTakeaway(statsWith({
+          publicModules: 1280,
+          publicModulesUpdatedLast30Days: 25
+        }))).toBe(ACTIVITY_TAKEAWAY_QUIET);
+      });
+    });
+
+    describe('library takeaway', () => {
+      it('falls back to the generic sentence when no public profiles exist', () => {
+        expect(mapLibraryTakeaway(statsWith({publicProfiles: 0}))).toBe(LIBRARY_TAKEAWAY_SUPPRESSED);
+      });
+
+      it('reads less than one shared work per profile', () => {
+        expect(mapLibraryTakeaway(statsWith({
+          publicRacks: 429,
+          publicPatches: 36,
+          publicProfiles: 613
+        }))).toBe(LIBRARY_TAKEAWAY_BELOW_ONE);
+      });
+
+      it('reads exactly one shared work per profile as about one (inclusive boundary)', () => {
+        expect(mapLibraryTakeaway(statsWith({
+          publicRacks: 100,
+          publicPatches: 20,
+          publicProfiles: 120
+        }))).toBe(LIBRARY_TAKEAWAY_ABOUT_ONE);
+      });
+
+      it('reads exactly two shared works per profile as multiple (inclusive boundary)', () => {
+        expect(mapLibraryTakeaway(statsWith({
+          publicRacks: 200,
+          publicPatches: 0,
+          publicProfiles: 100
+        }))).toBe(LIBRARY_TAKEAWAY_MULTIPLE);
+      });
+    });
+
+    describe('makers takeaway', () => {
+      it('falls back to the generic sentence when no makers updated', () => {
+        expect(mapMakersTakeaway([])).toBe(MAKERS_TAKEAWAY_EMPTY);
+      });
+
+      it('reports a lone active maker with no share claims', () => {
+        expect(mapMakersTakeaway([
+          {label: 'Intellijel', count: 26, detail: '26 modules updated in the last 30 days'}
+        ])).toBe(MAKERS_TAKEAWAY_SINGLE);
+      });
+
+      it('reads an exact tie as a shared lead', () => {
+        expect(mapMakersTakeaway([
+          {label: 'Intellijel', count: 13, detail: ''},
+          {label: 'Erica Synths', count: 13, detail: ''}
+        ])).toBe(MAKERS_TAKEAWAY_SHARED_LEAD);
+      });
+
+      it('reads exactly 1.5x as a clear lead (inclusive boundary)', () => {
+        expect(mapMakersTakeaway([
+          {label: 'Intellijel', count: 15, detail: ''},
+          {label: 'Mutable Instruments', count: 10, detail: ''}
+        ])).toBe(MAKERS_TAKEAWAY_CLEAR_LEAD);
+      });
+
+      it('reads a live-like 26 vs 16 lead as a clear lead', () => {
+        expect(mapMakersTakeaway([
+          {label: 'Intellijel', count: 26, detail: '26 modules updated in the last 30 days'},
+          {label: 'Mutable Instruments', count: 16, detail: '16 modules updated in the last 30 days'}
+        ])).toBe(MAKERS_TAKEAWAY_CLEAR_LEAD);
+      });
+
+      it('reads just below 1.5x as a close pack', () => {
+        expect(mapMakersTakeaway([
+          {label: 'Intellijel', count: 14, detail: ''},
+          {label: 'Mutable Instruments', count: 10, detail: ''}
+        ])).toBe(MAKERS_TAKEAWAY_CLOSE_PACK);
+      });
+    });
+
+    describe('hero takeaway', () => {
+      function heroEntry(id: number, count: number) {
+        return {id, name: `Module ${ id }`, manufacturer: {id, name: 'Maker'}, count};
+      }
+
+      it('falls back to the generic sentence for an empty bucket', () => {
+        expect(mapHeroTakeaway([], 'owners')).toBe(HERO_TAKEAWAY_EMPTY);
+      });
+
+      it('reports a lone ranked module with no share claims', () => {
+        expect(mapHeroTakeaway([heroEntry(1, 1)], 'sales')).toBe(HERO_TAKEAWAY_SINGLE);
+      });
+
+      it('reads an exact tie as a shared lead', () => {
+        expect(mapHeroTakeaway([heroEntry(1, 1), heroEntry(2, 1)], 'wants')).toBe(HERO_TAKEAWAY_SHARED_LEAD);
+      });
+
+      it('reads a live-like 48 vs 24 lead as at least twice as many owners', () => {
+        expect(mapHeroTakeaway([heroEntry(1, 48), heroEntry(2, 24)], 'owners'))
+          .toBe('The top-ranked module holds at least twice as many owners as the next-ranked design.');
+      });
+
+      it('reads just below 2x as a clear margin', () => {
+        expect(mapHeroTakeaway([heroEntry(1, 19), heroEntry(2, 10)], 'owners')).toBe(HERO_TAKEAWAY_CLEAR_MARGIN);
+      });
+
+      it('reads exactly 1.5x as a clear margin (inclusive boundary)', () => {
+        expect(mapHeroTakeaway([heroEntry(1, 15), heroEntry(2, 10)], 'owners')).toBe(HERO_TAKEAWAY_CLEAR_MARGIN);
+      });
+
+      it('reads just below 1.5x as a close pack', () => {
+        expect(mapHeroTakeaway([heroEntry(1, 14), heroEntry(2, 10)], 'owners')).toBe(HERO_TAKEAWAY_CLOSE_PACK);
+      });
     });
   });
 

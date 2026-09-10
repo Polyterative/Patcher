@@ -91,6 +91,9 @@ export interface ApplicationInsightsTrendMomentumItem {
 export interface ApplicationInsightsPage {
   heroSummary: string;
   heroHighlights: ApplicationInsightsHighlight[];
+  freshTakeaway: string;
+  activityTakeaway: string;
+  libraryTakeaway: string;
   footprintSnapshot: ApplicationInsightsSnapshotMetric[];
   footprintHighlights: ApplicationInsightsHighlight[];
   standardMixBars: ApplicationInsightsBar[];
@@ -108,6 +111,7 @@ export interface ApplicationInsightsPage {
   moduleFreshnessHighlights: ApplicationInsightsHighlight[];
   topManufacturerBars: ApplicationInsightsBar[];
   activeManufacturerBars: ApplicationInsightsBar[];
+  makersTakeaway: string;
   widestManufacturerBars: ApplicationInsightsBar[];
   oneUManufacturerBars: ApplicationInsightsBar[];
   makerHighlights: ApplicationInsightsHighlight[];
