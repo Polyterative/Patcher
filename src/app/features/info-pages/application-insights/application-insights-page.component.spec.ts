@@ -250,10 +250,12 @@ describe('ApplicationInsightsPageComponent', () => {
     });
 
     it('labels bucket count nouns for hero rows', () => {
-      expect(comp.heroCountNoun('mostOwned')).toBe('owners');
-      expect(comp.heroCountNoun('mostWanted')).toBe('wants');
+      expect(comp.heroCountNoun('mostOwned')).toBe('in racks');
+      expect(comp.heroCountNoun('mostWanted')).toBe('wishes');
       expect(comp.heroCountNoun('mostSold')).toBe('sales');
-      expect(comp.heroBucketLabel('mostSold')).toBe('Most Sold');
+      expect(comp.heroBucketLabel('mostSold')).toBe('Changing hands');
+      expect(comp.heroBucketLabel('mostOwned')).toBe('Loved right now');
+      expect(comp.heroBucketLabel('mostWanted')).toBe('On wishlists');
     });
 
     it('reuses a read-only module-minimal card config for hero rankings', () => {

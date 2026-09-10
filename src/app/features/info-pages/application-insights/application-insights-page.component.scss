@@ -50,6 +50,39 @@
   color: rgba(24, 37, 53, 0.62);
 }
 
+.momentum-summary {
+  margin: 1rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: rgba(24, 37, 53, 0.85);
+}
+
+.method-details {
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(86, 108, 132, 0.2);
+  border-radius: 1rem;
+  background: rgba(248, 251, 255, 0.9);
+}
+
+.method-details summary {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--insights-blue-700);
+  cursor: pointer;
+}
+
+.method-details summary:focus-visible {
+  outline: 2px solid var(--insights-blue-500);
+  outline-offset: 2px;
+}
+
+.method-details__item {
+  margin: 0.75rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: rgba(24, 37, 53, 0.72);
+}
+
 .updated-badge {
   display: inline-block;
   margin: 0 0 1rem;

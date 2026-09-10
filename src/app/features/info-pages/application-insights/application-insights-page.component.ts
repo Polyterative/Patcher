@@ -82,9 +82,9 @@ const ACTIVITY_CHIP_ICONS: Record<string, string> = {
 })
 export class ApplicationInsightsPageComponent {
   readonly heroBuckets: ApplicationInsightsHeroBucket[] = [
-    {key: 'mostOwned', label: 'Most Owned', icon: 'inventory_2', countNoun: 'owners'},
-    {key: 'mostWanted', label: 'Most Wanted', icon: 'bookmark_add', countNoun: 'wants'},
-    {key: 'mostSold', label: 'Most Sold', icon: 'sell', countNoun: 'sales'}
+    {key: 'mostOwned', label: 'Loved right now', icon: 'inventory_2', countNoun: 'in racks'},
+    {key: 'mostWanted', label: 'On wishlists', icon: 'bookmark_add', countNoun: 'wishes'},
+    {key: 'mostSold', label: 'Changing hands', icon: 'sell', countNoun: 'sales'}
   ];
 
   readonly vm$!: Observable<ApplicationInsightsVm>;
@@ -148,11 +148,11 @@ export class ApplicationInsightsPageComponent {
   }
 
   heroCountNoun(bucket: ApplicationDiscoveryBucket): string {
-    return this.heroBuckets.find((entry) => entry.key === bucket)?.countNoun ?? 'owners';
+    return this.heroBuckets.find((entry) => entry.key === bucket)?.countNoun ?? 'in racks';
   }
 
   heroBucketLabel(bucket: ApplicationDiscoveryBucket): string {
-    return this.heroBuckets.find((entry) => entry.key === bucket)?.label ?? 'Most Owned';
+    return this.heroBuckets.find((entry) => entry.key === bucket)?.label ?? 'Loved right now';
   }
 
   onHeroBucket(bucket: ApplicationDiscoveryBucket): void {
