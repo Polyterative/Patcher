@@ -74,8 +74,6 @@ export class UserModulesComponent extends SubManager {
     public dataService: UserAreaDataService
   ) {
     super();
-    this.dataService.updateModulesData$.next();
-    
   }
 
   visibleFilters(): {value: UserModulesSectionFilter; label: string; icon: string}[] {

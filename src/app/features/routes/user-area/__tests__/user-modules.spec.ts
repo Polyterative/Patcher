@@ -45,7 +45,7 @@ describe('UserModulesComponent', () => {
     expect(component.encloseVertically).toBe(true);
   });
   
-  it('should trigger updateModulesData$ on construction', () => {
+  it('does not trigger a duplicate module load on construction', () => {
     const spy = jasmine.createSpy('updateModulesData$');
     mockDataService = createMockUserAreaDataService();
     mockDataService.updateModulesData$.subscribe(spy);
@@ -57,7 +57,7 @@ describe('UserModulesComponent', () => {
       asUserAreaDataService(mockDataService)
     );
     
-    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).not.toHaveBeenCalled();
   });
   
   it('should expose dataService publicly', () => {

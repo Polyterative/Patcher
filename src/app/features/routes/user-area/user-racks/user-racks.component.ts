@@ -49,11 +49,7 @@ export class UserRacksComponent {
     public dialog: MatDialog,
     public backend: SupabaseService,
     public dataService: UserAreaDataService,
-  ) {
-    
-    // update with local user data
-    this.dataService.updateRackData$.next(undefined);
-  }
+  ) {}
 
   visibleFilters(): {value: UserRacksSectionFilter; label: string; icon: string}[] {
     return this.showCoolFilter

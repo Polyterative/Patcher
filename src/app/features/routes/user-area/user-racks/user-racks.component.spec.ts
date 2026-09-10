@@ -36,12 +36,12 @@ describe('UserRacksComponent', () => {
     expect(comp).toBeTruthy();
   });
 
-  it('emits updateRackData$ on construction', () => {
+  it('does not emit a duplicate rack update on construction', () => {
     let emitted = false;
     const ds2 = mockDataService();
     ds2.updateRackData$.subscribe(() => emitted = true);
     new UserRacksComponent(mockDialog(), mockBackend(), ds2);
-    expect(emitted).toBeTrue();
+    expect(emitted).toBeFalse();
   });
 
   it('rackMinimalViewConfig is a copy of defaultRackMinimalViewConfig', () => {

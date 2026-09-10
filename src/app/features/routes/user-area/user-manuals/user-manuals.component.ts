@@ -33,10 +33,7 @@ export class UserManualsComponent {
   
   constructor(
     public dataService: UserAreaDataService
-  ) {
-    this.dataService.updateManualsData$.next();
-    
-  }
+  ) {}
   
   openManual(url: string) {
     window.open(url, '_blank');

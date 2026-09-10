@@ -14,7 +14,7 @@ import { defaultRackMinimalViewConfig } from 'src/app/components/rack-parts/rack
 /**
  * UserRacksComponent Tests
  *
- * Covers: creation, Input defaults, data trigger on init,
+ * Covers: creation, Input defaults, data state,
  * addRack$ delegation, view config defaults, and data stream reflection.
  */
 describe('UserRacksComponent', () => {
@@ -51,7 +51,7 @@ describe('UserRacksComponent', () => {
     expect(component.rackMinimalViewConfig).toEqual({...defaultRackMinimalViewConfig});
   });
   
-  it('should trigger updateRackData$ with undefined on construction', () => {
+  it('does not trigger a duplicate rack load on construction', () => {
     const spy = jasmine.createSpy('updateRackData$');
     mockDataService = createMockUserAreaDataService();
     mockDataService.updateRackData$.subscribe(spy);
@@ -64,8 +64,7 @@ describe('UserRacksComponent', () => {
       asUserAreaDataService(mockDataService),
     );
     
-    expect(spy).toHaveBeenCalledWith(undefined);
-    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).not.toHaveBeenCalled();
   });
   
   it('should expose dataService publicly', () => {

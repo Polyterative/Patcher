@@ -39,12 +39,12 @@ describe('UserModulesComponent', () => {
     expect(comp).toBeTruthy();
   });
 
-  it('emits updateModulesData$ on construction', () => {
+  it('does not emit a duplicate module update on construction', () => {
     let emitted = false;
     const ds2 = mockDataService();
     ds2.updateModulesData$.subscribe(() => emitted = true);
     new UserModulesComponent(mockBackend(), ds2);
-    expect(emitted).toBeTrue();
+    expect(emitted).toBeFalse();
   });
 
   it('userModulesComponentViewConfig defaults to userModulesDefaultViewConfig', () => {
