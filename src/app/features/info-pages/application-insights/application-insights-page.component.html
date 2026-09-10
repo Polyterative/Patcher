@@ -302,75 +302,144 @@
           <lib-hero-content-card
             titleNormal="Private footprint"
             icon="lock"
-            description="How much of the library stays private — unshared works and works on private profiles."
+            description="How much of the racks and patches library stays private — unshared works and works on private profiles."
           >
             <p class="takeaway">{{ page.privateFootprint.racksTakeaway }}</p>
 
             @if (page.privateFootprint.suppressed) {
               <p class="empty-note">Not enough data yet.</p>
               <p class="footprint-suppressed-sub">Private shares appear once the library is large enough to show them without singling anyone out.</p>
-            } @else if (page.privateFootprint.slices[0]; as racks) {
-              <div class="footprint-body">
-                <svg
-                  class="footprint-donut"
-                  viewBox="0 0 42 42"
-                  role="img"
-                  [attr.aria-label]="'Rack footprint: ' + racks.publicRowLabel + ' public, ' + racks.privateRowLabel + ' private'"
-                >
-                  <title>Private versus public racks</title>
-                  <circle
-                    class="footprint-donut__track"
-                    cx="21"
-                    cy="21"
-                    r="15.9155"
-                    pathLength="100"
-                    aria-hidden="true"
-                  ></circle>
-                  <circle
-                    class="footprint-donut__slice"
-                    cx="21"
-                    cy="21"
-                    r="15.9155"
-                    pathLength="100"
-                    stroke-dashoffset="25"
-                    [attr.stroke-dasharray]="racks.publicSharePercent + ' 100'"
-                    aria-hidden="true"
-                  ></circle>
-                  <text
-                    class="footprint-donut__value"
-                    x="21"
-                    y="21"
-                    text-anchor="middle"
-                    aria-hidden="true"
-                  >{{ racks.privateSharePercent }}%</text>
-                  <text
-                    class="footprint-donut__caption"
-                    x="21"
-                    y="27"
-                    text-anchor="middle"
-                    aria-hidden="true"
-                  >private</text>
-                </svg>
+            } @else if (footprintSlice(page.privateFootprint.slices, 'racks'); as racks) {
+              <div class="footprint-grid">
+                <div class="footprint-item">
+                  <h4 class="footprint-item__title">Racks</h4>
+                  <div class="footprint-body">
+                    <svg
+                      class="footprint-donut"
+                      viewBox="0 0 42 42"
+                      role="img"
+                      [attr.aria-label]="'Rack footprint: ' + racks.publicRowLabel + ' public, ' + racks.privateRowLabel + ' private'"
+                    >
+                      <title>Private versus public racks</title>
+                      <circle
+                        class="footprint-donut__track"
+                        cx="21"
+                        cy="21"
+                        r="15.9155"
+                        pathLength="100"
+                        aria-hidden="true"
+                      ></circle>
+                      <circle
+                        class="footprint-donut__slice"
+                        cx="21"
+                        cy="21"
+                        r="15.9155"
+                        pathLength="100"
+                        stroke-dashoffset="25"
+                        [attr.stroke-dasharray]="racks.publicSharePercent + ' 100'"
+                        aria-hidden="true"
+                      ></circle>
+                      <text
+                        class="footprint-donut__value"
+                        x="21"
+                        y="21"
+                        text-anchor="middle"
+                        aria-hidden="true"
+                      >{{ racks.privateSharePercent }}%</text>
+                      <text
+                        class="footprint-donut__caption"
+                        x="21"
+                        y="27"
+                        text-anchor="middle"
+                        aria-hidden="true"
+                      >private</text>
+                    </svg>
 
-                <ul class="footprint-legend">
-                  <li class="footprint-legend__row">
-                    <span class="footprint-legend__dot footprint-legend__dot--public" aria-hidden="true"></span>
-                    <span>Public racks</span>
-                    <strong>{{ racks.publicRowLabel }}</strong>
-                  </li>
-                  <li class="footprint-legend__row">
-                    <span class="footprint-legend__dot footprint-legend__dot--private" aria-hidden="true"></span>
-                    <span>Private racks</span>
-                    <strong>{{ racks.privateRowLabel }}</strong>
-                  </li>
-                  @for (slice of page.privateFootprint.slices.slice(1); track slice.key) {
-                    <li class="footprint-legend__row">
-                      <span>Private {{ slice.label | lowercase }}</span>
-                      <strong>{{ slice.privateRowLabel }}</strong>
-                    </li>
-                  }
-                </ul>
+                    <ul class="footprint-legend">
+                      <li class="footprint-legend__row">
+                        <span class="footprint-legend__dot footprint-legend__dot--public" aria-hidden="true"></span>
+                        <span>Public racks</span>
+                        <strong>{{ racks.publicRowLabel }}</strong>
+                      </li>
+                      <li class="footprint-legend__row">
+                        <span class="footprint-legend__dot footprint-legend__dot--private" aria-hidden="true"></span>
+                        <span>Private racks</span>
+                        <strong>{{ racks.privateRowLabel }}</strong>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                @if (footprintSlice(page.privateFootprint.slices, 'patches'); as patches) {
+                  <div class="footprint-item">
+                    <h4 class="footprint-item__title">Patches</h4>
+                    <div class="footprint-body">
+                      <svg
+                        class="footprint-donut"
+                        viewBox="0 0 42 42"
+                        role="img"
+                        [attr.aria-label]="'Patch footprint: ' + patches.publicRowLabel + ' public, ' + patches.privateRowLabel + ' private'"
+                      >
+                        <title>Private versus public patches</title>
+                        <circle
+                          class="footprint-donut__track"
+                          cx="21"
+                          cy="21"
+                          r="15.9155"
+                          pathLength="100"
+                          aria-hidden="true"
+                        ></circle>
+                        <circle
+                          class="footprint-donut__slice footprint-donut__slice--patches"
+                          cx="21"
+                          cy="21"
+                          r="15.9155"
+                          pathLength="100"
+                          stroke-dashoffset="25"
+                          [attr.stroke-dasharray]="patches.publicSharePercent + ' 100'"
+                          aria-hidden="true"
+                        ></circle>
+                        <text
+                          class="footprint-donut__value"
+                          x="21"
+                          y="21"
+                          text-anchor="middle"
+                          aria-hidden="true"
+                        >{{ patches.privateSharePercent }}%</text>
+                        <text
+                          class="footprint-donut__caption"
+                          x="21"
+                          y="27"
+                          text-anchor="middle"
+                          aria-hidden="true"
+                        >private</text>
+                      </svg>
+
+                      <ul class="footprint-legend">
+                        <li class="footprint-legend__row">
+                          <span class="footprint-legend__dot footprint-legend__dot--public" aria-hidden="true"></span>
+                          <span>Public patches</span>
+                          <strong>{{ patches.publicRowLabel }}</strong>
+                        </li>
+                        <li class="footprint-legend__row">
+                          <span class="footprint-legend__dot footprint-legend__dot--private" aria-hidden="true"></span>
+                          <span>Private patches</span>
+                          <strong>{{ patches.privateRowLabel }}</strong>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                } @else {
+                  <div class="footprint-item">
+                    <h4 class="footprint-item__title">Patches</h4>
+                    <p class="footprint-suppressed-sub">Patch shares appear once enough connected patches exist to show them without singling anyone out.</p>
+                  </div>
+                }
               </div>
+
+              @if (footprintSlice(page.privateFootprint.slices, 'modules'); as modules) {
+                <p class="footprint-modules-note">Private modules: <strong>{{ modules.privateRowLabel }}</strong></p>
+              }
             }
           </lib-hero-content-card>
 

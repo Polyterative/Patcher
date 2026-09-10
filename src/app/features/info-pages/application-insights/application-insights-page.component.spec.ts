@@ -344,5 +344,17 @@ describe('ApplicationInsightsPageComponent', () => {
       expect(comp.sharingTeaser(mix)).toBe('84 shared racks · 42 connected patches to start from');
       expect(comp.sharingTeaser([])).toBe('');
     });
+
+    it('finds private-footprint slices by key', () => {
+      const slices = [
+        {key: 'racks', label: 'Racks', publicRowLabel: '10', privateRowLabel: '20'},
+        {key: 'patches', label: 'Patches', publicRowLabel: '5', privateRowLabel: '8'}
+      ] as unknown as Parameters<ApplicationInsightsPageComponent['footprintSlice']>[0];
+      expect(comp.footprintSlice(slices, 'racks')?.label).toBe('Racks');
+      expect(comp.footprintSlice(slices, 'patches')?.label).toBe('Patches');
+      expect(comp.footprintSlice(slices, 'modules')).toBeUndefined();
+      expect(comp.footprintSlice([], 'racks')).toBeUndefined();
+      expect(comp.footprintSlice(null, 'racks')).toBeUndefined();
+    });
   });
 });
