@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.7.22](https://github.com/Polyterative/Patcher/compare/v6.7.21...v6.7.22) (2026-09-10)
+
+
+### Features
+
+* **insights:** add maker format size discovery rails ([6db90ad](https://github.com/Polyterative/Patcher/commit/6db90ad141e5a24bdd7aeb72c6c370d911043f1c))
+* **insights:** add private footprint card with suppression gate ([a3eb71c](https://github.com/Polyterative/Patcher/commit/a3eb71c8befd2bddcd646c67d0a66c483e48578b))
+* **insights:** add private footprint totals to snapshot rpc and fetcher ([bf95f4e](https://github.com/Polyterative/Patcher/commit/bf95f4e6bd779445684dcd50cdc91177d6462ecb))
+* **insights:** bind live takeaways on insights cards and demote reading guides ([1c92448](https://github.com/Polyterative/Patcher/commit/1c92448d41d586bdf64167c4a149e6d1fedd241e))
+* **insights:** de-verbose discovery voice and merge fresh cards ([72f6791](https://github.com/Polyterative/Patcher/commit/72f67915e948f7444602aea074bf1d5ef1f212ea))
+* **insights:** derive fresh activity library makers hero takeaways from live shares ([c148899](https://github.com/Polyterative/Patcher/commit/c148899a19a31a48ffaf16a30042e163f66699b5))
+* **insights:** derive private footprint takeaway from live shares ([7b69928](https://github.com/Polyterative/Patcher/commit/7b69928d80a090369ae6a387a5d163822b560a06))
+* **insights:** expose insights page publicly without isDev gate ([2aeb64c](https://github.com/Polyterative/Patcher/commit/2aeb64c7a13958b6211db365c0b48a5355d757f9))
+* **insights:** polish discovery podium voice and seo ([89fdd94](https://github.com/Polyterative/Patcher/commit/89fdd94f6f23aaf9b388b21b1596c13c6c825d10))
+* **insights:** rebuild insights page around ownership trends and fresh activity ([fe07452](https://github.com/Polyterative/Patcher/commit/fe07452a7c75161a98047fe4dea08a720b5a99f9))
+* **insights:** reuse module-minimal cards for ownership hero rankings ([61a3dd7](https://github.com/Polyterative/Patcher/commit/61a3dd7c3f018b5c4ccf8d03d59df98501832661))
+* **insights:** show homepage insights section publicly ([2149d1d](https://github.com/Polyterative/Patcher/commit/2149d1dcf03bab23c5874a71ae7e2ed9d17f91c2))
+* **insights:** show patches private-public donut beside racks ([ae31566](https://github.com/Polyterative/Patcher/commit/ae315660d97078e4ddea34197e95ff56a186b262))
+
+
+### Bug Fixes
+
+* **insights:** correct private footprint takeaway to match live shares ([dd09e0a](https://github.com/Polyterative/Patcher/commit/dd09e0a473f37c347a98bfdddd8463ba59a7ca53))
+* **insights:** pair narrow sections into two-column rows on desktop ([8a05b01](https://github.com/Polyterative/Patcher/commit/8a05b01f145492151792555599f674976dbb3c53))
+* **insights:** use neutral public-stats voice across insights copy ([24ab14d](https://github.com/Polyterative/Patcher/commit/24ab14ddde5c88076b060bf8b16e3d60362c111e))
+* **routing:** use path-based stale chunk recovery ([0422f69](https://github.com/Polyterative/Patcher/commit/0422f69f1f49c9de9d78facd21f1787b7741e6d6))
+
 ### [6.7.21](https://github.com/Polyterative/Patcher/compare/v6.7.20...v6.7.21) (2026-09-02)
 
 
