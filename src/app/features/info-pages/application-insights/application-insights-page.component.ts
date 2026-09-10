@@ -142,11 +142,11 @@ export class ApplicationInsightsPageComponent {
     );
     this.seoAndUtilsService.updateSeo(
       {
-        title: 'Application insights',
-        description: 'Ownership rankings, last-30-day activity, and library footprint across the public Patcher catalogue.',
+        title: 'Discover modules',
+        description: 'What the community loves, wishes for, and trades — plus makers, formats, and fresh activity.',
         url: 'https://patcher.xyz/insights',
       },
-      'Application insights'
+      'Discover modules'
     );
   }
 
@@ -168,6 +168,10 @@ export class ApplicationInsightsPageComponent {
 
   onSupportLinkClick(target: string): void {
     this.applicationStatisticsService.trackSupportLinkClicked(target);
+  }
+
+  onDiscoveryRailClick(target: string): void {
+    this.applicationStatisticsService.trackDiscoveryRailClicked(target);
   }
 
   retry(): void {

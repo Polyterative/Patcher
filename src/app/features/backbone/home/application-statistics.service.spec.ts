@@ -923,6 +923,14 @@ describe('ApplicationStatisticsService', () => {
     expect(analytics.capture).toHaveBeenCalledWith('insights.support_link_clicked', {target: 'fresh_browse_racks'});
   });
 
+  it('captures discovery rail clicks with the rail target', () => {
+    const {analytics, service} = build();
+
+    service.trackDiscoveryRailClicked('makers');
+
+    expect(analytics.capture).toHaveBeenCalledWith('insights.discovery_rail_clicked', {target: 'makers'});
+  });
+
   it('maps discovery buckets from the backend snapshot', (done) => {
     const {backend, service} = build();
 

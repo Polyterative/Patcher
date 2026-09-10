@@ -36,8 +36,11 @@
 
 #### Layer 3 — Polish
 
-- [ ] Responsive/motion polish for merged Fresh card
-- [ ] Final copy and a11y review
+- [x] Hero podium (rank-1 spans 2 cols desktop, larger badge, SCSS-only)
+- [x] Rails readability (gaps, dead SCSS removed, snap-scroll skipped)
+- [x] Empty-state discovery voice (hero/makers/fresh/format/size)
+- [x] SEO discovery framing + discovery-rail analytics
+- [x] Specs + lint green
 
 Updated: 2026-09-10
 
