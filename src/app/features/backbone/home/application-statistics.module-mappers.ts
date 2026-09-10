@@ -1,4 +1,5 @@
 import {
+  PublicApplicationModuleInsightBucket,
   PublicApplicationModuleInsights,
   PublicApplicationStatistics,
 } from '../../backend/supabase-queries';
@@ -30,7 +31,7 @@ type FreshnessSections = Pick<
 
 type MakerSections = Pick<
   ApplicationInsightsPage,
-  'topManufacturerBars' | 'activeManufacturerBars' | 'widestManufacturerBars' | 'oneUManufacturerBars' | 'makerHighlights'
+  'topManufacturerBars' | 'activeManufacturerBars' | 'makersTakeaway' | 'widestManufacturerBars' | 'oneUManufacturerBars' | 'makerHighlights'
 >;
 
 export function mapStandardSections(
@@ -320,6 +321,41 @@ export function mapFreshnessSections(
   };
 }
 
+// Makers-takeaway threshold: the leader needs at least 1.5x the runner-up to
+// read as a clear lead (inclusive boundary). Exact ties on top read as shared.
+export const MAKERS_TAKEAWAY_CLEAR_LEAD_RATIO = 1.5;
+export const MAKERS_TAKEAWAY_EMPTY =
+  'No maker updates were recorded in the last 30 days.';
+export const MAKERS_TAKEAWAY_SINGLE =
+  'A single maker accounts for all module updates in the last 30 days.';
+export const MAKERS_TAKEAWAY_SHARED_LEAD =
+  'The most active makers share the 30-day update lead.';
+export const MAKERS_TAKEAWAY_CLEAR_LEAD =
+  'The most active maker leads the next by a clear margin.';
+export const MAKERS_TAKEAWAY_CLOSE_PACK =
+  'Recent maker updates are spread across makers with no single maker pulling ahead.';
+
+export function mapMakersTakeaway(
+  activeManufacturers: PublicApplicationModuleInsightBucket[]
+): string {
+  if (activeManufacturers.length === 0) {
+    return MAKERS_TAKEAWAY_EMPTY;
+  }
+
+  if (activeManufacturers.length === 1) {
+    return MAKERS_TAKEAWAY_SINGLE;
+  }
+
+  const [leader, runnerUp] = activeManufacturers;
+  if (leader.count === runnerUp.count) {
+    return MAKERS_TAKEAWAY_SHARED_LEAD;
+  }
+  if (leader.count / Math.max(runnerUp.count, 1) >= MAKERS_TAKEAWAY_CLEAR_LEAD_RATIO) {
+    return MAKERS_TAKEAWAY_CLEAR_LEAD;
+  }
+  return MAKERS_TAKEAWAY_CLOSE_PACK;
+}
+
 export function mapMakerSections(
   moduleInsights: PublicApplicationModuleInsights,
   context: ApplicationStatisticsMapperContext
@@ -343,6 +379,7 @@ export function mapMakerSections(
         tone: context.getToneByIndex(index + 1)
       }))
     ),
+    makersTakeaway: mapMakersTakeaway(moduleInsights.activeManufacturers),
     widestManufacturerBars: mapBarWidths(
       moduleInsights.widestManufacturers.map((bucket, index) => ({
         label: bucket.label,

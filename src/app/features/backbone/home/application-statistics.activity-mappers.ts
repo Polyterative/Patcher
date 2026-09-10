@@ -1,4 +1,7 @@
-import { PublicApplicationActivityPoint } from '../../backend/supabase-queries';
+import {
+  PublicApplicationActivityPoint,
+  PublicApplicationStatistics
+} from '../../backend/supabase-queries';
 import { ApplicationInsightsPage } from './application-statistics.models';
 import { ApplicationStatisticsMapperContext } from './application-statistics.mapper-context';
 import {
@@ -8,6 +11,81 @@ import {
 } from './application-statistics.utils';
 
 type ActivityChart = ApplicationInsightsPage['activityChart'];
+
+// Fresh-takeaway thresholds: a single symmetric majority line at 60% keeps the
+// branches hysteresis-free, mirroring the private-footprint takeaway. Shares
+// use exact counts (not rounded labels), and the 60% boundary is inclusive to
+// the majority side.
+export const FRESH_TAKEAWAY_MAJORITY_SHARE = 0.6;
+export const FRESH_TAKEAWAY_EMPTY =
+  'No public updates were recorded in the last 30 days.';
+export const FRESH_TAKEAWAY_MODULES_MAJORITY =
+  'Module updates account for most 30-day activity, outpacing rack and patch updates combined.';
+export const FRESH_TAKEAWAY_RACKS_MAJORITY =
+  'Rack updates account for most 30-day activity, outpacing module and patch updates combined.';
+export const FRESH_TAKEAWAY_PATCHES_MAJORITY =
+  'Patch updates account for most 30-day activity, outpacing module and rack updates combined.';
+export const FRESH_TAKEAWAY_MIXED =
+  'Updates are spread across modules, racks, and patches with no single dominant type.';
+
+export function mapFreshTakeaway(
+  activitySeries: PublicApplicationActivityPoint[]
+): string {
+  const totals = sumActivityWindow(activitySeries, 0);
+  const grandTotal = totals.modules + totals.racks + totals.patches;
+
+  if (grandTotal <= 0) {
+    return FRESH_TAKEAWAY_EMPTY;
+  }
+
+  if (totals.modules / grandTotal >= FRESH_TAKEAWAY_MAJORITY_SHARE) {
+    return FRESH_TAKEAWAY_MODULES_MAJORITY;
+  }
+  if (totals.racks / grandTotal >= FRESH_TAKEAWAY_MAJORITY_SHARE) {
+    return FRESH_TAKEAWAY_RACKS_MAJORITY;
+  }
+  if (totals.patches / grandTotal >= FRESH_TAKEAWAY_MAJORITY_SHARE) {
+    return FRESH_TAKEAWAY_PATCHES_MAJORITY;
+  }
+  return FRESH_TAKEAWAY_MIXED;
+}
+
+// Activity-takeaway thresholds: penetration of the 30-day module updates into
+// the all-time public catalogue. Boundaries are inclusive to the upper side:
+// a rate of exactly 20% reads as high, exactly 2% reads as steady.
+export const ACTIVITY_TAKEAWAY_HIGH_RATE = 0.2;
+export const ACTIVITY_TAKEAWAY_STEADY_RATE = 0.02;
+export const ACTIVITY_TAKEAWAY_SUPPRESSED =
+  'Recent movement is not reported yet.';
+export const ACTIVITY_TAKEAWAY_IDLE =
+  'No public modules moved in the last 30 days.';
+export const ACTIVITY_TAKEAWAY_HIGH =
+  'At least one in five public modules moved in the last 30 days.';
+export const ACTIVITY_TAKEAWAY_STEADY =
+  'About one in twenty public modules moved in the last 30 days.';
+export const ACTIVITY_TAKEAWAY_QUIET =
+  'Only a small fraction of public modules moved in the last 30 days.';
+
+export function mapActivityTakeaway(
+  statistics: PublicApplicationStatistics
+): string {
+  if (statistics.publicModules <= 0) {
+    return ACTIVITY_TAKEAWAY_SUPPRESSED;
+  }
+
+  if (statistics.publicModulesUpdatedLast30Days <= 0) {
+    return ACTIVITY_TAKEAWAY_IDLE;
+  }
+
+  const rate = statistics.publicModulesUpdatedLast30Days / Math.max(statistics.publicModules, 1);
+  if (rate >= ACTIVITY_TAKEAWAY_HIGH_RATE) {
+    return ACTIVITY_TAKEAWAY_HIGH;
+  }
+  if (rate >= ACTIVITY_TAKEAWAY_STEADY_RATE) {
+    return ACTIVITY_TAKEAWAY_STEADY;
+  }
+  return ACTIVITY_TAKEAWAY_QUIET;
+}
 
 export function mapActivityChart(
   activitySeries: PublicApplicationActivityPoint[],
