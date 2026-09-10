@@ -40,6 +40,8 @@ export type {
   ApplicationInsightsTrendLegendItem,
   ApplicationInsightsTrendMomentumItem,
   ApplicationDiscoverySnapshot,
+  ApplicationPrivateFootprint,
+  ApplicationPrivateFootprintSlice,
   MetricTone,
 } from './application-statistics.models';
 

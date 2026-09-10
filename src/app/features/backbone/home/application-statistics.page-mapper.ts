@@ -13,6 +13,7 @@ import {
   mapStandardSections,
 } from './application-statistics.module-mappers';
 import { mapSharingSections } from './application-statistics.sharing-mappers';
+import { mapPrivateFootprint } from './application-statistics.footprint-mappers';
 import { formatPercentValue } from './application-statistics.utils';
 
 export function mapApplicationInsightsPage(
@@ -96,6 +97,7 @@ export function mapApplicationInsightsPage(
     ...mapFreshnessSections(statistics, moduleInsights, context),
     ...mapMakerSections(moduleInsights, context),
     activityChart: mapActivityChart(activitySeries, context),
-    ...mapSharingSections(statistics, context)
+    ...mapSharingSections(statistics, context),
+    privateFootprint: mapPrivateFootprint(statistics, context)
   };
 }

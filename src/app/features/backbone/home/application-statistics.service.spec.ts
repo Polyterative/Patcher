@@ -4,6 +4,7 @@ import { ApplicationStatisticsService } from './application-statistics.service';
 import { MinimalModule } from 'src/app/models/module';
 import { AnalyticsService } from '../analytics-integration/analytics.service';
 import { SupabaseService } from '../../backend/supabase.service';
+import { PublicApplicationStatistics } from '../../backend/supabase-queries.models';
 
 
 describe('ApplicationStatisticsService', () => {
@@ -24,7 +25,7 @@ describe('ApplicationStatisticsService', () => {
     };
   }
   function build(
-    counts = {
+    counts: PublicApplicationStatistics = {
       publicModules: 1280,
       publicManufacturers: 96,
       publicProfiles: 240,
@@ -35,7 +36,13 @@ describe('ApplicationStatisticsService', () => {
       publicPatches: 42,
       publicPatchConnections: 168,
       publicPatchAuthors: 18,
-      publicPatchesUpdatedLast30Days: 9
+      publicPatchesUpdatedLast30Days: 9,
+      totalRacks: 320,
+      privateRacks: 236,
+      totalModules: 1500,
+      privateModules: 220,
+      totalPatches: 120,
+      privatePatches: 78
     },
     moduleInsights = {
       topManufacturers: [
@@ -381,8 +388,135 @@ describe('ApplicationStatisticsService', () => {
     });
   });
 
-  it('captures insights.page_viewed when the 30-day snapshot page loads', (done) => {
-    const {analytics, backend, service} = build();
+  it('maps private-vs-public footprint slices with shares', (done) => {
+    const {service} = build();
+
+    service.page$.subscribe((page) => {
+      expect(page.privateFootprint.suppressed).toBeFalse();
+      expect(page.privateFootprint.slices.map((slice) => ({
+        key: slice.key,
+        publicCount: slice.publicCount,
+        privateCount: slice.privateCount,
+        totalCount: slice.totalCount,
+        publicSharePercent: slice.publicSharePercent,
+        privateSharePercent: slice.privateSharePercent,
+        publicRowLabel: slice.publicRowLabel,
+        privateRowLabel: slice.privateRowLabel
+      }))).toEqual([
+        {
+          key: 'racks',
+          publicCount: 84,
+          privateCount: 236,
+          totalCount: 320,
+          publicSharePercent: 26,
+          privateSharePercent: 74,
+          publicRowLabel: '84 (26%)',
+          privateRowLabel: '236 (74%)'
+        },
+        {
+          key: 'modules',
+          publicCount: 1280,
+          privateCount: 220,
+          totalCount: 1500,
+          publicSharePercent: 85,
+          privateSharePercent: 15,
+          publicRowLabel: '1,280 (85%)',
+          privateRowLabel: '220 (15%)'
+        },
+        {
+          key: 'patches',
+          publicCount: 42,
+          privateCount: 78,
+          totalCount: 120,
+          publicSharePercent: 35,
+          privateSharePercent: 65,
+          publicRowLabel: '42 (35%)',
+          privateRowLabel: '78 (65%)'
+        }
+      ]);
+      done();
+    });
+  });
+
+  it('suppresses the private footprint while the snapshot payload predates footprint keys', (done) => {
+    const {service} = build({
+      publicModules: 1280,
+      publicManufacturers: 96,
+      publicProfiles: 240,
+      publicModulesUpdatedLast30Days: 64,
+      publicRacks: 84,
+      publicRackAuthors: 31,
+      publicRacksUpdatedLast30Days: 21,
+      publicPatches: 42,
+      publicPatchConnections: 168,
+      publicPatchAuthors: 18,
+      publicPatchesUpdatedLast30Days: 9
+    });
+
+    service.page$.subscribe((page) => {
+      expect(page.privateFootprint.suppressed).toBeTrue();
+      expect(page.privateFootprint.slices).toEqual([]);
+      done();
+    });
+  });
+
+  it('suppresses footprint slices below the privacy gate without hiding larger universes', (done) => {
+    const {service} = build({
+      publicModules: 1280,
+      publicManufacturers: 96,
+      publicProfiles: 240,
+      publicModulesUpdatedLast30Days: 64,
+      publicRacks: 4,
+      publicRackAuthors: 31,
+      publicRacksUpdatedLast30Days: 21,
+      publicPatches: 42,
+      publicPatchConnections: 168,
+      publicPatchAuthors: 18,
+      publicPatchesUpdatedLast30Days: 9,
+      totalRacks: 8,
+      privateRacks: 4,
+      totalModules: 1500,
+      privateModules: 220,
+      totalPatches: 120,
+      privatePatches: 78
+    });
+
+    service.page$.subscribe((page) => {
+      expect(page.privateFootprint.suppressed).toBeTrue();
+      expect(page.privateFootprint.slices.map((slice) => slice.key)).toEqual(['modules', 'patches']);
+      done();
+    });
+  });
+
+  it('suppresses the footprint card when a rack slice is too thin to show', (done) => {
+    const {service} = build({
+      publicModules: 1280,
+      publicManufacturers: 96,
+      publicProfiles: 240,
+      publicModulesUpdatedLast30Days: 64,
+      publicRacks: 118,
+      publicRackAuthors: 31,
+      publicRacksUpdatedLast30Days: 21,
+      publicPatches: 42,
+      publicPatchConnections: 168,
+      publicPatchAuthors: 18,
+      publicPatchesUpdatedLast30Days: 9,
+      totalRacks: 120,
+      privateRacks: 2,
+      totalModules: 1500,
+      privateModules: 220,
+      totalPatches: 120,
+      privatePatches: 78
+    });
+
+    service.page$.subscribe((page) => {
+      expect(page.privateFootprint.suppressed).toBeTrue();
+      expect(page.privateFootprint.slices.map((slice) => slice.key)).toEqual(['modules', 'patches']);
+      done();
+    });
+  });
+
+  it('captures insights.page_viewed when the 30-day snapshot page loads', (done) => {    const {analytics, backend, service} = build();
 
     service.page$.subscribe(() => {
       expect(backend.GET.applicationInsightsSnapshot).toHaveBeenCalledWith(30);
