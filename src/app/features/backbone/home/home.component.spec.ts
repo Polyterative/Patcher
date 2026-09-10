@@ -81,8 +81,9 @@ describe('HomeComponent', () => {
     expect(comp.userStories.length).toBe(4);
   });
 
-  it('communityLinks uses browseLinks when isDev=false', () => {
-    expect(comp.communityLinks.length).toBe(3);
+  it('communityLinks always includes insights publicly', () => {
+    expect(comp.communityLinks.length).toBe(4);
+    expect(comp.communityLinks.some(l => l.href === '/info/insights')).toBeTrue();
   });
 
   it('enables community trends discovery', () => {
@@ -93,8 +94,8 @@ describe('HomeComponent', () => {
     expect(comp.showHomepageInsights).toBeFalse();
   });
 
-  it('showInsightsPageEntry reflects appState.isDev', () => {
-    expect(comp.showInsightsPageEntry).toBeFalse();
+  it('showInsightsPageEntry is true publicly without isDev gate', () => {
+    expect(comp.showInsightsPageEntry).toBeTrue();
   });
 
   it('communityLinks includes insights when isDev=true', () => {
@@ -102,6 +103,15 @@ describe('HomeComponent', () => {
     makeServiceMocks();
     const comp2 = makeComponent();
     expect(comp2.communityLinks.some(l => l.href === '/info/insights')).toBeTrue();
+    expect(comp2.showInsightsPageEntry).toBeTrue();
+  });
+
+  it('communityLinks includes insights when isDev=false (production)', () => {
+    mockAppState = makeAppStateMock(false);
+    makeServiceMocks();
+    const comp3 = makeComponent();
+    expect(comp3.communityLinks.some(l => l.href === '/info/insights')).toBeTrue();
+    expect(comp3.showInsightsPageEntry).toBeTrue();
   });
 
   it('proofSections has at least one item', () => {

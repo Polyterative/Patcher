@@ -237,17 +237,15 @@ export class HomeComponent extends SubManager implements OnInit, OnDestroy {
     this.patchDetailDataService.setDetailAnalyticsSurface(DETAIL_ANALYTICS_SURFACES.homePreview);
     this.rackDetailDataService.setDetailAnalyticsSurface(DETAIL_ANALYTICS_SURFACES.homePreview);
     this.moduleDetailDataService.setDetailAnalyticsSurface(DETAIL_ANALYTICS_SURFACES.homePreview);
-    this.showInsightsPageEntry = this.appState.isDev;
-    this.communityLinks = this.showInsightsPageEntry
-      ? [
+    this.showInsightsPageEntry = true;
+    this.communityLinks = [
         {
           icon: 'insights',
           label: 'Open insights',
           href: '/info/insights'
         },
         ...this.browseLinks
-      ]
-      : [...this.browseLinks];
+      ];
  
     const seoData: SeoSocialShareData = {
       title: 'Patcher home',

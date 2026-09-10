@@ -48,13 +48,15 @@ describe('toolbar-link-data', () => {
     expect(links.some(l => l.route === '/home')).toBeTrue();
   });
 
-  it('getToolbarMainLinks returns prod links without dev-only items', () => {
+  it('getToolbarMainLinks exposes insights publicly without isDev', () => {
     const prod = getToolbarMainLinks(false);
     const dev = getToolbarMainLinks(true);
     expect(prod.length).toBeGreaterThan(0);
     expect(prod.some(l => l.route === '/collections/browser')).toBeTrue();
     expect(prod.some(l => l.route === '/marketplace')).toBeTrue();
-    expect(dev.length).toBeGreaterThanOrEqual(prod.length);
+    expect(prod.some(l => l.route === '/info/insights')).toBeTrue();
+    expect(dev.some(l => l.route === '/info/insights')).toBeTrue();
+    expect(dev.length).toEqual(prod.length);
   });
 
   it('places Marketplace in the public browse group before Patches', () => {
@@ -83,6 +85,8 @@ describe('toolbar-link-data', () => {
     expect(labels).not.toContain('Support');
     expect(labels).toContain('Browse');
     expect(labels).toContain('Your account');
+    const browse = sections.find(s => s.label === 'Browse');
+    expect(browse?.links.some(l => l.route === '/info/insights')).toBeTrue();
   });
 
   it('buildToolbarSections includes Admin section only for admin users', () => {
@@ -97,5 +101,11 @@ describe('toolbar-link-data', () => {
     const homeLinks = getToolbarHomeLinks();
     const mainLinks = getToolbarMainLinks(false);
     expect(targets.length).toBe(homeLinks.length + mainLinks.length);
+    expect(targets.some(l => l.route === '/info/insights')).toBeTrue();
+  });
+
+  it('getWideShellQuickTargets exposes insights without isDev', () => {
+    const prodTargets = getWideShellQuickTargets();
+    expect(prodTargets.some(l => l.route === '/info/insights')).toBeTrue();
   });
 });

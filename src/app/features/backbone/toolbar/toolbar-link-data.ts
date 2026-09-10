@@ -15,6 +15,13 @@ const HOME_LINKS: RouteClickableLink[] = [
   }
 ];
 
+const INSIGHTS_LINK: RouteClickableLink = {
+  label: 'Insights',
+  route: '/info/insights',
+  icon: 'insights',
+  disabled: false
+};
+
 const MAIN_LINKS: RouteClickableLink[] = [
   {
     label: 'Modules',
@@ -52,6 +59,7 @@ const MAIN_LINKS: RouteClickableLink[] = [
     icon: 'settings_input_composite',
     disabled: false
   },
+  INSIGHTS_LINK,
   {
     label: 'Manufacturers',
     route: '/manufacturers/browser',
@@ -60,13 +68,6 @@ const MAIN_LINKS: RouteClickableLink[] = [
   }
 ];
 
-const INSIGHTS_LINK: RouteClickableLink = {
-  label: 'Insights',
-  route: '/info/insights',
-  icon: 'insights',
-  disabled: false
-};
-
 const ADMIN_LINKS: RouteClickableLink[] = [
   {
     label: 'Admin',
@@ -74,15 +75,6 @@ const ADMIN_LINKS: RouteClickableLink[] = [
     icon: 'admin_panel_settings',
     disabled: false
   }
-];
-
-const manufacturerLinkIndex = MAIN_LINKS.findIndex(link => link.route === '/manufacturers/browser');
-const devInsightsInsertIndex = manufacturerLinkIndex >= 0 ? manufacturerLinkIndex : MAIN_LINKS.length;
-
-const DEV_MAIN_LINKS: RouteClickableLink[] = [
-  ...MAIN_LINKS.slice(0, devInsightsInsertIndex),
-  INSIGHTS_LINK,
-  ...MAIN_LINKS.slice(devInsightsInsertIndex)
 ];
 
 const guestLinksCache = [
@@ -103,14 +95,14 @@ const guestLinksCache = [
 const userLinksCache = new Map<string, RouteClickableLink[]>();
 const wideShellAccountLinksCache = new Map<string, RouteClickableLink[]>();
 const toolbarSectionsCache = new Map<string, ToolbarMobileSection[]>();
-const wideShellQuickTargetsCache = new Map<'dev' | 'prod', RouteClickableLink[]>();
+const wideShellQuickTargetsCache = new Map<string, RouteClickableLink[]>();
 
 export function getToolbarHomeLinks(): RouteClickableLink[] {
   return HOME_LINKS;
 }
 
-export function getToolbarMainLinks(isDev: boolean): RouteClickableLink[] {
-  return isDev ? DEV_MAIN_LINKS : MAIN_LINKS;
+export function getToolbarMainLinks(_isDev?: boolean): RouteClickableLink[] {
+  return MAIN_LINKS;
 }
 
 export function getToolbarAdminLinks(): RouteClickableLink[] {
@@ -182,8 +174,8 @@ export function buildWideShellAccountLinks(isLoggedIn: boolean, username: string
   return nextLinks;
 }
 
-export function buildToolbarSections(isLoggedIn: boolean, username: string, isAdmin: boolean, isDev: boolean): ToolbarMobileSection[] {
-  const cacheKey = `${ isLoggedIn ? 1 : 0 }:${ username.trim() || 'Account' }:${ isAdmin ? 1 : 0 }:${ isDev ? 1 : 0 }`;
+export function buildToolbarSections(isLoggedIn: boolean, username: string, isAdmin: boolean, _isDev?: boolean): ToolbarMobileSection[] {
+  const cacheKey = `${ isLoggedIn ? 1 : 0 }:${ username.trim() || 'Account' }:${ isAdmin ? 1 : 0 }`;
   const cachedSections = toolbarSectionsCache.get(cacheKey);
   if (cachedSections) {
     return cachedSections;
@@ -191,7 +183,7 @@ export function buildToolbarSections(isLoggedIn: boolean, username: string, isAd
 
   const accountLinks = isLoggedIn ? buildToolbarUserLinks(username) : buildToolbarGuestLinks();
   const sections: ToolbarMobileSection[] = [
-    {label: 'Browse', links: getToolbarMainLinks(isDev)},
+    {label: 'Browse', links: getToolbarMainLinks()},
     {label: isLoggedIn ? 'Your account' : 'Account', links: accountLinks}
   ];
 
@@ -203,8 +195,8 @@ export function buildToolbarSections(isLoggedIn: boolean, username: string, isAd
   return sections;
 }
 
-export function getWideShellQuickTargets(isDev: boolean): RouteClickableLink[] {
-  const cacheKey = isDev ? 'dev' : 'prod';
+export function getWideShellQuickTargets(_isDev?: boolean): RouteClickableLink[] {
+  const cacheKey = 'public';
   const cachedTargets = wideShellQuickTargetsCache.get(cacheKey);
   if (cachedTargets) {
     return cachedTargets;
@@ -212,7 +204,7 @@ export function getWideShellQuickTargets(isDev: boolean): RouteClickableLink[] {
 
   const nextTargets = [
     ...getToolbarHomeLinks(),
-    ...getToolbarMainLinks(isDev)
+    ...getToolbarMainLinks()
   ];
   wideShellQuickTargetsCache.set(cacheKey, nextTargets);
   return nextTargets;
