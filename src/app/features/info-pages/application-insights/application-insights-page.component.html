@@ -20,7 +20,7 @@
           icon="insights"
           description="What the community owns, wants, and trades — the top 6 modules in each ownership bucket."
         >
-          <p class="takeaway"><strong>Takeaway:</strong> a small set of proven modules shows up in racks, want-lists, and sales again and again — start here when choosing gear with community mileage.</p>
+          <p class="takeaway"><strong>Takeaway:</strong> a small set of proven modules shows up in racks, want-lists, and sales again and again — concentration in a few widely used designs.</p>
 
           <div
             class="bucket-toggle"
@@ -110,7 +110,7 @@
             icon="show_chart"
             description="Daily public updates across modules, racks, and patches for the last 30 days."
           >
-            <p class="takeaway"><strong>Takeaway:</strong> the stacked bars split each day into module, rack, and patch updates, with 7-day momentum below — read it as recent cadence, not a long-range trend.</p>
+            <p class="takeaway"><strong>Takeaway:</strong> the stacked bars split each day into module, rack, and patch updates, with 7-day momentum below — recent cadence, not a long-range trend.</p>
             @if (vm.updatedLabel) {
               <p class="updated-badge">Updated {{ vm.updatedLabel }} · last 30 days</p>
             }
@@ -233,9 +233,9 @@
           <lib-hero-content-card
             titleNormal="Private footprint"
             icon="lock"
-            description="How much of the library stays private — your unshared work still counts."
+            description="How much of the library stays private — unshared works and works on private profiles."
           >
-            <p class="takeaway"><strong>Takeaway:</strong> most racks are shared publicly, and nearly a third stay private — still here, still counted, still yours.</p>
+            <p class="takeaway"><strong>Takeaway:</strong> most racks are shared publicly, and nearly a third stay private — both included in the totals.</p>
 
             @if (page.privateFootprint.suppressed) {
               <p class="empty-note">Not enough data yet.</p>
@@ -348,7 +348,7 @@
             icon="precision_manufacturing"
             description="Makers ranked by modules updated in the last 30 days."
           >
-            <p class="takeaway"><strong>Takeaway:</strong> the makers with the most recently updated modules — follow them for active, maintained designs.</p>
+            <p class="takeaway"><strong>Takeaway:</strong> the makers with the most recently updated modules — active, maintained designs by 30-day update count.</p>
 
             @if (page.activeManufacturerBars.length > 0) {
               <div class="metric-bars">
