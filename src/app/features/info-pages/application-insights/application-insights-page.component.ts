@@ -18,8 +18,10 @@ import {
   ApplicationInsightsHighlight,
   ApplicationInsightsMixSegment,
   ApplicationInsightsPage,
+  ApplicationPrivateFootprintSlice,
   ApplicationStatisticsService
 } from '../../backbone/home/application-statistics.service';
+import { ApplicationPrivateFootprintSliceKey } from '../../backbone/home/application-statistics.models';
 import { mapHeroTakeaway } from '../../backbone/home/application-statistics.mappers';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 import {
@@ -180,6 +182,13 @@ export class ApplicationInsightsPageComponent {
 
   medianWidth(highlights: ApplicationInsightsHighlight[] | null | undefined): string {
     return (highlights ?? []).find((highlight) => highlight.label === 'Median width')?.value ?? '';
+  }
+
+  footprintSlice(
+    slices: ApplicationPrivateFootprintSlice[] | null | undefined,
+    key: ApplicationPrivateFootprintSliceKey
+  ): ApplicationPrivateFootprintSlice | undefined {
+    return (slices ?? []).find((slice) => slice.key === key);
   }
 
   sharingTeaser(mix: ApplicationInsightsMixSegment[] | null | undefined): string {
