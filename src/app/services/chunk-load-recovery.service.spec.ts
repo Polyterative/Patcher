@@ -7,11 +7,15 @@ import {
 import { Subject } from 'rxjs';
 import {
   CHUNK_LOAD_RECOVERY_WINDOW,
+  CHUNK_LOAD_RECOVERY_PATH_PREFIX,
   CHUNK_LOAD_RELOAD_QUERY_PARAM,
+  CHUNK_LOAD_RELOAD_TARGET_QUERY_PARAM,
   CHUNK_LOAD_RELOAD_STORAGE_KEY,
   ChunkLoadRecoveryService,
   ChunkLoadRecoveryWindow,
-  reportChunkLoadError
+  reportChunkLoadError,
+  removeChunkLoadCacheBuster,
+  resolveChunkLoadRecoveryTarget
 } from './chunk-load-recovery.service';
 
 describe('ChunkLoadRecoveryService', () => {
@@ -67,8 +71,10 @@ describe('ChunkLoadRecoveryService', () => {
     const replace = browserWindow.location.replace as jasmine.Spy;
     expect(replace).toHaveBeenCalledTimes(1);
     const reloadedUrl = new URL(replace.calls.first().args[0] as string);
-    expect(reloadedUrl.pathname).toBe('/modules/browser');
+    expect(reloadedUrl.pathname).toMatch(new RegExp(`^${ CHUNK_LOAD_RECOVERY_PATH_PREFIX }\\d+$`));
     expect(reloadedUrl.searchParams.get(CHUNK_LOAD_RELOAD_QUERY_PARAM)).toMatch(/^\d+$/);
+    expect(reloadedUrl.searchParams.get(CHUNK_LOAD_RELOAD_TARGET_QUERY_PARAM))
+      .toBe('/modules/browser');
     expect(sessionStorage.getItem(CHUNK_LOAD_RELOAD_STORAGE_KEY)).toMatch(/^\d+$/);
 
     routerEvents$.next(new NavigationError(
@@ -113,6 +119,125 @@ describe('ChunkLoadRecoveryService', () => {
     expect(browserWindow.location.replace as jasmine.Spy).not.toHaveBeenCalled();
   });
 
+  it('loads a fresh shell through a path-based recovery URL and restores the intended route before boot', () => {
+    browserWindow.location.href = 'https://patcher.xyz/';
+
+    routerEvents$.next(new NavigationError(
+      1,
+      '/modules/browser?sort=name#results',
+      new Error('Loading chunk 42 failed'),
+      null
+    ));
+
+    const recoveryUrl = (browserWindow.location.replace as jasmine.Spy).calls.first().args[0] as string;
+    expect(resolveChunkLoadRecoveryTarget(recoveryUrl)).toBe('/modules/browser?sort=name#results');
+
+    browserWindow.location.href = recoveryUrl;
+    service.ngOnDestroy();
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        ChunkLoadRecoveryService,
+        {
+          provide: Router,
+          useValue: {events: routerEvents$}
+        },
+        {
+          provide: CHUNK_LOAD_RECOVERY_WINDOW,
+          useValue: browserWindow
+        }
+      ]
+    });
+    service = TestBed.inject(ChunkLoadRecoveryService);
+
+    expect(browserWindow.history.replaceState as jasmine.Spy).toHaveBeenCalledWith(
+      {navigationId: 1},
+      '',
+      '/modules/browser?sort=name#results'
+    );
+  });
+
+  it('does not carry an older query-only recovery marker into the restored route', () => {
+    browserWindow.location.href =
+      'https://patcher.xyz/modules?sort=name&__patcher_chunk_reload=1234#results';
+
+    routerEvents$.next(new NavigationError(
+      1,
+      browserWindow.location.href,
+      new Error('Loading chunk 42 failed'),
+      null
+    ));
+
+    const recoveryUrl = (browserWindow.location.replace as jasmine.Spy).calls.first().args[0] as string;
+    expect(resolveChunkLoadRecoveryTarget(recoveryUrl)).toBe('/modules?sort=name#results');
+    expect(removeChunkLoadCacheBuster(recoveryUrl)).not.toContain(CHUNK_LOAD_RELOAD_TARGET_QUERY_PARAM);
+  });
+
+  it('rejects recovery targets that are not same-origin application paths', () => {
+    expect(resolveChunkLoadRecoveryTarget(
+      'https://patcher.xyz/__patcher_chunk_recovery/123?__patcher_chunk_reload=123&__patcher_chunk_target=javascript%3Aalert(1)'
+    )).toBeUndefined();
+    expect(resolveChunkLoadRecoveryTarget(
+      'https://patcher.xyz/__patcher_chunk_recovery/123?__patcher_chunk_reload=123&__patcher_chunk_target=https%3A%2F%2Fevil.example%2F'
+    )).toBeUndefined();
+    expect(resolveChunkLoadRecoveryTarget(
+      'https://patcher.xyz/__patcher_chunk_recovery/123?__patcher_chunk_reload=123&__patcher_chunk_target=%2F%2Fevil.example%2F'
+    )).toBeUndefined();
+  });
+
+  it('keeps a recovery marker in the restored route when session storage is unavailable', () => {
+    browserWindow.location.href = 'https://patcher.xyz/';
+    routerEvents$.next(new NavigationError(
+      1,
+      '/modules/browser?sort=name#results',
+      new Error('Loading chunk 42 failed'),
+      null
+    ));
+    const recoveryUrl = (browserWindow.location.replace as jasmine.Spy).calls.first().args[0] as string;
+    const recoveryTimestamp = new URL(recoveryUrl).searchParams.get(CHUNK_LOAD_RELOAD_QUERY_PARAM);
+
+    service.ngOnDestroy();
+    TestBed.resetTestingModule();
+    Object.defineProperty(browserWindow, 'sessionStorage', {
+      configurable: true,
+      get: () => {
+        throw new Error('sessionStorage unavailable');
+      }
+    });
+    browserWindow.location.href = recoveryUrl;
+    TestBed.configureTestingModule({
+      providers: [
+        ChunkLoadRecoveryService,
+        {
+          provide: Router,
+          useValue: {events: routerEvents$}
+        },
+        {
+          provide: CHUNK_LOAD_RECOVERY_WINDOW,
+          useValue: browserWindow
+        }
+      ]
+    });
+    service = TestBed.inject(ChunkLoadRecoveryService);
+
+    const normalizedUrl =
+      `/modules/browser?sort=name&${ CHUNK_LOAD_RELOAD_QUERY_PARAM }=${ recoveryTimestamp }#results`;
+    expect(browserWindow.history.replaceState as jasmine.Spy).toHaveBeenCalledWith(
+      {navigationId: 1},
+      '',
+      normalizedUrl
+    );
+
+    browserWindow.location.href = `https://patcher.xyz${ normalizedUrl }`;
+    routerEvents$.next(new NavigationError(
+      2,
+      normalizedUrl,
+      new Error('Loading chunk 42 failed'),
+      null
+    ));
+    expect(browserWindow.location.replace as jasmine.Spy).toHaveBeenCalledTimes(1);
+  });
+
   it('removes the recovery query after a successful navigation when the attempt is persisted', () => {
     routerEvents$.next(new NavigationError(
       1,
@@ -128,7 +253,7 @@ describe('ChunkLoadRecoveryService', () => {
     expect(browserWindow.history.replaceState as jasmine.Spy).toHaveBeenCalledWith(
       {navigationId: 1},
       '',
-      'https://patcher.xyz/modules?sort=name#results'
+      '/modules?sort=name#results'
     );
   });
 
@@ -173,5 +298,19 @@ describe('ChunkLoadRecoveryService', () => {
     ));
 
     expect(browserWindow.location.replace as jasmine.Spy).toHaveBeenCalledTimes(1);
+  });
+
+  it('treats a malformed recovery query as a loop guard', () => {
+    browserWindow.location.href =
+      'https://patcher.xyz/modules?__patcher_chunk_reload=not-a-timestamp';
+
+    routerEvents$.next(new NavigationError(
+      1,
+      '/modules',
+      new Error('Loading chunk 42 failed'),
+      null
+    ));
+
+    expect(browserWindow.location.replace as jasmine.Spy).not.toHaveBeenCalled();
   });
 });
