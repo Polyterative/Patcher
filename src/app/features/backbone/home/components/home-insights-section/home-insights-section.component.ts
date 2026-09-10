@@ -20,4 +20,10 @@ export class HomeInsightsSectionComponent {
   @Input() insightsDescription = '';
 
   constructor(readonly applicationStatisticsService: ApplicationStatisticsService) {}
+
+  onBridgeLinkClick(href: string): void {
+    if (href === '/info/insights') {
+      this.applicationStatisticsService.trackInsightsEntryClicked('home_insights_section');
+    }
+  }
 }

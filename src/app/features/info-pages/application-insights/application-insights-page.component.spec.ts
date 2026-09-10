@@ -13,6 +13,7 @@ interface InsightsStatsMock {
   trackHeroModuleClicked: jasmine.Spy;
   trackSupportLinkClicked: jasmine.Spy;
   trackDiscoveryRailClicked: jasmine.Spy;
+  trackMethodDetailsOpened: jasmine.Spy;
 }
 
 function mockStatistics(): InsightsStatsMock {
@@ -24,7 +25,8 @@ function mockStatistics(): InsightsStatsMock {
     selectHeroBucket: jasmine.createSpy('selectHeroBucket'),
     trackHeroModuleClicked: jasmine.createSpy('trackHeroModuleClicked'),
     trackSupportLinkClicked: jasmine.createSpy('trackSupportLinkClicked'),
-    trackDiscoveryRailClicked: jasmine.createSpy('trackDiscoveryRailClicked')
+    trackDiscoveryRailClicked: jasmine.createSpy('trackDiscoveryRailClicked'),
+    trackMethodDetailsOpened: jasmine.createSpy('trackMethodDetailsOpened')
   };
 }
 
@@ -286,6 +288,13 @@ describe('ApplicationInsightsPageComponent', () => {
     it('delegates discovery rail clicks with the rail target', () => {
       comp.onDiscoveryRailClick('makers');
       expect(stats.trackDiscoveryRailClicked).toHaveBeenCalledWith('makers');
+    });
+
+    it('tracks method-details opens only when the details element opens', () => {
+      comp.onMethodDetailsToggle({target: {open: true}} as unknown as Event);
+      expect(stats.trackMethodDetailsOpened).toHaveBeenCalledTimes(1);
+      comp.onMethodDetailsToggle({target: {open: false}} as unknown as Event);
+      expect(stats.trackMethodDetailsOpened).toHaveBeenCalledTimes(1);
     });
 
     it('labels bucket count nouns for hero rows', () => {      expect(comp.heroCountNoun('mostOwned')).toBe('in racks');

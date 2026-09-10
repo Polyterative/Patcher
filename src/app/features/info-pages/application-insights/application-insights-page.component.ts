@@ -176,6 +176,12 @@ export class ApplicationInsightsPageComponent {
     this.applicationStatisticsService.trackDiscoveryRailClicked(target);
   }
 
+  onMethodDetailsToggle(event: Event): void {
+    if ((event.target as HTMLDetailsElement).open) {
+      this.applicationStatisticsService.trackMethodDetailsOpened();
+    }
+  }
+
   retry(): void {
     this.applicationStatisticsService.refresh();
   }

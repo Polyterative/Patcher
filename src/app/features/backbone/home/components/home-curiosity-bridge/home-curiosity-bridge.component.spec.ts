@@ -14,4 +14,10 @@ describe('HomeCuriosityBridgeComponent', () => {
     comp.links = [{icon: 'inventory_2', label: 'Modules', href: '/modules'}];
     expect(comp.links.length).toBe(1);
   });
+  it('emits the href when a link is clicked', () => {
+    const seen: string[] = [];
+    comp.linkClicked.subscribe((href) => seen.push(href));
+    comp.linkClicked.emit('/info/insights');
+    expect(seen).toEqual(['/info/insights']);
+  });
 });

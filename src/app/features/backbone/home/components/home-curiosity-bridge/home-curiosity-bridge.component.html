@@ -4,7 +4,7 @@
   
   <div class="community-links">
     @for (link of links; track link.label) {
-      <a [routerLink]="link.href">
+      <a [routerLink]="link.href" (click)="linkClicked.emit(link.href)">
         <mat-icon>{{ link.icon }}</mat-icon>
         {{ link.label }}
       </a>
