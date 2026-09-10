@@ -20,6 +20,65 @@
   gap: 1rem;
 }
 
+// Two-column rows for desktop: catalogue cuts (formats + sizes) and
+// footprint snapshots (library + private) sit side by side.
+// Hero (top 6) and Fresh (30-day chart) stay full width — they need it.
+// Single column below desktop.
+.insights-duo {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
+}
+
+.insights-duo > * {
+  min-width: 0;
+}
+
+// Makers card: Most-collected + Heating up sit side by side on desktop
+// instead of stacking two full-width bar lists.
+.makers-columns {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.makers-column {
+  display: grid;
+  gap: 0.5rem;
+  align-content: start;
+  min-width: 0;
+}
+
+.makers-column .rail-subhead {
+  margin-top: 0;
+}
+
+@media (min-width: 64rem) {
+  .insights-duo {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .insights-duo > lib-hero-content-card {
+    height: 100%;
+  }
+
+  // Half-width cards: keep snapshot metrics to 2 per row so cards
+  // don't squeeze into 3-4 cramped columns.
+  .insights-duo .snapshot-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .makers-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .makers-columns > :only-child {
+    grid-column: 1 / -1;
+  }
+}
+
 .insights-loader {
   display: grid;
 }
