@@ -931,6 +931,22 @@ describe('ApplicationStatisticsService', () => {
     expect(analytics.capture).toHaveBeenCalledWith('insights.discovery_rail_clicked', {target: 'makers'});
   });
 
+  it('captures method-details opens without props', () => {
+    const {analytics, service} = build();
+
+    service.trackMethodDetailsOpened();
+
+    expect(analytics.capture).toHaveBeenCalledWith('insights.method_details_opened', {});
+  });
+
+  it('captures insights entry clicks with the entry source', () => {
+    const {analytics, service} = build();
+
+    service.trackInsightsEntryClicked('home_insights_section');
+
+    expect(analytics.capture).toHaveBeenCalledWith('insights.entry_clicked', {source: 'home_insights_section'});
+  });
+
   it('maps discovery buckets from the backend snapshot', (done) => {
     const {backend, service} = build();
 

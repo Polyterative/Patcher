@@ -57,6 +57,8 @@ export class ApplicationStatisticsService extends SubManager {
   }>();
   private readonly supportLinkClickedRequest$ = new Subject<{target: string}>();
   private readonly discoveryRailClickedRequest$ = new Subject<{target: string}>();
+  private readonly methodDetailsOpenedRequest$ = new Subject<void>();
+  private readonly insightsEntryClickedRequest$ = new Subject<{source: string}>();
   private readonly mappers = new ApplicationStatisticsMappers();
 
   readonly heroBucket$ = this.heroBucketRequest$.asObservable();
@@ -107,6 +109,14 @@ export class ApplicationStatisticsService extends SubManager {
       tap(({target}) => this.analytics.capture('insights.discovery_rail_clicked', {target})),
       takeUntil(this.destroy$)
     ).subscribe();
+    this.methodDetailsOpenedRequest$.pipe(
+      tap(() => this.analytics.capture('insights.method_details_opened', {})),
+      takeUntil(this.destroy$)
+    ).subscribe();
+    this.insightsEntryClickedRequest$.pipe(
+      tap(({source}) => this.analytics.capture('insights.entry_clicked', {source})),
+      takeUntil(this.destroy$)
+    ).subscribe();
     this.refreshRequest$.next();
   }
 
@@ -137,6 +147,14 @@ export class ApplicationStatisticsService extends SubManager {
 
   trackDiscoveryRailClicked(target: string) {
     this.discoveryRailClickedRequest$.next({target});
+  }
+
+  trackMethodDetailsOpened() {
+    this.methodDetailsOpenedRequest$.next();
+  }
+
+  trackInsightsEntryClicked(source: string) {
+    this.insightsEntryClickedRequest$.next({source});
   }
 
   private getDiscoveryModuleIds(snapshot: ApplicationDiscoverySnapshot): number[] {

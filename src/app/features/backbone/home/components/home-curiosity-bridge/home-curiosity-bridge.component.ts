@@ -1,7 +1,9 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Input
+  EventEmitter,
+  Input,
+  Output
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterModule } from '@angular/router';
@@ -20,4 +22,5 @@ export class HomeCuriosityBridgeComponent {
   @Input() title = '';
   @Input() description = '';
   @Input() links: HomeLinkPill[] = [];
+  @Output() linkClicked = new EventEmitter<string>();
 }

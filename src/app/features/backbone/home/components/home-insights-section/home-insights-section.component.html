@@ -5,6 +5,7 @@
         [title]="insightsTitle"
         [description]="insightsDescription"
         [links]="communityLinks"
+        (linkClicked)="onBridgeLinkClick($event)"
       ></app-home-curiosity-bridge>
     }
 

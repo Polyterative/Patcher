@@ -97,6 +97,9 @@ constructor(private analytics: AnalyticsService) {}
 | `insights.hero_bucket_viewed` | `ApplicationStatisticsService` hero bucket pipeline | `bucket` |
 | `insights.hero_module_clicked` | `ApplicationStatisticsService` hero module pipeline | `bucket`, `module_id`, `rank`, `count` |
 | `insights.support_link_clicked` | `ApplicationStatisticsService` support link pipeline | `target` |
+| `insights.discovery_rail_clicked` | `ApplicationStatisticsService` discovery rail pipeline | `target` |
+| `insights.method_details_opened` | `ApplicationStatisticsService` method-details pipeline (How-we-count `<details>` toggle, opens only) | — |
+| `insights.entry_clicked` | `ApplicationStatisticsService` insights entry pipeline (homepage curiosity bridge) | `source` (`home_insights_section`) |
 
 ---
 

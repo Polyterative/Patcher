@@ -455,7 +455,7 @@
 
         }
 
-        <details class="method-details">
+        <details class="method-details" (toggle)="onMethodDetailsToggle($event)">
           <summary>How we count</summary>
           <p class="method-details__item"><strong>Top modules —</strong> public modules ranked from community ownership signals. Top 6 per bucket, minimum count 1. Buckets below that threshold show the empty note instead of a ranking.</p>
           <p class="method-details__item"><strong>Fresh this month —</strong> daily counts of public-profile updates — public modules, shared racks, and connected public patches. Window: last 30 days only; no long-range trend is implied. The New-this-week strip reads the first two module-freshness cohorts (0–7 days, 8–30 days).</p>
