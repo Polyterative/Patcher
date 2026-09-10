@@ -182,6 +182,27 @@ describe('ApplicationInsightsPageComponent', () => {
       stats.page$.next(buildPageStub());
       stats.discovery$.error(new Error('discovery failed'));
     });
+
+    it('passes the derived racks takeaway through to the template vm', (done) => {
+      let count = 0;
+      comp.vm$.subscribe((vm) => {
+        count++;
+        if (count === 2) {
+          const page = vm.page as unknown as {privateFootprint: {racksTakeaway: string}};
+          expect(page.privateFootprint.racksTakeaway).toContain('racks');
+          done();
+        }
+      });
+      stats.page$.next({
+        ...buildPageStub(),
+        privateFootprint: {
+          suppressed: false,
+          slices: [],
+          racksTakeaway: 'Most racks are shared publicly, with the remaining private share included in the totals.'
+        }
+      });
+      stats.discovery$.next(buildDiscoveryStub() as unknown as Record<string, unknown>);
+    });
   });
 
   describe('hero interactions', () => {

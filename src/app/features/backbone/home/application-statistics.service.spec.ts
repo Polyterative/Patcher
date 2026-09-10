@@ -5,6 +5,13 @@ import { MinimalModule } from 'src/app/models/module';
 import { AnalyticsService } from '../analytics-integration/analytics.service';
 import { SupabaseService } from '../../backend/supabase.service';
 import { PublicApplicationStatistics } from '../../backend/supabase-queries.models';
+import {
+  mapRacksTakeaway,
+  PRIVATE_FOOTPRINT_RACKS_TAKEAWAY_PARITY,
+  PRIVATE_FOOTPRINT_RACKS_TAKEAWAY_PRIVATE_MAJORITY,
+  PRIVATE_FOOTPRINT_RACKS_TAKEAWAY_PUBLIC_MAJORITY,
+  PRIVATE_FOOTPRINT_RACKS_TAKEAWAY_SUPPRESSED
+} from './application-statistics.footprint-mappers';
 
 
 describe('ApplicationStatisticsService', () => {
@@ -393,6 +400,7 @@ describe('ApplicationStatisticsService', () => {
 
     service.page$.subscribe((page) => {
       expect(page.privateFootprint.suppressed).toBeFalse();
+      expect(page.privateFootprint.racksTakeaway).toBe(PRIVATE_FOOTPRINT_RACKS_TAKEAWAY_PRIVATE_MAJORITY);
       expect(page.privateFootprint.slices.map((slice) => ({
         key: slice.key,
         publicCount: slice.publicCount,
@@ -455,6 +463,7 @@ describe('ApplicationStatisticsService', () => {
 
     service.page$.subscribe((page) => {
       expect(page.privateFootprint.suppressed).toBeTrue();
+      expect(page.privateFootprint.racksTakeaway).toBe(PRIVATE_FOOTPRINT_RACKS_TAKEAWAY_SUPPRESSED);
       expect(page.privateFootprint.slices).toEqual([]);
       done();
     });
@@ -483,6 +492,7 @@ describe('ApplicationStatisticsService', () => {
 
     service.page$.subscribe((page) => {
       expect(page.privateFootprint.suppressed).toBeTrue();
+      expect(page.privateFootprint.racksTakeaway).toBe(PRIVATE_FOOTPRINT_RACKS_TAKEAWAY_SUPPRESSED);
       expect(page.privateFootprint.slices.map((slice) => slice.key)).toEqual(['modules', 'patches']);
       done();
     });
@@ -511,8 +521,88 @@ describe('ApplicationStatisticsService', () => {
 
     service.page$.subscribe((page) => {
       expect(page.privateFootprint.suppressed).toBeTrue();
+      expect(page.privateFootprint.racksTakeaway).toBe(PRIVATE_FOOTPRINT_RACKS_TAKEAWAY_SUPPRESSED);
       expect(page.privateFootprint.slices.map((slice) => slice.key)).toEqual(['modules', 'patches']);
       done();
+    });
+  });
+
+  describe('private footprint racks takeaway', () => {
+    function racksCounts(publicRacks: number, privateRacks: number, totalRacks: number): PublicApplicationStatistics {
+      return {
+        publicModules: 1280,
+        publicManufacturers: 96,
+        publicProfiles: 240,
+        publicModulesUpdatedLast30Days: 64,
+        publicRacks,
+        publicRackAuthors: 31,
+        publicRacksUpdatedLast30Days: 21,
+        publicPatches: 42,
+        publicPatchConnections: 168,
+        publicPatchAuthors: 18,
+        publicPatchesUpdatedLast30Days: 9,
+        totalRacks,
+        privateRacks,
+        totalModules: 1500,
+        privateModules: 220,
+        totalPatches: 120,
+        privatePatches: 78
+      };
+    }
+
+    it('derives a public-majority takeaway from live-like shares', (done) => {
+      const {service} = build(racksCounts(429, 196, 625));
+
+      service.page$.subscribe((page) => {
+        expect(page.privateFootprint.suppressed).toBeFalse();
+        expect(page.privateFootprint.racksTakeaway).toBe(PRIVATE_FOOTPRINT_RACKS_TAKEAWAY_PUBLIC_MAJORITY);
+        done();
+      });
+    });
+
+    it('derives a near-parity takeaway for an even split', (done) => {
+      const {service} = build(racksCounts(50, 50, 100));
+
+      service.page$.subscribe((page) => {
+        expect(page.privateFootprint.suppressed).toBeFalse();
+        expect(page.privateFootprint.racksTakeaway).toBe(PRIVATE_FOOTPRINT_RACKS_TAKEAWAY_PARITY);
+        done();
+      });
+    });
+
+    it('reads exactly 60 percent public as a public majority (inclusive boundary)', (done) => {
+      const {service} = build(racksCounts(6, 4, 10));
+
+      service.page$.subscribe((page) => {
+        expect(page.privateFootprint.suppressed).toBeFalse();
+        expect(page.privateFootprint.racksTakeaway).toBe(PRIVATE_FOOTPRINT_RACKS_TAKEAWAY_PUBLIC_MAJORITY);
+        done();
+      });
+    });
+
+    it('reads exactly 60 percent private as a private majority (inclusive boundary)', (done) => {
+      const {service} = build(racksCounts(4, 6, 10));
+
+      service.page$.subscribe((page) => {
+        expect(page.privateFootprint.suppressed).toBeFalse();
+        expect(page.privateFootprint.racksTakeaway).toBe(PRIVATE_FOOTPRINT_RACKS_TAKEAWAY_PRIVATE_MAJORITY);
+        done();
+      });
+    });
+
+    it('reads just inside the band as near-parity', (done) => {
+      const {service} = build(racksCounts(59, 41, 100));
+
+      service.page$.subscribe((page) => {
+        expect(page.privateFootprint.suppressed).toBeFalse();
+        expect(page.privateFootprint.racksTakeaway).toBe(PRIVATE_FOOTPRINT_RACKS_TAKEAWAY_PARITY);
+        done();
+      });
+    });
+
+    it('falls back to the generic sentence when the racks slice is missing', () => {
+      expect(mapRacksTakeaway(false, undefined)).toBe(PRIVATE_FOOTPRINT_RACKS_TAKEAWAY_SUPPRESSED);
+      expect(mapRacksTakeaway(true, undefined)).toBe(PRIVATE_FOOTPRINT_RACKS_TAKEAWAY_SUPPRESSED);
     });
   });
 

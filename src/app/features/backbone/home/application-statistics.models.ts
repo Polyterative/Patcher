@@ -61,6 +61,7 @@ export interface ApplicationPrivateFootprintSlice {
 export interface ApplicationPrivateFootprint {
   suppressed: boolean;
   slices: ApplicationPrivateFootprintSlice[];
+  racksTakeaway: string;
 }
 
 export interface ApplicationInsightsTrendDay {

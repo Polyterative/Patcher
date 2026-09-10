@@ -235,7 +235,7 @@
             icon="lock"
             description="How much of the library stays private — unshared works and works on private profiles."
           >
-            <p class="takeaway"><strong>Takeaway:</strong> most racks are shared publicly, and nearly a third stay private — both included in the totals.</p>
+            <p class="takeaway"><strong>Takeaway:</strong> {{ page.privateFootprint.racksTakeaway }}</p>
 
             @if (page.privateFootprint.suppressed) {
               <p class="empty-note">Not enough data yet.</p>
