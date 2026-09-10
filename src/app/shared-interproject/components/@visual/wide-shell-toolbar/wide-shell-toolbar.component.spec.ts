@@ -89,6 +89,11 @@ describe('WideShellToolbarComponent', () => {
     expect(host.textContent).not.toContain('Patreon');
   });
 
+  it('exposes insights in quick targets publicly without isDev gate', () => {
+    const component = fixture.componentInstance;
+    expect(component.wideShellTargets.some(l => l.route === '/info/insights')).toBeTrue();
+  });
+
   it('treats home target as active when the current URL has query params or fragments', () => {
     const component = fixture.componentInstance;
     const homeTarget = {label: 'Home', route: '/home', disabled: false};

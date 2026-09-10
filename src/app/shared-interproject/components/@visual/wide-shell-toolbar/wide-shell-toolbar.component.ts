@@ -79,7 +79,7 @@ export class WideShellToolbarComponent {
     private readonly userManagementService: UserManagementService,
     private readonly router: Router
   ) {
-    this.wideShellTargets = getWideShellQuickTargets(this.appState.isDev);
+    this.wideShellTargets = getWideShellQuickTargets();
     this.currentShellUrl$ = this.router.events.pipe(
       filter((event) => event instanceof NavigationEnd),
       startWith(null),
@@ -116,8 +116,7 @@ export class WideShellToolbarComponent {
       map(({isLoggedIn, username, isAdmin}) => buildToolbarSections(
         isLoggedIn,
         username,
-        isAdmin,
-        this.appState.isDev
+        isAdmin
       )),
       distinctUntilChanged(),
       shareReplay({bufferSize: 1, refCount: true})
