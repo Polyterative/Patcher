@@ -203,6 +203,33 @@ describe('ApplicationInsightsPageComponent', () => {
       });
       stats.discovery$.next(buildDiscoveryStub() as unknown as Record<string, unknown>);
     });
+
+    it('derives the hero takeaway for the selected bucket', (done) => {
+      let count = 0;
+      comp.vm$.subscribe((vm) => {
+        count++;
+        if (count === 2) {
+          expect(vm.heroTakeaway).toBe('A single module tops the ranking.');
+          done();
+        }
+      });
+      stats.page$.next(buildPageStub());
+      stats.discovery$.next(buildDiscoveryStub() as unknown as Record<string, unknown>);
+    });
+
+    it('falls back to the generic hero takeaway for an empty bucket', (done) => {
+      let count = 0;
+      comp.vm$.subscribe((vm) => {
+        count++;
+        if (count === 2) {
+          expect(vm.heroEmpty).toBeTrue();
+          expect(vm.heroTakeaway).toBe('Rankings appear once community counts reach the reporting threshold.');
+          done();
+        }
+      });
+      stats.page$.next(buildPageStub());
+      stats.discovery$.next(buildEmptyDiscoveryStub() as unknown as Record<string, unknown>);
+    });
   });
 
   describe('hero interactions', () => {
