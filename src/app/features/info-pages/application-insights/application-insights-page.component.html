@@ -20,7 +20,7 @@
           icon="insights"
           description="What the community owns, wants, and trades — the top 6 modules in each ownership bucket."
         >
-          <p class="takeaway"><strong>Takeaway:</strong> a small set of proven modules shows up in racks, want-lists, and sales again and again — concentration in a few widely used designs.</p>
+          <p class="takeaway"><strong>Takeaway:</strong> {{ vm.heroTakeaway }}</p>
 
           <div
             class="bucket-toggle"
@@ -108,9 +108,9 @@
           <lib-hero-content-card
             titleNormal="Fresh — last 30 days"
             icon="show_chart"
-            description="Daily public updates across modules, racks, and patches for the last 30 days."
+            description="Daily public updates across modules, racks, and patches for the last 30 days. Stacked bars split each day by type, with 7-day momentum below."
           >
-            <p class="takeaway"><strong>Takeaway:</strong> the stacked bars split each day into module, rack, and patch updates, with 7-day momentum below — recent cadence, not a long-range trend.</p>
+            <p class="takeaway"><strong>Takeaway:</strong> {{ page.freshTakeaway }}</p>
             @if (vm.updatedLabel) {
               <p class="updated-badge">Updated {{ vm.updatedLabel }} · last 30 days</p>
             }
@@ -200,9 +200,9 @@
           <lib-hero-content-card
             titleNormal="Library now"
             icon="analytics"
-            description="Point-in-time footprint: absolute counts, not progress bars."
+            description="Point-in-time footprint across catalogue, makers, profiles, and shared works — absolute counts, not rates."
           >
-            <p class="takeaway"><strong>Takeaway:</strong> the size of today’s public library — catalogue, makers, profiles, and shared works at a glance.</p>
+            <p class="takeaway"><strong>Takeaway:</strong> {{ page.libraryTakeaway }}</p>
 
             <div class="snapshot-grid">
               @for (metric of page.footprintSnapshot; track metric.label) {
@@ -320,7 +320,7 @@
             icon="timeline"
             description="Compact totals for the last 30 days across modules, racks, and patches."
           >
-            <p class="takeaway"><strong>Takeaway:</strong> how much of the public library moved in the last 30 days, split by modules, racks, and patches.</p>
+            <p class="takeaway"><strong>Takeaway:</strong> {{ page.activityTakeaway }}</p>
 
             @if (vm.activityChips.length > 0) {
               <div class="activity-chips">
@@ -348,7 +348,7 @@
             icon="precision_manufacturing"
             description="Makers ranked by modules updated in the last 30 days."
           >
-            <p class="takeaway"><strong>Takeaway:</strong> the makers with the most recently updated modules — active, maintained designs by 30-day update count.</p>
+            <p class="takeaway"><strong>Takeaway:</strong> {{ page.makersTakeaway }}</p>
 
             @if (page.activeManufacturerBars.length > 0) {
               <div class="metric-bars">

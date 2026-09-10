@@ -17,6 +17,7 @@ import {
   ApplicationInsightsPage,
   ApplicationStatisticsService
 } from '../../backbone/home/application-statistics.service';
+import { mapHeroTakeaway } from '../../backbone/home/application-statistics.mappers';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 import {
   defaultModuleMinimalViewConfig,
@@ -43,6 +44,7 @@ export interface ApplicationInsightsVm {
   bucket: ApplicationDiscoveryBucket;
   heroEntries: ApplicationDiscoveryEntry[];
   heroEmpty: boolean;
+  heroTakeaway: string;
   activityChips: ApplicationInsightsActivityChip[];
   updatedLabel: string;
   isLoading: boolean;
@@ -56,6 +58,7 @@ const LOADING_VM: ApplicationInsightsVm = {
   bucket: 'mostOwned',
   heroEntries: [],
   heroEmpty: true,
+  heroTakeaway: '',
   activityChips: [],
   updatedLabel: '',
   isLoading: true,
@@ -185,6 +188,7 @@ export class ApplicationInsightsPageComponent {
       bucket,
       heroEntries,
       heroEmpty: heroEntries.length === 0,
+      heroTakeaway: mapHeroTakeaway(heroEntries, this.heroCountNoun(bucket)),
       activityChips: (page?.activityChart.legend ?? []).map((item) => ({
         label: `${ item.label } (last 30 days)`,
         value: item.valueLabel,
