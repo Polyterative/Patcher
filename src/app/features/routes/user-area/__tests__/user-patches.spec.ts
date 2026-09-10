@@ -45,7 +45,7 @@ describe('UserPatchesComponent', () => {
     expect(component.globalSearchQuery).toBe('');
   });
   
-  it('should trigger updatePatchesData$ on construction', () => {
+  it('does not trigger a duplicate patch load on construction', () => {
     const spy = jasmine.createSpy('updatePatchesData$');
     mockDataService = createMockUserAreaDataService();
     mockDataService.updatePatchesData$.subscribe(spy);
@@ -58,7 +58,7 @@ describe('UserPatchesComponent', () => {
       asUserAreaDataService(mockDataService),
     );
     
-    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).not.toHaveBeenCalled();
   });
   
   it('should expose dataService publicly', () => {

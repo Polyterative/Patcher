@@ -44,10 +44,7 @@ export class UserPatchesComponent {
     public dialog: MatDialog,
     public backend: SupabaseService,
     public dataService: UserAreaDataService,
-  ) {
-    this.dataService.updatePatchesData$.next();
-   
-  }
+  ) {}
 
   visibleFilters(): {value: UserPatchesSectionFilter; label: string; icon: string}[] {
     return this.showCoolFilter

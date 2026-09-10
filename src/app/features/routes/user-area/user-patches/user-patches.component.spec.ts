@@ -33,8 +33,8 @@ describe('UserPatchesComponent', () => {
     expect(comp).toBeTruthy();
   });
 
-  it('calls updatePatchesData$.next() in constructor', () => {
-    expect(mockDataService.updatePatchesData$.next).toHaveBeenCalledOnceWith();
+  it('does not trigger a duplicate patch load in the child', () => {
+    expect(mockDataService.updatePatchesData$.next).not.toHaveBeenCalled();
   });
 
   it('globalSearchQuery defaults to empty string', () => {

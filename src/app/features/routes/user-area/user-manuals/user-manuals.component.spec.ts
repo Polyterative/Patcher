@@ -210,9 +210,9 @@ describe('UserManualsComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('No manuals match the current search');
   });
 
-  it('requests manuals on init', () => {
+  it('does not request manuals a second time on child init', () => {
     const {updateManualsData$} = build();
 
-    expect(updateManualsData$.next).toHaveBeenCalled();
+    expect(updateManualsData$.next).not.toHaveBeenCalled();
   });
 });

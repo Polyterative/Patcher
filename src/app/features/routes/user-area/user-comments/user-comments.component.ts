@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
-  Component,
-  OnInit
+  Component
 } from '@angular/core';
 import {
   AsyncPipe,
@@ -49,7 +48,7 @@ interface FilterOption {
     EmptyStateTipsComponent,
   ]
 })
-export class UserCommentsComponent implements OnInit {
+export class UserCommentsComponent {
   commentViewConfig: CommentViewConfig = {
     ...defaultCommentViewConfig,
     showContext: true,
@@ -78,10 +77,6 @@ export class UserCommentsComponent implements OnInit {
         filter == null ? data : data?.filter(c => c.entityType === filter)
       )
     );
-  }
-
-  ngOnInit(): void {
-    this.dataService.updateCommentsData$.next();
   }
 
   setFilter(value: number | null): void {

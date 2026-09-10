@@ -61,15 +61,6 @@ describe('UserCommentsComponent', () => {
     });
   });
 
-  it('requests comments on init', () => {
-    const {component, updateCommentsData$} = build();
-    const nextSpy = spyOn(updateCommentsData$, 'next').and.callThrough();
-
-    component.ngOnInit();
-
-    expect(nextSpy).toHaveBeenCalled();
-  });
-
   it('clears the type filter when setFilter is called with null', (done) => {
     const {component} = build();
     component.setFilter(CommentableEntityTypes.PATCH);
