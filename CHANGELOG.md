@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.7.23](https://github.com/Polyterative/Patcher/compare/v6.7.22...v6.7.23) (2026-09-10)
+
+
+### Features
+
+* **insights:** track method explainer opens and homepage entry clicks ([23625b6](https://github.com/Polyterative/Patcher/commit/23625b64ec4bcbe2cddabc22f055e175b0b17e6c))
+
+
+### Bug Fixes
+
+* **user-area:** prevent duplicate workspace loads ([37c00af](https://github.com/Polyterative/Patcher/commit/37c00afe07f95527339b686325b2c32b1d0ae9b8))
+
 ### [6.7.22](https://github.com/Polyterative/Patcher/compare/v6.7.21...v6.7.22) (2026-09-10)
 
 
