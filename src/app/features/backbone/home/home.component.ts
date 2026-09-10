@@ -72,7 +72,7 @@ const HOME_PROOF_DELAY_STEP_MS = 500;
   ],
 })
 export class HomeComponent extends SubManager implements OnInit, OnDestroy {
-  readonly showHomepageInsights = false;
+  readonly showHomepageInsights = true;
   readonly showCommunityTrends = true;
 
   readonly patchViewConfig: PatchMinimalViewConfig = {

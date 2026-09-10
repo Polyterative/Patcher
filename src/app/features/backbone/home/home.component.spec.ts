@@ -90,8 +90,8 @@ describe('HomeComponent', () => {
     expect(comp.showCommunityTrends).toBeTrue();
   });
 
-  it('keeps homepage insights hidden while disabled', () => {
-    expect(comp.showHomepageInsights).toBeFalse();
+  it('shows homepage insights publicly', () => {
+    expect(comp.showHomepageInsights).toBeTrue();
   });
 
   it('showInsightsPageEntry is true publicly without isDev gate', () => {
