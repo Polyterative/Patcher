@@ -24,6 +24,14 @@ export interface PublicApplicationStatistics {
   publicPatchConnections: number;
   publicPatchAuthors: number;
   publicPatchesUpdatedLast30Days: number;
+  // Private-footprint totals (additive RPC keys; optional so old 11-key
+  // snapshot payloads keep mapping during rollout — absent means suppressed).
+  totalRacks?: number;
+  privateRacks?: number;
+  totalModules?: number;
+  privateModules?: number;
+  totalPatches?: number;
+  privatePatches?: number;
 }
 
 export interface PublicApplicationActivityPoint {
