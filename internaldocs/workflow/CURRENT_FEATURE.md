@@ -17,30 +17,7 @@
 
 ## Active
 
-### Insights → Discovery rework — plan: [plans/insights-discovery.md](./plans/insights-discovery.md)
-
-#### Layer 1 — MVP
-
-- [x] De-labeled takeaway headlines
-- [x] Single collapsed "How we count" block
-- [x] Fresh + 30-day activity merged
-- [x] Bucket rename (keys unchanged)
-- [x] CTA trim
-
-#### Layer 2 — Structural
-
-- [x] Maker spotlight card (replaces Makers in motion)
-- [x] Format finder + size guide cards
-- [x] Fresh drops strip + Library starter teaser
-- [x] Library CTA removed, Private footprint untouched
-
-#### Layer 3 — Polish
-
-- [x] Hero podium (rank-1 spans 2 cols desktop, larger badge, SCSS-only)
-- [x] Rails readability (gaps, dead SCSS removed, snap-scroll skipped)
-- [x] Empty-state discovery voice (hero/makers/fresh/format/size)
-- [x] SEO discovery framing + discovery-rail analytics
-- [x] Specs + lint green
+_No active feature._
 
 Updated: 2026-09-10
 
