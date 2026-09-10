@@ -178,21 +178,32 @@ export class SupabaseApplicationInsightsSnapshotQueries extends SupabaseQueriesB
         const snapshot: Partial<
           Database['public']['Functions']['get_application_insights_snapshot']['Returns'][number]
         > = response?.data?.[0] ?? {};
+        const rawStatistics = (snapshot.statistics ?? {
+          publicModules: 0,
+          publicManufacturers: 0,
+          publicProfiles: 0,
+          publicModulesUpdatedLast30Days: 0,
+          publicRacks: 0,
+          publicRackAuthors: 0,
+          publicRacksUpdatedLast30Days: 0,
+          publicPatches: 0,
+          publicPatchConnections: 0,
+          publicPatchAuthors: 0,
+          publicPatchesUpdatedLast30Days: 0
+        }) as unknown as Partial<PublicApplicationStatistics>;
 
         return {
-          statistics: (snapshot.statistics ?? {
-            publicModules: 0,
-            publicManufacturers: 0,
-            publicProfiles: 0,
-            publicModulesUpdatedLast30Days: 0,
-            publicRacks: 0,
-            publicRackAuthors: 0,
-            publicRacksUpdatedLast30Days: 0,
-            publicPatches: 0,
-            publicPatchConnections: 0,
-            publicPatchAuthors: 0,
-            publicPatchesUpdatedLast30Days: 0
-          }) as unknown as PublicApplicationStatistics,
+          statistics: {
+            // Private-footprint defaults keep old 11-key RPC payloads working
+            // during rollout; the mapper suppresses zero-total slices.
+            totalRacks: 0,
+            privateRacks: 0,
+            totalModules: 0,
+            privateModules: 0,
+            totalPatches: 0,
+            privatePatches: 0,
+            ...rawStatistics
+          } as unknown as PublicApplicationStatistics,
           activitySeries: (snapshot.activity_series ?? []) as unknown as PublicApplicationActivityPoint[],
           moduleInsights: (snapshot.module_insights ?? {
             topManufacturers: [],

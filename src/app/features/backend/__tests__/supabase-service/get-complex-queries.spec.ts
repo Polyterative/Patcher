@@ -391,6 +391,134 @@ describe('SupabaseService - get complex queries', () => {
         }
       });
     }, TEST_TIMEOUT);
+
+    it('maps private-footprint totals from the snapshot RPC', (done) => {
+      const rpcSpy = spyOn(supabaseClient, 'rpc').and.returnValue(Promise.resolve({
+        data: [{
+          statistics: {
+            publicModules: 150,
+            publicManufacturers: 28,
+            publicProfiles: 80,
+            publicModulesUpdatedLast30Days: 63,
+            publicRacks: 24,
+            publicRackAuthors: 12,
+            publicRacksUpdatedLast30Days: 9,
+            publicPatches: 11,
+            publicPatchConnections: 48,
+            publicPatchAuthors: 7,
+            publicPatchesUpdatedLast30Days: 5,
+            totalRacks: 120,
+            privateRacks: 96,
+            totalModules: 200,
+            privateModules: 50,
+            totalPatches: 40,
+            privatePatches: 29
+          },
+          activity_series: [],
+          module_insights: {
+            topManufacturers: [],
+            activeManufacturers: [],
+            widestManufacturers: [],
+            oneUManufacturers: [],
+            standardMix: [],
+            standardActivity: [],
+            standardWidthAverages: [],
+            standardManufacturerCounts: [],
+            hpBands: [],
+            hpBandActivity: [],
+            hpExact: [],
+            freshnessWindows: [],
+            createdWindows: [],
+            topFiveManufacturerShare: 0,
+            soloManufacturerCount: 0,
+            medianModulesPerManufacturer: 0,
+            medianCatalogueAgeYears: 0,
+            staleModules: 0,
+            averageHp: 0,
+            medianHp: 0
+          }
+        }],
+        error: null
+      }));
+
+      service.GET.applicationInsightsSnapshot(30).subscribe({
+        next: (result: PublicApplicationInsightsSnapshot) => {
+          expect(rpcSpy).toHaveBeenCalledWith('get_application_insights_snapshot', {p_days: 30});
+          expect(result.statistics.totalRacks).toBe(120);
+          expect(result.statistics.privateRacks).toBe(96);
+          expect(result.statistics.totalModules).toBe(200);
+          expect(result.statistics.privateModules).toBe(50);
+          expect(result.statistics.totalPatches).toBe(40);
+          expect(result.statistics.privatePatches).toBe(29);
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('defaults missing private-footprint keys so old 11-key payloads keep mapping', (done) => {
+      spyOn(supabaseClient, 'rpc').and.returnValue(Promise.resolve({
+        data: [{
+          statistics: {
+            publicModules: 150,
+            publicManufacturers: 28,
+            publicProfiles: 80,
+            publicModulesUpdatedLast30Days: 63,
+            publicRacks: 24,
+            publicRackAuthors: 12,
+            publicRacksUpdatedLast30Days: 9,
+            publicPatches: 11,
+            publicPatchConnections: 48,
+            publicPatchAuthors: 7,
+            publicPatchesUpdatedLast30Days: 5
+          },
+          activity_series: [],
+          module_insights: {
+            topManufacturers: [],
+            activeManufacturers: [],
+            widestManufacturers: [],
+            oneUManufacturers: [],
+            standardMix: [],
+            standardActivity: [],
+            standardWidthAverages: [],
+            standardManufacturerCounts: [],
+            hpBands: [],
+            hpBandActivity: [],
+            hpExact: [],
+            freshnessWindows: [],
+            createdWindows: [],
+            topFiveManufacturerShare: 0,
+            soloManufacturerCount: 0,
+            medianModulesPerManufacturer: 0,
+            medianCatalogueAgeYears: 0,
+            staleModules: 0,
+            averageHp: 0,
+            medianHp: 0
+          }
+        }],
+        error: null
+      }));
+
+      service.GET.applicationInsightsSnapshot(30).subscribe({
+        next: (result: PublicApplicationInsightsSnapshot) => {
+          expect(result.statistics.publicRacks).toBe(24);
+          expect(result.statistics.totalRacks).toBe(0);
+          expect(result.statistics.privateRacks).toBe(0);
+          expect(result.statistics.totalModules).toBe(0);
+          expect(result.statistics.privateModules).toBe(0);
+          expect(result.statistics.totalPatches).toBe(0);
+          expect(result.statistics.privatePatches).toBe(0);
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
   });
 
   describe('GET.applicationModuleDiscovery', () => {
