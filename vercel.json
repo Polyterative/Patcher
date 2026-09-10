@@ -6,6 +6,9 @@
   "ignoreCommand": "bash scripts/build/vercel-ignore-build.sh",
   "routes": [
     { "src": "/sitemap.xml", "dest": "/api/sitemap" },
+    { "src": "/", "dest": "/api/ssr" },
+    { "src": "/__patcher_chunk_recovery/(.*)", "dest": "/api/ssr" },
+    { "src": "/index.csr.html", "dest": "/api/ssr" },
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/api/ssr" }
   ],

@@ -9,6 +9,8 @@ import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
 export const CHUNK_LOAD_RELOAD_QUERY_PARAM = '__patcher_chunk_reload';
+export const CHUNK_LOAD_RELOAD_TARGET_QUERY_PARAM = '__patcher_chunk_target';
+export const CHUNK_LOAD_RECOVERY_PATH_PREFIX = '/__patcher_chunk_recovery/';
 export const CHUNK_LOAD_RELOAD_STORAGE_KEY = 'patcher.chunk-load-reload.v1';
 export const CHUNK_LOAD_RELOAD_COOLDOWN_MS = 30_000;
 
@@ -58,14 +60,57 @@ export function reportChunkLoadError(error: unknown): boolean {
 
 export function addChunkLoadCacheBuster(href: string, now: number): string {
   const url = new URL(href);
+  removeChunkLoadRecoveryParams(url);
+  const target = `${ url.pathname }${ url.search }${ url.hash }`;
+  // Use a path component as well as query state because some caches ignore query-only busting.
+  url.pathname = `${ CHUNK_LOAD_RECOVERY_PATH_PREFIX }${ now }`;
+  url.search = '';
+  url.hash = '';
+  url.searchParams.set(CHUNK_LOAD_RELOAD_TARGET_QUERY_PARAM, target);
   url.searchParams.set(CHUNK_LOAD_RELOAD_QUERY_PARAM, String(now));
   return url.toString();
 }
 
 export function removeChunkLoadCacheBuster(href: string): string {
   const url = new URL(href);
-  url.searchParams.delete(CHUNK_LOAD_RELOAD_QUERY_PARAM);
+  removeChunkLoadRecoveryParams(url);
   return url.toString();
+}
+
+export function resolveChunkLoadRecoveryTarget(href: string): string | undefined {
+  let url: URL;
+  try {
+    url = new URL(href, 'https://patcher.xyz');
+  } catch {
+    return undefined;
+  }
+
+  if (!url.pathname.startsWith(CHUNK_LOAD_RECOVERY_PATH_PREFIX)) {
+    return undefined;
+  }
+
+  const target = url.searchParams.get(CHUNK_LOAD_RELOAD_TARGET_QUERY_PARAM);
+  const reloadMarker = url.searchParams.get(CHUNK_LOAD_RELOAD_QUERY_PARAM);
+  if (!target || !reloadMarker || !Number.isFinite(Number(reloadMarker))
+    || !target.startsWith('/') || target.startsWith('//')) {
+    return undefined;
+  }
+
+  try {
+    const targetUrl = new URL(target, url.origin);
+    if (targetUrl.origin !== url.origin || !targetUrl.pathname.startsWith('/')) {
+      return undefined;
+    }
+    removeChunkLoadRecoveryParams(targetUrl);
+    return `${ targetUrl.pathname }${ targetUrl.search }${ targetUrl.hash }`;
+  } catch {
+    return undefined;
+  }
+}
+
+function removeChunkLoadRecoveryParams(url: URL): void {
+  url.searchParams.delete(CHUNK_LOAD_RELOAD_QUERY_PARAM);
+  url.searchParams.delete(CHUNK_LOAD_RELOAD_TARGET_QUERY_PARAM);
 }
 
 @Injectable({providedIn: 'root'})
@@ -79,6 +124,7 @@ export class ChunkLoadRecoveryService {
   private reloadAttempted = false;
 
   constructor() {
+    this.normalizeRecoveryLocation();
     this.chunkLoadErrorHandler = error => this.recoverFromChunkLoadError(error);
     activeChunkLoadErrorHandler = this.chunkLoadErrorHandler;
     this.routerSubscription = new Subscription();
@@ -103,6 +149,31 @@ export class ChunkLoadRecoveryService {
       activeChunkLoadErrorHandler = undefined;
     }
     this.routerSubscription.unsubscribe();
+  }
+
+  private normalizeRecoveryLocation(): void {
+    if (!this.browserWindow) {
+      return;
+    }
+
+    const target = resolveChunkLoadRecoveryTarget(this.browserWindow.location.href);
+    if (!target) {
+      return;
+    }
+
+    let normalizedTarget = target;
+    const queryTimestamp = this.getRecoveryQueryTimestamp();
+    if (!this.storage && queryTimestamp !== undefined && queryTimestamp !== null) {
+      const targetUrl = new URL(target, this.browserWindow.location.href);
+      targetUrl.searchParams.set(CHUNK_LOAD_RELOAD_QUERY_PARAM, String(queryTimestamp));
+      normalizedTarget = `${ targetUrl.pathname }${ targetUrl.search }${ targetUrl.hash }`;
+    }
+
+    this.browserWindow.history.replaceState(
+      this.browserWindow.history.state,
+      '',
+      normalizedTarget
+    );
   }
 
   private recoverFromChunkLoadError(error: unknown, targetUrl?: string): void {
@@ -156,6 +227,18 @@ export class ChunkLoadRecoveryService {
   }
 
   private cleanRecoveryQueryParam(): void {
+    const recoveryTarget = this.browserWindow
+      ? resolveChunkLoadRecoveryTarget(this.browserWindow.location.href)
+      : undefined;
+    if (recoveryTarget) {
+      this.browserWindow.history.replaceState(
+        this.browserWindow.history.state,
+        '',
+        recoveryTarget
+      );
+      return;
+    }
+
     const queryTimestamp = this.getRecoveryQueryTimestamp();
     if (!this.browserWindow || queryTimestamp === undefined) {
       return;

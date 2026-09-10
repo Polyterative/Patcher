@@ -33,6 +33,7 @@ import {
   NO_STORE_CACHE_CONTROL,
   getStaticAssetCacheControl
 } from './server-cache-policy';
+import { resolveChunkLoadRecoveryTarget } from './app/services/chunk-load-recovery.service';
 
 
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
@@ -67,7 +68,8 @@ export function app(): express.Express {
   // All other requests → Angular SSR via CommonEngine
   server.use((req, res, next) => {
     const { protocol, originalUrl, baseUrl, headers } = req;
-    const statusCode = resolveSsrStatusCode(originalUrl);
+    const ssrUrl = resolveChunkLoadRecoveryTarget(originalUrl) ?? originalUrl;
+    const statusCode = resolveSsrStatusCode(ssrUrl);
     const requestOrigin = resolveRequestOrigin({
       protocol,
       host: headers.host,
@@ -84,7 +86,7 @@ export function app(): express.Express {
       .render({
         bootstrap: AppServerModule,
         documentFilePath: csrHtml,
-        url: `${ requestOrigin }${ originalUrl }`,
+        url: `${ requestOrigin }${ ssrUrl }`,
         publicPath: browserDistFolder,
         providers: [
           { provide: APP_BASE_HREF, useValue: baseUrl },
