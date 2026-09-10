@@ -207,5 +207,15 @@ describe('ApplicationInsightsPageComponent', () => {
       expect(comp.heroCountNoun('mostSold')).toBe('sales');
       expect(comp.heroBucketLabel('mostSold')).toBe('Most Sold');
     });
+
+    it('reuses a read-only module-minimal card config for hero rankings', () => {
+      expect(comp.heroModuleViewConfig.hideButtons).toBeTrue();
+      expect(comp.heroModuleViewConfig.hideDates).toBeTrue();
+      expect(comp.heroModuleViewConfig.hideDescription).toBeTrue();
+      expect(comp.heroModuleViewConfig.hideTags).toBeTrue();
+      expect(comp.heroModuleViewConfig.hideHP).toBeTrue();
+      expect(comp.heroModuleViewConfig.hideIoCounts).toBeTrue();
+      expect(comp.heroModuleViewConfig.hideManufacturer).toBeFalse();
+    });
   });
 });

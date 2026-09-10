@@ -18,6 +18,10 @@ import {
   ApplicationStatisticsService
 } from '../../backbone/home/application-statistics.service';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
+import {
+  defaultModuleMinimalViewConfig,
+  ModuleMinimalViewConfig
+} from 'src/app/components/module-parts/module-minimal/module-minimal.component';
 
 
 export interface ApplicationInsightsHeroBucket {
@@ -81,6 +85,16 @@ export class ApplicationInsightsPageComponent {
   ];
 
   readonly vm$!: Observable<ApplicationInsightsVm>;
+
+  readonly heroModuleViewConfig: ModuleMinimalViewConfig = {
+    ...defaultModuleMinimalViewConfig,
+    hideButtons: true,
+    hideDates: true,
+    hideDescription: true,
+    hideTags: true,
+    hideHP: true,
+    hideIoCounts: true
+  };
 
   constructor(
     private readonly applicationStatisticsService: ApplicationStatisticsService,
