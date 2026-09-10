@@ -56,6 +56,7 @@ export class ApplicationStatisticsService extends SubManager {
     count: number;
   }>();
   private readonly supportLinkClickedRequest$ = new Subject<{target: string}>();
+  private readonly discoveryRailClickedRequest$ = new Subject<{target: string}>();
   private readonly mappers = new ApplicationStatisticsMappers();
 
   readonly heroBucket$ = this.heroBucketRequest$.asObservable();
@@ -102,6 +103,10 @@ export class ApplicationStatisticsService extends SubManager {
       tap(({target}) => this.analytics.capture('insights.support_link_clicked', {target})),
       takeUntil(this.destroy$)
     ).subscribe();
+    this.discoveryRailClickedRequest$.pipe(
+      tap(({target}) => this.analytics.capture('insights.discovery_rail_clicked', {target})),
+      takeUntil(this.destroy$)
+    ).subscribe();
     this.refreshRequest$.next();
   }
 
@@ -128,6 +133,10 @@ export class ApplicationStatisticsService extends SubManager {
 
   trackSupportLinkClicked(target: string) {
     this.supportLinkClickedRequest$.next({target});
+  }
+
+  trackDiscoveryRailClicked(target: string) {
+    this.discoveryRailClickedRequest$.next({target});
   }
 
   private getDiscoveryModuleIds(snapshot: ApplicationDiscoverySnapshot): number[] {

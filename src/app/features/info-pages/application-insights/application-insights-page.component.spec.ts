@@ -12,6 +12,7 @@ interface InsightsStatsMock {
   selectHeroBucket: jasmine.Spy;
   trackHeroModuleClicked: jasmine.Spy;
   trackSupportLinkClicked: jasmine.Spy;
+  trackDiscoveryRailClicked: jasmine.Spy;
 }
 
 function mockStatistics(): InsightsStatsMock {
@@ -22,7 +23,8 @@ function mockStatistics(): InsightsStatsMock {
     refresh: jasmine.createSpy('refresh'),
     selectHeroBucket: jasmine.createSpy('selectHeroBucket'),
     trackHeroModuleClicked: jasmine.createSpy('trackHeroModuleClicked'),
-    trackSupportLinkClicked: jasmine.createSpy('trackSupportLinkClicked')
+    trackSupportLinkClicked: jasmine.createSpy('trackSupportLinkClicked'),
+    trackDiscoveryRailClicked: jasmine.createSpy('trackDiscoveryRailClicked')
   };
 }
 
@@ -118,10 +120,14 @@ describe('ApplicationInsightsPageComponent', () => {
       expect(comp).toBeTruthy();
     });
 
-    it('calls updateSeo with title "Application insights"', () => {
+    it('calls updateSeo with the discovery title and description', () => {
       expect(seo.updateSeo).toHaveBeenCalledWith(
-        jasmine.objectContaining({ title: 'Application insights' }),
-        'Application insights'
+        jasmine.objectContaining({
+          title: 'Discover modules',
+          description: 'What the community loves, wishes for, and trades — plus makers, formats, and fresh activity.',
+          url: 'https://patcher.xyz/insights'
+        }),
+        'Discover modules'
       );
     });
 
@@ -275,6 +281,11 @@ describe('ApplicationInsightsPageComponent', () => {
     it('delegates support link clicks with the link target', () => {
       comp.onSupportLinkClick('fresh_browse_racks');
       expect(stats.trackSupportLinkClicked).toHaveBeenCalledWith('fresh_browse_racks');
+    });
+
+    it('delegates discovery rail clicks with the rail target', () => {
+      comp.onDiscoveryRailClick('makers');
+      expect(stats.trackDiscoveryRailClicked).toHaveBeenCalledWith('makers');
     });
 
     it('labels bucket count nouns for hero rows', () => {      expect(comp.heroCountNoun('mostOwned')).toBe('in racks');

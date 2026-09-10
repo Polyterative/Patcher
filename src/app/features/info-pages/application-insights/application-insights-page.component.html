@@ -47,7 +47,7 @@
               <button type="button" class="retry-button" (click)="retry()">Retry</button>
             </div>
           } @else if (vm.heroEmpty) {
-            <p class="empty-note">Not enough data yet.</p>
+            <p class="empty-note">Nothing trending yet — be the first to share a rack.</p>
             <div class="hero-actions">
               <app-brand-primary-button
                 routerLink="/modules/browser"
@@ -176,6 +176,8 @@
                   <span aria-hidden="true"> · </span><span>Earlier this month: {{ freshRest.valueLabel }}</span>
                 }
               </p>
+            } @else {
+              <p class="empty-note">No fresh drops yet — new shares land here first.</p>
             }
 
             <div class="hero-actions">
@@ -200,7 +202,7 @@
             <p class="takeaway">{{ page.makersTakeaway }}</p>
 
             @if (page.topManufacturerBars.length === 0 && page.activeManufacturerBars.length === 0) {
-              <p class="empty-note">No maker updates in the last 30 days yet.</p>
+              <p class="empty-note">No makers on the move yet — new shares will put makers here.</p>
             } @else {
               @if (page.topManufacturerBars.length > 0) {
                 <h3 class="rail-subhead">Most-collected</h3>
@@ -224,7 +226,7 @@
               <app-brand-primary-button
                 routerLink="/modules/browser"
                 icon="view_module"
-                (click$)="onSupportLinkClick('makers_browse_modules')"
+                (click$)="onSupportLinkClick('makers_browse_modules'); onDiscoveryRailClick('makers')"
               >Browse modules</app-brand-primary-button>
             </div>
           </lib-hero-content-card>
@@ -243,7 +245,7 @@
                 }
               </div>
             } @else {
-              <p class="empty-note">Not enough data yet.</p>
+              <p class="empty-note">No formats to compare yet — shared modules will fill this in.</p>
             }
           </lib-hero-content-card>
 
@@ -265,7 +267,7 @@
                   }
                 }
               } @else {
-                <p class="empty-note">Not enough data yet.</p>
+                <p class="empty-note">Nothing to measure yet — shared modules will fill this in.</p>
               }
             }
           </lib-hero-content-card>
@@ -376,7 +378,7 @@
 
         <details class="method-details">
           <summary>How we count</summary>
-          <p class="method-details__item"><strong>Top modules —</strong> public modules ranked from community ownership signals. Top 6 per bucket, minimum count 1. Buckets below that threshold show “Not enough data yet.” instead of a ranking.</p>
+          <p class="method-details__item"><strong>Top modules —</strong> public modules ranked from community ownership signals. Top 6 per bucket, minimum count 1. Buckets below that threshold show the empty note instead of a ranking.</p>
           <p class="method-details__item"><strong>Fresh this month —</strong> daily counts of public-profile updates — public modules, shared racks, and connected public patches. Window: last 30 days only; no long-range trend is implied. The New-this-week strip reads the first two module-freshness cohorts (0–7 days, 8–30 days).</p>
           <p class="method-details__item"><strong>Makers to explore —</strong> Most-collected ranks makers by public modules all-time; Heating up ranks makers by public modules updated in the last 30 days. Only makers with at least one module are shown; empty results are suppressed.</p>
           <p class="method-details__item"><strong>What fits your case? —</strong> public modules grouped by format standard, all-time counts.</p>

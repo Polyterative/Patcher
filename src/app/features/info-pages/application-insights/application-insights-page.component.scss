@@ -43,13 +43,6 @@
   color: rgba(24, 37, 53, 0.85);
 }
 
-.method-note {
-  margin: 1rem 0 0;
-  font-size: 0.8rem;
-  line-height: 1.5;
-  color: rgba(24, 37, 53, 0.62);
-}
-
 .momentum-summary {
   margin: 1rem 0 0;
   font-size: 0.9rem;
@@ -277,6 +270,21 @@
   white-space: nowrap;
 }
 
+// Podium: rank-1 hero card spans two columns with a larger rank badge.
+// Desktop only — mobile stays single-column (see max-width rules below).
+// Static sizing, no animation, so prefers-reduced-motion needs no override.
+@media (min-width: 48rem) {
+  .hero-cards > .hero-card:first-child {
+    grid-column: span 2;
+  }
+
+  .hero-card:first-child .hero-card__rank {
+    min-width: 2.75rem;
+    height: 2.75rem;
+    font-size: 1.25rem;
+  }
+}
+
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
@@ -291,23 +299,9 @@
   outline-offset: 2px;
 }
 
-.activity-chips {
-  display: grid;
-  gap: 0.75rem;
-  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-  margin-bottom: 1rem;
-}
-
-.insight-chip__label {
-  display: block;
-  margin-bottom: 0.15rem;
-  font-size: 0.82rem;
-  color: rgba(24, 37, 53, 0.7);
-}
-
 .metric-bars {
   display: grid;
-  gap: 0.95rem;
+  gap: 1rem;
 }
 
 .snapshot-grid {
@@ -555,45 +549,11 @@
   background: var(--insights-blue-700);
 }
 
-.trend-momentum-grid {
-  display: grid;
-  gap: 0.75rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-top: 1rem;
-}
-
-.trend-momentum-card {
-  display: grid;
-  gap: 0.3rem;
-  padding: 0.85rem 0.95rem;
-  border: 1px solid rgba(86, 108, 132, 0.14);
-  border-radius: 1rem;
-  background: rgba(248, 251, 255, 0.82);
-  font-variant-numeric: tabular-nums;
-}
-
-.trend-momentum-card small {
-  color: rgba(24, 37, 53, 0.66);
-  font-size: 0.78rem;
-}
-
-.trend-momentum-card__header {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .hero-card__card,
   .bucket-toggle__button,
   .retry-button {
     transition: none;
-  }
-}
-
-@media (max-width: 64rem) {
-  .trend-momentum-grid {
-    grid-template-columns: 1fr;
   }
 }
 
@@ -615,7 +575,6 @@
     padding: 0.6rem 0 1.2rem;
   }
 
-  .activity-chips,
   .snapshot-grid,
   .trend-legend {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -657,10 +616,6 @@
 
   .snapshot-card p {
     font-size: 0.8rem;
-  }
-
-  .trend-momentum-card {
-    padding: 0.75rem 0.8rem;
   }
 }
 
