@@ -93,6 +93,10 @@ constructor(private analytics: AnalyticsService) {}
 | `manufacturer.viewed` | `ManufacturerDetailDataService` on data load | `manufacturer_id` |
 | `feedback.submitted` | `ModuleFlagDataService.submitFlag$` backend success | `category`, `length` |
 | `admin.action_performed` | `AdminFlagsDataService` resolve/reopen/delete flag success | `action` |
+| `insights.page_viewed` | `ApplicationStatisticsService.page$` snapshot tap | — |
+| `insights.hero_bucket_viewed` | `ApplicationStatisticsService` hero bucket pipeline | `bucket` |
+| `insights.hero_module_clicked` | `ApplicationStatisticsService` hero module pipeline | `bucket`, `module_id`, `rank`, `count` |
+| `insights.support_link_clicked` | `ApplicationStatisticsService` support link pipeline | `target` |
 
 ---
 

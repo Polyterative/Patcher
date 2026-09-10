@@ -5,368 +5,276 @@
         <lib-hero-content-card
           titleBig="Insights"
           icon="insights"
-          description="Loading the public catalogue snapshot, update velocity, and sharing analysis."
+          description="Loading ownership rankings, last-30-day activity, and the library footprint."
         >
           <div class="insights-loader__body">
             <mat-progress-bar mode="indeterminate"></mat-progress-bar>
             <p class="insights-loader__label">Preparing the insights view</p>
-            <div class="insights-loader__chips">
-              <div class="insight-chip insight-chip--compact">
-                <mat-icon>view_module</mat-icon>
-                <div>
-                  <span class="insight-chip__label">Public catalogue</span>
-                  <strong>Loading</strong>
-                </div>
-              </div>
-              <div class="insight-chip insight-chip--compact">
-                <mat-icon>timeline</mat-icon>
-                <div>
-                  <span class="insight-chip__label">Recent activity</span>
-                  <strong>Loading</strong>
-                </div>
-              </div>
-              <div class="insight-chip insight-chip--compact">
-                <mat-icon>pie_chart</mat-icon>
-                <div>
-                  <span class="insight-chip__label">Sharing layer</span>
-                  <strong>Loading</strong>
-                </div>
-              </div>
-            </div>
           </div>
         </lib-hero-content-card>
       </div>
-    } @else if (vm.page; as page) {
+    } @else {
       <div class="insights-page">
         <lib-hero-content-card
           titleBig="Insights"
           icon="insights"
-          description="Public catalogue composition, update velocity, format mix, and sharing activity across the last 30 days."
+          description="What the community owns, wants, and trades — the top 6 modules in each ownership bucket."
         >
-          <p class="hero-summary">{{ page.heroSummary }}</p>
-          <div class="hero-highlights">
-            @for (highlight of page.heroHighlights; track highlight.label; let i = $index) {
-              <app-insight-chip [icon]="highlight.icon" [label]="highlight.label" [value]="highlight.value" [featured]="i === 0"></app-insight-chip>
+          <p class="takeaway"><strong>Takeaway:</strong> a small set of proven modules shows up in racks, want-lists, and sales again and again — start here when choosing gear with community mileage.</p>
+
+          <div
+            class="bucket-toggle"
+            role="group"
+            aria-label="Ownership buckets"
+          >
+            @for (bucket of heroBuckets; track bucket.key) {
+              <button
+                type="button"
+                class="bucket-toggle__button"
+                [class.bucket-toggle__button--active]="vm.bucket === bucket.key"
+                [attr.aria-pressed]="vm.bucket === bucket.key"
+                (click)="onHeroBucket(bucket.key)"
+              >
+                <mat-icon class="bucket-toggle__icon">{{ bucket.icon }}</mat-icon>
+                {{ bucket.label }}
+              </button>
             }
           </div>
 
-          <div class="hero-actions">
-            <app-brand-primary-button routerLink="/modules/browser" icon="view_module">Browse modules</app-brand-primary-button>
-            <app-brand-primary-button routerLink="/racks/browser" icon="dashboard_customize">Browse racks</app-brand-primary-button>
-          </div>
+          @if (vm.discoveryError) {
+            <div class="error-block" role="alert">
+              <p>Ownership rankings could not be loaded.</p>
+              <button type="button" class="retry-button" (click)="retry()">Retry</button>
+            </div>
+          } @else if (vm.heroEmpty) {
+            <p class="empty-note">Not enough data yet.</p>
+            <div class="hero-actions">
+              <app-brand-primary-button
+                routerLink="/modules/browser"
+                icon="view_module"
+                (click$)="onSupportLinkClick('hero_empty_browse_modules')"
+              >Browse modules</app-brand-primary-button>
+            </div>
+          } @else {
+            <ol class="hero-rows" [attr.aria-label]="heroBucketLabel(vm.bucket)">
+              @for (entry of vm.heroEntries; track entry.id; let i = $index) {
+                <li class="hero-row">
+                  <a
+                    class="hero-row__link"
+                    [routerLink]="['/modules/details', entry.id]"
+                    (click)="onHeroModuleClick(vm.bucket, entry, i + 1)"
+                    [attr.aria-label]="entry.name + ' by ' + entry.manufacturer.name + ', ' + entry.count + ' ' + heroCountNoun(vm.bucket) + ', rank ' + (i + 1) + ' in ' + heroBucketLabel(vm.bucket)"
+                  >
+                    <span class="hero-row__rank" aria-hidden="true">{{ i + 1 }}</span>
+                    <span class="hero-row__main">
+                      <span class="hero-row__name">{{ entry.module?.name ?? entry.name }}</span>
+                      <span class="hero-row__maker">{{ entry.module?.manufacturer?.name ?? entry.manufacturer.name }}</span>
+                    </span>
+                    <span class="hero-row__count">{{ entry.count }} {{ heroCountNoun(vm.bucket) }}</span>
+                  </a>
+                </li>
+              }
+            </ol>
+            <div class="hero-actions">
+              <app-brand-primary-button
+                routerLink="/modules/browser"
+                icon="view_module"
+                (click$)="onSupportLinkClick('hero_browse_modules')"
+              >Browse modules</app-brand-primary-button>
+            </div>
+          }
+
+          <p class="method-note">Method: public modules ranked from community ownership signals. Top 6 per bucket, minimum count 1. Buckets below that threshold show “Not enough data yet.” instead of a ranking.</p>
         </lib-hero-content-card>
 
-        <div class="insights-grid">
-        <lib-hero-content-card
-          titleNormal="Library now"
-          icon="analytics"
-          description="Point-in-time footprint: absolute counts, not progress bars."
-        >
-          <div class="snapshot-grid">
-            @for (metric of page.footprintSnapshot; track metric.label) {
-              <div class="snapshot-card" [ngClass]="'snapshot-card--' + metric.tone">
-                <div class="snapshot-card__header">
-                  <span class="snapshot-card__icon">
-                    <mat-icon>{{ metric.icon }}</mat-icon>
+        @if (vm.pageError) {
+          <div class="error-block" role="alert">
+            <p>Activity and footprint data could not be loaded.</p>
+            <button type="button" class="retry-button" (click)="retry()">Retry</button>
+          </div>
+        } @else if (vm.page; as page) {
+          <lib-hero-content-card
+            titleNormal="Fresh — last 30 days"
+            icon="show_chart"
+            description="Daily public updates across modules, racks, and patches for the last 30 days."
+          >
+            <p class="takeaway"><strong>Takeaway:</strong> the stacked bars split each day into module, rack, and patch updates, with 7-day momentum below — read it as recent cadence, not a long-range trend.</p>
+            @if (vm.updatedLabel) {
+              <p class="updated-badge">Updated {{ vm.updatedLabel }} · last 30 days</p>
+            }
+
+            <div class="trend-chart" role="img" aria-label="Stacked daily updates for the last 30 days">
+              @for (day of page.activityChart.days; track day.date) {
+                <div class="trend-day">
+                  <div
+                    class="trend-day__bar"
+                    role="img"
+                    [style.height.%]="day.heightPercent"
+                    [attr.aria-label]="day.label + ': ' + day.total + ' updates'"
+                  >
+                    @if (day.modules > 0) {
+                      <span
+                        class="trend-day__segment trend-day__segment--modules"
+                        aria-hidden="true"
+                        [style.flexGrow]="day.modules"
+                      ></span>
+                    }
+                    @if (day.racks > 0) {
+                      <span
+                        class="trend-day__segment trend-day__segment--racks"
+                        aria-hidden="true"
+                        [style.flexGrow]="day.racks"
+                      ></span>
+                    }
+                    @if (day.patches > 0) {
+                      <span
+                        class="trend-day__segment trend-day__segment--patches"
+                        aria-hidden="true"
+                        [style.flexGrow]="day.patches"
+                      ></span>
+                    }
+                  </div>
+                  <span class="trend-day__label" [class.trend-day__label--hidden]="!day.showLabel">
+                    {{ day.label }}
                   </span>
-                  <span class="snapshot-card__label">{{ metric.label }}</span>
-                </div>
-                <strong class="snapshot-card__value">{{ metric.valueLabel }}</strong>
-                <p>{{ metric.detail }}</p>
-              </div>
-            }
-          </div>
-
-          <div class="section-highlights">
-            @for (highlight of page.footprintHighlights; track highlight.label) {
-              <app-insight-chip [icon]="highlight.icon" [label]="highlight.label" [value]="highlight.value" [compact]="true"></app-insight-chip>
-            }
-          </div>
-        </lib-hero-content-card>
-
-        <lib-hero-content-card
-          titleNormal="Module standards"
-          icon="category"
-          description="Format distribution: footprint, 30-day activity, average width, and maker count per standard."
-        >
-          <div class="rankings-grid rankings-grid--four-up">
-            <div class="metric-bars">
-              <h4 class="rankings-grid__title">Modules by format</h4>
-              @for (bar of page.standardMixBars; track bar.label) {
-                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
-              }
-            </div>
-
-            <div class="metric-bars">
-              <h4 class="rankings-grid__title">30-day updates by format</h4>
-              @for (bar of page.standardActivityBars; track bar.label) {
-                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
-              }
-            </div>
-
-            <div class="metric-bars">
-              <h4 class="rankings-grid__title">Avg. width per format</h4>
-              @for (bar of page.standardWidthBars; track bar.label) {
-                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
-              }
-            </div>
-
-            <div class="metric-bars">
-              <h4 class="rankings-grid__title">Active makers per format</h4>
-              @for (bar of page.standardManufacturerBars; track bar.label) {
-                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
-              }
-            </div>
-          </div>
-
-          <div class="section-highlights">
-            @for (highlight of page.standardMixHighlights; track highlight.label) {
-              <app-insight-chip [icon]="highlight.icon" [label]="highlight.label" [value]="highlight.value" [compact]="true"></app-insight-chip>
-            }
-          </div>
-        </lib-hero-content-card>
-
-        <lib-hero-content-card
-          titleNormal="Module sizes"
-          icon="straighten"
-          description="Module width distribution: footprint, 30-day activity, churn rate, and most common exact widths."
-        >
-          <div class="rankings-grid rankings-grid--four-up">
-            <div class="metric-bars">
-              <h4 class="rankings-grid__title">Modules by width band</h4>
-              @for (bar of page.hpBandBars; track bar.label) {
-                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
-              }
-            </div>
-
-            <div class="metric-bars">
-              <h4 class="rankings-grid__title">30-day updates by width band</h4>
-              @for (bar of page.hpBandActivityBars; track bar.label) {
-                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
-              }
-            </div>
-
-            <div class="metric-bars">
-              <h4 class="rankings-grid__title">Churn rate (30d)</h4>
-              @for (bar of page.hpBandVelocityBars; track bar.label) {
-                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
-              }
-            </div>
-
-            <div class="metric-bars">
-              <h4 class="rankings-grid__title">Exact widths (most common)</h4>
-              @for (bar of page.hpExactBars; track bar.label) {
-                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
-              }
-            </div>
-          </div>
-
-          <div class="section-highlights">
-            @for (highlight of page.hpBandHighlights; track highlight.label) {
-              <app-insight-chip [icon]="highlight.icon" [label]="highlight.label" [value]="highlight.value" [compact]="true"></app-insight-chip>
-            }
-          </div>
-        </lib-hero-content-card>
-
-        <lib-hero-content-card
-          titleNormal="Module freshness"
-          icon="schedule"
-          description="Update windows and catalogue age: how recently modules moved, and how long this public archive has been accumulating."
-        >
-          <div class="rankings-grid">
-            <div class="metric-bars">
-              <h4 class="rankings-grid__title">Updated by recency</h4>
-              @for (bar of page.moduleFreshnessBars; track bar.label) {
-                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
-              }
-            </div>
-
-            <div class="metric-bars">
-              <h4 class="rankings-grid__title">Catalogue age</h4>
-              @for (bar of page.moduleCatalogueAgeBars; track bar.label) {
-                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
-              }
-            </div>
-          </div>
-
-          <div class="section-highlights">
-            @for (highlight of page.moduleFreshnessHighlights; track highlight.label) {
-              <app-insight-chip [icon]="highlight.icon" [label]="highlight.label" [value]="highlight.value" [compact]="true"></app-insight-chip>
-            }
-          </div>
-        </lib-hero-content-card>
-
-        <lib-hero-content-card
-          titleNormal="30-day activity"
-          icon="show_chart"
-          description="30 days of module, rack, and patch updates: daily totals of public-profile changes."
-        >
-          <div class="trend-chart">
-            @for (day of page.activityChart.days; track day.date) {
-              <div class="trend-day">
-                <div
-                  class="trend-day__bar"
-                  [style.height.%]="day.heightPercent"
-                  [attr.aria-label]="day.label + ': ' + day.total + ' updates'"
-                >
-                  @if (day.modules > 0) {
-                    <span
-                      class="trend-day__segment trend-day__segment--modules"
-                      [style.flexGrow]="day.modules"
-                    ></span>
-                  }
-                  @if (day.racks > 0) {
-                    <span
-                      class="trend-day__segment trend-day__segment--racks"
-                      [style.flexGrow]="day.racks"
-                    ></span>
-                  }
-                  @if (day.patches > 0) {
-                    <span
-                      class="trend-day__segment trend-day__segment--patches"
-                      [style.flexGrow]="day.patches"
-                    ></span>
-                  }
-                </div>
-                <span class="trend-day__label" [class.trend-day__label--hidden]="!day.showLabel">
-                  {{ day.label }}
-                </span>
-              </div>
-            }
-          </div>
-
-          <div class="trend-legend">
-            @for (legendItem of page.activityChart.legend; track legendItem.label) {
-              <div class="trend-legend__item">
-                <span class="trend-legend__dot" [ngClass]="'trend-legend__dot--' + legendItem.toneClass"></span>
-                <span>{{ legendItem.label }}</span>
-                <strong>{{ legendItem.valueLabel }}</strong>
-              </div>
-            }
-          </div>
-
-          <div class="trend-momentum-grid">
-            @for (momentum of page.activityChart.momentum; track momentum.label) {
-              <div class="trend-momentum-card">
-                <div class="trend-momentum-card__header">
-                  <span class="trend-legend__dot" [ngClass]="'trend-legend__dot--' + momentum.toneClass"></span>
-                  <strong>{{ momentum.label }}</strong>
-                </div>
-                <span>{{ momentum.valueLabel }}</span>
-                <small>{{ momentum.deltaLabel }}</small>
-              </div>
-            }
-          </div>
-
-          <div class="section-highlights">
-            @for (highlight of page.activityChart.highlights; track highlight.label) {
-              <app-insight-chip [icon]="highlight.icon" [label]="highlight.label" [value]="highlight.value" [compact]="true"></app-insight-chip>
-            }
-          </div>
-        </lib-hero-content-card>
-
-        <lib-hero-content-card
-          titleNormal="Makers leading the library"
-          icon="precision_manufacturing"
-          description="Maker rankings: catalogue size, 30-day updates, average width, and 1U prevalence."
-        >
-          <div class="rankings-grid">
-            <div class="metric-bars">
-              <h4 class="rankings-grid__title">Modules per maker</h4>
-              @for (bar of page.topManufacturerBars; track bar.label) {
-                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
-              }
-            </div>
-
-            <div class="metric-bars">
-              <h4 class="rankings-grid__title">30-day updates per maker</h4>
-              @for (bar of page.activeManufacturerBars; track bar.label) {
-                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
-              }
-            </div>
-
-            <div class="metric-bars">
-              <h4 class="rankings-grid__title">Avg. width per maker</h4>
-              @for (bar of page.widestManufacturerBars; track bar.label) {
-                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
-              }
-            </div>
-
-            <div class="metric-bars">
-              <h4 class="rankings-grid__title">Most 1U-focused makers</h4>
-              @for (bar of page.oneUManufacturerBars; track bar.label) {
-                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
-              }
-            </div>
-          </div>
-
-          <div class="section-highlights">
-            @for (highlight of page.makerHighlights; track highlight.label) {
-              <app-insight-chip [icon]="highlight.icon" [label]="highlight.label" [value]="highlight.value" [compact]="true"></app-insight-chip>
-            }
-          </div>
-        </lib-hero-content-card>
-
-        <lib-hero-content-card
-          titleNormal="How people share"
-          icon="pie_chart"
-          description="Sharing mix and participation: racks vs. patches, sharing rate per profile, and 30-day update frequency."
-        >
-          <div class="mix">
-            <div class="mix__bar">
-              @for (segment of page.sharingMix; track segment.label) {
-                <div
-                  class="mix__segment"
-                  [ngClass]="'mix__segment--' + segment.tone"
-                  [style.width.%]="segment.widthPercent"
-                ></div>
-              }
-            </div>
-
-            <div class="mix__legend">
-              @for (segment of page.sharingMix; track segment.label) {
-                <div class="mix__legend-item">
-                  <span class="trend-legend__dot" [ngClass]="'trend-legend__dot--' + (segment.tone === 'brand' ? 'patches' : 'racks')"></span>
-                  <span>{{ segment.label }}</span>
-                  <strong>{{ segment.valueLabel }}</strong>
                 </div>
               }
             </div>
-          </div>
 
-          <div class="metric-bars">
-            @for (bar of page.sharingRateBars; track bar.label) {
-              <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
-            }
-          </div>
+            <div class="trend-legend">
+              @for (legendItem of page.activityChart.legend; track legendItem.label) {
+                <div class="trend-legend__item">
+                  <span class="trend-legend__dot" [ngClass]="'trend-legend__dot--' + legendItem.toneClass" aria-hidden="true"></span>
+                  <span>{{ legendItem.label }}</span>
+                  <strong>{{ legendItem.valueLabel }}</strong>
+                </div>
+              }
+            </div>
 
-          <div class="section-highlights">
-            @for (highlight of page.sharingHighlights; track highlight.label) {
-              <app-insight-chip [icon]="highlight.icon" [label]="highlight.label" [value]="highlight.value" [compact]="true"></app-insight-chip>
-            }
-          </div>
-        </lib-hero-content-card>
+            <div class="trend-momentum-grid">
+              @for (momentum of page.activityChart.momentum; track momentum.label) {
+                <div class="trend-momentum-card">
+                  <div class="trend-momentum-card__header">
+                    <span class="trend-legend__dot" [ngClass]="'trend-legend__dot--' + momentum.toneClass" aria-hidden="true"></span>
+                    <strong>{{ momentum.label }}</strong>
+                  </div>
+                  <span>{{ momentum.valueLabel }}</span>
+                  <small>{{ momentum.deltaLabel }}</small>
+                </div>
+              }
+            </div>
 
-        <lib-hero-content-card
-          titleNormal="Patch depth"
-          icon="share"
-          description="Patch layer density: participation rates, connection depth, and update activity."
-        >
-          <div class="metric-bars">
-            @for (bar of page.patchDepthBars; track bar.label) {
-              <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
-            }
-          </div>
+            <div class="hero-actions">
+              <app-brand-primary-button
+                routerLink="/modules/browser"
+                icon="view_module"
+                (click$)="onSupportLinkClick('fresh_browse_modules')"
+              >Browse modules</app-brand-primary-button>
+              <app-brand-primary-button
+                routerLink="/racks/browser"
+                icon="dashboard_customize"
+                (click$)="onSupportLinkClick('fresh_browse_racks')"
+              >Browse racks</app-brand-primary-button>
+              <app-brand-primary-button
+                routerLink="/patches/browser"
+                icon="cable"
+                (click$)="onSupportLinkClick('fresh_browse_patches')"
+              >Browse patches</app-brand-primary-button>
+            </div>
 
-          <div class="section-highlights">
-            @for (highlight of page.patchHighlights; track highlight.label) {
-              <app-insight-chip [icon]="highlight.icon" [label]="highlight.label" [value]="highlight.value" [compact]="true"></app-insight-chip>
+            <p class="method-note">Method: daily counts of public-profile updates — public modules, shared racks, and connected public patches. Window: last 30 days only; no long-range trend is implied.</p>
+          </lib-hero-content-card>
+
+          <lib-hero-content-card
+            titleNormal="Library now"
+            icon="analytics"
+            description="Point-in-time footprint: absolute counts, not progress bars."
+          >
+            <p class="takeaway"><strong>Takeaway:</strong> the size of today’s public library — catalogue, makers, profiles, and shared works at a glance.</p>
+
+            <div class="snapshot-grid">
+              @for (metric of page.footprintSnapshot; track metric.label) {
+                <div class="snapshot-card" [ngClass]="'snapshot-card--' + metric.tone">
+                  <div class="snapshot-card__header">
+                    <span class="snapshot-card__icon" aria-hidden="true">
+                      <mat-icon>{{ metric.icon }}</mat-icon>
+                    </span>
+                    <span class="snapshot-card__label">{{ metric.label }}</span>
+                  </div>
+                  <strong class="snapshot-card__value">{{ metric.valueLabel }}</strong>
+                  <p>{{ metric.detail }}</p>
+                </div>
+              }
+            </div>
+
+            <div class="hero-actions">
+              <app-brand-primary-button
+                routerLink="/modules/browser"
+                icon="view_module"
+                (click$)="onSupportLinkClick('library_browse_modules')"
+              >Browse modules</app-brand-primary-button>
+            </div>
+
+            <p class="method-note">Method: point-in-time totals from the cached public snapshot. Absolute counts of the all-time footprint — not rates, not a 30-day window.</p>
+          </lib-hero-content-card>
+
+          <lib-hero-content-card
+            titleNormal="30-day activity"
+            icon="timeline"
+            description="Compact totals for the last 30 days across modules, racks, and patches."
+          >
+            <p class="takeaway"><strong>Takeaway:</strong> how much of the public library moved in the last 30 days, split by modules, racks, and patches.</p>
+
+            @if (vm.activityChips.length > 0) {
+              <div class="activity-chips">
+                @for (chip of vm.activityChips; track chip.label) {
+                  <app-insight-chip [icon]="chip.icon" [label]="chip.label" [value]="chip.value"></app-insight-chip>
+                }
+              </div>
+            } @else {
+              <p class="empty-note">No public updates in the last 30 days yet.</p>
             }
-          </div>
-        </lib-hero-content-card>
-        </div>
+
+            <div class="hero-actions">
+              <app-brand-primary-button
+                routerLink="/racks/browser"
+                icon="dashboard_customize"
+                (click$)="onSupportLinkClick('activity_browse_racks')"
+              >Browse racks</app-brand-primary-button>
+            </div>
+
+            <p class="method-note">Method: 30-day totals from the same public activity series as the Fresh chart above. Population: public modules, shared racks on public profiles, connected public patches.</p>
+          </lib-hero-content-card>
+
+          <lib-hero-content-card
+            titleNormal="Makers in motion"
+            icon="precision_manufacturing"
+            description="Makers ranked by modules updated in the last 30 days."
+          >
+            <p class="takeaway"><strong>Takeaway:</strong> the makers with the most recently updated modules — follow them for active, maintained designs.</p>
+
+            @if (page.activeManufacturerBars.length > 0) {
+              <div class="metric-bars">
+                @for (bar of page.activeManufacturerBars; track bar.label) {
+                  <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
+                }
+              </div>
+            } @else {
+              <p class="empty-note">No maker updates in the last 30 days yet.</p>
+            }
+
+            <div class="hero-actions">
+              <app-brand-primary-button
+                routerLink="/modules/browser"
+                icon="view_module"
+                (click$)="onSupportLinkClick('makers_browse_modules')"
+              >Browse modules</app-brand-primary-button>
+            </div>
+
+            <p class="method-note">Method: makers ranked by public modules updated in the last 30 days. Only makers with at least one update are shown; empty results are suppressed.</p>
+          </lib-hero-content-card>
+        }
       </div>
     }
   </lib-screen-wrapper>
 }
-

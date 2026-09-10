@@ -2,6 +2,7 @@ import { of } from 'rxjs';
 import { TestBed } from '@angular/core/testing';
 import { ApplicationStatisticsService } from './application-statistics.service';
 import { MinimalModule } from 'src/app/models/module';
+import { AnalyticsService } from '../analytics-integration/analytics.service';
 import { SupabaseService } from '../../backend/supabase.service';
 
 
@@ -155,12 +156,14 @@ describe('ApplicationStatisticsService', () => {
     TestBed.configureTestingModule({
       providers: [
         ApplicationStatisticsService,
-        {provide: SupabaseService, useValue: backend}
+        {provide: SupabaseService, useValue: backend},
+        {provide: AnalyticsService, useValue: jasmine.createSpyObj<AnalyticsService>('AnalyticsService', ['capture'])}
       ]
     });
 
     return {
       backend,
+      analytics: TestBed.inject(AnalyticsService) as jasmine.SpyObj<AnalyticsService>,
       service: TestBed.inject(ApplicationStatisticsService)
     };
   }
@@ -376,6 +379,50 @@ describe('ApplicationStatisticsService', () => {
       ]);
       done();
     });
+  });
+
+  it('captures insights.page_viewed when the 30-day snapshot page loads', (done) => {
+    const {analytics, backend, service} = build();
+
+    service.page$.subscribe(() => {
+      expect(backend.GET.applicationInsightsSnapshot).toHaveBeenCalledWith(30);
+      expect(analytics.capture).toHaveBeenCalledWith('insights.page_viewed', {});
+      done();
+    });
+  });
+
+  it('exposes mostOwned as the default hero bucket and captures bucket changes', () => {
+    const {analytics, service} = build();
+    const seen: string[] = [];
+
+    service.heroBucket$.subscribe((bucket) => seen.push(bucket));
+
+    expect(seen).toEqual(['mostOwned']);
+    service.selectHeroBucket('mostOwned');
+    expect(analytics.capture).not.toHaveBeenCalledWith('insights.hero_bucket_viewed', {bucket: 'mostOwned'});
+    service.selectHeroBucket('mostWanted');
+    expect(analytics.capture).toHaveBeenCalledWith('insights.hero_bucket_viewed', {bucket: 'mostWanted'});
+  });
+
+  it('captures hero module clicks with bucket, module, rank, and count', () => {
+    const {analytics, service} = build();
+
+    service.trackHeroModuleClicked('mostSold', {id: 11, count: 13}, 2);
+
+    expect(analytics.capture).toHaveBeenCalledWith('insights.hero_module_clicked', {
+      bucket: 'mostSold',
+      module_id: 11,
+      rank: 2,
+      count: 13
+    });
+  });
+
+  it('captures support link clicks with the link target', () => {
+    const {analytics, service} = build();
+
+    service.trackSupportLinkClicked('fresh_browse_racks');
+
+    expect(analytics.capture).toHaveBeenCalledWith('insights.support_link_clicked', {target: 'fresh_browse_racks'});
   });
 
   it('maps discovery buckets from the backend snapshot', (done) => {

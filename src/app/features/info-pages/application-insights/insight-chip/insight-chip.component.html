@@ -1,7 +1,8 @@
 <div class="insight-chip"
      [class.insight-chip--compact]="compact"
-     [class.insight-chip--featured]="featured">
-  <mat-icon>{{ icon }}</mat-icon>
+     [class.insight-chip--featured]="featured"
+     [attr.aria-label]="label + ': ' + value">
+  <mat-icon aria-hidden="true">{{ icon }}</mat-icon>
   <div>
     <span class="insight-chip__label">{{ label }}</span>
     <strong>{{ value }}</strong>
