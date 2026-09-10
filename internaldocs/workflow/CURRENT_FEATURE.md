@@ -29,8 +29,10 @@
 
 #### Layer 2 — Structural
 
-- [ ] Podium treatment for hero ranking
-- [ ] Discovery-oriented card ordering
+- [x] Maker spotlight card (replaces Makers in motion)
+- [x] Format finder + size guide cards
+- [x] Fresh drops strip + Library starter teaser
+- [x] Library CTA removed, Private footprint untouched
 
 #### Layer 3 — Polish
 

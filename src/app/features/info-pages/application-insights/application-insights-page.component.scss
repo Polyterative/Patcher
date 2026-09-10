@@ -57,6 +57,36 @@
   color: rgba(24, 37, 53, 0.85);
 }
 
+.rail-subhead {
+  margin: 1.1rem 0 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--insights-blue-700);
+}
+
+.fresh-drops {
+  margin: 0.75rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: rgba(24, 37, 53, 0.85);
+  font-variant-numeric: tabular-nums;
+}
+
+.starter-teaser {
+  margin: 1rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: rgba(24, 37, 53, 0.78);
+}
+
+.size-median {
+  margin: 0.75rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: rgba(24, 37, 53, 0.78);
+  font-variant-numeric: tabular-nums;
+}
+
 .method-details {
   padding: 0.85rem 1rem;
   border: 1px solid rgba(86, 108, 132, 0.2);

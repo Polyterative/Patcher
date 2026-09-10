@@ -45,7 +45,35 @@ function buildPageStub(): Record<string, unknown> {
       highlights: []
     },
     footprintSnapshot: [],
-    activeManufacturerBars: []
+    topManufacturerBars: [
+      {label: 'Make Noise', valueLabel: '120', detail: '120 public modules', widthPercent: 100, tone: 'brand'}
+    ],
+    activeManufacturerBars: [
+      {label: 'Intellijel', valueLabel: '14', detail: '14 modules updated in the last 30 days', widthPercent: 100, tone: 'emerald'}
+    ],
+    makersTakeaway: 'Recent maker updates are spread across makers with no single maker pulling ahead.',
+    standardMixBars: [
+      {label: '3U', valueLabel: '1,000', detail: '1000 public modules in this format', widthPercent: 100, tone: 'brand'}
+    ],
+    hpBandBars: [
+      {label: '0-2 HP', valueLabel: '60', detail: '60 modules in this size band', widthPercent: 12, tone: 'brand'},
+      {label: '3-5 HP', valueLabel: '110', detail: '110 modules in this size band', widthPercent: 22, tone: 'emerald'},
+      {label: '6-8 HP', valueLabel: '170', detail: '170 modules in this size band', widthPercent: 33, tone: 'violet'},
+      {label: '9-16 HP', valueLabel: '510', detail: '510 modules in this size band', widthPercent: 100, tone: 'amber'},
+      {label: '17-28 HP', valueLabel: '320', detail: '320 modules in this size band', widthPercent: 63, tone: 'brand'},
+      {label: '29+ HP', valueLabel: '110', detail: '110 modules in this size band', widthPercent: 22, tone: 'emerald'}
+    ],
+    hpBandHighlights: [
+      {label: 'Median width', value: '12 HP', icon: 'straighten'}
+    ],
+    moduleFreshnessBars: [
+      {label: 'Fresh (0-7 days)', valueLabel: '25', detail: '25 public modules moved in the last week', widthPercent: 100, tone: 'brand'},
+      {label: 'Recent (8-30 days)', valueLabel: '40', detail: '40 public modules moved earlier this month', widthPercent: 80, tone: 'emerald'}
+    ],
+    sharingMix: [
+      {label: 'Racks', valueLabel: '84 (65%)', widthPercent: 65, tone: 'emerald'},
+      {label: 'Patches', valueLabel: '42 (35%)', widthPercent: 35, tone: 'brand'}
+    ]
   };
 }
 
@@ -249,8 +277,7 @@ describe('ApplicationInsightsPageComponent', () => {
       expect(stats.trackSupportLinkClicked).toHaveBeenCalledWith('fresh_browse_racks');
     });
 
-    it('labels bucket count nouns for hero rows', () => {
-      expect(comp.heroCountNoun('mostOwned')).toBe('in racks');
+    it('labels bucket count nouns for hero rows', () => {      expect(comp.heroCountNoun('mostOwned')).toBe('in racks');
       expect(comp.heroCountNoun('mostWanted')).toBe('wishes');
       expect(comp.heroCountNoun('mostSold')).toBe('sales');
       expect(comp.heroBucketLabel('mostSold')).toBe('Changing hands');
@@ -266,6 +293,45 @@ describe('ApplicationInsightsPageComponent', () => {
       expect(comp.heroModuleViewConfig.hideHP).toBeTrue();
       expect(comp.heroModuleViewConfig.hideIoCounts).toBeTrue();
       expect(comp.heroModuleViewConfig.hideManufacturer).toBeFalse();
+    });
+  });
+
+  describe('discovery rails', () => {
+    it('condenses six HP bands into Tiny/Classic/Big buckets with summed counts', () => {
+      const buckets = comp.sizeGuideBuckets((buildPageStub()['hpBandBars'] as unknown) as Parameters<ApplicationInsightsPageComponent['sizeGuideBuckets']>[0]);
+      expect(buckets.map((bucket) => bucket.label)).toEqual(['Tiny (0–5 HP)', 'Classic (6–16 HP)', 'Big (17+ HP)']);
+      expect(buckets.map((bucket) => bucket.valueLabel)).toEqual(['170', '680', '430']);
+      expect(buckets[1].widthPercent).toBe(100);
+    });
+
+    it('falls back to positional splits when HP labels differ', () => {
+      const bars = [
+        {label: 'XS', valueLabel: '10', detail: '', widthPercent: 10, tone: 'brand'},
+        {label: 'S', valueLabel: '20', detail: '', widthPercent: 20, tone: 'brand'},
+        {label: 'M', valueLabel: '30', detail: '', widthPercent: 30, tone: 'brand'},
+        {label: 'L', valueLabel: '40', detail: '', widthPercent: 40, tone: 'brand'},
+        {label: 'XL', valueLabel: '50', detail: '', widthPercent: 50, tone: 'brand'},
+        {label: 'XXL', valueLabel: '60', detail: '', widthPercent: 60, tone: 'brand'}
+      ] as unknown as Parameters<ApplicationInsightsPageComponent['sizeGuideBuckets']>[0];
+      const buckets = comp.sizeGuideBuckets(bars);
+      expect(buckets.map((bucket) => bucket.valueLabel)).toEqual(['30', '70', '110']);
+    });
+
+    it('returns no size buckets for empty input', () => {
+      expect(comp.sizeGuideBuckets([])).toEqual([]);
+      expect(comp.sizeGuideBuckets(null)).toEqual([]);
+    });
+
+    it('reads the median width highlight', () => {
+      const highlights = buildPageStub()['hpBandHighlights'] as unknown as Parameters<ApplicationInsightsPageComponent['medianWidth']>[0];
+      expect(comp.medianWidth(highlights)).toBe('12 HP');
+      expect(comp.medianWidth([])).toBe('');
+    });
+
+    it('builds the starter teaser from the sharing mix', () => {
+      const mix = buildPageStub()['sharingMix'] as unknown as Parameters<ApplicationInsightsPageComponent['sharingTeaser']>[0];
+      expect(comp.sharingTeaser(mix)).toBe('84 shared racks · 42 connected patches to start from');
+      expect(comp.sharingTeaser([])).toBe('');
     });
   });
 });
