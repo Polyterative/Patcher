@@ -266,10 +266,18 @@
                   >
                     <div class="price-drop-top__row">
                       <span class="price-drop-top__badge" aria-hidden="true">{{ topDrop.dropLabel }}</span>
-                      <span class="price-drop-top__main">
-                        <span class="hero-card__name">{{ topDrop.name }}</span>
-                        <span class="hero-card__maker">{{ topDrop.manufacturerName }}</span>
-                      </span>
+                      @if (topDrop.module; as module) {
+                        <app-module-minimal
+                          class="hero-card__module"
+                          [data]="module"
+                          [viewConfig]="heroModuleViewConfig"
+                        ></app-module-minimal>
+                      } @else {
+                        <span class="hero-card__fallback">
+                          <span class="hero-card__name">{{ topDrop.name }}</span>
+                          <span class="hero-card__maker">{{ topDrop.manufacturerName }}</span>
+                        </span>
+                      }
                       <span class="price-drop-top__price">{{ topDrop.priceRangeLabel }}</span>
                     </div>
                     <p class="price-drop-top__meta">From {{ topDrop.storeCount }} {{ topDrop.storeCount === 1 ? 'store' : 'stores' }} · estimated EUR</p>

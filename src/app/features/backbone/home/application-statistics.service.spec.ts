@@ -1198,6 +1198,7 @@ describe('ApplicationStatisticsService', () => {
         manufacturerName: 'Intellijel',
         dropLabel: '↓15%'
       }));
+      expect(section.topDrop?.module?.name).toBe('Maths');
       expect(backend.GET.publicModulesByIds).toHaveBeenCalledWith([5]);
       done();
     });
