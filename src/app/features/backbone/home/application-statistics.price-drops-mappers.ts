@@ -42,6 +42,7 @@ export function mapPriceDropsSection(
     moduleId: topSummary.moduleId,
     name: module?.name ?? `Module ${ topSummary.moduleId }`,
     manufacturerName: module?.manufacturer?.name ?? 'Unknown maker',
+    module,
     trendPercent: topSummary.trendPercent,
     dropLabel: formatPriceDropPercent(topSummary.trendPercent),
     priceRangeLabel: formatPriceDropRange(topSummary),

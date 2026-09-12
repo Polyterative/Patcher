@@ -143,6 +143,7 @@ export interface ApplicationPriceDropTopItem {
   moduleId: number;
   name: string;
   manufacturerName: string;
+  module?: MinimalModule;
   trendPercent: number;
   dropLabel: string;
   priceRangeLabel: string;
