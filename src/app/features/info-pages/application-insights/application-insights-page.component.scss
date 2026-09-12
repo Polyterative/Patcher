@@ -356,6 +356,12 @@
   margin-bottom: 1rem;
 }
 
+.price-drop-top .hero-card__module {
+  width: 100%;
+  max-width: 26rem;
+  min-width: 0;
+}
+
 .price-drop-top__row {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
