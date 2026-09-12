@@ -7,6 +7,7 @@ import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 interface InsightsStatsMock {
   page$: Subject<Record<string, unknown>>;
   discovery$: Subject<Record<string, unknown>>;
+  priceDrops$: BehaviorSubject<Record<string, unknown> | null>;
   heroBucket$: BehaviorSubject<string>;
   refresh: jasmine.Spy;
   selectHeroBucket: jasmine.Spy;
@@ -20,6 +21,13 @@ function mockStatistics(): InsightsStatsMock {
   return {
     page$: new Subject<Record<string, unknown>>(),
     discovery$: new Subject<Record<string, unknown>>(),
+    priceDrops$: new BehaviorSubject<Record<string, unknown> | null>({
+      trackedCount: 0,
+      dropCount: 0,
+      takeaway: 'Not enough price history yet.',
+      topDrop: null,
+      suppressed: true
+    }),
     heroBucket$: new BehaviorSubject<string>('mostOwned'),
     refresh: jasmine.createSpy('refresh'),
     selectHeroBucket: jasmine.createSpy('selectHeroBucket'),
@@ -219,6 +227,38 @@ describe('ApplicationInsightsPageComponent', () => {
       stats.discovery$.error(new Error('discovery failed'));
     });
 
+    it('surfaces price-drops errors while keeping page content', (done) => {
+      let count = 0;
+      comp.vm$.subscribe((vm) => {
+        count++;
+        if (count === 2) {
+          expect(vm.priceDropsError).toBeTrue();
+          expect(vm.priceDrops).toBeNull();
+          expect(vm.page).not.toBeNull();
+          done();
+        }
+      });
+      stats.priceDrops$.error(new Error('price drops failed'));
+      stats.page$.next(buildPageStub());
+      stats.discovery$.next(buildDiscoveryStub() as unknown as Record<string, unknown>);
+    });
+
+    it('passes price drops through to the template vm', (done) => {
+      let count = 0;
+      comp.vm$.subscribe((vm) => {
+        count++;
+        if (count === 2) {
+          const priceDrops = vm.priceDrops as unknown as {dropCount: number; suppressed: boolean};
+          expect(priceDrops.dropCount).toBe(0);
+          expect(priceDrops.suppressed).toBeTrue();
+          expect(vm.priceDropsError).toBeFalse();
+          done();
+        }
+      });
+      stats.page$.next(buildPageStub());
+      stats.discovery$.next(buildDiscoveryStub() as unknown as Record<string, unknown>);
+    });
+
     it('passes the derived racks takeaway through to the template vm', (done) => {
       let count = 0;
       comp.vm$.subscribe((vm) => {
@@ -283,6 +323,11 @@ describe('ApplicationInsightsPageComponent', () => {
     it('delegates support link clicks with the link target', () => {
       comp.onSupportLinkClick('fresh_browse_racks');
       expect(stats.trackSupportLinkClicked).toHaveBeenCalledWith('fresh_browse_racks');
+    });
+
+    it('delegates price-drop module clicks as a support link', () => {
+      comp.onPriceDropModuleClick();
+      expect(stats.trackSupportLinkClicked).toHaveBeenCalledWith('price_drop_module');
     });
 
     it('delegates discovery rail clicks with the rail target', () => {

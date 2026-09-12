@@ -175,6 +175,7 @@ export interface SupabaseQueriesService
     'getModulePriceListings'
       | 'getModulePriceHistorySnapshots'
       | 'getRecentModuleMarketPrices'
+      | 'getPriceDropCandidateSnapshots'
   >,
   Pick<
     SupabasePossessionQueries,

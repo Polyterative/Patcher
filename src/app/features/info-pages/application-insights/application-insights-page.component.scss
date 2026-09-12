@@ -351,6 +351,56 @@
   margin-top: 1rem;
 }
 
+.price-drop-top {
+  display: grid;
+  margin-bottom: 1rem;
+}
+
+.price-drop-top__row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.9rem;
+  align-items: start;
+}
+
+.price-drop-top__badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 3rem;
+  height: 2rem;
+  padding: 0 0.6rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--insights-blue-600);
+  background: var(--insights-blue-050);
+  border-radius: 0.75rem;
+  white-space: nowrap;
+}
+
+.price-drop-top__main {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.price-drop-top__price {
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: rgba(24, 37, 53, 0.78);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.price-drop-top__meta {
+  margin: 0.6rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: rgba(24, 37, 53, 0.62);
+  font-variant-numeric: tabular-nums;
+}
+
 .hero-card__card:focus-visible,
 .bucket-toggle__button:focus-visible,
 .retry-button:focus-visible {
@@ -692,6 +742,15 @@
   }
 
   .hero-card__count {
+    grid-column: 2;
+    text-align: start;
+  }
+
+  .price-drop-top__row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .price-drop-top__price {
     grid-column: 2;
     text-align: start;
   }

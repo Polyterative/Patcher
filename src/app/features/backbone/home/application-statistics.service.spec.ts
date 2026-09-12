@@ -1,4 +1,4 @@
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { TestBed } from '@angular/core/testing';
 import { ApplicationStatisticsService } from './application-statistics.service';
 import { MinimalModule } from 'src/app/models/module';
@@ -200,7 +200,8 @@ describe('ApplicationStatisticsService', () => {
           buildModule(5, 'Maths', 'Intellijel'),
           buildModule(8, 'Clouds', 'Mutable Instruments'),
           buildModule(11, 'Dixie II+', 'Intellijel')
-        ]))
+        ])),
+        priceDropCandidateSnapshots: jasmine.createSpy('GET.priceDropCandidateSnapshots').and.returnValue(of([]))
       }
     };
 
@@ -1147,6 +1148,61 @@ describe('ApplicationStatisticsService', () => {
         {label: 'Racks', valueLabel: '95 (95%)', widthPercent: 88, tone: 'emerald'},
         {label: 'Patches', valueLabel: '5 (5%)', widthPercent: 12, tone: 'brand'}
       ]);
+      done();
+    });
+  });
+
+  it('suppresses price drops while price history is too thin to compare', (done) => {
+    const {backend, service} = build();
+
+    service.priceDrops$.subscribe((section) => {
+      expect(backend.GET.priceDropCandidateSnapshots).toHaveBeenCalled();
+      expect(section.trackedCount).toBe(0);
+      expect(section.dropCount).toBe(0);
+      expect(section.topDrop).toBeNull();
+      expect(section.suppressed).toBeTrue();
+      expect(section.takeaway).toContain('Not enough price history yet');
+      done();
+    });
+  });
+
+  it('maps a reliable price drop with the public module name attached', (done) => {
+    const {backend, service} = build();
+    (backend.GET.priceDropCandidateSnapshots as jasmine.Spy).and.returnValue(of([
+      {id: 1, listingId: 1, storeId: 1, moduleId: 5, observedAt: '2026-07-25T00:00:00.000Z', priceAmountMinor: 40000, currency: 'EUR', availability: 'in_stock', source: 'api'},
+      {id: 2, listingId: 2, storeId: 2, moduleId: 5, observedAt: '2026-08-05T00:00:00.000Z', priceAmountMinor: 39500, currency: 'EUR', availability: 'in_stock', source: 'api'},
+      {id: 3, listingId: 1, storeId: 1, moduleId: 5, observedAt: '2026-08-25T00:00:00.000Z', priceAmountMinor: 36000, currency: 'EUR', availability: 'in_stock', source: 'api'},
+      {id: 4, listingId: 1, storeId: 1, moduleId: 5, observedAt: '2026-09-05T00:00:00.000Z', priceAmountMinor: 34000, currency: 'EUR', availability: 'in_stock', source: 'api'},
+      {id: 5, listingId: 3, storeId: 1, moduleId: 8, observedAt: '2026-08-10T00:00:00.000Z', priceAmountMinor: 30000, currency: 'EUR', availability: 'in_stock', source: 'api'},
+      {id: 6, listingId: 3, storeId: 1, moduleId: 8, observedAt: '2026-09-01T00:00:00.000Z', priceAmountMinor: 30000, currency: 'EUR', availability: 'in_stock', source: 'api'}
+    ]));
+
+    service.priceDrops$.subscribe((section) => {
+      expect(section.trackedCount).toBe(2);
+      expect(section.dropCount).toBe(1);
+      expect(section.suppressed).toBeFalse();
+      expect(section.takeaway).toContain('1 tracked module dropped reliably');
+      expect(section.topDrop).toEqual(jasmine.objectContaining({
+        moduleId: 5,
+        name: 'Maths',
+        manufacturerName: 'Intellijel',
+        dropLabel: '↓15%'
+      }));
+      expect(backend.GET.publicModulesByIds).toHaveBeenCalledWith([5]);
+      done();
+    });
+  });
+
+  it('falls back to a suppressed price-drops section when snapshots fail', (done) => {
+    const {backend, service} = build();
+    (backend.GET.priceDropCandidateSnapshots as jasmine.Spy).and.returnValue(
+      throwError(() => new Error('snapshots failed'))
+    );
+
+    service.priceDrops$.subscribe((section) => {
+      expect(section.suppressed).toBeTrue();
+      expect(section.topDrop).toBeNull();
+      expect(section.dropCount).toBe(0);
       done();
     });
   });

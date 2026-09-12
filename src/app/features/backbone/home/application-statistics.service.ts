@@ -3,6 +3,7 @@ import {
   BehaviorSubject,
   ReplaySubject,
   Subject,
+  catchError,
   of
 } from 'rxjs';
 import {
@@ -19,9 +20,16 @@ import { ApplicationStatisticsMappers } from './application-statistics.mappers';
 import {
   ApplicationDiscoveryBucket,
   ApplicationDiscoveryEntry,
-  ApplicationDiscoverySnapshot
+  ApplicationDiscoverySnapshot,
+  ApplicationPriceDropsSection
 } from './application-statistics.models';
 import { MinimalModule } from 'src/app/models/module';
+import {
+  buildPriceDropSummaries,
+  getReliablePriceDrops,
+  groupPriceDropSnapshotsByModule
+} from '../../backend/module-price-drops.utils';
+import { mapPriceDropsSection } from './application-statistics.price-drops-mappers';
 
 const HOME_DISCOVERY_LIMIT = 6;
 const HOME_DISCOVERY_MIN_COUNT = 1;
@@ -40,6 +48,8 @@ export type {
   ApplicationInsightsTrendLegendItem,
   ApplicationInsightsTrendMomentumItem,
   ApplicationDiscoverySnapshot,
+  ApplicationPriceDropsSection,
+  ApplicationPriceDropTopItem,
   ApplicationPrivateFootprint,
   ApplicationPrivateFootprintSlice,
   MetricTone,
@@ -83,6 +93,29 @@ export class ApplicationStatisticsService extends SubManager {
 
       return this.backend.GET.publicModulesByIds(moduleIds).pipe(
         map((modules) => this.attachDiscoveryModules(snapshot, modules))
+      );
+    })
+  );
+  readonly priceDrops$ = this.refreshRequest$.pipe(
+    switchMap(() => this.backend.GET.priceDropCandidateSnapshots().pipe(
+      catchError(() => of([]))
+    )),
+    switchMap((snapshots) => {
+      const grouped = groupPriceDropSnapshotsByModule(snapshots);
+      const summaries = buildPriceDropSummaries(grouped);
+      const reliable = getReliablePriceDrops(summaries);
+      const topIds = reliable.slice(0, 3).map((drop) => drop.summary.moduleId);
+
+      if (topIds.length === 0) {
+        return of(mapPriceDropsSection(snapshots, new Map()));
+      }
+
+      return this.backend.GET.publicModulesByIds(topIds).pipe(
+        map((modules) => mapPriceDropsSection(
+          snapshots,
+          new Map(modules.map((module) => [module.id, module]))
+        )),
+        catchError(() => of(mapPriceDropsSection(snapshots, new Map())))
       );
     })
   );

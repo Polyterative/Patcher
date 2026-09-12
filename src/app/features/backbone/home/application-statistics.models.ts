@@ -64,6 +64,14 @@ export interface ApplicationPrivateFootprint {
   racksTakeaway: string;
 }
 
+export interface ApplicationPriceDropsSection {
+  trackedCount: number;
+  dropCount: number;
+  takeaway: string;
+  topDrop: ApplicationPriceDropTopItem | null;
+  suppressed: boolean;
+}
+
 export interface ApplicationInsightsTrendDay {
   date: string;
   label: string;
@@ -130,6 +138,18 @@ export interface ApplicationInsightsPage {
 }
 
 export type ApplicationDiscoveryBucket = 'mostOwned' | 'mostWanted' | 'mostSold';
+
+export interface ApplicationPriceDropTopItem {
+  moduleId: number;
+  name: string;
+  manufacturerName: string;
+  trendPercent: number;
+  dropLabel: string;
+  priceRangeLabel: string;
+  storeCount: number;
+  earliestObservedAt: string;
+  latestObservedAt: string;
+}
 
 export interface ApplicationDiscoveryEntry {
   id: number;
