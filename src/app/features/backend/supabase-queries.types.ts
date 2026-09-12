@@ -68,17 +68,6 @@ export type ModulePriceHistorySnapshotRow = Pick<
   'id' | 'listing_id' | 'observed_at' | 'price_amount_minor' | 'currency' | 'availability' | 'source'
 >;
 
-export type PriceDropCandidateRow = Pick<
-  ModulePriceSnapshotRow,
-  'id' | 'listing_id' | 'observed_at' | 'price_amount_minor' | 'currency' | 'availability' | 'source'
-> & {
-  listing: {
-    module_id: number;
-    store_id: number;
-    active: boolean;
-  } | null;
-};
-
 export type ModulePriceSnapshotRow = {
   id: number;
   listing_id: number;

@@ -4,6 +4,7 @@ import {
   ReplaySubject,
   Subject,
   catchError,
+  forkJoin,
   of
 } from 'rxjs';
 import {
@@ -97,25 +98,51 @@ export class ApplicationStatisticsService extends SubManager {
     })
   );
   readonly priceDrops$ = this.refreshRequest$.pipe(
-    switchMap(() => this.backend.GET.priceDropCandidateSnapshots().pipe(
-      catchError(() => of([]))
+    switchMap(() => this.backend.GET.applicationModuleDiscovery(
+      HOME_DISCOVERY_LIMIT,
+      HOME_DISCOVERY_MIN_COUNT
+    ).pipe(
+      catchError(() => of({mostOwned: [], mostWanted: [], mostSold: []}))
     )),
-    switchMap((snapshots) => {
-      const grouped = groupPriceDropSnapshotsByModule(snapshots);
-      const summaries = buildPriceDropSummaries(grouped);
-      const reliable = getReliablePriceDrops(summaries);
-      const topIds = reliable.slice(0, 3).map((drop) => drop.summary.moduleId);
+    switchMap((snapshot) => {
+      const moduleIds = [...new Set([
+        ...snapshot.mostOwned,
+        ...snapshot.mostWanted,
+        ...snapshot.mostSold
+      ].map((entry) => entry.id))].filter((id) => Number.isFinite(id) && id > 0);
 
-      if (topIds.length === 0) {
-        return of(mapPriceDropsSection(snapshots, new Map()));
+      if (moduleIds.length === 0) {
+        return of(mapPriceDropsSection([], new Map()));
       }
 
-      return this.backend.GET.publicModulesByIds(topIds).pipe(
-        map((modules) => mapPriceDropsSection(
-          snapshots,
-          new Map(modules.map((module) => [module.id, module]))
-        )),
-        catchError(() => of(mapPriceDropsSection(snapshots, new Map())))
+      return forkJoin(
+        moduleIds.map((moduleId) =>
+          this.backend.GET.modulePriceHistorySnapshots(moduleId).pipe(
+            map((snapshots) => snapshots.map((item) => ({...item, moduleId}))),
+            catchError(() => of([]))
+          )
+        )
+      ).pipe(
+        map((perModule) => perModule.flat()),
+        switchMap((snapshots) => {
+          const grouped = groupPriceDropSnapshotsByModule(snapshots);
+          const summaries = buildPriceDropSummaries(grouped);
+          const topIds = getReliablePriceDrops(summaries)
+            .slice(0, 3)
+            .map((drop) => drop.summary.moduleId);
+
+          if (topIds.length === 0) {
+            return of(mapPriceDropsSection(snapshots, new Map()));
+          }
+
+          return this.backend.GET.publicModulesByIds(topIds).pipe(
+            map((modules) => mapPriceDropsSection(
+              snapshots,
+              new Map(modules.map((module) => [module.id, module]))
+            )),
+            catchError(() => of(mapPriceDropsSection(snapshots, new Map())))
+          );
+        })
       );
     })
   );
