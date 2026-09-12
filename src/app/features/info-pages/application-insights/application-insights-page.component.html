@@ -237,6 +237,55 @@
             </div>
           </lib-hero-content-card>
 
+          <lib-hero-content-card
+            titleNormal="Recent price drops"
+            icon="trending_down"
+            description="Reliable module price drops from the last 60 days of Price Hub history."
+          >
+            @if (vm.priceDropsError) {
+              <div class="error-block" role="alert">
+                <p>Price drops could not be loaded.</p>
+                <button type="button" class="retry-button" (click)="retry()">Retry</button>
+              </div>
+            } @else if (!vm.priceDrops) {
+              <p class="empty-note">Checking recent price history…</p>
+            } @else if (vm.priceDrops.suppressed || !vm.priceDrops.topDrop) {
+              <p class="takeaway">{{ vm.priceDrops.takeaway }}</p>
+              <p class="empty-note">Drops appear once enough tracked modules have comparable 60-day history. Small wiggles and single-blip errors stay filtered out.</p>
+            } @else {
+              <p class="takeaway">{{ vm.priceDrops.takeaway }}</p>
+              @if (vm.priceDrops.topDrop; as topDrop) {
+                <div class="price-drop-top">
+                  <lib-clean-card
+                    class="hero-card__card"
+                    [routerLink]="['/modules/details', topDrop.moduleId]"
+                    (click)="onPriceDropModuleClick()"
+                    role="link"
+                    tabindex="0"
+                    [attr.aria-label]="topDrop.name + ' by ' + topDrop.manufacturerName + ', price drop ' + topDrop.dropLabel + ', ' + topDrop.priceRangeLabel"
+                  >
+                    <div class="price-drop-top__row">
+                      <span class="price-drop-top__badge" aria-hidden="true">{{ topDrop.dropLabel }}</span>
+                      <span class="price-drop-top__main">
+                        <span class="hero-card__name">{{ topDrop.name }}</span>
+                        <span class="hero-card__maker">{{ topDrop.manufacturerName }}</span>
+                      </span>
+                      <span class="price-drop-top__price">{{ topDrop.priceRangeLabel }}</span>
+                    </div>
+                    <p class="price-drop-top__meta">From {{ topDrop.storeCount }} {{ topDrop.storeCount === 1 ? 'store' : 'stores' }} · estimated EUR</p>
+                  </lib-clean-card>
+                </div>
+              }
+              <div class="hero-actions">
+                <app-brand-primary-button
+                  routerLink="/modules/browser"
+                  icon="view_module"
+                  (click$)="onSupportLinkClick('price_drops_browse_modules')"
+                >Browse modules</app-brand-primary-button>
+              </div>
+            }
+          </lib-hero-content-card>
+
           <div class="insights-duo">
             <lib-hero-content-card
               titleNormal="What fits your case?"
@@ -460,6 +509,7 @@
           <p class="method-details__item"><strong>Top modules —</strong> public modules ranked from community ownership signals. Top 6 per bucket, minimum count 1. Buckets below that threshold show the empty note instead of a ranking.</p>
           <p class="method-details__item"><strong>Fresh this month —</strong> daily counts of public-profile updates — public modules, shared racks, and connected public patches. Window: last 30 days only; no long-range trend is implied. The New-this-week strip reads the first two module-freshness cohorts (0–7 days, 8–30 days).</p>
           <p class="method-details__item"><strong>Makers to explore —</strong> Most-collected ranks makers by public modules all-time; Heating up ranks makers by public modules updated in the last 30 days. Only makers with at least one module are shown; empty results are suppressed.</p>
+          <p class="method-details__item"><strong>Recent price drops —</strong> 60-day Price Hub history in estimated EUR. A drop counts only when it falls 5–60%, stays at or above ~€20 on both ends, spans at least 7 days, and is corroborated by at least 3 snapshots or 2 stores. Zero prices, tiny wiggles, and mixed-variant ranges stay filtered out. Only public modules are named.</p>
           <p class="method-details__item"><strong>What fits your case? —</strong> public modules grouped by format standard, all-time counts.</p>
           <p class="method-details__item"><strong>What size? —</strong> public modules grouped from the HP-band distribution into Tiny (0–5 HP), Classic (6–16 HP), and Big (17+ HP). Median width is the catalogue median.</p>
           <p class="method-details__item"><strong>Library now —</strong> point-in-time totals from the cached public snapshot. Absolute counts of the all-time footprint — not rates, not a 30-day window. The starter line reads shared-rack and connected-patch totals from the sharing mix.</p>

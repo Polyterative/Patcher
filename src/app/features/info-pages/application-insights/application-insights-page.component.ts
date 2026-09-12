@@ -18,6 +18,7 @@ import {
   ApplicationInsightsHighlight,
   ApplicationInsightsMixSegment,
   ApplicationInsightsPage,
+  ApplicationPriceDropsSection,
   ApplicationPrivateFootprintSlice,
   ApplicationStatisticsService
 } from '../../backbone/home/application-statistics.service';
@@ -51,6 +52,8 @@ export interface ApplicationInsightsVm {
   heroEmpty: boolean;
   heroTakeaway: string;
   activityChips: ApplicationInsightsActivityChip[];
+  priceDrops: ApplicationPriceDropsSection | null;
+  priceDropsError: boolean;
   updatedLabel: string;
   isLoading: boolean;
   pageError: boolean;
@@ -65,6 +68,8 @@ const LOADING_VM: ApplicationInsightsVm = {
   heroEmpty: true,
   heroTakeaway: '',
   activityChips: [],
+  priceDrops: null,
+  priceDropsError: false,
   updatedLabel: '',
   isLoading: true,
   pageError: false,
@@ -128,17 +133,30 @@ export class ApplicationInsightsPageComponent {
         discoveryError: true
       }))
     );
+    const priceDropsState$ = this.applicationStatisticsService.priceDrops$.pipe(
+      map((priceDrops) => ({
+        priceDrops: priceDrops as ApplicationPriceDropsSection | null,
+        priceDropsError: false
+      })),
+      catchError(() => of({
+        priceDrops: null as ApplicationPriceDropsSection | null,
+        priceDropsError: true
+      }))
+    );
     this.vm$ = combineLatest([
       pageState$,
       discoveryState$,
-      this.applicationStatisticsService.heroBucket$
+      this.applicationStatisticsService.heroBucket$,
+      priceDropsState$
     ]).pipe(
-      map(([pageState, discoveryState, bucket]) => this.mapVm(
+      map(([pageState, discoveryState, bucket, priceDropsState]) => this.mapVm(
         pageState.page,
         pageState.pageError,
         discoveryState.discovery,
         discoveryState.discoveryError,
-        bucket
+        bucket,
+        priceDropsState.priceDrops,
+        priceDropsState.priceDropsError
       )),
       startWith(LOADING_VM)
     );
@@ -174,6 +192,10 @@ export class ApplicationInsightsPageComponent {
 
   onDiscoveryRailClick(target: string): void {
     this.applicationStatisticsService.trackDiscoveryRailClicked(target);
+  }
+
+  onPriceDropModuleClick(): void {
+    this.applicationStatisticsService.trackSupportLinkClicked('price_drop_module');
   }
 
   onMethodDetailsToggle(event: Event): void {
@@ -272,7 +294,9 @@ export class ApplicationInsightsPageComponent {
     pageError: boolean,
     discovery: ApplicationDiscoverySnapshot | null,
     discoveryError: boolean,
-    bucket: ApplicationDiscoveryBucket
+    bucket: ApplicationDiscoveryBucket,
+    priceDrops: ApplicationPriceDropsSection | null,
+    priceDropsError: boolean
   ): ApplicationInsightsVm {
     const heroEntries = discovery?.[bucket] ?? [];
     const days = page?.activityChart.days ?? [];
@@ -290,6 +314,8 @@ export class ApplicationInsightsPageComponent {
         value: item.valueLabel,
         icon: ACTIVITY_CHIP_ICONS[item.label] ?? 'timeline'
       })),
+      priceDrops,
+      priceDropsError,
       updatedLabel: lastDay ? lastDay.label : '',
       isLoading: false,
       pageError,
