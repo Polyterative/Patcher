@@ -58,11 +58,6 @@ import {
   getModuleRecentMarketPrice,
   ModuleRecentMarketPriceListing
 } from './module-price-summary.utils';
-import {
-  PRICE_DROP_SNAPSHOT_ROW_LIMIT,
-  PRICE_DROP_WINDOW_DAYS,
-  PriceDropHistorySnapshot
-} from './module-price-drops.utils';
 
 export type {
   CurrentUserContributorStats,
@@ -109,7 +104,6 @@ import {
   ModuleRecentMarketPriceListingRow,
   ModulePriceSnapshotRow,
   ModuleStoreListingRow,
-  PriceDropCandidateRow,
   PublicModuleInsightRow,
   ManufacturerInsightStats
 } from './supabase-queries.types';
@@ -341,60 +335,6 @@ export class SupabaseModulePriceQueries extends SupabaseQueriesBase {
           ))
           .filter((summary): summary is ModuleRecentMarketPrice => summary !== null);
       })
-    );
-  }
-
-
-
-  @Cacheable({
-    maxAge: priceHubCacheTime,
-    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('priceHub'))),
-    cacheHasher: ([windowDays, rowLimit]) => [`priceDrops:${ windowDays }:${ rowLimit }`],
-    maxCacheCount: 5
-  })
-  getPriceDropCandidateSnapshots(
-    windowDays = PRICE_DROP_WINDOW_DAYS,
-    rowLimit = PRICE_DROP_SNAPSHOT_ROW_LIMIT
-  ): Observable<PriceDropHistorySnapshot[]> {
-    const boundedWindowDays = Math.min(Math.max(Math.trunc(windowDays), 7), 90);
-    const boundedRowLimit = Math.min(Math.max(Math.trunc(rowLimit), 100), 10000);
-    const observedSince = new Date(Date.now() - boundedWindowDays * 24 * 60 * 60 * 1000).toISOString();
-
-    return rxFrom(
-      this.supabase
-        .from(DbPaths.module_price_snapshots)
-        .select(`
-          id,
-          listing_id,
-          observed_at,
-          price_amount_minor,
-          currency,
-          availability,
-          source,
-          listing:${ DbPaths.module_store_listings }!inner(module_id,store_id,active)
-        `)
-        .filter('listing.active', 'eq', true)
-        .gte('observed_at', observedSince)
-        .order('observed_at', {ascending: false})
-        .order('id', {ascending: false})
-        .limit(boundedRowLimit)
-    ).pipe(
-      remapErrors(),
-      map((response: {data: PriceDropCandidateRow[] | null}) =>
-        (response.data ?? [])
-          .filter((row) => Number.isFinite(row.listing?.module_id) && Number.isFinite(row.listing?.store_id))
-          .map((row) => ({
-            id: row.id,
-            listingId: row.listing_id,
-            storeId: row.listing.store_id,
-            moduleId: row.listing.module_id,
-            observedAt: row.observed_at,
-            priceAmountMinor: row.price_amount_minor,
-            currency: row.currency,
-            availability: row.availability,
-            source: row.source
-          }))
-      )
     );
   }
 

@@ -10,15 +10,14 @@ Add ONE new section to `/info/insights` with TWO insights about recent price dro
 
 ### Layer 1 — MVP
 
-- [ ] New `module-price-drops.utils.ts` with strict reliability filter + specs
-- [ ] New `GET.priceDropCandidateSnapshots` (single 60d query, public RLS, no migration) + wiring
-- [ ] `ApplicationStatisticsService.priceDrops$` returning tracked/drop counts + top drop with module name
-- [ ] Insights page card after Makers with Insight 1 (count) + Insight 2 (biggest reliable drop + link), empty/error/suppressed states, method note
+- [x] New `module-price-drops.utils.ts` with strict reliability filter + specs
+- [x] `ApplicationStatisticsService.priceDrops$` over discovery Top modules via existing per-module histories + module names
+- [x] Insights page card after Makers with Insight 1 (count) + Insight 2 (biggest reliable drop + link), empty/error/suppressed states, method note
 - [ ] Targeted specs + `pnpm lint` clean
 
 ### Layer 2 — Structural
 
-- [ ] Verify cache keys (`priceHub` bust) and no N+1 (one snapshots query + one `publicModulesByIds` for top drops only)
+- [ ] Verify cache keys (`priceHub` bust) and no N+1 blowup (cached discovery + bounded per-module histories + one `publicModulesByIds` for top drops only)
 - [ ] Confirm RLS anon-readable (already granted), no policy change
 
 ### Layer 3 — Polish
@@ -38,6 +37,7 @@ Add ONE new section to `/info/insights` with TWO insights about recent price dro
 - 2026-09-12 · Strict filtering (owner-approved): drop 5–60%, floor €20 both ends, all points >0, ≥3 points OR ≥2 stores, earliest–latest span ≥7d, max/min <3x. Rationale: hides cents-vs-euros, kit-vs-assembled, single-blip scraper errors; may hide some real clearance deals (accepted).
 - 2026-09-12 · Frontend-only, no migration/RPC change: single snapshots query (60d, active listings, limit 5000) + client-side EUR normalize via existing FX table + `getModuleSparsePriceHistorySummary`. No backend-plan-reviewer gate (no persistent-data-shape change), no RLS change (anon SELECT already granted).
 - 2026-09-12 · Only public modules named (via `publicModulesByIds`); counts derived from snapshots joined to active listings. Suppressed until ≥1 reliable drop; otherwise empty note explains coverage (never misleading zero-as-signal).
+- 2026-09-12 · REDESIGN after live-data probe: the single global snapshots query is unworkable — PostgREST caps responses at 500 rows, so an `observed_at desc` slice covers only the last ~12h of crawl output (436 modules, 373 with a single point → no history → permanent suppression). Replaced with per-module `getModulePriceHistorySnapshots` over the discovery Top modules (≤18 ids, cached discovery + 1h priceHub history cache, ≤13 small parallel requests, per-module errors isolated). Live probe confirmed real qualifying drops among hero modules (Disting MK4 −24%, Cs-L −12%, Knight Gallop/ochd −5%) and correct rejection of a +337% mixed-variant error. Global-catalogue coverage remains a follow-up requiring a server-side aggregation RPC (migration + owner approval).
 
 ## Documentation impact
 

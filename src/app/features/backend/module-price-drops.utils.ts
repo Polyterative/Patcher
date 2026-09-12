@@ -13,7 +13,6 @@ export const PRICE_DROP_MAX_PERCENT = 60;
 export const PRICE_DROP_MIN_PRICE_EUR_MINOR = 2000;
 export const PRICE_DROP_MIN_SPAN_DAYS = 7;
 export const PRICE_DROP_MAX_RANGE_RATIO = 3;
-export const PRICE_DROP_SNAPSHOT_ROW_LIMIT = 5000;
 
 export interface PriceDropHistorySnapshot extends ModulePriceHistorySnapshot {
   moduleId: number;
