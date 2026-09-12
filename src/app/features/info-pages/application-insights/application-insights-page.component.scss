@@ -353,15 +353,29 @@
 
 .price-drop-top {
   display: grid;
+  justify-items: start;
   margin-bottom: 1rem;
 }
 
-.price-drop-top__row {
-  display: grid;
-  grid-template-columns: auto minmax(0, 24rem) auto;
-  justify-content: start;
-  gap: 0.9rem;
-  align-items: start;
+.price-drop-top > .hero-card__card {
+  width: fit-content;
+  max-width: 36rem;
+  min-width: 0;
+}
+
+.price-drop-top__readout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.price-drop-top .hero-card__module,
+.price-drop-top .hero-card__fallback {
+  max-width: 24rem;
+  min-width: 0;
 }
 
 .price-drop-top__badge {
@@ -384,7 +398,7 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: rgba(24, 37, 53, 0.78);
-  text-align: right;
+  text-align: left;
   white-space: nowrap;
 }
 
@@ -741,12 +755,12 @@
     text-align: start;
   }
 
-  .price-drop-top__row {
-    grid-template-columns: auto minmax(0, 1fr);
+  .price-drop-top > .hero-card__card {
+    width: 100%;
+    max-width: none;
   }
 
   .price-drop-top__price {
-    grid-column: 2;
     text-align: start;
   }
 
