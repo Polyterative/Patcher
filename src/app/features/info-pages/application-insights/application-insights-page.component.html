@@ -1,5 +1,5 @@
 @if (vm$ | async; as vm) {
-  <lib-screen-wrapper maxSize="110rem">
+  <div class="col gap1">
     @if (vm.isLoading) {
       <div class="insights-loader">
         <lib-hero-content-card
@@ -526,5 +526,5 @@
         </details>
       </div>
     }
-  </lib-screen-wrapper>
+  </div>
 }
