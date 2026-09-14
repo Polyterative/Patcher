@@ -826,6 +826,174 @@ html.dark {
     border-bottom-color: rgba(148, 184, 220, 0.14);
   }
 
+  // Manufacturer rows: tame the white frost so hover doesn't glare.
+  app-manufacturer-row {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  app-manufacturer-row:nth-child(even) {
+    background: rgba(255, 255, 255, 0.025);
+  }
+
+  app-manufacturer-row:hover {
+    background: rgba(255, 255, 255, 0.07);
+  }
+
+  .manufacturer-row-panel-group-label {
+    background: rgba(21, 28, 38, 0.72);
+    border-color: rgba(148, 184, 220, 0.25);
+    color: rgba(215, 228, 242, 0.85);
+  }
+
+  // Detail action links + floating save actions that ship as white sheets.
+  a.module-detail-action-button {
+    background: #1b2431 !important; // px-ok: overrides light !important sheet
+    border-color: #5a86b5 !important; // px-ok: overrides light !important border
+    color: #dbe7f5 !important; // px-ok: keeps label legible on dark sheet
+  }
+
+  a.module-detail-action-button:hover {
+    background: #243043 !important; // px-ok: dark hover lift
+  }
+
+  .module-detail-save-floating-action {
+    background: #1b2431;
+    border-color: #5a86b5;
+    color: #dbe7f5;
+  }
+
+  .module-detail-save-floating-action:hover:not(:disabled) {
+    background: #243043;
+  }
+
+  .module-detail-save-floating-action:disabled {
+    background: #141a24;
+    color: rgba(158, 178, 199, 0.55);
+  }
+
+  .module-detail-acquisition-row,
+  .module-panel-ratio-row {
+    background: var(--app-surface);
+    border-color: var(--app-border);
+  }
+
+  .module-detail-acquisition-row span,
+  .module-detail-acquisition-row p {
+    color: var(--app-ink-2);
+  }
+
+  .module-detail-acquisitions__latest {
+    color: #a9c9ef;
+  }
+
+  .module-detail-dev-group__label {
+    color: var(--app-ink-3);
+  }
+
+  .module-panel-ratio-diagnostics {
+    background: var(--app-surface);
+    border-color: var(--app-border);
+  }
+
+  .module-panel-ratio-diagnostics__header,
+  .module-panel-ratio-diagnostics__threshold {
+    color: var(--app-ink-2);
+  }
+
+  .module-panel-ratio-row--match {
+    background: rgba(13, 112, 35, 0.12);
+  }
+
+  .module-panel-ratio-row--mismatch,
+  .merge-into-target-form {
+    background: rgba(165, 73, 11, 0.12);
+  }
+
+  .merge-into-target-form__error {
+    color: #e89a9a;
+  }
+
+  // Rack/patch editor chrome: frosted controls that glare on dark canvas.
+  .rackEditorResponsiveActions__button,
+  .rackEditorFloatingOptions__panel,
+  .rackEditorFloatingOptions__quickToggle,
+  .rackEditorFloatingOptions__analysisModeButton,
+  .rackEditorFloatingOptions__actionButton {
+    background: rgba(27, 36, 49, 0.9);
+    border-color: rgba(148, 184, 220, 0.25);
+    color: rgba(215, 228, 242, 0.9);
+  }
+
+  .rackEditorFloatingOptions__actionButton:hover,
+  .rackEditorFloatingOptions__actionButton:focus-visible,
+  .rackEditorResponsiveActions__button:hover,
+  .rackEditorResponsiveActions__button:focus-visible {
+    background: rgba(35, 46, 61, 0.96);
+    border-color: rgba(148, 184, 220, 0.45);
+  }
+
+  .rackEditorFloatingOptions__analysisModeButton--active,
+  .rackEditorFloatingOptions__analysisFocusButton--active {
+    background: rgba(143, 184, 232, 0.16);
+    border-color: rgba(143, 184, 232, 0.45);
+    color: rgba(240, 246, 252, 0.96);
+  }
+
+  .rackEditorFloatingOptions__actionButton--primary {
+    background: rgba(13, 112, 35, 0.24);
+    border-color: rgba(124, 199, 143, 0.4);
+    color: #7cc78f;
+  }
+
+  .rackEditorFloatingOptions__toggle {
+    background: #1b2431;
+    border-color: #5a86b5;
+    color: #dbe7f5;
+  }
+
+  .rackEditorResponsiveActions__touchGuide {
+    background: linear-gradient(180deg, rgba(27, 36, 49, 0.96), rgba(21, 28, 38, 0.94));
+    border-color: var(--app-border);
+    color: rgba(215, 228, 242, 0.9);
+  }
+
+  .rowPowerPanel {
+    background: rgba(27, 36, 49, 0.985);
+    border-color: rgba(148, 184, 220, 0.2);
+    box-shadow: 0 0.85rem 1.9rem rgba(0, 0, 0, 0.5);
+    color: rgba(215, 228, 242, 0.95);
+  }
+
+  .hpIndicator,
+  .moduleHoverStats {
+    background: rgba(27, 36, 49, 0.95);
+    border-color: rgba(148, 184, 220, 0.25);
+    color: #a9c9ef;
+  }
+
+  // Patch-editor control bar, empty state + CV inline popup.
+  .patch-editor-controls {
+    background: rgba(27, 36, 49, 0.88);
+  }
+
+  .patch-editor-empty-state {
+    background: rgba(255, 255, 255, 0.045);
+  }
+
+  .patch-editor-rack-visual__cv-inline {
+    background: rgba(27, 36, 49, 0.97);
+    border-color: rgba(148, 184, 220, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  // Collection editor washes.
+  .module-collection-editor__visibility,
+  .module-collection-editor__empty-state {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(148, 184, 220, 0.18);
+    color: rgba(198, 213, 230, 0.75);
+  }
+
   // Quick-add action floating on result cards.
   .module-list-card-action {
     background: rgba(27, 36, 49, 0.92);
