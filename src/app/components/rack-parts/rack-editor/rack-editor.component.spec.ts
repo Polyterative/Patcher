@@ -1,23 +1,35 @@
-import { ChangeDetectorRef } from '@angular/core';
+import { ChangeDetectorRef, NO_ERRORS_SCHEMA } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { CommonModule } from '@angular/common';
 import {
   BehaviorSubject,
   Subject,
+  of
 } from 'rxjs';
 import { ModulePanelZoomDialogComponent } from 'src/app/components/module-parts/module-details/module-panel-zoom-dialog.component';
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
 import { RackedModule } from 'src/app/models/module';
-import { RackMinimal } from 'src/app/models/rack';
+import {
+  Rack,
+  RackMinimal
+} from 'src/app/models/rack';
 import {
   ContextMenuItem,
   GeneralContextMenuDataService
 } from 'src/app/shared-interproject/components/@smart/general-context-menu/general-context-menu-data.service';
+import { TotalHpOfRackPipe } from '../total-hp-of-rack.pipe';
+import { TotalModulesOfRackPipe } from '../total-modules-of-rack.pipe';
+import { TotalPlacedModulesOfRackPipe } from '../total-placed-modules-of-rack.pipe';
+import { HasUnrackedModulesListPipe } from './rack-visual-model/has-unracked-modules-list.pipe';
 import { RackEditorComponent } from './rack-editor.component';
 import {
   RACK_ANALYSIS_MODES,
   RACK_LAYOUT_HOVER_MODES
 } from '../rack-analysis-mode';
+import { RackLayoutScope } from '../rack-layout-analysis.utils';
 import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 
 
@@ -1050,5 +1062,96 @@ describe('RackEditorComponent', () => {
   it('selectedTouchModule starts as null', () => {
     const component = createComponent();
     expect(component.selectedTouchModule).toBeNull();
+  });
+});
+
+describe('RackEditorComponent layout action buttons', () => {
+  let layoutVariantActionInProgress$: BehaviorSubject<boolean>;
+  let fixture: ComponentFixture<RackEditorComponent>;
+
+  beforeEach(async () => {
+    layoutVariantActionInProgress$ = new BehaviorSubject<boolean>(false);
+    const rowedRackedModules$ = new BehaviorSubject<RackedModule[][]>([[{
+      module: {id: 5, name: 'VCO', hp: 8, standard: {id: 0}},
+      rackingData: {id: 10, rackid: 1, moduleid: 5, row: 0, column: 0}
+    } as unknown as RackedModule]]);
+    const dataServiceMock = {
+      rowedRackedModules$,
+      isRackDataLoading$: new BehaviorSubject<boolean>(false),
+      isCurrentRackPropertyOfCurrentUser$: new BehaviorSubject<boolean>(true),
+      isCurrentRackEditable$: new BehaviorSubject<boolean>(true),
+      userRequestedSmallerScale$: new BehaviorSubject<boolean>(false),
+      analysisMode$: new BehaviorSubject(RACK_ANALYSIS_MODES.layout),
+      layoutHoverMode$: new BehaviorSubject(RACK_LAYOUT_HOVER_MODES.sameHp),
+      layoutScope$: new BehaviorSubject<RackLayoutScope>('all'),
+      signalFocusArea$: new BehaviorSubject<null>(null),
+      shouldShowPanelImages$: new BehaviorSubject<boolean>(true),
+      isRackImageCaptureInProgress$: new BehaviorSubject<boolean>(false),
+      functionAnalysisLegendItems$: of([]),
+      functionAnalysisResidualLabel$: of(null),
+      functionAnalysisCoverageSummary$: of(''),
+      canUpdateRackImagePreview$: of(false),
+      singleRackData$: new BehaviorSubject({id: 1, hp: 84, rows: 1} as unknown as Rack),
+      layoutVariantActionInProgress$
+    } as unknown as RackDetailDataService;
+
+    await TestBed.configureTestingModule({
+      imports: [CommonModule, NoopAnimationsModule],
+      declarations: [
+        RackEditorComponent,
+        TotalHpOfRackPipe,
+        TotalModulesOfRackPipe,
+        TotalPlacedModulesOfRackPipe,
+        HasUnrackedModulesListPipe
+      ],
+      schemas: [NO_ERRORS_SCHEMA],
+      providers: [
+        {provide: MatSnackBar, useValue: jasmine.createSpyObj('MatSnackBar', ['open'])},
+        {provide: RackDetailDataService, useValue: dataServiceMock},
+        {provide: MatDialog, useValue: jasmine.createSpyObj('MatDialog', ['open'])},
+        {provide: AnalyticsService, useValue: {capture: () => undefined}}
+      ]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(RackEditorComponent);
+    fixture.componentInstance.data = {id: 1, hp: 84, rows: 1} as unknown as RackMinimal;
+    fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    fixture.destroy();
+  });
+
+  function layoutActionButton(label: string): HTMLButtonElement {
+    const buttons = Array.from(
+      fixture.nativeElement.querySelectorAll('.rackEditorFloatingOptions__actionButton')
+    ) as HTMLButtonElement[];
+    const match = buttons.find(button => button.textContent?.includes(label));
+    if (!match) {
+      throw new Error(`missing ${ label } button`);
+    }
+    return match;
+  }
+
+  it('renders enabled remix and shuffle buttons when no layout action is in flight', () => {
+    const remix = layoutActionButton('Remix layout');
+    const shuffle = layoutActionButton('Shuffle');
+
+    expect(remix.disabled).toBeFalse();
+    expect(shuffle.disabled).toBeFalse();
+  });
+
+  it('disables remix and shuffle buttons while a layout action is in flight', () => {
+    layoutVariantActionInProgress$.next(true);
+    fixture.detectChanges();
+
+    expect(layoutActionButton('Remix layout').disabled).toBeTrue();
+    expect(layoutActionButton('Shuffle').disabled).toBeTrue();
+
+    layoutVariantActionInProgress$.next(false);
+    fixture.detectChanges();
+
+    expect(layoutActionButton('Remix layout').disabled).toBeFalse();
+    expect(layoutActionButton('Shuffle').disabled).toBeFalse();
   });
 });
