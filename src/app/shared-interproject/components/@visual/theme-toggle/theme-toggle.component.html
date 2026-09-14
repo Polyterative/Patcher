@@ -1,0 +1,16 @@
+@if (vm$ | async; as vm) {
+  <button
+    type="button"
+    mat-icon-button
+    class="theme-toggle"
+    [class.theme-toggle--explicit]="vm.preference !== 'system'"
+    [attr.aria-label]="vm.label"
+    [attr.data-preference]="vm.preference"
+    [attr.data-effective]="vm.effective"
+    [matTooltip]="vm.tooltip"
+    matTooltipPosition="below"
+    (click)="cycle()"
+  >
+    <mat-icon aria-hidden="true">{{ vm.icon }}</mat-icon>
+  </button>
+}

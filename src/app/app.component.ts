@@ -41,6 +41,7 @@ import { WideShellToolbarComponent } from './shared-interproject/components/@vis
 import { AnalyticsService } from './features/backbone/analytics-integration/analytics.service';
 import { normalizeUrlPath } from './shared-interproject/url-path.util';
 import { ChunkLoadRecoveryService } from './services/chunk-load-recovery.service';
+import { AppThemeService } from './shared-interproject/app-theme.service';
 
 type AppShellArea = 'home' | 'modules' | 'racks' | 'patches' | 'marketplace' | 'manufacturers' | 'user' | 'manuals' | 'comments' | 'info';
 
@@ -109,6 +110,10 @@ export class AppComponent implements OnDestroy {
     // Recover stale cached entry documents whose lazy chunk URLs no longer
     // exist after a deployment.
     _chunkLoadRecovery: ChunkLoadRecoveryService,
+    // Eagerly instantiate so html.dark / color-scheme stay in sync with the
+    // stored preference (or OS theme) from first paint, including live
+    // prefers-color-scheme changes while preference is 'system'.
+    _themeEagerBoot: AppThemeService,
   ) {
     this.animationsDisabled = isPlatformBrowser(this.platformId)
       && window.matchMedia('(prefers-reduced-motion: reduce)').matches;

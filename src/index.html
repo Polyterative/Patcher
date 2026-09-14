@@ -50,6 +50,30 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="preload" href="/assets/font/XXIIAven-Regular.ttf" as="font" type="font/ttf" crossorigin>
+  <meta name="theme-color" content="#eef6fa" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0d1117" media="(prefers-color-scheme: dark)">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    // System-first theme boot: apply html.dark before first paint to avoid a flash.
+    // Mirrors AppThemeService (storage key + system fallback). Keep dependency-free.
+    try {
+      var stored = localStorage.getItem('patcher.theme-preference');
+      var wantDark = stored === 'dark'
+        ? true
+        : stored === 'light'
+          ? false
+          : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var root = document.documentElement;
+      if (wantDark) {
+        root.classList.add('dark');
+      } else {
+        root.classList.remove('dark');
+      }
+      root.setAttribute('data-theme', wantDark ? 'dark' : 'light');
+      root.setAttribute('data-theme-source', stored === 'light' || stored === 'dark' ? stored : 'system');
+      root.style.colorScheme = wantDark ? 'dark' : 'light';
+    } catch (e) { /* private mode — fall through to light */ }
+  </script>
 </head>
 <body>
 <app-root></app-root>
