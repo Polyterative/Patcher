@@ -1,4 +1,7 @@
 import {
+  buildPriceDropSummaries,
+  formatPriceDropPercent,
+  formatPriceDropRange,
   getReliablePriceDrops,
   groupPriceDropSnapshotsByModule,
   isReliablePriceDropSummary,
@@ -107,5 +110,31 @@ describe('module-price-drops utils', () => {
     expect(grouped.get(1)?.length).toBe(2);
     expect(grouped.get(2)?.length).toBe(1);
     expect(grouped.has(-5)).toBeFalse();
+  });
+
+  it('formats drop percents as rounded down-arrows', () => {
+    expect(formatPriceDropPercent(-15)).toBe('↓15%');
+    expect(formatPriceDropPercent(-15.6)).toBe('↓16%');
+    expect(formatPriceDropPercent(-5)).toBe('↓5%');
+  });
+
+  it('formats drop ranges as estimated EUR before → after', () => {
+    expect(formatPriceDropRange(buildSummary())).toBe('~€400 → ~€340');
+  });
+
+  it('builds one summary per module with enough history and skips thin groups', () => {
+    const referenceDate = new Date('2026-07-01T00:00:00.000Z');
+    const summaries = buildPriceDropSummaries(new Map([
+      [1, [
+        buildSnapshot({moduleId: 1, id: 1, observedAt: '2026-05-15T00:00:00.000Z', priceAmountMinor: 40000}),
+        buildSnapshot({moduleId: 1, id: 2, observedAt: '2026-06-01T00:00:00.000Z', priceAmountMinor: 38000}),
+        buildSnapshot({moduleId: 1, id: 3, observedAt: '2026-06-25T00:00:00.000Z', priceAmountMinor: 34000})
+      ]],
+      [2, [
+        buildSnapshot({moduleId: 2, id: 4, observedAt: '2026-06-25T00:00:00.000Z', priceAmountMinor: 30000})
+      ]]
+    ]), referenceDate);
+    expect(summaries.map((summary) => summary.moduleId)).toEqual([1]);
+    expect(summaries[0]?.eligiblePointCount).toBe(3);
   });
 });
