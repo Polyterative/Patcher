@@ -1218,6 +1218,7 @@ describe('RackDetailDataService reactive flows', () => {
     const {service, backend} = build();
     service.singleRackData$.next(rack({id: 1, rows: 2}));
     service.rowedRackedModules$.next([[moduleInRack(1, 0, 0)], [moduleInRack(2, 1, 0)]]);
+    expect(service.duplicateRowInProgress$.value).toBe(false);
     const persist$ = new Subject<EmptyBackendResponse>();
     backend.update.rackedModules.and.returnValue(persist$.asObservable());
 
@@ -1264,6 +1265,7 @@ describe('RackDetailDataService reactive flows', () => {
       [moduleInRack(10, 0, 0, 80), moduleInRack(11, 0, 1, 10)],
       [moduleInRack(12, 1, 0, 20)]
     ]);
+    expect(service.layoutVariantActionInProgress$.value).toBe(false);
     const persist$ = new Subject<EmptyBackendResponse>();
     backend.update.rackedModules.and.returnValue(persist$.asObservable());
 
@@ -1293,6 +1295,7 @@ describe('RackDetailDataService reactive flows', () => {
     ]);
     service.layoutScope$.next({rowIndex: 1});
     spyOn(Math, 'random').and.returnValue(0);
+    expect(service.layoutVariantActionInProgress$.value).toBe(false);
     const persist$ = new Subject<EmptyBackendResponse>();
     backend.update.rackedModules.and.returnValue(persist$.asObservable());
 
@@ -1322,6 +1325,48 @@ describe('RackDetailDataService reactive flows', () => {
 
     expect(backend.update.rackedModules).not.toHaveBeenCalled();
     expect(service.layoutVariantActionInProgress$.value).toBe(false);
+  });
+
+  it('resets the layout flag and rolls back when remix persistence fails', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    service.singleRackData$.next(rack({id: 1, rows: 2, hp: 84}));
+    service.rowedRackedModules$.next([
+      [moduleInRack(10, 0, 0, 80), moduleInRack(11, 0, 1, 10)],
+      [moduleInRack(12, 1, 0, 20)]
+    ]);
+    backend.update.rackedModules.and.returnValue(throwError(() => new Error('persist failed')));
+
+    service.requestLayoutRemix$.next();
+
+    expect(service.layoutVariantActionInProgress$.value).toBe(false);
+    expect(SharedConstants.errorCustom).toHaveBeenCalled();
+    expect(service.rowedRackedModules$.value!.map(row => row.map(module => module.rackingData.id))).toEqual([
+      [10, 11],
+      [12]
+    ]);
+  });
+
+  it('resets the layout flag and rolls back when shuffle persistence fails', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    service.singleRackData$.next(rack({id: 1, rows: 2, hp: 84}));
+    service.rowedRackedModules$.next([
+      [moduleInRack(50, 0, 0, 12), moduleInRack(51, 0, 1, 4)],
+      [moduleInRack(52, 1, 0, 12), moduleInRack(53, 1, 1, 4)]
+    ]);
+    service.layoutScope$.next({rowIndex: 1});
+    spyOn(Math, 'random').and.returnValue(0);
+    backend.update.rackedModules.and.returnValue(throwError(() => new Error('persist failed')));
+
+    service.requestLayoutShuffle$.next();
+
+    expect(service.layoutVariantActionInProgress$.value).toBe(false);
+    expect(SharedConstants.errorCustom).toHaveBeenCalled();
+    expect(service.rowedRackedModules$.value!.map(row => row.map(module => module.rackingData.id))).toEqual([
+      [50, 51],
+      [52, 53]
+    ]);
   });
 
   it('does not create a patch from rack when confirmation is cancelled', () => {
