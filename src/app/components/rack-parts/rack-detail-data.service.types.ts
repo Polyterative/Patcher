@@ -93,10 +93,12 @@ export interface RackDetailDataContext {
   requestRemoveRow$: Subject<void>;
   requestMoveRow$: Subject<{rowId: number; direction: 'up' | 'down'}>;
   requestDuplicateRow$: Subject<number>;
+  duplicateRowInProgress$: BehaviorSubject<boolean>;
   requestClearRow$: Subject<number>;
   requestDeleteRow$: Subject<number>;
   requestLayoutRemix$: Subject<void>;
   requestLayoutShuffle$: Subject<void>;
+  layoutVariantActionInProgress$: BehaviorSubject<boolean>;
   layoutScope$: BehaviorSubject<RackLayoutScope>;
   requestRackedModulesDbSync$: Subject<void>;
   loadModulesForRack$: Subject<number>;
