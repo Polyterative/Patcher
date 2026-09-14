@@ -118,6 +118,21 @@
   justify-content: flex-end;
 }
 
+// Discrete appearance toggle: first in the right (account) group on desktop,
+// so it reads as chrome — not as a nav target. The topbar copy covers mobile,
+// where the targets row is hidden.
+.title-metro-account-toggle {
+  display: inline-flex;
+  align-items: center;
+  margin-inline-end: 0.35rem;
+}
+
+@media (min-width: 39.0625rem) {
+  .title-metro-topbar-toggle {
+    display: none;
+  }
+}
+
 .title-metro-target {
   display: inline-flex;
   align-items: center;
