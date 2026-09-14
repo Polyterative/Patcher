@@ -17,9 +17,26 @@
 
 ## Active
 
-_No active feature._
+### Insights — recent price drops — plan: [plans/insights-price-drops.md](./plans/insights-price-drops.md)
 
-Updated: 2026-09-10
+#### Layer 1 — MVP
+
+- [x] New `module-price-drops.utils.ts` with strict reliability filter + specs
+- [x] `ApplicationStatisticsService.priceDrops$` over discovery Top modules via existing per-module histories + module names
+- [x] Insights page card after Makers with Insight 1 (count) + Insight 2 (biggest reliable drop + link), empty/error/suppressed states, method note
+- [x] Targeted specs (format fns, mapper branches, component shown-state) + `pnpm lint` clean
+
+#### Layer 2 — Structural
+
+- [x] Verify cache keys (`priceHub` bust) and no N+1 blowup (cached discovery + bounded per-module histories + one `publicModulesByIds` for top drops only)
+- [x] Confirm RLS anon-readable (already granted), no policy change
+
+#### Layer 3 — Polish
+
+- [x] Copy review (zero-bullshit, tabular numerals), mobile 36rem static check
+- [ ] Live screenshot re-verify (needs `pnpm start` — dev server down, user consent required)
+
+Updated: 2026-09-14
 
 Recent completed checkpoints are archived in [COMPLETED.md](./COMPLETED.md); their validation
 notes and decisions live in the matching plan files (e.g.
