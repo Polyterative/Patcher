@@ -34,7 +34,7 @@
 #### Layer 3 — Polish
 
 - [x] Copy review (zero-bullshit, tabular numerals), mobile 36rem static check
-- [ ] Live screenshot re-verify (needs `pnpm start` — dev server down, user consent required)
+- [x] Live screenshot re-verify (desktop 1440 + mobile 390 via agent-snapshot, real data)
 
 Updated: 2026-09-14
 
