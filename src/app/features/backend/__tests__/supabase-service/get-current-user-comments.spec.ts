@@ -92,6 +92,7 @@ describe('SupabaseService - GET.currentUserComments', () => {
     service.GET.currentUserComments(0, 9).subscribe({
       next: () => {
         expect(orderSpy).toHaveBeenCalledWith('created', {ascending: false});
+        expect(orderSpy).toHaveBeenCalledWith('id', {ascending: false});
         done();
       },
       error: (err) => {

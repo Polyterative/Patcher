@@ -5,6 +5,10 @@ import {
   setupSupabaseServiceTest,
   TEST_TIMEOUT
 } from './test-setup';
+import {
+  authUserFixture,
+  mockUserSession
+} from './supabase-query-test-doubles';
 
 
 function chainable(resolveValue: any = {data: null, error: null}) {
@@ -105,6 +109,7 @@ describe('SupabaseService - GET.userPatchesPaginated', () => {
     service.GET.userPatchesPaginated(0, 9).subscribe({
       next: () => {
         expect(orderSpy).toHaveBeenCalledWith('updated', {ascending: false});
+        expect(orderSpy).toHaveBeenCalledWith('id', {ascending: false});
         done();
       },
       error: (err) => {
@@ -211,6 +216,26 @@ describe('SupabaseService - GET.userRacksPaginated', () => {
       }
     });
   }, TEST_TIMEOUT);
+
+  it('should order racks by updated desc with id desc tie-break', (done) => {
+    mockUserSession(service, authUserFixture('u2'));
+
+    const mock = chainable({data: [], count: 0, error: null});
+    const orderSpy = spyOn(mock, 'order').and.returnValue(mock);
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+    service.GET.userRacksPaginated(0, 9).subscribe({
+      next: () => {
+        expect(orderSpy).toHaveBeenCalledWith('updated', {ascending: false});
+        expect(orderSpy).toHaveBeenCalledWith('id', {ascending: false});
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
 });
 
 describe('SupabaseService - GET.publicUserPatchesPaginated', () => {
@@ -264,6 +289,24 @@ describe('SupabaseService - GET.publicUserPatchesPaginated', () => {
           name: 'Visible patch',
           author: {id: 'public-author', username: 'patcher'},
         }]);
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+
+  it('should order public patches by updated desc with id desc tie-break', (done) => {
+    const mock = chainable({data: [], count: 0, error: null});
+    const orderSpy = spyOn(mock, 'order').and.returnValue(mock);
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+    service.GET.publicUserPatchesPaginated('public-author', 0, 9).subscribe({
+      next: () => {
+        expect(orderSpy).toHaveBeenCalledWith('updated', {ascending: false});
+        expect(orderSpy).toHaveBeenCalledWith('id', {ascending: false});
         done();
       },
       error: (err) => {
@@ -348,6 +391,24 @@ describe('SupabaseService - GET.publicUserRacksPaginated', () => {
           `id,name,hp,rows,description,created,updated,authorid,public_id,image,author:authorid(username,id),${ publicAuthorGateAlias }:authorid!inner(public)`,
           {count: 'exact'}
         );
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+
+  it('should order public racks by updated desc with id desc tie-break', (done) => {
+    const mock = chainable({data: [], count: 0, error: null});
+    const orderSpy = spyOn(mock, 'order').and.returnValue(mock);
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+    service.GET.publicUserRacksPaginated('public-author', 0, 9).subscribe({
+      next: () => {
+        expect(orderSpy).toHaveBeenCalledWith('updated', {ascending: false});
+        expect(orderSpy).toHaveBeenCalledWith('id', {ascending: false});
         done();
       },
       error: (err) => {

@@ -38,7 +38,9 @@ type PatchBrowserResult = QueryChainResult<PatchListItem> & {
 interface PatchSelectQuery<Row> {
   select(columns: string): {
     filter(column: string, operator: string, value: string): {
-      order(column: string, options: {ascending: boolean}): Promise<QueryChainResult<Row>>;
+      order(column: string, options: {ascending: boolean}): {
+        order(column: string, options: {ascending: boolean}): Promise<QueryChainResult<Row>>;
+      };
     };
   };
 }
@@ -57,7 +59,9 @@ function currentUserListQuery<T>(response: QueryChainResult<T>): PatchSelectQuer
   return {
     select: () => ({
       filter: () => ({
-        order: () => Promise.resolve(response)
+        order: () => ({
+          order: () => Promise.resolve(response)
+        })
       })
     })
   };

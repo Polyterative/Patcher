@@ -24,7 +24,9 @@ type RackFixture = Rack & Pick<RackRow, 'authorid'>;
 interface CurrentUserRackSelectQuery<Row> {
   select(columns: string): {
     filter(column: string, operator: string, value: string): {
-      order(column: string, options: {ascending: boolean}): Promise<QueryChainResult<Row>>;
+      order(column: string, options: {ascending: boolean}): {
+        order(column: string, options: {ascending: boolean}): Promise<QueryChainResult<Row>>;
+      };
     };
   };
 }
@@ -33,7 +35,9 @@ function currentUserListQuery<T>(response: QueryChainResult<T>): CurrentUserRack
   return {
     select: () => ({
       filter: () => ({
-        order: () => Promise.resolve(response)
+        order: () => ({
+          order: () => Promise.resolve(response)
+        })
       })
     })
   };
@@ -161,6 +165,7 @@ describe('SupabaseService - currentUserRacks Integration', () => {
         expect(query.select).toHaveBeenCalledWith('id,name,description,hp,rows,image,public,public_id,created,updated, author:authorid(username,id)');
         expect(query.filter).toHaveBeenCalledWith('authorid', 'eq', 'test-user-id');
         expect(query.order).toHaveBeenCalledWith('updated', {ascending: false});
+        expect(query.order).toHaveBeenCalledWith('id', {ascending: false});
 
         // Verify array content
         if (result.length > 0) {
@@ -255,6 +260,7 @@ describe('SupabaseService - currentUserRacks Integration', () => {
         ).toBe(testAuthorId);
         expect(query.filter).toHaveBeenCalledWith('authorid', 'eq', testAuthorId);
         expect(query.order).toHaveBeenCalledWith('updated', {ascending: false});
+        expect(query.order).toHaveBeenCalledWith('id', {ascending: false});
         done();
       },
       error: (error: unknown) => {

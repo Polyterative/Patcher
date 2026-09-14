@@ -232,7 +232,8 @@ describe('SupabaseService - accent-insensitive search', () => {
         expect(detailRangeSpy).toHaveBeenCalledWith(0, 0);
         expect(detailOrderSpy.calls.allArgs()).toEqual([
           ['color', {foreignTable: 'module_panels', ascending: true}],
-          ['name', {ascending: false}]
+          ['name', {ascending: false}],
+          ['id', {ascending: false}]
         ]);
         expect(detailLimitSpy).toHaveBeenCalledWith(1, {foreignTable: 'module_panels'});
         expect(result.count).toBe(1);

@@ -171,6 +171,7 @@ export class SupabaseCommentReactionQueries extends SupabaseQueriesBase {
             .select(QueryJoins.commentListColumns, {count: 'exact'})
             .filter('authorId', 'eq', user.id)
             .order('created', {ascending: false})
+            .order('id', {ascending: false})
             .range(from, to)
         )),
         remapErrors(),
@@ -298,6 +299,7 @@ export class SupabaseCommentReactionQueries extends SupabaseQueriesBase {
         .filter('entityId', 'eq', entityId)
         .filter('entityType', 'eq', entityType)
         .order('created', { ascending: false })
+        .order('id', { ascending: false })
         .range(from, to)
     )
       .pipe(

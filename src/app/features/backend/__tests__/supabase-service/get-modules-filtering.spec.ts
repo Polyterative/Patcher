@@ -662,6 +662,23 @@ describe('SupabaseService - GET.modules filtering', () => {
     ]);
   }, TEST_TIMEOUT);
 
+  it('adds id as a stable secondary order matching the primary direction', async () => {
+    const mock = chainableWithIlike({data: [], count: 0, error: null});
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+    await firstValueFrom(service.GET.modules(
+      0, 10, undefined, 'name', 'asc'
+    ));
+    await firstValueFrom(service.GET.modules(
+      0, 10, undefined, 'name', 'desc'
+    ));
+
+    expect(mock.orderCalls.filter(([column]) => column === 'id')).toEqual([
+      ['id', {ascending: true}],
+      ['id', {ascending: false}]
+    ]);
+  }, TEST_TIMEOUT);
+
   it('should apply manufacturer filter when manufacturerId is provided', (done) => {
     const mock = chainableWithIlike({data: [], count: 0, error: null});
     const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);

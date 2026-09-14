@@ -218,6 +218,24 @@ describe('SupabaseService - GET cached delegates', () => {
         }
       });
     }, TEST_TIMEOUT);
+
+    it('should order manufacturers by the requested column with id tie-break', (done) => {
+      const mock = chainable<ManufacturerRow>({data: [], count: 0, error: null} satisfies QueryCountRowsResult<ManufacturerRow>);
+      const orderSpy: jasmine.Spy = spyOn(mock, 'order').and.returnValue(mock);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+      service.GET.manufacturers(0, 10, 'id,name', 'name').subscribe({
+        next: () => {
+          const orderedColumns = orderSpy.calls.allArgs().map((args) => args[0]);
+          expect(orderedColumns).toEqual(['name', 'id']);
+          done();
+        },
+        error: (err: unknown) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
   });
   
   describe('GET.patchConnections', () => {
@@ -446,6 +464,42 @@ describe('SupabaseService - GET cached delegates', () => {
       service.GET.patches().subscribe({
         next: (result: QueryCountRowsResult<PatchIdRow>) => {
           expect(result).toBeDefined();
+          done();
+        },
+        error: (err: unknown) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should order by name asc with id asc tie-break by default', (done) => {
+      const mock = chainable<PatchIdRow>({data: [], count: 0, error: null} satisfies QueryCountRowsResult<PatchIdRow>);
+      const orderSpy = spyOn(mock, 'order').and.returnValue(mock);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+      service.GET.patches().subscribe({
+        next: () => {
+          expect(orderSpy).toHaveBeenCalledWith('name', {ascending: false});
+          expect(orderSpy).toHaveBeenCalledWith('id', {ascending: false});
+          done();
+        },
+        error: (err: unknown) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should match id tie-break direction to the primary sort direction', (done) => {
+      const mock = chainable<PatchIdRow>({data: [], count: 0, error: null} satisfies QueryCountRowsResult<PatchIdRow>);
+      const orderSpy = spyOn(mock, 'order').and.returnValue(mock);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+      service.GET.patches(0, 10, undefined, 'name', 'asc').subscribe({
+        next: () => {
+          expect(orderSpy).toHaveBeenCalledWith('name', {ascending: true});
+          expect(orderSpy).toHaveBeenCalledWith('id', {ascending: true});
           done();
         },
         error: (err: unknown) => {

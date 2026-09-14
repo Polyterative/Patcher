@@ -167,6 +167,7 @@ export class SupabasePatchQueries extends SupabaseQueriesBase {
         .select(`id,name,description,public_id,tags,created,updated, ${ QueryJoins.author }`)
         .filter('authorid', 'eq', authorid)
         .order('updated', {ascending: false})
+        .order('id', {ascending: false})
     ).pipe(
       remapErrors(),
       throwIfSupabaseErrorWhen<{data: Patch[] | null}>(strictErrors),
@@ -188,6 +189,7 @@ export class SupabasePatchQueries extends SupabaseQueriesBase {
           .select(`*, ${ QueryJoins.author }`, {count: 'exact'})
           .filter('authorid', 'eq', user.id)
           .order('updated', {ascending: false})
+          .order('id', {ascending: false})
           .range(from, to)
       )),
       remapErrors(),
@@ -208,6 +210,7 @@ export class SupabasePatchQueries extends SupabaseQueriesBase {
         .filter('authorid', 'eq', authorId)
         .filter('public', 'eq', true)
         .order('updated', {ascending: false})
+        .order('id', {ascending: false})
         .range(from, to)
     ).pipe(
       remapErrors()
@@ -379,7 +382,8 @@ export class SupabasePatchQueries extends SupabaseQueriesBase {
       .from(DbPaths.patches)
       .select(`${ columns + connections }`, includeCount ? {count: 'exact'} : undefined)
       .filter("public", "eq", true)
-      .order(orderBy ?? 'name', {ascending: orderDirection === 'asc'});
+      .order(orderBy ?? 'name', {ascending: orderDirection === 'asc'})
+      .order('id', {ascending: orderDirection === 'asc'});
 
     if (nameQuery.length === 0) {
       queryBuilder = queryBuilder.range(from, to);
