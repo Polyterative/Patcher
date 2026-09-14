@@ -986,6 +986,24 @@ html.dark {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
   }
 
+  // Module editor + adder sheets (warm paper tones become dark warm).
+  .setup-subblock,
+  .setup-panel-crop-stage {
+    background: var(--app-surface);
+    border-color: var(--app-border);
+  }
+
+  .setup-panel-crop-stage image-cropper {
+    color: var(--app-ink-3);
+    border-color: var(--app-border-strong);
+  }
+
+  .setup-panel-crop-error {
+    background: rgba(112, 13, 13, 0.3);
+    color: #e89a9a;
+    border-color: rgba(232, 154, 154, 0.4);
+  }
+
   // Collection editor washes.
   .module-collection-editor__visibility,
   .module-collection-editor__empty-state {
