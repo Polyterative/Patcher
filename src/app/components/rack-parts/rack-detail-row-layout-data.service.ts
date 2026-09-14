@@ -4,6 +4,8 @@ import {
   catchError,
   concatMap,
   exhaustMap,
+  filter,
+  finalize,
   map,
   switchMap,
   tap,
@@ -150,19 +152,21 @@ export class RackDetailRowLayoutDataService {
 
     context.requestDuplicateRow$
       .pipe(
-        switchMap(rowId => context.waitForRackModuleOrientationUpdateIdle().pipe(
+        filter(() => !context.duplicateRowInProgress$.value),
+        exhaustMap(rowId => context.waitForRackModuleOrientationUpdateIdle().pipe(
           map(() => ({
             rowId,
             rackModules: context.rowedRackedModules$.value,
             rack: context.singleRackData$.value
           }))
         )),
-        switchMap(({rowId, rackModules, rack}) => {
+        exhaustMap(({rowId, rackModules, rack}) => {
           if (!rack || !rackModules || rowId < 0 || rowId >= rack.rows) {
             SharedConstants.infoCustom(context.snackBar, 'This row cannot be duplicated.');
             return EMPTY;
           }
 
+          context.duplicateRowInProgress$.next(true);
           const snapshotRack: Rack = cloneRackData(rack);
           const snapshotRackModules: RackedModule[][] = cloneRackData(rackModules);
           const nextRack: Rack = {
@@ -191,7 +195,8 @@ export class RackDetailRowLayoutDataService {
               context.rowedRackedModules$.next(context.withCurrentRackModuleOrientations(snapshotRackModules));
               SharedConstants.errorCustom(context.snackBar, 'Failed to duplicate row — changes reverted. Check your connection and try again.');
               return EMPTY;
-            })
+            }),
+            finalize(() => context.duplicateRowInProgress$.next(false))
           );
         }),
         context.takeUntilDestroyed()
@@ -265,10 +270,15 @@ export class RackDetailRowLayoutDataService {
 
     context.requestLayoutRemix$
       .pipe(
+        filter(() => !context.layoutVariantActionInProgress$.value),
         withLatestFrom(context.layoutScope$),
-        switchMap(([_, layoutScope]) => {
-          return context.waitForRackModuleOrientationUpdateIdle().pipe(
-            switchMap(() => context.applyLayoutVariantAction(context.rowedRackedModules$.value, context.singleRackData$.value, layoutScope, 'remix'))
+        exhaustMap(([_, layoutScope]) => context.waitForRackModuleOrientationUpdateIdle().pipe(
+          map(() => layoutScope)
+        )),
+        exhaustMap(layoutScope => {
+          context.layoutVariantActionInProgress$.next(true);
+          return context.applyLayoutVariantAction(context.rowedRackedModules$.value, context.singleRackData$.value, layoutScope, 'remix').pipe(
+            finalize(() => context.layoutVariantActionInProgress$.next(false))
           );
         }),
         context.takeUntilDestroyed()
@@ -277,10 +287,15 @@ export class RackDetailRowLayoutDataService {
 
     context.requestLayoutShuffle$
       .pipe(
+        filter(() => !context.layoutVariantActionInProgress$.value),
         withLatestFrom(context.layoutScope$),
-        switchMap(([_, layoutScope]) => {
-          return context.waitForRackModuleOrientationUpdateIdle().pipe(
-            switchMap(() => context.applyLayoutVariantAction(context.rowedRackedModules$.value, context.singleRackData$.value, layoutScope, 'shuffle'))
+        exhaustMap(([_, layoutScope]) => context.waitForRackModuleOrientationUpdateIdle().pipe(
+          map(() => layoutScope)
+        )),
+        exhaustMap(layoutScope => {
+          context.layoutVariantActionInProgress$.next(true);
+          return context.applyLayoutVariantAction(context.rowedRackedModules$.value, context.singleRackData$.value, layoutScope, 'shuffle').pipe(
+            finalize(() => context.layoutVariantActionInProgress$.next(false))
           );
         }),
         context.takeUntilDestroyed()

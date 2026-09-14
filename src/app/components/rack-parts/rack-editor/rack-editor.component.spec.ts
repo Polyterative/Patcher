@@ -532,6 +532,7 @@ describe('RackEditorComponent', () => {
       {
         requestMoveRow$: new Subject<{rowId: number; direction: 'up' | 'down'}>(),
         requestDuplicateRow$,
+        duplicateRowInProgress$: new BehaviorSubject(false),
         requestClearRow$,
         requestDeleteRow$: new Subject<number>(),
         isAnyRackModuleOrientationUpdating: jasmine.createSpy('isAnyRackModuleOrientationUpdating').and.returnValue(false)
@@ -575,6 +576,34 @@ describe('RackEditorComponent', () => {
 
     expect(duplicateSpy).toHaveBeenCalledWith(1);
     expect(clearSpy).toHaveBeenCalledWith(1);
+  });
+
+  it('disables duplicate row in the row action menu while duplication is in flight', () => {
+    const menuItems$ = new BehaviorSubject<ContextMenuItem[]>([]);
+    const open$ = new Subject<MouseEvent>();
+    const component = createComponent(
+      {} as MatSnackBar,
+      {
+        requestMoveRow$: new Subject<{rowId: number; direction: 'up' | 'down'}>(),
+        requestDuplicateRow$: new Subject<number>(),
+        duplicateRowInProgress$: new BehaviorSubject(true),
+        requestClearRow$: new Subject<number>(),
+        requestDeleteRow$: new Subject<number>(),
+        isAnyRackModuleOrientationUpdating: jasmine.createSpy('isAnyRackModuleOrientationUpdating').and.returnValue(false)
+      } as unknown as RackDetailDataService,
+      {menuItems$, open$} as GeneralContextMenuDataService,
+      {markForCheck: () => undefined} as ChangeDetectorRef,
+      jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
+    );
+
+    component.openRowOverflowMenu({
+      $event: new MouseEvent('click'),
+      rowId: 1,
+      totalRows: 3,
+      rowModuleCount: 2
+    });
+
+    expect(menuItems$.value.find(item => item.id === 'duplicate-row')?.disabled).toBeTrue();
   });
 
   it('clears the touch selection after running the shared replace-with-blank action', () => {

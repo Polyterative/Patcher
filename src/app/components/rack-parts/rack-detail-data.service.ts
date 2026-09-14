@@ -125,10 +125,12 @@ export class RackDetailDataService extends SubManager {
   readonly requestRemoveRow$ = new Subject<void>();
   readonly requestMoveRow$ = new Subject<{rowId: number; direction: 'up' | 'down'}>();
   readonly requestDuplicateRow$ = new Subject<number>();
+  readonly duplicateRowInProgress$ = new BehaviorSubject<boolean>(false);
   readonly requestClearRow$ = new Subject<number>();
   readonly requestDeleteRow$ = new Subject<number>();
   readonly requestLayoutRemix$ = new Subject<void>();
   readonly requestLayoutShuffle$ = new Subject<void>();
+  readonly layoutVariantActionInProgress$ = new BehaviorSubject<boolean>(false);
   readonly layoutScope$ = new BehaviorSubject<RackLayoutScope>('all');
   readonly requestRackedModulesDbSync$ = new Subject<void>();
   private readonly loadModulesForRack$ = new Subject<number>();
@@ -344,10 +346,12 @@ export class RackDetailDataService extends SubManager {
       requestRemoveRow$: this.requestRemoveRow$,
       requestMoveRow$: this.requestMoveRow$,
       requestDuplicateRow$: this.requestDuplicateRow$,
+      duplicateRowInProgress$: this.duplicateRowInProgress$,
       requestClearRow$: this.requestClearRow$,
       requestDeleteRow$: this.requestDeleteRow$,
       requestLayoutRemix$: this.requestLayoutRemix$,
       requestLayoutShuffle$: this.requestLayoutShuffle$,
+      layoutVariantActionInProgress$: this.layoutVariantActionInProgress$,
       layoutScope$: this.layoutScope$,
       requestRackedModulesDbSync$: this.requestRackedModulesDbSync$,
       loadModulesForRack$: this.loadModulesForRack$,

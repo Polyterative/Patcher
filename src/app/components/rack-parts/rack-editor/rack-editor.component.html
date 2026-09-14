@@ -346,6 +346,7 @@
                        <button mat-stroked-button
                                type="button"
                                class="rackEditorFloatingOptions__actionButton rackEditorFloatingOptions__actionButton--primary"
+                               [disabled]="(dataService.layoutVariantActionInProgress$ | async) ?? false"
                                (click)="requestLayoutRemix()"
                        >
                          <mat-icon>auto_fix_high</mat-icon>
@@ -354,6 +355,7 @@
                        <button mat-stroked-button
                                type="button"
                                class="rackEditorFloatingOptions__actionButton"
+                               [disabled]="(dataService.layoutVariantActionInProgress$ | async) ?? false"
                                (click)="requestLayoutShuffle()"
                        >
                          <mat-icon>shuffle</mat-icon>

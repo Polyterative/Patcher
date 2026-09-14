@@ -1214,6 +1214,116 @@ describe('RackDetailDataService reactive flows', () => {
     expect(service.createPatchFromRackInProgress$.value).toBe(false);
   });
 
+  it('ignores a second duplicate-row click while the first is in flight', () => {
+    const {service, backend} = build();
+    service.singleRackData$.next(rack({id: 1, rows: 2}));
+    service.rowedRackedModules$.next([[moduleInRack(1, 0, 0)], [moduleInRack(2, 1, 0)]]);
+    const persist$ = new Subject<EmptyBackendResponse>();
+    backend.update.rackedModules.and.returnValue(persist$.asObservable());
+
+    service.requestDuplicateRow$.next(0);
+    expect(service.duplicateRowInProgress$.value).toBe(true);
+    expect(service.singleRackData$.value.rows).toBe(3);
+
+    service.requestDuplicateRow$.next(0);
+
+    expect(backend.update.rackedModules).toHaveBeenCalledTimes(1);
+    expect(service.singleRackData$.value.rows).toBe(3);
+    expect(service.rowedRackedModules$.value!.length).toBe(3);
+
+    persist$.next({});
+    persist$.complete();
+
+    expect(service.duplicateRowInProgress$.value).toBe(false);
+  });
+
+  it('resets the duplicate-row flag when persistence fails', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    service.singleRackData$.next(rack({id: 1, rows: 2}));
+    service.rowedRackedModules$.next([[moduleInRack(1, 0, 0)], [moduleInRack(2, 1, 0)]]);
+    backend.update.rackedModules.and.returnValue(throwError(() => new Error('persist failed')));
+
+    service.requestDuplicateRow$.next(0);
+
+    expect(service.singleRackData$.value.rows).toBe(2);
+    expect(service.duplicateRowInProgress$.value).toBe(false);
+    expect(SharedConstants.errorCustom).toHaveBeenCalled();
+
+    backend.update.rackedModules.and.returnValue(of({}));
+    service.requestDuplicateRow$.next(0);
+
+    expect(service.singleRackData$.value.rows).toBe(3);
+    expect(service.duplicateRowInProgress$.value).toBe(false);
+  });
+
+  it('ignores a second layout-remix click while the first is in flight', () => {
+    const {service, backend} = build();
+    service.singleRackData$.next(rack({id: 1, rows: 2, hp: 84}));
+    service.rowedRackedModules$.next([
+      [moduleInRack(10, 0, 0, 80), moduleInRack(11, 0, 1, 10)],
+      [moduleInRack(12, 1, 0, 20)]
+    ]);
+    const persist$ = new Subject<EmptyBackendResponse>();
+    backend.update.rackedModules.and.returnValue(persist$.asObservable());
+
+    service.requestLayoutRemix$.next();
+    expect(service.layoutVariantActionInProgress$.value).toBe(true);
+
+    service.requestLayoutRemix$.next();
+
+    expect(backend.update.rackedModules).toHaveBeenCalledTimes(1);
+    expect(service.rowedRackedModules$.value!.map(row => row.map(module => module.rackingData.id))).toEqual([
+      [10],
+      [12, 11]
+    ]);
+
+    persist$.next({});
+    persist$.complete();
+
+    expect(service.layoutVariantActionInProgress$.value).toBe(false);
+  });
+
+  it('ignores a second layout-shuffle click while the first is in flight', () => {
+    const {service, backend} = build();
+    service.singleRackData$.next(rack({id: 1, rows: 2, hp: 84}));
+    service.rowedRackedModules$.next([
+      [moduleInRack(50, 0, 0, 12), moduleInRack(51, 0, 1, 4)],
+      [moduleInRack(52, 1, 0, 12), moduleInRack(53, 1, 1, 4)]
+    ]);
+    service.layoutScope$.next({rowIndex: 1});
+    spyOn(Math, 'random').and.returnValue(0);
+    const persist$ = new Subject<EmptyBackendResponse>();
+    backend.update.rackedModules.and.returnValue(persist$.asObservable());
+
+    service.requestLayoutShuffle$.next();
+    expect(service.layoutVariantActionInProgress$.value).toBe(true);
+
+    service.requestLayoutShuffle$.next();
+
+    expect(backend.update.rackedModules).toHaveBeenCalledTimes(1);
+    expect(service.rowedRackedModules$.value!.map(row => row.map(module => module.rackingData.id))).toEqual([
+      [50, 51],
+      [53, 52]
+    ]);
+
+    persist$.next({});
+    persist$.complete();
+
+    expect(service.layoutVariantActionInProgress$.value).toBe(false);
+  });
+
+  it('does not latch the layout flag when remix has nothing to do', () => {
+    const {service, backend} = build();
+    service.singleRackData$.next(rack({id: 1, rows: 1, hp: 84}));
+    service.rowedRackedModules$.next([[moduleInRack(10, 0, 0, 8, 0), moduleInRack(11, 0, 1, 8, 1)]]);
+
+    service.requestLayoutRemix$.next();
+
+    expect(backend.update.rackedModules).not.toHaveBeenCalled();
+    expect(service.layoutVariantActionInProgress$.value).toBe(false);
+  });
+
   it('does not create a patch from rack when confirmation is cancelled', () => {
     spyOn(SharedConstants, 'infoCustom').and.callFake(() => {});
     const {service, backend, dialog} = build();

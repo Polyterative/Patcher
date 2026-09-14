@@ -345,7 +345,7 @@ export class RackEditorModuleActionsService extends SubManager {
         id: 'duplicate-row',
         label: 'Duplicate row',
         icon: 'content_copy',
-        disabled: isOrientationUpdating,
+        disabled: isOrientationUpdating || this.dataService.duplicateRowInProgress$.value,
         click$: this.createMenuActionSubject(() => this.dataService.requestDuplicateRow$.next(rowId))
       },
       this.createContextMenuSpacerItem(1),
