@@ -6,18 +6,21 @@
            routerLink="/home"
            routerLinkActive="title-metro-brand--active"
            aria-label="Go to home">{{ siteTitle }}</a>
-        <button
-          #mobileMenuTrigger
-          type="button"
-          class="title-metro-menu-trigger"
-          [attr.aria-expanded]="mobileMenuOpen"
-          aria-controls="title-metro-mobile-panel"
-          [attr.aria-label]="mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'"
-          [matTooltip]="mobileMenuOpen ? 'Close navigation' : 'Open navigation'"
-          [matTooltipDisabled]="mobileMenuOpen"
-          (click)="toggleMobileMenu()">
-          <mat-icon aria-hidden="true">{{ mobileMenuOpen ? 'close' : 'menu' }}</mat-icon>
-        </button>
+        <div class="title-metro-topbar-actions">
+          <app-theme-toggle></app-theme-toggle>
+          <button
+            #mobileMenuTrigger
+            type="button"
+            class="title-metro-menu-trigger"
+            [attr.aria-expanded]="mobileMenuOpen"
+            aria-controls="title-metro-mobile-panel"
+            [attr.aria-label]="mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'"
+            [matTooltip]="mobileMenuOpen ? 'Close navigation' : 'Open navigation'"
+            [matTooltipDisabled]="mobileMenuOpen"
+            (click)="toggleMobileMenu()">
+            <mat-icon aria-hidden="true">{{ mobileMenuOpen ? 'close' : 'menu' }}</mat-icon>
+          </button>
+        </div>
       </div>
     }
     <nav class="title-metro-targets" aria-label="Section targets">

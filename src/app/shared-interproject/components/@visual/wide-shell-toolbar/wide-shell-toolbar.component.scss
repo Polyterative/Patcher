@@ -26,6 +26,13 @@
   gap: 1rem;
 }
 
+.title-metro-topbar-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-inline-start: auto;
+}
+
 .title-metro-brand {
   --title-metro-brand-color: #{$brand-primary};
   display: inline-flex;

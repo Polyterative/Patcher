@@ -25,9 +25,27 @@ $patcher-theme: mat.define-theme((
         ),
 ));
 
+// Dark twin: same palettes, dark theme-type. Only colour tokens are re-emitted
+// under html.dark so density/typography stay single-sourced from the light theme.
+$patcher-dark-theme: mat.define-theme((
+        color: (
+                theme-type: dark,
+                primary: mat.$azure-palette,
+                tertiary: mat.$cyan-palette,
+        ),
+        typography: (
+                brand-family: 'Roboto',
+                plain-family: 'Roboto',
+        ),
+        density: (
+                scale: -4,
+        ),
+));
+
 // Emit all component styles for the theme exactly once at the root level.
 :root {
   @include mat.all-component-themes($patcher-theme);
+  color-scheme: light;
   --app-viewport-width: 100vw;
   --app-viewport-height: 100vh;
   --app-viewport-dynamic-height: 100vh;
@@ -58,6 +76,11 @@ $patcher-theme: mat.define-theme((
   --app-touch-target-prominent-min: 3.25rem;
   --app-touch-target-gap: 0.35rem;
   --app-loading-shimmer-duration: 1150ms;
+}
+
+html.dark {
+  @include mat.all-component-colors($patcher-dark-theme);
+  color-scheme: dark;
 }
 
 @supports (height: 100svh) {
