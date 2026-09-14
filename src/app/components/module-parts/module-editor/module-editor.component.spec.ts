@@ -700,7 +700,7 @@ describe('ModuleEditorComponent panel crop flow', () => {
     expect(component.panelCropPosition?.y2 ?? 0).toBe(640);
   });
 
-  it('fills by tightening the crop selection instead of scaling the image', async () => {
+  it('fills by growing the crop selection toward the frame without scaling the image', async () => {
     const {component} = makeComponent();
     component.onPanelCropperReady({width: 320, height: 640});
     component.data = makeDbModule({
@@ -712,10 +712,11 @@ describe('ModuleEditorComponent panel crop flow', () => {
 
     component.fillPanelImage();
 
-    expect(component.panelCropPosition?.x1 ?? 0).toBeCloseTo(36.03244094488189, 2);
-    expect(component.panelCropPosition?.y1 ?? 0).toBeCloseTo(57.6, 6);
-    expect(component.panelCropPosition?.x2 ?? 0).toBeCloseTo(283.9675590551181, 2);
-    expect(component.panelCropPosition?.y2 ?? 0).toBeCloseTo(582.4, 6);
+    // The fitted box already fills the frame, so Fill converges on it.
+    expect(component.panelCropPosition?.x1 ?? 0).toBeCloseTo(8.81889763779526, 6);
+    expect(component.panelCropPosition?.y1 ?? 0).toBe(0);
+    expect(component.panelCropPosition?.x2 ?? 0).toBeCloseTo(311.18110236220474, 6);
+    expect(component.panelCropPosition?.y2 ?? 0).toBe(640);
   });
 
   it('clears one-shot crop overrides after the cropper reports a new drag position', async () => {

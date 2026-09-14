@@ -179,7 +179,7 @@ export class ModuleEditorComponent extends SubManager implements OnInit, OnDestr
   onPanelCropperChange(position: CropperPosition): void { this.panelState.onPanelCropperChange(position); }
   onPanelImageLoadFailed(): void { this.panelState.onPanelImageLoadFailed(); }
   fitPanelImage(): void { this.panelState.fitPanelImage(this.panelCropper, this.panelCropAspectRatio); }
-  fillPanelImage(): void { this.panelState.fillPanelImage(this.panelCropper, this.panelCropAspectRatio); }
+  fillPanelImage(): void { this.panelState.fillPanelImage(this.panelCropAspectRatio); }
   resetPanelCropper(): void { this.panelState.resetPanelCropper(this.panelCropper); }
   confirmPanelUploadGuardrail(): void { this.panelState.confirmPanelUploadGuardrail(); }
 
