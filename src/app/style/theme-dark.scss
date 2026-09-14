@@ -702,6 +702,26 @@ html.dark {
     background: transparent;
   }
 
+  // Every item name link (module / rack / patch / collection titles).
+  app-hero-clickable-title .title,
+  .hero-clickable-title .title,
+  a.title {
+    color: rgba(235, 242, 250, 0.94);
+    text-decoration-color: rgba(235, 242, 250, 0);
+  }
+
+  app-hero-clickable-title .title:visited,
+  .hero-clickable-title .title:visited,
+  a.title:visited {
+    color: rgba(235, 242, 250, 0.94);
+  }
+
+  app-hero-clickable-title .title:hover,
+  .hero-clickable-title .title:hover,
+  a.title:hover {
+    text-decoration-color: rgba(235, 242, 250, 0.6);
+  }
+
   .title-inline-description,
   .title-sub {
     color: var(--app-ink-3);
@@ -717,6 +737,113 @@ html.dark {
   .title-text--with-sub .title-sub,
   .title-text--with-sub-auto .title-sub {
     color: var(--app-ink-2);
+  }
+
+  // Detail headers re-assert black mains/subs via ::ng-deep host rules —
+  // match their depth so dark wins (module / rack / patch / profile / user).
+  .module-browser-detail__header h1.title .title-text--with-sub .title-main,
+  .rackBrowserDetailView__header h1.title .title-text--with-sub .title-main,
+  .patch-browser-detail__header h1.title .title-text--with-sub .title-main {
+    color: var(--app-ink-3);
+  }
+
+  .module-browser-detail__header h1.title .title-text--with-sub .title-sub,
+  .rackBrowserDetailView__header h1.title .title-text--with-sub .title-sub,
+  .patch-browser-detail__header h1.title .title-text--with-sub .title-sub,
+  .profile-header h1.title .title-sub,
+  .user-area-header h1.title .title-sub {
+    color: var(--app-ink);
+  }
+
+  // Showcase labels (footer columns, stat labels).
+  .showcase-root .label,
+  app-label-value-showcase .label {
+    color: rgba(198, 213, 230, 0.66);
+  }
+
+  .showcase-root .label__suffix,
+  app-label-value-showcase .label__suffix {
+    color: rgba(158, 178, 199, 0.5);
+  }
+
+  app-label-group-showcase .label {
+    color: rgba(198, 213, 230, 0.6);
+  }
+
+  app-label-group-showcase .value {
+    color: rgba(235, 242, 250, 0.88);
+  }
+
+  // Entity stat grids + generic card captions.
+  .entity-stat-grid__label,
+  .entity-stat-grid__caption,
+  .entityStatGrid__detail {
+    color: var(--app-ink-3);
+  }
+
+  .entityStatGrid__showcase--clickable .label {
+    color: #8fb8e8;
+  }
+
+  .subtitle_onWhite {
+    color: rgba(198, 213, 230, 0.5);
+  }
+
+  // Manufacturer index names.
+  .manufacturer-row-name {
+    color: rgba(235, 242, 250, 0.94);
+  }
+
+  // Auth divider + switcher links.
+  .sso-buttons-container .divider::before,
+  .sso-buttons-container .divider::after {
+    border-bottom-color: rgba(148, 184, 220, 0.18);
+  }
+
+  .sso-buttons-container .divider span {
+    color: rgba(158, 178, 199, 0.7);
+  }
+
+  mat-card-subtitle.action-link {
+    color: rgba(198, 213, 230, 0.75);
+  }
+
+  mat-card-subtitle.action-link strong {
+    color: #8fb8e8;
+  }
+
+  .reset-link {
+    border-color: rgba(148, 184, 220, 0.14);
+  }
+
+  .reset-link:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(148, 184, 220, 0.22);
+  }
+
+  // Flag-dialog steps + CV chips.
+  .flag-step-number {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(215, 228, 242, 0.8);
+  }
+
+  .flag-step-title {
+    color: rgba(235, 242, 250, 0.9);
+  }
+
+  .flag-step-copy {
+    color: rgba(198, 213, 230, 0.68);
+  }
+
+  .item-cvitem {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: rgba(215, 228, 242, 0.82);
+  }
+
+  .rack-image-fallback {
+    border-color: rgba(148, 184, 220, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(158, 178, 199, 0.65);
   }
 
   // Tables inside browsers keep row separation without white glare.
