@@ -88,6 +88,12 @@ export class ModuleEditorPanelStateService {
     this.panelCropFileRequestId++;
     this.panelCropLoadFailed$.next(false);
     this.panelCropLoading$.next(true);
+    // A new source image invalidates any crop state derived from the previous
+    // image dimensions. Clear it now so Fit/Fill cannot reuse a stale box or
+    // stale max bounds before the cropper reports readiness for the new file.
+    this.panelCropperMaxBounds = undefined;
+    this.pendingPanelCropOverride = undefined;
+    this.panelCropPosition$.next(undefined);
     this.replacePanelSourcePreviewUrl(this.tryCreateObjectUrl(file));
     this.replaceCroppedPanelPreviewUrl(null);
   }
@@ -187,17 +193,16 @@ export class ModuleEditorPanelStateService {
     this.applyPanelCropPreset(this.buildFittedPanelCropPosition(this.panelCropperMaxBounds, aspectRatio));
   }
 
-  fillPanelImage(panelCropper: ModuleEditorCropperComponent | undefined, aspectRatio: number): void {
+  fillPanelImage(aspectRatio: number): void {
     const maxBounds = this.panelCropperMaxBounds;
     if (!maxBounds) {
       return;
     }
 
-    if (panelCropper) {
-      this.pendingPanelCropOverride = undefined;
-      panelCropper.resetCropperPosition();
-    }
-
+    // Fill is a relative zoom-out around the current selection (or the fitted
+    // box when nothing is selected yet), growing toward the maximal fitted box.
+    // It converges: once the selection fills the frame, further clicks are a
+    // no-op instead of shrinking the selection step after step.
     const basePosition = this.panelCropPosition$.value ?? this.buildFittedPanelCropPosition(maxBounds, aspectRatio);
     this.applyPanelCropPreset(
       scalePanelCropPosition(basePosition, PANEL_CROP_FILL_SCALE, maxBounds, aspectRatio)

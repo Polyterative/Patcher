@@ -21,7 +21,12 @@ export const PANEL_TYPE_OPTIONS: PanelTypeOption[] = [
   {name: 'Limited edition', value: 4, id: '3'}
 ];
 
-export const PANEL_CROP_FILL_SCALE = 0.82;
+/**
+ * Fill grows the selection toward the maximal fitted box (~22% per click).
+ * It must stay above 1 so repeated clicks converge on the full frame instead
+ * of shrinking the selection step after step.
+ */
+export const PANEL_CROP_FILL_SCALE = 1.22;
 
 /** Computes the aspect-ratio-preserving fitted crop box centered in the image. */
 export function buildFittedPanelCropPosition(

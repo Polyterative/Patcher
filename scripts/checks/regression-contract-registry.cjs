@@ -53,8 +53,11 @@ module.exports = {
     },
     {
       source: 'src/app/components/module-parts/module-editor/module-editor-panel-state.service.ts',
-      acceptedSpecGlobs: ['src/app/components/module-parts/module-editor/module-editor.component.spec.ts'],
-      reason: 'Only consumed by ModuleEditorComponent; it has no dedicated spec file of its own.'
+      acceptedSpecGlobs: [
+        'src/app/components/module-parts/module-editor/module-editor-panel-state.service.spec.ts',
+        'src/app/components/module-parts/module-editor/module-editor.component.spec.ts'
+      ],
+      reason: 'Exercised directly by its dedicated module-editor-panel-state.service.spec.ts plus the consuming ModuleEditorComponent spec.'
     },
     {
       source: 'src/app/components/module-parts/module-editor/module-editor-form-state.service.ts',
