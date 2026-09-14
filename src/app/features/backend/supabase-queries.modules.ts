@@ -372,7 +372,8 @@ export class SupabaseModuleQueries extends SupabaseQueriesBase {
     )
       .order(`color`, {foreignTable: DbPaths.module_panels, ascending: true})
       .limit(1, {foreignTable: DbPaths.module_panels})
-      .order(moduleOrderColumn, moduleOrderOptions);
+      .order(moduleOrderColumn, moduleOrderOptions)
+      .order('id', {ascending: moduleOrderOptions.ascending});
 
     const buildSearchRowsQuery = (query: any, applyTextFilters = false) => {
       const lightweightSelect = hasTagFilter
@@ -384,7 +385,8 @@ export class SupabaseModuleQueries extends SupabaseQueriesBase {
         : query.select(lightweightSelect);
 
       return applyBaseFilters(selectedQuery, applyTextFilters)
-        .order(moduleOrderColumn, moduleOrderOptions);
+        .order(moduleOrderColumn, moduleOrderOptions)
+        .order('id', {ascending: moduleOrderOptions.ascending});
     };
 
     if (!requiresClientTextFiltering) {
@@ -590,6 +592,7 @@ export class SupabaseModuleQueries extends SupabaseQueriesBase {
         .filter('public', 'eq', true)
         .or(`name.ilike.%${ escapedQuery }%,description.ilike.%${ escapedQuery }%`)
         .order('name', {ascending: true})
+        .order('id', {ascending: true})
         .limit(limit)
     ).pipe(
       remapErrors(),

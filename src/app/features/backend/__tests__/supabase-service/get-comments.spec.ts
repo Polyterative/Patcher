@@ -81,6 +81,7 @@ describe('SupabaseService - GET.comments', () => {
     service.GET.comments(1, 1).subscribe({
       next: () => {
         expect(orderSpy).toHaveBeenCalledWith('created', { ascending: false });
+        expect(orderSpy).toHaveBeenCalledWith('id', { ascending: false });
         done();
       },
       error: (err: unknown) => { fail(err); done(); }

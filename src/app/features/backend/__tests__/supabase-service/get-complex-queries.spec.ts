@@ -1045,6 +1045,29 @@ describe('SupabaseService - get complex queries', () => {
         }
       });
     }, TEST_TIMEOUT);
+
+    it('should order manufacturers by name asc with id asc tie-break', (done) => {
+      const mock = chainable({data: [], count: 0, error: null});
+      const orderSpy = spyOn(mock, 'order').and.returnValue(mock);
+      spyOn(supabaseClient, 'from').and.callFake((table: string) => {
+        if (table === 'manufacturers') {
+          return mock;
+        }
+        return chainable({data: [], error: null});
+      });
+
+      service.GET.manufacturersPaginated(0, 19, '', 'name', 'asc').subscribe({
+        next: () => {
+          expect(orderSpy).toHaveBeenCalledWith('name', {ascending: true});
+          expect(orderSpy).toHaveBeenCalledWith('id', {ascending: true});
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
   });
   
   describe('get.racksWithModule', () => {
@@ -1094,6 +1117,24 @@ describe('SupabaseService - get complex queries', () => {
             'id,name,hp,rows,description,created,updated,authorid,public_id,image,author:authorid(username,id),author_profile_gate:authorid!inner(public),rack_modules!inner(rackid,moduleid)',
             { count: 'exact' }
           );
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should order by updated desc with id desc tie-break by default', (done) => {
+      const mock = chainable({data: [], count: 0, error: null});
+      const orderSpy = spyOn(mock, 'order').and.returnValue(mock);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+      service.get.racksWithModule(99).subscribe({
+        next: () => {
+          expect(orderSpy).toHaveBeenCalledWith('updated', {ascending: false});
+          expect(orderSpy).toHaveBeenCalledWith('id', {ascending: false});
           done();
         },
         error: (err) => {

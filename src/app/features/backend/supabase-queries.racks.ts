@@ -167,6 +167,7 @@ export class SupabaseRackQueries extends SupabaseQueriesBase {
         .select(`${ QueryJoins.currentUserRackListColumns }, ${ QueryJoins.author }`)
         .filter('authorid', 'eq', authorid)
         .order('updated', {ascending: false})
+        .order('id', {ascending: false})
     ).pipe(
       remapErrors(),
       throwIfSupabaseErrorWhen<{data: Rack[] | null}>(strictErrors),
@@ -188,6 +189,7 @@ export class SupabaseRackQueries extends SupabaseQueriesBase {
           .select(`*, ${ QueryJoins.author }`, {count: 'exact'})
           .filter('authorid', 'eq', user.id)
           .order('updated', {ascending: false})
+          .order('id', {ascending: false})
           .range(from, to)
       )),
       remapErrors(),
@@ -214,6 +216,7 @@ export class SupabaseRackQueries extends SupabaseQueriesBase {
         .filter('public', 'eq', true)
         .filter(`${ PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
         .order('updated', {ascending: false})
+        .order('id', {ascending: false})
         .range(from, to)
     ).pipe(
       remapErrors(),
@@ -477,6 +480,7 @@ export class SupabaseRackQueries extends SupabaseQueriesBase {
         .filter('rack_modules.moduleid', 'eq', moduleid)
         .range(from, to)
         .order(orderBy ?? 'updated', { ascending: orderDirection === 'asc' })
+        .order('id', { ascending: orderDirection === 'asc' })
     ).pipe(
       remapErrors(),
       map((response: any) => {

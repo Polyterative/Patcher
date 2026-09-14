@@ -205,7 +205,8 @@ export class SupabaseManufacturerQueries extends SupabaseQueriesBase {
       const response = await this.supabase.from(DbPaths.manufacturers)
         .select(columns, {count: 'exact'})
         .range(chunkFrom, chunkTo)
-        .order(orderBy);
+        .order(orderBy)
+        .order('id');
 
       if (response.error) {
         return {
@@ -264,7 +265,8 @@ export class SupabaseManufacturerQueries extends SupabaseQueriesBase {
 
     let query = this.supabase.from(DbPaths.manufacturers)
       .select('id,name,logo,websiteURL,adminUser', {count: 'exact'})
-      .order(orderBy, {ascending: orderDirection === 'asc'});
+      .order(orderBy, {ascending: orderDirection === 'asc'})
+      .order('id', {ascending: orderDirection === 'asc'});
 
     if (nameQuery.length === 0) {
       query = query.range(from, effectiveTo);
@@ -324,7 +326,8 @@ export class SupabaseManufacturerQueries extends SupabaseQueriesBase {
     return rxFrom((async () => {
       const manufacturersQuery = this.supabase.from(DbPaths.manufacturers)
         .select('id,name,logo,websiteURL,adminUser', {count: 'exact'})
-        .order('name', {ascending: true});
+        .order('name', {ascending: true})
+        .order('id', {ascending: true});
 
       const manufacturersResponse = await manufacturersQuery;
       if (manufacturersResponse.error) {
