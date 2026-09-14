@@ -102,5 +102,5 @@ export function formatPriceDropPercent(trendPercent: number): string {
 }
 
 export function formatPriceDropRange(summary: ModuleSparsePriceHistorySummary): string {
-  return `${ formatEstimatedEurPrice(summary.earliestPriceEurMinor) } → ${ formatEstimatedEurPrice(summary.latestPriceEurMinor).replace(/^~/, '~') }`;
+  return `${ formatEstimatedEurPrice(summary.earliestPriceEurMinor) } → ${ formatEstimatedEurPrice(summary.latestPriceEurMinor) }`;
 }

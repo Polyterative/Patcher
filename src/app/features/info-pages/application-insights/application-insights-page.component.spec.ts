@@ -259,6 +259,35 @@ describe('ApplicationInsightsPageComponent', () => {
       stats.discovery$.next(buildDiscoveryStub() as unknown as Record<string, unknown>);
     });
 
+    it('passes a shown price drop with its top module through to the template vm', (done) => {
+      let count = 0;
+      comp.vm$.subscribe((vm) => {
+        count++;
+        if (count === 2) {
+          const priceDrops = vm.priceDrops as unknown as {
+            dropCount: number;
+            suppressed: boolean;
+            topDrop: {moduleId: number; dropLabel: string} | null;
+          };
+          expect(priceDrops.dropCount).toBe(1);
+          expect(priceDrops.suppressed).toBeFalse();
+          expect(priceDrops.topDrop?.moduleId).toBe(5);
+          expect(priceDrops.topDrop?.dropLabel).toBe('↓15%');
+          expect(vm.priceDropsError).toBeFalse();
+          done();
+        }
+      });
+      stats.priceDrops$.next({
+        trackedCount: 3,
+        dropCount: 1,
+        takeaway: '1 tracked module dropped reliably in the last 60 days (out of 3 with enough history).',
+        topDrop: {moduleId: 5, dropLabel: '↓15%'},
+        suppressed: false
+      });
+      stats.page$.next(buildPageStub());
+      stats.discovery$.next(buildDiscoveryStub() as unknown as Record<string, unknown>);
+    });
+
     it('passes the derived racks takeaway through to the template vm', (done) => {
       let count = 0;
       comp.vm$.subscribe((vm) => {
