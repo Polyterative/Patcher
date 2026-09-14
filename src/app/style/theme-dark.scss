@@ -808,6 +808,16 @@ html.dark {
     border: 1px solid var(--app-border);
   }
 
+  // Floating selection panel + discovery tips.
+  .panel-card {
+    background: rgba(21, 28, 38, 0.96);
+    border-color: rgba(148, 184, 220, 0.22);
+    color: rgba(215, 228, 242, 0.92);
+    box-shadow:
+      0 0.45rem 1.4rem rgba(0, 0, 0, 0.5),
+      inset 0 0 0 0.0625rem rgba(148, 184, 220, 0.08);
+  }
+
   // Device-frame browser chrome around embedded previews.
   lib-device-frame-wrapper .top,
   lib-device-frame-wrapper .bottom,
