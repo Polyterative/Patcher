@@ -808,6 +808,38 @@ html.dark {
     border: 1px solid var(--app-border);
   }
 
+  // Browser filter chrome: slate labels that go muddy on dark.
+  .proposer-group__label {
+    background: rgba(148, 184, 220, 0.14);
+    color: rgba(198, 213, 230, 0.88);
+  }
+
+  .tag-filter-accordion .mat-expansion-panel-header {
+    color: rgba(198, 213, 230, 0.82);
+  }
+
+  .tag-filter-accordion .mat-expansion-panel-header:hover {
+    background: rgba(148, 184, 220, 0.08) !important; // px-ok: mirrors light hover wash
+  }
+
+  .tag-filter-accordion .mat-expansion-panel {
+    border-bottom-color: rgba(148, 184, 220, 0.14);
+  }
+
+  // Quick-add action floating on result cards.
+  .module-list-card-action {
+    background: rgba(27, 36, 49, 0.92);
+    box-shadow: 0 0.25rem 0.7rem rgba(0, 0, 0, 0.45);
+  }
+
+  // Module description hover-reader popup.
+  .module-description-reader {
+    background: rgba(27, 36, 49, 0.98);
+    border-color: rgba(148, 184, 220, 0.22);
+    color: rgba(215, 228, 242, 0.9);
+    box-shadow: 0 0.45rem 1.25rem rgba(0, 0, 0, 0.5);
+  }
+
   // Floating selection panel + discovery tips.
   .panel-card {
     background: rgba(21, 28, 38, 0.96);
