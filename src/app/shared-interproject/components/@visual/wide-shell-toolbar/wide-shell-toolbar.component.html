@@ -7,7 +7,7 @@
            routerLinkActive="title-metro-brand--active"
            aria-label="Go to home">{{ siteTitle }}</a>
         <div class="title-metro-topbar-actions">
-          <app-theme-toggle></app-theme-toggle>
+          <app-theme-toggle class="title-metro-topbar-toggle"></app-theme-toggle>
           <button
             #mobileMenuTrigger
             type="button"
@@ -37,6 +37,7 @@
         }
       </div>
       <div class="title-metro-target-group title-metro-target-group--account">
+        <app-theme-toggle class="title-metro-account-toggle"></app-theme-toggle>
         @for (item of shellVm.accountLinks; track trackByNavLink($index, item)) {
           <a
             class="title-metro-target title-metro-target--private"
