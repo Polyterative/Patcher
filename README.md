@@ -21,6 +21,7 @@
 - **Power analysis** and **balance analysis** in rack detail.
 - **Multi-panel module support** with panel gallery improvements.
 - **Public profiles**, contributor stats, and better discovery tooling.
+- **Public Insights page** with ownership trends, discovery rails, and fresh community activity.
 
 See the full [CHANGELOG](CHANGELOG.md) for details.
 
