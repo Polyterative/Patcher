@@ -11,6 +11,7 @@ import {
 import {
   computeLayoutAnalysis,
   RackLayoutAnalysisResult,
+  rowMixedStandards,
 } from '../../rack-layout-analysis.utils';
 import {
   buildRackPowerBreakdown,
@@ -171,31 +172,39 @@ export class RackVisualModelRenderService {
     return this.rowPowerBreakdown[rowId] ?? null;
   }
 
-  rowHpOverflowAt(rowId: number): number {
+  rowHpOverflowAt(rowId: number, rowedRackedModules?: RackedModule[][] | null, rackData?: RackMinimal | null): number {
+    if (rowedRackedModules && rackData) {
+      return this.freshRowOverflow(rowedRackedModules?.[rowId], rackData?.hp ?? 0);
+    }
     return this.rowHpOverflow[rowId] ?? 0;
   }
 
   isModuleOverflowing(rowId: number, moduleIndex: number, rowedRackedModules: RackedModule[][] | null | undefined, rackData: RackMinimal | null | undefined): boolean {
-    if ((this.rowHpOverflow[rowId] ?? 0) <= 0) return false;
     const row = rowedRackedModules?.[rowId];
     if (!row) return false;
     const capacity = rackData?.hp ?? 0;
+    const used = this.freshRowUsedHp(row);
+    if (used <= capacity) return false;
     let cumulative = 0;
     for (let i = 0; i < moduleIndex; i++) {
-      cumulative += row[i]?.module?.hp ?? 0;
+      cumulative += this.freshModuleHp(row[i]);
     }
-    return cumulative + (row[moduleIndex]?.module?.hp ?? 0) > capacity;
+    return cumulative + this.freshModuleHp(row[moduleIndex]) > capacity;
   }
 
   rowHpTooltip(rowId: number, rowedRackedModules: RackedModule[][] | null | undefined, rackData: RackMinimal | null | undefined): string {
     const capacity = rackData?.hp ?? 0;
     const row = rowedRackedModules?.[rowId] ?? [];
-    const used = row.reduce((sum, module) => sum + (module.module?.hp ?? 0), 0);
-    const overflow = this.rowHpOverflow[rowId] ?? 0;
+    const used = this.freshRowUsedHp(row);
+    const overflow = this.freshRowOverflow(row, capacity);
     return `Row ${rowId + 1}: ${used} / ${capacity} HP — ${overflow} HP over capacity`;
   }
 
-  totalHpOverflow(): number {
+  totalHpOverflow(rowedRackedModules?: RackedModule[][] | null, rackData?: RackMinimal | null): number {
+    if (rowedRackedModules && rackData) {
+      const capacity = rackData?.hp ?? 0;
+      return (rowedRackedModules ?? []).reduce((sum, row) => sum + this.freshRowOverflow(row, capacity), 0);
+    }
     return this.rowHpOverflow.reduce((sum, value) => sum + value, 0);
   }
 
@@ -208,9 +217,7 @@ export class RackVisualModelRenderService {
   }
 
   rowRemainingHp(rowId: number, rowedRackedModules: RackedModule[][] | null | undefined, rackData: RackMinimal | null | undefined): number {
-    const row = rowedRackedModules?.[rowId] ?? [];
-    const used = row.reduce((sum, module) => sum + (module.module?.hp ?? 0), 0);
-    return Math.max(0, (rackData?.hp ?? 0) - used);
+    return this.freshRowWasted(rowedRackedModules?.[rowId], rackData?.hp ?? 0);
   }
 
   shouldShowRowPowerPanel(rowId: number, analysisMode: RackAnalysisMode, rowedRackedModules: RackedModule[][] | null | undefined): boolean {
@@ -266,14 +273,31 @@ export class RackVisualModelRenderService {
     return buildRowFunctionResidualLabel(this.rowFunctionBreakdownAt(rowId));
   }
 
-  rowLayoutUsedHp(rowId: number, rackData: RackMinimal | null | undefined): number {
+  rowLayoutUsedHp(rowId: number, rackData: RackMinimal | null | undefined, rowedRackedModules?: RackedModule[][] | null): number {
+    if (rowedRackedModules) {
+      return this.freshRowUsedHp(rowedRackedModules?.[rowId]);
+    }
     const overflow = this.layoutAnalysis?.overflowHp[rowId] ?? 0;
     const wasted = this.layoutAnalysis?.wastedHp[rowId] ?? 0;
     const capacity = rackData?.hp ?? 0;
     return capacity + overflow - wasted;
   }
 
-  rowLayoutStatusLabel(rowId: number): string {
+  rowLayoutStatusLabel(rowId: number, rowedRackedModules?: RackedModule[][] | null, rackData?: RackMinimal | null): string {
+    const freshStandards = rowedRackedModules ? rowMixedStandards(rowedRackedModules?.[rowId]) : null;
+    if (freshStandards && freshStandards.length > 1) {
+      return `Mixed formats: ${ freshStandards.map(standard => this.layoutStandardLabel(standard)).join(' + ') }`;
+    }
+    if (rowedRackedModules && rackData) {
+      const row = rowedRackedModules?.[rowId] ?? [];
+      const capacity = rackData?.hp ?? 0;
+      const overflow = this.freshRowOverflow(row, capacity);
+      if (overflow > 0) {
+        return `${ overflow }HP over capacity`;
+      }
+      const wasted = this.freshRowWasted(row, capacity);
+      return wasted > 0 ? `${ wasted }HP spare` : 'Perfectly filled';
+    }
     const mixedIssue = this.layoutMixedIssueAt(rowId);
     if (mixedIssue) {
       return `Mixed formats: ${ mixedIssue.standards.map(standard => this.layoutStandardLabel(standard)).join(' + ') }`;
@@ -304,7 +328,18 @@ export class RackVisualModelRenderService {
       : 'No cross-row moves suggested for this row.';
   }
 
-  rowLayoutPanelClass(rowId: number): string {
+  rowLayoutPanelClass(rowId: number, rowedRackedModules?: RackedModule[][] | null, rackData?: RackMinimal | null): string {
+    if (rowedRackedModules) {
+      if (rowMixedStandards(rowedRackedModules?.[rowId]).length > 1) {
+        return 'rowPowerPanel--layoutWarning';
+      }
+      if (rackData) {
+        const overflow = this.freshRowOverflow(rowedRackedModules?.[rowId], rackData?.hp ?? 0);
+        return overflow > 0
+          ? 'rowPowerPanel--layoutOverflow'
+          : 'rowPowerPanel--layout';
+      }
+    }
     if (this.layoutMixedIssueAt(rowId)) {
       return 'rowPowerPanel--layoutWarning';
     }
@@ -364,6 +399,28 @@ export class RackVisualModelRenderService {
 
   private layoutMixedIssueAt(rowId: number) {
     return this.layoutAnalysis?.mixedRowIssues.find(issue => issue.rowIndex === rowId) ?? null;
+  }
+
+  private freshModuleHp(module: RackedModule | null | undefined): number {
+    const hp = module?.module?.hp ?? 0;
+    if (!Number.isFinite(hp)) {
+      return 0;
+    }
+    return Math.max(0, hp);
+  }
+
+  private freshRowUsedHp(row: RackedModule[] | null | undefined): number {
+    return (row ?? []).reduce((sum, module) => sum + this.freshModuleHp(module), 0);
+  }
+
+  private freshRowOverflow(row: RackedModule[] | null | undefined, capacity: number): number {
+    const safeCapacity = Number.isFinite(capacity) ? Math.max(0, capacity) : 0;
+    return Math.max(0, this.freshRowUsedHp(row) - safeCapacity);
+  }
+
+  private freshRowWasted(row: RackedModule[] | null | undefined, capacity: number): number {
+    const safeCapacity = Number.isFinite(capacity) ? Math.max(0, capacity) : 0;
+    return Math.max(0, safeCapacity - this.freshRowUsedHp(row));
   }
 
   private layoutStandardLabel(standard: number): string {

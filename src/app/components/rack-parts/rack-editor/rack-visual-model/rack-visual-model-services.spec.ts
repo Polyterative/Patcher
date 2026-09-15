@@ -79,6 +79,33 @@ describe('RackVisualModel extracted services', () => {
       expect(service.isModuleOverflowing(0, 2, [[hovered, sameHp, overflow]], rackFixture)).toBeTrue();
       expect(service.isSameHpHighlightedModule(sameHp, RACK_ANALYSIS_MODES.layout)).toBeTrue();
     });
+
+    it('reports fresh layout HP from current rows when cached analysis is stale', () => {
+      const service = new RackVisualModelRenderService();
+      const fullRow = [
+        makeRackedModule(1, 0, 0, 32),
+      ];
+      const sparseRow = [
+        makeRackedModule(1, 0, 0, 14),
+      ];
+      const freshRows = [[sparseRow[0]]];
+
+      service.update([fullRow], rackFixture);
+
+      expect(service.rowLayoutUsedHp(0, rackFixture, freshRows)).toBe(14);
+      expect(service.rowLayoutStatusLabel(0, freshRows, rackFixture)).toBe('18HP spare');
+      expect(service.rowLayoutPanelClass(0, freshRows, rackFixture)).toBe('rowPowerPanel--layout');
+      expect(service.rowHpOverflowAt(0, freshRows, rackFixture)).toBe(0);
+      expect(service.totalHpOverflow(freshRows, rackFixture)).toBe(0);
+    });
+
+    it('reports empty rows as empty instead of perfectly filled', () => {
+      const service = new RackVisualModelRenderService();
+      service.update([[makeRackedModule(1, 0, 0, 32)]], rackFixture);
+
+      expect(service.rowLayoutUsedHp(1, rackFixture, [[makeRackedModule(1, 0, 0, 32)], []])).toBe(0);
+      expect(service.rowLayoutStatusLabel(1, [[]], rackFixture)).toBe('32HP spare');
+    });
   });
 
   describe('RackVisualModelLayoutService', () => {
