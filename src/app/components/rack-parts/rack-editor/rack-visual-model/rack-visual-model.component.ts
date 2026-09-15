@@ -340,7 +340,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   rowFunctionResidualLabel(rowId: number): string { return this.render.rowFunctionResidualLabel(rowId); }
   rowLayoutUsedHp(rowId: number): number { return this.render.rowLayoutUsedHp(rowId, this.rackData, this.rowedRackedModules); }
   rowLayoutStatusLabel(rowId: number): string { return this.render.rowLayoutStatusLabel(rowId, this.rowedRackedModules, this.rackData); }
-  rowLayoutFooterLabel(rowId: number): string { return this.render.rowLayoutFooterLabel(rowId); }
+  rowLayoutFooterLabel(rowId: number): string { return this.render.rowLayoutFooterLabel(rowId, this.rowedRackedModules); }
   rowLayoutPanelClass(rowId: number): string { return this.render.rowLayoutPanelClass(rowId, this.rowedRackedModules, this.rackData); }
   powerAnalysisVisual(rackedModule: RackedModule): RackPowerHeatmapVisual { return this.getModuleView(rackedModule).powerAnalysisVisual; }
   functionAnalysisVisual(rackedModule: RackedModule): RackFunctionVisual { return this.getModuleView(rackedModule).functionAnalysisVisual; }
