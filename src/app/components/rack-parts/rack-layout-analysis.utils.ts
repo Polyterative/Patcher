@@ -108,15 +108,19 @@ export function computeLayoutAnalysis(
   };
 }
 
+export function rowMixedStandards(row: RackedModule[] | null | undefined): number[] {
+  return [...new Set(
+    (row ?? [])
+      .filter(module => !isBlankModule(module.module.id))
+      .map(module => moduleStandardId(module))
+  )].sort((a, b) => a - b);
+}
+
 function findMixedRowIssues(rows: RackedModule[][]): RackLayoutMixedRowIssue[] {
   return rows
     .map((row, rowIndex) => ({
       rowIndex,
-      standards: [...new Set(
-        row
-          .filter(module => !isBlankModule(module.module.id))
-          .map(module => moduleStandardId(module))
-      )].sort((a, b) => a - b)
+      standards: rowMixedStandards(row)
     }))
     .filter(issue => issue.standards.length > 1);
 }

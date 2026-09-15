@@ -319,12 +319,12 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     }
   }
   rowPowerBreakdownAt(rowId: number): RackPowerRowBreakdown | null { return this.render.rowPowerBreakdownAt(rowId); }
-  rowHpOverflowAt(rowId: number): number { return this.render.rowHpOverflowAt(rowId); }
+  rowHpOverflowAt(rowId: number): number { return this.render.rowHpOverflowAt(rowId, this.rowedRackedModules, this.rackData); }
   isModuleOverflowing(rowId: number, moduleIndex: number): boolean { return this.render.isModuleOverflowing(rowId, moduleIndex, this.rowedRackedModules, this.rackData); }
   rowHpTooltip(rowId: number): string { return this.render.rowHpTooltip(rowId, this.rowedRackedModules, this.rackData); }
 
   get totalHpOverflow(): number {
-    return this.render.totalHpOverflow();
+    return this.render.totalHpOverflow(this.rowedRackedModules, this.rackData);
   }
 
   isRowAnalysisPanelVisible(rowId: number): boolean { return this.render.isRowAnalysisPanelVisible(rowId, this.rowedRackedModules); }
@@ -338,10 +338,10 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   rowPowerHeaderLabel(rowId: number): string { return this.render.rowPowerHeaderLabel(rowId); }
   rowFunctionBreakdownAt(rowId: number): RowFunctionBreakdown | null { return this.render.rowFunctionBreakdownAt(rowId); }
   rowFunctionResidualLabel(rowId: number): string { return this.render.rowFunctionResidualLabel(rowId); }
-  rowLayoutUsedHp(rowId: number): number { return this.render.rowLayoutUsedHp(rowId, this.rackData); }
-  rowLayoutStatusLabel(rowId: number): string { return this.render.rowLayoutStatusLabel(rowId); }
+  rowLayoutUsedHp(rowId: number): number { return this.render.rowLayoutUsedHp(rowId, this.rackData, this.rowedRackedModules); }
+  rowLayoutStatusLabel(rowId: number): string { return this.render.rowLayoutStatusLabel(rowId, this.rowedRackedModules, this.rackData); }
   rowLayoutFooterLabel(rowId: number): string { return this.render.rowLayoutFooterLabel(rowId); }
-  rowLayoutPanelClass(rowId: number): string { return this.render.rowLayoutPanelClass(rowId); }
+  rowLayoutPanelClass(rowId: number): string { return this.render.rowLayoutPanelClass(rowId, this.rowedRackedModules, this.rackData); }
   powerAnalysisVisual(rackedModule: RackedModule): RackPowerHeatmapVisual { return this.getModuleView(rackedModule).powerAnalysisVisual; }
   functionAnalysisVisual(rackedModule: RackedModule): RackFunctionVisual { return this.getModuleView(rackedModule).functionAnalysisVisual; }
   analysisVisualClass(rackedModule: RackedModule, analysisMode: RackAnalysisMode): string { return this.getModuleView(rackedModule, undefined, undefined, analysisMode).analysisVisualClass; }
