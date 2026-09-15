@@ -57,10 +57,7 @@ export class RackVisualModelRenderService {
     const rows = rowedRackedModules ?? [];
     const capacity = rackData?.hp ?? 0;
     this.rowPowerBreakdown = buildRackPowerBreakdown(rows).rows;
-    this.rowHpOverflow = rows.map(row => {
-      const used = row.reduce((sum, module) => sum + (module.module?.hp ?? 0), 0);
-      return Math.max(0, used - capacity);
-    });
+    this.rowHpOverflow = rows.map(row => this.freshRowOverflow(row, capacity));
     this.rowFunctionBreakdowns = buildRowFunctionBreakdowns(rowedRackedModules);
     this.moduleFunctionVisuals = new Map(
       rows
@@ -194,9 +191,7 @@ export class RackVisualModelRenderService {
 
   rowHpTooltip(rowId: number, rowedRackedModules: RackedModule[][] | null | undefined, rackData: RackMinimal | null | undefined): string {
     const capacity = rackData?.hp ?? 0;
-    const row = rowedRackedModules?.[rowId] ?? [];
-    const used = this.freshRowUsedHp(row);
-    const overflow = this.freshRowOverflow(row, capacity);
+    const {used, overflow} = this.freshRowFigures(rowedRackedModules?.[rowId], capacity);
     return `Row ${rowId + 1}: ${used} / ${capacity} HP — ${overflow} HP over capacity`;
   }
 
@@ -289,13 +284,10 @@ export class RackVisualModelRenderService {
       return `Mixed formats: ${ freshStandards.map(standard => this.layoutStandardLabel(standard)).join(' + ') }`;
     }
     if (rowedRackedModules && rackData) {
-      const row = rowedRackedModules?.[rowId] ?? [];
-      const capacity = rackData?.hp ?? 0;
-      const overflow = this.freshRowOverflow(row, capacity);
+      const {overflow, wasted} = this.freshRowFigures(rowedRackedModules?.[rowId], rackData?.hp ?? 0);
       if (overflow > 0) {
         return `${ overflow }HP over capacity`;
       }
-      const wasted = this.freshRowWasted(row, capacity);
       return wasted > 0 ? `${ wasted }HP spare` : 'Perfectly filled';
     }
     const mixedIssue = this.layoutMixedIssueAt(rowId);
@@ -312,7 +304,10 @@ export class RackVisualModelRenderService {
     return wasted > 0 ? `${ wasted }HP spare` : 'Perfectly filled';
   }
 
-  rowLayoutFooterLabel(rowId: number): string {
+  rowLayoutFooterLabel(rowId: number, rowedRackedModules?: RackedModule[][] | null): string {
+    if (rowedRackedModules && rowMixedStandards(rowedRackedModules?.[rowId]).length > 1) {
+      return `Fix row ${ rowId + 1 } before remixing.`;
+    }
     const mixedIssue = this.layoutMixedIssueAt(rowId);
     if (mixedIssue) {
       return `Fix row ${ rowId + 1 } before remixing.`;
@@ -411,6 +406,16 @@ export class RackVisualModelRenderService {
 
   private freshRowUsedHp(row: RackedModule[] | null | undefined): number {
     return (row ?? []).reduce((sum, module) => sum + this.freshModuleHp(module), 0);
+  }
+
+  private freshRowFigures(row: RackedModule[] | null | undefined, capacity: number): {used: number; overflow: number; wasted: number} {
+    const used = this.freshRowUsedHp(row);
+    const safeCapacity = Number.isFinite(capacity) ? Math.max(0, capacity) : 0;
+    return {
+      used,
+      overflow: Math.max(0, used - safeCapacity),
+      wasted: Math.max(0, safeCapacity - used)
+    };
   }
 
   private freshRowOverflow(row: RackedModule[] | null | undefined, capacity: number): number {
