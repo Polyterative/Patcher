@@ -18,6 +18,10 @@
     block-size: 1.2rem;
     font-size: 1.2rem;
     line-height: 1.2rem;
+    // Optical alignment: the brightness glyphs carry more ink above their
+    // line-box middle than nav cap-height text does, so the icon reads high
+    // next to uppercase links. Nudge it down to sit on the text midline.
+    translate: 0 0.12rem;
   }
 
   &:hover {
