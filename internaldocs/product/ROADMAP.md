@@ -355,6 +355,9 @@ general resale platforms (Reverb, eBay) require users to describe modules in fre
 - Feedback and reputation are later trust layers based on completed transactions plus bounded account/contribution signals;
   no leaderboards, star ratings, follows, or public reputation scoreboards.
 - Listings expire or are marked sold; collection membership is not automatically updated (seller intent may differ).
+  Since 2026-09-15 the My Listings UI states this explicitly on close ("Collection unchanged") and
+  distinguishes first listings ("not listed yet" / "Create listing") from relists ("previously listed" /
+  "Create new listing", with cleanup guidance to remove For Sale from the collection after a sale).
 
 **Design decision — buyer-seller contact:** v1 should avoid generic chat and payments, but it should still create a
 structured inquiry / offer record tied to the listing. That record can reveal agreed contact/shipping details only after
@@ -450,8 +453,20 @@ stable, and there is enough public volume for the aggregates to be credible.
 
 **Current decisions after the first shipped iterations:**
 
-- the dedicated insights surface should stay **fully public** while it remains aggregate-only and privacy-safe; its public
-  discoverability is part of the product value
+- the dedicated insights surface is **fully public since 6.7.22 (2026-09-10)**: the `isDev` gate is
+  removed from toolbar, footer, and homepage, so toolbar/footer/homepage all expose `/info/insights`
+  and the home insights section renders for signed-out visitors too
+- the page was rebuilt around ownership trends and fresh activity (module-minimal hero ranking cards,
+  maker/format/size discovery rails with `insights.discovery_rail_clicked` analytics, merged Fresh +
+  30-day activity card, human headlines with methodology collapsed into one "How we count" note)
+- private-footprint context ships beside the public aggregates (racks donut since 6.7.22; patches
+  donut alongside it) with suppression gates — aggregate-only, never per-user or per-entity
+- recent price drops ship as one error-filtered section after Makers (reliable-drop count plus the
+  biggest qualifying drop, strict 5–60% / ≥€20 / snapshot-span filter, per-module error isolation;
+  completed on `develop` 2026-09-14, awaiting production release)
+- the "do not expand beyond the teaser until public profiles are live" activation gate is retired for
+  aggregate-only surfaces: the page stays public while every card remains anonymised, suppressed at
+  low volume, and paired with a methodology hint
 - the current best UI vocabulary is **lightweight custom charts + strong summary chips**, not a flat stat wall and not a
   heavy chart dependency; keep the page fast and bespoke until there is enough richer analytical depth to justify a charting
   library
@@ -732,4 +747,9 @@ stable) can be long-lived. These two strategies must be separate.
 
 #### Dark Mode
 
-CSS variable-based theme system. Large design scope; only worth doing once the component library is stable.
+Shipped 2026-09-14 on `develop` (system-first `AppThemeService` + discrete toolbar toggle +
+coordinated dark audit across floating panels, browsers, details, marketplace/manufacturers/
+insights/user-area, and module-editor sheets). The original "only once the component library is
+stable" gate is therefore retired; the remaining work is keeping new surfaces dual-theme from the
+first pass (see [DESIGN_LANGUAGE.md](../DESIGN_LANGUAGE.md#theming-light--dark)). Awaiting
+production release — no public-docs claims until published.
