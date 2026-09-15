@@ -363,6 +363,32 @@ export class UserListingsComponent extends SubManager implements OnInit {
     return editor ? vm.eligibleModules.find(module => module.id === editor.moduleId) ?? null : null;
   }
 
+  hasAnyListingForModule(listings: readonly MarketplaceListing[] | null | undefined, moduleId: number): boolean {
+    return (listings ?? []).some(listing => listing.moduleId === moduleId);
+  }
+
+  hasClosedListingForModule(listings: readonly MarketplaceListing[] | null | undefined, moduleId: number): boolean {
+    return (listings ?? []).some(listing =>
+      listing.moduleId === moduleId && CLOSED_LISTING_STATUSES.includes(listing.status)
+    );
+  }
+
+  hasClosedSoldListingForModule(listings: readonly MarketplaceListing[] | null | undefined, moduleId: number): boolean {
+    return (listings ?? []).some(listing =>
+      listing.moduleId === moduleId && listing.status === 'closed_sold'
+    );
+  }
+
+  eligibleSubtitle(module: MinimalModule, listings: readonly MarketplaceListing[] | null | undefined): string {
+    return this.hasAnyListingForModule(listings, module.id)
+      ? 'For sale in your collection — previously listed.'
+      : 'For sale in your collection — not listed yet.';
+  }
+
+  eligibleCtaLabel(module: MinimalModule, listings: readonly MarketplaceListing[] | null | undefined): string {
+    return this.hasAnyListingForModule(listings, module.id) ? 'Create new listing' : 'Create listing';
+  }
+
   canPublish(listing: MarketplaceListing): boolean {
     return listing.status === 'draft' || listing.status === 'paused';
   }

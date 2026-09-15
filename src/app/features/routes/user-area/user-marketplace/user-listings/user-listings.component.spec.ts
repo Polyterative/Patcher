@@ -298,6 +298,36 @@ describe('UserListingsComponent', () => {
     expect(host.querySelector('[data-testid="user-listing-create"]')).toBeNull();
   });
 
+  it('labels a first-time eligible module as not listed yet', () => {
+    const component = build({modules: [createModule({id: 101})]});
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.textContent).toContain('not listed yet');
+    expect(host.textContent).not.toContain('Previously listed');
+    expect(component.eligibleSubtitle(createModule({id: 101}), [])).toBe(
+      'For sale in your collection — not listed yet.'
+    );
+    expect(component.eligibleCtaLabel(createModule({id: 101}), [])).toBe('Create listing');
+  });
+
+  it('labels an eligible module with closed sold history as previously listed with cleanup guidance', () => {
+    const component = build({
+      listings: [createListing({status: 'closed_sold', moduleId: 101})],
+      modules: [createModule({id: 101})]
+    });
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.textContent).toContain('previously listed');
+    expect(host.textContent).not.toContain('not listed yet');
+    expect(host.querySelector('[data-testid="user-listing-create"]')?.textContent).toContain('Create new listing');
+    expect(host.querySelector('[data-testid="user-listing-relist-note"]')).not.toBeNull();
+    expect(host.querySelector('[data-testid="user-listing-sold-note"]')?.textContent).toContain('remove For Sale');
+    expect(component.hasClosedSoldListingForModule([createListing({status: 'closed_sold', moduleId: 101})], 101)).toBeTrue();
+    expect(component.hasClosedSoldListingForModule([createListing({status: 'active', moduleId: 101})], 101)).toBeFalse();
+  });
+
   it('is wired into the private user-area module', () => {
     expect(moduleDef(UserAreaModule).imports).toContain(UserListingsComponent);
   });

@@ -302,7 +302,7 @@ describe('UserListingsDataService', () => {
       status: 'closed_sold',
       moduleId: '101'
     }));
-    expect(service.snapshot.statusMessage).toBe('Listing closed as sold. Your module collection state is unchanged.');
+    expect(service.snapshot.statusMessage).toBe('Listing closed as sold. Collection unchanged — remove For Sale from your collection if you no longer have it.');
     service.ngOnDestroy();
   });
 });

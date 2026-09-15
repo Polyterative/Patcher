@@ -567,9 +567,9 @@ export class UserListingsDataService extends SubManager {
       case 'paused':
         return 'Listing is paused.';
       case 'closed_sold':
-        return 'Listing closed as sold. Your module collection state is unchanged.';
+        return 'Listing closed as sold. Collection unchanged — remove For Sale from your collection if you no longer have it.';
       case 'closed_unsold':
-        return 'Listing closed as unsold. Your module collection state is unchanged.';
+        return 'Listing closed as unsold. Collection unchanged — it stays eligible until you remove For Sale.';
       default:
         return 'Listing updated.';
     }
