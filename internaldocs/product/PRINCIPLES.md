@@ -33,8 +33,9 @@ possibly reply threads only if community volume eventually justifies the added c
 
 ## Privacy & Sharing Philosophy
 
-Racks have public/private toggle. Patches have opt-in public. User profiles do not yet exist as navigable entities —
-users can only see their own.
+Racks have public/private toggle. Patches have opt-in public. User profiles are navigable entities
+with username-slug URLs: users can make their profile public or private, open the public page, and
+copy the public profile link from My profile.
 
 Privacy is per-entity-type, not a single master switch. **Resolved defaults:** patches and racks are private by default;
 sale listings are public by nature. Each entity type requires an explicit "show on my profile" opt-in rather than

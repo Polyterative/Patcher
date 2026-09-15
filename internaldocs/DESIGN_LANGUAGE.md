@@ -71,6 +71,24 @@ Clarity survives fatigue. Precision builds trust. Personality is structural, not
 - Avoid gradients unless they encode real information (e.g. a continuous range)
 - No shadows for decoration — use shadows only to convey layering depth that matters
 
+### Theming (light / dark)
+
+Patcher ships a system-first light/dark theme (live since 2026-09-14, `AppThemeService` in
+`src/app/shared-interproject/app-theme.service.ts`):
+
+- Default preference is `system` — the OS `prefers-color-scheme` wins until the user picks an explicit override.
+- The discrete toggle cycles `system → dark → light → system` and persists to localStorage
+  (`patcher.theme-preference`). It is seated first in the account group of the toolbar so it is
+  discoverable without dominating primary navigation.
+- The effective theme applies as `html.dark` + `data-theme` / `data-theme-source` + `color-scheme`,
+  so Material (`material-theme.scss`, `theme-tokens.scss`) and custom surfaces (`theme-dark.scss`)
+  follow it without a flash. All DOM access is SSR-guarded.
+- Dark surfaces are audited as a coordinated pass, not per-component improvisation: floating selection
+  panel, browser/filter/card chrome, detail rows and editor chrome, marketplace/manufacturers/insights/
+  user-area, module-editor sheets, readable titles/links/labels/flags, and Lottie art visibility.
+- New surfaces must render in both themes from the first pass — do not ship light-only and
+  "fix dark later". Verify toggle glyph alignment against nav text and stat-card track keys in dark.
+
 ### Spacing and Density
 
 - Patcher is dense by design. Empty space is not the default luxury — it is a deliberate choice
