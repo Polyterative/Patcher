@@ -227,6 +227,29 @@ are the worked examples of this additive-sibling-method pattern.
 
 ---
 
+## Stable Pagination Ordering (id tie-breaker)
+
+Every paginated list query must end its ordering with a unique tie-breaker (`.order('id', ...)`)
+after the human-meaningful sort key. Without it, rows sharing the same sort value (e.g. identical
+`created_at` timestamps) can shift between pages and appear twice or never. Since 2026-09-14 this
+covers modules, manufacturers, patches, racks, and comments/comment queries.
+
+When adding a new paginated query or changing an existing `order()` chain: keep the domain sort
+first, append the `id` tie-breaker last with the matching direction, and extend the
+`paginated-user-queries` / per-entity specs to pin the full order chain.
+
+---
+
+## Insights Snapshot Additive Keys (old-RPC compat)
+
+`get_application_insights_snapshot` evolves by adding optional keys inside the `statistics` JSONB
+object (e.g. private-footprint totals) — never by changing the `RETURNS TABLE` shape. The TS fetcher
+(`supabase-queries.application-insights-snapshot.ts`) must default every new key for old-RPC
+responses during rollout, the mapper must suppress missing keys rather than crash, and no new
+`CachedEntity` is needed: snapshot reads reuse the existing entry and busters.
+
+---
+
 ## Schema-change preflight (READ BEFORE WRITING SQL)
 
 Before touching `supabase/migrations/`, RPCs, columns, indexes, or policies — even via the Supabase MCP — walk through this list. Past mistakes live here so we don't repeat them.

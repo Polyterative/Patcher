@@ -46,6 +46,26 @@ Supabase
 - Provides `destroy$` for cleanup
 - Reactive wiring details live in [patterns/REACTIVE_SERVICES.md](./patterns/REACTIVE_SERVICES.md)
 
+## App Theme (system-first dark mode)
+
+- `AppThemeService` (`src/app/shared-interproject/app-theme.service.ts`) is a root singleton owning the
+  `system | light | dark` preference and the derived effective theme.
+- Default is `system` (OS `prefers-color-scheme`); the discrete `ThemeToggleComponent` cycles
+  `system → dark → light → system` and persists to localStorage. Application is via `html.dark` +
+  `data-theme` attributes, SSR-guarded.
+- Theme tokens live in `src/app/style/` (`material-theme.scss`, `theme-tokens.scss`, `theme-dark.scss`).
+  Visual rules live in [DESIGN_LANGUAGE.md](./DESIGN_LANGUAGE.md#theming-light--dark).
+
+## Stale Chunk Recovery (path-based)
+
+- `ChunkLoadRecoveryService` (`src/app/services/chunk-load-recovery.service.ts`) recovers from stale
+  lazy-chunk failures after a deploy: on a chunk-load error it reloads once through the
+  `/__patcher_chunk_recovery/<timestamp>` path prefix (plus query markers), with a 30 s cooldown
+  loop guard backed by sessionStorage and a query-param fallback.
+- `src/server.ts` and `vercel.json` must keep serving/normalising that recovery path prefix —
+  do not add SSR routes or rewrites that swallow it. Regression coverage lives in
+  `chunk-load-recovery.service.spec.ts`.
+
 ## File Structure
 
 ```
