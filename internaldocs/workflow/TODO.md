@@ -115,10 +115,21 @@
 
 - [ ] Insights — recent price drops — `public-behavioral + public-visual`; [plan](./plans/done/insights-price-drops.md);
   docs: `Patcher-docs insights pages (named at publication)`; screenshots: `insights desktop + mobile`; release evidence: pending
+- [ ] Dark mode — system-first theme + discrete toggle + coordinated dark audit — `public-behavioral + public-visual`;
+  commits: `4e8a2666`, `38630ff7`, `8b791dc8`, `3a066451`, `5d6d5e76`, `97f294e2`, `f1ebe79a`, `0e30e3a5`, `c385c0f7`;
+  docs: `Patcher-docs account/appearance pages (named at publication)`; screenshots: `account + toolbar dark desktop + mobile`; release evidence: pending
+- [ ] Rack editor — hide preview/JPEG actions and Options FAB while editing — `public-behavioral`;
+  commits: `73a944f7`, `6c120e6b`;
+  docs: `Patcher-docs racks pages (named at publication)`; screenshots: `none`; release evidence: pending
+- [ ] Marketplace — relist vs first-listing copy + close-behavior guidance — `public-behavioral`, feature-flagged `marketplaceEnabled`;
+  commits: `2c032635`;
+  docs: `Patcher-docs marketplace pages (named at publication)`; screenshots: `none`; release evidence: pending
 
 ### Published; docs pending
 
-- None.
+- [ ] Insights — public launch (ownership-trends rebuild, discovery rails, public toolbar/footer/homepage exposure, private-footprint cards) — `public-behavioral + public-visual`;
+  released: `6.7.22` + `6.7.23`;
+  docs: `Patcher-docs insights pages (named at publication)`; screenshots: `insights desktop + mobile`
 
 ### Published but documentation-blocked
 
