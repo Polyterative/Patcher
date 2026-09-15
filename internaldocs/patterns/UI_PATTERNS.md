@@ -240,3 +240,49 @@ Use these as default rules when building or refactoring UI that should work well
 - Avoid scroll-bound recalculation unless it is throttled or otherwise bounded.
 - Use backdrop blur sparingly on fixed surfaces.
 - Prefer short, intentional motion over long-running decorative animation on work surfaces.
+
+---
+
+## Double-Submit Guards (in-flight action flags)
+
+Layout-mutating rack actions (duplicate row, remix, shuffle — and the same shape anywhere else)
+must ignore a second trigger while the first persistence is in flight. One flag per action family:
+
+```typescript
+// Service
+readonly duplicateRowInProgress$ = new BehaviorSubject<boolean>(false);
+readonly layoutVariantActionInProgress$ = new BehaviorSubject<boolean>(false); // shared by remix + shuffle
+
+// Handler: early-return on re-entry, set the flag, clear it on success AND on error/rollback
+// so the button never latches disabled after a failed persist.
+```
+
+```html
+<button [disabled]="dataService.layoutVariantActionInProgress$ | async"
+        (click)="dataService.requestLayoutRemix$.next()">Remix</button>
+```
+
+Rules: guard every action whose handler issues a backend write from a repeated-click surface;
+reset the flag on failure (the optimistic state must roll back too); cover both the ignored
+second click and the flag reset with reactive specs (see `rack-detail-data.service.reactive.spec.ts`
+duplicate-row/remix/shuffle blocks and the button-disabled-state specs).
+
+---
+
+## Editing-Mode Chrome Suppression
+
+While a rack is in editable mode, hide view-only export/preview chrome: the preview/JPEG media
+actions and the floating Options FAB/panel stay out of the way until the user locks the rack.
+The rule is `isEditing = isOwner && isEditable` — guests and locked views keep the full chrome.
+
+Apply the same principle to any editor with a distinct edit/view mode: editing shows only editing
+affordances; export, share, and view-option surfaces return when editing ends.
+
+---
+
+## Module-Editor Panel Crop Rule
+
+Filling a panel image must preserve an existing custom crop; selecting a new file clears the stale
+crop state. Never silently re-crop user-adjusted artwork on fill, and never carry crop state across
+files. Covered by `module-editor-panel-state.service.spec.ts` — extend those specs when touching
+fill/clear paths (see the versioned regression-contract registry entry for the module editor).

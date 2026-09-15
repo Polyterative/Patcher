@@ -1,6 +1,6 @@
 # Cache Strategy
 
-> Last audited: 13-08-2026 (see Audit Findings history below). Re-audit whenever a new GET or write method is added to any supabase-* namespace file.
+> Last audited: 15-09-2026 (see Audit Findings history below). Re-audit whenever a new GET or write method is added to any supabase-* namespace file.
 
 ---
 
@@ -129,6 +129,16 @@ The following cache invalidation gaps were found and fixed in this session:
 | `add.moduleFlag`               | No cache bust       | `cacheBust(['module_flags'])`      | `getCurrentUserContributorStats()`'s "flags submitted" count stayed stale for up to `defaultCacheTime` after a new flag was submitted |
 | `update.moduleFlagResolved`     | No cache bust       | `cacheBust(['module_flags'])`      | Same stale-stats issue after resolving a flag |
 | `delete.moduleFlag`             | No cache bust       | `cacheBust(['module_flags'])`      | Same stale-stats issue after deleting a flag |
+
+---
+
+## Audit Findings & Fixes Applied (15-09-2026, docs-only review)
+
+| Change | Cache impact | Verdict |
+|---|---|---|
+| Insights private-footprint totals ride inside the existing `get_application_insights_snapshot` `statistics` JSONB | Reuses the same snapshot cache entry + existing busters; no new `CachedEntity` | Correct — no doc/inventory change beyond this row |
+| Recent price drops source from cached discovery Top modules with bounded per-module 60-day histories | Reuses the discovery cache path; per-module error isolation, no new write path | Correct — no new key needed |
+| Paginated list `id` tie-breaker (modules, manufacturers, patches, racks, comments) | Ordering-only change; cache keys and busters untouched | Correct — ordering stability needs no invalidation change |
 
 ---
 
