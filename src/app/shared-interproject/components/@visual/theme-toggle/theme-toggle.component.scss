@@ -31,14 +31,13 @@
   }
 
   // Per-glyph optical alignment: each icon carries its ink differently
-  // relative to uppercase cap-height text (crescent horns rise high, the sun
-  // sits near center, the gear reads true). Nudge each onto the text midline.
+  // relative to uppercase cap-height text. Small nudges onto the midline.
   &[data-preference='dark'] .mat-icon {
-    translate: 0 0.16rem;
+    translate: 0 0.08rem;
   }
 
   &[data-preference='light'] .mat-icon {
-    translate: 0 0.08rem;
+    translate: 0 0.04rem;
   }
 }
 
