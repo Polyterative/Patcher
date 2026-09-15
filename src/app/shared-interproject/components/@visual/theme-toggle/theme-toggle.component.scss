@@ -30,11 +30,15 @@
     outline-offset: 0.15rem;
   }
 
-  // Per-glyph optical alignment: the crescent carries its mass low in its
-  // em box and reads as sitting below uppercase cap-height text, so it rides
-  // up slightly. Sun and gear read true unshifted.
+  // Per-glyph optical alignment, measured from rendered ink pixels against
+  // the nav cap band (gear +1.45px low, crescent +1.55px low, sun on-center).
+  // Lifts each glyph's ink center onto the text ink center.
+  &[data-preference='system'] .mat-icon {
+    translate: 0 -0.11rem;
+  }
+
   &[data-preference='dark'] .mat-icon {
-    translate: 0 -0.06rem;
+    translate: 0 -0.12rem;
   }
 }
 
