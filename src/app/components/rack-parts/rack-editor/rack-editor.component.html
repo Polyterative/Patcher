@@ -16,6 +16,7 @@
   canUpdateRackImagePreview:(dataService.canUpdateRackImagePreview$|async)
 }; as bag) {
   @let currentAnalysisMode = bag.analysisMode ?? analysisModes.off;
+  @let isEditing = bag.isCurrentRackPropertyOfCurrentUser && bag.isCurrentRackEditable;
   <div class="col gap1"
   >
     @if (bag.isRackDataLoading) {
@@ -116,7 +117,7 @@
                 {{ bag.isCurrentRackEditable ? 'Lock rack' : 'Edit rack' }}
               </button>
             }
-             @if ((bag.rowedRackedModules | totalHpOfRack) > 0) {
+             @if ((bag.rowedRackedModules | totalHpOfRack) > 0 && !isEditing) {
                <ng-container *ngTemplateOutlet="rackMediaActions; context: {
                  isOwner: bag.isCurrentRackPropertyOfCurrentUser,
                 canUpdatePreview: bag.canUpdateRackImagePreview,
@@ -204,8 +205,8 @@
                }
              }
            </div>
-          <div class="rackEditorFloatingOptions">
-            @if ((bag.rowedRackedModules | totalHpOfRack) > 0) {
+           <div class="rackEditorFloatingOptions">
+            @if ((bag.rowedRackedModules | totalHpOfRack) > 0 && !isEditing) {
               <div class="rackEditorFloatingOptions__panel rackEditorFloatingOptions__panel--actions">
                 <ng-container *ngTemplateOutlet="rackMediaActions; context: {
                   isOwner: bag.isCurrentRackPropertyOfCurrentUser,
@@ -422,7 +423,7 @@
                    }
                 </div>
               </div>
-            @if (viewOptionsExpanded) {
+             @if (viewOptionsExpanded && !isEditing) {
              <div class="rackEditorFloatingOptions__panel">
                <mat-slide-toggle [checked]="bag.shouldShowPanelImages"
                                  (change)="setShouldShowPanelImages($event.checked)"
@@ -436,6 +437,7 @@
               </mat-slide-toggle>
             </div>
           }
+          @if (!isEditing) {
           <button mat-fab
                   extended
                   type="button"
@@ -446,6 +448,7 @@
             <mat-icon>{{ viewOptionsExpanded ? 'close' : 'tune' }}</mat-icon>
             {{ viewOptionsExpanded ? 'Close' : 'Options' }}
           </button>
+          }
         </div>
       </div>
     </lib-hero-content-card>
