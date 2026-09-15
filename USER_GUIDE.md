@@ -11,11 +11,12 @@ track a collection, and share selected work publicly.
 4. [Modules](#modules)
 5. [Patches](#patches)
 6. [Racks](#racks)
-7. [Your Profile & Account](#your-profile--account)
-8. [Privacy & Data](#privacy--data)
-9. [Tips & Best Practices](#tips--best-practices)
-10. [Community & Support](#community--support)
-11. [Quick Reference](#quick-reference)
+7. [Insights](#insights)
+8. [Your Profile & Account](#your-profile--account)
+9. [Privacy & Data](#privacy--data)
+10. [Tips & Best Practices](#tips--best-practices)
+11. [Community & Support](#community--support)
+12. [Quick Reference](#quick-reference)
 
 ---
 
@@ -53,6 +54,7 @@ You can start by exploring:
 - **Patches** for public patch examples
 - **Racks** for public rack layouts
 - **Manufacturers** for maker-specific browsing
+- **Insights** for community trends and catalogue stats (no login needed)
 
 ### Creating an account
 
@@ -78,6 +80,7 @@ The main toolbar gives you direct access to:
 - **Racks**: public rack browser
 - **Patches**: public patch browser
 - **Manufacturers**: manufacturer browser
+- **Insights**: public community trends and catalogue stats
 - **My profile**: your personal workspace after signing in
 - **Your username**: account-management page after signing in
 
@@ -237,6 +240,29 @@ Any signed-in user can:
 
 ---
 
+## Insights
+
+The **Insights** page (`Insights` in the toolbar and footer, plus a teaser on the home page) shows
+aggregate community trends. It is public — no account needed.
+
+You will find:
+
+- **Ownership trends**: most-owned, most-wanted, and most-changing-hands modules, with links back to
+  the module pages
+- **Discovery rails**: top makers, formats, and sizes to browse from
+- **Fresh activity**: what the community shared recently
+- **Sharing mix**: how much of the library is public vs private, as aggregate totals only
+- **How we count**: each card carries a short methodology note explaining the sample and time window
+
+Good to know:
+
+- All figures are aggregate and anonymised. Small samples are hidden rather than shown with false
+  precision.
+- The page links interesting findings back to the module, rack, and patch browsers so you can keep
+  exploring.
+
+---
+
 ## Your Profile & Account
 
 ### Your profile workspace
@@ -365,10 +391,13 @@ A: Yes, through a manual support request on Discord.
 **Q: What formats are supported?**  
 A: 3U Eurorack, Intellijel 1U, and Pulp Logic 1U.
 
+**Q: Can I browse community trends without an account?**
+A: Yes. The **Insights** page and the home-page teaser are public.
+
 **Q: Is there a mobile app?**  
 A: Patcher is currently a web app that works in mobile browsers, with the most comfortable editing flows on larger screens.
 
 ---
 
-*Last updated: May 2026*  
+*Last updated: September 2026*  
 *For technical documentation and contributor setup, see the [README](README.md).*
