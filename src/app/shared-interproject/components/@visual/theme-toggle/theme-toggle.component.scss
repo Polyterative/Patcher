@@ -18,10 +18,6 @@
     block-size: 1.2rem;
     font-size: 1.2rem;
     line-height: 1.2rem;
-    // Optical alignment: the brightness glyphs carry more ink above their
-    // line-box middle than nav cap-height text does, so the icon reads high
-    // next to uppercase links. Nudge it down to sit on the text midline.
-    translate: 0 0.12rem;
   }
 
   &:hover {
@@ -34,18 +30,15 @@
     outline-offset: 0.15rem;
   }
 
-  // Tiny persistence dot: signals an explicit override without adding chrome.
-  &.theme-toggle--explicit::after {
-    content: "";
-    position: absolute;
-    inset-block-end: 0.22rem;
-    inset-inline-end: 0.22rem;
-    inline-size: 0.3rem;
-    block-size: 0.3rem;
-    border-radius: 50%;
-    background: currentColor;
-    opacity: 0.65;
-    pointer-events: none;
+  // Per-glyph optical alignment: each icon carries its ink differently
+  // relative to uppercase cap-height text (crescent horns rise high, the sun
+  // sits near center, the gear reads true). Nudge each onto the text midline.
+  &[data-preference='dark'] .mat-icon {
+    translate: 0 0.16rem;
+  }
+
+  &[data-preference='light'] .mat-icon {
+    translate: 0 0.08rem;
   }
 }
 
