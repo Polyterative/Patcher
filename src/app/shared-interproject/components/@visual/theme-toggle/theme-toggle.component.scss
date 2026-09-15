@@ -30,14 +30,11 @@
     outline-offset: 0.15rem;
   }
 
-  // Per-glyph optical alignment: each icon carries its ink differently
-  // relative to uppercase cap-height text. Small nudges onto the midline.
+  // Per-glyph optical alignment: the crescent carries its mass low in its
+  // em box and reads as sitting below uppercase cap-height text, so it rides
+  // up slightly. Sun and gear read true unshifted.
   &[data-preference='dark'] .mat-icon {
-    translate: 0 0.08rem;
-  }
-
-  &[data-preference='light'] .mat-icon {
-    translate: 0 0.04rem;
+    translate: 0 -0.06rem;
   }
 }
 
