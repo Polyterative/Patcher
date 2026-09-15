@@ -116,7 +116,7 @@
                 </div>
 
                 @if (canClose(listing)) {
-                  <p class="listing-row__close-note">Closing only changes listing status. Your module collection state is unchanged.</p>
+                  <p class="listing-row__close-note">Closing only changes listing status. If sold, remove For Sale from your collection to stop seeing it as eligible.</p>
                 }
                 @if (listing.status === 'active' || listing.status === 'reserved' || listing.status === 'paused' || listing.status === 'draft') {
                   <p class="listing-row__close-note" data-testid="user-listing-open-warning">
@@ -138,11 +138,11 @@
                   <div class="listing-row__copy">
                     <span class="listing-row__manufacturer">{{ manufacturerForModule(module) }}</span>
                     <strong>{{ module.name }}</strong>
-                    <span>For sale in your collection — not listed yet.</span>
+                    <span>{{ eligibleSubtitle(module, bag.vm.listings) }}</span>
                   </div>
                   <span class="listing-row__badge">eligible</span>
                 </div>
-                <div class="listing-row__actions" [attr.aria-label]="'Create listing for ' + module.name">
+                <div class="listing-row__actions" [attr.aria-label]="eligibleCtaLabel(module, bag.vm.listings) + ' for ' + module.name">
                   <button
                     mat-stroked-button
                     color="primary"
@@ -150,8 +150,18 @@
                     [disabled]="vm.busy || !!bag.editor"
                     data-testid="user-listing-create"
                     (click)="openCreate(module)"
-                  >Create listing</button>
+                  >{{ eligibleCtaLabel(module, bag.vm.listings) }}</button>
                 </div>
+                @if (hasClosedListingForModule(bag.vm.listings, module.id)) {
+                  <p class="listing-row__close-note" data-testid="user-listing-relist-note">
+                    Previously listed. Create a new listing only if you still have it.
+                  </p>
+                }
+                @if (hasClosedSoldListingForModule(bag.vm.listings, module.id)) {
+                  <p class="listing-row__close-note" data-testid="user-listing-sold-note">
+                    You closed a sale for this. If you no longer have it, remove For Sale from your collection to stop seeing it here.
+                  </p>
+                }
 
                 @if (bag.editor?.mode === 'create' && bag.editor?.moduleId === module.id) {
                   <ng-container
