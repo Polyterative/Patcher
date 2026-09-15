@@ -211,6 +211,16 @@ html.dark {
   }
 }
 
+// ── Lottie art ships white-on-transparent; the global .invert-color flip ─────
+// exists only to keep it legible on light surfaces. Under html.dark the flip
+// would paint it black-on-dark (invisible), so cancel it and show native art.
+html.dark {
+  ng-lottie.invert-color,
+  app-lottie-container .invert-color {
+    filter: none !important; // px-ok: cancels the light-only legibility flip
+  }
+}
+
 // ── Pass 2: overlays (dialog / menu / tooltip / snackbar) ────────────────────
 html.dark {
   .mat-mdc-dialog-surface,

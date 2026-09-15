@@ -29,11 +29,4 @@ export class EntityStatCardComponent {
       .filter(row => row.length > 0);
   }
 
-  rowTrackKey(index: number): number {
-    return index;
-  }
-
-  groupTrackKey(group: EntityStatGroup, rowIndex: number, groupIndex: number): string {
-    return `${ rowIndex }|${ group.title ?? '' }|${ groupIndex }`;
-  }
 }
