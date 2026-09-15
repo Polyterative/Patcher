@@ -127,6 +127,22 @@ test.describe('Authenticated Rack Editor layout regressions', () => {
     assertFitsViewport(panelBox, NARROW_MOBILE_VIEWPORT.width);
   });
 
+  test('mobile hides download and update actions while editing and restores them on lock', async ({page}) => {
+    await openRackAtViewport(page, rackUrl, MOBILE_VIEWPORT);
+    await enterEditMode(page);
+
+    const actions = page.locator('app-rack-editor .rackEditorResponsiveActions');
+    await expect(actions.getByRole('button', {name: /download jpeg/i})).toBeHidden();
+    await expect(actions.getByRole('button', {name: /update preview/i})).toBeHidden();
+    // Options and Lock rack stay reachable so view options and exit-edit remain available.
+    await expect(actions.getByRole('button', {name: /^Options$/i})).toBeVisible();
+    await expect(actions.getByRole('button', {name: /^Lock rack$/i})).toBeVisible();
+
+    await lockRack(page);
+
+    await expect(actions.getByRole('button', {name: /download jpeg/i})).toBeVisible();
+  });
+
   test('mobile places download and update actions below the rack without overflowing', async ({page}) => {
     await openRackAtViewport(page, rackUrl, MOBILE_VIEWPORT);
     await lockRack(page);
@@ -185,18 +201,20 @@ test.describe('Authenticated Rack Editor layout regressions', () => {
     expect(overlaps(quickToggleBox, editFabBox)).toBe(false);
   });
 
-  test('tablet keeps the floating options panel separate from the right-side lock FAB while editing', async ({page}) => {
+  test('tablet hides the floating options toggle and image actions while editing and restores them on lock', async ({page}) => {
     await openRackAtViewport(page, rackUrl, TABLET_VIEWPORT);
     await enterEditMode(page);
 
-    await page.getByRole('button', {name: /^Options$/i}).first().click();
-
-    const panelBox = await readBox(page.locator('app-rack-editor .rackEditorFloatingOptions__panel').filter({
+    await expect(page.locator('app-rack-editor .rackEditorFloatingOptions__toggle')).toBeHidden();
+    await expect(page.locator('app-rack-editor .rackEditorFloatingOptions__panel--actions')).toBeHidden();
+    await expect(page.locator('app-rack-editor .rackEditorFloatingOptions__panel').filter({
       has: page.getByText(/Use images/i)
-    }).first());
-    const lockFabBox = await readBox(page.getByRole('button', {name: /^Lock rack$/i}).first());
+    })).toBeHidden();
 
-    expect(overlaps(panelBox, lockFabBox)).toBe(false);
+    await lockRack(page);
+
+    await expect(page.locator('app-rack-editor .rackEditorFloatingOptions__toggle')).toBeVisible();
+    await expect(page.locator('app-rack-editor .rackEditorFloatingOptions__panel--actions')).toBeVisible();
   });
 
   test('tablet landscape uses docked image actions instead of the compact action strip', async ({page}) => {
