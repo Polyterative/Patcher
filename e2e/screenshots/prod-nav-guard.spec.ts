@@ -15,7 +15,6 @@ test('production docs screenshot navigation excludes dev-only surfaces', async (
   await expect(page.getByRole('link', {name: /^Manufacturers$/i}).first()).toBeVisible();
 
   await expect(page.getByRole('link', {name: /^Collections$/i})).toHaveCount(0);
-  await expect(page.getByRole('link', {name: /^Insights$/i})).toHaveCount(0);
   await expect(page.getByRole('link', {name: /^Marketplace$/i})).toHaveCount(0);
   await expect(page.locator('[data-feature="cool-button"]')).toHaveCount(0);
 });

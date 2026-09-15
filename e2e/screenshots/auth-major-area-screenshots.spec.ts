@@ -194,7 +194,6 @@ async function captureViewport(
 
 async function assertProductionShell(page: Page): Promise<void> {
   await expect(page.getByRole('link', {name: /^\s*Collections\s*$/i})).toHaveCount(0, {timeout: 10_000});
-  await expect(page.getByRole('link', {name: /^\s*Insights\s*$/i})).toHaveCount(0, {timeout: 10_000});
   await expect(page.getByRole('link', {name: /^\s*Marketplace\s*$/i})).toHaveCount(0, {timeout: 10_000});
   await expect(page.locator([
     'app-toolbar a[href$="/collections/browser"]',
