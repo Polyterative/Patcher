@@ -51,7 +51,7 @@ export async function applyDocsScreenshotSanitisation(
   options?: {fixtureRetention?: FixtureRetentionSection[]}
 ): Promise<void> {
   const accountId = await readCurrentAccountId(page);
-  const accountLabel = await readCurrentAccountLabel(page);
+  const accountLabels = await readCurrentAccountLabels(page);
   const accountIdReplacement = accountId
     ? {
       source: escapeRegExp(accountId),
@@ -59,13 +59,11 @@ export async function applyDocsScreenshotSanitisation(
       replacement: 'Docs screenshot account'
     }
     : null;
-  const accountLabelReplacement = accountLabel
-    ? {
-      source: escapeRegExp(accountLabel),
-      flags: 'gi',
-      replacement: 'Docs screenshot account'
-    }
-    : null;
+  const accountLabelReplacements = accountLabels.map(label => ({
+    source: escapeRegExp(label),
+    flags: 'gi',
+    replacement: 'Docs screenshot account'
+  }));
   await page.evaluate((config) => {
     const ensureHideStyle = () => {
       if (document.getElementById(config.hideStyleId)) {
@@ -223,7 +221,7 @@ export async function applyDocsScreenshotSanitisation(
     const replacements = [
       ...config.textReplacements,
       ...(config.accountIdReplacement ? [config.accountIdReplacement] : []),
-      ...(config.accountLabelReplacement ? [config.accountLabelReplacement] : [])
+      ...config.accountLabelReplacements
     ].map(replacement => ({
       pattern: new RegExp(replacement.source, replacement.flags),
       replacement: replacement.replacement
@@ -242,7 +240,7 @@ export async function applyDocsScreenshotSanitisation(
   }, {
     fixturePrefixSource: FIXTURE_PREFIX_SOURCE,
     accountIdReplacement,
-    accountLabelReplacement,
+    accountLabelReplacements,
     hideAttribute: DOCS_SCREENSHOT_HIDE_ATTRIBUTE,
     hideStyleId: DOCS_SCREENSHOT_HIDE_STYLE_ID,
     hideStyleText: SCREENSHOT_HIDE_STYLE,
@@ -251,13 +249,21 @@ export async function applyDocsScreenshotSanitisation(
   });
 }
 
-async function readCurrentAccountLabel(page: Page): Promise<string | null> {
+async function readCurrentAccountLabels(page: Page): Promise<string[]> {
   return page.evaluate(() => {
-    const navLabel = document.querySelector('app-wide-shell-toolbar a[href$="/user/area"]')?.textContent?.trim();
-    if (navLabel) {
-      return navLabel;
-    }
+    const labels: string[] = [];
+    const pushUniqueLabel = (value: string | null | undefined) => {
+      const label = value?.trim();
+      if (label && !labels.some(existing => existing.toLowerCase() === label.toLowerCase())) {
+        labels.push(label);
+      }
+    };
 
+    // NOTE: the wide-shell toolbar link is deliberately not a source here.
+    // Since the toolbar shows the static "My library" label instead of the
+    // account name, trusting its text poisons the replacement (rewriting real
+    // toolbar copy to "Docs screenshot account") while the real username
+    // leaks through unsanitised.
     // The "User area" heading renders its username in a dedicated
     // `.title-sub` span, but the enclosing <h1> also contains the page
     // icon ligature text and (when public) an inline description, so
@@ -271,16 +277,15 @@ async function readCurrentAccountLabel(page: Page): Promise<string | null> {
     // replacement below.
     const userAreaHeading = Array.from(document.querySelectorAll('h1'))
       .find(element => /^USER AREA\b/i.test(element.querySelector('.title-main')?.textContent?.trim() ?? ''));
-    const titleSub = userAreaHeading?.querySelector('.title-sub')?.textContent?.trim();
-    if (titleSub) {
-      return titleSub;
-    }
+    pushUniqueLabel(userAreaHeading?.querySelector('.title-sub')?.textContent);
 
     const heading = Array.from(document.querySelectorAll('h1'))
       .map(element => element.textContent?.trim() ?? '')
       .find(text => /^USER AREA\s*-/i.test(text));
-    return heading?.replace(/^USER AREA\s*-\s*/i, '').trim() || null;
-  }).catch(() => null);
+    pushUniqueLabel(heading?.replace(/^USER AREA\s*-\s*/i, '').trim());
+
+    return labels;
+  }).catch(() => []);
 }
 
 async function readCurrentAccountId(page: Page): Promise<string | null> {
