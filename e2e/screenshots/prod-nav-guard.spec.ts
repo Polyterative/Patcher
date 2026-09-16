@@ -6,7 +6,7 @@ import {
 
 test('production docs screenshot navigation excludes dev-only surfaces', async ({page}) => {
   await page.goto('/home');
-  await expect(page.locator('app-toolbar').first()).toBeVisible({timeout: 20_000});
+  await expect(page.locator('app-wide-shell-toolbar').first()).toBeVisible({timeout: 20_000});
 
   await expect(page.getByRole('link', {name: /^Home$/i}).first()).toBeVisible();
   await expect(page.getByRole('link', {name: /^Modules$/i}).first()).toBeVisible();
