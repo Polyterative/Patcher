@@ -68,9 +68,13 @@ import {
   getSelectedTagIdsFromFields,
   groupFilterTags,
   hasActiveModuleFiltersForFields,
+  hasActivePriceFilterForFields,
   hasResettableModuleFilters,
   isOwnedPossessionForModule,
   isWantedPossessionForModule,
+  matchesPriceRange,
+  normalizePriceRange,
+  parsePriceBoundary,
   sortModulesByBestMatchForTags,
   toggleTagSelection
 } from './module-browser-filter.helpers';
@@ -132,6 +136,15 @@ export class ModuleBrowserDataService extends SubManager {
    * the results loading indicator, which must not spin with no fetch behind it.
    */
   readonly priceFilterChanged$ = new Subject<void>();
+  /**
+   * Lets embedding contexts suspend price auto-fill while the server page
+   * is not the visible dataset (owned / wanted / available collection
+   * modes filter fully client-side datasets — paginating the server page
+   * behind them would only burn traffic and flash the loader).
+   */
+  readonly suspendPriceAutoFill$ = new BehaviorSubject<boolean>(false);
+  /** True while a price auto-fill page is in flight (drives Load more visibility). */
+  readonly priceAutoFillInFlight$ = new BehaviorSubject<boolean>(false);
 
   readonly serversideTableRequestData = {
     skip$: new BehaviorSubject<number>(0),
@@ -164,6 +177,8 @@ export class ModuleBrowserDataService extends SubManager {
   private readonly priceSummariesRequestedIds = new Set<number>();
   /** Number of raw (server) rows fetched so far, independent of any local AND-tag filtering. */
   private fetchedRawCount = 0;
+  /** Raw rows in the most recent server response; zero stops price auto-fill (server exhausted in practice). */
+  private lastResponseRawCount = 0;
 
   constructor(
     private backend: SupabaseService,
@@ -505,11 +520,15 @@ export class ModuleBrowserDataService extends SubManager {
         const current = this.modulesList$.value ?? [];
         this.modulesList$.next(skip === 0 ? response.data : [...current, ...response.data]);
         this.fetchedRawCount = skip === 0 ? response.rawFetchedCount : this.fetchedRawCount + response.rawFetchedCount;
+        this.lastResponseRawCount = response.rawFetchedCount;
         this.remoteTagFilterLoading$.next(false);
 
         if (skip === 0) {
           this.capturePendingSearchPerformed(response.count ?? response.data.length);
         }
+
+        this.priceAutoFillInFlight$.next(false);
+        this.maybeAutoFillPricePage();
       });
 
     // Keep a merged Price Hub summary map for every loaded page. The ids are
@@ -528,6 +547,17 @@ export class ModuleBrowserDataService extends SubManager {
         this.takeUntilDestroyed()
       )
       .subscribe(summaries => this.mergePriceSummaries(summaries));
+
+    // Re-evaluate page fullness whenever fresh price data lands or the
+    // bounds change: either can turn a short page into a fillable one.
+    // Termination is structural (see `maybeAutoFillPricePage`).
+    this.priceSummaryByModuleId$
+      .pipe(this.takeUntilDestroyed())
+      .subscribe(() => this.maybeAutoFillPricePage());
+
+    this.priceFilterChanged$
+      .pipe(this.takeUntilDestroyed())
+      .subscribe(() => this.maybeAutoFillPricePage());
 
     this.loadMore$
       .pipe(
@@ -716,6 +746,57 @@ export class ModuleBrowserDataService extends SubManager {
         return of([]);
       })
     );
+  }
+
+  /**
+   * Pulls the next server page while an active price filter leaves the
+   * visible page short, so the list fills before Load more is proposed.
+   * Deliberately silent (no `search.load_more` event): this is automatic
+   * backfill, not a user action.
+   *
+   * Termination is structural — every cycle either returns early or grows
+   * `fetchedRawCount` toward the server total:
+   * - an auto-fill is already in flight (re-entrant map/response emissions),
+   * - the visible dataset is not the server page (collection modes),
+   * - no price bound is set, or the page already holds `take` matches,
+   * - every server row is loaded, or the last page came back empty.
+   */
+  private maybeAutoFillPricePage(): void {
+    if (this.priceAutoFillInFlight$.value) {
+      return;
+    }
+    if (this.suspendPriceAutoFill$.value) {
+      return;
+    }
+    if (!hasActivePriceFilterForFields(this.fields)) {
+      return;
+    }
+    const take = this.serversideTableRequestData.take$.value;
+    if (this.countPriceMatches(this.modulesList$.value ?? []) >= take) {
+      return;
+    }
+    const total = this.serversideAdditionalData.itemsCount$.value ?? 0;
+    if (this.fetchedRawCount >= total) {
+      return;
+    }
+    if (this.lastResponseRawCount <= 0) {
+      return;
+    }
+    this.priceAutoFillInFlight$.next(true);
+    this.serversideTableRequestData.skip$.next(this.fetchedRawCount);
+    this.updateModulesList$.next();
+  }
+
+  private countPriceMatches(modules: ReadonlyArray<MinimalModule>): number {
+    const {minPriceEur, maxPriceEur} = normalizePriceRange(
+      parsePriceBoundary(this.fields.priceMin.control.value),
+      parsePriceBoundary(this.fields.priceMax.control.value)
+    );
+    if (minPriceEur === null && maxPriceEur === null) {
+      return modules.length;
+    }
+    const prices = this.getPriceEurMinorMap();
+    return modules.filter(module => matchesPriceRange(prices.get(module.id) ?? null, minPriceEur, maxPriceEur)).length;
   }
 
   private mergePriceSummaries(summaries: ReadonlyArray<ModuleRecentMarketPrice>): void {
