@@ -39,6 +39,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatSliderModule } from '@angular/material/slider';
 import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.module';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { CommentsModule } from 'src/app/components/shared-atoms/comments/comments.module';
@@ -86,6 +87,7 @@ import { ModuleListModule } from '../module-list/module-list.module';
     MatToolbarModule,
     MatButtonToggleModule,
     MatExpansionModule,
+    MatSliderModule,
     MatMenu,
     MatMenuItem,
     MatMenuTrigger,

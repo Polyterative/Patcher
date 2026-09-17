@@ -46,6 +46,28 @@
   display: none;
 }
 
+.module-price-controls {
+  align-items: flex-start;
+
+  lib-mat-form-entity {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}
+
+.module-price-slider {
+  display: block;
+  width: 100%;
+}
+
+.module-filter-hint {
+  display: block;
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 0.75rem;
+  line-height: 1.35;
+  opacity: 0.6;
+}
+
 .module-browser-mode {
   padding: 1rem;
   border: 1px solid rgba(34, 75, 117, 0.12);

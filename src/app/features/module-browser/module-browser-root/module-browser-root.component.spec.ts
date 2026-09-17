@@ -36,6 +36,7 @@ import {
   SimpleUserModel,
   SupabaseService
 } from '../../backend/supabase.service';
+import { ModuleRecentMarketPrice } from '../../backend/supabase-queries';
 import { UserModuleAcquisitionDraft } from 'src/app/models/user-module-acquisition';
 import { AnalyticsService } from '../../backbone/analytics-integration/analytics.service';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
@@ -61,6 +62,7 @@ describe('ModuleBrowserRootComponent', () => {
       manufacturers: ManufacturersSpy;
       modules: ModulesSpy;
       currentUserModulesPossessionOnly: jasmine.Spy<() => Observable<Pick<DbModule, 'id' | 'possessionKind'>[]>>;
+      recentModuleMarketPrices: jasmine.Spy<(moduleIds: number[]) => Observable<ModuleRecentMarketPrice[]>>;
     };
     get: {
       allTags: jasmine.Spy<() => Observable<Tag[]>>;
@@ -154,6 +156,8 @@ describe('ModuleBrowserRootComponent', () => {
         modules: jasmine.createSpy<(...args: unknown[]) => Observable<ModulesResponse>>('modules')
           .and.returnValue(of({data: [], count: 0})),
         currentUserModulesPossessionOnly: jasmine.createSpy<() => Observable<Pick<DbModule, 'id' | 'possessionKind'>[]>>('currentUserModulesPossessionOnly')
+          .and.returnValue(of([])),
+        recentModuleMarketPrices: jasmine.createSpy<(moduleIds: number[]) => Observable<ModuleRecentMarketPrice[]>>('recentModuleMarketPrices')
           .and.returnValue(of([]))
       },
       get: {
@@ -690,4 +694,72 @@ describe('ModuleBrowserRootComponent', () => {
       'No collection modules match the current filters. Reset the filters or switch browsing mode.'
     );
   });
+
+  function priceSummaryFixture(moduleId: number, estimatedPriceEurMinor: number): ModuleRecentMarketPrice {
+    return {
+      moduleId,
+      estimatedPriceEurMinor,
+      displayPrice: `~€${ Math.round(estimatedPriceEurMinor / 100) }`,
+      storeCount: 2,
+      latestObservedAt: '2026-09-01T00:00:00.000Z',
+      tooltip: 'Estimated recent market price'
+    };
+  }
+
+  it('renders min/max price controls with a range slider beside the depth filter', () => {
+    const host = fixture.nativeElement as HTMLElement;
+
+    expect(host.textContent).toContain('Min price (€)');
+    expect(host.textContent).toContain('Max price (€)');
+    expect(host.querySelector('.module-price-slider')).not.toBeNull();
+    expect(host.querySelector('.module-filter-hint')?.textContent).toContain('loaded results');
+  });
+
+  it('filters loaded catalog results by price range, hides unpriced, and counts visible results', fakeAsync(() => {
+    backend.GET.recentModuleMarketPrices.and.returnValue(of([
+      priceSummaryFixture(1, 19900),
+      priceSummaryFixture(2, 9999),
+      priceSummaryFixture(3, 45900)
+    ]));
+    component.dataService.modulesList$.next(buildOwnedModules(4));
+    component.dataService.serversideAdditionalData.itemsCount$.next(4);
+    component.dataService.fields.priceMin.control.setValue('100');
+    component.dataService.fields.priceMax.control.setValue('300');
+    tick(750);
+    fixture.detectChanges();
+
+    expect(component.visibleModules$.value?.map((module) => module.id)).toEqual([1]);
+    expect(component.visibleItemsCount$.value).toBe(1);
+  }));
+
+  it('mirrors typed bounds on the slider and commits released thumbs back to the controls', fakeAsync(() => {
+    component.dataService.fields.priceMin.control.setValue('100');
+    component.dataService.fields.priceMax.control.setValue('300');
+    tick(750);
+
+    expect(component.priceSliderStartEur).toBe(100);
+    expect(component.priceSliderEndEur).toBe(300);
+
+    component.priceSliderStartEur = 0;
+    component.priceSliderEndEur = component.priceSliderCeilEur;
+    component.commitPriceSlider();
+    tick(750);
+
+    expect(component.dataService.fields.priceMin.control.value).toBe('');
+    expect(component.dataService.fields.priceMax.control.value).toBe('');
+  }));
+
+  it('applies the price range to owned collection results', fakeAsync(() => {
+    backend.GET.recentModuleMarketPrices.and.callFake((moduleIds: number[]) => of(
+      moduleIds.map((id) => priceSummaryFixture(id, id * 10000))
+    ));
+    component.enableCollectionBrowseModes = true;
+    component.ownedModulesInput = buildOwnedModules(20);
+    component.dataService.fields.priceMax.control.setValue('500');
+    tick(750);
+
+    expect(component.collectionBrowseMode).toBe('owned');
+    expect(component.visibleModules$.value?.map((module) => module.id)).toEqual([1, 2, 3, 4, 5]);
+    expect(component.priceSliderCeilEur).toBe(2000);
+  }));
 });

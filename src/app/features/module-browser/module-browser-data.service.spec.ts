@@ -1388,6 +1388,19 @@ describe('ModuleBrowserDataService', () => {
     service.ngOnDestroy();
   });
 
+  it('never refetches ids that came back without price data', () => {
+    const {service, backend} = build();
+    service.modulesList$.next([moduleFactory({id: 1})]);
+    expect(backend.GET.recentModuleMarketPrices.calls.count()).toBe(1);
+
+    service.modulesList$.next([moduleFactory({id: 1})]);
+    service.ensurePriceSummariesForModuleIds([1]);
+    service.priceSummaryByModuleId$.next(service.priceSummaryByModuleId$.value);
+
+    expect(backend.GET.recentModuleMarketPrices.calls.count()).toBe(1);
+    service.ngOnDestroy();
+  });
+
   it('ensurePriceSummariesForModuleIds fetches only ids missing from the map', () => {
     const {service, backend} = build();
     backend.GET.recentModuleMarketPrices.and.returnValue(of([priceSummaryFixture(1, 19900)]));

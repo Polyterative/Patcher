@@ -17,6 +17,7 @@ import {
 } from './module-browser-data.constants';
 import { ModuleBrowserFields } from './module-browser-data.models';
 import {
+  commitPriceSliderBounds,
   filterOwnedModulesForFields,
   filterWantedModulesForFields,
   getActiveFilterNames,
@@ -25,6 +26,7 @@ import {
   hasResettableModuleFilters,
   matchesPriceRange,
   parsePriceBoundary,
+  resolvePriceSliderCeilEur,
   sortModulesByBestMatchForTags,
   toggleTagSelection
 } from './module-browser-filter.helpers';
@@ -400,5 +402,21 @@ describe('module-browser-filter.helpers', () => {
     fields.priceMax.control.setValue('300');
     expect(hasActiveModuleFiltersForFields(fields)).toBeTrue();
     expect(getActiveFilterNames(fields)).toEqual(['priceMax']);
+  });
+
+  it('resolves an honest slider ceiling from loaded-page prices only', () => {
+    expect(resolvePriceSliderCeilEur([], null)).toEqual(500);
+    expect(resolvePriceSliderCeilEur([46000], null)).toEqual(500);
+    expect(resolvePriceSliderCeilEur([46001], null)).toEqual(500);
+    expect(resolvePriceSliderCeilEur([123000], null)).toEqual(1300);
+    expect(resolvePriceSliderCeilEur([], 2000)).toEqual(2000);
+    expect(resolvePriceSliderCeilEur([19900], 1200)).toEqual(1200);
+  });
+
+  it('commits released slider thumbs back onto the text controls', () => {
+    expect(commitPriceSliderBounds(0, 500, 500)).toEqual({priceMin: '', priceMax: ''});
+    expect(commitPriceSliderBounds(100, 300, 500)).toEqual({priceMin: '100', priceMax: '300'});
+    expect(commitPriceSliderBounds(0, 300, 500)).toEqual({priceMin: '', priceMax: '300'});
+    expect(commitPriceSliderBounds(100, 1300, 1300)).toEqual({priceMin: '100', priceMax: ''});
   });
 });

@@ -155,6 +155,13 @@ export class ModuleBrowserDataService extends SubManager {
   private searchPerformedPending = false;
   private hasKnownUserModulesList = false;
   private userModulesOwnerId: string | null = null;
+  /**
+   * Ids already asked from Price Hub (even when they came back without data).
+   * Modules without listings would otherwise refetch forever: every empty
+   * response merges nothing, but a naive map emission still re-triggers the
+   * sync that requested them.
+   */
+  private readonly priceSummariesRequestedIds = new Set<number>();
   /** Number of raw (server) rows fetched so far, independent of any local AND-tag filtering. */
   private fetchedRawCount = 0;
 
@@ -508,18 +515,15 @@ export class ModuleBrowserDataService extends SubManager {
     // Keep a merged Price Hub summary map for every loaded page. The ids are
     // identical to the module-list display fetch, so both ride the same
     // `priceHubRecentModuleMarketPrices` cache entry instead of doubling traffic.
+    // Already-known and already-requested ids are skipped: listings-less
+    // modules come back empty and must not refetch on every emission.
     this.modulesList$
       .pipe(
-        map(list => getSortedModuleIds(list ?? [])),
+        map(list => this.missingPriceSummaryIds(getSortedModuleIds(list ?? []))),
         distinctUntilChanged((previous, next) => previous.join(',') === next.join(',')),
-        switchMap(ids => ids.length === 0
+        switchMap(missing => missing.length === 0
           ? of([])
-          : this.backend.GET.recentModuleMarketPrices(ids).pipe(
-            catchError(error => {
-              console.warn('[module-browser] Recent market prices could not be loaded.', error);
-              return of([]);
-            })
-          )
+          : this.fetchAndMarkPriceSummaries(missing)
         ),
         this.takeUntilDestroyed()
       )
@@ -684,30 +688,48 @@ export class ModuleBrowserDataService extends SubManager {
    * current map so filtering degrades to "no price data" instead of erroring.
    */
   ensurePriceSummariesForModuleIds(moduleIds: ReadonlyArray<number>): void {
-    const missing = [...new Set(
+    const missing = this.missingPriceSummaryIds([...new Set(
       (moduleIds ?? []).filter(id => Number.isFinite(id) && id > 0)
-    )].filter(id => !this.priceSummaryByModuleId$.value.has(id));
+    )]);
 
     if (missing.length === 0) {
       return;
     }
 
-    this.backend.GET.recentModuleMarketPrices(missing).pipe(
+    this.fetchAndMarkPriceSummaries(missing).pipe(
       take(1),
-      catchError(error => {
-        console.warn('[module-browser] Recent market prices could not be loaded.', error);
-        return of([]);
-      }),
       this.takeUntilDestroyed()
     ).subscribe(summaries => this.mergePriceSummaries(summaries));
   }
 
+  private missingPriceSummaryIds(moduleIds: ReadonlyArray<number>): number[] {
+    return moduleIds.filter(id =>
+      !this.priceSummaryByModuleId$.value.has(id) && !this.priceSummariesRequestedIds.has(id)
+    );
+  }
+
+  private fetchAndMarkPriceSummaries(moduleIds: ReadonlyArray<number>): Observable<ModuleRecentMarketPrice[]> {
+    moduleIds.forEach(id => this.priceSummariesRequestedIds.add(id));
+    return this.backend.GET.recentModuleMarketPrices([...moduleIds]).pipe(
+      catchError(error => {
+        console.warn('[module-browser] Recent market prices could not be loaded.', error);
+        return of([]);
+      })
+    );
+  }
+
   private mergePriceSummaries(summaries: ReadonlyArray<ModuleRecentMarketPrice>): void {
     const next = new Map(this.priceSummaryByModuleId$.value);
+    let changed = false;
     for (const summary of summaries ?? []) {
-      next.set(summary.moduleId, summary);
+      if (next.get(summary.moduleId)?.estimatedPriceEurMinor !== summary.estimatedPriceEurMinor) {
+        next.set(summary.moduleId, summary);
+        changed = true;
+      }
     }
-    this.priceSummaryByModuleId$.next(next);
+    if (changed) {
+      this.priceSummaryByModuleId$.next(next);
+    }
   }
 
   private getSelectedTagIds(): number[] {
