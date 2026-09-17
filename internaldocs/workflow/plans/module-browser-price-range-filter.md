@@ -47,6 +47,7 @@ Add a professional min/max price filter to the `/modules` browser sidebar that f
 2. **Unpriced modules while a price bound is set**: exclude (professional-shop behavior).
 3. **Scope**: `/modules` browser all modes + rack-editor picker reuse via the shared root component. Excluded: marketplace (already has), module detail, insights, user-area lists.
 4. **Pagination semantics**: filter the loaded page + honest hint copy; `Load more` keeps working; `itemsCount` stays the server count. No over-fetch loop, no server-side RPC.
+   → SUPERSEDED 2026-09-17 by owner bug report (max €60 showed 4 items + Load more): pagination now **auto-fills** — the service pulls following server pages until the visible page holds `take` price matches or the catalog is exhausted, and `hasMoreModules` hides Load more while filling. Silent backfill (no `search.load_more` event), structurally terminating (in-flight/suspend/full/exhausted/empty-page guards), suspended for collection datasets. Verified live: max €60 fills 25 cards + Load more over ~7 server pages.
 
 ## Checklist
 
