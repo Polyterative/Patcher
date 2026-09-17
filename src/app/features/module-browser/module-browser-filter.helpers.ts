@@ -129,7 +129,8 @@ export function filterOwnedModulesForFields(
   fields: ModuleBrowserFields,
   tagMatchMode: 'OR' | 'AND',
   excludedModuleIds: number[] = [],
-  priceEurMinorByModuleId: ReadonlyMap<number, number> = EMPTY_PRICE_MAP
+  priceEurMinorByModuleId: ReadonlyMap<number, number> = EMPTY_PRICE_MAP,
+  includeUnpriced = false
 ): MinimalModule[] | undefined {
   if (modules === undefined) {
     return undefined;
@@ -140,7 +141,7 @@ export function filterOwnedModulesForFields(
   const filteredModules = modules.filter((module) =>
     isOwnedPossessionForModule(module)
     && !excludedIds.has(module.id)
-    && matchesOwnedModuleFilters(module, criteria, priceEurMinorByModuleId)
+    && matchesOwnedModuleFilters(module, criteria, priceEurMinorByModuleId, includeUnpriced)
   );
   return sortOwnedModulesForFields(filteredModules, fields);
 }
@@ -149,7 +150,8 @@ export function filterWantedModulesForFields(
   modules: MinimalModule[] | undefined,
   fields: ModuleBrowserFields,
   tagMatchMode: 'OR' | 'AND',
-  priceEurMinorByModuleId: ReadonlyMap<number, number> = EMPTY_PRICE_MAP
+  priceEurMinorByModuleId: ReadonlyMap<number, number> = EMPTY_PRICE_MAP,
+  includeUnpriced = false
 ): MinimalModule[] | undefined {
   if (modules === undefined) {
     return undefined;
@@ -157,7 +159,7 @@ export function filterWantedModulesForFields(
 
   const criteria = createModuleFilterCriteria(fields, tagMatchMode);
   const filteredModules = modules.filter((module) =>
-    isWantedPossessionForModule(module) && matchesOwnedModuleFilters(module, criteria, priceEurMinorByModuleId)
+    isWantedPossessionForModule(module) && matchesOwnedModuleFilters(module, criteria, priceEurMinorByModuleId, includeUnpriced)
   );
   return sortOwnedModulesForFields(filteredModules, fields);
 }
@@ -230,20 +232,21 @@ export function parsePriceBoundary(value: string | number | null | undefined): n
 
 /**
  * True when a Price Hub estimate (minor EUR units) falls inside the
- * whole-EUR [min, max] range. With no bounds set everything matches;
- * with any bound set, modules without price data are excluded
- * (professional-shop behavior for price filters).
+ * whole-EUR [min, max] range. With no bounds set everything matches.
+ * With any bound set, modules without price data are excluded unless
+ * `includeUnpriced` opts them back in (the sidebar toggle).
  */
 export function matchesPriceRange(
   estimatedPriceEurMinor: number | null | undefined,
   minPriceEur: number | null,
-  maxPriceEur: number | null
+  maxPriceEur: number | null,
+  includeUnpriced = false
 ): boolean {
   if (minPriceEur === null && maxPriceEur === null) {
     return true;
   }
   if (estimatedPriceEurMinor === null || estimatedPriceEurMinor === undefined) {
-    return false;
+    return includeUnpriced;
   }
   if (minPriceEur !== null && estimatedPriceEurMinor < Math.round(minPriceEur * 100)) {
     return false;
@@ -329,7 +332,8 @@ export function commitPriceSliderBounds(
 function matchesOwnedModuleFilters(
   module: MinimalModule,
   criteria: ModuleFilterCriteria,
-  priceEurMinorByModuleId: ReadonlyMap<number, number> = EMPTY_PRICE_MAP
+  priceEurMinorByModuleId: ReadonlyMap<number, number> = EMPTY_PRICE_MAP,
+  includeUnpriced = false
 ): boolean {
   if (!matchesSearchQuery(criteria.name, module.name)) {
     return false;
@@ -361,7 +365,8 @@ function matchesOwnedModuleFilters(
     && !matchesPriceRange(
       priceEurMinorByModuleId.get(module.id) ?? null,
       criteria.minPriceEur,
-      criteria.maxPriceEur
+      criteria.maxPriceEur,
+      includeUnpriced
     )) {
     return false;
   }

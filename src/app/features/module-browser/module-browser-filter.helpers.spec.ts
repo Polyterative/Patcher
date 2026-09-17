@@ -358,6 +358,14 @@ describe('module-browser-filter.helpers', () => {
     expect(matchesPriceRange(undefined, null, 300)).toBeFalse();
   });
 
+  it('opts unpriced modules back in when includeUnpriced is set', () => {
+    expect(matchesPriceRange(null, 100, 300, true)).toBeTrue();
+    expect(matchesPriceRange(undefined, 100, null, true)).toBeTrue();
+    expect(matchesPriceRange(9999, 100, 300, true)).toBeFalse();
+    expect(matchesPriceRange(19900, 100, 300, true)).toBeTrue();
+    expect(matchesPriceRange(null, null, null, true)).toBeTrue();
+  });
+
   it('filters owned modules by estimated market price and drops unpriced ones', () => {
     const fields = buildFields();
     fields.priceMin.control.setValue('100');
@@ -402,6 +410,22 @@ describe('module-browser-filter.helpers', () => {
       'OR',
       [],
       prices
+    )?.map(module => module.id)).toEqual([1, 2]);
+  });
+
+  it('keeps unpriced modules alongside a range when includeUnpriced is set', () => {
+    const fields = buildFields();
+    fields.priceMin.control.setValue('100');
+    fields.priceMax.control.setValue('300');
+    const prices = new Map([[1, 19900]]);
+
+    expect(filterOwnedModulesForFields(
+      [moduleFactory({id: 1}), moduleFactory({id: 2})],
+      fields,
+      'OR',
+      [],
+      prices,
+      true
     )?.map(module => module.id)).toEqual([1, 2]);
   });
 
