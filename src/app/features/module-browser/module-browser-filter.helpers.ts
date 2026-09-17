@@ -98,6 +98,11 @@ export function hasActiveModuleFiltersForFields(fields: ModuleBrowserFields): bo
   );
 }
 
+export function hasActivePriceFilterForFields(fields: ModuleBrowserFields): boolean {
+  return parsePriceBoundary(fields.priceMin.control.value) !== null
+    || parsePriceBoundary(fields.priceMax.control.value) !== null;
+}
+
 export function getActiveFilterNames(fields: ModuleBrowserFields): string[] {
   const activeFilters: string[] = [];
   if (fields.name.control.value ?? '') activeFilters.push('name');

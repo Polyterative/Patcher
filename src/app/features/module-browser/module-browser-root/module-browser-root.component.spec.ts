@@ -712,7 +712,7 @@ describe('ModuleBrowserRootComponent', () => {
     expect(host.textContent).toContain('Min price (€)');
     expect(host.textContent).toContain('Max price (€)');
     expect(host.querySelector('.module-price-slider')).not.toBeNull();
-    expect(host.querySelector('.module-filter-hint')?.textContent).toContain('loaded results');
+    expect(host.querySelector('.module-filter-hint')?.textContent).toContain('hides unpriced');
   });
 
   it('filters loaded catalog results by price range, hides unpriced, and counts visible results', fakeAsync(() => {
@@ -762,4 +762,27 @@ describe('ModuleBrowserRootComponent', () => {
     expect(component.visibleModules$.value?.map((module) => module.id)).toEqual([1, 2, 3, 4, 5]);
     expect(component.priceSliderCeilEur).toBe(2000);
   }));
+
+  it('suspends price auto-fill while browsing collection datasets', () => {
+    expect(component.dataService.suspendPriceAutoFill$.value).toBeFalse();
+
+    component.enableCollectionBrowseModes = true;
+    component.ownedModulesInput = buildOwnedModules(20);
+    fixture.detectChanges();
+
+    expect(component.collectionBrowseMode).toBe('owned');
+    expect(component.dataService.suspendPriceAutoFill$.value).toBeTrue();
+  });
+
+  it('proposes load more only when no price auto-fill is in flight', () => {
+    component.dataService.serversideAdditionalData.itemsCount$.next(50);
+    component.dataService.modulesList$.next(buildOwnedModules(2));
+    expect(component.hasMoreModules).toBeTrue();
+
+    component.dataService.priceAutoFillInFlight$.next(true);
+    expect(component.hasMoreModules).toBeFalse();
+
+    component.dataService.priceAutoFillInFlight$.next(false);
+    expect(component.hasMoreModules).toBeTrue();
+  });
 });
