@@ -58,20 +58,24 @@
   }
 }
 
+.module-price-filter-block {
+  // Clips the slider's invisible native range inputs (not the slider
+  // itself): Material spans them ±21px past the host for dual-thumb hit
+  // areas, which otherwise inflates the rail scrollWidth. Visible thumbs
+  // at the extremes sit ~6px inside the rail, so only the invisible
+  // slivers are ever cut — never the circles.
+  overflow: clip;
+}
+
 .module-price-slider {
   // width:auto (not 100%): the M3 slider keeps 8px side touch insets, which
   // a fixed 100% width would push past the rail into a horizontal scrollbar.
   // position:relative: the visually-hidden native range inputs are
   // absolutely positioned — without an anchored host they escape to the
-  // viewport origin and inflate the sidebar scrollWidth by the same 13px.
-  // overflow:clip: those inputs span overlapping track halves ±21px past
-  // the host edges (Material internals for dual-thumb hit areas); the
-  // slivers are invisible and uninteractable, so clip them instead of
-  // scrolling the rail. Non-discrete slider has no drag value label to clip.
+  // viewport origin instead of staying inside the clipped block.
   position: relative;
   display: block;
   width: auto;
-  overflow: clip;
 }
 
 .module-filter-hint {

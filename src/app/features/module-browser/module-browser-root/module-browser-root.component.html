@@ -165,6 +165,26 @@
         </div>
 
         <div class="module-filter-control module-filter-control--optional">
+          <lib-mat-form-entity [control]="dataService.fields.standard.control"
+                               [type]="dataService.fields.standard.type"
+                               [options$]="dataService.fields.standard.options$"
+                               [disableVoidSelection]="true"
+                               [label]="dataService.fields.standard.label"
+                               iconL1="settings"
+          ></lib-mat-form-entity>
+        </div>
+
+        <div class="module-filter-control module-filter-control--optional">
+          <lib-mat-form-entity [control]="dataService.fields.order.control"
+                               [options$]="dataService.fields.order.options$"
+                               [type]="dataService.fields.order.type"
+                               [disableVoidSelection]="true"
+                               [label]="dataService.fields.order.label"
+                               iconL1="sort"
+          ></lib-mat-form-entity>
+        </div>
+
+        <div class="module-filter-control module-filter-control--optional module-price-filter-block">
           <div class="module-price-controls col gap1">
             <lib-mat-form-entity [control]="dataService.fields.priceMin.control"
                                  [type]="dataService.fields.priceMin.type"
@@ -195,26 +215,6 @@
             >
           </mat-slider>
           <small class="module-filter-hint">~€ estimates · filters loaded results · hides unpriced</small>
-        </div>
-
-        <div class="module-filter-control module-filter-control--optional">
-          <lib-mat-form-entity [control]="dataService.fields.standard.control"
-                               [type]="dataService.fields.standard.type"
-                               [options$]="dataService.fields.standard.options$"
-                               [disableVoidSelection]="true"
-                               [label]="dataService.fields.standard.label"
-                               iconL1="settings"
-          ></lib-mat-form-entity>
-        </div>
-
-        <div class="module-filter-control module-filter-control--optional">
-          <lib-mat-form-entity [control]="dataService.fields.order.control"
-                               [options$]="dataService.fields.order.options$"
-                               [type]="dataService.fields.order.type"
-                               [disableVoidSelection]="true"
-                               [label]="dataService.fields.order.label"
-                               iconL1="sort"
-          ></lib-mat-form-entity>
         </div>
 
         <div class="module-filter-control module-filter-control--optional module-tag-filter-section">
