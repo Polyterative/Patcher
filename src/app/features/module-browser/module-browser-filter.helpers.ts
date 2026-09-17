@@ -206,13 +206,20 @@ export const MODULE_PRICE_SLIDER_STEP_EUR = 10;
  * Parses a whole-EUR price boundary from a text control value.
  * Mirrors `parsePriceBoundary` in marketplace-view-models: blank or
  * non-numeric/negative input means "no bound", never zero-as-signal.
+ * Accepts numbers too: `type="number"` inputs surface `number | null` at
+ * runtime even though the controls are typed `FormControl<string>`
+ * (same latent typing as the hp/depth controls — hence no `.trim()` blind).
  */
-export function parsePriceBoundary(value: string | null | undefined): number | null {
-  const trimmed = (value ?? '').trim();
-  if (!trimmed) {
+export function parsePriceBoundary(value: string | number | null | undefined): number | null {
+  const text = typeof value === 'string'
+    ? value.trim()
+    : typeof value === 'number'
+      ? String(value)
+      : '';
+  if (!text) {
     return null;
   }
-  const parsed = Number(trimmed);
+  const parsed = Number(text);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
 }
 
@@ -266,16 +273,19 @@ function createModuleFilterCriteria(
 /**
  * Forgiving range normalization: a typed min above max is treated as a
  * swapped range instead of matching nothing (the dual slider can never
- * produce this state; typed inputs can).
+ * produce this state; typed inputs can). A zero min is dropped: estimates
+ * are never negative, so it constrains nothing — keeping it would only
+ * serve to wrongly hide unpriced modules while the filter looks inactive.
  */
-function normalizePriceRange(
+export function normalizePriceRange(
   minPriceEur: number | null,
   maxPriceEur: number | null
 ): {minPriceEur: number | null; maxPriceEur: number | null} {
-  if (minPriceEur !== null && maxPriceEur !== null && minPriceEur > maxPriceEur) {
-    return {minPriceEur: maxPriceEur, maxPriceEur: minPriceEur};
+  const effectiveMin = minPriceEur === 0 ? null : minPriceEur;
+  if (effectiveMin !== null && maxPriceEur !== null && effectiveMin > maxPriceEur) {
+    return {minPriceEur: maxPriceEur, maxPriceEur: effectiveMin};
   }
-  return {minPriceEur, maxPriceEur};
+  return {minPriceEur: effectiveMin, maxPriceEur};
 }
 
 /**
