@@ -52,6 +52,7 @@ import {
 } from './module-browser-data.utils';
 import { AnalyticsService } from '../backbone/analytics-integration/analytics.service';
 import { recoverBrowserListRequest } from '../browser-data-recovery';
+import { ModuleRecentMarketPrice } from '../backend/supabase-queries';
 import { createModuleBrowserFields } from './module-browser-fields.factory';
 import type { ModulePossessionDialogResult } from 'src/app/components/module-parts/module-possession-dialog/module-possession-dialog.component';
 import {
@@ -88,6 +89,14 @@ type BrowserModulePossessionWriteResult = {
 };
 type BrowserUserModulesRefreshSource = 'auth' | 'refresh';
 
+function getSortedModuleIds(data: ReadonlyArray<MinimalModule>): number[] {
+  return [...new Set(
+    data
+      .map(module => module.id)
+      .filter(id => Number.isFinite(id) && id > 0)
+  )].sort((first, second) => first - second);
+}
+
 
 @Injectable()
 export class ModuleBrowserDataService extends SubManager {
@@ -107,6 +116,22 @@ export class ModuleBrowserDataService extends SubManager {
   );
   readonly resetForm$ = new Subject<void>();
   readonly paginatorToFistPage$ = new Subject<void>();
+  /**
+   * Price Hub summaries keyed by module id, merged across every fetch.
+   * Feeds the min/max price filter (whole-EUR bounds match against
+   * `estimatedPriceEurMinor`) and the price-slider ceiling. Reads ride the
+   * existing `priceHubRecentModuleMarketPrices` cache entry, so the
+   * module-list display fetch for the same ids stays a cache hit.
+   */
+  readonly priceSummaryByModuleId$ = new BehaviorSubject<ReadonlyMap<number, ModuleRecentMarketPrice>>(new Map());
+  /**
+   * Emitted (debounced) when only the price bounds change. Unlike the other
+   * filters this never refetches the server page — price lives outside
+   * `GET.modules`, so listeners re-apply the range locally instead.
+   * Deliberately separate from `moduleFilterInteraction$`: that stream drives
+   * the results loading indicator, which must not spin with no fetch behind it.
+   */
+  readonly priceFilterChanged$ = new Subject<void>();
 
   readonly serversideTableRequestData = {
     skip$: new BehaviorSubject<number>(0),
@@ -187,6 +212,8 @@ export class ModuleBrowserDataService extends SubManager {
       this.fields.manufacturers.control.valueChanges,
       this.fields.hp.control.valueChanges,
       this.fields.depth.control.valueChanges,
+      this.fields.priceMin.control.valueChanges,
+      this.fields.priceMax.control.valueChanges,
       this.fields.hpCondition.control.valueChanges,
       this.fields.standard.control.valueChanges,
       this.fields.order.control.valueChanges,
@@ -284,6 +311,26 @@ export class ModuleBrowserDataService extends SubManager {
       this.fields.hpCondition.control.valueChanges,
       this.fields.standard.control.valueChanges
     );
+
+    // Price bounds intentionally stay out of `filterControlChanges$`: they
+    // never refetch the server page (see `priceFilterChanged$`). They apply
+    // instantly to loaded results through the price-summary map instead.
+    merge(
+      this.fields.priceMin.control.valueChanges,
+      this.fields.priceMax.control.valueChanges
+    ).pipe(
+      tap(() => this.markSearchPerformedPending()),
+      debounceTime(750),
+      this.takeUntilDestroyed()
+    ).subscribe(() => {
+      const activeFilters = getActiveFilterNames(this.fields);
+      this.analytics.capture('search.filter_changed', {
+        active_filters: activeFilters,
+        active_filter_count: activeFilters.length,
+        order: this.fields.order.control.value?.id,
+      });
+      this.priceFilterChanged$.next();
+    });
 
     merge(
       filterControlChanges$.pipe(tap(() => this.markSearchPerformedPending())),
@@ -458,6 +505,26 @@ export class ModuleBrowserDataService extends SubManager {
         }
       });
 
+    // Keep a merged Price Hub summary map for every loaded page. The ids are
+    // identical to the module-list display fetch, so both ride the same
+    // `priceHubRecentModuleMarketPrices` cache entry instead of doubling traffic.
+    this.modulesList$
+      .pipe(
+        map(list => getSortedModuleIds(list ?? [])),
+        distinctUntilChanged((previous, next) => previous.join(',') === next.join(',')),
+        switchMap(ids => ids.length === 0
+          ? of([])
+          : this.backend.GET.recentModuleMarketPrices(ids).pipe(
+            catchError(error => {
+              console.warn('[module-browser] Recent market prices could not be loaded.', error);
+              return of([]);
+            })
+          )
+        ),
+        this.takeUntilDestroyed()
+      )
+      .subscribe(summaries => this.mergePriceSummaries(summaries));
+
     this.loadMore$
       .pipe(
         withLatestFrom(this.modulesList$),
@@ -485,6 +552,8 @@ export class ModuleBrowserDataService extends SubManager {
         this.fields.manufacturers.control.setValue('', silent);
         this.fields.hp.control.setValue('', silent);
         this.fields.depth.control.setValue('', silent);
+        this.fields.priceMin.control.setValue('', silent);
+        this.fields.priceMax.control.setValue('', silent);
         this.fields.hpCondition.control.setValue(DEFAULT_HP_CONDITION, silent);
         this.fields.standard.control.setValue(DEFAULT_STANDARD, silent);
         this.fields.tags.control.setValue([], silent);
@@ -520,11 +589,22 @@ export class ModuleBrowserDataService extends SubManager {
     modules: MinimalModule[] | undefined,
     excludedModuleIds: number[] = []
   ): MinimalModule[] | undefined {
-    return filterOwnedModulesForFields(modules, this.fields, this.tagMatchMode$.value, excludedModuleIds);
+    return filterOwnedModulesForFields(
+      modules,
+      this.fields,
+      this.tagMatchMode$.value,
+      excludedModuleIds,
+      this.getPriceEurMinorMap()
+    );
   }
 
   filterWantedModules(modules: MinimalModule[] | undefined): MinimalModule[] | undefined {
-    return filterWantedModulesForFields(modules, this.fields, this.tagMatchMode$.value);
+    return filterWantedModulesForFields(
+      modules,
+      this.fields,
+      this.tagMatchMode$.value,
+      this.getPriceEurMinorMap()
+    );
   }
 
   isOwnedPossession(module: MinimalModule): boolean {
@@ -584,6 +664,50 @@ export class ModuleBrowserDataService extends SubManager {
       ? {...module, possessionKind: kind ?? undefined}
       : module
     ));
+  }
+
+  /**
+   * Minor-EUR price estimates keyed by module id, derived from the merged
+   * summary map. This is what the range matcher consumes.
+   */
+  getPriceEurMinorMap(): ReadonlyMap<number, number> {
+    return new Map(
+      [...this.priceSummaryByModuleId$.value.values()]
+        .map(summary => [summary.moduleId, summary.estimatedPriceEurMinor] as const)
+    );
+  }
+
+  /**
+   * Fetches Price Hub summaries for ids missing from the map (e.g. owned /
+   * wanted collection datasets, which never pass through `modulesList$`).
+   * Already-known ids are skipped; failures resolve to empty and keep the
+   * current map so filtering degrades to "no price data" instead of erroring.
+   */
+  ensurePriceSummariesForModuleIds(moduleIds: ReadonlyArray<number>): void {
+    const missing = [...new Set(
+      (moduleIds ?? []).filter(id => Number.isFinite(id) && id > 0)
+    )].filter(id => !this.priceSummaryByModuleId$.value.has(id));
+
+    if (missing.length === 0) {
+      return;
+    }
+
+    this.backend.GET.recentModuleMarketPrices(missing).pipe(
+      take(1),
+      catchError(error => {
+        console.warn('[module-browser] Recent market prices could not be loaded.', error);
+        return of([]);
+      }),
+      this.takeUntilDestroyed()
+    ).subscribe(summaries => this.mergePriceSummaries(summaries));
+  }
+
+  private mergePriceSummaries(summaries: ReadonlyArray<ModuleRecentMarketPrice>): void {
+    const next = new Map(this.priceSummaryByModuleId$.value);
+    for (const summary of summaries ?? []) {
+      next.set(summary.moduleId, summary);
+    }
+    this.priceSummaryByModuleId$.next(next);
   }
 
   private getSelectedTagIds(): number[] {
