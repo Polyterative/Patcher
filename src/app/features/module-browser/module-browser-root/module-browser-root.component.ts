@@ -259,6 +259,7 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
       this.dataService.serversideTableRequestData.take$,
       this.dataService.priceSummaryByModuleId$,
       this.dataService.priceFilterChanged$,
+      this.dataService.includeUnpriced$,
       this.dataService.fields.name.control.valueChanges,
       this.dataService.fields.description.control.valueChanges,
       this.dataService.fields.manufacturers.control.valueChanges,
@@ -553,7 +554,8 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
       return modules;
     }
     const prices = this.dataService.getPriceEurMinorMap();
-    return modules.filter(module => matchesPriceRange(prices.get(module.id) ?? null, minPriceEur, maxPriceEur));
+    const includeUnpriced = this.dataService.includeUnpriced$.value;
+    return modules.filter(module => matchesPriceRange(prices.get(module.id) ?? null, minPriceEur, maxPriceEur, includeUnpriced));
   }
 
   private syncPriceSliderState(): void {

@@ -38,6 +38,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatSliderModule } from '@angular/material/slider';
 import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.module';
@@ -86,6 +87,7 @@ import { ModuleListModule } from '../module-list/module-list.module';
     MatDividerModule,
     MatToolbarModule,
     MatButtonToggleModule,
+    MatCheckboxModule,
     MatExpansionModule,
     MatSliderModule,
     MatMenu,

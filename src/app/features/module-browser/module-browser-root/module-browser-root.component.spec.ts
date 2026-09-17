@@ -785,4 +785,32 @@ describe('ModuleBrowserRootComponent', () => {
     component.dataService.priceAutoFillInFlight$.next(false);
     expect(component.hasMoreModules).toBeTrue();
   });
+
+  it('shows the include-unpriced toggle only while a price bound is set', fakeAsync(() => {
+    const host = fixture.nativeElement as HTMLElement;
+    fixture.detectChanges();
+    expect(host.querySelector('.module-price-unpriced-toggle')).toBeNull();
+
+    component.dataService.fields.priceMax.control.setValue('300');
+    tick(750);
+    fixture.detectChanges();
+
+    expect(host.querySelector('.module-price-unpriced-toggle')?.textContent).toContain('Include unpriced');
+  }));
+
+  it('brings unpriced modules back when includeUnpriced is checked', fakeAsync(() => {
+    backend.GET.recentModuleMarketPrices.and.returnValue(of([
+      priceSummaryFixture(1, 5000)
+    ]));
+    component.dataService.modulesList$.next(buildOwnedModules(3));
+    component.dataService.serversideAdditionalData.itemsCount$.next(3);
+    component.dataService.fields.priceMax.control.setValue('300');
+    tick(750);
+    fixture.detectChanges();
+    expect(component.visibleModules$.value?.map((module) => module.id)).toEqual([1]);
+
+    component.dataService.includeUnpriced$.next(true);
+    fixture.detectChanges();
+    expect(component.visibleModules$.value?.map((module) => module.id)).toEqual([1, 2, 3]);
+  }));
 });
