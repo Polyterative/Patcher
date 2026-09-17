@@ -215,6 +215,12 @@
             >
           </mat-slider>
           <small class="module-filter-hint">~€ estimates · hides unpriced</small>
+          @if (dataService.priceFilterActive$ | async) {
+            <mat-checkbox class="module-price-unpriced-toggle"
+                          [checked]="dataService.includeUnpriced$ | async"
+                          (change)="dataService.includeUnpriced$.next($event.checked)"
+            >Include unpriced</mat-checkbox>
+          }
         </div>
 
         <div class="module-filter-control module-filter-control--optional module-tag-filter-section">

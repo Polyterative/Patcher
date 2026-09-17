@@ -145,6 +145,14 @@ export class ModuleBrowserDataService extends SubManager {
   readonly suspendPriceAutoFill$ = new BehaviorSubject<boolean>(false);
   /** True while a price auto-fill page is in flight (drives Load more visibility). */
   readonly priceAutoFillInFlight$ = new BehaviorSubject<boolean>(false);
+  /**
+   * Opts modules without Price Hub data back into a bounded price filter.
+   * Meaningless (and ignored) without bounds — the matcher short-circuits
+   * before consulting it — so it never counts as an active filter alone.
+   */
+  readonly includeUnpriced$ = new BehaviorSubject<boolean>(false);
+  /** Whether any price bound is currently set (drives the toggle visibility). */
+  readonly priceFilterActive$ = new BehaviorSubject<boolean>(false);
 
   readonly serversideTableRequestData = {
     skip$: new BehaviorSubject<number>(0),
@@ -351,6 +359,14 @@ export class ModuleBrowserDataService extends SubManager {
         active_filter_count: activeFilters.length,
         order: this.fields.order.control.value?.id,
       });
+      const priceActive = hasActivePriceFilterForFields(this.fields);
+      this.priceFilterActive$.next(priceActive);
+      if (!priceActive && this.includeUnpriced$.value) {
+        // No orphaned opt-ins: the toggle only ever means something with a
+        // bound set, so clearing the last bound clears it too instead of
+        // leaving invisible state for the next bound to inherit.
+        this.includeUnpriced$.next(false);
+      }
       this.priceFilterChanged$.next();
     });
 
@@ -559,6 +575,14 @@ export class ModuleBrowserDataService extends SubManager {
       .pipe(this.takeUntilDestroyed())
       .subscribe(() => this.maybeAutoFillPricePage());
 
+    this.includeUnpriced$
+      .pipe(
+        distinctUntilChanged(),
+        skip(1),
+        this.takeUntilDestroyed()
+      )
+      .subscribe(() => this.maybeAutoFillPricePage());
+
     this.loadMore$
       .pipe(
         withLatestFrom(this.modulesList$),
@@ -592,6 +616,8 @@ export class ModuleBrowserDataService extends SubManager {
         this.fields.standard.control.setValue(DEFAULT_STANDARD, silent);
         this.fields.tags.control.setValue([], silent);
         this.fields.tagSearch.control.setValue('', silent);
+        this.includeUnpriced$.next(false);
+        this.priceFilterActive$.next(false);
         this.tagSearchQuery$.next('');
         this.serversideTableRequestData.filter$.next('');
         this.serversideTableRequestData.sort$.next([this.orderStartingValue.id, 'desc']);
@@ -628,7 +654,8 @@ export class ModuleBrowserDataService extends SubManager {
       this.fields,
       this.tagMatchMode$.value,
       excludedModuleIds,
-      this.getPriceEurMinorMap()
+      this.getPriceEurMinorMap(),
+      this.includeUnpriced$.value
     );
   }
 
@@ -637,7 +664,8 @@ export class ModuleBrowserDataService extends SubManager {
       modules,
       this.fields,
       this.tagMatchMode$.value,
-      this.getPriceEurMinorMap()
+      this.getPriceEurMinorMap(),
+      this.includeUnpriced$.value
     );
   }
 
@@ -796,7 +824,8 @@ export class ModuleBrowserDataService extends SubManager {
       return modules.length;
     }
     const prices = this.getPriceEurMinorMap();
-    return modules.filter(module => matchesPriceRange(prices.get(module.id) ?? null, minPriceEur, maxPriceEur)).length;
+    const includeUnpriced = this.includeUnpriced$.value;
+    return modules.filter(module => matchesPriceRange(prices.get(module.id) ?? null, minPriceEur, maxPriceEur, includeUnpriced)).length;
   }
 
   private mergePriceSummaries(summaries: ReadonlyArray<ModuleRecentMarketPrice>): void {

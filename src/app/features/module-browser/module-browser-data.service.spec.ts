@@ -1589,4 +1589,68 @@ describe('ModuleBrowserDataService', () => {
     expect(backend.GET.modules.calls.count()).toBe(1);
     service.ngOnDestroy();
   }));
+
+  it('brings unpriced modules back into owned filtering when includeUnpriced is on', () => {
+    const {service, backend} = build();
+    backend.GET.recentModuleMarketPrices.and.returnValue(of([priceSummaryFixture(1, 19900)]));
+    service.modulesList$.next([moduleFactory({id: 1}), moduleFactory({id: 2})]);
+    service.fields.priceMax.control.setValue('300');
+    service.includeUnpriced$.next(true);
+
+    expect(service.filterOwnedModules([
+      moduleFactory({id: 1}),
+      moduleFactory({id: 2})
+    ])?.map(module => module.id)).toEqual([1, 2]);
+    service.ngOnDestroy();
+  });
+
+  it('counts unpriced modules toward page fullness when includeUnpriced is on', fakeAsync(() => {
+    const {service, backend} = build();
+    backend.GET.modules.and.returnValue(of({
+      data: Array.from({length: 25}, (_, index) => moduleFactory({id: 1 + index})),
+      count: 50
+    }));
+    backend.GET.recentModuleMarketPrices.and.returnValue(of([priceSummaryFixture(1, 5000)]));
+    service.updateModulesList$.next();
+    service.fields.priceMax.control.setValue('100');
+    service.includeUnpriced$.next(true);
+    tick(750);
+
+    expect(backend.GET.modules.calls.count()).toBe(1);
+
+    service.includeUnpriced$.next(false);
+
+    expect(backend.GET.modules.calls.count()).toBe(2);
+    service.ngOnDestroy();
+  }));
+
+  it('clears includeUnpriced and the active flag on resetForm$', fakeAsync(() => {
+    const {service} = build();
+    service.fields.priceMax.control.setValue('300');
+    service.includeUnpriced$.next(true);
+    tick(750);
+    expect(service.priceFilterActive$.value).toBeTrue();
+
+    service.resetForm$.next();
+
+    expect(service.includeUnpriced$.value).toBeFalse();
+    expect(service.priceFilterActive$.value).toBeFalse();
+    expect(service.fields.priceMax.control.value).toBe('');
+    service.ngOnDestroy();
+  }));
+
+  it('auto-clears includeUnpriced when the last bound is removed', fakeAsync(() => {
+    const {service} = build();
+    service.fields.priceMax.control.setValue('300');
+    service.includeUnpriced$.next(true);
+    tick(750);
+    expect(service.includeUnpriced$.value).toBeTrue();
+    expect(service.priceFilterActive$.value).toBeTrue();
+
+    service.fields.priceMax.control.setValue('');
+    tick(750);
+    expect(service.includeUnpriced$.value).toBeFalse();
+    expect(service.priceFilterActive$.value).toBeFalse();
+    service.ngOnDestroy();
+  }));
 });
