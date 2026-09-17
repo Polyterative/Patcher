@@ -47,17 +47,31 @@
 }
 
 .module-price-controls {
-  align-items: flex-start;
-
+  // Stacked full-width singles, not the marketplace side-by-side pair: at
+  // this rail's 208px the halved fields clip their floating labels under
+  // the clear button (screenshot-verified). Stacking matches every sibling
+  // filter and keeps labels legible; the dual slider below carries the
+  // at-a-glance range read.
   lib-mat-form-entity {
-    flex: 1 1 0;
-    min-width: 0;
+    flex: none;
+    width: 100%;
   }
 }
 
 .module-price-slider {
+  // width:auto (not 100%): the M3 slider keeps 8px side touch insets, which
+  // a fixed 100% width would push past the rail into a horizontal scrollbar.
+  // position:relative: the visually-hidden native range inputs are
+  // absolutely positioned — without an anchored host they escape to the
+  // viewport origin and inflate the sidebar scrollWidth by the same 13px.
+  // overflow:clip: those inputs span overlapping track halves ±21px past
+  // the host edges (Material internals for dual-thumb hit areas); the
+  // slivers are invisible and uninteractable, so clip them instead of
+  // scrolling the rail. Non-discrete slider has no drag value label to clip.
+  position: relative;
   display: block;
-  width: 100%;
+  width: auto;
+  overflow: clip;
 }
 
 .module-filter-hint {
