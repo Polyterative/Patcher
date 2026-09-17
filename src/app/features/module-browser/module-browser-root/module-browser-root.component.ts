@@ -37,6 +37,15 @@ import { RackBalanceAxisResult } from 'src/app/components/rack-parts/rack-balanc
 import { Tag, TagSuggestionGroup } from 'src/app/models/tag';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { ModuleList } from '../module-browser-data.service';
+import {
+  commitPriceSliderBounds,
+  matchesPriceRange,
+  MODULE_PRICE_SLIDER_FLOOR_EUR,
+  MODULE_PRICE_SLIDER_MIN_CEIL_EUR,
+  MODULE_PRICE_SLIDER_STEP_EUR,
+  parsePriceBoundary,
+  resolvePriceSliderCeilEur
+} from '../module-browser-filter.helpers';
 import { ModuleListActionConfig } from '../module-list/module-list.component';
 import { MatDialog } from '@angular/material/dialog';
 import {
@@ -126,6 +135,11 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
   readonly visibleModules$ = new BehaviorSubject<ModuleList>(null);
   readonly visibleItemsCount$ = new BehaviorSubject<number>(0);
   readonly ownedModulesDefaultThreshold = OWNED_MODULES_DEFAULT_THRESHOLD;
+  readonly priceSliderFloorEur = MODULE_PRICE_SLIDER_FLOOR_EUR;
+  readonly priceSliderStepEur = MODULE_PRICE_SLIDER_STEP_EUR;
+  priceSliderCeilEur = MODULE_PRICE_SLIDER_MIN_CEIL_EUR;
+  priceSliderStartEur = MODULE_PRICE_SLIDER_FLOOR_EUR;
+  priceSliderEndEur = MODULE_PRICE_SLIDER_MIN_CEIL_EUR;
   collectionBrowseMode: RackModuleBrowseMode = 'all';
 
   get hasMoreModules(): boolean {
@@ -239,6 +253,8 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
       this.dataService.serversideAdditionalData.itemsCount$,
       this.dataService.serversideTableRequestData.skip$,
       this.dataService.serversideTableRequestData.take$,
+      this.dataService.priceSummaryByModuleId$,
+      this.dataService.priceFilterChanged$,
       this.dataService.fields.name.control.valueChanges,
       this.dataService.fields.description.control.valueChanges,
       this.dataService.fields.manufacturers.control.valueChanges,
@@ -280,6 +296,22 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
   
   toggleMobileFilters(): void {
     this.mobileFiltersExpanded = !this.mobileFiltersExpanded;
+  }
+
+  /**
+   * Commits released slider thumbs onto the price text controls. The slider
+   * and the inputs are two views over the same filter: a full-range thumb
+   * clears its bound, and the existing debounced price pipeline picks up the
+   * change from there.
+   */
+  commitPriceSlider(): void {
+    const {priceMin, priceMax} = commitPriceSliderBounds(
+      this.priceSliderStartEur,
+      this.priceSliderEndEur,
+      this.priceSliderCeilEur
+    );
+    this.dataService.fields.priceMin.control.setValue(priceMin);
+    this.dataService.fields.priceMax.control.setValue(priceMax);
   }
 
   onModuleAction(module: MinimalModule): void {
@@ -472,11 +504,21 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
   }
 
   private syncVisibleModules(): void {
+    this.syncPriceSliderState();
     if (!this.usesOwnedDataset) {
-      this.visibleItemsCount$.next(this.dataService.serversideAdditionalData.itemsCount$.value);
-      this.updateVisibleModules(this.dataService.modulesList$.value);
+      const priceFiltered = this.applyPriceRangeFilter(this.dataService.modulesList$.value);
+      this.visibleItemsCount$.next(
+        this.hasActivePriceFilter() && priceFiltered !== null
+          ? priceFiltered.length
+          : this.dataService.serversideAdditionalData.itemsCount$.value
+      );
+      this.updateVisibleModules(priceFiltered);
       return;
     }
+
+    this.dataService.ensurePriceSummariesForModuleIds(
+      (this.ownedModules ?? []).map(module => module.id)
+    );
 
     const filteredUserModules = this.isWantedBrowseMode
       ? this.dataService.filterWantedModules(this.ownedModules)
@@ -492,6 +534,45 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
 
     this.visibleItemsCount$.next(filteredUserModules.length);
     this.updateVisibleModules(filteredUserModules);
+  }
+
+  private hasActivePriceFilter(): boolean {
+    return parsePriceBoundary(this.dataService.fields.priceMin.control.value) !== null
+      || parsePriceBoundary(this.dataService.fields.priceMax.control.value) !== null;
+  }
+
+  private applyPriceRangeFilter(modules: ModuleList): ModuleList {
+    if (!modules) {
+      return modules;
+    }
+    const minEur = parsePriceBoundary(this.dataService.fields.priceMin.control.value);
+    const maxEur = parsePriceBoundary(this.dataService.fields.priceMax.control.value);
+    if (minEur === null && maxEur === null) {
+      return modules;
+    }
+    const prices = this.dataService.getPriceEurMinorMap();
+    return modules.filter(module => matchesPriceRange(prices.get(module.id) ?? null, minEur, maxEur));
+  }
+
+  private syncPriceSliderState(): void {
+    const minEur = parsePriceBoundary(this.dataService.fields.priceMin.control.value);
+    const maxEur = parsePriceBoundary(this.dataService.fields.priceMax.control.value);
+    const ceil = resolvePriceSliderCeilEur(
+      [...this.dataService.priceSummaryByModuleId$.value.values()]
+        .map(summary => summary.estimatedPriceEurMinor),
+      maxEur
+    );
+    const start = minEur ?? MODULE_PRICE_SLIDER_FLOOR_EUR;
+    const end = maxEur ?? ceil;
+    if (ceil === this.priceSliderCeilEur
+      && start === this.priceSliderStartEur
+      && end === this.priceSliderEndEur) {
+      return;
+    }
+    this.priceSliderCeilEur = ceil;
+    this.priceSliderStartEur = start;
+    this.priceSliderEndEur = end;
+    this.cdr.markForCheck();
   }
 
   private updateVisibleModules(modules: ModuleList): void {

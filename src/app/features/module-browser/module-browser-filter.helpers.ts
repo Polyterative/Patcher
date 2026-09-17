@@ -198,6 +198,10 @@ interface ModuleFilterCriteria {
 
 const EMPTY_PRICE_MAP: ReadonlyMap<number, number> = new Map();
 
+export const MODULE_PRICE_SLIDER_FLOOR_EUR = 0;
+export const MODULE_PRICE_SLIDER_MIN_CEIL_EUR = 500;
+export const MODULE_PRICE_SLIDER_STEP_EUR = 10;
+
 /**
  * Parses a whole-EUR price boundary from a text control value.
  * Mirrors `parsePriceBoundary` in marketplace-view-models: blank or
@@ -272,6 +276,39 @@ function normalizePriceRange(
     return {minPriceEur: maxPriceEur, maxPriceEur: minPriceEur};
   }
   return {minPriceEur, maxPriceEur};
+}
+
+/**
+ * Honest slider ceiling from loaded-page data only: the rounded-up max of
+ * the known estimates and the typed max bound, never below the fallback.
+ * There is no catalog-wide price aggregation, so a global ceiling would be
+ * invented data — the hint copy next to the slider says as much.
+ */
+export function resolvePriceSliderCeilEur(
+  estimatedPricesEurMinor: ReadonlyArray<number>,
+  currentMaxEur: number | null
+): number {
+  const loadedMaxEur = estimatedPricesEurMinor.length > 0
+    ? Math.max(...estimatedPricesEurMinor) / 100
+    : 0;
+  const target = Math.max(loadedMaxEur, currentMaxEur ?? 0, MODULE_PRICE_SLIDER_MIN_CEIL_EUR);
+  return Math.ceil(target / 100) * 100;
+}
+
+/**
+ * Maps released slider thumbs back onto the text controls. A full-range
+ * thumb means "no bound" (empty string), keeping slider and inputs as two
+ * views over the same filter instead of two sources of truth.
+ */
+export function commitPriceSliderBounds(
+  startEur: number,
+  endEur: number,
+  ceilEur: number
+): {priceMin: string; priceMax: string} {
+  return {
+    priceMin: startEur <= MODULE_PRICE_SLIDER_FLOOR_EUR ? '' : String(Math.round(startEur)),
+    priceMax: endEur >= ceilEur ? '' : String(Math.round(endEur))
+  };
 }
 
 function matchesOwnedModuleFilters(
