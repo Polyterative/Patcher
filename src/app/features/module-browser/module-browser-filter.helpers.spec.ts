@@ -334,6 +334,10 @@ describe('module-browser-filter.helpers', () => {
     expect(parsePriceBoundary(' 0 ')).toEqual(0);
     expect(parsePriceBoundary('-5')).toBeNull();
     expect(parsePriceBoundary('not-a-number')).toBeNull();
+    // type="number" inputs surface numbers at runtime despite the
+    // FormControl<string> typing (same as the hp/depth controls).
+    expect(parsePriceBoundary(250 as unknown as string)).toEqual(250);
+    expect(parsePriceBoundary(0 as unknown as string)).toEqual(0);
   });
 
   it('matches everything without bounds and excludes unpriced modules once bounded', () => {
@@ -385,6 +389,20 @@ describe('module-browser-filter.helpers', () => {
       [],
       prices
     )?.map(module => module.id)).toEqual([1]);
+  });
+
+  it('treats a zero min as no bound so unpriced modules stay visible', () => {
+    const fields = buildFields();
+    fields.priceMin.control.setValue(0 as unknown as string);
+    const prices = new Map([[1, 19900]]);
+
+    expect(filterOwnedModulesForFields(
+      [moduleFactory({id: 1}), moduleFactory({id: 2})],
+      fields,
+      'OR',
+      [],
+      prices
+    )?.map(module => module.id)).toEqual([1, 2]);
   });
 
   it('reports price bounds as resettable, active, and named filters', () => {

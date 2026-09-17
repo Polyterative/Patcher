@@ -43,6 +43,7 @@ import {
   MODULE_PRICE_SLIDER_FLOOR_EUR,
   MODULE_PRICE_SLIDER_MIN_CEIL_EUR,
   MODULE_PRICE_SLIDER_STEP_EUR,
+  normalizePriceRange,
   parsePriceBoundary,
   resolvePriceSliderCeilEur
 } from '../module-browser-filter.helpers';
@@ -545,13 +546,15 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
     if (!modules) {
       return modules;
     }
-    const minEur = parsePriceBoundary(this.dataService.fields.priceMin.control.value);
-    const maxEur = parsePriceBoundary(this.dataService.fields.priceMax.control.value);
-    if (minEur === null && maxEur === null) {
+    const {minPriceEur, maxPriceEur} = normalizePriceRange(
+      parsePriceBoundary(this.dataService.fields.priceMin.control.value),
+      parsePriceBoundary(this.dataService.fields.priceMax.control.value)
+    );
+    if (minPriceEur === null && maxPriceEur === null) {
       return modules;
     }
     const prices = this.dataService.getPriceEurMinorMap();
-    return modules.filter(module => matchesPriceRange(prices.get(module.id) ?? null, minEur, maxEur));
+    return modules.filter(module => matchesPriceRange(prices.get(module.id) ?? null, minPriceEur, maxPriceEur));
   }
 
   private syncPriceSliderState(): void {
