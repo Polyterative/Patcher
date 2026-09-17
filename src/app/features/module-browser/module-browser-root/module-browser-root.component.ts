@@ -39,6 +39,7 @@ import { SubManager } from 'src/app/shared-interproject/directives/subscription-
 import { ModuleList } from '../module-browser-data.service';
 import {
   commitPriceSliderBounds,
+  hasActivePriceFilterForFields,
   matchesPriceRange,
   MODULE_PRICE_SLIDER_FLOOR_EUR,
   MODULE_PRICE_SLIDER_MIN_CEIL_EUR,
@@ -146,7 +147,9 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
   get hasMoreModules(): boolean {
     const total = this.dataService.serversideAdditionalData.itemsCount$.value;
     const loaded = this.dataService.modulesList$.value?.length ?? 0;
-    return !this.usesOwnedDataset && loaded < total;
+    return !this.usesOwnedDataset
+      && !this.dataService.priceAutoFillInFlight$.value
+      && loaded < total;
   }
 
   get remainingModulesCount(): number {
@@ -505,11 +508,12 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
   }
 
   private syncVisibleModules(): void {
+    this.dataService.suspendPriceAutoFill$.next(this.usesOwnedDataset);
     this.syncPriceSliderState();
     if (!this.usesOwnedDataset) {
       const priceFiltered = this.applyPriceRangeFilter(this.dataService.modulesList$.value);
       this.visibleItemsCount$.next(
-        this.hasActivePriceFilter() && priceFiltered !== null
+        hasActivePriceFilterForFields(this.dataService.fields) && priceFiltered !== null
           ? priceFiltered.length
           : this.dataService.serversideAdditionalData.itemsCount$.value
       );
@@ -535,11 +539,6 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
 
     this.visibleItemsCount$.next(filteredUserModules.length);
     this.updateVisibleModules(filteredUserModules);
-  }
-
-  private hasActivePriceFilter(): boolean {
-    return parsePriceBoundary(this.dataService.fields.priceMin.control.value) !== null
-      || parsePriceBoundary(this.dataService.fields.priceMax.control.value) !== null;
   }
 
   private applyPriceRangeFilter(modules: ModuleList): ModuleList {

@@ -1479,4 +1479,114 @@ describe('ModuleBrowserDataService', () => {
     ])?.map(module => module.id)).toEqual([1]);
     service.ngOnDestroy();
   });
+
+  function priceAutoFillBuild() {
+    const built = build();
+    built.backend.GET.recentModuleMarketPrices.and.callFake((moduleIds: number[]) => of(
+      moduleIds.map((id) => priceSummaryFixture(id, id * 100))
+    ));
+    return built;
+  }
+
+  it('auto-fills the next server page when a price filter leaves the page short', fakeAsync(() => {
+    const {service, backend} = priceAutoFillBuild();
+    backend.GET.modules.and.returnValues(
+      of({
+        data: [1, 2, 3, 4].map((id) => moduleFactory({id})),
+        count: 50
+      }),
+      of({
+        data: Array.from({length: 25}, (_, index) => moduleFactory({id: 10 + index})),
+        count: 50
+      })
+    );
+
+    service.updateModulesList$.next();
+    service.fields.priceMax.control.setValue('100');
+    tick(750);
+
+    expect(backend.GET.modules.calls.count()).toBe(2);
+    expect(backend.GET.modules.calls.mostRecent().args.slice(0, 2)).toEqual([4, 28]);
+    expect(service.modulesList$.value?.length).toBe(29);
+    service.ngOnDestroy();
+  }));
+
+  it('does not auto-fill when the price-filtered page is already full', fakeAsync(() => {
+    const {service, backend} = priceAutoFillBuild();
+    backend.GET.modules.and.returnValue(of({
+      data: Array.from({length: 25}, (_, index) => moduleFactory({id: 1 + index})),
+      count: 50
+    }));
+
+    service.updateModulesList$.next();
+    service.fields.priceMax.control.setValue('100');
+    tick(750);
+
+    expect(backend.GET.modules.calls.count()).toBe(1);
+    service.ngOnDestroy();
+  }));
+
+  it('does not auto-fill once the server catalog is exhausted', fakeAsync(() => {
+    const {service, backend} = priceAutoFillBuild();
+    backend.GET.modules.and.returnValue(of({
+      data: [1, 2, 3, 4].map((id) => moduleFactory({id})),
+      count: 4
+    }));
+
+    service.updateModulesList$.next();
+    service.fields.priceMax.control.setValue('100');
+    tick(750);
+
+    expect(backend.GET.modules.calls.count()).toBe(1);
+    service.ngOnDestroy();
+  }));
+
+  it('does not auto-fill without an active price filter', fakeAsync(() => {
+    const {service, backend} = priceAutoFillBuild();
+    backend.GET.modules.and.returnValue(of({
+      data: [1, 2, 3, 4].map((id) => moduleFactory({id})),
+      count: 50
+    }));
+
+    service.updateModulesList$.next();
+    tick(750);
+
+    expect(backend.GET.modules.calls.count()).toBe(1);
+    service.ngOnDestroy();
+  }));
+
+  it('stops auto-filling after an empty server page', fakeAsync(() => {
+    const {service, backend} = priceAutoFillBuild();
+    backend.GET.modules.and.returnValues(
+      of({
+        data: [1, 2, 3, 4].map((id) => moduleFactory({id})),
+        count: 50
+      }),
+      of({data: [], count: 50})
+    );
+
+    service.updateModulesList$.next();
+    service.fields.priceMax.control.setValue('100');
+    tick(750);
+    tick(750);
+
+    expect(backend.GET.modules.calls.count()).toBe(2);
+    service.ngOnDestroy();
+  }));
+
+  it('suspends price auto-fill for owned datasets', fakeAsync(() => {
+    const {service, backend} = priceAutoFillBuild();
+    backend.GET.modules.and.returnValue(of({
+      data: [1, 2, 3, 4].map((id) => moduleFactory({id})),
+      count: 50
+    }));
+    service.suspendPriceAutoFill$.next(true);
+
+    service.updateModulesList$.next();
+    service.fields.priceMax.control.setValue('100');
+    tick(750);
+
+    expect(backend.GET.modules.calls.count()).toBe(1);
+    service.ngOnDestroy();
+  }));
 });
