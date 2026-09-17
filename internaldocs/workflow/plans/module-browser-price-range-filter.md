@@ -63,6 +63,7 @@ Add a professional min/max price filter to the `/modules` browser sidebar that f
 - 2026-09-17 · No `mat-slider` in repo today: slider deferred to Layer 3 pending validation, so Layer 1 introduces zero new dependency surface.
 - 2026-09-17 · First placement proposal: sidebar directly after Max Depth (numeric filters cluster: HP → Depth → Price), same `lib-mat-form-entity` weight as siblings, no new section header. Affected: `/modules` browser + rack-editor picker (shared root component). Excluded: marketplace (already has), module detail, insights, user-area lists.
 - 2026-09-17 · Owner approvals: (1) inputs + dual-thumb slider from the start — slider is the first `mat-slider` in the repo, so its module import + dark-theme + 390 px mobile pass are Layer 1 acceptance, not polish; bounds come from loaded-page data only; (2) unpriced modules excluded while a bound is set; (3) scope = browser + picker via shared root component; (4) pagination = filter loaded page + honest copy, no over-fetch, no RPC.
+- 2026-09-17 · Root specs caught an infinite refetch loop during chunk 3: listings-less modules come back empty, and a naive always-emit merge re-triggered the sync that requested them (`RangeError: Maximum call stack size exceeded`). Fixed with a `priceSummariesRequestedIds` guard (one fetch per id per service lifetime) + change-only `mergePriceSummaries` emissions, covered by a dedicated no-refetch regression spec.
 
 ## Documentation impact
 
