@@ -24,6 +24,7 @@ import {
 } from 'src/app/models/tag';
 import { AnalyticsService } from '../backbone/analytics-integration/analytics.service';
 import { CachedEntity } from '../backend/supabase.cache';
+import { ModuleRecentMarketPrice } from '../backend/supabase-queries';
 import {
   SimpleUserModel,
   SupabaseService
@@ -60,6 +61,7 @@ describe('ModuleBrowserDataService', () => {
     orderBy?: string
   ) => Observable<ManufacturersBackendResult>;
   type AllTagsQuery = () => Observable<Tag[]>;
+  type RecentMarketPricesQuery = (moduleIds: number[]) => Observable<ModuleRecentMarketPrice[]>;
   type CacheResetterNext = (keys: CachedEntity[]) => void;
   type ModuleTag = MinimalModule['tags'][number];
   type RuntimeManufacturerControl = {
@@ -83,6 +85,7 @@ describe('ModuleBrowserDataService', () => {
       manufacturers: jasmine.Spy<ManufacturersQuery>;
       modules: jasmine.Spy<ModulesQuery>;
       currentUserModulesPossessionOnly: jasmine.Spy<() => Observable<Pick<DbModule, 'id' | 'possessionKind'>[]>>;
+      recentModuleMarketPrices: jasmine.Spy<RecentMarketPricesQuery>;
     };
     get: {
       allTags: jasmine.Spy<AllTagsQuery>;
@@ -128,6 +131,8 @@ describe('ModuleBrowserDataService', () => {
         manufacturers: jasmine.createSpy<ManufacturersQuery>('GET.manufacturers').and.returnValue(of({data: []})),
         modules: jasmine.createSpy<ModulesQuery>('GET.modules').and.returnValue(of({data: [], count: 0})),
         currentUserModulesPossessionOnly: jasmine.createSpy<() => Observable<Pick<DbModule, 'id' | 'possessionKind'>[]>>('GET.currentUserModulesPossessionOnly')
+          .and.returnValue(of([])),
+        recentModuleMarketPrices: jasmine.createSpy<RecentMarketPricesQuery>('GET.recentModuleMarketPrices')
           .and.returnValue(of([]))
       },
       get: {
@@ -1343,4 +1348,122 @@ describe('ModuleBrowserDataService', () => {
 
     expect(canReset).toBeTrue();
   }));
+
+  function priceSummaryFixture(moduleId: number, estimatedPriceEurMinor: number): ModuleRecentMarketPrice {
+    return {
+      moduleId,
+      estimatedPriceEurMinor,
+      displayPrice: `~€${ Math.round(estimatedPriceEurMinor / 100) }`,
+      storeCount: 2,
+      latestObservedAt: '2026-09-01T00:00:00.000Z',
+      tooltip: 'Estimated recent market price'
+    };
+  }
+
+  it('fetches price summaries once for loaded page ids and merges them into the map', () => {
+    const {service, backend} = build();
+    backend.GET.recentModuleMarketPrices.and.returnValue(of([
+      priceSummaryFixture(1, 19900),
+      priceSummaryFixture(2, 45900)
+    ]));
+
+    service.modulesList$.next([moduleFactory({id: 2}), moduleFactory({id: 1})]);
+    expect(backend.GET.recentModuleMarketPrices).toHaveBeenCalledWith([1, 2]);
+    expect(service.getPriceEurMinorMap()).toEqual(new Map([[1, 19900], [2, 45900]]));
+
+    service.modulesList$.next([moduleFactory({id: 1}), moduleFactory({id: 2})]);
+    expect(backend.GET.recentModuleMarketPrices.calls.count()).toBe(1);
+    service.ngOnDestroy();
+  });
+
+  it('keeps the current price map when the summaries request fails', () => {
+    const {service, backend} = build();
+    backend.GET.recentModuleMarketPrices.and.returnValue(
+      throwError(() => new Error('price hub down'))
+    );
+
+    service.modulesList$.next([moduleFactory({id: 1})]);
+
+    expect(service.priceSummaryByModuleId$.value.size).toBe(0);
+    service.ngOnDestroy();
+  });
+
+  it('ensurePriceSummariesForModuleIds fetches only ids missing from the map', () => {
+    const {service, backend} = build();
+    backend.GET.recentModuleMarketPrices.and.returnValue(of([priceSummaryFixture(1, 19900)]));
+    service.modulesList$.next([moduleFactory({id: 1})]);
+    backend.GET.recentModuleMarketPrices.calls.reset();
+    backend.GET.recentModuleMarketPrices.and.returnValue(of([priceSummaryFixture(2, 45900)]));
+
+    service.ensurePriceSummariesForModuleIds([1, 2, 2, -4]);
+
+    expect(backend.GET.recentModuleMarketPrices).toHaveBeenCalledWith([2]);
+    expect(service.getPriceEurMinorMap()).toEqual(new Map([[1, 19900], [2, 45900]]));
+
+    backend.GET.recentModuleMarketPrices.calls.reset();
+    service.ensurePriceSummariesForModuleIds([1, 2]);
+    expect(backend.GET.recentModuleMarketPrices).not.toHaveBeenCalled();
+    service.ngOnDestroy();
+  });
+
+  it('emits priceFilterChanged$ on debounced price input without refetching GET.modules', fakeAsync(() => {
+    const {service, backend, analytics} = build();
+    backend.GET.modules.calls.reset();
+    analytics.capture.calls.reset();
+    let priceChanges = 0;
+    service.priceFilterChanged$.subscribe(() => priceChanges++);
+
+    service.fields.priceMin.control.setValue('100');
+    tick(749);
+    expect(priceChanges).toBe(0);
+
+    tick(1);
+    expect(priceChanges).toBe(1);
+    expect(backend.GET.modules).not.toHaveBeenCalled();
+    expect(analytics.capture).toHaveBeenCalledWith('search.filter_changed', {
+      active_filters: ['priceMin'],
+      active_filter_count: 1,
+      order: 'updated'
+    });
+    service.ngOnDestroy();
+  }));
+
+  it('canReset$ emits true when a price bound has content', fakeAsync(() => {
+    const {service} = build();
+    let canReset: boolean | undefined;
+    service.canReset$.subscribe(v => (canReset = v));
+    service.fields.priceMax.control.setValue('300');
+    tick();
+    expect(canReset).toBeTrue();
+    service.ngOnDestroy();
+  }));
+
+  it('resets price bounds to empty on resetForm$', fakeAsync(() => {
+    const {service} = build();
+    service.fields.priceMin.control.setValue('100');
+    service.fields.priceMax.control.setValue('300');
+    tick(750);
+    service.resetForm$.next();
+    expect(service.fields.priceMin.control.value).toBe('');
+    expect(service.fields.priceMax.control.value).toBe('');
+    service.ngOnDestroy();
+  }));
+
+  it('filters owned modules by price range using the summary map', () => {
+    const {service, backend} = build();
+    backend.GET.recentModuleMarketPrices.and.returnValue(of([
+      priceSummaryFixture(1, 19900),
+      priceSummaryFixture(2, 9999)
+    ]));
+    service.modulesList$.next([moduleFactory({id: 1}), moduleFactory({id: 2})]);
+    service.fields.priceMin.control.setValue('100');
+    service.fields.priceMax.control.setValue('300');
+
+    expect(service.filterOwnedModules([
+      moduleFactory({id: 1}),
+      moduleFactory({id: 2}),
+      moduleFactory({id: 3})
+    ])?.map(module => module.id)).toEqual([1]);
+    service.ngOnDestroy();
+  });
 });
