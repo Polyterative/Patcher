@@ -58,12 +58,16 @@ export function hasResettableModuleFilters(
   const standard = fields.standard.control.value;
   const order = fields.order.control.value;
   const tags = fields.tags.control.value;
+  const priceMin = fields.priceMin.control.value;
+  const priceMax = fields.priceMax.control.value;
   return (
     fields.name.control.value !== '' ||
     fields.description.control.value !== '' ||
     isOption(fields.manufacturers.control.value) ||
     (hp !== '' && hp !== null) ||
     (fields.depth.control.value !== '' && fields.depth.control.value !== null) ||
+    (priceMin !== '' && priceMin !== null) ||
+    (priceMax !== '' && priceMax !== null) ||
     (hpCondition && hpCondition.id !== DEFAULT_HP_CONDITION.id) ||
     (standard && standard.id !== undefined) ||
     (order && order.id !== orderStartingValueId) ||
@@ -77,6 +81,8 @@ export function hasActiveModuleFiltersForFields(fields: ModuleBrowserFields): bo
   const hpCondition = fields.hpCondition.control.value;
   const standard = fields.standard.control.value;
   const tags = fields.tags.control.value;
+  const priceMin = fields.priceMin.control.value;
+  const priceMax = fields.priceMax.control.value;
 
   return (
     fields.name.control.value.trim() !== ''
@@ -84,6 +90,8 @@ export function hasActiveModuleFiltersForFields(fields: ModuleBrowserFields): bo
     || isOption(fields.manufacturers.control.value)
     || (hp !== '' && hp !== null)
     || (fields.depth.control.value !== '' && fields.depth.control.value !== null)
+    || (priceMin !== '' && priceMin !== null)
+    || (priceMax !== '' && priceMax !== null)
     || (hpCondition && hpCondition.id !== DEFAULT_HP_CONDITION.id)
     || (standard && standard.id !== undefined)
     || (tags && tags.length > 0)
@@ -97,6 +105,8 @@ export function getActiveFilterNames(fields: ModuleBrowserFields): string[] {
   if (fields.manufacturers.control.value) activeFilters.push('manufacturer');
   if (fields.hp.control.value) activeFilters.push('hp');
   if (fields.depth.control.value) activeFilters.push('depth');
+  if (fields.priceMin.control.value) activeFilters.push('priceMin');
+  if (fields.priceMax.control.value) activeFilters.push('priceMax');
   if (fields.standard.control.value?.id !== undefined) activeFilters.push('standard');
   if ((fields.tags.control.value ?? []).length > 0) activeFilters.push('tags');
   return activeFilters;
@@ -113,7 +123,8 @@ export function filterOwnedModulesForFields(
   modules: MinimalModule[] | undefined,
   fields: ModuleBrowserFields,
   tagMatchMode: 'OR' | 'AND',
-  excludedModuleIds: number[] = []
+  excludedModuleIds: number[] = [],
+  priceEurMinorByModuleId: ReadonlyMap<number, number> = EMPTY_PRICE_MAP
 ): MinimalModule[] | undefined {
   if (modules === undefined) {
     return undefined;
@@ -124,7 +135,7 @@ export function filterOwnedModulesForFields(
   const filteredModules = modules.filter((module) =>
     isOwnedPossessionForModule(module)
     && !excludedIds.has(module.id)
-    && matchesOwnedModuleFilters(module, criteria)
+    && matchesOwnedModuleFilters(module, criteria, priceEurMinorByModuleId)
   );
   return sortOwnedModulesForFields(filteredModules, fields);
 }
@@ -132,7 +143,8 @@ export function filterOwnedModulesForFields(
 export function filterWantedModulesForFields(
   modules: MinimalModule[] | undefined,
   fields: ModuleBrowserFields,
-  tagMatchMode: 'OR' | 'AND'
+  tagMatchMode: 'OR' | 'AND',
+  priceEurMinorByModuleId: ReadonlyMap<number, number> = EMPTY_PRICE_MAP
 ): MinimalModule[] | undefined {
   if (modules === undefined) {
     return undefined;
@@ -140,7 +152,7 @@ export function filterWantedModulesForFields(
 
   const criteria = createModuleFilterCriteria(fields, tagMatchMode);
   const filteredModules = modules.filter((module) =>
-    isWantedPossessionForModule(module) && matchesOwnedModuleFilters(module, criteria)
+    isWantedPossessionForModule(module) && matchesOwnedModuleFilters(module, criteria, priceEurMinorByModuleId)
   );
   return sortOwnedModulesForFields(filteredModules, fields);
 }
@@ -177,9 +189,53 @@ interface ModuleFilterCriteria {
   hpValue: number;
   hpConditionId: string;
   maxDepth: number;
+  minPriceEur: number | null;
+  maxPriceEur: number | null;
   selectedStandardId: number | undefined;
   selectedTagIds: number[];
   tagMatchMode: 'OR' | 'AND';
+}
+
+const EMPTY_PRICE_MAP: ReadonlyMap<number, number> = new Map();
+
+/**
+ * Parses a whole-EUR price boundary from a text control value.
+ * Mirrors `parsePriceBoundary` in marketplace-view-models: blank or
+ * non-numeric/negative input means "no bound", never zero-as-signal.
+ */
+export function parsePriceBoundary(value: string | null | undefined): number | null {
+  const trimmed = (value ?? '').trim();
+  if (!trimmed) {
+    return null;
+  }
+  const parsed = Number(trimmed);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+}
+
+/**
+ * True when a Price Hub estimate (minor EUR units) falls inside the
+ * whole-EUR [min, max] range. With no bounds set everything matches;
+ * with any bound set, modules without price data are excluded
+ * (professional-shop behavior for price filters).
+ */
+export function matchesPriceRange(
+  estimatedPriceEurMinor: number | null | undefined,
+  minPriceEur: number | null,
+  maxPriceEur: number | null
+): boolean {
+  if (minPriceEur === null && maxPriceEur === null) {
+    return true;
+  }
+  if (estimatedPriceEurMinor === null || estimatedPriceEurMinor === undefined) {
+    return false;
+  }
+  if (minPriceEur !== null && estimatedPriceEurMinor < Math.round(minPriceEur * 100)) {
+    return false;
+  }
+  if (maxPriceEur !== null && estimatedPriceEurMinor > Math.round(maxPriceEur * 100)) {
+    return false;
+  }
+  return true;
 }
 
 function createModuleFilterCriteria(
@@ -193,13 +249,36 @@ function createModuleFilterCriteria(
     hpValue: Number.parseInt(fields.hp.control.value, 10),
     hpConditionId: fields.hpCondition.control.value?.id ?? DEFAULT_HP_CONDITION.id,
     maxDepth: Number.parseInt(fields.depth.control.value, 10),
+    ...normalizePriceRange(
+      parsePriceBoundary(fields.priceMin.control.value),
+      parsePriceBoundary(fields.priceMax.control.value)
+    ),
     selectedStandardId: fields.standard.control.value?.id,
     selectedTagIds: getSelectedTagIdsFromFields(fields),
     tagMatchMode
   };
 }
 
-function matchesOwnedModuleFilters(module: MinimalModule, criteria: ModuleFilterCriteria): boolean {
+/**
+ * Forgiving range normalization: a typed min above max is treated as a
+ * swapped range instead of matching nothing (the dual slider can never
+ * produce this state; typed inputs can).
+ */
+function normalizePriceRange(
+  minPriceEur: number | null,
+  maxPriceEur: number | null
+): {minPriceEur: number | null; maxPriceEur: number | null} {
+  if (minPriceEur !== null && maxPriceEur !== null && minPriceEur > maxPriceEur) {
+    return {minPriceEur: maxPriceEur, maxPriceEur: minPriceEur};
+  }
+  return {minPriceEur, maxPriceEur};
+}
+
+function matchesOwnedModuleFilters(
+  module: MinimalModule,
+  criteria: ModuleFilterCriteria,
+  priceEurMinorByModuleId: ReadonlyMap<number, number> = EMPTY_PRICE_MAP
+): boolean {
   if (!matchesSearchQuery(criteria.name, module.name)) {
     return false;
   }
@@ -223,6 +302,15 @@ function matchesOwnedModuleFilters(module: MinimalModule, criteria: ModuleFilter
 
   if (Number.isFinite(criteria.maxDepth) && criteria.maxDepth >= 0
     && (module.depth === null || module.depth === undefined || module.depth > criteria.maxDepth)) {
+    return false;
+  }
+
+  if ((criteria.minPriceEur !== null || criteria.maxPriceEur !== null)
+    && !matchesPriceRange(
+      priceEurMinorByModuleId.get(module.id) ?? null,
+      criteria.minPriceEur,
+      criteria.maxPriceEur
+    )) {
     return false;
   }
 

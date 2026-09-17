@@ -19,7 +19,12 @@ import { ModuleBrowserFields } from './module-browser-data.models';
 import {
   filterOwnedModulesForFields,
   filterWantedModulesForFields,
+  getActiveFilterNames,
   groupFilterTags,
+  hasActiveModuleFiltersForFields,
+  hasResettableModuleFilters,
+  matchesPriceRange,
+  parsePriceBoundary,
   sortModulesByBestMatchForTags,
   toggleTagSelection
 } from './module-browser-filter.helpers';
@@ -73,6 +78,20 @@ describe('module-browser-filter.helpers', () => {
         label: 'Max Depth',
         code: 'depth',
         flex: '6rem',
+        control: new FormControl<string>('', {nonNullable: true}),
+        type: FormTypes.NUMBER
+      },
+      priceMin: {
+        label: 'Min price (€)',
+        code: 'priceMin',
+        flex: '7rem',
+        control: new FormControl<string>('', {nonNullable: true}),
+        type: FormTypes.NUMBER
+      },
+      priceMax: {
+        label: 'Max price (€)',
+        code: 'priceMax',
+        flex: '7rem',
         control: new FormControl<string>('', {nonNullable: true}),
         type: FormTypes.NUMBER
       },
@@ -302,5 +321,84 @@ describe('module-browser-filter.helpers', () => {
       gamma
     ]);
     expect(modules).toEqual([gamma, alpha, beta]);
+  });
+
+  it('parses whole-EUR price boundaries forgivingly', () => {
+    expect(parsePriceBoundary('')).toBeNull();
+    expect(parsePriceBoundary('   ')).toBeNull();
+    expect(parsePriceBoundary(null)).toBeNull();
+    expect(parsePriceBoundary(undefined)).toBeNull();
+    expect(parsePriceBoundary('250')).toEqual(250);
+    expect(parsePriceBoundary(' 0 ')).toEqual(0);
+    expect(parsePriceBoundary('-5')).toBeNull();
+    expect(parsePriceBoundary('not-a-number')).toBeNull();
+  });
+
+  it('matches everything without bounds and excludes unpriced modules once bounded', () => {
+    expect(matchesPriceRange(19900, null, null)).toBeTrue();
+    expect(matchesPriceRange(null, null, null)).toBeTrue();
+    expect(matchesPriceRange(undefined, null, null)).toBeTrue();
+
+    expect(matchesPriceRange(19900, 100, 300)).toBeTrue();
+    expect(matchesPriceRange(10000, 100, 300)).toBeTrue();
+    expect(matchesPriceRange(30000, 100, 300)).toBeTrue();
+    expect(matchesPriceRange(9999, 100, 300)).toBeFalse();
+    expect(matchesPriceRange(30001, 100, 300)).toBeFalse();
+
+    expect(matchesPriceRange(19900, 200, null)).toBeFalse();
+    expect(matchesPriceRange(19900, null, 150)).toBeFalse();
+
+    expect(matchesPriceRange(null, 100, null)).toBeFalse();
+    expect(matchesPriceRange(undefined, null, 300)).toBeFalse();
+  });
+
+  it('filters owned modules by estimated market price and drops unpriced ones', () => {
+    const fields = buildFields();
+    fields.priceMin.control.setValue('100');
+    fields.priceMax.control.setValue('300');
+    const prices = new Map([
+      [1, 19900],
+      [2, 9999],
+      [3, 30001]
+    ]);
+
+    expect(filterOwnedModulesForFields([
+      moduleFactory({id: 1}),
+      moduleFactory({id: 2}),
+      moduleFactory({id: 3}),
+      moduleFactory({id: 4})
+    ], fields, 'OR', [], prices)?.map(module => module.id)).toEqual([1]);
+  });
+
+  it('treats a typed min above max as a swapped range instead of matching nothing', () => {
+    const fields = buildFields();
+    fields.priceMin.control.setValue('300');
+    fields.priceMax.control.setValue('100');
+    const prices = new Map([[1, 19900]]);
+
+    expect(filterOwnedModulesForFields(
+      [moduleFactory({id: 1}), moduleFactory({id: 2})],
+      fields,
+      'OR',
+      [],
+      prices
+    )?.map(module => module.id)).toEqual([1]);
+  });
+
+  it('reports price bounds as resettable, active, and named filters', () => {
+    const fields = buildFields();
+    expect(hasResettableModuleFilters(fields, 'updated', 'OR')).toBeFalse();
+    expect(hasActiveModuleFiltersForFields(fields)).toBeFalse();
+    expect(getActiveFilterNames(fields)).toEqual([]);
+
+    fields.priceMin.control.setValue('100');
+    expect(hasResettableModuleFilters(fields, 'updated', 'OR')).toBeTrue();
+    expect(hasActiveModuleFiltersForFields(fields)).toBeTrue();
+    expect(getActiveFilterNames(fields)).toEqual(['priceMin']);
+
+    fields.priceMin.control.setValue('');
+    fields.priceMax.control.setValue('300');
+    expect(hasActiveModuleFiltersForFields(fields)).toBeTrue();
+    expect(getActiveFilterNames(fields)).toEqual(['priceMax']);
   });
 });
