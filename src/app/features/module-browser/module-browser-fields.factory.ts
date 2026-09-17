@@ -108,6 +108,32 @@ export function createModuleBrowserFields({
       }),
       type: FormTypes.NUMBER
     },
+    priceMin: {
+      label: 'Min price (€)',
+      code: 'priceMin',
+      flex: '7rem',
+      control: new FormControl<string>('', {
+        nonNullable: true,
+        validators: Validators.compose([
+          Validators.min(0),
+          Validators.pattern(/^-?\d+$/),
+        ])
+      }),
+      type: FormTypes.NUMBER
+    },
+    priceMax: {
+      label: 'Max price (€)',
+      code: 'priceMax',
+      flex: '7rem',
+      control: new FormControl<string>('', {
+        nonNullable: true,
+        validators: Validators.compose([
+          Validators.min(0),
+          Validators.pattern(/^-?\d+$/),
+        ])
+      }),
+      type: FormTypes.NUMBER
+    },
     hpCondition: {
       label: 'HP must be...',
       code: 'hpCondition',
