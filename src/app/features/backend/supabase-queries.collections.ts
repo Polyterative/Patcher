@@ -329,6 +329,43 @@ export class SupabaseCollectionQueries extends SupabaseQueriesBase {
 
   @Cacheable({
     maxAge: defaultCacheTime,
+    maxCacheCount: 40,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x =>
+      x.includes('moduleCollections') || x.includes('moduleCollectionWithId')
+    )),
+  })
+  getCurrentUserModuleCollectionsPage(from = 0, to = 24): Observable<ModuleCollectionPage> {
+    return this.getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return rxFrom(
+          this.supabase
+            .from(DbPaths.module_collections)
+            .select(this.moduleCollectionSummarySelect(), {count: 'exact'})
+            .filter('authorid', 'eq', user.id)
+            .order('updated', {ascending: false})
+            .order('id', {ascending: false})
+            .range(from, to)
+        );
+      }),
+      remapErrors(),
+      map((response: {data: unknown; count?: number | null}) => {
+        const rows = Array.isArray(response.data) ? response.data : [];
+        const items = rows.map(row => this.mapModuleCollectionSummary(row));
+        const total = response.count ?? items.length;
+        return {
+          items,
+          total,
+          remaining: Math.max(total - (to + 1), 0)
+        };
+      })
+    );
+  }
+
+
+
+  @Cacheable({
+    maxAge: defaultCacheTime,
     maxCacheCount: 50,
     cacheBusterObserver: cacheBuster$.pipe(filter(x =>
       x.includes('moduleCollectionWithId') || x.includes('moduleCollections')

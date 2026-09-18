@@ -34,3 +34,19 @@
 .user-collections-card__actions {
   flex-wrap: wrap;
 }
+
+.loadMore {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem 0 0.25rem;
+}
+
+.loadMore__btn {
+  min-width: 12rem;
+}
+
+.loadMore__count {
+  margin-left: 0.5rem;
+  font-size: 0.78rem;
+  opacity: 0.6;
+}

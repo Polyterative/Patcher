@@ -1,4 +1,4 @@
-import { Observable, of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { ModuleCollectionsDataService } from './module-collections-data.service';
@@ -81,6 +81,15 @@ describe('ModuleCollectionsDataService', () => {
   }
 
   function build(addCollectionResult: ModuleCollectionMutationResult = 11) {
+    const ownedSummary = buildSummary({
+      id: 2,
+      authorid: 'user-2',
+      author: { id: 'user-2', username: 'Me' },
+      name: 'Private notes',
+      public: false,
+      public_id: 'private',
+      module_count: 1
+    });
     const getNamespace = Object.assign(Object.create(null) as SupabaseService['GET'], {
       publicModuleCollections: jasmine.createSpy<SupabaseService['GET']['publicModuleCollections']>('publicModuleCollections')
         .and.returnValue(of([
@@ -88,16 +97,14 @@ describe('ModuleCollectionsDataService', () => {
         ])),
       currentUserModuleCollections: jasmine.createSpy<SupabaseService['GET']['currentUserModuleCollections']>('currentUserModuleCollections')
         .and.returnValue(of([
-          buildSummary({
-            id: 2,
-            authorid: 'user-2',
-            author: { id: 'user-2', username: 'Me' },
-            name: 'Private notes',
-            public: false,
-            public_id: 'private',
-            module_count: 1
-          })
+          ownedSummary
         ])),
+      currentUserModuleCollectionsPage: jasmine.createSpy<SupabaseService['GET']['currentUserModuleCollectionsPage']>('currentUserModuleCollectionsPage')
+        .and.callFake((from: number, to: number) => of({
+          items: [ownedSummary],
+          total: 1,
+          remaining: Math.max(1 - (to + 1), 0)
+        })),
       publicModuleCollectionByPublicId: jasmine.createSpy<SupabaseService['GET']['publicModuleCollectionByPublicId']>('publicModuleCollectionByPublicId')
         .and.returnValue(of(buildDetail())),
       currentUserModuleCollectionById: jasmine.createSpy<SupabaseService['GET']['currentUserModuleCollectionById']>('currentUserModuleCollectionById')
@@ -144,18 +151,84 @@ describe('ModuleCollectionsDataService', () => {
     const {service, backend, analytics} = build();
     let publicCollections: ModuleCollectionSummary[] | undefined;
     let currentUserCollections: ModuleCollectionSummary[] | undefined;
+    let hasMore: boolean | undefined;
+    let remaining = -1;
+    let loading: boolean | undefined;
     service.publicCollections$.subscribe(collections => publicCollections = collections);
     service.currentUserCollections$.subscribe(collections => currentUserCollections = collections);
+    service.currentUserCollectionsHasMore$.subscribe(value => hasMore = value);
+    service.currentUserCollectionsRemaining$.subscribe(value => remaining = value);
+    service.currentUserCollectionsLoading$.subscribe(value => loading = value);
 
     service.updatePublicCollections$.next();
     service.updateCurrentUserCollections$.next();
 
     expect(backend.GET.publicModuleCollections).toHaveBeenCalled();
-    expect(backend.GET.currentUserModuleCollections).toHaveBeenCalled();
+    expect(backend.GET.currentUserModuleCollectionsPage).toHaveBeenCalledWith(0, 24);
     expect(publicCollections?.[0].name).toBe('Ambient starters');
     expect(currentUserCollections?.[0].name).toBe('Private notes');
+    expect(hasMore).toBeFalse();
+    expect(remaining).toBe(0);
+    expect(loading).toBeFalse();
     expect(analytics.capture).toHaveBeenCalledWith('module_collection.browser_viewed', {view: 'public'});
     expect(analytics.capture).toHaveBeenCalledWith('module_collection.browser_viewed', {view: 'user_area'});
+  });
+
+  it('pages owned collections with load-more and dedupes repeats', () => {
+    const {service, backend} = build();
+    const secondPageSummary = buildSummary({
+      id: 3,
+      authorid: 'user-2',
+      author: { id: 'user-2', username: 'Me' },
+      name: 'Second page set',
+      public: false,
+      public_id: 'second',
+      module_count: 4
+    });
+    backend.GET.currentUserModuleCollectionsPage.and.callFake((from: number, to: number) => {
+      if (from === 0) {
+        return of({items: [buildSummary({id: 2, name: 'Private notes'})], total: 27, remaining: 2});
+      }
+      return of({items: [secondPageSummary, buildSummary({id: 2, name: 'Private notes'})], total: 27, remaining: 0});
+    });
+    let currentUserCollections: ModuleCollectionSummary[] | undefined;
+    let hasMore: boolean | undefined;
+    let remaining = -1;
+    service.currentUserCollections$.subscribe(collections => currentUserCollections = collections);
+    service.currentUserCollectionsHasMore$.subscribe(value => hasMore = value);
+    service.currentUserCollectionsRemaining$.subscribe(value => remaining = value);
+
+    service.updateCurrentUserCollections$.next();
+    expect(backend.GET.currentUserModuleCollectionsPage).toHaveBeenCalledWith(0, 24);
+    expect(currentUserCollections?.length).toBe(1);
+    expect(hasMore).toBeTrue();
+    expect(remaining).toBe(2);
+
+    service.loadMoreCurrentUserCollections$.next();
+    expect(backend.GET.currentUserModuleCollectionsPage).toHaveBeenCalledWith(25, 49);
+    expect(currentUserCollections?.map(collection => collection.id)).toEqual([2, 3]);
+    expect(hasMore).toBeFalse();
+    expect(remaining).toBe(0);
+  });
+
+  it('keeps previous owned collections when a page fails', () => {
+    const {service, backend} = build();
+    backend.GET.currentUserModuleCollectionsPage.and.callFake((from: number) => {
+      if (from === 0) {
+        return of({items: [buildSummary({id: 2, name: 'Private notes'})], total: 26, remaining: 1});
+      }
+      return throwError(() => new Error('network down'));
+    });
+    let currentUserCollections: ModuleCollectionSummary[] | undefined;
+    let hasMore: boolean | undefined;
+    service.currentUserCollections$.subscribe(collections => currentUserCollections = collections);
+    service.currentUserCollectionsHasMore$.subscribe(value => hasMore = value);
+
+    service.updateCurrentUserCollections$.next();
+    service.loadMoreCurrentUserCollections$.next();
+
+    expect(currentUserCollections?.map(collection => collection.id)).toEqual([2]);
+    expect(hasMore).toBeTrue();
   });
 
   it('loads collection details and backlinks', () => {

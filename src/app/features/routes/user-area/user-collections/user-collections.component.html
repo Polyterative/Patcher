@@ -36,6 +36,17 @@
               </lib-clean-card>
             }
           </div>
+          @if ((dataService.currentUserCollectionsHasMore$ | async)) {
+            <div class="loadMore">
+              <button mat-stroked-button
+                      class="loadMore__btn"
+                      [disabled]="(dataService.currentUserCollectionsLoading$ | async) ?? false"
+                      (click)="dataService.loadMoreCurrentUserCollections$.next()"
+              >Load more
+                <span class="loadMore__count">{{ dataService.currentUserCollectionsRemaining$ | async }} remaining</span>
+              </button>
+            </div>
+          }
         } @else {
           <app-empty-state icon="playlist_add"
                            title="No collections yet"
