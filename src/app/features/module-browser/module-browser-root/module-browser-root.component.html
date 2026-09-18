@@ -189,11 +189,13 @@
             <lib-mat-form-entity [control]="dataService.fields.priceMin.control"
                                  [type]="dataService.fields.priceMin.type"
                                  [label]="dataService.fields.priceMin.label"
+                                 [presets]="[100, 300, 500]"
                                  iconL1="remove"
             ></lib-mat-form-entity>
             <lib-mat-form-entity [control]="dataService.fields.priceMax.control"
                                  [type]="dataService.fields.priceMax.type"
                                  [label]="dataService.fields.priceMax.label"
+                                 [presets]="[100, 300, 500]"
                                  iconL1="add"
             ></lib-mat-form-entity>
           </div>
@@ -214,7 +216,17 @@
                    aria-label="Maximum estimated price in euros"
             >
           </mat-slider>
-          <small class="module-filter-hint">~€ estimates · hides unpriced</small>
+          <small class="module-filter-hint tabular-nums">
+            @if (dataService.priceFilterActive$ | async) {
+              @if (dataService.includeUnpriced$ | async) {
+                ~€ estimates · showing unpriced
+              } @else {
+                ~€ estimates · hides unpriced
+              }
+            } @else {
+              ~€ estimates
+            }
+          </small>
           @if (dataService.priceFilterActive$ | async) {
             <mat-checkbox class="module-price-unpriced-toggle"
                           [checked]="dataService.includeUnpriced$ | async"

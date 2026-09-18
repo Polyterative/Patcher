@@ -71,11 +71,13 @@ import {
   hasActivePriceFilterForFields,
   hasResettableModuleFilters,
   isOwnedPossessionForModule,
+  isPriceOrderOption,
   isWantedPossessionForModule,
   matchesPriceRange,
   normalizePriceRange,
   parsePriceBoundary,
   sortModulesByBestMatchForTags,
+  sortModulesByPrice,
   toggleTagSelection
 } from './module-browser-filter.helpers';
 
@@ -392,6 +394,10 @@ export class ModuleBrowserDataService extends SubManager {
       const orderVal = this.fields.order.control.value;
       const nameVal = this.fields.name.control.value ?? '';
       const isBestMatchOrder = orderVal?.id === this.bestMatchOrderOption.id;
+      // Price lives outside `GET.modules` (Price Hub join), so the server
+      // keeps its default sort and the root component re-sorts the loaded
+      // page client-side — same pattern as best-match.
+      const isClientSortedOrder = isBestMatchOrder || isPriceOrderOption(orderVal);
 
       const activeFilters = getActiveFilterNames(this.fields);
       this.analytics.capture('search.filter_changed', {
@@ -402,8 +408,8 @@ export class ModuleBrowserDataService extends SubManager {
 
       this.serversideTableRequestData.filter$.next(nameVal);
       this.serversideTableRequestData.sort$.next([
-        isBestMatchOrder ? this.orderStartingValue.id : (orderVal?.id ?? ''),
-        isBestMatchOrder ? 'desc' : toSortDirection(orderVal?.name)
+        isClientSortedOrder ? this.orderStartingValue.id : (orderVal?.id ?? ''),
+        isClientSortedOrder ? 'desc' : toSortDirection(orderVal?.name)
       ]);
       this.serversideTableRequestData.skip$.next(0);
       this.paginatorToFistPage$.next();
@@ -679,6 +685,10 @@ export class ModuleBrowserDataService extends SubManager {
 
   sortModulesByBestMatch(modules: MinimalModule[]): MinimalModule[] {
     return sortModulesByBestMatchForTags(modules, this.getSelectedTagIds());
+  }
+
+  sortModulesByPrice(modules: MinimalModule[]): MinimalModule[] {
+    return sortModulesByPrice(modules, this.getPriceEurMinorMap(), toSortDirection(this.fields.order.control.value?.name));
   }
 
   private persistModulePossession$(

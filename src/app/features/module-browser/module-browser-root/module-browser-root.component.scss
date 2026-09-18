@@ -65,6 +65,9 @@
   // at the extremes sit ~6px inside the rail, so only the invisible
   // slivers are ever cut — never the circles.
   overflow: clip;
+  // Tabular figures for price inputs + hint (DESIGN_LANGUAGE.md:
+  // numeric data uses tabular figures so columns align).
+  font-variant-numeric: tabular-nums;
 }
 
 .module-price-slider {

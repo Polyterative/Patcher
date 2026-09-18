@@ -24,10 +24,12 @@ import {
   groupFilterTags,
   hasActiveModuleFiltersForFields,
   hasResettableModuleFilters,
+  isPriceOrderOption,
   matchesPriceRange,
   parsePriceBoundary,
   resolvePriceSliderCeilEur,
   sortModulesByBestMatchForTags,
+  sortModulesByPrice,
   toggleTagSelection
 } from './module-browser-filter.helpers';
 
@@ -460,5 +462,65 @@ describe('module-browser-filter.helpers', () => {
     expect(commitPriceSliderBounds(100, 300, 500)).toEqual({priceMin: '100', priceMax: '300'});
     expect(commitPriceSliderBounds(0, 300, 500)).toEqual({priceMin: '', priceMax: '300'});
     expect(commitPriceSliderBounds(100, 1300, 1300)).toEqual({priceMin: '100', priceMax: ''});
+  });
+
+  it('detects the client-side price order option', () => {
+    expect(isPriceOrderOption({id: 'price', name: 'Price ↑'})).toBeTrue();
+    expect(isPriceOrderOption({id: 'price', name: 'Price ↓'})).toBeTrue();
+    expect(isPriceOrderOption({id: 'hp', name: 'HP ↑'})).toBeFalse();
+    expect(isPriceOrderOption(null)).toBeFalse();
+    expect(isPriceOrderOption(undefined)).toBeFalse();
+  });
+
+  it('sorts modules by estimated price with unpriced last in both directions', () => {
+    const modules = [
+      moduleFactory({id: 1, name: 'Expensive'}),
+      moduleFactory({id: 2, name: 'Cheap'}),
+      moduleFactory({id: 3, name: 'Unpriced'}),
+      moduleFactory({id: 4, name: 'Mid'})
+    ];
+    const prices = new Map([[1, 45900], [2, 9999], [4, 19900]]);
+
+    expect(sortModulesByPrice(modules, prices, 'asc').map(module => module.id)).toEqual([2, 4, 1, 3]);
+    expect(sortModulesByPrice(modules, prices, 'desc').map(module => module.id)).toEqual([1, 4, 2, 3]);
+    expect(modules.map(module => module.id)).toEqual([1, 2, 3, 4]);
+  });
+
+  it('breaks price ties by name and keeps unpriced name-sorted', () => {
+    const modules = [
+      moduleFactory({id: 1, name: 'Beta'}),
+      moduleFactory({id: 2, name: 'Alpha'}),
+      moduleFactory({id: 3, name: 'Zulu'}),
+      moduleFactory({id: 4, name: 'Mike'})
+    ];
+    const prices = new Map([[1, 19900], [2, 19900]]);
+
+    expect(sortModulesByPrice(modules, prices, 'asc').map(module => module.id)).toEqual([2, 1, 4, 3]);
+  });
+
+  it('sorts owned collection results by price when the price order is active', () => {
+    const fields = buildFields();
+    fields.order.control.setValue({id: 'price', name: 'Price ↑'});
+    const prices = new Map([[1, 45900], [2, 9999]]);
+
+    expect(filterOwnedModulesForFields([
+      moduleFactory({id: 1}),
+      moduleFactory({id: 2}),
+      moduleFactory({id: 3})
+    ], fields, 'OR', [], prices)?.map(module => module.id)).toEqual([2, 1, 3]);
+
+    fields.order.control.setValue({id: 'price', name: 'Price ↓'});
+    expect(filterOwnedModulesForFields([
+      moduleFactory({id: 1}),
+      moduleFactory({id: 2}),
+      moduleFactory({id: 3})
+    ], fields, 'OR', [], prices)?.map(module => module.id)).toEqual([1, 2, 3]);
+  });
+
+  it('includes price sort options in the order dropdown', () => {
+    expect(MODULE_ORDER_OPTIONS.filter(option => option.id === 'price')).toEqual([
+      {id: 'price', name: 'Price ↑'},
+      {id: 'price', name: 'Price ↓'}
+    ]);
   });
 });

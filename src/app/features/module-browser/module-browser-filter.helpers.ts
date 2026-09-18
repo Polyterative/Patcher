@@ -143,7 +143,7 @@ export function filterOwnedModulesForFields(
     && !excludedIds.has(module.id)
     && matchesOwnedModuleFilters(module, criteria, priceEurMinorByModuleId, includeUnpriced)
   );
-  return sortOwnedModulesForFields(filteredModules, fields);
+  return sortOwnedModulesForFields(filteredModules, fields, priceEurMinorByModuleId);
 }
 
 export function filterWantedModulesForFields(
@@ -161,7 +161,7 @@ export function filterWantedModulesForFields(
   const filteredModules = modules.filter((module) =>
     isWantedPossessionForModule(module) && matchesOwnedModuleFilters(module, criteria, priceEurMinorByModuleId, includeUnpriced)
   );
-  return sortOwnedModulesForFields(filteredModules, fields);
+  return sortOwnedModulesForFields(filteredModules, fields, priceEurMinorByModuleId);
 }
 
 export function isOwnedPossessionForModule(module: MinimalModule): boolean {
@@ -379,7 +379,48 @@ function matchesOwnedModuleFilters(
   return true;
 }
 
-function sortOwnedModulesForFields(modules: MinimalModule[], fields: ModuleBrowserFields): MinimalModule[] {
+export function isPriceOrderOption(order: {id: string; name?: string} | null | undefined): boolean {
+  return order?.id === 'price';
+}
+
+/**
+ * Client-side price sort on Price Hub estimates (minor EUR units).
+ * Unpriced modules sort last in both directions — there is no catalog-wide
+ * price aggregation, so inventing a position among priced rows would be
+ * fake precision. Name breaks ties for stability.
+ */
+export function sortModulesByPrice(
+  modules: MinimalModule[],
+  priceEurMinorByModuleId: ReadonlyMap<number, number> = EMPTY_PRICE_MAP,
+  direction: 'asc' | 'desc' = 'asc'
+): MinimalModule[] {
+  return [...modules].sort((a, b) => {
+    const aPrice = priceEurMinorByModuleId.get(a.id);
+    const bPrice = priceEurMinorByModuleId.get(b.id);
+    const aPriced = aPrice !== undefined && aPrice !== null;
+    const bPriced = bPrice !== undefined && bPrice !== null;
+    if (!aPriced && !bPriced) {
+      return compareModulesByNameAsc(a, b);
+    }
+    if (!aPriced) {
+      return 1;
+    }
+    if (!bPriced) {
+      return -1;
+    }
+    const comparison = (aPrice as number) - (bPrice as number);
+    if (comparison !== 0) {
+      return direction === 'asc' ? comparison : -comparison;
+    }
+    return compareModulesByNameAsc(a, b);
+  });
+}
+
+function sortOwnedModulesForFields(
+  modules: MinimalModule[],
+  fields: ModuleBrowserFields,
+  priceEurMinorByModuleId: ReadonlyMap<number, number> = EMPTY_PRICE_MAP
+): MinimalModule[] {
   const order = fields.order.control.value;
   const direction = toSortDirection(order?.name);
   const sortedModules = [...modules];
@@ -399,6 +440,8 @@ function sortOwnedModulesForFields(modules: MinimalModule[], fields: ModuleBrows
       return sortedModules.sort(direction === 'asc' ? compareModulesByUpdatedAsc : compareModulesByUpdatedDesc);
     case 'depth':
       return sortedModules.sort((a, b) => compareModulesByDepth(a, b, direction));
+    case 'price':
+      return sortModulesByPrice(sortedModules, priceEurMinorByModuleId, direction);
     default:
       return sortedModules;
   }
