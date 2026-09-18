@@ -4,10 +4,13 @@ import {
 } from '@angular/core';
 import {
   BehaviorSubject,
+  Observable,
   ReplaySubject,
-  Subject
+  Subject,
+  of
 } from 'rxjs';
 import {
+  catchError,
   map,
   tap,
   switchMap,
@@ -16,9 +19,17 @@ import { AnalyticsService } from 'src/app/features/backbone/analytics-integratio
 import { SupabaseService } from '../backend/supabase.service';
 import {
   ModuleCollectionDetail,
+  ModuleCollectionPage,
   ModuleCollectionSummary
 } from 'src/app/models/module-collection';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
+
+const USER_COLLECTIONS_PAGE_SIZE = 25;
+
+interface UserCollectionsPageResult extends ModuleCollectionPage {
+  from: number;
+  failed: boolean;
+}
 
 @Injectable()
 export class ModuleCollectionsDataService extends SubManager {
@@ -36,13 +47,23 @@ export class ModuleCollectionsDataService extends SubManager {
   readonly publicCollectionUnavailableMessage$ = this._publicCollectionUnavailableMessage$.asObservable();
   private readonly _currentUserCollectionUnavailableMessage$ = new BehaviorSubject<string | null>(null);
   readonly currentUserCollectionUnavailableMessage$ = this._currentUserCollectionUnavailableMessage$.asObservable();
+  private readonly _currentUserCollectionsLoading$ = new BehaviorSubject<boolean>(false);
+  readonly currentUserCollectionsLoading$ = this._currentUserCollectionsLoading$.asObservable();
+  private readonly _currentUserCollectionsHasMore$ = new BehaviorSubject<boolean>(false);
+  readonly currentUserCollectionsHasMore$ = this._currentUserCollectionsHasMore$.asObservable();
+  private readonly _currentUserCollectionsRemaining$ = new BehaviorSubject<number>(0);
+  readonly currentUserCollectionsRemaining$ = this._currentUserCollectionsRemaining$.asObservable();
 
   readonly updatePublicCollections$ = new Subject<void>();
   readonly updateCurrentUserCollections$ = new Subject<void>();
+  readonly loadMoreCurrentUserCollections$ = new Subject<void>();
   readonly updatePublicCollectionByPublicId$ = new ReplaySubject<string>(1);
   readonly updateCurrentUserCollectionById$ = new ReplaySubject<number>(1);
   readonly updateModuleCollectionsForModule$ = new ReplaySubject<number>(1);
   readonly localCurrentUserCollectionUpdated$ = new Subject<ModuleCollectionDetail>();
+
+  private readonly _userCollectionsSkip$ = new BehaviorSubject<number>(0);
+  private userCollectionsVersion = 0;
 
   constructor(
     private backend: SupabaseService,
@@ -64,14 +85,51 @@ export class ModuleCollectionsDataService extends SubManager {
 
     this.updateCurrentUserCollections$
       .pipe(
-        tap(() => this._currentUserCollections$.next(undefined)),
-        switchMap(() => this.backend.GET.currentUserModuleCollections()),
+        tap(() => {
+          this.userCollectionsVersion++;
+          this._userCollectionsSkip$.next(0);
+          this._currentUserCollections$.next(undefined);
+          this._currentUserCollectionsHasMore$.next(false);
+          this._currentUserCollectionsRemaining$.next(0);
+          this._currentUserCollectionsLoading$.next(true);
+        }),
+        switchMap(() => this.fetchCurrentUserCollectionsPage(0)),
         this.takeUntilDestroyed()
       )
-      .subscribe(collections => {
-        this._currentUserCollections$.next(collections);
+      .subscribe(page => {
+        this.applyFirstUserCollectionsPage(page);
         this.analytics.capture('module_collection.browser_viewed', { view: 'user_area' });
       });
+
+    this.loadMoreCurrentUserCollections$.pipe(
+      tap(() => {
+        this._currentUserCollectionsLoading$.next(true);
+        this.analytics.capture('module_collection.user_area_load_more', {
+          loaded_count: this._currentUserCollections$.getValue()?.length ?? 0,
+          remaining: this._currentUserCollectionsRemaining$.getValue()
+        });
+      }),
+      switchMap(() => {
+        const nextSkip = this._userCollectionsSkip$.getValue() + USER_COLLECTIONS_PAGE_SIZE;
+        const version = this.userCollectionsVersion;
+        return this.fetchCurrentUserCollectionsPage(nextSkip).pipe(
+          map(page => ({page, version}))
+        );
+      }),
+      this.takeUntilDestroyed()
+    ).subscribe(({page, version}) => {
+      if (version !== this.userCollectionsVersion) {
+        return;
+      }
+      this._currentUserCollectionsLoading$.next(false);
+      if (!page.failed) {
+        this._userCollectionsSkip$.next(page.from);
+      }
+      const current = this._currentUserCollections$.getValue() ?? [];
+      this._currentUserCollections$.next(this.appendUniqueCollections(current, page.items));
+      this._currentUserCollectionsHasMore$.next(page.remaining > 0);
+      this._currentUserCollectionsRemaining$.next(page.remaining);
+    });
 
     this.updatePublicCollectionByPublicId$
       .pipe(
@@ -196,5 +254,50 @@ export class ModuleCollectionsDataService extends SubManager {
     return this.backend.delete.moduleCollection(id).pipe(
       tap(() => this.analytics.capture('module_collection.deleted', { collection_id: id }))
     );
+  }
+
+  private fetchCurrentUserCollectionsPage(from: number): Observable<UserCollectionsPageResult> {
+    const previousItems = this._currentUserCollections$.getValue() ?? [];
+    const previousRemaining = this._currentUserCollectionsRemaining$.getValue();
+    return this.backend.GET.currentUserModuleCollectionsPage(from, from + USER_COLLECTIONS_PAGE_SIZE - 1).pipe(
+      map(page => ({
+        ...page,
+        from,
+        failed: false
+      })),
+      catchError(error => {
+        console.error('[module-collections] Failed to load user collections', error);
+        return of({
+          items: from === 0 ? [] : previousItems,
+          total: from === 0 ? 0 : previousItems.length + previousRemaining,
+          remaining: from === 0 ? 0 : previousRemaining,
+          from,
+          failed: true
+        });
+      })
+    );
+  }
+
+  private applyFirstUserCollectionsPage(page: UserCollectionsPageResult): void {
+    this._currentUserCollectionsLoading$.next(false);
+    this._currentUserCollections$.next(page.items);
+    this._currentUserCollectionsHasMore$.next(page.remaining > 0);
+    this._currentUserCollectionsRemaining$.next(page.remaining);
+  }
+
+  private appendUniqueCollections(
+    current: ModuleCollectionSummary[],
+    incoming: ModuleCollectionSummary[]
+  ): ModuleCollectionSummary[] {
+    const seenIds = new Set(current.map(collection => collection.id));
+    const uniqueIncoming = incoming.filter(collection => {
+      if (seenIds.has(collection.id)) {
+        return false;
+      }
+      seenIds.add(collection.id);
+      return true;
+    });
+
+    return [...current, ...uniqueIncoming];
   }
 }
