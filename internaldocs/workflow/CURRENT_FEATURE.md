@@ -19,7 +19,7 @@
 
 _No active feature._
 
-Updated: 2026-09-15
+Updated: 2026-09-18
 
 Recent completed checkpoints are archived in [COMPLETED.md](./COMPLETED.md); their validation
 notes and decisions live in the matching plan files (e.g.
