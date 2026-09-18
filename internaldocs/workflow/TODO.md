@@ -50,6 +50,7 @@
 - Cloudflare/R2 staging: creating `patcher-module-panels` and `patcher-rack-previews` and copying/verifying objects is approved.
   Traffic switching, cleanup, and Supabase object deletion remain separately gated.
 - Marketplace address/listing schema/RLS/storage/backend foundation **applied and verified** — listing UI/discovery remains in the linked plans; release/push remains gated.
+- Rack module orientation storage: the reviewed `text` → `smallint` schema/typegen/backend migration is authorized (owner re-confirmed 2026-09-18 via Q&A; [GitHub issue #145](https://github.com/Polyterative/Patcher/issues/145)) — proceed with BACKEND_METHODS preflight + `backend-plan-reviewer` + local Docker validation + advisors first; remote apply stays in the user-present operator window; no RLS/policy changes expected.
 - Price Hub retention/diagnostics and zero-decimal backfill **approved in principle** — same preflight/typegen/advisor validation required before any mutation. Snapshot worker scheduling was explicitly approved on 2026-08-31: every three days at 00:00 UTC via pg_cron/pg_net, with its token held in Vault.
 - Public Open API: reviewed technical plan adopted for MVP implementation
   (`backend-plan-reviewer`: APPROVE WITH CHANGES). The owner-present database,
@@ -91,9 +92,6 @@
 - [ ] **Security hardening — phase approvals** (details in the private, gitignored
   security docs: `internaldocs/security/rls-hardening.md`, Approval queue section;
   answer there or here) (added 2026-08-10).
-- [ ] Rack module orientation storage: authorize the reviewed `text` → `smallint`
-  schema/typegen/backend migration after preflight; no RLS/policy changes are expected
-  ([GitHub issue #145](https://github.com/Polyterative/Patcher/issues/145)) (added 2026-07-19).
 - [ ] Cloudflare/R2: authorize traffic switch, cleanup, and any Supabase object deletion after the approved copy/verification stage (added 2026-07-08).
 - [ ] PostHog analytics review: provide credentials/export access (added 2026-07-08).
 
@@ -169,10 +167,10 @@
 - [ ] **ON HOLD INDEFINITELY: Rack Comparison — balance diff between two racks** → [`plans/rack-comparison-balance-diff-between-two-racks.md`](./plans/rack-comparison-balance-diff-between-two-racks.md)
 - [ ] **ON HOLD: MEDIUM: Sentry — Live Issue Audit** → [`plans/sentry-live-issue-audit.md`](./plans/sentry-live-issue-audit.md)
 - [ ] **ON HOLD: MEDIUM: Patch SVG previews (blocked: linked migration/typegen drift; do not apply storage/RLS autonomously)** → [GitHub issue #158](https://github.com/Polyterative/Patcher/issues/158)
-- [ ] **ON HOLD: MEDIUM: Pagination id tie-breaker (fix committed locally in `3edd622d`, unpushed; awaiting owner results verification before push/close)** → [GitHub issue #131](https://github.com/Polyterative/Patcher/issues/131)
+- [ ] **ON HOLD: MEDIUM: Pagination id tie-breaker (fix `3edd622d` is in `origin/develop`; tie-breaker specs 84/84 green 2026-09-18 — awaiting owner live-results verification before closing; push is moot, close is owner-confirmed)** → [GitHub issue #131](https://github.com/Polyterative/Patcher/issues/131)
 - [ ] **ON HOLD: SEO — OG Image Generation** → [`plans/on-seo-og-image-generation.md`](./plans/on-seo-og-image-generation.md)
 - [ ] **LOWEST: PostHog UI interaction analytics review (needs credentials/export later)** → [`plans/posthog-ui-interaction-analytics-review.md`](./plans/posthog-ui-interaction-analytics-review.md)
-- [ ] **LOW: Module-collection browsing 25-row hard cap (public + current-user) has no load-more path — may be intentional MVP scope; needs a product decision before treating as a bug** (found in 2026-08-13 discovery swarm, deferred).
+- [ ] **LOW: Module-collection browsing 25-row hard cap (owner verdict 2026-09-18 via Q&A: confirmed bug, implement load-more) — scoped: public discovery browser already pages via the Page API (`publicModuleCollectionsPage` + `loadMore$`); the gap is user-area My collections (`user-collections` → `currentUserModuleCollections()` defaults `0..24`, no count, no load-more). Plan: additive `getCurrentUserModuleCollectionsPage` with `{count: 'exact'}` (no migration, no RLS change) + user-area load-more wiring.**
 - [ ] **LOW: Rack "add row" has no maximum row count** (found in 2026-08-13 discovery swarm, deferred).
 - [ ] **LOW: Test-coverage gaps in 10 complex files with zero/thin direct spec coverage — `RackDetailPersistenceOperationsService`, `RackDetailModulePlacementDataService`, `RackDetailModuleReplacementDataService`, `patch-detail-linked-rack.bindings.ts`, `ModuleEditorPanelStateService`, `ModuleEditorFormStateService`, `UserManagementAccountActionsService`, `UserManagementAuthFlowService`, `module-collection-editor-data.service.ts`, `user-listings-data.service.ts` — recommend a dedicated follow-up loop pass, not a single backlog line** (found in 2026-08-13 discovery swarm, deferred). Slice 1a adds focused transition coverage for rack module additions and module-browser quick-add, but most listed files remain uncovered. Slice 3a adds a versioned regression-contract registry + pre-commit guard (`scripts/checks/check-regression-contract.cjs`, `scripts/checks/regression-contract-registry.cjs`) requiring these exact 10 files to pair with an accepted spec change whenever touched, but does not itself add spec coverage — the files remain thin/zero-coverage until a dedicated follow-up pass.
 - [x] **Accepted limitation (not a bug): patch-connection optimistic rollback (`26c9c88e`) does not guarantee restoring the absolute last-confirmed-backend state after a chain of 3+ consecutive failed syncs — each failure restores only its own nearest pre-mutation snapshot; every failure still surfaces an error, so no data loss is silent. Disclosed intentionally so it isn't rediscovered as a regression.**
