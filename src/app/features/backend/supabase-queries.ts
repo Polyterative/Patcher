@@ -200,6 +200,7 @@ export interface SupabaseQueriesService
     'getPublicModuleCollections'
       | 'getPublicModuleCollectionsPage'
       | 'getCurrentUserModuleCollections'
+      | 'getCurrentUserModuleCollectionsPage'
       | 'getPublicModuleCollectionByPublicId'
       | 'getCurrentUserModuleCollectionById'
       | 'getModuleCollectionsForModule'
