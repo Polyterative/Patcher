@@ -22,5 +22,7 @@ export const MODULE_ORDER_OPTIONS: ModuleOrderOption[] = [
   {id: 'updated', name: 'Updated ↓'},
   {id: 'depth', name: 'Depth ↑'},
   {id: 'depth', name: 'Depth ↓'},
+  {id: 'price', name: 'Price ↑'},
+  {id: 'price', name: 'Price ↓'},
   {id: 'isComplete', name: 'Data Complete ↓'},
 ];

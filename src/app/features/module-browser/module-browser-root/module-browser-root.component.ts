@@ -596,6 +596,13 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
       }
       return;
     }
+    if (!this.usesOwnedDataset && this.dataService.fields.order.control.value?.id === 'price') {
+      const sortedModules = this.dataService.sortModulesByPrice(modules);
+      if (!this.haveSameModuleIds(currentModules, sortedModules)) {
+        this.visibleModules$.next(sortedModules);
+      }
+      return;
+    }
 
     if (!this.haveSameModuleIds(currentModules, modules)) {
       this.visibleModules$.next(modules);

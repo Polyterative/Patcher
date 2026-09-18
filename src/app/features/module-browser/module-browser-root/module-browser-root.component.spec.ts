@@ -706,14 +706,32 @@ describe('ModuleBrowserRootComponent', () => {
     };
   }
 
-  it('renders min/max price controls with a range slider beside the depth filter', () => {
+  it('renders min/max price controls with a range slider beside the depth filter', fakeAsync(() => {
     const host = fixture.nativeElement as HTMLElement;
 
     expect(host.textContent).toContain('Min price (€)');
     expect(host.textContent).toContain('Max price (€)');
     expect(host.querySelector('.module-price-slider')).not.toBeNull();
+    // No bound yet: honest base copy without a hides/showing claim.
+    expect(host.querySelector('.module-filter-hint')?.textContent).toContain('~€ estimates');
+
+    component.dataService.fields.priceMax.control.setValue('300');
+    tick(750);
+    fixture.detectChanges();
     expect(host.querySelector('.module-filter-hint')?.textContent).toContain('hides unpriced');
-  });
+  }));
+
+  it('flips the price hint to showing unpriced when the opt-in is checked', fakeAsync(() => {
+    const host = fixture.nativeElement as HTMLElement;
+    component.dataService.fields.priceMax.control.setValue('300');
+    tick(750);
+    fixture.detectChanges();
+    expect(host.querySelector('.module-filter-hint')?.textContent).toContain('hides unpriced');
+
+    component.dataService.includeUnpriced$.next(true);
+    fixture.detectChanges();
+    expect(host.querySelector('.module-filter-hint')?.textContent).toContain('showing unpriced');
+  }));
 
   it('filters loaded catalog results by price range, hides unpriced, and counts visible results', fakeAsync(() => {
     backend.GET.recentModuleMarketPrices.and.returnValue(of([
@@ -811,6 +829,28 @@ describe('ModuleBrowserRootComponent', () => {
 
     component.dataService.includeUnpriced$.next(true);
     fixture.detectChanges();
+    expect(component.visibleModules$.value?.map((module) => module.id)).toEqual([1, 2, 3]);
+  }));
+
+  it('sorts loaded catalog results by estimated price with unpriced last', fakeAsync(() => {
+    backend.GET.recentModuleMarketPrices.and.returnValue(of([
+      priceSummaryFixture(1, 45900),
+      priceSummaryFixture(2, 9999)
+    ]));
+    // Price sort keeps the server order untouched and re-sorts the loaded
+    // page client-side, so the debounced order fetch must resolve back to
+    // the same three rows instead of the default empty page.
+    backend.GET.modules.and.returnValue(of({data: buildOwnedModules(3), count: 3}));
+    component.dataService.fields.order.control.setValue({id: 'price', name: 'Price ↑'});
+    tick(750);
+    fixture.detectChanges();
+
+    expect(component.visibleModules$.value?.map((module) => module.id)).toEqual([2, 1, 3]);
+
+    component.dataService.fields.order.control.setValue({id: 'price', name: 'Price ↓'});
+    tick(750);
+    fixture.detectChanges();
+
     expect(component.visibleModules$.value?.map((module) => module.id)).toEqual([1, 2, 3]);
   }));
 });

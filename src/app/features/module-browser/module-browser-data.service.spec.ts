@@ -1653,4 +1653,38 @@ describe('ModuleBrowserDataService', () => {
     expect(service.priceFilterActive$.value).toBeFalse();
     service.ngOnDestroy();
   }));
+
+  it('uses updated/desc for backend sorting when price sort is selected', fakeAsync(() => {
+    const {service, backend} = build();
+    service.fields.order.control.setValue({id: 'price', name: 'Price ↑'});
+    tick(750);
+
+    expect(service.serversideTableRequestData.sort$.value).toEqual(['updated', 'desc']);
+    expect(sortArgs(backend)).toEqual(['updated', 'desc']);
+    service.ngOnDestroy();
+  }));
+
+  it('sorts loaded modules by estimated price with unpriced last', () => {
+    const {service, backend} = build();
+    backend.GET.recentModuleMarketPrices.and.returnValue(of([
+      priceSummaryFixture(1, 45900),
+      priceSummaryFixture(2, 9999)
+    ]));
+    service.modulesList$.next([moduleFactory({id: 1}), moduleFactory({id: 2}), moduleFactory({id: 3})]);
+
+    service.fields.order.control.setValue({id: 'price', name: 'Price ↑'});
+    expect(service.sortModulesByPrice([
+      moduleFactory({id: 1, name: 'Expensive'}),
+      moduleFactory({id: 3, name: 'Unpriced'}),
+      moduleFactory({id: 2, name: 'Cheap'})
+    ]).map(module => module.id)).toEqual([2, 1, 3]);
+
+    service.fields.order.control.setValue({id: 'price', name: 'Price ↓'});
+    expect(service.sortModulesByPrice([
+      moduleFactory({id: 2, name: 'Cheap'}),
+      moduleFactory({id: 3, name: 'Unpriced'}),
+      moduleFactory({id: 1, name: 'Expensive'})
+    ]).map(module => module.id)).toEqual([1, 2, 3]);
+    service.ngOnDestroy();
+  });
 });
