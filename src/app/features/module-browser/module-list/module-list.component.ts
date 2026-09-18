@@ -135,6 +135,14 @@ export class ModuleListComponent extends SubManager implements OnInit {
   }
 
   @Input() priceSummarySourceData$: Observable<ModulePriceSummarySource> | undefined;
+  /**
+   * Shared Price Hub map owned by the parent data service (module-browser
+   * root passes `dataService.priceSummaryByModuleId$`). When provided, the
+   * list mirrors it instead of issuing its own `recentModuleMarketPrices`
+   * fetch for the same ids — one batched call per page, no double traffic.
+   * Other callers (manufacturer, user-area) omit it and keep the fetch path.
+   */
+  @Input() sharedPriceSummaryByModuleId$: Observable<ReadonlyMap<number, ModuleRecentMarketPrice>> | undefined;
   @Output() readonly moduleAction$ = new EventEmitter<MinimalModule>();
 
   private readonly externalSearchQuery$ = new BehaviorSubject<string>('');
@@ -228,7 +236,16 @@ export class ModuleListComponent extends SubManager implements OnInit {
       );
     }
 
-    if (this.backend?.GET?.recentModuleMarketPrices) {
+    if (this.sharedPriceSummaryByModuleId$) {
+      this.manageSub(
+        combineLatest([
+          this._showPriceSummary$,
+          this.sharedPriceSummaryByModuleId$
+        ]).subscribe(([showPriceSummary, summaries]) => {
+          this._priceSummaryByModuleId$.next(showPriceSummary ? (summaries ?? new Map()) : new Map());
+        })
+      );
+    } else if (this.backend?.GET?.recentModuleMarketPrices) {
       const priceSummarySourceData$ = this.priceSummarySourceData$ ?? this.data$;
 
       this.manageSub(

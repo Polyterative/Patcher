@@ -436,6 +436,71 @@ describe('ModuleListComponent', () => {
     component.ngOnDestroy();
   }));
 
+  it('mirrors a shared price map instead of fetching', fakeAsync(() => {
+    const filterService = new LocalDataFilterService();
+    const data$ = new BehaviorSubject<MinimalModule[] | null>([
+      buildModule({id: 1, name: 'Maths'}),
+      buildModule({id: 2, name: 'Mimeophon'}),
+    ]);
+    const summary = {
+      moduleId: 1,
+      estimatedPriceEurMinor: 19900,
+      displayPrice: '~€199',
+      storeCount: 3,
+      latestObservedAt: '2026-07-01T00:00:00.000Z',
+      tooltip: 'Recent market price: ~€199 from 3 stores, latest check Jul 1, 2026.'
+    };
+    const shared$ = new BehaviorSubject<ReadonlyMap<number, ModuleRecentMarketPrice>>(
+      new Map([[1, summary]])
+    );
+    const {backend, recentModuleMarketPrices} = createPriceBackendDouble();
+    const component = createComponent(filterService, backend);
+    component.data$ = data$;
+    component.showPriceSummary = true;
+    component.sharedPriceSummaryByModuleId$ = shared$;
+
+    component.ngOnInit();
+    tick();
+
+    expect(recentModuleMarketPrices).not.toHaveBeenCalled();
+    expect(currentVal(component.priceSummaryByModuleId$)?.get(1)).toEqual(summary);
+
+    shared$.next(new Map([[1, summary], [2, {...summary, moduleId: 2}]]));
+    tick();
+
+    expect(recentModuleMarketPrices).not.toHaveBeenCalled();
+    expect(currentVal(component.priceSummaryByModuleId$)?.get(2)).toEqual({...summary, moduleId: 2});
+    component.ngOnDestroy();
+  }));
+
+  it('clears shared prices while the summary input is disabled', fakeAsync(() => {
+    const filterService = new LocalDataFilterService();
+    const data$ = new BehaviorSubject<MinimalModule[] | null>([
+      buildModule({id: 1, name: 'Maths'}),
+    ]);
+    const shared$ = new BehaviorSubject<ReadonlyMap<number, ModuleRecentMarketPrice>>(
+      new Map([[1, {
+        moduleId: 1,
+        estimatedPriceEurMinor: 19900,
+        displayPrice: '~€199',
+        storeCount: 3,
+        latestObservedAt: '2026-07-01T00:00:00.000Z',
+        tooltip: 'Recent market price.'
+      }]])
+    );
+    const {backend, recentModuleMarketPrices} = createPriceBackendDouble();
+    const component = createComponent(filterService, backend);
+    component.data$ = data$;
+    component.sharedPriceSummaryByModuleId$ = shared$;
+
+    component.ngOnInit();
+    tick();
+
+    expect(recentModuleMarketPrices).not.toHaveBeenCalled();
+    expect(currentVal(component.priceSummaryByModuleId$)?.size).toBe(0);
+    component.ngOnDestroy();
+  }));
+
   it('fetches price summaries when the input is enabled after init', fakeAsync(() => {
     const filterService = new LocalDataFilterService();
     const data$ = new BehaviorSubject<MinimalModule[] | null>([

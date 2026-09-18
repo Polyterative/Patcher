@@ -350,7 +350,7 @@
                            [moduleAction]="effectiveModuleAction"
                            [moduleActionDisabledIds]="effectiveModuleActionDisabledIds"
                            [showPriceSummary]="true"
-                           [priceSummarySourceData$]="dataService.modulesList$"
+                           [sharedPriceSummaryByModuleId$]="dataService.priceSummaryByModuleId$"
                            (moduleAction$)="onModuleAction($event)"
           ></app-module-list>
         </div>
