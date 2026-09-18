@@ -30,16 +30,16 @@ Add a professional min/max price filter to the `/modules` browser sidebar that f
 
 ### Layer 2 — Structural
 
-- [ ] Pagination semantics: document + implement the chosen behavior for the server dataset (filter-loaded-page + hint is the default; over-fetch-until-full is the alternative — see open decisions). `Load more` must keep working; `itemsCount` stays the server count.
-- [ ] Owned / wanted / available collection modes parity (client-side full datasets — exact filtering, no pagination caveat).
-- [ ] Optional price sort (`MODULE_ORDER_OPTIONS` `price ↑/↓` on `estimatedPriceEurMinor`; unpriced last).
+- [x] Pagination semantics: document + implement the chosen behavior for the server dataset (filter-loaded-page + hint is the default; over-fetch-until-full is the alternative — see open decisions). `Load more` must keep working; `itemsCount` stays the server count.
+- [x] Owned / wanted / available collection modes parity (client-side full datasets — exact filtering, no pagination caveat).
+- [x] Optional price sort (`MODULE_ORDER_OPTIONS` `price ↑/↓` on `estimatedPriceEurMinor`; unpriced last).
 - [ ] Verify `priceHub` cache-bust path, no N+1 (one batched call per page, same as today), analytics `search.performed.filters_active` counts price.
 
 ### Layer 3 — Polish
 
-- [ ] Dual-thumb range slider **only if validated**: `MatSliderModule` import, min/max bounds sourced honestly (loaded-page bounds, not fake global bounds), mobile 390 px + dark-theme pass, Playwright screenshots before concluding (per `AGENTS.md` §5).
-- [ ] Preset chips (copy the HP `[presets]` pattern, e.g. `~€100 / ~€300 / ~€500` bounds) — cheap professional-shop touch.
-- [ ] Copy review (zero-bullshit, tabular numerals per `DESIGN_LANGUAGE.md`), `€` glyph + `~` estimated-prefix consistency with `displayPrice`.
+- [x] Dual-thumb range slider **only if validated**: `MatSliderModule` import, min/max bounds sourced honestly (loaded-page bounds, not fake global bounds), mobile 390 px + dark-theme pass, Playwright screenshots before concluding (per `AGENTS.md` §5).
+- [x] Preset chips (copy the HP `[presets]` pattern, e.g. `~€100 / ~€300 / ~€500` bounds) — cheap professional-shop touch.
+- [x] Copy review (zero-bullshit, tabular numerals per `DESIGN_LANGUAGE.md`), `€` glyph + `~` estimated-prefix consistency with `displayPrice`.
 
 ## Decisions (owner-approved 2026-09-17)
 
@@ -69,6 +69,8 @@ Add a professional min/max price filter to the `/modules` browser sidebar that f
 - 2026-09-17 · Visual verification (desktop 1440px, mobile 390px, emulated-OS dark, all screenshot-inspected; zero page errors): (1) stacked full-width Min/Max, not the marketplace side-by-side pair — at this rail's 208px the halved fields clip floating labels under the clear button; (2) slider CSS trilogy, all probe-measured: block-level flex (the `row` utility's inline-flex sizes to 470px max-content and overflows), `width: auto` (M3 8px side touch insets), `position: relative` + `overflow: clip` (absolutely-positioned native range inputs otherwise inflate rail scrollWidth to 221px); (3) live probes: typed Max=100 filters 25→8 cards, slider keyboard steps filter 25→19, rail overflow 0. Dark renders from system tokens + native slider theming, no custom colors.
 - 2026-09-17 · Owner round 2: price block moved to just before the tags section (after Order by). Slider end-circle clipping fixed properly — the `overflow: clip` belonged on the price block, not the slider host: block-level clip cuts only the invisible native-input slivers (±21px Material hit-area overhang) while the visible thumb circles sit ~6px inside the rail and render whole. Probe-verified knobs fully inside rail bounds with rail overflow 0.
 - 2026-09-17 · Owner round 3 (unpriced visibility): added an "Include unpriced" checkbox under the hint, shown only while a bound is set (via `priceFilterActive$`). Opts listings-less modules back into bounded results across all three layers (matcher flag → service `includeUnpriced$` → root join + auto-fill counting). Clearing the last bound auto-clears the toggle so no invisible state persists; reset clears both. Verified live: max €300 shows 38 cards, checking the box brings unpriced back (514 cards), clearing the bound hides the box again.
+- 2026-09-18 · Price sort (Layer 2 optional): `MODULE_ORDER_OPTIONS` gains `price ↑/↓` (same duplicate-id + arrow-direction pattern as name/hp/depth, so `toSortDirection` keeps working). No server column exists, so the service falls back to `updated/desc` for `GET.modules` (same as best-match) and the root re-sorts the loaded page client-side via `sortModulesByPrice` (unpriced last both directions, name tiebreak — inventing a priced position for unpriced rows would be fake precision). Owned/wanted/available modes sort inside `filterOwned/WantedModulesForFields` via the same helper since they already hold the price map. Covered by helper + service + root specs; 146/146 targeted tests, `pnpm lint` clean.
+- 2026-09-18 · Presets + hint polish (Layer 3): both price inputs gain `[presets]="[100, 300, 500]"` (exact HP `[presets]` pattern from the plan, `~€100 / ~€300 / ~€500` bounds). Hint copy turns honest-dynamic — base `~€ estimates` with no bound, `hides unpriced` while bounded, `showing unpriced` while the opt-in is checked (the old static `hides unpriced` lied while the box was checked). Block gains `font-variant-numeric: tabular-nums` per `DESIGN_LANGUAGE.md` numeric-data rule. Root hint specs updated to the dynamic copy; no new layout, no Playwright round (standard preset pattern + text-only change, verified via specs + lint).
 
 ## Documentation impact
 
@@ -76,4 +78,4 @@ Add a professional min/max price filter to the `/modules` browser sidebar that f
 - Production visibility: immediate on publish (page ungated; no flag)
 - Public docs paths: Patcher-docs modules pages (named at publication, post-production-confirmation only)
 - Screenshot targets: modules desktop + mobile
-- Changelog summary: `The modules browser now filters by estimated market price with min/max EUR controls.`
+- Changelog summary: `The modules browser now filters by estimated market price with min/max EUR controls, preset chips, an honest unpriced hint, and Price ↑/↓ sort (unpriced last).`
