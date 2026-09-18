@@ -19,21 +19,21 @@ Add a professional min/max price filter to the `/modules` browser sidebar that f
 
 ### Layer 1 — MVP (frontend-only, min/max EUR inputs)
 
-- [ ] `module-browser-data.models.ts`: add `priceMin` / `priceMax` `ModuleTextField` entries to `ModuleBrowserFields`.
-- [ ] `module-browser-fields.factory.ts`: add both controls (`FormTypes.NUMBER`, `Validators.min(0)` + integer pattern copied from `depth`, labels `Min price (€)` / `Max price (€)`, flex `7rem` copied from marketplace).
-- [ ] `module-browser-filter.helpers.ts`: add `parsePriceBoundary` (copy of `marketplace-view-models.ts:338-345`), `matchesPriceRange(estimatedEurMinor, minEur, maxEur)` (copy shape of `applyHpCondition` in `module-browser-data.utils.ts:28-37`), extend `ModuleFilterCriteria`, `matchesOwnedModuleFilters`, `hasResettableModuleFilters`, `hasActiveModuleFiltersForFields`, `getActiveFilterNames` (+`'price'`).
-- [ ] `ModuleBrowserDataService`: add a shared `priceSummaryByModuleId$` (fetch current page ids via `backend.GET.recentModuleMarketPrices`, riding the existing `priceHubRecentModuleMarketPrices` cache entry); wire price controls into `canReset$`, `filterControlChanges$` (same 750 ms debounce path), `resetForm$` (silent `''` + reload), analytics (automatic via `getActiveFilterNames`).
-- [ ] `module-browser-root.component.html`: price block in `.filter-sidebar` directly after the Max Depth control — `<div class="module-filter-control module-filter-control--optional"><div class="module-price-controls row gap1">` with two `lib-mat-form-entity` NUMBER fields (copies `marketplace-browser.component.html:76-91`), plus a dual-thumb `mat-slider` range bound to the same min/max controls underneath (owner-approved 2026-09-17; requires importing `MatSliderModule` — first `mat-slider` usage in the repo, see Decision log).
-- [ ] `module-browser-root.component.ts`: include price controls in the `syncVisibleModules` merge; join loaded modules with the price map and drop out-of-range rows; honest empty-state/hint copy when a price filter is active but the loaded page has no priced matches.
-- [ ] `ModuleListComponent`: consume the service price map instead of a second parallel fetch (avoids double `recentModuleMarketPrices` traffic).
-- [ ] Specs: helper specs (parse/match/resettable/active/names), data-service spec additions, root-component spec; `pnpm lint` clean; targeted `pnpm test-headless --include="**/module-browser/**"`.
+- [x] `module-browser-data.models.ts`: add `priceMin` / `priceMax` `ModuleTextField` entries to `ModuleBrowserFields`.
+- [x] `module-browser-fields.factory.ts`: add both controls (`FormTypes.NUMBER`, `Validators.min(0)` + integer pattern copied from `depth`, labels `Min price (€)` / `Max price (€)`, flex `7rem` copied from marketplace).
+- [x] `module-browser-filter.helpers.ts`: add `parsePriceBoundary` (copy of `marketplace-view-models.ts:338-345`), `matchesPriceRange(estimatedEurMinor, minEur, maxEur)` (copy shape of `applyHpCondition` in `module-browser-data.utils.ts:28-37`), extend `ModuleFilterCriteria`, `matchesOwnedModuleFilters`, `hasResettableModuleFilters`, `hasActiveModuleFiltersForFields`, `getActiveFilterNames` (+`'price'`).
+- [x] `ModuleBrowserDataService`: add a shared `priceSummaryByModuleId$` (fetch current page ids via `backend.GET.recentModuleMarketPrices`, riding the existing `priceHubRecentModuleMarketPrices` cache entry); wire price controls into `canReset$`, `filterControlChanges$` (same 750 ms debounce path), `resetForm$` (silent `''` + reload), analytics (automatic via `getActiveFilterNames`).
+- [x] `module-browser-root.component.html`: price block in `.filter-sidebar` directly after the Max Depth control — `<div class="module-filter-control module-filter-control--optional"><div class="module-price-controls row gap1">` with two `lib-mat-form-entity` NUMBER fields (copies `marketplace-browser.component.html:76-91`), plus a dual-thumb `mat-slider` range bound to the same min/max controls underneath (owner-approved 2026-09-17; requires importing `MatSliderModule` — first `mat-slider` usage in the repo, see Decision log).
+- [x] `module-browser-root.component.ts`: include price controls in the `syncVisibleModules` merge; join loaded modules with the price map and drop out-of-range rows; honest empty-state/hint copy when a price filter is active but the loaded page has no priced matches.
+- [x] `ModuleListComponent`: consume the service price map instead of a second parallel fetch (avoids double `recentModuleMarketPrices` traffic).
+- [x] Specs: helper specs (parse/match/resettable/active/names), data-service spec additions, root-component spec; `pnpm lint` clean; targeted `pnpm test-headless --include="**/module-browser/**"`.
 
 ### Layer 2 — Structural
 
 - [x] Pagination semantics: document + implement the chosen behavior for the server dataset (filter-loaded-page + hint is the default; over-fetch-until-full is the alternative — see open decisions). `Load more` must keep working; `itemsCount` stays the server count.
 - [x] Owned / wanted / available collection modes parity (client-side full datasets — exact filtering, no pagination caveat).
 - [x] Optional price sort (`MODULE_ORDER_OPTIONS` `price ↑/↓` on `estimatedPriceEurMinor`; unpriced last).
-- [ ] Verify `priceHub` cache-bust path, no N+1 (one batched call per page, same as today), analytics `search.performed.filters_active` counts price.
+- [x] Verify `priceHub` cache-bust path, no N+1 (one batched call per page, same as today), analytics `search.performed.filters_active` counts price.
 
 ### Layer 3 — Polish
 
@@ -51,11 +51,11 @@ Add a professional min/max price filter to the `/modules` browser sidebar that f
 
 ## Checklist
 
-- [ ] Plan approved (controls, unpriced behavior, scope, pagination semantics — all owner-approved 2026-09-17)
-- [ ] Layer 1 implemented per file list above
-- [ ] Layer 2 pagination + collection-mode parity + (optional) price sort
-- [ ] Layer 3 polish per approved control style, screenshots captured + inspected
-- [ ] Targeted specs + `pnpm lint` clean
+- [x] Plan approved (controls, unpriced behavior, scope, pagination semantics — all owner-approved 2026-09-17)
+- [x] Layer 1 implemented per file list above
+- [x] Layer 2 pagination + collection-mode parity + (optional) price sort
+- [x] Layer 3 polish per approved control style, screenshots captured + inspected
+- [x] Targeted specs + `pnpm lint` clean
 
 ## Decision log
 
@@ -71,6 +71,8 @@ Add a professional min/max price filter to the `/modules` browser sidebar that f
 - 2026-09-17 · Owner round 3 (unpriced visibility): added an "Include unpriced" checkbox under the hint, shown only while a bound is set (via `priceFilterActive$`). Opts listings-less modules back into bounded results across all three layers (matcher flag → service `includeUnpriced$` → root join + auto-fill counting). Clearing the last bound auto-clears the toggle so no invisible state persists; reset clears both. Verified live: max €300 shows 38 cards, checking the box brings unpriced back (514 cards), clearing the bound hides the box again.
 - 2026-09-18 · Price sort (Layer 2 optional): `MODULE_ORDER_OPTIONS` gains `price ↑/↓` (same duplicate-id + arrow-direction pattern as name/hp/depth, so `toSortDirection` keeps working). No server column exists, so the service falls back to `updated/desc` for `GET.modules` (same as best-match) and the root re-sorts the loaded page client-side via `sortModulesByPrice` (unpriced last both directions, name tiebreak — inventing a priced position for unpriced rows would be fake precision). Owned/wanted/available modes sort inside `filterOwned/WantedModulesForFields` via the same helper since they already hold the price map. Covered by helper + service + root specs; 146/146 targeted tests, `pnpm lint` clean.
 - 2026-09-18 · Presets + hint polish (Layer 3): both price inputs gain `[presets]="[100, 300, 500]"` (exact HP `[presets]` pattern from the plan, `~€100 / ~€300 / ~€500` bounds). Hint copy turns honest-dynamic — base `~€ estimates` with no bound, `hides unpriced` while bounded, `showing unpriced` while the opt-in is checked (the old static `hides unpriced` lied while the box was checked). Block gains `font-variant-numeric: tabular-nums` per `DESIGN_LANGUAGE.md` numeric-data rule. Root hint specs updated to the dynamic copy; no new layout, no Playwright round (standard preset pattern + text-only change, verified via specs + lint).
+- 2026-09-18 · Shared price map (Layer 1 last item): `ModuleListComponent` gains an optional `sharedPriceSummaryByModuleId$` input; the browser root passes `dataService.priceSummaryByModuleId$`, so the list mirrors the service map instead of a second parallel `recentModuleMarketPrices` fetch for the same ids. Fallback fetch path kept for manufacturer/user-area callers. Covered by 2 new specs (mirror + updates with zero backend calls; empty map while disabled); 26/26 list specs, 146/146 browser specs, `pnpm lint` clean.
+- 2026-09-18 · Layer 2 verification (closes the plan): `priceHub` bust path confirmed — summaries ride the existing `priceHubRecentModuleMarketPrices` entry (1 h, `priceHub` buster); no N+1 — one batched call per page via `missingPriceSummaryIds` + `priceSummariesRequestedIds` guard with change-only emissions (list display for the same ids is a cache hit, now eliminated entirely via the shared input); analytics — `getActiveFilterNames` includes `priceMin/priceMax`, so both `search.filter_changed` (price path) and `search.performed.filters_active` count price. Collection parity holds via `ensurePriceSummariesForModuleIds` + suspended auto-fill in owned/wanted/available modes.
 
 ## Documentation impact
 

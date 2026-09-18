@@ -124,6 +124,9 @@
 - [ ] Marketplace — relist vs first-listing copy + close-behavior guidance — `public-behavioral`, feature-flagged `marketplaceEnabled`;
   commits: `2c032635`;
   docs: `Patcher-docs marketplace pages (named at publication)`; screenshots: `none`; release evidence: pending
+- [ ] Module browser — price range filter (min/max EUR on Price Hub estimates, presets, unpriced opt-in, Price ↑/↓ sort) — `public-behavioral + public-visual`;
+  commits: `9656b772`, `8f662fb4`, `7064107a`, `17d53862`, `744c1fc7`, `73d26ddf`, `5ac2f579`, `da52ea7d`, `f1827e9e`;
+  docs: `Patcher-docs modules pages (named at publication)`; screenshots: `modules desktop + mobile`; release evidence: pending
 
 ### Published; docs pending
 
@@ -142,8 +145,6 @@
 - None.
 
 ### PRODUCT — Tier 2 (requires stable public profiles / community trust layer)
-
-- [ ] **MEDIUM: Module browser — price range filter (min/max EUR on Price Hub estimates, no migration)** → [`plans/module-browser-price-range-filter.md`](./plans/module-browser-price-range-filter.md)
 
 - [ ] **MEDIUM: Marketplace — Realtime Messaging (thread preview helper complete; schema/RLS/realtime/UI/moderation gated)** → [GitHub issue #154](https://github.com/Polyterative/Patcher/issues/154)
 - [ ] **MEDIUM: Marketplace — Feedback and Reputation (next marketplace slice approved after address/listings)** → [GitHub issue #155](https://github.com/Polyterative/Patcher/issues/155)
