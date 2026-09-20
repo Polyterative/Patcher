@@ -136,9 +136,13 @@ export function remapErrors<T>() {
 }
 
 export function throwIfSupabaseError<T>() {
-  return (source: Observable<T>) => source.pipe(
-    map((response: T) => {
-      const responseError = (response as unknown as {error?: unknown} | null | undefined)?.error;
+  // Assertion operator: accepts any wire response, throws on `error`, and
+  // narrows the stream to T. The input stays `unknown` so call sites that
+  // assert a friendlier row shape than the generated Postgrest types keep
+  // compiling — runtime behavior is unchanged (pass-through or throw).
+  return (source: Observable<unknown>) => source.pipe(
+    map((response: unknown) => {
+      const responseError = (response as {error?: unknown} | null | undefined)?.error;
       if (responseError) {
         throw responseError;
       }

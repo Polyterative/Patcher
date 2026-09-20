@@ -15,7 +15,10 @@ import { Database } from 'src/backend/database.types';
 import { DbComment } from '../../models/comment';
 import { Patch } from '../../models/patch';
 import { Rack } from '../../models/rack';
-import { PatchModuleInstance } from '../../models/connection';
+import {
+  PatchConnection,
+  PatchModuleInstance
+} from '../../models/connection';
 import {
   DbPaths,
   QueryJoins
@@ -149,7 +152,8 @@ import {
   EMPTY_CONTRIBUTOR_STATS,
   MAX_QUERY_ROWS,
   PUBLIC_AUTHOR_GATE_ALIAS,
-  SupabaseQueriesBase
+  SupabaseQueriesBase,
+  type SupabaseWireResponse
 } from './supabase-queries.base';
 
 
@@ -338,7 +342,7 @@ export class SupabasePatchQueries extends SupabaseQueriesBase {
     )
       .pipe(
         remapErrors(),
-        map((response: any) => {
+        map((response: SupabaseWireResponse) => {
           const row = Array.isArray(response?.data) ? response.data[0] : response?.data;
           return {data: row ?? null, error: response?.error ?? null};
         })
@@ -355,7 +359,11 @@ export class SupabasePatchQueries extends SupabaseQueriesBase {
     return rxFrom(
       this.supabase.rpc('resolve_public_patch_legacy_id', {p_id: id})
     )
-      .pipe(remapErrors());
+      .pipe(
+        remapErrors(),
+        // Same public_id-or-null contract as the rack equivalent above.
+        map(res => ({data: res.data as unknown as string | null, error: res.error}))
+      );
   }
 
 
@@ -392,14 +400,19 @@ export class SupabasePatchQueries extends SupabaseQueriesBase {
     return rxFrom(queryBuilder)
       .pipe(
         remapErrors(),
-        map((response: any) => {
+        map((response: SupabaseWireResponse) => {
+          const rows = (Array.isArray(response?.data) ? response.data : []) as Patch[];
           if (nameQuery.length === 0) {
-            return response;
+            return {data: rows, count: response?.count ?? rows.length, error: response?.error};
           }
 
-          return applyClientSideSearchFilter(response, from, to, (patch: any) =>
-            matchesSearchQuery(nameQuery, patch?.name)
+          const filtered = applyClientSideSearchFilter(
+            {data: rows, count: response?.count ?? rows.length},
+            from,
+            to,
+            (patch: Patch) => matchesSearchQuery(nameQuery, patch?.name)
           );
+          return {...filtered, error: response?.error};
         })
       );
   }
@@ -428,7 +441,10 @@ export class SupabasePatchQueries extends SupabaseQueriesBase {
     )
       .pipe(
         remapErrors(),
-        map((x => x.data))
+        // The connection/CV join selects PatchConnection rows at runtime; the
+        // nested join strings defeat the generated Postgrest parser, so assert
+        // the documented shape here (values pass through untouched).
+        map((x => x.data as unknown as PatchConnection[]))
       );
   }
 
@@ -478,7 +494,7 @@ export class SupabasePatchQueries extends SupabaseQueriesBase {
       })
     ).pipe(
       remapErrors(),
-      map((response: any) => (response.data ?? []) as Patch[])
+      map((response: SupabaseWireResponse) => (Array.isArray(response?.data) ? response.data : []) as Patch[])
     );
   }
 }

@@ -148,6 +148,43 @@ import {
 export const PUBLIC_AUTHOR_GATE_ALIAS = 'author_profile_gate';
 export const MAX_QUERY_ROWS = 500;
 
+/**
+ * Minimal structural view of a Supabase wire response. Concrete query methods
+ * refine `data` with their own row types; helpers here only need `unknown`.
+ *
+ * Declared as a `type` alias (not an `interface`) so object-literal response
+ * shapes keep their implicit index signature — several helpers constrain
+ * responses with `Record<string, unknown>`, which interfaces never satisfy.
+ */
+export type SupabaseWireResponse = {
+  data?: unknown;
+  error?: unknown;
+  count?: number | null;
+};
+
+/**
+ * Minimal structural view of the pre-select table builder (`supabase.from(t)`).
+ * Only `select` is needed here: callers refine the chain from there.
+ */
+export interface SupabaseTableQuery {
+  select(columns?: string, options?: Record<string, unknown>): ChainableSupabaseQuery;
+}
+
+/**
+ * Minimal chainable subset of the Postgrest filter builder used by the
+ * `countRows` / `fetchAllRows` helpers. Structural (not the generated
+ * generics) so conditional chaining (`let query = ...; query = query.order(...)`)
+ * and cross-table lambdas don't hit excessively-deep type instantiation.
+ */
+export interface ChainableSupabaseQuery extends PromiseLike<SupabaseWireResponse> {
+  select(columns?: string, options?: Record<string, unknown>): ChainableSupabaseQuery;
+  filter(column: string, operator: string, value: unknown): ChainableSupabaseQuery;
+  order(column: string, options?: Record<string, unknown>): ChainableSupabaseQuery;
+  range(from: number, to: number): ChainableSupabaseQuery;
+  ilike(column: string, pattern: string): ChainableSupabaseQuery;
+  limit(count: number, options?: Record<string, unknown>): ChainableSupabaseQuery;
+}
+
 export const EMPTY_CONTRIBUTOR_STATS: CurrentUserContributorStats = {
   modulesSubmitted: 0,
   approvedModules: 0,
@@ -177,13 +214,13 @@ export class SupabaseQueriesBase {
       | typeof DbPaths.profiles
       | typeof DbPaths.racks
       | typeof DbPaths.patches,
-    applyFilters: (query: any) => any
+    applyFilters: (query: SupabaseTableQuery) => ChainableSupabaseQuery
   ): Observable<number> {
     return rxFrom(
       applyFilters(this.supabase.from(table))
     ).pipe(
       remapErrors(),
-      map((result: any) => result.count ?? 0)
+      map((result: SupabaseWireResponse) => result.count ?? 0)
     );
   }
 
@@ -216,8 +253,8 @@ export class SupabaseQueriesBase {
       | typeof DbPaths.racks
       | typeof DbPaths.patches
       | typeof DbPaths.manufacturers,
-    buildQuery: (query: any) => any
-  ): Promise<{data: T[]; error: any}> {
+    buildQuery: (query: SupabaseTableQuery) => ChainableSupabaseQuery
+  ): Promise<{data: T[]; error: unknown}> {
     const pageSize = MAX_QUERY_ROWS;
     const rows: T[] = [];
     let offset = 0;
@@ -245,20 +282,26 @@ export class SupabaseQueriesBase {
 
 
 
-  protected stripPublicAuthorGate<T>(response: any) {
+  /**
+   * Strip the public-author gate join from list responses. The input is always
+   * a list-shaped wire response in practice; the `data` member comes back
+   * typed as `T[]` while the runtime value passes through untouched.
+   */
+  protected stripPublicAuthorGate<T>(response: SupabaseWireResponse): SupabaseWireResponse & {data: T[]} {
     const gateAlias = PUBLIC_AUTHOR_GATE_ALIAS;
-    const data = Array.isArray(response?.data)
-      ? response.data.map((row: any) => {
+    const rows: unknown[] = Array.isArray(response?.data) ? response.data : [];
+    const data = (Array.isArray(response?.data)
+      ? rows.map((row: unknown) => {
         if (!row || typeof row !== 'object') {
-          return row;
+          return row as T;
         }
         const {
           [gateAlias]: _gate,
           ...sanitizedRow
-        } = row;
+        } = row as Record<string, unknown>;
         return sanitizedRow as T;
       })
-      : response?.data;
+      : response?.data as T[]);
 
     return {
       ...response,
