@@ -65,9 +65,9 @@ export class ManufacturerDetailDataService extends SubManager {
       }),
       switchMap(id => this.backend.get.manufacturerWithId(id).pipe(
         tap(result => {
-          this._manufacturerData$.next(result.data as ManufacturerDetail);
+          this._manufacturerData$.next(result.data as unknown as ManufacturerDetail);
           if (result.data) {
-            this.analytics.capture('manufacturer.viewed', { manufacturer_id: (result.data as ManufacturerDetail).id });
+            this.analytics.capture('manufacturer.viewed', { manufacturer_id: (result.data as unknown as ManufacturerDetail).id });
           }
         }),
         switchMap(() => this.backend.get.modulesBySameManufacturer(id, 0, 200)),

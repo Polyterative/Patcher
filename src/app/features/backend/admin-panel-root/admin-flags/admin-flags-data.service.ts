@@ -165,10 +165,15 @@ export class AdminFlagsDataService extends SubManager {
 
     return forkJoin(
       userIds.map(userId => this.backend.get.userWithId(userId, 'id,username').pipe(
-        map((response: SupabaseSingleResponse<ReporterProfileRow>) => ({
-          id: userId,
-          username: response.data?.username ?? null
-        })),
+        // The profile lookup returns ReporterProfileRow at runtime; the
+        // generated select type is wider, so narrow here (values untouched).
+        map((response: unknown) => {
+          const row = (response as SupabaseSingleResponse<ReporterProfileRow> | null | undefined)?.data;
+          return {
+            id: userId,
+            username: row?.username ?? null
+          };
+        }),
         catchError(() => of({id: userId, username: null}))
       ))
     ).pipe(

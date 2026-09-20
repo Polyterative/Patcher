@@ -37,9 +37,10 @@ export function buildRackStatistics(rows: RackedModule[][]): {name: string; valu
 }
 
 export function extractCreatedPatchId(
-  response: {id?: number; data?: Array<{id?: number}>} | undefined
+  response: unknown
 ): number {
-  const createdPatchId = response?.data?.[0]?.id ?? response?.id;
+  const record = response as {id?: number; data?: Array<{id?: number}> | null} | null | undefined;
+  const createdPatchId = record?.data?.[0]?.id ?? record?.id;
 
   if (!createdPatchId) {
     throw new Error('Patch creation did not return a patch id.');
@@ -55,9 +56,10 @@ export function extractCreatedPatchId(
  * returns undefined.
  */
 export function extractCreatedPublicId(
-  response: {public_id?: string; data?: Array<{public_id?: string}>} | undefined
+  response: unknown
 ): string | undefined {
-  return response?.data?.[0]?.public_id ?? response?.public_id ?? undefined;
+  const record = response as {public_id?: string; data?: Array<{public_id?: string}> | null} | null | undefined;
+  return record?.data?.[0]?.public_id ?? record?.public_id ?? undefined;
 }
 
 export function isAnyModuleWithoutRackingId(rackModules: RackedModule[][]): boolean {

@@ -175,6 +175,10 @@ export class SupabaseCommentReactionQueries extends SupabaseQueriesBase {
             .range(from, to)
         )),
         remapErrors(),
+        // The comment-list join selects the DbComment shape at runtime; the
+        // generated Postgrest types cannot parse the join string, so assert
+        // the documented shape here (values pass through untouched).
+        map(response => response as unknown as {data: DbComment[] | null; count: number | null; error: unknown}),
       );
   }
 
@@ -304,7 +308,8 @@ export class SupabaseCommentReactionQueries extends SupabaseQueriesBase {
     )
       .pipe(
         remapErrors(),
-        map(x => ({ data: x.data, count: x.count }))
+        // Same join-shape assertion as above: runtime rows are DbComment.
+        map(x => ({data: x.data as unknown as DbComment[] | null, count: x.count}))
       );
   }
 }
