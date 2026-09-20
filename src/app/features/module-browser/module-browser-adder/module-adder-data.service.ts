@@ -212,7 +212,7 @@ export class ModuleAdderDataService extends SubManager {
     
     // load manufacturers into options BehaviorSubject
     this.backend.GET.manufacturers(0, 99999, 'id,name').pipe(
-      map(x => (x.data ?? []).map(z => ({ id: z.id.toString(), name: z.name }))),
+      map(x => ((x.data ?? []) as Array<{id: number; name: string}>).map(z => ({ id: z.id.toString(), name: z.name }))),
       this.takeUntilDestroyed()
     ).subscribe(opts => this._manufacturerOptions$.next(opts));
 

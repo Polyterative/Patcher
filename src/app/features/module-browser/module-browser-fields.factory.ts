@@ -76,7 +76,7 @@ export function createModuleBrowserFields({
       type: FormTypes.AUTOCOMPLETE,
       options$: backend.GET.manufacturers(0, 99999, 'id,name')
         .pipe(
-          map(x => (x.data ?? []).map(z => ({id: z.id.toString(), name: z.name}))),
+          map(x => ((x.data ?? []) as Array<{id: number; name: string}>).map(z => ({id: z.id.toString(), name: z.name}))),
           startWith([]),
           takeUntilDestroyed(),
           share()

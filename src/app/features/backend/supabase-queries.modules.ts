@@ -256,8 +256,21 @@ import {
   EMPTY_CONTRIBUTOR_STATS,
   MAX_QUERY_ROWS,
   PUBLIC_AUTHOR_GATE_ALIAS,
-  SupabaseQueriesBase
+  SupabaseQueriesBase,
+  type ChainableSupabaseQuery,
+  type SupabaseTableQuery,
+  type SupabaseWireResponse
 } from './supabase-queries.base';
+
+/**
+ * Lightweight module row used by the client-side text-search narrowing path:
+ * only the columns needed for predicate filtering and detail hydration.
+ */
+interface ModuleSearchRow {
+  id?: number;
+  name?: string;
+  description?: string;
+}
 
 
 export class SupabaseModuleQueries extends SupabaseQueriesBase {
@@ -283,7 +296,7 @@ export class SupabaseModuleQueries extends SupabaseQueriesBase {
     onlyPublic = true,
     tagIds?: number[],
     includeCount = true,
-    maxDepth?: number) {
+    maxDepth?: number): Observable<{data: MinimalModule[]; count: number | null; error: unknown}> {
     const nameQuery = (name ?? '').trim();
     const descriptionQuery = (description ?? '').trim();
     const requiresClientTextFiltering = nameQuery.length > 0 || descriptionQuery.length > 0;
@@ -297,7 +310,7 @@ export class SupabaseModuleQueries extends SupabaseQueriesBase {
       ? `tags:${ DbPaths.module_tags }!inner(id,tag:${ DbPaths.tags }(*),voteCount:${ DbPaths.user_module_tags }(moduletagid))`
       : QueryJoins.module_tags;
 
-    const applyBaseFilters = (builtQuery: any, applyTextFilters = false) => {
+    const applyBaseFilters = (builtQuery: ChainableSupabaseQuery, applyTextFilters = false) => {
       let nextQuery = builtQuery;
 
       if (onlyPublic === true) {
@@ -345,13 +358,13 @@ export class SupabaseModuleQueries extends SupabaseQueriesBase {
       }
 
       if (hasTagFilter) {
-        nextQuery = (nextQuery as any).filter(`${ DbPaths.module_tags }.tagid`, 'in', `(${ tagIds.join(',') })`);
+        nextQuery = nextQuery.filter(`${ DbPaths.module_tags }.tagid`, 'in', `(${ tagIds.join(',') })`);
       }
 
       return nextQuery;
     };
 
-    const selectDetailedModules = (query: any) => includeCount
+    const selectDetailedModules = (query: SupabaseTableQuery) => includeCount
       ? query.select(`
                     id,name,hp,depth,description,public,created,updated,
                     ${ QueryJoins.manufacturer },
@@ -367,7 +380,7 @@ export class SupabaseModuleQueries extends SupabaseQueriesBase {
                     ${ moduleTagsJoin }
                   `);
 
-    const buildDetailedQuery = (query: any) => applyBaseFilters(
+    const buildDetailedQuery = (query: SupabaseTableQuery) => applyBaseFilters(
       selectDetailedModules(query)
     )
       .order(`color`, {foreignTable: DbPaths.module_panels, ascending: true})
@@ -375,7 +388,7 @@ export class SupabaseModuleQueries extends SupabaseQueriesBase {
       .order(moduleOrderColumn, moduleOrderOptions)
       .order('id', {ascending: moduleOrderOptions.ascending});
 
-    const buildSearchRowsQuery = (query: any, applyTextFilters = false) => {
+    const buildSearchRowsQuery = (query: SupabaseTableQuery, applyTextFilters = false) => {
       const lightweightSelect = hasTagFilter
         ? `id,name,depth,description,${ DbPaths.module_tags }!inner(id)`
         : 'id,name,depth,description';
@@ -391,17 +404,24 @@ export class SupabaseModuleQueries extends SupabaseQueriesBase {
 
     if (!requiresClientTextFiltering) {
       return rxFrom(buildDetailedQuery(this.supabase.from(DbPaths.modules)).range(from, to))
-        .pipe(remapErrors());
+        .pipe(
+          remapErrors(),
+          map((response: SupabaseWireResponse) => ({
+            data: ((Array.isArray(response?.data) ? response.data : []) as MinimalModule[]),
+            count: response?.count ?? null,
+            error: response?.error
+          }))
+        );
     }
 
     return rxFrom((async () => {
-      const filterPredicate = (module: any) =>
+      const filterPredicate = (module: ModuleSearchRow) =>
         matchesSearchQuery(nameQuery, module?.name)
         && matchesSearchQuery(descriptionQuery, module?.description);
 
-      const narrowedSearchResponse = await this.fetchAllRows<any>(
+      const narrowedSearchResponse = await this.fetchAllRows<ModuleSearchRow>(
         DbPaths.modules,
-        (query: any) => buildSearchRowsQuery(query, true)
+        (query) => buildSearchRowsQuery(query, true)
       );
       if (narrowedSearchResponse.error) {
         return narrowedSearchResponse;
@@ -418,9 +438,9 @@ export class SupabaseModuleQueries extends SupabaseQueriesBase {
       );
 
       if (filteredSearchRows.count === 0) {
-        const fallbackSearchResponse = await this.fetchAllRows<any>(
+        const fallbackSearchResponse = await this.fetchAllRows<ModuleSearchRow>(
           DbPaths.modules,
-          (query: any) => buildSearchRowsQuery(query, false)
+          (query) => buildSearchRowsQuery(query, false)
         );
         if (fallbackSearchResponse.error) {
           return fallbackSearchResponse;
@@ -442,7 +462,7 @@ export class SupabaseModuleQueries extends SupabaseQueriesBase {
       }
 
       const pageIds = (filteredSearchRows.data ?? [])
-        .map((module: any) => module?.id)
+        .map(module => module?.id)
         .filter((id: number | undefined): id is number => Number.isFinite(id));
 
       if (pageIds.length === 0) {
@@ -460,7 +480,7 @@ export class SupabaseModuleQueries extends SupabaseQueriesBase {
       }
 
       const detailRows = Array.isArray(detailResponse.data) ? detailResponse.data : [];
-      const detailRowsById = new Map(detailRows.map((row: any) => [row?.id, row]));
+      const detailRowsById = new Map(detailRows.map(row => [row?.id, row]));
       const orderedPageRows = pageIds
         .map((id) => detailRowsById.get(id))
         .filter(Boolean);
@@ -470,7 +490,16 @@ export class SupabaseModuleQueries extends SupabaseQueriesBase {
         data: orderedPageRows,
         count: filteredSearchRows.count
       };
-    })()).pipe(remapErrors());
+    })()).pipe(
+      remapErrors(),
+      // Normalize to the same page shape as the non-filter branch: the final
+      // rows are always full detail modules at runtime.
+      map((response: SupabaseWireResponse) => ({
+        data: ((Array.isArray(response?.data) ? response.data : []) as MinimalModule[]),
+        count: response?.count ?? null,
+        error: response?.error
+      }))
+    );
   }
 
 
@@ -596,7 +625,7 @@ export class SupabaseModuleQueries extends SupabaseQueriesBase {
         .limit(limit)
     ).pipe(
       remapErrors(),
-      map((response: any) => (response.data ?? []) as MinimalModule[])
+      map((response: SupabaseWireResponse) => ((Array.isArray(response?.data) ? response.data : []) as MinimalModule[]))
     );
   }
 }

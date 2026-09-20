@@ -114,7 +114,7 @@ export class PublicProfileDataService extends SubManager {
       )
       .subscribe({
         next: (response) => {
-          const profile = mapProfile(response?.data);
+          const profile = mapProfile(response?.data as unknown as Record<string, unknown> | null | undefined);
 
           if (!profile) {
             this.routeState$.next('not-found');
@@ -246,7 +246,7 @@ export class PublicProfileDataService extends SubManager {
       .subscribe({
         next: (response) => {
           const skip = this.patchesPagination.skip$.value;
-          const incoming = (response?.data as Patch[]) ?? [];
+          const incoming = (response?.data as unknown as Patch[] | null | undefined) ?? [];
           const current = this.patchesData$.value ?? [];
           this.patchesData$.next(skip === 0 ? incoming : [...current, ...incoming]);
           this.patchesCount$.next(response?.count ?? 0);

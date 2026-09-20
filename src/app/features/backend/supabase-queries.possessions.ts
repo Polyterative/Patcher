@@ -159,7 +159,8 @@ import {
   EMPTY_CONTRIBUTOR_STATS,
   MAX_QUERY_ROWS,
   PUBLIC_AUTHOR_GATE_ALIAS,
-  SupabaseQueriesBase
+  SupabaseQueriesBase,
+  type SupabaseWireResponse
 } from './supabase-queries.base';
 
 
@@ -243,7 +244,7 @@ export class SupabasePossessionQueries extends SupabaseQueriesBase {
         return rxFrom(queryBuilder).pipe(
           remapErrors(),
           throwIfSupabaseErrorWhen<{data: CurrentUserModulePossessionRow[] | null}>(strictErrors),
-          map((x: any) => (x.data ?? []).map((y: any) => ({
+          map((x: {data: CurrentUserModulePossessionRow[] | null}) => (x.data ?? []).map((y: CurrentUserModulePossessionRow) => ({
             ...y.module,
             collectionUpdated: y.collectionUpdated,
             possessionKind: y.kind
@@ -313,7 +314,7 @@ export class SupabasePossessionQueries extends SupabaseQueriesBase {
           .filter('authorid', 'eq', user.id)
       )),
       remapErrors(),
-      map(x => ((x.data as any) ?? []).map((row: any) => row.moduletagid as number))
+      map(x => ((x.data ?? []) as Array<{moduletagid: number}>).map(row => row.moduletagid))
     );
   }
 
@@ -330,8 +331,8 @@ export class SupabasePossessionQueries extends SupabaseQueriesBase {
         .select('kind')
         .eq('moduleid', moduleId)
     ).pipe(
-      map((x: any) => {
-        const rows: { kind: string }[] = x.data ?? [];
+      map((x: SupabaseWireResponse) => {
+        const rows = (x.data ?? []) as Array<{kind: string}>;
         const counts = { hasCount: 0, wantsCount: 0, sellsCount: 0 };
         for (const row of rows) {
           if (row.kind === 'HAS') counts.hasCount++;
@@ -360,7 +361,9 @@ export class SupabasePossessionQueries extends SupabaseQueriesBase {
         );
       }),
       remapErrors(),
-      map(response => (response.data ?? []) as UserModuleAcquisition[])
+      // The stream emits either the list response or the `of([])` empty
+      // fallback from above; normalize both to a row array (same values).
+      map(response => ((Array.isArray(response) ? response : response.data) ?? []) as UserModuleAcquisition[])
     );
   }
 }

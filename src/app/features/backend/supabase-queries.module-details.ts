@@ -220,7 +220,11 @@ export class SupabaseModuleDetailQueries extends SupabaseQueriesBase {
         .select(`id,name,${ QueryJoins.insOutsMinimal }`)
         .in('id', uniqueModuleIds)
     ).pipe(
-      remapErrors()
+      remapErrors(),
+      // The ins/outs join selects PatchGraphModule rows at runtime; the join
+      // string defeats the generated Postgrest parser, so assert the declared
+      // shape here (values pass through untouched).
+      map(response => ({data: response.data as unknown as PatchGraphModule[] | null, error: response.error}))
     );
   }
 
@@ -299,7 +303,7 @@ export class SupabaseModuleDetailQueries extends SupabaseQueriesBase {
         .range(from, to)
     ).pipe(
       remapErrors(),
-      map(response => response.data as MinimalModule[] | null)
+      map(response => response.data as unknown as MinimalModule[] | null)
     );
   }
 

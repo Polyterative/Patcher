@@ -148,7 +148,9 @@ import {
   EMPTY_CONTRIBUTOR_STATS,
   MAX_QUERY_ROWS,
   PUBLIC_AUTHOR_GATE_ALIAS,
-  SupabaseQueriesBase
+  SupabaseQueriesBase,
+  type ChainableSupabaseQuery,
+  type SupabaseTableQuery
 } from './supabase-queries.base';
 
 
@@ -162,8 +164,9 @@ export class SupabaseApplicationStatisticsQueries extends SupabaseQueriesBase {
       | typeof DbPaths.patches,
     // Select strings mix raw joins across three differently-shaped tables, so the
     // Postgrest query builder generics can't be narrowed here without hitting
-    // excessively-deep type instantiation; the concrete row shape is asserted below.
-    buildQuery: (query: any) => any
+    // excessively-deep type instantiation; the structural chainable above plus
+    // the concrete row assertion below keep this tidy instead.
+    buildQuery: (query: SupabaseTableQuery) => ChainableSupabaseQuery
   ): Promise<{data: {updated: string}[]; error: PostgrestError | null}> {
     const pageSize = MAX_QUERY_ROWS;
     const rows: {updated: string}[] = [];
