@@ -13,12 +13,27 @@ export type RackModuleOrientation = typeof RACK_MODULE_ORIENTATIONS[keyof typeof
 
 export const DEFAULT_RACK_MODULE_ORIENTATION: RackModuleOrientation = RACK_MODULE_ORIENTATIONS.normal;
 
+/**
+ * Database storage values for `rack_modules.orientation` after the smallint
+ * migration (GitHub issue #145): `0` is normal, `1` is `rot180`, `2+` reserved
+ * for reviewed future states. Phase 1 readers accept both the legacy text and
+ * the numeric encodings; writers still send text until the operator apply.
+ */
+export const RACK_MODULE_ORIENTATION_DB_VALUES = {
+  normal: 0,
+  rot180: 1
+} as const;
+
 const FLIPPABLE_3U_STANDARD_IDS = new Set([0, 1000]);
 
 export function normalizeRackModuleOrientation(value: unknown): RackModuleOrientation {
-  return value === RACK_MODULE_ORIENTATIONS.rot180
-    ? RACK_MODULE_ORIENTATIONS.rot180
-    : RACK_MODULE_ORIENTATIONS.normal;
+  if (
+    value === RACK_MODULE_ORIENTATIONS.rot180 ||
+    value === RACK_MODULE_ORIENTATION_DB_VALUES.rot180
+  ) {
+    return RACK_MODULE_ORIENTATIONS.rot180;
+  }
+  return RACK_MODULE_ORIENTATIONS.normal;
 }
 
 export function nextRackModuleOrientation(value: unknown): RackModuleOrientation {
