@@ -53,7 +53,7 @@ describe('SupabaseService - public patch visibility', () => {
 
     service.GET.publicPatchWithId(238).subscribe({
       next: (result) => {
-        expect(result.data?.id).toBe(238);
+        expect((result.data as unknown as {id?: number})?.id).toBe(238);
         expect(selectSpy.calls.mostRecent().args[0]).not.toContain('author_profile_gate:authorid!inner(public)');
         expect(filterSpy).toHaveBeenCalledWith('public', 'eq', true);
         expect(filterSpy).not.toHaveBeenCalledWith('author_profile_gate.public', 'eq', true);

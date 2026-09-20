@@ -210,11 +210,12 @@ describe('SupabaseService - Patch Privacy Integration', () => {
     
     service.get.patchWithId(1).subscribe({
       next: result => {
-        expect(result.data).toBeDefined();
-        expect(result.data.public).withContext(
+        const row = result.data as unknown as PatchFixture;
+        expect(row).toBeDefined();
+        expect(row?.public).withContext(
           'Patch data must include public field'
         ).toBe(false);
-        expect(result.data.name).toBe('Test Patch');
+        expect(row?.name).toBe('Test Patch');
         
         done();
       },

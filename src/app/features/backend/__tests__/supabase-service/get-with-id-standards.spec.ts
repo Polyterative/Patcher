@@ -1,4 +1,5 @@
 import { SupabaseService } from '../../supabase.service';
+import type { Observable } from 'rxjs';
 import type { SupabaseTableRow } from '../../supabase-db.types';
 import {
   cleanupSupabaseServiceTest,
@@ -53,7 +54,7 @@ describe('SupabaseService - GET single-entity fetchers', () => {
         } satisfies SingleRowResult<ManufacturerRow>)
       );
       
-      service.get.manufacturerWithId(3).subscribe({
+      (service.get.manufacturerWithId(3) as unknown as Observable<SingleRowResult<ManufacturerRow>>).subscribe({
         next: (result: SingleRowResult<ManufacturerRow>) => {
           expect(result.data.id).toBe(3);
           expect(result.data.name).toBe('Make Noise');
@@ -96,7 +97,7 @@ describe('SupabaseService - GET single-entity fetchers', () => {
         chainable<StandardRow>({data: mockStds, error: null} satisfies ListRowsResult<StandardRow>)
       );
       
-      service.get.standards().subscribe({
+      (service.get.standards() as unknown as Observable<ListRowsResult<StandardRow>>).subscribe({
         next: (result: ListRowsResult<StandardRow>) => {
           expect(Array.isArray(result.data)).toBeTrue();
           expect(result.data.length).toBe(2);
@@ -114,7 +115,7 @@ describe('SupabaseService - GET single-entity fetchers', () => {
         chainable<StandardRow>({data: null, error: null} satisfies ListRowsResult<StandardRow>)
       );
       
-      service.get.standards().subscribe({
+      (service.get.standards() as unknown as Observable<ListRowsResult<StandardRow>>).subscribe({
         next: (result: ListRowsResult<StandardRow>) => {
           expect(result.data).toBeNull();
           done();
@@ -137,7 +138,7 @@ describe('SupabaseService - GET single-entity fetchers', () => {
       } satisfies SingleRowResult<ModuleRow>;
       spyOn(supabaseClient, 'from').and.returnValue(chainable(mockModule));
       
-      service.GET.moduleWithId(42).subscribe({
+      (service.GET.moduleWithId(42) as unknown as Observable<SingleRowResult<ModuleRow>>).subscribe({
         next: (result: SingleRowResult<ModuleRow>) => {
           expect(result.data.id).toBe(42);
           done();
@@ -231,7 +232,7 @@ describe('SupabaseService - GET single-entity fetchers', () => {
       } satisfies SingleRowResult<PatchRow>;
       spyOn(supabaseClient, 'from').and.returnValue(chainable(mockPatch));
       
-      service.get.patchWithId(99).subscribe({
+      (service.get.patchWithId(99) as unknown as Observable<SingleRowResult<PatchRow>>).subscribe({
         next: (result: SingleRowResult<PatchRow>) => {
           expect(result.data.id).toBe(99);
           done();
@@ -254,7 +255,7 @@ describe('SupabaseService - GET single-entity fetchers', () => {
       } satisfies SingleRowResult<ProfileRow>;
       spyOn(supabaseClient, 'from').and.returnValue(chainable(mockProfile));
       
-      service.get.userWithId('abc').subscribe({
+      (service.get.userWithId('abc') as unknown as Observable<SingleRowResult<ProfileRow>>).subscribe({
         next: (result: SingleRowResult<ProfileRow>) => {
           expect(result.data.username).toBe('patcher_pro');
           done();
@@ -277,7 +278,7 @@ describe('SupabaseService - GET single-entity fetchers', () => {
       } satisfies SingleRowResult<ProfileRow>;
       spyOn(supabaseClient, 'from').and.returnValue(chainable(mockProfile));
       
-      service.get.userWithId('xyz').subscribe({
+      (service.get.userWithId('xyz') as unknown as Observable<SingleRowResult<ProfileRow>>).subscribe({
         next: (result: SingleRowResult<ProfileRow>) => {
           expect(result.data.username).toBe('modmaster');
           done();

@@ -1,4 +1,5 @@
 import { SupabaseService } from '../../supabase.service';
+import type { Observable } from 'rxjs';
 import { Patch } from 'src/app/models/patch';
 import {
   cleanupSupabaseServiceTest,
@@ -139,7 +140,7 @@ describe('SupabaseService - GET.patches filtering and ordering', () => {
       chainableWithIlike({data: mockPatches, count: 1, error: null})
     );
     
-    service.GET.patches(0, 9).subscribe({
+    (service.GET.patches(0, 9) as unknown as Observable<PatchListingResult>).subscribe({
       next: (result: PatchListingResult) => {
         expect(result.data).toEqual(mockPatches);
         expect(result.count).toBe(1);
@@ -181,7 +182,7 @@ describe('SupabaseService - GET.patches filtering and ordering', () => {
     const ilikeSpy = spyOn(mock, 'ilike').and.callThrough();
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
-    service.GET.patches(0, 9, 'drum').subscribe({
+    (service.GET.patches(0, 9, 'drum') as unknown as Observable<PatchListingResult>).subscribe({
       next: (result: PatchListingResult) => {
         expect(ilikeSpy).not.toHaveBeenCalled();
         expect(result.count).toBe(1);

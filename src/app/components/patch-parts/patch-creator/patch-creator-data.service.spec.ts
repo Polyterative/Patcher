@@ -34,7 +34,7 @@ describe('PatchCreatorDataService', () => {
     };
 
     service.createPatch$(patchDraft).subscribe(response => {
-      expect(response).toEqual({data: [{id: 42}]});
+      expect(response as unknown).toEqual({data: [{id: 42}]});
       expect(patchCreatorApi.createPatch).toHaveBeenCalledOnceWith(patchDraft);
       done();
     });

@@ -5,7 +5,8 @@ import type {
 } from 'src/app/models/connection';
 import type { UserModulePossessionKind } from 'src/app/models/module';
 import {
-  firstValueFrom
+  firstValueFrom,
+  type Observable
 } from 'rxjs';
 import { SupabaseService } from '../../supabase.service';
 import { cacheBuster$ } from '../../supabase.cache';
@@ -106,7 +107,7 @@ describe('SupabaseService - GET cached delegates', () => {
       const mockRack = {data: {id: 7, name: 'Studio Rack'}, error: null} satisfies QuerySingleRowResult<RackIdRow>;
       spyOn(supabaseClient, 'from').and.returnValue(chainable<RackIdRow>(mockRack));
       
-      service.GET.rackWithId(7).subscribe({
+      (service.GET.rackWithId(7) as unknown as Observable<QuerySingleRowResult<RackIdRow>>).subscribe({
         next: (result: QuerySingleRowResult<RackIdRow>) => {
           expect(result.data.id).toBe(7);
           done();
@@ -124,7 +125,7 @@ describe('SupabaseService - GET cached delegates', () => {
       const mockRack = {data: {id: 8, name: 'Public Rack'}, error: null} satisfies QuerySingleRowResult<RackIdRow>;
       spyOn(supabaseClient, 'from').and.returnValue(chainable<RackIdRow>(mockRack));
 
-      service.GET.publicRackWithId(8).subscribe({
+      (service.GET.publicRackWithId(8) as unknown as Observable<QuerySingleRowResult<RackIdRow>>).subscribe({
         next: (result: QuerySingleRowResult<RackIdRow>) => {
           expect(result.data.id).toBe(8);
           done();
@@ -243,7 +244,7 @@ describe('SupabaseService - GET cached delegates', () => {
       const mockConns = {data: [{patchid: 3, a: 10, b: 20}], error: null} satisfies QueryListRowsResult<PatchConnectionRow>;
       spyOn(supabaseClient, 'from').and.returnValue(chainable<PatchConnectionRow>(mockConns));
       
-      service.GET.patchConnections(3).subscribe({
+      (service.GET.patchConnections(3) as unknown as Observable<PatchConnectionRow[] | null>).subscribe({
         next: (result: PatchConnectionRow[] | null) => {
           expect(result).toBeDefined();
           done();
@@ -384,7 +385,7 @@ describe('SupabaseService - GET cached delegates', () => {
       const mockModule = {data: {id: 11, name: 'Ripples'}, error: null} satisfies QuerySingleRowResult<ModuleIdRow>;
       spyOn(supabaseClient, 'from').and.returnValue(chainable<ModuleIdRow>(mockModule));
       
-      service.GET.moduleWithId(11).subscribe({
+      (service.GET.moduleWithId(11) as unknown as Observable<QuerySingleRowResult<ModuleIdRow>>).subscribe({
         next: (result: QuerySingleRowResult<ModuleIdRow>) => {
           expect(result).toBeDefined();
           done();
@@ -461,7 +462,7 @@ describe('SupabaseService - GET cached delegates', () => {
       const mockPatches = {data: [{id: 1, name: 'Ambient 1'}], count: 1, error: null} satisfies QueryCountRowsResult<PatchIdRow>;
       spyOn(supabaseClient, 'from').and.returnValue(chainable<PatchIdRow>(mockPatches));
       
-      service.GET.patches().subscribe({
+      (service.GET.patches() as unknown as Observable<QueryCountRowsResult<PatchIdRow>>).subscribe({
         next: (result: QueryCountRowsResult<PatchIdRow>) => {
           expect(result).toBeDefined();
           done();
@@ -521,7 +522,7 @@ describe('SupabaseService - GET cached delegates', () => {
       const ilikeSpy = spyOn(mock, 'ilike').and.callThrough();
       spyOn(supabaseClient, 'from').and.returnValue(mock);
       
-      service.GET.patches(0, 10, 'Ambient').subscribe({
+      (service.GET.patches(0, 10, 'Ambient') as unknown as Observable<QueryCountRowsResult<PatchIdRow>>).subscribe({
         next: (result: QueryCountRowsResult<PatchIdRow>) => {
           expect(ilikeSpy).not.toHaveBeenCalled();
           expect(result.count).toBe(1);
@@ -541,7 +542,7 @@ describe('SupabaseService - GET cached delegates', () => {
       const mockPatch = {data: {id: 3, name: 'Public Patch'}, error: null} satisfies QuerySingleRowResult<PatchIdRow>;
       spyOn(supabaseClient, 'from').and.returnValue(chainable<PatchIdRow>(mockPatch));
 
-      service.GET.publicPatchWithId(3).subscribe({
+      (service.GET.publicPatchWithId(3) as unknown as Observable<QuerySingleRowResult<PatchIdRow>>).subscribe({
         next: (result: QuerySingleRowResult<PatchIdRow>) => {
           expect(result.data.id).toBe(3);
           done();
@@ -580,7 +581,7 @@ describe('SupabaseService - GET cached delegates', () => {
       } satisfies QueryCountRowsResult<RackListQueryRow>;
       spyOn(supabaseClient, 'from').and.returnValue(chainable<RackListQueryRow>(mockRacks));
       
-      service.GET.racksMinimal().subscribe({
+      (service.GET.racksMinimal() as unknown as Observable<QueryCountRowsResult<RackIdRow>>).subscribe({
         next: (result: QueryCountRowsResult<RackIdRow>) => {
           expect(result).toBeDefined();
           done();
@@ -604,7 +605,7 @@ describe('SupabaseService - GET cached delegates', () => {
       const ilikeSpy = spyOn(mock, 'ilike').and.callThrough();
       spyOn(supabaseClient, 'from').and.returnValue(mock);
       
-      service.GET.racksMinimal(0, undefined, 'studio').subscribe({
+      (service.GET.racksMinimal(0, undefined, 'studio') as unknown as Observable<QueryCountRowsResult<RackIdRow>>).subscribe({
         next: (result: QueryCountRowsResult<RackIdRow>) => {
           expect(ilikeSpy).not.toHaveBeenCalled();
           expect(result.count).toBe(1);
@@ -782,7 +783,7 @@ describe('SupabaseService - GET cached delegates', () => {
         chainable<CurrentUserCommentRow>({data: [{id: 1, content: 'Hello'}], error: null} satisfies QueryListRowsResult<CurrentUserCommentRow>)
       );
       
-      service.GET.currentUserComments().subscribe({
+      (service.GET.currentUserComments() as unknown as Observable<QueryListRowsResult<CurrentUserCommentRow>>).subscribe({
         next: (result: QueryListRowsResult<CurrentUserCommentRow>) => {
           expect(result).toBeDefined();
           done();

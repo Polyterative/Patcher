@@ -5,7 +5,10 @@ import type {
   MinimalModule,
   RackedModule
 } from 'src/app/models/module';
-import { firstValueFrom } from 'rxjs';
+import {
+  firstValueFrom,
+  type Observable
+} from 'rxjs';
 import type { SupabaseTableRow } from '../../supabase-db.types';
 import {
   cleanupSupabaseServiceTest,
@@ -55,7 +58,7 @@ describe('SupabaseService - get simple queries', () => {
         chainable<StandardRow>({data: mockData, error: null} satisfies QueryListRowsResult<StandardRow>)
       );
 
-      service.get.standards().subscribe({
+      (service.get.standards() as unknown as Observable<QueryListRowsResult<StandardRow>>).subscribe({
         next: (result: QueryListRowsResult<StandardRow>) => {
           expect(result.data).toEqual(mockData);
           done();
@@ -92,7 +95,7 @@ describe('SupabaseService - get simple queries', () => {
         chainable<ManufacturerRow>({data: mockData, error: null} satisfies QuerySingleRowResult<ManufacturerRow>)
       );
 
-      service.get.manufacturerWithId(5).subscribe({
+      (service.get.manufacturerWithId(5) as unknown as Observable<QuerySingleRowResult<ManufacturerRow>>).subscribe({
         next: (result: QuerySingleRowResult<ManufacturerRow>) => {
           expect(result.data).toEqual(mockData);
           done();
@@ -132,7 +135,7 @@ describe('SupabaseService - get simple queries', () => {
         chainable<ProfileRow>({data: mockData, error: null} satisfies QuerySingleRowResult<ProfileRow>)
       );
 
-      service.get.userWithId('user-42').subscribe({
+      (service.get.userWithId('user-42') as unknown as Observable<QuerySingleRowResult<ProfileRow>>).subscribe({
         next: (result: QuerySingleRowResult<ProfileRow>) => {
           expect(result.data).toEqual(mockData);
           done();
@@ -277,7 +280,7 @@ describe('SupabaseService - get simple queries', () => {
         chainable<PatchDetailRow>({data: mockData, error: null} satisfies QuerySingleRowResult<PatchDetailRow>)
       );
 
-      service.get.patchWithId(10).subscribe({
+      (service.get.patchWithId(10) as unknown as Observable<QuerySingleRowResult<PatchDetailRow>>).subscribe({
         next: (result: QuerySingleRowResult<PatchDetailRow>) => {
           expect(result.data.id).toBe(10);
           done();
@@ -295,7 +298,7 @@ describe('SupabaseService - get simple queries', () => {
         chainable<PatchDetailRow>({data: mockData, error: null} satisfies QuerySingleRowResult<PatchDetailRow>)
       );
 
-      service.get.patchWithId(10).subscribe({
+      (service.get.patchWithId(10) as unknown as Observable<QuerySingleRowResult<PatchDetailRow>>).subscribe({
         next: (result: QuerySingleRowResult<PatchDetailRow>) => {
           expect(result.data.linked_rack_id).toBe(33);
           done();
@@ -524,7 +527,7 @@ describe('SupabaseService - get simple queries', () => {
         )
       );
 
-      service.get.publicProfileByUsername('patcher_fan').subscribe({
+      (service.get.publicProfileByUsername('patcher_fan') as unknown as Observable<QuerySingleRowResult<ProfileByUsernameRow>>).subscribe({
         next: (result: QuerySingleRowResult<ProfileByUsernameRow>) => {
           expect(result.data).toEqual(mockData);
           done();

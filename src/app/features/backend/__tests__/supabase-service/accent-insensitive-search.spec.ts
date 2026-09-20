@@ -18,11 +18,13 @@ import {
 
 
 type PatchSearchRow = Pick<SupabaseTableRow<'patches'>, 'id' | 'name'> & {
-  author_profile_gate: { public: boolean };
+  // Optional: list methods strip the gate join before returning rows.
+  author_profile_gate?: { public: boolean };
 };
 
 type RackSearchRow = Pick<SupabaseTableRow<'racks'>, 'id' | 'name'> & {
-  author_profile_gate: { public: boolean };
+  // Optional: list methods strip the gate join before returning rows.
+  author_profile_gate?: { public: boolean };
 };
 
 type ManufacturerSearchRow = Pick<SupabaseTableRow<'manufacturers'>, 'id' | 'name'>;
@@ -37,8 +39,9 @@ type ModuleDetailRow = ModuleSearchRow & {
 
 type SearchObservableResult<Row> = {
   data: Row[] | null;
-  count: number | null;
-  error?: PostgrestError | null;
+  // Optional: single-row and strip outputs don't always carry a count.
+  count?: number | null;
+  error?: unknown;
 };
 
 type ModuleRowsFetchResult = QueryListRowsResult<ModuleSearchRow> | {
@@ -260,7 +263,7 @@ describe('SupabaseService - accent-insensitive search', () => {
     );
 
     service.GET.modules(0, 10, 'erbe').subscribe({
-      next: (result: QueryChainResult<ModuleSearchRow>) => {
+      next: (result: {error: unknown}) => {
         expect(supabaseClient.from).not.toHaveBeenCalled();
         expect(result.error).toBe(fallbackError);
         done();
