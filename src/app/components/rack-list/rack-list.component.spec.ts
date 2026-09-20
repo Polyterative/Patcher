@@ -90,7 +90,9 @@ function makeReactionBackendSpy(): ReactionBackendSpy {
       reaction: jasmine.createSpy<SupabaseService['add']['reaction']>('addReaction').and.returnValue(of(null)),
     },
     delete: {
-      reaction: jasmine.createSpy<SupabaseService['delete']['reaction']>('deleteReaction').and.returnValue(of([])),
+      reaction: jasmine.createSpy<SupabaseService['delete']['reaction']>('deleteReaction').and.returnValue(
+        of([]) as unknown as ReturnType<SupabaseService['delete']['reaction']>
+      ),
     }
   };
 }

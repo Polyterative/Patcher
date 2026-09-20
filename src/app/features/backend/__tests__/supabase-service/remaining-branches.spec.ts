@@ -1,5 +1,8 @@
 import { of } from 'rxjs';
-import type { PostgrestError } from '@supabase/supabase-js';
+import type {
+  PostgrestError,
+  PostgrestSingleResponse
+} from '@supabase/supabase-js';
 import type { CV, CVwithModule } from 'src/app/models/cv';
 import type { PatchConnection } from 'src/app/models/connection';
 import type {
@@ -390,7 +393,7 @@ describe('SupabaseService - Remaining Branches', () => {
       return updateQuery;
     });
     
-    spyOn(service.delete, 'patchConnectionsForPatch').and.returnValue(of({}));
+    spyOn(service.delete, 'patchConnectionsForPatch').and.returnValue(of({data: null, error: null} as PostgrestSingleResponse<null>));
     const connection: PatchConnection = {
       patch: patchFixture(999),
       a: cvWithModuleFixture(10, 10),

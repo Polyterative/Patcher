@@ -1,4 +1,5 @@
 import { SupabaseService } from '../../supabase.service';
+import type { Observable } from 'rxjs';
 import type { SupabaseTableRow } from '../../supabase-db.types';
 import {
   cleanupSupabaseServiceTest,
@@ -48,7 +49,7 @@ describe('SupabaseService - GET.currentUserComments', () => {
       chainable<CurrentUserCommentRow>({data: mockComments, count: 2, error: null})
     );
     
-    service.GET.currentUserComments(0, 9).subscribe({
+    (service.GET.currentUserComments(0, 9) as unknown as Observable<CurrentUserCommentsResult>).subscribe({
       next: (result: CurrentUserCommentsResult) => {
         expect(result.data).toEqual(mockComments);
         expect(result.count).toBe(2);
