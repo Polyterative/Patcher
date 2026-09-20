@@ -132,13 +132,13 @@ export function catchErrors<T>(snackBar: MatSnackBar): (source: Observable<T>) =
 
 export function remapErrors<T>() {
   // In Supabase v2, errors are handled differently - just pass through
-  return (source: Observable<any>) => source;
+  return (source: Observable<T>) => source;
 }
 
 export function throwIfSupabaseError<T>() {
-  return (source: Observable<any>) => source.pipe(
-    map((response: any) => {
-      const responseError = (response as {error?: unknown} | null | undefined)?.error;
+  return (source: Observable<T>) => source.pipe(
+    map((response: T) => {
+      const responseError = (response as unknown as {error?: unknown} | null | undefined)?.error;
       if (responseError) {
         throw responseError;
       }
