@@ -7,29 +7,20 @@ import {
 } from './test-setup';
 import {
   authUserFixture,
+  chainable,
   mockUserSession
 } from './supabase-query-test-doubles';
-
-
-function chainable(resolveValue: any = {data: null, error: null}) {
-  const m: any = {};
-  ['select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit', 'single',
-    'insert', 'update', 'delete', 'upsert', 'ilike'].forEach(method => {
-    m[method] = () => m;
-  });
-  m.then = (res: Function, rej?: Function) =>
-    Promise.resolve(resolveValue).then(res as any, rej as any);
-  return m;
-}
+import type { CachedEntity } from '../../supabase.cache';
+import type { RackMinimal } from 'src/app/models/rack';
 
 describe('SupabaseService - GET.userPatchesPaginated', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: {from: (table: string) => unknown};
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = (service as unknown as {supabase: {from: (table: string) => unknown}}).supabase;
   });
   
   afterEach(() => {
@@ -37,8 +28,8 @@ describe('SupabaseService - GET.userPatchesPaginated', () => {
   });
   
   it('should return paginated {data, count} for the current user', (done) => {
-    const mockUser = {id: 'user-42'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('user-42');
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
     
     const mockPatches = [{id: 1, name: 'Patch A'}, {id: 2, name: 'Patch B'}];
     spyOn(supabaseClient, 'from').and.returnValue(
@@ -46,8 +37,8 @@ describe('SupabaseService - GET.userPatchesPaginated', () => {
     );
     
     service.GET.userPatchesPaginated(0, 9).subscribe({
-      next: (result: any) => {
-        expect(result.data).toEqual(mockPatches);
+      next: (result) => {
+        expect(result.data as unknown).toEqual(mockPatches);
         expect(result.count).toBe(2);
         done();
       },
@@ -59,8 +50,8 @@ describe('SupabaseService - GET.userPatchesPaginated', () => {
   }, TEST_TIMEOUT);
   
   it('should filter patches by the current user id', (done) => {
-    const mockUser = {id: 'owner-99'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('owner-99');
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
     
     const mock = chainable({data: [], count: 0, error: null});
     const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
@@ -79,8 +70,8 @@ describe('SupabaseService - GET.userPatchesPaginated', () => {
   }, TEST_TIMEOUT);
   
   it('should pass the from/to range to the query', (done) => {
-    const mockUser = {id: 'u1'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('u1');
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
     
     const mock = chainable({data: [], count: 0, error: null});
     const rangeSpy = spyOn(mock, 'range').and.returnValue(mock);
@@ -99,8 +90,8 @@ describe('SupabaseService - GET.userPatchesPaginated', () => {
   }, TEST_TIMEOUT);
   
   it('should order patches by updated descending', (done) => {
-    const mockUser = {id: 'u1'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('u1');
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
     
     const mock = chainable({data: [], count: 0, error: null});
     const orderSpy = spyOn(mock, 'order').and.returnValue(mock);
@@ -122,12 +113,12 @@ describe('SupabaseService - GET.userPatchesPaginated', () => {
 
 describe('SupabaseService - GET.userRacksPaginated', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: {from: (table: string) => unknown};
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = (service as unknown as {supabase: {from: (table: string) => unknown}}).supabase;
   });
   
   afterEach(() => {
@@ -135,8 +126,8 @@ describe('SupabaseService - GET.userRacksPaginated', () => {
   });
   
   it('should return paginated {data, count} for the current user', (done) => {
-    const mockUser = {id: 'user-7'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('user-7');
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
     
     const mockRacks = [{id: 10, name: 'Rack X'}];
     spyOn(supabaseClient, 'from').and.returnValue(
@@ -144,8 +135,8 @@ describe('SupabaseService - GET.userRacksPaginated', () => {
     );
     
     service.GET.userRacksPaginated(0, 9).subscribe({
-      next: (result: any) => {
-        expect(result.data).toEqual(mockRacks);
+      next: (result) => {
+        expect(result.data as unknown).toEqual(mockRacks);
         expect(result.count).toBe(1);
         done();
       },
@@ -157,8 +148,8 @@ describe('SupabaseService - GET.userRacksPaginated', () => {
   }, TEST_TIMEOUT);
   
   it('should filter racks by current user id', (done) => {
-    const mockUser = {id: 'rack-owner'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('rack-owner');
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
     
     const mock = chainable({data: [], count: 0, error: null});
     const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
@@ -177,8 +168,8 @@ describe('SupabaseService - GET.userRacksPaginated', () => {
   }, TEST_TIMEOUT);
   
   it('should apply the from/to range', (done) => {
-    const mockUser = {id: 'u2'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('u2');
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
     
     const mock = chainable({data: [], count: 0, error: null});
     const rangeSpy = spyOn(mock, 'range').and.returnValue(mock);
@@ -197,17 +188,17 @@ describe('SupabaseService - GET.userRacksPaginated', () => {
   }, TEST_TIMEOUT);
   
   it('should return empty data array when user has no racks', (done) => {
-    const mockUser = {id: 'empty-user'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('empty-user');
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
     
     spyOn(supabaseClient, 'from').and.returnValue(
       chainable({data: [], count: 0, error: null})
     );
     
     service.GET.userRacksPaginated(0, 9).subscribe({
-      next: (result: any) => {
+      next: (result) => {
         expect(result.count).toBe(0);
-        expect(result.data).toEqual([]);
+        expect(result.data as unknown).toEqual([]);
         done();
       },
       error: (err) => {
@@ -240,12 +231,12 @@ describe('SupabaseService - GET.userRacksPaginated', () => {
 
 describe('SupabaseService - GET.publicUserPatchesPaginated', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: {from: (table: string) => unknown};
 
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = (service as unknown as {supabase: {from: (table: string) => unknown}}).supabase;
   });
 
   afterEach(() => {
@@ -282,9 +273,9 @@ describe('SupabaseService - GET.publicUserPatchesPaginated', () => {
     }));
 
     service.GET.publicUserPatchesPaginated('public-author', 0, 9).subscribe({
-      next: (result: any) => {
+      next: (result) => {
         expect(result.count).toBe(1);
-        expect(result.data).toEqual([{
+        expect(result.data as unknown).toEqual([{
           id: 123,
           name: 'Visible patch',
           author: {id: 'public-author', username: 'patcher'},
@@ -319,13 +310,13 @@ describe('SupabaseService - GET.publicUserPatchesPaginated', () => {
 
 describe('SupabaseService - GET.publicUserRacksPaginated', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: {from: (table: string) => unknown};
   const publicAuthorGateAlias = 'author_profile_gate';
 
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = (service as unknown as {supabase: {from: (table: string) => unknown}}).supabase;
   });
 
   afterEach(() => {
@@ -364,9 +355,9 @@ describe('SupabaseService - GET.publicUserRacksPaginated', () => {
     }));
 
     service.GET.publicUserRacksPaginated('public-author', 0, 9).subscribe({
-      next: (result: any) => {
+      next: (result) => {
         expect(result.count).toBe(1);
-        expect(result.data).toEqual([{
+        expect(result.data as unknown).toEqual([{
           id: 77,
           name: 'Visible rack',
           author: {id: 'public-author', username: 'patcher'},
@@ -421,12 +412,12 @@ describe('SupabaseService - GET.publicUserRacksPaginated', () => {
 
 describe('SupabaseService - GET.racksMinimal', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: {from: (table: string) => unknown};
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = (service as unknown as {supabase: {from: (table: string) => unknown}}).supabase;
   });
   
   afterEach(() => {
@@ -440,8 +431,8 @@ describe('SupabaseService - GET.racksMinimal', () => {
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
     service.GET.racksMinimal(0, 19).subscribe({
-      next: (result: any) => {
-        expect(result.data).toEqual(mockRacks);
+      next: (result) => {
+        expect(result.data as unknown).toEqual(mockRacks);
         expect(result.count).toBe(1);
         done();
       },
@@ -484,10 +475,10 @@ describe('SupabaseService - GET.racksMinimal', () => {
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
     service.GET.racksMinimal(0, 19, 'Drum').subscribe({
-      next: (result: any) => {
+      next: (result) => {
         expect(ilikeSpy).not.toHaveBeenCalled();
         expect(result.count).toBe(1);
-        expect(result.data).toEqual([
+        expect(result.data as unknown).toEqual([
           {id: 1, name: 'Drum Bus'}
         ]);
         done();
@@ -559,12 +550,12 @@ describe('SupabaseService - GET.racksMinimal', () => {
 
 describe('SupabaseService - GET.patchConnections', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: {from: (table: string) => unknown};
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = (service as unknown as {supabase: {from: (table: string) => unknown}}).supabase;
   });
   
   afterEach(() => {
@@ -580,8 +571,8 @@ describe('SupabaseService - GET.patchConnections', () => {
     );
     
     service.GET.patchConnections(5).subscribe({
-      next: (result: any) => {
-        expect(result).toEqual(mockConnections);
+      next: (result) => {
+        expect(result as unknown).toEqual(mockConnections);
         done();
       },
       error: (err) => {
@@ -615,7 +606,7 @@ describe('SupabaseService - GET.patchConnections', () => {
     
     service.GET.patchConnections(1).subscribe({
       next: () => {
-        expect(orderSpy).toHaveBeenCalledWith('ordinal');
+        expect(orderSpy.calls.first().args[0]).toBe('ordinal');
         done();
       },
       error: (err) => {
@@ -631,7 +622,7 @@ describe('SupabaseService - GET.patchConnections', () => {
     );
     
     service.GET.patchConnections(99).subscribe({
-      next: (result: any) => {
+      next: (result) => {
         expect(result).toBeNull();
         done();
       },
@@ -645,12 +636,12 @@ describe('SupabaseService - GET.patchConnections', () => {
 
 describe('SupabaseService - GET.patchModuleInstances', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: {from: (table: string) => unknown};
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = (service as unknown as {supabase: {from: (table: string) => unknown}}).supabase;
   });
   
   afterEach(() => {
@@ -667,7 +658,7 @@ describe('SupabaseService - GET.patchModuleInstances', () => {
     );
     
     service.GET.patchModuleInstances(7).subscribe({
-      next: (result: any) => {
+      next: (result) => {
         expect(result.length).toBe(2);
         expect(result[0].instance_label).toBe('Osc 1');
         expect(result[1].instance_label).toBeNull();
@@ -703,7 +694,7 @@ describe('SupabaseService - GET.patchModuleInstances', () => {
     );
     
     service.GET.patchModuleInstances(0).subscribe({
-      next: (result: any) => {
+      next: (result) => {
         // remapErrors + map(x => x.data as PatchModuleInstance[]) may return null;
         // at minimum it must not throw
         expect(result === null || Array.isArray(result)).toBeTrue();
@@ -730,10 +721,10 @@ describe('SupabaseService - get.currentUserPatches unauthenticated', () => {
   });
   
   it('should return empty array when there is no user session', (done) => {
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(null));
     
     service.get.currentUserPatches().subscribe({
-      next: (result: any) => {
+      next: (result) => {
         expect(Array.isArray(result)).toBeTrue();
         expect(result.length).toBe(0);
         done();
@@ -748,12 +739,12 @@ describe('SupabaseService - get.currentUserPatches unauthenticated', () => {
 
 describe('SupabaseService - get.currentUserRacks authorid override', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: {from: (table: string) => unknown};
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = (service as unknown as {supabase: {from: (table: string) => unknown}}).supabase;
   });
   
   afterEach(() => {
@@ -763,7 +754,7 @@ describe('SupabaseService - get.currentUserRacks authorid override', () => {
   it('should query by the current session authorid', (done) => {
     const mock = chainable({data: [{id: 5, name: 'Guest Rack'}], error: null});
     const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'session-author-id'}));
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(authUserFixture('session-author-id')));
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
     service.get.currentUserRacks().subscribe({
@@ -781,12 +772,12 @@ describe('SupabaseService - get.currentUserRacks authorid override', () => {
 
 describe('SupabaseService - get.myVotes', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: {from: (table: string) => unknown};
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = (service as unknown as {supabase: {from: (table: string) => unknown}}).supabase;
   });
   
   afterEach(() => {
@@ -794,16 +785,16 @@ describe('SupabaseService - get.myVotes', () => {
   });
   
   it('should return an array of voted moduletagids', (done) => {
-    const mockUser = {id: 'voter'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('voter');
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
     
     spyOn(supabaseClient, 'from').and.returnValue(
       chainable({data: [{moduletagid: 10}, {moduletagid: 20}], error: null})
     );
     
     service.get.myVotes().subscribe({
-      next: (result: any) => {
-        expect(result).toEqual([10, 20]);
+      next: (result) => {
+        expect(result as unknown).toEqual([10, 20]);
         done();
       },
       error: (err) => {
@@ -814,16 +805,16 @@ describe('SupabaseService - get.myVotes', () => {
   }, TEST_TIMEOUT);
   
   it('should return empty array when user has cast no votes', (done) => {
-    const mockUser = {id: 'no-votes-user'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('no-votes-user');
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
     
     spyOn(supabaseClient, 'from').and.returnValue(
       chainable({data: [], error: null})
     );
     
     service.get.myVotes().subscribe({
-      next: (result: any) => {
-        expect(result).toEqual([]);
+      next: (result) => {
+        expect(result as unknown).toEqual([]);
         done();
       },
       error: (err) => {
@@ -834,8 +825,8 @@ describe('SupabaseService - get.myVotes', () => {
   }, TEST_TIMEOUT);
   
   it('should filter votes by current user authorid', (done) => {
-    const mockUser = {id: 'voter-123'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('voter-123');
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
     
     const mock = chainable({data: [], error: null});
     const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
@@ -856,12 +847,12 @@ describe('SupabaseService - get.myVotes', () => {
 
 describe('SupabaseService - add.patchModuleInstance', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: {from: (table: string) => unknown};
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = (service as unknown as {supabase: {from: (table: string) => unknown}}).supabase;
   });
   
   afterEach(() => {
@@ -869,8 +860,8 @@ describe('SupabaseService - add.patchModuleInstance', () => {
   });
   
   it('should insert a patch module instance and return the created row', (done) => {
-    const mockUser = {id: 'author'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('author');
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
     
     const mockRow = {id: 77, patch_id: 3, module_id: 5, instance_label: 'VCO 1'};
     const mock = chainable({data: mockRow, error: null});
@@ -878,7 +869,7 @@ describe('SupabaseService - add.patchModuleInstance', () => {
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
     service.add.patchModuleInstance(3, 5, 'VCO 1').subscribe({
-      next: (result: any) => {
+      next: (result) => {
         expect(insertSpy).toHaveBeenCalledWith({
           patch_id: 3,
           module_id: 5,
@@ -895,8 +886,8 @@ describe('SupabaseService - add.patchModuleInstance', () => {
   }, TEST_TIMEOUT);
   
   it('should store null when no instance_label is provided', (done) => {
-    const mockUser = {id: 'author'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('author');
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
     
     const mock = chainable({data: {id: 88, patch_id: 1, module_id: 2, instance_label: null}, error: null});
     const insertSpy = spyOn(mock, 'insert').and.returnValue(mock);
@@ -919,14 +910,14 @@ describe('SupabaseService - add.patchModuleInstance', () => {
   }, TEST_TIMEOUT);
   
   it('should bust patchConnections and patchModuleInstances caches', (done) => {
-    const mockUser = {id: 'u'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('u');
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
     spyOn(supabaseClient, 'from').and.returnValue(
       chainable({data: {id: 1, patch_id: 1, module_id: 1, instance_label: null}, error: null})
     );
     
-    const bustedKeys: any[] = [];
-    service.cacheResetter$.subscribe((keys: any) => bustedKeys.push(...keys));
+    const bustedKeys: CachedEntity[] = [];
+    service.cacheResetter$.subscribe(keys => bustedKeys.push(...keys));
     
     service.add.patchModuleInstance(1, 1).subscribe({
       next: () => {
@@ -944,12 +935,12 @@ describe('SupabaseService - add.patchModuleInstance', () => {
 
 describe('SupabaseService - add.patchModuleInstances (batch)', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: {from: (table: string) => unknown};
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = (service as unknown as {supabase: {from: (table: string) => unknown}}).supabase;
   });
   
   afterEach(() => {
@@ -957,8 +948,8 @@ describe('SupabaseService - add.patchModuleInstances (batch)', () => {
   });
   
   it('should batch insert multiple instances in a single call', (done) => {
-    const mockUser = {id: 'batch-author'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('batch-author');
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
     
     const rows = [
       {patch_id: 10, module_id: 1, instance_label: 'A'},
@@ -971,7 +962,7 @@ describe('SupabaseService - add.patchModuleInstances (batch)', () => {
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
     service.add.patchModuleInstances(rows).subscribe({
-      next: (result: any) => {
+      next: (result) => {
         expect(insertSpy).toHaveBeenCalledWith(rows);
         expect(result.length).toBe(3);
         done();
@@ -986,12 +977,12 @@ describe('SupabaseService - add.patchModuleInstances (batch)', () => {
 
 describe('SupabaseService - delete.userRack', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: {from: (table: string) => unknown};
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = (service as unknown as {supabase: {from: (table: string) => unknown}}).supabase;
   });
   
   afterEach(() => {
@@ -999,8 +990,8 @@ describe('SupabaseService - delete.userRack', () => {
   });
   
   it('should delete the rack scoped to the current user', (done) => {
-    const mockUser = {id: 'rack-owner'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('rack-owner');
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
     
     const mock = chainable({data: null, error: null});
     const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
@@ -1020,12 +1011,12 @@ describe('SupabaseService - delete.userRack', () => {
   }, TEST_TIMEOUT);
   
   it('should bust rackWithId cache after deletion', (done) => {
-    const mockUser = {id: 'u'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('u');
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
     spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: null}));
     
-    const bustedKeys: any[] = [];
-    service.cacheResetter$.subscribe((keys: any) => bustedKeys.push(...keys));
+    const bustedKeys: CachedEntity[] = [];
+    service.cacheResetter$.subscribe(keys => bustedKeys.push(...keys));
     
     service.delete.userRack(1).subscribe({
       next: () => {
@@ -1042,12 +1033,12 @@ describe('SupabaseService - delete.userRack', () => {
 
 describe('SupabaseService - delete.patchConnectionsForPatch', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: {from: (table: string) => unknown};
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = (service as unknown as {supabase: {from: (table: string) => unknown}}).supabase;
   });
   
   afterEach(() => {
@@ -1055,8 +1046,8 @@ describe('SupabaseService - delete.patchConnectionsForPatch', () => {
   });
   
   it('should delete all connections for the given patch id', (done) => {
-    const mockUser = {id: 'u'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('u');
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
     
     const mock = chainable({data: null, error: null});
     const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
@@ -1075,12 +1066,12 @@ describe('SupabaseService - delete.patchConnectionsForPatch', () => {
   }, TEST_TIMEOUT);
   
   it('should bust patchConnections and patches caches', (done) => {
-    const mockUser = {id: 'u'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('u');
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
     spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: null}));
     
-    const bustedKeys: any[] = [];
-    service.cacheResetter$.subscribe((keys: any) => bustedKeys.push(...keys));
+    const bustedKeys: CachedEntity[] = [];
+    service.cacheResetter$.subscribe(keys => bustedKeys.push(...keys));
     
     service.delete.patchConnectionsForPatch(33).subscribe({
       next: () => {
@@ -1098,12 +1089,12 @@ describe('SupabaseService - delete.patchConnectionsForPatch', () => {
 
 describe('SupabaseService - delete.patchModuleInstancesForPatch', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: {from: (table: string) => unknown};
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = (service as unknown as {supabase: {from: (table: string) => unknown}}).supabase;
   });
   
   afterEach(() => {
@@ -1111,8 +1102,8 @@ describe('SupabaseService - delete.patchModuleInstancesForPatch', () => {
   });
   
   it('should delete all module instances for the given patch_id', (done) => {
-    const mockUser = {id: 'u'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('u');
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
     
     const mock = chainable({data: null, error: null});
     const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
@@ -1131,12 +1122,12 @@ describe('SupabaseService - delete.patchModuleInstancesForPatch', () => {
   }, TEST_TIMEOUT);
   
   it('should bust patchConnections and patchModuleInstances caches', (done) => {
-    const mockUser = {id: 'u'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('u');
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
     spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: null}));
     
-    const bustedKeys: any[] = [];
-    service.cacheResetter$.subscribe((keys: any) => bustedKeys.push(...keys));
+    const bustedKeys: CachedEntity[] = [];
+    service.cacheResetter$.subscribe(keys => bustedKeys.push(...keys));
     
     service.delete.patchModuleInstancesForPatch(44).subscribe({
       next: () => {
@@ -1154,12 +1145,12 @@ describe('SupabaseService - delete.patchModuleInstancesForPatch', () => {
 
 describe('SupabaseService - update.rack', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: {from: (table: string) => unknown};
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = (service as unknown as {supabase: {from: (table: string) => unknown}}).supabase;
   });
   
   afterEach(() => {
@@ -1167,21 +1158,21 @@ describe('SupabaseService - update.rack', () => {
   });
   
   it('should upsert rack with correct fields including authorid from session', (done) => {
-    const mockUser = {id: 'rack-author'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('rack-author');
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
     
     const mock = chainable({data: [{id: 3}], error: null});
     const upsertSpy = spyOn(mock, 'upsert').and.returnValue(mock);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
-    const rackData: any = {
+    const rackData = {
       id: 3, name: 'Updated Rack', hp: 84, rows: 3,
       description: 'test', locked: false, public: true, image: null
     };
     
-    service.update.rack(rackData).subscribe({
+    service.update.rack(rackData as unknown as RackMinimal).subscribe({
       next: () => {
-        const payload = upsertSpy.calls.first().args[0] as any;
+        const payload = upsertSpy.calls.first().args[0] as unknown as Record<string, unknown>;
         expect(payload.authorid).toBe('rack-author');
         expect(payload.name).toBe('Updated Rack');
         expect(payload.id).toBe(3);
@@ -1195,14 +1186,14 @@ describe('SupabaseService - update.rack', () => {
   }, TEST_TIMEOUT);
   
   it('should bust rackWithId cache', (done) => {
-    const mockUser = {id: 'u'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('u');
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
     spyOn(supabaseClient, 'from').and.returnValue(chainable({data: [{id: 1}], error: null}));
     
-    const bustedKeys: any[] = [];
-    service.cacheResetter$.subscribe((keys: any) => bustedKeys.push(...keys));
+    const bustedKeys: CachedEntity[] = [];
+    service.cacheResetter$.subscribe(keys => bustedKeys.push(...keys));
     
-    service.update.rack({id: 1, name: 'R', hp: 84, rows: 3} as any).subscribe({
+    service.update.rack({id: 1, name: 'R', hp: 84, rows: 3} as unknown as RackMinimal).subscribe({
       next: () => {
         expect(bustedKeys).toContain('rackWithId');
         done();
@@ -1215,9 +1206,9 @@ describe('SupabaseService - update.rack', () => {
   }, TEST_TIMEOUT);
   
   it('should throw when user is not authenticated', (done) => {
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(null));
     
-    service.update.rack({id: 1, name: 'R', hp: 84, rows: 3} as any).subscribe({
+    service.update.rack({id: 1, name: 'R', hp: 84, rows: 3} as unknown as RackMinimal).subscribe({
       next: () => {
         fail('should have errored');
         done();
@@ -1232,12 +1223,12 @@ describe('SupabaseService - update.rack', () => {
 
 describe('SupabaseService - update.patchModuleInstanceLabel', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: {from: (table: string) => unknown};
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = (service as unknown as {supabase: {from: (table: string) => unknown}}).supabase;
   });
   
   afterEach(() => {
@@ -1245,15 +1236,15 @@ describe('SupabaseService - update.patchModuleInstanceLabel', () => {
   });
   
   it('should update instance_label for the given id', (done) => {
-    const mockUser = {id: 'u'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('u');
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
     
     const mock = chainable({data: {id: 5, patch_id: 1, module_id: 2, instance_label: 'LFO 2'}, error: null});
     const updateSpy = spyOn(mock, 'update').and.returnValue(mock);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
     service.update.patchModuleInstanceLabel(5, 'LFO 2').subscribe({
-      next: (result: any) => {
+      next: (result) => {
         expect(updateSpy).toHaveBeenCalledWith({instance_label: 'LFO 2'});
         expect(result.instance_label).toBe('LFO 2');
         done();
@@ -1266,8 +1257,8 @@ describe('SupabaseService - update.patchModuleInstanceLabel', () => {
   }, TEST_TIMEOUT);
   
   it('should allow clearing a label by passing null', (done) => {
-    const mockUser = {id: 'u'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('u');
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
     
     const mock = chainable({data: {id: 5, patch_id: 1, module_id: 2, instance_label: null}, error: null});
     const updateSpy = spyOn(mock, 'update').and.returnValue(mock);
@@ -1286,14 +1277,14 @@ describe('SupabaseService - update.patchModuleInstanceLabel', () => {
   }, TEST_TIMEOUT);
   
   it('should bust patchConnections and patchModuleInstances caches', (done) => {
-    const mockUser = {id: 'u'};
-    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    const mockUser = authUserFixture('u');
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
     spyOn(supabaseClient, 'from').and.returnValue(
       chainable({data: {id: 1, patch_id: 1, module_id: 1, instance_label: 'X'}, error: null})
     );
     
-    const bustedKeys: any[] = [];
-    service.cacheResetter$.subscribe((keys: any) => bustedKeys.push(...keys));
+    const bustedKeys: CachedEntity[] = [];
+    service.cacheResetter$.subscribe(keys => bustedKeys.push(...keys));
     
     service.update.patchModuleInstanceLabel(1, 'X').subscribe({
       next: () => {
@@ -1311,12 +1302,12 @@ describe('SupabaseService - update.patchModuleInstanceLabel', () => {
 
 describe('SupabaseService - get.allTags', () => {
   let service: SupabaseService;
-  let supabaseClient: any;
+  let supabaseClient: {from: (table: string) => unknown};
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = (service as unknown as {supabase: {from: (table: string) => unknown}}).supabase;
   });
   
   afterEach(() => {
@@ -1335,7 +1326,7 @@ describe('SupabaseService - get.allTags', () => {
     
     service.get.allTags().subscribe({
       next: (result) => {
-        expect(result).toEqual(mockTags);
+        expect(result as unknown).toEqual(mockTags);
         expect(orderSpy).toHaveBeenCalledWith('type', {ascending: true});
         expect(orderSpy).toHaveBeenCalledWith('name', {ascending: true});
         done();
@@ -1352,7 +1343,7 @@ describe('SupabaseService - get.allTags', () => {
     
     service.get.allTags().subscribe({
       next: (result) => {
-        expect(result).toEqual([]);
+        expect(result as unknown).toEqual([]);
         done();
       },
       error: (err) => {

@@ -6,17 +6,13 @@ import {
 } from './test-setup';
 import { SupabaseService } from '../../supabase.service';
 import { DEFAULT_RACK_MODULE_ORIENTATION } from 'src/app/models/rack';
-
-function chainable(resolveValue: any = {data: null, error: null}) {
-  const m: any = {};
-  ['select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit', 'single',
-    'insert', 'update', 'delete', 'upsert', 'ilike'].forEach(method => {
-    m[method] = () => m;
-  });
-  m.then = (res: Function, rej?: Function) =>
-    Promise.resolve(resolveValue).then(res as any, rej as any);
-  return m;
-}
+import type { RackMinimal } from 'src/app/models/rack';
+import type { MinimalManufacturer } from 'src/app/models/manufacturer';
+import {
+  authUserFixture,
+  chainable
+} from './supabase-query-test-doubles';
+import type { CachedEntity } from '../../supabase.cache';
 
 
 /**
@@ -31,14 +27,12 @@ function chainable(resolveValue: any = {data: null, error: null}) {
  */
 describe('SupabaseService - CRUD Operations', () => {
   let service: SupabaseService;
-  let mockSnackBar: any;
-  let supabaseClient: any;
+  let supabaseClient: {from: (table: string) => unknown};
   
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
-    mockSnackBar = setup.mockSnackBar;
-    supabaseClient = (service as any).supabase;
+    supabaseClient = (service as unknown as {supabase: {from: (table: string) => unknown}}).supabase;
   });
   
   afterEach(() => {
@@ -58,7 +52,7 @@ describe('SupabaseService - CRUD Operations', () => {
         updated_at: new Date().toISOString()
       };
       
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
       
       const insertSpy = jasmine.createSpy('insert').and.returnValue(
         Promise.resolve({data: {id: 1}, error: null})
@@ -100,10 +94,10 @@ describe('SupabaseService - CRUD Operations', () => {
         updated_at: new Date().toISOString()
       };
       
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
       
       let capturedAuthorId: string | undefined;
-      const insertSpy = jasmine.createSpy('insert').and.callFake((data: any) => {
+      const insertSpy = jasmine.createSpy('insert').and.callFake((data: {authorId?: string}) => {
         capturedAuthorId = data.authorId;
         return Promise.resolve({data: {id: 1}, error: null});
       });
@@ -139,7 +133,7 @@ describe('SupabaseService - CRUD Operations', () => {
         updated_at: new Date().toISOString()
       };
       
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
       
       const insertSpy = jasmine.createSpy('insert').and.returnValue(
         Promise.resolve({data: null, error: null})
@@ -174,7 +168,7 @@ describe('SupabaseService - CRUD Operations', () => {
         updated_at: new Date().toISOString()
       };
       
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
       
       const mock = chainable({data: [{id: 99}], error: null});
       const insertSpy = spyOn(mock, 'insert').and.returnValue(mock);
@@ -206,17 +200,17 @@ describe('SupabaseService - CRUD Operations', () => {
         updated_at: new Date().toISOString()
       };
       
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
       
       const mock = chainable({data: [{id: 777}], error: null});
       spyOn(mock, 'insert').and.returnValue(mock);
       spyOn(mock, 'select').and.returnValue(mock);
       spyOn(supabaseClient, 'from').and.returnValue(mock);
       
-      let emittedKeys: any[] | undefined;
+      let emittedKeys: CachedEntity[] | undefined;
       const sub = service.cacheResetter$.subscribe((keys) => {
         if (Array.isArray(keys) && keys.includes('patches')) {
-          emittedKeys = keys as any[];
+          emittedKeys = keys;
         }
       });
       
@@ -239,7 +233,7 @@ describe('SupabaseService - CRUD Operations', () => {
   
   describe('add.rack', () => {
     it('should derive authorid from session and bust rackWithId cache', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'session-author'}));
+      spyOn(service.auth, 'getUserSession$').and.returnValue(of(authUserFixture('session-author')));
       const rackInput = {
         name: 'My Rack',
         description: 'New rack',
@@ -260,14 +254,14 @@ describe('SupabaseService - CRUD Operations', () => {
         insert: insertSpy
       });
 
-      let emittedKeys: any[] | undefined;
+      let emittedKeys: CachedEntity[] | undefined;
       const sub = service.cacheResetter$.subscribe((keys) => {
         if (Array.isArray(keys) && keys.includes('rackWithId')) {
-          emittedKeys = keys as any[];
+          emittedKeys = keys;
         }
       });
 
-      service.add.rack(rackInput as any).subscribe({
+      service.add.rack(rackInput).subscribe({
         next: () => {
           expect(insertSpy).toHaveBeenCalledWith(
             jasmine.objectContaining({...rackInput, authorid: 'session-author'})
@@ -287,9 +281,9 @@ describe('SupabaseService - CRUD Operations', () => {
     }, TEST_TIMEOUT);
 
     it('should error when user is not authenticated', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+      spyOn(service.auth, 'getUserSession$').and.returnValue(of(null));
 
-      service.add.rack({name: 'Rack', hp: 84, rows: 3, locked: false, public: true} as any).subscribe({
+      service.add.rack({name: 'Rack', hp: 84, rows: 3, locked: false, public: true}).subscribe({
         next: () => {
           fail('Expected error for unauthenticated call');
           done();
@@ -304,7 +298,7 @@ describe('SupabaseService - CRUD Operations', () => {
   
   describe('add.rackModule', () => {
     it('should add module to rack with position when authenticated', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
+      spyOn(service.auth, 'getUserSession$').and.returnValue(of(authUserFixture('u1')));
       const mock = chainable({data: {id: 1}, error: null});
       const insertSpy = spyOn(mock, 'insert').and.returnValue(mock);
       const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
@@ -331,7 +325,7 @@ describe('SupabaseService - CRUD Operations', () => {
     }, TEST_TIMEOUT);
 
     it('should allow optional row and column', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
+      spyOn(service.auth, 'getUserSession$').and.returnValue(of(authUserFixture('u1')));
       const mock = chainable({data: {id: 1}, error: null});
       const insertSpy = spyOn(mock, 'insert').and.returnValue(mock);
       const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
@@ -358,7 +352,7 @@ describe('SupabaseService - CRUD Operations', () => {
     }, TEST_TIMEOUT);
 
     it('should error when user is not authenticated', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+      spyOn(service.auth, 'getUserSession$').and.returnValue(of(null));
 
       service.add.rackModule(10, 5).subscribe({
         next: () => {
@@ -389,7 +383,7 @@ describe('SupabaseService - CRUD Operations', () => {
     }
 
     it('should strip undefined and null values before update', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1', submitter: 'u1'}));
+      spyOn(service.auth, 'getUserSession$').and.returnValue(of({...authUserFixture('u1'), submitter: 'u1'}));
       const {updateSpy} = buildModuleUpdateMock();
       spyOn(supabaseClient, 'from').and.returnValue({update: updateSpy});
 
@@ -415,13 +409,13 @@ describe('SupabaseService - CRUD Operations', () => {
     }, TEST_TIMEOUT);
 
     it('should transform nested objects to IDs', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1', submitter: 'u1'}));
+      spyOn(service.auth, 'getUserSession$').and.returnValue(of({...authUserFixture('u1'), submitter: 'u1'}));
       const {updateSpy} = buildModuleUpdateMock();
       spyOn(supabaseClient, 'from').and.returnValue({update: updateSpy});
 
       service.update.module({
         id: 1,
-        standard: {id: 5, name: 'Eurorack'} as any
+        standard: {id: 5, name: 'Eurorack'}
       }).subscribe({
         next: () => {
           const callArgs = updateSpy.calls.first().args[0];
@@ -436,18 +430,18 @@ describe('SupabaseService - CRUD Operations', () => {
     }, TEST_TIMEOUT);
 
     it('should strip non-updatable fields', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1', submitter: 'u1'}));
+      spyOn(service.auth, 'getUserSession$').and.returnValue(of({...authUserFixture('u1'), submitter: 'u1'}));
       const {updateSpy} = buildModuleUpdateMock();
       spyOn(supabaseClient, 'from').and.returnValue({update: updateSpy});
 
       service.update.module({
         id: 1,
         name: 'Test',
-        ins: [] as any,
-        outs: [] as any,
-        tags: [] as any,
-        panels: [] as any,
-        manufacturer: {id: 1} as any
+        ins: [],
+        outs: [],
+        tags: [],
+        panels: [],
+        manufacturer: {id: 1} as unknown as MinimalManufacturer
       }).subscribe({
         next: () => {
           const callArgs = updateSpy.calls.first().args[0];
@@ -468,7 +462,7 @@ describe('SupabaseService - CRUD Operations', () => {
   
   describe('update.rack', () => {
     it('should use session user id as authorid and exclude author object', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'session-user'}));
+      spyOn(service.auth, 'getUserSession$').and.returnValue(of(authUserFixture('session-user')));
       const upsertSpy = jasmine.createSpy('upsert').and.returnValue({
         select: jasmine.createSpy('select').and.returnValue(
           Promise.resolve({data: [{id: 1}], error: null})
@@ -491,7 +485,7 @@ describe('SupabaseService - CRUD Operations', () => {
         author: {id: 'session-user', username: 'test'}
       };
 
-      service.update.rack(rackData as any).subscribe({
+      service.update.rack(rackData as unknown as RackMinimal).subscribe({
         next: () => {
           const callArgs = upsertSpy.calls.first().args[0];
           expect(callArgs.id).toBe(1);
@@ -510,7 +504,7 @@ describe('SupabaseService - CRUD Operations', () => {
     }, TEST_TIMEOUT);
 
     it('should surface Supabase rack update errors instead of treating them as success', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'session-user'}));
+      spyOn(service.auth, 'getUserSession$').and.returnValue(of(authUserFixture('session-user')));
       const upsertSpy = jasmine.createSpy('upsert').and.returnValue({
         select: jasmine.createSpy('select').and.returnValue(
           Promise.resolve({data: null, error: {message: 'update failed'}})
@@ -521,7 +515,7 @@ describe('SupabaseService - CRUD Operations', () => {
         upsert: upsertSpy
       });
 
-      service.update.rack({id: 1, name: 'Rack'} as any).subscribe({
+      service.update.rack({id: 1, name: 'Rack'} as unknown as RackMinimal).subscribe({
         next: () => {
           fail('Expected rack update to error');
           done();
@@ -534,8 +528,8 @@ describe('SupabaseService - CRUD Operations', () => {
     }, TEST_TIMEOUT);
 
     it('should update non-owned racks for admins without changing authorid', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'admin-user'}));
-      spyOn(service.auth as any, 'hasAdminRole$').and.returnValue(of(true));
+      spyOn(service.auth, 'getUserSession$').and.returnValue(of(authUserFixture('admin-user')));
+      spyOn(service.auth, 'hasAdminRole$').and.returnValue(of(true));
       const selectSpy = jasmine.createSpy('select').and.returnValue(
         Promise.resolve({data: [{id: 1}], error: null})
       );
@@ -558,7 +552,7 @@ describe('SupabaseService - CRUD Operations', () => {
         public: true,
         image: 'rack.jpeg',
         author: {id: 'owner-user', username: 'owner'}
-      } as any).subscribe({
+      } as unknown as RackMinimal).subscribe({
         next: () => {
           const callArgs = updateSpy.calls.first().args[0];
           expect(callArgs.authorid).toBeUndefined();
@@ -575,9 +569,9 @@ describe('SupabaseService - CRUD Operations', () => {
     }, TEST_TIMEOUT);
 
     it('should error when user is not authenticated', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+      spyOn(service.auth, 'getUserSession$').and.returnValue(of(null));
 
-      service.update.rack({id: 1, name: 'Rack', author: {id: 'x'}} as any).subscribe({
+      service.update.rack({id: 1, name: 'Rack', author: {id: 'x'}} as unknown as RackMinimal).subscribe({
         next: () => {
           fail('Expected error for unauthenticated call');
           done();
@@ -596,7 +590,7 @@ describe('SupabaseService - CRUD Operations', () => {
   
   describe('delete.comment', () => {
     it('should delete comment by id when authenticated', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
+      spyOn(service.auth, 'getUserSession$').and.returnValue(of(authUserFixture('u1')));
 
       // Chain: delete().filter('id', 'eq', 42).filter('authorId', 'eq', 'u1') → Promise
       const ownerFilterSpy = jasmine.createSpy('ownerFilter').and.returnValue(
@@ -621,7 +615,7 @@ describe('SupabaseService - CRUD Operations', () => {
     }, TEST_TIMEOUT);
 
     it('should error when user is not authenticated', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+      spyOn(service.auth, 'getUserSession$').and.returnValue(of(null));
 
       service.delete.comment(42).subscribe({
         next: () => {
@@ -645,7 +639,7 @@ describe('SupabaseService - CRUD Operations', () => {
         updated_at: new Date().toISOString()
       };
       
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(service.auth, 'getUserSession$').and.returnValue(of(mockUser));
       
       let userModulesDeleteCalled = false;
       let commentsDeleteCalled = false;
@@ -656,11 +650,11 @@ describe('SupabaseService - CRUD Operations', () => {
           userModulesDeleteCalled = true;
           return {
             delete: () => ({
-              filter: (field: string, op: string, value: any) => {
+              filter: (field: string, op: string, value: unknown) => {
                 expect(field).toBe('profileid');
                 expect(value).toBe('user-delete');
                 return {
-                  filter: (field2: string, op2: string, value2: any) => {
+                  filter: (field2: string, op2: string, value2: unknown) => {
                     expect(field2).toBe('moduleid');
                     expect(value2).toBe(99);
                     return Promise.resolve({data: null, error: null});
@@ -698,7 +692,7 @@ describe('SupabaseService - CRUD Operations', () => {
   
   describe('delete.rackedModule', () => {
     it('should delete racked module by id', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
+      spyOn(service.auth, 'getUserSession$').and.returnValue(of(authUserFixture('u1')));
       const filterSpy = jasmine.createSpy('filter').and.returnValue(
         Promise.resolve({data: null, error: null})
       );
@@ -797,7 +791,7 @@ describe('SupabaseService - CRUD Operations', () => {
         insert: insertSpy
       });
       
-      service.add.moduleINs(cvData as any, 42).subscribe({
+      service.add.moduleINs(cvData, 42).subscribe({
         next: () => {
           const callArgs = insertSpy.calls.first().args[0];
           expect(callArgs.length).toBe(2);
@@ -849,7 +843,7 @@ describe('SupabaseService - CRUD Operations', () => {
       ];
       
       expectedAddMethods.forEach(method => {
-        expect(typeof (service.add as any)[method]).toBe('function',
+        expect(typeof (service.add as unknown as Record<string, unknown>)[method]).toBe('function',
           `add.${ method } should exist`);
       });
     });
@@ -860,7 +854,7 @@ describe('SupabaseService - CRUD Operations', () => {
       ];
       
       expectedUpdateMethods.forEach(method => {
-        expect(typeof (service.update as any)[method]).toBe('function',
+        expect(typeof (service.update as unknown as Record<string, unknown>)[method]).toBe('function',
           `update.${ method } should exist`);
       });
     });
@@ -873,7 +867,7 @@ describe('SupabaseService - CRUD Operations', () => {
       ];
       
       expectedDeleteMethods.forEach(method => {
-        expect(typeof (service.delete as any)[method]).toBe('function',
+        expect(typeof (service.delete as unknown as Record<string, unknown>)[method]).toBe('function',
           `delete.${ method } should exist`);
       });
     });
