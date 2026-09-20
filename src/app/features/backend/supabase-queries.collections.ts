@@ -147,12 +147,19 @@ import {
   EMPTY_CONTRIBUTOR_STATS,
   MAX_QUERY_ROWS,
   PUBLIC_AUTHOR_GATE_ALIAS,
-  SupabaseQueriesBase
+  SupabaseQueriesBase,
+  type ChainableSupabaseQuery,
+  type SupabaseWireResponse
 } from './supabase-queries.base';
 
 
-export class SupabaseCollectionQueries extends SupabaseQueriesBase {
+/**
+ * Raw collection row as returned by the summary/detail selects: the
+ * ModuleCollectionSummary shape plus the joined `entries` array.
+ */
+type ModuleCollectionSummaryRow = ModuleCollectionSummary & {entries?: Array<unknown>};
 
+export class SupabaseCollectionQueries extends SupabaseQueriesBase {
 
   private moduleCollectionSummarySelect(): string {
     return [
@@ -190,7 +197,7 @@ export class SupabaseCollectionQueries extends SupabaseQueriesBase {
 
 
 
-  private mapModuleCollectionSummary(row: any): ModuleCollectionSummary {
+  private mapModuleCollectionSummary(row: ModuleCollectionSummaryRow): ModuleCollectionSummary {
     return {
       id: row.id,
       authorid: row.authorid,
@@ -208,12 +215,13 @@ export class SupabaseCollectionQueries extends SupabaseQueriesBase {
 
 
 
-  private mapModuleCollectionDetail(row: any): ModuleCollectionDetail | undefined {
+  private mapModuleCollectionDetail(row: ModuleCollectionSummaryRow & {entries?: unknown}): ModuleCollectionDetail | undefined {
     if (!row) {
       return undefined;
     }
 
-    const entries = ((row.entries ?? []) as any[])
+    const rawEntries = (Array.isArray(row.entries) ? row.entries : []) as ModuleCollectionDetail['entries'];
+    const entries = rawEntries
       .filter(entry => !!entry.module)
       .sort((a, b) => a.ordinal - b.ordinal);
 
@@ -233,25 +241,25 @@ export class SupabaseCollectionQueries extends SupabaseQueriesBase {
     order: 'updated_desc' | 'created_desc' | 'name_asc' = 'updated_desc',
     includeCount = false
   ) {
-    let query = this.supabase
+    let query: ChainableSupabaseQuery = this.supabase
       .from(DbPaths.module_collections)
       .select(this.moduleCollectionSummarySelect(), includeCount ? {count: 'exact'} : undefined)
       .filter('public', 'eq', true);
 
     const searchQuery = search.trim();
     if (searchQuery) {
-      query = (query as any).ilike('name', `%${searchQuery}%`);
+      query = query.ilike('name', `%${searchQuery}%`);
     }
 
     if (order === 'name_asc') {
-      query = (query as any).order('name', { ascending: true });
+      query = query.order('name', { ascending: true });
     } else if (order === 'created_desc') {
-      query = (query as any).order('created', { ascending: false });
+      query = query.order('created', { ascending: false });
     } else {
-      query = (query as any).order('updated', { ascending: false });
+      query = query.order('updated', { ascending: false });
     }
 
-    return (query as any).order('id', { ascending: false }).range(from, to);
+    return query.order('id', { ascending: false }).range(from, to);
   }
 
 
@@ -266,7 +274,7 @@ export class SupabaseCollectionQueries extends SupabaseQueriesBase {
   getPublicModuleCollections(from = 0, to = 24, search = '', order: 'updated_desc' | 'created_desc' | 'name_asc' = 'updated_desc'): Observable<ModuleCollectionSummary[]> {
     return rxFrom(this.buildPublicModuleCollectionsQuery(from, to, search, order)).pipe(
       remapErrors(),
-      map((response: any) => ((response.data ?? []) as any[])
+      map((response: SupabaseWireResponse) => ((Array.isArray(response?.data) ? response.data : []) as ModuleCollectionSummaryRow[])
         .map(row => this.mapModuleCollectionSummary(row))
       )
     );
@@ -289,8 +297,8 @@ export class SupabaseCollectionQueries extends SupabaseQueriesBase {
   ): Observable<ModuleCollectionPage> {
     return rxFrom(this.buildPublicModuleCollectionsQuery(from, to, search, order, true)).pipe(
       remapErrors(),
-      map((response: any) => {
-        const items = ((response.data ?? []) as any[])
+      map((response: SupabaseWireResponse & {count?: number | null}) => {
+        const items = ((Array.isArray(response?.data) ? response.data : []) as ModuleCollectionSummaryRow[])
           .map(row => this.mapModuleCollectionSummary(row));
         const total = response.count ?? items.length;
         return {
@@ -319,7 +327,7 @@ export class SupabaseCollectionQueries extends SupabaseQueriesBase {
         );
       }),
       remapErrors(),
-      map((response: any) => ((response.data ?? []) as any[])
+      map((response: SupabaseWireResponse) => ((Array.isArray(response?.data) ? response.data : []) as ModuleCollectionSummaryRow[])
         .map(row => this.mapModuleCollectionSummary(row))
       )
     );
@@ -381,7 +389,7 @@ export class SupabaseCollectionQueries extends SupabaseQueriesBase {
         .maybeSingle()
     ).pipe(
       remapErrors(),
-      map((response: any) => this.mapModuleCollectionDetail(response.data))
+      map((response: SupabaseWireResponse) => this.mapModuleCollectionDetail(response.data as ModuleCollectionSummaryRow & {entries?: unknown}))
     );
   }
 
@@ -401,7 +409,7 @@ export class SupabaseCollectionQueries extends SupabaseQueriesBase {
         );
       }),
       remapErrors(),
-      map((response: any) => this.mapModuleCollectionDetail(response.data))
+      map((response: SupabaseWireResponse) => this.mapModuleCollectionDetail(response.data as ModuleCollectionSummaryRow & {entries?: unknown}))
     );
   }
 
@@ -423,9 +431,9 @@ export class SupabaseCollectionQueries extends SupabaseQueriesBase {
         .filter('collection.public', 'eq', true)
     ).pipe(
       remapErrors(),
-      map((response: any) => ((response.data ?? []) as any[])
+      map((response: SupabaseWireResponse) => ((Array.isArray(response?.data) ? response.data : []) as Array<{collection?: ModuleCollectionSummaryRow | null}>)
         .map(row => row.collection)
-        .filter(Boolean)
+        .filter((collection): collection is ModuleCollectionSummaryRow => !!collection)
         .map(row => this.mapModuleCollectionSummary(row))
       )
     );

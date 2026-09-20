@@ -133,7 +133,8 @@ import {
   parseModuleUpdatedTimestampMs,
   buildManufacturerModuleStats,
   withManufacturerModuleStats,
-  compareManufacturersByLatestModuleActivity
+  compareManufacturersByLatestModuleActivity,
+  type ManufacturerStatsTarget
 } from './supabase-queries.manufacturer-stats';
 import {
   REACTION_COUNT_COLUMNS,
@@ -147,7 +148,8 @@ import {
   EMPTY_CONTRIBUTOR_STATS,
   MAX_QUERY_ROWS,
   PUBLIC_AUTHOR_GATE_ALIAS,
-  SupabaseQueriesBase
+  SupabaseQueriesBase,
+  type SupabaseWireResponse
 } from './supabase-queries.base';
 
 
@@ -195,9 +197,9 @@ export class SupabaseManufacturerQueries extends SupabaseQueriesBase {
     to: number,
     columns: string,
     orderBy: string
-  ): Promise<{ data: any[]; error: null; count: number | null } | { data: any[] | null; error: any; count: number | null }> {
+  ): Promise<{ data: unknown[]; error: null; count: number | null } | { data: unknown[] | null; error: unknown; count: number | null }> {
     const safeTo = Math.max(from, to);
-    const data: any[] = [];
+    const data: unknown[] = [];
     let count: number | null = null;
 
     for (let chunkFrom = from; chunkFrom <= safeTo; chunkFrom += MAX_QUERY_ROWS) {
@@ -274,19 +276,21 @@ export class SupabaseManufacturerQueries extends SupabaseQueriesBase {
 
     return rxFrom(query).pipe(
       remapErrors(),
-      switchMap((response: any) => {
+      switchMap((response: SupabaseWireResponse & {data?: unknown[]; count?: number | null}) => {
         const filteredResponse = nameQuery.length > 0
-          ? applyClientSideSearchFilter(response, from, effectiveTo, (manufacturer: any) =>
+          ? applyClientSideSearchFilter(response, from, effectiveTo, (manufacturer: {name?: string | null} | null | undefined) =>
             matchesSearchQuery(nameQuery, manufacturer?.name)
           )
           : response;
-        const manufacturers = Array.isArray(filteredResponse?.data) ? filteredResponse.data : [];
+        // Rows select id/name/logo/websiteURL/adminUser; assert the shared
+        // stats-target shape (values pass through untouched).
+        const manufacturers = ((Array.isArray(filteredResponse?.data) ? filteredResponse.data : []) as ManufacturerStatsTarget[]);
         if (manufacturers.length === 0) {
           return rxFrom(Promise.resolve(filteredResponse));
         }
 
         const manufacturerIds = manufacturers
-          .map((x: any) => x.id)
+          .map(x => x.id)
           .filter((id: unknown): id is number => typeof id === 'number');
         if (manufacturerIds.length === 0) {
           return rxFrom(Promise.resolve(filteredResponse));
@@ -303,7 +307,7 @@ export class SupabaseManufacturerQueries extends SupabaseQueriesBase {
           const statsByManufacturerId = buildManufacturerModuleStats(modulesActivityResponse.data);
           return {
             ...filteredResponse,
-            data: manufacturers.map((manufacturer: any) =>
+            data: manufacturers.map(manufacturer =>
               withManufacturerModuleStats(
                 manufacturer,
                 statsByManufacturerId.get(manufacturer.id)
@@ -334,7 +338,7 @@ export class SupabaseManufacturerQueries extends SupabaseQueriesBase {
         return manufacturersResponse;
       }
 
-      const manufacturers = (manufacturersResponse.data ?? []).filter((manufacturer: any) =>
+      const manufacturers = (manufacturersResponse.data ?? []).filter(manufacturer =>
         matchesSearchQuery(nameQuery, manufacturer?.name)
       );
       if (manufacturers.length === 0) {
@@ -383,7 +387,7 @@ export class SupabaseManufacturerQueries extends SupabaseQueriesBase {
       );
       const pagedManufacturers = sortedManufacturers
         .slice(from, to + 1)
-        .map((manufacturer: any) =>
+        .map(manufacturer =>
           withManufacturerModuleStats(
             manufacturer,
             statsByManufacturerId.get(manufacturer.id)
@@ -408,7 +412,7 @@ export class SupabaseManufacturerQueries extends SupabaseQueriesBase {
       manufacturerId: number;
       updated: string
     }[];
-    error: any
+    error: unknown
   }> {
     const pageSize = MAX_QUERY_ROWS;
     const rows: {
@@ -437,7 +441,7 @@ export class SupabaseManufacturerQueries extends SupabaseQueriesBase {
         const response = await q;
         if (response.error) { return {data: [], error: response.error}; }
 
-        const pageRows = (response.data ?? []).map((x: any) => ({
+        const pageRows = (response.data ?? []).map(x => ({
           manufacturerId: x.manufacturerId,
           updated: x.updated
         }));
