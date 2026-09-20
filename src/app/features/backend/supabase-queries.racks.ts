@@ -149,8 +149,10 @@ import {
   EMPTY_CONTRIBUTOR_STATS,
   MAX_QUERY_ROWS,
   PUBLIC_AUTHOR_GATE_ALIAS,
-  SupabaseQueriesBase
+  SupabaseQueriesBase,
+  type SupabaseWireResponse
 } from './supabase-queries.base';
+import { type SupabaseSingleResponse } from './supabase-db.types';
 
 
 export class SupabaseRackQueries extends SupabaseQueriesBase {
@@ -239,7 +241,13 @@ export class SupabaseRackQueries extends SupabaseQueriesBase {
         .filter('public', 'eq', true)
         .single()
     )
-      .pipe(remapErrors());
+      .pipe(
+        remapErrors(),
+        // `.single()` returns one Rack (or an error) at runtime; the author
+        // join string defeats the generated Postgrest parser, so assert the
+        // documented shape here (values pass through untouched).
+        map(response => response as unknown as SupabaseSingleResponse<Rack | null>)
+      );
   }
 
 
@@ -303,7 +311,9 @@ export class SupabaseRackQueries extends SupabaseQueriesBase {
         .single()
     )
       .pipe(
-        remapErrors()
+        remapErrors(),
+        // Same single-rack shape assertion as getPublicRackWithId above.
+        map(response => response as unknown as SupabaseSingleResponse<Rack | null>)
       );
   }
 
@@ -367,7 +377,7 @@ export class SupabaseRackQueries extends SupabaseQueriesBase {
     )
       .pipe(
         remapErrors(),
-        map((response: any) => {
+        map((response: SupabaseWireResponse) => {
           const row = Array.isArray(response?.data) ? response.data[0] : response?.data;
           return {data: row ?? null, error: response?.error ?? null};
         })
@@ -385,7 +395,12 @@ export class SupabaseRackQueries extends SupabaseQueriesBase {
     return rxFrom(
       this.supabase.rpc('resolve_public_rack_legacy_id', {p_id: id})
     )
-      .pipe(remapErrors());
+      .pipe(
+        remapErrors(),
+        // The RPC yields the public_id string, or null for private/missing
+        // racks; normalize to that documented shape (values untouched).
+        map(res => ({data: res.data as unknown as string | null, error: res.error}))
+      );
   }
 
 
@@ -440,12 +455,12 @@ export class SupabaseRackQueries extends SupabaseQueriesBase {
       .pipe(
         remapErrors(),
         map(response => this.stripPublicAuthorGate<Rack>(response)),
-        map((response: any) => {
+        map((response: SupabaseWireResponse & {data: Rack[]}) => {
           if (nameQuery.length === 0) {
             return response;
           }
 
-          return applyClientSideSearchFilter(response, from, effectiveTo, (rack: any) =>
+          return applyClientSideSearchFilter(response, from, effectiveTo, (rack: Rack) =>
             matchesSearchQuery(nameQuery, rack?.name)
           );
         })
@@ -483,8 +498,8 @@ export class SupabaseRackQueries extends SupabaseQueriesBase {
         .order('id', { ascending: orderDirection === 'asc' })
     ).pipe(
       remapErrors(),
-      map((response: any) => {
-        const stripped = this.stripPublicAuthorGate<{ data: Rack[]; count: number | null }>(response);
+      map((response: SupabaseWireResponse) => {
+        const stripped = this.stripPublicAuthorGate<Rack>(response);
         return {
           ...stripped,
           data: (stripped.data ?? []).map((rack: Rack) => ({ rack }))

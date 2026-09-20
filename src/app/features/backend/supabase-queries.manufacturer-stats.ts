@@ -55,7 +55,7 @@ const MANUFACTURER_ANALYTICS_LABELS: Record<ManufacturerAnalyticsMetricKey, stri
 const MANUFACTURER_ANALYTICS_PRIVACY_COPY =
   'Only aggregate activity is shown. User-level ownership and private rack or patch detail stays hidden.';
 
-interface ManufacturerStatsTarget {
+export interface ManufacturerStatsTarget {
   id: number;
   name?: string | null;
   [key: string]: unknown;
