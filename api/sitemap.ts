@@ -70,7 +70,17 @@ interface SitemapEntry {
   imageCaption?: string;
 }
 
-export default async function handler(req: any, res: any): Promise<void> {
+interface SitemapRequest {
+  method?: string;
+  headers: Record<string, string | string[] | undefined>;
+}
+
+interface SitemapResponse {
+  setHeader: (name: string, value: string | string[]) => void;
+  status: (code: number) => {send: (body: string) => void};
+}
+
+export default async function handler(req: SitemapRequest, res: SitemapResponse): Promise<void> {
   if (req.method !== 'GET') {
     res.setHeader('allow', 'GET');
     res.status(405).send('Method Not Allowed');
@@ -301,7 +311,7 @@ function extractHost(origin: string): string {
   }
 }
 
-function isPreviewRequest(req: any): boolean {
+function isPreviewRequest(req: SitemapRequest): boolean {
   if (VERCEL_ENV) {
     return VERCEL_ENV !== 'production';
   }
