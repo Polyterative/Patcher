@@ -384,7 +384,7 @@ export class GraphComponent implements AfterViewInit, OnChanges, OnDestroy {
     
     this.graph.nodes().forEach(nodeKey => {
       const attrs = this.graph.getNodeAttributes(nodeKey) as GraphNode;
-      const data = (attrs.data ?? {}) as Record<string, any>;
+      const data = (attrs.data ?? {}) as Record<string, unknown>;
       const boundaryBase = data['boundaryBase'] as {
         color?: string;
         size?: number;
