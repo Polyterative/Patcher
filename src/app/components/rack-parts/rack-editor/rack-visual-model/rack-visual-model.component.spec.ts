@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { CdkDragDrop } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, CdkDragEnd, CdkDragStart } from '@angular/cdk/drag-drop';
 import {
   ElementRef,
   NO_ERRORS_SCHEMA,
@@ -25,6 +25,8 @@ import {
   RACK_LAYOUT_HOVER_MODES
 } from '../../rack-analysis-mode';
 import { HasUnrackedModulesPipe } from './has-unracked-modules.pipe';
+import { ModuleRightClick } from '../rack-editor.types';
+import { SignalFocusArea } from '../../rack-signal-analysis.utils';
 import { RackVisualModelComponent } from './rack-visual-model.component';
 import { TagType } from 'src/app/models/tag';
 import { RackMinimal } from 'src/app/models/rack';
@@ -32,14 +34,18 @@ import { RackedModule } from 'src/app/models/module';
 
 
 describe('RackVisualModelComponent', () => {
+  type RackVisualModelTestAccessor = {
+    touchInteractionMode: boolean;
+  };
+
   let fixture: ComponentFixture<RackVisualModelComponent>;
   let component: RackVisualModelComponent;
-  let moduleRef: any;
+  let moduleRef: RackedModule;
   let rackDetailDataService: {
     shouldShowPanelImages$: Subject<boolean>;
     analysisMode$: BehaviorSubject<RackAnalysisMode>;
     layoutHoverMode$: BehaviorSubject<typeof RACK_LAYOUT_HOVER_MODES[keyof typeof RACK_LAYOUT_HOVER_MODES]>;
-    signalFocusArea$: BehaviorSubject<any>;
+    signalFocusArea$: BehaviorSubject<SignalFocusArea | null>;
     currentDownloadElementRef$: {next: jasmine.Spy};
     rackOrderChange$: {next: jasmine.Spy};
     addBlankToRow$: Subject<{rowId: number; hp: number}>;
@@ -83,12 +89,12 @@ describe('RackVisualModelComponent', () => {
     fixture = TestBed.createComponent(RackVisualModelComponent);
     component = fixture.componentInstance;
     moduleRef = makeRackedModule(10, 0, 0);
-    component.rackData = {hp: 104} as any;
+    component.rackData = {hp: 104} as unknown as RackMinimal;
     component.rowedRackedModules = [[moduleRef]];
     component.isCurrentRackEditable = true;
     component.isCurrentRackPropertyOfCurrentUser = true;
-    component.rackDetailDataService = rackDetailDataService as any;
-    component.moduleRightClick$ = new Subject<any>();
+    component.rackDetailDataService = rackDetailDataService as unknown as RackDetailDataService;
+    component.moduleRightClick$ = new Subject<ModuleRightClick>();
   });
 
   function makeRackedModule(
@@ -99,7 +105,7 @@ describe('RackVisualModelComponent', () => {
     powerNeg12: number | null = null,
     powerPos5: number | null = null,
     standardId = 0
-  ): any {
+  ): RackedModule {
     return {
       module: {
         id,
@@ -120,7 +126,7 @@ describe('RackVisualModelComponent', () => {
         column,
         selectedPanelId: null,
       }
-    } as any;
+    } as unknown as RackedModule;
   }
 
   it('hides the per-module HP badge in edit mode when analysis is off', () => {
@@ -209,7 +215,7 @@ describe('RackVisualModelComponent', () => {
   });
 
   it('keeps an optimistic rack module track key stable after a persisted id is assigned', () => {
-    const optimisticModule = makeRackedModule(undefined as any, 0, 1);
+    const optimisticModule = makeRackedModule(undefined as unknown as number, 0, 1);
 
     const optimisticKey = component.rackModuleTrackKey(optimisticModule);
     optimisticModule.rackingData.id = 44;
@@ -386,7 +392,7 @@ describe('RackVisualModelComponent', () => {
   });
 
   it('keeps the rack template capped to the configured HP width when rows overflow', () => {
-    component.rackData = {hp: 100} as any;
+    component.rackData = {hp: 100} as unknown as RackMinimal;
     component.rowedRackedModules = [[
       makeRackedModule(10, 0, 0),
       makeRackedModule(11, 0, 14),
@@ -411,7 +417,7 @@ describe('RackVisualModelComponent', () => {
   });
 
   it('computes zero HP overflow when modules fit within rack capacity', () => {
-    component.rackData = {hp: 30} as any;
+    component.rackData = {hp: 30} as unknown as RackMinimal;
     component.rowedRackedModules = [[makeRackedModule(1, 0, 0), makeRackedModule(2, 0, 14)]]; // 14+14=28 < 30
     fixture.detectChanges();
 
@@ -420,7 +426,7 @@ describe('RackVisualModelComponent', () => {
   });
 
   it('computes positive HP overflow when modules exceed rack capacity', () => {
-    component.rackData = {hp: 20} as any;
+    component.rackData = {hp: 20} as unknown as RackMinimal;
     component.rowedRackedModules = [[makeRackedModule(1, 0, 0), makeRackedModule(2, 0, 14)]]; // 14+14=28 > 20 → overflow=8
     fixture.detectChanges();
 
@@ -429,7 +435,7 @@ describe('RackVisualModelComponent', () => {
   });
 
   it('sums HP overflow across multiple rows', () => {
-    component.rackData = {hp: 20} as any;
+    component.rackData = {hp: 20} as unknown as RackMinimal;
     component.rowedRackedModules = [
       [makeRackedModule(1, 0, 0), makeRackedModule(2, 0, 14)], // 28 → overflow=8
       [makeRackedModule(3, 1, 0), makeRackedModule(4, 1, 14)], // 28 → overflow=8
@@ -440,7 +446,7 @@ describe('RackVisualModelComponent', () => {
   });
 
   it('marks overflowing modules with the overflow border overlay when overflow > 0', () => {
-    component.rackData = {hp: 20} as any;
+    component.rackData = {hp: 20} as unknown as RackMinimal;
     component.rowedRackedModules = [[makeRackedModule(1, 0, 0), makeRackedModule(2, 0, 14)]]; // 28 > 20
     fixture.detectChanges();
 
@@ -448,7 +454,7 @@ describe('RackVisualModelComponent', () => {
   });
 
   it('does not mark modules as overflowing when modules fit within capacity', () => {
-    component.rackData = {hp: 40} as any;
+    component.rackData = {hp: 40} as unknown as RackMinimal;
     component.rowedRackedModules = [[makeRackedModule(1, 0, 0), makeRackedModule(2, 0, 14)]]; // 28 < 40
     fixture.detectChanges();
 
@@ -457,7 +463,7 @@ describe('RackVisualModelComponent', () => {
   });
 
   it('isModuleOverflowing returns false when all rows fit within capacity', () => {
-    component.rackData = {hp: 40} as any;
+    component.rackData = {hp: 40} as unknown as RackMinimal;
     component.rowedRackedModules = [[makeRackedModule(1, 0, 0), makeRackedModule(2, 0, 14)]]; // 28 < 40
     fixture.detectChanges();
 
@@ -465,7 +471,7 @@ describe('RackVisualModelComponent', () => {
   });
 
   it('removes the row template background when the row contains unracked modules', () => {
-    component.rowedRackedModules = [[makeRackedModule(10, null as any, null as any)]];
+    component.rowedRackedModules = [[makeRackedModule(10, null as unknown as number, null as unknown as number)]];
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
@@ -496,10 +502,13 @@ describe('RackVisualModelComponent', () => {
 
   it('shows function hover stats in function analysis mode', () => {
     moduleRef.module.tags = [{
+      id: 1,
       tag: {
+        id: 1,
         name: 'VCO',
         type: TagType.Source
-      }
+      },
+      voteCount: []
     }];
     fixture.detectChanges();
 
@@ -518,10 +527,13 @@ describe('RackVisualModelComponent', () => {
   it('computes function-mode module visuals on demand for modules outside the memoized rows', () => {
     const externalModule = makeRackedModule(99, 4, 6);
     externalModule.module.tags = [{
+      id: 1,
       tag: {
+        id: 1,
         name: 'VCO',
         type: TagType.Source
-      }
+      },
+      voteCount: []
     }];
     fixture.detectChanges();
 
@@ -538,7 +550,9 @@ describe('RackVisualModelComponent', () => {
     moduleRef.module.name = 'Voice';
     moduleRef.module.outs = [{id: 101, name: 'Audio Out', isAudio: true}];
     moduleRef.module.tags = [{
+      id: 1,
       tag: {
+        id: 1,
         name: 'VCO',
         type: TagType.Source
       },
@@ -547,7 +561,9 @@ describe('RackVisualModelComponent', () => {
     destination.module.name = 'Filter';
     destination.module.ins = [{id: 201, name: 'Audio In', isAudio: true}];
     destination.module.tags = [{
+      id: 2,
       tag: {
+        id: 2,
         name: 'Filter',
         type: TagType.Source
       },
@@ -631,7 +647,7 @@ describe('RackVisualModelComponent', () => {
   it('opens the module context menu on a deliberate touch long press', () => {
     jasmine.clock().install();
     try {
-      (component as any).touchInteractionMode = true;
+      (component as unknown as RackVisualModelTestAccessor).touchInteractionMode = true;
       const nextSpy = spyOn(component.moduleRightClick$, 'next');
 
       component.onModulePointerDown({
@@ -656,7 +672,7 @@ describe('RackVisualModelComponent', () => {
   });
 
   it('emits a touch selection on a simple touch tap when primary actions are enabled', () => {
-    (component as any).touchInteractionMode = true;
+    (component as unknown as RackVisualModelTestAccessor).touchInteractionMode = true;
     component.touchPrimaryActionsEnabled = true;
     const selectionSpy = spyOn(component.touchModuleSelected, 'emit');
 
@@ -678,7 +694,7 @@ describe('RackVisualModelComponent', () => {
   it('cancels the touch long press when the finger starts moving', () => {
     jasmine.clock().install();
     try {
-      (component as any).touchInteractionMode = true;
+      (component as unknown as RackVisualModelTestAccessor).touchInteractionMode = true;
       const nextSpy = spyOn(component.moduleRightClick$, 'next');
 
       component.onModulePointerDown({
@@ -705,7 +721,7 @@ describe('RackVisualModelComponent', () => {
   it('does not emit a touch selection after the long-press secondary menu opens', () => {
     jasmine.clock().install();
     try {
-      (component as any).touchInteractionMode = true;
+      (component as unknown as RackVisualModelTestAccessor).touchInteractionMode = true;
       component.touchPrimaryActionsEnabled = true;
       const selectionSpy = spyOn(component.touchModuleSelected, 'emit');
 
@@ -897,14 +913,14 @@ describe('RackVisualModelComponent', () => {
         top: 100,
         bottom: 300
       })
-    } as any;
+    } as unknown as HTMLElement;
 
     component.setHoveredRow(0, {
       getBoundingClientRect: () => ({
         top: 120,
         bottom: 160
       })
-    } as any);
+    } as unknown as HTMLElement);
 
     expect(component.isRowPowerPanelBelow(0)).toBeTrue();
   });
@@ -919,7 +935,7 @@ describe('RackVisualModelComponent', () => {
   });
 
   it('suppresses panel image enter animation for the actively dragged module', () => {
-    component.onDragStarted({} as any, moduleRef);
+    component.onDragStarted({} as unknown as CdkDragStart<RackedModule>, moduleRef);
 
     expect(component.isDragImageAnimationSuppressed(moduleRef)).toBeTrue();
   });
@@ -930,14 +946,14 @@ describe('RackVisualModelComponent', () => {
       return 0;
     });
 
-    component.onDragStarted({} as any, moduleRef);
-    component.onDragEnded({} as any, moduleRef);
+    component.onDragStarted({} as unknown as CdkDragStart<RackedModule>, moduleRef);
+    component.onDragEnded({} as unknown as CdkDragEnd<RackedModule>, moduleRef);
 
     expect(component.isDragImageAnimationSuppressed(moduleRef)).toBeFalse();
   });
 
   it('arms drop reveal suppression on drag release before drop cleanup', () => {
-    component.onDragReleased({} as any, moduleRef);
+    component.onDragReleased({}, moduleRef);
 
     expect(component.isDropRevealSuppressed(moduleRef)).toBeTrue();
   });
@@ -948,8 +964,8 @@ describe('RackVisualModelComponent', () => {
       return 0;
     });
 
-    component.onDragReleased({} as any, moduleRef);
-    component.onDragEnded({} as any, moduleRef);
+    component.onDragReleased({}, moduleRef);
+    component.onDragEnded({} as unknown as CdkDragEnd<RackedModule>, moduleRef);
 
     expect(component.isDropRevealSuppressed(moduleRef)).toBeFalse();
   });
@@ -961,8 +977,8 @@ describe('RackVisualModelComponent', () => {
       return animationFrames.length;
     });
 
-    component.onDragReleased({} as any, moduleRef);
-    component.onDropListDropped({previousContainer: {}, container: {}} as any, 0, moduleRef);
+    component.onDragReleased({}, moduleRef);
+    component.onDropListDropped({previousContainer: {}, container: {}} as unknown as CdkDragDrop<ElementRef>, 0, moduleRef);
 
     expect(component.isDropRevealSuppressed(moduleRef)).toBeTrue();
     expect(rackDetailDataService.rackOrderChange$.next).toHaveBeenCalled();
@@ -981,10 +997,10 @@ describe('RackVisualModelComponent', () => {
       return animationFrames.length;
     });
 
-    component.onDragStarted({} as any, moduleRef);
-    component.onDragReleased({} as any, moduleRef);
-    component.onDragEnded({} as any, moduleRef);
-    component.onDropListDropped({previousContainer: {}, container: {}} as any, 0, moduleRef);
+    component.onDragStarted({} as unknown as CdkDragStart<RackedModule>, moduleRef);
+    component.onDragReleased({}, moduleRef);
+    component.onDragEnded({} as unknown as CdkDragEnd<RackedModule>, moduleRef);
+    component.onDropListDropped({previousContainer: {}, container: {}} as unknown as CdkDragDrop<ElementRef>, 0, moduleRef);
 
     expect(component.isDragImageAnimationSuppressed(moduleRef)).toBeTrue();
 
@@ -1037,8 +1053,8 @@ describe('RackVisualModelComponent', () => {
 
     try {
       const sameContainer = {};
-      component.onDragReleased({} as any, moduleRef);
-      component.onDropListDropped({previousContainer: sameContainer, container: sameContainer} as any, 0, moduleRef);
+      component.onDragReleased({}, moduleRef);
+      component.onDropListDropped({previousContainer: sameContainer, container: sameContainer} as unknown as CdkDragDrop<ElementRef>, 0, moduleRef);
 
       animationFrames.shift()?.(0);
       animationFrames.shift()?.(0);
@@ -1061,8 +1077,8 @@ describe('RackVisualModelComponent', () => {
       return animationFrames.length;
     });
 
-    component.onDragReleased({} as any, moduleRef);
-    component.onDropListDropped({previousContainer: {}, container: {}} as any, 1, moduleRef);
+    component.onDragReleased({}, moduleRef);
+    component.onDropListDropped({previousContainer: {}, container: {}} as unknown as CdkDragDrop<ElementRef>, 1, moduleRef);
 
     animationFrames.shift()?.(0);
     animationFrames.shift()?.(0);
