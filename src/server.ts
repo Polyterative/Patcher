@@ -138,10 +138,9 @@ if (isMainModule(import.meta.url)) {
 // is not an SsrNodeRequestHandler and fall back to its internal Vite SSR middleware,
 // which reads HTML from in-memory outputFiles (no disk file needed) and injects CSS/scripts.
 // In production, export the full Express app tagged via createNodeRequestHandler.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const reqHandler = isProd
   ? createNodeRequestHandler(app())
-  : ((_req: any, _res: any, next: any) => next?.());
+  : ((_req: express.Request, _res: express.Response, next: express.NextFunction) => next?.());
 
 function resolveSsrRedirect(responseInit: ResponseInit): { status: number; location: string } | null {
   const status = responseInit.status;
