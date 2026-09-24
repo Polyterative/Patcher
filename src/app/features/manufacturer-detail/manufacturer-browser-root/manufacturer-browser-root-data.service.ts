@@ -160,14 +160,15 @@ export class ManufacturerBrowserRootDataService extends SubManager {
         return this.backend.GET.manufacturersPaginated(
           skip, (skip + take) - 1, filter, sortCol, sortDir
         ).pipe(
-          map((response: any) => {
+          map((response: {data?: unknown; count?: number | null; error?: unknown}) => {
             if (response?.error) {
               return {kind: 'error' as const, error: response.error, count: prevCount, data: prevData};
             }
+            const rows = response?.data;
             return {
               kind: 'success' as const,
               count: response?.count ?? 0,
-              data: Array.isArray(response?.data) ? response.data : [] as ManufacturerDetail[],
+              data: (Array.isArray(rows) ? rows : []) as ManufacturerDetail[],
             };
           }),
           catchError(err => {
@@ -178,7 +179,7 @@ export class ManufacturerBrowserRootDataService extends SubManager {
       }),
       map(result => {
         if (result.kind !== 'success') {
-          console.error('[manufacturer-browser] load failed', (result as any).error);
+          console.error('[manufacturer-browser] load failed', result.error);
         }
         return {count: result.count, data: result.data};
       }),

@@ -103,6 +103,11 @@ interface CurrentUserModulePossessionRow {
   kind: unknown;
 }
 
+export type CurrentUserModule = DbModule & {
+  collectionUpdated: string | null;
+  possessionKind: UserModulePossessionKind;
+};
+
 interface CurrentUserModulePossessionOnlyRow {
   module: Pick<MinimalModule, 'id'>;
   kind: unknown;
@@ -178,7 +183,7 @@ export class SupabasePossessionQueries extends SupabaseQueriesBase {
     includeManuals = false,
     orderConfig?: Partial<CurrentUserModulesOrderConfig>,
     strictErrors = false,
-  ): Observable<any> {
+  ): Observable<CurrentUserModule[]> {
     const prefix = `module`;
     const panelsTable: string = `${ prefix }.${ DbPaths.module_panels }`;
 
@@ -246,9 +251,9 @@ export class SupabasePossessionQueries extends SupabaseQueriesBase {
           throwIfSupabaseErrorWhen<{data: CurrentUserModulePossessionRow[] | null}>(strictErrors),
           map((x: {data: CurrentUserModulePossessionRow[] | null}) => (x.data ?? []).map((y: CurrentUserModulePossessionRow) => ({
             ...y.module,
-            collectionUpdated: y.collectionUpdated,
-            possessionKind: y.kind
-          })))
+            collectionUpdated: y.collectionUpdated as string | null,
+            possessionKind: y.kind as UserModulePossessionKind
+          })) as unknown as CurrentUserModule[])
         );
       }),
     );
