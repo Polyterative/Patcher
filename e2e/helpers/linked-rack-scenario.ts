@@ -3,6 +3,32 @@ import {
   type Page
 } from '@playwright/test';
 
+interface LinkedRackDebugModuleEntry {
+  id: number;
+  name: string;
+}
+
+interface LinkedRackDebugDataService {
+  modulesList$?: {value?: LinkedRackDebugModuleEntry[]};
+  backend: {
+    add: {
+      rackModule: (moduleId: number, rackId: number, row: number, column: number) => {subscribe: (next: () => void) => unknown};
+    };
+  };
+  singleRackData$: {value: {id: number}};
+  updateSingleRackData$: {next: (id: number) => void};
+}
+
+interface LinkedRackDebugComponent {
+  dataService?: LinkedRackDebugDataService;
+}
+
+interface AngularDebugGlobal {
+  ng?: {
+    getComponent?: (element: Element | null) => LinkedRackDebugComponent | undefined | null;
+  };
+}
+
 
 export interface PreparedLinkedRackScenario {
   rackUrl: string;
@@ -117,7 +143,7 @@ async function addModulesFromBrowser(page: Page, count: number): Promise<void> {
   await expect(moduleBrowser.locator('lib-clean-card').first()).toBeVisible({timeout: 20_000});
 
   const modules = await page.evaluate((expectedCount) => {
-    const ng = (window as any).ng;
+    const ng = (window as unknown as AngularDebugGlobal).ng;
     if (!ng?.getComponent) {
       throw new Error('Angular debug API unavailable');
     }
@@ -145,7 +171,7 @@ async function addModulesFromBrowser(page: Page, count: number): Promise<void> {
     );
 
     await page.evaluate(({moduleId, column}) => {
-      const ng = (window as any).ng;
+      const ng = (window as unknown as AngularDebugGlobal).ng;
       if (!ng?.getComponent) {
         throw new Error('Angular debug API unavailable');
       }
@@ -156,7 +182,10 @@ async function addModulesFromBrowser(page: Page, count: number): Promise<void> {
       }
 
       const component = ng.getComponent(rackDetail);
-      const service = component.dataService;
+      const service = component?.dataService;
+      if (!service) {
+        throw new Error('Rack detail component not found');
+      }
       service.backend.add.rackModule(moduleId, service.singleRackData$.value.id, 0, column)
         .subscribe(() => service.updateSingleRackData$.next(service.singleRackData$.value.id));
     }, {
