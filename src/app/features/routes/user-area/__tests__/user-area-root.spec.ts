@@ -5,6 +5,13 @@ import {
   tick
 } from '@angular/core/testing';
 import { UserAreaRootComponent } from '../user-area-root/user-area-root.component';
+import { UserManagementService } from '../../../backbone/login/user-management.service';
+import { SupabaseService } from '../../../backend/supabase.service';
+import { UserAreaDataService } from '../user-area-data.service';
+import { SeoAndUtilsService } from '../../../backbone/seo-and-utils.service';
+import { UrlCreatorService } from '../../../backend/url-creator.service';
+import { DbComment } from 'src/app/models/comment';
+import { DbModule } from 'src/app/models/module';
 import {
   createMockSeoAndUtilsService,
   createMockSupabaseService,
@@ -22,6 +29,8 @@ import {
  *
  * Covers: component creation, SEO, initial observable state.
  */
+type MiscStatRow = {name: string; value: number; icon: string};
+
 describe('UserAreaRootComponent - Initialization', () => {
   let component: UserAreaRootComponent;
   let mockUserService: ReturnType<typeof createMockUserManagementService>;
@@ -36,11 +45,11 @@ describe('UserAreaRootComponent - Initialization', () => {
     mockBackend = createMockSupabaseService();
     
     component = new UserAreaRootComponent(
-      mockUserService as any,
-      mockBackend as any,
-      mockDataService as any,
-      mockSeoService as any,
-      createMockUrlCreatorService() as any,
+      mockUserService as unknown as UserManagementService,
+      mockBackend as unknown as SupabaseService,
+      mockDataService as unknown as UserAreaDataService,
+      mockSeoService as unknown as SeoAndUtilsService,
+      createMockUrlCreatorService() as unknown as UrlCreatorService,
       true
     );
     component.ignoreSeo = ignoreSeo;
@@ -117,11 +126,11 @@ describe('UserAreaRootComponent - Initialization', () => {
     mockBackend = createMockSupabaseService();
 
     component = new UserAreaRootComponent(
-      mockUserService as any,
-      mockBackend as any,
-      mockDataService as any,
-      mockSeoService as any,
-      createMockUrlCreatorService() as any,
+      mockUserService as unknown as UserManagementService,
+      mockBackend as unknown as SupabaseService,
+      mockDataService as unknown as UserAreaDataService,
+      mockSeoService as unknown as SeoAndUtilsService,
+      createMockUrlCreatorService() as unknown as UrlCreatorService,
       true
     );
     component.ignoreSeo = true;
@@ -140,11 +149,11 @@ describe('UserAreaRootComponent - Initialization', () => {
     mockBackend = createMockSupabaseService();
 
     component = new UserAreaRootComponent(
-      mockUserService as any,
-      mockBackend as any,
-      mockDataService as any,
-      mockSeoService as any,
-      createMockUrlCreatorService() as any,
+      mockUserService as unknown as UserManagementService,
+      mockBackend as unknown as SupabaseService,
+      mockDataService as unknown as UserAreaDataService,
+      mockSeoService as unknown as SeoAndUtilsService,
+      createMockUrlCreatorService() as unknown as UrlCreatorService,
       true
     );
     component.ignoreSeo = true;
@@ -183,11 +192,11 @@ describe('UserAreaRootComponent - miscStats$', () => {
     const mockBackend = createMockSupabaseService();
     
     component = new UserAreaRootComponent(
-      mockUserService as any,
-      mockBackend as any,
-      mockDataService as any,
-      mockSeoService as any,
-      createMockUrlCreatorService() as any,
+      mockUserService as unknown as UserManagementService,
+      mockBackend as unknown as SupabaseService,
+      mockDataService as unknown as UserAreaDataService,
+      mockSeoService as unknown as SeoAndUtilsService,
+      createMockUrlCreatorService() as unknown as UrlCreatorService,
       true
     );
     component.ignoreSeo = true;
@@ -202,7 +211,7 @@ describe('UserAreaRootComponent - miscStats$', () => {
     mockDataService.commentsData$.next([]);
     mockDataService.manualsData$.next([]);
     
-    component.miscStats$.subscribe((stats: any[]) => {
+    component.miscStats$.subscribe((stats: MiscStatRow[]) => {
       expect(stats.find(s => s.name === 'Modules')?.value).toBe(0);
       expect(stats.find(s => s.name === 'Racks')?.value).toBe(0);
       expect(stats.find(s => s.name === 'Patches')?.value).toBe(0);
@@ -214,13 +223,13 @@ describe('UserAreaRootComponent - miscStats$', () => {
   
   it('should reflect correct counts from data service streams', (done) => {
     build();
-    mockDataService.modulesData$.next(MOCK_MODULES as any);
-    mockDataService.rackData$.next(MOCK_RACKS as any);
-    mockDataService.patchesData$.next(MOCK_PATCHES as any);
-    mockDataService.commentsData$.next([{id: 1}, {id: 2}, {id: 3}] as any);
-    mockDataService.manualsData$.next([{id: 5}] as any);
+    mockDataService.modulesData$.next(MOCK_MODULES);
+    mockDataService.rackData$.next(MOCK_RACKS);
+    mockDataService.patchesData$.next(MOCK_PATCHES);
+    mockDataService.commentsData$.next([{id: 1}, {id: 2}, {id: 3}] as unknown as DbComment[]);
+    mockDataService.manualsData$.next([{id: 5}] as unknown as DbModule[]);
     
-    component.miscStats$.subscribe((stats: any[]) => {
+    component.miscStats$.subscribe((stats: MiscStatRow[]) => {
       expect(stats.find(s => s.name === 'Modules')?.value).toBe(2);
       expect(stats.find(s => s.name === 'Racks')?.value).toBe(2);
       expect(stats.find(s => s.name === 'Patches')?.value).toBe(2);
@@ -238,7 +247,7 @@ describe('UserAreaRootComponent - miscStats$', () => {
     mockDataService.commentsData$.next(undefined);
     mockDataService.manualsData$.next(undefined);
     
-    component.miscStats$.subscribe((stats: any[]) => {
+    component.miscStats$.subscribe((stats: MiscStatRow[]) => {
       stats.forEach(s => expect(s.value).toBe(0));
       done();
     });
@@ -252,7 +261,7 @@ describe('UserAreaRootComponent - miscStats$', () => {
     mockDataService.commentsData$.next([]);
     mockDataService.manualsData$.next([]);
     
-    component.miscStats$.subscribe((stats: any[]) => {
+    component.miscStats$.subscribe((stats: MiscStatRow[]) => {
       const icons = stats.map(s => s.icon);
       expect(icons).toContain('view_module');
       expect(icons).toContain('view_stream');
@@ -271,7 +280,7 @@ describe('UserAreaRootComponent - miscStats$', () => {
     mockDataService.commentsData$.next([]);
     mockDataService.manualsData$.next([]);
     
-    component.miscStats$.subscribe((stats: any[]) => {
+    component.miscStats$.subscribe((stats: MiscStatRow[]) => {
       expect(stats.length).toBe(5);
       done();
     });
@@ -290,11 +299,11 @@ describe('UserAreaRootComponent - contributorStats$', () => {
     const mockBackend = createMockSupabaseService();
 
     component = new UserAreaRootComponent(
-      mockUserService as any,
-      mockBackend as any,
-      mockDataService as any,
-      mockSeoService as any,
-      createMockUrlCreatorService() as any,
+      mockUserService as unknown as UserManagementService,
+      mockBackend as unknown as SupabaseService,
+      mockDataService as unknown as UserAreaDataService,
+      mockSeoService as unknown as SeoAndUtilsService,
+      createMockUrlCreatorService() as unknown as UrlCreatorService,
       true
     );
     component.ignoreSeo = true;
@@ -346,11 +355,11 @@ describe('UserAreaRootComponent - Global Search', () => {
     const mockBackend = createMockSupabaseService();
     
     component = new UserAreaRootComponent(
-      mockUserService as any,
-      mockBackend as any,
-      mockDataService as any,
-      mockSeoService as any,
-      createMockUrlCreatorService() as any,
+      mockUserService as unknown as UserManagementService,
+      mockBackend as unknown as SupabaseService,
+      mockDataService as unknown as UserAreaDataService,
+      mockSeoService as unknown as SeoAndUtilsService,
+      createMockUrlCreatorService() as unknown as UrlCreatorService,
       true
     );
     component.ignoreSeo = true;
@@ -387,9 +396,9 @@ describe('UserAreaRootComponent - Global Search', () => {
 
   it('should connect the discovery stream through the data service', fakeAsync(() => {
     build();
-    mockDataService.modulesData$.next(MOCK_MODULES as any);
-    mockDataService.rackData$.next(MOCK_RACKS as any);
-    mockDataService.patchesData$.next(MOCK_PATCHES as any);
+    mockDataService.modulesData$.next(MOCK_MODULES);
+    mockDataService.rackData$.next(MOCK_RACKS);
+    mockDataService.patchesData$.next(MOCK_PATCHES);
 
     tick(150);
 
