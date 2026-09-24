@@ -27,13 +27,13 @@ export class DaysInWeekPickerComponent implements OnInit, OnDestroy, ControlValu
   @Input()
   public disabled = false;
 
-  private onChange = (_: any) => { };
+  private onChange: (value: number[]) => void = () => { };
 
-  registerOnChange(fn: (value: any) => any): void { this.onChange = fn; }
+  registerOnChange(fn: (value: number[]) => void): void { this.onChange = fn; }
 
   private onTouched = () => { };
 
-  registerOnTouched(fn: () => any): void { this.onTouched = fn; }
+  registerOnTouched(fn: () => void): void { this.onTouched = fn; }
 
   setDisabledState(isDisabled: boolean): void {
     if (isDisabled)
@@ -58,7 +58,7 @@ export class DaysInWeekPickerComponent implements OnInit, OnDestroy, ControlValu
     this.checkboxGroupForm = this.formBuilder.group(this.getDay(_ => new FormControl(false)), {});
   }
 
-  private getDay(fn: (a: string) => any) {
+  private getDay<T>(fn: (a: string) => T): Record<string, T> {
     return this.days.reduce((a, b) => ({
       ...a,
       [b.id]: fn(b.id)
