@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, NO_ERRORS_SCHEMA } from '@angular/core';
+import { ChangeDetectorRef, ElementRef, NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -11,10 +11,11 @@ import {
 } from 'rxjs';
 import { ModulePanelZoomDialogComponent } from 'src/app/components/module-parts/module-details/module-panel-zoom-dialog.component';
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
-import { RackedModule } from 'src/app/models/module';
+import { DbModule, ModulePanel, RackedModule } from 'src/app/models/module';
 import {
   Rack,
-  RackMinimal
+  RackMinimal,
+  RackingData
 } from 'src/app/models/rack';
 import {
   ContextMenuItem,
@@ -35,6 +36,12 @@ import { AnalyticsService } from 'src/app/features/backbone/analytics-integratio
 
 describe('RackEditorComponent', () => {
   let createdComponents: RackEditorComponent[];
+
+  type RackEditorTestAccessor = {
+    rackViewportRef: unknown;
+    rackScaleSurfaceRef: unknown;
+    updateAutoScale: () => void;
+  };
 
   function createComponent(
     snackBar: MatSnackBar = {} as MatSnackBar,
@@ -85,13 +92,13 @@ describe('RackEditorComponent', () => {
     component.openInspectPanel({
       module: {
         panels: [
-          {id: 1, filename: 'light.png', description: 'Light'} as any,
-          {id: 2, filename: 'dark.png', description: 'Dark'} as any
+          {id: 1, filename: 'light.png', description: 'Light'} as unknown as ModulePanel,
+          {id: 2, filename: 'dark.png', description: 'Dark'} as unknown as ModulePanel
         ]
-      } as any,
+      } as unknown as DbModule,
       rackingData: {
         selectedPanelId: 2
-      } as any
+      } as unknown as RackingData
     } as RackedModule);
 
     expect(dialog.open).toHaveBeenCalledWith(
@@ -118,12 +125,12 @@ describe('RackEditorComponent', () => {
     component.openInspectPanel({
       module: {
         panels: [
-          {id: 1, filename: '', description: 'No file'} as any
+          {id: 1, filename: '', description: 'No file'} as unknown as ModulePanel
         ]
-      } as any,
+      } as unknown as DbModule,
       rackingData: {
         selectedPanelId: 1
-      } as any
+      } as unknown as RackingData
     } as RackedModule);
 
     expect(dialog.open).not.toHaveBeenCalled();
@@ -140,18 +147,18 @@ describe('RackEditorComponent', () => {
       requestRackedModuleReplaceWithBlank$: new Subject<RackedModule>(),
       requestRackedModuleRowClearing$: new Subject<RackedModule>(),
       requestClearRow$: new Subject<number>(),
-      requestRackedModulePanelSwitch$: new Subject<any>(),
+      requestRackedModulePanelSwitch$: new Subject<{rackedModule: RackedModule; panelId: number | null}>(),
     };
 
     const component = createComponent(
       {} as MatSnackBar,
-      dataService as any,
+      dataService as unknown as RackDetailDataService,
       {menuItems$, open$} as GeneralContextMenuDataService,
       {markForCheck: () => undefined} as ChangeDetectorRef,
       jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
     );
 
-    component.data = {hp: 104} as any;
+    component.data = {hp: 104} as unknown as RackMinimal;
     component.ngOnInit();
 
     component.moduleRightClick$.next({
@@ -446,7 +453,7 @@ describe('RackEditorComponent', () => {
   });
 
   it('opens secondary touch actions for the selected module from the visible action tray', () => {
-    const menuItems$ = new BehaviorSubject<any[]>([]);
+    const menuItems$ = new BehaviorSubject<ContextMenuItem[]>([]);
     const open$ = new Subject<MouseEvent>();
     const dataService = {
       isCurrentRackPropertyOfCurrentUser$: new BehaviorSubject(true),
@@ -456,7 +463,7 @@ describe('RackEditorComponent', () => {
       requestRackedModuleReplaceWithBlank$: new Subject<RackedModule>(),
       requestRackedModuleRowClearing$: new Subject<RackedModule>(),
       requestClearRow$: new Subject<number>(),
-      requestRackedModulePanelSwitch$: new Subject<any>(),
+      requestRackedModulePanelSwitch$: new Subject<{rackedModule: RackedModule; panelId: number | null}>(),
       canToggleRackModuleOrientation: jasmine.createSpy('canToggleRackModuleOrientation').and.returnValue(false),
       isRackModuleOrientationUpdating: jasmine.createSpy('isRackModuleOrientationUpdating').and.returnValue(false),
       isAnyRackModuleOrientationUpdating: jasmine.createSpy('isAnyRackModuleOrientationUpdating').and.returnValue(false),
@@ -469,7 +476,7 @@ describe('RackEditorComponent', () => {
 
     const component = createComponent(
       {} as MatSnackBar,
-      dataService as any,
+      dataService as unknown as RackDetailDataService,
       contextMenu,
       {markForCheck: () => undefined} as ChangeDetectorRef,
       jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
@@ -488,7 +495,7 @@ describe('RackEditorComponent', () => {
       toJSON: () => ({})
     } as DOMRect);
 
-    component.data = {hp: 104} as any;
+    component.data = {hp: 104} as unknown as RackMinimal;
     component.ngOnInit();
     component.selectedTouchModule = {
       module: {
@@ -497,7 +504,7 @@ describe('RackEditorComponent', () => {
         manufacturer: {name: 'Xaoc Devices'},
         panels: []
       }
-    } as any;
+    } as unknown as RackedModule;
 
     component.openSelectedTouchModuleMenu(anchor);
 
@@ -535,7 +542,7 @@ describe('RackEditorComponent', () => {
   });
 
   it('exposes clear row from the row action menu', () => {
-    const menuItems$ = new BehaviorSubject<any[]>([]);
+    const menuItems$ = new BehaviorSubject<ContextMenuItem[]>([]);
     const open$ = new Subject<MouseEvent>();
     const requestDuplicateRow$ = new Subject<number>();
     const requestClearRow$ = new Subject<number>();
@@ -548,7 +555,7 @@ describe('RackEditorComponent', () => {
         requestClearRow$,
         requestDeleteRow$: new Subject<number>(),
         isAnyRackModuleOrientationUpdating: jasmine.createSpy('isAnyRackModuleOrientationUpdating').and.returnValue(false)
-      } as any,
+      } as unknown as RackDetailDataService,
       {menuItems$, open$} as GeneralContextMenuDataService,
       {markForCheck: () => undefined} as ChangeDetectorRef,
       jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
@@ -863,15 +870,15 @@ describe('RackEditorComponent', () => {
       jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
     );
 
-    component.data = {hp: 104} as any;
+    component.data = {hp: 104} as unknown as RackMinimal;
     spyOn(window, 'getComputedStyle').and.returnValue({fontSize: '10'} as CSSStyleDeclaration);
-    (component as any).rackViewportRef = {
+    (component as unknown as RackEditorTestAccessor).rackViewportRef = {
       nativeElement: {
         clientWidth: 520
       }
     };
 
-    (component as any).updateAutoScale();
+    (component as unknown as RackEditorTestAccessor).updateAutoScale();
 
     expect(component.autoScale).toBeCloseTo(0.5, 4);
   });
@@ -885,15 +892,15 @@ describe('RackEditorComponent', () => {
       jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
     );
 
-    component.data = {hp: 104} as any;
+    component.data = {hp: 104} as unknown as RackMinimal;
     spyOn(window, 'getComputedStyle').and.returnValue({fontSize: '10'} as CSSStyleDeclaration);
-    (component as any).rackViewportRef = {
+    (component as unknown as RackEditorTestAccessor).rackViewportRef = {
       nativeElement: {
         clientWidth: 520
       }
     };
 
-    (component as any).updateAutoScale();
+    (component as unknown as RackEditorTestAccessor).updateAutoScale();
 
     expect(component.effectiveScale(false)).toBeCloseTo(0.5, 4);
     expect(component.effectiveScale(true)).toBeCloseTo(0.325, 4);
@@ -908,20 +915,20 @@ describe('RackEditorComponent', () => {
       jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
     );
 
-    component.data = {hp: 104} as any;
+    component.data = {hp: 104} as unknown as RackMinimal;
     spyOn(window, 'getComputedStyle').and.returnValue({fontSize: '10'} as CSSStyleDeclaration);
-    (component as any).rackViewportRef = {
+    (component as unknown as RackEditorTestAccessor).rackViewportRef = {
       nativeElement: {
         clientWidth: 520
       }
     };
-    (component as any).rackScaleSurfaceRef = {
+    (component as unknown as RackEditorTestAccessor).rackScaleSurfaceRef = {
       nativeElement: {
         offsetHeight: 400
       }
     };
 
-    (component as any).updateAutoScale();
+    (component as unknown as RackEditorTestAccessor).updateAutoScale();
 
     expect(component.scaledRackWidthPx(false)).toBeCloseTo(520, 4);
     expect(component.scaledRackHeightPx(false)).toBeCloseTo(200, 4);
@@ -958,15 +965,15 @@ describe('RackEditorComponent', () => {
       jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
     );
 
-    component.data = {hp: 104} as any;
+    component.data = {hp: 104} as unknown as RackMinimal;
     spyOn(window, 'getComputedStyle').and.returnValue({fontSize: '10'} as CSSStyleDeclaration);
-    (component as any).rackViewportRef = {
+    (component as unknown as RackEditorTestAccessor).rackViewportRef = {
       nativeElement: {
         clientWidth: 1600
       }
     };
 
-    (component as any).updateAutoScale();
+    (component as unknown as RackEditorTestAccessor).updateAutoScale();
 
     expect(component.autoScale).toBe(1);
   });
@@ -980,12 +987,12 @@ describe('RackEditorComponent', () => {
       jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
     );
 
-    component.data = {hp: 104} as any;
+    component.data = {hp: 104} as unknown as RackMinimal;
     spyOn(window, 'getComputedStyle').and.returnValue({fontSize: '10'} as CSSStyleDeclaration);
     spyOnProperty(window, 'innerWidth', 'get').and.returnValue(780);
 
-    (component as any).rackViewportRef = undefined;
-    (component as any).updateAutoScale();
+    (component as unknown as RackEditorTestAccessor).rackViewportRef = undefined;
+    (component as unknown as RackEditorTestAccessor).updateAutoScale();
 
     expect(component.autoScale).toBeCloseTo(0.75, 4);
   });
@@ -1000,14 +1007,14 @@ describe('RackEditorComponent', () => {
       jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
     );
 
-    component.data = {hp: 104} as any;
+    component.data = {hp: 104} as unknown as RackMinimal;
     spyOn(window, 'getComputedStyle').and.returnValue({fontSize: '10'} as CSSStyleDeclaration);
 
     component.rackViewport = {
       nativeElement: {
         clientWidth: 624
       }
-    } as any;
+    } as unknown as ElementRef<HTMLElement>;
 
     await Promise.resolve();
 
@@ -1025,10 +1032,10 @@ describe('RackEditorComponent', () => {
       jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
     );
 
-    component.data = {hp: 104} as any;
+    component.data = {hp: 104} as unknown as RackMinimal;
     spyOn(window, 'getComputedStyle').and.returnValue({fontSize: '10'} as CSSStyleDeclaration);
     spyOnProperty(window, 'innerWidth', 'get').and.returnValue(832);
-    (component as any).rackViewportRef = undefined;
+    (component as unknown as RackEditorTestAccessor).rackViewportRef = undefined;
 
     component.onWindowResize();
 
