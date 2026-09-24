@@ -17,16 +17,19 @@ import {
   firstValueFrom,
 } from 'rxjs';
 import { Patch } from 'src/app/models/patch';
+import { DbModule, MinimalModule } from 'src/app/models/module';
+import { Rack } from 'src/app/models/rack';
+import { DbComment } from 'src/app/models/comment';
 
 const makeModule = (name: string, mfr = '', desc = '', tags: string[] = []) => ({
   name, description: desc,
   manufacturer: { name: mfr },
   tags: tags.map(t => ({ tag: { name: t, id: 0 } }))
-} as any);
+} as unknown as MinimalModule);
 
-const makeRack = (name: string, desc = '') => ({ name, description: desc } as any);
-const makeManual = (name: string, mfr = '', desc = '') => ({ name, description: desc, manufacturer: { name: mfr } } as any);
-const makeComment = (content: string, username = '') => ({ content, profile: { username } } as any);
+const makeRack = (name: string, desc = '') => ({ name, description: desc } as unknown as Rack);
+const makeManual = (name: string, mfr = '', desc = '') => ({ name, description: desc, manufacturer: { name: mfr } } as unknown as DbModule);
+const makeComment = (content: string, username = '') => ({ content, profile: { username } } as unknown as DbComment);
 const makePatch = (name: string, desc = '', tags: string[] = []) => ({ name, description: desc, tags } as Patch);
 
 describe('user-area-data.utils', () => {
@@ -35,9 +38,9 @@ describe('user-area-data.utils', () => {
       const result = buildDiscoverySnapshot(
         [makeModule('A'), makeModule('B')],
         [makeRack('R')],
-        [{} as any],
-        [{} as any],
-        [{} as any],
+        [{} as unknown as Patch],
+        [{} as unknown as DbModule],
+        [{} as unknown as DbComment],
         ''
       );
       expect(result.modulesCount).toBe(2);
