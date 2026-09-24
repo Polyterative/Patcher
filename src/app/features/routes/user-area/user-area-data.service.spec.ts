@@ -4,7 +4,11 @@ import {
   throwError
 } from 'rxjs';
 import { UserAreaDataService } from './user-area-data.service';
+import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import { DiscoveryTipService } from 'src/app/shared-interproject/discovery-tips/discovery-tip.service';
+import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 import { PatchCreatorComponent } from 'src/app/components/patch-parts/patch-creator/patch-creator.component';
 import {
   RackCreatorComponent,
@@ -13,7 +17,7 @@ import {
 } from 'src/app/components/rack-parts/rack-creator/rack-creator.component';
 import { CachedEntity } from 'src/app/features/backend/supabase.cache';
 import { DbComment } from 'src/app/models/comment';
-import { MinimalModule } from 'src/app/models/module';
+import { DbModule, MinimalModule } from 'src/app/models/module';
 import { Patch } from 'src/app/models/patch';
 import { Rack } from 'src/app/models/rack';
 
@@ -126,7 +130,7 @@ describe('UserAreaDataService', () => {
     };
     const snackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
     
-    const service = new UserAreaDataService(dialog as any, backend as any, discoveryTipService as any, analytics as any, snackBar);
+    const service = new UserAreaDataService(dialog as unknown as MatDialog, backend as unknown as SupabaseService, discoveryTipService as unknown as DiscoveryTipService, analytics as unknown as AnalyticsService, snackBar);
     return {service, backend, dialog, discoveryTipService, analytics, snackBar};
   }
 
@@ -153,10 +157,10 @@ describe('UserAreaDataService', () => {
     expect(backend.get.currentUserPatches).toHaveBeenCalledWith(true);
     expect(backend.get.currentUserRacks).toHaveBeenCalledWith(true);
     
-    expect(service.commentsData$.value as any).toEqual([{id: 1}]);
+    expect(service.commentsData$.value as unknown as Array<{id: number}>).toEqual([{id: 1}]);
     expect(service.modulesData$.value?.length).toBe(3);
-    expect((service.patchesData$.value as any)?.[0]?.id).toBe(10);
-    expect((service.rackData$.value as any)?.[0]?.id).toBe(20);
+    expect((service.patchesData$.value as unknown as Array<{id: number}> | undefined)?.[0]?.id).toBe(10);
+    expect((service.rackData$.value as unknown as Array<{id: number}> | undefined)?.[0]?.id).toBe(20);
   });
 
   it('loads contributor stats on update requests', () => {
@@ -213,7 +217,7 @@ describe('UserAreaDataService', () => {
 
     expect(service.commentsPagination.skip$.value).toBe(1);
     expect(backend.GET.currentUserComments).toHaveBeenCalledWith(1, 10);
-    expect(service.commentsData$.value as any).toEqual([{id: 1}, {id: 2}, {id: 3}]);
+    expect(service.commentsData$.value as unknown as Array<{id: number}>).toEqual([{id: 1}, {id: 2}, {id: 3}]);
     expect(service.commentsCount$.value).toBe(3);
   });
 
@@ -391,7 +395,7 @@ describe('UserAreaDataService', () => {
         description: 'Precision analog VCO',
         manualURL: 'https://a'
       }
-    ] as any);
+    ] as unknown as DbModule[]);
 
     searchQuery$.next('intellijel');
 
@@ -424,7 +428,7 @@ describe('UserAreaDataService', () => {
         created: '2024-01-01',
         updated: '2024-01-01'
       }
-    ] as any);
+    ] as unknown as DbComment[]);
 
     searchQuery$.next('intellijel');
 
@@ -437,9 +441,9 @@ describe('UserAreaDataService', () => {
     const {service} = build();
 
     service.patchesData$.next([
-      {id: 1, name: 'A', description: '', tags: ['drone', 'ambient']} as any,
-      {id: 2, name: 'B', description: '', tags: ['ambient', 'filter']} as any,
-      {id: 3, name: 'C', description: '', tags: undefined} as any
+      {id: 1, name: 'A', description: '', tags: ['drone', 'ambient']} as unknown as Patch,
+      {id: 2, name: 'B', description: '', tags: ['ambient', 'filter']} as unknown as Patch,
+      {id: 3, name: 'C', description: '', tags: undefined} as unknown as Patch
     ]);
 
     service.allPatchTags$.subscribe((tags) => {
@@ -464,7 +468,7 @@ describe('UserAreaDataService', () => {
   it('opens rack creator with current modules and triggers rack refresh', () => {
     const {service, dialog, discoveryTipService} = build();
     const rackUpdateSpy = spyOn(service.updateRackData$, 'next').and.callThrough();
-    service.modulesData$.next([{id: 99, name: 'Local', hp: 8} as any]);
+    service.modulesData$.next([{id: 99, name: 'Local', hp: 8} as unknown as MinimalModule]);
     
     service.addRack$.next();
     
@@ -481,15 +485,15 @@ describe('UserAreaDataService', () => {
   it('excludes WANTS modules when opening rack creator (only HAS and SELLS pass)', () => {
     const {service, dialog} = build();
     service.modulesData$.next([
-      {id: 1, name: 'Rings',  hp: 8, possessionKind: 'HAS'}   as any,
-      {id: 2, name: 'Clouds', hp: 14, possessionKind: 'WANTS'} as any,
-      {id: 3, name: 'Braids', hp: 10, possessionKind: 'SELLS'} as any,
+      {id: 1, name: 'Rings',  hp: 8, possessionKind: 'HAS'}   as unknown as MinimalModule,
+      {id: 2, name: 'Clouds', hp: 14, possessionKind: 'WANTS'} as unknown as MinimalModule,
+      {id: 3, name: 'Braids', hp: 10, possessionKind: 'SELLS'} as unknown as MinimalModule,
     ]);
 
     service.addRack$.next();
 
     const callArgs = (dialog.open as jasmine.Spy).calls.mostRecent().args[1];
-    const passedIds = (callArgs.data.userModules as any[]).map((m: any) => m.id);
+    const passedIds = (callArgs.data.userModules as unknown as Array<{id: number}>).map((m: {id: number}) => m.id);
     expect(passedIds).toEqual([1, 3]);
     expect(passedIds).not.toContain(2);
   });
@@ -498,10 +502,10 @@ describe('UserAreaDataService', () => {
     const {service} = build();
     const emittedIds: number[][] = [];
     service.modulesData$.next([
-      {id: 1, name: 'Rings', manufacturer: {name: 'Mutable'}, description: '', possessionKind: 'HAS'} as any,
-      {id: 2, name: 'Clouds', manufacturer: {name: 'Mutable'}, description: '', possessionKind: 'WANTS'} as any,
-      {id: 3, name: 'Braids', manufacturer: {name: 'Mutable'}, description: '', possessionKind: 'SELLS'} as any,
-      {id: 4, name: 'Legacy', manufacturer: {name: 'Mutable'}, description: ''} as any,
+      {id: 1, name: 'Rings', manufacturer: {name: 'Mutable'}, description: '', possessionKind: 'HAS'} as unknown as MinimalModule,
+      {id: 2, name: 'Clouds', manufacturer: {name: 'Mutable'}, description: '', possessionKind: 'WANTS'} as unknown as MinimalModule,
+      {id: 3, name: 'Braids', manufacturer: {name: 'Mutable'}, description: '', possessionKind: 'SELLS'} as unknown as MinimalModule,
+      {id: 4, name: 'Legacy', manufacturer: {name: 'Mutable'}, description: ''} as unknown as MinimalModule,
     ]);
 
     const subscription = service.filteredModulesData$.subscribe((modules) => {
@@ -584,12 +588,12 @@ describe('UserAreaDataService', () => {
       {id: 1, name: 'One', manufacturer: {name: 'A'}, description: ''},
       {id: 2, name: 'Two', manufacturer: {name: 'A'}, description: ''},
       {id: 3, name: 'Three', manufacturer: {name: 'A'}, description: ''}
-    ] as any);
+    ] as unknown as MinimalModule[]);
     service.patchesData$.next([
       {id: 1, name: 'Patch One', description: '', tags: []},
       {id: 2, name: 'Patch Two', description: '', tags: []},
       {id: 3, name: 'Patch Three', description: '', tags: []}
-    ] as any);
+    ] as unknown as Patch[]);
 
     expect(service.modulesPagination.take$.value).toBe(10);
     service.loadMoreModules$.next();
@@ -618,16 +622,16 @@ describe('UserAreaDataService', () => {
       {id: 1, name: 'Rack One', description: ''},
       {id: 2, name: 'Rack Two', description: ''},
       {id: 3, name: 'Rack Three', description: ''}
-    ] as any);
+    ] as unknown as Rack[]);
 
     expect(service.racksPagination.take$.value).toBe(10);
     service.loadMoreRacks$.next();
     expect(service.racksPagination.take$.value).toBe(20);
     expect(backend.get.currentUserRacks).not.toHaveBeenCalled();
 
-    let lastRacks: any[] = [];
+    let lastRacks: Rack[] = [];
     service.pagedRacksData$.subscribe((racks) => { if (racks) { lastRacks = racks; } });
-    expect(lastRacks.map((r: any) => r.id)).toEqual([1, 2, 3]);
+    expect(lastRacks.map((r: Rack) => r.id)).toEqual([1, 2, 3]);
   });
 
   it('records discovery actions from service-owned helper subjects', () => {
@@ -647,11 +651,11 @@ describe('UserAreaDataService', () => {
     const searchQuery$ = new Subject<string>();
     service.connectDiscovery(searchQuery$.asObservable());
 
-    service.modulesData$.next([{id: 1}] as any);
-    service.rackData$.next([{id: 2}] as any);
-    service.patchesData$.next([{id: 3}] as any);
-    service.manualsData$.next([{id: 4}] as any);
-    service.commentsData$.next([{id: 5}] as any);
+    service.modulesData$.next([{id: 1}] as unknown as MinimalModule[]);
+    service.rackData$.next([{id: 2}] as unknown as Rack[]);
+    service.patchesData$.next([{id: 3}] as unknown as Patch[]);
+    service.manualsData$.next([{id: 4}] as unknown as DbModule[]);
+    service.commentsData$.next([{id: 5}] as unknown as DbComment[]);
     searchQuery$.next('maths');
 
     expect(discoveryTipService.updateUserAreaSnapshot).toHaveBeenCalledWith({
@@ -692,7 +696,7 @@ describe('UserAreaDataService', () => {
         manufacturer: {name: 'Xaoc Devices'},
         description: 'Dual peak filter'
       }
-    ] as any);
+    ] as unknown as MinimalModule[]);
 
     service.rackData$.next([
       ...Array.from({length: 10}, (_, index) => ({
@@ -705,7 +709,7 @@ describe('UserAreaDataService', () => {
         name: 'Belgrade Performance Case',
         description: 'Dedicated filter showcase'
       }
-    ] as any);
+    ] as unknown as Rack[]);
 
     service.patchesData$.next([
       ...Array.from({length: 10}, (_, index) => ({
@@ -720,7 +724,7 @@ describe('UserAreaDataService', () => {
         description: 'Ambient drone patch',
         tags: ['ambient', 'filter']
       }
-    ] as any);
+    ] as unknown as Patch[]);
 
     searchQuery$.next('belgrade');
 
@@ -766,7 +770,7 @@ describe('UserAreaDataService', () => {
         description: 'Percussive filter ping',
         tags: ['techno', 'filter']
       }
-    ] as any);
+    ] as unknown as Patch[]);
 
     service.activeTagFilter$.next('ambient');
     searchQuery$.next('belgrade');
@@ -885,8 +889,8 @@ describe('UserAreaDataService', () => {
   it('filteredPatchesData$ filters by active tag', (done) => {
     const {service} = build();
     service.patchesData$.next([
-      {id: 1, name: 'Patch A', tags: ['ambient']} as any,
-      {id: 2, name: 'Patch B', tags: ['drone']} as any,
+      {id: 1, name: 'Patch A', tags: ['ambient']} as unknown as Patch,
+      {id: 2, name: 'Patch B', tags: ['drone']} as unknown as Patch,
     ]);
     service.activeTagFilter$.next('ambient');
 
@@ -900,8 +904,8 @@ describe('UserAreaDataService', () => {
   it('filteredPatchesData$ shows all patches when tag filter is cleared', (done) => {
     const {service} = build();
     service.patchesData$.next([
-      {id: 1, name: 'Alpha', tags: ['ambient']} as any,
-      {id: 2, name: 'Beta', tags: ['drone']} as any,
+      {id: 1, name: 'Alpha', tags: ['ambient']} as unknown as Patch,
+      {id: 2, name: 'Beta', tags: ['drone']} as unknown as Patch,
     ]);
     service.activeTagFilter$.next(null);
 
@@ -924,9 +928,9 @@ describe('UserAreaDataService', () => {
   it('filteredPatchesData$ combines tag and text search', (done) => {
     const {service} = build();
     service.patchesData$.next([
-      {id: 1, name: 'Ambient Study', description: '', tags: ['ambient']} as any,
-      {id: 2, name: 'Drone Fog',    description: '', tags: ['ambient', 'drone']} as any,
-      {id: 3, name: 'Bright Tones', description: '', tags: ['melodic']} as any,
+      {id: 1, name: 'Ambient Study', description: '', tags: ['ambient']} as unknown as Patch,
+      {id: 2, name: 'Drone Fog',    description: '', tags: ['ambient', 'drone']} as unknown as Patch,
+      {id: 3, name: 'Bright Tones', description: '', tags: ['melodic']} as unknown as Patch,
     ]);
     service.activeTagFilter$.next('ambient');
     service['_searchQuery$'].next('drone');
