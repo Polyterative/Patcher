@@ -30,7 +30,7 @@ import {
   tap
 } from 'rxjs/operators';
 import { StandardsService } from 'src/app/components/format-translator/standards.service';
-import { MinimalModule } from 'src/app/models/module';
+import { DbModule, MinimalModule } from 'src/app/models/module';
 import {
   CustomValidators,
   FormTypes,
@@ -307,7 +307,7 @@ export class ModuleAdderDataService extends SubManager {
           };
           
         }),
-        exhaustMap((x) => this.backend.add.modules([x as any]).pipe(
+        exhaustMap((x) => this.backend.add.modules([x as unknown as DbModule]).pipe(
           map(() => x),
           catchError(() => {
             SharedConstants.errorCustom(this.snackBar, 'Failed to submit module. Please try again.');
