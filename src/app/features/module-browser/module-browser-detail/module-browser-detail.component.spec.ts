@@ -26,7 +26,7 @@ import { COOL_REACTIONS_ENABLED } from 'src/app/components/shared-atoms/cool-but
 import { CoolButtonComponent } from 'src/app/components/shared-atoms/cool-button/cool-button.component';
 import { ModuleMinimalViewConfig } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
-import { DbModule } from 'src/app/models/module';
+import { DbModule, ModulePanel } from 'src/app/models/module';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 import { AppStateService } from "src/app/shared-interproject/app-state.service";
 import { UserManagementService } from "src/app/features/backbone/login/user-management.service";
@@ -81,6 +81,29 @@ class ManufacturerRowStubComponent {
 describe('ModuleBrowserDetailComponent', () => {
   type RatioModuleFixture = Pick<DbModule, 'hp' | 'standard'>;
   type SearchLinkPriceListing = Pick<ModulePriceListing, 'storeId' | 'storeSlug' | 'verificationStatus'>;
+  type RenderDataService = {
+    singleModuleData$: BehaviorSubject<unknown>;
+    racksWithThisModule$: BehaviorSubject<unknown[]>;
+    patchesWithThisModule$: BehaviorSubject<unknown[]>;
+    moduleUsageSummary$: BehaviorSubject<unknown>;
+    possessionCounts$: BehaviorSubject<unknown>;
+    coolCount$: BehaviorSubject<number | undefined>;
+    coolCountUpdate$: Subject<number | null>;
+    currentModulePossession$: BehaviorSubject<unknown>;
+    modulesBySameManufacturer$: BehaviorSubject<unknown[]>;
+    modulePriceListings$: BehaviorSubject<SearchLinkPriceListing[] | undefined>;
+    moduleEditingPanelOpenState$: BehaviorSubject<boolean>;
+    moduleEditorHasPendingChanges$: BehaviorSubject<boolean>;
+    isAdmin$: BehaviorSubject<boolean>;
+    updateSingleModuleData$: Subject<number>;
+    changeModule$: Subject<Partial<DbModule>>;
+    requestModuleEditingToggle$: Subject<void>;
+    deleteModuleAndOrphanManufacturer$: Subject<DbModule>;
+    mergeIntoTargetModule$: Subject<{ sourceId: number; targetId: number }>;
+    moduleMergeResult$: Subject<unknown>;
+    deleteModule$: Subject<number>;
+    deletePanel$: Subject<ModulePanel>;
+  };
 
   function makeReactionBackendSpy() {
     return {
@@ -98,12 +121,12 @@ describe('ModuleBrowserDetailComponent', () => {
   }
 
   function build() {
-    const routeParams$ = new Subject<any>();
-    const singleModuleData$ = new BehaviorSubject<any>(undefined);
+    const routeParams$ = new Subject<Record<string, unknown>>();
+    const singleModuleData$ = new BehaviorSubject<unknown>(undefined);
     const updateSingleModuleData$ = new Subject<number>();
-    const changeModule$ = new Subject<any>();
+    const changeModule$ = new Subject<Partial<DbModule>>();
     const requestModuleEditingToggle$ = new Subject<void>();
-    const deleteModuleAndOrphanManufacturer$ = new Subject<any>();
+    const deleteModuleAndOrphanManufacturer$ = new Subject<DbModule>();
     const mergeIntoTargetModule$ = new Subject<{ sourceId: number; targetId: number }>();
     const moduleMergeResult$ = new Subject<unknown>();
     
@@ -133,13 +156,13 @@ describe('ModuleBrowserDetailComponent', () => {
     };
     
     const component = new ModuleBrowserDetailComponent(
-      dataService as any,
-      route as any,
+      dataService as unknown as ModuleDetailDataService,
+      route as unknown as ActivatedRoute,
       router,
-      seoAndUtilsService as any,
-      {} as any,
-      commentsDataService as any,
-      {} as any
+      seoAndUtilsService as unknown as SeoAndUtilsService,
+      {} as unknown as AppStateService,
+      commentsDataService as unknown as CommentsDataService,
+      {} as unknown as UserManagementService
     );
     
     return {
@@ -175,7 +198,7 @@ describe('ModuleBrowserDetailComponent', () => {
 
   async function render(options: {isDev?: boolean; isAdmin?: boolean; user?: unknown; coolToken?: boolean} = {}): Promise<{
     fixture: ComponentFixture<ModuleBrowserDetailComponent>;
-    dataService: any;
+    dataService: RenderDataService;
     loggedUser$: BehaviorSubject<unknown>;
     reactionBackend: ReturnType<typeof makeReactionBackendSpy>;
   }> {
@@ -189,37 +212,37 @@ describe('ModuleBrowserDetailComponent', () => {
         coolCount$.next(count);
       }
     });
-    const dataService = {
-      singleModuleData$: new BehaviorSubject<any>(moduleFixture()),
-      racksWithThisModule$: new BehaviorSubject<any[]>([]),
-      patchesWithThisModule$: new BehaviorSubject<any[]>([]),
-      moduleUsageSummary$: new BehaviorSubject<any>({
+    const dataService: RenderDataService = {
+      singleModuleData$: new BehaviorSubject<unknown>(moduleFixture()),
+      racksWithThisModule$: new BehaviorSubject<unknown[]>([]),
+      patchesWithThisModule$: new BehaviorSubject<unknown[]>([]),
+      moduleUsageSummary$: new BehaviorSubject<unknown>({
         public_rack_count: 0,
         hidden_rack_bucket: 'none',
         public_patch_count: 0,
         hidden_patch_bucket: 'none'
       }),
-      possessionCounts$: new BehaviorSubject<any>({
+      possessionCounts$: new BehaviorSubject<unknown>({
         hasCount: 0,
         wantsCount: 0,
         sellsCount: 0
       }),
       coolCount$,
       coolCountUpdate$,
-      currentModulePossession$: new BehaviorSubject<any>(null),
-      modulesBySameManufacturer$: new BehaviorSubject<any[]>([]),
+      currentModulePossession$: new BehaviorSubject<unknown>(null),
+      modulesBySameManufacturer$: new BehaviorSubject<unknown[]>([]),
       modulePriceListings$: new BehaviorSubject<SearchLinkPriceListing[] | undefined>(undefined),
       moduleEditingPanelOpenState$: new BehaviorSubject<boolean>(false),
       moduleEditorHasPendingChanges$: new BehaviorSubject<boolean>(false),
       isAdmin$: new BehaviorSubject<boolean>(!!options.isAdmin),
       updateSingleModuleData$: new Subject<number>(),
-      changeModule$: new Subject<any>(),
+      changeModule$: new Subject<Partial<DbModule>>(),
       requestModuleEditingToggle$: new Subject<void>(),
-      deleteModuleAndOrphanManufacturer$: new Subject<any>(),
+      deleteModuleAndOrphanManufacturer$: new Subject<DbModule>(),
       mergeIntoTargetModule$: new Subject<{ sourceId: number; targetId: number }>(),
       moduleMergeResult$: new Subject<unknown>(),
       deleteModule$: new Subject<number>(),
-      deletePanel$: new Subject<any>()
+      deletePanel$: new Subject<ModulePanel>()
     };
     const commentsDataService = {
       requestCommentsUpdate$: {next: jasmine.createSpy('requestCommentsUpdate.next')},
@@ -335,7 +358,7 @@ describe('ModuleBrowserDetailComponent', () => {
     const {component, dataService, commentsDataService} = build();
     component.ngOnInit();
     
-    dataService.updateSingleModuleData$.next(0 as any);
+    dataService.updateSingleModuleData$.next(0);
     
     expect(commentsDataService.requestReset$.next).toHaveBeenCalled();
   });
@@ -553,24 +576,24 @@ describe('ModuleBrowserDetailComponent', () => {
   
   it('emits expected patch payloads for dev helpers', () => {
     const {component, dataService} = build();
-    const emitted: any[] = [];
+    const emitted: Array<Partial<DbModule>> = [];
     dataService.changeModule$.subscribe(x => emitted.push(x));
     
     component.setDevStandard(2);
     component.setDevComplete(true);
     component.setDevApproved(true);
     component.setDevDIY(true);
-    component.adjustDevHp({hp: 12} as any, -5);
-    component.adjustDevHp({hp: 12} as any, -1);
-    component.adjustDevHp({hp: 12} as any, 1);
-    component.adjustDevHp({hp: 12} as any, 5);
-    component.adjustDevHp({hp: 0} as any, -1);
-    component.adjustDevHp({hp: 3} as any, -5);
+    component.adjustDevHp({hp: 12}, -5);
+    component.adjustDevHp({hp: 12}, -1);
+    component.adjustDevHp({hp: 12}, 1);
+    component.adjustDevHp({hp: 12}, 5);
+    component.adjustDevHp({hp: 0}, -1);
+    component.adjustDevHp({hp: 3}, -5);
     component.trimDevTextFields({
       name: '  My   Module ',
       description: '  rich   text  ',
       manualURL: '  https://manual  '
-    } as any);
+    } as unknown as DbModule);
     component.clearDevManualUrl();
     component.clampDevNumericFields({
       hp: -1,
@@ -579,7 +602,7 @@ describe('ModuleBrowserDetailComponent', () => {
       powerPos12: -5,
       powerNeg12: 1,
       powerPos5: Number.POSITIVE_INFINITY
-    } as any);
+    } as unknown as DbModule);
     
     expect(emitted[0]).toEqual({standard: {id: 2, name: ''}});
     expect(emitted[1]).toEqual({isComplete: true});
@@ -609,7 +632,7 @@ describe('ModuleBrowserDetailComponent', () => {
 
   it('clamps null power rails to zero in dev helpers', () => {
     const {component, dataService} = build();
-    const emitted: any[] = [];
+    const emitted: Array<Partial<DbModule>> = [];
     dataService.changeModule$.subscribe(x => emitted.push(x));
 
     component.clampDevNumericFields({
@@ -619,7 +642,7 @@ describe('ModuleBrowserDetailComponent', () => {
       powerPos12: null,
       powerNeg12: null,
       powerPos5: null
-    } as any);
+    } as unknown as DbModule);
 
     expect(emitted[0]).toEqual({
       hp: 4,
@@ -688,14 +711,14 @@ describe('ModuleBrowserDetailComponent', () => {
     const {component, dataService} = build();
     const confirmSpy = spyOn(window, 'confirm');
     const deleteSpy = spyOn(dataService.deleteModuleAndOrphanManufacturer$, 'next').and.callThrough();
-    const module = moduleFixture();
+    const module = moduleFixture() as DbModule;
 
     confirmSpy.and.returnValue(false);
-    component.confirmDeleteModuleAndOrphanManufacturer(module as any);
+    component.confirmDeleteModuleAndOrphanManufacturer(module);
     expect(deleteSpy).not.toHaveBeenCalled();
 
     confirmSpy.and.returnValue(true);
-    component.confirmDeleteModuleAndOrphanManufacturer(module as any);
+    component.confirmDeleteModuleAndOrphanManufacturer(module);
     expect(deleteSpy).toHaveBeenCalledWith(module);
   });
 
@@ -743,8 +766,8 @@ describe('ModuleBrowserDetailComponent', () => {
     const {component} = build();
     const openSpy = spyOn(window, 'open');
     
-    component.submitSimilar({manufacturerId: 3, hp: 8, standard: {id: 1}} as any);
-    component.openManual({manualURL: 'https://docs'} as any);
+    component.submitSimilar({manufacturerId: 3, hp: 8, standard: {id: 1}} as unknown as Partial<DbModule>);
+    component.openManual({manualURL: 'https://docs'} as unknown as DbModule);
     component.openExternalLink('https://external');
     
     expect(openSpy).toHaveBeenCalledWith('/modules/add?manufacturer=3&HP=8&standard=1', '_blank');
