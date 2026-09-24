@@ -15,12 +15,14 @@ import {
   sortAndGroupEditorCards
 } from './patch-editor.component';
 import { BehaviorSubject, of } from 'rxjs';
-import { PatchModuleInstance } from 'src/app/models/connection';
+import { PatchConnection, PatchModuleInstance } from 'src/app/models/connection';
+import { RackConnectionSelection } from './patch-editor-view.utils';
+import { LinkedRackPreviewCard } from './patch-editor.types';
 import { ElementRef, ChangeDetectorRef } from '@angular/core';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 import { PatchDetailDataService, LinkedRackUiState } from '../patch-detail-data.service';
-import { DbModule } from 'src/app/models/module';
+import { DbModule, RackedModule } from 'src/app/models/module';
 import { Rack } from 'src/app/models/rack';
 
 function unlinkedRackState(): LinkedRackUiState {
@@ -89,7 +91,7 @@ const createCard = (
     manufacturer: {
       name: manufacturerName
     }
-  } as any,
+  } as unknown as DbModule,
   instance: undefined,
   label: undefined,
   instanceCount,
@@ -100,6 +102,11 @@ const createCard = (
 
 
 describe('PatchEditorComponent', () => {
+  type PatchEditorTestAccessor = {
+    rackViewportRef: unknown;
+    rackBaseHeightPx: number;
+  };
+
   it('should hide module tags in patch editor cards to keep the editor compact', () => {
     const component = createPatchEditorComponent();
     
@@ -154,11 +161,11 @@ describe('PatchEditorComponent', () => {
         linkedRackState$,
         editorOperationMode$,
         confirmSelectedConnection$: of(undefined)
-      } as any,
-      {} as any,
-      {nativeElement: document.createElement('div')} as any,
-      {markForCheck: () => {}} as any,
-      {capture: () => {}} as any
+      } as unknown as PatchDetailDataService,
+      {} as unknown as AppStateService,
+      {nativeElement: document.createElement('div')} as unknown as ElementRef,
+      {markForCheck: () => {}} as unknown as ChangeDetectorRef,
+      {capture: () => {}} as unknown as AnalyticsService
     );
     const values: boolean[] = [];
     const sub = component.hasLinkedRack$.subscribe(value => values.push(value));
@@ -260,18 +267,18 @@ describe('PatchEditorComponent', () => {
   it('sorts linked-rack preview rows and modules by physical position', () => {
     const rows = buildLinkedRackPreviewRows([
       {
-        module: {id: 1, name: 'Late'} as any,
+        module: {id: 1, name: 'Late'} as unknown as DbModule,
         rackingData: {id: 301, row: 2, column: 18, selectedPanelId: 9}
       },
       {
-        module: {id: 2, name: 'First'} as any,
+        module: {id: 2, name: 'First'} as unknown as DbModule,
         rackingData: {id: 101, row: 1, column: 14}
       },
       {
-        module: {id: 3, name: 'Earlier'} as any,
+        module: {id: 3, name: 'Earlier'} as unknown as DbModule,
         rackingData: {id: 102, row: 1, column: 2}
       }
-    ] as any);
+      ] as unknown as RackedModule[]);
 
     expect(rows.map(row => row.row)).toEqual([1, 2]);
     expect(rows[0].modules.map(card => card.trackingId)).toEqual([102, 101]);
@@ -281,12 +288,12 @@ describe('PatchEditorComponent', () => {
 
   it('maps duplicate linked-rack positions to patch instances by rack position and instance id', () => {
     const preview = buildLinkedRackPreviewState(
-      {id: 10, name: 'Studio Rack'} as any,
+      {id: 10, name: 'Studio Rack'} as unknown as Rack,
       [
-        {module: {id: 7, name: 'Maths'} as any, rackingData: {id: 7002, row: 1, column: 20}},
-        {module: {id: 7, name: 'Maths'} as any, rackingData: {id: 7001, row: 1, column: 4}},
-        {module: {id: 7, name: 'Maths'} as any, rackingData: {id: 7003, row: 2, column: 1}}
-      ] as any
+        {module: {id: 7, name: 'Maths'} as unknown as DbModule, rackingData: {id: 7002, row: 1, column: 20}},
+        {module: {id: 7, name: 'Maths'} as unknown as DbModule, rackingData: {id: 7001, row: 1, column: 4}},
+        {module: {id: 7, name: 'Maths'} as unknown as DbModule, rackingData: {id: 7003, row: 2, column: 1}}
+      ] as unknown as RackedModule[]
     );
 
     const instanceMap = buildLinkedRackInstanceMap(preview, [
@@ -301,16 +308,16 @@ describe('PatchEditorComponent', () => {
 
   it('detects linked-rack divergence for orphaned modules and excess copies', () => {
     const preview = buildLinkedRackPreviewState(
-      {id: 10, name: 'Studio Rack'} as any,
+      {id: 10, name: 'Studio Rack'} as unknown as Rack,
       [
-        {module: {id: 1, name: 'Rack Module'} as any, rackingData: {id: 1001, row: 1, column: 1}}
-      ] as any
+        {module: {id: 1, name: 'Rack Module'} as unknown as DbModule, rackingData: {id: 1001, row: 1, column: 1}}
+      ] as unknown as RackedModule[]
     );
 
     const divergence = detectLinkedRackDivergence(preview, [
-      {id: 11, patch_id: 1, module_id: 1, instance_label: null, module: {name: 'Rack Module'} as any},
-      {id: 12, patch_id: 1, module_id: 1, instance_label: null, module: {name: 'Rack Module'} as any},
-      {id: 99, patch_id: 1, module_id: 9, instance_label: null, module: {name: 'Orphan'} as any}
+      {id: 11, patch_id: 1, module_id: 1, instance_label: null, module: {name: 'Rack Module'}},
+      {id: 12, patch_id: 1, module_id: 1, instance_label: null, module: {name: 'Rack Module'}},
+      {id: 99, patch_id: 1, module_id: 9, instance_label: null, module: {name: 'Orphan'}}
     ], []);
 
     expect(divergence.clean).toBeFalse();
@@ -333,12 +340,12 @@ describe('PatchEditorComponent', () => {
       {id: 11, patch_id: 1, module_id: 1},
       {id: 22, patch_id: 1, module_id: 2},
       {id: 33, patch_id: 1, module_id: 3}
-    ] as any;
+    ] as unknown as PatchModuleInstance[];
     const connections = [
       {instance_id_a: 22, instance_id_b: 33},
       {instance_id_a: 11, instance_id_b: undefined},
       {instance_id_a: undefined, instance_id_b: undefined}
-    ] as any;
+    ] as unknown as PatchConnection[];
 
     expect(countOrphanedConnections(instanceMap, instances, connections)).toBe(1);
   });
@@ -346,7 +353,7 @@ describe('PatchEditorComponent', () => {
   it('clears the expanded rack CV panel when switching editor modes', () => {
     const component = createPatchEditorComponent();
     component.expandedRackTrackingId = 123;
-    component.expandedRackModule = {id: 1, name: 'Maths'} as any;
+    component.expandedRackModule = {id: 1, name: 'Maths'} as unknown as DbModule;
 
     component.setOperationMode('collection');
 
@@ -358,12 +365,12 @@ describe('PatchEditorComponent', () => {
   it('labels duplicate rack module copies by rack position only when disambiguation is needed', () => {
     const component = createPatchEditorComponent();
     component.linkedRackPreviewState$.next(buildLinkedRackPreviewState(
-      {id: 10, name: 'Studio Rack'} as any,
+      {id: 10, name: 'Studio Rack'} as unknown as Rack,
       [
-        {module: {id: 7, name: 'Maths'} as any, rackingData: {id: 7002, row: 1, column: 20}},
-        {module: {id: 7, name: 'Maths'} as any, rackingData: {id: 7001, row: 1, column: 4}},
-        {module: {id: 8, name: 'Plaits'} as any, rackingData: {id: 8001, row: 1, column: 32}}
-      ] as any
+        {module: {id: 7, name: 'Maths'} as unknown as DbModule, rackingData: {id: 7002, row: 1, column: 20}},
+        {module: {id: 7, name: 'Maths'} as unknown as DbModule, rackingData: {id: 7001, row: 1, column: 4}},
+        {module: {id: 8, name: 'Plaits'} as unknown as DbModule, rackingData: {id: 8001, row: 1, column: 32}}
+      ] as unknown as RackedModule[]
     ));
 
     expect(component.getRackModuleCopyLabel(7001, 7)).toBe('(1)');
@@ -373,8 +380,8 @@ describe('PatchEditorComponent', () => {
 
   it('auto-scales wide linked-rack visuals to the viewport and keeps narrower racks at full scale', () => {
     const component = createPatchEditorComponent();
-    (component as any).rackViewportRef = {nativeElement: {clientWidth: 800}};
-    (component as any).rackBaseHeightPx = 240;
+    (component as unknown as PatchEditorTestAccessor).rackViewportRef = {nativeElement: {clientWidth: 800}};
+    (component as unknown as PatchEditorTestAccessor).rackBaseHeightPx = 240;
     const remPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
 
     component.updateRackAutoScale(100);
@@ -392,8 +399,8 @@ describe('PatchEditorComponent', () => {
 
   it('builds unavailable linked-rack preview state when the rack cannot be resolved', () => {
     const preview = buildLinkedRackPreviewState(undefined, [
-      {module: {id: 1, name: 'Ignored'} as any, rackingData: {id: 1001, row: 1, column: 1}}
-    ] as any);
+      {module: {id: 1, name: 'Ignored'} as unknown as DbModule, rackingData: {id: 1001, row: 1, column: 1}}
+      ] as unknown as RackedModule[]);
 
     expect(preview.kind).toBe('unavailable');
     expect(preview.moduleCount).toBe(0);
@@ -403,9 +410,9 @@ describe('PatchEditorComponent', () => {
 
   it('uses deterministic fallback tracking ids for rack positions missing row ids', () => {
     const rows = buildLinkedRackPreviewRows([
-      {module: {id: 4, name: 'Fallback'} as any, rackingData: {row: 1, column: 3}},
-      {module: {id: 8, name: 'Explicit'} as any, rackingData: {id: 808, row: 1, column: 5}}
-    ] as any);
+      {module: {id: 4, name: 'Fallback'} as unknown as DbModule, rackingData: {row: 1, column: 3}},
+      {module: {id: 8, name: 'Explicit'} as unknown as DbModule, rackingData: {id: 808, row: 1, column: 5}}
+      ] as unknown as RackedModule[]);
 
     expect(rows[0].modules[0].trackingId).toBe(200304);
     expect(rows[0].modules[1].trackingId).toBe(808);
@@ -417,7 +424,7 @@ describe('PatchEditorComponent', () => {
       description: 'Loading',
       rows: [{
         row: 1,
-        modules: [{trackingId: 1001, module: {id: 7} as any, row: 1, column: 1, selectedPanelId: null, orientation: 'normal'}]
+        modules: [{trackingId: 1001, module: {id: 7} as unknown as DbModule, row: 1, column: 1, selectedPanelId: null, orientation: 'normal'}]
       }],
       moduleCount: 1
     }, [
@@ -429,11 +436,11 @@ describe('PatchEditorComponent', () => {
 
   it('reports clean divergence when duplicate rack positions exactly match patch copies', () => {
     const preview = buildLinkedRackPreviewState(
-      {id: 10, name: 'Studio Rack'} as any,
+      {id: 10, name: 'Studio Rack'} as unknown as Rack,
       [
-        {module: {id: 7, name: 'Maths'} as any, rackingData: {id: 7001, row: 1, column: 4}},
-        {module: {id: 7, name: 'Maths'} as any, rackingData: {id: 7002, row: 1, column: 20}}
-      ] as any
+        {module: {id: 7, name: 'Maths'} as unknown as DbModule, rackingData: {id: 7001, row: 1, column: 4}},
+        {module: {id: 7, name: 'Maths'} as unknown as DbModule, rackingData: {id: 7002, row: 1, column: 20}}
+      ] as unknown as RackedModule[]
     );
 
     const divergence = detectLinkedRackDivergence(preview, [
@@ -453,10 +460,10 @@ describe('PatchEditorComponent', () => {
     const message = component.getRackToolbarSummary({
       kind: 'ready',
       description: '',
-      rack: {name: 'Studio Current', rows: 2, hp: 84} as any,
+      rack: {name: 'Studio Current', rows: 2, hp: 84} as unknown as Rack,
       rows: [],
       moduleCount: 3
-    } as any, {
+    } as unknown as LinkedRackPreviewState, {
       orphanedModules: [],
       excessInstances: [{moduleId: 7, moduleName: 'Maths', rackPositions: 1, patchInstances: 2}],
       totalOrphanedInstances: 1,
@@ -473,10 +480,10 @@ describe('PatchEditorComponent', () => {
     const message = component.getRackToolbarSummary({
       kind: 'ready',
       description: 'Click ins and outs to wire connections.',
-      rack: {name: 'Studio Current', rows: 4, hp: 104} as any,
+      rack: {name: 'Studio Current', rows: 4, hp: 104} as unknown as Rack,
       rows: [],
       moduleCount: 8
-    } as any, {
+    } as unknown as LinkedRackPreviewState, {
       orphanedModules: [],
       excessInstances: [],
       totalOrphanedInstances: 2,
@@ -496,7 +503,7 @@ describe('PatchEditorComponent', () => {
       description: 'Click ins and outs to wire connections.',
       rows: [],
       moduleCount: 8
-    } as any);
+    } as unknown as LinkedRackPreviewState);
 
     expect(message).toBe('Click ins and outs to wire connections.');
   });
@@ -507,10 +514,10 @@ describe('PatchEditorComponent', () => {
     const message = component.getRackToolbarSummary({
       kind: 'ready',
       description: 'Click ins and outs to wire connections.',
-      rack: {name: 'Studio Current', rows: 4, hp: 104} as any,
+      rack: {name: 'Studio Current', rows: 4, hp: 104} as unknown as Rack,
       rows: [],
       moduleCount: 36
-    } as any, {
+    } as unknown as LinkedRackPreviewState, {
       orphanedModules: [],
       excessInstances: [],
       totalOrphanedInstances: 0,
@@ -530,7 +537,7 @@ describe('PatchEditorComponent', () => {
         description: 'unused',
         rows: [],
         moduleCount: 0
-      } as any,
+      } as unknown as LinkedRackPreviewState,
       null,
       0
     );
@@ -698,18 +705,18 @@ describe('PatchEditorComponent', () => {
   it('groups linked-rack preview modules by row and sorts them by column', () => {
     const rows = buildLinkedRackPreviewRows([
       {
-        module: {id: 2, name: 'B', manufacturer: {name: 'Maker'}} as any,
+        module: {id: 2, name: 'B', manufacturer: {name: 'Maker'}} as unknown as DbModule,
         rackingData: {id: 22, row: 1, column: 8, selectedPanelId: null}
       },
       {
-        module: {id: 1, name: 'A', manufacturer: {name: 'Maker'}} as any,
+        module: {id: 1, name: 'A', manufacturer: {name: 'Maker'}} as unknown as DbModule,
         rackingData: {id: 11, row: 0, column: 6, selectedPanelId: null}
       },
       {
-        module: {id: 3, name: 'C', manufacturer: {name: 'Maker'}} as any,
+        module: {id: 3, name: 'C', manufacturer: {name: 'Maker'}} as unknown as DbModule,
         rackingData: {id: 33, row: 1, column: 2, selectedPanelId: null}
       }
-    ] as any);
+      ] as unknown as RackedModule[]);
 
     expect(rows.map(row => row.row)).toEqual([0, 1]);
     expect(rows[1].modules.map(card => card.module.id)).toEqual([3, 2]);
@@ -722,9 +729,9 @@ describe('PatchEditorComponent', () => {
 
   it('uses rackingData.id as trackingId', () => {
     const rows = buildLinkedRackPreviewRows([{
-      module: {id: 5, name: 'Test'} as any,
+        module: {id: 5, name: 'Test'} as unknown as DbModule,
       rackingData: {id: 42, row: 0, column: 0, selectedPanelId: null}
-    }] as any);
+    }] as unknown as RackedModule[]);
 
     expect(rows[0].modules[0].trackingId).toBe(42);
   });
@@ -746,10 +753,10 @@ describe('PatchEditorComponent', () => {
 
   describe('buildLinkedRackInstanceMap', () => {
     const makePreviewState = (modules: { id: number; moduleId: number; row: number; col: number }[]): LinkedRackPreviewState => {
-      const rows = new Map<number, any[]>();
+      const rows = new Map<number, LinkedRackPreviewCard[]>();
       for (const m of modules) {
         const row = rows.get(m.row) ?? [];
-        row.push({trackingId: m.id, module: {id: m.moduleId} as any, row: m.row, column: m.col, selectedPanelId: null, orientation: 'normal'});
+        row.push({trackingId: m.id, module: {id: m.moduleId} as unknown as DbModule, row: m.row, column: m.col, selectedPanelId: null, orientation: 'normal'});
         rows.set(m.row, row);
       }
       return {
@@ -975,9 +982,9 @@ describe('PatchEditorComponent', () => {
         b: null
       };
 
-      expect(component.getRackModuleConnectionRole(10, 1, instanceMap, sel as any)).toBe('out');
+      expect(component.getRackModuleConnectionRole(10, 1, instanceMap, sel as unknown as RackConnectionSelection | null)).toBe('out');
       // Other copy of same module should NOT match
-      expect(component.getRackModuleConnectionRole(20, 1, instanceMap, sel as any)).toBeNull();
+      expect(component.getRackModuleConnectionRole(20, 1, instanceMap, sel as unknown as RackConnectionSelection | null)).toBeNull();
     });
 
     it('falls back to module_id when CV has no instance_id', () => {
@@ -987,7 +994,7 @@ describe('PatchEditorComponent', () => {
         b: null
       };
 
-      expect(component.getRackModuleConnectionRole(10, 1, instanceMap, sel as any)).toBe('in');
+      expect(component.getRackModuleConnectionRole(10, 1, instanceMap, sel as unknown as RackConnectionSelection | null)).toBe('in');
     });
 
     it('does not highlight unrelated modules', () => {
@@ -997,7 +1004,7 @@ describe('PatchEditorComponent', () => {
         b: null
       };
 
-      expect(component.getRackModuleConnectionRole(30, 2, instanceMap, sel as any)).toBeNull();
+      expect(component.getRackModuleConnectionRole(30, 2, instanceMap, sel as unknown as RackConnectionSelection | null)).toBeNull();
     });
 
     it('returns roles for both sides in pre-confirm state', () => {
@@ -1007,8 +1014,8 @@ describe('PatchEditorComponent', () => {
         b: {cv: {module: {id: 2}, instance_id: 300}, kind: 'in' as const}
       };
 
-      expect(component.getRackModuleConnectionRole(10, 1, instanceMap, sel as any)).toBe('out');
-      expect(component.getRackModuleConnectionRole(30, 2, instanceMap, sel as any)).toBe('in');
+      expect(component.getRackModuleConnectionRole(10, 1, instanceMap, sel as unknown as RackConnectionSelection | null)).toBe('out');
+      expect(component.getRackModuleConnectionRole(30, 2, instanceMap, sel as unknown as RackConnectionSelection | null)).toBe('in');
     });
 
     it('returns the destination role when only an input side is selected first', () => {
@@ -1018,8 +1025,8 @@ describe('PatchEditorComponent', () => {
         b: {cv: {module: {id: 2}, instance_id: 200}, kind: 'in' as const}
       };
 
-      expect(component.getRackModuleConnectionRole(20, 2, instanceMap, sel as any)).toBe('in');
-      expect(component.getRackModuleConnectionRole(30, 2, instanceMap, sel as any)).toBeNull();
+      expect(component.getRackModuleConnectionRole(20, 2, instanceMap, sel as unknown as RackConnectionSelection | null)).toBe('in');
+      expect(component.getRackModuleConnectionRole(30, 2, instanceMap, sel as unknown as RackConnectionSelection | null)).toBeNull();
     });
 
     it('only matches the specific copy in pre-confirm when both are same module', () => {
@@ -1030,8 +1037,8 @@ describe('PatchEditorComponent', () => {
         b: {cv: {module: {id: 1}, instance_id: 200}, kind: 'in' as const}
       };
 
-      expect(component.getRackModuleConnectionRole(10, 1, instanceMap, sel as any)).toBe('out');
-      expect(component.getRackModuleConnectionRole(20, 1, instanceMap, sel as any)).toBe('in');
+      expect(component.getRackModuleConnectionRole(10, 1, instanceMap, sel as unknown as RackConnectionSelection | null)).toBe('out');
+      expect(component.getRackModuleConnectionRole(20, 1, instanceMap, sel as unknown as RackConnectionSelection | null)).toBe('in');
     });
   });
 
@@ -1048,7 +1055,7 @@ describe('PatchEditorComponent', () => {
 
     it('dims other copies of the same module (only clicked copy stays)', () => {
       component.expandedRackTrackingId = 10;
-      component.expandedRackModule = {id: 1} as any;
+      component.expandedRackModule = {id: 1} as unknown as DbModule;
 
       // Different trackingId, same module.id → should be dimmed
       expect(component.isRackModuleDimmed(20, 1, null, null)).toBe(true);
@@ -1056,21 +1063,21 @@ describe('PatchEditorComponent', () => {
 
     it('does not dim the exact clicked position', () => {
       component.expandedRackTrackingId = 10;
-      component.expandedRackModule = {id: 1} as any;
+      component.expandedRackModule = {id: 1} as unknown as DbModule;
 
       expect(component.isRackModuleDimmed(10, 1, null, null)).toBe(false);
     });
 
     it('returns true for unrelated modules when something is expanded', () => {
       component.expandedRackTrackingId = 10;
-      component.expandedRackModule = {id: 1} as any;
+      component.expandedRackModule = {id: 1} as unknown as DbModule;
 
       expect(component.isRackModuleDimmed(30, 2, null, null)).toBe(true);
     });
 
     it('does not dim modules involved in a pending connection', () => {
       component.expandedRackTrackingId = 10;
-      component.expandedRackModule = {id: 1} as any;
+      component.expandedRackModule = {id: 1} as unknown as DbModule;
 
       const instanceMap = new Map([[30, 300]]);
       const sel = {
@@ -1078,12 +1085,12 @@ describe('PatchEditorComponent', () => {
         b: null
       };
 
-      expect(component.isRackModuleDimmed(30, 2, instanceMap, sel as any)).toBe(false);
+      expect(component.isRackModuleDimmed(30, 2, instanceMap, sel as unknown as RackConnectionSelection | null)).toBe(false);
     });
 
     it('does not dim a selected input-only destination while another module is expanded', () => {
       component.expandedRackTrackingId = 10;
-      component.expandedRackModule = {id: 1} as any;
+      component.expandedRackModule = {id: 1} as unknown as DbModule;
 
       const instanceMap = new Map([[30, 300]]);
       const sel = {
@@ -1091,7 +1098,7 @@ describe('PatchEditorComponent', () => {
         b: {cv: {module: {id: 2}, instance_id: 300}, kind: 'in' as const}
       };
 
-      expect(component.isRackModuleDimmed(30, 2, instanceMap, sel as any)).toBe(false);
+      expect(component.isRackModuleDimmed(30, 2, instanceMap, sel as unknown as RackConnectionSelection | null)).toBe(false);
     });
   });
 
@@ -1106,9 +1113,9 @@ describe('PatchEditorComponent', () => {
       component.linkedRackPreviewState$.next({
         kind: 'ready',
         description: '',
-        rows: [{row: 0, modules: [{trackingId: 10, module: {id: 1} as any, row: 0, column: 0, selectedPanelId: null, orientation: 'normal'}]}],
+        rows: [{row: 0, modules: [{trackingId: 10, module: {id: 1} as unknown as DbModule, row: 0, column: 0, selectedPanelId: null, orientation: 'normal'}]}],
         moduleCount: 1
-      } as any);
+      } as unknown as LinkedRackPreviewState);
 
       expect(component.getRackModuleCopyLabel(10, 1)).toBeNull();
     });
@@ -1120,12 +1127,12 @@ describe('PatchEditorComponent', () => {
         rows: [{
           row: 0,
           modules: [
-            {trackingId: 10, module: {id: 1} as any, row: 0, column: 0, selectedPanelId: null, orientation: 'normal'},
-            {trackingId: 20, module: {id: 1} as any, row: 0, column: 8, selectedPanelId: null, orientation: 'normal'}
+            {trackingId: 10, module: {id: 1} as unknown as DbModule, row: 0, column: 0, selectedPanelId: null, orientation: 'normal'},
+            {trackingId: 20, module: {id: 1} as unknown as DbModule, row: 0, column: 8, selectedPanelId: null, orientation: 'normal'}
           ]
         }],
         moduleCount: 2
-      } as any);
+      } as unknown as LinkedRackPreviewState);
 
       expect(component.getRackModuleCopyLabel(10, 1)).toBe('(1)');
       expect(component.getRackModuleCopyLabel(20, 1)).toBe('(2)');
@@ -1142,11 +1149,11 @@ describe('PatchEditorComponent', () => {
         kind: 'ready',
         description: '',
         rows: [
-          {row: 1, modules: [{trackingId: 30, module: {id: 1} as any, row: 1, column: 0, selectedPanelId: null, orientation: 'normal'}]},
-          {row: 0, modules: [{trackingId: 10, module: {id: 1} as any, row: 0, column: 5, selectedPanelId: null, orientation: 'normal'}]}
+          {row: 1, modules: [{trackingId: 30, module: {id: 1} as unknown as DbModule, row: 1, column: 0, selectedPanelId: null, orientation: 'normal'}]},
+          {row: 0, modules: [{trackingId: 10, module: {id: 1} as unknown as DbModule, row: 0, column: 5, selectedPanelId: null, orientation: 'normal'}]}
         ],
         moduleCount: 2
-      } as any);
+      } as unknown as LinkedRackPreviewState);
 
       // Row 0 comes first → (1), row 1 → (2)
       expect(component.getRackModuleCopyLabel(10, 1)).toBe('(1)');
@@ -1167,26 +1174,26 @@ describe('PatchEditorComponent', () => {
 
     it('returns true for connection-involved module that is not currently expanded', () => {
       component.expandedRackTrackingId = 20;
-      component.expandedRackModule = {id: 2} as any;
+      component.expandedRackModule = {id: 2} as unknown as DbModule;
       const instanceMap = new Map([[10, 100]]);
       const sel = {
         a: {cv: {module: {id: 1}, instance_id: 100}, kind: 'out' as const},
         b: null
       };
 
-      expect(component.isRackModulePendingSource(10, 1, instanceMap, sel as any)).toBe(true);
+      expect(component.isRackModulePendingSource(10, 1, instanceMap, sel as unknown as RackConnectionSelection | null)).toBe(true);
     });
 
     it('returns false for the currently expanded module', () => {
       component.expandedRackTrackingId = 10;
-      component.expandedRackModule = {id: 1} as any;
+      component.expandedRackModule = {id: 1} as unknown as DbModule;
       const instanceMap = new Map([[10, 100]]);
       const sel = {
         a: {cv: {module: {id: 1}, instance_id: 100}, kind: 'out' as const},
         b: null
       };
 
-      expect(component.isRackModulePendingSource(10, 1, instanceMap, sel as any)).toBe(false);
+      expect(component.isRackModulePendingSource(10, 1, instanceMap, sel as unknown as RackConnectionSelection | null)).toBe(false);
     });
   });
 
@@ -1198,10 +1205,10 @@ describe('PatchEditorComponent', () => {
     });
 
     it('expands a module by trackingId', () => {
-      const module = {id: 1, name: 'VCA'} as any;
+      const module = {id: 1, name: 'VCA'} as unknown as DbModule;
       component.selectRackModule(10, module, {
         getBoundingClientRect: () => ({left: 120, right: 180})
-      } as any);
+      } as unknown as HTMLElement);
 
       expect(component.expandedRackTrackingId).toBe(10);
       expect(component.expandedRackModule).toBe(module);
@@ -1209,7 +1216,7 @@ describe('PatchEditorComponent', () => {
     });
 
     it('collapses when clicking the same trackingId again', () => {
-      const module = {id: 1, name: 'VCA'} as any;
+      const module = {id: 1, name: 'VCA'} as unknown as DbModule;
       component.selectRackModule(10, module);
       component.selectRackModule(10, module);
 
@@ -1218,8 +1225,8 @@ describe('PatchEditorComponent', () => {
     });
 
     it('switches to a different copy of the same module', () => {
-      const moduleA = {id: 1, name: 'VCA'} as any;
-      const moduleB = {id: 1, name: 'VCA'} as any;
+      const moduleA = {id: 1, name: 'VCA'} as unknown as DbModule;
+      const moduleB = {id: 1, name: 'VCA'} as unknown as DbModule;
       component.selectRackModule(10, moduleA);
       component.selectRackModule(20, moduleB);
 
@@ -1228,8 +1235,8 @@ describe('PatchEditorComponent', () => {
     });
 
     it('resets when operation mode changes', () => {
-      component.selectRackModule(10, {id: 1} as any);
-      component.setOperationMode('collection' as any);
+      component.selectRackModule(10, {id: 1} as unknown as DbModule);
+      component.setOperationMode(PATCH_EDITOR_OPERATION_MODES.collection);
 
       expect(component.expandedRackTrackingId).toBeNull();
       expect(component.expandedRackModule).toBeNull();
@@ -1261,7 +1268,7 @@ describe('PatchEditorComponent', () => {
 
     it('clears the expanded module when clicking empty linked-rack space', () => {
       component.expandedRackTrackingId = 10;
-      component.expandedRackModule = {id: 1, name: 'VCA'} as any;
+      component.expandedRackModule = {id: 1, name: 'VCA'} as unknown as DbModule;
       const backgroundClick = new MouseEvent('click');
       Object.defineProperty(backgroundClick, 'target', {
         value: document.createElement('div')
@@ -1275,7 +1282,7 @@ describe('PatchEditorComponent', () => {
 
     it('ignores clicks originating from the selected module wrapper subtree', () => {
       component.expandedRackTrackingId = 10;
-      component.expandedRackModule = {id: 1, name: 'VCA'} as any;
+      component.expandedRackModule = {id: 1, name: 'VCA'} as unknown as DbModule;
       const moduleWrapper = document.createElement('div');
       moduleWrapper.className = 'patch-editor-rack-visual__module-wrapper';
       const moduleChild = document.createElement('div');
@@ -1298,12 +1305,12 @@ describe('PatchEditorComponent', () => {
     const mkPreviewState = (modules: Array<{id: number; name: string; row: number; col: number}>): LinkedRackPreviewState => ({
       kind: 'ready',
       description: '',
-      rack: { id: 1, name: 'Test', hp: 84, rows: 1 } as any,
+      rack: { id: 1, name: 'Test', hp: 84, rows: 1 } as unknown as Rack,
       rows: [{
         row: 0,
         modules: modules.map(m => ({
           trackingId: m.id * 1000,
-          module: { id: m.id, name: m.name } as any,
+          module: { id: m.id, name: m.name } as unknown as DbModule,
           row: m.row,
           column: m.col,
           selectedPanelId: null,
@@ -1315,7 +1322,7 @@ describe('PatchEditorComponent', () => {
 
     it('returns clean when rack and instances match', () => {
       const state = mkPreviewState([{id: 1, name: 'VCA', row: 0, col: 0}]);
-      const instances: PatchModuleInstance[] = [{id: 100, module_id: 1} as any];
+      const instances: PatchModuleInstance[] = [{id: 100, module_id: 1} as unknown as PatchModuleInstance];
       const result = detectLinkedRackDivergence(state, instances, []);
       expect(result.clean).toBeTrue();
       expect(result.totalOrphanedInstances).toBe(0);
@@ -1330,8 +1337,8 @@ describe('PatchEditorComponent', () => {
     it('detects orphaned modules (instance for module not in rack)', () => {
       const state = mkPreviewState([{id: 1, name: 'VCA', row: 0, col: 0}]);
       const instances: PatchModuleInstance[] = [
-        {id: 100, module_id: 1} as any,
-        {id: 200, module_id: 99} as any
+        {id: 100, module_id: 1} as unknown as PatchModuleInstance,
+        {id: 200, module_id: 99} as unknown as PatchModuleInstance
       ];
       const result = detectLinkedRackDivergence(state, instances, []);
       expect(result.clean).toBeFalse();
@@ -1343,7 +1350,7 @@ describe('PatchEditorComponent', () => {
     it('uses joined patch instance module names for orphaned modules', () => {
       const state = mkPreviewState([{id: 1, name: 'VCA', row: 0, col: 0}]);
       const instances: PatchModuleInstance[] = [
-        {id: 200, module_id: 99, module: {name: 'Maths'}} as any
+        {id: 200, module_id: 99, module: {name: 'Maths'}} as unknown as PatchModuleInstance
       ];
 
       const result = detectLinkedRackDivergence(state, instances, []);
@@ -1354,9 +1361,9 @@ describe('PatchEditorComponent', () => {
     it('detects excess instances (more instances than rack positions)', () => {
       const state = mkPreviewState([{id: 1, name: 'VCA', row: 0, col: 0}]);
       const instances: PatchModuleInstance[] = [
-        {id: 100, module_id: 1} as any,
-        {id: 101, module_id: 1} as any,
-        {id: 102, module_id: 1} as any
+        {id: 100, module_id: 1} as unknown as PatchModuleInstance,
+        {id: 101, module_id: 1} as unknown as PatchModuleInstance,
+        {id: 102, module_id: 1} as unknown as PatchModuleInstance
       ];
       const result = detectLinkedRackDivergence(state, instances, []);
       expect(result.clean).toBeFalse();
@@ -1370,7 +1377,7 @@ describe('PatchEditorComponent', () => {
       const state: LinkedRackPreviewState = {
         kind: 'loading', description: '', rows: [], moduleCount: 0
       };
-      const instances: PatchModuleInstance[] = [{id: 100, module_id: 1} as any];
+      const instances: PatchModuleInstance[] = [{id: 100, module_id: 1} as unknown as PatchModuleInstance];
       const result = detectLinkedRackDivergence(state, instances, []);
       expect(result.clean).toBeTrue();
     });
@@ -1381,10 +1388,10 @@ describe('PatchEditorComponent', () => {
         {id: 1, name: 'VCA', row: 0, col: 1}
       ]);
       const instances: PatchModuleInstance[] = [
-        {id: 100, module_id: 1} as any,
-        {id: 101, module_id: 1} as any,
-        {id: 102, module_id: 1} as any,
-        {id: 200, module_id: 50} as any
+        {id: 100, module_id: 1} as unknown as PatchModuleInstance,
+        {id: 101, module_id: 1} as unknown as PatchModuleInstance,
+        {id: 102, module_id: 1} as unknown as PatchModuleInstance,
+        {id: 200, module_id: 50} as unknown as PatchModuleInstance
       ];
       const result = detectLinkedRackDivergence(state, instances, []);
       expect(result.clean).toBeFalse();
@@ -1399,35 +1406,35 @@ describe('PatchEditorComponent', () => {
 
     it('returns 0 when no connections exist', () => {
       const map = new Map<number, number>([[1000, 100]]);
-      const instances: PatchModuleInstance[] = [{id: 100, module_id: 1} as any];
+      const instances: PatchModuleInstance[] = [{id: 100, module_id: 1} as unknown as PatchModuleInstance];
       expect(countOrphanedConnections(map, instances, [])).toBe(0);
     });
 
     it('returns 0 when all instances are mapped', () => {
       const map = new Map<number, number>([[1000, 100]]);
-      const instances: PatchModuleInstance[] = [{id: 100, module_id: 1} as any];
-      const connections = [{instance_id_a: 100, instance_id_b: 100} as any];
+      const instances: PatchModuleInstance[] = [{id: 100, module_id: 1} as unknown as PatchModuleInstance];
+      const connections = [{instance_id_a: 100, instance_id_b: 100} as unknown as PatchConnection];
       expect(countOrphanedConnections(map, instances, connections)).toBe(0);
     });
 
     it('counts connections referencing orphaned instances', () => {
       const map = new Map<number, number>([[1000, 100]]);
       const instances: PatchModuleInstance[] = [
-        {id: 100, module_id: 1} as any,
-        {id: 200, module_id: 2} as any
+        {id: 100, module_id: 1} as unknown as PatchModuleInstance,
+        {id: 200, module_id: 2} as unknown as PatchModuleInstance
       ];
       const connections = [
-        {instance_id_a: 100, instance_id_b: 200} as any,
-        {instance_id_a: 200, instance_id_b: null} as any,
-        {instance_id_a: 100, instance_id_b: 100} as any
+        {instance_id_a: 100, instance_id_b: 200} as unknown as PatchConnection,
+        {instance_id_a: 200, instance_id_b: null} as unknown as PatchConnection,
+        {instance_id_a: 100, instance_id_b: 100} as unknown as PatchConnection
       ];
       expect(countOrphanedConnections(map, instances, connections)).toBe(2);
     });
 
     it('returns 0 when all connections have null instance IDs', () => {
       const map = new Map<number, number>([[1000, 100]]);
-      const instances: PatchModuleInstance[] = [{id: 100, module_id: 1} as any];
-      const connections = [{instance_id_a: null, instance_id_b: null} as any];
+      const instances: PatchModuleInstance[] = [{id: 100, module_id: 1} as unknown as PatchModuleInstance];
+      const connections = [{instance_id_a: null, instance_id_b: null} as unknown as PatchConnection];
       expect(countOrphanedConnections(map, instances, connections)).toBe(0);
     });
   });
