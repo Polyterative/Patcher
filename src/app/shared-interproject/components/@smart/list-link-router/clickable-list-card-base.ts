@@ -4,7 +4,7 @@ import { Observable, ReplaySubject } from 'rxjs';
 
 export interface CardLink {
   label: string;
-  route: any[] | string;
+  route: readonly unknown[] | string;
   navExtras?: NavigationExtras,
   icon?: string;
   disabled?: Observable<boolean>;
@@ -18,7 +18,7 @@ export interface CardLinkDataModel {
 }
 
 
-export function buildCardLinkRoute(label: string, route: any[], icon?: string, disabled?: Observable<boolean>, hidden?: Observable<boolean>): CardLink {
+export function buildCardLinkRoute(label: string, route: readonly unknown[], icon?: string, disabled?: Observable<boolean>, hidden?: Observable<boolean>): CardLink {
 
   return {
     route,

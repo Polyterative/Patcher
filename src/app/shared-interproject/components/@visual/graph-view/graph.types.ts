@@ -3,7 +3,7 @@ export interface GraphNode {
   size: number;
   label: string;
   color: string;
-  data?: any;
+  data?: Record<string, unknown>;
   x: number;
   y: number;
 }
@@ -17,7 +17,7 @@ export interface GraphEdge {
   size: number;
   weight?: number;
   type: 'arrow' | 'curve' | 'line';
-  data?: any;
+  data?: Record<string, unknown>;
 }
 
 export interface GraphComponentState {
