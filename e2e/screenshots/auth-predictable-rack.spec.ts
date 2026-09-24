@@ -1,6 +1,8 @@
 import {
   expect,
-  test
+  test,
+  type Locator,
+  type Page
 } from '@playwright/test';
 
 
@@ -63,7 +65,7 @@ test.describe('Authenticated rack edit flow', () => {
   });
 });
 
-async function setCreateRackDialogPrivacy(page: any, dialog: any, shouldBePublic: boolean): Promise<void> {
+async function setCreateRackDialogPrivacy(page: Page, dialog: Locator, shouldBePublic: boolean): Promise<void> {
   const actions = page.locator('mat-dialog-actions').last();
   await expect(actions).toBeVisible({timeout: 5_000});
 
