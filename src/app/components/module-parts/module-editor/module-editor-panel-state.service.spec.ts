@@ -1,14 +1,18 @@
+import { UntypedFormControl } from '@angular/forms';
+import type { ImageCroppedEvent } from 'ngx-image-cropper';
 import { DbModule } from 'src/app/models/module';
+import { buildUploadGuardrailAdvisory } from 'src/app/shared-interproject/upload-guardrails/upload-guardrails';
 import { ModuleEditorCropperComponent } from './module-editor-cropper.component';
 import { ModuleEditorDataService } from './module-editor-data.service';
 import { ModuleEditorPanelStateService } from './module-editor-panel-state.service';
+import { PANEL_TYPE_OPTIONS } from './module-editor.types';
 
 const ASPECT_12HP_3U = 12 / 25.4;
 const ASPECT_14HP_3U = 14 / 25.4;
 
-function makeDataService(): ModuleEditorDataService {
+function makeDataService(format: 'webp' | 'jpeg' = 'webp'): ModuleEditorDataService {
   return {
-    getPreferredPanelCropFormat: () => 'webp'
+    getPreferredPanelCropFormat: () => format
   } as unknown as ModuleEditorDataService;
 }
 
@@ -228,5 +232,193 @@ describe('ModuleEditorPanelStateService panel crop modes', () => {
     expect(cropper.keyboardAccess).toHaveBeenCalledTimes(1);
     expect(cropper.keyboardAccess.calls.mostRecent().args[0])
       .toEqual(jasmine.objectContaining({key: 'ArrowRight'}));
+  });
+});
+
+type GuardedCroppedPanelFile = Awaited<ReturnType<ModuleEditorDataService['buildGuardedCroppedPanelFile']>>;
+
+function makeGuardedResult(file: File): GuardedCroppedPanelFile {
+  const blob = new Blob(['cropped'], {type: 'image/webp'});
+  return {
+    file,
+    compression: {
+      blob,
+      widthPx: 320,
+      heightPx: 640,
+      attempt: null,
+      advisory: buildUploadGuardrailAdvisory('module-panel', {
+        byteSize: blob.size,
+        widthPx: 320,
+        heightPx: 640,
+        mimeType: blob.type
+      })
+    }
+  };
+}
+
+function makeCropDataService(
+  guardedImpl: (sourceFile: File, blob: Blob) => Promise<GuardedCroppedPanelFile>
+): {
+  dataService: ModuleEditorDataService;
+  buildGuardedCroppedPanelFile: jasmine.Spy<ModuleEditorDataService['buildGuardedCroppedPanelFile']>;
+  suggestPanelTypeFromBlob: jasmine.Spy<ModuleEditorDataService['suggestPanelTypeFromBlob']>;
+} {
+  const buildGuardedCroppedPanelFile =
+    jasmine.createSpy<ModuleEditorDataService['buildGuardedCroppedPanelFile']>('buildGuardedCroppedPanelFile')
+      .and.callFake(guardedImpl);
+  const suggestPanelTypeFromBlob =
+    jasmine.createSpy<ModuleEditorDataService['suggestPanelTypeFromBlob']>('suggestPanelTypeFromBlob')
+      .and.resolveTo(1);
+  const dataService = {
+    getPreferredPanelCropFormat: () => 'webp',
+    buildGuardedCroppedPanelFile,
+    suggestPanelTypeFromBlob
+  } as unknown as ModuleEditorDataService;
+  return {dataService, buildGuardedCroppedPanelFile, suggestPanelTypeFromBlob};
+}
+
+function makeCropEvent(blob: Blob = new Blob(['cropped'], {type: 'image/jpeg'})): ImageCroppedEvent {
+  return {
+    blob,
+    objectUrl: 'blob:panel-preview',
+    width: 320,
+    height: 640,
+    cropperPosition: {x1: 0, y1: 0, x2: 320, y2: 640},
+    imagePosition: {x1: 0, y1: 0, x2: 320, y2: 640}
+  };
+}
+
+describe('ModuleEditorPanelStateService crop lifecycle and teardown', () => {
+  beforeEach(() => {
+    spyOn(URL, 'createObjectURL').and.returnValue('blob:mock-panel');
+    spyOn(URL, 'revokeObjectURL');
+  });
+
+  it('maps the crop output format to the matching upload mime type', () => {
+    expect(new ModuleEditorPanelStateService(makeDataService('webp')).panelCropOutputMimeType)
+      .toBe('image/webp');
+    expect(new ModuleEditorPanelStateService(makeDataService('jpeg')).panelCropOutputMimeType)
+      .toBe('image/jpeg');
+  });
+
+  it('clears crop output without backend work when no source file is selected', async () => {
+    const {dataService, buildGuardedCroppedPanelFile} =
+      makeCropDataService(sourceFile => Promise.resolve(makeGuardedResult(sourceFile)));
+    const service = new ModuleEditorPanelStateService(dataService);
+
+    await service.onPanelImageCropped(makeCropEvent(), new UntypedFormControl(PANEL_TYPE_OPTIONS[0]));
+
+    expect(buildGuardedCroppedPanelFile).not.toHaveBeenCalled();
+    expect(service.croppedPanelFile$.value).toBeUndefined();
+    expect(service.panelUploadGuardrail$.value).toBeNull();
+    expect(service.panelUploadGuardrailConfirmed$.value).toBeFalse();
+    expect(service.croppedPanelPreviewUrl$.value).toBeNull();
+  });
+
+  it('stores the guarded crop output and preview on success', async () => {
+    const croppedFile = new File(['cropped'], 'panel-cropped.webp', {type: 'image/webp'});
+    const {dataService} =
+      makeCropDataService(() => Promise.resolve(makeGuardedResult(croppedFile)));
+    const service = new ModuleEditorPanelStateService(dataService);
+    service.handleSelectedFile(makeFile());
+    expect(service.panelCropLoading$.value).toBeTrue();
+
+    await service.onPanelImageCropped(makeCropEvent(), new UntypedFormControl(PANEL_TYPE_OPTIONS[0]));
+
+    expect(service.croppedPanelFile$.value).toBe(croppedFile);
+    expect(service.croppedPanelPreviewUrl$.value).toBe('blob:panel-preview');
+    expect(service.panelCropLoading$.value).toBeFalse();
+    expect(service.panelCropLoadFailed$.value).toBeFalse();
+  });
+
+  it('flags load failure and clears the crop when guardrail preparation rejects', async () => {
+    const {dataService} =
+      makeCropDataService(() => Promise.reject(new Error('compress boom')));
+    const service = new ModuleEditorPanelStateService(dataService);
+    service.handleSelectedFile(makeFile());
+    spyOn(console, 'error');
+
+    await service.onPanelImageCropped(makeCropEvent(), new UntypedFormControl(PANEL_TYPE_OPTIONS[0]));
+
+    expect(service.croppedPanelFile$.value).toBeUndefined();
+    expect(service.panelUploadGuardrail$.value).toBeNull();
+    expect(service.panelCropLoading$.value).toBeFalse();
+    expect(service.panelCropLoadFailed$.value).toBeTrue();
+    expect(service.croppedPanelPreviewUrl$.value).toBeNull();
+  });
+
+  it('only confirms guardrailed uploads that require confirmation', () => {
+    const service = makeService();
+    service.panelUploadGuardrail$.next(buildUploadGuardrailAdvisory('module-panel', {
+      byteSize: 1024,
+      widthPx: 320,
+      heightPx: 640,
+      mimeType: 'image/webp'
+    }));
+
+    service.confirmPanelUploadGuardrail();
+
+    expect(service.panelUploadGuardrailConfirmed$.value).toBeFalse();
+
+    service.panelUploadGuardrail$.next(buildUploadGuardrailAdvisory('module-panel', {
+      byteSize: 600 * 1024,
+      widthPx: 320,
+      heightPx: 640,
+      mimeType: 'image/webp'
+    }));
+
+    service.confirmPanelUploadGuardrail();
+
+    expect(service.panelUploadGuardrailConfirmed$.value).toBeTrue();
+  });
+
+  it('clears previews and flags when the source image fails to load, then recovers', () => {
+    const service = makeService();
+    service.handleSelectedFile(makeFile());
+    expect(service.selectedPanelSourcePreviewUrl$.value).toBe('blob:mock-panel');
+
+    service.onPanelImageLoadFailed();
+
+    expect(service.panelCropLoading$.value).toBeFalse();
+    expect(service.panelCropLoadFailed$.value).toBeTrue();
+    expect(service.selectedPanelSourcePreviewUrl$.value).toBeNull();
+    expect(service.croppedPanelPreviewUrl$.value).toBeNull();
+
+    service.onPanelImageLoaded();
+
+    expect(service.panelCropLoadFailed$.value).toBeFalse();
+  });
+
+  it('resets the full crop state on dispose and tolerates repeated disposal', () => {
+    const service = makeService();
+    service.handleSelectedFile(makeFile());
+    service.onPanelCropperReady({width: 320, height: 640});
+    service.onPanelCropperChange({x1: 10, y1: 10, x2: 100, y2: 100});
+
+    service.dispose();
+    service.dispose();
+
+    expect(service.selectedPanelSourceFile$.value).toBeUndefined();
+    expect(service.panelCropPosition).toBeUndefined();
+    expect(service.panelCropOverride).toBeUndefined();
+    expect(service.panelUploadGuardrail$.value).toBeNull();
+    expect(service.panelCropLoading$.value).toBeFalse();
+    expect(service.panelCropLoadFailed$.value).toBeFalse();
+  });
+
+  it('ignores auto-detection after a manual panel type change', async () => {
+    const {dataService, suggestPanelTypeFromBlob} = makeCropDataService(sourceFile =>
+      Promise.resolve(makeGuardedResult(sourceFile)));
+    suggestPanelTypeFromBlob.and.resolveTo(2);
+    const service = new ModuleEditorPanelStateService(dataService);
+    const panelTypeControl = new UntypedFormControl(PANEL_TYPE_OPTIONS[0]);
+    service.handleSelectedFile(makeFile());
+    service.handlePanelTypeControlChange();
+
+    await service.onPanelImageCropped(makeCropEvent(), panelTypeControl);
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(panelTypeControl.value).toEqual(PANEL_TYPE_OPTIONS[0]);
+    expect(service.panelTypeAutoSelectionCue$.value).toBeFalse();
   });
 });
