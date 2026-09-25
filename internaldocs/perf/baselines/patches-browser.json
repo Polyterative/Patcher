@@ -1,0 +1,45 @@
+{
+  "flow": "patches-browser",
+  "route": "/patches/browser",
+  "capturedAt": "2026-09-25",
+  "treeSha": "5911db8d",
+  "server": "dev (pnpm start, vite, unoptimized + HMR — lab deltas only, not prod absolutes)",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "chromium": "Google Chrome for Testing 149.0.7827.55 (Playwright 1.61.1)",
+  "runs": 5,
+  "settleMs": 5000,
+  "median": {
+    "cold": {
+      "lcpMs": 1312,
+      "cls": 0.3833614753461505,
+      "longTaskCount": 2,
+      "longestTaskMs": 76,
+      "domNodes": 943,
+      "jsHeapBytes": 41902320,
+      "taskDurationMs": 641.701,
+      "scriptDurationMs": 88.733,
+      "layoutDurationMs": 31.499,
+      "domContentLoadedMs": 415.5,
+      "loadMs": 472.19999999925494,
+      "requestCount": 250
+    },
+    "warm": {
+      "lcpMs": 1116,
+      "cls": 0.38310450223443926,
+      "longTaskCount": 0,
+      "longestTaskMs": 0,
+      "domNodes": 943,
+      "jsHeapBytes": 43666692,
+      "taskDurationMs": 565.71,
+      "scriptDurationMs": 61.059,
+      "layoutDurationMs": 22.452,
+      "domContentLoadedMs": 266.7000000011176,
+      "loadMs": 303.59999999962747,
+      "requestCount": 250
+    }
+  },
+  "notes": "CLS ~0.38 — lowest of the content flows (still breaches hard 0.1). DOM 943 inside budget. LCP 1312/1116ms inside target. INP unmeasured; TBT proxy used. Dev transfer/script bytes are vite artifacts — not prod budgets."
+}
