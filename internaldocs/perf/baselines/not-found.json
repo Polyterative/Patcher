@@ -1,0 +1,45 @@
+{
+  "flow": "not-found",
+  "route": "/404 (already loadComponent-split leaf)",
+  "capturedAt": "2026-09-25",
+  "treeSha": "5911db8d",
+  "server": "dev (pnpm start, vite, unoptimized + HMR — lab deltas only, not prod absolutes)",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "chromium": "Google Chrome for Testing 149.0.7827.55 (Playwright 1.61.1)",
+  "runs": 5,
+  "settleMs": 5000,
+  "median": {
+    "cold": {
+      "lcpMs": 1036,
+      "cls": 0.32435636547282237,
+      "longTaskCount": 1,
+      "longestTaskMs": 77,
+      "domNodes": 401,
+      "jsHeapBytes": 27600020,
+      "taskDurationMs": 381.258,
+      "scriptDurationMs": 50.927,
+      "layoutDurationMs": 11.951,
+      "domContentLoadedMs": 418.19999999925494,
+      "loadMs": 472.2999999988824,
+      "requestCount": 195
+    },
+    "warm": {
+      "lcpMs": 912,
+      "cls": 0.3240993923611111,
+      "longTaskCount": 0,
+      "longestTaskMs": 0,
+      "domNodes": 401,
+      "jsHeapBytes": 28295148,
+      "taskDurationMs": 328.719,
+      "scriptDurationMs": 24.657,
+      "layoutDurationMs": 7.932,
+      "domContentLoadedMs": 265.69999999925494,
+      "loadMs": 309.5,
+      "requestCount": 197
+    }
+  },
+  "notes": "CLS 0.32 breaches hard despite tiny DOM 401 — even the minimal already-split leaf shifts, pointing at a shell-level contributor (fonts/shell layout) rather than content alone. Verifies the leaf stays split (requestCount 195-197, lowest). INP unmeasured; TBT proxy used. Dev transfer/script bytes are vite artifacts — not prod budgets."
+}
