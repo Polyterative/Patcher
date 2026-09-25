@@ -16,7 +16,6 @@ import { takeUntil } from 'rxjs/operators';
  * Can be extended by a component to dispose all the subscription on OnDestroy
  */
 @Directive()
-// eslint-disable-next-line @angular-eslint/directive-class-suffix
 export class SubManager implements OnDestroy {
   protected _subscriptions: Subscription[] = [];
 
