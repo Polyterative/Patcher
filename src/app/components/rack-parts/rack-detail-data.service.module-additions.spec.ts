@@ -305,6 +305,28 @@ describe('RackDetailDataService module additions', () => {
       expect(reloaded?.rackingData.row).toBeNull();
       expect(reloaded?.rackingData.column).toBeNull();
     });
+
+    it('positions a blank at the end of a fallback row when local row state is missing', () => {
+      const {service, backend} = build();
+      service.singleRackData$.next(rack({id: 1, rows: 2}));
+      service.rowedRackedModules$.next([]);
+      backend.add.rackModule.and.returnValue(of({
+        data: [persistedRow({id: 501, moduleid: 4651, rackid: 1, row: 1, column: 0})]
+      }));
+      const refreshSpy = spyOn(service.updateSingleRackData$, 'next').and.callThrough();
+
+      service.addBlankToRow$.next({rowId: 1, hp: 8});
+
+      expect(backend.GET.moduleWithIdForRackDisplay).toHaveBeenCalledWith(4651);
+      expect(backend.add.rackModule).toHaveBeenCalledWith(4651, 1, 1, 0);
+      const rows = service.rowedRackedModules$.value ?? [];
+      expect(rows.length).toBe(2);
+      expect(rows[1][0].module.id).toBe(4651);
+      expect(rows[1][0].rackingData.id).toBe(501);
+      expect(rows[1][0].rackingData.row).toBe(1);
+      expect(rows[1][0].rackingData.column).toBe(0);
+      expect(refreshSpy).not.toHaveBeenCalled();
+    });
   });
 
   describe('S2 — contextual add rollback on failure (AT-R2)', () => {
@@ -340,6 +362,41 @@ describe('RackDetailDataService module additions', () => {
       expect(backend.add.rackModule.calls.argsFor(1)).toEqual([88, 1]);
       const persisted = (service.rowedRackedModules$.value ?? []).flatMap(row => row).find(m => m.module.id === 88);
       expect(persisted?.rackingData.id).toBe(300);
+    });
+
+    it('shows a loading error without touching the backend when rack data is missing', () => {
+      spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+      const {service, backend} = build();
+      service.singleRackData$.next(undefined);
+      service.rowedRackedModules$.next([[]]);
+
+      service.addModuleToRack$.next(moduleFixture(77, 'Ghost Module', 8, 0));
+      service.addBlankToRow$.next({rowId: 0, hp: 8});
+
+      expect(SharedConstants.errorCustom).toHaveBeenCalledTimes(2);
+      expect(SharedConstants.errorCustom).toHaveBeenCalledWith(
+        jasmine.anything(),
+        'Rack data is still loading. Try again in a moment.'
+      );
+      expect(backend.add.rackModule).not.toHaveBeenCalled();
+      expect(backend.GET.moduleWithIdForRackDisplay).not.toHaveBeenCalled();
+    });
+
+    it('rejects unknown blank sizes without backend calls and leaves rows untouched', () => {
+      spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+      const {service, backend} = build();
+      service.singleRackData$.next(rack({id: 1, rows: 1}));
+      service.rowedRackedModules$.next([[]]);
+
+      service.addBlankToRow$.next({rowId: 0, hp: 99});
+
+      expect(SharedConstants.errorCustom).toHaveBeenCalledOnceWith(
+        jasmine.anything(),
+        'No matching blank panel was found for this row format and size.'
+      );
+      expect(backend.GET.moduleWithIdForRackDisplay).not.toHaveBeenCalled();
+      expect(backend.add.rackModule).not.toHaveBeenCalled();
+      expect(service.rowedRackedModules$.value).toEqual([[]]);
     });
   });
 
