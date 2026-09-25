@@ -7,6 +7,7 @@
 > prose session-log formats used before that convention (roughly pre-2026-06), left as-is rather than
 > reformatted — dates are not strictly descending once you cross into those sections.
 
+- **2026-09-25** — SMALL: Module-collection browsing 25-row cap closed as already shipped — user-area My collections pages via additive `getCurrentUserModuleCollectionsPage` (`{count: 'exact'}`) with `loadMoreCurrentUserCollections$` + hasMore/remaining UI and paging/dedupe/failure specs; no migration, no RLS change (`08a6379c`).
 - **2026-09-18** — MEDIUM: Module browser price range filter adds min/max EUR controls with dual-thumb slider, preset chips, honest unpriced hint + opt-in, auto-filling pagination, collection-mode parity, and Price ↑/↓ sort (unpriced last); module list reuses the shared Price Hub map with no double fetch; no migration (`9656b772`, `8f662fb4`, `7064107a`, `17d53862`, `744c1fc7`, `73d26ddf`, `5ac2f579`, `da52ea7d`, `f1827e9e`; [plan](./plans/done/module-browser-price-range-filter.md)).
 
 - **2026-09-15** — SMALL: Marketplace My Listings distinguishes first listings ("not listed yet" / "Create listing") from relists ("previously listed" / "Create new listing") and states collection-unchanged close behavior explicitly, with remove-For-Sale cleanup guidance after a sale; no schema/RLS changes (`2c032635`).
