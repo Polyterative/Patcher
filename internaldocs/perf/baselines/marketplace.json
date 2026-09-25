@@ -1,0 +1,45 @@
+{
+  "flow": "marketplace",
+  "route": "/marketplace (LOCAL-ONLY: marketplaceEnabled true in dev, false in prod — no prod counterpart)",
+  "capturedAt": "2026-09-25",
+  "treeSha": "5911db8d",
+  "server": "dev (pnpm start, vite, unoptimized + HMR — lab deltas only, not prod absolutes)",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "chromium": "Google Chrome for Testing 149.0.7827.55 (Playwright 1.61.1)",
+  "runs": 5,
+  "settleMs": 5000,
+  "median": {
+    "cold": {
+      "lcpMs": 444,
+      "cls": 0.5158951654128086,
+      "longTaskCount": 1,
+      "longestTaskMs": 79,
+      "domNodes": 727,
+      "jsHeapBytes": 31839976,
+      "taskDurationMs": 453.518,
+      "scriptDurationMs": 57.782,
+      "layoutDurationMs": 20.906,
+      "domContentLoadedMs": 427.7999999988824,
+      "loadMs": 486.8999999985099,
+      "requestCount": 202
+    },
+    "warm": {
+      "lcpMs": 264,
+      "cls": 0.5156381923010973,
+      "longTaskCount": 0,
+      "longestTaskMs": 0,
+      "domNodes": 727,
+      "jsHeapBytes": 48615144,
+      "taskDurationMs": 373.292,
+      "scriptDurationMs": 24.932,
+      "layoutDurationMs": 15.355,
+      "domContentLoadedMs": 185.69999999925494,
+      "loadMs": 316.5,
+      "requestCount": 204
+    }
+  },
+  "notes": "LOCAL-ONLY flow: marketplaceEnabled is true in local environment.ts but false in environment.prod.ts, so this baseline has no production counterpart; deltas here do not transfer to prod. CLS ~0.52 breach; DOM 727 inside budget; LCP 444/264ms best cold/warm. INP unmeasured; TBT proxy used. Dev transfer/script bytes are vite artifacts — not prod budgets."
+}
