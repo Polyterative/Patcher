@@ -40,4 +40,25 @@ test.describe('Patch Graph Stability', () => {
     await expect(staleOverlay).toHaveCount(0);
     expect(pageErrors).toEqual([]);
   });
+
+  test('flow animation keeps progressing (edge heat pulses)', async ({page}) => {
+    // Guards the 55ms flow-animation tick: edge styling must keep changing
+    // over time. Used as the safety proof for zone-scheduling refactors
+    // (runOutsideAngular must not freeze the animation).
+    await page.goto('/patches/details/5');
+    await expect(page).not.toHaveURL(/404/);
+
+    const graphContainer = page.locator('app-patch-graph .graph-container');
+    await expect(graphContainer).toBeVisible({timeout: 20_000});
+    const graph = graphContainer.locator('lib-graph');
+    await expect(graph).toBeVisible({timeout: 15_000});
+    await expect(graphContainer.getByText('Building graph...')).toHaveCount(0, {timeout: 8_000});
+
+    const frame = graphContainer.locator('canvas').first();
+    await expect(frame).toBeVisible({timeout: 15_000});
+    const first = await frame.screenshot();
+    await page.waitForTimeout(700);
+    const second = await frame.screenshot();
+    expect(second.equals(first)).toBe(false);
+  });
 });
