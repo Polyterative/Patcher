@@ -1,0 +1,45 @@
+{
+  "flow": "module-detail",
+  "route": "/modules/details/1025 (public module id 1025)",
+  "capturedAt": "2026-09-25",
+  "treeSha": "5911db8d",
+  "server": "dev (pnpm start, vite, unoptimized + HMR — lab deltas only, not prod absolutes)",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "chromium": "Google Chrome for Testing 149.0.7827.55 (Playwright 1.61.1)",
+  "runs": 5,
+  "settleMs": 5000,
+  "median": {
+    "cold": {
+      "lcpMs": 940,
+      "cls": 0.6536117569032519,
+      "longTaskCount": 2,
+      "longestTaskMs": 81,
+      "domNodes": 2784,
+      "jsHeapBytes": 49284076,
+      "taskDurationMs": 1224.046,
+      "scriptDurationMs": 142.192,
+      "layoutDurationMs": 85.602,
+      "domContentLoadedMs": 386.1000000005588,
+      "loadMs": 446,
+      "requestCount": 250
+    },
+    "warm": {
+      "lcpMs": 808,
+      "cls": 0.5403693166976112,
+      "longTaskCount": 1,
+      "longestTaskMs": 54,
+      "domNodes": 2784,
+      "jsHeapBytes": 47543332,
+      "taskDurationMs": 1004.591,
+      "scriptDurationMs": 92.187,
+      "layoutDurationMs": 62.509,
+      "domContentLoadedMs": 178.20000000018626,
+      "loadMs": 307.29999999981374,
+      "requestCount": 250
+    }
+  },
+  "notes": "DOM 2784 approaches 3000 hard budget; CLS ~0.65 (warm 0.54) systemic breach. LCP 940/808ms inside target. INP unmeasured; TBT proxy used. Dev transfer/script bytes are vite artifacts — not prod budgets."
+}
