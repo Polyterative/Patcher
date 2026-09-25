@@ -9,6 +9,7 @@ import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { RichUserModel } from 'src/app/features/backend/supabase.types';
 import {
   MarketplaceListing,
+  MarketplaceListingDraft,
   MarketplaceListingMedia
 } from 'src/app/features/marketplace/marketplace-listing.utils';
 import { MinimalModule } from 'src/app/models/module';
@@ -102,6 +103,20 @@ function createListing(overrides: Partial<MarketplaceListing> = {}): Marketplace
   };
 }
 
+function createDraft(): MarketplaceListingDraft {
+  return {
+    askingPrice: '120',
+    askingPriceCurrency: 'EUR',
+    condition: 'good',
+    moduleId: '101',
+    openToOffers: true,
+    sellerProfileId: 'seller-1',
+    shippingOptions: ['Domestic shipping'],
+    shipsFromCountry: 'DE',
+    status: 'draft'
+  };
+}
+
 function snackBarMock(): MatSnackBar {
   return {
     open: jasmine.createSpy('open')
@@ -173,6 +188,79 @@ describe('UserListingsDataService', () => {
     expect(service.snapshot.eligibleModules.map(module => module.id)).toEqual([101]);
     expect(service.snapshot.listings.length).toBe(1);
     expect(service.snapshot.sellerProfileId).toBe('seller-1');
+    service.ngOnDestroy();
+  });
+
+  it('handles empty listings and modules when the profile is unavailable', () => {
+    const backend = backendMock({listings: [], modules: []});
+    const userService = {
+      loggedUserFullProfile$: of(undefined)
+    } as unknown as UserManagementService;
+    const service = new UserListingsDataService(backend, userService, snackBarMock());
+
+    service.load$.next();
+
+    expect(service.snapshot.listings).toEqual([]);
+    expect(service.snapshot.eligibleModules).toEqual([]);
+    expect(service.snapshot.sellerProfileId).toBeNull();
+    expect(service.snapshot.loading).toBeFalse();
+    service.ngOnDestroy();
+  });
+
+  it('preserves loaded listings and reports a subsequent load error', () => {
+    const listing = createListing();
+    const backend = backendMock({listings: [listing]});
+    const service = new UserListingsDataService(backend, userServiceMock(), snackBarMock());
+    service.load$.next();
+
+    (backend.get.currentUserMarketplaceListings as jasmine.Spy).and.returnValue(
+      throwError(() => new Error('listing read failed'))
+    );
+    service.load$.next();
+
+    expect(service.snapshot.listings).toEqual([listing]);
+    expect(service.snapshot.listError).toBe('listing read failed');
+    expect(service.snapshot.loading).toBeFalse();
+    service.ngOnDestroy();
+  });
+
+  it('clears busy state and exposes an error when creating a listing fails', () => {
+    const backend = backendMock();
+    (backend.add.marketplaceListing as jasmine.Spy).and.returnValue(
+      throwError(() => new Error('create failed'))
+    );
+    const service = new UserListingsDataService(backend, userServiceMock(), snackBarMock());
+
+    service.save$.next({draft: createDraft()});
+
+    expect(service.snapshot.busy).toBeFalse();
+    expect(service.snapshot.busyLabel).toBeNull();
+    expect(service.snapshot.mutationError).toBe('create failed');
+    expect(service.snapshot.listings).toEqual([]);
+    service.ngOnDestroy();
+  });
+
+  it('updates an existing listing and reports the refreshed listing as saved', () => {
+    const media = createMedia();
+    const existing = createListing({media: [media]});
+    const updated = createListing({description: 'Updated description', media: [media]});
+    const backend = backendMock({listings: [existing], updateResult: updated});
+    const service = new UserListingsDataService(backend, userServiceMock(), snackBarMock());
+    const saveSucceeded = jasmine.createSpy('saveSucceeded');
+    service.saveSucceeded$.subscribe(saveSucceeded);
+    service.load$.next();
+    (backend.get.currentUserMarketplaceListings as jasmine.Spy).and.returnValue(of([updated]));
+
+    service.save$.next({id: existing.id, draft: createDraft()});
+
+    expect(backend.update.marketplaceListing).toHaveBeenCalledOnceWith(existing.id, createDraft());
+    expect(service.snapshot.listings).toEqual([updated]);
+    expect(saveSucceeded).toHaveBeenCalledWith({
+      failedFiles: [],
+      listing: updated,
+      partialError: null
+    });
+    expect(service.snapshot.mutationError).toBeNull();
     service.ngOnDestroy();
   });
 
@@ -303,6 +391,95 @@ describe('UserListingsDataService', () => {
       moduleId: '101'
     }));
     expect(service.snapshot.statusMessage).toBe('Listing closed as sold. Collection unchanged — remove For Sale from your collection if you no longer have it.');
+    service.ngOnDestroy();
+  });
+
+  it('clears busy state and reports an error when a lifecycle update fails', () => {
+    const listing = createListing({status: 'draft'});
+    const backend = backendMock();
+    (backend.update.marketplaceListing as jasmine.Spy).and.returnValue(
+      throwError(() => new Error('status update failed'))
+    );
+    const service = new UserListingsDataService(backend, userServiceMock(), snackBarMock());
+
+    service.lifecycle$.next({listing, status: 'active'});
+
+    expect(service.snapshot.busy).toBeFalse();
+    expect(service.snapshot.busyLabel).toBeNull();
+    expect(service.snapshot.mutationError).toBe('status update failed');
+    expect(service.snapshot.statusMessage).toBeNull();
+    service.ngOnDestroy();
+  });
+
+  it('deletes listing media and adopts the refreshed listing', () => {
+    const media = createMedia();
+    const listing = createListing({media: [media]});
+    const refreshed = createListing({description: 'Refreshed listing', media: []});
+    const backend = backendMock();
+    (backend.get.currentUserMarketplaceListings as jasmine.Spy).and.returnValue(of([refreshed]));
+    const service = new UserListingsDataService(backend, userServiceMock(), snackBarMock());
+
+    service.mediaDelete$.next({listing, media});
+
+    expect(backend.delete.marketplaceListingMedia).toHaveBeenCalledOnceWith(media.id);
+    expect(service.snapshot.listings).toEqual([refreshed]);
+    expect(service.snapshot.busy).toBeFalse();
+    expect(service.snapshot.mutationError).toBeNull();
+    service.ngOnDestroy();
+  });
+
+  it('retains current listings and reports an error when media deletion fails', () => {
+    const listing = createListing();
+    const media = createMedia();
+    const backend = backendMock({listings: [listing]});
+    (backend.delete.marketplaceListingMedia as jasmine.Spy).and.returnValue(
+      throwError(() => new Error('image delete failed'))
+    );
+    const service = new UserListingsDataService(backend, userServiceMock(), snackBarMock());
+    service.load$.next();
+
+    service.mediaDelete$.next({listing: createListing({media: [media]}), media});
+
+    expect(service.snapshot.listings).toEqual([listing]);
+    expect(service.snapshot.busy).toBeFalse();
+    expect(service.snapshot.mutationError).toBe('image delete failed');
+    service.ngOnDestroy();
+  });
+
+  it('does not call the reorder API when a media move is beyond the list boundary', () => {
+    const first = createMedia({id: 'media-first', position: 0});
+    const second = createMedia({id: 'media-second', position: 1});
+    const listing = createListing({media: [first, second]});
+    const backend = backendMock();
+    const service = new UserListingsDataService(backend, userServiceMock(), snackBarMock());
+
+    service.mediaMove$.next({listing, media: first, direction: -1});
+
+    expect(backend.update.marketplaceListingMediaOrder).not.toHaveBeenCalled();
+    expect(service.snapshot.busy).toBeFalse();
+    service.ngOnDestroy();
+  });
+
+  it('persists a valid media reorder using position order', () => {
+    const first = createMedia({id: 'media-first', position: 0});
+    const second = createMedia({id: 'media-second', position: 1});
+    const listing = createListing({media: [first, second]});
+    const reordered = createListing({media: [
+      {...second, position: 0},
+      {...first, position: 1}
+    ]});
+    const backend = backendMock();
+    (backend.get.currentUserMarketplaceListings as jasmine.Spy).and.returnValue(of([reordered]));
+    const service = new UserListingsDataService(backend, userServiceMock(), snackBarMock());
+
+    service.mediaMove$.next({listing, media: first, direction: 1});
+
+    expect(backend.update.marketplaceListingMediaOrder).toHaveBeenCalledOnceWith(
+      listing.id,
+      ['media-second', 'media-first']
+    );
+    expect(service.snapshot.listings).toEqual([reordered]);
+    expect(service.snapshot.busy).toBeFalse();
     service.ngOnDestroy();
   });
 });
