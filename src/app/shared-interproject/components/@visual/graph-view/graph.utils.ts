@@ -40,7 +40,10 @@ export function parseColor(color: string): {r: number; g: number; b: number} {
 
 export function computeGraphLayoutRuntimeMs(nodeCount: number, edgeCount: number): number {
   const complexity = nodeCount + edgeCount;
-  return Math.max(1200, Math.min(3200, 900 + complexity * 15));
+  // Halved layout budget: force-directed placement converges most in early
+  // iterations, so the tail of the runtime buys little visual change while
+  // costing main-thread supervisor + node-sync work on every patch view.
+  return Math.max(600, Math.min(1600, (900 + complexity * 15) / 2));
 }
 
 export function renderNodeLabel(
