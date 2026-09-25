@@ -4,7 +4,7 @@ import {
   tick
 } from '@angular/core/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { ModuleCollectionsDataService } from 'src/app/features/module-collections/module-collections-data.service';
 import { MinimalModule } from 'src/app/models/module';
@@ -69,7 +69,7 @@ describe('ModuleCollectionEditorDataService', () => {
     });
     const service = TestBed.inject(ModuleCollectionEditorDataService);
 
-    return {service, backend, collectionsDataService};
+    return {service, backend, collectionsDataService, snackBar};
   }
 
   function buildCollection(): ModuleCollectionDetail {
@@ -178,4 +178,118 @@ describe('ModuleCollectionEditorDataService', () => {
     });
     expect(updatedCollection?.image).toBe('covers/utility-stack.jpg');
   }));
+
+  it('blocks an explicit save with an empty title and marks the title control touched', () => {
+    const {service, collectionsDataService, snackBar} = build();
+
+    service.save$.next();
+
+    expect(service.nameControl.touched).toBeTrue();
+    expect(collectionsDataService.saveCollection).not.toHaveBeenCalled();
+    expect(snackBar.open).toHaveBeenCalledWith(
+      'Please enter a collection title.',
+      undefined,
+      {duration: 3000, panelClass: 'snack-info'}
+    );
+  });
+
+  it('creates a collection and signals explicit-save success', () => {
+    const {service, collectionsDataService, snackBar} = build();
+    const module = buildModule(7, 'Clouds');
+    let completed = false;
+    service.nameControl.setValue('New collection');
+    service.addModule$.next(module);
+    service.explicitSaveCompleted$.subscribe(() => completed = true);
+
+    service.save$.next();
+
+    expect(collectionsDataService.saveCollection).toHaveBeenCalledOnceWith({
+      name: 'New collection',
+      description: '',
+      public: false,
+      image: null,
+      moduleIds: [7]
+    });
+    expect(completed).toBeTrue();
+    expect(service.saving$.value).toBeFalse();
+    expect(snackBar.open).toHaveBeenCalledWith(
+      'Collection created.',
+      undefined,
+      {duration: 4000, panelClass: 'snack-success'}
+    );
+  });
+
+  it('reports an explicit save failure without emitting completion', () => {
+    const {service, collectionsDataService, snackBar} = build();
+    const error = new Error('offline');
+    spyOn(console, 'error');
+    collectionsDataService.saveCollection.and.returnValue(throwError(() => error));
+    service.nameControl.setValue('New collection');
+    let completed = false;
+    service.explicitSaveCompleted$.subscribe(() => completed = true);
+
+    service.save$.next();
+
+    expect(completed).toBeFalse();
+    expect(service.saving$.value).toBeFalse();
+    expect(snackBar.open).toHaveBeenCalledWith(
+      'Failed to save collection.',
+      undefined,
+      {duration: 5000, panelClass: 'snack-error'}
+    );
+  });
+
+  it('patches local module entries after a successful playlist autosave', () => {
+    const {service, collectionsDataService} = build();
+    const collection = buildCollection();
+    const addedModule = buildModule(7, 'Clouds');
+    let updatedCollection: ModuleCollectionDetail | undefined;
+    service.initializeCollection(collection);
+    service.collectionUpdated$.subscribe(value => updatedCollection = value);
+
+    service.addModule$.next(addedModule);
+
+    expect(collectionsDataService.saveCollection).toHaveBeenCalledOnceWith({
+      id: 12,
+      name: 'Utility stack',
+      description: 'Useful utilities',
+      public: false,
+      image: null,
+      moduleIds: [99, 7]
+    });
+    expect(service.selectedModules$.value.map(module => module.id)).toEqual([99, 7]);
+    expect(updatedCollection?.entries.map(entry => [entry.id, entry.ordinal, entry.module.id])).toEqual([
+      [1, 0, 99],
+      [0, 1, 7]
+    ]);
+    expect(service.saving$.value).toBeFalse();
+  });
+
+  it('reverts optimistic module changes and reports a failed playlist autosave', () => {
+    const {service, collectionsDataService, snackBar} = build();
+    spyOn(console, 'error');
+    collectionsDataService.saveCollection.and.returnValue(throwError(() => new Error('offline')));
+    service.initializeCollection(buildCollection());
+
+    service.addModule$.next(buildModule(7, 'Clouds'));
+
+    expect(service.selectedModules$.value.map(module => module.id)).toEqual([99]);
+    expect(service.saving$.value).toBeFalse();
+    expect(snackBar.open).toHaveBeenCalledWith(
+      'Failed to save collection modules - changes reverted. Check your connection and try again.',
+      undefined,
+      {duration: 5000, panelClass: 'snack-error'}
+    );
+  });
+
+  it('stops handling module changes after the service is destroyed', () => {
+    const {service, collectionsDataService} = build();
+    service.initializeCollection(buildCollection());
+    service.ngOnDestroy();
+
+    service.addModule$.next(buildModule(7, 'Clouds'));
+
+    expect(service.selectedModules$.value.map(module => module.id)).toEqual([99]);
+    expect(collectionsDataService.saveCollection).not.toHaveBeenCalled();
+  });
 });
