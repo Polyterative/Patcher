@@ -1,0 +1,43 @@
+{
+  "flow": "user-area",
+  "route": "/user/area",
+  "capturedAt": "2026-09-25",
+  "treeSha": "0091c2ab",
+  "server": "dev (pnpm start, vite, unoptimized + HMR — lab deltas only, not prod absolutes)",
+  "viewport": { "width": 1440, "height": 900 },
+  "chromium": "Google Chrome for Testing 149.0.7827.55 (Playwright 1.61.1)",
+  "runs": 5,
+  "settleMs": 5000,
+  "snapshot": "/tmp/snap-user-area (screenshot.png shows LOGGED-OUT home+FAQ, dom.html 133KB, requests 293, console 7)",
+  "median": {
+    "cold": {
+      "lcpMs": 1008,
+      "cls": 0.4967331256965878,
+      "longTaskCount": 1,
+      "longestTaskMs": 76,
+      "domNodes": 557,
+      "jsHeapBytes": 39083312,
+      "taskDurationMs": 553.855,
+      "scriptDurationMs": 107.564,
+      "layoutDurationMs": 22.175,
+      "domContentLoadedMs": 387.6000000005588,
+      "loadMs": 448.70000000018626,
+      "requestCount": 250
+    },
+    "warm": {
+      "lcpMs": 324,
+      "cls": 0.49647615258487654,
+      "longTaskCount": 0,
+      "longestTaskMs": 0,
+      "domNodes": 556,
+      "jsHeapBytes": 52064332,
+      "taskDurationMs": 353.522,
+      "scriptDurationMs": 23.889,
+      "layoutDurationMs": 11.804,
+      "domContentLoadedMs": 279.20000000018626,
+      "loadMs": 313.70000000018626,
+      "requestCount": 209
+    }
+  },
+  "notes": "CAUTION: auth fixture (playwright/.auth/user.json, 2026-09-16) was expired — the snapshot rendered the logged-out home page, so this row is an unauthenticated fallback, NOT an authenticated user-area baseline. Authenticated /user/area with fresh pnpm test:e2e:auth fixture is a queued follow-up. CLS ~0.50 breaches hard budget even here — consistent with the systemic CLS offender."
+}
