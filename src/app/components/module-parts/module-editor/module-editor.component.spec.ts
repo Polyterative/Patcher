@@ -765,3 +765,117 @@ describe('ModuleEditorComponent panel crop flow', () => {
     expect(resetCropperPosition).toHaveBeenCalled();
   });
 });
+
+describe('ModuleEditorFormStateService hydration and validation', () => {
+  function makeFormState(): ModuleEditorFormStateService {
+    return new ModuleEditorFormStateService(new UntypedFormBuilder());
+  }
+
+  it('hydrates every optional module field into its control', () => {
+    const formState = makeFormState();
+
+    formState.hydrateModule(makeDbModule({
+      powerPos12: 80,
+      powerNeg12: 35,
+      powerPos5: 10,
+      weight: 150,
+      depth: 42
+    }));
+
+    expect(formState.powerRailPositive.control.value).toBe(80);
+    expect(formState.powerRailNegative.control.value).toBe(35);
+    expect(formState.powerRailFiveVolts.control.value).toBe(10);
+    expect(formState.weight.control.value).toBe(150);
+    expect(formState.depth.control.value).toBe(42);
+  });
+
+  it('leaves controls blank when module fields are null', () => {
+    const formState = makeFormState();
+
+    formState.hydrateModule({
+      ...makeDbModule(),
+      powerPos12: null,
+      powerNeg12: null,
+      powerPos5: null,
+      weight: null,
+      depth: null
+    } as unknown as DbModule);
+
+    expect(formState.powerRailPositive.control.value).toBe('');
+    expect(formState.powerRailNegative.control.value).toBe('');
+    expect(formState.powerRailFiveVolts.control.value).toBe('');
+    expect(formState.weight.control.value).toBe('');
+    expect(formState.depth.control.value).toBe('');
+  });
+
+  it('resets power autofill readiness on hydration', () => {
+    const formState = makeFormState();
+    formState.markPowerAutofillReady();
+
+    formState.hydrateModule(makeDbModule({powerPos12: 80}));
+    formState.autoFillBlankPowerRails(formState.powerRailPositive.control, 80);
+
+    expect(formState.powerRailPositive.control.value).toBe(80);
+    expect(formState.powerRailNegative.control.value).toBe('');
+    expect(formState.powerRailFiveVolts.control.value).toBe('');
+  });
+
+  it('rejects out-of-range power, weight, and depth values', () => {
+    const formState = makeFormState();
+
+    formState.powerRailPositive.control.setValue(2001);
+    expect(formState.powerRailPositive.control.valid).toBeFalse();
+
+    formState.powerRailNegative.control.setValue(-1);
+    expect(formState.powerRailNegative.control.valid).toBeFalse();
+
+    formState.powerRailPositive.control.setValue(120);
+    expect(formState.powerRailPositive.control.valid).toBeTrue();
+
+    formState.weight.control.setValue(2001);
+    expect(formState.weight.control.valid).toBeFalse();
+
+    formState.depth.control.setValue(501);
+    expect(formState.depth.control.valid).toBeFalse();
+
+    formState.weight.control.setValue(150);
+    formState.depth.control.setValue(42);
+    expect(formState.formGroupPhysical.valid).toBeTrue();
+  });
+
+  it('ignores autofill for empty values and preserves existing sibling values', () => {
+    const formState = makeFormState();
+    formState.markPowerAutofillReady();
+    formState.powerRailNegative.control.setValue(35);
+
+    formState.autoFillBlankPowerRails(formState.powerRailPositive.control, '');
+    formState.autoFillBlankPowerRails(formState.powerRailPositive.control, null);
+    formState.autoFillBlankPowerRails(formState.powerRailPositive.control, undefined);
+
+    expect(formState.powerRailNegative.control.value).toBe(35);
+    expect(formState.powerRailFiveVolts.control.value).toBe('');
+
+    formState.autoFillBlankPowerRails(formState.powerRailPositive.control, 120);
+
+    expect(formState.powerRailNegative.control.value).toBe(35);
+    expect(formState.powerRailFiveVolts.control.value).toBe(0);
+  });
+
+  it('marks editor groups and port controls pristine together', () => {
+    const formState = makeFormState();
+    const cv = makeDraftCv();
+    formState.formGroupPower.markAsDirty();
+    formState.formGroupPhysical.markAsDirty();
+    cv.name.markAsDirty();
+    cv.a.markAsDirty();
+    cv.b.markAsDirty();
+
+    formState.markEditorFormsPristine([cv], []);
+
+    expect(formState.formGroupPower.pristine).toBeTrue();
+    expect(formState.formGroupPhysical.pristine).toBeTrue();
+    expect(cv.name.pristine).toBeTrue();
+    expect(cv.a.pristine).toBeTrue();
+    expect(cv.b.pristine).toBeTrue();
+  });
+});
