@@ -1,0 +1,43 @@
+{
+  "flow": "browser",
+  "route": "/modules/browser",
+  "capturedAt": "2026-09-25",
+  "treeSha": "0091c2ab",
+  "server": "dev (pnpm start, vite, unoptimized + HMR — lab deltas only, not prod absolutes)",
+  "viewport": { "width": 1440, "height": 900 },
+  "chromium": "Google Chrome for Testing 149.0.7827.55 (Playwright 1.61.1)",
+  "runs": 5,
+  "settleMs": 5000,
+  "snapshot": "/tmp/snap-browser (screenshot.png 1.5MB, dom.html 699KB, requests 279, console 7)",
+  "median": {
+    "cold": {
+      "lcpMs": 1904,
+      "cls": 0.6450688528806584,
+      "longTaskCount": 3,
+      "longestTaskMs": 88,
+      "domNodes": 3486,
+      "jsHeapBytes": 64852852,
+      "taskDurationMs": 960.533,
+      "scriptDurationMs": 114.832,
+      "layoutDurationMs": 153.418,
+      "domContentLoadedMs": 412.59999999962747,
+      "loadMs": 540.4000000003725,
+      "requestCount": 250
+    },
+    "warm": {
+      "lcpMs": 1692,
+      "cls": 0.6448118797689472,
+      "longTaskCount": 1,
+      "longestTaskMs": 67,
+      "domNodes": 3486,
+      "jsHeapBytes": 75736932,
+      "taskDurationMs": 855.228,
+      "scriptDurationMs": 71.538,
+      "layoutDurationMs": 148.43,
+      "domContentLoadedMs": 218.1000000005588,
+      "loadMs": 315.5,
+      "requestCount": 250
+    }
+  },
+  "notes": "DOM nodes 3486 breach the 3000 hard budget. CLS ~0.64 breaches hard budget 0.1 on every flow — systemic, top offender (suspect webfont swap / imageless dimensions; dev HMR may inflate). INP unmeasured in lab (no interaction in harness); taskDuration + longTaskCount used as TBT proxy."
+}

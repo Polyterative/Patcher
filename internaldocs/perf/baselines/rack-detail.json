@@ -1,0 +1,43 @@
+{
+  "flow": "rack-detail",
+  "route": "/racks/0LpWxyJRmzWd (public share-link shape)",
+  "capturedAt": "2026-09-25",
+  "treeSha": "0091c2ab",
+  "server": "dev (pnpm start, vite, unoptimized + HMR — lab deltas only, not prod absolutes)",
+  "viewport": { "width": 1440, "height": 900 },
+  "chromium": "Google Chrome for Testing 149.0.7827.55 (Playwright 1.61.1)",
+  "runs": 5,
+  "settleMs": 5000,
+  "snapshot": "/tmp/snap-rack-detail (screenshot.png, dom.html 372KB, requests 298, console 65 incl. 58x NG0956 track-by-identity size 2)",
+  "median": {
+    "cold": {
+      "lcpMs": 1700,
+      "cls": 0.5905182815614551,
+      "longTaskCount": 1,
+      "longestTaskMs": 76,
+      "domNodes": 1421,
+      "jsHeapBytes": 56590704,
+      "taskDurationMs": 893.153,
+      "scriptDurationMs": 138.516,
+      "layoutDurationMs": 66.119,
+      "domContentLoadedMs": 434.20000000018626,
+      "loadMs": 490.20000000018626,
+      "requestCount": 250
+    },
+    "warm": {
+      "lcpMs": 1232,
+      "cls": 0.590684545814713,
+      "longTaskCount": 0,
+      "longestTaskMs": 0,
+      "domNodes": 1421,
+      "jsHeapBytes": 55817548,
+      "taskDurationMs": 768.943,
+      "scriptDurationMs": 79.359,
+      "layoutDurationMs": 55.077,
+      "domContentLoadedMs": 176.6000000005588,
+      "loadMs": 303.70000000018626,
+      "requestCount": 250
+    }
+  },
+  "notes": "Module panel images render loading=eager decoding=sync (left as-is: rack visual is the likely LCP element; lazy would risk LCP regression — needs trace proof before touching). 58 NG0956 warnings observed in snapshot console. INP unmeasured; TBT proxy used."
+}
