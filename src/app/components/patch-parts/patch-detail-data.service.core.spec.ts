@@ -28,6 +28,7 @@ import { CVConnectionState } from './patch-detail-data.models';
 import { SelectionPanelBridgeService } from './selection-panel-bridge.service';
 import { PatchDetailDataService } from './patch-detail-data.service';
 import { DETAIL_ANALYTICS_SURFACES } from '../detail-analytics-surface';
+import { LINKED_RACK_PENDING_ENVIRONMENT_MESSAGE } from './linked-rack-rollout';
 
 
 describe('PatchDetailDataService core flows', () => {
@@ -95,6 +96,21 @@ describe('PatchDetailDataService core flows', () => {
       linked_rack_id: null,
       ...partial
     });
+  }
+
+  function rack(id: number, name = `Rack ${ id }`): Rack {
+    return {
+      id,
+      name,
+      description: '',
+      hp: 104,
+      rows: 2,
+      author: {id: 'u1', username: 'patcher'},
+      locked: false,
+      public: true,
+      created: '',
+      updated: ''
+    };
   }
 
   function connection(aId: number, bId: number, instanceA?: number, instanceB?: number): PatchConnection {
@@ -553,5 +569,122 @@ describe('PatchDetailDataService core flows', () => {
     relabelSubject.complete();
 
     expect(nextSpy.calls.count()).toBe(callsBeforeDestroy);
+  });
+
+  // --- Linked rack bindings ---
+
+  it('loads current-user rack options for the patch owner', () => {
+    const {service, backend} = build();
+    backend.get.currentUserRacks.and.returnValue(of([rack(7, 'Studio Rack')]));
+
+    service.singlePatchData$.next(patch({author: {id: 'u1', username: 'patcher'}}));
+
+    expect(backend.get.currentUserRacks).toHaveBeenCalled();
+    expect(service.currentUserRacks$.value.length).toBe(1);
+    expect(service.linkedRackOptions$.value).toEqual([{id: '7', name: 'Studio Rack'}]);
+  });
+
+  it('resolves the linked rack from owned racks without a backend fetch', () => {
+    const {service, backend} = build();
+    backend.get.currentUserRacks.and.returnValue(of([rack(9, 'Owned Rack')]));
+
+    service.singlePatchData$.next(patch({id: 3, linked_rack_id: 9}));
+
+    expect(backend.GET.rackWithId).not.toHaveBeenCalled();
+    expect(backend.GET.publicRackWithId).not.toHaveBeenCalled();
+    expect(service.linkedRackState$.value.kind).toBe('linked');
+    expect(service.linkedRackState$.value.rackId).toBe(9);
+  });
+
+  it('loads a non-owned linked rack through the public read for anonymous visitors', () => {
+    const {service, backend} = build({userSession: null});
+    backend.GET.publicRackWithId.and.returnValue(of({data: rack(42, 'Public Rack')}));
+
+    service.singlePatchData$.next(patch({author: {id: 'owner', username: 'owner'}, linked_rack_id: 42}));
+
+    expect(backend.GET.publicRackWithId).toHaveBeenCalledWith(42);
+    expect(backend.GET.rackWithId).not.toHaveBeenCalled();
+    expect(service.linkedRackState$.value.kind).toBe('linked');
+    expect(service.linkedRackState$.value.rackId).toBe(42);
+  });
+
+  it('marks the linked rack unavailable when the public read fails', () => {
+    const {service, backend} = build({userSession: null});
+    backend.GET.publicRackWithId.and.returnValue(throwError(() => new Error('rack read failed')));
+
+    service.singlePatchData$.next(patch({author: {id: 'owner', username: 'owner'}, linked_rack_id: 42}));
+
+    expect(service.linkedRackState$.value.kind).toBe('unavailable');
+    expect(service.linkedRackState$.value.rackId).toBe(42);
+  });
+
+  it('skips backend reads when an owner linked rack is missing locally', () => {
+    const {service, backend} = build();
+
+    service.singlePatchData$.next(patch({linked_rack_id: 999}));
+
+    expect(backend.GET.rackWithId).not.toHaveBeenCalled();
+    expect(backend.GET.publicRackWithId).not.toHaveBeenCalled();
+    expect(service.linkedRackState$.value.kind).toBe('unavailable');
+    expect(service.linkedRackState$.value.rackId).toBe(999);
+  });
+
+  it('persists a linked-rack attach with analytics and a success snackbar', () => {
+    spyOn(SharedConstants, 'successCustom').and.callFake(() => {});
+    const {service, backend, snackBar, analytics} = build();
+    service.singlePatchData$.next(patch({id: 1, linked_rack_id: null}));
+
+    service.requestLinkedRackChange$.next(7);
+
+    expect(backend.update.patchSilent).toHaveBeenCalledWith(jasmine.objectContaining({linked_rack_id: 7}));
+    expect(service.singlePatchData$.value?.linked_rack_id).toBe(7);
+    expect(analytics.capture).toHaveBeenCalledWith('patch.linked_rack_changed', {patch_id: 1, rack_id: 7});
+    expect(SharedConstants.successCustom).toHaveBeenCalledWith(snackBar, 'Linked rack updated.');
+  });
+
+  it('persists a linked-rack detach with the cleared message', () => {
+    spyOn(SharedConstants, 'successCustom').and.callFake(() => {});
+    const {service, backend, snackBar} = build();
+    service.singlePatchData$.next(patch({id: 2, linked_rack_id: 7}));
+
+    service.clearLinkedRack();
+
+    expect(backend.update.patchSilent).toHaveBeenCalledWith(jasmine.objectContaining({linked_rack_id: null}));
+    expect(service.singlePatchData$.value?.linked_rack_id).toBeNull();
+    expect(SharedConstants.successCustom).toHaveBeenCalledWith(snackBar, 'Linked rack cleared.');
+  });
+
+  it('rolls back the linked-rack control and surfaces an error when persist fails', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    spyOn(console, 'error');
+    const {service, backend, snackBar} = build();
+    backend.update.patchSilent.and.returnValue(throwError(() => new Error('network down')));
+    service.singlePatchData$.next(patch({id: 1, linked_rack_id: null}));
+
+    service.requestLinkedRackChange$.next(7);
+
+    expect(backend.update.patchSilent).toHaveBeenCalled();
+    expect(service.singlePatchData$.value?.linked_rack_id).toBeNull();
+    expect(service.formData.linkedRack.control.value).toBe('');
+    expect(SharedConstants.errorCustom).toHaveBeenCalledWith(
+      snackBar, 'Failed to save linked rack — check your connection and try again.');
+  });
+
+  it('blocks linked-rack persistence with the environment hint on schema-missing errors', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    spyOn(console, 'error');
+    const {service, backend, snackBar} = build();
+    backend.update.patchSilent.and.returnValue(throwError(() => ({
+      code: 'PGRST204',
+      message: 'Could not find the linked_rack_id column of patches in the schema cache'
+    })));
+    service.singlePatchData$.next(patch({id: 1, linked_rack_id: null}));
+
+    service.requestLinkedRackChange$.next(7);
+
+    expect(service.linkedRackPersistenceBlocked$.value).toBeTrue();
+    expect(service.linkedRackPersistenceHint$.value).toBe(LINKED_RACK_PENDING_ENVIRONMENT_MESSAGE);
+    expect(SharedConstants.errorCustom).toHaveBeenCalledWith(
+      snackBar, 'Linked rack saving is not available yet in this environment.');
   });
 });
