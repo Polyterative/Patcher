@@ -1,0 +1,45 @@
+{
+  "flow": "info",
+  "route": "/info (no child route — shell-only render)",
+  "capturedAt": "2026-09-25",
+  "treeSha": "5911db8d",
+  "server": "dev (pnpm start, vite, unoptimized + HMR — lab deltas only, not prod absolutes)",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "chromium": "Google Chrome for Testing 149.0.7827.55 (Playwright 1.61.1)",
+  "runs": 5,
+  "settleMs": 5000,
+  "median": {
+    "cold": {
+      "lcpMs": 1028,
+      "cls": 0.06376608769504458,
+      "longTaskCount": 1,
+      "longestTaskMs": 74,
+      "domNodes": 393,
+      "jsHeapBytes": 28397256,
+      "taskDurationMs": 384.233,
+      "scriptDurationMs": 52.662,
+      "layoutDurationMs": 12.015,
+      "domContentLoadedMs": 406.2999999988824,
+      "loadMs": 458.59999999962747,
+      "requestCount": 196
+    },
+    "warm": {
+      "lcpMs": 884,
+      "cls": 0.06350911458333333,
+      "longTaskCount": 0,
+      "longestTaskMs": 0,
+      "domNodes": 393,
+      "jsHeapBytes": 32439040,
+      "taskDurationMs": 327.754,
+      "scriptDurationMs": 24.514,
+      "layoutDurationMs": 7.662,
+      "domContentLoadedMs": 266.5,
+      "loadMs": 306.09999999962747,
+      "requestCount": 198
+    }
+  },
+  "notes": "CLS 0.064 meets hard budget <=0.1 — the ONLY flow meeting CLS. Minimal shell (DOM 393, heap 28MB) supports the theory that CLS scales with content-layout weight, not the shell itself. Smallest runtime measured (task 384ms). INP unmeasured; TBT proxy used. Dev transfer/script bytes are vite artifacts — not prod budgets."
+}
