@@ -1,0 +1,45 @@
+{
+  "flow": "home",
+  "route": "/",
+  "capturedAt": "2026-09-25",
+  "treeSha": "5911db8d",
+  "server": "dev (pnpm start, vite, unoptimized + HMR — lab deltas only, not prod absolutes)",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "chromium": "Google Chrome for Testing 149.0.7827.55 (Playwright 1.61.1)",
+  "runs": 5,
+  "settleMs": 5000,
+  "median": {
+    "cold": {
+      "lcpMs": 580,
+      "cls": 0.6197734636387872,
+      "longTaskCount": 8,
+      "longestTaskMs": 142,
+      "domNodes": 1951,
+      "jsHeapBytes": 69642568,
+      "taskDurationMs": 3341.751,
+      "scriptDurationMs": 712.815,
+      "layoutDurationMs": 104.971,
+      "domContentLoadedMs": 401,
+      "loadMs": 460.5,
+      "requestCount": 250
+    },
+    "warm": {
+      "lcpMs": 452,
+      "cls": 0.6195164905270759,
+      "longTaskCount": 7,
+      "longestTaskMs": 142,
+      "domNodes": 1951,
+      "jsHeapBytes": 68385100,
+      "taskDurationMs": 3386.58,
+      "scriptDurationMs": 673.158,
+      "layoutDurationMs": 98.598,
+      "domContentLoadedMs": 191.3999999994412,
+      "loadMs": 317.5,
+      "requestCount": 250
+    }
+  },
+  "notes": "Cold longTaskCount 8 / warm 7 breaches hard budget <=3 (worst count of all flows); scriptDuration 713ms cold rivals patch-detail. CLS ~0.62 systemic breach. LCP 580ms cold is the fastest content flow. INP unmeasured; TBT proxy used. Dev transfer/script bytes are vite artifacts — not prod budgets."
+}
