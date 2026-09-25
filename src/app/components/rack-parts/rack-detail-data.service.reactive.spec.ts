@@ -1522,4 +1522,123 @@ describe('RackDetailDataService reactive flows', () => {
     expect(backend.update.rackedModules).toHaveBeenCalled();
   });
 
+  it('shows a loading or not-found error when removing a module that is not in local state', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    service.singleRackData$.next(rack());
+
+    service.rowedRackedModules$.next(null);
+    service.requestRackedModuleRemoval$.next(moduleInRack(1, 0, 0));
+    expect(SharedConstants.errorCustom).toHaveBeenCalledWith(
+      jasmine.anything(),
+      'Rack data is still loading. Try removing this module again in a moment.'
+    );
+
+    service.rowedRackedModules$.next([[moduleInRack(1, 0, 0)]]);
+    service.requestRackedModuleRemoval$.next(moduleInRack(99, 0, 0));
+    expect(SharedConstants.errorCustom).toHaveBeenCalledWith(
+      jasmine.anything(),
+      'Could not find this module in the rack.'
+    );
+
+    expect(SharedConstants.errorCustom).toHaveBeenCalledTimes(2);
+    expect(backend.delete.rackedModule).not.toHaveBeenCalled();
+    expect(rackingIds(service.rowedRackedModules$.value?.[0] ?? [])).toEqual([1]);
+  });
+
+  it('shows a loading or not-found error when duplicating a module that is not in local state', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    const {service} = build();
+    service.singleRackData$.next(rack());
+    const syncSpy = spyOn(service.requestRackedModulesDbSync$, 'next').and.callThrough();
+
+    service.rowedRackedModules$.next(null);
+    service.requestRackedModuleDuplication$.next(moduleInRack(1, 0, 0));
+    expect(SharedConstants.errorCustom).toHaveBeenCalledWith(
+      jasmine.anything(),
+      'Rack data is still loading. Try duplicating this module again in a moment.'
+    );
+
+    service.rowedRackedModules$.next([[moduleInRack(1, 0, 0)]]);
+    service.requestRackedModuleDuplication$.next(moduleInRack(99, 0, 0));
+    expect(SharedConstants.errorCustom).toHaveBeenCalledWith(
+      jasmine.anything(),
+      'Could not find this module in the rack.'
+    );
+
+    expect(SharedConstants.errorCustom).toHaveBeenCalledTimes(2);
+    expect(syncSpy).not.toHaveBeenCalled();
+    expect(rackingIds(service.rowedRackedModules$.value?.[0] ?? [])).toEqual([1]);
+  });
+
+  it('guards replace-with-blank when rack data, persistence state, or row placement is missing', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    const {service, backend} = build();
+
+    service.singleRackData$.next(undefined);
+    service.rowedRackedModules$.next(null);
+    service.requestRackedModuleReplaceWithBlank$.next(moduleInRack(1, 0, 0, 8, 0));
+    expect(SharedConstants.errorCustom).toHaveBeenCalledWith(
+      jasmine.anything(),
+      'Rack data is still loading. Try replacing this module again in a moment.'
+    );
+
+    service.singleRackData$.next(rack());
+    service.rowedRackedModules$.next([[moduleInRack(1, 0, 0, 8, 0)]]);
+    service.requestRackedModuleReplaceWithBlank$.next(moduleInRack(undefined, 0, 0, 8, 0));
+    expect(SharedConstants.errorCustom).toHaveBeenCalledWith(
+      jasmine.anything(),
+      'Rack changes are still syncing. Try replacing this module again in a moment.'
+    );
+
+    const stray = moduleInRack(1, null, null, 8, 0);
+    service.rowedRackedModules$.next([[stray]]);
+    service.requestRackedModuleReplaceWithBlank$.next(stray);
+    expect(SharedConstants.errorCustom).toHaveBeenCalledWith(
+      jasmine.anything(),
+      'Could not find this module in the rack.'
+    );
+
+    expect(SharedConstants.errorCustom).toHaveBeenCalledTimes(3);
+    expect(backend.GET.moduleWithIdForRackDisplay).not.toHaveBeenCalled();
+    expect(backend.delete.rackedModule).not.toHaveBeenCalled();
+    expect(backend.add.rackModule).not.toHaveBeenCalled();
+  });
+
+  it('shows a blank-panel load error and leaves rows untouched when the blank lookup fails', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    service.singleRackData$.next(rack({id: 1, rows: 1}));
+    service.rowedRackedModules$.next([[moduleInRack(1, 0, 0)]]);
+    backend.GET.moduleWithIdForRackDisplay.and.returnValue(throwError(() => new Error('lookup failed')));
+
+    service.addBlankToRow$.next({rowId: 0, hp: 8});
+
+    expect(backend.GET.moduleWithIdForRackDisplay).toHaveBeenCalledWith(4651);
+    expect(backend.add.rackModule).not.toHaveBeenCalled();
+    expect(service.rowedRackedModules$.value[0].length).toBe(1);
+    expect(service.rowedRackedModules$.value[0][0].module.id).toBe(1001);
+    expect(SharedConstants.errorCustom).toHaveBeenCalledOnceWith(
+      jasmine.anything(),
+      'Failed to load the blank panel. Try again in a moment.'
+    );
+  });
+
+  it('rejects blank adds for rows outside the rack without touching the backend', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    service.singleRackData$.next(rack({id: 1, rows: 1}));
+    service.rowedRackedModules$.next([[moduleInRack(1, 0, 0)]]);
+
+    service.addBlankToRow$.next({rowId: 3, hp: 8});
+
+    expect(SharedConstants.errorCustom).toHaveBeenCalledOnceWith(
+      jasmine.anything(),
+      'This row cannot receive a blank panel.'
+    );
+    expect(backend.GET.moduleWithIdForRackDisplay).not.toHaveBeenCalled();
+    expect(backend.add.rackModule).not.toHaveBeenCalled();
+    expect(service.rowedRackedModules$.value[0].length).toBe(1);
+  });
+
 });
