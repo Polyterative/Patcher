@@ -54,6 +54,7 @@ second source of rules.
 | [patterns/CACHE_STRATEGY.md](./patterns/CACHE_STRATEGY.md) | Read-cache keys, invalidation rules, and cache-busting after writes |
 | [testing/UNIT_TESTING.md](./testing/UNIT_TESTING.md) | Shared unit test conventions and examples |
 | [testing/DOCS_SCREENSHOTS.md](./testing/DOCS_SCREENSHOTS.md) | Docs screenshot regeneration, review, and guarded sync workflow |
+| [perf/top-offender-report.md](./perf/top-offender-report.md) | Chrome-measured per-flow offender ranking for GitHub #150 (Layer 1 exit item) |
 
 ### Feature Specs
 
