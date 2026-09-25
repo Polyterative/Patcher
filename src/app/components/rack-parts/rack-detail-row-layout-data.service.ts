@@ -17,6 +17,8 @@ import { SharedConstants } from '../../shared-interproject/SharedConstants';
 import { cloneRackData } from './rack-detail-data.utils';
 import { RackDetailDataContext } from './rack-detail-data.service.types';
 
+export const MAX_RACK_ROWS = 8;
+
 @Injectable()
 export class RackDetailRowLayoutDataService {
   bind(context: RackDetailDataContext): void {
@@ -71,6 +73,16 @@ export class RackDetailRowLayoutDataService {
         withLatestFrom(context.singleRackData$, context.rowedRackedModules$),
         exhaustMap(([_, rack, rackModules]) => {
           if (!rack) {
+            return EMPTY;
+          }
+          if (rack.rows >= MAX_RACK_ROWS) {
+            SharedConstants.infoCustom(context.snackBar, `This rack has reached the maximum of ${ MAX_RACK_ROWS } rows.`);
+            context.analytics.capture('rack.row_add_blocked', {
+              rack_id: rack.id,
+              rows: rack.rows,
+              reason: 'max_rows',
+              action: 'add'
+            });
             return EMPTY;
           }
 
@@ -163,6 +175,16 @@ export class RackDetailRowLayoutDataService {
         exhaustMap(({rowId, rackModules, rack}) => {
           if (!rack || !rackModules || rowId < 0 || rowId >= rack.rows) {
             SharedConstants.infoCustom(context.snackBar, 'This row cannot be duplicated.');
+            return EMPTY;
+          }
+          if (rack.rows >= MAX_RACK_ROWS) {
+            SharedConstants.infoCustom(context.snackBar, `This rack has reached the maximum of ${ MAX_RACK_ROWS } rows.`);
+            context.analytics.capture('rack.row_add_blocked', {
+              rack_id: rack.id,
+              rows: rack.rows,
+              reason: 'max_rows',
+              action: 'duplicate'
+            });
             return EMPTY;
           }
 

@@ -409,11 +409,14 @@
     @if (isCurrentRackEditable && isCurrentRackPropertyOfCurrentUser) {
       <div
         [@enter]="{ value: '', params: { delay: (2 * 25)+500}}"
+        [matTooltip]="maxRackRowsTooltip()"
+        [matTooltipDisabled]="touchInteractionMode || !isMaxRackRowsReached()"
       >
         <app-brand-primary-button
           theme="primary"
           icon="add"
           (click$)="rackDetailDataService.requestAddNewRow$.next()"
+          [disabled]="isMaxRackRowsReached()"
         >
           Add new row
         </app-brand-primary-button>

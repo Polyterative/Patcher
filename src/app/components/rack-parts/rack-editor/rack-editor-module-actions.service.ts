@@ -13,6 +13,7 @@ import { SubManager } from 'src/app/shared-interproject/directives/subscription-
 import { ModulePanelZoomDialogComponent } from '../../module-parts/module-details/module-panel-zoom-dialog.component';
 import { derivePanelLabel } from '../../module-parts/panel.constants';
 import { RackDetailDataService } from '../rack-detail-data.service';
+import { MAX_RACK_ROWS } from '../rack-detail-row-layout-data.service';
 import {
   RackEditorModuleAction,
   RowOverflowClick
@@ -313,6 +314,7 @@ export class RackEditorModuleActionsService extends SubManager {
     const isLastRow = rowId >= totalRows - 1;
     const canDeleteRow = totalRows > 1 && rowModuleCount === 0;
     const isOrientationUpdating = this.dataService.isAnyRackModuleOrientationUpdating();
+    const isAtMaxRows = totalRows >= MAX_RACK_ROWS;
 
     return [
       {
@@ -345,7 +347,7 @@ export class RackEditorModuleActionsService extends SubManager {
         id: 'duplicate-row',
         label: 'Duplicate row',
         icon: 'content_copy',
-        disabled: isOrientationUpdating || this.dataService.duplicateRowInProgress$.value,
+        disabled: isOrientationUpdating || this.dataService.duplicateRowInProgress$.value || isAtMaxRows,
         click$: this.createMenuActionSubject(() => this.dataService.requestDuplicateRow$.next(rowId))
       },
       this.createContextMenuSpacerItem(1),
