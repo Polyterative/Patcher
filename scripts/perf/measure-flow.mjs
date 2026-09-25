@@ -25,7 +25,7 @@ export function parseArguments(argumentsList) {
     if (argument === '--' && index === 0) {
       continue;
     }
-    if (!['--flow', '--url', '--runs', '--settle-ms'].includes(argument)) {
+    if (!['--flow', '--url', '--runs', '--settle-ms', '--storage-state'].includes(argument)) {
       throw new Error(`Unknown argument: ${argument}`);
     }
     if (!value || value.startsWith('--')) {
@@ -44,6 +44,9 @@ export function parseArguments(argumentsList) {
         break;
       case '--settle-ms':
         options.settleMs = Number(value);
+        break;
+      case '--storage-state':
+        options.storageState = value;
         break;
     }
     index += 1;
@@ -119,12 +122,20 @@ async function measureFlow(options) {
 
   const browser = await chromium.launch({ headless: true });
   const runs = [];
+  const contextOptions = {
+    viewport: { width: 1440, height: 900 },
+  };
+  if (options.storageState) {
+    const { existsSync } = await import('node:fs');
+    if (!existsSync(options.storageState)) {
+      throw new Error(`storage-state file not found: ${options.storageState}`);
+    }
+    contextOptions.storageState = options.storageState;
+  }
 
   try {
     for (let runNumber = 1; runNumber <= options.runs; runNumber += 1) {
-      const context = await browser.newContext({
-        viewport: { width: 1440, height: 900 },
-      });
+      const context = await browser.newContext(contextOptions);
       const tracePath = path.join(outputDirectory, `run-${runNumber}.zip`);
 
       try {

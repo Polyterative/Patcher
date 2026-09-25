@@ -25,6 +25,21 @@ test('parses a valid flow measurement request', () => {
   );
 });
 
+test('accepts an opt-in storage-state for authenticated flows', () => {
+  assert.equal(
+    parseArguments([
+      '--flow', 'user-area',
+      '--url', 'http://localhost:5556/user/area',
+      '--storage-state', 'playwright/.auth/user.json',
+    ]).storageState,
+    'playwright/.auth/user.json'
+  );
+  assert.equal(
+    parseArguments(['--flow', 'home', '--url', 'http://127.0.0.1:5557/']).storageState,
+    undefined
+  );
+});
+
 test('accepts pnpm argument forwarding', () => {
   assert.equal(
     parseArguments(['--', '--flow', 'home', '--url', 'http://127.0.0.1:5557/']).flow,
