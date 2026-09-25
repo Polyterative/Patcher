@@ -51,15 +51,15 @@ describe('graph.utils', () => {
 
   describe('computeGraphLayoutRuntimeMs', () => {
     it('returns the minimum runtime for simple graphs', () => {
-      expect(computeGraphLayoutRuntimeMs(1, 0)).toBe(1200);
+      expect(computeGraphLayoutRuntimeMs(1, 0)).toBe(600);
     });
 
     it('scales with graph complexity', () => {
-      expect(computeGraphLayoutRuntimeMs(100, 50)).toBe(3150);
+      expect(computeGraphLayoutRuntimeMs(100, 50)).toBe(1575);
     });
 
     it('caps the runtime for complex graphs', () => {
-      expect(computeGraphLayoutRuntimeMs(200, 100)).toBe(3200);
+      expect(computeGraphLayoutRuntimeMs(200, 100)).toBe(1600);
     });
   });
 });
