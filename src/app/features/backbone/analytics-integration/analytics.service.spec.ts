@@ -120,7 +120,7 @@ describe('AnalyticsService', () => {
       await flushPromises();
 
       expect(posthog.capture).toHaveBeenCalledWith('$pageview', {
-        $current_url: window.location.origin + '/current-patch'
+        $current_url: `${window.location.origin}/current-patch`
       });
       expect(posthog.identify).toHaveBeenCalledWith('user-1', {
         email:    'a@b.com',
@@ -138,7 +138,7 @@ describe('AnalyticsService', () => {
       await flushPromises();
 
       expect(posthog.capture).toHaveBeenCalledOnceWith('$pageview', {
-        $current_url: window.location.origin + '/new'
+        $current_url: `${window.location.origin}/new`
       });
     });
   });

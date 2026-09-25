@@ -20,7 +20,7 @@ test('screenshot module editor with panel image', async ({ browser }) => {
   if (count > 0) {
     const href = await editLinks.first().getAttribute('href');
     console.log('href:', href);
-    await page.goto('http://localhost:5556' + href);
+    await page.goto(`http://localhost:5556${href}`);
     await page.waitForLoadState('networkidle');
     await page.screenshot({ path: path.join(OUT, '02-module-details.png') });
   }
