@@ -345,7 +345,7 @@ async function crawlSitemapMetadataProductUrl(
   }
 
   const product = store.adapter === 'bigcommerce_metadata'
-    ? normalizeBigCommerceProductPage(html, productUrl)
+    ? normalizeBigCommerceProductPage(html, productUrl, { storeSlug: store.slug })
     : store.adapter === 'shopware_metadata'
       ? normalizeShopwareProductPage(html, productUrl)
       : normalizeProductMetadataPage(html, productUrl, 'custom', { storeSlug: store.slug });

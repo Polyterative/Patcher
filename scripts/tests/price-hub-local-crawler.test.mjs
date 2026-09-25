@@ -28,6 +28,7 @@ const foundSoundStore = readApprovedPriceHubStore('found-sound');
 const instruoStore = readApprovedPriceHubStore('instruo');
 const machineroomStore = readApprovedPriceHubStore('machineroom');
 const martinPasStore = readApprovedPriceHubStore('martin-pas');
+const midwestStore = readApprovedPriceHubStore('midwest-modular');
 const milkAudioStore = readApprovedPriceHubStore('milk-audio-store');
 const postmodularStore = readApprovedPriceHubStore('postmodular');
 const pushermanStore = readApprovedPriceHubStore('pusherman-productions');
@@ -1531,6 +1532,81 @@ test('crawls BigCommerce product sitemap and normalizes product metadata pages',
 
     assert.equal(product.currency, 'JPY');
     assert.equal(product.priceAmountMinor, 77000);
+  });
+
+  test('reads Midwest Modular manufacturer from CDN image filenames without brand markup', () => {
+    const productUrl = 'https://midwestmodular.com/ochd/';
+    const product = normalizeBigCommerceProductPage(bigCommerceProductPage({
+      name: 'OCHD',
+      url: productUrl,
+      price: '199',
+      currency: 'USD',
+      availability: 'oos',
+      image: 'https://cdn11.bigcommerce.com/s-29g18g7sqx/products/1718/images/1949/Divkid_OCHD__53682.1706907358.500.750.jpg',
+    }), productUrl, { storeSlug: 'midwest-modular' });
+
+    assert.equal(product.productName, 'OCHD');
+    assert.equal(product.rawMeta.brand, 'Divkid OCHD');
+  });
+
+  test('leaves brand empty for brand-less BigCommerce pages outside Midwest Modular', () => {
+    const productUrl = 'https://midwestmodular.com/ochd/';
+    const page = bigCommerceProductPage({
+      name: 'OCHD',
+      url: productUrl,
+      price: '199',
+      currency: 'USD',
+      availability: 'oos',
+      image: 'https://cdn11.bigcommerce.com/s-29g18g7sqx/products/1718/images/1949/Divkid_OCHD__53682.1706907358.500.750.jpg',
+    });
+
+    assert.equal(normalizeBigCommerceProductPage(page, productUrl).rawMeta.brand, undefined);
+    assert.equal(
+      normalizeBigCommerceProductPage(page, productUrl, { storeSlug: 'signal-sounds-eu' }).rawMeta.brand,
+      undefined,
+    );
+  });
+
+  test('crawls Midwest Modular pages with image-derived brand evidence', async () => {
+    const productUrl = 'https://midwestmodular.com/ochd/';
+    const sitemap = `<urlset><url><loc>${productUrl}</loc></url></urlset>`;
+
+    const crawl = await crawlPriceHubStoreCatalog(midwestStore, {
+      maxProducts: 1,
+      fetchFn: async (url) => url.includes('xmlsitemap.php')
+        ? textResponse(sitemap)
+        : textResponse(bigCommerceProductPage({
+          name: 'OCHD',
+          url: productUrl,
+          price: '199',
+          currency: 'USD',
+          availability: 'instock',
+          image: 'https://cdn11.bigcommerce.com/s-29g18g7sqx/products/1718/images/1949/Divkid_OCHD__53682.1706907358.500.750.jpg',
+        })),
+    });
+
+    assert.equal(crawl.products.length, 1);
+    assert.equal(crawl.products[0].rawMeta.brand, 'Divkid OCHD');
+  });
+
+  test('matches image-brand products against manufacturer-backed modules', () => {
+    const matches = matchModulesToProducts(
+      [{ id: 'ochd-id', name: 'ochd', manufacturerName: 'divkid' }],
+      [{
+        productName: 'OCHD',
+        productUrl: 'https://midwestmodular.com/ochd/',
+        priceAmountMinor: 19900,
+        currency: 'USD',
+        availability: 'in_stock',
+        imageUrl: null,
+        rawMeta: { adapter: 'bigcommerce_metadata', slug: 'ochd', brand: 'Divkid OCHD' },
+      }],
+      { includeIgnored: false },
+    );
+
+    assert.equal(matches.length, 1);
+    assert.equal(matches[0].moduleId, 'ochd-id');
+    assert.equal(matches[0].status, 'strong_candidate');
   });
 
   test('crawls recursive custom product sitemaps and normalizes metadata pages', async () => {
