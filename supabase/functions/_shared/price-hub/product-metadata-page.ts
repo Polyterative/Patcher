@@ -49,7 +49,7 @@ function readComparableUrlSlug(value: string | null): string {
 
 export type ProductMetadataAdapter = 'bigcommerce_metadata' | 'shopware_metadata' | 'custom';
 
-interface ProductMetadataContext {
+export interface ProductMetadataContext {
   storeSlug?: string;
 }
 
@@ -59,7 +59,7 @@ export function normalizeProductMetadataPage(
   adapter: ProductMetadataAdapter,
   context: ProductMetadataContext = {},
 ): NormalizedStoreListingSnapshot {
-  const metadata = readProductPageMetadata(html, productUrl);
+  const metadata = readProductPageMetadata(html, productUrl, context);
   const availabilityText = readAvailabilityText(html, context);
   const slug = slugFromUrl(metadata.productUrl ?? productUrl);
   const productName = normalizeProductName(metadata.productName, adapter);
@@ -103,24 +103,50 @@ export function detachProductMetadataString(value: string): string {
   return value.length === 0 ? '' : value.split('').join('');
 }
 
-function readProductPageMetadata(html: string, productUrl: string): ProductPageMetadata {
+function readProductPageMetadata(
+  html: string,
+  productUrl: string,
+  context: ProductMetadataContext = {},
+): ProductPageMetadata {
   const meta = readMetaTags(html);
   const jsonLd = readProductJsonLdMetadata(html);
   const abiCart = readAbiCartTextalkMetadata(html, productUrl);
   const priceCurrency = meta.get('product:price:currency') ?? meta.get('og:price:currency') ?? meta.get('pricecurrency') ?? jsonLd.priceCurrency ?? null;
   const resolvedPriceCurrency = priceCurrency ?? abiCart.priceCurrency ?? null;
+  const imageUrl = meta.get('og:image') ?? jsonLd.imageUrl ?? abiCart.imageUrl ?? null;
 
   return {
     priceAmount: meta.get('product:price:amount') ?? meta.get('og:price:amount') ?? meta.get('price') ?? jsonLd.priceAmount ?? abiCart.priceAmount ?? readEmbeddedMinorUnitPriceAmount(html, resolvedPriceCurrency),
     priceCurrency: resolvedPriceCurrency,
     productName: meta.get('og:title') ?? jsonLd.productName ?? abiCart.productName ?? readTitle(html),
     productUrl: normalizeProductUrl(meta.get('og:url') ?? meta.get('product:product_link') ?? abiCart.productUrl),
-    imageUrl: meta.get('og:image') ?? jsonLd.imageUrl ?? abiCart.imageUrl ?? null,
+    imageUrl,
     availability: meta.get('product:availability') ?? meta.get('og:availability') ?? jsonLd.availability ?? abiCart.availability ?? null,
     productId: meta.get('productid') ?? jsonLd.productId ?? abiCart.productId ?? null,
     sku: meta.get('sku') ?? jsonLd.sku ?? abiCart.sku ?? readSku(html),
-    brand: meta.get('product:brand') ?? meta.get('brand') ?? meta.get('manufacturer') ?? jsonLd.brand ?? abiCart.brand ?? null,
+    brand: meta.get('product:brand') ?? meta.get('brand') ?? meta.get('manufacturer') ?? jsonLd.brand ?? abiCart.brand ?? readStoreImageBrandGuess(imageUrl, context),
   };
+}
+
+// Midwest Modular's BigCommerce Stencil theme exposes no brand markup at all
+// (no Product JSON-LD, no product:brand meta, no on-page brand element), so the
+// generic brand chain above resolves to null and the matcher can never reach
+// manufacturer support. Its CDN image filenames consistently lead with the
+// manufacturer name (<Brand>_<Product>__<imageId>...), e.g. Divkid_OCHD__... or
+// Tip-Top-Audio-VCA__..., which the matcher consumes as ordinary brand evidence
+// via phrase inclusion. Scoped to this store: other themes must not inherit it.
+function readStoreImageBrandGuess(imageUrl: string | null, context: ProductMetadataContext): string | null {
+  if (context.storeSlug !== 'midwest-modular' || !imageUrl) {
+    return null;
+  }
+
+  const filename = imageUrl.split('?')[0].split('/').at(-1) ?? '';
+  if (!filename.includes('__')) {
+    return null;
+  }
+
+  const guess = filename.split('__')[0].replace(/_+/g, ' ').trim();
+  return guess.length > 0 ? detachProductMetadataString(guess) : null;
 }
 
 function readEmbeddedMinorUnitPriceAmount(html: string, currency: string | null): string | null {
