@@ -1,0 +1,45 @@
+{
+  "flow": "manufacturers",
+  "route": "/manufacturers/browser",
+  "capturedAt": "2026-09-25",
+  "treeSha": "5911db8d",
+  "server": "dev (pnpm start, vite, unoptimized + HMR — lab deltas only, not prod absolutes)",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "chromium": "Google Chrome for Testing 149.0.7827.55 (Playwright 1.61.1)",
+  "runs": 5,
+  "settleMs": 5000,
+  "median": {
+    "cold": {
+      "lcpMs": 1024,
+      "cls": 0.7079961720993817,
+      "longTaskCount": 1,
+      "longestTaskMs": 76,
+      "domNodes": 6752,
+      "jsHeapBytes": 72338964,
+      "taskDurationMs": 1308.319,
+      "scriptDurationMs": 122.729,
+      "layoutDurationMs": 181.036,
+      "domContentLoadedMs": 397.19999999925494,
+      "loadMs": 462.7000000011176,
+      "requestCount": 250
+    },
+    "warm": {
+      "lcpMs": 876,
+      "cls": 0.718625032284165,
+      "longTaskCount": 0,
+      "longestTaskMs": 0,
+      "domNodes": 6752,
+      "jsHeapBytes": 65602572,
+      "taskDurationMs": 1233.024,
+      "scriptDurationMs": 88.107,
+      "layoutDurationMs": 176.55,
+      "domContentLoadedMs": 181.89999999850988,
+      "loadMs": 308.80000000074506,
+      "requestCount": 250
+    }
+  },
+  "notes": "DOM 6752 is 2.25x the 3000 hard budget — worst DOM of all flows (logo grid). CLS ~0.71-0.72 worst alongside manufacturer-detail. Third-party requests 37 (external logo hosts). Layout 181ms cold is the worst layout cost measured. INP unmeasured; TBT proxy used. Dev transfer/script bytes are vite artifacts — not prod budgets."
+}
