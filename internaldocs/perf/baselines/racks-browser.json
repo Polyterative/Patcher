@@ -1,0 +1,45 @@
+{
+  "flow": "racks-browser",
+  "route": "/racks/browser",
+  "capturedAt": "2026-09-25",
+  "treeSha": "5911db8d",
+  "server": "dev (pnpm start, vite, unoptimized + HMR — lab deltas only, not prod absolutes)",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "chromium": "Google Chrome for Testing 149.0.7827.55 (Playwright 1.61.1)",
+  "runs": 5,
+  "settleMs": 5000,
+  "median": {
+    "cold": {
+      "lcpMs": 1692,
+      "cls": 0.561504993864669,
+      "longTaskCount": 1,
+      "longestTaskMs": 75,
+      "domNodes": 1045,
+      "jsHeapBytes": 41395596,
+      "taskDurationMs": 633.412,
+      "scriptDurationMs": 83.578,
+      "layoutDurationMs": 38.956,
+      "domContentLoadedMs": 394.5,
+      "loadMs": 449.5,
+      "requestCount": 250
+    },
+    "warm": {
+      "lcpMs": 1296,
+      "cls": 0.5612480207529578,
+      "longTaskCount": 0,
+      "longestTaskMs": 0,
+      "domNodes": 1045,
+      "jsHeapBytes": 43196392,
+      "taskDurationMs": 537.697,
+      "scriptDurationMs": 32.336,
+      "layoutDurationMs": 27.05,
+      "domContentLoadedMs": 174.29999999981374,
+      "loadMs": 303.1000000005588,
+      "requestCount": 250
+    }
+  },
+  "notes": "CLS ~0.56 systemic breach; DOM 1045 inside budget; LCP 1692/1296ms inside target. Quietest runtime of the browsers (task 633ms cold). INP unmeasured; TBT proxy used. Dev transfer/script bytes are vite artifacts — not prod budgets."
+}
