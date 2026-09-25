@@ -1,0 +1,45 @@
+{
+  "flow": "public-profile",
+  "route": "/u/Polyterative (handle linked from Home)",
+  "capturedAt": "2026-09-25",
+  "treeSha": "5911db8d",
+  "server": "dev (pnpm start, vite, unoptimized + HMR — lab deltas only, not prod absolutes)",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "chromium": "Google Chrome for Testing 149.0.7827.55 (Playwright 1.61.1)",
+  "runs": 5,
+  "settleMs": 5000,
+  "median": {
+    "cold": {
+      "lcpMs": 1572,
+      "cls": 0.5900571188928004,
+      "longTaskCount": 1,
+      "longestTaskMs": 74,
+      "domNodes": 948,
+      "jsHeapBytes": 35441324,
+      "taskDurationMs": 547.581,
+      "scriptDurationMs": 59.356,
+      "layoutDurationMs": 36.324,
+      "domContentLoadedMs": 401.19999999925494,
+      "loadMs": 458.09999999962747,
+      "requestCount": 227
+    },
+    "warm": {
+      "lcpMs": 1248,
+      "cls": 0.5898001457810892,
+      "longTaskCount": 0,
+      "longestTaskMs": 0,
+      "domNodes": 948,
+      "jsHeapBytes": 49942440,
+      "taskDurationMs": 460.394,
+      "scriptDurationMs": 27.657,
+      "layoutDurationMs": 27.425,
+      "domContentLoadedMs": 274.5,
+      "loadMs": 310.59999999962747,
+      "requestCount": 229
+    }
+  },
+  "notes": "CLS ~0.59 systemic breach; DOM 948 inside budget; LCP 1572/1248ms inside target. Third-party 17-19 (avatars/external). INP unmeasured; TBT proxy used. Dev transfer/script bytes are vite artifacts — not prod budgets."
+}
