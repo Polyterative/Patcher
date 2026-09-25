@@ -34,6 +34,7 @@ import {
 import { TagType } from 'src/app/models/tag';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { RackDetailDataService } from './rack-detail-data.service';
+import { MAX_RACK_ROWS } from './rack-detail-row-layout-data.service';
 
 type BackendResponse<T> = {data: T};
 type EmptyBackendResponse = Record<string, never>;
@@ -501,6 +502,61 @@ describe('RackDetailDataService reactive flows', () => {
     expect(service.singleRackData$.value.rows).toBe(2);
     expect(service.rowedRackedModules$.value).toEqual([originalRows[0], []]);
     expect(SharedConstants.errorCustom).toHaveBeenCalledTimes(2);
+  });
+
+  it('blocks adding a row when the rack is at the maximum row count', () => {
+    spyOn(SharedConstants, 'infoCustom').and.callFake(() => {});
+    const {service, backend, analytics} = build();
+    service.singleRackData$.next(rack({id: 7, rows: MAX_RACK_ROWS}));
+    const originalRows = [[moduleInRack(1, 0, 0)]];
+    service.rowedRackedModules$.next(originalRows);
+
+    service.requestAddNewRow$.next();
+
+    expect(service.singleRackData$.value.rows).toBe(MAX_RACK_ROWS);
+    expect(service.rowedRackedModules$.value).toEqual(originalRows);
+    expect(backend.update.rack).not.toHaveBeenCalled();
+    expect(SharedConstants.infoCustom).toHaveBeenCalled();
+    expect(analytics.capture).toHaveBeenCalledWith('rack.row_add_blocked', jasmine.objectContaining({
+      rack_id: 7,
+      rows: MAX_RACK_ROWS,
+      reason: 'max_rows',
+      action: 'add'
+    }));
+  });
+
+  it('blocks duplicating a row when the rack is at the maximum row count', () => {
+    spyOn(SharedConstants, 'infoCustom').and.callFake(() => {});
+    const {service, backend, analytics} = build();
+    service.singleRackData$.next(rack({id: 7, rows: MAX_RACK_ROWS}));
+    const originalRows = [[moduleInRack(1, 0, 0)]];
+    service.rowedRackedModules$.next(originalRows);
+
+    service.requestDuplicateRow$.next(0);
+
+    expect(service.singleRackData$.value.rows).toBe(MAX_RACK_ROWS);
+    expect(service.rowedRackedModules$.value).toEqual(originalRows);
+    expect(backend.update.rack).not.toHaveBeenCalled();
+    expect(backend.update.rackedModules).not.toHaveBeenCalled();
+    expect(service.duplicateRowInProgress$.value).toBeFalse();
+    expect(SharedConstants.infoCustom).toHaveBeenCalled();
+    expect(analytics.capture).toHaveBeenCalledWith('rack.row_add_blocked', jasmine.objectContaining({
+      rack_id: 7,
+      rows: MAX_RACK_ROWS,
+      reason: 'max_rows',
+      action: 'duplicate'
+    }));
+  });
+
+  it('allows adding a row just below the maximum row count', () => {
+    const {service, backend} = build();
+    service.singleRackData$.next(rack({id: 7, rows: MAX_RACK_ROWS - 1}));
+    service.rowedRackedModules$.next([[moduleInRack(1, 0, 0)]]);
+
+    service.requestAddNewRow$.next();
+
+    expect(service.singleRackData$.value.rows).toBe(MAX_RACK_ROWS);
+    expect(backend.update.rack).toHaveBeenCalledWith(jasmine.objectContaining({rows: MAX_RACK_ROWS}));
   });
 
   it('optimistically adds a picker module before backend racking id is returned', () => {

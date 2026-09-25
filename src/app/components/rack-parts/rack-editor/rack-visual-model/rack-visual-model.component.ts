@@ -26,6 +26,7 @@ import { takeUntil } from 'rxjs/operators';
 import { RackedModule } from 'src/app/models/module';
 import { RackMinimal } from 'src/app/models/rack';
 import { RackDetailDataService } from '../../rack-detail-data.service';
+import { MAX_RACK_ROWS } from '../../rack-detail-row-layout-data.service';
 import {
   RackAnalysisMode,
   RACK_ANALYSIS_MODES,
@@ -252,6 +253,11 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   }
 
   isLastRowEmpty(rowedRackedModules: RackedModule[][]): boolean { return rowedRackedModules[rowedRackedModules.length - 1].length === 0; }
+  get maxRackRows(): number { return MAX_RACK_ROWS; }
+  isMaxRackRowsReached(): boolean {
+    return (this.rackData?.rows ?? this.rowedRackedModules?.length ?? 0) >= MAX_RACK_ROWS;
+  }
+  maxRackRowsTooltip(): string { return `Maximum of ${ MAX_RACK_ROWS } rows reached`; }
   effectiveHp(rackedModule: RackedModule): number { return this.render.effectiveHp(rackedModule); }
 
   setHoveredModule(rackedModule: RackedModule, moduleElement?: EventTarget | null): void {
