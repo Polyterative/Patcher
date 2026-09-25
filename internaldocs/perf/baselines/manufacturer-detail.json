@@ -1,0 +1,45 @@
+{
+  "flow": "manufacturer-detail",
+  "route": "/manufacturers/details/987 (first link from manufacturers browser)",
+  "capturedAt": "2026-09-25",
+  "treeSha": "5911db8d",
+  "server": "dev (pnpm start, vite, unoptimized + HMR — lab deltas only, not prod absolutes)",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "chromium": "Google Chrome for Testing 149.0.7827.55 (Playwright 1.61.1)",
+  "runs": 5,
+  "settleMs": 5000,
+  "median": {
+    "cold": {
+      "lcpMs": 592,
+      "cls": 0.7137915478448644,
+      "longTaskCount": 2,
+      "longestTaskMs": 120,
+      "domNodes": 3103,
+      "jsHeapBytes": 58292228,
+      "taskDurationMs": 697.635,
+      "scriptDurationMs": 83.751,
+      "layoutDurationMs": 38.866,
+      "domContentLoadedMs": 413.30000000074506,
+      "loadMs": 480.90000000037253,
+      "requestCount": 250
+    },
+    "warm": {
+      "lcpMs": 324,
+      "cls": 0.7135345747331532,
+      "longTaskCount": 1,
+      "longestTaskMs": 81,
+      "domNodes": 3103,
+      "jsHeapBytes": 68898044,
+      "taskDurationMs": 579.571,
+      "scriptDurationMs": 50.9,
+      "layoutDurationMs": 27.724,
+      "domContentLoadedMs": 271.80000000074506,
+      "loadMs": 313.5,
+      "requestCount": 250
+    }
+  },
+  "notes": "DOM 3103 breaches 3000 hard; CLS ~0.71 tied worst. Third-party 38 (external logo hosts). LCP 592/324ms — best warm LCP measured. INP unmeasured; TBT proxy used. Dev transfer/script bytes are vite artifacts — not prod budgets."
+}
