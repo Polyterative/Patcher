@@ -73,27 +73,46 @@ describe('MarketplaceBrowserComponent', () => {
     expect(host.querySelector('[data-testid="marketplace-active-chips"]')?.textContent).toContain('Make Noise');
   });
 
+  it('exposes the max HP filter as a removable active chip', () => {
+    fixture.componentInstance.updateFilter('maxHp', '15');
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('[data-testid="marketplace-active-chips"]')?.textContent).toContain('Max 15 HP');
+    expect(host.querySelector('[data-testid="marketplace-empty"]')).not.toBeNull();
+
+    fixture.componentInstance.clearFilter('maxHp');
+    fixture.detectChanges();
+
+    expect(host.querySelector('[data-testid="marketplace-active-chips"]')).toBeNull();
+    expect(host.querySelector('[data-testid="marketplace-grid"]')).not.toBeNull();
+  });
+
   it('shows currency selection before enabling price filters', () => {
     const host = fixture.nativeElement as HTMLElement;
-    const priceInputs = () => host.querySelectorAll<HTMLInputElement>('input[type="number"]');
+    const priceInputs = () => ['Min price', 'Max price'].map(label => {
+      const field = Array.from(host.querySelectorAll('lib-mat-form-entity'))
+        .find(element => element.textContent?.includes(label));
+      return field?.querySelector('input');
+    });
 
     expect(host.textContent).toContain('Select a currency to enable price range and price sorting.');
-    expect(priceInputs()[0].disabled).toBeTrue();
-    expect(priceInputs()[1].disabled).toBeTrue();
+    expect(priceInputs()[0]?.disabled).toBeTrue();
+    expect(priceInputs()[1]?.disabled).toBeTrue();
 
     fixture.componentInstance.updateFilter('currency', 'EUR');
     fixture.detectChanges();
 
-    expect(priceInputs()[0].disabled).toBeFalse();
-    expect(priceInputs()[1].disabled).toBeFalse();
+    expect(priceInputs()[0]?.disabled).toBeFalse();
+    expect(priceInputs()[1]?.disabled).toBeFalse();
     expect(host.querySelector('[data-testid="marketplace-active-chips"]')?.textContent).toContain('Currency: EUR');
 
     fixture.componentInstance.clearFilter('currency');
     fixture.detectChanges();
 
     expect(host.textContent).toContain('Select a currency to enable price range and price sorting.');
-    expect(priceInputs()[0].disabled).toBeTrue();
-    expect(priceInputs()[1].disabled).toBeTrue();
+    expect(priceInputs()[0]?.disabled).toBeTrue();
+    expect(priceInputs()[1]?.disabled).toBeTrue();
   });
 
   it('preserves the browse return URL when login is required', () => {

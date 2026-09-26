@@ -35,6 +35,7 @@ export interface MarketplaceBrowserFields {
   condition: MarketplaceSelectField;
   currency: MarketplaceSelectField;
   manufacturer: MarketplaceSelectField;
+  maxHp: MarketplaceTextField;
   maxPrice: MarketplaceTextField;
   minPrice: MarketplaceTextField;
   query: MarketplaceTextField;
@@ -81,6 +82,7 @@ export function createMarketplaceBrowserFields({
     ),
     minPrice: textField('minPrice', 'Min price', '7rem', FormTypes.NUMBER),
     maxPrice: textField('maxPrice', 'Max price', '7rem', FormTypes.NUMBER),
+    maxHp: textField('maxHp', 'Max width (HP)', '7rem', FormTypes.NUMBER),
     shipsFromCountry: selectField(
       'shipsFromCountry',
       'Ships from',
