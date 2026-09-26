@@ -65,6 +65,13 @@
             ></lib-mat-form-entity>
 
             <lib-mat-form-entity
+              [control]="dataService.fields.maxHp.control"
+              [type]="dataService.fields.maxHp.type"
+              [label]="dataService.fields.maxHp.label"
+              iconL1="straighten"
+            ></lib-mat-form-entity>
+
+            <lib-mat-form-entity
               [control]="dataService.fields.currency.control"
               [type]="dataService.fields.currency.type"
               [options$]="dataService.fields.currency.options$"

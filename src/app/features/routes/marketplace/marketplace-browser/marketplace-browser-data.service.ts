@@ -177,6 +177,12 @@ export class MarketplaceBrowserDataService extends SubManager {
       takeUntil(this.destroy$)
     ).subscribe();
 
+    this.fields.maxHp.control.valueChanges.pipe(
+      distinctUntilChanged(),
+      tap(value => this.setFilter$.next({key: 'maxHp', value})),
+      takeUntil(this.destroy$)
+    ).subscribe();
+
     this.fields.maxPrice.control.valueChanges.pipe(
       distinctUntilChanged(),
       tap(value => this.setFilter$.next({key: 'maxPrice', value})),
@@ -320,6 +326,7 @@ export class MarketplaceBrowserDataService extends SubManager {
     this.fields.currency.control.patchValue(optionForFilter(filters.currency, 'All currencies'), patchOptions);
     this.fields.minPrice.control.patchValue(filters.minPrice, patchOptions);
     this.fields.maxPrice.control.patchValue(filters.maxPrice, patchOptions);
+    this.fields.maxHp.control.patchValue(filters.maxHp, patchOptions);
     this.fields.shipsFromCountry.control.patchValue(optionForFilter(filters.shipsFromCountry, 'All countries / global'), patchOptions);
     this.fields.shippingOption.control.patchValue(optionForFilter(filters.shippingOption, 'Any shipping option'), patchOptions);
     this.fields.sort.control.patchValue(

@@ -153,6 +153,25 @@ describe('MarketplaceBrowserDataService', () => {
     expect(activeMarketplaceListings).toHaveBeenCalledTimes(1);
   });
 
+  it('applies a max HP bound locally without another backend call', async () => {
+    activeMarketplaceListings.and.returnValue(of([
+      createMarketplaceListing(),
+      createMarketplaceListing({
+        id: 'listing-2',
+        module: createMarketplaceModule({hp: 12, id: 202, name: 'Plaits'}),
+        publicId: 'plaits-public'
+      })
+    ]));
+
+    service.load$.next();
+    service.setFilter$.next({key: 'maxHp', value: '15'});
+    const vm = await firstValueFrom(service.vm$.pipe(take(1)));
+
+    expect(vm.listings.map(listing => listing.publicId)).toEqual(['plaits-public']);
+    expect(vm.activeChips.map(chip => chip.label)).toEqual(['Max 15 HP']);
+    expect(activeMarketplaceListings).toHaveBeenCalledTimes(1);
+  });
+
   it('requires a selected currency before applying price filters or price sort', async () => {
     activeMarketplaceListings.and.returnValue(of([
       createMarketplaceListing({
