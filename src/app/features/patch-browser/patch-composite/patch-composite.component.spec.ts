@@ -34,6 +34,7 @@ describe('PatchCompositeComponent', () => {
     const stats = {
       totalCables: 10,
       uniqueModules: 5,
+      totalInstances: 5,
       multiplesCount: 2,
       avgCablesPerModule: 2,
       annotatedConnections: 3
@@ -74,6 +75,17 @@ describe('PatchCompositeComponent', () => {
       const rows = comp.buildStatRows(stats);
       const multiples = rows[0][0].items.find(i => i.label === 'Multiples');
       expect(multiples?.hidden).toBeFalse();
+    });
+
+    it('memoizes rows by stats reference so template change detection keeps DOM identities stable', () => {
+      const first = comp.buildStatRows(stats);
+      const second = comp.buildStatRows(stats);
+
+      expect(second).toBe(first);
+
+      const recomputed = comp.buildStatRows({ ...stats });
+      expect(recomputed).not.toBe(first);
+      expect(recomputed).toEqual(first);
     });
   });
 });
