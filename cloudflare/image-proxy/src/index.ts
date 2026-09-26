@@ -5,8 +5,8 @@ export interface ImageProxyEnv {
   EDGE_CACHE_TTL_SECONDS?: string;
 }
 
-const DEFAULT_SUPABASE_STORAGE_ORIGIN = 'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public';
-const DEFAULT_ALLOWED_BUCKETS = [
+export const DEFAULT_SUPABASE_STORAGE_ORIGIN = 'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public';
+export const DEFAULT_ALLOWED_BUCKETS = [
   'module-panels',
   'racks',
   'manufacturer-logos',
@@ -14,8 +14,8 @@ const DEFAULT_ALLOWED_BUCKETS = [
   'patches',
   'marketplace-listings',
 ];
-const DEFAULT_BROWSER_CACHE_TTL_SECONDS = 604800;
-const DEFAULT_EDGE_CACHE_TTL_SECONDS = 2592000;
+export const DEFAULT_BROWSER_CACHE_TTL_SECONDS = 604800;
+export const DEFAULT_EDGE_CACHE_TTL_SECONDS = 2592000;
 
 export function allowedBuckets(env: ImageProxyEnv): Set<string> {
   const configuredBuckets = env.ALLOWED_BUCKETS
