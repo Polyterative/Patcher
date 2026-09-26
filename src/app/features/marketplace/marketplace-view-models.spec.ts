@@ -65,6 +65,7 @@ describe('marketplace view models', () => {
       condition: 'excellent',
       currency: 'EUR',
       manufacturer: 'Make Noise',
+      maxHp: '',
       maxPrice: '1300',
       minPrice: '1000',
       query: 'maths',
@@ -95,6 +96,7 @@ describe('marketplace view models', () => {
       condition: 'excellent',
       currency: 'EUR',
       manufacturer: '',
+      maxHp: '',
       maxPrice: '',
       minPrice: '1000',
       query: '',
@@ -105,6 +107,7 @@ describe('marketplace view models', () => {
       condition: '',
       currency: 'EUR',
       manufacturer: '',
+      maxHp: '',
       maxPrice: '',
       minPrice: '',
       query: '',
@@ -133,6 +136,7 @@ describe('marketplace view models', () => {
       condition: '',
       currency: '',
       manufacturer: '',
+      maxHp: '',
       maxPrice: '200',
       minPrice: '50',
       query: '',
@@ -173,6 +177,7 @@ describe('marketplace view models', () => {
       condition: '',
       currency: 'EUR',
       manufacturer: '',
+      maxHp: '',
       maxPrice: '1200',
       minPrice: '800',
       query: '',
@@ -181,5 +186,45 @@ describe('marketplace view models', () => {
     }, 'price-high');
 
     expect(filtered.map(listing => listing.publicId)).toEqual(['eur-affordable']);
+  });
+
+  it('filters by max module width while keeping listings without a linked module', () => {
+    const wide = buildMarketplaceCardViewModel(createMarketplaceListing(), now);
+    const narrow = buildMarketplaceCardViewModel(createMarketplaceListing({
+      id: 'listing-narrow',
+      module: createMarketplaceModule({hp: 12, id: 202, name: 'Plaits'}),
+      publicId: 'narrow-public'
+    }), now);
+    const moduleless = buildMarketplaceCardViewModel(createMarketplaceListing({
+      id: 'listing-moduleless',
+      moduleId: 0,
+      module: null,
+      publicId: 'moduleless-public'
+    }), now);
+
+    const filtered = filterAndSortMarketplaceListings([wide, narrow, moduleless], {
+      condition: '',
+      currency: '',
+      manufacturer: '',
+      maxHp: '15',
+      maxPrice: '',
+      minPrice: '',
+      query: '',
+      shippingOption: '',
+      shipsFromCountry: ''
+    }, 'newest');
+
+    expect(filtered.map(listing => listing.publicId)).toEqual(['narrow-public', 'moduleless-public']);
+    expect(marketplaceFilterChips({
+      condition: '',
+      currency: '',
+      manufacturer: '',
+      maxHp: '15',
+      maxPrice: '',
+      minPrice: '',
+      query: '',
+      shippingOption: '',
+      shipsFromCountry: ''
+    }).map(chip => chip.label)).toEqual(['Max 15 HP']);
   });
 });
