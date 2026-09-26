@@ -171,5 +171,4 @@
 - [ ] **ON HOLD: MEDIUM: Pagination id tie-breaker (fix `3edd622d` is in `origin/develop`; tie-breaker specs 84/84 green 2026-09-18 — awaiting owner live-results verification before closing; push is moot, close is owner-confirmed)** → [GitHub issue #131](https://github.com/Polyterative/Patcher/issues/131)
 - [ ] **ON HOLD: SEO — OG Image Generation** → [`plans/on-seo-og-image-generation.md`](./plans/on-seo-og-image-generation.md)
 - [ ] **LOWEST: PostHog UI interaction analytics review (needs credentials/export later)** → [`plans/posthog-ui-interaction-analytics-review.md`](./plans/posthog-ui-interaction-analytics-review.md)
-- [ ] **LOW: Rack "add row" has no maximum row count** (found in 2026-08-13 discovery swarm, deferred).
 - [x] **Accepted limitation (not a bug): patch-connection optimistic rollback (`26c9c88e`) does not guarantee restoring the absolute last-confirmed-backend state after a chain of 3+ consecutive failed syncs — each failure restores only its own nearest pre-mutation snapshot; every failure still surfaces an error, so no data loss is silent. Disclosed intentionally so it isn't rediscovered as a regression.**
