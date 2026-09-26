@@ -48,3 +48,12 @@ Blocked: needs either a local API credential or a user-provided CSV/JSON export.
 Recommended default: DECLINE/DEFER — close as "on hold until owner cares about analytics", no credential handoff. Rationale: zero production impact, purely opportunistic product-insight work; handing over credentials now buys nothing while higher slices are open.
 
 Decline consequence: no usage/drop-off/dead-surface analysis and no instrumentation follow-ups; nothing breaks, nothing stays exposed.
+
+## Decision log
+
+- 2026-09-25: drafted as a single copy-paste owner message so the three stale
+  pending questions (security Q1–Q4, R2 switch/cleanup, PostHog credentials) can
+  be cleared with one reply; no code, migration, deletion, or provisioning is
+  authorized off this batch — each approval executes only in its own gated window.
+- 2026-09-26: linked from `TODO.md` Approvals ledger so the doc is reachable
+  (docs lint D5) and carries its own Decision log (docs lint D3).
