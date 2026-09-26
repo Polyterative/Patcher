@@ -120,6 +120,9 @@
 - [ ] Rack editor — hide preview/JPEG actions and Options FAB while editing — `public-behavioral`;
   commits: `73a944f7`, `6c120e6b`;
   docs: `Patcher-docs racks pages (named at publication)`; screenshots: `none`; release evidence: pending
+- [ ] Rack editor — row cap at 8 (`MAX_RACK_ROWS`, blocked add/duplicate guards + disabled Add-row button/tooltip) — `public-behavioral`;
+  commits: `0091c2ab`;
+  docs: `Patcher-docs racks pages (named at publication)`; screenshots: `none`; release evidence: pending
 - [ ] Marketplace — relist vs first-listing copy + close-behavior guidance — `public-behavioral`, feature-flagged `marketplaceEnabled`;
   commits: `2c032635`;
   docs: `Patcher-docs marketplace pages (named at publication)`; screenshots: `none`; release evidence: pending
