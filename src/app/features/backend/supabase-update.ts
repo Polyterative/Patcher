@@ -169,7 +169,7 @@ export function createUpdateNamespace(
           remapErrors()
         );
       }),
-      cacheBust(['rackWithId'])
+      cacheBust(['rackWithId', 'racksMinimal'])
     ),
     
     rackModulePanel: (rackModuleId: number, panelId: number | null) => getUserSession$().pipe(
@@ -177,7 +177,7 @@ export function createUpdateNamespace(
         if (!user) return throwError(() => new Error('Authentication required'));
         return rxFrom(supabase.from(DbPaths.rack_modules).update({selected_panel_id: panelId}).eq('id', rackModuleId)).pipe(remapErrors());
       }),
-      cacheBust(['rackWithId'])
+      cacheBust(['rackWithId', 'racksMinimal'])
     ),
 
     rackModuleOrientation: (rackModuleId: number, orientation: RackModuleOrientation = DEFAULT_RACK_MODULE_ORIENTATION) => getUserSession$().pipe(
@@ -188,7 +188,7 @@ export function createUpdateNamespace(
         ).pipe(remapErrors());
       }),
       throwIfSupabaseError(),
-      cacheBust(['rackWithId'])
+      cacheBust(['rackWithId', 'racksMinimal'])
     ),
 
     rack: (data: RackMinimal) => getUserSession$().pipe(

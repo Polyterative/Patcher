@@ -310,7 +310,7 @@ export function createAddNamespace(
             .select('id,moduleid,rackid,row,column,selected_panel_id,orientation')
         );
       }),
-      cacheBust(['rackWithId']),
+      cacheBust(['rackWithId', 'racksMinimal']),
       remapErrors()
     ),
 
