@@ -676,6 +676,7 @@ describe('SupabaseService - update extended', () => {
       service.update.rackModulePanel(1, 3).subscribe({
         next: () => {
           expect(bustedKeys).toContain('rackWithId');
+          expect(bustedKeys).toContain('racksMinimal');
           done();
         },
         error: (err: unknown) => {
@@ -740,6 +741,7 @@ describe('SupabaseService - update extended', () => {
       service.update.rackModuleOrientation(1, 'normal').subscribe({
         next: () => {
           expect(bustedKeys).toContain('rackWithId');
+          expect(bustedKeys).toContain('racksMinimal');
           done();
         },
         error: (err: unknown) => {

@@ -271,7 +271,7 @@ export function createDeleteNamespace(
             .filter('id', 'eq', id)
         );
       }),
-      cacheBust(['rackWithId']),
+      cacheBust(['rackWithId', 'racksMinimal']),
       remapErrors()
     ),
 
@@ -287,7 +287,7 @@ export function createDeleteNamespace(
               .in('id', ids)
           );
         }),
-        cacheBust(['rackWithId']),
+        cacheBust(['rackWithId', 'racksMinimal']),
         remapErrors()
       );
     },
@@ -301,7 +301,7 @@ export function createDeleteNamespace(
             .filter('rackid', 'eq', rackId)
         );
       }),
-      cacheBust(['rackWithId']),
+      cacheBust(['rackWithId', 'racksMinimal']),
       remapErrors()
     ),
     
