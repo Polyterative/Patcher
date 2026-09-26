@@ -12,6 +12,7 @@ const DEFAULT_ALLOWED_BUCKETS = [
   'manufacturer-logos',
   'module-collections',
   'patches',
+  'marketplace-listings',
 ];
 const DEFAULT_BROWSER_CACHE_TTL_SECONDS = 604800;
 const DEFAULT_EDGE_CACHE_TTL_SECONDS = 2592000;
