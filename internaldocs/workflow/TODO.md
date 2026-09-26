@@ -93,6 +93,7 @@
   security docs: `internaldocs/security/rls-hardening.md`, Approval queue section;
   answer there or here) (added 2026-08-10).
 - [ ] Cloudflare/R2: authorize traffic switch, cleanup, and any Supabase object deletion after the approved copy/verification stage (added 2026-07-08).
+- [ ] Cloudflare/R2 filename versioning: approve versioned/content-addressed media filenames before any TTL lengthening or R2 reassessment; recommended default is content-hash names for new uploads only, existing objects keep current TTLs with manual dashboard purge and no recompression/re-upload ([GitHub issue #156](https://github.com/Polyterative/Patcher/issues/156)) (added 2026-09-26).
 - [ ] PostHog analytics review: provide credentials/export access (added 2026-07-08).
 - Consolidated owner message for the three stale questions above: [owner batch draft](./plans/owner-batch-pending-questions.md) (added 2026-09-25).
 

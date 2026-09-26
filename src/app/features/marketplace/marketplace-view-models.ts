@@ -9,6 +9,7 @@ export interface MarketplaceBrowseFilters {
   condition: string;
   currency: string;
   manufacturer: string;
+  maxHp: string;
   maxPrice: string;
   minPrice: string;
   query: string;
@@ -70,6 +71,7 @@ export const EMPTY_MARKETPLACE_BROWSE_FILTERS: MarketplaceBrowseFilters = {
   condition: '',
   currency: '',
   manufacturer: '',
+  maxHp: '',
   maxPrice: '',
   minPrice: '',
   query: '',
@@ -196,6 +198,7 @@ export function filterAndSortMarketplaceListings(
   const priceControlsEnabled = marketplacePriceControlsEnabled(filters);
   const minPrice = priceControlsEnabled ? parsePriceBoundary(filters.minPrice) : null;
   const maxPrice = priceControlsEnabled ? parsePriceBoundary(filters.maxPrice) : null;
+  const maxHp = parseHpBoundary(filters.maxHp);
   const effectiveSort = effectiveMarketplaceSort(sort, filters);
 
   const filtered = listings.filter(listing => {
@@ -221,6 +224,11 @@ export function filterAndSortMarketplaceListings(
       return false;
     }
     if (maxPrice !== null && listing.priceMajor > maxPrice) {
+      return false;
+    }
+    // Listings without a linked module carry no width; they pass the HP bound
+    // because unknown width cannot prove a misfit.
+    if (maxHp !== null && listing.module !== null && listing.module.hp > maxHp) {
       return false;
     }
 
@@ -255,6 +263,9 @@ export function marketplaceFilterChips(filters: MarketplaceBrowseFilters): Marke
   }
   if (filters.currency && filters.maxPrice.trim()) {
     chips.push({key: 'maxPrice', label: `Max ${ filters.currency } ${ filters.maxPrice.trim() }`});
+  }
+  if (filters.maxHp.trim()) {
+    chips.push({key: 'maxHp', label: `Max ${ filters.maxHp.trim() } HP`});
   }
   return chips;
 }
@@ -342,6 +353,15 @@ function parsePriceBoundary(value: string): number | null {
   }
   const parsed = Number(trimmed);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+}
+
+function parseHpBoundary(value: string): number | null {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+  const parsed = Number(trimmed);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
 const fractionDigitsFormatterCache = new Map<string, Intl.NumberFormat>();
