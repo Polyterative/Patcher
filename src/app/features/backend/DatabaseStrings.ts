@@ -115,6 +115,7 @@ export class QueryJoins {
   static rackDisplayModuleColumns: string = `
     id,
     name,
+    description,
     hp,
     weight,
     depth,
