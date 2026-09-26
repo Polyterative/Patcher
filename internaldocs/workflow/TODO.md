@@ -94,6 +94,7 @@
   answer there or here) (added 2026-08-10).
 - [ ] Cloudflare/R2: authorize traffic switch, cleanup, and any Supabase object deletion after the approved copy/verification stage (added 2026-07-08).
 - [ ] PostHog analytics review: provide credentials/export access (added 2026-07-08).
+- Consolidated owner message for the three stale questions above: [owner batch draft](./plans/owner-batch-pending-questions.md) (added 2026-09-25).
 
 ### Denials / permanent constraints
 
