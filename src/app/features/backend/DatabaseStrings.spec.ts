@@ -87,6 +87,11 @@ describe('QueryJoins', () => {
     expect(QueryJoins.module_fk_rackmodules).toContain('ins:module_ins');
     expect(QueryJoins.module_fk_rackmodules).toContain('outs:module_outs');
   });
+
+  it('rack display module columns include description for signal analysis classification', () => {
+    expect(QueryJoins.rackDisplayModuleColumns).toContain('description');
+    expect(QueryJoins.module_fk_rackmodules).toContain('description');
+  });
   
   it('module_panels join string contains the module_panels table reference', () => {
     expect(QueryJoins.module_panels).toContain('module_panels');
