@@ -357,6 +357,20 @@ describe('RackBrowserDetailViewComponent', () => {
     expect(spaceGroup.items[1].value).toBe('66');
   });
 
+  it('memoizes summary stat rows by input reference so template change detection keeps DOM identities stable', () => {
+    const rack = makeRackMinimal({hp: 84, rows: 1});
+    const modules = [[makeRackedModule(301, 10, 50, -20, 0)]];
+
+    const first = component.rackSummaryStatRows(rack, modules);
+    const second = component.rackSummaryStatRows(rack, modules);
+
+    expect(second).toBe(first);
+
+    const recomputed = component.rackSummaryStatRows(makeRackMinimal({hp: 84, rows: 1}), modules);
+    expect(recomputed).not.toBe(first);
+    expect(recomputed).toEqual(first);
+  });
+
   describe('SEO metadata', () => {
     it('calls updateSeo with rack title and description when data arrives', () => {
       singleRackData$.next(makeRack({

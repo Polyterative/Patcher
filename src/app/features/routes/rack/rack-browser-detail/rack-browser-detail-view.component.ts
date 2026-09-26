@@ -157,6 +157,30 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
   }
 
   rackSummaryStatRows(data: RackMinimal, rowedRackedModules: RackedModule[][]): EntityStatGroup[][] {
+    // Memoized by input reference: the template invokes this on every change-detection
+    // cycle, and entity-stat-card tracks inner groups by identity — a fresh array per
+    // cycle destroys/recreates the whole stat DOM (NG0956). Async-pipe inputs keep
+    // stable references between emissions, so the cache holds until data changes.
+    if (
+      this.lastStatRows !== null &&
+      this.lastStatRowsData === data &&
+      this.lastStatRowsModules === rowedRackedModules
+    ) {
+      return this.lastStatRows;
+    }
+
+    const rows = this.buildRackSummaryStatRows(data, rowedRackedModules);
+    this.lastStatRowsData = data;
+    this.lastStatRowsModules = rowedRackedModules;
+    this.lastStatRows = rows;
+    return rows;
+  }
+
+  private lastStatRowsData: RackMinimal | null = null;
+  private lastStatRowsModules: RackedModule[][] | null = null;
+  private lastStatRows: EntityStatGroup[][] | null = null;
+
+  private buildRackSummaryStatRows(data: RackMinimal, rowedRackedModules: RackedModule[][]): EntityStatGroup[][] {
     const rackModules = rowedRackedModules.flat().filter(module => !isBlankModule(module.module.id));
     const totalModules = rackModules.length;
     const usedHp = rackModules.reduce((sum, module) => sum + module.module.hp, 0);
