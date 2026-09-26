@@ -10,6 +10,7 @@ import {
   PatchMinimalViewConfig
 } from 'src/app/components/patch-parts/patch-minimal/patch-minimal.component';
 import { EntityStatGroup } from 'src/app/components/shared-atoms/entity-stat-card/entity-stat-card.component';
+import { PatchConnectionStats } from 'src/app/components/patch-parts/patch-connection-stats.pipe';
 import { Patch } from 'src/app/models/patch';
 
 
@@ -43,8 +44,17 @@ export class PatchCompositeComponent {
     public dataService: PatchDetailDataService
   ) {}
 
-  buildStatRows(stats: { totalCables: number; uniqueModules: number; multiplesCount: number; avgCablesPerModule: number; annotatedConnections: number }): EntityStatGroup[][] {
-    return [[{
+  buildStatRows(stats: PatchConnectionStats): EntityStatGroup[][] {
+    // Memoized by input reference: the template invokes this on every change-detection
+    // cycle (the patch graph tick drives CD constantly), and entity-stat-card tracks
+    // groups by identity — a fresh array per cycle destroys/recreates the stat DOM
+    // (NG0956). The patchConnectionStats pipe emits a stable object until connections
+    // change, so the cache holds across tick-driven cycles.
+    if (this.lastStatRows !== null && this.lastStatRowsStats === stats) {
+      return this.lastStatRows;
+    }
+
+    const rows: EntityStatGroup[][] = [[{
       title: 'Patch statistics',
       items: [
         { label: 'Cables', value: `${stats.totalCables}`, icon: 'cable' },
@@ -54,5 +64,11 @@ export class PatchCompositeComponent {
         { label: 'Annotated', value: `${stats.annotatedConnections}`, icon: 'edit_note', hidden: stats.annotatedConnections === 0 }
       ]
     }]];
+    this.lastStatRowsStats = stats;
+    this.lastStatRows = rows;
+    return rows;
   }
+
+  private lastStatRowsStats: PatchConnectionStats | null = null;
+  private lastStatRows: EntityStatGroup[][] | null = null;
 }
