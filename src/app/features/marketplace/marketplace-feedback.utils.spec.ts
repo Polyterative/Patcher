@@ -118,6 +118,25 @@ describe('marketplace-feedback.utils', () => {
     });
   });
 
+  it('ignores empty, case-variant, and sentiment-less aggregation entries', () => {
+    expect(aggregateMarketplaceFeedbackSentiments([])).toEqual({
+      positive: 0,
+      neutral: 0,
+      negative: 0
+    });
+    expect(aggregateMarketplaceFeedbackSentiments([
+      { sentiment: 'Positive' },
+      { sentiment: 'POSITIVE' },
+      {},
+      { sentiment: 1 },
+      { sentiment: 'neutral' }
+    ])).toEqual({
+      positive: 0,
+      neutral: 1,
+      negative: 0
+    });
+  });
+
   it('returns zero counts for malformed aggregation input', () => {
     expect(aggregateMarketplaceFeedbackSentiments(null)).toEqual({
       positive: 0,
