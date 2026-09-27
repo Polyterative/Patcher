@@ -664,21 +664,21 @@ html.dark {
     color: rgba(143, 184, 232, 0.75);
   }
 
-  .module-browser-submit-fab {
-    background: #1b2431;
-    border-color: #5a86b5;
-    color: #dbe7f5;
-  }
-
-  .module-browser-submit-fab:hover {
-    background: #243043;
-  }
+  // NOTE: .module-browser-submit-fab is theme-aware via mat-sys tokens in the
+  // component stylesheet — no manual dark background/border override needed.
 }
 
 // ── Pass 3c: browser / editor / detail white panels ───────────────────────────
 html.dark {
+  // Dark shadow lift for floating actions (base colors are theme-aware via
+  // mat-sys tokens; only the shadow needs a dark boost).
   .module-browser-submit-fab,
-  .edit-fab__button {
+  app-edit-fab button,
+  .module-detail-save-floating-action,
+  .module-submit-similar-fab,
+  .manufacturer-detail-submit-fab,
+  .marketplace-browser__login-fab,
+  .rackEditorFloatingOptions__toggle {
     box-shadow: 0 0.25rem 0.9rem rgba(0, 0, 0, 0.5);
   }
 
@@ -993,20 +993,8 @@ html.dark {
     background: #243043 !important; // px-ok: dark hover lift
   }
 
-  .module-detail-save-floating-action {
-    background: #1b2431;
-    border-color: #5a86b5;
-    color: #dbe7f5;
-  }
-
-  .module-detail-save-floating-action:hover:not(:disabled) {
-    background: #243043;
-  }
-
-  .module-detail-save-floating-action:disabled {
-    background: #141a24;
-    color: rgba(158, 178, 199, 0.55);
-  }
+  // NOTE: .module-detail-save-floating-action is theme-aware via mat-sys
+  // tokens in the component stylesheet — no manual dark override needed.
 
   .module-detail-acquisition-row,
   .module-panel-ratio-row {
@@ -1050,25 +1038,8 @@ html.dark {
     color: #e89a9a;
   }
 
-  // Rack/patch editor chrome: frosted controls that glare on dark canvas.
-  .rackEditorResponsiveActions__button,
-  .rackEditorFloatingOptions__panel,
-  .rackEditorFloatingOptions__quickToggle,
-  .rackEditorFloatingOptions__analysisModeButton,
-  .rackEditorFloatingOptions__actionButton {
-    background: rgba(27, 36, 49, 0.9);
-    border-color: rgba(148, 184, 220, 0.25);
-    color: rgba(215, 228, 242, 0.9);
-  }
-
-  .rackEditorFloatingOptions__actionButton:hover,
-  .rackEditorFloatingOptions__actionButton:focus-visible,
-  .rackEditorResponsiveActions__button:hover,
-  .rackEditorResponsiveActions__button:focus-visible {
-    background: rgba(35, 46, 61, 0.96);
-    border-color: rgba(148, 184, 220, 0.45);
-  }
-
+  // Rack/patch editor chrome: base floating surfaces are theme-aware via
+  // mat-sys tokens — only state accents need dark tuning below.
   .rackEditorFloatingOptions__analysisModeButton--active,
   .rackEditorFloatingOptions__analysisFocusButton--active {
     background: rgba(143, 184, 232, 0.16);
@@ -1082,16 +1053,10 @@ html.dark {
     color: #7cc78f;
   }
 
-  .rackEditorFloatingOptions__toggle {
-    background: #1b2431;
-    border-color: #5a86b5;
-    color: #dbe7f5;
-  }
-
   .rackEditorResponsiveActions__touchGuide {
-    background: linear-gradient(180deg, rgba(27, 36, 49, 0.96), rgba(21, 28, 38, 0.94));
-    border-color: var(--app-border);
-    color: rgba(215, 228, 242, 0.9);
+    background: var(--mat-sys-surface-container-high, var(--app-surface-translucent-strong));
+    border-color: var(--mat-sys-outline-variant, var(--app-border));
+    color: var(--mat-sys-on-surface, var(--app-ink));
   }
 
   .rowPowerPanel {
@@ -1149,24 +1114,9 @@ html.dark {
     color: rgba(198, 213, 230, 0.75);
   }
 
-  // Marketplace / manufacturer / user-area sheets sharing the white-FAB pattern.
-  .marketplace-browser__login-fab,
-  .manufacturer-detail-submit-fab,
-  .manufacturer-website-btn {
-    background: #1b2431;
-    border-color: #5a86b5;
-    color: #dbe7f5;
-  }
-
-  .marketplace-browser__login-fab:hover,
-  .manufacturer-detail-submit-fab:hover,
-  .manufacturer-website-btn:hover {
-    background: #243043;
-  }
-
-  .manufacturer-website-btn {
-    color: #dbe7f5 !important; // px-ok: overrides light !important type color
-  }
+  // Marketplace / manufacturer floating actions are theme-aware via mat-sys
+  // tokens in their component stylesheets — no manual dark override needed.
+  // .manufacturer-website-btn keeps its light !important border/type via tokens.
 
   .user-profile-card__status,
   .user-area-utility-search {
@@ -1243,12 +1193,12 @@ html.dark {
 
   // Floating selection panel + discovery tips.
   .panel-card {
-    background: rgba(21, 28, 38, 0.96);
-    border-color: rgba(148, 184, 220, 0.22);
-    color: rgba(215, 228, 242, 0.92);
+    background: var(--mat-sys-surface-container-high, var(--app-surface-translucent-strong));
+    border-color: var(--mat-sys-outline-variant, var(--app-border));
+    color: var(--mat-sys-on-surface, var(--app-ink));
     box-shadow:
-      0 0.45rem 1.4rem rgba(0, 0, 0, 0.5),
-      inset 0 0 0 0.0625rem rgba(148, 184, 220, 0.08);
+      var(--app-floating-surface-shadow-strong, 0 0.45rem 1.4rem rgba(0, 0, 0, 0.5)),
+      inset 0 0 0 0.0625rem color-mix(in srgb, var(--mat-sys-outline-variant, var(--app-border)) 20%, transparent);
   }
 
   // Device-frame browser chrome around embedded previews.

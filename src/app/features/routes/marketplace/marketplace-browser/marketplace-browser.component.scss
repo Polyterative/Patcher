@@ -59,15 +59,15 @@
   right: calc(var(--app-floating-inset-inline, 1rem) + env(safe-area-inset-right));
   bottom: calc(var(--app-floating-inset-block, 1rem) + env(safe-area-inset-bottom) + var(--app-floating-bottom-offset, 0px));
   z-index: 98;
-  border: 0.125rem solid #3e638a;
+  border: 0.125rem solid var(--mat-sys-outline-variant, var(--app-border-strong, #3e638a));
   border-radius: var(--app-floating-action-radius, 1.75rem);
-  background: #ffffff;
-  color: #224b75;
+  background: var(--mat-sys-surface-container-high, var(--app-surface, #ffffff));
+  color: var(--mat-sys-primary, var(--app-link, #224b75));
   box-shadow: var(--app-floating-action-shadow, 0 0.25rem 0.875rem rgba(38, 76, 116, 0.22));
   white-space: nowrap;
 
   &:hover {
-    background: #f2f7fc;
+    background: var(--mat-sys-surface-container-highest, var(--app-surface-2, #f2f7fc));
   }
 }
 
