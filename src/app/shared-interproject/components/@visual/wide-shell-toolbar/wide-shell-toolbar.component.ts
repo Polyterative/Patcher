@@ -16,7 +16,6 @@ import {
 } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ThemeToggleComponent } from '../theme-toggle/theme-toggle.component';
 import {
   combineLatest,
   Observable
@@ -51,8 +50,7 @@ import { normalizeUrlPath } from 'src/app/shared-interproject/url-path.util';
     CommonModule,
     MatIconModule,
     MatTooltipModule,
-    RouterModule,
-    ThemeToggleComponent
+    RouterModule
   ],
   templateUrl: './wide-shell-toolbar.component.html',
   styleUrls: ['./wide-shell-toolbar.component.scss'],
