@@ -1,6 +1,7 @@
 import {
   MARKETPLACE_FEEDBACK_BODY_MAX_LENGTH,
   MARKETPLACE_FEEDBACK_WINDOW_DAYS,
+  aggregateMarketplaceFeedbackSentiments,
   canLeaveMarketplaceFeedback,
   isMarketplaceFeedbackVisible,
   summarizeMarketplaceTrustBand,
@@ -100,6 +101,34 @@ describe('marketplace-feedback.utils', () => {
     expect(`${summary.label} ${summary.copy}`).not.toContain('star');
     expect(`${summary.label} ${summary.copy}`).not.toContain('score');
     expect(`${summary.label} ${summary.copy}`).not.toContain('leaderboard');
+  });
+
+  it('aggregates only whitelisted feedback sentiments', () => {
+    expect(aggregateMarketplaceFeedbackSentiments([
+      { sentiment: 'positive' },
+      { sentiment: 'neutral' },
+      { sentiment: 'positive' },
+      { sentiment: 'negative' },
+      { sentiment: 'excellent' },
+      null
+    ])).toEqual({
+      positive: 2,
+      neutral: 1,
+      negative: 1
+    });
+  });
+
+  it('returns zero counts for malformed aggregation input', () => {
+    expect(aggregateMarketplaceFeedbackSentiments(null)).toEqual({
+      positive: 0,
+      neutral: 0,
+      negative: 0
+    });
+    expect(aggregateMarketplaceFeedbackSentiments('not feedback')).toEqual({
+      positive: 0,
+      neutral: 0,
+      negative: 0
+    });
   });
 
   it('normalizes positive feedback without a body', () => {

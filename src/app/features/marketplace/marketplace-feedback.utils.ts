@@ -59,6 +59,12 @@ export interface MarketplaceTrustBandSummary {
   copy: string;
 }
 
+export interface MarketplaceFeedbackSentimentCounts {
+  positive: number;
+  neutral: number;
+  negative: number;
+}
+
 const DEFAULT_SAME_PAIR_FEEDBACK_CAP = 3;
 const NEW_SELLER_COMPLETED_TRANSACTION_THRESHOLD = 3;
 const FEEDBACK_ELIGIBLE_COMPLETED_STATUSES = new Set([
@@ -183,6 +189,27 @@ export function summarizeMarketplaceTrustBand(input: MarketplaceTrustBandInput):
     copy: 'Completed marketplace feedback is generally constructive.',
     label: 'Steady seller'
   };
+}
+
+export function aggregateMarketplaceFeedbackSentiments(input: unknown): MarketplaceFeedbackSentimentCounts {
+  const counts: MarketplaceFeedbackSentimentCounts = {
+    positive: 0,
+    neutral: 0,
+    negative: 0
+  };
+
+  if (!Array.isArray(input)) {
+    return counts;
+  }
+
+  for (const feedback of input) {
+    const sentiment = asFeedbackDraftRecord(feedback)?.sentiment;
+    if (typeof sentiment === 'string' && MARKETPLACE_FEEDBACK_SENTIMENTS.has(sentiment as MarketplaceFeedbackSentiment)) {
+      counts[sentiment as MarketplaceFeedbackSentiment] += 1;
+    }
+  }
+
+  return counts;
 }
 
 function parseFeedbackTime(value: string | Date | number | null | undefined): number | null {
