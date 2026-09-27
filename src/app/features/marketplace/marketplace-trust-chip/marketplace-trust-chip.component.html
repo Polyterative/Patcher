@@ -1,0 +1,8 @@
+@if (summary; as trust) {
+  <span
+    class="marketplace-trust-chip marketplace-trust-chip--{{ trust.band }}"
+    data-testid="marketplace-trust-chip"
+    [matTooltip]="trust.copy"
+    matTooltipPosition="above"
+  ><mat-icon>{{ iconFor(trust.band) }}</mat-icon>{{ trust.label }}</span>
+}
