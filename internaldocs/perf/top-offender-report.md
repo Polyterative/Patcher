@@ -56,3 +56,19 @@ excluded from offender ranking (prod bundle numbers live in the #150 thread).
   sub-500-DOM flows and they split CLS pass/fail, separating shell-level from content-level
   shift. Rejected bundle-analyzer-led ranking because dev chunk names are vite artifacts with
   no prod counterpart. Rejected marketplace prioritization because the flag is off in prod.
+
+## Compile-time candidate screen (2026-09-27)
+
+- Hypothesis screened: ensure font loading uses `font-display: swap` to avoid blocking text
+  rendering. No source change is justified: every local `@font-face` in
+  `src/app/style/fonts.scss` already declares `swap`, the Google Fonts links in `src/index.html`
+  use `display=swap`, and the earlier H2 Chrome experiment reported CLS bit-identical after the
+  font-swap change. Reference medians from the Chrome 149 / Playwright 1.61.1 run on tree
+  `5911db8d`: shell-only `/info` CLS **0.0638** and already-lazy `/404` CLS **0.3244** (5 cold
+  runs each; see [`baselines/info.json`](baselines/info.json) and
+  [`baselines/not-found.json`](baselines/not-found.json)). The font change did not explain the
+  shell/content CLS gap and is not repeated as an optimization.
+- The other small compile-time candidate, lazy-loading `/404` and `/links/retired`, is also
+  already implemented and guarded by `src/app/app-routing.module.spec.ts`. No safe unimplemented
+  candidate emerged from this bounded screen; this is a baseline/decision note, not a new
+  performance claim or a fresh post-change measurement.
