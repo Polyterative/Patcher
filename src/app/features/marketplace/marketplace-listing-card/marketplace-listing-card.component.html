@@ -39,6 +39,9 @@
     </div>
     <div class="marketplace-card__meta">
       <span>{{ listing.sellerLabel }}</span>
+      @if (trust) {
+        <app-marketplace-trust-chip [summary]="trust"></app-marketplace-trust-chip>
+      }
       <span>{{ listing.ageLabel }}</span>
     </div>
     <div class="marketplace-card__shipping">

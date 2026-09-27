@@ -57,4 +57,24 @@ describe('MarketplaceListingCardComponent', () => {
     expect(host.querySelector('.marketplace-card__placeholder')).not.toBeNull();
     expect(host.querySelector('img')).toBeNull();
   });
+
+  it('hides the trust chip until feedback data is available', () => {
+    const host = fixture.nativeElement as HTMLElement;
+
+    expect(host.querySelector('[data-testid="marketplace-trust-chip"]')).toBeNull();
+  });
+
+  it('renders the seller trust chip beside the seller label once provided', () => {
+    fixture.componentRef.setInput('trust', {
+      band: 'new_seller',
+      copy: 'Not enough closed marketplace history yet. Use normal buyer caution.',
+      label: 'New seller'
+    });
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const meta = host.querySelector('.marketplace-card__meta');
+
+    expect(meta?.querySelector('[data-testid="marketplace-trust-chip"]')?.textContent).toContain('New seller');
+  });
 });
