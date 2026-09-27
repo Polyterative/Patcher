@@ -1,0 +1,31 @@
+:host {
+  display: inline-flex;
+}
+
+.marketplace-trust-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border: 0.0625rem solid var(--mat-sys-outline-variant);
+  border-radius: 999rem;
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.marketplace-trust-chip mat-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  font-size: 0.875rem;
+}
+
+.marketplace-trust-chip--steady {
+  border-color: color-mix(in srgb, var(--mat-sys-primary) 40%, transparent);
+  color: var(--mat-sys-primary);
+}
+
+.marketplace-trust-chip--mixed mat-icon {
+  color: var(--mat-sys-error);
+}
