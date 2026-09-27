@@ -69,6 +69,32 @@ export type MarketplaceMessageContentFlag =
   | 'off_platform_payment'
   | 'external_contact';
 
+export function sortMarketplaceMessageThreadPreviews(
+  previews: readonly MarketplaceMessageThreadPreview[] | null | undefined
+): MarketplaceMessageThreadPreview[] {
+  if (!Array.isArray(previews)) {
+    return [];
+  }
+
+  const safePreviews = previews.filter(
+    (preview): preview is MarketplaceMessageThreadPreview => isObjectRecord(preview)
+  );
+
+  return [...safePreviews].sort((first, second) => {
+    const timeDifference = getThreadPreviewTime(second) - getThreadPreviewTime(first);
+    if (timeDifference !== 0) {
+      return timeDifference;
+    }
+
+    const unreadDifference = getThreadPreviewUnread(second) - getThreadPreviewUnread(first);
+    if (unreadDifference !== 0) {
+      return unreadDifference;
+    }
+
+    return getThreadPreviewSortKey(first).localeCompare(getThreadPreviewSortKey(second));
+  });
+}
+
 export type MarketplaceMessageDraftValidationResult =
   | {
       valid: true;
@@ -310,6 +336,37 @@ function trimOptionalText(value: unknown): string | undefined {
 
   const trimmed = value.trim();
   return trimmed || undefined;
+}
+
+function getThreadPreviewTime(preview: MarketplaceMessageThreadPreview): number {
+  if (!isObjectRecord(preview) || !('lastMessageAt' in preview)) {
+    return Number.NEGATIVE_INFINITY;
+  }
+
+  const rawValue = (preview as {lastMessageAt?: unknown}).lastMessageAt;
+  if (typeof rawValue !== 'string' || !rawValue) {
+    return Number.NEGATIVE_INFINITY;
+  }
+
+  const parsedTime = Date.parse(rawValue);
+  return Number.isFinite(parsedTime) ? parsedTime : Number.NEGATIVE_INFINITY;
+}
+
+function getThreadPreviewUnread(preview: MarketplaceMessageThreadPreview): number {
+  const unreadCount = (preview as {unreadCount?: unknown}).unreadCount;
+  return typeof unreadCount === 'number' && Number.isFinite(unreadCount) ? unreadCount : 0;
+}
+
+function getThreadPreviewSortKey(preview: MarketplaceMessageThreadPreview): string {
+  if (isObjectRecord(preview) && 'transactionId' in preview) {
+    const transactionId = (preview as {transactionId?: unknown}).transactionId;
+    if (typeof transactionId === 'string' && transactionId) {
+      return transactionId;
+    }
+  }
+
+  const label = (preview as {otherParticipantLabel?: unknown}).otherParticipantLabel;
+  return typeof label === 'string' ? label : '';
 }
 
 function isObjectRecord(value: unknown): value is Record<string, unknown> {

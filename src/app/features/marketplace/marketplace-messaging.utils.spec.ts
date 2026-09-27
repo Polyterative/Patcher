@@ -1,6 +1,7 @@
 import {
   buildMarketplaceMessageThreadPreview,
   detectMarketplaceMessageContentFlags,
+  sortMarketplaceMessageThreadPreviews,
   type MarketplaceMessageDraft,
   validateAndNormalizeMarketplaceMessageDraft
 } from './marketplace-messaging.utils';
@@ -279,5 +280,73 @@ describe('marketplace-messaging.utils', () => {
       flags: [],
       valid: false
     });
+  });
+
+  it('sorts thread previews by recency with deterministic tie-breakers', () => {
+    const older = buildMarketplaceMessageThreadPreview({
+      lastMessageAt: '2026-07-08T09:30:00.000Z',
+      transactionId: 'transaction-b',
+      unreadCount: 0
+    });
+    const newer = buildMarketplaceMessageThreadPreview({
+      lastMessageAt: '2026-07-09T09:30:00.000Z',
+      transactionId: 'transaction-a',
+      unreadCount: 0
+    });
+    const missingTime = buildMarketplaceMessageThreadPreview({
+      transactionId: 'transaction-c'
+    });
+
+    const input = [older, missingTime, newer];
+    const sorted = sortMarketplaceMessageThreadPreviews(input);
+
+    expect(sorted.map(preview => preview.available ? preview.transactionId : 'missing')).toEqual([
+      'transaction-a',
+      'transaction-b',
+      'transaction-c'
+    ]);
+    expect(input.map(preview => preview.available ? preview.transactionId : 'missing')).toEqual([
+      'transaction-b',
+      'transaction-c',
+      'transaction-a'
+    ]);
+  });
+
+  it('breaks equal-time ties by unread count then transaction id without throwing', () => {
+    const sameTime = '2026-07-09T09:30:00.000Z';
+    const lowUnread = buildMarketplaceMessageThreadPreview({
+      lastMessageAt: sameTime,
+      transactionId: 'transaction-b',
+      unreadCount: 1
+    });
+    const highUnread = buildMarketplaceMessageThreadPreview({
+      lastMessageAt: sameTime,
+      transactionId: 'transaction-c',
+      unreadCount: 5
+    });
+    const sameUnreadLaterId = buildMarketplaceMessageThreadPreview({
+      lastMessageAt: sameTime,
+      transactionId: 'transaction-a',
+      unreadCount: 5
+    });
+
+    const sorted = sortMarketplaceMessageThreadPreviews([lowUnread, highUnread, sameUnreadLaterId]);
+
+    expect(sorted.map(preview => preview.available ? preview.transactionId : 'missing')).toEqual([
+      'transaction-a',
+      'transaction-c',
+      'transaction-b'
+    ]);
+  });
+
+  it('returns an empty list for unknown sort input and skips malformed entries', () => {
+    expect(sortMarketplaceMessageThreadPreviews(null)).toEqual([]);
+    expect(sortMarketplaceMessageThreadPreviews(undefined)).toEqual([]);
+    expect(() => sortMarketplaceMessageThreadPreviews(
+      [null, undefined, 123] as unknown as Parameters<typeof sortMarketplaceMessageThreadPreviews>[0]
+    )).not.toThrow();
+    expect(sortMarketplaceMessageThreadPreviews(
+      [null, undefined, 123] as unknown as Parameters<typeof sortMarketplaceMessageThreadPreviews>[0]
+    )).toEqual([]);
   });
 });
