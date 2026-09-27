@@ -65,4 +65,22 @@ describe('ModuleDetailsComponent', () => {
     expect(component.getPanelColorBadge('proto-panel.png', 'Prototype panel', 999, 0)).toBeNull();
   });
 
+  it('returns stable labels across repeat evaluations so template bindings reuse memoized derivations', () => {
+    expect(component.getPanelLabel('maths-dark.png', null, 0)).toBe('Dark');
+    expect(component.getPanelLabel('maths-dark.png', null, 0)).toBe('Dark');
+    expect(component.getPanelLabel('maths-dark.png', 'Custom face', 0)).toBe('Custom face');
+    expect(component.getPanelLabel('maths-dark.png', null, 1)).toBe('Dark');
+    expect(component.getPanelLabel('plain.png', null, 4)).toBe('Panel 5');
+  });
+
+  it('keeps badge derivation consistent with the memoized label after cache pressure', () => {
+    for (let i = 0; i < 250; i++) {
+      component.getPanelLabel(`panel-${ i }.png`, null, i);
+    }
+
+    expect(component.getPanelLabel('maths-dark.png', null, 0)).toBe('Dark');
+    expect(component.getPanelColorBadge('ignored.png', 'Dark', 2, 0)).toBeNull();
+    expect(component.getPanelColorBadge('proto-panel.png', 'Prototype panel', 2, 0)).toBe('Dark');
+  });
+
 });
