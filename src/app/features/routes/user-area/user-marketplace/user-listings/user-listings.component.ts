@@ -18,11 +18,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   BehaviorSubject,
   combineLatest,
-  Observable
+  Observable,
+  of
 } from 'rxjs';
 import {
   map,
-  startWith
+  startWith,
+  switchMap
 } from 'rxjs/operators';
 import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-state-tips/empty-state-tips.component';
 import {
@@ -39,6 +41,7 @@ import {
   validateAndNormalizeMarketplaceListingDraft
 } from 'src/app/features/marketplace/marketplace-listing.utils';
 import { formatMarketplaceMinorUnits } from 'src/app/features/marketplace/marketplace-money.utils';
+import { MarketplacePriceGuidance } from 'src/app/features/marketplace/marketplace-price-guidance.utils';
 import { MinimalModule } from 'src/app/models/module';
 import { HeroContentCardComponent } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
@@ -153,6 +156,7 @@ export class UserListingsComponent extends SubManager implements OnInit {
   readonly availableModules$: Observable<MinimalModule[]>;
   readonly validation$: Observable<MarketplaceListingDraftValidationResult>;
   readonly duplicateWarning$: Observable<MarketplaceDuplicateListingWarningResult>;
+  readonly priceGuidance$: Observable<MarketplacePriceGuidance | null>;
   readonly canSave$: Observable<boolean>;
 
   constructor(readonly dataService: UserListingsDataService) {
@@ -171,6 +175,9 @@ export class UserListingsComponent extends SubManager implements OnInit {
     );
     this.duplicateWarning$ = combineLatest([formChanges$, this.vm$, this.editor$]).pipe(
       map(([, vm, editor]) => this.duplicateWarning(vm, editor))
+    );
+    this.priceGuidance$ = this.editor$.pipe(
+      switchMap(editor => editor ? this.dataService.priceGuidanceForModule$(editor.moduleId) : of(null))
     );
     this.canSave$ = combineLatest([this.validation$, this.duplicateWarning$, this.vm$]).pipe(
       map(([validation, duplicate, vm]) => validation.valid && !duplicate.hasDuplicate && !vm.busy)

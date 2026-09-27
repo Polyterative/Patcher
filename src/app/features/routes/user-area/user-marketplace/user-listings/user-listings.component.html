@@ -237,6 +237,13 @@
         @if (showFieldError(validation, 'askingPrice', listingFields.askingPrice.control); as error) {
           <small role="alert">{{ error }}</small>
         }
+        @if (priceGuidance$ | async; as guidance) {
+          <small
+            class="listing-editor__hint"
+            data-testid="user-listing-price-guidance"
+            [matTooltip]="guidance.tooltip ?? ''"
+          >Price guidance: {{ guidance.displayPrice }} new across {{ guidance.storeCount }} {{ guidance.storeCount === 1 ? 'store' : 'stores' }}.</small>
+        }
       </div>
 
       <div class="listing-editor__field">

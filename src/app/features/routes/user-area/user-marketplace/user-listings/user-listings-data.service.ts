@@ -32,6 +32,10 @@ import {
   normalizeMarketplaceListingMediaDrafts
 } from 'src/app/features/marketplace/marketplace-listing.utils';
 import { getMarketplaceCurrencyFractionDigits } from 'src/app/features/marketplace/marketplace-money.utils';
+import {
+  buildMarketplacePriceGuidance,
+  MarketplacePriceGuidance
+} from 'src/app/features/marketplace/marketplace-price-guidance.utils';
 import { MinimalModule } from 'src/app/models/module';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
@@ -118,6 +122,17 @@ export class UserListingsDataService extends SubManager {
 
   get snapshot(): UserListingsViewModel {
     return this._vm$.value;
+  }
+
+  priceGuidanceForModule$(moduleId: number): Observable<MarketplacePriceGuidance | null> {
+    if (!Number.isFinite(moduleId) || moduleId <= 0) {
+      return of(null);
+    }
+
+    return this.backend.GET.recentModuleMarketPrices([moduleId]).pipe(
+      map(prices => buildMarketplacePriceGuidance(prices, moduleId)),
+      catchError(() => of(null))
+    );
   }
 
   constructor(

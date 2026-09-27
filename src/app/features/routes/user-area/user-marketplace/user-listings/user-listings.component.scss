@@ -110,6 +110,7 @@
 .listing-editor__field--wide { grid-column: 1 / -1; }
 .listing-editor__field lib-mat-form-entity { display: block; }
 .listing-editor__field small { display: block; margin-top: 0.25rem; color: var(--mat-sys-error); font-size: 0.72rem; font-weight: 700; }
+.listing-editor__field .listing-editor__hint { color: var(--mat-sys-on-surface-variant); font-weight: 400; }
 .listing-editor__fieldset { margin: 0; padding: 0.6rem; border: 1px solid var(--mat-sys-outline-variant); border-radius: 0.65rem; }
 .listing-editor__fieldset legend { padding: 0 0.25rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
 .listing-editor__media { gap: 0.5rem; padding: 0.65rem; background: var(--mat-sys-surface-container); }

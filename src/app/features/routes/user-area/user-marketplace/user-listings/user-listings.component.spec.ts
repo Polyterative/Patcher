@@ -102,12 +102,14 @@ function snackBarMock(): MatSnackBar {
 
 function backendMock(options: {
   listings?: MarketplaceListing[];
+  marketPrices?: Array<{moduleId: number; displayPrice: string; storeCount: number; tooltip: string}>;
   modules?: MinimalModule[];
 } = {}): SupabaseService {
   const listings = options.listings ?? [];
   return {
     GET: {
-      currentUserModules: jasmine.createSpy('currentUserModules').and.returnValue(of(options.modules ?? [createModule()]))
+      currentUserModules: jasmine.createSpy('currentUserModules').and.returnValue(of(options.modules ?? [createModule()])),
+      recentModuleMarketPrices: jasmine.createSpy('recentModuleMarketPrices').and.returnValue(of(options.marketPrices ?? []))
     },
     add: {
       marketplaceListing: jasmine.createSpy('marketplaceListing').and.returnValue(of(createListing({id: 'created-listing'}))),
@@ -140,6 +142,7 @@ describe('UserListingsComponent', () => {
 
   function build(options: {
     listings?: MarketplaceListing[];
+    marketPrices?: Array<{moduleId: number; displayPrice: string; storeCount: number; tooltip: string}>;
     modules?: MinimalModule[];
   } = {}): UserListingsComponent {
     backend = backendMock(options);
@@ -220,6 +223,30 @@ describe('UserListingsComponent', () => {
     euShippingInput?.click();
     fixture.detectChanges();
     expect(component.form.controls.shippingOptions.controls.euShipping.value).toBeTrue();
+  });
+
+  it('shows price guidance under the price field when Price Hub has data', () => {
+    const component = build({modules: [createModule()], marketPrices: [{
+      displayPrice: '~€1,199',
+      moduleId: 101,
+      storeCount: 4,
+      tooltip: 'Estimated recent market price: ~€1,199 from 4 stores.'
+    }]});
+    component.openCreate(createModule());
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('[data-testid="user-listing-price-guidance"]')?.textContent)
+      .toContain('Price guidance: ~€1,199 new across 4 stores.');
+  });
+
+  it('hides price guidance without Price Hub data', () => {
+    const component = build({modules: [createModule()]});
+    component.openCreate(createModule());
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('[data-testid="user-listing-price-guidance"]')).toBeNull();
   });
 
   it('creates and publishes an inline listing from a For Sale module', () => {
