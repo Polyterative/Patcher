@@ -72,8 +72,22 @@ export class ModuleDetailsComponent {
     });
   }
 
-  getPanelLabel(filename: string, description: string, index: number): string {
-    return derivePanelLabel(filename, description, index);
+  getPanelLabel(filename: string, description: string | null | undefined, index: number): string {
+    // Memoized: the template derives the label up to 3x per panel per
+    // change-detection cycle (alt + tooltip + caption), plus once more via
+    // getPanelColorBadge — each call re-runs regex/split/keyword-scan in
+    // derivePanelLabel. The cache collapses repeat evaluations to Map hits.
+    const key = `${ filename ?? '' }‖${ description ?? '' }‖${ index }`;
+    const cached = this.panelLabelCache.get(key);
+    if (cached !== undefined) {
+      return cached;
+    }
+    const label = derivePanelLabel(filename, description, index);
+    if (this.panelLabelCache.size >= ModuleDetailsComponent.PANEL_LABEL_CACHE_LIMIT) {
+      this.panelLabelCache.clear();
+    }
+    this.panelLabelCache.set(key, label);
+    return label;
   }
 
   getPanelImageUrl(filename: string): string {
@@ -85,11 +99,14 @@ export class ModuleDetailsComponent {
   }
 
   /** Returns the color badge label only when it adds info not already in the label text. */
-  getPanelColorBadge(filename: string, description: string, color: number, index: number): string | null {
+  getPanelColorBadge(filename: string, description: string | null | undefined, color: number, index: number): string | null {
     const colorName = PANEL_COLORS[color] ?? null;
     if (!colorName) return null;
-    const label = derivePanelLabel(filename, description, index);
+    const label = this.getPanelLabel(filename, description, index);
     return label.toLowerCase() === colorName.toLowerCase() ? null : colorName;
   }
+
+  private readonly panelLabelCache = new Map<string, string>();
+  private static readonly PANEL_LABEL_CACHE_LIMIT = 200;
 
 }
