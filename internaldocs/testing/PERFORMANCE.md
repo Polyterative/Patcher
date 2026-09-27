@@ -57,8 +57,11 @@ Web Vitals: LCP ≤2500ms target / ≤3500 hard (public; ≤3.5s authenticated s
 CLS ≤0.05 target / ≤0.1 hard; TBT proxy ≤200 target / ≤600 hard. Runtime: longest task
 ≤100 / ≤250ms; longtasks ≤3 hard; heap ≤40 / ≤80MB; DOM ≤1500 target / ≤3000 hard;
 script ≤400 / ≤900ms; layout ≤250 / ≤600ms. Standing state: systemic CLS breach
-(0.32–0.91 nearly everywhere) vs ≤0.1 hard — content-driven per H3 isolation (fonts and
-shell toggles exonerated as systemic causes; see top-offender report §H3 exhibits).
+(0.32–0.91 nearly everywhere) vs ≤0.1 hard — supporting-block transient per the
+[shift-attribution addendum](../perf/shift-attribution-supporting-block.md)
+(94–99% of CLS on probed content flows; fonts, images, and NG0956 exonerated;
+H4/H7 own no share of this score; fix parked out of scope pending owner
+un-park decision).
 
 ## Top-offender methodology
 
