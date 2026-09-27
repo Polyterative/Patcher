@@ -403,6 +403,64 @@ describe('SupabaseService - get simple queries', () => {
       });
     }, TEST_TIMEOUT);
 
+    it('maps post-migration numeric orientation values to semantic names (GitHub #145)', (done) => {
+      // After the text -> smallint migration, rows arrive as 0/1. The read
+      // boundary must keep exposing semantic names; unknown values fall back
+      // to normal. Casts are intentional: generated DB types still model the
+      // pre-migration text column until the operator apply + typegen.
+      const numeric = (value: unknown): RackModuleRawRow['orientation'] =>
+        value as unknown as RackModuleRawRow['orientation'];
+      const mock: SupabaseQueryChain<RackModuleRawRow> = chainable<RackModuleRawRow>({
+        data: [
+          {
+            id: 1,
+            row: 0,
+            column: 0,
+            moduleid: 10,
+            rackid: 3,
+            selected_panel_id: null,
+            orientation: numeric(1),
+            module: {id: 10}
+          },
+          {
+            id: 2,
+            row: 0,
+            column: 1,
+            moduleid: 11,
+            rackid: 3,
+            selected_panel_id: null,
+            orientation: numeric(0),
+            module: {id: 11}
+          },
+          {
+            id: 3,
+            row: 0,
+            column: 2,
+            moduleid: 12,
+            rackid: 3,
+            selected_panel_id: null,
+            orientation: numeric(7),
+            module: {id: 12}
+          }
+        ],
+        error: null
+      } satisfies QueryListRowsResult<RackModuleRawRow>);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+      service.get.rackedModules(3).subscribe({
+        next: (result: RackedModule[]) => {
+          expect(result[0].rackingData.orientation).toBe('rot180');
+          expect(result[1].rackingData.orientation).toBe('normal');
+          expect(result[2].rackingData.orientation).toBe('normal');
+          done();
+        },
+        error: (err: unknown) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
     it('requests module tags in the rack-module join', (done) => {
       const mock: SupabaseQueryChain<RackModuleRawRow> = chainable<RackModuleRawRow>(
         {data: [], error: null} satisfies QueryListRowsResult<RackModuleRawRow>
