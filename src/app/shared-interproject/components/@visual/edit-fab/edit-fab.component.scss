@@ -28,11 +28,15 @@
     min-height: var(--module-editor-close-fab-height, var(--app-floating-action-height, 3.5rem));
     padding-left: 2rem;
     padding-right: 2rem;
-    border: 0.125rem solid #3e638a;
+    border: 0.125rem solid var(--mat-sys-outline-variant, var(--app-border-strong, #3e638a));
     box-shadow: var(--app-floating-action-shadow, 0 0.25rem 0.875rem rgba(38, 76, 116, 0.22));
-    background: #ffffff;
-    color: #224b75;
+    background: var(--mat-sys-surface-container-high, var(--app-surface, #ffffff));
+    color: var(--mat-sys-primary, var(--app-link, #224b75));
     border-radius: var(--app-floating-action-radius, 1.75rem);
+  }
+
+  button:hover:not(.edit-fab-discard) {
+    background: var(--mat-sys-surface-container-highest, var(--app-surface-2, #f2f7fc));
   }
 
   button.edit-fab-editing {
@@ -42,13 +46,13 @@
   }
 
   button.edit-fab-discard {
-    border-color: #7e3a21;
-    background: #a44626;
-    color: #ffffff;
+    border-color: var(--mat-sys-error, #7e3a21);
+    background: var(--mat-sys-error-container, #a44626);
+    color: var(--mat-sys-on-error-container, #ffffff);
   }
 
   button.edit-fab-discard:hover {
-    background: #8c3b20;
+    background: color-mix(in srgb, var(--mat-sys-error-container, #a44626) 88%, black);
   }
 
   button.bouncing {

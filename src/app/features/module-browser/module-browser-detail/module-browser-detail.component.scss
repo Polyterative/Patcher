@@ -175,22 +175,22 @@ a.module-detail-action-button {
 .module-detail-save-floating-action {
   width: var(--module-editor-save-fab-width, 9.25rem);
   min-height: var(--module-editor-close-fab-height, var(--app-floating-action-height, 3.5rem));
-  border: 0.125rem solid #3e638a;
+  border: 0.125rem solid var(--mat-sys-outline-variant, var(--app-border-strong, #3e638a));
   border-radius: var(--app-floating-action-radius, 1.75rem);
-  background: #ffffff;
-  color: #365777;
+  background: var(--mat-sys-surface-container-high, var(--app-surface, #ffffff));
+  color: var(--mat-sys-primary, var(--app-link, #365777));
   box-shadow: var(--app-floating-action-shadow, 0 0.25rem 0.875rem rgba(38, 76, 116, 0.22));
   transition: opacity 140ms ease-in-out, transform 140ms ease-in-out, background-color 140ms ease-in-out;
 
   &:hover:not(:disabled) {
-    background: #f2f7fc;
+    background: var(--mat-sys-surface-container-highest, var(--app-surface-2, #f2f7fc));
     transform: translateY(-0.0625rem);
   }
 
   &:disabled {
     opacity: 0.62;
-    background: #edf2f8;
-    color: #7c8da0;
+    background: var(--mat-sys-surface-container, var(--app-surface-2, #edf2f8));
+    color: var(--mat-sys-on-surface-variant, var(--app-ink-3, #7c8da0));
   }
 }
 
@@ -220,10 +220,10 @@ a.module-detail-action-button {
   min-height: 2.85rem;
   padding-left: 1rem;
   padding-right: 1rem;
-  border: 0.125rem solid #8aa0ba;
+  border: 0.125rem solid var(--mat-sys-outline-variant, rgba(138, 160, 186, 1));
   border-radius: var(--app-floating-action-radius, 1.75rem);
-  background: #ffffff;
-  color: #355476;
+  background: var(--mat-sys-surface-container-high, var(--app-surface, #ffffff));
+  color: var(--mat-sys-primary, var(--app-link, #355476));
   font-size: 0.84rem;
   line-height: 1;
   letter-spacing: 0.01em;
@@ -232,9 +232,9 @@ a.module-detail-action-button {
   transition: background-color 160ms ease-in-out, border-color 160ms ease-in-out, color 160ms ease-in-out;
 
   &:hover {
-    background: #f2f7fc;
-    border-color: #7291b3;
-    color: #224568;
+    background: var(--mat-sys-surface-container-highest, var(--app-surface-2, #f2f7fc));
+    border-color: var(--mat-sys-outline, #7291b3);
+    color: var(--mat-sys-primary, var(--app-link, #224568));
   }
 
   .mat-icon {
