@@ -134,6 +134,7 @@ function userServiceMock(): UserManagementService {
 function backendMock(options: {
   addResult?: MarketplaceListing;
   listings?: MarketplaceListing[];
+  marketPrices?: Array<{moduleId: number; displayPrice: string; storeCount: number; tooltip: string}>;
   mediaRecordFails?: boolean;
   mediaUploadFails?: boolean;
   modules?: MinimalModule[];
@@ -147,7 +148,8 @@ function backendMock(options: {
       currentUserModules: jasmine.createSpy('currentUserModules').and.returnValue(of(options.modules ?? [
         createModule({id: 101, possessionKind: 'SELLS'}),
         createModule({id: 202, name: 'Wanted module', possessionKind: 'WANTS'})
-      ]))
+      ])),
+      recentModuleMarketPrices: jasmine.createSpy('recentModuleMarketPrices').and.returnValue(of(options.marketPrices ?? []))
     },
     add: {
       marketplaceListing: jasmine.createSpy('marketplaceListing').and.returnValue(of(saved)),
@@ -480,6 +482,44 @@ describe('UserListingsDataService', () => {
     );
     expect(service.snapshot.listings).toEqual([reordered]);
     expect(service.snapshot.busy).toBeFalse();
+    service.ngOnDestroy();
+  });
+
+  it('exposes cached price guidance for the edited module', () => {
+    const backend = backendMock({marketPrices: [{
+      displayPrice: '~€1,199',
+      moduleId: 101,
+      storeCount: 4,
+      tooltip: 'Estimated recent market price: ~€1,199 from 4 stores.'
+    }]});
+    const service = new UserListingsDataService(backend, userServiceMock(), snackBarMock());
+
+    let guidance: unknown;
+    service.priceGuidanceForModule$(101).subscribe(value => guidance = value);
+
+    expect(backend.GET.recentModuleMarketPrices).toHaveBeenCalledOnceWith([101]);
+    expect(guidance).toEqual({
+      displayPrice: '~€1,199',
+      moduleId: 101,
+      storeCount: 4,
+      tooltip: 'Estimated recent market price: ~€1,199 from 4 stores.'
+    });
+    service.ngOnDestroy();
+  });
+
+  it('hides price guidance without usable price data', () => {
+    const backend = backendMock();
+    (backend.GET.recentModuleMarketPrices as jasmine.Spy).and.returnValue(
+      throwError(() => new Error('price read failed'))
+    );
+    const service = new UserListingsDataService(backend, userServiceMock(), snackBarMock());
+
+    const seen: unknown[] = [];
+    service.priceGuidanceForModule$(101).subscribe(value => seen.push(value));
+    service.priceGuidanceForModule$(0).subscribe(value => seen.push(value));
+
+    expect(seen).toEqual([null, null]);
+    expect(backend.GET.recentModuleMarketPrices).toHaveBeenCalledOnceWith([101]);
     service.ngOnDestroy();
   });
 });
