@@ -150,4 +150,38 @@ describe('manufacturer-updates.utils', () => {
     expect(normalizeFeaturedModuleIds(['a', 'b', 'c', 'd', 'e', 'f', 'g']).length).toBe(MANUFACTURER_FEATURED_MODULE_LIMIT);
     expect(normalizeFeaturedModuleIds({ ids: ['module-1'] })).toEqual([]);
   });
+
+  it('keeps exactly the featured cap and drops blanks, whitespace, and non-strings', () => {
+    expect(normalizeFeaturedModuleIds([])).toEqual([]);
+    expect(normalizeFeaturedModuleIds(null)).toEqual([]);
+    expect(normalizeFeaturedModuleIds(['   ', '', '  a  ', 'A', 'b'])).toEqual(['a', 'b']);
+    const atCap = ['a', 'b', 'c', 'd', 'e', 'f'];
+    expect(normalizeFeaturedModuleIds(atCap)).toEqual(atCap);
+    expect(normalizeFeaturedModuleIds([...atCap, 'g', 'h'])).toEqual(atCap);
+  });
+
+  it('accepts boundary title/body lengths and Date or numeric expiry values', () => {
+    const title = 't'.repeat(MANUFACTURER_UPDATE_TITLE_MAX_LENGTH);
+    const body = 'b'.repeat(MANUFACTURER_UPDATE_BODY_MAX_LENGTH);
+    for (const expiresAt of [new Date('2026-08-07T12:00:00Z'), Date.parse('2026-08-07T12:00:00Z')]) {
+      const result = validateManufacturerUpdateDraft({body, expiresAt, manufacturerId: 'maker-1', title}, now);
+      expect(result.valid).withContext(`expiry ${String(expiresAt)}`).toBeTrue();
+    }
+    expect(validateManufacturerUpdateDraft({body, manufacturerId: 'maker-1', title}, now).valid).toBeTrue();
+  });
+
+  it('omits empty expiry values instead of flagging them invalid', () => {
+    for (const expiresAt of [undefined, null, '']) {
+      const result = validateManufacturerUpdateDraft({
+        body: 'Body',
+        expiresAt,
+        manufacturerId: 'maker-1',
+        title: 'Title'
+      }, now);
+      expect(result).toEqual({
+        update: {body: 'Body', manufacturerId: 'maker-1', title: 'Title'},
+        valid: true
+      });
+    }
+  });
 });

@@ -37,11 +37,17 @@ export class ManufacturerDetailDataService extends SubManager {
   private readonly _manufacturerData$ = new BehaviorSubject<ManufacturerDetail | null>(null);
   private readonly _modulesData$ = new BehaviorSubject<ModuleList>(null);
   private readonly _isLoading$ = new BehaviorSubject<boolean>(false);
-  
+  // Display-only seam for future read-only aggregate analytics rows (no
+  // persistence, no backend fetch yet). Raw rows are normalized through
+  // normalizeManufacturerAnalyticsRows before display so sub-threshold
+  // counts stay hidden.
+  private readonly _displayAggregateRows$ = new BehaviorSubject<unknown>([]);
+
   // PUBLIC
   readonly manufacturerData$ = this._manufacturerData$.asObservable();
   readonly modulesData$ = this._modulesData$.asObservable();
   readonly isLoading$ = this._isLoading$.asObservable();
+  readonly displayAggregateRows$ = this._displayAggregateRows$.asObservable();
 
   get logoStorageBase(): string {
     return this.backend.storage.publicUrlBases.manufacturerLogos;
