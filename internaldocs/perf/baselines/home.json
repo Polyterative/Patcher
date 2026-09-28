@@ -1,8 +1,8 @@
 {
   "flow": "home",
   "route": "/",
-  "capturedAt": "2026-09-25",
-  "treeSha": "5911db8d",
+  "capturedAt": "2026-09-28",
+  "treeSha": "fbea70f0",
   "server": "dev (pnpm start, vite, unoptimized + HMR — lab deltas only, not prod absolutes)",
   "viewport": {
     "width": 1440,
@@ -13,33 +13,33 @@
   "settleMs": 5000,
   "median": {
     "cold": {
-      "lcpMs": 580,
+      "lcpMs": 620,
       "cls": 0.6197734636387872,
-      "longTaskCount": 8,
-      "longestTaskMs": 142,
-      "domNodes": 1951,
-      "jsHeapBytes": 69642568,
-      "taskDurationMs": 3341.751,
-      "scriptDurationMs": 712.815,
-      "layoutDurationMs": 104.971,
-      "domContentLoadedMs": 401,
-      "loadMs": 460.5,
+      "longTaskCount": 9,
+      "longestTaskMs": 158,
+      "domNodes": 1939,
+      "jsHeapBytes": 59560088,
+      "taskDurationMs": 3123.163,
+      "scriptDurationMs": 584.728,
+      "layoutDurationMs": 97.934,
+      "domContentLoadedMs": 414.90000000037253,
+      "loadMs": 476.80000000074506,
       "requestCount": 250
     },
     "warm": {
-      "lcpMs": 452,
+      "lcpMs": 472,
       "cls": 0.6195164905270759,
-      "longTaskCount": 7,
-      "longestTaskMs": 142,
-      "domNodes": 1951,
-      "jsHeapBytes": 68385100,
-      "taskDurationMs": 3386.58,
-      "scriptDurationMs": 673.158,
-      "layoutDurationMs": 98.598,
-      "domContentLoadedMs": 191.3999999994412,
-      "loadMs": 317.5,
+      "longTaskCount": 8,
+      "longestTaskMs": 158,
+      "domNodes": 1939,
+      "jsHeapBytes": 54091196,
+      "taskDurationMs": 3064.898,
+      "scriptDurationMs": 527.737,
+      "layoutDurationMs": 89.835,
+      "domContentLoadedMs": 294.7999999988824,
+      "loadMs": 332.2000000011176,
       "requestCount": 250
     }
   },
-  "notes": "Cold longTaskCount 8 / warm 7 breaches hard budget <=3 (worst count of all flows); scriptDuration 713ms cold rivals patch-detail. CLS ~0.62 systemic breach. LCP 580ms cold is the fastest content flow. INP unmeasured; TBT proxy used. Dev transfer/script bytes are vite artifacts — not prod budgets."
+  "notes": "Cold longTaskCount 9 / warm 8 vs 8 / 7 on 2026-09-25 — still the worst count of all flows vs hard <=3. Script/task down vs prior (585 vs 713ms script cold; task 3123 vs 3342ms), heap down ~10MB, DOM 1939 vs 1951 (content drift). CLS bit-identical ~0.62 systemic breach. LCP 620ms cold still the fastest content flow. First attempt hit a transient navigation error; retry succeeded. INP unmeasured; TBT proxy used. Dev transfer/script bytes are vite artifacts — not prod budgets."
 }

@@ -5,7 +5,9 @@ lab deltas only, not prod absolutes), median of 5 cold + 5 warm per flow, settle
 Committed baselines: [baselines/](baselines/) (`browser`, `rack-detail`, `patch-detail`,
 `user-area` from prior rounds; `home`, `module-detail`, `racks-browser`, `patches-browser`,
 `manufacturers`, `manufacturer-detail`, `info`, `not-found`, `public-profile`, `marketplace`
-recorded 2026-09-25 on tree `5911db8d`).
+recorded 2026-09-25 on tree `5911db8d`; `info`, `home`, `patch-detail`, `rack-detail`,
+`module-detail` re-measured 2026-09-28 on tree `fbea70f0` — see
+[Fresh re-measurement 2026-09-28](#fresh-re-measurement-2026-09-28)).
 
 Budgets: CLS target ≤0.05 / hard ≤0.1; DOM target ≤1500 / hard ≤3000 (home row; other flows
 judged against the same hard cap); longtasks ≤3 hard; script eval ≤900ms hard; layout ≤600ms
@@ -56,6 +58,22 @@ excluded from offender ranking (prod bundle numbers live in the #150 thread).
   sub-500-DOM flows and they split CLS pass/fail, separating shell-level from content-level
   shift. Rejected bundle-analyzer-led ranking because dev chunk names are vite artifacts with
   no prod counterpart. Rejected marketplace prioritization because the flag is off in prod.
+
+## Fresh re-measurement 2026-09-28
+
+- Re-measured `info`, `home`, `patch-detail`, `rack-detail`, `module-detail` on tree
+  `fbea70f0` (same fixed profile: Chrome 149.0.7827.55 / Playwright 1.61.1, 1440x900,
+  median of 5 cold + 5 warm, settle 5000ms, dev server on `:5556`). Raw runs under
+  gitignored `tmp/perf/<flow>-h28base/`; trimmed medians committed to `baselines/`.
+  Tree was dirty with pre-existing uncommitted marketplace-detail changes unrelated to
+  these flows — recorded as-is, no source touched by this pass.
+- Cold-median deltas vs 2026-09-25: `info` CLS bit-identical (H3 control holds);
+  `home` longtasks 9 vs 8 (still worst count), script 585 vs 713ms; `patch-detail`
+  script 583 vs 718ms, CLS bit-identical; `rack-detail` task 1062 vs 893ms and layout
+  90 vs 66ms (observed uptick — needs a same-tree repeat before any regression claim);
+  `module-detail` DOM 2772 vs 2784, cold CLS 0.639 vs 0.654, cold layout 110 vs 86ms.
+- Standing state unchanged: systemic CLS breach persists on all 4 content flows;
+  no optimization applied, no offender re-ranking — this is a baseline refresh only.
 
 ## Compile-time candidate screen (2026-09-27)
 

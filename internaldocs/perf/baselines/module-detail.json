@@ -1,8 +1,8 @@
 {
   "flow": "module-detail",
   "route": "/modules/details/1025 (public module id 1025)",
-  "capturedAt": "2026-09-25",
-  "treeSha": "5911db8d",
+  "capturedAt": "2026-09-28",
+  "treeSha": "fbea70f0",
   "server": "dev (pnpm start, vite, unoptimized + HMR — lab deltas only, not prod absolutes)",
   "viewport": {
     "width": 1440,
@@ -13,33 +13,33 @@
   "settleMs": 5000,
   "median": {
     "cold": {
-      "lcpMs": 940,
-      "cls": 0.6536117569032519,
+      "lcpMs": 952,
+      "cls": 0.6386761999394505,
       "longTaskCount": 2,
-      "longestTaskMs": 81,
-      "domNodes": 2784,
-      "jsHeapBytes": 49284076,
-      "taskDurationMs": 1224.046,
-      "scriptDurationMs": 142.192,
-      "layoutDurationMs": 85.602,
-      "domContentLoadedMs": 386.1000000005588,
-      "loadMs": 446,
+      "longestTaskMs": 83,
+      "domNodes": 2772,
+      "jsHeapBytes": 49794096,
+      "taskDurationMs": 1310.373,
+      "scriptDurationMs": 164.444,
+      "layoutDurationMs": 109.547,
+      "domContentLoadedMs": 416,
+      "loadMs": 526.3000000007451,
       "requestCount": 250
     },
     "warm": {
-      "lcpMs": 808,
-      "cls": 0.5403693166976112,
+      "lcpMs": 884,
+      "cls": 0.5402637955025881,
       "longTaskCount": 1,
-      "longestTaskMs": 54,
-      "domNodes": 2784,
-      "jsHeapBytes": 47543332,
-      "taskDurationMs": 1004.591,
-      "scriptDurationMs": 92.187,
-      "layoutDurationMs": 62.509,
-      "domContentLoadedMs": 178.20000000018626,
-      "loadMs": 307.29999999981374,
+      "longestTaskMs": 59,
+      "domNodes": 2772,
+      "jsHeapBytes": 49549424,
+      "taskDurationMs": 1092.102,
+      "scriptDurationMs": 109.732,
+      "layoutDurationMs": 75.648,
+      "domContentLoadedMs": 291.30000000074506,
+      "loadMs": 329.3999999985099,
       "requestCount": 250
     }
   },
-  "notes": "DOM 2784 approaches 3000 hard budget; CLS ~0.65 (warm 0.54) systemic breach. LCP 940/808ms inside target. INP unmeasured; TBT proxy used. Dev transfer/script bytes are vite artifacts — not prod budgets."
+  "notes": "DOM 2772 vs 2784 on 2026-09-25, still near 3000 hard. Cold CLS 0.639 vs 0.654 prior; warm CLS 0.540 vs 0.540 (stable). Cold layout up 110 vs 86ms; script up 164 vs 142ms cold. LCP 952/884ms inside target. INP unmeasured; TBT proxy used. Dev transfer/script bytes are vite artifacts — not prod budgets."
 }
