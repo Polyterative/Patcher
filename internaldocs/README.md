@@ -69,6 +69,7 @@ second source of rules.
 | File | Purpose |
 |---|---|
 | [ops/CLOUDFLARE_CACHE_OBSERVABILITY.md](./ops/CLOUDFLARE_CACHE_OBSERVABILITY.md) | Image-proxy cache health re-check runbook line (#156) |
+| [ops/INFRA_SAFE_CHECKPOINT_2026-09-28.md](./ops/INFRA_SAFE_CHECKPOINT_2026-09-28.md) | Source-level evidence and preserved operator gates for infra issues #159/#158/#156/#151/#150/#145 |
 | [ops/LOCAL_BACKUP_INSPECTION.md](./ops/LOCAL_BACKUP_INSPECTION.md) | Local-only backup inspection notes |
 | [ops/RELEASE_PROCESS.md](./ops/RELEASE_PROCESS.md) | Release branch runbook and history-safety notes |
 | [ops/SENTRY_TRIAGE.md](./ops/SENTRY_TRIAGE.md) | Sentry live-issue triage, fixing, and closing workflow |
