@@ -4,6 +4,7 @@ import {
   MANUFACTURER_ANALYTICS_HIDDEN_DISPLAY_VALUE,
   MANUFACTURER_ANALYTICS_METRIC_COPY,
   MANUFACTURER_ANALYTICS_METRIC_IDS,
+  MANUFACTURER_ANALYTICS_PRIVACY_THRESHOLDS_BY_METRIC,
   normalizeManufacturerAnalyticsRows
 } from './manufacturer-analytics.utils';
 
@@ -133,8 +134,7 @@ describe('manufacturer-analytics.utils', () => {
     expect(JSON.stringify(result)).not.toContain('2');
   });
 
-  it('supports a configurable minimum privacy threshold', () => {
-    expect(normalizeManufacturerAnalyticsRows([
+  it('supports a configurable minimum privacy threshold', () => {    expect(normalizeManufacturerAnalyticsRows([
       { metricId: 'views', count: 4 },
       { metricId: 'outbound_clicks', count: 5 }
     ], { minimumPrivacyThreshold: 5 })).toEqual([
@@ -234,5 +234,60 @@ describe('manufacturer-analytics.utils', () => {
     expect(serialized).not.toContain('raw');
     expect(serialized).not.toContain('timestamp');
     expect(serialized).not.toContain('created_at');
+  });
+
+  it('returns [] for non-array and empty inputs', () => {
+    expect(normalizeManufacturerAnalyticsRows([])).toEqual([]);
+    expect(normalizeManufacturerAnalyticsRows(null)).toEqual([]);
+    expect(normalizeManufacturerAnalyticsRows(undefined)).toEqual([]);
+    expect(normalizeManufacturerAnalyticsRows('views')).toEqual([]);
+  });
+
+  it('treats the exact privacy threshold as available', () => {
+    const result = normalizeManufacturerAnalyticsRows([{metricId: 'views', count: 3}]);
+    expect(result).toEqual([jasmine.objectContaining({metricId: 'views', state: 'available', count: 3})]);
+  });
+
+  it('falls back to the default threshold for invalid threshold options', () => {
+    for (const minimumPrivacyThreshold of [Number.NaN, Number.POSITIVE_INFINITY, -1, '3' as unknown as number]) {
+      const result = normalizeManufacturerAnalyticsRows(
+        [{metricId: 'views', count: 2}],
+        {minimumPrivacyThreshold}
+      );
+      expect(result[0]?.state).withContext(`threshold ${String(minimumPrivacyThreshold)}`).toBe('hidden');
+    }
+    expect(normalizeManufacturerAnalyticsRows(
+      [{metricId: 'views', count: 2}],
+      {minimumPrivacyThreshold: 0}
+    )[0]?.state).toBe('available');
+  });
+
+  it('mirrors the backend per-metric 3/5/10 thresholds in the unified-rule map', () => {
+    expect(MANUFACTURER_ANALYTICS_PRIVACY_THRESHOLDS_BY_METRIC).toEqual({
+      collection_count: 5,
+      outbound_clicks: 5,
+      public_patch_count: 3,
+      public_rack_count: 3,
+      views: 10
+    });
+  });
+
+  it('keeps the flat-3 default when no per-metric override is passed (unified rule opt-in only)', () => {
+    expect(normalizeManufacturerAnalyticsRows([{metricId: 'views', count: 5}])[0]?.state).toBe('available');
+    expect(normalizeManufacturerAnalyticsRows(
+      [{metricId: 'views', count: 5}],
+      {privacyThresholdsByMetric: MANUFACTURER_ANALYTICS_PRIVACY_THRESHOLDS_BY_METRIC}
+    )[0]?.state).toBe('hidden');
+  });
+
+  it('floors per-metric overrides at the global threshold', () => {
+    expect(normalizeManufacturerAnalyticsRows(
+      [{metricId: 'public_patch_count', count: 2}],
+      {privacyThresholdsByMetric: {public_patch_count: 1}}
+    )[0]?.state).toBe('hidden');
+    expect(normalizeManufacturerAnalyticsRows(
+      [{metricId: 'public_patch_count', count: 3}],
+      {privacyThresholdsByMetric: {public_patch_count: 1}}
+    )[0]?.state).toBe('available');
   });
 });

@@ -107,7 +107,7 @@ describe('ManufacturerDetailDataService', () => {
       analytics as unknown as AnalyticsService
     );
     
-    return {service, backend, snackBar, mockManufacturer, mockModules};
+    return {service, backend, snackBar, analytics, mockManufacturer, mockModules};
   }
   
   afterEach(() => {
@@ -140,6 +140,16 @@ describe('ManufacturerDetailDataService', () => {
       const {service} = build();
       expect(service.isLoading$).toBeDefined();
       expect(typeof service.isLoading$.subscribe).toBe('function');
+      service.ngOnDestroy();
+    });
+
+    it('should expose display-only aggregate rows defaulting to empty (no backend fetch)', () => {
+      const {service, backend} = build();
+      let result: unknown;
+      service.displayAggregateRows$.subscribe(v => result = v).unsubscribe();
+      expect(result).toEqual([]);
+      expect(backend.get.manufacturerWithId).not.toHaveBeenCalled();
+      expect(backend.get.modulesBySameManufacturer).not.toHaveBeenCalled();
       service.ngOnDestroy();
     });
 
@@ -225,7 +235,7 @@ describe('ManufacturerDetailDataService', () => {
       }).not.toThrow();
       service.ngOnDestroy();
     }));
-    
+
     it('should set isLoading$ to false after error', fakeAsync(() => {
       const {service, backend} = build();
       backend.get.manufacturerWithId.and.returnValue(throwError(() => new Error('err')));
@@ -234,6 +244,41 @@ describe('ManufacturerDetailDataService', () => {
       service.updateManufacturer$.next(1);
       tick();
       expect(loadingValues[loadingValues.length - 1]).toBe(false);
+      service.ngOnDestroy();
+    }));
+
+    it('should keep null data and notify when the manufacturer load fails', fakeAsync(() => {
+      const {service, backend, snackBar} = build();
+      backend.get.manufacturerWithId.and.returnValue(throwError(() => new Error('Network error')));
+      let manufacturer: ManufacturerDetail | null | undefined;
+      service.manufacturerData$.subscribe(v => manufacturer = v);
+      service.updateManufacturer$.next(1);
+      tick();
+      expect(manufacturer).toBeNull();
+      expect(snackBar.open).toHaveBeenCalled();
+      service.ngOnDestroy();
+    }));
+
+    it('should keep null modules when the module list load fails', fakeAsync(() => {
+      const {service, backend} = build();
+      backend.get.modulesBySameManufacturer.and.returnValue(throwError(() => new Error('modules failed')));
+      let modules: ModuleList | undefined;
+      service.modulesData$.subscribe(v => modules = v);
+      service.updateManufacturer$.next(1);
+      tick();
+      expect(modules).toBeNull();
+      service.ngOnDestroy();
+    }));
+
+    it('should emit null manufacturer data without analytics when the backend returns empty', fakeAsync(() => {
+      const {service, backend, analytics} = build();
+      backend.get.manufacturerWithId.and.returnValue(of({data: null}));
+      let manufacturer: ManufacturerDetail | null | undefined = undefined;
+      service.manufacturerData$.subscribe(v => manufacturer = v);
+      service.updateManufacturer$.next(1);
+      tick();
+      expect(manufacturer).toBeNull();
+      expect(analytics.capture).not.toHaveBeenCalled();
       service.ngOnDestroy();
     }));
   });

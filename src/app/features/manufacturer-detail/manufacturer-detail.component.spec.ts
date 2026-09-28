@@ -4,16 +4,22 @@ import {
 } from 'rxjs';
 import { ManufacturerDetailComponent } from './manufacturer-detail.component';
 import {
-  ManufacturerDetail
+  ManufacturerDetail,
+  ManufacturerDetailDataService
 } from './manufacturer-detail-data.service';
 import { LabelValueData } from 'src/app/components/rack-parts/rack-editor/lib-showcase-grid/lib-showcase-grid.component';
 import { MinimalModule } from 'src/app/models/module';
 import { ModuleList } from 'src/app/features/module-browser/module-browser-data.service';
-import { ManufacturerDetailDataService } from './manufacturer-detail-data.service';
 import { ActivatedRoute, Params } from '@angular/router';
 import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
 import { SeoSocialShareData } from 'src/app/models/seo.model';
 import { TimeagoPipe } from 'ngx-timeago';
+import { MANUFACTURER_FEATURED_MODULE_LIMIT } from './manufacturer-updates.utils';
+import { UrlCreatorService } from 'src/app/features/backend/url-creator.service';
+import {
+  MANUFACTURER_ANALYTICS_HIDDEN_DISPLAY_VALUE,
+  ManufacturerAnalyticsDisplayRow
+} from './manufacturer-analytics.utils';
 
 
 function makeManufacturer(overrides: Partial<ManufacturerDetail> = {}): ManufacturerDetail {
@@ -53,12 +59,14 @@ function makeStandard(id: number): MinimalModule['standard'] {
 function build() {
   const manufacturerData$ = new BehaviorSubject<ManufacturerDetail | null>(null);
   const modulesData$       = new BehaviorSubject<ModuleList>(null);
+  const displayAggregateRows$ = new BehaviorSubject<unknown>([]);
   const updateManufacturerNext = jasmine.createSpy<(id: number) => void>('updateManufacturer$.next');
 
   const dataService = {
     logoStorageBase: 'https://cdn.example.test/manufacturer-logos/',
     manufacturerData$,
     modulesData$,
+    displayAggregateRows$,
     updateManufacturer$: {next: updateManufacturerNext},
   } as unknown as ManufacturerDetailDataService;
 
@@ -71,21 +79,27 @@ function build() {
   const timeagoSpy   = jasmine.createSpy('transform').and.returnValue('3 days ago');
   const timeago = {transform: timeagoSpy} as unknown as TimeagoPipe;
 
+  const urlCopySpy = jasmine.createSpy('copyTextToClipboard');
+  const urlCreatorService = {copyTextToClipboard: urlCopySpy} as unknown as UrlCreatorService;
+
   const component = new ManufacturerDetailComponent(
     dataService,
     route,
     seoService,
     timeago,
+    urlCreatorService,
   );
 
   return {
     component,
     manufacturerData$,
     modulesData$,
+    displayAggregateRows$,
     updateManufacturerNext,
     routeParams$,
     seoUpdateSpy,
     timeagoSpy,
+    urlCopySpy,
   };
 }
 
@@ -298,6 +312,240 @@ describe('ManufacturerDetailComponent', () => {
       const baseCallCount = seoUpdateSpy.calls.count(); // constructor's initial baseline call
       // null is already the initial BehaviorSubject value so no further call occurs
       expect(seoUpdateSpy.calls.count()).toBe(baseCallCount);
+      component.ngOnDestroy();
+    });
+  });
+
+  // ─── featuredModules$ (display-only, no persistence) ──────────────────────
+
+  describe('featuredModules$', () => {
+
+    function featuredSnapshot(component: ManufacturerDetailComponent): MinimalModule[] {
+      let result: MinimalModule[] = [];
+      component.featuredModules$.subscribe(s => result = s).unsubscribe();
+      return result;
+    }
+
+    it('returns [] when modules list is null', () => {
+      const {component} = build();
+      expect(featuredSnapshot(component)).toEqual([]);
+      component.ngOnDestroy();
+    });
+
+    it('surfaces public modules in catalogue order', () => {
+      const {component, modulesData$} = build();
+      modulesData$.next([makeModule({id: 10}), makeModule({id: 11})]);
+      expect(featuredSnapshot(component).map(m => m.id)).toEqual([10, 11]);
+      component.ngOnDestroy();
+    });
+
+    it('excludes non-public modules', () => {
+      const {component, modulesData$} = build();
+      modulesData$.next([
+        makeModule({id: 10, public: false}),
+        makeModule({id: 11}),
+      ]);
+      expect(featuredSnapshot(component).map(m => m.id)).toEqual([11]);
+      component.ngOnDestroy();
+    });
+
+    it('caps the featured surface at the module limit', () => {
+      const {component, modulesData$} = build();
+      modulesData$.next(Array.from({length: MANUFACTURER_FEATURED_MODULE_LIMIT + 2}, (_, i) => makeModule({id: 100 + i})));
+      const featured = featuredSnapshot(component);
+      expect(featured.length).toBe(MANUFACTURER_FEATURED_MODULE_LIMIT);
+      expect(featured.map(m => m.id)).toEqual([100, 101, 102, 103, 104, 105]);
+      component.ngOnDestroy();
+    });
+
+    it('returns [] for an empty catalogue without calling the featured cap', () => {
+      const {component, modulesData$} = build();
+      modulesData$.next([]);
+      expect(featuredSnapshot(component)).toEqual([]);
+      component.ngOnDestroy();
+    });
+
+    it('caps interleaved public modules while skipping private ones', () => {
+      const {component, modulesData$} = build();
+      const modules = Array.from({length: MANUFACTURER_FEATURED_MODULE_LIMIT + 3}, (_, i) => makeModule({
+        id: 200 + i,
+        public: i % 2 === 0
+      }));
+      modulesData$.next(modules);
+      const featured = featuredSnapshot(component);
+      expect(featured.length).toBeLessThanOrEqual(MANUFACTURER_FEATURED_MODULE_LIMIT);
+      expect(featured.every(m => m.public !== false)).toBeTrue();
+      expect(featured.map(m => m.id)).toEqual([200, 202, 204, 206, 208]);
+      component.ngOnDestroy();
+    });
+
+    it('returns [] when every catalogue module is private', () => {
+      const {component, modulesData$} = build();
+      modulesData$.next([makeModule({id: 10, public: false}), makeModule({id: 11, public: false})]);
+      expect(featuredSnapshot(component)).toEqual([]);
+      component.ngOnDestroy();
+    });
+  });
+
+  // ─── analyticsRows$ (threshold-gated, display copy only) ──────────────────
+
+  describe('analyticsRows$', () => {
+
+    it('returns [] while the display-only aggregate seam is empty', () => {
+      const {component} = build();
+      let result: unknown;
+      component.analyticsRows$.subscribe(s => result = s).unsubscribe();
+      expect(result).toEqual([]);
+      component.ngOnDestroy();
+    });
+
+    it('hides below-threshold counts with generic copy and no exact count', () => {
+      const {component, displayAggregateRows$} = build();
+      displayAggregateRows$.next([{metricId: 'views', count: 1}]);
+      let result: readonly ManufacturerAnalyticsDisplayRow[] = [];
+      component.analyticsRows$.subscribe(s => result = s).unsubscribe();
+      expect(result.length).toBe(1);
+      expect(result[0].state).toBe('hidden');
+      expect(result[0].displayValue).toBe(MANUFACTURER_ANALYTICS_HIDDEN_DISPLAY_VALUE);
+      expect('count' in result[0]).toBeFalse();
+      component.ngOnDestroy();
+    });
+
+    it('shows above-threshold counts with locale display values', () => {
+      const {component, displayAggregateRows$} = build();
+      displayAggregateRows$.next([{metricId: 'outbound_clicks', count: 3000}]);
+      let result: readonly ManufacturerAnalyticsDisplayRow[] = [];
+      component.analyticsRows$.subscribe(s => result = s).unsubscribe();
+      expect(result).toEqual([jasmine.objectContaining({state: 'available', displayValue: '3,000', count: 3000})]);
+      component.ngOnDestroy();
+    });
+
+    it('filters unknown metrics and malformed rows from the analytics surface', () => {
+      const {component, displayAggregateRows$} = build();
+      displayAggregateRows$.next([
+        {metricId: 'viewer_user_ids', count: 100},
+        {metricId: 'views'},
+        null,
+        {metricId: 'views', count: 12}
+      ]);
+      let result: readonly ManufacturerAnalyticsDisplayRow[] = [];
+      component.analyticsRows$.subscribe(s => result = s).unsubscribe();
+      expect(result).toEqual([jasmine.objectContaining({metricId: 'views', state: 'available', count: 12})]);
+      expect(JSON.stringify(result)).not.toContain('viewer_user_ids');
+      component.ngOnDestroy();
+    });
+
+    it('keeps every below-threshold row hidden without exposing exact counts', () => {
+      const {component, displayAggregateRows$} = build();
+      displayAggregateRows$.next([
+        {metricId: 'views', count: 1},
+        {metricId: 'collection_count', count: 2}
+      ]);
+      let result: readonly ManufacturerAnalyticsDisplayRow[] = [];
+      component.analyticsRows$.subscribe(s => result = s).unsubscribe();
+      expect(result.length).toBe(2);
+      for (const row of result) {
+        expect(row.state).toBe('hidden');
+        expect(row.displayValue).toBe(MANUFACTURER_ANALYTICS_HIDDEN_DISPLAY_VALUE);
+        expect('count' in row).toBeFalse();
+      }
+      component.ngOnDestroy();
+    });
+  });
+
+  // ─── widgetCard$ (embed preview, public fields only) ──────────────────────
+
+  describe('widgetCard$', () => {
+
+    function widgetSnapshot(component: ManufacturerDetailComponent) {
+      let result: {manufacturer: {canonicalUrl: string}; module: {canonicalUrl: string}} | null | undefined;
+      component.widgetCard$.subscribe(s => result = s).unsubscribe();
+      return result;
+    }
+
+    it('returns null when manufacturer data is missing', () => {
+      const {component, modulesData$} = build();
+      modulesData$.next([makeModule()]);
+      expect(widgetSnapshot(component)).toBeNull();
+      component.ngOnDestroy();
+    });
+
+    it('returns null when no public module exists', () => {
+      const {component, manufacturerData$, modulesData$} = build();
+      manufacturerData$.next(makeManufacturer());
+      modulesData$.next([makeModule({public: false})]);
+      expect(widgetSnapshot(component)).toBeNull();
+      component.ngOnDestroy();
+    });
+
+    it('returns null when the module list is null or empty', () => {
+      const {component, manufacturerData$, modulesData$} = build();
+      manufacturerData$.next(makeManufacturer());
+      expect(widgetSnapshot(component)).toBeNull();
+      modulesData$.next([]);
+      expect(widgetSnapshot(component)).toBeNull();
+      component.ngOnDestroy();
+    });
+
+    it('serializes a preview contract for the first public module', () => {
+      const {component, manufacturerData$, modulesData$} = build();
+      manufacturerData$.next(makeManufacturer({id: 1, name: 'Doepfer'}));
+      modulesData$.next([makeModule({id: 10, name: 'A-110-1'})]);
+      const card = widgetSnapshot(component);
+      expect(card!.manufacturer.canonicalUrl).toBe('https://patcher.xyz/manufacturers/details/1');
+      expect(card!.module.canonicalUrl).toBe('https://patcher.xyz/modules/details/10');
+      expect(JSON.stringify(card)).not.toContain('adminUser');
+      component.ngOnDestroy();
+    });
+  });
+
+  // ─── widgetEmbedSnippet$ (copyable display-only snippet, no endpoint) ───
+
+  describe('widgetEmbedSnippet$', () => {
+
+    function snippetSnapshot(component: ManufacturerDetailComponent): string | null {
+      let result: string | null = null;
+      component.widgetEmbedSnippet$.subscribe(s => result = s).unsubscribe();
+      return result;
+    }
+
+    it('returns null when no public module exists (no backend fetch)', () => {
+      const {component, manufacturerData$, modulesData$} = build();
+      manufacturerData$.next(makeManufacturer());
+      modulesData$.next([makeModule({public: false})]);
+      expect(snippetSnapshot(component)).toBeNull();
+      component.ngOnDestroy();
+    });
+
+    it('derives a static blockquote snippet with canonical URLs and no endpoint', () => {
+      const {component, manufacturerData$, modulesData$} = build();
+      manufacturerData$.next(makeManufacturer({id: 1, name: 'Doepfer'}));
+      modulesData$.next([makeModule({id: 10, name: 'A-110-1'})]);
+      const snippet = snippetSnapshot(component);
+      expect(snippet).toContain('<blockquote');
+      expect(snippet).toContain('https://patcher.xyz/modules/details/10');
+      expect(snippet).not.toContain('<script');
+      expect(snippet).not.toContain('<iframe');
+      expect(snippet).not.toContain('adminUser');
+      component.ngOnDestroy();
+    });
+
+    it('delegates snippet copying to UrlCreatorService with copy messaging', () => {
+      const {component, urlCopySpy} = build();
+      component.copyWidgetSnippet('<blockquote>embed</blockquote>');
+      expect(urlCopySpy).toHaveBeenCalledWith(
+        '<blockquote>embed</blockquote>',
+        'Widget embed snippet copied to clipboard.',
+        'Clipboard write failed — copy the snippet manually.'
+      );
+      component.ngOnDestroy();
+    });
+
+    it('ignores empty snippet copy requests', () => {
+      const {component, urlCopySpy} = build();
+      component.copyWidgetSnippet(null);
+      component.copyWidgetSnippet('');
+      expect(urlCopySpy).not.toHaveBeenCalled();
       component.ngOnDestroy();
     });
   });

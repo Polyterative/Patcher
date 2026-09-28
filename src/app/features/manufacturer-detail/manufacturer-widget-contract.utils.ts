@@ -90,6 +90,10 @@ export function serializeManufacturerWidgetModuleCard(
   manufacturer: ManufacturerWidgetManufacturerInput,
   module: ManufacturerWidgetModuleInput
 ): ManufacturerWidgetModuleCardContract | null {
+  if (!manufacturer || typeof manufacturer !== 'object' || !module || typeof module !== 'object') {
+    return null;
+  }
+
   if (!isSerializablePublicModule(module)) {
     return null;
   }
@@ -128,6 +132,40 @@ export function serializeManufacturerWidgetModuleCard(
     manufacturer: manufacturerContract,
     module: moduleContract,
   };
+}
+
+/**
+ * Builds a copyable display-only HTML embed snippet for a widget card.
+ * Static markup only: canonical links plus data attributes, no <script>,
+ * no <iframe>, no widget endpoint, no network fetch. Safe to render inside
+ * a <code> block and copy to clipboard.
+ */
+export function buildManufacturerWidgetEmbedSnippet(
+  card: ManufacturerWidgetModuleCardContract | null | undefined
+): string | null {
+  if (!card) {
+    return null;
+  }
+
+  const moduleLabel = card.module.name && card.manufacturer.name
+    ? `${ card.module.name } — ${ card.manufacturer.name }`
+    : card.module.name;
+
+  return `<blockquote class="patcher-module-card" data-schema-version="1" data-manufacturer-id="${ escapeHtmlAttribute(card.manufacturer.id) }" data-module-id="${ escapeHtmlAttribute(card.module.id) }">`
+    + `<a href="${ escapeHtmlAttribute(card.module.canonicalUrl) }">${ escapeHtmlText(moduleLabel) }</a> `
+    + `<span>via <a href="${ escapeHtmlAttribute(PATCHER_ORIGIN) }">patcher.xyz</a></span>`
+    + `</blockquote>`;
+}
+
+function escapeHtmlText(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function escapeHtmlAttribute(value: string): string {
+  return escapeHtmlText(value).replace(/"/g, '&quot;');
 }
 
 function isSerializablePublicModule(module: ManufacturerWidgetModuleInput): boolean {
