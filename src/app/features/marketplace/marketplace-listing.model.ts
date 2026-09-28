@@ -108,6 +108,7 @@ export interface MarketplaceListingDraft {
   shippingNotes?: string | null;
   externalLink?: string | null;
   status?: MarketplaceListingStatus | string | null;
+  expiresAt?: string | Date | number | null;
 }
 
 export type MarketplaceListingDraftField =
@@ -122,7 +123,8 @@ export type MarketplaceListingDraftField =
   | 'shippingOptions'
   | 'shippingNotes'
   | 'externalLink'
-  | 'status';
+  | 'status'
+  | 'expiresAt';
 
 export interface MarketplaceListingNormalizedDraft {
   moduleId: string;
@@ -138,6 +140,13 @@ export interface MarketplaceListingNormalizedDraft {
   description?: string;
   externalLink?: string;
   status: MarketplaceListingStatus;
+  /**
+   * Normalized expiry: `undefined` (key absent) = no expiry info supplied,
+   * `null` = seller explicitly cleared the expiry, ISO string = set expiry.
+   * The absent-vs-null distinction lets updates omit `expires_at` on
+   * unrelated edits while still sending explicit `null` on clear.
+   */
+  expiresAt?: string | null;
 }
 
 export interface MarketplaceListingSellerSummary {
@@ -190,6 +199,12 @@ export interface MarketplaceListing {
   status: MarketplaceListingStatus;
   createdAt: string;
   updatedAt: string;
+  /**
+   * Optional while expiry editing rolls out: rows predate the projection and
+   * shared spec helpers construct literals without it. The backend mapper
+   * always sets it (`null` when the row has no expiry).
+   */
+  expiresAt?: string | null;
   media: MarketplaceListingMedia[];
   module: MarketplaceListingModuleSummary | null;
   seller: MarketplaceListingSellerSummary | null;
