@@ -22,6 +22,7 @@ import {
   normalizeStandardRow,
   normalizeTagRow,
 } from '../../cloudflare/public-api/src/catalogue-mapping.ts';
+import { streamPublicDatasetJsonl } from '../../cloudflare/public-api/src/dataset-export.ts';
 import {
   normalizeRecordUsageInput,
   normalizeVerifyApiKeyRow,
@@ -571,6 +572,50 @@ test('catalogue row mapping fails closed on malformed database output', () => {
   assert.throws(
     () => normalizeModuleRow({ ...moduleOne, is_diy: 'false' }),
     /boolean/
+  );
+});
+
+test('JSONL dataset shaping reuses public allowlists and streams ordered rows', () => {
+  const chunks = [...streamPublicDatasetJsonl('modules', [
+    { ...moduleOne, private_note: 'must not leak' },
+    { ...moduleTwo, admin_id: 'must not leak' },
+  ])];
+  const lines = chunks.map(chunk => new TextDecoder().decode(chunk));
+
+  assert.equal(chunks.length, 2);
+  assert.deepEqual(lines, [
+    `${JSON.stringify(moduleOne)}\n`,
+    `${JSON.stringify(moduleTwo)}\n`,
+  ]);
+  assert.equal(lines.some(line => line.includes('private_note') || line.includes('admin_id')), false);
+  assert.deepEqual(
+    [...streamPublicDatasetJsonl('manufacturers', [{ ...manufacturerOne, internal: 'hidden' }])]
+      .map(chunk => JSON.parse(new TextDecoder().decode(chunk))),
+    [manufacturerOne]
+  );
+  assert.deepEqual(
+    [...streamPublicDatasetJsonl('standards', [{ id: 0, name: '3U' }])]
+      .map(chunk => new TextDecoder().decode(chunk)),
+    ['{"id":0,"name":"3U"}\n']
+  );
+  assert.deepEqual([...streamPublicDatasetJsonl('tags', [])], []);
+});
+
+test('JSONL dataset shaping rejects malformed or unstable row order', () => {
+  assert.throws(
+    () => [...streamPublicDatasetJsonl('manufacturers', [manufacturerOne, { ...manufacturerOne }])],
+    /strictly increasing IDs/
+  );
+  assert.throws(
+    () => [...streamPublicDatasetJsonl('tags', [
+      { id: 2, name: 'Later', type: null },
+      { id: 1, name: 'Earlier', type: null },
+    ])],
+    /strictly increasing IDs/
+  );
+  assert.throws(
+    () => [...streamPublicDatasetJsonl('tags', [{ id: 1, name: 'Tag', type: 'private' }])],
+    /recognized tag type/
   );
 });
 

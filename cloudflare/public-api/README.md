@@ -116,7 +116,13 @@ The v1 contract exposes only allowlisted catalogue fields from publishable modul
 - bulk export endpoints;
 - public rack and public patch endpoints.
 
-Bulk JSONL export is a Structural follow-up. Public racks and patches are deferred to a later contract review and will use existing opaque `public_id` patterns rather than integer IDs.
+Bulk JSONL delivery is a Structural follow-up. Public racks and patches are deferred to a later contract review and will use existing opaque `public_id` patterns rather than integer IDs.
+
+## Dataset JSONL contract (local shaping only)
+
+The local `src/dataset-export.ts` helper defines the row encoding for four future full-catalogue snapshots: `modules`, `manufacturers`, `standards`, and `tags`. Each line is one UTF-8 JSON object using the same allowlisted fields and normalization as the corresponding v1 catalogue response item. Lines end in `LF`; an empty dataset produces an empty byte stream. Rows must be supplied in strictly increasing numeric `id` order, and the helper yields one encoded line at a time so the caller does not need to buffer the whole export.
+
+The future `GET /v1/datasets` manifest is expected to identify each dataset by name and report its byte size and SHA-256 digest. A future authenticated `GET /v1/datasets/{name}` will stream the matching JSONL object through the Worker; direct or presigned R2 URLs are not part of the contract. This helper does **not** add either route, manifest generation, a scheduled export job, R2 storage, or Cloudflare bindings. Those remain separately gated.
 
 ## Source map
 
@@ -131,6 +137,7 @@ Bulk JSONL export is a Structural follow-up. Public racks and patches are deferr
 | [`src/catalogue-provider.ts`](./src/catalogue-provider.ts) | Parameterized catalogue queries against `api_v1_*` views. |
 | [`src/catalogue-serving.ts`](./src/catalogue-serving.ts) | Cache API, ETag/304, stale-while-revalidate, origin error handling. |
 | [`src/catalogue-mapping.ts`](./src/catalogue-mapping.ts) | Row normalization, field allowlists, sparse fields, cursor encoding. |
+| [`src/dataset-export.ts`](./src/dataset-export.ts) | Local streaming JSONL shaping for the four public catalogue datasets; not connected to routes or storage. |
 | [`src/database.ts`](./src/database.ts) | postgres.js Hyperdrive client, API key RPC calls, usage reporter. |
 | [`wrangler.jsonc`](./wrangler.jsonc) | Local Worker entry and Durable Object class declaration only; no real remote IDs. |
 | [`openapi.yaml`](./openapi.yaml) | OpenAPI 3.1 consumer contract. |
