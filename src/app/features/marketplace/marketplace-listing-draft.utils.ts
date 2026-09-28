@@ -43,7 +43,8 @@ export function isMarketplaceListingCondition(value: unknown): value is Marketpl
 }
 
 export function validateAndNormalizeMarketplaceListingDraft(
-  draft: MarketplaceListingDraft | null | undefined
+  draft: MarketplaceListingDraft | null | undefined,
+  now: string | Date | number = Date.now()
 ): MarketplaceListingDraftValidationResult {
   const source = isObjectRecord(draft) ? draft : {};
   const errors: Partial<Record<MarketplaceListingDraftField, string>> = {};
@@ -63,6 +64,7 @@ export function validateAndNormalizeMarketplaceListingDraft(
     && !(typeof source.status === 'string' && source.status.trim().length === 0);
   const status = statusInputProvided ? trimOptionalText(source.status) : 'draft';
   const shippingOptions = normalizeMarketplaceListingShippingOptions(source.shippingOptions);
+  const expiresAtResult = normalizeFutureExpiresAt(source.expiresAt, now);
 
   if (!moduleId) {
     errors.moduleId = 'Required';
@@ -116,6 +118,10 @@ export function validateAndNormalizeMarketplaceListingDraft(
     errors.shippingNotes = `Use ${MAX_SHIPPING_NOTES_LENGTH} characters or fewer`;
   }
 
+  if (expiresAtResult.error) {
+    errors.expiresAt = expiresAtResult.error;
+  }
+
   if (Object.keys(errors).length > 0) {
     return {
       errors,
@@ -138,7 +144,8 @@ export function validateAndNormalizeMarketplaceListingDraft(
       status: status as MarketplaceListingStatus,
       ...(titleOverride ? {titleOverride} : {}),
       ...(description ? {description} : {}),
-      ...(externalLink ? {externalLink} : {})
+      ...(externalLink ? {externalLink} : {}),
+      ...(expiresAtResult.expiresAt !== undefined ? {expiresAt: expiresAtResult.expiresAt} : {})
     },
     valid: true
   };
@@ -169,4 +176,48 @@ export function normalizeMarketplaceListingShippingOptions(value: unknown): stri
   }
 
   return normalized;
+}
+
+function normalizeFutureExpiresAt(
+  value: unknown,
+  now: string | Date | number
+): { expiresAt?: string | null; error?: string } {
+  if (value === null || value === undefined) {
+    return value === null ? {expiresAt: null} : {};
+  }
+
+  if (typeof value === 'string' && value.trim().length === 0) {
+    return {expiresAt: null};
+  }
+
+  const expiresAtMs = parseTimeInput(value);
+  const nowMs = parseTimeInput(now);
+
+  if (expiresAtMs === null || nowMs === null) {
+    return {error: 'Use a valid date'};
+  }
+
+  if (expiresAtMs <= nowMs) {
+    return {error: 'Use a future date'};
+  }
+
+  return {expiresAt: new Date(expiresAtMs).toISOString()};
+}
+
+function parseTimeInput(value: unknown): number | null {
+  if (value instanceof Date) {
+    const ms = value.getTime();
+    return Number.isFinite(ms) ? ms : null;
+  }
+
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : null;
+  }
+
+  if (typeof value === 'string') {
+    const ms = Date.parse(value.trim());
+    return Number.isFinite(ms) ? ms : null;
+  }
+
+  return null;
 }

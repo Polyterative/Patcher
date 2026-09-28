@@ -22,7 +22,7 @@ import {
 } from './supabase-db.types';
 
 export const MARKETPLACE_LISTING_COLUMNS =
-  'id,public_id,seller_profileid,moduleid,title_override,description,condition,asking_price_amount_minor,asking_price_currency,open_to_offers,ships_from_country,shipping_options,shipping_notes,external_link,status,created_at,updated_at';
+  'id,public_id,seller_profileid,moduleid,title_override,description,condition,asking_price_amount_minor,asking_price_currency,open_to_offers,ships_from_country,shipping_options,shipping_notes,external_link,status,created_at,updated_at,expires_at';
 export const LISTING_MEDIA_COLUMNS =
   'id,listing_id,kind,url,storage_path,position,mime_type,created_at';
 export const MARKETPLACE_LISTING_WITH_RELATIONS_COLUMNS = `${ MARKETPLACE_LISTING_COLUMNS },
@@ -67,21 +67,10 @@ export function buildMarketplaceListingInsert(
   sellerProfileId: string,
   draft: MarketplaceListingDraft
 ): SupabaseTableInsert<'marketplace_listings'> {
-  const listing = normalizeMarketplaceListingForPersistence(sellerProfileId, draft);
+  const {payload} = marketplaceListingWritePayload(sellerProfileId, draft);
   return {
-    asking_price_amount_minor: listing.askingPriceAmountMinor,
-    asking_price_currency: listing.askingPriceCurrency,
-    condition: listing.condition,
-    description: listing.description ?? null,
-    external_link: listing.externalLink ?? null,
-    moduleid: listing.moduleId,
-    open_to_offers: listing.openToOffers,
-    seller_profileid: sellerProfileId,
-    shipping_notes: listing.shippingNotes ?? null,
-    shipping_options: listing.shippingOptions,
-    ships_from_country: listing.shipsFromCountry,
-    status: listing.status,
-    title_override: listing.titleOverride ?? null
+    ...payload,
+    seller_profileid: sellerProfileId
   };
 }
 
@@ -89,8 +78,12 @@ export function buildMarketplaceListingUpdate(
   sellerProfileId: string,
   draft: MarketplaceListingDraft
 ): SupabaseTableUpdate<'marketplace_listings'> {
-  const {seller_profileid: _sellerProfileId, ...update} = buildMarketplaceListingInsert(sellerProfileId, draft);
-  return update;
+  const {listing, payload} = marketplaceListingWritePayload(sellerProfileId, draft);
+  if (listing.expiresAt === undefined) {
+    const {expires_at: _omittedExpiresAt, ...update} = payload;
+    return update;
+  }
+  return payload;
 }
 
 export function buildListingMediaInsert(
@@ -127,6 +120,7 @@ export function mapMarketplaceListingRow(row: MarketplaceListingRow): Marketplac
     condition: row.condition as MarketplaceListingCondition,
     createdAt: row.created_at,
     description: row.description,
+    expiresAt: row.expires_at,
     externalLink: row.external_link,
     id: row.id,
     media: (row.media ?? []).map(mapListingMediaRow).sort((first, second) => first.position - second.position),
@@ -213,6 +207,31 @@ export function buildMarketplaceListingImagePath(
   const timestamp = new Date().toISOString().replace(/:/g, '-').replace(/[^0-9-]/g, '');
 
   return `${ sellerProfileId }/${ listingId }/${ base }_${ timestamp }.${ extension }`;
+}
+
+function marketplaceListingWritePayload(
+  sellerProfileId: string,
+  draft: MarketplaceListingDraft
+) {
+  const listing = normalizeMarketplaceListingForPersistence(sellerProfileId, draft);
+  return {
+    listing,
+    payload: {
+      asking_price_amount_minor: listing.askingPriceAmountMinor,
+      asking_price_currency: listing.askingPriceCurrency,
+      condition: listing.condition,
+      description: listing.description ?? null,
+      expires_at: listing.expiresAt ?? null,
+      external_link: listing.externalLink ?? null,
+      moduleid: listing.moduleId,
+      open_to_offers: listing.openToOffers,
+      shipping_notes: listing.shippingNotes ?? null,
+      shipping_options: listing.shippingOptions,
+      ships_from_country: listing.shipsFromCountry,
+      status: listing.status,
+      title_override: listing.titleOverride ?? null
+    }
+  };
 }
 
 function normalizeMarketplaceListingForPersistence(
