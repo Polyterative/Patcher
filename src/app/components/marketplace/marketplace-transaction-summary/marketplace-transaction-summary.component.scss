@@ -1,0 +1,42 @@
+.marketplace-transaction-summary {
+  &__section {
+    border-block-start: 0.0625rem solid var(--mat-sys-outline-variant);
+    padding-block-start: 0.75rem;
+  }
+
+  &__section h2 {
+    font-size: 1rem;
+    margin: 0;
+  }
+
+  &__section p,
+  &__section ol,
+  &__section ul {
+    margin: 0;
+  }
+
+  &__status {
+    font-weight: 600;
+  }
+
+  &__status--warning {
+    color: var(--mat-sys-error);
+  }
+
+  &__timeline-item {
+    border-inline-start: 0.125rem solid var(--mat-sys-outline-variant);
+    padding-inline-start: 0.5rem;
+  }
+
+  &__timeline-item[data-tone='primary'] {
+    border-color: var(--mat-sys-primary);
+  }
+
+  &__timeline-item[data-tone='danger'] {
+    border-color: var(--mat-sys-error);
+  }
+
+  &__message {
+    white-space: pre-wrap;
+  }
+}

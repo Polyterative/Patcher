@@ -1,0 +1,88 @@
+@if (marketplaceEnabled) {
+  <section class="marketplace-transaction-summary col gap1" aria-label="Marketplace transaction summary" data-testid="marketplace-transaction-summary">
+    @if (inquiryResult; as result) {
+      <section class="marketplace-transaction-summary__section col gap05" aria-labelledby="marketplace-inquiry-heading" data-testid="marketplace-inquiry-preview">
+        <h2 id="marketplace-inquiry-heading">Inquiry draft</h2>
+        @if (result.valid) {
+          <p class="marketplace-transaction-summary__status">Draft is valid</p>
+          <p class="marketplace-transaction-summary__message">{{ result.inquiry.message }}</p>
+          @if (result.inquiry.proposedPriceAmountMinor !== undefined && result.inquiry.proposedPriceCurrency) {
+            <p>Proposed price: {{ formatPrice(result.inquiry.proposedPriceAmountMinor, result.inquiry.proposedPriceCurrency) }}</p>
+          }
+          @if (result.inquiry.buyerDestinationSummary; as destination) {
+            <p>Destination: {{ destination }}</p>
+          }
+        } @else {
+          <p class="marketplace-transaction-summary__status marketplace-transaction-summary__status--warning">Draft needs attention</p>
+          <ul>
+            @for (error of inquiryErrors(result.errors); track error) {
+              <li>{{ error }}</li>
+            }
+          </ul>
+        }
+      </section>
+    }
+
+    @if (timelineEvents?.length) {
+      <section class="marketplace-transaction-summary__section col gap05" aria-labelledby="marketplace-timeline-heading" data-testid="marketplace-transaction-timeline">
+        <h2 id="marketplace-timeline-heading">Transaction timeline</h2>
+        <ol>
+          @for (item of timelineItems; track $index) {
+            <li class="marketplace-transaction-summary__timeline-item" [attr.data-tone]="item.available ? item.tone : 'neutral'">
+              @if (item.available) {
+                <strong>{{ item.label }}</strong>
+                @if (item.actorRole) { <span> · {{ item.actorRole }}</span> }
+                @if (item.createdAt) { <time> · {{ item.createdAt }}</time> }
+              } @else {
+                <span>Status update unavailable</span>
+              }
+            </li>
+          }
+        </ol>
+      </section>
+    }
+
+    @if (latestOfferSummary; as offer) {
+      <section class="marketplace-transaction-summary__section col gap05" aria-labelledby="marketplace-offer-heading" data-testid="marketplace-latest-offer">
+        <h2 id="marketplace-offer-heading">Latest offer</h2>
+        @if (offer.available) {
+          <p><strong>{{ offer.label }}:</strong> {{ formattedLatestOffer }}</p>
+          @if (offer.awaitingActorRole) {
+            <p>{{ offer.canCurrentActorRespond ? 'Waiting for your response' : 'Waiting for the other participant' }}</p>
+          }
+        } @else {
+          <p>{{ offerUnavailableLabel(offer.reason) }}</p>
+        }
+      </section>
+    }
+
+    @if (threadSummary; as thread) {
+      <section class="marketplace-transaction-summary__section col gap05" aria-labelledby="marketplace-thread-heading" data-testid="marketplace-thread-preview">
+        <h2 id="marketplace-thread-heading">Conversation</h2>
+        @if (thread.available) {
+          <p><strong>{{ thread.otherParticipantLabel }}</strong>: {{ thread.lastMessagePreview }}</p>
+          @if (thread.unreadCount > 0) {
+            <p>{{ thread.unreadLabel }} unread</p>
+          }
+          @if (thread.flags.length) {
+            <ul aria-label="Message review flags">
+              @for (flag of thread.flags; track flag) {
+                <li>{{ messageFlagLabel(flag) }}</li>
+              }
+            </ul>
+          }
+        } @else {
+          <p>Conversation preview unavailable</p>
+        }
+      </section>
+    }
+
+    @if (visibleFeedbackSummary; as feedback) {
+      <section class="marketplace-transaction-summary__section col gap05" aria-labelledby="marketplace-feedback-heading" data-testid="marketplace-feedback-summary">
+        <h2 id="marketplace-feedback-heading">Marketplace feedback</h2>
+        <p><strong>{{ feedback.trust.label }}</strong> · {{ feedback.trust.copy }}</p>
+        <p>{{ feedback.sentiments.positive }} positive · {{ feedback.sentiments.neutral }} neutral · {{ feedback.sentiments.negative }} negative</p>
+      </section>
+    }
+  </section>
+}
