@@ -105,7 +105,7 @@ None expected. No policy, GRANT, SECURITY DEFINER, or storage change. `expires_a
 - `pnpm lint` (layering: no new imports across Component → Data → API → Supabase boundary) + targeted `pnpm test-headless --include="**/marketplace-listings*"`.
 - No E2E in this slice (UI editing surface is a separate plan); no screenshot needed (no visual change).
 
-## 8. Decision log
+## Decision log
 
 - 2026-09-28 · Reuse existing `expires_at timestamptz null`; no migration — column + types already exist, change is projection/mapper/draft only.
 - 2026-09-28 · `expiresAt` is `string | null` passthrough in `MarketplaceListing` (no Date coercion) — keeps mapper total over legacy NULLs and matches DB wire type.
