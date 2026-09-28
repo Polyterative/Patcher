@@ -29,24 +29,24 @@ Dev-server transfer/script bytes are vite artifacts — deltas only, never prod 
 INP is unmeasured in lab (no interaction step); `taskDurationMs` + `longTaskCount` are the
 TBT proxy. Never claim INP numbers.
 
-## Flow list (all baselined 2026-09-25, tree `5911db8d` unless noted)
+## Flow list (info, home, patch-detail, rack-detail, module-detail re-baselined 2026-09-28 on tree `fbea70f0`; remaining 9 flows baselined 2026-09-25, tree `5911db8d` unless noted)
 
 | baseline file | route | notes |
 |---|---|---|
-| `browser.json` | `/modules/browser` | DOM 3486 vs 3000 hard |
-| `rack-detail.json` | `/racks/0LpWxyJRmzWd` | 58x NG0956 track warnings |
-| `patch-detail.json` | `/patches/details/5` | script ~718ms (FA2 layout; halved in H5) |
-| `user-area.json` | `/user/area` (auth, `--storage-state`) | worst CLS 0.91 |
-| `home.json` | `/` | worst longtask count 8/7 |
-| `module-detail.json` | `/modules/details/1025` | DOM 2784, near hard |
-| `racks-browser.json` | `/racks/browser` | quietest browser |
-| `patches-browser.json` | `/patches/browser` | mildest content CLS 0.38 |
-| `manufacturers.json` | `/manufacturers/browser` | worst DOM 6752, layout 181ms, 37 third-party |
-| `manufacturer-detail.json` | `/manufacturers/details/987` | first link from manufacturers browser |
-| `info.json` | `/info` (shell-only) | ONLY flow meeting CLS hard (0.064) — H3 control exhibit |
-| `not-found.json` | `/404` | CLS 0.32 on minimal leaf — H3 shell exhibit |
-| `public-profile.json` | `/u/Polyterative` | handle linked from Home |
-| `marketplace.json` | `/marketplace` | LOCAL-ONLY (`marketplaceEnabled` true locally, false in prod) |
+| `browser.json` | `/modules/browser` | DOM 3486 vs 3000 hard (2026-09-25) |
+| `rack-detail.json` | `/racks/0LpWxyJRmzWd` | 2026-09-28: task 1062 vs 893ms cold, layout 90 vs 66ms — observed uptick, needs same-tree repeat |
+| `patch-detail.json` | `/patches/details/5` | 2026-09-28: script 583 vs 718ms cold; CLS bit-identical |
+| `user-area.json` | `/user/area` (auth, `--storage-state`) | worst CLS 0.91 (2026-09-25) |
+| `home.json` | `/` | 2026-09-28: longtasks 9/8 vs 8/7, still worst count; script down 585 vs 713ms cold |
+| `module-detail.json` | `/modules/details/1025` | 2026-09-28: DOM 2772, cold CLS 0.639 vs 0.654; cold layout up 110 vs 86ms |
+| `racks-browser.json` | `/racks/browser` | quietest browser (2026-09-25) |
+| `patches-browser.json` | `/patches/browser` | mildest content CLS 0.38 (2026-09-25) |
+| `manufacturers.json` | `/manufacturers/browser` | worst DOM 6752, layout 181ms, 37 third-party (2026-09-25) |
+| `manufacturer-detail.json` | `/manufacturers/details/987` | first link from manufacturers browser (2026-09-25) |
+| `info.json` | `/info` (shell-only) | 2026-09-28: CLS bit-identical 0.064, ONLY flow meeting CLS hard — H3 control exhibit holds |
+| `not-found.json` | `/404` | CLS 0.32 on minimal leaf — H3 shell exhibit (2026-09-25) |
+| `public-profile.json` | `/u/Polyterative` | handle linked from Home (2026-09-25) |
+| `marketplace.json` | `/marketplace` | LOCAL-ONLY (`marketplaceEnabled` true locally, false in prod) (2026-09-25) |
 
 Known measured slugs live in the baseline files' `route` fields; manufacturer-detail id and
 profile handle were discovered from live links (first browser link / home link), not fixtures.
