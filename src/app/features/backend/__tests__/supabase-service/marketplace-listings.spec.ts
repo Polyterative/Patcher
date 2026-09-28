@@ -6,7 +6,14 @@ import {
   TEST_TIMEOUT
 } from './test-setup';
 import { DbPaths } from '../../DatabaseStrings';
-import { MARKETPLACE_LISTING_COLUMNS } from '../../supabase-marketplace-listings';
+import {
+  buildMarketplaceListingInsert,
+  buildMarketplaceListingUpdate,
+  mapMarketplaceListingRow,
+  MARKETPLACE_LISTING_COLUMNS,
+  type MarketplaceListingRow
+} from '../../supabase-marketplace-listings';
+import { type MarketplaceListingDraft } from 'src/app/features/marketplace/marketplace-listing.utils';
 
 const CHAINABLE_METHODS = [
   'select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit',
@@ -263,5 +270,96 @@ describe('SupabaseService - marketplace listings backend', () => {
     expect(deleteImageSpy).toHaveBeenCalledTimes(2);
     expect(listingDelete.eq).toHaveBeenCalledWith('seller_profileid', currentUserId);
     expect(mediaDelete.eq).toHaveBeenCalledWith('id', mediaId);
+  }, TEST_TIMEOUT);
+});
+
+describe('SupabaseService - marketplace listings expiry (omit-when-absent)', () => {
+  let service: SupabaseService;
+  let supabaseClient: SupabaseClientMock;
+
+  const FUTURE_EXPIRY_ISO = '2030-05-01T12:00:00.000Z';
+  const baseDraft = {
+    askingPrice: '1234.50',
+    askingPriceCurrency: 'EUR',
+    condition: 'excellent',
+    moduleId: '42',
+    shipsFromCountry: 'DE',
+    status: 'active'
+  } as unknown as MarketplaceListingDraft;
+  const draftWithExpiry = (expiresAt: unknown) => ({
+    ...baseDraft,
+    expiresAt
+  }) as unknown as MarketplaceListingDraft;
+  const mappedExpiresAt = (row: MarketplaceListingRow): unknown =>
+    (mapMarketplaceListingRow(row) as unknown as {expiresAt?: unknown}).expiresAt;
+
+  beforeEach(() => {
+    const setup = setupSupabaseServiceTest();
+    service = setup.service;
+    supabaseClient = (service as unknown as {supabase: SupabaseClientMock}).supabase;
+    spyOn(service.auth, 'getUserSession$').and.returnValue(of({
+      created_at: '2026-07-17T12:00:00Z',
+      id: currentUserId
+    }));
+  });
+
+  afterEach(cleanupSupabaseServiceTest);
+
+  it('projects expires_at without over-fetching the primary table', async () => {
+    expect(MARKETPLACE_LISTING_COLUMNS).toContain('expires_at');
+    const mock = chainable({data: [listingRow], error: null});
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+    await firstValueFrom(service.GET.activeMarketplaceListings(0, 4));
+
+    expect(mock.select).toHaveBeenCalledWith(jasmine.stringContaining('expires_at'));
+    expect(mock.select).not.toHaveBeenCalledWith(jasmine.stringContaining('(*)'));
+  }, TEST_TIMEOUT);
+
+  it('maps expires_at through to expiresAt for null and set rows', () => {
+    expect(mappedExpiresAt({...listingRow, expires_at: null} as unknown as MarketplaceListingRow)).toBeNull();
+    expect(mappedExpiresAt({
+      ...listingRow,
+      expires_at: FUTURE_EXPIRY_ISO
+    } as unknown as MarketplaceListingRow)).toBe(FUTURE_EXPIRY_ISO);
+  });
+
+  it('inserts a future expiry as expires_at', () => {
+    const payload = buildMarketplaceListingInsert(currentUserId, draftWithExpiry(FUTURE_EXPIRY_ISO));
+
+    expect(payload.expires_at).toBe(FUTURE_EXPIRY_ISO);
+  });
+
+  it('omits expires_at on updates without expiry input', () => {
+    const payload = buildMarketplaceListingUpdate(currentUserId, baseDraft);
+
+    expect('expires_at' in payload).toBe(false);
+  });
+
+  it('clears expiry with explicit null on update', () => {
+    const payload = buildMarketplaceListingUpdate(currentUserId, draftWithExpiry(null));
+
+    expect(payload.expires_at).toBeNull();
+  });
+
+  it('keeps ownership guard and cache bust on expiry updates', async () => {
+    const mock = chainable({data: listingRow, error: null});
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+    const bustedKeys: string[] = [];
+    const sub = service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as string[])));
+
+    await firstValueFrom(service.update.marketplaceListing(listingId, draftWithExpiry(FUTURE_EXPIRY_ISO)));
+
+    const payload = mock.update.calls.first().args[0] as Record<string, unknown>;
+    expect(payload['expires_at']).toBe(FUTURE_EXPIRY_ISO);
+    expect(payload['seller_profileid']).toBeUndefined();
+    expect(mock.eq).toHaveBeenCalledWith('id', listingId);
+    expect(mock.eq).toHaveBeenCalledWith('seller_profileid', currentUserId);
+    expect(bustedKeys).toEqual(jasmine.arrayContaining([
+      'marketplaceListings',
+      'marketplaceListingWithId',
+      'currentUserMarketplaceListings'
+    ]));
+    sub.unsubscribe();
   }, TEST_TIMEOUT);
 });
