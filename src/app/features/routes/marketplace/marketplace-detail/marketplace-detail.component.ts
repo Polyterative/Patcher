@@ -23,6 +23,8 @@ import {
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { EmptyStateComponent } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.component';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
+import { MarketplaceTransactionSummaryComponent } from 'src/app/components/marketplace/marketplace-transaction-summary/marketplace-transaction-summary.component';
+import { environment } from 'src/environments/environment';
 import { MarketplaceDetailDataService } from './marketplace-detail-data.service';
 import { HeroContentCardComponent } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component';
 import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.module';
@@ -34,6 +36,7 @@ import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.
     CommonModule,
     EmptyStateComponent,
     HeroContentCardComponent,
+    MarketplaceTransactionSummaryComponent,
     MatButtonModule,
     MatIconModule,
     ModulePartsModule,
@@ -48,9 +51,11 @@ export class MarketplaceDetailComponent extends SubManager implements OnInit {
   private readonly _selectedMediaIndex$ = new BehaviorSubject<number>(0);
 
   readonly vm$: MarketplaceDetailDataService['vm$'];
+  readonly transaction$: MarketplaceDetailDataService['transaction$'];
   readonly selectedMediaIndex$ = this._selectedMediaIndex$.asObservable();
   readonly selectedMedia$;
   readonly isLoggedIn$;
+  readonly marketplaceEnabled = environment.features.marketplaceEnabled;
 
   constructor(
     readonly dataService: MarketplaceDetailDataService,
@@ -60,6 +65,7 @@ export class MarketplaceDetailComponent extends SubManager implements OnInit {
   ) {
     super();
     this.vm$ = this.dataService.vm$;
+    this.transaction$ = this.dataService.transaction$;
     this.selectedMedia$ = combineLatest([this.vm$, this.selectedMediaIndex$]).pipe(
       map(([vm, index]) => vm.listing?.media[index] ?? vm.listing?.media[0] ?? null)
     );

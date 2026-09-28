@@ -21,6 +21,7 @@ import {
 } from 'src/app/features/marketplace/marketplace-test-helpers.spec';
 import {
   MarketplaceDetailDataService,
+  MarketplaceDetailTransactionInputs,
   MarketplaceDetailViewState
 } from './marketplace-detail-data.service';
 import { MarketplaceDetailComponent } from './marketplace-detail.component';
@@ -32,6 +33,7 @@ const LISTING_IMAGE_TWO_PATH = '11111111-1111-4111-8111-111111111111/22222222-22
 describe('MarketplaceDetailComponent', () => {
   let fixture: ComponentFixture<MarketplaceDetailComponent>;
   let detailState$: BehaviorSubject<MarketplaceDetailViewState>;
+  let transactionState$: BehaviorSubject<MarketplaceDetailTransactionInputs | null>;
   let loadListing$: ReplaySubject<string>;
 
   beforeEach(() => {
@@ -56,6 +58,7 @@ describe('MarketplaceDetailComponent', () => {
       notFound: false
     });
     loadListing$ = new ReplaySubject<string>(1);
+    transactionState$ = new BehaviorSubject<MarketplaceDetailTransactionInputs | null>(null);
 
     TestBed.configureTestingModule({
       imports: [
@@ -85,6 +88,7 @@ describe('MarketplaceDetailComponent', () => {
           provide: MarketplaceDetailDataService,
           useValue: {
             loadListing$,
+            transaction$: transactionState$.asObservable(),
             vm$: detailState$.asObservable()
           }
         }]
@@ -185,5 +189,29 @@ describe('MarketplaceDetailComponent', () => {
     expect(host.querySelector('.marketplace-detail__grid')).toBeNull();
     expect(host.textContent).not.toContain('Maths');
     expect(host.textContent).not.toContain('Clean public listing.');
+  });
+
+  it('hides the transaction summary section while transaction inputs are null', () => {
+    const host = fixture.nativeElement as HTMLElement;
+
+    expect(host.querySelector('[data-testid="marketplace-detail-transaction"]')).toBeNull();
+    expect(host.querySelector('app-marketplace-transaction-summary')).toBeNull();
+  });
+
+  it('binds all five transaction inputs when a transaction context is present', () => {
+    transactionState$.next({
+      feedbackDisplay: null,
+      inquiryDraft: {buyerProfileId: 'buyer-1', listingId: 'listing-1', message: 'Is this still available?'},
+      latestOffer: null,
+      threadPreview: null,
+      timelineEvents: [{toStatus: 'proposed'}]
+    });
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const summary = host.querySelector('[data-testid="marketplace-detail-transaction"]');
+
+    expect(summary).not.toBeNull();
+    expect(host.textContent).toContain('Inquiry sent');
   });
 });

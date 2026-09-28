@@ -55,6 +55,24 @@ describe('MarketplaceDetailDataService', () => {
     expect(vm.notFound).toBeFalse();
   });
 
+  it('keeps transaction inputs null on the public route without a transaction context', async () => {
+    marketplaceListingByPublicId.and.returnValue(of(createMarketplaceListing()));
+
+    service.loadListing$.next('maths-public');
+    const transaction = await firstValueFrom(service.transaction$.pipe(take(1)));
+
+    expect(transaction).toBeNull();
+  });
+
+  it('keeps transaction inputs null when the listing is not found', async () => {
+    marketplaceListingByPublicId.and.returnValue(of(null));
+
+    service.loadListing$.next('missing');
+    const transaction = await firstValueFrom(service.transaction$.pipe(take(1)));
+
+    expect(transaction).toBeNull();
+  });
+
   it('signs private marketplace listing storage paths before exposing detail media', async () => {
     const storagePath = '11111111-1111-4111-8111-111111111111/22222222-2222-4222-8222-222222222222/front.webp';
     marketplaceListingByPublicId.and.returnValue(of(createMarketplaceListing({
