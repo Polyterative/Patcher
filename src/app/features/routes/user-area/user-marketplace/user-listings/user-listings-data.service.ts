@@ -40,7 +40,7 @@ import { MinimalModule } from 'src/app/models/module';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 
-export type UserListingsStatusFilter = 'all' | 'active' | 'draft' | 'paused' | 'closed';
+export type UserListingsStatusFilter = 'all' | 'active' | 'reserved' | 'draft' | 'paused' | 'expired' | 'closed';
 
 export interface UserListingsSaveRequest {
   id?: string | null;

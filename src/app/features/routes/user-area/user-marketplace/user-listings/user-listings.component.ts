@@ -74,7 +74,7 @@ interface UserListingsFilterOption {
 type ShippingOptionControlName = 'localPickup' | 'domesticShipping' | 'euShipping' | 'internationalShipping';
 
 const OPEN_LISTING_STATUSES: MarketplaceListingStatus[] = ['active', 'reserved', 'paused', 'draft'];
-const CLOSED_LISTING_STATUSES: MarketplaceListingStatus[] = ['closed_sold', 'closed_unsold', 'expired'];
+const CLOSED_LISTING_STATUSES: MarketplaceListingStatus[] = ['closed_sold', 'closed_unsold'];
 
 @Component({
   selector: 'app-user-listings',
@@ -107,12 +107,14 @@ export class UserListingsComponent extends SubManager implements OnInit {
   readonly filter$ = this._filter$.asObservable();
   readonly pendingFiles$ = this._pendingFiles$.asObservable();
   readonly mediaValidationMessage$ = this._mediaValidationMessage$.asObservable();
-  readonly filters: UserListingsStatusFilter[] = ['all', 'active', 'draft', 'paused', 'closed'];
+  readonly filters: UserListingsStatusFilter[] = ['all', 'active', 'reserved', 'draft', 'paused', 'expired', 'closed'];
   readonly filterOptions: UserListingsFilterOption[] = [
     {value: 'all', label: 'All', icon: 'storefront'},
     {value: 'active', label: 'Active', icon: 'visibility'},
+    {value: 'reserved', label: 'Reserved', icon: 'event_busy'},
     {value: 'draft', label: 'Draft', icon: 'edit_note'},
     {value: 'paused', label: 'Paused', icon: 'pause_circle'},
+    {value: 'expired', label: 'Expired', icon: 'schedule'},
     {value: 'closed', label: 'Closed', icon: 'task_alt'}
   ];
 
@@ -400,8 +402,20 @@ export class UserListingsComponent extends SubManager implements OnInit {
     return listing.status === 'draft' || listing.status === 'paused';
   }
 
+  canRelist(listing: MarketplaceListing): boolean {
+    return listing.status === 'expired';
+  }
+
   canPause(listing: MarketplaceListing): boolean {
     return listing.status === 'active' || listing.status === 'reserved';
+  }
+
+  canReserve(listing: MarketplaceListing): boolean {
+    return listing.status === 'active';
+  }
+
+  canReleaseReservation(listing: MarketplaceListing): boolean {
+    return listing.status === 'reserved';
   }
 
   canClose(listing: MarketplaceListing): boolean {
@@ -535,6 +549,9 @@ export class UserListingsComponent extends SubManager implements OnInit {
     }
     if (filter === 'closed') {
       return listings.filter(listing => CLOSED_LISTING_STATUSES.includes(listing.status));
+    }
+    if (filter === 'expired') {
+      return listings.filter(listing => listing.status === 'expired');
     }
     return listings.filter(listing => listing.status === filter);
   }

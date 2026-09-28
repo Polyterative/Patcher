@@ -100,6 +100,21 @@
                       Publish active
                     </button>
                   }
+                  @if (canRelist(listing)) {
+                    <button mat-button type="button" [disabled]="vm.busy || !!bag.editor" data-testid="user-listing-relist" (click)="changeLifecycle(listing, 'active')">
+                      Relist active
+                    </button>
+                  }
+                  @if (canReserve(listing)) {
+                    <button mat-button type="button" [disabled]="vm.busy || !!bag.editor" data-testid="user-listing-reserve" (click)="changeLifecycle(listing, 'reserved')">
+                      Mark reserved
+                    </button>
+                  }
+                  @if (canReleaseReservation(listing)) {
+                    <button mat-button type="button" [disabled]="vm.busy || !!bag.editor" data-testid="user-listing-release-reservation" (click)="changeLifecycle(listing, 'active')">
+                      Return to active
+                    </button>
+                  }
                   @if (canPause(listing)) {
                     <button mat-button type="button" [disabled]="vm.busy || !!bag.editor" (click)="changeLifecycle(listing, 'paused')">
                       Pause

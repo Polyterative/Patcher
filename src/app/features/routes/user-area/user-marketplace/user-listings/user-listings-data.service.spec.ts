@@ -522,4 +522,61 @@ describe('UserListingsDataService', () => {
     expect(backend.GET.recentModuleMarketPrices).toHaveBeenCalledOnceWith([101]);
     service.ngOnDestroy();
   });
+
+  it('reserves, releases, and relists through lifecycle updates with plain status copy', () => {
+    const reserved = createListing({id: 'listing-1', status: 'reserved'});
+    const backend = backendMock({listings: [reserved], updateResult: reserved});
+    const service = new UserListingsDataService(backend, userServiceMock(), snackBarMock());
+
+    service.lifecycle$.next({listing: createListing({id: 'listing-1', status: 'active'}), status: 'reserved'});
+    expect(backend.update.marketplaceListing).toHaveBeenCalledWith('listing-1', jasmine.objectContaining({
+      moduleId: '101',
+      status: 'reserved'
+    }));
+    expect(service.snapshot.statusMessage).toBe('Listing updated.');
+
+    service.lifecycle$.next({listing: reserved, status: 'active'});
+    expect(backend.update.marketplaceListing).toHaveBeenCalledWith('listing-1', jasmine.objectContaining({status: 'active'}));
+    expect(service.snapshot.statusMessage).toBe('Listing is active.');
+    service.ngOnDestroy();
+  });
+
+  it('closes as unsold with collection-unchanged guidance', () => {
+    const closed = createListing({status: 'closed_unsold'});
+    const backend = backendMock({listings: [closed], updateResult: closed});
+    const service = new UserListingsDataService(backend, userServiceMock(), snackBarMock());
+
+    service.lifecycle$.next({listing: createListing({status: 'expired'}), status: 'closed_unsold'});
+
+    expect(service.snapshot.statusMessage).toBe(
+      'Listing closed as unsold. Collection unchanged — it stays eligible until you remove For Sale.'
+    );
+    service.ngOnDestroy();
+  });
+
+  it('does not call the reorder API when moving the last media item forward', () => {
+    const first = createMedia({id: 'media-first', position: 0});
+    const second = createMedia({id: 'media-second', position: 1});
+    const listing = createListing({media: [first, second]});
+    const backend = backendMock();
+    const service = new UserListingsDataService(backend, userServiceMock(), snackBarMock());
+
+    service.mediaMove$.next({listing, media: second, direction: 1});
+
+    expect(backend.update.marketplaceListingMediaOrder).not.toHaveBeenCalled();
+    expect(service.snapshot.busy).toBeFalse();
+    service.ngOnDestroy();
+  });
+
+  it('does not call the reorder API for media missing from the listing', () => {
+    const listing = createListing({media: [createMedia({id: 'media-first', position: 0})]});
+    const backend = backendMock();
+    const service = new UserListingsDataService(backend, userServiceMock(), snackBarMock());
+
+    service.mediaMove$.next({listing, media: createMedia({id: 'media-ghost', position: 9}), direction: 1});
+
+    expect(backend.update.marketplaceListingMediaOrder).not.toHaveBeenCalled();
+    expect(service.snapshot.busy).toBeFalse();
+    service.ngOnDestroy();
+  });
 });

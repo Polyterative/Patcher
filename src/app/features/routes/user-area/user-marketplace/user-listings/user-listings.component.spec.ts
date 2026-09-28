@@ -182,9 +182,132 @@ describe('UserListingsComponent', () => {
     const filterGroup = host.querySelector('mat-button-toggle-group.module-collection-filter');
 
     expect(filterGroup).not.toBeNull();
-    for (const value of ['all', 'active', 'draft', 'paused', 'closed']) {
+    for (const value of ['all', 'active', 'reserved', 'draft', 'paused', 'expired', 'closed']) {
       expect(host.querySelector(`[data-testid="user-listings-filter-${value}"]`)).not.toBeNull();
     }
+  });
+
+  it('filters reserved and expired listings separately from active and closed listings', () => {
+    const component = build({listings: [
+      createListing({id: 'active-listing', status: 'active', titleOverride: 'Active listing'}),
+      createListing({id: 'reserved-listing', status: 'reserved', titleOverride: 'Reserved listing'}),
+      createListing({id: 'expired-listing', status: 'expired', titleOverride: 'Expired listing'}),
+      createListing({id: 'sold-listing', status: 'closed_sold', titleOverride: 'Sold listing'})
+    ]});
+    const host = fixture.nativeElement as HTMLElement;
+
+    component.setFilter('reserved');
+    fixture.detectChanges();
+    expect(host.querySelectorAll('[data-testid="user-listing-row"]').length).toBe(1);
+    expect(host.textContent).toContain('Reserved listing');
+    expect(host.textContent).not.toContain('Active listing');
+
+    component.setFilter('expired');
+    fixture.detectChanges();
+    expect(host.querySelectorAll('[data-testid="user-listing-row"]').length).toBe(1);
+    expect(host.textContent).toContain('Expired listing');
+
+    component.setFilter('closed');
+    fixture.detectChanges();
+    expect(host.querySelectorAll('[data-testid="user-listing-row"]').length).toBe(1);
+    expect(host.textContent).toContain('Sold listing');
+    expect(host.textContent).not.toContain('Expired listing');
+  });
+
+  it('wires seller reservation actions to the existing listing lifecycle update', () => {
+    const listing = createListing({id: 'reserve-me', status: 'active'});
+    build({listings: [listing]});
+    const host = fixture.nativeElement as HTMLElement;
+
+    host.querySelector<HTMLButtonElement>('[data-testid="user-listing-reserve"]')?.click();
+    expect(backend.update.marketplaceListing).toHaveBeenCalledWith('reserve-me', jasmine.objectContaining({status: 'reserved'}));
+  });
+
+  it('returns reserved seller listings to active through the existing lifecycle update', () => {
+    build({listings: [createListing({id: 'reserved-listing', status: 'reserved'})]});
+    const host = fixture.nativeElement as HTMLElement;
+
+    host.querySelector<HTMLButtonElement>('[data-testid="user-listing-release-reservation"]')?.click();
+    expect(backend.update.marketplaceListing).toHaveBeenCalledWith('reserved-listing', jasmine.objectContaining({status: 'active'}));
+  });
+
+  it('relists expired seller listings to active through the existing lifecycle update', () => {
+    build({listings: [createListing({id: 'expired-listing', status: 'expired'})]});
+    const host = fixture.nativeElement as HTMLElement;
+
+    expect(host.querySelector('[data-testid="user-listing-relist"]')).not.toBeNull();
+    host.querySelector<HTMLButtonElement>('[data-testid="user-listing-relist"]')?.click();
+    expect(backend.update.marketplaceListing).toHaveBeenCalledWith('expired-listing', jasmine.objectContaining({status: 'active'}));
+  });
+
+  it('hides the relist action on non-expired seller listings', () => {
+    const component = build({listings: [createListing({id: 'active-listing', status: 'active'})]});
+    const host = fixture.nativeElement as HTMLElement;
+
+    expect(host.querySelector('[data-testid="user-listing-relist"]')).toBeNull();
+    expect(component.canRelist(createListing({status: 'active'}))).toBeFalse();
+    expect(component.canRelist(createListing({status: 'expired'}))).toBeTrue();
+  });
+
+  it('enables relist only for expired listings across every lifecycle status', () => {
+    const component = build({listings: []});
+
+    for (const status of ['draft', 'active', 'reserved', 'paused', 'closed_sold', 'closed_unsold'] as const) {
+      expect(component.canRelist(createListing({status}))).withContext(`relist hidden for ${status}`).toBeFalse();
+    }
+    expect(component.canRelist(createListing({status: 'expired'}))).toBeTrue();
+  });
+
+  it('gates publish, pause, reserve, release, and close actions by lifecycle status', () => {
+    const component = build({listings: []});
+
+    expect(component.canPublish(createListing({status: 'draft'}))).toBeTrue();
+    expect(component.canPublish(createListing({status: 'paused'}))).toBeTrue();
+    expect(component.canPublish(createListing({status: 'active'}))).toBeFalse();
+    expect(component.canPublish(createListing({status: 'expired'}))).toBeFalse();
+
+    expect(component.canPause(createListing({status: 'active'}))).toBeTrue();
+    expect(component.canPause(createListing({status: 'reserved'}))).toBeTrue();
+    expect(component.canPause(createListing({status: 'draft'}))).toBeFalse();
+    expect(component.canPause(createListing({status: 'expired'}))).toBeFalse();
+
+    expect(component.canReserve(createListing({status: 'active'}))).toBeTrue();
+    expect(component.canReserve(createListing({status: 'reserved'}))).toBeFalse();
+    expect(component.canReserve(createListing({status: 'draft'}))).toBeFalse();
+
+    expect(component.canReleaseReservation(createListing({status: 'reserved'}))).toBeTrue();
+    expect(component.canReleaseReservation(createListing({status: 'active'}))).toBeFalse();
+
+    expect(component.canClose(createListing({status: 'active'}))).toBeTrue();
+    expect(component.canClose(createListing({status: 'expired'}))).toBeTrue();
+    expect(component.canClose(createListing({status: 'closed_sold'}))).toBeFalse();
+    expect(component.canClose(createListing({status: 'closed_unsold'}))).toBeFalse();
+  });
+
+  it('filters paused and draft listings separately from the closed aggregate', () => {
+    const component = build({listings: [
+      createListing({id: 'draft-listing', status: 'draft', titleOverride: 'Draft listing'}),
+      createListing({id: 'paused-listing', status: 'paused', titleOverride: 'Paused listing'}),
+      createListing({id: 'sold-listing', status: 'closed_sold', titleOverride: 'Sold listing'}),
+      createListing({id: 'unsold-listing', status: 'closed_unsold', titleOverride: 'Unsold listing'})
+    ]});
+    const host = fixture.nativeElement as HTMLElement;
+
+    component.setFilter('draft');
+    fixture.detectChanges();
+    expect(host.querySelectorAll('[data-testid="user-listing-row"]').length).toBe(1);
+    expect(host.textContent).toContain('Draft listing');
+
+    component.setFilter('paused');
+    fixture.detectChanges();
+    expect(host.querySelectorAll('[data-testid="user-listing-row"]').length).toBe(1);
+    expect(host.textContent).toContain('Paused listing');
+
+    component.setFilter('closed');
+    fixture.detectChanges();
+    expect(host.querySelectorAll('[data-testid="user-listing-row"]').length).toBe(2);
+    expect(host.textContent).toContain('Sold listing');
+    expect(host.textContent).toContain('Unsold listing');
   });
 
   it('renders the listing editor with shared form entities and material checkboxes', () => {
