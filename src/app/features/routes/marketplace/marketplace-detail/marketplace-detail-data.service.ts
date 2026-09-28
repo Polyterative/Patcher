@@ -17,6 +17,13 @@ import {
   type MarketplaceListing,
   type MarketplaceListingStatus
 } from 'src/app/features/marketplace/marketplace-listing.utils';
+import { type MarketplaceFeedbackVisibilityInput } from 'src/app/features/marketplace/marketplace-feedback.utils';
+import { type MarketplaceMessageThreadPreviewCandidate } from 'src/app/features/marketplace/marketplace-messaging.utils';
+import {
+  type MarketplaceInquiryDraft,
+  type MarketplaceLatestOfferSummaryInput,
+  type MarketplaceTransactionTimelineEventInput
+} from 'src/app/features/marketplace/marketplace-transaction.models';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import {
@@ -34,6 +41,19 @@ export interface MarketplaceDetailViewState {
   notFound: boolean;
 }
 
+export interface MarketplaceDetailTransactionFeedbackInput extends MarketplaceFeedbackVisibilityInput {
+  completedTransactions: number;
+  feedback: unknown;
+}
+
+export interface MarketplaceDetailTransactionInputs {
+  inquiryDraft: MarketplaceInquiryDraft | null;
+  timelineEvents: readonly MarketplaceTransactionTimelineEventInput[] | null;
+  latestOffer: MarketplaceLatestOfferSummaryInput | null;
+  threadPreview: MarketplaceMessageThreadPreviewCandidate | null;
+  feedbackDisplay: MarketplaceDetailTransactionFeedbackInput | null;
+}
+
 const EMPTY_DETAIL_STATE: MarketplaceDetailViewState = {
   error: null,
   listing: null,
@@ -47,6 +67,9 @@ export class MarketplaceDetailDataService extends SubManager {
   private readonly _vm$ = new BehaviorSubject<MarketplaceDetailViewState>(EMPTY_DETAIL_STATE);
 
   readonly vm$ = this._vm$.asObservable();
+  readonly transaction$ = this._vm$.pipe(
+    map(state => buildMarketplaceDetailTransaction(state.listing))
+  );
   readonly loadListing$ = new ReplaySubject<string>(1);
 
   constructor(
@@ -106,4 +129,29 @@ function publicActiveListingOrNull(listing: MarketplaceListing | null): Marketpl
     && listing.seller?.public === true
     ? listing
     : null;
+}
+
+function buildMarketplaceDetailTransaction(
+  listing: MarketplaceListingDetailViewModel | null
+): MarketplaceDetailTransactionInputs | null {
+  if (!listing) {
+    return null;
+  }
+  // The public detail route has no authenticated transaction context yet, so all
+  // five summary inputs stay null and the host keeps the summary section hidden.
+  // Follow-up slices fill each field from its own derivation point, reusing only
+  // existing SupabaseService namespaces (no new tables/RLS):
+  // - inquiryDraft: seed {listingId: listing.publicId} once the viewer identity
+  //   is known; null for anonymous browsing.
+  // - timelineEvents: transaction status events for the viewer's transaction on
+  //   this listing; null when the viewer has no transaction here.
+  // - latestOffer: latest offer on the viewer's transaction; null without one.
+  //   Never synthesize from the listing asking price (listing statuses are not
+  //   transaction statuses, so the offer builder would report inactive_status).
+  // - threadPreview: message thread preview for the viewer's transaction; null
+  //   without one. Previews must stay redacted via the messaging utils.
+  // - feedbackDisplay: seller feedback once the visibility window permits
+  //   release; null until then. Never derive completedTransactions from active
+  //   listing counts.
+  return null;
 }

@@ -177,6 +177,17 @@
           </aside>
         </div>
       </lib-hero-content-card>
+
+      @if (marketplaceEnabled && (transaction$ | async); as transaction) {
+        <app-marketplace-transaction-summary
+          data-testid="marketplace-detail-transaction"
+          [inquiryDraft]="transaction.inquiryDraft"
+          [timelineEvents]="transaction.timelineEvents"
+          [latestOffer]="transaction.latestOffer"
+          [threadPreview]="transaction.threadPreview"
+          [feedbackDisplay]="transaction.feedbackDisplay"
+        ></app-marketplace-transaction-summary>
+      }
     }
   </section>
 }
