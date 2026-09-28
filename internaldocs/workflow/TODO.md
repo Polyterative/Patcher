@@ -150,6 +150,7 @@
 
 - [ ] **MEDIUM: Marketplace — Realtime Messaging (thread preview helper complete; schema/RLS/realtime/UI/moderation gated)** → [GitHub issue #154](https://github.com/Polyterative/Patcher/issues/154)
 - [ ] **MEDIUM: Marketplace — Feedback and Reputation (next marketplace slice approved after address/listings)** → [GitHub issue #155](https://github.com/Polyterative/Patcher/issues/155)
+- [ ] **LOW: Marketplace — expiry-date editing backend (expose `expires_at` through read/write path; DRAFT pending backend-plan-reviewer fixes)** → [`plans/marketplace-expiry-editing.md`](./plans/marketplace-expiry-editing.md)
 - [ ] **MEDIUM: Insights private-vs-public footprint (implemented on develop; remote apply + live re-verify operator-gated)** → [`plans/insights-private-vs-public-footprint.md`](./plans/insights-private-vs-public-footprint.md)
 
 ### DATA MODEL (schema / domain gaps to address)
