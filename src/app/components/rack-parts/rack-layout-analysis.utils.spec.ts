@@ -217,6 +217,21 @@ describe('computeLayoutAnalysis', () => {
     ]);
   });
 
+  it('skips arrangement counting when requested but still computes moves and validity', () => {
+    const rows = [
+      [rackModule(1, 10, 0), rackModule(2, 20, 0)],
+      [rackModule(3, 30, 1), rackModule(4, 40, 1)]
+    ];
+
+    const result = computeLayoutAnalysis(rows, 84, 'all', {skipArrangementCount: true});
+
+    expect(result.arrangementCount).toEqual({kind: 'capped', source: 'sampled', orderOfMagnitude: 0});
+    expect(result.validArrangementCount).toBe('capped');
+    expect(result.isValid).toBeTrue();
+    expect(result.overflowHp).toEqual([0, 0]);
+    expect(result.autoArrangeMoves.length).toBe(4);
+  });
+
   it('falls back to a sampled/capped estimate for large high-slack racks instead of hanging', () => {
     // Repro for /racks/x2iWDIhRugPx — 15 modules across 6x184HP at ~33% fill.
     // Exact DP state keyed on remaining-HP vectors grew unbounded here and threw
