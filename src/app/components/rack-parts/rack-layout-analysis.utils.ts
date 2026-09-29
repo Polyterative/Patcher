@@ -62,6 +62,17 @@ const RACK_ARRANGEMENT_DISPLAY_SAFE_INTEGER_CAP_LOG10 = Math.log10(RACK_ARRANGEM
  */
 const MAX_EXACT_MEMO_ENTRIES = 100_000;
 
+/**
+ * Placeholder used when the caller skips arrangement counting (initial render
+ * path). Never displayed: every surface that reads `arrangementCount`
+ * recomputes with the full count on demand.
+ */
+const DEFERRED_ARRANGEMENT_COUNT: RackArrangementCount = {
+  kind: 'capped',
+  source: 'sampled',
+  orderOfMagnitude: 0
+};
+
 class ExactCountBudgetExceeded extends Error {
   constructor(entries: number) {
     super(`Exact arrangement count aborted after ${ entries } memo entries.`);
@@ -71,6 +82,13 @@ class ExactCountBudgetExceeded extends Error {
 
 export interface RackLayoutAnalysisOptions {
   variant?: number;
+  /**
+   * Skip arrangement counting entirely (initial-render path). Row-level fields
+   * (mixed issues, wasted/overflow HP, auto-arrange moves) are still computed;
+   * only `arrangementCount` becomes a deferred placeholder that layout-mode
+   * surfaces recompute on demand via `layoutArrangementSummary`.
+   */
+  skipArrangementCount?: boolean;
 }
 
 export function computeLayoutAnalysis(
@@ -106,7 +124,9 @@ export function computeLayoutAnalysis(
     group.rowIndexes,
     options.variant ?? 0
   ));
-  const arrangementCount = safeArrangementCount(formatGroups, safeRackHp);
+  const arrangementCount = options.skipArrangementCount
+    ? DEFERRED_ARRANGEMENT_COUNT
+    : safeArrangementCount(formatGroups, safeRackHp);
   const hasOverflow = overflowHp.some(value => value > 0);
 
   return {

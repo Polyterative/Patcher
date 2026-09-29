@@ -64,7 +64,11 @@ export class RackVisualModelRenderService {
         .flat()
         .map(module => [this.moduleDomKey(module), buildRackFunctionVisual(module)])
     );
-    this.layoutAnalysis = computeLayoutAnalysis(rowedRackedModules, capacity);
+    // Arrangement counts are deferred here on purpose: nothing on the initial
+    // render path reads them (row labels use overflow/wasted/mixed issues plus
+    // auto-arrange moves only), and exact counting can hang large/high-slack
+    // racks. Layout-mode surfaces recompute the full count on demand.
+    this.layoutAnalysis = computeLayoutAnalysis(rowedRackedModules, capacity, 'all', {skipArrangementCount: true});
     if (this.hoveredRowIndex != null && this.hoveredRowIndex >= this.rowPowerBreakdown.length) {
       this.hoveredRowIndex = null;
     }

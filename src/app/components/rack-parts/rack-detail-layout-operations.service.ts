@@ -39,7 +39,10 @@ export class RackDetailLayoutOperationsService {
       ? this.randomLayoutVariant(rackModules)
       : this.layoutRemixVariant;
     const analysis = computeLayoutAnalysis(rackModules, rack.hp, layoutScope, {
-      variant: startVariant
+      variant: startVariant,
+      // Only mixed-row issues and auto-arrange moves are read below; the
+      // arrangement count is deferred to layout-mode surfaces.
+      skipArrangementCount: true
     });
     if (analysis.mixedRowIssues.length > 0) {
       SharedConstants.errorCustom(context.snackBar, 'Fix mixed-format rows before remixing.');
@@ -221,7 +224,9 @@ export class RackDetailLayoutOperationsService {
 
     for (let offset = 0; offset < candidateCount; offset += 1) {
       const variant = startVariant + offset;
-      const analysis = computeLayoutAnalysis(rackModules, rackHp, layoutScope, {variant});
+      // Remix search only reads auto-arrange moves; skipping the arrangement
+      // count keeps this loop cheap on large racks.
+      const analysis = computeLayoutAnalysis(rackModules, rackHp, layoutScope, {variant, skipArrangementCount: true});
       const changedMoves = analysis.autoArrangeMoves.filter(move =>
         move.fromRow !== move.toRow || move.fromColumn !== move.toColumn
       );

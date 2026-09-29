@@ -82,6 +82,8 @@ export class RackEditorLayoutAnalysisService {
   }
 
   layoutArrangementSummary(rowedRackedModules: RackedModule[][] | null | undefined): string {
+    // The one caller that needs the real count: this surface only renders in
+    // layout analysis mode, so the (possibly exact) counting happens on demand.
     const analysis = this.computeLayoutAnalysis(rowedRackedModules);
     if (!analysis) {
       return 'Add modules to estimate valid arrangements.';
@@ -107,7 +109,7 @@ export class RackEditorLayoutAnalysisService {
   }
 
   layoutValiditySummary(rowedRackedModules: RackedModule[][] | null | undefined): string {
-    const analysis = this.computeLayoutAnalysis(rowedRackedModules);
+    const analysis = this.computeLayoutAnalysis(rowedRackedModules, true);
     if (!analysis) {
       return 'Layout validity appears after modules are placed.';
     }
@@ -127,7 +129,7 @@ export class RackEditorLayoutAnalysisService {
   }
 
   layoutRemixUnavailableReason(rowedRackedModules: RackedModule[][] | null | undefined): string | null {
-    const analysis = this.computeLayoutAnalysis(rowedRackedModules);
+    const analysis = this.computeLayoutAnalysis(rowedRackedModules, true);
     if (!analysis) {
       return 'Add modules before remixing the layout.';
     }
@@ -140,7 +142,7 @@ export class RackEditorLayoutAnalysisService {
   }
 
   layoutRemixMoveSummary(rowedRackedModules: RackedModule[][] | null | undefined): string {
-    const analysis = this.computeLayoutAnalysis(rowedRackedModules);
+    const analysis = this.computeLayoutAnalysis(rowedRackedModules, true);
     if (!analysis || analysis.mixedRowIssues.length > 0) {
       return '';
     }
@@ -206,7 +208,7 @@ export class RackEditorLayoutAnalysisService {
     });
   }
 
-  private computeLayoutAnalysis(rowedRackedModules: RackedModule[][] | null | undefined): RackLayoutAnalysisResult | null {
+  private computeLayoutAnalysis(rowedRackedModules: RackedModule[][] | null | undefined, skipArrangementCount = false): RackLayoutAnalysisResult | null {
     if (!rowedRackedModules?.length) {
       return null;
     }
@@ -216,7 +218,12 @@ export class RackEditorLayoutAnalysisService {
       return null;
     }
 
-    return computeLayoutAnalysis(rowedRackedModules, rackHp, this.dataService.layoutScope$.value);
+    return computeLayoutAnalysis(
+      rowedRackedModules,
+      rackHp,
+      this.dataService.layoutScope$.value,
+      skipArrangementCount ? {skipArrangementCount: true} : undefined
+    );
   }
 
   private formatArrangementCount(count: number): string {
