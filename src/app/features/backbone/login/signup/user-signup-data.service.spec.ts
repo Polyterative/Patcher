@@ -246,4 +246,32 @@ describe('UserSignupDataService', () => {
     expect(userManagementService.isUsernameAvailableForSignup$).not.toHaveBeenCalled();
     expect(userManagementService.signup).not.toHaveBeenCalled();
   });
+
+  it('accepts subdomain emails such as username@sub.domain.tld', () => {
+    service.fields.email.control.setValue('username@sub.domain.tld');
+
+    expect(service.fields.email.control.valid).toBeTrue();
+  });
+
+  it('signs up with a subdomain email when the rest of the form is valid', () => {
+    spyOn(SharedConstants, 'confirmMail').and.callFake(() => {});
+    service.fields.email.control.setValue('username@sub.domain.tld');
+    userManagementService.signup.and.returnValue(of({
+      user: {id: 'u-1', email: 'username@sub.domain.tld', created_at: '', updated_at: ''},
+      requiresEmailConfirmation: true
+    }));
+
+    service.mailSignClick$.next();
+
+    expect(userManagementService.signup).toHaveBeenCalledOnceWith('newuser', 'username@sub.domain.tld', 'password123');
+  });
+
+  it('blocks signup when the email has no valid format', () => {
+    service.fields.email.control.setValue('not-an-email');
+
+    service.mailSignClick$.next();
+
+    expect(service.fields.email.control.invalid).toBeTrue();
+    expect(userManagementService.signup).not.toHaveBeenCalled();
+  });
 });

@@ -31,6 +31,7 @@ import {
   applyUsernameAvailabilityError,
   usernameValidators
 } from '../username-validation';
+import { emailValidators } from '../email-validation';
 import { normalizeInternalReturnUrl } from '../safe-return-url';
 
 
@@ -61,10 +62,7 @@ export class UserSignupDataService extends SubManager {
       label: 'Email',
       code: 'email',
       flex: '6rem',
-      control: new UntypedFormControl('', Validators.compose([
-        Validators.required,
-        Validators.email
-      ])),
+      control: new UntypedFormControl('', Validators.compose(emailValidators())),
       type: FormTypes.EMAIL,
       hint: 'NOT visible by other users',
       iconL1: 'email',
