@@ -6,6 +6,7 @@ import {
   getModulePanelPublicUrl,
   getRackImagePublicUrl
 } from '../../supabase-storage';
+import { getPublicStorageUrl } from 'src/app/shared-interproject/utils/public-storage-url';
 import { environment } from 'src/environments/environment';
 import {
   cleanupSupabaseServiceTest,
@@ -22,7 +23,7 @@ import type { SupabaseStorageFile } from '../../supabase.types';
 
 
 const TEST_SUPABASE_URL = 'https://sozmatmywjpstwidzlss.supabase.co';
-type StorageBucketName = 'marketplace-listings' | 'module-panels' | 'patches' | 'racks';
+type StorageBucketName = 'marketplace-listings' | 'module-collections' | 'module-panels' | 'patches' | 'racks';
 type StorageProviderError = {
   message: string;
   name?: string;
@@ -159,12 +160,44 @@ describe('SupabaseService - storage', () => {
       expect(service.storage.publicUrlBases.marketplaceListings).toBe(StorageUrls.marketplaceListings);
     });
 
+    it('routes collection cover URLs through the cached image proxy', () => {
+      expect(getPublicStorageUrl('module-collections', 'cover photo.jpg'))
+        .toBe('https://images.patcher.xyz/module-collections/cover%20photo.jpg');
+    });
+
     describe('getMarketplaceListingImagePublicUrl', () => {
       it('builds the proxied marketplace listing storage URL', () => {
         expect(getMarketplaceListingImagePublicUrl('seller/listing/front.webp'))
           .toBe('https://images.patcher.xyz/marketplace-listings/seller/listing/front.webp');
       });
     });
+  });
+
+  describe('storage.uploadCollectionCover', () => {
+    it('uploads with a long-lived cache while preserving its timestamped filename', (done) => {
+      mockUserSession(service, authUserFixture('u1'));
+      setupStorageMock();
+
+      service.storage.uploadCollectionCover(new Blob(), 'Cover Photo.JPG').subscribe({
+        next: filename => {
+          expect(filename).toMatch(/^cover photo_[0-9-]+\.jpg$/);
+          expect(supabaseClient.storage.from).toHaveBeenCalledWith('module-collections');
+          expect(mockBucket.upload).toHaveBeenCalledWith(
+            filename,
+            jasmine.any(Blob),
+            jasmine.objectContaining({
+              cacheControl: '31536000',
+              contentType: 'image/jpeg'
+            })
+          );
+          done();
+        },
+        error: err => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
   });
 
   describe('getModulePanelPublicUrl', () => {
