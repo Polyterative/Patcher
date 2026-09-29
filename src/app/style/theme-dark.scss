@@ -791,8 +791,10 @@ html.dark {
     color: var(--app-ink-3);
   }
 
-  .entityStatGrid__showcase--clickable .label {
-    color: #8fb8e8;
+  .entityStatGrid__showcase--clickable .label,
+  .entityStatGrid__showcase--clickable .value,
+  .entityStatGrid__showcase--clickable mat-icon {
+    color: var(--app-link);
   }
 
   .subtitle_onWhite {
