@@ -283,8 +283,9 @@ describe('SupabaseService - GET.modules filtering', () => {
     expect(queries[0].selectCalls[0][0]).toContain('manufacturerId');
     expect(queries[0].filterCalls).toContain(['public', 'eq', true]);
     queries.forEach(query => {
-      expect(query.limitCalls).toContain([300, undefined]);
+      expect(query.limitCalls).toContain([50, undefined]);
     });
+    expect(modules.length).toBeLessThanOrEqual(50);
   }, TEST_TIMEOUT);
 
   it('applies the import candidate limit globally across multiple result batches', async () => {
@@ -384,12 +385,55 @@ describe('SupabaseService - GET.modules filtering', () => {
 
     expect(queries.some(query => query.orFilters.some(filters => filters.includes('optomix rev2')))).toBeTrue();
     expect(modules.map(module => module.id)).toContain(highIdTarget.id);
+    expect(queries.flatMap(query => moduleNameFilterTerms(query.orFilters[0])).length).toBeLessThanOrEqual(20);
   }, TEST_TIMEOUT);
 
-  it('reserves capped backend search batches for late single-token aliases after more than 80 generated terms', async () => {
-    const exactTerms = Array.from({length: 64}, (_value, index) => `exact module ${ index + 1 }`);
+  it('caps import candidate terms at 20 terms in at most 3 batched queries', async () => {
+    const exactTerms = Array.from({length: 30}, (_value, index) => `exact module ${ index + 1 }`);
+    const queries: ModuleQueryDouble[] = [];
+
+    spyOn(supabaseClient, 'from').and.callFake(() => {
+      const query = chainableWithIlike({data: [], count: 0, error: null});
+      queries.push(query);
+      return query;
+    });
+
+    await firstValueFrom(service.GET.publicModuleImportCandidates(exactTerms));
+
+    const queriedTerms = queries.flatMap(query => moduleNameFilterTerms(query.orFilters[0]));
+
+    expect(queriedTerms.length).toBe(20);
+    expect(queries.length).toBe(3);
+    expect(moduleNameFilterTerms(queries[0].orFilters[0])).toEqual(exactTerms.slice(0, 8));
+    queries.forEach(query => {
+      expect(query.limitCalls).toContain([50, undefined]);
+    });
+  }, TEST_TIMEOUT);
+
+  it('caps import candidates at 50 rows per query by default', async () => {
+    const floodRows = Array.from({length: 200}, (_value, index) => ({
+      id: index + 1,
+      name: `Optomix rev2 variant ${ index + 1 }`,
+      description: 'Flood match'
+    })) satisfies ModuleListingRow[];
+    const queries: ModuleQueryDouble[] = [];
+
+    spyOn(supabaseClient, 'from').and.callFake(() => {
+      const query = chainableWithIlike({data: floodRows, count: floodRows.length, error: null});
+      queries.push(query);
+      return query;
+    });
+
+    const modules = await firstValueFrom(service.GET.publicModuleImportCandidates(['optomix rev2']));
+
+    expect(queries.length).toBe(1);
+    expect(queries[0].limitCalls).toContain([50, undefined]);
+    expect(modules.length).toBe(50);
+  }, TEST_TIMEOUT);
+  it('reserves capped backend search batches for late single-token aliases after more than 20 generated terms', async () => {
+    const exactTerms = Array.from({length: 16}, (_value, index) => `exact module ${ index + 1 }`);
     const letters = 'abcdefghijklmnopqrstuvwxyz';
-    const aliasTerms = Array.from({length: 40}, (_value, index) =>
+    const aliasTerms = Array.from({length: 12}, (_value, index) =>
       `alias${ letters[Math.floor(index / letters.length)] }${ letters[index % letters.length] }`
     );
     const queries: ModuleQueryDouble[] = [];
@@ -407,10 +451,11 @@ describe('SupabaseService - GET.modules filtering', () => {
 
     const queriedTerms = queries.flatMap(query => moduleNameFilterTerms(query.orFilters[0]));
 
-    expect(queries.length).toBeLessThanOrEqual(10);
+    expect(queries.length).toBe(3);
+    expect(queriedTerms.length).toBe(20);
     expect(moduleNameFilterTerms(queries[0].orFilters[0])).toEqual(exactTerms.slice(0, 8));
-    expect(queriedTerms).toContain(aliasTerms[23]);
-    expect(queriedTerms).not.toContain(aliasTerms[24]);
+    expect(queriedTerms).toContain(aliasTerms[3]);
+    expect(queriedTerms).not.toContain(aliasTerms[4]);
   }, TEST_TIMEOUT);
 
   it('keeps long individual-token import terms out of high-signal exact-name batches', async () => {

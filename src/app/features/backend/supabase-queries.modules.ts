@@ -98,9 +98,9 @@ export interface RackCommentContextRow {
   public_id: string | null;
 }
 
-const MODULE_IMPORT_SEARCH_TERM_LIMIT = 80;
+const MODULE_IMPORT_SEARCH_TERM_LIMIT = 20;
 const MODULE_IMPORT_SEARCH_BATCH_SIZE = 8;
-const MODULE_IMPORT_ALIAS_TERM_RESERVE = 24;
+const MODULE_IMPORT_ALIAS_TERM_RESERVE = 8;
 
 /**
  * Bounded window for the module text-search accent-recovery fallback. The
@@ -158,7 +158,7 @@ function orderedUniqueModuleImportSearchTerms(searchTerms: string[]): string[] {
     : maxQueryBatches;
   const selectedHighSignalTerms = highSignalTerms.slice(
     0,
-    highSignalBatchBudget * MODULE_IMPORT_SEARCH_BATCH_SIZE
+    Math.min(highSignalBatchBudget * MODULE_IMPORT_SEARCH_BATCH_SIZE, MODULE_IMPORT_SEARCH_TERM_LIMIT)
   );
   const remainingTermSlots = MODULE_IMPORT_SEARCH_TERM_LIMIT - selectedHighSignalTerms.length;
   const remainingBatchSlots = maxQueryBatches - countModuleImportSearchBatches(selectedHighSignalTerms.length);
@@ -205,8 +205,8 @@ function moduleImportNameFilter(searchTerms: string[]): string {
 
 function boundedModuleImportCandidateLimit(limit: number): number {
   return Number.isFinite(limit)
-    ? Math.min(Math.max(Math.floor(limit), 0), 300)
-    : 300;
+    ? Math.min(Math.max(Math.floor(limit), 0), 50)
+    : 50;
 }
 
 interface ModuleImportCandidateResponse {
@@ -558,7 +558,7 @@ export class SupabaseModuleQueries extends SupabaseQueriesBase {
     cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('modules'))),
     maxCacheCount: 50,
   })
-  getPublicModuleImportCandidates(searchTerms: string[], limit = 300): Observable<MinimalModule[]> {
+  getPublicModuleImportCandidates(searchTerms: string[], limit = 50): Observable<MinimalModule[]> {
     const orderedSearchTerms = orderedUniqueModuleImportSearchTerms(searchTerms);
     const candidateLimit = boundedModuleImportCandidateLimit(limit);
 
