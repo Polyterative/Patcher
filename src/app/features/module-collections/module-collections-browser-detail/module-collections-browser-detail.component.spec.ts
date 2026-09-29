@@ -215,7 +215,7 @@ describe('ModuleCollectionsBrowserDetailComponent', () => {
         published: '2026-01-01T00:00:00.000Z',
         modified: '2026-01-01T00:00:00.000Z',
         keywords: jasmine.stringMatching(/Utility stack.*Make Noise.*Mutable Instruments.*eurorack/),
-        image: jasmine.stringMatching(/\/storage\/v1\/object\/public\/module-collections\/covers\/utility-stack\.jpg$/)
+        image: jasmine.stringMatching(/^https:\/\/images\.patcher\.xyz\/module-collections\/covers\/utility-stack\.jpg$/)
       }),
       'Utility stack — Module collection'
     );
