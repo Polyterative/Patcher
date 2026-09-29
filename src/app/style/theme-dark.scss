@@ -1042,11 +1042,33 @@ html.dark {
 
   // Rack/patch editor chrome: base floating surfaces are theme-aware via
   // mat-sys tokens — only state accents need dark tuning below.
-  .rackEditorFloatingOptions__analysisModeButton--active,
   .rackEditorFloatingOptions__analysisFocusButton--active {
     background: rgba(143, 184, 232, 0.16);
     border-color: rgba(143, 184, 232, 0.45);
     color: rgba(240, 246, 252, 0.96);
+  }
+
+  .rackEditorFloatingOptions__analysisModeButton {
+    background: var(--app-surface-2);
+    border-color: var(--app-border-strong);
+    color: var(--app-ink-2);
+  }
+
+  .rackEditorFloatingOptions__analysisModeButton:hover:not(.rackEditorFloatingOptions__analysisModeButton--active) {
+    background: color-mix(in srgb, var(--app-link) 12%, var(--app-surface-2));
+    border-color: var(--app-link);
+    color: var(--app-ink);
+  }
+
+  .rackEditorFloatingOptions__analysisModeButton--active {
+    background: color-mix(in srgb, var(--app-link) 22%, var(--app-surface-2));
+    border-color: color-mix(in srgb, var(--app-link) 70%, var(--app-border-strong));
+    color: var(--app-ink);
+  }
+
+  .rackEditorFloatingOptions__analysisModeButton--active:hover {
+    background: color-mix(in srgb, var(--app-link) 30%, var(--app-surface-2));
+    border-color: var(--app-link);
   }
 
   .rackEditorFloatingOptions__actionButton--primary {
