@@ -203,7 +203,7 @@ $floatingSurfaceMaxWidth: 16.5rem;
   min-width: 0;
   padding: 0.38rem 0.58rem;
   background: var(--mat-sys-surface-container, var(--app-surface-translucent, rgba(255, 255, 255, 0.72)));
-  color: var(--mat-sys-on-surface, rgba(21, 46, 70, 0.88));
+  color: var(--app-ink, rgba(17, 31, 48, 0.96));
   font: inherit;
   font-size: 0.74rem;
   font-weight: 600;
@@ -214,13 +214,13 @@ $floatingSurfaceMaxWidth: 16.5rem;
 
 .rackEditorFloatingOptions__analysisFocusButton:hover {
   border-color: var(--mat-sys-outline, rgba(34, 75, 117, 0.44));
-  background: var(--mat-sys-surface-container-high, #eef4fb);
+  background: var(--app-surface-2, #f4f8fc);
 }
 
 .rackEditorFloatingOptions__analysisFocusButton--active {
   border-color: var(--mat-sys-primary, rgba(34, 75, 117, 0.5));
   background: var(--mat-sys-primary-container, rgba(34, 75, 117, 0.14));
-  color: var(--mat-sys-on-primary-container, rgba(26, 55, 82, 0.96));
+  color: var(--app-ink, rgba(17, 31, 48, 0.96));
 }
 
 .rackEditorFloatingOptions__analysisModeButton {
@@ -233,7 +233,7 @@ $floatingSurfaceMaxWidth: 16.5rem;
   border-radius: 999px;
   min-width: 0;
   background: var(--mat-sys-surface-container, var(--app-surface-translucent, rgba(255, 255, 255, 0.72)));
-  color: var(--mat-sys-on-surface, rgba(21, 46, 70, 0.92));
+  color: var(--app-ink, rgba(17, 31, 48, 0.96));
   font: inherit;
   font-weight: 600;
   line-height: 1.1;
@@ -255,19 +255,19 @@ $floatingSurfaceMaxWidth: 16.5rem;
 
 .rackEditorFloatingOptions__analysisModeButton:hover {
   border-color: var(--mat-sys-outline, rgba(34, 75, 117, 0.48));
-  background: var(--mat-sys-surface-container-high, #eef4fb);
+  background: var(--app-surface-2, #f4f8fc);
   box-shadow: inset 0 0 0 0.0625rem rgba(34, 75, 117, 0.08);
 }
 
 .rackEditorFloatingOptions__analysisModeButton:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 0.125rem rgba(34, 75, 117, 0.18);
+  box-shadow: 0 0 0 0.125rem var(--app-focus-ring, rgba(61, 115, 188, 0.32));
 }
 
 .rackEditorFloatingOptions__analysisModeButton--active {
   background: var(--mat-sys-primary-container, rgba(34, 75, 117, 0.12));
   border-color: var(--mat-sys-primary, rgba(34, 75, 117, 0.44));
-  color: var(--mat-sys-on-primary-container, rgba(29, 57, 84, 0.96));
+  color: var(--app-ink, rgba(17, 31, 48, 0.96));
 }
 
 .rackEditorFloatingOptions__analysisModeButton--active:hover {
@@ -281,7 +281,7 @@ $floatingSurfaceMaxWidth: 16.5rem;
   max-width: 15rem;
   font-size: 0.78rem;
   line-height: 1.35;
-  color: var(--mat-sys-on-surface-variant, rgba(29, 63, 94, 0.86));
+  color: var(--app-ink-3, rgba(30, 52, 78, 0.56));
 }
 
 .rackEditorFloatingOptions__analysisHint--subtle {

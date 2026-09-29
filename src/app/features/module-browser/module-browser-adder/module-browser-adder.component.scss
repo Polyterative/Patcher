@@ -158,7 +158,7 @@
     font-size: 2.4rem;
     width: 2.4rem;
     height: 2.4rem;
-    color: rgba(0,0,0,0.55);
+    color: var(--app-ink-2, rgba(35, 60, 90, 0.78));
     margin-bottom: 0.25rem;
   }
   .intro-title {
@@ -170,7 +170,7 @@
   .intro-sub {
     margin: 0;
     text-align: center;
-    color: rgba(0,0,0,0.6);
+    color: var(--app-ink-2, rgba(35, 60, 90, 0.78));
     font-size: 0.95rem;
     max-width: 36rem;
   }

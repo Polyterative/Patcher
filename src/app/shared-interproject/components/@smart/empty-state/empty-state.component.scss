@@ -17,7 +17,7 @@
   gap: 0.85rem;
   width: min(100%, 28rem);
   padding: 1rem;
-  color: rgba(31, 57, 82, 0.78);
+  color: var(--app-ink-2, rgba(35, 60, 90, 0.78));
   text-align: center;
 }
 
@@ -27,8 +27,8 @@
   width: 4rem;
   height: 4rem;
   border-radius: 999px;
-  background: rgba(34, 75, 117, 0.06);
-  color: rgba(34, 75, 117, 0.5);
+  background: color-mix(in srgb, var(--app-link, #2f639f) 10%, transparent);
+  color: var(--app-link, #2f639f);
 }
 
 .empty-state__icon {
@@ -46,13 +46,13 @@
   font-size: clamp(1.05rem, 2.5vw, 1.25rem);
   font-weight: 700;
   letter-spacing: 0.01em;
-  color: rgba(28, 50, 72, 0.76);
+  color: var(--app-ink, rgba(17, 31, 48, 0.96));
 }
 
 .empty-state__copy span {
   font-size: 0.95rem;
   line-height: 1.45;
-  color: rgba(31, 57, 82, 0.66);
+  color: var(--app-ink-2, rgba(35, 60, 90, 0.78));
 }
 
 .empty-state__image {
