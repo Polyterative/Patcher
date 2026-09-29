@@ -474,6 +474,39 @@ describe('SupabaseService - auth methods', () => {
         }
       });
     }, TEST_TIMEOUT);
+    
+    it('should accept dots between username labels', (done) => {
+      const profileMock = chainable<{username: string}>({data: [{username: 'john.doe'}], error: null});
+      
+      spyOn(supabaseClient, 'from').and.returnValue(profileMock);
+      const updateSpy = spyOn(profileMock, 'update').and.returnValue(profileMock);
+      
+      service.auth.updateUsername$('user-id-1', 'john.doe').subscribe({
+        next: () => {
+          expect(updateSpy).toHaveBeenCalledWith(
+            jasmine.objectContaining({username: 'john.doe'})
+          );
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+    
+    it('should error on leading, trailing, or consecutive dots', (done) => {
+      service.auth.updateUsername$('user1', '.john').subscribe({
+        next: () => {
+          fail('Should have errored');
+          done();
+        },
+        error: (err) => {
+          expect(err.message).toContain('letters, numbers');
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
   });
   
   describe('updatePassword$', () => {

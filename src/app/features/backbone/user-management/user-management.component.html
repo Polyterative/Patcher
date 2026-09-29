@@ -33,7 +33,7 @@
                         <mat-error *ngIf="usernameControl.hasError('required')">Display name is required</mat-error>
                         <mat-error *ngIf="usernameControl.hasError('minlength')">At least 3 characters required</mat-error>
                         <mat-error *ngIf="usernameControl.hasError('maxlength')">Use 30 characters or fewer</mat-error>
-                        <mat-error *ngIf="usernameControl.hasError('pattern')">Use letters, numbers, underscores, or hyphens</mat-error>
+                        <mat-error *ngIf="usernameControl.hasError('pattern')">Use letters, numbers, dots, underscores, or hyphens</mat-error>
                         <mat-error *ngIf="usernameControl.hasError('usernameTaken')">That display name is already taken</mat-error>
                         <mat-error *ngIf="usernameControl.hasError('usernameAvailabilityCheckFailed')">Display name availability could not be checked. Try again.</mat-error>
                       </mat-form-field>

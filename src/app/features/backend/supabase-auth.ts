@@ -393,9 +393,10 @@ export function createAuthNamespace(
       if (trimmedUsername.length > 30) {
         return throwError(() => new Error('Username must be 30 characters or less.'));
       }
-      const validUsernameRegex = /^[a-zA-Z0-9_-]+$/;
+      // Kept identical to USERNAME_PATTERN in username-validation.ts — change both together.
+      const validUsernameRegex = /^[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)*$/;
       if (!validUsernameRegex.test(trimmedUsername)) {
-        return throwError(() => new Error('Username can only contain letters, numbers, underscores, and hyphens.'));
+        return throwError(() => new Error('Username can only contain letters, numbers, dots, underscores, and hyphens.'));
       }
       
       return rxFrom(

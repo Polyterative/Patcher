@@ -173,6 +173,22 @@ describe('UserManagementComponent - Username Editing', () => {
       expect(component.usernameControl.valid).toBe(true);
     });
     
+    it('should be valid for dotted usernames like firstname.lastname', () => {
+      component.usernameControl.setValue('john.doe');
+      expect(component.usernameControl.valid).toBe(true);
+      component.usernameControl.setValue('a.b.c-1_2');
+      expect(component.usernameControl.valid).toBe(true);
+    });
+    
+    it('should be invalid for leading, trailing, or consecutive dots', () => {
+      component.usernameControl.setValue('.john');
+      expect(component.usernameControl.hasError('pattern')).toBe(true);
+      component.usernameControl.setValue('john.');
+      expect(component.usernameControl.hasError('pattern')).toBe(true);
+      component.usernameControl.setValue('john..doe');
+      expect(component.usernameControl.hasError('pattern')).toBe(true);
+    });
+    
     it('should be valid for exactly 3 characters', () => {
       component.usernameControl.setValue('abc');
       expect(component.usernameControl.valid).toBe(true);
