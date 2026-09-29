@@ -160,6 +160,7 @@
 
 ### INFRA (independent; pick any time a product task is blocked)
 
+- [ ] **HIGH: Supabase Cached Egress overquota — cut API + Storage bytes (6.25/5 GB; rack search paging + collection-cover proxy first)** → [GitHub issue #161](https://github.com/Polyterative/Patcher/issues/161) + [`plans/supabase-cached-egress-overquota.md`](./plans/supabase-cached-egress-overquota.md)
 - [~] **HIGH: Rack layout analysis caps — large/high-slack racks hang on exact arrangement counting (repro: `/racks/x2iWDIhRugPx`)** → [`plans/rack-layout-analysis-caps.md`](./plans/rack-layout-analysis-caps.md)
 - [!] **HIGH: Security — hardening backlog (private)** → local, gitignored `internaldocs/security/` (sole-contributor setup; not published because the repo is public)
 - [ ] **HIGH: Application performance — Chrome-measured budget, per-flow baselines, and hypothesis-per-commit optimization loop (frontend-only; supersedes the bundle-only plan as sub-scope)** → [GitHub issue #150](https://github.com/Polyterative/Patcher/issues/150)
