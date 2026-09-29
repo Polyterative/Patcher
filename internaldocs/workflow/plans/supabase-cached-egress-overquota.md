@@ -14,12 +14,13 @@ Status: Open on `develop`, frontend-only. No schema/migration/RLS/RPC change. No
 
 ## Layer 1 — MVP (stop the full-table fetches)
 
-- [ ] `getRacksMinimal`: apply server-side name filter (`.ilike`) + `.range(from, effectiveTo)` on the search path; drop client-side full-fetch filter.
-- [ ] Collection covers via `images.patcher.xyz` proxy (parity with panels/racks); bump `uploadCollectionCover` `cacheControl: '360'` → `'31536000'`; confirm no direct-URL fallback in hot card path.
-- [ ] Targeted specs + `pnpm lint` green; confirm Supabase Reports top-query bucket moves.
+- [x] `getRacksMinimal`: apply server-side name filter (`.ilike`) + `.range(from, effectiveTo)` on the search path; drop client-side full-fetch filter. (`2b257495`)
+- [x] Collection covers via `images.patcher.xyz` proxy (parity with panels/racks); bump `uploadCollectionCover` `cacheControl: '360'` → `'31536000'`; confirm no direct-URL fallback in hot card path. (`3c2f33ac`)
+- [x] Targeted specs + `pnpm lint` green (94/94 across 3 spec files, eslint 0, `diff --check` clean); Supabase Reports top-query bucket check stays dashboard-side.
 
 ## Layer 2 — Structural (shrink repeat payloads)
 
+- [ ] `getPatches` name search: same server-side filter + range treatment as racks (`supabase-queries.patches.ts:377-418`).
 - [ ] Module text search: min 2–3 chars + debounce, cap/remove `fetchAllRows` fallback (e.g. `range(0,99)`), raise `getModules` TTL 1 min → 5 min.
 - [ ] Current-user lists: `select('id')` where only IDs needed, else paginate (racks/patches already have paginated alternatives).
 - [ ] Module/rack detail projections: replace `select *` with explicit columns; trim unneeded joins on first paint.
@@ -35,7 +36,9 @@ Status: Open on `develop`, frontend-only. No schema/migration/RLS/RPC change. No
 ## Decision log
 
 - 2026-09-29: Frontend-only scope; no backend shape change so no `backend-plan-reviewer` gate and no RLS/operator window needed.
-- 2026-09-29: Layer 1 targets the two unbounded fetches first (rack search + collection-cover storage) because the overage is only ~1.25 GB — smallest diff likely suffices.
+- 2026-09-29: Layer 1 accepted accent tradeoff on rack search: pure server `ILIKE` means an unaccented query (e.g. `lubadh`) no longer matches accented rack names (`Lùbadh`), which the old full-scan client filter handled. Kept server-only (no paged-window client refinement) because refinement can't recover rows the server already excluded; full accent preservation needs a DB-side normalized column/trigram — follow-up only if users report it.
+- 2026-09-29: Proxy routing uses a per-bucket allowlist (`IMAGE_PROXY_BUCKETS`) in `getPublicStorageUrl` so only `module-collections` moves; other buckets keep direct URLs until verified.
+- 2026-09-29: `getPatches` (`supabase-queries.patches.ts:377-418`) found with the same unbounded name-search pattern (no `.range()`, no server filter) — queued into Layer 2 alongside module fallback caps.
 
 ## Documentation impact
 

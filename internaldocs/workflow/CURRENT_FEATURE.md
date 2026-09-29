@@ -21,13 +21,13 @@
 
 #### Layer 1 — MVP (stop the full-table fetches)
 
-- [ ] Rack search server-side filter + range
-- [ ] Collection covers via proxy + long cacheControl
-- [ ] Targeted specs + lint green
+- [x] Rack search server-side filter + range
+- [x] Collection covers via proxy + long cacheControl
+- [x] Targeted specs + lint green
 
 #### Layer 2 — Structural (shrink repeat payloads)
 
-- [ ] Module search guardrails + longer TTL
+- [ ] Patch search server-side + module search guardrails + longer TTL
 - [ ] Current-user lists paginated/minimal
 - [ ] Detail projections trimmed
 
