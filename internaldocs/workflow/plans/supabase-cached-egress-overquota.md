@@ -20,11 +20,11 @@ Status: Open on `develop`, frontend-only. No schema/migration/RLS/RPC change. No
 
 ## Layer 2 — Structural (shrink repeat payloads)
 
-- [ ] `getPatches` name search: same server-side filter + range treatment as racks (`supabase-queries.patches.ts:377-418`).
-- [ ] Module text search: min 2–3 chars + debounce, cap/remove `fetchAllRows` fallback (e.g. `range(0,99)`), raise `getModules` TTL 1 min → 5 min.
-- [ ] Current-user lists: `select('id')` where only IDs needed, else paginate (racks/patches already have paginated alternatives).
-- [ ] Module/rack detail projections: replace `select *` with explicit columns; trim unneeded joins on first paint.
-- [ ] Specs for search caps, pagination, and projection trims.
+- [x] `getPatches` name search: same server-side filter + range treatment as racks (`supabase-queries.patches.ts:377-418`). (`24e2b653`)
+- [x] Module text search: fallback `fetchAllRows` pagination-to-exhaustion replaced with a single bounded `[0, 99]` window; narrowed `ilike` + accent predicate + lightweight projection + detail refetch unchanged. (`7c96e9b9`)
+- [x] Current-user lists verified already narrow, no change: `getCurrentUserPatchesForAuthor` selects exact caller columns; `getCurrentUserRacksForAuthor` uses `currentUserRackListColumns` + 50-min cache with a paginated alternative available; possessions has a minimal `getCurrentUserModulesPossessionOnly` variant.
+- [ ] Module search TTL 1 min → 5 min search-path-only: skipped, needs a method split (single `@Cacheable` covers list + search branches).
+- [ ] Module/rack detail `select *` trims: skipped, needs an exhaustive template audit (`singleModuleData$` fans out to many subcomponents).
 
 ## Layer 3 — Polish (defer + densify what remains)
 
@@ -38,7 +38,8 @@ Status: Open on `develop`, frontend-only. No schema/migration/RLS/RPC change. No
 - 2026-09-29: Frontend-only scope; no backend shape change so no `backend-plan-reviewer` gate and no RLS/operator window needed.
 - 2026-09-29: Layer 1 accepted accent tradeoff on rack search: pure server `ILIKE` means an unaccented query (e.g. `lubadh`) no longer matches accented rack names (`Lùbadh`), which the old full-scan client filter handled. Kept server-only (no paged-window client refinement) because refinement can't recover rows the server already excluded; full accent preservation needs a DB-side normalized column/trigram — follow-up only if users report it.
 - 2026-09-29: Proxy routing uses a per-bucket allowlist (`IMAGE_PROXY_BUCKETS`) in `getPublicStorageUrl` so only `module-collections` moves; other buckets keep direct URLs until verified.
-- 2026-09-29: `getPatches` (`supabase-queries.patches.ts:377-418`) found with the same unbounded name-search pattern (no `.range()`, no server filter) — queued into Layer 2 alongside module fallback caps.
+- 2026-09-29: Layer 2 skips are deliberate, not deferred debt: search-path-only TTL needs a method split, detail `*` trims need a template audit, and current-user lists are already narrow. Revisit only if egress still over after Layer 3.
+- 2026-09-29: `get-cached-delegates.spec.ts` carried a stale racks `client-side` test from Layer 1 commit `2b257495`; fixed in-tree to assert server ilike + range passthrough.
 
 ## Documentation impact
 

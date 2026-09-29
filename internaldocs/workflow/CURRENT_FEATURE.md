@@ -27,9 +27,9 @@
 
 #### Layer 2 — Structural (shrink repeat payloads)
 
-- [ ] Patch search server-side + module search guardrails + longer TTL
-- [ ] Current-user lists paginated/minimal
-- [ ] Detail projections trimmed
+- [x] Patch search server-side + module fallback capped
+- [x] Current-user lists verified narrow (no change)
+- [x] Detail projections reviewed (trim skipped, needs audit)
 
 #### Layer 3 — Polish (defer + densify what remains)
 
