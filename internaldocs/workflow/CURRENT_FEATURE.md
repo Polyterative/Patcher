@@ -17,22 +17,25 @@
 
 ## Active
 
-### Rack layout analysis caps — plan: [plans/rack-layout-analysis-caps.md](./plans/rack-layout-analysis-caps.md)
+### Supabase Cached Egress overquota — plan: [plans/supabase-cached-egress-overquota.md](./plans/supabase-cached-egress-overquota.md)
 
-#### Layer 1 — MVP (make the rack load)
+#### Layer 1 — MVP (stop the full-table fetches)
 
-- [x] Memo budget + sampled fallback in exact counting
-- [x] Regression spec with production rack shape
-- [x] Targeted specs + lint green
+- [ ] Rack search server-side filter + range
+- [ ] Collection covers via proxy + long cacheControl
+- [ ] Targeted specs + lint green
 
-#### Layer 2 — Structural (count only when layout mode needs it)
+#### Layer 2 — Structural (shrink repeat payloads)
 
-- [x] `skipArrangementCount` option + render-service opt-out
-- [x] Remix/validity summaries skip; arrangement summary keeps full count
+- [ ] Module search guardrails + longer TTL
+- [ ] Current-user lists paginated/minimal
+- [ ] Detail projections trimmed
 
-#### Layer 3 — Polish
+#### Layer 3 — Polish (defer + densify what remains)
 
-- [x] HP-slack guard + prod-shape verification
+- [ ] Below-fold reads lazy-loaded
+- [ ] Import burst capped + image sizing + count trims
+- [ ] Egress headroom verified
 
 Updated: 2026-09-29
 
