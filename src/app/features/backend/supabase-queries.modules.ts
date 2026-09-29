@@ -102,6 +102,15 @@ const MODULE_IMPORT_SEARCH_TERM_LIMIT = 80;
 const MODULE_IMPORT_SEARCH_BATCH_SIZE = 8;
 const MODULE_IMPORT_ALIAS_TERM_RESERVE = 24;
 
+/**
+ * Bounded window for the module text-search accent-recovery fallback. The
+ * narrowed server `ilike` misses accent variants (e.g. `Lubadh` vs `Lùbadh`),
+ * so an empty narrowed result retries with a broad client-side scan — capped
+ * to the first window via a single `.range()` instead of `fetchAllRows`
+ * pagination to exhaustion.
+ */
+const MODULE_TEXT_SEARCH_FALLBACK_WINDOW = 100;
+
 function normalizeModuleImportSearchTerm(term: string): string {
   return term.trim().replace(/\s+/g, ' ');
 }
@@ -438,18 +447,24 @@ export class SupabaseModuleQueries extends SupabaseQueriesBase {
       );
 
       if (filteredSearchRows.count === 0) {
-        const fallbackSearchResponse = await this.fetchAllRows<ModuleSearchRow>(
-          DbPaths.modules,
-          (query) => buildSearchRowsQuery(query, false)
-        );
-        if (fallbackSearchResponse.error) {
-          return fallbackSearchResponse;
+        const fallbackWireResponse = await buildSearchRowsQuery(
+          this.supabase.from(DbPaths.modules),
+          false
+        ).range(0, MODULE_TEXT_SEARCH_FALLBACK_WINDOW - 1);
+        if (fallbackWireResponse.error) {
+          return fallbackWireResponse;
         }
+
+        const fallbackRows = (Array.isArray(fallbackWireResponse.data)
+          ? fallbackWireResponse.data
+          : []) as ModuleSearchRow[];
 
         filteredSearchRows = applyClientSideSearchFilter(
           {
-            ...fallbackSearchResponse,
-            count: fallbackSearchResponse.data.length
+            ...fallbackWireResponse,
+            data: fallbackRows,
+            count: fallbackRows.length,
+            error: fallbackWireResponse.error ?? null
           },
           from,
           to,
