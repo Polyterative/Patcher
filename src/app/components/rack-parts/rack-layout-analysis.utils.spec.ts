@@ -216,4 +216,24 @@ describe('computeLayoutAnalysis', () => {
       [2, 2]
     ]);
   });
+
+  it('falls back to a sampled/capped estimate for large high-slack racks instead of hanging', () => {
+    // Repro for /racks/x2iWDIhRugPx — 15 modules across 6x184HP at ~33% fill.
+    // Exact DP state keyed on remaining-HP vectors grew unbounded here and threw
+    // `Map maximum size exceeded`, hanging the rack page.
+    const rows = [
+      [rackModule(1, 8, 0)],
+      [rackModule(2, 12, 1)],
+      [rackModule(3, 60, 2)],
+      [rackModule(4, 60, 3), rackModule(5, 18, 3)],
+      [rackModule(6, 30, 4), rackModule(7, 20, 4), rackModule(8, 14, 4), rackModule(9, 42, 4)],
+      [rackModule(10, 36, 5), rackModule(11, 20, 5), rackModule(12, 20, 5), rackModule(13, 12, 5), rackModule(14, 4, 5), rackModule(15, 8, 5)]
+    ];
+
+    const result = computeLayoutAnalysis(rows, 184);
+
+    expect(result.isValid).toBeTrue();
+    expect(result.autoArrangeMoves.length).toBe(15);
+    expect(['sampled', 'capped']).toContain(result.arrangementCount.kind);
+  });
 });

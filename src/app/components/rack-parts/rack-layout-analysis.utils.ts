@@ -51,6 +51,24 @@ const ESTIMATED_ARRANGEMENT_SAMPLE_COUNT = 1024;
 export const RACK_ARRANGEMENT_DISPLAY_SAFE_INTEGER_CAP = Number.MAX_SAFE_INTEGER;
 const RACK_ARRANGEMENT_DISPLAY_SAFE_INTEGER_CAP_LOG10 = Math.log10(RACK_ARRANGEMENT_DISPLAY_SAFE_INTEGER_CAP);
 
+/**
+ * Hard bound on exact arrangement-count DP states. Exact state is keyed on
+ * remaining-HP vectors per row, which explode for large/high-slack racks even
+ * when the combinatorial estimate in `shouldCountExactly` looks small (repro:
+ * 15 modules across 6×184HP at ~33% fill grew past 3M states and threw
+ * `RangeError: Map maximum size exceeded`, hanging the rack page). This caps
+ * analysis cost without limiting user rack size — callers fall back to the
+ * sampled estimate once the budget is spent.
+ */
+const MAX_EXACT_MEMO_ENTRIES = 100_000;
+
+class ExactCountBudgetExceeded extends Error {
+  constructor(entries: number) {
+    super(`Exact arrangement count aborted after ${ entries } memo entries.`);
+    this.name = 'ExactCountBudgetExceeded';
+  }
+}
+
 export interface RackLayoutAnalysisOptions {
   variant?: number;
 }
@@ -88,10 +106,7 @@ export function computeLayoutAnalysis(
     group.rowIndexes,
     options.variant ?? 0
   ));
-  const canCountExactly = formatGroups.every(group => shouldCountExactly(group));
-  const arrangementCount = canCountExactly
-    ? buildExactArrangementCount(formatGroups, safeRackHp)
-    : buildEstimatedArrangementCount(formatGroups, safeRackHp);
+  const arrangementCount = safeArrangementCount(formatGroups, safeRackHp);
   const hasOverflow = overflowHp.some(value => value > 0);
 
   return {
@@ -231,6 +246,28 @@ function buildExactArrangementCount(formatGroups: RackLayoutFormatGroup[], rackH
   return bigintToArrangementCount(count, 'exact');
 }
 
+/**
+ * Arrangement counting must never hang or throw the rack page: exact DP aborts
+ * via `ExactCountBudgetExceeded` (or a `RangeError` if the engine limit is hit
+ * first) and every failure falls back to the bounded sampled estimate.
+ */
+function safeArrangementCount(formatGroups: RackLayoutFormatGroup[], rackHp: number): RackArrangementCount {
+  try {
+    if (formatGroups.every(group => shouldCountExactly(group))) {
+      return buildExactArrangementCount(formatGroups, rackHp);
+    }
+  } catch (err) {
+    console.warn('[rack-layout-analysis] Exact arrangement count exceeded budget; falling back to sampled estimate.', err);
+  }
+
+  try {
+    return buildEstimatedArrangementCount(formatGroups, rackHp);
+  } catch (err) {
+    console.warn('[rack-layout-analysis] Sampled arrangement estimate failed; returning capped placeholder.', err);
+    return {kind: 'capped', source: 'sampled', orderOfMagnitude: 0};
+  }
+}
+
 function countExactArrangements(modules: RackedModule[], rackHp: number, rowCount: number): bigint {
   const targetRowCount = Math.max(1, rowCount);
   const moduleHpValues = modules
@@ -261,6 +298,9 @@ function countExactArrangements(modules: RackedModule[], rackHp: number, rowCoun
     }
 
     memo.set(memoKey, count);
+    if (memo.size > MAX_EXACT_MEMO_ENTRIES) {
+      throw new ExactCountBudgetExceeded(memo.size);
+    }
     return count;
   };
 
