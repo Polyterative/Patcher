@@ -741,6 +741,69 @@ describe('SupabaseService - get.currentUserPatches unauthenticated', () => {
   }, TEST_TIMEOUT);
 });
 
+describe('SupabaseService - get.currentUserPatches projection', () => {
+  let service: SupabaseService;
+  let supabaseClient: {from: (table: string) => unknown};
+
+  beforeEach(() => {
+    const setup = setupSupabaseServiceTest();
+    service = setup.service;
+    supabaseClient = (service as unknown as {supabase: {from: (table: string) => unknown}}).supabase;
+  });
+
+  afterEach(() => {
+    cleanupSupabaseServiceTest();
+  });
+
+  it('should select only the narrow columns consumed by the user-area patch list', (done) => {
+    mockUserSession(service, authUserFixture('patch-owner'));
+
+    const mock = chainable({data: [], error: null});
+    const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
+    const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+    service.get.currentUserPatches().subscribe({
+      next: () => {
+        expect(selectSpy).toHaveBeenCalledWith(
+          jasmine.stringContaining('id,name,description,public_id,tags,created,updated')
+        );
+        expect(selectSpy).toHaveBeenCalledWith(
+          jasmine.stringContaining('author:authorid(username,id)')
+        );
+        expect(filterSpy).toHaveBeenCalledWith('authorid', 'eq', 'patch-owner');
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+
+  it('should not select wide or unrendered patch columns for the current user list', (done) => {
+    mockUserSession(service, authUserFixture('patch-owner'));
+
+    const mock = chainable({data: [], error: null});
+    const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+    service.get.currentUserPatches().subscribe({
+      next: () => {
+        const selectArg = selectSpy.calls.mostRecent().args[0] as string;
+        expect(selectArg).not.toContain('*');
+        expect(selectArg).not.toContain('linked_rack_id');
+        expect(selectArg).not.toContain('image');
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+});
+
 describe('SupabaseService - get.currentUserRacks authorid override', () => {
   let service: SupabaseService;
   let supabaseClient: {from: (table: string) => unknown};

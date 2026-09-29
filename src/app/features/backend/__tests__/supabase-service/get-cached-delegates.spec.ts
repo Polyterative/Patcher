@@ -510,7 +510,7 @@ describe('SupabaseService - GET cached delegates', () => {
       });
     }, TEST_TIMEOUT);
     
-    it('should apply the name filter client-side when name is provided', (done) => {
+    it('should filter and paginate name searches on the server without client-side filtering', (done) => {
       const mock = chainable<PatchIdRow>({
         data: [
           {id: 1, name: 'Ambient Wash'},
@@ -520,13 +520,16 @@ describe('SupabaseService - GET cached delegates', () => {
         error: null
       } satisfies QueryCountRowsResult<PatchIdRow>);
       const ilikeSpy = spyOn(mock, 'ilike').and.callThrough();
+      const rangeSpy = spyOn(mock, 'range').and.callThrough();
       spyOn(supabaseClient, 'from').and.returnValue(mock);
-      
-      (service.GET.patches(0, 10, 'Ambient') as unknown as Observable<QueryCountRowsResult<PatchIdRow>>).subscribe({
+
+      (service.GET.patches(10, 19, 'Ambient') as unknown as Observable<QueryCountRowsResult<PatchIdRow>>).subscribe({
         next: (result: QueryCountRowsResult<PatchIdRow>) => {
-          expect(ilikeSpy).not.toHaveBeenCalled();
-          expect(result.count).toBe(1);
-          expect(result.data).toEqual([{id: 1, name: 'Ambient Wash'}]);
+          expect(ilikeSpy).toHaveBeenCalledWith('name', '%Ambient%');
+          expect(rangeSpy).toHaveBeenCalledWith(10, 19);
+          // Supabase owns search filtering; do not re-filter a paged response in the client.
+          expect(result.count).toBe(2);
+          expect(result.data).toEqual([{id: 1, name: 'Ambient Wash'}, {id: 2, name: 'Perc Loop'}]);
           done();
         },
         error: (err: unknown) => {
@@ -593,23 +596,26 @@ describe('SupabaseService - GET cached delegates', () => {
       });
     }, TEST_TIMEOUT);
     
-    it('should apply the name filter client-side when name is provided', (done) => {
+    it('should filter and paginate name searches on the server without client-side filtering', (done) => {
       const mock = chainable<RackListQueryRow>({
         data: [
           {id: 1, name: 'Studio Rack', author_profile_gate: {public: true}},
-          {id: 2, name: 'Performance Rack', author_profile_gate: {public: true}}
+          {id: 2, name: 'Studio Live', author_profile_gate: {public: true}}
         ],
         count: 2,
         error: null
       } satisfies QueryCountRowsResult<RackListQueryRow>);
       const ilikeSpy = spyOn(mock, 'ilike').and.callThrough();
+      const rangeSpy = spyOn(mock, 'range').and.callThrough();
       spyOn(supabaseClient, 'from').and.returnValue(mock);
-      
-      (service.GET.racksMinimal(0, undefined, 'studio') as unknown as Observable<QueryCountRowsResult<RackIdRow>>).subscribe({
+
+      (service.GET.racksMinimal(0, 19, 'studio') as unknown as Observable<QueryCountRowsResult<RackIdRow>>).subscribe({
         next: (result: QueryCountRowsResult<RackIdRow>) => {
-          expect(ilikeSpy).not.toHaveBeenCalled();
-          expect(result.count).toBe(1);
-          expect(result.data).toEqual([{id: 1, name: 'Studio Rack'}]);
+          expect(ilikeSpy).toHaveBeenCalledWith('name', '%studio%');
+          expect(rangeSpy).toHaveBeenCalledWith(0, 19);
+          // Supabase owns search filtering; do not re-filter a paged response in the client.
+          expect(result.count).toBe(2);
+          expect(result.data).toEqual([{id: 1, name: 'Studio Rack'}, {id: 2, name: 'Studio Live'}]);
           done();
         },
         error: (err: unknown) => {
