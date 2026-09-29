@@ -100,8 +100,8 @@
   padding: 0.18rem 0.42rem 0.18rem 0.55rem;
   border: none;
   border-radius: 999px;
-  background: rgba(34, 75, 117, 0.08);
-  color: rgba(19, 54, 89, 0.86);
+  background: color-mix(in srgb, var(--mat-sys-primary, var(--app-link, #2f639f)) 10%, transparent);
+  color: var(--app-ink-2, rgba(35, 60, 90, 0.78));
   font-size: 0.76rem;
   font-weight: 600;
   line-height: 1.2;
@@ -110,11 +110,11 @@
 }
 
 .rackBalancePanel__toggleButton:hover {
-  background: rgba(34, 75, 117, 0.14);
+  background: color-mix(in srgb, var(--mat-sys-primary, var(--app-link, #2f639f)) 18%, transparent);
 }
 
 .rackBalancePanel__toggleButton:focus-visible {
-  outline: 2px solid rgba(52, 123, 193, 0.35);
+  outline: 2px solid var(--app-focus-ring, rgba(61, 115, 188, 0.32));
   outline-offset: 2px;
 }
 
@@ -122,7 +122,7 @@
   width: 0.95rem;
   height: 0.95rem;
   font-size: 0.95rem;
-  color: rgba(19, 54, 89, 0.72);
+  color: var(--app-ink-2, rgba(35, 60, 90, 0.78));
   transition: transform 160ms ease, color 120ms ease;
 }
 
@@ -148,7 +148,7 @@
 
 .rackBalancePanel__details {
   padding-top: 0.4rem;
-  border-top: 1px solid rgba(19, 54, 89, 0.08);
+  border-top: 1px solid var(--app-border, rgba(34, 72, 118, 0.12));
   animation: rack-balance-panel-enter 220ms ease-out both;
 }
 
@@ -176,14 +176,14 @@
 $rack-balance-accent: rgba(71, 170, 156, 1);
 
 .rackBalancePanel__radarRing {
-  fill: rgba(71, 170, 156, 0.03);
-  stroke: rgba(71, 170, 156, 0.13);
+  fill: var(--app-data-viz-grid-fill, rgba(71, 170, 156, 0.03));
+  stroke: var(--app-data-viz-grid, rgba(71, 170, 156, 0.13));
   stroke-width: 1;
   animation: rack-balance-fade-in 260ms ease-out both;
 }
 
 .rackBalancePanel__radarAxisLine {
-  stroke: rgba(71, 170, 156, 0.12);
+  stroke: var(--app-data-viz-axis, rgba(71, 170, 156, 0.12));
   stroke-width: 1;
   animation: rack-balance-fade-in 260ms ease-out both;
 }
@@ -205,7 +205,7 @@ $rack-balance-accent: rgba(71, 170, 156, 1);
 }
 
 .rackBalancePanel__radarLabel {
-  fill: rgba(19, 54, 89, 0.72);
+  fill: var(--app-ink-2, rgba(35, 60, 90, 0.78));
   font-size: 0.72rem;
   font-weight: 600;
   animation: rack-balance-fade-in 220ms ease-out both 120ms;
@@ -239,7 +239,7 @@ $rack-balance-accent: rgba(71, 170, 156, 1);
   width: 1.15rem;
   height: 1.15rem;
   font-size: 1.15rem;
-  color: rgba(19, 54, 89, 0.62);
+  color: var(--app-ink-2, rgba(35, 60, 90, 0.78));
   margin-top: 0.2rem;
 }
 
@@ -253,7 +253,7 @@ $rack-balance-accent: rgba(71, 170, 156, 1);
 
 .rackBalancePanel__lowDataMessage {
   margin: 0;
-  color: rgba(19, 54, 89, 0.68);
+  color: var(--app-ink-2, rgba(35, 60, 90, 0.78));
   line-height: 1.35;
   white-space: normal;
 }

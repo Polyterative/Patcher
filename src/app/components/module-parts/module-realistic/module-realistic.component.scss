@@ -21,7 +21,7 @@
   min-width: 0 !important;
   max-width: none !important;
   flex: none !important;
-  background-color: rgba(255, 255, 255, 0.96);
+  background-color: var(--app-module-face-surface, rgba(255, 255, 255, 0.96));
   position: relative;
   isolation: isolate;
   transition: background-color 140ms ease, box-shadow 180ms ease;
@@ -74,7 +74,7 @@
 @media (hover: hover) and (pointer: fine) {
   .root:hover {
     @include mat.elevation(2);
-    background-color: rgba(255, 255, 255, 0.6);
+    background-color: var(--app-module-face-hover-surface, rgba(255, 255, 255, 0.6));
   }
 }
 
@@ -375,6 +375,6 @@ $power-analysis-hot-color: #dc3434;
 .modBody {
   padding-right: .5rem;
   padding-left: .5rem;
-  background-color: #ffffff;
+  background-color: var(--app-module-face-surface, #ffffff);
   height: 100%;
 }
