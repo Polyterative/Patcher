@@ -247,6 +247,19 @@ describe('UserSignupDataService', () => {
     expect(userManagementService.signup).not.toHaveBeenCalled();
   });
 
+  it('accepts dots in the username before checking availability', () => {
+    spyOn(SharedConstants, 'confirmMail').and.callFake(() => {});
+    service.fields.username.control.setValue('john.doe');
+    userManagementService.signup.and.returnValue(of({
+      user: {id: 'u-1', email: 'new@example.com', created_at: '', updated_at: ''},
+      requiresEmailConfirmation: true
+    }));
+
+    service.mailSignClick$.next();
+
+    expect(userManagementService.isUsernameAvailableForSignup$).toHaveBeenCalledWith('john.doe');
+  });
+
   it('accepts subdomain emails such as username@sub.domain.tld', () => {
     service.fields.email.control.setValue('username@sub.domain.tld');
 

@@ -8,8 +8,13 @@ import { ErrorCodes } from 'src/app/shared-interproject/components/@smart/mat-fo
 
 export const USERNAME_MIN_LENGTH = 3;
 export const USERNAME_MAX_LENGTH = 30;
-export const USERNAME_PATTERN = /^[a-zA-Z0-9_-]+$/;
-export const USERNAME_PATTERN_MESSAGE = 'Use letters, numbers, underscores, or hyphens only';
+/**
+ * Dots are allowed but only *between* labels (`firstname.lastname`): no
+ * leading, trailing, or consecutive dots. Kept identical to the backend
+ * `updateUsername$` check in `supabase-auth.ts` — change both together.
+ */
+export const USERNAME_PATTERN = /^[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)*$/;
+export const USERNAME_PATTERN_MESSAGE = 'Use letters, numbers, dots, underscores, or hyphens only';
 
 export function usernameValidators(): ValidatorFn[] {
   return [
