@@ -17,9 +17,24 @@
 
 ## Active
 
-_No active feature._
+### Rack layout analysis caps — plan: [plans/rack-layout-analysis-caps.md](./plans/rack-layout-analysis-caps.md)
 
-Updated: 2026-09-18
+#### Layer 1 — MVP (make the rack load)
+
+- [ ] Memo budget + sampled fallback in exact counting
+- [ ] Regression spec with production rack shape
+- [ ] Targeted specs + lint green
+
+#### Layer 2 — Structural (count only when layout mode needs it)
+
+- [ ] `skipArrangementCount` option + render-service opt-out
+- [ ] Remix/validity summaries skip; arrangement summary keeps full count
+
+#### Layer 3 — Polish
+
+- [ ] HP-slack guard + prod-snapshot verification
+
+Updated: 2026-09-29
 
 Recent completed checkpoints are archived in [COMPLETED.md](./COMPLETED.md); their validation
 notes and decisions live in the matching plan files (e.g.
