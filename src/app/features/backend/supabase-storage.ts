@@ -160,7 +160,7 @@ export function createStorageNamespace(
           supabase.storage
             .from(DbStoragePaths.module_collections)
             .upload(filenameAndExtension, file, {
-              cacheControl: '360',
+              cacheControl: '31536000',
               contentType: 'image/jpeg'
             })
         ).pipe(
