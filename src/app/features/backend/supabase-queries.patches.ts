@@ -41,9 +41,6 @@ import {
   SimpleUserModel
 } from './supabase.types';
 import {
-  matchesSearchQuery
-} from 'src/app/shared-interproject/components/@smart/mat-form-entity/string-utils';
-import {
   CurrentUserContributorStats,
   PublicApplicationActivityPoint,
   PublicApplicationInsightsSnapshot,
@@ -121,7 +118,6 @@ import { MinimalModule } from 'src/app/models/module';
 import { UserModuleAcquisition } from 'src/app/models/user-module-acquisition';
 import { Tag } from 'src/app/models/tag';
 import {
-  applyClientSideSearchFilter,
   escapeIlikePattern,
   getHpBandLabel,
   isOneUStandard,
@@ -393,26 +389,17 @@ export class SupabasePatchQueries extends SupabaseQueriesBase {
       .order(orderBy ?? 'name', {ascending: orderDirection === 'asc'})
       .order('id', {ascending: orderDirection === 'asc'});
 
-    if (nameQuery.length === 0) {
-      queryBuilder = queryBuilder.range(from, to);
+    if (nameQuery.length > 0) {
+      queryBuilder = queryBuilder.ilike('name', `%${ escapeIlikePattern(nameQuery) }%`);
     }
+    queryBuilder = queryBuilder.range(from, to);
 
     return rxFrom(queryBuilder)
       .pipe(
         remapErrors(),
         map((response: SupabaseWireResponse) => {
           const rows = (Array.isArray(response?.data) ? response.data : []) as Patch[];
-          if (nameQuery.length === 0) {
-            return {data: rows, count: response?.count ?? rows.length, error: response?.error};
-          }
-
-          const filtered = applyClientSideSearchFilter(
-            {data: rows, count: response?.count ?? rows.length},
-            from,
-            to,
-            (patch: Patch) => matchesSearchQuery(nameQuery, patch?.name)
-          );
-          return {...filtered, error: response?.error};
+          return {data: rows, count: response?.count ?? rows.length, error: response?.error};
         })
       );
   }

@@ -170,7 +170,7 @@ describe('SupabaseService - GET.patches filtering and ordering', () => {
     });
   }, TEST_TIMEOUT);
   
-  it('should apply the name filter client-side when name is provided', (done) => {
+  it('should filter and paginate name searches on the server without client-side filtering', (done) => {
     const mock = chainableWithIlike({
       data: [
         {id: 1, name: 'DrumPatch', public: true},
@@ -180,15 +180,36 @@ describe('SupabaseService - GET.patches filtering and ordering', () => {
       error: null
     });
     const ilikeSpy = spyOn(mock, 'ilike').and.callThrough();
+    const rangeSpy = spyOn(mock, 'range').and.callThrough();
     spyOn(supabaseClient, 'from').and.returnValue(mock);
-    
-    (service.GET.patches(0, 9, 'drum') as unknown as Observable<PatchListingResult>).subscribe({
+
+    (service.GET.patches(10, 19, 'drum') as unknown as Observable<PatchListingResult>).subscribe({
       next: (result: PatchListingResult) => {
-        expect(ilikeSpy).not.toHaveBeenCalled();
-        expect(result.count).toBe(1);
+        expect(ilikeSpy).toHaveBeenCalledWith('name', '%drum%');
+        expect(rangeSpy).toHaveBeenCalledWith(10, 19);
+        // Supabase owns search filtering; do not re-filter a paged response in the client.
+        expect(result.count).toBe(2);
         expect(result.data).toEqual([
-          {id: 1, name: 'DrumPatch', public: true}
+          {id: 1, name: 'DrumPatch', public: true},
+          {id: 2, name: 'BassPatch', public: true}
         ]);
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+
+  it('should escape ilike wildcards in the name search', (done) => {
+    const mock = chainableWithIlike({data: [], count: 0, error: null});
+    const ilikeSpy = spyOn(mock, 'ilike').and.returnValue(mock);
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+    service.GET.patches(0, 9, '100%_patch\\live').subscribe({
+      next: () => {
+        expect(ilikeSpy).toHaveBeenCalledWith('name', '%100\\%\\_patch\\\\live%');
         done();
       },
       error: (err) => {
