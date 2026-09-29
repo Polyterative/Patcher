@@ -92,21 +92,21 @@
   margin: 0;
   font-size: 0.92rem;
   line-height: 1.45;
-  color: rgba(24, 37, 53, 0.78);
+  color: var(--app-ink-2, rgba(35, 60, 90, 0.78));
 }
 
 .takeaway {
   margin: 0 0 1rem;
   font-size: 0.92rem;
   line-height: 1.5;
-  color: rgba(24, 37, 53, 0.85);
+  color: var(--app-ink-2, rgba(35, 60, 90, 0.78));
 }
 
 .momentum-summary {
   margin: 1rem 0 0;
   font-size: 0.9rem;
   line-height: 1.5;
-  color: rgba(24, 37, 53, 0.85);
+  color: var(--app-ink-2, rgba(35, 60, 90, 0.78));
 }
 
 .rail-subhead {
