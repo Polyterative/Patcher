@@ -125,30 +125,31 @@ describe('SupabaseService - accent-insensitive search', () => {
     });
   }, TEST_TIMEOUT);
 
-  it('matches accented rack names from an unaccented search query', (done) => {
+  it('filters and paginates accented rack names in the server query', (done) => {
     const mockRacks = [
-      {id: 1, name: 'Lùbadh Case', author_profile_gate: {public: true}},
-      {id: 2, name: 'Performance Case', author_profile_gate: {public: true}}
+      {id: 1, name: 'Lùbadh Case', author_profile_gate: {public: true}}
     ] satisfies RackSearchRow[];
     const mock: SupabaseQueryChain<RackSearchRow> = chainable<RackSearchRow>({
       data: mockRacks,
-      count: 2,
+      count: 1,
       error: null
     } satisfies QueryCountRowsResult<RackSearchRow>);
     const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
     const orderSpy = spyOn(mock, 'order').and.returnValue(mock);
     const rangeSpy = spyOn(mock, 'range').and.returnValue(mock);
+    const ilikeSpy = spyOn(mock, 'ilike').and.returnValue(mock);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
 
-    service.GET.racksMinimal(0, 10, '  lubadh  ').subscribe({
+    service.GET.racksMinimal(0, 10, '  lùbadh  ').subscribe({
       next: (result: SearchObservableResult<RackSearchRow>) => {
         expect(filterSpy).toHaveBeenCalledWith('public', 'eq', true);
         expect(filterSpy).toHaveBeenCalledWith('author_profile_gate.public', 'eq', true);
+        expect(ilikeSpy).toHaveBeenCalledWith('name', '%lùbadh%');
         expect(orderSpy.calls.allArgs()).toEqual([
           ['name', {ascending: false}],
           ['id', {ascending: false}]
         ]);
-        expect(rangeSpy).not.toHaveBeenCalled();
+        expect(rangeSpy).toHaveBeenCalledWith(0, 10);
         expect(result.count).toBe(1);
         expect(result.data?.[0]?.name).toBe('Lùbadh Case');
         done();

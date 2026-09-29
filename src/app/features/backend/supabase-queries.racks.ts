@@ -38,9 +38,6 @@ import {
   SimpleUserModel
 } from './supabase.types';
 import {
-  matchesSearchQuery
-} from 'src/app/shared-interproject/components/@smart/mat-form-entity/string-utils';
-import {
   CurrentUserContributorStats,
   PublicApplicationActivityPoint,
   PublicApplicationInsightsSnapshot,
@@ -118,7 +115,6 @@ import { MinimalModule } from 'src/app/models/module';
 import { UserModuleAcquisition } from 'src/app/models/user-module-acquisition';
 import { Tag } from 'src/app/models/tag';
 import {
-  applyClientSideSearchFilter,
   escapeIlikePattern,
   getHpBandLabel,
   isOneUStandard,
@@ -447,23 +443,15 @@ export class SupabaseRackQueries extends SupabaseQueriesBase {
       .order(orderBy ? orderBy : "name", {ascending: orderDirection === "asc"})
       .order('id', {ascending: orderDirection === "asc"});
 
-    if (nameQuery.length === 0) {
-      query = query.range(from, effectiveTo);
+    if (nameQuery.length > 0) {
+      query = query.ilike('name', `%${ escapeIlikePattern(nameQuery) }%`);
     }
+    query = query.range(from, effectiveTo);
 
     return rxFrom(query)
       .pipe(
         remapErrors(),
-        map(response => this.stripPublicAuthorGate<Rack>(response)),
-        map((response: SupabaseWireResponse & {data: Rack[]}) => {
-          if (nameQuery.length === 0) {
-            return response;
-          }
-
-          return applyClientSideSearchFilter(response, from, effectiveTo, (rack: Rack) =>
-            matchesSearchQuery(nameQuery, rack?.name)
-          );
-        })
+        map(response => this.stripPublicAuthorGate<Rack>(response))
       );
   }
 
