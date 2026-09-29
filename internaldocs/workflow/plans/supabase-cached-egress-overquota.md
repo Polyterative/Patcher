@@ -28,10 +28,11 @@ Status: Open on `develop`, frontend-only. No schema/migration/RLS/RPC change. No
 
 ## Layer 3 — Polish (defer + densify what remains)
 
-- [ ] Lazy-load below-fold detail reads (price history, usage summary, reactions, acquisitions) on tab/visibility.
-- [ ] Cap ModularGrid import candidate burst (terms 80→20, candidates 300→50, batch + debounce).
-- [ ] Image sizing params on proxy URLs (`width`/`quality` for cards; full-res on detail only); `count: 'exact'` → estimated/none where count unused.
-- [ ] Re-check Supabase Cached Egress daily graph for ≥1.5 GB headroom before closing.
+- [ ] Lazy-load below-fold detail reads: investigated only — page has no tab/visibility signal; only usage summary + possession counts have a natural below-fold trigger and both need new plumbing + spec rewrites. Queued as follow-up.
+- [x] Import candidate burst capped: terms 80→20, per-query candidates 300→50, alias reserve 24→8; worst case 10×300 joined rows → 3×50 (20×). Caller is file-driven with `switchMap`, no debounce needed. (`4fa80728`)
+- [ ] Image sizing params: skipped, proven absent — the `images.patcher.xyz` worker is a pure passthrough (`origin.search = ''`, no `cf.image` transform); params would be stripped while fragmenting cache keys. Needs a worker transform + deploy (operator-gated), then card-site params.
+- [ ] `count: 'exact'` trims: skipped, zero safe sites — every `exact` feeds a user-visible total, pagination math, or the 8-image limit gate.
+- [ ] Supabase Cached Egress graph re-check: dashboard-side; watch daily for ≥1.5 GB headroom before closing issue #161.
 
 ## Decision log
 
@@ -39,7 +40,7 @@ Status: Open on `develop`, frontend-only. No schema/migration/RLS/RPC change. No
 - 2026-09-29: Layer 1 accepted accent tradeoff on rack search: pure server `ILIKE` means an unaccented query (e.g. `lubadh`) no longer matches accented rack names (`Lùbadh`), which the old full-scan client filter handled. Kept server-only (no paged-window client refinement) because refinement can't recover rows the server already excluded; full accent preservation needs a DB-side normalized column/trigram — follow-up only if users report it.
 - 2026-09-29: Proxy routing uses a per-bucket allowlist (`IMAGE_PROXY_BUCKETS`) in `getPublicStorageUrl` so only `module-collections` moves; other buckets keep direct URLs until verified.
 - 2026-09-29: Layer 2 skips are deliberate, not deferred debt: search-path-only TTL needs a method split, detail `*` trims need a template audit, and current-user lists are already narrow. Revisit only if egress still over after Layer 3.
-- 2026-09-29: `get-cached-delegates.spec.ts` carried a stale racks `client-side` test from Layer 1 commit `2b257495`; fixed in-tree to assert server ilike + range passthrough.
+- 2026-09-29: Layer 3 skips are evidence-backed: proxy worker source confirms no image-transform support, every `exact` count is consumed by UI/gates, and the detail page has no visibility signal for lazy-load. Import cap lands 20× worst-case reduction with file-driven caller (no debounce needed).
 
 ## Documentation impact
 

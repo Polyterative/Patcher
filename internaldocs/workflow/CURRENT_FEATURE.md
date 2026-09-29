@@ -33,9 +33,10 @@
 
 #### Layer 3 — Polish (defer + densify what remains)
 
-- [ ] Below-fold reads lazy-loaded
-- [ ] Import burst capped + image sizing + count trims
-- [ ] Egress headroom verified
+- [x] Import burst capped (20× worst-case cut)
+- [x] Image sizing + count trims reviewed (both skipped with evidence)
+- [x] Below-fold lazy-load investigated (queued as follow-up)
+- [ ] Egress headroom verified on dashboard (user-side, then close #161)
 
 Updated: 2026-09-29
 
