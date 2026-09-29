@@ -273,7 +273,7 @@ function buildExactArrangementCount(formatGroups: RackLayoutFormatGroup[], rackH
  */
 function safeArrangementCount(formatGroups: RackLayoutFormatGroup[], rackHp: number): RackArrangementCount {
   try {
-    if (formatGroups.every(group => shouldCountExactly(group))) {
+    if (formatGroups.every(group => shouldCountExactly(group, rackHp))) {
       return buildExactArrangementCount(formatGroups, rackHp);
     }
   } catch (err) {
@@ -327,10 +327,28 @@ function countExactArrangements(modules: RackedModule[], rackHp: number, rowCoun
   return countFrom(0, Array.from({length: targetRowCount}, () => rackHp));
 }
 
-function shouldCountExactly(group: RackLayoutFormatGroup): boolean {
-  return group.modules.length <= 20
-    && estimateExactArrangementStates(group.modules.length, Math.max(1, group.rowIndexes.length))
-    <= MAX_EXACT_ARRANGEMENT_STATES;
+function shouldCountExactly(group: RackLayoutFormatGroup, rackHp: number): boolean {
+  if (group.modules.length > 20) {
+    return false;
+  }
+
+  const rowCount = Math.max(1, group.rowIndexes.length);
+  if (estimateExactArrangementStates(group.modules.length, rowCount) > MAX_EXACT_ARRANGEMENT_STATES) {
+    return false;
+  }
+
+  // Loose-packing guard: exact DP state is keyed on remaining-HP vectors, which
+  // explode when rows carry far more headroom than modules need (repro: 15
+  // modules x 6 rows at ~33% fill passed the combinatorial estimate but grew
+  // past 3M states). Skip exact counting up front for wide, mostly-empty
+  // groups instead of burning the memo budget first.
+  const totalUsedHp = group.modules.reduce((sum, module) => sum + moduleHp(module), 0);
+  const totalCapacityHp = Math.max(0, rackHp) * rowCount;
+  if (totalCapacityHp > 0 && group.modules.length * rowCount > 60 && totalUsedHp / totalCapacityHp < 0.5) {
+    return false;
+  }
+
+  return true;
 }
 
 function estimateExactArrangementStates(moduleCount: number, rowCount: number): number {
