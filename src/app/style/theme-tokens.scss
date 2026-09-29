@@ -23,6 +23,11 @@
   --app-input-bg: rgba(255, 255, 255, 0.9);
   --app-code-bg: rgba(17, 31, 48, 0.05);
   --app-focus-ring: rgba(61, 115, 188, 0.32);
+  --app-module-face-surface: rgba(255, 255, 255, 0.96);
+  --app-module-face-hover-surface: rgba(255, 255, 255, 0.6);
+  --app-data-viz-grid-fill: rgba(71, 170, 156, 0.03);
+  --app-data-viz-grid: rgba(71, 170, 156, 0.13);
+  --app-data-viz-axis: rgba(71, 170, 156, 0.12);
 }
 
 html.dark {
@@ -45,6 +50,11 @@ html.dark {
   --app-input-bg: rgba(13, 18, 26, 0.6);
   --app-code-bg: rgba(255, 255, 255, 0.06);
   --app-focus-ring: rgba(143, 184, 232, 0.4);
+  --app-module-face-surface: #1b2431;
+  --app-module-face-hover-surface: #252f3d;
+  --app-data-viz-grid-fill: rgba(143, 184, 232, 0.025);
+  --app-data-viz-grid: rgba(143, 184, 232, 0.2);
+  --app-data-viz-axis: rgba(143, 184, 232, 0.16);
 }
 
 // Base page paint — transitions are short per DESIGN_LANGUAGE motion rules.

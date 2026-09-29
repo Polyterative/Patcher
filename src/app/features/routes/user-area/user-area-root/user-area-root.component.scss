@@ -283,12 +283,12 @@
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: rgba(40, 68, 104, 0.72);
+  color: var(--app-link, #2f639f);
 }
 
 .user-area-utility-search__copy {
   margin: 0;
-  color: rgba(28, 49, 79, 0.76);
+  color: var(--app-ink-2, rgba(35, 60, 90, 0.78));
   font-size: 0.9rem;
   line-height: 1.4;
 }
