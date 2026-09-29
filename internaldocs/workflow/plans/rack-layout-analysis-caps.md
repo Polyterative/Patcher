@@ -12,28 +12,32 @@ Status: In progress on `develop`, frontend-only. No schema/migration/RLS/RPC cha
 
 ## Layer 1 — MVP (make the rack load)
 
-- [ ] Harden `countExactArrangements` with a memo-entry budget; abort to a sentinel instead of growing until `RangeError`.
-- [ ] `computeLayoutAnalysis` never throws for counting reasons; falls back to sampled/capped estimate.
-- [ ] Regression spec with the production rack shape (15 modules, 6×184) returns fast without throwing.
-- [ ] Targeted specs + `pnpm lint` green.
+- [x] Harden `countExactArrangements` with a memo-entry budget; abort to a sentinel instead of growing until `RangeError`.
+- [x] `computeLayoutAnalysis` never throws for counting reasons; falls back to sampled/capped estimate.
+- [x] Regression spec with the production rack shape (15 modules, 6×184) returns fast without throwing.
+- [x] Targeted specs + `pnpm lint` green.
 
 ## Layer 2 — Structural (count only when layout mode needs it)
 
-- [ ] Add `skipArrangementCount` option to `computeLayoutAnalysis` (default keeps current behavior).
-- [ ] Render service (`RackVisualModelRenderService.update`) passes the skip flag — initial load stays `O(n log n)`.
-- [ ] Remix/validity summaries skip the count; only `layoutArrangementSummary` keeps the full count.
-- [ ] Specs for the skip flag.
+- [x] Add `skipArrangementCount` option to `computeLayoutAnalysis` (default keeps current behavior).
+- [x] Render service (`RackVisualModelRenderService.update`) passes the skip flag — initial load stays `O(n log n)`.
+- [x] Remix/validity summaries skip the count; only `layoutArrangementSummary` keeps the full count.
+- [x] Specs for the skip flag.
 
 ## Layer 3 — Polish (avoid burning budget before falling back)
 
-- [ ] HP-slack guard in `shouldCountExactly` so loose-packing shapes skip exact counting up front.
-- [ ] Verify with node repro + production snapshot (`agent-snapshot.mjs` vs `https://patcher.xyz/racks/x2iWDIhRugPx`).
+- [x] HP-slack guard in `shouldCountExactly` so loose-packing shapes skip exact counting up front.
+- [x] Verify with node repro + targeted specs (prod snapshot still serves the old 6.7.23 build, so live verification waits for release).
 
 ## Decision log
 
 - 2026-09-29: Cap the analysis, not the rack. User explicitly rejected capping maximum rack size; all guards live in the counting path (`rack-layout-analysis.utils.ts`).
 - 2026-09-29: Default `computeLayoutAnalysis` behavior unchanged (full count) so existing callers/tests keep semantics; cheap paths opt out via `skipArrangementCount`.
 - 2026-09-29: Memo budget (not wall-clock) is the abort signal — deterministic, testable, no timers in utils.
+- 2026-09-29: Budget set to 100k memo entries, matching the existing `MAX_EXACT_ARRANGEMENT_STATES` scale; prod repro aborted at 100001 entries in milliseconds and fell back to `sampled`.
+- 2026-09-29: Slack guard thresholds (`modules × rows > 60` and `used/capacity < 0.5`) chosen so every existing exact-count spec (≤4 modules) still takes the exact path; only wide, mostly-empty groups skip up front.
+- 2026-09-29: `rack-layout-analysis.utils.ts` now trips the R4 500-line soft warning (564 lines, check exits 0). Accepted: pure-utils module, far from the 1000-line hard error; splitting it is separate work.
+- 2026-09-29: Full `pnpm lint` (`ng lint`) crashes this machine with a Node abort trap (exit 134), unrelated to the change; validated with scoped `eslint` on all touched files (0 errors) plus `check-layering`/`check-docs` (both exit 0).
 
 ## Documentation impact
 

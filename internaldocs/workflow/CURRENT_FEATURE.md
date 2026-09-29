@@ -21,18 +21,18 @@
 
 #### Layer 1 — MVP (make the rack load)
 
-- [ ] Memo budget + sampled fallback in exact counting
-- [ ] Regression spec with production rack shape
-- [ ] Targeted specs + lint green
+- [x] Memo budget + sampled fallback in exact counting
+- [x] Regression spec with production rack shape
+- [x] Targeted specs + lint green
 
 #### Layer 2 — Structural (count only when layout mode needs it)
 
-- [ ] `skipArrangementCount` option + render-service opt-out
-- [ ] Remix/validity summaries skip; arrangement summary keeps full count
+- [x] `skipArrangementCount` option + render-service opt-out
+- [x] Remix/validity summaries skip; arrangement summary keeps full count
 
 #### Layer 3 — Polish
 
-- [ ] HP-slack guard + prod-snapshot verification
+- [x] HP-slack guard + prod-shape verification
 
 Updated: 2026-09-29
 
