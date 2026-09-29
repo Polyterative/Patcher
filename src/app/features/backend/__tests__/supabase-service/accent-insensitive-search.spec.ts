@@ -96,27 +96,28 @@ describe('SupabaseService - accent-insensitive search', () => {
     cleanupSupabaseServiceTest();
   });
 
-  it('matches accented patch names from an unaccented search query', (done) => {
+  it('filters and paginates accented patch names in the server query', (done) => {
     const mockPatches = [
-      {id: 1, name: 'Lùbadh Jam', author_profile_gate: {public: true}},
-      {id: 2, name: 'Mimeophon Jam', author_profile_gate: {public: true}}
+      {id: 1, name: 'Lùbadh Jam', author_profile_gate: {public: true}}
     ] satisfies PatchSearchRow[];
     const mock: SupabaseQueryChain<PatchSearchRow> = chainable<PatchSearchRow>({
       data: mockPatches,
-      count: 2,
+      count: 1,
       error: null
     } satisfies QueryCountRowsResult<PatchSearchRow>);
     const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
     const orderSpy = spyOn(mock, 'order').and.returnValue(mock);
     const rangeSpy = spyOn(mock, 'range').and.returnValue(mock);
+    const ilikeSpy = spyOn(mock, 'ilike').and.returnValue(mock);
     const fromSpy = spyOn(supabaseClient, 'from').and.returnValue(mock);
 
-    service.GET.patches(0, 10, '  lubadh  ').subscribe({
+    service.GET.patches(0, 10, '  lùbadh  ').subscribe({
       next: (result: SearchObservableResult<PatchSearchRow>) => {
         expect(fromSpy).toHaveBeenCalledWith('patches');
         expect(filterSpy).toHaveBeenCalledWith('public', 'eq', true);
+        expect(ilikeSpy).toHaveBeenCalledWith('name', '%lùbadh%');
         expect(orderSpy).toHaveBeenCalledWith('name', {ascending: false});
-        expect(rangeSpy).not.toHaveBeenCalled();
+        expect(rangeSpy).toHaveBeenCalledWith(0, 10);
         expect(result.count).toBe(1);
         expect(result.data?.[0]?.name).toBe('Lùbadh Jam');
         done();
@@ -202,11 +203,22 @@ describe('SupabaseService - accent-insensitive search', () => {
     const detailOrderSpy = spyOn(detailQuery, 'order').and.returnValue(detailQuery);
     const detailLimitSpy = spyOn(detailQuery, 'limit').and.returnValue(detailQuery);
     const detailRangeSpy = spyOn(detailQuery, 'range').and.returnValue(detailQuery);
-    spyOn(supabaseClient, 'from').and.returnValue(detailQuery);
     const fallbackRows = [
       {id: 1, name: 'Érbe-Verb', description: 'Stereo reverb'},
       {id: 2, name: 'Mimeophon', description: 'Stereo delay'}
     ] satisfies ModuleSearchRow[];
+    const fallbackQuery: SupabaseQueryChain<ModuleSearchRow> = chainable<ModuleSearchRow>({
+      data: fallbackRows,
+      count: 2,
+      error: null
+    } satisfies QueryCountRowsResult<ModuleSearchRow>);
+    const fallbackRangeSpy = spyOn(fallbackQuery, 'range').and.returnValue(fallbackQuery);
+    const fallbackIlikeSpy = spyOn(fallbackQuery, 'ilike').and.returnValue(fallbackQuery);
+    // Fallback runs as a single bounded window via from(); the detail refetch follows.
+    spyOn(supabaseClient, 'from').and.returnValues(
+      fallbackQuery as unknown as SupabaseQueryChain<ModuleDetailRow>,
+      detailQuery
+    );
     const fetchAllRowsSpy = spyOn(queries, 'fetchAllRows').and.callFake(async (_table, buildQuery) => {
       const searchQuery: SupabaseQueryChain<ModuleSearchRow> = chainable<ModuleSearchRow>({
         data: [],
@@ -219,19 +231,16 @@ describe('SupabaseService - accent-insensitive search', () => {
       buildQuery(searchQuery);
       expect(filterSpy).toHaveBeenCalledWith('public', 'eq', true);
       expect(orderSpy).toHaveBeenCalledWith('name', {ascending: false});
-
-      if (fetchAllRowsSpy.calls.count() === 1) {
-        expect(ilikeSpy).toHaveBeenCalledWith('name', '%erbe%');
-        return {data: [], error: null} satisfies QueryListRowsResult<ModuleSearchRow>;
-      }
-
-      expect(ilikeSpy).not.toHaveBeenCalled();
-      return {data: fallbackRows, error: null} satisfies QueryListRowsResult<ModuleSearchRow>;
+      expect(ilikeSpy).toHaveBeenCalledWith('name', '%erbe%');
+      return {data: [], error: null} satisfies QueryListRowsResult<ModuleSearchRow>;
     });
 
     service.GET.modules(0, 10, '  erbe  ').subscribe({
       next: (result: SearchObservableResult<ModuleDetailRow>) => {
-        expect(fetchAllRowsSpy.calls.count()).toBe(2);
+        expect(fetchAllRowsSpy.calls.count()).toBe(1);
+        // Accent recovery scans one bounded window without text filters.
+        expect(fallbackIlikeSpy).not.toHaveBeenCalled();
+        expect(fallbackRangeSpy).toHaveBeenCalledWith(0, 99);
         expect(detailFilterSpy).toHaveBeenCalledWith('id', 'in', '(1)');
         expect(detailRangeSpy).toHaveBeenCalledWith(0, 0);
         expect(detailOrderSpy.calls.allArgs()).toEqual([
@@ -257,15 +266,19 @@ describe('SupabaseService - accent-insensitive search', () => {
       message: 'fallback failed',
       name: 'PostgrestError'
     };
-    spyOn(supabaseClient, 'from');
-    spyOn(queries, 'fetchAllRows').and.returnValues(
-      Promise.resolve({data: [], error: null} satisfies QueryListRowsResult<ModuleSearchRow>),
-      Promise.resolve({data: [], error: fallbackError})
+    const fallbackQuery: SupabaseQueryChain<ModuleSearchRow> = chainable<ModuleSearchRow>({
+      data: [],
+      error: fallbackError
+    });
+    const fromSpy = spyOn(supabaseClient, 'from').and.returnValue(
+      fallbackQuery as unknown as SupabaseQueryChain<ModuleDetailRow>
     );
+    spyOn(queries, 'fetchAllRows').and.resolveTo({data: [], error: null} satisfies QueryListRowsResult<ModuleSearchRow>);
 
     service.GET.modules(0, 10, 'erbe').subscribe({
       next: (result: {error: unknown}) => {
-        expect(supabaseClient.from).not.toHaveBeenCalled();
+        // Narrowed scan (fetchAllRows) + one bounded fallback window; no detail refetch on error.
+        expect(fromSpy.calls.count()).toBe(1);
         expect(result.error).toBe(fallbackError);
         done();
       },

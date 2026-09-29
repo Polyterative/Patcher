@@ -51,6 +51,7 @@ type ModuleListingResultResolver =
 class ModuleQueryDouble implements PromiseLike<ModuleListingResult> {
   readonly filterCalls: Array<[string, string, QueryFilterValue]> = [];
   readonly limitCalls: Array<[number, ForeignTableOptions?]> = [];
+  readonly rangeCalls: Array<[number, number]> = [];
   readonly orFilters: string[] = [];
   readonly orderCalls: Array<[string, OrderOptions]> = [];
   readonly selectCalls: Array<[string, SelectOptions?]> = [];
@@ -83,7 +84,8 @@ class ModuleQueryDouble implements PromiseLike<ModuleListingResult> {
     return this;
   }
 
-  range(_from: number, _to: number): this {
+  range(from: number, to: number): this {
+    this.rangeCalls.push([from, to]);
     return this;
   }
 
@@ -781,25 +783,18 @@ describe('SupabaseService - GET.modules filtering', () => {
 
   it('falls back to the broad client-side scan when narrowed ilike results are empty', (done) => {
     const queries = getModuleQueriesDouble(service);
-    spyOn(supabaseClient, 'from').and.returnValue(chainableWithIlike({
+    const fallbackAndDetailMock = chainableWithIlike({
       data: [{id: 1, name: 'Lùbadh', description: 'Dual looper'}],
       count: 1,
       error: null
-    }));
-    const fetchAllRowsSpy = spyOn(queries, 'fetchAllRows').and.returnValues(
-      Promise.resolve({data: [], error: null}),
-      Promise.resolve({
-        data: [
-          {id: 1, name: 'Lùbadh', description: 'Dual looper'},
-          {id: 2, name: 'Mimeophon', description: 'Stereo delay'}
-        ],
-        error: null
-      })
-    );
+    });
+    spyOn(supabaseClient, 'from').and.returnValue(fallbackAndDetailMock);
+    const fetchAllRowsSpy = spyOn(queries, 'fetchAllRows').and.resolveTo({data: [], error: null});
 
     service.GET.modules(0, 10, 'Lubadh').subscribe({
       next: (result: ModuleListingResult) => {
-        expect(fetchAllRowsSpy.calls.count()).toBe(2);
+        expect(fetchAllRowsSpy.calls.count()).toBe(1);
+        expect(fallbackAndDetailMock.rangeCalls).toEqual(jasmine.arrayContaining([[0, 99]]));
         expect(result.count).toBe(1);
         expect(result.data[0].name).toBe('Lùbadh');
         done();
@@ -811,23 +806,49 @@ describe('SupabaseService - GET.modules filtering', () => {
     });
   }, TEST_TIMEOUT);
 
+  it('caps the accent-recovery fallback to a single bounded window', async () => {
+    const queries = getModuleQueriesDouble(service);
+    const fetchAllRowsSpy = spyOn(queries, 'fetchAllRows').and.resolveTo({data: [], error: null});
+    const fromMocks: ModuleQueryDouble[] = [];
+    spyOn(supabaseClient, 'from').and.callFake(() => {
+      const mock = chainableWithIlike({
+        data: [{id: 1, name: 'Lùbadh', description: 'Dual looper'}],
+        count: 1,
+        error: null
+      });
+      fromMocks.push(mock);
+      return mock;
+    });
+
+    const result = await firstValueFrom(service.GET.modules(0, 10, 'Lubadh')) as ModuleListingResult;
+
+    expect(fetchAllRowsSpy.calls.count()).toBe(1);
+    expect(fromMocks.length).toBe(2);
+    expect(fromMocks[0].rangeCalls).toEqual([[0, 99]]);
+    expect(fromMocks[0].selectCalls[0][0]).toContain('id,name');
+    expect(result.count).toBe(1);
+    expect(result.data[0].name).toBe('Lùbadh');
+  }, TEST_TIMEOUT);
+
   it('returns an empty result when neither narrowed nor fallback matching finds a module', (done) => {
     const queries = getModuleQueriesDouble(service);
-    spyOn(queries, 'fetchAllRows').and.returnValues(
-      Promise.resolve({data: [], error: null}),
-      Promise.resolve({
-        data: [
-          {id: 1, name: 'Rings', description: 'Resonator'},
-          {id: 2, name: 'Belgrad', description: 'Dual peak filter'}
-        ],
-        error: null
-      })
-    );
+    spyOn(queries, 'fetchAllRows').and.resolveTo({data: [], error: null});
+    const fallbackMock = chainableWithIlike({
+      data: [
+        {id: 1, name: 'Rings', description: 'Resonator'},
+        {id: 2, name: 'Belgrad', description: 'Dual peak filter'}
+      ],
+      count: 2,
+      error: null
+    });
+    const fromSpy = spyOn(supabaseClient, 'from').and.returnValue(fallbackMock);
 
     service.GET.modules(0, 10, 'zzqxv').subscribe({
       next: (result: ModuleListingResult) => {
         expect(result.count).toBe(0);
         expect(result.data).toEqual([]);
+        expect(fromSpy.calls.count()).toBe(1);
+        expect(fallbackMock.rangeCalls).toEqual([[0, 99]]);
         done();
       },
       error: (err) => {
