@@ -462,7 +462,7 @@ describe('SupabaseService - GET.racksMinimal', () => {
     });
   }, TEST_TIMEOUT);
   
-  it('should apply the name filter client-side when name is provided', (done) => {
+  it('should filter and paginate name searches on the server without client-side filtering', (done) => {
     const mock = chainable({
       data: [
         {id: 1, name: 'Drum Bus', author_profile_gate: {public: true}},
@@ -472,14 +472,18 @@ describe('SupabaseService - GET.racksMinimal', () => {
       error: null
     });
     const ilikeSpy = spyOn(mock, 'ilike').and.callThrough();
+    const rangeSpy = spyOn(mock, 'range').and.callThrough();
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
-    service.GET.racksMinimal(0, 19, 'Drum').subscribe({
+    service.GET.racksMinimal(10, 19, 'Drum').subscribe({
       next: (result) => {
-        expect(ilikeSpy).not.toHaveBeenCalled();
-        expect(result.count).toBe(1);
+        expect(ilikeSpy).toHaveBeenCalledWith('name', '%Drum%');
+        expect(rangeSpy).toHaveBeenCalledWith(10, 19);
+        // Supabase owns search filtering; do not re-filter a paged response in the client.
+        expect(result.count).toBe(2);
         expect(result.data as unknown).toEqual([
-          {id: 1, name: 'Drum Bus'}
+          {id: 1, name: 'Drum Bus'},
+          {id: 2, name: 'Bass Station'}
         ]);
         done();
       },
