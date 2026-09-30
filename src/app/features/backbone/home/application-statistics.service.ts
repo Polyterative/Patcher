@@ -5,7 +5,8 @@ import {
   Subject,
   catchError,
   forkJoin,
-  of
+  of,
+  shareReplay
 } from 'rxjs';
 import {
   map,
@@ -34,6 +35,10 @@ import { mapPriceDropsSection } from './application-statistics.price-drops-mappe
 
 const HOME_DISCOVERY_LIMIT = 6;
 const HOME_DISCOVERY_MIN_COUNT = 1;
+// Worst case is 3 buckets x 6 entries = 18 unique modules; the section only
+// surfaces the single top drop plus aggregate counts, so bound the per-module
+// history fan-out to the first 9 discovery ids (bucket order preserved).
+const HOME_PRICE_DROPS_MAX_MODULES = 9;
 
 export type {
   ApplicationDiscoveryBucket,
@@ -83,8 +88,11 @@ export class ApplicationStatisticsService extends SubManager {
     tap(() => this.analytics.capture('insights.page_viewed', {})),
     map(({statistics, activitySeries, moduleInsights}) => this.mappers.mapPage(statistics, activitySeries, moduleInsights))
   );
-  readonly discovery$ = this.refreshRequest$.pipe(
+  private readonly discoverySnapshot$ = this.refreshRequest$.pipe(
     switchMap(() => this.backend.GET.applicationModuleDiscovery(HOME_DISCOVERY_LIMIT, HOME_DISCOVERY_MIN_COUNT)),
+    shareReplay({bufferSize: 1, refCount: true})
+  );
+  readonly discovery$ = this.discoverySnapshot$.pipe(
     switchMap((snapshot) => {
       const moduleIds = this.getDiscoveryModuleIds(snapshot);
 
@@ -97,19 +105,16 @@ export class ApplicationStatisticsService extends SubManager {
       );
     })
   );
-  readonly priceDrops$ = this.refreshRequest$.pipe(
-    switchMap(() => this.backend.GET.applicationModuleDiscovery(
-      HOME_DISCOVERY_LIMIT,
-      HOME_DISCOVERY_MIN_COUNT
-    ).pipe(
-      catchError(() => of({mostOwned: [], mostWanted: [], mostSold: []}))
-    )),
+  readonly priceDrops$ = this.discoverySnapshot$.pipe(
+    catchError(() => of({mostOwned: [], mostWanted: [], mostSold: []})),
     switchMap((snapshot) => {
       const moduleIds = [...new Set([
         ...snapshot.mostOwned,
         ...snapshot.mostWanted,
         ...snapshot.mostSold
-      ].map((entry) => entry.id))].filter((id) => Number.isFinite(id) && id > 0);
+      ].map((entry) => entry.id))]
+        .filter((id) => Number.isFinite(id) && id > 0)
+        .slice(0, HOME_PRICE_DROPS_MAX_MODULES);
 
       if (moduleIds.length === 0) {
         return of(mapPriceDropsSection([], new Map()));
