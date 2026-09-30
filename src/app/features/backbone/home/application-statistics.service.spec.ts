@@ -1217,4 +1217,41 @@ describe('ApplicationStatisticsService', () => {
       done();
     });
   });
+
+  it('shares a single discovery snapshot between discovery and price drops', (done) => {
+    const {backend, service} = build();
+
+    service.discovery$.subscribe(() => {
+      service.priceDrops$.subscribe((section) => {
+        expect(backend.GET.applicationModuleDiscovery).toHaveBeenCalledTimes(1);
+        expect(backend.GET.applicationModuleDiscovery).toHaveBeenCalledWith(6, 1);
+        expect(section.suppressed).toBeTrue();
+        done();
+      });
+    });
+  });
+
+  it('caps per-module price-history reads at nine discovery ids in bucket order', (done) => {
+    const {backend, service} = build();
+    const bucket = (from: number): Array<{id: number; name: string; manufacturer: {id: number; name: string}; count: number}> =>
+      Array.from({length: 6}, (_, index) => ({
+        id: from + index,
+        name: `Module ${ from + index }`,
+        manufacturer: {id: from + index, name: 'Maker'},
+        count: 10
+      }));
+    (backend.GET.applicationModuleDiscovery as jasmine.Spy).and.returnValue(of({
+      mostOwned: bucket(1),
+      mostWanted: bucket(101),
+      mostSold: bucket(201)
+    }));
+
+    service.priceDrops$.subscribe((section) => {
+      const historySpy = backend.GET.modulePriceHistorySnapshots as jasmine.Spy;
+      expect(historySpy.calls.count()).toBe(9);
+      expect(historySpy.calls.allArgs().map((args) => args[0])).toEqual([1, 2, 3, 4, 5, 6, 101, 102, 103]);
+      expect(section.suppressed).toBeTrue();
+      done();
+    });
+  });
 });
