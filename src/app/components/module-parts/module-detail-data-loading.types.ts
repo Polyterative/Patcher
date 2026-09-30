@@ -1,4 +1,4 @@
-import { BehaviorSubject, Observable, ReplaySubject } from 'rxjs';
+import { BehaviorSubject, Observable, ReplaySubject, Subject } from 'rxjs';
 import type { SupabaseService } from '../../features/backend/supabase.service';
 import { UserManagementService } from '../../features/backbone/login/user-management.service';
 import { AnalyticsService } from '../../features/backbone/analytics-integration/analytics.service';
@@ -32,6 +32,8 @@ export interface ModuleDetailDataLoadingContext {
   readonly modulePriceHistorySnapshots$: BehaviorSubject<ModulePriceHistorySnapshot[] | undefined>;
   readonly moduleUsageSummary$: BehaviorSubject<ModuleUsageSummary | undefined>;
   readonly possessionCounts$: BehaviorSubject<ModulePossessionCounts | undefined>;
+  readonly requestUsageSummary$: Subject<void>;
+  readonly requestPossessionCounts$: Subject<void>;
   readonly coolCount$: BehaviorSubject<number | undefined>;
   readonly coolCountUpdate$: Observable<number | null>;
   readonly userModuleAcquisitions$: BehaviorSubject<UserModuleAcquisition[] | undefined>;

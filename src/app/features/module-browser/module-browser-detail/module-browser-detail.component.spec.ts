@@ -77,6 +77,41 @@ class ManufacturerRowStubComponent {
   @Input() showPriceSummary = false;
 }
 
+class FakeIntersectionObserver {
+  static instances: FakeIntersectionObserver[] = [];
+  readonly callback: IntersectionObserverCallback;
+  readonly targets = new Set<Element>();
+  disconnected = false;
+
+  constructor(callback: IntersectionObserverCallback) {
+    this.callback = callback;
+    FakeIntersectionObserver.instances.push(this);
+  }
+
+  observe = (target: Element): void => {
+    this.targets.add(target);
+  };
+
+  unobserve = (target: Element): void => {
+    this.targets.delete(target);
+  };
+
+  disconnect = (): void => {
+    this.disconnected = true;
+    this.targets.clear();
+  };
+
+  fire(isIntersecting: boolean): void {
+    if (this.disconnected) {
+      return;
+    }
+    this.callback(
+      Array.from(this.targets, target => ({isIntersecting, target} as unknown as IntersectionObserverEntry)),
+      this as unknown as IntersectionObserver
+    );
+  }
+}
+
 
 describe('ModuleBrowserDetailComponent', () => {
   type RatioModuleFixture = Pick<DbModule, 'hp' | 'standard'>;
@@ -89,6 +124,8 @@ describe('ModuleBrowserDetailComponent', () => {
     possessionCounts$: BehaviorSubject<unknown>;
     coolCount$: BehaviorSubject<number | undefined>;
     coolCountUpdate$: Subject<number | null>;
+    requestUsageSummary$: Subject<void>;
+    requestPossessionCounts$: Subject<void>;
     currentModulePossession$: BehaviorSubject<unknown>;
     modulesBySameManufacturer$: BehaviorSubject<unknown[]>;
     modulePriceListings$: BehaviorSubject<SearchLinkPriceListing[] | undefined>;
@@ -136,6 +173,8 @@ describe('ModuleBrowserDetailComponent', () => {
       updateSingleModuleData$,
       changeModule$,
       isAdmin$: new BehaviorSubject<boolean>(false),
+      requestUsageSummary$: new Subject<void>(),
+      requestPossessionCounts$: new Subject<void>(),
       requestModuleEditingToggle$,
       deleteModuleAndOrphanManufacturer$,
       mergeIntoTargetModule$,
@@ -229,6 +268,8 @@ describe('ModuleBrowserDetailComponent', () => {
       }),
       coolCount$,
       coolCountUpdate$,
+      requestUsageSummary$: new Subject<void>(),
+      requestPossessionCounts$: new Subject<void>(),
       currentModulePossession$: new BehaviorSubject<unknown>(null),
       modulesBySameManufacturer$: new BehaviorSubject<unknown[]>([]),
       modulePriceListings$: new BehaviorSubject<SearchLinkPriceListing[] | undefined>(undefined),
@@ -402,6 +443,58 @@ describe('ModuleBrowserDetailComponent', () => {
     const text = fixture.nativeElement.textContent;
     expect(text).toContain('Checking private and hidden rack usage...');
     expect(text).toContain('Checking private and hidden patch usage...');
+  });
+
+  it('emits viewport demand signals when below-fold anchors intersect', async () => {
+    const windowWithObserver = window as unknown as {IntersectionObserver: typeof IntersectionObserver};
+    const realIntersectionObserver = windowWithObserver.IntersectionObserver;
+    windowWithObserver.IntersectionObserver = FakeIntersectionObserver as unknown as typeof IntersectionObserver;
+    FakeIntersectionObserver.instances.length = 0;
+    try {
+      const {fixture, dataService} = await render();
+      const usageSpy = spyOn(dataService.requestUsageSummary$, 'next').and.callThrough();
+      const possessionSpy = spyOn(dataService.requestPossessionCounts$, 'next').and.callThrough();
+      fixture.detectChanges();
+
+      expect(usageSpy).not.toHaveBeenCalled();
+      expect(possessionSpy).not.toHaveBeenCalled();
+
+      FakeIntersectionObserver.instances.forEach(observer => observer.fire(true));
+
+      expect(usageSpy).toHaveBeenCalledTimes(1);
+      expect(possessionSpy).toHaveBeenCalledTimes(1);
+    } finally {
+      windowWithObserver.IntersectionObserver = realIntersectionObserver;
+      FakeIntersectionObserver.instances.length = 0;
+    }
+  });
+
+  it('re-emits demand for visible anchors when the module changes', async () => {
+    const windowWithObserver = window as unknown as {IntersectionObserver: typeof IntersectionObserver};
+    const realIntersectionObserver = windowWithObserver.IntersectionObserver;
+    windowWithObserver.IntersectionObserver = FakeIntersectionObserver as unknown as typeof IntersectionObserver;
+    FakeIntersectionObserver.instances.length = 0;
+    try {
+      const {dataService} = await render();
+      const usageSpy = spyOn(dataService.requestUsageSummary$, 'next').and.callThrough();
+      const possessionSpy = spyOn(dataService.requestPossessionCounts$, 'next').and.callThrough();
+
+      FakeIntersectionObserver.instances.forEach(observer => observer.fire(true));
+      expect(usageSpy).toHaveBeenCalledTimes(1);
+      expect(possessionSpy).toHaveBeenCalledTimes(1);
+
+      dataService.updateSingleModuleData$.next(99);
+      expect(usageSpy).toHaveBeenCalledTimes(2);
+      expect(possessionSpy).toHaveBeenCalledTimes(2);
+
+      FakeIntersectionObserver.instances.forEach(observer => observer.fire(false));
+      dataService.updateSingleModuleData$.next(100);
+      expect(usageSpy).toHaveBeenCalledTimes(2);
+      expect(possessionSpy).toHaveBeenCalledTimes(2);
+    } finally {
+      windowWithObserver.IntersectionObserver = realIntersectionObserver;
+      FakeIntersectionObserver.instances.length = 0;
+    }
   });
 
   it('shows hidden usage supplements alongside public lists', async () => {

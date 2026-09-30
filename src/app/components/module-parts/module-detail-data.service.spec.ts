@@ -364,19 +364,78 @@ describe('ModuleDetailDataService', () => {
     expect(backend.get.patchesWithModule).toHaveBeenCalledWith(10);
     expect(backend.GET.moduleCollectionsForModule).toHaveBeenCalledWith(10);
     expect(backend.GET.modulePriceHistorySnapshots).toHaveBeenCalledWith(10);
-    expect(backend.get.moduleUsageSummary).toHaveBeenCalledWith(10);
+    expect(backend.get.moduleUsageSummary).not.toHaveBeenCalled();
+    expect(backend.get.modulePossessionCounts).not.toHaveBeenCalled();
     expect(backend.get.reactionCount).toHaveBeenCalledWith(ReactionEntityTypes.MODULE, 10);
     expect(backend.get.userModuleAcquisitionsForModule).toHaveBeenCalledWith(10);
     expect(service.singleModuleData$.value?.id).toBe(10);
     expect(service.racksWithThisModule$.value).toEqual([rackUsage]);
     expect(service.patchesWithThisModule$.value).toEqual([patchUsage]);
     expect(service.collectionsWithThisModule$.value?.[0].name).toBe('Ambient starters');
+    expect(service.moduleUsageSummary$.value).toBeUndefined();
+    expect(service.possessionCounts$.value).toBeUndefined();
+  }));
+
+  it('defers usage summary and possession counts until viewport demand signals arrive', fakeAsync(() => {
+    const {service, backend} = build();
+
+    service.updateSingleModuleData$.next(10);
+    tick();
+
+    expect(backend.get.moduleUsageSummary).not.toHaveBeenCalled();
+    expect(backend.get.modulePossessionCounts).not.toHaveBeenCalled();
+    expect(service.moduleUsageSummary$.value).toBeUndefined();
+    expect(service.possessionCounts$.value).toBeUndefined();
+
+    service.requestUsageSummary$.next();
+    tick();
+
+    expect(backend.get.moduleUsageSummary).toHaveBeenCalledWith(10);
+    expect(backend.get.modulePossessionCounts).not.toHaveBeenCalled();
     expect(service.moduleUsageSummary$.value).toEqual({
       public_rack_count: 1,
       hidden_rack_bucket: 'some',
       public_patch_count: 1,
       hidden_patch_bucket: '5_plus'
     });
+    expect(service.possessionCounts$.value).toBeUndefined();
+
+    service.requestPossessionCounts$.next();
+    tick();
+
+    expect(backend.get.modulePossessionCounts).toHaveBeenCalledWith(10);
+    expect(service.possessionCounts$.value).toEqual({
+      hasCount: 5,
+      wantsCount: 2,
+      sellsCount: 1
+    });
+  }));
+
+  it('fetches deferred reads with the current module id and clears stale values on navigation', fakeAsync(() => {
+    const {service, backend} = build();
+
+    service.updateSingleModuleData$.next(10);
+    service.requestUsageSummary$.next();
+    service.requestPossessionCounts$.next();
+    tick();
+
+    expect(backend.get.moduleUsageSummary).toHaveBeenCalledWith(10);
+    expect(backend.get.modulePossessionCounts).toHaveBeenCalledWith(10);
+
+    service.updateSingleModuleData$.next(20);
+    tick();
+
+    expect(service.moduleUsageSummary$.value).toBeUndefined();
+    expect(service.possessionCounts$.value).toBeUndefined();
+    expect(backend.get.moduleUsageSummary).not.toHaveBeenCalledWith(20);
+    expect(backend.get.modulePossessionCounts).not.toHaveBeenCalledWith(20);
+
+    service.requestUsageSummary$.next();
+    service.requestPossessionCounts$.next();
+    tick();
+
+    expect(backend.get.moduleUsageSummary).toHaveBeenCalledWith(20);
+    expect(backend.get.modulePossessionCounts).toHaveBeenCalledWith(20);
   }));
 
   it('captures module.viewed once for a direct detail load', fakeAsync(() => {

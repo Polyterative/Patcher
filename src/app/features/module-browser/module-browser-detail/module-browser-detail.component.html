@@ -105,7 +105,10 @@
             }
             <div class="module-detail-supportRailCards">
           @if (bag.data) {
+            <!-- Viewport-demand anchor for possession counts: the Community card below only renders
+                 once counts load, so observe this always-rendered Data card host instead. -->
             <lib-hero-content-card
+               #communityDemandAnchor
                [@moduleDetailDataEnter]="{ value: '', params: { delay: 80, duration: 180 } }"
                 titleNormal="Data"
                [sidesPadding]="false"
@@ -597,7 +600,7 @@
             <div class="module-detail-swap-pane"
                  [@moduleDetailPaneSwap]
             >
-              <div class="module-detail-usageGrid">
+              <div class="module-detail-usageGrid" #usageDemandAnchor>
                 @if (viewConfig.hideRackedIn === false) {
                   <app-module-usage-card
                     title="Racked in"
