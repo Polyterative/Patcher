@@ -325,7 +325,8 @@ describe('PatchDetailDataService editor collection modules', () => {
     };
     const fetch = jasmine.createSpy('currentUserModulesForPatchEditor').and.returnValue(of([
       {id: 1, possessionKind: 'HAS'} as DbModule,
-      {id: 2, possessionKind: 'WANTS'} as DbModule
+      {id: 2, possessionKind: 'WANTS'} as DbModule,
+      {id: 3, possessionKind: null} as unknown as DbModule
     ]));
     const deps = {
       backend: {GET: {currentUserModulesForPatchEditor: fetch}}
@@ -333,7 +334,8 @@ describe('PatchDetailDataService editor collection modules', () => {
 
     loadEditorCollectionModules$(deps, strategy).subscribe(modules => {
       expect(fetch).toHaveBeenCalledWith(order);
-      expect(modules.map(module => module.id)).toEqual([1]);
+      // WANTS is dropped client-side, but NULL-kind rows the server keeps must survive.
+      expect(modules.map(module => module.id)).toEqual([1, 3]);
       done();
     });
   });
