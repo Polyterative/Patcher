@@ -37,11 +37,11 @@ Status: Open on `develop`, frontend-only. No schema/migration/RLS/RPC change. No
 ## Batch 2 (scouted 2026-09-30, same issue #161)
 
 - [x] Module-detail below-fold reads deferred to viewport demand (`requestUsageSummary$` / `requestPossessionCounts$` + IntersectionObserver anchors; header reads stay eager). (`d5152e09`)
-- [ ] Homepage `applicationModuleDiscovery` double-fire + per-module price-history fan-out (`application-statistics.service.ts:86-148`).
-- [ ] `getUserRacksPaginated` `SELECT *` — narrow or remove after verifying dead (`supabase-queries.racks.ts:183-195`).
-- [ ] Patch-editor full `getCurrentUserModules` — minimal projection or PossessionOnly + `modulesByIds` (`patch-detail-linked-rack.bindings.ts:202`, `possessions.ts:181-208`).
-- [ ] `get.rackedModules` uncached + dual drivers — short-TTL cache/dedupe per rackId with bust on mutate (`supabase-get.ts:97-104`).
-- [ ] Min-chars (≥2) gate on server search before `ilike %x%` + `count:exact` refetch (debounce already 750ms everywhere).
+- [x] Homepage `applicationModuleDiscovery` double-fire + per-module price-history fan-out: one shared snapshot (`shareReplay`), history ids capped 18→9; ~22 calls/~40 requests → ~12/~21 per refresh. (`08e8ed00`)
+- [x] `getUserRacksPaginated` `SELECT *` — verified dead (zero production callers) and removed with binding + specs. (`898e8931`)
+- [x] Patch-editor full `getCurrentUserModules` — new trimmed `getCurrentUserModulesForPatchEditor` (drops `module_tags(*)` + ~11 unused scalars; WANTS exclusion stays client-side to avoid dropping NULL-kind rows). (`2453642b`)
+- [x] `get.rackedModules` uncached + dual drivers — new cached `getRackedModules` (smallCacheTime, reuses `rackWithId` buster all writes already emit); `get` namespace delegates. (`898e8931`)
+- [x] Min-chars (≥2) gate on server search: 1-char queries reuse last success, never blank; racks in data-service, modules/patches in query layer via shared `MIN_SERVER_TEXT_SEARCH_CHARS`. (`898e8931`, `2453642b`)
 
 ## Decision log
 
@@ -50,7 +50,8 @@ Status: Open on `develop`, frontend-only. No schema/migration/RLS/RPC change. No
 - 2026-09-29: Proxy routing uses a per-bucket allowlist (`IMAGE_PROXY_BUCKETS`) in `getPublicStorageUrl` so only `module-collections` moves; other buckets keep direct URLs until verified.
 - 2026-09-29: Layer 2 skips are deliberate, not deferred debt: search-path-only TTL needs a method split, detail `*` trims need a template audit, and current-user lists are already narrow. Revisit only if egress still over after Layer 3.
 - 2026-09-29: Layer 3 skips are evidence-backed: proxy worker source confirms no image-transform support, every `exact` count is consumed by UI/gates. Import cap lands 20× worst-case reduction with file-driven caller (no debounce needed). (Lazy-load moved to Batch 2 after a viewport signal was designed.)
-- 2026-09-30: Batch 2 scouted (debounce already 750ms everywhere, no timer/auth fan-out, proxy clean): homepage discovery double-fire, `getUserRacksPaginated *`, patch-editor full collection pull, uncached `rackedModules`, min-chars gate.
+- 2026-09-30: Batch 2 done (290 + 88 targeted specs green, eslint/checks clean): watch dashboard for headroom, then close #161.
+- 2026-09-30: Regression-contract guard required an aggregate-family spec for the editor bindings swap — added `loadEditorCollectionModules$` coverage to `patch-detail-data.service.spec.ts` instead of a registry exception.
 - 2026-09-30: Deferred-reads chunk `d5152e09` includes two pre-existing tree hunks (demand-signal subjects) folded in as the same feature unit.
 
 ## Documentation impact
