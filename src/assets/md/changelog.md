@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.7.25](https://github.com/Polyterative/Patcher/compare/v6.7.24...v6.7.25) (2026-09-30)
+
+
+### Bug Fixes
+
+* **theme:** brighten clickable stat values in dark mode ([2b2007e](https://github.com/Polyterative/Patcher/commit/2b2007e4dc3238caa8768d84111146c27aac583e))
+* **theme:** improve dark contrast in rack and workspace ([4e138b7](https://github.com/Polyterative/Patcher/commit/4e138b7dbfcaf541d130f54080bc1c5c6cefd880))
+* **theme:** refine dark rack analysis controls ([6187efa](https://github.com/Polyterative/Patcher/commit/6187efa08b9d3de66aefad09c6e8540294d148e1))
+* **theme:** restore contrast in dark mode surfaces ([4ddf902](https://github.com/Polyterative/Patcher/commit/4ddf9029ffff5b201b36b720def1e377365a590a))
+* **vercel:** diff whole push against previous sha for docs-only gate ([2081599](https://github.com/Polyterative/Patcher/commit/2081599dae9f311e66a6fb40210b1a2b4407d9f7))
+
 ### [6.7.24](https://github.com/Polyterative/Patcher/compare/v6.7.23...v6.7.24) (2026-09-29)
 
 
