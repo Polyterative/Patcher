@@ -177,6 +177,14 @@ export class RackBrowserDataService extends SubManager {
           const previousData = this.racksList$.value ?? [];
           const previousCount = this.serversideAdditionalData.itemsCount$.value ?? previousData.length;
 
+          // A single-character query matches nearly every rack name via
+          // `%x%` yet returns a useless page + a full exact count. Hold the
+          // previous list instead of firing ilike+count; the list only
+          // refreshes once the query reaches 0 or ≥2 characters.
+          if (filter.trim().length === 1) {
+            return of({data: previousData, count: previousCount});
+          }
+
           return recoverBrowserListRequest(
             () => this.backend.GET.racksMinimal(
               skip,

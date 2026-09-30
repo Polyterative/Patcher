@@ -339,20 +339,19 @@ describe('Email leakage – patch and rack author queries', () => {
     });
   }, TEST_TIMEOUT);
   
-  it('GET.userRacksPaginated must not request email', (done) => {
-    mockUserSession(service, authUserFixture('u1'));
+  it('GET.publicUserRacksPaginated must not request email', (done) => {
     const mock = selectRecordingQueryChain<RackRow>({
       data: [],
       count: 0,
       error: null
     } satisfies QueryCountRowsResult<RackRow>);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
-    
-    service.GET.userRacksPaginated(0, 9).subscribe({
+
+    service.GET.publicUserRacksPaginated('u1', 0, 9).subscribe({
       next: () => {
         for (const call of mock.selectCalls) {
           expect(call)
-            .withContext('userRacksPaginated select must not contain email')
+            .withContext('publicUserRacksPaginated select must not contain email')
             .not.toContain('email');
         }
         done();
