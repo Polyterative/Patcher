@@ -38,6 +38,15 @@
 - [x] Below-fold lazy-load investigated (queued as follow-up)
 - [ ] Egress headroom verified on dashboard (user-side, then close #161)
 
+#### Batch 2 (same issue)
+
+- [x] Below-fold reads deferred to viewport demand
+- [ ] Homepage discovery double-fire + history fan-out
+- [ ] `getUserRacksPaginated *` narrow/remove
+- [ ] Patch-editor collection pull minimal
+- [ ] `rackedModules` short-TTL cache
+- [ ] Min-chars gate on server search
+
 Updated: 2026-09-29
 
 Recent completed checkpoints are archived in [COMPLETED.md](./COMPLETED.md); their validation
