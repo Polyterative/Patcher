@@ -34,13 +34,24 @@ Status: Open on `develop`, frontend-only. No schema/migration/RLS/RPC change. No
 - [ ] `count: 'exact'` trims: skipped, zero safe sites — every `exact` feeds a user-visible total, pagination math, or the 8-image limit gate.
 - [ ] Supabase Cached Egress graph re-check: dashboard-side; watch daily for ≥1.5 GB headroom before closing issue #161.
 
+## Batch 2 (scouted 2026-09-30, same issue #161)
+
+- [x] Module-detail below-fold reads deferred to viewport demand (`requestUsageSummary$` / `requestPossessionCounts$` + IntersectionObserver anchors; header reads stay eager). (`d5152e09`)
+- [ ] Homepage `applicationModuleDiscovery` double-fire + per-module price-history fan-out (`application-statistics.service.ts:86-148`).
+- [ ] `getUserRacksPaginated` `SELECT *` — narrow or remove after verifying dead (`supabase-queries.racks.ts:183-195`).
+- [ ] Patch-editor full `getCurrentUserModules` — minimal projection or PossessionOnly + `modulesByIds` (`patch-detail-linked-rack.bindings.ts:202`, `possessions.ts:181-208`).
+- [ ] `get.rackedModules` uncached + dual drivers — short-TTL cache/dedupe per rackId with bust on mutate (`supabase-get.ts:97-104`).
+- [ ] Min-chars (≥2) gate on server search before `ilike %x%` + `count:exact` refetch (debounce already 750ms everywhere).
+
 ## Decision log
 
 - 2026-09-29: Frontend-only scope; no backend shape change so no `backend-plan-reviewer` gate and no RLS/operator window needed.
 - 2026-09-29: Layer 1 accepted accent tradeoff on rack search: pure server `ILIKE` means an unaccented query (e.g. `lubadh`) no longer matches accented rack names (`Lùbadh`), which the old full-scan client filter handled. Kept server-only (no paged-window client refinement) because refinement can't recover rows the server already excluded; full accent preservation needs a DB-side normalized column/trigram — follow-up only if users report it.
 - 2026-09-29: Proxy routing uses a per-bucket allowlist (`IMAGE_PROXY_BUCKETS`) in `getPublicStorageUrl` so only `module-collections` moves; other buckets keep direct URLs until verified.
 - 2026-09-29: Layer 2 skips are deliberate, not deferred debt: search-path-only TTL needs a method split, detail `*` trims need a template audit, and current-user lists are already narrow. Revisit only if egress still over after Layer 3.
-- 2026-09-29: Layer 3 skips are evidence-backed: proxy worker source confirms no image-transform support, every `exact` count is consumed by UI/gates, and the detail page has no visibility signal for lazy-load. Import cap lands 20× worst-case reduction with file-driven caller (no debounce needed).
+- 2026-09-29: Layer 3 skips are evidence-backed: proxy worker source confirms no image-transform support, every `exact` count is consumed by UI/gates. Import cap lands 20× worst-case reduction with file-driven caller (no debounce needed). (Lazy-load moved to Batch 2 after a viewport signal was designed.)
+- 2026-09-30: Batch 2 scouted (debounce already 750ms everywhere, no timer/auth fan-out, proxy clean): homepage discovery double-fire, `getUserRacksPaginated *`, patch-editor full collection pull, uncached `rackedModules`, min-chars gate.
+- 2026-09-30: Deferred-reads chunk `d5152e09` includes two pre-existing tree hunks (demand-signal subjects) folded in as the same feature unit.
 
 ## Documentation impact
 
