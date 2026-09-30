@@ -97,6 +97,47 @@ describe('RackBrowserDataService', () => {
     service.ngOnDestroy();
   }));
 
+  it('does not fire a backend search for a single-character query and keeps the previous list', fakeAsync(() => {
+    const {service, backend} = build();
+    const previous = [rackFactory(1, 'Kept'), rackFactory(2, 'Stable')];
+    service.racksList$.next(previous);
+    service.serversideAdditionalData.itemsCount$.next(2);
+
+    service.fields.search.control.setValue('x');
+    tick(750);
+
+    expect(backend.GET.racksMinimal).not.toHaveBeenCalled();
+    expect(service.racksList$.value).toEqual(previous);
+    expect(service.serversideAdditionalData.itemsCount$.value).toBe(2);
+    service.ngOnDestroy();
+  }));
+
+  it('reuses previous results without blanking when updateRacksList$ fires on a 1-char filter', () => {
+    const {service, backend} = build();
+    const previous = [rackFactory(3, 'Held')];
+    service.racksList$.next(previous);
+    service.serversideAdditionalData.itemsCount$.next(9);
+    service.serversideTableRequestData.filter$.next('q');
+
+    service.updateRacksList$.next();
+
+    expect(backend.GET.racksMinimal).not.toHaveBeenCalled();
+    expect(service.racksList$.value).toEqual(previous);
+    expect(service.serversideAdditionalData.itemsCount$.value).toBe(9);
+  });
+
+  it('still fetches for a two-character search', fakeAsync(() => {
+    const {service, backend} = build();
+    service.fields.search.control.setValue('xy');
+
+    tick(750);
+
+    expect(backend.GET.racksMinimal).toHaveBeenCalledWith(
+      0, jasmine.any(Number), 'xy', 'updated', 'desc', true, 'stable-rack-pagination-v2'
+    );
+    service.ngOnDestroy();
+  }));
+
   it('updates sort$ and re-fetches after order control changes (debounced)', fakeAsync(() => {
     const {service, backend} = build();
     service.fields.order.control.setValue({id: 'name', name: 'Name ↓'});

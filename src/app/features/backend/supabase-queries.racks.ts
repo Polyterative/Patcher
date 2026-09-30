@@ -14,7 +14,7 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from 'src/backend/database.types';
 import { DbComment } from '../../models/comment';
 import { Patch } from '../../models/patch';
-import { Rack } from '../../models/rack';
+import { Rack, normalizeRackModuleOrientation } from '../../models/rack';
 import { PatchModuleInstance } from '../../models/connection';
 import {
   DbPaths,
@@ -95,6 +95,10 @@ export interface RackCommentContextRow {
   public_id: string | null;
 }
 
+type RackModuleWithModuleRow = SupabaseTableRow<'rack_modules'> & {
+  module: DbModule;
+};
+
 import {
   ManufacturerModuleStats,
   ModuleActivityRow,
@@ -111,7 +115,7 @@ import {
   ModuleCollectionPage,
   ModuleCollectionSummary
 } from 'src/app/models/module-collection';
-import { MinimalModule } from 'src/app/models/module';
+import { MinimalModule, DbModule, RackedModule } from 'src/app/models/module';
 import { UserModuleAcquisition } from 'src/app/models/user-module-acquisition';
 import { Tag } from 'src/app/models/tag';
 import {
@@ -148,7 +152,7 @@ import {
   SupabaseQueriesBase,
   type SupabaseWireResponse
 } from './supabase-queries.base';
-import { type SupabaseSingleResponse } from './supabase-db.types';
+import { responseList, type SupabaseSingleResponse, type SupabaseTableRow } from './supabase-db.types';
 
 
 export class SupabaseRackQueries extends SupabaseQueriesBase {
@@ -173,25 +177,41 @@ export class SupabaseRackQueries extends SupabaseQueriesBase {
     );
   }
 
-
-
+  /**
+   * Racked-module layout read, cached short-TTL per rackId. Serves both the
+   * rack-detail loader (`loadModulesForRack$`) and the patch-editor linked-rack
+   * preview, which previously each fired an uncached `rack_modules` read per
+   * rack emission. Reuses the `rackWithId` buster tag (same underlying rows —
+   * every rack_modules write already busts it), so no new CachedEntity key.
+   */
   @Cacheable({
-    maxAge: longCacheTime,
+    maxAge: smallCacheTime,
     cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('rackWithId'))),
     maxCacheCount: 50,
   })
-  getUserRacksPaginated(from = 0, to: number = this.defaultPag) {
-    return this.getUserSession$().pipe(
-      switchMap(user => rxFrom(
-        this.supabase.from(DbPaths.racks)
-          .select(`*, ${ QueryJoins.author }`, {count: 'exact'})
-          .filter('authorid', 'eq', user.id)
-          .order('updated', {ascending: false})
-          .order('id', {ascending: false})
-          .range(from, to)
-      )),
-      remapErrors(),
-    );
+  getRackedModules(rackid: number): Observable<RackedModule[]> {
+    return rxFrom(
+      this.supabase.from(DbPaths.rack_modules)
+        .select(`id,moduleid,rackid,row,column,selected_panel_id,orientation, ${ QueryJoins.module_fk_rackmodules }`)
+        .filter('rackid', 'eq', rackid)
+        .order('row', {ascending: true})
+        .order('column', {ascending: true})
+    )
+      .pipe(remapErrors())
+      .pipe(
+        map(response => responseList(response as SupabaseSingleResponse<RackModuleWithModuleRow[]>)),
+        map(rows => rows.map((row): RackedModule => ({
+          module: row.module,
+          rackingData: {
+            id: row.id,
+            row: row.row,
+            column: row.column,
+            moduleid: row.moduleid,
+            rackid: row.rackid,
+            selectedPanelId: row.selected_panel_id ?? null,
+            orientation: normalizeRackModuleOrientation(row.orientation)
+          }
+        }))));
   }
 
 

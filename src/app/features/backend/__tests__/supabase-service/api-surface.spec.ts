@@ -59,7 +59,6 @@ describe('SupabaseService - API Surface', () => {
         'publicRackWithId',
         'racksMinimal',
         'userPatchesPaginated',
-        'userRacksPaginated',
         'publicUserPatchesPaginated',
         'publicUserRacksPaginated',
         'activeMarketplaceListings',

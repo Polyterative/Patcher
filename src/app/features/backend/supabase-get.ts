@@ -11,7 +11,6 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from 'src/backend/database.types';
 import { Patch } from '../../models/patch';
 import { Rack } from '../../models/rack';
-import { normalizeRackModuleOrientation } from '../../models/rack';
 import {
   DbPaths,
   QueryJoins
@@ -26,7 +25,6 @@ import {
   type SupabaseSingleResponse,
   type SupabaseTableRow
 } from './supabase-db.types';
-import { DbModule, RackedModule } from 'src/app/models/module';
 import { UserModuleAcquisition } from 'src/app/models/user-module-acquisition';
 import {
   REACTION_KIND_COOL,
@@ -45,9 +43,6 @@ export interface AdminFlagRow {
   resolved: boolean;
 }
 
-type RackModuleWithModuleRow = SupabaseTableRow<'rack_modules'> & {
-  module: DbModule;
-};
 type HiddenUsageBucket = 'none' | 'some' | '5_plus' | '10_plus' | '25_plus';
 type ModuleUsageSummaryRow = Omit<
   SupabaseFunctionReturns<'get_module_usage_summary_bucketed'>[number],
@@ -94,28 +89,7 @@ export function createGetNamespace(
     reactionCountsForEntities: (entityType: number, entityIds: number[], kind: ReactionKind = REACTION_KIND_COOL) =>
       queries.getReactionCountsForEntities(entityType, entityIds, kind),
     publicRacksByIds: (rackIds: number[], strictErrors = false) => queries.getPublicRacksByIds(rackIds, strictErrors),
-    rackedModules: (rackid: number) => rxFrom(
-      supabase.from(DbPaths.rack_modules)
-        .select(`id,moduleid,rackid,row,column,selected_panel_id,orientation, ${ QueryJoins.module_fk_rackmodules }`)
-        .filter('rackid', 'eq', rackid)
-        .order('row', {ascending: true})
-        .order('column', {ascending: true})
-    )
-      .pipe(remapErrors())
-      .pipe(
-        map(response => responseList(response as SupabaseSingleResponse<RackModuleWithModuleRow[]>)),
-        map(rows => rows.map((row): RackedModule => ({
-          module: row.module,
-          rackingData: {
-            id: row.id,
-            row: row.row,
-            column: row.column,
-            moduleid: row.moduleid,
-            rackid: row.rackid,
-            selectedPanelId: row.selected_panel_id ?? null,
-            orientation: normalizeRackModuleOrientation(row.orientation)
-          }
-        })))),
+    rackedModules: (rackid: number) => queries.getRackedModules(rackid),
     
     racksWithModule: (moduleid: number, from = 0, to: number = defaultPag, orderBy?: string, orderDirection?: 'asc' | 'desc') =>
       queries.getRacksWithModule(moduleid, from, to, orderBy, orderDirection),

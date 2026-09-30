@@ -108,7 +108,7 @@ export interface SupabaseQueriesService
   Pick<
     SupabaseRackQueries,
     'getCurrentUserRacksForAuthor'
-      | 'getUserRacksPaginated'
+      | 'getRackedModules'
       | 'getPublicUserRacksPaginated'
       | 'getPublicRackWithId'
       | 'getPublicRacksByIds'

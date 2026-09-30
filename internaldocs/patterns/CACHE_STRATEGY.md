@@ -39,7 +39,7 @@ Every `CachedEntity` key, its producer(s), and which write operations bust it:
 | `patches`               | `getPatches`, `getCurrentUserPatchesForAuthor`, `getUserPatchesPaginated`, `getPublicUserPatchesPaginated`, `getPublicPatchWithId` | `add.patch`, `update.patch`, `update.patchSilent`, `update.patchConnections`, `update.patchConnectionsSilent`, `update.patchTags`, `delete.patch`, `delete.patchConnectionsForPatch`, `delete.userPatch`, `delete.allUserData` |
 | `patchConnections`      | `getPatchConnections`                                           | `add.patchModuleInstance`, `add.patchModuleInstances`, `update.patchConnections`, `update.patchConnectionsSilent`, `update.patchConnectionNoteSilent`, `update.patchModuleInstanceLabel`, `update.patch`, `update.patchSilent`, `delete.patch`, `delete.patchConnectionsForPatch`, `delete.patchModuleInstance`, `delete.patchModuleInstancesForPatch`, `delete.userPatch`, `delete.allUserData` |
 | `patchModuleInstances`  | `getPatchModuleInstances`                                       | `add.patchModuleInstance`, `add.patchModuleInstances`, `update.patchModuleInstanceLabel`, `delete.patch`, `delete.patchModuleInstance`, `delete.patchModuleInstancesForPatch`, `delete.userPatch`, `delete.allUserData` |
-| `rackWithId`            | `getRackWithId`, `getPublicRackWithId`, `getUserRacksPaginated`, `getPublicUserRacksPaginated` | `add.rack`, `add.rackModule`, `update.rack`, `update.rackedModules`, `update.rackModulePanel`, `delete.userRack`, `delete.rackedModule`, `delete.modulesOfRack`, `delete.allUserData` |
+| `rackWithId`            | `getRackWithId`, `getPublicRackWithId`, `getRackedModules`, `getPublicUserRacksPaginated` | `add.rack`, `add.rackModule`, `update.rack`, `update.rackedModules`, `update.rackModulePanel`, `delete.userRack`, `delete.rackedModule`, `delete.modulesOfRack`, `delete.allUserData` |
 | `racksMinimal`          | `getRacksMinimal`                                               | `add.rack`, `update.rack`, `delete.userRack`, `delete.allUserData`                       |
 | `comments`              | `getComments`                                                   | `add.comment`, `delete.comment`, `delete.commentsForRack`, `delete.allUserData`           |
 | `currentUserComments`   | `getCurrentUserComments`                                        | `add.comment`, `delete.comment`, `delete.commentsForRack`, `delete.userModule`, `delete.module`, `delete.allUserData` |
@@ -75,7 +75,6 @@ This is appropriate for the use cases listed:
 
 | Method                          | Reason not cached                                                              |
 |---------------------------------|--------------------------------------------------------------------------------|
-| `get.rackedModules(rackId)`     | Called only from the rack editor on open; always needs fresh layout data       |
 | `get.racksWithModule(moduleId)` | Paginated browse result; parameters vary; acceptable to load fresh             |
 | `get.patchWithId(id)`           | Loaded inside the patch editor; editor owns the live state                     |
 | `get.patchesWithModule(id)`     | Paginated browse result                                                        |
