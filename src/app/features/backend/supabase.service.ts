@@ -194,6 +194,7 @@ export class SupabaseService extends SubManager {
 
     this.GET = {
       currentUserModules: this.queries.getCurrentUserModules.bind(this.queries),
+      currentUserModulesForPatchEditor: this.queries.getCurrentUserModulesForPatchEditor.bind(this.queries),
       currentUserModulesPossessionOnly: this.queries.getCurrentUserModulesPossessionOnly.bind(this.queries),
       modules: this.queries.getModules.bind(this.queries),
       publicModulesByIds: this.queries.getPublicModulesByIds.bind(this.queries),
@@ -276,6 +277,7 @@ export class SupabaseService extends SubManager {
 
   readonly GET!: {
     currentUserModules: typeof SupabaseQueriesService.prototype.getCurrentUserModules;
+    currentUserModulesForPatchEditor: typeof SupabaseQueriesService.prototype.getCurrentUserModulesForPatchEditor;
     currentUserModulesPossessionOnly: typeof SupabaseQueriesService.prototype.getCurrentUserModulesPossessionOnly;
     modules: typeof SupabaseQueriesService.prototype.getModules;
     publicModulesByIds: typeof SupabaseQueriesService.prototype.getPublicModulesByIds;

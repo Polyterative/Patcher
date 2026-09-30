@@ -8,7 +8,8 @@ import {
 import {
   filter,
   map,
-  switchMap
+  switchMap,
+  tap
 } from 'rxjs/operators';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from 'src/backend/database.types';
@@ -238,7 +239,8 @@ import {
   escapeIlikePattern,
   getHpBandLabel,
   isOneUStandard,
-  HP_BAND_ORDER
+  HP_BAND_ORDER,
+  MIN_SERVER_TEXT_SEARCH_CHARS
 } from './supabase-queries.helpers';
 import {
   rankBuckets,
@@ -284,6 +286,12 @@ interface ModuleSearchRow {
 
 export class SupabaseModuleQueries extends SupabaseQueriesBase {
 
+  /**
+   * Last successful module list emission, reused when a sub-min-length text
+   * query arrives so the browser list keeps showing previous results instead
+   * of blanking (or firing a near-full-table `ilike`).
+   */
+  private lastModuleListResult: {data: MinimalModule[]; count: number | null; error: unknown} | null = null;
 
   @Cacheable({
     maxAge: smallCacheTime,
@@ -309,6 +317,14 @@ export class SupabaseModuleQueries extends SupabaseQueriesBase {
     const nameQuery = (name ?? '').trim();
     const descriptionQuery = (description ?? '').trim();
     const requiresClientTextFiltering = nameQuery.length > 0 || descriptionQuery.length > 0;
+    // A 1-char query matches most of the table — never fire ilike+count for
+    // it; reuse the previous list result so the browser never blanks.
+    const isShortTextSearch = requiresClientTextFiltering
+      && nameQuery.length < MIN_SERVER_TEXT_SEARCH_CHARS
+      && descriptionQuery.length < MIN_SERVER_TEXT_SEARCH_CHARS;
+    if (isShortTextSearch) {
+      return of(this.lastModuleListResult ?? {data: [], count: 0, error: null});
+    }
     const hasTagFilter = tagIds && tagIds.length > 0;
     const moduleOrderColumn = orderBy || 'name';
     const moduleOrderOptions = {
@@ -419,7 +435,12 @@ export class SupabaseModuleQueries extends SupabaseQueriesBase {
             data: ((Array.isArray(response?.data) ? response.data : []) as MinimalModule[]),
             count: response?.count ?? null,
             error: response?.error
-          }))
+          })),
+          tap(result => {
+            if (!result.error) {
+              this.lastModuleListResult = result;
+            }
+          })
         );
     }
 
@@ -513,7 +534,12 @@ export class SupabaseModuleQueries extends SupabaseQueriesBase {
         data: ((Array.isArray(response?.data) ? response.data : []) as MinimalModule[]),
         count: response?.count ?? null,
         error: response?.error
-      }))
+      })),
+      tap(result => {
+        if (!result.error) {
+          this.lastModuleListResult = result;
+        }
+      })
     );
   }
 
@@ -619,7 +645,7 @@ export class SupabaseModuleQueries extends SupabaseQueriesBase {
 
   searchPublicModulesForCollection(query: string, limit = 24): Observable<MinimalModule[]> {
     const normalizedQuery = query.trim();
-    if (normalizedQuery.length < 2) {
+    if (normalizedQuery.length < MIN_SERVER_TEXT_SEARCH_CHARS) {
       return of([]);
     }
 

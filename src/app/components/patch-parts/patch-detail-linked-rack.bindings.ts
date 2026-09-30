@@ -199,9 +199,7 @@ export function loadEditorCollectionModules$(
   deps: PatchDetailDataDependencies,
   strategy: PatchEditorSortStrategy
 ): Observable<DbModule[]> {
-  return deps.backend.GET.currentUserModules(
-    true,
-    false,
+  return deps.backend.GET.currentUserModulesForPatchEditor(
     strategy.backendOrder
   ).pipe(
     map((modules: DbModule[]) => modules.filter(module => module.possessionKind !== 'WANTS'))

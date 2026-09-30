@@ -58,6 +58,9 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
         includeWishlist: boolean,
         order?: CurrentUserModulesOrderConfig
       ) => Observable<DbModule[]>>;
+      currentUserModulesForPatchEditor: jasmine.Spy<(
+        order?: CurrentUserModulesOrderConfig
+      ) => Observable<DbModule[]>>;
       patchConnections: jasmine.Spy<(patchId: number) => Observable<PatchConnection[]>>;
       patchModuleInstances: jasmine.Spy<(patchId: number) => Observable<PatchModuleInstance[]>>;
       rackWithId: jasmine.Spy<(rackId: number) => Observable<RackDetailResponse>>;
@@ -171,6 +174,10 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
           includeWishlist: boolean,
           order?: CurrentUserModulesOrderConfig
         ) => Observable<DbModule[]>>('GET.currentUserModules')
+          .and.returnValue(of([])),
+        currentUserModulesForPatchEditor: jasmine.createSpy<(
+          order?: CurrentUserModulesOrderConfig
+        ) => Observable<DbModule[]>>('GET.currentUserModulesForPatchEditor')
           .and.returnValue(of([])),
         patchConnections: jasmine.createSpy<(patchId: number) => Observable<PatchConnection[]>>('GET.patchConnections')
           .and.returnValue(of([])),
@@ -329,7 +336,7 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
       backendOrder: order,
       localComparator: () => 0
     };
-    backend.GET.currentUserModules.and.returnValue(of([
+    backend.GET.currentUserModulesForPatchEditor.and.returnValue(of([
       {...dbModuleFixture(1, 'Owned'), possessionKind: 'HAS'},
       {...dbModuleFixture(2, 'Wishlist'), possessionKind: 'WANTS'},
       {...dbModuleFixture(3, 'Selling'), possessionKind: 'SELLS'}
@@ -338,7 +345,8 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
 
     service.loadEditorCollectionModules$(strategy).subscribe(modules => result = modules);
 
-    expect(backend.GET.currentUserModules).toHaveBeenCalledWith(true, false, order);
+    expect(backend.GET.currentUserModulesForPatchEditor).toHaveBeenCalledWith(order);
+    expect(backend.GET.currentUserModules).not.toHaveBeenCalled();
     expect(result.map(module => module.id)).toEqual([1, 3]);
   });
 

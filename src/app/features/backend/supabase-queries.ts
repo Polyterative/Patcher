@@ -179,6 +179,7 @@ export interface SupabaseQueriesService
   Pick<
     SupabasePossessionQueries,
     'getCurrentUserModules'
+      | 'getCurrentUserModulesForPatchEditor'
       | 'getCurrentUserModulesPossessionOnly'
       | 'getMyVotes'
       | 'getModulePossessionCounts'

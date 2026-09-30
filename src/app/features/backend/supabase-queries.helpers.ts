@@ -57,3 +57,10 @@ export function isOneUStandard(standardName: string): boolean {
  * HP band order for sorting
  */
 export const HP_BAND_ORDER = ['0-2 HP', '3-5 HP', '6-8 HP', '9-16 HP', '17-28 HP', '29+ HP'];
+
+/**
+ * Minimum trimmed characters before a text query may hit the server with
+ * `ilike %q%` (+ `count: exact`). A single character matches a huge share of
+ * rows, so 1-char queries reuse the previous list result instead of firing.
+ */
+export const MIN_SERVER_TEXT_SEARCH_CHARS = 2;

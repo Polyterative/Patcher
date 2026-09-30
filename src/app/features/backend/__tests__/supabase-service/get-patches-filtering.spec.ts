@@ -337,4 +337,53 @@ describe('SupabaseService - GET.patches filtering and ordering', () => {
       }
     });
   }, TEST_TIMEOUT);
+
+  it('should NOT fire ilike+count for a 1-char name query and returns empty without previous results', (done) => {
+    const fromSpy = spyOn(supabaseClient, 'from').and.callThrough();
+
+    (service.GET.patches(0, 9, 'x') as unknown as Observable<PatchListingResult>).subscribe({
+      next: (result: PatchListingResult) => {
+        expect(fromSpy).not.toHaveBeenCalled();
+        expect(result.data).toEqual([]);
+        expect(result.count).toBe(0);
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+
+  it('should reuse previous patch results for a 1-char query instead of blanking the list', (done) => {
+    const mockPatches = [{id: 1, name: 'DrumPatch', public: true}];
+    const fromSpy = spyOn(supabaseClient, 'from').and.returnValue(
+      chainableWithIlike({data: mockPatches, count: 1, error: null})
+    );
+
+    (service.GET.patches(0, 9) as unknown as Observable<PatchListingResult>).subscribe({
+      next: (first: PatchListingResult) => {
+        expect(first.data).toEqual(mockPatches);
+
+        (service.GET.patches(0, 9, 'd') as unknown as Observable<PatchListingResult>).subscribe({
+          next: (second: PatchListingResult) => {
+            // One server round-trip total: the 1-char query reuses the
+            // previous emission without touching supabase again.
+            expect(fromSpy.calls.count()).toBe(1);
+            expect(second.data).toEqual(mockPatches);
+            expect(second.count).toBe(1);
+            done();
+          },
+          error: (err) => {
+            fail(err);
+            done();
+          }
+        });
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
 });

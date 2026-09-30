@@ -20,6 +20,10 @@ import {
 } from '../../models/connection';
 import { CVConnectionState } from './patch-detail-data.models';
 import { cvWithModuleFixture } from './patch-graph/patch-graph-test-fixtures';
+import { loadEditorCollectionModules$ } from './patch-detail-linked-rack.bindings';
+import type { PatchDetailDataDependencies } from './patch-detail-data.context.types';
+import type { PatchEditorSortStrategy } from './patch-editor/patch-editor.types';
+import type { DbModule } from '../../models/module';
 
 
 type UserSession = { id: string } | null;
@@ -308,4 +312,29 @@ describe('PatchDetailDataService selection behavior', () => {
     expect(service.instanceLabelMap$.value.size).toBe(0);
   });
 
+});
+
+describe('PatchDetailDataService editor collection modules', () => {
+  it('pulls editor collection modules through the trimmed patch-editor read and keeps the wishlist filter', (done) => {
+    const order = {key: 'collectionUpdated', direction: 'desc'} as const;
+    const strategy: PatchEditorSortStrategy = {
+      id: 'addedLatest',
+      label: 'Recently added',
+      backendOrder: order,
+      localComparator: () => 0
+    };
+    const fetch = jasmine.createSpy('currentUserModulesForPatchEditor').and.returnValue(of([
+      {id: 1, possessionKind: 'HAS'} as DbModule,
+      {id: 2, possessionKind: 'WANTS'} as DbModule
+    ]));
+    const deps = {
+      backend: {GET: {currentUserModulesForPatchEditor: fetch}}
+    } as unknown as PatchDetailDataDependencies;
+
+    loadEditorCollectionModules$(deps, strategy).subscribe(modules => {
+      expect(fetch).toHaveBeenCalledWith(order);
+      expect(modules.map(module => module.id)).toEqual([1]);
+      done();
+    });
+  });
 });
